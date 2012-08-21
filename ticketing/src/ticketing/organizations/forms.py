@@ -106,3 +106,55 @@ class OrganizationForm(Form):
         choices=[(81, u'日本')],
     )
     '''
+
+class SejTenantForm(Form):
+
+    def _get_translations(self):
+        return Translations()
+
+    id = HiddenField(
+        label=u'ID',
+        validators=[Optional()],
+    )
+    shop_id = TextField(
+        label=u'ショップID',
+        validators=[
+            Required(),
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ]
+    )
+    shop_name = TextField(
+        label=u'ショップ名',
+        validators=[
+            Required(),
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ]
+    )
+    contact_01 = TextField(
+        label=u'連絡先1',
+        validators=[
+            Required(),
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ]
+    )
+    contact_02 = TextField(
+        label=u'連絡先2',
+        validators=[
+            Required(),
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ]
+    )
+    api_key = TextField(
+        label=u'API KEY',
+        validators=[
+            Required(),
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ]
+    )
+    inticket_api_url = TextField(
+        label=u'API URL',
+        validators=[
+            Required(),
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ]
+    )

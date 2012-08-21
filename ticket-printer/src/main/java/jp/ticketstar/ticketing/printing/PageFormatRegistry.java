@@ -27,7 +27,7 @@ public class PageFormatRegistry {
     public static OurPageFormat buildPageFormatForRT() {
         final OurPageFormat retval = new OurPageFormat();
         retval.setName("楽天チケット");
-        retval.setVerticalGuides(new double[] { mmToPoint(19.2), mmToPoint(148.1) });
+        retval.setVerticalGuides(new double[] { mmToPoint(17.8), mmToPoint(139) });
         retval.setPaper(buildPaper(new DDimension2D(mmToPoint(65.04), mmToPoint(177.96))));
         retval.setOrientation(PageFormat.LANDSCAPE);
         return retval;

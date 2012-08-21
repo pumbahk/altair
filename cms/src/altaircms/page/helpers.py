@@ -79,7 +79,7 @@ def topic_describe_viewlet(request, pageset):
     va.set_pageset(request, pageset)
     event = pageset.event
     va.set_event(request, event)
-    topics = Topic.query.filter_by(event=event).filter_by(bound_page=pageset).order_by("topic.kind", "topic.subkind", "topic.orderno")
+    topics = Topic.query.filter_by(event=event).filter_by(bound_page=pageset).order_by("topic.kind", "topic.subkind", "topic.display_order")
     va.set_topics(request, topics)
     response = render_view_to_response(request.context, request, name="describe_topic")
     if response is None:
@@ -88,7 +88,7 @@ def topic_describe_viewlet(request, pageset):
 
 def topcontent_describe_viewlet(request, pageset):
     va.set_pageset(request, pageset)
-    topcontents = Topcontent.query.filter_by(bound_page=pageset).order_by("topcontent.kind", "topcontent.subkind", "topcontent.orderno")
+    topcontents = Topcontent.query.filter_by(bound_page=pageset).order_by("topcontent.kind", "topcontent.subkind", "topcontent.display_order")
     va.set_topcontents(request, topcontents)
     response = render_view_to_response(request.context, request, name="describe_topcontent")
     if response is None:

@@ -31,9 +31,19 @@ def format_size(size):
 
 
 ## sortable, 
-def sortable(request, name, direction="asc", **kwargs):
+def sortparams(prefix, request, defaults=(None, None)):
+    sort_by = request.params.get(prefix + '_sort', None)
+    direction = request.params.get(prefix + '_direction', None)
+    if (sort_by is None or sort_by == '') and not direction:
+        return defaults
+    return sort_by, direction
+
+def sortable(prefix, request, sort_by, direction="asc", **kwargs):
     defaults = request.params.copy()
-    defaults.update(sort=name, direction=direction)
+    _sort_by, _direction = sortparams(prefix, request)
+    if sort_by == _sort_by:
+        direction = 'desc' if _direction == 'asc' else 'asc'
+    defaults.update({ prefix + '_sort': sort_by, prefix + '_direction': direction })
     defaults.update(kwargs)
     url = request.current_route_url(_query=defaults)
     return url

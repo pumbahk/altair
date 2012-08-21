@@ -59,11 +59,11 @@ class OrderTests(unittest.TestCase):
         import transaction
         transaction.abort()
 
-    def _makeOne(self, b, a, orderno=None, id=None, is_vetoed=False):
+    def _makeOne(self, b, a, display_order=None, id=None, is_vetoed=False):
         from altaircms.topic.models import Topic
         return Topic(publish_open_on=b, 
                      publish_close_on=a, 
-                     id=id, orderno=orderno)
+                     id=id, display_order=display_order)
 
     def test_order(self):
         """ today:2/1 => 2/1;  today:10/1 => 4/1, 3/1, 2/1
@@ -122,12 +122,12 @@ class OrderTests(unittest.TestCase):
         qs = Topic.publishing(datetime(2011, 5, 1))
         self.assertEquals([q.id for q in qs], [2])
 
-    def test_sorted_by_orderno5(self):
+    def test_sorted_by_display_order5(self):
         """ today:6/1, topics=[2/1~4/1, 3/1~5/1]; => []
         """
-        DBSession.add(self._makeOne(datetime(2011, 2, 1),datetime(9999, 2, 1), id=1, orderno=1))
-        DBSession.add(self._makeOne(datetime(2011, 2, 1), datetime(9999, 2, 1), id=3, orderno=100))
-        DBSession.add(self._makeOne(datetime(2011, 2, 1), datetime(9999, 2, 1), id=2, orderno=50))
+        DBSession.add(self._makeOne(datetime(2011, 2, 1),datetime(9999, 2, 1), id=1, display_order=1))
+        DBSession.add(self._makeOne(datetime(2011, 2, 1), datetime(9999, 2, 1), id=3, display_order=100))
+        DBSession.add(self._makeOne(datetime(2011, 2, 1), datetime(9999, 2, 1), id=2, display_order=50))
 
         qs = Topic.publishing(datetime(2011, 10, 1))
         self.assertEquals([q.id for q in qs], [1, 2, 3])

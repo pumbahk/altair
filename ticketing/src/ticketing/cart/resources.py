@@ -31,6 +31,21 @@ class TicketingCartResource(object):
         else:
             self.event_id = None
 
+    @property
+    def membership(self):
+        membergroup = self.membergroup
+        if not membergroup:
+            return None
+        return membergroup.membership
+
+    @property
+    def membergroup(self):
+        sales_segment = self.sales_segment
+        if sales_segment is None:
+            return None
+        return sales_segment.membergroup
+
+
     def get_system_fee(self):
         # 暫定で0に設定
         return 0
@@ -45,7 +60,11 @@ class TicketingCartResource(object):
         return pairs
 
 
+    @deprecate("deprecated method")
     def get_sales_segument(self):
+        return self.get_sales_segment()
+
+    def get_sales_segment(self):
         """ 該当イベントのSalesSegment取得
         """
 
@@ -58,6 +77,8 @@ class TicketingCartResource(object):
             ).filter(
                 c_models.SalesSegment.event_id==self.event_id
             ).first()
+            if sales_segment is None:
+                return None
             if sales_segment.start_at <= now and sales_segment.end_at >= now:
                 return sales_segment
         else:
@@ -68,6 +89,8 @@ class TicketingCartResource(object):
             ).filter(
                 c_models.SalesSegment.end_at>=now
             ).first()
+
+    sales_segment = property(get_sales_segment)
 
     @deprecate("deprecated method")
     def _convert_order_product_items(self, performance_id, ordered_products):

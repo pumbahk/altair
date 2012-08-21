@@ -65,8 +65,9 @@
           % endif
         </td>
         % if detail:
-        <td>${order.ordered_products[0].product.event.title}</td>
-        <td>${order.ordered_products[0].ordered_product_items[0].product_item.performance.start_on or ''}</td>
+        <% performance = order.performance %>
+        <td><a href="${request.route_path('events.show', event_id=performance.event.id)}">${performance.event.title}</a></td>
+        <td><a href="${request.route_path('performances.show', performance_id=performance.id)}/reservation">${performance.start_on or ''}</a></td>
         % endif
       </tr>
   % else:

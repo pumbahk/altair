@@ -140,13 +140,13 @@ class TicketForm(Form):
     name = fields.TextField(validators=[required_field()], label=u"券種")
     seattype = fields.TextField(validators=[], label=u"席種／グレード")
     price = fields.IntegerField(validators=[required_field()], label=u"料金")
-    # orderno = fields.TextField(label=u"表示順序(default:50)")
-    def validate_orderno(form, field):
+    # display_order = fields.TextField(label=u"表示順序(default:50)")
+    def validate_display_order(form, field):
         if not field.data:
             field.data = "50"
 
     __display_fields__ = [u"sale",u"name",  u"seattype", u"price"]
-    # __display_fields__ = [u"sale", u"name", u"seattype", u"price", u"orderno"]
+    # __display_fields__ = [u"sale", u"name", u"seattype", u"price", u"display_order"]
 
 class PromotionForm(Form):
     kind_content = fields.TextField(label=u"タグ的なもの(, 区切り)") #@todo rename
@@ -166,7 +166,7 @@ class PromotionForm(Form):
     publish_open_on = fields.DateTimeField(label=u"公開開始日", validators=[required_field()])
     publish_close_on = fields.DateTimeField(label=u"公開終了日", validators=[required_field()])
     
-    orderno = fields.IntegerField(label=u"表示順序(1〜100)", default=50)
+    display_order = fields.IntegerField(label=u"表示順序(1〜100)", default=50)
     is_vetoed = fields.BooleanField(label=u"公開禁止")
 
     def validate(self, **kwargs):
@@ -178,7 +178,7 @@ class PromotionForm(Form):
     __display_fields__ = [
         u"kind_content",
         u"main_image", u"text", u"thumbnail", u"linked_page", u"link", 
-        u"publish_open_on", u"publish_close_on", u"orderno", u"is_vetoed"
+        u"publish_open_on", u"publish_close_on", u"display_order", u"is_vetoed"
         ]
 
 
@@ -210,12 +210,12 @@ class CategoryForm(Form):
     # hierarchy = fields.SelectField(label=u"階層")
     imgsrc = fields.TextField(label=u"imgsrc(e.g. /static/ticketstar/img/common/header_nav_top.gif)")
     url = fields.TextField(label=u"リンク(外部ページのURL)")
-    orderno = fields.IntegerField(label=u"表示順序")
+    display_order = fields.IntegerField(label=u"表示順序")
 
     __display_fields__ = [u"name", u"origin", u"label",
                           u"parent", u"hierarchy", 
                           u"imgsrc", u"url", u"pageset", 
-                          u"orderno"]
+                          u"display_order"]
 
     # def configure(self, request):
     #     qs = DBSession.query(Category.hierarchy)
@@ -259,7 +259,7 @@ class TopicForm(Form):
     publish_open_on = fields.DateTimeField(label=u"公開開始日", validators=[required_field()])
     publish_close_on = fields.DateTimeField(label=u"公開終了日", validators=[required_field()])
     
-    orderno = fields.IntegerField(label=u"表示順序(1〜100)", default=50)
+    display_order = fields.IntegerField(label=u"表示順序(1〜100)", default=50)
     is_vetoed = fields.BooleanField(label=u"公開禁止")
 
     bound_page = dynamic_query_select_field_factory(PageSet, 
@@ -283,7 +283,7 @@ class TopicForm(Form):
     __display_fields__ = [u"title", u"kind", u"subkind", u"is_global", 
                           u"text", 
                           u"publish_open_on", u"publish_close_on", 
-                          u"orderno", u"is_vetoed", 
+                          u"display_order", u"is_vetoed", 
                           u"bound_page", u"linked_page", u"link", u"mobile_link", u"event"]
 
     def validate(self, **kwargs):
@@ -324,7 +324,7 @@ class TopcontentForm(Form):
     publish_close_on = fields.DateTimeField(label=u"公開終了日", validators=[required_field()])
 
     
-    orderno = fields.IntegerField(label=u"表示順序(1〜100)", default=50)
+    display_order = fields.IntegerField(label=u"表示順序(1〜100)", default=50)
     is_vetoed = fields.BooleanField(label=u"公開禁止")
 
     ##本当は、client.id, organization.idでfilteringする必要がある
@@ -344,7 +344,7 @@ class TopcontentForm(Form):
     __display_fields__= [u"title", u"kind", u"subkind", u"is_global", 
                          u"text", u"countdown_type", u"image_asset",u"mobile_image_asset",  
                          u"publish_open_on", u"publish_close_on", 
-                         u"orderno", u"is_vetoed", 
+                         u"display_order", u"is_vetoed", 
                          u"bound_page", u"linked_page", u"link", u"mobile_link"]
     
     def validate(self, **kwargs):
@@ -366,12 +366,12 @@ class HotWordForm(Form):
     enablep = fields.BooleanField(label=u"利用する/しない")
     term_begin = fields.DateTimeField(label=u"利用開始日", validators=[required_field()])
     term_end = fields.DateTimeField(label=u"利用終了日", validators=[required_field()])
-    orderno = fields.IntegerField(label=u"表示順序")
+    display_order = fields.IntegerField(label=u"表示順序")
     
     
     __display_fields__ = [u"name", u"tag",
                           u"enablep", u"term_begin", u"term_end", 
-                          u"orderno"]
+                          u"display_order"]
 
     def validate(self, **kwargs):
         super(HotWordForm, self).validate()

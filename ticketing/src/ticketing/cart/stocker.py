@@ -15,8 +15,12 @@ class NotEnoughStockException(Exception):
     def __init__(self, stock, actualy, required):
         super(NotEnoughStockException, self).__init__()
         self.stock = stock
-        self.stock_holder_name = self.stock.stock_holder.name
-        self.stock_type_name = self.stock.stock_type.name
+        self.stock_holder_name = None
+        if self.stock.stock_holder:
+            self.stock_holder_name = self.stock.stock_holder.name
+        self.stock_type_name = None
+        if self.stock.stock_type:
+            self.stock_type_name = self.stock.stock_type.name
         self.actualy = actualy
         self.required = required
 

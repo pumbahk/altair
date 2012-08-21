@@ -109,14 +109,13 @@ function newHandler(objects, styleClasses, drawable, offset) {
         y: utils.convertToUserUnit(height * scale, unit)
       };
       var _s = canvasTransform.apply(s);
-      // Font sizes are always in pt. (this is the spec)
-      var _fontSize = utils.convertToUserUnit(fontSize, 'pt');
-      var _lineHeight = utils.convertToUserUnit(lineHeight || fontSize, 'pt');
+      // Font sizes are always in px. (this is the spec)
       var canvasScale = Math.sqrt(Math.abs(determinant(canvasTransform)));
       var n = document.createElement('div');
+      var _lineHeight = (lineHeight || fontSize);
       n.setAttribute('style', [
           'position:absolute;',
-          'font-size:', _fontSize * canvasScale, 'px', ';',
+          'font-size:', fontSize * canvasScale, 'px', ';',
           'line-height:', _lineHeight * canvasScale, 'px', ';',
           'left:', _p.x, 'px', ';',
           'top:', _p.y, 'px', ';',
@@ -125,7 +124,7 @@ function newHandler(objects, styleClasses, drawable, offset) {
         ].concat(styleDefs).join(''));
       n.innerHTML = text;
       viewport.appendChild(n);
-      texts.push({ n: n, position: p, size: s, fontSize: _fontSize, lineHeight: _lineHeight });
+      texts.push({ n: n, position: p, size: s, fontSize: fontSize, lineHeight: _lineHeight });
     },
     cm: function _currentTransformationMatrix(a, b, c, d, e, f) {
       currentMatrix = { a: a, b: b, c: c, d: d, e: e, f: f };

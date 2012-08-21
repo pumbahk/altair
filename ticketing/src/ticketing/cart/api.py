@@ -8,6 +8,7 @@ from zope.deprecation import deprecate
 
 logger = logging.getLogger(__name__)
 from pyramid.interfaces import IRoutesMapper, IRequest
+from pyramid.security import effective_principals
 from ..api.impl import get_communication_api
 from ..api.impl import CMSCommunicationApi
 from .interfaces import IPaymentMethodManager
@@ -74,7 +75,7 @@ def get_item_name(request, performance):
 def get_nickname(request):
     from .rakuten_auth.api import authenticated_user
     user = authenticated_user(request)
-    return user['nickname']
+    return user.get('nickname', '')
 
 def get_payment_method_manager(request=None, registry=None):
     if request is not None:
@@ -193,3 +194,14 @@ def get_system_fee(request):
 def get_stock_holder(request, event_id):
     stocker = get_stocker(request)
     return stocker.get_stock_holder(event_id)
+
+def get_valid_sales_url(request, event):
+    principals = effective_principals(request)
+    logger.debug(principals)
+    for salessegment in event.sales_segments:
+        membergroup = salessegment.membergroup
+        logger.debug("sales_segment:%s" % salessegment.name)
+        logger.debug("membergroup:%s" % membergroup.name)
+        if "membergroup:%s" % membergroup.name in principals:
+            return request.route_url('cart.index.sales', event_id=event.id, sales_segment_id=salessegment.id)
+

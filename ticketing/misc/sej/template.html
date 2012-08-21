@@ -562,10 +562,11 @@ function newHandler(n, xmldoc) {
     strokeColor: null,
     strokeWidth: null
   };
+  var dpiFix = 1.;
   function initPathData() {
     if (pathData == null) {
       var p = applyMatrix(currentMatrix, currentPoint);
-      pathData = [['M', p.x, p.y]];
+      pathData = [['M', p.x * dpiFix, p.y * dpiFix]];
     }
   }
   function initDrawable() {
@@ -634,17 +635,21 @@ function newHandler(n, xmldoc) {
     },
     U: function setUnit(_unit) {
       unit = _unit;
+      if (unit == 'px')
+        dpiFix = 96. / 90;
+      else
+        dpiFix = 1.;
     },
     X: function showText(width, height, text) {
       var p = applyMatrix(currentMatrix, currentPoint);
       n.insertAdjacentHTML('beforeEnd', [
         '<div style="position:absolute;',
-        'font-size:', fontSize, 'pt', ';',
-        'line-height:', lineHeight || fontSize, 'pt', ';',
-        'left:', p.x, unit, ';',
-        'top:', p.y, unit, ';',
-        'width:', width * scale, unit, ';',
-        'height:', height * scale, unit, '"',
+        'font-size:', fontSize, 'px', ';',
+        'line-height:', lineHeight || fontSize, 'px', ';',
+        'left:', p.x * dpiFix, unit, ';',
+        'top:', p.y * dpiFix, unit, ';',
+        'width:', width * dpiFix * scale, unit, ';',
+        'height:', height * dpiFix * scale, unit, '"',
         ' class="', classes.join(' '), '"',
         '>', text, '</div>'].join(''));
     },
@@ -659,7 +664,7 @@ function newHandler(n, xmldoc) {
       var p = { x: x, y: y };
       var p1 = applyMatrix(currentMatrix, p);
       if (pathData != null)
-        pathData.push(['M', p1.x, p1.y]);
+        pathData.push(['M', p1.x * dpiFix, p1.y * dpiFix]);
       currentPoint = p;
     },
     l: function lineTo(x, y) {
@@ -668,7 +673,7 @@ function newHandler(n, xmldoc) {
       var p = { x: x, y: y };
       var p1 = applyMatrix(currentMatrix, p);
       initPathData();
-      pathData.push(['L', p1.x, p1.y]);
+      pathData.push(['L', p1.x * dpiFix, p1.y * dpiFix]);
       currentPoint = p;
     },
     c: function curveTo(x1, y1, x2, y2, x3, y3) {
@@ -683,7 +688,9 @@ function newHandler(n, xmldoc) {
           p2 = applyMatrix(currentMatrix, { x: x2, y: y2 }),
           p3 = applyMatrix(currentMatrix, p);
       initPathData();
-      pathData.push(['C', p1.x, p1.y, p2.x, p2.y, p3.x, p3.y]);  
+      pathData.push(['C', p1.x * dpiFix, p1.y * dpiFix,
+                          p2.x * dpiFix, p2.y * dpiFix,
+                          p3.x * dpiFix, p3.y * dpiFix]);
       currentPoint = p;
     },
     v: function curveToS1(x2, y2, x3, y3) {
@@ -696,7 +703,9 @@ function newHandler(n, xmldoc) {
           p2 = applyMatrix(currentMatrix, { x: x2, y: y2 }),
           p3 = applyMatrix(currentMatrix, p);
       initPathData();
-      pathData.push(['C', p1.x, p1.y, p2.x, p2.y, p3.x, p3.y]);  
+      pathData.push(['C', p1.x * dpiFix, p1.y * dpiFix,
+                          p2.x * dpiFix, p2.y * dpiFix,
+                          p3.x * dpiFix, p3.y * dpiFix]);
       currentPoint = p;
     },
     y: function curveToS2(x1, y1, x3, y3) {
@@ -708,7 +717,9 @@ function newHandler(n, xmldoc) {
       var p1 = applyMatrix(currentMatrix, { x: x1, y: y1 });
           p3 = applyMatrix(currentMatrix, p);
       initPathData();
-      pathData.push(['C', p1.x, p1.y, p3.x, p3.y, p3.x, p3.y]);  
+      pathData.push(['C', p1.x * dpiFix, p1.y * dpiFix,
+                          p3.x * dpiFix, p3.y * dpiFix,
+                          p3.x * dpiFix, p3.y * dpiFix]);  
       currentPoint = p;
     },
     q: function quadraticCurveTo(x1, y1, x2, y2) {
@@ -720,7 +731,8 @@ function newHandler(n, xmldoc) {
       var p1 = applyMatrix(currentMatrix, { x: x1, y: y1 }),
           p2 = applyMatrix(currentMatrix, p);
       initPathData();
-      pathData.push(['Q', p1.x, p1.y, p2.x, p2.y]);
+      pathData.push(['Q', p1.x * dpiFix, p1.y * dpiFix,
+                          p2.x * dpiFix, p2.y * dpiFix]);
       currentPoint = p;
     },
     a: function arc(rx, ry, phi, largeArc, sweep, x, y) {
@@ -732,7 +744,8 @@ function newHandler(n, xmldoc) {
       var r = applyMatrix(currentMatrix, { x: rx - currentMatrix.e, y: ry - currentMatrix.f }),
           p1 = applyMatrix(currentMatrix, p);
       initPathData();
-      pathData.push(['A', r.x, r.y, phi, largeArc, sweep, p1.x, p1.y]);
+      pathData.push(['A', r.x * dpiFix, r.y * dpiFix, phi, largeArc, sweep,
+                          p1.x * dpiFix, p1.y * dpiFix]);
       currentPoint = p;
     },
     h: function closePath() {

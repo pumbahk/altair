@@ -1,7 +1,8 @@
-package jp.ticketstar.ticketing.printing;
+package jp.ticketstar.ticketing.printing.gui;
 
 import java.awt.CardLayout;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.EventQueue;
 
 import javax.print.PrintService;
@@ -37,6 +38,15 @@ import java.util.Collection;
 import javax.swing.JPanel;
 
 import javax.swing.JComboBox;
+
+import jp.ticketstar.ticketing.printing.AppService;
+import jp.ticketstar.ticketing.printing.BoundingBoxOverlay;
+import jp.ticketstar.ticketing.printing.GenericComboBoxModel;
+import jp.ticketstar.ticketing.printing.GuidesOverlay;
+import jp.ticketstar.ticketing.printing.JGVTComponent;
+import jp.ticketstar.ticketing.printing.OurPageFormat;
+import jp.ticketstar.ticketing.printing.Ticket;
+import jp.ticketstar.ticketing.printing.TicketSetModel;
 
 import org.apache.batik.swing.gvt.Overlay;
 
@@ -77,7 +87,7 @@ class PageFormatCellRenderer extends DefaultListCellRenderer {
 	}
 }
 
-public class AppWindow {
+public class AppWindow implements IAppWindow {
 	AppService appService;
 	AppWindowModel model;
 	
@@ -183,6 +193,9 @@ public class AppWindow {
 		boundingBoxOverlay = new BoundingBoxOverlay(model);
 	}
 
+	/* (non-Javadoc)
+	 * @see jp.ticketstar.ticketing.printing.gui.IAppWindow#unbind()
+	 */
 	public void unbind() {
 		if (model == null)
 			return;
@@ -194,6 +207,9 @@ public class AppWindow {
 		model.removePropertyChangeListener(pageFormatChangeListener);
 	}
 	
+	/* (non-Javadoc)
+	 * @see jp.ticketstar.ticketing.printing.gui.IAppWindow#bind(jp.ticketstar.ticketing.printing.gui.AppWindowModel)
+	 */
 	public void bind(AppWindowModel model) {
 		unbind();
 		model.addPropertyChangeListener("ticketSetModel", ticketSetModelChangeListener);
@@ -273,10 +289,16 @@ public class AppWindow {
 		splitPane.setRightComponent(panel);
 	}
 
-	public JFrame getFrame() {
+	/* (non-Javadoc)
+	 * @see jp.ticketstar.ticketing.printing.gui.IAppWindow#getFrame()
+	 */
+	public Container getFrame() {
 		return frame;
 	}
 	
+	/* (non-Javadoc)
+	 * @see jp.ticketstar.ticketing.printing.gui.IAppWindow#show()
+	 */
 	public void show() {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {

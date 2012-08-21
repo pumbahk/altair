@@ -39,10 +39,10 @@ class IndexView(object):
         self.context = request.context
 
 
-    @view_config(route_name='cart.index', renderer='carts_mobile/index.html', xhr=False, permission="view", request_type=".interfaces.IMobileRequest")
-    @view_config(route_name='cart.index.sales', renderer='carts_mobile/index.html', xhr=False, permission="view", request_type=".interfaces.IMobileRequest")
-    @view_config(route_name='cart.index', renderer='carts/index.html', xhr=False, permission="view")
-    @view_config(route_name='cart.index.sales', renderer='carts/index.html', xhr=False, permission="view")
+    @view_config(route_name='cart.index', renderer='carts_mobile/index.html', xhr=False, permission="buy", request_type=".interfaces.IMobileRequest")
+    @view_config(route_name='cart.index.sales', renderer='carts_mobile/index.html', xhr=False, permission="buy", request_type=".interfaces.IMobileRequest")
+    @view_config(route_name='cart.index', renderer='carts/index.html', xhr=False, permission="buy")
+    @view_config(route_name='cart.index.sales', renderer='carts/index.html', xhr=False, permission="buy")
     def __call__(self):
         jquery_tools.need()
         event_id = self.request.matchdict['event_id']
@@ -50,6 +50,7 @@ class IndexView(object):
 
         sales_segment = self.context.get_sales_segument()
         if sales_segment is None:
+            logger.debug("No matching sales_segment")
             raise NoEventError("No matching sales_segment")
 
         from .api import get_event_info_from_cms
@@ -122,7 +123,7 @@ class IndexView(object):
             c_models.Performance.event_id==c_models.StockHolder.event_id).filter(
             c_models.StockHolder.id==c_models.Stock.stock_holder_id).filter(
             c_models.Stock.stock_type_id==c_models.StockType.id).filter(
-            c_models.Stock.id.in_(segment_stocks)).order_by(c_models.StockType.order_no).all()
+            c_models.Stock.id.in_(segment_stocks)).order_by(c_models.StockType.display_order).all()
 
         performance = c_models.Performance.query.filter_by(id=performance_id).one()
 
@@ -652,3 +653,17 @@ class CompleteView(object):
                 logger.debug("User %s starts subscribing %s for <%s>" % (user, subscription.name, mail_address))
             else:
                 logger.debug("User %s is already subscribing %s for <%s>" % (user, subscription.name, mail_address))
+
+
+class InvalidMemberGroupView(object):
+    def __init__(self, request):
+        self.request = request
+        self.context = request.context
+
+    @view_config(context='.authorization.InvalidMemberGroupException')
+    def __call__(self):
+        event_id = self.context.event_id
+        event = c_models.Event.query.filter(c_models.Event.id==event_id).one()
+        location = api.get_valid_sales_url(self.request, event)
+        logger.debug('url: %s ' % location)
+        return HTTPFound(location=location)

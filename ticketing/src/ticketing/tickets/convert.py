@@ -1100,7 +1100,7 @@ class Visitor(object):
         if new_style.stroke_width != old_style.stroke_width:
             self.emitter.emit_stroke_width(new_style.stroke_width if new_style.stroke_width is not StyleNone else 0)
         if new_style.font_size != old_style.font_size:
-            self.emitter.emit_font_size((new_style.font_size if new_style.font_size is not StyleNone else 0) * 72. / 90)
+            self.emitter.emit_font_size((new_style.font_size if new_style.font_size is not StyleNone else 0))
 
     def emit_transform(self, old_transform, new_transform):
         if not numpy.array_equal(old_transform, new_transform):

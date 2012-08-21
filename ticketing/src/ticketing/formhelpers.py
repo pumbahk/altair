@@ -7,6 +7,8 @@ from exceptions import ValueError
 from wtforms import validators, fields
 import logging
 
+logger = logging.getLogger(__name__)
+
 '''
 Customized field definition datetime format of "%Y-%m-%d %H:%M"
 '''
@@ -30,7 +32,14 @@ class DateTimeField(fields.DateTimeField):
             except ValueError:
                 self.data = None
                 raise validators.ValidationError(u'日付の形式を確認してください')
-logger = logging.getLogger(__name__)
+
+class BugFreeSelectField(fields.SelectField):
+    def pre_validate(self, form):
+        for v, _ in self.choices:
+            if self.data == self.coerce(v):
+                break
+        else:
+            raise ValueError(self.gettext('Not a valid choice'))
 
 class Translations(object):
     messages={
