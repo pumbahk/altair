@@ -23,7 +23,7 @@ class MembershipAuthorizationPolicy(object):
             # 楽天認証
             return "rakuten_auth" in principals
 
-        if permission = "buy":
+        if permission == "buy":
             logger.debug('authorize for buy')
             membership = context.membership    
             membergroup = context.membergroup
