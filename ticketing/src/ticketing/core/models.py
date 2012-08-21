@@ -1752,13 +1752,11 @@ class TicketPrintHistory(Base, BaseModel, WithTimestamp):
     __tablename__ = "TicketPrintHistory"
     id = Column(Identifier, primary_key=True, autoincrement=True, nullable=False)
     operator_id = Column(Identifier, ForeignKey('Operator.id'), nullable=True)
-    operator = relationship('Operator', uselist=False)
     ordered_product_item_id = Column(Identifier, ForeignKey('OrderedProductItem.id'), nullable=True)
     ordered_product_item = relationship('OrderedProductItem', backref='print_histories')
     seat_id = Column(Identifier, ForeignKey('Seat.id'), nullable=True)
     seat = relationship('Seat', backref='print_histories')
     ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id'), nullable=False)
-    ticket_bundle = relationship('TicketBundle', backref='print_histories')
 
 class TicketPrintQueue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "TicketPrintQueue"
