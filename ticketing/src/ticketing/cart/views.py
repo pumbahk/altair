@@ -660,8 +660,10 @@ class InvalidMemberGroupView(object):
         self.request = request
         self.context = request.context
 
+    @view_config(context='.authorization.InvalidMemberGroupException')
     def __call__(self):
         event_id = self.context.event_id
-        event = Event.query.filter(id=event_id).one()
-        location = api.get_valid_url(request, event)
+        event = c_models.Event.query.filter(c_models.Event.id==event_id).one()
+        location = api.get_valid_sales_url(self.request, event)
+        logger.debug('url: %s ' % location)
         return HTTPFound(location=location)

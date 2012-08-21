@@ -41,7 +41,7 @@ class MembershipAuthorizationPolicy(object):
                 return False
 
             if not permit_membergroup:
-                raise InvalidMemberGroup(context.event_id)
+                raise InvalidMemberGroupException(context.event_id)
 
             return permit_membership and permit_membergroup
 
