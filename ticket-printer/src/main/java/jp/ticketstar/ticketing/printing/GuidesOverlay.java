@@ -10,7 +10,10 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 
 import jp.ticketstar.ticketing.printing.gui.AppWindowModel;
+<<<<<<< HEAD
 import jp.ticketstar.ticketing.printing.gui.IAppContainer;
+=======
+>>>>>>> feature/ticketing
 
 import org.apache.batik.swing.gvt.Overlay;
 

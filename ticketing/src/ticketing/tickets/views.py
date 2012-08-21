@@ -271,6 +271,10 @@ class TicketTemplates(BaseView):
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class TicketPrinter(BaseView):
 
+    @view_config(route_name='tickets.printer', renderer='ticketing:templates/tickets/printer.html')
+    def printer(self):
+        return dict()
+
     @view_config(route_name='tickets.print.dequeue', renderer='json')
     def dequeue(self):
         retval = TicketPrintQueue.dequeue_all(self.context.user)

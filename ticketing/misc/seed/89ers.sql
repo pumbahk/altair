@@ -11,6 +11,8 @@ INSERT INTO `User` (id) VALUES (65);
 INSERT INTO `User` (id) VALUES (66);
 INSERT INTO `Organization` VALUES (10,'BJ89ers','B8',1,'89ers@ticketstar.jp','','','','','','','',65,'',1,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
 INSERT INTO `Organization` VALUES (11,'秋田ノーザンハピネッツ','DD',1,'rt_support@ticketstar.jp','秋田','秋田','秋田','秋田','','','',66,'',NULL,'2012-07-18 04:20:34','2012-07-18 04:20:34',NULL);
+INSERT INTO `SejTenant` VALUES (1, 'BJ89ers', 30520, '','', NULL, NULL, 10, NOW(), NULL, NULL);
+INSERT INTO `SejTenant` VALUES (2, '秋田ノーザンハピネッツ', 30520, '','', NULL, NULL, 11, NOW(), NULL, NULL);
 
 INSERT INTO `Account` VALUES (100000,NULL,'BJ89ers',65,10,'2012-07-11 05:32:51','2012-07-11 05:32:51',NULL);
 INSERT INTO `Account` VALUES (100001,NULL,'NH',66,11,'2012-07-18 12:27:32','2012-07-18 12:27:32',NULL);

@@ -19,9 +19,9 @@ actions = {
     icon='icon-ok',
   ),
   'print':dict(
-    label=u'発券',
-    url='javascript:cancel_order(%d);' % order.id,
-    icon='icon-ok',
+    label=u'発券する',
+    url=request.route_path('orders.print.queue', order_id=order.id),
+    icon='icon-print',
   ),
   'cancel':dict(
     label=u'キャンセル',

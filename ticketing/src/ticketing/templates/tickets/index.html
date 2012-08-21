@@ -50,7 +50,7 @@ ${breadcrumbs(
           </a>
         </li>
         <li>
-          <a class="id-delegate-action" href="#" 
+          <a class="id-delegate-action" href="#"
              data-delegated="#deleteModalFormat"
              data-base-url="${request.route_path("tickets.formats.delete",id="__id__")}"
              href="#deleteModalFormat" data-toggle="modal">
@@ -83,7 +83,7 @@ ${breadcrumbs(
     <tr>
       <td><input type="radio" name="format_id" value="${format.id}" /></td>
       <td><a href="${request.route_url('tickets.formats.show', id=format.id)}">${format.name}</a></td>
-      <td>${h.format_size(h.extract_paper_size(format))} 
+      <td>${h.format_size(h.extract_paper_size(format))}
       <td>${u' / '.join(dm.name for dm in format.delivery_methods)}</td>
       <td>${format.updated_at}</td>
       <td>${format.created_at}</td>

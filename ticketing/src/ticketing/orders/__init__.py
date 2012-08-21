@@ -7,6 +7,8 @@ def includeme(config):
     config.add_route('orders.delivered'                 , '/delivered/{order_id}')
     config.add_route('orders.download'                  , '/download/')
 
+    config.add_route('orders.print.queue'               , '/print/queue/{order_id}')
+
     config.add_subscriber('.mail.on_order_canceled'     , '.events.OrderCanceled')
 
     config.add_route('orders.sej'                       , '/sej')

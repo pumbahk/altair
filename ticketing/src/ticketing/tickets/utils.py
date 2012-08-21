@@ -148,8 +148,8 @@ def build_dicts_from_ordered_product_item(ordered_product_item, user_profile=Non
             u'multicheckout_approval_no': order.multicheckout_approval_no,
             u'order_no': order.order_no,
             u'paid_at': datetime_as_dict(order.paid_at),
-            u'delivered_at': datetime_as_dict(order.delivered_at),
-            u'cancelled_at': datetime_as_dict(order.canceled_at),
+            u'delivered_at': datetime_as_dict(order.delivered_at) if order.delivered_at else None,
+            u'cancelled_at': datetime_as_dict(order.canceled_at) if order.canceled_at else None,
             },
         u'orderedProductItem': {
             u'price': ordered_product_item.price
@@ -193,7 +193,7 @@ def build_dicts_from_ordered_product_item(ordered_product_item, user_profile=Non
             u"last_name": shipping_address.last_name,
             u"first_name_kana": shipping_address.first_name_kana,
             u"last_name_kana": shipping_address.last_name_kana,
-            u"birth_day": datetime_as_dict(shipping_address.birth_day),
+            # u"birth_day": datetime_as_dict(shipping_address.birth_day),
             u"zip": shipping_address.zip,
             u"country": shipping_address.country,
             u"prefecture": shipping_address.prefecture,
@@ -234,7 +234,7 @@ def build_dicts_from_ordered_product_item(ordered_product_item, user_profile=Non
             u"status": user_profile.status
             }
 
-    retval = []
+    retval = dict()
     for seat in ordered_product_item.seats:
         d = build_dict_from_seat(seat, ticket_number_issuer)
         d.update(extra)

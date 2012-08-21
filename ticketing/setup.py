@@ -64,6 +64,7 @@ requires = [
     'cssutils',
     'numpy',
     'qrcode',
+    'pystache'
     ]
 
 setup(name='ticketing',
