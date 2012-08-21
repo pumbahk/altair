@@ -25,10 +25,9 @@ ${event.title}
   <div>
     ${cart['total_amount']}円
   </div>
-  <form action="${request.route_url('cart.payment')}" method="post">
+  <form action="${request.route_url('cart.payment')}">
     <div style="text-align:center;">
     <br/>
-    ${form.csrf_token()}
     <input type="submit" value="決済へ">
     </div>
   </form>

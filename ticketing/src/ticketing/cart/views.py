@@ -394,9 +394,6 @@ class ReserveView(object):
             csrf_context=self.request.session)
         form.validate()
 
-        # CSRFトークン発行
-        form_next = schemas.CSRFSecureForm(csrf_context=self.request.session)
-
         data = dict(
             event=event,
             performance=performance, 
@@ -437,7 +434,6 @@ class ReserveView(object):
         api.set_cart(self.request, cart)
         data.update(dict(result='OK',
                     payment_url=self.request.route_url("cart.payment"),
-                    form=form_next,
                     cart=dict(products=[dict(name=p.product.name, 
                                              quantity=p.quantity,
                                              price=int(p.product.price),
