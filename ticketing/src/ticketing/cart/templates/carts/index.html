@@ -346,16 +346,6 @@ $(function() {
 								${event['sales_end_on']}
 							</td>
 						</tr>
-            <!--
-						<tr>
-							<th scope="row">席種・料金（税込）</th>
-							<td id="pricelist">
-								%for p in event['product']:
-								${p.name} ： ${h.format_number(p.price)}円 <br/>
-								%endfor
-							</td>
-						</tr>
-						-->
 					%for v in event_extra_info:
 						<tr>
 							<th scope="row">${v['label']}</th>
