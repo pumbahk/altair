@@ -553,6 +553,7 @@ class PaymentView(object):
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id', 0)
         payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter_by(id=payment_delivery_method_pair_id).first()
         cart.payment_delivery_pair = payment_delivery_pair
+        cart.system_fee = payment_delivery_pair.system_fee
 
         form = self.validate()
 
