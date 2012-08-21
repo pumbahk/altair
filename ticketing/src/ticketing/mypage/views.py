@@ -3,12 +3,14 @@ import logging
 from pyramid.view import view_config
 
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
-from ticketing.core.models import Order, OrderedProduct, OrderedProductItem
+from ticketing.core.models import Order, OrderedProduct, OrderedProductItem, Seat
 from ticketing.cart.rakuten_auth.api import authenticated_user, forget
 from ticketing.cart import api
 from .helpers import make_order_data
 
 import webhelpers.paginate as paginate
+import ticketing.cart.plugins.qr
+from ticketing.qr import qr
 
 import sqlahelper
 
@@ -85,9 +87,36 @@ class MyPageView(object):
         except NoResultFound, e:
             raise HTTPNotFound()
 
+        tickets = None
+        if order.payment_delivery_pair.delivery_method.delivery_plugin_id == ticketing.cart.plugins.qr.PLUGIN_ID:
+            """QRコード発行の場合"""
+            builder = qr()
+            tickets = [ ]
+            pcode = order.performance.code
+            pdate = order.performance.start_on.strftime("%Y%m%d")
+            for ordered_product in order.items:
+                for ordered_product_item in ordered_product.ordered_product_items:
+                    for seat_item in ordered_product_item.seats:
+                        class QRTicket:
+                            serial = u"1"
+                            performance_code = pcode
+                            performance_date = pdate
+                            product = ordered_product.product
+                            seat = seat_item
+                            qr = builder.make(dict(
+                                serial=u"1",
+                                performance=pcode,
+                                order=order.order_no,
+                                date=pdate,
+                                type=100,
+                                seat=seat_item.name,
+                            ))
+                        tickets.append(QRTicket())
+
         import locale
         locale.setlocale(locale.LC_ALL, 'ja_JP')
         return dict(
             order = make_order_data(order),
+            tickets = tickets,
             user = user.user_profile
         )
