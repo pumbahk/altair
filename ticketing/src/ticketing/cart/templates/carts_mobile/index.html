@@ -1,28 +1,12 @@
-<%inherit file="./footer.html"/>
-
-<html lang="ja">
-<head>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <title>チケット販売・イベントの予約 [音楽 / コンサート / 舞台 / スポーツ] - 楽天チケット</title>
-</head>
-<body bgcolor="#ffffff"><font size="1">
-<div align="center">
-  <img src="${request.static_url('ticketing.cart:static/img/mobile/logo-small.gif')}" width="160" height="26" alt="楽天チケット" />
-  <hr size="2" noshade="noshade" color="#bf0000" />
-</div>
-<div>
-
-${h.get_nickname(request)} さん
+<%inherit file="./base.html"/>
 
 <div style="background-image:url(${request.static_url('ticketing.cart:static/img/mobile/bg_bar.gif')});background-color:#bf0000" bgcolor="#bf0000" background="${request.static_url('ticketing.cart:static/img/mobile/bg_bar.gif')}"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>チケット購入</font></div>
 
 ${event.title}
 
 % if venue:
-  <p>会場:<br/>
-  ${venue.name}
-  </p>
-  <p>日時をお選びください</p>
+  <hr size="1" color="#888888" noshade="noshade" />
+  <p><font color="#ffbf00">■</font>日時をお選びください</p>
   <form action="">
     <select name="pid">
   % for performance in performances:
@@ -39,9 +23,14 @@ ${event.title}
     <input type="submit" value="戻る">
     </div>
   </form>
-% else:
-  <p>会場をお選びください</p>
+  <hr size="1" color="#888888" noshade="noshade" />
+  <div style="background-color:#ffdddd">会場</div>
   <div>
+    ${venue.name}
+  </div>
+% else:
+  <hr size="1" color="#888888" noshade="noshade" />
+  <p><font color="#ffbf00">■</font>会場をお選びください</p>
   <form action="">
     <select name="v">
   % for venue_name in venues:
@@ -53,5 +42,5 @@ ${event.title}
     <input type="submit" value="次へ">
     </div>
   </form>
-  </div>
+  <hr size="1" color="#888888" noshade="noshade" />
 % endif

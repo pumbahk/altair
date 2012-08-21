@@ -1,31 +1,13 @@
-<%inherit file="./footer.html"/>
-
-<html lang="ja">
-<head>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <title>チケット販売・イベントの予約 [音楽 / コンサート / 舞台 / スポーツ] - 楽天チケット</title>
-</head>
-<body bgcolor="#ffffff"><font size="1">
-<div align="center">
-  <img src="${request.static_url('ticketing.cart:static/img/mobile/logo-small.gif')}" width="160" height="26" alt="楽天チケット" />
-  <hr size="2" noshade="noshade" color="#bf0000" />
-</div>
-<div>
+<%inherit file="./base.html"/>
 
 <div style="background-image:url(${request.static_url('ticketing.cart:static/img/mobile/bg_bar.gif')});background-color:#bf0000" bgcolor="#bf0000" background="${request.static_url('ticketing.cart:static/img/mobile/bg_bar.gif')}"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>チケット購入</font></div>
 
 ${event.title}
 
-<p>会場:<br/>
-${venue.name}
-</p>
-
-<p>日時:<br/>
-${performance.start_on}
-</p>
+<hr size="1" color="#888888" noshade="noshade" />
 
 <p>
-席種をお選びください
+<font color="#ffbf00">■</font>席種をお選びください
 </p>
 
 <form>
@@ -45,3 +27,15 @@ ${performance.start_on}
   <input type="submit" value="戻る">
   </div>
 </form>
+
+<hr size="1" color="#888888" noshade="noshade" />
+
+<div style="background-color:#ffdddd">会場</div>
+<div>
+  ${venue.name}
+</div>
+
+<div style="background-color:#ffdddd">日時</div>
+<div>
+  ${performance.start_on}
+</div>
