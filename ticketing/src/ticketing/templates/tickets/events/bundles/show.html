@@ -2,16 +2,16 @@
 <%namespace file="/common/helpers.html" import="breadcrumbs,pager,flash_messages"/>
 
 <script>
-  // ajax modal
   $(function(){
     $("a.id-action").click(  
      function(){
-       var pk = $("input[name='attribute_id']:checked").val();
-       if(!pk){ return false; }
+       var pk = $(this).parents(".box").find("input[name='id']:checked").val();
+      if(!pk){ return false; }
        $(this).attr("href", $(this).attr("data-base-url").replace("__id__", pk));
        return true;
     });
 
+    // ajax modal
 	$("a.ajax-modal[data-toggle=modal]").click(function(){
       $($(this).attr("data-target")).load($(this).attr("href"));
 	});
@@ -92,42 +92,60 @@
 
 <hr/>
 <h3>関連づけられているパフォーマンスと商品</h3>
-%if len(bundle.product_items) > 0:
-<table class="table table-striped table-bordered table-condensed">
-  <thead>
-    <tr>
-      <th></th>
-      <th>パフォーマンス</th>
-      <th>商品名</th>
-      <th>商品明細名</th>
-      <th>更新日時</th>
-      <th>作成日時</th>
-    </tr>
-  </thead>
-  <tbody>
-  %for performance in product_item_dict.itervalues():
-    %for i, product in enumerate(performance['products'].itervalues()):
-      %for j, (product_item_id, product_item) in enumerate(product['product_items'].iteritems()):
-    <tr>
-      <td><input type="radio" name="item_id" value="${product_item_id}" /></td>
-        %if i == 0:
-      <td rowspan="${len(performance['product_items'])}">${performance['name']}</td>
-        %endif
-        %if j == 0:
-      <td rowspan="${len(product['product_items'])}">${product['name']}</td>
-        %endif
-      <td>${product_item['name']}</td>
-      <td>${product_item['updated_at']}</td>
-      <td>${product_item['created_at']}</td>
-    </tr>
-      %endfor
-    %endfor
-  %endfor
-  </tbody>
-</table>
-%endif
+<div class="box">
+  %if len(bundle.product_items) > 0:
+  <table class="table table-striped table-bordered table-condensed">
+	<thead>
+	  <tr>
+		<th></th>
+		<th><a href="${request.route_path("performances.index", event_id=event.id)}">パフォーマンス</a></th>
+		<th><a href="${request.route_path("products.index", event_id=event.id)}">商品名</th>
+		<th>商品明細名</th>
+		<th>更新日時</th>
+		<th>作成日時</th>
+	  </tr>
+	</thead>
+	<tbody>
+	%for performance in product_item_dict.itervalues():
+	  %for i, product in enumerate(performance['products'].itervalues()):
+		%for j, (product_item_id, product_item) in enumerate(product['product_items'].iteritems()):
+	  <tr>
+		<td><input type="radio" name="id" value="${product_item_id}" /></td>
+		  %if i == 0:
+		<td rowspan="${len(performance['product_items'])}">${performance['name']}</td>
+		  %endif
+		  %if j == 0:
+		<td rowspan="${len(product['product_items'])}">${product['name']}</td>
+		  %endif
+		<td>${product_item['name']}</td>
+		<td>${product_item['updated_at']}</td>
+		<td>${product_item['created_at']}</td>
+	  </tr>
+		%endfor
+	  %endfor
+	%endfor
+	</tbody>
+  </table>
+  %endif
+
+  <div class="row-fluid well">
+	<div class="btn-group" style="float: left; margin-right: 20px;">
+	  <a class="id-action btn" href="#"
+		 data-base-url="${request.route_path("events.tickets.bundles.items.preview",bundle_id=bundle.id, event_id=event.id, item_id="__id__")}">
+		<i class="icon-eye-open"></i> 選択した商品の券面を表示
+	  </a>
+		  <button class="btn dropdown-toggle" data-toggle="dropdown">
+			<span class="caret"></span>
+		  </button>
+		  <ul class="dropdown-menu">
+		  </ul>
+	</div>
+	<div style="clear:both;"></div>
+  </div>
+</div>
 
 <hr/>
+
 
 <h3>チケット券面(Ticket)</h3>
 %if len(bundle.tickets) > 0:
@@ -154,60 +172,62 @@
 <hr/>
 <h3>属性(TicketAttribute)</h3>
 
-%if len(bundle.attributes) > 0:
-<table class="table table-striped table-bordered table-condensed">
-  <tbody><tr>
-	  <th></th>
-      <th>key</th>
-      <th>value</th>
-	  <th>更新日時</th>
-	  <th>作成日時</th>
-	</tr>
-  %for attribute in bundle.attributes_.itervalues():
-	<tr>
-      <td><input type="radio" name="attribute_id" value="${attribute.id}"/></td>
-	  <td width="30%">${attribute.name}</td>
-	  <td width="30%">
-		%if len(attribute.value) > 100:
-		  ${attribute.value}...
-		%else:
-		  ${attribute.value}
-		%endif
-	  </td>
-	  <td>${attribute.updated_at}</td>
-	  <td>${attribute.created_at}</td>
-   	</tr>
-   %endfor
-</table>
-%endif
+<div class="box">
+  %if len(bundle.attributes) > 0:
+  <table class="table table-striped table-bordered table-condensed">
+	<tbody><tr>
+		<th></th>
+		<th>key</th>
+		<th>value</th>
+		<th>更新日時</th>
+		<th>作成日時</th>
+	  </tr>
+	%for attribute in bundle.attributes_.itervalues():
+	  <tr>
+		<td><input type="radio" name="id" value="${attribute.id}"/></td>
+		<td width="30%">${attribute.name}</td>
+		<td width="30%">
+		  %if len(attribute.value) > 100:
+			${attribute.value}...
+		  %else:
+			${attribute.value}
+		  %endif
+		</td>
+		<td>${attribute.updated_at}</td>
+		<td>${attribute.created_at}</td>
+	  </tr>
+	 %endfor
+  </table>
+  %endif
 
-<div class="row-fluid well">
-  <div class="btn-group">
-	<a class="btn" href="${request.route_path("events.tickets.attributes.new", event_id=event.id, bundle_id=bundle.id)}">
-	  <i class="icon-pencil"> </i> 属性(TicketAttribute)の追加
-	</a>
-        <button class="btn dropdown-toggle" data-toggle="dropdown">
-          <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu">
-		  <li>
-			<a class="id-action" href="#"
-			   data-base-url="${request.route_path("events.tickets.attributes.edit",bundle_id=bundle.id, event_id=event.id,attribute_id="__id__")}">
-			  <i class="icon-pencil"></i> 編集
-			</a>
-		  </li>
-          <li>
-			<a href="#" class="id-action ajax-modal"
-			   data-base-url="${request.route_path("events.tickets.attributes.delete", bundle_id=bundle.id, attribute_id="__id__", event_id=event.id)}" 
-			   data-toggle="modal" data-target="#AjaxModal">
-              <i class="icon-minus"></i> 削除
-            </a>
-          </li>
-          <li>
-            <a href="${request.route_path("events.tickets.bundles.new", event_id=event.id, query=dict(id=bundle.id))}">
-              <i class="icon-plus"></i> コピーして新規作成
-            </a>
-          </li>
-        </ul>
+  <div class="row-fluid well">
+	<div class="btn-group">
+	  <a class="btn" href="${request.route_path("events.tickets.attributes.new", event_id=event.id, bundle_id=bundle.id)}">
+		<i class="icon-pencil"> </i> 属性(TicketAttribute)の追加
+	  </a>
+		  <button class="btn dropdown-toggle" data-toggle="dropdown">
+			<span class="caret"></span>
+		  </button>
+		  <ul class="dropdown-menu">
+			<li>
+			  <a class="id-action" href="#"
+				 data-base-url="${request.route_path("events.tickets.attributes.edit",bundle_id=bundle.id, event_id=event.id,attribute_id="__id__")}">
+				<i class="icon-pencil"></i> 編集
+			  </a>
+			</li>
+			<li>
+			  <a href="#" class="id-action ajax-modal"
+				 data-base-url="${request.route_path("events.tickets.attributes.delete", bundle_id=bundle.id, attribute_id="__id__", event_id=event.id)}" 
+				 data-toggle="modal" data-target="#AjaxModal">
+				<i class="icon-minus"></i> 削除
+			  </a>
+			</li>
+			<li>
+			  <a href="${request.route_path("events.tickets.bundles.new", event_id=event.id, query=dict(id=bundle.id))}">
+				<i class="icon-plus"></i> コピーして新規作成
+			  </a>
+			</li>
+		  </ul>
+	</div>
   </div>
 </div>

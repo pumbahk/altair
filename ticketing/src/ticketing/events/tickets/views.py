@@ -236,3 +236,14 @@ class BundleAttributeView(BaseView):
         return HTTPFound(self.request.route_path("events.tickets.bundles.show",
                                                  event_id=event_id, bundle_id=bundle_id))
 
+@view_config(route_name="events.tickets.bundles.items.preview", 
+             renderer="string")
+def ticket_preview_bound_by_product_item(context, request):
+    from ticketing.tickets.utils import build_dicts_from_product_item
+    from pystache import Renderer
+
+    item = context.product_item
+    bundle = context.bundle
+    renderer = Renderer()
+    return renderer.render(bundle.tickets[0].drawing, build_dicts_from_product_item(item))
+

@@ -3,6 +3,8 @@
 from unittest import TestCase
 from datetime import datetime
 
+
+
 class TicketsUtilsTest(TestCase):
     def build_seat_fixture(self):
         from ..core.models import Organization, Event, Performance, StockType, StockTypeEnum, StockHolder, Stock, StockStatus, Venue, Seat, SeatStatus, SeatStatusEnum
@@ -27,7 +29,7 @@ class TicketsUtilsTest(TestCase):
         stock_type = StockType(
             name=u'S席',
             type=StockTypeEnum.Seat.v,
-            order_no=0,
+            display_order=0,
             quantity_only=0,
             event=event
             )
@@ -109,7 +111,7 @@ class TicketsUtilsTest(TestCase):
             u"stockType": {
                 u"name": u"S席",
                 u"type": 0,
-                u"order_no": 0,
+                u"display_order": 0,
                 u"quantity_only": 0
                 },
             u"seat": {
