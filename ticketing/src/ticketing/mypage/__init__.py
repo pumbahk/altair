@@ -2,6 +2,7 @@
 
 from pyramid.config import Configurator
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
+from pyramid_who.whov2 import WhoV2AuthenticationPolicy
 from sqlalchemy import engine_from_config
 import sqlahelper
 from pyramid_beaker import session_factory_from_settings
@@ -38,6 +39,11 @@ def main(global_config, **settings):
     config.include('.')
     config.include('.errors')
     config.include('..cart.rakuten_auth')
+    who_config = settings['pyramid_who.config']
+    from ..cart.authorization import MembershipAuthorizationPolicy
+    config.set_authorization_policy(MembershipAuthorizationPolicy())
+    from ..cart.security import auth_model_callback
+    config.set_authentication_policy(WhoV2AuthenticationPolicy(who_config, 'auth_tkt', callback=auth_model_callback))
     config.scan()
     config.scan('..core.models')
 

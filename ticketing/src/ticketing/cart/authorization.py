@@ -19,7 +19,11 @@ class MembershipAuthorizationPolicy(object):
         principalsには、ユーザーの会員種別がすでに入っている想定
         """
 
-        if permission == "buy":
+        if permission == "view":
+            # 楽天認証
+            return "rakuten_auth" in principals
+
+        if permission = "buy":
             logger.debug('authorize for buy')
             membership = context.membership    
             membergroup = context.membergroup
