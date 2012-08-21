@@ -141,7 +141,7 @@ function _clone(obj, target) {
   // if target is given. clone obj properties into it.
   var clone, p;
   if (obj instanceof Date) {
-    clone = new Date((typeof obj.getTime === 'function') ? obj.getTime() : obj);
+    clone = new Date(obj.getTime());
     if (target instanceof Date) {
       for (p in target) if (target.hasOwnProperty(p)) clone[p] = _clone(target[p], clone[p]);
     }
@@ -152,8 +152,7 @@ function _clone(obj, target) {
     }
   } else {
     clone = (!_atomic_p(target) && typeof target !== 'function') ?
-      target :
-      new obj.constructor()
+      target : new obj.constructor();
   }
 
   for (p in obj)
@@ -308,10 +307,10 @@ var _class = (function() {
     _class.prototype = new f();
     _class.prototype.__super__ = __super__;
 
-    var iiop = _class['%%INIT_INSTANCE_ORIGN_PROPS'];
+    var iiop = _class['%%INIT_INSTANCE_ORIGIN_PROPS'];
 
-    _class['%%INIT_INSTANCE_ORIGN_PROPS'] = function(inst) {
-      var parent_iiop = parent['%%INIT_INSTANCE_ORIGN_PROPS'];
+    _class['%%INIT_INSTANCE_ORIGIN_PROPS'] = function(inst) {
+      var parent_iiop = parent['%%INIT_INSTANCE_ORIGIN_PROPS'];
       if (parent_iiop) parent_iiop(inst);
       iiop(inst);
     };
@@ -343,9 +342,9 @@ var _class = (function() {
       }
     }
 
-    var iiop = _class['%%INIT_INSTANCE_ORIGN_PROPS'];
-    _class['%%INIT_INSTANCE_ORIGN_PROPS'] = function(inst) {
-      var include_iiop = include['%%INIT_INSTANCE_ORIGN_PROPS'];
+    var iiop = _class['%%INIT_INSTANCE_ORIGIN_PROPS'];
+    _class['%%INIT_INSTANCE_ORIGIN_PROPS'] = function(inst) {
+      var include_iiop = include['%%INIT_INSTANCE_ORIGIN_PROPS'];
       if (include_iiop) include_iiop(inst);
       iiop(inst);
     };
@@ -410,20 +409,16 @@ var _class = (function() {
       }
     }
 
-    __class__ = function(arg) {
-      __class__['%%INIT_INSTANCE_ORIGN_PROPS'](this);
-      if (this.init)
-        this.init.apply(this, arguments);
-      else
-        _clone(arg, this); 
+    __class__ = function __Class__(arg) {
+      __class__['%%INIT_INSTANCE_ORIGIN_PROPS'](this);
+      if (this.init) this.init.apply(this, arguments);
+      else           _clone(arg, this);
     };
 
-    __class__['%%INIT_INSTANCE_ORIGN_PROPS'] =
+    __class__['%%INIT_INSTANCE_ORIGIN_PROPS'] =
       function(inst) {
         for (var p in props) {
-          // if (props.hasOwnProperty(p)) {
-            inst[p] = _clone(props[p]);
-          // }
+          inst[p] = _clone(props[p]);
         }
       };
 
@@ -610,6 +605,8 @@ var Matrix = (function() {
       },
 
       translate: function (offset) {
+        if (offset ===  void(0))
+          return { x: this.e, y: this.f };
         return this.multiplyI(1, 0, 0, 1, offset.x, offset.y);
       },
 
@@ -898,7 +895,6 @@ var TransformStack = _class("TransformStack", {
         } catch(e) {}
 
         if ( !box || !contains( docElem, elem ) ) {
-          console.log('here');
           return box ? { top: box.top, left: box.left } : { top: 0, left: 0 };
         }
 
@@ -1554,7 +1550,7 @@ var PathData = (function() {
     case 'm':
       if (l == 0 || l % 2 != 0)
         throw new ValueError("moveToRel takes 2 * n arguments, " + l + " given: " + arr.join(" "));
-      var x = this.parseNumber(arr[i]), y = this.parseNumber(arr[i + 1]);
+      var x = this.parseNumber(arr[i]) + this.last.x, y = this.parseNumber(arr[i + 1]) + this.last.y;
       this.data.push(['M', x, y]);
       for (var j = i + 2, n = i + l; j < n ; j += 2) {
         x += this.parseNumber(arr[j]), y += this.parseNumber(arr[j + 1]);
