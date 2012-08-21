@@ -1,0 +1,46 @@
+<%inherit file="./base.html"/>
+<%namespace file="./tags_mobile.html" name="mobile" />
+
+<div style="background-image:url(${request.static_url('ticketing.cart:static/img/mobile/bg_bar.gif')});background-color:#bf0000" bgcolor="#bf0000" background="${request.static_url('ticketing.cart:static/img/mobile/bg_bar.gif')}"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>チケット購入</font></div>
+
+<p>
+購入を完了いたしました。
+</p>
+
+<%mobile:header>お買い物内容</%mobile:header>
+<div>
+${order.performance.event.title} ${order.performance.name} ${h.performance_date(order.performance)} ${order.performance.venue.name}
+</div>
+% for idx, product in enumerate(order.ordered_products):
+<%mobile:form_header>商品${idx + 1}</%mobile:form_header>
+<div>
+${product.product.name} ${product.quantity} 枚<br/>
+￥${h.format_number(product.product.price * product.quantity)}
+</div>
+% endfor
+<%mobile:form_header>決済手数料</%mobile:form_header>
+<div>
+￥${h.format_number(order.transaction_fee)}
+</div>
+<%mobile:form_header>配送手数料</%mobile:form_header>
+<div>
+￥${h.format_number(order.delivery_fee)}
+</div>
+<%mobile:form_header>システム利用料</%mobile:form_header>
+<div>
+￥${h.format_number(order.system_fee)}
+</div>
+<%mobile:form_header>合計金額</%mobile:form_header>
+<div>
+￥${h.format_number(order.total_amount)}
+</div>
+
+<%mobile:header>お支払い</%mobile:header>
+<div>
+${h.render_payment_finished_viewlet(request, order)}
+</div>
+
+<%mobile:header>配送情報</%mobile:header>
+<div>
+${h.render_delivery_finished_viewlet(request, order)}
+</div>
