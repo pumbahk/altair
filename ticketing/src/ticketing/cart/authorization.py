@@ -18,6 +18,8 @@ class MembershipAuthorizationPolicy(object):
         """
         principalsには、ユーザーの会員種別がすでに入っている想定
         """
+        if permission and not principals:
+            return False
 
         if permission == "view":
             # 楽天認証

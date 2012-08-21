@@ -926,3 +926,12 @@ class MobileSelectProductView(object):
             form=form,
         )
         return data
+
+class OutTermSalesView(object):
+    def __init__(self, context, request):
+        self.request = request
+        self.context = context
+
+    @view_config(context='.exceptions.OutTermSalesException', renderer='ticketing.cart:templates/carts/out_term_sales.html')
+    def __call__(self):
+        return dict(event=self.context.event, sales_segment=self.context.sales_segment)
