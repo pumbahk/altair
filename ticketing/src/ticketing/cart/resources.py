@@ -308,7 +308,13 @@ class TicketingCartResource(object):
         from .rakuten_auth.api import authenticated_user
         from . import api
         openid = authenticated_user(self.request)
-        user = api.get_or_create_user(self.request, openid['clamed_id'])
+        if 'clamed_id' in openid:
+            auth_identifier = openid['clamed_id']
+            membership = 'rakuten'
+        elif 'username' in openid:
+            auth_identifier = openid['username']
+            membership = openid['membership']
+        user = api.get_or_create_user(self.request, auth_identifier, membership)
         return user
 
 @implementer(IOrderDelivery)

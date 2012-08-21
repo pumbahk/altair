@@ -95,14 +95,14 @@ def get_payment_method_url(request, payment_method_id, route_args={}):
     else:
         return ""
 
-def get_or_create_user(request, clamed_id):
+def get_or_create_user(request, auth_identifier, membership='rakuten'):
     # TODO: 楽天OpenID以外にも対応できるフレームワークを...
     credential = UserCredential.query.filter(
-        UserCredential.auth_identifier==clamed_id
+        UserCredential.auth_identifier==auth_identifier
     ).filter(
         UserCredential.membership_id==Membership.id
     ).filter(
-        Membership.name=='rakuten'
+        Membership.name==membership
     ).first()
     if credential:
         return credential.user
@@ -112,7 +112,7 @@ def get_or_create_user(request, clamed_id):
     if membership is None:
         membership = Membership(name='rakuten')
         DBSession.add(membership)
-    credential = UserCredential(user=user, auth_identifier=clamed_id, membership=membership)
+    credential = UserCredential(user=user, auth_identifier=auth_identifier, membership=membership)
     DBSession.add(user)
     return user
 
