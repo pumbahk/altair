@@ -46,6 +46,14 @@ class EventBoundTicketsResource(object):
         return attribute
 
     @property
+    def ticket_template(self):
+        mdict = self.request.matchdict
+        template = Ticket.filter_by(id=mdict["template_id"]).first()
+        if template is None:
+            raise HTTPNotFound('template id %s is not found' % mdict["template_id"])
+        return template
+
+    @property
     def product_item(self):
         mdict = self.request.matchdict
         item = ProductItem.filter_by(id=mdict["item_id"]).first()

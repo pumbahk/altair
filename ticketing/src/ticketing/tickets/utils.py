@@ -23,14 +23,37 @@ def datetime_as_dict(dt):
         u'hour': dt.hour, u'minute': dt.minute, u'second': dt.second
         }
 
-def build_dict_from_stock_and_venue(stock, venue):
+def build_dict_from_stock(stock, retval=None):
+    retval = retval or {}
     stock_holder = stock.stock_holder
     stock_type = stock.stock_type
     stock_status = stock.stock_status
+    retval.update({
+        u'stock': {
+            u'quantity': stock.quantity
+            },
+        u'stockStatus': {
+            u'quantity': stock_status.quantity
+            },
+        u'stockHolder': {
+            u'name': stock_holder.name
+            },
+        u'stockType': {
+            u'name': stock_type.name,
+            u'type': stock_type.type,
+            u'display_order': stock_type.display_order,
+            u'quantity_only': stock_type.quantity_only
+            },
+        u'席種名': stock_type.name,
+        })
+    return retval
+
+def build_dict_from_venue(venue, retval=None):
+    retval = retval or {}
     performance = venue.performance
     event = performance.event
     organization = event.organization
-    return {
+    retval.update({
         u'organization': {
             u'name': organization.name,
             u'code': organization.code
@@ -51,21 +74,6 @@ def build_dict_from_stock_and_venue(stock, venue):
             u'name': venue.name,
             u'sub_name': venue.sub_name
             },
-        u'stock': {
-            u'quantity': stock.quantity
-            },
-        u'stockStatus': {
-            u'quantity': stock_status.quantity
-            },
-        u'stockHolder': {
-            u'name': stock_holder.name
-            },
-        u'stockType': {
-            u'name': stock_type.name,
-            u'type': stock_type.type,
-            u'display_order': stock_type.display_order,
-            u'quantity_only': stock_type.quantity_only
-            },
         u'イベント名': event.title,
         u'パフォーマンス名': performance.name,
         u'対戦名': performance.name,
@@ -75,11 +83,13 @@ def build_dict_from_stock_and_venue(stock, venue):
         u'開場時刻': format_time(performance.open_on),
         u'開始時刻': format_time(performance.start_on),
         u'終了時刻': format_time(performance.end_on),
-        u'席種名': stock_type.name,
-        }
+        })
+    return retval
     
 def build_dict_from_seat(seat, ticket_number_issuer=None):
-    retval = build_dict_from_stock_and_venue(seat.stock, seat.venue)
+    retval = {}
+    retval = build_dict_from_stock(seat.stock, retval)
+    retval = build_dict_from_venue(seat.venue, retval)
     retval.update({
             u'seat': {
                 u'l0_id': seat.l0_id,
@@ -92,12 +102,12 @@ def build_dict_from_seat(seat, ticket_number_issuer=None):
             })
     return retval
 
-def build_dicts_from_product_item(product_item):
+def build_dict_from_product_item(product_item):
     ticket_bundle = product_item.ticket_bundle
     product = product_item.product
     sales_segment = product.sales_segment
 
-    extra = {
+    retval = {
         u'salesSegment': {
             u'name': sales_segment.name,
             u'kind': sales_segment.kind,
@@ -105,7 +115,7 @@ def build_dicts_from_product_item(product_item):
             u'end_at': datetime_as_dict(sales_segment.end_at),
             u'upper_limit': sales_segment.upper_limit,
             u'seat_choice': sales_segment.seat_choice
-            },
+            }, 
         u'product': {
             u'name': product.name,
             u'price': product.price
@@ -115,16 +125,22 @@ def build_dicts_from_product_item(product_item):
             u'price': product_item.price,
             u'quantity': product_item.quantity
             },
-        u'aux': ticket_bundle.attributes,
-        u'券種名': product_item.name,
+        u'aux': dict(ticket_bundle.attributes), 
+        u'券種名': product_item.name or product.name,
+        u'商品価格': product.price,
+        u'チケット価格': product_item.price,
         }
-    retval = []
-    retval.append(extra)
-    return retval
-    for seat in ordered_product_item.seats:
-        d = build_dict_from_seat(seat, ticket_number_issuer)
-        d.update(extra)
-        retval.append(d)
+
+    retval = build_dict_from_stock(product_item.stock, retval)
+    retval = build_dict_from_venue(product_item.performance.venue, retval)
+    ## 不足分
+    retval.update({
+            u"席番": u"{{席番}}", 
+            u'注文番号': u"{{注文番号}}",
+            u'予約番号': u"{{予約番号}}", 
+            u'発券番号': u"{{発券番号}}", 
+            u"公演コード": u"xxx"
+    })
     return retval
 
 def build_dicts_from_ordered_product_item(ordered_product_item, user_profile=None, ticket_number_issuer=None):
@@ -205,7 +221,7 @@ def build_dicts_from_ordered_product_item(ordered_product_item, user_profile=Non
             u"fax": shipping_address.fax
             },
         u'aux': ticket_bundle.attributes,
-        u'券種名': product_item.name,
+        u'券種名': product_item.name or product.name,
         u'商品価格': ordered_product.price,
         u'チケット価格': ordered_product_item.price,
         u'注文番号': order.order_no,

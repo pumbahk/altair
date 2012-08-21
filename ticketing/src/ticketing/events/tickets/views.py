@@ -9,6 +9,11 @@ from ticketing.core.models import ProductItem, Performance
 from ticketing.core.models import Ticket, TicketBundle, TicketBundleAttribute
 from ticketing.views import BaseView
 from . import forms
+
+from ticketing.tickets.utils import build_dict_from_product_item
+from pystache import Renderer
+from ticketing.tickets.convert import to_opcodes
+from lxml import etree
    
 
 @view_defaults(decorator=with_bootstrap, permission="authenticated")
@@ -237,13 +242,21 @@ class BundleAttributeView(BaseView):
                                                  event_id=event_id, bundle_id=bundle_id))
 
 @view_config(route_name="events.tickets.bundles.items.preview", 
-             renderer="string")
+             renderer="ticketing:templates/tickets/events/bundles/ticket_preview.html", 
+             permission="authenticated", decorator=with_bootstrap)
 def ticket_preview_bound_by_product_item(context, request):
-    from ticketing.tickets.utils import build_dicts_from_product_item
-    from pystache import Renderer
+    return {"tickets": request.context.bundle.tickets, 
+            "item": request.context.product_item}
 
+@view_config(route_name="events.tickets.bundles.items.data", 
+             renderer="json", permission="authenticated", decorator=with_bootstrap)
+def ticket_preview_bound_by_product_item_data(context, request):
     item = context.product_item
-    bundle = context.bundle
+    template = context.ticket_template
     renderer = Renderer()
-    return renderer.render(bundle.tickets[0].drawing, build_dicts_from_product_item(item))
+    svg = renderer.render(template.drawing, build_dict_from_product_item(item))
+    data = dict(template.ticket_format.data)
+    data.update(dict(drawing=' '.join(to_opcodes(etree.ElementTree(etree.fromstring(svg))))))
+    return data
+    
 
