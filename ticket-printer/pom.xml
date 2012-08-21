@@ -96,36 +96,27 @@
     	<version>r03</version>
     </dependency>
     <dependency>
-<<<<<<< HEAD
-
-=======
->>>>>>> feature/ticketing
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
       <version>2.2.2</version>
       <scope>compile</scope>
     </dependency>
-<<<<<<< HEAD
- <dependency>
-	<groupId>commons-logging</groupId>
-	<artifactId>commons-logging</artifactId>
-	<version>1.1.1</version>
-	</dependency>
-
-=======
->>>>>>> feature/ticketing
-<dependency>
-	<groupId>org.apache.httpcomponents</groupId>
-	<artifactId>httpclient</artifactId>
-	<version>4.0-alpha4</version>
+    <dependency>
+	  <groupId>commons-logging</groupId>
+	  <artifactId>commons-logging</artifactId>
+	  <version>1.1.1</version>
+	  </dependency>
+   <dependency>
+	  <groupId>org.apache.httpcomponents</groupId>
+	  <artifactId>httpclient</artifactId>
+	  <version>4.0-alpha4</version>
+    </dependency>
+    <dependency>
+	<groupId>commons-io</groupId>
+	<artifactId>commons-io</artifactId>
+	<version>2.4</version>
 </dependency>
-<<<<<<< HEAD
-
-</dependencies>
-
-=======
-</dependencies>
->>>>>>> feature/ticketing
+  </dependencies>
  
   <repositories>
     <repository>

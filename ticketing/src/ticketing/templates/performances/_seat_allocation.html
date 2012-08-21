@@ -75,6 +75,23 @@ span.editable {
   z-index: 10;
   opacity: 1;
 }
+
+.swatch {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+  border: 1px solid #cdcdcd;
+  background-color: #FFFFFF;
+  text-align: center;
+}
+
+.reporting {
+  float: right;
+  margin: 8px 18px 8px 5px;
+}
 </style>
 
 <script type="text/javascript">
@@ -319,8 +336,12 @@ function buildStockHolderTypeTables(venue) {
   var retval = $('<div></div>');
   venue.stockHolders.each(function (stockHolder) {
     var keyedStocks = stockHolder.keyedStocks();
-    var head = $('<h4 class="ui-header"></h4>').text(stockHolder.get('name'));
-    var div = $('<div></div>').css('display', 'none');
+    var style = stockHolder.get('style');
+    var swatch = $('<span class="swatch"></span>').css('text-color', style.text_color).text(style.text||'　');
+    var head = $('<h4 class="ui-header" style="float: left;"></h4>').text(' ' + stockHolder.get('name'));
+    var button = $('<a class="reporting btn btn-mini btn-inverse" data-toggle="modal" href="#modal-report">配券明細</a>');
+    button.attr('onclick', "$('.modal-report-submit').attr('href', '/events/reports/${performance.event_id}/seat_stock_to_stockholder/" + stockHolder.get('id') + "');");
+    var div = $('<div></div>').css('display', 'block');
     var table = $('<table class="table table-bordered"></table>');
     var tbody = $('<tbody></tbody>').appendTo(table);
     venue.stockTypes.each(function (stockType) {
@@ -336,9 +357,13 @@ function buildStockHolderTypeTables(venue) {
       else
         div.css('display', 'block');
     });
+    head.prepend(swatch);
     table.appendTo(div);
 
     retval.append(head);
+    if (stockHolder.get('id'))
+      retval.append(button);
+    retval.append('<div style="clear: both;"></div>');
     retval.append(div);
   });
   return retval;
@@ -419,6 +444,22 @@ callbacks.select = function (viewer, selection) {
   <a class="btn btn-mini btn-inverse" data-toggle="modal" href="#modal-download_seats">
     <i class="icon-download icon-white"></i> すべての座席をCSV出力
   </a>
+</div>
+
+<div id="modal-report" class="modal hide fade">
+  <div class="modal-header">
+    <a href="javascript:void(0);" class="close btn-close">&times;</a>
+    <h3>確認</h3>
+  </div>
+
+  <div class="modal-body">
+    <p>配券明細をダウンロードします。よろしいですか？</p>
+  </div>
+
+  <div class="modal-footer">
+    <a href="javascript:void(0);" onclick="$('#modal-report').modal('hide');" class="btn secondary btn-close">キャンセル</a>
+    <a href="" onclick="$('#modal-report').modal('hide');" class="btn danger modal-report-submit">ダウンロード</a>
+  </div>
 </div>
 
 <div id="modal-download_seats" class="modal hide fade">

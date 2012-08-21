@@ -1,5 +1,4 @@
-"""
-Initial table definitions
+"""Initial table definitions
 
 Revision ID: 18090a14e5c0
 Revises: None
