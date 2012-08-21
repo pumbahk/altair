@@ -48,6 +48,7 @@ class LoginView(object):
             self.select_renderer(membership)
             return {'username': username}
 
+
         return_to_url = self.return_to_url
         res = HTTPFound(location=return_to_url, headers=headers)
 

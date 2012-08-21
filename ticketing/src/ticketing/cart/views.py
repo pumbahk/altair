@@ -39,10 +39,10 @@ class IndexView(object):
         self.context = request.context
 
 
-    @view_config(route_name='cart.index', renderer='carts_mobile/index.html', xhr=False, permission="view", request_type=".interfaces.IMobileRequest")
-    @view_config(route_name='cart.index.sales', renderer='carts_mobile/index.html', xhr=False, permission="view", request_type=".interfaces.IMobileRequest")
-    @view_config(route_name='cart.index', renderer='carts/index.html', xhr=False, permission="view")
-    @view_config(route_name='cart.index.sales', renderer='carts/index.html', xhr=False, permission="view")
+    @view_config(route_name='cart.index', renderer='carts_mobile/index.html', xhr=False, permission="buy", request_type=".interfaces.IMobileRequest")
+    @view_config(route_name='cart.index.sales', renderer='carts_mobile/index.html', xhr=False, permission="buy", request_type=".interfaces.IMobileRequest")
+    @view_config(route_name='cart.index', renderer='carts/index.html', xhr=False, permission="buy")
+    @view_config(route_name='cart.index.sales', renderer='carts/index.html', xhr=False, permission="buy")
     def __call__(self):
         jquery_tools.need()
         event_id = self.request.matchdict['event_id']
@@ -653,3 +653,15 @@ class CompleteView(object):
                 logger.debug("User %s starts subscribing %s for <%s>" % (user, subscription.name, mail_address))
             else:
                 logger.debug("User %s is already subscribing %s for <%s>" % (user, subscription.name, mail_address))
+
+
+class InvalidMemberGroupView(object):
+    def __init__(self, request):
+        self.request = request
+        self.context = request.context
+
+    def __call__(self):
+        event_id = self.context.event_id
+        event = Event.query.filter(id=event_id).one()
+        location = api.get_valid_url(request, event)
+        return HTTPFound(location=location)
