@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['MYTN0MXECAVA9M9S'] = (function (exports) { (function () { 
+__LIBS__['oB_NII0AC1HYHK13'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -59,41 +59,18 @@ exports.DEFAULT = {
   },
 
   SEAT_STATUS_STYLE: {
-    //NotOnSale
-    0: {
-      stroke: { color: "#929292", width: 1, pattern: 'solid' }
-    },
-    //Vacant
-    1: {
-    },
-    //InCart
-    2: {
-      stroke: { color: "#ffff40", width: 1, pattern: 'solid' }
-    },
-    //Ordered
-    3: {
-      stroke: { color: "#2020d2", width: 1, pattern: 'solid' }
-    },
-    //Confirmed
-    4: {
-      stroke: { color: "#ff8c40", width: 1, pattern: 'solid' }
-    },
-    //Shipped
-    5: {
-      stroke: { color: "#b3d940", width: 1, pattern: 'solid' }
-    },
-    //Canceled
-    6: {
-      stroke: { color: "#ff4040", width: 1, pattern: 'solid' }
-    },
-    //Reserved
-    7: {
-      stroke: { color: "#9f9fec", width: 1, pattern: 'solid' }
-    }
+    0: { stroke: { color: "#929292", width: 1, pattern: 'solid' } },
+    1: {},
+    2: { stroke: { color: "#ffff40", width: 1, pattern: 'solid' } },
+    3: { stroke: { color: "#2020d2", width: 1, pattern: 'solid' } },
+    4: { stroke: { color: "#ff8c40", width: 1, pattern: 'solid' } },
+    5: { stroke: { color: "#b3d940", width: 1, pattern: 'solid' } },
+    6: { stroke: { color: "#ff4040", width: 1, pattern: 'solid' } },
+    7: { stroke: { color: "#9f9fec", width: 1, pattern: 'solid' } }
   }
 };
  })(); return exports; })({});
-__LIBS__['LMB1Q7AJW39L48BY'] = (function (exports) { (function () { 
+__LIBS__['X2YGWZ5PJJVU9X7_'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -119,7 +96,7 @@ exports.ja = {
   } 
 };
  })(); return exports; })({});
-__LIBS__['pNCGHR4ZV3LC7FUP'] = (function (exports) { (function () { 
+__LIBS__['i9ZXSABDC_I_L55U'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -218,7 +195,7 @@ exports.mergeStyle = function mergeStyle(a, b) {
   };
 };
  })(); return exports; })({});
-__LIBS__['mSF_HH8DZ_9NCFEI'] = (function (exports) { (function () { 
+__LIBS__['gDKDBQNQLKONY3HK'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -267,12 +244,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['GOT7USEYLFC17XLY'] = (function (exports) { (function () { 
+__LIBS__['MG3RSK5RZIZB38HC'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['pNCGHR4ZV3LC7FUP'];
-var CONF = __LIBS__['MYTN0MXECAVA9M9S'];
-var IdentifiableSet = __LIBS__['mSF_HH8DZ_9NCFEI'].IdentifiableSet;
+var util = __LIBS__['i9ZXSABDC_I_L55U'];
+var CONF = __LIBS__['oB_NII0AC1HYHK13'];
+var IdentifiableSet = __LIBS__['gDKDBQNQLKONY3HK'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -711,12 +688,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['EMMCJNAR6WT51VIU'] = (function (exports) { (function () { 
+__LIBS__['U9_EBC457AJAG49I'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['pNCGHR4ZV3LC7FUP'];
-var CONF = __LIBS__['MYTN0MXECAVA9M9S'];
-var models = __LIBS__['GOT7USEYLFC17XLY'];
+var util = __LIBS__['i9ZXSABDC_I_L55U'];
+var CONF = __LIBS__['oB_NII0AC1HYHK13'];
+var models = __LIBS__['MG3RSK5RZIZB38HC'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -850,7 +827,21 @@ var Seat = exports.Seat = Backbone.Model.extend({
     shape.style(util.convertToFashionStyle(style));
     var styleText = style.text || model.get('seat_no');
     if (style.text && $.inArray('highlighted', this.styleTypes) != -1) {
-      styleText = model.get('seat_no');
+      var posx = 0;
+      var posy = 0;
+      var e = window.event;
+      if (e.pageX || e.pageY) {
+        posx = e.pageX;
+        posy = e.pageY;
+      }
+      else if (e.clientX || e.clientY) {
+        posx = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+        posy = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+      }
+      $('#tooltip').attr('style', 'visibility: visible; top: ' + posy + 'px; left: ' + posx + 'px;');
+      $('#tooltip').text('座席番号:' + model.get('seat_no'));
+    } else {
+      $('#tooltip').attr('style', 'visibility: hidden;');
     }
     if (!this.label) {
       var p = shape.position(),
@@ -861,7 +852,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
             x: p.x + (s.x * 0.10),
             y: p.y + (s.y * 0.75)
           },
-          fontSize: (s.y * 0.75),
+          fontSize: (s.y * 0.5),
           text: styleText,
           style: { fill: new Fashion.FloodFill(new Fashion.Color(style.text_color)) }
         })
@@ -898,13 +889,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['MYTN0MXECAVA9M9S'];
-  var models = __LIBS__['GOT7USEYLFC17XLY'];
-  var util = __LIBS__['pNCGHR4ZV3LC7FUP'];
-  var viewobjects = __LIBS__['EMMCJNAR6WT51VIU'];
-  var IdentifiableSet = __LIBS__['mSF_HH8DZ_9NCFEI'].IdentifiableSet;
+  var CONF = __LIBS__['oB_NII0AC1HYHK13'];
+  var models = __LIBS__['MG3RSK5RZIZB38HC'];
+  var util = __LIBS__['i9ZXSABDC_I_L55U'];
+  var viewobjects = __LIBS__['U9_EBC457AJAG49I'];
+  var IdentifiableSet = __LIBS__['gDKDBQNQLKONY3HK'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['LMB1Q7AJW39L48BY'];
+    I18n.translations = __LIBS__['X2YGWZ5PJJVU9X7_'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;

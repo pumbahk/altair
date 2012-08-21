@@ -11,7 +11,7 @@ def _setup_db(echo=False):
         modules=[
             'ticketing.models',
             'ticketing.cart.models',
-            'ticketing.orders.models', 
+            #'ticketing.orders.models', 
             'ticketing.users.models',
             'ticketing.multicheckout.models',
             ],
@@ -323,6 +323,45 @@ class TicketingCartResourceTests(unittest.TestCase):
         self.session.add(sales_segment)
         return sales_segment
 
+    @mock.patch("ticketing.cart.resources.datetime")
+    def test_membership_none(self, mock_datetime):
+        from datetime import datetime
+        mock_datetime.now.return_value = datetime(2012, 6, 20)
+
+        event_id = "99"
+        ss1 = self._add_sales_segement(event_id=event_id, start_at=datetime(2012, 6, 1), end_at=datetime(2012, 6, 30))
+        ss2 = self._add_sales_segement(event_id=event_id, start_at=datetime(2012, 6, 21), end_at=datetime(2012, 6, 30))
+        ss3 = self._add_sales_segement(event_id=event_id, start_at=datetime(2012, 6, 1), end_at=datetime(2012, 6, 19))
+        self.session.flush()
+
+        request = DummyRequest(matchdict={'event_id': event_id})
+        target = self._makeOne(request)
+        result = target.membership
+
+        self.assertIsNone(result)
+
+    @mock.patch("ticketing.cart.resources.datetime")
+    def test_membership(self, mock_datetime):
+        from ticketing.users.models import Membership, MemberGroup
+        from datetime import datetime
+        mock_datetime.now.return_value = datetime(2012, 6, 20)
+
+        event_id = "99"
+        ss1 = self._add_sales_segement(event_id=event_id, start_at=datetime(2012, 6, 1), end_at=datetime(2012, 6, 30))
+        ss2 = self._add_sales_segement(event_id=event_id, start_at=datetime(2012, 6, 21), end_at=datetime(2012, 6, 30))
+        ss3 = self._add_sales_segement(event_id=event_id, start_at=datetime(2012, 6, 1), end_at=datetime(2012, 6, 19))
+        ms = Membership()
+        mg = MemberGroup(membership=ms)
+        ss1.membergroup = mg
+        self.session.flush()
+
+        request = DummyRequest(matchdict={'event_id': event_id})
+        target = self._makeOne(request)
+        result = target.membership
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result, ms)
+
     def test_event_id(self):
         request = DummyRequest(matchdict={"event_id": "this-is-event"})
         target = self._makeOne(request)
@@ -424,7 +463,7 @@ class TicketingCartResourceTests(unittest.TestCase):
         performance_id = 8
 
         venue = self._add_venue(organization_id, site_id, venue_id)
-        stock = Stock(id=stock_id, quantity=100)
+        stock = Stock(id=stock_id, quantity=100, performance_id=performance_id)
         stock_status = StockStatus(stock_id=stock.id, quantity=100)
         seats = [Seat(id=i, stock_id=stock.id, venue=venue) for i in range(5)]
         seat_statuses = [SeatStatus(seat_id=i, status=int(SeatStatusEnum.Vacant)) for i in range(2)]
@@ -561,7 +600,7 @@ class ReserveViewTests(unittest.TestCase):
         performance_id = 8
 
         venue = self._add_venue(organization_id, site_id, venue_id)
-        stock = Stock(id=stock_id, quantity=100)
+        stock = Stock(id=stock_id, quantity=100, performance_id=performance_id)
         stock_status = StockStatus(stock_id=stock.id, quantity=100)
         seats = [Seat(id=i, stock_id=stock.id, venue=venue) for i in range(2)]
         seat_statuses = [SeatStatus(seat_id=i, status=int(SeatStatusEnum.Vacant)) for i in range(2)]
@@ -636,7 +675,7 @@ class ReserveViewTests(unittest.TestCase):
         performance_id = 8
 
         venue = self._add_venue(organization_id, site_id, venue_id)
-        stock = Stock(id=stock_id, quantity=100)
+        stock = Stock(id=stock_id, quantity=100, performance_id=performance_id)
         stock_status = StockStatus(stock_id=stock.id, quantity=0)
         seats = [Seat(id=i, stock_id=stock.id, venue=venue) for i in range(5)]
         seat_statuses = [SeatStatus(seat_id=i, status=int(SeatStatusEnum.InCart)) for i in range(5)]
@@ -813,8 +852,8 @@ class PaymentViewTests(unittest.TestCase):
                 zip=u"000-0000",
                 prefecture=u"東京都",
                 city=u"渋谷区",
-                street=u"住所",
-                address=u"",
+                address_1=u"住所",
+                address_2=u"",
                 email='mail-address@example.com',
             ),
         )
@@ -828,6 +867,7 @@ class PaymentViewTests(unittest.TestCase):
             ),
         )
         request.context = testing.DummyResource()
+        request.context.get_or_create_user = mock_get_or_create_user
         request.context.get_payment_delivery_method_pair = lambda: None
         target = self._makeOne(request)
         result = target()

@@ -55,6 +55,26 @@ span.editable {
   margin: 3px 5px 0 0;
   float: left;
 }
+
+#tooltip {
+  border: solid 3px #05C;
+  -moz-border-radius: 6px;
+  -webkit-border-radius: 6px;
+  border-radius: 6px;
+  position: absolute;
+  text-decoration: none;
+  margin: 10px;
+  padding: 5px 5px;
+  width: 80px;
+  zoom: 1;
+  -webkit-transition-property: opacity;
+  -webkit-transition-duration: 2s;
+  -webkit-transition-timing-function: ease-in-out;
+  background-color: white;
+  visibility: hidden;
+  z-index: 10;
+  opacity: 1;
+}
 </style>
 
 <script type="text/javascript">
@@ -71,6 +91,7 @@ span.editable {
   $(".collapse").collapse()
 </script>
 
+<div id="tooltip"></div>
 <div class="tabbable tabs-below tabs-above" id="seat-allocation-tab">
   <div class="tab-content"  id="seat-allocation-tab-content">
     <div class="tab-pane active" id="map">
@@ -392,6 +413,10 @@ callbacks.select = function (viewer, selection) {
       </div>
     </div>
   </div>
+</div>
+
+<div style="float: right;">
+  <a class="btn btn-inverse" href="${request.route_path('seats.download', venue_id=performance.venue.id)}">すべての座席をCSV出力</a>
 </div>
 
 <div id="modal-result" class="modal hide">

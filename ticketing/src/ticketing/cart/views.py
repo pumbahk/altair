@@ -48,6 +48,7 @@ class IndexView(object):
 
         sales_segment = self.context.get_sales_segument()
         if sales_segment is None:
+            logger.debug("No matching sales_segment")
             raise NoEventError("No matching sales_segment")
 
         from .api import get_event_info_from_cms

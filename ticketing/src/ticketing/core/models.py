@@ -766,6 +766,9 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     event_id = Column(Identifier, ForeignKey('Event.id'))
     event = relationship('Event', backref='sales_segments')
 
+    membergroup_id = Column(Identifier, ForeignKey('MemberGroup.id'))
+    membergroup = relationship('MemberGroup', backref='salessegments')
+
     def get_cms_data(self):
         start_at = isodate.datetime_isoformat(self.start_at) if self.start_at else ''
         end_at = isodate.datetime_isoformat(self.end_at) if self.end_at else ''
@@ -1591,6 +1594,15 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 status_cond.append(and_(Order.canceled_at==None, Order.paid_at==None, Order.delivered_at==None))
             if status_cond:
                 query = query.filter(or_(*status_cond))
+        condition = form.tel.data
+        if condition:
+            query = query.join(Order.shipping_address).filter(ShippingAddress.tel_1==condition)
+        condition = form.start_on_from.data
+        if condition:
+            query = query.join(Order.performance).filter(Performance.start_on>=condition)
+        condition = form.start_on_to.data
+        if condition:
+            query = query.join(Order.performance).filter(Performance.start_on<=condition)
         return query
 
 
@@ -1743,4 +1755,32 @@ class TicketPrintHistory(Base, BaseModel, WithTimestamp):
     seat = relationship('Seat', backref='print_histories')
     ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id'), nullable=False)
     ticket_bundle = relationship('TicketBundle', backref='print_histories')
+
+class TicketPrintQueue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = "TicketPrintQueue"
+    id = Column(Identifier, primary_key=True, autoincrement=True, nullable=False)
+    operator_id = Column(Identifier, ForeignKey('Operator.id'), nullable=True)
+    operator = relationship('Operator', uselist=False)
+    data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
+
+    @classmethod
+    def enqueue(self, operator, data):
+        '''
+        '''
+        DBSession.add(TicketPrintQueue(data = data, operator = operator))
+
+    @classmethod
+    def dequeue_all(self, operator):
+        '''
+        '''
+        ret_val = []
+        now = datetime.now()
+        queues = TicketPrintQueue.filter_by(deleted_at = None).order_by('created_at desc').all()
+        for queue in queues:
+            queue.deleted_at = now
+            ret_val.append(dict(
+                id = queue.id,
+                data = queue.data
+            ))
+        return ret_val
 

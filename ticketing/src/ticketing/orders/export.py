@@ -50,6 +50,8 @@ class OrderCSV(object):
         'payment',
         'delivery',
         'event',
+        'performance',
+        'performance_code',
         'venue',
         'start_on',
         ]
@@ -57,7 +59,12 @@ class OrderCSV(object):
         'name',
         'price',
         'quantity',
-        'other',
+        ]
+    product_item_header = [
+        'name',
+        'price',
+        'quantity',
+        'seat_no',
         ]
 
     def __init__(self, orders):
@@ -83,45 +90,69 @@ class OrderCSV(object):
         shipping_address_dict = record_to_multidict(order.shipping_address)
         shipping_address_list = [('shipping_' + column, shipping_address_dict.get(column)) for column in self.shipping_address_header]
 
+        performance = order.performance
         other_list = [
             ('payment', order.payment_delivery_pair.payment_method.name),
             ('delivery', order.payment_delivery_pair.delivery_method.name),
-            ('event', order.ordered_products[0].product.event.title),
-            ('venue', order.ordered_products[0].ordered_product_items[0].product_item.performance.venue.name),
-            ('start_on', order.ordered_products[0].ordered_product_items[0].product_item.performance.start_on),
+            ('event', performance.event.title),
+            ('performance', performance.name),
+            ('performance_code', performance.code),
+            ('venue', performance.venue.name),
+            ('start_on', performance.start_on),
         ]
 
         product_list = []
         for i, ordered_product in enumerate(order.ordered_products):
             for column in self.product_header:
-                if column != 'other':
-                    column_name = 'product_%s_%s' % (column, i)
+                column_name = 'product_%s_%s' % (column, i)
+                if not column_name in self.header:
+                    self.header.append(column_name)
+                if column == 'name':
+                    product_list.append((column_name, ordered_product.product.name))
+                if column == 'price':
+                    product_list.append((column_name, format_number(ordered_product.price)))
+                if column == 'quantity':
+                    product_list.append((column_name, ordered_product.quantity))
+
+            product_item_list = []
+            for ordered_product_item in ordered_product.ordered_product_items:
+                for column in self.product_item_header:
+                    column_name = 'product_item_%s_%s' % (column, i)
                     if not column_name in self.header:
                         self.header.append(column_name)
                     if column == 'name':
-                        product_list.append((column_name, ordered_product.product.name))
+                        product_item_list.append((column_name, ordered_product_item.product_item.name))
                     if column == 'price':
-                        product_list.append((column_name, format_number(ordered_product.price)))
+                        product_item_list.append((column_name, format_number(ordered_product_item.price)))
                     if column == 'quantity':
-                        product_list.append((column_name, ordered_product.quantity))
-                else:
-                    for ordered_product_item in ordered_product.ordered_product_items:
-                        for key, value in ordered_product_item.attributes.items():
-                            if value and key in ['t_shirts_size', 'publicity', 'mail_permission', 'cont', 'old_id_number']:
-                                column_name = '%s_%s' % (key, i)
-                                if not column_name in self.header:
-                                    self.header.append(column_name)
+                        product_item_list.append((column_name, ordered_product_item.product_item.quantity))
+                    if column == 'seat_no':
+                        seat_no = ''
+                        if ordered_product_item.seats:
+                            seat_no = ', '.join([(seat.seat_no) for seat in ordered_product_item.seats if seat.seat_no])
+                        product_item_list.append((column_name, seat_no))
 
-                                # for bj89ers
-                                if key == 'mail_permission':
-                                    value = '' if value is None else value
-                                elif key == 'cont':
-                                    value = u'新規' if value == 'no' else u'継続'
-
-                                product_list.append((column_name, value))
+                # for bj89ers
+                for key, value in ordered_product_item.attributes.items():
+                    if value and key in ['t_shirts_size', 'publicity', 'mail_permission', 'cont', 'old_id_number']:
+                        column_name = '%s_%s' % (key, i)
+                        if not column_name in self.header:
+                            self.header.append(column_name)
+                        if key == 'mail_permission':
+                            value = '' if value is None else value
+                        elif key == 'cont':
+                            value = u'新規' if value == 'no' else u'継続'
+                        product_list.append((column_name, value))
 
         # encoding
-        row = dict(order_list + user_profile_list + shipping_address_list + other_list + product_list)
+        row = dict(
+            order_list
+            + user_profile_list
+            + shipping_address_list
+            + other_list
+            + product_list
+            + product_item_list
+        )
         for key, value in row.items():
             if value:
                 if not isinstance(value, unicode):
@@ -132,5 +163,3 @@ class OrderCSV(object):
             row[key] = value
 
         return row
-
-

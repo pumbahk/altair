@@ -7,8 +7,8 @@ from wtforms import TextField, SelectField, IntegerField, DecimalField, SelectMu
 from wtforms.validators import Length, NumberRange, EqualTo, Optional, ValidationError
 from sqlalchemy.sql import func
 
-from ticketing.formhelpers import Translations, Required
-from ticketing.core.models import SalesSegment, Product, ProductItem, StockHolder, StockType, Stock, Performance
+from ticketing.formhelpers import Translations, Required, BugFreeSelectField
+from ticketing.core.models import SalesSegment, Product, ProductItem, StockHolder, StockType, Stock, Performance, TicketBundle
 
 class ProductForm(Form):
 
@@ -77,15 +77,21 @@ class ProductForm(Form):
                 if Decimal(field.data) < Decimal(sum_amount):
                     raise ValidationError(u'既に登録された商品合計金額以上で入力してください')
 
-
 class ProductItemForm(Form):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
-        if 'performance_id' in kwargs:
-            performance = Performance.get(kwargs['performance_id'])
+        performance_id = kwargs.get('performance_id')
+        event_id = kwargs.get('event_id')
+        if performance_id is not None:
+            performance = Performance.get(performance_id)
             stock_holders = StockHolder.get_seller(performance.event)
+            event_id = performance.event_id
             self.stock_holders.choices = [(sh.id, sh.name) for sh in stock_holders]
+        if event_id is not None:
+            ticket_bundles = TicketBundle.filter_by(event_id=event_id)
+            self.ticket_bundle_id.choices = [(u'', u'(なし)')] + [(tb.id, tb.name) for tb in ticket_bundles]
+
         if self.stock_holders.data:
             conditions ={
                 'performance_id':self.performance_id.data,
@@ -134,6 +140,11 @@ class ProductItemForm(Form):
         choices=[],
         coerce=int
     )
+    ticket_bundle_id = BugFreeSelectField(
+        label=u'TicketBundle',
+        validators=[],
+        coerce=lambda v: None if not v else int(v)
+        )
 
     def validate_stock_id(form, field):
         if field.data and form.product_id.data and not form.id.data:

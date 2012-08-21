@@ -1,0 +1,133 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="jp">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<link rel="stylesheet" type="text/css" href="${request.static_url('ticketing.cart.fc_auth:static/89ers/style.css')}" media="all" />
+	<title>ナイナーズチケット</title>
+
+	<!--[if lte IE 6]>  
+    <script type="text/javascript" src="images/DD_belatedPNG.js">  
+    </script>  
+    <script type="text/javascript"> DD_belatedPNG.fix( '.header,.sparkle');</script>  
+    <![endif]-->  
+
+</head>
+<body>
+	<!-- wrapper -->	
+	<div class="wrapper">
+		<!-- メインカラム -->
+		<div class="maincol">
+			<div class="header">
+				<div class="gnavi">
+					<ul>
+						<li><a href="top.html">チケットTOP</a></li>
+						<li><a href="purchase.html">チケット購入</a></li>
+						<!-- <li><a href="price.html">価格・座席図</a></li> -->
+						<li><a href="unoccupied.html">残席情報</a></li>
+						<li><a href="playguide.html">チケット取扱数量</a></li>
+						<li><a href="howto.html">購入・引取方法</a></li>
+						<li><a href="faq.html">FAQ</a></li>
+					</ul>　　
+				</div>
+			</div>
+
+			<form action="${request.url}" method="post">
+				<div class="kadomaru">
+
+
+					<table cellpadding="0" cellspacing="0" class="textC" style="margin:0 auto;">
+						<tr>
+							<td>
+								<table class="login" style="margin-right:5px;">
+									<thead>
+										<th>
+											一般の方はこちらから
+										</th>
+									</thead>
+									<tr>
+										<td style="text-align:center;"> <div class="redBtn">チケット購入</div> </td>
+									</tr>
+								</table>
+							</td>
+							<td>
+                                <input type="hidden" name="membership" value="89ers" />
+								<table class="login" style="margin-left:5px;">
+									<thead>
+										<th>
+											ブースター会員の方はこちらから
+										</th>
+									</thead>
+									<tr>
+										<td>
+											<table>
+												<tr>
+													<td>
+														会員ID
+														<br /><span class="small red">※ 半角英数</span>
+													</td>
+													<td>
+														<input type="text" name="username" size="22" maxlength="8" value="${username}">
+													</td>
+												</tr>
+												<tr>
+													<td>
+														パスワード
+														<br /><span class="small red">※ 半角英数</span>
+													</td>
+													<td>
+														<input type="password" name="password" size="22" maxlength="8" value="">
+													</td>
+												</tr>
+												<tr>
+													<!-- <td colspan="2" class="textC"> <input type="submit" name="login" value="ログイン"  class="redBtn" /> </td> -->
+													<td colspan="2" class="textC"> <button class="redBtn">ログイン</button> </td>
+												</tr>
+												<tr>
+													<td colspan="2" class="textC"> <small>会員IDとパスワードを忘れてしまった方は<a href="#">こちら</a>からお問い合わせください。</small></td>
+												</tr>
+											</table>							
+										</td>
+									</tr>
+								</table>
+							</td>
+						</tr>
+					</table>
+
+
+
+				  
+
+				</div>
+			</form>
+
+
+
+			<div class="footer">
+				<div class="footernav">
+		          <ul>
+		            <li class="first"><a href="/static/faq/faq.html">ヘルプ</a></li>
+		            <li><a href="http://www.ticketstar.jp/corporate">運営会社</a></li>
+		            <li><a href="https://ticket.rakuten.co.jp/contact/form">お問い合わせ</a></li>
+		            <li><a href="http://www.ticketstar.jp/privacy">個人情報保護方針</a></li>
+		            <li class="last"><a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a></li>
+		          </ul>
+		        </div>
+				<div class="copyright">
+					Copyright &copy; 2010-2011 TicketStar Inc. All Rights Reserved. 
+				</div>
+			</div>
+
+		</div>
+		<!-- メインカラムおわり -->
+		<!-- サイドバー -->
+		<div class="sidebar">
+			
+			
+			
+		</div>	
+		<!-- サイドバーおわり -->
+		
+	</div>
+	<!-- wrapperおわり -->
+</body>
+</html>

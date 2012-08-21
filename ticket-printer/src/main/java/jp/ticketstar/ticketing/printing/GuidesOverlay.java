@@ -8,6 +8,10 @@ import java.awt.geom.Dimension2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
+
+import jp.ticketstar.ticketing.printing.gui.AppWindowModel;
+import jp.ticketstar.ticketing.printing.gui.IAppContainer;
+
 import org.apache.batik.swing.gvt.Overlay;
 
 public class GuidesOverlay implements Overlay {

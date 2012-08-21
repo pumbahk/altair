@@ -11,6 +11,9 @@ import java.net.URI;
 
 import javax.swing.JFileChooser;
 
+import jp.ticketstar.ticketing.printing.gui.AppWindow;
+import jp.ticketstar.ticketing.printing.gui.AppWindowModel;
+import jp.ticketstar.ticketing.printing.gui.IAppContainer;
 import jp.ticketstar.ticketing.printing.svg.ExtendedSVG12BridgeContext;
 import jp.ticketstar.ticketing.printing.svg.ExtendedSVG12OMDocument;
 import jp.ticketstar.ticketing.printing.svg.OurDocumentLoader;
@@ -36,7 +39,7 @@ public class AppService extends SVGUserAgentGUIAdapter implements UserAgent {
 		this.appWindowModel = appWindowModel;
 	}
 
-	public void setAppWindow(AppWindow appWindow) {
+	public void setAppWindow(IAppContainer appWindow) {
 		parentComponent = appWindow.getFrame();
 		appWindow.bind(appWindowModel);
 	}

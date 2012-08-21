@@ -46,6 +46,7 @@ def includeme(config):
     
     config.set_authorization_policy(ACLAuthorizationPolicy())
     config.set_authentication_policy(WhoV2AuthenticationPolicy(who_config, 'auth_tkt'))
+    config.add_tween('.tweens.RakutenAuthTween')
 
 def main(global_conf, **settings):
     """ fot the test """

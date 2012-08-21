@@ -119,6 +119,8 @@ class RakutenOpenIDPlugin(object):
 
     # IChallenger
     def challenge(self, environ, status, app_headers, forget_headers):
+        if not environ.get('ticketing.cart.rakuten_auth.required'):
+            return
         session = environ['session.rakuten_openid']
         session['return_url'] = wsgiref.util.request_uri(environ)
         logger.debug('redirect from %s' % session['return_url'])

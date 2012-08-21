@@ -89,27 +89,39 @@
 </div>
 
 <hr/>
-<h3>商品(ProductItem)</h3>
+<h3>関連づけられているパフォーマンスと商品</h3>
 %if len(bundle.product_items) > 0:
 <table class="table table-striped table-bordered table-condensed">
-  <tbody><tr>
+  <thead>
+    <tr>
       <th></th>
-      <th>名称</th>
-      <th>価格</th>
-      <th>数量(quantity)</th>
+      <th>パフォーマンス</th>
+      <th>商品名</th>
+      <th>商品明細名</th>
       <th>更新日時</th>
       <th>作成日時</th>
-	</tr>
-  %for item in bundle.product_items:
-	<tr>
-	  <td><input type="radio" name="item_id" value="${item.id}" /></td>
-	  <td>${item.name}</td>
-	  <td>${item.price}</td>
-	  <td>${item.quantity}</td>
-	  <td>${item.updated_at}</td>
-	  <td>${item.created_at}</td>
-	</tr>
+    </tr>
+  </thead>
+  <tbody>
+  %for performance in product_item_dict.itervalues():
+    %for i, product in enumerate(performance['products'].itervalues()):
+      %for j, (product_item_id, product_item) in enumerate(product['product_items'].iteritems()):
+    <tr>
+      <td><input type="radio" name="item_id" value="${product_item_id}" /></td>
+        %if i == 0:
+      <td rowspan="${len(performance['product_items'])}">${performance['name']}</td>
+        %endif
+        %if j == 0:
+      <td rowspan="${len(product['product_items'])}">${product['name']}</td>
+        %endif
+      <td>${product_item['name']}</td>
+      <td>${product_item['updated_at']}</td>
+      <td>${product_item['created_at']}</td>
+    </tr>
+      %endfor
+    %endfor
   %endfor
+  </tbody>
 </table>
 %endif
 

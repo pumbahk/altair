@@ -4,7 +4,8 @@ import webhelpers.paginate as paginate
 from ticketing.fanstatic import with_bootstrap
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPCreated
-from ticketing.core.models import ProductItem
+from ticketing.models import DBSession
+from ticketing.core.models import ProductItem, Performance
 from ticketing.core.models import Ticket, TicketBundle, TicketBundleAttribute
 from ticketing.views import BaseView
 from . import forms
@@ -29,7 +30,8 @@ class IndexView(BaseView):
                  renderer="ticketing:templates/tickets/events/_bundleform.html")
     def _api_ticketbundle_form(self):
         form = forms.BundleForm(event_id=self.request.matchdict["event_id"])
-        return dict(form=form)
+        performances = []
+        return dict(form=form, performances=performances)
 
 
 @view_config(route_name="events.tickets.bind.ticket", request_method="POST", 
@@ -71,11 +73,10 @@ class BundleView(BaseView):
 
         bundle = TicketBundle(operator=self.context.user, 
                               event_id=event.id, 
-                              name=form.data["name"], 
+                              name=form.data["name"],
                               )
 
         bundle.replace_tickets(Ticket.filter(Ticket.id.in_(form.data["tickets"])))
-        bundle.replace_product_items(ProductItem.filter(ProductItem.id.in_(form.data["product_items"])))
         bundle.save()
 
         self.request.session.flash(u'チケット券面構成(TicketBundle)が登録されました')
@@ -88,10 +89,10 @@ class BundleView(BaseView):
         event = self.context.event
         form = forms.BundleForm(event_id=event.id, 
                                 name=bundle.name, 
-                                tickets=[e.id for e in bundle.tickets], 
-                                product_items=[e.id for e in bundle.product_items])
+                                tickets=[e.id for e in bundle.tickets])
+        performances = DBSession.query(Performance).join(ProductItem).filter(ProductItem.ticket_bundle==bundle)
         
-        return dict(form=form, event=event, bundle=bundle)
+        return dict(form=form, event=event, bundle=bundle, performances=performances)
 
     @view_config(route_name="events.tickets.bundles.edit", request_method="POST", 
                  renderer="ticketing:templates/tickets/events/bundles/new.html")
@@ -105,7 +106,6 @@ class BundleView(BaseView):
 
         bundle.name = form.data["name"]
         bundle.replace_tickets(Ticket.filter(Ticket.id.in_(form.data["tickets"])))
-        bundle.replace_product_items(ProductItem.filter(ProductItem.id.in_(form.data["product_items"])))
         bundle.save()
 
         self.request.session.flash(u'チケット券面構成(TicketBundle)が更新されました')
@@ -134,8 +134,31 @@ class BundleView(BaseView):
     @view_config(route_name="events.tickets.bundles.show",
                  renderer="ticketing:templates/tickets/events/bundles/show.html")
     def show(self):
+        product_item_dict = {}
+        for product_item in self.context.bundle.product_items:
+            performance = product_item_dict.get(product_item.performance_id)
+            if performance is None:
+                performance = product_item_dict[product_item.performance_id] = {
+                    'name': product_item.performance.name,
+                    'products': {},
+                    'product_items': {}
+                    }
+            product = performance['products'].get(product_item.product.id)
+            if product is None:
+                product = performance['products'][product_item.product.id] = {
+                    'name': product_item.product.name,
+                    'product_items': {}
+                    }
+            performance['product_items'][product_item.id] = \
+            product['product_items'][product_item.id] = {
+                'name': product_item.name,
+                'updated_at': product_item.updated_at,
+                'created_at': product_item.created_at
+                }
+
         return dict(bundle=self.context.bundle, 
-                    event=self.context.event)
+                    event=self.context.event,
+                    product_item_dict=product_item_dict)
 
 
 @view_defaults(decorator=with_bootstrap, permission="authenticated")

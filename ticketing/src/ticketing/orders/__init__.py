@@ -21,6 +21,5 @@ def includeme(config):
     config.add_route('orders.sej.order.ticket.refund'   , '/sej/order/refund/{ticket_id}/ticket')
 
     config.add_route('orders.sej.ticket_template'       , '/sej/ticket_template')
-    config.add_route('orders.api.ticket'                , '/ticket/{id}')
 
     config.scan(".")
