@@ -5,16 +5,19 @@
   function new_product_item(product_id) {
     var product = '#product-' + product_id;
     var modal = $('#modal-product_item');
-    modal.find('#product #name').text($(product).find('#name').text());
-    modal.find('#product #price').text(Math.floor($(product).find('#price').attr('value')));
-    modal.find('#product #sales_segment_id').text($(product).find('#sales_segment_id').text());
+    var product_name = $(product).find('#name').text();
+    var product_price = Math.floor($(product).find('#price').attr('value'));
+    modal.find('#product #name').text(product_name);
+    modal.find('#product #price').text(product_price);
+    modal.find('#product #sales_segment_id').val($(product).find('#sales_segment_id').attr('value')).change();
+    modal.find('#product #seat_stock_type_id').val($(product).find('#seat_stock_type_id').attr('value'));
     modal.find('#id').val('');
     modal.find('#performance_id').val(${performance.id});
     modal.find('#product_id').val($(product).find('#id').text());
-    modal.find('#stock_holders').removeAttr('disabled');
+    modal.find('#stock_holders').removeAttr('disabled').change();
     modal.find('#stock_id').removeAttr('disabled');
-    modal.find('#product-item #name').val('');
-    modal.find('#product-item #price').val('');
+    modal.find('#product-item #name').val(product_name);
+    modal.find('#product-item #price').val(product_price);
     modal.find('#quantity').val(1);
     modal.modal('toggle');
   }
@@ -24,7 +27,8 @@
     var modal = $('#modal-product_item');
     modal.find('#product #name').text($(product).find('#name').text());
     modal.find('#product #price').text(Math.floor($(product).find('#price').attr('value')));
-    modal.find('#product #sales_segment_id').text($(product).find('#sales_segment_id').attr('value'));
+    modal.find('#product #sales_segment_id').val($(product).find('#sales_segment_id').attr('value')).change();
+    modal.find('#product #seat_stock_type_id').val($(product).find('#seat_stock_type_id').attr('value'));
     modal.find('#id').val(product_item_id);
     modal.find('#performance_id').val(${performance.id});
     modal.find('#product_id').val(product_id);
