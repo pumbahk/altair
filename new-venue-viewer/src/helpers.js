@@ -1,6 +1,5 @@
 var parseCSSStyleText = (function () {
   var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
-
   var regexp_for_values = /(?:((?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+)|"((?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*)"|'((?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*)')(?:\s+|$)/g;
 
   function unescape(escaped) {
@@ -103,6 +102,8 @@ function parseCSSAsSvgStyle(str, defs) {
   var strokeWidthString = styles['stroke-width'];
   var strokeOpacity = null;
   var strokeOpacityString = styles['stroke-opacity'];
+  var fontSize = null;
+  var fontSizeString = styles['font-size'];
   if (fillString) {
     if (fillString[0] == 'none') {
       fill = false;
@@ -132,22 +133,27 @@ function parseCSSAsSvgStyle(str, defs) {
   if (strokeOpacityString) {
     strokeOpacity = parseFloat(strokeOpacityString[0]);
   }
+  if (fontSizeString) {
+    fontSize = parseFloat(fontSizeString);
+  }
   return {
     fill: fill,
     fillOpacity: fillOpacity,
     stroke: stroke,
     strokeWidth: strokeWidth,
-    strokeOpacity: strokeOpacity
+    strokeOpacity: strokeOpacity,
+    fontSize: fontSize
   };
 }
 
 function mergeSvgStyle(origStyle, newStyle) {
   return {
-    fill: newStyle.fill !== null ? newStyle.fill: origStyle.fill,
-    fillOpacity: newStyle.fillOpacity !== null ? newStyle.fillOpacity: origStyle.fillOpacity,
-    stroke: newStyle.stroke !== null ? newStyle.stroke: origStyle.stroke,
-    strokeWidth: newStyle.strokeWidth !== null ? newStyle.strokeWidth: origStyle.strokeWidth,
-    strokeOpacity: newStyle.strokeOpacity !== null ? newStyle.strokeOpacity: origStyle.strokeOpacity
+    fill:          newStyle.fill !== null ? newStyle.fill: origStyle.fill,
+    fillOpacity:   newStyle.fillOpacity !== null ? newStyle.fillOpacity: origStyle.fillOpacity,
+    stroke:        newStyle.stroke !== null ? newStyle.stroke: origStyle.stroke,
+    strokeWidth:   newStyle.strokeWidth !== null ? newStyle.strokeWidth: origStyle.strokeWidth,
+    strokeOpacity: newStyle.strokeOpacity !== null ? newStyle.strokeOpacity: origStyle.strokeOpacity,
+    fontSize:      newStyle.fontSize !== null ? newStyle.fontSize: origStyle.fontSize
   };
 }
 

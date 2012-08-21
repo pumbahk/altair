@@ -19,9 +19,14 @@ Fashion.Backend.VML = (function() {
 
   function setup() {
     var namespaces = window.document.namespaces;
-    if (!namespaces[VML_PREFIX])
-      namespaces.add(VML_PREFIX, VML_NAMESPACE_URL);
-    window.document.createStyleSheet().addRule(VML_PREFIX + '\\:*', "behavior:url(#default#VML)");
+    if (Fashion.browser.version >= 8) {
+      if (!namespaces[VML_PREFIX])
+        namespaces.add(VML_PREFIX, VML_NAMESPACE_URL, VML_BEHAVIOR_URL);
+    } else {
+      if (!namespaces[VML_PREFIX])
+        namespaces.add(VML_PREFIX, VML_NAMESPACE_URL);
+      window.document.createStyleSheet().addRule(VML_PREFIX + '\\:*', "behavior:url(#default#VML)");
+    }
   }
 
   function newElement(type) {
@@ -435,8 +440,6 @@ var Base = (function() {
               fill.setOuterAttribute('fillColor', st.fill.color._toString(true));
             } else {
               fill.setInnerAttribute('type', "solid");
-              if (st.fill.color._toString === void(0))
-                alert("OUCH!!!!!" + typeof(st.fill.color));
               fill.setInnerAttribute('color', st.fill.color._toString(true));
               fill.setInnerAttribute('opacity', st.fill.color.a / 255.);
             }
@@ -978,7 +981,7 @@ var Drawable = _class("DrawableVML", {
       if (position) {
         position = _clipPoint(
             position,
-            { x: 0, y: 0 },
+            this.wrapper._inverse_transform.translate(),
             _subtractPoint(
               this.wrapper._content_size,
               this.wrapper._inverse_transform.apply(

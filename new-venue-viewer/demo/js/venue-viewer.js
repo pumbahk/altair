@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['QVBSLOARX_GCGB4K'] = (function (exports) { (function () { 
+__LIBS__['wKZ4WLP103A79NEB'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -121,7 +121,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['JUN78XA_IKUO91TQ'] = (function (exports) { (function () { 
+__LIBS__['J4MEP8U7K7N_0MEC'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -134,6 +134,10 @@ exports.DEFAULT = {
     seat: {
       fill: new Fashion.Color('#fff'),
       stroke: new Fashion.Color('#000')
+    },
+    glayout: {
+      fill: new Fashion.FloodFill(new Fashion.Color('#ccc')),
+      stroke: new Fashion.Stroke(new Fashion.Color('#999'), 2)
     }
   },
 
@@ -172,11 +176,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['wP7BOW7J_VGGG3I0'] = (function (exports) { (function () { 
+__LIBS__['L1FEFNN5PH1U_RQN'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['QVBSLOARX_GCGB4K'];
-var CONF = __LIBS__['JUN78XA_IKUO91TQ'];
+var util = __LIBS__['wKZ4WLP103A79NEB'];
+var CONF = __LIBS__['J4MEP8U7K7N_0MEC'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -716,7 +720,6 @@ var _class = (function() {
 /************** helpers.js **************/
 var parseCSSStyleText = (function () {
   var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
-
   var regexp_for_values = /(?:((?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+)|"((?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*)"|'((?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*)')(?:\s+|$)/g;
 
   function unescape(escaped) {
@@ -819,6 +822,8 @@ function parseCSSAsSvgStyle(str, defs) {
   var strokeWidthString = styles['stroke-width'];
   var strokeOpacity = null;
   var strokeOpacityString = styles['stroke-opacity'];
+  var fontSize = null;
+  var fontSizeString = styles['font-size'];
   if (fillString) {
     if (fillString[0] == 'none') {
       fill = false;
@@ -848,22 +853,27 @@ function parseCSSAsSvgStyle(str, defs) {
   if (strokeOpacityString) {
     strokeOpacity = parseFloat(strokeOpacityString[0]);
   }
+  if (fontSizeString) {
+    fontSize = parseFloat(fontSizeString);
+  }
   return {
     fill: fill,
     fillOpacity: fillOpacity,
     stroke: stroke,
     strokeWidth: strokeWidth,
-    strokeOpacity: strokeOpacity
+    strokeOpacity: strokeOpacity,
+    fontSize: fontSize
   };
 }
 
 function mergeSvgStyle(origStyle, newStyle) {
   return {
-    fill: newStyle.fill !== null ? newStyle.fill: origStyle.fill,
-    fillOpacity: newStyle.fillOpacity !== null ? newStyle.fillOpacity: origStyle.fillOpacity,
-    stroke: newStyle.stroke !== null ? newStyle.stroke: origStyle.stroke,
-    strokeWidth: newStyle.strokeWidth !== null ? newStyle.strokeWidth: origStyle.strokeWidth,
-    strokeOpacity: newStyle.strokeOpacity !== null ? newStyle.strokeOpacity: origStyle.strokeOpacity
+    fill:          newStyle.fill !== null ? newStyle.fill: origStyle.fill,
+    fillOpacity:   newStyle.fillOpacity !== null ? newStyle.fillOpacity: origStyle.fillOpacity,
+    stroke:        newStyle.stroke !== null ? newStyle.stroke: origStyle.stroke,
+    strokeWidth:   newStyle.strokeWidth !== null ? newStyle.strokeWidth: origStyle.strokeWidth,
+    strokeOpacity: newStyle.strokeOpacity !== null ? newStyle.strokeOpacity: origStyle.strokeOpacity,
+    fontSize:      newStyle.fontSize !== null ? newStyle.fontSize: origStyle.fontSize
   };
 }
 
@@ -921,9 +931,9 @@ function _map(arr, fn) {
   return retval;
 }
 
-  var CONF = __LIBS__['JUN78XA_IKUO91TQ'];
-  var seat = __LIBS__['wP7BOW7J_VGGG3I0'];
-  var util = __LIBS__['QVBSLOARX_GCGB4K'];
+  var CONF = __LIBS__['J4MEP8U7K7N_0MEC'];
+  var seat = __LIBS__['L1FEFNN5PH1U_RQN'];
+  var util = __LIBS__['wKZ4WLP103A79NEB'];
 
   var createDrawingLoader = function(url) {
     return function (next, error) {
@@ -931,7 +941,9 @@ function _map(arr, fn) {
         type: 'get',
         url: url,
         dataType: 'xml',
-        success: function(xml) { next(xml); },
+        success: function(xml) {
+          next(xml);
+        },
         error: function(xhr, text) { throw new Error("Failed to load drawing data (reason: " + text + ")"); }
       });
     }
@@ -969,10 +981,13 @@ function _map(arr, fn) {
         click: null,
         selectable: null,
         select: null,
-        changeCurrentClassName: null
+        changeCurrentClassName: null,
+        messageBoard: null,
+        slider: null
       },
       dataSource: null,
       zoomRatio: CONF.DEFAULT.ZOOM_RATIO,
+      contentOriginPosition: {x: 0, y: 0},
       dragging: false,
       startPos: { x: 0, y: 0 },
       rubberBand: new Fashion.Rect({
@@ -985,7 +1000,6 @@ function _map(arr, fn) {
       overlayShapes: new StoreObject(),
       shift: false,
       keyEvents: null,
-      zoomRatio: 1.0,
       uiMode: 'select1',
       shapes: null,
       seats: {},
@@ -993,8 +1007,13 @@ function _map(arr, fn) {
       selectionCount: 0,
       highlighted: {},
       animating: false,
+      blocks: null,
       _adjacencyLength: 1,
-      currentClass: 'root'
+      currentClass: 'root',
+      currentFocusedIds: null,
+      parentLinks: [],
+      seatTitles: {},
+      optionalViewportSize: null
     },
 
     methods: {
@@ -1009,11 +1028,18 @@ function _map(arr, fn) {
         if (options.zoomRatio) this.zoomRatio = options.zoomRatio;
         this.rubberBand.style(CONF.DEFAULT.MASK_STYLE);
         canvas.empty();
+        this.optionalViewportSize = options.viewportSize;
       },
 
       load: function VenueViewer_load() {
         if (this.drawable !== null)
           this.drawable.dispose();
+
+        if (this.blocks !== null) {
+          for (id in this.blocks) {
+            this.blocks[id].removeEvent();
+          }
+        }
 
         this.originalStyles.clear();
         this.overlayShapes.clear();
@@ -1030,8 +1056,7 @@ function _map(arr, fn) {
               self.callbacks.loadstart('info');
               self.dataSource.info(function (data) {
                 if (!'available_adjacencies' in data) {
-                  self.callbacks.message("Invalid data");
-                  return;
+                  self.callbacks.message("Invalid data"); return;
                 }
                 self.availableAdjacencies = data.available_adjacencies;
                 self.seatAdjacencies = new seat.SeatAdjacencies(self);
@@ -1058,9 +1083,13 @@ function _map(arr, fn) {
 
       initDrawable: function VenueViewer_initDrawable(dataSource, next) {
         var self = this;
+        var isFocused = function isFocused(id){
+          return self.currentFocusedIds == null || self.currentFocusedIds.indexOf(id) > -1;
+        };
         dataSource(function (drawing) {
           var attrs = util.allAttributes(drawing.documentElement);
           var w = parseFloat(attrs.width), h = parseFloat(attrs.height);
+          var focused = isFocused(attrs.id);
           var vb = null;
           if (attrs.viewBox) {
             var comps = attrs.viewBox.split(/\s+/);
@@ -1074,17 +1103,23 @@ function _map(arr, fn) {
             y: ((vb && vb[3]) || h || w)
           } : null);
 
-          var drawable = new Fashion.Drawable(self.canvas[0], { contentSize: {x: size.x, y: size.y} });
+          var drawable = new Fashion.Drawable( self.canvas[0], {
+            contentSize: {x: size.x, y: size.y},
+            viewportSize: self.optionalViewportSize
+          });
+
           var shapes = {};
           var styleClasses = CONF.DEFAULT.STYLES;
 
-          (function iter(svgStyle, defs, nodeList) {
+          var xmax = -Infinity, ymax = -Infinity,
+              xmin = Infinity,  ymin = Infinity;
+
+          (function iter(svgStyle, defs, nodeList, focused) {
             outer:
             for (var i = 0; i < nodeList.length; i++) {
               var n = nodeList[i];
               if (n.nodeType != 1) continue;
               var attrs = util.allAttributes(n);
-
               var shape = null;
 
               { // stylize
@@ -1093,8 +1128,7 @@ function _map(arr, fn) {
                   currentSvgStyle = mergeSvgStyle(currentSvgStyle, parseCSSAsSvgStyle(attrs.style, defs));
                 if (attrs['class']) {
                   var style = styleClasses[attrs['class']];
-                  if (style)
-                    currentSvgStyle = mergeSvgStyle(currentSvgStyle, style);
+                  if (style) currentSvgStyle = mergeSvgStyle(currentSvgStyle, style);
                 }
               }
 
@@ -1103,9 +1137,11 @@ function _map(arr, fn) {
                 parseDefs(n, defs);
                 break;
 
-              case 'g':
-                arguments.callee.call(self, currentSvgStyle, defs, n.childNodes);
+              case 'g': {
+                arguments.callee.call(self, currentSvgStyle, defs, n.childNodes,
+                                      (focused || isFocused(attrs.id)));
                 continue outer;
+              }
 
               case 'path':
                 if (!attrs.d) throw new Error("Pathdata is not provided for the path element");
@@ -1117,11 +1153,13 @@ function _map(arr, fn) {
               case 'text':
                 if (n.firstChild) {
                   shape = new Fashion.Text({
-                    fontSize: 30,
                     text: collectText(n),
                     zIndex: 99
                   });
                 }
+                break;
+
+              case 'symbol':
                 break;
 
               case 'rect':
@@ -1135,6 +1173,12 @@ function _map(arr, fn) {
                     y: parseFloat(attrs.ry || 0)
                   }
                 });
+                for (var j=0,ll=n.childNodes.length; j<ll; j++) {
+                  if (n.childNodes[j].nodeName == "title") {
+                    self.seatTitles[attrs.id] = n.childNodes[j].childNodes[0].nodeValue;
+                    break;
+                  }
+                }
                 break;
 
               default:
@@ -1143,38 +1187,91 @@ function _map(arr, fn) {
 
               if (shape !== null) {
                 var x = parseFloat(attrs.x),
-                y = parseFloat(attrs.y);
-                if (!isNaN(x) && !isNaN(y))
+                    y = parseFloat(attrs.y);
+
+                if (!isNaN(x) && !isNaN(y)) {
+
+                  if (focused) {
+                    if (xmax < x) xmax = x;
+                    else if (x < xmin) xmin = x;
+                    if (ymax < y) ymax = y;
+                    else if (y < ymin) ymin = y;
+                  }
+
                   shape.position({ x: x, y: y });
+                }
+                //if (focused) {
                 shape.style(buildStyleFromSvgStyle(currentSvgStyle));
+                if (shape instanceof Fashion.Text) {
+                  shape.fontSize(currentSvgStyle.fontSize);
+                }
+                // } else {
+                // shape.style(styleClasses['glayout']);
+                //}
                 drawable.draw(shape);
               }
               shapes[attrs.id] = shape;
             }
-          }).call(self,
-                  { fill: false, fillOpacity: false,
-                    stroke: false, strokeOpacity: false },
-                  {},
-                  drawing.documentElement.childNodes);
+          }).call(
+            self,
+            {
+              fill: false, fillOpacity: false,
+              stroke: false, strokeOpacity: false,
+              fontSize: 10
+            },
+            {},
+            drawing.documentElement.childNodes,
+            focused);
 
           self.drawable = drawable;
           self.shapes = shapes;
 
-          var cs = drawable.contentSize();
-          var vs = drawable.viewportSize();
+/*
+
           var center = {
-            x: (cs.x - vs.x) / 2,
-            y: (cs.y - vs.y) / 2
+            x: (xmax + xmin) / 2,
+            y: (ymax + ymin) / 2
           };
 
-          self.drawable.transform(Fashion.Matrix.scale(self.zoomRatio));
+          var width  = (xmax - xmin) / 0.8;
+          var height = (ymax - ymin) / 0.8;
+
+          var origin_of_shapes = {
+            x: center.x - (width/2),
+            y: center.y - (height/2)
+          };
+
+          var vs = drawable.viewportSize();
+          var wr = vs.x / width;
+          var hr = vs.y / height;
+          var r = (wr < hr) ? wr : hr;
+          var origin = {
+            x: (wr < hr) ? origin_of_shapes.x : center.x - ((vs.x/2)/hr),
+            y: (wr < hr) ? center.y - ((vs.y/2)/wr) : origin_of_shapes.y
+          };
+          self.zoomRatio = r;
+          self.callbacks.slider.setOriginZoomRatio(r);
+          self.contentOriginPosition = origin;
+
+          drawable.transform(
+            Fashion.Matrix.scale(self.zoomRatio)
+              .translate({x: -self.contentOriginPosition.x,
+                          y: -self.contentOriginPosition.y}));
+
+          drawable.contentSize({x: (vs.x/r) + origin.x, y: (vs.y/r) + origin.y});
+
+*/
           self.changeUIMode(self.uiMode);
           next.call(this);
+
         }, self.callbacks.message);
       },
 
       initBlocks: function VenueViewer_initBlocks(dataSource, next) {
         var self = this;
+
+        self.blocks = {};
+
         dataSource(function (classes) {
           var current_class_meta = classes[self.currentClass];
           var ids = current_class_meta.group_l0_ids;
@@ -1203,6 +1300,7 @@ function _map(arr, fn) {
 
             parents.push([function(){
               self.currentClass = current;
+              self.currentFocusedIds = classes[current]['focused_ids'];
               self.dataSource.drawing = createDrawingLoader('data/xebio-arena/drawings/'+current+'.xml');
               self.load();
             }, classes[current].name]);
@@ -1210,36 +1308,45 @@ function _map(arr, fn) {
             return parents;
           };
 
-          self.callbacks.changeCurrentClassName(getParentLinks(self.currentClass));
+          self.parentLinks = getParentLinks(self.currentClass);
+          self.callbacks.changeCurrentClassName(self.parentLinks);
 
           for (var id in ids) (function(id) {
             var shape = self.shapes[id];
             var meta = ids[id];
+            self.blocks[id] = shape;
             shape.addEvent({
               mouseover: function(evt) {
-                if (self.uiMode == 'select') return;
-                var shapes = getSibling(meta);
-                for (var i=0, l=shapes.length; i<l; i++) {
-                  var shape = copyShape(shapes[i]);
-                  shape.style(util.convertToFashionStyle(CONF.DEFAULT.OVERLAYS['highlighted_block']));
-                  self.drawable.draw(shape);
-                  self.overlayShapes.save(shapes[i].id, shape);
+                if (self.uiMode == 'select1') {
+                  var shapes = getSibling(meta);
+                  for (var i=0, l=shapes.length; i<l; i++) {
+                    var shape = copyShape(shapes[i]);
+                    shape.style(util.convertToFashionStyle(CONF.DEFAULT.OVERLAYS['highlighted_block']));
+                    self.drawable.draw(shape);
+                    self.overlayShapes.save(shapes[i].id, shape);
+                  }
+                  self.callbacks.messageBoard.up(classes[meta].name);
                 }
               },
               mouseout: function(evt) {
-                if (self.uiMode == 'select') return;
-                var shapes = getSibling(meta);
-                for (var i=0, l=shapes.length; i<l; i++) {
-                  var shape = self.overlayShapes.restore(shapes[i].id);
-                  self.drawable.erase(shape);
+                if (self.uiMode == 'select1') {
+                  var shapes = getSibling(meta);
+                  for (var i=0, l=shapes.length; i<l; i++) {
+                    var shape = self.overlayShapes.restore(shapes[i].id);
+                    if (shape) self.drawable.erase(shape);
+                  }
+                  self.callbacks.messageBoard.down();
                 }
               },
               mousedown: function(evt) {
-                self.currentClass = ids[id];
-                self.dataSource.drawing =
-                  createDrawingLoader('data/xebio-arena/drawings/'+
-                                      self.currentClass+'.xml');
-                self.load();
+                if (self.uiMode == 'select1') {
+                  self.callbacks.messageBoard.down();
+                  self.currentClass = ids[id];
+                  self.currentFocusedIds = classes[self.currentClass]['focused_ids'];
+                  self.dataSource.drawing =
+                    createDrawingLoader('data/xebio-arena/drawings/'+self.currentClass+'.xml');
+                  self.load();
+                }
               }
             });
           })(id);
@@ -1259,6 +1366,7 @@ function _map(arr, fn) {
               mouseover: function(evt) {
                 if (self.uiMode == 'select')
                   return;
+                self.callbacks.messageBoard.up(self.seatTitles[this.id]);
                 self.seatAdjacencies.getCandidates(this.id, self.adjacencyLength(), function (candidates) {
                   if (candidates.length == 0)
                     return;
@@ -1287,6 +1395,7 @@ function _map(arr, fn) {
               mouseout: function(evt) {
                 if (self.uiMode == 'select')
                   return;
+                self.callbacks.messageBoard.down();
                 var highlighted = self.highlighted;
                 self.highlighted = {};
                 for (var i in highlighted)
@@ -1382,7 +1491,8 @@ function _map(arr, fn) {
               mousedown: function(evt) {
                 if (self.animating) return;
                 self.startPos = evt.logicalPosition;
-                self.rubberBand.position({x: self.startPos.x, y: self.startPos.y});
+                self.rubberBand.position({x: self.startPos.x,
+                                          y: self.startPos.y});
                 self.rubberBand.size({x: 0, y: 0});
                 self.drawable.draw(self.rubberBand);
                 self.dragging = true;
@@ -1393,7 +1503,7 @@ function _map(arr, fn) {
                 if (self.animating) return;
                 self.drawable.releaseMouse();
                 self.dragging = false;
-                var selection = []; 
+                var selection = [];
                 var hitTest = util.makeHitTester(self.rubberBand);
                 for (var id in self.seats) {
                   var seat = self.seats[id];
@@ -1434,8 +1544,7 @@ function _map(arr, fn) {
           case 'zoomin':
             this.drawable.addEvent({
               mouseup: function(evt) {
-                self.zoomRatio*=1.2;
-                this.transform(Fashion.Matrix.scale(self.zoomRatio));
+                self.zoom(self.zoomRatio * 1.2, evt.logicalPosition);
               }
             });
             break;
@@ -1443,8 +1552,7 @@ function _map(arr, fn) {
           case 'zoomout':
             this.drawable.addEvent({
               mouseup: function(evt) {
-                self.zoomRatio/=1.2;
-                this.transform(Fashion.Matrix.scale(self.zoomRatio));
+                self.zoom(self.zoomRatio / 1.2, evt.logicalPosition);
               }
             });
             break;
@@ -1455,6 +1563,42 @@ function _map(arr, fn) {
         }
         this.uiMode = type;
         this.callbacks.uimodeselect(this, type);
+      },
+
+      zoom: function(ratio, center) {
+
+        if (!center) {
+          var vs = this.drawable.viewportSize();
+          var logicalSize = {
+            x: vs.x / this.zoomRatio,
+            y: vs.y / this.zoomRatio
+          };
+          var scroll = this.drawable.scrollPosition();
+          center = {
+            x: scroll.x + (logicalSize.x / 2),
+            y: scroll.y + (logicalSize.y / 2)
+          }
+        }
+
+        this.zoomRatio = ratio;
+        this.drawable.transform(Fashion.Matrix.scale(ratio)
+                                .translate({x: -this.contentOriginPosition.x,
+                                            y: -this.contentOriginPosition.y}));
+
+        var vs = this.drawable.viewportSize();
+
+        var logicalSize = {
+          x: vs.x / ratio,
+          y: vs.y / ratio
+        };
+
+        var logicalOrigin = {
+          x: center.x - (logicalSize.x / 2),
+          y: center.y - (logicalSize.y / 2)
+        };
+
+        this.drawable.scrollPosition(logicalOrigin);
+
       },
 
       unselectAll: function VenueViewer_unselectAll() {
@@ -1519,6 +1663,13 @@ function _map(arr, fn) {
           scrollPos = Fashion._lib.addPoint(scrollPos, delta);
           self.drawable.scrollPosition(scrollPos);
         }, 50);
+      },
+
+      back: function VenueViewer_back() {
+        if (this.parentLinks.length >= 2) {
+          var link = this.parentLinks[this.parentLinks.length - 2];
+          link[0].call(this);
+        }
       }
     }
   });
@@ -1630,6 +1781,15 @@ function _map(arr, fn) {
         case 'adjacency':
           aux.adjacencyLength(arguments[1]|0);
           break;
+
+        case 'back':
+          aux.back();
+          break;
+
+        case 'zoom':
+          aux.zoom(arguments[1]);
+          break;
+
         }
       }
     }

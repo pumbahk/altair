@@ -44,6 +44,7 @@
     "root": {
       "id": 1,
       "name": "全体図",
+      "focused_ids": ["root"],
       "group_l0_ids": {
         "rect121054": "block_a",
         "rect123324": "block_a",
@@ -61,30 +62,35 @@
     "block_a": {
       "id": 2,
       "name": "Aブロック",
+      "focused_ids": ["g14", "g2278", "g6187"],
       "group_l0_ids": {
       }
     },
     "block_b": {
       "id": 3,
       "name": "Bブロック",
+      "focused_ids": ["g33357", "g34501", "g37716"],
       "group_l0_ids": {
       }
     },
     "block_c": {
       "id": 4,
       "name": "Cブロック",
+      "focused_ids": ["g62237", "g64567"],
       "group_l0_ids": {
       }
     },
     "block_d": {
       "id": 5,
       "name": "Dブロック",
+      "focused_ids": ["g115717", "g116861"],
       "group_l0_ids": {
       }
     },
     "block_courtside": {
       "id": 6,
       "name": "コートサイド",
+      "focused_ids": ["g95791"],
       "group_l0_ids": {
       }
     }

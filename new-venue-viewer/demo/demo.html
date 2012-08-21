@@ -20,13 +20,90 @@
 }
 
 #venue {
-  height: 500px;
+  height: 400px;
+  width: 430px;
   border: 1px solid #ccc;
 }
 #current-class-name-holder {
   font-size: 13px;
   margin-left: 10px;
 }
+
+#mouseover-message-board {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  background: black;
+  color: white;
+  padding: 15px;
+}
+
+#back-button {
+  position: absolute;
+  top:  160px;
+  left: 400px;
+  width: 32px;
+  height: 32px;
+  background: url(img/backButton.png);
+  cursor: pointer;
+  z-index: 99;
+}
+
+#slider {
+    position: absolute;
+    top:  165px;
+    left: 20px;
+    width: 20px;
+    height: 100px;
+    z-index: 99;
+}
+
+#slider-plus {
+    position: absolute;
+    cursor: pointer;
+    top: 0px;
+    left: 0px;
+    width: 20px;
+    height: 20px;
+    background: url(img/zoomIn.png);
+    z-index: 101;
+}
+
+#slider-minus {
+    position: absolute;
+    cursor: pointer;
+    top: 80px;
+    left: 0px;
+    width: 20px;
+    height: 20px;
+    background: url(img/zoomOut.png);
+    z-index: 101;
+}
+
+#slider-vbar {
+    position: absolute;
+    cursor: pointer;
+    top: 10px;
+    left: 0px;
+    width: 20px;
+    height: 80px;
+    background: url(img/zoomBar.png);
+    background-repeat: repeat-y;
+    z-index: 100;
+}
+
+#slider-hbar {
+    position: absolute;
+    cursor: pointer;
+    top: 67px;
+    left: 0px;
+    width: 20px;
+    height: 20px;
+    background: url(img/zoomSlider.png);
+    z-index: 101;
+}
+
 </style>
 </head>
 <body>
@@ -44,13 +121,24 @@
     <select class="ui-button action-select-adjacencies" id="toolbar-seat-adjacencies-selector"></select>
     <select class="ui-button action-select-stock-types" id="toolbar-stock-type-selector"></select>
     <span id="current-class-name-holder"></span>
+    <div id="mouseover-message-board"></div>
   </div>
   <div id="venue"><div class="message">Loading...</div></div>
+  <div id="slider">
+    <div id="slider-plus"></div>
+    <div id="slider-minus"></div>
+    <div id="slider-vbar"></div>
+    <div id="slider-hbar"></div>
+  </div>
+  <div id="back-button"></div>
   <script type="text/javascript">
 var currentStockTypeId = "";
 var venue = $('#venue');
 function loadVenue() {
   venue.venueviewer({
+    viewportSize: {
+      x: 430, y: 400
+    },
     dataSource: {
       drawing: "data/xebio-arena/drawings/root.xml",
       metadata: "data/xebio-arena/data.json",
@@ -94,7 +182,107 @@ function loadVenue() {
             holder.append(' &gt; ');
           }
         }
+        var back_btn = $("#back-button");
+        if (parent_list.length == 1) {
+          back_btn.hide();
+        } else {
+          back_btn.show();
+        }
       },
+      messageBoard: (function() {
+        var board = $("#mouseover-message-board");
+        board.hide();
+        $('html').mousemove(function(e){
+          board.css({
+            top:  e.pageY+10,
+            left: e.pageX+10
+          });
+        });
+
+        return {
+          up: function(msg) {
+            board.empty();
+            board.append(msg).fadeIn(100);
+          },
+          down: function() {
+            board.stop();
+            board.fadeOut(100);
+          }
+        }
+      })(),
+
+      slider: (function() {
+        var sliderHeight = 100;
+        var cont  = $("#slider");
+        var plus  = $("#slider-plus");
+        var minus = $("#slider-minus");
+        var vbar  = $("#slider-vbar");
+        var hbar  = $("#slider-hbar");
+
+        var zoomRatioMin = 0.5;
+        var zoomRatioMax = 2.2;
+        var hbarMoving = false;
+        var hbarPositionMax = sliderHeight - (13+20);
+        var hbarPositionMin = 13;
+        var hbarPosition = hbarPositionMax;
+        var lastMouseY = 0;
+
+        var onHbarMoved = function(pos) {
+          var level = ((hbarPositionMax - pos) / (hbarPositionMax - hbarPositionMin));
+          var zoomRatioWidth = zoomRatioMax - zoomRatioMin;
+          var zoomRatio = zoomRatioMin + (zoomRatioWidth * level);
+          venue.venueviewer("zoom", zoomRatio);
+        }
+
+        var lastHbarPosition = hbarPosition;
+        var setPositionHbar = function (pos, disableCallback) {
+          if (pos > hbarPositionMax) pos = hbarPositionMax;
+          else if (pos < hbarPositionMin) pos = hbarPositionMin;
+          hbar.css({ top: pos + 'px' });
+          if (lastHbarPosition != pos && !disableCallback) {
+            onHbarMoved(pos);
+          }
+          lastHbarPosition = pos;
+          return pos;
+        }
+
+        hbar.mousedown(function(e) {
+          hbarMoving = true;
+          lastMouseY = e.pageY;
+        });
+        cont.mousemove(function(e) {
+          if (hbarMoving) {
+            var dist = e.pageY - lastMouseY;
+            hbarPosition = setPositionHbar(hbarPosition + dist);
+            lastMouseY = e.pageY;
+          }
+        });
+        cont.mouseup(function(e) {
+          hbarMoving = false;
+        });
+        vbar.click(function(e) {
+          hbarPosition = setPositionHbar(e.offsetY);
+          lastMouseY = e.pageY;
+        });
+
+        var step = 10;
+        plus.click(function(e) {
+          hbarPosition = setPositionHbar(hbarPosition - step);
+        });
+        minus.click(function(e) {
+          hbarPosition = setPositionHbar(hbarPosition + step);
+        });
+
+
+        return {
+          setOriginZoomRatio: function(ratio) {
+            zoomRatioMin = ratio;
+            hbarPosition = setPositionHbar(hbarPositionMax, true);
+          }
+        };
+
+      })(),
+
       message: function (msg) {
         $("<div></div>").text(msg).dialog({
           modal: true,
@@ -103,6 +291,7 @@ function loadVenue() {
           }
         });
       },
+
       load: function (viewer) {
         var n = $("#toolbar-seat-adjacencies-selector");
         $.each(viewer.availableAdjacencies, function(i, v) {
@@ -121,6 +310,7 @@ function loadVenue() {
                                 .appendTo(n);
         }
       },
+
       with_uimodeselect: function (viewer, mode) {
         switch (mode) {
         case 'select1':
@@ -198,6 +388,15 @@ $(".action-select-stock-types").change(function () {
 $(".action-reload").click(function () {
   loadVenue();
 });
+$("#back-button").click(function() {
+  if (!venue) return;
+  venue.venueviewer("back");
+});
+
+$(function() {
+
+});
+
 loadVenue();
 </script>
 </div>

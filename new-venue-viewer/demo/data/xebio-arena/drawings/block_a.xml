@@ -43,8 +43,7 @@
       </cc:Work>
     </rdf:RDF>
   </metadata>
-  <g
-     id="g8">
+  <g id="g14">
     <title
        id="title10">ブロックA1F</title>
     <metadata
@@ -65,7 +64,7 @@
     <g
        id="g16">
       <title
-         id="title18">Aブロック6</title>
+          id="title18">Aブロック6</title>
       <metadata
          id="metadata20">
         <si:object>
@@ -4965,8 +4964,7 @@
       </rect>
     </g>
   </g>
-  <g
-     id="g2278">
+  <g id="g2278">
     <title
        id="title2280">ブロックA2F</title>
     <metadata
@@ -13381,8 +13379,7 @@
       </rect>
     </g>
   </g>
-  <g
-     id="g6187">
+  <g id="g6187">
     <title
        id="title6189">ブロックA3F</title>
     <metadata
@@ -14636,47 +14633,47 @@
      x="251.82251"
      y="35.299999"
      id="text23151"
-     style="text-anchor:middle">18_</text>
+     style="text-anchor:left;fill:#000;font-size:15px;">18_</text>
   <text
      x="251.82251"
      y="62.300003"
      id="text23153"
-     style="text-anchor:middle">16_</text>
+     style="text-anchor:left;fill:#000;font-size:15px;">16_</text>
   <text
      x="734.32227"
      y="70.300003"
      id="text23155"
-     style="text-anchor:middle">←3階　↓2階</text>
+     style="text-anchor:left;fill:#000;font-size:15px;">←3階　↓2階</text>
   <text
      x="251.82251"
      y="89.300003"
      id="text23165"
-     style="text-anchor:middle">15_</text>
+     style="text-anchor:left;fill:#000;font-size:15px;">15_</text>
   <text
      x="251.82251"
      y="183.8"
      id="text23395"
-     style="text-anchor:middle">8_</text>
+     style="text-anchor:left;fill:#000;font-size:15px;">8_</text>
   <text
      x="306.94751"
      y="210.8"
      id="text23431"
-     style="text-anchor:middle">↑2階　1階→</text>
+     style="text-anchor:left;fill:#000;font-size:15px;">↑2階　1階→</text>
   <text
      x="377.82251"
      y="210.8"
      id="text23433"
-     style="text-anchor:middle">6_</text>
+     style="text-anchor:left;fill:#000;font-size:15px;">6_</text>
   <text
      x="377.82251"
      y="278.29999"
      id="text23435"
-     style="text-anchor:middle">1_</text>
+     style="text-anchor:left;fill:#000;font-size:15px;">1_</text>
   <text
      x="1078.6975"
      y="315.5"
      id="text23437"
-     style="text-anchor:middle">Aブロック</text>
+     style="text-anchor:left;fill:#000;font-size:30px;">Aブロック</text>
   <g
      id="g127809"
      style="fill:#e5d196;fill-opacity:1">
