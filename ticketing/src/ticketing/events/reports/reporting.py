@@ -17,11 +17,7 @@ def export_for_stock_holder(event, stock_holder):
     template_path = assetresolver.resolve(
         "ticketing:/templates/reports/assign_template.xls").abspath()
     exporter = xls_export.SeatAssignExporter(template=template_path)
-    # Performance
-    query = Performance.filter(Performance.event_id==event.id)
-    query = query.order_by(Performance.id)
-    performances = list(query)
-    for i, performance in enumerate(performances):
+    for i, performance in enumerate(event.performances):
         sheet_num = i + 1
         sheet_name = u"%s%d" % (jdatetime(performance.start_on), sheet_num)
         # 一つ目のシートは追加せずに取得
@@ -32,14 +28,12 @@ def export_for_stock_holder(event, stock_holder):
             sheet = exporter.add_sheet(sheet_name)
         # PerformanceごとのStockを取得
         stock_records = []
-        stock_query = Stock \
-            .filter(Stock.performance_id==performance.id) \
-            .filter(Stock.stock_holder_id==stock_holder.id) \
-            .order_by(Stock.stock_type_id)
-        stocks = list(stock_query)
+        stocks = Stock.filter_by(performance_id=performance.id)\
+                      .filter_by(stock_holder_id=stock_holder.id)\
+                      .order_by(Stock.stock_type_id).all()
         # 席種ごとのオブジェクトを作成
         for stock in stocks:
-            stock_type = StockType.get(stock.stock_type_id)
+            stock_type = stock.stock_type
             # Stock
             stock_record = report_sheet.StockRecord(seat_type=stock_type.name)
             # 数受けの場合
@@ -50,8 +44,7 @@ def export_for_stock_holder(event, stock_holder):
                 stock_record.records.append(seat_record)
             else:
                 # Seat
-                query = Seat.filter(Seat.stock_id==stock.id)
-                seats = query.order_by(Seat.name)
+                seats = Seat.filter_by(stock_id=stock.id).order_by(Seat.name).all()
                 seat_sources = map(report_sheet.seat_source_from_seat, seats)
                 seat_records = report_sheet.seat_records_from_seat_sources(seat_sources)
                 for seat_record in seat_records:
@@ -69,10 +62,7 @@ def export_for_stock_holder_unsold(event, stock_holder):
         "ticketing:/templates/reports/assign_template.xls").abspath()
     exporter = xls_export.SeatAssignExporter(template=template_path)
     # Performance
-    query = Performance.filter(Performance.event_id==event.id)
-    query = query.order_by(Performance.id)
-    performances = list(query)
-    for i, performance in enumerate(performances):
+    for i, performance in enumerate(event.performances):
         sheet_num = i + 1
         sheet_name = u"%s%d" % (jdatetime(performance.start_on), sheet_num)
         # 一つ目のシートは追加せずに取得
@@ -83,14 +73,12 @@ def export_for_stock_holder_unsold(event, stock_holder):
             sheet = exporter.add_sheet(sheet_name)
         # PerformanceごとのStockを取得
         stock_records = []
-        stock_query = Stock \
-            .filter(Stock.performance_id==performance.id) \
-            .filter(Stock.stock_holder_id==stock_holder.id) \
-            .order_by(Stock.stock_type_id)
-        stocks = list(stock_query)
+        stocks = Stock.filter(Stock.performance_id==performance.id) \
+                      .filter(Stock.stock_holder_id==stock_holder.id) \
+                      .order_by(Stock.stock_type_id).all()
         # 席種ごとのオブジェクトを作成
         for stock in stocks:
-            stock_type = StockType.get(stock.stock_type_id)
+            stock_type = stock.stock_type
             # Stock
             stock_record = report_sheet.StockRecord(
                 seat_type=stock_type.name,
@@ -104,8 +92,7 @@ def export_for_stock_holder_unsold(event, stock_holder):
                 stock_record.records.append(seat_record)
             else:
                 # Seat
-                query = Seat.filter(Seat.stock_id==stock.id)
-                seats = query.order_by(Seat.name)
+                seats = Seat.filter(Seat.stock_id==stock.id).order_by(Seat.name).all()
                 seat_sources = map(report_sheet.seat_source_from_seat, seats)
                 seat_records = report_sheet.seat_records_from_seat_sources_unsold(seat_sources)
                 for seat_record in seat_records:

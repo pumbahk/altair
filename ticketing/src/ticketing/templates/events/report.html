@@ -7,7 +7,7 @@
     function report_event(report_type, label) {
       modal = $('#modal-report');
       modal.find('.modal-report-label').text(label);
-      modal.find('.modal-report-submit').attr('href', '/events/report/' + event_id + '/' + report_type);
+      modal.find('.modal-report-submit').attr('href', '/events/reports/' + event_id + '/' + report_type);
       modal.find('.modal-report-submit').click(function() {
         modal.modal('hide');
       });
@@ -30,7 +30,7 @@
       modal.find('.modal-report-submit').click(function() {
         // フォームからstock_holder_idを取得
         var stock_holder_id = modal.find('select[name=stock-holder-id]').val();
-        modal.find('.modal-report-submit').attr('href', '/events/report/' + event_id + '/' + report_type + '/' + stock_holder_id);
+        modal.find('.modal-report-submit').attr('href', '/events/reports/' + event_id + '/' + report_type + '/' + stock_holder_id);
         modal.modal('hide');
       });
       modal.find('.btn-close').click(function() {
@@ -128,7 +128,7 @@
     <p><span class="modal-report-label"></span>をダウンロードします。取引先を選択してください。</p>
     <form name="modal-report-form">
       <select name="stock-holder-id">
-      % for stock_holder in stock_holders:
+      % for stock_holder in event.stock_holders:
         <option value="${stock_holder.id}">${stock_holder.name}</option>
       % endfor
       </select>
