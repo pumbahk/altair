@@ -113,8 +113,8 @@
 %for m in payment_delivery_methods:
 <hr />
 <% checked = 'checked' if str(m.id) == checked_id else '' %>
-<input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" ${checked}>${m.payment_method.name}<br/>
-手数料:${h.format_currency(m.transaction_fee)} (${h.fee_type(m.payment_method.fee_type)})<br />
+<input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" ${checked}>${m.payment_method.name}+${m.delivery_method.name}<br/>
+手数料:${h.format_currency(m.transaction_fee)} (${h.fee_type(m.payment_method.fee_type)}) + ${h.format_currency(m.delivery_fee)} (${h.fee_type(m.delivery_method.fee_type)})<br />
 <div>
 % if m.payment_method.payment_plugin_id == 1:
 <font size="-2">
