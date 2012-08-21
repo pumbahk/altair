@@ -25,7 +25,7 @@ class MembershipAuthorizationPolicy(object):
             membergroup = context.membergroup
             if membership is None or membergroup is None:
                 # 楽天認証
-                return "rakuten_user" in principals
+                return "rakuten_auth" in principals
 
             
             membership_principal = "membership:%s" % membership.name
