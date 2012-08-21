@@ -130,33 +130,17 @@ def process_sheet(exporter, sheet, event, performance, stock_holder, stock_recor
 
 def seat_source_from_seat(seat):
     """SeatからSeatSourceを作る
-    seat.venue.attributesにはjsonデコード可能な値が入る
-    {
-      "display_name_format": "%(block)s %(floor)s %(row)s %(seat)s",
-      "scale": ["block", "floor", "row", "seat"]
-    }
     """
-    # TODO:モデルから取得
-    #venue_attributes = seat.venue.attributes
-    venue_attributes = """{
-"display_name_format": "%(block)s %(floor)s %(row)s %(seat)s",
-"scale": ["block", "floor", "row", "seat"]
-}"""
-    if venue_attributes:
-        venue_attributes_dict = json.loads(venue_attributes)
-    else:
-        venue_attributes_dict = {}
-    scales_keys = venue_attributes_dict.get("scale")
+    attributes = seat.attributes or {}
     seat_source = SeatSource(source=seat)
-    if scales_keys:
-        if "block" in scales_keys:
-            seat_source.block = seat.get("block")
-        if "floor" in scales_keys:
-            seat_source.floor = seat.get("floor")
-        if "row" in scales_keys:
-            seat_source.line = seat.get("row")
-        if "seat" in scales_keys:
-            seat_source.seat = seat.get("seat")
+    if attributes:
+        if 'block' in attributes:
+            seat_source.block = attributes.get('block')
+        if 'floor' in attributes:
+            seat_source.floor = attributes.get('floor')
+        if 'row' in attributes:
+            seat_source.line = attributes.get('row')
+    seat_source.seat = seat.seat_no
     seat_source.status = seat.status
     return seat_source
 

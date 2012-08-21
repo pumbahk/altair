@@ -62,6 +62,27 @@
                         % endif
                         <span>（${order.payment_delivery_pair.payment_method.name}）</span></td>
 				</tr>
+				% if order.payment_delivery_pair.delivery_method.delivery_plugin_id == 5:
+				<tr>
+					<th scope="row" ${'class="waitingPayment"' if order.paid_at else ''}>QRコード</th>
+					<td colspan="2">
+						% if order.paid_at:
+							% for ticket in tickets:
+								<img src="/qr?d=${ticket.qr}" style="float: left; width: 200px; height: 200px;"/>
+								発券番号 ${ticket.serial} <br />
+								パフォーマンス ${ticket.performance_code} <br />
+								注文番号 ${order.order_no} <br />
+								興行日 ${ticket.performance_date} <br />
+								席種 ${ticket.product.name} (${ticket.product.id}) <br />
+								席番号 ${ticket.seat.name} <br />
+								<br style="clear: left;" />
+							% endfor
+						% else:
+							QRコードは支払い完了後に表示されます
+						% endif
+					</td>
+				</tr>
+				% else:
 				<tr>
 					<th scope="row" ${'class="waitingPayment"' if order.paid_at else ''}>配送ステータス</th>
 					<td colspan="2" ${'class="waitingPayment"' if order.paid_at else ''}>
@@ -72,6 +93,7 @@
 					    % endif
                         <span> (${order.payment_delivery_pair.delivery_method.name}）</span></td>
 				</tr>
+				% endif
 			</table>
                 ## <img src="${request.static_url('ticketing.cart:static/img/mypage/btn_invoice_on.gif')}" alt="請求書発行" width="88" height="22" /></p>
 		</div>

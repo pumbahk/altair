@@ -1,7 +1,7 @@
 from pyramid.interfaces import IRootFactory
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from ticketing.core.models import Event
-from ticketing.core.models import Ticket, TicketBundle, TicketBundleAttribute
+from ticketing.core.models import Ticket, TicketBundle, TicketBundleAttribute, ProductItem
 
 class EventBoundTicketsResource(object):
     __name__ = 'events.tickets'
@@ -44,6 +44,22 @@ class EventBoundTicketsResource(object):
         if attribute is None:
             raise HTTPNotFound('attribute id %s is not found' % mdict["attribute_id"])
         return attribute
+
+    @property
+    def ticket_template(self):
+        mdict = self.request.matchdict
+        template = Ticket.filter_by(id=mdict["template_id"]).first()
+        if template is None:
+            raise HTTPNotFound('template id %s is not found' % mdict["template_id"])
+        return template
+
+    @property
+    def product_item(self):
+        mdict = self.request.matchdict
+        item = ProductItem.filter_by(id=mdict["item_id"]).first()
+        if item is None:
+            raise HTTPNotFound('item id %s is not found' % mdict["item_id"])
+        return item
 
     @property
     def tickets(self):

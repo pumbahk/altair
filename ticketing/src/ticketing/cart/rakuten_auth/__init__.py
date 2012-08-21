@@ -4,9 +4,6 @@ from pyramid.httpexceptions import HTTPFound
 from string import Template
 from pyramid import security
 from pyramid.config import Configurator
-from pyramid.authentication import AuthTktAuthenticationPolicy
-from pyramid.authorization import ACLAuthorizationPolicy
-from pyramid_who.whov2 import WhoV2AuthenticationPolicy
 from .interfaces import IRakutenOpenID
 from .api import RakutenOpenID, authenticated_user
 
@@ -37,15 +34,12 @@ def signout(request):
 def includeme(config):
     # openid設定
     settings = config.registry.settings
-    who_config = settings['pyramid_who.config']
 
     config.add_view('.views.RootView', attr="login", route_name="rakuten_auth.login")
     config.add_view('.views.RootView', attr="verify", route_name="rakuten_auth.verify")
     config.add_view('.views.RootView', attr="error", route_name="rakuten_auth.error")
     config.set_forbidden_view('.views.RootView', attr="login")
     
-    config.set_authorization_policy(ACLAuthorizationPolicy())
-    config.set_authentication_policy(WhoV2AuthenticationPolicy(who_config, 'auth_tkt'))
     config.add_tween('.tweens.RakutenAuthTween')
 
 def main(global_conf, **settings):

@@ -416,7 +416,30 @@ callbacks.select = function (viewer, selection) {
 </div>
 
 <div style="float: right;">
-  <a class="btn btn-inverse" href="${request.route_path('seats.download', venue_id=performance.venue.id)}">すべての座席をCSV出力</a>
+  <a class="btn btn-mini btn-inverse" data-toggle="modal" href="#modal-download_seats">
+    <i class="icon-download icon-white"></i> すべての座席をCSV出力
+  </a>
+</div>
+
+<div id="modal-download_seats" class="modal hide fade">
+  <div class="modal-header">
+    <a href="#" class="close">&times;</a>
+    <h3>確認</h3>
+  </div>
+
+  <div class="modal-body">
+    <p>すべての座席情報(CSV)をダウンロードします。よろしいですか？<br>
+      <div class="alert alert-error">
+      この機能は時間がかかるケースがあります。<br>
+      席種／配券作業の確認を行いたい場合のみ利用してください。
+      </div>
+    </p>
+  </div>
+
+  <div class="modal-footer">
+    <a href="javascript:void(0);" onclick="$('#modal-download_seats').modal('hide');" class="btn secondary">キャンセル</a>
+    <a href="${request.route_path('seats.download', venue_id=performance.venue.id)}" onclick="$('#modal-download_seats').modal('hide');" class="btn danger">ダウンロード</a>
+  </div>
 </div>
 
 <div id="modal-result" class="modal hide">

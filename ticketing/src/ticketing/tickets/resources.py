@@ -15,7 +15,7 @@ class TicketsResource(object):
         self.user = parent.user
 
     def after_ticket_action_redirect(self):
-        return HTTPFound(location=self.request.route_path("tickets.templates.index"))
+        return HTTPFound(location=self.request.route_path("tickets.index"))
     
     def tickets_query(self):
         return Ticket.templates_query()

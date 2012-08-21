@@ -18,6 +18,9 @@ from ticketing.orders.forms import (OrderForm, OrderSearchForm, SejOrderForm, Se
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.orders.events import notify_order_canceled
+from ticketing.tickets.utils import build_dicts_from_ordered_product_item
+
+import pystache
 
 @view_defaults(decorator=with_bootstrap)
 class Orders(BaseView):
@@ -105,6 +108,24 @@ class Orders(BaseView):
 
         return response
 
+    @view_config(route_name='orders.print.queue')
+    def order_print_queue(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.query.get(order_id)
+
+
+        tickets = []
+        print order, order_id
+        for ordered_product in order.items:
+            for ordered_product_item in ordered_product.ordered_product_items:
+                bundle = ordered_product_item.product_item.ticket_bundle
+                dicts = build_dicts_from_ordered_product_item(ordered_product_item)
+                for dict_ in dicts:
+                    for ticket in bundle.tickets:
+                        pystache.render(ticket.data['drawing'], dict_)
+
+
+        return HTTPFound(location=self.request.route_path('orders.show', order_id=order_id))
 
 from ticketing.sej.models import SejOrder, SejTicket, SejTicketTemplateFile, SejRefundEvent, SejRefundTicket
 from ticketing.sej.ticket import SejTicketDataXml
@@ -319,6 +340,7 @@ class SejOrderInfoView(object):
             self.request.session.flash(u'オーダーをキャンセルに失敗しました。 %s' % e)
 
         return HTTPFound(location=self.request.route_path('orders.sej.order.info', order_id=order_id))
+
 
 @view_defaults(decorator=with_bootstrap)
 class SejRefundView(BaseView):

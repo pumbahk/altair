@@ -6,9 +6,14 @@ from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPCreated
 from ticketing.models import DBSession
 from ticketing.core.models import ProductItem, Performance
-from ticketing.core.models import Ticket, TicketBundle, TicketBundleAttribute
+from ticketing.core.models import Ticket, TicketBundle, TicketBundleAttribute, TicketPrintQueue
 from ticketing.views import BaseView
 from . import forms
+
+from ticketing.tickets.utils import build_dict_from_product_item
+from pystache import Renderer
+from ticketing.tickets.convert import to_opcodes
+from lxml import etree
    
 
 @view_defaults(decorator=with_bootstrap, permission="authenticated")
@@ -67,8 +72,6 @@ class BundleView(BaseView):
         event = self.context.event
 
         if not form.validate():
-            # self.request.session.flash(u'%s' % form.errors)
-            # raise HTTPFound(self.request.route_path("events.tickets.index", event_id=event.id))
             return dict(form=form, event=event)
 
         bundle = TicketBundle(operator=self.context.user, 
@@ -237,4 +240,44 @@ class BundleAttributeView(BaseView):
         self.request.session.flash(u'"属性(TicketBundleAttribute)を削除しました')
         return HTTPFound(self.request.route_path("events.tickets.bundles.show",
                                                  event_id=event_id, bundle_id=bundle_id))
+
+@view_config(route_name="events.tickets.bundles.items.preview", 
+             renderer="ticketing:templates/tickets/events/bundles/ticket_preview.html", 
+             permission="authenticated", decorator=with_bootstrap)
+def ticket_preview_bound_by_product_item(context, request):
+    return {"tickets": request.context.bundle.tickets, 
+            "item": request.context.product_item}
+
+@view_config(route_name="events.tickets.bundles.items.data", 
+             renderer="json", permission="authenticated", decorator=with_bootstrap)
+def ticket_preview_bound_by_product_item_data(context, request):
+    item = context.product_item
+    template = context.ticket_template
+    renderer = Renderer()
+    svg = renderer.render(template.drawing, build_dict_from_product_item(item))
+    data = dict(template.ticket_format.data)
+    data.update(dict(drawing=' '.join(to_opcodes(etree.ElementTree(etree.fromstring(svg))))))
+    return data
+
+@view_config(route_name="events.tickets.bundles.items.enqueue", 
+             request_method="POST", permission="authenticated")    
+def ticket_preview_enqueue_item(context, request):
+    item = context.product_item
+    renderer = Renderer()
+    operator = context.user
+    mdict = request.matchdict
+
+    for template in request.context.bundle.tickets:
+        svg = renderer.render(template.drawing, build_dict_from_product_item(item))
+        queue = TicketPrintQueue(operator_id=operator.id, 
+                                 data=dict(drawing=svg))
+        queue.save()
+
+    request.session.flash(u'印刷キューにデータを投入しました')
+    return HTTPFound(request.route_path("events.tickets.bundles.items.preview", 
+                              event_id=mdict["event_id"], 
+                              bundle_id=mdict["bundle_id"], 
+                              item_id=mdict["item_id"]))
+
+
 
