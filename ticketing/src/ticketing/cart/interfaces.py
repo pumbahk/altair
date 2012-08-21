@@ -81,3 +81,19 @@ class ICartFactory(Interface):
         """
         カート作成
         """
+
+class ICompleteMail(Interface):
+    """完了メールを送る
+    """
+    request = Attribute("request")
+
+    def validate():
+        """ validate, all delivery method pair can choice mail template for oneself.
+        """
+        pass
+
+    def build_mail_body(order):
+        pass
+
+    def send_mail(order):
+        pass

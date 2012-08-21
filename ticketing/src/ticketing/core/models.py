@@ -1803,3 +1803,17 @@ class TicketPrintQueue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             ))
         return ret_val
 
+class MailExtraInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = "MailExtraInfo"
+    id = Column(Identifier, primary_key=True)
+    organization_id = Column(Identifier, ForeignKey('Organization.id'), nullable=True)
+    organization = relationship('Organization', uselist=False, backref=backref('mail_extra_info'))
+    data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
+
+    @property
+    def signature(self):
+        return self.data["signature"]
+
+    @property
+    def footer(self):
+        return self.data["footer"]
