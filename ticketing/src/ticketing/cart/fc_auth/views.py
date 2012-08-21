@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 import logging
 from pyramid.httpexceptions import HTTPFound
 from repoze.who.api import get_api as get_who_api
@@ -46,7 +47,8 @@ class LoginView(object):
 
         if authenticated is None:
             self.select_renderer(membership)
-            return {'username': username}
+            return {'username': username,
+                    'message': u'会員番号かパスワードが一致しません'}
 
 
         return_to_url = self.return_to_url

@@ -4,6 +4,7 @@
 在庫数管理
 """
 import logging
+from datetime import datetime
 import itertools
 from ticketing.core.models import *
 
@@ -96,7 +97,10 @@ class Stocker(object):
 
     def get_stock_holder(self, event_id):
         """ イベントに対する主枠ホルダー """
+
         
+        now = datetime.now()
+
         return StockHolder.query.filter(
             Account.id==StockHolder.account_id
         ).filter(
@@ -105,5 +109,17 @@ class Stocker(object):
             Organization.user_id==User.id
         ).filter(
             StockHolder.event_id==event_id
-        ).one()
+        ).filter(
+            Stock.stock_holder_id==StockHolder.id
+        ).filter(
+            ProductItem.stock_id==Stock.id
+        ).filter(
+            Product.id==ProductItem.product_id
+        ).filter(
+            SalesSegment.id==Product.sales_segment_id
+        ).filter(
+            SalesSegment.start_at<=now
+        ).filter(
+            SalesSegment.end_at>=now
+        ).distinct('*').one()
 

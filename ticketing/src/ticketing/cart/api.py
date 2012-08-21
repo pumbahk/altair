@@ -72,10 +72,13 @@ def get_item_name(request, performance):
     base_item_name = request.registry.settings['cart.item_name']
     return _maybe_encoded(base_item_name) + " " + str(performance.id)
 
-def get_nickname(request):
+def get_nickname(request, suffix=u'さん'):
     from .rakuten_auth.api import authenticated_user
     user = authenticated_user(request)
-    return user.get('nickname', '')
+    nickname = user.get('nickname', '')
+    if not nickname:
+        return ""
+    return nickname + suffix
 
 def get_payment_method_manager(request=None, registry=None):
     if request is not None:
@@ -95,14 +98,14 @@ def get_payment_method_url(request, payment_method_id, route_args={}):
     else:
         return ""
 
-def get_or_create_user(request, clamed_id):
+def get_or_create_user(request, auth_identifier, membership='rakuten'):
     # TODO: 楽天OpenID以外にも対応できるフレームワークを...
     credential = UserCredential.query.filter(
-        UserCredential.auth_identifier==clamed_id
+        UserCredential.auth_identifier==auth_identifier
     ).filter(
         UserCredential.membership_id==Membership.id
     ).filter(
-        Membership.name=='rakuten'
+        Membership.name==membership
     ).first()
     if credential:
         return credential.user
@@ -112,7 +115,7 @@ def get_or_create_user(request, clamed_id):
     if membership is None:
         membership = Membership(name='rakuten')
         DBSession.add(membership)
-    credential = UserCredential(user=user, auth_identifier=clamed_id, membership=membership)
+    credential = UserCredential(user=user, auth_identifier=auth_identifier, membership=membership)
     DBSession.add(user)
     return user
 

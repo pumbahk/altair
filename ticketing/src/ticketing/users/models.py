@@ -108,7 +108,7 @@ class MailMagazine(Base, WithTimestamp):
 
     def subscribe(self, user, mail_address):
         subscription = MailSubscription.query.filter(
-            MailSubscription.user==user,
+            #MailSubscription.user==user,
             MailSubscription.email==mail_address
         ).filter(
             MailSubscription.segment==self
