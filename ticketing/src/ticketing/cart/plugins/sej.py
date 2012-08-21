@@ -110,8 +110,8 @@ class SejPaymentPlugin(object):
 
         settings = get_current_registry().settings
         tenant = SejTenant.filter_by(organization_id = performance.event.organization.id).first()
-        api_key = tenant.api_key or settings['sej.api_key']
-        api_url = tenant.inticket_api_url or settings['sej.inticket_api_url']
+        api_key = (tenant and tenant.api_key) or settings['sej.api_key']
+        api_url = (tenant and tenant.inticket_api_url) or settings['sej.inticket_api_url']
 
         sej_order = get_sej_order(order)
         if not sej_order:
@@ -166,8 +166,8 @@ class SejDeliveryPlugin(object):
 
         settings = get_current_registry().settings
         tenant = SejTenant.filter_by(organization_id = performance.event.organization.id).first()
-        api_key = tenant.api_key or settings['sej.api_key']
-        api_url = tenant.inticket_api_url or settings['sej.inticket_api_url']
+        api_key = (tenant and tenant.api_key) or settings['sej.api_key']
+        api_url = (tenant and tenant.inticket_api_url) or settings['sej.inticket_api_url']
 
         sej_order = get_sej_order(order)
         if not sej_order:
