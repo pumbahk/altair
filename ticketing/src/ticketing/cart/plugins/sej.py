@@ -105,8 +105,8 @@ class SejPaymentPlugin(object):
         payment_due_at = get_payment_due_at(current_date,order)
         ticketing_start_at = get_ticketing_start_at(current_date,order)
         ticketing_due_at = order.payment_delivery_pair.issuing_end_at
-        tel1 = shipping_address.tel_1.replace('-', '')
-        tel2 = shipping_address.tel_2.replace('-', '')
+        tel1 = shipping_address.tel_1 and shipping_address.tel_1.replace('-', '')
+        tel2 = shipping_address.tel_2 and shipping_address.tel_2.replace('-', '')
 
         settings = get_current_registry().settings
         tenant = SejTenant.filter_by(organization_id = performance.event.organization.id).first()
@@ -161,8 +161,8 @@ class SejDeliveryPlugin(object):
         ticketing_due_at = cart.payment_delivery_pair.issuing_end_at
         tickets = get_tickets_from_cart(cart)
         order_no = cart.order_no
-        tel1 = shipping_address.tel_1.replace('-', '')
-        tel2 = shipping_address.tel_2.replace('-', '')
+        tel1 = shipping_address.tel_1 and shipping_address.tel_1.replace('-', '')
+        tel2 = shipping_address.tel_2 and shipping_address.tel_2.replace('-', '')
 
         settings = get_current_registry().settings
         tenant = SejTenant.filter_by(organization_id = performance.event.organization.id).first()
