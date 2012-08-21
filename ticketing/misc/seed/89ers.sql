@@ -1,4 +1,12 @@
 BEGIN;
+
+-- INSERT INTO `OperatorRole` (id, name, status) VALUES (1, 'administrator', 1);
+-- INSERT INTO `OperatorRole` (id, name, status) VALUES (2, 'superuser', 1);
+-- INSERT INTO `DeliveryMethodPlugin` VALUES (1, '郵送','2012-07-10 17:44:29','2012-07-10 17:44:29', NULL);
+-- INSERT INTO `PaymentMethodPlugin` VALUES (1, 'クレジットカード払い','2012-07-10 17:44:29','2012-07-10 17:44:29', NULL);
+-- INSERT INTO `PaymentMethodPlugin` VALUES (3, 'セブンイレブン支払い','2012-07-10 17:44:29','2012-07-10 17:44:29', NULL);
+
+
 INSERT INTO `User` (id) VALUES (65);
 INSERT INTO `User` (id) VALUES (66);
 INSERT INTO `Organization` VALUES (10,'BJ89ers','B8',1,'89ers@ticketstar.jp','','','','','','','',65,'',1,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
@@ -7,25 +15,25 @@ INSERT INTO `Organization` VALUES (11,'秋田ノーザンハピネッツ','DD',1
 INSERT INTO `Account` VALUES (100000,NULL,'BJ89ers',65,10,'2012-07-11 05:32:51','2012-07-11 05:32:51',NULL);
 INSERT INTO `Account` VALUES (100001,NULL,'NH',66,11,'2012-07-18 12:27:32','2012-07-18 12:27:32',NULL);
 INSERT INTO `Event` VALUES (100001,'BJ890','仙台89ers FC会員登録','bj89ers',100000,10,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
-INSERT INTO `Membership` VALUES (NULL,'89ers',NULL,NULL,NULL);
+INSERT INTO `Membership` VALUES (100001,'89ers',NULL,NULL,NULL);
+INSERT INTO `MemberGroup` (id, name, membership_id) VALUES(100001, 'corporation', 100001);
+INSERT INTO `MemberGroup` (id, name, membership_id) VALUES(100002, 'platinum', 100001);
+INSERT INTO `MemberGroup` (id, name, membership_id) VALUES(100003, 'gold', 100001);
+INSERT INTO `MemberGroup` (id, name, membership_id) VALUES(100009, 'guest', 100001);
+
 INSERT INTO `Operator` VALUES (100000,'bj89ers','dev+bj01@ticketstar.jp',10,NULL,1,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
 INSERT INTO `Operator` VALUES (100001,'bjnh','dev+bj02@ticketstar.jp',11,NULL,1,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
 
 INSERT INTO `OperatorAuth` VALUES (100000,'dev+bj01@ticketstar.jp','21232f297a57a5a743894a0e4a801fc3','auth_code','access_token','secret_key','2012-07-10 17:44:29','2012-07-10 17:44:29');
 INSERT INTO `OperatorAuth` VALUES (100001,'dev+bj02@ticketstar.jp','21232f297a57a5a743894a0e4a801fc3','auth_code','access_token','secret_key','2012-07-10 17:44:29','2012-07-10 17:44:29');
 
-INSERT INTO `OperatorRole` (id, name, status) VALUES (1, 'administrator', 1);
-INSERT INTO `OperatorRole` (id, name, status) VALUES (2, 'superuser', 1);
 INSERT INTO `OperatorRole_Operator` VALUES (NULL,1,100000);
 INSERT INTO `OperatorRole_Operator` VALUES (NULL,1,100001);
 
-INSERT INTO `SalesSegment` VALUES (100000,'会員登録','その他','2012-07-01 00:00:00','2012-08-31 00:00:00',10000,0,100001,'2012-07-10 17:44:29','2012-07-10 17:44:29', NULL, NULL);
+INSERT INTO `SalesSegment` VALUES (100000,'プラチナ会員用',NULL,'2012-07-01 00:00:00','2012-08-31 00:00:00',10000,0,100001,'2012-07-10 17:44:29','2012-07-10 17:44:29', NULL, 100002);
 
-INSERT INTO `DeliveryMethodPlugin` VALUES (1, '郵送','2012-07-10 17:44:29','2012-07-10 17:44:29', NULL);
 INSERT INTO `DeliveryMethod` VALUES (100000,'なし',0.00,0,10,1,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
 
-INSERT INTO `PaymentMethodPlugin` VALUES (1, 'クレジットカード払い','2012-07-10 17:44:29','2012-07-10 17:44:29', NULL);
-INSERT INTO `PaymentMethodPlugin` VALUES (3, 'セブンイレブン支払い','2012-07-10 17:44:29','2012-07-10 17:44:29', NULL);
 INSERT INTO `PaymentMethod` VALUES (100000,'クレジットカード払い',0.00,0,10,1,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
 INSERT INTO `PaymentMethod` VALUES (100001,'セブンイレブン支払い',158.00,0,10,3,'2012-07-10 17:44:29','2012-07-10 17:44:29',NULL);
 
