@@ -12,17 +12,17 @@ ${breadcrumbs(
 
 <script type="text/javascript">
   $(function(){
-    $("#action_menu a.id-action").click(
+    $("#format_menu a.id-action").click(
      function(){
-       var pk = $("input[name='id']:checked").val();
+       var pk = $("input[name='format_id']:checked").val();
        if(!pk){ return false; }
        $(this).attr("href", $(this).attr("data-base-url").replace("__id__", pk));
        return true;
     });
 
-    $("#action_menu a.id-delegate-action").click(
+    $("#format_menu a.id-delegate-action").click(
      function(){
-       var pk = $("input[name='id']:checked").val();
+       var pk = $("input[name='format_id']:checked").val();
        if(!pk){ return false; }
        var delegated=$(this).attr("data-delegated");
 // fixme
@@ -35,7 +35,7 @@ ${breadcrumbs(
 </script>
 
 <h2>チケット様式</h2>
-<div class="btn-group">
+<div id="format_menu" class="btn-group">
   <a href="${request.route_path("tickets.formats.new")}" class="btn">
     <i class="icon-plus"></i> 新規
   </a>
@@ -53,7 +53,7 @@ ${breadcrumbs(
           <a class="id-delegate-action" href="#" 
              data-delegated="#deleteModalFormat"
              data-base-url="${request.route_path("tickets.formats.delete",id="__id__")}"
-             href="#deleteModal" data-toggle="modal">
+             href="#deleteModalFormat" data-toggle="modal">
             <i class="icon-minus"></i> 削除
           </a>
         </li>
@@ -81,7 +81,7 @@ ${breadcrumbs(
   <tbody>
   % for format in formats:
     <tr>
-      <td><input type="radio" name="id" value="${format.id}" /></td>
+      <td><input type="radio" name="format_id" value="${format.id}" /></td>
       <td><a href="${request.route_url('tickets.formats.show', id=format.id)}">${format.name}</a></td>
       <td>${h.format_size(h.extract_paper_size(format))} 
       <td>${u' / '.join(dm.name for dm in format.delivery_methods)}</td>
@@ -98,17 +98,17 @@ ${breadcrumbs(
 
 <script type="text/javascript">
   $(function(){
-    $("#action_menu a.id-action").click(
+    $("#template_menu a.id-action").click(
      function(){
-       var pk = $("input[name='id']:checked").val();
+       var pk = $("input[name='template_id']:checked").val();
        if(!pk){ return false; }
        $(this).attr("href", $(this).attr("data-base-url").replace("__id__", pk));
        return true;
     });
 
-    $("#action_menu a.id-delegate-action").click(
+    $("#template_menu a.id-delegate-action").click(
      function(){
-       var pk = $("input[name='id']:checked").val();
+       var pk = $("input[name='template_id']:checked").val();
        if(!pk){ return false; }
        var delegated=$(this).attr("data-delegated");
 // fixme
@@ -121,7 +121,7 @@ ${breadcrumbs(
 </script>
 
 <h2>テンプレート</h2>
-<div id="action_menu" class="btn-group">
+<div class="btn-group" id="template_menu">
   <a href="${request.route_path("tickets.templates.new")}" class="btn">
     <i class="icon-plus"></i> 新規
   </a>
@@ -137,9 +137,9 @@ ${breadcrumbs(
         </li>
         <li>
           <a class="id-delegate-action" href="#" 
-             data-delegated="#deleteModal"
+             data-delegated="#deleteModalTemplate"
              data-base-url="${request.route_path("tickets.templates.delete",id="__id__")}"
-             href="#deleteModal" data-toggle="modal">
+             href="#deleteModalTemplate" data-toggle="modal">
             <i class="icon-minus"></i> 削除
           </a>
         </li>
@@ -167,7 +167,7 @@ ${breadcrumbs(
   <tbody>
   % for template in templates:
     <tr>
-      <td><input type="radio" name="id" value="${template.id}" /></td>
+      <td><input type="radio" name="template_id" value="${template.id}" /></td>
       <td><a href="${request.route_url('tickets.templates.show', id=template.id)}">${template.name}</a></td>
       <td>${template.ticket_format.name}</td>
       <td>${template.updated_at}</td>

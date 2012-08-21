@@ -3,20 +3,16 @@ import logging
 from StringIO import StringIO
 import json
 import webhelpers.paginate as paginate
+import sqlalchemy as sa
 from ticketing.fanstatic import with_bootstrap
 from pyramid.view import view_config, view_defaults
-import sqlalchemy as sa
-from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPCreated
-from pyramid.threadlocal import get_current_registry
-from pyramid.url import route_path
-from pyramid.response import Response
-from pyramid.path import AssetResolver
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 
 from ticketing.views import BaseView
 
 from ticketing.core.models import DeliveryMethod
-from ticketing.core.models import TicketFormat, Ticket, TicketBundle, TicketPrintHistory
-from ticketing.core.models import Order
+from ticketing.core.models import TicketFormat, Ticket
+from ticketing.core.models import TicketPrintQueue
 from . import forms
 from . import helpers
 from .response import FileLikeResponse
@@ -78,7 +74,7 @@ class TicketFormats(BaseView):
             format.delivery_methods.append(dmethod)
         format.save()
         self.request.session.flash(u'チケット様式を更新しました')
-        return HTTPFound(location=self.request.route_path("tickets.formats.index"))
+        return HTTPFound(location=self.request.route_path("tickets.index"))
 
     @view_config(route_name='tickets.formats.new', renderer='ticketing:templates/tickets/formats/new.html')
     def new(self):
@@ -124,7 +120,7 @@ class TicketFormats(BaseView):
             ticket_format.delivery_methods.append(dmethod)
         ticket_format.save()
         self.request.session.flash(u'チケット様式を登録しました')
-        return HTTPFound(location=self.request.route_path("tickets.formats.index"))
+        return HTTPFound(location=self.request.route_path("tickets.index"))
             
 
     @view_config(route_name='tickets.formats.delete', request_method="POST")
@@ -137,7 +133,7 @@ class TicketFormats(BaseView):
         format.delete()
         self.request.session.flash(u'チケット様式を削除しました')
 
-        return HTTPFound(location=self.request.route_path("tickets.formats.index"))
+        return HTTPFound(location=self.request.route_path("tickets.index"))
 
     @view_config(route_name='tickets.formats.show', renderer='ticketing:templates/tickets/formats/show.html')
     def show(self):
@@ -271,9 +267,6 @@ class TicketTemplates(BaseView):
         data = dict(template.ticket_format.data)
         data.update(dict(drawing=' '.join(to_opcodes(etree.ElementTree(etree.fromstring(template.drawing))))))
         return data
-
-
-from ticketing.core.models import TicketPrintQueue
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class TicketPrinter(BaseView):

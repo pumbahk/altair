@@ -67,8 +67,6 @@ class BundleView(BaseView):
         event = self.context.event
 
         if not form.validate():
-            # self.request.session.flash(u'%s' % form.errors)
-            # raise HTTPFound(self.request.route_path("events.tickets.index", event_id=event.id))
             return dict(form=form, event=event)
 
         bundle = TicketBundle(operator=self.context.user, 
