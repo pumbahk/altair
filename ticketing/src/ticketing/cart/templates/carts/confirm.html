@@ -29,7 +29,7 @@
 	<!-- ========== main ========== -->
 	<div id="main">
 		<h1><img src="${request.static_url('ticketing.cart:static/img/settlement/title_settlement.gif')}" alt="チケット購入" width="950" height="40" /></h1>
-        ${h.get_nickname(request)} さん
+        ${h.get_nickname(request)} 
         <form id="form1" action="${request.route_url('payment.finish')}" method="post">
             ${form.csrf_token()}
 			<div class="confirmBox">

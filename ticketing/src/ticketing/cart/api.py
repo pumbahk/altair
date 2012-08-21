@@ -72,10 +72,13 @@ def get_item_name(request, performance):
     base_item_name = request.registry.settings['cart.item_name']
     return _maybe_encoded(base_item_name) + " " + str(performance.id)
 
-def get_nickname(request):
+def get_nickname(request, suffix=u'さん'):
     from .rakuten_auth.api import authenticated_user
     user = authenticated_user(request)
-    return user.get('nickname', '')
+    nickname = user.get('nickname', '')
+    if not nickname:
+        return ""
+    return nickname + suffix
 
 def get_payment_method_manager(request=None, registry=None):
     if request is not None:
