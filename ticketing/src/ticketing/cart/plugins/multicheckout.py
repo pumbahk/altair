@@ -8,7 +8,7 @@ from pyramid.httpexceptions import HTTPFound
 from ticketing.multicheckout import helpers as m_h
 from ticketing.multicheckout import api as multicheckout_api
 from ticketing.core import models as c_models
-from ..interfaces import IPaymentPlugin, ICartPayment, IOrderPayment
+from ..interfaces import IPaymentPlugin, ICartPayment, IOrderPayment, ICompleteMailPayment
 from .models import DBSession
 from .. import schemas
 from .. import logger
@@ -139,6 +139,13 @@ def confirm_viewlet(context, request):
 def completion_viewlet(context, request):
     """ 完了画面表示 
     :param context: IOrderPayment
+    """
+    return dict()
+
+@view_config(context=ICompleteMailPayment, name="payment-1", renderer="ticketing.cart.plugins:templates/mail_complete.html")
+def completion_mail_viewlet(context, request):
+    """ 完了メール表示
+    :param context: ICompleteMailPayment
     """
     return dict()
 

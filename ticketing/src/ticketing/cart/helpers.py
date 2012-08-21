@@ -11,7 +11,7 @@ from webhelpers.html.tags import *
 from webhelpers.number import format_number as _format_number
 from markupsafe import Markup
 from zope.interface import implementer
-from .resources import OrderDelivery, CartDelivery, OrderPayment, CartPayment
+from .resources import OrderDelivery, CartDelivery, OrderPayment, CartPayment, CompleteMailDelivery, CompleteMailPayment
 from ..core.models import FeeTypeEnum, SalesSegment, StockTypeEnum
 import logging
 from .api import get_nickname
@@ -151,6 +151,7 @@ def render_payment_finished_viewlet(request, order):
         raise ValueError
     return Markup(response.text)
 
+
 def product_name_with_unit(product, performance_id):
     items = product.items_by_performance_id(performance_id)
     if len(items) == 1:
@@ -159,3 +160,28 @@ def product_name_with_unit(product, performance_id):
         return u"(%s)" % (u" + ".join(
             u"%s:%d枚" % (escape(item.stock_type.name), item.quantity)
             for item in items))
+
+def render_delivery_finished_mail_viewlet(request, order):
+    logger.debug("*" * 80)
+    plugin_id = order.payment_delivery_pair.delivery_method.delivery_plugin_id
+    logger.debug("plugin_id:%d" % plugin_id)
+
+    order = CompleteMailDelivery(order)
+    response = render_view_to_response(order, request, name="delivery-%d" % plugin_id, secure=False)
+    if response is None:
+        logger.debug("*complete mail*: %s is not found" % "delivery-%d" % plugin_id)
+        return u""
+    return Markup(response.text)
+
+def render_payment_finished_mail_viewlet(request, order):
+    logger.debug("*" * 80)
+    plugin_id = order.payment_delivery_pair.payment_method.payment_plugin_id
+    logger.debug("plugin_id:%d" % plugin_id)
+
+    order = CompleteMailPayment(order)
+    response = render_view_to_response(order, request, name="payment-%d" % plugin_id, secure=False)
+    if response is None:
+        logger.debug("*complete mail*: %s is not found" % "payment-%d" % plugin_id)
+        return ""
+    return Markup(response.text)
+

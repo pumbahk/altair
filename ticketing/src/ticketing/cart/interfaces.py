@@ -18,10 +18,14 @@ class IPaymentMethodManager(Interface):
 
 class ICartDelivery(Interface):
     """ 確認画面の配送ビューレットのコンテキスト"""
-    order = Attribute(u"注文内容")
+    cart = Attribute(u"カート")
 
 class IOrderDelivery(Interface):
     """ 完了画面の配送ビューレットのコンテキスト"""
+    order = Attribute(u"注文内容")
+
+class ICompleteMailDelivery(Interface):
+    """ 完了メールの配送ビューレットのコンテキスト"""
     order = Attribute(u"注文内容")
 
 class ICartPayment(Interface):
@@ -30,7 +34,11 @@ class ICartPayment(Interface):
 
 class IOrderPayment(Interface):
     """ 完了画面の決済ビューレットのコンテキスト"""
-    cart = Attribute(u"カート")
+    order = Attribute(u"注文内容")
+
+class ICompleteMailPayment(Interface):
+    """ 完了メールの配送ビューレットのコンテキスト"""
+    order = Attribute(u"注文内容")
 
 class IDeliveryPlugin(Interface):
     """ 配送処理プラグイン """

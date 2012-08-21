@@ -12,7 +12,7 @@ from sqlalchemy import sql
 from pyramid.security import Everyone, Authenticated
 from pyramid.security import Allow
 from zope.interface import implementer
-from .interfaces import IOrderPayment, IOrderDelivery, ICartPayment, ICartDelivery
+from .interfaces import IOrderPayment, IOrderDelivery, ICartPayment, ICartDelivery, ICompleteMailPayment, ICompleteMailDelivery
 
 from .exceptions import OutTermSalesException
 from ..core import models as c_models
@@ -330,6 +330,11 @@ class CartDelivery(object):
     def __init__(self, cart):
         self.cart = cart
 
+@implementer(ICompleteMailDelivery)
+class CompleteMailDelivery(object):
+    def __init__(self, order):
+        self.order = order
+
 @implementer(IOrderPayment)
 class OrderPayment(object):
     def __init__(self, order):
@@ -339,3 +344,8 @@ class OrderPayment(object):
 class CartPayment(object):
     def __init__(self, cart):
         self.cart = cart
+
+@implementer(ICompleteMailPayment)
+class CompleteMailPayment(object):
+    def __init__(self, order):
+        self.order = order

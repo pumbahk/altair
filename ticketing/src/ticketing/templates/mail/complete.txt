@@ -39,3 +39,5 @@ ${ordered_product.product.name} ${h.format_currency(ordered_product.product.pric
 ■合計金額
 ${h.format_currency(order_total_amount)}
 
+${h.render_payment_finished_mail_viewlet(request, order)}
+${h.render_delivery_finished_mail_viewlet(request, order)}
