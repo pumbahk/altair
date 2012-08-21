@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['oB_NII0AC1HYHK13'] = (function (exports) { (function () { 
+__LIBS__['v6D5KNG4PFKC59IC'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -59,18 +59,18 @@ exports.DEFAULT = {
   },
 
   SEAT_STATUS_STYLE: {
-    0: { stroke: { color: "#929292", width: 1, pattern: 'solid' } },
+    0: { stroke: { color: "#929292", width: 2, pattern: 'solid' } },
     1: {},
-    2: { stroke: { color: "#ffff40", width: 1, pattern: 'solid' } },
-    3: { stroke: { color: "#2020d2", width: 1, pattern: 'solid' } },
-    4: { stroke: { color: "#ff8c40", width: 1, pattern: 'solid' } },
-    5: { stroke: { color: "#b3d940", width: 1, pattern: 'solid' } },
-    6: { stroke: { color: "#ff4040", width: 1, pattern: 'solid' } },
-    7: { stroke: { color: "#9f9fec", width: 1, pattern: 'solid' } }
+    2: { stroke: { color: "#ffff40", width: 2, pattern: 'solid' } },
+    3: { stroke: { color: "#2020d2", width: 2, pattern: 'solid' } },
+    4: { stroke: { color: "#ff8c40", width: 2, pattern: 'solid' } },
+    5: { stroke: { color: "#b3d940", width: 2, pattern: 'solid' } },
+    6: { stroke: { color: "#ff4040", width: 2, pattern: 'solid' } },
+    7: { stroke: { color: "#9f9fec", width: 2, pattern: 'solid' } }
   }
 };
  })(); return exports; })({});
-__LIBS__['X2YGWZ5PJJVU9X7_'] = (function (exports) { (function () { 
+__LIBS__['JNQS05Z7JF3B6KTF'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -96,7 +96,7 @@ exports.ja = {
   } 
 };
  })(); return exports; })({});
-__LIBS__['i9ZXSABDC_I_L55U'] = (function (exports) { (function () { 
+__LIBS__['f5SHO3NVI81ZH65W'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -195,7 +195,7 @@ exports.mergeStyle = function mergeStyle(a, b) {
   };
 };
  })(); return exports; })({});
-__LIBS__['gDKDBQNQLKONY3HK'] = (function (exports) { (function () { 
+__LIBS__['cRPUEHOQ28_0QY2M'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -244,12 +244,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['MG3RSK5RZIZB38HC'] = (function (exports) { (function () { 
+__LIBS__['XO9UCQMTMKD4CZQ0'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['i9ZXSABDC_I_L55U'];
-var CONF = __LIBS__['oB_NII0AC1HYHK13'];
-var IdentifiableSet = __LIBS__['gDKDBQNQLKONY3HK'].IdentifiableSet;
+var util = __LIBS__['f5SHO3NVI81ZH65W'];
+var CONF = __LIBS__['v6D5KNG4PFKC59IC'];
+var IdentifiableSet = __LIBS__['cRPUEHOQ28_0QY2M'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -688,12 +688,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['U9_EBC457AJAG49I'] = (function (exports) { (function () { 
+__LIBS__['z_EKOJST9Z0V_W6Q'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['i9ZXSABDC_I_L55U'];
-var CONF = __LIBS__['oB_NII0AC1HYHK13'];
-var models = __LIBS__['MG3RSK5RZIZB38HC'];
+var util = __LIBS__['f5SHO3NVI81ZH65W'];
+var CONF = __LIBS__['v6D5KNG4PFKC59IC'];
+var models = __LIBS__['XO9UCQMTMKD4CZQ0'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -889,13 +889,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['oB_NII0AC1HYHK13'];
-  var models = __LIBS__['MG3RSK5RZIZB38HC'];
-  var util = __LIBS__['i9ZXSABDC_I_L55U'];
-  var viewobjects = __LIBS__['U9_EBC457AJAG49I'];
-  var IdentifiableSet = __LIBS__['gDKDBQNQLKONY3HK'].IdentifiableSet;
+  var CONF = __LIBS__['v6D5KNG4PFKC59IC'];
+  var models = __LIBS__['XO9UCQMTMKD4CZQ0'];
+  var util = __LIBS__['f5SHO3NVI81ZH65W'];
+  var viewobjects = __LIBS__['z_EKOJST9Z0V_W6Q'];
+  var IdentifiableSet = __LIBS__['cRPUEHOQ28_0QY2M'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['X2YGWZ5PJJVU9X7_'];
+    I18n.translations = __LIBS__['JNQS05Z7JF3B6KTF'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
