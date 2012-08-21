@@ -67,6 +67,9 @@
 													</td>
 													<td>
 														<input type="text" name="username" size="22" maxlength="8" value="${username}">
+														%if message:
+														<br/><span class="small red">${message}</span>
+														%endif
 													</td>
 												</tr>
 												<tr>
@@ -83,7 +86,7 @@
 													<td colspan="2" class="textC"> <button class="redBtn">ログイン</button> </td>
 												</tr>
 												<tr>
-													<td colspan="2" class="textC"> <small>会員IDとパスワードを忘れてしまった方は<a href="#">こちら</a>からお問い合わせください。</small></td>
+													<td colspan="2" class="textC"> <small>会員IDとパスワードを忘れてしまった方は<a href="mailto:89ers@ticketstar.jp">こちら</a>からお問い合わせください。</small></td>
 												</tr>
 											</table>							
 										</td>
