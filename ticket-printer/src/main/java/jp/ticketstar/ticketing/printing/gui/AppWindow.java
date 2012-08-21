@@ -1,42 +1,43 @@
 package jp.ticketstar.ticketing.printing.gui;
 
-import java.awt.BorderLayout;
-import java.awt.Button;
 import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.Graphics;
-import java.awt.event.ActionEvent;
+
+import javax.print.PrintService;
+import javax.swing.JFrame;
+import java.awt.BorderLayout;
+
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JLabel;
+import javax.swing.JToolBar;
+import javax.swing.JButton;
+import javax.swing.ImageIcon;
+import javax.swing.JSplitPane;
+import javax.swing.JList;
+
 import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Dimension2D;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
-import java.util.Collection;
 
-import javax.print.PrintService;
-import javax.swing.ImageIcon;
-import javax.swing.JApplet;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JSplitPane;
-import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
+import java.awt.Dimension;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Collection;
+
+import javax.swing.JPanel;
+
+import javax.swing.JComboBox;
 
 import jp.ticketstar.ticketing.printing.AppService;
 import jp.ticketstar.ticketing.printing.BoundingBoxOverlay;
@@ -48,31 +49,49 @@ import jp.ticketstar.ticketing.printing.Ticket;
 import jp.ticketstar.ticketing.printing.TicketSetModel;
 
 import org.apache.batik.swing.gvt.Overlay;
-import org.apache.commons.io.IOUtils;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-  
-/**
- * Created with IntelliJ IDEA.
- * User: mistat
- * Date: 8/9/12
- * Time: 10:00 PM
- * To change this template use File | Settings | File Templates.
- */
-public class AppApplet extends JApplet implements IAppWindow  {
-	/**
-	 * 
-	 */
+class TicketCellRenderer extends DefaultListCellRenderer {
 	private static final long serialVersionUID = 1L;
 
-	public AppApplet() {
+	@Override
+	public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+		JLabel label = (JLabel)super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+		if (value != null)
+			label.setText(((Ticket)value).getName());
+		return label;
 	}
-	
+}
+
+class PrintServiceCellRenderer extends DefaultListCellRenderer {
+	private static final long serialVersionUID = 1L;
+
+	@Override
+	public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+		JLabel label = (JLabel)super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+		if (value != null)
+			label.setText(((PrintService)value).getName());
+		return label;
+	}
+}
+
+
+class PageFormatCellRenderer extends DefaultListCellRenderer {
+	private static final long serialVersionUID = 1L;
+
+	@Override
+	public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+		JLabel label = (JLabel)super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+		if (value != null)
+			label.setText(((OurPageFormat)value).getName());
+		return label;
+	}
+}
+
+public class AppWindow implements IAppWindow {
 	AppService appService;
 	AppWindowModel model;
 	
-	//private JApplet frame;
+	private JFrame frame;
 	private JList list;
 	private JPanel panel;
 
@@ -163,6 +182,20 @@ public class AppApplet extends JApplet implements IAppWindow  {
 	private JComboBox comboBoxPrintService;
 	private JComboBox comboBoxPageFormat;
 
+	/**
+	 * Create the application.
+	 */
+	public AppWindow(AppService appService) {
+		this.appService = appService;
+		initialize();
+		appService.setAppWindow(this);
+		guidesOverlay = new GuidesOverlay(model);
+		boundingBoxOverlay = new BoundingBoxOverlay(model);
+	}
+
+	/* (non-Javadoc)
+	 * @see jp.ticketstar.ticketing.printing.gui.IAppWindow#unbind()
+	 */
 	public void unbind() {
 		if (model == null)
 			return;
@@ -174,6 +207,9 @@ public class AppApplet extends JApplet implements IAppWindow  {
 		model.removePropertyChangeListener(pageFormatChangeListener);
 	}
 	
+	/* (non-Javadoc)
+	 * @see jp.ticketstar.ticketing.printing.gui.IAppWindow#bind(jp.ticketstar.ticketing.printing.gui.AppWindowModel)
+	 */
 	public void bind(AppWindowModel model) {
 		unbind();
 		model.addPropertyChangeListener("ticketSetModel", ticketSetModelChangeListener);
@@ -184,35 +220,36 @@ public class AppApplet extends JApplet implements IAppWindow  {
 		model.refresh();
 		this.model = model;
 	}
-	
-	public  void init () {
-		
-    	model = new AppWindowModel();
-    	appService = new AppService(model);
-		initialize();
-    	
-		appService.setAppWindow(this);
-		guidesOverlay = new GuidesOverlay(model);
-		boundingBoxOverlay = new BoundingBoxOverlay(model);
-		
-		String  queueApiUrl = getParameter("queueApiUrl");  
-		if (queueApiUrl == null) {
-			queueApiUrl = "";
-		}
-		String params = "";
-		
-		appService.loadFromApi(queueApiUrl, params);
 
-	}
 	/**
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		this.setBounds(0, 0, 640, 300);
-		this.getContentPane().setLayout(new BorderLayout(0, 0));
+		frame = new JFrame();
+		frame.setBounds(100, 100, 450, 300);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.getContentPane().setLayout(new BorderLayout(0, 0));
 		
 		JToolBar toolBar = new JToolBar();
-		this.getContentPane().add(toolBar, BorderLayout.NORTH);
+		frame.getContentPane().add(toolBar, BorderLayout.NORTH);
+		
+		JButton btnOpen = new JButton("Open");
+		btnOpen.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				appService.openFileDialog();
+			}
+		});
+		btnOpen.setIcon(new ImageIcon(AppWindow.class.getResource("/toolbarButtonGraphics/general/Open24.gif")));
+		toolBar.add(btnOpen);
+		
+		btnPrint = new JButton("Print");
+		btnPrint.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				appService.printAll();
+			}
+		});
+		btnPrint.setIcon(new ImageIcon(AppWindow.class.getResource("/toolbarButtonGraphics/general/Print24.gif")));
+		toolBar.add(btnPrint);
 		
 		comboBoxPrintService = new JComboBox();
 		comboBoxPrintService.setRenderer(new PrintServiceCellRenderer());
@@ -232,17 +269,8 @@ public class AppApplet extends JApplet implements IAppWindow  {
 		});
 		toolBar.add(comboBoxPageFormat);
 		
-		btnPrint = new JButton("印刷");
-		btnPrint.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				appService.printAll();
-			}
-		});
-		btnPrint.setIcon(new ImageIcon(AppWindow.class.getResource("/toolbarButtonGraphics/general/Print24.gif")));
-		toolBar.add(btnPrint);
-		
 		JSplitPane splitPane = new JSplitPane();
-		this.getContentPane().add(splitPane, BorderLayout.CENTER);
+		frame.getContentPane().add(splitPane, BorderLayout.CENTER);
 		
 		list = new JList();
 		list.setPreferredSize(new Dimension(128, 0));
@@ -261,9 +289,25 @@ public class AppApplet extends JApplet implements IAppWindow  {
 		splitPane.setRightComponent(panel);
 	}
 
+	/* (non-Javadoc)
+	 * @see jp.ticketstar.ticketing.printing.gui.IAppWindow#getFrame()
+	 */
 	public Container getFrame() {
-		return this;
+		return frame;
 	}
-
 	
+	/* (non-Javadoc)
+	 * @see jp.ticketstar.ticketing.printing.gui.IAppWindow#show()
+	 */
+	public void show() {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
 }
