@@ -264,7 +264,7 @@ function newScanner(text) {
         var g = regexp.exec(text);
         if (!g)
           return null;
-        if (g[1]) {
+        if (g[1] !== null && g[1] !== void(0)) {
           retval = ['string', g[1].replace(/\\(.)/g, '$1')];
         } else if (g[2]) {
           retval = ['symbol', g[2]];
