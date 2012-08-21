@@ -101,19 +101,12 @@ class MyPageView(object):
                 for ordered_product_item in ordered_product.ordered_product_items:
                     for seat_item in ordered_product_item.seats:
                         class QRTicket:
-                            serial = u"1"
+                            serial = u""
                             performance_code = pcode
                             performance_date = pdate
                             product = ordered_product.product
                             seat = seat_item
-                            qr = builder.sign(builder.make(dict(
-                                serial=u"1",
-                                performance=pcode,
-                                order=order.order_no,
-                                date=pdate,
-                                type=100,
-                                seat=seat_item.name,
-                            )))
+                            qr = u""
                         ticket = QRTicket()
                         history = m.TicketPrintHistory.filter_by(ordered_product_item_id=ordered_product_item.id, seat_id=seat_item.id).first()
                         if history == None:
@@ -121,6 +114,14 @@ class MyPageView(object):
                             m.DBSession.add(history)
                             m.DBSession.flush()
                         ticket.serial = history.id
+                        ticket.qr = builder.sign(builder.make(dict(
+                                    serial=("%d" % ticket.serial),
+                                    performance=pcode,
+                                    order=order.order_no,
+                                    date=pdate,
+                                    type=100,
+                                    seat=seat_item.name,
+                                    )))
                         tickets.append(ticket)
 
         import locale
