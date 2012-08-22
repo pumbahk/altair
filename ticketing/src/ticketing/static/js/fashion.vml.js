@@ -19,9 +19,14 @@ Fashion.Backend.VML = (function() {
 
   function setup() {
     var namespaces = window.document.namespaces;
-    if (!namespaces[VML_PREFIX])
-      namespaces.add(VML_PREFIX, VML_NAMESPACE_URL);
-    window.document.createStyleSheet().addRule(VML_PREFIX + '\\:*', "behavior:url(#default#VML)");
+    if (Fashion.browser.version >= 8) {
+      if (!namespaces[VML_PREFIX])
+        namespaces.add(VML_PREFIX, VML_NAMESPACE_URL, VML_BEHAVIOR_URL);
+    } else {
+      if (!namespaces[VML_PREFIX])
+        namespaces.add(VML_PREFIX, VML_NAMESPACE_URL);
+      window.document.createStyleSheet().addRule(VML_PREFIX + '\\:*', "behavior:url(#default#VML)");
+    }
   }
 
   function newElement(type) {
@@ -146,12 +151,16 @@ Fashion.Backend.VML = (function() {
     };
 
     if (impl instanceof Drawable) {
-      retval.physicalPosition = _subtractPoint(physicalPagePosition, impl.getViewportOffset());
-      retval.logicalPosition = impl.convertToLogicalPoint(retval.physicalPosition);
+      retval.screenPosition   = _subtractPoint(physicalPagePosition, impl.getViewportOffset());
+      var physicalPosition    = _addPoint(impl.convertToPhysicalPoint(impl.scrollPosition()), retval.screenPosition);
+      retval.logicalPosition  = impl.convertToLogicalPoint(physicalPosition);
+      retval.physicalPosition = physicalPosition
     } else {
-      retval.physicalPosition = _subtractPoint(physicalPagePosition, impl.drawable.getViewportOffset());
-      retval.logicalPosition = impl.drawable.convertToLogicalPoint(retval.physicalPosition);
-      retval.offsetPosition = _subtractPoint(retval.logicalPosition, impl.wrapper._position);
+      retval.screenPosition   = _subtractPoint(physicalPagePosition, impl.drawable.getViewportOffset());
+      var physicalPosition    = _addPoint(impl.drawable.convertToPhysicalPoint(impl.drawable.scrollPosition()), retval.screenPosition);
+      retval.logicalPosition  = impl.drawable.convertToLogicalPoint(physicalPosition);
+      retval.physicalPosition = physicalPosition;
+      retval.offsetPosition   = _subtractPoint(retval.logicalPosition, impl.wrapper._position);
     }
 
     return retval;
@@ -1053,7 +1062,11 @@ var Drawable = _class("DrawableVML", {
     },
 
     convertToLogicalPoint: function(point) {
-      return _addPoint(this.scrollPosition(), this.wrapper._inverse_transform.apply(point));
+      return this.wrapper._inverse_transform.apply(point);
+    },
+
+    convertToPhysicalPoint: function(point) {
+      return this.wrapper._transform.apply(point);
     },
 
     _updateContentSize: function () {
