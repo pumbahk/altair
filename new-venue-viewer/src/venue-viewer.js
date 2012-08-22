@@ -298,7 +298,6 @@
           self.drawable = drawable;
           self.shapes = shapes;
 
-/*
           var center = {
             x: (xmax + xmin) / 2,
             y: (ymax + ymin) / 2
@@ -331,7 +330,6 @@
 
           drawable.contentSize({x: (vs.x/r) + origin.x, y: (vs.y/r) + origin.y});
 
-*/
           self.changeUIMode(self.uiMode);
           next.call(this);
 
