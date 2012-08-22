@@ -75,7 +75,7 @@
                     -->
                         <table id="confirmDelivery">
                             <tr>
-                                <th scope="row">購入者氏名(全角入力(例：山田, 太郎))</th>
+                                <th scope="row">購入者氏名(全角かな(例：山田, 太郎))</th>
                                 <td>
                                     <ul>
                                         <li>
@@ -92,7 +92,7 @@
                                 </td>
                             </tr>
                             <tr>
-                                <th scope="row">購入者氏名(カナ(例：ヤマダ, タロウ))</th>
+                                <th scope="row">購入者氏名(全角カナ(例：ヤマダ, タロウ))</th>
                                 <td>
                                     <ul>
                                         <li>
@@ -109,14 +109,14 @@
                                 </td>
                             </tr>
                             <tr>
-                                <th scope="row">${form['mail_address'].label}（例:mail@example.ne.jp）</th>
+                                <th scope="row">${form['mail_address'].label}(半角英数(例:mail@example.ne.jp)）</th>
                                 <td>
                                     ${form['mail_address']}
                                         ${h.error_list(request, form, 'mail_address')}
                                 </td>
                             </tr>
                             <tr>
-                                <th scope="row">住所(例: 1410022,東京都,品川区,東五反田x-xx-xx,yyビルz階 )</th>
+                                <th scope="row">住所(全角かな(例: 1410022,東京都,品川区,東五反田x-xx-xx,yyビルz階 ))</th>
                                 <td>
                                     <ul>
                                         <li>${form['zip'].label}
@@ -140,7 +140,7 @@
                                 </td>
                             </tr>
                             <tr>
-                                <th scope="row">電話番号(例: 080xxxxyyyy)</th>
+                                <th scope="row">電話番号(半角数字(例: 080xxxxyyyy))</th>
                                 <td>
                                     <ul>
                                         <li>${form['tel'].label}
