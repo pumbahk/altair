@@ -8,15 +8,26 @@
   )}
 </div>
 
+<style type="text/css">
+  h3 {margin-top: 20px;  }
+</style>
 <script>
   // ajax modal
   $(function(){
+    $("a.id-action").click(  
+      function() {
+        var form = $(this).closest('form'); 
+        var pk = form.find("input:radio:checked, input:checkbox:checked").val();
+        if(!pk){ return false; }
+        $(this).attr("href", $(this).attr("data-base-url").replace("__id__", pk));
+        return true;
+    });
+
 	$("a.ajax-modal[data-toggle=modal]").click(function(){
       $($(this).attr("data-target")).load($(this).attr("href"));
 	});
   });
 </script>
-
 <div class="modal hide" id="AjaxModal">
 </div>
 
@@ -28,46 +39,136 @@
   ${flash_messages(request)}
 </div>
 
-<div id="tickets">
-  <h3>チケット券面</h3>
+<div class="message">
+<p>この操作は商品を作成する前に行ってください。商品作成時に券面と商品が結びつけられます。</p>
+<p>
+  1. イベントにチケット券面を割り当ててください。(主券、副券..など)<br/>
+  2. チケット券面を割り当てたら、チケット券面構成(TicketBundle)を作成してください。(「主券のみ」,「主券+副券」など)<br/>
+  3. 必要に応じて、作成したチケット券面構成(TicketBundle)に属性(TicketAttribute)を追加してください。
+</p>
+</div>
+
+<form id="tickets">
+  <h3>1. チケット券面</h3>
+
+%if tickets.count() > 0:
+  <table class="table fullwidth checkboxed_table">
+    <thead>
+      <tr>
+      <th class="minwidth"></th>
+      <th><a href="#" class="sortable">名前</a></th>
+      <th><a href="#" class="sortable">チケット様式</a></th>
+      <th><a href="#" class="sortable">更新日時</a></th>
+      <th><a href="#" class="sortable">作成日時</a></th>
+      </tr>
+    </thead>
+    <tbody>
+	% for ticket in tickets:
+      <tr>
+        <td><input type="radio" name="ticket_id" value="${ticket.id}" /></td>
+        <td id="ticket:${ticket.id}"><a href="${request.route_path("events.tickets.boundtickets.show", event_id=event.id, id=ticket.id)}">${ticket.name}</a></td>
+        <td><a href="${request.route_path("tickets.formats.show", id=ticket.ticket_format.id)}">${ticket.ticket_format.name}</a></td>
+        <td>${ticket.updated_at}</td>
+        <td>${ticket.created_at}</td>
+      </tr>
+	% endfor
+    </tbody>
+  </table>
+%endif
 
   <div class="row-fluid well">
-	<div class="btn-group">
-	  <a href="${request.route_path("events.tickets.api.ticketform",event_id=event.id)}" 
-		 data-toggle="modal" data-target="#AjaxModal"
-		 class="btn ajax-modal">
-		<i class="icon-plus"></i> ${event.title}にチケット券面を追加
-	  </a>
-		  <button class="btn dropdown-toggle" data-toggle="dropdown">
-			<span class="caret"></span>
-		  </button>
-		  <ul class="dropdown-menu">
-		  </ul>
-	</div>
+    <div class="btn-group">
+      <a href="${request.route_path("events.tickets.api.ticketform",event_id=event.id)}" 
+       data-toggle="modal" data-target="#AjaxModal"
+       class="btn ajax-modal">
+        <i class="icon-plus"></i> ${event.title}にチケット券面を追加
+      </a>
+      <button class="btn dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
+      <ul class="dropdown-menu">
+        <li>
+          <a data-base-url="${request.route_path("events.tickets.boundtickets.edit",event_id=event.id, id="__id__")}"
+           href="#" class="id-action">
+          <i class="icon-pencil"></i> 編集
+          </a>
+        </li>
+        <li>
+          <a href="#" class="id-action ajax-modal"
+           data-base-url="${request.route_path("events.tickets.boundtickets.delete", id="__id__", event_id=event.id)}" 
+           data-toggle="modal" data-target="#AjaxModal">
+          <i class="icon-minus"></i> 削除
+          </a>
+        </li>
+        <li>
+          <a data-base-url="${request.route_path("events.tickets.boundtickets.download", id="__id__", event_id=event.id)}"
+            href="#" class="id-action">
+            <i class="icon-minus"></i> 登録されている内容をdownload
+          </a>
+        </li>
+      </ul>
+    </div>
   </div>
+</form>
 
+<form id="ticket-bundle">
+  <h3>2. チケット券面構成(TicketBundle)</h3>
+
+%if bundles.count() > 0:
   <table class="table fullwidth checkboxed_table">
-	<thead>
-	  <tr>
-		<th class="minwidth"></th>
-		<th><a href="#" class="sortable">名前</a></th>
-		<th><a href="#" class="sortable">チケット様式</a></th>
-		<th><a href="#" class="sortable">更新日時</a></th>
-		<th><a href="#" class="sortable">作成日時</a></th>
-	  </tr>
-	</thead>
-	<tbody>
-	% for ticket in tickets:
-	  <tr>
-		<td><input type="radio" name="id" value="${ticket.id}" /></td>
-		<td><a href="#">${ticket.name}</a></td>
-		<td>${ticket.ticket_format.name}</td>
-		<td>${ticket.updated_at}</td>
-		<td>${ticket.created_at}</td>
-	  </tr>
+    <thead>
+      <tr>
+      <th class="minwidth"></th>
+      <th><a href="#" class="sortable">名前</a></th>
+      <th><a href="#" class="sortable">チケット券面(Ticket)</a></th>
+      <th><a href="#" class="sortable">属性(TicketAttribute)</a></th>
+      </tr>
+    </thead>
+    <tbody>
+	% for bundle in bundles:
+      <tr>
+        <td><input type="radio" name="id" value="${bundle.id}"/></td>
+        <td><a href="${request.route_path("events.tickets.bundles.show",bundle_id=bundle.id, event_id=event.id)}"
+             >${bundle.name}</a>
+        </td>
+        <td>
+          <ul>
+            %for ticket in bundle.tickets:
+            <li><a href="#ticket:${ticket.id}">${ticket.name}</a></li>
+            %endfor		  
+          </ul>
+        </td>
+        <td>
+          <ul>
+            %for attribute in bundle.attributes_.itervalues():
+            <li>${attribute.name}</li>
+            %endfor		  
+          </ul>
+        </td>
+      </tr>
 	% endfor
-	</tbody>
+    </tbody>
   </table>
+%endif
 
-</div>
+  <div class="row-fluid well">
+    <div class="btn-group">
+      <a href="${request.route_path("events.tickets.api.bundleform",event_id=event.id)}" 
+       data-toggle="modal" data-target="#AjaxModal"
+       class="btn ajax-modal">
+      <i class="icon-plus"></i> ${event.title}にチケット券面構成(TicketBundle)を追加
+      </a>
+        <button class="btn dropdown-toggle" data-toggle="dropdown">
+        <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+          <li>
+            <a href="#" class="id-action ajax-modal"
+             data-base-url="${request.route_path("events.tickets.bundles.delete", bundle_id="__id__", event_id=event.id)}" 
+             data-toggle="modal" data-target="#AjaxModal">
+            <i class="icon-minus"></i> 削除
+            </a>
+          </li>
+        </ul>
+    </div>
+  </div>
+</form>
 

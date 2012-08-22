@@ -14,6 +14,7 @@ from pyramid.security import Allow
 from zope.interface import implementer
 from .interfaces import IOrderPayment, IOrderDelivery, ICartPayment, ICartDelivery
 
+from .exceptions import OutTermSalesException
 from ..core import models as c_models
 from . import models as m
 from . import logger
@@ -31,6 +32,21 @@ class TicketingCartResource(object):
         else:
             self.event_id = None
 
+    @property
+    def membership(self):
+        membergroup = self.membergroup
+        if not membergroup:
+            return None
+        return membergroup.membership
+
+    @property
+    def membergroup(self):
+        sales_segment = self.sales_segment
+        if sales_segment is None:
+            return None
+        return sales_segment.membergroup
+
+
     def get_system_fee(self):
         # 暫定で0に設定
         return 0
@@ -45,7 +61,11 @@ class TicketingCartResource(object):
         return pairs
 
 
+    @deprecate("deprecated method")
     def get_sales_segument(self):
+        return self.get_sales_segment()
+
+    def get_sales_segment(self):
         """ 該当イベントのSalesSegment取得
         """
 
@@ -58,8 +78,12 @@ class TicketingCartResource(object):
             ).filter(
                 c_models.SalesSegment.event_id==self.event_id
             ).first()
-            if sales_segment.start_at <= now and sales_segment.end_at >= now:
-                return sales_segment
+            if sales_segment is None:
+                return None
+            if sales_segment.start_at >= now or sales_segment.end_at <= now:
+                event = c_models.Event.filter(c_models.Event.id==self.event_id).one()
+                raise OutTermSalesException(event, sales_segment)
+            return sales_segment
         else:
             return c_models.SalesSegment.query.filter(
                 c_models.SalesSegment.event_id==self.event_id
@@ -68,6 +92,8 @@ class TicketingCartResource(object):
             ).filter(
                 c_models.SalesSegment.end_at>=now
             ).first()
+
+    sales_segment = property(get_sales_segment)
 
     @deprecate("deprecated method")
     def _convert_order_product_items(self, performance_id, ordered_products):
@@ -285,7 +311,13 @@ class TicketingCartResource(object):
         from .rakuten_auth.api import authenticated_user
         from . import api
         openid = authenticated_user(self.request)
-        user = api.get_or_create_user(self.request, openid['clamed_id'])
+        if 'clamed_id' in openid:
+            auth_identifier = openid['clamed_id']
+            membership = 'rakuten'
+        elif 'username' in openid:
+            auth_identifier = openid['username']
+            membership = openid['membership']
+        user = api.get_or_create_user(self.request, auth_identifier, membership)
         return user
 
 @implementer(IOrderDelivery)

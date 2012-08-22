@@ -1,0 +1,46 @@
+<%inherit file="./base.html"/>
+
+<div style="background-image:url(${request.static_url('ticketing.cart:static/img/mobile/bg_bar.gif')});background-color:#bf0000" bgcolor="#bf0000" background="${request.static_url('ticketing.cart:static/img/mobile/bg_bar.gif')}"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>チケット購入</font></div>
+
+${event.title}
+
+% if venue:
+  <hr size="1" color="#888888" noshade="noshade" />
+  <p><font color="#ffbf00">■</font>日時をお選びください</p>
+  <form action="">
+    <select name="pid">
+  % for performance in performances:
+    <option value="${performance['id']}">${performance['start_on']}</option>
+  % endfor
+    </select>
+    <div style="text-align:center;">
+    <br/>
+    <input type="submit" value="次へ">
+    </div>
+  </form>
+  <form action="">
+    <div style="text-align:center;">
+    <input type="submit" value="戻る">
+    </div>
+  </form>
+  <hr size="1" color="#888888" noshade="noshade" />
+  <div style="background-color:#ffdddd">会場</div>
+  <div>
+    ${venue.name}
+  </div>
+% else:
+  <hr size="1" color="#888888" noshade="noshade" />
+  <p><font color="#ffbf00">■</font>会場をお選びください</p>
+  <form action="">
+    <select name="v">
+  % for venue_name in venues:
+    <option value="${venue_name}">${venue_name}</option>
+  % endfor
+    </select>
+    <div style="text-align:center;">
+    <br/>
+    <input type="submit" value="次へ">
+    </div>
+  </form>
+  <hr size="1" color="#888888" noshade="noshade" />
+% endif

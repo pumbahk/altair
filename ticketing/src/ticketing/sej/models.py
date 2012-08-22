@@ -9,6 +9,19 @@ import sqlahelper
 session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
 
+class SejTenant(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
+    __tablename__           = 'SejTenant'
+    id                      = Column(Identifier, primary_key=True)
+    shop_name               = Column(String(12))
+    shop_id                 = Column(String(12))
+    contact_01              = Column(String(128))
+    contact_02              = Column(String(255))
+    api_key                 = Column(String(255), nullable=True)
+    inticket_api_url        = Column(String(255), nullable=True)
+
+    organization_id         = Column(Identifier) # あえてRelationしません
+
+
 class SejTicketTemplateFile(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     __tablename__           = 'SejTicketTemplateFile'
     id                      = Column(Identifier, primary_key=True)

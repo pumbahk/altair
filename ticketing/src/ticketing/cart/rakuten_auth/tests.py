@@ -115,22 +115,45 @@ class RakutenOpenIDTests(unittest.TestCase):
     @mock.patch('time.time')
     @mock.patch('urllib2.urlopen')
     def test_it(self, mock_urlopen, mock_time, mock_uuid):
+        import urllib
         from mock import call
 
         target = self._makeOne('https://api.id.rakuten.co.jp/openid/auth', 
-            'http://www.example.com/', 'akfjakldjfakldjfkalsdjfklasdjfklajdf', 'secret',
+            'http://www.example.com/', 
+            'http://www.example.com/error', 
+            'akfjakldjfakldjfkalsdjfklasdjfklajdf', 'secret',
             access_token_url='https://api.id.rakuten.co.jp/oauth',
             )
 
         response = """\
 is_valid:true
-ns:http://specs.openid.net/auth/2.0"""
+ns:http://specs.openid.net/auth/2.0
+"""
+
+        token_response = "oauth_token_secret=xxxxxx&oauth_token=yyyyyyy"
 
         mock_response = mock.Mock()
-        
         mock_response.read = lambda : response
-        mock_urlopen.return_value = mock_response
-        mock_read = mock.Mock()
+        token_mock_response = mock.Mock()
+        token_mock_response.read = lambda: token_response
+        api_mock_response = mock.Mock()
+        api_mock_response.read = lambda : "key:value" 
+        #mock_urlopen.return_value = mock_response
+        class SideEffect(object):
+            def __init__(self):
+                self.called_count = 0
+            def __call__(self, *args, **kwargs):
+                try:
+                    if self.called_count == 0:
+                        return mock_response
+                    elif self.called_count == 1:
+                        return token_mock_response
+                    else:
+                        return api_mock_response
+                finally:
+                    self.called_count += 1
+        side_effect = SideEffect()
+        mock_urlopen.side_effect = side_effect
         
         mock_time.return_value = 999999999.9999
         mock_uuid.return_value = mock.Mock(hex='nonce-nonce')
@@ -190,7 +213,9 @@ ns:http://specs.openid.net/auth/2.0"""
         from mock import call
 
         target = self._makeOne('https://api.id.rakuten.co.jp/openid/auth', 
-            'http://www.example.com/', 'akfjakldjfakldjfkalsdjfklasdjfklajdf', 'secret',
+            'http://www.example.com/', 
+            'http://www.example.com/error', 
+            consumer_key='akfjakldjfakldjfkalsdjfklasdjfklajdf', secret='secret',
             access_token_url='')
 
         response = """\
@@ -250,7 +275,7 @@ ns:http://specs.openid.net/auth/2.0"""
                 "&openid.ax.value.nickname=this-is-nickname"
             ),
             call().close(),
-            call('?oauth_consumer_key=akfjakldjfakldjfkalsdjfklasdjfklajdf&oauth_token=XXXXXXXXXXXXX&oauth_signature_method=HMAC-SHA1&oauth_timestamp=999999999999&oauth_nonce=nonce-nonce&oauth_version=1.0&oauth_signature=6ZoBYAQxl6XpQwW540ErEmDJAMc%3D'),
+            call('?oauth_consumer_key=akfjakldjfakldjfkalsdjfklasdjfklajdf&oauth_token=XXXXXXXXXXXXX&oauth_signature_method=HMAC-SHA1&oauth_timestamp=999999999999&oauth_nonce=nonce-nonce&oauth_version=1.0&oauth_signature=LdA%2BKbPkF6aYkzpDPHpGU2rorAI%3D'),
             call().close(),])
 
 class parse_access_token_responseTests(unittest.TestCase):

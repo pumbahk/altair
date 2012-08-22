@@ -229,31 +229,31 @@ def detail_tickets(event):
                sale=sale, 
                price=30000, 
                name=u"S席＋駐車場", 
-               orderno=1), 
+               display_order=1), 
         Ticket(
                sale=sale, 
                price=15000, 
                seattype=u"S席", 
                name=u"S席", 
-               orderno=2), 
+               display_order=2), 
         Ticket(
                sale=sale, 
                price=8000, 
                seattype=u"A席", 
                name=u"A席", 
-               orderno=3), 
+               display_order=3), 
         Ticket(
                sale=sale, 
                price=5000, 
                seattype=u"B席", 
                name=u"B席", 
-               orderno=4), 
+               display_order=4), 
         Ticket(
                sale=sale, 
                price=3000, 
                seattype=u"C席", 
                name=u"C席", 
-               orderno=5)
+               display_order=5)
     ])
 
     sales_choices = import_symbol("altaircms.seeds.saleskind:SALESKIND_CHOICES")
@@ -267,31 +267,31 @@ def detail_tickets(event):
                price=30003, 
                seattype=u"SSA席", 
                name=u"S席+駐車場", 
-               orderno=1), 
+               display_order=1), 
         Ticket(
                sale=sale, 
                price=15003, 
                seattype=u"SA席", 
                name=u"S席", 
-               orderno=2), 
+               display_order=2), 
         Ticket(
                sale=sale, 
                price=8003, 
                seattype=u"A席", 
                name=u"A席", 
-               orderno=3), 
+               display_order=3), 
         Ticket(
                sale=sale, 
                price=5003, 
                seattype=u"B席", 
                name=u"B席", 
-               orderno=4), 
+               display_order=4), 
         Ticket(
                sale=sale, 
                price=3003, 
                seattype=u"C席", 
                name=u"C席", 
-               orderno=5)
+               display_order=5)
     ])
     for per in event.performances:
         per.tickets = r
@@ -1048,14 +1048,14 @@ def sports_topics(pageset):
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
               bound_page=pageset, 
-              orderno=1), 
+              display_order=1), 
         Topic(kind=u"トピックス", 
               text=u"#", 
               title=u"きゃりーぱみゅぱみゅ、倖田來未 、CNBLUE ら出演♪「オンタマカーニバル2012」1/14発売！", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
               bound_page=pageset, 
-              orderno=2), 
+              display_order=2), 
 
         ]
 
@@ -1169,14 +1169,14 @@ def music_topics(pageset):
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
               is_global=True, 
-              orderno=1), 
+              display_order=1), 
         Topic(kind=u"トピックス", 
               text=u"#", 
               title=u"きゃりーぱみゅぱみゅ、倖田來未 、CNBLUE ら出演♪「オンタマカーニバル2012」1/14発売！", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
               is_global=True, 
-              orderno=2), 
+              display_order=2), 
 
         ## sidebar
         Topic(kind=u"特集(サブカテゴリ)", 
@@ -1186,7 +1186,7 @@ def music_topics(pageset):
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
               is_global=False, 
-              orderno=1), 
+              display_order=1), 
         Topic(kind=u"特集(サブカテゴリ)", 
               text=u"#", 
               bound_page=pageset, 
@@ -1194,7 +1194,7 @@ def music_topics(pageset):
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
               is_global=False, 
-              orderno=2), 
+              display_order=2), 
         Topic(kind=u"特集(サブカテゴリ)", 
               text=u"#", 
               bound_page=pageset, 
@@ -1202,7 +1202,7 @@ def music_topics(pageset):
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
               is_global=False, 
-              orderno=3), 
+              display_order=3), 
         ]
 
 def music_promotion():
@@ -1315,14 +1315,14 @@ def stage_topics(pageset):
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
               bound_page=pageset, 
-              orderno=1), 
+              display_order=1), 
         Topic(kind=u"トピックス", 
               text=u"#", 
               title=u"きゃりーぱみゅぱみゅ、倖田來未 、CNBLUE ら出演♪「オンタマカーニバル2012」1/14発売！", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
               bound_page=pageset, 
-              orderno=2), 
+              display_order=2), 
 
         ]
 
@@ -1436,14 +1436,14 @@ def event_topics(pageset):
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
               bound_page=pageset, 
-              orderno=1), 
+              display_order=1), 
         Topic(kind=u"トピックス", 
               text=u"#", 
               title=u"きゃりーぱみゅぱみゅ、倖田來未 、CNBLUE ら出演♪「オンタマカーニバル2012」1/14発売！", 
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
               bound_page=pageset, 
-              orderno=2), 
+              display_order=2), 
 
         ]
 
@@ -1582,7 +1582,7 @@ def top_topics(page):
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
               is_global=True, 
-              orderno=1), 
+              display_order=1), 
         Topic(kind=u"トピックス", 
               subkind=u"Top", 
               text=u"#", 
@@ -1590,7 +1590,7 @@ def top_topics(page):
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
               is_global=True, 
-              orderno=2), 
+              display_order=2), 
         Topic(kind=u"トピックス", 
               subkind=u"Top", 
               text=u"#", 
@@ -1598,7 +1598,7 @@ def top_topics(page):
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
               is_global=True, 
-              orderno=3), 
+              display_order=3), 
         Topic(kind=u"トピックス", 
               subkind=u"Top", 
               text=u"#", 
@@ -1606,7 +1606,7 @@ def top_topics(page):
               publish_open_on=datetime.datetime(2011, 1, 1),
               publish_close_on=datetime.datetime(2013, 1, 1), 
               is_global=True, 
-              orderno=4), 
+              display_order=4), 
         ]
 
 
@@ -1623,7 +1623,7 @@ def top_topcontents(page):
                    is_global=True, 
                    title=link_page.title, 
                    text=u"ここになにか説明を加える。これはデフォルトの文章を表示するようにしても良いかもしれない。", 
-                   orderno=50, 
+                   display_order=50, 
                    image_asset = image_asset,  ##
                    countdown_type = "deal_close"
                    ), 
@@ -1634,7 +1634,7 @@ def top_topcontents(page):
                    is_global=True, 
                    title=link_page.title, 
                    text=u"ここになにか説明を加える。これはデフォルトの文章を表示するようにしても良いかもしれない。", 
-                   orderno=50, 
+                   display_order=50, 
                    image_asset = image_asset,  ##
                    countdown_type = "deal_close"
                    ), 
@@ -1645,7 +1645,7 @@ def top_topcontents(page):
                    is_global=True, 
                    title=link_page.title, 
                    text=u"ここになにか説明を加える。これはデフォルトの文章を表示するようにしても良いかもしれない。", 
-                   orderno=50, 
+                   display_order=50, 
                    image_asset = image_asset,  ##
                    countdown_type = "deal_close"
                    ), 
@@ -1656,7 +1656,7 @@ def top_topcontents(page):
                    is_global=True, 
                    title=link_page.title, 
                    text=u"ここになにか説明を加える。これはデフォルトの文章を表示するようにしても良いかもしれない。", 
-                   orderno=50, 
+                   display_order=50, 
                    image_asset = image_asset,  ##
                    countdown_type = "deal_close"
                    ), 
@@ -1667,7 +1667,7 @@ def top_topcontents(page):
                    is_global=True, 
                    title=link_page.title, 
                    text=u"ここになにか説明を加える。これはデフォルトの文章を表示するようにしても良いかもしれない。", 
-                   orderno=50, 
+                   display_order=50, 
                    image_asset = image_asset,  ##
                    countdown_type = "deal_close"
                    ), 
@@ -1678,7 +1678,7 @@ def top_topcontents(page):
                    is_global=True, 
                    title=link_page.title, 
                    text=u"ここになにか説明を加える。これはデフォルトの文章を表示するようにしても良いかもしれない。", 
-                   orderno=50, 
+                   display_order=50, 
                    image_asset = image_asset,  ##
                    countdown_type = "deal_close"
                    )

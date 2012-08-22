@@ -5,11 +5,7 @@ import json
 import logging
 import urllib2
 import contextlib
-import xlwt
-import xlrd
-from xlutils.copy import copy
 from datetime import datetime
-from time import strftime
 
 import webhelpers.paginate as paginate
 from sqlalchemy import or_
@@ -20,21 +16,16 @@ from pyramid.url import route_path
 from pyramid.response import Response
 from pyramid.path import AssetResolver
 
-from ticketing.models import merge_session_with_post, record_to_multidict, DBSession
+from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
-from ticketing.core.models import Event, Performance, StockHolder, StockType, Stock
-from ticketing.core.models import SeatAttribute, Seat
+from ticketing.core.models import Event, Performance
 from ticketing.events.forms import EventForm
 from ticketing.events.performances.forms import PerformanceForm
 from ticketing.events.sales_segments.forms import SalesSegmentForm
 from ticketing.events.stock_types.forms import StockTypeForm
 from ticketing.events.stock_holders.forms import StockHolderForm
 from ticketing.products.forms import ProductForm
-from ticketing.events.reports import xls_export
-from ticketing.events.reports import sheet as report_sheet
-from .reports import reporting
-from ticketing.helpers.base import jdatetime
 
 from ..api.impl import get_communication_api
 from ..api.impl import CMSCommunicationApi
@@ -226,190 +217,3 @@ class Events(BaseView):
             self.request.session.flash(u'イベント送信に失敗しました')
 
         return HTTPFound(location=route_path('events.show', self.request, event_id=event.id))
-
-    @view_config(route_name='events.report', renderer='ticketing:templates/events/report.html')
-    def report(self):
-        event_id = int(self.request.matchdict.get('event_id', 0))
-        event = Event.get(event_id)
-        if event is None:
-            return HTTPNotFound('event id %d is not found' % event_id)
-
-        # StockHolder
-        stock_holders = list(StockHolder \
-            .filter(StockHolder.event_id==event_id) \
-            .order_by(StockHolder.id))
-
-        f = EventForm(user_id=self.context.user.id)
-        f.process(record_to_multidict(event))
-        return {
-            'form':f,
-            'event':event,
-            'stock_holders': stock_holders,
-        }
-
-    @view_config(route_name='events.report.sales')
-    def download_sales_report(self):
-        event_id = int(self.request.matchdict.get('event_id', 0))
-        event = Event.get(event_id)
-        if event is None:
-            return HTTPNotFound('event id %d is not found' % event_id)
-
-        # copy from template.xls
-        rb = xlrd.open_workbook('src/ticketing/templates/reports/sales_report_template.xls', formatting_info=True)
-        wb = copy(rb)
-        print dir(wb)
-
-        # find data as json format
-
-        # add data to xls sheet
-        #book = xlwt.Workbook()
-        #book.add_sheet("NewSheet_1")
-        #book.save('sample.xls')
-
-        sheet = wb.get_sheet(0)
-        print dir(sheet)
-
-        # Event
-        sheet.write(0, 34, u"(現在日時)")
-        sheet.write(5, 0, u"(イベント名)")
-        sheet.write(11, 0, u"(販売区分名)")
-        sheet.write(11, 12, u"(販売開始日時)")
-        sheet.write(11, 18, u"(販売終了日時)")
-        sheet.write(11, 30, u"(販売手数料)")
-        sheet.write(12, 30, u"(払戻手数料)")
-        sheet.write(13, 30, u"(印刷代金)")
-        sheet.write(14, 30, u"(登録手数料)")
-        sheet.write(16, 0, u"(会場名)")
-
-        # Performance
-
-        #
-
-        '''
-        sheet_row_1 = sheet.row(1)
-        sheet_row_1.write(0, "A2")
-        sheet_row_1.write(1, "B2")
-        sheet_row_1.write(2, "C2")
-        sheet_row_1.write(3, "D2")
-        sheet_row_1.write(4, "E2")
-        '''
-
-        # download
-        wb.save('sales_report_%s_%s.xls' % (event_id, strftime('%Y%m%d%H%M%S')))
-
-        # temporary redirect
-        return HTTPFound(location=route_path('events.report', self.request, event_id=event.id))
-
-        #fname = os.path.join(Newsletter.subscriber_dir(), newsletter.subscriber_file())
-        #f = open(fname)
-        #headers = [
-        #    ('Content-Type', 'application/octet-stream'),
-        #    ('Content-Disposition', 'attachment; filename=%s' % os.path.basename(fname))
-        #]
-        #response = Response(f.read(), headers=headers)
-        #f.close()
-
-        #return response
-
-    @view_config(route_name='events.report.seat_stocks')
-    def download_seat_stocks(self):
-        """仕入明細ダウンロード
-        """
-        # Event
-        event_id = int(self.request.matchdict.get('event_id', 0))
-        event = Event.get(event_id)
-        if event is None:
-            raise HTTPNotFound('event id %d is not found' % event_id)
-        # StockHolder
-        stock_holder = StockHolder \
-            .filter(StockHolder.event_id==event_id) \
-            .filter(StockHolder.account_id==self.context.user.id).first()
-        if stock_holder is None:
-            raise HTTPNotFound("StockHolder is not found id=%s" % stock_holder_id)
-
-        exporter = reporting.export_for_stock_holder(
-            event,
-            stock_holder
-        )
-        # 現在日時
-        timestamp = strftime('%Y%m%d%H%M%S')
-        # 出力ファイル名
-        filename = "assign_%(code)s_%(datetime)s" % dict(
-            code=event.code,  # イベントコード
-            datetime=timestamp
-        )
-
-        headers = [
-            ('Content-Type', 'application/octet-stream'),
-            ('Content-Disposition', 'attachment; filename=%s' % filename)
-        ]
-        response = Response(exporter.as_string(), headerlist=headers)
-        return response
-
-    
-    @view_config(route_name='events.report.seat_stock_to_stockholder')
-    def seat_stock_to_stockholder(self):
-        event_id = int(self.request.matchdict.get('event_id', 0))
-        # Event
-        event = Event.get(event_id)
-        if event is None:
-            raise HTTPNotFound('event id %d is not found' % event_id)
-        # StockHolder
-        stock_holder_id = int(self.request.matchdict.get('stock_holder_id', 0))
-        stock_holder = StockHolder.get(stock_holder_id)
-        if stock_holder is None:
-            raise HTTPNotFound("StockHolder is not found id=%s" % stock_holder_id)
-
-        exporter = reporting.export_for_stock_holder(
-            event,
-            stock_holder
-        )
-        # 現在日時
-        timestamp = strftime('%Y%m%d%H%M%S')
-        # 出力ファイル名
-        filename = "assign_%(code)s_%(datetime)s" % dict(
-            code=event.code,  # イベントコード
-            datetime=timestamp
-        )
-
-        headers = [
-            ('Content-Type', 'application/octet-stream'),
-            ('Content-Disposition', 'attachment; filename=%s' % filename)
-        ]
-        response = Response(exporter.as_string(), headerlist=headers)
-        return response
-
-    @view_config(route_name='events.report.seat_unsold')
-    def seat_stock_unsold(self):
-        """残席明細ダウンロード
-        """
-        # Event
-        event_id = int(self.request.matchdict.get('event_id', 0))
-        event = Event.get(event_id)
-        if event is None:
-            raise HTTPNotFound('event id %d is not found' % event_id)
-        # StockHolder
-        stock_holder = StockHolder \
-            .filter(StockHolder.event_id==event_id) \
-            .filter(StockHolder.account_id==self.context.user.id).first()
-        if stock_holder is None:
-            raise HTTPNotFound("StockHolder is not found id=%s" % stock_holder_id)
-
-        exporter = reporting.export_for_stock_holder_unsold(
-            event,
-            stock_holder,
-        )
-        # 現在日時
-        timestamp = strftime('%Y%m%d%H%M%S')
-        # 出力ファイル名
-        filename = "unsold_%(code)s_%(datetime)s" % dict(
-            code=event.code,  # イベントコード
-            datetime=timestamp
-        )
-
-        headers = [
-            ('Content-Type', 'application/octet-stream'),
-            ('Content-Disposition', 'attachment; filename=%s' % filename)
-        ]
-        response = Response(exporter.as_string(), headerlist=headers)
-        return response

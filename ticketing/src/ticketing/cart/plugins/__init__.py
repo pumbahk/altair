@@ -18,5 +18,6 @@ def includeme(config):
     config.include(".shipping")
     config.include(".sej")
     config.include(".checkout")
+    config.include(".qr")
 
 

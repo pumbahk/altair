@@ -1,7 +1,9 @@
 # -*- coding:utf-8 -*-
-
+from ticketing.logicaldeleting import install as ld_install
+ld_install()
 from pyramid.config import Configurator
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
+from pyramid_who.whov2 import WhoV2AuthenticationPolicy
 from sqlalchemy import engine_from_config
 import sqlahelper
 from pyramid_beaker import session_factory_from_settings
@@ -28,10 +30,13 @@ def includeme(config):
     config.add_route('cart.order', 'order')
     config.add_route('cart.payment', 'payment')
     config.add_route('cart.release', 'release')
+    # モバイル専用
+    config.add_route('cart.mobile', 'events/{event_id}/performances/{performance_id}/seat_types')
 
     # 完了／エラー
     config.add_route('payment.confirm', 'confirm')
     config.add_route('payment.finish', 'completed')
+    config.add_route('qr.make', 'qr')
 
     config.add_subscriber('.subscribers.add_helpers', 'pyramid.events.BeforeRender')
 
@@ -51,9 +56,9 @@ def includeme(config):
     reg.adapters.register([IRequest], ICartFactory, "", CartFactory)
 
 
+
+
 def main(global_config, **settings):
-    from ticketing.logicaldeleting import install as install_ld
-    install_ld()    
     engine = engine_from_config(settings)
     my_session_factory = session_factory_from_settings(settings)
     sqlahelper.add_engine(engine)
@@ -70,6 +75,12 @@ def main(global_config, **settings):
 
     config.include('.')
     config.include('.rakuten_auth')
+    who_config = settings['pyramid_who.config']
+    from authorization import MembershipAuthorizationPolicy
+    config.set_authorization_policy(MembershipAuthorizationPolicy())
+    from .security import auth_model_callback
+    config.set_authentication_policy(WhoV2AuthenticationPolicy(who_config, 'auth_tkt', callback=auth_model_callback))
+    config.include('.fc_auth')
     config.scan()
     config.include('..checkout')
     config.include('..multicheckout')

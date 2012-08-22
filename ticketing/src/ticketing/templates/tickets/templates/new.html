@@ -1,9 +1,16 @@
 <%inherit file="../../layout_2cols.html" />
 <%namespace file="/common/helpers.html" import="breadcrumbs,flash_messages,form_item"/>
+
+<style type="text/css">
+  .controls select{width: 80%;}
+  .controls input{width: 80%;}
+  .controls textarea{width: 80%; min-height:100px;}
+</style>
+
 <div class="breadcrumbs">
 ${breadcrumbs(
-  names=[u'トップ', u'チケットテンプレート', u"登録"],
-  urls=[request.route_path('index'), request.route_path("tickets.templates.index")]
+  names=[u'トップ', u'チケット券面', u"テンプレート登録"],
+  urls=[request.route_path('index'), request.route_path("tickets.index")]
 )}
 </div>
 

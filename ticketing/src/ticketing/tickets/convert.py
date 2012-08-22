@@ -935,6 +935,8 @@ class Visitor(object):
         self.font_weight_classes = {
             u"900": u"b",
             u"bold": u"b",
+            u"400": None,
+            u"normal": None,
             }
 
     @staticmethod
@@ -1100,7 +1102,7 @@ class Visitor(object):
         if new_style.stroke_width != old_style.stroke_width:
             self.emitter.emit_stroke_width(new_style.stroke_width if new_style.stroke_width is not StyleNone else 0)
         if new_style.font_size != old_style.font_size:
-            self.emitter.emit_font_size((new_style.font_size if new_style.font_size is not StyleNone else 0) * 72. / 90)
+            self.emitter.emit_font_size((new_style.font_size if new_style.font_size is not StyleNone else 0))
 
     def emit_transform(self, old_transform, new_transform):
         if not numpy.array_equal(old_transform, new_transform):
@@ -1130,13 +1132,14 @@ class Visitor(object):
                 classes_pushed += 1
 
         if new_style.font_weight is not None:
-            font_weight_class = self.font_weight_classes.get(new_style.font_weight)
-            if font_weight_class is None:
-                raise Exception('Unsupported font: %s' % new_style.font_weight)
-            old_font_weight_class = self.font_weight_classes.get(self.current_style_ctx.style.font_weight)
-            if font_weight_class != old_font_weight_class:
-                self.emitter.emit_push_class(font_weight_class)
-                classes_pushed += 1
+            if new_style.font_weight not in self.font_weight_classes:
+                raise Exception('Unsupported font weight: %s' % new_style.font_weight)
+            font_weight_class = self.font_weight_classes[new_style.font_weight]
+            if font_weight_class is not None:
+                old_font_weight_class = self.font_weight_classes.get(self.current_style_ctx.style.font_weight)
+                if font_weight_class != old_font_weight_class:
+                    self.emitter.emit_push_class(font_weight_class)
+                    classes_pushed += 1
 
         if new_style.text_anchor is not None:
             text_anchor_class = self.text_anchor_classes.get(new_style.text_anchor)

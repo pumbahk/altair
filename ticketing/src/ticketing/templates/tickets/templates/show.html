@@ -13,8 +13,8 @@
 </%block>
 <div class="breadcrumbs">
 ${breadcrumbs(
-  names=[u'トップ', u'チケットテンプレート', template.name],
-  urls=[request.route_path('index'), request.route_path('tickets.templates.index')]
+  names=[u'トップ', u'チケット券面', u'テンプレート: %s' % template.name],
+  urls=[request.route_path('index'), request.route_path('tickets.index')]
 )}
 </div>
 <div class="page-header">
@@ -76,6 +76,11 @@ $('#ticket-viewer').ticketviewer(options).ticketviewer('load');
               <i class="icon-minus"></i> 削除
             </a>
           </li>
+		  <li>
+			<a href="${request.route_path("tickets.templates.download",id=template.id)}">
+			  <i class="icon-minus"></i> 登録されている内容をdownload
+			</a>
+		  </li>
 <%doc>
           <li>
             <a href="${request.route_path("tickets.templates.new",_query=dict(id=template.id))}">

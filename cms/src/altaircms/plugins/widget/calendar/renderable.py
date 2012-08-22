@@ -5,6 +5,8 @@ logger = logging.getLogger(__file__)
 from calendar_stream import PackedCalendarStream
 from calendar_stream import CalendarStreamGenerator
 from collections import defaultdict
+from pyramid.renderers import render
+from datetime import date, timedelta
 from . import CalendarTemplatePathStore
 import itertools
 
@@ -13,7 +15,7 @@ __all__ = ["CalendarOutput", "performances_to_dict"]
 def performances_to_dict(performances):
     D = defaultdict(list)
     for p in performances:
-        dt = p.start_on.date()
+        dt = p.start_on
         D[(dt.year, dt.month, dt.day)].append(p)
     return D
 
@@ -21,13 +23,14 @@ YEAR, MONTH, DAY = [0, 1, 2]
 FIRST, LAST = [0, -1]
 
 class CalendarWeek(object):
-    def __init__(self, r, performances, month_changed=False):
+    def __init__(self, r, performances, month_changed=False, this_month=None):
         self.month_changed = month_changed or r[FIRST][MONTH].value != r[LAST][MONTH].value
         self.month = r[LAST][MONTH].value
         self.year = r[LAST][YEAR].value
         self.r = r
         self.week = []
         self.performances = performances
+        self.this_month = this_month
 
     WDAYCLASS_MAP = [["first"], 
                      [],
@@ -43,7 +46,8 @@ class CalendarWeek(object):
             day_class.append("odd_month" if m.value % 2 == 1 else "even_month")
             yield {"day_class": " ".join(day_class),
                    "day": d.value, 
-                   "day_performances": self.performances[(y.value, m.value, d.value)]
+                   "day_performances": self.performances[(y.value, m.value, d.value)], 
+                   "this_month": self.this_month == m.value
                    }
     """
     * start of week: first
@@ -80,13 +84,13 @@ class CalendarOutput(object):
         self.template = template or self.template
         self.performances = performances or defaultdict(list)
         
-    def each_rows(self, begin_date, end_date):
+    def each_rows(self, begin_date, end_date, this_month=None):
         gen = CalendarStreamGenerator(PackedCalendarStream, force_start_from_monday=True)
         stream = gen.start_from(begin_date.year, begin_date.month, begin_date.day)
         itr = stream.iterate_to(end_date.year, end_date.month, end_date.day)
-        yield CalendarWeek(itr.next(), self.performances, month_changed=True)
+        yield CalendarWeek(itr.next(), self.performances, month_changed=True, this_month=this_month)
         for r in itr:
-            yield CalendarWeek(r, self.performances)
+            yield CalendarWeek(r, self.performances, this_month=this_month)
 
     def render(self, begin_date, end_date):
         rows = self.each_rows(begin_date, end_date)
@@ -104,8 +108,6 @@ def _collect_months(performances):
 ### render function ##
 # using these functioins in models.CalendarWidget.merge_settings() via getattr
 
-from pyramid.renderers import render
-from datetime import date
 
 def _next_month_date(d):
     if d.month == 12:
@@ -157,7 +159,7 @@ def tab(widget, calendar_status, performances, request, template_name=None):
                         if start_date <= p.start_on and p.start_on <= end_date))
     visibilities = itertools.chain([True], itertools.repeat(False))
     monthly_performances = itertools.groupby(performances, lambda p: (p.start_on.year, p.start_on.month))
-    cals = (CalendarOutput.from_performances(perfs).each_rows(date(y, m, 1), _next_month_date(date(y, m, 1)))\
+    cals = (CalendarOutput.from_performances(perfs).each_rows(date(y, m, 1), (_next_month_date(date(y, m, 1)) - timedelta(days=1)), this_month=m)\
                 for (y, m), perfs in monthly_performances)
     return render(template_name, {"cals":cals,
                                   "months":months,

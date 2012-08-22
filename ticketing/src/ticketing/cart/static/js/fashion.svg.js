@@ -58,14 +58,17 @@ Fashion.Backend.SVG = (function() {
     } else {
       physicalPagePosition = { x: domEvt.pageX, y: domEvt.pageY };
     }
+
     if (impl instanceof Drawable) {
       retval.screenPosition   = _subtractPoint(physicalPagePosition, impl.getViewportOffset());
-      retval.logicalPosition  = impl.convertToLogicalPoint(retval.screenPosition);
-      retval.physicalPosition = impl.convertToPhysicalPoint(retval.screenPosition);
+      var physicalPosition    = _addPoint(impl.convertToPhysicalPoint(impl.scrollPosition()), retval.screenPosition);
+      retval.logicalPosition  = impl.convertToLogicalPoint(physicalPosition);
+      retval.physicalPosition = physicalPosition;
     } else {
       retval.screenPosition   = _subtractPoint(physicalPagePosition, impl.drawable.getViewportOffset());
-      retval.logicalPosition  = impl.drawable.convertToLogicalPoint(retval.screenPosition);
-      retval.physicalPosition = impl.drawable.convertToPhysicalPoint(retval.screenPosition);
+      var physicalPosition    = _addPoint(impl.drawable.convertToPhysicalPoint(impl.drawable.scrollPosition()), retval.screenPosition);
+      retval.logicalPosition  = impl.drawable.convertToLogicalPoint(physicalPosition);
+      retval.physicalPosition = physicalPosition;
       retval.offsetPosition   = _subtractPoint(retval.logicalPosition, impl.wrapper._position);
     }
 
@@ -836,7 +839,7 @@ var Drawable = _class("DrawableSVG", {
       if (position) {
         position = _clipPoint(
           position,
-          { x: 0, y: 0 },
+          this.wrapper._inverse_transform.translate(),
           _subtractPoint(
             this.wrapper._content_size,
             this.wrapper._inverse_transform.apply(
@@ -897,11 +900,11 @@ var Drawable = _class("DrawableSVG", {
     },
 
     convertToLogicalPoint: function(point) {
-      return _addPoint(this.scrollPosition(), this.wrapper._inverse_transform.apply(point));
+      return this.wrapper._inverse_transform.apply(point);
     },
 
     convertToPhysicalPoint: function(point) {
-      return _addPoint(this.wrapper._transform.apply(this.scrollPosition()), point);
+      return this.wrapper._transform.apply(point);
     },
 
     _updateContentSize: function () {

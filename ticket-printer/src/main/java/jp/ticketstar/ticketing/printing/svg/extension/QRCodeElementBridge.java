@@ -18,7 +18,6 @@ import org.apache.batik.dom.svg.AnimatedLiveAttributeValue;
 import org.apache.batik.dom.svg.LiveAttributeException;
 import org.apache.batik.gvt.ShapeNode;
 import org.w3c.dom.Element;
-import org.w3c.dom.events.MutationEvent;
 
 import com.google.zxing.qrcode.encoder.ByteMatrix;
 import com.google.zxing.qrcode.encoder.Encoder;

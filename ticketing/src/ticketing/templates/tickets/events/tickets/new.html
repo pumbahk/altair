@@ -1,0 +1,58 @@
+<%inherit file="../../../layout_2cols.html" />
+<%namespace file="/common/helpers.html" import="breadcrumbs,flash_messages,form_item"/>
+
+<%
+event_id = request.matchdict["event_id"]
+event = request.context.event
+%>
+
+<style type="text/css">
+  .controls select{width: 80%;}
+  .controls input{width: 80%;}
+  .controls textarea{width: 80%; min-height:100px;}
+</style>
+
+<div class="breadcrumbs">
+  ${breadcrumbs(
+    names=[u'イベント', event.title, u'券面', u"チケットテンプレート", u"登録"],
+    urls=[request.route_path('events.index'), 
+          request.route_path('events.show', event_id=event.id),
+          request.route_path('events.tickets.index', event_id=event.id),
+          request.route_path('events.tickets.boundtickets.show', event_id=event.id, id=request.matchdict["id"]),
+         ]
+  )}
+</div>
+
+<div class="page-header">
+  <h3>チケットテンプレート登録</h3>
+</div>
+
+<%doc>
+<div class="content">
+  ${flash_messages(request)}
+  ${alert_message(form)}
+</div>
+</%doc>
+
+<%
+   event_id=request.matchdict["event_id"]
+   route_name = u'編集'
+   route_path = request.route_path('events.tickets.boundtickets.edit', id=template.id, event_id=event.id)
+   place_holder = u"この欄が空の場合には、現在登録されているファイルが使われます"
+%>
+
+
+
+<div class="well">
+  <form class="form-horizontal" action="${route_path}" method="POST"
+		enctype="multipart/form-data">
+	<fieldset>
+	  ${form_item(form.name)}
+	  ${form_item(form.ticket_format)}
+	  ${form_item(form.drawing, option={"placeholder": place_holder})}
+	</fieldset>
+	<div class="form-actions">
+	  <input class="btn btn-primary" type="submit" name="submit" value="登録">
+	</div>
+  </form>
+</div>

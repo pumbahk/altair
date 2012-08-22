@@ -30,7 +30,7 @@
   <ul class="nav nav-pills">
     <li class="dropdown" id="top-search-text">
       <form id="search-order" action="${url}" method="POST">
-        <input name="order_no" type="text" class="search-query" placeholder="受注番号">
+        <input name="order_no" type="text" class="search-query" placeholder="予約番号">
       </form>
     </li>
     <li class="dropdown" id="top-search" style="margin-left: 10px;">
@@ -77,8 +77,8 @@
           </label>
           <div class="controls">
             <div style="float: left;">
-              <input class="datefield" style="width: 140px;" id="ordered_from" name="ordered_from" type="text"> 〜
-              <input class="datefield" style="width: 140px;" id="ordered_to" name="ordered_to" type="text">
+              <input class="datefield" style="width: 140px;" id="ordered_from" name="ordered_from" type="text" value="${form.ordered_from._value()}"> 〜
+              <input class="datefield" style="width: 140px;" id="ordered_to" name="ordered_to" type="text" value="${form.ordered_to._value()}">
             </div>
           </div>
         </div>
@@ -86,6 +86,18 @@
         ${h.form_item(form.payment_method)}
         ${h.form_item(form.delivery_method)}
         ${h.form_item(form.status)}
+        ${h.form_item(form.tel)}
+        <div class="control-group ">
+          <label class="control-label">
+            ${form.start_on_from.label.text}
+          </label>
+          <div class="controls">
+            <div style="float: left;">
+              <input class="datefield" style="width: 140px;" id="start_on_from" name="start_on_from" type="text" value="${form.start_on_from._value()}"> 〜
+              <input class="datefield" style="width: 140px;" id="start_on_to" name="start_on_to" type="text" value="${form.start_on_to._value()}">
+            </div>
+          </div>
+        </div>
         ${h.form_item(form.sort)}
         ${h.form_item(form.direction)}
         ${h.form_item(form.performance_id)}

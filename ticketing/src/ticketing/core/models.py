@@ -3,7 +3,8 @@
 import logging
 from datetime import datetime
 
-from sqlalchemy import Table, Column, ForeignKey, ForeignKeyConstraint, func, or_, and_
+from sqlalchemy import Table, Column, ForeignKey, func, or_, and_
+from sqlalchemy import ForeignKeyConstraint, UniqueConstraint
 from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode
 from sqlalchemy.orm import join, backref, column_property
 from sqlalchemy.orm.collections import attribute_mapped_collection
@@ -190,6 +191,7 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id              = Column(Identifier, primary_key=True)
     l0_id           = Column(String(255))
     name            = Column(Unicode(50), nullable=False, default=u"", server_default=u"")
+    seat_no         = Column(String(255))
     stock_id        = Column(Identifier, ForeignKey('Stock.id'))
 
     venue_id        = Column(Identifier, ForeignKey('Venue.id', ondelete='CASCADE'), nullable=False)
@@ -506,7 +508,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization = relationship('Organization', backref='events')
 
     performances = relationship('Performance', backref='event')
-    stock_types = relationship('StockType', backref='event', order_by='StockType.order_no')
+    stock_types = relationship('StockType', backref='event', order_by='StockType.display_order')
     stock_holders = relationship('StockHolder', backref='event')
 
     _first_performance = None
@@ -602,8 +604,8 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 "tickets":[1,2],
               ],
               "tickets":[
-                {"id":1, "sale_id":1, "name":"A席大人", "seat_type":"A席", "price":5000, "order_no":1},
-                {"id":2, "sale_id":2, "name":"B席大人", "seat_type":"B席", "price":3000, "order_no":2},
+                {"id":1, "sale_id":1, "name":"A席大人", "seat_type":"A席", "price":5000, "display_order":1},
+                {"id":2, "sale_id":2, "name":"B席大人", "seat_type":"B席", "price":3000, "display_order":2},
               ],
               "sales":[
                 {"id":1, "name":"販売区分1", "start_on":~, "end_on":~, "seat_choice":true},
@@ -764,6 +766,9 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     event_id = Column(Identifier, ForeignKey('Event.id'))
     event = relationship('Event', backref='sales_segments')
 
+    membergroup_id = Column(Identifier, ForeignKey('MemberGroup.id'))
+    membergroup = relationship('MemberGroup', backref='salessegments')
+
     def get_cms_data(self):
         start_at = isodate.datetime_isoformat(self.start_at) if self.start_at else ''
         end_at = isodate.datetime_isoformat(self.end_at) if self.end_at else ''
@@ -907,7 +912,6 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     stock = relationship("Stock", backref="product_items")
 
     quantity = Column(Integer, nullable=False, default=1, server_default='1')
-
     ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id'), nullable=True)
 
     @property
@@ -968,11 +972,11 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
     type = Column(Integer)  # @see StockTypeEnum
-    order_no = Column(Integer, default=1)
+    display_order = Column(Integer, nullable=False, default=1)
     event_id = Column(Identifier, ForeignKey("Event.id"))
     quantity_only = Column(Boolean, default=False)
     style = Column(MutationDict.as_mutable(JSONEncodedDict(1024)))
-    stocks = relationship('Stock', backref=backref('stock_type', order_by='StockType.order_no'))
+    stocks = relationship('Stock', backref=backref('stock_type', order_by='StockType.display_order'))
 
     @property
     def is_seat(self):
@@ -1188,18 +1192,18 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
     price = Column(Numeric(precision=16, scale=2), nullable=False)
-    order_no = Column(Integer, default=1)
+    display_order = Column(Integer, nullable=False, default=1)
 
     sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'), nullable=True)
-    sales_segment = relationship('SalesSegment', uselist=False, backref=backref('product', order_by='Product.order_no'))
+    sales_segment = relationship('SalesSegment', uselist=False, backref=backref('product', order_by='Product.display_order'))
 
     seat_stock_type_id = Column(Identifier, ForeignKey('StockType.id'), nullable=True)
-    seat_stock_type = relationship('StockType', uselist=False, backref=backref('product', order_by='Product.order_no'))
+    seat_stock_type = relationship('StockType', uselist=False, backref=backref('product', order_by='Product.display_order'))
 
     event_id = Column(Identifier, ForeignKey('Event.id'))
-    event = relationship('Event', backref=backref('products', order_by='Product.order_no'))
+    event = relationship('Event', backref=backref('products', order_by='Product.display_order'))
 
-    items = relationship('ProductItem', backref=backref('product', order_by='Product.order_no'))
+    items = relationship('ProductItem', backref=backref('product', order_by='Product.display_order'))
 
     @staticmethod
     def find(performance_id=None, event_id=None, sales_segment_id=None, include_deleted=False):
@@ -1276,7 +1280,7 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             'price':floor(self.price),
             'sale_id':self.sales_segment_id,
             'seat_type':self.seat_type(),
-            'order_no':self.order_no,
+            'display_order':self.display_order,
         }
         if self.deleted_at:
             data['deleted'] = 'true'
@@ -1590,6 +1594,15 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 status_cond.append(and_(Order.canceled_at==None, Order.paid_at==None, Order.delivered_at==None))
             if status_cond:
                 query = query.filter(or_(*status_cond))
+        condition = form.tel.data
+        if condition:
+            query = query.join(Order.shipping_address).filter(ShippingAddress.tel_1==condition)
+        condition = form.start_on_from.data
+        if condition:
+            query = query.join(Order.performance).filter(Performance.start_on>=condition)
+        condition = form.start_on_to.data
+        if condition:
+            query = query.join(Order.performance).filter(Performance.start_on<=condition)
         return query
 
 
@@ -1688,6 +1701,10 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def templates_query(cls):
         return cls.filter_by(event_id=None)
 
+    @property
+    def drawing(self):
+        return self.data["drawing"]
+
     def create_event_bound(self, event):
         new_object = self.__class__.clone(self)
         new_object.event_id = event.id
@@ -1695,15 +1712,21 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class TicketBundleAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "TicketBundleAttribute" 
-    ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id', ondelete='CASCADE'), primary_key=True, nullable=False)
-    name = Column(String(255), primary_key=True, nullable=False)
+    id = Column(Identifier, primary_key=True)
+    ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id', ondelete='CASCADE'), nullable=False)
+    name = Column(String(255), nullable=False)
     value = Column(String(1023))
+
+    __table_args__= (
+        UniqueConstraint("ticket_bundle_id", "name", "deleted_at", name="ib_unique_1"), 
+        )
 
 from ..operators.models import Operator
 
 class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "TicketBundle"
     id = Column(Identifier, primary_key=True)
+    name = Column(Unicode(255), default=u"", nullable=False)
     event_id = Column(Identifier, ForeignKey('Event.id', ondelete='CASCADE'))
     event = relationship('Event', uselist=False, backref='ticket_bundles')
     operator_id = Column(Identifier, ForeignKey('Operator.id'))
@@ -1712,6 +1735,18 @@ class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     attributes = association_proxy('attributes_', 'value', creator=lambda k, v: SeatAttribute(name=k, value=v))
     tickets = relationship('Ticket', secondary=Ticket_TicketBundle.__table__, backref='bundles')
     product_items = relationship('ProductItem', backref='ticket_bundle')
+
+    def replace_tickets(self, news):
+        for ticket in self.tickets:
+            self.tickets.remove(ticket)
+        for ticket in news:
+            self.tickets.append(ticket)
+
+    def replace_product_items(self, news):
+        for product_item in self.product_items:
+            self.product_items.remove(product_item)
+        for product_item in news:
+            self.product_items.append(product_item)
 
 class TicketPrintHistory(Base, BaseModel, WithTimestamp):
     __tablename__ = "TicketPrintHistory"
@@ -1724,4 +1759,36 @@ class TicketPrintHistory(Base, BaseModel, WithTimestamp):
     seat = relationship('Seat', backref='print_histories')
     ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id'), nullable=False)
     ticket_bundle = relationship('TicketBundle', backref='print_histories')
+
+class TicketPrintQueue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = "TicketPrintQueue"
+    id = Column(Identifier, primary_key=True, autoincrement=True, nullable=False)
+    operator_id = Column(Identifier, ForeignKey('Operator.id'), nullable=True)
+    operator = relationship('Operator', uselist=False)
+    data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
+
+    @property
+    def drawing(self):
+        return self.data["drawing"]
+
+    @classmethod
+    def enqueue(self, operator, data):
+        '''
+        '''
+        DBSession.add(TicketPrintQueue(data = data, operator = operator))
+
+    @classmethod
+    def dequeue_all(self, operator):
+        '''
+        '''
+        ret_val = []
+        now = datetime.now()
+        queues = TicketPrintQueue.filter_by(deleted_at = None).order_by('created_at desc').all()
+        for queue in queues:
+            queue.deleted_at = now
+            ret_val.append(dict(
+                id = queue.id,
+                data = queue.data
+            ))
+        return ret_val
 

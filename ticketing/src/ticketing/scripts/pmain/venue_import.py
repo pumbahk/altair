@@ -168,11 +168,14 @@ def import_tree(organization, tree, file):
             for seat_obj in seat_objs:
                 seat = Seat(venue=venue, l0_id=seat_obj['_node'].get('id'), group_l0_id=group_l0_id)
                 name = seat_obj['properties'].get('name')
+                seat_no = seat_obj['properties'].get('seat_no')
                 gate = seat_obj['properties'].get('gate')
                 floor = seat_obj['properties'].get('floor')
                 indexes = seat_obj['collections'].get('indexes')
                 if name is not None:
                     seat.name = name
+                if seat_no is not None:
+                    seat.seat_no = seat_no
                 if row_name is not None:
                     seat['row'] = row_name
                 if gate is not None:

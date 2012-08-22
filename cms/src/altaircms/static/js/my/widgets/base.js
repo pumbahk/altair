@@ -36,7 +36,7 @@ var widget = (function(){
         widget_name: null, 
         where: null,  //widget self
         get_block_name: function(e){}, 
-        get_orderno: function(e){}, 
+        get_display_order: function(e){}, 
         get_data: function(e){}, 
         set_data: function(e, data){}, 
         finish_dialog: function(){}, 

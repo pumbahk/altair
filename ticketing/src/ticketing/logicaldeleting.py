@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 def install():
+    logger.debug('install extension for logical deleting')
     sqlahelper._session = orm.scoped_session(
         orm.sessionmaker(class_=LogicalDeletableSession, 
             extension=_ZTE()))

@@ -1,6 +1,9 @@
 <%page args="form" />
 <%namespace file="/common/helpers.html" name="h" />
 
+<link rel="stylesheet" type="text/css" href="/static/css/decentcolorpicker.css" />
+<script type="text/javascript" src="/static/js/jquery.decentcolorpicker.js"></script>
+
 <script type="text/javascript">
   $(function() {
     $('#modal-stock_type #type').change(function() {
@@ -45,7 +48,7 @@
       ${h.form_item(form.name, option={'style':'display: block;','maxlength':255})}
       ${h.form_item(form.quantity_only, option={'style':'display: inline;'})}
       ${h.form_item(form.type, option={'style':'display: inline;'})}
-      ${h.form_item(form.order_no)}
+      ${h.form_item(form.display_order)}
       <hr />
 
       <div id="color-picker">

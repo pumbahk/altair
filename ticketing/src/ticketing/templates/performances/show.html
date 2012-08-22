@@ -73,7 +73,6 @@ $(function () {
     <li id="seat-allocation-tab"><a href="${route_path}/seat-allocation">席種／配券</a></li>
     <li id="product-tab"><a href="${route_path}/product">商品</a></li>
     <li id="reservation-tab"><a href="${route_path}/reservation">予約</a></li>
-    <li id="ticket-designer-tab"><a href="${route_path}/ticket-designer">チケット券面</a></li>
   </ul>
   <div class="tab-content" id="tabbable-tab-content">
     % if tab == 'product':
@@ -83,10 +82,6 @@ $(function () {
     % elif tab == 'reservation':
     <div class="tab-pane" id="reservation">
       <%include file="./_reservation.html" args="form=form_order, form_search=form_search, orders=orders" />
-    </div>
-    % elif tab == 'ticket-designer':
-    <div class="tab-pane" id="ticket-designer">
-      <%include file="./_ticket_designer.html" />
     </div>
     % else:
     <div class="tab-pane" id="seat-allocation">

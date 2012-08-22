@@ -36,7 +36,7 @@ class StockTypeForm(Form):
         default=StockTypeEnum.Seat.v,
         widget=CheckboxInput(),
     )
-    order_no = IntegerField(
+    display_order = IntegerField(
         label=u'表示順',
     )
     fill_color = TextField(

@@ -1,13 +1,17 @@
 # coding: utf-8
 
+import csv
+from datetime import datetime
+from urllib2 import urlopen
+
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.response import Response
 from sqlalchemy.orm import joinedload, noload
-from urllib2 import urlopen
 
 from ticketing.models import DBSession
 from ticketing.core.models import Venue, Seat, SeatAdjacencySet, Stock, StockHolder, StockType
+from ticketing.venues.export import SeatCSV
 
 @view_config(route_name="api.get_drawing", request_method="GET")
 def get_drawing(request):
@@ -41,6 +45,7 @@ def get_seats(request):
         for seat in DBSession.query(Seat).options(joinedload('attributes_'), joinedload('areas'), joinedload('status_')).filter_by(venue=venue):
             seat_datum = {
                 'id': seat.l0_id,
+                'seat_no': seat.seat_no,
                 'stock_id': seat.stock_id,
                 'status': seat.status,
                 'areas': [area.id for area in seat.areas],
@@ -79,7 +84,7 @@ def get_seats(request):
             is_seat=stock_type.is_seat,
             quantity_only=stock_type.quantity_only,
             style=stock_type.style) \
-        for stock_type in DBSession.query(StockType).filter_by(event=venue.performance.event).order_by(StockType.order_no)
+        for stock_type in DBSession.query(StockType).filter_by(event=venue.performance.event).order_by(StockType.display_order)
         ]
 
     retval[u'stock_holders'] = [
@@ -91,3 +96,26 @@ def get_seats(request):
         ]
 
     return retval
+
+@view_config(route_name='seats.download')
+def download(request):
+    venue_id = int(request.matchdict.get('venue_id', 0))
+    venue = Venue.get(venue_id)
+    if venue is None:
+        return HTTPNotFound("Venue id #%d not found" % venue_id)
+
+    seats = Seat.filter_by(venue_id=venue_id).all()
+
+    headers = [
+        ('Content-Type', 'application/octet-stream; charset=cp932'),
+        ('Content-Disposition', 'attachment; filename=seats_{date}.csv'.format(date=datetime.now().strftime('%Y%m%d%H%M%S')))
+    ]
+    response = Response(headers=headers)
+
+    seats_csv = SeatCSV(seats)
+
+    writer = csv.DictWriter(response, seats_csv.header, delimiter=',', quoting=csv.QUOTE_ALL)
+    writer.writeheader()
+    writer.writerows(seats_csv.rows)
+
+    return response

@@ -1,0 +1,41 @@
+<%inherit file="./base.html"/>
+
+<div style="background-image:url(${request.static_url('ticketing.cart:static/img/mobile/bg_bar.gif')});background-color:#bf0000" bgcolor="#bf0000" background="${request.static_url('ticketing.cart:static/img/mobile/bg_bar.gif')}"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>チケット購入</font></div>
+
+${event.title}
+
+<hr size="1" color="#888888" noshade="noshade" />
+
+<p>
+<font color="#ffbf00">■</font>席種をお選びください
+</p>
+
+<form>
+  <select name="stid">
+  % for seat_type in seat_types:
+    <option value="${seat_type['id']}">${seat_type['name']}</option>
+  % endfor
+  </select>
+  <div style="text-align:center;">
+  <br/>
+  <input type="submit" value="次へ">
+  </div>
+</form>
+<form action="${request.route_url('cart.index', event_id=event.id)}">
+  <div style="text-align:center;">
+  <input type="hidden" name="v" value="${venue.name}">
+  <input type="submit" value="戻る">
+  </div>
+</form>
+
+<hr size="1" color="#888888" noshade="noshade" />
+
+<div style="background-color:#ffdddd">会場</div>
+<div>
+  ${venue.name}
+</div>
+
+<div style="background-color:#ffdddd">日時</div>
+<div>
+  ${performance.start_on}
+</div>

@@ -533,6 +533,62 @@ class DummyStocker(object):
                     stock_type=testing.DummyModel(quantity_only=False))), 10)
         ]
 
+
+class get_valid_sales_urlTests(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.session = _setup_db()
+
+    def setUp(self):
+        self.config = testing.setUp()
+
+    def tearDown(self):
+        testing.tearDown()
+
+    def _callFUT(self, *args, **kwargs):
+        from .api import get_valid_sales_url
+        return get_valid_sales_url(*args, **kwargs)
+
+    def _create_data(self):
+        import ticketing.core.models as c_m
+        import ticketing.users.models as u_m
+        event = c_m.Event()
+        membership = u_m.Membership(name='ms1')
+        membergroup = u_m.MemberGroup(name='mg1', membership=membership)
+        sales_segment = c_m.SalesSegment(event=event,
+            membergroup=membergroup)
+        self.session.add(event)
+        self.session.add(membership)
+        self.session.flush()
+        return event, membergroup
+
+    def test_it(self):
+        self.config.testing_securitypolicy(
+            "test_user",
+            ['membership:ms1', 'membergroup:mg1']
+        )
+        self.config.add_route('cart.index.sales',
+            '{event_id}/{sales_segment_id}')
+        event, membergroup = self._create_data()
+        request = testing.DummyRequest()
+        result = self._callFUT(request, event)
+
+        self.assertEqual(result, 'http://example.com/1/1')
+
+    def test_it_not_found(self):
+        self.config.testing_securitypolicy(
+            "test_user",
+            ['membership:ms1', 'membergroup:mg2']
+        )
+        self.config.add_route('cart.index.sales',
+            '{event_id}/{sales_segment_id}')
+        event, membergroup = self._create_data()
+        request = testing.DummyRequest()
+        result = self._callFUT(request, event)
+
+        self.assertIsNone(result)
+
 class DummyReserving(object):
     """ dummy for IReserving"""
     def __init__(self, request):
