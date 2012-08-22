@@ -43,21 +43,29 @@
 						<tr>
 							<th scope="row"><img src="${request.static_url('ticketing.cart:static/img/settlement/icon_dummy.gif')}" alt="" width="21" height="21" /> ${product.product.name}</th>
 							<td><strong>${product.quantity}</strong>枚</td>
+							<td>
+                % for seat in product.seats:
+                ${seat['name']}<br/>
+                % endfor
+              </td>
 							<td class="align1">￥${h.format_number(product.product.price * product.quantity)}</td>
 						</tr>
                         %endfor
 						<tr id="commission">
 							<th scope="row">決済手数料</th>
 							<td>&nbsp;</td>
+							<td>&nbsp;</td>
 							<td class="align1">￥${h.format_number(cart.transaction_fee)}</td>
 						</tr>
 						<tr id="commission">
 							<th scope="row">配送手数料</th>
 							<td>&nbsp;</td>
+							<td>&nbsp;</td>
 							<td class="align1">￥${h.format_number(cart.delivery_fee)}</td>
 						</tr>
 						<tr id="commission">
 							<th scope="row">システム利用料</th>
+							<td>&nbsp;</td>
 							<td>&nbsp;</td>
 							<td class="align1">￥${h.format_number(cart.system_fee)}</td>
 						</tr>
@@ -65,11 +73,13 @@
 						<tr id="commission">
 							<th scope="row">手数料</th>
 							<td>&nbsp;</td>
+							<td>&nbsp;</td>
 							<td class="align1">￥600</td>
 						</tr>
 -->
 						<tr id="total">
                             <th scope="row"><img src="${request.static_url('ticketing.cart:static/img/settlement/total.gif')}" alt="合計金額" width="67" height="16" /></th>
+							<td>&nbsp;</td>
 							<td>&nbsp;</td>
 							<td class="align1">￥${h.format_number(cart.total_amount)}</td>
 						</tr>

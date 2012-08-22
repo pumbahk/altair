@@ -1,6 +1,7 @@
 # encoding: utf-8
-
 import logging
+import itertools
+import operator
 from datetime import datetime
 
 from sqlalchemy import Table, Column, ForeignKey, func, or_, and_
@@ -1630,6 +1631,11 @@ class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         for item in self.ordered_product_items:
             item.release()
 
+    @property
+    def seats(self):
+        return sorted(itertools.chain.from_iterable(i.seatdicts for i in self.ordered_product_items),
+            key=operator.itemgetter('l0_id'))
+
 class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderedProductItem'
     id = Column(Identifier, primary_key=True)
@@ -1662,6 +1668,11 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             {'quantity': StockStatus.quantity + self.product_item.quantity}
         ).where(StockStatus.stock_id==self.product_item.stock_id)
         DBSession.bind.execute(query)
+
+    @property
+    def seatdicts(self):
+        return ({'name': s.name, 'l0_id': s.l0_id}
+                for s in self.seats)
 
 class Ticket_TicketBundle(Base, BaseModel, LogicallyDeleted):
     __tablename__ = 'Ticket_TicketBundle'
