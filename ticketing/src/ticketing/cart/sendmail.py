@@ -8,6 +8,7 @@ from .api import get_complete_mail
 from zope.interface import implementer
 from .interfaces import ICompleteMail
 from . import helpers as h
+from ..models import DBSession
 
 ## dummy mailer
 from pyramid_mailer.interfaces import IMailer
@@ -32,12 +33,17 @@ def devnull_mailer(config):
     config.registry.registerUtility(mailer, IMailer)
 
 def on_order_completed(order_completed):
-    order = order_completed.order
-    request = order_completed.request
-    message = create_message(request, order)
-    mailer = get_mailer(request) ## todo.component化
-    mailer.send(message)
-    logger.info("send mail to %s" % message.recipients)
+    try:
+        order = order_completed.order
+        request = order_completed.request
+        message = create_message(request, order)
+        mailer = get_mailer(request) ## todo.component化
+        mailer.send(message)
+        logger.info("send mail to %s" % message.recipients)
+    except Exception, e:
+        ## id見れないと困る
+        DBSession.flush(order)
+        logger.error("*complete mail* send mail is failed. order id: %d" % order.id,  exc_info=1)
 
 def create_message(request, order):
     complete_mail = get_complete_mail(request)

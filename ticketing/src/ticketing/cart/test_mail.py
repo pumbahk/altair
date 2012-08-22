@@ -137,9 +137,29 @@ class SendCompleteMailTest(unittest.TestCase):
 
         
     def test_exception_in_send_mail_action(self):
+        """ メール作成中にエラーが出たときにorderのidがログに出ていることを確認する。
         """
-        """
+        import mock
+        from pyramid.interfaces import IRequest
+        from ticketing.cart.interfaces import ICompleteMail
 
+        class RaiseExceptionCompleteMail(object):
+            def __init__(self, request):
+                self.request = request
+                
+            def build_message(self, order):
+                raise Exception("wooo-wheee")
+
+        with mock.patch("ticketing.cart.sendmail.logger") as m:
+            self.config.registry.adapters.register([IRequest], ICompleteMail, "", RaiseExceptionCompleteMail)
+            request = testing.DummyRequest()
+            order = testing.DummyResource(id=121212)
+            self._callFUT(request, order)
+
+            self.assertTrue(m.error.called)
+            self.assertIn("121212", m.error.call_args[0][0])
+
+        
     def test_normal_success_around_header(self):
         """ card支払いqr受け取りだけれど。このテストは送り先などのチェックに利用。
         """
