@@ -259,6 +259,7 @@ def build_dicts_from_ordered_product_item(ordered_product_item, user_profile=Non
 
 from lxml.etree import Element as xml_Element
 from lxml.etree import tostring as xml_ToString
+from lxml.etree import fromstring as xml_FromString
 import lxml.html
 
 class SvgPageSet(object):
@@ -268,16 +269,32 @@ class SvgPageSet(object):
             nsmap={
                 'svg': 'http://www.w3.org/2000/svg',
                 'ts' : 'http://xmlns.ticketstar.jp/svg-extension'
-                }
+                },
+            version='1.2',
+
             )
         self.page_set = xml_Element('{http://www.w3.org/2000/svg}pageSet')
         self.result.append(self.page_set)
+        self.is_set_page_setting = False
 
     def append_page(self, svg):
+
+
         page = xml_Element('{http://www.w3.org/2000/svg}page')
-        page.append(lxml.html.fromstring(svg))
+        root = xml_FromString(svg)
+        if not self.is_set_page_setting :
+            self.result.set('version', root.get('version'))
+            self.result.set('width', root.get('width'))
+            self.result.set('height', root.get('height'))
+            self.result.set('id', root.get('id'))
+            self.is_set_page_setting = True
+
+        for child in root:
+            page.append(child)
+
         self.page_set.append(page)
 
     def merge(self):
+        print xml_ToString(self.result, xml_declaration=True, encoding='utf-8')
         return xml_ToString(self.result, xml_declaration=True, encoding='utf-8')
 

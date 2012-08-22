@@ -12,7 +12,7 @@ import jp.ticketstar.ticketing.printing.svg.SVGOMPageElement;
 import jp.ticketstar.ticketing.printing.svg.SVGOMPageSetElement;
 
 import org.apache.batik.bridge.GVTBuilder;
-import org.apache.batik.dom.svg.AbstractElement;
+import org.apache.batik.dom.AbstractElement;
 import org.apache.batik.dom.svg.SVGOMElement;
 import org.apache.batik.dom.svg.SVGOMTitleElement;
 import org.apache.batik.gvt.CompositeGraphicsNode;

@@ -197,7 +197,7 @@ public class AppApplet extends JApplet implements IAppWindow  {
 		
 		String  queueApiUrl = getParameter("queueApiUrl");  
 		if (queueApiUrl == null) {
-			queueApiUrl = "";
+			queueApiUrl = "http://0.0.0.0:7654/tickets/print/dequeue";
 		}
 		String params = "";
 		

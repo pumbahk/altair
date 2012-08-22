@@ -75,8 +75,14 @@ def get_tickets(order):
             dicts = build_dicts_from_ordered_product_item(ordered_product_item)
             for dict_ in dicts:
                 for ticket in bundle.tickets:
+<<<<<<< HEAD
                     svg = etree.tostring(convert_svg(etree.ElementTree(etree.fromstring(pystache.render(ticket.data['drawing'], dict_)))), encoding=unicode)
                     ticket = get_ticket(order.order_no, ordered_product_item.product_item, svg)
+=======
+                    # ticket.ticket_format.delivery_methods
+                    svg = convert_svg(etree.parse(pystache.render(ticket.data['drawing'], dict_)))
+                    ticket = get_ticket(order.order_no, ordered_product_item, svg)
+>>>>>>> 券面印刷APIの修正
                     tickets.append(ticket)
     return tickets
 

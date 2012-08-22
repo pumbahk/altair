@@ -6,12 +6,16 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Dimension2D;
 import java.awt.print.Printable;
 import java.awt.print.PrinterJob;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLConnection;
+import java.util.List;
 
 import javax.swing.JFileChooser;
 
@@ -20,6 +24,7 @@ import jp.ticketstar.ticketing.printing.gui.IAppWindow;
 import jp.ticketstar.ticketing.printing.svg.ExtendedSVG12BridgeContext;
 import jp.ticketstar.ticketing.printing.svg.ExtendedSVG12OMDocument;
 import jp.ticketstar.ticketing.printing.svg.OurDocumentLoader;
+import jp.ticketstar.ticketing.printing.svg.OurSAXSVGDocumentFactory;
 
 import org.apache.batik.bridge.BridgeExtension;
 import org.apache.batik.bridge.UserAgent;
@@ -40,8 +45,22 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+class TicketMetadata {
+	Integer id;
+}
+class PrintData {
+	String drawing;
+}
+class PrintQueue {
+	PrintData data;
+}
+class PrintQueueList {
+	List<TicketMetadata> tickets;
+	String svg;
+}
+
 interface JsonLoadCallback {
-	void success(final int status, final JsonObject jobj);
+	void success(final int status, final String response);
 	void fail(final int status);
 }
 
@@ -55,7 +74,8 @@ class JsonLoader extends Thread {
 	
 	public void run() {
 		try {
-			callback.success(200, new Gson().fromJson(stringOfUrl(url), JsonObject.class));
+			String res = stringOfUrl(url);
+			callback.success(200, res);
 		} catch (IOException e) {
 			e.printStackTrace(System.err);
 			callback.fail(0);
@@ -65,7 +85,10 @@ class JsonLoader extends Thread {
 
 	public static String stringOfUrl(String addr) throws IOException {
 	    ByteArrayOutputStream output = new ByteArrayOutputStream();
-	    IOUtils.copy(new URL(addr).openStream(), output);
+	    URL url = new URL(addr);
+	    URLConnection con =  url.openConnection();
+	    con.setRequestProperty("Cookie", "backendtkt=0ad7a36b5c172ec198ca55aceebc83a350349138YWRtaW4%3D!userid_type:b64unicode");
+	    IOUtils.copy(con.getInputStream(), output);
 	    return output.toString();
 	}
 } 
@@ -160,23 +183,20 @@ public class AppService extends SVGUserAgentGUIAdapter implements UserAgent {
 		final ExtendedSVG12BridgeContext bridgeContext = new ExtendedSVG12BridgeContext(this, loader);
 		
 		new JsonLoader(apiUrl, new JsonLoadCallback() {
-			public void success(int status, JsonObject jobj) {
-				StringBuffer sb = new StringBuffer();
-				JsonArray queueArray = jobj.get("print_queue_list").getAsJsonArray();
-				for (int i=0; i< queueArray.size() ; i++){
-					JsonObject jsonObj = queueArray.get(i).getAsJsonObject();
-					String svg = jsonObj.get("drawing").getAsString();
-					sb.append(svg);
-				}
-				StringReader reader = new StringReader(sb.toString());
+			public void success(int status, String response) {
+				PrintQueueList queueList = (new Gson()).fromJson(response, PrintQueueList.class);
 				String uri = "set the document URI, so Batik will be able to resolve relative path";
 				SVGDocument doc = null;
 				try {
-					doc = new SAXSVGDocumentFactory(XMLResourceDescriptor.getXMLParserClassName()).createSVGDocument(uri,reader);
+					byte[] bytes = queueList.svg.getBytes("UTF-8");
+					InputStream input = new ByteArrayInputStream(bytes);
+					OurSAXSVGDocumentFactory documentFactory = new OurSAXSVGDocumentFactory(XMLResourceDescriptor.getXMLParserClassName(), true);
+			        doc = documentFactory.createSVGDocument(uri, input);
+
 				} catch (Exception ex) {
 					ex.printStackTrace(System.err);
 				} finally {
-					reader.close();
+	
 				}
 
 				try {
