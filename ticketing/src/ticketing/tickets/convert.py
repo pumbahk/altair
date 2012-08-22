@@ -905,10 +905,11 @@ class Visitor(object):
                   stroke_width=1,
                   font_size=12,
                   text_anchor='start'),
-            False)
+            {})
         self.style_stack = []
         self.current_transform = I
         self.transform_stack = []
+        self.overloaded_classes = {}
         if global_transform is not None:
             self._apply_transform(global_transform)
         self.css_parser = cssutils.CSSParser()
@@ -1128,6 +1129,9 @@ class Visitor(object):
             self.emitter.emit_stroke_width(new_style.stroke_width if new_style.stroke_width is not StyleNone else 0)
         if new_style.font_size != old_style.font_size:
             self.emitter.emit_font_size((new_style.font_size if new_style.font_size is not StyleNone else 0))
+        if self.current_style_ctx.style.line_height != new_style.line_height:
+            self.emitter.emit_line_height((new_style.line_height if new_style.line_height is not StyleNone else 0))
+
 
     def emit_transform(self, old_transform, new_transform):
         if not numpy.array_equal(old_transform, new_transform):
@@ -1172,22 +1176,28 @@ class Visitor(object):
             if text_anchor_class != old_text_anchor_class:
                 classes_pushed['text_anchor'] = text_anchor_class
 
-        if new_style.line_height is not None and self.current_style_ctx.style.line_height != new_style.line_height:
-            self.emitter.emit_line_height(new_style.line_height)
+        stack_level = None
+        for k, l in self.overloaded_classes.items():
+            if k in classes_pushed:
+                if stack_level is None or stack_level > l:
+                    stack_level = l
 
-        prev_classes_pushed = self.current_style_ctx.classes_pushed
-        classes_overloaded = False
-        for k in classes_pushed:
-            if k in prev_classes_pushed:
-                classes_overloaded = True
-                break
+        if stack_level is not None:
+            i = len(self.style_stack)
+            while i > stack_level:
+                i -= 1
+                style_ctx = self.style_stack[i]
+                prev_classes_pushed = style_ctx.classes_pushed
+                for _ in range(0, len(prev_classes_pushed)):
+                    self.emitter.emit_pop_class()
+                if i == stack_level:
+                    _classes_pushed = dict(prev_classes_pushed)
+                    _classes_pushed.update(classes_pushed)
+                    classes_pushed = _classes_pushed
+                prev_classes_pushed.clear()
 
-        if classes_overloaded:
-            for _ in range(0, len(prev_classes_pushed)):
-                self.emitter.emit_pop_class()
-            prev_classes_pushed.clear()
-
-        for v in classes_pushed.values():
+        for k, v in classes_pushed.items():
+            self.overloaded_classes[k] = len(self.style_stack)
             self.emitter.emit_push_class(v)
 
         self.current_style_ctx = StyleContext(new_style, classes_pushed)
@@ -1196,6 +1206,7 @@ class Visitor(object):
         prev_style_ctx = self.style_stack.pop()
         for _ in range(0, len(self.current_style_ctx.classes_pushed)):
             self.emitter.emit_pop_class()
+
         if prev_style_ctx.style.line_height is not None and self.current_style_ctx.style.line_height != prev_style_ctx.style.line_height:
             self.emitter.emit_line_height(prev_style_ctx.style.line_height)
         self.emit_styles(self.current_style_ctx.style, prev_style_ctx.style)
@@ -1206,7 +1217,6 @@ class Visitor(object):
         transform_str = elem.get(u'transform', None)
         if transform_str != None:
             self._apply_transform(self.parse_transform(transform_str))
-
 
     def _apply_transform(self, matrix):
         new_transform = self.current_transform * matrix
