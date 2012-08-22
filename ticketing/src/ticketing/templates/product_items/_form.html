@@ -2,12 +2,12 @@
 <%namespace file="/common/helpers.html" import="form_item" />
 
 <script type="text/javascript">
-  stock_holder2stocks = {
+  var stock_holder2stocks = {
     % for stock_holder in performance.event.stock_holders:
       '${stock_holder.id}':[
         % for stock in stock_holder.stocks:
           % if stock.performance_id == performance.id:
-            ['${stock.id}', '${stock.stock_type.name}'],
+            ['${stock.id}', '${stock.stock_type.id}', '${stock.stock_type.name}'],
           % endif
         % endfor
       ],
@@ -17,15 +17,28 @@
   $(function() {
     $('#modal-product_item #stock_holders').change(function(){
       $('#modal-product_item #stock_id').children().remove();
-      stock_ids = stock_holder2stocks[$(this).val()];
-      stock_id_node = window.document.getElementById('stock_id');
+      var stock_ids = stock_holder2stocks[$(this).val()];
+      var stock_id_node = window.document.getElementById('stock_id');
       if (stock_ids) {
+        var seat_stock_type_id = $('#modal-product_item #seat_stock_type_id').attr('value');
+        var selectedIndex = 0;
         for (var i = 0; i < stock_ids.length; i++ ) {
-          stock_id_node.options[i] = new Option(stock_ids[i][1], stock_ids[i][0]);
+          if (seat_stock_type_id == stock_ids[i][1])
+            selectedIndex = i;
+          stock_id_node.options[i] = new Option(stock_ids[i][2], stock_ids[i][0]);
         }
-        stock_id_node.selectedIndex = 0;
+        stock_id_node.selectedIndex = selectedIndex;
       }
     }).change();
+
+    $('#modal-product_item #sales_segment_id').change(function(){
+      var choices = {
+        % for choice in form_product.sales_segment_id.choices:
+          '${choice[0]}':'${choice[1]}',
+        % endfor
+      }
+      $(this).text(choices[$(this).val()]);
+    });
 
     $('#modal-product_item').on('shown', function(){
       $(this).css('max-height', '750px')
@@ -56,7 +69,10 @@
             </tr>
             <tr>
               <th>${form_product.sales_segment_id.label.text}</th>
-              <td><span id="sales_segment_id"></span></td>
+              <td>
+                <span id="sales_segment_id"></span>
+                <input id="seat_stock_type_id" type="hidden" />
+              </td>
             </tr>
           </table>
         </div>
@@ -66,8 +82,10 @@
           ${form_item(form.product_id)}
           ${form_item(form.stock_holders)}
           ${form_item(form.stock_id)}
+          ${form_item(form.name)}
           ${form_item(form.price)}
           ${form_item(form.quantity)}
+          ${form_item(form.ticket_bundle_id)}
         </div>
       </fieldset>
     </form>

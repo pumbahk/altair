@@ -28,7 +28,7 @@ import ticketing.oauth2.models as models
 add(model_instances, models, dir(models))
 import ticketing.operators.models as models
 add(model_instances, models, dir(models))
-import ticketing.orders.models as models
+import ticketing.core.models as models
 add(model_instances, models, dir(models))
 import ticketing.users.models as models
 add(model_instances, models, dir(models))

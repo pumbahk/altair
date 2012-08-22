@@ -3,10 +3,11 @@ Fashion.Backend.VML = (function() {
   var Fashion = this;
   var window = Fashion.window;
   var _class = Fashion._lib._class;
-  var _escapeXMLSpecialChars = Fashion._lib._escapeXMLSpecialChars;
+  var _escapeXMLSpecialChars = Fashion._lib.escapeXMLSpecialChars;
   var __assert__ = Fashion._lib.__assert__;
-  var _addPoint = Fashion._lib._addPoint;
-  var _subtractPoint = Fashion._lib._subtractPoint;
+  var _addPoint = Fashion._lib.addPoint;
+  var _subtractPoint = Fashion._lib.subtractPoint;
+  var _clipPoint = Fashion._lib.clipPoint;
   var Refresher = Fashion.Backend.Refresher;
   // checking browser.
   if (Fashion.browser.identifier !== 'ie') return null;
@@ -18,9 +19,14 @@ Fashion.Backend.VML = (function() {
 
   function setup() {
     var namespaces = window.document.namespaces;
-    if (!namespaces[VML_PREFIX])
-      namespaces.add(VML_PREFIX, VML_NAMESPACE_URL);
-    window.document.createStyleSheet().addRule(VML_PREFIX + '\\:*', "behavior:url(#default#VML)");
+    if (Fashion.browser.version >= 8) {
+      if (!namespaces[VML_PREFIX])
+        namespaces.add(VML_PREFIX, VML_NAMESPACE_URL, VML_BEHAVIOR_URL);
+    } else {
+      if (!namespaces[VML_PREFIX])
+        namespaces.add(VML_PREFIX, VML_NAMESPACE_URL);
+      window.document.createStyleSheet().addRule(VML_PREFIX + '\\:*', "behavior:url(#default#VML)");
+    }
   }
 
   function newElement(type) {
@@ -29,8 +35,7 @@ Fashion.Backend.VML = (function() {
   }
 
   function matrixString(m) {
-    // return [m.a, m.c, m.b, m.d, m.e, m.f].join(',');
-    return [1, 0, 0, 1, 0, 0].join(',');
+    return [m.a, m.c, m.b, m.d, m.e, m.f].join(',');
   }
 
   function pathString(path) {
@@ -73,6 +78,54 @@ Fashion.Backend.VML = (function() {
     return pattern.join(' ');
   }
 
+  function appendPrologue(vml, id, tagName) {
+    vml.push(
+        '<', VML_PREFIX, ':', tagName,
+        ' unselectable="on"',
+        ' __fashion__id="', id, '"');
+    return vml;
+  }
+
+  function appendEpilogue(vml, tagName) {
+    vml.push('</', VML_PREFIX, ':', tagName, '>');
+    return vml;
+  }
+
+  function appendStyles(vml, shape) {
+    var position = shape.wrapper._position;
+    var size = shape.wrapper._size;
+    var fillAndStroke = new VMLFillAndStroke();
+    shape._buildVMLStyle(fillAndStroke);
+    fillAndStroke.setStyle({
+      position: 'absolute',
+      display: 'block',
+      margin: 0,
+      padding: 0,
+      width: size.x + 'px',
+      height: size.y + 'px',
+      left: position.x + 'px',
+      top: position.y + 'px'
+    });
+    fillAndStroke.appendHTML(vml);
+    return vml;
+  }
+
+  function populateWithChildElements(elem) {
+    var childNodes = elem.node.childNodes;
+    for (var i = childNodes.length; --i >= 0;) {
+      var node = childNodes[i];
+      switch (node.tagName.toLowerCase()) {
+      case 'fill':
+        elem.fill = node;
+        break;
+      case 'stroke':
+        elem.stroke = node;
+        break;
+      }
+    }
+    return elem;
+  }
+
   function buildMouseEvt(impl, msieEvt) {
     var retval = new Fashion.MouseEvt();
     retval.type = msieEvt.type;
@@ -98,12 +151,16 @@ Fashion.Backend.VML = (function() {
     };
 
     if (impl instanceof Drawable) {
-      retval.physicalPosition = _subtractPoint(physicalPagePosition, impl.getViewportOffset());
-      retval.logicalPosition = impl.convertToLogicalPoint(retval.physicalPosition);
+      retval.screenPosition   = _subtractPoint(physicalPagePosition, impl.getViewportOffset());
+      var physicalPosition    = _addPoint(impl.convertToPhysicalPoint(impl.scrollPosition()), retval.screenPosition);
+      retval.logicalPosition  = impl.convertToLogicalPoint(physicalPosition);
+      retval.physicalPosition = physicalPosition
     } else {
-      retval.physicalPosition = _subtractPoint(physicalPagePosition, impl.drawable.getViewportOffset());
-      retval.logicalPosition = impl.drawable.convertToLogicalPoint(retval.physicalPosition);
-      retval.offsetPosition = _subtractPoint(retval.logicalPosition, impl.wrapper._position);
+      retval.screenPosition   = _subtractPoint(physicalPagePosition, impl.drawable.getViewportOffset());
+      var physicalPosition    = _addPoint(impl.drawable.convertToPhysicalPoint(impl.drawable.scrollPosition()), retval.screenPosition);
+      retval.logicalPosition  = impl.drawable.convertToLogicalPoint(physicalPosition);
+      retval.physicalPosition = physicalPosition;
+      retval.offsetPosition   = _subtractPoint(retval.logicalPosition, impl.wrapper._position);
     }
 
     return retval;
@@ -282,7 +339,7 @@ var Base = (function() {
                   this._elem.node.coordOrigin = "";
                   this._elem.node.coordSize = VML_FLOAT_PRECISION + ',' + VML_FLOAT_PRECISION;
                   this._elem.skew.matrix = matrixString(transform);
-                  // this._elem.skew.on = true;
+                  this._elem.skew.on = true;
                 }
               } else {
                 if (this._elem.skew) {
@@ -423,7 +480,7 @@ var Base = (function() {
         } else {
           stroke.setOuterAttribute('stroked', false);
         }
-        fillAndStroke.setStyle('cursor', st.cursor ? st.cursor: 'normal');
+        fillAndStroke.setStyle('cursor', st.cursor ? st.cursor: 'default');
       }
     }
   });
@@ -463,96 +520,161 @@ var Circle = _class("CircleVML", {
     newElement: function(vg) {
       var position = this.wrapper._position;
       var size = this.wrapper._size;
-      var vml = [
-        '<', VML_PREFIX, ':oval',
-        ' unselectable="on"',
-        ' __fashion__id="', this.wrapper.id, '"'
-      ];
-      var fillAndStroke = new VMLFillAndStroke();
-      this._buildVMLStyle(fillAndStroke);
-      fillAndStroke.setStyle({
-        position: 'absolute',
-        display: 'block',
-        margin: 0,
-        padding: 0,
-        width: size.x + 'px',
-        height: size.y + 'px',
-        left: position.x + 'px',
-        top: position.y + 'px'
-      });
-      fillAndStroke.appendHTML(vml);
-      vml.push('</', VML_PREFIX, ':oval', '>');
+      var vml = appendPrologue([], this.wrapper.id, 'oval');
+      appendStyles(vml, this);
+      appendEpilogue(vml, 'oval');
       vg.node.insertAdjacentHTML('beforeEnd', vml.join(''));
-      return {
+      return populateWithChildElements({
         node: vg.node.lastChild,
         fill: null,
         stroke: null,
         skew: null
-      };
+      });
     }
   }
 });
 /** @} */
 /** @file Rect.js { */
-var Rect = _class("RectVML", {
-  parent: Base,
-
-  class_props: {
-    _refresher: new Refresher(Base._refresher).setup({
-      moreHandlers: [
-        [
-          Fashion.DIRTY_POSITION,
-          function() {
-            var position = this.wrapper._position;
-            this._elem.node.style.left = position.x + 'px';
-            this._elem.node.style.top = position.y + 'px';
-          }
-        ],
-        [
-          Fashion.DIRTY_SIZE,
-          function() {
-            var size = this.wrapper._size;
-            this._elem.node.style.width = size.x + 'px';
-            this._elem.node.style.height = size.y + 'px';
-          }
-        ]
-      ]
-    })
-  },
-
-  methods: {
-    newElement: function(vg) {
-      var position = this.wrapper._position;
-      var size = this.wrapper._size;
-      var vml = [
-        '<', VML_PREFIX, ':rect',
-        ' unselectable="on"',
-        ' __fashion__id="', this.wrapper.id, '"'
-      ];
-      var fillAndStroke = new VMLFillAndStroke();
-      this._buildVMLStyle(fillAndStroke);
-      fillAndStroke.setStyle({
-        position: 'absolute',
-        display: 'block',
-        margin: 0,
-        padding: 0,
-        width: size.x + 'px',
-        height: size.y + 'px',
-        left: position.x + 'px',
-        top: position.y + 'px'
-      });
-      fillAndStroke.appendHTML(vml);
-      vml.push('</', VML_PREFIX, ':rect', '>');
-      vg.node.insertAdjacentHTML('beforeEnd', vml.join(''));
-      return {
-        node: vg.node.lastChild,
-        fill: null,
-        stroke: null,
-        skew: null
-      };
-    }
+var Rect = (function () {
+  function appendPath(vml, size, corner) {
+    var prec = VML_FLOAT_PRECISION,
+        rx = (corner.x || 0) * prec / size.x;
+        ry = (corner.y || 0) * prec / size.y;
+    vml.push('at0,0,', rx * 2, ',', ry * 2, ',', rx, ',0,0,', ry);
+    vml.push('l0,', prec - ry);
+    vml.push('at0,', prec - ry * 2, ',', rx * 2, ',', prec, ',0,', prec - ry, ',', rx, ',', prec);
+    vml.push('l', prec - rx, ',', prec);
+    vml.push('at', prec - rx * 2, ',', prec - ry * 2, ',', prec, ',', prec, ',', prec - rx, ',', prec, ',', prec, ',', prec - ry);
+    vml.push('l', prec, ',', ry);
+    vml.push('at', prec - rx * 2, ',0,', prec, ',', ry * 2, ',', prec, ',', ry, ',', prec - rx, ',', 0);
+    vml.push('x');
+    return vml;
   }
-});
+
+  var handlers = {
+    rect: {
+      buildElement: function () {
+        var vml = appendPrologue([], this.wrapper.id, 'rect');
+        appendStyles(vml, this);
+        appendEpilogue(vml, 'rect');
+        return vml;
+      },
+
+      update: function () {
+      }
+    },
+
+    roundrect: {
+      buildElement: function () {
+        var vml = appendPrologue([], this.wrapper.id, 'roundrect');
+        vml.push(' arcsize="', (this.wrapper._corner.x || 0) / this.wrapper._size.x, '"');
+        appendStyles(vml, this);
+        appendEpilogue(vml, 'roundrect');
+        return vml;
+      },
+
+      update: function () {
+        this._elem.arcSize = (this.wrapper._corner.x || 0) / this.wrapper._size.x;
+      }
+    },
+
+    shape: {
+      buildElement: function () {
+        var position = this.wrapper._position;
+        var vml = appendPrologue([], this.wrapper.id, 'shape');
+        vml.push(' path="');
+        appendPath(vml, this.wrapper._size, this.wrapper._corner);
+        vml.push('"');
+        appendStyles(vml, this);
+        appendEpilogue(vml, 'shape');
+        return vml;
+      },
+
+      update: function () {
+        this._elem.path = appendPath([], this.wrapper._size, this.wrapper._corner).join('');
+      }
+    }
+  };
+
+  return _class("RectVML", {
+    parent: Base,
+
+    props: {
+      _handler: null
+    },
+
+    class_props: {
+      _refresher: new Refresher(Base._refresher).setup({
+        moreHandlers: [
+          [
+            Fashion.DIRTY_POSITION,
+            function() {
+              var position = this.wrapper._position;
+              this._elem.node.style.left = position.x + 'px';
+              this._elem.node.style.top = position.y + 'px';
+            }
+          ],
+          [
+            Fashion.DIRTY_SIZE | Fashion.DIRTY_SHAPE,
+            function() {
+              var size = this.wrapper._size;
+              var handler = this.determineImpl();
+              if (handler === this._handler) {
+                this._elem.node.style.width = size.x + 'px';
+                this._elem.node.style.height = size.y + 'px';
+                handler.update.call(this);
+              } else {
+                var n = document.createElement('div');
+                var elem = this._elem;
+                n.innerHTML = handler.buildElement.call(this).join('');
+                var nn = n.firstChild, parentNode = elem.node.parentNode;
+                parentNode.insertBefore(nn, elem.node);
+                parentNode.removeChild(elem.node);
+                this._handler = handler;
+                this._elem = {
+                  node: nn,
+                  fill: nn.firstChild,
+                  stroke: nn.firstChild ? nn.firstChild.nextSibling: null,
+                  skew: null
+                };
+              }
+            }
+          ]
+        ]
+      })
+    },
+
+    methods: {
+      determineImpl: function() {
+        var size = this.wrapper._size;
+        var corner = this.wrapper._corner;
+        if (corner.x == corner.y && size.x == size.y) {
+          if (corner.x == 0)
+            return handlers.rect;
+          else
+            return handlers.roundrect;
+        } else {
+          return handlers.shape;
+        }
+      },
+
+      newElement: function(vg) {
+        var handler = this._handler = this.determineImpl();
+        var vml = handler.buildElement.call(this);
+        vg.node.insertAdjacentHTML('beforeEnd', vml.join(''));
+        return populateWithChildElements({
+          node: vg.node.lastChild,
+          fill: null,
+          stroke: null,
+          skew: null
+        });
+      }
+    }
+  });
+})();
+/*
+ * vim: sts=2 sw=2 ts=2 et
+ */
 /** @} */
 /** @file Path.js { */
 var Path = _class("PathVML", {
@@ -606,12 +728,12 @@ var Path = _class("PathVML", {
       fillAndStroke.appendHTML(vml);
       vml.push('</', VML_PREFIX, ':shape', '>');
       vg.node.insertAdjacentHTML('beforeEnd', vml.join(''));
-      return {
+      return populateWithChildElements({
         node: vg.node.lastChild,
         fill: null,
         stroke: null,
         skew: null
-      };
+      });
     }
   }
 });
@@ -680,13 +802,14 @@ var Text = _class("TextVML", {
                     'v-text-align:left" />',
         '</', VML_PREFIX, ':line', '>');
       vg.node.insertAdjacentHTML('beforeEnd', vml.join(''));
-      return {
-        node: vg.node.lastChild,
+      var n = vg.node.lastChild;
+      return populateWithChildElements({
+        node: n,
         fill: null,
         stroke: null,
         skew: null,
-        textpath: vg.node.lastChild.lastChild
-      };
+        textpath: n.lastChild
+      });
     }
   }
 });
@@ -697,13 +820,16 @@ var Drawable = _class("DrawableVML", {
     _vg: null,
     _content: null,
     _viewport: null,
+    _viewportInnerSize: { x: 0, y: 0 },
     _capturingShape: null,
     _handledEvents: {
       mousedown: [ false, 0, null ],
       mouseup: [ false, 0, null ],
       mousemove: [ false, 0, null ],
       mouseover: [ false, 0, null ],
-      mouseout: [ false, 0, null ]
+      mouseout: [ false, 0, null ],
+      scroll: [ false, 0, null ],
+      visualchange: [ false, 0, null ]
     },
     _scrollPosition: { x: 0, y: 0 },
     _currentEvent: null,
@@ -719,6 +845,13 @@ var Drawable = _class("DrawableVML", {
         if (!this._viewport.parentNode != this.wrapper.target) {
           this.wrapper.target.appendChild(this._viewport);
         }
+      },
+      postHandler: function (_, originalDirty) {
+        var evt = new Fashion.VisualChangeEvt();
+        evt.target = this.wrapper;
+        evt.dirty = originalDirty;
+        if (this.wrapper.handler)
+          this.wrapper.handler.dispatch(evt);
       },
       handlers: [
         [
@@ -768,10 +901,12 @@ var Drawable = _class("DrawableVML", {
               var beingHandled = this._handledEvents[type][0];
               var toHandle = this.wrapper.handler.handles(type);
               if (!beingHandled && toHandle) {
-                this._handleEvent(type);
+                if (type != 'scroll' && type.indexOf('visualchange') != 0)
+                  this._handleEvent(type);
                 this._handledEvents[type][0] = true;
               } else if (beingHandled && !toHandle) {
-                this._unhandleEvent(type);
+                if (type != 'scroll' && type.indexOf('visualchange') != 0)
+                  this._unhandleEvent(type);
                 this._handledEvents[type][0] = false;
               }
             }
@@ -788,7 +923,7 @@ var Drawable = _class("DrawableVML", {
 
       var self = this;
       this._eventFunc = function(msieEvt) {
-        if (self._capturingShape)
+        if (self._capturingShape && self._capturingShape !== self)
           return false;
         var target = msieEvt.srcElement;
         var fashionId = target.__fashion__id;
@@ -814,7 +949,15 @@ var Drawable = _class("DrawableVML", {
       };
 
       this._scrollEventFunc = function (msieEvt) {
-        self._scrollPosition = self.wrapper._inverse_transform.apply({ x: parseInt(self._viewport.scrollLeft), y: parseInt(self._viewport.scrollTop) });
+        var physicalPosition = { x: parseInt(self._viewport.scrollLeft), y: parseInt(self._viewport.scrollTop) };
+        self._scrollPosition = self.wrapper._inverse_transform.apply(physicalPosition);
+        if (self._handledEvents.scroll[0]) {
+          var evt = new Fashion.ScrollEvt();
+          evt.target = self.wrapper;
+          evt.physicalPosition = physicalPosition;
+          evt.logicalPosition = self._scrollPosition;
+          self.wrapper.handler.dispatch(evt);
+        }
       };
 
       this._viewport = this._buildViewportElement();
@@ -840,6 +983,13 @@ var Drawable = _class("DrawableVML", {
 
     scrollPosition: function(position) {
       if (position) {
+        position = _clipPoint(
+            position,
+            this.wrapper._inverse_transform.translate(),
+            _subtractPoint(
+              this.wrapper._content_size,
+              this.wrapper._inverse_transform.apply(
+                this._viewportInnerSize)));
         this._scrollPosition = position;
         if (window.readyState == 'complete') {
           var _position = this.wrapper._transform.apply(position);
@@ -907,8 +1057,16 @@ var Drawable = _class("DrawableVML", {
       this._capturingShape = null;
     },
 
+    capturingShape: function () {
+      return this._capturingShape;
+    },
+
     convertToLogicalPoint: function(point) {
-      return _addPoint(this.scrollPosition(), this.wrapper._inverse_transform.apply(point));
+      return this.wrapper._inverse_transform.apply(point);
+    },
+
+    convertToPhysicalPoint: function(point) {
+      return this.wrapper._transform.apply(point);
     },
 
     _updateContentSize: function () {
@@ -922,6 +1080,11 @@ var Drawable = _class("DrawableVML", {
       this._viewport.style.overflow =
          (contentSize.x <= viewportSize.x &&
           contentSize.y <= viewportSize.y) ? 'hidden': 'scroll';
+      this._viewportInnerSize = {
+        x: this._viewport.clientWidth,
+        y: this._viewport.clientHeight
+      };
+      this._scrollEventFunc();
     },
 
     _buildRoot: function () {

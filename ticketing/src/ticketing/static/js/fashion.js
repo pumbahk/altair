@@ -124,12 +124,15 @@ _lib.__assert__            = __assert__;
 /** @file misc.js { */
 // detect atomic or not
 function _atomic_p(obj) {
-  var t = typeof obj;
-  return ( !(obj instanceof Date) &&
-           ( obj === null || obj === void(0) ||
-             t === 'boolean' || t === 'number' || t === 'string' ||
-             obj.valueOf !== Object.prototype.valueOf));
+  var t;
+  return ( obj === null || obj === void(0) ||
+           (t = typeof obj) === 'number' ||
+           t === 'string' ||
+           t === 'boolean' ||
+           ((obj.valueOf !== Object.prototype.valueOf) &&
+            !(obj instanceof Date)));
 };
+
 
 // make deep clone of the object
 function _clone(obj, target) {
@@ -138,7 +141,7 @@ function _clone(obj, target) {
   // if target is given. clone obj properties into it.
   var clone, p;
   if (obj instanceof Date) {
-    clone = new Date((typeof obj.getTime === 'function') ? obj.getTime() : obj);
+    clone = new Date(obj.getTime());
     if (target instanceof Date) {
       for (p in target) if (target.hasOwnProperty(p)) clone[p] = _clone(target[p], clone[p]);
     }
@@ -149,8 +152,7 @@ function _clone(obj, target) {
     }
   } else {
     clone = (!_atomic_p(target) && typeof target !== 'function') ?
-      target :
-      new obj.constructor()
+      target : new obj.constructor();
   }
 
   for (p in obj)
@@ -246,10 +248,10 @@ _lib.xparseInt             = xparseInt;
 _lib._repeat               = _repeat;
 _lib._lpad                 = _lpad;
 _lib._clip                 = _clip;
-_lib._clipPoint            = _clipPoint;
-_lib._addPoint             = _addPoint;
-_lib._subtractPoint        = _subtractPoint;
-_lib._escapeXMLSpecialChars = _escapeXMLSpecialChars;
+_lib.clipPoint             = _clipPoint;
+_lib.addPoint              = _addPoint;
+_lib.subtractPoint         = _subtractPoint;
+_lib.escapeXMLSpecialChars = _escapeXMLSpecialChars;
 _lib._bindEvent            = _bindEvent;
 _lib._unbindEvent          = _unbindEvent;
 
@@ -305,10 +307,10 @@ var _class = (function() {
     _class.prototype = new f();
     _class.prototype.__super__ = __super__;
 
-    var iiop = _class['%%INIT_INSTANCE_ORIGN_PROPS'];
+    var iiop = _class['%%INIT_INSTANCE_ORIGIN_PROPS'];
 
-    _class['%%INIT_INSTANCE_ORIGN_PROPS'] = function(inst) {
-      var parent_iiop = parent['%%INIT_INSTANCE_ORIGN_PROPS'];
+    _class['%%INIT_INSTANCE_ORIGIN_PROPS'] = function(inst) {
+      var parent_iiop = parent['%%INIT_INSTANCE_ORIGIN_PROPS'];
       if (parent_iiop) parent_iiop(inst);
       iiop(inst);
     };
@@ -340,9 +342,9 @@ var _class = (function() {
       }
     }
 
-    var iiop = _class['%%INIT_INSTANCE_ORIGN_PROPS'];
-    _class['%%INIT_INSTANCE_ORIGN_PROPS'] = function(inst) {
-      var include_iiop = include['%%INIT_INSTANCE_ORIGN_PROPS'];
+    var iiop = _class['%%INIT_INSTANCE_ORIGIN_PROPS'];
+    _class['%%INIT_INSTANCE_ORIGIN_PROPS'] = function(inst) {
+      var include_iiop = include['%%INIT_INSTANCE_ORIGIN_PROPS'];
       if (include_iiop) include_iiop(inst);
       iiop(inst);
     };
@@ -407,20 +409,16 @@ var _class = (function() {
       }
     }
 
-    __class__ = function(arg) {
-      __class__['%%INIT_INSTANCE_ORIGN_PROPS'](this);
-      if (this.init)
-        this.init.apply(this, arguments);
-      else
-        _clone(arg, this); 
+    __class__ = function __Class__(arg) {
+      __class__['%%INIT_INSTANCE_ORIGIN_PROPS'](this);
+      if (this.init) this.init.apply(this, arguments);
+      else           _clone(arg, this);
     };
 
-    __class__['%%INIT_INSTANCE_ORIGN_PROPS'] =
+    __class__['%%INIT_INSTANCE_ORIGIN_PROPS'] =
       function(inst) {
         for (var p in props) {
-          if (props.hasOwnProperty(p)) {
-            inst[p] = _clone(props[p]);
-          }
+          inst[p] = _clone(props[p]);
         }
       };
 
@@ -494,6 +492,31 @@ _lib._class = _class;
       Drawable : unsupported
     };
   };
+
+  var onceOnLoad = (function () {
+    var pending = [];
+    var loaded = false;
+
+    if (_window) {
+      _bindEvent(_window, 'load', function () {
+        loaded = true;
+        _unbindEvent(_window, 'load', arguments.callee);
+        while (pending.length)
+          (pending.shift())();
+      });
+    
+      return function onceOnLoad(f) {
+        if (loaded)
+          f();
+        else
+          pending.push(f);
+      };
+    } else {
+      return function onceOnLoad(f) {
+        f();
+      }
+    }
+  })();
 
 /** @file Matrix.js { */
 var Matrix = (function() {
@@ -582,6 +605,8 @@ var Matrix = (function() {
       },
 
       translate: function (offset) {
+        if (offset ===  void(0))
+          return { x: this.e, y: this.f };
         return this.multiplyI(1, 0, 0, 1, offset.x, offset.y);
       },
 
@@ -734,6 +759,7 @@ var Refresher = _class("Refresher", {
     },
 
     call: function (target, dirty) {
+      var originalDirty = dirty;
       if (this._preHandler) {
         var _dirty = this._preHandler.call(target, dirty);
         if (_dirty !== void(0))
@@ -746,7 +772,7 @@ var Refresher = _class("Refresher", {
             pair[1].call(target, dirty);
         }
       }
-      this._postHandler && this._postHandler.call(target, dirty);
+      this._postHandler && this._postHandler.call(target, dirty, originalDirty);
     }
   }
 });
@@ -869,7 +895,6 @@ var TransformStack = _class("TransformStack", {
         } catch(e) {}
 
         if ( !box || !contains( docElem, elem ) ) {
-          console.log('here');
           return box ? { top: box.top, left: box.left } : { top: 0, left: 0 };
         }
 
@@ -1360,12 +1385,10 @@ var ImageData = _class('ImageData', {
 
       this.callbacks = [];
       var self = this;
-      Fashion._lib._bindEvent(this.node, 'load', function () {
+      onceOnLoad(function () {
         self._size = { width: self.node.width, height: self.node.height };
-        Fashion._lib._unbindEvent(self.node, 'load', arguments.callee);
-        for (var i = 0; i < self.callbacks.length; i++)
-          self.callbacks[i](self._size);
-        self.callbacks = null;
+        while (self.callbacks.length)
+          (self.callbacks.shift())(self._size);
       });
 
       this.node.src = url;
@@ -1527,7 +1550,7 @@ var PathData = (function() {
     case 'm':
       if (l == 0 || l % 2 != 0)
         throw new ValueError("moveToRel takes 2 * n arguments, " + l + " given: " + arr.join(" "));
-      var x = this.parseNumber(arr[i]), y = this.parseNumber(arr[i + 1]);
+      var x = this.parseNumber(arr[i]) + this.last.x, y = this.parseNumber(arr[i + 1]) + this.last.y;
       this.data.push(['M', x, y]);
       for (var j = i + 2, n = i + l; j < n ; j += 2) {
         x += this.parseNumber(arr[j]), y += this.parseNumber(arr[j + 1]);
@@ -1824,26 +1847,47 @@ var MouseEvt = _class("MouseEvt", {
 /** @} */
   this.MouseEvt = MouseEvt;
 
+/** @file VisualChangeEvt.js { */
+var VisualChangeEvt = _class("VisualChangeEvt", {
+  props: {
+    type: 'visualchange',
+    target: null,
+    dirty: 0
+  },
+
+  methods: {}
+});
+
+/** @} */
+  this.VisualChangeEvt = VisualChangeEvt;
+
+/** @file ScrollEvt.js { */
+var ScrollEvt = _class("ScrollEvt", {
+
+  props: {
+    type: 'scroll',
+    target: null,
+    logicalPosition:   { x: 0, y: 0 },
+    physicalPosition:  { x: 0, y: 0 }
+  },
+
+  methods: {}
+});
+/** @} */
+  this.ScrollEvt = ScrollEvt;
+
 /** @file MouseEventsHandler.js { */
 var MouseEventsHandler = _class("MouseEventsHandler", {
   props : {
-    _handlersMap: {
-      mousedown: [],
-      mouseup:   [],
-      mousemove: [],
-      mouseover: [],
-      mouseout:  []
-    },
+    _handlersMap: {},
     _target: null
   },
 
   methods: {
-    init: function(target, h) {
+    init: function(target, events) {
       this._target = target;
-
-      if (h) {
-        this.add(h);
-      }
+      for (var i in events)
+        this._handlersMap[events[i]] = [];
     },
 
     getHandlerFunctionsFor: function(type) {
@@ -2039,18 +2083,22 @@ var Base = _class("Base", {
     captureMouse: function() {
       if (!this.drawable)
         throw new NotAttached("This Shape is not attached any Drawable yet.");
-      this.drawable.captureMouse(this);
+      this.drawable.impl.captureMouse(this.impl);
     },
 
     releaseMouse: function() {
       if (!this.drawable)
         throw new NotAttached("This Shape is not attached any Drawable yet.");
-      this.drawable.releaseMouse(this);
+      this.drawable.impl.releaseMouse(this.impl);
     },
 
     addEvent: function(type, h) {
-      if (this.handler === null)
-        this.handler = new MouseEventsHandler(this);
+      if (this.handler === null) {
+        this.handler = new MouseEventsHandler(
+          this,
+          ['mousedown', 'mouseup', 'mousemove', 'mouseover', 'mouseout']
+        );
+      }
       this.handler.add.apply(this.handler, arguments);
       this._dirty |= Fashion.DIRTY_EVENT_HANDLERS;
       if (this.drawable)
@@ -2093,8 +2141,24 @@ var Circle = _class("Circle", {
 var Rect = _class("Rect", {
   parent: Base,
   class_props: { impl: 'Rect' },
-  methods: {}
+  props: {
+    _corner: { x: 0, y: 0 }
+  },
+  methods: {
+    corner: function(value) {
+      if (value !== void(0)) {
+        this._corner = value;
+        this._dirty |= Fashion.DIRTY_SHAPE;
+        if (this.drawable)
+          this.drawable._enqueueForUpdate(this);
+      }
+      return this._corner;
+    }
+  }
 });
+/*
+ * vim: sts=2 sw=2 ts=2 et
+ */
 /** @} */
 /** @file Path.js { */
 var Path = _class("Path", {
@@ -2148,8 +2212,7 @@ var Drawable = _class("Drawable", {
       } else {
         var self = this;
         if (_window) {
-          Fashion._lib._bindEvent(_window, 'load', function () {
-            Fashion._lib._unbindEvent(_window, 'load', arguments.callee);
+          onceOnLoad(function () {
             var size = { x: target.clientWidth, y: target.clientHeight };
             self.viewportSize(size);
             if (!options || !options.contentSize)
@@ -2176,6 +2239,10 @@ var Drawable = _class("Drawable", {
         this._enqueueForUpdate(this);
       }
       return this._viewport_size;
+    },
+
+    viewportInnerSize: function () {
+      return this.impl._viewportInnerSize;
     },
 
     contentSize: function(size) {
@@ -2287,17 +2354,22 @@ var Drawable = _class("Drawable", {
       return shape;
     },
 
-    captureMouse: function(shape) {
-      this.impl.captureMouse(shape.impl);
+    captureMouse: function() {
+      this.impl.captureMouse(this.impl);
     },
 
-    releaseMouse: function(shape) {
-      this.impl.releaseMouse(shape.impl);
+    releaseMouse: function() {
+      this.impl.releaseMouse(this.impl);
     },
 
     addEvent: function(type, h) {
-      if (this.handler === null)
-        this.handler = new MouseEventsHandler(this);
+      if (this.handler === null) {
+        this.handler = new MouseEventsHandler(
+          this,
+          ['mousedown', 'mouseup', 'mousemove', 'mouseover', 'mouseout',
+           'scroll', 'visualchange']
+        );
+      }
       this.handler.add.apply(this.handler, arguments);
       this._dirty |= Fashion.DIRTY_EVENT_HANDLERS;
       this._enqueueForUpdate(this);

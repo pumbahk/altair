@@ -15,7 +15,7 @@ def get_performances(event):
 
 def _get_categories(request, hierarchy):
     qs =  Category.get_toplevel_categories(hierarchy=hierarchy, request=request)
-    return qs.order_by(sa.asc("orderno")).options(orm.joinedload("pageset"))
+    return qs.order_by(sa.asc("display_order")).options(orm.joinedload("pageset"))
 
 
 def get_navigation_categories(request):

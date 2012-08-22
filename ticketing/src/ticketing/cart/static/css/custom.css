@@ -4,6 +4,11 @@
   display: none;
 }
 
+p.cartNickname{
+	margin:0 0 10px 10px;
+}
+
+
 /* modal */
 .btn-redo {
   width: 236px;

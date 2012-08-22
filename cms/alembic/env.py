@@ -19,7 +19,6 @@ import altaircms.auth.models
 import altaircms.asset.models
 import altaircms.widget.models
 import altaircms.page.models
-import altaircms.usersetting.models
 import altaircms.event.models
 import altaircms.topic.models
 import altaircms.layout.models

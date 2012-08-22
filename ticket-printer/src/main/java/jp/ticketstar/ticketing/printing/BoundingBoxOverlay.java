@@ -8,6 +8,9 @@ import java.awt.geom.Dimension2D;
 import java.lang.ref.WeakReference;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+
+import jp.ticketstar.ticketing.printing.gui.AppWindowModel;
+
 import org.apache.batik.swing.gvt.Overlay;
 
 public class BoundingBoxOverlay implements Overlay {

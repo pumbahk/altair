@@ -1474,6 +1474,23 @@
 	background: url(../img/settlement/bg_box_top.gif) no-repeat 0 0;
 }
 
+.settlementBoxInner dl {
+	margin-left:10px;
+}
+
+.settlementBoxInner dl dt.cartPayment {
+	font-size:140%;
+	font-weight:bold;
+	border-left:2px #ccc solid;
+	padding:3px 0 0 10px;
+	height:30px;
+	margin:8px 0 10px 0;
+}
+
+.settlementBoxInner p{
+	margin:0 0 10px 20px;
+}
+
 .settlementBox2 {
 	margin: 0 10px 20px;
 	background: url(../img/settlement/bg_box_bottom_02.gif) no-repeat left bottom;
@@ -1569,8 +1586,6 @@
 }
 
 #selectSeatType .seatListContainer li {
-	height: 26px;
-	overflow: hidden;
 	line-height: 16px;
 	font-weight: bold;
 }
@@ -1581,7 +1596,13 @@
 	opacity: 0.5;
 }
 
-#selectSeatType .seatListContainer li .seatColor {
+#selectSeatType .seatListContainer li .seatListItemInner {
+	margin: 0 0;
+	padding: 0 0;
+	height: 26px;
+}
+
+#selectSeatType .seatListContainer li .seatListItemInner .seatColor {
 	float: left;
 	width: 14px;
 	height: 14px;
@@ -1591,30 +1612,96 @@
 	margin: 5px 13px 5px 9px;
 }
 
-#selectSeatType .seatListContainer li .seatName {
+#selectSeatType .seatListContainer li .seatListItemInner .seatName {
 	float: left;
 	height; 16px;
 	padding: 5px 0;
 }
 
-#selectSeatType .seatListContainer li .seatState {
+#selectSeatType .seatListContainer li .seatListItemInner .seatState {
 	float: right;
 	margin: 5px 16px;
 }
 
-#selectSeatType .seatListContainer li.seatEven {
+#selectSeatType .seatListContainer li.seatEven .seatListItemInner {
 	background: url(../img/settlement/bg_seat_even.gif) no-repeat 0 0;
 }
 
-#selectSeatType .seatListContainer li.seatOdd {
+#selectSeatType .seatListContainer li.seatOdd .seatListItemInner {
 	background: url(../img/settlement/bg_seat_even.gif) no-repeat 0 0;
 }
 
-#selectSeatType .seatListContainer li.selected {
+#selectSeatType .seatListContainer li.selected .seatListItemInner {
 	filter: alpha(opacity=100);
 	-moz-opacity: 1.0;
 	opacity: 1.0;
 	background: url(../img/settlement/bg_seat_select.png) no-repeat 0 0;
+}
+
+#selectSeatType .seatListContainer li.selected .seatListItemAux {
+  height: 0px;
+	padding-right: 20px;
+	overflow: hidden;
+}
+
+#selectSeatType .selectProduct .btn-select-buy {
+	width: 140px;
+	height: 0px;
+	line-height: 0px;
+	overflow: hidden;
+	font-size: 0px;
+	padding: 33px 0 0 0;
+	margin: 0 0;
+	background: url(../img/settlement/btn_select_buy.small.gif) no-repeat 0 0;
+	border: none;
+}
+
+#selectSeatType .selectProduct .btn-select-buy:hover {
+	background-image: url(../img/settlement/btn_select_buy.small.hl.gif);
+}
+
+#selectSeatType.blur .selectProduct .btn-select-buy {
+	background-image: url(../img/settlement/btn_select_buy.small.d.gif);
+}
+
+#selectSeatType .selectProduct .btn-entrust-buy {
+	width: 140px;
+	height: 0px;
+	line-height: 0px;
+	overflow: hidden;
+	font-size: 0px;
+	padding: 33px 0 0 0;
+	margin: 0 0;
+	background: url(../img/settlement/btn_entrust_buy.small.gif) no-repeat 0 0;
+	border: none;
+}
+
+#selectSeatType .selectProduct .btn-entrust-buy:hover {
+	background-image: url(../img/settlement/btn_entrust_buy.small.hl.gif);
+}
+
+#selectSeatType.blur .selectProduct .btn-entrust-buy {
+	background-image: url(../img/settlement/btn_entrust_buy.small.d.gif);
+}
+
+#selectSeatType .selectProduct .btn-buy {
+	width: 60px;
+	height: 0px;
+	line-height: 0px;
+	overflow: hidden;
+	font-size: 0px;
+	padding: 31px 0 0 0;
+	margin: 0 0;
+	background: url(../img/settlement/btn_buy.small.gif) no-repeat 0 0;
+	border: none;
+}
+
+#selectSeatType .selectProduct .btn-buy:hover {
+	background-image: url(../img/settlement/btn_buy.small.hl.gif);
+}
+
+#selectSeatType.blur .selectProduct .btn-buy {
+	background-image: url(../img/settlement/btn_buy.small.d.gif);
 }
 
 #selectBuy {
@@ -1713,11 +1800,14 @@
 }
 
 #selectSeat .venueViewer {
-  width: 430px;
-  /* height: 466px; */
-  height: 400px;
+  width: 490px;
+  height: 430px;
   border: 1px solid #ccc;
   margin-bottom: 10px;
+}
+
+#selectSeat.blur .venueViewer {
+	opacity: .25;
 }
 
 #selectSeat.blur #selectProduct h3 {
@@ -1734,55 +1824,76 @@
 	overflow: hidden;
 }
 
-#selectSeat #selectProduct dl {
-	width: 395px;
-	margin: 0 0 10px 9px;
-	background: url(../img/settlement/bg_select_buy_top.gif) no-repeat 0 0;
+#selectSeat .btn-select-seat {
+	width: 60px;
+	height: 0px;
+	line-height: 0px;
+	overflow: hidden;
+	font-size: 0px;
+	padding: 31px 0 0 0;
+	margin: 0 0;
+	background: url(../img/settlement/btn_select.small.d.gif) no-repeat 0 0;
+	border: none;
 }
 
-#selectSeat #selectProduct dt {
-	padding: 15px 15px 10px;
-	font-weight: bold;
+
+#selectSeat.focused .btn-select-seat {
+	width: 60px;
+	height: 0px;
+	line-height: 0px;
+	overflow: hidden;
+	font-size: 0px;
+	padding: 31px 0 0 0;
+	margin: 0 0;
+	background: url(../img/settlement/btn_select.small.gif) no-repeat 0 0;
+	border: none;
 }
 
-#selectSeat #selectProduct dd {
-	padding: 0 10px 10px;
-	height: 320px;
-	background: url(../img/settlement/bg_select_buy_bottom.gif) no-repeat left bottom;
+#selectSeat.focused .btn-select-seat:hover {
+	background-image: url(../img/settlement/btn_select.small.hl.gif);
 }
 
-#selectProduct .productList {
-    list-style-type: none;
-		border-top: 1px solid #cccccc;
+#selectSeat .btn-cancel {
+	width: 99px;
+	height: 0px;
+	line-height: 0px;
+	overflow: hidden;
+	font-size: 0px;
+	padding: 31px 0 0 0;
+	margin: 0 0;
+	background: url(../img/settlement/btn_cancel.small.d.gif) no-repeat 0 0;
+	border: none;
 }
 
-#selectProduct .productList li {
-    overflow: hidden;
-    clear: both;
-		padding: 5px;
+
+#selectSeat.focused .btn-cancel {
+	width: 99px;
+	height: 0px;
+	line-height: 0px;
+	overflow: hidden;
+	font-size: 0px;
+	padding: 31px 0 0 0;
+	margin: 0 0;
+	background: url(../img/settlement/btn_cancel.small.gif) no-repeat 0 0;
+	border: none;
 }
 
-#selectProduct .productList .productName {
-    float: left;
-		font-weight: bold;
+#cancelSeat.focused .btn-cancel:hover {
+	background-image: url(../img/settlement/btn_cancel.small.hl.gif);
 }
 
-#selectProduct .productList .productPrice {
-    float: right;
+
+#selectSeatType ul.buttonSet {
+	padding: 0 0 0 0;
+	text-align: right;
+	overflow: hidden;
 }
 
-#selectProduct .productList .productQuantity {
-    clear: right;
-    float: right;
+#selectSeatType ul.buttonSet li {
+	display: inline-block;
 }
 
-#selectSeat #selectProduct ul.buttonSet {
-	float: right;
-	padding: 0 6px 10px 0;
-}
-
-#selectSeat #selectProduct ul.buttonSet li {
-	margin-bottom: 5px;
+#selectSeatType .selectProduct {
 }
 
 #seatImage {

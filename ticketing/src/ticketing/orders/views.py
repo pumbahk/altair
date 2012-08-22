@@ -11,12 +11,16 @@ import webhelpers.paginate as paginate
 
 from ticketing.models import merge_session_with_post, record_to_appstruct, merge_and_flush, record_to_multidict
 from ticketing.operators.models import Operator, OperatorRole, Permission
-from ticketing.orders.models import Order, OrderCSV
+from ticketing.core.models import Order
+from ticketing.orders.export import OrderCSV
 from ticketing.orders.forms import (OrderForm, OrderSearchForm, SejOrderForm, SejTicketForm, SejTicketForm,
                                     SejRefundEventForm,SejRefundOrderForm)
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.orders.events import notify_order_canceled
+from ticketing.tickets.utils import build_dicts_from_ordered_product_item
+
+import pystache
 
 @view_defaults(decorator=with_bootstrap)
 class Orders(BaseView):
@@ -28,8 +32,6 @@ class Orders(BaseView):
         form_search = OrderSearchForm(self.request.params)
         if form_search.validate():
             query = Order.set_search_condition(query, form_search)
-        else:
-            self.request.session.flash(u'検索条件が正しくありません')
 
         orders = paginate.Page(
             query,
@@ -84,24 +86,17 @@ class Orders(BaseView):
 
     @view_config(route_name='orders.download')
     def download(self):
-        sort = self.request.GET.get('sort', 'Order.id')
-        direction = self.request.GET.get('direction', 'desc')
-        if direction not in ['asc', 'desc']:
-            direction = 'desc'
-
         query = Order.filter(Order.organization_id==int(self.context.user.organization_id))
-        query = query.order_by(sort + ' ' + direction)
 
-        form_search = OrderSearchForm(self.request.POST)
-        if self.request.method == 'POST':
+        form_search = OrderSearchForm(self.request.params)
+        if form_search.validate():
             query = Order.set_search_condition(query, form_search)
 
-        # ダウンロード可能な上限件数の条件を付加
-        orders = query.limit(500).all()
+        orders = query.all()
 
         headers = [
             ('Content-Type', 'application/octet-stream; charset=cp932'),
-            ('Content-Disposition', 'attachment; filename=orders_{date}.csv'.format(date=datetime.now().strftime('%Y%m%d')))
+            ('Content-Disposition', 'attachment; filename=orders_{date}.csv'.format(date=datetime.now().strftime('%Y%m%d%H%M%S')))
         ]
         response = Response(headers=headers)
 
@@ -113,6 +108,24 @@ class Orders(BaseView):
 
         return response
 
+    @view_config(route_name='orders.print.queue')
+    def order_print_queue(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.query.get(order_id)
+
+
+        tickets = []
+        print order, order_id
+        for ordered_product in order.items:
+            for ordered_product_item in ordered_product.ordered_product_items:
+                bundle = ordered_product_item.product_item.ticket_bundle
+                dicts = build_dicts_from_ordered_product_item(ordered_product_item)
+                for dict_ in dicts:
+                    for ticket in bundle.tickets:
+                        pystache.render(ticket.data['drawing'], dict_)
+
+
+        return HTTPFound(location=self.request.route_path('orders.show', order_id=order_id))
 
 from ticketing.sej.models import SejOrder, SejTicket, SejTicketTemplateFile, SejRefundEvent, SejRefundTicket
 from ticketing.sej.ticket import SejTicketDataXml
@@ -328,6 +341,7 @@ class SejOrderInfoView(object):
 
         return HTTPFound(location=self.request.route_path('orders.sej.order.info', order_id=order_id))
 
+
 @view_defaults(decorator=with_bootstrap)
 class SejRefundView(BaseView):
 
@@ -453,4 +467,50 @@ class SejTicketTemplate(BaseView):
             templates=templates
         )
 
+'''
+from ticketing.core.models import  TicketPrintHistory
 
+@view_defaults(decorator=with_bootstrap, permission="event_editor", renderer="json")
+class TicketPrintApi(BaseView):
+    @view_config(route_name='orders.api.ticket', request_method="GET")
+    def get_ticket(self):
+        ''' '''
+        order = Order.filter_by(id=self.request.matchdict["id"]).first()
+        if not order:
+            return HTTPNotFound()
+
+        tickets = []
+        for ordered_product in order.ordered_products:
+            for ordered_product_item in ordered_product.ordered_product_items:
+                ticket_bundle = ordered_product_item.product_item.ticket_bundle
+                if ticket_bundle:
+                    for ticket in ticket_bundle.tickets:
+                        data = ticket.data
+                        tickets.append(data)
+
+        return dict(tickets = tickets)
+
+    @view_config(route_name='orders.api.ticket', request_method="POST")
+    def print_ticket(self):
+        ''' '''
+        order = Order.filter_by(id=self.request.matchdict["id"]).first()
+        if not order:
+            return HTTPNotFound()
+
+        now = datetime.now()
+        for ordered_product in order.ordered_products:
+            for ordered_product_item in ordered_product.ordered_product_items:
+                ticket_bundle = ordered_product_item.product_item.ticket_bundle
+                if ticket_bundle:
+                    seats = ordered_product_item.seats
+                    for ticket in ticket_bundle.tickets:
+                        for seat in seats:
+                            c = TicketPrintHistory(
+                                operator = self.context.user,
+                                ordered_product_item = ordered_product_item,
+                                seat=seat,
+                                ticket_bundle = ticket_bundle)
+                            c.save()
+
+        return dict(result='ok')
+'''

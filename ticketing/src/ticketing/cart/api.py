@@ -8,6 +8,7 @@ from zope.deprecation import deprecate
 
 logger = logging.getLogger(__name__)
 from pyramid.interfaces import IRoutesMapper, IRequest
+from pyramid.security import effective_principals
 from ..api.impl import get_communication_api
 from ..api.impl import CMSCommunicationApi
 from .interfaces import IPaymentMethodManager
@@ -71,10 +72,13 @@ def get_item_name(request, performance):
     base_item_name = request.registry.settings['cart.item_name']
     return _maybe_encoded(base_item_name) + " " + str(performance.id)
 
-def get_nickname(request):
+def get_nickname(request, suffix=u'さん'):
     from .rakuten_auth.api import authenticated_user
     user = authenticated_user(request)
-    return user['nickname']
+    nickname = user.get('nickname', '')
+    if not nickname:
+        return ""
+    return nickname + suffix
 
 def get_payment_method_manager(request=None, registry=None):
     if request is not None:
@@ -94,14 +98,14 @@ def get_payment_method_url(request, payment_method_id, route_args={}):
     else:
         return ""
 
-def get_or_create_user(request, clamed_id):
+def get_or_create_user(request, auth_identifier, membership='rakuten'):
     # TODO: 楽天OpenID以外にも対応できるフレームワークを...
     credential = UserCredential.query.filter(
-        UserCredential.auth_identifier==clamed_id
+        UserCredential.auth_identifier==auth_identifier
     ).filter(
         UserCredential.membership_id==Membership.id
     ).filter(
-        Membership.name=='rakuten'
+        Membership.name==membership
     ).first()
     if credential:
         return credential.user
@@ -111,7 +115,7 @@ def get_or_create_user(request, clamed_id):
     if membership is None:
         membership = Membership(name='rakuten')
         DBSession.add(membership)
-    credential = UserCredential(user=user, auth_identifier=clamed_id, membership=membership)
+    credential = UserCredential(user=user, auth_identifier=auth_identifier, membership=membership)
     DBSession.add(user)
     return user
 
@@ -193,3 +197,14 @@ def get_system_fee(request):
 def get_stock_holder(request, event_id):
     stocker = get_stocker(request)
     return stocker.get_stock_holder(event_id)
+
+def get_valid_sales_url(request, event):
+    principals = effective_principals(request)
+    logger.debug(principals)
+    for salessegment in event.sales_segments:
+        membergroup = salessegment.membergroup
+        logger.debug("sales_segment:%s" % salessegment.name)
+        logger.debug("membergroup:%s" % membergroup.name)
+        if "membergroup:%s" % membergroup.name in principals:
+            return request.route_url('cart.index.sales', event_id=event.id, sales_segment_id=salessegment.id)
+

@@ -1,9 +1,8 @@
 from datetime import datetime
 from dateutil import parser
 from ticketing.cart.resources import TicketingCartResource
-from ticketing.core.models import DBSession
+from ticketing.core.models import DBSession, Order
 from ticketing.users.models import User, UserCredential, Membership, UserProfile
-from ticketing.orders.models import Order
 from ticketing.sej.models import SejOrder
 from .api import load_user_profile
 from sqlalchemy.orm.exc import NoResultFound

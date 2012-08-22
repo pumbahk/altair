@@ -1,12 +1,15 @@
 <%inherit file="/layout.html" />
 <%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/parts/_toggle_menu.html" name="tm" />
+
+<%include file="/parts/_toggle_menu.html" />
 
 <div class="row-fluid">
-  <div class="span2">
+  <div id="left-menu" class="span2" style="${tm.menu_style()}">
     <%include file="/parts/_menu.html" args="event=event" />
   </div>
 
-  <div class="span10">
+  <div id="main-container" class="${tm.container_class()}">
     <%block name="style">
     <link rel="stylesheet" type="text/css" href="/static/css/decentcolorpicker.css" />
     <script type="text/javascript" src="/static/js/jquery.decentcolorpicker.js"></script>
@@ -115,8 +118,8 @@
     <div id="stock_holders">
       <h3>配券先</h3>
       <div style="margin-top: 20px;">
-        <%include file="/stock_holders/_list.html" args="form=form_stock_holder, event=event, limit=10" />
-        <%include file="/stock_holders/_action_button.html" />
+        <%include file="/stock_holders/_list.html" args="form=form_stock_holder, stock_holders=event.stock_holders, limit=10" />
+        <%include file="/stock_holders/_action_button.html" args="event=event" />
         <div id="stock_holders-form">
           <%include file="/stock_holders/_form.html" args="form=form_stock_holder" />
         </div>

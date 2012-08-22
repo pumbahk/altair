@@ -3,10 +3,11 @@ Fashion.Backend.SVG = (function() {
   var Fashion = this;
   var window = Fashion.window;
   var _class = Fashion._lib._class;
-  var _escapeXMLSpecialChars = Fashion._lib._escapeXMLSpecialChars;
+  var _escapeXMLSpecialChars = Fashion._lib.escapeXMLSpecialChars;
   var __assert__ = Fashion._lib.__assert__;
-  var _addPoint = Fashion._lib._addPoint;
-  var _subtractPoint = Fashion._lib._subtractPoint;
+  var _addPoint = Fashion._lib.addPoint;
+  var _subtractPoint = Fashion._lib.subtractPoint;
+  var _clipPoint = Fashion._lib.clipPoint;
   var Refresher = Fashion.Backend.Refresher;
   var TransformStack = Fashion.Backend.TransformStack;
 
@@ -57,14 +58,17 @@ Fashion.Backend.SVG = (function() {
     } else {
       physicalPagePosition = { x: domEvt.pageX, y: domEvt.pageY };
     }
+
     if (impl instanceof Drawable) {
       retval.screenPosition   = _subtractPoint(physicalPagePosition, impl.getViewportOffset());
-      retval.logicalPosition  = impl.convertToLogicalPoint(retval.screenPosition);
-      retval.physicalPosition = impl.convertToPhysicalPoint(retval.screenPosition);
+      var physicalPosition    = _addPoint(impl.convertToPhysicalPoint(impl.scrollPosition()), retval.screenPosition);
+      retval.logicalPosition  = impl.convertToLogicalPoint(physicalPosition);
+      retval.physicalPosition = physicalPosition;
     } else {
       retval.screenPosition   = _subtractPoint(physicalPagePosition, impl.drawable.getViewportOffset());
-      retval.logicalPosition  = impl.drawable.convertToLogicalPoint(retval.screenPosition);
-      retval.physicalPosition = impl.drawable.convertToPhysicalPoint(retval.screenPosition);
+      var physicalPosition    = _addPoint(impl.drawable.convertToPhysicalPoint(impl.drawable.scrollPosition()), retval.screenPosition);
+      retval.logicalPosition  = impl.drawable.convertToLogicalPoint(physicalPosition);
+      retval.physicalPosition = physicalPosition;
       retval.offsetPosition   = _subtractPoint(retval.logicalPosition, impl.wrapper._position);
     }
 
@@ -128,17 +132,18 @@ var Base = _class("BaseSVG", {
           function () {
             var elem = this._elem;
             var style = this.wrapper._style;
-            if (style.fill) {
-              if (style.fill instanceof Fashion.FloodFill) {
-                elem.setAttribute('fill', style.fill.color.toString(true));
-                elem.setAttribute('fill-opacity', style.fill.color.a / 255.0);
-              } else if (style.fill instanceof Fashion.LinearGradientFill
-                  || style.fill instanceof Fashion.RadialGradientFill
-                  || style.fill instanceof Fashion.ImageTileFill) {
-                var def = this.drawable._defsManager.get(style.fill);
+            var fill, stroke;
+
+            if (fill = style.fill) {
+              if (fill instanceof Fashion.FloodFill) {
+                elem.setAttribute('fill', fill.color.toString(true));
+                elem.setAttribute('fill-opacity', fill.color.a / 255.0);
+              } else if (fill instanceof Fashion.LinearGradientFill
+                         || fill instanceof Fashion.RadialGradientFill
+                         || fill instanceof Fashion.ImageTileFill) {
+                var def = this.drawable._defsManager.get(fill);
                 elem.setAttribute('fill', "url(#" + def.id + ")");
-                if (this.def)
-                  this.def.delRef();
+                if (this.def) this.def.delRef();
                 this.def = def;
                 def.addRef();
               }
@@ -146,15 +151,16 @@ var Base = _class("BaseSVG", {
               elem.setAttribute('fill', 'none');
             }
 
-            if (style.stroke) {
-              elem.setAttribute('stroke', style.stroke.color.toString(true));
-              elem.setAttribute('stroke-opacity', style.stroke.color.a / 255.0);
-              elem.setAttribute('stroke-width', style.stroke.width);
-              if (style.stroke.pattern && style.stroke.pattern.length > 1)
-                elem.setAttribute('stroke-dasharray', style.stroke.pattern.join(' '));
+            if (stroke = style.stroke) {
+              elem.setAttribute('stroke', stroke.color.toString(true));
+              elem.setAttribute('stroke-opacity', stroke.color.a / 255.0);
+              elem.setAttribute('stroke-width', stroke.width);
+              if (stroke.pattern && stroke.pattern.length > 1)
+                elem.setAttribute('stroke-dasharray', stroke.pattern.join(' '));
             } else {
               elem.setAttribute('stroke', 'none');
             }
+
             elem.style.cursor = style.cursor;
           }
         ],
@@ -195,7 +201,7 @@ var Base = _class("BaseSVG", {
       var self = this;
       this._eventFunc = function(domEvt) {
         if (self.drawable._capturingShape &&
-            self.drawable._capturingShape != self)
+            self.drawable._capturingShape !== self)
           return true;
         self.wrapper.handler.dispatch(buildMouseEvt(self, domEvt));
         return false;
@@ -294,6 +300,14 @@ var Rect = _class("RectSVG", {
             var size = this.wrapper._size;
             this._elem.setAttribute('width', size.x + 'px');
             this._elem.setAttribute('height', size.y + 'px');
+          }
+        ],
+        [
+          Fashion.DIRTY_SHAPE,
+          function () {
+            var corner = this.wrapper._corner, size = this.wrapper._size;
+            this._elem.setAttribute('rx', corner ? corner.x: 0);
+            this._elem.setAttribute('ry', corner ? corner.y: 0);
           }
         ]
       ]
@@ -499,7 +513,7 @@ var DefsManager = (function() {
     ImageTileFill: function(obj) {
       var xml = [
         '<pattern width="0" height="0" patternUnits="userSpaceOnUse">',
-        '<image xlink:href="', Fashion._lib._escapeXMLSpecialChars(obj.imageData.url), '" width="0" height="0" />',
+        '<image xlink:href="', _escapeXMLSpecialChars(obj.imageData.url), '" width="0" height="0" />',
         '</pattern>'
       ].join('');
       return [
@@ -570,7 +584,9 @@ var DefsManager = (function() {
 var DepthManager = _class("DepthManager", {
   props: {
     root: null,
-    depth: []
+    layers: [],
+    depth: [],
+    idDepthTable: {}
   },
 
   methods: {
@@ -579,33 +595,88 @@ var DepthManager = _class("DepthManager", {
     },
 
     add: function(shape) {
-      var s = 0, e = this.depth.length;
-      while (s != e) {
-        var c = (s + e) >> 1;
-        if (this.depth[c].wrapper._zIndex < shape.wrapper._zIndex) {
-          s = c + 1;
-        } else {
-          e = c;
-        }
-      }
-      var exists = false;
-      while (s < this.depth.length && this.depth[s].wrapper._zIndex == shape.wrapper._zIndex) {
-        if (this.depth[s].wrapper.id == shape.wrapper.id) {
-          exists = true;
-          break;
-        }
-        s++;
-      }
-      this.depth.splice(s, exists, shape);
-      if (shape._elem) {
-        var beforeChild = null;
-        for (var i = s + 1; i < this.depth.length; i++) {
-          beforeChild = this.depth[i]._elem;
-          if (beforeChild)
+      var nth = shape.wrapper._zIndex;
+      var id = shape.wrapper.id;
+      var layer, last_nth;
+
+      // if already exists
+      if (last_nth = this.idDepthTable[id]) {
+
+        // if same depth. nothing todo.
+        if (last_nth == nth) return;
+
+        // remove
+        layer = this.layers[last_nth];
+        for (var i=0,l=layer.length; i<l; i++) {
+          if (layer[i].wrapper.id == id) {
+            layer.splice(i, 1);
+            if (layer.length == 0) {
+              this.layers.splice(last_nth, 1);
+              if (layer.next) layer.next.prev = layer.prev;
+              if (layter.prev) layer.prev.next = layer.next;
+              this.depth.splice(this.depth.indexOf(last_nth), 1);
+            }
             break;
+          }
         }
-        shape._elem.parentNode.insertBefore(shape._elem, beforeChild);
       }
+
+      // if no elements of same depth.
+      if (!(layer = this.layers[nth])) {
+
+        var s = 0, e = this.depth.length;
+
+        while (s != e) {
+          var c = (s + e) >> 1;
+          if (this.depth[c] < nth) {
+            s = c + 1;
+          } else {
+            e = c;
+          }
+        }
+
+        this.depth.splice(s, 0, nth);
+
+        var idx;
+
+        layer = []; // new layer;
+
+        var prev_layer =
+          ((((idx = this.depth[s-1]) !== void(0)) && this.layers[idx]) ||
+           null);
+
+        var next_layer =
+          ((((idx = this.depth[s+1]) !== void(0)) && this.layers[idx]) ||
+           null);
+
+        if (prev_layer) prev_layer.next = layer;
+        layer.prev = prev_layer;
+
+        if (next_layer) next_layer.prev = layer;
+        layer.next = next_layer;
+
+        this.layers[nth] = layer;
+
+      }
+
+      // if shape has elem.
+      // find next-shape that has elem, and insert shape.elem before it.
+      if (shape._elem) {
+        var layer_for_iter = layer;
+        var after_elem = null;
+        outer:
+        // start from next layer.
+        while (layer_for_iter = layer_for_iter.next) {
+          for (var i=0,l=layer_for_iter.length; i<l; i++) {
+            if (after_elem = layer_for_iter[i]._elem) break outer;
+          }
+        }
+        shape._elem.parentNode.insertBefore(shape._elem, after_elem);
+      }
+
+      layer.push(shape);
+      this.idDepthTable[id] = nth;
+
     }
   }
 });
@@ -623,15 +694,19 @@ var Drawable = _class("DrawableSVG", {
     _svg:         null,
     _vg:          null,
     _viewport:    null,
+    _viewportInnerSize: null,
     _capturingShape: null,
     _handledEvents: {
       mousedown: null,
       mouseup:   null,
       mousemove: null,
-      mouseout:  null
+      mouseout:  null,
+      scroll: null,
+      visualchange: null
     },
     _eventFunc: null,
     _captureEventFunc: null,
+    _scrollEventFunc: null,
     _refresher: null
   },
 
@@ -642,7 +717,13 @@ var Drawable = _class("DrawableSVG", {
           this.wrapper.target.appendChild(this._viewport);
         }
       },
-
+      postHandler: function (_, originalDirty) {
+        var evt = new Fashion.VisualChangeEvt();
+        evt.target = this.wrapper;
+        evt.dirty = originalDirty;
+        if (this.wrapper.handler)
+          this.wrapper.handler.dispatch(evt);
+      },
       handlers: [
         [
           Fashion.DIRTY_SIZE,
@@ -667,10 +748,18 @@ var Drawable = _class("DrawableSVG", {
               var handled = this.wrapper.handler.handles(type);
               var eventFunc = this._handledEvents[type];
               if (!eventFunc && handled) {
-                this._svg.addEventListener(type, this._eventFunc, false);
-                this._handledEvents[type] = this._eventFunc;
+                if (type == 'scroll') {
+                  this._viewport.addEventListener(type, this._scrollEventFunc, false);
+                  this._handledEvents[type] = this._scrollEventFunc;
+                } else if (type.indexOf('visualchange') != 0) {
+                  this._svg.addEventListener(type, this._eventFunc, false);
+                  this._handledEvents[type] = this._eventFunc;
+                }
               } else if (eventFunc && !handled) {
-                this._svg.removeEventListener(type, eventFunc, false);
+                if (type == 'scroll')
+                  this._viewport.removeEventListener(type, this._eventFunc, false);
+                else if (type.indexOf('visualchange') != 0)
+                  this._svg.removeEventListener(type, eventFunc, false);
                 this._handledEvents[type] = null;
               }
             }
@@ -687,7 +776,7 @@ var Drawable = _class("DrawableSVG", {
 
       var self = this;
       this._eventFunc = function(domEvt) {
-        if (self._capturingShape)
+        if (self._capturingShape && self._capturingShape !== self)
           return true;
         domEvt.stopPropagation();
         self.wrapper.handler.dispatch(buildMouseEvt(self, domEvt));
@@ -697,6 +786,19 @@ var Drawable = _class("DrawableSVG", {
       this._captureEventFunc = function (domEvt) {
         var func = self._capturingShape._handledEvents[domEvt.type];
         return func ? func(domEvt): true;
+      };
+
+      this._scrollEventFunc = function () {
+        if (self._handledEvents.scroll) {
+          var evt = new Fashion.ScrollEvt();
+          evt.target = self.wrapper;
+          evt.physicalPosition = {
+            x: self._viewport.scrollLeft,
+            y: self._viewport.scrollTop
+          };
+          evt.logicalPosition = self.scrollPosition();
+          self.wrapper.handler.dispatch(evt);
+        }
       };
 
       var viewport = this._buildViewportElement();
@@ -735,6 +837,13 @@ var Drawable = _class("DrawableSVG", {
 
     scrollPosition: function(position) {
       if (position) {
+        position = _clipPoint(
+          position,
+          this.wrapper._inverse_transform.translate(),
+          _subtractPoint(
+            this.wrapper._content_size,
+            this.wrapper._inverse_transform.apply(
+              this._viewportInnerSize)));
         var _position = this.wrapper._transform.apply(position);
         this._viewport.scrollLeft = _position.x;
         this._viewport.scrollTop  = _position.y;
@@ -776,8 +885,6 @@ var Drawable = _class("DrawableSVG", {
     },
 
     releaseMouse: function(shape) {
-      var handler = shape.handler;
-
       if (this._capturingShape != shape) {
         throw new Fashion.NotFound("The shape is not capturing.");
       }
@@ -788,12 +895,16 @@ var Drawable = _class("DrawableSVG", {
       this._capturingShape = null;
     },
 
+    capturingShape: function () {
+      return this._capturingShape;
+    },
+
     convertToLogicalPoint: function(point) {
-      return _addPoint(this.scrollPosition(), this.wrapper._inverse_transform.apply(point));
+      return this.wrapper._inverse_transform.apply(point);
     },
 
     convertToPhysicalPoint: function(point) {
-      return _addPoint(this.wrapper._transform.apply(this.scrollPosition()), point);
+      return this.wrapper._transform.apply(point);
     },
 
     _updateContentSize: function () {
@@ -806,6 +917,11 @@ var Drawable = _class("DrawableSVG", {
       this._viewport.style.overflow =
          (contentSize.x <= viewportSize.x &&
           contentSize.y <= viewportSize.y) ? 'hidden': 'scroll';
+      this._viewportInnerSize = {
+        x: this._viewport.clientWidth,
+        y: this._viewport.clientHeight,
+      };
+      this._scrollEventFunc();
     },
 
     _buildSvgElement: function() {

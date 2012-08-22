@@ -8,7 +8,6 @@ from pyramid.httpexceptions import HTTPFound
 from ticketing.multicheckout import helpers as m_h
 from ticketing.multicheckout import api as multicheckout_api
 from ticketing.core import models as c_models
-from ticketing.orders import models as o_models
 from ..interfaces import IPaymentPlugin, ICartPayment, IOrderPayment
 from .models import DBSession
 from .. import schemas
@@ -87,7 +86,7 @@ class MultiCheckoutPlugin(object):
 
         DBSession.add(checkout_sales_result)
 
-        order = o_models.Order.create_from_cart(cart)
+        order = c_models.Order.create_from_cart(cart)
         order.multicheckout_approval_no = checkout_sales_result.ApprovalNo
         order.paid_at = datetime.now()
         cart.finish()
@@ -115,7 +114,7 @@ class MultiCheckoutPlugin(object):
 
         DBSession.add(checkout_sales_result)
 
-        order = o_models.Order.create_from_cart(cart)
+        order = c_models.Order.create_from_cart(cart)
         order.multicheckout_approval_no = checkout_sales_result.ApprovalNo
         order.paid_at = datetime.now()
         cart.finish()

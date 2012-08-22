@@ -1,0 +1,31 @@
+<%
+jar_file = ''
+width = 640
+height = 480
+%>
+<OBJECT
+    classid="clsid:8AD9C840-044E-11D1-B3E9-00805F499D93"
+    codebase="http://java.sun.com/update/1.5.0/jinstall-1_5-windows-i586.cab#Version=5,0,0,9"
+    WIDTH="${width}" HEIGHT="${height}">
+    <param name="Message" value="apiUrl=${request.route_url('tickets.print.dequeue')}">
+    <param name="CODE" VALUE="model.SampleModelMain.class" >
+    <param name="CODEBASE" VALUE="../" >
+    <param name="ARCHIVE" VALUE="${jar_file}" >
+    <param name="type" value="application/x-java-applet;version=1.5">
+    <param name="scriptable" value="false">
+
+    <comment>
+    <embed
+        type="application/x-java-applet;version=1.5"
+        CODE="model.SampleModelMain.class"
+        JAVA_CODEBASE="../"
+        ARCHIVE="${jar_file}"
+        WIDTH="350"
+        HEIGHT="250"
+        scriptable=false
+        pluginspage="http://java.sun.com/products/plugin/index.html#download">
+        <noembed>
+        </noembed>
+	</embed>
+    </comment>
+</object>

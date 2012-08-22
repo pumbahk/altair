@@ -9,6 +9,19 @@ import sqlahelper
 session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
 
+class SejTenant(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
+    __tablename__           = 'SejTenant'
+    id                      = Column(Identifier, primary_key=True)
+    shop_name               = Column(String(12))
+    shop_id                 = Column(String(12))
+    contact_01              = Column(String(128))
+    contact_02              = Column(String(255))
+    api_key                 = Column(String(255), nullable=True)
+    inticket_api_url        = Column(String(255), nullable=True)
+
+    organization_id         = Column(Identifier) # あえてRelationしません
+
+
 class SejTicketTemplateFile(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     __tablename__           = 'SejTicketTemplateFile'
     id                      = Column(Identifier, primary_key=True)
@@ -108,7 +121,7 @@ class SejNotification(BaseModel, WithTimestamp, LogicallyDeleted, Base):
 class SejFile(BaseModel, WithTimestamp, LogicallyDeleted, Base):
     __tablename__           = 'SejFile'
     id                      = Column(Identifier, primary_key=True)
-    notification_type       = Column(Enum('94', '51', '61', '92', '94', '95', '96'))
+    notification_type       = Column(Enum('91', '51', '61', '92', '94', '95', '96'))
     file_date               = Column(Date, unique=True)
     reflected_at            = Column(DateTime, nullable=True)
     file_url                = Column(String(255))

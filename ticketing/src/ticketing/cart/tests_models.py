@@ -2,7 +2,7 @@ import unittest
 
 class CartedProductItemTests(unittest.TestCase):
     def setUp(self):
-        import ticketing.orders.models # for the depencency
+        import ticketing.core.models # for the depencency
 
     def _getTarget(self):
         from .models import CartedProductItem

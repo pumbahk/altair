@@ -66,6 +66,7 @@ def main(global_config, **settings):
     config.include('ticketing.events' , route_prefix='/events')
     config.include('ticketing.orders' , route_prefix='/orders')
     config.include('ticketing.master' , route_prefix='/master')
+    config.include('ticketing.tickets' , route_prefix='/tickets')
     config.include('ticketing.products' , route_prefix='/products')
     config.include('ticketing.users' , route_prefix='/users')
     config.include('ticketing.venues' , route_prefix='/venues')

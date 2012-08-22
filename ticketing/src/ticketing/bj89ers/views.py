@@ -16,7 +16,6 @@ from ..cart import api
 from ..cart import helpers as h
 from ..core import models as c_models
 
-from ..orders import models as o_models
 from ..users.models import SexEnum
 from ..users.models import User, UserProfile
 
@@ -106,7 +105,7 @@ class PaymentView(_PaymentView):
     def create_shipping_address(self, user):
         params = load_user_profile(self.request)
         logger.debug('user_profile %s' % params)
-        shipping_address = o_models.ShippingAddress(
+        shipping_address = c_models.ShippingAddress(
             first_name=params['first_name'],
             last_name=params['last_name'],
             first_name_kana=params['first_name_kana'],

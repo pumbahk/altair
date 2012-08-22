@@ -1,8 +1,8 @@
 <%
-from pyramid.threadlocal import get_current_registry
-settings = get_current_registry().settings
-altaircms_url = settings.get('altaircms.front_end_url')
-testing = get_current_registry().settings.get('ticketing.testing', False)
+  from pyramid.threadlocal import get_current_registry
+  settings = get_current_registry().settings
+  altaircms_url = settings.get('altaircms.front_end_url')
+  testing = get_current_registry().settings.get('ticketing.testing', False)
 %>
 <link rel="stylesheet" type="text/css" href="/static/css/navigation.css" />
 <div class="navbar navbar-fixed-top">
@@ -15,7 +15,6 @@ testing = get_current_registry().settings.get('ticketing.testing', False)
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">${request.context.user.name}<b class="caret"></b></a>
                         <ul class="dropdown-menu">
-                            % if testing:
                             <li><a href="${request.route_path('login.info')}">
                                 <i class="icon-cog"> </i>
                                 個人設定</a>
@@ -24,6 +23,7 @@ testing = get_current_registry().settings.get('ticketing.testing', False)
                                   <i class="icon-cog"> </i>
                                 オペレーター管理</a>
                             </li>
+                            % if testing:
                             <li><a href="${request.route_path('organizations.index')}">
                               <i class="icon-cog"> </i>
                               取引先マスタ管理</a>

@@ -4,21 +4,21 @@
   position: relative;
   border: 1px solid #ccc;
   overflow: hidden;
-  height: 400px;
+  height: 600px;
 }
 
 #venue-editor .venue-editor-main .venue-editor-main-root {
   border-right: 1px solid #ccc;
-  width: 60%;
+  width: 65%;
   height: 100%;
   float: left;
 }
 
 #venue-editor .venue-editor-main .venue-editor-main-side {
-  width: 40%;
+  width: 35%;
   height: 100%;
   overflow: scroll;
-  margin-left: -1px;
+  margin-left: -2px;
   float: right;
 }
 
@@ -148,6 +148,11 @@ function readjustMap() {
   });
 }
 $(window).resize(readjustMap);
+$('#menu-toggle').click(function() {
+  setTimeout(function() {
+    readjustMap();
+  }, 100);
+});
 
 venueEditor.find(".ui-button").each(function (i, n) {
   n = $(n);

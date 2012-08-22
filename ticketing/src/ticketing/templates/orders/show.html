@@ -19,12 +19,12 @@ ${h.breadcrumbs(
 
   <div class="span6">
     <div class="page-header">
-      <h3>受注情報</h3>
+      <h3>予約情報</h3>
     </div>
 
     <table class="table table-striped table-bordered">
       <tr>
-        <th class="span2">受注番号</th>
+        <th class="span2">予約番号</th>
         <td class="span3">${order.order_no}</td>
       </tr>
       <tr>
@@ -44,7 +44,7 @@ ${h.breadcrumbs(
         </td>
       </tr>
       <tr>
-        <th>受注日時</th>
+        <th>予約日時</th>
         <td>${h.safe_strftime(order.created_at)}</td>
       </tr>
       <tr>
@@ -169,18 +169,27 @@ ${h.breadcrumbs(
 
     % for i, ordered_product in enumerate(order.ordered_products):
       % if i == 0:
+        <% performance = order.performance %>
         <table class="table table-striped table-bordered">
           <tr>
             <th class="span2">イベント</th>
-            <td class="span6">${ordered_product.product.event.title}</td>
+            <td class="span6">${performance.event.title}</td>
           </tr>
           <tr>
-            <th>開始日時</th>
-            <td>${ordered_product.ordered_product_items[0].product_item.performance.start_on or ''}</td>
+            <th>公演名</th>
+            <td>${performance.name}</td>
+          </tr>
+          <tr>
+            <th>公演コード</th>
+            <td>${performance.code}</td>
+          </tr>
+          <tr>
+            <th>開演日時</th>
+            <td>${performance.start_on or ''}</td>
           </tr>
           <tr>
             <th>会場</th>
-            <td>${ordered_product.ordered_product_items[0].product_item.performance.venue.name}</td>
+            <td>${performance.venue.name}</td>
           </tr>
         </table>
 
@@ -203,8 +212,15 @@ ${h.breadcrumbs(
       % for i, ordered_product_item in enumerate(ordered_product.ordered_product_items):
           <tr>
             <td class="span2"></td>
-            <% attr = ordered_product_item.attributes.get('t_shirts_size') or '' %>
-            <td class="span4">${ordered_product_item.product_item.stock_type.name} ${attr}</td>
+            <%
+              attr = ordered_product_item.attributes.get('t_shirts_size') or ''
+              seat_no = ''
+              if ordered_product_item.seats:
+                seat_no = ', '.join([(seat.seat_no) for seat in ordered_product_item.seats if seat.seat_no])
+                if seat_no:
+                  seat_no = u'(座席番号 %s)' % seat_no
+            %>
+            <td class="span4">${ordered_product_item.product_item.stock_type.name} ${attr} ${seat_no}</td>
             <td style="text-align: right;">${h.price_format(ordered_product_item.product_item.price)}円</td>
             <td >${ordered_product_item.product_item.quantity}</td>
             <td style="text-align: right;">

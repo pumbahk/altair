@@ -124,12 +124,15 @@ _lib.__assert__            = __assert__;
 /** @file misc.js { */
 // detect atomic or not
 function _atomic_p(obj) {
-  var t = typeof obj;
-  return ( !(obj instanceof Date) &&
-           ( obj === null || obj === void(0) ||
-             t === 'boolean' || t === 'number' || t === 'string' ||
-             obj.valueOf !== Object.prototype.valueOf));
+  var t;
+  return ( obj === null || obj === void(0) ||
+           (t = typeof obj) === 'number' ||
+           t === 'string' ||
+           t === 'boolean' ||
+           ((obj.valueOf !== Object.prototype.valueOf) &&
+            !(obj instanceof Date)));
 };
+
 
 // make deep clone of the object
 function _clone(obj, target) {
@@ -138,7 +141,7 @@ function _clone(obj, target) {
   // if target is given. clone obj properties into it.
   var clone, p;
   if (obj instanceof Date) {
-    clone = new Date((typeof obj.getTime === 'function') ? obj.getTime() : obj);
+    clone = new Date(obj.getTime());
     if (target instanceof Date) {
       for (p in target) if (target.hasOwnProperty(p)) clone[p] = _clone(target[p], clone[p]);
     }
@@ -149,8 +152,7 @@ function _clone(obj, target) {
     }
   } else {
     clone = (!_atomic_p(target) && typeof target !== 'function') ?
-      target :
-      new obj.constructor()
+      target : new obj.constructor();
   }
 
   for (p in obj)
@@ -305,10 +307,10 @@ var _class = (function() {
     _class.prototype = new f();
     _class.prototype.__super__ = __super__;
 
-    var iiop = _class['%%INIT_INSTANCE_ORIGN_PROPS'];
+    var iiop = _class['%%INIT_INSTANCE_ORIGIN_PROPS'];
 
-    _class['%%INIT_INSTANCE_ORIGN_PROPS'] = function(inst) {
-      var parent_iiop = parent['%%INIT_INSTANCE_ORIGN_PROPS'];
+    _class['%%INIT_INSTANCE_ORIGIN_PROPS'] = function(inst) {
+      var parent_iiop = parent['%%INIT_INSTANCE_ORIGIN_PROPS'];
       if (parent_iiop) parent_iiop(inst);
       iiop(inst);
     };
@@ -340,9 +342,9 @@ var _class = (function() {
       }
     }
 
-    var iiop = _class['%%INIT_INSTANCE_ORIGN_PROPS'];
-    _class['%%INIT_INSTANCE_ORIGN_PROPS'] = function(inst) {
-      var include_iiop = include['%%INIT_INSTANCE_ORIGN_PROPS'];
+    var iiop = _class['%%INIT_INSTANCE_ORIGIN_PROPS'];
+    _class['%%INIT_INSTANCE_ORIGIN_PROPS'] = function(inst) {
+      var include_iiop = include['%%INIT_INSTANCE_ORIGIN_PROPS'];
       if (include_iiop) include_iiop(inst);
       iiop(inst);
     };
@@ -407,20 +409,16 @@ var _class = (function() {
       }
     }
 
-    __class__ = function(arg) {
-      __class__['%%INIT_INSTANCE_ORIGN_PROPS'](this);
-      if (this.init)
-        this.init.apply(this, arguments);
-      else
-        _clone(arg, this); 
+    __class__ = function __Class__(arg) {
+      __class__['%%INIT_INSTANCE_ORIGIN_PROPS'](this);
+      if (this.init) this.init.apply(this, arguments);
+      else           _clone(arg, this);
     };
 
-    __class__['%%INIT_INSTANCE_ORIGN_PROPS'] =
+    __class__['%%INIT_INSTANCE_ORIGIN_PROPS'] =
       function(inst) {
         for (var p in props) {
-          if (props.hasOwnProperty(p)) {
-            inst[p] = _clone(props[p]);
-          }
+          inst[p] = _clone(props[p]);
         }
       };
 
@@ -499,19 +497,25 @@ _lib._class = _class;
     var pending = [];
     var loaded = false;
 
-    _bindEvent(_window, 'load', function () {
-      loaded = true;
-      _unbindEvent(_window, 'load', arguments.callee);
-      while (pending.length)
-        (pending.shift())();
-    });
-  
-    return function onceOnLoad(f) {
-      if (loaded)
+    if (_window) {
+      _bindEvent(_window, 'load', function () {
+        loaded = true;
+        _unbindEvent(_window, 'load', arguments.callee);
+        while (pending.length)
+          (pending.shift())();
+      });
+    
+      return function onceOnLoad(f) {
+        if (loaded)
+          f();
+        else
+          pending.push(f);
+      };
+    } else {
+      return function onceOnLoad(f) {
         f();
-      else
-        pending.push(f);
-    };
+      }
+    }
   })();
 
 /** @file Matrix.js { */
@@ -601,6 +605,8 @@ var Matrix = (function() {
       },
 
       translate: function (offset) {
+        if (offset ===  void(0))
+          return { x: this.e, y: this.f };
         return this.multiplyI(1, 0, 0, 1, offset.x, offset.y);
       },
 
@@ -753,6 +759,7 @@ var Refresher = _class("Refresher", {
     },
 
     call: function (target, dirty) {
+      var originalDirty = dirty;
       if (this._preHandler) {
         var _dirty = this._preHandler.call(target, dirty);
         if (_dirty !== void(0))
@@ -765,7 +772,7 @@ var Refresher = _class("Refresher", {
             pair[1].call(target, dirty);
         }
       }
-      this._postHandler && this._postHandler.call(target, dirty);
+      this._postHandler && this._postHandler.call(target, dirty, originalDirty);
     }
   }
 });
@@ -888,7 +895,6 @@ var TransformStack = _class("TransformStack", {
         } catch(e) {}
 
         if ( !box || !contains( docElem, elem ) ) {
-          console.log('here');
           return box ? { top: box.top, left: box.left } : { top: 0, left: 0 };
         }
 
@@ -1544,7 +1550,7 @@ var PathData = (function() {
     case 'm':
       if (l == 0 || l % 2 != 0)
         throw new ValueError("moveToRel takes 2 * n arguments, " + l + " given: " + arr.join(" "));
-      var x = this.parseNumber(arr[i]), y = this.parseNumber(arr[i + 1]);
+      var x = this.parseNumber(arr[i]) + this.last.x, y = this.parseNumber(arr[i + 1]) + this.last.y;
       this.data.push(['M', x, y]);
       for (var j = i + 2, n = i + l; j < n ; j += 2) {
         x += this.parseNumber(arr[j]), y += this.parseNumber(arr[j + 1]);
@@ -1841,26 +1847,47 @@ var MouseEvt = _class("MouseEvt", {
 /** @} */
   this.MouseEvt = MouseEvt;
 
+/** @file VisualChangeEvt.js { */
+var VisualChangeEvt = _class("VisualChangeEvt", {
+  props: {
+    type: 'visualchange',
+    target: null,
+    dirty: 0
+  },
+
+  methods: {}
+});
+
+/** @} */
+  this.VisualChangeEvt = VisualChangeEvt;
+
+/** @file ScrollEvt.js { */
+var ScrollEvt = _class("ScrollEvt", {
+
+  props: {
+    type: 'scroll',
+    target: null,
+    logicalPosition:   { x: 0, y: 0 },
+    physicalPosition:  { x: 0, y: 0 }
+  },
+
+  methods: {}
+});
+/** @} */
+  this.ScrollEvt = ScrollEvt;
+
 /** @file MouseEventsHandler.js { */
 var MouseEventsHandler = _class("MouseEventsHandler", {
   props : {
-    _handlersMap: {
-      mousedown: [],
-      mouseup:   [],
-      mousemove: [],
-      mouseover: [],
-      mouseout:  []
-    },
+    _handlersMap: {},
     _target: null
   },
 
   methods: {
-    init: function(target, h) {
+    init: function(target, events) {
       this._target = target;
-
-      if (h) {
-        this.add(h);
-      }
+      for (var i in events)
+        this._handlersMap[events[i]] = [];
     },
 
     getHandlerFunctionsFor: function(type) {
@@ -2066,8 +2093,12 @@ var Base = _class("Base", {
     },
 
     addEvent: function(type, h) {
-      if (this.handler === null)
-        this.handler = new MouseEventsHandler(this);
+      if (this.handler === null) {
+        this.handler = new MouseEventsHandler(
+          this,
+          ['mousedown', 'mouseup', 'mousemove', 'mouseover', 'mouseout']
+        );
+      }
       this.handler.add.apply(this.handler, arguments);
       this._dirty |= Fashion.DIRTY_EVENT_HANDLERS;
       if (this.drawable)
@@ -2332,8 +2363,13 @@ var Drawable = _class("Drawable", {
     },
 
     addEvent: function(type, h) {
-      if (this.handler === null)
-        this.handler = new MouseEventsHandler(this);
+      if (this.handler === null) {
+        this.handler = new MouseEventsHandler(
+          this,
+          ['mousedown', 'mouseup', 'mousemove', 'mouseover', 'mouseout',
+           'scroll', 'visualchange']
+        );
+      }
       this.handler.add.apply(this.handler, arguments);
       this._dirty |= Fashion.DIRTY_EVENT_HANDLERS;
       this._enqueueForUpdate(this);

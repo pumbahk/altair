@@ -7,6 +7,7 @@ Fashion.Backend.VML = (function() {
   var __assert__ = Fashion._lib.__assert__;
   var _addPoint = Fashion._lib.addPoint;
   var _subtractPoint = Fashion._lib.subtractPoint;
+  var _clipPoint = Fashion._lib.clipPoint;
   var Refresher = Fashion.Backend.Refresher;
   // checking browser.
   if (Fashion.browser.identifier !== 'ie') return null;
@@ -18,9 +19,14 @@ Fashion.Backend.VML = (function() {
 
   function setup() {
     var namespaces = window.document.namespaces;
-    if (!namespaces[VML_PREFIX])
-      namespaces.add(VML_PREFIX, VML_NAMESPACE_URL);
-    window.document.createStyleSheet().addRule(VML_PREFIX + '\\:*', "behavior:url(#default#VML)");
+    if (Fashion.browser.version >= 8) {
+      if (!namespaces[VML_PREFIX])
+        namespaces.add(VML_PREFIX, VML_NAMESPACE_URL, VML_BEHAVIOR_URL);
+    } else {
+      if (!namespaces[VML_PREFIX])
+        namespaces.add(VML_PREFIX, VML_NAMESPACE_URL);
+      window.document.createStyleSheet().addRule(VML_PREFIX + '\\:*', "behavior:url(#default#VML)");
+    }
   }
 
   function newElement(type) {
@@ -145,12 +151,16 @@ Fashion.Backend.VML = (function() {
     };
 
     if (impl instanceof Drawable) {
-      retval.physicalPosition = _subtractPoint(physicalPagePosition, impl.getViewportOffset());
-      retval.logicalPosition = impl.convertToLogicalPoint(retval.physicalPosition);
+      retval.screenPosition   = _subtractPoint(physicalPagePosition, impl.getViewportOffset());
+      var physicalPosition    = _addPoint(impl.convertToPhysicalPoint(impl.scrollPosition()), retval.screenPosition);
+      retval.logicalPosition  = impl.convertToLogicalPoint(physicalPosition);
+      retval.physicalPosition = physicalPosition
     } else {
-      retval.physicalPosition = _subtractPoint(physicalPagePosition, impl.drawable.getViewportOffset());
-      retval.logicalPosition = impl.drawable.convertToLogicalPoint(retval.physicalPosition);
-      retval.offsetPosition = _subtractPoint(retval.logicalPosition, impl.wrapper._position);
+      retval.screenPosition   = _subtractPoint(physicalPagePosition, impl.drawable.getViewportOffset());
+      var physicalPosition    = _addPoint(impl.drawable.convertToPhysicalPoint(impl.drawable.scrollPosition()), retval.screenPosition);
+      retval.logicalPosition  = impl.drawable.convertToLogicalPoint(physicalPosition);
+      retval.physicalPosition = physicalPosition;
+      retval.offsetPosition   = _subtractPoint(retval.logicalPosition, impl.wrapper._position);
     }
 
     return retval;
@@ -470,7 +480,7 @@ var Base = (function() {
         } else {
           stroke.setOuterAttribute('stroked', false);
         }
-        fillAndStroke.setStyle('cursor', st.cursor ? st.cursor: 'normal');
+        fillAndStroke.setStyle('cursor', st.cursor ? st.cursor: 'default');
       }
     }
   });
@@ -817,7 +827,9 @@ var Drawable = _class("DrawableVML", {
       mouseup: [ false, 0, null ],
       mousemove: [ false, 0, null ],
       mouseover: [ false, 0, null ],
-      mouseout: [ false, 0, null ]
+      mouseout: [ false, 0, null ],
+      scroll: [ false, 0, null ],
+      visualchange: [ false, 0, null ]
     },
     _scrollPosition: { x: 0, y: 0 },
     _currentEvent: null,
@@ -833,6 +845,13 @@ var Drawable = _class("DrawableVML", {
         if (!this._viewport.parentNode != this.wrapper.target) {
           this.wrapper.target.appendChild(this._viewport);
         }
+      },
+      postHandler: function (_, originalDirty) {
+        var evt = new Fashion.VisualChangeEvt();
+        evt.target = this.wrapper;
+        evt.dirty = originalDirty;
+        if (this.wrapper.handler)
+          this.wrapper.handler.dispatch(evt);
       },
       handlers: [
         [
@@ -882,10 +901,12 @@ var Drawable = _class("DrawableVML", {
               var beingHandled = this._handledEvents[type][0];
               var toHandle = this.wrapper.handler.handles(type);
               if (!beingHandled && toHandle) {
-                this._handleEvent(type);
+                if (type != 'scroll' && type.indexOf('visualchange') != 0)
+                  this._handleEvent(type);
                 this._handledEvents[type][0] = true;
               } else if (beingHandled && !toHandle) {
-                this._unhandleEvent(type);
+                if (type != 'scroll' && type.indexOf('visualchange') != 0)
+                  this._unhandleEvent(type);
                 this._handledEvents[type][0] = false;
               }
             }
@@ -928,7 +949,15 @@ var Drawable = _class("DrawableVML", {
       };
 
       this._scrollEventFunc = function (msieEvt) {
-        self._scrollPosition = self.wrapper._inverse_transform.apply({ x: parseInt(self._viewport.scrollLeft), y: parseInt(self._viewport.scrollTop) });
+        var physicalPosition = { x: parseInt(self._viewport.scrollLeft), y: parseInt(self._viewport.scrollTop) };
+        self._scrollPosition = self.wrapper._inverse_transform.apply(physicalPosition);
+        if (self._handledEvents.scroll[0]) {
+          var evt = new Fashion.ScrollEvt();
+          evt.target = self.wrapper;
+          evt.physicalPosition = physicalPosition;
+          evt.logicalPosition = self._scrollPosition;
+          self.wrapper.handler.dispatch(evt);
+        }
       };
 
       this._viewport = this._buildViewportElement();
@@ -954,9 +983,9 @@ var Drawable = _class("DrawableVML", {
 
     scrollPosition: function(position) {
       if (position) {
-        position = clipPoint(
+        position = _clipPoint(
             position,
-            { x: 0, y: 0 },
+            this.wrapper._inverse_transform.translate(),
             _subtractPoint(
               this.wrapper._content_size,
               this.wrapper._inverse_transform.apply(
@@ -1028,8 +1057,16 @@ var Drawable = _class("DrawableVML", {
       this._capturingShape = null;
     },
 
+    capturingShape: function () {
+      return this._capturingShape;
+    },
+
     convertToLogicalPoint: function(point) {
-      return _addPoint(this.scrollPosition(), this.wrapper._inverse_transform.apply(point));
+      return this.wrapper._inverse_transform.apply(point);
+    },
+
+    convertToPhysicalPoint: function(point) {
+      return this.wrapper._transform.apply(point);
     },
 
     _updateContentSize: function () {
@@ -1045,8 +1082,9 @@ var Drawable = _class("DrawableVML", {
           contentSize.y <= viewportSize.y) ? 'hidden': 'scroll';
       this._viewportInnerSize = {
         x: this._viewport.clientWidth,
-        y: this._viewport.clientHeight,
+        y: this._viewport.clientHeight
       };
+      this._scrollEventFunc();
     },
 
     _buildRoot: function () {

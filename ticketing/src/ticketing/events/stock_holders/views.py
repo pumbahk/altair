@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import logging
+
+import webhelpers.paginate as paginate
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.renderers import render_to_response
@@ -11,8 +14,39 @@ from ticketing.fanstatic import with_bootstrap
 from ticketing.events.stock_holders.forms import StockHolderForm
 from ticketing.core.models import Event, StockHolder
 
+logger = logging.getLogger(__name__)
+
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class StockHolders(BaseView):
+
+    @view_config(route_name='stock_holders.index', renderer='ticketing:templates/stock_holders/index.html')
+    def index(self):
+        event_id = int(self.request.matchdict.get('event_id', 0))
+        event = Event.get(event_id)
+
+        sort = self.request.GET.get('sort', 'StockHolder.id')
+        direction = self.request.GET.get('direction', 'asc')
+        if direction not in ['asc', 'desc']:
+            direction = 'asc'
+
+        conditions = {
+            'event_id':event.id
+        }
+        query = StockHolder.filter_by(**conditions)
+        query = query.order_by(sort + ' ' + direction)
+
+        stock_holders = paginate.Page(
+            query,
+            page=int(self.request.params.get('page', 0)),
+            items_per_page=20,
+            url=paginate.PageURL_WebOb(self.request)
+        )
+
+        return {
+            'form_stock_holder':StockHolderForm(organization_id=self.context.user.organization_id, event_id=event_id),
+            'stock_holders':stock_holders,
+            'event':event,
+        }
 
     @view_config(route_name='stock_holders.new', request_method='POST', renderer='ticketing:templates/stock_holders/_form.html')
     def new_post(self):
@@ -69,7 +103,10 @@ class StockHolders(BaseView):
         if stock_holder is None:
             return HTTPNotFound('stock_holder id %d is not found' % stock_holder_id)
 
-        stock_holder.delete()
+        try:
+            stock_holder.delete()
+            self.request.session.flash(u'枠を削除しました')
+        except Exception, e:
+            self.request.session.flash(e.message)
 
-        self.request.session.flash(u'枠を削除しました')
         return HTTPFound(location=route_path('events.show', self.request, event_id=stock_holder.event.id))

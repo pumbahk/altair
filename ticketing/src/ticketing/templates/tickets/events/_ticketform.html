@@ -1,0 +1,21 @@
+<%namespace file="/common/helpers.html" import="form_item"/>
+
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">×</button>
+    <h3>チケット券面を追加</h3>
+  </div>
+
+  <form class="form-horizontal"
+		action="${request.route_path("events.tickets.bind.ticket", event_id=request.matchdict["event_id"])}"
+		method="POST">
+	<div class="modal-body">
+		<fieldset>
+		  ${form_item(form.ticket_template)}
+		  ${form_item(form.name)}
+		</fieldset>
+	</div>
+	<div class="modal-footer">
+		<a href="#" class="btn" data-dismiss="modal">キャンセル</a>
+		<input class="btn btn-primary" type="submit" name="submit" value="登録">
+	</div>
+  </form>

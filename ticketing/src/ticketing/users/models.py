@@ -18,6 +18,9 @@ class User(Base, WithTimestamp):
     bank_account_id = Column(Identifier, ForeignKey('BankAccount.id'))
     bank_account    = relationship('BankAccount')
 
+    membergroup_id = Column(Identifier, ForeignKey('MemberGroup.id'))
+    membergroup = relationship('MemberGroup', backref='users')
+
     @staticmethod
     def get(user_id):
         return session.query(User).filter(User.id == user_id).first()
@@ -105,7 +108,7 @@ class MailMagazine(Base, WithTimestamp):
 
     def subscribe(self, user, mail_address):
         subscription = MailSubscription.query.filter(
-            MailSubscription.user==user,
+            #MailSubscription.user==user,
             MailSubscription.email==mail_address
         ).filter(
             MailSubscription.segment==self
@@ -152,11 +155,20 @@ class Membership(Base, WithTimestamp):
     query = session.query_property()
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
-    sales_segments = lambda:relationship('SalesSegment', secondary=Membership_SalesSegment.__table__, backref='memberships')
+    #sales_segments = lambda:relationship('SalesSegment', secondary=Membership_SalesSegment.__table__, backref='memberships')
     status = Column(Integer)
 
-class Membership_SalesSegment(Base):
-    __tablename__ = 'Membership_SalesSegment'
-    query = session.query_property()
-    membership_id = Column(Identifier, ForeignKey('Membership.id'), primary_key=True)
-    sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'), primary_key=True)
+class MemberGroup(Base, WithTimestamp):
+     __tablename__ = 'MemberGroup'
+     query = session.query_property()
+     id = Column(Identifier, primary_key=True)
+     name = Column(String(255))
+     membership_id = Column(Identifier, ForeignKey('Membership.id'))
+     membership = relationship('Membership', backref='membergruops')
+
+   
+# class Membership_SalesSegment(Base):
+#     __tablename__ = 'Membership_SalesSegment'
+#     query = session.query_property()
+#     membership_id = Column(Identifier, ForeignKey('Membership.id'), primary_key=True)
+#     sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'), primary_key=True)

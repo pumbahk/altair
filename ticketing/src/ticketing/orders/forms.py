@@ -11,7 +11,7 @@ from ticketing.core.models import PaymentMethodPlugin, DeliveryMethodPlugin
 class OrderForm(Form):
 
     order_no = HiddenField(
-        label=u'受注番号',
+        label=u'予約番号',
         validators=[Optional()],
     )
     total_amount = HiddenField(
@@ -19,22 +19,23 @@ class OrderForm(Form):
         validators=[Optional()],
     )
     created_at = HiddenField(
-        label=u'受注日時',
+        label=u'予約日時',
         validators=[Optional()],
     )
 
 class OrderSearchForm(Form):
 
     order_no = TextField(
-        label=u'受注番号',
+        label=u'予約番号',
         validators=[Optional()],
     )
     ordered_from = DateTimeField(
-        label=u'受注日時',
+        label=u'予約日時',
         validators=[Optional()],
         format='%Y-%m-%d %H:%M',
     )
     ordered_to = DateTimeField(
+        label=u'予約日時',
         validators=[Optional()],
         format='%Y-%m-%d %H:%M',
     )
@@ -56,12 +57,29 @@ class OrderSearchForm(Form):
         choices=[('ordered', u'未入金'), ('paid', u'入金済み'), ('delivered', u'配送済み'), ('canceled', u'キャンセル'), ('refunded', u'キャンセル (返金済)')],
         coerce=str,
     )
+    tel = TextField(
+        label=u'電話番号',
+        validators=[Optional()],
+    )
+    start_on_from = DateTimeField(
+        label=u'公演日時',
+        validators=[Optional()],
+        format='%Y-%m-%d %H:%M',
+    )
+    start_on_to = DateTimeField(
+        label=u'公演日時',
+        validators=[Optional()],
+        format='%Y-%m-%d %H:%M',
+    )
     sort = HiddenField(
         validators=[Optional()],
     )
     direction = HiddenField(
         validators=[Optional(), AnyOf(['asc', 'desc'], message='')],
         default='desc',
+    )
+    performance_id = HiddenField(
+        validators=[Optional()],
     )
 
 class SejTicketForm(Form):

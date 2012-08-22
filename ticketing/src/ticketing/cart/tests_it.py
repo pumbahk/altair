@@ -8,7 +8,7 @@ def _setup_db(echo=False):
     return _setup_db_(
         modules=[
             'ticketing.core.models',
-            'ticketing.orders.models',
+            #'ticketing.orders.models',
             'ticketing.cart.models',
             ],
         echo=echo
@@ -45,7 +45,6 @@ class ReserveViewTests(unittest.TestCase):
 
     def _add_seats(self):
         import ticketing.core.models as c_m
-        import ticketing.orders.models as o_m
         # organization
         org = c_m.Organization()
         # event

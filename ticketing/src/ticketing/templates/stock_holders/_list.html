@@ -1,4 +1,4 @@
-<%page args="form, event, limit=None" />
+<%page args="form, stock_holders, limit=None" />
 <%namespace file="/common/helpers.html" name="h" />
 
 <% paging = False if limit else True %>
@@ -27,7 +27,7 @@
       </tr>
       </thead>
       <tbody>
-      % for i, stock_holder in enumerate(event.stock_holders):
+      % for i, stock_holder in enumerate(stock_holders):
       <% if limit and i >= limit: break %>
       <tr id="stock_holder-${stock_holder.id}" name="${stock_holder.name}" data='${h.json(stock_holder.style)}'>
         <th><input type="radio" name="stock_holder_id" value="${stock_holder.id}" /></th>
@@ -42,5 +42,5 @@
 </div>
 
 % if paging:
-  ${h.pager(event.stock_holders)}
+  ${h.pager(stock_holders)}
 % endif

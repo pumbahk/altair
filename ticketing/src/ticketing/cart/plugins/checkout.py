@@ -7,12 +7,11 @@ from pyramid.view import view_config
 from pyramid.response import Response
 from pyramid.httpexceptions import HTTPFound
 
-from ticketing.orders.models import Order
 from ticketing.cart.interfaces import IPaymentPlugin, IOrderPayment
 from ticketing.cart import helpers as h
 from ticketing.cart import api as a
 from ticketing.cart.models import Cart, CartedProduct
-from ticketing.core.models import Product, PaymentDeliveryMethodPair
+from ticketing.core.models import Product, PaymentDeliveryMethodPair, Order
 from ticketing.checkout import api
 from ticketing.checkout import helpers
 

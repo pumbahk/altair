@@ -1,9 +1,10 @@
 <%page args="event=None" />
 <%
-from ticketing.bookmark.models import Bookmark
-from pyramid.threadlocal import get_current_registry
-testing = get_current_registry().settings.get('ticketing.testing', False)
+  from ticketing.bookmark.models import Bookmark
+  from pyramid.threadlocal import get_current_registry
+  testing = get_current_registry().settings.get('ticketing.testing', False)
 %>
+
 <div class="well sidebar-nav">
   <ul class="nav nav-list">
     <li class="nav-header">公演管理</li>
@@ -11,10 +12,11 @@ testing = get_current_registry().settings.get('ticketing.testing', False)
     % if event:
     <ul style="margin-left:15px">
       <li><a href="${request.route_path('stock_types.index', event_id=event.id)}">席種</a></li>
+      <li><a href="${request.route_path('stock_holders.index', event_id=event.id)}">配券先</a></li>
       <li><a href="${request.route_path('sales_segments.index', event_id=event.id)}">販売区分</a></li>
       <li><a href="${request.route_path('products.index', event_id=event.id)}">商品</a></li>
       <li><a href="${request.route_path('performances.index', event_id=event.id)}">パフォーマンス</a></li>
-      <li><a href="${request.route_path('events.report', event_id=event.id)}"></i>帳票</a></li>
+      <li><a href="${request.route_path('reports.index', event_id=event.id)}"></i>帳票</a></li>
     </ul>
     % endif
     <li><a href="${request.route_path('accounts.index')}">取引先</a></li>
@@ -26,7 +28,7 @@ testing = get_current_registry().settings.get('ticketing.testing', False)
     <li><a href="${request.route_path('payment_methods.index')}">決済方法</a></li>
     <li><a href="${request.route_path('delivery_methods.index')}">配送方法</a></li>
     % if testing:
-    <li><a href="">チケット券面</a></li>
+    <li><a href="${request.route_path('tickets.index')}">チケット券面</a></li>
     % endif
     <li class="divider"></li>
     <li class="nav-header">ユーザー管理</li>

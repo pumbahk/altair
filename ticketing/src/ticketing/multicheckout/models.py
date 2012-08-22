@@ -10,7 +10,6 @@ from ..models import Identifier
 
 # for schema dependencies
 import ticketing.core.models
-import ticketing.orders.models
 
 Base = sqlahelper.get_base()
 DBSession = sqlahelper.get_session()

@@ -1,15 +1,24 @@
 # encoding: utf-8
 
 import logging
+from datetime import datetime
 
-from sqlalchemy import Table, Column, ForeignKey, ForeignKeyConstraint, func
+from sqlalchemy import Table, Column, ForeignKey, func, or_, and_
+from sqlalchemy import ForeignKeyConstraint, UniqueConstraint
 from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode
-from sqlalchemy.orm import join, backref
+from sqlalchemy.orm import join, backref, column_property
 from sqlalchemy.orm.collections import attribute_mapped_collection
+from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.ext.associationproxy import association_proxy
+
+from pyramid.threadlocal import get_current_registry
 
 from ticketing.models import *
 from ticketing.users.models import User
+from ticketing.utils import sensible_alnum_decode
+from ticketing.sej.models import SejOrder
+from ticketing.sej.exceptions import SejServerError
+from ticketing.sej.payment import request_cancel_order
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +71,7 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     areas = relationship("VenueArea", backref='venues', secondary=VenueArea_group_l0_id.__table__)
     organization = relationship("Organization", backref='venues')
     seat_index_types = relationship("SeatIndexType", backref='venue')
-    attributes = JSONEncodedDict(16384)
+    attributes = Column(MutationDict.as_mutable(JSONEncodedDict(16384)))
 
     @staticmethod
     def create_from_template(template, performance_id, original_performance_id=None):
@@ -182,6 +191,7 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id              = Column(Identifier, primary_key=True)
     l0_id           = Column(String(255))
     name            = Column(Unicode(50), nullable=False, default=u"", server_default=u"")
+    seat_no         = Column(String(255))
     stock_id        = Column(Identifier, ForeignKey('Stock.id'))
 
     venue_id        = Column(Identifier, ForeignKey('Venue.id', ondelete='CASCADE'), nullable=False)
@@ -258,7 +268,8 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             seat_status.delete()
 
         # delete SeatAttribute
-        for attribute in self.attributes:
+        seat_attributes = SeatAttribute.filter_by(seat_id=self.id).all()
+        for attribute in seat_attributes:
             attribute.delete()
 
         # delete Seat
@@ -497,7 +508,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization = relationship('Organization', backref='events')
 
     performances = relationship('Performance', backref='event')
-    stock_types = relationship('StockType', backref='event', order_by='StockType.order_no')
+    stock_types = relationship('StockType', backref='event', order_by='StockType.display_order')
     stock_holders = relationship('StockHolder', backref='event')
 
     _first_performance = None
@@ -593,8 +604,8 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 "tickets":[1,2],
               ],
               "tickets":[
-                {"id":1, "sale_id":1, "name":"A席大人", "seat_type":"A席", "price":5000, "order_no":1},
-                {"id":2, "sale_id":2, "name":"B席大人", "seat_type":"B席", "price":3000, "order_no":2},
+                {"id":1, "sale_id":1, "name":"A席大人", "seat_type":"A席", "price":5000, "display_order":1},
+                {"id":2, "sale_id":2, "name":"B席大人", "seat_type":"B席", "price":3000, "display_order":2},
               ],
               "sales":[
                 {"id":1, "name":"販売区分1", "start_on":~, "end_on":~, "seat_choice":true},
@@ -755,6 +766,9 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     event_id = Column(Identifier, ForeignKey('Event.id'))
     event = relationship('Event', backref='sales_segments')
 
+    membergroup_id = Column(Identifier, ForeignKey('MemberGroup.id'))
+    membergroup = relationship('MemberGroup', backref='salessegments')
+
     def get_cms_data(self):
         start_at = isodate.datetime_isoformat(self.start_at) if self.start_at else ''
         end_at = isodate.datetime_isoformat(self.end_at) if self.end_at else ''
@@ -888,6 +902,7 @@ class BuyerCondition(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'ProductItem'
     id = Column(Identifier, primary_key=True)
+    name = Column(String(255))
     price = Column(Numeric(precision=16, scale=2), nullable=False)
 
     product_id = Column(Identifier, ForeignKey('Product.id'))
@@ -897,7 +912,6 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     stock = relationship("Stock", backref="product_items")
 
     quantity = Column(Integer, nullable=False, default=1, server_default='1')
-
     ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id'), nullable=True)
 
     @property
@@ -958,11 +972,11 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
     type = Column(Integer)  # @see StockTypeEnum
-    order_no = Column(Integer, default=1)
+    display_order = Column(Integer, nullable=False, default=1)
     event_id = Column(Identifier, ForeignKey("Event.id"))
     quantity_only = Column(Boolean, default=False)
     style = Column(MutationDict.as_mutable(JSONEncodedDict(1024)))
-    stocks = relationship('Stock', backref=backref('stock_type', order_by='StockType.order_no'))
+    stocks = relationship('Stock', backref=backref('stock_type', order_by='StockType.display_order'))
 
     @property
     def is_seat(self):
@@ -1024,6 +1038,18 @@ class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         # create default Stock
         Stock.create_default(self.event, stock_holder_id=self.id)
 
+    def delete(self):
+        # 在庫が割り当てられている場合は削除できない
+        for stock in self.stocks:
+            if stock.quantity > 0:
+                raise Exception(u'座席および席数の割当がある為、削除できません')
+
+        # delete Stock
+        for stock in self.stocks:
+            stock.delete()
+
+        super(StockHolder, self).delete()
+
     def stocks_by_performance(self, performance_id):
         def performance_filter(stock):
             return (stock.performance_id == performance_id)
@@ -1064,13 +1090,22 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         else:
             # 更新時はquantityを更新
             stock_status = StockStatus.filter_by(stock_id=self.id).first()
-            seat_quantity = Seat.filter(Seat.stock_id==self.id)\
-                .join(SeatStatus)\
-                .filter(Seat.id==SeatStatus.seat_id)\
-                .filter(SeatStatus.status.in_([SeatStatusEnum.Vacant.v]))\
-                .count()
+            if self.stock_type and self.stock_type.quantity_only:
+                seat_quantity = self.quantity
+            else:
+                seat_quantity = Seat.filter(Seat.stock_id==self.id)\
+                    .join(SeatStatus)\
+                    .filter(Seat.id==SeatStatus.seat_id)\
+                    .filter(SeatStatus.status.in_([SeatStatusEnum.Vacant.v]))\
+                    .count()
             stock_status.quantity = seat_quantity
         stock_status.save()
+
+    def delete(self):
+        # delete StockStatus
+        self.stock_status.delete()
+
+        super(Stock, self).delete()
 
     @staticmethod
     def get_default(performance_id):
@@ -1126,11 +1161,12 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                         if stock_type.id not in created_stock_types:
                             created_stock_types.append(stock_type.id)
 
-        # 生成したStockをProductに紐づけるProductItemを生成
-        for stock_type_id in created_stock_types:
-            products = Product.filter(Product.seat_stock_type_id==stock_type_id).all()
-            for product in products:
-                ProductItem.create_default(product)
+        ''' ProductItemの自動生成は行わない '''
+        ## 生成したStockをProductに紐づけるProductItemを生成
+        #for stock_type_id in created_stock_types:
+        #    products = Product.filter(Product.seat_stock_type_id==stock_type_id).all()
+        #    for product in products:
+        #        ProductItem.create_default(product)
 
     @staticmethod
     def create_from_template(template, performance_id):
@@ -1156,18 +1192,18 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
     price = Column(Numeric(precision=16, scale=2), nullable=False)
-    order_no = Column(Integer, default=1)
+    display_order = Column(Integer, nullable=False, default=1)
 
     sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'), nullable=True)
-    sales_segment = relationship('SalesSegment', uselist=False, backref=backref('product', order_by='Product.order_no'))
+    sales_segment = relationship('SalesSegment', uselist=False, backref=backref('product', order_by='Product.display_order'))
 
     seat_stock_type_id = Column(Identifier, ForeignKey('StockType.id'), nullable=True)
-    seat_stock_type = relationship('StockType', uselist=False, backref=backref('product', order_by='Product.order_no'))
+    seat_stock_type = relationship('StockType', uselist=False, backref=backref('product', order_by='Product.display_order'))
 
     event_id = Column(Identifier, ForeignKey('Event.id'))
-    event = relationship('Event', backref=backref('products', order_by='Product.order_no'))
+    event = relationship('Event', backref=backref('products', order_by='Product.display_order'))
 
-    items = relationship('ProductItem', backref=backref('product', order_by='Product.order_no'))
+    items = relationship('ProductItem', backref=backref('product', order_by='Product.display_order'))
 
     @staticmethod
     def find(performance_id=None, event_id=None, sales_segment_id=None, include_deleted=False):
@@ -1200,8 +1236,9 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def add(self):
         super(Product, self).add()
 
-        # Performance数分のProductItemを生成
-        ProductItem.create_default(product=self)
+        ''' ProductItemの自動生成は行わない '''
+        ## Performance数分のProductItemを生成
+        #ProductItem.create_default(product=self)
 
     def get_quantity_power(self, stock_type, performance_id):
         """ 数量倍率 """
@@ -1243,18 +1280,14 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             'price':floor(self.price),
             'sale_id':self.sales_segment_id,
             'seat_type':self.seat_type(),
-            'order_no':self.order_no,
+            'display_order':self.display_order,
         }
         if self.deleted_at:
             data['deleted'] = 'true'
         return data
 
     def seat_type(self):
-        name = ProductItem.filter_by(product_id=self.id)\
-                          .join(Stock).join(StockType)\
-                          .filter(StockType.type==StockTypeEnum.Seat.v)\
-                          .with_entities(StockType.name).distinct().scalar()
-        return name if name else ''
+        return self.seat_stock_type.name if self.seat_stock_type else ''
 
     @staticmethod
     def create_from_template(template, event_id, convert_map):
@@ -1316,4 +1349,446 @@ class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     prefecture = Column(String(64), nullable=False, default=u'')
 
     status = Column(Integer)
+
+orders_seat_table = Table("orders_seat", Base.metadata,
+    Column("seat_id", Identifier, ForeignKey("Seat.id")),
+    Column("OrderedProductItem_id", Identifier, ForeignKey("OrderedProductItem.id")),
+)
+
+class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'ShippingAddress'
+    id = Column(Identifier, primary_key=True)
+    user_id = Column(Identifier, ForeignKey("User.id"))
+    user = relationship('User', backref='shipping_addresses')
+    email = Column(String(255))
+    nick_name = Column(String(255))
+    first_name = Column(String(255))
+    last_name = Column(String(255))
+    first_name_kana = Column(String(255))
+    last_name_kana = Column(String(255))
+    sex = Column(Integer)
+    zip = Column(String(255))
+    country = Column(String(255))
+    prefecture = Column(String(255), nullable=False, default=u'')
+    city = Column(String(255), nullable=False, default=u'')
+    address_1 = Column(String(255), nullable=False, default=u'')
+    address_2 = Column(String(255))
+    tel_1 = Column(String(32))
+    tel_2 = Column(String(32))
+    fax = Column(String(32))
+    email = Column(String(255))
+
+class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'Order'
+    id = Column(Identifier, primary_key=True)
+    user_id = Column(Identifier, ForeignKey("User.id"))
+    user = relationship('User')
+    shipping_address_id = Column(Identifier, ForeignKey("ShippingAddress.id"))
+    shipping_address = relationship('ShippingAddress', backref='order')
+    organization_id = Column(Identifier, ForeignKey("Organization.id"))
+    ordered_from = relationship('Organization', backref='orders')
+
+    items = relationship('OrderedProduct')
+    total_amount = Column(Numeric(precision=16, scale=2), nullable=False)
+    system_fee = Column(Numeric(precision=16, scale=2), nullable=False)
+    transaction_fee = Column(Numeric(precision=16, scale=2), nullable=False)
+    delivery_fee = Column(Numeric(precision=16, scale=2), nullable=False)
+
+    multicheckout_approval_no = Column(Unicode(255), doc=u"マルチ決済受領番号")
+
+    payment_delivery_method_pair_id = Column(Identifier, ForeignKey("PaymentDeliveryMethodPair.id"))
+    payment_delivery_pair = relationship("PaymentDeliveryMethodPair")
+
+    paid_at = Column(DateTime, nullable=True, default=None)
+    delivered_at = Column(DateTime, nullable=True, default=None)
+    canceled_at = Column(DateTime, nullable=True, default=None)
+
+    order_no = Column(String(255))
+
+    performance_id = Column(Identifier, ForeignKey('Performance.id'))
+    performance = relationship('Performance', backref="orders")
+
+    @property
+    def status(self):
+        if self.canceled_at:
+            return 'refunded' if self.paid_at else 'canceled'
+        elif self.delivered_at:
+            return 'delivered'
+        elif self.paid_at:
+            return 'paid'
+        else:
+            return 'ordered'
+
+    def cancel(self, request):
+        # キャンセル済み、売上キャンセル済み、配送済みはキャンセルできない
+        if self.status == 'canceled' or self.status == 'refunded' or self.status == 'delivered':
+            return False
+
+        '''
+        決済方法ごとに払戻し処理
+        '''
+        ppid = self.payment_delivery_pair.payment_method.payment_plugin_id
+        if not ppid:
+            return False
+
+        # クレジットカード決済
+        if ppid == 1:
+            # 入金済みなら決済をキャンセル
+            if self.status == 'paid':
+                # 売り上げキャンセル
+                from ticketing.multicheckout import api as multi_checkout_api
+
+                order_no = self.order_no
+                if request.registry.settings.get('multicheckout.testing', False):
+                    order_no = '%010d%02d' % (sensible_alnum_decode(order_no[2:12]), 0)
+                multi_checkout_result = multi_checkout_api.checkout_sales_cancel(request, order_no)
+                DBSession.add(multi_checkout_result)
+
+                error_code = ''
+                if multi_checkout_result.CmnErrorCd and multi_checkout_result.CmnErrorCd != '000000':
+                    error_code = multi_checkout_result.CmnErrorCd
+                elif multi_checkout_result.CardErrorCd and multi_checkout_result.CardErrorCd != '000000':
+                    error_code = multi_checkout_result.CardErrorCd
+
+                if error_code:
+                    logger.error(u'クレジットカード決済のキャンセルに失敗しました。 %s' % error_code)
+                    return False
+
+                self.multi_checkout_approval_no = multi_checkout_result.ApprovalNo
+
+        # 楽天あんしん決済
+        elif ppid == 2:
+            # ToDo
+            pass
+
+        # コンビニ決済 (セブンイレブン)
+        elif ppid == 3:
+            # 入金済みならキャンセル不可
+            if self.status == 'paid':
+                return False
+
+            # 未入金ならコンビニ決済のキャンセル通知
+            elif self.status == 'ordered':
+                sej_order = SejOrder.query.filter_by(order_id=self.order_no).first()
+                if sej_order and not sej_order.cancel_at:
+                    settings = get_current_registry().settings
+                    shop_id = settings.get('sej.shop_id', 0)
+                    if sej_order.shop_id != shop_id:
+                        logger.error(u'コンビニ決済(セブンイレブン)のキャンセルに失敗しました Invalid shop_id : %s' % shop_id)
+                        return False
+
+                    try:
+                        request_cancel_order(
+                            order_id=sej_order.order_id,
+                            billing_number=sej_order.billing_number,
+                            exchange_number=sej_order.exchange_number,
+                            shop_id=shop_id,
+                            secret_key=settings.get('sej.api_key'),
+                            hostname=settings.get('sej.inticket_api_url')
+                        )
+                    except SejServerError, e:
+                        logger.error(u'コンビニ決済(セブンイレブン)のキャンセルに失敗しました %s' % e)
+                        return False
+
+        # 窓口支払
+        elif ppid == 4:
+            pass
+
+        # 在庫を戻す
+        self.release()
+        self.canceled_at = datetime.now()
+        self.save()
+
+        return True
+
+    def release(self):
+        # 在庫を解放する
+        for product in self.ordered_products:
+            product.release()
+
+    def delivered(self):
+        # 入金済みのみ配送済みにステータス変更できる
+        if self.status == 'paid':
+            self.delivered_at = datetime.now()
+            self.save()
+            return True
+        else:
+            return False
+
+    @classmethod
+    def create_from_cart(cls, cart):
+        order = cls()
+        order.order_no = cart.order_no
+        order.total_amount = cart.total_amount
+        order.shipping_address = cart.shipping_address
+        order.payment_delivery_pair = cart.payment_delivery_pair
+        order.system_fee = cart.system_fee
+        order.transaction_fee = cart.transaction_fee
+        order.delivery_fee = cart.delivery_fee
+        order.performance = cart.performance
+
+        for product in cart.products:
+            ordered_product = OrderedProduct(
+                order=order, product=product.product, price=product.product.price, quantity=product.quantity)
+            for item in product.items:
+                ordered_product_item = OrderedProductItem(
+                    ordered_product=ordered_product, product_item=item.product_item, price=item.product_item.price,
+                    seats=item.seats,
+                )
+
+        return order
+
+    @staticmethod
+    def filter_by_performance_id(id):
+        performance = Performance.get(id)
+        if not performance:
+            return None
+
+        return Order.filter_by(organization_id=performance.event.organization_id)\
+            .join(Order.ordered_products)\
+            .join(OrderedProduct.ordered_product_items)\
+            .join(OrderedProductItem.product_item)\
+            .filter(ProductItem.performance_id==id)\
+            .distinct()
+
+    @staticmethod
+    def set_search_condition(query, form):
+        sort = form.sort.data or 'id'
+        direction = form.direction.data or 'desc'
+        query = query.order_by('Order.' + sort + ' ' + direction)
+
+        condition = form.order_no.data
+        if condition:
+            query = query.filter(Order.order_no==condition)
+        condition = form.performance_id.data
+        if condition:
+            query = query.filter(Order.performance_id==condition)
+        condition = form.ordered_from.data
+        if condition:
+            query = query.filter(Order.created_at>=condition)
+        condition = form.ordered_to.data
+        if condition:
+            query = query.filter(Order.created_at<=condition)
+        condition = form.payment_method.data
+        if condition:
+            query = query.join(Order.payment_delivery_pair)
+            query = query.join(PaymentMethod)
+            query = query.filter(PaymentMethod.payment_plugin_id.in_(condition))
+        condition = form.delivery_method.data
+        if condition:
+            query = query.join(Order.payment_delivery_pair)
+            query = query.join(DeliveryMethod)
+            query = query.filter(DeliveryMethod.delivery_plugin_id.in_(condition))
+        condition = form.status.data
+        if condition:
+            status_cond = []
+            if 'refunded' in condition:
+                status_cond.append(and_(Order.canceled_at!=None, Order.paid_at!=None))
+            if 'canceled' in condition:
+                status_cond.append(and_(Order.canceled_at!=None, Order.paid_at==None))
+            if 'delivered' in condition:
+                status_cond.append(and_(Order.canceled_at==None, Order.delivered_at!=None))
+            if 'paid' in condition:
+                status_cond.append(and_(Order.canceled_at==None, Order.paid_at!=None, Order.delivered_at==None))
+            if 'ordered' in condition:
+                status_cond.append(and_(Order.canceled_at==None, Order.paid_at==None, Order.delivered_at==None))
+            if status_cond:
+                query = query.filter(or_(*status_cond))
+        condition = form.tel.data
+        if condition:
+            query = query.join(Order.shipping_address).filter(ShippingAddress.tel_1==condition)
+        condition = form.start_on_from.data
+        if condition:
+            query = query.join(Order.performance).filter(Performance.start_on>=condition)
+        condition = form.start_on_to.data
+        if condition:
+            query = query.join(Order.performance).filter(Performance.start_on<=condition)
+        return query
+
+
+def no_filter(value):
+    return value
+
+class OrderedProductAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__   = "OrderedProductAttribute"
+    ordered_product_item_id  = Column(Identifier, ForeignKey('OrderedProductItem.id'), primary_key=True, nullable=False)
+    name = Column(String(255), primary_key=True, nullable=False)
+    value = Column(String(1023))
+
+class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'OrderedProduct'
+    id = Column(Identifier, primary_key=True)
+    order_id = Column(Identifier, ForeignKey("Order.id"))
+    order = relationship('Order', backref='ordered_products')
+    product_id = Column(Identifier, ForeignKey("Product.id"))
+    product = relationship('Product')
+    price = Column(Numeric(precision=16, scale=2), nullable=False)
+    quantity = Column(Integer)
+
+    def release(self):
+        # 在庫を解放する
+        for item in self.ordered_product_items:
+            item.release()
+
+class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'OrderedProductItem'
+    id = Column(Identifier, primary_key=True)
+    ordered_product_id = Column(Identifier, ForeignKey("OrderedProduct.id"))
+    ordered_product = relationship('OrderedProduct', backref='ordered_product_items')
+    product_item_id = Column(Identifier, ForeignKey("ProductItem.id"))
+    product_item = relationship('ProductItem')
+#    seat_id = Column(Identifier, ForeignKey('Seat.id'))
+#    seat = relationship('Seat')
+    seats = relationship("Seat", secondary=orders_seat_table)
+    price = Column(Numeric(precision=16, scale=2), nullable=False)
+
+    _attributes = relationship("OrderedProductAttribute", backref='ordered_product_item', collection_class=attribute_mapped_collection('name'), cascade='all,delete-orphan')
+    attributes = association_proxy('_attributes', 'value', creator=lambda k, v: OrderedProductAttribute(name=k, value=v))
+
+    @property
+    def seat_statuses(self):
+        """ 確保済の座席ステータス
+        """
+        return DBSession.query(SeatStatus).filter(SeatStatus.seat_id.in_([s.id for s in self.seats])).all()
+
+    def release(self):
+        # 座席開放
+        for seat_status in self.seat_statuses:
+            logger.debug('release seat id=%d' % (seat_status.seat_id))
+            seat_status.status = int(SeatStatusEnum.Vacant)
+        # 在庫数を戻す
+        logger.debug('release stock id=%s quantity=%d' % (self.product_item.stock_id, self.product_item.quantity))
+        query = StockStatus.__table__.update().values(
+            {'quantity': StockStatus.quantity + self.product_item.quantity}
+        ).where(StockStatus.stock_id==self.product_item.stock_id)
+        DBSession.bind.execute(query)
+
+class Ticket_TicketBundle(Base, BaseModel, LogicallyDeleted):
+    __tablename__ = 'Ticket_TicketBundle'
+    ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id'), primary_key=True)
+    ticket_id = Column(Identifier, ForeignKey('Ticket.id'), primary_key=True)
+
+class TicketFormat_DeliveryMethod(Base, BaseModel, LogicallyDeleted):
+    __tablename__ = 'TicketFormat_DeliveryMethod'
+    ticket_format_id = Column(Identifier, ForeignKey('TicketFormat.id'), primary_key=True)
+    delivery_method_id = Column(Identifier, ForeignKey('DeliveryMethod.id'), primary_key=True)
+
+class TicketFormat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = "TicketFormat"
+    id = Column(Identifier, primary_key=True)
+    name = Column(Unicode(255), nullable=False)
+    organization_id = Column(Identifier, ForeignKey('Organization.id'), nullable=True)
+    organization = relationship('Organization', uselist=False, backref='ticket_formats')
+    delivery_methods = relationship('DeliveryMethod', secondary=TicketFormat_DeliveryMethod.__table__, backref='ticket_formats')
+    data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
+
+class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    """
+    Ticket.event_idがNULLのものはマスターデータ。これを雛形として実際にeventとひもづけるTicketオブジェクトを作成する。
+    """
+    __tablename__ = "Ticket"
+    id = Column(Identifier, primary_key=True)
+    organization_id = Column(Identifier, ForeignKey('Organization.id'), nullable=True)
+    organization = relationship('Organization', uselist=False, backref=backref('ticket_templates'))
+    event_id = Column(Identifier, ForeignKey('Event.id', ondelete='CASCADE'))
+    event = relationship('Event', uselist=False, backref='tickets')
+    ticket_format_id = Column(Identifier, ForeignKey('TicketFormat.id'), nullable=False)
+    ticket_format = relationship('TicketFormat', uselist=False, backref='tickets')
+    name = Column(Unicode(255), nullable=False, default=u'')
+    data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
+
+    @classmethod
+    def templates_query(cls):
+        return cls.filter_by(event_id=None)
+
+    @property
+    def drawing(self):
+        return self.data["drawing"]
+
+    def create_event_bound(self, event):
+        new_object = self.__class__.clone(self)
+        new_object.event_id = event.id
+        return new_object
+
+class TicketBundleAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = "TicketBundleAttribute" 
+    id = Column(Identifier, primary_key=True)
+    ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id', ondelete='CASCADE'), nullable=False)
+    name = Column(String(255), nullable=False)
+    value = Column(String(1023))
+
+    __table_args__= (
+        UniqueConstraint("ticket_bundle_id", "name", "deleted_at", name="ib_unique_1"), 
+        )
+
+from ..operators.models import Operator
+
+class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = "TicketBundle"
+    id = Column(Identifier, primary_key=True)
+    name = Column(Unicode(255), default=u"", nullable=False)
+    event_id = Column(Identifier, ForeignKey('Event.id', ondelete='CASCADE'))
+    event = relationship('Event', uselist=False, backref='ticket_bundles')
+    operator_id = Column(Identifier, ForeignKey('Operator.id'))
+    operator = relationship('Operator', uselist=False)
+    attributes_ = relationship("TicketBundleAttribute", backref='bundle', collection_class=attribute_mapped_collection('name'), cascade='all,delete-orphan')
+    attributes = association_proxy('attributes_', 'value', creator=lambda k, v: SeatAttribute(name=k, value=v))
+    tickets = relationship('Ticket', secondary=Ticket_TicketBundle.__table__, backref='bundles')
+    product_items = relationship('ProductItem', backref='ticket_bundle')
+
+    def replace_tickets(self, news):
+        for ticket in self.tickets:
+            self.tickets.remove(ticket)
+        for ticket in news:
+            self.tickets.append(ticket)
+
+    def replace_product_items(self, news):
+        for product_item in self.product_items:
+            self.product_items.remove(product_item)
+        for product_item in news:
+            self.product_items.append(product_item)
+
+class TicketPrintHistory(Base, BaseModel, WithTimestamp):
+    __tablename__ = "TicketPrintHistory"
+    id = Column(Identifier, primary_key=True, autoincrement=True, nullable=False)
+    operator_id = Column(Identifier, ForeignKey('Operator.id'), nullable=True)
+    operator = relationship('Operator', uselist=False)
+    ordered_product_item_id = Column(Identifier, ForeignKey('OrderedProductItem.id'), nullable=True)
+    ordered_product_item = relationship('OrderedProductItem', backref='print_histories')
+    seat_id = Column(Identifier, ForeignKey('Seat.id'), nullable=True)
+    seat = relationship('Seat', backref='print_histories')
+    ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id'), nullable=False)
+    ticket_bundle = relationship('TicketBundle', backref='print_histories')
+
+class TicketPrintQueue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = "TicketPrintQueue"
+    id = Column(Identifier, primary_key=True, autoincrement=True, nullable=False)
+    operator_id = Column(Identifier, ForeignKey('Operator.id'), nullable=True)
+    operator = relationship('Operator', uselist=False)
+    data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
+
+    @property
+    def drawing(self):
+        return self.data["drawing"]
+
+    @classmethod
+    def enqueue(self, operator, data):
+        '''
+        '''
+        DBSession.add(TicketPrintQueue(data = data, operator = operator))
+
+    @classmethod
+    def dequeue_all(self, operator):
+        '''
+        '''
+        ret_val = []
+        now = datetime.now()
+        queues = TicketPrintQueue.filter_by(deleted_at = None).order_by('created_at desc').all()
+        for queue in queues:
+            queue.deleted_at = now
+            ret_val.append(dict(
+                id = queue.id,
+                data = queue.data
+            ))
+        return ret_val
 
