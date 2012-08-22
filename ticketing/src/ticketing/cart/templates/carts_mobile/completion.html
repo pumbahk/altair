@@ -15,7 +15,10 @@ ${order.performance.event.title} ${order.performance.name} ${h.performance_date(
 <%mobile:form_header>商品${idx + 1}</%mobile:form_header>
 <div>
 ${product.product.name} ${product.quantity} 枚<br/>
-￥${h.format_number(product.product.price * product.quantity)}
+￥${h.format_number(product.product.price * product.quantity)}<br/>
+% for seat in product.seats:
+${seat['name']}<br/>
+% endfor
 </div>
 % endfor
 <%mobile:form_header>決済手数料</%mobile:form_header>
