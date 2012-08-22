@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import itertools
 from pyramid import renderers
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
@@ -69,10 +70,7 @@ class CompleteMail(object):
     def _build_mail_body(self, order):
         sa = order.shipping_address 
         pair = order.payment_delivery_pair
-        seats = [dict(name=s.name, seat_no=s.seat_no)
-                 for product in order.ordered_products
-                 for item in product.ordered_product_items 
-                 for s in item.seats]
+        seats = itertools.chain.from_iterable((p.seats for p in order.ordered_products))
 
         value = dict(order=order,
                 name=u"{0} {1}".format(sa.last_name, sa.first_name),

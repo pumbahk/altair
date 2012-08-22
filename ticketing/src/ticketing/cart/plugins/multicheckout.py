@@ -143,6 +143,22 @@ def completion_viewlet(context, request):
     """
     return dict()
 
+@view_config(context=ICompleteMailPayment, name="payment-%d" % PAYMENT_ID)
+             # renderer="ticketing.cart.plugins:templates/card_payment_mail_complete.html")
+def completion_payment_mail_viewlet(context, request):
+    """ 完了メール表示
+    :param context: ICompleteMailPayment
+    """
+    return Response(u"""
+＜クレジットカードでのお支払いの方＞
+
+予約成立と同時に、ご登録のクレジットカードにて自動的に決済手続きを行わせて頂きます。
+
+お申込の取消、公演日・席種・枚数等の変更は出来ませんのでご注意ください。
+
+クレジットカードの引き落としは、カード会社によって異なります。詳細はご利用のカード会社へお問い合わせください。
+""")
+
 class MultiCheckoutView(object):
     """ マルチ決済API
     """

@@ -53,6 +53,8 @@ ${h.render_payment_finished_mail_viewlet(request, order)}
 お受取方法： ${delivery_method_name}
 ${h.render_delivery_finished_mail_viewlet(request, order)}
 
+
+
 ※本メールは自動配信メールとなり、こちらに返信されても返答はいたしかねます。
 
 ※営利目的としたチケットの転売は禁止となっております。

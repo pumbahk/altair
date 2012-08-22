@@ -28,6 +28,9 @@ def japanese_date(date):
 def japanese_time(time):
     return u"%d時%d分" % (time.hour, time.minute)
 
+def japanese_datetime(dt):
+    return japanese_date(dt)+japanese_time(dt)
+
 def mail_date(date):
     return u'{d.year}年 {d.month}月 {d.day}日 {d.hour}時 {d.minute}分'.format(d=date)
 
@@ -186,9 +189,9 @@ def render_payment_finished_mail_viewlet(request, order):
     logger.debug("*" * 80)
     plugin_id = order.payment_delivery_pair.payment_method.payment_plugin_id
     logger.debug("plugin_id:%d" % plugin_id)
-
     order = CompleteMailPayment(order)
     response = render_view_to_response(order, request, name="payment-%d" % plugin_id, secure=False)
+
     if response is None:
         logger.debug("*complete mail*: %s is not found" % "payment-%d" % plugin_id)
         return ""

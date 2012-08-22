@@ -1,11 +1,14 @@
------
-■お引取
-お引取方法： セブン-イレブン引き取り
 
 ＜セブン-イレブンでお引取りの方＞
-引換票番号：${sej_order.billing_number}
-引取受付期間：${h.japanese_date(sej_order.payment_due_at)}${h.japanese_time(sej_order.payment_due_at)} - ${h.japanese_date(sej_order.payment_due_at)}${h.japanese_time(sej_order.payment_due_at)}
+
+引換票番号：${sej_order.exchange_number}
+
+引取受付期間：${h.japanese_datetime(sej_order.ticketing_start_at)} - ${h.japanese_datetime(sej_order.ticketing_due_at)}
+
+ 
 
 セブン-イレブン発券の際には引換票番号が必要です。
+
 予約・購入履歴確認画面（https://xxx）より、「引換票」を印刷するか、または引換票番号をお控え下さい。
+
 引取受付期間内に、引換票または引換票番号をお持ちの上、セブン-イレブン店頭レジにてチケットをお引取り下さい。

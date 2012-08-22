@@ -20,14 +20,89 @@ def tearDownModule():
     from ticketing.testing import _teardown_db
     _teardown_db()
 
+def _build_order(*args, **kwargs):
+    from ticketing.core.models import (
+        Order, 
+        OrderedProduct, 
+        OrderedProductItem, 
+        Seat, 
+        Product, 
+        Organization, 
+        ShippingAddress, 
+        Performance, 
+     )
+    shipping_address = ShippingAddress(
+        first_name=kwargs.get("shipping_address__first_name", u"first-name"), 
+        last_name=kwargs.get("shipping_address__last_name", u"last-name"), 
+        first_name_kana=kwargs.get("shipping_address__first_name_kana", u"first-name_kana"), 
+        last_name_kana=kwargs.get("shipping_address__last_name_kana", u"last-name_kana"), 
+        email=kwargs.get("shipping_address__email"), 
+        tel_1=kwargs.get("shipping_address__tel1"), 
+        tel_2=kwargs.get("shipping_address__tel2"), 
+        zip=kwargs.get("shipping_address__zip"),
+        prefecture=kwargs.get("shipping_address__prefecture"),
+        city=kwargs.get("shipping_address__city"),
+        address_1=kwargs.get("shipping_address__address_1"),
+        address_2=kwargs.get("shipping_address__address_2")
+        )
+
+    ordered_from = Organization(name=kwargs.get("ordered_from__name", u"ordered-from-name"), 
+                                contact_email=kwargs.get("ordered_from__contact_email"))
+
+    performance = Performance(name=kwargs.get("performance__name"))
+
+    order = Order(ordered_from=ordered_from,
+                  shipping_address=shipping_address, 
+                  performance=performance, 
+                  order_no=kwargs.get("order__order_no"), 
+                  system_fee=kwargs.get("order__system_fee", 200.00), 
+                  transaction_fee=kwargs.get("order__transaction_fee", 300.00), 
+                  total_amount=kwargs.get("order__total_amount", 9999), 
+                  created_at=kwargs.get("order__created_at", datetime.now()) ## xxx:
+                      )
+
+    ordererd_product0 = OrderedProduct(
+        product=Product(
+            name=kwargs.get("product0__name", "product-name"), 
+            price=kwargs.get("product0__price", 400.00)))
+    ordered_product_item0 = OrderedProductItem()
+    ordered_product_item0.seats.append(Seat(name=kwargs.get("seat0__name")))
+    ordererd_product0.ordered_product_items.append(ordered_product_item0)
+    order.ordered_products.append(ordererd_product0)
+
+    ordererd_product1 = OrderedProduct(
+        product=Product(
+            name=kwargs.get("product1__name", "product-name"), 
+            price=kwargs.get("product1__price", 400.00)))
+    ordered_product_item1 = OrderedProductItem()
+    ordered_product_item1.seats.append(Seat(name=kwargs.get("seat1__name")))
+    ordererd_product1.ordered_product_items.append(ordered_product_item1)
+    order.ordered_products.append(ordererd_product1)
+    return order
+
+def _build_sej(*args, **kwargs):
+    from ticketing.sej.models import SejOrder
+    sejorder = SejOrder(**kwargs)
+    import sqlahelper
+    sqlahelper.get_session().add(sejorder)
+    return sejorder
+
 class SendCompleteMailTest(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp(settings={"altair.mailer": "pyramid_mailer.testing"})
+        self.config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
         self.config.include("ticketing.cart.import_mail_module")
+
+        ## TBA
+        self.config.add_route("qr.make", "__________")
+
+        self.config.include("ticketing.cart.plugins")
         self.config.add_subscriber('ticketing.cart.subscribers.add_helpers', 'pyramid.events.BeforeRender')
 
     def tearDown(self):
         self._get_mailer().outbox = []
+        import transaction
+        transaction.abort()
         testing.tearDown()
 
     def _get_mailer(self):
@@ -61,62 +136,8 @@ class SendCompleteMailTest(unittest.TestCase):
 
         
     def test_exception_in_send_mail_action(self):
-        pass
-
-    def _build_order(self, *args, **kwargs):
-        from ticketing.core.models import (
-            Order, 
-            OrderedProduct, 
-            OrderedProductItem, 
-            Seat, 
-            Product, 
-            Organization, 
-            ShippingAddress, 
-            Performance, 
-         )
-        shipping_address = ShippingAddress(
-            first_name=kwargs.get("shipping_address__first_name", u"first-name"), 
-            last_name=kwargs.get("shipping_address__last_name", u"last-name"), 
-            first_name_kana=kwargs.get("shipping_address__first_name_kana", u"first-name_kana"), 
-            last_name_kana=kwargs.get("shipping_address__last_name_kana", u"last-name_kana"), 
-            email=kwargs.get("shipping_address__email"), 
-            tel_1=kwargs.get("shipping_address__tel1"), 
-            tel_2=kwargs.get("shipping_address__tel2"), 
-            )
-
-        ordered_from = Organization(name=kwargs.get("ordered_from__name", u"ordered-from-name"), 
-                                    contact_email=kwargs.get("ordered_from__contact_email"))
-
-        performance = Performance(name=kwargs.get("performance__name"))
-
-        order = Order(ordered_from=ordered_from,
-                      shipping_address=shipping_address, 
-                      performance=performance, 
-                      order_no=kwargs.get("order__order_no"), 
-                      system_fee=kwargs.get("order__system_fee", 200.00), 
-                      transaction_fee=kwargs.get("order__transaction_fee", 300.00), 
-                      total_amount=kwargs.get("order__total_amount", 9999), 
-                      created_at=kwargs.get("order__created_at", datetime.now()) ## xxx:
-                          )
-
-        ordererd_product0 = OrderedProduct(
-            product=Product(
-                name=kwargs.get("product0__name", "product-name"), 
-                price=kwargs.get("product0__price", 400.00)))
-        ordered_product_item0 = OrderedProductItem()
-        ordered_product_item0.seats.append(Seat(name=kwargs.get("seat0__name")))
-        ordererd_product0.ordered_product_items.append(ordered_product_item0)
-        order.ordered_products.append(ordererd_product0)
-
-        ordererd_product1 = OrderedProduct(
-            product=Product(
-                name=kwargs.get("product1__name", "product-name"), 
-                price=kwargs.get("product1__price", 400.00)))
-        ordered_product_item1 = OrderedProductItem()
-        ordered_product_item1.seats.append(Seat(name=kwargs.get("seat1__name")))
-        ordererd_product1.ordered_product_items.append(ordered_product_item1)
-        order.ordered_products.append(ordererd_product1)
-        return order
+        """
+        """
 
     def test_normal_success_around_header(self):
         """ card支払いqr受け取りだけれど。このテストは送り先などのチェックに利用。
@@ -128,7 +149,7 @@ class SendCompleteMailTest(unittest.TestCase):
          )
         request = testing.DummyRequest()
 
-        order = self._build_order(
+        order = _build_order(
             shipping_address__email="purchase@user.ne.jp", 
             ordered_from__name = u"ordered-from-name",
             ordered_from__contact_email="from@organization.ne.jp"
@@ -158,7 +179,7 @@ class SendCompleteMailTest(unittest.TestCase):
          )
         request = testing.DummyRequest()
 
-        order = self._build_order(
+        order = _build_order(
             shipping_address__first_name=u"first-name", 
             shipping_address__last_name=u"family-name", 
             shipping_address__first_name_kana=u"名前", 
@@ -225,45 +246,189 @@ class SendCompleteMailTest(unittest.TestCase):
         ## pugin
         self.assertIn(u"クレジットカード決済", body)
         self.assertIn(u"QR受け取り", body)
-
-    # def test_payment_by_card_delivery_by_qr(self):
-    #     from ticketing.core.models import (
-    #         PaymentDeliveryMethodPair, 
-    #         PaymentMethod, 
-    #         DeliveryMethod
-    #      )
-    #     request = testing.DummyRequest()
-
-    #     order = self._build_order()
         
-    #     payment_method = PaymentMethod(payment_plugin_id=1)
-    #     from ticketing.cart.plugins.multicheckout import PAYMENT_ID
-    #     self.assertEquals(payment_method.payment_plugin_id, PAYMENT_ID)
+    def test_payment_by_card_delivery_by_qr(self):
+        from ticketing.core.models import (
+            PaymentDeliveryMethodPair, 
+            PaymentMethod, 
+            DeliveryMethod
+         )
+        request = testing.DummyRequest()
 
-    #     delivery_method = DeliveryMethod(delivery_plugin_id=5)
-    #     from ticketing.cart.plugins.qr import PLUGIN_ID
-    #     self.assertEquals(delivery_method.delivery_plugin_id, PLUGIN_ID)
+        order = _build_order()
+        
+        payment_method = PaymentMethod(payment_plugin_id=1, name=u"クレジットカード決済")
+        from ticketing.cart.plugins.multicheckout import PAYMENT_ID
+        self.assertEquals(payment_method.payment_plugin_id, PAYMENT_ID)
 
-    #     method_pair = PaymentDeliveryMethodPair(payment_method=payment_method, 
-    #                                             delivery_method=delivery_method)
-    #     order.payment_delivery_pair = method_pair
+        delivery_method = DeliveryMethod(delivery_plugin_id=5, name=u"QR受け取り")
+        from ticketing.cart.plugins.qr import PLUGIN_ID
+        self.assertEquals(delivery_method.delivery_plugin_id, PLUGIN_ID)
 
-    #     self._callFUT(request, order)
-    #     result = self._get_mailer().outbox.pop()
-    #     print dir(result)
-    #     ##
+        method_pair = PaymentDeliveryMethodPair(payment_method=payment_method, 
+                                                delivery_method=delivery_method)
+        order.payment_delivery_pair = method_pair
+
+        self._callFUT(request, order)
+        result = self._get_mailer().outbox.pop()
+
+        body = result.body
+        self.assertIn(u"＜クレジットカードでのお支払いの方＞", body)
+        self.assertIn(u"＜ORコードでお引き取りの方＞", body)
+
 
     def test_payment_by_card_delivery_by_seven(self):
-        pass
+        from ticketing.core.models import (
+            PaymentDeliveryMethodPair, 
+            PaymentMethod, 
+            DeliveryMethod
+         )
+        request = testing.DummyRequest()
+
+        order = _build_order()
+
+        sejorder = _build_sej(order_id=101010,
+                              exchange_number="707070", 
+                              ticketing_start_at=datetime(3000, 1, 1), 
+                              ticketing_due_at=datetime(4000, 1, 1), 
+                              )
+        order.order_no = sejorder.order_id
+        
+        payment_method = PaymentMethod(payment_plugin_id=1, name=u"クレジットカード決済")
+        from ticketing.cart.plugins.multicheckout import PAYMENT_ID
+        self.assertEquals(payment_method.payment_plugin_id, PAYMENT_ID)
+
+        delivery_method = DeliveryMethod(delivery_plugin_id=2, name=u"セブン受け取り")
+        from ticketing.cart.plugins.sej import DELIVERY_PLUGIN_ID
+        self.assertEquals(delivery_method.delivery_plugin_id, DELIVERY_PLUGIN_ID)
+
+        method_pair = PaymentDeliveryMethodPair(payment_method=payment_method, 
+                                                delivery_method=delivery_method)
+        order.payment_delivery_pair = method_pair
+
+        self._callFUT(request, order)
+        result = self._get_mailer().outbox.pop()
+
+        body = result.body
+        self.assertIn(u"＜クレジットカードでのお支払いの方＞", body)
+
+        self.assertIn(u"＜セブン-イレブンでお引取りの方＞", body)
+        self.assertIn(u"707070", body)
+        self.assertIn(h.japanese_datetime(datetime(3000, 1, 1)), body)
+        self.assertIn(h.japanese_datetime(datetime(4000, 1, 1)), body)
+
 
     def test_payment_by_card_delivery_home(self):
-        pass
+        from ticketing.core.models import (
+            PaymentDeliveryMethodPair, 
+            PaymentMethod, 
+            DeliveryMethod
+         )
+        request = testing.DummyRequest()
+
+        order = _build_order(
+            shipping_address__first_name=u"first-name", 
+            shipping_address__last_name=u"family-name", 
+            shipping_address__first_name_kana=u"名前", 
+            shipping_address__last_name_kana=u"苗字", 
+            shipping_address__email="purchase@user.ne.jp", 
+            shipping_address__zip=u"100-0001", 
+            shipping_address__prefecture=u"東京都", 
+            shipping_address__city=u"千代田区", 
+            shipping_address__address_1=u"千代田1番1号", 
+            shipping_address__address_2=u"()", 
+            )
+        
+        payment_method = PaymentMethod(payment_plugin_id=1, name=u"クレジットカード決済")
+        from ticketing.cart.plugins.multicheckout import PAYMENT_ID
+        self.assertEquals(payment_method.payment_plugin_id, PAYMENT_ID)
+
+        delivery_method = DeliveryMethod(delivery_plugin_id=1, name=u"郵送")
+        from ticketing.cart.plugins.shipping import PLUGIN_ID
+        self.assertEquals(delivery_method.delivery_plugin_id, PLUGIN_ID)
+
+        method_pair = PaymentDeliveryMethodPair(payment_method=payment_method, 
+                                                delivery_method=delivery_method)
+        order.payment_delivery_pair = method_pair
+
+        self._callFUT(request, order)
+        result = self._get_mailer().outbox.pop()
+
+        body = result.body
+        self.assertIn(u"＜クレジットカードでのお支払いの方＞", body)
+        self.assertIn(u"＜配送にてお引取りの方＞", body)
+
+        self.assertIn(u"苗字 名前", body)
+        self.assertIn(u"100-0001", body)
+        self.assertIn(u"東京都 千代田区 千代田1番1号 ()", body)
 
     def test_payment_by_seven_delivery_by_seven(self):
-        pass
+        from ticketing.core.models import (
+            PaymentDeliveryMethodPair, 
+            PaymentMethod, 
+            DeliveryMethod
+         )
+        request = testing.DummyRequest()
+
+        order = _build_order()
+        
+        ## extra info
+        sejorder = _build_sej(order_id=101010,
+                              billing_number="909090", 
+                              payment_due_at=datetime(2000, 1, 1), 
+                              exchange_number="707070", 
+                              ticketing_start_at=datetime(3000, 1, 1), 
+                              ticketing_due_at=datetime(4000, 1, 1))
+        order.order_no = sejorder.order_id
+        
+        payment_method = PaymentMethod(payment_plugin_id=3, name=u"セブン支払い")
+        from ticketing.cart.plugins.sej import PAYMENT_PLUGIN_ID
+        self.assertEquals(payment_method.payment_plugin_id, PAYMENT_PLUGIN_ID)
+
+
+        delivery_method = DeliveryMethod(delivery_plugin_id=2, name=u"セブン受け取り")
+        from ticketing.cart.plugins.sej import DELIVERY_PLUGIN_ID
+        self.assertEquals(delivery_method.delivery_plugin_id, DELIVERY_PLUGIN_ID)
+
+        method_pair = PaymentDeliveryMethodPair(payment_method=payment_method, 
+                                                delivery_method=delivery_method)
+        order.payment_delivery_pair = method_pair
+
+        self._callFUT(request, order)
+        result = self._get_mailer().outbox.pop()
+
+        body = result.body
+        self.assertIn(u"＜コンビニでのお支払いの方＞", body)
+        self.assertIn(u"909090", body)
+        self.assertIn(h.japanese_date(datetime(2000, 1, 1)), body)
+
+        self.assertIn(u"＜セブン-イレブンでお引取りの方＞", body)
+        self.assertIn(u"707070", body)
+        self.assertIn(h.japanese_datetime(datetime(3000, 1, 1)), body)
+        self.assertIn(h.japanese_datetime(datetime(4000, 1, 1)), body)
+
 
     def test_payment_unknown_delivery_by_unknown(self):
-        pass
+        """存在していないpluginが渡されたデータでもメールは飛ぶ。(支払い方法などの欄はほぼ空欄)
+        """
+        from ticketing.core.models import (
+            PaymentDeliveryMethodPair, 
+            PaymentMethod, 
+            DeliveryMethod
+         )
+        request = testing.DummyRequest()
+
+        order = _build_order()
+        
+        payment_method = PaymentMethod(payment_plugin_id=9999, name=u"存在していないpayment plugin")
+        delivery_method = DeliveryMethod(delivery_plugin_id=9999, name=u"存在していないdeliveery plugin")
+        method_pair = PaymentDeliveryMethodPair(payment_method=payment_method, 
+                                                delivery_method=delivery_method)
+        order.payment_delivery_pair = method_pair
+
+        self._callFUT(request, order)
+        result = self._get_mailer().outbox.pop()
+        self.assertTrue(result.body) ## xxx:
 
 if __name__ == "__main__":
     # setUpModule()
