@@ -813,7 +813,8 @@ class Style(object):
         'font_size',
         'font_family',
         'font_weight',
-        'text_anchor'
+        'text_anchor',
+        'line_height',
         ]
 
     def __init__(self, **kwargs):
@@ -839,10 +840,10 @@ def text_and_elements(elem):
         if subelem.tail:
             yield unicode(subelem.tail)
 
-def as_user_unit(size):
+def as_user_unit(size, rel_unit=None):
     if size is None:
         return None
-    spec = re.match('(-?[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(pt|pc|mm|cm|in|px)?', size.strip().lower())
+    spec = re.match('(-?[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(pt|pc|mm|cm|in|px|em|%)?', size.strip().lower())
     if spec is None:
         raise Exception('Invalid length / size specifier: ' + size)
     degree = float(spec.group(1))
@@ -859,6 +860,14 @@ def as_user_unit(size):
         return degree * 90.
     elif unit == 'px':
         return degree
+    elif unit == 'em':
+        if rel_unit is None:
+            raise Exception('Relative size specified where no unit size is given in the applied context')
+        return rel_unit * degree
+    elif unit == '%':
+        if rel_unit is None:
+            raise Exception('Relative size specified where no unit size is given in the applied context')
+        return rel_unit * degree / 100.
 
 def namespace(ns):
     def decorator(f):
@@ -888,7 +897,7 @@ class StyleContext(object):
         self.classes_pushed = classes_pushed
 
 class Visitor(object):
-    def __init__(self, emitter):
+    def __init__(self, emitter, global_transform=None):
         self.emitter = emitter
         self.current_style_ctx = StyleContext(
             Style(fill_color=StyleNone,
@@ -900,6 +909,8 @@ class Visitor(object):
         self.style_stack = []
         self.current_transform = I
         self.transform_stack = []
+        if global_transform is not None:
+            self._apply_transform(global_transform)
         self.css_parser = cssutils.CSSParser()
         self.font_classes = {
             u"Arial": u"f0",
@@ -1027,10 +1038,11 @@ class Visitor(object):
         stroke_color = self.parse_color_style(css_style_decl[u'stroke'] or elem.get(u'stroke'))
         stroke_width = as_user_unit(css_style_decl[u'stroke-width'] or elem.get(u'stroke-width'))
         fill_color = self.parse_color_style(css_style_decl[u'fill'] or elem.get(u'fill'))
-        font_size = as_user_unit(css_style_decl['font-size'] or elem.get(u'font-size'))
+        font_size = as_user_unit(css_style_decl['font-size'] or elem.get(u'font-size'), )
         font_family = css_style_decl['font-family'] or elem.get(u'font-family', None)
         font_weight = css_style_decl['font-weight'] or elem.get(u'font-weight', None)
         text_anchor = css_style_decl['text-anchor'] or elem.get(u'text-anchor')
+        line_height = as_user_unit(css_style_decl['line-height'] or elem.get(u'line-height'), font_size or self.current_style_ctx.style.font_size)
 
         return self.current_style_ctx.style.replace(
             stroke_color=stroke_color,
@@ -1039,7 +1051,8 @@ class Visitor(object):
             font_size=font_size,
             font_family=font_family,
             font_weight=font_weight,
-            text_anchor=text_anchor
+            text_anchor=text_anchor,
+            line_height=line_height
             )
 
     def _build_html_from_flow_elements(self, elems, container='div'):
@@ -1063,9 +1076,21 @@ class Visitor(object):
                     raise Exception('Unsupported tag: %s' % elem.tag)
 
                 html_styles = []
+
+                line_height = None
                 style = self.fetch_styles_from_element(elem)
+                if self.current_style_ctx.style.line_height != style.line_height:
+                    line_height = style.line_height
+
                 if self.current_style_ctx.style.font_size != style.font_size:
                     html_styles.append((u'font-size', unicode(style.font_size) + u'px'))
+                    # XXX: workaround to cope with the difference of
+                    # interpretation of line-height between HTML and SVG
+                    if line_height is None:
+                        line_height = style.font_size
+
+                if line_height is not None:
+                    html_styles.append((u'line-height', unicode(line_height) + u'px'))
                 if self.current_style_ctx.style.fill_color != style.fill_color:
                     html_styles.append((u'color', stype.fill_color))
                 current_font_family_class = self.font_classes.get(self.current_style_ctx.style.font_family)
@@ -1120,7 +1145,7 @@ class Visitor(object):
         new_style = self.fetch_styles_from_element(elem)
         self.emit_styles(self.current_style_ctx.style, new_style)
 
-        classes_pushed = 0
+        classes_pushed = {}
 
         if new_style.font_family is not None:
             font_family_class = self.font_classes.get(new_style.font_family)
@@ -1128,8 +1153,7 @@ class Visitor(object):
                 raise Exception('Unsupported font: %s' % new_style.font_family)
             old_font_family_class = self.font_classes.get(self.current_style_ctx.style.font_family)
             if font_family_class != old_font_family_class:
-                self.emitter.emit_push_class(font_family_class)
-                classes_pushed += 1
+                classes_pushed['font_family'] = font_family_class
 
         if new_style.font_weight is not None:
             if new_style.font_weight not in self.font_weight_classes:
@@ -1138,8 +1162,7 @@ class Visitor(object):
             if font_weight_class is not None:
                 old_font_weight_class = self.font_weight_classes.get(self.current_style_ctx.style.font_weight)
                 if font_weight_class != old_font_weight_class:
-                    self.emitter.emit_push_class(font_weight_class)
-                    classes_pushed += 1
+                    classes_pushed['font_weight'] = font_weight_class
 
         if new_style.text_anchor is not None:
             text_anchor_class = self.text_anchor_classes.get(new_style.text_anchor)
@@ -1147,15 +1170,34 @@ class Visitor(object):
             if text_anchor_class is None:
                 raise Exception('Unsupported anchor type: %s' % new_style.text_anchor)
             if text_anchor_class != old_text_anchor_class:
-                self.emitter.emit_push_class(text_anchor_class)
-                classes_pushed += 1
+                classes_pushed['text_anchor'] = text_anchor_class
+
+        if new_style.line_height is not None and self.current_style_ctx.style.line_height != new_style.line_height:
+            self.emitter.emit_line_height(new_style.line_height)
+
+        prev_classes_pushed = self.current_style_ctx.classes_pushed
+        classes_overloaded = False
+        for k in classes_pushed:
+            if k in prev_classes_pushed:
+                classes_overloaded = True
+                break
+
+        if classes_overloaded:
+            for _ in range(0, len(prev_classes_pushed)):
+                self.emitter.emit_pop_class()
+            prev_classes_pushed.clear()
+
+        for v in classes_pushed.values():
+            self.emitter.emit_push_class(v)
 
         self.current_style_ctx = StyleContext(new_style, classes_pushed)
 
     def unapply_styles(self):
         prev_style_ctx = self.style_stack.pop()
-        for _ in range(0, self.current_style_ctx.classes_pushed):
+        for _ in range(0, len(self.current_style_ctx.classes_pushed)):
             self.emitter.emit_pop_class()
+        if prev_style_ctx.style.line_height is not None and self.current_style_ctx.style.line_height != prev_style_ctx.style.line_height:
+            self.emitter.emit_line_height(prev_style_ctx.style.line_height)
         self.emit_styles(self.current_style_ctx.style, prev_style_ctx.style)
         self.current_style_ctx = prev_style_ctx
 
@@ -1163,9 +1205,11 @@ class Visitor(object):
         self.transform_stack.append(self.current_transform)
         transform_str = elem.get(u'transform', None)
         if transform_str != None:
-            new_transform = self.current_transform * self.parse_transform(transform_str)
-        else:
-            new_transform = self.current_transform
+            self._apply_transform(self.parse_transform(transform_str))
+
+
+    def _apply_transform(self, matrix):
+        new_transform = self.current_transform * matrix
         self.emit_transform(self.current_transform, new_transform)
         self.current_transform = new_transform
 
@@ -1268,6 +1312,7 @@ class Visitor(object):
     def visit_flowRoot(self, scanner, ns, local_name, elem):
         flow_region_visited = False
         flow_div_visited = False
+        self.apply_styles(elem)
         for n in elem:
             if n.tag == u'{%s}flowRegion' % SVG_NAMESPACE:
                 if flow_region_visited:
@@ -1370,19 +1415,19 @@ def handle_qrcode(retval, qrcode):
     retval.append(E.QR_VER(u'%02d' % (level + 1)))
     retval.append(E.QR_CELL('%d' % cell_size))
 
-def to_opcodes(doc):
+def to_opcodes(doc, global_transform=None):
     opcodes = []
     emitter = ScaleFilter(Assembler(opcodes), .1)
     emitter.emit_unit('px')
-    Scanner(Visitor(emitter))([doc.getroot()])
+    Scanner(Visitor(emitter, global_transform))([doc.getroot()])
     opcodes = Optimizer()(opcodes)
     result = []
     emit_opcodes(TicketNotationEmitter(result), opcodes)
     return result
 
-def convert_svg(doc):
+def convert_svg(doc, global_transform=None):
     retval = E.TICKET(
-        E.b(u' '.join(to_opcodes(doc))), 
+        E.b(u' '.join(to_opcodes(doc, global_transform))), 
         E.FIXTAG01(),
         E.FIXTAG02(),
         E.FIXTAG03(),
@@ -1397,4 +1442,4 @@ def convert_svg(doc):
 
 if __name__ == '__main__':
     import sys
-    print re.sub(r'''encoding=(["'])Windows-31J\1''', 'encoding="Shift_JIS"', etree.tostring(convert_svg(etree.parse(sys.argv[1])), encoding='Windows-31J'))
+    print re.sub(r'''encoding=(["'])Windows-31J\1''', 'encoding="Shift_JIS"', etree.tostring(convert_svg(etree.parse(sys.stdin), Visitor.parse_transform(sys.argv[1]) if len(sys.argv) >= 2 else None), encoding='Windows-31J'))
