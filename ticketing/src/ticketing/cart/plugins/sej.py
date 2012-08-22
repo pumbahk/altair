@@ -74,7 +74,7 @@ def get_tickets(order):
             dicts = build_dicts_from_ordered_product_item(ordered_product_item)
             for dict_ in dicts:
                 for ticket in bundle.tickets:
-                    svg = convert_svg(etree.ElementTree(etree.fromstring(pystache.render(ticket.data['drawing'], dict_))))
+                    svg = etree.tostring(convert_svg(etree.ElementTree(etree.fromstring(pystache.render(ticket.data['drawing'], dict_)))), encoding=unicode)
                     ticket = get_ticket(order.order_no, ordered_product_item.product_item, svg)
                     tickets.append(ticket)
     return tickets
