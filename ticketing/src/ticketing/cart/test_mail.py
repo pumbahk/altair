@@ -57,6 +57,7 @@ def _build_order(*args, **kwargs):
                   order_no=kwargs.get("order__order_no"), 
                   system_fee=kwargs.get("order__system_fee", 200.00), 
                   transaction_fee=kwargs.get("order__transaction_fee", 300.00), 
+                  delivery_fee=kwargs.get("order__delivery_fee"), 
                   total_amount=kwargs.get("order__total_amount", 9999), 
                   created_at=kwargs.get("order__created_at", datetime.now()) ## xxx:
                       )
@@ -191,6 +192,7 @@ class SendCompleteMailTest(unittest.TestCase):
             order__created_at=datetime(1900, 1, 1), 
             order__system_fee=20.0, 
             order__transaction_fee=30.0, 
+            order__delivery_fee=40.0, 
             order__total_amount=99999, ##
             ordered_from__name = u"ordered-from-name",
             ordered_from__contact_email="from@organization.ne.jp", 
@@ -239,6 +241,7 @@ class SendCompleteMailTest(unittest.TestCase):
         ## 利用料
         self.assertIn(h.format_currency(20), body)
         self.assertIn(h.format_currency(30), body)
+        self.assertIn(h.format_currency(40), body)
 
         ## 合計金額
         self.assertIn(h.format_currency(99999), body)
@@ -246,6 +249,8 @@ class SendCompleteMailTest(unittest.TestCase):
         ## pugin
         self.assertIn(u"クレジットカード決済", body)
         self.assertIn(u"QR受け取り", body)
+        # print body
+
         
     def test_payment_by_card_delivery_by_qr(self):
         from ticketing.core.models import (
