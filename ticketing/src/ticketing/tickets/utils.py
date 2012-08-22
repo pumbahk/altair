@@ -249,7 +249,7 @@ def build_dicts_from_ordered_product_item(ordered_product_item, user_profile=Non
             u"status": user_profile.status
             }
 
-    retval = dict()
+    retval = []
     for seat in ordered_product_item.seats:
         d = build_dict_from_seat(seat, ticket_number_issuer)
         d.update(extra)
