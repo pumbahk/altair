@@ -1,5 +1,6 @@
 <%
-jar_file = ''
+jar_file = request.static_url('ticketing:static/printing-0.0.0.jar')
+class_name = 'jp.ticketstar.ticketing.printing.gui.AppApplet'
 width = 640
 height = 480
 %>
@@ -8,7 +9,7 @@ height = 480
     codebase="http://java.sun.com/update/1.5.0/jinstall-1_5-windows-i586.cab#Version=5,0,0,9"
     WIDTH="${width}" HEIGHT="${height}">
     <param name="Message" value="apiUrl=${request.route_url('tickets.print.dequeue')}">
-    <param name="CODE" VALUE="model.SampleModelMain.class" >
+    <param name="CODE" VALUE="${class_name}" >
     <param name="CODEBASE" VALUE="../" >
     <param name="ARCHIVE" VALUE="${jar_file}" >
     <param name="type" value="application/x-java-applet;version=1.5">
@@ -17,7 +18,7 @@ height = 480
     <comment>
     <embed
         type="application/x-java-applet;version=1.5"
-        CODE="model.SampleModelMain.class"
+        CODE="${class_name}"
         JAVA_CODEBASE="../"
         ARCHIVE="${jar_file}"
         WIDTH="350"

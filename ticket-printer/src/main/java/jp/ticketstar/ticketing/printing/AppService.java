@@ -42,19 +42,17 @@ import org.w3c.dom.svg.SVGAElement;
 import org.w3c.dom.svg.SVGDocument;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 
-class TicketMetadata {
-	Integer id;
-}
-class PrintData {
-	String drawing;
-}
-class PrintQueue {
-	PrintData data;
-}
 class PrintQueueList {
+	class TicketMetadata {
+		Integer id;
+	}
+	class PrintData {
+		String drawing;
+	}
+	class PrintQueue {
+		PrintData data;
+	}
 	List<TicketMetadata> tickets;
 	String svg;
 }

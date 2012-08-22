@@ -16,6 +16,63 @@
 
   <build>
     <plugins>
+
+        <plugin>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <configuration>
+             <descriptorRefs>
+                <descriptorRef>jar-with-dependencies</descriptorRef>
+             </descriptorRefs>
+             <archive>
+               <manifest>
+                 <mainClass>jp.ticketstar.ticketing.printing.gui.AppApplet</mainClass>
+               </manifest>
+               <!--  <manifestEntries>
+                 <Class-Path>../config/</Class-Path>
+               </manifestEntries> -->
+             </archive>
+          </configuration>
+          <executions>
+            <execution>
+              <id>make-assembly</id>
+              <phase>exec</phase>
+              <goals>
+                <goal>single</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>appassembler-maven-plugin</artifactId>
+        <version>1.0</version>
+        <configuration>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+          <repositoryLayout>flat</repositoryLayout>
+          <repositoryName>lib</repositoryName>
+          <configurationDirectory>config</configurationDirectory>
+          <generateRepository>true</generateRepository>
+          <installArtifacts>false</installArtifacts>
+          <extraJvmArguments>-Xmx512m</extraJvmArguments>
+          <programs>
+            <program>
+              <mainClass>jp.ticketstar.ticketing.printing.App</mainClass>
+              <name>ticketprinter</name>
+            </program>
+          </programs>
+        </configuration>
+        <executions>
+          <execution>
+          <id>make-assembly</id>
+            <phase>package</phase>
+            <goals>
+              <goal>assemble</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
 	    <groupId>org.apache.maven.plugins</groupId>
 	    <artifactId>maven-jar-plugin</artifactId> 
@@ -32,34 +89,21 @@
 	     	</manifest>
 	  	  </archive>
 	    </configuration>
-	  </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>appassembler-maven-plugin</artifactId>
-        <version>1.0</version>
-        <configuration>
-          <repositoryLayout>flat</repositoryLayout>
-          <repositoryName>lib</repositoryName>
-          <configurationDirectory>config</configurationDirectory>
-          <generateRepository>true</generateRepository>
-          <installArtifacts>false</installArtifacts>
-          <extraJvmArguments>-Xmx512m</extraJvmArguments>
-          <programs>
-            <program>
-              <mainClass>jp.ticketstar.ticketing.printing.App</mainClass>
-              <name>ticketprinter</name>
-            </program>
-          </programs>
-        </configuration>
         <executions>
           <execution>
-            <phase>package</phase>
             <goals>
-              <goal>assemble</goal>
+              <goal>sign</goal>
             </goals>
+            <phase>package</phase>
+            <configuration>
+              <keystore>src/main/keystore/signing-jar.keystore</keystore>
+              <alias>applet</alias>
+              <storepass>applet</storepass>
+              <keypass>applet</keypass>
+            </configuration>
           </execution>
         </executions>
-      </plugin>
+	  </plugin>
     </plugins>
   </build>
 
