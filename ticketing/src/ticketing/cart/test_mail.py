@@ -455,6 +455,31 @@ class SendCompleteMailTest(unittest.TestCase):
         result = self._get_mailer().outbox.pop()
         self.assertTrue(result.body) ## xxx:
 
+    def test_with_extra_mail_info(self):
+        from ticketing.core.models import (
+            PaymentDeliveryMethodPair, 
+            PaymentMethod, 
+            DeliveryMethod, 
+            ExtraMailInfo
+         )
+        request = testing.DummyRequest()
+
+        order = _build_order()
+        order.ordered_from.extra_mailinfo = ExtraMailInfo(data={u"footer": u"this-is-footer-message"})
+        payment_method = PaymentMethod(payment_plugin_id=9999)
+        delivery_method = DeliveryMethod(delivery_plugin_id=9999)
+        method_pair = PaymentDeliveryMethodPair(payment_method=payment_method, 
+                                                delivery_method=delivery_method)
+        order.payment_delivery_pair = method_pair
+
+        self._callFUT(request, order)
+        result = self._get_mailer().outbox.pop()
+
+        self.assertIn(u"this-is-footer-message", result.body)
+        
+
+
+
 if __name__ == "__main__":
     # setUpModule()
     unittest.main()

@@ -63,8 +63,4 @@ ${h.render_delivery_finished_mail_viewlet(request, order)}
 
 ※営利目的としたチケットの転売は禁止となっております。
 
-----
-
-仙台89ERS（ナイナーズチケット）　チケット事務局
-
-電話番号：022-215-8138　（平日09：00~18：00）
+${footer}

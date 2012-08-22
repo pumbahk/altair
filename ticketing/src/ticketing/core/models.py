@@ -1793,3 +1793,19 @@ class TicketPrintQueue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         '''
         '''
         return TicketPrintQueue.filter_by(deleted_at = None, operator = operator).order_by('created_at desc').all()
+
+class ExtraMailInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = "ExtraMailInfo"
+    id = Column(Identifier, primary_key=True)
+    organization_id = Column(Identifier, ForeignKey('Organization.id'), nullable=True)
+    organization = relationship('Organization', uselist=False, backref=backref('extra_mailinfo', uselist=False))
+    data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
+
+    @property
+    def signature(self):
+        return self.data["signature"]
+
+    @property
+    def footer(self):
+        return self.data.get("footer", u"")
+

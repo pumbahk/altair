@@ -10,6 +10,21 @@ from .interfaces import ICompleteMail
 from . import helpers as h
 from ..models import DBSession
 
+
+class MailInfoExtractorFactory(object):
+    def __init__(self, name, default=u""):
+        self.name = name
+        self.default = default
+
+    def __call__(self, organization):
+        maiinfo = organization.extra_mailinfo
+        if maiinfo:
+            return getattr(maiinfo, self.name)
+        else:
+            return self.default
+
+get_mail_footer = MailInfoExtractorFactory("footer")
+
 ## dummy mailer
 from pyramid_mailer.interfaces import IMailer
 @implementer(IMailer)
@@ -74,6 +89,7 @@ class CompleteMail(object):
             sender=from_)
 
     def _build_mail_body(self, order):
+        organization = order.ordered_from
         sa = order.shipping_address 
         pair = order.payment_delivery_pair
         seats = itertools.chain.from_iterable((p.seats for p in order.ordered_products))
@@ -94,7 +110,8 @@ class CompleteMail(object):
                 transaction_fee=order.transaction_fee,
                 payment_method_name=pair.payment_method.name, 
                 delivery_method_name=pair.delivery_method.name, 
-                seats = seats
+                seats = seats, 
+                footer = get_mail_footer(organization)
                      )
         return value
 
