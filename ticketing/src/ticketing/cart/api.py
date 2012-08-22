@@ -205,9 +205,10 @@ def get_valid_sales_url(request, event):
     principals = effective_principals(request)
     logger.debug(principals)
     for salessegment in event.sales_segments:
-        membergroup = salessegment.membergroup
-        logger.debug("sales_segment:%s" % salessegment.name)
-        logger.debug("membergroup:%s" % membergroup.name)
-        if "membergroup:%s" % membergroup.name in principals:
-            return request.route_url('cart.index.sales', event_id=event.id, sales_segment_id=salessegment.id)
+        membergroups = salessegment.membergroups
+        for membergroup in membergroups:
+            logger.debug("sales_segment:%s" % salessegment.name)
+            logger.debug("membergroup:%s" % membergroup.name)
+            if "membergroup:%s" % membergroup.name in principals:
+                return request.route_url('cart.index.sales', event_id=event.id, sales_segment_id=salessegment.id)
 

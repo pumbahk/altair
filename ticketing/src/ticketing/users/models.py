@@ -1,4 +1,4 @@
-from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL, Index
+from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL, Index, UniqueConstraint
 from sqlalchemy.orm import join, backref, column_property
 
 from standardenum import StandardEnum
@@ -158,14 +158,25 @@ class Membership(Base, WithTimestamp):
     #sales_segments = lambda:relationship('SalesSegment', secondary=Membership_SalesSegment.__table__, backref='memberships')
     status = Column(Integer)
 
-class MemberGroup(Base, WithTimestamp):
-     __tablename__ = 'MemberGroup'
-     query = session.query_property()
-     id = Column(Identifier, primary_key=True)
-     name = Column(String(255))
-     membership_id = Column(Identifier, ForeignKey('Membership.id'))
-     membership = relationship('Membership', backref='membergruops')
 
+MemberGroup_SalesSegment = Table('MemberGroup_SalesSegment', Base.metadata,
+    Column('id', Identifier, primary_key=True),
+    Column('membergroup_id', Identifier, ForeignKey('MemberGroup.id')),
+    Column('sales_segment_id', Identifier, ForeignKey('SalesSegment.id')),
+    UniqueConstraint('membergroup_id', 'sales_segment_id'),
+)
+
+class MemberGroup(Base, WithTimestamp):
+    __tablename__ = 'MemberGroup'
+    query = session.query_property()
+    id = Column(Identifier, primary_key=True)
+    name = Column(String(255))
+    membership_id = Column(Identifier, ForeignKey('Membership.id'))
+    membership = relationship('Membership', backref='membergruops')
+
+    sales_segments = relationship('SalesSegment',
+        secondary=MemberGroup_SalesSegment,
+        backref="membergroups")
    
 # class Membership_SalesSegment(Base):
 #     __tablename__ = 'Membership_SalesSegment'

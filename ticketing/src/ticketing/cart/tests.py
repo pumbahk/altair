@@ -336,9 +336,9 @@ class TicketingCartResourceTests(unittest.TestCase):
 
         request = DummyRequest(matchdict={'event_id': event_id})
         target = self._makeOne(request)
-        result = target.membership
+        result = target.memberships
 
-        self.assertIsNone(result)
+        self.assertEqual(result, [])
 
     @mock.patch("ticketing.cart.resources.datetime")
     def test_membership(self, mock_datetime):
@@ -352,15 +352,14 @@ class TicketingCartResourceTests(unittest.TestCase):
         ss3 = self._add_sales_segement(event_id=event_id, start_at=datetime(2012, 6, 1), end_at=datetime(2012, 6, 19))
         ms = Membership()
         mg = MemberGroup(membership=ms)
-        ss1.membergroup = mg
+        ss1.membergroups.append(mg)
         self.session.flush()
 
         request = DummyRequest(matchdict={'event_id': event_id})
         target = self._makeOne(request)
-        result = target.membership
+        result = target.memberships
 
-        self.assertIsNotNone(result)
-        self.assertEqual(result, ms)
+        self.assertEqual(result, [ms])
 
     def test_event_id(self):
         request = DummyRequest(matchdict={"event_id": "this-is-event"})

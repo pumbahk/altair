@@ -33,18 +33,26 @@ class TicketingCartResource(object):
             self.event_id = None
 
     @property
-    def membership(self):
-        membergroup = self.membergroup
-        if not membergroup:
-            return None
-        return membergroup.membership
+    def memberships(self):
+        membergroups = self.membergroups
+        if not membergroups:
+            return []
+        return [m.membership for m in membergroups]
+
+    # @property
+    # def membergroup(self):
+    #     sales_segment = self.sales_segment
+    #     if sales_segment is None:
+    #         return None
+    #     return sales_segment.membergroup
 
     @property
-    def membergroup(self):
+    def membergroups(self):
         sales_segment = self.sales_segment
         if sales_segment is None:
-            return None
-        return sales_segment.membergroup
+            return []
+        return sales_segment.membergroups
+        
 
 
     def get_system_fee(self):
