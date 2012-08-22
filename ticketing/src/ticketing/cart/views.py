@@ -515,7 +515,7 @@ class PaymentView(object):
                 first_name=user_profile.first_name,
                 first_name_kana=user_profile.first_name_kana,
                 tel=user_profile.tel_1,
-                fax=user_profile.fax,
+                fax=getattr(user_profile, "fax", None), 
                 zip=user_profile.zip,
                 prefecture=user_profile.prefecture,
                 city=user_profile.city,
@@ -620,7 +620,7 @@ class PaymentView(object):
             country=u"日本国",
             tel_1=params['tel'],
             #tel_2=params['tel_2'],
-            fax=params['fax'],
+            fax=params.get('fax'),
             user=user,
             email=params['mail_address']
         )
