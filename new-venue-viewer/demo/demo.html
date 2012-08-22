@@ -229,6 +229,7 @@ function loadVenue() {
 
         var onHbarMoved = function(pos) {
           var level = ((hbarPositionMax - pos) / (hbarPositionMax - hbarPositionMin));
+          level = level * level;
           var zoomRatioWidth = zoomRatioMax - zoomRatioMin;
           var zoomRatio = zoomRatioMin + (zoomRatioWidth * level);
           venue.venueviewer("zoom", zoomRatio);
