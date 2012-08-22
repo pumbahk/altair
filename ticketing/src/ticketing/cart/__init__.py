@@ -57,6 +57,14 @@ def includeme(config):
     reg.adapters.register([IRequest], ICartFactory, "", CartFactory)
 
 
+def import_mail_module(config):
+    config.include(config.registry.settings["altair.mailer"])
+    from pyramid.interfaces import IRequest
+    from .interfaces import ICompleteMail
+    from .sendmail import CompleteMail
+    complete_mail_factory = functools.partial(CompleteMail, "tickets:templates/mail/complete.txt")
+    config.registry.adapters.register([IRequest], ICompleteMail, "", complete_mail_factory)
+    config.add_subscriber('.sendmail.on_order_completed', '.events.OrderCompleted')
 
 
 def main(global_config, **settings):
@@ -74,14 +82,7 @@ def main(global_config, **settings):
 
 
     ## mail
-    config.include(config.registry.settings["altair.mailer"])
-    from pyramid.interfaces import IRequest
-    from .interfaces import ICompleteMail
-    from .sendmail import CompleteMail
-    complete_mail_factory = functools.partial(CompleteMail, "tickets:templates/mail/complete.txt")
-    config.registry.adapters.register([IRequest], ICompleteMail, "", complete_mail_factory)
-    config.add_subscriber('.sendmail.on_order_completed', '.events.OrderCompleted')
-
+    config.include(import_mail_module)
 
     config.include('.')
     config.include('.rakuten_auth')

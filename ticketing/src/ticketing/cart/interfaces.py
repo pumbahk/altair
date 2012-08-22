@@ -103,5 +103,5 @@ class ICompleteMail(Interface):
     def build_mail_body(order):
         pass
 
-    def send_mail(order):
+    def build_message(order):
         pass

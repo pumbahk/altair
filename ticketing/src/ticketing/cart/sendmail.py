@@ -32,14 +32,14 @@ def devnull_mailer(config):
 def on_order_completed(order_completed):
     order = order_completed.order
     request = order_completed.request
-    message = create_message(order)
+    message = create_message(request, order)
     mailer = get_mailer(request) ## todo.component化
     mailer.send(message)
     logger.info("send mail to %s" % message.recipients)
 
 def create_message(request, order):
     complete_mail = get_complete_mail(request)
-    return complete_mail.send_mail(order)
+    return complete_mail.build_message(order)
 
 @implementer(ICompleteMail)
 class CompleteMail(object):
@@ -53,7 +53,7 @@ class CompleteMail(object):
     def get_email_from(self, order):
         raise NotImplemented()
 
-    def send_mail(self, order):
+    def build_message(self, order):
         organization = order.ordered_from
         subject = self.get_subject(organization)
         from_ = self.get_email_from(order)
