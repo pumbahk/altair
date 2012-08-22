@@ -31,7 +31,15 @@
 	<!-- ========== main ========== -->
 	<div id="main">
 		<h1><img src="${request.static_url('ticketing.cart:static/img/settlement/89ers_title_settlement.gif')}" alt="チケット購入" width="950" height="40" /></h1>
-				${h.get_nickname(request)} 
+    ${h.get_nickname(request)} 
+
+     %if request.session.peek_flash():
+         %for message in request.session.pop_flash():
+         <table cellpadding="0" cellspacing="0" class="form89ers">
+         <tr><td colspan="2" style="text-align:left;"><div class="error">${message}</div></td></tr>
+         </table>
+         %endfor
+     %endif
 		<form id="form1" name="form1" method="post" action="${request.url}">
             ${form.csrf_token()}
 			<div class="settlementBox">
