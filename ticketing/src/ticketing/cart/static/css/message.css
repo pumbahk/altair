@@ -1,0 +1,14 @@
+@charset "utf-8";
+
+/* error message */
+ul.error-list li {
+  color: #D8000C;
+  background-color: #FFBABA;
+  margin-left: 10px;
+}
+
+.error {
+  color: #D8000C;
+  background-color: #FFBABA;
+  margin-left: 10px;
+}
