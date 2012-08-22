@@ -74,12 +74,14 @@ def main(global_config, **settings):
 
 
     ## mail
+    config.include(config.registry.settings["altair.mailer"])
     from pyramid.interfaces import IRequest
     from .interfaces import ICompleteMail
     from .sendmail import CompleteMail
     complete_mail_factory = functools.partial(CompleteMail, "tickets:templates/mail/complete.txt")
     config.registry.adapters.register([IRequest], ICompleteMail, "", complete_mail_factory)
     config.add_subscriber('.sendmail.on_order_completed', '.events.OrderCompleted')
+
 
     config.include('.')
     config.include('.rakuten_auth')
