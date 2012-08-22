@@ -75,14 +75,8 @@ def get_tickets(order):
             dicts = build_dicts_from_ordered_product_item(ordered_product_item)
             for dict_ in dicts:
                 for ticket in bundle.tickets:
-<<<<<<< HEAD
                     svg = etree.tostring(convert_svg(etree.ElementTree(etree.fromstring(pystache.render(ticket.data['drawing'], dict_)))), encoding=unicode)
                     ticket = get_ticket(order.order_no, ordered_product_item.product_item, svg)
-=======
-                    # ticket.ticket_format.delivery_methods
-                    svg = convert_svg(etree.parse(pystache.render(ticket.data['drawing'], dict_)))
-                    ticket = get_ticket(order.order_no, ordered_product_item, svg)
->>>>>>> 券面印刷APIの修正
                     tickets.append(ticket)
     return tickets
 
@@ -159,7 +153,6 @@ class SejDeliveryPlugin(object):
     def finish(self, request, cart):
         logger.debug('Sej Delivery')
 
-        order_no = str(cart.id)
         shipping_address = cart.shipping_address
         performance = cart.performance
         current_date = datetime.now()
@@ -177,7 +170,7 @@ class SejDeliveryPlugin(object):
         api_key = (tenant and tenant.api_key) or settings['sej.api_key']
         api_url = (tenant and tenant.inticket_api_url) or settings['sej.inticket_api_url']
 
-        sej_order = get_sej_order(order)
+        sej_order = SejOrder.filter(SejOrder.order_id == cart.order_no).first()
         if not sej_order:
             request_order(
                 shop_name           = tenant.shop_name,
