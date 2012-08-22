@@ -325,8 +325,7 @@
 
           drawable.transform(
             Fashion.Matrix.scale(self.zoomRatio)
-              .translate({x: -self.contentOriginPosition.x,
-                          y: -self.contentOriginPosition.y}));
+              .translate({x: -origin.x, y: -origin.y}));
 
           drawable.contentSize({x: (vs.x/r) + origin.x, y: (vs.y/r) + origin.y});
 

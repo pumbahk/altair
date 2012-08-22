@@ -151,12 +151,16 @@ Fashion.Backend.VML = (function() {
     };
 
     if (impl instanceof Drawable) {
-      retval.physicalPosition = _subtractPoint(physicalPagePosition, impl.getViewportOffset());
-      retval.logicalPosition = impl.convertToLogicalPoint(retval.physicalPosition);
+      retval.screenPosition   = _subtractPoint(physicalPagePosition, impl.getViewportOffset());
+      var physicalPosition    = _addPoint(impl.convertToPhysicalPoint(impl.scrollPosition()), retval.screenPosition);
+      retval.logicalPosition  = impl.convertToLogicalPoint(physicalPosition);
+      retval.physicalPosition = physicalPosition
     } else {
-      retval.physicalPosition = _subtractPoint(physicalPagePosition, impl.drawable.getViewportOffset());
-      retval.logicalPosition = impl.drawable.convertToLogicalPoint(retval.physicalPosition);
-      retval.offsetPosition = _subtractPoint(retval.logicalPosition, impl.wrapper._position);
+      retval.screenPosition   = _subtractPoint(physicalPagePosition, impl.drawable.getViewportOffset());
+      var physicalPosition    = _addPoint(impl.drawable.convertToPhysicalPoint(impl.drawable.scrollPosition()), retval.screenPosition);
+      retval.logicalPosition  = impl.drawable.convertToLogicalPoint(physicalPosition);
+      retval.physicalPosition = physicalPosition;
+      retval.offsetPosition   = _subtractPoint(retval.logicalPosition, impl.wrapper._position);
     }
 
     return retval;
@@ -979,14 +983,15 @@ var Drawable = _class("DrawableVML", {
 
     scrollPosition: function(position) {
       if (position) {
-        position = _clipPoint(
-            position,
-            this.wrapper._inverse_transform.translate(),
-            _subtractPoint(
-              this.wrapper._content_size,
-              this.wrapper._inverse_transform.apply(
-                this._viewportInnerSize)));
+        var min = this.wrapper._inverse_transform.translate();
+        var scrollable_size = _subtractPoint(
+          this.wrapper._content_size,
+          this.wrapper._inverse_transform.apply(
+            this._viewportInnerSize));
+        var max = _addPoint(min, scrollable_size);
+        position = _clipPoint(position, min, max);
         this._scrollPosition = position;
+
         if (window.readyState == 'complete') {
           var _position = this.wrapper._transform.apply(position);
           this._viewport.scrollLeft = _position.x;
@@ -1058,7 +1063,11 @@ var Drawable = _class("DrawableVML", {
     },
 
     convertToLogicalPoint: function(point) {
-      return _addPoint(this.scrollPosition(), this.wrapper._inverse_transform.apply(point));
+      return this.wrapper._inverse_transform.apply(point);
+    },
+
+    convertToPhysicalPoint: function(point) {
+      return this.wrapper._transform.apply(point);
     },
 
     _updateContentSize: function () {

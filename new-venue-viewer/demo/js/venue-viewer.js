@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['G484H877KJ5UNBTF'] = (function (exports) { (function () { 
+__LIBS__['W39KHVBF9_QCS7K0'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -121,7 +121,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['Q9KVCQNMS239X97D'] = (function (exports) { (function () { 
+__LIBS__['sERFK_EB8P0BDB5J'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -176,11 +176,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['lEM1SKN7FJJRNF6F'] = (function (exports) { (function () { 
+__LIBS__['kWOMV7X1O99H8JYL'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['G484H877KJ5UNBTF'];
-var CONF = __LIBS__['Q9KVCQNMS239X97D'];
+var util = __LIBS__['W39KHVBF9_QCS7K0'];
+var CONF = __LIBS__['sERFK_EB8P0BDB5J'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -931,9 +931,9 @@ function _map(arr, fn) {
   return retval;
 }
 
-  var CONF = __LIBS__['Q9KVCQNMS239X97D'];
-  var seat = __LIBS__['lEM1SKN7FJJRNF6F'];
-  var util = __LIBS__['G484H877KJ5UNBTF'];
+  var CONF = __LIBS__['sERFK_EB8P0BDB5J'];
+  var seat = __LIBS__['kWOMV7X1O99H8JYL'];
+  var util = __LIBS__['W39KHVBF9_QCS7K0'];
 
   var createDrawingLoader = function(url) {
     return function (next, error) {
@@ -1253,8 +1253,7 @@ function _map(arr, fn) {
 
           drawable.transform(
             Fashion.Matrix.scale(self.zoomRatio)
-              .translate({x: -self.contentOriginPosition.x,
-                          y: -self.contentOriginPosition.y}));
+              .translate({x: -origin.x, y: -origin.y}));
 
           drawable.contentSize({x: (vs.x/r) + origin.x, y: (vs.y/r) + origin.y});
 
