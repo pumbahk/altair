@@ -24,6 +24,7 @@ from ticketing.tickets.utils import *
 from lxml import html, etree
 from lxml.builder import E
 from datetime import datetime, timedelta
+import pystache
 
 PAYMENT_PLUGIN_ID = 3
 DELIVERY_PLUGIN_ID = 2
