@@ -90,42 +90,17 @@ ${h.render_payment_finished_viewlet(request, order)}
 ${h.render_delivery_finished_viewlet(request, order)}
                 </div>
             </div>
-<!--
-		<div class="settlementInterest">
-			<h2>■この商品を買った人は、こんな商品にも興味をもっています。</h2>
-			<ul>
-				<li><a href="#"><img src="../img/settlement/dummy_interest.jpg" alt="" width="128" height="112" /></a><br />
-					<a href="#">ZED 東京公演 12月3日 14:00 幕張メッセイベントホール</a></li>
-				<li><a href="#"><img src="../img/settlement/dummy_interest.jpg" alt="" width="128" height="112" /></a><br />
-					<a href="#">ZED 東京公演 12月3日 14:00 幕張メッセイベントホール</a></li>
-				<li><a href="#"><img src="../img/settlement/dummy_interest.jpg" alt="" width="128" height="112" /></a><br />
-					<a href="#">ZED 東京公演 12月3日 14:00 幕張メッセイベントホール</a></li>
-				<li><a href="#"><img src="../img/settlement/dummy_interest.jpg" alt="" width="128" height="112" /></a><br />
-					<a href="#">ZED 東京公演 12月3日 14:00 幕張メッセイベントホール</a></li>
-				<li><a href="#"><img src="../img/settlement/dummy_interest.jpg" alt="" width="128" height="112" /></a><br />
-					<a href="#">ZED 東京公演 12月3日 14:00 幕張メッセイベントホール</a></li>
-				<li><a href="#"><img src="../img/settlement/dummy_interest.jpg" alt="" width="128" height="112" /></a><br />
-					<a href="#">ZED 東京公演 12月3日 14:00 幕張メッセイベントホール</a></li>
-			</ul>
-		</div>
-		<div class="settlementInterest">
-			<h2>■この商品を買った人は、こんな商品にも興味をもっています。</h2>
-			<ul>
-				<li><a href="#"><img src="../img/settlement/dummy_interest.jpg" alt="" width="128" height="112" /></a><br />
-					<a href="#">ZED 東京公演 12月3日 14:00 幕張メッセイベントホール</a></li>
-				<li><a href="#"><img src="../img/settlement/dummy_interest.jpg" alt="" width="128" height="112" /></a><br />
-					<a href="#">ZED 東京公演 12月3日 14:00 幕張メッセイベントホール</a></li>
-				<li><a href="#"><img src="../img/settlement/dummy_interest.jpg" alt="" width="128" height="112" /></a><br />
-					<a href="#">ZED 東京公演 12月3日 14:00 幕張メッセイベントホール</a></li>
-				<li><a href="#"><img src="../img/settlement/dummy_interest.jpg" alt="" width="128" height="112" /></a><br />
-					<a href="#">ZED 東京公演 12月3日 14:00 幕張メッセイベントホール</a></li>
-				<li><a href="#"><img src="../img/settlement/dummy_interest.jpg" alt="" width="128" height="112" /></a><br />
-					<a href="#">ZED 東京公演 12月3日 14:00 幕張メッセイベントホール</a></li>
-				<li><a href="#"><img src="../img/settlement/dummy_interest.jpg" alt="" width="128" height="112" /></a><br />
-					<a href="#">ZED 東京公演 12月3日 14:00 幕張メッセイベントホール</a></li>
-			</ul>
-		</div>
--->
+
+			<div class="confirmBox">
+				<div class="confirmBoxInner">
+				  <h3>注意事項</h3>
+ 				  <ul>
+					<li>お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。<a href="mailto:89ers@ticketstar.jp">89ers@ticketstar.jp</a> までご連絡ください。<br />
+					  （お問い合わせの際は、お申込み時のお名前と電話番号を記載お願いします）</li>
+					<li>お申込内容は、「<a href="${request.route_url('order_review.form')}">履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。</li>
+ 				  </ul>
+                </div>
+            </div>
 	</div>
 	<!-- ========== /main ========== -->
 	
