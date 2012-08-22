@@ -18,12 +18,13 @@ from ticketing.sej.payment import request_order
 from ticketing.sej.resources import SejPaymentType, SejTicketType
 from ticketing.sej.utils import han2zen
 
-from ticketing.tickets.convert import convert_svg
+from ticketing.tickets.convert import convert_svg, as_user_unit
 from ticketing.tickets.utils import *
 
 from lxml import html, etree
 from lxml.builder import E
 from datetime import datetime, timedelta
+import numpy
 import pystache
 from ticketing.cart import helpers as cart_helper
 
@@ -67,6 +68,15 @@ def get_ticket(order_no, product_item, svg):
         xml = SejTicketDataXml(svg)
     )
 
+def translate(x, y):
+    return numpy.matrix(
+        [
+            [1., 0., float(x)],
+            [0., 1., float(y)],
+            [0., 0., 1.]
+            ],
+        dtype=numpy.float64)
+
 def get_tickets(order):
     tickets = []
     for ordered_product in order.items:
@@ -75,7 +85,16 @@ def get_tickets(order):
             dicts = build_dicts_from_ordered_product_item(ordered_product_item)
             for dict_ in dicts:
                 for ticket in bundle.tickets:
-                    svg = etree.tostring(convert_svg(etree.ElementTree(etree.fromstring(pystache.render(ticket.data['drawing'], dict_)))), encoding=unicode)
+                    ticket_format = ticket.ticket_format
+                    applicable = False
+                    for delivery_method in ticket_format.delivery_methods:
+                        if delivery_method.delivery_plugin_id == DELIVERY_PLUGIN_ID:
+                            applicable = True
+                            break
+                    if not applicable:
+                        continue
+                    transform = translate(-as_user_unit(ticket_format.data['print_offset']['x']), -as_user_unit(ticket_format.data['print_offset']['y']))
+                    svg = etree.tostring(convert_svg(etree.ElementTree(etree.fromstring(pystache.render(ticket.data['drawing'], dict_))), transform), encoding=unicode)
                     ticket = get_ticket(order.order_no, ordered_product_item.product_item, svg)
                     tickets.append(ticket)
     return tickets

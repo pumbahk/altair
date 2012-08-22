@@ -11,7 +11,8 @@ INSERT INTO TicketFormat(id, organization_id, name, data) VALUES (1, 1,
     { "x": "4mm", "y": "3mm", "width": "11.2mm", "height": "59.04mm" },
     { "x": "23.2mm", "y": "3mm", "width": "120.9mm", "height": "59.04mm" },
     { "x": "152.1mm", "y": "3mm", "width": "21.86mm", "height": "59.04mm" }
-  ]
+  ],
+  "print_offset": { "x": "0mm", "y": "0mm" }
 }
 ');
 INSERT INTO TicketFormat(id, organization_id, name, data) VALUES (2, 1,
@@ -25,7 +26,8 @@ INSERT INTO TicketFormat(id, organization_id, name, data) VALUES (2, 1,
   "printable_areas": [
     { "x": "43.8mm", "y": "3mm", "width": "104mm", "height": "52mm" },
     { "x": "144.8mm", "y": "3mm", "width": "30mm", "height": "52mm" }
-  ]
+  ],
+  "print_offset": { "x": "17.8mm", "y": "3mm" }
 }
 ');
 INSERT INTO TicketFormat(id, organization_id, name, data) VALUES (3, 1,
@@ -39,7 +41,8 @@ INSERT INTO TicketFormat(id, organization_id, name, data) VALUES (3, 1,
   "printable_areas": [
     { "x": "31.1mm", "y": "6.5mm", "width": "93mm", "height": "63mm" },
     { "x": "132.1mm", "y": "6.5mm", "width": "30mm", "height": "63mm" }
-  ]
+  ],
+  "print_offset": { "x": "17.8mm", "y": "6.5mm" }
 }
 ');
 
