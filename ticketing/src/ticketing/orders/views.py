@@ -467,6 +467,7 @@ class SejTicketTemplate(BaseView):
             templates=templates
         )
 
+'''
 from ticketing.core.models import  TicketPrintHistory
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor", renderer="json")
@@ -512,3 +513,4 @@ class TicketPrintApi(BaseView):
                             c.save()
 
         return dict(result='ok')
+'''
