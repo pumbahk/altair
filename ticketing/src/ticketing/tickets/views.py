@@ -277,6 +277,26 @@ class TicketPrinter(BaseView):
 
     @view_config(route_name='tickets.print.dequeue', renderer='json')
     def dequeue(self):
-        retval = TicketPrintQueue.dequeue_all(self.context.user)
-        return dict(print_queue_list=retval)
+
+        from ticketing.tickets.utils import SvgPageSet
+        from datetime import datetime
+
+        queues = TicketPrintQueue.dequeue_all(self.context.user)
+        tickets = []
+        now = datetime.now()
+
+        svg_page_set = SvgPageSet()
+        for queue in queues:
+            #queue.deleted_at = now
+            tickets.append(dict(
+                id = queue.id,
+            ))
+
+            data = queue.data['drawing']
+            svg_page_set.append_page(data)
+
+        return dict(
+            svg = svg_page_set.merge(),
+            tickets = tickets
+        )
 

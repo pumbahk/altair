@@ -1792,28 +1792,4 @@ class TicketPrintQueue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def dequeue_all(self, operator):
         '''
         '''
-        ret_val = []
-        now = datetime.now()
-        queues = TicketPrintQueue.filter_by(deleted_at = None).order_by('created_at desc').all()
-        for queue in queues:
-            queue.deleted_at = now
-            ret_val.append(dict(
-                id = queue.id,
-                data = queue.data
-            ))
-        return ret_val
-
-# class MailExtraInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
-#     __tablename__ = "MailExtraInfo"
-#     id = Column(Identifier, primary_key=True)
-#     organization_id = Column(Identifier, ForeignKey('Organization.id'), nullable=True)
-#     organization = relationship('Organization', uselist=False, backref=backref('mail_extra_info'))
-#     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
-
-#     @property
-#     def signature(self):
-#         return self.data["signature"]
-
-#     @property
-#     def footer(self):
-#         return self.data["footer"]
+        return TicketPrintQueue.filter_by(deleted_at = None, operator = operator).order_by('created_at desc').all()

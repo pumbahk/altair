@@ -255,3 +255,29 @@ def build_dicts_from_ordered_product_item(ordered_product_item, user_profile=Non
         d.update(extra)
         retval.append(d)
     return retval
+
+
+from lxml.etree import Element as xml_Element
+from lxml.etree import tostring as xml_ToString
+import lxml.html
+
+class SvgPageSet(object):
+    def __init__(self):
+        self.result = xml_Element(
+            '{http://www.w3.org/2000/svg}svg',
+            nsmap={
+                'svg': 'http://www.w3.org/2000/svg',
+                'ts' : 'http://xmlns.ticketstar.jp/svg-extension'
+                }
+            )
+        self.page_set = xml_Element('{http://www.w3.org/2000/svg}pageSet')
+        self.result.append(self.page_set)
+
+    def append_page(self, svg):
+        page = xml_Element('{http://www.w3.org/2000/svg}page')
+        page.append(lxml.html.fromstring(svg))
+        self.page_set.append(page)
+
+    def merge(self):
+        return xml_ToString(self.result, xml_declaration=True, encoding='utf-8')
+
