@@ -20,7 +20,9 @@
 
 	<!-- ========== header ========== -->
 	<div id="grpheader">
-		<p id="siteID"><a href="/"><img src="${request.static_url('ticketing.cart:static/img/common/header_logo_01.gif')}" alt="楽天チケット" class="serviceLogo" width="97" height="35" /></a><a href="/"><img src="${request.static_url('ticketing.cart:static/img/common/header_logo_02.gif')}" alt="チケット" class="serviceTitle" width="88" height="23" /></a></p>
+		<p id="siteID">
+			<img src="${request.static_url('ticketing.cart:static/img/common/89erslogo_300x40.gif')}" alt="ナイナーズチケット" width="300" height="40"  />
+		</p>
 	</div>
 	<!-- ========== /header ========== -->
 	
@@ -28,8 +30,8 @@
 
 	<!-- ========== main ========== -->
 	<div id="main">
-		<h1><img src="${request.static_url('ticketing.cart:static/img/settlement/title_settlement.gif')}" alt="チケット購入" width="950" height="40" /></h1>
-        ${h.get_nickname(request)}
+		<h1><img src="${request.static_url('ticketing.cart:static/img/settlement/89ers_title_settlement.gif')}" alt="チケット購入" width="950" height="40" /></h1>
+        ${h.get_nickname(request)} 
 		<p><img src="${request.static_url('ticketing.cart:static/img/settlement/completion.gif')}" alt="購入を完了いたしました。" width="201" height="50" /></p>
 
 			<div class="confirmBox">

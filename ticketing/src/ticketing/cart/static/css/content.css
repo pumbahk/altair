@@ -1474,6 +1474,23 @@
 	background: url(../img/settlement/bg_box_top.gif) no-repeat 0 0;
 }
 
+.settlementBoxInner dl {
+	margin-left:10px;
+}
+
+.settlementBoxInner dl dt.cartPayment {
+	font-size:140%;
+	font-weight:bold;
+	border-left:2px #ccc solid;
+	padding:3px 0 0 10px;
+	height:30px;
+	margin:8px 0 10px 0;
+}
+
+.settlementBoxInner p{
+	margin:0 0 10px 20px;
+}
+
 .settlementBox2 {
 	margin: 0 10px 20px;
 	background: url(../img/settlement/bg_box_bottom_02.gif) no-repeat left bottom;

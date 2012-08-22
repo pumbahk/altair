@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
 <head>
 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-<title>チケット販売・イベントの予約 [音楽 / コンサート / 舞台 / スポーツ] - 楽天チケット</title>
+<title>ナイナーズチケット</title>
 <meta name="description" content="チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などのスポーツ、その他イベントなどのチケットのオンラインショッピングサイトです。" />
 <meta name="keywords" content="チケット,演劇,クラシック,オペラ,コンサート,バレエ,ミュージカル,野球,サッカー,格闘技" />
 <meta http-equiv="content-style-type" content="text/css" />
@@ -172,9 +172,8 @@ $(function() {
 	<!-- ========== header ========== -->
 	<div id="grpheader">
 		<p id="siteID">
-      <a href="http://www.rakuten.co.jp/"><img src="${request.static_url('ticketing.cart:static/img/common/header_logo_01.gif')}" alt="楽天チケット" class="serviceLogo" width="97" height="35" /></a>
-      <a href="/"><img src="${request.static_url('ticketing.cart:static/img/common/header_logo_02.gif')}" alt="チケット" class="serviceTitle" width="88" height="23" /></a>
-    </p>
+			<img src="${request.static_url('ticketing.cart:static/img/common/89erslogo_300x40.gif')}" alt="ナイナーズチケット" width="300" height="40"  />
+		</p>
 	</div>
 	<!-- ========== /header ========== -->
 	
@@ -182,16 +181,9 @@ $(function() {
 
 	<!-- ========== main ========== -->
 	<div id="main">
-		<h1><img src="${request.static_url('ticketing.cart:static/img/settlement/title_settlement.gif')}" alt="チケット購入" width="950" height="40" /></h1>
-				${h.get_nickname(request)} 
+		<h1><img src="${request.static_url('ticketing.cart:static/img/settlement/89ers_title_settlement.gif')}" alt="チケット購入" width="950" height="40" /></h1>
+				<p class="cartNickname">ようこそ ${h.get_nickname(request)} さん</p>
 		<h2 id="ticketName">${event['title']}</h2>
-		<ul id="ticketIcon">
-			<li><img src="${request.static_url('ticketing.cart:static/img/detail/icon_select.gif')}" alt="座席選択可" width="80" height="30" /></li>
-			<li><img src="${request.static_url('ticketing.cart:static/img/detail/icon_keep.gif')}" alt="おとなりキープ" width="80" height="30" /></li>
-			<li><img src="${request.static_url('ticketing.cart:static/img/detail/icon_official.gif')}" alt="公式2次市場" width="80" height="30" /></li>
-			<li><img src="${request.static_url('ticketing.cart:static/img/detail/icon_goods.gif')}" alt="先行グッズ予約" width="80" height="30" /></li>
-			<li><img src="${request.static_url('ticketing.cart:static/img/detail/icon_event.gif')}" alt="イベントコミュニティ" width="80" height="30" /></li>
-		</ul>
 		<form id="form1" name="form1" method="post" action="">
 			<div id="settlementSelectBox">
 				<div id="settlementSelectBoxInner">
