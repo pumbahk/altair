@@ -6,6 +6,7 @@
   <link rel="stylesheet" href="js/css/bootstrap/jquery-ui-1.8.16.custom.css" />
   <script type="text/javascript" src="js/jquery-1.7.2.js"></script>
   <script type="text/javascript" src="js/jquery-ui-1.8.20.custom.min.js"></script>
+  <script type="text/javascript" src="js/jquery.mousecapture.js"></script>
   <script type="text/javascript" src="js/fashion.js"></script>
   <![if !(lt IE 9)]>
   <script type="text/javascript" src="js/fashion.svg.js"></script>
@@ -246,20 +247,28 @@ function loadVenue() {
           return pos;
         }
 
-        hbar.mousedown(function(e) {
-          hbarMoving = true;
-          lastMouseY = e.pageY;
-        });
-        cont.mousemove(function(e) {
+        var moveHandler = function(e) {
           if (hbarMoving) {
             var dist = e.pageY - lastMouseY;
             hbarPosition = setPositionHbar(hbarPosition + dist);
             lastMouseY = e.pageY;
           }
-        });
-        cont.mouseup(function(e) {
+        };
+
+        var upHandler = function(e) {
           hbarMoving = false;
+          $(document).unbind("mousemove", moveHandler);
+          $(document).unbind("mouseup", upHandler);
+        };
+
+        hbar.mousedown(function(e) {
+          hbarMoving = true;
+          lastMouseY = e.pageY;
+
+          $(document).mousemove(moveHandler);
+          $(document).mouseup(upHandler);
         });
+
         vbar.click(function(e) {
           hbarPosition = setPositionHbar(e.offsetY);
           lastMouseY = e.pageY;
