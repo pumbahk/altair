@@ -28,6 +28,9 @@ def japanese_date(date):
 def japanese_time(time):
     return u"%d時%d分" % (time.hour, time.minute)
 
+def mail_date(date):
+    return u'{d.year}年 {d.month}月 {d.day}日 {d.hour}時 {d.minute}分'.format(d=date)
+
 # TODO: requestをパラメータから排除
 def error_list(request, form, name):
     errors = form[name].errors

@@ -125,7 +125,8 @@ def card_number_mask(number):
     """ 下4桁以外をマスク"""
     return "*" * (len(number) - 4) + number[-4:]
 
-@view_config(context=ICartPayment, name="payment-1", renderer="ticketing.cart.plugins:templates/card_confirm.html")
+PAYMENT_ID = 1
+@view_config(context=ICartPayment, name="payment-%d" % PAYMENT_ID, renderer="ticketing.cart.plugins:templates/card_confirm.html")
 def confirm_viewlet(context, request):
     """ 確認画面表示 
     :param context: ICartPayment
@@ -135,7 +136,7 @@ def confirm_viewlet(context, request):
     logger.debug("order_session %s" % order_session)
     return dict(order=order_session, card_number_mask=card_number_mask)
 
-@view_config(context=IOrderPayment, name="payment-1", renderer="ticketing.cart.plugins:templates/card_complete.html")
+@view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_ID, renderer="ticketing.cart.plugins:templates/card_complete.html")
 def completion_viewlet(context, request):
     """ 完了画面表示 
     :param context: IOrderPayment

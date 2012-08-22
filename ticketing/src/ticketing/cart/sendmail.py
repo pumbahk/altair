@@ -6,6 +6,7 @@ from . import logger
 from .api import get_complete_mail
 from zope.interface import implementer
 from .interfaces import ICompleteMail
+from . import helpers as h
 
 ## dummy mailer
 from pyramid_mailer.interfaces import IMailer
@@ -48,15 +49,15 @@ class CompleteMail(object):
         self.request = request
 
     def get_subject(self, organization):
-        return u"受付完了メール 【{organization.name}】".format(organization=organization)
+        return u"チケット予約受付完了のお知らせ 【{organization.name}】".format(organization=organization)
 
-    def get_email_from(self, order):
-        raise NotImplemented()
+    def get_email_from(self, organization):
+        return organization.contact_email
 
     def build_message(self, order):
         organization = order.ordered_from
         subject = self.get_subject(organization)
-        from_ = self.get_email_from(order)
+        from_ = self.get_email_from(organization)
         mail_body = self.build_mail_body(order)
         return Message(
             subject=subject,
@@ -65,8 +66,9 @@ class CompleteMail(object):
             body=mail_body,
             sender=from_)
 
-    def build_mail_body(self, order):
+    def _build_mail_body(self, order):
         sa = order.shipping_address 
+        pair = order.payment_delivery_pair
         value = dict(order=order,
                 name=u"{0} {1}".format(sa.last_name, sa.first_name),
                 name_kana=u"{0} {1}".format(sa.last_name_kana, sa.first_name_kana),
@@ -74,12 +76,18 @@ class CompleteMail(object):
                 tel2_no=sa.tel_2,
                 email=sa.email,
                 order_no=order.order_no,
-                order_datetime=u'{d.year}年 {d.month}月 {d.day}日 {d.hour}時 {d.minute}分'.format(d=order.created_at),
+                order_datetime=h.mail_date(order.created_at), 
                 order_items=order.ordered_products,
                 order_total_amount=order.total_amount,
                 performance_name=order.performance.name,
                 system_fee=order.system_fee,
                 delivery_fee=order.delivery_fee,
                 transaction_fee=order.transaction_fee,
+                payment_method_name=pair.payment_method.name, 
+                delivery_method_name=pair.delivery_method.name
                      )
+        return value
+
+    def build_mail_body(self, order):
+        value = self._build_mail_body(order)
         return renderers.render(self.mail_template, value, request=self.request)

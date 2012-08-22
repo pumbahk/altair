@@ -24,6 +24,8 @@ ${order_datetime}
 -----
 ${performance_name}
 
+■購入いただいた座席
+
 ■商品代金
 %for ordered_product in order_items:
 ${ordered_product.product.name} ${h.format_currency(ordered_product.product.price)}
@@ -39,9 +41,14 @@ ${ordered_product.product.name} ${h.format_currency(ordered_product.product.pric
 ■合計金額
 ${h.format_currency(order_total_amount)}
 
+-----
+■お支払
+お支払方法： ${payment_method_name}
 ${h.render_payment_finished_mail_viewlet(request, order)}
+-----
+■お受取
+お受取方法： ${delivery_method_name}
 ${h.render_delivery_finished_mail_viewlet(request, order)}
-
 
 ※本メールは自動配信メールとなり、こちらに返信されても返答はいたしかねます。
 

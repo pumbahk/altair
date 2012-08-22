@@ -62,7 +62,7 @@ def import_mail_module(config):
     from pyramid.interfaces import IRequest
     from .interfaces import ICompleteMail
     from .sendmail import CompleteMail
-    complete_mail_factory = functools.partial(CompleteMail, "tickets:templates/mail/complete.txt")
+    complete_mail_factory = functools.partial(CompleteMail, "ticketing:templates/mail/complete.mako")
     config.registry.adapters.register([IRequest], ICompleteMail, "", complete_mail_factory)
     config.add_subscriber('.sendmail.on_order_completed', '.events.OrderCompleted')
 
