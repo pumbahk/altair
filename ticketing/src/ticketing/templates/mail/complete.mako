@@ -25,6 +25,9 @@ ${order_datetime}
 ${performance_name}
 
 ■購入いただいた座席
+%for seat in seats:
+* ${seat["name"]}
+%endfor
 
 ■商品代金
 %for ordered_product in order_items:

@@ -67,6 +67,8 @@ class SendCompleteMailTest(unittest.TestCase):
         from ticketing.core.models import (
             Order, 
             OrderedProduct, 
+            OrderedProductItem, 
+            Seat, 
             Product, 
             Organization, 
             ShippingAddress, 
@@ -96,18 +98,24 @@ class SendCompleteMailTest(unittest.TestCase):
                       total_amount=kwargs.get("order__total_amount", 9999), 
                       created_at=kwargs.get("order__created_at", datetime.now()) ## xxx:
                           )
-        
-        order.ordered_products.append(
-            OrderedProduct(
-                product=Product(
-                    name=kwargs.get("product0__name", "product-name"), 
-                    price=kwargs.get("product0__price", 400.00))))
-        order.ordered_products.append(
-            OrderedProduct(
-                product=Product(
-                    name=kwargs.get("product1__name", "product-name"), 
-                    price=kwargs.get("product1__price", 400.00))))
 
+        ordererd_product0 = OrderedProduct(
+            product=Product(
+                name=kwargs.get("product0__name", "product-name"), 
+                price=kwargs.get("product0__price", 400.00)))
+        ordered_product_item0 = OrderedProductItem()
+        ordered_product_item0.seats.append(Seat(name=kwargs.get("seat0__name")))
+        ordererd_product0.ordered_product_items.append(ordered_product_item0)
+        order.ordered_products.append(ordererd_product0)
+
+        ordererd_product1 = OrderedProduct(
+            product=Product(
+                name=kwargs.get("product1__name", "product-name"), 
+                price=kwargs.get("product1__price", 400.00)))
+        ordered_product_item1 = OrderedProductItem()
+        ordered_product_item1.seats.append(Seat(name=kwargs.get("seat1__name")))
+        ordererd_product1.ordered_product_items.append(ordered_product_item1)
+        order.ordered_products.append(ordererd_product1)
         return order
 
     def test_normal_success_around_header(self):
@@ -169,7 +177,9 @@ class SendCompleteMailTest(unittest.TestCase):
             product0__name = u"商品名0", 
             product0__price = 10000.00, 
             product1__name = u"商品名1", 
-            product1__price = 20000.00
+            product1__price = 20000.00, 
+            seat0__name = u"2階A:1", 
+            seat1__name = u"2階A:2", 
             )
         
         payment_method = PaymentMethod(payment_plugin_id=1, name=u"クレジットカード決済")
@@ -195,6 +205,10 @@ class SendCompleteMailTest(unittest.TestCase):
         ## 公演情報
         self.assertIn(u"何かパフォーマンス名", body)
 
+        ## 座席情報
+        self.assertIn(u"2階A:1", body)
+        self.assertIn(u"2階A:2", body)
+
         ## 商品情報
         self.assertIn(u"商品名0", body)
         self.assertIn(h.format_currency(10000.00), body)
@@ -208,7 +222,7 @@ class SendCompleteMailTest(unittest.TestCase):
         ## 合計金額
         self.assertIn(h.format_currency(99999), body)
 
-        ##
+        ## pugin
         self.assertIn(u"クレジットカード決済", body)
         self.assertIn(u"QR受け取り", body)
 

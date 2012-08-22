@@ -69,6 +69,11 @@ class CompleteMail(object):
     def _build_mail_body(self, order):
         sa = order.shipping_address 
         pair = order.payment_delivery_pair
+        seats = [dict(name=s.name, seat_no=s.seat_no)
+                 for product in order.ordered_products
+                 for item in product.ordered_product_items 
+                 for s in item.seats]
+
         value = dict(order=order,
                 name=u"{0} {1}".format(sa.last_name, sa.first_name),
                 name_kana=u"{0} {1}".format(sa.last_name_kana, sa.first_name_kana),
@@ -84,7 +89,8 @@ class CompleteMail(object):
                 delivery_fee=order.delivery_fee,
                 transaction_fee=order.transaction_fee,
                 payment_method_name=pair.payment_method.name, 
-                delivery_method_name=pair.delivery_method.name
+                delivery_method_name=pair.delivery_method.name, 
+                seats = seats
                      )
         return value
 
