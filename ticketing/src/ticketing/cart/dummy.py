@@ -14,6 +14,7 @@ def _dummy_order():
         start_on = datetime.now()
         class event:
             title = "event"
+            id = 4
         class venue:
             name = "venue"
     order.ordered_products = []
