@@ -169,7 +169,8 @@ cart.ApplicationController.prototype.init = function(venues_selection, selected,
     // フォーム
     this.orderFormPresenter = new cart.OrderFormPresenter({
         viewType: cart.OrderFormView,
-        venuePresenter: this.venuePresenter
+        venuePresenter: this.venuePresenter,
+        upper_limit: upper_limit
     });
 
     this.performanceSearchPresenter.stockTypeListPresenter = this.stockTypeListPresenter;
@@ -549,12 +550,20 @@ cart.OrderFormPresenter.prototype = {
             alert('商品を1つ以上選択してください');
             return;
         }
+        if (this.upper_limit < this.quantity_to_select) {
+            alert('枚数は合計' + this.upper_limit + '枚以内で選択してください');
+            return;
+        }
         this.venuePresenter.setStockType(this.stock_type);
     },
     onEntrustPressed: function () {
         this.calculateQuantityToSelect();
         if (this.quantity_to_select == 0) {
             alert('商品を1つ以上選択してください');
+            return;
+        }
+        if (this.upper_limit < this.quantity_to_select) {
+            alert('枚数は合計' + this.upper_limit + '枚以内で選択してください');
             return;
         }
         this.setSeats([]);

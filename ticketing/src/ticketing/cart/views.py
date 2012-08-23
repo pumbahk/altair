@@ -347,8 +347,27 @@ class ReserveView(object):
         if not order_items:
             return dict(result='NG', reason="no products")
 
+        performance = c_models.Performance.get(self.request.params['performance_id'])
+        if not order_items:
+            return dict(result='NG', reason="no performance")
+
         selected_seats = self.request.params.getall('selected_seat')
         logger.debug('order_items %s' % order_items)
+
+        sum_quantity = 0
+        if selected_seats:
+            sum_quantity = len(selected_seats)
+        else:
+            for product, quantity in order_items:
+                sum_quantity += quantity
+        logger.debug('sum_quantity=%s' % sum_quantity)
+
+        self.context.event_id = performance.event_id
+        sales_segment = self.context.get_sales_segument()
+        if sales_segment.upper_limit < sum_quantity:
+            logger.debug('upper_limit over')
+            return dict(result='NG', reason="upper_limit")
+
         try:
             cart = api.order_products(self.request, self.request.params['performance_id'], order_items, selected_seats=selected_seats)
             if cart is None:
@@ -559,7 +578,6 @@ class PaymentView(object):
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id', 0)
         payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter_by(id=payment_delivery_method_pair_id).first()
         if not payment_delivery_pair:
-            self.request.session.flash(u"お支払い方法／お受け取り方法をひとつお選びください")
             raise HTTPFound(self.request.current_route_url())
 
         cart.payment_delivery_pair = payment_delivery_pair
