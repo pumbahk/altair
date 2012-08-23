@@ -16,7 +16,7 @@
   % for delivery_method in delivery_methods.items:
   <tr id="delivery_method-${delivery_method.id}">
     <td><input name="delivery_method_id" type="radio" value=${delivery_method.id} />
-	<span style="display: none;" class="delivery_method_description">${delivery_method.description | n,x}</span>
+	<span style="display: none;" class="delivery_method_description">${delivery_method.description or '' | n,x}</span>
 	</td>
     <td><span id="id">${delivery_method.id}</span></td>
     <td><a href="javascript:edit_delivery_method(${delivery_method.id});"><span id="name">${delivery_method.name}</span></a></td>

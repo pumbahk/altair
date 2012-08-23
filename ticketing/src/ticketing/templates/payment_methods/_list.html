@@ -16,7 +16,7 @@
   % for payment_method in payment_methods.items:
   <tr id="payment_method-${payment_method.id}">
     <td><input name="payment_method_id" type="radio" value=${payment_method.id} />
-	<span style="display: none;" class="payment_method_description">${payment_method.description | n,x}</span>
+	<span style="display: none;" class="payment_method_description">${payment_method.description or '' | n,x}</span>
 	</td>
     <td><span id="id">${payment_method.id}</span></td>
     <td><a href="javascript:edit_payment_method(${payment_method.id});"><span id="name">${payment_method.name}</span></a></td>
