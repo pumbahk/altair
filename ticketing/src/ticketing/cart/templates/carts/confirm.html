@@ -133,12 +133,13 @@ shipping = cart.shipping_address
             </div>
 			<div class="confirmBox">
 				<div class="confirmBoxInner">
-					<h3>配送情報</h3>
+					<h3><img src="${request.static_url('ticketing.cart:static/img/settlement/title_reception.gif')}" alt="配送情報" width="103" height="30" /></h3>
                     ${h.render_delivery_confirm_viewlet(request, cart)}
                 </div>
             </div>
 			<div class="confirmBox">
 				<div class="confirmBoxInner">
+					<h3><img src="${request.static_url('ticketing.cart:static/img/settlement/title_customer_info.gif')}" alt="購入者情報" width="103" height="30" /></h3>
 					<h3>購入者情報</h3>
 					<table id="confirmDelivery" summary="配送先情報">
 						<tr>

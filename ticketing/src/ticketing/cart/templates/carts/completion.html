@@ -43,7 +43,7 @@
 		<p><img src="${request.static_url('ticketing.cart:static/img/settlement/completion.gif')}" alt="購入を完了いたしました。" width="201" height="50" /></p>
 			<div class="confirmBox">
 				<div class="confirmBoxInner">
-					<h3>予約番号</h3>
+					<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_order_number.gif')}" alt="予約番号" width="103" height="30" /></h2>
 				  <div class="confirm-message">
 					${order.order_no}
 				  </div>
@@ -103,7 +103,7 @@
             </div>
 			<div class="confirmBox">
 				<div class="confirmBoxInner">
-					<h3>配送情報</h3>
+					<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_reception.gif')}" alt="配送情報" width="103" height="30" /></h2>
 					<div class="confirm-message">
 					  ${h.render_delivery_finished_viewlet(request, order)}
 					</div>

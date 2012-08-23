@@ -42,7 +42,7 @@
 		<form id="form1" name="form1" method="post" action="${request.url}">
 			<div class="settlementBox">
 				<div class="settlementBoxInner">
-					<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_methods.gif')}" alt="お支払い、引き取り方法の指定" width="167" height="30" /></h2>
+					<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_methods.gif')}" alt="お支払い、引き取り方法の指定" width="267" height="30" /></h2>
 					<p style="margin-left:20px;">どれかひとつをお選びください</p>
           <% checked_id = request.params.get('payment_delivery_method_pair_id') %>
           %for m in payment_delivery_methods:
@@ -82,6 +82,7 @@
 			</div>
             <div class="confirmBox">
                 <div class="confirmBoxInner">
+		    <h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_customer_info.gif')}" alt="購入者情報" width="103" height="30" /></h2>
                     <h2>購入者情報</h2>
                     <!--
                     <div class="settlementPayBox">
