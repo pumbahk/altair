@@ -1,3 +1,5 @@
+# -*- coding:utf-8 -*-
+
 from pyramid.response import Response
 from pyramid.renderers import render
 
@@ -70,6 +72,7 @@ def complete_view(request):
 def payment_view(request):
     import mock
     from .schemas import ClientForm
+    request.session.flash(u"お支払い方法／受け取り方法をどれかひとつお選びください")
     with mock.patch("ticketing.cart.rakuten_auth.api.authenticated_user"):
         params=dict(form=ClientForm(), 
                     payment_delivery_methods=[], 
