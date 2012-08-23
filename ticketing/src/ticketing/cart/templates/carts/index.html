@@ -214,51 +214,40 @@ $(function() {cart.init(venues_selection, selected, upper_limit, cart_release_ur
 	</div>
 	<!-- ========== /main ========== -->
 	
-<!-- /container --></div>
-
-<div class="modal payment" id="order-error-template" style="display:none">
-	<div class="modal-header">
-    <h2><span>在庫がありません</span></h2>
-	</div>
-	<div class="modal-inner">
-    <div class="modal-body">
-      <img src="${request.static_url('ticketing.cart:static/img/settlement/error.gif')}" width="624" height="224" />
-    </div>
-    <div class="modal-footer">
-      <button class="close-button btn-redo"></button>
-    </div>
-	</div>
+<!-- /container -->
 </div>
 
-<div class="modal payment" style="display:none" id="order-reserved">
-	<div class="modal-header">
-        <h3><span id="performance-name"></span></h3>
-        <h4><span id="performance-name-sub"></span></h4>
-	</div>
-	<div class="modal-inner">
-	    <div class="modal-body">
+<div class="modal payment" id="order-error-template" style="display:none">
+  <div class="modal-header"></div>
+  <div class="modal-inner">
+    <div class="modal-body"></div>
+    <div class="modal-footer"></div>
+  </div>
+</div>
 
-	    	<img src="${request.static_url('ticketing.cart:static/img/settlement/total.gif')}" alt="合計金額" width="67" height="16"
-	    		 style="margin-bottom:7px;">
-	    	<table>
-	    	<tbody>
-	    		<tr class="last-child">
-	    		<td id="cart-total-amount">￥</td>
-	    		</tr>
-	    	</tbody>
-	    	</table>
-
-	    	<p class="lead" style="margin-bottom:4px;">内訳</p>
-	    	<table>
-	    	<tbody id="contentsOfShopping">
-	    	</tbody>
-	    	</table>
-	    </div>
-	    <div class="modal-footer">
-	    	<button class="cancel-button btn-redo"></button>
-	    	<button class="confirm-button btn-buy"></button>
-	    </div>
-	</div>
+<div class="modal payment" id="order-reserved" style="display:none">
+  <div class="modal-header"></div>
+  <div class="modal-inner">
+    <div class="modal-body">
+      <h3>合計金額</h3>
+      <table>
+        <tbody>
+          <tr class="last-child">
+          <td class="cart-total-amount">￥</td>
+          </tr>
+        </tbody>
+      </table>
+      <h3>内訳</h3>
+      <table>
+        <tbody class="contentsOfShopping">
+        </tbody>
+      </table>
+    </div>
+    <div class="modal-footer">
+      <button class="cancel-button btn-redo">座席・枚数を選びなおす</button>
+      <button class="ok-button btn-buy">購入する</button>
+    </div>
+  </div>
 </div>
 </body>
 </html>

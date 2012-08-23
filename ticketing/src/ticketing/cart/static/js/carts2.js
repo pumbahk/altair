@@ -31,6 +31,89 @@ cart.util = {
             else if (g[2])
                 jq.append(g[2]);
         }
+    },
+
+    format_currency: function (value) {
+        return "￥" + value;
+    }
+};
+
+cart.order_messages = {
+    'stock': {
+        title: '在庫がありません',
+        message: 'ご希望の座席を確保できませんでした'
+    },
+    'invalid seats': {
+        title: '座席選択に誤りがあります',
+        message: '座席を再度選択してください'
+    },
+    'adjacency': {
+        title: '連席で座席を確保できません',
+        message: '座席を選んで購入してください'
+    }
+};
+
+cart.Dialog = function () {
+    this.initialize.apply(this, arguments);
+};
+
+cart.Dialog.prototype = {
+    initialize: function (n, callbacks) {
+        this.n = n.clone();
+        this.callbacks = callbacks;
+        n.parent().append(this.n);
+        this.n.overlay({
+            mask: {
+                color: "#999",
+                opacity: 0.5
+            },
+            closeOnClick: false
+        });
+        var self = this;
+        this.n.on('click', '.cancel-button', function() {
+            callbacks.cancel.call(self);
+        });
+        this.n.on('click', '.ok-button', function() {
+            callbacks.ok.call(self);
+        });
+    },
+
+    close: function () {
+        this.n.overlay().close();
+        this.callbacks.close && this.callbacks.close();
+        this.n.remove();
+    },
+
+    load: function () {
+        this.n.overlay().load();
+    },
+
+    header: function (n) {
+        var h = this.n.find('.modal-header');
+        if (n === void(0))
+            return h;
+        if (n == null) {
+            h.remove();
+        } else {
+            h.empty();
+            h.append(n);
+        }
+    },
+
+    footer: function (n) {
+        var f = this.n.find('.modal-footer');
+        if (f === void(0))
+            return f;
+        f.empty();
+        f.append(n);
+    },
+
+    body: function (n) {
+        var b = this.n.find('.modal-body');
+        if (n === void(0))
+            return b;
+        b.empty();
+        b.append(n);
     }
 };
 
@@ -50,30 +133,6 @@ cart.init = function(venues_selection, selected, upper_limit, cart_release_url) 
     });
     this.app = new cart.ApplicationController();
     this.app.init(venues_selection, selected, upper_limit, cart_release_url);
-    this.inCartProductList = $('#contentsOfShopping');
-    this.totalAmount = $('#cart-total-amount');
-    this.reservationDialog = $('#order-reserved');
-    this.errorDialog = $('#order-error-template');
-    var self = this;
-    this.reservationDialog.find('.cancel-button').click(function() {
-        $.ajax({
-            url: cart_release_url, // global
-            dataType: 'json',
-            type: 'POST',  
-            success: function() {
-                self.reservationDialog.overlay().close();
-            }
-        });
-        $("#selectSeat .venueViewer").venueviewer("refresh");
-        self.reservationDialog.overlay().close();
-        $("#selectSeatType").click();
-    });
-    this.reservationDialog.find('.confirm-button').click(function() {
-        window.location.href = reservationData.payment_url;
-    });
-    this.errorDialog.find('.close-button').click(function() {
-        self.errorDialog.overlay().close();
-    });
 };
 
 cart.createContentOfShoppingElement = function(product) {
@@ -106,41 +165,57 @@ cart.createContentOfShoppingElement = function(product) {
     return item;
 };
 
-cart.proceedToCheckout = function proceedToCheckout(data) {
-    reservationData = data;
-    var root = this.hallName;
-    var products = data.cart.products;
+cart.proceedToCheckout = function proceedToCheckout(performance, reservationData) {
+    var dialog = new cart.Dialog($('#order-reserved'), {
+        ok: function () {
+            window.location.href = reservationData.payment_url;
+        },
+        cancel: function () {
+            $.ajax({
+                url: cart_release_url, // global
+                dataType: 'json',
+                type: 'POST',  
+                success: function() {}
+            });
+            this.close();
+        }
+    });
+    var products = reservationData.cart.products;
+    var inCartProductList = dialog.body().find('.contentsOfShopping');
+    var totalAmount = dialog.body().find('.cart-total-amount');
 
     // insert product items in cart
-    this.inCartProductList.empty();
+    inCartProductList.empty();
     for (var i = 0; i < products.length; i++) {
         var product = products[i];
-        var item = this.createContentOfShoppingElement(product);//
-        this.inCartProductList.append(item);
+        var item = cart.createContentOfShoppingElement(product);
+        inCartProductList.append(item);
     }
-    this.inCartProductList.find("tr").last().addClass(".last-child");
+    inCartProductList.find("tr").last().addClass("last-child");
+    totalAmount.text(cart.util.format_currency(reservationData.cart.total_amount));
 
-    this.totalAmount.text("￥ " + data.cart.total_amount);
-
-    this.reservationDialog.overlay({
-        mask: {
-            color: "#999",
-            opacity: 0.5
-        },
-        closeOnClick: false
-    });
-    this.reservationDialog.overlay().load();
+    dialog.header(
+        $('<h2>')
+            .append(
+                $('<span id="performance-date"></span>')
+                .text(performance.get('performance_start')))
+            .append(' ')
+            .append(
+                $('<span id="performance-name"></span>')
+                .text(performance.get('performance_name'))));
+    dialog.load();
 }
 
-cart.showErrorDialog = function showErrorDialog() {
-    this.errorDialog.overlay({
-        mask: {
-            color: "#999",
-            opacity: 0.5
-        },
-        closeOnClick: false
+cart.showErrorDialog = function showErrorDialog(title, message, footer_button_class) {
+    var errorDialog = new this.Dialog($('#order-error-template'), {
+        ok: function () {
+            this.close();
+        }
     });
-    this.errorDialog.overlay().load();
+    errorDialog.header(title ? $('<h2></h2>').text(title): null);
+    errorDialog.body($('<div style="text-align:center"></div>').text(message));
+    errorDialog.footer($('<button class="ok-button">閉じる</button>').addClass(footer_button_class));
+    errorDialog.load();
 };
 
 cart.ApplicationController = function() {
@@ -338,10 +413,10 @@ cart.VenuePresenter.prototype = {
         var selection = this.view.getChoices();
         var quantity_to_select = this.orderFormPresenter.quantity_to_select;
         if (selection.length < quantity_to_select) {
-            alert("あと " + (quantity_to_select - selection.length) + " 席選んでください");
+            cart.showErrorDialog(null, "あと " + (quantity_to_select - selection.length) + " 席選んでください", "btn-close");
             return;
         } else if (selection.length != quantity_to_select) {
-            alert("購入枚数と選択した席の数が一致していません。");
+            cart.showErrorDialog("エラー", "購入枚数と選択した席の数が一致していません。", "btn-close");
             return;
         }
         this.orderFormPresenter.setSeats(selection);
@@ -561,11 +636,11 @@ cart.OrderFormPresenter.prototype = {
     onSelectSeatPressed: function () {
         this.calculateQuantityToSelect();
         if (this.quantity_to_select == 0) {
-            alert('商品を1つ以上選択してください');
+            cart.showErrorDialog(null, '商品を1つ以上選択してください', 'btn-close');
             return;
         }
         if (this.upper_limit < this.quantity_to_select) {
-            alert('枚数は合計' + this.upper_limit + '枚以内で選択してください');
+            cart.showErrorDialog(null, '枚数は合計' + this.upper_limit + '枚以内で選択してください', 'btn-close');
             return;
         }
         this.venuePresenter.setStockType(this.stock_type);
@@ -573,11 +648,11 @@ cart.OrderFormPresenter.prototype = {
     onEntrustPressed: function () {
         this.calculateQuantityToSelect();
         if (this.quantity_to_select == 0) {
-            alert('商品を1つ以上選択してください');
+            cart.showErrorDialog(null, '商品を1つ以上選択してください', 'btn-close');
             return;
         }
         if (this.upper_limit < this.quantity_to_select) {
-            alert('枚数は合計' + this.upper_limit + '枚以内で選択してください');
+            cart.showErrorDialog(null, '枚数は合計' + this.upper_limit + '枚以内で選択してください', 'btn-close');
             return;
         }
         this.setSeats([]);
@@ -595,6 +670,7 @@ cart.OrderFormPresenter.prototype = {
         });
     },
     doOrder: function () {
+        var performance = cart.app.performance;
         var values = this.orderForm.serialize();
         $.ajax({
             url: order_url, //this is global variable
@@ -603,9 +679,10 @@ cart.OrderFormPresenter.prototype = {
             type: 'POST',
             success: function(data, textStatus, jqXHR) {
                 if (data.result == 'OK') {
-                    cart.proceedToCheckout(data);
+                    cart.proceedToCheckout(performance, data);
                 } else {
-                    cart.showErrorDialog();
+                    var japanized_message = cart.order_messages[data.reason];
+                    cart.showErrorDialog(japanized_message.title, japanized_message.message, 'btn-redo');
                 }
             }
         });
@@ -708,16 +785,16 @@ cart.OrderFormView = Backbone.View.extend({
         name.text(product.get("name"));
         var payment = $('<span class="productPrice"></span>');
         payment.text('￥' + product.get("price"));
-        var quantity = $('<span class="productQuantity">');
+        var quantity = $('<span class="productQuantity"></span>');
         var pullDown = $('<select />').attr('name', 'product-' + product.id);
         for (var i = 0; i < upper_limit+1; i++) {
             $('<option></option>').text(i).val(i).appendTo(pullDown);
         }
         cart.util.render_template_into(quantity, product.get("unit_template"), { num: pullDown });
         return $('<li class="productListItem"></li>')
-            .append(name)
+            .append(quantity)
             .append(payment)
-            .append(quantity);
+            .append(name);
     }
 });
 

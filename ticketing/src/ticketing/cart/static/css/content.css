@@ -1640,7 +1640,6 @@
 
 #selectSeatType .seatListContainer li.selected .seatListItemAux {
   height: 0px;
-	padding-right: 20px;
 	overflow: hidden;
 }
 
@@ -1702,6 +1701,24 @@
 
 #selectSeatType.blur .selectProduct .btn-buy {
 	background-image: url(../img/settlement/btn_buy.small.d.gif);
+}
+
+.selectProduct ul.productList {
+	padding: 2px 8px;
+}
+
+.selectProduct ul.productList li.productListItem {
+	padding: 2px 2px;	
+}
+
+.selectProduct ul.productList li.productListItem .productPrice {
+	padding-left: 4px;
+	padding-right: 4px;
+	float: right;
+}
+
+.selectProduct ul.productList li.productListItem .productQuantity {
+	float: right;
 }
 
 #selectBuy {
