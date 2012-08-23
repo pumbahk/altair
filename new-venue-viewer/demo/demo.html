@@ -100,7 +100,19 @@ function loadVenue() {
       x: 430, y: 400
     },
     dataSource: {
-      drawing: "data/xebio-arena/drawings/root.xml",
+      drawing: function(key) {
+        return function (next, error) {
+          $.ajax({
+            type: 'get',
+            url: "data/xebio-arena/drawings/" + key + ".xml",
+            dataType: 'xml',
+            success: function(xml) {
+              next(xml);
+            },
+            error: function(xhr, text) { throw new Error("Failed to load drawing data (reason: " + text + ")"); }
+          });
+        }
+      },
       metadata: "data/xebio-arena/data.json",
       seats: function (next, error) {
         $.ajax({
@@ -129,21 +141,24 @@ function loadVenue() {
       }
     },
     callbacks: {
-      changeCurrentClassName: function (parent_list) {
+      pageChanging: function (newPage) {
+        var parentList = this.getParents();
         var holder = $("#current-class-name-holder");
         holder.empty();
-        for (var i=0,l=parent_list.length; i<l; i++) {
-          var callback = parent_list[i][0];
-          var txt = parent_list[i][1];
-          if (i == l-1) {
-            holder.append($("<b>"+txt+"</b>"));
-          } else {
-            holder.append($("<a href='javascript:void(0)'>"+txt+"</a>").bind("click", callback));
-            holder.append(' &gt; ');
-          }
+        var self = this;
+        for (var i = 0, l = parentList.length; i < l; i++) {
+          (function (parent) {
+            var pageData = self.pages[parent];
+            holder.append($("<a href='javascript:void(0)'></a>").text(pageData.name).bind("click", function () {
+              self.navigate(parent);
+            }));
+          })(parentList[i]);
+          holder.append(' &gt; ');
         }
+        var currentPageData = this.pages[this.currentPage];
+        holder.append($('<span></span>').text(currentPageData.name));
         var back_btn = $("#back-button");
-        if (parent_list.length == 1) {
+        if (parentList.length == 1) {
           back_btn.hide();
         } else {
           back_btn.show();

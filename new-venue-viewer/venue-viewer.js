@@ -1,11 +1,939 @@
+(function () {
+var __LIBS__ = {};
+__LIBS__['bYG3W7CH1ZL24TVV'] = (function (exports) { (function () { 
+
+/************** util.js **************/
+exports.eventKey = function Util_eventKey(e) {
+  var shift, ctrl;
+  // Mozilla
+  if (e != null) {
+    keycode = e.which;
+    ctrl    = typeof e.modifiers == 'undefined' ? e.ctrlKey : e.modifiers & Event.CONTROL_MASK;
+    shift   = typeof e.modifiers == 'undefined' ? e.shiftKey : e.modifiers & Event.SHIFT_MASK;
+
+  }
+  // ie
+  else {
+    keycode = event.keyCode;
+    ctrl    = event.ctrlKey;
+    shift   = event.shiftKey;
+
+  }
+
+  keychar = String.fromCharCode(keycode).toUpperCase();
+
+  return {
+    ctrl:    (!!ctrl) || keycode === 17,
+    shift:   (!!shift) || keycode === 16,
+    keycode: keycode,
+    keychar: keychar
+  };
+};
+
+exports.convertToFashionStyle = function Util_convertToFashionStyle(style, gradient) {
+  var fill = function(fill) {
+    switch (fill.type) {
+    case 'flood':
+    default:
+      if (gradient) {
+        return new Fashion.LinearGradientFill(
+          [
+            [0, new Fashion.Color("#fff")],
+            [1, new Fashion.Color(fill.color || "#fff")]
+          ], .125);
+      } else {
+        return new Fashion.FloodFill(new Fashion.Color(fill.color));
+      }
+    case 'linear':
+      return new Fashion.LinearGradientFill(_map(fill.colors, function (c) { return new Fashion.Color(c); }), fill.angle);
+    case 'radial':
+      return new Fashion.LinearGradientFill(_map(fill.colors, function (c) { return new Fashion.Color(c); }), fill.focus);
+    case 'tile':
+      return new Fashion.ImageTileFill(fill.imageData);
+    }
+    return null;
+  };
+
+  var stroke = function(stroke) {
+    return new Fashion.Stroke(
+            [(style.stroke.color || "#000"),
+             (style.stroke.width ? style.stroke.width: 1),
+             (style.stroke.pattern || "solid")].join(' '));
+  };
+
+  return {
+    "fill": style.fill ? fill(style.fill): null,
+    "stroke": style.stroke ? stroke(style.stroke): null
+  };
+};
+
+exports.convertFromFashionStyle = function (style) {
+  return {
+    text: null,
+    text_color: null,
+    fill: 
+      style.fill instanceof Fashion.FloodFill ?
+        { type: 'flood', color: style.fill.color._toString() }:
+      style.fill instanceof Fashion.LinearGradientFill ?
+        { type: 'linear', colors: _map(style.fill.colors, function (c) { return c._toString() }),
+          angle: style.fill.angle }:
+      style.fill instanceof Fashion.RadialGradientFill ?
+        { type: 'radial', colors: _map(style.fill.colors, function (c) { return c._toString() }),
+          focus: style.fill.focus }:
+      style.fill instanceof Fashion.ImageTileFill ?
+        { type: 'tile', imageData: style.imageData }:
+      null,
+    stroke:
+      style.stroke ?
+        { color: style.stroke.color._toString(), width: style.stroke.width,
+          pattern: style.stroke.pattern }:
+        null
+  };
+};
+
+exports.allAttributes = function Util_allAttributes(el) {
+  var rt = {}, attrs=el.attributes, attr;
+  for (var i=0, l=attrs.length; i<l; i++) {
+    attr = attrs[i];
+    rt[attr.nodeName] = attr.nodeValue;
+  }
+  return rt;
+};  
+
+exports.makeHitTester = function Util_makeHitTester(a) {
+  var pa = a.position(),
+  sa = a.size(),
+  ax0 = pa.x,
+  ax1 = pa.x + sa.x,
+  ay0 = pa.y,
+  ay1 = pa.y + sa.y;
+
+  return function(b) {
+    var pb = b.position(),
+    sb = b.size(),
+    bx0 = pb.x,
+    bx1 = pb.x + sb.x,
+    by0 = pb.y,
+    by1 = pb.y + sb.y;
+
+    return ((((ax0 < bx0) && (bx0 < ax1)) || (( ax0 < bx1) && (bx1 < ax1)) || ((bx0 < ax0) && (ax1 < bx1))) && // x
+            (((ay0 < by0) && (by0 < ay1)) || (( ay0 < by1) && (by1 < ay1)) || ((by0 < ay0) && (ay1 < by1))));  // y
+  }
+};
+ })(); return exports; })({});
+__LIBS__['Y_GP_7P8ZJCN3XN9'] = (function (exports) { (function () { 
+
+/************** CONF.js **************/
+exports.DEFAULT = {
+  ZOOM_RATIO: 0.8,
+  STYLES: {
+    label: {
+      fill: new Fashion.Color('#000'),
+      stroke: null
+    },
+    seat: {
+      fill: new Fashion.Color('#fff'),
+      stroke: new Fashion.Color('#000')
+    },
+    glayout: {
+      fill: new Fashion.FloodFill(new Fashion.Color('#ccc')),
+      stroke: new Fashion.Stroke(new Fashion.Color('#999'), 2)
+    }
+  },
+
+  MASK_STYLE: {
+    fill:   new Fashion.FloodFill(new Fashion.Color("#0064ff80")),
+    stroke: new Fashion.Stroke(new Fashion.Color("#0080FF"), 2)
+  },
+
+  SEAT_STYLE: {
+    text_color: "#000",
+    fill:   { color: "#fff" }
+  },
+
+  OVERLAYS: {
+    highlighted: {
+      fill: null,
+      stroke: { color: "#F63", width: 3, pattern: 'solid' }
+    },
+    highlighted_block: {
+      fill: null,
+      stroke: { color: "#F44", width: 5, pattern: 'solid' }
+    }
+  },
+
+  AUGMENTED_STYLE: {
+    selected: {
+      text_color: "#FFF",
+      fill:   { color: "#009BE1" },
+      stroke: { color: "#FFF", width: 3 }
+    },
+    unselectable: {
+      text_color: "#888",
+      fill:   { color: "#eee" },
+      stroke: { color: "#ccc" }
+    }
+  }
+};
+ })(); return exports; })({});
+__LIBS__['qL2OQ1PHPNM00WFF'] = (function (exports) { (function () { 
+
+/************** seat.js **************/
+var util = __LIBS__['bYG3W7CH1ZL24TVV'];
+var CONF = __LIBS__['Y_GP_7P8ZJCN3XN9'];
+
+function clone(obj) {
+  return $.extend({}, obj);
+}
+
+function mergeStyle(a, b) {
+  return {
+    text: (b.text ? b.text: a.text) || null,
+    text_color: (b.text_color ? b.text_color: a.text_color) || null,
+    fill: (b.fill ? b.fill: a.fill) || null,
+    stroke: (b.stroke ? b.stroke: a.stroke) || null
+  };
+}
+
+function copyShape(shape) {
+  if (shape instanceof Fashion.Path) {
+    return new Fashion.Path({ points: shape.points(), style:shape.style() });
+  } else if (shape instanceof Fashion.Rect) {
+    return new Fashion.Rect({ position: shape.position(), size: shape.size() });
+  }
+  return null;
+}
+
+var Seat = exports.Seat = function Seat () {
+  this.id = null;
+  this.editor = null;
+  this.type = null;
+  this.floor = null;
+  this.gate = null;
+  this.block = null;
+  this.events = {};
+  this._styleTypes = [];
+  this.mata = null;
+  this.shape = null;
+  this.originalStyle = null;
+  this._highlightedSeats = [];
+  this._selected = false;
+  this.label = null;
+  this._overlays = {};
+
+  this.init.apply(this, arguments);
+};
+
+Seat.prototype.init = function Seat_init(id, shape, meta, parent, events) {
+  var self    = this;
+  this.id     = id;
+  this.parent = parent;
+  this.shape  = shape;
+  this.meta   = meta;
+
+  this.type = this.parent.stockTypes[meta.stock_type_id];
+
+  var style = mergeStyle(
+    CONF.DEFAULT.SEAT_STYLE,
+    util.convertFromFashionStyle(shape.style()));
+
+  if (this.type)
+    style = mergeStyle(style, this.type.style);
+
+  this.originalStyle = style;
+
+  if (events) {
+    for (var i in events) {
+      (function(i) {
+        self.events[i] = function(evt) {
+          if (self.parent.dragging || self.parent.animating)
+            return;
+          events[i].apply(self, arguments);
+        };
+      }).call(this, i);
+    }
+    this.shape.addEvent(this.events);
+  }
+
+  this.refresh();
+};
+
+Seat.prototype.stylize = function Seat_stylize() {
+  var style = this.originalStyle;
+  for (var i = 0; i < this._styleTypes.length; i++) {
+    var styleType = this._styleTypes[i];
+    style = mergeStyle(style, CONF.DEFAULT.AUGMENTED_STYLE[styleType]);
+  }
+  this.shape.style(util.convertToFashionStyle(style));
+
+  if (style.text) {
+    if (!this.label) {
+      var p = this.shape.position(),
+          s = this.shape.size();
+      this.label = this.parent.drawable.draw(
+        new Fashion.Text({
+          position: {
+            x: p.x,
+            y: p.y + (s.y * 0.75)
+          },
+          fontSize: (s.y * 0.75),
+          text: style.text,
+          style: { fill: new Fashion.FloodFill(new Fashion.Color(style.text_color)) }
+        })
+      );
+      this.label.addEvent(this.events);
+    } else {
+      this.label.text(style.text);
+      this.label.style({ fill: new Fashion.FloodFill(new Fashion.Color(style.text_color)) });
+    }
+  } else {
+    if (this.label) {
+      this.parent.drawable.erase(this.label);
+      this.label = null;
+    }
+  }
+};
+
+Seat.prototype.addOverlay = function Seat_addOverlay(value) {
+  if (!(value in this._overlays)) {
+    var shape = copyShape(this.shape)
+    shape.style(util.convertToFashionStyle(CONF.DEFAULT.OVERLAYS[value]));
+    this._overlays[value] = shape;
+    this.parent.drawable.draw(shape);
+  }
+};
+
+Seat.prototype.removeOverlay = function Seat_removeOverlay(value) {
+  var shape = this._overlays[value];
+  if (shape !== void(0)) {
+    this.parent.drawable.erase(shape);
+    delete this._overlays[value];
+  }
+};
+
+Seat.prototype.addStyleType = function Seat_addStyleType(value) {
+  this._styleTypes.push(value);
+  this.stylize();
+};
+
+Seat.prototype.removeStyleType = function Seat_removeStyleType(value) {
+  for (var i = 0; i < this._styleTypes.length;) {
+    if (this._styleTypes[i] == value)
+      this._styleTypes.splice(i, 1);
+    else
+      i++;
+  }
+  this.stylize();
+};
+
+Seat.prototype.refreshDynamicStyle = function Seat_refreshDynamicStyle() {
+  if (!this.selectable())
+    this.addStyleType('unselectable');
+  else
+    this.removeStyleType('unselectable');
+};
+
+Seat.prototype.refresh = function Seat_refresh() {
+  this.refreshDynamicStyle();
+  this.stylize();
+};
+
+Seat.prototype.__selected = function Seat___selected() {
+  this.addStyleType('selected');
+  this._selected = true;
+};
+
+Seat.prototype.__unselected = function Seat___unselected() {
+  this.removeStyleType('selected');
+  this._selected = false;
+};
+
+Seat.prototype.selected = function Seat_selected(value) {
+  if (value !== void(0))
+    this.parent._select(this, value);
+  return this._selected;
+};
+
+Seat.prototype.selectable = function Seat_selectable() {
+  return !this.parent.callbacks.selectable ||
+    this.parent.callbacks.selectable(this.parent, this);
+};
+
+var SeatAdjacencies = exports.SeatAdjacencies = function SeatAdjacencies(parent) {
+  this.tbl = [];
+  this.src = parent.dataSource.seatAdjacencies;
+  this.availableAdjacencies = parent.availableAdjacencies;
+  this.callbacks = parent.callbacks;
+};
+
+SeatAdjacencies.prototype.getCandidates = function SeatAdjacencies_getCandidates(id, length, next, error) {
+  if (length == 1)
+    return next([[id]]);
+
+  var tbl = this.tbl[length];
+  if (tbl !== void(0)) {
+    next(tbl[id] || []);
+    return;
+  }
+  this.callbacks.loadstart && this.callbacks.loadstart('seatAdjacencies');
+  var self = this;
+  this.src(function (data) {
+    var _data;
+    if (data === void(0) || (_data = data[length]) === void(0)) {
+      error("Invalid adjacency data");
+      return;
+    }
+    tbl = self.tbl[length] = self.convertToTable(length, _data);
+    next(tbl[id] || []);
+  }, error, length);
+};
+
+SeatAdjacencies.prototype.convertToTable = function SeatAdjacencies_convertToTable(len, src) {
+  var rt = {};
+
+  for (var i = 0, l = src.length; i < l; i++) {
+    // sort by string.
+    src[i] = src[i].sort();
+    for (var j = 0;j < len;j++) {
+      var id  =  src[i][j];
+      if (!rt[id]) rt[id] = [];
+      rt[id].push(src[i]);
+    }
+  }
+
+  // sort by string-array.
+  for (var i in rt) rt[i].sort().reverse();
+
+  return rt;
+};
+
+/*
+// test code
+// ad == ad2
+
+var ad = new SeatAdjacencies({"3": [["A1", "A2", "A3"], ["A2", "A3", "A4"], ["A3", "A4", "A5"], ["A4", "A5", "A6"]]});
+var ad2 = new SeatAdjacencies({"3": [["A1", "A3", "A2"], ["A2", "A3", "A4"], ["A4", "A3", "A5"], ["A6", "A5", "A4"]]});
+console.log(ad);
+console.log(ad2);
+*/
+/*
+ * vim: sts=2 sw=2 ts=2 et
+ */
+ })(); return exports; })({});
+
+
+/************** venue-viewer.js **************/
 (function ($) {
 
-  include("classify.js");
-  include("helpers.js");
 
-  var CONF = require('CONF.js');
-  var seat = require('seat.js');
-  var util = require('util.js');
+
+/************** classify.js **************/
+
+
+/************** misc.js **************/
+// detect atomic or not
+function _atomic_p(obj) {
+  var t;
+  return ( obj === null || obj === void(0) ||
+           (t = typeof obj) === 'number' ||
+           t === 'string' ||
+           t === 'boolean' ||
+           ((obj.valueOf !== Object.prototype.valueOf) &&
+            !(obj instanceof Date)));
+};
+
+
+// make deep clone of the object
+function _clone(obj, target) {
+  if (_atomic_p(obj)) return obj;
+
+  // if target is given. clone obj properties into it.
+  var clone, p;
+  if (obj instanceof Date) {
+    clone = new Date(obj.getTime());
+    if (target instanceof Date) {
+      for (p in target) if (target.hasOwnProperty(p)) clone[p] = _clone(target[p], clone[p]);
+    }
+  } else if (typeof obj === 'function') {
+    clone = function(){return obj.apply(this, arguments);};
+    if (typeof target === 'function') {
+      for (p in target) if (target.hasOwnProperty(p)) clone[p] = _clone(target[p], clone[p]);
+    }
+  } else {
+    clone = (!_atomic_p(target) && typeof target !== 'function') ?
+      target : new obj.constructor();
+  }
+
+  for (p in obj)
+    if (obj.hasOwnProperty(p))
+      clone[p] = _clone(obj[p], clone[p]);
+
+  return clone;
+};
+
+function xparseInt(str, radix) {
+  var retval = parseInt(str, radix);
+  if (isNaN(retval))
+    throw new ValueError("Invalid numeric string: " + str);
+  return retval;
+};
+
+function _repeat(str, length) {
+  var retval = '';
+  while (length) {
+    if (length & 1)
+      retval += str;
+    str += str;
+    length >>= 1;
+  }
+  return retval;
+};
+
+function _lpad(str, length, pad) {
+  return _repeat(pad, length - str.length) + str;
+};
+
+function _bindEvent(target, type, f) {
+  if (typeof BROWSER == 'undefined')
+    return;
+
+  if (BROWSER.identifier == 'ie' && BROWSER.version < 9)
+    target.attachEvent('on' + type, f);
+  else
+    target.addEventListener(type, f, false);
+}
+
+function _unbindEvent(target, type, f) {
+  if (typeof BROWSER == 'undefined')
+    return;
+
+  if (BROWSER.identifier == 'ie' && BROWSER.version < 9)
+    target.detachEvent('on' + type, f);
+  else
+    target.removeEventListener(type, f, false);
+}
+
+var _escapeXMLSpecialChars = (function () {
+  var specials = new RegExp("[<>&'\"]"),
+      map = ['', '&lt;', '&gt;', '&amp;', '&apos;', '&quot;', ''];
+  return function (str) {
+    if (typeof str != 'string')
+      str = str.toString();
+    return str.replace(specials, function(x) { return map[special.source.indexOf(x)] });
+  };
+})();
+
+function _clip(target, min, max) {
+  return Math.min(Math.max(target, min), max);
+}
+
+function _clipPoint(target, min, max) {
+  return { x: _clip(target.x, min.x, max.x),
+           y: _clip(target.y, min.y, max.y) };
+}
+
+function _addPoint(lhs, rhs) {
+  return { x: lhs.x + rhs.x, y: lhs.y + rhs.y };
+}
+
+function _subtractPoint(lhs, rhs) {
+  return { x: lhs.x - rhs.x, y: lhs.y - rhs.y };
+}
+
+function _indexOf(array, elem, fromIndex) {
+  if (array instanceof Array && 'indexOf' in Array.prototype) {
+    return array.indexOf(elem, fromIndex);
+  }
+  for (var i = Math.max(fromIndex || 0, 0); i < array.length; i++) {
+    if (array[i] === elem)
+      return i;
+  }
+  return -1;
+}
+
+var _class = (function() {
+  function __super__() {
+    return this.constructor.__super__.prototype;
+  }
+
+  function inherits(_class, parent) {
+    _class.__super__ = parent;
+
+    var f = function() {};
+    f.prototype = parent.prototype;
+    f.prototype.constructor = parent;
+    _class.prototype = new f();
+    _class.prototype.__super__ = __super__;
+
+    var iiop = _class['%%INIT_INSTANCE_ORIGIN_PROPS'];
+
+    _class['%%INIT_INSTANCE_ORIGIN_PROPS'] = function(inst) {
+      var parent_iiop = parent['%%INIT_INSTANCE_ORIGIN_PROPS'];
+      if (parent_iiop) parent_iiop(inst);
+      iiop(inst);
+    };
+
+    return _class;
+
+  };
+
+  function method(_class, name, func) {
+    func.__class__ = _class;
+    _class.prototype[name] = func;
+  };
+
+  var genclassid = (function() {
+    var id = 0;
+    return function getclassid() {
+      var ret = "%%ANONYMOUS_CLASS_"+id+"%%"; ++id;
+      return ret;
+    };
+  })();
+
+  function mixin(_class, include) {
+    var incproto = include.prototype;
+    for (var i in incproto) {
+      if (i == 'init') {
+        _class.prototype['init%%' + include['%%CLASSNAME%%']] = incproto[i];
+      } else if (i !== "__super__" && i !== "constructor") {
+        _class.prototype[i] = incproto[i];
+      }
+    }
+
+    var iiop = _class['%%INIT_INSTANCE_ORIGIN_PROPS'];
+    _class['%%INIT_INSTANCE_ORIGIN_PROPS'] = function(inst) {
+      var include_iiop = include['%%INIT_INSTANCE_ORIGIN_PROPS'];
+      if (include_iiop) include_iiop(inst);
+      iiop(inst);
+    };
+  };
+
+  function check_interface(_class, impl) {
+    for (var i in impl.prototype) {
+      if (impl.prototype.hasOwnProperty(i)) {
+        if (!_class.prototype.hasOwnProperty(i)) {
+          throw new DeclarationError(
+              'The class \'' + _class['%%CLASSNAME%%'] +
+              '\' must provide property or method \'' + i +
+              '\' imposed by \'' + impl['%%CLASSNAME%%'] +'".');
+        }
+      }
+    }
+  };
+
+  return function _class(name, definition) {
+    var __class__, i, j, l, c, def, type;
+
+    var props = {};
+    var class_props = {};
+    var methods = {};
+    var class_methods = {};
+    var parent = Object;
+    var mixins = [];
+    var interfaces = [];
+
+    for (i in definition) {
+      switch (i) {
+      case "props":
+        def = definition[i];
+        for (j in def) {
+          if (def.hasOwnProperty(j))
+            props[j] = def[j];
+        }
+        break;
+      case "class_props":
+        class_props = definition[i];
+        break;
+      case "methods":
+        methods = definition[i];
+        break;
+      case "class_methods":
+        class_methods = definition[i];
+        break;
+      case "parent":
+        parent = definition[i];
+        break;
+      case "interfaces":
+        interfaces = definition[i];
+        break;
+      case "mixins":
+        mixins = definition[i];
+        break;
+      default:
+        throw new ArgumentError(
+            'You gave \'' + i + '\' as definition, but the _class() excepts' +
+            ' only \'props\',\'class_props\',\'methods\',\'class_methods\',\'parent\',\'interfaces\',\'mixins\'.');
+
+      }
+    }
+
+    __class__ = function __Class__(arg) {
+      __class__['%%INIT_INSTANCE_ORIGIN_PROPS'](this);
+      if (this.init) this.init.apply(this, arguments);
+      else           _clone(arg, this);
+    };
+
+    __class__['%%INIT_INSTANCE_ORIGIN_PROPS'] =
+      function(inst) {
+        for (var p in props) {
+          inst[p] = _clone(props[p]);
+        }
+      };
+
+    inherits(__class__, parent);
+
+    for (j = 0, l = mixins.length; j < l; j++) {
+      mixin(__class__, mixins[j]);
+    }
+
+    for (i in methods) {
+      if (methods.hasOwnProperty(i)) {
+        method(__class__, i, methods[i]);
+      }
+    }
+    __class__.prototype.constructor = __class__;
+
+    __class__['%%CLASSNAME%%'] = name || genclassid();
+    for (i in class_methods) {
+      __class__[i] = class_methods[i];
+    }
+
+    for (j=0, l=interfaces.length; j<l; j++) {
+      check_interface(__class__, interfaces[j]);
+    }
+
+    for (i in class_props) {
+      __class__[i] = class_props[i];
+    }
+
+    class_methods['init'] && class_methods.init.call(__class__);
+
+    return __class__;
+  };
+
+})();
+/*
+ * vim: sts=2 sw=2 ts=2 et
+ */
+
+
+/************** helpers.js **************/
+var parseCSSStyleText = (function () {
+  var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
+  var regexp_for_values = /(?:((?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+)|"((?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*)"|'((?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*)')(?:\s+|$)/g;
+
+  function unescape(escaped) {
+    return escaped.replace(/(?:\\(0{0,2}d[89ab][0-9A-Fa-f]{2})(?:\r\n|[ \n\r\t\f])?)?\\([0-9A-Fa-f]{1,6})(?:\r\n|[ \n\r\t\f])?|\\([^\n\r\f0-9A-Fa-f])/g, function(_, a, b, c) {
+      if (a !== void(0)) {
+        var c2 = parseInt(b, 16) ;
+        if (c2 < 0xdc00 || c2 > 0xdfff)
+          throw new ValueError("Invalid surrogate pair");
+        return String.fromCharCode((((parseInt(a, 16) & 0x3ff) << 10) | (c2 & 0x3ff)) + 0x10000);
+      } else if (b !== void(0)) {
+        return String.fromCharCode(parseInt(b, 16));
+      } else if (c !== void(0)) {
+        return c;
+      }
+    });
+  }
+
+  return function parseCSSStyleText(str) {
+    var retval = {};
+    var r = str.replace(regexp_for_styles, function (_, k, v) {
+      var values = [];
+      var r = v.replace(regexp_for_values, function (_, a, b, c) {
+        if (a !== void(0)) {
+          values.push(unescape(a));
+        } else if (b !== void(0)) {
+          values.push(unescape(b));
+        } else if (c !== void(0)) {
+          values.push(unescape(c));
+        }
+        return '';
+      });
+      if (r != '')
+        throw new ValueError("Invalid CSS rule string: " + str);
+      retval[k] = values;
+      return '';
+    });
+    if (r != '')
+      throw new ValueError("Invalid CSS rule string: " + str);
+    return retval;
+  };
+})();
+
+function parseDefs(node, defset) {
+  function parseStops(def) {
+    var ref = typeof def.getAttributeNS == 'function' ?
+      def.getAttributeNS('http://www.w3.org/1999/xlink', 'href'):
+      def.getAttribute("xlink:href");
+    if (ref) {
+      if (typeof def.ownerDocument.getElementById == 'function')
+        def = def.ownerDocument.getElementById(ref.substring(1));
+      else
+        def = def.ownerDocument.selectSingleNode("*//*[@id='" + ref.substring(1) + "']");
+    }
+    var stops = def.childNodes;
+    var colors = [];
+    for (var i = 0; i < stops.length; i++) {
+      var node = stops[i];
+      if (node.nodeType != 1)
+        continue;
+      if (node.nodeName == 'stop') {
+        var styles = parseCSSStyleText(node.getAttribute('style'));
+        colors.push([
+          parseFloat(node.getAttribute('offset')),
+          new Fashion.Color(styles['stop-color'][0])]);
+      }
+    }
+    return colors;
+  }
+
+  var defs = node.childNodes;
+  for (var i = 0; i < defs.length; i++) {
+    var def = defs[i];
+    if (def.nodeType != 1)
+      continue;
+    var id = def.getAttribute('id');
+    switch (def.nodeName) {
+    case 'linearGradient':
+      var x1 = parseFloat(def.getAttribute("x1")), y1 = parseFloat(def.getAttribute("y1")),
+      x2 = parseFloat(def.getAttribute("x2")), y2 = parseFloat(def.getAttribute("y2"));
+      var r = Math.acos((x2 - x1) / Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))) + (y2 - y1 < 0 ? Math.PI: 0);
+      defset[id] = new Fashion.LinearGradientFill(parseStops(def), r / (Math.PI * 2));
+      break;
+    case 'radialGradient':
+      defset[id] = new Fashion.RadialGradientFill(parseStops(def),
+                                                  { x: def.getAttribute('fx') || '50%', y: def.getAttribute('fy') || '50%' });
+      break;
+    }
+  }
+}
+
+function parseCSSAsSvgStyle(str, defs) {
+  var styles = parseCSSStyleText(str);
+  var fill = null;
+  var fillString = styles['fill'];
+  var fillOpacity = null;
+  var fillOpacityString = styles['fill-opacity'];
+  var stroke = null;
+  var strokeString = styles['stroke'];
+  var strokeWidth = null;
+  var strokeWidthString = styles['stroke-width'];
+  var strokeOpacity = null;
+  var strokeOpacityString = styles['stroke-opacity'];
+  var fontSize = null;
+  var fontSizeString = styles['font-size'];
+  if (fillString) {
+    if (fillString[0] == 'none') {
+      fill = false;
+    } else {
+      var g = /url\(#([^)]*)\)/.exec(fillString[0]);
+      if (g) {
+        fill = defs[g[1]];
+        if (!fill)
+          throw new Error();
+      } else {
+        fill = new Fashion.Color(fillString[0]);
+      }
+    }
+  }
+  if (fillOpacityString) {
+    fillOpacity = parseFloat(fillOpacityString[0]);
+  }
+  if (strokeString) {
+    if (strokeString[0] == 'none')
+      stroke = false;
+    else
+      stroke = new Fashion.Color(strokeString[0]);
+  }
+  if (strokeWidthString) {
+    strokeWidth = parseFloat(strokeWidthString[0]);
+  }
+  if (strokeOpacityString) {
+    strokeOpacity = parseFloat(strokeOpacityString[0]);
+  }
+  if (fontSizeString) {
+    fontSize = parseFloat(fontSizeString);
+  }
+  return {
+    fill: fill,
+    fillOpacity: fillOpacity,
+    stroke: stroke,
+    strokeWidth: strokeWidth,
+    strokeOpacity: strokeOpacity,
+    fontSize: fontSize
+  };
+}
+
+function mergeSvgStyle(origStyle, newStyle) {
+  return {
+    fill:          newStyle.fill !== null ? newStyle.fill: origStyle.fill,
+    fillOpacity:   newStyle.fillOpacity !== null ? newStyle.fillOpacity: origStyle.fillOpacity,
+    stroke:        newStyle.stroke !== null ? newStyle.stroke: origStyle.stroke,
+    strokeWidth:   newStyle.strokeWidth !== null ? newStyle.strokeWidth: origStyle.strokeWidth,
+    strokeOpacity: newStyle.strokeOpacity !== null ? newStyle.strokeOpacity: origStyle.strokeOpacity,
+    fontSize:      newStyle.fontSize !== null ? newStyle.fontSize: origStyle.fontSize
+  };
+}
+
+function buildStyleFromSvgStyle(svgStyle) {
+  return {
+    fill:
+    svgStyle.fill ?
+      (svgStyle.fill instanceof Fashion.Color ?
+       new Fashion.FloodFill(
+         svgStyle.fill.replace(
+           null, null, null,
+           svgStyle.fillOpacity ? svgStyle.fillOpacity * 255: 255)):
+       svgStyle.fill):
+    null,
+    stroke: 
+    svgStyle.stroke ? new Fashion.Stroke(
+      svgStyle.stroke.replace(
+        null, null, null,
+        svgStyle.fillOpacity ? svgStyle.fillOpacity * 255: 255),
+      svgStyle.strokeWidth ? svgStyle.strokeWidth: 1,
+      svgStyle.strokePattern ? svgStyle.strokePattern: null):
+    null,
+    visibility: true
+  };
+}
+
+function collectText(node) {
+  var children = node.childNodes;
+  for (var i=0, l=children.length, rt=""; i<l; i++) {
+    var n = children[i];
+    var name = n.nodeName;
+    if (name === '#text'){
+      rt += n.nodeValue;
+    } else {
+      rt += collectText(n);
+    }
+  }
+  return rt;
+}
+
+function copyShape(shape) {
+  if (shape instanceof Fashion.Path) {
+    return new Fashion.Path({ points: shape.points(), style:shape.style() });
+  } else if (shape instanceof Fashion.Rect) {
+    return new Fashion.Rect({ position: shape.position(), size: shape.size() });
+  }
+  return null;
+}
+
+function _map(arr, fn) {
+  var retval = new Array(arr.length);
+  for (var i = 0; i < arr.length; i++) {
+    retval[i] = fn(arr[i]);
+  }
+  return retval;
+}
+
+  var CONF = __LIBS__['Y_GP_7P8ZJCN3XN9'];
+  var seat = __LIBS__['qL2OQ1PHPNM00WFF'];
+  var util = __LIBS__['bYG3W7CH1ZL24TVV'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -868,3 +1796,4 @@
 /*
  * vim: sts=2 sw=2 ts=2 et
  */
+})();
