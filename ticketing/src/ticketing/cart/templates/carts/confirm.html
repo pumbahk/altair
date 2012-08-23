@@ -140,7 +140,6 @@ shipping = cart.shipping_address
 			<div class="confirmBox">
 				<div class="confirmBoxInner">
 					<h3><img src="${request.static_url('ticketing.cart:static/img/settlement/title_customer_info.gif')}" alt="購入者情報" width="103" height="30" /></h3>
-					<h3>購入者情報</h3>
 					<table id="confirmDelivery" summary="配送先情報">
 						<tr>
 							<th scope="row">氏名（漢字）</th>
@@ -151,7 +150,7 @@ shipping = cart.shipping_address
                             <td>${shipping.last_name_kana} ${shipping.first_name_kana}</td>
 						</tr>
 						<tr>
-							<th scope="row">電話番号（自宅）</th>
+							<th scope="row">電話番号</th>
                             <td>${shipping.tel_1}</td>
 						</tr>
                         <!--
@@ -161,8 +160,9 @@ shipping = cart.shipping_address
 						</tr>
                         -->
 						<tr>
-							<th scope="row">配送先住所</th>
-                            <td>${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}</td>
+							<th scope="row">配送先住所 <br />※配送受取を選択した場合</th>
+                            <td>${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}
+							</td>
 						</tr>
 					</table>
 				</div>
@@ -226,10 +226,15 @@ shipping = cart.shipping_address
 					</div>
 				</div>
 			</div>
-			<p class="align2">
+		<table style="margin-left: auto; margin-right: auto;"><tr><td style="width: 320px; text-align: center;">
         <input id="btn-back" type="submit" name="back" value="" />
+		<br />
+		※ここまでのお申し込みがキャンセルになります。 &nbsp;&nbsp;&nbsp;&nbsp;
+		</td><td style="width: 320px; text-align: center;">
         <input id="btn-complete" type="submit" value="" />
-      </p>
+		<br />
+		&nbsp;
+		</td></tr></table>
     </form>
 	</div>
 	<!-- ========== /main ========== -->

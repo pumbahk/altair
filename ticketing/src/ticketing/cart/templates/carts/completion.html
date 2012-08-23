@@ -117,23 +117,21 @@
 				  <div class="confirm-message">
 					<ul>
 
-					  <li>
-ブラウザの「戻る」ボタンを使用するとエラーになります。前ページに戻る場合は画面内に表示されているボタンを使用して下さい。なお、ページによってはブラウザの「更新」ボタンを使用するとエラーになる場合があります。
-					  </li>
 					  <li>お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。<a href="mailto:89ers@ticketstar.jp">89ers@ticketstar.jp</a> までご連絡ください。<br />
 						（お問い合わせの際は、お申込み時のお名前と電話番号を記載お願いします）</li>
 					  <li>お申込内容は、「<a href="#">履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。</li>
 					</ul>
 
 				  </div>
-
+              </div>
+            </div>
+			<div style="width: 800px; text-align: center; margin-left: auto; margin-right: auto;">
 				  <div class="next-action">
 					<a href="http://89ers.tstar.jp/top"
 					   ><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_back_to_top.gif')}"/></a>
 					<a href="${request.route_url("cart.index", event_id=order.performance.event.id)}"
 					   ><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_other_ticket.gif')}"/></a>
 				  </div>
-              </div>
             </div>
 
 	</div>
