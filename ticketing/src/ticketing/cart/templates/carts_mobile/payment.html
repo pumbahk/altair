@@ -1,6 +1,7 @@
-<%inherit file="./base.html"/>
+<%inherit file="./base_89ers.html"/>
+<%namespace file="./tags_mobile.html" name="mobile" />
 
-<div style="background-image:url(${request.static_url('ticketing.cart:static/img/mobile/bg_bar.gif')});background-color:#bf0000" bgcolor="#bf0000" background="${request.static_url('ticketing.cart:static/img/mobile/bg_bar.gif')}"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>チケット購入</font></div>
+<%mobile:header>チケット購入</%mobile:header>
 
 <form method="post" action="${request.url}">
 <div>
@@ -54,6 +55,16 @@
 </div>
 
 <div>
+<font color="#ffbf00">■</font>${form['mail_address2'].label}
+</div>
+<div>
+  ${form['mail_address2']}
+  <div style="color:#ff0000">
+    ${h.error_list(request, form, 'mail_address2')}
+  </div>
+</div>
+
+<div>
 <font color="#ffbf00">■</font>住所
 </div>
 <div>
@@ -96,6 +107,7 @@
     ${h.error_list(request, form, 'tel')}
   </div>
 </div>
+<!--
 <div>
   ${form['fax'].label}<br/>
   ${form['fax']}
@@ -103,6 +115,7 @@
     ${h.error_list(request, form, 'fax')}
   </div>
 </div>
+-->
 
 <hr />
 <div>
