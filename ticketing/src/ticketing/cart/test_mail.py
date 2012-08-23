@@ -286,9 +286,9 @@ class SendCompleteMailTest(unittest.TestCase):
         from ticketing.cart.plugins.multicheckout import PAYMENT_ID
         self.assertEquals(payment_method.payment_plugin_id, PAYMENT_ID)
 
-        delivery_method = DeliveryMethod(delivery_plugin_id=5, name=u"QR受け取り")
-        from ticketing.cart.plugins.qr import PLUGIN_ID
-        self.assertEquals(delivery_method.delivery_plugin_id, PLUGIN_ID)
+        delivery_method = DeliveryMethod(delivery_plugin_id=4, name=u"QR受け取り")
+        from ticketing.cart.plugins.qr import DELIVERY_PLUGIN_ID
+        self.assertEquals(delivery_method.delivery_plugin_id, DELIVERY_PLUGIN_ID)
 
         method_pair = PaymentDeliveryMethodPair(payment_method=payment_method, 
                                                 delivery_method=delivery_method)
