@@ -4,13 +4,13 @@ from pyramid.renderers import render
 def includeme(config):
     config.add_route("dummy.cart.payment", "/dummy/payment")
     config.add_view(payment_view, route_name="dummy.cart.payment")
+    config.add_route("dummy.payment.confirm", "/dummy/confirm")
+    config.add_view(confirm_view, route_name="dummy.payment.confirm")
     config.add_route("dummy.payment.finish", "/dummy/completed")
     config.add_view(complete_view, route_name="dummy.payment.finish")
 
-def _dummy_order():
-    import mock
+def _dummy_performance():
     from datetime import datetime
-    order = mock.Mock()
     class performance:
         name = "Hey"
         start_on = datetime.now()
@@ -19,6 +19,12 @@ def _dummy_order():
             id = 4
         class venue:
             name = "venue"
+    return performance
+
+def _dummy_order():
+    import mock
+    order = mock.Mock()
+    order.performance = _dummy_performance()
     order.ordered_products = []
     order.transaction_fee = 100
     order.system_fee = 200
@@ -26,9 +32,34 @@ def _dummy_order():
     order.total_amount = 500
     order.payment_delivery_pair.payment_method.payment_plugin_id = 1
     order.payment_delivery_pair.delivery_method.delivery_plugin_id = 1
-    order.performance = performance
     return order
 
+def _dummy_cart():
+    import mock
+    cart = mock.Mock()
+    cart.performance = _dummy_performance()
+    cart.products = []
+    cart.transaction_fee = 100
+    cart.system_fee = 200
+    cart.delivery_fee = 300
+    cart.total_amount = 500
+    cart.payment_delivery_pair.payment_method.payment_plugin_id = 1
+    cart.payment_delivery_pair.delivery_method.delivery_plugin_id = 1
+    return cart
+
+def confirm_view(request):
+    import mock
+    from collections import defaultdict
+    with mock.patch("ticketing.cart.rakuten_auth.api.authenticated_user"):
+        form = mock.Mock()
+        cart = _dummy_cart()
+        request.session["order"] = defaultdict(str)
+        magazines = []
+        user = mock.Mock()
+        params = dict(cart=cart, mailmagazines=magazines, user=user, form=form)
+        result = render("carts/confirm.html", params, request=request)
+        return Response(result)
+    
 def complete_view(request):
     import mock
     with mock.patch("ticketing.cart.rakuten_auth.api.authenticated_user"):
