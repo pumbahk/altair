@@ -91,86 +91,99 @@
                     -->
                         <table id="confirmDelivery">
                             <tr>
-                                <th scope="row">購入者氏名(全角かな(例：山田, 太郎))</th>
+                                <th scope="row">購入者氏名(全角)</th>
                                 <td>
                                     <ul>
                                         <li>
                                         ${form['last_name'].label}
                                         ${form['last_name']}
+										(例：山田)
                                         ${h.error_list(request, form, 'last_name')}
                                         </li>
                                         <li>
                                         ${form['first_name'].label}
                                         ${form['first_name']}
+										(例：太郎)
                                         ${h.error_list(request, form, 'first_name')}
                                         </li>
                                     </ul>
                                 </td>
                             </tr>
                             <tr>
-                                <th scope="row">購入者氏名(全角カナ(例：ヤマダ, タロウ))</th>
+                                <th scope="row">購入者氏名(全角カナ)</th>
                                 <td>
                                     <ul>
                                         <li>
                                         ${form['last_name_kana'].label}
                                         ${form['last_name_kana']}
+										(例：ヤマダ)
                                         ${h.error_list(request, form, 'last_name_kana')}
                                         </li>
                                         <li>
                                         ${form['first_name_kana'].label}
                                         ${form['first_name_kana']}
+										(例：タロウ)
                                         ${h.error_list(request, form, 'first_name_kana')}
                                         </li>
                                     </ul>
                                 </td>
                             </tr>
                             <tr>
-                                <th scope="row">${form['mail_address'].label}(半角英数(例:mail@example.ne.jp)）</th>
+                                <th scope="row">${form['mail_address'].label}(半角英数)</th>
                                 <td>
 								  <ul>
 									<li>
                                       ${form['mail_address'].label}
                                       ${form['mail_address']}
+										(例：mail@example.ne.jp)
                                       ${h.error_list(request, form, 'mail_address')}
 									</li>
 									<li>
                                       ${form['mail_address2'].label}
                                       ${form['mail_address2']}
+										(例：mail@example.ne.jp)
                                       ${h.error_list(request, form, 'mail_address2')}
 									</li>
 								  </ul>
                                 </td>
                             </tr>
                             <tr>
-                                <th scope="row">住所(全角かな(例: 1410022,東京都,品川区,東五反田x-xx-xx,yyビルz階 ))</th>
+                                <th scope="row">住所</th>
                                 <td>
                                     <ul>
                                         <li>${form['zip'].label}
                                         ${form['zip']}
+										(例: 1410022)
                                         ${h.error_list(request, form, 'zip')}
                                         </li>
                                         <li>${form['prefecture'].label}
                                         ${form['prefecture']}
+										(例: 東京都)
                                         ${h.error_list(request, form, 'prefecture')}
                                         </li>
                                         <li>${form['city'].label}
                                         ${form['city']}
+										(例: 品川区)
                                         ${h.error_list(request, form, 'city')}
                                         </li>
                                         <li>住所
                                         ${form['address_1']}
-                                        ${form['address_2']}
+										(例: 東五反田x-xx-xx)
+                                        <br />　　<!--スペース2文字-->
+										${form['address_2']}
+										(例: yyビルz階)
                                         ${h.error_list(request, form, 'address_1')}
                                         </li>
                                     </ul>
                                 </td>
                             </tr>
                             <tr>
-                                <th scope="row">電話番号(半角数字(例: 080xxxxyyyy))</th>
+                                <th scope="row">電話番号(半角数字)</th>
                                 <td>
                                     <ul>
                                         <li>${form['tel'].label}
                                           ${form['tel']}
+										  (例: 080xxxxyyyy)
                                           ${h.error_list(request, form, 'tel')}
                                         </li>
                                         <!-- <li>${form['fax'].label}
