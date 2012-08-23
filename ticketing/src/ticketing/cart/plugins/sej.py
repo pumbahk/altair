@@ -101,12 +101,26 @@ def get_tickets(order):
     return tickets
 
 def get_tickets_from_cart(cart):
-    tickets = list()
-    for product in cart.products:
-        for item in product.items:
-            ticket = get_ticket(u'%012d' % cart.id, item)
-            tickets.append(ticket)
-    return tickets
+    tickets = []
+    for carted_product in cart.products:
+        for product_item in carted_product.items.product_item:
+            bundle = product_item.ticket_bundle
+            dicts = build_dicts_from_ordered_product_item(product_item)
+            for dict_ in dicts:
+                for ticket in bundle.tickets:
+                    ticket_format = ticket.ticket_format
+                    applicable = False
+                    for delivery_method in ticket_format.delivery_methods:
+                        if delivery_method.delivery_plugin_id == DELIVERY_PLUGIN_ID:
+                            applicable = True
+                            break
+                    if not applicable:
+                        continue
+                    transform = translate(-as_user_unit(ticket_format.data['print_offset']['x']), -as_user_unit(ticket_format.data['print_offset']['y']))
+                    svg = etree.tostring(convert_svg(etree.ElementTree(etree.fromstring(pystache.render(ticket.data['drawing'], dict_))), transform), encoding=unicode)
+                    ticket = get_ticket(cart.order_no, carted_product.product, svg)
+                    tickets.appen
+
 
 @implementer(IPaymentPlugin)
 class SejPaymentPlugin(object):
@@ -260,7 +274,7 @@ class SejPaymentDeliveryPlugin(object):
                 total               = order.total_amount,
                 ticket_total        = cart.tickets_amount,
                 commission_fee      = order.system_fee + order.transaction_fee,
-                payment_type        = SejPaymentType.Prepayment if SejPaymentType.CashOnDelivery else SejPaymentType.Prepayment ,
+                payment_type        = SejPaymentType.CashOnDelivery,
                 ticketing_fee       = order.delivery_fee,
                 payment_due_at      = payment_due_at,
                 ticketing_start_at  = ticketing_start_at,
