@@ -1,53 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['iVRCN9AO25IS0OSU'] = (function (exports) { (function () { 
-
-/************** CONF.js **************/
-exports.DEFAULT = {
-  ZOOM_RATIO: 0.8,
-  STYLES: {
-    label: {
-      fill: new Fashion.Color('#000'),
-      stroke: null
-    },
-    seat: {
-      fill: new Fashion.Color('#fff'),
-      stroke: new Fashion.Color('#000')
-    }
-  },
-
-  MASK_STYLE: {
-    fill:   new Fashion.FloodFill(new Fashion.Color("#0064ff80")),
-    stroke: new Fashion.Stroke(new Fashion.Color("#0080FF"), 2)
-  },
-
-  SEAT_STYLE: {
-    text_color: "#000",
-    fill:   { color: "#fff" }
-  },
-
-  OVERLAYS: {
-    highlighted: {
-      fill: null,
-      stroke: { color: "#F63", width: 3, pattern: 'solid' }
-    }
-  },
-
-  AUGMENTED_STYLE: {
-    selected: {
-      text_color: "#FFF",
-      fill:   { color: "#009BE1" },
-      stroke: { color: "#FFF", width: 3 }
-    },
-    unselectable: {
-      text_color: "#888",
-      fill:   { color: "#eee" },
-      stroke: { color: "#ccc" }
-    }
-  }
-};
- })(); return exports; })({});
-__LIBS__['BFUZL9VYPU0P75SC'] = (function (exports) { (function () { 
+__LIBS__['bYG3W7CH1ZL24TVV'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -89,12 +42,12 @@ exports.convertToFashionStyle = function Util_convertToFashionStyle(style, gradi
             [1, new Fashion.Color(fill.color || "#fff")]
           ], .125);
       } else {
-        return new Fashion.FloodFill(fill.color);
+        return new Fashion.FloodFill(new Fashion.Color(fill.color));
       }
     case 'linear':
-      return new Fashion.LinearGradientFill(fill.colors, fill.angle);
+      return new Fashion.LinearGradientFill(_map(fill.colors, function (c) { return new Fashion.Color(c); }), fill.angle);
     case 'radial':
-      return new Fashion.LinearGradientFill(fill.colors, fill.focus);
+      return new Fashion.LinearGradientFill(_map(fill.colors, function (c) { return new Fashion.Color(c); }), fill.focus);
     case 'tile':
       return new Fashion.ImageTileFill(fill.imageData);
     }
@@ -120,19 +73,19 @@ exports.convertFromFashionStyle = function (style) {
     text_color: null,
     fill: 
       style.fill instanceof Fashion.FloodFill ?
-        { type: 'flood', color: style.fill.color }:
+        { type: 'flood', color: style.fill.color._toString() }:
       style.fill instanceof Fashion.LinearGradientFill ?
-        { type: 'linear', colors: style.fill.colors,
+        { type: 'linear', colors: _map(style.fill.colors, function (c) { return c._toString() }),
           angle: style.fill.angle }:
       style.fill instanceof Fashion.RadialGradientFill ?
-        { type: 'radial', colors: style.fill.colors,
+        { type: 'radial', colors: _map(style.fill.colors, function (c) { return c._toString() }),
           focus: style.fill.focus }:
       style.fill instanceof Fashion.ImageTileFill ?
         { type: 'tile', imageData: style.imageData }:
       null,
     stroke:
       style.stroke ?
-        { color: style.stroke.color, width: style.stroke.width,
+        { color: style.stroke.color._toString(), width: style.stroke.width,
           pattern: style.stroke.pattern }:
         null
   };
@@ -168,14 +121,69 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['o1XEMHB_T4I58F3_'] = (function (exports) { (function () { 
+__LIBS__['Y_GP_7P8ZJCN3XN9'] = (function (exports) { (function () { 
+
+/************** CONF.js **************/
+exports.DEFAULT = {
+  ZOOM_RATIO: 0.8,
+  STYLES: {
+    label: {
+      fill: new Fashion.Color('#000'),
+      stroke: null
+    },
+    seat: {
+      fill: new Fashion.Color('#fff'),
+      stroke: new Fashion.Color('#000')
+    },
+    glayout: {
+      fill: new Fashion.FloodFill(new Fashion.Color('#ccc')),
+      stroke: new Fashion.Stroke(new Fashion.Color('#999'), 2)
+    }
+  },
+
+  MASK_STYLE: {
+    fill:   new Fashion.FloodFill(new Fashion.Color("#0064ff80")),
+    stroke: new Fashion.Stroke(new Fashion.Color("#0080FF"), 2)
+  },
+
+  SEAT_STYLE: {
+    text_color: "#000",
+    fill:   { color: "#fff" }
+  },
+
+  OVERLAYS: {
+    highlighted: {
+      fill: null,
+      stroke: { color: "#F63", width: 3, pattern: 'solid' }
+    },
+    highlighted_block: {
+      fill: null,
+      stroke: { color: "#F44", width: 5, pattern: 'solid' }
+    }
+  },
+
+  AUGMENTED_STYLE: {
+    selected: {
+      text_color: "#FFF",
+      fill:   { color: "#009BE1" },
+      stroke: { color: "#FFF", width: 3 }
+    },
+    unselectable: {
+      text_color: "#888",
+      fill:   { color: "#eee" },
+      stroke: { color: "#ccc" }
+    }
+  }
+};
+ })(); return exports; })({});
+__LIBS__['qL2OQ1PHPNM00WFF'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['BFUZL9VYPU0P75SC'];
-var CONF = __LIBS__['iVRCN9AO25IS0OSU'];
+var util = __LIBS__['bYG3W7CH1ZL24TVV'];
+var CONF = __LIBS__['Y_GP_7P8ZJCN3XN9'];
 
 function clone(obj) {
-  return $.extend({}, obj); 
+  return $.extend({}, obj);
 }
 
 function mergeStyle(a, b) {
@@ -328,7 +336,6 @@ Seat.prototype.refreshDynamicStyle = function Seat_refreshDynamicStyle() {
 Seat.prototype.refresh = function Seat_refresh() {
   this.refreshDynamicStyle();
   this.stylize();
-  this.selected(false);
 };
 
 Seat.prototype.__selected = function Seat___selected() {
@@ -417,672 +424,1259 @@ console.log(ad2);
 
 /************** venue-viewer.js **************/
 (function ($) {
-  var CONF = __LIBS__['iVRCN9AO25IS0OSU'];
-  var seat = __LIBS__['o1XEMHB_T4I58F3_'];
-  var util = __LIBS__['BFUZL9VYPU0P75SC'];
 
-  var parseCSSStyleText = (function () {
-    var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
 
-    var regexp_for_values = /(?:((?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+)|"((?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*)"|'((?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*)')(?:\s+|$)/g;
 
-    function unescape(escaped) {
-      return escaped.replace(/(?:\\(0{0,2}d[89ab][0-9A-Fa-f]{2})(?:\r\n|[ \n\r\t\f])?)?\\([0-9A-Fa-f]{1,6})(?:\r\n|[ \n\r\t\f])?|\\([^\n\r\f0-9A-Fa-f])/g, function(_, a, b, c) {
-        if (a !== void(0)) {
-          var c2 = parseInt(b, 16) ;
-          if (c2 < 0xdc00 || c2 > 0xdfff)
-            throw new ValueError("Invalid surrogate pair");
-          return String.fromCharCode((((parseInt(a, 16) & 0x3ff) << 10) | (c2 & 0x3ff)) + 0x10000);
-        } else if (b !== void(0)) {
-          return String.fromCharCode(parseInt(b, 16));
-        } else if (c !== void(0)) {
-          return c;
-        }
-      });
+/************** classify.js **************/
+
+
+/************** misc.js **************/
+// detect atomic or not
+function _atomic_p(obj) {
+  var t;
+  return ( obj === null || obj === void(0) ||
+           (t = typeof obj) === 'number' ||
+           t === 'string' ||
+           t === 'boolean' ||
+           ((obj.valueOf !== Object.prototype.valueOf) &&
+            !(obj instanceof Date)));
+};
+
+
+// make deep clone of the object
+function _clone(obj, target) {
+  if (_atomic_p(obj)) return obj;
+
+  // if target is given. clone obj properties into it.
+  var clone, p;
+  if (obj instanceof Date) {
+    clone = new Date(obj.getTime());
+    if (target instanceof Date) {
+      for (p in target) if (target.hasOwnProperty(p)) clone[p] = _clone(target[p], clone[p]);
+    }
+  } else if (typeof obj === 'function') {
+    clone = function(){return obj.apply(this, arguments);};
+    if (typeof target === 'function') {
+      for (p in target) if (target.hasOwnProperty(p)) clone[p] = _clone(target[p], clone[p]);
+    }
+  } else {
+    clone = (!_atomic_p(target) && typeof target !== 'function') ?
+      target : new obj.constructor();
+  }
+
+  for (p in obj)
+    if (obj.hasOwnProperty(p))
+      clone[p] = _clone(obj[p], clone[p]);
+
+  return clone;
+};
+
+function xparseInt(str, radix) {
+  var retval = parseInt(str, radix);
+  if (isNaN(retval))
+    throw new ValueError("Invalid numeric string: " + str);
+  return retval;
+};
+
+function _repeat(str, length) {
+  var retval = '';
+  while (length) {
+    if (length & 1)
+      retval += str;
+    str += str;
+    length >>= 1;
+  }
+  return retval;
+};
+
+function _lpad(str, length, pad) {
+  return _repeat(pad, length - str.length) + str;
+};
+
+function _bindEvent(target, type, f) {
+  if (typeof BROWSER == 'undefined')
+    return;
+
+  if (BROWSER.identifier == 'ie' && BROWSER.version < 9)
+    target.attachEvent('on' + type, f);
+  else
+    target.addEventListener(type, f, false);
+}
+
+function _unbindEvent(target, type, f) {
+  if (typeof BROWSER == 'undefined')
+    return;
+
+  if (BROWSER.identifier == 'ie' && BROWSER.version < 9)
+    target.detachEvent('on' + type, f);
+  else
+    target.removeEventListener(type, f, false);
+}
+
+var _escapeXMLSpecialChars = (function () {
+  var specials = new RegExp("[<>&'\"]"),
+      map = ['', '&lt;', '&gt;', '&amp;', '&apos;', '&quot;', ''];
+  return function (str) {
+    if (typeof str != 'string')
+      str = str.toString();
+    return str.replace(specials, function(x) { return map[special.source.indexOf(x)] });
+  };
+})();
+
+function _clip(target, min, max) {
+  return Math.min(Math.max(target, min), max);
+}
+
+function _clipPoint(target, min, max) {
+  return { x: _clip(target.x, min.x, max.x),
+           y: _clip(target.y, min.y, max.y) };
+}
+
+function _addPoint(lhs, rhs) {
+  return { x: lhs.x + rhs.x, y: lhs.y + rhs.y };
+}
+
+function _subtractPoint(lhs, rhs) {
+  return { x: lhs.x - rhs.x, y: lhs.y - rhs.y };
+}
+
+function _indexOf(array, elem, fromIndex) {
+  if (array instanceof Array && 'indexOf' in Array.prototype) {
+    return array.indexOf(elem, fromIndex);
+  }
+  for (var i = Math.max(fromIndex || 0, 0); i < array.length; i++) {
+    if (array[i] === elem)
+      return i;
+  }
+  return -1;
+}
+
+var _class = (function() {
+  function __super__() {
+    return this.constructor.__super__.prototype;
+  }
+
+  function inherits(_class, parent) {
+    _class.__super__ = parent;
+
+    var f = function() {};
+    f.prototype = parent.prototype;
+    f.prototype.constructor = parent;
+    _class.prototype = new f();
+    _class.prototype.__super__ = __super__;
+
+    var iiop = _class['%%INIT_INSTANCE_ORIGIN_PROPS'];
+
+    _class['%%INIT_INSTANCE_ORIGIN_PROPS'] = function(inst) {
+      var parent_iiop = parent['%%INIT_INSTANCE_ORIGIN_PROPS'];
+      if (parent_iiop) parent_iiop(inst);
+      iiop(inst);
+    };
+
+    return _class;
+
+  };
+
+  function method(_class, name, func) {
+    func.__class__ = _class;
+    _class.prototype[name] = func;
+  };
+
+  var genclassid = (function() {
+    var id = 0;
+    return function getclassid() {
+      var ret = "%%ANONYMOUS_CLASS_"+id+"%%"; ++id;
+      return ret;
+    };
+  })();
+
+  function mixin(_class, include) {
+    var incproto = include.prototype;
+    for (var i in incproto) {
+      if (i == 'init') {
+        _class.prototype['init%%' + include['%%CLASSNAME%%']] = incproto[i];
+      } else if (i !== "__super__" && i !== "constructor") {
+        _class.prototype[i] = incproto[i];
+      }
     }
 
-    return function parseCSSStyleText(str) {
-      var retval = {};
-      var r = str.replace(regexp_for_styles, function (_, k, v) {
-        var values = [];
-        var r = v.replace(regexp_for_values, function (_, a, b, c) {
-          if (a !== void(0)) {
-            values.push(unescape(a));
-          } else if (b !== void(0)) {
-            values.push(unescape(b));
-          } else if (c !== void(0)) {
-            values.push(unescape(c));
-          }
-          return '';
-        });
-        if (r != '')
-          throw new ValueError("Invalid CSS rule string: " + str);
-        retval[k] = values;
+    var iiop = _class['%%INIT_INSTANCE_ORIGIN_PROPS'];
+    _class['%%INIT_INSTANCE_ORIGIN_PROPS'] = function(inst) {
+      var include_iiop = include['%%INIT_INSTANCE_ORIGIN_PROPS'];
+      if (include_iiop) include_iiop(inst);
+      iiop(inst);
+    };
+  };
+
+  function check_interface(_class, impl) {
+    for (var i in impl.prototype) {
+      if (impl.prototype.hasOwnProperty(i)) {
+        if (!_class.prototype.hasOwnProperty(i)) {
+          throw new DeclarationError(
+              'The class \'' + _class['%%CLASSNAME%%'] +
+              '\' must provide property or method \'' + i +
+              '\' imposed by \'' + impl['%%CLASSNAME%%'] +'".');
+        }
+      }
+    }
+  };
+
+  return function _class(name, definition) {
+    var __class__, i, j, l, c, def, type;
+
+    var props = {};
+    var class_props = {};
+    var methods = {};
+    var class_methods = {};
+    var parent = Object;
+    var mixins = [];
+    var interfaces = [];
+
+    for (i in definition) {
+      switch (i) {
+      case "props":
+        def = definition[i];
+        for (j in def) {
+          if (def.hasOwnProperty(j))
+            props[j] = def[j];
+        }
+        break;
+      case "class_props":
+        class_props = definition[i];
+        break;
+      case "methods":
+        methods = definition[i];
+        break;
+      case "class_methods":
+        class_methods = definition[i];
+        break;
+      case "parent":
+        parent = definition[i];
+        break;
+      case "interfaces":
+        interfaces = definition[i];
+        break;
+      case "mixins":
+        mixins = definition[i];
+        break;
+      default:
+        throw new ArgumentError(
+            'You gave \'' + i + '\' as definition, but the _class() excepts' +
+            ' only \'props\',\'class_props\',\'methods\',\'class_methods\',\'parent\',\'interfaces\',\'mixins\'.');
+
+      }
+    }
+
+    __class__ = function __Class__(arg) {
+      __class__['%%INIT_INSTANCE_ORIGIN_PROPS'](this);
+      if (this.init) this.init.apply(this, arguments);
+      else           _clone(arg, this);
+    };
+
+    __class__['%%INIT_INSTANCE_ORIGIN_PROPS'] =
+      function(inst) {
+        for (var p in props) {
+          inst[p] = _clone(props[p]);
+        }
+      };
+
+    inherits(__class__, parent);
+
+    for (j = 0, l = mixins.length; j < l; j++) {
+      mixin(__class__, mixins[j]);
+    }
+
+    for (i in methods) {
+      if (methods.hasOwnProperty(i)) {
+        method(__class__, i, methods[i]);
+      }
+    }
+    __class__.prototype.constructor = __class__;
+
+    __class__['%%CLASSNAME%%'] = name || genclassid();
+    for (i in class_methods) {
+      __class__[i] = class_methods[i];
+    }
+
+    for (j=0, l=interfaces.length; j<l; j++) {
+      check_interface(__class__, interfaces[j]);
+    }
+
+    for (i in class_props) {
+      __class__[i] = class_props[i];
+    }
+
+    class_methods['init'] && class_methods.init.call(__class__);
+
+    return __class__;
+  };
+
+})();
+/*
+ * vim: sts=2 sw=2 ts=2 et
+ */
+
+
+/************** helpers.js **************/
+var parseCSSStyleText = (function () {
+  var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
+  var regexp_for_values = /(?:((?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+)|"((?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*)"|'((?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*)')(?:\s+|$)/g;
+
+  function unescape(escaped) {
+    return escaped.replace(/(?:\\(0{0,2}d[89ab][0-9A-Fa-f]{2})(?:\r\n|[ \n\r\t\f])?)?\\([0-9A-Fa-f]{1,6})(?:\r\n|[ \n\r\t\f])?|\\([^\n\r\f0-9A-Fa-f])/g, function(_, a, b, c) {
+      if (a !== void(0)) {
+        var c2 = parseInt(b, 16) ;
+        if (c2 < 0xdc00 || c2 > 0xdfff)
+          throw new ValueError("Invalid surrogate pair");
+        return String.fromCharCode((((parseInt(a, 16) & 0x3ff) << 10) | (c2 & 0x3ff)) + 0x10000);
+      } else if (b !== void(0)) {
+        return String.fromCharCode(parseInt(b, 16));
+      } else if (c !== void(0)) {
+        return c;
+      }
+    });
+  }
+
+  return function parseCSSStyleText(str) {
+    var retval = {};
+    var r = str.replace(regexp_for_styles, function (_, k, v) {
+      var values = [];
+      var r = v.replace(regexp_for_values, function (_, a, b, c) {
+        if (a !== void(0)) {
+          values.push(unescape(a));
+        } else if (b !== void(0)) {
+          values.push(unescape(b));
+        } else if (c !== void(0)) {
+          values.push(unescape(c));
+        }
         return '';
       });
       if (r != '')
         throw new ValueError("Invalid CSS rule string: " + str);
-      return retval;
-    };
-  })();
+      retval[k] = values;
+      return '';
+    });
+    if (r != '')
+      throw new ValueError("Invalid CSS rule string: " + str);
+    return retval;
+  };
+})();
 
-  function parseDefs(node, defset) {
-    function parseStops(def) {
-      var ref = typeof def.getAttributeNS == 'function' ?
-        def.getAttributeNS('http://www.w3.org/1999/xlink', 'href'):
-        def.getAttribute("xlink:href");
-      if (ref) {
-        if (typeof def.ownerDocument.getElementById == 'function')
-          def = def.ownerDocument.getElementById(ref.substring(1));
-        else
-          def = def.ownerDocument.selectSingleNode("*//*[@id='" + ref.substring(1) + "']");
-      }
-      var stops = def.childNodes;
-      var colors = [];
-      for (var i = 0; i < stops.length; i++) {
-        var node = stops[i];
-        if (node.nodeType != 1)
-          continue;
-        if (node.nodeName == 'stop') {
-          var styles = parseCSSStyleText(node.getAttribute('style'));
-          colors.push([
-            parseFloat(node.getAttribute('offset')),
-            new Fashion.Color(styles['stop-color'][0])]);
-        }
-      }
-      return colors;
-    }
-
-    var defs = node.childNodes;
-    for (var i = 0; i < defs.length; i++) {
-      var def = defs[i];
-      if (def.nodeType != 1)
-        continue;
-      var id = def.getAttribute('id');
-      switch (def.nodeName) {
-      case 'linearGradient':
-        var x1 = parseFloat(def.getAttribute("x1")), y1 = parseFloat(def.getAttribute("y1")),
-            x2 = parseFloat(def.getAttribute("x2")), y2 = parseFloat(def.getAttribute("y2"));
-        var r = Math.acos((x2 - x1) / Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))) + (y2 - y1 < 0 ? Math.PI: 0);
-        defset[id] = new Fashion.LinearGradientFill(parseStops(def), r / (Math.PI * 2));
-        break;
-      case 'radialGradient':
-        defset[id] = new Fashion.RadialGradientFill(parseStops(def),
-          { x: def.getAttribute('fx') || '50%', y: def.getAttribute('fy') || '50%' });
-        break;
-      }
-    }
-  }
-
-  function parseCSSAsSvgStyle(str, defs) {
-    var styles = parseCSSStyleText(str);
-    var fill = null;
-    var fillString = styles['fill'];
-    var fillOpacity = null;
-    var fillOpacityString = styles['fill-opacity'];
-    var stroke = null;
-    var strokeString = styles['stroke'];
-    var strokeWidth = null;
-    var strokeWidthString = styles['stroke-width'];
-    var strokeOpacity = null;
-    var strokeOpacityString = styles['stroke-opacity'];
-    if (fillString) {
-      if (fillString[0] == 'none') {
-        fill = false;
-      } else {
-        var g = /url\(#([^)]*)\)/.exec(fillString[0]);
-        if (g) {
-          fill = defs[g[1]];
-          if (!fill)
-            throw new Error();
-        } else {
-          fill = new Fashion.Color(fillString[0]);
-        }
-      }
-    }
-    if (fillOpacityString) {
-      fillOpacity = parseFloat(fillOpacityString[0]);
-    }
-    if (strokeString) {
-      if (strokeString[0] == 'none')
-        stroke = false;
+function parseDefs(node, defset) {
+  function parseStops(def) {
+    var ref = typeof def.getAttributeNS == 'function' ?
+      def.getAttributeNS('http://www.w3.org/1999/xlink', 'href'):
+      def.getAttribute("xlink:href");
+    if (ref) {
+      if (typeof def.ownerDocument.getElementById == 'function')
+        def = def.ownerDocument.getElementById(ref.substring(1));
       else
-        stroke = new Fashion.Color(strokeString[0]);
+        def = def.ownerDocument.selectSingleNode("*//*[@id='" + ref.substring(1) + "']");
     }
-    if (strokeWidthString) {
-      strokeWidth = parseFloat(strokeWidthString[0]);
-    }
-    if (strokeOpacityString) {
-      strokeOpacity = parseFloat(strokeOpacityString[0]);
-    }
-    return {
-      fill: fill,
-      fillOpacity: fillOpacity,
-      stroke: stroke,
-      strokeWidth: strokeWidth,
-      strokeOpacity: strokeOpacity
-    };
-  }
-
-  function mergeSvgStyle(origStyle, newStyle) {
-    return {
-      fill: newStyle.fill !== null ? newStyle.fill: origStyle.fill,
-      fillOpacity: newStyle.fillOpacity !== null ? newStyle.fillOpacity: origStyle.fillOpacity,
-      stroke: newStyle.stroke !== null ? newStyle.stroke: origStyle.stroke,
-      strokeWidth: newStyle.strokeWidth !== null ? newStyle.strokeWidth: origStyle.strokeWidth,
-      strokeOpacity: newStyle.strokeOpacity !== null ? newStyle.strokeOpacity: origStyle.strokeOpacity
-    };
-  }
-
-  function buildStyleFromSvgStyle(svgStyle) {
-    return {
-      fill:
-        svgStyle.fill ? 
-          (svgStyle.fill instanceof Fashion.Color ?
-            new Fashion.FloodFill(
-              svgStyle.fill.replace(
-                null, null, null,
-                svgStyle.fillOpacity ? svgStyle.fillOpacity * 255: 255)):
-            svgStyle.fill):
-          null,
-      stroke: 
-        svgStyle.stroke ? new Fashion.Stroke(
-          svgStyle.stroke.replace(
-            null, null, null,
-            svgStyle.fillOpacity ? svgStyle.fillOpacity * 255: 255),
-          svgStyle.strokeWidth ? svgStyle.strokeWidth: 1,
-          svgStyle.strokePattern ? svgStyle.strokePattern: null):
-          null,
-      visibility: true
-    };
-  }
-
-  var VenueViewer = function VenueViewer(canvas, options) {
-    this.canvas = canvas;
-    this.callbacks = {
-      uimodeselect: null,
-      load: null,
-      loadstart: null,
-      click: null,
-      selectable: null,
-      select: null
-    };
-    this.stockTypes = null;
-    if (options.callbacks) {
-      for (var k in this.callbacks)
-        this.callbacks[k] = options.callbacks[k] || null;
-    }
-    this.callbacks.message = options.callbacks && options.callbacks.message || function () {};
-    this.dataSource = options.dataSource;
-    this.zoomRatio = options.zoomRatio || CONF.DEFAULT.ZOOM_RATIO;
-    this.dragging = false;
-    this.startPos = { x: 0, y: 0 };
-    this.rubberBand = null;
-    this.drawable = null;
-    this.availableAdjacencies = [ 1 ];
-    this.originalStyles = (function() {
-      var store = {};
-      return {
-        save: function(id, data) {
-          if (!store[id]) store[id] = data;
-        },
-        restore: function(id) {
-          var rt = store[id];
-          delete store[id];
-          return rt;
-        }
-      };
-    })();
-    this.shift = false;
-    this.keyEvents = null;
-    this.zoomRatio = 1.0;
-    this.uiMode = 'select1';
-    this.shapes = null;
-    this.seats = {};
-    this.selection = {};
-    this.selectionCount = 0;
-    this.highlighted = {};
-    this._adjacencyLength = 1;
-    this.animating = false;
-    this.addKeyEvent();
-    this.rubberBand = new Fashion.Rect({
-      position: {x: 0, y: 0},
-      size: {x: 0, y: 0}
-    });
-    this.rubberBand.style(CONF.DEFAULT.MASK_STYLE);
-    canvas.empty();
-  };
-
-  VenueViewer.prototype.load = function VenueViewer_load() {
-    if (this.drawable !== null)
-      this.drawable.dispose();
-    this.seatAdjacencies = null;
-    var self = this;
-    self.callbacks.loadstart && self.callbacks.loadstart('drawing');
-    self.initDrawable(self.dataSource.drawing, function () {
-      self.callbacks.loadstart && self.callbacks.loadstart('stockTypes');
-      self.dataSource.stockTypes(function (data) {
-        self.stockTypes = data;
-        self.callbacks.loadstart && self.callbacks.loadstart('info');
-        self.dataSource.info(function (data) {
-          if (!'available_adjacencies' in data) {
-            self.callbacks.message("Invalid data");
-            return;
-          }
-          self.availableAdjacencies = data.available_adjacencies;
-          self.seatAdjacencies = new seat.SeatAdjacencies(self);
-          self.callbacks.loadstart && self.callbacks.loadstart('seats');
-          self.initSeats(self.dataSource.seats, function () {
-            self.callbacks.load && self.callbacks.load(self);
-          });
-        }, self.callbacks.message);
-      }, self.callbacks.message);
-    });
-  };
-
-  VenueViewer.prototype.dispose = function VenueViewer_dispose() {
-    this.removeKeyEvent();
-    if (this.drawable) {
-      this.drawable.dispose();
-      this.drawable = null;
-    }
-    this.seats = null;
-    this.selection = null;
-    this.highlighted = null;
-  };
-
-  VenueViewer.prototype.initDrawable = function VenueViewer_initDrawable(dataSource, next) {
-    var self = this;
-    dataSource(function (drawing) {
-      var attrs = util.allAttributes(drawing.documentElement);
-      var w = parseFloat(attrs.width), h = parseFloat(attrs.height);
-      var vb = null;
-      if (attrs.viewBox) {
-        var comps = attrs.viewBox.split(/\s+/);
-        vb = new Array(comps.length);
-        for (var i = 0; i < comps.length; i++)
-          vb[i] = parseFloat(comps[i]);
+    var stops = def.childNodes;
+    var colors = [];
+    for (var i = 0; i < stops.length; i++) {
+      var node = stops[i];
+      if (node.nodeType != 1)
+        continue;
+      if (node.nodeName == 'stop') {
+        var styles = parseCSSStyleText(node.getAttribute('style'));
+        colors.push([
+          parseFloat(node.getAttribute('offset')),
+          new Fashion.Color(styles['stop-color'][0])]);
       }
+    }
+    return colors;
+  }
 
-      var size = ((vb || w || h) ? {
-        x: ((vb && vb[2]) || w || h),
-        y: ((vb && vb[3]) || h || w)
-      } : null);
+  var defs = node.childNodes;
+  for (var i = 0; i < defs.length; i++) {
+    var def = defs[i];
+    if (def.nodeType != 1)
+      continue;
+    var id = def.getAttribute('id');
+    switch (def.nodeName) {
+    case 'linearGradient':
+      var x1 = parseFloat(def.getAttribute("x1")), y1 = parseFloat(def.getAttribute("y1")),
+      x2 = parseFloat(def.getAttribute("x2")), y2 = parseFloat(def.getAttribute("y2"));
+      var r = Math.acos((x2 - x1) / Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))) + (y2 - y1 < 0 ? Math.PI: 0);
+      defset[id] = new Fashion.LinearGradientFill(parseStops(def), r / (Math.PI * 2));
+      break;
+    case 'radialGradient':
+      defset[id] = new Fashion.RadialGradientFill(parseStops(def),
+                                                  { x: def.getAttribute('fx') || '50%', y: def.getAttribute('fy') || '50%' });
+      break;
+    }
+  }
+}
 
-      var drawable = new Fashion.Drawable(self.canvas[0], { contentSize: {x: size.x, y: size.y} });
-      var shapes = {};
-      var styleClasses = CONF.DEFAULT.STYLES;
+function parseCSSAsSvgStyle(str, defs) {
+  var styles = parseCSSStyleText(str);
+  var fill = null;
+  var fillString = styles['fill'];
+  var fillOpacity = null;
+  var fillOpacityString = styles['fill-opacity'];
+  var stroke = null;
+  var strokeString = styles['stroke'];
+  var strokeWidth = null;
+  var strokeWidthString = styles['stroke-width'];
+  var strokeOpacity = null;
+  var strokeOpacityString = styles['stroke-opacity'];
+  var fontSize = null;
+  var fontSizeString = styles['font-size'];
+  if (fillString) {
+    if (fillString[0] == 'none') {
+      fill = false;
+    } else {
+      var g = /url\(#([^)]*)\)/.exec(fillString[0]);
+      if (g) {
+        fill = defs[g[1]];
+        if (!fill)
+          throw new Error();
+      } else {
+        fill = new Fashion.Color(fillString[0]);
+      }
+    }
+  }
+  if (fillOpacityString) {
+    fillOpacity = parseFloat(fillOpacityString[0]);
+  }
+  if (strokeString) {
+    if (strokeString[0] == 'none')
+      stroke = false;
+    else
+      stroke = new Fashion.Color(strokeString[0]);
+  }
+  if (strokeWidthString) {
+    strokeWidth = parseFloat(strokeWidthString[0]);
+  }
+  if (strokeOpacityString) {
+    strokeOpacity = parseFloat(strokeOpacityString[0]);
+  }
+  if (fontSizeString) {
+    fontSize = parseFloat(fontSizeString);
+  }
+  return {
+    fill: fill,
+    fillOpacity: fillOpacity,
+    stroke: stroke,
+    strokeWidth: strokeWidth,
+    strokeOpacity: strokeOpacity,
+    fontSize: fontSize
+  };
+}
 
-      (function iter(svgStyle, defs, nodeList) {
-        outer:
-        for (var i = 0; i < nodeList.length; i++) {
-          var n = nodeList[i];
-          if (n.nodeType != 1) continue;
-          var attrs = util.allAttributes(n);
+function mergeSvgStyle(origStyle, newStyle) {
+  return {
+    fill:          newStyle.fill !== null ? newStyle.fill: origStyle.fill,
+    fillOpacity:   newStyle.fillOpacity !== null ? newStyle.fillOpacity: origStyle.fillOpacity,
+    stroke:        newStyle.stroke !== null ? newStyle.stroke: origStyle.stroke,
+    strokeWidth:   newStyle.strokeWidth !== null ? newStyle.strokeWidth: origStyle.strokeWidth,
+    strokeOpacity: newStyle.strokeOpacity !== null ? newStyle.strokeOpacity: origStyle.strokeOpacity,
+    fontSize:      newStyle.fontSize !== null ? newStyle.fontSize: origStyle.fontSize
+  };
+}
 
-          var shape = null;
-          var currentSvgStyle = svgStyle;
-          if (attrs.style)
-            currentSvgStyle = mergeSvgStyle(currentSvgStyle, parseCSSAsSvgStyle(attrs.style, defs));
-          if (attrs['class']) {
-            var style = styleClasses[attrs['class']];
-            if (style)
-              currentSvgStyle = mergeSvgStyle(currentSvgStyle, style);
+function buildStyleFromSvgStyle(svgStyle) {
+  return {
+    fill:
+    svgStyle.fill ?
+      (svgStyle.fill instanceof Fashion.Color ?
+       new Fashion.FloodFill(
+         svgStyle.fill.replace(
+           null, null, null,
+           svgStyle.fillOpacity ? svgStyle.fillOpacity * 255: 255)):
+       svgStyle.fill):
+    null,
+    stroke: 
+    svgStyle.stroke ? new Fashion.Stroke(
+      svgStyle.stroke.replace(
+        null, null, null,
+        svgStyle.fillOpacity ? svgStyle.fillOpacity * 255: 255),
+      svgStyle.strokeWidth ? svgStyle.strokeWidth: 1,
+      svgStyle.strokePattern ? svgStyle.strokePattern: null):
+    null,
+    visibility: true
+  };
+}
+
+function collectText(node) {
+  var children = node.childNodes;
+  for (var i=0, l=children.length, rt=""; i<l; i++) {
+    var n = children[i];
+    var name = n.nodeName;
+    if (name === '#text'){
+      rt += n.nodeValue;
+    } else {
+      rt += collectText(n);
+    }
+  }
+  return rt;
+}
+
+function copyShape(shape) {
+  if (shape instanceof Fashion.Path) {
+    return new Fashion.Path({ points: shape.points(), style:shape.style() });
+  } else if (shape instanceof Fashion.Rect) {
+    return new Fashion.Rect({ position: shape.position(), size: shape.size() });
+  }
+  return null;
+}
+
+function _map(arr, fn) {
+  var retval = new Array(arr.length);
+  for (var i = 0; i < arr.length; i++) {
+    retval[i] = fn(arr[i]);
+  }
+  return retval;
+}
+
+  var CONF = __LIBS__['Y_GP_7P8ZJCN3XN9'];
+  var seat = __LIBS__['qL2OQ1PHPNM00WFF'];
+  var util = __LIBS__['bYG3W7CH1ZL24TVV'];
+
+  var StoreObject = _class("StoreObject", {
+    props: {
+      store: {}
+    },
+    methods: {
+      save: function(id, data) {
+        if (!this.store[id]) this.store[id] = data;
+      },
+      restore: function(id) {
+        var rt = this.store[id];
+        delete this.store[id];
+        return rt;
+      },
+      clear: function() {
+        for (var id in this.store) {
+          delete this.store[id];
+        }
+      }
+    }
+  });
+
+  var VenueViewer = _class("VenueViewer", {
+
+    props: {
+      canvas: null,
+      callbacks: {
+        uimodeselect: null,
+        load: null,
+        loadstart: null,
+        click: null,
+        selectable: null,
+        select: null,
+        pageChanging: null,
+        messageBoard: null,
+        zoomRatioChanging: null,
+        zoomRatioChange: null
+      },
+      dataSource: null,
+      zoomRatio: CONF.DEFAULT.ZOOM_RATIO,
+      contentOriginPosition: {x: 0, y: 0},
+      dragging: false,
+      startPos: { x: 0, y: 0 },
+      rubberBand: new Fashion.Rect({
+        position: {x: 0, y: 0},
+        size: {x: 0, y: 0}
+      }),
+      drawable: null,
+      availableAdjacencies: [ 1 ],
+      originalStyles: new StoreObject(),
+      overlayShapes: new StoreObject(),
+      shift: false,
+      keyEvents: null,
+      uiMode: 'select1',
+      shapes: null,
+      seats: {},
+      selection: {},
+      selectionCount: 0,
+      highlighted: {},
+      animating: false,
+      blocks: null,
+      _adjacencyLength: 1,
+      currentPage: 'root',
+      currentFocusedIds: null,
+      parentLinks: [],
+      seatTitles: {},
+      optionalViewportSize: null
+    },
+
+    methods: {
+      init: function VenueViewer_init(canvas, options) {
+        this.canvas = canvas;
+        this.stockTypes = null;
+        if (options.callbacks) {
+          for (var k in this.callbacks)
+            this.callbacks[k] = options.callbacks[k] || function () {};
+        }
+        this.dataSource = options.dataSource;
+        if (options.zoomRatio) zoom(options.zoomRatio);
+        this.rubberBand.style(CONF.DEFAULT.MASK_STYLE);
+        canvas.empty();
+        this.optionalViewportSize = options.viewportSize;
+      },
+
+      load: function VenueViewer_load() {
+        if (this.drawable !== null)
+          this.drawable.dispose();
+
+        if (this.blocks !== null) {
+          for (id in this.blocks) {
+            this.blocks[id].removeEvent();
+          }
+        }
+
+        this.originalStyles.clear();
+        this.overlayShapes.clear();
+
+        this.seatAdjacencies = null;
+        var self = this;
+        self.callbacks.loadstart.call(this, 'drawing');
+        var drawingLoader = this.dataSource.drawing(this.currentPage);
+        self.initDrawable(drawingLoader, function () {
+          self.callbacks.loadstart.call(self, 'pages');
+          self.initBlocks(self.dataSource.pages, function() {
+            self.callbacks.loadstart.call(self, 'stockTypes');
+            self.dataSource.stockTypes(function (data) {
+              self.stockTypes = data;
+              self.callbacks.loadstart.call(self, 'info');
+              self.dataSource.info(function (data) {
+                if (!'available_adjacencies' in data) {
+                  self.callbacks.message.call(self, "Invalid data");
+                  return;
+                }
+                self.availableAdjacencies = data.available_adjacencies;
+                self.seatAdjacencies = new seat.SeatAdjacencies(self);
+                self.callbacks.loadstart.call(self, 'seats');
+                self.initSeats(self.dataSource.seats, function () {
+                  self.callbacks.load.call(self, self);
+                });
+              }, self.callbacks.message);
+            }, self.callbacks.message);
+          });
+        });
+      },
+
+      dispose: function VenueViewer_dispose() {
+        this.removeKeyEvent();
+        if (this.drawable) {
+          this.drawable.dispose();
+          this.drawable = null;
+        }
+        this.seats = null;
+        this.selection = null;
+        this.highlighted = null;
+      },
+
+      initDrawable: function VenueViewer_initDrawable(dataSource, next) {
+        var self = this;
+        var isFocused = function isFocused(id){
+          return self.currentFocusedIds == null || self.currentFocusedIds.indexOf(id) > -1;
+        };
+        dataSource(function (drawing) {
+          var attrs = util.allAttributes(drawing.documentElement);
+          var w = parseFloat(attrs.width), h = parseFloat(attrs.height);
+          var focused = isFocused(attrs.id);
+          var vb = null;
+          if (attrs.viewBox) {
+            var comps = attrs.viewBox.split(/\s+/);
+            vb = new Array(comps.length);
+            for (var i = 0; i < comps.length; i++)
+              vb[i] = parseFloat(comps[i]);
           }
 
-          switch (n.nodeName) {
-          case 'defs':
-            parseDefs(n, defs);
-            break;
+          var size = ((vb || w || h) ? {
+            x: ((vb && vb[2]) || w || h),
+            y: ((vb && vb[3]) || h || w)
+          } : null);
 
-          case 'g':
-            arguments.callee.call(self, currentSvgStyle, defs, n.childNodes);
-            continue outer;
+          var drawable = new Fashion.Drawable( self.canvas[0], {
+            contentSize: {x: size.x, y: size.y},
+            viewportSize: self.optionalViewportSize
+          });
 
-          case 'path':
-            if (!attrs.d) throw new Error("Pathdata is not provided for the path element");
-            shape = new Fashion.Path({
-              points: new Fashion.PathData(attrs.d)
+          var shapes = {};
+          var styleClasses = CONF.DEFAULT.STYLES;
+
+          var xmax = -Infinity, ymax = -Infinity,
+              xmin = Infinity,  ymin = Infinity;
+
+          (function iter(svgStyle, defs, nodeList, focused) {
+            outer:
+            for (var i = 0; i < nodeList.length; i++) {
+              var n = nodeList[i];
+              if (n.nodeType != 1) continue;
+              var attrs = util.allAttributes(n);
+              var shape = null;
+
+              { // stylize
+                var currentSvgStyle = svgStyle;
+                if (attrs.style)
+                  currentSvgStyle = mergeSvgStyle(currentSvgStyle, parseCSSAsSvgStyle(attrs.style, defs));
+                if (attrs['class']) {
+                  var style = styleClasses[attrs['class']];
+                  if (style) currentSvgStyle = mergeSvgStyle(currentSvgStyle, style);
+                }
+              }
+
+              switch (n.nodeName) {
+              case 'defs':
+                parseDefs(n, defs);
+                break;
+
+              case 'g': {
+                arguments.callee.call(self, currentSvgStyle, defs, n.childNodes,
+                                      (focused || isFocused(attrs.id)));
+                continue outer;
+              }
+
+              case 'path':
+                if (!attrs.d) throw new Error("Pathdata is not provided for the path element");
+                shape = new Fashion.Path({
+                  points: new Fashion.PathData(attrs.d)
+                });
+                break;
+
+              case 'text':
+                if (n.firstChild) {
+                  shape = new Fashion.Text({
+                    text: collectText(n),
+                    zIndex: 99
+                  });
+                }
+                break;
+
+              case 'symbol':
+                break;
+
+              case 'rect':
+                shape = new Fashion.Rect({
+                  size: {
+                    x: parseFloat(attrs.width),
+                    y: parseFloat(attrs.height)
+                  },
+                  corner: {
+                    x: parseFloat(attrs.rx || 0),
+                    y: parseFloat(attrs.ry || 0)
+                  }
+                });
+                for (var j=0,ll=n.childNodes.length; j<ll; j++) {
+                  if (n.childNodes[j].nodeName == "title") {
+                    self.seatTitles[attrs.id] = n.childNodes[j].childNodes[0].nodeValue;
+                    break;
+                  }
+                }
+                break;
+
+              default:
+                continue outer;
+              }
+
+              if (shape !== null) {
+                var x = parseFloat(attrs.x),
+                    y = parseFloat(attrs.y);
+
+                if (!isNaN(x) && !isNaN(y)) {
+
+                  if (focused) {
+                    if (xmax < x) xmax = x;
+                    else if (x < xmin) xmin = x;
+                    if (ymax < y) ymax = y;
+                    else if (y < ymin) ymin = y;
+                  }
+
+                  shape.position({ x: x, y: y });
+                }
+                shape.style(buildStyleFromSvgStyle(currentSvgStyle));
+                if (shape instanceof Fashion.Text) {
+                  shape.fontSize(currentSvgStyle.fontSize);
+                }
+                drawable.draw(shape);
+              }
+              shapes[attrs.id] = shape;
+            }
+          }).call(
+            self,
+            {
+              fill: false, fillOpacity: false,
+              stroke: false, strokeOpacity: false,
+              fontSize: 10
+            },
+            {},
+            drawing.documentElement.childNodes,
+            focused);
+
+          self.drawable = drawable;
+          self.shapes = shapes;
+
+          var center = {
+            x: (xmax + xmin) / 2,
+            y: (ymax + ymin) / 2
+          };
+
+          var width  = (xmax - xmin) / 0.8;
+          var height = (ymax - ymin) / 0.8;
+
+          var origin_of_shapes = {
+            x: center.x - (width/2),
+            y: center.y - (height/2)
+          };
+
+          var vs = drawable.viewportSize();
+          var wr = vs.x / width;
+          var hr = vs.y / height;
+          var r = (wr < hr) ? wr : hr;
+          var origin = {
+            x: (wr < hr) ? origin_of_shapes.x : center.x - ((vs.x/2)/hr),
+            y: (wr < hr) ? center.y - ((vs.y/2)/wr) : origin_of_shapes.y
+          };
+          self.zoomRatioMin = r;
+          self.contentOriginPosition = origin;
+
+          drawable.transform(
+            Fashion.Matrix.scale(self.zoomRatio)
+              .translate({x: -origin.x, y: -origin.y}));
+
+          drawable.contentSize({x: (vs.x/r) + origin.x, y: (vs.y/r) + origin.y});
+
+          self.changeUIMode(self.uiMode);
+          next.call(this);
+
+        }, self.callbacks.message);
+      },
+
+      navigate: function (page) {
+        if (!(page in this.pages))
+          return;
+        this.currentFocusedIds = this.pages[page]['focused_ids'];
+        this.currentPage = page;
+        this.callbacks.pageChanging.call(this, page);
+        this.load();
+      },
+
+      findParent: function (page) {
+        for (var i in this.pages) {
+          var ids = this.pages[i]["group_l0_ids"];
+          if (ids) {
+            for (var id in ids) {
+              if (ids[id] == page) {
+                return i;
+              }
+            }
+          }
+        }
+        return false;
+      },
+
+      getParents: function () {
+        var retval = [];
+        var self = this;
+        function _parentLink(result, current) {
+          var parent = self.findParent(current);
+          if (!parent)
+            return;
+          result.push(parent);
+          _parentLink(result, parent);
+        }
+        _parentLink(retval, this.currentPage);
+        return retval;
+      },
+
+      initBlocks: function VenueViewer_initBlocks(dataSource, next) {
+        var self = this;
+
+        self.blocks = {};
+        self.pages = { root: { group_l0_ids: {} } };
+
+        dataSource(function (pages) {
+          self.pages = pages;
+          var currentPageData = pages[self.currentPage];
+
+          function getSiblings(page) {
+            var rt = [];
+            for (var id in currentPageData.group_l0_ids) {
+              if (currentPageData.group_l0_ids[id] == page) rt.push(self.shapes[id]);
+            }
+            return rt;
+          }
+
+          for (var id in currentPageData.group_l0_ids) (function(id) {
+            var shape = self.shapes[id];
+            var page = currentPageData.group_l0_ids[id];
+            self.blocks[id] = shape;
+            shape.addEvent({
+              mouseover: function(evt) {
+                if (self.uiMode == 'select1') {
+                  var shapes = getSiblings(page);
+                  for (var i=0, l=shapes.length; i<l; i++) {
+                    var shape = copyShape(shapes[i]);
+                    shape.style(util.convertToFashionStyle(CONF.DEFAULT.OVERLAYS['highlighted_block']));
+                    self.drawable.draw(shape);
+                    self.overlayShapes.save(shapes[i].id, shape);
+                  }
+                  self.callbacks.messageBoard.up.call(self, self.pages[page].name);
+                }
+              },
+              mouseout: function(evt) {
+                if (self.uiMode == 'select1') {
+                  var shapes = getSiblings(page);
+                  for (var i=0, l=shapes.length; i<l; i++) {
+                    var shape = self.overlayShapes.restore(shapes[i].id);
+                    if (shape) self.drawable.erase(shape);
+                  }
+                  self.callbacks.messageBoard.down.call(self);
+                }
+              },
+              mousedown: function(evt) {
+                if (self.uiMode == 'select1') {
+                  self.callbacks.messageBoard.down.call(self);
+                  self.navigate(page);
+                }
+              }
+            });
+          })(id);
+
+          next.call(self);
+        }, self.callbacks.message);
+      },
+
+      initSeats: function VenueViewer_initSeats(dataSource, next) {
+        var self = this;
+        dataSource(function (seats) {
+          for (var id in self.shapes) {
+            var shape = self.shapes[id];
+            var meta  = seats[id];
+            if (!meta) continue;
+            self.seats[id] = new seat.Seat(id, shape, meta, self, {
+              mouseover: function(evt) {
+                if (self.uiMode == 'select')
+                  return;
+                self.callbacks.messageBoard.up(self.seatTitles[this.id]);
+                self.seatAdjacencies.getCandidates(this.id, self.adjacencyLength(), function (candidates) {
+                  if (candidates.length == 0)
+                    return;
+                  var candidate = null;
+                  for (var i = 0; i < candidates.length; i++) {
+                    candidate = candidates[i];
+                    for (var j = 0; j < candidate.length; j++) {
+                      if (!self.seats[candidate[j]].selectable()) {
+                        candidate = null;
+                        break;
+                      }
+                    }
+                    if (candidate) {
+                      break;
+                    }
+                  }
+                  if (!candidate)
+                    return;
+                  for (var i = 0; i < candidate.length; i++) {
+                    var seat = self.seats[candidate[i]];
+                    seat.addOverlay('highlighted');
+                    self.highlighted[seat.id] = seat;
+                  }
+                }, self.callbacks.message);
+              },
+              mouseout: function(evt) {
+                if (self.uiMode == 'select')
+                  return;
+                self.callbacks.messageBoard.down.call(self);
+                var highlighted = self.highlighted;
+                self.highlighted = {};
+                for (var i in highlighted)
+                  highlighted[i].removeOverlay('highlighted');
+              },
+              mousedown: function(evt) {
+                self.callbacks.click(self, self, self.highlighted);
+              }
+            });
+          }
+          next.call(self);
+        }, self.callbacks.message);
+      },
+
+      refresh: function VenueViewer_refresh() {
+        for (var id in this.seats) this.seats[id].refresh();
+      },
+
+      addKeyEvent: function VenueViewer_addKeyEvent() {
+        if (this.keyEvents) return;
+        var self = this;
+        this.keyEvents = {
+          down: function(e) { if (util.eventKey(e).shift) self.shift = true;  return true; },
+          up:   function(e) { if (util.eventKey(e).shift) self.shift = false; return true; }
+        };
+
+        $(document).bind('keydown', this.keyEvents.down);
+        $(document).bind('keyup',   this.keyEvents.up);
+      },
+
+      removeKeyEvent: function VenueViewer_removeKeyEvent() {
+        if (!this.keyEvents) return;
+
+        $(document).unbind('keydown', this.keyEvents.down);
+        $(document).unbind('keyup',   this.keyEvents.up);
+      },
+
+      changeUIMode: function VenueViewer_changeUIMode(type) {
+        if (this.drawable) {
+          var self = this;
+          this.drawable.removeEvent(["mousedown", "mouseup", "mousemove"]);
+
+          switch(type) {
+          case 'move':
+            var mousedown = false, scrollPos = null;
+            this.drawable.addEvent({
+              mousedown: function (evt) {
+                if (self.animating) return;
+                mousedown = true;
+                scrollPos = self.drawable.scrollPosition();
+                self.startPos = evt.logicalPosition;
+              },
+
+              mouseup: function (evt) {
+                if (self.animating) return;
+                mousedown = false;
+                if (self.dragging) {
+                  self.drawable.releaseMouse();
+                  self.dragging = false;
+                }
+              },
+
+              mousemove: function (evt) {
+                if (self.animating) return;
+                if (!self.dragging) {
+                  if (mousedown) {
+                    self.dragging = true;
+                    self.drawable.captureMouse();
+                  } else {
+                    return;
+                  }
+                }
+                var newScrollPos = Fashion._lib.subtractPoint(
+                  scrollPos,
+                  Fashion._lib.subtractPoint(
+                    evt.logicalPosition,
+                    self.startPos));
+                scrollPos = self.drawable.scrollPosition(newScrollPos);
+              }
             });
             break;
 
-          case 'text':
-            if (n.firstChild) {
-              shape = new Fashion.Text({
-                fontSize: 10,
-                text: n.firstChild.nodeValue,
-                zIndex: 99
-              });
-            }
+          case 'select1':
+            /* this.drawable.addEvent({
+              mousedown: {
+              }
+            });
+            */
             break;
 
-          case 'rect':
-            shape = new Fashion.Rect({
-              size: {
-                x: parseFloat(attrs.width),
-                y: parseFloat(attrs.height)
+          case 'select':
+            this.drawable.addEvent({
+              mousedown: function(evt) {
+                if (self.animating) return;
+                self.startPos = evt.logicalPosition;
+                self.rubberBand.position({x: self.startPos.x,
+                                          y: self.startPos.y});
+                self.rubberBand.size({x: 0, y: 0});
+                self.drawable.draw(self.rubberBand);
+                self.dragging = true;
+                self.drawable.captureMouse();
               },
-              corner: {
-                x: parseFloat(attrs.rx || 0),
-                y: parseFloat(attrs.ry || 0)
+
+              mouseup: function(evt) {
+                if (self.animating) return;
+                self.drawable.releaseMouse();
+                self.dragging = false;
+                var selection = [];
+                var hitTest = util.makeHitTester(self.rubberBand);
+                for (var id in self.seats) {
+                  var seat = self.seats[id];
+                  if ((hitTest(seat.shape) || (self.shift && seat.selected())) &&
+                      (!self.callbacks.selectable
+                       || self.callbacks.selectable(this, seat))) {
+                    selection.push(seat);
+                  }
+                }
+                self.unselectAll();
+                self.drawable.erase(self.rubberBand);
+                for (var i = 0; i < selection.length; i++)
+                  selection[i].selected(true);
+                self.callbacks.select(self, selection);
+              },
+
+              mousemove: function(evt) {
+                if (self.animating) return;
+                if (self.dragging) {
+                  var pos = evt.logicalPosition;
+                  var w = Math.abs(pos.x - self.startPos.x);
+                  var h = Math.abs(pos.y - self.startPos.y);
+
+                  var origin = {
+                    x: (pos.x < self.startPos.x) ? pos.x : self.startPos.x,
+                    y: (pos.y < self.startPos.y) ? pos.y : self.startPos.y
+                  };
+
+                  if (origin.x !== self.startPos.x || origin.y !== self.startPos.y)
+                    self.rubberBand.position(origin);
+
+                  self.rubberBand.size({x: w, y: h});
+                }
+              }
+            });
+            break;
+
+          case 'zoomin':
+            this.drawable.addEvent({
+              mouseup: function(evt) {
+                self.zoom(self.zoomRatio * 1.2, evt.logicalPosition);
+              }
+            });
+            break;
+
+          case 'zoomout':
+            this.drawable.addEvent({
+              mouseup: function(evt) {
+                self.zoom(self.zoomRatio / 1.2, evt.logicalPosition);
               }
             });
             break;
 
           default:
-            continue outer;
+            throw new Error("Invalid ui mode: " + type);
           }
-
-          if (shape !== null) {
-            var x = parseFloat(attrs.x),
-                y = parseFloat(attrs.y);
-            if (!isNaN(x) && !isNaN(y))
-              shape.position({ x: x, y: y });
-            shape.style(buildStyleFromSvgStyle(currentSvgStyle));
-            drawable.draw(shape);
-          }
-          shapes[attrs.id] = shape;
         }
-      }).call(self,
-        { fill: false, fillOpacity: false,
-          stroke: false, strokeOpacity: false },
-        {},
-        drawing.documentElement.childNodes);
+        this.uiMode = type;
+        this.callbacks.uimodeselect(this, type);
+      },
 
-      self.drawable = drawable;
-      self.shapes = shapes;
+      zoom: function(ratio, center) {
+        if (isNaN(ratio))
+          return;
+        var previousRatio = this.zoomRatio;
+        if (this.callbacks.zoomRatioChanging) {
+          var corrected = this.callbacks.zoomRatioChanging(ratio);
+          if (corrected === false)
+            return;
+          if (corrected)
+            ratio = corrected;
+        }
+        if (!this.drawable) {
+          this.zoomRatio = ratio;
+          this.callbacks.zoomRatioChange && this.callbacks.zoomRatioChange(ratio);
+          return;
+        }
 
-      var cs = drawable.contentSize();
-      var vs = drawable.viewportSize();
-      var center = {
-        x: (cs.x - vs.x) / 2,
-        y: (cs.y - vs.y) / 2
-      };
-
-      self.drawable.transform(Fashion.Matrix.scale(self.zoomRatio));
-      self.changeUIMode(self.uiMode);
-      next.call(this);
-    }, self.callbacks.message);
-  };
-
-  VenueViewer.prototype.initSeats = function VenueViewer_initSeats(dataSource, next) {
-    var self = this;
-    dataSource(function (seats) {
-      for (var id in self.shapes) {
-        var shape = self.shapes[id];
-        var meta  = seats[id];
-        if (!meta) continue;
-        self.seats[id] = new seat.Seat(id, shape, meta, self, {
-          mouseover: function(evt) {
-            if (self.uiMode == 'select')
-              return;
-            self.seatAdjacencies.getCandidates(this.id, self.adjacencyLength(), function (candidates) {
-              if (candidates.length == 0)
-                return;
-              var candidate = null;
-              for (var i = 0; i < candidates.length; i++) {
-                candidate = candidates[i];
-                for (var j = 0; j < candidate.length; j++) {
-                  if (!self.seats[candidate[j]].selectable()) {
-                    candidate = null;
-                    break;
-                  }
-                }
-                if (candidate) {
-                  break;
-                }
-              }
-              if (!candidate)
-                return;
-              for (var i = 0; i < candidate.length; i++) {
-                var seat = self.seats[candidate[i]];
-                seat.addOverlay('highlighted');
-                self.highlighted[seat.id] = seat;
-              }
-            }, self.callbacks.message);
-          },
-          mouseout: function(evt) {
-            if (self.uiMode == 'select')
-              return;
-            var highlighted = self.highlighted;
-            self.highlighted = {};
-            for (var i in highlighted)
-              highlighted[i].removeOverlay('highlighted');
-          },
-          mousedown: function(evt) {
-            self.callbacks.click && self.callbacks.click(self, self, self.highlighted);
+        if (!center) {
+          var vs = this.drawable.viewportSize();
+          var logicalSize = {
+            x: vs.x / previousRatio,
+            y: vs.y / previousRatio
+          };
+          var scroll = this.drawable.scrollPosition();
+          center = {
+            x: scroll.x + (logicalSize.x / 2),
+            y: scroll.y + (logicalSize.y / 2)
           }
-        });
-      }
-      next.call(self);
-    }, self.callbacks.message);
-  };
+        }
 
-  VenueViewer.prototype.refresh = function VenueViewer_refresh() {
-    for (var id in this.seats)
-      this.seats[id].refresh();
-  };
+        this.drawable.transform(Fashion.Matrix.scale(ratio)
+                                .translate({x: -this.contentOriginPosition.x,
+                                            y: -this.contentOriginPosition.y}));
 
-  VenueViewer.prototype.addKeyEvent = function VenueViewer_addKeyEvent() {
-    if (this.keyEvents) return;
+        var vs = this.drawable.viewportSize();
 
-    var self = this;
+        var logicalSize = {
+          x: vs.x / ratio,
+          y: vs.y / ratio
+        };
 
-    this.keyEvents = {
-      down: function(e) { if (util.eventKey(e).shift) self.shift = true;  return true; },
-      up:   function(e) { if (util.eventKey(e).shift) self.shift = false; return true; }
-    };
+        var logicalOrigin = {
+          x: center.x - (logicalSize.x / 2),
+          y: center.y - (logicalSize.y / 2)
+        };
 
-    $(document).bind('keydown', this.keyEvents.down);
-    $(document).bind('keyup',   this.keyEvents.up);
+        this.drawable.scrollPosition(logicalOrigin);
+        this.zoomRatio = ratio;
+        this.callbacks.zoomRatioChange && this.callbacks.zoomRatioChange(ratio);
+      },
 
-  };
+      unselectAll: function VenueViewer_unselectAll() {
+        var prevSelection = this.selection;
+        this.selection = {};
+        for (var id in prevSelection) {
+          this.seats[id].__unselected();
+        }
+      },
 
-  VenueViewer.prototype.removeKeyEvent = function VenueViewer_removeKeyEvent() {
-    if (!this.keyEvents) return;
-
-    $(document).unbind('keydown', this.keyEvents.down);
-    $(document).unbind('keyup',   this.keyEvents.up);
-  };
-
-  VenueViewer.prototype.changeUIMode = function VenueViewer_changeUIMode(type) {
-    if (this.drawable) {
-      var self = this;
-      this.drawable.removeEvent(["mousedown", "mouseup", "mousemove"]);
-
-      switch(type) {
-      case 'move':
-        var mousedown = false, scrollPos = null;
-        this.drawable.addEvent({
-          mousedown: function (evt) {
-            if (self.animating)
-              return;
-            mousedown = true;
-            scrollPos = self.drawable.scrollPosition();
-            self.startPos = evt.logicalPosition;
-          },
-
-          mouseup: function (evt) {
-            if (self.animating)
-              return;
-            mousedown = false;
-            if (self.dragging) {
-              self.drawable.releaseMouse();
-              self.dragging = false;
-            }
-          },
-
-          mousemove: function (evt) {
-            if (self.animating)
-              return;
-            if (!self.dragging) {
-              if (mousedown) {
-                self.dragging = true;  
-                self.drawable.captureMouse();
-              } else {
-                return;
-              }
-            }
-            var newScrollPos = Fashion._lib.subtractPoint(
-              scrollPos,
-              Fashion._lib.subtractPoint(
-                evt.logicalPosition,
-                self.startPos));
-            scrollPos = self.drawable.scrollPosition(newScrollPos);
+      _select: function VenueViewer__select(seat, value) {
+        if (value) {
+          if (!(seat.id in this.selection)) {
+            this.selection[seat.id] = seat;
+            this.selectionCount++;
+            seat.__selected();
           }
-        });
-        break; 
-
-      case 'select1':
-        break;
-
-      case 'select':
-        this.drawable.addEvent({
-          mousedown: function(evt) {
-            if (self.animating)
-              return;
-            self.startPos = evt.logicalPosition;
-            self.rubberBand.position({x: self.startPos.x, y: self.startPos.y});
-            self.rubberBand.size({x: 0, y: 0});
-            self.drawable.draw(self.rubberBand);
-            self.dragging = true;
-            self.drawable.captureMouse();
-          },
-
-          mouseup: function(evt) {
-            if (self.animating)
-              return;
-            self.drawable.releaseMouse();
-            self.dragging = false;
-            var selection = []; 
-            var hitTest = util.makeHitTester(self.rubberBand);
-            for (var id in self.seats) {
-              var seat = self.seats[id];
-              if ((hitTest(seat.shape) || (self.shift && seat.selected())) &&
-                  (!self.callbacks.selectable
-                      || self.callbacks.selectable(this, seat))) {
-                selection.push(seat);
-              }
-            }
-            self.unselectAll();
-            self.drawable.erase(self.rubberBand);
-            for (var i = 0; i < selection.length; i++)
-              selection[i].selected(true);
-            self.callbacks.select && self.callbacks.select(self, selection);
-          },
-
-          mousemove: function(evt) {
-            if (self.animating)
-              return;
-            if (self.dragging) {
-              var pos = evt.logicalPosition;
-              var w = Math.abs(pos.x - self.startPos.x);
-              var h = Math.abs(pos.y - self.startPos.y);
-
-              var origin = {
-                x: (pos.x < self.startPos.x) ? pos.x : self.startPos.x,
-                y: (pos.y < self.startPos.y) ? pos.y : self.startPos.y
-              };
-
-              if (origin.x !== self.startPos.x || origin.y !== self.startPos.y)
-                self.rubberBand.position(origin);
-
-              self.rubberBand.size({x: w, y: h});
-            }
+        } else {
+          if (seat.id in this.selection) {
+            delete this.selection[seat.id];
+            this.selectionCount--;
+            seat.__unselected();
           }
-        });
-        break;
+        }
+      },
 
-      case 'zoomin':
-        this.drawable.addEvent({
-          mouseup: function(evt) {
-            self.zoomRatio*=1.2;
-            this.transform(Fashion.Matrix.scale(self.zoomRatio));
+      adjacencyLength: function VenueViewer_adjacencyLength(value) {
+        if (value !== void(0)) {
+          this._adjacencyLength = value;
+        }
+        return this._adjacencyLength;
+      },
+
+      scrollTo: function VenueViewer_scrollTo(leftTopCorner) {
+        if (this.animating) return;
+        var scrollPos = this.drawable.scrollPosition();
+        leftTopCorner = { x: leftTopCorner.x, y: leftTopCorner.y };
+        var contentSize = this.drawable.contentSize();
+        var rightBottomCorner = Fashion._lib.addPoint(
+          leftTopCorner,
+          this.drawable._inverse_transform.apply(
+            this.drawable.viewportInnerSize()));
+        if (rightBottomCorner.x > contentSize.x)
+          leftTopCorner.x += contentSize.x - rightBottomCorner.x;
+        if (rightBottomCorner.y > contentSize.y)
+          leftTopCorner.y += contentSize.y - rightBottomCorner.y;
+        leftTopCorner.x = Math.max(leftTopCorner.x, 0);
+        leftTopCorner.y = Math.max(leftTopCorner.y, 0);
+
+        this.animating = true;
+        var self = this;
+        var t = setInterval(function () {
+          var delta = Fashion._lib.subtractPoint(
+            leftTopCorner,
+            scrollPos);
+          if (Math.sqrt(delta.x * delta.x + delta.y * delta.y) < 1) {
+            clearInterval(t);
+            self.animating = false;
+            return;
           }
-        });
-        break;
+          delta = { x: delta.x / 2, y: delta.y / 2 };
+          scrollPos = Fashion._lib.addPoint(scrollPos, delta);
+          self.drawable.scrollPosition(scrollPos);
+        }, 50);
+      },
 
-      case 'zoomout':
-        this.drawable.addEvent({
-          mouseup: function(evt) {
-            self.zoomRatio/=1.2;
-            this.transform(Fashion.Matrix.scale(self.zoomRatio));
-          }
-        });
-        break;
-
-      default:
-        throw new Error("Invalid ui mode: " + type);
+      back: function VenueViewer_back() {
+        if (this.parentLinks.length >= 2) {
+          var link = this.parentLinks[this.parentLinks.length - 2];
+          link[0].call(this);
+        }
       }
     }
-    this.uiMode = type;
-    this.callbacks.uimodeselect && this.callbacks.uimodeselect(this, type);
-  };
+  });
 
-  VenueViewer.prototype.unselectAll = function VenueViewer_unselectAll() {
-    var prevSelection = this.selection;
-    this.selection = {};
-    for (var id in prevSelection) {
-      this.seats[id].__unselected();
-    }
-  };
-
-  VenueViewer.prototype._select = function VenueViewer__select(seat, value) {
-    if (value) {
-      if (!(seat.id in this.selection)) {
-        this.selection[seat.id] = seat;
-        this.selectionCount++;
-        seat.__selected();
-      }
-    } else {
-      if (seat.id in this.selection) {
-        delete this.selection[seat.id];
-        this.selectionCount--;
-        seat.__unselected();
-      }
-    }
-  };
-
-  VenueViewer.prototype.adjacencyLength = function VenueViewer_adjacencyLength(value) {
-    if (value !== void(0)) {
-      this._adjacencyLength = value;
-    }
-    return this._adjacencyLength;
-  };
-
-  VenueViewer.prototype.scrollTo = function VenueViewer_scrollTo(leftTopCorner) {
-    if (this.animating)
-      return;
-    var scrollPos = this.drawable.scrollPosition();
-    leftTopCorner = { x: leftTopCorner.x, y: leftTopCorner.y };
-    var contentSize = this.drawable.contentSize();
-    var rightBottomCorner = Fashion._lib.addPoint(
-      leftTopCorner,
-      this.drawable._inverse_transform.apply(
-        this.drawable.viewportInnerSize()));
-    if (rightBottomCorner.x > contentSize.x)
-      leftTopCorner.x += contentSize.x - rightBottomCorner.x;
-    if (rightBottomCorner.y > contentSize.y)
-      leftTopCorner.y += contentSize.y - rightBottomCorner.y;
-    leftTopCorner.x = Math.max(leftTopCorner.x, 0);
-    leftTopCorner.y = Math.max(leftTopCorner.y, 0);
-
-    this.animating = true;
-    var self = this;
-    var t = setInterval(function () {
-      var delta = Fashion._lib.subtractPoint(
-        leftTopCorner,
-        scrollPos);
-      if (Math.sqrt(delta.x * delta.x + delta.y * delta.y) < 1) {
-        clearInterval(t);
-        self.animating = false;
-        return;
-      }
-      delta = { x: delta.x / 2, y: delta.y / 2 };
-      scrollPos = Fashion._lib.addPoint(scrollPos, delta);
-      self.drawable.scrollPosition(scrollPos);
-    }, 50);
-  };
+  /* main */
 
   $.fn.venueviewer = function (options) {
     var aux = this.data('venueviewer');
@@ -1096,7 +1690,7 @@ console.log(ad2);
         aux.dispose();
 
       var _options = $.extend({}, options);
-     
+
       var createMetadataLoader = (function () {
         var conts = {}, allData = null, first = true;
         return function createMetadataLoader(key) {
@@ -1118,7 +1712,7 @@ console.log(ad2);
                   var _conts = conts;
                   conts = {};
                   for (var k in _conts)
-                    _conts[k].error(message);
+                    _conts[k] && _conts[k].error(message);
                 }
               });
               first = false;
@@ -1133,27 +1727,14 @@ console.log(ad2);
         };
       })();
 
-      _options.dataSource = {
-        drawing:
-          typeof options.dataSource.drawing == 'function' ?
-            options.dataSource.drawing:
-            function (next, error) {
-              $.ajax({
-                type: 'get',
-                url: options.dataSource.drawing,
-                dataType: 'xml',
-                success: function(xml) { next(xml); },
-                error: function(xhr, text) { error("Failed to load drawing data (reason: " + text + ")"); }
-              });
-            }
-      };
       $.each(
         [
           [ 'stockTypes', 'stock_types' ],
           [ 'seats', 'seats' ],
           [ 'areas', 'areas' ],
           [ 'info', 'info' ],
-          [ 'seatAdjacencies', 'seat_adjacencies' ]
+          [ 'seatAdjacencies', 'seat_adjacencies' ],
+          [ 'pages', 'pages' ]
         ],
         function(n, k) {
           _options.dataSource[k[0]] =
@@ -1164,8 +1745,9 @@ console.log(ad2);
       );
       aux = new VenueViewer(this, _options),
       this.data('venueviewer', aux);
-      if (options.uimode)
-        aux.changeUIMode(options.uimode);
+
+      if (options.uimode) aux.changeUIMode(options.uimode);
+
     } else if (typeof options == 'string' || options instanceof String) {
       if (options == 'remove') {
         aux.dispose();
@@ -1179,7 +1761,10 @@ console.log(ad2);
           break;
 
         case 'uimode':
-          aux.changeUIMode(arguments[1]);
+          if (arguments.length >= 2)
+            aux.changeUIMode(arguments[1]);
+          else
+            return aux.uiMode;
           break;
 
         case 'selection':
@@ -1191,6 +1776,15 @@ console.log(ad2);
         case 'adjacency':
           aux.adjacencyLength(arguments[1]|0);
           break;
+
+        case 'back':
+          aux.back();
+          break;
+
+        case 'zoom':
+          aux.zoom(arguments[1]);
+          break;
+
         }
       }
     }

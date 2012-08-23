@@ -40,6 +40,11 @@ p.cartNickname{
   line-height: 0px;
 }
 
+#selectSeat .venueViewerWrapper .tooltip {
+    border: #ffaa33 1px solid;
+    background-color: #ffee88;
+}
+
 .modal {
   /* margin-left: -340px; */
   width: 660px;

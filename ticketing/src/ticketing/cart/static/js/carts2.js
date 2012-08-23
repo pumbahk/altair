@@ -393,7 +393,10 @@ cart.VenuePresenter.prototype = {
         var self = this;
         this.callbacks = {
             selectable: function () { return self.selectable.apply(self, arguments); },
-            click: function () { self.click.apply(self, arguments); }
+            click: function () { self.click.apply(self, arguments); },
+            error: function (err) {
+                alert(err);
+            }
         };
         this.view = new this.viewType({
             presenter: this
@@ -836,6 +839,8 @@ cart.VenueView = Backbone.View.extend({
         this.currentViewer = $('.venueViewer');
         this.presenter = this.options.presenter;
         this.readOnly = true;
+        this.zoomRatioMin = 1;
+        this.zoomRatioMax = 2.5;
         var self = this;
         $('#selectSeat .btn-select-seat').click(function () {
             if (self.readOnly)
@@ -849,6 +854,29 @@ cart.VenueView = Backbone.View.extend({
             self.presenter.onCancelPressed();
             return false;
         });
+        var verticalSlider = $('<div></div>').smihica_vertical_slider({
+            'height': 100,
+            onchange: function (pos) {
+                var level = pos * pos;
+                var zoomRatio = self.zoomRatioMin + ((self.zoomRatioMax - self.zoomRatioMin) * level);
+                try {
+                    self.currentViewer.venueviewer("zoom", zoomRatio);
+                } catch (e) {}
+            }
+        }).css({
+            'position': 'absolute',
+            'left': '20px',
+            'top': '20px'
+        });
+        this.offsetParent = this.currentViewer.parent();
+        verticalSlider.appendTo(this.offsetParent);
+        this.verticalSlider = verticalSlider;
+        this.tooltip = $('<div class="tooltip"></div>')
+            .css({
+                'position': 'absolute',
+            })
+            .hide()
+            .appendTo(this.offsetParent);
     },
     getChoices: function () {
         var selection = this.currentViewer.venueviewer('selection');
@@ -859,9 +887,45 @@ cart.VenueView = Backbone.View.extend({
         return retval;
     },
     updateVenueViewer: function(dataSource, callbacks) {
+        var self = this;
+        var _callbacks = $.extend($.extend({}, callbacks), {
+            zoomRatioChanging: function (zoomRatio) {
+                return Math.min(Math.max(zoomRatio, self.zoomRatioMin), self.zoomRatioMax);
+            },
+            zoomRatioChange: function (zoomRatio) {
+                var pos = Math.sqrt((zoomRatio - self.zoomRatioMin) / (self.zoomRatioMax - self.zoomRatioMin));
+                self.verticalSlider.smihica_vertical_slider('position', pos);
+            },
+            load: function (viewer) {
+                self.zoomRatioMin = viewer.zoomRatioMin;
+                viewer.zoom(viewer.zoomRatioMin);
+                callbacks.load && callbacks.load.apply(this, arguments);
+            },
+            messageBoard: (function() {
+                self.tooltip.hide();
+                var offset = self.offsetParent.offset();
+                $(document.body).mousemove(function(e){
+                    self.tooltip.css({
+                        left: (e.pageX - offset.left) + 'px', 
+                        top:  (e.pageY - offset.top) + 'px'
+                    });
+                });
+
+                return {
+                    up: function(msg) {
+                        self.tooltip.text(msg).fadeIn(100);
+                    },
+                    down: function() {
+                        self.tooltip.stop();
+                        self.tooltip.fadeOut(100);
+                    }
+                }
+            })()
+        });
+
         this.currentViewer.venueviewer({
             dataSource: dataSource,
-            callbacks: callbacks
+            callbacks: _callbacks
         })
         this.currentViewer.venueviewer("load");
         this.render();
@@ -907,7 +971,7 @@ cart.Venue = Backbone.Model.extend({
           info: factory(function (data) { return data['info']; }),
           seats: factory(function (data) { return data['seats']; }),
           areas: factory(function (data) { return data['areas']; }),
-          seat_adjacencies: function (next, error, length) {
+          seatAdjacencies: function (next, error, length) {
             var _params = $.extend(params, { length_or_range: length });
             $.ajax({
               url: util.build_route_path(params.data_source.seat_adjacencies._params),
@@ -918,7 +982,7 @@ cart.Venue = Backbone.Model.extend({
               }
             });
           },
-          stock_types: function (next, error) {
+          stockTypes: function (next, error) {
             continuations.stock_types_loaded.continuation(next, error);
           }
         };
@@ -954,7 +1018,7 @@ function newMetadataLoaderFactory(url) {
             var _conts = conts;
             conts = [];
             for (var i = 0; i < _conts.length; i++)
-              _conts[i].error(message);
+              _conts[i].error && _conts[i].error(message);
           }
         });
         first = false;
@@ -970,15 +1034,17 @@ function newMetadataLoaderFactory(url) {
 function createDataSource(params) {
   var factory = newMetadataLoaderFactory(params.data_source.seats);
   return {
-    drawing: function (next, error) {
-      $.ajax({
-        url: params.data_source.venue_drawing,
-        dataType: 'xml',
-        success: function (data) { next(data); },
-        error: function (xhr, text) {
-          error("Failed to load drawing data (" + text + ")");
-        }
-      });
+    drawing: function (page) {
+      return function (next, error) {
+        $.ajax({
+          url: params.data_source.venue_drawing,
+          dataType: 'xml',
+          success: function (data) { next(data); },
+          error: function (xhr, text) {
+            error("Failed to load drawing data (" + text + ")");
+          }
+        });
+      }
     },
     stockTypes: function (next, error) {
       var stock_types = {};
@@ -989,7 +1055,7 @@ function createDataSource(params) {
     info: factory(function (data) { return data['info']; }),
     seats: factory(function (data) { return data['seats']; }),
     areas: factory(function (data) { return data['areas']; }),
-    seat_adjacencies: function (next, error, length) {
+    seatAdjacencies: function (next, error, length) {
       var _params = $.extend(params, { length_or_range: length });
       $.ajax({
         url: util.build_route_path(params.data_source.seat_adjacencies._params),
@@ -1000,9 +1066,8 @@ function createDataSource(params) {
         }
       });
     },
-    stock_types: function (next, error) {
-      continuations.stock_types_loaded.continuation(next, error);
-    }
+    // pages: factory(function (data) { return data['pages']; })
+    pages: function (next, error) { next({ 'root': {} }); }
   };
 }
 

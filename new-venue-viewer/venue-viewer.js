@@ -1019,17 +1019,7 @@ function _map(arr, fn) {
       },
 
       load: function VenueViewer_load() {
-        if (this.drawable !== null)
-          this.drawable.dispose();
-
-        if (this.blocks !== null) {
-          for (id in this.blocks) {
-            this.blocks[id].removeEvent();
-          }
-        }
-
-        this.originalStyles.clear();
-        this.overlayShapes.clear();
+        this.dispose();
 
         this.seatAdjacencies = null;
         var self = this;
@@ -1050,7 +1040,7 @@ function _map(arr, fn) {
                 self.availableAdjacencies = data.available_adjacencies;
                 self.seatAdjacencies = new seat.SeatAdjacencies(self);
                 self.callbacks.loadstart.call(self, 'seats');
-                self.initSeats(self.dataSource.seats, function () {
+                self.initeeats(self.dataSource.seats, function () {
                   self.callbacks.load.call(self, self);
                 });
               }, self.callbacks.message);
@@ -1065,6 +1055,15 @@ function _map(arr, fn) {
           this.drawable.dispose();
           this.drawable = null;
         }
+
+        if (this.blocks !== null) {
+          for (id in this.blocks) {
+            this.blocks[id].removeEvent();
+          }
+        }
+
+        this.originalStyles.clear();
+        this.overlayShapes.clear();
         this.seats = null;
         this.selection = null;
         this.highlighted = null;

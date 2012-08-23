@@ -11,6 +11,7 @@
 
 <link rel="stylesheet" href="${request.static_url('ticketing.cart:static/css/import.css')}" type="text/css" media="all" />
 <link rel="stylesheet" href="${request.static_url('ticketing.cart:static/css/custom.css')}" type="text/css" media="all" />
+<link rel="stylesheet" href="${request.static_url('ticketing.cart:static/js/css/jquery.smihica_vertical_slider/smihica_vertical_slider.css')}" type="text/css" media="all" />
 
 <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/fashion.js')}"></script>
 <![if !(lt IE 9)]>
@@ -24,7 +25,7 @@
 <!-- <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/carts.js')}"></script> -->
 <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/carts2.js')}"></script>
 <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/venue-viewer.js')}"></script>
-
+<script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/jquery.smihica_vertical_slider.js')}" charset="utf-8"></script>
 <style type="text/css">
 .modal {
 	font-size: 150%;
@@ -167,7 +168,10 @@ $(function() {cart.init(venues_selection, selected, upper_limit, cart_release_ur
             </div>
             <div id="selectSeat">
               <div class="selectSeatLeftPane">
-                <div class="venueViewer"></div>
+                <div class="venueViewerWrapper">
+                  <div class="slider"></div>
+                  <div class="venueViewer"></div>
+                </div>
                 <div>
                   <button class="btn-select-seat">購入</button>
                   <button class="btn-cancel">キャンセル</button>
