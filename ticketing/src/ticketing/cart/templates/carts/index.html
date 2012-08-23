@@ -60,7 +60,7 @@ $(function() {cart.init(venues_selection, selected, upper_limit, cart_release_ur
 	<div id="main">
 		<h1><img src="${request.static_url('ticketing.cart:static/img/settlement/89ers_title_settlement.gif')}" alt="チケット購入" width="950" height="40" /></h1>
 				<p class="cartNickname">ようこそ ${h.get_nickname(request)} さん</p>
-		<h2 id="ticketName">${event['title']}</h2>
+		<h2 id="ticketName">${event['title']} (<span class="performanceNameSpace"></span>)</h2>
 		<form id="form1" name="form1" method="post" action="">
 			<div id="settlementSelectBox">
 				<div id="settlementSelectBoxInner">
@@ -183,6 +183,10 @@ $(function() {cart.init(venues_selection, selected, upper_limit, cart_release_ur
 				<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_event.gif')}" alt="イベント詳細" width="106" height="29" /></h2>
 				<table summary="イベント詳細情報">
 					<tbody>
+                        <tr>
+                          <th scope="row">イベント名</th>
+                          <td>${event["title"]} (<span class="performanceNameSpace"></span>)</td>
+                        </tr>
 						<tr>
 							<th scope="row">開催日時</th>
 							<td id="descPerformanceDate"></td>
