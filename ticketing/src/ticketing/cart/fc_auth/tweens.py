@@ -15,7 +15,7 @@ class FCAuthTween(object):
         finally:
             if hasattr(request, 'context'):
                 logger.debug('fc auth tween %s' % request.context)
-                if hasattr(request.context, 'membership') and request.context.membership:
-                    logger.debug('check fc_auth %s' % request.context.membership)
+                if hasattr(request.context, 'memberships') and request.context.memberships:
+                    logger.debug('check fc_auth %s' % request.context.memberships)
                     request.environ['ticketing.cart.fc_auth.required'] = True
                     request.environ['ticketing.cart.fc_auth.login_url'] = login_url(request)
