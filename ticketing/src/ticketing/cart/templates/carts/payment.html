@@ -32,6 +32,13 @@
 	<div id="main">
 		<h1><img src="${request.static_url('ticketing.cart:static/img/settlement/89ers_title_settlement.gif')}" alt="チケット購入" width="950" height="40" /></h1>
     ${h.get_nickname(request)} 
+
+     %if request.session.peek_flash():
+	   %for message in request.session.pop_flash():
+		 <div class="error">${message}</div>
+	   %endfor
+     %endif
+
 		<form id="form1" name="form1" method="post" action="${request.url}">
 			<div class="settlementBox">
 				<div class="settlementBoxInner">
@@ -111,8 +118,18 @@
                             <tr>
                                 <th scope="row">${form['mail_address'].label}(半角英数(例:mail@example.ne.jp)）</th>
                                 <td>
-                                    ${form['mail_address']}
-                                        ${h.error_list(request, form, 'mail_address')}
+								  <ul>
+									<li>
+                                      ${form['mail_address'].label}
+                                      ${form['mail_address']}
+                                      ${h.error_list(request, form, 'mail_address')}
+									</li>
+									<li>
+                                      ${form['mail_address2'].label}
+                                      ${form['mail_address2']}
+                                      ${h.error_list(request, form, 'mail_address2')}
+									</li>
+								  </ul>
                                 </td>
                             </tr>
                             <tr>
