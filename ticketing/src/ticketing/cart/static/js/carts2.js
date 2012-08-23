@@ -523,7 +523,7 @@ cart.PerformanceSearch = Backbone.Model.extend({
                 return venue;
             }
         }
-    },
+    }
 });
 
 cart.Performance = Backbone.Model.extend({
