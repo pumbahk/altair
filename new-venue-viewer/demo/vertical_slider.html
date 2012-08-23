@@ -10,11 +10,11 @@
 <body>
   <div id="slider1" style="height:70px"></div>
   <script type="text/javascript">
-    $('#slider1').smihica_vertical_slider({
+    console.log($('#slider1').smihica_vertical_slider({
       onchange: function (pos) {
         console.log(pos, this.smihica_vertical_slider('position'));
       }
-    });
+    }));
   </script>
 </body>
 </html>

@@ -19,7 +19,7 @@ $.fn.smihica_vertical_slider = function (options_or_key, value) {
       .append(minus = $('<div class="smihica-vertical-slider-minus"></div>'))
       .append(vbar  = $('<div class="smihica-vertical-slider-vbar"></div>'))
       .append(hbar  = $('<div class="smihica-vertical-slider-hbar"></div>'));
-    this.replaceWith(cont);
+    this.append(cont);
 
     var zoomRatioMin = 0.5;
     var zoomRatioMax = 2.2;
