@@ -41,7 +41,14 @@
 		<h1><img src="${request.static_url('ticketing.cart:static/img/settlement/89ers_title_settlement.gif')}" alt="チケット購入" width="950" height="40" /></h1>
         ${h.get_nickname(request)} 
 		<p><img src="${request.static_url('ticketing.cart:static/img/settlement/completion.gif')}" alt="購入を完了いたしました。" width="201" height="50" /></p>
-
+			<div class="confirmBox">
+				<div class="confirmBoxInner">
+					<h3>予約番号</h3>
+				  <div class="confirm-message">
+					${order.order_no}
+				  </div>
+				</div>
+			</div>
 			<div class="confirmBox">
 				<div class="confirmBoxInner">
 					<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_shopping.gif')}" alt="お買い物内容" width="114" height="30" /></h2>
