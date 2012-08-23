@@ -52,18 +52,27 @@
 								<tr>
                   <% checked = 'checked' if str(m.id) == checked_id else '' %>
 									<td class="settlementPayRadio"><input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" ${checked} /></td>
-									<td><dl style="width:300px;">
+									<td onclick="$(this).parents('tr').find('input').click();">
+										<dl>
 										<dt>${m.payment_method.name}</dt>
-										<dd>${h.format_currency(m.transaction_fee)}
-                                            (${h.fee_type(m.payment_method.fee_type)})
+										<dd class="paymentFee_${h.format_number(m.transaction_fee)}">
+											<span class="paymentFee">${h.format_currency(m.transaction_fee)}</span>
+                                            <span class="paymentFeeType">(${h.fee_type(m.payment_method.fee_type)})</span>
+											<div class="description">
+											${m.payment_method.description | n}
+											</div>
                                         </dd>
                                         </dl>
                                     </td>
-                                    <td>
-                                        <dl style="width:300px;">
+									<td onclick="$(this).parents('tr').find('input').click();">
+                                        <dl>
 										<dt>${m.delivery_method.name}</dt>
-										<dd>${h.format_currency(m.delivery_fee)}
-                                            (${h.fee_type(m.delivery_method.fee_type)})
+										<dd class="devlieryFee_${h.format_number(m.delivery_fee)}">
+											<span class="deliveryFee">${h.format_currency(m.delivery_fee)}</span>
+                                            <span class="deliveryFeeType">(${h.fee_type(m.delivery_method.fee_type)})</span>
+											<div class="description">
+											${m.delivery_method.description | n}
+											</div>
                                         </dd>
 									</dl></td>
 								</tr>

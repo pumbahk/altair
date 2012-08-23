@@ -844,6 +844,7 @@ class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentMethod'
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
+    description = Column(String(2000))
     fee = Column(Numeric(precision=16, scale=2), nullable=False)
     fee_type = Column(Integer, nullable=False, default=FeeTypeEnum.Once.v[0])
 
@@ -866,6 +867,7 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'DeliveryMethod'
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
+    description = Column(String(2000))
     fee = Column(Numeric(precision=16, scale=2), nullable=False)
     fee_type = Column(Integer, nullable=False, default=FeeTypeEnum.Once.v[0])
 
