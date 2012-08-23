@@ -39,7 +39,7 @@ class MembershipAuthorizationPolicy(object):
             permit_membership = any([(ms in principals) for ms in membership_principals])
             permit_membergroup = any([(mp in principals) for mp in membergroup_principals])
             if not permit_membership:
-                logger.debug("%s not in %s" % (membership_principal, principals))
+                logger.debug("%s not in %s" % (membership_principals, principals))
                 return False
 
             if not permit_membergroup:

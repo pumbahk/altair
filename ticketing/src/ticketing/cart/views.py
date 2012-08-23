@@ -344,6 +344,9 @@ class ReserveView(object):
     @view_config(route_name='cart.order', request_method="POST", renderer='json')
     def reserve(self):
         order_items = self.ordered_items
+        if not order_items:
+            return dict(result='NG', reason="no products")
+
         selected_seats = self.request.params.getall('selected_seat')
         logger.debug('order_items %s' % order_items)
         try:
