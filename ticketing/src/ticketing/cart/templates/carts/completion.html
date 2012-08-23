@@ -11,6 +11,14 @@
 <link rel="shortcut icon" href="${request.static_url('ticketing.cart:static/img/common/favicon.ico')}" />
 <link rel="stylesheet" href="${request.static_url('ticketing.cart:static/css/import.css')}" type="text/css" media="all" />
 <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/jquery.js')}"></script>
+<style type="text/css">
+  .confirm-message{
+    margin-left: 7px;
+  }
+  .next-action{
+    margin-top: 20px;
+  }
+</style>
 </head>
 <body id="settlement">
 
@@ -81,26 +89,42 @@
 			<div class="confirmBox">
 				<div class="confirmBoxInner">
                     <h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_payment.gif')}" alt="お支払い" width="78" height="30" /></h2>
-${h.render_payment_finished_viewlet(request, order)}
+					<div class="confirm-message">
+					  ${h.render_payment_finished_viewlet(request, order)}
+					</div>
                 </div>
             </div>
 			<div class="confirmBox">
 				<div class="confirmBoxInner">
 					<h3>配送情報</h3>
-${h.render_delivery_finished_viewlet(request, order)}
+					<div class="confirm-message">
+					  ${h.render_delivery_finished_viewlet(request, order)}
+					</div>
                 </div>
             </div>
 
+			## todo: pluggable
 			<div class="confirmBox">
 				<div class="confirmBoxInner">
 				  <h3>注意事項</h3>
- 				  <ul>
-					<li>お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。<a href="mailto:89ers@ticketstar.jp">89ers@ticketstar.jp</a> までご連絡ください。<br />
-					  （お問い合わせの際は、お申込み時のお名前と電話番号を記載お願いします）</li>
-					<li>お申込内容は、「<a href="${request.route_url('order_review.form')}">履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。</li>
- 				  </ul>
-                </div>
+				  <div class="confirm-message">
+					<ul>
+					  <li>お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。<a href="mailto:89ers@ticketstar.jp">89ers@ticketstar.jp</a> までご連絡ください。<br />
+						（お問い合わせの際は、お申込み時のお名前と電話番号を記載お願いします）</li>
+					  <li>お申込内容は、「<a href="#">履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。</li>
+					</ul>
+
+				  </div>
+
+				  <div class="next-action">
+					<a href="http://89ers.tstar.jp/top"
+					   ><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_back_to_top.gif')}"/></a>
+					<a href="#"
+					   ><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_other_ticket.gif')}"/></a>
+				  </div>
+              </div>
             </div>
+
 	</div>
 	<!-- ========== /main ========== -->
 	
