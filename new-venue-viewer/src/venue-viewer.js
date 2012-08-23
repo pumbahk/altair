@@ -55,7 +55,8 @@
         select: null,
         changeCurrentClassName: null,
         messageBoard: null,
-        slider: null
+        zoomRatioChanging: null,
+        zoomRatioChange: null
       },
       dataSource: null,
       zoomRatio: CONF.DEFAULT.ZOOM_RATIO,
@@ -97,7 +98,7 @@
             this.callbacks[k] = options.callbacks[k] || function () {};
         }
         this.dataSource = options.dataSource;
-        if (options.zoomRatio) this.zoomRatio = options.zoomRatio;
+        if (options.zoomRatio) zoom(options.zoomRatio);
         this.rubberBand.style(CONF.DEFAULT.MASK_STYLE);
         canvas.empty();
         this.optionalViewportSize = options.viewportSize;
@@ -319,8 +320,7 @@
             x: (wr < hr) ? origin_of_shapes.x : center.x - ((vs.x/2)/hr),
             y: (wr < hr) ? center.y - ((vs.y/2)/wr) : origin_of_shapes.y
           };
-          self.zoomRatio = r;
-          self.callbacks.slider.setOriginZoomRatio(r);
+          self.zoomRatioMin = r;
           self.contentOriginPosition = origin;
 
           drawable.transform(
@@ -634,12 +634,27 @@
       },
 
       zoom: function(ratio, center) {
+        if (isNaN(ratio))
+          return;
+        var previousRatio = this.zoomRatio;
+        if (this.callbacks.zoomRatioChanging) {
+          var corrected = this.callbacks.zoomRatioChanging(ratio);
+          if (corrected === false)
+            return;
+          if (corrected)
+            ratio = corrected;
+        }
+        if (!this.drawable) {
+          this.zoomRatio = ratio;
+          this.callbacks.zoomRatioChange && this.callbacks.zoomRatioChange(ratio);
+          return;
+        }
 
         if (!center) {
           var vs = this.drawable.viewportSize();
           var logicalSize = {
-            x: vs.x / this.zoomRatio,
-            y: vs.y / this.zoomRatio
+            x: vs.x / previousRatio,
+            y: vs.y / previousRatio
           };
           var scroll = this.drawable.scrollPosition();
           center = {
@@ -648,7 +663,6 @@
           }
         }
 
-        this.zoomRatio = ratio;
         this.drawable.transform(Fashion.Matrix.scale(ratio)
                                 .translate({x: -this.contentOriginPosition.x,
                                             y: -this.contentOriginPosition.y}));
@@ -666,7 +680,8 @@
         };
 
         this.drawable.scrollPosition(logicalOrigin);
-
+        this.zoomRatio = ratio;
+        this.callbacks.zoomRatioChange && this.callbacks.zoomRatioChange(ratio);
       },
 
       unselectAll: function VenueViewer_unselectAll() {

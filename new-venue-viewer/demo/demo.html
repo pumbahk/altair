@@ -4,6 +4,7 @@
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
   <title>Venue Viewer Demo</title>
   <link rel="stylesheet" href="js/css/bootstrap/jquery-ui-1.8.16.custom.css" />
+  <link rel="stylesheet" href="js/css/jquery.smihica_vertical_slider/smihica_vertical_slider.css" />
   <script type="text/javascript" src="js/jquery-1.7.2.js"></script>
   <script type="text/javascript" src="js/jquery-ui-1.8.20.custom.min.js"></script>
   <script type="text/javascript" src="js/fashion.js"></script>
@@ -14,6 +15,7 @@
   <script type="text/javascript" src="js/fashion.vml.js"></script>
   <![endif]-->
   <script type="text/javascript" src="js/venue-viewer.js"></script>
+  <script type="text/javascript" src="js/jquery.smihica_vertical_slider.js"></script>
   <style type="text/css">
 .ui-widget {
   font-size: 12px;
@@ -39,71 +41,28 @@
   padding: 15px;
 }
 
+#wrapper {
+  position: relative;
+}
+
+#slider {
+  position: absolute;
+  left: 20px;
+  top: 20px;
+  width: 20px;
+  height:100px;
+}
+
 #back-button {
   position: absolute;
-  top:  160px;
-  left: 400px;
+  top:  20px;
+  left: 380px;
   width: 32px;
   height: 32px;
   background: url(img/backButton.png);
   cursor: pointer;
   z-index: 99;
 }
-
-#slider {
-    position: absolute;
-    top:  165px;
-    left: 20px;
-    width: 20px;
-    height: 100px;
-    z-index: 99;
-}
-
-#slider-plus {
-    position: absolute;
-    cursor: pointer;
-    top: 0px;
-    left: 0px;
-    width: 20px;
-    height: 20px;
-    background: url(img/zoomIn.png);
-    z-index: 101;
-}
-
-#slider-minus {
-    position: absolute;
-    cursor: pointer;
-    top: 80px;
-    left: 0px;
-    width: 20px;
-    height: 20px;
-    background: url(img/zoomOut.png);
-    z-index: 101;
-}
-
-#slider-vbar {
-    position: absolute;
-    cursor: pointer;
-    top: 10px;
-    left: 0px;
-    width: 20px;
-    height: 80px;
-    background: url(img/zoomBar.png);
-    background-repeat: repeat-y;
-    z-index: 100;
-}
-
-#slider-hbar {
-    position: absolute;
-    cursor: pointer;
-    top: 67px;
-    left: 0px;
-    width: 20px;
-    height: 20px;
-    background: url(img/zoomSlider.png);
-    z-index: 101;
-}
-
 </style>
 </head>
 <body>
@@ -123,18 +82,19 @@
     <span id="current-class-name-holder"></span>
     <div id="mouseover-message-board"></div>
   </div>
-  <div id="venue"><div class="message">Loading...</div></div>
-  <div id="slider">
-    <div id="slider-plus"></div>
-    <div id="slider-minus"></div>
-    <div id="slider-vbar"></div>
-    <div id="slider-hbar"></div>
+  <div id="wrapper">
+    <div id="venue"><div class="message">Loading...</div></div>
+    <div id="back-button"></div>
+    <div id="slider"></div>
   </div>
-  <div id="back-button"></div>
   <script type="text/javascript">
 var currentStockTypeId = "";
 var venue = $('#venue');
+var slider = $('#slider');
 function loadVenue() {
+  var zoomRatioMin = 0;
+  var zoomRatioMax = 2.5;
+
   venue.venueviewer({
     viewportSize: {
       x: 430, y: 400
@@ -189,6 +149,14 @@ function loadVenue() {
           back_btn.show();
         }
       },
+      zoomRatioChanging: function (zoomRatio) {
+        return Math.min(Math.max(zoomRatio, zoomRatioMin), zoomRatioMax);
+      },
+      zoomRatioChange: function (zoomRatio) {
+        console.log(zoomRatio);
+        var pos = Math.sqrt((zoomRatio - zoomRatioMin) / (zoomRatioMax - zoomRatioMin));
+        slider.smihica_vertical_slider('position', pos);
+      },
       messageBoard: (function() {
         var board = $("#mouseover-message-board");
         board.hide();
@@ -211,87 +179,6 @@ function loadVenue() {
         }
       })(),
 
-      slider: (function() {
-        var sliderHeight = 100;
-        var cont  = $("#slider");
-        var plus  = $("#slider-plus");
-        var minus = $("#slider-minus");
-        var vbar  = $("#slider-vbar");
-        var hbar  = $("#slider-hbar");
-
-        var zoomRatioMin = 0.5;
-        var zoomRatioMax = 2.2;
-        var hbarMoving = false;
-        var hbarPositionMax = sliderHeight - (13+20);
-        var hbarPositionMin = 13;
-        var hbarPosition = hbarPositionMax;
-        var lastMouseY = 0;
-
-        var onHbarMoved = function(pos) {
-          var level = ((hbarPositionMax - pos) / (hbarPositionMax - hbarPositionMin));
-          level = level * level;
-          var zoomRatioWidth = zoomRatioMax - zoomRatioMin;
-          var zoomRatio = zoomRatioMin + (zoomRatioWidth * level);
-          venue.venueviewer("zoom", zoomRatio);
-        }
-
-        var lastHbarPosition = hbarPosition;
-        var setPositionHbar = function (pos, disableCallback) {
-          if (pos > hbarPositionMax) pos = hbarPositionMax;
-          else if (pos < hbarPositionMin) pos = hbarPositionMin;
-          hbar.css({ top: pos + 'px' });
-          if (lastHbarPosition != pos && !disableCallback) {
-            onHbarMoved(pos);
-          }
-          lastHbarPosition = pos;
-          return pos;
-        }
-
-        var moveHandler = function(e) {
-          if (hbarMoving) {
-            var dist = e.pageY - lastMouseY;
-            hbarPosition = setPositionHbar(hbarPosition + dist);
-            lastMouseY = e.pageY;
-          }
-        };
-
-        var upHandler = function(e) {
-          hbarMoving = false;
-          $(document).unbind("mousemove", moveHandler);
-          $(document).unbind("mouseup", upHandler);
-        };
-
-        hbar.mousedown(function(e) {
-          hbarMoving = true;
-          lastMouseY = e.pageY;
-
-          $(document).mousemove(moveHandler);
-          $(document).mouseup(upHandler);
-        });
-
-        vbar.click(function(e) {
-          hbarPosition = setPositionHbar(e.offsetY);
-          lastMouseY = e.pageY;
-        });
-
-        var step = 10;
-        plus.click(function(e) {
-          hbarPosition = setPositionHbar(hbarPosition - step);
-        });
-        minus.click(function(e) {
-          hbarPosition = setPositionHbar(hbarPosition + step);
-        });
-
-
-        return {
-          setOriginZoomRatio: function(ratio) {
-            zoomRatioMin = ratio;
-            hbarPosition = setPositionHbar(hbarPositionMax, true);
-          }
-        };
-
-      })(),
-
       message: function (msg) {
         $("<div></div>").text(msg).dialog({
           modal: true,
@@ -302,6 +189,8 @@ function loadVenue() {
       },
 
       load: function (viewer) {
+        zoomRatioMin = viewer.zoomRatioMin;
+        viewer.zoom(viewer.zoomRatioMin);
         var n = $("#toolbar-seat-adjacencies-selector");
         $.each(viewer.availableAdjacencies, function(i, v) {
           $('<option></option>').attr("value", v).text(v)
@@ -356,6 +245,15 @@ function loadVenue() {
       }
     }
   }).venueviewer("load");
+
+  slider.smihica_vertical_slider({
+    onchange: function (pos) {
+      var level = pos * pos;
+      var zoomRatio = zoomRatioMin + ((zoomRatioMax - zoomRatioMin) * level);
+      console.log(zoomRatio);
+      venue.venueviewer("zoom", zoomRatio);
+    }
+  });
 }
 
 $(".action-zoomin").click(function () {
