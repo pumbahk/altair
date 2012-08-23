@@ -8,6 +8,7 @@ class SeatCSV(object):
     seat_header = [
         'seat_id',
         'seat_no',
+        'seat_areas',
         ]
     stock_attribute_header = [
         'floor',
