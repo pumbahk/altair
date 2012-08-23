@@ -1,7 +1,8 @@
 # coding: utf-8
 
 from pyramid.view import view_config
-from pyramid.exceptions import NotFound, Forbidden, HTTPFound
+from pyramid.exceptions import NotFound, Forbidden
+from pyramid.httpexceptions import HTTPFound
 from ..exceptions import *
 import logging
 
