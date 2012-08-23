@@ -77,7 +77,7 @@ class Reserving(object):
             SeatStatus.status==int(SeatStatusEnum.Vacant)
         ).filter(
             SeatIndex.seat_id==Seat.id
-        ).order_by(SeatIndex.index)[:1]
+        ).order_by(SeatIndex.index, Seat.l0_id)[:1]
 
     def get_vacant_seats(self, stock_id, quantity):
         """ 空き席を取得 """
