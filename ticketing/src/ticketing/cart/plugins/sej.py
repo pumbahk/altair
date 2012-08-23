@@ -27,6 +27,7 @@ from datetime import datetime, timedelta
 import numpy
 import pystache
 from ticketing.cart import helpers as cart_helper
+import re
 
 PAYMENT_PLUGIN_ID = 3
 DELIVERY_PLUGIN_ID = 2
@@ -61,8 +62,8 @@ def get_ticket(order_no, product_item, svg):
     performance = product_item.performance
     return dict(
         ticket_type         = SejTicketType.TicketWithBarcode,
-        event_name          = han2zen(performance.event.title)[:40].replace(' ', ''),
-        performance_name    = han2zen(performance.name)[:40].replace(' ', ''),
+        event_name          = re.sub('[ \-\.,;\'\"]', '', han2zen(performance.event.title)[:20]),
+        performance_name    = re.sub('[ \-\.,;\'\"]', '', han2zen(performance.name)[:20]),
         ticket_template_id  = u'TTTS000001',
         performance_datetime= performance.start_on,
         xml = SejTicketDataXml(svg)
@@ -273,7 +274,7 @@ class SejPaymentDeliveryPlugin(object):
         return order
 
 
-@view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer='ticketing.cart.plugins:templates/carts/sej_delivery_complete.html')
+@view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer='ticketing.cart.plugins:templates/sej_delivery_complete.html')
 def sej_delivery_viewlet(context, request):
     order = context.order
     sej_order = get_sej_order(order)
@@ -282,7 +283,7 @@ def sej_delivery_viewlet(context, request):
         sej_order=sej_order
     )
 
-@view_config(context=ICartDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer='ticketing.cart.plugins:templates/carts/sej_delivery_confirm.html')
+@view_config(context=ICartDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer='ticketing.cart.plugins:templates/sej_delivery_confirm.html')
 def sej_delivery_confirm_viewlet(context, request):
     return Response(text=u'セブンイレブン受け取り')
 
@@ -295,7 +296,7 @@ def sej_payment_viewlet(context, request):
         sej_order=sej_order
     )
 
-@view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer='ticketing.cart.plugins:templates/carts/sej_payment_confirm.html')
+@view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer='ticketing.cart.plugins:templates/sej_payment_confirm.html')
 def sej_payment_confirm_viewlet(context, request):
     return Response(text=u'セブンイレブン支払い')
 
