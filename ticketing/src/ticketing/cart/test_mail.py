@@ -177,7 +177,7 @@ class SendCompleteMailTest(unittest.TestCase):
             )
         
         payment_method = PaymentMethod(payment_plugin_id=1)
-        delivery_method = DeliveryMethod(delivery_plugin_id=5)
+        delivery_method = DeliveryMethod(delivery_plugin_id=4)
         method_pair = PaymentDeliveryMethodPair(payment_method=payment_method, 
                                                 delivery_method=delivery_method)
         order.payment_delivery_pair = method_pair
@@ -226,7 +226,7 @@ class SendCompleteMailTest(unittest.TestCase):
             )
         
         payment_method = PaymentMethod(payment_plugin_id=1, name=u"クレジットカード決済")
-        delivery_method = DeliveryMethod(delivery_plugin_id=5, name=u"QR受け取り")
+        delivery_method = DeliveryMethod(delivery_plugin_id=4, name=u"QR受け取り")
         method_pair = PaymentDeliveryMethodPair(payment_method=payment_method, 
                                                 delivery_method=delivery_method)
         order.payment_delivery_pair = method_pair
@@ -286,7 +286,7 @@ class SendCompleteMailTest(unittest.TestCase):
         from ticketing.cart.plugins.multicheckout import PAYMENT_ID
         self.assertEquals(payment_method.payment_plugin_id, PAYMENT_ID)
 
-        delivery_method = DeliveryMethod(delivery_plugin_id=5, name=u"QR受け取り")
+        delivery_method = DeliveryMethod(delivery_plugin_id=4, name=u"QR受け取り")
         from ticketing.cart.plugins.qr import PLUGIN_ID
         self.assertEquals(delivery_method.delivery_plugin_id, PLUGIN_ID)
 
