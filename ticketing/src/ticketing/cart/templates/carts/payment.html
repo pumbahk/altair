@@ -51,29 +51,27 @@
 							<table>
 								<tr>
                   <% checked = 'checked' if str(m.id) == checked_id else '' %>
-									<td class="settlementPayRadio"><input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" ${checked} /></td>
+									<td class="settlementPayRadio">
+                    <input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" ${checked} />
+                  </td>
 									<td onclick="$(this).parents('tr').find('input').click();">
 										<dl>
 										<dt>${m.payment_method.name}</dt>
 										<dd class="paymentFee_${h.format_number(m.transaction_fee)}">
 											<span class="paymentFee">${h.format_currency(m.transaction_fee)}</span>
-                                            <span class="paymentFeeType">(${h.fee_type(m.payment_method.fee_type)})</span>
-											<div class="description">
-											${m.payment_method.description | n}
-											</div>
-                                        </dd>
-                                        </dl>
-                                    </td>
+                      <span class="paymentFeeType">(${h.fee_type(m.payment_method.fee_type)})</span>
+											<div class="description">${m.payment_method.description or ''}</div>
+                    </dd>
+                    </dl>
+                  </td>
 									<td onclick="$(this).parents('tr').find('input').click();">
-                                        <dl>
+                    <dl>
 										<dt>${m.delivery_method.name}</dt>
 										<dd class="devlieryFee_${h.format_number(m.delivery_fee)}">
 											<span class="deliveryFee">${h.format_currency(m.delivery_fee)}</span>
-                                            <span class="deliveryFeeType">(${h.fee_type(m.delivery_method.fee_type)})</span>
-											<div class="description">
-											${m.delivery_method.description | n}
-											</div>
-                                        </dd>
+                      <span class="deliveryFeeType">(${h.fee_type(m.delivery_method.fee_type)})</span>
+											<div class="description">${m.delivery_method.description or ''}</div>
+                    </dd>
 									</dl></td>
 								</tr>
 							</table>
