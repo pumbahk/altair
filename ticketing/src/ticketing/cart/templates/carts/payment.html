@@ -60,7 +60,7 @@
 										<dd class="paymentFee_${h.format_number(m.transaction_fee)}">
 											<span class="paymentFee">${h.format_currency(m.transaction_fee)}</span>
                       <span class="paymentFeeType">(${h.fee_type(m.payment_method.fee_type)})</span>
-											<div class="description">${m.payment_method.description or ''}</div>
+											<div class="description">${m.payment_method.description or '' | n}</div>
                     </dd>
                     </dl>
                   </td>
@@ -70,7 +70,7 @@
 										<dd class="devlieryFee_${h.format_number(m.delivery_fee)}">
 											<span class="deliveryFee">${h.format_currency(m.delivery_fee)}</span>
                       <span class="deliveryFeeType">(${h.fee_type(m.delivery_method.fee_type)})</span>
-											<div class="description">${m.delivery_method.description or ''}</div>
+											<div class="description">${m.delivery_method.description or '' | n}</div>
                     </dd>
 									</dl></td>
 								</tr>
@@ -83,8 +83,8 @@
             <div class="confirmBox">
                 <div class="confirmBoxInner">
 		    <h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_customer_info.gif')}" alt="購入者情報" width="103" height="30" /></h2>
-                    <h2>購入者情報</h2>
                     <!--
+                    <h2>購入者情報</h2>
                     <div class="settlementPayBox">
                       <div class="settlementPayBoxInner">
                     -->
