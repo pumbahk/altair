@@ -992,8 +992,7 @@ cart.Venue = Backbone.Model.extend({
     defaults: {
     },
     initialize: function() {
-    },
-
+    }
 });
 
 
