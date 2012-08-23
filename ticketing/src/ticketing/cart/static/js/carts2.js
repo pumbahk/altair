@@ -77,9 +77,17 @@ cart.init = function(venues_selection, selected, upper_limit, cart_release_url) 
 };
 
 cart.createContentOfShoppingElement = function(product) {
+	var comma = function(s, f) {
+		var to = String(s);
+		var tmp = "";
+		while(to != (tmp = to.replace(/^([+-]?\d+)(\d\d\d)/,"$1,$2"))) {
+			to = tmp;
+		}
+		return to;
+	};
     var item = $('<tr/>');
     var name = $('<td/>').text(product.name);;
-    var price = $('<td/>').text("￥ "+product.price);
+    var price = $('<td/>').text("￥ "+comma(product.price));
     var quantity = $('<td/>').text(product.quantity + " 枚");
     // TODO: 予約席をProductごとに追加
     var seats_container = $('<td/>');
