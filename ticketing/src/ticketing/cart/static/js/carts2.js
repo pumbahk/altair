@@ -208,11 +208,12 @@ cart.PerformanceSearchPresenter.prototype = {
         var performance = this.performanceSearch.getPerformance(performance_id);
         this.performance.url = performance.seat_types_url;
         this.performance.fetch({
-            success: function () {
+            success: function (req, data) {
                 var performance_date = cart.util.datestring_japanize(performance.date)
                 $('#performanceDate').text(performance_date);
                 $('#descPerformanceDate').text(performance_date);
                 $('#performanceVenue').text(performance.name);
+                $(".performanceNameSpace").text(data["performance_name"]);
             }
         });
     }
