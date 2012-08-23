@@ -12,6 +12,7 @@ from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.exceptions import NotFound
 from pyramid.response import Response
 from pyramid.view import view_config
+from pyramid.threadlocal import get_current_request
 from js.jquery_tools import jquery_tools
 from urllib2 import urlopen
 from zope.deprecation import deprecate
@@ -32,12 +33,20 @@ import transaction
 
 logger = logging.getLogger(__name__)
 
+def back(func):
+    def retval(*args, **kwargs):
+        request = get_current_request()
+        if request.params.has_key('back'):
+            ReleaseCartView(request)()
+            return HTTPFound(request.route_url('cart.index', event_id=request.params.get('event_id')))
+        return func(*args, **kwargs)
+    return retval
+
 class IndexView(object):
     """ 座席選択画面 """
     def __init__(self, request):
         self.request = request
         self.context = request.context
-
 
     @view_config(route_name='cart.index', renderer='carts/index.html', xhr=False, permission="buy")
     @view_config(route_name='cart.index.sales', renderer='carts/index.html', xhr=False, permission="buy")
@@ -696,6 +705,7 @@ class CompleteView(object):
         self.context = request.context
         # TODO: Orderを表示？
 
+    @back
     @view_config(route_name='payment.finish', renderer="carts/completion.html", request_method="POST")
     @view_config(route_name='payment.finish', request_type='.interfaces.IMobileRequest', renderer="carts_mobile/completion.html", request_method="POST")
     def __call__(self):
