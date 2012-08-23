@@ -118,7 +118,7 @@ class Reserving(object):
             not_(SeatAdjacency.id.in_(reserved_adjacencies))
         ).filter(
             SeatIndex.seat_id==Seat.id
-        ).order_by(SeatIndex.index).first()
+        ).order_by(SeatIndex.index, Seat.l0_id).first()
 
         if adjacency is None:
             raise NotEnoughAdjacencyException
