@@ -873,7 +873,7 @@ cart.VenueView = Backbone.View.extend({
         this.verticalSlider = verticalSlider;
         this.tooltip = $('<div class="tooltip"></div>')
             .css({
-                'position': 'absolute',
+                'position': 'absolute'
             })
             .hide()
             .appendTo(this.offsetParent);
