@@ -59,7 +59,7 @@ $(function() {cart.init(venues_selection, selected, upper_limit, cart_release_ur
 	<!-- ========== main ========== -->
 	<div id="main">
 		<h1><img src="${request.static_url('ticketing.cart:static/img/settlement/89ers_title_settlement.gif')}" alt="チケット購入" width="950" height="40" /></h1>
-				<p class="cartNickname">ようこそ ${h.get_nickname(request)} さん</p>
+				<p class="cartNickname">ようこそ ${h.get_nickname(request)}</p>
 		<h2 id="ticketName">${event['title']} (<span class="performanceNameSpace"></span>)</h2>
 		<form id="form1" name="form1" method="post" action="">
 			<div id="settlementSelectBox">
