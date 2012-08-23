@@ -15,6 +15,7 @@
     modal.find('#id').val(id);
     modal.find('#name').val($(el).find('#name').text());
     modal.find('#fee').val($(el).find('#fee').text());
+    modal.find('*[name="description"]').val(decodeURI($(el).find('.payment_method_description').text()));
     modal.modal('toggle');
   }
   function delete_payment_method() {

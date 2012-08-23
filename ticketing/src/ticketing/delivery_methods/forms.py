@@ -45,6 +45,6 @@ class DeliveryMethodForm(Form):
         coerce=int
     )
     description = TextField(
-        validators=[Required()],
+        label=u"説明文(HTML)", 
         widget=TextArea()
     )
