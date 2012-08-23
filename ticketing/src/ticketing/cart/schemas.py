@@ -155,3 +155,20 @@ class ClientForm(Form):
             Email(),
         ]
     )
+    mail_address2 = fields.TextField(
+        label=u"確認用メールアドレス",
+        filters=[strip_spaces],
+        validators=[
+            Required(),
+            Email(),
+        ]
+    )
+
+    def validate(self):
+        status = super(ClientForm, self).validate()
+
+        data = self.data
+        if data["mail_address"] != data["mail_address2"]:
+            getattr(self, "mail_address").errors.append(u"メールアドレスと確認メールアドレスが一致していません。")
+            status = False
+        return status

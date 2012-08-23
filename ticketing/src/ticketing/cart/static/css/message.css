@@ -5,10 +5,12 @@ ul.error-list li {
   color: #D8000C;
   background-color: #FFBABA;
   margin-left: 10px;
+  font-size: 125%;
 }
 
 .error {
   color: #D8000C;
   background-color: #FFBABA;
   margin-left: 10px;
+  font-size: 125%;
 }
