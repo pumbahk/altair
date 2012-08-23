@@ -1,14 +1,14 @@
 """create extra mailinfo
 
 Revision ID: 362dc10402f5
-Revises: 9ef25d188e3
+Revises: 406252f94050
 Create Date: 2012-08-22 19:48:02.905148
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '362dc10402f5'
-down_revision = '9ef25d188e3'
+down_revision = '406252f94050'
 
 from alembic import op
 import sqlalchemy as sa
