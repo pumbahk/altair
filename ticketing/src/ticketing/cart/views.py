@@ -233,7 +233,11 @@ class IndexView(object):
             for p in query]
 
         return dict(products=products,
-                    seat_type=dict(id=seat_type.id, name=seat_type.name))
+                    seat_type=dict(id=seat_type.id, name=seat_type.name),
+                    sales_segment=dict(
+                        start_at=salessegment.start_at.strftime("%Y-%m-%d %H:%M"),
+                        end_at=salessegment.end_at.strftime("%Y-%m-%d %H:%M")
+                    ))
 
     @view_config(route_name='cart.seats', renderer="json")
     def get_seats(self):

@@ -283,6 +283,11 @@ cart.StockTypeListPresenter.prototype = {
                 }
                 var selected = self.view.selected;
                 self.orderFormPresenter.showOrderForm(selected, stock_type, productCollection);
+                var sales_segment = data.sales_segment;
+                $('#descSalesTerm').text(
+                  cart.util.datestring_japanize(sales_segment.start_at) + '〜' +
+                  cart.util.datestring_japanize(sales_segment.end_at)
+                );
             }
         );
     }
