@@ -41,7 +41,14 @@
 		<h1><img src="${request.static_url('ticketing.cart:static/img/settlement/89ers_title_settlement.gif')}" alt="チケット購入" width="950" height="40" /></h1>
         ${h.get_nickname(request)} 
 		<p><img src="${request.static_url('ticketing.cart:static/img/settlement/completion.gif')}" alt="購入を完了いたしました。" width="201" height="50" /></p>
-
+			<div class="confirmBox">
+				<div class="confirmBoxInner">
+					<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_order_number.gif')}" alt="予約番号" width="103" height="30" /></h2>
+				  <div class="confirm-message">
+					${order.order_no}
+				  </div>
+				</div>
+			</div>
 			<div class="confirmBox">
 				<div class="confirmBoxInner">
 					<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_shopping.gif')}" alt="お買い物内容" width="114" height="30" /></h2>
@@ -96,7 +103,7 @@
             </div>
 			<div class="confirmBox">
 				<div class="confirmBoxInner">
-					<h3>配送情報</h3>
+					<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_reception.gif')}" alt="配送情報" width="103" height="30" /></h2>
 					<div class="confirm-message">
 					  ${h.render_delivery_finished_viewlet(request, order)}
 					</div>
@@ -109,6 +116,10 @@
 				  <h3>注意事項</h3>
 				  <div class="confirm-message">
 					<ul>
+
+					  <li>
+ブラウザの「戻る」ボタンを使用するとエラーになります。前ページに戻る場合は画面内に表示されているボタンを使用して下さい。なお、ページによってはブラウザの「更新」ボタンを使用するとエラーになる場合があります。
+					  </li>
 					  <li>お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。<a href="mailto:89ers@ticketstar.jp">89ers@ticketstar.jp</a> までご連絡ください。<br />
 						（お問い合わせの際は、お申込み時のお名前と電話番号を記載お願いします）</li>
 					  <li>お申込内容は、「<a href="#">履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。</li>

@@ -10,6 +10,23 @@
 <meta http-equiv="content-script-type" content="text/javascript" />
 <link rel="shortcut icon" href="${request.static_url('ticketing.cart:static/img/common/favicon.ico')}" />
 <link rel="stylesheet" href="${request.static_url('ticketing.cart:static/css/import.css')}" type="text/css" media="all" />
+<style>
+  #btn-back {
+    border: 0;
+    width: 226px;
+    height: 46px;
+    vertical-align: top;
+    padding: 1px;
+    margin-right: 20px;
+    background: url("${request.static_url('ticketing.cart:static/img/settlement/btn_back_to_selection.gif')}") left top no-repeat;
+  }
+  #btn-complete {
+    border: 0;
+    width: 226px;
+    height: 46px;
+    background: url("${request.static_url('ticketing.cart:static/img/settlement/btn_buy.gif')}") left top no-repeat;
+  }
+</style>
 <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/jquery.js')}"></script>
 </head>
 <body id="settlement">
@@ -25,7 +42,7 @@
 		</p>
 	</div>
 	<!-- ========== /header ========== -->
-	
+
 	<hr />
 
 	<!-- ========== main ========== -->
@@ -34,6 +51,7 @@
         ${h.get_nickname(request)} 
         <form id="form1" action="${request.route_url('payment.finish')}" method="post">
             ${form.csrf_token()}
+          <input type="hidden" name="event_id" value="${cart.performance.event.id}"/>
 			<div class="confirmBox">
 				<div class="confirmBoxInner">
 					<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_shopping.gif')}" alt="お買い物内容" width="114" height="30" /></h2>
@@ -115,12 +133,13 @@ shipping = cart.shipping_address
             </div>
 			<div class="confirmBox">
 				<div class="confirmBoxInner">
-					<h3>配送情報</h3>
+					<h3><img src="${request.static_url('ticketing.cart:static/img/settlement/title_reception.gif')}" alt="配送情報" width="103" height="30" /></h3>
                     ${h.render_delivery_confirm_viewlet(request, cart)}
                 </div>
             </div>
 			<div class="confirmBox">
 				<div class="confirmBoxInner">
+					<h3><img src="${request.static_url('ticketing.cart:static/img/settlement/title_customer_info.gif')}" alt="購入者情報" width="103" height="30" /></h3>
 					<h3>購入者情報</h3>
 					<table id="confirmDelivery" summary="配送先情報">
 						<tr>
@@ -207,8 +226,11 @@ shipping = cart.shipping_address
 					</div>
 				</div>
 			</div>
-			<p class="align2"><input type="image" src="${request.static_url('ticketing.cart:static/img/settlement/btn_buy.gif')}" alt="購入する" width="226" height="46" /></p>
-		</form>
+			<p class="align2">
+        <input id="btn-back" type="submit" name="back" value="" />
+        <input id="btn-complete" type="submit" value="" />
+      </p>
+    </form>
 	</div>
 	<!-- ========== /main ========== -->
 	
