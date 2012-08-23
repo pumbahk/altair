@@ -197,9 +197,8 @@ $(function() {cart.init(venues_selection, selected, upper_limit, cart_release_ur
 						</tr>
 						<tr>
 							<th scope="row">販売期間</th>
-							<td>
-								${event['sales_start_on']}
-								${event['sales_end_on']}
+							<td id="descSalesTerm">
+								${event['sales_start_on']} 〜 ${event['sales_end_on']}
 							</td>
 						</tr>
 					%for v in event_extra_info:

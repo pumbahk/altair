@@ -2004,6 +2004,29 @@
 	padding: 10px 10px 15px;
 }
 
+.settlementPayBox dd .deliveryFee,
+.settlementPayBox dd .paymentFee {
+	color: #bf191f;
+	font-weight: bold;
+	font-size: 116.7%;
+}
+
+.settlementPayBox dd .description {
+	margin-top: 4px;
+}
+
+.settlementPayBox td {
+	vertical-align: top;
+}
+
+.settlementPayBox td.settlementPayRadio {
+	vertical-align: middle;
+}
+
+.settlementPayBox td dl {
+	width: 400px;
+}
+
 .settlementPayRadio {
 	width: 45px;
 	text-align: center;
