@@ -387,7 +387,7 @@ cart.VenuePresenter = function(params) {
 
 cart.VenuePresenter.prototype = {
     defaults: {
-        viewType: null,
+        viewType: null
     },
     initialize: function() {
         var self = this;
