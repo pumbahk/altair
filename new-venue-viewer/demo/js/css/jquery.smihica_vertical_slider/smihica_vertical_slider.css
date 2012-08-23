@@ -1,0 +1,53 @@
+.smihica-vertical-slider {
+    position: absolute;
+    width: 20px;
+    height: 100px;
+    z-index: 99;
+}
+
+.smihica-vertical-slider-plus {
+    position: absolute;
+    cursor: pointer;
+    top: 0px;
+    left: 0px;
+    width: 20px;
+    height: 20px;
+    background: url(zoomin.png);
+    z-index: 101;
+}
+
+.smihica-vertical-slider-minus {
+    position: absolute;
+    cursor: pointer;
+    top: 80px;
+    left: 0px;
+    width: 20px;
+    height: 20px;
+    background: url(zoomout.png);
+    z-index: 101;
+}
+
+.smihica-vertical-slider-vbar {
+    position: absolute;
+    cursor: pointer;
+    top: 10px;
+    left: 0px;
+    width: 20px;
+    height: 80px;
+    background: url(zoombar.png);
+    background-repeat: repeat-y;
+    z-index: 100;
+}
+
+.smihica-vertical-slider-hbar {
+    position: absolute;
+    cursor: pointer;
+    top: 67px;
+    left: 0px;
+    width: 20px;
+    height: 20px;
+    background: url(zoomslider.png);
+    z-index: 101;
+}
+
+
