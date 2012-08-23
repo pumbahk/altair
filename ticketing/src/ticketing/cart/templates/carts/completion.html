@@ -119,7 +119,7 @@
 				  <div class="next-action">
 					<a href="http://89ers.tstar.jp/top"
 					   ><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_back_to_top.gif')}"/></a>
-					<a href="#"
+					<a href="${request.route_url("cart.index", event_id=order.performance.event.id)}"
 					   ><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_other_ticket.gif')}"/></a>
 				  </div>
               </div>
