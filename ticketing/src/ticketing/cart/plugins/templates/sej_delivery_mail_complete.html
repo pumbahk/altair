@@ -3,18 +3,7 @@
 
 引換票番号：${sej_order.exchange_number or sej_order.billing_number}
 
-%if is_payment_with_sej:
-引取受付期間：${h.japanese_datetime(sej_order.ticketing_start_at)} 
-- ${h.japanese_datetime(sej_order.ticketing_due_at)}
-%else:
-引取受付期間：${h.japanese_datetime(sej_order.ticketing_start_at)} 
-- ${h.japanese_datetime(sej_order.ticketing_due_at)}
-
-購入いただいた次の日から引き取りが可能となります。
-%endif
- 
-
-セブン-イレブン発券の際には引換票番号が必要です。
+セブン-イレブン店頭レジにて代金と引換でチケットをお引取り下さい。公演日までにチケットをお受け取り下さい。
 
 予約・購入履歴確認画面（ https://89ers.tstar.jp/order/review ）より、「引換票」を印刷するか、または引換票番号をお控え下さい。
 
