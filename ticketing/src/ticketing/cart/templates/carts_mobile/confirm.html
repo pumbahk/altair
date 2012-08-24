@@ -70,7 +70,7 @@ ${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shi
 
 <%mobile:header>メールマガジンの配信</%mobile:header>
 <p>
-ご利用いただいた方には、楽天チケットからのお知らせと、楽天からのメルマガをお送りします。不要な方はチェックをはずしてください。
+ご利用いただいた方には、仙台89ERSからのメールマガジンをお送りします。不要な方はチェックをはずしてください。
 </p>
 % for mailmagazine in mailmagazines:
 <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />${mailmagazine.name}<br/>
