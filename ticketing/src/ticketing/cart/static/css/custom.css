@@ -11,33 +11,36 @@ p.cartNickname{
 
 /* modal */
 .btn-redo {
+  display: inline-block;
   width: 206px;
   background: url(../img/settlement/btn_redo.gif) no-repeat 0 0;
   border: none;
   padding: 46px 0 0 0;
   height: 0px;
   font-size: 0px;
-  line-height: 0px;
+  line-height: -1px;
 }
 
 .btn-close {
+  display: inline-block;
   width: 142px;
   background: url(../img/settlement/btn_close.gif) no-repeat 0 0;
   border: none;
   padding: 47px 0 0 0;
   height: 0px;
   font-size: 0px;
-  line-height: 0px;
+  line-height: -1px;
 }
 
 .btn-buy {
+  display: inline-block;
   width: 224px;
   padding: 46px 0 0 0;
   background: url(../img/settlement/btn_buy.gif) no-repeat 0 0;
   border: none;
   height: 0px;
   font-size: 0px;
-  line-height: 0px;
+  line-height: -1px;
 }
 
 .tooltip {

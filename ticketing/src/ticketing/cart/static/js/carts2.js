@@ -214,7 +214,7 @@ cart.showErrorDialog = function showErrorDialog(title, message, footer_button_cl
     });
     errorDialog.header(title ? $('<h2></h2>').text(title): null);
     errorDialog.body($('<div style="text-align:center"></div>').text(message));
-    errorDialog.footer($('<button class="ok-button">閉じる</button>').addClass(footer_button_class));
+    errorDialog.footer($('<a class="ok-button">閉じる</a>').addClass(footer_button_class));
     errorDialog.load();
 };
 

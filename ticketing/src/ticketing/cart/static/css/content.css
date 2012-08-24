@@ -1644,9 +1644,10 @@
 }
 
 #selectSeatType .selectProduct .btn-select-buy {
+	display: inline-block;
 	width: 140px;
 	height: 0px;
-	line-height: 0px;
+	line-height: -1px;
 	overflow: hidden;
 	font-size: 0px;
 	padding: 33px 0 0 0;
@@ -1664,9 +1665,10 @@
 }
 
 #selectSeatType .selectProduct .btn-entrust-buy {
+	display: inline-block;
 	width: 140px;
 	height: 0px;
-	line-height: 0px;
+	line-height: -1px;
 	overflow: hidden;
 	font-size: 0px;
 	padding: 33px 0 0 0;
@@ -1684,9 +1686,10 @@
 }
 
 #selectSeatType .selectProduct .btn-buy {
+	display: inline-block;
 	width: 60px;
 	height: 0px;
-	line-height: 0px;
+	line-height: -1px;
 	overflow: hidden;
 	font-size: 0px;
 	padding: 31px 0 0 0;
@@ -1708,7 +1711,8 @@
 }
 
 .selectProduct ul.productList li.productListItem {
-	padding: 2px 2px;	
+	padding: 2px 2px;
+	clear: both;
 }
 
 .selectProduct ul.productList li.productListItem .productPrice {
@@ -1898,9 +1902,10 @@
 }
 
 #selectSeat .btn-select-seat {
+	display: inline-block;
 	width: 60px;
 	height: 0px;
-	line-height: 0px;
+	line-height: -1px;
 	overflow: hidden;
 	font-size: 0px;
 	padding: 31px 0 0 0;
@@ -1927,9 +1932,10 @@
 }
 
 #selectSeat .btn-cancel {
+	display: inline-block;
 	width: 99px;
 	height: 0px;
-	line-height: 0px;
+	line-height: -1px;
 	overflow: hidden;
 	font-size: 0px;
 	padding: 31px 0 0 0;
@@ -1942,7 +1948,7 @@
 #selectSeat.focused .btn-cancel {
 	width: 99px;
 	height: 0px;
-	line-height: 0px;
+	line-height: -1px;
 	overflow: hidden;
 	font-size: 0px;
 	padding: 31px 0 0 0;
@@ -1957,13 +1963,13 @@
 
 
 #selectSeatType ul.buttonSet {
+	clear:right;
 	padding: 0 0 0 0;
 	text-align: right;
-	overflow: hidden;
 }
 
 #selectSeatType ul.buttonSet li {
-	display: inline-block;
+	display: inline;
 }
 
 #selectSeatType .selectProduct {
