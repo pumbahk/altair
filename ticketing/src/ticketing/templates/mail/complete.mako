@@ -22,7 +22,10 @@ ${order_no}
 ${order_datetime}
 
 -----
-${performance_name}
+${performance.event.title} ${performance.name} 
+
+日時: ${h.japanese_datetime(order.performance.start_on)}(予定) 
+会場: ${order.performance.venue.name}
 
 ■購入いただいた座席
 %for seat in seats:
@@ -36,13 +39,13 @@ ${ordered_product.product.name} ${h.format_currency(ordered_product.product.pric
 
 ■サービス利用料・手数料
 %if system_fee:
-システム利用料： ${h.format_currency(system_fee)} 円
+システム利用料： ${h.format_currency(system_fee)}
 %endif
 %if transaction_fee:
-決済手数料：${h.format_currency(transaction_fee)} 円
+決済手数料：${h.format_currency(transaction_fee)}
 %endif
 %if delivery_fee:
-配送手数料：${h.format_currency(delivery_fee)} 円
+発券/配送手数料：${h.format_currency(delivery_fee)}
 %endif
 
 ■合計金額

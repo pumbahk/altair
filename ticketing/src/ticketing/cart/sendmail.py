@@ -88,7 +88,7 @@ class CompleteMail(object):
                 order_datetime=h.mail_date(order.created_at), 
                 order_items=order.ordered_products,
                 order_total_amount=order.total_amount,
-                performance_name=order.performance.name,
+                performance=order.performance,
                 system_fee=order.system_fee,
                 delivery_fee=order.delivery_fee,
                 transaction_fee=order.transaction_fee,

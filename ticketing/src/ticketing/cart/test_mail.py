@@ -30,6 +30,8 @@ def _build_order(*args, **kwargs):
         Organization, 
         ShippingAddress, 
         Performance, 
+        Event, 
+        Venue
      )
     shipping_address = ShippingAddress(
         first_name=kwargs.get("shipping_address__first_name", u"first-name"), 
@@ -49,9 +51,13 @@ def _build_order(*args, **kwargs):
     ordered_from = Organization(name=kwargs.get("ordered_from__name", u"ordered-from-name"), 
                                 contact_email=kwargs.get("ordered_from__contact_email"))
 
-    performance = Performance(name=kwargs.get("performance__name"))
+    performance = Performance(name=kwargs.get("performance__name"),
+                              start_on=kwargs.get("performance__start_on", datetime(1900, 1, 1)),  #xxx:
+                              venue=Venue(name=kwargs.get("venue__name")), 
+                              event=Event(title=kwargs.get("event__title")))
 
     order = Order(ordered_from=ordered_from,
+                  id=111, 
                   shipping_address=shipping_address, 
                   performance=performance, 
                   order_no=kwargs.get("order__order_no"), 
@@ -217,6 +223,9 @@ class SendCompleteMailTest(unittest.TestCase):
             ordered_from__name = u"ordered-from-name",
             ordered_from__contact_email="from@organization.ne.jp", 
             performance__name = u"何かパフォーマンス名", 
+            performance__start_on = datetime(2000, 1, 1), 
+            event__title = u"何かイベント名", 
+            venue__name = u"何か会場名", 
             product0__name = u"商品名0", 
             product0__price = 10000.00, 
             product1__name = u"商品名1", 
@@ -246,7 +255,10 @@ class SendCompleteMailTest(unittest.TestCase):
         self.assertIn(h.mail_date(datetime(1900, 1, 1)), body)
 
         ## 公演情報
+        self.assertIn(u"何かイベント名", body)
         self.assertIn(u"何かパフォーマンス名", body)
+        self.assertIn(u"何か会場名", body)
+        self.assertIn(h.japanese_datetime(datetime(2000, 1, 1)), body)
 
         ## 座席情報
         self.assertIn(u"2階A:1", body)
