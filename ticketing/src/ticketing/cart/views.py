@@ -22,7 +22,7 @@ from ..users import models as u_models
 from .models import Cart
 from . import helpers as h
 from . import schemas
-from .exceptions import CartException, NoCartError, NoEventError, InvalidCSRFTokenException, OverQuantityLimitError, ZeroQuantityError
+from .exceptions import CartException, NoCartError, NoEventError, InvalidCSRFTokenException, OverQuantityLimitError, ZeroQuantityError, CartCreationExceptoion
 from .rakuten_auth.api import authenticated_user
 from .events import notify_order_completed
 from webob.multidict import MultiDict
@@ -436,18 +436,15 @@ class ReserveView(object):
             event=event,
             performance=performance, 
             seat_type_id=seat_type_id,
-        )
-
-        data.update(dict(result='OK',
-                    payment_url=self.request.route_url("cart.payment"),
-                    cart=dict(products=[dict(name=p.product.name, 
-                                             quantity=p.quantity,
-                                             price=int(p.product.price),
-                                             seats=p.seats,
-                                        ) 
-                                        for p in cart.products],
-                              total_amount=h.format_number(cart.tickets_amount),
-                    )))
+            payment_url=self.request.route_url("cart.payment"),
+            cart=dict(products=[dict(name=p.product.name, 
+                                     quantity=p.quantity,
+                                     price=int(p.product.price),
+                                     seats=p.seats,
+                                ) 
+                                for p in cart.products],
+                      total_amount=h.format_number(cart.tickets_amount),
+            ))
         return data
 
     @view_config(route_name='cart.products', renderer='carts_mobile/products.html', xhr=False, permission="buy", request_type=".interfaces.IMobileRequest", request_method="POST")
@@ -493,24 +490,20 @@ class ReserveView(object):
             if cart is None:
                 transaction.abort()
                 logger.debug("cart is None. aborted.")
-                # TODO: 例外を上げる
-                data.update(dict(result='NG'))
-                return data
-        except NotEnoughAdjacencyException:
+                raise CartCreationExceptoion
+        except NotEnoughAdjacencyException as e:
             transaction.abort()
             logger.debug("not enough adjacency")
-            data.update(dict(result='NG', reason="adjacency"))
-            return data
-        except InvalidSeatSelectionException:
+            raise e
+        except InvalidSeatSelectionException as e:
+            # モバイルだとここにはこないかも
             transaction.abort()
             logger.debug("seat selection is invalid.")
-            data.update(dict(result='NG', reason="invalid seats"))
-            return data
+            raise e
         except NotEnoughStockException as e:
             transaction.abort()
             logger.debug("not enough stock quantity :%s" % e)
-            data.update(dict(result='NG', reason="stock"))
-            return data
+            raise e
 
         DBSession.add(cart)
         DBSession.flush()
