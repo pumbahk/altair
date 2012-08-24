@@ -1817,7 +1817,8 @@
 }
 
 #selectSeat .venueViewer,
-#selectSeat .venueViewerWrapper {
+#selectSeat .venueViewerWrapper,
+#selectSeat .guidanceBackground {
   width: 490px;
   height: 430px;
 }
@@ -1828,8 +1829,58 @@
   margin-bottom: 10px;
 }
 
-#selectSeat.blur .venueViewerWrapper {
-	opacity: .25;
+#selectSeat .guidance {
+	position: absolute;
+	display: none;
+	left: 0;
+	top: 0;
+	width: 450px;
+	height: 390px;
+	margin: 0 0;
+	padding: 20px 20px;
+	z-index: 10001;
+	user-select: none;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+}
+
+#selectSeat .guidance .guidanceInner {
+	position: relative;
+	margin-top: 50px;
+	height: 240px;
+	font-weight: bold;
+	font-size: 14px;
+}
+
+#selectSeat .guidance .guidanceInner h3 {
+	border-left: 6px solid #fa4;
+	padding-left: 4px;
+	font-size: 18px;
+	margin-bottom: 14px;
+}
+
+
+#selectSeat .guidanceBackground {
+	position: absolute;
+	left: 0;
+	top: 0;
+	z-index: 10000;
+	display: none;
+}
+
+#selectSeat.blur .guidanceBackground {
+	display: block;
+	-moz-opacity: 0.75;
+	-opera-opacity: 0.75;
+	-webkit-opacity: 0.75;
+	opacity: 0.75;
+	filter: alpha(opacity=75);
+	background-color: #fff;
+}
+
+#selectSeat.blur .guidance {
+	display: block;
+	color: #000;
 }
 
 #selectSeat.blur #selectProduct h3 {

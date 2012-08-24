@@ -842,6 +842,9 @@
         case 'selection':
           return aux.selection;
 
+        case 'unselectAll':
+          return aux.unselectAll();
+
         case 'refresh':
           return aux.refresh();
 

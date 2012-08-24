@@ -172,6 +172,18 @@ $(function() {cart.init(venues_selection, selected, upper_limit, cart_release_ur
                 <div class="venueViewerWrapper">
                   <div class="slider"></div>
                   <div class="venueViewer"></div>
+                  <div class="guidanceBackground"></div>
+                  <div class="guidance">
+                    <div class="guidanceInner">
+                      <h3>チケット購入方法</h3>
+                      <p>1. 左側の席種一覧から希望の席種をクリックしてください。</p>
+                      <p>2. 希望の券種と枚数を選択してください。</p>
+                      <p>3. 購入方法をお選びください。</p>
+                      <p>4. [座席を選んで購入] の場合、右側 (この欄) に会場図が表示されます。選択した席種名の横に記載されたブロックを選択してください。</p>
+                      <p>5. ご希望席を選択/解除してください。</p>
+                      <p>※席種・ブロックを選び直す際は、「キャンセル」ボタンを押してください。</p>
+                    </div>
+                  </div>
                 </div>
                 <div>
                   <button class="btn-select-seat">購入</button>
@@ -188,10 +200,10 @@ $(function() {cart.init(venues_selection, selected, upper_limit, cart_release_ur
 				<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_event.gif')}" alt="イベント詳細" width="106" height="29" /></h2>
 				<table summary="イベント詳細情報">
 					<tbody>
-                        <tr>
-                          <th scope="row">イベント名</th>
-                          <td>${event["title"]} (<span class="performanceNameSpace"></span>)</td>
-                        </tr>
+            <tr>
+              <th scope="row">イベント名</th>
+              <td>${event["title"]} (<span class="performanceNameSpace"></span>)</td>
+            </tr>
 						<tr>
 							<th scope="row">開催日時</th>
 							<td id="descPerformanceDate"></td>
