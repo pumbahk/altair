@@ -712,7 +712,9 @@ class ConfirmView(object):
             raise NoCartError()
         cart = api.get_cart(self.request)
 
-        magazines = u_models.MailMagazine.query.outerjoin(u_models.MailSubscription).filter(u_models.MailMagazine.organization==cart.performance.event.organization).filter(or_(u_models.MailSubscription.email != cart.shipping_address.email, u_models.MailSubscription.email == None)).all()
+        magazines = u_models.MailMagazine.query.outerjoin(u_models.MailSubscription) \
+            .filter(u_models.MailMagazine.organization==cart.performance.event.organization) \
+            .all()
 
         user = self.context.get_or_create_user()
         return dict(cart=cart, mailmagazines=magazines, user=user, form=form)
