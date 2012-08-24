@@ -102,6 +102,7 @@ class OrderCSV(object):
         ]
 
         product_list = []
+        product_item_list = []
         for i, ordered_product in enumerate(order.ordered_products):
             for column in self.product_header:
                 column_name = 'product_%s_%s' % (column, i)
@@ -114,7 +115,6 @@ class OrderCSV(object):
                 if column == 'quantity':
                     product_list.append((column_name, ordered_product.quantity))
 
-            product_item_list = []
             for ordered_product_item in ordered_product.ordered_product_items:
                 for column in self.product_item_header:
                     column_name = 'product_item_%s_%s' % (column, i)
