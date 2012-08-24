@@ -6,10 +6,8 @@ ${name}　様
 -----
 ■お名前カナ
 ${name_kana}
-■電話番号（携帯）
+■電話番号
 ${tel_no if tel_no else ''}
-■電話番号（自宅）
-${tel2_no if tel2_no else ''}
 ■メールアドレス
 ${email}
 
@@ -70,4 +68,4 @@ ${h.render_delivery_finished_mail_viewlet(request, order)}
 
 仙台89ERS（ナイナーズチケット）　チケット事務局
 
-電話番号：022-215-8138　（平日09：00~18：00）
+電話番号：022-215-8138　（平日09:00〜18:00）
