@@ -885,7 +885,10 @@ class MobileSelectProductView(object):
             c_models.Performance.event_id==c_models.StockHolder.event_id).filter(
             c_models.StockHolder.id==c_models.Stock.stock_holder_id).filter(
             c_models.Stock.stock_type_id==c_models.StockType.id).filter(
-            c_models.Stock.id.in_(segment_stocks)).order_by(c_models.StockType.display_order).all()
+            c_models.Stock.id.in_(segment_stocks)).filter(
+            c_models.ProductItem.stock_id==c_models.Stock.id).filter(
+            c_models.ProductItem.performance_id==performance_id).order_by(
+            c_models.StockType.display_order).all()
 
         data = dict(
             seat_types=[
