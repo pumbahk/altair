@@ -708,8 +708,8 @@ class ConfirmView(object):
     @view_config(route_name='payment.confirm', request_type='.interfaces.IMobileRequest', request_method="GET", renderer="carts_mobile/confirm.html")
     def get(self):
         form = schemas.CSRFSecureForm(csrf_context=self.request.session)
-
-        assert api.has_cart(self.request)
+        if not api.has_cart(self.request):
+            raise NoCartError()
         cart = api.get_cart(self.request)
 
         magazines = u_models.MailMagazine.query.outerjoin(u_models.MailSubscription).filter(u_models.MailMagazine.organization==cart.performance.event.organization).filter(or_(u_models.MailSubscription.email != cart.shipping_address.email, u_models.MailSubscription.email == None)).all()
@@ -741,7 +741,9 @@ class CompleteView(object):
         form = schemas.CSRFSecureForm(form_data=self.request.params, csrf_context=self.request.session)
         form.validate()
         #assert not form.csrf_token.errors
-        assert api.has_cart(self.request)
+        if not api.has_cart(self.request):
+            raise NoCartError()
+
         cart = api.get_cart(self.request)
 
         order_session = self.request.session['order']
