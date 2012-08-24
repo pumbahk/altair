@@ -45,7 +45,7 @@ shipping = cart.shipping_address
 ${h.render_payment_confirm_viewlet(request, cart)}
 </div>
 
-<%mobile:header>配送情報</%mobile:header>
+<%mobile:header>お引き取り</%mobile:header>
 <div>
 ${h.render_delivery_confirm_viewlet(request, cart)}
 </div>
@@ -59,7 +59,7 @@ ${shipping.last_name} ${shipping.first_name}
 <div>
 ${shipping.last_name_kana} ${shipping.first_name_kana}
 </div>
-<%mobile:form_header>電話番号(自宅)</%mobile:form_header>
+<%mobile:form_header>電話番号</%mobile:form_header>
 <div>
 ${shipping.tel_1}
 </div>
