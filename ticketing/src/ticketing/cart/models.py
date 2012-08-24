@@ -37,6 +37,7 @@ from ticketing.models import Identifier
 from ..core import models as c_models
 from ..models import Identifier
 from . import logger
+from .exceptions import NoCartError
 
 class PaymentMethodManager(object):
     def __init__(self):
@@ -114,6 +115,9 @@ class CartedProductItem(Base):
         """ 決済処理
         """
         for seat_status in self.seat_statuses:
+            if seat_status.status != int(c_models.SeatStatus.InCart):
+                self.release()
+                raise NoCartError()
             seat_status.status = int(c_models.SeatStatusEnum.Ordered)
         self.finished_at = datetime.now()
 
