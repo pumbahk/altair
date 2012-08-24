@@ -22,7 +22,7 @@ from ..users import models as u_models
 from .models import Cart
 from . import helpers as h
 from . import schemas
-from .exceptions import CartException, NoCartError, NoEventError
+from .exceptions import CartException, NoCartError, NoEventError, InvalidCSRFTokenException, OverQuantityLimitError, ZeroQuantityError
 from .rakuten_auth.api import authenticated_user
 from .events import notify_order_completed
 from webob.multidict import MultiDict
@@ -416,24 +416,21 @@ class ReserveView(object):
                               total_amount=h.format_number(cart.tickets_amount),
                     ))
 
-    @view_config(route_name='cart.order', request_method="POST", renderer='carts_mobile/reserve.html', request_type=".interfaces.IMobileRequest")
+    @view_config(route_name='cart.order', request_method="GET", renderer='carts_mobile/reserve.html', request_type=".interfaces.IMobileRequest")
     def reserve_mobile(self):
+        cart = api.get_cart(self.request)
+        if not cart:
+            raise NotFound
+
         performance_id = self.request.params.get('performance_id')
         seat_type_id = self.request.params.get('seat_type_id')
 
-        # パフォーマンス
         performance = c_models.Performance.query.filter(
             c_models.Performance.id==performance_id).first()
-        if performance is None:
-            raise NoEventError("No such performance (%d)" % performance_id)
-        # イベント
-        event = performance.event
-
-        # CSRFトークンの確認
-        form = schemas.CSRFSecureForm(
-            form_data=self.request.params,
-            csrf_context=self.request.session)
-        form.validate()
+        if performance:
+            event = performance.event
+        else:
+            event = None
 
         data = dict(
             event=event,
@@ -441,7 +438,52 @@ class ReserveView(object):
             seat_type_id=seat_type_id,
         )
 
+        data.update(dict(result='OK',
+                    payment_url=self.request.route_url("cart.payment"),
+                    cart=dict(products=[dict(name=p.product.name, 
+                                             quantity=p.quantity,
+                                             price=int(p.product.price),
+                                             seats=p.seats,
+                                        ) 
+                                        for p in cart.products],
+                              total_amount=h.format_number(cart.tickets_amount),
+                    )))
+        return data
+
+    @view_config(route_name='cart.products', renderer='carts_mobile/products.html', xhr=False, permission="buy", request_type=".interfaces.IMobileRequest", request_method="POST")
+    def products_form(self):
+        """商品の値検証とおまかせ座席確保とカート作成
+        """
+        performance_id = self.request.params.get('performance_id')
+        seat_type_id = self.request.params.get('seat_type_id')
+
+        # セールスセグメント必須
+        sales_segment = self.context.get_sales_segument()
+        if sales_segment is None:
+            raise NoEventError("No matching sales_segment")
+
+        # パフォーマンス
+        performance = c_models.Performance.query.filter(
+            c_models.Performance.id==performance_id).first()
+        if performance is None:
+            raise NoEventError("No such performance (%d)" % performance_id)
+
+        # CSRFトークンの確認
+        form = schemas.CSRFSecureForm(
+            form_data=dict(csrf_token=self.request.params.get('csrf_token')),
+            csrf_context=self.request.session)
+
         order_items = self.ordered_items
+
+        # 購入枚数の制限
+        sum_quantity = sum(num for product, num in order_items)
+        logger.debug('sum_quantity=%s' % sum_quantity)
+        if sum_quantity > sales_segment.upper_limit:
+            raise OverQuantityLimitError(sales_segment.upper_limit)
+
+        if sum_quantity == 0:
+            raise ZeroQuantityError
+
         try:
             # カート生成(席はおまかせ)
             cart = api.order_products(
@@ -473,17 +515,13 @@ class ReserveView(object):
         DBSession.add(cart)
         DBSession.flush()
         api.set_cart(self.request, cart)
-        data.update(dict(result='OK',
-                    payment_url=self.request.route_url("cart.payment"),
-                    cart=dict(products=[dict(name=p.product.name, 
-                                             quantity=p.quantity,
-                                             price=int(p.product.price),
-                                             seats=p.seats,
-                                        ) 
-                                        for p in cart.products],
-                              total_amount=h.format_number(cart.tickets_amount),
-                    )))
-        return data
+        # 購入確認画面へ
+        query = dict(
+            performance_id=performance_id,
+            event_id=performance.event_id,
+            seat_type_id=seat_type_id,
+        )
+        return HTTPFound(self.request.route_url('cart.order', _query=query))
 
     def __call__(self):
         """
@@ -902,7 +940,7 @@ class MobileSelectProductView(object):
         )
         return data
 
-    @view_config(route_name='cart.products', renderer='carts_mobile/products.html', xhr=False, permission="buy", request_type=".interfaces.IMobileRequest")
+    @view_config(route_name='cart.products', renderer='carts_mobile/products.html', xhr=False, permission="buy", request_type=".interfaces.IMobileRequest", request_method="GET")
     def products(self):
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.matchdict['performance_id']

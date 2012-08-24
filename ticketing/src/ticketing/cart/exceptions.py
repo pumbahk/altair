@@ -15,3 +15,14 @@ class OutTermSalesException(Exception):
         Exception.__init__(self)
         self.event = event
         self.sales_segment = sales_segment
+
+class InvalidCSRFTokenException(Exception):
+    pass
+
+class OverQuantityLimitError(Exception):
+    def __init__(self, upper_limit):
+        Exception.__init__(self)
+        self.upper_limit = upper_limit
+
+class ZeroQuantityError(Exception):
+    pass

@@ -277,7 +277,7 @@ class Cart(Base):
     def is_expired(self, expire_span_minutes):
         """ 決済完了までの時間制限
         """
-        return self.created_at > datetime.now() - timedelta(minutes=expire_span_minutes)
+        return self.created_at < datetime.now() - timedelta(minutes=expire_span_minutes)
 
     @deprecate("deprecated method")
     def add_seat(self, seats, ordered_products):
