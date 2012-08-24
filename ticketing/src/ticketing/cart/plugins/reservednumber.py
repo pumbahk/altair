@@ -6,7 +6,7 @@ from pyramid.view import view_config
 from pyramid.response import Response
 from zope.interface import implementer
 from ticketing.core import models as c_models
-from ..interfaces import IDeliveryPlugin, IOrderDelivery, ICartDelivery
+from ..interfaces import IDeliveryPlugin, IOrderDelivery, ICartDelivery, ICompleteMailDelivery
 from ..interfaces import IPaymentPlugin, IOrderPayment, ICartPayment
 from . import models as m
 from . import logger
@@ -45,6 +45,7 @@ def reserved_number_payment_confirm_viewlet(context, request):
     logger.debug(u"窓口")
     return dict()
 
+
 @implementer(IDeliveryPlugin)
 class ReservedNumberDeliveryPlugin(object):
     """ 窓口引き換え予約番号プラグイン"""
@@ -57,6 +58,13 @@ class ReservedNumberDeliveryPlugin(object):
         reserved_number = m.ReservedNumber(order_no=cart.order_no, number=number)
         m.DBSession.add(reserved_number)
         logger.debug("引き換え番号: %s" % reserved_number.number)
+
+@view_config(context=ICompleteMailDelivery, name="delivery-%d" % PLUGIN_ID, renderer="ticketing.cart.plugins:templates/reserved_number_mail_complete.html")
+def completion_delivery_mail_viewlet(context, request):
+    """ 完了メール表示
+    :param context: ICompleteMailDelivery
+    """
+    return dict()
 
 def rand_string(seed, length):
     return "".join([random.choice(seed) for i in range(length)])
