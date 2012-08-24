@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['RF76P9L7FJL68S0C'] = (function (exports) { (function () { 
+__LIBS__['WLIMO7L9UCG316P5'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -121,7 +121,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['NOAYCS28T3CVE4G2'] = (function (exports) { (function () { 
+__LIBS__['rB7FR09P7HLEE80E'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -176,11 +176,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['QXO_F37LA49SL1JN'] = (function (exports) { (function () { 
+__LIBS__['zA2RRSFORDVLDXHQ'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['RF76P9L7FJL68S0C'];
-var CONF = __LIBS__['NOAYCS28T3CVE4G2'];
+var util = __LIBS__['WLIMO7L9UCG316P5'];
+var CONF = __LIBS__['rB7FR09P7HLEE80E'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -931,9 +931,9 @@ function _map(arr, fn) {
   return retval;
 }
 
-  var CONF = __LIBS__['NOAYCS28T3CVE4G2'];
-  var seat = __LIBS__['QXO_F37LA49SL1JN'];
-  var util = __LIBS__['RF76P9L7FJL68S0C'];
+  var CONF = __LIBS__['rB7FR09P7HLEE80E'];
+  var seat = __LIBS__['zA2RRSFORDVLDXHQ'];
+  var util = __LIBS__['WLIMO7L9UCG316P5'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1609,6 +1609,7 @@ function _map(arr, fn) {
         for (var id in prevSelection) {
           this.seats[id].__unselected();
         }
+        this.selectionCount = 0;
       },
 
       _select: function VenueViewer__select(seat, value) {
