@@ -105,20 +105,21 @@ def get_tickets_from_cart(cart):
     for carted_product in cart.products:
         for carted_product_item in carted_product.items:
             bundle = carted_product_item.product_item.ticket_bundle
-            dict_ = build_dict_from_product_item(carted_product_item.product_item)
-            for ticket in bundle.tickets:
-                ticket_format = ticket.ticket_format
-                applicable = False
-                for delivery_method in ticket_format.delivery_methods:
-                    if delivery_method.delivery_plugin_id == DELIVERY_PLUGIN_ID:
-                       applicable = True
-                       break
-                if not applicable:
-                    continue
-                transform = translate(-as_user_unit(ticket_format.data['print_offset']['x']), -as_user_unit(ticket_format.data['print_offset']['y']))
-                svg = etree.tostring(convert_svg(etree.ElementTree(etree.fromstring(pystache.render(ticket.data['drawing'], dict_))), transform), encoding=unicode)
-                ticket = get_ticket(cart.order_no, carted_product_item.product_item, svg)
-                tickets.append(ticket)
+            for seat in carted_product_item.seats:
+                dict_ = build_dict_from_seat(seat, None)
+                for ticket in bundle.tickets:
+                    ticket_format = ticket.ticket_format
+                    applicable = False
+                    for delivery_method in ticket_format.delivery_methods:
+                        if delivery_method.delivery_plugin_id == DELIVERY_PLUGIN_ID:
+                            applicable = True
+                            break
+                    if not applicable:
+                        continue
+                    transform = translate(-as_user_unit(ticket_format.data['print_offset']['x']), -as_user_unit(ticket_format.data['print_offset']['y']))
+                    svg = etree.tostring(convert_svg(etree.ElementTree(etree.fromstring(pystache.render(ticket.data['drawing'], dict_))), transform), encoding=unicode)
+                    ticket = get_ticket(cart.order_no, carted_product_item.product_item, svg)
+                    tickets.append(ticket)
     return tickets
 
 
