@@ -185,7 +185,7 @@ class SendCompleteMailTest(unittest.TestCase):
             )
         
         payment_method = PaymentMethod(payment_plugin_id=1)
-        delivery_method = DeliveryMethod(delivery_plugin_id=5)
+        delivery_method = DeliveryMethod(delivery_plugin_id=4)
         method_pair = PaymentDeliveryMethodPair(payment_method=payment_method, 
                                                 delivery_method=delivery_method)
         order.payment_delivery_pair = method_pair
@@ -239,7 +239,7 @@ class SendCompleteMailTest(unittest.TestCase):
             )
         
         payment_method = PaymentMethod(payment_plugin_id=1, name=u"クレジットカード決済")
-        delivery_method = DeliveryMethod(delivery_plugin_id=5, name=u"QR受け取り")
+        delivery_method = DeliveryMethod(delivery_plugin_id=4, name=u"QR受け取り")
         method_pair = PaymentDeliveryMethodPair(payment_method=payment_method, 
                                                 delivery_method=delivery_method)
         order.payment_delivery_pair = method_pair
@@ -314,7 +314,7 @@ class SendCompleteMailTest(unittest.TestCase):
 
         body = result.body
         self.assertIn(u"＜クレジットカードでのお支払いの方＞", body)
-        self.assertIn(u"＜ORコードでお引き取りの方＞", body)
+        self.assertIn(u"＜試合当日窓口受取の方＞", body)
 
 
     def test_payment_by_card_delivery_by_seven(self):
@@ -353,6 +353,7 @@ class SendCompleteMailTest(unittest.TestCase):
         self.assertIn(u"＜クレジットカードでのお支払いの方＞", body)
 
         self.assertIn(u"＜セブン-イレブンでお引取りの方＞", body)
+        self.assertIn(u"次の日から", body)
         self.assertIn(u"707070", body)
         self.assertIn(h.japanese_datetime(datetime(3000, 1, 1)), body)
         self.assertIn(h.japanese_datetime(datetime(4000, 1, 1)), body)
@@ -444,6 +445,7 @@ class SendCompleteMailTest(unittest.TestCase):
 
         self.assertIn(u"＜セブン-イレブンでお引取りの方＞", body)
         self.assertIn(u"707070", body)
+        self.assertNotIn(u"次の日から", body)
         self.assertIn(h.japanese_datetime(datetime(3000, 1, 1)), body)
         self.assertIn(h.japanese_datetime(datetime(4000, 1, 1)), body)
 

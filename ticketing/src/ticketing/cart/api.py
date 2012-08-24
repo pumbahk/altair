@@ -61,7 +61,7 @@ def remove_cart(request):
     del request.session['ticketing.cart_id']
 
 def has_cart(request):
-    minute = max(int(request.registry.settings['altair_cart.expire_time']) - 1, 0)
+    minutes = max(int(request.registry.settings['altair_cart.expire_time']) - 1, 0)
     cart = get_cart(request)
     if cart is None:
         return False

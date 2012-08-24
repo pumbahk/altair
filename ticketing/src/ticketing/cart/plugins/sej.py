@@ -295,8 +295,11 @@ class SejPaymentDeliveryPlugin(object):
 def sej_delivery_viewlet(context, request):
     order = context.order
     sej_order = get_sej_order(order)
+    payment_id = context.order.payment_delivery_pair.payment_method.payment_plugin_id
+    is_payment_with_sej = int(payment_id or -1) == PAYMENT_PLUGIN_ID
     return dict(
         order=order,
+        is_payment_with_sej=is_payment_with_sej, 
         sej_order=sej_order
     )
 
@@ -336,4 +339,7 @@ def completion_delivery_mail_viewlet(context, request):
     :param context: ICompleteMailDelivery
     """
     sej_order=get_sej_order(context.order)
-    return dict(sej_order=sej_order, h=cart_helper)
+    payment_id = context.order.payment_delivery_pair.payment_method.payment_plugin_id
+    is_payment_with_sej = int(payment_id or -1) == PAYMENT_PLUGIN_ID
+    return dict(sej_order=sej_order, h=cart_helper, 
+                is_payment_with_sej=is_payment_with_sej)
