@@ -102,7 +102,7 @@ class Reserving(object):
             SeatStatus.seat_id==Seat.id
         )
 
-        adjacency = SeatAdjacency.query.filter(
+        adjacencies = SeatAdjacency.query.filter(
             SeatAdjacencySet.seat_count==quantity,
         ).filter(
             SeatAdjacencySet.id==SeatAdjacency.adjacency_set_id,
@@ -118,7 +118,14 @@ class Reserving(object):
             not_(SeatAdjacency.id.in_(reserved_adjacencies))
         ).filter(
             SeatIndex.seat_id==Seat.id
-        ).order_by(SeatIndex.index, Seat.l0_id).first()
+        ).order_by(SeatIndex.index, Seat.l0_id).all()
+
+        adjacency = None
+        for adj in adjacencies:
+            if [s for s in adj.seats if s.stock_id != stock_id]:
+                continue
+            adjacency = adj
+            break
 
         if adjacency is None:
             raise NotEnoughAdjacencyException
