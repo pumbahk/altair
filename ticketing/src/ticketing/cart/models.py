@@ -204,6 +204,8 @@ class CartedProduct(Base):
         for item in self.items:
             item.release()
 
+    def is_valid(self):
+        return all([i.is_valid() for i in self.items])
         
 
 class Cart(Base):
@@ -323,3 +325,6 @@ class Cart(Base):
 
         for product in self.products:
             product.release()
+
+    def is_valid(self):
+        return all([p.is_valid() for p in self.products])
