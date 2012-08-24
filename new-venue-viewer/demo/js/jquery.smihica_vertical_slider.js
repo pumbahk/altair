@@ -61,12 +61,14 @@ $.fn.smihica_vertical_slider = function (options_or_key, value) {
         var dist = e.pageY - lastMouseY;
         setPositionHbar(lastHbarPosition + dist);
       }
+      return false;
     }
 
     function upHandler(e) {
       hbarMoving = false;
       $(document).unbind("mousemove", moveHandler);
       $(document).unbind("mouseup", upHandler);
+      return false;
     }
 
     hbar.mousedown(function(e) {
@@ -76,6 +78,7 @@ $.fn.smihica_vertical_slider = function (options_or_key, value) {
 
       $(document).mousemove(moveHandler);
       $(document).mouseup(upHandler);
+      return false;
     });
 
     vbar.click(function(e) {
