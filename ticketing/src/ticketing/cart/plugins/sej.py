@@ -289,6 +289,8 @@ class SejPaymentDeliveryPlugin(object):
 
 
 @view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer='ticketing.cart.plugins:templates/sej_delivery_complete.html')
+@view_config(context=IOrderDelivery, request_type='ticketing.cart.interfaces.IMobileRequest',
+             name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer='ticketing.cart.plugins:templates/sej_delivery_complete_mobile.html')
 def sej_delivery_viewlet(context, request):
     order = context.order
     sej_order = get_sej_order(order)
@@ -297,11 +299,15 @@ def sej_delivery_viewlet(context, request):
         sej_order=sej_order
     )
 
-@view_config(context=ICartDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer='ticketing.cart.plugins:templates/sej_delivery_confirm.html')
+@view_config(context=ICartDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, 
+             renderer='ticketing.cart.plugins:templates/sej_delivery_confirm.html')
 def sej_delivery_confirm_viewlet(context, request):
     return Response(text=u'セブンイレブン受け取り')
 
-@view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer='ticketing.cart.plugins:templates/sej_payment_complete.html')
+@view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, 
+             renderer='ticketing.cart.plugins:templates/sej_payment_complete.html')
+@view_config(context=IOrderPayment, request_type='ticketing.cart.interfaces.IMobileRequest',
+             name="payment-%d" % PAYMENT_PLUGIN_ID, renderer='ticketing.cart.plugins:templates/sej_payment_complete_mobile.html')
 def sej_payment_viewlet(context, request):
     order = context.order
     sej_order = get_sej_order(order)
