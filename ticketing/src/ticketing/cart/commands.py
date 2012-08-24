@@ -73,6 +73,7 @@ def cancel_auth_expired_carts():
         else:
             logging.info("Order(order_no = %s) status = %s " % (order_no, inquiry.Status))
 
+        cart.release()
         cart.finished_at = now
         transaction.commit()
     logging.info("end auth cancel batch")
