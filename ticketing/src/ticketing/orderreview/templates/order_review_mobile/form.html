@@ -1,6 +1,5 @@
 <%inherit file="/layout_mobile.html"/>
 <%namespace file="/tags_mobile.html" name="mobile" />
-<%block name="header">受付確認ページ</%block>
 <form method="post" action="${request.route_path('order_review.show')}">
 <%mobile:form_header required="true">受付番号</%mobile:form_header>
 <div>
