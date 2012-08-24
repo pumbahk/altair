@@ -447,7 +447,7 @@ class ReserveView(object):
             ))
         return data
 
-    @view_config(route_name='cart.products', renderer='carts_mobile/products.html', xhr=False, permission="buy", request_type=".interfaces.IMobileRequest", request_method="POST")
+    @view_config(route_name='cart.products', renderer='carts_mobile/products.html', xhr=False, request_type=".interfaces.IMobileRequest", request_method="POST")
     def products_form(self):
         """商品の値検証とおまかせ座席確保とカート作成
         """
@@ -880,7 +880,7 @@ class MobileSelectProductView(object):
         self.request = request
         self.context = request.context
 
-    @view_config(route_name='cart.mobile', renderer='carts_mobile/seat_types.html', xhr=False, permission="buy", request_type=".interfaces.IMobileRequest")
+    @view_config(route_name='cart.mobile', renderer='carts_mobile/seat_types.html', xhr=False, request_type=".interfaces.IMobileRequest")
     def __call__(self):
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.matchdict['performance_id']
@@ -937,7 +937,7 @@ class MobileSelectProductView(object):
         )
         return data
 
-    @view_config(route_name='cart.products', renderer='carts_mobile/products.html', xhr=False, permission="buy", request_type=".interfaces.IMobileRequest", request_method="GET")
+    @view_config(route_name='cart.products', renderer='carts_mobile/products.html', xhr=False, request_type=".interfaces.IMobileRequest", request_method="GET")
     def products(self):
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.matchdict['performance_id']
