@@ -492,6 +492,13 @@ class ReserveView(object):
         if sum_quantity == 0:
             raise ZeroQuantityError
 
+        # 古いカートを削除
+        old_cart = api.get_cart(self.request)
+        if old_cart:
+            old_cart.release()
+            DBSession.delete(old_cart)
+            api.remove_cart(self.request)
+
         try:
             # カート生成(席はおまかせ)
             cart = api.order_products(
