@@ -57,6 +57,8 @@
                                     <dt>カード番号(半角数字)</dt>
                                     <dd>
                                       <input name="card_number" type="text" id="textfield" length="16" placeholder="1234123412341234"/>
+									  16桁
+                                      ${h.error_list(request, form, 'card_number')}
                                     </dd>
                                     <dt>有効期限</dt>
                                     <dd>
@@ -74,6 +76,7 @@
                                             <option value="11">11</option>
                                             <option value="12">12</option>
                                         </select>
+										${h.error_list(request, form, 'exp_month')}
                                         月　
                                         <!-- TODO: 現在年から算出する-->
                                         <select name="exp_year" id="select2">
@@ -87,14 +90,18 @@
                                             <option value="19">2019</option>
                                             <option value="20">2020</option>
                                         </select>
-                                        年</dd>
+                                        年
+										${h.error_list(request, form, 'exp_year')}
+									</dd>
                                     <dt>名義人(半角ローマ字)</dt>
                                     <dd>
                                         <input name="card_holder_name" type="text" id="textfield5" size="50" placeholder="YAMADA TARO"/>
+										${h.error_list(request, form, 'card_holder_name')}
                                     </dd>
                                     <dt>セキュリティコード(半角)</dt>
                                     <dd>
                                         <input name="secure_code" type="text" id="textfield6" size="5"/>
+										${h.error_list(request, form, 'secure_code')}
                                     </dd>
                                 </dl>
                             </div>
