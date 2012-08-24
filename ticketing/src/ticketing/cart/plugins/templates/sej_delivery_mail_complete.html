@@ -1,9 +1,10 @@
 
 ＜セブン-イレブンでお引取りの方＞
 
-引換票番号：${sej_order.exchange_number}
+引換票番号：${sej_order.exchange_number or sej_order.billing_number}
 
-引取受付期間：${h.japanese_datetime(sej_order.ticketing_start_at)} - ${h.japanese_datetime(sej_order.ticketing_due_at)}
+引取受付期間：${h.japanese_datetime(sej_order.ticketing_start_at)} 
+- ${h.japanese_datetime(sej_order.ticketing_due_at)}
 
  
 
