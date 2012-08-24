@@ -136,7 +136,7 @@ class CartedProductItem(Base):
 
     def is_valid(self):
         for seat_status in self.seat_statuses:
-            if seat_status.status != int(c_models.SeatStatus.InCart):
+            if seat_status.status != int(c_models.SeatStatusEnum.InCart):
                 return False
         return True
         
