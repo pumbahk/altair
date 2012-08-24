@@ -857,6 +857,9 @@
           aux.zoom(arguments[1]);
           break;
 
+        case 'navigate':
+          aux.navigate(arguments[1]);
+          break;
         }
       }
     }

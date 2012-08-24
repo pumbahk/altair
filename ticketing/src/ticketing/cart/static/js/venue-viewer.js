@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['bYG3W7CH1ZL24TVV'] = (function (exports) { (function () { 
+__LIBS__['fR9MEOJRMUQIN8ZW'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -121,7 +121,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['Y_GP_7P8ZJCN3XN9'] = (function (exports) { (function () { 
+__LIBS__['G1020EH_K92MZWQ8'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -176,11 +176,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['qL2OQ1PHPNM00WFF'] = (function (exports) { (function () { 
+__LIBS__['XAO2NLKIKWIQ5S1V'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['bYG3W7CH1ZL24TVV'];
-var CONF = __LIBS__['Y_GP_7P8ZJCN3XN9'];
+var util = __LIBS__['fR9MEOJRMUQIN8ZW'];
+var CONF = __LIBS__['G1020EH_K92MZWQ8'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -931,9 +931,9 @@ function _map(arr, fn) {
   return retval;
 }
 
-  var CONF = __LIBS__['Y_GP_7P8ZJCN3XN9'];
-  var seat = __LIBS__['qL2OQ1PHPNM00WFF'];
-  var util = __LIBS__['bYG3W7CH1ZL24TVV'];
+  var CONF = __LIBS__['G1020EH_K92MZWQ8'];
+  var seat = __LIBS__['XAO2NLKIKWIQ5S1V'];
+  var util = __LIBS__['fR9MEOJRMUQIN8ZW'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1785,6 +1785,9 @@ function _map(arr, fn) {
           aux.zoom(arguments[1]);
           break;
 
+        case 'navigate':
+          aux.navigate(arguments[1]);
+          break;
         }
       }
     }

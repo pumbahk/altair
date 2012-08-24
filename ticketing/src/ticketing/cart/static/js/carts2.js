@@ -411,6 +411,7 @@ cart.VenuePresenter.prototype = {
     },
     onCancelPressed: function () {
         this.setStockType(null);
+        this.view.reset();
     },
     onSelectPressed: function () {
         var selection = this.view.getChoices();
@@ -868,15 +869,13 @@ cart.VenueView = Backbone.View.extend({
             'left': '20px',
             'top': '20px'
         });
-        this.offsetParent = this.currentViewer.parent();
-        verticalSlider.appendTo(this.offsetParent);
+        verticalSlider.appendTo(this.currentViewer.parent());
         this.verticalSlider = verticalSlider;
         this.tooltip = $('<div class="tooltip"></div>')
             .css({
                 'position': 'absolute'
             })
-            .hide()
-            .appendTo(this.offsetParent);
+            .appendTo(document.body);
     },
     getChoices: function () {
         var selection = this.currentViewer.venueviewer('selection');
@@ -903,21 +902,19 @@ cart.VenueView = Backbone.View.extend({
             },
             messageBoard: (function() {
                 self.tooltip.hide();
-                var offset = self.offsetParent.offset();
                 $(document.body).mousemove(function(e){
                     self.tooltip.css({
-                        left: (e.pageX - offset.left) + 'px', 
-                        top:  (e.pageY - offset.top) + 'px'
+                        left: (e.pageX + 10) + 'px', 
+                        top:  (e.pageY + 10) + 'px'
                     });
                 });
 
                 return {
                     up: function(msg) {
-                        self.tooltip.text(msg).fadeIn(100);
+                        self.tooltip.show().stop().text(msg).fadeIn(100);
                     },
                     down: function() {
-                        self.tooltip.stop();
-                        self.tooltip.fadeOut(100);
+                        self.tooltip.stop().fadeOut(100);
                     }
                 }
             })()
@@ -944,6 +941,9 @@ cart.VenueView = Backbone.View.extend({
     render: function() {
         this.updateUIState();
         this.currentViewer.venueviewer("refresh");
+    },
+    reset: function () {
+        this.currentViewer.venueviewer("navigate", "root");
     }
 });
 
@@ -1036,7 +1036,7 @@ function createDataSource(params) {
     drawing: function (page) {
       return function (next, error) {
         $.ajax({
-          url: params.data_source.venue_drawing,
+          url: hardcoded_root + "xebio-arena." + page + ".svg", // this is global
           dataType: 'xml',
           success: function (data) { next(data); },
           error: function (xhr, text) {
@@ -1066,7 +1066,53 @@ function createDataSource(params) {
       });
     },
     // pages: factory(function (data) { return data['pages']; })
-    pages: function (next, error) { next({ 'root': {} }); }
+    pages: function (next, error) {
+        next({
+            "root": {
+                "name": "全体図",
+                "group_l0_ids": {
+                    "rect1151": "block_a",
+                    "rect3378": "block_a",
+                    "rect7220": "block_a",
+                    "rect7792": "block_b",
+                    "rect8999": "block_b",
+                    "rect9961": "block_b",
+                    "rect11488": "block_b",
+                    "rect13092": "block_c",
+                    "rect15379": "block_c",
+                    "rect19241": "block_c",
+                    "rect19833": "block_d",
+                    "rect21040": "block_d",
+                    "rect21727": "block_d",
+                    "rect22879": "block_d",
+                    "rect13": "courtside",
+                    "rect65": "courtside",
+                    "rect417": "courtside",
+                    "rect784": "courtside"
+                }
+            },
+            "block_a": {
+                "name": "Aブロック",
+                "group_l0_ids": {}
+            },
+            "block_b": {
+                "name": "Bブロック",
+                "group_l0_ids": {}
+            },
+            "block_c": {
+                "name": "Cブロック",
+                "group_l0_ids": {}
+            },
+            "block_d": {
+                "name": "Dブロック",
+                "group_l0_ids": {}
+            },
+            "courtside": {
+                "name": "コートサイド・コートエンド",
+                "group_l0_ids": {}
+            }
+        });
+    }
   };
 }
 
