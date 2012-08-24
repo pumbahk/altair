@@ -117,7 +117,7 @@ def get_tickets_from_cart(cart):
                     continue
                 transform = translate(-as_user_unit(ticket_format.data['print_offset']['x']), -as_user_unit(ticket_format.data['print_offset']['y']))
                 svg = etree.tostring(convert_svg(etree.ElementTree(etree.fromstring(pystache.render(ticket.data['drawing'], dict_))), transform), encoding=unicode)
-                ticket = get_ticket(cart.order_no, carted_product.product, svg)
+                ticket = get_ticket(cart.order_no, carted_product_item.product_item, svg)
                 tickets.append(ticket)
     return tickets
 
