@@ -13,8 +13,10 @@
     var el = '#payment_method-' + id;
     var modal = $('#modal-payment_method');
     modal.find('#id').val(id);
+    modal.find('#payment_plugin_id').val($(el).find('#payment_plugin_id').val());
     modal.find('#name').val($(el).find('#name').text());
     modal.find('#fee').val($(el).find('#fee').text());
+    modal.find('#fee_type').val($(el).find('#fee_type').attr('value'));
     modal.find('*[name="description"]').val(decodeURI($(el).find('.payment_method_description').text()));
     modal.modal('toggle');
   }
