@@ -964,6 +964,7 @@ class MobileSelectProductView(object):
             performance=performance,
             venue=performance.venue,
             seat_type=seat_type,
+            upper_limit=sales_segment.upper_limit,
             products=[
                 dict(
                     id=product.id,
