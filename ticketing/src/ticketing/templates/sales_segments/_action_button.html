@@ -30,7 +30,7 @@
     modal.modal('toggle');
   }
   function delete_sales_segment() {
-    var id = get_id('sales_segment_id');
+    var id = $('input[name=sales_segment_id]:checked').val() || $('#sales_segments-form').find('#sales_segment_id').attr('value');
     if (!id) return;
     var modal = $('#modal-delete');
     modal.find('##delete').attr('href', '/events/sales_segments/delete/' + id);
