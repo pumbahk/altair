@@ -14,6 +14,7 @@ from .. import schemas
 from .. import logger
 from .. import helpers as h
 from .. import api
+from ..exceptions import NoCartError
 
 
 logger = logging.getLogger(__name__)
@@ -183,7 +184,8 @@ class MultiCheckoutView(object):
             self.request.errors = form.errors
             return dict(form=form)
         assert not form.csrf_token.errors
-        assert api.has_cart(self.request)
+        if not api.has_cart(self.request):
+            raise NoCartError()
         cart = api.get_cart(self.request)
         order = self._form_to_order(form)
 
@@ -202,7 +204,8 @@ class MultiCheckoutView(object):
             self.request.errors = form.errors
             return dict(form=form)
         assert not form.csrf_token.errors
-        assert api.has_cart(self.request)
+        if not api.has_cart(self.request):
+            raise NoCartError()
 
         order = self._form_to_order(form)
 
@@ -290,7 +293,8 @@ class MultiCheckoutView(object):
         """ カード情報入力(3Dセキュア)コールバック
         3Dセキュア認証結果取得
         """
-        assert api.has_cart(self.request)
+        if not api.has_cart(self.request):
+            raise NoCartError()
         cart = api.get_cart(self.request)
 
         order = self.request.session['order']
