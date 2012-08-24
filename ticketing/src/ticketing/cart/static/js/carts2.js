@@ -922,7 +922,8 @@ cart.VenueView = Backbone.View.extend({
 
         this.currentViewer.venueviewer({
             dataSource: dataSource,
-            callbacks: _callbacks
+            callbacks: _callbacks,
+            viewportSize: { x: 490, y: 430 }
         })
         this.currentViewer.venueviewer("load");
         this.render();
