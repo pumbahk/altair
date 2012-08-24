@@ -65,7 +65,12 @@ def has_cart(request):
     cart = get_cart(request)
     if cart is None:
         return False
-    return not cart.is_expired(minutes)
+    expired = cart.is_expired(minutes) or cart.finished_at
+    if expired:
+        cart.release()
+        import transaction
+        transaction.commit()
+    return not expired
 
 def _maybe_encoded(s, encoding='utf-8'):
     if isinstance(s, unicode):
