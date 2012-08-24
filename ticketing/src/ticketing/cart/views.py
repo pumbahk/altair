@@ -745,6 +745,8 @@ class CompleteView(object):
             raise NoCartError()
 
         cart = api.get_cart(self.request)
+        if not cart.is_valid():
+            raise NoCartError()
 
         order_session = self.request.session['order']
 

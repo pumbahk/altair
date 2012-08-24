@@ -134,6 +134,13 @@ class CartedProductItem(Base):
         ).where(c_models.StockStatus.stock_id==self.product_item.stock_id)
         DBSession.bind.execute(up)
 
+    def is_valid(self):
+        for seat_status in self.seat_statuses:
+            if seat_status.status != int(c_models.SeatStatus.InCart):
+                return False
+        return True
+        
+
 class CartedProduct(Base):
     __tablename__ = 'ticketing_cartedproducts'
 
