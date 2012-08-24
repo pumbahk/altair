@@ -15,18 +15,23 @@ Fashion.Backend.VML = (function() {
   var VML_PREFIX = 'v';
   var VML_NAMESPACE_URL = 'urn:schemas-microsoft-com:vml';
   var VML_BEHAVIOR_URL = '#default#VML';
+  var VML_TAGS = ['group', 'shape', 'rect', 'line', 'textpath', 'skew', 'path', 'roundrect', 'oval'];
   var VML_FLOAT_PRECISION = 1e4;
 
   function setup() {
     var namespaces = window.document.namespaces;
     if (Fashion.browser.version >= 8) {
       if (!namespaces[VML_PREFIX])
-        namespaces.add(VML_PREFIX, VML_NAMESPACE_URL, VML_BEHAVIOR_URL);
+        namespaces.add(VML_PREFIX, VML_NAMESPACE_URL, null);
     } else {
       if (!namespaces[VML_PREFIX])
         namespaces.add(VML_PREFIX, VML_NAMESPACE_URL);
-      window.document.createStyleSheet().addRule(VML_PREFIX + '\\:*', "behavior:url(#default#VML)");
     }
+    var buf = [];
+    for (var i = VML_TAGS.length; --i >= 0; ) {
+      buf.push(VML_PREFIX + '\\:' + VML_TAGS[i])
+    }
+    window.document.createStyleSheet().cssText = buf.join(',') + '{behavior:url(' + VML_BEHAVIOR_URL + ')}';
   }
 
   function newElement(type) {
