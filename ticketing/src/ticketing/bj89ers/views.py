@@ -99,7 +99,7 @@ class IndexView(object):
         return HTTPFound(location=self.request.route_url("cart.payment"))
 
 class PaymentView(_PaymentView):
-    def validate(self):
+    def validate(self, payment_delivery_pair):
         return None
 
     def create_shipping_address(self, user):

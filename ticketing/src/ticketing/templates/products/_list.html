@@ -94,8 +94,8 @@
         <% rowspan = 'rowspan=%s' % (count) %>
         <tr id="product-${product.id}">
           <td ${rowspan}>
-            <input type="radio" id="product_id" value="${product.id}" />
-            <input type="hidden" id="sales_segment_id" value="${sales_segment_id}" />
+            <input type="radio" name="product_id" value="${product.id}" />
+            <input type="hidden" name="sales_segment_id" value="${sales_segment_id}" />
             <input type="hidden" id="seat_stock_type_id" value="${stock_type_id}" />
           </td>
           <td ${rowspan}><span>${product.seat_type()}</span></td>
