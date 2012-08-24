@@ -607,6 +607,7 @@
     for (var id in prevSelection) {
       this.seats[id].__unselected();
     }
+    this.selectionCount = 0;
   };
 
   VenueViewer.prototype._select = function VenueViewer__select(seat, value) {
