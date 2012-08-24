@@ -44,8 +44,8 @@ cart.order_messages = {
         message: 'ご希望の座席を確保できませんでした'
     },
     'invalid seats': {
-        title: '座席選択に誤りがあります',
-        message: '座席を再度選択してください'
+        title: 'ご希望の座席が確保できませんでした。',
+        message: '画面を最新の情報に更新した上で再度席の選択をしてください。座席を再度選択してください'
     },
     'adjacency': {
         title: '連席で座席を確保できません',
@@ -922,7 +922,8 @@ cart.VenueView = Backbone.View.extend({
 
         this.currentViewer.venueviewer({
             dataSource: dataSource,
-            callbacks: _callbacks
+            callbacks: _callbacks,
+            viewportSize: { x: 490, y: 430 }
         })
         this.currentViewer.venueviewer("load");
         this.render();
