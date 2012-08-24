@@ -25,6 +25,7 @@ def notfound(request):
 @view_config(context=NoCartError, renderer=selectable_renderer("ticketing.cart:templates/carts/%(membership)s/timeout.html"))
 def handle_nocarterror(request):
     logger.error(request.context, exc_info=request.exc_info)
+    api.remove_cart(request)
     return {}
     # return HTTPFound('/')
 
