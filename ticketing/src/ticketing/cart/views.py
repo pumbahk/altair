@@ -593,26 +593,24 @@ class PaymentView(object):
 
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id', 0)
         payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter_by(id=payment_delivery_method_pair_id).first()
-        if not payment_delivery_pair:
-            self.request.session.flash(u"お支払い方法／受け取り方法をどれかひとつお選びください")
-            raise HTTPFound(self.request.current_route_url())
-
-        cart.payment_delivery_pair = payment_delivery_pair
-        cart.system_fee = payment_delivery_pair.system_fee
-
         form = self.validate()
 
-        #if not (payment_delivery_pair and form.validate()):
         if not payment_delivery_pair or form:
-            self.context.event_id = cart.performance.event.id
-            payment_delivery_methods = self.context.get_payment_delivery_method_pair()
             if not payment_delivery_pair:
+                self.request.session.flash(u"お支払い方法／受け取り方法をどれかひとつお選びください")
                 logger.debug("invalid : %s" % 'payment_delivery_method_pair_id')
             else:
                 logger.debug("invalid : %s" % form.errors)
+
+            self.context.event_id = cart.performance.event.id
+            payment_delivery_methods = self.context.get_payment_delivery_method_pair()
+
             return dict(form=form,
                 payment_delivery_methods=payment_delivery_methods,
                 user=user, user_profile=user.user_profile)
+
+        cart.payment_delivery_pair = payment_delivery_pair
+        cart.system_fee = payment_delivery_pair.system_fee
 
         shipping_address = self.create_shipping_address(user)
 
