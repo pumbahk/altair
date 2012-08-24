@@ -26,3 +26,6 @@ class OverQuantityLimitError(Exception):
 
 class ZeroQuantityError(Exception):
     pass
+
+class CartCreationExceptoion(Exception):
+    pass

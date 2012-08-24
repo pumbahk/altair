@@ -4,6 +4,8 @@ from pyramid.view import view_config
 from pyramid.exceptions import NotFound, Forbidden
 from pyramid.httpexceptions import HTTPFound
 from ..exceptions import *
+from ..reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
+from ..stocker import NotEnoughStockException
 import logging
 
 logger = logging.getLogger(__name__)
@@ -18,7 +20,7 @@ def notfound(request):
     request.response.status = 404
     return {}
 
-@view_config(context=NoCartError, renderer="ticketing.cart:templates/errors/timeout.html")
+@view_config(context=NoCartError, renderer="ticketing.cart:templates/carts/timeout.html")
 def handle_nocarterror(request):
     logger.error(request.context, exc_info=request.exc_info)
     return {}
@@ -50,3 +52,19 @@ class OverQuantityLimitErrorView(object):
 @view_config(context=ZeroQuantityError, renderer='ticketing.cart:templates/carts_mobile/error.html', request_type="..interfaces.IMobileRequest")
 def zero_quantity_error(request):
     return dict(message=u"枚数は1枚以上で選択してください")
+
+@view_config(context=NotEnoughStockException, renderer='ticketing.cart:templates/carts_mobile/error.html', request_type="..interfaces.IMobileRequest")
+def not_enough_stock_exception(request):
+    return dict(message=u"在庫がありません。\nご希望の座席を確保できませんでした。")
+
+@view_config(context=InvalidSeatSelectionException, renderer='ticketing.cart:templates/carts_mobile/error.html', request_type="..interfaces.IMobileRequest")
+def invalid_seat_selection_exception(request):
+    return dict(message=u"座席選択に誤りがあります。\n座席を再度選択してください。")
+
+@view_config(context=NotEnoughAdjacencyException, renderer='ticketing.cart:templates/carts_mobile/error.html', request_type="..interfaces.IMobileRequest")
+def not_enough_ajacency_exception(request):
+    return dict(message=u"連席で座席を確保できません。個別に購入してください。")
+
+@view_config(context=CartCreationExceptoion, renderer='ticketing.cart:templates/carts_mobile/error.html', request_type="..interfaces.IMobileRequest")
+def cart_creation_exception(request):
+    return dict(message=u"カートを作成できませんでした。しばらく時間を置いてから再度お試しください。")
