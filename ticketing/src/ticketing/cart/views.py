@@ -600,9 +600,9 @@ class PaymentView(object):
             payment_delivery_methods=payment_delivery_methods,
             user=user, user_profile=user.user_profile)
 
-    def validate(self):
+    def validate(self, payment_delivery_pair):
         form = schemas.ClientForm(formdata=self.request.params)
-        if form.validate():
+        if form.validate() and payment_delivery_pair:
             return None 
         else:
             return form
@@ -624,7 +624,7 @@ class PaymentView(object):
 
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id', 0)
         payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter_by(id=payment_delivery_method_pair_id).first()
-        form = self.validate()
+        form = self.validate(payment_delivery_pair)
 
         if not payment_delivery_pair or form:
             if not payment_delivery_pair:
