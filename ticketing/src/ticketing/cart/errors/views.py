@@ -18,7 +18,7 @@ def notfound(request):
     request.response.status = 404
     return {}
 
-@view_config(context=NoCartError, renderer="ticketing.cart:templates/errors/timeout.html")
+@view_config(context=NoCartError, renderer="ticketing.cart:templates/carts/timeout.html")
 def handle_nocarterror(request):
     logger.error(request.context, exc_info=request.exc_info)
     return {}
