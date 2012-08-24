@@ -58,7 +58,8 @@ def get_cart(request):
 def remove_cart(request):
     if hasattr(request, '_cart'):
         delattr(request, '_cart')
-    del request.session['ticketing.cart_id']
+    if request.session.get("ticketing.cart_id"):
+        del request.session['ticketing.cart_id']
 
 def has_cart(request):
     minutes = max(int(request.registry.settings['altair_cart.expire_time']) - 1, 0)
@@ -70,6 +71,7 @@ def has_cart(request):
         cart.release()
         import transaction
         transaction.commit()
+        remove_cart(request)
     return not expired
 
 def _maybe_encoded(s, encoding='utf-8'):
