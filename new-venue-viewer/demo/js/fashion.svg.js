@@ -1,0 +1,1 @@
+../../../bundle/Fashion/fashion.svg.js

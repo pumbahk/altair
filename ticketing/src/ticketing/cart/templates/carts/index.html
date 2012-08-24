@@ -11,6 +11,7 @@
 
 <link rel="stylesheet" href="${request.static_url('ticketing.cart:static/css/import.css')}" type="text/css" media="all" />
 <link rel="stylesheet" href="${request.static_url('ticketing.cart:static/css/custom.css')}" type="text/css" media="all" />
+<link rel="stylesheet" href="${request.static_url('ticketing.cart:static/js/css/jquery.smihica_vertical_slider/smihica_vertical_slider.css')}" type="text/css" media="all" />
 
 <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/fashion.js')}"></script>
 <![if !(lt IE 9)]>
@@ -24,7 +25,7 @@
 <!-- <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/carts.js')}"></script> -->
 <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/carts2.js')}"></script>
 <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/venue-viewer.js')}"></script>
-
+<script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/jquery.smihica_vertical_slider.js')}" charset="utf-8"></script>
 <style type="text/css">
 .modal {
 	font-size: 150%;
@@ -38,6 +39,7 @@ var sales_segment = ${sales_segment};
 var order_url = "${order_url}";
 var products_from_selected_date_url = "${products_from_selected_date_url}";
 var cart_release_url = "${cart_release_url}";
+var hardcoded_root = "${request.static_url('ticketing.cart:static/site-data/')}";
 $(function() {cart.init(venues_selection, selected, upper_limit, cart_release_url);});
 </script>
 </head>
@@ -59,14 +61,14 @@ $(function() {cart.init(venues_selection, selected, upper_limit, cart_release_ur
 	<!-- ========== main ========== -->
 	<div id="main">
 		<h1><img src="${request.static_url('ticketing.cart:static/img/settlement/89ers_title_settlement.gif')}" alt="チケット購入" width="950" height="40" /></h1>
-				<p class="cartNickname">ようこそ ${h.get_nickname(request)} さん</p>
-		<h2 id="ticketName">${event['title']}</h2>
+				<!-- <p class="cartNickname">ようこそ ${h.get_nickname(request)}</p> -->
+		<h2 id="ticketName">${event['title']} (<span class="performanceNameSpace"></span>)</h2>
 		<form id="form1" name="form1" method="post" action="">
 			<div id="settlementSelectBox">
 				<div id="settlementSelectBoxInner">
 					<table summary="チケット購入の絞り込み">
 						<tr>
-							<th>日程</th>
+							<th>日程(予定)</th>
 							<td>
 								<select name="select" id="date-select">
 								</select>
@@ -157,9 +159,9 @@ $(function() {cart.init(venues_selection, selected, upper_limit, cart_release_ur
                     <fieldset style="display:none;" class="selected-seats">
                     </fieldset>
                     <ul class="buttonSet">
-                      <li><button class="btn-select-buy">座席を選んで購入</button></li>
-                      <li><button class="btn-entrust-buy">おまかせで購入</button></li>
-                      <li><button class="btn-buy">購入</button></li>
+                      <li><a class="btn-select-buy">座席を選んで購入</a></li>
+                      <li><a class="btn-entrust-buy">おまかせで購入</a></li>
+                      <li><a class="btn-buy">購入</a></li>
                     </ul>
                   </div>
                 </div>
@@ -167,10 +169,28 @@ $(function() {cart.init(venues_selection, selected, upper_limit, cart_release_ur
             </div>
             <div id="selectSeat">
               <div class="selectSeatLeftPane">
-                <div class="venueViewer"></div>
+                <div class="venueViewerWrapper">
+                  <div class="slider"></div>
+                  <div class="venueViewer"></div>
+                  <div class="guidanceBackground"></div>
+                  <div class="guidance">
+                    <div class="guidanceInner">
+                      <h3>チケット購入方法</h3>
+                      <p>1. 左側の席種一覧から希望の席種をクリックしてください。</p>
+                      <p>2. 希望の券種と枚数を選択してください。</p>
+                      <p>3. 購入方法をお選びください。</p>
+                      <p>4. [座席を選んで購入] の場合、右側 (この欄) に会場図が表示されます。選択した席種名の横に記載されたブロックを選択してください。</p>
+                      <p>5. ご希望席を選択/解除してください。</p>
+                      <p>※席種・ブロックを選び直す際は、「キャンセル」ボタンを押してください。</p>
+                    </div>
+                  </div>
+                </div>
+                <div style="float: right">
+                  <a onclick="$('#venue-detail').click(function () { $(this).overlay().close() }).overlay({ mask: { color: '#999', opacity: .5 }, closeOnClick: true }).load()">会場図の文字が見にくい方はこちら</a>
+                </div>
                 <div>
-                  <button class="btn-select-seat">購入</button>
-                  <button class="btn-cancel">キャンセル</button>
+                  <a class="btn-select-seat">購入</a>
+                  <a class="btn-cancel">キャンセル</a>
                 </div>
               </div>
             </div>
@@ -183,9 +203,13 @@ $(function() {cart.init(venues_selection, selected, upper_limit, cart_release_ur
 				<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_event.gif')}" alt="イベント詳細" width="106" height="29" /></h2>
 				<table summary="イベント詳細情報">
 					<tbody>
+            <tr>
+              <th scope="row">イベント名</th>
+              <td>${event["title"]} (<span class="performanceNameSpace"></span>)</td>
+            </tr>
 						<tr>
 							<th scope="row">開催日時</th>
-							<td id="performance_date"></td>
+							<td id="descPerformanceDate"></td>
 						</tr>
 						<tr>
 							<th scope="row">会場</th>
@@ -193,9 +217,8 @@ $(function() {cart.init(venues_selection, selected, upper_limit, cart_release_ur
 						</tr>
 						<tr>
 							<th scope="row">販売期間</th>
-							<td>
-								${event['sales_start_on']}
-								${event['sales_end_on']}
+							<td id="descSalesTerm">
+								${event['sales_start_on']} 〜 ${event['sales_end_on']}
 							</td>
 						</tr>
 					%for v in event_extra_info:
@@ -211,51 +234,44 @@ $(function() {cart.init(venues_selection, selected, upper_limit, cart_release_ur
 	</div>
 	<!-- ========== /main ========== -->
 	
-<!-- /container --></div>
-
-<div class="modal payment" id="order-error-template" style="display:none">
-	<div class="modal-header">
-    <h2><span>在庫がありません</span></h2>
-	</div>
-	<div class="modal-inner">
-    <div class="modal-body">
-      <img src="${request.static_url('ticketing.cart:static/img/settlement/error.gif')}" width="624" height="224" />
-    </div>
-    <div class="modal-footer">
-      <button class="close-button btn-redo"></button>
-    </div>
-	</div>
+<!-- /container -->
 </div>
 
-<div class="modal payment" style="display:none" id="order-reserved">
-	<div class="modal-header">
-        <h3><span id="performance-name"></span></h3>
-        <h4><span id="performance-name-sub"></span></h4>
-	</div>
-	<div class="modal-inner">
-	    <div class="modal-body">
+<div class="modal" id="venue-detail" style="display:none; background-image: url(${request.static_url('ticketing.cart:static/site-data/xebio-arena.png')}); width: 833px; height: 637px;">
+</div>
 
-	    	<img src="${request.static_url('ticketing.cart:static/img/settlement/total.gif')}" alt="合計金額" width="67" height="16"
-	    		 style="margin-bottom:7px;">
-	    	<table>
-	    	<tbody>
-	    		<tr class="last-child">
-	    		<td id="cart-total-amount">￥</td>
-	    		</tr>
-	    	</tbody>
-	    	</table>
 
-	    	<p class="lead" style="margin-bottom:4px;">内訳</p>
-	    	<table>
-	    	<tbody id="contentsOfShopping">
-	    	</tbody>
-	    	</table>
-	    </div>
-	    <div class="modal-footer">
-	    	<button class="cancel-button btn-redo"></button>
-	    	<button class="confirm-button btn-buy"></button>
-	    </div>
-	</div>
+<div class="modal payment" id="order-error-template" style="display:none">
+  <div class="modal-header"></div>
+  <div class="modal-inner">
+    <div class="modal-body"></div>
+    <div class="modal-footer"></div>
+  </div>
+</div>
+
+<div class="modal payment" id="order-reserved" style="display:none">
+  <div class="modal-header"></div>
+  <div class="modal-inner">
+    <div class="modal-body">
+      <h3>合計金額</h3>
+      <table>
+        <tbody>
+          <tr class="last-child">
+          <td class="cart-total-amount">￥</td>
+          </tr>
+        </tbody>
+      </table>
+      <h3>内訳</h3>
+      <table>
+        <tbody class="contentsOfShopping">
+        </tbody>
+      </table>
+    </div>
+    <div class="modal-footer">
+      <a class="cancel-button btn-redo">座席・枚数を選びなおす</a>
+      <a class="ok-button btn-buy">購入する</a>
+    </div>
+  </div>
 </div>
 </body>
 </html>

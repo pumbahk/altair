@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
 <head>
 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-<title>チケット販売・イベントの予約 [音楽 / コンサート / 舞台 / スポーツ] - 楽天チケット</title>
+<title>ナイナーズチケット</title>
 <meta name="description" content="チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などのスポーツ、その他イベントなどのチケットのオンラインショッピングサイトです。" />
 <meta name="keywords" content="チケット,演劇,クラシック,オペラ,コンサート,バレエ,ミュージカル,野球,サッカー,格闘技" />
 <meta http-equiv="content-style-type" content="text/css" />
@@ -11,6 +11,14 @@
 <link rel="shortcut icon" href="${request.static_url('ticketing.cart:static/img/common/favicon.ico')}" />
 <link rel="stylesheet" href="${request.static_url('ticketing.cart:static/css/import.css')}" type="text/css" media="all" />
 <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/jquery.js')}"></script>
+<style type="text/css">
+  .confirm-message{
+    margin-left: 7px;
+  }
+  .next-action{
+    margin-top: 20px;
+  }
+</style>
 </head>
 <body id="settlement">
 
@@ -33,36 +41,52 @@
 		<h1><img src="${request.static_url('ticketing.cart:static/img/settlement/89ers_title_settlement.gif')}" alt="チケット購入" width="950" height="40" /></h1>
         ${h.get_nickname(request)} 
 		<p><img src="${request.static_url('ticketing.cart:static/img/settlement/completion.gif')}" alt="購入を完了いたしました。" width="201" height="50" /></p>
-
+			<div class="confirmBox">
+				<div class="confirmBoxInner">
+					<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_order_number.gif')}" alt="予約番号" width="103" height="30" /></h2>
+				  <div class="confirm-message">
+					${order.order_no}
+				  </div>
+				</div>
+			</div>
 			<div class="confirmBox">
 				<div class="confirmBoxInner">
 					<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_shopping.gif')}" alt="お買い物内容" width="114" height="30" /></h2>
-                    <h3 id="name">${order.performance.event.title} ${order.performance.name} ${h.performance_date(order.performance)} ${order.performance.venue.name}</h3>
+                    <h3 id="name">${order.performance.event.title} ${order.performance.name} ${h.performance_date(order.performance)}(予定) ${order.performance.venue.name}</h3>
 					<table id="contentsOfShopping" summary="席種、金額などのお買い物内容">
                         %for product in order.ordered_products:
 						<tr>
 							<th scope="row"><img src="${request.static_url('ticketing.cart:static/img/settlement/icon_dummy.gif')}" alt="" width="21" height="21" /> ${product.product.name}</th>
 							<td><strong>${product.quantity}</strong>枚</td>
+							<td>
+                % for seat in product.seats:
+                ${seat['name']}<br/>
+                % endfor
+              </td>
 							<td class="align1">￥${h.format_number(product.product.price * product.quantity)}</td>
 						</tr>
                         %endfor
 						<tr id="commission">
 							<th scope="row">決済手数料</th>
 							<td>&nbsp;</td>
+							<td>&nbsp;</td>
 							<td class="align1">￥${h.format_number(order.transaction_fee)}</td>
 						</tr>
 						<tr id="commission">
-							<th scope="row">配送手数料</th>
+							<th scope="row">発券/配送手数料</th>
+							<td>&nbsp;</td>
 							<td>&nbsp;</td>
 							<td class="align1">￥${h.format_number(order.delivery_fee)}</td>
 						</tr>
 						<tr id="commission">
 							<th scope="row">システム利用料</th>
 							<td>&nbsp;</td>
+							<td>&nbsp;</td>
 							<td class="align1">￥${h.format_number(order.system_fee)}</td>
 						</tr>
 						<tr id="total">
                             <th scope="row"><img src="${request.static_url('ticketing.cart:static/img/settlement/total.gif')}" alt="合計金額" width="67" height="16" /></th>
+							<td>&nbsp;</td>
 							<td>&nbsp;</td>
 							<td class="align1">￥${h.format_number(order.total_amount)}</td>
 						</tr>
@@ -72,51 +96,44 @@
 			<div class="confirmBox">
 				<div class="confirmBoxInner">
                     <h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_payment.gif')}" alt="お支払い" width="78" height="30" /></h2>
-${h.render_payment_finished_viewlet(request, order)}
+					<div class="confirm-message">
+					  ${h.render_payment_finished_viewlet(request, order)}
+					</div>
                 </div>
             </div>
 			<div class="confirmBox">
 				<div class="confirmBoxInner">
-					<h3>配送情報</h3>
-${h.render_delivery_finished_viewlet(request, order)}
+					<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_reception.gif')}" alt="配送情報" width="103" height="30" /></h2>
+					<div class="confirm-message">
+					  ${h.render_delivery_finished_viewlet(request, order)}
+					</div>
                 </div>
             </div>
-<!--
-		<div class="settlementInterest">
-			<h2>■この商品を買った人は、こんな商品にも興味をもっています。</h2>
-			<ul>
-				<li><a href="#"><img src="../img/settlement/dummy_interest.jpg" alt="" width="128" height="112" /></a><br />
-					<a href="#">ZED 東京公演 12月3日 14:00 幕張メッセイベントホール</a></li>
-				<li><a href="#"><img src="../img/settlement/dummy_interest.jpg" alt="" width="128" height="112" /></a><br />
-					<a href="#">ZED 東京公演 12月3日 14:00 幕張メッセイベントホール</a></li>
-				<li><a href="#"><img src="../img/settlement/dummy_interest.jpg" alt="" width="128" height="112" /></a><br />
-					<a href="#">ZED 東京公演 12月3日 14:00 幕張メッセイベントホール</a></li>
-				<li><a href="#"><img src="../img/settlement/dummy_interest.jpg" alt="" width="128" height="112" /></a><br />
-					<a href="#">ZED 東京公演 12月3日 14:00 幕張メッセイベントホール</a></li>
-				<li><a href="#"><img src="../img/settlement/dummy_interest.jpg" alt="" width="128" height="112" /></a><br />
-					<a href="#">ZED 東京公演 12月3日 14:00 幕張メッセイベントホール</a></li>
-				<li><a href="#"><img src="../img/settlement/dummy_interest.jpg" alt="" width="128" height="112" /></a><br />
-					<a href="#">ZED 東京公演 12月3日 14:00 幕張メッセイベントホール</a></li>
-			</ul>
-		</div>
-		<div class="settlementInterest">
-			<h2>■この商品を買った人は、こんな商品にも興味をもっています。</h2>
-			<ul>
-				<li><a href="#"><img src="../img/settlement/dummy_interest.jpg" alt="" width="128" height="112" /></a><br />
-					<a href="#">ZED 東京公演 12月3日 14:00 幕張メッセイベントホール</a></li>
-				<li><a href="#"><img src="../img/settlement/dummy_interest.jpg" alt="" width="128" height="112" /></a><br />
-					<a href="#">ZED 東京公演 12月3日 14:00 幕張メッセイベントホール</a></li>
-				<li><a href="#"><img src="../img/settlement/dummy_interest.jpg" alt="" width="128" height="112" /></a><br />
-					<a href="#">ZED 東京公演 12月3日 14:00 幕張メッセイベントホール</a></li>
-				<li><a href="#"><img src="../img/settlement/dummy_interest.jpg" alt="" width="128" height="112" /></a><br />
-					<a href="#">ZED 東京公演 12月3日 14:00 幕張メッセイベントホール</a></li>
-				<li><a href="#"><img src="../img/settlement/dummy_interest.jpg" alt="" width="128" height="112" /></a><br />
-					<a href="#">ZED 東京公演 12月3日 14:00 幕張メッセイベントホール</a></li>
-				<li><a href="#"><img src="../img/settlement/dummy_interest.jpg" alt="" width="128" height="112" /></a><br />
-					<a href="#">ZED 東京公演 12月3日 14:00 幕張メッセイベントホール</a></li>
-			</ul>
-		</div>
--->
+
+			## todo: pluggable
+			<div class="confirmBox">
+				<div class="confirmBoxInner">
+				  <h3>注意事項</h3>
+				  <div class="confirm-message">
+					<ul>
+
+					  <li>お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。<a href="mailto:89ers@ticketstar.jp">89ers@ticketstar.jp</a> までご連絡ください。<br />
+						（お問い合わせの際は、お申込み時のお名前と電話番号を記載お願いします）</li>
+					  <li>お申込内容は、「<a href="https://89ers.tstar.jp/orderreview">履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。</li>
+					</ul>
+
+				  </div>
+              </div>
+            </div>
+			<div style="width: 800px; text-align: center; margin-left: auto; margin-right: auto;">
+				  <div class="next-action">
+					<a href="http://89ers.tstar.jp/top"
+					   ><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_back_to_top.gif')}"/></a>
+					<a href="${request.route_url("cart.index", event_id=order.performance.event.id)}"
+					   ><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_other_ticket.gif')}"/></a>
+				  </div>
+            </div>
+
 	</div>
 	<!-- ========== /main ========== -->
 	

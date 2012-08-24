@@ -8,12 +8,13 @@ from pyramid.httpexceptions import HTTPFound
 from ticketing.multicheckout import helpers as m_h
 from ticketing.multicheckout import api as multicheckout_api
 from ticketing.core import models as c_models
-from ..interfaces import IPaymentPlugin, ICartPayment, IOrderPayment
+from ..interfaces import IPaymentPlugin, ICartPayment, IOrderPayment, ICompleteMailPayment
 from .models import DBSession
 from .. import schemas
 from .. import logger
 from .. import helpers as h
 from .. import api
+from ..exceptions import NoCartError
 
 
 logger = logging.getLogger(__name__)
@@ -125,7 +126,8 @@ def card_number_mask(number):
     """ 下4桁以外をマスク"""
     return "*" * (len(number) - 4) + number[-4:]
 
-@view_config(context=ICartPayment, name="payment-1", renderer="ticketing.cart.plugins:templates/card_confirm.html")
+PAYMENT_ID = 1
+@view_config(context=ICartPayment, name="payment-%d" % PAYMENT_ID, renderer="ticketing.cart.plugins:templates/card_confirm.html")
 def confirm_viewlet(context, request):
     """ 確認画面表示 
     :param context: ICartPayment
@@ -135,12 +137,28 @@ def confirm_viewlet(context, request):
     logger.debug("order_session %s" % order_session)
     return dict(order=order_session, card_number_mask=card_number_mask)
 
-@view_config(context=IOrderPayment, name="payment-1", renderer="ticketing.cart.plugins:templates/card_complete.html")
+@view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_ID, renderer="ticketing.cart.plugins:templates/card_complete.html")
 def completion_viewlet(context, request):
     """ 完了画面表示 
     :param context: IOrderPayment
     """
     return dict()
+
+@view_config(context=ICompleteMailPayment, name="payment-%d" % PAYMENT_ID)
+             # renderer="ticketing.cart.plugins:templates/card_payment_mail_complete.html")
+def completion_payment_mail_viewlet(context, request):
+    """ 完了メール表示
+    :param context: ICompleteMailPayment
+    """
+    return Response(u"""
+＜クレジットカードでのお支払いの方＞
+
+予約成立と同時に、ご登録のクレジットカードにて自動的に決済手続きを行わせて頂きます。
+
+お申込の取消、公演日・席種・枚数等の変更は出来ませんのでご注意ください。
+
+クレジットカードの引き落としは、カード会社によって異なります。詳細はご利用のカード会社へお問い合わせください。
+""")
 
 class MultiCheckoutView(object):
     """ マルチ決済API
@@ -166,7 +184,8 @@ class MultiCheckoutView(object):
             self.request.errors = form.errors
             return dict(form=form)
         assert not form.csrf_token.errors
-        assert api.has_cart(self.request)
+        if not api.has_cart(self.request):
+            raise NoCartError()
         cart = api.get_cart(self.request)
         order = self._form_to_order(form)
 
@@ -185,7 +204,8 @@ class MultiCheckoutView(object):
             self.request.errors = form.errors
             return dict(form=form)
         assert not form.csrf_token.errors
-        assert api.has_cart(self.request)
+        if not api.has_cart(self.request):
+            raise NoCartError()
 
         order = self._form_to_order(form)
 
@@ -273,7 +293,8 @@ class MultiCheckoutView(object):
         """ カード情報入力(3Dセキュア)コールバック
         3Dセキュア認証結果取得
         """
-        assert api.has_cart(self.request)
+        if not api.has_cart(self.request):
+            raise NoCartError()
         cart = api.get_cart(self.request)
 
         order = self.request.session['order']

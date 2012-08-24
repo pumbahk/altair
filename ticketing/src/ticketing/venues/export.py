@@ -8,6 +8,8 @@ class SeatCSV(object):
     seat_header = [
         'seat_id',
         'seat_no',
+        'seat_areas',
+        'seat_name',
         ]
     stock_attribute_header = [
         'floor',
@@ -42,7 +44,8 @@ class SeatCSV(object):
     def _convert_to_csv(self, seat):
         seat_list = [
             ('seat_id', seat.id),
-            ('seat_no', seat.seat_no)
+            ('seat_no', seat.seat_no),
+            ('seat_name', seat.name)
         ]
 
         stock_attribute_list = []

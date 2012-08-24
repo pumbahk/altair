@@ -1,0 +1,345 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+  <title>Venue Viewer Demo</title>
+  <link rel="stylesheet" href="js/css/bootstrap/jquery-ui-1.8.16.custom.css" />
+  <link rel="stylesheet" href="js/css/jquery.smihica_vertical_slider/smihica_vertical_slider.css" />
+  <script type="text/javascript" src="js/jquery-1.7.2.js"></script>
+  <script type="text/javascript" src="js/jquery-ui-1.8.20.custom.min.js"></script>
+  <script type="text/javascript" src="js/fashion.js"></script>
+  <![if !(lt IE 9)]>
+  <script type="text/javascript" src="js/fashion.svg.js"></script>
+  <![endif]>
+  <!--[if (lt IE 9)]> 
+  <script type="text/javascript" src="js/fashion.vml.js"></script>
+  <![endif]-->
+  <script type="text/javascript" src="js/venue-viewer.js"></script>
+  <script type="text/javascript" src="js/jquery.smihica_vertical_slider.js"></script>
+  <style type="text/css">
+.ui-widget {
+  font-size: 12px;
+}
+
+#venue {
+  height: 400px;
+  width: 430px;
+  border: 1px solid #ccc;
+}
+#current-class-name-holder {
+  font-size: 13px;
+  margin-left: 10px;
+}
+
+#mouseover-message-board {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  background: black;
+  color: white;
+  padding: 15px;
+}
+
+#wrapper {
+  position: relative;
+}
+
+#slider {
+  position: absolute;
+  left: 20px;
+  top: 20px;
+  width: 20px;
+  height:100px;
+}
+
+#back-button {
+  position: absolute;
+  top:  20px;
+  left: 380px;
+  width: 32px;
+  height: 32px;
+  background: url(img/backButton.png);
+  cursor: pointer;
+  z-index: 99;
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Venue Viewer Demo</h1>
+  <div class="ui-corner-all ui-toolbar">
+    <span class="ui-buttonset">
+      <input type="radio" name="function" value="select" class="ui-button ui-icon-primary-arrow-4 action-move" id="toolbar-action-move" checked="checked" /><label for="toolbar-action-move">Move</label>
+      <input type="radio" name="function" value="select" class="ui-button ui-icon-primary-arrowthick-1-ne action-select-one" id="toolbar-action-select-one" checked="checked" /><label for="toolbar-action-select-one">Select One</label>
+      <input type="radio" name="function" value="select" class="ui-button ui-icon-primary-calculator action-select-multiple" id="toolbar-action-select-multiple" /><label for="toolbar-action-select-multiple">Select Multiple</label>
+      <input type="radio" name="function" value="zoomin" class="ui-button ui-icon-primary-zoomin action-zoomin" id="toolbar-action-zoomin" /><label for="toolbar-action-zoomin">Zoom-in</label>
+      <input type="radio" name="function" value="zoomout" class="ui-button ui-icon-primary-zoomout action-zoomout" id="toolbar-action-zoomout" /><label for="toolbar-action-zoomout">Zoom-out</label>
+    </span>
+    <button class="ui-button action-reload ui-icon-primary-refresh">Reload</button>
+    <select class="ui-button action-select-adjacencies" id="toolbar-seat-adjacencies-selector"></select>
+    <select class="ui-button action-select-stock-types" id="toolbar-stock-type-selector"></select>
+    <span id="current-class-name-holder"></span>
+    <div id="mouseover-message-board"></div>
+  </div>
+  <div id="wrapper">
+    <div id="venue"><div class="message">Loading...</div></div>
+    <div id="back-button"></div>
+    <div id="slider"></div>
+  </div>
+  <script type="text/javascript">
+var currentStockTypeId = "";
+var venue = $('#venue');
+var slider = $('#slider');
+function loadVenue() {
+  var zoomRatioMin = 0;
+  var zoomRatioMax = 2.5;
+
+  venue.venueviewer({
+    viewportSize: {
+      x: 430, y: 400
+    },
+    dataSource: {
+      drawing: function(key) {
+        return function (next, error) {
+          $.ajax({
+            type: 'get',
+            url: "data/xebio-arena/drawings/" + key + ".xml",
+            dataType: 'xml',
+            success: function(xml) {
+              next(xml);
+            },
+            error: function(xhr, text) { throw new Error("Failed to load drawing data (reason: " + text + ")"); }
+          });
+        }
+      },
+      metadata: "data/xebio-arena/data.json",
+      seats: function (next, error) {
+        $.ajax({
+          // url: 'data/seat-data.json',
+          url: 'data/xebio-arena/seat-data.json',
+          dataType: 'json',
+          success: function(data) {
+            next(data['seats']);
+          },
+          error: function(xhr, text) {
+            error("Failed to load adjacency data (reason: " + text + ")");
+          }
+        });
+      },
+      seatAdjacencies: function (next, error, length) {
+        $.ajax({
+          url: 'data/xebio-arena/adjacencies/' + (length|0) + '.json',
+          dataType: 'json',
+          success: function(data) {
+            next(data['seat_adjacencies']);
+          },
+          error: function(xhr, text) {
+            error("Failed to load adjacency data (reason: " + text + ")");
+          }
+        });
+      }
+    },
+    callbacks: {
+      pageChanging: function (newPage) {
+        var parentList = this.getParents();
+        var holder = $("#current-class-name-holder");
+        holder.empty();
+        var self = this;
+        for (var i = 0, l = parentList.length; i < l; i++) {
+          (function (parent) {
+            var pageData = self.pages[parent];
+            holder.append($("<a href='javascript:void(0)'></a>").text(pageData.name).bind("click", function () {
+              self.navigate(parent);
+            }));
+          })(parentList[i]);
+          holder.append(' &gt; ');
+        }
+        var currentPageData = this.pages[this.currentPage];
+        holder.append($('<span></span>').text(currentPageData.name));
+        var back_btn = $("#back-button");
+        if (parentList.length == 1) {
+          back_btn.hide();
+        } else {
+          back_btn.show();
+        }
+      },
+      zoomRatioChanging: function (zoomRatio) {
+        return Math.min(Math.max(zoomRatio, zoomRatioMin), zoomRatioMax);
+      },
+      zoomRatioChange: function (zoomRatio) {
+        console.log(zoomRatio);
+        var pos = Math.sqrt((zoomRatio - zoomRatioMin) / (zoomRatioMax - zoomRatioMin));
+        slider.smihica_vertical_slider('position', pos);
+      },
+      messageBoard: (function() {
+        var board = $("#mouseover-message-board");
+        board.hide();
+        $('html').mousemove(function(e){
+          board.css({
+            top:  e.pageY+10,
+            left: e.pageX+10
+          });
+        });
+
+        return {
+          up: function(msg) {
+            board.empty();
+            board.append(msg).fadeIn(100);
+          },
+          down: function() {
+            board.stop();
+            board.fadeOut(100);
+          }
+        }
+      })(),
+
+      message: function (msg) {
+        $("<div></div>").text(msg).dialog({
+          modal: true,
+          buttons: {
+            "Ok": function () { $(this).dialog('destroy'); }
+          }
+        });
+      },
+
+      load: function (viewer) {
+        zoomRatioMin = viewer.zoomRatioMin;
+        viewer.zoom(viewer.zoomRatioMin);
+        var n = $("#toolbar-seat-adjacencies-selector");
+        $.each(viewer.availableAdjacencies, function(i, v) {
+          $('<option></option>').attr("value", v).text(v)
+                                .appendTo(n);
+        });
+        n.select(function() {
+          viewer.adjacencyLength(value|0);
+        });
+        var n = $("#toolbar-stock-type-selector");
+        $('<option></option>').attr("value", "").text("All")
+                                .appendTo(n);
+        for (var id in viewer.stockTypes) {
+          var stock_type = viewer.stockTypes[id];
+          $('<option></option>').attr("value", id).text(stock_type.name)
+                                .appendTo(n);
+        }
+      },
+
+      with_uimodeselect: function (viewer, mode) {
+        switch (mode) {
+        case 'select1':
+          $("#toolbar-action-select-one").attr("checked", "checked");
+          break;
+        case 'select':
+          $("#toolbar-action-select-multiple").attr("checked", "checked");
+          break;
+        case 'zoomin':
+          $("#toolbar-action-select-zoomin").attr("checked", "checked");
+          break;
+        case 'zoomout':
+          $("#toolbar-action-select-zoomout").attr("checked", "checked");
+          break;
+        }
+      },
+      selectable: function (viewer, seat) {
+        if (currentStockTypeId == "") return true;
+        return seat.meta.stock_type_id == currentStockTypeId;
+      },
+      click: function (viewer, seat, highlighted) {
+        $.each(highlighted, function (id, seat) {
+                                                //console.log(seat);
+        });
+      },
+      select: function (viewer, selection) {
+        $.each(selection, function (i, seat) {
+                                                //console.log(seat);
+        });
+      },
+      loadstart: function (category) {
+        if (typeof console != 'undefined');
+                                                //console.log(category);
+      }
+    }
+  }).venueviewer("load");
+
+  slider.smihica_vertical_slider({
+    onchange: function (pos) {
+      var level = pos * pos;
+      var zoomRatio = zoomRatioMin + ((zoomRatioMax - zoomRatioMin) * level);
+      console.log(zoomRatio);
+      venue.venueviewer("zoom", zoomRatio);
+    }
+  });
+}
+
+$(".action-zoomin").click(function () {
+  if (!venue)
+    return;
+  venue.venueviewer("uimode", "zoomin");
+});
+$(".action-zoomout").click(function () {
+  if (!venue)
+    return;
+  venue.venueviewer("uimode", "zoomout");
+});
+$(".action-move").click(function () {
+  if (!venue)
+    return;
+  venue.venueviewer("uimode", "move");
+});
+$(".action-select-one").click(function () {
+  if (!venue)
+    return;
+  venue.venueviewer("uimode", "select1");
+});
+$(".action-select-multiple").click(function () {
+  if (!venue)
+    return;
+  venue.venueviewer("uimode", "select");
+});
+$(".action-select-adjacencies").change(function () {
+  if (!venue)
+    return;
+  venue.venueviewer("adjacency", this.value);
+});
+$(".action-select-stock-types").change(function () {
+  if (!venue)
+    return;
+  currentStockTypeId = this.value;
+  venue.venueviewer("refresh");
+});
+$(".action-reload").click(function () {
+  loadVenue();
+});
+$("#back-button").click(function() {
+  if (!venue) return;
+  venue.venueviewer("back");
+});
+
+$(function() {
+
+});
+
+loadVenue();
+</script>
+</div>
+<script type="text/javascript">
+$(".ui-button").each(function (i, n) {
+  n = $(n);
+  n.removeClass('ui-button');
+  var cssClass = n.attr("class").split(/\s+/);
+  var options = { icons: {} }; 
+  for (var i = 0; i < cssClass.length; i++) {
+    var g;
+    if ((g = /ui-icon-primary-(.+)/.exec(cssClass[i])))
+      options.icons.primary = 'ui-icon-' + g[1];
+    if ((g = /ui-icon-secondary-(.+)/.exec(cssClass[i])))
+      options.icons.secondary = 'ui-icon-' + g[1];
+    if ('ui-no-text' == cssClass[i])
+      options.text = false;
+  }
+  n.button(options);
+});
+$(".ui-buttonset").remove('ui-buttonset').buttonset();
+</script>
+</body>
+</html>

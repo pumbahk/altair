@@ -1,6 +1,7 @@
 # encoding: utf-8
-
 import logging
+import itertools
+import operator
 from datetime import datetime
 
 from sqlalchemy import Table, Column, ForeignKey, func, or_, and_
@@ -766,8 +767,8 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     event_id = Column(Identifier, ForeignKey('Event.id'))
     event = relationship('Event', backref='sales_segments')
 
-    membergroup_id = Column(Identifier, ForeignKey('MemberGroup.id'))
-    membergroup = relationship('MemberGroup', backref='salessegments')
+    # membergroup_id = Column(Identifier, ForeignKey('MemberGroup.id'))
+    # membergroup = relationship('MemberGroup', backref='salessegments')
 
     def get_cms_data(self):
         start_at = isodate.datetime_isoformat(self.start_at) if self.start_at else ''
@@ -843,6 +844,7 @@ class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentMethod'
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
+    description = Column(String(2000))
     fee = Column(Numeric(precision=16, scale=2), nullable=False)
     fee_type = Column(Integer, nullable=False, default=FeeTypeEnum.Once.v[0])
 
@@ -865,6 +867,7 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'DeliveryMethod'
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
+    description = Column(String(2000))
     fee = Column(Numeric(precision=16, scale=2), nullable=False)
     fee_type = Column(Integer, nullable=False, default=FeeTypeEnum.Once.v[0])
 
@@ -1440,7 +1443,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
                 order_no = self.order_no
                 if request.registry.settings.get('multicheckout.testing', False):
-                    order_no = '%010d%02d' % (sensible_alnum_decode(order_no[2:12]), 0)
+                    order_no = '%012d%02d' % (sensible_alnum_decode(order_no[2:12]), 0)
                 multi_checkout_result = multi_checkout_api.checkout_sales_cancel(request, order_no)
                 DBSession.add(multi_checkout_result)
 
@@ -1630,6 +1633,11 @@ class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         for item in self.ordered_product_items:
             item.release()
 
+    @property
+    def seats(self):
+        return sorted(itertools.chain.from_iterable(i.seatdicts for i in self.ordered_product_items),
+            key=operator.itemgetter('l0_id'))
+
 class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderedProductItem'
     id = Column(Identifier, primary_key=True)
@@ -1662,6 +1670,11 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             {'quantity': StockStatus.quantity + self.product_item.quantity}
         ).where(StockStatus.stock_id==self.product_item.stock_id)
         DBSession.bind.execute(query)
+
+    @property
+    def seatdicts(self):
+        return ({'name': s.name, 'l0_id': s.l0_id}
+                for s in self.seats)
 
 class Ticket_TicketBundle(Base, BaseModel, LogicallyDeleted):
     __tablename__ = 'Ticket_TicketBundle'
@@ -1781,14 +1794,4 @@ class TicketPrintQueue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def dequeue_all(self, operator):
         '''
         '''
-        ret_val = []
-        now = datetime.now()
-        queues = TicketPrintQueue.filter_by(deleted_at = None).order_by('created_at desc').all()
-        for queue in queues:
-            queue.deleted_at = now
-            ret_val.append(dict(
-                id = queue.id,
-                data = queue.data
-            ))
-        return ret_val
-
+        return TicketPrintQueue.filter_by(deleted_at = None, operator = operator).order_by('created_at desc').all()

@@ -11,6 +11,9 @@
 <link rel="shortcut icon" href="${request.static_url('ticketing.cart:static/img/common/favicon.ico')}" />
 <link rel="stylesheet" href="${request.static_url('ticketing.cart:static/css/import.css')}" type="text/css" media="all" />
 <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/jquery.js')}"></script>
+<style type="text/css">
+  .settlementPayInputInner dd { margin-left: 36px; }
+</style>
 </head>
 <body id="settlement">
 
@@ -31,7 +34,15 @@
 	<!-- ========== main ========== -->
 	<div id="main">
 		<h1><img src="${request.static_url('ticketing.cart:static/img/settlement/89ers_title_settlement.gif')}" alt="チケット購入" width="950" height="40" /></h1>
-				${h.get_nickname(request)} 
+    ${h.get_nickname(request)} 
+
+     %if request.session.peek_flash():
+         %for message in request.session.pop_flash():
+         <table cellpadding="0" cellspacing="0" class="form89ers">
+         <tr><td colspan="2" style="text-align:left;"><div class="error">${message}</div></td></tr>
+         </table>
+         %endfor
+     %endif
 		<form id="form1" name="form1" method="post" action="${request.url}">
             ${form.csrf_token()}
 			<div class="settlementBox">
@@ -43,9 +54,11 @@
                         <div class="settlementPayInput">
                             <div class="settlementPayInputInner">
                                 <dl>
-                                    <dt>カード番号</dt>
+                                    <dt>カード番号(半角数字)</dt>
                                     <dd>
-                                      <input name="card_number" type="text" id="textfield" length="16" placeholder="aaaabbbbccccdddd"/>
+                                      <input name="card_number" type="text" id="textfield" length="16" placeholder="1234123412341234"/>
+									  16桁
+                                      ${h.error_list(request, form, 'card_number')}
                                     </dd>
                                     <dt>有効期限</dt>
                                     <dd>
@@ -63,6 +76,7 @@
                                             <option value="11">11</option>
                                             <option value="12">12</option>
                                         </select>
+										${h.error_list(request, form, 'exp_month')}
                                         月　
                                         <!-- TODO: 現在年から算出する-->
                                         <select name="exp_year" id="select2">
@@ -76,14 +90,18 @@
                                             <option value="19">2019</option>
                                             <option value="20">2020</option>
                                         </select>
-                                        年</dd>
-                                    <dt>名義人(ローマ字)</dt>
+                                        年
+										${h.error_list(request, form, 'exp_year')}
+									</dd>
+                                    <dt>名義人(半角ローマ字)</dt>
                                     <dd>
-                                        <input name="card_holder_name" type="text" id="textfield5" size="50" placeholder="YAMADATARO"/>
+                                        <input name="card_holder_name" type="text" id="textfield5" size="50" placeholder="YAMADA TARO"/>
+										${h.error_list(request, form, 'card_holder_name')}
                                     </dd>
-                                    <dt>セキュリティコード</dt>
+                                    <dt>セキュリティコード(半角)</dt>
                                     <dd>
                                         <input name="secure_code" type="text" id="textfield6" size="5"/>
+										${h.error_list(request, form, 'secure_code')}
                                     </dd>
                                 </dl>
                             </div>
@@ -91,6 +109,10 @@
 
 						<p>セキュリティコードは、MasterCard、VisaまたはJCBでは、カード裏面の署名欄に印刷されている下3桁の数字です。<br/>
 						  American Expressでは、カードの表に印刷されている4桁の数字です。
+						</p>
+
+						<p>
+ブラウザの「戻る」ボタンを使用するとエラーになります。前ページに戻る場合は画面内に表示されているボタンを使用して下さい。なお、ページによってはブラウザの「更新」ボタンを使用するとエラーになる場合があります。
 						</p>
 
 						<p>
@@ -104,7 +126,6 @@
                   <img src="${request.static_url('ticketing.cart:static/img/settlement/master.gif')}" height="30px" />
                   <img src="${request.static_url('ticketing.cart:static/img/settlement/jcb.gif')}" height="30px" />
                   <img src="${request.static_url('ticketing.cart:static/img/settlement/amex_logo.gif')}" height="30px" /><br />
-				  <img src="${request.static_url('ticketing.cart:static/img/settlement/card.gif')}" alt="カードの種類" width="374" height="35" />
 				 </p>
 </dd>
 				</dl>

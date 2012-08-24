@@ -1640,14 +1640,14 @@
 
 #selectSeatType .seatListContainer li.selected .seatListItemAux {
   height: 0px;
-	padding-right: 20px;
 	overflow: hidden;
 }
 
 #selectSeatType .selectProduct .btn-select-buy {
+	display: inline-block;
 	width: 140px;
 	height: 0px;
-	line-height: 0px;
+	line-height: -1px;
 	overflow: hidden;
 	font-size: 0px;
 	padding: 33px 0 0 0;
@@ -1665,9 +1665,10 @@
 }
 
 #selectSeatType .selectProduct .btn-entrust-buy {
+	display: inline-block;
 	width: 140px;
 	height: 0px;
-	line-height: 0px;
+	line-height: -1px;
 	overflow: hidden;
 	font-size: 0px;
 	padding: 33px 0 0 0;
@@ -1685,9 +1686,10 @@
 }
 
 #selectSeatType .selectProduct .btn-buy {
+	display: inline-block;
 	width: 60px;
 	height: 0px;
-	line-height: 0px;
+	line-height: -1px;
 	overflow: hidden;
 	font-size: 0px;
 	padding: 31px 0 0 0;
@@ -1702,6 +1704,25 @@
 
 #selectSeatType.blur .selectProduct .btn-buy {
 	background-image: url(../img/settlement/btn_buy.small.d.gif);
+}
+
+.selectProduct ul.productList {
+	padding: 2px 8px;
+}
+
+.selectProduct ul.productList li.productListItem {
+	padding: 2px 2px;
+	clear: both;
+}
+
+.selectProduct ul.productList li.productListItem .productPrice {
+	padding-left: 4px;
+	padding-right: 4px;
+	float: right;
+}
+
+.selectProduct ul.productList li.productListItem .productQuantity {
+	float: right;
 }
 
 #selectBuy {
@@ -1799,15 +1820,71 @@
 	padding: 0 11px 11px 0;
 }
 
-#selectSeat .venueViewer {
+#selectSeat .venueViewer,
+#selectSeat .venueViewerWrapper,
+#selectSeat .guidanceBackground {
   width: 490px;
   height: 430px;
+}
+
+#selectSeat .venueViewerWrapper {
+	position: relative;
   border: 1px solid #ccc;
   margin-bottom: 10px;
 }
 
-#selectSeat.blur .venueViewer {
-	opacity: .25;
+#selectSeat .guidance {
+	position: absolute;
+	display: none;
+	left: 0;
+	top: 0;
+	width: 450px;
+	height: 390px;
+	margin: 0 0;
+	padding: 20px 20px;
+	z-index: 10001;
+	user-select: none;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+}
+
+#selectSeat .guidance .guidanceInner {
+	position: relative;
+	margin-top: 50px;
+	height: 240px;
+	font-weight: bold;
+	font-size: 14px;
+}
+
+#selectSeat .guidance .guidanceInner h3 {
+	border-left: 6px solid #fa4;
+	padding-left: 4px;
+	font-size: 18px;
+	margin-bottom: 14px;
+}
+
+
+#selectSeat .guidanceBackground {
+	position: absolute;
+	left: 0;
+	top: 0;
+	z-index: 10000;
+	display: none;
+}
+
+#selectSeat.blur .guidanceBackground {
+	display: block;
+	-moz-opacity: 0.75;
+	-opera-opacity: 0.75;
+	-webkit-opacity: 0.75;
+	opacity: 0.75;
+	filter: alpha(opacity=75);
+	background-color: #fff;
+}
+
+#selectSeat.blur .guidance {
+	display: block;
+	color: #000;
 }
 
 #selectSeat.blur #selectProduct h3 {
@@ -1825,9 +1902,10 @@
 }
 
 #selectSeat .btn-select-seat {
+	display: inline-block;
 	width: 60px;
 	height: 0px;
-	line-height: 0px;
+	line-height: -1px;
 	overflow: hidden;
 	font-size: 0px;
 	padding: 31px 0 0 0;
@@ -1854,9 +1932,10 @@
 }
 
 #selectSeat .btn-cancel {
+	display: inline-block;
 	width: 99px;
 	height: 0px;
-	line-height: 0px;
+	line-height: -1px;
 	overflow: hidden;
 	font-size: 0px;
 	padding: 31px 0 0 0;
@@ -1869,7 +1948,7 @@
 #selectSeat.focused .btn-cancel {
 	width: 99px;
 	height: 0px;
-	line-height: 0px;
+	line-height: -1px;
 	overflow: hidden;
 	font-size: 0px;
 	padding: 31px 0 0 0;
@@ -1884,13 +1963,13 @@
 
 
 #selectSeatType ul.buttonSet {
+	clear:right;
 	padding: 0 0 0 0;
 	text-align: right;
-	overflow: hidden;
 }
 
 #selectSeatType ul.buttonSet li {
-	display: inline-block;
+	display: inline;
 }
 
 #selectSeatType .selectProduct {
@@ -2002,6 +2081,29 @@
 .settlementPayBox dd {
 	overflow: hidden;
 	padding: 10px 10px 15px;
+}
+
+.settlementPayBox dd .deliveryFee,
+.settlementPayBox dd .paymentFee {
+	color: #bf191f;
+	font-weight: bold;
+	font-size: 116.7%;
+}
+
+.settlementPayBox dd .description {
+	margin-top: 4px;
+}
+
+.settlementPayBox td {
+	vertical-align: top;
+}
+
+.settlementPayBox td.settlementPayRadio {
+	vertical-align: middle;
+}
+
+.settlementPayBox td dl {
+	width: 400px;
 }
 
 .settlementPayRadio {

@@ -557,7 +557,7 @@ class get_valid_sales_urlTests(unittest.TestCase):
         membership = u_m.Membership(name='ms1')
         membergroup = u_m.MemberGroup(name='mg1', membership=membership)
         sales_segment = c_m.SalesSegment(event=event,
-            membergroup=membergroup)
+            membergroups=[membergroup])
         self.session.add(event)
         self.session.add(membership)
         self.session.flush()

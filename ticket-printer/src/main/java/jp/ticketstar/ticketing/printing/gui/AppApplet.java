@@ -18,10 +18,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Dimension2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
 import java.util.Collection;
 
 import javax.print.PrintService;
@@ -197,7 +193,7 @@ public class AppApplet extends JApplet implements IAppWindow  {
 		
 		String  queueApiUrl = getParameter("queueApiUrl");  
 		if (queueApiUrl == null) {
-			queueApiUrl = "";
+			queueApiUrl = "http://0.0.0.0:7654/tickets/print/dequeue";
 		}
 		String params = "";
 		

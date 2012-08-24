@@ -68,7 +68,7 @@
 					<td colspan="2">
 						% if order.paid_at:
 							% for ticket in tickets:
-								<img src="/qr?d=${ticket.qr}" style="float: left; width: 200px; height: 200px;"/>
+								<img src="/qr?d=${ticket.qr | u}" style="float: left; width: 200px; height: 200px;"/>
 								発券番号 ${ticket.serial} <br />
 								パフォーマンス ${ticket.performance_code} <br />
 								注文番号 ${order.order_no} <br />

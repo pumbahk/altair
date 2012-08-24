@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 
 import unittest
+import mock
 from pyramid import testing
 from .testing import _setup_db as _setup_db_, _teardown_db
 
@@ -116,8 +117,9 @@ class ReserveViewTests(unittest.TestCase):
             ('product-%d' % product3.id, 1),
         ])
 
+        context = mock.Mock()
         request = testing.DummyRequest(params=params, 
-            context=testing.DummyResource())
+            context=context)
         target = self._makeOne(request)
 
         results = target.reserve()
@@ -133,8 +135,10 @@ class ReserveViewTests(unittest.TestCase):
             ('product-%d' % product4.id, 1),
         ])
 
+        
+        context = mock.Mock()
         request = testing.DummyRequest(params=params, 
-            context=testing.DummyResource())
+            context=context)
         target = self._makeOne(request)
 
         results = target.reserve()
@@ -150,8 +154,9 @@ class ReserveViewTests(unittest.TestCase):
             ('product-%d' % product1.id, 2),
         ])
 
+        context = mock.Mock()
         request = testing.DummyRequest(params=params, 
-            context=testing.DummyResource())
+            context=context)
         target = self._makeOne(request)
 
         results = target.reserve()
@@ -179,8 +184,9 @@ class ReserveViewTests(unittest.TestCase):
             ('selected_seat', seat3.l0_id),
         ])
 
+        context = mock.Mock()
         request = testing.DummyRequest(params=params, 
-            context=testing.DummyResource())
+            context=context)
         target = self._makeOne(request)
 
         results = target.reserve()
@@ -207,8 +213,9 @@ class ReserveViewTests(unittest.TestCase):
             ('selected_seat', seat4.l0_id),
         ])
 
+        context = mock.Mock()
         request = testing.DummyRequest(params=params, 
-            context=testing.DummyResource())
+            context=context)
 
         target = self._makeOne(request)
         results = target.reserve()

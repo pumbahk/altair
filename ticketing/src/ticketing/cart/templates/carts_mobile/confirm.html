@@ -1,7 +1,7 @@
-<%inherit file="./base.html"/>
+<%inherit file="./base_89ers.html"/>
 <%namespace file="./tags_mobile.html" name="mobile" />
 
-<div style="background-image:url(${request.static_url('ticketing.cart:static/img/mobile/bg_bar.gif')});background-color:#bf0000" bgcolor="#bf0000" background="${request.static_url('ticketing.cart:static/img/mobile/bg_bar.gif')}"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>チケット購入</font></div>
+<%mobile:header>チケット購入</%mobile:header>
 
 <%mobile:header>申込内容確認</%mobile:header>
 <form id="form1" action="${request.route_url('payment.finish')}" method="post">
@@ -13,14 +13,17 @@ ${cart.performance.event.title} ${cart.performance.name} ${h.performance_date(ca
 <%mobile:form_header>商品${idx + 1}</%mobile:form_header>
 <div>
 ${product.product.name} ${product.quantity} 枚<br/>
-￥${h.format_number(product.product.price * product.quantity)}
+￥${h.format_number(product.product.price * product.quantity)}<br/>
+% for seat in product.seats:
+${seat['name']}<br/>
+% endfor
 </div>
 % endfor
 <%mobile:form_header>決済手数料</%mobile:form_header>
 <div>
 ￥${h.format_number(cart.transaction_fee)}
 </div>
-<%mobile:form_header>配送手数料</%mobile:form_header>
+<%mobile:form_header>発券/配送手数料</%mobile:form_header>
 <div>
 ￥${h.format_number(cart.delivery_fee)}
 </div>
@@ -42,7 +45,7 @@ shipping = cart.shipping_address
 ${h.render_payment_confirm_viewlet(request, cart)}
 </div>
 
-<%mobile:header>配送情報</%mobile:header>
+<%mobile:header>お引き取り</%mobile:header>
 <div>
 ${h.render_delivery_confirm_viewlet(request, cart)}
 </div>
@@ -56,7 +59,7 @@ ${shipping.last_name} ${shipping.first_name}
 <div>
 ${shipping.last_name_kana} ${shipping.first_name_kana}
 </div>
-<%mobile:form_header>電話番号(自宅)</%mobile:form_header>
+<%mobile:form_header>電話番号</%mobile:form_header>
 <div>
 ${shipping.tel_1}
 </div>
@@ -67,7 +70,7 @@ ${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shi
 
 <%mobile:header>メールマガジンの配信</%mobile:header>
 <p>
-ご利用いただいた方には、楽天チケットからのお知らせと、楽天からのメルマガをお送りします。不要な方はチェックをはずしてください。
+ご利用いただいた方には、仙台89ERSからのメールマガジンをお送りします。不要な方はチェックをはずしてください。
 </p>
 % for mailmagazine in mailmagazines:
 <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />${mailmagazine.name}<br/>

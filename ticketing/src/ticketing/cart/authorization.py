@@ -27,19 +27,19 @@ class MembershipAuthorizationPolicy(object):
 
         if permission == "buy":
             logger.debug('authorize for buy')
-            membership = context.membership    
-            membergroup = context.membergroup
-            if membership is None or membergroup is None:
+            memberships = context.memberships
+            membergroups = context.membergroups
+            if not memberships or not membergroups:
                 # 楽天認証
                 return "rakuten_auth" in principals
 
             
-            membership_principal = "membership:%s" % membership.name
-            membergroup_principal = "membergroup:%s" % membergroup.name
-            permit_membership = membership_principal in principals
-            permit_membergroup = membergroup_principal in principals
+            membership_principals = ["membership:%s" % m.name for m in memberships]
+            membergroup_principals = ["membergroup:%s" % m.name for m in membergroups]
+            permit_membership = any([(ms in principals) for ms in membership_principals])
+            permit_membergroup = any([(mp in principals) for mp in membergroup_principals])
             if not permit_membership:
-                logger.debug("%s not in %s" % (membership_principal, principals))
+                logger.debug("%s not in %s" % (membership_principals, principals))
                 return False
 
             if not permit_membergroup:

@@ -1,0 +1,46 @@
+<html lang="ja">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>ナイナーズチケット</title>
+</head>
+<body>
+<div align="center">
+  <img src="${request.static_url('ticketing.cart.fc_auth:static/89ers/images/head_title.jpg')}" width="232" height="72" alt="ナイナーズチケット" />
+  <hr size="2" noshade="noshade" color="#bf0000" />
+</div>
+<div>
+<p style="text-align:center;">
+仙台89ERS<br/>
+<!--
+<form action="${request.route_url('fc_auth.guest', membership='89ers')}" method="post">
+<div style="text-align:center;">
+<input type="submit" value="&gt;&gt;チケット購入&lt;&lt;"/>
+</div>
+</form>
+-->
+</p>
+<div id="login_form">
+<font color="#ffbf00">■</font>ブースター会員ログイン
+</div>
+<form action="${request.url}" method="post">
+<input type="hidden" name="membership" value="89ers" />
+<div>
+  会員ID(8桁)<br/>
+  <input type="text" name="username" size="22" maxlength="8" value="${username}">
+</div>
+<div>
+  パスワード(半角英数8桁)<br/>
+  <input type="password" name="password" size="22" maxlength="8" value="">
+</div>
+<input type="submit" value="ログイン" />
+</form>
+
+<hr size="1" color="#888888" noshade="noshade" />
+<div align="center" style="font-size:x-small">
+  <div>
+    <a href="#">ヘルプ</a> | <a href="http://www.ticketstar.jp/corporate">運営会社</a> | <a href="#">お問い合わせ</a> | <a href="http://www.ticketstar.jp/privacy">個人情報保護方針</a> | <a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a>
+  </div>
+<div><font color="#888888">2010-2012 &copy; TicketStar, Inc. All rights reserved.</font></div>
+</div>
+</body>
+</html>

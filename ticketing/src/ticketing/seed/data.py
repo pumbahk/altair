@@ -464,6 +464,7 @@ delivery_method_names = [
     u'郵送',
     u'コンビニ受取 (セブンイレブン)',
     u'窓口受取',
+    u'QRコード',
     ]
 
 payment_delivery_method_pair_matrix = [

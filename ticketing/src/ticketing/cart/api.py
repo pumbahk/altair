@@ -13,7 +13,7 @@ from ..api.impl import get_communication_api
 from ..api.impl import CMSCommunicationApi
 from .interfaces import IPaymentMethodManager
 from .interfaces import IPaymentPlugin, IDeliveryPlugin, IPaymentDeliveryPlugin
-from .interfaces import IMobileRequest, IStocker, IReserving, ICartFactory
+from .interfaces import IMobileRequest, IStocker, IReserving, ICartFactory, ICompleteMail
 from .models import Cart, PaymentMethodManager, DBSession, CartedProductItem, CartedProduct
 from ..users.models import User, UserCredential, Membership
     
@@ -58,10 +58,21 @@ def get_cart(request):
 def remove_cart(request):
     if hasattr(request, '_cart'):
         delattr(request, '_cart')
-    del request.session['ticketing.cart_id']
+    if request.session.get("ticketing.cart_id"):
+        del request.session['ticketing.cart_id']
 
 def has_cart(request):
-    return 'ticketing.cart_id' in request.session or hasattr(request, '_cart')
+    minutes = max(int(request.registry.settings['altair_cart.expire_time']) - 1, 0)
+    cart = get_cart(request)
+    if cart is None:
+        return False
+    expired = cart.is_expired(minutes) or cart.finished_at
+    if expired:
+        cart.release()
+        import transaction
+        transaction.commit()
+        remove_cart(request)
+    return not expired
 
 def _maybe_encoded(s, encoding='utf-8'):
     if isinstance(s, unicode):
@@ -162,6 +173,9 @@ def get_cart_factory(request):
     stocker_cls = reg.adapters.lookup([IRequest], ICartFactory, "")
     return stocker_cls(request)
 
+def get_complete_mail(request):
+    cls = request.registry.adapters.lookup([IRequest], ICompleteMail, "")
+    return cls(request)
 
 def order_products(request, performance_id, product_requires, selected_seats=[]):
     stocker = get_stocker(request)
@@ -202,9 +216,10 @@ def get_valid_sales_url(request, event):
     principals = effective_principals(request)
     logger.debug(principals)
     for salessegment in event.sales_segments:
-        membergroup = salessegment.membergroup
-        logger.debug("sales_segment:%s" % salessegment.name)
-        logger.debug("membergroup:%s" % membergroup.name)
-        if "membergroup:%s" % membergroup.name in principals:
-            return request.route_url('cart.index.sales', event_id=event.id, sales_segment_id=salessegment.id)
+        membergroups = salessegment.membergroups
+        for membergroup in membergroups:
+            logger.debug("sales_segment:%s" % salessegment.name)
+            logger.debug("membergroup:%s" % membergroup.name)
+            if "membergroup:%s" % membergroup.name in principals:
+                return request.route_url('cart.index.sales', event_id=event.id, sales_segment_id=salessegment.id)
 

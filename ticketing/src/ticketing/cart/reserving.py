@@ -44,7 +44,7 @@ class Reserving(object):
             SeatStatus.seat_id.in_([s.id for s in selected_seats])
         ).filter(
             SeatStatus.status==int(SeatStatusEnum.Vacant)
-        ).all()
+        ).with_lockmode('update').all()
 
         if len(seat_statuses) != len(selected_seat_l0_ids):
             logger.debug("seat_statuses %s" % seat_statuses)
@@ -77,7 +77,7 @@ class Reserving(object):
             SeatStatus.status==int(SeatStatusEnum.Vacant)
         ).filter(
             SeatIndex.seat_id==Seat.id
-        ).order_by(SeatIndex.index)[:1]
+        ).order_by(SeatIndex.index, Seat.l0_id)[:1]
 
     def get_vacant_seats(self, stock_id, quantity):
         """ 空き席を取得 """
@@ -102,7 +102,7 @@ class Reserving(object):
             SeatStatus.seat_id==Seat.id
         )
 
-        adjacency = SeatAdjacency.query.filter(
+        adjacencies = SeatAdjacency.query.filter(
             SeatAdjacencySet.seat_count==quantity,
         ).filter(
             SeatAdjacencySet.id==SeatAdjacency.adjacency_set_id,
@@ -118,7 +118,14 @@ class Reserving(object):
             not_(SeatAdjacency.id.in_(reserved_adjacencies))
         ).filter(
             SeatIndex.seat_id==Seat.id
-        ).order_by(SeatIndex.index).first()
+        ).order_by(SeatIndex.index, Seat.l0_id).all()
+
+        adjacency = None
+        for adj in adjacencies:
+            if [s for s in adj.seats if s.stock_id != stock_id]:
+                continue
+            adjacency = adj
+            break
 
         if adjacency is None:
             raise NotEnoughAdjacencyException

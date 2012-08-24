@@ -51,9 +51,9 @@
     <td id="seat_choice" value="${sales_segment.seat_choice}">${u'○' if sales_segment.seat_choice else u'×'}</td>
   </tr>
 </table>
-<input type="hidden" id="sales_segment_id" value="${sales_segment.id}" />
 <%include file="/sales_segments/_action_button.html" args="order=['edit', 'delete']" />
 <div id="sales_segments-form">
+  <input type="hidden" id="sales_segment_id" value="${sales_segment.id}" />
   <%include file="/sales_segments/_form.html" args="form=form_ss" />
 </div>
 

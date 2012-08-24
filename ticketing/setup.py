@@ -30,7 +30,7 @@ requires = [
     'py4j',
     'WebHelpers',
     'fixture',
-    'js.jquery',
+    'js.jquery == 1.7.1',
     'js.jquery_validation_engine',
     'js.underscore >= 1.3.3',
     'js.jquery_tools',

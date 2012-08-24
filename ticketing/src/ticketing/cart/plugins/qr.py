@@ -3,25 +3,29 @@
 from pyramid.view import view_config
 from pyramid.response import Response
 from zope.interface import implementer
-from ..interfaces import IDeliveryPlugin, IOrderDelivery, ICartDelivery
+from ..interfaces import IOrderDelivery, ICartDelivery, ICompleteMailDelivery
 from . import models as m
 from . import logger
 import qrcode
 import StringIO
 import ticketing.qr
 
-PLUGIN_ID = 5
+DELIVERY_PLUGIN_ID = 4
 
 def includeme(config):
-    config.add_delivery_plugin(QRTicketDeliveryPlugin(), PLUGIN_ID)
+    config.add_delivery_plugin(QRTicketDeliveryPlugin(), DELIVERY_PLUGIN_ID)
     config.scan(__name__)
 
-@view_config(context=ICartDelivery, name="delivery-%d" % PLUGIN_ID, renderer="ticketing.cart.plugins:templates/qr_confirm.html")
+@view_config(context=ICartDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer="ticketing.cart.plugins:templates/qr_confirm.html")
 def deliver_confirm_viewlet(context, request):
     return dict()
 
-@view_config(context=IOrderDelivery, name="delivery-%d" % PLUGIN_ID, renderer="ticketing.cart.plugins:templates/qr_complete.html")
+@view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer="ticketing.cart.plugins:templates/qr_complete.html")
 def deliver_completion_viewlet(context, request):
+    return dict()
+
+@view_config(context=ICompleteMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer="ticketing.cart.plugins:templates/qr_mail_complete.html")
+def deliver_completion_mail_viewlet(context, request):
     return dict()
 
 class QRTicketDeliveryPlugin(object):

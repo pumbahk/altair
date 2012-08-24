@@ -1,5 +1,5 @@
 function newScanner(text) {
-  var regexp = /"((?:\\.|[^"])*)"|:([^\s"]*)|(-?(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)(?:[eE][-+]?[0-9]+)?)|([*+/A-Za-z_-]+)|([ \t]+)|(\r\n|\r|\n)|(.)/g;
+  var regexp = /("(?:\\.|[^"])*)"|:([^\s"]*)|(-?(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)(?:[eE][-+]?[0-9]+)?)|([*+/A-Za-z_-]+)|([ \t]+)|(\r\n|\r|\n)|(.)/g;
   var line = 0;
   var column = 0;
   return {
@@ -9,8 +9,8 @@ function newScanner(text) {
         var g = regexp.exec(text);
         if (!g)
           return null;
-        if (g[1] !== null && g[1] !== void(0)) {
-          retval = ['string', g[1].replace(/\\(.)/g, '$1')];
+        if (g[1]) {
+          retval = ['string', g[1].substring(1).replace(/\\(.)/g, '$1')];
         } else if (g[2]) {
           retval = ['symbol', g[2]];
         } else if (g[3]) {

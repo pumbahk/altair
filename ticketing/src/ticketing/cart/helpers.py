@@ -11,7 +11,7 @@ from webhelpers.html.tags import *
 from webhelpers.number import format_number as _format_number
 from markupsafe import Markup
 from zope.interface import implementer
-from .resources import OrderDelivery, CartDelivery, OrderPayment, CartPayment
+from .resources import OrderDelivery, CartDelivery, OrderPayment, CartPayment, CompleteMailDelivery, CompleteMailPayment
 from ..core.models import FeeTypeEnum, SalesSegment, StockTypeEnum
 import logging
 from .api import get_nickname
@@ -21,6 +21,22 @@ logger = logging.getLogger(__name__)
 def performance_date(performance):
     s = performance.start_on
     return u'{0.month}月{0.day}日 {0.hour:02}:{0.minute:02}'.format(s)
+
+def japanese_date(date):
+    return u"%d年%d月%d日(%s)" % (date.year, date.month, date.day, u"月火水木金土日"[date.weekday()])
+
+def japanese_time(time):
+    return u"%d時%d分" % (time.hour, time.minute)
+
+def japanese_datetime(dt):
+    try:
+        return japanese_date(dt)+japanese_time(dt)
+    except:
+        logger.error("dt is None")
+        return ""
+
+def mail_date(date):
+    return u'{d.year}年 {d.month}月 {d.day}日 {d.hour}時 {d.minute}分'.format(d=date)
 
 # TODO: requestをパラメータから排除
 def error_list(request, form, name):
@@ -151,6 +167,7 @@ def render_payment_finished_viewlet(request, order):
         raise ValueError
     return Markup(response.text)
 
+
 def product_name_with_unit(product, performance_id):
     items = product.items_by_performance_id(performance_id)
     if len(items) == 1:
@@ -159,3 +176,28 @@ def product_name_with_unit(product, performance_id):
         return u"(%s)" % (u" + ".join(
             u"%s:%d枚" % (escape(item.stock_type.name), item.quantity)
             for item in items))
+
+def render_delivery_finished_mail_viewlet(request, order):
+    logger.debug("*" * 80)
+    plugin_id = order.payment_delivery_pair.delivery_method.delivery_plugin_id
+    logger.debug("plugin_id:%d" % plugin_id)
+
+    order = CompleteMailDelivery(order)
+    response = render_view_to_response(order, request, name="delivery-%d" % plugin_id, secure=False)
+    if response is None:
+        logger.debug("*complete mail*: %s is not found" % "delivery-%d" % plugin_id)
+        return u""
+    return Markup(response.text)
+
+def render_payment_finished_mail_viewlet(request, order):
+    logger.debug("*" * 80)
+    plugin_id = order.payment_delivery_pair.payment_method.payment_plugin_id
+    logger.debug("plugin_id:%d" % plugin_id)
+    order = CompleteMailPayment(order)
+    response = render_view_to_response(order, request, name="payment-%d" % plugin_id, secure=False)
+
+    if response is None:
+        logger.debug("*complete mail*: %s is not found" % "payment-%d" % plugin_id)
+        return ""
+    return Markup(response.text)
+

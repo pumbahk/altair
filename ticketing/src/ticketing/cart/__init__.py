@@ -3,6 +3,7 @@ from ticketing.logicaldeleting import install as ld_install
 ld_install()
 from pyramid.config import Configurator
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
+import functools
 from pyramid_who.whov2 import WhoV2AuthenticationPolicy
 from sqlalchemy import engine_from_config
 import sqlahelper
@@ -56,6 +57,14 @@ def includeme(config):
     reg.adapters.register([IRequest], ICartFactory, "", CartFactory)
 
 
+def import_mail_module(config):
+    config.include(config.registry.settings["altair.mailer"])
+    from pyramid.interfaces import IRequest
+    from .interfaces import ICompleteMail
+    from .sendmail import CompleteMail
+    complete_mail_factory = functools.partial(CompleteMail, "ticketing:templates/mail/complete.mako")
+    config.registry.adapters.register([IRequest], ICompleteMail, "", complete_mail_factory)
+    config.add_subscriber('.sendmail.on_order_completed', '.events.OrderCompleted')
 
 
 def main(global_config, **settings):
@@ -69,9 +78,11 @@ def main(global_config, **settings):
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_renderer('json'  , 'ticketing.renderers.json_renderer_factory')
     config.add_renderer('csv'   , 'ticketing.renderers.csv_renderer_factory')
-    config.add_static_view('staic', 'ticketing.cart:static', cache_max_age=3600)
+    config.add_static_view('static', 'ticketing.cart:static', cache_max_age=3600)
 
-    config.add_subscriber('.mail.on_order_completed', '.events.OrderCompleted')
+
+    ## mail
+    config.include(import_mail_module)
 
     config.include('.')
     config.include('.rakuten_auth')

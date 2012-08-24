@@ -32,10 +32,17 @@
 	<div id="main">
 		<h1><img src="${request.static_url('ticketing.cart:static/img/settlement/89ers_title_settlement.gif')}" alt="チケット購入" width="950" height="40" /></h1>
     ${h.get_nickname(request)} 
+
+     %if request.session.peek_flash():
+	   %for message in request.session.pop_flash():
+		 <div class="error">${message}</div>
+	   %endfor
+     %endif
+
 		<form id="form1" name="form1" method="post" action="${request.url}">
 			<div class="settlementBox">
 				<div class="settlementBoxInner">
-					<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_methods.gif')}" alt="お支払い、引き取り方法の指定" width="167" height="30" /></h2>
+					<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_methods.gif')}" alt="お支払い、引き取り方法の指定" width="267" height="30" /></h2>
 					<p style="margin-left:20px;">どれかひとつをお選びください</p>
           <% checked_id = request.params.get('payment_delivery_method_pair_id') %>
           %for m in payment_delivery_methods:
@@ -44,20 +51,27 @@
 							<table>
 								<tr>
                   <% checked = 'checked' if str(m.id) == checked_id else '' %>
-									<td class="settlementPayRadio"><input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" ${checked} /></td>
-									<td><dl style="width:300px;">
+									<td class="settlementPayRadio">
+                    <input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" ${checked} />
+                  </td>
+									<td onclick="$(this).parents('tr').find('input').click();">
+										<dl>
 										<dt>${m.payment_method.name}</dt>
-										<dd>${h.format_currency(m.transaction_fee)}
-                                            (${h.fee_type(m.payment_method.fee_type)})
-                                        </dd>
-                                        </dl>
-                                    </td>
-                                    <td>
-                                        <dl style="width:300px;">
+										<dd class="paymentFee_${h.format_number(m.transaction_fee)}">
+											<span class="paymentFee">${h.format_currency(m.transaction_fee)}</span>
+                      <span class="paymentFeeType">(${h.fee_type(m.payment_method.fee_type)})</span>
+											<div class="description">${m.payment_method.description or '' | n}</div>
+                    </dd>
+                    </dl>
+                  </td>
+									<td onclick="$(this).parents('tr').find('input').click();">
+                    <dl>
 										<dt>${m.delivery_method.name}</dt>
-										<dd>${h.format_currency(m.delivery_fee)}
-                                            (${h.fee_type(m.delivery_method.fee_type)})
-                                        </dd>
+										<dd class="devlieryFee_${h.format_number(m.delivery_fee)}">
+											<span class="deliveryFee">${h.format_currency(m.delivery_fee)}</span>
+                      <span class="deliveryFeeType">(${h.fee_type(m.delivery_method.fee_type)})</span>
+											<div class="description">${m.delivery_method.description or '' | n}</div>
+                    </dd>
 									</dl></td>
 								</tr>
 							</table>
@@ -68,89 +82,114 @@
 			</div>
             <div class="confirmBox">
                 <div class="confirmBoxInner">
-                    <h2>購入者情報</h2>
+		    <h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_customer_info.gif')}" alt="購入者情報" width="103" height="30" /></h2>
                     <!--
+                    <h2>購入者情報</h2>
                     <div class="settlementPayBox">
                       <div class="settlementPayBoxInner">
                     -->
                         <table id="confirmDelivery">
                             <tr>
-                                <th scope="row">購入者氏名(全角入力(例：山田, 太郎))</th>
+                                <th scope="row">購入者氏名(全角)</th>
                                 <td>
                                     <ul>
                                         <li>
                                         ${form['last_name'].label}
                                         ${form['last_name']}
+										(例：山田)
                                         ${h.error_list(request, form, 'last_name')}
                                         </li>
                                         <li>
                                         ${form['first_name'].label}
                                         ${form['first_name']}
+										(例：太郎)
                                         ${h.error_list(request, form, 'first_name')}
                                         </li>
                                     </ul>
                                 </td>
                             </tr>
                             <tr>
-                                <th scope="row">購入者氏名(カナ(例：ヤマダ, タロウ))</th>
+                                <th scope="row">購入者氏名(全角カナ)</th>
                                 <td>
                                     <ul>
                                         <li>
                                         ${form['last_name_kana'].label}
                                         ${form['last_name_kana']}
+										(例：ヤマダ)
                                         ${h.error_list(request, form, 'last_name_kana')}
                                         </li>
                                         <li>
                                         ${form['first_name_kana'].label}
                                         ${form['first_name_kana']}
+										(例：タロウ)
                                         ${h.error_list(request, form, 'first_name_kana')}
                                         </li>
                                     </ul>
                                 </td>
                             </tr>
                             <tr>
-                                <th scope="row">${form['mail_address'].label}（例:mail@example.ne.jp）</th>
+                                <th scope="row">${form['mail_address'].label}(半角英数)</th>
                                 <td>
-                                    ${form['mail_address']}
-                                        ${h.error_list(request, form, 'mail_address')}
+								  <ul>
+									<li>
+                                      ${form['mail_address'].label}
+                                      ${form['mail_address']}
+										(例：mail@example.ne.jp)
+                                      ${h.error_list(request, form, 'mail_address')}
+									</li>
+									<li>
+                                      ${form['mail_address2'].label}
+                                      ${form['mail_address2']}
+										(例：mail@example.ne.jp)
+                                      ${h.error_list(request, form, 'mail_address2')}
+									</li>
+								  </ul>
+								  <p style="margin-left:10px; font-size:90%; color:#333;">予約受付完了メール等をメールでご案内します。「ticketstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</p>
                                 </td>
                             </tr>
                             <tr>
-                                <th scope="row">住所(例: 1410022,東京都,品川区,東五反田x-xx-xx,yyビルz階 )</th>
+                                <th scope="row">住所</th>
                                 <td>
                                     <ul>
                                         <li>${form['zip'].label}
                                         ${form['zip']}
+										(例: 1410022)
                                         ${h.error_list(request, form, 'zip')}
                                         </li>
                                         <li>${form['prefecture'].label}
                                         ${form['prefecture']}
+										(例: 東京都)
                                         ${h.error_list(request, form, 'prefecture')}
                                         </li>
                                         <li>${form['city'].label}
                                         ${form['city']}
+										(例: 品川区)
                                         ${h.error_list(request, form, 'city')}
                                         </li>
-                                        <li>住所
+                                        <li>町名番地
                                         ${form['address_1']}
-                                        ${form['address_2']}
+										(例: 東五反田x-xx-xx)
+                                        <br />建物名等
+										${form['address_2']}
+										(例: yyビルz階)
                                         ${h.error_list(request, form, 'address_1')}
                                         </li>
                                     </ul>
                                 </td>
                             </tr>
                             <tr>
-                                <th scope="row">電話番号(例: 080xxxxyyyy)</th>
+                                <th scope="row">電話番号(半角数字)</th>
                                 <td>
                                     <ul>
                                         <li>${form['tel'].label}
                                           ${form['tel']}
+										  (例: 080xxxxyyyy)
                                           ${h.error_list(request, form, 'tel')}
                                         </li>
-                                        <li>${form['fax'].label}
-                                          ${form['fax']}
-                                          ${h.error_list(request, form, 'fax')}
-                                        </li>
+                                        <!-- <li>${form['fax'].label}
+                                         !--   ${form['fax']}
+                                         !--   ${h.error_list(request, form, 'fax')}
+                                         !-- </li> -->
                                     </ul>
                                 </td>
                             </tr>

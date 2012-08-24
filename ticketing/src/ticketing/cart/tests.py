@@ -141,14 +141,14 @@ class CartTests(unittest.TestCase):
         created = datetime.now() - timedelta(minutes=16)
         target = self._makeOne(created_at=created)
         result = target.is_expired(15)
-        self.assertFalse(result)
+        self.assertTrue(result)
 
     def test_is_expired_instance(self):
         from datetime import datetime, timedelta
         created = datetime.now() - timedelta(minutes=14)
         target = self._makeOne(created_at=created)
         result = target.is_expired(15)
-        self.assertTrue(result)
+        self.assertFalse(result)
 
     def test_is_expired_class(self):
         from datetime import datetime, timedelta
@@ -158,7 +158,7 @@ class CartTests(unittest.TestCase):
         self._add_cart(u"expired", created_at=expired_created)
 
         target = self._getTarget()
-        result = target.query.filter(target.is_expired(expire_span_minutes=15)).all()
+        result = target.query.filter(not target.is_expired(expire_span_minutes=15)).all()
 
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].cart_session_id, u'valid')
@@ -336,9 +336,9 @@ class TicketingCartResourceTests(unittest.TestCase):
 
         request = DummyRequest(matchdict={'event_id': event_id})
         target = self._makeOne(request)
-        result = target.membership
+        result = target.memberships
 
-        self.assertIsNone(result)
+        self.assertEqual(result, [])
 
     @mock.patch("ticketing.cart.resources.datetime")
     def test_membership(self, mock_datetime):
@@ -352,15 +352,14 @@ class TicketingCartResourceTests(unittest.TestCase):
         ss3 = self._add_sales_segement(event_id=event_id, start_at=datetime(2012, 6, 1), end_at=datetime(2012, 6, 19))
         ms = Membership()
         mg = MemberGroup(membership=ms)
-        ss1.membergroup = mg
+        ss1.membergroups.append(mg)
         self.session.flush()
 
         request = DummyRequest(matchdict={'event_id': event_id})
         target = self._makeOne(request)
-        result = target.membership
+        result = target.memberships
 
-        self.assertIsNotNone(result)
-        self.assertEqual(result, ms)
+        self.assertEqual(result, [ms])
 
     def test_event_id(self):
         request = DummyRequest(matchdict={"event_id": "this-is-event"})
@@ -832,6 +831,7 @@ class PaymentViewTests(unittest.TestCase):
     def test_it_no_cart(self):
         from .exceptions import NoCartError
         request = testing.DummyRequest()
+        request.registry.settings['altair_cart.expire_time'] = "15"
         target = self._makeOne(request)
         self.assertRaises(NoCartError, lambda: target())
 
@@ -859,12 +859,15 @@ class PaymentViewTests(unittest.TestCase):
         )
         self._register_starndard_payment_methods()
         request = testing.DummyRequest()
+        request.registry.settings['altair_cart.expire_time'] = "15"
         request._cart = testing.DummyModel(
             performance=testing.DummyModel(
                 event=testing.DummyModel(
                     id="this-is-event-id",
                 ),
             ),
+            is_expired=lambda minutes: False,
+            finished_at=None,
         )
         request.context = testing.DummyResource()
         request.context.get_or_create_user = mock_get_or_create_user
