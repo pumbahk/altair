@@ -96,6 +96,7 @@ class ClientForm(Form):
         filters=[strip_spaces],
         validators=[
             Required(),
+            Length(min=1, max=12, message=u'確認してください'),
             Regexp(r'^\d*$', message=u'-を抜いた数字のみを入力してください'), 
         ]
     )
@@ -103,6 +104,7 @@ class ClientForm(Form):
         label=u"FAX",
         validators=[
             Optional(),
+            Length(min=1, max=12, message=u'確認してください'),
             Phone(u'FAX番号を確認してください'),
         ]
     )
