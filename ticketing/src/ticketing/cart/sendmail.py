@@ -65,6 +65,8 @@ class CompleteMail(object):
         organization = order.ordered_from
         subject = self.get_subject(organization)
         from_ = self.get_email_from(organization)
+
+
         mail_body = self.build_mail_body(order)
         return Message(
             subject=subject,

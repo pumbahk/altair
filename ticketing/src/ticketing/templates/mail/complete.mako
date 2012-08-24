@@ -34,7 +34,7 @@ ${performance.event.title} ${performance.name}
 
 ■商品代金
 %for ordered_product in order_items:
-${ordered_product.product.name} ${h.format_currency(ordered_product.product.price)}
+${ordered_product.product.name} ${h.format_currency(ordered_product.product.price)} x${ordered_product.quantity}枚
 %endfor
 
 ■サービス利用料・手数料

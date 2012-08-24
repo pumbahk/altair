@@ -69,6 +69,7 @@ def _build_order(*args, **kwargs):
                       )
 
     ordererd_product0 = OrderedProduct(
+        quantity=kwargs.get("product0__quantity", "product-quantity"), 
         product=Product(
             name=kwargs.get("product0__name", "product-name"), 
             price=kwargs.get("product0__price", 400.00)))
@@ -78,6 +79,7 @@ def _build_order(*args, **kwargs):
     order.ordered_products.append(ordererd_product0)
 
     ordererd_product1 = OrderedProduct(
+        quantity=kwargs.get("product1__quantity", "product-quantity"), 
         product=Product(
             name=kwargs.get("product1__name", "product-name"), 
             price=kwargs.get("product1__price", 400.00)))
@@ -228,8 +230,10 @@ class SendCompleteMailTest(unittest.TestCase):
             venue__name = u"何か会場名", 
             product0__name = u"商品名0", 
             product0__price = 10000.00, 
+            product0__quantity = 1, 
             product1__name = u"商品名1", 
             product1__price = 20000.00, 
+            product1__quantity = 2, 
             seat0__name = u"2階A:1", 
             seat1__name = u"2階A:2", 
             )
@@ -281,7 +285,6 @@ class SendCompleteMailTest(unittest.TestCase):
         ## pugin
         self.assertIn(u"クレジットカード決済", body)
         self.assertIn(u"QR受け取り", body)
-        # print body
 
         
     def test_payment_by_card_delivery_by_qr(self):
