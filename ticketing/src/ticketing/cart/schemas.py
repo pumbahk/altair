@@ -112,7 +112,7 @@ class ClientForm(Form):
         validators=[
             Required(),
             Regexp(r'^\d{7}$', message=u'-を抜いた数字(7桁)のみを入力してください'), 
-            Length(max=7, message=u'確認してください'),
+            Length(min=7, max=7, message=u'確認してください'),
         ]
     )
     prefecture = fields.TextField(
