@@ -23,3 +23,6 @@ class OverQuantityLimitError(Exception):
     def __init__(self, upper_limit):
         Exception.__init__(self)
         self.upper_limit = upper_limit
+
+class ZeroQuantityError(Exception):
+    pass

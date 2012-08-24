@@ -22,7 +22,7 @@ from ..users import models as u_models
 from .models import Cart
 from . import helpers as h
 from . import schemas
-from .exceptions import CartException, NoCartError, NoEventError, InvalidCSRFTokenException, OverQuantityLimitError
+from .exceptions import CartException, NoCartError, NoEventError, InvalidCSRFTokenException, OverQuantityLimitError, ZeroQuantityError
 from .rakuten_auth.api import authenticated_user
 from .events import notify_order_completed
 from webob.multidict import MultiDict
@@ -480,6 +480,9 @@ class ReserveView(object):
         logger.debug('sum_quantity=%s' % sum_quantity)
         if sum_quantity > sales_segment.upper_limit:
             raise OverQuantityLimitError(sales_segment.upper_limit)
+
+        if sum_quantity == 0:
+            raise ZeroQuantityError
 
         try:
             # カート生成(席はおまかせ)

@@ -46,3 +46,7 @@ class OverQuantityLimitErrorView(object):
         logger.error(self.context, exc_info=self.request.exc_info)
         upper_limit = self.context.upper_limit
         return dict(message=u"枚数は合計%d枚以内で選択してください" % upper_limit)
+
+@view_config(context=ZeroQuantityError, renderer='ticketing.cart:templates/carts_mobile/error.html', request_type="..interfaces.IMobileRequest")
+def zero_quantity_error(request):
+    return dict(message=u"枚数は1枚以上で選択してください")
