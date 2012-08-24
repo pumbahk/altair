@@ -58,7 +58,7 @@ ${h.render_payment_finished_mail_viewlet(request, order)}
 お受取方法： ${delivery_method_name}
 ${h.render_delivery_finished_mail_viewlet(request, order)}
 
-
+お申込内容は、「予約・購入履歴確認画面」（ https://89ers.tstar.jp/orderreview  ）からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。
 
 ※本メールは自動配信メールとなり、こちらに返信されても返答はいたしかねます。
 
