@@ -141,14 +141,14 @@ class CartTests(unittest.TestCase):
         created = datetime.now() - timedelta(minutes=16)
         target = self._makeOne(created_at=created)
         result = target.is_expired(15)
-        self.assertFalse(result)
+        self.assertTrue(result)
 
     def test_is_expired_instance(self):
         from datetime import datetime, timedelta
         created = datetime.now() - timedelta(minutes=14)
         target = self._makeOne(created_at=created)
         result = target.is_expired(15)
-        self.assertTrue(result)
+        self.assertFalse(result)
 
     def test_is_expired_class(self):
         from datetime import datetime, timedelta
@@ -158,7 +158,7 @@ class CartTests(unittest.TestCase):
         self._add_cart(u"expired", created_at=expired_created)
 
         target = self._getTarget()
-        result = target.query.filter(target.is_expired(expire_span_minutes=15)).all()
+        result = target.query.filter(not target.is_expired(expire_span_minutes=15)).all()
 
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].cart_session_id, u'valid')

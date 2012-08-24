@@ -9,7 +9,7 @@ ${event.title}
 
 商品をお選びください
 
-<form action="${request.route_url('cart.order')}" method="post">
+<form action="${request.url}" method="post">
   % for product in products:
     <div>
       <br/>

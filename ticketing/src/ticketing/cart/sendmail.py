@@ -65,6 +65,8 @@ class CompleteMail(object):
         organization = order.ordered_from
         subject = self.get_subject(organization)
         from_ = self.get_email_from(organization)
+
+
         mail_body = self.build_mail_body(order)
         return Message(
             subject=subject,
@@ -88,7 +90,7 @@ class CompleteMail(object):
                 order_datetime=h.mail_date(order.created_at), 
                 order_items=order.ordered_products,
                 order_total_amount=order.total_amount,
-                performance_name=order.performance.name,
+                performance=order.performance,
                 system_fee=order.system_fee,
                 delivery_fee=order.delivery_fee,
                 transaction_fee=order.transaction_fee,

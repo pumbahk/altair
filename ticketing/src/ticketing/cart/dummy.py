@@ -10,6 +10,8 @@ def includeme(config):
     config.add_view(confirm_view, route_name="dummy.payment.confirm")
     config.add_route("dummy.payment.finish", "/dummy/completed")
     config.add_view(complete_view, route_name="dummy.payment.finish")
+    config.add_route("dummy.timeout", "/dummy/timeout")
+    config.add_view(timeout_view, route_name="dummy.timeout", renderer="carts/timeout.html")
 
 def _dummy_performance():
     from datetime import datetime
@@ -81,3 +83,5 @@ def payment_view(request):
         result = render("carts/payment.html", params, request=request)
         return Response(result)
     
+def timeout_view(request):
+    return {}
