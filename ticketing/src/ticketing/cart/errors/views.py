@@ -68,3 +68,7 @@ def not_enough_ajacency_exception(request):
 @view_config(context=CartCreationExceptoion, renderer='ticketing.cart:templates/carts_mobile/error.html', request_type="..interfaces.IMobileRequest")
 def cart_creation_exception(request):
     return dict(message=u"カートを作成できませんでした。しばらく時間を置いてから再度お試しください。")
+
+@view_config(context=InvalidCSRFTokenException, renderer='ticketing.cart:templates/carts_mobile/error.html', request_type="..interfaces.IMobileRequest")
+def cart_creation_exception(request):
+    return dict(message=u"ウェブブラウザの戻るボタンは使用できません。画面上の戻るボタンから操作して下さい。")

@@ -478,8 +478,13 @@ class ReserveView(object):
 
         # CSRFトークンの確認
         form = schemas.CSRFSecureForm(
-            form_data=dict(csrf_token=self.request.params.get('csrf_token')),
+            formdata=self.request.params,
             csrf_context=self.request.session)
+        if not form.validate():
+            raise InvalidCSRFTokenException
+        # セッションからCSRFトークンを削除して再利用不可にしておく
+        if 'csrf' in self.request.session:
+            del self.request.session['csrf']
 
         order_items = self.ordered_items
 
@@ -753,7 +758,7 @@ class CompleteView(object):
     @view_config(route_name='payment.finish', renderer="carts/completion.html", request_method="POST")
     @view_config(route_name='payment.finish', request_type='.interfaces.IMobileRequest', renderer="carts_mobile/completion.html", request_method="POST")
     def __call__(self):
-        form = schemas.CSRFSecureForm(form_data=self.request.params, csrf_context=self.request.session)
+        form = schemas.CSRFSecureForm(formdata=self.request.params, csrf_context=self.request.session)
         form.validate()
         #assert not form.csrf_token.errors
         if not api.has_cart(self.request):
