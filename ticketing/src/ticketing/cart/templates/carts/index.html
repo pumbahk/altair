@@ -185,6 +185,9 @@ $(function() {cart.init(venues_selection, selected, upper_limit, cart_release_ur
                     </div>
                   </div>
                 </div>
+                <div style="float: right">
+                  <a onclick="$('#venue-detail').click(function () { $(this).overlay().close() }).overlay({ mask: { color: '#999', opacity: .5 }, closeOnClick: true }).load()">会場図の文字が見にくい方はこちら</a>
+                </div>
                 <div>
                   <a class="btn-select-seat">購入</a>
                   <a class="btn-cancel">キャンセル</a>
@@ -233,6 +236,10 @@ $(function() {cart.init(venues_selection, selected, upper_limit, cart_release_ur
 	
 <!-- /container -->
 </div>
+
+<div class="modal" id="venue-detail" style="display:none; background-image: url(${request.static_url('ticketing.cart:static/site-data/xebio-arena.png')}); width: 833px; height: 637px;">
+</div>
+
 
 <div class="modal payment" id="order-error-template" style="display:none">
   <div class="modal-header"></div>

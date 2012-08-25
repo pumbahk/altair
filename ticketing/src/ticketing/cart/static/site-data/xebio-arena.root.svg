@@ -16,7 +16,7 @@
    viewBox="22 22 4140 2115"
    id="svg2"
    inkscape:version="0.48.1 r9760"
-   sodipodi:docname="xebio-arena-root.svg">
+   sodipodi:docname="xebio-arena.root.svg">
   <sodipodi:namedview
      pagecolor="#ffffff"
      bordercolor="#666666"
@@ -26,17 +26,19 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1838"
-     inkscape:window-height="1045"
+     inkscape:window-width="1280"
+     inkscape:window-height="756"
      id="namedview10086"
      showgrid="false"
      inkscape:zoom="0.375"
-     inkscape:cx="2205.7633"
-     inkscape:cy="630.83333"
+     inkscape:cx="2632.4299"
+     inkscape:cy="-9.1667"
      inkscape:window-x="46"
      inkscape:window-y="2"
      inkscape:window-maximized="0"
-     inkscape:current-layer="svg2" />
+     inkscape:current-layer="svg2"
+     showguides="true"
+     inkscape:guide-bbox="true" />
   <title
      id="title4">ゼビオアリーナ</title>
   <defs
@@ -206,11 +208,6 @@
      height="1462.5"
      width="67.5" />
   <text
-     x="247.5"
-     y="76.5"
-     id="text23538"
-     style="text-anchor:middle;fill:#000000">ゼビオアリーナ仙台</text>
-  <text
      x="1496.25"
      y="1548"
      id="text23766"
@@ -247,14 +244,9 @@
        sodipodi:linespacing="1000%"
        id="text33503"
        y="395.66666"
-       x="2182"
-       style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:1000%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"
-       xml:space="preserve"><tspan
-         style="font-size:48px"
-         id="tspan33507"
-         y="395.66666"
-         x="2182"
-         sodipodi:role="line">Aブロック</tspan></text>
+       x="1971.3334"
+       style="font-size:96px;line-height:1000%;fill:#000000;stroke:none"
+       xml:space="preserve">Aブロック</text>
   </g>
   <g
      id="g33612">
@@ -281,16 +273,11 @@
        style="fill:#cccccc;stroke:#888888" />
     <text
        xml:space="preserve"
-       style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:1000%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"
-       x="2200.6667"
+       style="font-size:96px;line-height:1000%;fill:#000000;stroke:none"
+       x="1992.6667"
        y="1777"
        id="text33511"
-       sodipodi:linespacing="1000%"><tspan
-         sodipodi:role="line"
-         x="2200.6667"
-         y="1777"
-         id="tspan33513"
-         style="font-size:48px">Cブロック</tspan></text>
+       sodipodi:linespacing="1000%">Cブロック</text>
   </g>
   <g
      id="g33619">
@@ -338,15 +325,10 @@
     <text
        sodipodi:linespacing="1000%"
        id="text33515"
-       y="1067.6666"
-       x="1035.3335"
-       style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:1000%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"
-       xml:space="preserve"><tspan
-         style="font-size:48px"
-         id="tspan33517"
-         y="1067.6666"
-         x="1035.3335"
-         sodipodi:role="line">Bブロック</tspan></text>
+       y="1094.3333"
+       x="998.00018"
+       style="font-size:96px;fill:#000000;stroke:none;"
+       xml:space="preserve">Bブロック</text>
   </g>
   <g
      id="g33630">
@@ -380,16 +362,11 @@
        style="fill:#cccccc;stroke:#888888" />
     <text
        xml:space="preserve"
-       style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:1000%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"
+       style="font-size:96px;fill:#000000;stroke:none;"
        x="3334"
        y="1091.6666"
        id="text33519"
-       sodipodi:linespacing="1000%"><tspan
-         sodipodi:role="line"
-         x="3334"
-         y="1091.6666"
-         id="tspan33521"
-         style="font-size:48px">Dブロック</tspan></text>
+       sodipodi:linespacing="1000%">Dブロック</text>
   </g>
   <g
      id="g33589">
@@ -424,19 +401,9 @@
     <text
        sodipodi:linespacing="1000%"
        id="text33523"
-       y="670.33331"
-       x="2208.6667"
-       style="font-size:24px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:1000%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"
-       xml:space="preserve"><tspan
-         style="font-size:48px"
-         id="tspan33525"
-         y="670.33331"
-         x="2208.6667"
-         sodipodi:role="line">コートサイド・コートエンド</tspan><tspan
-         id="tspan33527"
-         style="font-size:48px"
-         y="1150.3333"
-         x="2208.6667"
-         sodipodi:role="line" /></text>
+       y="707.66663"
+       x="1568.5001"
+       style="font-size:48px;fill:#000000;stroke:none;"
+       xml:space="preserve">コートサイド・コートエンド</text>
   </g>
 </svg>
