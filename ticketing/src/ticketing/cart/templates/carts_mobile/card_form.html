@@ -3,7 +3,7 @@
 <%mobile:header>カード情報の入力</%mobile:header>
 <form id="form1" name="form1" method="post" action="${request.route_url('payment.secure_code')}">
     ${form.csrf_token()}
-<%mobile:form_header required="true">カード番号</%mobile:form_header>
+<%mobile:form_header required="true">カード番号(数字16桁)</%mobile:form_header>
 % if request.session.peek_flash():
 <div>
 % for message in request.session.pop_flash():
@@ -47,17 +47,16 @@ ${h.error_list(request, form, 'card_number')}
 ${h.error_list(request, form, 'exp_month')}
 ${h.error_list(request, form, 'exp_year')}
 </div>
-<%mobile:form_header required="true">カード名義</%mobile:form_header>
+<%mobile:form_header required="true">カード名義(半角ローマ字大文字)</%mobile:form_header>
 <div>
 <input type="text" name="card_holder_name" istyle="3" /><br />
 ${h.error_list(request, form, 'card_holder_name')}
 </div>
-<%mobile:form_header required="true">セキュリティコード</%mobile:form_header>
+<%mobile:form_header required="true">セキュリティコード(数字3〜4桁)</%mobile:form_header>
 <div>
 <input type="text" name="secure_code" istyle="4" /><br />
 ${h.error_list(request, form, 'secure_code')}
 <font size="-2">
-※半角 (例:123)<br />
 カード裏面の署名欄に記載された数字のうち末尾3桁のセキュリティコードを入力して下さい。<br />
 （カード会社により、カード表面のクレジットカード番号の左上または右上の数字4桁の場合もあります）。<br />
 クレジットカードの暗証番号とは異なりますのでご注意下さい。<br />

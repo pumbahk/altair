@@ -564,7 +564,8 @@ cart.StockTypeListView = Backbone.View.extend({
                      $('<span class="seatName"></span>')
                      .text(stockType.get("name")))
                    .append(
-                     $('<span class="seatStatus"></span>')))
+                     $('<span class="seatState"></span>')
+                     .text(stockType.get("availability_text"))))
                 .append($('<div class="seatListItemAux"></div>'))
                 .addClass(["seatEven", "seatOdd"][i & 1])
                 .appendTo(ul)
@@ -734,6 +735,8 @@ cart.OrderFormView = Backbone.View.extend({
         );
     },
     showForm: function(selected_stock_type_el, stock_type, products, done) {
+        if (!stock_type.get('availability'))
+            return false;
         if (this.selected_stock_type_el && selected_stock_type_el[0] == this.selected_stock_type_el[0]) {
             return false;
         }
@@ -1076,21 +1079,32 @@ function createDataSource(params) {
                     "rect1151": "block_a",
                     "rect3378": "block_a",
                     "rect7220": "block_a",
+                    "rect6310": "block_a",
+                    "rect6312": "block_a",
+                    "rect60014": "block_a",
+                    "rect60016": "block_a",
                     "rect7792": "block_b",
                     "rect8999": "block_b",
                     "rect9961": "block_b",
                     "rect11488": "block_b",
+                    "rect60018": "block_b",
                     "rect13092": "block_c",
                     "rect15379": "block_c",
                     "rect19241": "block_c",
+                    "rect60020": "block_c",
+                    "rect60022": "block_c",
+                    "rect60024": "block_c",
+                    "rect60026": "block_c",
                     "rect19833": "block_d",
                     "rect21040": "block_d",
                     "rect21727": "block_d",
                     "rect22879": "block_d",
+                    "rect60030": "block_d",
                     "rect13": "courtside",
                     "rect65": "courtside",
                     "rect417": "courtside",
-                    "rect784": "courtside"
+                    "rect784": "courtside",
+                    "rect60028": "courtside"
                 }
             },
             "block_a": {

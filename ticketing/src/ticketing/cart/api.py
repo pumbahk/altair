@@ -68,9 +68,6 @@ def has_cart(request):
         return False
     expired = cart.is_expired(minutes) or cart.finished_at
     if expired:
-        cart.release()
-        import transaction
-        transaction.commit()
         remove_cart(request)
     return not expired
 
@@ -85,7 +82,7 @@ def get_item_name(request, performance):
 
 def get_nickname(request, suffix=u'さん'):
     from .rakuten_auth.api import authenticated_user
-    user = authenticated_user(request)
+    user = authenticated_user(request) or {}
     nickname = user.get('nickname', '')
     if not nickname:
         return ""

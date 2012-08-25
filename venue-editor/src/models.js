@@ -139,7 +139,12 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
     }
     {
       var stock = seat.get('stock');
-      var set = perStockSeatSet[stock.id];
+      var set;
+      if (stock) {
+        set = perStockSeatSet[stock.id];
+      } else {
+        console.log('Stock not found in Seat.id:' + seat.id);
+      }
       if (!set)
         set = perStockSeatSet[stock.id] = new IdentifiableSet();
       set.add(seat);
@@ -336,9 +341,14 @@ var Stock = exports.Stock = Backbone.Model.extend({
     var self = this;
 
     _.each(Stock.styleProviderAttributes, function (name) {
-      self.get(name).on('change:style', function () {
-        self._refreshStyle();
-      });
+      var stock = self.get(name);
+      if (stock) {
+        stock.on('change:style', function () {
+          self._refreshStyle();
+        });
+      } else {
+        console.log(name + ' not found in Stock.id:' + self.id);
+      }
     });
 
     this._refreshStyle();

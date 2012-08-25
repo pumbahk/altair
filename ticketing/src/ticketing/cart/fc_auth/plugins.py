@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 #
 import pickle
 import logging
@@ -65,11 +66,17 @@ class FCAuthPlugin(object):
     # IAuthenticator
     def authenticate(self, environ, identity):
         logger.debug('authenticate fc_auth')
+        is_guest = identity.get('is_guest', False)
+        
+        if is_guest:
+            logger.debug('authenticate fc_auth for guest')
+            return guest_authenticate(environ, identity)
         membership = identity.get('membership')
         username = identity.get('username')
         password = identity.get('password')
         is_identify = identity.get('identify', False)
 
+        # 以下の処理も関数にわけるべきか
         if not (membership and username and password) and not is_identify:
             logger.debug('fc_auth identity was not found : %s' % identity)
             return
@@ -96,16 +103,19 @@ class FCAuthPlugin(object):
 
         data = {'username': username, 
             'membergroup': user.membergroup.name,
-            'membership': user.membergroup.membership.name}
+            'membership': user.membergroup.membership.name,
+            'is_guest': False,
+            }
         return pickle.dumps(data).encode('base64')
 
-
-
+        
     # IChallenger
     def challenge(self, environ, status, app_headers, forget_headers):
+        logger.debug('challenge')
         if not environ.get('ticketing.cart.fc_auth.required'):
             logger.debug('fc auth is not required')
             return
+        logger.debug('fc auth is required')
         session = environ['session.rakuten_openid']
         session['return_url'] = wsgiref.util.request_uri(environ)
         session.save()
@@ -114,3 +124,30 @@ class FCAuthPlugin(object):
     # IMetadataProvider
     def add_metadata(self, environ, identity):
         pass
+
+def guest_authenticate(environ, identity):
+    """
+    指定メンバーシップにおけるゲストメンバーグループでidentifyする
+    """
+    membership_name = identity.get('membership')
+    if membership_name is None:
+        return None
+
+    membergroup = u_m.MemberGroup.query.filter(
+        u_m.MemberGroup.is_guest==True,
+    ).filter(
+        u_m.MemberGroup.membership_id==u_m.Membership.id
+    ).filter(
+        u_m.Membership.name==membership_name
+    ).first()
+
+    if membergroup is None:
+        logger.debug('guest membergroup is not found at %s' % membership_name)
+        return None
+    data = {'username': u'ゲスト', 
+        'membergroup': membergroup.name,
+        'membership': membership_name,
+        'is_guest': True,
+    }
+
+    return pickle.dumps(data).encode('base64')

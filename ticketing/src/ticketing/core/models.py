@@ -1647,7 +1647,7 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     product_item = relationship('ProductItem')
 #    seat_id = Column(Identifier, ForeignKey('Seat.id'))
 #    seat = relationship('Seat')
-    seats = relationship("Seat", secondary=orders_seat_table)
+    seats = relationship("Seat", secondary=orders_seat_table, backref='ordered_product_items')
     price = Column(Numeric(precision=16, scale=2), nullable=False)
 
     _attributes = relationship("OrderedProductAttribute", backref='ordered_product_item', collection_class=attribute_mapped_collection('name'), cascade='all,delete-orphan')
@@ -1665,9 +1665,9 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             logger.debug('release seat id=%d' % (seat_status.seat_id))
             seat_status.status = int(SeatStatusEnum.Vacant)
         # 在庫数を戻す
-        logger.debug('release stock id=%s quantity=%d' % (self.product_item.stock_id, self.product_item.quantity))
+        logger.debug('release stock id=%s quantity=%d' % (self.product_item.stock_id, len(self.seats)))
         query = StockStatus.__table__.update().values(
-            {'quantity': StockStatus.quantity + self.product_item.quantity}
+            {'quantity': StockStatus.quantity + len(self.seats)}
         ).where(StockStatus.stock_id==self.product_item.stock_id)
         DBSession.bind.execute(query)
 

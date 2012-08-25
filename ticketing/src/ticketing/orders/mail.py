@@ -59,10 +59,12 @@ def create_cancel_message(request, order):
     )
     mail_body = renderers.render(mail_renderer_names[plugin_id], value, request=request)
     mail_body = unicode(mail_body, 'utf-8')
+    from_ = order.ordered_from.contact_email
 
     message = Message(
         subject=subject,
         recipients=[order.shipping_address.email],
+        bcc=[from_], 
         body=mail_body,
         sender=from_)
     return message

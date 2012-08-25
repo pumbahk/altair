@@ -64,7 +64,8 @@ requires = [
     'cssutils',
     'numpy',
     'qrcode',
-    'pystache'
+    'pystache',
+    'repoze.browserid',
     ]
 
 setup(name='ticketing',

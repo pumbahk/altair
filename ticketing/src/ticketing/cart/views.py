@@ -49,6 +49,17 @@ class IndexView(object):
         self.context = request.context
 
     @view_config(route_name='cart.index', renderer='carts/index.html', xhr=False, permission="buy")
+    def redirect_sale(self):
+        sales_segment = self.context.get_sales_segument()
+        if sales_segment is None:
+            logger.debug("No matching sales_segment")
+            raise NoEventError("No matching sales_segment")
+        event_id = self.request.matchdict['event_id']
+        location = self.request.route_url('cart.index.sales', 
+            event_id=event_id,
+            sales_segment_id=sales_segment.id)
+        return HTTPFound(location=location)
+
     @view_config(route_name='cart.index.sales', renderer='carts/index.html', xhr=False, permission="buy")
     def __call__(self):
         jquery_tools.need()
@@ -127,7 +138,8 @@ class IndexView(object):
             c_models.ProductItem.product_id==c_models.Product.id).filter(
             c_models.Product.sales_segment_id==sales_segment_id)
 
-        seat_types = DBSession.query(c_models.StockType).filter(
+        seat_type_triplets = DBSession.query(c_models.StockType, c_models.Stock.quantity, c_models.StockStatus.quantity).filter(
+            c_models.Stock.id==c_models.StockStatus.stock_id).filter(
             c_models.Performance.event_id==event_id).filter(
             c_models.Performance.id==performance_id).filter(
             c_models.Performance.event_id==c_models.StockHolder.event_id).filter(
@@ -145,9 +157,11 @@ class IndexView(object):
                     style=s.style,
                     products_url=self.request.route_url('cart.products',
                         event_id=event_id, performance_id=performance_id, seat_type_id=s.id),
+                    availability=available > 0,
+                    availability_text=h.get_availability_text(available),
                     quantity_only=s.quantity_only,
                     )
-                for s in seat_types
+                for s, total, available in seat_type_triplets
                 ],
                 event_name=performance.event.title,
                 performance_name=performance.name,
@@ -467,8 +481,13 @@ class ReserveView(object):
 
         # CSRFトークンの確認
         form = schemas.CSRFSecureForm(
-            form_data=dict(csrf_token=self.request.params.get('csrf_token')),
+            formdata=self.request.params,
             csrf_context=self.request.session)
+        if not form.validate():
+            raise InvalidCSRFTokenException
+        # セッションからCSRFトークンを削除して再利用不可にしておく
+        if 'csrf' in self.request.session:
+            del self.request.session['csrf']
 
         order_items = self.ordered_items
 
@@ -480,6 +499,13 @@ class ReserveView(object):
 
         if sum_quantity == 0:
             raise ZeroQuantityError
+
+        # 古いカートを削除
+        old_cart = api.get_cart(self.request)
+        if old_cart:
+            old_cart.release()
+            DBSession.delete(old_cart)
+            api.remove_cart(self.request)
 
         try:
             # カート生成(席はおまかせ)
@@ -573,10 +599,11 @@ class PaymentView(object):
         self.context.event_id = cart.performance.event.id
         payment_delivery_methods = self.context.get_payment_delivery_method_pair()
 
-        #openid = authenticated_user(self.request)
-        #user = api.get_or_create_user(self.request, openid['clamed_id'])
         user = self.context.get_or_create_user()
-        user_profile = user.user_profile
+        user_profile = None
+        if user is not None:
+            user_profile = user.user_profile
+
         if user_profile is not None:
             formdata = MultiDict(
                 last_name=user_profile.last_name,
@@ -598,7 +625,8 @@ class PaymentView(object):
         form = schemas.ClientForm(formdata=formdata)
         return dict(form=form,
             payment_delivery_methods=payment_delivery_methods,
-            user=user, user_profile=user.user_profile)
+            #user=user, user_profile=user.user_profile,
+            )
 
     def validate(self, payment_delivery_pair):
         form = schemas.ClientForm(formdata=self.request.params)
@@ -618,8 +646,6 @@ class PaymentView(object):
             raise NoCartError()
         cart = api.get_cart(self.request)
 
-        #openid = authenticated_user(self.request)
-        #user = api.get_or_create_user(self.request, openid['clamed_id'])
         user = self.context.get_or_create_user()
 
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id', 0)
@@ -638,7 +664,8 @@ class PaymentView(object):
 
             return dict(form=form,
                 payment_delivery_methods=payment_delivery_methods,
-                user=user, user_profile=user.user_profile)
+                #user=user, user_profile=user.user_profile,
+                )
 
         cart.payment_delivery_pair = payment_delivery_pair
         cart.system_fee = payment_delivery_pair.system_fee
@@ -717,16 +744,10 @@ class ConfirmView(object):
             .all()
 
         user = self.context.get_or_create_user()
-        return dict(cart=cart, mailmagazines=magazines, user=user, form=form)
-
-    # @view_config(route_name='payment.confirm', request_method="POST", renderer="carts/confirm.html")
-    # def post(self):
-
-    #     assert h.has_cart(self.request)
-    #     cart = h.get_cart(self.request)
-    #         
-    #     self.save_subscription()
-    #     return HTTPFound(self.request.route_url("payment.finish"))
+        return dict(cart=cart, mailmagazines=magazines, 
+            #user=user, 
+            form=form,
+            )
 
 
 class CompleteView(object):
@@ -740,7 +761,7 @@ class CompleteView(object):
     @view_config(route_name='payment.finish', renderer="carts/completion.html", request_method="POST")
     @view_config(route_name='payment.finish', request_type='.interfaces.IMobileRequest', renderer="carts_mobile/completion.html", request_method="POST")
     def __call__(self):
-        form = schemas.CSRFSecureForm(form_data=self.request.params, csrf_context=self.request.session)
+        form = schemas.CSRFSecureForm(formdata=self.request.params, csrf_context=self.request.session)
         form.validate()
         #assert not form.csrf_token.errors
         if not api.has_cart(self.request):
@@ -769,8 +790,6 @@ class CompleteView(object):
             delivery_plugin = api.get_delivery_plugin(self.request, payment_delivery_pair.delivery_method.delivery_plugin_id)
             delivery_plugin.finish(self.request, cart)
 
-        #openid = authenticated_user(self.request)
-        #user = api.get_or_create_user(self.request, openid['clamed_id'])
         user = self.context.get_or_create_user()
         order.user = user
         order.organization_id = order.performance.event.organization_id
@@ -780,13 +799,20 @@ class CompleteView(object):
         # メール購読でエラーが出てロールバックされても困る
         order_id = order.id
         mail_address = cart.shipping_address.email
-        user_id = self.context.get_or_create_user().id
+        plain_user = self.context.get_or_create_user()
+        user_id = None
+        if plain_user is not None:
+            user_id = plain_user.id
+            user_cls = plain_user.__class__
         transaction.commit()
-        user = DBSession.query(user.__class__).get(user_id)
+        user = None
+        if user_id is not None:
+            user = DBSession.query(user_cls).get(user_id)
         order = DBSession.query(order.__class__).get(order_id)
  
         # メール購読
         self.save_subscription(user, mail_address)
+        api.remove_cart(self.request)
 
         return dict(order=order)
 
@@ -1019,5 +1045,9 @@ class OutTermSalesView(object):
         self.context = context
 
     @view_config(context='.exceptions.OutTermSalesException', renderer='ticketing.cart:templates/carts/out_term_sales.html')
+    def __call__(self):
+        return dict(event=self.context.event, sales_segment=self.context.sales_segment)
+
+    @view_config(context='.exceptions.OutTermSalesException', renderer='ticketing.cart:templates/carts_mobile/out_term_sales.html', request_type=".interfaces.IMobileRequest")
     def __call__(self):
         return dict(event=self.context.event, sales_segment=self.context.sales_segment)

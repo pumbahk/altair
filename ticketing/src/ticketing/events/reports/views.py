@@ -17,10 +17,7 @@ from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.core.models import Event, StockHolder
 from ticketing.events.forms import EventForm
-from ticketing.events.reports import xls_export
-from ticketing.events.reports import sheet as report_sheet
 from ticketing.events.reports import reporting
-from ticketing.helpers.base import jdatetime
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class Reports(BaseView):
@@ -132,7 +129,7 @@ class Reports(BaseView):
         )
 
         headers = [
-            ('Content-Type', 'application/octet-stream'),
+            ('Content-Type', 'application/octet-stream; charset=utf-8'),
             ('Content-Disposition', 'attachment; filename=%s' % str(filename))
         ]
         return Response(exporter.as_string(), headers=headers)
@@ -162,7 +159,7 @@ class Reports(BaseView):
         )
 
         headers = [
-            ('Content-Type', 'application/octet-stream'),
+            ('Content-Type', 'application/octet-stream; charset=utf-8'),
             ('Content-Disposition', 'attachment; filename=%s' % str(filename))
         ]
         return Response(exporter.as_string(), headers=headers)
@@ -193,7 +190,7 @@ class Reports(BaseView):
         )
 
         headers = [
-            ('Content-Type', 'application/octet-stream'),
+            ('Content-Type', 'application/octet-stream; charset=utf-8'),
             ('Content-Disposition', 'attachment; filename=%s' % str(filename))
         ]
         return Response(exporter.as_string(), headers=headers)

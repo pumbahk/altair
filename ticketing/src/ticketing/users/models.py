@@ -141,7 +141,7 @@ class MailSubscription(Base, WithTimestamp):
     id = Column(Identifier, primary_key=True)
     email = Column(String(255))
     user_id = Column(Identifier, ForeignKey("User.id"), nullable=True)
-    user = relationship('User', uselist=False)
+    user = relationship('User', uselist=False, backref='mail_subscription')
     segment_id = Column(Identifier, ForeignKey("MailMagazine.id"), nullable=True)
     segment = relationship('MailMagazine', uselist=False)
 
@@ -173,6 +173,7 @@ class MemberGroup(Base, WithTimestamp):
     name = Column(String(255))
     membership_id = Column(Identifier, ForeignKey('Membership.id'))
     membership = relationship('Membership', backref='membergruops')
+    is_guest = Column(Boolean, default=False, server_default='0', nullable=False)
 
     sales_segments = relationship('SalesSegment',
         secondary=MemberGroup_SalesSegment,
