@@ -44,7 +44,7 @@ class Reserving(object):
             SeatStatus.seat_id.in_([s.id for s in selected_seats])
         ).filter(
             SeatStatus.status==int(SeatStatusEnum.Vacant)
-        ).all()
+        ).with_lockmode('update').all()
 
         if len(seat_statuses) != len(selected_seat_l0_ids):
             logger.debug("seat_statuses %s" % seat_statuses)

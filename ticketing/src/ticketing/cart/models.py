@@ -111,28 +111,41 @@ class CartedProductItem(Base):
         """
         return DBSession.query(c_models.SeatStatus).filter(c_models.SeatStatus.seat_id.in_([s.id for s in self.seats])).all()
 
+    @property
+    def seat_statuses_for_update(self):
+        """ 確保済の座席ステータス
+        """
+        return DBSession.query(c_models.SeatStatus).filter(c_models.SeatStatus.seat_id.in_([s.id for s in self.seats])).with_lockmode('update').all()
+
     def finish(self):
         """ 決済処理
         """
-        for seat_status in self.seat_statuses:
+        for seat_status in self.seat_statuses_for_update:
             if seat_status.status != int(c_models.SeatStatusEnum.InCart):
-                self.release()
                 raise NoCartError()
             seat_status.status = int(c_models.SeatStatusEnum.Ordered)
         self.finished_at = datetime.now()
 
     def release(self):
+        logger.info('trying to release CartedProductItem (id=%d)' % self.id)
         # 座席開放
-        for seat_status in self.seat_statuses:
-            logger.debug('release seat id=%d' % (seat_status.seat_id))
+        for seat_status in self.seat_statuses_for_update:
+            logger.info('trying to release seat (id=%d)' % seat_status.seat_id)
+            if seat_status.status != int(c_models.SeatStatusEnum.InCart):
+                logger.info('seat (id=%d) has status=%d, while expecting InCart (%d)' % (seat_status.status, int(c_models.SeatStatusEnum.InCart)))
+                logger.info('not releaseing CartedProductItem (id=%d) for safety' % self.id)
+                return False
+            logger.info('setting status of seat (id=%d) to Vacant (%d)' % (seat_status.seat_id, int(c_models.SeatStatusEnum.Vacant)))
             seat_status.status = int(c_models.SeatStatusEnum.Vacant)
 
         # 在庫数戻し
-        logger.debug('release stock id=%s quantity=%d' % (self.product_item.stock_id, self.quantity))
+        logger.info('restoring the quantity of stock (id=%s) by +%d' % (self.product_item.stock_id, self.quantity))
         up = c_models.StockStatus.__table__.update().values(
                 {"quantity": c_models.StockStatus.quantity + self.quantity}
         ).where(c_models.StockStatus.stock_id==self.product_item.stock_id)
         DBSession.bind.execute(up)
+        logger.info('done for CartedProductItem (id=%d)' % self.id)
+        return True
 
     def is_valid(self):
         for seat_status in self.seat_statuses:
@@ -201,8 +214,13 @@ class CartedProduct(Base):
     def release(self):
         """ 開放
         """
+        logger.info('trying to release CartedProduct (id=%d)' % self.id)
         for item in self.items:
-            item.release()
+            if not item.release():
+                logger.info('returing False to abort. NO FURTHER SQL EXECUTION IS SUPPOSED!')
+                return False
+        logger.info('CartedProduct (id=%d) successfully released' % self.id)
+        return True
 
     def is_valid(self):
         return all([i.is_valid() for i in self.items])
@@ -324,7 +342,9 @@ class Cart(Base):
         """
 
         for product in self.products:
-            product.release()
+            if not product.release():
+                return False
+        return True
 
     def is_valid(self):
         return all([p.is_valid() for p in self.products])
