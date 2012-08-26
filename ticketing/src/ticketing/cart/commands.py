@@ -62,8 +62,23 @@ def cancel_auth_expired_carts():
             break
 
         order_no = get_order_no(request, cart)
+        logging.info("begin releasing cart (id=%d, order_no=%s)" % (cart.id, order_no))
+        cart_id = cart.id
+        if not cart.release():
+            logging.info('failed to release cart (id=%d). transaction will be aborted shortly' % cart_id)
+            transaction.abort()
+            continue
+        logging.info('TRANSACTION IS BEING COMMITTED...')
+        transaction.commit()
+        logging.info('verifying the cart in question (id=%d) still exists')
+        cart = m.Cart.query.filter_by(id=cart_id).first()
+        if cart is None:
+            logging.info('cart (id=%d) IS GONE FOR SOME REASONS. SIGH.')
+            continue
+
         # 状態確認
-        logging.debug('check for order_no=%s' % order_no)
+        logging.info('well, then trying to cancel the authorization request associated with the order (order_no=%s)' % order_no)
+        logging.info('check for order_no=%s' % order_no)
         inquiry = a.checkout_inquiry(request, order_no)
 
         # オーソリOKだったらキャンセル
@@ -73,7 +88,8 @@ def cancel_auth_expired_carts():
         else:
             logging.info("Order(order_no = %s) status = %s " % (order_no, inquiry.Status))
 
-        cart.release()
         cart.finished_at = now
+        logging.info("TRANSACTION IS BEING COMMITTED AGAIN...")
         transaction.commit()
+
     logging.info("end auth cancel batch")
