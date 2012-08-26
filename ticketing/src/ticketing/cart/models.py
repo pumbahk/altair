@@ -132,7 +132,7 @@ class CartedProductItem(Base):
         for seat_status in self.seat_statuses_for_update:
             logger.info('trying to release seat (id=%d)' % seat_status.seat_id)
             if seat_status.status != int(c_models.SeatStatusEnum.InCart):
-                logger.info('seat (id=%d) has status=%d, while expecting InCart (%d)' % (seat_status.status, int(c_models.SeatStatusEnum.InCart)))
+                logger.info('seat (id=%d) has status=%d, while expecting InCart (%d)' % (seat_status.seat_id, seat_status.status, int(c_models.SeatStatusEnum.InCart)))
                 logger.info('not releaseing CartedProductItem (id=%d) for safety' % self.id)
                 return False
             logger.info('setting status of seat (id=%d) to Vacant (%d)' % (seat_status.seat_id, int(c_models.SeatStatusEnum.Vacant)))
