@@ -49,6 +49,17 @@ class IndexView(object):
         self.context = request.context
 
     @view_config(route_name='cart.index', renderer='carts/index.html', xhr=False, permission="buy")
+    def redirect_sale(self):
+        sales_segment = self.context.get_sales_segument()
+        if sales_segment is None:
+            logger.debug("No matching sales_segment")
+            raise NoEventError("No matching sales_segment")
+        event_id = self.request.matchdict['event_id']
+        location = self.request.route_url('cart.index.sales', 
+            event_id=event_id,
+            sales_segment_id=sales_segment.id)
+        return HTTPFound(location=location)
+
     @view_config(route_name='cart.index.sales', renderer='carts/index.html', xhr=False, permission="buy")
     def __call__(self):
         jquery_tools.need()
