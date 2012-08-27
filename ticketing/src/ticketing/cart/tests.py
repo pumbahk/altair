@@ -831,6 +831,7 @@ class PaymentViewTests(unittest.TestCase):
     def test_it_no_cart(self):
         from .exceptions import NoCartError
         request = testing.DummyRequest()
+        request.registry.settings['altair_cart.expire_time'] = "15"
         target = self._makeOne(request)
         self.assertRaises(NoCartError, lambda: target())
 
@@ -858,12 +859,15 @@ class PaymentViewTests(unittest.TestCase):
         )
         self._register_starndard_payment_methods()
         request = testing.DummyRequest()
+        request.registry.settings['altair_cart.expire_time'] = "15"
         request._cart = testing.DummyModel(
             performance=testing.DummyModel(
                 event=testing.DummyModel(
                     id="this-is-event-id",
                 ),
             ),
+            is_expired=lambda minutes: False,
+            finished_at=None,
         )
         request.context = testing.DummyResource()
         request.context.get_or_create_user = mock_get_or_create_user

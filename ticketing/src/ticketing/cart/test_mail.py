@@ -249,42 +249,42 @@ class SendCompleteMailTest(unittest.TestCase):
         body = result.body
 
         ## 基本情報
-        self.assertIn(u"family-name first-name", body)
-        self.assertIn(u"苗字 名前", body)
-        self.assertIn(u"0120-1234", body)
-        self.assertIn(u"08012341234", body)
+        self.assertIn(u"family-name first-name", body, u"family-name first-name")
+        self.assertIn(u"苗字 名前", body, u"苗字 名前")
+        self.assertIn(u"0120-1234", body, u"0120-1234")
+        self.assertIn(u"08012341234", body, u"08012341234")
 
         ## 受付情報
-        self.assertIn(u"xxx-xxxx-xxxx", body)
-        self.assertIn(h.mail_date(datetime(1900, 1, 1)), body)
+        self.assertIn(u"xxx-xxxx-xxxx", body, u"xxx-xxxx-xxxx")
+        self.assertIn(h.mail_date(datetime(1900, 1, 1)), body, h.mail_date(datetime(1900, 1, 1)))
 
         ## 公演情報
-        self.assertIn(u"何かイベント名", body)
-        self.assertIn(u"何かパフォーマンス名", body)
-        self.assertIn(u"何か会場名", body)
-        self.assertIn(h.japanese_datetime(datetime(2000, 1, 1)), body)
+        self.assertIn(u"何かイベント名", body, u"何かイベント名",)
+        self.assertIn(u"何かパフォーマンス名", body, u"何かパフォーマンス名",)
+        self.assertIn(u"何か会場名", body, u"何か会場名")
+        self.assertIn(h.japanese_datetime(datetime(2000, 1, 1)), body, h.japanese_datetime(datetime(2000, 1, 1)))
 
         ## 座席情報
-        self.assertIn(u"2階A:1", body)
-        self.assertIn(u"2階A:2", body)
+        self.assertIn(u"2階A:1", body, u"2階A:1")
+        self.assertIn(u"2階A:2", body, u"2階A:2")
 
         ## 商品情報
-        self.assertIn(u"商品名0", body)
-        self.assertIn(h.format_currency(10000.00), body)
-        self.assertIn(u"商品名1", body)
-        self.assertIn(h.format_currency(20000.00), body)
+        self.assertIn(u"商品名0", body, u"商品名0")
+        self.assertIn(h.format_currency(10000.00), body, h.format_currency(10000.00))
+        self.assertIn(u"商品名1", body, u"商品名1")
+        self.assertIn(h.format_currency(20000.00), body, h.format_currency(20000.00))
 
         ## 利用料
-        self.assertIn(h.format_currency(20), body)
-        self.assertIn(h.format_currency(30), body)
-        self.assertIn(h.format_currency(40), body)
+        self.assertIn(h.format_currency(20), body, h.format_currency(20))
+        self.assertIn(h.format_currency(30), body, h.format_currency(30))
+        self.assertIn(h.format_currency(40), body, h.format_currency(40))
 
         ## 合計金額
-        self.assertIn(h.format_currency(99999), body)
+        self.assertIn(h.format_currency(99999), body, h.format_currency(99999))
 
         ## pugin
-        self.assertIn(u"クレジットカード決済", body)
-        self.assertIn(u"QR受け取り", body)
+        self.assertIn(u"クレジットカード決済", body, u"クレジットカード決済")
+        self.assertIn(u"QR受け取り", body, u"QR受け取り")
 
         
     def test_payment_by_card_delivery_by_qr(self):
@@ -352,11 +352,11 @@ class SendCompleteMailTest(unittest.TestCase):
         body = result.body
         self.assertIn(u"＜クレジットカードでのお支払いの方＞", body)
 
-        self.assertIn(u"＜セブン-イレブンでお引取りの方＞", body)
-        self.assertIn(u"次の日から", body)
-        self.assertIn(u"707070", body)
-        self.assertIn(h.japanese_datetime(datetime(3000, 1, 1)), body)
-        self.assertIn(h.japanese_datetime(datetime(4000, 1, 1)), body)
+        self.assertIn(u"＜セブン-イレブンでお引取りの方＞", body, u"＜セブン-イレブンでお引取りの方＞")
+        self.assertIn(u"次の日から", body, u"次の日から")
+        self.assertIn(u"707070", body, u"707070")
+        self.assertIn(h.japanese_datetime(datetime(3000, 1, 1)), body, u"3000")
+        self.assertIn(h.japanese_datetime(datetime(4000, 1, 1)), body, u"4000")
 
 
     def test_payment_by_card_delivery_home(self):
@@ -446,8 +446,8 @@ class SendCompleteMailTest(unittest.TestCase):
         self.assertIn(u"＜セブン-イレブンでお引取りの方＞", body)
         self.assertIn(u"707070", body)
         self.assertNotIn(u"次の日から", body)
-        self.assertIn(h.japanese_datetime(datetime(3000, 1, 1)), body)
-        self.assertIn(h.japanese_datetime(datetime(4000, 1, 1)), body)
+        self.assertIn(h.japanese_datetime(datetime(3000, 1, 1)), body, u"3000")
+        self.assertIn(h.japanese_datetime(datetime(4000, 1, 1)), body, u"4000")
 
 
     def test_payment_unknown_delivery_by_unknown(self):
