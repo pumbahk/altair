@@ -31,13 +31,13 @@
 				</div>
 			</div>
 
-			<form action="${request.route_url('fc_auth.guest', membership=request.matchdict['membership'])}" method="post">
 				<div class="kadomaru">
 
 
 					<table cellpadding="0" cellspacing="0" class="textC" style="margin:0 auto;">
 						<tr>
 							<td>
+			                    <form action="${request.route_url('fc_auth.guest', membership=request.matchdict['membership'])}" method="post">
 								<table class="login" style="margin-right:5px; height: 270px;">
 									<thead>
 										<th>
@@ -53,8 +53,10 @@
                                             </td>
 									</tr>
 								</table>
+                                </form>
 							</td>
 							<td>
+			                    <form action="${request.url}" method="post">
 								<table class="login" style="margin-left:5px; height: 270px;">
 									<thead>
 										<th>
@@ -93,6 +95,7 @@
 													<td colspan="2" class="textC"><small>今シーズン用の会員証・先行販売のご案内をご確認ください（昨シーズンのFC会員番号は使用できません。ご注意ください）<br>会員IDとパスワードを忘れてしまった方は<a href="mailto:89ers@ticketstar.jp">こちら</a>からお問い合わせください。</small></td>
 												</tr>
 											</table>							
+			                                </form>
 										</td>
 									</tr>
 								</table>
@@ -127,7 +130,6 @@
                     </div>
 
 				</div>
-			</form>
 
 
 
