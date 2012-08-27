@@ -1,4 +1,5 @@
 import unittest
+from pyramid import testing
 from ticketing.testing import _setup_db, _teardown_db
 from .testing import add_credential
 
@@ -255,6 +256,56 @@ class guest_authenticateTests(unittest.TestCase):
         self.assertEqual(result['membership'], 'testing')
         self.assertEqual(result['membergroup'], 'testing_guest')
         self.assertTrue(result['is_guest'])
+
+class LoginViewTests(unittest.TestCase):
+    
+
+    def _getTarget(self):
+        from .views import LoginView
+        return LoginView
+
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
+
+    def test_guest_login_fail(self):
+        membership_name = 'testing'
+
+        request = testing.DummyRequest(matchdict={'membership': 'testing'})
+        request.environ['session.rakuten_openid'] = {'return_url': '/return/to/url'}
+        request.environ['repoze.who.api'] = DummyWhoApi(None)
+
+        target = self._makeOne(request)
+
+        result = target.guest_login()
+
+        self.assertIn('message', result)
+
+    def test_guest_login(self):
+        membership_name = 'testing'
+
+        request = testing.DummyRequest(matchdict={'membership': 'testing'})
+        request.environ['session.rakuten_openid'] = {'return_url': '/return/to/url'}
+        request.environ['repoze.who.api'] = DummyWhoApi(
+            {'membership': 'testing', 'is_guest': True},
+            [('X-TESTING', 'TESTING')])
+
+
+        target = self._makeOne(request)
+
+        result = target.guest_login()
+
+        self.assertEqual(result.location, '/return/to/url')
+        self.assertEqual(result.headers['X-TESTING'], 'TESTING')
+
+class DummyWhoApi(object):
+    def __init__(self, authenticated, headers=[]):
+        self.authenticated = authenticated
+        self.headers = headers
+
+
+    def login(self, identity):
+        return self.authenticated, self.headers
 
 class DummySession(dict):
     def save(self):

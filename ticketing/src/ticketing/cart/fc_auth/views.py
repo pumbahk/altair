@@ -62,3 +62,26 @@ class LoginView(object):
 
         return res
 
+    @view_config(request_method="POST", route_name='fc_auth.guest', renderer='string')
+    def guest_login(self):
+        who_api = get_who_api(self.request.environ)
+        membership = self.request.matchdict['membership']
+        logger.debug("guest authenticate for membership %s" % membership)
+
+        identity = {
+            'membership': membership,
+            'is_guest': True,
+        }
+        authenticated, headers = who_api.login(identity)
+
+        if authenticated is None:
+            self.select_renderer(membership)
+            return {'username': '',
+                    'message': u'一般販売を行っておりません。'}
+
+
+        return_to_url = self.return_to_url
+        res = HTTPFound(location=return_to_url, headers=headers)
+
+        return res
+
