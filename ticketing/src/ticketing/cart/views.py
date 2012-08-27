@@ -573,10 +573,10 @@ class PaymentView(object):
         self.context.event_id = cart.performance.event.id
         payment_delivery_methods = self.context.get_payment_delivery_method_pair()
 
-        #openid = authenticated_user(self.request)
-        #user = api.get_or_create_user(self.request, openid['clamed_id'])
         user = self.context.get_or_create_user()
-        user_profile = user.user_profile
+        if user is not None:
+            user_profile = user.user_profile
+
         if user_profile is not None:
             formdata = MultiDict(
                 last_name=user_profile.last_name,
@@ -598,7 +598,8 @@ class PaymentView(object):
         form = schemas.ClientForm(formdata=formdata)
         return dict(form=form,
             payment_delivery_methods=payment_delivery_methods,
-            user=user, user_profile=user.user_profile)
+            #user=user, user_profile=user.user_profile,
+            )
 
     def validate(self, payment_delivery_pair):
         form = schemas.ClientForm(formdata=self.request.params)
@@ -618,8 +619,6 @@ class PaymentView(object):
             raise NoCartError()
         cart = api.get_cart(self.request)
 
-        #openid = authenticated_user(self.request)
-        #user = api.get_or_create_user(self.request, openid['clamed_id'])
         user = self.context.get_or_create_user()
 
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id', 0)
@@ -638,7 +637,8 @@ class PaymentView(object):
 
             return dict(form=form,
                 payment_delivery_methods=payment_delivery_methods,
-                user=user, user_profile=user.user_profile)
+                #user=user, user_profile=user.user_profile,
+                )
 
         cart.payment_delivery_pair = payment_delivery_pair
         cart.system_fee = payment_delivery_pair.system_fee
@@ -717,16 +717,10 @@ class ConfirmView(object):
             .all()
 
         user = self.context.get_or_create_user()
-        return dict(cart=cart, mailmagazines=magazines, user=user, form=form)
-
-    # @view_config(route_name='payment.confirm', request_method="POST", renderer="carts/confirm.html")
-    # def post(self):
-
-    #     assert h.has_cart(self.request)
-    #     cart = h.get_cart(self.request)
-    #         
-    #     self.save_subscription()
-    #     return HTTPFound(self.request.route_url("payment.finish"))
+        return dict(cart=cart, mailmagazines=magazines, 
+            #user=user, 
+            form=form,
+            )
 
 
 class CompleteView(object):
@@ -769,8 +763,6 @@ class CompleteView(object):
             delivery_plugin = api.get_delivery_plugin(self.request, payment_delivery_pair.delivery_method.delivery_plugin_id)
             delivery_plugin.finish(self.request, cart)
 
-        #openid = authenticated_user(self.request)
-        #user = api.get_or_create_user(self.request, openid['clamed_id'])
         user = self.context.get_or_create_user()
         order.user = user
         order.organization_id = order.performance.event.organization_id

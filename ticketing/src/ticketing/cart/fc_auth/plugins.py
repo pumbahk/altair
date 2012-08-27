@@ -147,5 +147,5 @@ def guest_authenticate(environ, identity):
         'membership': membership_name,
         'is_guest': True,
     }
-    return data
 
+    return pickle.dumps(data).encode('base64')
