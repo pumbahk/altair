@@ -585,6 +585,7 @@ class PaymentView(object):
         payment_delivery_methods = self.context.get_payment_delivery_method_pair()
 
         user = self.context.get_or_create_user()
+        user_profile = None
         if user is not None:
             user_profile = user.user_profile
 
@@ -783,9 +784,14 @@ class CompleteView(object):
         # メール購読でエラーが出てロールバックされても困る
         order_id = order.id
         mail_address = cart.shipping_address.email
-        user_id = self.context.get_or_create_user().id
+        plain_user = self.context.get_or_create_user()
+        user_id = None
+        if plain_user is not None:
+            user_id = plain_user.id
         transaction.commit()
-        user = DBSession.query(user.__class__).get(user_id)
+        user = None
+        if user_id is not None:
+            user = DBSession.query(user.__class__).get(user_id)
         order = DBSession.query(order.__class__).get(order_id)
  
         # メール購読
