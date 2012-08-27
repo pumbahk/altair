@@ -164,7 +164,7 @@ class TestIt(unittest.TestCase):
 
         import pickle
         self.assertEqual(pickle.loads(authenticated['repoze.who.userid'].decode('base64')), 
-            {'username': 'test_user', 'membership': 'fc', 'membergroup': 'fc_plutinum'})
+            {'username': 'test_user', 'membership': 'fc', 'membergroup': 'fc_plutinum', "is_guest": False})
 
     def test_challenge_none(self):
         login_url = 'http://example.com/login'
@@ -191,6 +191,70 @@ class TestIt(unittest.TestCase):
 
         self.assertEqual(result.location, login_url)
         self.assertEqual(session['return_url'], 'http://127.0.0.1/')
+
+
+class guest_authenticateTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.session = _setup_db(modules=[
+                'ticketing.core.models',
+                #'ticketing.tickets.models',
+                'ticketing.operators.models',
+                #'ticketing.users.models',
+                ])
+
+    @classmethod
+    def tearDownClass(cls):
+        _teardown_db()
+
+    def tearDown(self):
+        _teardown_db()
+
+    def _callFUT(self, *args, **kwargs):
+        from .plugins import guest_authenticate
+        return guest_authenticate(*args, **kwargs)
+
+    def test_empty(self):
+        environ = {
+        }
+        identity = {
+        }
+        result = self._callFUT(environ, identity)
+
+        self.assertIsNone(result)
+
+    def test_no_geust_membergroup(self):
+        environ = {
+        }
+        identity = {
+            "membership": 'testing',
+        }
+        result = self._callFUT(environ, identity)
+
+        self.assertIsNone(result)
+
+    def _create_guest(self, name):
+        import ticketing.users.models as u_m
+
+        membership = u_m.Membership(name=name)
+        guest = u_m.MemberGroup(membership=membership, is_guest=True, name=name+"_guest")
+        self.session.add(membership)
+        self.session.flush()
+        return guest
+
+    def test_it(self):
+        environ = {
+        }
+        identity = {
+            "membership": 'testing',
+        }
+
+        self._create_guest(identity['membership'])
+        result = self._callFUT(environ, identity)
+
+        self.assertEqual(result['membership'], 'testing')
+        self.assertEqual(result['membergroup'], 'testing_guest')
+        self.assertTrue(result['is_guest'])
 
 class DummySession(dict):
     def save(self):
