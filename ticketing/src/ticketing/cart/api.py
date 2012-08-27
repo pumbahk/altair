@@ -68,9 +68,6 @@ def has_cart(request):
         return False
     expired = cart.is_expired(minutes) or cart.finished_at
     if expired:
-        cart.release()
-        import transaction
-        transaction.commit()
         remove_cart(request)
     return not expired
 
