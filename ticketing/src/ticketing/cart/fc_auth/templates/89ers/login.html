@@ -38,7 +38,7 @@
 						<tr>
 							<td>
 			                    <form action="${request.route_url('fc_auth.guest', membership=request.matchdict['membership'])}" method="post">
-								<table class="login" style="margin-right:5px; height: 270px;">
+								<table class="login" style="margin-right:5px; height: 290px;">
 									<thead>
 										<th>
 											一般の方はこちらから
@@ -46,18 +46,19 @@
 									</thead>
 									<tr>
 										<td style="text-align:center;"> 
-                                            <button class="redBtn">チケット購入</button>
-										    %if guest_message:
-										    <br/><span class="small red">${guest_message}</span>
-										    %endif
-                                            </td>
+                      <button class="redBtn" style="margin-top: 30px;">チケット購入</button>
+										  <div style="margin-top: 10px;"><small>9月1日(土) 12:00より販売開始予定です。</small></div>
+										  %if guest_message:
+										  <div class="small red">${guest_message}</div>
+										  %endif
+                    </td>
 									</tr>
 								</table>
                                 </form>
 							</td>
 							<td>
 			                    <form action="${request.url}" method="post">
-								<table class="login" style="margin-left:5px; height: 270px;">
+								<table class="login" style="margin-left:5px; height: 290px;">
 									<thead>
 										<th>
 											ブースター会員の方はこちらから
@@ -72,7 +73,7 @@
 														<br /><span class="small red">※ 半角英数</span>
 													</td>
 													<td>
-														<input type="text" name="username" size="22" maxlength="8" value="${username}">
+														<input type="text" name="username" size="20" maxlength="8" value="${username}">
 														%if message:
 														<br/><span class="small red">${message}</span>
 														%endif
@@ -84,7 +85,7 @@
 														<br /><span class="small red">※ 半角英数</span>
 													</td>
 													<td>
-														<input type="password" name="password" size="22" maxlength="8" value="">
+														<input type="password" name="password" size="20" maxlength="8" value="">
 													</td>
 												</tr>
 												<tr>
