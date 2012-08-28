@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['v6D5KNG4PFKC59IC'] = (function (exports) { (function () { 
+__LIBS__['cOPGCSV32A3O85_8'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -70,7 +70,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['JNQS05Z7JF3B6KTF'] = (function (exports) { (function () { 
+__LIBS__['yMS6VUKUQDIY863S'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -96,7 +96,7 @@ exports.ja = {
   } 
 };
  })(); return exports; })({});
-__LIBS__['f5SHO3NVI81ZH65W'] = (function (exports) { (function () { 
+__LIBS__['P77B4A5R4O17X9WK'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -195,7 +195,7 @@ exports.mergeStyle = function mergeStyle(a, b) {
   };
 };
  })(); return exports; })({});
-__LIBS__['cRPUEHOQ28_0QY2M'] = (function (exports) { (function () { 
+__LIBS__['M_N8FFKVC0WA1L2_'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -244,12 +244,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['XO9UCQMTMKD4CZQ0'] = (function (exports) { (function () { 
+__LIBS__['q5JQBDYHPEW5CLUE'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['f5SHO3NVI81ZH65W'];
-var CONF = __LIBS__['v6D5KNG4PFKC59IC'];
-var IdentifiableSet = __LIBS__['cRPUEHOQ28_0QY2M'].IdentifiableSet;
+var util = __LIBS__['P77B4A5R4O17X9WK'];
+var CONF = __LIBS__['cOPGCSV32A3O85_8'];
+var IdentifiableSet = __LIBS__['M_N8FFKVC0WA1L2_'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -388,7 +388,12 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
     }
     {
       var stock = seat.get('stock');
-      var set = perStockSeatSet[stock.id];
+      var set;
+      if (stock) {
+        set = perStockSeatSet[stock.id];
+      } else {
+        console.log('Stock not found in Seat.id:' + seat.id);
+      }
       if (!set)
         set = perStockSeatSet[stock.id] = new IdentifiableSet();
       set.add(seat);
@@ -585,9 +590,14 @@ var Stock = exports.Stock = Backbone.Model.extend({
     var self = this;
 
     _.each(Stock.styleProviderAttributes, function (name) {
-      self.get(name).on('change:style', function () {
-        self._refreshStyle();
-      });
+      var stock = self.get(name);
+      if (stock) {
+        stock.on('change:style', function () {
+          self._refreshStyle();
+        });
+      } else {
+        console.log(name + ' not found in Stock.id:' + self.id);
+      }
     });
 
     this._refreshStyle();
@@ -688,12 +698,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['z_EKOJST9Z0V_W6Q'] = (function (exports) { (function () { 
+__LIBS__['TSM0PYGVFKU9DYPI'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['f5SHO3NVI81ZH65W'];
-var CONF = __LIBS__['v6D5KNG4PFKC59IC'];
-var models = __LIBS__['XO9UCQMTMKD4CZQ0'];
+var util = __LIBS__['P77B4A5R4O17X9WK'];
+var CONF = __LIBS__['cOPGCSV32A3O85_8'];
+var models = __LIBS__['q5JQBDYHPEW5CLUE'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -889,13 +899,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['v6D5KNG4PFKC59IC'];
-  var models = __LIBS__['XO9UCQMTMKD4CZQ0'];
-  var util = __LIBS__['f5SHO3NVI81ZH65W'];
-  var viewobjects = __LIBS__['z_EKOJST9Z0V_W6Q'];
-  var IdentifiableSet = __LIBS__['cRPUEHOQ28_0QY2M'].IdentifiableSet;
+  var CONF = __LIBS__['cOPGCSV32A3O85_8'];
+  var models = __LIBS__['q5JQBDYHPEW5CLUE'];
+  var util = __LIBS__['P77B4A5R4O17X9WK'];
+  var viewobjects = __LIBS__['TSM0PYGVFKU9DYPI'];
+  var IdentifiableSet = __LIBS__['M_N8FFKVC0WA1L2_'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['JNQS05Z7JF3B6KTF'];
+    I18n.translations = __LIBS__['yMS6VUKUQDIY863S'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
