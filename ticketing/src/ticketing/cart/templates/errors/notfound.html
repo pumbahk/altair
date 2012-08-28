@@ -1,57 +1,30 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html lang="en">
-<head>
-  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-  <title>仙台89ERS - ナイナーズチケット</title>
-  <link rel="stylesheet" type="text/css" href="${request.static_url('ticketing.cart:static/css/error.css')}" media="all" />
-  <script language="JavaScript" src="${request.static_url('ticketing.cart:static/js/jquery.js')}"></script>
-</head>
-<body>
-  <div align="center">
-    <div class="header">
-      <img src="${request.static_url('ticketing.cart:static/img/errors/head_title.png')}" alt="仙台89ERS" width="780" height="135" />
-    </div>
-    <h1 class="title">仙台89ERS ナイナーズチケット</h1>
-	<table class="layout" style="width:760px" class="wrapper">
-      <tr>
-		<td>
-		  <h2>ページが見つかりません</h2>
-          <div class="formWrapper">
-           <table cellpadding="0" cellspacing="0" class="form89ers">
-             <colgroup>
-               <col style="width:180px;">
-               <col style="width:310px;">
-             </colgroup>
-             <tbody>
-               <tr>
-                 <td>
-                 <h4>指定されたページが見つかりません </h4>
-                 なおリンクをクリックされていた場合、ページが削除された、またはURL（ページアドレス）が変更された可能性があります。
-                 <ul>
-                     <li> ブラウザの再読み込みを行う</li>
-                     <li> 入力したURL（ページアドレス）にタイプミスがないか確認する</li>
-                     <li> ブラウザの「戻る」ボタンを押して前画面からやり直す</li>
-                 </ul>
-                 </td>
-             </tr>
-           </tbody>
-       </table>
-		</tr>
-    </table>
-  </div>
-  <div class="footer">
-	  
-        <div class="footernav">
-          <ul>
-            <li class="first"><a href="mailto:89ers@ticketstar.jp">お問い合わせ</a></li>
-            <li><a href="http://privacy.rakuten.co.jp/">個人情報保護方針</a></li>
-            <li class="last"><a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a></li>
-          </ul>
-        </div>
-        <div class="copyright">
-          Copyright &copy; 2010-2012 TicketStar Inc. All Rights Reserved. 
-        </div>
+<%inherit file="./base_89ers.html">
 
-  </div>
-</body>
-</html>
+<table class="layout" style="width:760px" class="wrapper">
+  <tr>
+    <td>
+      <h2>ページが見つかりません</h2>
+      <div class="formWrapper">
+        <table cellpadding="0" cellspacing="0" class="form89ers">
+          <colgroup>
+            <col style="width:180px;">
+            <col style="width:310px;">
+          </colgroup>
+          <tbody>
+            <tr>
+              <td>
+                <h4>指定されたページが見つかりません </h4>
+                なおリンクをクリックされていた場合、ページが削除された、またはURL（ページアドレス）が変更された可能性があります。
+                <ul>
+                  <li> ブラウザの再読み込みを行う</li>
+                  <li> 入力したURL（ページアドレス）にタイプミスがないか確認する</li>
+                  <li> ブラウザの「戻る」ボタンを押して前画面からやり直す</li>
+                </ul>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+	  </div>
+	</td>
+  </tr>
+</table>
