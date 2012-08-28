@@ -106,6 +106,23 @@ ${h.breadcrumbs(
         <th>メールアドレス</th>
         <td>${order.shipping_address.email}</td>
       </tr>
+      <tr>
+        <th>購読メールマガジン</th>
+        <%
+          segment_name = []
+          if order.user and order.user.mail_subscription:
+            for ms in order.user.mail_subscription:
+              if ms.segment.organization_id == order.organization_id:
+                segment_name.append(ms.segment.name)
+        %>
+        <td>
+          <ul>
+          % for name in list(set(segment_name)):
+            <li>${name}</li>
+          % endfor
+          </ul>
+        </td>
+      </tr>
     </table>
   </div>
 </div>
