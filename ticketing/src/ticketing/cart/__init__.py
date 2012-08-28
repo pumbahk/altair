@@ -91,6 +91,7 @@ def main(global_config, **settings):
     config.set_authorization_policy(MembershipAuthorizationPolicy())
     from .security import auth_model_callback
     config.set_authentication_policy(WhoV2AuthenticationPolicy(who_config, 'auth_tkt', callback=auth_model_callback))
+    config.add_tween('.tweens.CacheControlTween')
     config.include('.fc_auth')
     config.scan()
     config.include('..checkout')
