@@ -214,17 +214,17 @@ ${h.breadcrumbs(
             <td class="span2"></td>
             <%
               attr = ordered_product_item.attributes.get('t_shirts_size') or ''
-              seat_no = ''
+              seat_name = ''
               if ordered_product_item.seats:
-                seat_no = ', '.join([(seat.seat_no) for seat in ordered_product_item.seats if seat.seat_no])
-                if seat_no:
-                  seat_no = u'(座席番号 %s)' % seat_no
+                seat_name = ', '.join([(seat.name) for seat in ordered_product_item.seats if seat.name])
+                if seat_name:
+                  seat_name = u'(%s)' % seat_name
             %>
-            <td class="span4">${ordered_product_item.product_item.stock_type.name} ${attr} ${seat_no}</td>
+            <td class="span4">${ordered_product_item.product_item.stock_type.name} ${attr} ${seat_name}</td>
             <td style="text-align: right;">${h.price_format(ordered_product_item.product_item.price)}円</td>
-            <td >${ordered_product_item.product_item.quantity}</td>
+            <td >${len(ordered_product_item.seats)}</td>
             <td style="text-align: right;">
-              ${h.price_format(ordered_product_item.product_item.price * ordered_product_item.product_item.quantity)}円
+              ${h.price_format(ordered_product_item.product_item.price * len(ordered_product_item.seats))}円
             </td>
           </tr>
       % endfor
