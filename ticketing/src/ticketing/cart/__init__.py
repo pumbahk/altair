@@ -80,6 +80,12 @@ def main(global_config, **settings):
     config.add_renderer('csv'   , 'ticketing.renderers.csv_renderer_factory')
     config.add_static_view('static', 'ticketing.cart:static', cache_max_age=3600)
 
+    config.include(".selectable_renderer")
+    ## this is individual function
+    def by_context_membership(helper, value, system_values, request=None):
+        fmt = helper.format_string
+        return fmt % dict(membership=request.context.membership_name)
+    config.add_selectable_renderer_selector(by_context_membership)
 
     ## mail
     config.include(import_mail_module)

@@ -49,3 +49,8 @@ class SelectableRenderer(object):
         renderer = self.get_sub_renderer(selector(self, value, system_values, request=request))
         return renderer.render(value, system_values, request=request)
 
+def selectable_renderer(fmt, defaults=None):
+    global _lookup_key
+    lookup_key = StringLike(_lookup_key)
+    lookup_key._format_string = fmt
+    return lookup_key

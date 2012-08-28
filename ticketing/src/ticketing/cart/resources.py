@@ -33,6 +33,10 @@ class TicketingCartResource(object):
             self.event_id = None
 
     @property
+    def membership_name(self):
+        return "89ers"
+
+    @property
     def memberships(self):
         membergroups = self.membergroups
         if not membergroups:

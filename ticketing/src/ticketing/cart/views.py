@@ -30,7 +30,7 @@ from . import api
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from .stocker import NotEnoughStockException
 import transaction
-
+from ticketing.cart.selectable_renderer import selectable_renderer
 logger = logging.getLogger(__name__)
 
 def back(func):
@@ -48,7 +48,7 @@ class IndexView(object):
         self.request = request
         self.context = request.context
 
-    @view_config(route_name='cart.index', renderer='carts/index.html', xhr=False, permission="buy")
+    @view_config(route_name='cart.index', renderer=selectable_renderer("carts/%(membership)s/index.html"), xhr=False, permission="buy")
     def redirect_sale(self):
         sales_segment = self.context.get_sales_segument()
         if sales_segment is None:
@@ -60,7 +60,7 @@ class IndexView(object):
             sales_segment_id=sales_segment.id)
         return HTTPFound(location=location)
 
-    @view_config(route_name='cart.index.sales', renderer='carts/index.html', xhr=False, permission="buy")
+    @view_config(route_name='cart.index.sales', renderer=selectable_renderer('carts/%(membership)s/index.html'), xhr=False, permission="buy")
     def __call__(self):
         jquery_tools.need()
         event_id = self.request.matchdict['event_id']
@@ -588,7 +588,7 @@ class PaymentView(object):
         self.request = request
         self.context = request.context
 
-    @view_config(route_name='cart.payment', request_method="GET", renderer="carts/payment.html")
+    @view_config(route_name='cart.payment', request_method="GET", renderer=selectable_renderer("carts/%(membership)s/payment.html"))
     @view_config(route_name='cart.payment', request_type='.interfaces.IMobileRequest', request_method="GET", renderer="carts_mobile/payment.html")
     def __call__(self):
         """ 支払い方法、引き取り方法選択
@@ -635,7 +635,7 @@ class PaymentView(object):
         else:
             return form
 
-    @view_config(route_name='cart.payment', request_method="POST", renderer="carts/payment.html")
+    @view_config(route_name='cart.payment', request_method="POST", renderer=selectable_renderer("carts/%(membership)s/payment.html"))
     @view_config(route_name='cart.payment', request_type='.interfaces.IMobileRequest', request_method="POST", renderer="carts_mobile/payment.html")
     def post(self):
         """ 支払い方法、引き取り方法選択
@@ -731,7 +731,7 @@ class ConfirmView(object):
         self.request = request
         self.context = request.context
 
-    @view_config(route_name='payment.confirm', request_method="GET", renderer="carts/confirm.html")
+    @view_config(route_name='payment.confirm', request_method="GET", renderer=selectable_renderer("carts/%(membership)s/confirm.html"))
     @view_config(route_name='payment.confirm', request_type='.interfaces.IMobileRequest', request_method="GET", renderer="carts_mobile/confirm.html")
     def get(self):
         form = schemas.CSRFSecureForm(csrf_context=self.request.session)
@@ -758,7 +758,7 @@ class CompleteView(object):
         # TODO: Orderを表示？
 
     @back
-    @view_config(route_name='payment.finish', renderer="carts/completion.html", request_method="POST")
+    @view_config(route_name='payment.finish', renderer=selectable_renderer("carts/%(membership)s/completion.html"), request_method="POST")
     @view_config(route_name='payment.finish', request_type='.interfaces.IMobileRequest', renderer="carts_mobile/completion.html", request_method="POST")
     def __call__(self):
         form = schemas.CSRFSecureForm(formdata=self.request.params, csrf_context=self.request.session)
