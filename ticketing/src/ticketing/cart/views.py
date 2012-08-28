@@ -138,7 +138,8 @@ class IndexView(object):
             c_models.ProductItem.product_id==c_models.Product.id).filter(
             c_models.Product.sales_segment_id==sales_segment_id)
 
-        seat_types = DBSession.query(c_models.StockType).filter(
+        seat_type_triplets = DBSession.query(c_models.StockType, c_models.Stock.quantity, c_models.StockStatus.quantity).filter(
+            c_models.Stock.id==c_models.StockStatus.stock_id).filter(
             c_models.Performance.event_id==event_id).filter(
             c_models.Performance.id==performance_id).filter(
             c_models.Performance.event_id==c_models.StockHolder.event_id).filter(
@@ -156,9 +157,11 @@ class IndexView(object):
                     style=s.style,
                     products_url=self.request.route_url('cart.products',
                         event_id=event_id, performance_id=performance_id, seat_type_id=s.id),
+                    availability=available > 0,
+                    availability_text=h.get_availability_text(available),
                     quantity_only=s.quantity_only,
                     )
-                for s in seat_types
+                for s, total, available in seat_type_triplets
                 ],
                 event_name=performance.event.title,
                 performance_name=performance.name,
