@@ -132,7 +132,7 @@ class SeatRecordsFromSeatSourcesUnsold(TestCase):
         ))
 
     def test_ok(self):
-        result = sheet.seat_records_from_seat_sources_unsold(self.seat_sources)
+        result = sheet.seat_records_from_seat_sources(self.seat_sources, unsold=True)
         self.assertEqual(len(result), 2)
         self.assertEqual(result[0].line, u"あ")
         self.assertEqual(result[0].start, "A1")
