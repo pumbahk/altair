@@ -94,7 +94,7 @@ def export_for_stock_holder_unsold(event, stock_holder):
                 # Seat
                 seats = Seat.filter(Seat.stock_id==stock.id).order_by(Seat.name).all()
                 seat_sources = map(report_sheet.seat_source_from_seat, seats)
-                seat_records = report_sheet.seat_records_from_seat_sources_unsold(seat_sources)
+                seat_records = report_sheet.seat_records_from_seat_sources(seat_sources, unsold=True)
                 for seat_record in seat_records:
                     stock_record.records.append(seat_record)
             stock_records.append(stock_record)
