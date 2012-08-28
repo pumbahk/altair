@@ -38,6 +38,6 @@ ${products}
 合計　　　　　 ${total_amount}（円）
 
 ─────────────問い合わせ─────────────────
-商品、決済・発送に関するお問い合わせ support@ticketstar.jp
-楽天チケット http://ticket.rakuten.co.jp/
+${order.ordered_from.name}
+商品、決済・発送に関するお問い合わせ ${contact_email}
 ───────────────────────────────────
