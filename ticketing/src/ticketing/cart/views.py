@@ -803,6 +803,7 @@ class CompleteView(object):
  
         # メール購読
         self.save_subscription(user, mail_address)
+        api.remove_cart(cart)
 
         return dict(order=order)
 
