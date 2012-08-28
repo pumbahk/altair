@@ -788,10 +788,11 @@ class CompleteView(object):
         user_id = None
         if plain_user is not None:
             user_id = plain_user.id
+            user_cls = plain_user.__class__
         transaction.commit()
         user = None
         if user_id is not None:
-            user = DBSession.query(user.__class__).get(user_id)
+            user = DBSession.query(user_cls).get(user_id)
         order = DBSession.query(order.__class__).get(order_id)
  
         # メール購読
