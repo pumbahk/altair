@@ -11,6 +11,7 @@ import itertools
 from sqlalchemy import sql
 from pyramid.security import Everyone, Authenticated
 from pyramid.security import Allow
+
 from zope.interface import implementer
 from .interfaces import IOrderPayment, IOrderDelivery, ICartPayment, ICartDelivery, ICompleteMailPayment, ICompleteMailDelivery
 
@@ -317,6 +318,18 @@ class TicketingCartResource(object):
             return cart
         finally:
             conn.close()
+
+    @property
+    def membership(self):
+        from .rakuten_auth.api import authenticated_user
+        user = authenticated_user(self.request)
+        if user is None:
+            return None
+        if 'membership' not in user:
+            return None
+
+        membership = user['membership']
+        return membership
 
     def get_or_create_user(self):
         # TODO: 依存関係がおかしいので確認 なぜrakuten_authがcart.apiを使うのか？
