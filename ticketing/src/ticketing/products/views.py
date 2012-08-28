@@ -37,7 +37,7 @@ class Products(BaseView):
         products = paginate.Page(
             query,
             page=int(self.request.params.get('page', 0)),
-            items_per_page=20,
+            items_per_page=200,
             url=paginate.PageURL_WebOb(self.request)
         )
 
