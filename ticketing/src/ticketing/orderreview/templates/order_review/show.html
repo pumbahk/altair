@@ -24,7 +24,7 @@
                     <tbody>
                         <tr>
                             <thead>
-                            <th colspan="4"><span>${order.performance.event.title} <br />${order.performance.name}(予定) <br />${h.japanese_date(order.performance.open_on)} ${h.japanese_time(order.performance.open_on)} ${order.performance.venue.name}</span></th>
+                            <th colspan="4"><span>${order.performance.event.title} <br />${order.performance.name}<br />${h.japanese_date(order.performance.start_on)} ${h.japanese_time(order.performance.start_on)} ${order.performance.venue.name}</span></th>
                             </thead>
                         </tr>
                         %for product in order.items:
@@ -87,7 +87,7 @@ shipping =order.shipping_address
                             <td>${shipping.last_name_kana} ${shipping.first_name_kana}</td>
                         </tr>
                         <tr>
-                            <th scope="row">電話番号（自宅）</th>
+                            <th scope="row">電話番号</th>
                             <td>${shipping.tel_1}</td>
                         </tr>
                         <!--
@@ -97,7 +97,7 @@ shipping =order.shipping_address
                         </tr>
                         -->
                         <tr>
-                            <th scope="row">配送先住所</th>
+                            <th scope="row">住所</th>
                             <td>${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}</td>
                         </tr>
                     </tbody>
