@@ -1647,7 +1647,7 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     product_item = relationship('ProductItem')
 #    seat_id = Column(Identifier, ForeignKey('Seat.id'))
 #    seat = relationship('Seat')
-    seats = relationship("Seat", secondary=orders_seat_table)
+    seats = relationship("Seat", secondary=orders_seat_table, backref='ordered_product_items')
     price = Column(Numeric(precision=16, scale=2), nullable=False)
 
     _attributes = relationship("OrderedProductAttribute", backref='ordered_product_item', collection_class=attribute_mapped_collection('name'), cascade='all,delete-orphan')
