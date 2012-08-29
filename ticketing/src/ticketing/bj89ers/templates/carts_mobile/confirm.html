@@ -4,7 +4,6 @@
 <form id="form1" action="${request.route_url('payment.finish')}" method="post">
 ${form.csrf_token()}
 <%
-up = user.user_profile
 pm = _api.load_user_profile(request)
 %>
 <%mobile:form_header>新規／継続</%mobile:form_header>
