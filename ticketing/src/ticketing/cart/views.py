@@ -759,7 +759,7 @@ class CompleteView(object):
 
     @back
     @view_config(route_name='payment.finish', renderer=selectable_renderer("carts/%(membership)s/completion.html"), request_method="POST")
-    @view_config(route_name='payment.finish', request_type='.interfaces.IMobileRequest', renderer="carts_mobile/%(membership)s/completion.html", request_method="POST")
+    @view_config(route_name='payment.finish', request_type='.interfaces.IMobileRequest', renderer=selectable_renderer("carts_mobile/%(membership)s/completion.html"), request_method="POST")
     def __call__(self):
         form = schemas.CSRFSecureForm(formdata=self.request.params, csrf_context=self.request.session)
         form.validate()
@@ -850,8 +850,8 @@ class MobileIndexView(object):
         self.request = request
         self.context = request.context
 
-    @view_config(route_name='cart.index', renderer='carts_mobile/%(membership)s/index.html', xhr=False, permission="buy", request_type=".interfaces.IMobileRequest")
-    @view_config(route_name='cart.index.sales', renderer='carts_mobile/%(membership)s/index.html', xhr=False, permission="buy", request_type=".interfaces.IMobileRequest")
+    @view_config(route_name='cart.index', renderer=selectable_renderer('carts_mobile/%(membership)s/index.html'), xhr=False, permission="buy", request_type=".interfaces.IMobileRequest")
+    @view_config(route_name='cart.index.sales', renderer=selectable_renderer('carts_mobile/%(membership)s/index.html'), xhr=False, permission="buy", request_type=".interfaces.IMobileRequest")
     def __call__(self):
         event_id = self.request.matchdict['event_id']
         venue_name = self.request.params.get('v')
@@ -908,7 +908,7 @@ class MobileSelectProductView(object):
         self.request = request
         self.context = request.context
 
-    @view_config(route_name='cart.mobile', renderer='carts_mobile/%(membership)s/seat_types.html', xhr=False, request_type=".interfaces.IMobileRequest")
+    @view_config(route_name='cart.mobile', renderer=selectable_renderer('carts_mobile/%(membership)s/seat_types.html'), xhr=False, request_type=".interfaces.IMobileRequest")
     def __call__(self):
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.matchdict['performance_id']
@@ -965,7 +965,7 @@ class MobileSelectProductView(object):
         )
         return data
 
-    @view_config(route_name='cart.products', renderer='carts_mobile/%(membership)s/products.html', xhr=False, request_type=".interfaces.IMobileRequest", request_method="GET")
+    @view_config(route_name='cart.products', renderer=selectable_renderer('carts_mobile/%(membership)s/products.html'), xhr=False, request_type=".interfaces.IMobileRequest", request_method="GET")
     def products(self):
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.matchdict['performance_id']
@@ -1044,6 +1044,6 @@ class OutTermSalesView(object):
         self.request = request
         self.context = context
 
-    @view_config(context='.exceptions.OutTermSalesException', renderer='ticketing.cart:templates/carts/%(membership)s/out_term_sales.html')
+    @view_config(context='.exceptions.OutTermSalesException', renderer=selectable_renderer('ticketing.cart:templates/carts/%(membership)s/out_term_sales.html'))
     def __call__(self):
         return dict(event=self.context.event, sales_segment=self.context.sales_segment)
