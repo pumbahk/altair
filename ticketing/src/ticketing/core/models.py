@@ -844,6 +844,7 @@ class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentMethod'
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
+    description = Column(String(2000))
     fee = Column(Numeric(precision=16, scale=2), nullable=False)
     fee_type = Column(Integer, nullable=False, default=FeeTypeEnum.Once.v[0])
 
@@ -866,6 +867,7 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'DeliveryMethod'
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
+    description = Column(String(2000))
     fee = Column(Numeric(precision=16, scale=2), nullable=False)
     fee_type = Column(Integer, nullable=False, default=FeeTypeEnum.Once.v[0])
 
@@ -1441,7 +1443,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
                 order_no = self.order_no
                 if request.registry.settings.get('multicheckout.testing', False):
-                    order_no = '%010d%02d' % (sensible_alnum_decode(order_no[2:12]), 0)
+                    order_no = '%012d%02d' % (sensible_alnum_decode(order_no[2:12]), 0)
                 multi_checkout_result = multi_checkout_api.checkout_sales_cancel(request, order_no)
                 DBSession.add(multi_checkout_result)
 
@@ -1645,7 +1647,7 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     product_item = relationship('ProductItem')
 #    seat_id = Column(Identifier, ForeignKey('Seat.id'))
 #    seat = relationship('Seat')
-    seats = relationship("Seat", secondary=orders_seat_table)
+    seats = relationship("Seat", secondary=orders_seat_table, backref='ordered_product_items')
     price = Column(Numeric(precision=16, scale=2), nullable=False)
 
     _attributes = relationship("OrderedProductAttribute", backref='ordered_product_item', collection_class=attribute_mapped_collection('name'), cascade='all,delete-orphan')
@@ -1663,9 +1665,9 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             logger.debug('release seat id=%d' % (seat_status.seat_id))
             seat_status.status = int(SeatStatusEnum.Vacant)
         # 在庫数を戻す
-        logger.debug('release stock id=%s quantity=%d' % (self.product_item.stock_id, self.product_item.quantity))
+        logger.debug('release stock id=%s quantity=%d' % (self.product_item.stock_id, len(self.seats)))
         query = StockStatus.__table__.update().values(
-            {'quantity': StockStatus.quantity + self.product_item.quantity}
+            {'quantity': StockStatus.quantity + len(self.seats)}
         ).where(StockStatus.stock_id==self.product_item.stock_id)
         DBSession.bind.execute(query)
 

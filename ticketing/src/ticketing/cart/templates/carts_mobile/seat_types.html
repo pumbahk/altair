@@ -1,6 +1,7 @@
-<%inherit file="./base.html"/>
+<%inherit file="./base_89ers.html"/>
+<%namespace file="./tags_mobile.html" name="mobile" />
 
-<div style="background-image:url(${request.static_url('ticketing.cart:static/img/mobile/bg_bar.gif')});background-color:#bf0000" bgcolor="#bf0000" background="${request.static_url('ticketing.cart:static/img/mobile/bg_bar.gif')}"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>チケット購入</font></div>
+<%mobile:header>チケット購入</%mobile:header>
 
 ${event.title}
 
@@ -10,7 +11,7 @@ ${event.title}
 <font color="#ffbf00">■</font>席種をお選びください
 </p>
 
-<form>
+<form action="${request.url}" method="get">
   <select name="stid">
   % for seat_type in seat_types:
     <option value="${seat_type['id']}">${seat_type['name']}</option>
@@ -21,7 +22,7 @@ ${event.title}
   <input type="submit" value="次へ">
   </div>
 </form>
-<form action="${request.route_url('cart.index', event_id=event.id)}">
+<form action="${request.route_url('cart.index', event_id=event.id)}" method="get">
   <div style="text-align:center;">
   <input type="hidden" name="v" value="${venue.name}">
   <input type="submit" value="戻る">

@@ -821,6 +821,7 @@ var Drawable = _class("DrawableSVG", {
     },
 
     dispose: function() {
+      this._capturingShape = true;
       if (this._viewport && this._viewport.parentNode)
         this._viewport.parentNode.removeChild(this._viewport);
       this._viewport = null;
@@ -837,13 +838,13 @@ var Drawable = _class("DrawableSVG", {
 
     scrollPosition: function(position) {
       if (position) {
-        position = _clipPoint(
-          position,
-          this.wrapper._inverse_transform.translate(),
-          _subtractPoint(
-            this.wrapper._content_size,
-            this.wrapper._inverse_transform.apply(
-              this._viewportInnerSize)));
+        var min = this.wrapper._inverse_transform.translate();
+        var scrollable_size = _subtractPoint(
+          this.wrapper._content_size,
+          this.wrapper._inverse_transform.apply(
+            this._viewportInnerSize));
+        var max = _addPoint(min, scrollable_size);
+        position = _clipPoint(position, min, max);
         var _position = this.wrapper._transform.apply(position);
         this._viewport.scrollLeft = _position.x;
         this._viewport.scrollTop  = _position.y;

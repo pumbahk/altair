@@ -78,7 +78,7 @@ def main(global_config, **settings):
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_renderer('json'  , 'ticketing.renderers.json_renderer_factory')
     config.add_renderer('csv'   , 'ticketing.renderers.csv_renderer_factory')
-    config.add_static_view('staic', 'ticketing.cart:static', cache_max_age=3600)
+    config.add_static_view('static', 'ticketing.cart:static', cache_max_age=3600)
 
 
     ## mail
@@ -91,6 +91,7 @@ def main(global_config, **settings):
     config.set_authorization_policy(MembershipAuthorizationPolicy())
     from .security import auth_model_callback
     config.set_authentication_policy(WhoV2AuthenticationPolicy(who_config, 'auth_tkt', callback=auth_model_callback))
+    config.add_tween('.tweens.CacheControlTween')
     config.include('.fc_auth')
     config.scan()
     config.include('..checkout')

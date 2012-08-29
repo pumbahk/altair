@@ -8,3 +8,6 @@
 %endif
 </div>
 </%def>
+<%def name="rakuten_header()">
+<div style="background-image:url(${request.static_url('ticketing.cart:static/img/mobile/bg_bar.gif')});background-color:#bf0000" bgcolor="#bf0000" background="${request.static_url('ticketing.cart:static/img/mobile/bg_bar.gif')}"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>${caller.body()}</font></div>
+</%def>

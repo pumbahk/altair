@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
+import re
 from datetime import datetime
 from itertools import groupby
 
@@ -22,7 +23,9 @@ class SeatSource(object):
         if self.block and self.floor:
             return "%s %s" % (self.block, self.floor)
         if self.source and self.source.name:
-            return self.source.name
+            name = re.sub(u' [0-9]+番', '', self.source.name)
+            name = re.sub(u' [0-9]+列', '', name)
+            return name
         return ""
 
 
@@ -145,32 +148,9 @@ def seat_source_from_seat(seat):
     return seat_source
 
 
-def seat_records_from_seat_sources(seat_sources):
+def seat_records_from_seat_sources(seat_sources, unsold=False):
     """SeatSourceのリストからSeatRecordのリストを返す
     サマリー作成
-    """
-    result = []
-    # block,floor,line,seatの優先順でソートする
-    sorted_seat_sources = sorted(
-        seat_sources,
-        key=lambda v: (v.block, v.floor, v.line, v.seat))
-    # block,floor,lineでグループ化してSeatRecordを作る
-    for key, generator in groupby(sorted_seat_sources, lambda v: (v.block, v.floor, v.line)):
-        values = list(generator)
-        seat_record = SeatRecord(
-            block=values[0].get_block_display(),
-            line=key[2],
-            start=values[0].seat,
-            end=values[-1].seat,
-            quantity=len(values),
-        )
-        result.append(seat_record)
-    return result
-
-
-def seat_records_from_seat_sources_unsold(seat_sources):
-    """SeatSourceのリストからSeatRecordのリストを返す
-    空席のみのサマリー作成
     """
     result = []
     # block,floor,line,seatの優先順でソートする
@@ -183,21 +163,21 @@ def seat_records_from_seat_sources_unsold(seat_sources):
         # 連続した座席はまとめる
         lst_values = []
         for value in values:
-            # 空席のもの
-            if value.status == SeatStatusEnum.Vacant.v:
-                lst_values.append(value)
-            else:
-                if lst_values:
-                    # flush
-                    seat_record = SeatRecord(
-                        block=lst_values[0].get_block_display(),
-                        line=key[2],
-                        start=lst_values[0].seat,
-                        end=lst_values[-1].seat,
-                        quantity=len(lst_values),
-                    )
-                    result.append(seat_record)
+            # 1つ前の座席と連続していたらまとめる
+            if lst_values and int(lst_values[-1].seat) + 1 != int(value.seat):
+                # flush
+                seat_record = SeatRecord(
+                    block=lst_values[0].get_block_display(),
+                    line=key[2],
+                    start=lst_values[0].seat,
+                    end=lst_values[-1].seat,
+                    quantity=len(lst_values),
+                )
+                result.append(seat_record)
                 lst_values = []
+            # 残席のみ
+            if not unsold or value.status == SeatStatusEnum.Vacant.v:
+                lst_values.append(value)
         # 残り
         if lst_values:
             seat_record = SeatRecord(

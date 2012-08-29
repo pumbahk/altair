@@ -1,6 +1,7 @@
-<%inherit file="./base.html"/>
+<%inherit file="./base_89ers.html"/>
+<%namespace file="./tags_mobile.html" name="mobile" />
 
-<div style="background-image:url(${request.static_url('ticketing.cart:static/img/mobile/bg_bar.gif')});background-color:#bf0000" bgcolor="#bf0000" background="${request.static_url('ticketing.cart:static/img/mobile/bg_bar.gif')}"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>チケット購入</font></div>
+<%mobile:header>チケット購入</%mobile:header>
 
 ${event.title}
 
@@ -8,7 +9,7 @@ ${event.title}
 
 商品をお選びください
 
-<form action="${request.route_url('cart.order')}" method="post">
+<form action="${request.url}" method="post">
   % for product in products:
     <div>
       <br/>
@@ -20,12 +21,9 @@ ${event.title}
       % endif
       数量
       <select name="product-${product['id']}">
-        <option value="0">0</option>
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
+        % for num in range(upper_limit + 1):
+        <option value="${num}">${num}</option>
+        % endfor
       </select>
     </div>
   % endfor
@@ -37,7 +35,7 @@ ${event.title}
   <input type="submit" value="次へ">
   </div>
 </form>
-<form action="${request.route_url('cart.mobile', event_id=event.id, performance_id=performance.id)}">
+<form action="${request.route_url('cart.mobile', event_id=event.id, performance_id=performance.id)}" method="get">
   <div style="text-align:center;">
   <input type="hidden" name="v" value="${venue.name}">
   <input type="submit" value="戻る">

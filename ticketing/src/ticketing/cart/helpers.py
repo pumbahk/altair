@@ -29,7 +29,11 @@ def japanese_time(time):
     return u"%d時%d分" % (time.hour, time.minute)
 
 def japanese_datetime(dt):
-    return japanese_date(dt)+japanese_time(dt)
+    try:
+        return japanese_date(dt)+japanese_time(dt)
+    except:
+        logger.error("dt is None")
+        return ""
 
 def mail_date(date):
     return u'{d.year}年 {d.month}月 {d.day}日 {d.hour}時 {d.minute}分'.format(d=date)
@@ -197,3 +201,10 @@ def render_payment_finished_mail_viewlet(request, order):
         return ""
     return Markup(response.text)
 
+def get_availability_text(quantity):
+    if quantity == 0:
+        return u'×'
+    elif quantity < 20: 
+        return u'△'
+    else:
+        return u'◎'

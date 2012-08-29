@@ -96,6 +96,7 @@ class ClientForm(Form):
         filters=[strip_spaces],
         validators=[
             Required(),
+            Length(min=1, max=12, message=u'確認してください'),
             Regexp(r'^\d*$', message=u'-を抜いた数字のみを入力してください'), 
         ]
     )
@@ -103,6 +104,7 @@ class ClientForm(Form):
         label=u"FAX",
         validators=[
             Optional(),
+            Length(min=1, max=12, message=u'確認してください'),
             Phone(u'FAX番号を確認してください'),
         ]
     )
@@ -111,8 +113,8 @@ class ClientForm(Form):
         filters=[strip_spaces],
         validators=[
             Required(),
-            Regexp(r'^\d*$', message=u'-を抜いた数字のみを入力してください'), 
-            Length(max=8, message=u'確認してください'),
+            Regexp(r'^\d{7}$', message=u'-を抜いた数字(7桁)のみを入力してください'), 
+            Length(min=7, max=7, message=u'確認してください'),
         ]
     )
     prefecture = fields.TextField(
@@ -155,3 +157,20 @@ class ClientForm(Form):
             Email(),
         ]
     )
+    mail_address2 = fields.TextField(
+        label=u"確認用メールアドレス",
+        filters=[strip_spaces],
+        validators=[
+            Required(),
+            Email(),
+        ]
+    )
+
+    def validate(self):
+        status = super(ClientForm, self).validate()
+
+        data = self.data
+        if data["mail_address"] != data["mail_address2"]:
+            getattr(self, "mail_address").errors.append(u"メールアドレスと確認メールアドレスが一致していません。")
+            status = False
+        return status

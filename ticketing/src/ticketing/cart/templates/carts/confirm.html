@@ -1,218 +1,154 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
-<head>
-<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-<title>ナイナーズチケット</title>
-<meta name="description" content="チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などのスポーツ、その他イベントなどのチケットのオンラインショッピングサイトです。" />
-<meta name="keywords" content="チケット,演劇,クラシック,オペラ,コンサート,バレエ,ミュージカル,野球,サッカー,格闘技" />
-<meta http-equiv="content-style-type" content="text/css" />
-<meta http-equiv="content-script-type" content="text/javascript" />
-<link rel="shortcut icon" href="${request.static_url('ticketing.cart:static/img/common/favicon.ico')}" />
-<link rel="stylesheet" href="${request.static_url('ticketing.cart:static/css/import.css')}" type="text/css" media="all" />
-<script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/jquery.js')}"></script>
-</head>
-<body id="settlement">
+<%inherit file="./base_89ers.html"/>
+<%block name="css">
+<style>
+  #btn-back {
+    border: 0;
+    width: 226px;
+    height: 46px;
+    vertical-align: top;
+    padding: 1px;
+    margin-right: 20px;
+    background: url("${request.static_url('ticketing.cart:static/img/settlement/btn_back_to_selection.gif')}") left top no-repeat;
+  }
+  #btn-complete {
+    border: 0;
+    width: 226px;
+    height: 46px;
+    background: url("${request.static_url('ticketing.cart:static/img/settlement/btn_buy.gif')}") left top no-repeat;
+  }
+</style>
+</%block>
 
-<p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${request.static_url('ticketing.cart:static/img/common/skip.gif')}" alt="本文へジャンプ" width="1" height="1" /></a></p>
+<form id="form1" action="${request.route_url('payment.finish')}" method="post">
+  ${form.csrf_token()}
+  <input type="hidden" name="event_id" value="${cart.performance.event.id}"/>
 
-<div id="container">
-
-	<!-- ========== header ========== -->
-	<div id="grpheader">
-		<p id="siteID">
-			<img src="${request.static_url('ticketing.cart:static/img/common/89erslogo_300x40.gif')}" alt="ナイナーズチケット" width="300" height="40"  />
-		</p>
+  <div class="confirmBox">
+	<div class="confirmBoxInner">
+	  <h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_shopping.gif')}" alt="お買い物内容" width="114" height="30" /></h2>
+      <h3 id="name">${cart.performance.event.title} ${cart.performance.name} ${h.performance_date(cart.performance)}(予定) ${cart.performance.venue.name}</h3>
+	  <table id="contentsOfShopping" summary="席種、金額などのお買い物内容">
+        %for product in cart.products:
+		<tr>
+		  <th scope="row"><img src="${request.static_url('ticketing.cart:static/img/settlement/icon_dummy.gif')}" alt="" width="21" height="21" /> ${product.product.name}</th>
+		  <td><strong>${product.quantity}</strong>枚</td>
+		  <td>
+            % for seat in product.seats:
+            ${seat['name']}<br/>
+            % endfor
+          </td>
+		  <td class="align1">￥${h.format_number(product.product.price * product.quantity)}</td>
+		</tr>
+        %endfor
+		<tr id="commission">
+		  <th scope="row">決済手数料</th>
+		  <td>&nbsp;</td>
+		  <td>&nbsp;</td>
+		  <td class="align1">￥${h.format_number(cart.transaction_fee)}</td>
+		</tr>
+		<tr id="commission">
+		  <th scope="row">発券/配送手数料</th>
+		  <td>&nbsp;</td>
+		  <td>&nbsp;</td>
+		  <td class="align1">￥${h.format_number(cart.delivery_fee)}</td>
+		</tr>
+		<tr id="commission">
+		  <th scope="row">システム利用料</th>
+		  <td>&nbsp;</td>
+		  <td>&nbsp;</td>
+		  <td class="align1">￥${h.format_number(cart.system_fee)}</td>
+		</tr>
+		<tr id="total">
+          <th scope="row"><img src="${request.static_url('ticketing.cart:static/img/settlement/total.gif')}" alt="合計金額" width="67" height="16" /></th>
+		  <td>&nbsp;</td>
+		  <td>&nbsp;</td>
+		  <td class="align1">￥${h.format_number(cart.total_amount)}</td>
+		</tr>
+	  </table>
 	</div>
-	<!-- ========== /header ========== -->
-	
-	<hr />
+  </div>
 
-	<!-- ========== main ========== -->
-	<div id="main">
-		<h1><img src="${request.static_url('ticketing.cart:static/img/settlement/89ers_title_settlement.gif')}" alt="チケット購入" width="950" height="40" /></h1>
-        ${h.get_nickname(request)} 
-        <form id="form1" action="${request.route_url('payment.finish')}" method="post">
-            ${form.csrf_token()}
-			<div class="confirmBox">
-				<div class="confirmBoxInner">
-					<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_shopping.gif')}" alt="お買い物内容" width="114" height="30" /></h2>
-                    <h3 id="name">${cart.performance.event.title} ${cart.performance.name} ${h.performance_date(cart.performance)}(予定) ${cart.performance.venue.name}</h3>
-					<table id="contentsOfShopping" summary="席種、金額などのお買い物内容">
-                        %for product in cart.products:
-						<tr>
-							<th scope="row"><img src="${request.static_url('ticketing.cart:static/img/settlement/icon_dummy.gif')}" alt="" width="21" height="21" /> ${product.product.name}</th>
-							<td><strong>${product.quantity}</strong>枚</td>
-							<td>
-                % for seat in product.seats:
-                ${seat['name']}<br/>
-                % endfor
-              </td>
-							<td class="align1">￥${h.format_number(product.product.price * product.quantity)}</td>
-						</tr>
-                        %endfor
-						<tr id="commission">
-							<th scope="row">決済手数料</th>
-							<td>&nbsp;</td>
-							<td>&nbsp;</td>
-							<td class="align1">￥${h.format_number(cart.transaction_fee)}</td>
-						</tr>
-						<tr id="commission">
-							<th scope="row">配送手数料</th>
-							<td>&nbsp;</td>
-							<td>&nbsp;</td>
-							<td class="align1">￥${h.format_number(cart.delivery_fee)}</td>
-						</tr>
-						<tr id="commission">
-							<th scope="row">システム利用料</th>
-							<td>&nbsp;</td>
-							<td>&nbsp;</td>
-							<td class="align1">￥${h.format_number(cart.system_fee)}</td>
-						</tr>
-<!--
-						<tr id="commission">
-							<th scope="row">手数料</th>
-							<td>&nbsp;</td>
-							<td>&nbsp;</td>
-							<td class="align1">￥600</td>
-						</tr>
--->
-						<tr id="total">
-                            <th scope="row"><img src="${request.static_url('ticketing.cart:static/img/settlement/total.gif')}" alt="合計金額" width="67" height="16" /></th>
-							<td>&nbsp;</td>
-							<td>&nbsp;</td>
-							<td class="align1">￥${h.format_number(cart.total_amount)}</td>
-						</tr>
-					</table>
-				</div>
-			</div>
-<!--
-			<div class="confirmBox">
-				<div class="confirmBoxInner">
-					<h2><img src="../img/settlement/title_payment.gif" alt="お支払い" width="78" height="30" /></h2>
-					<h3>クレジットカードでお支払い</h3>
-					<table id="confirmCard" summary="クレジットカード情報">
-						<tr>
-							<th scope="row">カード番号</th>
-							<td>xxxx-xxxx-xxxx-xxxx</td>
-						</tr>
-						<tr>
-							<th scope="row">有効期限</th>
-							<td>2011/12</td>
-						</tr>
-					</table>
-				</div>
-			</div>
--->
-<%
-shipping = cart.shipping_address
-%>
-			<div class="confirmBox">
-				<div class="confirmBoxInner">
-                    <h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_payment.gif')}" alt="お支払い" width="78" height="30" /></h2>
-                    ${h.render_payment_confirm_viewlet(request, cart)}
-                </div>
-            </div>
-			<div class="confirmBox">
-				<div class="confirmBoxInner">
-					<h3>配送情報</h3>
-                    ${h.render_delivery_confirm_viewlet(request, cart)}
-                </div>
-            </div>
-			<div class="confirmBox">
-				<div class="confirmBoxInner">
-					<h3>購入者情報</h3>
-					<table id="confirmDelivery" summary="配送先情報">
-						<tr>
-							<th scope="row">氏名（漢字）</th>
-                            <td>${shipping.last_name} ${shipping.first_name}</td>
-						</tr>
-						<tr>
-							<th scope="row">氏名（カナ）</th>
-                            <td>${shipping.last_name_kana} ${shipping.first_name_kana}</td>
-						</tr>
-						<tr>
-							<th scope="row">電話番号（自宅）</th>
-                            <td>${shipping.tel_1}</td>
-						</tr>
-                        <!--
-						<tr>
-							<th scope="row">電話番号（携帯電話）</th>
-							<td>000-0000-0000</td>
-						</tr>
-                        -->
-						<tr>
-							<th scope="row">配送先住所</th>
-                            <td>${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}</td>
-						</tr>
-					</table>
-				</div>
-			</div>
-			<div class="settlementBox">
-				<div class="settlementBoxInner">
-                    <h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_magazine.gif')}" alt="メールマガジンの配信" width="177" height="30" /></h2>
-					<div id="mailMagazineBox">
-						<div id="mailMagazineBoxInner">
-							<dl>
-								<dt>
-ご利用いただいた方には、仙台89ERSからのメールマガジンをお送りします。不要な方はチェックをはずしてください。
-</dt>
-                <dd>
-                  <ul>
-                  %for mailmagazine in mailmagazines:
-                    <li>
-                      <div>
-                        <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
-                        <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
-                      </div>
-                      <div>
-                        ${mailmagazine.description|n}
-                      </div>
-                    </li>
-                  %endfor
-                  </ul>
-                </dd>
-                <!--
-								<li>
-									<dl>
-										<dt>楽天からのメルマガ</dt>
-										<dd>
-											<ul>
-												<li>
-													<label>
-														<input type="checkbox" name="mailmagazine_rakuten_bargain" id="checkbox2" />
-														バーゲン情報（楽天市場バーゲンニュース）</label>
-												</li>
-												<li>
-													<label>
-														<input type="checkbox" name="mailmagazine_rakuten_coupon" id="checkbox3" />
-														クーポン情報（楽天市場 Rakuponニュース）</label>
-												</li>
-												<li>
-													<label>
-														<input type="checkbox" name="mailmagazine_rakuten_platinum" id="checkbox4" />
-														プラチナ会員限定優待情報（楽天プラチナ優待ニュース）</label>
-												</li>
-											</ul>
-										</dd>
-									</dl>
-								</li>
-                                -->
-                                <!--
-								<li>　　<a href="#">全ての選択を解除</a>　<a href="#">全てのメルマガを選択</a></li>
-								<li class="attention1"><strong>※既に配信されているメルマガの配信停止をしたい場合は、次のページの「配信停止ページへ」のリンクから停止作業を行ってください。</strong></li>
-                                -->
-							</dl>
-						</div>
-					</div>
-				</div>
-			</div>
-			<p class="align2"><input type="image" src="${request.static_url('ticketing.cart:static/img/settlement/btn_buy.gif')}" alt="購入する" width="226" height="46" /></p>
-		</form>
+  <%
+	 shipping = cart.shipping_address
+	 %>
+
+  <div class="confirmBox">
+	<div class="confirmBoxInner">
+      <h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_payment.gif')}" alt="お支払い" width="78" height="30" /></h2>
+      ${h.render_payment_confirm_viewlet(request, cart)}
+    </div>
+  </div>
+
+  <div class="confirmBox">
+	<div class="confirmBoxInner">
+	  <h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_reception.gif')}" alt="配送情報" width="103" height="30" /></h2>
+      ${h.render_delivery_confirm_viewlet(request, cart)}
+    </div>
+  </div>
+
+  <div class="confirmBox">
+	<div class="confirmBoxInner">
+	  <h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_customer_info.gif')}" alt="購入者情報" width="103" height="30" /></h2>
+	  <table id="confirmDelivery" summary="配送先情報">
+		<tr>
+		  <th scope="row">氏名（漢字）</th>
+          <td>${shipping.last_name} ${shipping.first_name}</td>
+		</tr>
+		<tr>
+		  <th scope="row">氏名（カナ）</th>
+          <td>${shipping.last_name_kana} ${shipping.first_name_kana}</td>
+		</tr>
+		<tr>
+		  <th scope="row">電話番号</th>
+          <td>${shipping.tel_1}</td>
+		</tr>
+		<tr>
+		  <th scope="row">配送先住所 <br />※配送受取を選択した場合</th>
+          <td>${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}
+		  </td>
+		</tr>
+	  </table>
 	</div>
-	<!-- ========== /main ========== -->
-	
-<!-- /container --></div>
+  </div>
 
-</body>
-</html>
+  <div class="settlementBox">
+	<div class="settlementBoxInner">
+      <h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_magazine.gif')}" alt="メールマガジンの配信" width="177" height="30" /></h2>
+	  <div id="mailMagazineBox">
+		<div id="mailMagazineBoxInner">
+		  <dl>
+			<dt>
+			  ご利用いただいた方には、仙台89ERSからのメールマガジンをお送りします。不要な方はチェックをはずしてください。
+			</dt>
+            <dd>
+              <ul>
+                %for mailmagazine in mailmagazines:
+                <li>
+                  <div>
+                    <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
+                    <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
+                  </div>
+                  <div>
+                    ${mailmagazine.description|n}
+                  </div>
+                </li>
+                %endfor
+              </ul>
+            </dd>
+			</dl>
+		</div>
+	  </div>
+	</div>
+  </div>
+  
+  <table style="margin-left: auto; margin-right: auto;"><tr><td style="width: 320px; text-align: center;">
+          <input id="btn-back" type="submit" name="back" value="" />
+		  <br />
+		  ※ここまでのお申し込みがキャンセルになります。 &nbsp;&nbsp;&nbsp;&nbsp;
+	  </td><td style="width: 320px; text-align: center;">
+        <input id="btn-complete" type="submit" value="" />
+		<br />
+		&nbsp;
+  </td></tr></table>
+</form>
+  

@@ -1,0 +1,14 @@
+<%inherit file="./base_89ers.html"/>
+
+%if request.session.peek_flash():
+ %for message in request.session.pop_flash():
+   <div class="error">${message}</div>
+ %endfor
+%endif
+   
+<div class="confirmBox">
+  <div class="confirmBoxInner">
+	セッションがタイムアウトされました。
+	再度、最初からご購入をお試しください。<a href="/">トップに戻る</a>
+  </div>
+</div>

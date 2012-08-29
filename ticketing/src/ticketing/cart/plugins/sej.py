@@ -3,8 +3,8 @@ from zope.interface import implementer
 from pyramid.view import view_config
 from pyramid.response import Response
 
-from ..interfaces import IPaymentPlugin, ICartPayment, IOrderPayment, ICompleteMailPayment, ICompleteMailDelivery
-from ..interfaces import IDeliveryPlugin, ICartDelivery, IOrderDelivery
+from ..interfaces import IPaymentPlugin, ICartPayment, IOrderPayment, ICompleteMailPayment
+from ..interfaces import IDeliveryPlugin, ICartDelivery, IOrderDelivery, ICompleteMailDelivery
 
 from .. import logger
 
@@ -27,6 +27,7 @@ from datetime import datetime, timedelta
 import numpy
 import pystache
 from ticketing.cart import helpers as cart_helper
+import re
 
 PAYMENT_PLUGIN_ID = 3
 DELIVERY_PLUGIN_ID = 2
@@ -43,7 +44,7 @@ def get_payment_due_at(current_date, cart):
         payment_due_at = current_date + timedelta(days=cart.payment_delivery_pair.payment_period_days)
     else:
         payment_due_at = current_date + timedelta(days=3)
-        payment_due_at.replace(hour=23, minute=59, second=59)
+        payment_due_at = payment_due_at.replace(hour=23, minute=59, second=59)
     return payment_due_at
 
 def get_ticketing_start_at(current_date, cart):
@@ -51,7 +52,7 @@ def get_ticketing_start_at(current_date, cart):
         ticketing_start_at = cart.payment_delivery_pair.issuing_start_at
     else:
         ticketing_start_at = current_date + timedelta(days=cart.payment_delivery_pair.issuing_interval_days)
-        ticketing_start_at.replace(hour=00, minute=00, second=00)
+        ticketing_start_at = ticketing_start_at.replace(hour=00, minute=00, second=00)
     return ticketing_start_at
 
 def get_sej_order(order):
@@ -61,8 +62,8 @@ def get_ticket(order_no, product_item, svg):
     performance = product_item.performance
     return dict(
         ticket_type         = SejTicketType.TicketWithBarcode,
-        event_name          = han2zen(performance.event.title)[:40].replace(' ', ''),
-        performance_name    = han2zen(performance.name)[:40].replace(' ', ''),
+        event_name          = re.sub('[ \-\.,;\'\"]', '', han2zen(performance.event.title)[:20]),
+        performance_name    = re.sub('[ \-\.,;\'\"]', '', han2zen(performance.name)[:20]),
         ticket_template_id  = u'TTTS000001',
         performance_datetime= performance.start_on,
         xml = SejTicketDataXml(svg)
@@ -100,12 +101,27 @@ def get_tickets(order):
     return tickets
 
 def get_tickets_from_cart(cart):
-    tickets = list()
-    for product in cart.products:
-        for item in product.items:
-            ticket = get_ticket(u'%012d' % cart.id, item)
-            tickets.append(ticket)
+    tickets = []
+    for carted_product in cart.products:
+        for carted_product_item in carted_product.items:
+            bundle = carted_product_item.product_item.ticket_bundle
+            for seat in carted_product_item.seats:
+                dict_ = build_dict_from_seat(seat, None)
+                for ticket in bundle.tickets:
+                    ticket_format = ticket.ticket_format
+                    applicable = False
+                    for delivery_method in ticket_format.delivery_methods:
+                        if delivery_method.delivery_plugin_id == DELIVERY_PLUGIN_ID:
+                            applicable = True
+                            break
+                    if not applicable:
+                        continue
+                    transform = translate(-as_user_unit(ticket_format.data['print_offset']['x']), -as_user_unit(ticket_format.data['print_offset']['y']))
+                    svg = etree.tostring(convert_svg(etree.ElementTree(etree.fromstring(pystache.render(ticket.data['drawing'], dict_))), transform), encoding=unicode)
+                    ticket = get_ticket(cart.order_no, carted_product_item.product_item, svg)
+                    tickets.append(ticket)
     return tickets
+
 
 @implementer(IPaymentPlugin)
 class SejPaymentPlugin(object):
@@ -259,7 +275,7 @@ class SejPaymentDeliveryPlugin(object):
                 total               = order.total_amount,
                 ticket_total        = cart.tickets_amount,
                 commission_fee      = order.system_fee + order.transaction_fee,
-                payment_type        = SejPaymentType.Prepayment if SejPaymentType.CashOnDelivery else SejPaymentType.Prepayment ,
+                payment_type        = SejPaymentType.CashOnDelivery,
                 ticketing_fee       = order.delivery_fee,
                 payment_due_at      = payment_due_at,
                 ticketing_start_at  = ticketing_start_at,
@@ -273,20 +289,29 @@ class SejPaymentDeliveryPlugin(object):
         return order
 
 
-@view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer='ticketing.cart.plugins:templates/carts/sej_delivery_complete.html')
+@view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer='ticketing.cart.plugins:templates/sej_delivery_complete.html')
+@view_config(context=IOrderDelivery, request_type='ticketing.cart.interfaces.IMobileRequest',
+             name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer='ticketing.cart.plugins:templates/sej_delivery_complete_mobile.html')
 def sej_delivery_viewlet(context, request):
     order = context.order
     sej_order = get_sej_order(order)
+    payment_id = context.order.payment_delivery_pair.payment_method.payment_plugin_id
+    is_payment_with_sej = int(payment_id or -1) == PAYMENT_PLUGIN_ID
     return dict(
         order=order,
+        is_payment_with_sej=is_payment_with_sej, 
         sej_order=sej_order
     )
 
-@view_config(context=ICartDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer='ticketing.cart.plugins:templates/carts/sej_delivery_confirm.html')
+@view_config(context=ICartDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, 
+             renderer='ticketing.cart.plugins:templates/sej_delivery_confirm.html')
 def sej_delivery_confirm_viewlet(context, request):
     return Response(text=u'セブンイレブン受け取り')
 
-@view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer='ticketing.cart.plugins:templates/sej_payment_complete.html')
+@view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, 
+             renderer='ticketing.cart.plugins:templates/sej_payment_complete.html')
+@view_config(context=IOrderPayment, request_type='ticketing.cart.interfaces.IMobileRequest',
+             name="payment-%d" % PAYMENT_PLUGIN_ID, renderer='ticketing.cart.plugins:templates/sej_payment_complete_mobile.html')
 def sej_payment_viewlet(context, request):
     order = context.order
     sej_order = get_sej_order(order)
@@ -295,7 +320,7 @@ def sej_payment_viewlet(context, request):
         sej_order=sej_order
     )
 
-@view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer='ticketing.cart.plugins:templates/carts/sej_payment_confirm.html')
+@view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer='ticketing.cart.plugins:templates/sej_payment_confirm.html')
 def sej_payment_confirm_viewlet(context, request):
     return Response(text=u'セブンイレブン支払い')
 
@@ -314,4 +339,7 @@ def completion_delivery_mail_viewlet(context, request):
     :param context: ICompleteMailDelivery
     """
     sej_order=get_sej_order(context.order)
-    return dict(sej_order=sej_order, h=cart_helper)
+    payment_id = context.order.payment_delivery_pair.payment_method.payment_plugin_id
+    is_payment_with_sej = int(payment_id or -1) == PAYMENT_PLUGIN_ID
+    return dict(sej_order=sej_order, h=cart_helper, 
+                is_payment_with_sej=is_payment_with_sej)

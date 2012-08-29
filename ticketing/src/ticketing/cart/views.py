@@ -12,6 +12,7 @@ from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.exceptions import NotFound
 from pyramid.response import Response
 from pyramid.view import view_config
+from pyramid.threadlocal import get_current_request
 from js.jquery_tools import jquery_tools
 from urllib2 import urlopen
 from zope.deprecation import deprecate
@@ -21,7 +22,7 @@ from ..users import models as u_models
 from .models import Cart
 from . import helpers as h
 from . import schemas
-from .exceptions import CartException, NoCartError, NoEventError
+from .exceptions import CartException, NoCartError, NoEventError, InvalidCSRFTokenException, OverQuantityLimitError, ZeroQuantityError, CartCreationExceptoion
 from .rakuten_auth.api import authenticated_user
 from .events import notify_order_completed
 from webob.multidict import MultiDict
@@ -32,14 +33,33 @@ import transaction
 
 logger = logging.getLogger(__name__)
 
+def back(func):
+    def retval(*args, **kwargs):
+        request = get_current_request()
+        if request.params.has_key('back'):
+            ReleaseCartView(request)()
+            return HTTPFound(request.route_url('cart.index', event_id=request.params.get('event_id')))
+        return func(*args, **kwargs)
+    return retval
+
 class IndexView(object):
     """ 座席選択画面 """
     def __init__(self, request):
         self.request = request
         self.context = request.context
 
-
     @view_config(route_name='cart.index', renderer='carts/index.html', xhr=False, permission="buy")
+    def redirect_sale(self):
+        sales_segment = self.context.get_sales_segument()
+        if sales_segment is None:
+            logger.debug("No matching sales_segment")
+            raise NoEventError("No matching sales_segment")
+        event_id = self.request.matchdict['event_id']
+        location = self.request.route_url('cart.index.sales', 
+            event_id=event_id,
+            sales_segment_id=sales_segment.id)
+        return HTTPFound(location=location)
+
     @view_config(route_name='cart.index.sales', renderer='carts/index.html', xhr=False, permission="buy")
     def __call__(self):
         jquery_tools.need()
@@ -118,13 +138,17 @@ class IndexView(object):
             c_models.ProductItem.product_id==c_models.Product.id).filter(
             c_models.Product.sales_segment_id==sales_segment_id)
 
-        seat_types = DBSession.query(c_models.StockType).filter(
+        seat_type_triplets = DBSession.query(c_models.StockType, c_models.Stock.quantity, c_models.StockStatus.quantity).filter(
+            c_models.Stock.id==c_models.StockStatus.stock_id).filter(
             c_models.Performance.event_id==event_id).filter(
             c_models.Performance.id==performance_id).filter(
             c_models.Performance.event_id==c_models.StockHolder.event_id).filter(
             c_models.StockHolder.id==c_models.Stock.stock_holder_id).filter(
             c_models.Stock.stock_type_id==c_models.StockType.id).filter(
-            c_models.Stock.id.in_(segment_stocks)).order_by(c_models.StockType.display_order).all()
+            c_models.Stock.id.in_(segment_stocks)).filter(
+            c_models.ProductItem.stock_id==c_models.Stock.id).filter(
+            c_models.ProductItem.performance_id==performance_id).order_by(
+            c_models.StockType.display_order).all()
 
         performance = c_models.Performance.query.filter_by(id=performance_id).one()
 
@@ -133,9 +157,11 @@ class IndexView(object):
                     style=s.style,
                     products_url=self.request.route_url('cart.products',
                         event_id=event_id, performance_id=performance_id, seat_type_id=s.id),
+                    availability=available > 0,
+                    availability_text=h.get_availability_text(available),
                     quantity_only=s.quantity_only,
                     )
-                for s in seat_types
+                for s, total, available in seat_type_triplets
                 ],
                 event_name=performance.event.title,
                 performance_name=performance.name,
@@ -230,7 +256,11 @@ class IndexView(object):
             for p in query]
 
         return dict(products=products,
-                    seat_type=dict(id=seat_type.id, name=seat_type.name))
+                    seat_type=dict(id=seat_type.id, name=seat_type.name),
+                    sales_segment=dict(
+                        start_at=salessegment.start_at.strftime("%Y-%m-%d %H:%M"),
+                        end_at=salessegment.end_at.strftime("%Y-%m-%d %H:%M")
+                    ))
 
     @view_config(route_name='cart.seats', renderer="json")
     def get_seats(self):
@@ -344,8 +374,30 @@ class ReserveView(object):
     @view_config(route_name='cart.order', request_method="POST", renderer='json')
     def reserve(self):
         order_items = self.ordered_items
+        if not order_items:
+            return dict(result='NG', reason="no products")
+
+        performance = c_models.Performance.get(self.request.params['performance_id'])
+        if not order_items:
+            return dict(result='NG', reason="no performance")
+
         selected_seats = self.request.params.getall('selected_seat')
         logger.debug('order_items %s' % order_items)
+
+        sum_quantity = 0
+        if selected_seats:
+            sum_quantity = len(selected_seats)
+        else:
+            for product, quantity in order_items:
+                sum_quantity += quantity
+        logger.debug('sum_quantity=%s' % sum_quantity)
+
+        self.context.event_id = performance.event_id
+        sales_segment = self.context.get_sales_segument()
+        if sales_segment.upper_limit < sum_quantity:
+            logger.debug('upper_limit over')
+            return dict(result='NG', reason="upper_limit")
+
         try:
             cart = api.order_products(self.request, self.request.params['performance_id'], order_items, selected_seats=selected_seats)
             if cart is None:
@@ -378,32 +430,83 @@ class ReserveView(object):
                               total_amount=h.format_number(cart.tickets_amount),
                     ))
 
-    @view_config(route_name='cart.order', request_method="POST", renderer='carts_mobile/reserve.html', request_type=".interfaces.IMobileRequest")
+    @view_config(route_name='cart.order', request_method="GET", renderer='carts_mobile/reserve.html', request_type=".interfaces.IMobileRequest")
     def reserve_mobile(self):
+        cart = api.get_cart(self.request)
+        if not cart:
+            raise NotFound
+
         performance_id = self.request.params.get('performance_id')
         seat_type_id = self.request.params.get('seat_type_id')
+
+        performance = c_models.Performance.query.filter(
+            c_models.Performance.id==performance_id).first()
+        if performance:
+            event = performance.event
+        else:
+            event = None
+
+        data = dict(
+            event=event,
+            performance=performance, 
+            seat_type_id=seat_type_id,
+            payment_url=self.request.route_url("cart.payment"),
+            cart=dict(products=[dict(name=p.product.name, 
+                                     quantity=p.quantity,
+                                     price=int(p.product.price),
+                                     seats=p.seats,
+                                ) 
+                                for p in cart.products],
+                      total_amount=h.format_number(cart.tickets_amount),
+            ))
+        return data
+
+    @view_config(route_name='cart.products', renderer='carts_mobile/products.html', xhr=False, request_type=".interfaces.IMobileRequest", request_method="POST")
+    def products_form(self):
+        """商品の値検証とおまかせ座席確保とカート作成
+        """
+        performance_id = self.request.params.get('performance_id')
+        seat_type_id = self.request.params.get('seat_type_id')
+
+        # セールスセグメント必須
+        sales_segment = self.context.get_sales_segument()
+        if sales_segment is None:
+            raise NoEventError("No matching sales_segment")
 
         # パフォーマンス
         performance = c_models.Performance.query.filter(
             c_models.Performance.id==performance_id).first()
         if performance is None:
             raise NoEventError("No such performance (%d)" % performance_id)
-        # イベント
-        event = performance.event
 
         # CSRFトークンの確認
         form = schemas.CSRFSecureForm(
-            form_data=self.request.params,
+            formdata=self.request.params,
             csrf_context=self.request.session)
-        form.validate()
-
-        data = dict(
-            event=event,
-            performance=performance, 
-            seat_type_id=seat_type_id,
-        )
+        if not form.validate():
+            raise InvalidCSRFTokenException
+        # セッションからCSRFトークンを削除して再利用不可にしておく
+        if 'csrf' in self.request.session:
+            del self.request.session['csrf']
 
         order_items = self.ordered_items
+
+        # 購入枚数の制限
+        sum_quantity = sum(num for product, num in order_items)
+        logger.debug('sum_quantity=%s' % sum_quantity)
+        if sum_quantity > sales_segment.upper_limit:
+            raise OverQuantityLimitError(sales_segment.upper_limit)
+
+        if sum_quantity == 0:
+            raise ZeroQuantityError
+
+        # 古いカートを削除
+        old_cart = api.get_cart(self.request)
+        if old_cart:
+            old_cart.release()
+            DBSession.delete(old_cart)
+            api.remove_cart(self.request)
+
         try:
             # カート生成(席はおまかせ)
             cart = api.order_products(
@@ -413,39 +516,31 @@ class ReserveView(object):
             if cart is None:
                 transaction.abort()
                 logger.debug("cart is None. aborted.")
-                # TODO: 例外を上げる
-                data.update(dict(result='NG'))
-                return data
-        except NotEnoughAdjacencyException:
+                raise CartCreationExceptoion
+        except NotEnoughAdjacencyException as e:
             transaction.abort()
             logger.debug("not enough adjacency")
-            data.update(dict(result='NG', reason="adjacency"))
-            return data
-        except InvalidSeatSelectionException:
+            raise e
+        except InvalidSeatSelectionException as e:
+            # モバイルだとここにはこないかも
             transaction.abort()
             logger.debug("seat selection is invalid.")
-            data.update(dict(result='NG', reason="invalid seats"))
-            return data
+            raise e
         except NotEnoughStockException as e:
             transaction.abort()
             logger.debug("not enough stock quantity :%s" % e)
-            data.update(dict(result='NG', reason="stock"))
-            return data
+            raise e
 
         DBSession.add(cart)
         DBSession.flush()
         api.set_cart(self.request, cart)
-        data.update(dict(result='OK',
-                    payment_url=self.request.route_url("cart.payment"),
-                    cart=dict(products=[dict(name=p.product.name, 
-                                             quantity=p.quantity,
-                                             price=int(p.product.price),
-                                             seats=p.seats,
-                                        ) 
-                                        for p in cart.products],
-                              total_amount=h.format_number(cart.tickets_amount),
-                    )))
-        return data
+        # 購入確認画面へ
+        query = dict(
+            performance_id=performance_id,
+            event_id=performance.event_id,
+            seat_type_id=seat_type_id,
+        )
+        return HTTPFound(self.request.route_url('cart.order', _query=query))
 
     def __call__(self):
         """
@@ -504,10 +599,11 @@ class PaymentView(object):
         self.context.event_id = cart.performance.event.id
         payment_delivery_methods = self.context.get_payment_delivery_method_pair()
 
-        #openid = authenticated_user(self.request)
-        #user = api.get_or_create_user(self.request, openid['clamed_id'])
         user = self.context.get_or_create_user()
-        user_profile = user.user_profile
+        user_profile = None
+        if user is not None:
+            user_profile = user.user_profile
+
         if user_profile is not None:
             formdata = MultiDict(
                 last_name=user_profile.last_name,
@@ -529,11 +625,12 @@ class PaymentView(object):
         form = schemas.ClientForm(formdata=formdata)
         return dict(form=form,
             payment_delivery_methods=payment_delivery_methods,
-            user=user, user_profile=user.user_profile)
+            #user=user, user_profile=user.user_profile,
+            )
 
-    def validate(self):
+    def validate(self, payment_delivery_pair):
         form = schemas.ClientForm(formdata=self.request.params)
-        if form.validate():
+        if form.validate() and payment_delivery_pair:
             return None 
         else:
             return form
@@ -549,31 +646,29 @@ class PaymentView(object):
             raise NoCartError()
         cart = api.get_cart(self.request)
 
-        #openid = authenticated_user(self.request)
-        #user = api.get_or_create_user(self.request, openid['clamed_id'])
         user = self.context.get_or_create_user()
 
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id', 0)
         payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter_by(id=payment_delivery_method_pair_id).first()
-        if not payment_delivery_pair:
-            raise HTTPFound(self.request.current_route_url())
+        form = self.validate(payment_delivery_pair)
 
-        cart.payment_delivery_pair = payment_delivery_pair
-        cart.system_fee = payment_delivery_pair.system_fee
-
-        form = self.validate()
-
-        #if not (payment_delivery_pair and form.validate()):
         if not payment_delivery_pair or form:
-            self.context.event_id = cart.performance.event.id
-            payment_delivery_methods = self.context.get_payment_delivery_method_pair()
             if not payment_delivery_pair:
+                self.request.session.flash(u"お支払い方法／受け取り方法をどれかひとつお選びください")
                 logger.debug("invalid : %s" % 'payment_delivery_method_pair_id')
             else:
                 logger.debug("invalid : %s" % form.errors)
+
+            self.context.event_id = cart.performance.event.id
+            payment_delivery_methods = self.context.get_payment_delivery_method_pair()
+
             return dict(form=form,
                 payment_delivery_methods=payment_delivery_methods,
-                user=user, user_profile=user.user_profile)
+                #user=user, user_profile=user.user_profile,
+                )
+
+        cart.payment_delivery_pair = payment_delivery_pair
+        cart.system_fee = payment_delivery_pair.system_fee
 
         shipping_address = self.create_shipping_address(user)
 
@@ -640,23 +735,19 @@ class ConfirmView(object):
     @view_config(route_name='payment.confirm', request_type='.interfaces.IMobileRequest', request_method="GET", renderer="carts_mobile/confirm.html")
     def get(self):
         form = schemas.CSRFSecureForm(csrf_context=self.request.session)
-
-        assert api.has_cart(self.request)
+        if not api.has_cart(self.request):
+            raise NoCartError()
         cart = api.get_cart(self.request)
 
-        magazines = u_models.MailMagazine.query.outerjoin(u_models.MailSubscription).filter(u_models.MailMagazine.organization==cart.performance.event.organization).filter(or_(u_models.MailSubscription.email != cart.shipping_address.email, u_models.MailSubscription.email == None)).all()
+        magazines = u_models.MailMagazine.query.outerjoin(u_models.MailSubscription) \
+            .filter(u_models.MailMagazine.organization==cart.performance.event.organization) \
+            .all()
 
         user = self.context.get_or_create_user()
-        return dict(cart=cart, mailmagazines=magazines, user=user, form=form)
-
-    # @view_config(route_name='payment.confirm', request_method="POST", renderer="carts/confirm.html")
-    # def post(self):
-
-    #     assert h.has_cart(self.request)
-    #     cart = h.get_cart(self.request)
-    #         
-    #     self.save_subscription()
-    #     return HTTPFound(self.request.route_url("payment.finish"))
+        return dict(cart=cart, mailmagazines=magazines, 
+            #user=user, 
+            form=form,
+            )
 
 
 class CompleteView(object):
@@ -666,14 +757,19 @@ class CompleteView(object):
         self.context = request.context
         # TODO: Orderを表示？
 
+    @back
     @view_config(route_name='payment.finish', renderer="carts/completion.html", request_method="POST")
     @view_config(route_name='payment.finish', request_type='.interfaces.IMobileRequest', renderer="carts_mobile/completion.html", request_method="POST")
     def __call__(self):
-        form = schemas.CSRFSecureForm(form_data=self.request.params, csrf_context=self.request.session)
+        form = schemas.CSRFSecureForm(formdata=self.request.params, csrf_context=self.request.session)
         form.validate()
         #assert not form.csrf_token.errors
-        assert api.has_cart(self.request)
+        if not api.has_cart(self.request):
+            raise NoCartError()
+
         cart = api.get_cart(self.request)
+        if not cart.is_valid():
+            raise NoCartError()
 
         order_session = self.request.session['order']
 
@@ -694,8 +790,6 @@ class CompleteView(object):
             delivery_plugin = api.get_delivery_plugin(self.request, payment_delivery_pair.delivery_method.delivery_plugin_id)
             delivery_plugin.finish(self.request, cart)
 
-        #openid = authenticated_user(self.request)
-        #user = api.get_or_create_user(self.request, openid['clamed_id'])
         user = self.context.get_or_create_user()
         order.user = user
         order.organization_id = order.performance.event.organization_id
@@ -705,13 +799,20 @@ class CompleteView(object):
         # メール購読でエラーが出てロールバックされても困る
         order_id = order.id
         mail_address = cart.shipping_address.email
-        user_id = self.context.get_or_create_user().id
+        plain_user = self.context.get_or_create_user()
+        user_id = None
+        if plain_user is not None:
+            user_id = plain_user.id
+            user_cls = plain_user.__class__
         transaction.commit()
-        user = DBSession.query(user.__class__).get(user_id)
+        user = None
+        if user_id is not None:
+            user = DBSession.query(user_cls).get(user_id)
         order = DBSession.query(order.__class__).get(order_id)
  
         # メール購読
         self.save_subscription(user, mail_address)
+        api.remove_cart(self.request)
 
         return dict(order=order)
 
@@ -807,7 +908,7 @@ class MobileSelectProductView(object):
         self.request = request
         self.context = request.context
 
-    @view_config(route_name='cart.mobile', renderer='carts_mobile/seat_types.html', xhr=False, permission="buy", request_type=".interfaces.IMobileRequest")
+    @view_config(route_name='cart.mobile', renderer='carts_mobile/seat_types.html', xhr=False, request_type=".interfaces.IMobileRequest")
     def __call__(self):
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.matchdict['performance_id']
@@ -845,7 +946,10 @@ class MobileSelectProductView(object):
             c_models.Performance.event_id==c_models.StockHolder.event_id).filter(
             c_models.StockHolder.id==c_models.Stock.stock_holder_id).filter(
             c_models.Stock.stock_type_id==c_models.StockType.id).filter(
-            c_models.Stock.id.in_(segment_stocks)).order_by(c_models.StockType.display_order).all()
+            c_models.Stock.id.in_(segment_stocks)).filter(
+            c_models.ProductItem.stock_id==c_models.Stock.id).filter(
+            c_models.ProductItem.performance_id==performance_id).order_by(
+            c_models.StockType.display_order).all()
 
         data = dict(
             seat_types=[
@@ -861,7 +965,7 @@ class MobileSelectProductView(object):
         )
         return data
 
-    @view_config(route_name='cart.products', renderer='carts_mobile/products.html', xhr=False, permission="buy", request_type=".interfaces.IMobileRequest")
+    @view_config(route_name='cart.products', renderer='carts_mobile/products.html', xhr=False, request_type=".interfaces.IMobileRequest", request_method="GET")
     def products(self):
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.matchdict['performance_id']
@@ -921,6 +1025,7 @@ class MobileSelectProductView(object):
             performance=performance,
             venue=performance.venue,
             seat_type=seat_type,
+            upper_limit=sales_segment.upper_limit,
             products=[
                 dict(
                     id=product.id,

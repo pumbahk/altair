@@ -536,10 +536,13 @@ var Circle = _class("CircleVML", {
 /** @} */
 /** @file Rect.js { */
 var Rect = (function () {
+
+  var prec = VML_FLOAT_PRECISION;
+  var coordsize = 'coordorigin="0 0" coordsize="'+ prec +' '+ prec +'"';
+
   function appendPath(vml, size, corner) {
-    var prec = VML_FLOAT_PRECISION,
-        rx = (corner.x || 0) * prec / size.x;
-        ry = (corner.y || 0) * prec / size.y;
+    var rx = Math.round((corner.x || 0) * prec / size.x);
+        ry = Math.round((corner.y || 0) * prec / size.y);
     vml.push('at0,0,', rx * 2, ',', ry * 2, ',', rx, ',0,0,', ry);
     vml.push('l0,', prec - ry);
     vml.push('at0,', prec - ry * 2, ',', rx * 2, ',', prec, ',0,', prec - ry, ',', rx, ',', prec);
@@ -585,6 +588,7 @@ var Rect = (function () {
         vml.push(' path="');
         appendPath(vml, this.wrapper._size, this.wrapper._corner);
         vml.push('"');
+        vml.push(coordsize);
         appendStyles(vml, this);
         appendEpilogue(vml, 'shape');
         return vml;
@@ -648,7 +652,7 @@ var Rect = (function () {
       determineImpl: function() {
         var size = this.wrapper._size;
         var corner = this.wrapper._corner;
-        if (corner.x == corner.y && size.x == size.y) {
+        if (corner.x == corner.y) {
           if (corner.x == 0)
             return handlers.rect;
           else
@@ -876,7 +880,7 @@ var Drawable = _class("DrawableVML", {
                 }
                 var contentSize = this.wrapper._transform.apply(this.wrapper._content_size);
                 this._vg.node.coordOrigin = (-transform.e * VML_FLOAT_PRECISION) + ',' + (-transform.f * VML_FLOAT_PRECISION);
-                this._vg.node.coordSize = (VML_FLOAT_PRECISION / scale.x) + ',' + (VML_FLOAT_PRECISION / scale.y);
+                this._vg.node.coordSize = Math.round(VML_FLOAT_PRECISION / scale.x) + ',' + Math.round(VML_FLOAT_PRECISION / scale.y);
               } else {
                 if (!this._vg.skew) {
                   this._vg.skew = newElement('skew');
@@ -983,14 +987,15 @@ var Drawable = _class("DrawableVML", {
 
     scrollPosition: function(position) {
       if (position) {
-        position = _clipPoint(
-            position,
-            this.wrapper._inverse_transform.translate(),
-            _subtractPoint(
-              this.wrapper._content_size,
-              this.wrapper._inverse_transform.apply(
-                this._viewportInnerSize)));
+        var min = this.wrapper._inverse_transform.translate();
+        var scrollable_size = _subtractPoint(
+          this.wrapper._content_size,
+          this.wrapper._inverse_transform.apply(
+            this._viewportInnerSize));
+        var max = _addPoint(min, scrollable_size);
+        position = _clipPoint(position, min, max);
         this._scrollPosition = position;
+
         if (window.readyState == 'complete') {
           var _position = this.wrapper._transform.apply(position);
           this._viewport.scrollLeft = _position.x;
@@ -1090,6 +1095,7 @@ var Drawable = _class("DrawableVML", {
     _buildRoot: function () {
       var vg = newElement('group');
       vg.style.cssText = 'position:absolute;display:block;margin:0;padding:0;width:' + VML_FLOAT_PRECISION + 'px;height:' + VML_FLOAT_PRECISION + 'px';
+      vg.coordOrigin = '0,0';
       vg.coordSize = VML_FLOAT_PRECISION + ',' + VML_FLOAT_PRECISION;
       return { node: vg, skew: null };
     },

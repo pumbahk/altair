@@ -1,0 +1,409 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:si="http://xmlns.ticketstar.jp/2012/site-info"
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   width="4140"
+   height="2115"
+   viewBox="22 22 4140 2115"
+   id="svg2"
+   inkscape:version="0.48.1 r9760"
+   sodipodi:docname="xebio-arena.root.svg">
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1280"
+     inkscape:window-height="756"
+     id="namedview10086"
+     showgrid="false"
+     inkscape:zoom="0.375"
+     inkscape:cx="2632.4299"
+     inkscape:cy="-9.1667"
+     inkscape:window-x="46"
+     inkscape:window-y="2"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg2"
+     showguides="true"
+     inkscape:guide-bbox="true" />
+  <title
+     id="title4">ゼビオアリーナ</title>
+  <defs
+     id="defs23900">
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath18442">
+      <path
+         inkscape:connector-curvature="0"
+         d="m 0,2001.26 2568.189,0 L 2568.189,0 0,0 0,2001.26 z"
+         id="path18444" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath18442-7">
+      <path
+         inkscape:connector-curvature="0"
+         d="m 0,2001.26 2568.189,0 L 2568.189,0 0,0 0,2001.26 z"
+         id="path18444-1" />
+    </clipPath>
+  </defs>
+  <metadata
+     id="metadata6">
+    <si:object>
+      <si:class>Venue</si:class>
+      <si:property
+         name="name">ゼビオアリーナ</si:property>
+      <si:collection
+         name="seatIndexTypes">
+        <si:object
+           id="seatIndexType-1">
+          <si:class>SeatIndexType</si:class>
+          <si:property
+             name="name">デフォルト</si:property>
+        </si:object>
+      </si:collection>
+    </si:object>
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>ゼビオアリーナ</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path
+     inkscape:connector-curvature="0"
+     d="m 2854.4128,1436.1304 -1323.4924,0 0,-712.41935 1323.4924,0 0,712.41935 z"
+     style="fill:#fff200;fill-opacity:1;fill-rule:nonzero;stroke:none"
+     id="path18412-9" />
+  <path
+     id="path18436"
+     style="fill:none;stroke:#231f20;stroke-width:0.57145512;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+     d="m 2192.6656,723.61843 0,712.60677"
+     inkscape:connector-curvature="0" />
+  <path
+     id="path18448-4"
+     style="fill:none;stroke:#231f20;stroke-width:0.57145512;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+     d="m 2274.9527,1079.9229 c 0,45.4444 -36.8406,82.2895 -82.2872,82.2895 -45.4467,0 -82.2896,-36.8451 -82.2896,-82.2895 0,-45.4513 36.8429,-82.29182 82.2896,-82.29182 45.4466,0 82.2872,36.84052 82.2872,82.29182 z"
+     inkscape:connector-curvature="0" />
+  <path
+     inkscape:connector-curvature="0"
+     d="m 2582.4002,1197.6415 272.0126,0 0,-235.44405 -272.0126,0 0,235.44405 z"
+     style="fill:none;stroke:#231f20;stroke-width:0.57145512;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+     id="path18450-9" />
+  <path
+     inkscape:connector-curvature="0"
+     d="m 2582.4002,1163.3542 272.0126,0 0,-166.86944 -272.0126,0 0,166.86944 z"
+     style="fill:none;stroke:#231f20;stroke-width:0.57145512;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+     id="path18452-5" />
+  <path
+     id="path18456-0"
+     style="fill:none;stroke:#231f20;stroke-width:0.57145512;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+     d="m 2500.1106,1079.9229 c 0,45.7621 37.0989,82.861 82.861,82.861 45.7644,0 82.861,-37.0989 82.861,-82.861 0,-45.7667 -37.0966,-82.86556 -82.861,-82.86556 -45.7621,0 -82.861,37.09886 -82.861,82.86556 z"
+     inkscape:connector-curvature="0" />
+  <g
+     id="g18458-9"
+     transform="matrix(2.2858204,0,0,-2.2858204,2765.2658,1079.9229)">
+    <path
+       inkscape:connector-curvature="0"
+       d="m 0,0 c 0,-2.762 2.238,-5 5,-5 2.762,0 5,2.238 5,5 C 10,2.762 7.762,5.002 5,5.002 2.238,5.002 0,2.762 0,0 z"
+       style="fill:none;stroke:#231f20;stroke-width:0.25;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+       id="path18460-3" />
+  </g>
+  <path
+     id="path18464-0"
+     style="fill:none;stroke:#231f20;stroke-width:0.57145512;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+     d="m 2854.4128,782.28395 -92.5757,0 c -160.9995,3.94304 -290.2992,135.68401 -290.2992,297.63895 0,161.9458 129.2997,293.6868 290.2992,297.6344 l 92.5757,0"
+     inkscape:connector-curvature="0" />
+  <g
+     id="g18466-7"
+     transform="matrix(2.2858204,0,0,-2.2858204,2796.1244,1057.6316)">
+    <path
+       inkscape:connector-curvature="0"
+       d="M 0,0 0,-19.502"
+       style="fill:none;stroke:#231f20;stroke-width:0.25;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+       id="path18468-5" />
+  </g>
+  <g
+     id="g18470-7"
+     transform="matrix(2.2858204,0,0,-2.2858204,2795.5529,1079.9229)">
+    <path
+       inkscape:connector-curvature="0"
+       d="M 0,0 -3,0"
+       style="fill:none;stroke:#231f20;stroke-width:0.25;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+       id="path18472-5" />
+  </g>
+  <path
+     inkscape:connector-curvature="0"
+     d="m 1717.4457,914.53809 -139.435,0 0,-69.71752 139.435,0 0,69.71752 z"
+     style="fill:none;stroke:#231f20;stroke-width:0.57145512;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+     id="path18474-0" />
+  <path
+     inkscape:connector-curvature="0"
+     d="m 1802.9331,1197.6415 -272.0126,0 0,-235.44405 272.0126,0 0,235.44405 z"
+     style="fill:none;stroke:#231f20;stroke-width:0.57145512;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+     id="path18476-6" />
+  <path
+     inkscape:connector-curvature="0"
+     d="m 1802.9331,1163.3542 -272.0126,0 0,-166.86944 272.0126,0 0,166.86944 z"
+     style="fill:none;stroke:#231f20;stroke-width:0.57145512;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+     id="path18478-4" />
+  <path
+     id="path18482-8"
+     style="fill:none;stroke:#231f20;stroke-width:0.57145512;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+     d="m 1885.2226,1079.9229 c 0,45.7621 -37.0966,82.861 -82.861,82.861 -45.7644,0 -82.861,-37.0989 -82.861,-82.861 0,-45.7667 37.0966,-82.86556 82.861,-82.86556 45.7644,0 82.861,37.09886 82.861,82.86556 z"
+     inkscape:connector-curvature="0" />
+  <g
+     id="g18484-4"
+     transform="matrix(2.2858204,0,0,-2.2858204,1620.0675,1079.9229)">
+    <path
+       inkscape:connector-curvature="0"
+       d="m 0,0 c 0,-2.762 -2.238,-5 -5,-5 -2.761,0 -5,2.238 -5,5 0,2.764 2.239,5.002 5,5.002 2.762,0 5,-2.238 5,-5.002 z"
+       style="fill:none;stroke:#231f20;stroke-width:0.25;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+       id="path18486-0" />
+  </g>
+  <path
+     id="path18490-6"
+     style="fill:none;stroke:#231f20;stroke-width:0.57145512;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+     d="m 1530.9205,782.28395 92.5757,0 c 160.9995,3.94304 290.2992,135.68401 290.2992,297.63895 0,161.9458 -129.2997,293.6868 -290.2992,297.6344 l -92.5757,0"
+     inkscape:connector-curvature="0" />
+  <g
+     id="g18492-2"
+     transform="matrix(2.2858204,0,0,-2.2858204,1589.2089,1057.6316)">
+    <path
+       inkscape:connector-curvature="0"
+       d="M 0,0 0,-19.502"
+       style="fill:none;stroke:#231f20;stroke-width:0.25;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+       id="path18494-4" />
+  </g>
+  <g
+     id="g18496-7"
+     transform="matrix(2.2858204,0,0,-2.2858204,1589.7804,1079.9229)">
+    <path
+       inkscape:connector-curvature="0"
+       d="M 0,0 3,0"
+       style="fill:none;stroke:#231f20;stroke-width:0.25;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+       id="path18498-4" />
+  </g>
+  <rect
+     style="fill:#cccccc;stroke:#888888"
+     id="rect12200"
+     y="405"
+     x="112.5"
+     height="1462.5"
+     width="67.5" />
+  <text
+     x="1496.25"
+     y="1548"
+     id="text23766"
+     style="text-anchor:middle;fill:#000000">HOME BENCH</text>
+  <text
+     x="2553.75"
+     y="1548"
+     id="text23768"
+     style="text-anchor:middle;fill:#000000">VISITOR BENCH</text>
+  <g
+     id="g33579">
+    <rect
+       width="1642.5"
+       height="135"
+       x="1372.5"
+       y="427.5"
+       id="rect1151"
+       style="fill:#cccccc;stroke:#888888" />
+    <rect
+       width="2340"
+       height="202.5"
+       x="1012.5"
+       y="180"
+       id="rect3378"
+       style="fill:#cccccc;stroke:#888888" />
+    <rect
+       width="900"
+       height="67.5"
+       x="1305"
+       y="45"
+       id="rect7220"
+       style="fill:#cccccc;stroke:#888888" />
+    <text
+       sodipodi:linespacing="1000%"
+       id="text33503"
+       y="395.66666"
+       x="1971.3334"
+       style="font-size:96px;line-height:1000%;fill:#000000;stroke:none"
+       xml:space="preserve">Aブロック</text>
+  </g>
+  <g
+     id="g33612">
+    <rect
+       width="1687.5"
+       height="135"
+       x="1372.5"
+       y="1597.5"
+       id="rect13092"
+       style="fill:#cccccc;stroke:#888888" />
+    <rect
+       width="2340"
+       height="180"
+       x="1012.5"
+       y="1777.5"
+       id="rect15379"
+       style="fill:#cccccc;stroke:#888888" />
+    <rect
+       width="1440"
+       height="45"
+       x="1260"
+       y="2070"
+       id="rect19241"
+       style="fill:#cccccc;stroke:#888888" />
+    <text
+       xml:space="preserve"
+       style="font-size:96px;line-height:1000%;fill:#000000;stroke:none"
+       x="1992.6667"
+       y="1777"
+       id="text33511"
+       sodipodi:linespacing="1000%">Cブロック</text>
+  </g>
+  <g
+     id="g33619">
+    <rect
+       width="180"
+       height="742.5"
+       x="1080"
+       y="697.5"
+       id="rect7792"
+       style="fill:#cccccc;stroke:#888888" />
+    <rect
+       width="675"
+       height="157.5"
+       x="270"
+       y="202.5"
+       id="rect8999"
+       style="fill:#cccccc;stroke:#888888" />
+    <g
+       id="b11">
+      <title
+         id="title9957">Bブロック2F</title>
+      <metadata
+         id="metadata9959">
+        <si:object>
+          <si:class>Block</si:class>
+          <si:property
+             name="name">Bブロック2F</si:property>
+        </si:object>
+      </metadata>
+      <rect
+         style="fill:#cccccc;stroke:#888888"
+         id="rect9961"
+         y="517.5"
+         x="697.5"
+         height="1057.5"
+         width="157.5" />
+    </g>
+    <rect
+       width="630"
+       height="180"
+       x="337.5"
+       y="1800"
+       id="rect11488"
+       style="fill:#cccccc;stroke:#888888" />
+    <text
+       sodipodi:linespacing="1000%"
+       id="text33515"
+       y="1094.3333"
+       x="998.00018"
+       style="font-size:96px;fill:#000000;stroke:none;"
+       xml:space="preserve">Bブロック</text>
+  </g>
+  <g
+     id="g33630">
+    <rect
+       width="180"
+       height="742.5"
+       x="3127.5"
+       y="697.5"
+       id="rect19833"
+       style="fill:#cccccc;stroke:#888888" />
+    <rect
+       width="675"
+       height="112.5"
+       x="3397.5"
+       y="247.5"
+       id="rect21040"
+       style="fill:#cccccc;stroke:#888888" />
+    <rect
+       width="112.5"
+       height="1057.5"
+       x="3532.5"
+       y="517.5"
+       id="rect21727"
+       style="fill:#cccccc;stroke:#888888" />
+    <rect
+       width="652.5"
+       height="112.5"
+       x="3397.5"
+       y="1800"
+       id="rect22879"
+       style="fill:#cccccc;stroke:#888888" />
+    <text
+       xml:space="preserve"
+       style="font-size:96px;fill:#000000;stroke:none;"
+       x="3334"
+       y="1091.6666"
+       id="text33519"
+       sodipodi:linespacing="1000%">Dブロック</text>
+  </g>
+  <g
+     id="g33589">
+    <rect
+       width="180"
+       height="22.5"
+       x="1845"
+       y="1507.5"
+       id="rect13"
+       style="fill:#cccccc;stroke:#888888" />
+    <rect
+       width="1597.5"
+       height="22.5"
+       x="1440"
+       y="607.5"
+       id="rect65"
+       style="fill:#cccccc;stroke:#888888" />
+    <rect
+       width="45"
+       height="855"
+       x="1327.5"
+       y="652.5"
+       id="rect417"
+       style="fill:#cccccc;stroke:#888888" />
+    <rect
+       width="45"
+       height="855"
+       x="3015"
+       y="652.5"
+       id="rect784"
+       style="fill:#cccccc;stroke:#888888" />
+    <text
+       sodipodi:linespacing="1000%"
+       id="text33523"
+       y="707.66663"
+       x="1568.5001"
+       style="font-size:48px;fill:#000000;stroke:none;"
+       xml:space="preserve">コートサイド・コートエンド</text>
+  </g>
+</svg>

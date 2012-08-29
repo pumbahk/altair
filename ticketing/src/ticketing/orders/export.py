@@ -64,7 +64,7 @@ class OrderCSV(object):
         'name',
         'price',
         'quantity',
-        'seat_no',
+        'seat_name',
         ]
 
     def __init__(self, orders):
@@ -102,6 +102,7 @@ class OrderCSV(object):
         ]
 
         product_list = []
+        product_item_list = []
         for i, ordered_product in enumerate(order.ordered_products):
             for column in self.product_header:
                 column_name = 'product_%s_%s' % (column, i)
@@ -114,7 +115,6 @@ class OrderCSV(object):
                 if column == 'quantity':
                     product_list.append((column_name, ordered_product.quantity))
 
-            product_item_list = []
             for ordered_product_item in ordered_product.ordered_product_items:
                 for column in self.product_item_header:
                     column_name = 'product_item_%s_%s' % (column, i)
@@ -125,12 +125,12 @@ class OrderCSV(object):
                     if column == 'price':
                         product_item_list.append((column_name, format_number(ordered_product_item.price)))
                     if column == 'quantity':
-                        product_item_list.append((column_name, ordered_product_item.product_item.quantity))
-                    if column == 'seat_no':
-                        seat_no = ''
+                        product_item_list.append((column_name, len(ordered_product_item.seats)))
+                    if column == 'seat_name':
+                        seat_name = ''
                         if ordered_product_item.seats:
-                            seat_no = ', '.join([(seat.seat_no) for seat in ordered_product_item.seats if seat.seat_no])
-                        product_item_list.append((column_name, seat_no))
+                            seat_name = ', '.join([(seat.name) for seat in ordered_product_item.seats if seat.name])
+                        product_item_list.append((column_name, seat_name))
 
                 # for bj89ers
                 for key, value in ordered_product_item.attributes.items():

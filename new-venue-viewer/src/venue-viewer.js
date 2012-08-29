@@ -7,20 +7,6 @@
   var seat = require('seat.js');
   var util = require('util.js');
 
-  var createDrawingLoader = function(url) {
-    return function (next, error) {
-      $.ajax({
-        type: 'get',
-        url: url,
-        dataType: 'xml',
-        success: function(xml) {
-          next(xml);
-        },
-        error: function(xhr, text) { throw new Error("Failed to load drawing data (reason: " + text + ")"); }
-      });
-    }
-  }
-
   var StoreObject = _class("StoreObject", {
     props: {
       store: {}
@@ -53,9 +39,10 @@
         click: null,
         selectable: null,
         select: null,
-        changeCurrentClassName: null,
+        pageChanging: null,
         messageBoard: null,
-        slider: null
+        zoomRatioChanging: null,
+        zoomRatioChange: null
       },
       dataSource: null,
       zoomRatio: CONF.DEFAULT.ZOOM_RATIO,
@@ -81,7 +68,7 @@
       animating: false,
       blocks: null,
       _adjacencyLength: 1,
-      currentClass: 'root',
+      currentPage: 'root',
       currentFocusedIds: null,
       parentLinks: [],
       seatTitles: {},
@@ -97,7 +84,7 @@
             this.callbacks[k] = options.callbacks[k] || function () {};
         }
         this.dataSource = options.dataSource;
-        if (options.zoomRatio) this.zoomRatio = options.zoomRatio;
+        if (options.zoomRatio) zoom(options.zoomRatio);
         this.rubberBand.style(CONF.DEFAULT.MASK_STYLE);
         canvas.empty();
         this.optionalViewportSize = options.viewportSize;
@@ -118,23 +105,25 @@
 
         this.seatAdjacencies = null;
         var self = this;
-        self.callbacks.loadstart('drawing');
-        self.initDrawable(self.dataSource.drawing, function () {
-          self.callbacks.loadstart('drawingClasses');
-          self.initBlocks(self.dataSource.drawingClasses, function() {
-            self.callbacks.loadstart('stockTypes');
+        self.callbacks.loadstart.call(this, 'drawing');
+        var drawingLoader = this.dataSource.drawing(this.currentPage);
+        self.initDrawable(drawingLoader, function () {
+          self.callbacks.loadstart.call(self, 'pages');
+          self.initBlocks(self.dataSource.pages, function() {
+            self.callbacks.loadstart.call(self, 'stockTypes');
             self.dataSource.stockTypes(function (data) {
               self.stockTypes = data;
-              self.callbacks.loadstart('info');
+              self.callbacks.loadstart.call(self, 'info');
               self.dataSource.info(function (data) {
                 if (!'available_adjacencies' in data) {
-                  self.callbacks.message("Invalid data"); return;
+                  self.callbacks.message.call(self, "Invalid data");
+                  return;
                 }
                 self.availableAdjacencies = data.available_adjacencies;
                 self.seatAdjacencies = new seat.SeatAdjacencies(self);
-                self.callbacks.loadstart('seats');
+                self.callbacks.loadstart.call(self, 'seats');
                 self.initSeats(self.dataSource.seats, function () {
-                  self.callbacks.load(self);
+                  self.callbacks.load.call(self, self);
                 });
               }, self.callbacks.message);
             }, self.callbacks.message);
@@ -272,14 +261,10 @@
 
                   shape.position({ x: x, y: y });
                 }
-                //if (focused) {
                 shape.style(buildStyleFromSvgStyle(currentSvgStyle));
                 if (shape instanceof Fashion.Text) {
                   shape.fontSize(currentSvgStyle.fontSize);
                 }
-                // } else {
-                // shape.style(styleClasses['glayout']);
-                //}
                 drawable.draw(shape);
               }
               shapes[attrs.id] = shape;
@@ -319,8 +304,7 @@
             x: (wr < hr) ? origin_of_shapes.x : center.x - ((vs.x/2)/hr),
             y: (wr < hr) ? center.y - ((vs.y/2)/wr) : origin_of_shapes.y
           };
-          self.zoomRatio = r;
-          self.callbacks.slider.setOriginZoomRatio(r);
+          self.zoomRatioMin = r;
           self.contentOriginPosition = origin;
 
           drawable.transform(
@@ -335,85 +319,92 @@
         }, self.callbacks.message);
       },
 
+      navigate: function (page) {
+        if (!(page in this.pages))
+          return;
+        this.currentFocusedIds = this.pages[page]['focused_ids'];
+        this.currentPage = page;
+        this.callbacks.pageChanging.call(this, page);
+        this.load();
+      },
+
+      findParent: function (page) {
+        for (var i in this.pages) {
+          var ids = this.pages[i]["group_l0_ids"];
+          if (ids) {
+            for (var id in ids) {
+              if (ids[id] == page) {
+                return i;
+              }
+            }
+          }
+        }
+        return false;
+      },
+
+      getParents: function () {
+        var retval = [];
+        var self = this;
+        function _parentLink(result, current) {
+          var parent = self.findParent(current);
+          if (!parent)
+            return;
+          result.push(parent);
+          _parentLink(result, parent);
+        }
+        _parentLink(retval, this.currentPage);
+        return retval;
+      },
+
       initBlocks: function VenueViewer_initBlocks(dataSource, next) {
         var self = this;
 
         self.blocks = {};
+        self.pages = { root: { group_l0_ids: {} } };
 
-        dataSource(function (classes) {
-          var current_class_meta = classes[self.currentClass];
-          var ids = current_class_meta.group_l0_ids;
+        dataSource(function (pages) {
+          self.pages = pages;
+          var currentPageData = pages[self.currentPage];
 
-          var getSibling = function(meta) {
+          function getSiblings(page) {
             var rt = [];
-            for (var id in ids) {
-              if (ids[id] == meta) rt.push(self.shapes[id]);
+            for (var id in currentPageData.group_l0_ids) {
+              if (currentPageData.group_l0_ids[id] == page) rt.push(self.shapes[id]);
             }
             return rt;
-          };
+          }
 
-          var getParentLinks = function(current) {
-            var found = false;
-            outer:
-            for (var c in classes) {
-              var ids = classes[c]["group_l0_ids"];
-              for (var id in ids) {
-                if (ids[id] == current) {
-                  found = c;
-                  break outer;
-                }
-              }
-            }
-            var parents = (found) ? getParentLinks(found) : [];
-
-            parents.push([function(){
-              self.currentClass = current;
-              self.currentFocusedIds = classes[current]['focused_ids'];
-              self.dataSource.drawing = createDrawingLoader('data/xebio-arena/drawings/'+current+'.xml');
-              self.load();
-            }, classes[current].name]);
-
-            return parents;
-          };
-
-          self.parentLinks = getParentLinks(self.currentClass);
-          self.callbacks.changeCurrentClassName(self.parentLinks);
-
-          for (var id in ids) (function(id) {
+          for (var id in currentPageData.group_l0_ids) (function(id) {
             var shape = self.shapes[id];
-            var meta = ids[id];
+            var page = currentPageData.group_l0_ids[id];
             self.blocks[id] = shape;
             shape.addEvent({
               mouseover: function(evt) {
                 if (self.uiMode == 'select1') {
-                  var shapes = getSibling(meta);
+                  var shapes = getSiblings(page);
                   for (var i=0, l=shapes.length; i<l; i++) {
                     var shape = copyShape(shapes[i]);
                     shape.style(util.convertToFashionStyle(CONF.DEFAULT.OVERLAYS['highlighted_block']));
                     self.drawable.draw(shape);
                     self.overlayShapes.save(shapes[i].id, shape);
                   }
-                  self.callbacks.messageBoard.up(classes[meta].name);
+                  self.callbacks.messageBoard.up.call(self, self.pages[page].name);
                 }
               },
               mouseout: function(evt) {
                 if (self.uiMode == 'select1') {
-                  var shapes = getSibling(meta);
+                  var shapes = getSiblings(page);
                   for (var i=0, l=shapes.length; i<l; i++) {
                     var shape = self.overlayShapes.restore(shapes[i].id);
                     if (shape) self.drawable.erase(shape);
                   }
-                  self.callbacks.messageBoard.down();
+                  self.callbacks.messageBoard.down.call(self);
                 }
               },
               mousedown: function(evt) {
                 if (self.uiMode == 'select1') {
-                  self.callbacks.messageBoard.down();
-                  self.currentClass = ids[id];
-                  self.currentFocusedIds = classes[self.currentClass]['focused_ids'];
-                  self.dataSource.drawing =
-                    createDrawingLoader('data/xebio-arena/drawings/'+self.currentClass+'.xml');
-                  self.load();
+                  self.callbacks.messageBoard.down.call(self);
+                  self.navigate(page);
                 }
               }
             });
@@ -463,7 +454,7 @@
               mouseout: function(evt) {
                 if (self.uiMode == 'select')
                   return;
-                self.callbacks.messageBoard.down();
+                self.callbacks.messageBoard.down.call(self);
                 var highlighted = self.highlighted;
                 self.highlighted = {};
                 for (var i in highlighted)
@@ -634,12 +625,27 @@
       },
 
       zoom: function(ratio, center) {
+        if (isNaN(ratio))
+          return;
+        var previousRatio = this.zoomRatio;
+        if (this.callbacks.zoomRatioChanging) {
+          var corrected = this.callbacks.zoomRatioChanging(ratio);
+          if (corrected === false)
+            return;
+          if (corrected)
+            ratio = corrected;
+        }
+        if (!this.drawable) {
+          this.zoomRatio = ratio;
+          this.callbacks.zoomRatioChange && this.callbacks.zoomRatioChange(ratio);
+          return;
+        }
 
         if (!center) {
           var vs = this.drawable.viewportSize();
           var logicalSize = {
-            x: vs.x / this.zoomRatio,
-            y: vs.y / this.zoomRatio
+            x: vs.x / previousRatio,
+            y: vs.y / previousRatio
           };
           var scroll = this.drawable.scrollPosition();
           center = {
@@ -648,7 +654,6 @@
           }
         }
 
-        this.zoomRatio = ratio;
         this.drawable.transform(Fashion.Matrix.scale(ratio)
                                 .translate({x: -this.contentOriginPosition.x,
                                             y: -this.contentOriginPosition.y}));
@@ -666,7 +671,8 @@
         };
 
         this.drawable.scrollPosition(logicalOrigin);
-
+        this.zoomRatio = ratio;
+        this.callbacks.zoomRatioChange && this.callbacks.zoomRatioChange(ratio);
       },
 
       unselectAll: function VenueViewer_unselectAll() {
@@ -675,6 +681,7 @@
         for (var id in prevSelection) {
           this.seats[id].__unselected();
         }
+        this.selectionCount = 0;
       },
 
       _select: function VenueViewer__select(seat, value) {
@@ -778,7 +785,7 @@
                   var _conts = conts;
                   conts = {};
                   for (var k in _conts)
-                    _conts[k].error(message);
+                    _conts[k] && _conts[k].error(message);
                 }
               });
               first = false;
@@ -793,13 +800,6 @@
         };
       })();
 
-      _options.dataSource = {
-        drawing:
-          typeof options.dataSource.drawing == 'function' ?
-          options.dataSource.drawing:
-          createDrawingLoader(options.dataSource.drawing)
-      };
-
       $.each(
         [
           [ 'stockTypes', 'stock_types' ],
@@ -807,7 +807,7 @@
           [ 'areas', 'areas' ],
           [ 'info', 'info' ],
           [ 'seatAdjacencies', 'seat_adjacencies' ],
-          [ 'drawingClasses', 'drawing_classes' ]
+          [ 'pages', 'pages' ]
         ],
         function(n, k) {
           _options.dataSource[k[0]] =
@@ -843,6 +843,9 @@
         case 'selection':
           return aux.selection;
 
+        case 'unselectAll':
+          return aux.unselectAll();
+
         case 'refresh':
           return aux.refresh();
 
@@ -858,6 +861,9 @@
           aux.zoom(arguments[1]);
           break;
 
+        case 'navigate':
+          aux.navigate(arguments[1]);
+          break;
         }
       }
     }

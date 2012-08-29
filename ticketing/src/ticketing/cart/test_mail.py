@@ -30,6 +30,8 @@ def _build_order(*args, **kwargs):
         Organization, 
         ShippingAddress, 
         Performance, 
+        Event, 
+        Venue
      )
     shipping_address = ShippingAddress(
         first_name=kwargs.get("shipping_address__first_name", u"first-name"), 
@@ -49,9 +51,13 @@ def _build_order(*args, **kwargs):
     ordered_from = Organization(name=kwargs.get("ordered_from__name", u"ordered-from-name"), 
                                 contact_email=kwargs.get("ordered_from__contact_email"))
 
-    performance = Performance(name=kwargs.get("performance__name"))
+    performance = Performance(name=kwargs.get("performance__name"),
+                              start_on=kwargs.get("performance__start_on", datetime(1900, 1, 1)),  #xxx:
+                              venue=Venue(name=kwargs.get("venue__name")), 
+                              event=Event(title=kwargs.get("event__title")))
 
     order = Order(ordered_from=ordered_from,
+                  id=111, 
                   shipping_address=shipping_address, 
                   performance=performance, 
                   order_no=kwargs.get("order__order_no"), 
@@ -63,6 +69,7 @@ def _build_order(*args, **kwargs):
                       )
 
     ordererd_product0 = OrderedProduct(
+        quantity=kwargs.get("product0__quantity", "product-quantity"), 
         product=Product(
             name=kwargs.get("product0__name", "product-name"), 
             price=kwargs.get("product0__price", 400.00)))
@@ -72,6 +79,7 @@ def _build_order(*args, **kwargs):
     order.ordered_products.append(ordererd_product0)
 
     ordererd_product1 = OrderedProduct(
+        quantity=kwargs.get("product1__quantity", "product-quantity"), 
         product=Product(
             name=kwargs.get("product1__name", "product-name"), 
             price=kwargs.get("product1__price", 400.00)))
@@ -217,10 +225,15 @@ class SendCompleteMailTest(unittest.TestCase):
             ordered_from__name = u"ordered-from-name",
             ordered_from__contact_email="from@organization.ne.jp", 
             performance__name = u"何かパフォーマンス名", 
+            performance__start_on = datetime(2000, 1, 1), 
+            event__title = u"何かイベント名", 
+            venue__name = u"何か会場名", 
             product0__name = u"商品名0", 
             product0__price = 10000.00, 
+            product0__quantity = 1, 
             product1__name = u"商品名1", 
             product1__price = 20000.00, 
+            product1__quantity = 2, 
             seat0__name = u"2階A:1", 
             seat1__name = u"2階A:2", 
             )
@@ -239,37 +252,38 @@ class SendCompleteMailTest(unittest.TestCase):
         self.assertIn(u"family-name first-name", body)
         self.assertIn(u"苗字 名前", body)
         self.assertIn(u"0120-1234", body)
-        self.assertIn(u"08012341234", body)
 
         ## 受付情報
-        self.assertIn(u"xxx-xxxx-xxxx", body)
-        self.assertIn(h.mail_date(datetime(1900, 1, 1)), body)
+        self.assertIn(u"xxx-xxxx-xxxx", body, u"xxx-xxxx-xxxx")
+        self.assertIn(h.mail_date(datetime(1900, 1, 1)), body, h.mail_date(datetime(1900, 1, 1)))
 
         ## 公演情報
-        self.assertIn(u"何かパフォーマンス名", body)
+        self.assertIn(u"何かイベント名", body, u"何かイベント名",)
+        self.assertIn(u"何かパフォーマンス名", body, u"何かパフォーマンス名",)
+        self.assertIn(u"何か会場名", body, u"何か会場名")
+        self.assertIn(h.japanese_datetime(datetime(2000, 1, 1)), body, h.japanese_datetime(datetime(2000, 1, 1)))
 
         ## 座席情報
-        self.assertIn(u"2階A:1", body)
-        self.assertIn(u"2階A:2", body)
+        self.assertIn(u"2階A:1", body, u"2階A:1")
+        self.assertIn(u"2階A:2", body, u"2階A:2")
 
         ## 商品情報
-        self.assertIn(u"商品名0", body)
-        self.assertIn(h.format_currency(10000.00), body)
-        self.assertIn(u"商品名1", body)
-        self.assertIn(h.format_currency(20000.00), body)
+        self.assertIn(u"商品名0", body, u"商品名0")
+        self.assertIn(h.format_currency(10000.00), body, h.format_currency(10000.00))
+        self.assertIn(u"商品名1", body, u"商品名1")
+        self.assertIn(h.format_currency(20000.00), body, h.format_currency(20000.00))
 
         ## 利用料
-        self.assertIn(h.format_currency(20), body)
-        self.assertIn(h.format_currency(30), body)
-        self.assertIn(h.format_currency(40), body)
+        self.assertIn(h.format_currency(20), body, h.format_currency(20))
+        self.assertIn(h.format_currency(30), body, h.format_currency(30))
+        self.assertIn(h.format_currency(40), body, h.format_currency(40))
 
         ## 合計金額
-        self.assertIn(h.format_currency(99999), body)
+        self.assertIn(h.format_currency(99999), body, h.format_currency(99999))
 
         ## pugin
-        self.assertIn(u"クレジットカード決済", body)
-        self.assertIn(u"QR受け取り", body)
-        # print body
+        self.assertIn(u"クレジットカード決済", body, u"クレジットカード決済")
+        self.assertIn(u"QR受け取り", body, u"QR受け取り")
 
         
     def test_payment_by_card_delivery_by_qr(self):
@@ -287,8 +301,8 @@ class SendCompleteMailTest(unittest.TestCase):
         self.assertEquals(payment_method.payment_plugin_id, PAYMENT_ID)
 
         delivery_method = DeliveryMethod(delivery_plugin_id=4, name=u"QR受け取り")
-        from ticketing.cart.plugins.qr import PLUGIN_ID
-        self.assertEquals(delivery_method.delivery_plugin_id, PLUGIN_ID)
+        from ticketing.cart.plugins.qr import DELIVERY_PLUGIN_ID
+        self.assertEquals(delivery_method.delivery_plugin_id, DELIVERY_PLUGIN_ID)
 
         method_pair = PaymentDeliveryMethodPair(payment_method=payment_method, 
                                                 delivery_method=delivery_method)
@@ -299,7 +313,7 @@ class SendCompleteMailTest(unittest.TestCase):
 
         body = result.body
         self.assertIn(u"＜クレジットカードでのお支払いの方＞", body)
-        self.assertIn(u"＜ORコードでお引き取りの方＞", body)
+        self.assertIn(u"＜試合当日窓口受取の方＞", body)
 
 
     def test_payment_by_card_delivery_by_seven(self):
@@ -338,9 +352,10 @@ class SendCompleteMailTest(unittest.TestCase):
         self.assertIn(u"＜クレジットカードでのお支払いの方＞", body)
 
         self.assertIn(u"＜セブン-イレブンでお引取りの方＞", body)
+        # self.assertIn(u"次の日から", body)
         self.assertIn(u"707070", body)
-        self.assertIn(h.japanese_datetime(datetime(3000, 1, 1)), body)
-        self.assertIn(h.japanese_datetime(datetime(4000, 1, 1)), body)
+        # self.assertIn(h.japanese_datetime(datetime(3000, 1, 1)), body)
+        # self.assertIn(h.japanese_datetime(datetime(4000, 1, 1)), body)
 
 
     def test_payment_by_card_delivery_home(self):
@@ -429,8 +444,9 @@ class SendCompleteMailTest(unittest.TestCase):
 
         self.assertIn(u"＜セブン-イレブンでお引取りの方＞", body)
         self.assertIn(u"707070", body)
-        self.assertIn(h.japanese_datetime(datetime(3000, 1, 1)), body)
-        self.assertIn(h.japanese_datetime(datetime(4000, 1, 1)), body)
+        self.assertNotIn(u"次の日から", body)
+        # self.assertIn(h.japanese_datetime(datetime(3000, 1, 1)), body, u"3000")
+        # self.assertIn(h.japanese_datetime(datetime(4000, 1, 1)), body, u"4000")
 
 
     def test_payment_unknown_delivery_by_unknown(self):

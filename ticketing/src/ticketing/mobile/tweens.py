@@ -30,6 +30,8 @@ def mobile_encoding_convert_factory(handler, registry):
             ## DeprecationWarning: Use req = req.decode('cp932')
             session = getattr(request, 'session', None)
             decoded = request.decode("cp932")
+            request.environ.update(decoded.environ)
+            decoded.environ = request.environ
             decoded.session = session
             manager.get()['request'] = decoded # hack!
             decoded.is_mobile = True

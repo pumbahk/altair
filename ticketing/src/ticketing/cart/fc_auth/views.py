@@ -3,11 +3,13 @@ import logging
 from pyramid.httpexceptions import HTTPFound
 from repoze.who.api import get_api as get_who_api
 from pyramid.view import view_config
+from ticketing.cart import api as cart_api
 
 logger = logging.getLogger(__name__)
 
 class LoginView(object):
     renderer_tmpl = "ticketing.cart.fc_auth:templates/{membership}/login.html"
+    renderer_tmpl_mobile = "ticketing.cart.fc_auth:templates/{membership}/login_mobile.html"
 
     def __init__(self, request):
         self.request = request
@@ -15,7 +17,10 @@ class LoginView(object):
 
 
     def select_renderer(self, membership):
-        self.request.override_renderer = self.renderer_tmpl.format(membership=membership)
+        if cart_api.is_mobile(self.request):
+            self.request.override_renderer = self.renderer_tmpl_mobile.format(membership=membership)
+        else:
+            self.request.override_renderer = self.renderer_tmpl.format(membership=membership)
 
     @property
     def return_to_url(self):
@@ -54,6 +59,29 @@ class LoginView(object):
         return_to_url = self.return_to_url
         res = HTTPFound(location=return_to_url, headers=headers)
 
+
+        return res
+
+    @view_config(request_method="POST", route_name='fc_auth.guest', renderer='string')
+    def guest_login(self):
+        who_api = get_who_api(self.request.environ)
+        membership = self.request.matchdict['membership']
+        logger.debug("guest authenticate for membership %s" % membership)
+
+        identity = {
+            'membership': membership,
+            'is_guest': True,
+        }
+        authenticated, headers = who_api.login(identity)
+
+        if authenticated is None:
+            self.select_renderer(membership)
+            return {'username': '',
+                    'guest_message': u'このチケットは一般販売を行っておりません。'}
+
+
+        return_to_url = self.return_to_url
+        res = HTTPFound(location=return_to_url, headers=headers)
 
         return res
 

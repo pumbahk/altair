@@ -8,6 +8,7 @@ class SeatCSV(object):
     seat_header = [
         'seat_id',
         'seat_no',
+        'seat_name',
         ]
     stock_attribute_header = [
         'floor',
@@ -28,6 +29,7 @@ class SeatCSV(object):
         ]
     seat_status_header = [
         'seat_status',
+        'order_no',
         ]
 
     def __init__(self, seats):
@@ -42,7 +44,8 @@ class SeatCSV(object):
     def _convert_to_csv(self, seat):
         seat_list = [
             ('seat_id', seat.id),
-            ('seat_no', seat.seat_no)
+            ('seat_no', seat.seat_no),
+            ('seat_name', seat.name)
         ]
 
         stock_attribute_list = []
@@ -76,6 +79,11 @@ class SeatCSV(object):
             if status.v == seat.status:
                 seat_status_list = [('seat_status', status.k)]
                 break
+        if seat.ordered_product_items:
+            for opi in seat.ordered_product_items:
+                if opi.ordered_product.order not in ('refunded', 'canceled'):
+                    seat_status_list.append(('order_no', opi.ordered_product.order.order_no))
+                    break
 
         # encoding
         row = dict(
