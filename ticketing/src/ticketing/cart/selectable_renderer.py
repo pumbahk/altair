@@ -1,6 +1,7 @@
 ## todo:
 from zope.interface import Interface
 from zope.interface import provider
+from zope.interface import implementer
 from pyramid.renderers import RendererHelper
 
 _lookup_key = "**selectable"
@@ -54,3 +55,21 @@ def selectable_renderer(fmt, defaults=None):
     lookup_key = StringLike(_lookup_key)
     lookup_key._format_string = fmt
     return lookup_key
+
+## individual utility
+@implementer(ISelectableRendererSelector)
+class ByDomainMappingSelector(object):
+    def __init__(self, mapping):
+        self.mapping = mapping
+
+    def lookup_mapped(self, domain_name):
+        for k, lookup_key in self.mapping.iteritems():
+            if k in domain_name:
+                return lookup_key
+        return self.mapping.get("default")
+
+    def __call__(self, helper, value, system_values, request=None):
+        assert request
+        mapped = self.lookup_mapped(request.host)
+        fmt = helper.format_string
+        return fmt % dict(membership=mapped)
