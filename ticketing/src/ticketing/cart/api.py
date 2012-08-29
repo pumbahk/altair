@@ -82,7 +82,7 @@ def get_item_name(request, performance):
 
 def get_nickname(request, suffix=u'さん'):
     from .rakuten_auth.api import authenticated_user
-    user = authenticated_user(request)
+    user = authenticated_user(request) or {}
     nickname = user.get('nickname', '')
     if not nickname:
         return ""
