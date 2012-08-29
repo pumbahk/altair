@@ -1047,3 +1047,7 @@ class OutTermSalesView(object):
     @view_config(context='.exceptions.OutTermSalesException', renderer='ticketing.cart:templates/carts/out_term_sales.html')
     def __call__(self):
         return dict(event=self.context.event, sales_segment=self.context.sales_segment)
+
+    @view_config(context='.exceptions.OutTermSalesException', renderer='ticketing.cart:templates/carts_mobile/out_term_sales.html', request_type=".interfaces.IMobileRequest")
+    def __call__(self):
+        return dict(event=self.context.event, sales_segment=self.context.sales_segment)
