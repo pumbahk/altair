@@ -1,9 +1,15 @@
 <%inherit file="./base_89ers.html"/>
-
 ${h.get_nickname(request)} 
 <p>
-  ${event.title} ${sales_segment.name} の販売は ${sales_segment.start_at.strftime('%Y/%m/%d %H:%M')} 開始です。
+${event.title} ${sales_segment.name} の販売期間は
 </p>
 <p>
-  販売開始日時以降に、改めてアクセスをお願いいたします。
+${h.japanese_datetime(sales_segment.start_at)}
+% if sales_segment.end_at:
+〜 ${h.japanese_datetime(sales_segment.end_at)} 
+% endif
+</p>
+<p>となっております。</p>
+<p>
+  販売期間内にアクセスしていただきますようお願いいたします。
 </p>
