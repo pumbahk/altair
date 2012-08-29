@@ -1600,27 +1600,38 @@
 	margin: 0 0;
 	padding: 0 0;
 	height: 26px;
+	position: relative;
 }
 
 #selectSeatType .seatListContainer li .seatListItemInner .seatColor {
-	float: left;
+	position: absolute;
 	width: 14px;
 	height: 14px;
 	border: 1px solid #fff;
 	line-height: 14px;
 	font-size: 10px;
-	margin: 5px 13px 5px 9px;
+	left: 9px;
+	top: 5px;
 }
 
 #selectSeatType .seatListContainer li .seatListItemInner .seatName {
-	float: left;
-	height; 16px;
-	padding: 5px 0;
+	position: absolute;
+	height: 16px;
+	padding: 5px 6px;
+	width: 288px;
+	left: 32px;
+	top: 0px;
+	overflow: hidden;
 }
 
 #selectSeatType .seatListContainer li .seatListItemInner .seatState {
-	float: right;
-	margin: 5px 16px;
+	position: absolute;
+	left: 334px;
+	top: 0px;
+	width: 20px;
+	margin: 5px 10px;
+	font-weight: bold;
+	text-align: center;
 }
 
 #selectSeatType .seatListContainer li.seatEven .seatListItemInner {

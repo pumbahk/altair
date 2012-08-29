@@ -201,3 +201,10 @@ def render_payment_finished_mail_viewlet(request, order):
         return ""
     return Markup(response.text)
 
+def get_availability_text(quantity):
+    if quantity == 0:
+        return u'×'
+    elif quantity < 20: 
+        return u'△'
+    else:
+        return u'◎'

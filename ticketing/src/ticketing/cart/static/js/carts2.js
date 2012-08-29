@@ -564,7 +564,8 @@ cart.StockTypeListView = Backbone.View.extend({
                      $('<span class="seatName"></span>')
                      .text(stockType.get("name")))
                    .append(
-                     $('<span class="seatStatus"></span>')))
+                     $('<span class="seatState"></span>')
+                     .text(stockType.get("availability_text"))))
                 .append($('<div class="seatListItemAux"></div>'))
                 .addClass(["seatEven", "seatOdd"][i & 1])
                 .appendTo(ul)
@@ -734,6 +735,9 @@ cart.OrderFormView = Backbone.View.extend({
         );
     },
     showForm: function(selected_stock_type_el, stock_type, products, done) {
+        console.log(stock_type);
+        if (!stock_type.get('availability'))
+            return false;
         if (this.selected_stock_type_el && selected_stock_type_el[0] == this.selected_stock_type_el[0]) {
             return false;
         }
