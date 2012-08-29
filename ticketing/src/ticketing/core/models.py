@@ -1811,24 +1811,3 @@ class ExtraMailInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def footer(self):
         return self.data.get("footer", u"")
 
-class EmailInfoTraverser(Traverser):
-    def __init__(self, target, data, parent=None):
-        self.target = target 
-        self.target = data
-        self.parent = parent
-        self.child = None
-        self._configured = False
-
-    def visit(self):
-        if hasattr(target, "extra_mailinfo"):
-            self.child = getattr(self, "visit_"+(self.target.__class__.__name__))()
-            self._configured = True
-
-    def visit_Event(self):
-        org = self.target.organization
-        root = self.__class__(org, org.extra_mailinfo, parent=self)
-        root.visit()
-        return root
-
-    def visit_Organization(self):
-        return None

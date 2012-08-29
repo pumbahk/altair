@@ -1,53 +1,70 @@
-from collections import defaultdict
 import unittest
-
-
-class FindStopAccessor(object):
-    def __init__(self, wrapper, d):
-        self.wrapper = wrapper
-        self.d = d
-
-    def __repr__(self):
-        return repr(self.d)
-
-    def __getitem__(self, k):
-        return self.d.get(k)
-
-class EmailInfoTraverser(object):
-    def __init__(self, target, data, parent=None, accessor_impl=FindStopAccessor):
-        self.target = target 
-        self.parent = parent
-        self.child = None
-        self._configured = False
-        self._accessor_impl = accessor_impl
-        self._data = data ##
-        self.data = self._accessor_impl(self, self._data)
-
-    def visit(self):
-        if hasattr(self.target, "extra_mailinfo"):
-            self.child = getattr(self, "visit_"+(self.target.__class__.__name__))()
-            self._configured = True
-        return self
-
-    def visit_Event(self):
-        org = self.target.organization
-        root = self.__class__(org, org.extra_mailinfo, parent=self)
-        root.visit()
-        return root
-
-    def visit_Organization(self):
-        return None
+from pyramid import testing
 
 class MailMessageStructureTests(unittest.TestCase):
-    def test_simple(self):
+    def _getTarget(self):
+        from ticketing.cart.sendmail import EmailInfoTraverser
+        return EmailInfoTraverser
+
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
+    def test_onechain(self):
         class Organization:
-            extra_mailinfo = defaultdict(list)
-        traverser = EmailInfoTraverser()
-        traverser.visit(Organization())
+            extra_mailinfo = testing.DummyResource(data=dict(header="header"))
 
-# class Event:
-#     organization = Organization()
-#     extra_mailinfo = defaultdict(list)
+        target = self._makeOne()
+        target.visit(Organization())
 
-# traverser = EmailInfoTraverser(Event(), Event().extra_mailinfo)
-# print traverser.visit().data
+        self.assertEquals(target.data["header"], "header")
+        self.assertEquals(target.data["footer"], None)
+
+    def test_twochain(self):
+        class Organization:
+            extra_mailinfo = testing.DummyResource(data=dict(header="organization header", footer="footer"))
+        class Event:
+            extra_mailinfo = testing.DummyResource(data=dict(header="event header"))
+            organization = Organization()
+
+        target = self._makeOne()
+        target.visit(Event())
+
+        self.assertEquals(target.data["header"], "event header")
+        self.assertEquals(target.data["footer"], "footer")
+
+    def test_threechain(self):
+        class Organization:
+            extra_mailinfo = testing.DummyResource(data=dict(one="1", two="2", three="O3"))
+        class Event:
+            extra_mailinfo = testing.DummyResource(data=dict(one="1", two="E2"))
+            organization = Organization()
+        class Performance:
+            extra_mailinfo = testing.DummyResource(data=dict(one="P1"))
+            event = Event()
+            
+        target = self._makeOne()
+        target.visit(Performance())
+
+        self.assertEquals(target.data["one"], "P1")
+        self.assertEquals(target.data["two"], "E2")
+        self.assertEquals(target.data["three"], "O3")
+
+    def test_getall(self):
+        class Organization:
+            extra_mailinfo = testing.DummyResource(data=dict(one="1", two="2", three="O3"))
+        class Event:
+            extra_mailinfo = testing.DummyResource(data=dict(one="1", two="E2"))
+            organization = Organization()
+        class Performance:
+            extra_mailinfo = testing.DummyResource(data=dict(one="P1"))
+            event = Event()
+            
+        target = self._makeOne()
+        target.visit(Performance())
+
+        self.assertEquals(target.data.getall("one"), ["P1", "1", "1"])
+        self.assertEquals(target.data.getall("two"), ["E2", "2"])
+        self.assertEquals(target.data.getall("three"), ["O3"])
+
+if __name__ == "__main__":
+    unittest.main()

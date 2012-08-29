@@ -10,20 +10,72 @@ from .interfaces import ICompleteMail
 from . import helpers as h
 from ..models import DBSession
 
+class FindStopAccessor(object):
+    def __init__(self, wrapper, d):
+        self.wrapper = wrapper
+        self.d = d
 
-class MailInfoExtractorFactory(object):
-    def __init__(self, name, default=u""):
-        self.name = name
-        self.default = default
+    def __repr__(self):
+        return repr(self.d)
 
-    def __call__(self, organization):
-        maiinfo = organization.extra_mailinfo
-        if maiinfo:
-            return getattr(maiinfo, self.name)
-        else:
-            return self.default
+    def _get_failback(self, k):
+        chained = self.wrapper.chained
+        if chained:
+            return chained.data[k]
 
-get_mail_footer = MailInfoExtractorFactory("footer")
+    def __getitem__(self, k):
+        if self.d is None:
+            return None
+        return self.d.get(k) or self._get_failback(k)
+
+    def getall(self, k):
+        r = []
+        this = self.wrapper
+        while this:
+            v = this.data.d.get(k)
+            if v:
+                r.append(v)
+            this = this.chained
+        return r
+
+class EmailInfoTraverser(object):
+    def __init__(self, accessor_impl=FindStopAccessor):
+        self.chained = None
+        self.target = None
+        self._configured = False
+        self._accessor_impl = accessor_impl
+
+    def visit(self, target):
+        if not self._configured:
+            getattr(self, "visit_"+(target.__class__.__name__))(target)
+            self._configured = True
+        return self
+
+    def _set_data(self, mailinfo):
+        self._data = mailinfo
+        self.data = self._accessor_impl(self, mailinfo.data if mailinfo else None)
+
+    def visit_Performance(self, performance):
+        event = performance.event
+        self.target = performance
+        self._set_data(performance.extra_mailinfo)
+
+        root = self.__class__(accessor_impl=self._accessor_impl)
+        self.chained = root 
+        root.visit(event)
+        
+    def visit_Event(self, event):
+        organization = event.organization
+        self.target = event
+        self._set_data(event.extra_mailinfo)
+
+        root = self.__class__(accessor_impl=self._accessor_impl)
+        self.chained = root 
+        root.visit(organization)
+
+    def visit_Organization(self, organization):
+        self.target = organization
+        self._set_data(organization.extra_mailinfo)
 
 ## dummy mailer
 from pyramid_mailer.interfaces import IMailer
@@ -96,6 +148,7 @@ class CompleteMail(object):
         pair = order.payment_delivery_pair
         seats = itertools.chain.from_iterable((p.seats for p in order.ordered_products))
 
+        traverser = EmailInfoTraverser().visit(organization)
         value = dict(order=order,
                 name=u"{0} {1}".format(sa.last_name, sa.first_name),
                 name_kana=u"{0} {1}".format(sa.last_name_kana, sa.first_name_kana),
@@ -113,7 +166,7 @@ class CompleteMail(object):
                 payment_method_name=pair.payment_method.name, 
                 delivery_method_name=pair.delivery_method.name, 
                 seats = seats, 
-                footer = get_mail_footer(organization)
+                footer = traverser.data["footer"]
                      )
         return value
 
