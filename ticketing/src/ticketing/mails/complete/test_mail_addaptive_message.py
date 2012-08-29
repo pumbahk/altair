@@ -3,7 +3,7 @@ from pyramid import testing
 
 class MailMessageStructureTests(unittest.TestCase):
     def _getTarget(self):
-        from ticketing.cart.sendmail import EmailInfoTraverser
+        from ticketing.mails.complete.builder import EmailInfoTraverser
         return EmailInfoTraverser
 
     def _makeOne(self, *args, **kwargs):
@@ -40,7 +40,7 @@ class MailMessageStructureTests(unittest.TestCase):
             organization = Organization()
         class Performance:
             extra_mailinfo = testing.DummyResource(data=dict(one="P1"))
-            event = Event()
+p            event = Event()
             
         target = self._makeOne()
         target.visit(Performance())

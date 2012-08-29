@@ -124,7 +124,7 @@ class SendCompleteMailTest(unittest.TestCase):
         
     def test_notify_success(self):
         from pyramid.interfaces import IRequest
-        from ticketing.cart.interfaces import ICompleteMail
+        from ticketing.mails.interfaces import ICompleteMail
 
         class DummyCompleteMail(object):
             def __init__(self, request):
@@ -149,7 +149,7 @@ class SendCompleteMailTest(unittest.TestCase):
         """
         import mock
         from pyramid.interfaces import IRequest
-        from ticketing.cart.interfaces import ICompleteMail
+        from ticketing.mails.interfaces import ICompleteMail
 
         class RaiseExceptionCompleteMail(object):
             def __init__(self, request):
