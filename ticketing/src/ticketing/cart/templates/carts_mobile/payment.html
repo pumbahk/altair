@@ -123,6 +123,13 @@
 購入時には、代金のほかに支払方法により、手数料がかかる場合があります。
 </div>
 <% checked_id = request.params.get('payment_delivery_method_pair_id') %>
+
+%if request.session.peek_flash():
+    %for message in request.session.pop_flash():
+    <div style="color:red">** ${message} **</div>
+    %endfor
+%endif
+
 %for m in payment_delivery_methods:
 <hr />
 <% checked = 'checked' if str(m.id) == checked_id else '' %>
