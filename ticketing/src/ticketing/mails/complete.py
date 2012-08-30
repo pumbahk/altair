@@ -12,7 +12,13 @@ from .api import get_mailinfo_traverser
 from zope.interface import implementer
 
 from ticketing.cart import helpers as ch ##
+from ticketing.core.models import MailStatusEnum
+import functools
 
+complete_mailinfo_traverser = functools.partial(
+    get_mailinfo_traverser, 
+    access=lambda d : d[MailStatusEnum.CompleteMail]
+)
 
 def build_message(request, order):
     complete_mail = get_complete_mail(request)
@@ -32,6 +38,45 @@ def preview_text(request, order):
 update_mailinfo = update_mailinfo
 
 ###
+class CompleteMailInfoTemplate(object):
+    payment_choices = [("header", u"ヘッダ"), 
+                       ("notice", u"注意事項"), 
+                       ("footer", u"フッタ"), 
+                       ]
+    delivery_choices = [("header", u"ヘッダー"), 
+                       ("notice", u"注意事項"), 
+                       ("footer", u"フッター"), 
+                       ]
+    common_choices = [
+        ("header", u"メールヘッダー"),
+        ("notice", u"共通注意事項"), 
+        ("footer", u"メールフッター"),
+        ]
+
+    def __init__(self, request, organization):
+        self.request = request
+        self.organization = organization
+
+    def payment_methods_keys(self):
+        for payment_method in self.organization.payment_method_list:
+            for k, v in self.payment_choices:
+                yield k, u"%s(%s)" % (v)
+
+    def delivery_methods_keys(self):
+        for delivery_method in self.organization.delivery_method_list:
+            for k, v in self.delivery_choices:
+                yield k, u"%s(%s)" % (v)
+
+    def common_methods_keys(self):
+        return self.common_choices
+
+    def template_keys(self):
+        return itertools.chain(
+            self.common_methods_keys(), 
+            self.payment_methods_keys(), 
+            self.delivery_methods_keys())
+    
+
 @implementer(ICompleteMail)
 class CompleteMail(object):
     def __init__(self, mail_template, request):
@@ -63,7 +108,7 @@ class CompleteMail(object):
         pair = order.payment_delivery_pair
         seats = itertools.chain.from_iterable((p.seats for p in order.ordered_products))
 
-        traverser = get_mailinfo_traverser(self.request, order)
+        traverser = complete_mailinfo_traverser(self.request, order)
         value = dict(h=ch, 
                      order=order,
                      name=u"{0} {1}".format(sa.last_name, sa.first_name),

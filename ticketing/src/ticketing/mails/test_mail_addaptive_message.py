@@ -66,5 +66,22 @@ class MailMessageStructureTests(unittest.TestCase):
         self.assertEquals(target.data.getall("two"), ["E2", "2"])
         self.assertEquals(target.data.getall("three"), ["O3"])
 
+    def test_twochain_with_change_access_function(self):
+        from ticketing.core.models import MailStatusEnum
+        class Organization:
+            extra_mailinfo = testing.DummyResource(
+                data={MailStatusEnum.CompleteMail : dict(header="complete-header"), 
+                      MailStatusEnum.PurchaseCancelMail: dict(header="cancel-header")
+                      }
+                )
+        
+        target = self._makeOne(access=lambda d : d[MailStatusEnum.CompleteMail])
+        target.visit(Organization())
+        self.assertEquals(target.data["header"], "complete-header")
+
+        target = self._makeOne(access=lambda d : d[MailStatusEnum.PurchaseCancelMail])
+        target.visit(Organization())
+        self.assertEquals(target.data["header"], "cancel-header")
+
 if __name__ == "__main__":
     unittest.main()

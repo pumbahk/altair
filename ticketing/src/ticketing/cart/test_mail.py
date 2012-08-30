@@ -476,12 +476,15 @@ class SendCompleteMailTest(unittest.TestCase):
             PaymentDeliveryMethodPair, 
             PaymentMethod, 
             DeliveryMethod, 
-            ExtraMailInfo
+            ExtraMailInfo, 
+            MailStatusEnum
          )
         request = testing.DummyRequest()
 
         order = _build_order()
-        order.ordered_from.extra_mailinfo = ExtraMailInfo(data={u"footer": u"this-is-footer-message"})
+        order.ordered_from.extra_mailinfo = ExtraMailInfo(
+            data={MailStatusEnum.CompleteMail: {u"footer": u"this-is-footer-message"}}
+        )
         payment_method = PaymentMethod(payment_plugin_id=9999)
         delivery_method = DeliveryMethod(delivery_plugin_id=9999)
         method_pair = PaymentDeliveryMethodPair(payment_method=payment_method, 

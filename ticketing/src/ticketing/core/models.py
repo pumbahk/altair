@@ -1812,3 +1812,7 @@ class ExtraMailInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         except Exception, e:
             self._errors = e
             return False
+
+class MailStatusEnum(StandardEnum):
+    CompleteMail = 1
+    PurchaseCancelMail = 2
