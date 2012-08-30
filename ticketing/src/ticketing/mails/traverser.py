@@ -1,10 +1,11 @@
 import functools
 
 class FindStopAccessor(object):
-    default_access = staticmethod(lambda d, k: d.get(k))
-    def __init__(self, wrapper, d, access=None):
+    default_access = staticmethod(lambda d, k, default=None: d.get(k, default))
+    def __init__(self, wrapper, d, access=None, default=None):
         self.wrapper = wrapper
         self.d = d
+        self.default = default
         self.access = access or self.default_access
 
     def __repr__(self):
@@ -17,30 +18,30 @@ class FindStopAccessor(object):
 
     def __getitem__(self, k):
         if self.d is None:
-            return None
-        return self.access(self.d, k) or self._get_failback(k)
+            return self.default
+        return self.access(self.d, k, default=self.default) or self._get_failback(k)
 
     def getall(self, k):
         r = []
         this = self.wrapper
         while this:
-            v = self.access(this.data.d, k)
+            v = self.access(this.data.d, k, default=self.default)
             if v:
                 r.append(v)
             this = this.chained
         return r
 
 class EmailInfoTraverser(object):
-    def __init__(self, accessor_impl=FindStopAccessor, access=None):
+    def __init__(self, accessor_impl=FindStopAccessor, access=None, default=None):
         self.chained = None
         self.target = None
         self._configured = False
-        if access:
-            self._accessor_impl = functools.partial(accessor_impl, access=access)
+        if access or default:
+            self._accessor_impl = functools.partial(accessor_impl, access=access, default=default)
         else:
             self._accessor_impl = accessor_impl
 
-    def visit(self, target, access=None):
+    def visit(self, target):
         if not self._configured:
             getattr(self, "visit_"+(target.__class__.__name__))(target)
             self._configured = True

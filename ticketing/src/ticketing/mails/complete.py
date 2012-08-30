@@ -17,7 +17,8 @@ import functools
 
 complete_mailinfo_traverser = functools.partial(
     get_mailinfo_traverser, 
-    access=lambda d, k : d[MailStatusEnum.CompleteMail].get(k)
+    access=lambda d, k, default="" : d[MailStatusEnum.CompleteMail].get(k, default), 
+    default=u"", 
 )
 
 def build_message(request, order):
@@ -68,6 +69,14 @@ class CompleteMailInfoTemplate(object):
 
     payment_key_fmt = "P%d%s"
     delivery_key_fmt = "D%d%s"
+
+    @classmethod
+    def payment_key(self, order, k):
+        self.payment_key_fmt % (order.payment_plugin_id, k)
+
+    @classmethod
+    def delivery_key(self, order, k):
+        self.delivery_key_fmt % (order.delivery_plugin_id, k)
 
     def payment_methods_keys(self):
         for payment_method in self.organization.payment_method_list:
@@ -143,6 +152,7 @@ class CompleteMail(object):
                      seats = seats, 
                      ### mail info
                      footer = traverser.data["footer"],
+                     notice = traverser.data["notice"],
                      )
         return value
 

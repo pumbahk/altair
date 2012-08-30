@@ -58,10 +58,19 @@ ${h.render_payment_finished_mail_viewlet(request, order)}
 お受取方法： ${delivery_method_name}
 ${h.render_delivery_finished_mail_viewlet(request, order)}
 
+${notice}
+## 後でnotice
 お申込内容は、「予約・購入履歴確認画面」（ https://89ers.tstar.jp/orderreview  ）からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。
 
 ※本メールは自動配信メールとなり、こちらに返信されても返答はいたしかねます。
 
 ※営利目的としたチケットの転売は禁止となっております。
+
+## 後でfooter
+-----
+
+仙台89ERS（ナイナーズチケット）　チケット事務局
+
+電話番号：022-215-8138　（平日09:00〜18:00）
 
 ${footer}

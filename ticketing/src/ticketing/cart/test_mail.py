@@ -448,7 +448,6 @@ class SendCompleteMailTest(unittest.TestCase):
         # self.assertIn(h.japanese_datetime(datetime(3000, 1, 1)), body, u"3000")
         # self.assertIn(h.japanese_datetime(datetime(4000, 1, 1)), body, u"4000")
 
-
     def test_payment_unknown_delivery_by_unknown(self):
         """存在していないpluginが渡されたデータでもメールは飛ぶ。(支払い方法などの欄はほぼ空欄)
         """

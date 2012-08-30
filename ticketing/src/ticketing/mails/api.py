@@ -5,11 +5,11 @@ import logging
 from ticketing.core.models import ExtraMailInfo
 
 logger = logging.getLogger(__name__)
-def get_mailinfo_traverser(request, order, access=None):
+def get_mailinfo_traverser(request, order, access=None, default=None):
     trv = getattr(order, "_mailinfo_traverser", None)
     if trv is None:
         organization = order.ordered_from
-        trv = order._mailinfo_traverser = EmailInfoTraverser(access=access).visit(organization)
+        trv = order._mailinfo_traverser = EmailInfoTraverser(access=access, default=default).visit(organization)
     return trv
 
 def update_mailinfo(request, data, organization=None, event=None):

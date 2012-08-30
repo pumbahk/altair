@@ -7,7 +7,7 @@ from ..interfaces import IPaymentPlugin, ICartPayment, IOrderPayment, ICompleteM
 from ..interfaces import IDeliveryPlugin, ICartDelivery, IOrderDelivery, ICompleteMailDelivery
 
 from .. import logger
-
+from ticketing.mails.complete import complete_mailinfo_traverser, CompleteMailInfoTemplate
 from pyramid.threadlocal import get_current_registry
 
 from ticketing.core import models as c_models
@@ -330,8 +330,11 @@ def completion_payment_mail_viewlet(context, request):
     """ 完了メール表示
     :param context: ICompleteMailPayment
     """
-    sej_order=get_sej_order(context.order)
-    return dict(sej_order=sej_order, h=cart_helper)
+    order = context.order
+    sej_order=get_sej_order(order)
+    trv = complete_mailinfo_traverser(request, order)
+    return dict(sej_order=sej_order, h=cart_helper, 
+                notice=trv.data[CompleteMailInfoTemplate.payment_key(order, "notice")])
 
 @view_config(context=ICompleteMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer="ticketing.cart.plugins:templates/sej_delivery_mail_complete.html")
 def completion_delivery_mail_viewlet(context, request):
@@ -341,5 +344,6 @@ def completion_delivery_mail_viewlet(context, request):
     sej_order=get_sej_order(context.order)
     payment_id = context.order.payment_delivery_pair.payment_method.payment_plugin_id
     is_payment_with_sej = int(payment_id or -1) == PAYMENT_PLUGIN_ID
-    return dict(sej_order=sej_order, h=cart_helper, 
+    trv = complete_mailinfo_traverser(request, context.order)
+    return dict(sej_order=sej_order, h=cart_helper, trv=trv, 
                 is_payment_with_sej=is_payment_with_sej)
