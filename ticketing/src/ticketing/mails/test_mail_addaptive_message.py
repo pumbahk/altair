@@ -3,7 +3,7 @@ from pyramid import testing
 
 class MailMessageStructureTests(unittest.TestCase):
     def _getTarget(self):
-        from ticketing.mails.complete.builder import EmailInfoTraverser
+        from ticketing.mails.traverser import EmailInfoTraverser
         return EmailInfoTraverser
 
     def _makeOne(self, *args, **kwargs):

@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 from . import logger
 from ..models import DBSession
-import ticketing.mails.complete.api as api
+import ticketing.mails.complete as api
 
 def on_order_completed(order_completed):
     try:

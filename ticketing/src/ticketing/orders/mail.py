@@ -1,4 +1,5 @@
-from ticketing.mails.order_cancel.builder import create_cancel_message
+# -*- coding:utf-8 -*-
+from ticketing.mails.order_cancel import create_cancel_message
 from pyramid_mailer import get_mailer
 import logging
 
