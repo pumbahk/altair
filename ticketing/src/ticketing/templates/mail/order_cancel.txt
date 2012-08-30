@@ -32,7 +32,7 @@ ${venue}
 ${products}
 システム利用料 ${system_fee}（円）
 決済手数料　　 ${transaction_fee}（円）
-配送手数料　　 ${delivery_fee}（円）
+発券/配送手数料　　 ${delivery_fee}（円）
 ********************************************************************
 合計　　　　　 ${total_amount}（円）
 
