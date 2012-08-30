@@ -1801,13 +1801,14 @@ class ExtraMailInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = Column(Identifier, primary_key=True)
     organization_id = Column(Identifier, ForeignKey('Organization.id'), nullable=True)
     organization = relationship('Organization', uselist=False, backref=backref('extra_mailinfo', uselist=False))
+    event_id = Column(Identifier, ForeignKey('Event.id'), nullable=True)
+    event = relationship('Event', uselist=False, backref=backref('extra_mailinfo', uselist=False))
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
 
-    @property
-    def signature(self):
-        return self.data["signature"]
-
-    @property
-    def footer(self):
-        return self.data.get("footer", u"")
-
+    def is_valid(self):
+        try:
+            json.dumps(self.data, ensure_ascii=False)
+            return True
+        except Exception, e:
+            self._errors = e
+            return False

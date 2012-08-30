@@ -5,7 +5,7 @@ from pyramid_mailer.message import Message
 from ..interfaces import ICompleteMail
 from zope.interface import implementer
 
-from ticketing.cart import helpers as ch
+from ticketing.cart import helpers as ch ##
 
 class FindStopAccessor(object):
     def __init__(self, wrapper, d):

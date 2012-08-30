@@ -1,8 +1,22 @@
 from .interfaces import ICompleteMail
 from pyramid.interfaces import IRequest
 import logging
+from ticketing.core.models import ExtraMailInfo
 
 logger = logging.getLogger(__name__)
+
+def update_mailinfo(request, data, organization=None, event=None):
+    target = event or organization
+    assert target
+    if target.extra_mailinfo is None:
+        target.extra_mailinfo = ExtraMailInfo(data=data)
+        if target == event:
+            target.event = event
+        if target == organization:
+            target.organization = organization
+    else:
+        target.extra_mailinfo.update(data)
+    return target.extra_mailinfo
 
 def get_complete_mail(request):
     cls = request.registry.adapters.lookup([IRequest], ICompleteMail, "")
@@ -24,3 +38,6 @@ sender: %(sender)s
 %(body)s
 """ % params
 
+def dump_mailinfo(mailinfo, limit=50):
+    for k, v in mailinfo.data.iteritems():
+        print k, v if len(v) <= limit else v[:limit]
