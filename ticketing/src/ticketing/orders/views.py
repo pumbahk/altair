@@ -482,6 +482,13 @@ class MailInfoView(BaseView):
         from ticketing.mails.complete import preview_text
         return preview_text(self.request, order)
 
+    @view_config(match_param="action=cancel_mail_preview", renderer="string")
+    def cancel_mail_preview(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id)
+        from ticketing.mails.order_cancel import preview_text
+        return preview_text(self.request, order)
+
 '''
 from ticketing.core.models import  TicketPrintHistory
 

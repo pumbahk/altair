@@ -2,7 +2,7 @@
 
 from pyramid import renderers
 from pyramid_mailer.message import Message
-
+from .api import preview_text_from_message
 from ticketing.cart import helpers as h
 import logging
 
@@ -16,6 +16,9 @@ mail_renderer_names = {
     '4': 'ticketing:templates/mail/order_cancel.txt',
 }
 
+def preview_text(request, order):
+    message = create_cancel_message(request, order)
+    return preview_text_from_message(message)
 
 def create_cancel_message(request, order):
     plugin_id = str(order.payment_delivery_pair.payment_method.payment_plugin_id)

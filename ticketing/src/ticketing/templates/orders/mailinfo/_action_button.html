@@ -29,7 +29,7 @@
 	</button>
 	<ul class="dropdown-menu">
 	  <li>
-		<a href="#">preview</a>
+		<a href="${request.route_path("orders.mailinfo", order_id=order.id, action="cancel_mail_preview")}">preview</a>
 		<a href="#">再送</a>
 	  </li>
 	</ul>
