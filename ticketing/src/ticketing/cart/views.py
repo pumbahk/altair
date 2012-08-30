@@ -1047,13 +1047,13 @@ class OutTermSalesView(object):
         self.context = context
 
     @view_config(context='.exceptions.OutTermSalesException', renderer='ticketing.cart:templates/carts/out_term_sales.html')
-    def __call__(self):
+    def pc(self):
         api.logout(self.request)
         return dict(event=self.context.event, 
                     sales_segment=self.context.sales_segment)
 
     @view_config(context='.exceptions.OutTermSalesException', renderer='ticketing.cart:templates/carts_mobile/out_term_sales.html', request_type=".interfaces.IMobileRequest")
-    def __call__(self):
+    def mobile(self):
         api.logout(self.request)
         return dict(event=self.context.event, 
                     sales_segment=self.context.sales_segment)
