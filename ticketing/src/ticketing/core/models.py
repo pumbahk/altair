@@ -1412,6 +1412,14 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     performance = relationship('Performance', backref="orders")
 
     @property
+    def payment_plugin_id(self):
+        return self.payment_delivery_pair.payment_method.payment_plugin_id
+
+    @property
+    def delivery_plugin_id(self):
+        return self.payment_delivery_pair.delivery_method.delivery_plugin_id
+
+    @property
     def status(self):
         if self.canceled_at:
             return 'refunded' if self.paid_at else 'canceled'

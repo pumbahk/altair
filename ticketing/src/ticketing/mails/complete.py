@@ -39,6 +39,15 @@ update_mailinfo = update_mailinfo
 
 ###
 class CompleteMailInfoTemplate(object):
+    """
+    data = {
+      "header": u"ヘッダー", 
+      "P0header": u"payment_plugin (0)header"
+      "P1header": u"payment_plugin (1)header", 
+      "D0header": u"deliveery_plugin (0)header"
+      "D1header": u"deliveery_plugin (1)header", 
+    }
+    """
     payment_choices = [("header", u"ヘッダ"), 
                        ("notice", u"注意事項"), 
                        ("footer", u"フッタ"), 
@@ -57,15 +66,20 @@ class CompleteMailInfoTemplate(object):
         self.request = request
         self.organization = organization
 
+    payment_key_fmt = "P%d%s"
+    delivery_key_fmt = "D%d%s"
+
     def payment_methods_keys(self):
         for payment_method in self.organization.payment_method_list:
+            plugin_id = payment_method.payment_plugin_id
             for k, v in self.payment_choices:
-                yield k, u"%s(%s)" % (v)
+                yield self.payment_key_fmt % (plugin_id, k), u"%s(%s)" % (v)
 
     def delivery_methods_keys(self):
         for delivery_method in self.organization.delivery_method_list:
+            plugin_id = delivery_method.delivery_plugin_id
             for k, v in self.delivery_choices:
-                yield k, u"%s(%s)" % (v)
+                yield self.delivery_key_fmt % (plugin_id, k), u"%s(%s)" % (v)
 
     def common_methods_keys(self):
         return self.common_choices
