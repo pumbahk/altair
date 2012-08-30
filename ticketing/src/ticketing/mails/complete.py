@@ -17,7 +17,7 @@ import functools
 
 complete_mailinfo_traverser = functools.partial(
     get_mailinfo_traverser, 
-    access=lambda d : d[MailStatusEnum.CompleteMail]
+    access=lambda d, k : d[MailStatusEnum.CompleteMail].get(k)
 )
 
 def build_message(request, order):
@@ -127,7 +127,8 @@ class CompleteMail(object):
                      payment_method_name=pair.payment_method.name, 
                      delivery_method_name=pair.delivery_method.name, 
                      seats = seats, 
-                     footer = traverser.data["footer"]
+                     ### mail info
+                     footer = traverser.data["footer"],
                      )
         return value
 

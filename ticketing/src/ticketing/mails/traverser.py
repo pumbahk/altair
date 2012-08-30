@@ -1,7 +1,7 @@
 import functools
 
 class FindStopAccessor(object):
-    default_access = staticmethod(lambda x: x)
+    default_access = staticmethod(lambda d, k: d.get(k))
     def __init__(self, wrapper, d, access=None):
         self.wrapper = wrapper
         self.d = d
@@ -18,13 +18,13 @@ class FindStopAccessor(object):
     def __getitem__(self, k):
         if self.d is None:
             return None
-        return self.access(self.d).get(k) or self._get_failback(k)
+        return self.access(self.d, k) or self._get_failback(k)
 
     def getall(self, k):
         r = []
         this = self.wrapper
         while this:
-            v = self.access(this.data.d).get(k)
+            v = self.access(this.data.d, k)
             if v:
                 r.append(v)
             this = this.chained

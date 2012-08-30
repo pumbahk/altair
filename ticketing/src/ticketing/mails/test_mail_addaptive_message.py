@@ -75,11 +75,11 @@ class MailMessageStructureTests(unittest.TestCase):
                       }
                 )
         
-        target = self._makeOne(access=lambda d : d[MailStatusEnum.CompleteMail])
+        target = self._makeOne(access=lambda d, k : d[MailStatusEnum.CompleteMail].get(k))
         target.visit(Organization())
         self.assertEquals(target.data["header"], "complete-header")
 
-        target = self._makeOne(access=lambda d : d[MailStatusEnum.PurchaseCancelMail])
+        target = self._makeOne(access=lambda d, k : d[MailStatusEnum.PurchaseCancelMail].get(k))
         target.visit(Organization())
         self.assertEquals(target.data["header"], "cancel-header")
 
