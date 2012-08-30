@@ -40,7 +40,7 @@ class MailMessageStructureTests(unittest.TestCase):
             organization = Organization()
         class Performance:
             extra_mailinfo = testing.DummyResource(data=dict(one="P1"))
-p            event = Event()
+            event = Event()
             
         target = self._makeOne()
         target.visit(Performance())
