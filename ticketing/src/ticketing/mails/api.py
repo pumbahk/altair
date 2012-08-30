@@ -35,7 +35,7 @@ def preview_text_from_message(message):
                   bcc=message.bcc, 
                   sender=message.sender, 
                   body=message.body)
-    return u"""
+    return u"""\
 subject: %(subject)s
 recipients: %(recipients)s
 bcc: %(bcc)s

@@ -475,6 +475,13 @@ class MailInfoView(BaseView):
         order = Order.get(order_id)
         return dict(order=order)
 
+    @view_config(match_param="action=complete_mail_preview", renderer="string")
+    def complete_mail_preview(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id)
+        from ticketing.mails.complete import preview_text
+        return preview_text(self.request, order)
+
 '''
 from ticketing.core.models import  TicketPrintHistory
 

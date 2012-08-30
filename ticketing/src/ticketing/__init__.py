@@ -76,6 +76,10 @@ def main(global_config, **settings):
     config.include('ticketing.payment_methods' , route_prefix='/payment_methods')
     config.include('ticketing.delivery_methods' , route_prefix='/delivery_methods')
 
+    config.include('ticketing.cart.plugins')
+    ## TBA
+    config.add_route("qr.make", "___________") ##xxx:
+    config.include(config.maybe_dotted("ticketing.cart.import_mail_module"))
     # 上からscanされてしまうためしかたなく追加。scanをinclude先に移動させて、このincludeを削除する。
     #config.include('ticketing.cart' , route_prefix='/cart')
 
@@ -85,7 +89,7 @@ def main(global_config, **settings):
 
     config.add_tween('.tweens.session_cleaner_factory', over=EXCVIEW)
     #config.scan('ticketing') # Bad Code
-
+    
     ## cmsとの通信
     bound_communication_api(config, 
                             ".api.impl.CMSCommunicationApi", 
