@@ -467,6 +467,14 @@ class SejTicketTemplate(BaseView):
             templates=templates
         )
 
+@view_defaults(decorator=with_bootstrap, permission="authenticated", route_name="orders.mailinfo")
+class MailInfoView(BaseView):
+    @view_config(match_param="action=show", renderer="ticketing:templates/orders/mailinfo/show.html")
+    def show(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id)
+        return dict(order=order)
+
 '''
 from ticketing.core.models import  TicketPrintHistory
 

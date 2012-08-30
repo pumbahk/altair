@@ -24,4 +24,5 @@ def includeme(config):
 
     config.add_route('orders.sej.ticket_template'       , '/sej/ticket_template')
 
+    config.add_route("orders.mailinfo", "/orders/{order_id}/mailinfo/{action}")
     config.scan(".")

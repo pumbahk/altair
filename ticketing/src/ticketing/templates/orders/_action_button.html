@@ -13,6 +13,11 @@
 
 <%
 actions = {
+  'mailinfo':dict(
+    label=u"メール",
+    url=request.route_path('orders.mailinfo', order_id=order. id,action="show"),
+    icon="icon-envelope"
+  ),
   'delivered':dict(
     label=u'配送済みにする',
     url=request.route_path('orders.delivered', order_id=order.id),
@@ -29,7 +34,7 @@ actions = {
     icon='icon-remove',
   ),
 }
-sort = iter(['delivered', 'print', 'cancel'])
+sort = iter(['mailinfo','delivered', 'print', 'cancel'])
 %>
 ${h.action_button(actions, sort, virtical=False)}
 
