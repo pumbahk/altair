@@ -814,7 +814,9 @@ class CompleteView(object):
         self.save_subscription(user, mail_address)
         api.remove_cart(self.request)
 
+        api.logout(self.request)
         return dict(order=order)
+
 
     def save_subscription(self, user, mail_address):
         magazines = u_models.MailMagazine.query.all()
@@ -1046,8 +1048,12 @@ class OutTermSalesView(object):
 
     @view_config(context='.exceptions.OutTermSalesException', renderer='ticketing.cart:templates/carts/out_term_sales.html')
     def __call__(self):
-        return dict(event=self.context.event, sales_segment=self.context.sales_segment)
+        api.logout(self.request)
+        return dict(event=self.context.event, 
+                    sales_segment=self.context.sales_segment)
 
     @view_config(context='.exceptions.OutTermSalesException', renderer='ticketing.cart:templates/carts_mobile/out_term_sales.html', request_type=".interfaces.IMobileRequest")
     def __call__(self):
-        return dict(event=self.context.event, sales_segment=self.context.sales_segment)
+        api.logout(self.request)
+        return dict(event=self.context.event, 
+                    sales_segment=self.context.sales_segment)
