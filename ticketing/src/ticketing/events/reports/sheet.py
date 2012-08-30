@@ -148,6 +148,14 @@ def seat_source_from_seat(seat):
     return seat_source
 
 
+def is_different_row(seatsource1, seatsource2):
+    """seatsource1とseatsource2が別の列、もしくは通路などを
+    挟んで連続していない場合にTrueを返す
+    """
+    return (int(seatsource1.seat) + 1 != int(seatsource2.seat)) or \
+        (seatsource1.source.row_l0_id != seatsource2.source.row_l0_id)
+
+
 def seat_records_from_seat_sources(seat_sources, unsold=False):
     """SeatSourceのリストからSeatRecordのリストを返す
     サマリー作成
@@ -163,8 +171,8 @@ def seat_records_from_seat_sources(seat_sources, unsold=False):
         # 連続した座席はまとめる
         lst_values = []
         for value in values:
-            # 1つ前の座席と連続していたらまとめる
-            if lst_values and int(lst_values[-1].seat) + 1 != int(value.seat):
+            # 1つ前の座席と連続していなければ結果に追加してlst_valuesをリセット
+            if lst_values and is_different_row(lst_values[-1], value):
                 # flush
                 seat_record = SeatRecord(
                     block=lst_values[0].get_block_display(),
