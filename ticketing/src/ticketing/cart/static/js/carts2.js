@@ -735,7 +735,6 @@ cart.OrderFormView = Backbone.View.extend({
         );
     },
     showForm: function(selected_stock_type_el, stock_type, products, done) {
-        console.log(stock_type);
         if (!stock_type.get('availability'))
             return false;
         if (this.selected_stock_type_el && selected_stock_type_el[0] == this.selected_stock_type_el[0]) {
