@@ -68,4 +68,4 @@ ${h.render_delivery_finished_mail_viewlet(request, order)}
 
 仙台89ERS（ナイナーズチケット）　チケット事務局
 
-お問い合わせ：89ers_support@ticketstar.jp
+お問い合わせ：89ers@ticketstar.jp
