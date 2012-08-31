@@ -14,8 +14,19 @@ ${breadcrumbs(
 )}
 </div>
 
+<%
+from ticketing.core.models import MailTypeEnum
+mailtype = int(request.matchdict["mailtype"])
+if int(MailTypeEnum.CompleteMail) == mailtype:
+    ja_mailtype = u"購入完了メール付加情報"
+elif int(MailTypeEnum.PurchaseCancelMail) == mailtype:
+    ja_mailtype = u"購入キャンセルメール付加情報"
+else:
+    ja_mailtype = u"?????"
+%>
+
 <div class="page-header">
-  <h3>メール付加情報追加</h3>
+  <h3>${ja_mailtype}</h3>
 </div>
 
 <%doc>

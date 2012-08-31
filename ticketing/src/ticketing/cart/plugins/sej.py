@@ -7,7 +7,8 @@ from ..interfaces import IPaymentPlugin, ICartPayment, IOrderPayment, ICompleteM
 from ..interfaces import IDeliveryPlugin, ICartDelivery, IOrderDelivery, ICompleteMailDelivery
 
 from .. import logger
-from ticketing.mails.complete import complete_mailinfo_traverser, CompleteMailInfoTemplate
+from ticketing.mails.complete import complete_mailinfo_traverser
+from ticketing.mails.forms import CompleteMailInfoTemplate
 from pyramid.threadlocal import get_current_registry
 
 from ticketing.core import models as c_models
