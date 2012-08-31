@@ -180,24 +180,24 @@ def product_name_with_unit(product, performance_id):
 def render_delivery_finished_mail_viewlet(request, order):
     logger.debug("*" * 80)
     plugin_id = order.payment_delivery_pair.delivery_method.delivery_plugin_id
-    logger.debug("plugin_id:%d" % plugin_id)
+    logger.debug("plugin_id:%s" % plugin_id)
 
     order = CompleteMailDelivery(order)
-    response = render_view_to_response(order, request, name="delivery-%d" % plugin_id, secure=False)
+    response = render_view_to_response(order, request, name="delivery-%s" % plugin_id, secure=False)
     if response is None:
-        logger.debug("*complete mail*: %s is not found" % "delivery-%d" % plugin_id)
+        logger.debug("*complete mail*: %s is not found" % "delivery-%s" % plugin_id)
         return u""
     return Markup(response.text)
 
 def render_payment_finished_mail_viewlet(request, order):
     logger.debug("*" * 80)
     plugin_id = order.payment_delivery_pair.payment_method.payment_plugin_id
-    logger.debug("plugin_id:%d" % plugin_id)
+    logger.debug("plugin_id:%s" % plugin_id)
     order = CompleteMailPayment(order)
-    response = render_view_to_response(order, request, name="payment-%d" % plugin_id, secure=False)
+    response = render_view_to_response(order, request, name="payment-%s" % plugin_id, secure=False)
 
     if response is None:
-        logger.debug("*complete mail*: %s is not found" % "payment-%d" % plugin_id)
+        logger.debug("*complete mail*: %s is not found" % "payment-%s" % plugin_id)
         return ""
     return Markup(response.text)
 

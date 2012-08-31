@@ -191,8 +191,9 @@ class Organizations(BaseView):
         sej_tenant_id = int(self.request.matchdict.get('id', 0))
 
 
-from ticketing.mails.complete import CompleteMailInfoTemplate
-from ticketing.mails.api import create_or_update_mailinfo
+from ticketing.mails.forms import CompleteMailInfoTemplate
+from ticketing.mails.complete import preview_text ##uggg
+from ticketing.mails.api import create_or_update_mailinfo,  create_fake_order_from_organization
 
 @view_defaults(route_name="organizations.mails.new", decorator=with_bootstrap, permission="authenticated", 
                renderer="ticketing:templates/organizations/mailinfo/new.html")
@@ -223,3 +224,16 @@ class MailInfoNewView(BaseView):
             DBSession.add(mailinfo)
             self.request.session.flash(u"メールの付加情報を登録しました")
             return HTTPFound(location=route_path('organizations.show', self.request, organization_id=organization.id))
+
+@view_config(route_name="organizations.mails.preview.preorder", 
+             decorator=with_bootstrap, permission="authenticated", 
+             renderer="string")
+def mail_preview_preorder(context, request):
+    payment_id = request.matchdict["payment_id"]
+    delivery_id = request.matchdict["delivery_id"]
+    organization_id = int(request.matchdict.get("organization_id", 0))
+    organization = Organization.get(organization_id)
+    fake_order = create_fake_order_from_organization(request, organization, payment_id, delivery_id)
+    return preview_text(request, fake_order)
+
+    

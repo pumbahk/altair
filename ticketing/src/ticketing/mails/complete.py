@@ -17,7 +17,8 @@ import functools
 
 complete_mailinfo_traverser = functools.partial(
     get_mailinfo_traverser, 
-    access=lambda d, k, default="" : d[MailTypeEnum.CompleteMail].get(k, default), 
+    ## xxx: uggg
+    access=lambda d, k, default="" : d.get(MailTypeEnum.CompleteMail, {}).get(k, default), 
     default=u"", 
 )
 

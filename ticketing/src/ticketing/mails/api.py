@@ -2,6 +2,7 @@ from .interfaces import ICompleteMail
 from .traverser import EmailInfoTraverser
 from pyramid.interfaces import IRequest
 import logging
+from datetime import datetime
 from ticketing.core.models import ExtraMailInfo
 
 logger = logging.getLogger(__name__)
@@ -74,3 +75,21 @@ def message_settings_override(message, override):
             bcc = override["bcc"]
             message.sender = bcc if hasattr(bcc, "length") else [bcc]
     return message
+
+import mock
+def create_fake_order_from_organization(request, organization, payment_plugin_id, delivery_plugin_id):
+    ## must not save models 
+    order = mock.Mock(
+            order_no="xxx-xxxx-xxxx", 
+            created_at=datetime(1900, 1, 1), 
+            system_fee=20.0, 
+            transaction_fee=30.0, 
+            delivery_fee=40.0, 
+            total_amount=99999, ##
+            )
+    order.ordered_products = []
+    order.ordered_from = organization
+    order._mailinfo_traverser = None
+    order.payment_delivery_pair.payment_method.payment_plugin_id = payment_plugin_id
+    order.payment_delivery_pair.delivery_method.delivery_plugin_id = delivery_plugin_id
+    return order

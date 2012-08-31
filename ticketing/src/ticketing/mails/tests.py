@@ -84,6 +84,29 @@ class CompletMailSettingsTest(unittest.TestCase):
         self.assertEquals(data_lookup.data["header"],u"this-is-default-header")
         self.assertEquals(data_lookup.data["footer"],u"this-is-footer-message")
 
+class CreateMailFromFakeOrderTests(unittest.TestCase):
+    def setUp(self):
+        self.config = testing.setUp(settings={"altair.mailer": "pyramid_mailer.testing"})
+        self.config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
+        self.config.include("ticketing.cart.import_mail_module")
+
+        ## TBA
+        self.config.add_route("qr.make", "__________")
+
+        self.config.include("ticketing.cart.plugins")
+
+    def test_it(self):
+        from ticketing.core.models import Organization
+        from ticketing.mails.api import create_fake_order_from_organization
+        from ticketing.mails.complete import build_message
+        
+        org = Organization()
+        org.extra_mail_info=None
+        request = testing.DummyRequest()
+        order = create_fake_order_from_organization(request, org, 2, 1)
+
+        build_message(request, order).body
+
 
 if __name__ == "__main__":
     # setUpModule()
