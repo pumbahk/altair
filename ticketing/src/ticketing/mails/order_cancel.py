@@ -1,21 +1,13 @@
 # -*- coding:utf-8 -*-
 from pyramid_mailer import get_mailer
-from .api import message_settings_override
 from pyramid import renderers
 from pyramid_mailer.message import Message
 from .api import preview_text_from_message
+from .api import message_settings_override
 from ticketing.cart import helpers as h
 import logging
 
 logger = logging.getLogger(__name__)
-
-
-mail_renderer_names = {
-    '1': 'ticketing:templates/mail/order_cancel.txt',
-    '2': 'ticketing:templates/mail/order_cancel.txt',
-    '3': 'ticketing:templates/mail/order_cancel.txt',
-    '4': 'ticketing:templates/mail/order_cancel.txt',
-}
 
 def preview_text(request, order):
     message = create_cancel_message(request, order)
@@ -26,7 +18,15 @@ def send_mail(request, order, override=None):
     message = create_cancel_message(request, order, override=override)
     message_settings_override(message, override)
     mailer.send(message)
-    logger.info("send complete mail to %s" % message.recipients)
+    logger.info("send cancel mail to %s" % message.recipients)
+
+
+mail_renderer_names = {
+    '1': 'ticketing:templates/mail/order_cancel.txt',
+    '2': 'ticketing:templates/mail/order_cancel.txt',
+    '3': 'ticketing:templates/mail/order_cancel.txt',
+    '4': 'ticketing:templates/mail/order_cancel.txt',
+}
 
 def create_cancel_message(request, order):
     plugin_id = str(order.payment_delivery_pair.payment_method.payment_plugin_id)
