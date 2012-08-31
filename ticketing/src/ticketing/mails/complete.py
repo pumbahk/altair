@@ -21,19 +21,27 @@ complete_mailinfo_traverser = functools.partial(
     default=u"", 
 )
 
-def build_message(request, order):
+def build_message(request, order, override=None):
     complete_mail = get_complete_mail(request)
     message = complete_mail.build_message(order)
+    if override:
+        if "recipient" in override:
+            message.recipients = [override["recipient"]]
+        if "subject" in override:
+            message.sender = override["subject"]
+        if "bcc" in override:
+            bcc = override["bcc"]
+            message.sender = bcc if hasattr(bcc, "length") else [bcc]
     return message
 
-def send_mail(request, order):
+def send_mail(request, order, override=None):
     mailer = get_mailer(request)
-    message = build_message(request, order)
+    message = build_message(request, order, override=override)
     mailer.send(message)
     logger.info("send complete mail to %s" % message.recipients)
 
-def preview_text(request, order):
-    message = build_message(request, order)
+def preview_text(request, order, override=None):
+    message = build_message(request, order, override=override)
     return preview_text_from_message(message)
 
 update_mailinfo = update_mailinfo
@@ -115,16 +123,16 @@ class CompleteMail(object):
     def build_message(self, order):
         organization = order.ordered_from
         subject = self.get_subject(organization)
-        from_ = self.get_email_from(organization)
-
+        mail_from = self.get_email_from(organization)
+        bcc = [mail_from]
 
         mail_body = self.build_mail_body(order)
         return Message(
             subject=subject,
             recipients=[order.shipping_address.email],
-            bcc=[from_],
+            bcc=bcc,
             body=mail_body,
-            sender=from_)
+            sender=mail_from)
 
     def _build_mail_body(self, order):
         sa = order.shipping_address 

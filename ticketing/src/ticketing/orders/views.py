@@ -14,7 +14,7 @@ from ticketing.operators.models import Operator, OperatorRole, Permission
 from ticketing.core.models import Order
 from ticketing.orders.export import OrderCSV
 from ticketing.orders.forms import (OrderForm, OrderSearchForm, SejOrderForm, SejTicketForm, SejTicketForm,
-                                    SejRefundEventForm,SejRefundOrderForm)
+                                    SejRefundEventForm,SejRefundOrderForm, SendingMailForm)
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.orders.events import notify_order_canceled
@@ -473,7 +473,8 @@ class MailInfoView(BaseView):
     def show(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id)
-        return dict(order=order)
+        mail_form = SendingMailForm()
+        return dict(order=order, mail_form=mail_form)
 
     @view_config(match_param="action=complete_mail_preview", renderer="string")
     def complete_mail_preview(self):
@@ -481,6 +482,20 @@ class MailInfoView(BaseView):
         order = Order.get(order_id)
         from ticketing.mails.complete import preview_text
         return preview_text(self.request, order)
+
+    @view_config(match_param="action=complete_mail_send", renderer="string", request_method="POST")
+    def complete_mail_send(self):
+        form = SendingMailForm(self.request.POST)
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        if not form.validate():
+            self.request.session.flash(u'失敗しました: %s' % form.errors)
+            raise HTTPFound(self.request.current_route_url(order_id=order_id, action="show"))
+
+        order = Order.get(order_id)
+        from ticketing.mails.complete import send_mail
+        send_mail(self.request, order, override=form.data)
+        self.request.session.flash(u'メール再送信しました')
+        return HTTPFound(self.request.current_route_url(order_id=order_id, action="show"))
 
     @view_config(match_param="action=cancel_mail_preview", renderer="string")
     def cancel_mail_preview(self):

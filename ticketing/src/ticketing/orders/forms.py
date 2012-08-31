@@ -3,7 +3,7 @@
 from wtforms import Form
 from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, TextAreaField,
                      BooleanField, RadioField, FieldList, FormField)
-from wtforms.validators import Optional, AnyOf
+from wtforms.validators import Optional, AnyOf, Email
 
 from ticketing.formhelpers import DateTimeField, Translations, Required
 from ticketing.core.models import PaymentMethodPlugin, DeliveryMethodPlugin
@@ -290,4 +290,26 @@ class SejRefundOrderForm(Form):
     refund_other_amount      = TextField(
         label=u'その他払戻金額',
         validators=[Optional()],
+    )
+            
+class SendingMailForm(Form):
+    # subject = TextField(
+    #     label=u"メールタイトル",
+    #     validators=[
+    #         Required(),
+    #     ]
+    # )
+    recipient = TextField(
+        label=u"送り先メールアドレス",
+        validators=[
+            Required(),
+            Email(),
+        ]
+    )
+    bcc = TextField(
+        label=u"bcc",
+        validators=[
+            Email(),
+            Optional()
+        ]
     )
