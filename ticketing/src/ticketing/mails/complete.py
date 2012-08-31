@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 from pyramid_mailer import get_mailer
-from .api import get_complete_mail, preview_text_from_message, update_mailinfo
+from .api import get_complete_mail, preview_text_from_message, update_mailinfo, message_settings_override
 import logging
 logger = logging.getLogger(__name__)
 
@@ -21,27 +21,20 @@ complete_mailinfo_traverser = functools.partial(
     default=u"", 
 )
 
-def build_message(request, order, override=None):
+def build_message(request, order):
     complete_mail = get_complete_mail(request)
     message = complete_mail.build_message(order)
-    if override:
-        if "recipient" in override:
-            message.recipients = [override["recipient"]]
-        if "subject" in override:
-            message.sender = override["subject"]
-        if "bcc" in override:
-            bcc = override["bcc"]
-            message.sender = bcc if hasattr(bcc, "length") else [bcc]
     return message
 
 def send_mail(request, order, override=None):
     mailer = get_mailer(request)
     message = build_message(request, order, override=override)
+    message_settings_override(message, override)
     mailer.send(message)
     logger.info("send complete mail to %s" % message.recipients)
 
-def preview_text(request, order, override=None):
-    message = build_message(request, order, override=override)
+def preview_text(request, order):
+    message = build_message(request, order)
     return preview_text_from_message(message)
 
 update_mailinfo = update_mailinfo

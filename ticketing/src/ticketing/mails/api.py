@@ -48,3 +48,14 @@ sender: %(sender)s
 def dump_mailinfo(mailinfo, limit=50):
     for k, v in mailinfo.data.iteritems():
         print k, v if len(v) <= limit else v[:limit]
+
+def message_settings_override(message, override):
+    if override:
+        if "recipient" in override:
+            message.recipients = [override["recipient"]]
+        if "subject" in override:
+            message.sender = override["subject"]
+        if "bcc" in override:
+            bcc = override["bcc"]
+            message.sender = bcc if hasattr(bcc, "length") else [bcc]
+    return message
