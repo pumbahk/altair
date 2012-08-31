@@ -161,12 +161,13 @@ def import_tree(organization, tree, file):
             DBSession.add(VenueArea_group_l0_id(area=block, venue=venue, group_l0_id=group_l0_id))
 
         for row_obj in block_obj['children']:
+            row_l0_id = row_obj['_node'].get('id')
             row_name = row_obj['properties'].get('name')
             seat_objs = row_obj['children']
             num_seats_in_row = len(seat_objs)
             seats_in_row = []
             for seat_obj in seat_objs:
-                seat = Seat(venue=venue, l0_id=seat_obj['_node'].get('id'), group_l0_id=group_l0_id)
+                seat = Seat(venue=venue, l0_id=seat_obj['_node'].get('id'), group_l0_id=group_l0_id, row_l0_id=row_l0_id)
                 name = seat_obj['properties'].get('name')
                 seat_no = seat_obj['properties'].get('seat_no')
                 gate = seat_obj['properties'].get('gate')
