@@ -603,3 +603,20 @@ class DummyCartFactory(object):
     
     def create_cart(self, performance_id, seats, ordered_products):
         return testing.DummyModel(performance_id=performance_id, seats=seats, ordered_products=ordered_products)
+
+class logout_Tests(unittest.TestCase):
+    def setUp(self):
+        self.config = testing.setUp()
+
+    def tearDown(self):
+        testing.tearDown()
+
+    def _callFUT(self, *args, **kwargs):
+        from .api import logout
+        return logout(*args, **kwargs)
+
+    def test_it(self):
+        request = testing.DummyRequest()
+        self._callFUT(request)
+
+        
