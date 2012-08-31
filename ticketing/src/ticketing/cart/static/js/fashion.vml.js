@@ -15,23 +15,22 @@ Fashion.Backend.VML = (function() {
   var VML_PREFIX = 'v';
   var VML_NAMESPACE_URL = 'urn:schemas-microsoft-com:vml';
   var VML_BEHAVIOR_URL = '#default#VML';
-  var VML_TAGS = ['group', 'shape', 'rect', 'line', 'textpath', 'skew', 'path', 'roundrect', 'oval'];
   var VML_FLOAT_PRECISION = 1e4;
 
   function setup() {
     var namespaces = window.document.namespaces;
     if (Fashion.browser.version >= 8) {
       if (!namespaces[VML_PREFIX])
-        namespaces.add(VML_PREFIX, VML_NAMESPACE_URL, null);
+        namespaces.add(VML_PREFIX, VML_NAMESPACE_URL, VML_BEHAVIOR_URL);
+      window.document.createStyleSheet().addRule(VML_PREFIX + '\\:line', "behavior:url(#default#VML)");
+      window.document.createStyleSheet().addRule(VML_PREFIX + '\\:rect', "behavior:url(#default#VML)");
+      window.document.createStyleSheet().addRule(VML_PREFIX + '\\:roundrect', "behavior:url(#default#VML)");
+      window.document.createStyleSheet().addRule(VML_PREFIX + '\\:oval', "behavior:url(#default#VML)");
     } else {
       if (!namespaces[VML_PREFIX])
         namespaces.add(VML_PREFIX, VML_NAMESPACE_URL);
+      window.document.createStyleSheet().addRule(VML_PREFIX + '\\:*', "behavior:url(#default#VML)");
     }
-    var buf = [];
-    for (var i = VML_TAGS.length; --i >= 0; ) {
-      buf.push(VML_PREFIX + '\\:' + VML_TAGS[i])
-    }
-    window.document.createStyleSheet().cssText = buf.join(',') + '{behavior:url(' + VML_BEHAVIOR_URL + ')}';
   }
 
   function newElement(type) {
@@ -317,7 +316,7 @@ var Base = (function() {
             return dirty;
           if (!this._elem) {
             this._elem = this.newElement(this.drawable._vg);
-            return dirty & Fashion.DIRTY_EVENT_HANDLERS;
+            return dirty & (Fashion.DIRTY_EVENT_HANDLERS | Fashion.DIRTY_TRANSFORM);
           }
           return dirty;
         },
@@ -344,6 +343,7 @@ var Base = (function() {
                   this._elem.node.coordOrigin = "";
                   this._elem.node.coordSize = VML_FLOAT_PRECISION + ',' + VML_FLOAT_PRECISION;
                   this._elem.skew.matrix = matrixString(transform);
+                  this._elem.skew.offset = transform.e + "," + transform.f;
                   this._elem.skew.on = true;
                 }
               } else {
@@ -808,7 +808,7 @@ var Text = _class("TextVML", {
         '<', VML_PREFIX, ':textpath string="', _escapeXMLSpecialChars(this.wrapper._text), '" on="t"',
         ' style="', 'font-size:', this.wrapper._fontSize, 'px;',
                     'font-family:', _escapeXMLSpecialChars(this.wrapper._fontFamily), ';',
-                    'v-text-align:left" />',
+                    'v-text-align:', _escapeXMLSpecialChars(this.wrapper._anchor), '" />',
         '</', VML_PREFIX, ':line', '>');
       vg.node.insertAdjacentHTML('beforeEnd', vml.join(''));
       var n = vg.node.lastChild;
