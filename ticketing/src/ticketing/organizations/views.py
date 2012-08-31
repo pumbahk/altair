@@ -190,10 +190,20 @@ class Organizations(BaseView):
 
 
 from ticketing.mails.complete import CompleteMailInfoTemplate
-@view_config(route_name="organizations.mails.new", decorator=with_bootstrap, permission="authenticated", 
-             renderer="ticketing:templates/organizations/mailinfo/new.html")
-def mailinfo_new(context, request):
-    organization_id = int(request.matchdict.get("organization_id", 0))
-    organization = Organization.get(organization_id)
-    form = CompleteMailInfoTemplate(request, organization).as_form()
-    return {"organization": organization, "form": form}
+@view_defaults(route_name="organizations.mails.new", decorator=with_bootstrap, permission="authenticated", 
+               renderer="ticketing:templates/organizations/mailinfo/new.html")
+class MailInfoNewView(BaseView):
+    @view_config(request_method="GET")
+    def mailinfo_new(self):
+        organization_id = int(self.request.matchdict.get("organization_id", 0))
+        organization = Organization.get(organization_id)
+        form = CompleteMailInfoTemplate(self.request, organization).as_form()
+        return {"organization": organization, "form": form}
+
+    @view_config(request_method="POST")
+    def mailinfo_new_post(self):
+        print self.request.POST
+        organization_id = int(self.request.matchdict.get("organization_id", 0))
+        organization = Organization.get(organization_id)
+        form = CompleteMailInfoTemplate(self.request, organization).as_form()
+        return {"organization": organization, "form": form}

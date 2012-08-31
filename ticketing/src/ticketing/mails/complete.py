@@ -73,11 +73,11 @@ class CompleteMailInfoTemplate(object):
         return MailInfoFormFactory(self)()
 
     payment_choices = [#("header", u"ヘッダ"), 
-                       ("notice", u"注意事項"), 
+                       ("notice", u"決済：注意事項"), 
                        #("footer", u"フッタ"), 
                        ]
     delivery_choices = [#("header", u"ヘッダー"), 
-                       ("notice", u"注意事項"), 
+                       ("notice", u"受取：注意事項"), 
                        #("footer", u"フッター"), 
                        ]
     common_choices = [
