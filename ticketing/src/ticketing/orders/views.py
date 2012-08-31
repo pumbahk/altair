@@ -467,21 +467,24 @@ class SejTicketTemplate(BaseView):
             templates=templates
         )
 
+import ticketing.mails.complete as mails_complete
 @view_defaults(decorator=with_bootstrap, permission="authenticated", route_name="orders.mailinfo")
 class MailInfoView(BaseView):
     @view_config(match_param="action=show", renderer="ticketing:templates/orders/mailinfo/show.html")
     def show(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id)
-        mail_form = SendingMailForm()
+        message = mails_complete.build_message(self.request, order)
+        mail_form = SendingMailForm(subject=message.subject, 
+                                    recipient=message.recipients[0], 
+                                    bcc=message.bcc[0] if message.bcc else "")
         return dict(order=order, mail_form=mail_form)
 
     @view_config(match_param="action=complete_mail_preview", renderer="string")
     def complete_mail_preview(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id)
-        from ticketing.mails.complete import preview_text
-        return preview_text(self.request, order)
+        return mails_complete.preview_text(self.request, order)
 
     @view_config(match_param="action=complete_mail_send", renderer="string", request_method="POST")
     def complete_mail_send(self):
@@ -492,8 +495,7 @@ class MailInfoView(BaseView):
             raise HTTPFound(self.request.current_route_url(order_id=order_id, action="show"))
 
         order = Order.get(order_id)
-        from ticketing.mails.complete import send_mail
-        send_mail(self.request, order, override=form.data)
+        mails_complete.send_mail(self.request, order, override=form.data)
         self.request.session.flash(u'メール再送信しました')
         return HTTPFound(self.request.current_route_url(order_id=order_id, action="show"))
 
