@@ -468,6 +468,7 @@ class SejTicketTemplate(BaseView):
         )
 
 import ticketing.mails.complete as mails_complete
+import ticketing.mails.order_cancel as mails_cancel
 @view_defaults(decorator=with_bootstrap, permission="authenticated", route_name="orders.mailinfo")
 class MailInfoView(BaseView):
     @view_config(match_param="action=show", renderer="ticketing:templates/orders/mailinfo/show.html")
@@ -503,8 +504,20 @@ class MailInfoView(BaseView):
     def cancel_mail_preview(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id)
-        from ticketing.mails.order_cancel import preview_text
-        return preview_text(self.request, order)
+        return mails_cancel.preview_text(self.request, order)
+
+    @view_config(match_param="action=cancel_mail_send", renderer="string", request_method="POST")
+    def cancel_mail_send(self):
+        form = SendingMailForm(self.request.POST)
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        if not form.validate():
+            self.request.session.flash(u'失敗しました: %s' % form.errors)
+            raise HTTPFound(self.request.current_route_url(order_id=order_id, action="show"))
+
+        order = Order.get(order_id)
+        mails_cancel.send_mail(self.request, order, override=form.data)
+        self.request.session.flash(u'メール再送信しました')
+        return HTTPFound(self.request.current_route_url(order_id=order_id, action="show"))
 
 '''
 from ticketing.core.models import  TicketPrintHistory

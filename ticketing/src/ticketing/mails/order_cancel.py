@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
-
+from pyramid_mailer import get_mailer
+from .api import message_settings_override
 from pyramid import renderers
 from pyramid_mailer.message import Message
 from .api import preview_text_from_message
@@ -19,6 +20,13 @@ mail_renderer_names = {
 def preview_text(request, order):
     message = create_cancel_message(request, order)
     return preview_text_from_message(message)
+
+def send_mail(request, order, override=None):
+    mailer = get_mailer(request)
+    message = create_cancel_message(request, order, override=override)
+    message_settings_override(message, override)
+    mailer.send(message)
+    logger.info("send complete mail to %s" % message.recipients)
 
 def create_cancel_message(request, order):
     plugin_id = str(order.payment_delivery_pair.payment_method.payment_plugin_id)

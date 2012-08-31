@@ -28,7 +28,7 @@ def build_message(request, order):
 
 def send_mail(request, order, override=None):
     mailer = get_mailer(request)
-    message = build_message(request, order, override=override)
+    message = build_message(request, order)
     message_settings_override(message, override)
     mailer.send(message)
     logger.info("send complete mail to %s" % message.recipients)
