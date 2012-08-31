@@ -59,7 +59,7 @@ def reflect_cancel_from_svc(request, sej_order, order, notification):
     order.canceled_at = datetime.now()
     order.save()
     sej_order.reflected_at = datetime.now()
-    sej_order.anceled_at = datetime.now()
+    sej_order.canceled_at = datetime.now()
     notification.reflected_at = datetime.now()
     notify_order_canceled(request, order)
 
@@ -68,7 +68,7 @@ def reflect_expire(request, sej_order, order, notification):
     order.canceled_at = datetime.now()
     order.save()
     sej_order.reflected_at = datetime.now()
-    sej_order.anceled_at = datetime.now()
+    sej_order.canceld_at = datetime.now()
     notification.reflected_at = datetime.now()
     notify_order_canceled(request, order)
 
