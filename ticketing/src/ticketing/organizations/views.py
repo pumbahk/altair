@@ -187,3 +187,13 @@ class Organizations(BaseView):
         '''
         organization_id = int(self.request.matchdict.get('organization_id', 0))
         sej_tenant_id = int(self.request.matchdict.get('id', 0))
+
+
+from ticketing.mails.complete import CompleteMailInfoTemplate
+@view_config(route_name="organizations.mails.new", decorator=with_bootstrap, permission="authenticated", 
+             renderer="ticketing:templates/organizations/mailinfo/new.html")
+def mailinfo_new(context, request):
+    organization_id = int(request.matchdict.get("organization_id", 0))
+    organization = Organization.get(organization_id)
+    form = CompleteMailInfoTemplate(request, organization).as_form()
+    return {"organization": organization, "form": form}

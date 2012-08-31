@@ -12,4 +12,7 @@ def includeme(config):
     config.add_route('organizations.sej_tenant_edit', '/sej/{organization_id}/edit/{id}')
     config.add_route('organizations.sej_tenant_delete', '/sej/{organization_id}/delete/{id}')
 
+    # config.add_route("organizations.mails.index", "/organizations/{organization_id}/mailinfo")
+    config.add_route("organizations.mails.new", "/organizations/{organization_id}/mailinfo")
+
     config.scan(".")

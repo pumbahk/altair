@@ -40,6 +40,19 @@ def preview_text(request, order):
 update_mailinfo = update_mailinfo
 
 ###
+from wtforms import Form
+from wtforms import fields
+from wtforms import widgets
+from collections import namedtuple
+
+def MailInfoFormFactory(template):
+    attrs = {}
+    for name, label in template.template_keys():
+        attrs["payment_methods"] = fields.SelectField(label=u"決済方法", choices=template.payment_methods_keys())
+        attrs["delivery_methods"] = fields.SelectField(label=u"配送方法", choices=template.delivery_methods_keys())
+        attrs[name] = fields.TextField(label=label, widget=widgets.TextArea())
+    return type("MailInfoForm", (Form, ), attrs)
+    
 class CompleteMailInfoTemplate(object):
     """
     data = {
@@ -50,13 +63,16 @@ class CompleteMailInfoTemplate(object):
       "D1header": u"deliveery_plugin (1)header", 
     }
     """
-    payment_choices = [("header", u"ヘッダ"), 
+    def as_form(self):
+        return MailInfoFormFactory(self)()
+
+    payment_choices = [#("header", u"ヘッダ"), 
                        ("notice", u"注意事項"), 
-                       ("footer", u"フッタ"), 
+                       #("footer", u"フッタ"), 
                        ]
-    delivery_choices = [("header", u"ヘッダー"), 
+    delivery_choices = [#("header", u"ヘッダー"), 
                        ("notice", u"注意事項"), 
-                       ("footer", u"フッター"), 
+                       #("footer", u"フッター"), 
                        ]
     common_choices = [
         ("header", u"メールヘッダー"),
@@ -79,26 +95,34 @@ class CompleteMailInfoTemplate(object):
     def delivery_key(self, order, k):
         self.delivery_key_fmt % (order.delivery_plugin_id, k)
 
-    def payment_methods_keys(self):
-        for payment_method in self.organization.payment_method_list:
+    def payment_methods_keys(self, payment_id):
+        candidates = self.organization.payment_method_list
+        if payment_id:
+            candidates = (m for m in candidates if m.payment_plugin_id==payment_id) #xxx:
+        for payment_method in candidates:
             plugin_id = payment_method.payment_plugin_id
+            plugin_name = payment_method.payment_plugin.name
             for k, v in self.payment_choices:
-                yield self.payment_key_fmt % (plugin_id, k), u"%s(%s)" % (v)
-
-    def delivery_methods_keys(self):
-        for delivery_method in self.organization.delivery_method_list:
+                yield self.payment_key_fmt % (plugin_id, k), u"%s(%s)" % (v, plugin_name)
+        
+    def delivery_methods_keys(self, delivery_id):
+        candidates = self.organization.delivery_method_list
+        if delivery_id:
+            candidates = (m for m in candidates if m.delivery_plugin_id==delivery_id) #xxx:
+        for delivery_method in candidates:
             plugin_id = delivery_method.delivery_plugin_id
+            plugin_name = delivery_method.delivery_plugin.name
             for k, v in self.delivery_choices:
-                yield self.delivery_key_fmt % (plugin_id, k), u"%s(%s)" % (v)
+                yield self.delivery_key_fmt % (plugin_id, k), u"%s(%s)" % (v, plugin_name)
 
     def common_methods_keys(self):
         return self.common_choices
 
-    def template_keys(self):
+    def template_keys(self, payment_plugin_id=None, delivery_plugin_id=None):
         return itertools.chain(
             self.common_methods_keys(), 
-            self.payment_methods_keys(), 
-            self.delivery_methods_keys())
+            self.payment_methods_keys(payment_plugin_id), 
+            self.delivery_methods_keys(delivery_plugin_id))
     
 
 @implementer(ICompleteMail)

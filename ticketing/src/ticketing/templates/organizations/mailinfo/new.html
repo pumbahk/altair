@@ -1,0 +1,40 @@
+<%inherit file="../../layout_2cols.html" />
+<%namespace file="/common/helpers.html" import="breadcrumbs,flash_messages,form_item"/>
+
+<style type="text/css">
+  .controls select{width: 80%;}
+  .controls input{width: 80%;}
+  .controls textarea{width: 80%; min-height:100px;}
+</style>
+
+<div class="breadcrumbs">
+${breadcrumbs(
+  names=[u'トップ', u"取引先詳細"],
+  urls=[request.route_path('index'), request.route_path("organizations.show",organization_id=organization.id)]
+)}
+</div>
+
+<div class="page-header">
+  <h3>メール付加情報追加</h3>
+</div>
+
+<%doc>
+<div class="content">
+  ${flash_messages(request)}
+  ${alert_message(form)}
+</div>
+</%doc>
+
+<div class="well">
+  <form class="form-horizontal" action="#" method="POST">
+	<fieldset>
+	  %for field in form:
+	    ${form_item(field)}
+	  %endfor
+	</fieldset>
+	<div class="form-actions">
+	  <input class="btn btn-primary" type="submit" name="submit" value="登録">
+	</div>
+  </form>
+</div>
+

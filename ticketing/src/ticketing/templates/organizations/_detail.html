@@ -106,10 +106,23 @@
   <tbody>
 % for tenant in sej_tenants:
   <tr>
-    <td class="span3">${tenant.name}</td>
+    <td class="span3">${tenant.shop_name}</td>
     <td>${tenant.contact_01}</td>
     <td>${tenant.contact_02}</td>
   </tr>
 % endfor
   <tbody>
 </table>
+
+<hr/>
+<div class="page-header">
+  <h4>メール付加情報設定</h4>
+</div>
+
+<div class="btn-group">
+  <a class="btn"
+	 href="${request.route_path("organizations.mails.new", organization_id=organization.id)}">
+    <i class="icon-pencil"></i> メール付加情報
+  </a>
+</div>
+
