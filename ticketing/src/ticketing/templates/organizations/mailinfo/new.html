@@ -29,7 +29,7 @@ ${breadcrumbs(
   <form class="form-horizontal" action="#" method="POST">
 	<fieldset>
 	  %for field in form:
-	  <div class="">
+	  <div class="${field.description}">
 	    ${form_item(field)}
 	  </div>
 	  %endfor
@@ -40,3 +40,17 @@ ${breadcrumbs(
   </form>
 </div>
 
+<script type="text/javascript">
+  $("#payment_methods").change(function(){
+    $(".payment").hide();
+    $("."+$(this).val()).show();
+  });
+  $("#delivery_methods").change(function(){
+    $(".delivery").hide();
+    $("."+$(this).val()).show();
+  });
+    $(".payment").hide();
+    $(".delivery").hide();
+    $("."+$("#payment_methods").val()).show();
+    $("."+$("#delivery_methods").val()).show();
+</script>

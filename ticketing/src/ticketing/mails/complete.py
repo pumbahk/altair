@@ -52,10 +52,10 @@ def MailInfoFormFactory(template):
 
     choices = template.payment_methods_choices()
     attrs["payment_types"] = [e[0] for e in choices]
-    attrs["payment_methods"] = fields.SelectField(label=u"決済方法", choices=choices)
+    attrs["payment_methods"] = fields.SelectField(label=u"決済方法", choices=choices, id="payment_methods")
 
     choices = template.delivery_methods_choices()
-    attrs["delivery_methods"] = fields.SelectField(label=u"配送方法", choices=choices)
+    attrs["delivery_methods"] = fields.SelectField(label=u"配送方法", choices=choices, id="delivery_methods")
     return type("MailInfoForm", (Form, ), attrs)
 
 PluginInfo = namedtuple("PluginInfo", "method name label") #P0, P0notice, 注意事項(コンビに決済)    
@@ -117,7 +117,7 @@ class CompleteMailInfoTemplate(object):
 
         for payment_method in candidates:
             plugin_id = payment_method.payment_plugin_id
-            payment_type = "P%d" % plugin_id
+            payment_type = "payment P%d" % plugin_id
             plugin_name = payment_method.payment_plugin.name
 
             for k, v in self.payment_choices:
@@ -132,7 +132,7 @@ class CompleteMailInfoTemplate(object):
             candidates = (m for m in candidates if m.delivery_plugin_id==delivery_id) #xxx:
         for delivery_method in candidates:
             plugin_id = delivery_method.delivery_plugin_id
-            delivery_type = "D%d" % plugin_id
+            delivery_type = "delivery D%d" % plugin_id
             plugin_name = delivery_method.delivery_plugin.name
 
             for k, v in self.delivery_choices:
