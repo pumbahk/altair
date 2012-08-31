@@ -62,6 +62,8 @@ ${breadcrumbs(
     var form = $("#submitForm");
     form.empty();
     form.append($('<input name="submit" type="submit">'));
+    form.append($('<input type="hidden" name="payment_methods">').attr("value",$("#payment_methods").val()));
+    form.append($('<input type="hidden" name="delivery_methods">').attr("value",$("#delivery_methods").val()));
     $(this).find("textarea:visible").each(function(i,e){
       var src = $(e);
       $("<input type='hidden'>").attr("name", src.attr("name")).attr("value", src.attr("value")).appendTo(form);

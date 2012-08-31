@@ -17,6 +17,8 @@ from ticketing.organizations.forms import OrganizationForm, SejTenantForm
 from ticketing.core.models import Event, Account
 
 from ticketing.sej.models import SejTenant
+import logging
+logger = logging.getLogger(__name__)
 
 #@view_defaults(decorator=with_bootstrap, permission="administrator")
 @view_defaults(decorator=with_bootstrap)
@@ -189,7 +191,8 @@ class Organizations(BaseView):
         sej_tenant_id = int(self.request.matchdict.get('id', 0))
 
 
-from ticketing.mails.complete import CompleteMailInfoTemplate
+from ticketing.mails.complete import CompleteMailInfoTemplate, update_mailinfo
+
 @view_defaults(route_name="organizations.mails.new", decorator=with_bootstrap, permission="authenticated", 
                renderer="ticketing:templates/organizations/mailinfo/new.html")
 class MailInfoNewView(BaseView):
@@ -197,13 +200,23 @@ class MailInfoNewView(BaseView):
     def mailinfo_new(self):
         organization_id = int(self.request.matchdict.get("organization_id", 0))
         organization = Organization.get(organization_id)
-        form = CompleteMailInfoTemplate(self.request, organization).as_form()
+        formclass = CompleteMailInfoTemplate(self.request, organization).as_formclass()
+        form = formclass(**(organization.extra_mailinfo.data if organization.extra_mailinfo else {}))
         return {"organization": organization, "form": form}
 
     @view_config(request_method="POST")
     def mailinfo_new_post(self):
-        print self.request.POST
+        logger.debug("mailinfo.post: %s" % self.request.POST)
         organization_id = int(self.request.matchdict.get("organization_id", 0))
         organization = Organization.get(organization_id)
-        form = CompleteMailInfoTemplate(self.request, organization).as_form()
-        return {"organization": organization, "form": form}
+        form = CompleteMailInfoTemplate(self.request, organization).as_formclass()(self.request.POST)
+        if not form.validate():
+            self.request.session.flash(u"入力に誤りがあります。")
+            return {"organization": organization, "form": form}
+        else:
+            mailinfo = update_mailinfo(self.request, form.data, organization=organization)
+            from ticketing.models import DBSession
+            logger.debug("mailinfo.data: %s" % mailinfo.data)
+            DBSession.add(mailinfo)
+            self.request.session.flash(u"メールの付加情報を登録しました")
+            return HTTPFound(location=route_path('organizations.show', self.request, organization_id=organization.id))

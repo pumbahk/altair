@@ -31,38 +31,38 @@ class CompletMailSettingsTest(unittest.TestCase):
         self.config.add_subscriber('ticketing.cart.subscribers.add_helpers', 'pyramid.events.BeforeRender')
 
     def _getTarget(self):
-        from ticketing.mails.complete import api
+        from ticketing.mails import api
         return api
 
-    def test_update_mailinfo_with_organization(self):
+    def test_create_or_update_mailinfo_with_organization(self):
         from ticketing.core.models import Organization
         organization = Organization()
         target = self._getTarget()
         request = None
         data = {u"footer": u"this-is-footer-message"}
 
-        result = target.update_mailinfo(request, data, organization=organization)
+        result = target.create_or_update_mailinfo(request, data, organization=organization)
         
         self.assertEquals(result.data["footer"],u"this-is-footer-message")
         self.assertEquals(result.organization, organization)
 
-    def test_update_mailinfo_with_event(self):
+    def test_create_or_update_mailinfo_with_event(self):
         from ticketing.core.models import Event
         event = Event()
         target = self._getTarget()
         request = None
         data = {u"footer": u"this-is-footer-message"}
 
-        result = target.update_mailinfo(request, data, event=event)
+        result = target.create_or_update_mailinfo(request, data, event=event)
         
         self.assertEquals(result.data["footer"],u"this-is-footer-message")
         self.assertEquals(result.event, event)
 
-    def test_update_mailinfo_with_event_using_organization_bound_one(self):
+    def test_create_or_update_mailinfo_with_event_using_organization_bound_one(self):
         from ticketing.core.models import Organization
         from ticketing.core.models import ExtraMailInfo
         from ticketing.core.models import Event
-        from ticketing.mails.complete.builder import EmailInfoTraverser
+        from ticketing.mails.traverser import EmailInfoTraverser
 
         organization = Organization()
         organization.extra_mailinfo = ExtraMailInfo(data=dict(header="this-is-default-header"))
@@ -72,7 +72,7 @@ class CompletMailSettingsTest(unittest.TestCase):
         request = None
         data = {u"footer": u"this-is-footer-message"}
 
-        result = target.update_mailinfo(request, data, event=event)
+        result = target.create_or_update_mailinfo(request, data, event=event)
 
         ## 新しく生成されたeventに結びつくMailInfoは直接親のOrganizationとは結びついていない。
         self.assertEquals(result.event, event)

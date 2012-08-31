@@ -56,6 +56,19 @@ def MailInfoFormFactory(template):
 
     choices = template.delivery_methods_choices()
     attrs["delivery_methods"] = fields.SelectField(label=u"配送方法", choices=choices, id="delivery_methods")
+
+    ## validation
+    def validate(self): # todo error message
+        status = super(type(self), self).validate()
+        for k in self.data.keys():
+            if k.startswith("P"):
+                if not k in attrs["payment_types"]:
+                    status = False
+            if k.startswith("D"):
+                if not k in attrs["delivery_types"]:
+                    status = False
+        return status
+
     return type("MailInfoForm", (Form, ), attrs)
 
 PluginInfo = namedtuple("PluginInfo", "method name label") #P0, P0notice, 注意事項(コンビに決済)    
@@ -69,8 +82,8 @@ class CompleteMailInfoTemplate(object):
       "D1header": u"deliveery_plugin (1)header", 
     }
     """
-    def as_form(self):
-        return MailInfoFormFactory(self)()
+    def as_formclass(self):
+        return MailInfoFormFactory(self)
 
     payment_choices = [#("header", u"ヘッダ"), 
                        ("notice", u"決済：注意事項"), 

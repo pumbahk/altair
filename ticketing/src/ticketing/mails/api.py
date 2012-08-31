@@ -12,18 +12,33 @@ def get_mailinfo_traverser(request, order, access=None, default=None):
         trv = order._mailinfo_traverser = EmailInfoTraverser(access=access, default=default).visit(organization)
     return trv
 
-def update_mailinfo(request, data, organization=None, event=None):
+def create_mailinfo(target, data, organization, event, kind):
+    if kind:
+        data = {kind: data}
+    target.extra_mailinfo = ExtraMailInfo(data=data)
+    if target == event:
+        target.event = event
+    if target == organization:
+        target.organization = organization
+    return target.extra_mailinfo
+
+def update_mailinfo(target, data, kind=None):
+    if kind:
+        if not kind in target.extra_mailinfo.data:
+            target.extra_mailinfo.data[kind] = {}
+        target.extra_mailinfo.data[kind].update(data)
+    else:
+        target.extra_mailinfo.data.update(data)
+    target.extra_mailinfo.data.changed()
+    return target.extra_mailinfo
+
+def create_or_update_mailinfo(request, data, organization=None, event=None, kind=None):
     target = event or organization
     assert target
     if target.extra_mailinfo is None:
-        target.extra_mailinfo = ExtraMailInfo(data=data)
-        if target == event:
-            target.event = event
-        if target == organization:
-            target.organization = organization
+        return create_mailinfo(target, data, organization, event, kind)
     else:
-        target.extra_mailinfo.update(data)
-    return target.extra_mailinfo
+        return update_mailinfo(target, data, kind)
 
 def get_complete_mail(request):
     cls = request.registry.adapters.lookup([IRequest], ICompleteMail, "")
