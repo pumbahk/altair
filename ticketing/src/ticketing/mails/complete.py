@@ -47,12 +47,18 @@ from collections import namedtuple
 
 def MailInfoFormFactory(template):
     attrs = {}
-    for name, label in template.template_keys():
-        attrs["payment_methods"] = fields.SelectField(label=u"決済方法", choices=template.payment_methods_keys())
-        attrs["delivery_methods"] = fields.SelectField(label=u"配送方法", choices=template.delivery_methods_keys())
-        attrs[name] = fields.TextField(label=label, widget=widgets.TextArea())
+    for e in template.template_keys():
+        attrs[e.name] = fields.TextField(label=e.label, widget=widgets.TextArea(), description=e.method)
+
+    choices = template.payment_methods_choices()
+    attrs["payment_types"] = [e[0] for e in choices]
+    attrs["payment_methods"] = fields.SelectField(label=u"決済方法", choices=choices)
+
+    choices = template.delivery_methods_choices()
+    attrs["delivery_methods"] = fields.SelectField(label=u"配送方法", choices=choices)
     return type("MailInfoForm", (Form, ), attrs)
-    
+
+PluginInfo = namedtuple("PluginInfo", "method name label") #P0, P0notice, 注意事項(コンビに決済)    
 class CompleteMailInfoTemplate(object):
     """
     data = {
@@ -75,9 +81,9 @@ class CompleteMailInfoTemplate(object):
                        #("footer", u"フッター"), 
                        ]
     common_choices = [
-        ("header", u"メールヘッダー"),
-        ("notice", u"共通注意事項"), 
-        ("footer", u"メールフッター"),
+        PluginInfo("", "header", u"メールヘッダー"),
+        PluginInfo("", "notice", u"共通注意事項"), 
+        PluginInfo("", "footer", u"メールフッター"),
         ]
 
     def __init__(self, request, organization):
@@ -95,25 +101,44 @@ class CompleteMailInfoTemplate(object):
     def delivery_key(self, order, k):
         self.delivery_key_fmt % (order.delivery_plugin_id, k)
 
+
+    def payment_methods_choices(self):
+        return [("P%d" % m.payment_plugin_id, m.name)
+            for m in self.organization.payment_method_list]
+
+    def delivery_methods_choices(self):
+        return [("D%d" % m.delivery_plugin_id, m.name)
+            for m in self.organization.delivery_method_list]
+
     def payment_methods_keys(self, payment_id):
         candidates = self.organization.payment_method_list
         if payment_id:
             candidates = (m for m in candidates if m.payment_plugin_id==payment_id) #xxx:
+
         for payment_method in candidates:
             plugin_id = payment_method.payment_plugin_id
+            payment_type = "P%d" % plugin_id
             plugin_name = payment_method.payment_plugin.name
+
             for k, v in self.payment_choices:
-                yield self.payment_key_fmt % (plugin_id, k), u"%s(%s)" % (v, plugin_name)
-        
+                yield PluginInfo(name=self.payment_key_fmt % (plugin_id, k),
+                                 method=payment_type, 
+                                 label=u"%s(%s)" % (v, plugin_name))
+                
+                
     def delivery_methods_keys(self, delivery_id):
         candidates = self.organization.delivery_method_list
         if delivery_id:
             candidates = (m for m in candidates if m.delivery_plugin_id==delivery_id) #xxx:
         for delivery_method in candidates:
             plugin_id = delivery_method.delivery_plugin_id
+            delivery_type = "D%d" % plugin_id
             plugin_name = delivery_method.delivery_plugin.name
+
             for k, v in self.delivery_choices:
-                yield self.delivery_key_fmt % (plugin_id, k), u"%s(%s)" % (v, plugin_name)
+                yield PluginInfo(name=self.delivery_key_fmt % (plugin_id, k),
+                                 method=delivery_type, 
+                                 label=u"%s(%s)" % (v, plugin_name))
 
     def common_methods_keys(self):
         return self.common_choices
