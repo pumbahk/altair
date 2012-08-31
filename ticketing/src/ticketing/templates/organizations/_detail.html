@@ -119,10 +119,17 @@
   <h4>メール付加情報設定</h4>
 </div>
 
+<%
+from ticketing.core.models import MailTypeEnum
+%>
 <div class="btn-group">
   <a class="btn"
-	 href="${request.route_path("organizations.mails.new", organization_id=organization.id)}">
-    <i class="icon-pencil"></i> メール付加情報
+	 href="${request.route_path("organizations.mails.new", organization_id=organization.id, mailtype=MailTypeEnum.CompleteMail)}">
+    <i class="icon-pencil"></i> 購入完了メール付加情報
+  </a>
+  <a class="btn"
+	 href="${request.route_path("organizations.mails.new", organization_id=organization.id, mailtype=MailTypeEnum.PurchaseCancelMail)}">
+    <i class="icon-pencil"></i> 購入キャンセルメール付加情報
   </a>
 </div>
 

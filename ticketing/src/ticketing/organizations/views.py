@@ -191,7 +191,8 @@ class Organizations(BaseView):
         sej_tenant_id = int(self.request.matchdict.get('id', 0))
 
 
-from ticketing.mails.complete import CompleteMailInfoTemplate, update_mailinfo
+from ticketing.mails.complete import CompleteMailInfoTemplate
+from ticketing.mails.api import create_or_update_mailinfo
 
 @view_defaults(route_name="organizations.mails.new", decorator=with_bootstrap, permission="authenticated", 
                renderer="ticketing:templates/organizations/mailinfo/new.html")
@@ -201,7 +202,8 @@ class MailInfoNewView(BaseView):
         organization_id = int(self.request.matchdict.get("organization_id", 0))
         organization = Organization.get(organization_id)
         formclass = CompleteMailInfoTemplate(self.request, organization).as_formclass()
-        form = formclass(**(organization.extra_mailinfo.data if organization.extra_mailinfo else {}))
+        mailtype = self.request.matchdict["mailtype"]
+        form = formclass(**(organization.extra_mailinfo.data.get(mailtype, {}) if organization.extra_mailinfo else {}))
         return {"organization": organization, "form": form}
 
     @view_config(request_method="POST")
@@ -214,7 +216,8 @@ class MailInfoNewView(BaseView):
             self.request.session.flash(u"入力に誤りがあります。")
             return {"organization": organization, "form": form}
         else:
-            mailinfo = update_mailinfo(self.request, form.data, organization=organization)
+            mailtype = self.request.matchdict["mailtype"]
+            mailinfo = create_or_update_mailinfo(self.request, form.data, organization=organization, kind=mailtype)
             from ticketing.models import DBSession
             logger.debug("mailinfo.data: %s" % mailinfo.data)
             DBSession.add(mailinfo)
