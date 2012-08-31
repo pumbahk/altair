@@ -1821,6 +1821,6 @@ class ExtraMailInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             self._errors = e
             return False
 
-class MailStatusEnum(StandardEnum):
+class MailTypeEnum(StandardEnum):
     CompleteMail = 1
     PurchaseCancelMail = 2

@@ -12,12 +12,12 @@ from .api import get_mailinfo_traverser
 from zope.interface import implementer
 
 from ticketing.cart import helpers as ch ##
-from ticketing.core.models import MailStatusEnum
+from ticketing.core.models import MailTypeEnum
 import functools
 
 complete_mailinfo_traverser = functools.partial(
     get_mailinfo_traverser, 
-    access=lambda d, k, default="" : d[MailStatusEnum.CompleteMail].get(k, default), 
+    access=lambda d, k, default="" : d[MailTypeEnum.CompleteMail].get(k, default), 
     default=u"", 
 )
 
