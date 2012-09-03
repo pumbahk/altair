@@ -1,0 +1,50 @@
+<%inherit file="../../layout_2cols.html" />
+<%namespace file="/common/helpers.html" import="breadcrumbs,flash_messages,form_item"/>
+
+<style type="text/css">
+  .controls select{width: 80%;}
+  .controls input{width: 80%;}
+  .controls textarea{width: 80%; min-height:100px;}
+</style>
+
+<div class="breadcrumbs">
+${breadcrumbs(
+  names=[u'トップ', u'チケット券面', u"様式登録"],
+  urls=[request.route_path('index'), request.route_path("tickets.index")]
+)}
+</div>
+
+<div class="page-header">
+  <h3>チケット様式登録</h3>
+</div>
+
+<%doc>
+<div class="content">
+  ${flash_messages(request)}
+  ${alert_message(form)}
+</div>
+</%doc>
+
+<%
+  if request.matched_route.name == 'tickets.ticketformats.edit':
+    route_name = u'編集'
+    route_path = request.route_path('tickets.ticketformats.edit', id=format.id)
+  else:
+    route_name = u'登録'
+    route_path = request.route_path('tickets.ticketformats.new')
+%>
+
+
+
+<div class="well">
+  <form class="form-horizontal" action="${route_path}" method="POST">
+	<fieldset>
+	  ${form_item(form.name)}
+	  ${form_item(form.data_value)}
+	  ${form_item(form.delivery_methods)}
+	</fieldset>
+	<div class="form-actions">
+	  <input class="btn btn-primary" type="submit" name="submit" value="登録">
+	</div>
+  </form>
+</div>

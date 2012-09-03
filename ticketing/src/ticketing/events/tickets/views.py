@@ -6,12 +6,12 @@ from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPCreated
 from ticketing.models import DBSession
 from ticketing.core.models import ProductItem, Performance
-from ticketing.core.models import Ticket, TicketBundle, TicketBundleAttribute, TicketPrintQueue
+from ticketing.core.models import Ticket, TicketBundle, TicketBundleAttribute, TicketPrintQueueEntry
 from ticketing.views import BaseView
 from . import forms
 
 from ticketing.tickets.utils import build_dict_from_product_item
-from pystache import Renderer
+import pystache
 from ticketing.tickets.convert import to_opcodes
 from lxml import etree
    
@@ -253,7 +253,7 @@ def ticket_preview_bound_by_product_item(context, request):
 def ticket_preview_bound_by_product_item_data(context, request):
     item = context.product_item
     template = context.ticket_template
-    renderer = Renderer()
+    renderer = pystache.Renderer()
     svg = renderer.render(template.drawing, build_dict_from_product_item(item))
     data = dict(template.ticket_format.data)
     data.update(dict(drawing=' '.join(to_opcodes(etree.ElementTree(etree.fromstring(svg))))))
@@ -263,14 +263,16 @@ def ticket_preview_bound_by_product_item_data(context, request):
              request_method="POST", permission="authenticated")    
 def ticket_preview_enqueue_item(context, request):
     item = context.product_item
-    renderer = Renderer()
+    renderer = pystache.Renderer()
     operator = context.user
     mdict = request.matchdict
 
     for template in request.context.bundle.tickets:
         svg = renderer.render(template.drawing, build_dict_from_product_item(item))
-        queue = TicketPrintQueue(operator_id=operator.id, 
-                                 data=dict(drawing=svg))
+        queue = TicketPrintQueueEntry(operator_id=operator.id, 
+                                      ticket=template,
+                                      summary=u'券面テンプレート (%s)' % template.name,
+                                      data=dict(drawing=svg))
         queue.save()
 
     request.session.flash(u'印刷キューにデータを投入しました')

@@ -9,8 +9,6 @@ import javax.print.PrintService;
 import javax.swing.JFrame;
 import java.awt.BorderLayout;
 
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JLabel;
 import javax.swing.JToolBar;
 import javax.swing.JButton;
 import javax.swing.ImageIcon;
@@ -43,53 +41,17 @@ import jp.ticketstar.ticketing.printing.AppService;
 import jp.ticketstar.ticketing.printing.BoundingBoxOverlay;
 import jp.ticketstar.ticketing.printing.GenericComboBoxModel;
 import jp.ticketstar.ticketing.printing.GuidesOverlay;
+import jp.ticketstar.ticketing.printing.AppModel;
 import jp.ticketstar.ticketing.printing.JGVTComponent;
 import jp.ticketstar.ticketing.printing.OurPageFormat;
-import jp.ticketstar.ticketing.printing.Ticket;
-import jp.ticketstar.ticketing.printing.TicketSetModel;
+import jp.ticketstar.ticketing.printing.Page;
+import jp.ticketstar.ticketing.printing.PageSetModel;
 
 import org.apache.batik.swing.gvt.Overlay;
 
-class TicketCellRenderer extends DefaultListCellRenderer {
-	private static final long serialVersionUID = 1L;
-
-	@Override
-	public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-		JLabel label = (JLabel)super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-		if (value != null)
-			label.setText(((Ticket)value).getName());
-		return label;
-	}
-}
-
-class PrintServiceCellRenderer extends DefaultListCellRenderer {
-	private static final long serialVersionUID = 1L;
-
-	@Override
-	public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-		JLabel label = (JLabel)super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-		if (value != null)
-			label.setText(((PrintService)value).getName());
-		return label;
-	}
-}
-
-
-class PageFormatCellRenderer extends DefaultListCellRenderer {
-	private static final long serialVersionUID = 1L;
-
-	@Override
-	public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-		JLabel label = (JLabel)super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-		if (value != null)
-			label.setText(((OurPageFormat)value).getName());
-		return label;
-	}
-}
-
 public class AppWindow implements IAppWindow {
 	AppService appService;
-	AppWindowModel model;
+	AppModel model;
 	
 	private JFrame frame;
 	private JList list;
@@ -103,7 +65,7 @@ public class AppWindow implements IAppWindow {
 		public void componentMoved(ComponentEvent e) {}
 
 		public void componentResized(ComponentEvent e) {
-			final Dimension2D documentSize = model.getTicketSetModel().getBridgeContext().getDocumentSize();
+			final Dimension2D documentSize = model.getPageSetModel().getBridgeContext().getDocumentSize();
 			final JGVTComponent source = (JGVTComponent)e.getSource();
 			double ox = Math.max(0, (source.getWidth() - documentSize.getWidth()) / 2),
 				   oy = Math.max(0, (source.getHeight() - documentSize.getHeight()) / 2);
@@ -118,9 +80,9 @@ public class AppWindow implements IAppWindow {
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getNewValue() != null) {
 				list.clearSelection();
-				final TicketSetModel ticketSetModel = (TicketSetModel)evt.getNewValue();
+				final PageSetModel ticketSetModel = (PageSetModel)evt.getNewValue();
 				panel.removeAll();
-				for (Ticket ticket: ticketSetModel.getTickets()) {
+				for (Page ticket: ticketSetModel.getTickets()) {
 					final JGVTComponent gvtComponent = new JGVTComponent(false, false);
 					final Dimension2D documentSize = ticketSetModel.getBridgeContext().getDocumentSize();
 					{
@@ -210,7 +172,7 @@ public class AppWindow implements IAppWindow {
 	/* (non-Javadoc)
 	 * @see jp.ticketstar.ticketing.printing.gui.IAppWindow#bind(jp.ticketstar.ticketing.printing.gui.AppWindowModel)
 	 */
-	public void bind(AppWindowModel model) {
+	public void bind(AppModel model) {
 		unbind();
 		model.addPropertyChangeListener("ticketSetModel", ticketSetModelChangeListener);
 		model.addPropertyChangeListener("printServices", printServicesChangeListener);
@@ -279,7 +241,7 @@ public class AppWindow implements IAppWindow {
 		list.setCellRenderer(new TicketCellRenderer());
 		list.addListSelectionListener(new ListSelectionListener() {
 			public void valueChanged(ListSelectionEvent arg0) {
-				((CardLayout)panel.getLayout()).show(panel, ((Ticket)((JList)arg0.getSource()).getSelectedValue()).getName());
+				((CardLayout)panel.getLayout()).show(panel, ((Page)((JList)arg0.getSource()).getSelectedValue()).getName());
 			}
 		});
 		splitPane.setLeftComponent(list);

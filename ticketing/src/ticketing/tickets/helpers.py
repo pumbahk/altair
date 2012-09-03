@@ -1,9 +1,11 @@
-from collections import namedtuple
+# encoding: utf-8
+
 import logging
 import sqlalchemy as sa
 
-Size = namedtuple('Size', 'width height')
+from .utils import Size
 from .convert import as_user_unit
+from .constants import *
 
 def extract_paper_size(ticket_format):
     size = ticket_format.data['size']
@@ -17,12 +19,38 @@ def extract_perforations(ticket_format):
         return perforations
 
 def extract_printable_areas(ticket_format):
-    printable_areas = ticket_format.data.get("printable_areas")
-    if not printable_areas:
-        return {"vertical": [], "horizontal": []}
-    else:
-        return printable_areas
-    
+    return ticket_format.data["printable_areas"]
+
+def extract_orientation(page_format):
+    return page_format.data["orientation"]
+
+def format_orientation(orientation):
+    return [u'タテ', u'ヨコ'][ORIENTATIONS.index(orientation)]
+
+def extract_paper(page_format):
+    return page_format.data.get(u"paper")
+
+def format_paper_name(paper_id):
+    return PAPERS[paper_id] if paper_id is not None else u'(設定なし)'
+
+def extract_printable_area(page_format):
+    return page_format.data["printable_area"]
+
+def format_rectangle(rect):
+    return u'左上端からの位置: %(x)s, %(y)s<br />幅 / 高さ: %(width)s x %(height)s' % rect
+
+def extract_ticket_margin(page_format):
+    return page_format.data["ticket_margin"]
+
+def format_orientation(orientation):
+    return [u'タテ', u'ヨコ'][ORIENTATIONS.index(orientation)]
+
+def extract_ticket_margin(page_format):
+    return page_format.data['ticket_margin']
+
+def format_margin(margin):
+    return u'上: %(top)s 下: %(bottom)s 左: %(left)s 右: %(right)s' % margin
+
 def user_unit_in_mm(v):
     return v * 25.4 / 90
 

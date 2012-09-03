@@ -9,7 +9,6 @@ import java.lang.ref.WeakReference;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import jp.ticketstar.ticketing.printing.gui.AppWindowModel;
 
 import org.apache.batik.swing.gvt.Overlay;
 
@@ -24,9 +23,9 @@ public class BoundingBoxOverlay implements Overlay {
 		}
 
 		public void propertyChange(PropertyChangeEvent evt) {
-			if (evt.getPropertyName().equals("ticketSetModel")) {
-				final TicketSetModel ticketSetModel = (TicketSetModel)evt.getNewValue();
-				outer.get().setDocumentSize(ticketSetModel.getBridgeContext().getDocumentSize());
+			if (evt.getPropertyName().equals("pageSetModel")) {
+				final PageSetModel pageSetModel = (PageSetModel)evt.getNewValue();
+				outer.get().setDocumentSize(pageSetModel.getBridgeContext().getDocumentSize());
 			}
 		}
 	}
@@ -35,10 +34,10 @@ public class BoundingBoxOverlay implements Overlay {
 		this.documentSize = size != null ? (Dimension2D)size.clone(): null;
 	}
 	
-	public BoundingBoxOverlay(AppWindowModel model) {
+	public BoundingBoxOverlay(AppModel model) {
 		model.addPropertyChangeListener(new PageFormatChangeListener(this));
-		if (model.getTicketSetModel() != null)
-			setDocumentSize(model.getTicketSetModel().getBridgeContext().getDocumentSize());
+		if (model.getPageSetModel() != null)
+			setDocumentSize(model.getPageSetModel().getBridgeContext().getDocumentSize());
 	}
 
 	static double pointToPixel(double point) {

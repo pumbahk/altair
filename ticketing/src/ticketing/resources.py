@@ -31,6 +31,7 @@ def newRootFactory(exemption_matcher):
             user_id = authenticated_userid(request)
             # assign the operator object to the context
             self.user = Operator.get_by_login_id(user_id) if user_id is not None else None
+            self.organization = self.user and self.user.organization
             self.request = request
 
     return Root

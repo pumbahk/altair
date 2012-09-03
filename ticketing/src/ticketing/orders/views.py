@@ -7,11 +7,12 @@ from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.response import Response
 from pyramid.url import route_path
+from ticketing.cart.plugins.sej import DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID_SEJ
 import webhelpers.paginate as paginate
 
 from ticketing.models import merge_session_with_post, record_to_appstruct, merge_and_flush, record_to_multidict
 from ticketing.operators.models import Operator, OperatorRole, Permission
-from ticketing.core.models import Order
+from ticketing.core.models import Order, TicketPrintQueueEntry
 from ticketing.orders.export import OrderCSV
 from ticketing.orders.forms import (OrderForm, OrderSearchForm, SejOrderForm, SejTicketForm, SejTicketForm,
                                     SejRefundEventForm,SejRefundOrderForm)
@@ -113,17 +114,34 @@ class Orders(BaseView):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.query.get(order_id)
 
-
         tickets = []
-        print order, order_id
         for ordered_product in order.items:
             for ordered_product_item in ordered_product.ordered_product_items:
                 bundle = ordered_product_item.product_item.ticket_bundle
                 dicts = build_dicts_from_ordered_product_item(ordered_product_item)
-                for dict_ in dicts:
+                for index, (seat, dict_) in enumerate(dicts):
                     for ticket in bundle.tickets:
-                        pystache.render(ticket.data['drawing'], dict_)
-
+                        ticket_format = ticket.ticket_format
+                        applicable = False
+                        for delivery_method in ticket_format.delivery_methods:
+                            if delivery_method.delivery_plugin_id != DELIVERY_PLUGIN_ID_SEJ:
+                                applicable = True
+                                break
+                        if not applicable:
+                            continue
+                        TicketPrintQueueEntry.enqueue(
+                            operator=self.context.user,
+                            ticket=ticket,
+                            data={ u'drawing': pystache.render(ticket.data['drawing'], dict_) },
+                            summary=u'注文 %s - %s%s' % (
+                                order.order_no,
+                                ordered_product_item.product_item.name,
+                                (u' (%d / %d枚目)' % (index + 1, len(dicts))
+                                 if len(dicts) > 1 else u'')
+                                ),
+                            ordered_product_item=ordered_product_item,
+                            seat=seat
+                            )
 
         return HTTPFound(location=self.request.route_path('orders.show', order_id=order_id))
 

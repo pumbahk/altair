@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import csv
+from lxml import etree
 import StringIO
 
 def json_renderer_factory(info):
@@ -50,3 +51,18 @@ def csv_renderer_factory(info):
                 response.content_disposition = 'attachment; filename=%s' % (value['filename'])
             return output
     return _render
+
+def lxml_renderer_factory(info):
+    def _render(value, system):
+        request = system.get('request')
+        charset = 'UTF-8'
+        if request is not None:
+            response = request.response
+            ct = response.content_type
+            if response.charset:
+                charset = response.charset
+            if ct == response.default_content_type:
+                response.content_type = 'text/xml'
+                response.charset = charset
+        return etree.tostring(value, xml_declaration=True, encoding=charset)
+    return _render 

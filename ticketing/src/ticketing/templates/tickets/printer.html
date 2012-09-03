@@ -1,32 +1,33 @@
 <%
-jar_file = request.static_url('ticketing:static/printing-0.0.0.jar')
+import json
+jar_file = request.static_url('ticketing:static/printing-0.0.0-jar-with-dependencies.jar')
 class_name = 'jp.ticketstar.ticketing.printing.gui.AppApplet'
 width = 640
 height = 480
+endpoints_json = json.dumps(endpoints, ensure_ascii=False)
+cookie = request.headers.get('cookie')
 %>
-<OBJECT
-    classid="clsid:8AD9C840-044E-11D1-B3E9-00805F499D93"
-    codebase="http://java.sun.com/update/1.5.0/jinstall-1_5-windows-i586.cab#Version=5,0,0,9"
-    WIDTH="${width}" HEIGHT="${height}">
-    <param name="Message" value="apiUrl=${request.route_url('tickets.print.dequeue')}">
-    <param name="CODE" VALUE="${class_name}" >
-    <param name="CODEBASE" VALUE="../" >
-    <param name="ARCHIVE" VALUE="${jar_file}" >
-    <param name="type" value="application/x-java-applet;version=1.5">
-    <param name="scriptable" value="false">
-
-    <comment>
-    <embed
-        type="application/x-java-applet;version=1.5"
-        CODE="${class_name}"
-        JAVA_CODEBASE="../"
-        ARCHIVE="${jar_file}"
-        WIDTH="350"
-        HEIGHT="250"
-        scriptable=false
-        pluginspage="http://java.sun.com/products/plugin/index.html#download">
-        <noembed>
-        </noembed>
-	</embed>
-    </comment>
+<object classid="clsid:8AD9C840-044E-11D1-B3E9-00805F499D93"
+        codebase="http://javadl-esd.sun.com/update/1.6.0/jinstall-6u35-windows-i586.cab#Version=1,6,0,35"
+        width="${width}" height="${height}">
+  <param name="endpoints" value="${endpoints_json}" />
+  <param name="cookie" value="${cookie}" />
+  <param name="code" value="${class_name}" />
+  <param name="codebase" value="${request.application_url}" />
+  <param name="archive" value="${jar_file}" />
+  <param name="type" value="application/x-java-applet;version=1.6" />
+  <param name="scriptable" value="false" />
+  <comment>
+    <embed type="application/x-java-applet;version=1.6"
+           code="${class_name}"
+           codebase="${request.application_url}"
+           archive="${jar_file}"
+           width="${width}"
+           height="${height}"
+           scriptable="false"
+           pluginspage="http://java.sun.com/products/plugin/index.html#download"
+           endpoints="${endpoints_json}"
+           cookie="${cookie}">
+    </embed>
+  </comment>
 </object>

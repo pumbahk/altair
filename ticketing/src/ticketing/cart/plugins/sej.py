@@ -84,7 +84,7 @@ def get_tickets(order):
         for ordered_product_item in ordered_product.ordered_product_items:
             bundle = ordered_product_item.product_item.ticket_bundle
             dicts = build_dicts_from_ordered_product_item(ordered_product_item)
-            for dict_ in dicts:
+            for seat, dict_ in dicts:
                 for ticket in bundle.tickets:
                     ticket_format = ticket.ticket_format
                     applicable = False

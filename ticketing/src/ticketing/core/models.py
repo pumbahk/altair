@@ -10,6 +10,7 @@ from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, 
 from sqlalchemy.orm import join, backref, column_property
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.sql.expression import desc
 from sqlalchemy.ext.associationproxy import association_proxy
 
 from pyramid.threadlocal import get_current_registry
@@ -1777,25 +1778,54 @@ class TicketPrintHistory(Base, BaseModel, WithTimestamp):
     ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id'), nullable=False)
     ticket_bundle = relationship('TicketBundle', backref='print_histories')
 
-class TicketPrintQueue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
-    __tablename__ = "TicketPrintQueue"
+class TicketPrintQueueEntry(Base, BaseModel):
+    __tablename__ = "TicketPrintQueueEntry"
     id = Column(Identifier, primary_key=True, autoincrement=True, nullable=False)
     operator_id = Column(Identifier, ForeignKey('Operator.id'), nullable=True)
     operator = relationship('Operator', uselist=False)
+    ordered_product_item_id = Column(Identifier, ForeignKey('OrderedProductItem.id'), nullable=True)
+    ordered_product_item = relationship('OrderedProductItem')
+    seat_id = Column(Identifier, ForeignKey('Seat.id'), nullable=True)
+    seat = relationship('Seat')
+    ticket_id = Column(Identifier, ForeignKey('Ticket.id'), nullable=False)
+    ticket = relationship('Ticket')
+    summary = Column(Unicode(255), nullable=False, default=u'')
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
+    created_at = Column(TIMESTAMP, nullable=False,
+                        default=datetime.now,
+                        server_default=sqlf.current_timestamp())
+    processed_at = Column(TIMESTAMP, nullable=True, default=None)
 
     @property
     def drawing(self):
         return self.data["drawing"]
 
     @classmethod
-    def enqueue(self, operator, data):
-        '''
-        '''
-        DBSession.add(TicketPrintQueue(data = data, operator = operator))
+    def enqueue(self, operator, ticket, data, summary, ordered_product_item=None, seat=None):
+        DBSession.add(TicketPrintQueueEntry(operator=operator, ticket=ticket, data=data, summary=summary, ordered_product_item=ordered_product_item))
 
     @classmethod
-    def dequeue_all(self, operator):
-        '''
-        '''
-        return TicketPrintQueue.filter_by(deleted_at = None, operator = operator).order_by('created_at desc').all()
+    def peek(self, operator, ticket_format_id):
+        return TicketPrintQueueEntry.filter_by(processed_at=None, operator=operator).filter(Ticket.ticket_format_id==ticket_format_id).order_by(desc(self.created_at)).all()
+
+    @classmethod
+    def dequeue(self, ids):
+        entries = TicketPrintQueueEntry.with_lockmode("update") \
+            .filter(TicketPrintQueueEntry.id.in_(ids)) \
+            .filter(TicketPrintQueueEntry.processed_at == None) \
+            .all()
+        if len(entries) == 0:
+            return False
+        for entry in entries:
+            entry.processed_at = datetime.now()
+            DBSession.add(entry)
+        return True
+
+class PageFormat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = "PageFormat"
+    id = Column(Identifier, primary_key=True)
+    name = Column(Unicode(255), nullable=False)
+    printer_name = Column(Unicode(255), nullable=False)
+    organization_id = Column(Identifier, ForeignKey('Organization.id'), nullable=True)
+    organization = relationship('Organization', uselist=False, backref='page_formats')
+    data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))

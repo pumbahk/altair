@@ -82,6 +82,7 @@ def main(global_config, **settings):
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_renderer('json'  , 'ticketing.renderers.json_renderer_factory')
     config.add_renderer('csv'   , 'ticketing.renderers.csv_renderer_factory')
+    config.add_renderer('lxml'  , 'ticketing.renderers.lxml_renderer_factory')
 
     config.add_tween('.tweens.session_cleaner_factory', over=EXCVIEW)
     #config.scan('ticketing') # Bad Code

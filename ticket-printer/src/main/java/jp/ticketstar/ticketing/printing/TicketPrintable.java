@@ -7,14 +7,14 @@ import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 
 public class TicketPrintable implements Printable {
-	final Tickets tickets;
+	final Pages tickets;
 	final AffineTransform trans;
 
-	public TicketPrintable(Tickets tickets) {
+	public TicketPrintable(Pages tickets) {
 		this(tickets, new AffineTransform());
 	}
 	
-	public TicketPrintable(Tickets tickets, AffineTransform trans) {
+	public TicketPrintable(Pages tickets, AffineTransform trans) {
 		this.tickets = tickets;
 		this.trans = trans;
 	}
