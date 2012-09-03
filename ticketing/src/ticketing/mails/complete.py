@@ -10,7 +10,7 @@ from pyramid_mailer.message import Message
 from .interfaces import ICompleteMail
 from .api import get_mailinfo_traverser
 from zope.interface import implementer
-
+from .api import create_or_update_mailinfo,  create_fake_order
 from ticketing.cart import helpers as ch ##
 from ticketing.core.models import MailTypeEnum
 import functools
@@ -22,6 +22,7 @@ complete_mailinfo_traverser = functools.partial(
     default=u"", 
 )
 
+__all__ = ["build_message", "send_mail", "preview_text", "create_or_update_mailinfo", "create_fake_order"]
 def build_message(request, order):
     complete_mail = get_complete_mail(request)
     message = complete_mail.build_message(order)

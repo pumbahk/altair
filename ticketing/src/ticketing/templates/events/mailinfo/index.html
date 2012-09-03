@@ -1,0 +1,20 @@
+<%inherit file="../../layout_2cols.html" />
+<%namespace file="/common/helpers.html" import="breadcrumbs,pager,flash_messages"/>
+<div class="breadcrumbs">
+      ${breadcrumbs(
+          names=[u'イベント', event.title, u"メール付加情報"],
+          urls=[request.route_path('events.index'), request.route_path("events.show",event_id=event.id)]
+      )}
+</div>
+
+<div class="content">
+  ${flash_messages(request)}
+</div>
+
+<h2>メール付加情報</h2>
+
+<hr/>
+
+%for i,label in choices:
+  <a href="${request.route_path("events.mailinfo.edit", event_id=event.id, mailtype=i)}">${label}</a>
+%endfor

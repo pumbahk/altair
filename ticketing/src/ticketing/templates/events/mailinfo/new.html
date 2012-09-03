@@ -8,10 +8,10 @@
 </style>
 
 <div class="breadcrumbs">
-${breadcrumbs(
-  names=[u'トップ', u"取引先詳細"],
-  urls=[request.route_path('index'), request.route_path("organizations.show",organization_id=organization.id)]
-)}
+      ${breadcrumbs(
+          names=[u'イベント', event.title, u"メール付加情報"],
+          urls=[request.route_path('events.index'), request.route_path("events.show",event_id=event.id)]
+      )}
 </div>
 
 <%
@@ -42,11 +42,14 @@ else:
   %endfor
 </div>
 
+<a href="${request.route_path("organizations.mails.new", organization_id=event.organization.id, mailtype=mailtype)}">
+${event.title}が所属する取引先のメール付加情報設定に移動
+</a>
+
 <div class="content">
   ${flash_messages(request)}
   ${alert_message(form)}
 </div>
-
 
 <div class="well">
   <form id="tmpSubmitForm" class="form-horizontal" action="#" method="POST">

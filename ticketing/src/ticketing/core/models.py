@@ -1826,5 +1826,5 @@ class MailTypeEnum(StandardEnum):
     PurchaseCancelMail = 2
 
 MailTypeLabels = (u"購入完了メール", u"購入キャンセルメール")
-assert(len(list(MailTypeEnum)), len(MailTypeLabels))
+assert(len(list(MailTypeEnum)) == len(MailTypeLabels))
 MailTypeChoices = [(str(e), label)for e, label in zip(MailTypeEnum, MailTypeLabels)]

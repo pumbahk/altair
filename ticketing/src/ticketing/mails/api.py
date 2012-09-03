@@ -84,7 +84,7 @@ def message_settings_override(message, override):
     return message
 
 import mock
-def create_fake_order_from_organization(request, organization, payment_plugin_id, delivery_plugin_id):
+def create_fake_order(request, organization, payment_plugin_id, delivery_plugin_id):
     ## must not save models 
     order = mock.Mock(
             order_no="xxx-xxxx-xxxx", 

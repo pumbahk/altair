@@ -17,6 +17,10 @@ from ticketing.organizations.forms import OrganizationForm, SejTenantForm
 from ticketing.core.models import Event, Account
 
 from ticketing.sej.models import SejTenant
+from ticketing.mails.forms import CompleteMailInfoTemplate
+from ticketing.models import DBSession
+from ticketing.mails.api import get_mail_utility
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -190,12 +194,6 @@ class Organizations(BaseView):
         organization_id = int(self.request.matchdict.get('organization_id', 0))
         sej_tenant_id = int(self.request.matchdict.get('id', 0))
 
-
-from ticketing.mails.forms import CompleteMailInfoTemplate
-from ticketing.mails.api import create_or_update_mailinfo,  create_fake_order_from_organization
-from ticketing.models import DBSession
-from ticketing.mails.api import get_mail_utility
-
 @view_defaults(route_name="organizations.mails.new", decorator=with_bootstrap, permission="authenticated", 
                renderer="ticketing:templates/organizations/mailinfo/new.html")
 class MailInfoNewView(BaseView):
@@ -206,11 +204,13 @@ class MailInfoNewView(BaseView):
         formclass = CompleteMailInfoTemplate(self.request, organization).as_formclass()
         mailtype = self.request.matchdict["mailtype"]
         form = formclass(**(organization.extra_mailinfo.data.get(mailtype, {}) if organization.extra_mailinfo else {}))
-        return {"organization": organization, "form": form}
+        return {"organization": organization, "form": form, "mailtype": mailtype}
 
     @view_config(request_method="POST")
     def mailinfo_new_post(self):
         logger.debug("mailinfo.post: %s" % self.request.POST)
+        mutil = get_mail_utility(self.request, self.request.matchdict["mailtype"])
+
         organization_id = int(self.request.matchdict.get("organization_id", 0))
         organization = Organization.get(organization_id)
         form = CompleteMailInfoTemplate(self.request, organization).as_formclass()(self.request.POST)
@@ -219,7 +219,7 @@ class MailInfoNewView(BaseView):
             return {"organization": organization, "form": form}
         else:
             mailtype = self.request.matchdict["mailtype"]
-            mailinfo = create_or_update_mailinfo(self.request, form.data, organization=organization, kind=mailtype)
+            mailinfo = mutil.create_or_update_mailinfo(self.request, form.data, organization=organization, kind=mailtype)
             logger.debug("mailinfo.data: %s" % mailinfo.data)
             DBSession.add(mailinfo)
             self.request.session.flash(u"メールの付加情報を登録しました")
@@ -234,7 +234,7 @@ def mail_preview_preorder(context, request):
     delivery_id = request.matchdict["delivery_id"]
     organization_id = int(request.matchdict.get("organization_id", 0))
     organization = Organization.get(organization_id)
-    fake_order = create_fake_order_from_organization(request, organization, payment_id, delivery_id)
+    fake_order = mutil.create_fake_order(request, organization, payment_id, delivery_id)
     return mutil.preview_text(request, fake_order)
 
     

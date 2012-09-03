@@ -4,10 +4,14 @@ from pyramid import renderers
 from pyramid_mailer.message import Message
 from .api import preview_text_from_message
 from .api import message_settings_override
+from .api import create_or_update_mailinfo
+from .api import create_fake_order
 from ticketing.cart import helpers as h
 import logging
 
 logger = logging.getLogger(__name__)
+
+__all__ = ["build_message", "send_mail", "preview_text", "create_or_update_mailinfo", "create_fake_order"]
 
 def build_message(request, order):
     return create_cancel_message(request, order)
