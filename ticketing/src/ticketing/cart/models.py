@@ -141,7 +141,8 @@ class CartedProductItem(Base):
         # 在庫数戻し
         logger.info('restoring the quantity of stock (id=%s) by +%d' % (self.product_item.stock_id, self.quantity))
         up = c_models.StockStatus.__table__.update().values(
-                {"quantity": c_models.StockStatus.quantity + self.quantity}
+                #{"quantity": c_models.StockStatus.quantity + self.quantity}
+                {"quantity": c_models.StockStatus.quantity + len(self.seats)}
         ).where(c_models.StockStatus.stock_id==self.product_item.stock_id)
         DBSession.bind.execute(up)
         logger.info('done for CartedProductItem (id=%d)' % self.id)
