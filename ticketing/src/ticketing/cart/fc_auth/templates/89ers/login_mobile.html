@@ -18,29 +18,13 @@
 <div style="text-align:center;">
 <br/>
 <input type="submit" value="&gt;&gt;チケット購入&lt;&lt;"/><br />
-9月1日(土) 12:00より販売開始予定です。</div>
+9月1日(土) 10:00より販売開始予定です。<br />ブースター会員先行販売期間は終了しております。<br />ブースター会員の方もこちらからご購入ください。</div>
 </div>
 %if guest_message:
 <div style="color:#ff0000">${guest_message}</div>
 %endif
 </form>
 </p>
-<div id="login_form">
-<font color="#ffbf00">■</font>ブースター会員ログイン
-</div>
-<form action="${request.url}" method="post">
-<input type="hidden" name="membership" value="89ers" />
-<div>
-  会員ID(8桁)<br/>
-  <input type="text" name="username" size="22" maxlength="8" value="${username}">
-</div>
-<div>
-  パスワード(半角英数8桁)<br/>
-  <input type="password" name="password" size="22" maxlength="8" value="">
-</div>
-<input type="submit" value="ログイン" />
-</form>
-
 <hr size="1" color="#888888" noshade="noshade" />
 <div align="center" style="font-size:x-small">
   <div>

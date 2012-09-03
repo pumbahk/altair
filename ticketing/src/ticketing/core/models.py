@@ -196,6 +196,7 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     stock_id        = Column(Identifier, ForeignKey('Stock.id'))
 
     venue_id        = Column(Identifier, ForeignKey('Venue.id', ondelete='CASCADE'), nullable=False)
+    row_l0_id       = Column(String(255), index=True)
     group_l0_id     = Column(String(255), index=True)
 
     venue           = relationship("Venue", backref='seats')

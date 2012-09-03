@@ -927,3 +927,5 @@ class FormRendererTests(unittest.TestCase):
         result = target.errors("req_text")
 
         self.assertEqual(result, "<ul>\n<li>This field is required.</li>\n</ul>")
+
+

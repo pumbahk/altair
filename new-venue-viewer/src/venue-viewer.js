@@ -175,12 +175,16 @@
           var xmax = -Infinity, ymax = -Infinity,
               xmin = Infinity,  ymin = Infinity;
 
-          (function iter(svgStyle, defs, nodeList, focused) {
+          (function iter(svgStyle, block_transform, defs, nodeList, focused) {
             outer:
             for (var i = 0; i < nodeList.length; i++) {
               var n = nodeList[i];
               if (n.nodeType != 1) continue;
+
               var attrs = util.allAttributes(n);
+              var transform = attrs["transform"] ?
+                block_transform.multiply(parseTransform(attrs["transform"])):
+                block_transform;
               var shape = null;
 
               { // stylize
@@ -199,7 +203,9 @@
                 break;
 
               case 'g': {
-                arguments.callee.call(self, currentSvgStyle, defs, n.childNodes,
+                arguments.callee.call(self, currentSvgStyle,
+                                      transform, defs,
+                                      n.childNodes,
                                       (focused || isFocused(attrs.id)));
                 continue outer;
               }
@@ -215,7 +221,8 @@
                 if (n.firstChild) {
                   shape = new Fashion.Text({
                     text: collectText(n),
-                    zIndex: 99
+                    anchor: currentSvgStyle.textAnchor,
+                    transform: _transform
                   });
                 }
                 break;
@@ -224,6 +231,7 @@
                 break;
 
               case 'rect':
+                var _transform = null;
                 shape = new Fashion.Rect({
                   size: {
                     x: parseFloat(attrs.width),
@@ -232,7 +240,9 @@
                   corner: {
                     x: parseFloat(attrs.rx || 0),
                     y: parseFloat(attrs.ry || 0)
-                  }
+                  },
+                  transform: _transform,
+                  zIndex: -10
                 });
                 for (var j=0,ll=n.childNodes.length; j<ll; j++) {
                   if (n.childNodes[j].nodeName == "title") {
@@ -262,6 +272,7 @@
                   shape.position({ x: x, y: y });
                 }
                 shape.style(buildStyleFromSvgStyle(currentSvgStyle));
+                shape.transform(transform);
                 if (shape instanceof Fashion.Text) {
                   shape.fontSize(currentSvgStyle.fontSize);
                 }
@@ -276,6 +287,7 @@
               stroke: false, strokeOpacity: false,
               fontSize: 10
             },
+            new Fashion.Matrix(),
             {},
             drawing.documentElement.childNodes,
             focused);

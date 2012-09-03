@@ -1704,7 +1704,7 @@ var PathData = (function() {
         throw new ValueError("arc takes 7 * n arguments, " + l + " given: " + arr.join(" "));
       var x = 0., y = 0.;
       for (var j = i, n = i + l; j <n ; j += 7) {
-        var rx = this.parseNumber(arr[j]), ry = y + this.parseNumber(arr[j + 1]);
+        var rx = this.parseNumber(arr[j]), ry = this.parseNumber(arr[j + 1]);
         var x_axis_rotation = this.parseNumber(arr[j + 2]);
         var large_arc_flag = this.parseNumber(arr[j + 3]);
         var sweep_flag = this.parseNumber(arr[j + 4]);
@@ -1719,7 +1719,7 @@ var PathData = (function() {
         throw new ValueError("arcRel takes 7 * n arguments, " + l + " given: " + arr.join(" "));
       var x = this.last.x, y = this.last.y;
       for (var j = i, n = i + l; j <n ; j += 7) {
-        var rx = x + this.parseNumber(arr[j]), ry = y + this.parseNumber(arr[j + 1]);
+        var rx = this.parseNumber(arr[j]), ry = this.parseNumber(arr[j + 1]);
         var x_axis_rotation = this.parseNumber(arr[j + 2]);
         var large_arc_flag = this.parseNumber(arr[j + 3]);
         var sweep_flag = this.parseNumber(arr[j + 4]);
@@ -2409,46 +2409,70 @@ var Drawable = _class("Drawable", {
  */
 /** @} */
 /** @file Text.js { */
-var Text = _class("Text", {
-  parent: Base,
-  class_props: { impl: 'Text' },
-  props: {
-    _text: '',
-    _fontFamily: 'Sans',
-    _fontSize: 10
-  },
-  methods: {
-    fontFamily: function(value) {
-      if (value) {
-        this._fontFamily = value
-        this._dirty |= Fashion.DIRTY_SHAPE;
-        if (this.drawable)
-          this.drawable._enqueueForUpdate(this);
+var Text = (function() {
+  var ANCHOR_SYMS = {
+    'left': 'left',
+    'center': 'center',
+    'right': 'right',
+    'start': 'left',
+    'middle': 'center',
+    'end': 'right'
+  };
+  return _class("Text", {
+    parent: Base,
+    class_props: { impl: 'Text' },
+    props: {
+      _text: '',
+      _fontFamily: 'Sans',
+      _fontSize: 10,
+      _anchor: 'left'
+    },
+    methods: {
+      fontFamily: function(value) {
+        if (value) {
+          this._fontFamily = value
+          this._dirty |= Fashion.DIRTY_SHAPE;
+          if (this.drawable)
+            this.drawable._enqueueForUpdate(this);
+        }
+        return this._fontFamily;
+      },
+
+      fontSize: function(value) {
+        if (value) {
+          this._fontSize = value;
+          this._dirty |= Fashion.DIRTY_SHAPE;
+          if (this.drawable)
+            this.drawable._enqueueForUpdate(this);
+        };
+        return this._fontSize;
+      },
+
+      text: function (value) {
+        if (value) {
+          this._text = value;
+          this._dirty |= Fashion.DIRTY_SHAPE;
+          if (this.drawable)
+            this.drawable._enqueueForUpdate(this);
+        };
+        return this._text;
+      },
+
+      anchor: function (value) {
+        if (value) {
+          var _value = ANCHOR_SYMS[value.toLowerCase()];
+          if (_value === void(0))
+            throw new ValueError('Invalid anchor type: ' + _value);
+          this._anchor = _value;
+          this._dirty |= Fashion.DIRTY_SHAPE;
+          if (this.drawable)
+            this.drawable._enqueueForUpdate(this);
+        };
+        return this._anchor;
       }
-      return this._fontFamily;
-    },
-
-    fontSize: function(value) {
-      if (value) {
-        this._fontSize = value;
-        this._dirty |= Fashion.DIRTY_SHAPE;
-        if (this.drawable)
-          this.drawable._enqueueForUpdate(this);
-      };
-      return this._fontSize;
-    },
-
-    text: function (value) {
-      if (value) {
-        this._text = value;
-        this._dirty |= Fashion.DIRTY_SHAPE;
-        if (this.drawable)
-          this.drawable._enqueueForUpdate(this);
-      };
-      return this._text;
     }
-  }
-});
+  });
+})();
 /*
  * vim: sts=2 sw=2 ts=2 et
  */

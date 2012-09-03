@@ -8,7 +8,7 @@ from zope.deprecation import deprecate
 
 logger = logging.getLogger(__name__)
 from pyramid.interfaces import IRoutesMapper, IRequest
-from pyramid.security import effective_principals
+from pyramid.security import effective_principals, forget
 from ..api.impl import get_communication_api
 from ..api.impl import CMSCommunicationApi
 from .interfaces import IPaymentMethodManager
@@ -82,7 +82,7 @@ def get_item_name(request, performance):
 
 def get_nickname(request, suffix=u'さん'):
     from .rakuten_auth.api import authenticated_user
-    user = authenticated_user(request)
+    user = authenticated_user(request) or {}
     nickname = user.get('nickname', '')
     if not nickname:
         return ""
@@ -216,3 +216,6 @@ def get_valid_sales_url(request, event):
             if "membergroup:%s" % membergroup.name in principals:
                 return request.route_url('cart.index.sales', event_id=event.id, sales_segment_id=salessegment.id)
 
+def logout(request):
+    headers = forget(request)
+    request.response.headerlist.extend(headers)

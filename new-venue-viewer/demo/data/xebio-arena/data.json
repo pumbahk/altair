@@ -46,17 +46,35 @@
       "name": "全体図",
       "focused_ids": ["root"],
       "group_l0_ids": {
-        "rect121054": "block_a",
-        "rect123324": "block_a",
-        "rect127233": "block_a",
-        "rect127815": "block_b",
-        "rect128959": "block_b",
-        "rect132174": "block_b",
-        "rect133082": "block_c",
-        "rect135412": "block_c",
-        "rect139336": "block_d",
-        "rect140480": "block_d",
-        "rect143023": "block_courtside"
+        "rect1151": "block_a",
+        "rect3378": "block_a",
+        "rect7220": "block_a",
+        "rect6310": "block_a",
+        "rect6312": "block_a",
+        "rect60014": "block_a",
+        "rect60016": "block_a",
+        "rect7792": "block_b",
+        "rect8999": "block_b",
+        "rect9961": "block_b",
+        "rect11488": "block_b",
+        "rect60018": "block_b",
+        "rect13092": "block_c",
+        "rect15379": "block_c",
+        "rect19241": "block_c",
+        "rect60020": "block_c",
+        "rect60022": "block_c",
+        "rect60024": "block_c",
+        "rect60026": "block_c",
+        "rect19833": "block_d",
+        "rect21040": "block_d",
+        "rect21727": "block_d",
+        "rect22879": "block_d",
+        "rect60030": "block_d",
+        "rect13": "courtside",
+        "rect65": "courtside",
+        "rect417": "courtside",
+        "rect784": "courtside",
+        "rect60028": "courtside"
       }
     },
     "block_a": {
@@ -87,7 +105,7 @@
       "group_l0_ids": {
       }
     },
-    "block_courtside": {
+    "courtside": {
       "id": 6,
       "name": "コートサイド",
       "focused_ids": ["g95791"],

@@ -1,5 +1,7 @@
 # -*- coding:utf-8 -*-
 from datetime import datetime
+from time import mktime
+from email.utils import formatdate
 
 class CacheControlTween(object):
     def __init__(self, handler, registry):
@@ -11,7 +13,7 @@ class CacheControlTween(object):
         if response.content_type.startswith("text/"):
             response.headers['Pragma'] = "no-cache"
             response.headers['Cache-Control'] = "no-cache,no-store"
-            response.headers['Expires'] = datetime.now().isoformat()
+            response.headers['Expires'] = formatdate(mktime(datetime.now().timetuple()), localtime=False)
 
         return response
 
