@@ -13,6 +13,7 @@ from ticketing.formhelpers import DateTimeField, Translations, Required
 from ticketing.core.models import Event, Account, DeliveryMethod
 from ticketing.core.models import TicketFormat
 from .convert import to_opcodes
+from .cleaner import cleanup_svg
 
 def filestorage_has_file(storage):
     return hasattr(storage, "filename") and storage.file
@@ -45,7 +46,8 @@ def build_template_data_value(drawing):
 
 def get_validated_xmltree_as_opcode_source(svgio):
     try:
-        xmltree  = etree.parse(svgio)
+        xmltree = etree.parse(svgio)
+        cleanup_svg(xmltree)
     except Exception, e:
         raise ValidationError("xml:" + str(e))
     try:
@@ -190,11 +192,12 @@ class TicketFormatForm(Form):
                 raise ValidationError("size[\"width\"] is not found")
             if not data["size"].get("height"):
                 raise ValidationError("size[\"height\"] is not found")
-
             if not "perforations" in data:
                 raise ValidationError("perforations is not found")
             if not "printable_areas" in data:
                 raise ValidationError("printable_areas is not found")
+            if not "print_offset" in data:
+                raise ValidationError("printable_offset is not found")
             
         except Exception, e:
             raise ValidationError(str(e))
