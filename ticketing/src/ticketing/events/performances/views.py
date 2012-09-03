@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+logger = logging.getLogger(__name__)
 
 import webhelpers.paginate as paginate
 from pyramid.view import view_config, view_defaults
@@ -14,6 +15,12 @@ from ticketing.events.performances.forms import PerformanceForm
 from ticketing.core.models import Event, Performance, Order
 from ticketing.products.forms import ProductForm, ProductItemForm
 from ticketing.orders.forms import OrderForm, OrderSearchForm
+
+from ticketing.mails.forms import CompleteMailInfoTemplate
+from ticketing.models import DBSession
+from ticketing.mails.api import get_mail_utility
+
+from ticketing.core.models import MailTypeChoices
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class Performances(BaseView):
@@ -189,3 +196,53 @@ class Performances(BaseView):
 
         self.request.session.flash(u'パフォーマンスを削除しました')
         return HTTPFound(location=route_path('events.show', self.request, event_id=performance.event_id))
+
+@view_config(decorator=with_bootstrap, permission="authenticated", 
+             route_name="performances.mailinfo.index")
+def mailinfo_index_view(context, request):
+    performance_id = request.matchdict["performance_id"]
+    return HTTPFound(request.route_url("performances.mailinfo.edit", performance_id=performance_id, mailtype=MailTypeChoices[0][0]))
+
+@view_defaults(decorator=with_bootstrap, permission="authenticated", 
+               route_name="performances.mailinfo.edit", 
+               renderer="ticketing:templates/performances/mailinfo/new.html")
+class MailInfoNewView(BaseView):
+    @view_config(request_method="GET")
+    def mailinfo_new(self):
+        performance = Performance.filter_by(id=self.request.matchdict["performance_id"]).first()
+        if performance is None:
+            raise HTTPNotFound('performance id %s is not found' % self.request.matchdict["performance_id"])
+
+        formclass = CompleteMailInfoTemplate(self.request, performance.event.organization).as_formclass()
+        mailtype = self.request.matchdict["mailtype"]
+        form = formclass(**(performance.extra_mailinfo.data.get(mailtype, {}) if performance.extra_mailinfo else {}))
+        return {"performance": performance, 
+                "form": form, 
+                "organization": performance.event.organization, 
+                "mailtype": self.request.matchdict["mailtype"], 
+                "choices": MailTypeChoices}
+
+    @view_config(request_method="POST")
+    def mailinfo_new_post(self):
+        logger.debug("mailinfo.post: %s" % self.request.POST)
+        mutil = get_mail_utility(self.request, self.request.matchdict["mailtype"])
+
+        performance = Performance.filter_by(id=self.request.matchdict["performance_id"]).first()
+        if performance is None:
+            raise HTTPNotFound('performance id %s is not found' % self.request.matchdict["performance_id"])
+        form = CompleteMailInfoTemplate(self.request, performance.event.organization).as_formclass()(self.request.POST)
+        if not form.validate():
+            self.request.session.flash(u"入力に誤りがあります。")
+        else:
+            mailtype = self.request.matchdict["mailtype"]
+            mailinfo = mutil.create_or_update_mailinfo(self.request, form.data, performance=performance, kind=mailtype)
+            logger.debug("mailinfo.data: %s" % mailinfo.data)
+            DBSession.add(mailinfo)
+            self.request.session.flash(u"メールの付加情報を登録しました")
+
+        return {"performance": performance, 
+                "form": form, 
+                "organization": performance.event.organization, 
+                "mailtype": self.request.matchdict["mailtype"], 
+                "choices": MailTypeChoices}
+

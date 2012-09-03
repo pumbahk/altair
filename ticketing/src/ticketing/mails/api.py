@@ -17,17 +17,19 @@ def get_mailinfo_traverser(request, order, access=None, default=None):
     trv = getattr(order, "_mailinfo_traverser", None)
     if trv is None:
         # organization = order.ordered_from
-        event = order.performance.event
-        trv = order._mailinfo_traverser = EmailInfoTraverser(access=access, default=default).visit(event)
+        performance = order.performance
+        trv = order._mailinfo_traverser = EmailInfoTraverser(access=access, default=default).visit(performance)
     return trv
 
-def create_mailinfo(target, data, organization, event, kind):
+def create_mailinfo(target, data, organization, event, performance, kind):
     if kind:
         data = {kind: data}
     target.extra_mailinfo = ExtraMailInfo(data=data)
-    if target == event:
+    if target == performance:
+        target.performance = performance
+    elif target == event:
         target.event = event
-    if target == organization:
+    elif target == organization:
         target.organization = organization
     return target.extra_mailinfo
 
@@ -41,11 +43,11 @@ def update_mailinfo(target, data, kind=None):
     target.extra_mailinfo.data.changed()
     return target.extra_mailinfo
 
-def create_or_update_mailinfo(request, data, organization=None, event=None, kind=None):
-    target = event or organization
+def create_or_update_mailinfo(request, data, organization=None, event=None, performance=None, kind=None):
+    target = performance or event or organization
     assert target
     if target.extra_mailinfo is None:
-        return create_mailinfo(target, data, organization, event, kind)
+        return create_mailinfo(target, data, organization, event, performance, kind)
     else:
         return update_mailinfo(target, data, kind)
 

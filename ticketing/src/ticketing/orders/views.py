@@ -479,8 +479,8 @@ class MailInfoView(BaseView):
         mail_form = SendingMailForm(subject=message.subject, 
                                     recipient=message.recipients[0], 
                                     bcc=message.bcc[0] if message.bcc else "")
-        event = order.performance.event
-        return dict(order=order, mail_form=mail_form, event=event)
+        performance = order.performance
+        return dict(order=order, mail_form=mail_form, performance=performance)
 
     @view_config(match_param="action=complete_mail_preview", renderer="string")
     def complete_mail_preview(self):

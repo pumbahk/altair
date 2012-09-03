@@ -23,7 +23,7 @@ from ticketing.core.models import MailTypeEnum
 	  <li>
 		<a href="${request.route_path("orders.mailinfo", order_id=order.id, action="complete_mail_preview")}">preview</a>
 		<a href="#SendingCompleteMailModal" data-toggle="modal">購入完了メールの再送</a>
-		<a href="${request.route_path("events.mailinfo.edit", event_id=event.id, mailtype=MailTypeEnum.CompleteMail)}">メール付加情報変更</a>
+		<a href="${request.route_path("performances.mailinfo.edit", performance_id=performance.id, mailtype=MailTypeEnum.CompleteMail)}">メール付加情報変更</a>
 	  </li>
 	</ul>
   </div>
@@ -36,7 +36,7 @@ from ticketing.core.models import MailTypeEnum
 	  <li>
 		<a href="${request.route_path("orders.mailinfo", order_id=order.id, action="cancel_mail_preview")}">preview</a>
 		<a href="#SendingCancelMailModal" data-toggle="modal">購入キャンセルメールの再送</a>
-		<a href="${request.route_path("events.mailinfo.edit", event_id=event.id, mailtype=MailTypeEnum.PurchaseCancelMail)}">メール付加情報変更</a>
+		<a href="${request.route_path("performances.mailinfo.edit", performance_id=performance.id, mailtype=MailTypeEnum.PurchaseCancelMail)}">メール付加情報変更</a>
 	  </li>
 	</ul>
   </div>

@@ -1,0 +1,104 @@
+<%inherit file="../../layout_2cols.html" />
+<%namespace file="/common/helpers.html" import="breadcrumbs,alert_message,flash_messages,form_item"/>
+
+<style type="text/css">
+  .controls select{width: 80%;}
+  .controls input{width: 80%;}
+  .controls textarea{width: 80%; min-height:100px;}
+</style>
+
+<div class="breadcrumbs">
+  ${breadcrumbs(
+      names=[u'イベント', performance.event.title, u'パフォーマンス', performance.name, u"メール付加情報"] ,
+      urls=[
+        request.route_path('events.index'),
+        request.route_path('events.show', event_id=performance.event.id),
+        request.route_path('performances.index', event_id=performance.event.id),
+        request.route_path('performances.show', performance_id=performance.id),
+      ]
+  )}
+</div>
+
+<%
+from ticketing.core.models import MailTypeEnum
+from ticketing.core.models import MailTypeChoices
+if str(MailTypeEnum.CompleteMail) == mailtype:
+    ja_mailtype = u"購入完了メール付加情報"
+elif str(MailTypeEnum.PurchaseCancelMail) == mailtype:
+    ja_mailtype = u"購入キャンセルメール付加情報"
+else:
+    ja_mailtype = u"?????"
+%>
+
+<div class="page-header">
+  <h3>${ja_mailtype}</h3>
+</div>
+
+<pre>
+メールの付加情報は以下のようにして取得されます
+  1. 購入されたチケットのイベントに紐づく設定を取得。
+  2. 購入されたチケットのイベントが所属している取引先に紐づく設定を取得。
+</pre>
+
+<div class="btn-group" style="margin-bottom:20px;">
+  %for i, label in MailTypeChoices:
+    <a class="btn btn-inverse"
+	   href="${request.current_route_path(organization_id=organization.id, mailtype=i)}">${label}</a>
+  %endfor
+</div>
+
+<a href="${request.route_path("events.mailinfo.edit", event_id=performance.event.id, mailtype=mailtype)}">
+${performance.name}が所属するイベントの設定に移動
+</a>
+
+<div class="content">
+  ${flash_messages(request)}
+  ${alert_message(form)}
+</div>
+
+<div class="well">
+  <form id="tmpSubmitForm" class="form-horizontal" action="#" method="POST">
+	<fieldset>
+	  %for field in form:
+	  <div class="${field.description}">
+	    ${form_item(field)}
+	  </div>
+	  %endfor
+	</fieldset>
+	<div class="form-actions">
+	  <input class="btn btn-primary" type="submit" name="submit" value="登録">
+	</div>
+  </form>
+</div>
+
+<form id="submitForm" action="#" method="POST" style="display: none;">
+</form>
+
+<script type="text/javascript">
+  $("#payment_methods").change(function(){
+    $(".payment").hide();
+    $("."+$(this).val()).show();
+  });
+  $("#delivery_methods").change(function(){
+    $(".delivery").hide();
+    $("."+$(this).val()).show();
+  });
+    $(".payment").hide();
+    $(".delivery").hide();
+    $("."+$("#payment_methods").val()).show();
+    $("."+$("#delivery_methods").val()).show();
+
+  $("#tmpSubmitForm").submit(function(e){
+    e.preventDefault();
+    var form = $("#submitForm");
+    form.empty();
+    form.append($('<input name="submit" type="submit">'));
+    form.append($('<input type="hidden" name="payment_methods">').attr("value",$("#payment_methods").val()));
+    form.append($('<input type="hidden" name="delivery_methods">').attr("value",$("#delivery_methods").val()));
+    $(this).find("textarea:visible").each(function(i,e){
+      var src = $(e);
+      $("<input type='hidden'>").attr("name", src.attr("name")).attr("value", src.attr("value")).appendTo(form);
+    });
+    form.find("input[name='submit']").click();
+  });
+</script>

@@ -1812,6 +1812,8 @@ class ExtraMailInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization = relationship('Organization', uselist=False, backref=backref('extra_mailinfo', uselist=False))
     event_id = Column(Identifier, ForeignKey('Event.id'), nullable=True)
     event = relationship('Event', uselist=False, backref=backref('extra_mailinfo', uselist=False))
+    performance_id = Column(Identifier, ForeignKey('Performance.id'), nullable=True)
+    performance = relationship('Performance', uselist=False, backref=backref('extra_mailinfo', uselist=False))
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
 
     def is_valid(self):
@@ -1828,4 +1830,4 @@ class MailTypeEnum(StandardEnum):
 
 MailTypeLabels = (u"購入完了メール", u"購入キャンセルメール")
 assert(len(list(MailTypeEnum)) == len(MailTypeLabels))
-MailTypeChoices = [(str(e), label)for e, label in zip(MailTypeEnum, MailTypeLabels)]
+MailTypeChoices = [(str(e), label)for e, label in zip(sorted(MailTypeEnum), MailTypeLabels)]
