@@ -26,7 +26,14 @@ else:
 %>
 
 <div class="page-header">
-  <h3>${ja_mailtype}</h3>
+  <h2>${ja_mailtype}</h2>
+  <span class="label">取引先</span> &gt
+  <span class="label label-warning">イベント</span> &gt
+  <span class="label">パフォーマンス</span>
+  <br/>
+  <a style="margin-left:30px;" href="${request.route_path("organizations.mails.new", organization_id=event.organization.id, mailtype=mailtype)}">
+	${event.title}が所属する取引先の設定に移動
+  </a>
 </div>
 
 <pre>
@@ -41,10 +48,6 @@ else:
 	   href="${request.current_route_path(organization_id=organization.id, mailtype=i)}">${label}</a>
   %endfor
 </div>
-
-<a href="${request.route_path("organizations.mails.new", organization_id=event.organization.id, mailtype=mailtype)}">
-${event.title}が所属する取引先の設定に移動
-</a>
 
 <div class="content">
   ${flash_messages(request)}
