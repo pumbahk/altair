@@ -6,7 +6,7 @@ from ticketing.fanstatic import with_bootstrap
 from pyramid.view import view_config, view_defaults
 from ticketing.views import BaseView
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPCreated
-from ticketing.mails.forms import CompleteMailInfoTemplate
+from ticketing.mails.forms import MailInfoTemplate
 from ticketing.models import DBSession
 from ticketing.mails.api import get_mail_utility
 
@@ -30,7 +30,7 @@ class MailInfoNewView(BaseView):
         if event is None:
             raise HTTPNotFound('event id %s is not found' % self.request.matchdict["event_id"])
 
-        formclass = CompleteMailInfoTemplate(self.request, event.organization).as_formclass()
+        formclass = MailInfoTemplate(self.request, event.organization).as_formclass()
         mailtype = self.request.matchdict["mailtype"]
         form = formclass(**(event.extra_mailinfo.data.get(mailtype, {}) if event.extra_mailinfo else {}))
         return {"event": event, 
@@ -48,7 +48,7 @@ class MailInfoNewView(BaseView):
                                 id=self.request.matchdict["event_id"]).first()
         if event is None:
             raise HTTPNotFound('event id %s is not found' % self.request.matchdict["event_id"])
-        form = CompleteMailInfoTemplate(self.request, event.organization).as_formclass()(self.request.POST)
+        form = MailInfoTemplate(self.request, event.organization).as_formclass()(self.request.POST)
         if not form.validate():
             self.request.session.flash(u"入力に誤りがあります。")
         else:

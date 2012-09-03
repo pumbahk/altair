@@ -8,7 +8,7 @@ from ..interfaces import IDeliveryPlugin, ICartDelivery, IOrderDelivery, IComple
 
 from .. import logger
 from ticketing.mails.complete import complete_mailinfo_traverser
-from ticketing.mails.forms import CompleteMailInfoTemplate
+from ticketing.mails.forms import MailInfoTemplate
 from pyramid.threadlocal import get_current_registry
 
 from ticketing.core import models as c_models
@@ -335,7 +335,7 @@ def completion_payment_mail_viewlet(context, request):
     sej_order=get_sej_order(order)
     trv = complete_mailinfo_traverser(request, order)
     return dict(sej_order=sej_order, h=cart_helper, 
-                notice=trv.data[CompleteMailInfoTemplate.payment_key(order, "notice")])
+                notice=trv.data[MailInfoTemplate.payment_key(order, "notice")])
 
 @view_config(context=ICompleteMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer="ticketing.cart.plugins:templates/sej_delivery_mail_complete.html")
 def completion_delivery_mail_viewlet(context, request):

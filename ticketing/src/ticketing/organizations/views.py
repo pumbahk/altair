@@ -17,7 +17,7 @@ from ticketing.organizations.forms import OrganizationForm, SejTenantForm
 from ticketing.core.models import Event, Account
 
 from ticketing.sej.models import SejTenant
-from ticketing.mails.forms import CompleteMailInfoTemplate
+from ticketing.mails.forms import MailInfoTemplate
 from ticketing.models import DBSession
 from ticketing.mails.api import get_mail_utility
 
@@ -201,7 +201,7 @@ class MailInfoNewView(BaseView):
     def mailinfo_new(self):
         organization_id = int(self.request.matchdict.get("organization_id", 0))
         organization = Organization.get(organization_id)
-        formclass = CompleteMailInfoTemplate(self.request, organization).as_formclass()
+        formclass = MailInfoTemplate(self.request, organization).as_formclass()
         mailtype = self.request.matchdict["mailtype"]
         form = formclass(**(organization.extra_mailinfo.data.get(mailtype, {}) if organization.extra_mailinfo else {}))
         return {"organization": organization, "form": form, "mailtype": mailtype}
@@ -213,7 +213,7 @@ class MailInfoNewView(BaseView):
 
         organization_id = int(self.request.matchdict.get("organization_id", 0))
         organization = Organization.get(organization_id)
-        form = CompleteMailInfoTemplate(self.request, organization).as_formclass()(self.request.POST)
+        form = MailInfoTemplate(self.request, organization).as_formclass()(self.request.POST)
         if not form.validate():
             self.request.session.flash(u"入力に誤りがあります。")
             return {"organization": organization, "form": form}

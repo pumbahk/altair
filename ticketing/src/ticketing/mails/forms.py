@@ -33,7 +33,7 @@ def MailInfoFormFactory(template):
     return type("MailInfoForm", (Form, ), attrs)
 
 PluginInfo = namedtuple("PluginInfo", "method name label") #P0, P0notice, 注意事項(コンビに決済)    
-class CompleteMailInfoTemplate(object):
+class MailInfoTemplate(object):
     """
     data = {
       "header": u"ヘッダー", 

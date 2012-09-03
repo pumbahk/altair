@@ -16,7 +16,7 @@ from ticketing.core.models import Event, Performance, Order
 from ticketing.products.forms import ProductForm, ProductItemForm
 from ticketing.orders.forms import OrderForm, OrderSearchForm
 
-from ticketing.mails.forms import CompleteMailInfoTemplate
+from ticketing.mails.forms import MailInfoTemplate
 from ticketing.models import DBSession
 from ticketing.mails.api import get_mail_utility
 
@@ -213,7 +213,7 @@ class MailInfoNewView(BaseView):
         if performance is None:
             raise HTTPNotFound('performance id %s is not found' % self.request.matchdict["performance_id"])
 
-        formclass = CompleteMailInfoTemplate(self.request, performance.event.organization).as_formclass()
+        formclass = MailInfoTemplate(self.request, performance.event.organization).as_formclass()
         mailtype = self.request.matchdict["mailtype"]
         form = formclass(**(performance.extra_mailinfo.data.get(mailtype, {}) if performance.extra_mailinfo else {}))
         return {"performance": performance, 
@@ -230,7 +230,7 @@ class MailInfoNewView(BaseView):
         performance = Performance.filter_by(id=self.request.matchdict["performance_id"]).first()
         if performance is None:
             raise HTTPNotFound('performance id %s is not found' % self.request.matchdict["performance_id"])
-        form = CompleteMailInfoTemplate(self.request, performance.event.organization).as_formclass()(self.request.POST)
+        form = MailInfoTemplate(self.request, performance.event.organization).as_formclass()(self.request.POST)
         if not form.validate():
             self.request.session.flash(u"入力に誤りがあります。")
         else:
