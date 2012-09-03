@@ -165,6 +165,9 @@ class Membership(Base, WithTimestamp):
     #sales_segments = lambda:relationship('SalesSegment', secondary=Membership_SalesSegment.__table__, backref='memberships')
     status = Column(Integer)
 
+    organization_id = Column(Identifier, ForeignKey('Organization.id'))
+    organization = relationship('Organization', backref='memberships')
+
 
 MemberGroup_SalesSegment = Table('MemberGroup_SalesSegment', Base.metadata,
     Column('id', Identifier, primary_key=True),
