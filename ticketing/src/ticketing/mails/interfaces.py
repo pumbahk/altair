@@ -1,6 +1,16 @@
 # -*- coding:utf-8 -*-
 from zope.interface import Interface, Attribute
 
+class IMailUtility(Interface):
+    def build_message(request, order):
+        """orderからメールオブジェクト作成"""
+        
+    def send_mail(request, order, override=None):
+        """ orderからメールを作成して送信"""
+        
+    def preview_text(request, order):
+        """ orderから送信されるメールのpreviewを作成"""
+    
 class ICompleteMail(Interface):
     """完了メールを送る
     """

@@ -9,13 +9,16 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+def build_message(request, order):
+    return create_cancel_message(request, order)
+
 def preview_text(request, order):
     message = create_cancel_message(request, order)
     return preview_text_from_message(message)
 
 def send_mail(request, order, override=None):
     mailer = get_mailer(request)
-    message = create_cancel_message(request, order, override=override)
+    message = create_cancel_message(request, order)
     message_settings_override(message, override)
     mailer.send(message)
     logger.info("send cancel mail to %s" % message.recipients)

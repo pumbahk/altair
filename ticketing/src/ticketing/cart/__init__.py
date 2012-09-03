@@ -58,12 +58,7 @@ def includeme(config):
 
 
 def import_mail_module(config):
-    config.include(config.registry.settings["altair.mailer"])
-    from pyramid.interfaces import IRequest
-    from ticketing.mails.interfaces import ICompleteMail
-    from ticketing.mails.complete import CompleteMail
-    complete_mail_factory = functools.partial(CompleteMail, "ticketing:templates/mail/complete.mako")
-    config.registry.adapters.register([IRequest], ICompleteMail, "", complete_mail_factory)
+    config.include("ticketing.mails")
     config.add_subscriber('.sendmail.on_order_completed', '.events.OrderCompleted')
 
 

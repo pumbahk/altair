@@ -1,4 +1,7 @@
-from .interfaces import ICompleteMail
+from .interfaces import (
+    ICompleteMail, 
+    IMailUtility
+)
 from .traverser import EmailInfoTraverser
 from pyramid.interfaces import IRequest
 import logging
@@ -6,6 +9,9 @@ from datetime import datetime
 from ticketing.core.models import ExtraMailInfo
 
 logger = logging.getLogger(__name__)
+def get_mailutility(request, mailtype):
+    return request.registry.getUtility(IMailUtility, str(mailtype))
+
 def get_mailinfo_traverser(request, order, access=None, default=None):
     trv = getattr(order, "_mailinfo_traverser", None)
     if trv is None:
