@@ -2,16 +2,26 @@
 from pyramid_mailer import get_mailer
 from pyramid import renderers
 from pyramid_mailer.message import Message
+import functools
 from .api import preview_text_from_message
 from .api import message_settings_override
 from .api import create_or_update_mailinfo
 from .api import create_fake_order
+from .api import get_mailinfo_traverser
 from ticketing.cart import helpers as h
+from ticketing.core.models import MailTypeEnum
 import logging
 
 logger = logging.getLogger(__name__)
 
 __all__ = ["build_message", "send_mail", "preview_text", "create_or_update_mailinfo", "create_fake_order"]
+
+get_traverser = functools.partial(
+    get_mailinfo_traverser, 
+    ## xxx: uggg
+    access=lambda d, k, default="" : d.get(str(MailTypeEnum.PurchaseCancelMail), {}).get(k, default), 
+    default=u"", 
+)
 
 def build_message(request, order):
     return create_cancel_message(request, order)
@@ -57,6 +67,7 @@ def create_cancel_message(request, order):
     if performance.venue.id != 1:  # ダミー会場でないなら
         venue_info = u'{venue} ({start_on}開演)'.format(venue=performance.venue.name, start_on=performance.start_on)
 
+    traverser = get_traverser(request, order)
     value = dict(
         order=order,
         sa=order.shipping_address,
@@ -68,6 +79,11 @@ def create_cancel_message(request, order):
         delivery_fee=h.format_currency(order.delivery_fee),
         total_amount=h.format_currency(order.total_amount),
         contact_email=order.ordered_from.contact_email,
+        ### mail info
+        footer = traverser.data["footer"],
+        notice = traverser.data["notice"],
+        header = traverser.data["header"],
+        
     )
     mail_body = renderers.render(mail_renderer_names[plugin_id], value, request=request)
     mail_body = unicode(mail_body, 'utf-8')

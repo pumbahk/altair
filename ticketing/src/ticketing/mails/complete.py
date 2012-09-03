@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
 from pyramid_mailer import get_mailer
 from .api import get_complete_mail, preview_text_from_message, message_settings_override
+from .api import get_mailinfo_traverser
+from .api import create_or_update_mailinfo,  create_fake_order
 import logging
 logger = logging.getLogger(__name__)
 
@@ -8,14 +10,12 @@ import itertools
 from pyramid import renderers
 from pyramid_mailer.message import Message
 from .interfaces import ICompleteMail
-from .api import get_mailinfo_traverser
 from zope.interface import implementer
-from .api import create_or_update_mailinfo,  create_fake_order
 from ticketing.cart import helpers as ch ##
 from ticketing.core.models import MailTypeEnum
 import functools
 
-complete_mailinfo_traverser = functools.partial(
+get_traverser = functools.partial(
     get_mailinfo_traverser, 
     ## xxx: uggg
     access=lambda d, k, default="" : d.get(str(MailTypeEnum.CompleteMail), {}).get(k, default), 
@@ -69,7 +69,7 @@ class CompleteMail(object):
         sa = order.shipping_address 
         pair = order.payment_delivery_pair
         seats = itertools.chain.from_iterable((p.seats for p in order.ordered_products))
-        traverser = complete_mailinfo_traverser(self.request, order)
+        traverser = get_traverser(self.request, order)
 
         value = dict(h=ch, 
                      order=order,

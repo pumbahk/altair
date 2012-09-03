@@ -7,7 +7,7 @@ from ..interfaces import IPaymentPlugin, ICartPayment, IOrderPayment, ICompleteM
 from ..interfaces import IDeliveryPlugin, ICartDelivery, IOrderDelivery, ICompleteMailDelivery
 
 from .. import logger
-from ticketing.mails.complete import complete_mailinfo_traverser
+from ticketing.mails.api import get_mail_utility
 from ticketing.mails.forms import MailInfoTemplate
 from pyramid.threadlocal import get_current_registry
 
@@ -333,7 +333,8 @@ def completion_payment_mail_viewlet(context, request):
     """
     order = context.order
     sej_order=get_sej_order(order)
-    trv = complete_mailinfo_traverser(request, order)
+    mutil = get_mail_utility(request, c_models.MailTypeEnum.CompleteMail)
+    trv = mutil.get_traverser(request, order)
     return dict(sej_order=sej_order, h=cart_helper, 
                 notice=trv.data[MailInfoTemplate.payment_key(order, "notice")])
 
@@ -345,6 +346,7 @@ def completion_delivery_mail_viewlet(context, request):
     sej_order=get_sej_order(context.order)
     payment_id = context.order.payment_delivery_pair.payment_method.payment_plugin_id
     is_payment_with_sej = int(payment_id or -1) == PAYMENT_PLUGIN_ID
-    trv = complete_mailinfo_traverser(request, context.order)
+    mutil = get_mail_utility(request, c_models.MailTypeEnum.CompleteMail)
+    trv = mutil.get_traverser(request, context.order)
     return dict(sej_order=sej_order, h=cart_helper, trv=trv, 
                 is_payment_with_sej=is_payment_with_sej)
