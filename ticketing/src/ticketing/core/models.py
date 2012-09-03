@@ -1672,20 +1672,28 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     attributes = association_proxy('_attributes', 'value', creator=lambda k, v: OrderedProductAttribute(name=k, value=v))
 
     @property
-    def seat_statuses(self):
+    def seat_statuses_for_update(self):
         """ 確保済の座席ステータス
         """
-        return DBSession.query(SeatStatus).filter(SeatStatus.seat_id.in_([s.id for s in self.seats])).all()
+        return DBSession.query(SeatStatus).filter(SeatStatus.seat_id.in_([s.id for s in self.seats])).with_lockmode('update').all()
 
     def release(self):
         # 座席開放
-        for seat_status in self.seat_statuses:
-            logger.debug('release seat id=%d' % (seat_status.seat_id))
-            if seat_status.status != int(SeatStatusEnum.Ordered):
-                raise InvalidStockStateError("This order is associated with a seat (id=%d) that is not marked ordered" % seat_status.seat_id)
-            seat_status.status = int(SeatStatusEnum.Vacant)
+        cancellable_status = [
+            int(SeatStatusEnum.Ordered),
+            int(SeatStatusEnum.Reserved),
+        ]
+        for seat_status in self.seat_statuses_for_update:
+            logger.info('trying to release seat (id=%d)' % seat_status.seat_id)
+            if seat_status.status not in cancellable_status:
+                logger.info('not releasing OrderedProductItem (id=%d, seat_id=%d, status=%d) for safety' % (self.id, seat_status.seat_id, seat_status.status))
+                raise InvalidStockStateError("This order is associated with a seat (id=%d, status=%d) that is not marked ordered" % seat_status.seat_id, seat_status.status)
+            else:
+                logger.info('setting status of seat (id=%d, status=%d) to Vacant (%d)' % (seat_status.seat_id, seat_status.status, int(SeatStatusEnum.Vacant)))
+                seat_status.status = int(SeatStatusEnum.Vacant)
+
         # 在庫数を戻す
-        logger.debug('release stock id=%s quantity=%d' % (self.product_item.stock_id, len(self.seats)))
+        logger.info('release stock id=%s quantity=%d' % (self.product_item.stock_id, len(self.seats)))
         query = StockStatus.__table__.update().values(
             {'quantity': StockStatus.quantity + len(self.seats)}
         ).where(StockStatus.stock_id==self.product_item.stock_id)
