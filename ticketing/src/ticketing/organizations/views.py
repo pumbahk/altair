@@ -192,8 +192,9 @@ class Organizations(BaseView):
 
 
 from ticketing.mails.forms import CompleteMailInfoTemplate
-from ticketing.mails.complete import preview_text ##uggg
 from ticketing.mails.api import create_or_update_mailinfo,  create_fake_order_from_organization
+from ticketing.models import DBSession
+from ticketing.mails.api import get_mail_utility
 
 @view_defaults(route_name="organizations.mails.new", decorator=with_bootstrap, permission="authenticated", 
                renderer="ticketing:templates/organizations/mailinfo/new.html")
@@ -219,7 +220,6 @@ class MailInfoNewView(BaseView):
         else:
             mailtype = self.request.matchdict["mailtype"]
             mailinfo = create_or_update_mailinfo(self.request, form.data, organization=organization, kind=mailtype)
-            from ticketing.models import DBSession
             logger.debug("mailinfo.data: %s" % mailinfo.data)
             DBSession.add(mailinfo)
             self.request.session.flash(u"メールの付加情報を登録しました")
@@ -229,11 +229,12 @@ class MailInfoNewView(BaseView):
              decorator=with_bootstrap, permission="authenticated", 
              renderer="string")
 def mail_preview_preorder(context, request):
+    mutil = get_mail_utility(request, request.matchdict["mailtype"])
     payment_id = request.matchdict["payment_id"]
     delivery_id = request.matchdict["delivery_id"]
     organization_id = int(request.matchdict.get("organization_id", 0))
     organization = Organization.get(organization_id)
     fake_order = create_fake_order_from_organization(request, organization, payment_id, delivery_id)
-    return preview_text(request, fake_order)
+    return mutil.preview_text(request, fake_order)
 
     

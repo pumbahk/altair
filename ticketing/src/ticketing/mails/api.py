@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 from .interfaces import (
     ICompleteMail, 
     IMailUtility
@@ -9,7 +10,7 @@ from datetime import datetime
 from ticketing.core.models import ExtraMailInfo
 
 logger = logging.getLogger(__name__)
-def get_mailutility(request, mailtype):
+def get_mail_utility(request, mailtype):
     return request.registry.getUtility(IMailUtility, str(mailtype))
 
 def get_mailinfo_traverser(request, order, access=None, default=None):
@@ -94,6 +95,25 @@ def create_fake_order_from_organization(request, organization, payment_plugin_id
             total_amount=99999, ##
             )
     order.ordered_products = []
+    ordererd_product0 = mock.Mock(
+        quantity=3, 
+        price=400.00, 
+        product=mock.Mock(
+            name=u"商品名", 
+            price=400.00),
+        seats=[
+            dict(name=u"シート名")
+            ], 
+        ordered_product_items = [
+            mock.Mock(
+                seats=[
+                    mock.Mock(name=u"シート名")
+                    ]
+                )
+            ]
+        )
+    order.ordered_products.append(ordererd_product0)
+
     order.ordered_from = organization
     order._mailinfo_traverser = None
     order.payment_delivery_pair.payment_method.payment_plugin_id = payment_plugin_id

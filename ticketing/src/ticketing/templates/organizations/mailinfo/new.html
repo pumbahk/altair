@@ -16,6 +16,7 @@ ${breadcrumbs(
 
 <%
 from ticketing.core.models import MailTypeEnum
+from ticketing.core.models import MailTypeChoices
 mailtype = int(request.matchdict["mailtype"])
 if int(MailTypeEnum.CompleteMail) == mailtype:
     ja_mailtype = u"購入完了メール付加情報"
@@ -27,6 +28,14 @@ else:
 
 <div class="page-header">
   <h3>${ja_mailtype}</h3>
+</div>
+
+<h4></h4>
+<div class="btn-group" style="margin-bottom:20px;">
+  %for i, label in MailTypeChoices:
+    <a class="btn btn-inverse"
+	   href="${request.current_route_path(organization_id=organization.id, mailtype=i)}">${label}</a>
+  %endfor
 </div>
 
 <%doc>
