@@ -92,6 +92,7 @@ class CompleteMail(object):
                      ### mail info
                      footer = traverser.data["footer"],
                      notice = traverser.data["notice"],
+                     header = traverser.data["header"],
                      )
         return value
 
