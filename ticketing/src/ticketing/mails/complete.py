@@ -18,7 +18,7 @@ import functools
 complete_mailinfo_traverser = functools.partial(
     get_mailinfo_traverser, 
     ## xxx: uggg
-    access=lambda d, k, default="" : d.get(MailTypeEnum.CompleteMail, {}).get(k, default), 
+    access=lambda d, k, default="" : d.get(str(MailTypeEnum.CompleteMail), {}).get(k, default), 
     default=u"", 
 )
 
@@ -69,8 +69,8 @@ class CompleteMail(object):
         sa = order.shipping_address 
         pair = order.payment_delivery_pair
         seats = itertools.chain.from_iterable((p.seats for p in order.ordered_products))
-
         traverser = complete_mailinfo_traverser(self.request, order)
+
         value = dict(h=ch, 
                      order=order,
                      name=u"{0} {1}".format(sa.last_name, sa.first_name),

@@ -15,6 +15,7 @@ class FindStopAccessor(object):
         chained = self.wrapper.chained
         if chained:
             return chained.data[k]
+        return self.default
 
     def __getitem__(self, k):
         if self.d is None:

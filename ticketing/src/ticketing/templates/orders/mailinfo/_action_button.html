@@ -1,7 +1,11 @@
-<%page args="order, mail_form" />
+<%page args="order, mail_form, event" />
 <%namespace file="/common/helpers.html" name="h" />
 <%namespace file="/common/modal.html" name="m" />
 
+## uggg
+<%
+from ticketing.core.models import MailTypeEnum
+%>
 <div class="btn-toolbar"  style="margin: 0pt;">
   <div class="btn-group" style="margin: 0pt;">
 	<a class="btn btn-inverse"
@@ -19,6 +23,7 @@
 	  <li>
 		<a href="${request.route_path("orders.mailinfo", order_id=order.id, action="complete_mail_preview")}">preview</a>
 		<a href="#SendingCompleteMailModal" data-toggle="modal">購入完了メールの再送</a>
+		<a href="${request.route_path("events.mailinfo.edit", event_id=event.id, mailtype=MailTypeEnum.CompleteMail)}">メール付加情報変更</a>
 	  </li>
 	</ul>
   </div>
@@ -31,6 +36,7 @@
 	  <li>
 		<a href="${request.route_path("orders.mailinfo", order_id=order.id, action="cancel_mail_preview")}">preview</a>
 		<a href="#SendingCancelMailModal" data-toggle="modal">購入キャンセルメールの再送</a>
+		<a href="${request.route_path("events.mailinfo.edit", event_id=event.id, mailtype=MailTypeEnum.PurchaseCancelMail)}">メール付加情報変更</a>
 	  </li>
 	</ul>
   </div>

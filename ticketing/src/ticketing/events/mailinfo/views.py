@@ -51,17 +51,15 @@ class MailInfoNewView(BaseView):
         form = CompleteMailInfoTemplate(self.request, event.organization).as_formclass()(self.request.POST)
         if not form.validate():
             self.request.session.flash(u"入力に誤りがあります。")
-            return {"event": event, 
-                    "form": form, 
-                    "organization": event.organization, 
-                    "mailtype": self.request.matchdict["mailtype"], 
-                    "choices": MailTypeChoices}
         else:
             mailtype = self.request.matchdict["mailtype"]
             mailinfo = mutil.create_or_update_mailinfo(self.request, form.data, event=event, kind=mailtype)
             logger.debug("mailinfo.data: %s" % mailinfo.data)
             DBSession.add(mailinfo)
             self.request.session.flash(u"メールの付加情報を登録しました")
-            return HTTPFound("/")
-            # return HTTPFound(location=route_path('organizations.show', self.request, organization_id=organization.id))
 
+        return {"event": event, 
+                "form": form, 
+                "organization": event.organization, 
+                "mailtype": self.request.matchdict["mailtype"], 
+                "choices": MailTypeChoices}

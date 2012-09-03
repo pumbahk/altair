@@ -16,8 +16,9 @@ def get_mail_utility(request, mailtype):
 def get_mailinfo_traverser(request, order, access=None, default=None):
     trv = getattr(order, "_mailinfo_traverser", None)
     if trv is None:
-        organization = order.ordered_from
-        trv = order._mailinfo_traverser = EmailInfoTraverser(access=access, default=default).visit(organization)
+        # organization = order.ordered_from
+        event = order.performance.event
+        trv = order._mailinfo_traverser = EmailInfoTraverser(access=access, default=default).visit(event)
     return trv
 
 def create_mailinfo(target, data, organization, event, kind):
