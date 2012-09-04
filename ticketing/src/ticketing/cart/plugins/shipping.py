@@ -7,6 +7,10 @@ from ..interfaces import IDeliveryPlugin, IOrderDelivery, ICartDelivery, IComple
 from . import models as m
 from . import logger
 from ticketing.cart import helpers as cart_helper
+from ticketing.core import models as c_models
+from ticketing.mails.api import get_mail_utility
+from ticketing.mails.forms import MailInfoTemplate
+
 
 PLUGIN_ID = 1
 def includeme(config):
@@ -38,4 +42,8 @@ def completion_delivery_mail_viewlet(context, request):
     :param context: ICompleteMailDelivery
     """
     shipping_address = context.order.shipping_address
-    return dict(h=cart_helper, shipping_address=shipping_address)
+    mutil = get_mail_utility(request, c_models.MailTypeEnum.CompleteMail)
+    trv = mutil.get_traverser(request, context.order)
+    return dict(h=cart_helper, shipping_address=shipping_address, 
+                notice=trv.data[MailInfoTemplate.delivery_key(context.order, "notice")]
+                )

@@ -54,7 +54,8 @@ def _build_order(*args, **kwargs):
     performance = Performance(name=kwargs.get("performance__name"),
                               start_on=kwargs.get("performance__start_on", datetime(1900, 1, 1)),  #xxx:
                               venue=Venue(name=kwargs.get("venue__name")), 
-                              event=Event(title=kwargs.get("event__title")))
+                              event=Event(title=kwargs.get("event__title"), 
+                                          organization=ordered_from))
 
     order = Order(ordered_from=ordered_from,
                   id=111, 
@@ -482,7 +483,10 @@ class SendCompleteMailTest(unittest.TestCase):
 
         order = _build_order()
         order.ordered_from.extra_mailinfo = ExtraMailInfo(
-            data={MailTypeEnum.CompleteMail: {u"footer": u"this-is-footer-message"}}
+            data={str(MailTypeEnum.CompleteMail):
+                  {u"footer": u"this-is-footer-message", 
+                   u"header": u"this-is-header-message"}
+                  }
         )
         payment_method = PaymentMethod(payment_plugin_id=9999)
         delivery_method = DeliveryMethod(delivery_plugin_id=9999)
@@ -493,10 +497,8 @@ class SendCompleteMailTest(unittest.TestCase):
         self._callFUT(request, order)
         result = self._get_mailer().outbox.pop()
 
+        self.assertIn(u"this-is-header-message", result.body)
         self.assertIn(u"this-is-footer-message", result.body)
-        
-
-
 
 if __name__ == "__main__":
     # setUpModule()
