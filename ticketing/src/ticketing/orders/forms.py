@@ -78,10 +78,19 @@ class OrderSearchForm(Form):
         validators=[Optional(), AnyOf(['asc', 'desc'], message='')],
         default='desc',
     )
+    event_id = SelectField(
+        label=u"イベント", 
+        coerce=int, 
+        choices=[], 
+        validators=[Optional()],
+    )
     performance_id = HiddenField(
         validators=[Optional()],
     )
-
+    def configure(self, event_query):
+        self.event_id.choices = [(e.id, e.title) for e in event_query]
+        return self
+        
 class SejTicketForm(Form):
     ticket_type = SelectField(
         label=u'チケット区分',

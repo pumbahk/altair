@@ -12,7 +12,7 @@ import webhelpers.paginate as paginate
 
 from ticketing.models import merge_session_with_post, record_to_appstruct, merge_and_flush, record_to_multidict
 from ticketing.operators.models import Operator, OperatorRole, Permission
-from ticketing.core.models import Order, TicketPrintQueueEntry
+from ticketing.core.models import Order, TicketPrintQueueEntry, Event
 from ticketing.orders.export import OrderCSV
 from ticketing.orders.forms import (OrderForm, OrderSearchForm, SejOrderForm, SejTicketForm, SejTicketForm,
                                     SejRefundEventForm,SejRefundOrderForm)
@@ -28,9 +28,11 @@ class Orders(BaseView):
 
     @view_config(route_name='orders.index', renderer='ticketing:templates/orders/index.html')
     def index(self):
-        query = Order.filter(Order.organization_id==int(self.context.user.organization_id))
+        organization_id = int(self.context.user.organization_id)
+        query = Order.filter(Order.organization_id==organization_id)
 
-        form_search = OrderSearchForm(self.request.params)
+        event_query = Event.filter_by(organization_id=organization_id)
+        form_search = OrderSearchForm(self.request.params).configure(event_query)
         if form_search.validate():
             query = Order.set_search_condition(query, form_search)
 

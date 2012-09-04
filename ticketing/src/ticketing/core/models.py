@@ -497,6 +497,18 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         performance.create_venue_id = template.venue.id
         performance.save()
 
+    @staticmethod
+    def set_search_condition(query, form):
+        sort = form.sort.data or 'id'
+        direction = form.direction.data or 'desc'
+        query = query.order_by('Performance.' + sort + ' ' + direction)
+
+        condition = form.event_id.data
+        if condition:
+            query = query.filter(Performance.event_id==condition)
+
+        return query
+
 class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Event'
 
@@ -1569,6 +1581,9 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         condition = form.performance_id.data
         if condition:
             query = query.filter(Order.performance_id==condition)
+        condition = form.event_id.data
+        if condition:
+            query = query.join(Order.performance).filter(Performance.event_id==condition)
         condition = form.ordered_from.data
         if condition:
             query = query.filter(Order.created_at>=condition)
