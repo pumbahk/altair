@@ -213,16 +213,16 @@ class MailInfoNewView(BaseView):
 
         organization_id = int(self.request.matchdict.get("organization_id", 0))
         organization = Organization.get(organization_id)
+        mailtype = self.request.matchdict["mailtype"]
         form = MailInfoTemplate(self.request, organization).as_formclass()(self.request.POST)
         if not form.validate():
             self.request.session.flash(u"入力に誤りがあります。")
         else:
-            mailtype = self.request.matchdict["mailtype"]
             mailinfo = mutil.create_or_update_mailinfo(self.request, form.data, organization=organization, kind=mailtype)
             logger.debug("mailinfo.data: %s" % mailinfo.data)
             DBSession.add(mailinfo)
             self.request.session.flash(u"メールの付加情報を登録しました")
-        return {"organization": organization, "form": form}
+        return {"organization": organization, "form": form, "mailtype": mailtype}
 
 @view_config(route_name="organizations.mails.preview.preorder", 
              decorator=with_bootstrap, permission="authenticated", 

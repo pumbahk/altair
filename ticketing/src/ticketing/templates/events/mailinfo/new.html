@@ -55,7 +55,7 @@ else:
 </div>
 
 <div class="well">
-  <form id="tmpSubmitForm" class="form-horizontal" action="#" method="POST">
+  <form id="submitForm" class="form-horizontal" action="#" method="POST">
 	<fieldset>
 	  %for field in form:
 	  <div class="${field.description}">
@@ -68,35 +68,3 @@ else:
 	</div>
   </form>
 </div>
-
-<form id="submitForm" action="#" method="POST" style="display: none;">
-</form>
-
-<script type="text/javascript">
-  $("#payment_methods").change(function(){
-    $(".payment").hide();
-    $("."+$(this).val()).show();
-  });
-  $("#delivery_methods").change(function(){
-    $(".delivery").hide();
-    $("."+$(this).val()).show();
-  });
-    $(".payment").hide();
-    $(".delivery").hide();
-    $("."+$("#payment_methods").val()).show();
-    $("."+$("#delivery_methods").val()).show();
-
-  $("#tmpSubmitForm").submit(function(e){
-    e.preventDefault();
-    var form = $("#submitForm");
-    form.empty();
-    form.append($('<input name="submit" type="submit">'));
-    form.append($('<input type="hidden" name="payment_methods">').attr("value",$("#payment_methods").val()));
-    form.append($('<input type="hidden" name="delivery_methods">').attr("value",$("#delivery_methods").val()));
-    $(this).find("textarea:visible").each(function(i,e){
-      var src = $(e);
-      $("<input type='hidden'>").attr("name", src.attr("name")).attr("value", src.attr("value")).appendTo(form);
-    });
-    form.find("input[name='submit']").click();
-  });
-</script>

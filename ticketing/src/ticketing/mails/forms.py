@@ -13,10 +13,11 @@ def MailInfoFormFactory(template):
 
     choices = template.payment_methods_choices()
     attrs["payment_types"] = [e[0] for e in choices]
-    attrs["payment_methods"] = fields.SelectField(label=u"決済方法", choices=choices, id="payment_methods")
+    # attrs["payment_methods"] = fields.SelectField(label=u"決済方法", choices=choices, id="payment_methods")
 
     choices = template.delivery_methods_choices()
-    attrs["delivery_methods"] = fields.SelectField(label=u"配送方法", choices=choices, id="delivery_methods")
+    attrs["delivery_types"] = [e[0] for e in choices]
+    # attrs["delivery_methods"] = fields.SelectField(label=u"配送方法", choices=choices, id="delivery_methods")
 
     ## validation
     def validate(self): # todo error message
