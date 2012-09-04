@@ -471,7 +471,8 @@ cart.PerformanceSearchView = Backbone.View.extend({
         var self = this;
         var dates = this.model.getDates();
         $.each(dates, function (_, v) {
-            self.selection.append($('<option></option>').attr('value', v).text(cart.util.datestring_japanize(v)));
+            //self.selection.append($('<option></option>').attr('value', v).text(cart.util.datestring_japanize(v)));
+            self.selection.append($('<option></option>').attr('value', v).text(v));
         });
         this.onDateSelectionChanged(dates[0]);
     },

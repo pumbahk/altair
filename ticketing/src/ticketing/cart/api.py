@@ -5,7 +5,9 @@ import operator
 import urllib2
 import logging
 import contextlib
+from datetime import datetime
 from zope.deprecation import deprecate
+import sqlalchemy as sa
 
 logger = logging.getLogger(__name__)
 from pyramid.interfaces import IRoutesMapper, IRequest
@@ -251,7 +253,7 @@ def performance_names(request, event, sales_segment):
     q = q.filter(ProductItem.product_id==Product.id)
     q = q.filter(Stock.id==ProductItem.stock_id)
     q = q.filter(Stock.performance_id==Performance.id)
-    values = q.all()
+    values = q.distinct().all()
 
     results = dict()
     for pid, name, start, open, vname in values:
@@ -259,3 +261,13 @@ def performance_names(request, event, sales_segment):
         results[name].append(dict(pid=pid, start=start, open=open, vname=vname))
 
     return sorted([(k, sorted(v, key=operator.itemgetter('start'))) for k, v in results.items()], key=operator.itemgetter(0))
+
+class JSONEncoder(json.JSONEncoder):
+    def __init__(self, datetime_format, *args, **kwargs):
+        super(JSONEncoder, self).__init__(*args, **kwargs)
+        self.datetime_format = datetime_format
+
+    def default(self, o):
+        if isinstance(o, datetime):
+            return o.strftime(self.datetime_format)
+        return super(JSONEncoder, self).default(o)
