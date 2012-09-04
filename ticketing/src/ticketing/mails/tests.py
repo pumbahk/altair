@@ -105,7 +105,7 @@ class CreateMailFromFakeOrderTests(unittest.TestCase):
         request = testing.DummyRequest()
         order = create_fake_order(request, org, 2, 1)
 
-        print build_message(request, order).body
+        build_message(request, order).body
 
 
 if __name__ == "__main__":

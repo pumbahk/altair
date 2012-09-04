@@ -45,16 +45,18 @@ class CompleteMail(object):
         self.mail_template = mail_template
         self.request = request
 
-    def get_subject(self, organization):
-        return u"チケット予約受付完了のお知らせ 【{organization.name}】".format(organization=organization)
+    def get_mail_subject(self, organization, traverser):
+        return (traverser.data["subject"] or 
+                u"チケット予約受付完了のお知らせ 【{organization.name}】".format(organization=organization))
 
-    def get_email_from(self, organization):
-        return organization.contact_email
+    def get_mail_sender(self, organization, traverser):
+        return (traverser.data["sender"] or organization.contact_email)
 
     def build_message(self, order):
         organization = order.ordered_from
-        subject = self.get_subject(organization)
-        mail_from = self.get_email_from(organization)
+        traverser = get_traverser(self.request, order)
+        subject = self.get_mail_subject(organization, traverser)
+        mail_from = self.get_mail_sender(organization, traverser)
         bcc = [mail_from]
 
         mail_body = self.build_mail_body(order)

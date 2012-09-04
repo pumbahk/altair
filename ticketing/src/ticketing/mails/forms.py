@@ -5,7 +5,7 @@ from wtforms import Form
 from wtforms import fields
 from wtforms import widgets
 from wtforms import validators
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
 
 def MethodChoicesFormFactory(template):
     attrs = {}
@@ -19,16 +19,17 @@ def MethodChoicesFormFactory(template):
     return type("MethodChoiceForm", (Form, ), attrs)
 
 def MailInfoFormFactory(template):
-    attrs = {}
+    attrs = OrderedDict()
+    attrs["subject"] = fields.TextField(label=u"メール件名")
+    attrs["sender"] = fields.TextField(label=u"メールsender")
+
     for e in template.template_keys():
         attrs[e.name] = fields.TextField(label=e.label, widget=widgets.TextArea(), description=e.method, 
                                          validators=[validators.Optional()])
+        
+    attrs["payment_types"] = [e[0] for e in template.payment_methods_choices()]
+    attrs["delivery_types"] = [e[0] for e in template.delivery_methods_choices()]
 
-    choices = template.payment_methods_choices()
-    attrs["payment_types"] = [e[0] for e in choices]
-
-    choices = template.delivery_methods_choices()
-    attrs["delivery_types"] = [e[0] for e in choices]
 
     ## validation
     def validate(self): # todo error message
