@@ -90,7 +90,7 @@ class MyPageView(object):
             raise HTTPNotFound()
 
         tickets = None
-        if order.payment_delivery_pair.delivery_method.delivery_plugin_id == ticketing.cart.plugins.qr.PLUGIN_ID:
+        if order.payment_delivery_pair.delivery_method.delivery_plugin_id == ticketing.cart.plugins.qr.DELIVERY_PLUGIN_ID:
             """QRコード発行の場合"""
             builder = qr()
             builder.key = u"THISISIMPORTANTSECRET"
