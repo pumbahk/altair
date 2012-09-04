@@ -6,7 +6,7 @@ from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, T
 from wtforms.validators import Optional, AnyOf
 
 from ticketing.formhelpers import DateTimeField, Translations, Required
-from ticketing.core.models import PaymentMethodPlugin, DeliveryMethodPlugin
+from ticketing.core.models import PaymentMethodPlugin, DeliveryMethodPlugin, PaymentDeliveryMethodPair, SalesSegment, Performance
 
 class OrderForm(Form):
 
@@ -110,6 +110,43 @@ class PerformanceSearchForm(Form):
     direction = HiddenField(
         validators=[Optional(), AnyOf(['asc', 'desc'], message='')],
         default='desc',
+    )
+
+class OrderReserveForm(Form):
+
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        Form.__init__(self, formdata, obj, prefix, **kwargs)
+        if 'performance_id' in kwargs:
+            performance = Performance.get(kwargs['performance_id'])
+            self.performance_id.data = performance.id
+            self.product_id.choices = [
+                (product.id, product.name) for product in performance.event.products
+            ]
+            pdmps = PaymentDeliveryMethodPair.filter()\
+                        .join(PaymentDeliveryMethodPair.sales_segment)\
+                        .filter(SalesSegment.kind=='vip').all()
+            self.payment_delivery_method_pair_id.choices = [
+                (pdmp.id, '%s  -  %s' % (pdmp.payment_method.name, pdmp.delivery_method.name)) for pdmp in pdmps
+            ]
+
+    def _get_translations(self):
+        return Translations()
+
+    performance_id = HiddenField(
+        label='',
+        validators=[Required()],
+    )
+    product_id = SelectField(
+        label=u'商品',
+        validators=[Required(u'選択してください')],
+        choices=[],
+        coerce=int
+    )
+    payment_delivery_method_pair_id = SelectField(
+        label=u'決済・配送方法',
+        validators=[Required(u'選択してください')],
+        choices=[],
+        coerce=int
     )
 
 class SejTicketForm(Form):

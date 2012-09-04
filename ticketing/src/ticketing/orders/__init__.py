@@ -7,7 +7,7 @@ def includeme(config):
     config.add_route('orders.cancel'                    , '/cancel/{order_id}')
     config.add_route('orders.delivered'                 , '/delivered/{order_id}')
     config.add_route('orders.download'                  , '/download/')
-
+    config.add_route('orders.reserve'                   , '/reserve/')
     config.add_route('orders.print.queue'               , '/print/queue/{order_id}')
 
     config.add_subscriber('.mail.on_order_canceled'     , '.events.OrderCanceled')
@@ -28,3 +28,14 @@ def includeme(config):
     config.add_route("orders.api.performances"          , "/api/performances")
     config.add_route("orders.api.printstatus"           , "/api/printstatus/{action}")
     config.scan(".")
+
+    # 団体予約、インナー予約でcartパッケージを使う為の設定
+    from pyramid.interfaces import IRequest
+    from ticketing.cart.interfaces import IStocker, IReserving, ICartFactory
+    from ticketing.cart.stocker import Stocker
+    from ticketing.cart.reserving import Reserving
+    from ticketing.cart.carting import CartFactory
+    reg = config.registry
+    reg.adapters.register([IRequest], IStocker, "", Stocker)
+    reg.adapters.register([IRequest], IReserving, "", Reserving)
+    reg.adapters.register([IRequest], ICartFactory, "", CartFactory)

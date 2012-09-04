@@ -1,29 +1,36 @@
 # -*- coding: utf-8 -*-
 
+import json
+import logging
 import csv
 import itertools
 from datetime import datetime
 
 from pyramid import testing
 from pyramid.view import view_config, view_defaults
-from pyramid.httpexceptions import HTTPFound, HTTPNotFound
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from pyramid.response import Response
 from pyramid.url import route_path
 from ticketing.cart.plugins.sej import DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID_SEJ
+from paste.util.multidict import MultiDict
 import webhelpers.paginate as paginate
+from wtforms import ValidationError
 
 from ticketing.models import merge_session_with_post, record_to_appstruct, merge_and_flush, record_to_multidict
 from ticketing.operators.models import Operator, OperatorRole, Permission
-from ticketing.core.models import Order, TicketPrintQueueEntry, Event, Performance
+from ticketing.core.models import Order, TicketPrintQueueEntry, Event, Performance, Product, PaymentDeliveryMethodPair
 from ticketing.orders.export import OrderCSV
-from ticketing.orders.forms import (OrderForm, OrderSearchForm, PerformanceSearchForm, SejOrderForm, SejTicketForm, SejTicketForm,
-                                    SejRefundEventForm,SejRefundOrderForm)
+from ticketing.orders.forms import (OrderForm, OrderSearchForm, PerformanceSearchForm, OrderReserveForm,
+                                    SejOrderForm, SejTicketForm, SejRefundEventForm, SejRefundOrderForm)
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.orders.events import notify_order_canceled
 from ticketing.tickets.utils import build_dicts_from_ordered_product_item
+from ticketing.cart import api
 
 import pystache
+
+logger = logging.getLogger(__name__)
 
 @view_defaults(xhr=True) ## todo:適切な位置に移動
 class OrdersAPIView(BaseView):
@@ -83,7 +90,6 @@ class OrdersAPIView(BaseView):
     def reset_printstatus(self):
         self.request.session["orders"] = set()
         return {"status": True, "count": 0, "result": []}
-
 
 @view_defaults(decorator=with_bootstrap)
 class Orders(BaseView):
@@ -207,6 +213,64 @@ class Orders(BaseView):
         writer.writerows(order_csv.rows)
 
         return response
+
+    @view_config(route_name='orders.reserve', request_method='POST', renderer='json')
+    def reserve(self):
+        post_data = MultiDict(self.request.json_body)
+        logger.debug('order reserve post_data=%s' % post_data)
+
+        performance_id = int(post_data.get('performance_id', 0))
+        performance = Performance.get(performance_id)
+        if performance is None:
+            logger.error('performance id %d is not found' % performance_id)
+            return HTTPBadRequest(body=json.dumps({
+                'message':u'パフォーマンスが存在しません',
+            }))
+
+        seats = post_data.get('seats')
+        if not seats:
+            return HTTPBadRequest(body=json.dumps({
+                'message':u'座席が選択されていません',
+            }))
+
+        try:
+            # validation
+            f = OrderReserveForm(performance_id=performance_id)
+            f.process(post_data)
+            if not f.validate():
+                raise ValidationError(reduce(lambda a,b: a+b, f.errors.values(), []))
+
+            # create cart
+            product = DBSession.query(Product).filter_by(id=post_data.get('product_id')).one()
+            order_items = [(product, len(seats))]
+            cart = api.order_products(self.request, performance_id, order_items, selected_seats=seats)
+            pdmp = DBSession.query(PaymentDeliveryMethodPair).filter_by(id=post_data.get('payment_delivery_method_pair_id')).one()
+            cart.payment_delivery_pair = pdmp
+            cart.system_fee = pdmp.system_fee
+            DBSession.add(cart)
+            DBSession.flush()
+
+            # create order
+            order = Order.create_from_cart(cart)
+            order.organization_id = order.performance.event.organization_id
+            DBSession.add(order)
+            DBSession.flush()
+            cart.finish()
+
+        except ValidationError, e:
+            logger.exception('validation error (%s)' % e.message)
+            return HTTPBadRequest(body=json.dumps({
+                'message':e.message,
+            }))
+
+        except Exception, e:
+            logger.exception('save error (%s)' % e.message)
+            return HTTPBadRequest(body=json.dumps({
+                'message':u'例外が発生しました',
+            }))
+
+        self.request.session.flash(u'予約しました')
+        return {}
 
     @view_config(route_name='orders.print.queue')
     def order_print_queue(self):

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-from pyramid.config import Configurator
+import re
 
 from sqlalchemy import engine_from_config
-
+from pyramid.config import Configurator
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
@@ -10,10 +10,6 @@ from pyramid.tweens import EXCVIEW
 
 import sqlahelper
 from .api.impl import bound_communication_api ## cmsとの通信
-import logging
-
-
-import re
 
 authn_exemption = re.compile(r'^(/_deform)|(/static)|(/_debug_toolbar)|(/favicon.ico)')
 

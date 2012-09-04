@@ -1,7 +1,6 @@
 # -*- coding:utf-8 -*-
-from ticketing.logicaldeleting import install as ld_install
 import json
-ld_install()
+
 from pyramid.config import Configurator
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
 import functools
@@ -11,7 +10,6 @@ import sqlahelper
 from pyramid_beaker import session_factory_from_settings
 
 import logging
-
 logger = logging.getLogger(__name__)
 
 from ..api.impl import bound_communication_api ## cmsとの通信
@@ -69,6 +67,9 @@ def import_mail_module(config):
 
 
 def main(global_config, **settings):
+    from ticketing.logicaldeleting import install as ld_install
+    ld_install()
+
     engine = engine_from_config(settings)
     my_session_factory = session_factory_from_settings(settings)
     sqlahelper.add_engine(engine)

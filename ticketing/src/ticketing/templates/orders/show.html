@@ -104,7 +104,11 @@ ${h.breadcrumbs(
       </tr>
       <tr>
         <th>メールアドレス</th>
-        <td>${order.shipping_address.email}</td>
+        <td>
+          % if order.shipping_address:
+            ${order.shipping_address.email}
+          % endif
+        </td>
       </tr>
       <tr>
         <th>購読メールマガジン</th>
@@ -141,19 +145,35 @@ ${h.breadcrumbs(
       </tr>
       <tr>
         <th>氏名</th>
-        <td>${sa.last_name} ${sa.first_name} (${sa.last_name_kana} ${sa.first_name_kana})</td>
+        <td>
+          % if sa:
+            ${sa.last_name} ${sa.first_name} (${sa.last_name_kana} ${sa.first_name_kana})
+          % endif
+        </td>
       </tr>
       <tr>
         <th>住所</th>
-        <td>${sa.zip} ${sa.country or ''} ${sa.prefecture} ${sa.city} ${sa.address_1} ${sa.address_2}</td>
+        <td>
+          % if sa:
+            ${sa.zip} ${sa.country or ''} ${sa.prefecture} ${sa.city} ${sa.address_1} ${sa.address_2}
+          % endif
+        </td>
       </tr>
       <tr>
         <th>Tel</th>
-        <td>${sa.tel_1}</td>
+        <td>
+          % if sa:
+            ${sa.tel_1}
+          % endif
+        </td>
       </tr>
       <tr>
         <th>Fax</th>
-        <td>${sa.fax or ''}</td>
+        <td>
+          % if sa:
+            ${sa.fax or ''}
+          % endif
+        </td>
       </tr>
     </table>
   </div>

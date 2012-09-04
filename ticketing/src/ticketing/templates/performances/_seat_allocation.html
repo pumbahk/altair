@@ -1,5 +1,6 @@
-<%page args="performance" />
+<%page args="performance, form_reserve" />
 <%namespace file="./_venue_view.html" name="vv" />
+<%namespace file="/common/helpers.html" name="h" />
 
 <style type="text/css">
 .assignable {
@@ -124,6 +125,7 @@ span.editable {
           <%vv:venueeditor data_source="${data_source}">
             <%def name="toolbar_extra()">
               <div style="float:right">
+                <a class="btn btn-primary" data-toggle="modal" href="#modal-reserve">予約する</a>
                 <a href="javascript:saveStocks();" class="btn btn-primary">保存する</a>
               </div>
             </%def>
@@ -398,6 +400,41 @@ function saveStocks() {
   });
 }
 
+function createOrder() {
+  var param = {'seats':[]};
+  var modal = $('#modal-reserve');
+  modal.find('.modal-body .alert').remove();
+  $(modal.find('form').serializeArray()).each(function(i, v) {
+    param[v.name] = v.value;
+  });
+  var selection = venueEditorRoot.venueeditor('selection');
+  selection.each(function (seat) {
+    param['seats'].push(seat.id);
+  });
+  $.ajax({
+    type: 'post',
+    url: "${request.route_path('orders.reserve')}",
+    contentType: 'application/json; charset=utf-8',
+    dataType: 'json',
+    data: JSON.stringify(param),
+    success: function(result) {
+      //location.reload(true);
+    },
+    error: function(xhr, text) {
+      var responseText = JSON.parse(xhr.responseText);
+      var messages = responseText['message'] || xhr.statusText
+      var errors = '';
+      if (typeof messages == 'string') {
+        errors += '<li>' + messages + '</li>';
+      } else {
+        for (i in messages)
+          errors += '<li>' + messages[i] + '</li>';
+      }
+      modal.find('.modal-body').prepend('<div class="alert alert-error"><ul>' + errors + '</ul></div>');
+    }
+  });
+}
+
 callbacks.load = function (viewer) {
   outer.empty();
   outer.append(buildStockHolderTypeTables(viewer.venue));
@@ -459,6 +496,28 @@ callbacks.select = function (viewer, selection) {
   <div class="modal-footer">
     <a href="javascript:void(0);" onclick="$('#modal-report').modal('hide');" class="btn secondary btn-close">キャンセル</a>
     <a href="" onclick="$('#modal-report').modal('hide');" class="btn danger modal-report-submit">ダウンロード</a>
+  </div>
+</div>
+
+<div id="modal-reserve" class="modal hide fade">
+  <div class="modal-header">
+    <a href="javascript:void(0);" class="close btn-close">&times;</a>
+    <h3>予約する</h3>
+  </div>
+
+  <div class="modal-body">
+    <form action="javascript:createOrder();">
+      <fieldset>
+        ${h.form_item(form_reserve.performance_id)}
+        ${h.form_item(form_reserve.product_id)}
+        ${h.form_item(form_reserve.payment_delivery_method_pair_id)}
+      </fieldset>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <a href="javascript:void(0);" onclick="$('#modal-reserve').modal('hide');" class="btn secondary btn-close">キャンセル</a>
+    <a href="javascript:void(0);" onclick="$('#modal-reserve').find('form').submit();" class="btn danger">予約する</a>
   </div>
 </div>
 
