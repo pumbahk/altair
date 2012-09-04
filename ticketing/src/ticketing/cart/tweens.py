@@ -10,7 +10,9 @@ class CacheControlTween(object):
 
     def __call__(self, request):
         response = self.handler(request)
-        if response.content_type.startswith("text/"):
+        if response.content_type and (
+                response.content_type.startswith("text/") or \
+                response.content_type == "application/javascript"):
             response.headers['Pragma'] = "no-cache"
             response.headers['Cache-Control'] = "no-cache,no-store"
             response.headers['Expires'] = formatdate(mktime(datetime.now().timetuple()), localtime=False)
