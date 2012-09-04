@@ -13,7 +13,7 @@ class FindStopAccessor(object):
     def __repr__(self):
         return repr(self.d)
 
-    def _get_failback(self, k):
+    def _find_next(self, k):
         chained = self.wrapper.chained
         if chained:
             return chained.data[k]
@@ -21,8 +21,8 @@ class FindStopAccessor(object):
 
     def __getitem__(self, k):
         if self.d is None:
-            return self._get_failback(k)
-        return self.access(self.d, k, default=self.default) or self._get_failback(k)
+            return self._find_next(k)
+        return self.access(self.d, k, default=self.default) or self._find_next(k)
 
     def getall(self, k):
         r = []
