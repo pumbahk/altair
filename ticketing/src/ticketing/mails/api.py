@@ -105,16 +105,18 @@ def _fake_order_add_fake_chain(fake_order, organization, event, performance):
         fake_order.performance._fake_root = organization
 
 def _fake_order_add_settings(order, payment_plugin_id, delivery_plugin_id, event, performance):
+    order.payment_delivery_pair.payment_method.payment_plugin_id = payment_plugin_id
     payment_plugin = PaymentMethodPlugin.query.filter_by(id=payment_plugin_id).first()
     if payment_plugin:
         order.payment_delivery_pair.payment_method.payment_plugin = payment_plugin
-    else:
-        order.payment_delivery_pair.payment_method.payment_plugin_id = payment_plugin_id
+        order.payment_delivery_pair.payment_method.name = payment_plugin.name
+
+    order.payment_delivery_pair.delivery_method.delivery_plugin_id = delivery_plugin_id
     delivery_plugin = DeliveryMethodPlugin.query.filter_by(id=delivery_plugin_id).first()
     if delivery_plugin:
         order.payment_delivery_pair.delivery_method.delivery_plugin = delivery_plugin
-    else:
-        order.payment_delivery_pair.delivery_method.delivery_plugin_id = delivery_plugin_id
+        order.payment_delivery_pair.delivery_method.name = delivery_plugin.name
+
     if event:
         order.performance.event = event
     if performance:
