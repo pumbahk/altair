@@ -21,7 +21,7 @@ class FindStopAccessor(object):
 
     def __getitem__(self, k):
         if self.d is None:
-            return self.default
+            return self._get_failback(k)
         return self.access(self.d, k, default=self.default) or self._get_failback(k)
 
     def getall(self, k):
@@ -47,10 +47,10 @@ class EmailInfoTraverser(object):
     def visit(self, target):
         if not self._configured:
             try:
-                method = getattr(self, "visit_"+(target.__class__.__name__))
+                visit_method = getattr(self, "visit_"+(target.__class__.__name__))
             except AttributeError:
-                method = self.visit_Missing
-            method(target)
+                visit_method = self.visit_Missing
+            visit_method(target)
             self._configured = True
         return self
 

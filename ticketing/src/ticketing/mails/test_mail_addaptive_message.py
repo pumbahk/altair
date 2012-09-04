@@ -49,6 +49,19 @@ class MailMessageStructureTests(unittest.TestCase):
         self.assertEquals(target.data["two"], "E2")
         self.assertEquals(target.data["three"], "O3")
 
+    def test_chainable_if_none(self):
+        class Organization:
+            extra_mailinfo = testing.DummyResource(data=dict(one="1", two="2", three="O3"))
+        class Event:
+            extra_mailinfo = None
+            organization = Organization()
+            
+        target = self._makeOne()
+        target.visit(Event())
+
+        self.assertEquals(target.data["one"], "1")
+        
+
     def test_getall(self):
         class Organization:
             extra_mailinfo = testing.DummyResource(data=dict(one="1", two="2", three="O3"))
