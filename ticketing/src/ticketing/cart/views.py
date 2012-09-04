@@ -103,7 +103,7 @@ class IndexView(object):
                 logger.debug("performance %s" % pv)
                 select_venues[pname].append(dict(
                     id=pv['pid'],
-                    name=u'{vname} {start:%Y-%m-%d %H:%M}開始'.format(**pv),
+                    name=u'{start:%Y-%m-%d %H:%M}開始 {vname}'.format(**pv),
                     seat_types_url=self.request.route_url('cart.seat_types',
                         performance_id=pv['pid'],
                         sales_segment_id=sales_segment.id,
