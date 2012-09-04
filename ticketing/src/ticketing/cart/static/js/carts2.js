@@ -292,9 +292,8 @@ cart.PerformanceSearchPresenter.prototype = {
         this.performance.url = performance.seat_types_url;
         this.performance.fetch({
             success: function (req, data) {
-                var performance_date = cart.util.datestring_japanize(performance.date)
-                $('#performanceDate').text(performance_date);
-                $('#descPerformanceDate').text(performance_date);
+                $('#performanceDate').text(data.performance_name);
+                $('#descPerformanceDate').text(data.performance_start);
                 $('#performanceVenue').text(performance.name);
                 $(".performanceNameSpace").text(data["performance_name"]);
             }
