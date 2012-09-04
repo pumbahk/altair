@@ -86,14 +86,23 @@ def message_settings_override(message, override):
             message.sender = bcc if hasattr(bcc, "length") else [bcc]
     return message
 
+## fake
 def create_fake_order(request, organization, payment_plugin_id, delivery_plugin_id, event=None, performance=None):
     ## must not save models 
     order = FakeObject("T")
     order.ordered_from = organization
-    order._fake_root = organization #xxx:
     order._mailinfo_traverser = None
     _fake_order_add_settings(order, payment_plugin_id, delivery_plugin_id, event, performance)
+    _fake_order_add_fake_chain(order, organization, event, performance)
     return order
+
+def _fake_order_add_fake_chain(fake_order, organization, event, performance):
+    if performance:
+        return
+    elif event:
+        fake_order.performance._fake_root = event
+    else:
+        fake_order.performance._fake_root = organization
 
 def _fake_order_add_settings(order, payment_plugin_id, delivery_plugin_id, event, performance):
     payment_plugin = PaymentMethodPlugin.query.filter_by(id=payment_plugin_id).first()
@@ -108,7 +117,5 @@ def _fake_order_add_settings(order, payment_plugin_id, delivery_plugin_id, event
         order.payment_delivery_pair.delivery_method.delivery_plugin_id = delivery_plugin_id
     if event:
         order.performance.event = event
-        order.performance._fake_root = event #xxx:
     if performance:
         order.performance = performance
-        order.performance._fake_root = performance #xxx:

@@ -30,14 +30,17 @@ class MailInfoNewView(BaseView):
         if event is None:
             raise HTTPNotFound('event id %s is not found' % self.request.matchdict["event_id"])
 
-        formclass = MailInfoTemplate(self.request, event.organization).as_formclass()
+        template = MailInfoTemplate(self.request, event.organization)
+        choice_form = template.as_choice_formclass()()
+        formclass = template.as_formclass()
         mailtype = self.request.matchdict["mailtype"]
         form = formclass(**(event.extra_mailinfo.data.get(mailtype, {}) if event.extra_mailinfo else {}))
         return {"event": event, 
                 "form": form, 
                 "organization": event.organization, 
                 "mailtype": self.request.matchdict["mailtype"], 
-                "choices": MailTypeChoices}
+                "choices": MailTypeChoices, 
+                "choice_form": choice_form}
 
     @view_config(request_method="POST")
     def mailinfo_new_post(self):
@@ -48,7 +51,9 @@ class MailInfoNewView(BaseView):
                                 id=self.request.matchdict["event_id"]).first()
         if event is None:
             raise HTTPNotFound('event id %s is not found' % self.request.matchdict["event_id"])
-        form = MailInfoTemplate(self.request, event.organization).as_formclass()(self.request.POST)
+        template = MailInfoTemplate(self.request, event.organization)
+        choice_form = template.as_choice_formclass()()
+        form = template.as_formclass()(self.request.POST)
         if not form.validate():
             self.request.session.flash(u"入力に誤りがあります。")
         else:
@@ -60,6 +65,7 @@ class MailInfoNewView(BaseView):
 
         return {"event": event, 
                 "form": form, 
+                "choice_form": choice_form, 
                 "organization": event.organization, 
                 "mailtype": self.request.matchdict["mailtype"], 
                 "choices": MailTypeChoices}

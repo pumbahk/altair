@@ -84,9 +84,6 @@ class EmailInfoTraverser(object):
         logger.debug("---- missing --- %s" % target)
         self.target = target
         self._set_data(None)
-        
-    def visit_FakeObject(self, target):
-        self.target = target._fake_root
-        print target._fake_root.extra_mailinfo.data
-        self._set_data(target._fake_root.extra_mailinfo)
 
+    def visit_FakeObject(self, target):
+        self.visit(target._fake_root)

@@ -213,14 +213,17 @@ class MailInfoNewView(BaseView):
         if performance is None:
             raise HTTPNotFound('performance id %s is not found' % self.request.matchdict["performance_id"])
 
-        formclass = MailInfoTemplate(self.request, performance.event.organization).as_formclass()
+        template = MailInfoTemplate(self.request, performance.event.organization)
+        choice_form = template.as_choice_formclass()()
+        formclass = template.as_formclass()
         mailtype = self.request.matchdict["mailtype"]
         form = formclass(**(performance.extra_mailinfo.data.get(mailtype, {}) if performance.extra_mailinfo else {}))
         return {"performance": performance, 
                 "form": form, 
                 "organization": performance.event.organization, 
                 "mailtype": self.request.matchdict["mailtype"], 
-                "choices": MailTypeChoices}
+                "choices": MailTypeChoices, 
+                "choice_form": choice_form}
 
     @view_config(request_method="POST")
     def mailinfo_new_post(self):
@@ -230,7 +233,11 @@ class MailInfoNewView(BaseView):
         performance = Performance.filter_by(id=self.request.matchdict["performance_id"]).first()
         if performance is None:
             raise HTTPNotFound('performance id %s is not found' % self.request.matchdict["performance_id"])
-        form = MailInfoTemplate(self.request, performance.event.organization).as_formclass()(self.request.POST)
+
+        template = MailInfoTemplate(self.request, performance.event.organization)
+        choice_form = template.as_choice_formclass()()
+        formclass = template.as_formclass()
+        form = formclass(self.request.POST)
         if not form.validate():
             self.request.session.flash(u"入力に誤りがあります。")
         else:
@@ -244,5 +251,6 @@ class MailInfoNewView(BaseView):
                 "form": form, 
                 "organization": performance.event.organization, 
                 "mailtype": self.request.matchdict["mailtype"], 
-                "choices": MailTypeChoices}
+                "choices": MailTypeChoices, 
+                "choice_form": choice_form}
 

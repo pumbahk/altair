@@ -19,4 +19,6 @@ def includeme(config):
     register_mailutilty(config, ".order_cancel", name=str(MailTypeEnum.PurchaseCancelMail))
 
     config.add_route("mails.preview.organization", "/mailinfo/preview/organization/{organization_id}/mailtype/{mailtype}")
+    config.add_route("mails.preview.event", "/mailinfo/preview/event/{event_id}/mailtype/{mailtype}")
+    config.add_route("mails.preview.performance", "/mailinfo/preview/performance/{performance_id}/mailtype/{mailtype}")
     config.scan(".views")
