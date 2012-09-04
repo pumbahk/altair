@@ -1421,6 +1421,12 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return self.payment_delivery_pair.delivery_method.delivery_plugin_id
 
     @property
+    def sej_order(self):
+        if not hasattr(self, "_sej_order"):
+            self._sej_order = SejOrder.filter(SejOrder.order_id == self.order_no).first()
+        return self._sej_order
+
+    @property
     def status(self):
         if self.canceled_at:
             return 'refunded' if self.paid_at else 'canceled'

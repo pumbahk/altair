@@ -332,7 +332,7 @@ def payment_mail_viewlet(context, request):
     :param context: ICompleteMailPayment
     """
     order = context.order
-    sej_order=get_sej_order(order)
+    sej_order=context.order.sej_order
     mutil = get_mail_utility(request, c_models.MailTypeEnum.CompleteMail)
     trv = mutil.get_traverser(request, order)
     return dict(sej_order=sej_order, h=cart_helper, 
@@ -343,7 +343,7 @@ def delivery_mail_viewlet(context, request):
     """ 完了メール表示
     :param context: ICompleteMailDelivery
     """
-    sej_order=get_sej_order(context.order)
+    sej_order=context.order.sej_order
     payment_id = context.order.payment_delivery_pair.payment_method.payment_plugin_id
     is_payment_with_sej = int(payment_id or -1) == PAYMENT_PLUGIN_ID
     mutil = get_mail_utility(request, c_models.MailTypeEnum.CompleteMail)
