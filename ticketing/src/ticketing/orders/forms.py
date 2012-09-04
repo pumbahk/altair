@@ -78,19 +78,40 @@ class OrderSearchForm(Form):
         validators=[Optional(), AnyOf(['asc', 'desc'], message='')],
         default='desc',
     )
+    def force_maybe(form, field):
+        if not field.choices:
+            field.data = None
+            field.errors[:] = []
+        return True
+
     event_id = SelectField(
         label=u"イベント", 
-        coerce=int, 
+        coerce=lambda x : int(x) if x else u"", 
         choices=[], 
-        validators=[Optional()],
+        validators=[Optional(), force_maybe],
     )
-    performance_id = HiddenField(
-        validators=[Optional()],
+    performance_id = SelectField(
+        label=u"公演", 
+        coerce=lambda x : int(x) if x else u"", 
+        choices=[], 
+        validators=[Optional(), force_maybe],
     )
     def configure(self, event_query):
-        self.event_id.choices = [(e.id, e.title) for e in event_query]
+        self.event_id.choices = [("", "")]+[(e.id, e.title) for e in event_query]
         return self
-        
+
+class PerformanceSearchForm(Form):
+    event_id =  HiddenField(
+        validators=[Optional()],
+    )        
+    sort = HiddenField(
+        validators=[Optional()],
+    )
+    direction = HiddenField(
+        validators=[Optional(), AnyOf(['asc', 'desc'], message='')],
+        default='desc',
+    )
+
 class SejTicketForm(Form):
     ticket_type = SelectField(
         label=u'チケット区分',

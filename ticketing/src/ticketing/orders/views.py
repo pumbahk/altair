@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import csv
+import itertools
 from datetime import datetime
 
+from pyramid import testing
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.response import Response
@@ -12,9 +14,9 @@ import webhelpers.paginate as paginate
 
 from ticketing.models import merge_session_with_post, record_to_appstruct, merge_and_flush, record_to_multidict
 from ticketing.operators.models import Operator, OperatorRole, Permission
-from ticketing.core.models import Order, TicketPrintQueueEntry, Event
+from ticketing.core.models import Order, TicketPrintQueueEntry, Event, Performance
 from ticketing.orders.export import OrderCSV
-from ticketing.orders.forms import (OrderForm, OrderSearchForm, SejOrderForm, SejTicketForm, SejTicketForm,
+from ticketing.orders.forms import (OrderForm, OrderSearchForm, PerformanceSearchForm, SejOrderForm, SejTicketForm, SejTicketForm,
                                     SejRefundEventForm,SejRefundOrderForm)
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
@@ -23,6 +25,20 @@ from ticketing.tickets.utils import build_dicts_from_ordered_product_item
 
 import pystache
 
+@view_defaults(xhr=True) ## todo:適切な位置に移動
+class OrdersAPIView(BaseView):
+    @view_config(renderer="json", route_name="orders.api.performances")
+    def get_performances(self):
+        form_search = PerformanceSearchForm(self.request.params)
+        if not form_search.validate():
+            return {"result": [],  "status": False}
+
+        query = Performance.query.filter(Performance.deleted_at == None)
+        query = Performance.set_search_condition(query, form_search)
+        performances = itertools.chain(query, [testing.DummyResource(id="", name="")])
+        performances = [dict(pk=p.id, name=p.name) for p in performances]
+        return {"result": performances, "status": True}
+    
 @view_defaults(decorator=with_bootstrap)
 class Orders(BaseView):
 

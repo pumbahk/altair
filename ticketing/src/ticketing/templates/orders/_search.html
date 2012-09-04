@@ -87,7 +87,44 @@
         ${h.form_item(form.delivery_method)}
         ${h.form_item(form.status)}
         ${h.form_item(form.tel)}
-		${h.form_item(form.event_id)}
+
+        ${h.form_item(form.event_id)}
+        ${h.form_item(form.performance_id)}
+        <script type="text/javascript">
+          $(function(){
+            var update_on_empty = function(){
+                var $target = $(this).parents("form").find("select[name='performance_id']").eq(0);
+                $target.empty();
+		        return ;
+            };
+            var update_on_hasvalue = function(v){
+              var self = this;
+              var params = {event_id: v};
+              $.getJSON("${request.route_url('orders.api.performances')}", params).done(function(data){
+                if(data.status){
+                  var $target = $(self).parents("form").find("select[name='performance_id']").eq(0);
+                  $target.empty();
+                  // optimize if slow.
+                  for(var i=0, j=data.result.length; i<j; i++){ 
+                    var e = data.result[i];
+                    $target.append($("<option>").attr("value", e.pk).text(e.name))
+                  }
+                }
+              });
+            };
+            var update_performances = function(){
+              var self = this;
+              var v = $(this).val();
+              if(!v){
+                return update_on_empty.call(self, v);
+              } else {
+                return update_on_hasvalue.call(self, v);
+              }
+            };
+            $("#search select[name='event_id']").change(update_performances);
+            //update_performances.call($("#search select[name='event_id'] option:selected"));
+          });
+		</script>
         <div class="control-group ">
           <label class="control-label">
             ${form.start_on_from.label.text}
@@ -101,7 +138,6 @@
         </div>
         ${h.form_item(form.sort)}
         ${h.form_item(form.direction)}
-        ${h.form_item(form.performance_id)}
       </fieldset>
     </form>
   </div>
