@@ -15,6 +15,4 @@ def includeme(config):
     # config.add_route("organizations.mails.index", "/organizations/{organization_id}/mailinfo")
     ## mail_type is MailTypeEnum
     config.add_route("organizations.mails.new", "/{organization_id}/mailinfo/{mailtype}")
-    config.add_route("organizations.mails.preview.preorder", 
-                     "/{organization_id}/mailinfo/{mailtype}/payment/{payment_id}/delivery/{delivery_id}")
     config.scan(".")

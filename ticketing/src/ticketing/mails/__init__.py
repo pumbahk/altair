@@ -17,3 +17,6 @@ def includeme(config):
     from ticketing.core.models import MailTypeEnum
     register_mailutilty(config, ".complete", name=str(MailTypeEnum.CompleteMail))
     register_mailutilty(config, ".order_cancel", name=str(MailTypeEnum.PurchaseCancelMail))
+
+    config.add_route("mails.preview.organization", "/mailinfo/preview/organization/{organization_id}/mailtype/{mailtype}")
+    config.scan(".views")

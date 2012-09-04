@@ -4,33 +4,41 @@ import itertools
 from wtforms import Form
 from wtforms import fields
 from wtforms import widgets
+from wtforms import validators
 from collections import namedtuple
+
+def MethodChoicesFormFactory(template):
+    attrs = {}
+    choices = template.payment_methods_choices()
+    attrs["payment_methods"] = fields.SelectField(label=u"決済方法", choices=choices, id="payment_methods")    
+    choices = template.delivery_methods_choices()
+    attrs["delivery_methods"] = fields.SelectField(label=u"配送方法", choices=choices, id="delivery_methods")
+    return type("MethodChoiceForm", (Form, ), attrs)
 
 def MailInfoFormFactory(template):
     attrs = {}
     for e in template.template_keys():
-        attrs[e.name] = fields.TextField(label=e.label, widget=widgets.TextArea(), description=e.method)
+        attrs[e.name] = fields.TextField(label=e.label, widget=widgets.TextArea(), description=e.method, 
+                                         validators=[validators.Optional()])
 
     choices = template.payment_methods_choices()
     attrs["payment_types"] = [e[0] for e in choices]
-    # attrs["payment_methods"] = fields.SelectField(label=u"決済方法", choices=choices, id="payment_methods")
 
     choices = template.delivery_methods_choices()
     attrs["delivery_types"] = [e[0] for e in choices]
-    # attrs["delivery_methods"] = fields.SelectField(label=u"配送方法", choices=choices, id="delivery_methods")
 
     ## validation
     def validate(self): # todo error message
         status = super(type(self), self).validate()
         for k in self.data.keys():
             if k.startswith("P"):
-                if not k in attrs["payment_types"]:
+                if not any(p in k for p in attrs["payment_types"]):
                     status = False
             if k.startswith("D"):
-                if not k in attrs["delivery_types"]:
+                if not any(p in k for p in attrs["delivery_types"]):
                     status = False
         return status
-
+    attrs["validate"] = validate
     return type("MailInfoForm", (Form, ), attrs)
 
 PluginInfo = namedtuple("PluginInfo", "method name label") #P0, P0notice, 注意事項(コンビに決済)    
@@ -44,6 +52,9 @@ class MailInfoTemplate(object):
       "D1header": u"deliveery_plugin (1)header", 
     }
     """
+    def as_choice_formclass(self):
+        return MethodChoicesFormFactory(self)
+
     def as_formclass(self):
         return MailInfoFormFactory(self)
 

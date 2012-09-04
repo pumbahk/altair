@@ -85,3 +85,8 @@ class EmailInfoTraverser(object):
         self.target = target
         self._set_data(None)
         
+    def visit_FakeObject(self, target):
+        self.target = target._fake_root
+        print target._fake_root.extra_mailinfo.data
+        self._set_data(target._fake_root.extra_mailinfo)
+

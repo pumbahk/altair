@@ -90,6 +90,7 @@ def create_fake_order(request, organization, payment_plugin_id, delivery_plugin_
     ## must not save models 
     order = FakeObject("T")
     order.ordered_from = organization
+    order._fake_root = organization #xxx:
     order._mailinfo_traverser = None
     _fake_order_add_settings(order, payment_plugin_id, delivery_plugin_id, event, performance)
     return order
@@ -107,6 +108,7 @@ def _fake_order_add_settings(order, payment_plugin_id, delivery_plugin_id, event
         order.payment_delivery_pair.delivery_method.delivery_plugin_id = delivery_plugin_id
     if event:
         order.performance.event = event
+        order.performance._fake_root = event #xxx:
     if performance:
         order.performance = performance
-
+        order.performance._fake_root = performance #xxx:

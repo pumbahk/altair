@@ -201,10 +201,12 @@ class MailInfoNewView(BaseView):
     def mailinfo_new(self):
         organization_id = int(self.request.matchdict.get("organization_id", 0))
         organization = Organization.get(organization_id)
-        formclass = MailInfoTemplate(self.request, organization).as_formclass()
+        template = MailInfoTemplate(self.request, organization)
+        choice_form = template.as_choice_formclass()()
+        formclass = template.as_formclass()
         mailtype = self.request.matchdict["mailtype"]
         form = formclass(**(organization.extra_mailinfo.data.get(mailtype, {}) if organization.extra_mailinfo else {}))
-        return {"organization": organization, "form": form, "mailtype": mailtype}
+        return {"organization": organization, "form": form, "mailtype": mailtype, "choice_form": choice_form}
 
     @view_config(request_method="POST")
     def mailinfo_new_post(self):
@@ -214,7 +216,10 @@ class MailInfoNewView(BaseView):
         organization_id = int(self.request.matchdict.get("organization_id", 0))
         organization = Organization.get(organization_id)
         mailtype = self.request.matchdict["mailtype"]
-        form = MailInfoTemplate(self.request, organization).as_formclass()(self.request.POST)
+        template = MailInfoTemplate(self.request, organization)
+        choice_form = template.as_choice_formclass()()
+        formclass = template.as_formclass()
+        form = formclass(self.request.POST)
         if not form.validate():
             self.request.session.flash(u"入力に誤りがあります。")
         else:
@@ -222,18 +227,4 @@ class MailInfoNewView(BaseView):
             logger.debug("mailinfo.data: %s" % mailinfo.data)
             DBSession.add(mailinfo)
             self.request.session.flash(u"メールの付加情報を登録しました")
-        return {"organization": organization, "form": form, "mailtype": mailtype}
-
-@view_config(route_name="organizations.mails.preview.preorder", 
-             decorator=with_bootstrap, permission="authenticated", 
-             renderer="string")
-def mail_preview_preorder(context, request):
-    mutil = get_mail_utility(request, request.matchdict["mailtype"])
-    payment_id = request.matchdict["payment_id"]
-    delivery_id = request.matchdict["delivery_id"]
-    organization_id = int(request.matchdict.get("organization_id", 0))
-    organization = Organization.get(organization_id)
-    fake_order = mutil.create_fake_order(request, organization, payment_id, delivery_id)
-    return mutil.preview_text(request, fake_order)
-
-    
+        return {"organization": organization, "form": form, "mailtype": mailtype, "choice_form": choice_form}

@@ -12,13 +12,16 @@ class FakeObject(unicode):
     def __init__(self, name="*"):
         self.name = name
         self.items = {}
+        self._fake_root = None
 
     def __repr__(self):
         return "%r %s" % (self.__class__, self.name)
 
     def __create_child__(self, name):
         longname = "%s.%s" % (self.name , name)
-        return self.__class__(longname)
+        child = self.__class__(longname)
+        child._fake_root = self._fake_root
+        return child
 
     def __getattr__(self, name):
         child = self.__create_child__(name) ## object
