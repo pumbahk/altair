@@ -1,4 +1,6 @@
 import functools
+import logging
+logger = logging.getLogger(__name__)
 
 class FindStopAccessor(object):
     default_access = staticmethod(lambda d, k, default=None: d.get(k, default))
@@ -44,7 +46,11 @@ class EmailInfoTraverser(object):
 
     def visit(self, target):
         if not self._configured:
-            getattr(self, "visit_"+(target.__class__.__name__))(target)
+            try:
+                method = getattr(self, "visit_"+(target.__class__.__name__))
+            except AttributeError:
+                method = self.visit_Missing
+            method(target)
             self._configured = True
         return self
 
@@ -73,3 +79,9 @@ class EmailInfoTraverser(object):
     def visit_Organization(self, organization):
         self.target = organization
         self._set_data(organization.extra_mailinfo)
+        
+    def visit_Missing(self, target):
+        logger.debug("---- missing --- %s" % target)
+        self.target = target
+        self._set_data(None)
+        

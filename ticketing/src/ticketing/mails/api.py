@@ -3,11 +3,11 @@ from .interfaces import (
     ICompleteMail, 
     IMailUtility
 )
+from .fake import FakeObject
 from .traverser import EmailInfoTraverser
 from pyramid.interfaces import IRequest
 import logging
-from datetime import datetime
-from ticketing.core.models import ExtraMailInfo
+from ticketing.core.models import ExtraMailInfo, PaymentMethodPlugin, DeliveryMethodPlugin
 
 logger = logging.getLogger(__name__)
 def get_mail_utility(request, mailtype):
@@ -86,39 +86,27 @@ def message_settings_override(message, override):
             message.sender = bcc if hasattr(bcc, "length") else [bcc]
     return message
 
-import mock
-def create_fake_order(request, organization, payment_plugin_id, delivery_plugin_id):
+def create_fake_order(request, organization, payment_plugin_id, delivery_plugin_id, event=None, performance=None):
     ## must not save models 
-    order = mock.Mock(
-            order_no="xxx-xxxx-xxxx", 
-            created_at=datetime(1900, 1, 1), 
-            system_fee=20.0, 
-            transaction_fee=30.0, 
-            delivery_fee=40.0, 
-            total_amount=99999, ##
-            )
-    order.ordered_products = []
-    ordererd_product0 = mock.Mock(
-        quantity=3, 
-        price=400.00, 
-        product=mock.Mock(
-            name=u"商品名", 
-            price=400.00),
-        seats=[
-            dict(name=u"シート名")
-            ], 
-        ordered_product_items = [
-            mock.Mock(
-                seats=[
-                    mock.Mock(name=u"シート名")
-                    ]
-                )
-            ]
-        )
-    order.ordered_products.append(ordererd_product0)
-
+    order = FakeObject("T")
     order.ordered_from = organization
     order._mailinfo_traverser = None
-    order.payment_delivery_pair.payment_method.payment_plugin_id = payment_plugin_id
-    order.payment_delivery_pair.delivery_method.delivery_plugin_id = delivery_plugin_id
+    _fake_order_add_settings(order, payment_plugin_id, delivery_plugin_id, event, performance)
     return order
+
+def _fake_order_add_settings(order, payment_plugin_id, delivery_plugin_id, event, performance):
+    payment_plugin = PaymentMethodPlugin.query.filter_by(id=payment_plugin_id).first()
+    if payment_plugin:
+        order.payment_delivery_pair.payment_method.payment_plugin = payment_plugin
+    else:
+        order.payment_delivery_pair.payment_method.payment_plugin_id = payment_plugin_id
+    delivery_plugin = DeliveryMethodPlugin.query.filter_by(id=delivery_plugin_id).first()
+    if delivery_plugin:
+        order.payment_delivery_pair.delivery_method.delivery_plugin = delivery_plugin
+    else:
+        order.payment_delivery_pair.delivery_method.delivery_plugin_id = delivery_plugin_id
+    if event:
+        order.performance.event = event
+    if performance:
+        order.performance = performance
+

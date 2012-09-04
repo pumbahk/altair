@@ -97,15 +97,15 @@ class CreateMailFromFakeOrderTests(unittest.TestCase):
 
     def test_it(self):
         from ticketing.core.models import Organization
-        from ticketing.mails.api import create_fake_order_from_organization
+        from ticketing.mails.api import create_fake_order
         from ticketing.mails.complete import build_message
         
         org = Organization()
         org.extra_mail_info=None
         request = testing.DummyRequest()
-        order = create_fake_order_from_organization(request, org, 2, 1)
+        order = create_fake_order(request, org, 2, 1)
 
-        build_message(request, order).body
+        print build_message(request, order).body
 
 
 if __name__ == "__main__":
