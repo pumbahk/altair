@@ -1,5 +1,6 @@
 <%inherit file="./base_89ers.html"/>
-${h.get_nickname(request)} 
+<%namespace file="./tags_mobile.html" name="mobile" />
+<%mobile:header>チケット購入</%mobile:header>
 <p>
 ${event.title} ${sales_segment.name} の販売期間は
 </p>

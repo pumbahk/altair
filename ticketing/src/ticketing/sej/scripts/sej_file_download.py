@@ -37,7 +37,9 @@ def file_get_and_import(date, shop_id, secret_key, hostname, file_dest):
         try:
             body = request_fileget(
                 notification_type,
-                date)
+                date,
+                secret_key = 'VpER7BsZpuLPqjUJ',
+                hostname = 'inticket.sej.co.jp')
 
             date_str = date.strftime('%Y%m%d')
             sej_output_path = "%s/%s" % (file_dest, date_str)

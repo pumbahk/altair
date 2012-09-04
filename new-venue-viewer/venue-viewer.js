@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['WLIMO7L9UCG316P5'] = (function (exports) { (function () { 
+__LIBS__['y45W3RUFVLK1_02Y'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -121,7 +121,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['rB7FR09P7HLEE80E'] = (function (exports) { (function () { 
+__LIBS__['CKAHKPVO_EXHBT4P'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -176,11 +176,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['zA2RRSFORDVLDXHQ'] = (function (exports) { (function () { 
+__LIBS__['v5KUJ1KPHLRHG6_7'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['WLIMO7L9UCG316P5'];
-var CONF = __LIBS__['rB7FR09P7HLEE80E'];
+var util = __LIBS__['y45W3RUFVLK1_02Y'];
+var CONF = __LIBS__['CKAHKPVO_EXHBT4P'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -824,6 +824,8 @@ function parseCSSAsSvgStyle(str, defs) {
   var strokeOpacityString = styles['stroke-opacity'];
   var fontSize = null;
   var fontSizeString = styles['font-size'];
+  var textAnchor = null;
+  var textAnchorString = styles['text-anchor'];
   if (fillString) {
     if (fillString[0] == 'none') {
       fill = false;
@@ -854,7 +856,10 @@ function parseCSSAsSvgStyle(str, defs) {
     strokeOpacity = parseFloat(strokeOpacityString[0]);
   }
   if (fontSizeString) {
-    fontSize = parseFloat(fontSizeString);
+    fontSize = parseFloat(fontSizeString[0]);
+  }
+  if (textAnchorString) {
+    textAnchor = textAnchorString[0];
   }
   return {
     fill: fill,
@@ -862,7 +867,8 @@ function parseCSSAsSvgStyle(str, defs) {
     stroke: stroke,
     strokeWidth: strokeWidth,
     strokeOpacity: strokeOpacity,
-    fontSize: fontSize
+    fontSize: fontSize,
+    textAnchor: textAnchor
   };
 }
 
@@ -873,7 +879,8 @@ function mergeSvgStyle(origStyle, newStyle) {
     stroke:        newStyle.stroke !== null ? newStyle.stroke: origStyle.stroke,
     strokeWidth:   newStyle.strokeWidth !== null ? newStyle.strokeWidth: origStyle.strokeWidth,
     strokeOpacity: newStyle.strokeOpacity !== null ? newStyle.strokeOpacity: origStyle.strokeOpacity,
-    fontSize:      newStyle.fontSize !== null ? newStyle.fontSize: origStyle.fontSize
+    fontSize:      newStyle.fontSize !== null ? newStyle.fontSize: origStyle.fontSize,
+    textAnchor:    newStyle.textAnchor !== null ? newStyle.textAnchor: origStyle.textAnchor
   };
 }
 
@@ -931,9 +938,51 @@ function _map(arr, fn) {
   return retval;
 }
 
-  var CONF = __LIBS__['rB7FR09P7HLEE80E'];
-  var seat = __LIBS__['zA2RRSFORDVLDXHQ'];
-  var util = __LIBS__['WLIMO7L9UCG316P5'];
+function parseTransform(transform_str) {
+    var g = /\s*([A-Za-z_-][0-9A-Za-z_-]*)\s*\(\s*((?:[^\s,]+(?:\s*,\s*|\s+))*[^\s,]+)\s*\)\s*/.exec(transform_str);
+
+    var f = g[1];
+    var args = g[2].replace(/(?:^\s+|\s+$)/, '').split(/\s*,\s*|\s+/);
+
+    switch (f) {
+    case 'matrix':
+        if (args.length != 6)
+            throw new Error("invalid number of arguments for matrix()")
+        return new Fashion.Matrix(
+            parseFloat(args[0]), parseFloat(args[1]),
+            parseFloat(args[2]), parseFloat(args[3]),
+            parseFloat(args[4]), parseFloat(args[5]));
+    case 'translate':
+        if (args.length != 2)
+            throw new Error("invalid number of arguments for translate()")
+        return Fashion.Matrix.translate({ x:parseFloat(args[0]), y:parseFloat(args[1]) });
+    case 'scale':
+        if (args.length != 2)
+            throw new Error("invalid number of arguments for scale()");
+        return new Fashion.Matrix(parseFloat(args[0]), 0, 0, parseFloat(args[1]), 0, 0);
+    case 'rotate':
+        if (args.length != 1)
+            throw new Error("invalid number of arguments for rotate()");
+        return Fashion.Matrix.rotate(parseFloat(args[0]) * Math.PI / 180);
+    case 'skeyX':
+        if (args.length != 1)
+            throw new Error('invalid number of arguments for skewX()');
+        var t = parseFloat(args[0]) * Math.PI / 180;
+        var ta = Math.tan(t);
+        return new Fashion.Matrix(1, 0, ta, 1, 0, 0);
+    case 'skeyY':
+        if (args.length != 1)
+            throw new Error('invalid number of arguments for skewX()');
+        var t = parseFloat(args[0]) * Math.PI / 180;
+        var ta = Math.tan(t);
+        return new Fashion.Matrix(1, ta, 0, 1, 0, 0);
+    }
+    throw new Error('invalid transform function: ' + f);
+}
+
+  var CONF = __LIBS__['CKAHKPVO_EXHBT4P'];
+  var seat = __LIBS__['v5KUJ1KPHLRHG6_7'];
+  var util = __LIBS__['y45W3RUFVLK1_02Y'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1103,12 +1152,16 @@ function _map(arr, fn) {
           var xmax = -Infinity, ymax = -Infinity,
               xmin = Infinity,  ymin = Infinity;
 
-          (function iter(svgStyle, defs, nodeList, focused) {
+          (function iter(svgStyle, block_transform, defs, nodeList, focused) {
             outer:
             for (var i = 0; i < nodeList.length; i++) {
               var n = nodeList[i];
               if (n.nodeType != 1) continue;
+
               var attrs = util.allAttributes(n);
+              var transform = attrs["transform"] ?
+                block_transform.multiply(parseTransform(attrs["transform"])):
+                block_transform;
               var shape = null;
 
               { // stylize
@@ -1127,7 +1180,9 @@ function _map(arr, fn) {
                 break;
 
               case 'g': {
-                arguments.callee.call(self, currentSvgStyle, defs, n.childNodes,
+                arguments.callee.call(self, currentSvgStyle,
+                                      transform, defs,
+                                      n.childNodes,
                                       (focused || isFocused(attrs.id)));
                 continue outer;
               }
@@ -1143,7 +1198,8 @@ function _map(arr, fn) {
                 if (n.firstChild) {
                   shape = new Fashion.Text({
                     text: collectText(n),
-                    zIndex: 99
+                    anchor: currentSvgStyle.textAnchor,
+                    transform: _transform
                   });
                 }
                 break;
@@ -1152,6 +1208,7 @@ function _map(arr, fn) {
                 break;
 
               case 'rect':
+                var _transform = null;
                 shape = new Fashion.Rect({
                   size: {
                     x: parseFloat(attrs.width),
@@ -1160,7 +1217,9 @@ function _map(arr, fn) {
                   corner: {
                     x: parseFloat(attrs.rx || 0),
                     y: parseFloat(attrs.ry || 0)
-                  }
+                  },
+                  transform: _transform,
+                  zIndex: -10
                 });
                 for (var j=0,ll=n.childNodes.length; j<ll; j++) {
                   if (n.childNodes[j].nodeName == "title") {
@@ -1190,6 +1249,7 @@ function _map(arr, fn) {
                   shape.position({ x: x, y: y });
                 }
                 shape.style(buildStyleFromSvgStyle(currentSvgStyle));
+                shape.transform(transform);
                 if (shape instanceof Fashion.Text) {
                   shape.fontSize(currentSvgStyle.fontSize);
                 }
@@ -1204,6 +1264,7 @@ function _map(arr, fn) {
               stroke: false, strokeOpacity: false,
               fontSize: 10
             },
+            new Fashion.Matrix(),
             {},
             drawing.documentElement.childNodes,
             focused);

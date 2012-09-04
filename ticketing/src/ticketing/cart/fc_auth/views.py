@@ -77,7 +77,7 @@ class LoginView(object):
         if authenticated is None:
             self.select_renderer(membership)
             return {'username': '',
-                    'guest_message': u'このチケットは一般販売を行っておりません。'}
+                    'guest_message': u''}
 
 
         return_to_url = self.return_to_url

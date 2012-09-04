@@ -102,8 +102,8 @@ class FCAuthPlugin(object):
             return
 
         data = {'username': username, 
-            'membergroup': user.membergroup.name,
-            'membership': user.membergroup.membership.name,
+            'membergroup': user.member.membergroup.name,
+            'membership': user.member.membergroup.membership.name,
             'is_guest': False,
             }
         return pickle.dumps(data).encode('base64')
@@ -111,9 +111,11 @@ class FCAuthPlugin(object):
         
     # IChallenger
     def challenge(self, environ, status, app_headers, forget_headers):
+        logger.debug('challenge')
         if not environ.get('ticketing.cart.fc_auth.required'):
             logger.debug('fc auth is not required')
             return
+        logger.debug('fc auth is required')
         session = environ['session.rakuten_openid']
         session['return_url'] = wsgiref.util.request_uri(environ)
         session.save()

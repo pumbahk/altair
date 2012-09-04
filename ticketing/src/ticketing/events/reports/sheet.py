@@ -148,6 +148,14 @@ def seat_source_from_seat(seat):
     return seat_source
 
 
+def is_different_row(seatsource1, seatsource2):
+    """seatsource1とseatsource2が別の列、もしくは通路などを
+    挟んで連続していない場合にTrueを返す
+    """
+    return (int(seatsource1.seat) + 1 != int(seatsource2.seat)) or \
+        (seatsource1.source.row_l0_id != seatsource2.source.row_l0_id)
+
+
 def seat_records_from_seat_sources(seat_sources, unsold=False):
     """SeatSourceのリストからSeatRecordのリストを返す
     サマリー作成
@@ -163,8 +171,8 @@ def seat_records_from_seat_sources(seat_sources, unsold=False):
         # 連続した座席はまとめる
         lst_values = []
         for value in values:
-            # 1つ前の座席と連続していたらまとめる
-            if lst_values and int(lst_values[-1].seat) + 1 != int(value.seat):
+            # 1つ前の座席と連続していなければ結果に追加してlst_valuesをリセット
+            if lst_values and is_different_row(lst_values[-1], value):
                 # flush
                 seat_record = SeatRecord(
                     block=lst_values[0].get_block_display(),
@@ -189,3 +197,107 @@ def seat_records_from_seat_sources(seat_sources, unsold=False):
             )
             result.append(seat_record)
     return result
+
+
+class SalesScheduleRecord(object):
+    """販売日程管理票の1シート分
+    """
+    def __init__(self, event_title=None, output_datetime=None, venue_name=None):
+        self.event_title = event_title
+        self.output_datetime = output_datetime
+        self.venue_name = venue_name
+        self.sales = []
+        self.performances = []
+        self.prices = []
+
+    def get_record(self):
+        record = dict(
+            event_title=self.event_title or "",
+            output_datetime=self.output_datetime or "",
+            venue_name=self.venue_name or "",
+            sales=[
+                sales_record.get_record() for sales_record in self.sales
+            ],
+            performance=[
+                performance_record.get_record() for performance_record in self.performances
+            ],
+            prices=[
+                price_record.get_record() for price_record in self.prices
+            ]
+        )
+        return record
+
+
+class SalesScheduleSalesRecord(object):
+    """販売日程管理票のSalesSegment部分
+    """
+    def __init__(self, sales_seg=None, sales_start=None, sales_end=None):
+        self.sales_seg = sales_seg
+        self.sales_start = sales_start
+        self.sales_end = sales_end
+
+    def get_record(self):
+        record = dict(
+            sales_seg=self.sales_seg or "",
+            sales_start=self.sales_start or "",
+            sales_end=self.sales_end or "",
+        )
+        return record
+
+
+class SalesSchedulePerformanceRecord(object):
+    """販売日程管理票のパフォーマンス部分
+    """
+    def __init__(self, datetime_=None, open_=None, start=None,
+            price_name=None, sales_end=None, submit_order=None,
+            submit_pay=None, pay_datetime=None):
+        self.datetime = datetime_
+        self.open_ = open_
+        self.start = start
+        self.price_name = price_name
+        self.sales_end = sales_end
+
+    def get_record(self):
+        record = dict(
+            datetime=self.datetime_ or "",
+            open=self.open_ or "",
+            start=self.start or "",
+            price_name=self.price_name or "",
+            sales_end = self.sales_end or "",
+        )
+        return record
+
+
+class SalesSchedulePriceRecord(object):
+    """販売日程管理票のprices
+    """
+    def __init__(self, name=None):
+        self.name = name
+        self.records = []
+
+    def get_record(self):
+        record = dict(
+            name=self.name or "",
+            records=[
+                price_record.get_record() for price_record in self.records
+            ],
+        )
+        return record
+
+
+class SalesSchedulePriceRecordRecord(object):
+    """販売日程管理票のpricesのrecordsの中身
+    sheet_record['prices'][0]['records'][0]
+    """
+    def __init__(self, seat_type=None, ticket_type=None, price=None):
+        self.seat_type = seat_type
+        self.ticket_type = ticket_type
+        self.price = price
+
+    def get_record(self):
+        record = dict(
+            seat_type=self.seat_type or "",
+            ticket_type=self.ticket_type or "",
+            price=self.price is None and "" or self.price,
+        )
+        return record

@@ -18,12 +18,19 @@ class User(Base, WithTimestamp):
     bank_account_id = Column(Identifier, ForeignKey('BankAccount.id'))
     bank_account    = relationship('BankAccount')
 
-    membergroup_id = Column(Identifier, ForeignKey('MemberGroup.id'))
-    membergroup = relationship('MemberGroup', backref='users')
-
     @staticmethod
     def get(user_id):
         return session.query(User).filter(User.id == user_id).first()
+
+
+class Member(Base, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'Member'
+    query = session.query_property()
+    id = Column(Identifier, primary_key=True)
+    user_id = Column(Identifier, ForeignKey('User.id'))
+    user = relationship('User', backref=backref("member", uselist=False))
+    membergroup_id = Column(Identifier, ForeignKey('MemberGroup.id'))
+    membergroup = relationship('MemberGroup', backref='users')
 
 class SexEnum(StandardEnum):
     Male = 1
@@ -157,6 +164,9 @@ class Membership(Base, WithTimestamp):
     name = Column(String(255))
     #sales_segments = lambda:relationship('SalesSegment', secondary=Membership_SalesSegment.__table__, backref='memberships')
     status = Column(Integer)
+
+    organization_id = Column(Identifier, ForeignKey('Organization.id'))
+    organization = relationship('Organization', backref='memberships')
 
 
 MemberGroup_SalesSegment = Table('MemberGroup_SalesSegment', Base.metadata,

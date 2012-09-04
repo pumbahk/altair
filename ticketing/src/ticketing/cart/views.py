@@ -63,6 +63,7 @@ class IndexView(object):
     @view_config(route_name='cart.index.sales', renderer=selectable_renderer('carts/%(membership)s/index.html'), xhr=False, permission="buy")
     def __call__(self):
         jquery_tools.need()
+        context = self.request.context
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.params.get('performance')
 
@@ -82,17 +83,32 @@ class IndexView(object):
         dates = sorted(list(set([p.start_on.strftime("%Y-%m-%d %H:%M") for p in e.performances])))
         logger.debug("dates:%s" % dates)
         # 日付ごとの会場リスト
+        # select_venues = {}
+        # for p in e.performances:
+        #     d = p.start_on.strftime('%Y-%m-%d %H:%M')
+        #     logger.debug('performance %d date %s' % (p.id, d))
+        #     ps = select_venues.get(d, [])
+        #     ps.append(dict(id=p.id, name=p.venue.name,
+        #                    seat_types_url=self.request.route_url('cart.seat_types', 
+        #                                                          performance_id=p.id,
+        #                                                          sales_segment_id=sales_segment.id,
+        #                                                          event_id=e.id)))
+        #     select_venues[d] = ps
+        performances = api.performance_names(self.request, context.event, context.sales_segment)
         select_venues = {}
-        for p in e.performances:
-            d = p.start_on.strftime('%Y-%m-%d %H:%M')
-            logger.debug('performance %d date %s' % (p.id, d))
-            ps = select_venues.get(d, [])
-            ps.append(dict(id=p.id, name=p.venue.name,
-                           seat_types_url=self.request.route_url('cart.seat_types', 
-                                                                 performance_id=p.id,
-                                                                 sales_segment_id=sales_segment.id,
-                                                                 event_id=e.id)))
-            select_venues[d] = ps
+        event = self.request.context.event
+        for pname, pvs in performances:
+            for pv in pvs:
+                select_venues[pname] = select_venues.get(pname, [])
+                logger.debug("performance %s" % pv)
+                select_venues[pname].append(dict(
+                    id=pv['pid'],
+                    name=u'{start:%Y-%m-%d %H:%M}開始 {vname}'.format(**pv),
+                    seat_types_url=self.request.route_url('cart.seat_types',
+                        performance_id=pv['pid'],
+                        sales_segment_id=sales_segment.id,
+                        event_id=event.id)))
+            
         logger.debug("venues %s" % select_venues)
 
         # 会場
@@ -814,7 +830,9 @@ class CompleteView(object):
         self.save_subscription(user, mail_address)
         api.remove_cart(self.request)
 
+        api.logout(self.request)
         return dict(order=order)
+
 
     def save_subscription(self, user, mail_address):
         magazines = u_models.MailMagazine.query.all()
@@ -1044,6 +1062,14 @@ class OutTermSalesView(object):
         self.request = request
         self.context = context
 
-    @view_config(context='.exceptions.OutTermSalesException', renderer=selectable_renderer('ticketing.cart:templates/carts/%(membership)s/out_term_sales.html'))
-    def __call__(self):
-        return dict(event=self.context.event, sales_segment=self.context.sales_segment)
+    @view_config(context='.exceptions.OutTermSalesException', renderer='ticketing.cart:templates/carts/out_term_sales.html')
+    def pc(self):
+        api.logout(self.request)
+        return dict(event=self.context.event, 
+                    sales_segment=self.context.sales_segment)
+
+    @view_config(context='.exceptions.OutTermSalesException', renderer='ticketing.cart:templates/carts_mobile/out_term_sales.html', request_type=".interfaces.IMobileRequest")
+    def mobile(self):
+        api.logout(self.request)
+        return dict(event=self.context.event, 
+                    sales_segment=self.context.sales_segment)

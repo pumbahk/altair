@@ -104,6 +104,8 @@ function parseCSSAsSvgStyle(str, defs) {
   var strokeOpacityString = styles['stroke-opacity'];
   var fontSize = null;
   var fontSizeString = styles['font-size'];
+  var textAnchor = null;
+  var textAnchorString = styles['text-anchor'];
   if (fillString) {
     if (fillString[0] == 'none') {
       fill = false;
@@ -134,7 +136,10 @@ function parseCSSAsSvgStyle(str, defs) {
     strokeOpacity = parseFloat(strokeOpacityString[0]);
   }
   if (fontSizeString) {
-    fontSize = parseFloat(fontSizeString);
+    fontSize = parseFloat(fontSizeString[0]);
+  }
+  if (textAnchorString) {
+    textAnchor = textAnchorString[0];
   }
   return {
     fill: fill,
@@ -142,7 +147,8 @@ function parseCSSAsSvgStyle(str, defs) {
     stroke: stroke,
     strokeWidth: strokeWidth,
     strokeOpacity: strokeOpacity,
-    fontSize: fontSize
+    fontSize: fontSize,
+    textAnchor: textAnchor
   };
 }
 
@@ -153,7 +159,8 @@ function mergeSvgStyle(origStyle, newStyle) {
     stroke:        newStyle.stroke !== null ? newStyle.stroke: origStyle.stroke,
     strokeWidth:   newStyle.strokeWidth !== null ? newStyle.strokeWidth: origStyle.strokeWidth,
     strokeOpacity: newStyle.strokeOpacity !== null ? newStyle.strokeOpacity: origStyle.strokeOpacity,
-    fontSize:      newStyle.fontSize !== null ? newStyle.fontSize: origStyle.fontSize
+    fontSize:      newStyle.fontSize !== null ? newStyle.fontSize: origStyle.fontSize,
+    textAnchor:    newStyle.textAnchor !== null ? newStyle.textAnchor: origStyle.textAnchor
   };
 }
 
@@ -209,4 +216,46 @@ function _map(arr, fn) {
     retval[i] = fn(arr[i]);
   }
   return retval;
+}
+
+function parseTransform(transform_str) {
+    var g = /\s*([A-Za-z_-][0-9A-Za-z_-]*)\s*\(\s*((?:[^\s,]+(?:\s*,\s*|\s+))*[^\s,]+)\s*\)\s*/.exec(transform_str);
+
+    var f = g[1];
+    var args = g[2].replace(/(?:^\s+|\s+$)/, '').split(/\s*,\s*|\s+/);
+
+    switch (f) {
+    case 'matrix':
+        if (args.length != 6)
+            throw new Error("invalid number of arguments for matrix()")
+        return new Fashion.Matrix(
+            parseFloat(args[0]), parseFloat(args[1]),
+            parseFloat(args[2]), parseFloat(args[3]),
+            parseFloat(args[4]), parseFloat(args[5]));
+    case 'translate':
+        if (args.length != 2)
+            throw new Error("invalid number of arguments for translate()")
+        return Fashion.Matrix.translate({ x:parseFloat(args[0]), y:parseFloat(args[1]) });
+    case 'scale':
+        if (args.length != 2)
+            throw new Error("invalid number of arguments for scale()");
+        return new Fashion.Matrix(parseFloat(args[0]), 0, 0, parseFloat(args[1]), 0, 0);
+    case 'rotate':
+        if (args.length != 1)
+            throw new Error("invalid number of arguments for rotate()");
+        return Fashion.Matrix.rotate(parseFloat(args[0]) * Math.PI / 180);
+    case 'skeyX':
+        if (args.length != 1)
+            throw new Error('invalid number of arguments for skewX()');
+        var t = parseFloat(args[0]) * Math.PI / 180;
+        var ta = Math.tan(t);
+        return new Fashion.Matrix(1, 0, ta, 1, 0, 0);
+    case 'skeyY':
+        if (args.length != 1)
+            throw new Error('invalid number of arguments for skewX()');
+        var t = parseFloat(args[0]) * Math.PI / 180;
+        var ta = Math.tan(t);
+        return new Fashion.Matrix(1, ta, 0, 1, 0, 0);
+    }
+    throw new Error('invalid transform function: ' + f);
 }

@@ -68,4 +68,4 @@ ${h.render_delivery_finished_mail_viewlet(request, order)}
 
 仙台89ERS（ナイナーズチケット）　チケット事務局
 
-電話番号：022-215-8138　（平日09:00〜18:00）
+お問い合わせ：89ers@ticketstar.jp

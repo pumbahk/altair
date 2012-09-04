@@ -5,6 +5,7 @@
 TODO: 引き当て処理自体はResourceから分離する。
 TODO: cart取得
 """
+import logging
 
 from datetime import datetime
 import itertools
@@ -17,9 +18,12 @@ from .interfaces import IOrderPayment, IOrderDelivery, ICartPayment, ICartDelive
 
 from .exceptions import OutTermSalesException
 from ..core import models as c_models
+from ..users import models as u_models
 from . import models as m
 from . import logger
 from zope.deprecation import deprecate
+
+logger = logging.getLogger(__name__)
 
 class TicketingCartResource(object):
     __acl__ = [
@@ -33,12 +37,18 @@ class TicketingCartResource(object):
         else:
             self.event_id = None
 
+    # @property
+    # def memberships(self):
+    #     membergroups = self.membergroups
+    #     if not membergroups:
+    #         return []
+    #     return [m.membership for m in membergroups]
     @property
     def memberships(self):
-        membergroups = self.membergroups
-        if not membergroups:
-            return []
-        return [m.membership for m in membergroups]
+        logger.debug('event %s' % self.event.title)
+        logger.debug('organization %s' % self.event.organization.code)
+        logger.debug('memberships %s' % self.event.organization.memberships)
+        return self.event.organization.memberships
 
     # @property
     # def membergroup(self):
@@ -46,6 +56,11 @@ class TicketingCartResource(object):
     #     if sales_segment is None:
     #         return None
     #     return sales_segment.membergroup
+
+    @property
+    def event(self):
+        event = c_models.Event.filter(c_models.Event.id==self.event_id).one()
+        return event
 
     @property
     def membergroups(self):
@@ -69,6 +84,11 @@ class TicketingCartResource(object):
 
         return pairs
 
+    def authenticated_user(self):
+        from .rakuten_auth.api import authenticated_user
+        user = authenticated_user(self.request)
+        return user
+
 
     @deprecate("deprecated method")
     def get_sales_segument(self):
@@ -81,26 +101,34 @@ class TicketingCartResource(object):
         sales_segment_id = self.request.matchdict.get('sales_segment_id')
 
         now = datetime.now()
+        q = c_models.SalesSegment.query
+        q = q.filter(c_models.SalesSegment.event_id==self.event_id)
+
         if sales_segment_id is not None:
-            sales_segment = c_models.SalesSegment.query.filter(
+            q = q.filter(
                 c_models.SalesSegment.id==sales_segment_id
+            )
+
+        user = self.authenticated_user()
+        if user and 'membership' in user:
+            q = q.filter(
+                c_models.SalesSegment.id==u_models.MemberGroup_SalesSegment.c.sales_segment_id
             ).filter(
-                c_models.SalesSegment.event_id==self.event_id
-            ).first()
-            if sales_segment is None:
-                return None
-            if sales_segment.start_at >= now or sales_segment.end_at <= now:
-                event = c_models.Event.filter(c_models.Event.id==self.event_id).one()
-                raise OutTermSalesException(event, sales_segment)
-            return sales_segment
-        else:
-            return c_models.SalesSegment.query.filter(
-                c_models.SalesSegment.event_id==self.event_id
+                u_models.MemberGroup_SalesSegment.c.membergroup_id==u_models.MemberGroup.id
             ).filter(
-                c_models.SalesSegment.start_at<=now
-            ).filter(
-                c_models.SalesSegment.end_at>=now
-            ).first()
+                u_models.MemberGroup.name==user['membergroup']
+            )
+
+        sales_segment = q.first()
+
+        if sales_segment is None:
+            return None
+
+        if sales_segment.start_at >= now or sales_segment.end_at <= now:
+            event = c_models.Event.filter(c_models.Event.id==self.event_id).one()
+            raise OutTermSalesException(event, sales_segment)
+
+        return sales_segment
 
     sales_segment = property(get_sales_segment)
 

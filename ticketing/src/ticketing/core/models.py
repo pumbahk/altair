@@ -14,6 +14,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 
 from pyramid.threadlocal import get_current_registry
 
+from .exceptions import *
 from ticketing.models import *
 from ticketing.users.models import User
 from ticketing.utils import sensible_alnum_decode
@@ -196,6 +197,7 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     stock_id        = Column(Identifier, ForeignKey('Stock.id'))
 
     venue_id        = Column(Identifier, ForeignKey('Venue.id', ondelete='CASCADE'), nullable=False)
+    row_l0_id       = Column(String(255), index=True)
     group_l0_id     = Column(String(255), index=True)
 
     venue           = relationship("Venue", backref='seats')
@@ -1663,6 +1665,8 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         # 座席開放
         for seat_status in self.seat_statuses:
             logger.debug('release seat id=%d' % (seat_status.seat_id))
+            if seat_status.status != int(SeatStatusEnum.Ordered):
+                raise InvalidStockStateError("This order is associated with a seat (id=%d) that is not marked ordered" % seat_status.seat_id)
             seat_status.status = int(SeatStatusEnum.Vacant)
         # 在庫数を戻す
         logger.debug('release stock id=%s quantity=%d' % (self.product_item.stock_id, len(self.seats)))

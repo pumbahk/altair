@@ -124,6 +124,20 @@ class BaseExporter(object):
         """
         return self.xl_writer.style_list[cell.xf_idx]
 
+    def get_rows(self, sheet, line_numbers):
+        """line_numbersリストで指定した行のセルのオブジェクトを返す
+        """
+        result = []
+        for i in line_numbers:
+            result.append(self.get_row_data(sheet, i))
+        return result
+
+    def remove_sheet(self, index):
+        # シートのリストから指定した位置のシートを削除
+        sheet = self.workbook._Workbook__worksheets.pop(index)
+        # シート名からのインデックスを削除
+        del self.workbook._Workbook__worksheet_idx_from_name[sheet.name]
+
     def add_sheet(self, sheetname):
         """シートの1つ目をコピーして増やす
         """
@@ -205,9 +219,226 @@ class BaseExporter(object):
         cell = get_cell(sheet, row_index, colx)
 
 
-class SalesReportExporter(BaseExporter):
+class SalesScheduleReportExporter(BaseExporter):
     """販売日程管理票の帳票出力(Excel)
     """
+    def __init__(self, template):
+        super(SalesScheduleReportExporter, self).__init__(template)
+        self._parts_sales_info_body = self.get_parts_sales_info_body()
+        self._parts_sales_info_footer = self.get_parts_sales_info_footer()
+        self._parts_performances_header = self.get_parts_performances_header()
+        self._parts_performances_body = self.get_parts_performances_body()
+        self._parts_performances_footer = self.get_parts_performances_footer()
+        self._parts_prices_header = self.get_parts_prices_header()
+        self._parts_prices_body = self.get_parts_prices_body()
+        self._parts_prices_footer = self.get_parts_prices_footer()
+        self.current_pos = {}
+
+    def add_sheet(self, sheetname):
+        result = super(SalesScheduleReportExporter, self).add_sheet(sheetname)
+        self.current_pos[result] = 14
+        return result
+
+    def get_parts_sheet(self):
+        """テンプレートにはめ込むパーツを持ったシート
+        """
+        return self.workbook.get_sheet(1)
+    parts_sheet = property(get_parts_sheet)
+
+    def get_parts_sales_info_body(self):
+        """販売期間/販売日時/販売終了日時の行
+        """
+        return self.get_rows(self.parts_sheet, [14])
+
+    def get_parts_sales_info_footer(self):
+        """販売期間/販売日時/販売終了日時のフッタ
+        """
+        return self.get_rows(self.parts_sheet, [15])
+
+    def get_parts_performances_header(self):
+        """パフォーマンス情報のヘッダ
+        """
+        return self.get_rows(self.parts_sheet, [17, 18, 19, 20])
+
+    def get_parts_performances_body(self):
+        """パフォーマンス情報の行
+        """
+        return self.get_rows(self.parts_sheet, [21])
+
+    def get_parts_performances_footer(self):
+        """パフォーマンス情報のフッタ
+        """
+        return self.get_rows(self.parts_sheet, [22])
+
+    def get_parts_prices_header(self):
+        """価格表のヘッダ
+        """
+        return self.get_rows(self.parts_sheet, [24, 25])
+
+    def get_parts_prices_body(self):
+        """価格表の行
+        """
+        return self.get_rows(self.parts_sheet, [26])
+
+    def get_parts_prices_footer(self):
+        """価格表のフッタ
+        """
+        return self.get_rows(self.parts_sheet, [27])
+
+    def remove_templates(self):
+        "先頭から2つのテンプレート用のシートを削除"
+        self.remove_sheet(0)
+        self.remove_sheet(0)
+
+    def write_output_datetime(self, sheet, value):
+        self.update_cell_text(sheet, 0, 12, value)
+
+    def write_event_title(self, sheet, value):
+        self.update_cell_text(sheet, 4, 0, value)
+
+    def write_sales_info(self, sheet, row_data, use_footer=False):
+        """販売期間
+        """
+        if use_footer:
+            parts = self._parts_sales_info_footer[0]
+        else:
+            parts = self._parts_sales_info_body[0]
+        pos = self.current_pos.get(sheet)
+        self.write_row_data(
+            sheet,
+            pos,
+            parts['cells'],
+            parts['styles'],
+            parts['merged_ranges'],
+        )
+        self.update_cell_text(sheet, pos, 0, row_data['sales_seg'])
+        self.update_cell_text(sheet, pos, 4, row_data['sales_start'])
+        self.update_cell_text(sheet, pos, 7, row_data['sales_end'])
+        self.current_pos[sheet] = pos + 1
+
+    def write_performance_header(self, sheet, venue_name):
+        """パフォーマンス情報ヘッダ
+        """
+        pos = self.current_pos.get(sheet)
+        for i, row_data in enumerate(self._parts_performances_header):
+            self.write_row_data(
+                sheet,
+                pos + 1 + i,
+                row_data['cells'],
+                row_data['styles'],
+                row_data['merged_ranges'],
+            )
+        # 会場名
+        self.update_cell_text(sheet, pos + 2, 0, venue_name)
+        self.current_pos[sheet] = pos + 1 + len(self._parts_performances_header)
+
+    def write_performance(self, sheet, row_data, use_footer=False):
+        """パフォーマンス情報
+        """
+        if use_footer:
+            parts = self._parts_performances_footer[0]
+        else:
+            parts = self._parts_performances_body[0]
+        pos = self.current_pos.get(sheet)
+        self.write_row_data(
+            sheet,
+            pos,
+            parts['cells'],
+            parts['styles'],
+            parts['merged_ranges'],
+        )
+        self.update_cell_text(sheet, pos, 0, row_data['datetime'])
+        self.update_cell_text(sheet, pos, 4, row_data['open'])
+        self.update_cell_text(sheet, pos, 5, row_data['start'])
+        self.update_cell_text(sheet, pos, 6, row_data['price_name'])
+        self.update_cell_text(sheet, pos, 7, row_data['sales_end'])
+        self.update_cell_text(sheet, pos, 9, row_data['submit_order'])
+        self.update_cell_text(sheet, pos, 11, row_data['submit_pay'])
+        self.update_cell_text(sheet, pos, 13, row_data['pay_datetime'])
+        self.current_pos[sheet] = pos + 1
+
+    def write_prices_header(self, sheet, price_name):
+        """価格表のヘッダ
+        """
+        pos = self.current_pos.get(sheet)
+        for i, row_data in enumerate(self._parts_prices_header):
+            self.write_row_data(
+                sheet,
+                pos + 1 + i,
+                row_data['cells'],
+                row_data['styles'],
+                row_data['merged_ranges'],
+            )
+        # 価格名
+        self.update_cell_text(sheet, pos + 1, 0, price_name)
+        self.current_pos[sheet] = pos + 1 + len(self._parts_prices_header)
+
+    def write_price_record(self, sheet, record, use_footer=False):
+        """価格の本文行
+        """
+        if use_footer:
+            parts = self._parts_prices_footer[0]
+        else:
+            parts = self._parts_prices_body[0]
+        pos = self.current_pos.get(sheet)
+        self.write_row_data(
+            sheet,
+            pos,
+            parts['cells'],
+            parts['styles'],
+            parts['merged_ranges'],
+        )
+        # データ埋める
+        self.update_cell_text(sheet, pos, 0, record['seat_type'])
+        self.update_cell_text(sheet, pos, 3, record['ticket_type'])
+        self.update_cell_text(sheet, pos, 6, record['price'])
+        self.current_pos[sheet] = pos + 1
+
+    def write_data(self, sheet, data):
+        """シートにデータを流し込む
+        {
+          'event_title': value,
+          'output_datetime': value,
+          'sales': [{}],
+          'performances': [{}],
+          'price_blocks': [{'prices': [{}]}],
+        }
+        """
+        event_title = data.get('event_title')
+        if event_title:
+            self.write_event_title(sheet, event_title)
+        output_datetime = data.get('output_datetime')
+        if output_datetime:
+            self.write_output_datetime(sheet, output_datetime)
+        sales = data.get('sales')
+        if sales:
+            for i, sales_dict in enumerate(sales):
+                # 最後の行は閉じる
+                if i == len(sales) - 1:
+                    self.write_sales_info(sheet, sales_dict, use_footer=True)
+                else:
+                    self.write_sales_info(sheet, sales_dict)
+        performances = data.get('performances')
+        venue_name = data.get('venue_name', '')
+        if performances:
+            self.write_performance_header(sheet, venue_name)
+            for i, performance_dict in enumerate(performances):
+                # 最後の行は閉じる
+                if i == len(performances) - 1:
+                    self.write_performance(sheet, performance_dict, use_footer=True)
+                else:
+                    self.write_performance(sheet, performance_dict)
+        prices = data.get('prices')
+        if prices:
+            for i, price_dict in enumerate(prices):
+                # ヘッダ
+                self.write_prices_header(sheet, price_dict['name'])
+                for j, record in enumerate(price_dict['records']):
+                    # 最後の行は閉じる
+                    if j == len(price_dict['records']) - 1:
+                        self.write_price_record(sheet, record, use_footer=True)
+                    else:
+                        self.write_price_record(sheet, record)
 
 
 class SeatAssignExporter(BaseExporter):

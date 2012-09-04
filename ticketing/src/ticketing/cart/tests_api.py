@@ -603,3 +603,117 @@ class DummyCartFactory(object):
     
     def create_cart(self, performance_id, seats, ordered_products):
         return testing.DummyModel(performance_id=performance_id, seats=seats, ordered_products=ordered_products)
+
+class logout_Tests(unittest.TestCase):
+    def setUp(self):
+        self.config = testing.setUp()
+
+    def tearDown(self):
+        testing.tearDown()
+
+    def _callFUT(self, *args, **kwargs):
+        from .api import logout
+        return logout(*args, **kwargs)
+
+    def test_it(self):
+        request = testing.DummyRequest()
+        self._callFUT(request)
+
+        
+class performance_namesTests(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.session = _setup_db()
+
+    def setUp(self):
+        self.config = testing.setUp()
+
+    def tearDown(self):
+        import transaction
+        transaction.abort()
+        self.session.remove()
+        testing.tearDown()
+
+    def _callFUT(self, *args, **kwargs):
+        from .api import performance_names
+        return performance_names(*args, **kwargs)
+
+    def test_empty(self):
+        from ..core.models import Event, SalesSegment
+        request = testing.DummyRequest()
+        event = Event()
+        sales_segment = SalesSegment()        
+        self.session.add(event)
+        self.session.add(sales_segment)
+        self.session.flush()
+
+        result = self._callFUT(request, event, sales_segment)
+
+        self.assertEqual(result, [])
+
+    def test_one(self):
+        from datetime import datetime
+        from ..core.models import Event, SalesSegment, Performance, Venue, Product, ProductItem, Stock, Site, Organization
+        request = testing.DummyRequest()
+        organization = Organization()
+        event = Event(organization=organization)
+        sales_segment = SalesSegment(event=event)        
+        product = Product(sales_segment=sales_segment, price=100)
+        performance = Performance(event=event, name=u"公演1", 
+            open_on=datetime(2012, 8, 31, 10), start_on=datetime(2012, 8, 31, 10, 30))
+        site = Site()
+        venue = Venue(performance=performance, site=site, organization=organization, name=u"会場1")
+        stock = Stock(performance=performance)
+        product_item = ProductItem(stock=stock, product=product, price=100)
+
+        self.session.add(event)
+        self.session.add(sales_segment)
+        self.session.flush()
+
+        result = self._callFUT(request, event, sales_segment)
+
+        self.assertEqual(result, [
+            (u'公演1', [ {'vname': u'会場1', 'pid': 1, 'open': datetime(2012, 8, 31, 10), 'start': datetime(2012, 8, 31, 10, 30)}]),
+        ])
+
+    def test_two(self):
+        from datetime import datetime
+        from ..core.models import Event, SalesSegment, Performance, Venue, Product, ProductItem, Stock, Site, Organization
+        request = testing.DummyRequest()
+        organization = Organization()
+        event = Event(organization=organization)
+        sales_segment = SalesSegment(event=event)        
+        site = Site()
+        for i in range(2):
+            product = Product(sales_segment=sales_segment, price=100)
+            performance = Performance(event=event, name=u"公演1", 
+                open_on=datetime(2012, 8 + i, 10, 10), start_on=datetime(2012, 8 + i, 10, 10, 30))
+            venue = Venue(performance=performance, site=site, organization=organization, name=u"会場1")
+            stock = Stock(performance=performance)
+            product_item = ProductItem(stock=stock, product=product, price=100)
+
+        for i in range(2):
+            product = Product(sales_segment=sales_segment, price=100)
+            performance = Performance(event=event, name=u"公演2", 
+                open_on=datetime(2012, 10 - i, 10, 10), start_on=datetime(2012, 10 - i, 10, 10, 30))
+            venue = Venue(performance=performance, site=site, organization=organization, name=u"会場1")
+            stock = Stock(performance=performance)
+            product_item = ProductItem(stock=stock, product=product, price=100)
+
+        self.session.add(event)
+        self.session.add(sales_segment)
+        self.session.flush()
+
+        result = self._callFUT(request, event, sales_segment)
+
+        self.assertEqual(result, [
+            (u'公演1', [
+                {'vname': u'会場1', 'pid': 1, 'open': datetime(2012, 8, 10, 10), 'start': datetime(2012, 8, 10, 10, 30)},
+                {'vname': u'会場1', 'pid': 2, 'open': datetime(2012, 9, 10, 10), 'start': datetime(2012, 9, 10, 10, 30)},
+            ]),
+            (u'公演2', [
+                {'vname': u'会場1', 'pid': 4, 'open': datetime(2012, 9, 10, 10), 'start': datetime(2012, 9, 10, 10, 30)},
+                {'vname': u'会場1', 'pid': 3, 'open': datetime(2012, 10, 10, 10), 'start': datetime(2012, 10, 10, 10, 30)},
+            ]),
+        ])

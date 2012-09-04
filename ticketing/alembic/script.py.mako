@@ -12,6 +12,10 @@ down_revision = ${repr(down_revision)}
 
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.sql.expression import text
+from sqlalchemy.sql import functions as sqlf
+
+Identifier = sa.BigInteger
 ${imports if imports else ""}
 
 def upgrade():

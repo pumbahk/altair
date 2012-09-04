@@ -30,135 +30,136 @@
 					</ul>　　
 				</div>
 			</div>
-
-				<div class="kadomaru">
-
-
-					<table cellpadding="0" cellspacing="0" class="textC" style="margin:0 auto;">
-						<tr>
-							<td>
-			                    <form action="${request.route_url('fc_auth.guest', membership=request.matchdict['membership'])}" method="post">
-								<table class="login" style="margin-right:5px; height: 290px;">
-									<thead>
-										<th>
-											一般の方はこちらから
-										</th>
-									</thead>
-									<tr>
-										<td style="text-align:center;"> 
-                      <button class="redBtn" style="margin-top: 30px;">チケット購入</button>
-										  <div style="margin-top: 10px;"><small>9月1日(土) 12:00より販売開始予定です。</small></div>
-										  %if guest_message:
-										  <div class="small red">${guest_message}</div>
-										  %endif
-                    </td>
-									</tr>
-								</table>
-                                </form>
-							</td>
-							<td>
-			                    <form action="${request.url}" method="post">
-								<table class="login" style="margin-left:5px; height: 290px;">
-									<thead>
-										<th>
-											ブースター会員の方はこちらから
-										</th>
-									</thead>
-									<tr>
-										<td>
-											<table>
-												<tr>
-													<td>
-														会員ID(8桁)
-														<br /><span class="small red">※ 半角英数</span>
-													</td>
-													<td>
-														<input type="text" name="username" size="20" maxlength="8" value="${username}">
-														%if message:
-														<br/><span class="small red">${message}</span>
-														%endif
-													</td>
-												</tr>
-												<tr>
-													<td>
-														パスワード(8桁)
-														<br /><span class="small red">※ 半角英数</span>
-													</td>
-													<td>
-														<input type="password" name="password" size="20" maxlength="8" value="">
-													</td>
-												</tr>
-												<tr>
-													<!-- <td colspan="2" class="textC"> <input type="submit" name="login" value="ログイン"  class="redBtn" /> </td> -->
-													<td colspan="2" class="textC"> <button class="redBtn">ログイン</button> </td>
-												</tr>
-												<tr>
-													<td colspan="2" class="textC"><small>今シーズン用の会員証・先行販売のご案内をご確認ください（昨シーズンのFC会員番号は使用できません。ご注意ください）<br>会員IDとパスワードを忘れてしまった方は<a href="mailto:89ers@ticketstar.jp">こちら</a>からお問い合わせください。</small></td>
-												</tr>
-											</table>							
-			                                </form>
-										</td>
-									</tr>
-								</table>
-							</td>
-						</tr>
-					</table>
-
-					<div class="kadomaru" style="margin:10px 20px 0 20px; font-size: 10px; border: 2px #CCC solid; width: 560px; padding: 10px;">
-                        <p>「ナイナーズチケット」を快適にご利用していただくために、以下のブラウザーでのご利用を推奨します。</p>
-					    <div style="margin:5px; font-size: 10px;">
-                        <p>
-                        Windows
-                            <ul>
-                            <li>Google Chrome</li>
-                            <li>Mozilla Firefox 13.0以降</li>
-                            <li>Internet Explorer 9.x</li>
-                            </ul>
-                        Mac
-                            <ul>
-                            <li>Safari 5.0以降</li>
-                            </ul>
-                        </p>
-                        <p>（現在、順次対応を行っておりますが、Internet Explorer 8.x, 7.x, 6x では表示が崩れたり、動作が遅い、座席が選びにくいなどの症状が発生することがあります。上記ブラウザのご利用をお勧めします）</p>
-                        <p style="font-size: 12px; font-weight: bold; margin: 8px 25px 0 25px; color: red; background-color: #eedcb3; text-align: center;">
-                        ※　Internet Explorer 8.x, 7.x, 6x をお使いの方、WindowsXPをお使いの方は、<br>
-                        座席を選んでの購入が出来ません。「お任せ」のみの購入となります。<br>
-                        上記ブラウザのご利用をお勧めします。下記よりダウンロード下さい。<br>
-                      　　　<a href="https://www.google.com/intl/ja/chrome/browser/">Chrome</a>
-                    　　　　<a href="http://www.mozilla.jp/firefox/">Firefox</a>
-                        </p>
-                        </div>
-                    </div>
-
-				</div>
-
-
-
-			<div class="footer">
-				<div class="footernav">
-		          <ul>
-		            <li><a href="http://www.ticketstar.jp/corporate">運営会社</a></li>
-		            <li><a href="mailto:89ers@ticketstar.jp">お問い合わせ</a></li>
-		            <li><a href="http://www.ticketstar.jp/privacy">個人情報保護方針</a></li>
-		            <li class="last"><a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a></li>
-		          </ul>
-		        </div>
-				<div class="copyright">
-					Copyright &copy; 2010-2011 TicketStar Inc. All Rights Reserved. 
-				</div>
-			</div>
-
-		</div>
-		<!-- メインカラムおわり -->
-		<!-- サイドバー -->
-		<div class="sidebar">
-			
-			
-			
-		</div>	
-		<!-- サイドバーおわり -->
-		
-	</div>
-	<!-- wrapperおわり -->
+      <div class="kadomaru">
+        <table cellpadding="0" cellspacing="0" class="textC" style="margin:0 auto;">
+          <tr>
+            <td>
+              <form action="${request.route_url('fc_auth.guest', membership=request.matchdict['membership'])}" method="post">
+                <table class="login" style="margin-right:5px; height: 290px;">
+                  <thead>
+                    <tr>
+                      <th>
+                        一般の方はこちらから
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style="text-align:center;"> 
+                        <button class="redBtn" style="margin-top: 30px;">チケット購入</button>
+                        <div style="margin-top: 10px;"><small>9月1日(土) 10:00より販売開始予定です。<br />ブースター会員先行販売期間は終了しております。<br />ブースター会員の方もこちらからご購入ください。</small></div>
+                        %if guest_message:
+                        <div class="small red">${guest_message}</div>
+                        %endif
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </form>
+            </td>
+            <td>
+              <form action="" method="get">
+                <table class="login" style="margin-left:5px; height: 290px; opacity:.5;-moz-opacity:.5;-webkit-opacity:.5;filter:alpha(opacity=50);">
+                  <thead>
+                    <tr>
+                      <th>
+                        ブースター会員の方はこちらから
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <table>
+                          <tbody>
+                            <tr>
+                              <td>
+                                会員ID(8桁)
+                                <br /><span class="small red">※ 半角英数</span>
+                              </td>
+                              <td>
+                                <input type="text" name="username" size="20" maxlength="8" value="${username}" disabled="disabled">
+                                %if message:
+                                <br/><span class="small red">${message}</span>
+                                %endif
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                パスワード(8桁)
+                                <br /><span class="small red">※ 半角英数</span>
+                              </td>
+                              <td>
+                                <input type="password" name="password" size="20" maxlength="8" value="" disabled="disabled">
+                              </td>
+                            </tr>
+                            <tr>
+                              <!-- <td colspan="2" class="textC"> <input type="submit" name="login" value="ログイン"  class="redBtn" /> </td> -->
+                              <td colspan="2" class="textC"> <button class="redBtn" disabled="disabled">ログイン</button> </td>
+                            </tr>
+                            <tr>
+                              <td colspan="2" class="textC"><small>今シーズン用の会員証・先行販売のご案内をご確認ください（昨シーズンのFC会員番号は使用できません。ご注意ください）<br>会員IDとパスワードを忘れてしまった方は<a href="mailto:89ers@ticketstar.jp">こちら</a>からお問い合わせください。</small></td>
+                            </tr>
+                          </tbody>
+                        </table>							
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </form>
+            </td>
+          </tr>
+        </table>
+        <div class="kadomaru" style="margin:10px 20px 0 20px; font-size: 10px; border: 2px #CCC solid; width: 560px; padding: 10px;">
+            <p>「ナイナーズチケット」を快適にご利用していただくために、以下のブラウザーでのご利用を推奨します。</p>
+            <div style="margin:5px; font-size: 10px;">
+              <p>
+                Windows
+                <ul>
+                  <li>Google Chrome</li>
+                  <li>Mozilla Firefox 13.0以降</li>
+                  <li>Internet Explorer 9.x</li>
+                </ul>
+                Mac
+                <ul>
+                  <li>Safari 5.0以降</li>
+                </ul>
+              </p>
+              <p>（現在、順次対応を行っておりますが、Internet Explorer 8.x, 7.x, 6x では表示が崩れたり、動作が遅い、座席が選びにくいなどの症状が発生することがあります。上記ブラウザのご利用をお勧めします）</p>
+              <div style="font-size: 12px; font-weight: bold; margin: 8px 25px 0 25px; color: red; background-color: #eedcb3;">
+                <p>
+                  ※Internet Explorer 8.x, 7.x, 6x をお使いの方は、座席を選んでの購入が出来ません。「お任せ」のみの購入となります。
+                </p>
+                <p>上記対応ブラウザのご利用をお勧めいたします。対応ブラウザは下記よりダウンロードしてください。</p>
+                <ul>
+                  <li><a href="https://www.google.com/intl/ja/chrome/browser/">Google Chrome</a></li>
+                  <li><a href="http://www.mozilla.jp/firefox/">Mozilla Firefox</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="footer">
+          <div class="footernav">
+            <ul>
+              <li><a href="http://www.ticketstar.jp/corporate">運営会社</a></li>
+              <li><a href="mailto:89ers@ticketstar.jp">お問い合わせ</a></li>
+              <li><a href="http://www.ticketstar.jp/privacy">個人情報保護方針</a></li>
+              <li class="last"><a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a></li>
+            </ul>
+          </div>
+          <div class="copyright">
+            Copyright &copy; 2010-2011 TicketStar Inc. All Rights Reserved. 
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- メインカラムおわり -->
+    <!-- サイドバー -->
+    <div class="sidebar">
+    </div>    
+    <!-- サイドバーおわり -->
+  </div>
+  <!-- wrapperおわり -->
 </body>
 </html>
