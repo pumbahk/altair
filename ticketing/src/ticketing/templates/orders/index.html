@@ -22,7 +22,18 @@
 </div>
 <div style="clear: both;"></div>
 
+## todo move 
+<script type="text/javascript">
+  <%include file="/orders/_printstatus.js"/>
+</script>
+<div class="area">
+  <dl>
+	<dt>チェックされた数</dt><dd id="printstatus_count"></dd>
+  </dl>
+</div>
+
 <p> ${orders.items_per_page * (orders.page-1) + 1}～${min(orders.items_per_page * orders.page, orders.item_count)} / ${orders.item_count}件</p>
 <div class="orders">
   <%include file="/orders/_list.html" args="form=form, orders=orders" />
 </div>
+

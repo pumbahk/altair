@@ -25,4 +25,5 @@ def includeme(config):
     config.add_route('orders.sej.ticket_template'       , '/sej/ticket_template')
 
     config.add_route("orders.api.performances"          , "/api/performances")
+    config.add_route("orders.api.printstatus"           , "/api/printstatus/{action}")
     config.scan(".")
