@@ -176,6 +176,12 @@ ${h.breadcrumbs(
         </td>
       </tr>
     </table>
+    <div class="pull-right">
+      <%include file="/orders/_action_button.html" args="order=order, sort=['edit_shipping_address']" />
+    </div>
+    <div id="shipping_address-form">
+      <%include file="/orders/_form.html" args="form=form_shipping_address" />
+    </div>
   </div>
 
   <div class="span6">
@@ -292,6 +298,9 @@ ${h.breadcrumbs(
           </tr>
         </table>
     % endfor
+    <div class="pull-right">
+      <%include file="/orders/_action_button.html" args="order=order, sort=['edit_product']" />
+    </div>
   </div>
 </div>
 

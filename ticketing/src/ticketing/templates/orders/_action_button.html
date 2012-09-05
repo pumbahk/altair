@@ -1,4 +1,4 @@
-<%page args="order" />
+<%page args="order, sort=None" />
 <%namespace file="/common/helpers.html" name="h" />
 <%namespace file="/common/modal.html" name="m" />
 
@@ -8,6 +8,16 @@
     modal.find('#delete').attr('href', '/orders/cancel/' + id);
     modal.find('#message').text("${u'選択した受注をキャンセルします。よろしいですか？'}");
     modal.modal('toggle');
+  }
+  function edit_shipping_address() {
+    var modal = $('#modal-edit-shipping_address');
+    modal.modal('toggle');
+  }
+  function save_shipping_address() {
+    var modal = '#modal-edit-shipping_address';
+    var form = '#shipping_address-form';
+    var url = '${request.route_path('orders.edit.shipping_address', order_id=order.id)}';
+    post_modal_form(modal, form, url);
   }
 </script>
 
@@ -28,8 +38,18 @@ actions = {
     url='javascript:cancel_order(%d);' % order.id,
     icon='icon-remove',
   ),
+  'edit_shipping_address':dict(
+    label=u'編集',
+    url='javascript:edit_shipping_address(%d);' % order.id,
+    icon='icon-edit',
+  ),
+  'edit_product':dict(
+    label=u'編集',
+    url='javascript:void(0);',
+    icon='icon-edit',
+  ),
 }
-sort = iter(['delivered', 'print', 'cancel'])
+sort = iter(sort or ['delivered', 'print', 'cancel'])
 %>
 ${h.action_button(actions, sort, virtical=False)}
 

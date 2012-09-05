@@ -10,15 +10,17 @@ from pyramid import testing
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from pyramid.response import Response
+from pyramid.renderers import render_to_response
 from pyramid.url import route_path
 from ticketing.cart.plugins.sej import DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID_SEJ
 from paste.util.multidict import MultiDict
 import webhelpers.paginate as paginate
 from wtforms import ValidationError
+from wtforms.validators import Optional
 
 from ticketing.models import merge_session_with_post, record_to_appstruct, merge_and_flush, record_to_multidict
 from ticketing.operators.models import Operator, OperatorRole, Permission
-from ticketing.core.models import Order, TicketPrintQueueEntry, Event, Performance, Product, PaymentDeliveryMethodPair
+from ticketing.core.models import Order, TicketPrintQueueEntry, Event, Performance, Product, PaymentDeliveryMethodPair, ShippingAddress
 from ticketing.orders.export import OrderCSV
 from ticketing.orders.forms import (OrderForm, OrderSearchForm, PerformanceSearchForm, OrderReserveForm,
                                     SejOrderForm, SejTicketForm, SejRefundEventForm, SejRefundOrderForm)
@@ -27,6 +29,7 @@ from ticketing.fanstatic import with_bootstrap
 from ticketing.orders.events import notify_order_canceled
 from ticketing.tickets.utils import build_dicts_from_ordered_product_item
 from ticketing.cart import api
+from ticketing.cart.schemas import ClientForm
 
 import pystache
 
@@ -159,8 +162,15 @@ class Orders(BaseView):
         if order is None:
             return HTTPNotFound('order id %d is not found' % order_id)
 
+        if order.shipping_address:
+            form_shipping_address = ClientForm(record_to_multidict(order.shipping_address))
+            form_shipping_address.tel.data = order.shipping_address.tel_1
+        else:
+            form_shipping_address = ClientForm()
+
         return {
             'order':order,
+            'form_shipping_address':form_shipping_address,
         }
 
     @view_config(route_name='orders.cancel')
@@ -271,6 +281,31 @@ class Orders(BaseView):
 
         self.request.session.flash(u'予約しました')
         return {}
+
+    @view_config(route_name='orders.edit.shipping_address', request_method='POST', renderer='ticketing:templates/orders/_form.html')
+    def edit_shipping_address_post(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id)
+        if order is None:
+            return HTTPNotFound('order id %d is not found' % order_id)
+
+        f = ClientForm(self.request.POST)
+        # ここではメールアドレスはチェック対象外
+        f.mail_address.validators = [Optional()]
+        f.mail_address2.validators = [Optional()]
+
+        if f.validate():
+            shipping_address = merge_session_with_post(order.shipping_address or ShippingAddress(), f.data)
+            shipping_address.tel_1 = f.tel.data
+            order.shipping_address = shipping_address
+            order.save()
+
+            self.request.session.flash(u'予約を保存しました')
+            return render_to_response('ticketing:templates/refresh.html', {}, request=self.request)
+        else:
+            return {
+                'form':f,
+            }
 
     @view_config(route_name='orders.print.queue')
     def order_print_queue(self):

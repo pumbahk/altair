@@ -4,6 +4,8 @@ def includeme(config):
     config.add_route('orders.index'                     , '/')
     config.add_route('orders.checked.index'             , '/checked')
     config.add_route('orders.show'                      , '/show/{order_id}')
+    config.add_route('orders.edit.shipping_address'     , '/edit/{order_id}/shipping_address/')
+    config.add_route('orders.edit.product'              , '/edit/{order_id}/product/')
     config.add_route('orders.cancel'                    , '/cancel/{order_id}')
     config.add_route('orders.delivered'                 , '/delivered/{order_id}')
     config.add_route('orders.download'                  , '/download/')
