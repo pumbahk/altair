@@ -156,7 +156,6 @@ public class PageSetModel {
 				throw new RuntimeException("Too many pages!");
 			SVGOMPageElement page = i.next();
 			String title = findTitle(page);
-			dumpGvtNode(ctx.getGraphicsNode(page));
 			tickets.add(
 				new Page(
 					title == null ?

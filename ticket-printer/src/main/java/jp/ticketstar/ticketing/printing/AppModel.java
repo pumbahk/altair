@@ -10,7 +10,7 @@ public interface AppModel {
 	/* (non-Javadoc)
 	 * @see jp.ticketstar.ticketing.printing.gui.IAppWindowModel#reload()
 	 */
-	public abstract void reload();
+	public abstract void initialize();
 
 	/* (non-Javadoc)
 	 * @see jp.ticketstar.ticketing.printing.gui.IAppWindowModel#refresh()

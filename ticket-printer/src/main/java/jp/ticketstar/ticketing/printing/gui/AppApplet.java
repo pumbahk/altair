@@ -160,7 +160,7 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 		public void componentShown(ComponentEvent e) {}
 	};
 	
-	private PropertyChangeListener ticketSetModelChangeListener = new PropertyChangeListener() {
+	private PropertyChangeListener pageSetModelChangeListener = new PropertyChangeListener() {
 		@SuppressWarnings("unchecked")
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getNewValue() != null) {
@@ -200,7 +200,8 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 				@SuppressWarnings("unchecked")
 				GenericComboBoxModel<PrintService> printServices = (GenericComboBoxModel<PrintService>)evt.getNewValue();
 				comboBoxPrintService.setModel(printServices);
-				comboBoxPrintService.setSelectedIndex(0);
+				if (printServices.size() > 0)
+					comboBoxPrintService.setSelectedIndex(0);
 			}
 		}
 	};
@@ -221,7 +222,8 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 				@SuppressWarnings("unchecked")
 				GenericComboBoxModel<OurPageFormat> pageFormats = (GenericComboBoxModel<OurPageFormat>)evt.getNewValue();
 				comboBoxPageFormat.setModel(pageFormats);
-				comboBoxPageFormat.setSelectedIndex(0);
+				if (pageFormats.size() > 0)
+					comboBoxPageFormat.setSelectedIndex(0);
 			}
 		}
 	};
@@ -260,7 +262,8 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 				@SuppressWarnings("unchecked")
 				GenericComboBoxModel<TicketFormat> ticketFormats = (GenericComboBoxModel<TicketFormat>)evt.getNewValue();
 				comboBoxTicketFormat.setModel(ticketFormats);
-				comboBoxTicketFormat.setSelectedIndex(0);
+				if (ticketFormats.size() > 0)
+					comboBoxTicketFormat.setSelectedIndex(0);
 			}
 		}
 	};
@@ -274,7 +277,7 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 		if (model == null)
 			return;
 
-		model.removePropertyChangeListener(ticketSetModelChangeListener);
+		model.removePropertyChangeListener(pageSetModelChangeListener);
 		model.removePropertyChangeListener(printServicesChangeListener);
 		model.removePropertyChangeListener(printServiceChangeListener);
 		model.removePropertyChangeListener(pageFormatsChangeListener);
@@ -285,7 +288,7 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 	
 	public void bind(AppModel model) {
 		unbind();
-		model.addPropertyChangeListener("ticketSetModel", ticketSetModelChangeListener);
+		model.addPropertyChangeListener("pageSetModel", pageSetModelChangeListener);
 		model.addPropertyChangeListener("printServices", printServicesChangeListener);
 		model.addPropertyChangeListener("printService", printServiceChangeListener);
 		model.addPropertyChangeListener("pageFormats", pageFormatsChangeListener);
@@ -324,15 +327,27 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 		return conn;
 	}
 
+	void populateModel() {
+		final FormatLoader.FormatPair formatPair = new FormatLoader(this).fetchFormats(config);
+		model.getPageFormats().addAll(formatPair.pageFormats);
+		model.getTicketFormats().addAll(formatPair.ticketFormats);
+		if (formatPair.pageFormats.size() > 0)
+			model.setPageFormat(formatPair.pageFormats.get(0));
+		if (formatPair.ticketFormats.size() > 0)
+			model.setTicketFormat(formatPair.ticketFormats.get(0));
+	}
+	
 	public void init() {
 		config = getConfiguration();
-		model = new AppAppletModel(config, this);
+		model = new AppAppletModel();
     	appService = new AppAppletService(this, model);
 		initialize();
  
 		appService.setAppWindow(this);
 		guidesOverlay = new GuidesOverlay(model);
 		boundingBoxOverlay = new BoundingBoxOverlay(model);
+
+		populateModel();
 	}
 	/**
 	 * Initialize the contents of the frame.

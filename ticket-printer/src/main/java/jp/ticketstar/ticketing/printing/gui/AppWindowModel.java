@@ -19,14 +19,14 @@ import jp.ticketstar.ticketing.printing.UnitUtils;
 
 public class AppWindowModel implements AppModel {
 	PropertyChangeSupport propertyChangeSupport = new SwingPropertyChangeSupport(this, true);
-	PageSetModel ticketSetModel = null;
+	PageSetModel pageSetModel = null;
 	PrintService printService = null;
 	GenericComboBoxModel<PrintService> printServices;
 	OurPageFormat pageFormat = null;
 	GenericComboBoxModel<OurPageFormat> pageFormats;
 	
 	public AppWindowModel() {
-		reload();
+		initialize();
 	}
 	
     static OurPageFormat buildPageFormatForRT() {
@@ -48,14 +48,7 @@ public class AppWindowModel implements AppModel {
     	return retval;
     }
 
-
-	/* (non-Javadoc)
-	 * @see jp.ticketstar.ticketing.printing.gui.IAppWindowModel#reload()
-	 */
-	/* (non-Javadoc)
-	 * @see jp.ticketstar.ticketing.printing.gui.IAppModel#reload()
-	 */
-	public void reload() {
+	public void initialize() {
 		{
 			final GenericComboBoxModel<PrintService> printServices = new GenericComboBoxModel<PrintService>();
 	        for (PrintService service: PrinterJob.lookupPrintServices())
@@ -91,7 +84,7 @@ public class AppWindowModel implements AppModel {
 	 * @see jp.ticketstar.ticketing.printing.gui.IAppModel#refresh()
 	 */
 	public void refresh() {
-		propertyChangeSupport.firePropertyChange("ticketSetModel", null, ticketSetModel);
+		propertyChangeSupport.firePropertyChange("pageSetModel", null, pageSetModel);
 		propertyChangeSupport.firePropertyChange("printServices", null, printServices);
 		propertyChangeSupport.firePropertyChange("printService", null, printService);
 		propertyChangeSupport.firePropertyChange("pageFormats", null, pageFormats);
@@ -177,7 +170,7 @@ public class AppWindowModel implements AppModel {
 	 * @see jp.ticketstar.ticketing.printing.gui.IAppModel#getPageSetModel()
 	 */
 	public PageSetModel getPageSetModel() {
-		return ticketSetModel;
+		return pageSetModel;
 	}
 
 	/* (non-Javadoc)
@@ -187,9 +180,9 @@ public class AppWindowModel implements AppModel {
 	 * @see jp.ticketstar.ticketing.printing.gui.IAppModel#setPageSetModel(jp.ticketstar.ticketing.printing.PageSetModel)
 	 */
 	public void setPageSetModel(PageSetModel pageSetModel) {
-		final PageSetModel prevValue = this.ticketSetModel;
-		this.ticketSetModel = pageSetModel;
-		propertyChangeSupport.firePropertyChange("ticketSetModel", prevValue, pageSetModel);
+		final PageSetModel prevValue = this.pageSetModel;
+		this.pageSetModel = pageSetModel;
+		propertyChangeSupport.firePropertyChange("pageSetModel", prevValue, pageSetModel);
 	}
 
 	/* (non-Javadoc)

@@ -115,7 +115,8 @@ public class AppWindow implements IAppWindow {
 				@SuppressWarnings("unchecked")
 				GenericComboBoxModel<PrintService> printServices = (GenericComboBoxModel<PrintService>)evt.getNewValue();
 				comboBoxPrintService.setModel(printServices);
-				comboBoxPrintService.setSelectedIndex(0);
+				if (printServices.size() > 0)
+					comboBoxPrintService.setSelectedIndex(0);
 			}
 		}
 	};
@@ -136,7 +137,8 @@ public class AppWindow implements IAppWindow {
 				@SuppressWarnings("unchecked")
 				GenericComboBoxModel<OurPageFormat> pageFormats = (GenericComboBoxModel<OurPageFormat>)evt.getNewValue();
 				comboBoxPageFormat.setModel(pageFormats);
-				comboBoxPageFormat.setSelectedIndex(0);
+				if (pageFormats.size() > 0)
+					comboBoxPageFormat.setSelectedIndex(0);
 			}
 		}
 	};
