@@ -59,6 +59,8 @@ public class GuidesOverlay implements Overlay {
 	}
 
 	public void paint(Graphics _g) {
+		if (size == null)
+			return; // should not happen...
 		Graphics2D g = (Graphics2D)_g;
 		g.setColor(Color.BLACK);
 		g.setStroke(new BasicStroke(
