@@ -1790,8 +1790,8 @@ class TicketPrintHistory(Base, BaseModel, WithTimestamp):
     ordered_product_item = relationship('OrderedProductItem', backref='print_histories')
     seat_id = Column(Identifier, ForeignKey('Seat.id'), nullable=True)
     seat = relationship('Seat', backref='print_histories')
-    ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id'), nullable=False)
-    ticket_bundle = relationship('TicketBundle', backref='print_histories')
+    ticket_id = Column(Identifier, ForeignKey('Ticket.id'), nullable=False)
+    ticket = relationship('Ticket')
 
 class TicketPrintQueueEntry(Base, BaseModel):
     __tablename__ = "TicketPrintQueueEntry"
