@@ -113,7 +113,7 @@ PrintStatusPresenter.prototype = {
   }
 };
 
-$(function(){
+$.event.add(window, "load", function(){
   var model = new PrintStatus(0);
   var view = new PrintStatusAppView($("#printstatus_count"), $("input.printstatus"));
   var urls = {
@@ -128,4 +128,4 @@ $(function(){
 
   presenter.on_load();
   $(window).unload(presenter.on_save_sync.bind(presenter));
-})
+});
