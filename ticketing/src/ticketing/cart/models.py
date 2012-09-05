@@ -251,6 +251,9 @@ class Cart(Base):
     payment_delivery_method_pair_id = sa.Column(Identifier, sa.ForeignKey("PaymentDeliveryMethodPair.id"))
     payment_delivery_pair = orm.relationship("PaymentDeliveryMethodPair")
 
+    order_id = sa.Column(Identifier, sa.ForeignKey("Order.id"))
+    order = orm.relationship('Order', backref='carts')
+
     @property
     def order_no(self):
         logger.debug("organization.id = %d" % self.performance.event.organization.id)

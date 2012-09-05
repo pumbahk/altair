@@ -809,6 +809,7 @@ class CompleteView(object):
         user = self.context.get_or_create_user()
         order.user = user
         order.organization_id = order.performance.event.organization_id
+        cart.order = order
 
         notify_order_completed(self.request, order)
 
