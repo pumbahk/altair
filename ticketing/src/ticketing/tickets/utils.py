@@ -304,22 +304,22 @@ Margin = namedtuple('Margin', 'top bottom left right')
 class SvgPageSetBuilder(object):
     def __init__(self, page_format, ticket_format):
         printable_area = Rectangle(
-            x=as_user_unit(page_format['printable_area']['x']),
-            y=as_user_unit(page_format['printable_area']['y']),
-            width=as_user_unit(page_format['printable_area']['width']),
-            height=as_user_unit(page_format['printable_area']['height'])
+            x=as_user_unit(page_format[u'printable_area'][u'x']),
+            y=as_user_unit(page_format[u'printable_area'][u'y']),
+            width=as_user_unit(page_format[u'printable_area'][u'width']),
+            height=as_user_unit(page_format[u'printable_area'][u'height'])
             )
 
         ticket_size = Size(
-            width=as_user_unit(ticket_format['size']['width']),
-            height=as_user_unit(ticket_format['size']['height'])
+            width=as_user_unit(ticket_format[u'size'][u'width']),
+            height=as_user_unit(ticket_format[u'size'][u'height'])
             )
 
         ticket_margin = Margin(
-            top=as_user_unit(page_format['ticket_margin']['top']),
-            bottom=as_user_unit(page_format['ticket_margin']['bottom']),
-            left=as_user_unit(page_format['ticket_margin']['left']),
-            right=as_user_unit(page_format['ticket_margin']['right'])
+            top=as_user_unit(page_format[u'ticket_margin'][u'top']),
+            bottom=as_user_unit(page_format[u'ticket_margin'][u'bottom']),
+            left=as_user_unit(page_format[u'ticket_margin'][u'left']),
+            right=as_user_unit(page_format[u'ticket_margin'][u'right'])
             )
 
         if printable_area.width < ticket_size.width + ticket_margin.left or \
@@ -338,12 +338,18 @@ class SvgPageSetBuilder(object):
         self.offset = Position(printable_area.x, printable_area.y)
 
     def build_root_element(self):
+        width = unicode(as_user_unit(self.page_format[u'size'][u'width']))
+        height = unicode(as_user_unit(self.page_format[u'size'][u'height']))
+
+        # Swap width / height if the orientation is 'landscape'
+        if self.page_format[u'orientation'].lower() == u'landscape':
+            width, height = height, width
         return etree.Element(
             u'{%s}svg' % SVG_NAMESPACE,
             nsmap={ u'svg': SVG_NAMESPACE, u'ts' : TS_SVG_EXT_NAMESPACE },
             version=u'1.2',
-            width=unicode(as_user_unit(self.page_format['size']['width'])),
-            height=unicode(as_user_unit(self.page_format['size']['height']))
+            width=width,
+            height=height
             )
 
     def add(self, svg, queue_id):
@@ -356,8 +362,8 @@ class SvgPageSetBuilder(object):
             self.page = etree.Element(u'{%s}page' % SVG_NAMESPACE)
             self.pageset.append(self.page)
         svgroot = svg.getroot() if isinstance(svg, etree._ElementTree) else svg
-        svgroot.set('x', unicode(self.offset.x + self.ticket_margin.left))
-        svgroot.set('y', unicode(self.offset.y + self.ticket_margin.top))
+        svgroot.set(u'x', unicode(self.offset.x + self.ticket_margin.left))
+        svgroot.set(u'y', unicode(self.offset.y + self.ticket_margin.top))
         svgroot.set(u'{%s}queue-id' % TS_SVG_EXT_NAMESPACE, unicode(queue_id))
         self.page.append(svgroot)
         self.offset = Position(self.ticket_size.width + self.ticket_margin.left + self.ticket_margin.right, self.offset.y)
