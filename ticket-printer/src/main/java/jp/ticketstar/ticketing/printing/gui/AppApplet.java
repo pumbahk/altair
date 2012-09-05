@@ -131,6 +131,7 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 	private static final long serialVersionUID = 1L;
 
 	public AppApplet() {
+		setPreferredSize(new Dimension(2147483647, 2147483647));
 	}
 	
 	AppAppletService appService;
