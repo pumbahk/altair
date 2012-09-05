@@ -4,7 +4,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.geom.Dimension2D;
+import java.awt.geom.Rectangle2D;
 import java.lang.ref.WeakReference;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -13,7 +13,7 @@ import java.beans.PropertyChangeListener;
 import org.apache.batik.swing.gvt.Overlay;
 
 public class BoundingBoxOverlay implements Overlay {
-	Dimension2D documentSize;
+	Rectangle2D imageableArea;
 	
 	static class PageFormatChangeListener implements PropertyChangeListener {
 		final WeakReference<BoundingBoxOverlay> outer;
@@ -23,32 +23,41 @@ public class BoundingBoxOverlay implements Overlay {
 		}
 
 		public void propertyChange(PropertyChangeEvent evt) {
-			if (evt.getPropertyName().equals("pageSetModel")) {
-				final PageSetModel pageSetModel = (PageSetModel)evt.getNewValue();
-				outer.get().setDocumentSize(pageSetModel.getBridgeContext().getDocumentSize());
+			if (evt.getPropertyName().equals("pageFormat")) {
+				final OurPageFormat pageFormat = ((AppModel)evt.getSource()).getPageFormat();
+				outer.get().setImageableArea(
+					new Rectangle2D.Double(
+						pageFormat.getImageableX(),
+						pageFormat.getImageableY(),
+						pageFormat.getImageableWidth(),
+						pageFormat.getImageableHeight()));
 			}
 		}
 	}
 	
-	private void setDocumentSize(Dimension2D size) {
-		this.documentSize = size != null ? (Dimension2D)size.clone(): null;
+	private void setImageableArea(Rectangle2D rect) {
+		this.imageableArea = rect != null ? (Rectangle2D)rect.clone(): null;
 	}
 	
 	public BoundingBoxOverlay(AppModel model) {
 		model.addPropertyChangeListener(new PageFormatChangeListener(this));
-		if (model.getPageSetModel() != null)
-			setDocumentSize(model.getPageSetModel().getBridgeContext().getDocumentSize());
-	}
-
-	static double pointToPixel(double point) {
-		return point * 90 / 72;
+		if (model.getPageFormat() != null) {
+			final OurPageFormat pageFormat = model.getPageFormat();
+			setImageableArea(
+				new Rectangle2D.Double(
+					pageFormat.getImageableX(),
+					pageFormat.getImageableY(),
+					pageFormat.getImageableWidth(),
+					pageFormat.getImageableHeight()));
+		}
 	}
 	
 	public void paint(Graphics _g) {
+		if (imageableArea == null)
+			return;
 		Graphics2D g = (Graphics2D)_g;
 		g.setColor(Color.LIGHT_GRAY);
 		g.setStroke(new BasicStroke());
-		if (documentSize != null)
-			g.drawRect(0, 0, (int)documentSize.getWidth(), (int)documentSize.getHeight());
+			g.drawRect(0, 0, (int)UnitUtils.pointToPixel(imageableArea.getWidth()), (int)UnitUtils.pointToPixel(imageableArea.getHeight()));
 	}
 }
