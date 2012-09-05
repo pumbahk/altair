@@ -6,7 +6,7 @@ from datetime import datetime
 
 from sqlalchemy import Table, Column, ForeignKey, func, or_, and_
 from sqlalchemy import ForeignKeyConstraint, UniqueConstraint
-from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode
+from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode, UnicodeText
 from sqlalchemy.orm import join, backref, column_property
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.orm.exc import NoResultFound
@@ -1422,6 +1422,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     canceled_at = Column(DateTime, nullable=True, default=None)
 
     order_no = Column(String(255))
+    note = Column(UnicodeText, nullable=True, default=None)
 
     performance_id = Column(Identifier, ForeignKey('Performance.id'))
     performance = relationship('Performance', backref="orders")

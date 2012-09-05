@@ -58,6 +58,11 @@ actions = {
     url='javascript:edit_product(%d);' % order.id,
     icon='icon-edit',
   ),
+  'note':dict(
+    label=u'メモを保存',
+    url='javascript:$("#note-form").submit();',
+    icon='icon-pencil',
+  ),
 }
 sort = iter(sort or ['delivered', 'print', 'cancel'])
 %>

@@ -3,7 +3,7 @@
 from wtforms import Form
 from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, TextAreaField,
                      BooleanField, RadioField, FieldList, FormField, DecimalField)
-from wtforms.validators import Optional, AnyOf
+from wtforms.validators import Optional, AnyOf, Length
 
 from ticketing.formhelpers import DateTimeField, Translations, Required
 from ticketing.core.models import PaymentMethodPlugin, DeliveryMethodPlugin, PaymentDeliveryMethodPair, SalesSegment, Performance
@@ -156,6 +156,13 @@ class OrderReserveForm(Form):
     performance_id = HiddenField(
         label='',
         validators=[Required()],
+    )
+    note = TextAreaField(
+        label=u'備考・メモ',
+        validators=[
+            Optional(),
+            Length(max=2000, message=u'2000文字以内で入力してください'),
+        ],
     )
     product_id = SelectField(
         label=u'商品',

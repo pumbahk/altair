@@ -268,6 +268,7 @@ class Orders(BaseView):
             # create order
             order = Order.create_from_cart(cart)
             order.organization_id = order.performance.event.organization_id
+            order.note = post_data.get('note')
             DBSession.add(order)
             DBSession.flush()
             cart.finish()
@@ -351,6 +352,19 @@ class Orders(BaseView):
 
         self.request.session.flash(u'予約を保存しました')
         return render_to_response('ticketing:templates/refresh.html', {}, request=self.request)
+
+    @view_config(route_name='orders.note', request_method='POST')
+    def note(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id)
+        if order is None:
+            return HTTPNotFound('order id %d is not found' % order_id)
+
+        order.note = self.request.POST.get('note')
+        order.save()
+
+        self.request.session.flash(u'メモを保存しました')
+        return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
 
     @view_config(route_name='orders.print.queue')
     def order_print_queue(self):

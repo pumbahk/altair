@@ -509,6 +509,7 @@ callbacks.select = function (viewer, selection) {
     <form action="javascript:createOrder();">
       <fieldset>
         ${h.form_item(form_reserve.performance_id)}
+        ${h.form_item(form_reserve.note, option={'rows':5, 'class':'span10'})}
         ${h.form_item(form_reserve.product_id)}
         ${h.form_item(form_reserve.payment_delivery_method_pair_id)}
       </fieldset>

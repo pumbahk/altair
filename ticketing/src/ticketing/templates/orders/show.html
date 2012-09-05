@@ -16,7 +16,6 @@ ${h.breadcrumbs(
 </div>
 
 <div class="row-fluid">
-
   <div class="span6">
     <div class="page-header">
       <h3>予約情報</h3>
@@ -301,6 +300,17 @@ ${h.breadcrumbs(
     </div>
     <div id="product-form">
       <%include file="/orders/_form_product.html" args="form=form_order, order=order" />
+    </div>
+  </div>
+</div>
+
+<div class="row-fluid">
+  <div class="span6 well" style="padding-left: 10px;">
+    <form id="note-form" action="${request.route_path('orders.note', order_id=order.id)}" method="POST" style="margin: 0;">
+      <textarea id="note" name="note" rows="3" style="width:100%;">${order.note or ''}</textarea>
+    </form>
+    <div class="pull-right">
+      <%include file="/orders/_action_button.html" args="order=order, sort=['note']" />
     </div>
   </div>
 </div>
