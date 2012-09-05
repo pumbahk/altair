@@ -1,6 +1,17 @@
 <%inherit file="/layout_2cols.html" />
 <%namespace file="/common/helpers.html" name="h" />
 
+<%block name="javascript">
+<script type="text/javascript" src="/static/js/fashion.js"></script>
+<![if !(lt IE 9)]>
+<script type="text/javascript" src="/static/js/fashion.svg.js"></script>
+<![endif]>
+<!--[if (lt IE 9)]> 
+<script type="text/javascript" src="/static/js/fashion.vml.js"></script>
+<![endif]-->
+<script type="text/javascript" src="/static/js/ticketing.ticket-viewer.js"></script>
+</%block>
+
 <div class="breadcrumbs">
 ${h.breadcrumbs(
   names=[u'トップ', u'購入情報', order.order_no],

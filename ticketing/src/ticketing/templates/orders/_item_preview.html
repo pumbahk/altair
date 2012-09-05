@@ -11,23 +11,39 @@
 	  ${form.item_id}
 	</form>
 
-	<div id="drawing">
+	<div id="drawing" style="height:200px;">
 	</div>
   </div>
 
   <div class="modal-footer">
-	hah,hah
 	<a href="#" class="btn" data-dismiss="modal">キャンセル</a>
 ##	<input class="btn btn-primary" type="submit" name="submit" value="登録">
   </div>
 
 <script type="text/javascript">
+$(function(){
+    url = "${request.route_path("orders.item.preview.getdata", item_id=item.id, ticket_id="__id__")}";
+    var draw_viewer = function(url, ticket_id){
+	  $.getJSON(url.replace("__id__", ticket_id)).done(function(data){ 
+		  var root = $("#drawing");
+          root.empty();
+		  var results = data.results;
+		  var names = data.names;
+		  for(var i=0,j=results.length;i<j; i++){
+			var jsondata = results[i];
+			var options = {"dataSource": function(next, err){ next(jsondata); }}
+
+			root.append($("<h3>").text(names[i]));
+			var wrap = $("<div>").attr("id", "diagram:"+i).attr("style", "height:200px;");
+			root.append(wrap)
+			wrap.ticketviewer(options).ticketviewer("load");
+		  }
+	  });
+    }
+    draw_viewer(url, $("#preview_select select[name='ticket_choices']").val());
   $("#preview_select select[name='ticket_choices']").change(function(){
     var ticket_id = $(this).val();
-    $.getJSON("${request.route_path("orders.item.preview.getdata", item_id=item.id)}",
-              {ticket_id: ticket_id }).done(function(data){
-      var wrapper = $("#drawing");
-      alert(data);
-    });
+    draw_viewer(url, ticket_id);
   });
+});
 </script>

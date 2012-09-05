@@ -9,7 +9,7 @@ def includeme(config):
     config.add_route('orders.download'                  , '/download/')
 
     config.add_route("orders.item.preview"              , "/item/preview/{order_id}/{item_id}")
-    config.add_route("orders.item.preview.getdata"      , "/api/item/{item_id}")
+    config.add_route("orders.item.preview.getdata"      , "/api/item/{item_id}/ticket/{ticket_id}")
     config.add_route('orders.print.queue'               , '/print/queue/{order_id}')
 
     config.add_subscriber('.mail.on_order_canceled'     , '.events.OrderCanceled')

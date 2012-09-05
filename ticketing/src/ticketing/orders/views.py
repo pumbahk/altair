@@ -227,26 +227,25 @@ class Orders(BaseView):
         return {"form": form,  "item": item}
 
     @view_config(route_name="orders.item.preview.getdata", request_method="GET", 
-                 renderer="json", 
-                 request_param="ticket_id")
+                 renderer="json")
     def ajax(self):
         from ticketing.core.models import OrderedProductItem
         from ticketing.tickets.convert import to_opcodes
         from lxml import etree
 
         item = OrderedProductItem.query.filter_by(id=self.request.matchdict["item_id"]).first()
-        if item is None:
-            return {}
-        ticket = Ticket.query.filter_by(id=self.request.GET["ticket_id"]).first()
-        if ticket is None:
-            return {}
-
+        ticket = Ticket.query.filter_by(id=self.request.matchdict["ticket_id"]).first()
         dicts = build_dicts_from_ordered_product_item(item)
-        for seat, dict_ in enumerate(dicts):
+        data = dict(ticket.ticket_format.data)
+        results = []
+        names = []
+        for seat, dict_ in dicts:
+            names.append(seat.name) 
             svg =  pystache.render(ticket.data['drawing'], dict_)
-                ## templateからのdata?
-            data = dict(drawing=' '.join(to_opcodes(etree.ElementTree(etree.fromstring(svg)))))
-        return dict(data=data)
+            r = data.copy()
+            r.update(dict(drawing=' '.join(to_opcodes(etree.ElementTree(etree.fromstring(svg))))))
+            results.append(r)
+        return {"results": results, "names": names}
 
     @view_config(route_name='orders.print.queue')
     def order_print_queue(self):
