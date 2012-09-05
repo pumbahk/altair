@@ -9,7 +9,7 @@
 <!--[if (lt IE 9)]> 
 <script type="text/javascript" src="/static/js/fashion.vml.js"></script>
 <![endif]-->
-<script type="text/javascript" src="/static/js/ticketing.ticket-viewer.js"></script>
+<script type="text/javascript" src="/static/js/ticketing.pageformat-viewer.js"></script>
 </%block>
 <div class="breadcrumbs">
 ${breadcrumbs(
@@ -86,10 +86,10 @@ ${breadcrumbs(
   <div class="span6"></div>
 </div>
 <div class="row-fluid">
-  <div id="ticket-viewer" style="height:300px"></div>
+  <div id="pageformat-viewer" style="height:300px"></div>
   <script type="text/javascript">
 var options = ${json.dumps({ 'dataSource': request.route_url('tickets.pageformats.data', id=format.id)})|n};
-$('#ticket-viewer').ticketviewer(options).ticketviewer('load');
+$('#pageformat-viewer').pageformatviewer(options).pageformatviewer('load');
 </script>
 </div>
 <div class="row-fluid well">
