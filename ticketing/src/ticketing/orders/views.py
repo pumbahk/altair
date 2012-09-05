@@ -11,9 +11,12 @@ from pyramid.response import Response
 from pyramid.url import route_path
 from ticketing.cart.plugins.sej import DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID_SEJ
 import webhelpers.paginate as paginate
+from ticketing.tickets.convert import to_opcodes
+from lxml import etree
 
 from ticketing.models import merge_session_with_post, record_to_appstruct, merge_and_flush, record_to_multidict
 from ticketing.operators.models import Operator, OperatorRole, Permission
+
 from ticketing.core.models import Order, TicketPrintQueueEntry, Event, Performance, OrderedProductItem, Ticket
 from ticketing.orders.export import OrderCSV
 from ticketing.orders.forms import (OrderForm, OrderSearchForm, PerformanceSearchForm, SejOrderForm, SejTicketForm, SejTicketForm,
@@ -228,11 +231,7 @@ class Orders(BaseView):
 
     @view_config(route_name="orders.item.preview.getdata", request_method="GET", 
                  renderer="json")
-    def ajax(self):
-        from ticketing.core.models import OrderedProductItem
-        from ticketing.tickets.convert import to_opcodes
-        from lxml import etree
-
+    def order_item_get_data_for_preview(self):
         item = OrderedProductItem.query.filter_by(id=self.request.matchdict["item_id"]).first()
         ticket = Ticket.query.filter_by(id=self.request.matchdict["ticket_id"]).first()
         dicts = build_dicts_from_ordered_product_item(item)
