@@ -383,7 +383,7 @@ class SvgPageSetBuilder(object):
             if title is not None:
                 title_elem = etree.Element(u'{%s}title' % SVG_NAMESPACE)
                 title_elem.text = title
-            self.page.append(title_elem)
+                self.page.append(title_elem)
             self.pageset.append(self.page)
         svgroot = svg.getroot() if isinstance(svg, etree._ElementTree) else svg
         svgroot.set(u'x', unicode(self.offset.x + self.ticket_margin.left))
