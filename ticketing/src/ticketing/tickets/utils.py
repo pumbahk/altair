@@ -373,9 +373,9 @@ class SvgPageSetBuilder(object):
             )
 
     def add(self, svg, queue_id, title=None):
-        if self.offset.x + self.ticket_margin.left >= self.printable_area.x + self.printable_area.width:
+        if self.offset.x + self.ticket_margin.left + self.ticket_size.width > self.printable_area.x + self.printable_area.width:
             self.offset = Position(self.printable_area.x, self.offset.y + self.ticket_size.height + self.ticket_margin.top + self.ticket_margin.bottom)
-        if self.offset.y + self.ticket_margin.top >= self.printable_area.y + self.printable_area.height:
+        if self.offset.y + self.ticket_margin.top + self.ticket_size.height > self.printable_area.y + self.printable_area.height:
             self.offset = Position(self.printable_area.x, self.printable_area.y)
             self.page = None
         if self.page is None:
@@ -390,4 +390,4 @@ class SvgPageSetBuilder(object):
         svgroot.set(u'y', unicode(self.offset.y + self.ticket_margin.top))
         svgroot.set(u'{%s}queue-id' % TS_SVG_EXT_NAMESPACE, unicode(queue_id))
         self.page.append(svgroot)
-        self.offset = Position(self.ticket_size.width + self.ticket_margin.left + self.ticket_margin.right, self.offset.y)
+        self.offset = Position(self.offset.x + self.ticket_size.width + self.ticket_margin.left + self.ticket_margin.right, self.offset.y)
