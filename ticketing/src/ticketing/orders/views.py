@@ -43,22 +43,22 @@ class OrdersAPIView(BaseView):
     def save_printstatus(self):
         """ [o:1, o:2, o:3, o:4, ....]
         """
-        ords = [o.lstrip("o:") for o in self.request.params if o.startswith("o:")]
+        ords = [o.lstrip("o:") for o in self.request.POST.getall("targets[]") if o.startswith("o:")]
         ords = Order.query.filter(Order.id.in_(ords))
 
         orders = self.request.session.get("orders") or set()
 
         for o in ords:
-            orders.add("o:"+o.id)
+            orders.add("o:%s" % o.id)
         self.request.session["orders"] = orders
-        return {"status": True, "count": len(orders), "result": orders}
+        return {"status": True, "count": len(orders), "result": list(orders)}
 
     @view_config(renderer="json", route_name="orders.api.printstatus", request_method="GET", match_param="action=load")
     def load_printstatus(self):
         if not "orders" in self.request.session:
             return {"status": False, "result": [], "count": 0};
         orders = self.request.session["orders"]
-        return {"status": True, "result": orders, "count": len(orders)}
+        return {"status": True, "result": list(orders), "count": len(orders)}
 
     @view_config(renderer="json", route_name="orders.api.printstatus", request_method="POST", match_param="action=reset")
     def reset_printstatus(self):
