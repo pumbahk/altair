@@ -181,7 +181,6 @@ public class QRCodeElementBridge extends SVGShapeElementBridge {
 	public void handleAnimatedAttributeChanged(AnimatedLiveAttributeValue alav) {
 		if (alav.getNamespaceURI() == null) {
 			String ln = alav.getLocalName();
-			System.out.println(ln);
 			if (ln.equals("x")
 					|| ln.equals("y")
 					|| ln.equals("width") 

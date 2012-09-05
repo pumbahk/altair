@@ -303,12 +303,20 @@ Margin = namedtuple('Margin', 'top bottom left right')
 
 class SvgPageSetBuilder(object):
     def __init__(self, page_format, ticket_format):
+        orientation = page_format[u'orientation'].lower()
+        
         printable_area = Rectangle(
             x=as_user_unit(page_format[u'printable_area'][u'x']),
             y=as_user_unit(page_format[u'printable_area'][u'y']),
             width=as_user_unit(page_format[u'printable_area'][u'width']),
             height=as_user_unit(page_format[u'printable_area'][u'height'])
             )
+
+        if orientation == u'landscape':
+            printable_area = Rectangle(
+                printable_area.y, printable_area.x,
+                printable_area.height, printable_area.width
+                )
 
         ticket_size = Size(
             width=as_user_unit(ticket_format[u'size'][u'width']),
@@ -328,6 +336,7 @@ class SvgPageSetBuilder(object):
 
         self.page_format = page_format
         self.ticket_format = ticket_format
+        self.orientation = orientation
         self.ticket_size = ticket_size
         self.printable_area = printable_area
         self.ticket_margin = ticket_margin
@@ -353,7 +362,7 @@ class SvgPageSetBuilder(object):
         height = unicode(as_user_unit(self.page_format[u'size'][u'height']))
 
         # Swap width / height if the orientation is 'landscape'
-        if self.page_format[u'orientation'].lower() == u'landscape':
+        if self.orientation == u'landscape':
             width, height = height, width
         return etree.Element(
             u'{%s}svg' % SVG_NAMESPACE,
