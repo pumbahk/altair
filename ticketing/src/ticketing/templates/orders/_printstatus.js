@@ -83,9 +83,22 @@ PrintStatusPresenter.prototype = {
     var self = this;
     var targets = this.view.collect_save_targets();
     targets = $.makeArray(targets.map(function(i, e){ return $(e).attr("name")}));
-    params = {"targets": JSON.stringify(targets)};
-    $.post(this.resourcs.save, {"targets": targets});
-    return false;
+    $.post(this.resourcs.save,{"targets": targets});
+    return true;
+  }, 
+
+  on_save_sync: function(e){
+    var self = this;
+    var targets = this.view.collect_save_targets();
+    targets = $.makeArray(targets.map(function(i, e){ return $(e).attr("name")}));
+    $.ajax({
+      async: false, 
+      // cache: false, 
+      type: "POST", 
+      data: {"targets": targets}, 
+      url: this.resourcs.save
+    });
+    return true;
   }, 
   on_reset: function(){
     // this page only or all
@@ -110,7 +123,9 @@ $(function(){
   }
   var presenter = new PrintStatusPresenter(model, view, urls);
   $("input.printstatus[type='checkbox']").on("change", presenter.on_check.bind(presenter));
-  $("#printstatus_save").click(presenter.on_save.bind(presenter));
+  // $("#printstatus_save").click(presenter.on_save.bind(presenter));
   $("#printstatus_reset").click(presenter.on_reset.bind(presenter));
+
   presenter.on_load();
+  $(window).unload(presenter.on_save_sync.bind(presenter));
 })

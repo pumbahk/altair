@@ -47,7 +47,6 @@ class OrdersAPIView(BaseView):
         ords = Order.query.filter(Order.id.in_(ords))
 
         orders = self.request.session.get("orders") or set()
-
         for o in ords:
             orders.add("o:%s" % o.id)
         self.request.session["orders"] = orders
