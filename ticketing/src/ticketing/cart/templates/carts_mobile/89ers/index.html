@@ -5,13 +5,13 @@
 
 ${event.title}
 
-% if venue:
+% if not venues:
   <hr size="1" color="#888888" noshade="noshade" />
-  <p><font color="#ffbf00">■</font>日程をお選びください</p>
+  <p><font color="#ffbf00">■</font>対象試合をお選びください</p>
   <form action="${request.url}" method="get">
-    <select name="pid">
+    <select name="performance_name">
   % for performance in performances:
-    <option value="${performance['id']}">${performance['start_on']}</option>
+    <option value="${performance}">${performance}</option>
   % endfor
     </select>
     <div style="text-align:center;">
@@ -19,23 +19,13 @@ ${event.title}
     <input type="submit" value="次へ">
     </div>
   </form>
-  <form action="${request.url}" method="get">
-    <div style="text-align:center;">
-    <input type="submit" value="戻る">
-    </div>
-  </form>
-  <hr size="1" color="#888888" noshade="noshade" />
-  <div style="background-color:#ffdddd">会場</div>
-  <div>
-    ${venue.name}
-  </div>
 % else:
   <hr size="1" color="#888888" noshade="noshade" />
-  <p><font color="#ffbf00">■</font>会場をお選びください</p>
+  <p><font color="#ffbf00">■</font>日時・会場をお選びください</p>
   <form action="${request.url}" method="get">
-    <select name="v">
-  % for venue_name in venues:
-    <option value="${venue_name}">${venue_name}</option>
+    <select name="pid">
+  % for pid, venue_name in venues:
+    <option value="${pid}">${venue_name}</option>
   % endfor
     </select>
     <div style="text-align:center;">

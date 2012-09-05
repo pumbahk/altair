@@ -891,31 +891,43 @@ class MobileIndexView(object):
         if event is None:
             raise NoEventError("No such event (%d)" % event_id)
 
-        if venue_name:
-            venue = c_models.Venue.query.filter(c_models.Venue.name==venue_name).first()
-            if venue is None:
-                logger.debug("No such venue venue_name=%s" % venue_name)
-        else:
-            venue = None
-        # 会場が指定されていなければ会場を選択肢を作る
-        if venue:
-            venues = []
-            # 会場が確定しているならパフォーマンスの選択肢を作る
-            performances_query = c_models.Performance.query \
-                .filter(c_models.Performance.event_id==event_id)
-            performances = [dict(id=p.id, start_on=p.start_on.strftime('%Y-%m-%d %H:%M')) \
-                for p in performances_query if p.venue.name==venue_name]
-        else:
-            # 会場は会場名で一意にする
-            venues = set(performance.venue.name for performance in event.performances)
-            performances = []
+        #if venue_name:
+        #    venue = c_models.Venue.query.filter(c_models.Venue.name==venue_name).first()
+        #    if venue is None:
+        #        logger.debug("No such venue venue_name=%s" % venue_name)
+        #else:
+        #    venue = None
+        ## 会場が指定されていなければ会場を選択肢を作る
+        #if venue:
+        #    venues = []
+        #    # 会場が確定しているならパフォーマンスの選択肢を作る
+        #    performances_query = c_models.Performance.query \
+        #        .filter(c_models.Performance.event_id==event_id)
+        #    performances = [dict(id=p.id, start_on=p.start_on.strftime('%Y-%m-%d %H:%M')) \
+        #        for p in performances_query if p.venue.name==venue_name]
+        #else:
+        #    # 会場は会場名で一意にする
+        #    venues = set(performance.venue.name for performance in event.performances)
+        #    performances = []
+
+        # 公演名リスト
+        perms = api.performance_names(self.request, event, sales_segment)
+        performances = [p[0] for p in perms]
+        logger.debug('performances %s' % performances)
+
+        # 公演名が指定されている場合は、（日時、会場）のリスト
+        performance_name = self.request.params.get('performance_name')
+        venues = []
+        if performance_name:
+            venues = [(x['pid'], u"{start:%Y-%m-%d %H:%M} {vname}".format(**x)) for x in api.performance_venue_by_name(self.request, event, sales_segment, performance_name)]
 
         return dict(
             event=event,
             sales_segment=sales_segment,
-            venue=venue,
+            #venue=venue,
             venues=venues,
             performances=performances,
+            performance_name=performance_name,
         )
 
 
@@ -1062,13 +1074,14 @@ class OutTermSalesView(object):
         self.request = request
         self.context = context
 
-    @view_config(context='.exceptions.OutTermSalesException', renderer='ticketing.cart:templates/carts/out_term_sales.html')
+    @view_config(context='.exceptions.OutTermSalesException', renderer=selectable_renderer('ticketing.cart:templates/carts/%(membership)s/out_term_sales.html'))
     def pc(self):
         api.logout(self.request)
         return dict(event=self.context.event, 
                     sales_segment=self.context.sales_segment)
 
-    @view_config(context='.exceptions.OutTermSalesException', renderer='ticketing.cart:templates/carts_mobile/out_term_sales.html', request_type=".interfaces.IMobileRequest")
+    @view_config(context='.exceptions.OutTermSalesException', renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/out_term_sales.html'), 
+        request_type=".interfaces.IMobileRequest")
     def mobile(self):
         api.logout(self.request)
         return dict(event=self.context.event, 

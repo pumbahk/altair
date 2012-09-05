@@ -228,17 +228,7 @@ def logout(request):
     headers = forget(request)
     request.response.headerlist.extend(headers)
 
-
-def performance_names(request, event, sales_segment):
-    """
-    公演絞り込み用データ
-    assoc list
-    キー：公演名
-    バリュー：会場、開催日時、のリスト
-
-    キー辞書順でソート
-    バリューリストは開催日順でリスト
-    """
+def _query_performance_names(request, event, sales_segment):
 
     q = DBSession.query(
         Performance.id,
@@ -253,6 +243,21 @@ def performance_names(request, event, sales_segment):
     q = q.filter(ProductItem.product_id==Product.id)
     q = q.filter(Stock.id==ProductItem.stock_id)
     q = q.filter(Stock.performance_id==Performance.id)
+
+    return q
+
+def performance_names(request, event, sales_segment):
+    """
+    公演絞り込み用データ
+    assoc list
+    キー：公演名
+    バリュー：会場、開催日時、のリスト
+
+    キー辞書順でソート
+    バリューリストは開催日順でリスト
+    """
+
+    q = _query_performance_names(request, event, sales_segment)
     values = q.distinct().all()
 
     results = dict()
@@ -261,6 +266,14 @@ def performance_names(request, event, sales_segment):
         results[name].append(dict(pid=pid, start=start, open=open, vname=vname))
 
     return sorted([(k, sorted(v, key=operator.itemgetter('start'))) for k, v in results.items()], key=operator.itemgetter(0))
+
+def performance_venue_by_name(request, event, sales_segment, performance_name):
+    q = _query_performance_names(request, event, sales_segment)
+    q = q.filter(Performance.name==performance_name)
+    values = q.distinct().all()
+
+    return sorted([dict(pid=pid, name=name, start=start, open=open, vname=vname) for pid, name, start, open, vname in values],
+            key=operator.itemgetter('start'))
 
 class JSONEncoder(json.JSONEncoder):
     def __init__(self, datetime_format, *args, **kwargs):
