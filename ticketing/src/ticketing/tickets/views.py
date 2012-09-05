@@ -426,8 +426,9 @@ class TicketPrinter(BaseView):
         page_format = DBSession.query(PageFormat).filter_by(id=page_format_id).one()
         ticket_format = DBSession.query(TicketFormat).filter_by(id=ticket_format_id).one()
         builder = SvgPageSetBuilder(page_format.data, ticket_format.data)
+        tickets_per_page = builder.tickets_per_page
         for entry in TicketPrintQueueEntry.peek(self.context.user, ticket_format_id):
-            builder.add(etree.fromstring(entry.data['drawing']), entry.id)
+            builder.add(etree.fromstring(entry.data['drawing']), entry.id, title=(entry.summary if tickets_per_page == 1 else None))
         return builder.root
 
     @view_config(route_name='tickets.printer.api.dequeue', request_method='POST', renderer='json')

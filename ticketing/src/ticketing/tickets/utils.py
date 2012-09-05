@@ -337,6 +337,17 @@ class SvgPageSetBuilder(object):
         self.page = None
         self.offset = Position(printable_area.x, printable_area.y)
 
+    @property
+    def tickets_per_page(self):
+        return (self.printable_area.width + self.ticket_margin.right) // \
+            (self.ticket_size.width +
+             self.ticket_margin.left +
+             self.ticket_margin.right) * \
+            (self.printable_area.height + self.ticket_margin.bottom) // \
+                (self.ticket_size.height +
+                 self.ticket_margin.top +
+                 self.ticket_margin.bottom)
+
     def build_root_element(self):
         width = unicode(as_user_unit(self.page_format[u'size'][u'width']))
         height = unicode(as_user_unit(self.page_format[u'size'][u'height']))
@@ -352,7 +363,7 @@ class SvgPageSetBuilder(object):
             height=height
             )
 
-    def add(self, svg, queue_id):
+    def add(self, svg, queue_id, title=None):
         if self.offset.x + self.ticket_margin.left >= self.printable_area.x + self.printable_area.width:
             self.offset = Position(self.printable_area.x, self.offset.y + self.ticket_size.height + self.ticket_margin.top + self.ticket_margin.bottom)
         if self.offset.y + self.ticket_margin.top >= self.printable_area.y + self.printable_area.height:
@@ -360,6 +371,10 @@ class SvgPageSetBuilder(object):
             self.page = None
         if self.page is None:
             self.page = etree.Element(u'{%s}page' % SVG_NAMESPACE)
+            if title is not None:
+                title_elem = etree.Element(u'{%s}title' % SVG_NAMESPACE)
+                title_elem.text = title
+            self.page.append(title_elem)
             self.pageset.append(self.page)
         svgroot = svg.getroot() if isinstance(svg, etree._ElementTree) else svg
         svgroot.set(u'x', unicode(self.offset.x + self.ticket_margin.left))
