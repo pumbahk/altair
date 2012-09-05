@@ -208,11 +208,9 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 	private PropertyChangeListener pageFormatChangeListener = new PropertyChangeListener() {
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getNewValue() != null) {
+				doLoadTicketData();
 				OurPageFormat pageFormat = (OurPageFormat)evt.getNewValue();
 				comboBoxPageFormat.setSelectedItem(pageFormat);
-				for (Component c: panel.getComponents())
-					((JGVTComponent)c).setPageFormat(model.getPageFormat());
-				panel.paintImmediately(0, 0, (int)panel.getSize().getWidth(), (int)panel.getSize().getHeight());
 			}
 		}
 	};
@@ -230,28 +228,8 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 	private PropertyChangeListener ticketFormatChangeListener = new PropertyChangeListener() {
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getNewValue() != null) {
+				doLoadTicketData();
 				final TicketFormat ticketFormat = (TicketFormat)evt.getNewValue();
-				try {
-					final URLConnection conn = newURLConnection(config.peekUrl);
-					appService.loadDocument(conn, new RequestBodySender() {
-						public String getRequestMethod() {
-							return "POST";
-						}
-						public void send(OutputStream out) throws IOException {
-							final JsonWriter writer = new JsonWriter(new OutputStreamWriter(out, "utf-8"));
-							writer.beginObject();
-							writer.name("ticket_format_id");
-							writer.value(ticketFormat.getId());
-							writer.name("page_format_id");
-							writer.value(model.getPageFormat().getId());
-							writer.endObject();
-							writer.flush();
-							writer.close();
-						}
-					});
-				} catch (IOException e) {
-					throw new ApplicationException(e);
-				}
 				comboBoxTicketFormat.setSelectedItem(ticketFormat);
 			}
 		}
@@ -336,7 +314,31 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 		if (formatPair.ticketFormats.size() > 0)
 			model.setTicketFormat(formatPair.ticketFormats.get(0));
 	}
-	
+
+	protected void doLoadTicketData() {
+		try {
+			final URLConnection conn = newURLConnection(config.peekUrl);
+			appService.loadDocument(conn, new RequestBodySender() {
+				public String getRequestMethod() {
+					return "POST";
+				}
+				public void send(OutputStream out) throws IOException {
+					final JsonWriter writer = new JsonWriter(new OutputStreamWriter(out, "utf-8"));
+					writer.beginObject();
+					writer.name("ticket_format_id");
+					writer.value(model.getTicketFormat().getId());
+					writer.name("page_format_id");
+					writer.value(model.getPageFormat().getId());
+					writer.endObject();
+					writer.flush();
+					writer.close();
+				}
+			});
+		} catch (IOException e) {
+			throw new ApplicationException(e);
+		}
+	}
+
 	public void init() {
 		config = getConfiguration();
 		model = new AppAppletModel();
