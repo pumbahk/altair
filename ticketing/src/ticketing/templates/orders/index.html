@@ -30,7 +30,14 @@
   <dl>
 	<dt>チェックされた数</dt><dd id="printstatus_count"></dd>
   </dl>
-  <button type="button" id="printstatus_save">save</button>
+
+  %if request.matched_route.name == "orders.checked.index":
+    <a href="${request.route_path("orders.index")}">全部の購入情報を表示</a>
+  %else:
+    <a href="${request.route_path("orders.checked.index")}">チェックした購入情報だけ表示</a>
+  %endif
+  <button type="button" class="btn" id="printstatus_save">save</button>
+  <button type="button" class="btn" id="printstatus_reset">reset</button>
 </div>
 
 <p> ${orders.items_per_page * (orders.page-1) + 1}～${min(orders.items_per_page * orders.page, orders.item_count)} / ${orders.item_count}件</p>

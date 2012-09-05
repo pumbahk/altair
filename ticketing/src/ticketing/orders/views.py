@@ -68,7 +68,39 @@ class OrdersAPIView(BaseView):
 
 @view_defaults(decorator=with_bootstrap)
 class Orders(BaseView):
+    @view_config(route_name="orders.checked.index", renderer='ticketing:templates/orders/index.html')
+    def checked_orders_index(self):
+        """後でindexと合成。これはチェックされたOrderだけを表示するview
+        """
+        if not self.request.session["orders"]:
+            return HTTPFound(self.request.route_url("orders.index"))
 
+        organization_id = int(self.context.user.organization_id)
+        query = Order.filter(Order.organization_id==organization_id)
+        ords = [o.lstrip("o:") for o in self.request.session["orders"] if o.startswith("o:")]
+        query = query.filter(Order.id.in_(ords))
+
+        event_query = Event.filter_by(organization_id=organization_id)
+        form_search = OrderSearchForm(self.request.params).configure(event_query)
+        if form_search.validate():
+            query = Order.set_search_condition(query, form_search)
+
+        page = int(self.request.params.get('page', 0))
+        orders = paginate.Page(
+            query,
+            page=page,
+            items_per_page=20,
+            item_count=query.count(), 
+            url=paginate.PageURL_WebOb(self.request)
+        )
+
+        return {
+            'form':OrderForm(),
+            'form_search':form_search,
+            'orders':orders,
+            "page": page, 
+        }
+        
     @view_config(route_name='orders.index', renderer='ticketing:templates/orders/index.html')
     def index(self):
         organization_id = int(self.context.user.organization_id)

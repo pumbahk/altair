@@ -2,6 +2,7 @@
 
 def includeme(config):
     config.add_route('orders.index'                     , '/')
+    config.add_route('orders.checked.index'             , '/checked')
     config.add_route('orders.show'                      , '/show/{order_id}')
     config.add_route('orders.cancel'                    , '/cancel/{order_id}')
     config.add_route('orders.delivered'                 , '/delivered/{order_id}')
