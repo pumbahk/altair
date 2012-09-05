@@ -52,10 +52,12 @@ class Orders(BaseView):
         if form_search.validate():
             query = Order.set_search_condition(query, form_search)
 
+        page = int(self.request.params.get('page', 0))
         orders = paginate.Page(
             query,
-            page=int(self.request.params.get('page', 0)),
+            page=page,
             items_per_page=20,
+            item_count=query.count(), 
             url=paginate.PageURL_WebOb(self.request)
         )
 
@@ -63,6 +65,7 @@ class Orders(BaseView):
             'form':OrderForm(),
             'form_search':form_search,
             'orders':orders,
+            "page": page, 
         }
 
     @view_config(route_name='orders.show', renderer='ticketing:templates/orders/show.html')
