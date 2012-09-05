@@ -321,3 +321,17 @@ class SejRefundOrderForm(Form):
         label=u'その他払戻金額',
         validators=[Optional()],
     )
+
+class PreviewTicketSelectForm(Form):
+    ticket_choices = SelectField(
+        label=u"チケットの種類", 
+        choices=[], 
+        validators=[Optional()],
+    )
+    
+    item_id = HiddenField(
+    )
+
+    def configure(self, tickets):
+        self.ticket_choices.choices = [(t.id,  t.name) for t in tickets]
+        return self

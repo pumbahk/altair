@@ -8,6 +8,8 @@ def includeme(config):
     config.add_route('orders.delivered'                 , '/delivered/{order_id}')
     config.add_route('orders.download'                  , '/download/')
 
+    config.add_route("orders.item.preview"              , "/item/preview/{order_id}/{item_id}")
+    config.add_route("orders.item.preview.getdata"      , "/api/item/{item_id}")
     config.add_route('orders.print.queue'               , '/print/queue/{order_id}')
 
     config.add_subscriber('.mail.on_order_canceled'     , '.events.OrderCanceled')
@@ -27,4 +29,5 @@ def includeme(config):
 
     config.add_route("orders.api.performances"          , "/api/performances")
     config.add_route("orders.api.printstatus"           , "/api/printstatus/{action}")
+    config.add_route("orders.api.printqueue"           , "/api/printqueue/{action}")
     config.scan(".")

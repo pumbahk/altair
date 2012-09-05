@@ -14,10 +14,10 @@ import webhelpers.paginate as paginate
 
 from ticketing.models import merge_session_with_post, record_to_appstruct, merge_and_flush, record_to_multidict
 from ticketing.operators.models import Operator, OperatorRole, Permission
-from ticketing.core.models import Order, TicketPrintQueueEntry, Event, Performance
+from ticketing.core.models import Order, TicketPrintQueueEntry, Event, Performance, OrderedProductItem, Ticket
 from ticketing.orders.export import OrderCSV
 from ticketing.orders.forms import (OrderForm, OrderSearchForm, PerformanceSearchForm, SejOrderForm, SejTicketForm, SejTicketForm,
-                                    SejRefundEventForm,SejRefundOrderForm)
+                                    SejRefundEventForm,SejRefundOrderForm, PreviewTicketSelectForm)
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.orders.events import notify_order_canceled
@@ -83,6 +83,14 @@ class OrdersAPIView(BaseView):
     def reset_printstatus(self):
         self.request.session["orders"] = set()
         return {"status": True, "count": 0, "result": []}
+
+    @view_config(renderer="json", route_name="orders.api.printqueue", request_method="GET", match_param="acton=dialog")
+    def print_queue_dialog(self):
+        order = self.request.GET["order_id"]
+        
+        return {"status": True, 
+                "title": u"title", 
+                "choices": []}
 
 
 @view_defaults(decorator=with_bootstrap)
@@ -207,6 +215,38 @@ class Orders(BaseView):
         writer.writerows(order_csv.rows)
 
         return response
+
+    @view_config(route_name="orders.item.preview", request_method="GET", 
+                 renderer='ticketing:templates/orders/_item_preview.html'
+                 )
+    def order_item_preview(self):
+        item = OrderedProductItem.query.filter_by(id=self.request.matchdict["item_id"]).first()
+        if item is None:
+            return {} ### xxx:
+        form = PreviewTicketSelectForm(item_id=item.id).configure(item.product_item.ticket_bundle.tickets)
+        return {"form": form,  "item": item}
+
+    @view_config(route_name="orders.item.preview.getdata", request_method="GET", 
+                 renderer="json", 
+                 request_param="ticket_id")
+    def ajax(self):
+        from ticketing.core.models import OrderedProductItem
+        from ticketing.tickets.convert import to_opcodes
+        from lxml import etree
+
+        item = OrderedProductItem.query.filter_by(id=self.request.matchdict["item_id"]).first()
+        if item is None:
+            return {}
+        ticket = Ticket.query.filter_by(id=self.request.GET["ticket_id"]).first()
+        if ticket is None:
+            return {}
+
+        dicts = build_dicts_from_ordered_product_item(item)
+        for seat, dict_ in enumerate(dicts):
+            svg =  pystache.render(ticket.data['drawing'], dict_)
+                ## templateからのdata?
+            data = dict(drawing=' '.join(to_opcodes(etree.ElementTree(etree.fromstring(svg)))))
+        return dict(data=data)
 
     @view_config(route_name='orders.print.queue')
     def order_print_queue(self):
