@@ -19,6 +19,16 @@
     var url = '${request.route_path('orders.edit.shipping_address', order_id=order.id)}';
     post_modal_form(modal, form, url);
   }
+  function edit_product() {
+    var modal = $('#modal-edit-product');
+    modal.modal('toggle');
+  }
+  function save_product() {
+    var modal = '#modal-edit-product';
+    var form = '#product-form';
+    var url = '${request.route_path('orders.edit.product', order_id=order.id)}';
+    post_modal_form(modal, form, url);
+  }
 </script>
 
 <%
@@ -45,12 +55,12 @@ actions = {
   ),
   'edit_product':dict(
     label=u'編集',
-    url='javascript:void(0);',
+    url='javascript:edit_product(%d);' % order.id,
     icon='icon-edit',
   ),
 }
 sort = iter(sort or ['delivered', 'print', 'cancel'])
 %>
-${h.action_button(actions, sort, virtical=False)}
+${h.action_button(actions, sort, vertical=False)}
 
 ${m.delete_modal(label_delete=u'キャンセル', label_cancel=u'戻る')}

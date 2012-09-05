@@ -165,12 +165,16 @@ class Orders(BaseView):
         if order.shipping_address:
             form_shipping_address = ClientForm(record_to_multidict(order.shipping_address))
             form_shipping_address.tel.data = order.shipping_address.tel_1
+            form_shipping_address.mail_address.data = order.shipping_address.email
         else:
             form_shipping_address = ClientForm()
+
+        form_order = OrderForm(record_to_multidict(order))
 
         return {
             'order':order,
             'form_shipping_address':form_shipping_address,
+            'form_order':form_order,
         }
 
     @view_config(route_name='orders.cancel')
@@ -243,6 +247,7 @@ class Orders(BaseView):
                 'message':u'座席が選択されていません',
             }))
 
+        order = None
         try:
             # validation
             f = OrderReserveForm(performance_id=performance_id)
@@ -276,13 +281,13 @@ class Orders(BaseView):
         except Exception, e:
             logger.exception('save error (%s)' % e.message)
             return HTTPBadRequest(body=json.dumps({
-                'message':u'例外が発生しました',
+                'message':u'エラーが発生しました',
             }))
 
         self.request.session.flash(u'予約しました')
-        return {}
+        return {'order_id':order.id}
 
-    @view_config(route_name='orders.edit.shipping_address', request_method='POST', renderer='ticketing:templates/orders/_form.html')
+    @view_config(route_name='orders.edit.shipping_address', request_method='POST', renderer='ticketing:templates/orders/_form_shipping_address.html')
     def edit_shipping_address_post(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id)
@@ -290,13 +295,13 @@ class Orders(BaseView):
             return HTTPNotFound('order id %d is not found' % order_id)
 
         f = ClientForm(self.request.POST)
-        # ここではメールアドレスはチェック対象外
-        f.mail_address.validators = [Optional()]
-        f.mail_address2.validators = [Optional()]
+        # ここでは確認用メールアドレスはチェック対象外
+        f.mail_address2.data = self.request.POST.get('mail_address')
 
         if f.validate():
             shipping_address = merge_session_with_post(order.shipping_address or ShippingAddress(), f.data)
             shipping_address.tel_1 = f.tel.data
+            shipping_address.email = f.mail_address.data
             order.shipping_address = shipping_address
             order.save()
 
@@ -306,6 +311,46 @@ class Orders(BaseView):
             return {
                 'form':f,
             }
+
+    @view_config(route_name='orders.edit.product', request_method='POST', renderer='ticketing:templates/orders/_form_product.html')
+    def edit_product_post(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id)
+        if order is None:
+            return HTTPNotFound('order id %d is not found' % order_id)
+
+        f = OrderForm(self.request.POST)
+
+        try:
+            if not f.validate():
+                raise ValidationError()
+
+            for op in order.items:
+                op.price = int(self.request.params.get('product_price-%d' % op.id) or 0)
+                if op.product.seat_stock_type.quantity_only:
+                    op.quantity = int(self.request.params.get('product_quantity-%d' % op.id) or 0)
+                for opi in op.ordered_product_items:
+                    opi.price = int(self.request.params.get('product_item_price-%d' % opi.id) or 0)
+                if sum(opi.price for opi in op.ordered_product_items) != op.price:
+                    raise ValidationError(u'小計金額が正しくありません')
+
+            order.system_fee = f.system_fee.data
+            order.transaction_fee = f.transaction_fee.data
+            order.delivery_fee = f.delivery_fee.data
+            order.total_amount = sum(op.price * op.quantity for op in order.items)\
+                                 + order.system_fee + order.transaction_fee + order.delivery_fee
+            order.save()
+        except ValidationError, e:
+            if e.message:
+                self.request.session.flash(e.message)
+            return {'form':f, 'order':order}
+        except Exception, e:
+            logger.exception('save error (%s)' % e.message)
+            self.request.session.flash(u'入力された金額および個数が不正です')
+            return {'form':f, 'order':order}
+
+        self.request.session.flash(u'予約を保存しました')
+        return render_to_response('ticketing:templates/refresh.html', {}, request=self.request)
 
     @view_config(route_name='orders.print.queue')
     def order_print_queue(self):

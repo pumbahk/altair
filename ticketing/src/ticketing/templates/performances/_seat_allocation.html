@@ -418,7 +418,7 @@ function createOrder() {
     dataType: 'json',
     data: JSON.stringify(param),
     success: function(result) {
-      //location.reload(true);
+      location.href = '/orders/show/' + result.order_id;
     },
     error: function(xhr, text) {
       var responseText = JSON.parse(xhr.responseText);
@@ -512,6 +512,7 @@ callbacks.select = function (viewer, selection) {
         ${h.form_item(form_reserve.product_id)}
         ${h.form_item(form_reserve.payment_delivery_method_pair_id)}
       </fieldset>
+      <p>※ 決済・配送方法は「販売区分」が「関係者」で登録されている方法のみ選択可能</p>
     </form>
   </div>
 

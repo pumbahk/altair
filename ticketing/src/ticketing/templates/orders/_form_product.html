@@ -1,0 +1,87 @@
+<%page args="form, order" />
+<%namespace file="/common/helpers.html" name="h" />
+
+<style type="text/css">
+  #modal-edit-product input {
+    width: 80px;
+    padding: 2px;
+    margin: 0;
+  }
+</style>
+
+<script type="text/javascript">
+  $(function() {
+    $('#system_fee, #transaction_fee, #delivery_fee').load(function(){
+      $(this).val(Math.floor($(this).val()));
+    }).load();
+  });
+</script>
+
+<div id="modal-edit-product" class="modal fade">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">×</a>
+    <h3>購入情報編集</h3>
+  </div>
+
+  <div class="modal-body">
+    <form action="javascript:save_product();" method="POST">
+      <div class="content">
+        ${h.flash_messages(request, type='alert-error')}
+        ${h.alert_message(form)}
+      </div>
+
+      <fieldset>
+        <table class="table table-striped table-bordered">
+          <tr>
+            <th colspan="2">商品</th>
+            <th style="width: 80px;">単価</th>
+            <th style="width: 80px;">個数</th>
+          </tr>
+          % for ordered_product in order.items:
+          <tr>
+            <td colspan="2">${ordered_product.product.name}</td>
+            <td><input name="product_price-${ordered_product.id}" type="text" value="${int(ordered_product.price)}"></td>
+            <td>
+              % if ordered_product.product.seat_stock_type.quantity_only:
+              <input name="product_quantity-${ordered_product.id}" type="text" value="${ordered_product.quantity}">
+              % else:
+              ${ordered_product.quantity}
+              % endif
+            </td>
+          </tr>
+            % for ordered_product_item in ordered_product.ordered_product_items:
+          <tr>
+            <td></td>
+            <td>${ordered_product_item.product_item.stock_type.name}</td>
+            <td><input name="product_item_price-${ordered_product_item.id}" type="text" value="${int(ordered_product_item.price)}"></td>
+            <td>${len(ordered_product_item.seats)}</td>
+          </tr>
+            % endfor
+          % else:
+          <tr>
+            <td colspan="2">決済手数料</td>
+            <td>${form.delivery_fee}</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td colspan="2">配送手数料</td>
+            <td>${form.transaction_fee}</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td colspan="2">システム利用料</td>
+            <td>${form.system_fee}</td>
+            <td></td>
+          </tr>
+          % endfor
+        </table>
+      </fieldset>
+      <p>※ 個数の変更は数受けの場合のみ可能です</p>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+    <a href="javascript:void(0);" onclick="$('#modal-edit-product').find('form').submit();" class="btn">保存</a>
+  </div>
+</div>

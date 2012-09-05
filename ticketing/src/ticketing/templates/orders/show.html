@@ -105,8 +105,8 @@ ${h.breadcrumbs(
       <tr>
         <th>メールアドレス</th>
         <td>
-          % if order.shipping_address:
-            ${order.shipping_address.email}
+          % if order.user and order.user.user_profile:
+            ${order.user.user_profile.email}
           % endif
         </td>
       </tr>
@@ -168,10 +168,10 @@ ${h.breadcrumbs(
         </td>
       </tr>
       <tr>
-        <th>Fax</th>
+        <th>メールアドレス</th>
         <td>
           % if sa:
-            ${sa.fax or ''}
+            ${sa.email or ''}
           % endif
         </td>
       </tr>
@@ -180,7 +180,7 @@ ${h.breadcrumbs(
       <%include file="/orders/_action_button.html" args="order=order, sort=['edit_shipping_address']" />
     </div>
     <div id="shipping_address-form">
-      <%include file="/orders/_form.html" args="form=form_shipping_address" />
+      <%include file="/orders/_form_shipping_address.html" args="form=form_shipping_address" />
     </div>
   </div>
 
@@ -238,7 +238,7 @@ ${h.breadcrumbs(
 
         <table class="table table-striped table-bordered">
           <tr>
-            <th colspan="2" class="span6">商品名</th>
+            <th colspan="2" class="span6">商品</th>
             <th class="span2">単価</th>
             <th class="span1">個数</th>
             <th class="span2">小計</th>
@@ -264,11 +264,9 @@ ${h.breadcrumbs(
                   seat_name = u'(%s)' % seat_name
             %>
             <td class="span4">${ordered_product_item.product_item.stock_type.name} ${attr} ${seat_name}</td>
-            <td style="text-align: right;">${h.price_format(ordered_product_item.product_item.price)}円</td>
-            <td >${len(ordered_product_item.seats)}</td>
-            <td style="text-align: right;">
-              ${h.price_format(ordered_product_item.product_item.price * len(ordered_product_item.seats))}円
-            </td>
+            <td style="text-align: right;">${h.price_format(ordered_product_item.price)}円</td>
+            <td>${len(ordered_product_item.seats)}</td>
+            <td></td>
           </tr>
       % endfor
     % else:
@@ -300,6 +298,9 @@ ${h.breadcrumbs(
     % endfor
     <div class="pull-right">
       <%include file="/orders/_action_button.html" args="order=order, sort=['edit_product']" />
+    </div>
+    <div id="product-form">
+      <%include file="/orders/_form_product.html" args="form=form_order, order=order" />
     </div>
   </div>
 </div>

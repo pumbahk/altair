@@ -2,13 +2,16 @@
 
 from wtforms import Form
 from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, TextAreaField,
-                     BooleanField, RadioField, FieldList, FormField)
+                     BooleanField, RadioField, FieldList, FormField, DecimalField)
 from wtforms.validators import Optional, AnyOf
 
 from ticketing.formhelpers import DateTimeField, Translations, Required
 from ticketing.core.models import PaymentMethodPlugin, DeliveryMethodPlugin, PaymentDeliveryMethodPair, SalesSegment, Performance
 
 class OrderForm(Form):
+
+    def _get_translations(self):
+        return Translations()
 
     order_no = HiddenField(
         label=u'予約番号',
@@ -21,6 +24,24 @@ class OrderForm(Form):
     created_at = HiddenField(
         label=u'予約日時',
         validators=[Optional()],
+    )
+    system_fee = DecimalField(
+        label=u'システム利用料',
+        places=2,
+        default=0,
+        validators=[Required()],
+    )
+    transaction_fee = DecimalField(
+        label=u'決済手数料',
+        places=2,
+        default=0,
+        validators=[Required()],
+    )
+    delivery_fee = DecimalField(
+        label=u'配送手数料',
+        places=2,
+        default=0,
+        validators=[Required()],
     )
 
 class OrderSearchForm(Form):
