@@ -96,8 +96,6 @@ class AppAppletService extends AppService {
      */
     public void displayError(Exception ex) {
     	ex.printStackTrace();
-    	final JSObject window = JSObject.getWindow(applet);
-    	window.call("alert", new Object[] { ex.toString() });
     }
 
     /**
