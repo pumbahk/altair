@@ -38,17 +38,37 @@ class OrdersAPIView(BaseView):
         performances = itertools.chain(query, [testing.DummyResource(id="", name="")])
         performances = [dict(pk=p.id, name=p.name) for p in performances]
         return {"result": performances, "status": True}
-    
-    @view_config(renderer="json", route_name="orders.api.printstatus", request_method="POST", match_param="action=save")
-    def save_printstatus(self):
+
+
+    @view_config(renderer="json", route_name="orders.api.printstatus", request_method="POST", match_param="action=add")
+    def add_printstatus(self):
         """ [o:1, o:2, o:3, o:4, ....]
         """
-        ords = [o.lstrip("o:") for o in self.request.POST.getall("targets[]") if o.startswith("o:")]
-        ords = Order.query.filter(Order.id.in_(ords))
+        oid = self.request.POST["target"]
+        if not oid.startswith("o:"):
+            return {"status": False}
+        # order = Order.query.filter(Order.id==oid.lstrip("o:")).first()
+        # if not order:
+        #     return {"status": False}
 
         orders = self.request.session.get("orders") or set()
-        for o in ords:
-            orders.add("o:%s" % o.id)
+        orders.add(oid)
+        self.request.session["orders"] = orders
+        return {"status": True, "count": len(orders), "result": list(orders)}
+
+    @view_config(renderer="json", route_name="orders.api.printstatus", request_method="POST", match_param="action=remove")
+    def remove_printstatus(self):
+        """ [o:1, o:2, o:3, o:4, ....]
+        """
+        oid = self.request.POST["target"]
+        if not oid.startswith("o:"):
+            return {"status": False}
+        # order = Order.query.filter(Order.id==oid.lstrip("o:")).first()
+        # if not order:
+        #     return {"status": False}
+        
+        orders = self.request.session.get("orders") or set()
+        orders.remove(oid)
         self.request.session["orders"] = orders
         return {"status": True, "count": len(orders), "result": list(orders)}
 

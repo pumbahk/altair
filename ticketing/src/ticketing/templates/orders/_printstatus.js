@@ -13,9 +13,6 @@ PrintStatusAppView.prototype = { //継承しないし
   cleanup_checkbox: function(){
     this.checkboxes.removeAttr("checked");
   }, 
-  collect_save_targets: function(){
-    return this.checkboxes.filter(":checked");
-  }, 
   check_and_count_checkboxes: function(result){
     var candidates = this.checkboxes;
     var cnt = 0;
@@ -64,10 +61,12 @@ PrintStatusPresenter.prototype = {
   on_inc: function($e){
     this.model.inc();
     this.view.display_count(this.model);
+    $.post(this.resourcs.add, {"target": $e.attr("name")});
   }, 
   on_dec: function($e){
     this.model.dec();
     this.view.display_count(this.model);
+    $.post(this.resourcs.remove, {"target": $e.attr("name")});
   }, 
   on_load: function(){
     var self = this;
@@ -78,27 +77,6 @@ PrintStatusPresenter.prototype = {
       self.model.count = this_page_count;
       self.view.display_count(self.model);
     });
-  }, 
-  on_save: function(e){
-    var self = this;
-    var targets = this.view.collect_save_targets();
-    targets = $.makeArray(targets.map(function(i, e){ return $(e).attr("name")}));
-    $.post(this.resourcs.save,{"targets": targets});
-    return true;
-  }, 
-
-  on_save_sync: function(e){
-    var self = this;
-    var targets = this.view.collect_save_targets();
-    targets = $.makeArray(targets.map(function(i, e){ return $(e).attr("name")}));
-    $.ajax({
-      async: false, 
-      // cache: false, 
-      type: "POST", 
-      data: {"targets": targets}, 
-      url: this.resourcs.save
-    });
-    return true;
   }, 
   on_reset: function(){
     // this page only or all
@@ -118,14 +96,13 @@ $.event.add(window, "load", function(){
   var view = new PrintStatusAppView($("#printstatus_count"), $("input.printstatus"));
   var urls = {
     load: "${request.route_url('orders.api.printstatus', action='load')}", 
-    save: "${request.route_url('orders.api.printstatus', action='save')}", 
+    add: "${request.route_url('orders.api.printstatus', action='add')}", 
+    remove: "${request.route_url('orders.api.printstatus', action='remove')}", 
     reset: "${request.route_url('orders.api.printstatus', action='reset')}"
   }
   var presenter = new PrintStatusPresenter(model, view, urls);
   $("input.printstatus[type='checkbox']").on("change", presenter.on_check.bind(presenter));
-  // $("#printstatus_save").click(presenter.on_save.bind(presenter));
   $("#printstatus_reset").click(presenter.on_reset.bind(presenter));
 
   presenter.on_load();
-  $(window).unload(presenter.on_save_sync.bind(presenter));
 });
