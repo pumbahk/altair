@@ -1,7 +1,7 @@
 from pyramid.config import Configurator
 from pyramid_beaker import session_factory_from_settings
 from pyramid.httpexceptions import HTTPNotFound
-
+import json
 from ticketing.cart.interfaces import IPaymentPlugin, ICartPayment, IOrderPayment
 from ticketing.cart.interfaces import IDeliveryPlugin, ICartDelivery, IOrderDelivery
 
@@ -18,6 +18,14 @@ def main(global_conf, **settings):
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_renderer('.txt' , 'pyramid.mako_templating.renderer_factory')
     config.add_static_view('static', 'ticketing.bj89ers:static', cache_max_age=3600)
+
+    ### selectable renderer
+    config.include("ticketing.cart.selectable_renderer")
+    domain_candidates = json.loads(config.registry.settings["altair.cart.domain.mapping"])
+    selector = config.maybe_dotted("ticketing.cart.selectable_renderer.ByDomainMappingSelector")(domain_candidates)
+    config.add_selectable_renderer_selector(selector)
+
+
     config.add_route('index', '/')
     config.add_route('contact', '/contact')
     config.add_route('notready', '/notready')
