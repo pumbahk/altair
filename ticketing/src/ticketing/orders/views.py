@@ -227,13 +227,13 @@ class Orders(BaseView):
         if order is None:
             return HTTPNotFound('order id %d is not found' % order_id)
 
-        mail_magazines = [ms.segment.name for ms in MailSubscription.query.filter_by(email=order.shipping_address.email).all()]
-
         if order.shipping_address:
+            mail_magazines = [ms.segment.name for ms in MailSubscription.query.filter_by(email=order.shipping_address.email).all()]
             form_shipping_address = ClientForm(record_to_multidict(order.shipping_address))
             form_shipping_address.tel.data = order.shipping_address.tel_1
             form_shipping_address.mail_address.data = order.shipping_address.email
         else:
+            mail_magazines = []
             form_shipping_address = ClientForm()
 
         form_order = OrderForm(record_to_multidict(order))
@@ -394,8 +394,13 @@ class Orders(BaseView):
             if not f.validate():
                 raise ValidationError()
 
+            order.system_fee = f.system_fee.data
+            order.transaction_fee = f.transaction_fee.data
+            order.delivery_fee = f.delivery_fee.data
+
             for op in order.items:
                 op.price = int(self.request.params.get('product_price-%d' % op.id) or 0)
+                # 個数が変更できるのは数受けのケースのみ
                 if op.product.seat_stock_type.quantity_only:
                     op.quantity = int(self.request.params.get('product_quantity-%d' % op.id) or 0)
                 for opi in op.ordered_product_items:
@@ -403,11 +408,13 @@ class Orders(BaseView):
                 if sum(opi.price for opi in op.ordered_product_items) != op.price:
                     raise ValidationError(u'小計金額が正しくありません')
 
-            order.system_fee = f.system_fee.data
-            order.transaction_fee = f.transaction_fee.data
-            order.delivery_fee = f.delivery_fee.data
-            order.total_amount = sum(op.price * op.quantity for op in order.items)\
-                                 + order.system_fee + order.transaction_fee + order.delivery_fee
+            total_amount = sum(op.price * op.quantity for op in order.items)\
+                           + order.system_fee + order.transaction_fee + order.delivery_fee
+            if order.status in ('paid', 'delivered'):
+                if total_amount != order.total_amount:
+                    raise ValidationError(u'入金済みの為、合計金額は変更できません')
+            order.total_amount = total_amount
+
             order.save()
         except ValidationError, e:
             if e.message:
