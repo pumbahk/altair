@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from datetime import datetime
 from wtforms import Form, ValidationError
 from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, TextAreaField,
                      BooleanField, RadioField, FieldList, FormField, DecimalField, IntegerField)
@@ -140,15 +141,19 @@ class OrderReserveForm(Form):
         if 'performance_id' in kwargs:
             performance = Performance.get(kwargs['performance_id'])
             self.performance_id.data = performance.id
-            self.product_id.choices = [
-                (product.id, product.name) for product in performance.event.products
-            ]
-            pdmps = PaymentDeliveryMethodPair.filter()\
-                        .join(PaymentDeliveryMethodPair.sales_segment)\
-                        .filter(SalesSegment.kind=='vip').all()
-            self.payment_delivery_method_pair_id.choices = [
-                (pdmp.id, '%s  -  %s' % (pdmp.payment_method.name, pdmp.delivery_method.name)) for pdmp in pdmps
-            ]
+
+            now = datetime.now()
+            sales_segments = SalesSegment.filter_by(kind='vip')\
+                                         .filter_by(event_id=performance.event_id)\
+                                         .filter(SalesSegment.start_at<=now)\
+                                         .filter(now<=SalesSegment.end_at).all()
+            for sales_segment in sales_segments:
+                products = Product.find(performance_id=performance.id, sales_segment_id=sales_segment.id)
+                self.product_id.choices += [(p.id, p.name) for p in products]
+                for pdmp in sales_segment.payment_delivery_method_pairs:
+                    self.payment_delivery_method_pair_id.choices.append(
+                        (pdmp.id, '%s  -  %s' % (pdmp.payment_method.name, pdmp.delivery_method.name))
+                    )
 
     def _get_translations(self):
         return Translations()
