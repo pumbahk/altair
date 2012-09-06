@@ -10,7 +10,7 @@
   }
   function new_sales_segment() {
     var modal = $('#modal-sales_segment');
-    reset_form(modal, '#event_id, #upper_limit, #seat_choice');
+    reset_form(modal, '#event_id, #upper_limit, #seat_choice, #public');
     modal.modal('toggle');
   }
   function edit_sales_segment() {
@@ -26,6 +26,9 @@
     modal.find('#upper_limit').val($(el + ' #upper_limit').text());
     if ($(el + ' #seat_choice').attr('value')) {
       modal.find('#seat_choice').attr('checked');
+    }
+    if ($(el + ' #public').attr('value')) {
+      modal.find('#public').attr('checked');
     }
     modal.modal('toggle');
   }
