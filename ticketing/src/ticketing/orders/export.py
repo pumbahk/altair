@@ -21,6 +21,7 @@ class OrderCSV(object):
         'transaction_fee',
         'delivery_fee',
         'system_fee',
+        'note',
         ]
     user_profile_header = [
         'last_name',
@@ -87,8 +88,11 @@ class OrderCSV(object):
         else:
             user_profile_list = []
 
-        shipping_address_dict = record_to_multidict(order.shipping_address)
-        shipping_address_list = [('shipping_' + column, shipping_address_dict.get(column)) for column in self.shipping_address_header]
+        if order.shipping_address:
+            shipping_address_dict = record_to_multidict(order.shipping_address)
+            shipping_address_list = [('shipping_' + column, shipping_address_dict.get(column)) for column in self.shipping_address_header]
+        else:
+            shipping_address_list = []
 
         performance = order.performance
         other_list = [
