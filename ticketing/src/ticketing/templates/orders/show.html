@@ -123,15 +123,14 @@ ${h.breadcrumbs(
       <tr>
         <th>購読メールマガジン</th>
         <%
-          segment_name = []
           if order.user and order.user.mail_subscription:
             for ms in order.user.mail_subscription:
               if ms.segment.organization_id == order.organization_id:
-                segment_name.append(ms.segment.name)
+                mail_magazines.append(ms.segment.name)
         %>
         <td>
           <ul>
-          % for name in list(set(segment_name)):
+          % for name in list(set(mail_magazines)):
             <li>${name}</li>
           % endfor
           </ul>
@@ -320,17 +319,6 @@ ${h.breadcrumbs(
   </div>
 </div>
 
-<div class="row-fluid">
-  <div class="span6 well" style="padding-left: 10px;">
-    <form id="note-form" action="${request.route_path('orders.note', order_id=order.id)}" method="POST" style="margin: 0;">
-      <textarea id="note" name="note" rows="3" style="width:100%;">${order.note or ''}</textarea>
-    </form>
-    <div class="pull-right">
-      <%include file="/orders/_action_button.html" args="order=order, sort=['note']" />
-    </div>
-  </div>
-</div>
-
 <% row = 0 %>
 % for ordered_product in order.ordered_products:
   % for ordered_product_item in ordered_product.ordered_product_items:
@@ -393,3 +381,14 @@ ${h.breadcrumbs(
 	});
   });
 </script>
+
+<div class="row-fluid">
+  <div class="span6 well" style="padding-left: 10px;">
+    <form id="note-form" action="${request.route_path('orders.note', order_id=order.id)}" method="POST" style="margin: 0;">
+      <textarea id="note" name="note" rows="3" style="width:100%;">${order.note or ''}</textarea>
+    </form>
+    <div class="pull-right">
+      <%include file="/orders/_action_button.html" args="order=order, sort=['note']" />
+    </div>
+  </div>
+</div>

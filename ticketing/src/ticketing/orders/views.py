@@ -18,9 +18,10 @@ import webhelpers.paginate as paginate
 from wtforms import ValidationError
 from wtforms.validators import Optional
 
-from ticketing.models import merge_session_with_post, record_to_appstruct, merge_and_flush, record_to_multidict
+from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.operators.models import Operator, OperatorRole, Permission
 from ticketing.core.models import Order, TicketPrintQueueEntry, Event, Performance, Product, PaymentDeliveryMethodPair, ShippingAddress, OrderedProductItem, Ticket
+from ticketing.users.models import MailSubscription
 from ticketing.orders.export import OrderCSV
 from ticketing.orders.forms import (OrderForm, OrderSearchForm, PerformanceSearchForm, OrderReserveForm,
                                     SejOrderForm, SejTicketForm, SejRefundEventForm, SejRefundOrderForm, 
@@ -168,6 +169,8 @@ class Orders(BaseView):
         if order is None:
             return HTTPNotFound('order id %d is not found' % order_id)
 
+        mail_magazines = [ms.segment.name for ms in MailSubscription.query.filter_by(email=order.shipping_address.email).all()]
+
         if order.shipping_address:
             form_shipping_address = ClientForm(record_to_multidict(order.shipping_address))
             form_shipping_address.tel.data = order.shipping_address.tel_1
@@ -179,6 +182,7 @@ class Orders(BaseView):
 
         return {
             'order':order,
+            'mail_magazines':mail_magazines,
             'form_shipping_address':form_shipping_address,
             'form_order':form_order,
         }
