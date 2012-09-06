@@ -336,7 +336,7 @@ class PreviewTicketSelectForm(Form):
         self.ticket_choices.choices = [(t.id,  t.name) for t in tickets]
         return self
 
-def PrintQueueDialogFormFactory(order, formdata=None): #filter?
+def PrintQueueDialogFormFactory(order, formdata=None):
     """
     item0 -- HiddenField
     ticket_choices0 --- SelectField
@@ -351,6 +351,8 @@ def PrintQueueDialogFormFactory(order, formdata=None): #filter?
 
         bundle = ordered_product_item.product_item.ticket_bundle
         choices = [(unicode(t.id), t.name) for t in bundle.tickets]
+        # choices = [(unicode(t.id), t.name) for t in bundle.tickets
+        #            if not utils.is_ticket_format_applicable(t.ticket_format)]
         attrs[ticket_field_name] = SelectField(label=ordered_product_item.name, 
                                                choices=choices)
 

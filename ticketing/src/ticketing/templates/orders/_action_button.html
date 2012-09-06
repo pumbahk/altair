@@ -29,8 +29,20 @@ actions = {
     icon='icon-remove',
   ),
 }
-sort = iter(['delivered', 'print', 'cancel'])
+sort = iter(['delivered','cancel'])
 %>
 ${h.action_button(actions, sort, virtical=False)}
 
 ${m.delete_modal(label_delete=u'キャンセル', label_cancel=u'戻る')}
+
+## 発券するボタンを追加する
+<script type="text/javascript">
+  $(function(){
+	var btn = $("<a>").attr("href", "${request.route_path("orders.print.queue.dialog", order_id=order.id)}")
+					  .attr("data-toggle","modal")
+					  .attr("data-target", "#PrintQueueModal")
+					  .attr("class", "ajax-modal btn")
+	                  .html("<i class='icon-print'></i> 発券する");
+	$(".btn-group").eq(0).append(btn);
+  });
+</script>
