@@ -1,0 +1,19 @@
+<%namespace file="/common/helpers.html" import="form_item"/>
+
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">×</button>
+    <h3>券面印刷</h3>
+  </div>
+
+ <form method="POST" action="${request.route_path("orders.print.queue.strict",order_id=order.id)}">
+  <div class="modal-body">
+	  %for field in form:
+	    ${form_item(field)}
+	  %endfor
+  </div>
+
+  <div class="modal-footer">
+	<a href="#" class="btn" data-dismiss="modal">キャンセル</a>
+    <input class="btn btn-primary" type="submit" name="submit" value="登録">
+  </div>
+ </form>

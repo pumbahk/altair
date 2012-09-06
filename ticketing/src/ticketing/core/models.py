@@ -1674,9 +1674,18 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def seat_statuses_for_update(self):
+      return DBSession.query(SeatStatus).filter(SeatStatus.seat_id.in_([s.id for s in self.seats])).with_lockmode('update').all()
+
+    def name(self):
+        if not self.seats:
+            return u""
+        return u', '.join([(seat.name) for seat in self.seats if seat.name])
+
+    @property
+    def seat_statuses(self):
         """ 確保済の座席ステータス
         """
-        return DBSession.query(SeatStatus).filter(SeatStatus.seat_id.in_([s.id for s in self.seats])).with_lockmode('update').all()
+        return DBSession.query(SeatStatus).filter(SeatStatus.seat_id.in_([s.id for s in self.seats])).all()
 
     def release(self):
         # 座席開放

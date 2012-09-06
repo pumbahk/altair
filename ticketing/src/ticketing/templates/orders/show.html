@@ -1,6 +1,17 @@
 <%inherit file="/layout_2cols.html" />
 <%namespace file="/common/helpers.html" name="h" />
 
+<%block name="javascript">
+<script type="text/javascript" src="/static/js/fashion.js"></script>
+<![if !(lt IE 9)]>
+<script type="text/javascript" src="/static/js/fashion.svg.js"></script>
+<![endif]>
+<!--[if (lt IE 9)]> 
+<script type="text/javascript" src="/static/js/fashion.vml.js"></script>
+<![endif]-->
+<script type="text/javascript" src="/static/js/ticketing.ticket-viewer.js"></script>
+</%block>
+
 <div class="breadcrumbs">
 ${h.breadcrumbs(
   names=[u'トップ', u'購入情報', order.order_no],
@@ -262,7 +273,12 @@ ${h.breadcrumbs(
                 if seat_name:
                   seat_name = u'(%s)' % seat_name
             %>
-            <td class="span4">${ordered_product_item.product_item.stock_type.name} ${attr} ${seat_name}</td>
+            <td class="span4">
+			  <a href="${request.route_path("orders.item.preview", order_id=order.id, item_id=ordered_product_item.id)}"
+				 data-toggle="modal" data-target="#PreviewModal"
+				 class="ajax-modal"
+				 >${ordered_product_item.product_item.stock_type.name} ${attr} ${seat_name}</a>
+			</td>
             <td style="text-align: right;">${h.price_format(ordered_product_item.price)}円</td>
             <td>${len(ordered_product_item.seats)}</td>
             <td></td>
@@ -353,3 +369,18 @@ ${h.breadcrumbs(
     % endif
   % endfor
 % endfor
+
+## for preview modal
+<script>
+  $(function(){
+    // ajax modal
+	$("a.ajax-modal[data-toggle=modal]").click(function(){
+      $($(this).attr("data-target")).load($(this).attr("href"));
+	});
+});
+</script>
+
+<div class="modal hide" id="PreviewModal">
+</div>
+<div class="modal hide" id="PrintQueueModal">
+</div>
