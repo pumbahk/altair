@@ -445,3 +445,14 @@ def PrintQueueDialogFormFactory(order, formdata=None):
     attrs["get_bound_ticket_dict"] = get_bound_ticket_dict
 
     return type("PrintQueueDialogForm", (Form, ), attrs)(formdata=formdata)
+
+class CheckedOrderTicketChoiceForm(Form):
+    ticket_id = SelectField(
+        label=u"チケットの種類", 
+        coerce=int, 
+        choices=[], 
+    )
+
+    def configure(self, tickets):
+        self.ticket_id.choices = [(t.id, t.name) for t in tickets]
+        return self
