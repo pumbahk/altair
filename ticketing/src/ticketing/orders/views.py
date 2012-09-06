@@ -108,7 +108,7 @@ class OrdersAPIView(BaseView):
         ticket_id = self.request.GET["ticket_id"]
         ords = self.request.session["orders"]
         ords = [o.lstrip("o:") for o in ords if o.startswith("o:")]
-        qs = DBSession.query(Order.order_no, Order.total_amount, Order.id)\
+        qs = Order.query\
             .filter(Order.deleted_at==None).filter(Order.id.in_(ords))\
             .filter(OrderedProduct.order_id.in_(ords))\
             .filter(OrderedProductItem.ordered_product_id==OrderedProduct.id)\
@@ -118,7 +118,7 @@ class OrdersAPIView(BaseView):
             .filter(Ticket.id==Ticket_TicketBundle.ticket_id)\
             .filter(Ticket.id==ticket_id).distinct()
 
-        orders_list = [dict(order_no=o.order_no, event_name="", total_amount=int(o.total_amount)) 
+        orders_list = [dict(order_no=o.order_no, event_name=o.performance.event.title, total_amount=int(o.total_amount)) 
                        for o in qs]
         return {"results": orders_list, "status": True}
 
