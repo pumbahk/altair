@@ -363,18 +363,25 @@ class Orders(BaseView):
         self.request.session.flash(u'予約を保存しました')
         return render_to_response('ticketing:templates/refresh.html', {}, request=self.request)
 
-    @view_config(route_name='orders.note', request_method='POST')
+    @view_config(route_name='orders.note', request_method='POST', renderer='json')
     def note(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id)
         if order is None:
-            return HTTPNotFound('order id %d is not found' % order_id)
+            return HTTPBadRequest(body=json.dumps({
+                'message':u'不正なデータです',
+            }))
 
-        order.note = self.request.POST.get('note')
+        f = OrderReserveForm(MultiDict(self.request.json_body))
+        if not f.note.validate(f):
+            logger.debug('validation error (%s)' % f.note.errors)
+            return HTTPBadRequest(body=json.dumps({
+                'message':f.note.errors,
+            }))
+
+        order.note = f.note.data
         order.save()
-
-        self.request.session.flash(u'メモを保存しました')
-        return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
+        return {}
 
     @view_config(route_name="orders.item.preview", request_method="GET", 
                  renderer='ticketing:templates/orders/_item_preview_dialog.html'

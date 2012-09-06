@@ -386,10 +386,11 @@ ${h.breadcrumbs(
 </script>
 
 <div class="row-fluid">
-  <div class="span6 well" style="padding-left: 10px;">
-    <form id="note-form" action="${request.route_path('orders.note', order_id=order.id)}" method="POST" style="margin: 0;">
+  <div id="note-form" class="span6 well" style="padding-left: 10px;">
+    <form style="margin: 0;">
       <textarea id="note" name="note" rows="3" style="width:100%;">${order.note or ''}</textarea>
     </form>
+    <div class="message pull-left"></div>
     <div class="pull-right">
       <%include file="/orders/_action_button.html" args="order=order, sort=['note']" />
     </div>
