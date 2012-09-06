@@ -96,5 +96,5 @@ def main(global_conf, **settings):
 
     config.add_subscriber('.subscribers.add_helpers', 'pyramid.events.BeforeRender')
     config.add_subscriber('.sendmail.on_order_completed', 'ticketing.cart.events.OrderCompleted')
-
+    config.include('ticketing.cart.errors')
     return config.make_wsgi_app()
