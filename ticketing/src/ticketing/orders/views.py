@@ -20,12 +20,12 @@ from wtforms.validators import Optional
 
 from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.operators.models import Operator, OperatorRole, Permission
-from ticketing.core.models import Order, TicketPrintQueueEntry, Event, Performance, Product, PaymentDeliveryMethodPair, ShippingAddress, OrderedProductItem, Ticket
+from ticketing.core.models import Order, TicketPrintQueueEntry, Event, Performance, Product, PaymentDeliveryMethodPair, ShippingAddress, OrderedProductItem, Ticket, TicketBundle, ProductItem, OrderedProduct, Ticket, TicketBundle, Ticket_TicketBundle
 from ticketing.users.models import MailSubscription
 from ticketing.orders.export import OrderCSV
 from ticketing.orders.forms import (OrderForm, OrderSearchForm, PerformanceSearchForm, OrderReserveForm,
                                     SejOrderForm, SejTicketForm, SejRefundEventForm, SejRefundOrderForm, 
-                                    PreviewTicketSelectForm, PrintQueueDialogFormFactory)
+                                    PreviewTicketSelectForm, PrintQueueDialogFormFactory, CheckedOrderTicketChoiceForm)
 from lxml import etree
 from ticketing.tickets.convert import to_opcodes
 from ticketing.views import BaseView
@@ -35,7 +35,6 @@ from ticketing.tickets.utils import build_dicts_from_ordered_product_item
 from ticketing.cart import api
 from ticketing.cart.schemas import ClientForm
 
-import logging
 logger = logging.getLogger(__name__)
 import pystache
 from . import utils
@@ -92,7 +91,7 @@ class OrdersAPIView(BaseView):
     @view_config(renderer="json", route_name="orders.api.printstatus", request_method="GET", match_param="action=load")
     def load_printstatus(self):
         if not "orders" in self.request.session:
-            return {"status": False, "result": [], "count": 0};
+            return {"status": False, "result": [], "count": 0}
         orders = self.request.session["orders"]
         return {"status": True, "result": list(orders), "count": len(orders)}
 
@@ -101,8 +100,67 @@ class OrdersAPIView(BaseView):
         self.request.session["orders"] = set()
         return {"status": True, "count": 0, "result": []}
 
+
+    @view_config(renderer="json", route_name="orders.api.orders", request_method="GET", match_param="action=matched_by_ticket", 
+                 request_param="ticket_id")
+    def checked_matched_orders(self):
+        if not "orders" in self.request.session:
+            return {"status": False, "result": []}
+        ticket_id = self.request.GET["ticket_id"]
+        ords = self.request.session["orders"]
+        ords = [o.lstrip("o:") for o in ords if o.startswith("o:")]
+        qs = Order.query\
+            .filter(Order.deleted_at==None).filter(Order.id.in_(ords))\
+            .filter(OrderedProduct.order_id.in_(ords))\
+            .filter(OrderedProductItem.ordered_product_id==OrderedProduct.id)\
+            .filter(ProductItem.id==OrderedProductItem.product_item_id)\
+            .filter(TicketBundle.id==ProductItem.ticket_bundle_id)\
+            .filter(Ticket_TicketBundle.ticket_bundle_id==TicketBundle.id)\
+            .filter(Ticket.id==Ticket_TicketBundle.ticket_id)\
+            .filter(Ticket.id==ticket_id).distinct()
+
+        orders_list = [dict(order_no=o.order_no, event_name=o.performance.event.title, total_amount=int(o.total_amount)) 
+                       for o in qs]
+        return {"results": orders_list, "status": True}
+
+def session_has_order_p(context, request):
+    return bool(request.session.get("orders"))
+
 @view_defaults(decorator=with_bootstrap)
 class Orders(BaseView):
+    @view_config(route_name="orders.checked.queue.dialog", renderer="ticketing:templates/orders/_checked_queue_dialog.html", 
+                 custom_predicates=(session_has_order_p,))
+    def checked_queue_dialog(self):
+        ords = self.request.session["orders"]
+        ords = [o.lstrip("o:") for o in ords if o.startswith("o:")]
+        # orders = Order.query.filter_by(deleted_at=None).filter(Order.id.in_(ords))
+        tickets = Ticket.query\
+            .filter(Ticket.id==Ticket_TicketBundle.ticket_id)\
+            .filter(Ticket_TicketBundle.ticket_bundle_id==TicketBundle.id)\
+            .filter(TicketBundle.id==ProductItem.ticket_bundle_id)\
+            .filter(ProductItem.id==OrderedProductItem.product_item_id)\
+            .filter(OrderedProductItem.ordered_product_id==OrderedProduct.id)\
+            .filter(OrderedProduct.order_id.in_(ords))\
+            .with_entities(Ticket.id, Ticket.name).distinct(Ticket.id)
+        form = CheckedOrderTicketChoiceForm().configure(tickets)
+        return {"form": form}
+
+    @view_config(route_name="orders.checked.queue.dialog", renderer="string")
+    def checked_queue_dialog_error(self):
+        params = dict(header=u"エラー", body=u"チェックした注文はありません")
+        return u"""
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">×</button>
+    %(header)s
+  </div>
+  <div class="modal-body">
+    %(body)s
+  </div>
+  <div class="modal-footer">
+	<a href="#" class="btn" data-dismiss="modal">キャンセル</a>
+  </div>
+""" % params
+        
     @view_config(route_name="orders.checked.index", renderer='ticketing:templates/orders/index.html')
     def checked_orders_index(self):
         """後でindexと合成。これはチェックされたOrderだけを表示するview
@@ -418,6 +476,49 @@ class Orders(BaseView):
         form = PrintQueueDialogFormFactory(order)
         return {"form": form, "order": order}
 
+    @view_config(route_name="orders.print.queue.manymany", request_method="POST", 
+                 request_param="ticket_id")
+    def order_print_queue_manymany(self):
+        ticket_id = self.request.POST["ticket_id"]
+        ticket = Ticket.query.filter_by(id=ticket_id).first()
+        if ticket is None:
+            raise HTTPFound(location=self.request.route_path('orders.index'))
+
+        if not utils.is_ticket_format_applicable(ticket.ticket_format):
+            logger.warn("*ticket print queue many* not applicable.")
+            self.request.session.flash(u'利用できないタイプの券面が選択されました。中止します。')
+            raise HTTPFound(location=self.request.route_path('orders.index'))
+
+        ords = self.request.session["orders"]
+        ords = [o.lstrip("o:") for o in ords if o.startswith("o:")]
+
+        qs = DBSession.query(Order)\
+            .filter(Order.deleted_at==None).filter(Order.id.in_(ords))\
+            .filter(OrderedProduct.order_id.in_(ords))\
+            .filter(OrderedProductItem.ordered_product_id==OrderedProduct.id)\
+            .filter(ProductItem.id==OrderedProductItem.product_item_id)\
+            .filter(TicketBundle.id==ProductItem.ticket_bundle_id)\
+            .filter(Ticket_TicketBundle.ticket_bundle_id==TicketBundle.id)\
+            .filter(Ticket.id==Ticket_TicketBundle.ticket_id)\
+            .filter(Ticket.id==ticket_id).distinct()
+
+        for order in qs:
+            for ordered_product in order.items:
+                for ordered_product_item in ordered_product.ordered_product_items:
+                    utils.enqueue_item(self.context.user,
+                                       order, ordered_product_item, ticket)
+
+        # def clean_session_callback(request):
+        logger.info("*ticketing print queue many* clean session")
+        session_values = self.request.session["orders"]
+        for order in qs:
+            session_values.remove("o:%s" % order.id)
+        self.request.session["orders"] = session_values
+        # self.request.add_finished_callback(clean_session_callback)
+
+        self.request.session.flash(u'券面を印刷キューに追加しました')
+        return HTTPFound(location=self.request.route_path('orders.index'))
+        
     @view_config(route_name="orders.print.queue.strict", request_method="POST")
     def order_print_queue_strict(self):
         order_id = int(self.request.matchdict.get('order_id', 0))

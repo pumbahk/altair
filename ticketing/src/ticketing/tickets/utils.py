@@ -279,7 +279,7 @@ class DictBuilder(object):
         if ordered_product_item.product_item.stock.stock_type.quantity_only:
             d = {}
             self.build_dict_from_stock(ordered_product_item.product_item.stock, d)
-            self.build_dict_from_stock(ordered_product_item.product_item.performance.venue, d)
+            self.build_dict_from_venue(ordered_product_item.product_item.performance.venue, d)
             d.update(extra)
             retval.append((None, d))
         else:

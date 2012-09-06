@@ -418,7 +418,7 @@ def PrintQueueDialogFormFactory(order, formdata=None):
         choices = [(unicode(t.id), t.name) for t in bundle.tickets]
         # choices = [(unicode(t.id), t.name) for t in bundle.tickets
         #            if not utils.is_ticket_format_applicable(t.ticket_format)]
-        attrs[ticket_field_name] = SelectField(label=ordered_product_item.name, 
+        attrs[ticket_field_name] = SelectField(label=u"チケットの種類(%s)" % ordered_product_item.name, 
                                                choices=choices)
 
     for ordered_product in order.items:
@@ -445,3 +445,14 @@ def PrintQueueDialogFormFactory(order, formdata=None):
     attrs["get_bound_ticket_dict"] = get_bound_ticket_dict
 
     return type("PrintQueueDialogForm", (Form, ), attrs)(formdata=formdata)
+
+class CheckedOrderTicketChoiceForm(Form):
+    ticket_id = SelectField(
+        label=u"チケットの種類", 
+        coerce=int, 
+        choices=[], 
+    )
+
+    def configure(self, tickets):
+        self.ticket_id.choices = [(t.id, t.name) for t in tickets]
+        return self

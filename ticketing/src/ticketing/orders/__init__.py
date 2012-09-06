@@ -3,6 +3,7 @@
 def includeme(config):
     config.add_route('orders.index'                     , '/')
     config.add_route('orders.checked.index'             , '/checked')
+    config.add_route('orders.checked.queue.dialog'      , '/checked/queue/dialog')
     config.add_route('orders.show'                      , '/show/{order_id}')
     config.add_route('orders.edit.shipping_address'     , '/edit/{order_id}/shipping_address/')
     config.add_route('orders.edit.product'              , '/edit/{order_id}/product/')
@@ -14,6 +15,7 @@ def includeme(config):
 
     config.add_route("orders.item.preview"              , "/item/preview/{order_id}/{item_id}")
     config.add_route("orders.item.preview.getdata"      , "/api/item/{item_id}/ticket/{ticket_id}")
+    config.add_route('orders.print.queue.manymany'        , '/print/queue/manymany')
     config.add_route('orders.print.queue'               , '/print/queue/{order_id}')
     config.add_route('orders.print.queue.strict'        , '/print/queue/{order_id}/strict')
     config.add_route('orders.print.queue.dialog'        , '/api/print/queue/{order_id}')
@@ -35,6 +37,7 @@ def includeme(config):
 
     config.add_route("orders.api.performances"          , "/api/performances")
     config.add_route("orders.api.printstatus"           , "/api/printstatus/{action}")
+    config.add_route("orders.api.orders"           , "/api/orders/{action}")
     config.scan(".")
 
     # 団体予約、インナー予約でcartパッケージを使う為の設定
