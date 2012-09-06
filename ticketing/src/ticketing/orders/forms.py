@@ -418,7 +418,7 @@ def PrintQueueDialogFormFactory(order, formdata=None):
         choices = [(unicode(t.id), t.name) for t in bundle.tickets]
         # choices = [(unicode(t.id), t.name) for t in bundle.tickets
         #            if not utils.is_ticket_format_applicable(t.ticket_format)]
-        attrs[ticket_field_name] = SelectField(label=ordered_product_item.name, 
+        attrs[ticket_field_name] = SelectField(label=u"チケットの種類(%s)" % ordered_product_item.name, 
                                                choices=choices)
 
     for ordered_product in order.items:
