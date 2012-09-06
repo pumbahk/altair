@@ -54,7 +54,13 @@
             <td></td>
             <td>${ordered_product_item.product_item.stock_type.name}</td>
             <td><input name="product_item_price-${ordered_product_item.id}" type="text" value="${int(ordered_product_item.price)}"></td>
-            <td>${len(ordered_product_item.seats)}</td>
+            <td>
+              % if ordered_product.product.seat_stock_type.quantity_only:
+              ${ordered_product.quantity}
+              % else:
+              ${len(ordered_product_item.seats)}
+              % endif
+            </td>
           </tr>
             % endfor
           % else:

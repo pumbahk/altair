@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from wtforms import Form
+from wtforms import Form, ValidationError
 from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, TextAreaField,
-                     BooleanField, RadioField, FieldList, FormField, DecimalField)
+                     BooleanField, RadioField, FieldList, FormField, DecimalField, IntegerField)
 from wtforms.validators import Optional, AnyOf, Length
 from collections import OrderedDict
 from ticketing.formhelpers import DateTimeField, Translations, Required
-from ticketing.core.models import PaymentMethodPlugin, DeliveryMethodPlugin, PaymentDeliveryMethodPair, SalesSegment, Performance
+from ticketing.core.models import PaymentMethodPlugin, DeliveryMethodPlugin, PaymentDeliveryMethodPair, SalesSegment, Performance, Product
 
 class OrderForm(Form):
 
@@ -164,6 +164,10 @@ class OrderReserveForm(Form):
             Length(max=2000, message=u'2000文字以内で入力してください'),
         ],
     )
+    quantity = IntegerField(
+        label=u'個数',
+        validators=[Optional()],
+    )
     product_id = SelectField(
         label=u'商品',
         validators=[Required(u'選択してください')],
@@ -176,6 +180,11 @@ class OrderReserveForm(Form):
         choices=[],
         coerce=int
     )
+
+    def validate_product_id(form, field):
+        product = Product.get(field.data)
+        if product and product.seat_stock_type.quantity_only and not form.quantity.data:
+            raise ValidationError(u'数受けの場合は個数を入力してください')
 
 class SejTicketForm(Form):
     ticket_type = SelectField(

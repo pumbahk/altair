@@ -499,6 +499,19 @@ callbacks.select = function (viewer, selection) {
   </div>
 </div>
 
+<script type="text/javascript">
+  var quantity_only_product_ids = ${[int(p.id) for p in performance.event.products if p.seat_stock_type.quantity_only]};
+  $(function() {
+    $('#modal-reserve #product_id').change(function() {
+      if ($.inArray(parseInt($(this).val()), quantity_only_product_ids) > -1) {
+        $('#modal-reserve #quantity_only').css('display', 'block');
+      } else {
+        $('#modal-reserve #quantity_only').css('display', 'none');
+      }
+    }).change();
+  });
+</script>
+
 <div id="modal-reserve" class="modal hide fade">
   <div class="modal-header">
     <a href="javascript:void(0);" class="close btn-close">&times;</a>
@@ -511,9 +524,12 @@ callbacks.select = function (viewer, selection) {
         ${h.form_item(form_reserve.performance_id)}
         ${h.form_item(form_reserve.note, option={'rows':5, 'class':'span10'})}
         ${h.form_item(form_reserve.product_id)}
+        <div id="quantity_only">
+        ${h.form_item(form_reserve.quantity)}
+        </div>
         ${h.form_item(form_reserve.payment_delivery_method_pair_id)}
       </fieldset>
-      <p>※ 決済・配送方法は「販売区分」が「関係者」で登録されている方法のみ選択可能</p>
+      <p>※ 決済・配送方法は「販売区分」が「関係者」で登録されている方法のみ選択可能です</p>
     </form>
   </div>
 

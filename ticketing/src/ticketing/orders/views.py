@@ -309,23 +309,26 @@ class Orders(BaseView):
                 'message':u'パフォーマンスが存在しません',
             }))
 
-        seats = post_data.get('seats')
-        if not seats:
-            return HTTPBadRequest(body=json.dumps({
-                'message':u'座席が選択されていません',
-            }))
-
         order = None
         try:
             # validation
             f = OrderReserveForm(performance_id=performance_id)
+            print post_data
             f.process(post_data)
             if not f.validate():
                 raise ValidationError(reduce(lambda a,b: a+b, f.errors.values(), []))
 
-            # create cart
             product = DBSession.query(Product).filter_by(id=post_data.get('product_id')).one()
-            order_items = [(product, len(seats))]
+            seats = post_data.get('seats')
+            if product.seat_stock_type.quantity_only:
+                quantity = int(post_data.get('quantity') or 0)
+            else:
+                quantity = len(seats)
+                if quantity == 0:
+                    raise ValidationError(u'座席が選択されていません')
+
+            # create cart
+            order_items = [(product, quantity)]
             cart = api.order_products(self.request, performance_id, order_items, selected_seats=seats)
             pdmp = DBSession.query(PaymentDeliveryMethodPair).filter_by(id=post_data.get('payment_delivery_method_pair_id')).one()
             cart.payment_delivery_pair = pdmp
