@@ -129,7 +129,10 @@ class OrderCSV(object):
                     if column == 'price':
                         product_item_list.append((column_name, format_number(ordered_product_item.price)))
                     if column == 'quantity':
-                        product_item_list.append((column_name, len(ordered_product_item.seats)))
+                        quantity = ordered_product.quantity
+                        if ordered_product_item.seats:
+                            quantity = len(ordered_product_item.seats)
+                        product_item_list.append((column_name, quantity))
                     if column == 'seat_name':
                         seat_name = ''
                         if ordered_product_item.seats:

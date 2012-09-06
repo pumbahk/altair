@@ -266,11 +266,14 @@ ${h.breadcrumbs(
             <td class="span2"></td>
             <%
               attr = ordered_product_item.attributes.get('t_shirts_size') or ''
-              seat_name = ''
               if ordered_product_item.seats:
+                quantity = len(ordered_product_item.seats)
                 seat_name = ', '.join([(seat.name) for seat in ordered_product_item.seats if seat.name])
                 if seat_name:
                   seat_name = u'(%s)' % seat_name
+              else:
+                quantity = ordered_product.quantity
+                seat_name = ''
             %>
             <td class="span4">
 			  <a href="${request.route_path("orders.item.preview", order_id=order.id, item_id=ordered_product_item.id)}"
@@ -279,7 +282,7 @@ ${h.breadcrumbs(
 				 >${ordered_product_item.product_item.stock_type.name} ${attr} ${seat_name}</a>
 			</td>
             <td style="text-align: right;">${h.price_format(ordered_product_item.price)}円</td>
-            <td>${len(ordered_product_item.seats)}</td>
+            <td>${quantity}</td>
             <td></td>
           </tr>
       % endfor
