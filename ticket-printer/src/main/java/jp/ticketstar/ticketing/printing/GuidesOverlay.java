@@ -36,7 +36,11 @@ public class GuidesOverlay implements Overlay {
 				}
 			} else if (evt.getPropertyName().equals("pageSetModel")) {
 				final PageSetModel pageSetModel = (PageSetModel)evt.getNewValue();
-				outer.get().setDocumentSize(pageSetModel.getBridgeContext().getDocumentSize());
+				if (pageSetModel != null) {
+					outer.get().setDocumentSize(pageSetModel.getBridgeContext().getDocumentSize());
+				} else {
+					outer.get().setDocumentSize(null);
+				}
 			}
 		}
 	}
@@ -60,7 +64,7 @@ public class GuidesOverlay implements Overlay {
 
 	public void paint(Graphics _g) {
 		if (size == null)
-			return; // should not happen...
+			return;
 		Graphics2D g = (Graphics2D)_g;
 		g.setColor(Color.BLACK);
 		g.setStroke(new BasicStroke(

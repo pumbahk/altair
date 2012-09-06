@@ -121,5 +121,7 @@ class Stocker(object):
             SalesSegment.start_at<=now
         ).filter(
             SalesSegment.end_at>=now
+        ).filter(
+            SalesSegment.public==True
         ).distinct('*').one()
 

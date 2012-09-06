@@ -50,6 +50,10 @@
     <th>${form_ss.seat_choice.label.text}</th>
     <td id="seat_choice" value="${sales_segment.seat_choice}">${u'○' if sales_segment.seat_choice else u'×'}</td>
   </tr>
+  <tr>
+    <th>${form_ss.public.label.text}</th>
+    <td id="public" value="${sales_segment.public}">${u'○' if sales_segment.public else u'×'}</td>
+  </tr>
 </table>
 <%include file="/sales_segments/_action_button.html" args="order=['edit', 'delete']" />
 <div id="sales_segments-form">
