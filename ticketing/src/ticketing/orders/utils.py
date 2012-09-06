@@ -1,3 +1,4 @@
+
 # -*- coding:utf-8 -*-
 from ticketing.cart.plugins.sej import DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID_SEJ
 import logging
@@ -15,10 +16,10 @@ def is_ticket_format_applicable(ticket_format):
             break
     return applicable
 
-def item_ticket_pairs(order, ticket_dict):
+def item_ticket_pairs(order, ticket_dict=None, ticket=None):
     for ordered_product in order.items:
         for ordered_product_item in ordered_product.ordered_product_items:
-            ticket = ticket_dict.get(int(ordered_product_item.id))
+            ticket = ticket or ticket_dict.get(int(ordered_product_item.id))
             if ticket is None:
                 logger.warn("*ticket print queue* ticket is not found. order.id=%s, item.id=%s" % \
                                 (order.id, ordered_product_item.id))

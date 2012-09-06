@@ -5,7 +5,7 @@
     <h3>券面まとめて印刷キューに追加</h3>
   </div>
 
-  <form>
+  <form action="${request.route_url("orders.print.queue.manymany")}" method="POST">
   <div class="modal-body">
     ${form_item(form.ticket_id, option=dict(id="ticket_id"))}
 
