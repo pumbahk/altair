@@ -1,0 +1,214 @@
+<%inherit file="./base_nh.html"/>
+
+<form id="form1" name="form1" method="post" action="">
+  <div class="settlementBox">
+    <div class="settlementBoxInner">
+      <h2><img src="../img/settlement/title_methods.gif" alt="お支払い方法の指定" width="167" height="30" /></h2>
+      <div class="settlementPayBox">
+        <div class="settlementPayBoxInner">
+          <table>
+            <tr>
+              <td class="settlementPayRadio"><input type="radio" name="radio" id="radio" value="radio" /></td>
+              <td><dl>
+                  <dt>クレジットカードでお支払い</dt>
+                  <dd>
+                    <div class="settlementPayInput">
+                      <div class="settlementPayInputInner">
+                        <dl>
+                          <dt>カード番号</dt>
+                          <dd>
+                            <input name="textfield" type="text" id="textfield" size="20" />
+                            -
+                            <input name="textfield2" type="text" id="textfield2" size="20" />
+                            -
+                            <input name="textfield3" type="text" id="textfield3" size="20" />
+                            -
+                            <input name="textfield4" type="text" id="textfield4" size="20" />
+                          </dd>
+                          <dt>有効期限</dt>
+                          <dd>
+                            <select name="select" id="select">
+                              <option>1</option>
+                              <option>2</option>
+                              <option>3</option>
+                              <option>4</option>
+                              <option>5</option>
+                              <option>6</option>
+                              <option>7</option>
+                              <option>8</option>
+                              <option>9</option>
+                              <option>10</option>
+                              <option>11</option>
+                              <option>12</option>
+                            </select>
+                            月　
+                            <select name="select2" id="select2">
+                              <option>2012</option>
+                              <option>2013</option>
+                              <option>2014</option>
+                              <option>2015</option>
+                              <option>2016</option>
+                              <option>2017</option>
+                              <option>2018</option>
+                              <option>2019</option>
+                              <option>2020</option>
+                            </select>
+                            年</dd>
+                          <dt>名義人</dt>
+                          <dd>
+                            <input name="textfield5" type="text" id="textfield5" size="50" />
+                          </dd>
+                        </dl>
+                      </div>
+                    </div>
+                    説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明<br />
+                    <img src="../img/settlement/card.gif" alt="カードの種類" width="374" height="35" /></dd>
+              </dl></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div class="settlementPayBox">
+        <div class="settlementPayBoxInner">
+          <table>
+            <tr>
+              <td class="settlementPayRadio"><input type="radio" name="radio" id="radio2" value="radio" /></td>
+              <td><dl>
+                  <dt>楽天安心決済でお支払い</dt>
+                  <dd>説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明</dd>
+              </dl></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="settlementBox">
+    <div class="settlementBoxInner">
+      <h2><img src="../img/settlement/title_pickup.gif" alt="お引き取り方法の指定" width="180" height="30" /></h2>
+      <div class="settlementPayBox">
+        <div class="settlementPayBoxInner">
+          <table>
+            <tr>
+              <td class="settlementPayRadio"><input type="radio" name="radio3" id="radio3" value="radio3" /></td>
+              <td><dl>
+                  <dt>配送</dt>
+                  <dd>
+                    <div class="settlementDeliveryInput">
+                      <div class="settlementDeliveryInputInner">
+                        <table>
+                          <tr class="registered">
+                            <th><label>
+                                <input type="radio" name="radio6" id="radio6" value="radio6" />
+                                登録済みの配送先を選択</label></th>
+                            <td><select name="select3" id="select3">
+                                <option>東京都港区○○</option>
+                            </select></td>
+                          </tr>
+                          <tr>
+                            <th><label>
+                                <input type="radio" name="radio6" id="radio7" value="radio6" />
+                                新しい配送先を入力</label></th>
+                            <td><dl>
+                                <dt>氏名（漢字）</dt>
+                                <dd>
+                                  <input name="textfield6" type="text" id="textfield6" size="50" />
+                                </dd>
+                                <dt>氏名（カナ）</dt>
+                                <dd>
+                                  <input name="textfield7" type="text" id="textfield7" size="50" />
+                                </dd>
+                                <dt>電話番号（自宅）</dt>
+                                <dd>
+                                  <input name="textfield8" type="text" id="textfield8" size="50" />
+                                </dd>
+                                <dt>電話番号（携帯電話）</dt>
+                                <dd>
+                                  <input name="textfield9" type="text" id="textfield9" size="50" />
+                                </dd>
+                                <dt>配送先住所</dt>
+                                <dd class="newAddressEnd">
+                                  <input name="textfield10" type="text" id="textfield10" size="50" />
+                                </dd>
+                            </dl></td>
+                          </tr>
+                        </table>
+                        <!--dl>
+                            <dt>
+                              <label>
+                                <input type="radio" name="radio6" id="radio6" value="radio6" />
+                                登録済みの配送先を選択</label>
+                            </dt>
+                        <dd>
+                          <select name="select3" id="select3">
+                            <option>東京都港区○○</option>
+                          </select>
+                        </dd>
+                        <dt>
+                          <label>
+                            <input type="radio" name="radio6" id="radio7" value="radio6" />
+                            新しい配送先を入力</label>
+                        </dt>
+                        <dd>
+                          <dl>
+                            <dt>氏名（漢字）</dt>
+                            <dd>
+                              <input name="textfield6" type="text" id="textfield6" size="50" />
+                            </dd>
+                            <dt>氏名（カナ）</dt>
+                            <dd>
+                              <input name="textfield7" type="text" id="textfield7" size="50" />
+                            </dd>
+                            <dt>電話番号（自宅）</dt>
+                            <dd>
+                              <input name="textfield8" type="text" id="textfield8" size="50" />
+                            </dd>
+                            <dt>電話番号（携帯電話）</dt>
+                            <dd>
+                              <input name="textfield9" type="text" id="textfield9" size="50" />
+                            </dd>
+                            <dt>配送先住所</dt>
+                            <dd>
+                              <input name="textfield10" type="text" id="textfield10" size="50" />
+                            </dd>
+                          </dl>
+                        </dd>
+                        </dl-->
+                      </div>
+                    </div>
+                    説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明</dd>
+              </dl></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div class="settlementPayBox">
+        <div class="settlementPayBoxInner">
+          <table>
+            <tr>
+              <td class="settlementPayRadio"><input type="radio" name="radio3" id="radio4" value="radio3" /></td>
+              <td><dl>
+                  <dt>QRコード発券</dt>
+                  <dd>説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明</dd>
+              </dl></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div class="settlementPayBox">
+        <div class="settlementPayBoxInner">
+          <table>
+            <tr>
+              <td class="settlementPayRadio"><input type="radio" name="radio3" id="radio5" value="radio3" /></td>
+              <td><dl>
+                  <dt>コンビニエンスストア受取</dt>
+                  <dd><img src="../img/settlement/familymart.gif" alt="あなたと、コンビに。ファミリーマート" width="96" height="40" class="convenience" />説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明説明</dd>
+              </dl></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="align2"><a href="#"><img src="../img/settlement/btn_next.gif" alt="次へ" width="226" height="46" /></a></p>
+</form>
