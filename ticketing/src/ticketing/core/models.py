@@ -1672,6 +1672,12 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     attributes = association_proxy('_attributes', 'value', creator=lambda k, v: OrderedProductAttribute(name=k, value=v))
 
     @property
+    def name(self):
+        if not self.seats:
+            return u""
+        return u', '.join([(seat.name) for seat in self.seats if seat.name])
+
+    @property
     def seat_statuses(self):
         """ 確保済の座席ステータス
         """

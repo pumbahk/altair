@@ -20,13 +20,16 @@ from ticketing.operators.models import Operator, OperatorRole, Permission
 from ticketing.core.models import Order, TicketPrintQueueEntry, Event, Performance, OrderedProductItem, Ticket
 from ticketing.orders.export import OrderCSV
 from ticketing.orders.forms import (OrderForm, OrderSearchForm, PerformanceSearchForm, SejOrderForm, SejTicketForm, SejTicketForm,
-                                    SejRefundEventForm,SejRefundOrderForm, PreviewTicketSelectForm)
+                                    SejRefundEventForm,SejRefundOrderForm, PreviewTicketSelectForm, PrintQueueDialogFormFactory)
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.orders.events import notify_order_canceled
 from ticketing.tickets.utils import build_dicts_from_ordered_product_item
 
+import logging
+logger = logging.getLogger(__name__)
 import pystache
+from . import utils
 
 @view_defaults(xhr=True) ## todo:適切な位置に移動
 class OrdersAPIView(BaseView):
@@ -86,15 +89,6 @@ class OrdersAPIView(BaseView):
     def reset_printstatus(self):
         self.request.session["orders"] = set()
         return {"status": True, "count": 0, "result": []}
-
-    @view_config(renderer="json", route_name="orders.api.printqueue", request_method="GET", match_param="acton=dialog")
-    def print_queue_dialog(self):
-        order = self.request.GET["order_id"]
-        
-        return {"status": True, 
-                "title": u"title", 
-                "choices": []}
-
 
 @view_defaults(decorator=with_bootstrap)
 class Orders(BaseView):
@@ -220,9 +214,9 @@ class Orders(BaseView):
         return response
 
     @view_config(route_name="orders.item.preview", request_method="GET", 
-                 renderer='ticketing:templates/orders/_item_preview.html'
+                 renderer='ticketing:templates/orders/_item_preview_dialog.html'
                  )
-    def order_item_preview(self):
+    def order_item_preview_dialog(self):
         item = OrderedProductItem.query.filter_by(id=self.request.matchdict["item_id"]).first()
         if item is None:
             return {} ### xxx:
@@ -246,12 +240,42 @@ class Orders(BaseView):
             results.append(r)
         return {"results": results, "names": names}
 
+    @view_config(route_name="orders.print.queue.dialog", request_method="GET", 
+                 renderer="ticketing:templates/orders/_print_queue_dialog.html")
+    def print_queue_dialog(self):
+        ## ここで、各order_product itemについてticket templateを選択してもらえるような画面にする。
+        order = Order.query.get(self.request.matchdict["order_id"])
+        form = PrintQueueDialogFormFactory(order)
+        return {"form": form, "order": order}
+
+    @view_config(route_name="orders.print.queue.strict", request_method="POST")
+    def order_print_queue_strict(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.query.get(order_id)
+
+        form = PrintQueueDialogFormFactory(order, formdata=self.request.POST)
+        if not form.validate():
+            self.request.session.flash(u'失敗: %s' % form.errors)
+            return HTTPFound(location=self.request.route_path('orders.show', order_id=order_id))
+        
+        ticket_dict = form.get_bound_ticket_dict() ## key is int
+        for ordered_product_item, ticket in utils.item_ticket_pairs(order, ticket_dict):
+            if not utils.is_ticket_format_applicable(ticket.ticket_format):
+                logger.warn("*ticket print queue* not applicable.  order.id=%s, item.id=%s" % \
+                                (order.id, ordered_product_item.id))
+                self.request.session.flash(u'利用できないタイプの券面が選択されました。中止します。')
+                raise HTTPFound(location=self.request.route_path('orders.show', order_id=order_id))
+            utils.enqueue_item(self.context.user,
+                               order, ordered_product_item, ticket)
+        self.request.session.flash(u'券面を印刷キューに追加しました')
+        return HTTPFound(location=self.request.route_path('orders.show', order_id=order_id))
+
+
     @view_config(route_name='orders.print.queue')
     def order_print_queue(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.query.get(order_id)
 
-        tickets = []
         for ordered_product in order.items:
             for ordered_product_item in ordered_product.ordered_product_items:
                 bundle = ordered_product_item.product_item.ticket_bundle
@@ -279,7 +303,7 @@ class Orders(BaseView):
                             ordered_product_item=ordered_product_item,
                             seat=seat
                             )
-
+        self.request.session.flash(u'券面を印刷キューに追加しました')
         return HTTPFound(location=self.request.route_path('orders.show', order_id=order_id))
 
 from ticketing.sej.models import SejOrder, SejTicket, SejTicketTemplateFile, SejRefundEvent, SejRefundTicket

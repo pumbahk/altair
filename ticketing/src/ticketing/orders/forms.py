@@ -4,7 +4,7 @@ from wtforms import Form
 from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, TextAreaField,
                      BooleanField, RadioField, FieldList, FormField)
 from wtforms.validators import Optional, AnyOf
-
+from collections import OrderedDict
 from ticketing.formhelpers import DateTimeField, Translations, Required
 from ticketing.core.models import PaymentMethodPlugin, DeliveryMethodPlugin
 
@@ -335,3 +335,46 @@ class PreviewTicketSelectForm(Form):
     def configure(self, tickets):
         self.ticket_choices.choices = [(t.id,  t.name) for t in tickets]
         return self
+
+def PrintQueueDialogFormFactory(order, formdata=None): #filter?
+    """
+    item0 -- HiddenField
+    ticket_choices0 --- SelectField
+    """
+    attrs = OrderedDict()
+    def add_field_pair(ordered_product_item):
+        item_field_name = "item%s" % ordered_product_item.id
+        ticket_field_name = "ticket%s" % ordered_product_item.id
+
+        attrs[item_field_name] = HiddenField(default=ordered_product_item.id, 
+                                             validators=[Required()])
+
+        bundle = ordered_product_item.product_item.ticket_bundle
+        choices = [(unicode(t.id), t.name) for t in bundle.tickets]
+        attrs[ticket_field_name] = SelectField(label=ordered_product_item.name, 
+                                               choices=choices)
+
+    for ordered_product in order.items:
+        for ordered_product_item in ordered_product.ordered_product_items:
+            add_field_pair(ordered_product_item)
+
+    def _get_bound_ticket_dict(self):
+        ticket_dict = {}
+        data = self.data
+        for k in data.iterkeys():
+            if k.startswith("item"):
+                item_pk = k.lstrip("item")
+                ticket_dict[int(item_pk)] = int(data["ticket"+item_pk])
+        return ticket_dict
+    attrs["_get_bound_ticket_dict"] = _get_bound_ticket_dict
+
+    def get_bound_ticket_dict(self):
+        from ticketing.core.models import Ticket
+        D = self._get_bound_ticket_dict()
+        tickets = {int(t.id):t for t in  Ticket.query.filter(Ticket.id.in_(D.values()))}
+        for item_id, ticket_id in D.iteritems():
+            D[item_id] = tickets[ticket_id]
+        return D
+    attrs["get_bound_ticket_dict"] = get_bound_ticket_dict
+
+    return type("PrintQueueDialogForm", (Form, ), attrs)(formdata=formdata)

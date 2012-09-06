@@ -250,7 +250,7 @@ ${h.breadcrumbs(
             %>
             <td class="span4">
 			  <a href="${request.route_path("orders.item.preview", order_id=order.id, item_id=ordered_product_item.id)}"
-				 data-toggle="modal" data-target="#AjaxModal"
+				 data-toggle="modal" data-target="#PreviewModal"
 				 class="ajax-modal"
 				 >${ordered_product_item.product_item.stock_type.name} ${attr} ${seat_name}</a>
 			</td>
@@ -340,5 +340,14 @@ ${h.breadcrumbs(
 });
 </script>
 
-<div class="modal hide" id="AjaxModal">
+<div class="test">
+  <a href="${request.route_path("orders.print.queue.dialog", order_id=order.id)}"
+	 data-toggle="modal" data-target="#PrintQueueModal"
+	 class="ajax-modal btn"
+	 >印刷キューに追加する</a>
+</div>
+
+<div class="modal hide" id="PreviewModal">
+</div>
+<div class="modal hide" id="PrintQueueModal">
 </div>
