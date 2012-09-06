@@ -45,8 +45,8 @@ def main(global_conf, **settings):
 
     config.add_view('.views.contact_view', route_name="contact", renderer="static/contact.html")
     config.add_view('.views.contact_view', route_name="contact", renderer="static_mobile/contact.html", request_type='ticketing.cart.interfaces.IMobileRequest')
-    config.add_view('.views.notfound_view', context=HTTPNotFound, renderer="errors/not_fount.html", )
-    config.add_view('.views.notfound_view', context=HTTPNotFound,  renderer="errors_mobile/not_fount.html", request_type='ticketing.cart.interfaces.IMobileRequest')
+    config.add_view('.views.notfound_view', context=HTTPNotFound, renderer="errors/not_found.html", )
+    config.add_view('.views.notfound_view', context=HTTPNotFound,  renderer="errors_mobile/not_found.html", request_type='ticketing.cart.interfaces.IMobileRequest')
     config.add_view('.views.exception_view',  context=StandardError, renderer="errors/error.html")
     config.add_view('.views.exception_view', context=StandardError,  renderer="errors_mobile/error.html", request_type='ticketing.cart.interfaces.IMobileRequest')
 

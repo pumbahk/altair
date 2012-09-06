@@ -74,11 +74,15 @@ def main(global_conf, **settings):
 
     config.add_view('.views.contact_view', route_name="contact", renderer="static/contact.html")
     config.add_view('.views.contact_view', route_name="contact", renderer="static_mobile/contact.html", request_type='ticketing.cart.interfaces.IMobileRequest')
-    config.add_view('.views.notfound_view', context=HTTPNotFound, renderer="errors/not_fount.html", )
-    config.add_view('.views.notfound_view', context=HTTPNotFound,  renderer="errors_mobile/not_fount.html", request_type='ticketing.cart.interfaces.IMobileRequest')
+    config.add_view('.views.notfound_view', context=HTTPNotFound, renderer="errors/not_found.html", )
+    config.add_view('.views.notfound_view', context=HTTPNotFound,  renderer="errors_mobile/not_found.html", request_type='ticketing.cart.interfaces.IMobileRequest')
+    config.add_view('.views.forbidden_view', context="pyramid.httpexceptions.HTTPForbidden", renderer="errors/not_found.html", )
+    config.add_view('.views.forbidden_view', context="pyramid.httpexceptions.HTTPForbidden", renderer="errors_mobile/not_found.html", request_type='ticketing.cart.interfaces.IMobileRequest')
     config.add_view('.views.exception_view',  context=StandardError, renderer="errors/error.html")
     config.add_view('.views.exception_view', context=StandardError,  renderer="errors_mobile/error.html", request_type='ticketing.cart.interfaces.IMobileRequest')
-
+    ## xxxx
+    config.add_view('.views.exception_view', context=Exception, renderer="errors/not_found.html", )
+    config.add_view('.views.exception_view', context=Exception, renderer="errors_mobile/not_found.html", request_type='ticketing.cart.interfaces.IMobileRequest')
     # @view_config()
 
     PAYMENT_PLUGIN_ID_SEJ = 3
@@ -96,5 +100,4 @@ def main(global_conf, **settings):
 
     config.add_subscriber('.subscribers.add_helpers', 'pyramid.events.BeforeRender')
     config.add_subscriber('.sendmail.on_order_completed', 'ticketing.cart.events.OrderCompleted')
-    config.include('ticketing.cart.errors')
     return config.make_wsgi_app()
