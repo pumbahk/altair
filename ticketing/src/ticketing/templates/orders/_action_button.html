@@ -64,7 +64,7 @@ actions = {
     icon='icon-pencil',
   ),
 }
-sort = iter(['delivered','cancel'])
+sort = iter(sort or ['delivered','cancel'])
 %>
 ${h.action_button(actions, sort, vertical=False)}
 
