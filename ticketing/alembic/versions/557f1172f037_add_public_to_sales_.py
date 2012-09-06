@@ -1,14 +1,14 @@
 """add_public_to_sales_segment
 
 Revision ID: 557f1172f037
-Revises: 2118ba6ee220
+Revises: 50843a2f178a
 Create Date: 2012-09-06 20:05:44.243508
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '557f1172f037'
-down_revision = '2118ba6ee220'
+down_revision = '50843a2f178a'
 
 from alembic import op
 import sqlalchemy as sa
