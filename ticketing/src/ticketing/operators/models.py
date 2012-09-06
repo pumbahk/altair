@@ -120,3 +120,8 @@ class Operator(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     operator_role_id=role_id
                 )
                 DBSession.add(operator_role_assoc)
+
+    def print_queue_entry_count(self):
+        return DBSession.query(TicketPrintQueueEntry).filter_by(operator=self).count()
+
+from ..core.models import TicketPrintQueueEntry

@@ -1,0 +1,84 @@
+<%inherit file="../../layout_2cols.html" />
+<%namespace file="/common/helpers.html" import="breadcrumbs,pager,flash_messages"/>
+<div class="breadcrumbs">
+${breadcrumbs(
+  names=[u'トップ', u'印刷キュー'],
+  urls=[request.route_path('index')]
+)}
+</div>
+
+<div class="content">
+  ${flash_messages(request)}
+</div>
+
+<script type="text/javascript">
+  $(function(){
+    $("#queue_entry_menu .id-delegate-action").click(function(){
+      var checked = $("input[name='queue_entry_id']:checked");
+      if (!checked) return false;
+      var delegated=$(this).attr("data-delegated");
+      var form = $(delegated).find("form")
+      $(form).attr("action", $(form).attr("data-base-url"))
+      checked.each(function (_, n) {
+        $(form).append($('<input type="hidden" name="id" />').attr('value', n.value));
+      });
+      $(delegated).modal();
+      return true;
+    });
+  });
+</script>
+
+<h2>印刷キュー</h2>
+<div id="queue_entry_menu" class="btn-group">
+  <button class="btn"><i class="icon-print"></i> 印刷ツールを開く</button>
+  <button class="btn id-delegate-action"
+     data-delegated="#deleteModalQueueEntry"
+     data-base-url="${request.route_path("tickets.queue.delete")}"
+     href="#deleteModalQueueEntry">
+    <i class="icon-minus"></i> 削除
+  </button>
+</div>
+
+<% sortable = lambda *args, **kwargs: h.sortable('queue_entry', *args, **kwargs) %>
+<table class="table fullwidth checkboxed_table">
+  <thead>
+    <tr>
+      <th class="minwidth"></th>
+      <th><a href="${sortable(request, "summary")}" class="sortable">内容</a></th>
+      <th><a href="${sortable(request, "ticket", direction="desc")}" class="sortable">テンプレート</a></th>
+      <th><a href="${sortable(request, "Order.order_no", direction="desc")}" class="sortable">注文番号</a></th>
+      <th><a href="${sortable(request, "OrderedProductItem.id", direction="desc")}" class="sortable">券種</a></th>
+      <th><a href="${sortable(request, "Seat.id", direction="desc")}" class="sortable">座席</a></th>
+      <th><a href="${sortable(request, "created_at", direction="desc")}" class="sortable">作成日時</a></th>
+    </tr>
+  </thead>
+  <tbody>
+  % for entry in queue_entries:
+    <tr>
+      <td><input type="checkbox" name="queue_entry_id" value="${entry.id}" /></td>
+      <td>${entry.summary}</td>
+      <td><a href="${request.route_url('events.tickets.boundtickets.show', event_id=entry.ticket.event_id, id=entry.ticket.id)}">${entry.ticket.name}</a></td>
+      <td><a href="${request.route_url('orders.show', order_id=entry.ordered_product_item.ordered_product.order.id)}">${entry.ordered_product_item.ordered_product.order.order_no}</a></td>
+      <td>${entry.ordered_product_item.product_item.name}</td>
+      <td>${entry.seat.name if entry.seat else u'-'}</td>
+      <td>${entry.created_at}</td>
+    </tr>
+  % endfor
+  </tbody>
+</table>
+
+<div class="modal hide" id="deleteModalQueueEntry">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">×</button>
+    <h3>確認</h3>
+  </div>
+  <div class="modal-body">
+    このエントリーを削除します。よろしいですか？
+  </div>
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">キャンセル</a>
+    <form action="#" data-base-url="${request.route_path("tickets.queue.delete")}" method="POST">
+      <button type="submit" class="btn">削除する</button>
+    </form>
+  </div>
+</div>

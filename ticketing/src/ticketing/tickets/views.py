@@ -15,6 +15,7 @@ from ..models import DBSession
 from ..core.models import DeliveryMethod
 from ..core.models import TicketFormat, PageFormat, Ticket
 from ..core.models import TicketPrintQueueEntry
+from ..core.models import OrderedProductItem, OrderedProduct, Order
 from . import forms
 from . import helpers
 from .utils import SvgPageSetBuilder
@@ -386,8 +387,31 @@ class TicketTemplates(BaseView):
         return data
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
-class TicketPrinter(BaseView):
+class TicketPrintQueueEntries(BaseView):
+    @view_config(route_name='tickets.queue.index', renderer='ticketing:templates/tickets/queue/index.html')
+    def index(self):
+        queue_entries_sort_by, queue_entries_direction = helpers.sortparams('queue_entry', self.request, ('TicketPrintQueueEntry.created_at', 'desc'))
+        queue_entries_qs = DBSession.query(TicketPrintQueueEntry) \
+            .filter_by(operator=self.context.user) \
+            .join(OrderedProductItem.ordered_product) \
+            .join(OrderedProduct.order)
+        queue_entries_qs = queue_entries_qs.order_by(helpers.get_direction(queue_entries_direction)(queue_entries_sort_by))
+        return dict(h=helpers, queue_entries=queue_entries_qs)
 
+    @view_config(route_name='tickets.queue.delete', request_method="POST")
+    def delete(self):
+        ids = self.request.params.get('id', [])
+        if isinstance(ids, basestring):
+            ids = [ids] 
+        DBSession.query(TicketPrintQueueEntry) \
+            .filter_by(operator=self.context.user) \
+            .filter(TicketPrintQueueEntry.id.in_(ids)) \
+            .delete(synchronize_session=False)
+        self.request.session.flash(u'エントリを削除しました')
+        return HTTPFound(location=self.request.route_path("tickets.queue.index"))
+
+@view_defaults(decorator=with_bootstrap, permission="event_editor")
+class TicketPrinter(BaseView):
     @view_config(route_name='tickets.printer', renderer='ticketing:templates/tickets/printer.html')
     def printer(self):
         return dict(endpoints=dict(
