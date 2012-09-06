@@ -6,6 +6,7 @@ from pyramid.httpexceptions import HTTPFound
 from ..exceptions import *
 from ..reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from ..stocker import NotEnoughStockException
+from .. import api
 from ticketing.cart.selectable_renderer import selectable_renderer
 import logging
 
