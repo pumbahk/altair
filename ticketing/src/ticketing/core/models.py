@@ -786,6 +786,17 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     # membergroup_id = Column(Identifier, ForeignKey('MemberGroup.id'))
     # membergroup = relationship('MemberGroup', backref='salessegments')
 
+    def delete(self):
+        # 商品が割り当てられている場合は削除できない
+        if self.product:
+            raise Exception(u'商品の割当がある為、削除できません')
+
+        # delete PaymentDeliveryMethodPair
+        for pdmp in self.payment_delivery_method_pairs:
+            pdmp.delete()
+
+        super(SalesSegment, self).delete()
+
     def get_cms_data(self):
         start_at = isodate.datetime_isoformat(self.start_at) if self.start_at else ''
         end_at = isodate.datetime_isoformat(self.end_at) if self.end_at else ''
@@ -949,6 +960,13 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         else:
             return None
 
+    def delete(self):
+        # 既に予約されている場合は削除できない
+        if self.ordered_product_items:
+            raise Exception(u'予約がある為、削除できません')
+
+        super(ProductItem, self).delete()
+
     @staticmethod
     def create_default(product):
         '''
@@ -1011,11 +1029,6 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         Product.create_default(stock_type=self)
 
     def delete(self):
-        # 在庫が割り当てられている場合は削除できない
-        for stock in self.stocks:
-            if stock.quantity > 0:
-                raise Exception(u'座席および席数の割当がある為、削除できません')
-
         # delete Stock
         for stock in self.stocks:
             stock.delete()
@@ -1065,7 +1078,6 @@ class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     account_id = Column(Identifier, ForeignKey('Account.id'))
 
     style = Column(MutationDict.as_mutable(JSONEncodedDict(1024)))
-
     stocks = relationship('Stock', backref='stock_holder')
 
     def add(self):
@@ -1075,11 +1087,6 @@ class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         Stock.create_default(self.event, stock_holder_id=self.id)
 
     def delete(self):
-        # 在庫が割り当てられている場合は削除できない
-        for stock in self.stocks:
-            if stock.quantity > 0:
-                raise Exception(u'座席および席数の割当がある為、削除できません')
-
         # delete Stock
         for stock in self.stocks:
             stock.delete()
@@ -1139,7 +1146,7 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def delete(self):
         # 在庫が割り当てられている場合は削除できない
-        if self.quantity > 0:
+        if self.quantity > 0 or self.product_items:
             raise Exception(u'座席および席数の割当がある為、削除できません')
 
         # delete StockStatus
@@ -1281,7 +1288,7 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         #ProductItem.create_default(product=self)
 
     def delete(self):
-        # 在庫が割り当てられている場合、既に購入されている場合は削除できない
+        # 在庫が割り当てられている場合は削除できない
         if self.items:
             raise Exception(u'座席および席数の割当がある為、削除できません')
 
@@ -1689,7 +1696,7 @@ class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     order_id = Column(Identifier, ForeignKey("Order.id"))
     order = relationship('Order', backref='ordered_products')
     product_id = Column(Identifier, ForeignKey("Product.id"))
-    product = relationship('Product')
+    product = relationship('Product', backref='ordered_products')
     price = Column(Numeric(precision=16, scale=2), nullable=False)
     quantity = Column(Integer)
 
@@ -1709,7 +1716,7 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     ordered_product_id = Column(Identifier, ForeignKey("OrderedProduct.id"))
     ordered_product = relationship('OrderedProduct', backref='ordered_product_items')
     product_item_id = Column(Identifier, ForeignKey("ProductItem.id"))
-    product_item = relationship('ProductItem')
+    product_item = relationship('ProductItem', backref='ordered_product_items')
 #    seat_id = Column(Identifier, ForeignKey('Seat.id'))
 #    seat = relationship('Seat')
     seats = relationship("Seat", secondary=orders_seat_table, backref='ordered_product_items')

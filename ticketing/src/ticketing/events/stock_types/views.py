@@ -86,11 +86,12 @@ class StockTypes(BaseView):
         if stock_type is None:
             return HTTPNotFound('stock_type id %d is not found' % id)
 
-        event_id = stock_type.event_id
+        location = route_path('events.show', self.request, event_id=stock_type.event_id)
         try:
             stock_type.delete()
             self.request.session.flash(u'席種を削除しました')
         except Exception, e:
             self.request.session.flash(e.message)
+            raise HTTPFound(location=location)
 
-        return HTTPFound(location=route_path('events.show', self.request, event_id=event_id))
+        return HTTPFound(location=location)
