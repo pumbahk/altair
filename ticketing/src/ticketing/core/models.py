@@ -1793,19 +1793,19 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class Ticket_TicketBundle(Base, BaseModel, LogicallyDeleted):
     __tablename__ = 'Ticket_TicketBundle'
-    ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id'), primary_key=True)
-    ticket_id = Column(Identifier, ForeignKey('Ticket.id'), primary_key=True)
+    ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id', ondelete='CASCADE'), primary_key=True)
+    ticket_id = Column(Identifier, ForeignKey('Ticket.id', ondelete='CASCADE'), primary_key=True)
 
 class TicketFormat_DeliveryMethod(Base, BaseModel, LogicallyDeleted):
     __tablename__ = 'TicketFormat_DeliveryMethod'
-    ticket_format_id = Column(Identifier, ForeignKey('TicketFormat.id'), primary_key=True)
-    delivery_method_id = Column(Identifier, ForeignKey('DeliveryMethod.id'), primary_key=True)
+    ticket_format_id = Column(Identifier, ForeignKey('TicketFormat.id', ondelete='CASCADE'), primary_key=True)
+    delivery_method_id = Column(Identifier, ForeignKey('DeliveryMethod.id', ondelete='CASCADE'), primary_key=True)
 
 class TicketFormat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "TicketFormat"
     id = Column(Identifier, primary_key=True)
     name = Column(Unicode(255), nullable=False)
-    organization_id = Column(Identifier, ForeignKey('Organization.id'), nullable=True)
+    organization_id = Column(Identifier, ForeignKey('Organization.id', ondelete='CASCADE'), nullable=True)
     organization = relationship('Organization', uselist=False, backref='ticket_formats')
     delivery_methods = relationship('DeliveryMethod', secondary=TicketFormat_DeliveryMethod.__table__, backref='ticket_formats')
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
@@ -1819,11 +1819,11 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     FLAG_ALWAYS_REISSUABLE = 1
 
     id = Column(Identifier, primary_key=True)
-    organization_id = Column(Identifier, ForeignKey('Organization.id'), nullable=True)
+    organization_id = Column(Identifier, ForeignKey('Organization.id', ondelete='CASCADE'), nullable=True)
     organization = relationship('Organization', uselist=False, backref=backref('ticket_templates'))
     event_id = Column(Identifier, ForeignKey('Event.id', ondelete='CASCADE'))
     event = relationship('Event', uselist=False, backref='tickets')
-    ticket_format_id = Column(Identifier, ForeignKey('TicketFormat.id'), nullable=False)
+    ticket_format_id = Column(Identifier, ForeignKey('TicketFormat.id', ondelete='CASCADE'), nullable=False)
     ticket_format = relationship('TicketFormat', uselist=False, backref='tickets')
     name = Column(Unicode(255), nullable=False, default=u'')
     flags = Column(Integer, nullable=False, default=0)
