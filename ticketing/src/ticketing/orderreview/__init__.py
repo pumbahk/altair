@@ -18,6 +18,7 @@ def main(global_conf, **settings):
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_renderer('.txt' , 'pyramid.mako_templating.renderer_factory')
     config.add_static_view('static', 'ticketing.bj89ers:static', cache_max_age=3600)
+    config.add_static_view('static_', 'ticketing.cart:static', cache_max_age=3600)
     config.add_static_view('img', 'ticketing.cart:static', cache_max_age=3600)
     config.include('ticketing.checkout')
     config.include('ticketing.multicheckout')
