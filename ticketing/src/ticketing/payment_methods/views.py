@@ -80,7 +80,12 @@ class PaymentMethods(BaseView):
         if payment_method is None:
             return HTTPNotFound('payment_method id %d is not found' % payment_method_id)
 
-        payment_method.delete()
+        location = route_path('payment_methods.index', self.request)
+        try:
+            payment_method.delete()
+            self.request.session.flash(u'決済方法を削除しました')
+        except Exception, e:
+            self.request.session.flash(e.message)
+            raise HTTPFound(location=location)
 
-        self.request.session.flash(u'決済方法を削除しました')
-        return HTTPFound(location=route_path('payment_methods.index', self.request))
+        return HTTPFound(location=location)

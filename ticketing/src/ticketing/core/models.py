@@ -852,9 +852,9 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'))
     sales_segment = relationship('SalesSegment', backref='payment_delivery_method_pairs')
     payment_method_id = Column(Identifier, ForeignKey('PaymentMethod.id'))
-    payment_method = relationship('PaymentMethod')
+    payment_method = relationship('PaymentMethod', backref='payment_delivery_method_pairs')
     delivery_method_id = Column(Identifier, ForeignKey('DeliveryMethod.id'))
-    delivery_method = relationship('DeliveryMethod')
+    delivery_method = relationship('DeliveryMethod', backref='payment_delivery_method_pairs')
 
     @staticmethod
     def create_from_template(template, sales_segment_id):
@@ -889,6 +889,13 @@ class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     payment_plugin_id = Column(Identifier, ForeignKey('PaymentMethodPlugin.id'))
     payment_plugin = relationship('PaymentMethodPlugin', uselist=False)
 
+    def delete(self):
+        # 既に使用されている場合は削除できない
+        if self.payment_delivery_method_pairs:
+            raise Exception(u'関連づけされた決済配送方法がある為、削除できません')
+
+        super(PaymentMethod, self).delete()
+
     @property
     def fee_type_label(self):
         for ft in FeeTypeEnum:
@@ -911,6 +918,13 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization = relationship('Organization', uselist=False , backref='delivery_method_list')
     delivery_plugin_id = Column(Identifier, ForeignKey('DeliveryMethodPlugin.id'))
     delivery_plugin = relationship('DeliveryMethodPlugin', uselist=False)
+
+    def delete(self):
+        # 既に使用されている場合は削除できない
+        if self.payment_delivery_method_pairs:
+            raise Exception(u'関連づけされた決済配送方法がある為、削除できません')
+
+        super(DeliveryMethod, self).delete()
 
     @property
     def fee_type_label(self):

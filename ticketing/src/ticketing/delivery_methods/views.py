@@ -80,7 +80,12 @@ class DeliveryMethods(BaseView):
         if delivery_method is None:
             return HTTPNotFound('delivery_method id %d is not found' % delivery_method_id)
 
-        delivery_method.delete()
+        location = route_path('delivery_methods.index', self.request)
+        try:
+            delivery_method.delete()
+            self.request.session.flash(u'配送方法を削除しました')
+        except Exception, e:
+            self.request.session.flash(e.message)
+            raise HTTPFound(location=location)
 
-        self.request.session.flash(u'配送方法を削除しました')
-        return HTTPFound(location=route_path('delivery_methods.index', self.request))
+        return HTTPFound(location=location)
