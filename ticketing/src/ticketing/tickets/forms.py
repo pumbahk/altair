@@ -283,7 +283,7 @@ class TicketFormatForm(Form):
             validate_rectangle(u'printable_area[%d]' % i, printable_area)
         if print_offset is None:
             raise ValidationError("print_offset is not found")
-        validate_position(print_offset)
+        validate_position(u'print_offset', print_offset)
         validate_perforations(u'perforations', perforations) 
 
     @staticmethod
