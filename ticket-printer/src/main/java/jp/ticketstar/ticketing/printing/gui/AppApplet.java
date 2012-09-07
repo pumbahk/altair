@@ -251,13 +251,13 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 						final Pages pages = (Pages)evt.getSource();
 						for (int i = evt.getIndex0(), j = evt.getIndex1(); i <= j; i++) {
 							for (Component c: panel.getComponents()) {
-								System.out.println(c.getName());
 								if (c.getName().equals(pages.get(i).getName())) {
 									panel.remove(c);
 									break;
 								}
 							}
 						}
+						panel.validate();
 					}
 				});
 			}
