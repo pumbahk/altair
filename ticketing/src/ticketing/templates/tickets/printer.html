@@ -1,9 +1,10 @@
+<%inherit file="../layout.html" />
 <%
 import json
 jar_file = request.static_url('ticketing:static/printing-0.0.0-jar-with-dependencies.jar')
 class_name = 'jp.ticketstar.ticketing.printing.gui.AppApplet'
 width = '100%'
-height = '100%'
+height = '800'
 endpoints_json = json.dumps(endpoints, ensure_ascii=False)
 cookie = request.headers.get('cookie')
 %>
