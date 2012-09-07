@@ -93,9 +93,12 @@ class Products(BaseView):
             return HTTPNotFound('product id %d is not found' % product_id)
 
         event_id = product.event_id
-        product.delete()
+        try:
+            product.delete()
+            self.request.session.flash(u'商品を削除しました')
+        except Exception, e:
+            self.request.session.flash(e.message)
 
-        self.request.session.flash(u'商品を削除しました')
         return HTTPFound(location=route_path('products.index', self.request, event_id=event_id))
 
 

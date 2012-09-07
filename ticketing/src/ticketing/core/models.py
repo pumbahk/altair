@@ -1010,6 +1010,23 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         # create default Product
         Product.create_default(stock_type=self)
 
+    def delete(self):
+        # 在庫が割り当てられている場合は削除できない
+        for stock in self.stocks:
+            if stock.quantity > 0:
+                raise Exception(u'座席および席数の割当がある為、削除できません')
+
+        # delete Stock
+        for stock in self.stocks:
+            stock.delete()
+
+        # delete Product
+        products = Product.filter_by(event_id=self.event_id).filter_by(seat_stock_type_id=self.id).all()
+        for product in products:
+            product.delete()
+
+        super(StockType, self).delete()
+
     def num_seats(self, performance_id=None):
         # 同一Performanceの同一StockTypeにおけるStock.quantityの合計
         query = Stock.filter_by(stock_type_id=self.id).with_entities(func.sum(Stock.quantity))
@@ -1121,6 +1138,10 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         stock_status.save()
 
     def delete(self):
+        # 在庫が割り当てられている場合は削除できない
+        if self.quantity > 0:
+            raise Exception(u'座席および席数の割当がある為、削除できません')
+
         # delete StockStatus
         self.stock_status.delete()
 
@@ -1258,6 +1279,13 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         ''' ProductItemの自動生成は行わない '''
         ## Performance数分のProductItemを生成
         #ProductItem.create_default(product=self)
+
+    def delete(self):
+        # 在庫が割り当てられている場合、既に購入されている場合は削除できない
+        if self.items:
+            raise Exception(u'座席および席数の割当がある為、削除できません')
+
+        super(Product, self).delete()
 
     def get_quantity_power(self, stock_type, performance_id):
         """ 数量倍率 """
