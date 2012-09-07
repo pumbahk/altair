@@ -7,7 +7,7 @@ from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, T
 from wtforms.validators import Optional, AnyOf, Length
 from collections import OrderedDict
 from ticketing.formhelpers import DateTimeField, Translations, Required
-from ticketing.core.models import (PaymentMethodPlugin, DeliveryMethodPlugin, PaymentDeliveryMethodPair,
+from ticketing.core.models import (PaymentMethodPlugin, DeliveryMethodPlugin, StockType,
                                    SalesSegment, Performance, Product, ProductItem)
 
 class OrderForm(Form):
@@ -155,24 +155,34 @@ class OrderReserveForm(Form):
                         (pdmp.id, '%s  -  %s' % (pdmp.payment_method.name, pdmp.delivery_method.name))
                     )
 
+            self.product_id.choices = []
             if 'stocks' in kwargs and kwargs['stocks']:
-                self.product_id.choices = []
+                # 座席選択あり
                 products = Product.filter(Product.event_id==performance.event_id)\
                                   .join(Product.items)\
                                   .filter(ProductItem.performance_id==performance.id)\
                                   .filter(ProductItem.stock_id.in_(kwargs['stocks'])).all()
                 self.product_id.choices += [(p.id, p.name) for p in products]
+            else:
+                # 数受け
+                products = Product.filter(Product.sales_segment_id.in_([ss.id for ss in sales_segments]))\
+                                  .join(Product.seat_stock_type)\
+                                  .filter(StockType.quantity_only==1).all()
+                self.product_id.choices += [(p.id, p.name) for p in products]
+                self.quantity_only.data = 1
 
     def _get_translations(self):
         return Translations()
 
     performance_id = HiddenField(
-        label='',
         validators=[Required()],
     )
     stocks = HiddenField(
         label=u'座席',
-        validators=[Required(u'予約する席を選択してください')],
+        validators=[Optional()],
+    )
+    quantity_only = HiddenField(
+        validators=[Optional()],
     )
     note = TextAreaField(
         label=u'備考・メモ',
