@@ -43,6 +43,24 @@ def back(func):
         return func(*args, **kwargs)
     return retval
 
+def get_seat_type_triplets(event_id, performance_id, sales_segment_id):
+    segment_stocks = DBSession.query(c_models.ProductItem.stock_id).filter(
+        c_models.ProductItem.product_id==c_models.Product.id).filter(
+        c_models.Product.sales_segment_id==sales_segment_id)
+
+    seat_type_triplets = DBSession.query(c_models.StockType, c_models.Stock.quantity, c_models.StockStatus.quantity).filter(
+            c_models.Stock.id==c_models.StockStatus.stock_id).filter(
+            c_models.Performance.event_id==event_id).filter(
+            c_models.Performance.id==performance_id).filter(
+            c_models.Performance.event_id==c_models.StockHolder.event_id).filter(
+            c_models.StockHolder.id==c_models.Stock.stock_holder_id).filter(
+            c_models.Stock.stock_type_id==c_models.StockType.id).filter(
+            c_models.Stock.id.in_(segment_stocks)).filter(
+            c_models.ProductItem.stock_id==c_models.Stock.id).filter(
+            c_models.ProductItem.performance_id==performance_id).order_by(
+            c_models.StockType.display_order).all()
+    return seat_type_triplets
+
 class IndexView(object):
     """ 座席選択画面 """
     def __init__(self, request):
@@ -151,22 +169,7 @@ class IndexView(object):
         performance_id = self.request.matchdict['performance_id']
         sales_segment_id = self.request.matchdict['sales_segment_id']
 
-        segment_stocks = DBSession.query(c_models.ProductItem.stock_id).filter(
-            c_models.ProductItem.product_id==c_models.Product.id).filter(
-            c_models.Product.sales_segment_id==sales_segment_id)
-
-        seat_type_triplets = DBSession.query(c_models.StockType, c_models.Stock.quantity, c_models.StockStatus.quantity).filter(
-            c_models.Stock.id==c_models.StockStatus.stock_id).filter(
-            c_models.Performance.event_id==event_id).filter(
-            c_models.Performance.id==performance_id).filter(
-            c_models.Performance.event_id==c_models.StockHolder.event_id).filter(
-            c_models.StockHolder.id==c_models.Stock.stock_holder_id).filter(
-            c_models.Stock.stock_type_id==c_models.StockType.id).filter(
-            c_models.Stock.id.in_(segment_stocks)).filter(
-            c_models.ProductItem.stock_id==c_models.Stock.id).filter(
-            c_models.ProductItem.performance_id==performance_id).order_by(
-            c_models.StockType.display_order).all()
-
+        seat_type_triplets = get_seat_type_triplets(event_id, performance_id, sales_segment_id)
         performance = c_models.Performance.query.filter_by(id=performance_id).one()
 
         data = dict(seat_types=[
@@ -968,28 +971,19 @@ class MobileSelectProductView(object):
         if performance is None:
             raise NoEventError("No such performance (%d)" % performance_id)
 
-        segment_stocks = DBSession.query(c_models.ProductItem.stock_id).filter(
-            c_models.ProductItem.product_id==c_models.Product.id).filter(
-            c_models.Product.sales_segment_id==sales_segment.id)
-
-        seat_types = DBSession.query(c_models.StockType).filter(
-            c_models.Performance.event_id==event_id).filter(
-            c_models.Performance.id==performance_id).filter(
-            c_models.Performance.event_id==c_models.StockHolder.event_id).filter(
-            c_models.StockHolder.id==c_models.Stock.stock_holder_id).filter(
-            c_models.Stock.stock_type_id==c_models.StockType.id).filter(
-            c_models.Stock.id.in_(segment_stocks)).filter(
-            c_models.ProductItem.stock_id==c_models.Stock.id).filter(
-            c_models.ProductItem.performance_id==performance_id).order_by(
-            c_models.StockType.display_order).all()
+        seat_type_triplets = get_seat_type_triplets(event.id, performance.id, sales_segment.id)            
 
         data = dict(
             seat_types=[
-                dict(
-                    id=s.id,
-                    name=s.name
-                )
-            for s in seat_types
+                dict(id=s.id, name=s.name,
+                     style=s.style,
+                     products_url=self.request.route_url('cart.products',
+                                                         event_id=event_id, performance_id=performance_id, seat_type_id=s.id),
+                     availability=available > 0,
+                     availability_text=h.get_availability_text(available),
+                     quantity_only=s.quantity_only,
+                     )
+            for s, total, available in seat_type_triplets
             ],
             event=event,
             performance=performance,

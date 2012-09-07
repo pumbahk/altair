@@ -14,7 +14,7 @@ ${event.title}
 <form action="${request.url}" method="get">
   <select name="stid">
   % for seat_type in seat_types:
-    <option value="${seat_type['id']}">${seat_type['name']}</option>
+    <option value="${seat_type['id']}">${seat_type['name']} ${seat_type["availability_text"]}</option>
   % endfor
   </select>
   <div style="text-align:center;">
