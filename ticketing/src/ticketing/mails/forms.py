@@ -6,6 +6,7 @@ from wtforms import fields
 from wtforms import widgets
 from wtforms import validators
 from collections import namedtuple, OrderedDict
+from ticketing.cart import helpers as ch
 
 def MethodChoicesFormFactory(template):
     attrs = {}
@@ -18,10 +19,51 @@ def MethodChoicesFormFactory(template):
     attrs["delivery_methods"] = fields.SelectField(label=u"配送方法", choices=choices, id="delivery_methods")
     return type("MethodChoiceForm", (Form, ), attrs)
 
+OrderInfo = namedtuple("OrderInfo", "name label getval")
+class OrderInfoForm(Form):
+    display_p = fields.BooleanField(u"表示する")
+    labelname = fields.TextField(u"ラベル名", validators=[validators.Required()])
+
+class OrderInfoDefault(object):
+    """ 
+    以下の情報のデフォルトの値。ラベル名が変えられ、表示するかしないか選択できる。
+    #注文情報 受付番号、受付日時、公演タイトル、商品名、座席番号、商品代金、サービス利用料・手数料、合計金額
+    """
+    def get_event_title(order):
+        performance = order.performance
+        return u"{0} {1}".format(performance.event.title, performance.name)
+
+    def get_seat_no(order):
+        seats = itertools.chain.from_iterable((p.seats for p in order.ordered_products))
+        return u"\n".join(u"* {0}".format(seat["name"] for seat in seats))
+
+    def get_product_description(order):
+        return u"\n".join((u"{0} {1} x{2}枚".format(op.product.name, 
+                                                    ch.format_currency(op.product.price),
+                                                    op.quantity)
+                           for op in order.ordered_products))
+
+    order_no = OrderInfo(name="order_no", label=u"受付番号", getval=lambda order : order.order_no)
+    order_datetime = OrderInfo(name="order_datetime", label=u"受付日", getval=lambda order: ch.mail_adte(order.created_at))
+    for_event = OrderInfo(name="for_event", label=u"公演タイトル", getval=get_event_title)
+    for_product =OrderInfo(name="for_product", label=u"商品代金", getval=get_product_description)
+    for_seat = OrderInfo(name=u"for_seat", label=u"ご購入いただいた座席", getval=get_seat_no)
+    system_fee = OrderInfo(name=u"system_fee", label=u"システム利用料", getval=lambda order: ch.format_currency(order.system_fee))
+    transaction_fee = OrderInfo(name=u"transaction_fee", label=u"決済手数料", getval=lambda order: ch.format_currency(order.transaction_fee))
+    delivery_fee = OrderInfo(name=u"delivery_fee", label=u"発券／配送手数料", getval=lambda order: ch.format_currency(order.delivery_fee))
+    total_amount = OrderInfo(name=u"total_amount", label=u"合計金額", getval=lambda order: ch.format_currency(order.total_amount))
+
+    @classmethod
+    def get_form_field_candidates(cls):
+        return ((k,v) for k,v in cls.__dict__.iteritems() if isinstance(v, OrderInfo))
+
 def MailInfoFormFactory(template):
     attrs = OrderedDict()
     attrs["subject"] = fields.TextField(label=u"メール件名")
     attrs["sender"] = fields.TextField(label=u"メールsender")
+
+    for k, v in OrderInfoDefault.get_form_field_candidates():
+        attrs[k] = fields.FormField(OrderInfoForm, label=v.label, default=dict(display_p=True, labelname=v.label, doc=v)) ##xxx:
 
     for e in template.template_keys():
         attrs[e.name] = fields.TextField(label=e.label, widget=widgets.TextArea(), description=e.method, 
