@@ -55,7 +55,6 @@ ${shipping.email}<br />
 <div>窓口支払</div>
 % endif
 <%mobile:form_header>お引き取り</%mobile:form_header>
-${ order.payment_delivery_pair.delivery_method.delivery_plugin.id }
 % if order.payment_delivery_pair.delivery_method.delivery_plugin.id == 1:
 <div>郵送</div>
 下記、ご登録送付先住所へチケットを配送いたします。
