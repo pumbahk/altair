@@ -2,13 +2,13 @@ package jp.ticketstar.ticketing.printing.gui;
 
 import java.awt.Container;
 
-import javax.swing.JFrame;
+import jp.ticketstar.ticketing.printing.AppModel;
 
 public interface IAppWindow {
 
 	public abstract void unbind();
 
-	public abstract void bind(AppWindowModel model);
+	public abstract void bind(AppModel model);
 
 	public abstract Container getFrame();
 

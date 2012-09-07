@@ -1,0 +1,49 @@
+<%namespace file="/common/helpers.html" import="form_item"/>
+
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">×</button>
+    <h3>preview</h3>
+  </div>
+
+  <div class="modal-body">
+	<form id="preview_select">
+	  ${form.ticket_format_id.label} ${form.ticket_format_id}
+	  ${form.item_id}
+	</form>
+
+	<div id="drawing" style="height:200px;">
+	</div>
+  </div>
+
+  <div class="modal-footer">
+	<a href="#" class="btn" data-dismiss="modal">キャンセル</a>
+##	<input class="btn btn-primary" type="submit" name="submit" value="登録">
+  </div>
+
+<script type="text/javascript">
+$(function(){
+    url = "${request.route_path("orders.item.preview.getdata", item_id=item.id, ticket_format_id="__id__")}";
+    var draw_viewer = function(url, ticket_format_id){
+      $.getJSON(url.replace("__id__", ticket_format_id)).done(function(data){ 
+  	    var root = $("#drawing");
+        root.empty();
+        var results = data.results;
+        var names = data.names;
+        for (var i = 0; i < results.length; i++) {
+          var jsondata = results[i];
+          var options = {"dataSource": function(next, err){ next(jsondata); }}
+
+          root.append($("<h3>").text(names[i]));
+          var wrap = $("<div>").attr("id", "diagram:"+i).attr("style", "height:200px;");
+          root.append(wrap)
+          wrap.ticketviewer(options).ticketviewer("load");
+        }
+      });
+    }
+    draw_viewer(url, $("#preview_select select[name='ticket_format_id']").val());
+    $("#preview_select select[name='ticket_format_id']").change(function(){
+    var ticket_format_id = $(this).val();
+    draw_viewer(url, ticket_format_id);
+  });
+});
+</script>

@@ -2,6 +2,7 @@
 
 from lxml import html, etree
 from lxml.builder import E
+from .constants import *
 import re
 import cssutils
 import numpy
@@ -15,10 +16,6 @@ __all__ = (
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-
-SVG_NAMESPACE = 'http://www.w3.org/2000/svg'
-TS_SVG_EXT_NAMESPACE = "http://xmlns.ticketstar.jp/svg-extension" 
 
 SEJ_ECLEVEL_MAP = {
     'h': 'H',

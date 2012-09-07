@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-from pyramid.config import Configurator
+import re
 
 from sqlalchemy import engine_from_config
-
+from pyramid.config import Configurator
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
@@ -10,10 +10,6 @@ from pyramid.tweens import EXCVIEW
 
 import sqlahelper
 from .api.impl import bound_communication_api ## cmsとの通信
-import logging
-
-
-import re
 
 authn_exemption = re.compile(r'^(/_deform)|(/static)|(/_debug_toolbar)|(/favicon.ico)')
 
@@ -86,6 +82,7 @@ def main(global_config, **settings):
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_renderer('json'  , 'ticketing.renderers.json_renderer_factory')
     config.add_renderer('csv'   , 'ticketing.renderers.csv_renderer_factory')
+    config.add_renderer('lxml'  , 'ticketing.renderers.lxml_renderer_factory')
 
     config.add_tween('.tweens.session_cleaner_factory', over=EXCVIEW)
     #config.scan('ticketing') # Bad Code

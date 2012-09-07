@@ -1,6 +1,11 @@
 # encoding: utf-8
 
+from lxml import etree
+from collections import namedtuple
+
 from ..users.models import SexEnum
+from .constants import *
+from .convert import as_user_unit
 
 def datetime_as_dict(dt):
     return {
@@ -271,10 +276,17 @@ class DictBuilder(object):
                 }
 
         retval = []
-        for seat in ordered_product_item.seats:
-            d = self.build_dict_from_seat(seat, ticket_number_issuer)
+        if ordered_product_item.product_item.stock.stock_type.quantity_only:
+            d = {}
+            self.build_dict_from_stock(ordered_product_item.product_item.stock, d)
+            self.build_dict_from_venue(ordered_product_item.product_item.performance.venue, d)
             d.update(extra)
-            retval.append(d)
+            retval.append((None, d))
+        else:
+            for seat in ordered_product_item.seats:
+                d = self.build_dict_from_seat(seat, ticket_number_issuer)
+                d.update(extra)
+                retval.append((seat, d))
         return retval
 
 _default_builder = DictBuilder(Japanese_Japan_Formatter())
@@ -284,41 +296,98 @@ build_dict_from_seat = _default_builder.build_dict_from_seat
 build_dict_from_product_item = _default_builder.build_dict_from_product_item
 build_dicts_from_ordered_product_item = _default_builder.build_dicts_from_ordered_product_item
 
-from lxml.etree import Element as xml_Element
-from lxml.etree import tostring as xml_ToString
-from lxml.etree import fromstring as xml_FromString
-import lxml.html
+Size = namedtuple('Size', 'width height')
+Position = namedtuple('Position', 'x y')
+Rectangle = namedtuple('Rectangle', 'x y width height')
+Margin = namedtuple('Margin', 'top bottom left right')
 
-class SvgPageSet(object):
-    def __init__(self):
-        self.result = xml_Element(
-            '{http://www.w3.org/2000/svg}svg',
-            nsmap={
-                'svg': 'http://www.w3.org/2000/svg',
-                'ts' : 'http://xmlns.ticketstar.jp/svg-extension'
-                },
-            version='1.2',
-
+class SvgPageSetBuilder(object):
+    def __init__(self, page_format, ticket_format):
+        orientation = page_format[u'orientation'].lower()
+        
+        printable_area = Rectangle(
+            x=as_user_unit(page_format[u'printable_area'][u'x']),
+            y=as_user_unit(page_format[u'printable_area'][u'y']),
+            width=as_user_unit(page_format[u'printable_area'][u'width']),
+            height=as_user_unit(page_format[u'printable_area'][u'height'])
             )
-        self.page_set = xml_Element('{http://www.w3.org/2000/svg}pageSet')
-        self.result.append(self.page_set)
-        self.is_set_page_setting = False
 
-    def append_page(self, svg):
-        page = xml_Element('{http://www.w3.org/2000/svg}page')
-        root = xml_FromString(svg)
-        if not self.is_set_page_setting :
-            self.result.set('version', root.get('version'))
-            self.result.set('width', root.get('width'))
-            self.result.set('height', root.get('height'))
-            self.result.set('id', root.get('id'))
-            self.is_set_page_setting = True
+        if orientation == u'landscape':
+            printable_area = Rectangle(
+                printable_area.y, printable_area.x,
+                printable_area.height, printable_area.width
+                )
 
-        for child in root:
-            page.append(child)
+        ticket_size = Size(
+            width=as_user_unit(ticket_format[u'size'][u'width']),
+            height=as_user_unit(ticket_format[u'size'][u'height'])
+            )
 
-        self.page_set.append(page)
+        ticket_margin = Margin(
+            top=as_user_unit(page_format[u'ticket_margin'][u'top']),
+            bottom=as_user_unit(page_format[u'ticket_margin'][u'bottom']),
+            left=as_user_unit(page_format[u'ticket_margin'][u'left']),
+            right=as_user_unit(page_format[u'ticket_margin'][u'right'])
+            )
 
-    def merge(self):
-        print xml_ToString(self.result, xml_declaration=True, encoding='utf-8')
-        return xml_ToString(self.result, xml_declaration=True, encoding='utf-8')
+        if printable_area.width < ticket_size.width + ticket_margin.left or \
+            printable_area.height < ticket_size.height + ticket_margin.top:
+            raise ValueError('printable area too small')
+
+        self.page_format = page_format
+        self.ticket_format = ticket_format
+        self.orientation = orientation
+        self.ticket_size = ticket_size
+        self.printable_area = printable_area
+        self.ticket_margin = ticket_margin
+        self.root = self.build_root_element()
+        self.pageset = etree.Element(u'{%s}pageSet' % SVG_NAMESPACE)
+        self.root.append(self.pageset)
+        self.page = None
+        self.offset = Position(printable_area.x, printable_area.y)
+
+    @property
+    def tickets_per_page(self):
+        return (self.printable_area.width + self.ticket_margin.right) // \
+            (self.ticket_size.width +
+             self.ticket_margin.left +
+             self.ticket_margin.right) * \
+            (self.printable_area.height + self.ticket_margin.bottom) // \
+                (self.ticket_size.height +
+                 self.ticket_margin.top +
+                 self.ticket_margin.bottom)
+
+    def build_root_element(self):
+        width = unicode(as_user_unit(self.page_format[u'size'][u'width']))
+        height = unicode(as_user_unit(self.page_format[u'size'][u'height']))
+
+        # Swap width / height if the orientation is 'landscape'
+        if self.orientation == u'landscape':
+            width, height = height, width
+        return etree.Element(
+            u'{%s}svg' % SVG_NAMESPACE,
+            nsmap={ u'svg': SVG_NAMESPACE, u'ts' : TS_SVG_EXT_NAMESPACE },
+            version=u'1.2',
+            width=width,
+            height=height
+            )
+
+    def add(self, svg, queue_id, title=None):
+        if self.offset.x + self.ticket_margin.left + self.ticket_size.width > self.printable_area.x + self.printable_area.width:
+            self.offset = Position(self.printable_area.x, self.offset.y + self.ticket_size.height + self.ticket_margin.top + self.ticket_margin.bottom)
+        if self.offset.y + self.ticket_margin.top + self.ticket_size.height > self.printable_area.y + self.printable_area.height:
+            self.offset = Position(self.printable_area.x, self.printable_area.y)
+            self.page = None
+        if self.page is None:
+            self.page = etree.Element(u'{%s}page' % SVG_NAMESPACE)
+            if title is not None:
+                title_elem = etree.Element(u'{%s}title' % SVG_NAMESPACE)
+                title_elem.text = title
+                self.page.append(title_elem)
+            self.pageset.append(self.page)
+        svgroot = svg.getroot() if isinstance(svg, etree._ElementTree) else svg
+        svgroot.set(u'x', unicode(self.offset.x + self.ticket_margin.left))
+        svgroot.set(u'y', unicode(self.offset.y + self.ticket_margin.top))
+        svgroot.set(u'{%s}queue-id' % TS_SVG_EXT_NAMESPACE, unicode(queue_id))
+        self.page.append(svgroot)
+        self.offset = Position(self.offset.x + self.ticket_size.width + self.ticket_margin.left + self.ticket_margin.right, self.offset.y)

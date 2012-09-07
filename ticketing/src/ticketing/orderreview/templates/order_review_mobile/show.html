@@ -54,9 +54,45 @@ ${shipping.email}<br />
 % elif order.payment_delivery_pair.payment_method.payment_plugin.id == 4:
 <div>窓口支払</div>
 % endif
+<%mobile:form_header>お引き取り</%mobile:form_header>
+% if order.payment_delivery_pair.delivery_method.delivery_plugin.id == 1:
+<div>郵送</div>
+下記、ご登録送付先住所へチケットを配送いたします。
+<% shipping = order.shipping_address %>
+<%mobile:form_header>氏名</%mobile:form_header>
+${shipping.last_name} ${shipping.first_name}
+<%mobile:form_header>氏名（フリガナ）</%mobile:form_header>
+${shipping.last_name_kana} ${shipping.first_name_kana}
+<%mobile:form_header>住所</%mobile:form_header>
+<div>
+〒${shipping.zip}<br />
+${shipping.prefecture}${shipping.city}${shipping.address_1}<br />
+${shipping.address_2}
+% elif order.payment_delivery_pair.delivery_method.delivery_plugin.id == 2:
+<div>セブンイレブン</div>
+<%mobile:form_header>引換票番号</%mobile:form_header>
+<div>${sej_order.exchange_number or sej_order.billing_number}</div>
+<%mobile:form_header>引取受付期間</%mobile:form_header>
+<div>${h.japanese_datetime(sej_order.ticketing_start_at)} から ${h.japanese_datetime(sej_order.ticketing_due_at)}</div>
+<div>引取受付期間内に、引換票または引換票番号をお持ちの上、セブン-イレブン店頭レジにてチケットをお引取り下さい。</div>
+<form action="${sej_order.exchange_sheet_url}" method="post" target="_blank">
+  <input type="hidden" name="iraihyo_id_00" value="${sej_order.exchange_sheet_number}" />
+  <input type="submit" class="paymentCoupon" value="引換票印刷">
+</form>
+% elif order.payment_delivery_pair.delivery_method.delivery_plugin.id == 3:
+<div>窓口受取</div>
+% elif order.payment_delivery_pair.delivery_method.delivery_plugin.id == 4:
+<div>QRコード</div>
+## QR表示
+%endif
 <div>
 &#xe737;注意事項<br />
 <font size="-2">
+%if order.payment_delivery_pair.payment_method.payment_plugin.id == 1:
+また、転居等による住所変更があった場合も上記メールアドレスへご連絡をお願いいたします。（送付先変更期限：各試合日の2週間前まで）
+
+なお、住所変更のご連絡がない場合等に起因する配送遅延等にはご対応いたしかねますのでご注意ください。
+%endif
 %if order.payment_delivery_pair.payment_method.payment_plugin.id == 3:
 ・セブンイレブン決済の際には払込番号が必要です。下記、「払込票印刷」ボタンをクリックし、払込票を印刷してお持ちになるか、上記の払込票番号をお控えいただき、レジでお伝え下さい。<br />
 ・予約有効期限までに、払込票または払込票番号をセブン-イレブン店頭レジにてお申し出の上、代金をお支払いください。<br />

@@ -53,6 +53,11 @@ class SalesSegmentForm(Form):
         default=1,
         widget=CheckboxInput(),
     )
+    public = IntegerField(
+        label=u'一般販売',
+        default=1,
+        widget=CheckboxInput(),
+    )
 
     def validate_end_at(form, field):
         if field.data is not None and field.data < form.start_at.data:

@@ -102,8 +102,8 @@ class FCAuthPlugin(object):
             return
 
         data = {'username': username, 
-            'membergroup': user.membergroup.name,
-            'membership': user.membergroup.membership.name,
+            'membergroup': user.member.membergroup.name,
+            'membership': user.member.membergroup.membership.name,
             'is_guest': False,
             }
         return pickle.dumps(data).encode('base64')

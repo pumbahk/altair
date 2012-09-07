@@ -29,6 +29,7 @@
     <table class="table table-striped table-bordered">
       <thead>
       <tr>
+		<th style="width: 40px;">印刷</th>
         <th style="width: 120px;">ステータス</th>
         <th style="width: 100px;">${search_and_sort(form.order_no)}</th>
         <th style="width: 120px;">${search_and_sort(form.created_at)}</th>
@@ -43,6 +44,9 @@
       <tbody>
     % endif
       <tr>
+		<td>
+		  <input class="printstatus" type="checkbox" name="o:${order.id}"/>
+		</td>
         <td>
           % if order.status == 'refunded':
           <span class="label label-important">キャンセル (返金済)</span>

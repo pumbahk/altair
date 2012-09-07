@@ -5,12 +5,14 @@
 TODO: 引き当て処理自体はResourceから分離する。
 TODO: cart取得
 """
+import logging
 
 from datetime import datetime
 import itertools
 from sqlalchemy import sql
 from pyramid.security import Everyone, Authenticated
 from pyramid.security import Allow
+
 from zope.interface import implementer
 from .interfaces import IOrderPayment, IOrderDelivery, ICartPayment, ICartDelivery, ICompleteMailPayment, ICompleteMailDelivery
 
@@ -20,6 +22,8 @@ from ..users import models as u_models
 from . import models as m
 from . import logger
 from zope.deprecation import deprecate
+
+logger = logging.getLogger(__name__)
 
 class TicketingCartResource(object):
     __acl__ = [
@@ -33,12 +37,18 @@ class TicketingCartResource(object):
         else:
             self.event_id = None
 
+    # @property
+    # def memberships(self):
+    #     membergroups = self.membergroups
+    #     if not membergroups:
+    #         return []
+    #     return [m.membership for m in membergroups]
     @property
     def memberships(self):
-        membergroups = self.membergroups
-        if not membergroups:
-            return []
-        return [m.membership for m in membergroups]
+        logger.debug('event %s' % self.event.title)
+        logger.debug('organization %s' % self.event.organization.code)
+        logger.debug('memberships %s' % self.event.organization.memberships)
+        return self.event.organization.memberships
 
     # @property
     # def membergroup(self):
@@ -46,6 +56,11 @@ class TicketingCartResource(object):
     #     if sales_segment is None:
     #         return None
     #     return sales_segment.membergroup
+
+    @property
+    def event(self):
+        event = c_models.Event.filter(c_models.Event.id==self.event_id).one()
+        return event
 
     @property
     def membergroups(self):
@@ -327,6 +342,18 @@ class TicketingCartResource(object):
             return cart
         finally:
             conn.close()
+
+    @property
+    def membership(self):
+        from .rakuten_auth.api import authenticated_user
+        user = authenticated_user(self.request)
+        if user is None:
+            return None
+        if 'membership' not in user:
+            return None
+
+        membership = user['membership']
+        return membership
 
     def get_or_create_user(self):
         # TODO: 依存関係がおかしいので確認 なぜrakuten_authがcart.apiを使うのか？

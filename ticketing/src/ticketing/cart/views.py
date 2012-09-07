@@ -30,7 +30,7 @@ from . import api
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from .stocker import NotEnoughStockException
 import transaction
-
+from ticketing.cart.selectable_renderer import selectable_renderer
 logger = logging.getLogger(__name__)
 
 def back(func):
@@ -48,7 +48,7 @@ class IndexView(object):
         self.request = request
         self.context = request.context
 
-    @view_config(route_name='cart.index', renderer='carts/index.html', xhr=False, permission="buy")
+    @view_config(route_name='cart.index', renderer=selectable_renderer("carts/%(membership)s/index.html"), xhr=False, permission="buy")
     def redirect_sale(self):
         sales_segment = self.context.get_sales_segument()
         if sales_segment is None:
@@ -60,9 +60,10 @@ class IndexView(object):
             sales_segment_id=sales_segment.id)
         return HTTPFound(location=location)
 
-    @view_config(route_name='cart.index.sales', renderer='carts/index.html', xhr=False, permission="buy")
+    @view_config(route_name='cart.index.sales', renderer=selectable_renderer('carts/%(membership)s/index.html'), xhr=False, permission="buy")
     def __call__(self):
         jquery_tools.need()
+        context = self.request.context
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.params.get('performance')
 
@@ -82,17 +83,32 @@ class IndexView(object):
         dates = sorted(list(set([p.start_on.strftime("%Y-%m-%d %H:%M") for p in e.performances])))
         logger.debug("dates:%s" % dates)
         # 日付ごとの会場リスト
+        # select_venues = {}
+        # for p in e.performances:
+        #     d = p.start_on.strftime('%Y-%m-%d %H:%M')
+        #     logger.debug('performance %d date %s' % (p.id, d))
+        #     ps = select_venues.get(d, [])
+        #     ps.append(dict(id=p.id, name=p.venue.name,
+        #                    seat_types_url=self.request.route_url('cart.seat_types', 
+        #                                                          performance_id=p.id,
+        #                                                          sales_segment_id=sales_segment.id,
+        #                                                          event_id=e.id)))
+        #     select_venues[d] = ps
+        performances = api.performance_names(self.request, context.event, context.sales_segment)
         select_venues = {}
-        for p in e.performances:
-            d = p.start_on.strftime('%Y-%m-%d %H:%M')
-            logger.debug('performance %d date %s' % (p.id, d))
-            ps = select_venues.get(d, [])
-            ps.append(dict(id=p.id, name=p.venue.name,
-                           seat_types_url=self.request.route_url('cart.seat_types', 
-                                                                 performance_id=p.id,
-                                                                 sales_segment_id=sales_segment.id,
-                                                                 event_id=e.id)))
-            select_venues[d] = ps
+        event = self.request.context.event
+        for pname, pvs in performances:
+            for pv in pvs:
+                select_venues[pname] = select_venues.get(pname, [])
+                logger.debug("performance %s" % pv)
+                select_venues[pname].append(dict(
+                    id=pv['pid'],
+                    name=u'{start:%Y-%m-%d %H:%M}開始 {vname}'.format(**pv),
+                    seat_types_url=self.request.route_url('cart.seat_types',
+                        performance_id=pv['pid'],
+                        sales_segment_id=sales_segment.id,
+                        event_id=event.id)))
+            
         logger.debug("venues %s" % select_venues)
 
         # 会場
@@ -430,7 +446,7 @@ class ReserveView(object):
                               total_amount=h.format_number(cart.tickets_amount),
                     ))
 
-    @view_config(route_name='cart.order', request_method="GET", renderer='carts_mobile/reserve.html', request_type=".interfaces.IMobileRequest")
+    @view_config(route_name='cart.order', request_method="GET", renderer=selectable_renderer('carts_mobile/%(membership)s/reserve.html'), request_type=".interfaces.IMobileRequest")
     def reserve_mobile(self):
         cart = api.get_cart(self.request)
         if not cart:
@@ -461,7 +477,7 @@ class ReserveView(object):
             ))
         return data
 
-    @view_config(route_name='cart.products', renderer='carts_mobile/products.html', xhr=False, request_type=".interfaces.IMobileRequest", request_method="POST")
+    @view_config(route_name='cart.products', renderer=selectable_renderer('carts_mobile/%(membership)s/products.html'), xhr=False, request_type=".interfaces.IMobileRequest", request_method="POST")
     def products_form(self):
         """商品の値検証とおまかせ座席確保とカート作成
         """
@@ -588,8 +604,8 @@ class PaymentView(object):
         self.request = request
         self.context = request.context
 
-    @view_config(route_name='cart.payment', request_method="GET", renderer="carts/payment.html")
-    @view_config(route_name='cart.payment', request_type='.interfaces.IMobileRequest', request_method="GET", renderer="carts_mobile/payment.html")
+    @view_config(route_name='cart.payment', request_method="GET", renderer=selectable_renderer("carts/%(membership)s/payment.html"))
+    @view_config(route_name='cart.payment', request_type='.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer("carts_mobile/%(membership)s/payment.html"))
     def __call__(self):
         """ 支払い方法、引き取り方法選択
         """
@@ -635,8 +651,8 @@ class PaymentView(object):
         else:
             return form
 
-    @view_config(route_name='cart.payment', request_method="POST", renderer="carts/payment.html")
-    @view_config(route_name='cart.payment', request_type='.interfaces.IMobileRequest', request_method="POST", renderer="carts_mobile/payment.html")
+    @view_config(route_name='cart.payment', request_method="POST", renderer=selectable_renderer("carts/%(membership)s/payment.html"))
+    @view_config(route_name='cart.payment', request_type='.interfaces.IMobileRequest', request_method="POST", renderer=selectable_renderer("carts_mobile/%(membership)s/payment.html"))
     def post(self):
         """ 支払い方法、引き取り方法選択
         """
@@ -731,8 +747,8 @@ class ConfirmView(object):
         self.request = request
         self.context = request.context
 
-    @view_config(route_name='payment.confirm', request_method="GET", renderer="carts/confirm.html")
-    @view_config(route_name='payment.confirm', request_type='.interfaces.IMobileRequest', request_method="GET", renderer="carts_mobile/confirm.html")
+    @view_config(route_name='payment.confirm', request_method="GET", renderer=selectable_renderer("carts/%(membership)s/confirm.html"))
+    @view_config(route_name='payment.confirm', request_type='.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer("carts_mobile/%(membership)s/confirm.html"))
     def get(self):
         form = schemas.CSRFSecureForm(csrf_context=self.request.session)
         if not api.has_cart(self.request):
@@ -758,8 +774,8 @@ class CompleteView(object):
         # TODO: Orderを表示？
 
     @back
-    @view_config(route_name='payment.finish', renderer="carts/completion.html", request_method="POST")
-    @view_config(route_name='payment.finish', request_type='.interfaces.IMobileRequest', renderer="carts_mobile/completion.html", request_method="POST")
+    @view_config(route_name='payment.finish', renderer=selectable_renderer("carts/%(membership)s/completion.html"), request_method="POST")
+    @view_config(route_name='payment.finish', request_type='.interfaces.IMobileRequest', renderer=selectable_renderer("carts_mobile/%(membership)s/completion.html"), request_method="POST")
     def __call__(self):
         form = schemas.CSRFSecureForm(formdata=self.request.params, csrf_context=self.request.session)
         form.validate()
@@ -793,6 +809,7 @@ class CompleteView(object):
         user = self.context.get_or_create_user()
         order.user = user
         order.organization_id = order.performance.event.organization_id
+        cart.order = order
 
         notify_order_completed(self.request, order)
 
@@ -852,8 +869,8 @@ class MobileIndexView(object):
         self.request = request
         self.context = request.context
 
-    @view_config(route_name='cart.index', renderer='carts_mobile/index.html', xhr=False, permission="buy", request_type=".interfaces.IMobileRequest")
-    @view_config(route_name='cart.index.sales', renderer='carts_mobile/index.html', xhr=False, permission="buy", request_type=".interfaces.IMobileRequest")
+    @view_config(route_name='cart.index', renderer=selectable_renderer('carts_mobile/%(membership)s/index.html'), xhr=False, permission="buy", request_type=".interfaces.IMobileRequest")
+    @view_config(route_name='cart.index.sales', renderer=selectable_renderer('carts_mobile/%(membership)s/index.html'), xhr=False, permission="buy", request_type=".interfaces.IMobileRequest")
     def __call__(self):
         event_id = self.request.matchdict['event_id']
         venue_name = self.request.params.get('v')
@@ -875,31 +892,43 @@ class MobileIndexView(object):
         if event is None:
             raise NoEventError("No such event (%d)" % event_id)
 
-        if venue_name:
-            venue = c_models.Venue.query.filter(c_models.Venue.name==venue_name).first()
-            if venue is None:
-                logger.debug("No such venue venue_name=%s" % venue_name)
-        else:
-            venue = None
-        # 会場が指定されていなければ会場を選択肢を作る
-        if venue:
-            venues = []
-            # 会場が確定しているならパフォーマンスの選択肢を作る
-            performances_query = c_models.Performance.query \
-                .filter(c_models.Performance.event_id==event_id)
-            performances = [dict(id=p.id, start_on=p.start_on.strftime('%Y-%m-%d %H:%M')) \
-                for p in performances_query if p.venue.name==venue_name]
-        else:
-            # 会場は会場名で一意にする
-            venues = set(performance.venue.name for performance in event.performances)
-            performances = []
+        #if venue_name:
+        #    venue = c_models.Venue.query.filter(c_models.Venue.name==venue_name).first()
+        #    if venue is None:
+        #        logger.debug("No such venue venue_name=%s" % venue_name)
+        #else:
+        #    venue = None
+        ## 会場が指定されていなければ会場を選択肢を作る
+        #if venue:
+        #    venues = []
+        #    # 会場が確定しているならパフォーマンスの選択肢を作る
+        #    performances_query = c_models.Performance.query \
+        #        .filter(c_models.Performance.event_id==event_id)
+        #    performances = [dict(id=p.id, start_on=p.start_on.strftime('%Y-%m-%d %H:%M')) \
+        #        for p in performances_query if p.venue.name==venue_name]
+        #else:
+        #    # 会場は会場名で一意にする
+        #    venues = set(performance.venue.name for performance in event.performances)
+        #    performances = []
+
+        # 公演名リスト
+        perms = api.performance_names(self.request, event, sales_segment)
+        performances = [p[0] for p in perms]
+        logger.debug('performances %s' % performances)
+
+        # 公演名が指定されている場合は、（日時、会場）のリスト
+        performance_name = self.request.params.get('performance_name')
+        venues = []
+        if performance_name:
+            venues = [(x['pid'], u"{start:%Y-%m-%d %H:%M} {vname}".format(**x)) for x in api.performance_venue_by_name(self.request, event, sales_segment, performance_name)]
 
         return dict(
             event=event,
             sales_segment=sales_segment,
-            venue=venue,
+            #venue=venue,
             venues=venues,
             performances=performances,
+            performance_name=performance_name,
         )
 
 
@@ -910,7 +939,7 @@ class MobileSelectProductView(object):
         self.request = request
         self.context = request.context
 
-    @view_config(route_name='cart.mobile', renderer='carts_mobile/seat_types.html', xhr=False, request_type=".interfaces.IMobileRequest")
+    @view_config(route_name='cart.mobile', renderer=selectable_renderer('carts_mobile/%(membership)s/seat_types.html'), xhr=False, request_type=".interfaces.IMobileRequest")
     def __call__(self):
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.matchdict['performance_id']
@@ -967,7 +996,7 @@ class MobileSelectProductView(object):
         )
         return data
 
-    @view_config(route_name='cart.products', renderer='carts_mobile/products.html', xhr=False, request_type=".interfaces.IMobileRequest", request_method="GET")
+    @view_config(route_name='cart.products', renderer=selectable_renderer('carts_mobile/%(membership)s/products.html'), xhr=False, request_type=".interfaces.IMobileRequest", request_method="GET")
     def products(self):
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.matchdict['performance_id']
@@ -1046,13 +1075,14 @@ class OutTermSalesView(object):
         self.request = request
         self.context = context
 
-    @view_config(context='.exceptions.OutTermSalesException', renderer='ticketing.cart:templates/carts/out_term_sales.html')
+    @view_config(context='.exceptions.OutTermSalesException', renderer=selectable_renderer('ticketing.cart:templates/carts/%(membership)s/out_term_sales.html'))
     def pc(self):
         api.logout(self.request)
         return dict(event=self.context.event, 
                     sales_segment=self.context.sales_segment)
 
-    @view_config(context='.exceptions.OutTermSalesException', renderer='ticketing.cart:templates/carts_mobile/out_term_sales.html', request_type=".interfaces.IMobileRequest")
+    @view_config(context='.exceptions.OutTermSalesException', renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/out_term_sales.html'), 
+        request_type=".interfaces.IMobileRequest")
     def mobile(self):
         api.logout(self.request)
         return dict(event=self.context.event, 

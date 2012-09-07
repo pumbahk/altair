@@ -1,0 +1,15 @@
+<%inherit file="./base_nh.html"/>
+${h.get_nickname(request)} 
+<p>
+${event.title} ${sales_segment.name} の販売期間は
+</p>
+<p>
+${h.japanese_datetime(sales_segment.start_at)}
+% if sales_segment.end_at:
+〜 ${h.japanese_datetime(sales_segment.end_at)} 
+% endif
+</p>
+<p>となっております。</p>
+<p>
+  販売期間内にアクセスしていただきますようお願いいたします。
+</p>

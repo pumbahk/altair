@@ -11,6 +11,13 @@
         $(this).val(0);
       }
     }).change();
+    $('#modal-sales_segment #public').change(function() {
+      if ($(this).attr('checked')) {
+        $(this).val(${form.public.default});
+      } else {
+        $(this).val(0);
+      }
+    }).change();
   });
 </script>
 
@@ -30,6 +37,7 @@
       ${h.form_item(form.end_at,option={"class":"datefield"})}
       ${h.form_item(form.upper_limit)}
       ${h.form_item(form.seat_choice)}
+      ${h.form_item(form.public)}
       <p>※セブンイレブン発券では発券日を指定した場合「前払い後日発券」になります。</p>
     </form>
   </div>

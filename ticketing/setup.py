@@ -102,6 +102,7 @@ setup(name='ticketing',
       [console_scripts]
       inquiry_demo=ticketing.cart.commands:inquiry_demo
       cancel_auth_expired_carts=ticketing.cart.commands:cancel_auth_expired_carts
+      join_cart_and_order=ticketing.cart.commands:join_cart_and_order
       """,
       paster_plugins=['pyramid'],
       )

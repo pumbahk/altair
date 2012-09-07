@@ -292,9 +292,8 @@ cart.PerformanceSearchPresenter.prototype = {
         this.performance.url = performance.seat_types_url;
         this.performance.fetch({
             success: function (req, data) {
-                var performance_date = cart.util.datestring_japanize(performance.date)
-                $('#performanceDate').text(performance_date);
-                $('#descPerformanceDate').text(performance_date);
+                $('#performanceDate').text(data.performance_name);
+                $('#descPerformanceDate').text(data.performance_start);
                 $('#performanceVenue').text(performance.name);
                 $(".performanceNameSpace").text(data["performance_name"]);
             }
@@ -471,7 +470,8 @@ cart.PerformanceSearchView = Backbone.View.extend({
         var self = this;
         var dates = this.model.getDates();
         $.each(dates, function (_, v) {
-            self.selection.append($('<option></option>').attr('value', v).text(cart.util.datestring_japanize(v)));
+            //self.selection.append($('<option></option>').attr('value', v).text(cart.util.datestring_japanize(v)));
+            self.selection.append($('<option></option>').attr('value', v).text(v));
         });
         this.onDateSelectionChanged(dates[0]);
     },

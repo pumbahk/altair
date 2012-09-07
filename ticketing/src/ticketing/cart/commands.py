@@ -31,6 +31,23 @@ def inquiry_demo():
 
     a.checkout_auth_cancel(request, order_no)
 
+def join_cart_and_order():
+    """ 過去データのcart.orderを補正する
+    """
+    config_file = sys.argv[1]
+    app_env = bootstrap(config_file)
+
+    # 対象カート
+    carts = m.Cart.query.filter(m.Cart.finished_at!=None).filter(m.Cart.order_id==None).with_lockmode('update').all()
+    logging.info('process for %s carts' % len(carts))
+
+    for cart in carts:
+        order = o_m.Order.query.filter(o_m.Order.order_no==cart.order_no).with_lockmode('update').first()
+        if order is None:
+            continue
+        cart.order = order        
+        logging.info('order_no = %s : cart[id=%s].order=order[%s]' % (cart.order_no, cart.id, order.id))
+    transaction.commit()
 
 def cancel_auth_expired_carts():
     """ 期限切れカートのオーソリをキャンセルする

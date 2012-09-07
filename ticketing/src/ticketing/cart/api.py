@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 
 import json
+import operator
 import urllib2
 import logging
 import contextlib
+from datetime import datetime
 from zope.deprecation import deprecate
+import sqlalchemy as sa
 
 logger = logging.getLogger(__name__)
 from pyramid.interfaces import IRoutesMapper, IRequest
@@ -16,6 +19,7 @@ from .interfaces import IPaymentPlugin, IDeliveryPlugin, IPaymentDeliveryPlugin
 from .interfaces import IMobileRequest, IStocker, IReserving, ICartFactory
 from .models import Cart, PaymentMethodManager, DBSession, CartedProductItem, CartedProduct
 from ..users.models import User, UserCredential, Membership
+from ..core.models import Event, Performance, Stock, StockHolder, Seat, Product, ProductItem, SalesSegment, Venue
     
 def is_mobile(request):
     return IMobileRequest.providedBy(request)
@@ -219,3 +223,60 @@ def get_valid_sales_url(request, event):
 def logout(request):
     headers = forget(request)
     request.response.headerlist.extend(headers)
+
+def _query_performance_names(request, event, sales_segment):
+
+    q = DBSession.query(
+        Performance.id,
+        Performance.name,
+        Performance.start_on,
+        Performance.open_on,
+        Venue.name)
+    q = q.filter(Performance.event_id==event.id)
+    q = q.filter(Venue.performance_id==Performance.id)
+    q = q.filter(SalesSegment.id==sales_segment.id)
+    q = q.filter(Product.sales_segment_id==SalesSegment.id)
+    q = q.filter(ProductItem.product_id==Product.id)
+    q = q.filter(Stock.id==ProductItem.stock_id)
+    q = q.filter(Stock.performance_id==Performance.id)
+
+    return q
+
+def performance_names(request, event, sales_segment):
+    """
+    公演絞り込み用データ
+    assoc list
+    キー：公演名
+    バリュー：会場、開催日時、のリスト
+
+    キー辞書順でソート
+    バリューリストは開催日順でリスト
+    """
+
+    q = _query_performance_names(request, event, sales_segment)
+    values = q.distinct().all()
+
+    results = dict()
+    for pid, name, start, open, vname in values:
+        results[name] = results.get(name, [])
+        results[name].append(dict(pid=pid, start=start, open=open, vname=vname))
+
+    return sorted([(k, sorted(v, key=operator.itemgetter('start'))) for k, v in results.items()], key=operator.itemgetter(0))
+
+def performance_venue_by_name(request, event, sales_segment, performance_name):
+    q = _query_performance_names(request, event, sales_segment)
+    q = q.filter(Performance.name==performance_name)
+    values = q.distinct().all()
+
+    return sorted([dict(pid=pid, name=name, start=start, open=open, vname=vname) for pid, name, start, open, vname in values],
+            key=operator.itemgetter('start'))
+
+class JSONEncoder(json.JSONEncoder):
+    def __init__(self, datetime_format, *args, **kwargs):
+        super(JSONEncoder, self).__init__(*args, **kwargs)
+        self.datetime_format = datetime_format
+
+    def default(self, o):
+        if isinstance(o, datetime):
+            return o.strftime(self.datetime_format)
+        return super(JSONEncoder, self).default(o)

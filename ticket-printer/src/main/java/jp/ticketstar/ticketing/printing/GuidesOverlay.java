@@ -9,7 +9,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 
-import jp.ticketstar.ticketing.printing.gui.AppWindowModel;
 
 import org.apache.batik.swing.gvt.Overlay;
 
@@ -35,9 +34,13 @@ public class GuidesOverlay implements Overlay {
 				} else {
 					outer.get().setGuides(null, null);
 				}
-			} else if (evt.getPropertyName().equals("ticketSetModel")) {
-				final TicketSetModel ticketSetModel = (TicketSetModel)evt.getNewValue();
-				outer.get().setDocumentSize(ticketSetModel.getBridgeContext().getDocumentSize());
+			} else if (evt.getPropertyName().equals("pageSetModel")) {
+				final PageSetModel pageSetModel = (PageSetModel)evt.getNewValue();
+				if (pageSetModel != null) {
+					outer.get().setDocumentSize(pageSetModel.getBridgeContext().getDocumentSize());
+				} else {
+					outer.get().setDocumentSize(null);
+				}
 			}
 		}
 	}
@@ -51,15 +54,17 @@ public class GuidesOverlay implements Overlay {
 		this.size = (Dimension2D)size.clone();
 	}
 	
-	public GuidesOverlay(AppWindowModel model) {
+	public GuidesOverlay(AppModel model) {
 		model.addPropertyChangeListener(new PageFormatChangeListener(this));
 		if (model.getPageFormat() != null)
 			setGuides(model.getPageFormat().getHorizontalGuides(), model.getPageFormat().getVerticalGuides());
-		if (model.getTicketSetModel() != null)
-			setDocumentSize(model.getTicketSetModel().getBridgeContext().getDocumentSize());
+		if (model.getPageSetModel() != null)
+			setDocumentSize(model.getPageSetModel().getBridgeContext().getDocumentSize());
 	}
 
 	public void paint(Graphics _g) {
+		if (size == null)
+			return;
 		Graphics2D g = (Graphics2D)_g;
 		g.setColor(Color.BLACK);
 		g.setStroke(new BasicStroke(

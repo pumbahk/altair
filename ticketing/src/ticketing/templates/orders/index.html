@@ -22,6 +22,43 @@
 </div>
 <div style="clear: both;"></div>
 
+## todo move 
+<script type="text/javascript">
+  <%include file="/orders/_printstatus.js"/>
+</script>
+<div class="area">
+  <dl>
+	<dt>チェックされた数</dt><dd id="printstatus_count"></dd>
+  </dl>
+
+  %if request.matched_route.name == "orders.checked.index":
+    <a href="${request.route_path("orders.index")}">全部の購入情報を表示</a>
+  %else:
+    <a href="${request.route_path("orders.checked.index")}">チェックした購入情報だけ表示</a>
+  %endif
+  <!-- <button type="button" class="btn" id="printstatus_save">save</button> -->
+  <button type="button" class="btn" id="printstatus_reset">reset</button>
+  <a href="${request.route_path("orders.checked.queue.dialog")}"
+	 data-toggle="modal" data-target="#PrintQueueModal"
+	 class="ajax-modal btn"
+	 ><i class="icon-print"></i> チェックしている注文をキューに入れる</a>
+</div>
+
+<p> ${max(orders.items_per_page * (orders.page-1) + 1,0)}～${min(orders.items_per_page * orders.page, orders.item_count)} / ${orders.item_count}件</p>
 <div class="orders">
   <%include file="/orders/_list.html" args="form=form, orders=orders" />
 </div>
+
+<div class="modal hide" id="PrintQueueModal">
+</div>
+<script type="text/javascript">
+  $(function(){
+    // ajax modal
+	$("a.ajax-modal[data-toggle=modal]").click(function(){
+      var wrap = $($(this).attr("data-target"));
+      wrap.empty();
+      $(wrap).load($(this).attr("href"));
+	});
+  });
+</script>
+

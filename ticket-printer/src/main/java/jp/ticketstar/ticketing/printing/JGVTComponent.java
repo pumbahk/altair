@@ -44,8 +44,8 @@ public class JGVTComponent extends AbstractJGVTComponent {
         
         if (image != null) {
         	g2d.transform(new AffineTransform(1, 0, 0, 1,
-        			pageFormat == null ? 0: pageFormat.getImageableX(),
-        			pageFormat == null ? 0: pageFormat.getImageableY()));
+        			pageFormat == null ? 0: UnitUtils.pointToPixel(pageFormat.getImageableX()),
+        			pageFormat == null ? 0: UnitUtils.pointToPixel(pageFormat.getImageableY())));
             g2d.drawRenderedImage(image, null);
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                                  RenderingHints.VALUE_ANTIALIAS_OFF);

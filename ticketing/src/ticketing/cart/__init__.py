@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
-from ticketing.logicaldeleting import install as ld_install
-ld_install()
+import json
+
 from pyramid.config import Configurator
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
 import functools
@@ -10,7 +10,6 @@ import sqlahelper
 from pyramid_beaker import session_factory_from_settings
 
 import logging
-
 logger = logging.getLogger(__name__)
 
 from ..api.impl import bound_communication_api ## cmsとの通信
@@ -63,6 +62,9 @@ def import_mail_module(config):
 
 
 def main(global_config, **settings):
+    from ticketing.logicaldeleting import install as ld_install
+    ld_install()
+
     engine = engine_from_config(settings)
     my_session_factory = session_factory_from_settings(settings)
     sqlahelper.add_engine(engine)
@@ -75,6 +77,11 @@ def main(global_config, **settings):
     config.add_renderer('csv'   , 'ticketing.renderers.csv_renderer_factory')
     config.add_static_view('static', 'ticketing.cart:static', cache_max_age=3600)
 
+    ### selectable renderer
+    config.include(".selectable_renderer")
+    domain_candidates = json.loads(config.registry.settings["altair.cart.domain.mapping"])
+    selector = config.maybe_dotted(".selectable_renderer.ByDomainMappingSelector")(domain_candidates)
+    config.add_selectable_renderer_selector(selector)
 
     ## mail
     config.include(import_mail_module)
@@ -94,6 +101,9 @@ def main(global_config, **settings):
     config.include('..mobile')
     config.include('.plugins')
     config.include('.errors')
+
+    if settings.get('altair.debug_mobile'):
+        config.add_tween('ticketing.mobile.tweens.mobile_request_factory')
 
     ## cmsとの通信
     bound_communication_api(config, 

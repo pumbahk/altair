@@ -1,0 +1,276 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>ナイナーズチケット</title>
+<meta name="description" content="チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などのスポーツ、その他イベントなどのチケットのオンラインショッピングサイトです。" />
+<meta name="keywords" content="チケット,演劇,クラシック,オペラ,コンサート,バレエ,ミュージカル,野球,サッカー,格闘技" />
+<meta http-equiv="content-style-type" content="text/css" />
+<meta http-equiv="content-script-type" content="text/javascript" />
+<link rel="shortcut icon" href="${request.static_url('ticketing.cart:static/img/common/favicon.ico')}" />
+
+<link rel="stylesheet" href="${request.static_url('ticketing.cart:static/css/import.css')}" type="text/css" media="all" />
+<link rel="stylesheet" href="${request.static_url('ticketing.cart:static/css/custom.css')}" type="text/css" media="all" />
+<link rel="stylesheet" href="${request.static_url('ticketing.cart:static/js/css/jquery.smihica_vertical_slider/smihica_vertical_slider.css')}" type="text/css" media="all" />
+
+<script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/fashion.js')}"></script>
+<![if !(lt IE 9)]>
+<script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/fashion.svg.js')}" charset="utf-8"></script>
+<![endif]>
+<!--[if (lt IE 9)]>
+<script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/fashion.vml.js')}" charset="utf-8"></script>
+<![endif]-->
+<script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/underscore-min.js')}"></script>
+<script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/backbone-min.js')}"></script>
+<!-- <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/carts.js')}"></script> -->
+<script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/carts2.js')}"></script>
+<script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/venue-viewer.js')}"></script>
+<script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/jquery.smihica_vertical_slider.js')}" charset="utf-8"></script>
+<style type="text/css">
+.modal {
+	font-size: 150%;
+}
+</style>
+<script type="text/javascript">
+var selected = ${selected};
+var venues_selection = ${venues_selection};
+var upper_limit = ${upper_limit};
+var sales_segment = ${sales_segment};
+var order_url = "${order_url}";
+var products_from_selected_date_url = "${products_from_selected_date_url}";
+var cart_release_url = "${cart_release_url}";
+var hardcoded_root = "${request.static_url('ticketing.cart:static/site-data/')}";
+$(function() {cart.init(venues_selection, selected, upper_limit, cart_release_url);});
+</script>
+</head>
+<body id="settlement">
+<p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${request.static_url('ticketing.cart:static/img/common/skip.gif')}" alt="本文へジャンプ" width="1" height="1" /></a></p>
+
+<div id="container">
+
+	<!-- ========== header ========== -->
+	<div id="grpheader">
+		<p id="siteID">
+			<img src="${request.static_url('ticketing.cart:static/img/common/happinetslogo_300x40.gif')}" alt="ナイナーズチケット" width="300" height="40"  />
+		</p>
+	</div>
+	<!-- ========== /header ========== -->
+	
+	<hr />
+
+	<!-- ========== main ========== -->
+	<div id="main">
+		<h1><img src="${request.static_url('ticketing.cart:static/img/settlement/happinets_title_settlement.gif')}" alt="チケット購入" width="950" height="40" /></h1>
+				<!-- <p class="cartNickname">ようこそ ${h.get_nickname(request)}</p> -->
+		<h2 id="ticketName">${event['title']} (<span class="performanceNameSpace"></span>)</h2>
+		<form id="form1" name="form1" method="post" action="">
+			<div id="settlementSelectBox">
+				<div id="settlementSelectBoxInner">
+					<table summary="チケット購入の絞り込み">
+						<tr>
+							<th>対象試合</th>
+							<td>
+								<select name="select" id="date-select">
+								</select>
+							</td>
+						</tr>
+						<tr id="settlementSelectEnd">
+							<th>日付・会場</th>
+							<td><select name="select2" id="venue-select">
+							</select></td>
+						</tr>
+					</table>
+				</div>
+			</div>
+		</form>
+		<div id="settlementOperation" class="settlementBox2">
+			<div class="settlementBoxInner2">
+				<h2 id="hallName">
+					<span id="performanceDate">-</span>
+					<span id="performanceVenue">-</span>
+				</h2>
+				<div class="settlementOperationPaneInner">
+          <div class="settlementOperationPaneInnerContent">
+            <div id="selectSeatType" class="focused">
+              <h3 class="lead">席種をお選びください</h3>
+              <form name="form2" method="post" action="" class="main" onsubmit="return false;">
+                <input type="hidden" name="performance_id" id="current-performance-id"/>
+                <div class="seatListContainer main">
+                  <ul id="seatTypeList">
+                  </ul>
+                  <script type="text/javascript">
+                    (function () {
+                      var selectSeatType = $('#selectSeatType');
+                      var ul = selectSeatType.find('.seatListContainer ul');
+                      var selected = ul.find("li.selected");
+                      var ulTopOffset = ul.parent()[0].offsetTop;
+                      var arrow = null;
+                      function updateArrowPos() {
+                        if (arrow) {
+                          var scrollY = ul.parent().scrollTop();
+                          var arrowAbsPos = selected.offsetTop + ulTopOffset;
+                          arrow.css({
+                            right: "0px",
+                            top: arrowAbsPos - scrollY + "px"
+                          });
+                        }
+                      }
+                      ul.data('updateArrowPos', updateArrowPos);
+                      ul.parent().scroll(updateArrowPos);
+                      function select(it) {
+                        if (!selectSeatType.hasClass('focused'))
+                          return;
+                        if (!it) {
+                          if (selected)
+                            selected.removeClass('selected');
+                          if (arrow)
+                            arrow.remove();
+                          selected = arrow = null;
+                          return;
+                        }
+                        if (!it.hasClass('selected')) {
+                          selected.removeClass('selected');
+                          it.addClass('selected');
+                          selected = it;
+                          if (!arrow) {
+                            arrow = $('<div></div>')
+                              .addClass("arrow")
+                              .appendTo(selectSeatType);
+                          }
+                          updateArrowPos();
+                        }
+                        var radio = it.find(':radio');
+                        if (radio.length) {
+                          radio[0].checked = true;
+                          radio.change();
+                        }
+                      }
+                      ul.delegate('.seatListItemInner', 'click', function () {
+                        select($(this).closest('li'));
+                      });
+                      ul.find("li:even").addClass("seatEven");
+                      ul.find("li:odd").addClass("seatOdd");
+                    })();
+                  </script>
+                  <div style="display:none; overflow: hidden" class="selectProduct" id="selectProductTemplate">
+                    <ul class="productList payment-seat-products">
+                    </ul>
+                    <fieldset style="display:none;" class="selected-seats">
+                    </fieldset>
+                    <ul class="buttonSet">
+                      <li><a class="btn-select-buy">座席を選んで購入</a></li>
+                      <li><a class="btn-entrust-buy">おまかせで購入</a></li>
+                      <li><a class="btn-buy">購入</a></li>
+                    </ul>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div id="selectSeat">
+              <div class="selectSeatLeftPane">
+                <div class="venueViewerWrapper">
+                  <div class="slider"></div>
+                  <div class="venueViewer"></div>
+                  <div class="guidanceBackground"></div>
+                  <div class="guidance">
+                    <div class="guidanceInner">
+                      <h3>チケット購入方法</h3>
+                      <p>1. 左側の席種一覧から希望の席種をクリックしてください。</p>
+                      <p>2. 希望の券種と枚数を選択してください。</p>
+                      <p>3. 購入方法をお選びください。</p>
+                      <p>4. [座席を選んで購入] の場合、右側 (この欄) に会場図が表示されます。選択した席種名の横に記載されたブロックを選択してください。</p>
+                      <p>5. ご希望席を選択/解除してください。</p>
+                      <p>※席種・ブロックを選び直す際は、「キャンセル」ボタンを押してください。</p>
+                    </div>
+                  </div>
+                </div>
+                <div style="float: right">
+                  <a onclick="$('#venue-detail').click(function () { $(this).overlay().close() }).overlay({ mask: { color: '#999', opacity: .5 }, closeOnClick: true }).load()">会場図の文字が見にくい方はこちら</a>
+                </div>
+                <div>
+                  <a class="btn-select-seat">購入</a>
+                  <a class="btn-cancel">キャンセル</a>
+                </div>
+              </div>
+            </div>
+          </div>
+				</div>
+			</div>
+		</div>
+		<div class="settlementBox2" id="settlementEventDetail" style="clear:both">
+			<div class="settlementBoxInner2">
+				<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_event.gif')}" alt="イベント詳細" width="106" height="29" /></h2>
+				<table summary="イベント詳細情報">
+					<tbody>
+            <tr>
+              <th scope="row">イベント名</th>
+              <td>${event["title"]} (<span class="performanceNameSpace"></span>)</td>
+            </tr>
+						<tr>
+							<th scope="row">開催日時</th>
+							<td id="descPerformanceDate"></td>
+						</tr>
+						<tr>
+							<th scope="row">会場</th>
+							<td id="venue"> ${", ".join(event['venues'])}</td>
+						</tr>
+						<tr>
+							<th scope="row">販売期間</th>
+							<td id="descSalesTerm">
+								${event['sales_start_on']} 〜 ${event['sales_end_on']}
+							</td>
+						</tr>
+					%for v in event_extra_info:
+						<tr>
+							<th scope="row">${v['label']}</th>
+							<td>${v['content']|n}</td>
+						</tr>
+					%endfor
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+	<!-- ========== /main ========== -->
+	
+<!-- /container -->
+</div>
+
+<div class="modal" id="venue-detail" style="display:none; background-image: url(${request.static_url('ticketing.cart:static/site-data/xebio-arena.png')}); width: 833px; height: 637px;">
+</div>
+
+
+<div class="modal payment" id="order-error-template" style="display:none">
+  <div class="modal-header"></div>
+  <div class="modal-inner">
+    <div class="modal-body"></div>
+    <div class="modal-footer"></div>
+  </div>
+</div>
+
+<div class="modal payment" id="order-reserved" style="display:none">
+  <div class="modal-header"></div>
+  <div class="modal-inner">
+    <div class="modal-body">
+      <h3>合計金額</h3>
+      <table>
+        <tbody>
+          <tr class="last-child">
+          <td class="cart-total-amount">￥</td>
+          </tr>
+        </tbody>
+      </table>
+      <h3>内訳</h3>
+      <table>
+        <tbody class="contentsOfShopping">
+        </tbody>
+      </table>
+    </div>
+    <div class="modal-footer">
+      <a class="cancel-button btn-redo">座席・枚数を選びなおす</a>
+      <a class="ok-button btn-buy">購入する</a>
+    </div>
+  </div>
+</div>
+</body>
+</html>

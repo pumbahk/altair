@@ -1,4 +1,4 @@
-<%page args="order" />
+<%page args="order, sort=None" />
 <%namespace file="/common/helpers.html" name="h" />
 <%namespace file="/common/modal.html" name="m" />
 
@@ -8,6 +8,56 @@
     modal.find('#delete').attr('href', '/orders/cancel/' + id);
     modal.find('#message').text("${u'選択した受注をキャンセルします。よろしいですか？'}");
     modal.modal('toggle');
+  }
+  function edit_shipping_address() {
+    var modal = $('#modal-edit-shipping_address');
+    modal.modal('toggle');
+  }
+  function save_shipping_address() {
+    var modal = '#modal-edit-shipping_address';
+    var form = '#shipping_address-form';
+    var url = '${request.route_path('orders.edit.shipping_address', order_id=order.id)}';
+    post_modal_form(modal, form, url);
+  }
+  function edit_product() {
+    var modal = $('#modal-edit-product');
+    modal.modal('toggle');
+  }
+  function save_product() {
+    var modal = '#modal-edit-product';
+    var form = '#product-form';
+    var url = '${request.route_path('orders.edit.product', order_id=order.id)}';
+    post_modal_form(modal, form, url);
+  }
+  function save_note() {
+    var param = {};
+    var form = $('#note-form');
+    form.find('.message').empty();
+    $(form.find('form').serializeArray()).each(function(i, v) {
+      param[v.name] = v.value;
+    });
+    $.ajax({
+      type: 'post',
+      url: '${request.route_path('orders.note', order_id=order.id)}',
+      contentType: 'application/json; charset=utf-8',
+      dataType: 'json',
+      data: JSON.stringify(param),
+      success: function(result) {
+        form.find('.message').append('メモを保存しました');
+      },
+      error: function(xhr, text) {
+        var responseText = JSON.parse(xhr.responseText);
+        var messages = responseText['message'] || xhr.statusText
+        var errors = '';
+        if (typeof messages == 'string') {
+          errors += '<li>' + messages + '</li>';
+        } else {
+          for (i in messages)
+            errors += '<li>' + messages[i] + '</li>';
+        }
+        form.find('.message').append('<ul>' + errors + '</ul>');
+      }
+    });
   }
 </script>
 
@@ -25,7 +75,7 @@ actions = {
   ),
   'print':dict(
     label=u'発券する',
-    url=request.route_path('orders.print.queue', order_id=order.id),
+     url=request.route_path('orders.print.queue', order_id=order.id),
     icon='icon-print',
   ),
   'cancel':dict(
@@ -33,9 +83,24 @@ actions = {
     url='javascript:cancel_order(%d);' % order.id,
     icon='icon-remove',
   ),
+  'edit_shipping_address':dict(
+    label=u'編集',
+    url='javascript:edit_shipping_address(%d);' % order.id,
+    icon='icon-edit',
+  ),
+  'edit_product':dict(
+    label=u'編集',
+    url='javascript:edit_product(%d);' % order.id,
+    icon='icon-edit',
+  ),
+  'note':dict(
+    label=u'メモを保存',
+    url='javascript:save_note(%d);' % order.id,
+    icon='icon-pencil',
+  ),
 }
-sort = iter(['mailinfo','delivered', 'print', 'cancel'])
+sort = iter(sort or ['mailinfo', 'delivered','cancel'])
 %>
-${h.action_button(actions, sort, virtical=False)}
+${h.action_button(actions, sort, vertical=False)}
 
 ${m.delete_modal(label_delete=u'キャンセル', label_cancel=u'戻る')}

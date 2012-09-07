@@ -1,0 +1,138 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<title>仙台89ERS 2012-2013 ブースタークラブ入会申込ページ</title>
+    <link rel="stylesheet" type="text/css" href="${request.static_url('ticketing.bj89ers:static/style.css')}" media="all" />
+</head>
+<body>
+  <div align="center">
+  <div class="header">
+	  <img src="${request.static_url('ticketing.bj89ers:static/images/head_title.png')}" alt="仙台89ERS" width="780" height="135" />
+  </div>
+  <h1 class="title">仙台89ERS 2012-2013 ブースタークラブ入会申込ページ</h1>
+  <form id="form1" action="${request.route_url('payment.finish')}" method="post">
+    ${form.csrf_token()}
+	<table class="layout" style="width:760px" class="wrapper">
+      <tr>
+		<td>
+          <h2>申込内容確認</h2>
+            <div class="formWrapper">
+              <table cellpadding="0" cellspacing="0" class="form89ers">
+                <colgroup>
+                  <col style="width:180px;">
+                  <col style="width:310px;">
+                </colgroup>
+                <tbody>
+                  <tr>
+                    <th colspan="2" style="text-align:left;font-size:18px;">
+                      仙台89ERS 2012-2013 ブースタークラブ
+                    </tr>
+                    <%
+                      pm = _api.load_user_profile(request)
+                    %>
+                    <tr>
+                      <th>新規／継続</th>
+                      <td>${u'継続' if pm.get('cont') == 'yes' else u'新規'}</td>
+                    </tr>
+                    % if pm.get('old_id_number'):
+                  　<tr>
+                      <th>2011-12会員番号</th>
+                      <td>${pm.get('old_id_number')}</td>
+                    </tr>
+                    % endif
+                    <tr>
+                      <th>会員種別</th>
+                      <td>${cart.products[0].product.name}</td>
+                    </tr>
+                    % if h.is_include_t_shirts(cart):
+                    <tr>
+                      <th>Tシャツサイズ</th>
+                      <td>${pm['t_shirts_size']}</td>
+                    </tr>
+                    % endif
+                     <tr>
+                        <th>氏名</th>
+                        <td>${pm['last_name']} ${pm['first_name']}</td>
+                     </tr>
+                     <tr>
+                        <th>氏名（フリガナ）</th>
+                        <td>${pm['last_name_kana']} ${pm['first_name_kana']}</td>
+                     </tr>
+                     <tr>
+                        <th>誕生日</th>
+                        <td>${pm['year']}年${pm['month']}月${pm['day']}日</td>
+                     </tr>
+                     <tr>
+                        <th>性別</th>
+                        <td>
+                          %if pm['sex']=='male':
+                            男性
+                          %endif
+                          %if pm['sex']=='female':
+                            女性
+                          %endif
+                        </td>
+                     </tr>
+                     <tr>
+                            <th>郵便番号</th>
+                            <td>${pm['zipcode1']}-${pm['zipcode2']}</td>
+                     </tr>
+                        <tr>
+                            <th>住所</th>
+                            <td>${pm['prefecture']} ${pm['city']} ${pm['address1']} ${pm['address2']}</td>
+                        </tr>
+                        <tr>
+                            <th>電話番号（携帯）</th>
+                            <td>${pm['tel_1']}</td>
+                        </tr>
+                        <tr>
+                            <th>電話番号（自宅）</th>
+                            <td>${pm['tel_2']}</td>
+                        </tr>
+                        <tr>
+                            <th>メールアドレス</th>
+                            <td>${pm['email']}</td>
+                        </tr>
+                        <tr>
+                            <th>仙台89ERSからのメールマガジンの配信	</th>
+                            <td>${u'希望する' if pm.get('mail_permission') else u'希望しない'}</td>
+                        </tr>
+                        <tr>
+                            <th>メモリアルブックへの掲載希望</th>
+                            <td>${u'はい' if pm.get('publicity') == 'yes' else u'いいえ'}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <table cellpadding="0" cellspacing="0" class="form89ers">
+                    <colgroup>
+                    <col style="width:180px;">
+                    <col style="width:310px;">
+                    </colgroup>
+                    <tbody>
+                        <tr>
+                            <td colspan="2" style="text-align:center;">
+                            <input type="submit" name="back" value="戻る" class="submit" style="width:200px;height:50px;">
+                            <input type="submit" value="申し込む" class="submit" style="width:200px;height:50px;">
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+
+
+                <br />
+                <br />
+                <br />
+			</td>
+		</tr>
+    </table>
+</form>
+  </div>
+
+	<%include file="/commons/footer.inc" />
+
+</body>
+</html>

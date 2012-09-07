@@ -42,9 +42,9 @@
           x: utils.convertToUserUnit(data['size'].width),
           y: utils.convertToUserUnit(data['size'].height)
         };
-        var contentSize = { x: 1000, y: 1000 };
+        var offset = { x: 4, y: 4 };
+        var contentSize = { x: paperSize.x + offset.x * 2 + 2, y: paperSize.y + offset.y * 2 + 2 };
         var drawable = new Fashion.Drawable(self.node, { contentSize: contentSize });
-        var offset = { x: 0, y: 0 };
         drawable.draw(new Fashion.Rect({
           position: offset,
           size: paperSize,

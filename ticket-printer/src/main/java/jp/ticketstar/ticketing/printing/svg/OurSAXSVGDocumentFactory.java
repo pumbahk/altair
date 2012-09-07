@@ -1,15 +1,8 @@
 package jp.ticketstar.ticketing.printing.svg;
 
-import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.io.Reader;
-
 import org.apache.batik.dom.svg.SAXSVGDocumentFactory;
 import org.apache.batik.dom.svg.SVGDOMImplementation;
 import org.w3c.dom.DOMImplementation;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 
 public class OurSAXSVGDocumentFactory extends SAXSVGDocumentFactory {
 

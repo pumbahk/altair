@@ -1,0 +1,32 @@
+<%page args="form" />
+<%namespace file="/common/helpers.html" name="h" />
+
+<div id="modal-edit-shipping_address" class="modal fade">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">×</a>
+    <h3>配送先編集</h3>
+  </div>
+
+  <div class="modal-body">
+    <form action="javascript:save_shipping_address();" method="POST">
+      <fieldset>
+        ${h.form_item(form.last_name, option={'maxlength':255})}
+        ${h.form_item(form.first_name, option={'maxlength':255})}
+        ${h.form_item(form.last_name_kana, option={'maxlength':255})}
+        ${h.form_item(form.first_name_kana, option={'maxlength':255})}
+        ${h.form_item(form.zip, option={'maxlength':7})}
+        ${h.form_item(form.prefecture, option={'maxlength':255})}
+        ${h.form_item(form.city, option={'maxlength':255})}
+        ${h.form_item(form.address_1, option={'maxlength':255})}
+        ${h.form_item(form.address_2, option={'maxlength':255})}
+        ${h.form_item(form.tel, option={'maxlength':12})}
+        ${h.form_item(form.mail_address)}
+      </fieldset>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+    <a href="javascript:void(0);" onclick="$('#modal-edit-shipping_address').find('form').submit();" class="btn">保存</a>
+  </div>
+</div>

@@ -1,14 +1,19 @@
 # -*- coding: utf-8 -*-
 
-from wtforms import Form
+from datetime import datetime
+from wtforms import Form, ValidationError
 from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, TextAreaField,
-                     BooleanField, RadioField, FieldList, FormField)
-from wtforms.validators import Optional, AnyOf, Email
-
+                     BooleanField, RadioField, FieldList, FormField, DecimalField, IntegerField)
+from wtforms.validators import Optional, AnyOf, Length, Email
+from collections import OrderedDict
 from ticketing.formhelpers import DateTimeField, Translations, Required
-from ticketing.core.models import PaymentMethodPlugin, DeliveryMethodPlugin
+from ticketing.core.models import (PaymentMethodPlugin, DeliveryMethodPlugin, PaymentDeliveryMethodPair,
+                                   SalesSegment, Performance, Product, ProductItem)
 
 class OrderForm(Form):
+
+    def _get_translations(self):
+        return Translations()
 
     order_no = HiddenField(
         label=u'予約番号',
@@ -21,6 +26,24 @@ class OrderForm(Form):
     created_at = HiddenField(
         label=u'予約日時',
         validators=[Optional()],
+    )
+    system_fee = DecimalField(
+        label=u'システム利用料',
+        places=2,
+        default=0,
+        validators=[Required()],
+    )
+    transaction_fee = DecimalField(
+        label=u'決済手数料',
+        places=2,
+        default=0,
+        validators=[Required()],
+    )
+    delivery_fee = DecimalField(
+        label=u'配送手数料',
+        places=2,
+        default=0,
+        validators=[Required()],
     )
 
 class OrderSearchForm(Form):
@@ -78,9 +101,103 @@ class OrderSearchForm(Form):
         validators=[Optional(), AnyOf(['asc', 'desc'], message='')],
         default='desc',
     )
-    performance_id = HiddenField(
+    def force_maybe(form, field):
+        if not field.choices:
+            field.data = None
+            field.errors[:] = []
+        return True
+
+    event_id = SelectField(
+        label=u"イベント", 
+        coerce=lambda x : int(x) if x else u"", 
+        choices=[], 
+        validators=[Optional(), force_maybe],
+    )
+    performance_id = SelectField(
+        label=u"公演", 
+        coerce=lambda x : int(x) if x else u"", 
+        choices=[], 
+        validators=[Optional(), force_maybe],
+    )
+    def configure(self, event_query):
+        self.event_id.choices = [("", "")]+[(e.id, e.title) for e in event_query]
+        return self
+
+class PerformanceSearchForm(Form):
+    event_id =  HiddenField(
+        validators=[Optional()],
+    )        
+    sort = HiddenField(
         validators=[Optional()],
     )
+    direction = HiddenField(
+        validators=[Optional(), AnyOf(['asc', 'desc'], message='')],
+        default='desc',
+    )
+
+class OrderReserveForm(Form):
+
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        Form.__init__(self, formdata, obj, prefix, **kwargs)
+        if 'performance_id' in kwargs:
+            performance = Performance.get(kwargs['performance_id'])
+            self.performance_id.data = performance.id
+
+            now = datetime.now()
+            sales_segments = SalesSegment.filter_by(kind='vip')\
+                                         .filter_by(event_id=performance.event_id)\
+                                         .filter(SalesSegment.start_at<=now)\
+                                         .filter(now<=SalesSegment.end_at).all()
+            self.payment_delivery_method_pair_id.choices = []
+            for sales_segment in sales_segments:
+                for pdmp in sales_segment.payment_delivery_method_pairs:
+                    self.payment_delivery_method_pair_id.choices.append(
+                        (pdmp.id, '%s  -  %s' % (pdmp.payment_method.name, pdmp.delivery_method.name))
+                    )
+
+            if 'stocks' in kwargs:
+                self.product_id.choices = []
+                products = Product.filter(Product.event_id==performance.event_id)\
+                                  .join(Product.items)\
+                                  .filter(ProductItem.performance_id==performance.id)\
+                                  .filter(ProductItem.stock_id.in_(kwargs['stocks'])).all()
+                self.product_id.choices += [(p.id, p.name) for p in products]
+
+    def _get_translations(self):
+        return Translations()
+
+    performance_id = HiddenField(
+        label='',
+        validators=[Required()],
+    )
+    note = TextAreaField(
+        label=u'備考・メモ',
+        validators=[
+            Optional(),
+            Length(max=2000, message=u'2000文字以内で入力してください'),
+        ],
+    )
+    quantity = IntegerField(
+        label=u'個数',
+        validators=[Optional()],
+    )
+    product_id = SelectField(
+        label=u'商品',
+        validators=[Required(u'選択してください')],
+        choices=[],
+        coerce=int
+    )
+    payment_delivery_method_pair_id = SelectField(
+        label=u'決済・配送方法',
+        validators=[Required(u'選択してください')],
+        choices=[],
+        coerce=int
+    )
+
+    def validate_product_id(form, field):
+        product = Product.get(field.data)
+        if product and product.seat_stock_type.quantity_only and not form.quantity.data:
+            raise ValidationError(u'数受けの場合は個数を入力してください')
 
 class SejTicketForm(Form):
     ticket_type = SelectField(
@@ -313,3 +430,33 @@ class SendingMailForm(Form):
             Optional()
         ]
     )
+
+class PreviewTicketSelectForm(Form):
+    ticket_format_id = SelectField(
+        label=u"チケットの種類", 
+        choices=[], 
+        validators=[Optional()],
+    )
+    
+    item_id = HiddenField(
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(type(self), self).__init__(*args, **kwargs)
+        ticket_formats = kwargs.get('ticket_formats')
+        if ticket_formats:
+            self.ticket_format_id.choices = [(t.id,  t.name) for t in ticket_formats]
+
+class CheckedOrderTicketChoiceForm(Form):
+    ticket_format_id = SelectField(
+        label=u"チケット様式", 
+        coerce=int, 
+        choices=[], 
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(type(self), self).__init__(*args, **kwargs)
+        ticket_formats = kwargs.get('ticket_formats')
+        if ticket_formats:
+            self.ticket_format_id.choices = [(t.id,  t.name) for t in ticket_formats]
+

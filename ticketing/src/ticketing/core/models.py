@@ -6,14 +6,16 @@ from datetime import datetime
 
 from sqlalchemy import Table, Column, ForeignKey, func, or_, and_
 from sqlalchemy import ForeignKeyConstraint, UniqueConstraint
-from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode
+from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode, UnicodeText
 from sqlalchemy.orm import join, backref, column_property
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.sql.expression import desc
 from sqlalchemy.ext.associationproxy import association_proxy
 
 from pyramid.threadlocal import get_current_registry
 
+from .exceptions import *
 from ticketing.models import *
 from ticketing.users.models import User
 from ticketing.utils import sensible_alnum_decode
@@ -495,6 +497,18 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         performance.create_venue_id = template.venue.id
         performance.save()
 
+    @staticmethod
+    def set_search_condition(query, form):
+        sort = form.sort.data or 'id'
+        direction = form.direction.data or 'desc'
+        query = query.order_by('Performance.' + sort + ' ' + direction)
+
+        condition = form.event_id.data
+        if condition:
+            query = query.filter(Performance.event_id==condition)
+
+        return query
+
 class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Event'
 
@@ -764,6 +778,7 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     end_at = Column(DateTime)
     upper_limit = Column(Integer)
     seat_choice = Column(Boolean, default=True)
+    public = Column(Boolean, default=True)
 
     event_id = Column(Identifier, ForeignKey('Event.id'))
     event = relationship('Event', backref='sales_segments')
@@ -1408,6 +1423,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     canceled_at = Column(DateTime, nullable=True, default=None)
 
     order_no = Column(String(255))
+    note = Column(UnicodeText, nullable=True, default=None)
 
     performance_id = Column(Identifier, ForeignKey('Performance.id'))
     performance = relationship('Performance', backref="orders")
@@ -1581,6 +1597,9 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         condition = form.performance_id.data
         if condition:
             query = query.filter(Order.performance_id==condition)
+        condition = form.event_id.data
+        if condition:
+            query = query.join(Order.performance).filter(Performance.event_id==condition)
         condition = form.ordered_from.data
         if condition:
             query = query.filter(Order.created_at>=condition)
@@ -1669,6 +1688,16 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     attributes = association_proxy('_attributes', 'value', creator=lambda k, v: OrderedProductAttribute(name=k, value=v))
 
     @property
+    def seat_statuses_for_update(self):
+      return DBSession.query(SeatStatus).filter(SeatStatus.seat_id.in_([s.id for s in self.seats])).with_lockmode('update').all()
+
+    @property
+    def name(self):
+        if not self.seats:
+            return u""
+        return u', '.join([(seat.name) for seat in self.seats if seat.name])
+
+    @property
     def seat_statuses(self):
         """ 確保済の座席ステータス
         """
@@ -1676,11 +1705,21 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def release(self):
         # 座席開放
-        for seat_status in self.seat_statuses:
-            logger.debug('release seat id=%d' % (seat_status.seat_id))
-            seat_status.status = int(SeatStatusEnum.Vacant)
+        cancellable_status = [
+            int(SeatStatusEnum.Ordered),
+            int(SeatStatusEnum.Reserved),
+        ]
+        for seat_status in self.seat_statuses_for_update:
+            logger.info('trying to release seat (id=%d)' % seat_status.seat_id)
+            if seat_status.status not in cancellable_status:
+                logger.info('not releasing OrderedProductItem (id=%d, seat_id=%d, status=%d) for safety' % (self.id, seat_status.seat_id, seat_status.status))
+                raise InvalidStockStateError("This order is associated with a seat (id=%d, status=%d) that is not marked ordered" % seat_status.seat_id, seat_status.status)
+            else:
+                logger.info('setting status of seat (id=%d, status=%d) to Vacant (%d)' % (seat_status.seat_id, seat_status.status, int(SeatStatusEnum.Vacant)))
+                seat_status.status = int(SeatStatusEnum.Vacant)
+
         # 在庫数を戻す
-        logger.debug('release stock id=%s quantity=%d' % (self.product_item.stock_id, len(self.seats)))
+        logger.info('release stock id=%s quantity=%d' % (self.product_item.stock_id, len(self.seats)))
         query = StockStatus.__table__.update().values(
             {'quantity': StockStatus.quantity + len(self.seats)}
         ).where(StockStatus.stock_id==self.product_item.stock_id)
@@ -1749,6 +1788,49 @@ class TicketBundleAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         UniqueConstraint("ticket_bundle_id", "name", "deleted_at", name="ib_unique_1"), 
         )
 
+class TicketPrintQueueEntry(Base, BaseModel):
+    __tablename__ = "TicketPrintQueueEntry"
+    id = Column(Identifier, primary_key=True, autoincrement=True, nullable=False)
+    operator_id = Column(Identifier, ForeignKey('Operator.id'), nullable=True)
+    operator = relationship('Operator', uselist=False)
+    ordered_product_item_id = Column(Identifier, ForeignKey('OrderedProductItem.id'), nullable=True)
+    ordered_product_item = relationship('OrderedProductItem')
+    seat_id = Column(Identifier, ForeignKey('Seat.id'), nullable=True)
+    seat = relationship('Seat')
+    ticket_id = Column(Identifier, ForeignKey('Ticket.id'), nullable=False)
+    ticket = relationship('Ticket')
+    summary = Column(Unicode(255), nullable=False, default=u'')
+    data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
+    created_at = Column(TIMESTAMP, nullable=False,
+                        default=datetime.now,
+                        server_default=sqlf.current_timestamp())
+    processed_at = Column(TIMESTAMP, nullable=True, default=None)
+
+    @property
+    def drawing(self):
+        return self.data["drawing"]
+
+    @classmethod
+    def enqueue(self, operator, ticket, data, summary, ordered_product_item=None, seat=None):
+        DBSession.add(TicketPrintQueueEntry(operator=operator, ticket=ticket, data=data, summary=summary, ordered_product_item=ordered_product_item))
+
+    @classmethod
+    def peek(self, operator, ticket_format_id):
+        return TicketPrintQueueEntry.filter_by(processed_at=None, operator=operator).filter(Ticket.ticket_format_id==ticket_format_id).order_by(desc(self.created_at)).all()
+
+    @classmethod
+    def dequeue(self, ids):
+        entries = TicketPrintQueueEntry.with_lockmode("update") \
+            .filter(TicketPrintQueueEntry.id.in_(ids)) \
+            .filter(TicketPrintQueueEntry.processed_at == None) \
+            .all()
+        if len(entries) == 0:
+            return False
+        for entry in entries:
+            entry.processed_at = datetime.now()
+            DBSession.add(entry)
+        return True
+
 from ..operators.models import Operator
 
 class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -1785,14 +1867,16 @@ class TicketPrintHistory(Base, BaseModel, WithTimestamp):
     ordered_product_item = relationship('OrderedProductItem', backref='print_histories')
     seat_id = Column(Identifier, ForeignKey('Seat.id'), nullable=True)
     seat = relationship('Seat', backref='print_histories')
-    ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id'), nullable=False)
-    ticket_bundle = relationship('TicketBundle', backref='print_histories')
+    ticket_id = Column(Identifier, ForeignKey('Ticket.id'), nullable=False)
+    ticket = relationship('Ticket')
 
-class TicketPrintQueue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
-    __tablename__ = "TicketPrintQueue"
-    id = Column(Identifier, primary_key=True, autoincrement=True, nullable=False)
-    operator_id = Column(Identifier, ForeignKey('Operator.id'), nullable=True)
-    operator = relationship('Operator', uselist=False)
+class PageFormat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = "PageFormat"
+    id = Column(Identifier, primary_key=True)
+    name = Column(Unicode(255), nullable=False)
+    printer_name = Column(Unicode(255), nullable=False)
+    organization_id = Column(Identifier, ForeignKey('Organization.id'), nullable=True)
+    organization = relationship('Organization', uselist=False, backref='page_formats')
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
 
     @property
@@ -1837,3 +1921,4 @@ class MailTypeEnum(StandardEnum):
 MailTypeLabels = (u"購入完了メール", u"購入キャンセルメール")
 assert(len(list(MailTypeEnum)) == len(MailTypeLabels))
 MailTypeChoices = [(str(e), label)for e, label in zip(sorted(MailTypeEnum), MailTypeLabels)]
+
