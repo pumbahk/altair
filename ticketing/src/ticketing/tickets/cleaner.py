@@ -12,6 +12,15 @@ __all__ = (
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+ALIGNMENT_COMPAT_MAP = {
+    u'left': u'start',
+    u'center': u'middle',
+    u'right': u'end',
+    u'start': u'start',
+    u'middle': u'middle',
+    u'end': u'end',
+    }
+
 class FormatError(Exception):
     pass
 
@@ -25,8 +34,12 @@ def override_styles(olddecl, newdecl):
 
 def parse_style(*args, **kwargs):
     decl = cssutils.parseStyle(*args, **kwargs)
-    # this is uncovered by SVG spec, but added by Inkscape...
-    decl.removeProperty(u'text-align')
+    text_align = decl.getProperty(u'text-align')
+    text_align = ALIGNMENT_COMPAT_MAP.get(text_align)
+    if text_align is not None:
+        decl.setProperty(u'text-align', text_align)
+    else:
+        decl.removeProperty(u'text-align')
     return decl
 
 def collect_flowpara_and_flowdivs(retval, style, elem):
