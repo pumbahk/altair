@@ -1774,45 +1774,6 @@ class TicketBundleAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         UniqueConstraint("ticket_bundle_id", "name", "deleted_at", name="ib_unique_1"), 
         )
 
-from ..operators.models import Operator
-
-class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
-    __tablename__ = "TicketBundle"
-    id = Column(Identifier, primary_key=True)
-    name = Column(Unicode(255), default=u"", nullable=False)
-    event_id = Column(Identifier, ForeignKey('Event.id', ondelete='CASCADE'))
-    event = relationship('Event', uselist=False, backref='ticket_bundles')
-    operator_id = Column(Identifier, ForeignKey('Operator.id'))
-    operator = relationship('Operator', uselist=False)
-    attributes_ = relationship("TicketBundleAttribute", backref='bundle', collection_class=attribute_mapped_collection('name'), cascade='all,delete-orphan')
-    attributes = association_proxy('attributes_', 'value', creator=lambda k, v: SeatAttribute(name=k, value=v))
-    tickets = relationship('Ticket', secondary=Ticket_TicketBundle.__table__, backref='bundles')
-    product_items = relationship('ProductItem', backref='ticket_bundle')
-
-    def replace_tickets(self, news):
-        for ticket in self.tickets:
-            self.tickets.remove(ticket)
-        for ticket in news:
-            self.tickets.append(ticket)
-
-    def replace_product_items(self, news):
-        for product_item in self.product_items:
-            self.product_items.remove(product_item)
-        for product_item in news:
-            self.product_items.append(product_item)
-
-class TicketPrintHistory(Base, BaseModel, WithTimestamp):
-    __tablename__ = "TicketPrintHistory"
-    id = Column(Identifier, primary_key=True, autoincrement=True, nullable=False)
-    operator_id = Column(Identifier, ForeignKey('Operator.id'), nullable=True)
-    operator = relationship('Operator', uselist=False)
-    ordered_product_item_id = Column(Identifier, ForeignKey('OrderedProductItem.id'), nullable=True)
-    ordered_product_item = relationship('OrderedProductItem', backref='print_histories')
-    seat_id = Column(Identifier, ForeignKey('Seat.id'), nullable=True)
-    seat = relationship('Seat', backref='print_histories')
-    ticket_id = Column(Identifier, ForeignKey('Ticket.id'), nullable=False)
-    ticket = relationship('Ticket')
-
 class TicketPrintQueueEntry(Base, BaseModel):
     __tablename__ = "TicketPrintQueueEntry"
     id = Column(Identifier, primary_key=True, autoincrement=True, nullable=False)
@@ -1855,6 +1816,45 @@ class TicketPrintQueueEntry(Base, BaseModel):
             entry.processed_at = datetime.now()
             DBSession.add(entry)
         return True
+
+from ..operators.models import Operator
+
+class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = "TicketBundle"
+    id = Column(Identifier, primary_key=True)
+    name = Column(Unicode(255), default=u"", nullable=False)
+    event_id = Column(Identifier, ForeignKey('Event.id', ondelete='CASCADE'))
+    event = relationship('Event', uselist=False, backref='ticket_bundles')
+    operator_id = Column(Identifier, ForeignKey('Operator.id'))
+    operator = relationship('Operator', uselist=False)
+    attributes_ = relationship("TicketBundleAttribute", backref='bundle', collection_class=attribute_mapped_collection('name'), cascade='all,delete-orphan')
+    attributes = association_proxy('attributes_', 'value', creator=lambda k, v: SeatAttribute(name=k, value=v))
+    tickets = relationship('Ticket', secondary=Ticket_TicketBundle.__table__, backref='bundles')
+    product_items = relationship('ProductItem', backref='ticket_bundle')
+
+    def replace_tickets(self, news):
+        for ticket in self.tickets:
+            self.tickets.remove(ticket)
+        for ticket in news:
+            self.tickets.append(ticket)
+
+    def replace_product_items(self, news):
+        for product_item in self.product_items:
+            self.product_items.remove(product_item)
+        for product_item in news:
+            self.product_items.append(product_item)
+
+class TicketPrintHistory(Base, BaseModel, WithTimestamp):
+    __tablename__ = "TicketPrintHistory"
+    id = Column(Identifier, primary_key=True, autoincrement=True, nullable=False)
+    operator_id = Column(Identifier, ForeignKey('Operator.id'), nullable=True)
+    operator = relationship('Operator', uselist=False)
+    ordered_product_item_id = Column(Identifier, ForeignKey('OrderedProductItem.id'), nullable=True)
+    ordered_product_item = relationship('OrderedProductItem', backref='print_histories')
+    seat_id = Column(Identifier, ForeignKey('Seat.id'), nullable=True)
+    seat = relationship('Seat', backref='print_histories')
+    ticket_id = Column(Identifier, ForeignKey('Ticket.id'), nullable=False)
+    ticket = relationship('Ticket')
 
 class PageFormat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "PageFormat"
