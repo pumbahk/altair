@@ -55,7 +55,8 @@ ${shipping.email}<br />
 <div>窓口支払</div>
 % endif
 <%mobile:form_header>お引き取り</%mobile:form_header>
-% if order.payment_delivery_pair.payment_method.payment_plugin.id == 1:
+${ order.payment_delivery_pair.delivery_method.delivery_plugin.id }
+% if order.payment_delivery_pair.delivery_method.delivery_plugin.id == 1:
 <div>郵送</div>
 下記、ご登録送付先住所へチケットを配送いたします。
 <% shipping = order.shipping_address %>
@@ -68,20 +69,20 @@ ${shipping.last_name_kana} ${shipping.first_name_kana}
 〒${shipping.zip}<br />
 ${shipping.prefecture}${shipping.city}${shipping.address_1}<br />
 ${shipping.address_2}
-% elif order.payment_delivery_pair.payment_method.payment_plugin.id == 2:
+% elif order.payment_delivery_pair.delivery_method.delivery_plugin.id == 2:
 <div>セブンイレブン</div>
 <%mobile:form_header>引換票番号</%mobile:form_header>
 <div>${sej_order.exchange_number or sej_order.billing_number}</div>
 <%mobile:form_header>引取受付期間</%mobile:form_header>
-<div>${h.japanese_date(sej_order.payment_due_at)}${h.japanese_time(sej_order.payment_due_at)}</div>
+<div>${h.japanese_datetime(sej_order.ticketing_start_at)} から ${h.japanese_datetime(sej_order.ticketing_due_at)}</div>
 <div>引取受付期間内に、引換票または引換票番号をお持ちの上、セブン-イレブン店頭レジにてチケットをお引取り下さい。</div>
 <form action="${sej_order.exchange_sheet_url}" method="post" target="_blank">
   <input type="hidden" name="iraihyo_id_00" value="${sej_order.exchange_sheet_number}" />
-  <input type="submit" class="paymentCoupon" value="払込票印刷">
+  <input type="submit" class="paymentCoupon" value="引換票印刷">
 </form>
-% elif order.payment_delivery_pair.payment_method.payment_plugin.id == 3:
+% elif order.payment_delivery_pair.delivery_method.delivery_plugin.id == 3:
 <div>窓口受取</div>
-% elif order.payment_delivery_pair.payment_method.payment_plugin.id == 4:
+% elif order.payment_delivery_pair.delivery_method.delivery_plugin.id == 4:
 <div>QRコード</div>
 ## QR表示
 %endif
