@@ -11,6 +11,7 @@ def includeme(config):
     config.add_route('orders.delivered'                 , '/delivered/{order_id}')
     config.add_route('orders.download'                  , '/download/')
     config.add_route('orders.reserve'                   , '/reserve/')
+    config.add_route('orders.reserve.form'              , '/reserve/form')
     config.add_route('orders.note'                      , '/note/{order_id}')
 
     config.add_route("orders.item.preview"              , "/item/preview/{order_id}/{item_id}")
@@ -37,7 +38,7 @@ def includeme(config):
 
     config.add_route("orders.api.performances"          , "/api/performances")
     config.add_route("orders.api.printstatus"           , "/api/printstatus/{action}")
-    config.add_route("orders.api.orders"           , "/api/orders/{action}")
+    config.add_route("orders.api.orders"                , "/api/orders/{action}")
     config.scan(".")
 
     # 団体予約、インナー予約でcartパッケージを使う為の設定

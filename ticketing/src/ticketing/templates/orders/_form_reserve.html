@@ -1,0 +1,40 @@
+<%page args="form" />
+<%namespace file="/common/helpers.html" name="h" />
+
+<script type="text/javascript">
+  $(function() {
+    var modal = $('#modal-reserve');
+    if (modal.find('#quantity_only').val()) {
+      modal.find('#quantity_form').css('display', 'block');
+    } else {
+      modal.find('#quantity_form').css('display', 'none');
+    }
+  });
+</script>
+
+<div id="modal-reserve" class="modal fade">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">&times;</a>
+    <h3>予約する</h3>
+  </div>
+
+  <div class="modal-body">
+    <form action="javascript:createOrder();">
+      <fieldset>
+        ${h.form_item(form.performance_id)}
+        ${h.form_item(form.note, option={'rows':5, 'class':'span10'})}
+        ${h.form_item(form.product_id)}
+        <div id="quantity_form">
+          ${h.form_item(form.quantity)}
+        </div>
+        ${h.form_item(form.payment_delivery_method_pair_id)}
+      </fieldset>
+      <p>※ 決済・配送方法は「販売区分」が「関係者」で登録されている方法のみ選択可能です</p>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <a href="javascript:void(0);" onclick="$('#modal-reserve').modal('hide');" class="btn secondary btn-close">キャンセル</a>
+    <a href="javascript:void(0);" onclick="$('#modal-reserve').find('form').submit();" class="btn danger">予約する</a>
+  </div>
+</div>

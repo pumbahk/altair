@@ -310,6 +310,23 @@ class Orders(BaseView):
 
         return response
 
+    @view_config(route_name='orders.reserve.form', request_method='POST', renderer='ticketing:templates/orders/_form_reserve.html')
+    def reserve_form(self):
+        post_data = MultiDict(self.request.json_body)
+        logger.debug('order reserve post_data=%s' % post_data)
+
+        performance_id = int(post_data.get('performance_id', 0))
+        performance = Performance.get(performance_id)
+        if performance is None:
+            logger.error('performance id %d is not found' % performance_id)
+            return HTTPBadRequest(body=json.dumps({
+                'message':u'パフォーマンスが存在しません',
+            }))
+
+        # Stockとkind=vipのSalesSegmentからProductを決定する
+        stocks = post_data.get('stocks')
+        return {'form':OrderReserveForm(performance_id=performance_id, stocks=stocks)}
+
     @view_config(route_name='orders.reserve', request_method='POST', renderer='json')
     def reserve(self):
         post_data = MultiDict(self.request.json_body)
@@ -323,10 +340,9 @@ class Orders(BaseView):
                 'message':u'パフォーマンスが存在しません',
             }))
 
-        order = None
         try:
             # validation
-            f = OrderReserveForm(performance_id=performance_id)
+            f = OrderReserveForm(performance_id=performance_id, stocks=post_data.get('stocks'))
             print post_data
             f.process(post_data)
             if not f.validate():
@@ -358,6 +374,8 @@ class Orders(BaseView):
             DBSession.flush()
             cart.finish()
 
+            self.request.session.flash(u'予約しました')
+            return {'order_id':order.id}
         except ValidationError, e:
             logger.exception('validation error (%s)' % e.message)
             return HTTPBadRequest(body=json.dumps({
@@ -369,9 +387,6 @@ class Orders(BaseView):
             return HTTPBadRequest(body=json.dumps({
                 'message':u'エラーが発生しました',
             }))
-
-        self.request.session.flash(u'予約しました')
-        return {'order_id':order.id}
 
     @view_config(route_name='orders.edit.shipping_address', request_method='POST', renderer='ticketing:templates/orders/_form_shipping_address.html')
     def edit_shipping_address_post(self):

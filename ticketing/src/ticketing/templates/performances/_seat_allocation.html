@@ -125,7 +125,7 @@ span.editable {
           <%vv:venueeditor data_source="${data_source}">
             <%def name="toolbar_extra()">
               <div style="float:right">
-                <a class="btn btn-primary" data-toggle="modal" href="#modal-reserve">予約する</a>
+                <a href="javascript:getOrderForm();" class="btn btn-primary">予約する</a>
                 <a href="javascript:saveStocks();" class="btn btn-primary">保存する</a>
               </div>
             </%def>
@@ -400,8 +400,28 @@ function saveStocks() {
   });
 }
 
+function getOrderForm() {
+  var param = {'stocks':[], 'performance_id':${performance.id}};
+  var selection = venueEditorRoot.venueeditor('selection');
+  selection.each(function (seat) {
+    var stock_id = seat.get('stock').get('id');
+    if ($.inArray(stock_id, param['stocks']) == -1)
+      param['stocks'].push(stock_id);
+  });
+  $.ajax({
+    type: 'post',
+    url: '${request.route_path('orders.reserve.form')}',
+    data: JSON.stringify(param),
+    dataType: 'html',
+    success: function(data) {
+      $('#reserve-form').html(data);
+      $('#modal-reserve').modal('show');
+    }
+  });
+}
+
 function createOrder() {
-  var param = {'seats':[]};
+  var param = {'seats':[], 'stocks':[]};
   var modal = $('#modal-reserve');
   modal.find('.modal-body .alert').remove();
   $(modal.find('form').serializeArray()).each(function(i, v) {
@@ -410,6 +430,9 @@ function createOrder() {
   var selection = venueEditorRoot.venueeditor('selection');
   selection.each(function (seat) {
     param['seats'].push(seat.id);
+    var stock_id = seat.get('stock').get('id');
+    if ($.inArray(stock_id, param['stocks']) == -1)
+      param['stocks'].push(stock_id);
   });
   $.ajax({
     type: 'post',
@@ -499,44 +522,8 @@ callbacks.select = function (viewer, selection) {
   </div>
 </div>
 
-<script type="text/javascript">
-  var quantity_only_product_ids = ${[int(p.id) for p in performance.event.products if p.seat_stock_type.quantity_only]};
-  $(function() {
-    $('#modal-reserve #product_id').change(function() {
-      if ($.inArray(parseInt($(this).val()), quantity_only_product_ids) > -1) {
-        $('#modal-reserve #quantity_only').css('display', 'block');
-      } else {
-        $('#modal-reserve #quantity_only').css('display', 'none');
-      }
-    }).change();
-  });
-</script>
-
-<div id="modal-reserve" class="modal hide fade">
-  <div class="modal-header">
-    <a class="close btn-close" data-dismiss="modal">&times;</a>
-    <h3>予約する</h3>
-  </div>
-
-  <div class="modal-body">
-    <form action="javascript:createOrder();">
-      <fieldset>
-        ${h.form_item(form_reserve.performance_id)}
-        ${h.form_item(form_reserve.note, option={'rows':5, 'class':'span10'})}
-        ${h.form_item(form_reserve.product_id)}
-        <div id="quantity_only">
-        ${h.form_item(form_reserve.quantity)}
-        </div>
-        ${h.form_item(form_reserve.payment_delivery_method_pair_id)}
-      </fieldset>
-      <p>※ 決済・配送方法は「販売区分」が「関係者」で登録されている方法のみ選択可能です</p>
-    </form>
-  </div>
-
-  <div class="modal-footer">
-    <a href="javascript:void(0);" onclick="$('#modal-reserve').modal('hide');" class="btn secondary btn-close">キャンセル</a>
-    <a href="javascript:void(0);" onclick="$('#modal-reserve').find('form').submit();" class="btn danger">予約する</a>
-  </div>
+<div id="reserve-form">
+  <%include file="/orders/_form_reserve.html" args="form=form_reserve" />
 </div>
 
 <div id="modal-download_seats" class="modal hide fade">

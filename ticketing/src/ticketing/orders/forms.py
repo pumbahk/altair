@@ -7,7 +7,8 @@ from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, T
 from wtforms.validators import Optional, AnyOf, Length
 from collections import OrderedDict
 from ticketing.formhelpers import DateTimeField, Translations, Required
-from ticketing.core.models import PaymentMethodPlugin, DeliveryMethodPlugin, PaymentDeliveryMethodPair, SalesSegment, Performance, Product
+from ticketing.core.models import (PaymentMethodPlugin, DeliveryMethodPlugin, PaymentDeliveryMethodPair,
+                                   SalesSegment, Performance, Product, ProductItem)
 
 class OrderForm(Form):
 
@@ -147,13 +148,20 @@ class OrderReserveForm(Form):
                                          .filter_by(event_id=performance.event_id)\
                                          .filter(SalesSegment.start_at<=now)\
                                          .filter(now<=SalesSegment.end_at).all()
+            self.payment_delivery_method_pair_id.choices = []
             for sales_segment in sales_segments:
-                products = Product.find(performance_id=performance.id, sales_segment_id=sales_segment.id)
-                self.product_id.choices += [(p.id, p.name) for p in products]
                 for pdmp in sales_segment.payment_delivery_method_pairs:
                     self.payment_delivery_method_pair_id.choices.append(
                         (pdmp.id, '%s  -  %s' % (pdmp.payment_method.name, pdmp.delivery_method.name))
                     )
+
+            if 'stocks' in kwargs:
+                self.product_id.choices = []
+                products = Product.filter(Product.event_id==performance.event_id)\
+                                  .join(Product.items)\
+                                  .filter(ProductItem.performance_id==performance.id)\
+                                  .filter(ProductItem.stock_id.in_(kwargs['stocks'])).all()
+                self.product_id.choices += [(p.id, p.name) for p in products]
 
     def _get_translations(self):
         return Translations()
