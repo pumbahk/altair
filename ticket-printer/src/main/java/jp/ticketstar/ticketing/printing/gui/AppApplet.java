@@ -37,6 +37,7 @@ import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
@@ -133,6 +134,7 @@ class AppAppletService extends AppService {
 					job.setPrintable(printable, model.getPageFormat());
 					job.print();
 				} catch (Exception e) {
+					e.printStackTrace();
 					displayError("Failed to print tickets\nReason: " + e);
 				}
 				return null;
@@ -224,38 +226,36 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 			if (evt.getNewValue() != null) {
 				list.clearSelection();
 				final PageSetModel pageSetModel = (PageSetModel)evt.getNewValue();
-				panel.removeAll();
-				for (Page page: pageSetModel.getPages()) {
-					final JGVTComponent gvtComponent = new JGVTComponent(false, false);
-					final Dimension2D documentSize = pageSetModel.getBridgeContext().getDocumentSize();
-					{
-						Collection<Overlay> overlays = gvtComponent.getOverlays();
-						overlays.add(guidesOverlay);
-						overlays.add(boundingBoxOverlay);
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						panel.removeAll();
+						for (Page page: pageSetModel.getPages()) {
+							final JGVTComponent gvtComponent = new JGVTComponent(false, false);
+							{
+								Collection<Overlay> overlays = gvtComponent.getOverlays();
+								overlays.add(guidesOverlay);
+								overlays.add(boundingBoxOverlay);
+							}
+							gvtComponent.setPageFormat(model.getPageFormat());
+							gvtComponent.addComponentListener(centeringListener);
+							gvtComponent.setSize(new Dimension((int)panel.getWidth(), (int)panel.getHeight()));
+							gvtComponent.setGraphicsNode(page.getGraphics());
+							gvtComponent.setName(page.getName());
+							panel.add(gvtComponent, page.getName());
+						}
+						list.setModel(pageSetModel.getPages());
+						panel.doLayout();
 					}
-					gvtComponent.setPageFormat(model.getPageFormat());
-					gvtComponent.addComponentListener(centeringListener);
-					gvtComponent.setSize(new Dimension((int)documentSize.getWidth(), (int)documentSize.getHeight()));
-					gvtComponent.setGraphicsNode(page.getGraphics());
-					gvtComponent.setName(page.getName());
-					panel.add(gvtComponent, page.getName());
-				}
-				panel.doLayout();
-				list.setModel(pageSetModel.getPages());
+				});
 				pageSetModel.getPages().addListDataListener(new ListDataListener() {
 					public void contentsChanged(ListDataEvent evt) {}
 
 					public void intervalAdded(ListDataEvent evt) {}
 
 					public void intervalRemoved(ListDataEvent evt) {
-						final Pages pages = (Pages)evt.getSource();
+						final Component[] pageComponents = panel.getComponents();
 						for (int i = evt.getIndex0(), j = evt.getIndex1(); i <= j; i++) {
-							for (Component c: panel.getComponents()) {
-								if (c.getName().equals(pages.get(i).getName())) {
-									panel.remove(c);
-									break;
-								}
-							}
+							panel.remove(pageComponents[i]);
 						}
 						panel.validate();
 					}
@@ -496,7 +496,9 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 		list.setCellRenderer(new TicketCellRenderer());
 		list.addListSelectionListener(new ListSelectionListener() {
 			public void valueChanged(ListSelectionEvent arg0) {
-				((CardLayout)panel.getLayout()).show(panel, ((Page)((JList)arg0.getSource()).getSelectedValue()).getName());
+				final Page page = (Page)((JList)arg0.getSource()).getSelectedValue();
+				if (page != null)
+					((CardLayout)panel.getLayout()).show(panel, page.getName());
 			}
 		});
 		splitPane.setLeftComponent(list);
