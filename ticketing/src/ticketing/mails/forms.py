@@ -20,9 +20,10 @@ def MethodChoicesFormFactory(template):
     return type("MethodChoiceForm", (Form, ), attrs)
 
 OrderInfo = namedtuple("OrderInfo", "name label getval")
+RenderVal = namedtuple("RenderVal", "status label, body")
 class OrderInfoForm(Form):
-    display_p = fields.BooleanField(u"表示する")
-    labelname = fields.TextField(u"ラベル名", validators=[validators.Required()])
+    use = fields.BooleanField(u"表示する")
+    kana = fields.TextField(u"ラベル名", validators=[validators.Required()])
 
 class OrderInfoDefault(object):
     """ 
@@ -33,9 +34,12 @@ class OrderInfoDefault(object):
         performance = order.performance
         return u"{0} {1}".format(performance.event.title, performance.name)
 
+    def get_performance_date(order):
+        return ch.japanese_datetime(order.performance.start_on)
+
     def get_seat_no(order):
         seats = itertools.chain.from_iterable((p.seats for p in order.ordered_products))
-        return u"\n".join(u"* {0}".format(seat["name"] for seat in seats))
+        return u"\n".join(u"* {0}".format(seat["name"]) for seat in seats)
 
     def get_product_description(order):
         return u"\n".join((u"{0} {1} x{2}枚".format(op.product.name, 
@@ -43,9 +47,18 @@ class OrderInfoDefault(object):
                                                     op.quantity)
                            for op in order.ordered_products))
 
+    def get_name_kana(order):
+        sa = order.shipping_address
+        return u"{0} {1}".format(sa.last_name_kana, sa.first_name_kana),
+
+    name_kana = OrderInfo(name="name_kana", label=u"お名前カナ", getval=get_name_kana)
+    tel = OrderInfo(name="tel", label=u"電話番号", getval=lambda order : order.shipping_address.tel_1 or "")
+    mail = OrderInfo(name="mail", label=u"メールアドレス", getval=lambda order : order.shipping_address.email)
     order_no = OrderInfo(name="order_no", label=u"受付番号", getval=lambda order : order.order_no)
-    order_datetime = OrderInfo(name="order_datetime", label=u"受付日", getval=lambda order: ch.mail_adte(order.created_at))
-    for_event = OrderInfo(name="for_event", label=u"公演タイトル", getval=get_event_title)
+    order_datetime = OrderInfo(name="order_datetime", label=u"受付日", getval=lambda order: ch.mail_date(order.created_at))
+    event_name = OrderInfo(name="event_name", label=u"公演タイトル", getval=get_event_title)
+    pdate = OrderInfo(name="pdate", label=u"公演日時", getval=get_performance_date)
+    venue = OrderInfo(name="venue", label=u"会場", getval=lambda order: order.performance.venue.name)
     for_product =OrderInfo(name="for_product", label=u"商品代金", getval=get_product_description)
     for_seat = OrderInfo(name=u"for_seat", label=u"ご購入いただいた座席", getval=get_seat_no)
     system_fee = OrderInfo(name=u"system_fee", label=u"システム利用料", getval=lambda order: ch.format_currency(order.system_fee))
@@ -57,13 +70,30 @@ class OrderInfoDefault(object):
     def get_form_field_candidates(cls):
         return ((k,v) for k,v in cls.__dict__.iteritems() if isinstance(v, OrderInfo))
 
+class OrderInfoRenderer(object):
+    default = OrderInfoDefault
+    def __init__(self, order, data):
+        self.order = order
+        self.data = data
+
+    def get(self, k):
+        if not hasattr(self, k):
+            val = self.data[k]
+            if not (val and val["use"]):
+                setattr(self, k, RenderVal(label="", status=False, body=""))
+            else:
+                setattr(self, k, RenderVal(label=val["kana"],
+                                           status=True, 
+                                           body=getattr(self.default, k).getval(self.order)))
+        return getattr(self, k)
+
 def MailInfoFormFactory(template):
     attrs = OrderedDict()
     attrs["subject"] = fields.TextField(label=u"メール件名")
     attrs["sender"] = fields.TextField(label=u"メールsender")
 
     for k, v in OrderInfoDefault.get_form_field_candidates():
-        attrs[k] = fields.FormField(OrderInfoForm, label=v.label, default=dict(display_p=True, labelname=v.label, doc=v)) ##xxx:
+        attrs[k] = fields.FormField(OrderInfoForm, label=v.label, default=dict(use=True, kana=v.label, doc=v)) ##xxx:
 
     for e in template.template_keys():
         attrs[e.name] = fields.TextField(label=e.label, widget=widgets.TextArea(), description=e.method, 
@@ -85,6 +115,11 @@ def MailInfoFormFactory(template):
                     status = False
         return status
     attrs["validate"] = validate
+
+    def as_mailinfo_data(self):
+        return {k:v for k, v in self.data.iteritems() if v}
+    attrs["as_mailinfo_data"] = as_mailinfo_data
+
     return type("MailInfoForm", (Form, ), attrs)
 
 PluginInfo = namedtuple("PluginInfo", "method name label") #P0, P0notice, 注意事項(コンビに決済)    

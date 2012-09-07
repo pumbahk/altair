@@ -3,6 +3,7 @@ from pyramid_mailer import get_mailer
 from .api import get_complete_mail, preview_text_from_message, message_settings_override
 from .api import get_mailinfo_traverser
 from .api import create_or_update_mailinfo,  create_fake_order
+from .forms import OrderInfoRenderer
 import logging
 logger = logging.getLogger(__name__)
 
@@ -70,27 +71,14 @@ class CompleteMail(object):
     def _build_mail_body(self, order):
         sa = order.shipping_address 
         pair = order.payment_delivery_pair
-        seats = itertools.chain.from_iterable((p.seats for p in order.ordered_products))
         traverser = get_traverser(self.request, order)
-
+        info_renderder = OrderInfoRenderer(order, traverser.data)
         value = dict(h=ch, 
                      order=order,
+                     get=info_renderder.get, 
                      name=u"{0} {1}".format(sa.last_name, sa.first_name),
-                     name_kana=u"{0} {1}".format(sa.last_name_kana, sa.first_name_kana),
-                     tel_no=sa.tel_1,
-                     tel2_no=sa.tel_2,
-                     email=sa.email,
-                     order_no=order.order_no,
-                     order_datetime=ch.mail_date(order.created_at), 
-                     order_items=order.ordered_products,
-                     order_total_amount=order.total_amount,
-                     performance=order.performance,
-                     system_fee=order.system_fee,
-                     delivery_fee=order.delivery_fee,
-                     transaction_fee=order.transaction_fee,
                      payment_method_name=pair.payment_method.name, 
                      delivery_method_name=pair.delivery_method.name, 
-                     seats = seats, 
                      ### mail info
                      footer = traverser.data["footer"],
                      notice = traverser.data["notice"],
