@@ -114,7 +114,7 @@
           <td id="quantity-${item.id}">${item.quantity}</td>
           <td>${item.stock.stock_status.quantity} / ${item.stock.quantity}席</td>
           <td id="stock-${item.id}" value="${item.stock.id}">${item.stock.id}</td>
-          <td>${h.action_button(actions(product.id, item.id), order=iter(['edit', 'new', 'delete']), options='btn-small')}</td>
+          <td><input type="hidden" id="ticket_bundle_id-${item.id}" value="${item.ticket_bundle_id}" />${h.action_button(actions(product.id, item.id), order=iter(['edit', 'new', 'delete']), options='btn-small')}</td>
         </tr>
             % endfor
             % if count == 0:

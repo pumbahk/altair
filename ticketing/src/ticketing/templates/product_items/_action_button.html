@@ -39,6 +39,7 @@
     modal.find('#product-item #name').val($('#item_name-' + product_item_id).attr('value'));
     modal.find('#product-item #price').val(Math.floor($('#item_price-' + product_item_id).attr('value')));
     modal.find('#quantity').val($('#quantity-' + product_item_id).text());
+    modal.find('#ticket_bundle_id').val($('#ticket_bundle_id-' + product_item_id).attr('value'));
     modal.modal('toggle');
   }
 
