@@ -18,7 +18,7 @@ class MembershipAuthorizationPolicy(object):
         """
         principalsには、ユーザーの会員種別がすでに入っている想定
         """
-        if permission and not principals:
+        if 'buy' not in permission and not principals:
             return False
 
         if permission == "view":
@@ -27,6 +27,10 @@ class MembershipAuthorizationPolicy(object):
 
         if permission == "buy":
             logger.debug('authorize for buy')
+            sales_segment = context.sales_segment
+            if sales_segment is not None and any([m.is_guest for m in sales_segment.membergroups]):
+                return True
+
             memberships = context.memberships
             membergroups = context.membergroups
             if not memberships or not membergroups:
