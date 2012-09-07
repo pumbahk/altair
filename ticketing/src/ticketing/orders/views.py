@@ -130,6 +130,7 @@ class OrdersAPIView(BaseView):
         if not "orders" in self.request.session:
             return {"status": False, "result": []}
         ticket_format_id = self.request.GET["ticket_format_id"]
+        exclude_issued = self.request.GET.get("exclude_issued", False)
         ords = self.request.session["orders"]
         ords = [o.lstrip("o:") for o in ords if o.startswith("o:")]
         qs = Order.query\
@@ -141,6 +142,8 @@ class OrdersAPIView(BaseView):
             .filter(Ticket_TicketBundle.ticket_bundle_id==TicketBundle.id)\
             .filter(Ticket.id==Ticket_TicketBundle.ticket_id)\
             .filter(Ticket.ticket_format_id==ticket_format_id).distinct()
+        if exclude_issued:
+            qs = qs.filter(Order.issued==False)
 
         orders_list = [dict(order_no=o.order_no, event_name=o.performance.event.title, total_amount=int(o.total_amount)) 
                        for o in qs]
@@ -544,6 +547,7 @@ class Orders(BaseView):
 
         qs = DBSession.query(Order)\
             .filter(Order.deleted_at==None).filter(Order.id.in_(ords))\
+            .filter(Order.issued==False)\
             .filter(OrderedProduct.order_id.in_(ords))\
             .filter(OrderedProductItem.ordered_product_id==OrderedProduct.id)\
             .filter(ProductItem.id==OrderedProductItem.product_item_id)\
