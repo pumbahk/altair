@@ -380,6 +380,15 @@ class Account(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization = relationship('Organization', uselist=False, backref='accounts')
     stock_holders = relationship('StockHolder', backref='account')
 
+    def delete(self):
+        # 既に使用されている場合は削除できない
+        if self.events:
+            raise Exception(u'関連づけされたイベントがある為、削除できません')
+        if self.stock_holders:
+            raise Exception(u'関連づけされた枠がある為、削除できません')
+
+        super(Account, self).delete()
+
     @property
     def account_type_label(self):
         for account_type in AccountTypeEnum:

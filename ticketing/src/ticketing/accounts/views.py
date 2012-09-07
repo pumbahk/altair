@@ -94,7 +94,12 @@ class Accounts(BaseView):
         if account is None:
             return HTTPNotFound('account id %d is not found' % account_id)
 
-        account.delete()
+        location = route_path('accounts.index', self.request)
+        try:
+            account.delete()
+            self.request.session.flash(u'取引先を削除しました')
+        except Exception, e:
+            self.request.session.flash(e.message)
+            raise HTTPFound(location=location)
 
-        self.request.session.flash(u'取引先を削除しました')
-        return HTTPFound(location=route_path('accounts.index', self.request))
+        return HTTPFound(location=location)
