@@ -14,7 +14,7 @@ from ..views import BaseView
 from ..models import DBSession
 from ..core.models import DeliveryMethod
 from ..core.models import TicketFormat, PageFormat, Ticket
-from ..core.models import TicketPrintQueueEntry
+from ..core.models import TicketPrintQueueEntry, TicketPrintHistory
 from ..core.models import OrderedProductItem, OrderedProduct, Order
 from . import forms
 from . import helpers
