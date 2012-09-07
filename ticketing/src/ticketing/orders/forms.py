@@ -155,7 +155,7 @@ class OrderReserveForm(Form):
                         (pdmp.id, '%s  -  %s' % (pdmp.payment_method.name, pdmp.delivery_method.name))
                     )
 
-            if 'stocks' in kwargs:
+            if 'stocks' in kwargs and kwargs['stocks']:
                 self.product_id.choices = []
                 products = Product.filter(Product.event_id==performance.event_id)\
                                   .join(Product.items)\
@@ -170,6 +170,10 @@ class OrderReserveForm(Form):
         label='',
         validators=[Required()],
     )
+    stocks = HiddenField(
+        label=u'座席',
+        validators=[Required(u'予約する席を選択してください')],
+    )
     note = TextAreaField(
         label=u'備考・メモ',
         validators=[
@@ -183,16 +187,22 @@ class OrderReserveForm(Form):
     )
     product_id = SelectField(
         label=u'商品',
-        validators=[Required(u'選択してください')],
+        validators=[Required(u'予約する商品を選択してください')],
         choices=[],
         coerce=int
     )
     payment_delivery_method_pair_id = SelectField(
         label=u'決済・配送方法',
-        validators=[Required(u'選択してください')],
+        validators=[Required(u'決済配送方法を選択してください')],
         choices=[],
         coerce=int
     )
+
+    def validate_stocks(form, field):
+        if len(field.data) > 1:
+            raise ValidationError(u'複数の席種を選択することはできません')
+        if not form.product_id.choices:
+            raise ValidationError(u'選択された座席に紐づく予約可能な商品がありません')
 
     def validate_product_id(form, field):
         product = Product.get(field.data)

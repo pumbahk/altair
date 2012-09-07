@@ -328,7 +328,12 @@ class Orders(BaseView):
 
         # Stockとkind=vipのSalesSegmentからProductを決定する
         stocks = post_data.get('stocks')
-        return {'form':OrderReserveForm(performance_id=performance_id, stocks=stocks)}
+        form_reserve = OrderReserveForm(post_data, performance_id=performance_id, stocks=stocks)
+        form_reserve.product_id.validators = [Optional()]
+        form_reserve.payment_delivery_method_pair_id.validators = [Optional()]
+        form_reserve.validate()
+
+        return {'form':form_reserve}
 
     @view_config(route_name='orders.reserve', request_method='POST', renderer='json')
     def reserve(self):

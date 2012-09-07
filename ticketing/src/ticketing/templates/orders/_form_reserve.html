@@ -19,6 +19,8 @@
   </div>
 
   <div class="modal-body">
+    ${h.alert_message(form)}
+
     <form action="javascript:createOrder();">
       <fieldset>
         ${h.form_item(form.performance_id)}
