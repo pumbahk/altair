@@ -20,12 +20,12 @@ from wtforms.validators import Optional
 
 from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.operators.models import Operator, OperatorRole, Permission
-from ticketing.core.models import Order, TicketPrintQueueEntry, Event, Performance, Product, PaymentDeliveryMethodPair, ShippingAddress, OrderedProductItem, Ticket, TicketBundle, ProductItem, OrderedProduct, Ticket, TicketBundle, Ticket_TicketBundle
+from ticketing.core.models import Order, TicketPrintQueueEntry, Event, Performance, Product, PaymentDeliveryMethodPair, ShippingAddress, OrderedProductItem, Ticket, TicketBundle, ProductItem, OrderedProduct, TicketFormat, Ticket_TicketBundle
 from ticketing.users.models import MailSubscription
 from ticketing.orders.export import OrderCSV
 from ticketing.orders.forms import (OrderForm, OrderSearchForm, PerformanceSearchForm, OrderReserveForm,
                                     SejOrderForm, SejTicketForm, SejRefundEventForm, SejRefundOrderForm, 
-                                    PreviewTicketSelectForm, PrintQueueDialogFormFactory, CheckedOrderTicketChoiceForm)
+                                    PreviewTicketSelectForm, CheckedOrderTicketChoiceForm)
 from lxml import etree
 from ticketing.tickets.convert import to_opcodes
 from ticketing.views import BaseView
@@ -40,6 +40,29 @@ import pystache
 from . import utils
 
 logger = logging.getLogger(__name__)
+
+def available_ticket_formats_for_orders(orders):
+    return TicketFormat.query\
+        .filter(TicketFormat.id==Ticket.ticket_format_id)\
+        .filter(Ticket.id==Ticket_TicketBundle.ticket_id)\
+        .filter(Ticket_TicketBundle.ticket_bundle_id==TicketBundle.id)\
+        .filter(TicketBundle.id==ProductItem.ticket_bundle_id)\
+        .filter(ProductItem.id==OrderedProductItem.product_item_id)\
+        .filter(OrderedProductItem.ordered_product_id==OrderedProduct.id)\
+        .filter(OrderedProduct.order_id.in_(orders))\
+        .with_entities(TicketFormat.id, TicketFormat.name)\
+        .distinct(TicketFormat.id)
+
+def available_ticket_formats_for_ordered_product_item(ordered_product_item_id):
+    return TicketFormat.query\
+        .filter(TicketFormat.id==Ticket.ticket_format_id)\
+        .filter(Ticket.id==Ticket_TicketBundle.ticket_id)\
+        .filter(Ticket_TicketBundle.ticket_bundle_id==TicketBundle.id)\
+        .filter(TicketBundle.id==ProductItem.ticket_bundle_id)\
+        .filter(ProductItem.id==OrderedProductItem.product_item_id)\
+        .filter(OrderedProductItem.id==ordered_product_item_id)\
+        .with_entities(TicketFormat.id, TicketFormat.name)\
+        .distinct(TicketFormat.id)
 
 @view_defaults(xhr=True) ## todo:適切な位置に移動
 class OrdersAPIView(BaseView):
@@ -102,11 +125,11 @@ class OrdersAPIView(BaseView):
 
 
     @view_config(renderer="json", route_name="orders.api.orders", request_method="GET", match_param="action=matched_by_ticket", 
-                 request_param="ticket_id")
+                 request_param="ticket_format_id")
     def checked_matched_orders(self):
         if not "orders" in self.request.session:
             return {"status": False, "result": []}
-        ticket_id = self.request.GET["ticket_id"]
+        ticket_format_id = self.request.GET["ticket_format_id"]
         ords = self.request.session["orders"]
         ords = [o.lstrip("o:") for o in ords if o.startswith("o:")]
         qs = Order.query\
@@ -117,7 +140,7 @@ class OrdersAPIView(BaseView):
             .filter(TicketBundle.id==ProductItem.ticket_bundle_id)\
             .filter(Ticket_TicketBundle.ticket_bundle_id==TicketBundle.id)\
             .filter(Ticket.id==Ticket_TicketBundle.ticket_id)\
-            .filter(Ticket.id==ticket_id).distinct()
+            .filter(Ticket.ticket_format_id==ticket_format_id).distinct()
 
         orders_list = [dict(order_no=o.order_no, event_name=o.performance.event.title, total_amount=int(o.total_amount)) 
                        for o in qs]
@@ -133,16 +156,7 @@ class Orders(BaseView):
     def checked_queue_dialog(self):
         ords = self.request.session["orders"]
         ords = [o.lstrip("o:") for o in ords if o.startswith("o:")]
-        # orders = Order.query.filter_by(deleted_at=None).filter(Order.id.in_(ords))
-        tickets = Ticket.query\
-            .filter(Ticket.id==Ticket_TicketBundle.ticket_id)\
-            .filter(Ticket_TicketBundle.ticket_bundle_id==TicketBundle.id)\
-            .filter(TicketBundle.id==ProductItem.ticket_bundle_id)\
-            .filter(ProductItem.id==OrderedProductItem.product_item_id)\
-            .filter(OrderedProductItem.ordered_product_id==OrderedProduct.id)\
-            .filter(OrderedProduct.order_id.in_(ords))\
-            .with_entities(Ticket.id, Ticket.name).distinct(Ticket.id)
-        form = CheckedOrderTicketChoiceForm().configure(tickets)
+        form = CheckedOrderTicketChoiceForm(ticket_formats=available_ticket_formats_for_orders(ords))
         return {"form": form}
 
     @view_config(route_name="orders.checked.queue.dialog", renderer="string")
@@ -458,45 +472,49 @@ class Orders(BaseView):
         item = OrderedProductItem.query.filter_by(id=self.request.matchdict["item_id"]).first()
         if item is None:
             return {} ### xxx:
-        form = PreviewTicketSelectForm(item_id=item.id).configure(item.product_item.ticket_bundle.tickets)
-        return {"form": form,  "item": item}
+        form = PreviewTicketSelectForm(item_id=item.id, ticket_formats=available_ticket_formats_for_ordered_product_item(item.id))
+        return {"form": form, "item": item}
 
     @view_config(route_name="orders.item.preview.getdata", request_method="GET", 
                  renderer="json")
     def order_item_get_data_for_preview(self):
-        item = OrderedProductItem.query.filter_by(id=self.request.matchdict["item_id"]).first()
-        ticket = Ticket.query.filter_by(id=self.request.matchdict["ticket_id"]).first()
+        item = OrderedProductItem.query.filter_by(id=self.request.matchdict["item_id"]).one()
+        ticket_format = TicketFormat.query.filter_by(id=self.request.matchdict["ticket_format_id"]).one()
+        tickets = Ticket.query \
+            .filter(OrderedProductItem.ordered_product_id==OrderedProduct.id)\
+            .filter(ProductItem.id==OrderedProductItem.product_item_id)\
+            .filter(TicketBundle.id==ProductItem.ticket_bundle_id)\
+            .filter(Ticket_TicketBundle.ticket_bundle_id==TicketBundle.id)\
+            .filter(Ticket.id==Ticket_TicketBundle.ticket_id)\
+            .filter(Ticket.ticket_format_id==ticket_format.id)\
+            .filter(OrderedProductItem.id==item.id)\
+            .all()
         dicts = build_dicts_from_ordered_product_item(item)
-        data = dict(ticket.ticket_format.data)
+        data = dict(ticket_format.data)
         results = []
         names = []
         for seat, dict_ in dicts:
-            names.append(seat.name) 
-            svg =  pystache.render(ticket.data['drawing'], dict_)
-            r = data.copy()
-            r.update(dict(drawing=' '.join(to_opcodes(etree.ElementTree(etree.fromstring(svg))))))
-            results.append(r)
+            names.append(seat.name)
+            for ticket in tickets:
+                svg = pystache.render(ticket.data['drawing'], dict_)
+                r = data.copy()
+                r.update(dict(drawing=' '.join(to_opcodes(etree.ElementTree(etree.fromstring(svg))))))
+                results.append(r)
         return {"results": results, "names": names}
 
     @view_config(route_name="orders.print.queue.dialog", request_method="GET", 
                  renderer="ticketing:templates/orders/_print_queue_dialog.html")
     def print_queue_dialog(self):
-        ## ここで、各order_product itemについてticket templateを選択してもらえるような画面にする。
         order = Order.query.get(self.request.matchdict["order_id"])
-        form = PrintQueueDialogFormFactory(order)
+        form = CheckedOrderTicketChoiceForm(ticket_formats=available_ticket_formats_for_orders([order.id]))
         return {"form": form, "order": order}
 
     @view_config(route_name="orders.print.queue.manymany", request_method="POST", 
-                 request_param="ticket_id")
+                 request_param="ticket_format_id")
     def order_print_queue_manymany(self):
-        ticket_id = self.request.POST["ticket_id"]
-        ticket = Ticket.query.filter_by(id=ticket_id).first()
-        if ticket is None:
-            raise HTTPFound(location=self.request.route_path('orders.index'))
-
-        if not utils.is_ticket_format_applicable(ticket.ticket_format):
-            logger.warn("*ticket print queue many* not applicable.")
-            self.request.session.flash(u'利用できないタイプの券面が選択されました。中止します。')
+        ticket_format_id = self.request.POST["ticket_format_id"]
+        ticket_format = TicketFormat.query.filter_by(id=ticket_format_id).first()
+        if ticket_format is None:
             raise HTTPFound(location=self.request.route_path('orders.index'))
 
         ords = self.request.session["orders"]
@@ -510,13 +528,11 @@ class Orders(BaseView):
             .filter(TicketBundle.id==ProductItem.ticket_bundle_id)\
             .filter(Ticket_TicketBundle.ticket_bundle_id==TicketBundle.id)\
             .filter(Ticket.id==Ticket_TicketBundle.ticket_id)\
-            .filter(Ticket.id==ticket_id).distinct()
+            .filter(TicketFormat.id==ticket_format_id) \
+            .distinct()
 
         for order in qs:
-            for ordered_product in order.items:
-                for ordered_product_item in ordered_product.ordered_product_items:
-                    utils.enqueue_item(self.context.user,
-                                       order, ordered_product_item, ticket)
+            utils.enqueue_for_order(operator=self.context.user, order=order, ticket_format=ticket_format)
 
         # def clean_session_callback(request):
         logger.info("*ticketing print queue many* clean session")
@@ -534,20 +550,16 @@ class Orders(BaseView):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.query.get(order_id)
 
-        form = PrintQueueDialogFormFactory(order, formdata=self.request.POST)
+        form = CheckedOrderTicketChoiceForm(formdata=self.request.POST, ticket_formats=available_ticket_formats_for_orders([order.id]))
         if not form.validate():
             self.request.session.flash(u'失敗: %s' % form.errors)
             return HTTPFound(location=self.request.route_path('orders.show', order_id=order_id))
-        
-        ticket_dict = form.get_bound_ticket_dict() ## key is int
-        for ordered_product_item, ticket in utils.item_ticket_pairs(order, ticket_dict):
-            if not utils.is_ticket_format_applicable(ticket.ticket_format):
-                logger.warn("*ticket print queue* not applicable.  order.id=%s, item.id=%s" % \
-                                (order.id, ordered_product_item.id))
-                self.request.session.flash(u'利用できないタイプの券面が選択されました。中止します。')
-                raise HTTPFound(location=self.request.route_path('orders.show', order_id=order_id))
-            utils.enqueue_item(self.context.user,
-                               order, ordered_product_item, ticket)
+
+        utils.enqueue_for_order(
+            operator=self.context.user,
+            order=order,
+            ticket_format=TicketFormat.query.filter_by(id=form.data['ticket_format_id']).one()
+            )
         self.request.session.flash(u'券面を印刷キューに追加しました')
         return HTTPFound(location=self.request.route_path('orders.show', order_id=order_id))
 
@@ -556,34 +568,7 @@ class Orders(BaseView):
     def order_print_queue(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.query.get(order_id)
-
-        for ordered_product in order.items:
-            for ordered_product_item in ordered_product.ordered_product_items:
-                bundle = ordered_product_item.product_item.ticket_bundle
-                dicts = build_dicts_from_ordered_product_item(ordered_product_item)
-                for index, (seat, dict_) in enumerate(dicts):
-                    for ticket in bundle.tickets:
-                        ticket_format = ticket.ticket_format
-                        applicable = False
-                        for delivery_method in ticket_format.delivery_methods:
-                            if delivery_method.delivery_plugin_id != DELIVERY_PLUGIN_ID_SEJ:
-                                applicable = True
-                                break
-                        if not applicable:
-                            continue
-                        TicketPrintQueueEntry.enqueue(
-                            operator=self.context.user,
-                            ticket=ticket,
-                            data={ u'drawing': pystache.render(ticket.data['drawing'], dict_) },
-                            summary=u'注文 %s - %s%s' % (
-                                order.order_no,
-                                ordered_product_item.product_item.name,
-                                (u' (%d / %d枚目)' % (index + 1, len(dicts))
-                                 if len(dicts) > 1 else u'')
-                                ),
-                            ordered_product_item=ordered_product_item,
-                            seat=seat
-                            )
+        utils.enqueue_for_order(operator=self.context.user, order=order)
         self.request.session.flash(u'券面を印刷キューに追加しました')
         return HTTPFound(location=self.request.route_path('orders.show', order_id=order_id))
 

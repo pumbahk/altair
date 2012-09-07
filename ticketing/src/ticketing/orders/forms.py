@@ -397,7 +397,7 @@ class SejRefundOrderForm(Form):
     )
 
 class PreviewTicketSelectForm(Form):
-    ticket_choices = SelectField(
+    ticket_format_id = SelectField(
         label=u"チケットの種類", 
         choices=[], 
         validators=[Optional()],
@@ -406,62 +406,21 @@ class PreviewTicketSelectForm(Form):
     item_id = HiddenField(
     )
 
-    def configure(self, tickets):
-        self.ticket_choices.choices = [(t.id,  t.name) for t in tickets]
-        return self
-
-def PrintQueueDialogFormFactory(order, formdata=None):
-    """
-    item0 -- HiddenField
-    ticket_choices0 --- SelectField
-    """
-    attrs = OrderedDict()
-    def add_field_pair(ordered_product_item):
-        item_field_name = "item%s" % ordered_product_item.id
-        ticket_field_name = "ticket%s" % ordered_product_item.id
-
-        attrs[item_field_name] = HiddenField(default=ordered_product_item.id, 
-                                             validators=[Required()])
-
-        bundle = ordered_product_item.product_item.ticket_bundle
-        choices = [(unicode(t.id), t.name) for t in bundle.tickets]
-        # choices = [(unicode(t.id), t.name) for t in bundle.tickets
-        #            if not utils.is_ticket_format_applicable(t.ticket_format)]
-        attrs[ticket_field_name] = SelectField(label=u"チケットの種類(%s)" % ordered_product_item.name, 
-                                               choices=choices)
-
-    for ordered_product in order.items:
-        for ordered_product_item in ordered_product.ordered_product_items:
-            add_field_pair(ordered_product_item)
-
-    def _get_bound_ticket_dict(self):
-        ticket_dict = {}
-        data = self.data
-        for k in data.iterkeys():
-            if k.startswith("item"):
-                item_pk = k.lstrip("item")
-                ticket_dict[int(item_pk)] = int(data["ticket"+item_pk])
-        return ticket_dict
-    attrs["_get_bound_ticket_dict"] = _get_bound_ticket_dict
-
-    def get_bound_ticket_dict(self):
-        from ticketing.core.models import Ticket
-        D = self._get_bound_ticket_dict()
-        tickets = {int(t.id):t for t in  Ticket.query.filter(Ticket.id.in_(D.values()))}
-        for item_id, ticket_id in D.iteritems():
-            D[item_id] = tickets[ticket_id]
-        return D
-    attrs["get_bound_ticket_dict"] = get_bound_ticket_dict
-
-    return type("PrintQueueDialogForm", (Form, ), attrs)(formdata=formdata)
+    def __init__(self, *args, **kwargs):
+        super(type(self), self).__init__(*args, **kwargs)
+        ticket_formats = kwargs.get('ticket_formats')
+        if ticket_formats:
+            self.ticket_format_id.choices = [(t.id,  t.name) for t in ticket_formats]
 
 class CheckedOrderTicketChoiceForm(Form):
-    ticket_id = SelectField(
-        label=u"チケットの種類", 
+    ticket_format_id = SelectField(
+        label=u"チケット様式", 
         coerce=int, 
         choices=[], 
     )
 
-    def configure(self, tickets):
-        self.ticket_id.choices = [(t.id, t.name) for t in tickets]
-        return self
+    def __init__(self, *args, **kwargs):
+        super(type(self), self).__init__(*args, **kwargs)
+        ticket_formats = kwargs.get('ticket_formats')
+        if ticket_formats:
+            self.ticket_format_id.choices = [(t.id,  t.name) for t in ticket_formats]

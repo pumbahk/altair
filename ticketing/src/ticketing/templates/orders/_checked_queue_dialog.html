@@ -7,7 +7,7 @@
 
   <form action="${request.route_url("orders.print.queue.manymany")}" method="POST">
   <div class="modal-body">
-    ${form_item(form.ticket_id, option=dict(id="ticket_id"))}
+    ${form_item(form.ticket_format_id, option=dict(id="ticket_format_id"))}
 
 	印刷キューに入れる注文
     <div id="listing_area">
@@ -23,16 +23,16 @@
 <script type="text/javascript">
   $(function(){
     var update_info = function(){
-      var ticket_id = $(this).val();
+      var ticket_format_id = $(this).val();
       $.getJSON("${request.route_url("orders.api.orders", action="matched_by_ticket")}",
-                {"ticket_id": ticket_id}).done(function(data){
+                {"ticket_format_id": ticket_format_id}).done(function(data){
         if(!data.status){
           return ;
         }
         var results = data.results;
         var ul = $("<ul>")
         for(var i = 0, j=results.length; i<j; i++){
-           var r = results[i]
+           var r = results[i];
            var content = "注文番号:{0} ({1}) 合計:{2}円"
                               .replace("{0}", r.order_no)
                               .replace("{1}", r.event_name)
@@ -45,7 +45,7 @@
       })
 	};
 
-    $("#ticket_id").change(update_info);
-    update_info.call($("#ticket_id"));
+    $("#ticket_format_id").change(update_info);
+    update_info.call($("#ticket_format_id"));
   });
 </script>
