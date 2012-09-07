@@ -48,7 +48,7 @@ class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 class VenueArea_group_l0_id(Base):
     __tablename__   = "VenueArea_group_l0_id"
     venue_id = Column(Identifier, ForeignKey('Venue.id', ondelete='CASCADE'), primary_key=True, nullable=False)
-    group_l0_id = Column(String(255), ForeignKey('Seat.group_l0_id', onupdate=None, ondelete=None), primary_key=True, nullable=True)
+    group_l0_id = Column(String(255), ForeignKey('Seat.group_l0_id', onupdate=None, ondelete='CASCADE'), primary_key=True, nullable=True)
     venue_area_id = Column(Identifier, ForeignKey('VenueArea.id', ondelete='CASCADE'), index=True, primary_key=True, nullable=False)
     venue = relationship('Venue')
 
