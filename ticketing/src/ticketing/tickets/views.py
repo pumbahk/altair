@@ -400,14 +400,12 @@ class TicketPrintQueueEntries(BaseView):
 
     @view_config(route_name='tickets.queue.delete', request_method="POST")
     def delete(self):
-        ids = self.request.params.get('id', [])
-        if isinstance(ids, basestring):
-            ids = [ids] 
-        DBSession.query(TicketPrintQueueEntry) \
+        ids = self.request.params.getall('id')
+        n = DBSession.query(TicketPrintQueueEntry) \
             .filter_by(operator=self.context.user) \
             .filter(TicketPrintQueueEntry.id.in_(ids)) \
             .delete(synchronize_session=False)
-        self.request.session.flash(u'エントリを削除しました')
+        self.request.session.flash(u'エントリを %d 件削除しました' % n)
         return HTTPFound(location=self.request.route_path("tickets.queue.index"))
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
