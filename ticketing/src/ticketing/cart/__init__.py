@@ -44,6 +44,7 @@ def includeme(config):
     config.add_route('rakuten_auth.login', '/login')
     config.add_route('rakuten_auth.verify', '/verify')
     config.add_route('rakuten_auth.error', '/error')
+    config.add_route('cart.logout', '/logout')
 
     from pyramid.interfaces import IRequest
     from .interfaces import IStocker, IReserving, ICartFactory

@@ -13,6 +13,7 @@ from pyramid.exceptions import NotFound
 from pyramid.response import Response
 from pyramid.view import view_config
 from pyramid.threadlocal import get_current_request
+from pyramid import security
 from js.jquery_tools import jquery_tools
 from urllib2 import urlopen
 from zope.deprecation import deprecate
@@ -1087,3 +1088,10 @@ class OutTermSalesView(object):
         api.logout(self.request)
         return dict(event=self.context.event, 
                     sales_segment=self.context.sales_segment)
+
+@view_config(route_name='cart.logout')
+def logout(request):
+    headers = security.forget(request)
+    res = HTTPFound(location='/')
+    res.headerlist.extend(headers)
+    return res
