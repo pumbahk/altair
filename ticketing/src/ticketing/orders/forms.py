@@ -77,7 +77,7 @@ class OrderSearchForm(Form):
     status = SelectMultipleField(
         label=u'ステータス',
         validators=[Optional()],
-        choices=[('ordered', u'未入金'), ('paid', u'入金済み'), ('delivered', u'配送済み'), ('canceled', u'キャンセル'), ('refunded', u'キャンセル (返金済)')],
+        choices=[('ordered', u'未入金'), ('paid', u'入金済み'), ('issued', u'発券済み'), ('unissued', u'未発券'), ('delivered', u'配送済み'), ('canceled', u'キャンセル'), ('refunded', u'キャンセル (返金済)')],
         coerce=str,
     )
     tel = TextField(

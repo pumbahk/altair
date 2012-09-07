@@ -2,14 +2,17 @@ package jp.ticketstar.ticketing.printing;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import jp.ticketstar.ticketing.printing.svg.ExtendedSVG12BridgeContext;
 import jp.ticketstar.ticketing.printing.svg.ExtendedSVG12OMDocument;
 import jp.ticketstar.ticketing.printing.svg.SVGOMPageElement;
 import jp.ticketstar.ticketing.printing.svg.SVGOMPageSetElement;
+import jp.ticketstar.ticketing.printing.svg.extension.TicketstarSVGExtensionConstants;
 
 import org.apache.batik.bridge.GVTBuilder;
 import org.apache.batik.dom.AbstractElement;
@@ -18,6 +21,7 @@ import org.apache.batik.dom.svg.SVGOMTitleElement;
 import org.apache.batik.gvt.CompositeGraphicsNode;
 import org.apache.batik.gvt.GraphicsNode;
 import org.w3c.dom.Node;
+import org.w3c.dom.svg.SVGSVGElement;
 
 class PageElementIterator implements Iterator<SVGOMPageElement> {
 	AbstractElement current;
@@ -57,7 +61,7 @@ public class PageSetModel {
 	SVGOMPageSetElement pageSetElement;
 	Pages pages;
 	
-	public Pages getTickets() {
+	public Pages getPages() {
 		return pages;
 	}
 
@@ -155,13 +159,23 @@ public class PageSetModel {
 			if (pageNumber > 1000)
 				throw new RuntimeException("Too many pages!");
 			SVGOMPageElement page = i.next();
-			String title = findTitle(page);
+			final String title = findTitle(page);
+			final List<String> queueIds = new ArrayList<String>();
+			for (AbstractElement elem = (AbstractElement)page.getFirstElementChild();
+					elem != null; elem = (AbstractElement)elem.getNextElementSibling()) {
+				if (elem instanceof SVGSVGElement) {
+					final String queueId = elem.getAttributeNS(TicketstarSVGExtensionConstants.TS_SVG_EXTENSION_NAMESPACE, "queue-id");
+					if (queueId != null)
+						queueIds.add(queueId);
+				}
+			}
 			tickets.add(
 				new Page(
 					title == null ?
 							Integer.toString(pageNumber):
 							String.format("%s (%d)", title, pageNumber),
-					ctx.getGraphicsNode(page)));
+					ctx.getGraphicsNode(page),
+					queueIds));
 		}
 		this.pages = tickets;
 	}

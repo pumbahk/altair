@@ -5,6 +5,7 @@
     <h3>券面印刷</h3>
   </div>
 
+% if not order.issued and not order.queued:
  <form method="POST" action="${request.route_path("orders.print.queue.strict",order_id=order.id)}">
   <div class="modal-body">
 	  %for field in form:
@@ -17,3 +18,8 @@
     <input class="btn btn-primary" type="submit" name="submit" value="登録">
   </div>
  </form>
+% else:
+  <div class="modal-body">
+    この注文は発券済みです。
+  </div>
+% endif

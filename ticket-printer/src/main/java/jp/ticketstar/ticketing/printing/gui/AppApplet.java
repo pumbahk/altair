@@ -5,7 +5,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.URLConnection;
-import java.applet.Applet;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Component;
@@ -19,8 +18,11 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Dimension2D;
+import java.awt.print.PrinterJob;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Collection;
 
 import javax.print.PrintService;
@@ -29,14 +31,14 @@ import javax.swing.ImageIcon;
 import javax.swing.JApplet;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -50,10 +52,15 @@ import jp.ticketstar.ticketing.printing.JGVTComponent;
 import jp.ticketstar.ticketing.printing.OurPageFormat;
 import jp.ticketstar.ticketing.printing.Page;
 import jp.ticketstar.ticketing.printing.PageSetModel;
+import jp.ticketstar.ticketing.printing.Pages;
+import jp.ticketstar.ticketing.printing.PrintableEvent;
+import jp.ticketstar.ticketing.printing.PrintableEventListener;
 import jp.ticketstar.ticketing.printing.RequestBodySender;
 import jp.ticketstar.ticketing.printing.TicketFormat;
+import jp.ticketstar.ticketing.printing.TicketPrintable;
 import jp.ticketstar.ticketing.printing.URLConnectionFactory;
 import jp.ticketstar.ticketing.printing.URLConnectionSVGDocumentLoader;
+import jp.ticketstar.ticketing.printing.URLFetcher;
 import jp.ticketstar.ticketing.printing.svg.ExtendedSVG12BridgeContext;
 import jp.ticketstar.ticketing.printing.svg.OurDocumentLoader;
 
@@ -68,9 +75,9 @@ import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 
 class AppAppletService extends AppService {
-	private Applet applet;
+	private AppApplet applet;
 	
-	public AppAppletService(Applet applet, AppModel model) {
+	public AppAppletService(AppApplet applet, AppModel model) {
 		super(model);
 		this.applet = applet;
 	}
@@ -83,6 +90,54 @@ class AppAppletService extends AppService {
 		this.documentLoader = documentLoader;
 		documentLoader.addSVGDocumentLoaderListener(new LoaderListener(new ExtendedSVG12BridgeContext(this, loader)));
 		documentLoader.start();
+	}
+
+	@Override
+	public void printAll() {
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+			public Object run() {
+				try {
+					final PrinterJob job = PrinterJob.getPrinterJob();
+					job.setPrintService(model.getPrintService());
+					final TicketPrintable printable = createTicketPrintable(job);
+					printable.addPrintableEventListener(new PrintableEventListener() {
+						public void pagePrinted(PrintableEvent evt) {
+							final Page page = printable.getPages().get(evt.getPageIndex());
+
+							try {
+								URLFetcher.fetch(applet.newURLConnection(applet.config.dequeueUrl), new RequestBodySender() {
+									public String getRequestMethod() {
+										return "POST";
+									}
+	
+									@Override
+									public void send(OutputStream out) throws IOException {
+										final JsonWriter writer = new JsonWriter(new OutputStreamWriter(out, "utf-8"));
+										writer.beginObject();
+										writer.name("queue_ids");
+										writer.beginArray();
+										for (final String queueId: page.getQueueIds())
+											writer.value(queueId);
+										writer.endArray();
+										writer.endObject();
+										writer.flush();
+										writer.close();
+									}
+								});
+							} catch (IOException e) {
+								displayError(e);
+							}
+							model.getPageSetModel().getPages().remove(page);
+						}
+					});
+					job.setPrintable(printable, model.getPageFormat());
+					job.print();
+				} catch (Exception e) {
+					displayError("Failed to print tickets\nReason: " + e);
+				}
+				return null;
+			}
+		});
 	}
 
     public void displayError(String message) {
@@ -158,7 +213,9 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 			source.setPaintingTransform(new AffineTransform(1, 0, 0, 1, ox, oy));
 		}
 
-		public void componentShown(ComponentEvent e) {}
+		public void componentShown(ComponentEvent e) {
+			componentResized(e);
+		}
 	};
 	
 	private PropertyChangeListener pageSetModelChangeListener = new PropertyChangeListener() {
@@ -168,7 +225,7 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 				list.clearSelection();
 				final PageSetModel pageSetModel = (PageSetModel)evt.getNewValue();
 				panel.removeAll();
-				for (Page ticket: pageSetModel.getTickets()) {
+				for (Page page: pageSetModel.getPages()) {
 					final JGVTComponent gvtComponent = new JGVTComponent(false, false);
 					final Dimension2D documentSize = pageSetModel.getBridgeContext().getDocumentSize();
 					{
@@ -179,11 +236,30 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 					gvtComponent.setPageFormat(model.getPageFormat());
 					gvtComponent.addComponentListener(centeringListener);
 					gvtComponent.setSize(new Dimension((int)documentSize.getWidth(), (int)documentSize.getHeight()));
-					gvtComponent.setGraphicsNode(ticket.getGraphics());
-					panel.add(gvtComponent, ticket.getName());
+					gvtComponent.setGraphicsNode(page.getGraphics());
+					gvtComponent.setName(page.getName());
+					panel.add(gvtComponent, page.getName());
 				}
 				panel.doLayout();
-				list.setModel(pageSetModel.getTickets());
+				list.setModel(pageSetModel.getPages());
+				pageSetModel.getPages().addListDataListener(new ListDataListener() {
+					public void contentsChanged(ListDataEvent evt) {}
+
+					public void intervalAdded(ListDataEvent evt) {}
+
+					public void intervalRemoved(ListDataEvent evt) {
+						final Pages pages = (Pages)evt.getSource();
+						for (int i = evt.getIndex0(), j = evt.getIndex1(); i <= j; i++) {
+							for (Component c: panel.getComponents()) {
+								System.out.println(c.getName());
+								if (c.getName().equals(pages.get(i).getName())) {
+									panel.remove(c);
+									break;
+								}
+							}
+						}
+					}
+				});
 			}
 		}
 	};
@@ -210,7 +286,13 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getNewValue() != null) {
 				doLoadTicketData();
-				OurPageFormat pageFormat = (OurPageFormat)evt.getNewValue();
+				final OurPageFormat pageFormat = (OurPageFormat)evt.getNewValue();
+				for (final PrintService printService: model.getPrintServices()) {
+					if (printService.getName().equals(pageFormat.getPreferredPrinterName())) {
+						model.setPrintService(printService);
+						break;
+					}
+				}
 				comboBoxPageFormat.setSelectedItem(pageFormat);
 			}
 		}

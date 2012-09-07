@@ -136,11 +136,18 @@ ${locale.format("%d", price, grouping=True)}
 
 <%def name="action_button(actions, order=None, vertical=True, options=None)">
 <%
+  from webhelpers.util import html_escape
   multi = True if len(actions) > 1 and order else False
   key = order.next() if multi else actions.keys()[0]
+  def attrs_str():
+    attrs = actions[key].get('attrs', {})
+    attrs['class'] = u'btn ' + attrs.get('class', u'')
+    if options is not None:
+      attrs['class'] += ' ' + options
+    return ' '.join(u'%s="%s"' % (name, html_escape(value)) for name, value in attrs.iteritems())
 %>
 <div class="btn-group">
-  <a href="${actions[key]['url']}" class="btn ${options}">
+  <a href="${actions[key]['url']}" ${attrs_str()|n}>
     <i class="${actions[key]['icon']}"></i> ${actions[key]['label']}
   </a>
   % if multi:
@@ -152,9 +159,9 @@ ${locale.format("%d", price, grouping=True)}
         % for key in order:
         <li>
           % if key == 'delete':
-          <a href="${actions[key]['url']}" data-controls-modal="modal-delete" data-backdrop="true" data-keyboard="true">
+          <a href="${actions[key]['url']}" data-controls-modal="modal-delete" data-backdrop="true" data-keyboard="true" ${attrs_str()|n}>
           % else:
-          <a href="${actions[key]['url']}">
+          <a href="${actions[key]['url']}" ${attrs_str()|n}>
           % endif
             <i class="${actions[key]['icon']}"></i> ${actions[key]['label']}
           </a>
@@ -164,9 +171,9 @@ ${locale.format("%d", price, grouping=True)}
     % else:
       % for key in order:
         % if key == 'delete':
-        <a href="${actions[key]['url']}" data-controls-modal="modal-delete" data-backdrop="true" data-keyboard="true" class="btn">
+        <a href="${actions[key]['url']}" data-controls-modal="modal-delete" data-backdrop="true" data-keyboard="true" ${attrs_str()|n}>
         % else:
-        <a href="${actions[key]['url']}" class="btn">
+        <a href="${actions[key]['url']}" ${attrs_str()|n}>
         % endif
           <i class="${actions[key]['icon']}"></i> ${actions[key]['label']}
         </a>

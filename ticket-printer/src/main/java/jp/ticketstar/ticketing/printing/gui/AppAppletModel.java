@@ -3,6 +3,8 @@ package jp.ticketstar.ticketing.printing.gui;
 import java.awt.print.PrinterJob;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 import javax.print.PrintService;
 import javax.swing.event.SwingPropertyChangeSupport;
@@ -30,8 +32,18 @@ public class AppAppletModel implements AppModel {
 	public void initialize() {
 		{
 			final GenericComboBoxModel<PrintService> printServices = new GenericComboBoxModel<PrintService>();
-	        for (PrintService service: PrinterJob.lookupPrintServices())
-	        	printServices.add(service);
+			try {
+				System.getSecurityManager().checkPrintJobAccess();
+				AccessController.doPrivileged(new PrivilegedAction<Object>() {
+					public Object run() {
+				        for (PrintService service: PrinterJob.lookupPrintServices())
+				        	printServices.add(service);
+				        return null;
+					}
+				});	
+			} catch (SecurityException e) {
+				throw e;
+			}
 	        final GenericComboBoxModel<PrintService> prevPrintServices = this.printServices;
 	        this.printServices = printServices;
 			propertyChangeSupport.firePropertyChange("printServices", prevPrintServices, printServices);

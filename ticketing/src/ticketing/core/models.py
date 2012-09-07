@@ -7,10 +7,10 @@ from datetime import datetime
 from sqlalchemy import Table, Column, ForeignKey, func, or_, and_
 from sqlalchemy import ForeignKeyConstraint, UniqueConstraint
 from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode, UnicodeText
-from sqlalchemy.orm import join, backref, column_property
+from sqlalchemy.orm import join, backref, column_property, joinedload
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.sql.expression import desc
+from sqlalchemy.sql.expression import desc, exists, select, table, column
 from sqlalchemy.ext.associationproxy import association_proxy
 
 from pyramid.threadlocal import get_current_registry
@@ -1449,12 +1449,25 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     paid_at = Column(DateTime, nullable=True, default=None)
     delivered_at = Column(DateTime, nullable=True, default=None)
     canceled_at = Column(DateTime, nullable=True, default=None)
+    last_issued_at = Column(DateTime, nullable=True, default=None)
 
     order_no = Column(String(255))
     note = Column(UnicodeText, nullable=True, default=None)
 
+    issued = Column(Boolean, nullable=False, default=False)
+
     performance_id = Column(Identifier, ForeignKey('Performance.id'))
     performance = relationship('Performance', backref="orders")
+
+    @classmethod
+    def __declare_last__(cls):
+        cls.queued = column_property(
+                exists(select('*') \
+                    .select_from(TicketPrintQueueEntry.__table__ \
+                        .join(OrderedProductItem.__table__) \
+                        .join(OrderedProduct.__table__)) \
+                    .where(OrderedProduct.order_id==cls.id) \
+                    .where(TicketPrintQueueEntry.processed_at==None)))
 
     @property
     def status(self):
@@ -1643,6 +1656,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 status_cond.append(and_(Order.canceled_at==None, Order.paid_at!=None, Order.delivered_at==None))
             if 'ordered' in condition:
                 status_cond.append(and_(Order.canceled_at==None, Order.paid_at==None, Order.delivered_at==None))
+            if 'issued' in condition:
+                status_cond.append(Order.issued==True)
+            if 'unissued' in condition:
+                status_cond.append(Order.issued==False)
             if status_cond:
                 query = query.filter(or_(*status_cond))
         condition = form.tel.data
@@ -1768,6 +1785,9 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     Ticket.event_idがNULLのものはマスターデータ。これを雛形として実際にeventとひもづけるTicketオブジェクトを作成する。
     """
     __tablename__ = "Ticket"
+
+    FLAG_ALWAYS_REISSUABLE = 1
+
     id = Column(Identifier, primary_key=True)
     organization_id = Column(Identifier, ForeignKey('Organization.id'), nullable=True)
     organization = relationship('Organization', uselist=False, backref=backref('ticket_templates'))
@@ -1776,6 +1796,7 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     ticket_format_id = Column(Identifier, ForeignKey('TicketFormat.id'), nullable=False)
     ticket_format = relationship('TicketFormat', uselist=False, backref='tickets')
     name = Column(Unicode(255), nullable=False, default=u'')
+    flags = Column(Integer, nullable=False, default=0)
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
 
     @classmethod
@@ -1834,16 +1855,25 @@ class TicketPrintQueueEntry(Base, BaseModel):
 
     @classmethod
     def dequeue(self, ids):
-        entries = TicketPrintQueueEntry.with_lockmode("update") \
+        entries = DBSession.query(TicketPrintQueueEntry) \
+            .with_lockmode("update") \
+            .outerjoin(TicketPrintQueueEntry.ordered_product_item) \
+            .outerjoin(OrderedProductItem.ordered_product) \
+            .outerjoin(OrderedProduct.order) \
             .filter(TicketPrintQueueEntry.id.in_(ids)) \
             .filter(TicketPrintQueueEntry.processed_at == None) \
             .all()
         if len(entries) == 0:
-            return False
+            return []
+        now = datetime.now()
         for entry in entries:
-            entry.processed_at = datetime.now()
-            DBSession.add(entry)
-        return True
+            entry.processed_at = now
+            order = entry.ordered_product_item.ordered_product.order
+            if not (entry.ticket.flags & Ticket.FLAG_ALWAYS_REISSUABLE):
+                entry.ordered_product_item.ordered_product.order.isseud = True
+            order.last_issued_at = now
+            order.issued = True
+        return entries
 
 from ..operators.models import Operator
 

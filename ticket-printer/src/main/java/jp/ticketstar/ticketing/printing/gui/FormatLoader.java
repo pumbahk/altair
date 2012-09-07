@@ -91,6 +91,11 @@ public class FormatLoader {
 					pageFormat.setPreferredMediaType(resolveMediaTypeString(paper.getAsString()));
 			}
 			{
+				final JsonElement printerName = pageFormatDatum.get("printer_name");
+				if (printerName != null)
+					pageFormat.setPreferredPrinterName(printerName.getAsString());
+			}
+			{
 				final JsonObject size = pageFormatDatum.get("size").getAsJsonObject();
 				final JsonObject printableArea = pageFormatDatum.get("printable_area").getAsJsonObject();
 				pageFormat.setPaper(PrintingUtils.buildPaper(

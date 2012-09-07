@@ -70,13 +70,19 @@ actions = {
   ),
   'print':dict(
     label=u'発券する',
-     url=request.route_path('orders.print.queue', order_id=order.id),
-    icon='icon-print',
+    url=request.route_path("orders.print.queue.dialog", order_id=order.id),
+    attrs={
+        "data-toggle": "modal",
+        "data-target": "#PrintQueueModal",
+        "class": "ajax-modal btn"
+        },
+    icon='icon-print'
   ),
   'cancel':dict(
     label=u'キャンセル',
     url='javascript:cancel_order(%d);' % order.id,
     icon='icon-remove',
+    attrs={ 'class': 'btn-danger' }
   ),
   'edit_shipping_address':dict(
     label=u'編集',
@@ -94,8 +100,8 @@ actions = {
     icon='icon-pencil',
   ),
 }
-sort = iter(sort or ['delivered','cancel'])
+sort = iter(sort)
 %>
 ${h.action_button(actions, sort, vertical=False)}
 
-${m.delete_modal(label_delete=u'キャンセル', label_cancel=u'戻る')}
+${m.delete_modal(label_delete=u'注文をキャンセルする (取消不可)', label_cancel=u'戻る')}

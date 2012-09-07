@@ -82,7 +82,7 @@ public class AppWindow implements IAppWindow {
 				list.clearSelection();
 				final PageSetModel ticketSetModel = (PageSetModel)evt.getNewValue();
 				panel.removeAll();
-				for (Page ticket: ticketSetModel.getTickets()) {
+				for (Page ticket: ticketSetModel.getPages()) {
 					final JGVTComponent gvtComponent = new JGVTComponent(false, false);
 					final Dimension2D documentSize = ticketSetModel.getBridgeContext().getDocumentSize();
 					{
@@ -97,7 +97,7 @@ public class AppWindow implements IAppWindow {
 					panel.add(gvtComponent, ticket.getName());
 				}
 				panel.doLayout();
-				list.setModel(ticketSetModel.getTickets());
+				list.setModel(ticketSetModel.getPages());
 			}
 		}
 	};

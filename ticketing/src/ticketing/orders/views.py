@@ -517,6 +517,13 @@ class Orders(BaseView):
                 results.append(r)
         return {"results": results, "names": names}
 
+    @view_config(route_name="orders.issue_status", request_method="POST", \
+                 request_param='issued')
+    def issue_status(self):
+        order = Order.query.get(self.request.matchdict["order_id"])
+        order.issued = int(self.request.params['issued'])
+        return HTTPFound(location=self.request.route_path('orders.show', order_id=order.id))
+
     @view_config(route_name="orders.print.queue.dialog", request_method="GET", 
                  renderer="ticketing:templates/orders/_print_queue_dialog.html")
     def print_queue_dialog(self):
