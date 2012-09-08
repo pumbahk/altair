@@ -12,7 +12,7 @@ import sqlahelper
 from .utils import JavaHashMap
 from .models import SejNotification, SejOrder, SejTicket
 
-from .helpers import make_sej_response, create_hash_from_x_start_params
+from .helpers import make_sej_response, create_hash_from_x_start_params, build_sej_datetime
 from .resources import SejNotificationType, SejPaymentType
 from .exceptions import SejResponseError
 
@@ -220,10 +220,81 @@ def process_notification():
         except NoResultFound, e:
             break
 
+def create_payment_or_cancel_request_from_record(n):
+    return {
+        'X_shori_id':           n.process_number,
+        'X_shop_id':            n.shop_id,
+        'X_shori_kbn':          str(int(n.payment_type)),
+        'X_shop_order_id':      n.order_id,
+        'X_haraikomi_no':       n.billing_number or '',
+        'X_hikikae_no':         n.exchange_number or '',
+        'X_goukei_kingaku':     n.total_price,
+        'X_ticket_cnt':         n.total_ticket_count,
+        'X_ticket_hon_cnt':     n.ticket_count,
+        'X_kaishu_cnt':         n.return_ticket_count,
+        'X_pay_mise_no':        n.pay_store_number,
+        'pay_mise_name':        n.pay_store_name,
+        'X_hakken_mise_no':     n.ticketing_store_number,
+        'hakken_mise_name':     n.ticketing_store_name,
+        'X_torikeshi_riyu':     n.cancel_reason,
+        'X_shori_time':         build_sej_datetime(n.processed_at),
+        }
 
+def create_payment_complete_request_from_record(n):
+    params = create_payment_or_cancel_request_from_record(n)
+    params['X_tuchi_type'] = str(SejNotificationType.PaymentComplete.v)
 
+def create_cancel_request_from_record(n):
+    params = create_payment_or_cancel_request_from_record(n)
+    params['X_tuchi_type'] = str(SejNotificationType.CancelFromSVC.v)
 
+def create_re_grant_request_from_record(n):
+    params = {
+        'X_tuchi_type':         str(SejNotificationType.ReGrant.v),
+        'X_shori_id':           n.process_number,
+        'X_shop_id':            n.shop_id,
+        'X_shori_kbn':          str(int(n.payment_type)),
+        'X_shop_order_id':      n.order_id,
+        'X_haraikomi_no':       n.billing_number or '',
+        'X_hikikae_no':         n.exchange_number or '',
+        'X_shori_kbn_new':      str(int(n.payment_type_new)),
+        'X_haraikomi_no_new':   n.billing_number_new or '',
+        'X_hikikae_no_new':     n.exchange_number_new or '',
+        'X_lmt_time_new':       build_sej_datetime(n.ticketing_due_at_new),
+        'X_shori_time':         build_sej_datetime(n.processed_at),
+        }
+    if n.barcode_numbers is not None and 'barcodes' in n.barcode_numbers:
+        barcodes = n.barcode_numbers['barcodes']
+        for i in range(0, 20):
+            barcode = barcodes[i] if i < len(barcodes) else ''
+            params['X_barcode_no_new_%02d' % (i + 1)] = barcode
+    return params
 
+def create_expire_request_from_record(n):
+    return {
+        'X_tuchi_type':         str(SejNotificationType.TicketingExpire.v),
+        'X_shori_id':           n.process_number,
+        'X_shop_id':            n.shop_id,
+        'X_shop_order_id':      n.order_id,
+        'X_shori_kbn':          str(n.payment_type),
+        'X_lmt_time':           build_sej_datetime(n.ticketing_due_at),
+        'X_haraikomi_no':       n.billing_number or '',
+        'X_hikikae_no':         n.exchange_number or '',
+        'X_shori_time':         build_sej_datetime(n.processed_at),
+        }
 
-
-
+def create_sej_notification_data_from_record(n, secret_key):
+    """for testing"""
+    processor = {
+        SejNotificationType.PaymentComplete.v:
+            create_payment_complete_request_from_record,
+        SejNotificationType.CancelFromSVC.v:
+            create_cancel_request_from_record,
+        SejNotificationType.ReGrant.v:
+            create_re_grant_request_from_record,
+        SejNotificationType.TicketingExpire.v:
+            create_expire_request_from_record,
+        }
+    params = processor[n.notification_type](n)
+    params['xcode'] = create_hash_from_x_start_params(params, secret_key)
+    return params
