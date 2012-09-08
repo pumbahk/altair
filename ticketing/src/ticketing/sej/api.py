@@ -93,7 +93,8 @@ def callback_notification(params,
         n.process_number                = hash_map['X_shori_id']
         n.shop_id                       = hash_map['X_shop_id']
         n.order_id                      = hash_map['X_shop_order_id']
-        n.ticketing_due_at             = parse(hash_map['X_lmt_time'])
+        n.payment_type                  = str(int(hash_map['X_shori_kbn']))
+        n.ticketing_due_at              = parse(hash_map['X_lmt_time'])
         n.billing_number                = hash_map['X_haraikomi_no']
         n.exchange_number               = hash_map['X_hikikae_no']
         n.processed_at                  = parse(hash_map['X_shori_time'])
