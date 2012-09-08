@@ -9,7 +9,7 @@ from dateutil import parser as date_parser
 from os.path import abspath, dirname
 
 from ticketing.sej.models import SejNotification, SejOrder, SejTicket
-from ticketing.orders.models import Order
+from ticketing.core.models import Order
 from ticketing.orders.events import notify_order_canceled
 
 sys.path.append(abspath(dirname(dirname(__file__))))
@@ -25,14 +25,14 @@ log = logging.getLogger(__file__)
 from sqlalchemy import and_
 
 def get_sej_order(notification):
-   if notification.exchange_number and notification.billing_number:
+    if notification.exchange_number and notification.billing_number:
         return SejOrder.filter(
             and_(
                 SejOrder.order_id       == notification.order_id,
                 SejOrder.exchange_number== notification.exchange_number,
                 SejOrder.billing_number == notification.billing_number
-             )
-        ).first()
+                )
+            ).first()
     elif notification.exchange_number:
         return SejOrder.filter(and_(SejOrder.order_id       == notification.order_id, SejOrder.exchange_number== notification.exchange_number)).first()
     elif notification.billing_number:
@@ -51,7 +51,7 @@ def reflect_ticketing_and_payment(request, sej_order, order, notification):
     sej_order.ticketing_store_number = notification.ticketing_store_number
     sej_order.ticketing_store_name = notification.ticketing_store_name
 
-   notification.reflected_at = datetime.now()
+    notification.reflected_at = datetime.now()
     sej_order.reflected_at = datetime.now()
 
 def reflect_cancel_from_svc(request, sej_order, order, notification):
@@ -119,10 +119,6 @@ def main(argv=sys.argv):
     request = env['request']
     registry = env['registry']
     settings = registry.settings
-
-    hostname = settings['sej.inticket_api_url']
-    shop_id = settings['sej.shop_id']
-    secret_key = settings['sej.api_key']
 
     import transaction
     trans = transaction.begin()

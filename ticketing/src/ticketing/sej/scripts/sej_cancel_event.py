@@ -15,9 +15,9 @@ from os.path import abspath, dirname
 
 from paste.deploy import loadapp
 
-from ticketing.sej.models import SejCancelEvent
+# from ticketing.sej.models import SejCancelEvent
 from ticketing.sej.payment import request_fileget, request_cancel_event
-from ticketing.sej.resources import SejNotificationType, code_from_notification_type, SejServerError
+from ticketing.sej.resources import SejNotificationType, code_from_notification_type # , SejServerError
 
 sys.path.append(abspath(dirname(dirname(__file__))))
 
