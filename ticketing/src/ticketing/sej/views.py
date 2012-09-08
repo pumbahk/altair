@@ -20,7 +20,7 @@ class SejHTTPErrorResponse(HTTPClientError):
 
 class SejCallback(object):
 
-    log = logging.getLogger(__file__)
+    log = logging.getLogger(__name__)
     log_sej = logging.getLogger('sej_payment')
 
     def __init__(self, request):
