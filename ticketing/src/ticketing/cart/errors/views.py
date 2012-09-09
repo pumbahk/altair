@@ -19,7 +19,9 @@ def forbidden(request):
 
 @view_config(context=NotFound, renderer=selectable_renderer('ticketing.cart:templates/errors/%(membership)s/notfound.html'))
 def notfound(request):
-    logger.debug("404 on event_id=%s" % request.context.event_id)
+    event_id = getattr(request.context, 'event_id', None)
+    if event_id is not None:
+        logger.debug("404 on event_id=%s" % event_id)
     request.response.status = 404
     return {}
 
