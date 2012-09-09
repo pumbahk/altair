@@ -42,6 +42,9 @@ def parse_style(*args, **kwargs):
         decl.removeProperty(u'text-align')
     return decl
 
+def css_text(decl):
+    return re.sub(ur'\r\n|\r|\n', ' ', decl.cssText)
+
 def collect_flowpara_and_flowdivs(retval, style, elem):
     for child_elem in elem:
         if child_elem.tag == u'{%s}flowDiv' % SVG_NAMESPACE:
@@ -58,7 +61,7 @@ def collect_flowpara_and_flowdivs(retval, style, elem):
                 _style = override_styles(style, parse_style(style_str, validate=False))
             else:
                 _style = style
-            child_elem.set(u'style', re.sub(ur'\r\n|\r|\n', ' ', _style.cssText))
+            child_elem.set(u'style', css_text(_style))
             retval.append(child_elem)
             elem.remove(child_elem)
 
@@ -87,6 +90,9 @@ def cleanup_elem(elem):
             flowregion = child_elem.find(u'{%s}flowRegion' % SVG_NAMESPACE)
             if flowregion is not None:
                 handle_flowregion(flowregion)
+            style_str = child_elem.get(u'style')
+            if style_str is not None:
+                child_elem.set(u'style', css_text(parse_style(style_str, validate=False)))
         elif child_elem.tag == u'{%s}image' % SVG_NAMESPACE:
             elem.remove(child_elem)
         cleanup_elem(child_elem)
