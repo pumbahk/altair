@@ -76,7 +76,7 @@ def handle_flowregion(flowregion):
     attach_fill_and_stroke_none_if_not_specified(first_child)
 
 def cleanup_elem(elem):
-    for child_elem in elem:
+    for child_elem in list(elem):
         if child_elem.tag == u'{%s}flowRoot' % SVG_NAMESPACE:
             retval = [] 
             collect_flowpara_and_flowdivs(retval, cssutils.css.CSSStyleDeclaration(), child_elem)
@@ -87,6 +87,8 @@ def cleanup_elem(elem):
             flowregion = child_elem.find(u'{%s}flowRegion' % SVG_NAMESPACE)
             if flowregion is not None:
                 handle_flowregion(flowregion)
+        elif child_elem.tag == u'{%s}image' % SVG_NAMESPACE:
+            elem.remove(child_elem)
         cleanup_elem(child_elem)
 
 def cleanup_svg(svg):
