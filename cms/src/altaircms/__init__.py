@@ -100,7 +100,7 @@ def main(global_config, **settings):
     config.add_static_view('plugins/static', 'altaircms:plugins/static', cache_max_age=3600)
     config.add_static_view("staticasset", settings["altaircms.asset.storepath"], cache_max_age=3600)
 
-    engine = engine_from_config(settings, 'sqlalchemy.')
+    engine = engine_from_config(settings, 'sqlalchemy.', pool_recycle=3600)
     sqlahelper.get_session().remove()
     sqlahelper.add_engine(engine)
 
