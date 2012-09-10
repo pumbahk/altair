@@ -53,6 +53,28 @@ var PrintStatusPresenter = function(model, view, resourcs){
   this.resourcs = resourcs;
 };
 
+var TaskQueue = {
+  // stop function is needed?
+  q :  [], 
+  runnnigp :  false, 
+  enqueue :  function(fn){
+    this.q.push(fn);
+    if(!this.runnnigp){
+      var self = this;
+      this.runnnigp = true;
+      setTimeout(function(){self.fire.call(self);}, 0);
+    }
+  }, 
+  fire : function(){
+    if(this.q.length > 0){
+      var fn = this.q.shift();
+      fn().done(this.fire.bind(this));
+    }else {
+      this.runnnigp = false;
+    }
+  }
+}
+
 PrintStatusPresenter.prototype = {
   on_check: function(e){
     var $e = $(e.currentTarget);
@@ -63,24 +85,25 @@ PrintStatusPresenter.prototype = {
     }
   }, 
   on_inc: function($e){
-    $.post(this.resourcs.add, {"target": $e.attr("name")});
     this.model.inc();
     this.view.display_count(this.model);
+    TaskQueue.enqueue(function(){return $.post(this.resourcs.add, {"target": $e.attr("name")})}.bind(this));
   }, 
   on_dec: function($e){
-    $.post(this.resourcs.remove, {"target": $e.attr("name")});
     this.model.dec();
     this.view.display_count(this.model);
+    TaskQueue.enqueue(function(){return $.post(this.resourcs.remove, {"target": $e.attr("name")})}.bind(this));
   }, 
   on_addall: function($e){
     var candidates = $("input.printstatus[type='checkbox']:not(:checked)")
     var targets = $.makeArray(candidates.map(function(i, e){return $(e).attr("name")}));
     candidates.attr("checked", "checked");
     if(targets.length > 0){
-      console.log(targets.length)
-      $.post(this.resourcs.addall, {"targets": targets});
-      this.model.change(targets.length);
-      this.view.display_count(this.model);
+      TaskQueue.enqueue(function(){
+        this.model.change(targets.length);
+        this.view.display_count(this.model);
+        return $.post(this.resourcs.addall, {"targets": targets});
+      }.bind(this));
     }
   }, 
   on_removeall: function($e){
@@ -88,29 +111,38 @@ PrintStatusPresenter.prototype = {
     var targets = $.makeArray(candidates.map(function(i, e){return $(e).attr("name")}));
     candidates.removeAttr("checked");
     if(targets.length > 0){
-      $.post(this.resourcs.removeall, {"targets": targets});
-      this.model.change(-targets.length);
-      this.view.display_count(this.model);
+      TaskQueue.enqueue(function(){
+        this.model.change(-targets.length);
+        this.view.display_count(this.model);
+        return $.post(this.resourcs.removeall, {"targets": targets});
+      }.bind(this));
     }
   }, 
   on_load: function(){
     var self = this;
-    $.getJSON(this.resourcs.load).done(function(data){
-      self.view.cleanup_checkbox();     
-      var this_page_count = self.view.check_and_count_checkboxes(data.result);
-      self.model.total_count = data.count;
-      self.model.count = this_page_count;
-      self.view.display_count(self.model);
+    TaskQueue.enqueue(function(){
+      return $.getJSON(self.resourcs.load).done(function(data){
+        self.view.cleanup_checkbox();     
+        var this_page_count = self.view.check_and_count_checkboxes(data.result);
+        self.model.total_count = data.count;
+        self.model.count = this_page_count;
+        self.view.display_count(self.model);
+      });
     });
   }, 
   on_reset: function(){
     // this page only or all
+    if (this.model.total_count <= 0){
+      return ;
+    }
     var self = this;
-    $.post(this.resourcs.reset).done(function(data){
-      self.model.total_count = data.count;
-      self.model.count = 0;
-      self.view.cleanup_checkbox();
-      self.view.display_count(self.model);
+    TaskQueue.enqueue(function(){
+      return $.post(self.resourcs.reset).done(function(data){
+        self.model.total_count = data.count;
+        self.model.count = 0;
+        self.view.cleanup_checkbox();
+        self.view.display_count(self.model);
+      });
     });
   }
 };
