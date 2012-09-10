@@ -3,8 +3,8 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
   <title>仙台89ERS ナイナーズチケット 購入確認ページ</title>
-  <link rel="stylesheet" type="text/css" href="${request.static_url('ticketing.bj89ers:static/style.css')}" media="all" />
-  <script language="JavaScript" src="${request.static_url('ticketing.bj89ers:static/js/jquery.js')}"></script>
+  <link rel="stylesheet" type="text/css" href="${request.static_url('ticketing.orderreview:static/css/89ers/style.css')}" media="all" />
+  <script language="JavaScript" src="${request.static_url('ticketing.orderreview:static/js/jquery.js')}"></script>
   <style type="text/css">
     .error {
       margin: 0;
@@ -17,7 +17,7 @@
 <body>
   <div align="center">
     <div class="header">
-      <img src="${request.static_url('ticketing.bj89ers:static/images/head_title.png')}" alt="仙台89ERS" width="780" height="135" />
+      <img src="${request.static_url('ticketing.orderreview:static/images/89ers/head_title.png')}" alt="仙台89ERS" width="780" height="135" />
     </div>
     <!-- これはdisplay none指定, なぜか... -->
     <h1 class="title">仙台89ERS ナイナーズチケット 購入確認ページ</h1>
@@ -72,7 +72,7 @@
       $('#t_shirts_size').css('display', $('#member_type option:selected').attr('with-shirt') == 'true' ? '' : 'none');
   });
   </script>
-	<%include file="../commons/footer.inc" />
+	<%include file="/commons/footer.inc" />
 
 </body>
 </html>
