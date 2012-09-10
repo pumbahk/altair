@@ -57,6 +57,7 @@ def selectable_renderer(fmt, defaults=None):
     return lookup_key
 
 ## individual utility
+
 @implementer(ISelectableRendererSelector)
 class ByDomainMappingSelector(object):
     def __init__(self, mapping):
@@ -73,3 +74,10 @@ class ByDomainMappingSelector(object):
         mapped = self.lookup_mapped(request.host)
         fmt = helper.format_string
         return fmt % dict(membership=mapped)
+
+## xxx: move
+def get_membership_from_request(request):
+    selector = request.registry.getUtility(ISelectableRendererSelector) ## xxx:
+    assert isinstance(selector, ByDomainMappingSelector)
+    return selector.lookup_mapped(request.host)
+
