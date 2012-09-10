@@ -31,10 +31,6 @@ def main(global_conf, **settings):
     # config.commit() #これ必要？
     config.include('..mobile')
 
-    config.add_route('contact', '/contact')
-    config.add_route('order_review.form', '/')
-    config.add_route('order_review.show', '/show')
-
     config.include(import_selectable_renderer)
     config.include(import_order_review_view)
     config.include(import_misc_view)
@@ -51,6 +47,9 @@ def import_selectable_renderer(config):
 
 
 def import_order_review_view(config):
+    config.add_route('order_review.form', '/')
+    config.add_route('order_review.show', '/show')
+
     config.add_view('.views.OrderReviewView', route_name='order_review.form', attr="get", request_method="GET", renderer="order_review/form.html")
     config.add_view('.views.OrderReviewView', request_type='ticketing.cart.interfaces.IMobileRequest', route_name='order_review.form',
                     attr="get", request_method="GET", renderer="order_review_mobile/form.html")
@@ -59,10 +58,11 @@ def import_order_review_view(config):
     config.add_view('.views.OrderReviewView', request_type='ticketing.cart.interfaces.IMobileRequest', route_name='order_review.show',
                     attr="post", request_method="POST", renderer="order_review_mobile/show.html")
 
-    config.add_view('.views.order_review_form_view', name="order_review_form", renderer="order_review/form.html")
-    config.add_view('.views.order_review_form_view', name="order_review_form", renderer="order_review_mobile/form.html", request_type='ticketing.cart.interfaces.IMobileRequest')
+    config.add_view('.views.order_review_form_view', context=".views.InvalidForm", renderer="order_review/form.html")
+    config.add_view('.views.order_review_form_view', context=".views.InvalidForm", renderer="order_review_mobile/form.html", request_type='ticketing.cart.interfaces.IMobileRequest')
     
 def import_misc_view(config):
+    config.add_route('contact', '/contact')
     config.add_view('.views.contact_view', route_name="contact", renderer="static/contact.html")
     config.add_view('.views.contact_view', route_name="contact", renderer="static_mobile/contact.html", request_type='ticketing.cart.interfaces.IMobileRequest')
 

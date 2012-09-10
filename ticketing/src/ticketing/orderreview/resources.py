@@ -5,7 +5,7 @@ from ticketing.cart.resources import TicketingCartResource
 from ticketing.core.models import DBSession, Order
 from ticketing.users.models import User, UserCredential, Membership, UserProfile
 from ticketing.sej.models import SejOrder
-from ticketing.cart.select_renderer import get_membership_from_request
+from ticketing.cart.selectable_renderer import get_membership_from_request
 
 from sqlalchemy.orm.exc import NoResultFound
 import logging

@@ -73,3 +73,14 @@ strip_spaces = strip(u' 　')
 class OrderReviewSchema(Form):
     order_no = fields.TextField(u"注文番号", filters=[strip_spaces], validators=[v.Required()])
     tel = fields.TextField(u"電話番号", filters=[strip_spaces, strip_hyphen()], validators=[v.Required()])
+
+    def object_validate(self, order):
+        address = order.shipping_address
+        if address is None:
+            self.errors["order_no"] = [u'受付番号または電話番号が違います。']
+            return False
+        if address.tel_1 != self.data["tel"] or address.tel_2 != self.data["tel"] :
+            self.errors["order_no"] = [u'電話番号が違います。'] ##xxx: tel?
+            return False
+        
+        return True
