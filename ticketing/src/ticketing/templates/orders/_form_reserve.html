@@ -19,12 +19,15 @@
   </div>
 
   <div class="modal-body">
+    ${h.alert_message(form)}
+
     <form action="javascript:createOrder();">
       <fieldset>
         ${h.form_item(form.performance_id)}
         ${h.form_item(form.note, option={'rows':5, 'class':'span10'})}
         ${h.form_item(form.product_id)}
         <div id="quantity_form">
+          ${h.form_item(form.quantity_only)}
           ${h.form_item(form.quantity)}
         </div>
         ${h.form_item(form.payment_delivery_method_pair_id)}

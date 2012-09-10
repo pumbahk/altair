@@ -68,6 +68,28 @@ ${h.breadcrumbs(
         </td>
       </tr>
       <tr>
+        <th>最終発券 (印字) 日時</th>
+        <td>
+          % if order.last_issued_at:
+            ${h.safe_strftime(order.last_issued_at)}
+          % else:
+            -
+          % endif
+        </td>
+      </tr>
+      <tr>
+        <th>発券済みフラグ</th>
+        <td>
+          % if order.issued:
+            発券済み
+            (<a href="#" data-toggle="modal" data-target="#ForceMarkUnissued">強制的に未発券に戻す</a>)
+          % else:
+            未発券
+            (<a href="#" data-toggle="modal" data-target="#ForceMarkIssued">強制的に発券済にする</a>)
+          % endif
+        </td>
+      </tr>
+      <tr>
         <th>配送日時</th>
         <td>
           % if order.delivered_at:
@@ -85,7 +107,14 @@ ${h.breadcrumbs(
       % endif
     </table>
     <div class="pull-right">
-      <%include file="/orders/_action_button.html" args="order=order" />
+      <%
+buttons = []
+buttons.append('delivered')
+if not order.issued and not order.queued:
+  buttons.append('print')
+buttons.append('cancel')
+%>
+      <%include file="/orders/_action_button.html" args="order=order, sort=buttons" />
     </div>
   </div>
 
@@ -264,7 +293,9 @@ ${h.breadcrumbs(
           </tr>
       % for i, ordered_product_item in enumerate(ordered_product.ordered_product_items):
           <tr>
-            <td class="span2"></td>
+            <td class="span2" style="text-align: right;">
+              <span class="label label-info">${ordered_product_item.product_item.stock.stock_holder.name}</span>
+            </td>
             <%
               attr = ordered_product_item.attributes.get('t_shirts_size') or ''
               if ordered_product_item.seats:
@@ -277,11 +308,11 @@ ${h.breadcrumbs(
                 seat_name = ''
             %>
             <td class="span4">
-			  <a href="${request.route_path("orders.item.preview", order_id=order.id, item_id=ordered_product_item.id)}"
-				 data-toggle="modal" data-target="#PreviewModal"
-				 class="ajax-modal"
-				 >${ordered_product_item.product_item.stock_type.name} ${attr} ${seat_name}<i class="icon-eye-open">_</i></a>
-			</td>
+              <a href="${request.route_path("orders.item.preview", order_id=order.id, item_id=ordered_product_item.id)}"
+              data-toggle="modal" data-target="#PreviewModal"
+              class="ajax-modal"
+              >${ordered_product_item.product_item.stock_type.name} ${attr} ${seat_name}<i class="icon-eye-open">_</i></a>
+            </td>
             <td style="text-align: right;">${h.price_format(ordered_product_item.price)}円</td>
             <td>${quantity}</td>
             <td></td>
@@ -367,17 +398,33 @@ ${h.breadcrumbs(
 </div>
 <div class="modal hide" id="PrintQueueModal">
 </div>
+<div class="modal hide" id="ForceMarkIssued">
+  <div class="modal-body">
+    この注文を強制的に発券済に設定します。よろしいですか?
+  </div>
+  <form method="post" action="${request.route_path('orders.issue_status', order_id=order.id)}" style="margin: 0">
+    <input type="hidden" name="issued" value="1" />
+    <div class="modal-footer">
+      <button class="btn" data-dismiss="modal">キャンセル</button>
+      <button class="btn btn-warning">設定する</a>
+    </div>
+  </form>
+</div>
+<div class="modal hide" id="ForceMarkUnissued">
+  <div class="modal-body">
+    この注文を強制的に未発券状態に設定します。よろしいですか?
+  </div>
+  <form method="post" action="${request.route_path('orders.issue_status', order_id=order.id)}" style="margin: 0">
+    <input type="hidden" name="issued" value="0" />
+    <div class="modal-footer">
+      <button class="btn" data-dismiss="modal">キャンセル</button>
+      <button class="btn btn-warning">設定する</a>
+    </div>
+  </form>
+</div>
 
-## 発券するボタンを追加する
 <script type="text/javascript">
   $(function(){
-	var btn = $("<a>").attr("href", "${request.route_path("orders.print.queue.dialog", order_id=order.id)}")
-					  .attr("data-toggle","modal")
-					  .attr("data-target", "#PrintQueueModal")
-					  .attr("class", "ajax-modal btn")
-	                  .html("<i class='icon-print'></i> 発券する");
-	$(".btn-group").eq(0).append(btn);
-
 ## for preview modal
     // ajax modal
 	$("a.ajax-modal[data-toggle=modal]").click(function(){

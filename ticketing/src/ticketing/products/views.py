@@ -92,11 +92,15 @@ class Products(BaseView):
         if product is None:
             return HTTPNotFound('product id %d is not found' % product_id)
 
-        event_id = product.event_id
-        product.delete()
+        location = route_path('products.index', self.request, event_id=product.event_id)
+        try:
+            product.delete()
+            self.request.session.flash(u'商品を削除しました')
+        except Exception, e:
+            self.request.session.flash(e.message)
+            raise HTTPFound(location=location)
 
-        self.request.session.flash(u'商品を削除しました')
-        return HTTPFound(location=route_path('products.index', self.request, event_id=event_id))
+        return HTTPFound(location=location)
 
 
 @view_defaults(decorator=with_bootstrap)
@@ -119,7 +123,7 @@ class ProductItems(BaseView):
             product_item = merge_session_with_post(ProductItem(), f.data)
             product_item.save()
 
-            self.request.session.flash(u'商品を保存しました')
+            self.request.session.flash(u'商品に在庫を割当てました')
             return render_to_response('ticketing:templates/refresh.html', {}, request=self.request)
         else:
             return {
@@ -145,7 +149,7 @@ class ProductItems(BaseView):
             product_item = merge_session_with_post(product_item, f.data)
             product_item.save()
 
-            self.request.session.flash(u'商品を保存しました')
+            self.request.session.flash(u'商品明細を保存しました')
             return render_to_response('ticketing:templates/refresh.html', {}, request=self.request)
         else:
             return {
@@ -161,8 +165,12 @@ class ProductItems(BaseView):
         if product_item is None:
             return HTTPNotFound('product_item id %d is not found' % product_item_id)
 
-        performance_id = product_item.performance_id
-        product_item.delete()
+        location = route_path('performances.show', self.request, performance_id=product_item.performance_id, _anchor='product')
+        try:
+            product_item.delete()
+            self.request.session.flash(u'商品から在庫の割当を外しました')
+        except Exception, e:
+            self.request.session.flash(e.message)
+            raise HTTPFound(location=location)
 
-        self.request.session.flash(u'商品を削除しました')
-        return HTTPFound(location=route_path('performances.show', self.request, performance_id=performance_id, _anchor='product'))
+        return HTTPFound(location=location)

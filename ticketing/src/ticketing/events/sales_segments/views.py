@@ -107,8 +107,12 @@ class SalesSegments(BaseView):
         if sales_segment is None:
             return HTTPNotFound('sales_segment id %d is not found' % sales_segment_id)
 
-        event_id = sales_segment.event_id
-        sales_segment.delete()
+        location = route_path('sales_segments.index', self.request, event_id=sales_segment.event_id)
+        try:
+            sales_segment.delete()
+            self.request.session.flash(u'販売区分を削除しました')
+        except Exception, e:
+            self.request.session.flash(e.message)
+            raise HTTPFound(location=location)
 
-        self.request.session.flash(u'販売区分を削除しました')
-        return HTTPFound(location=route_path('sales_segments.index', self.request, event_id=event_id))
+        return HTTPFound(location=location)

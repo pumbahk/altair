@@ -12,6 +12,15 @@ __all__ = (
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+ALIGNMENT_COMPAT_MAP = {
+    u'left': u'start',
+    u'center': u'middle',
+    u'right': u'end',
+    u'start': u'start',
+    u'middle': u'middle',
+    u'end': u'end',
+    }
+
 class FormatError(Exception):
     pass
 
@@ -25,9 +34,16 @@ def override_styles(olddecl, newdecl):
 
 def parse_style(*args, **kwargs):
     decl = cssutils.parseStyle(*args, **kwargs)
-    # this is uncovered by SVG spec, but added by Inkscape...
-    decl.removeProperty(u'text-align')
+    text_align = decl.getProperty(u'text-align')
+    text_align = ALIGNMENT_COMPAT_MAP.get(text_align)
+    if text_align is not None:
+        decl.setProperty(u'text-align', text_align)
+    else:
+        decl.removeProperty(u'text-align')
     return decl
+
+def css_text(decl):
+    return re.sub(ur'\r\n|\r|\n', ' ', decl.cssText)
 
 def collect_flowpara_and_flowdivs(retval, style, elem):
     for child_elem in elem:
@@ -45,7 +61,7 @@ def collect_flowpara_and_flowdivs(retval, style, elem):
                 _style = override_styles(style, parse_style(style_str, validate=False))
             else:
                 _style = style
-            child_elem.set(u'style', re.sub(ur'\r\n|\r|\n', ' ', _style.cssText))
+            child_elem.set(u'style', css_text(_style))
             retval.append(child_elem)
             elem.remove(child_elem)
 
@@ -63,7 +79,7 @@ def handle_flowregion(flowregion):
     attach_fill_and_stroke_none_if_not_specified(first_child)
 
 def cleanup_elem(elem):
-    for child_elem in elem:
+    for child_elem in list(elem):
         if child_elem.tag == u'{%s}flowRoot' % SVG_NAMESPACE:
             retval = [] 
             collect_flowpara_and_flowdivs(retval, cssutils.css.CSSStyleDeclaration(), child_elem)
@@ -74,6 +90,11 @@ def cleanup_elem(elem):
             flowregion = child_elem.find(u'{%s}flowRegion' % SVG_NAMESPACE)
             if flowregion is not None:
                 handle_flowregion(flowregion)
+            style_str = child_elem.get(u'style')
+            if style_str is not None:
+                child_elem.set(u'style', css_text(parse_style(style_str, validate=False)))
+        elif child_elem.tag == u'{%s}image' % SVG_NAMESPACE:
+            elem.remove(child_elem)
         cleanup_elem(child_elem)
 
 def cleanup_svg(svg):

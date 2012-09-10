@@ -100,8 +100,8 @@ class SejNotification(BaseModel, WithTimestamp, LogicallyDeleted, Base):
     ticket_count            = Column(Integer)
     return_ticket_count     = Column(Integer)
 
-    ticketing_due_datetime  = Column(DateTime, nullable=True)
-    ticketing_due_datetime_new = Column(DateTime, nullable=True)
+    ticketing_due_at        = Column(DateTime, nullable=True)
+    ticketing_due_at_new    = Column(DateTime, nullable=True)
 
     pay_store_number        = Column(String(6))
     pay_store_name          = Column(String(36))

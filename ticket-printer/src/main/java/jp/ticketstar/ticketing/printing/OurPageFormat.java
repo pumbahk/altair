@@ -9,7 +9,8 @@ public class OurPageFormat extends PageFormat {
 	double[] horizontalGuides;
 	double[] verticalGuides;
 	PageAttributes.MediaType preferredMediaType;
-
+	String preferredPrinterName;
+	
 	public int getId() {
 		return id;
 	}
@@ -33,6 +34,10 @@ public class OurPageFormat extends PageFormat {
 	public void setPreferredMediaType(PageAttributes.MediaType mediaType) {
 		this.preferredMediaType = mediaType;
 	}
+
+	public String getPreferredPrinterName() {
+		return preferredPrinterName;
+	}
 	
 	public double[] getHorizontalGuides() {
 		return horizontalGuides;
@@ -48,5 +53,9 @@ public class OurPageFormat extends PageFormat {
 
 	public void setVerticalGuides(double[] verticalGuides) {
 		this.verticalGuides = verticalGuides;
+	}
+
+	public void setPreferredPrinterName(String preferredPrinterName) {
+		this.preferredPrinterName = preferredPrinterName;
 	}
 }

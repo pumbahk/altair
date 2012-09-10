@@ -64,12 +64,31 @@ def strip(chars):
 REGEX_HYPHEN = re.compile('\-')
 def strip_hyphen():
     def stripper(unistr):
-        print unistr
         return unistr and REGEX_HYPHEN.sub('', unistr)
     return stripper
 
 strip_spaces = strip(u' 　')
 
 class OrderReviewSchema(Form):
+    def _get_translations(self):
+        return Translations({
+            'This field is required.' : u'入力してください',
+            'Not a valid choice' : u'選択してください',
+            'Invalid email address.' : u'Emailの形式が正しくありません。',
+            'Field must be at least %(min)d characters long.' : u'正しく入力してください。',
+            'Field must be between %(min)d and %(max)d characters long.': u'正しく入力してください。',
+            'Invalid input.': u'形式が正しくありません。',
+        })
+
     order_no = fields.TextField(u"注文番号", filters=[strip_spaces], validators=[v.Required()])
     tel = fields.TextField(u"電話番号", filters=[strip_spaces, strip_hyphen()], validators=[v.Required()])
+
+    def object_validate(self, order):
+        if order is None or order.shipping_address is None:
+            self.errors["order_no"] = [u'受付番号または電話番号が違います。']
+            return False
+        address = order.shipping_address
+        if address.tel_1 != self.data["tel"] and address.tel_2 != self.data["tel"] :
+            self.errors["order_no"] = [u'受付番号または電話番号が違います。']
+            return False
+        return True

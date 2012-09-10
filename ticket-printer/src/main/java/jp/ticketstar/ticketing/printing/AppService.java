@@ -8,6 +8,9 @@ import java.awt.print.Printable;
 import java.awt.print.PrinterJob;
 import java.io.File;
 import java.net.URI;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.ArrayList;
 
 import javax.swing.JFileChooser;
 
@@ -158,19 +161,26 @@ public class AppService extends SVGUserAgentGUIAdapter implements UserAgent {
 		documentLoader.start();
 	}
 
+	protected TicketPrintable createTicketPrintable(PrinterJob job) {
+		return new TicketPrintable(
+			new ArrayList<Page>(model.getPageSetModel().getPages()), job,
+			new AffineTransform(72. / 90, 0, 0, 72. / 90, 0, 0)
+		);
+	}
+
 	public void printAll() {
-		try {
-			final PrinterJob job = PrinterJob.getPrinterJob();
-			job.setPrintService(model.getPrintService());
-			final Printable printable = new TicketPrintable(
-				model.getPageSetModel().getTickets(),
-				new AffineTransform(72. / 90, 0, 0, 72. / 90, 0, 0)
-			);
-			job.setPrintable(printable, model.getPageFormat());
-			if (job.printDialog())
-				job.print();
-		} catch (Exception e) {
-			displayError("Failed to print tickets\nReason: " + e);
-		}
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+			public Object run() {
+				try {
+					final PrinterJob job = PrinterJob.getPrinterJob();
+					job.setPrintService(model.getPrintService());
+					job.setPrintable(createTicketPrintable(job), model.getPageFormat());
+					job.print();
+				} catch (Exception e) {
+					displayError("Failed to print tickets\nReason: " + e);
+				}
+				return null;
+			}
+		});
 	}
 }

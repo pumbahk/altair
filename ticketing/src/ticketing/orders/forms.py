@@ -7,7 +7,7 @@ from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, T
 from wtforms.validators import Optional, AnyOf, Length, Email
 from collections import OrderedDict
 from ticketing.formhelpers import DateTimeField, Translations, Required
-from ticketing.core.models import (PaymentMethodPlugin, DeliveryMethodPlugin, PaymentDeliveryMethodPair,
+from ticketing.core.models import (PaymentMethodPlugin, DeliveryMethodPlugin, StockType,
                                    SalesSegment, Performance, Product, ProductItem)
 
 class OrderForm(Form):
@@ -77,7 +77,7 @@ class OrderSearchForm(Form):
     status = SelectMultipleField(
         label=u'ステータス',
         validators=[Optional()],
-        choices=[('ordered', u'未入金'), ('paid', u'入金済み'), ('delivered', u'配送済み'), ('canceled', u'キャンセル'), ('refunded', u'キャンセル (返金済)')],
+        choices=[('ordered', u'未入金'), ('paid', u'入金済み'), ('issued', u'発券済み'), ('unissued', u'未発券'), ('delivered', u'配送済み'), ('canceled', u'キャンセル'), ('refunded', u'キャンセル (返金済)')],
         coerce=str,
     )
     tel = TextField(
@@ -155,20 +155,34 @@ class OrderReserveForm(Form):
                         (pdmp.id, '%s  -  %s' % (pdmp.payment_method.name, pdmp.delivery_method.name))
                     )
 
-            if 'stocks' in kwargs:
-                self.product_id.choices = []
+            self.product_id.choices = []
+            if 'stocks' in kwargs and kwargs['stocks']:
+                # 座席選択あり
                 products = Product.filter(Product.event_id==performance.event_id)\
                                   .join(Product.items)\
                                   .filter(ProductItem.performance_id==performance.id)\
                                   .filter(ProductItem.stock_id.in_(kwargs['stocks'])).all()
                 self.product_id.choices += [(p.id, p.name) for p in products]
+            else:
+                # 数受け
+                products = Product.filter(Product.sales_segment_id.in_([ss.id for ss in sales_segments]))\
+                                  .join(Product.seat_stock_type)\
+                                  .filter(StockType.quantity_only==1).all()
+                self.product_id.choices += [(p.id, p.name) for p in products]
+                self.quantity_only.data = 1
 
     def _get_translations(self):
         return Translations()
 
     performance_id = HiddenField(
-        label='',
         validators=[Required()],
+    )
+    stocks = HiddenField(
+        label=u'座席',
+        validators=[Optional()],
+    )
+    quantity_only = HiddenField(
+        validators=[Optional()],
     )
     note = TextAreaField(
         label=u'備考・メモ',
@@ -183,16 +197,22 @@ class OrderReserveForm(Form):
     )
     product_id = SelectField(
         label=u'商品',
-        validators=[Required(u'選択してください')],
+        validators=[Required(u'予約する商品を選択してください')],
         choices=[],
         coerce=int
     )
     payment_delivery_method_pair_id = SelectField(
         label=u'決済・配送方法',
-        validators=[Required(u'選択してください')],
+        validators=[Required(u'決済配送方法を選択してください')],
         choices=[],
         coerce=int
     )
+
+    def validate_stocks(form, field):
+        if len(field.data) > 1:
+            raise ValidationError(u'複数の席種を選択することはできません')
+        if not form.product_id.choices:
+            raise ValidationError(u'選択された座席に紐づく予約可能な商品がありません')
 
     def validate_product_id(form, field):
         product = Product.get(field.data)

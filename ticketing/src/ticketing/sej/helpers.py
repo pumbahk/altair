@@ -61,7 +61,7 @@ def create_hash_from_x_start_params(params, secret_key):
         if name.startswith('X_'):
             result = ascii_regex.search(param)
             if result:
-                raise SejRequestError(u"%s is must be ascii (%s)" % (name, param))
+                raise SejRequestError(u"%s must be ascii (%s)" % (name, param))
 
             falsify_props[name] = param
 
@@ -185,3 +185,6 @@ def create_sej_request_data(
             idx+=1
 
     return params
+
+def build_sej_datetime(dt):
+    return '%04d%02d%02d%02d%02d%02d' % (dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second) if dt is not None else ''

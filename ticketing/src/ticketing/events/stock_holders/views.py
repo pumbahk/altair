@@ -103,10 +103,12 @@ class StockHolders(BaseView):
         if stock_holder is None:
             return HTTPNotFound('stock_holder id %d is not found' % stock_holder_id)
 
+        location = route_path('events.show', self.request, event_id=stock_holder.event.id)
         try:
             stock_holder.delete()
             self.request.session.flash(u'枠を削除しました')
         except Exception, e:
             self.request.session.flash(e.message)
+            raise HTTPFound(location=location)
 
-        return HTTPFound(location=route_path('events.show', self.request, event_id=stock_holder.event.id))
+        return HTTPFound(location=location)

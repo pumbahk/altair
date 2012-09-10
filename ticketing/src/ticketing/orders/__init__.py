@@ -13,6 +13,7 @@ def includeme(config):
     config.add_route('orders.reserve'                   , '/reserve/')
     config.add_route('orders.reserve.form'              , '/reserve/form')
     config.add_route('orders.note'                      , '/note/{order_id}')
+    config.add_route('orders.issue_status'              , '/issue_status/{order_id}')
 
     config.add_route("orders.item.preview"              , "/item/preview/{order_id}/{item_id}")
     config.add_route("orders.item.preview.getdata"      , "/api/item/{item_id}/ticket/{ticket_format_id}")

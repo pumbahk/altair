@@ -53,7 +53,7 @@ requires = [
     'standardenum',
     'pyramid_who',
     'repoze.who',
-    'beaker',
+    'beaker >= 1.6.4',
     'mock',
     'tableau >= 0.0.4pre',
     'uamobile',
@@ -66,6 +66,8 @@ requires = [
     'qrcode',
     'pystache',
     'repoze.browserid',
+    'redis',
+    'beaker-extensions >= 0.2.0pre2',
     ]
 
 setup(name='ticketing',
@@ -92,7 +94,8 @@ setup(name='ticketing',
         'file:../bundle/js.underscore#egg=js.underscore-1.3.3',
         'https://github.com/moriyoshi/tableau/tarball/master#egg=tableau-0.0.4pre',
         'https://bitbucket.org/moriyoshi/alembic/get/9fe8d037f71f.zip#egg=alembic-0.3.5moriyoshi', 
-        "https://github.com/numpy/numpy/tarball/v1.6.2#egg=numpy-1.6.2"
+        "https://github.com/numpy/numpy/tarball/v1.6.2#egg=numpy-1.6.2",
+        'https://github.com/moriyoshi/beaker_extensions/tarball/0.2.0pre2#egg=beaker-extensions-0.2.0pre2', 
       ],
       tests_require=requires,
       test_suite="ticketing",

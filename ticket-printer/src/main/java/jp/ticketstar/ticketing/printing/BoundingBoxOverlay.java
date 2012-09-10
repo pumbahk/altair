@@ -26,11 +26,12 @@ public class BoundingBoxOverlay implements Overlay {
 			if (evt.getPropertyName().equals("pageFormat")) {
 				final OurPageFormat pageFormat = ((AppModel)evt.getSource()).getPageFormat();
 				outer.get().setImageableArea(
-					new Rectangle2D.Double(
-						pageFormat.getImageableX(),
-						pageFormat.getImageableY(),
-						pageFormat.getImageableWidth(),
-						pageFormat.getImageableHeight()));
+					pageFormat == null ? null:
+						new Rectangle2D.Double(
+							pageFormat.getImageableX(),
+							pageFormat.getImageableY(),
+							pageFormat.getImageableWidth(),
+							pageFormat.getImageableHeight()));
 			}
 		}
 	}

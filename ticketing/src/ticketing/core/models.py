@@ -7,10 +7,10 @@ from datetime import datetime
 from sqlalchemy import Table, Column, ForeignKey, func, or_, and_
 from sqlalchemy import ForeignKeyConstraint, UniqueConstraint
 from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode, UnicodeText
-from sqlalchemy.orm import join, backref, column_property
+from sqlalchemy.orm import join, backref, column_property, joinedload
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.sql.expression import desc
+from sqlalchemy.sql.expression import desc, exists, select, table, column
 from sqlalchemy.ext.associationproxy import association_proxy
 
 from pyramid.threadlocal import get_current_registry
@@ -48,7 +48,7 @@ class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 class VenueArea_group_l0_id(Base):
     __tablename__   = "VenueArea_group_l0_id"
     venue_id = Column(Identifier, ForeignKey('Venue.id', ondelete='CASCADE'), primary_key=True, nullable=False)
-    group_l0_id = Column(String(255), ForeignKey('Seat.group_l0_id', onupdate=None, ondelete=None), primary_key=True, nullable=True)
+    group_l0_id = Column(String(255), ForeignKey('Seat.group_l0_id', onupdate=None, ondelete='CASCADE'), primary_key=True, nullable=True)
     venue_area_id = Column(Identifier, ForeignKey('VenueArea.id', ondelete='CASCADE'), index=True, primary_key=True, nullable=False)
     venue = relationship('Venue')
 
@@ -379,6 +379,15 @@ class Account(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization_id = Column(Identifier, ForeignKey("Organization.id"), nullable=True)
     organization = relationship('Organization', uselist=False, backref='accounts')
     stock_holders = relationship('StockHolder', backref='account')
+
+    def delete(self):
+        # 既に使用されている場合は削除できない
+        if self.events:
+            raise Exception(u'関連づけされたイベントがある為、削除できません')
+        if self.stock_holders:
+            raise Exception(u'関連づけされた枠がある為、削除できません')
+
+        super(Account, self).delete()
 
     @property
     def account_type_label(self):
@@ -786,6 +795,17 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     # membergroup_id = Column(Identifier, ForeignKey('MemberGroup.id'))
     # membergroup = relationship('MemberGroup', backref='salessegments')
 
+    def delete(self):
+        # 商品が割り当てられている場合は削除できない
+        if self.product:
+            raise Exception(u'商品の割当がある為、削除できません')
+
+        # delete PaymentDeliveryMethodPair
+        for pdmp in self.payment_delivery_method_pairs:
+            pdmp.delete()
+
+        super(SalesSegment, self).delete()
+
     def get_cms_data(self):
         start_at = isodate.datetime_isoformat(self.start_at) if self.start_at else ''
         end_at = isodate.datetime_isoformat(self.end_at) if self.end_at else ''
@@ -832,9 +852,9 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'))
     sales_segment = relationship('SalesSegment', backref='payment_delivery_method_pairs')
     payment_method_id = Column(Identifier, ForeignKey('PaymentMethod.id'))
-    payment_method = relationship('PaymentMethod')
+    payment_method = relationship('PaymentMethod', backref='payment_delivery_method_pairs')
     delivery_method_id = Column(Identifier, ForeignKey('DeliveryMethod.id'))
-    delivery_method = relationship('DeliveryMethod')
+    delivery_method = relationship('DeliveryMethod', backref='payment_delivery_method_pairs')
 
     @staticmethod
     def create_from_template(template, sales_segment_id):
@@ -869,6 +889,13 @@ class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     payment_plugin_id = Column(Identifier, ForeignKey('PaymentMethodPlugin.id'))
     payment_plugin = relationship('PaymentMethodPlugin', uselist=False)
 
+    def delete(self):
+        # 既に使用されている場合は削除できない
+        if self.payment_delivery_method_pairs:
+            raise Exception(u'関連づけされた決済配送方法がある為、削除できません')
+
+        super(PaymentMethod, self).delete()
+
     @property
     def fee_type_label(self):
         for ft in FeeTypeEnum:
@@ -891,6 +918,13 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization = relationship('Organization', uselist=False , backref='delivery_method_list')
     delivery_plugin_id = Column(Identifier, ForeignKey('DeliveryMethodPlugin.id'))
     delivery_plugin = relationship('DeliveryMethodPlugin', uselist=False)
+
+    def delete(self):
+        # 既に使用されている場合は削除できない
+        if self.payment_delivery_method_pairs:
+            raise Exception(u'関連づけされた決済配送方法がある為、削除できません')
+
+        super(DeliveryMethod, self).delete()
 
     @property
     def fee_type_label(self):
@@ -948,6 +982,13 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             return self.seatStatus
         else:
             return None
+
+    def delete(self):
+        # 既に予約されている場合は削除できない
+        if self.ordered_product_items:
+            raise Exception(u'予約がある為、削除できません')
+
+        super(ProductItem, self).delete()
 
     @staticmethod
     def create_default(product):
@@ -1010,6 +1051,18 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         # create default Product
         Product.create_default(stock_type=self)
 
+    def delete(self):
+        # delete Stock
+        for stock in self.stocks:
+            stock.delete()
+
+        # delete Product
+        products = Product.filter_by(event_id=self.event_id).filter_by(seat_stock_type_id=self.id).all()
+        for product in products:
+            product.delete()
+
+        super(StockType, self).delete()
+
     def num_seats(self, performance_id=None):
         # 同一Performanceの同一StockTypeにおけるStock.quantityの合計
         query = Stock.filter_by(stock_type_id=self.id).with_entities(func.sum(Stock.quantity))
@@ -1048,7 +1101,6 @@ class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     account_id = Column(Identifier, ForeignKey('Account.id'))
 
     style = Column(MutationDict.as_mutable(JSONEncodedDict(1024)))
-
     stocks = relationship('Stock', backref='stock_holder')
 
     def add(self):
@@ -1058,11 +1110,6 @@ class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         Stock.create_default(self.event, stock_holder_id=self.id)
 
     def delete(self):
-        # 在庫が割り当てられている場合は削除できない
-        for stock in self.stocks:
-            if stock.quantity > 0:
-                raise Exception(u'座席および席数の割当がある為、削除できません')
-
         # delete Stock
         for stock in self.stocks:
             stock.delete()
@@ -1121,6 +1168,10 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         stock_status.save()
 
     def delete(self):
+        # 在庫が割り当てられている場合は削除できない
+        if self.quantity > 0 or self.product_items:
+            raise Exception(u'座席および席数の割当がある為、削除できません')
+
         # delete StockStatus
         self.stock_status.delete()
 
@@ -1258,6 +1309,13 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         ''' ProductItemの自動生成は行わない '''
         ## Performance数分のProductItemを生成
         #ProductItem.create_default(product=self)
+
+    def delete(self):
+        # 在庫が割り当てられている場合は削除できない
+        if self.items:
+            raise Exception(u'座席および席数の割当がある為、削除できません')
+
+        super(Product, self).delete()
 
     def get_quantity_power(self, stock_type, performance_id):
         """ 数量倍率 """
@@ -1421,12 +1479,25 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     paid_at = Column(DateTime, nullable=True, default=None)
     delivered_at = Column(DateTime, nullable=True, default=None)
     canceled_at = Column(DateTime, nullable=True, default=None)
+    last_issued_at = Column(DateTime, nullable=True, default=None)
 
     order_no = Column(String(255))
     note = Column(UnicodeText, nullable=True, default=None)
 
+    issued = Column(Boolean, nullable=False, default=False)
+
     performance_id = Column(Identifier, ForeignKey('Performance.id'))
     performance = relationship('Performance', backref="orders")
+
+    @classmethod
+    def __declare_last__(cls):
+        cls.queued = column_property(
+                exists(select('*') \
+                    .select_from(TicketPrintQueueEntry.__table__ \
+                        .join(OrderedProductItem.__table__) \
+                        .join(OrderedProduct.__table__)) \
+                    .where(OrderedProduct.order_id==cls.id) \
+                    .where(TicketPrintQueueEntry.processed_at==None)))
 
     @property
     def payment_plugin_id(self):
@@ -1629,6 +1700,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 status_cond.append(and_(Order.canceled_at==None, Order.paid_at!=None, Order.delivered_at==None))
             if 'ordered' in condition:
                 status_cond.append(and_(Order.canceled_at==None, Order.paid_at==None, Order.delivered_at==None))
+            if 'issued' in condition:
+                status_cond.append(Order.issued==True)
+            if 'unissued' in condition:
+                status_cond.append(Order.issued==False)
             if status_cond:
                 query = query.filter(or_(*status_cond))
         condition = form.tel.data
@@ -1658,7 +1733,7 @@ class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     order_id = Column(Identifier, ForeignKey("Order.id"))
     order = relationship('Order', backref='ordered_products')
     product_id = Column(Identifier, ForeignKey("Product.id"))
-    product = relationship('Product')
+    product = relationship('Product', backref='ordered_products')
     price = Column(Numeric(precision=16, scale=2), nullable=False)
     quantity = Column(Integer)
 
@@ -1678,7 +1753,7 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     ordered_product_id = Column(Identifier, ForeignKey("OrderedProduct.id"))
     ordered_product = relationship('OrderedProduct', backref='ordered_product_items')
     product_item_id = Column(Identifier, ForeignKey("ProductItem.id"))
-    product_item = relationship('ProductItem')
+    product_item = relationship('ProductItem', backref='ordered_product_items')
 #    seat_id = Column(Identifier, ForeignKey('Seat.id'))
 #    seat = relationship('Seat')
     seats = relationship("Seat", secondary=orders_seat_table, backref='ordered_product_items')
@@ -1732,19 +1807,19 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class Ticket_TicketBundle(Base, BaseModel, LogicallyDeleted):
     __tablename__ = 'Ticket_TicketBundle'
-    ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id'), primary_key=True)
-    ticket_id = Column(Identifier, ForeignKey('Ticket.id'), primary_key=True)
+    ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id', ondelete='CASCADE'), primary_key=True)
+    ticket_id = Column(Identifier, ForeignKey('Ticket.id', ondelete='CASCADE'), primary_key=True)
 
 class TicketFormat_DeliveryMethod(Base, BaseModel, LogicallyDeleted):
     __tablename__ = 'TicketFormat_DeliveryMethod'
-    ticket_format_id = Column(Identifier, ForeignKey('TicketFormat.id'), primary_key=True)
-    delivery_method_id = Column(Identifier, ForeignKey('DeliveryMethod.id'), primary_key=True)
+    ticket_format_id = Column(Identifier, ForeignKey('TicketFormat.id', ondelete='CASCADE'), primary_key=True)
+    delivery_method_id = Column(Identifier, ForeignKey('DeliveryMethod.id', ondelete='CASCADE'), primary_key=True)
 
 class TicketFormat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "TicketFormat"
     id = Column(Identifier, primary_key=True)
     name = Column(Unicode(255), nullable=False)
-    organization_id = Column(Identifier, ForeignKey('Organization.id'), nullable=True)
+    organization_id = Column(Identifier, ForeignKey('Organization.id', ondelete='CASCADE'), nullable=True)
     organization = relationship('Organization', uselist=False, backref='ticket_formats')
     delivery_methods = relationship('DeliveryMethod', secondary=TicketFormat_DeliveryMethod.__table__, backref='ticket_formats')
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
@@ -1754,14 +1829,18 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     Ticket.event_idがNULLのものはマスターデータ。これを雛形として実際にeventとひもづけるTicketオブジェクトを作成する。
     """
     __tablename__ = "Ticket"
+
+    FLAG_ALWAYS_REISSUABLE = 1
+
     id = Column(Identifier, primary_key=True)
-    organization_id = Column(Identifier, ForeignKey('Organization.id'), nullable=True)
+    organization_id = Column(Identifier, ForeignKey('Organization.id', ondelete='CASCADE'), nullable=True)
     organization = relationship('Organization', uselist=False, backref=backref('ticket_templates'))
     event_id = Column(Identifier, ForeignKey('Event.id', ondelete='CASCADE'))
     event = relationship('Event', uselist=False, backref='tickets')
-    ticket_format_id = Column(Identifier, ForeignKey('TicketFormat.id'), nullable=False)
+    ticket_format_id = Column(Identifier, ForeignKey('TicketFormat.id', ondelete='CASCADE'), nullable=False)
     ticket_format = relationship('TicketFormat', uselist=False, backref='tickets')
     name = Column(Unicode(255), nullable=False, default=u'')
+    flags = Column(Integer, nullable=False, default=0)
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
 
     @classmethod
@@ -1820,16 +1899,25 @@ class TicketPrintQueueEntry(Base, BaseModel):
 
     @classmethod
     def dequeue(self, ids):
-        entries = TicketPrintQueueEntry.with_lockmode("update") \
+        entries = DBSession.query(TicketPrintQueueEntry) \
+            .with_lockmode("update") \
+            .outerjoin(TicketPrintQueueEntry.ordered_product_item) \
+            .outerjoin(OrderedProductItem.ordered_product) \
+            .outerjoin(OrderedProduct.order) \
             .filter(TicketPrintQueueEntry.id.in_(ids)) \
             .filter(TicketPrintQueueEntry.processed_at == None) \
             .all()
         if len(entries) == 0:
-            return False
+            return []
+        now = datetime.now()
         for entry in entries:
-            entry.processed_at = datetime.now()
-            DBSession.add(entry)
-        return True
+            entry.processed_at = now
+            order = entry.ordered_product_item.ordered_product.order
+            if not (entry.ticket.flags & Ticket.FLAG_ALWAYS_REISSUABLE):
+                entry.ordered_product_item.ordered_product.order.isseud = True
+            order.last_issued_at = now
+            order.issued = True
+        return entries
 
 from ..operators.models import Operator
 

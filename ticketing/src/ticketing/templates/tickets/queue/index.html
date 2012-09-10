@@ -30,7 +30,7 @@ ${breadcrumbs(
 
 <h2>印刷キュー</h2>
 <div id="queue_entry_menu" class="btn-group">
-  <button class="btn"><i class="icon-print"></i> 印刷ツールを開く</button>
+  <a class="btn" href="${request.route_path("tickets.printer")}" target="_blank"><i class="icon-print"></i> 印刷ツールを開く</a>
   <button class="btn id-delegate-action"
      data-delegated="#deleteModalQueueEntry"
      data-base-url="${request.route_path("tickets.queue.delete")}"

@@ -141,7 +141,7 @@ class ProductItemForm(Form):
         coerce=int
     )
     ticket_bundle_id = BugFreeSelectField(
-        label=u'TicketBundle',
+        label=u'券面構成',
         validators=[],
         coerce=lambda v: None if not v else int(v)
         )

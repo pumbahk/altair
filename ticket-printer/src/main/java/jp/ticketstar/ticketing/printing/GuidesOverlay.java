@@ -51,7 +51,7 @@ public class GuidesOverlay implements Overlay {
 	}
 
 	private void setDocumentSize(Dimension2D size) {
-		this.size = (Dimension2D)size.clone();
+		this.size = size == null ? null: (Dimension2D)size.clone();
 	}
 	
 	public GuidesOverlay(AppModel model) {

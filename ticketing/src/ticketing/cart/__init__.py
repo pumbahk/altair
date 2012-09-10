@@ -44,6 +44,7 @@ def includeme(config):
     config.add_route('rakuten_auth.login', '/login')
     config.add_route('rakuten_auth.verify', '/verify')
     config.add_route('rakuten_auth.error', '/error')
+    config.add_route('cart.logout', '/logout')
 
     from pyramid.interfaces import IRequest
     from .interfaces import IStocker, IReserving, ICartFactory
@@ -65,7 +66,7 @@ def main(global_config, **settings):
     from ticketing.logicaldeleting import install as ld_install
     ld_install()
 
-    engine = engine_from_config(settings)
+    engine = engine_from_config(settings, pool_recycle=3600)
     my_session_factory = session_factory_from_settings(settings)
     sqlahelper.add_engine(engine)
 

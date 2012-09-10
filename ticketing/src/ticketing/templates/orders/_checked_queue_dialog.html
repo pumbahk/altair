@@ -25,7 +25,7 @@
     var update_info = function(){
       var ticket_format_id = $(this).val();
       $.getJSON("${request.route_url("orders.api.orders", action="matched_by_ticket")}",
-                {"ticket_format_id": ticket_format_id}).done(function(data){
+                {"ticket_format_id": ticket_format_id, "exclude_issued": true}).done(function(data){
         if(!data.status){
           return ;
         }

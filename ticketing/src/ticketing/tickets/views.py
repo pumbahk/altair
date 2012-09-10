@@ -14,7 +14,7 @@ from ..views import BaseView
 from ..models import DBSession
 from ..core.models import DeliveryMethod
 from ..core.models import TicketFormat, PageFormat, Ticket
-from ..core.models import TicketPrintQueueEntry
+from ..core.models import TicketPrintQueueEntry, TicketPrintHistory
 from ..core.models import OrderedProductItem, OrderedProduct, Order
 from . import forms
 from . import helpers
@@ -392,7 +392,7 @@ class TicketPrintQueueEntries(BaseView):
     def index(self):
         queue_entries_sort_by, queue_entries_direction = helpers.sortparams('queue_entry', self.request, ('TicketPrintQueueEntry.created_at', 'desc'))
         queue_entries_qs = DBSession.query(TicketPrintQueueEntry) \
-            .filter_by(operator=self.context.user) \
+            .filter_by(operator=self.context.user, processed_at=None) \
             .join(OrderedProductItem.ordered_product) \
             .join(OrderedProduct.order)
         queue_entries_qs = queue_entries_qs.order_by(helpers.get_direction(queue_entries_direction)(queue_entries_sort_by))
@@ -456,7 +456,15 @@ class TicketPrinter(BaseView):
     @view_config(route_name='tickets.printer.api.dequeue', request_method='POST', renderer='json')
     def dequeue(self):
         queue_ids = self.request.json_body['queue_ids']
-        if TicketPrintQueueEntry.dequeue(queue_ids):
+        entries = TicketPrintQueueEntry.dequeue(queue_ids)
+        for entry in entries:
+            DBSession.add(TicketPrintHistory(
+                operator_id=entry.operator_id,
+                ordered_product_item_id=entry.ordered_product_item_id,
+                seat_id=entry.seat_id,
+                ticket_id=entry.ticket_id))
+
+        if entries:
             return { u'status': u'success' }
         else:
             return { u'status': u'error' }
