@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import json
 from pyramid.config import Configurator
 from pyramid_beaker import session_factory_from_settings
 from pyramid.httpexceptions import HTTPNotFound
@@ -34,11 +35,20 @@ def main(global_conf, **settings):
     config.add_route('order_review.form', '/')
     config.add_route('order_review.show', '/show')
 
+    config.include(import_selectable_renderer)
     config.include(import_order_review_view)
     config.include(import_misc_view)
     config.include(import_exc_view)
     config.add_subscriber('.subscribers.add_helpers', 'pyramid.events.BeforeRender')
     return config.make_wsgi_app()
+
+def import_selectable_renderer(config):
+    ### selectable renderer
+    config.include("ticketing.cart.selectable_renderer")
+    domain_candidates = json.loads(config.registry.settings["altair.cart.domain.mapping"])
+    selector = config.maybe_dotted("ticketing.cart.selectable_renderer.ByDomainMappingSelector")(domain_candidates)
+    config.add_selectable_renderer_selector(selector)
+
 
 def import_order_review_view(config):
     config.add_view('.views.OrderReviewView', route_name='order_review.form', attr="get", request_method="GET", renderer="order_review/form.html")
