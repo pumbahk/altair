@@ -87,12 +87,21 @@ class OrdersAPIView(BaseView):
         oid = self.request.POST["target"]
         if not oid.startswith("o:"):
             return {"status": False}
-        # order = Order.query.filter(Order.id==oid.lstrip("o:")).first()
-        # if not order:
-        #     return {"status": False}
 
         orders = self.request.session.get("orders") or set()
         orders.add(oid)
+        self.request.session["orders"] = orders
+        return {"status": True, "count": len(orders), "result": list(orders)}
+
+    @view_config(renderer="json", route_name="orders.api.printstatus", request_method="POST", match_param="action=addall")
+    def add_all_printstatus(self):
+        """ [o:1, o:2, o:3, o:4, ....]
+        """
+        oids = self.request.POST.getall("targets[]")
+        orders = self.request.session.get("orders") or set()
+        for oid in oids:
+            if oid.startswith("o:"):
+                orders.add(oid)
         self.request.session["orders"] = orders
         return {"status": True, "count": len(orders), "result": list(orders)}
 
@@ -103,12 +112,21 @@ class OrdersAPIView(BaseView):
         oid = self.request.POST["target"]
         if not oid.startswith("o:"):
             return {"status": False}
-        # order = Order.query.filter(Order.id==oid.lstrip("o:")).first()
-        # if not order:
-        #     return {"status": False}
         
         orders = self.request.session.get("orders") or set()
         orders.remove(oid)
+        self.request.session["orders"] = orders
+        return {"status": True, "count": len(orders), "result": list(orders)}
+
+    @view_config(renderer="json", route_name="orders.api.printstatus", request_method="POST", match_param="action=removeall")
+    def remove_all_printstatus(self):
+        """ [o:1, o:2, o:3, o:4, ....]
+        """
+        oids = self.request.POST.getall("targets[]")
+        orders = self.request.session.get("orders") or set()
+        for oid in oids:
+            if oid.startswith("o:"):
+                orders.remove(oid)
         self.request.session["orders"] = orders
         return {"status": True, "count": len(orders), "result": list(orders)}
 

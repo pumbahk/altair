@@ -42,6 +42,8 @@
 	 data-toggle="modal" data-target="#PrintQueueModal"
 	 class="ajax-modal btn"
 	 ><i class="icon-print"></i> チェックしている注文をキューに入れる</a>
+  <a type="button" class="btn" id="addall">全部ON</a>
+  <a type="button" class="btn" id="removeall">全部OFF</a>
 </div>
 
 <p> ${max(orders.items_per_page * (orders.page-1) + 1,0)}～${min(orders.items_per_page * orders.page, orders.item_count)} / ${orders.item_count}件</p>

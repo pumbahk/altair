@@ -40,6 +40,10 @@ PrintStatus.prototype = {
   "dec": function(){
     this.count -= 1;
     this.total_count -= 1;
+  }, 
+  "change": function(d){
+    this.count += d;
+    this.total_count += d;
   }
 }
 
@@ -59,14 +63,35 @@ PrintStatusPresenter.prototype = {
     }
   }, 
   on_inc: function($e){
+    $.post(this.resourcs.add, {"target": $e.attr("name")});
     this.model.inc();
     this.view.display_count(this.model);
-    $.post(this.resourcs.add, {"target": $e.attr("name")});
   }, 
   on_dec: function($e){
+    $.post(this.resourcs.remove, {"target": $e.attr("name")});
     this.model.dec();
     this.view.display_count(this.model);
-    $.post(this.resourcs.remove, {"target": $e.attr("name")});
+  }, 
+  on_addall: function($e){
+    var candidates = $("input.printstatus[type='checkbox']:not(:checked)")
+    var targets = $.makeArray(candidates.map(function(i, e){return $(e).attr("name")}));
+    candidates.attr("checked", "checked");
+    if(targets.length > 0){
+      console.log(targets.length)
+      $.post(this.resourcs.addall, {"targets": targets});
+      this.model.change(targets.length);
+      this.view.display_count(this.model);
+    }
+  }, 
+  on_removeall: function($e){
+    var candidates = $("input.printstatus[type='checkbox']:checked")
+    var targets = $.makeArray(candidates.map(function(i, e){return $(e).attr("name")}));
+    candidates.removeAttr("checked");
+    if(targets.length > 0){
+      $.post(this.resourcs.removeall, {"targets": targets});
+      this.model.change(-targets.length);
+      this.view.display_count(this.model);
+    }
   }, 
   on_load: function(){
     var self = this;
@@ -82,7 +107,6 @@ PrintStatusPresenter.prototype = {
     // this page only or all
     var self = this;
     $.post(this.resourcs.reset).done(function(data){
-      console.log(data);
       self.model.total_count = data.count;
       self.model.count = 0;
       self.view.cleanup_checkbox();
@@ -97,12 +121,15 @@ $.event.add(window, "load", function(){
   var urls = {
     load: "${request.route_url('orders.api.printstatus', action='load')}", 
     add: "${request.route_url('orders.api.printstatus', action='add')}", 
+    addall: "${request.route_url('orders.api.printstatus', action='addall')}", 
     remove: "${request.route_url('orders.api.printstatus', action='remove')}", 
+    removeall: "${request.route_url('orders.api.printstatus', action='removeall')}", 
     reset: "${request.route_url('orders.api.printstatus', action='reset')}"
   }
   var presenter = new PrintStatusPresenter(model, view, urls);
   $("input.printstatus[type='checkbox']").on("change", presenter.on_check.bind(presenter));
   $("#printstatus_reset").click(presenter.on_reset.bind(presenter));
-
+  $("#addall").click(presenter.on_addall.bind(presenter));
+  $("#removeall").click(presenter.on_removeall.bind(presenter));
   presenter.on_load();
 });
