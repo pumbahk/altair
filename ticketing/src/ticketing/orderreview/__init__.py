@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 from pyramid.config import Configurator
 from pyramid_beaker import session_factory_from_settings
 from pyramid.httpexceptions import HTTPNotFound
@@ -20,19 +21,26 @@ def main(global_conf, **settings):
     config.add_static_view('static', 'ticketing.bj89ers:static', cache_max_age=3600)
     config.add_static_view('static_', 'ticketing.cart:static', cache_max_age=3600)
     config.add_static_view('img', 'ticketing.cart:static', cache_max_age=3600)
+
     config.include('ticketing.checkout')
     config.include('ticketing.multicheckout')
     config.include('ticketing.cart.plugins')
     config.include('ticketing.cart')
     config.scan('ticketing.cart.views')
-    config.commit()
-
+    # config.commit() #これ必要？
     config.include('..mobile')
 
     config.add_route('contact', '/contact')
     config.add_route('order_review.form', '/')
     config.add_route('order_review.show', '/show')
 
+    config.include(import_order_review_view)
+    config.include(import_misc_view)
+    config.include(import_exc_view)
+    config.add_subscriber('.subscribers.add_helpers', 'pyramid.events.BeforeRender')
+    return config.make_wsgi_app()
+
+def import_order_review_view(config):
     config.add_view('.views.OrderReviewView', route_name='order_review.form', attr="get", request_method="GET", renderer="order_review/form.html")
     config.add_view('.views.OrderReviewView', request_type='ticketing.cart.interfaces.IMobileRequest', route_name='order_review.form',
                     attr="get", request_method="GET", renderer="order_review_mobile/form.html")
@@ -43,13 +51,14 @@ def main(global_conf, **settings):
 
     config.add_view('.views.order_review_form_view', name="order_review_form", renderer="order_review/form.html")
     config.add_view('.views.order_review_form_view', name="order_review_form", renderer="order_review_mobile/form.html", request_type='ticketing.cart.interfaces.IMobileRequest')
-
+    
+def import_misc_view(config):
     config.add_view('.views.contact_view', route_name="contact", renderer="static/contact.html")
     config.add_view('.views.contact_view', route_name="contact", renderer="static_mobile/contact.html", request_type='ticketing.cart.interfaces.IMobileRequest')
+
+def import_exc_view(config):
     config.add_view('.views.notfound_view', context=HTTPNotFound, renderer="errors/not_found.html", )
     config.add_view('.views.notfound_view', context=HTTPNotFound,  renderer="errors_mobile/not_found.html", request_type='ticketing.cart.interfaces.IMobileRequest')
     config.add_view('.views.exception_view',  context=StandardError, renderer="errors/error.html")
     config.add_view('.views.exception_view', context=StandardError,  renderer="errors_mobile/error.html", request_type='ticketing.cart.interfaces.IMobileRequest')
 
-    config.add_subscriber('.subscribers.add_helpers', 'pyramid.events.BeforeRender')
-    return config.make_wsgi_app()
