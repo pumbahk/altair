@@ -2,8 +2,8 @@ from pyramid.config import Configurator
 from pyramid_beaker import session_factory_from_settings
 from pyramid.httpexceptions import HTTPNotFound
 
-from ticketing.cart.interfaces import IPaymentPlugin, ICartPayment, IOrderPayment
-from ticketing.cart.interfaces import IDeliveryPlugin, ICartDelivery, IOrderDelivery
+# from ticketing.cart.interfaces import IPaymentPlugin, ICartPayment, IOrderPayment
+# from ticketing.cart.interfaces import IDeliveryPlugin, ICartDelivery, IOrderDelivery
 
 from sqlalchemy import engine_from_config
 import sqlahelper

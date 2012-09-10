@@ -1,27 +1,7 @@
 # -*- coding:utf-8 -*-
 import logging
-from datetime import datetime, date
-import sqlalchemy as sa
-from pyramid.httpexceptions import HTTPFound, HTTPNotFound
-from pyramid.renderers import render_to_response
-from pyramid.threadlocal import get_current_request
 from pyramid.view import view_config, render_view_to_response
-from pyramid.view import notfound_view_config
-from webob.multidict import MultiDict
-
-from ..cart.events import notify_order_completed
-from ..cart.views import PaymentView as _PaymentView, CompleteView as _CompleteView
-from ..cart import api
-from ..cart import helpers as h
-from ..core import models as c_models
-
-from ..users.models import SexEnum
-from ..users.models import User, UserProfile
-
 from . import schemas
-from .models import DBSession
-from .helpers import sex_value
-
 logger = logging.getLogger(__name__)
 
 class OrderReviewView(object):
