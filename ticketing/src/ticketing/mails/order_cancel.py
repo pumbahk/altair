@@ -8,18 +8,23 @@ from .api import message_settings_override
 from .api import create_or_update_mailinfo
 from .api import create_fake_order
 from .api import get_mailinfo_traverser
+from .api import get_mail_utility
+from ticketing.cart import helpers as ch ##
 from ticketing.cart import helpers as h
 from ticketing.core.models import MailTypeEnum
 import logging
+from . import forms
+
 
 logger = logging.getLogger(__name__)
 
 __all__ = ["build_message", "send_mail", "preview_text", "create_or_update_mailinfo", "create_fake_order"]
 
+empty = {}
 get_traverser = functools.partial(
     get_mailinfo_traverser, 
     ## xxx: uggg
-    access=lambda d, k, default="" : d.get(str(MailTypeEnum.PurchaseCancelMail), {}).get(k, default), 
+    access=lambda d, k, default="" : d.get(str(MailTypeEnum.PurchaseCancelMail), empty).get(k, default), 
     default=u"", 
 )
 
@@ -45,14 +50,27 @@ mail_renderer_names = {
     '4': 'ticketing:templates/mail/order_cancel.txt',
 }
 
+def payment_notice(request, order):
+    get_mail_utility(request, MailTypeEnum.PurchaseCancelMail)
+    trv = get_traverser(request, order)
+    notice=trv.data[forms.MailInfoTemplate.payment_key(order, "notice")]
+    return notice
+
+def delivery_notice(request, order):
+    get_mail_utility(request, MailTypeEnum.PurchaseCancelMail)
+    trv = get_traverser(request, order)
+    notice=trv.data[forms.MailInfoTemplate.delivery_key(order, "notice")]
+    return notice
+    
 def create_cancel_message(request, order):
     plugin_id = str(order.payment_delivery_pair.payment_method.payment_plugin_id)
     if plugin_id not in mail_renderer_names:
         logger.warn('mail renderer not found for plugin_id %s' % plugin_id)
         return
 
-    subject = u'ご注文キャンセルについて 【{organization.name}】'.format(organization=order.ordered_from)
-    from_ = order.ordered_from.contact_email
+    traverser = get_traverser(request, order)
+    subject = (traverser.data["sender"] or u'ご注文キャンセルについて 【{organization.name}】'.format(organization=order.ordered_from))
+    from_ = (traverser.data["sender"] or order.ordered_from.contact_email)
     product_message_format = u'{product}　{price}（円）× {quantity}\r\n'
     products = ''
     for ordered_product in order.ordered_products:
@@ -66,9 +84,10 @@ def create_cancel_message(request, order):
     venue_info = ''
     if performance.venue.id != 1:  # ダミー会場でないなら
         venue_info = u'{venue} ({start_on}開演)'.format(venue=performance.venue.name, start_on=performance.start_on)
+    pair = order.payment_delivery_pair
 
-    traverser = get_traverser(request, order)
     value = dict(
+        h=ch, 
         order=order,
         sa=order.shipping_address,
         products=products,
@@ -79,11 +98,15 @@ def create_cancel_message(request, order):
         delivery_fee=h.format_currency(order.delivery_fee),
         total_amount=h.format_currency(order.total_amount),
         contact_email=order.ordered_from.contact_email,
+        payment_method_name=pair.payment_method.name, 
+        delivery_method_name=pair.delivery_method.name, 
+
         ### mail info
         footer = traverser.data["footer"],
         notice = traverser.data["notice"],
         header = traverser.data["header"],
-        
+        payment_notice = payment_notice(request, order), 
+        delivery_notice = delivery_notice(request, order), 
     )
     mail_body = renderers.render(mail_renderer_names[plugin_id], value, request=request)
     mail_body = unicode(mail_body, 'utf-8')

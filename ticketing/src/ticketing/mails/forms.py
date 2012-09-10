@@ -157,16 +157,18 @@ class MailInfoTemplate(object):
         self.request = request
         self.organization = organization
 
-    payment_key_fmt = "P%d%s"
-    delivery_key_fmt = "D%d%s"
+    payment_key_fmt = "P%s%s"
+    delivery_key_fmt = "D%s%s"
 
     @classmethod
     def payment_key(self, order, k):
-        self.payment_key_fmt % (order.payment_plugin_id, k)
+        payment_plugin_id  = order.payment_delivery_pair.payment_method.payment_plugin_id
+        return self.payment_key_fmt % (payment_plugin_id, k)
 
     @classmethod
     def delivery_key(self, order, k):
-        self.delivery_key_fmt % (order.delivery_plugin_id, k)
+        delivery_plugin_id  = order.payment_delivery_pair.delivery_method.delivery_plugin_id
+        return self.delivery_key_fmt % (delivery_plugin_id, k)
 
 
     def payment_methods_choices(self):
