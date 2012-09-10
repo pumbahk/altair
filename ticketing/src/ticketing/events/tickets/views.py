@@ -266,14 +266,14 @@ def ticket_preview_enqueue_item(context, request):
     renderer = pystache.Renderer()
     operator = context.user
     mdict = request.matchdict
+    ticket = DBSession.query(Ticket).filter_by(id=request.matchdict['ticket_id']).one()
 
-    for template in request.context.bundle.tickets:
-        svg = renderer.render(template.drawing, build_dict_from_product_item(item))
-        queue = TicketPrintQueueEntry(operator_id=operator.id, 
-                                      ticket=template,
-                                      summary=u'券面テンプレート (%s)' % template.name,
-                                      data=dict(drawing=svg))
-        queue.save()
+    svg = renderer.render(ticket.drawing, build_dict_from_product_item(item))
+    queue = TicketPrintQueueEntry(operator_id=operator.id, 
+                                  ticket=ticket,
+                                  summary=u'券面テンプレート (%s)' % ticket.name,
+                                  data=dict(drawing=svg))
+    queue.save()
 
     request.session.flash(u'印刷キューにデータを投入しました')
     return HTTPFound(request.route_path("events.tickets.bundles.items.preview", 
