@@ -3,12 +3,17 @@ from pyramid.response import _BLOCK_SIZE, FileIter, Response
 ## almost copy of pyramid.response.FileResponse
 class FileLikeResponse(Response):
      def __init__(self, io, request=None, cache_max_age=None,
-                 content_type=None, content_encoding=None):
+                 content_type=None, content_encoding=None,
+                 filename=None):
         super(FileLikeResponse, self).__init__(conditional_response=True)
         if content_type is None:
             content_type = 'application/octet-stream'
         self.content_type = content_type
         self.content_encoding = content_encoding
+        if filename is not None:
+            self.headers=[
+                ('Content-Disposition', 'attachment; filename=%s' % filename),
+                ]
         content_length = io.len
         app_iter = None
         if request is not None:

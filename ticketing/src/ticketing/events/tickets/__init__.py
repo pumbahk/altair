@@ -20,6 +20,7 @@ def includeme(config):
     add_route("events.tickets.bundles.items.data", "/event/{event_id}/bundle/{bundle_id}/item/{item_id}/template/{template_id}/data")
     add_route("events.tickets.bundles.items.preview", "/event/{event_id}/bundle/{bundle_id}/item/{item_id}/preview")
     add_route("events.tickets.bundles.items.enqueue", "/event/{event_id}/bundle/{bundle_id}/item/{item_id}/ticket/{ticket_id}/enqueue")
+    add_route("events.tickets.bundles.items.download", "/event/{event_id}/bundle/{bundle_id}/item/{item_id}/ticket/{ticket_id}/download")
 
     add_route("events.tickets.attributes.new", "/event/{event_id}/bundle/{bundle_id}/attribute/new")
     add_route("events.tickets.attributes.edit", "/event/{event_id}/bundle/{bundle_id}/attribute/{attribute_id}/edit")
