@@ -154,7 +154,7 @@ def completion_payment_mail_viewlet(context, request):
     """
     mutil = get_mail_utility(request, c_models.MailTypeEnum.CompleteMail)
     trv = mutil.get_traverser(request, context.order)
-    notice=trv.data[MailInfoTemplate.delivery_key(context.order, "notice")]
+    notice=trv.data[MailInfoTemplate.payment_key(context.order, "notice")]
     return Response(u"""
 ＜クレジットカードでのお支払いの方＞
 
