@@ -3,26 +3,31 @@
 
 <% paging = False if limit else True %>
 
-<%def name="actions(product_id, product_item_id=None)">
+<%def name="actions(product, product_item=None)">
 <%
   action_dict = {}
-  if product_item_id:
+  if product_item:
     action_dict.update({
       'edit':dict(
         label=u'編集',
-        url='javascript:edit_product_item(%s, %s);' % (product_id, product_item_id),
+        url='javascript:edit_product_item(%s, %s);' % (product.id, product_item.id),
         icon='icon-pencil',
       ),
       'delete':dict(
         label=u'削除',
-        url='javascript:delete_product_item(%s);' % product_item_id,
+        url='javascript:delete_product_item(%s);' % product_item.id,
         icon='icon-minus',
-      )
+      ),
+      'preview':dict(
+        label=u'券面プレビュー',
+        url=request.route_path('events.tickets.bundles.items.preview', event_id=product.event_id, bundle_id=product_item.ticket_bundle_id, item_id=product_item.id),
+        icon='icon-print',
+      ),
     })
   action_dict.update({
     'new':dict(
       label=u'追加',
-      url='javascript:new_product_item(%s);' % product_id,
+      url='javascript:new_product_item(%s);' % product.id,
       icon='icon-plus',
     ),
   })
@@ -114,12 +119,12 @@
           <td id="quantity-${item.id}">${item.quantity}</td>
           <td>${item.stock.stock_status.quantity} / ${item.stock.quantity}席</td>
           <td id="stock-${item.id}" value="${item.stock.id}">${item.stock.id}</td>
-          <td><input type="hidden" id="ticket_bundle_id-${item.id}" value="${item.ticket_bundle_id}" />${h.action_button(actions(product.id, item.id), order=iter(['edit', 'new', 'delete']), options='btn-small')}</td>
+          <td><input type="hidden" id="ticket_bundle_id-${item.id}" value="${item.ticket_bundle_id}" />${h.action_button(actions(product, item), order=iter(['edit', 'preview', 'new', 'delete']), options='btn-small')}</td>
         </tr>
             % endfor
             % if count == 0:
           <td colspan="6"></td>
-          <td>${h.action_button(actions(product.id), options='btn-small')}</td>
+          <td>${h.action_button(actions(product), options='btn-small')}</td>
         </tr>
             % endif
           % endif
