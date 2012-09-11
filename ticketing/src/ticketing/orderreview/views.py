@@ -2,6 +2,8 @@
 import logging
 from pyramid.view import view_config, render_view_to_response
 from ticketing.core.models import Order, OrderedProduct, OrderedProductItem, ProductItem, Performance, Seat, TicketPrintHistory
+from pyramid.httpexceptions import HTTPNotFound
+from sqlalchemy.orm.exc import NoResultFound
 from ticketing.qr import qr
 from pyramid.response import Response
 import StringIO
@@ -57,7 +59,6 @@ def contact_view(context, request):
     return dict()
 
 def build_qr(ticket_id):
-    from sqlalchemy.orm.exc import NoResultFound
     ticket = None
     try:
         ticket = TicketPrintHistory\

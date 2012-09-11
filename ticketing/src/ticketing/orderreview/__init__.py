@@ -34,6 +34,7 @@ def main(global_conf, **settings):
 
     config.include(import_selectable_renderer)
     config.include(import_order_review_view)
+    config.include(import_qr_view)
     config.include(import_misc_view)
     config.include(import_exc_view)
     config.add_subscriber('.subscribers.add_helpers', 'pyramid.events.BeforeRender')
@@ -49,14 +50,9 @@ def import_selectable_renderer(config):
     selector = config.maybe_dotted("ticketing.cart.selectable_renderer.ByDomainMappingSelector")(domain_candidates)
     config.add_selectable_renderer_selector(selector)
 
-
 def import_order_review_view(config):
     config.add_route('order_review.form', '/')
     config.add_route('order_review.show', '/show')
-    config.add_route('order_review.qr', '/qr/{ticket_id}/{sign}/ticket')
-    config.add_route('order_review.qr_confirm', '/qr/{ticket_id}/{sign}/')
-    config.add_route('order_review.qrdraw', '/qr/{ticket_id}/{sign}/image')
-    config.add_route('order_review.send', '/qr/{ticket_id}/{sign}/send')
 
     config.add_view('.views.OrderReviewView', route_name='order_review.form', attr="get", request_method="GET", renderer=selectable_renderer("%(membership)s/order_review/form.html"))
     config.add_view('.views.OrderReviewView', request_type='ticketing.cart.interfaces.IMobileRequest', route_name='order_review.form',
@@ -69,10 +65,16 @@ def import_order_review_view(config):
     config.add_view('.views.order_review_form_view', context=".views.InvalidForm", renderer=selectable_renderer("%(membership)s/order_review/form.html"))
     config.add_view('.views.order_review_form_view', context=".views.InvalidForm", renderer=selectable_renderer("order_review_mobile%(membership)s/form.html"), request_type='ticketing.cart.interfaces.IMobileRequest')
     
+def import_qr_view(config):
+    config.add_route('order_review.qr', '/qr/{ticket_id}/{sign}/ticket')
+    config.add_route('order_review.qr_confirm', '/qr/{ticket_id}/{sign}/')
+    config.add_route('order_review.qrdraw', '/qr/{ticket_id}/{sign}/image')
+    config.add_route('order_review.send', '/qr/{ticket_id}/{sign}/send')
+
     config.add_view('.views.order_review_qr_html', route_name='order_review.qr', renderer=selectable_renderer("%(membership)s/order_review/qr.html"))
     config.add_view('.views.order_review_qr_confirm', route_name='order_review.qr_confirm', renderer=selectable_renderer("%(membership)s/order_review/qr_confirm.html"))
     config.add_view('.views.order_review_send_mail', route_name='order_review.send', renderer=selectable_renderer("%(membership)s/order_review/send.html"))
-
+    
 def import_misc_view(config):
     config.add_route('contact', '/contact')
     config.add_view('.views.contact_view', route_name="contact", renderer=selectable_renderer("%(membership)s/static/contact.html"))
