@@ -8,13 +8,15 @@ from ticketing.qr import qr
 from pyramid.response import Response
 import StringIO
 import qrcode
-
+from ticketing.cart.selectable_renderer import selectable_renderer
 from . import schemas
+from ticketing.mobile import mobile_view_config
 
 builder = qr()
 builder.key = u"THISISIMPORTANTSECRET"
 
 logger = logging.getLogger(__name__)
+
 
 class InvalidForm(Exception):
     def __init__(self, form):
@@ -28,10 +30,18 @@ class OrderReviewView(object):
     def __call__(self):
         return dict()
 
+    @mobile_view_config(route_name='order_review.form',
+                        request_method="GET", renderer=selectable_renderer("%(membership)s/order_review_mobile/form.html"))
+    @view_config(route_name='order_review.form', request_method="GET", 
+                 renderer=selectable_renderer("%(membership)s/order_review/form.html"))
     def get(self):
         form = schemas.OrderReviewSchema(self.request.params)
         return {"form": form}
 
+    @mobile_view_config(route_name='order_review.show', request_method="POST", 
+                        renderer=selectable_renderer("%(membership)s/order_review_mobile/show.html"))
+    @view_config(route_name='order_review.show', request_method="POST", 
+                 renderer=selectable_renderer("%(membership)s/order_review/show.html"))
     def post(self):
         form = schemas.OrderReviewSchema(self.request.params)
         if not form.validate():
@@ -42,6 +52,10 @@ class OrderReviewView(object):
             raise InvalidForm(form)
         return dict(order=order, sej_order=sej_order, shipping_address=order.shipping_address)
 
+@mobile_view_config(context=InvalidForm, 
+                    renderer=selectable_renderer("order_review_mobile%(membership)s/form.html"))
+@view_config(context=InvalidForm, 
+             renderer=selectable_renderer("%(membership)s/order_review/form.html"))
 def order_review_form_view(context, request):
     request.errors = context.form.errors
     return dict(form=context.form)
@@ -55,6 +69,8 @@ def notfound_view(context, request):
     return dict()
 
 @view_config(name="contact")
+@view_config(route_name="contact", renderer=selectable_renderer("%(membership)s/static/contact.html"))
+@mobile_view_config(route_name="contact", renderer=selectable_renderer("%(membership)s/static_mobile/contact.html"))
 def contact_view(context, request):
     return dict()
 
@@ -93,6 +109,7 @@ def build_qr(ticket_id):
     
     return ticket
 
+@view_config(route_name='order_review.qr_confirm', renderer=selectable_renderer("%(membership)s/order_review/qr_confirm.html"))
 def order_review_qr_confirm(context, request):
     ticket_id = int(request.matchdict.get('ticket_id', 0))
     sign = request.matchdict.get('sign', 0)
@@ -111,6 +128,7 @@ def order_review_qr_confirm(context, request):
         product = ticket.product,
     )
     
+@view_config(route_name='order_review.qr', renderer=selectable_renderer("%(membership)s/order_review/qr.html"))
 def order_review_qr_html(context, request):
     ticket_id = int(request.matchdict.get('ticket_id', 0))
     sign = request.matchdict.get('sign', 0)
@@ -128,6 +146,7 @@ def order_review_qr_html(context, request):
         event = ticket.event,
         product = ticket.product,
     )
+
     
 @view_config(route_name='order_review.qrdraw', xhr=False, permission="view")
 def order_review_qr_image(context, request):
@@ -153,6 +172,7 @@ def order_review_qr_image(context, request):
     r.body = buf.getvalue()
     return r
 
+@view_config(route_name='order_review.send', renderer=selectable_renderer("%(membership)s/order_review/send.html"))
 def order_review_send_mail(context, request):
     ticket_id = int(request.matchdict.get('ticket_id', 0))
     sign = request.matchdict.get('sign', 0)
