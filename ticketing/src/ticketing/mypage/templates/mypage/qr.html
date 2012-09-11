@@ -1,0 +1,29 @@
+<html>
+<head>
+</head>
+<body>
+		<!-- InstanceBeginEditable name="main" -->
+			<div>
+			<h3>${event.title}${u'(%s)' % performance.name if performance.name else ''}</h3>
+				<dl>
+					<dt>${performance.start_on.strftime(u"%Y年%m月%d(%a)".encode('utf-8')).decode('utf-8')}</dt>
+					<dd>${performance.venue.name}&nbsp;<a href="#">会場地図</a></dd>
+				</dl>
+			</div>
+
+								<!-- ${ticket.qr} -->
+								<img src="${request.route_path('qr.draw')}?d=${ticket.qr | u}" style="float: left; width: 200px; height: 200px;"/>
+								発券番号 ${ticket.id} <br />
+								注文番号 ${order.order_no} <br />
+								パフォーマンス ${performance.code} <br />
+								興行日 ${performance.start_on} <br />
+								商品名 ${product.name} (${product.id}) <br />
+								席番号 ${ticket.seat.name} (${ticket.seat.l0_id}) <br />
+
+
+<br style="clear: both;" />
+
+<a href="javascript:window.close();">閉じる</a>
+
+</body>
+</html>

@@ -15,6 +15,8 @@ def includeme(config):
     config.add_route('mypage.index', '/')
     config.add_route('mypage.logout', '/logout')
     config.add_route('mypage.order', '/order/{order_id}')
+    config.add_route('mypage.qr', '/order/qr/{order_id}/{ticket_id}')
+    config.add_route('qr.draw', '/qr')
 
     config.add_subscriber('ticketing.cart.subscribers.add_helpers', 'pyramid.events.BeforeRender')
 

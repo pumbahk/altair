@@ -1,7 +1,6 @@
 # -*- coding:utf-8 -*-
 
 from pyramid.view import view_config
-from pyramid.response import Response
 from zope.interface import implementer
 from ..interfaces import IOrderDelivery, ICartDelivery, ICompleteMailDelivery
 from . import models as m
@@ -45,20 +44,3 @@ class QRTicketDeliveryPlugin(object):
     def finish(self, request, cart):
         """ 確定時処理 """
         pass
-
-@view_config(route_name='qr.make', xhr=False, permission="view")
-def get_qr_image(self):
-    qr = qrcode.QRCode(
-        version=None,
-        error_correction=qrcode.constants.ERROR_CORRECT_H,
-        box_size=10,
-    )
-    data = self.GET.get("d")
-    qr.add_data(data)
-    qr.make(fit=True)
-    img = qr.make_image()
-    r = Response(status=200, content_type="image/png")
-    buf = StringIO.StringIO()
-    img.save(buf, 'PNG')
-    r.body = buf.getvalue()
-    return r
