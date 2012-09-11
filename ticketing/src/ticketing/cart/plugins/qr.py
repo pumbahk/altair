@@ -34,12 +34,14 @@ def deliver_completion_viewlet(context, request):
     for op in order.ordered_products:
         for opi in op.ordered_product_items:
             for s in opi.seats:
-                # TODO: 発行済みかどうかを取得したい
+                # 発行済みかどうかを取得
+                history = core_models.TicketPrintHistory.filter_by(ordered_product_item_id = opi.id, seat_id = s.id).first()
                 class QRTicket:
                     order = 0
                     performance = context.order.performance
                     product = op.product
                     seat = s
+                    printed_at = history.created_at if history else ''
                 ticket = QRTicket()
                 tickets.append(ticket)
     
