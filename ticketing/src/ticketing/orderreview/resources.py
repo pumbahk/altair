@@ -1,3 +1,5 @@
+# -*- coding:utf-8 -*-
+
 from datetime import datetime
 from dateutil import parser
 from pyramid.decorator import reify
@@ -36,6 +38,10 @@ class OrderReviewResource(TicketingCartResource):
     def membership_name(self):
         return get_membership_from_request(self.request)
 
+    @reify
+    def membership(self):
+        return Membership.query.filter(Membership.name==self.membership_name).first()
+
     def get_or_create_user(self):
         from ticketing.cart import api
         cart = api.get_cart(self.request)
@@ -43,6 +49,7 @@ class OrderReviewResource(TicketingCartResource):
         if credential:
             user = credential.user
             return user
+        ## 本当にこれつくって良いの？
         credential = create_credential(cart.id, self.membership_name)
         DBSession.add(credential)
         return credential.user

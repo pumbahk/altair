@@ -36,7 +36,7 @@ class OrderReviewView(object):
             raise InvalidForm(form)
 
         order, sej_order = self.context.get_order()
-        if not form.object_validate(order):
+        if not form.object_validate(self.request, order):
             raise InvalidForm(form)
         return dict(order=order, sej_order=sej_order, shipping_address=order.shipping_address)
 
