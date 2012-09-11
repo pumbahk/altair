@@ -53,7 +53,6 @@ import jp.ticketstar.ticketing.printing.JGVTComponent;
 import jp.ticketstar.ticketing.printing.OurPageFormat;
 import jp.ticketstar.ticketing.printing.Page;
 import jp.ticketstar.ticketing.printing.PageSetModel;
-import jp.ticketstar.ticketing.printing.Pages;
 import jp.ticketstar.ticketing.printing.PrintableEvent;
 import jp.ticketstar.ticketing.printing.PrintableEventListener;
 import jp.ticketstar.ticketing.printing.RequestBodySender;
@@ -390,12 +389,14 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 
 	void populateModel() {
 		final FormatLoader.FormatPair formatPair = new FormatLoader(this).fetchFormats(config);
-		model.getPageFormats().addAll(formatPair.pageFormats);
-		model.getTicketFormats().addAll(formatPair.ticketFormats);
-		if (formatPair.pageFormats.size() > 0)
+		if (formatPair.pageFormats.size() > 0) {
+			model.getPageFormats().addAll(formatPair.pageFormats);
 			model.setPageFormat(formatPair.pageFormats.get(0));
-		if (formatPair.ticketFormats.size() > 0)
+		}
+		if (formatPair.ticketFormats.size() > 0) {
+			model.getTicketFormats().addAll(formatPair.ticketFormats);
 			model.setTicketFormat(formatPair.ticketFormats.get(0));
+		}
 	}
 
 	protected void doLoadTicketData() {
