@@ -26,6 +26,12 @@
     if (!id) return;
     $(location).attr('href', '/events/performances/copy/' + id);
   }
+
+  function mail_info(){
+    var id = get_id('performance_id');
+    if (!id) return;
+    $(location).attr('href', '/events/performances/mailinfo/' + id);
+  }
 </script>
 
 <%
@@ -55,6 +61,11 @@
       url='javascript:copy_performance();',
       icon='icon-plus',
     ),
+    'mail': dict(
+      label=u"メール付加情報",
+      url="javascript:mail_info()",
+      icon="icon-envelope",
+    )
   }
   order = iter(order or ['new', 'show', 'edit', 'delete', 'copy'])
 %>

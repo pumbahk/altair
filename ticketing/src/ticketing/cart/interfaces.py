@@ -2,8 +2,7 @@
 
 """ TBA
 """
-
-
+from ticketing.mails.interfaces import ICompleteMailDelivery, ICompleteMailPayment
 from zope.interface import Interface, Attribute
 
 class IPaymentMethodManager(Interface):
@@ -24,20 +23,12 @@ class IOrderDelivery(Interface):
     """ 完了画面の配送ビューレットのコンテキスト"""
     order = Attribute(u"注文内容")
 
-class ICompleteMailDelivery(Interface):
-    """ 完了メールの配送ビューレットのコンテキスト"""
-    order = Attribute(u"注文内容")
-
 class ICartPayment(Interface):
     """ 確認画面の決済ビューレットのコンテキスト"""
     cart = Attribute(u"カート")
 
 class IOrderPayment(Interface):
     """ 完了画面の決済ビューレットのコンテキスト"""
-    order = Attribute(u"注文内容")
-
-class ICompleteMailPayment(Interface):
-    """ 完了メールの配送ビューレットのコンテキスト"""
     order = Attribute(u"注文内容")
 
 class IDeliveryPlugin(Interface):
@@ -89,19 +80,3 @@ class ICartFactory(Interface):
         """
         カート作成
         """
-
-class ICompleteMail(Interface):
-    """完了メールを送る
-    """
-    request = Attribute("request")
-
-    def validate():
-        """ validate, all delivery method pair can choice mail template for oneself.
-        """
-        pass
-
-    def build_mail_body(order):
-        pass
-
-    def build_message(order):
-        pass

@@ -4,7 +4,7 @@ from datetime import datetime
 from wtforms import Form, ValidationError
 from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, TextAreaField,
                      BooleanField, RadioField, FieldList, FormField, DecimalField, IntegerField)
-from wtforms.validators import Optional, AnyOf, Length
+from wtforms.validators import Optional, AnyOf, Length, Email
 from collections import OrderedDict
 from ticketing.formhelpers import DateTimeField, Translations, Required
 from ticketing.core.models import (PaymentMethodPlugin, DeliveryMethodPlugin, StockType,
@@ -428,6 +428,28 @@ class SejRefundOrderForm(Form):
         label=u'その他払戻金額',
         validators=[Optional()],
     )
+            
+class SendingMailForm(Form):
+    # subject = TextField(
+    #     label=u"メールタイトル",
+    #     validators=[
+    #         Required(),
+    #     ]
+    # )
+    recipient = TextField(
+        label=u"送り先メールアドレス",
+        validators=[
+            Required(),
+            Email(),
+        ]
+    )
+    bcc = TextField(
+        label=u"bcc",
+        validators=[
+            Email(),
+            Optional()
+        ]
+    )
 
 class PreviewTicketSelectForm(Form):
     ticket_format_id = SelectField(
@@ -457,3 +479,4 @@ class CheckedOrderTicketChoiceForm(Form):
         ticket_formats = kwargs.get('ticket_formats')
         if ticket_formats:
             self.ticket_format_id.choices = [(t.id,  t.name) for t in ticket_formats]
+

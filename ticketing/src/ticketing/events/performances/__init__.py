@@ -8,3 +8,5 @@ def includeme(config):
     config.add_route('performances.edit', '/edit/{performance_id}')
     config.add_route('performances.delete', '/delete/{performance_id}')
     config.add_route('performances.copy', '/copy/{performance_id}')
+    config.add_route("performances.mailinfo.index", "/mailinfo/{performance_id}")
+    config.add_route("performances.mailinfo.edit", "/mailinfo/{performance_id}/mailtype/{mailtype}")

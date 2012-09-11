@@ -15,6 +15,8 @@ from .. import logger
 from .. import helpers as h
 from .. import api
 from ..exceptions import NoCartError
+from ticketing.mails.api import get_mail_utility
+from ticketing.mails.forms import MailInfoTemplate
 from ticketing.cart.selectable_renderer import selectable_renderer
 
 logger = logging.getLogger(__name__)
@@ -150,6 +152,9 @@ def completion_payment_mail_viewlet(context, request):
     """ 完了メール表示
     :param context: ICompleteMailPayment
     """
+    mutil = get_mail_utility(request, c_models.MailTypeEnum.CompleteMail)
+    trv = mutil.get_traverser(request, context.order)
+    notice=trv.data[MailInfoTemplate.payment_key(context.order, "notice")]
     return Response(u"""
 ＜クレジットカードでのお支払いの方＞
 
@@ -158,7 +163,8 @@ def completion_payment_mail_viewlet(context, request):
 お申込の取消、公演日・席種・枚数等の変更は出来ませんのでご注意ください。
 
 クレジットカードの引き落としは、カード会社によって異なります。詳細はご利用のカード会社へお問い合わせください。
-""")
+%s
+""" % notice)
 
 class MultiCheckoutView(object):
     """ マルチ決済API

@@ -16,7 +16,7 @@ from ..api.impl import get_communication_api
 from ..api.impl import CMSCommunicationApi
 from .interfaces import IPaymentMethodManager
 from .interfaces import IPaymentPlugin, IDeliveryPlugin, IPaymentDeliveryPlugin
-from .interfaces import IMobileRequest, IStocker, IReserving, ICartFactory, ICompleteMail
+from .interfaces import IMobileRequest, IStocker, IReserving, ICartFactory
 from .models import Cart, PaymentMethodManager, DBSession, CartedProductItem, CartedProduct
 from ..users.models import User, UserCredential, Membership
 from ..core.models import Event, Performance, Stock, StockHolder, Seat, Product, ProductItem, SalesSegment, Venue
@@ -173,10 +173,6 @@ def get_cart_factory(request):
     reg = request.registry
     stocker_cls = reg.adapters.lookup([IRequest], ICartFactory, "")
     return stocker_cls(request)
-
-def get_complete_mail(request):
-    cls = request.registry.adapters.lookup([IRequest], ICompleteMail, "")
-    return cls(request)
 
 def order_products(request, performance_id, product_requires, selected_seats=[]):
     stocker = get_stocker(request)

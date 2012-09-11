@@ -1,3 +1,4 @@
+${header}
 ${sa.last_name} ${sa.first_name} 様
 
 「${title}」のご注文キャンセル手続きが
@@ -36,7 +37,16 @@ ${products}
 ********************************************************************
 合計　　　　　 ${total_amount}（円）
 
+${notice}
+
+お支払方法： ${payment_method_name}
+${payment_notice}
+お受取方法： ${delivery_method_name}
+${delivery_notice}
+
 ─────────────問い合わせ─────────────────
 ${order.ordered_from.name}
 商品、決済・発送に関するお問い合わせ ${contact_email}
 ───────────────────────────────────
+
+${footer}

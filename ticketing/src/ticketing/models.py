@@ -301,6 +301,10 @@ class MutationDict(Mutable, dict):
 
         dict.__delitem__(self, key)
         self.changed()
+    
+    def update(self, *args, **kwargs):
+        dict.update(self, *args, **kwargs)
+        self.changed()
 
 class CustomizedRelationshipProperty(RelationshipProperty):
     def _determine_joins(self):

@@ -1,0 +1,29 @@
+<%inherit file="../../layout.html" />
+<%namespace file="/common/helpers.html" import="flash_messages"/>
+
+<div class="content">
+  ${flash_messages(request)}
+</div>
+
+<h2>メールpreview (${ja_mailtype})</h2>
+
+<form id="method_choice_form" class="form-inline" action="">
+  ${form["payment_methods"].label} ${form["payment_methods"]}
+  ${form["delivery_methods"].label} ${form["delivery_methods"]}
+</form>
+<hr/>
+
+<h3>メールの内容</h3>
+<div id="preview">
+  <pre>
+${preview_text}
+  </pre>
+</div>
+
+<script type="text/javascript">
+  $(function(){
+    $("#method_choice_form select").change(function(){
+      var pid = $(this).parents("form").submit();
+    });
+  });
+</script>

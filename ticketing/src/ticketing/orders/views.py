@@ -23,8 +23,9 @@ from ticketing.operators.models import Operator, OperatorRole, Permission
 from ticketing.core.models import Order, TicketPrintQueueEntry, Event, Performance, Product, PaymentDeliveryMethodPair, ShippingAddress, OrderedProductItem, Ticket, TicketBundle, ProductItem, OrderedProduct, TicketFormat, Ticket_TicketBundle
 from ticketing.users.models import MailSubscription
 from ticketing.orders.export import OrderCSV
-from ticketing.orders.forms import (OrderForm, OrderSearchForm, PerformanceSearchForm, OrderReserveForm,
-                                    SejOrderForm, SejTicketForm, SejRefundEventForm, SejRefundOrderForm, 
+from ticketing.orders.forms import (OrderForm, OrderSearchForm, SejOrderForm, SejTicketForm, 
+                                    SejRefundEventForm,SejRefundOrderForm, SendingMailForm, 
+                                    PerformanceSearchForm, OrderReserveForm,
                                     PreviewTicketSelectForm, CheckedOrderTicketChoiceForm)
 from lxml import etree
 from ticketing.tickets.convert import to_opcodes
@@ -960,3 +961,104 @@ class SejTicketTemplate(BaseView):
         return dict(
             templates=templates
         )
+
+import ticketing.mails.complete as mails_complete
+import ticketing.mails.order_cancel as mails_cancel
+@view_defaults(decorator=with_bootstrap, permission="authenticated", route_name="orders.mailinfo")
+class MailInfoView(BaseView):
+    @view_config(match_param="action=show", renderer="ticketing:templates/orders/mailinfo/show.html")
+    def show(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id)
+        message = mails_complete.build_message(self.request, order)
+        mail_form = SendingMailForm(subject=message.subject, 
+                                    recipient=message.recipients[0], 
+                                    bcc=message.bcc[0] if message.bcc else "")
+        performance = order.performance
+        return dict(order=order, mail_form=mail_form, performance=performance)
+
+    @view_config(match_param="action=complete_mail_preview", renderer="string")
+    def complete_mail_preview(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id)
+        return mails_complete.preview_text(self.request, order)
+
+    @view_config(match_param="action=complete_mail_send", renderer="string", request_method="POST")
+    def complete_mail_send(self):
+        form = SendingMailForm(self.request.POST)
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        if not form.validate():
+            self.request.session.flash(u'失敗しました: %s' % form.errors)
+            raise HTTPFound(self.request.current_route_url(order_id=order_id, action="show"))
+
+        order = Order.get(order_id)
+        mails_complete.send_mail(self.request, order, override=form.data)
+        self.request.session.flash(u'メール再送信しました')
+        return HTTPFound(self.request.current_route_url(order_id=order_id, action="show"))
+
+    @view_config(match_param="action=cancel_mail_preview", renderer="string")
+    def cancel_mail_preview(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id)
+        return mails_cancel.preview_text(self.request, order)
+
+    @view_config(match_param="action=cancel_mail_send", renderer="string", request_method="POST")
+    def cancel_mail_send(self):
+        form = SendingMailForm(self.request.POST)
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        if not form.validate():
+            self.request.session.flash(u'失敗しました: %s' % form.errors)
+            raise HTTPFound(self.request.current_route_url(order_id=order_id, action="show"))
+
+        order = Order.get(order_id)
+        mails_cancel.send_mail(self.request, order, override=form.data)
+        self.request.session.flash(u'メール再送信しました')
+        return HTTPFound(self.request.current_route_url(order_id=order_id, action="show"))
+
+'''
+from ticketing.core.models import  TicketPrintHistory
+
+@view_defaults(decorator=with_bootstrap, permission="event_editor", renderer="json")
+class TicketPrintApi(BaseView):
+    @view_config(route_name='orders.api.ticket', request_method="GET")
+    def get_ticket(self):
+        ''' '''
+        order = Order.filter_by(id=self.request.matchdict["id"]).first()
+        if not order:
+            return HTTPNotFound()
+
+        tickets = []
+        for ordered_product in order.ordered_products:
+            for ordered_product_item in ordered_product.ordered_product_items:
+                ticket_bundle = ordered_product_item.product_item.ticket_bundle
+                if ticket_bundle:
+                    for ticket in ticket_bundle.tickets:
+                        data = ticket.data
+                        tickets.append(data)
+
+        return dict(tickets = tickets)
+
+    @view_config(route_name='orders.api.ticket', request_method="POST")
+    def print_ticket(self):
+        ''' '''
+        order = Order.filter_by(id=self.request.matchdict["id"]).first()
+        if not order:
+            return HTTPNotFound()
+
+        now = datetime.now()
+        for ordered_product in order.ordered_products:
+            for ordered_product_item in ordered_product.ordered_product_items:
+                ticket_bundle = ordered_product_item.product_item.ticket_bundle
+                if ticket_bundle:
+                    seats = ordered_product_item.seats
+                    for ticket in ticket_bundle.tickets:
+                        for seat in seats:
+                            c = TicketPrintHistory(
+                                operator = self.context.user,
+                                ordered_product_item = ordered_product_item,
+                                seat=seat,
+                                ticket_bundle = ticket_bundle)
+                            c.save()
+
+        return dict(result='ok')
+'''

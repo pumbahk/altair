@@ -7,7 +7,8 @@ from ..interfaces import IPaymentPlugin, ICartPayment, IOrderPayment, ICompleteM
 from ..interfaces import IDeliveryPlugin, ICartDelivery, IOrderDelivery, ICompleteMailDelivery
 
 from .. import logger
-
+from ticketing.mails.api import get_mail_utility
+from ticketing.mails.forms import MailInfoTemplate
 from pyramid.threadlocal import get_current_registry
 
 from ticketing.core import models as c_models
@@ -326,20 +327,27 @@ def sej_payment_confirm_viewlet(context, request):
 
 
 @view_config(context=ICompleteMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer="ticketing.cart.plugins:templates/sej_payment_mail_complete.html")
-def completion_payment_mail_viewlet(context, request):
+def payment_mail_viewlet(context, request):
     """ 完了メール表示
     :param context: ICompleteMailPayment
     """
-    sej_order=get_sej_order(context.order)
-    return dict(sej_order=sej_order, h=cart_helper)
+    order = context.order
+    sej_order=context.order.sej_order
+    mutil = get_mail_utility(request, c_models.MailTypeEnum.CompleteMail)
+    trv = mutil.get_traverser(request, order)
+    return dict(sej_order=sej_order, h=cart_helper, 
+                notice=trv.data[MailInfoTemplate.payment_key(order, "notice")])
 
 @view_config(context=ICompleteMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer="ticketing.cart.plugins:templates/sej_delivery_mail_complete.html")
-def completion_delivery_mail_viewlet(context, request):
+def delivery_mail_viewlet(context, request):
     """ 完了メール表示
     :param context: ICompleteMailDelivery
     """
-    sej_order=get_sej_order(context.order)
+    sej_order=context.order.sej_order
     payment_id = context.order.payment_delivery_pair.payment_method.payment_plugin_id
     is_payment_with_sej = int(payment_id or -1) == PAYMENT_PLUGIN_ID
-    return dict(sej_order=sej_order, h=cart_helper, 
-                is_payment_with_sej=is_payment_with_sej)
+    mutil = get_mail_utility(request, c_models.MailTypeEnum.CompleteMail)
+    trv = mutil.get_traverser(request, context.order)
+    return dict(sej_order=sej_order, h=cart_helper, trv=trv, 
+                is_payment_with_sej=is_payment_with_sej, 
+                notice=trv.data[MailInfoTemplate.delivery_key(context.order, "notice")])

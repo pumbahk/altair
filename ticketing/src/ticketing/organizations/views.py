@@ -17,6 +17,12 @@ from ticketing.organizations.forms import OrganizationForm, SejTenantForm
 from ticketing.core.models import Event, Account
 
 from ticketing.sej.models import SejTenant
+from ticketing.mails.forms import MailInfoTemplate
+from ticketing.models import DBSession
+from ticketing.mails.api import get_mail_utility
+
+import logging
+logger = logging.getLogger(__name__)
 
 #@view_defaults(decorator=with_bootstrap, permission="administrator")
 @view_defaults(decorator=with_bootstrap)
@@ -187,3 +193,38 @@ class Organizations(BaseView):
         '''
         organization_id = int(self.request.matchdict.get('organization_id', 0))
         sej_tenant_id = int(self.request.matchdict.get('id', 0))
+
+@view_defaults(route_name="organizations.mails.new", decorator=with_bootstrap, permission="authenticated", 
+               renderer="ticketing:templates/organizations/mailinfo/new.html")
+class MailInfoNewView(BaseView):
+    @view_config(request_method="GET")
+    def mailinfo_new(self):
+        organization_id = int(self.request.matchdict.get("organization_id", 0))
+        organization = Organization.get(organization_id)
+        template = MailInfoTemplate(self.request, organization)
+        choice_form = template.as_choice_formclass()()
+        formclass = template.as_formclass()
+        mailtype = self.request.matchdict["mailtype"]
+        form = formclass(**(organization.extra_mailinfo.data.get(mailtype, {}) if organization.extra_mailinfo else {}))
+        return {"organization": organization, "form": form, "mailtype": mailtype, "choice_form": choice_form}
+
+    @view_config(request_method="POST")
+    def mailinfo_new_post(self):
+        logger.debug("mailinfo.post: %s" % self.request.POST)
+        mutil = get_mail_utility(self.request, self.request.matchdict["mailtype"])
+
+        organization_id = int(self.request.matchdict.get("organization_id", 0))
+        organization = Organization.get(organization_id)
+        mailtype = self.request.matchdict["mailtype"]
+        template = MailInfoTemplate(self.request, organization)
+        choice_form = template.as_choice_formclass()()
+        formclass = template.as_formclass()
+        form = formclass(self.request.POST)
+        if not form.validate():
+            self.request.session.flash(u"入力に誤りがあります。")
+        else:
+            mailinfo = mutil.create_or_update_mailinfo(self.request, form.as_mailinfo_data(), organization=organization, kind=mailtype)
+            logger.debug("mailinfo.data: %s" % mailinfo.data)
+            DBSession.add(mailinfo)
+            self.request.session.flash(u"メールの付加情報を登録しました")
+        return {"organization": organization, "form": form, "mailtype": mailtype, "choice_form": choice_form}
