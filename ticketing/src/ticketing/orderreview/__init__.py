@@ -67,7 +67,7 @@ def import_order_review_view(config):
     config.add_view('.views.order_review_form_view', context=".views.InvalidForm", renderer=selectable_renderer("%(membership)s/order_review/form.html"))
     config.add_view('.views.order_review_form_view', context=".views.InvalidForm", renderer=selectable_renderer("order_review_mobile%(membership)s/form.html"), request_type='ticketing.cart.interfaces.IMobileRequest')
     
-    config.add_view('.views.order_review_qr_html', route_name='order_review.qr', renderer=selectable_renderer("order_review/%(membership)s/qr.html"))
+    config.add_view('.views.order_review_qr_html', route_name='order_review.qr', renderer=selectable_renderer("%(membership)s/order_review/qr.html"))
 
 def import_misc_view(config):
     config.add_route('contact', '/contact')
