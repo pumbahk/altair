@@ -17,7 +17,7 @@ from pyramid.threadlocal import get_current_registry
 
 from .exceptions import *
 from ticketing.models import *
-from ticketing.users.models import User
+from ticketing.users.models import User, UserCredential
 from ticketing.utils import sensible_alnum_decode
 from ticketing.sej.models import SejOrder
 from ticketing.sej.exceptions import SejServerError
@@ -1708,7 +1708,13 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 query = query.filter(or_(*status_cond))
         condition = form.tel.data
         if condition:
-            query = query.join(Order.shipping_address).filter(ShippingAddress.tel_1==condition)
+            query = query.join(Order.shipping_address).filter(or_(ShippingAddress.tel_1==condition, ShippingAddress.tel_2==condition))
+        condition = form.name.data
+        if condition:
+            query = query.join(Order.shipping_address).filter(ShippingAddress.last_name + ShippingAddress.first_name==condition)
+        condition = form.member_id.data
+        if condition:
+            query = query.join(Order.user).join(User.user_credential).filter(UserCredential.auth_identifier==condition)
         condition = form.start_on_from.data
         if condition:
             query = query.join(Order.performance).filter(Performance.start_on>=condition)

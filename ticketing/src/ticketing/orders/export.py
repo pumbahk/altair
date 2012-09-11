@@ -31,6 +31,11 @@ class OrderCSV(object):
         'nick_name',
         'sex',
         ]
+    member_header = [
+        'membership_name',
+        'membergroup_name',
+        'membership_id',
+        ]
     shipping_address_header = [
         'last_name',
         'first_name',
@@ -72,6 +77,7 @@ class OrderCSV(object):
         # shipping_addressのヘッダーにはuser_profileのカラムと区別する為にprefix(shipping_)をつける
         self.header = self.order_header \
                     + self.user_profile_header \
+                    + self.member_header \
                     + ['shipping_' + sa for sa in self.shipping_address_header] \
                     + self.other_header
         self.rows = [self._convert_to_csv(order) for order in orders]
@@ -87,6 +93,13 @@ class OrderCSV(object):
             user_profile_list = [(column, user_profile_dict.get(column)) for column in self.user_profile_header]
         else:
             user_profile_list = []
+
+        member_list = []
+        if order.user and order.user.user_credential:
+            member_list.append(('membership_name', order.user.user_credential[0].membership.name))
+            member_list.append(('membership_id', order.user.user_credential[0].auth_identifier))
+        if order.user and order.user.member:
+            member_list.append(('membergroup_name', order.user.member.membergroup.name))
 
         if order.shipping_address:
             shipping_address_dict = record_to_multidict(order.shipping_address)
@@ -155,6 +168,7 @@ class OrderCSV(object):
         row = dict(
             order_list
             + user_profile_list
+            + member_list
             + shipping_address_list
             + other_list
             + product_list

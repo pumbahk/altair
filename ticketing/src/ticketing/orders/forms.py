@@ -80,6 +80,14 @@ class OrderSearchForm(Form):
         choices=[('ordered', u'未入金'), ('paid', u'入金済み'), ('issued', u'発券済み'), ('unissued', u'未発券'), ('delivered', u'配送済み'), ('canceled', u'キャンセル'), ('refunded', u'キャンセル (返金済)')],
         coerce=str,
     )
+    name = TextField(
+        label=u'氏名',
+        validators=[Optional()],
+    )
+    member_id = TextField(
+        label=u'会員番号',
+        validators=[Optional()],
+    )
     tel = TextField(
         label=u'電話番号',
         validators=[Optional()],
