@@ -10,6 +10,7 @@ import StringIO
 import qrcode
 from ticketing.cart.selectable_renderer import selectable_renderer
 from . import schemas
+from . import api
 from ticketing.mobile import mobile_view_config
 
 builder = qr()
@@ -176,19 +177,37 @@ def order_review_qr_image(context, request):
 def order_review_send_mail(context, request):
     ticket_id = int(request.matchdict.get('ticket_id', 0))
     sign = request.matchdict.get('sign', 0)
-    
-    ticket = build_qr(ticket_id)
-    
+
     # TODO: validate mail address
-    
+
     vars = dict(
         mail = request.POST.get('mail'),
         url = request.route_url('order_review.qr_confirm', ticket_id=ticket_id, sign=sign),
     )
     
     # TODO: send mail using template
-    
+    try:
+        sender = context.membership.organization.contact_email
+        api.send_qr_mail(request, context, vars["mail"], sender)
+    except Exception, e:
+        logger.error(str(e), exc_info=1)
+        raise HTTPNotFound()
     return dict(
         mail = vars['mail'],
         url = vars['url'],
         )
+
+@view_config(name="render.mail", 
+             renderer=selectable_renderer("ticketing/orderreview/templates/%(membership)s/order_review/qr.txt"))
+def render_qrmail_viewlet(context, request):
+    ticket_id = int(request.matchdict.get('ticket_id', 0))
+    sign = request.matchdict.get('sign', 0)
+    ticket = build_qr(ticket_id)
+    return dict(
+        event=ticket.event, 
+        performance=ticket.performance, 
+        product=ticket.product, 
+        seat=ticket.seat, 
+        mail = request.POST.get('mail'),
+        url = request.route_url('order_review.qr_confirm', ticket_id=ticket_id, sign=sign),
+    )
