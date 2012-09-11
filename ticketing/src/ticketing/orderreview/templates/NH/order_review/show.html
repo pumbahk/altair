@@ -3,14 +3,14 @@
 <html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-  <title>仙台89ERS ナイナーズチケット 購入確認ページ</title>
-    <link rel="stylesheet" type="text/css" href="${request.static_url('ticketing.orderreview:static/css/89ers/style.css')}" media="all" />
+  <title>秋田ノーザンハピネッツ ハピネッツチケット 購入確認ページ</title>
+    <link rel="stylesheet" type="text/css" href="${request.static_url('ticketing.orderreview:static/css/NH/style.css')}" media="all" />
     <script language="JavaScript" src="${request.static_url('ticketing.orderreview:static/js/jquery.js')}"></script>
 </head>
 <body>
-<h1 class="title">仙台89ERS ナイナーズチケット 購入確認ページ</h1>
+<h1 class="title">秋田ノーザンハピネッツ ハピネッツチケット 購入確認ページ</h1>
 <div align="center">
-    <img src="${request.static_url('ticketing.orderreview:static/images/89ers/head_title.png')}" alt="仙台89ERS" width="780" height="135" />
+    <img src="${request.static_url('ticketing.orderreview:static/images/NH/head_title.png')}" alt="秋田ノーザンハピネッツ" width="780" height="135" />
     <table class="layout" style="width:760px" class="wrapper">
         <tr>
             <td>
@@ -127,7 +127,7 @@ shipping =order.shipping_address
                     <tbody>
                         <tr>
                             <thead>
-                            <th colspan="2"><span>仙台89ERS 2012-2013 ブースタークラブ</span></th>
+                            <th colspan="2"><span>秋田ノーザンハピネッツ 2012-2013 ブースタークラブ</span></th>
                             </thead>
                         </tr>
                         <tr>
@@ -195,7 +195,7 @@ shipping =order.shipping_address
                             <td class="textR">${pm.get('email')}</td>
                         </tr>
                         <tr>
-                            <td>仙台89ERSからのメールマガジンの配信    </td>
+                            <td>秋田ノーザンハピネッツからのメールマガジンの配信    </td>
                             <td class="textR">${u'希望する' if pm.get('mail_permission') else u'希望しない'}</td>
                         </tr>
                         <tr>
@@ -276,7 +276,7 @@ shipping =order.shipping_address
             <div class="kadomaru">
                 <h3>お問い合わせ先</h3>
                 <ul class="markNone font14">
-                    <li>仙台89ERS　ブースター事務局</li>
+                    <li>秋田ノーザンハピネッツ　ブースター事務局</li>
                     <li>TEL: 022-215-8138　(平日：9:00〜18:00)</li>
                 </ul>
                 
@@ -287,6 +287,6 @@ shipping =order.shipping_address
         </tr>
     </table>
 </div>
-<%include file="/89ers/commons/footer.inc" />
+<%include file="/NH/commons/footer.inc" />
 </body>
 </html>
