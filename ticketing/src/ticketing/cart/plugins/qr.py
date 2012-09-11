@@ -35,7 +35,7 @@ def deliver_completion_viewlet(context, request):
         for opi in op.ordered_product_items:
             for s in opi.seats:
                 class QRTicket:
-                    serial = u""
+                    id = u""
                     order = 0
                     performance = context.order.performance
                     product = op.product
@@ -50,9 +50,9 @@ def deliver_completion_viewlet(context, request):
                     history = core_models.TicketPrintHistory(ordered_product_item_id=opi.id, seat_id=s.id)
                     m.DBSession.add(history)
                     m.DBSession.flush()
-                ticket.serial = history.id
+                ticket.id = history.id
                 ticket.qr = builder.sign(builder.make(dict(
-                            serial=("%d" % ticket.serial),
+                            serial=("%d" % ticket.id),
                             performance=order.performance.code,
                             order=order.order_no,
                             date=order.performance.start_on.strftime("%Y%m%d"),

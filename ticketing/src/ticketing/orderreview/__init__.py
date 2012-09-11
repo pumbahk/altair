@@ -53,8 +53,8 @@ def import_selectable_renderer(config):
 def import_order_review_view(config):
     config.add_route('order_review.form', '/')
     config.add_route('order_review.show', '/show')
-    config.add_route('order_review.qr', '/qr/{ticket_id}/{sign}/')
-    config.add_route('order_review.qr_confirm', '/qr/{ticket_id}/{sign}/confirm')
+    config.add_route('order_review.qr', '/qr/{ticket_id}/{sign}/ticket')
+    config.add_route('order_review.qr_confirm', '/qr/{ticket_id}/{sign}/')
     config.add_route('order_review.qrdraw', '/qr/{ticket_id}/{sign}/image')
     config.add_route('order_review.send', '/qr/{ticket_id}/{sign}/send')
 

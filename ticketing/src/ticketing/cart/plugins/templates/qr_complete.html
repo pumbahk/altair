@@ -9,10 +9,10 @@
 			商品名 ${ticket.product.name} (${ticket.product.id}) <br />
 			席番号 ${ticket.seat.name} (${ticket.seat.l0_id}) <br />
 			<br />
-			<form method="get" target="_blank" action="/orderreview/qr/${ticket.serial}/${ticket.sign | u}/">
+			<form method="get" target="_blank" action="${request.route_path('order_review.qr', ticket_id=ticket.id, sign=ticket.sign)}">
 				<input type="submit" value="印刷する" />
 			</form>
-			<form method="post" target="_blank" action="/orderreview/qr/${ticket.serial}/${ticket.sign | u}/send">
+			<form method="post" target="_blank" action="${request.route_path('order_review.send', ticket_id=ticket.id, sign=ticket.sign)}">
 				メールアドレス: <input type="text" name="mail" size="40" />
 				<input type="submit" name="send" value="メールで送る" />
 			</form>

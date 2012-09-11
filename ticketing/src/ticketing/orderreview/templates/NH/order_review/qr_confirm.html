@@ -9,7 +9,7 @@ ${performance.start_on.strftime(u"%Y年%m月%d(%a) %H:%M-".encode('utf-8')).deco
 ${performance.venue.name} <br />
 ${product.name} <br />
 
-<form method="get" action="./" target="_blank">
+<form method="get" action="${request.route_path('order_review.qr', ticket_id=ticket.id, sign=sign)}" target="_blank">
 <input type="submit" value="以下の注意事項に同意してQRチケットを取得" />
 </form>
 
