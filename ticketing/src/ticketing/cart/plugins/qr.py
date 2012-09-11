@@ -49,7 +49,7 @@ class QRTicketDeliveryPlugin(object):
 @view_config(route_name='qr.make', xhr=False, permission="view")
 def get_qr_image(self):
     qr = qrcode.QRCode(
-        version=1,
+        version=None,
         error_correction=qrcode.constants.ERROR_CORRECT_H,
         box_size=10,
     )
