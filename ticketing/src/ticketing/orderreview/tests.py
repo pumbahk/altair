@@ -122,8 +122,8 @@ class Bj89erCartResourceTests(unittest.TestCase):
         testing.tearDown()
 
     def _getTarget(self):
-        from .resources import Bj89erCartResource
-        return Bj89erCartResource
+        from .resources import OrderReviewResource
+        return OrderReviewResource
 
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)

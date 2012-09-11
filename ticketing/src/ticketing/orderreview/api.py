@@ -12,7 +12,7 @@ def get_mailbody_from_viewlet(request, context, viewname):
     response = render_view_to_response(context, request, name=viewname)
     if response is None:
         raise ValueError
-    return response.body
+    return response.text
 
 def _send_mail_simple(request, recipient, sender, mail_body, subject=u"QRメール"):
     message = Message(

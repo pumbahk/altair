@@ -70,4 +70,3 @@ class OrderReviewResource(TicketingCartResource):
 
         return order, sej_order
 
-

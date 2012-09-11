@@ -1,7 +1,9 @@
 # -*- coding:utf-8 -*-
 import logging
+import sqlalchemy.orm as orm
 from pyramid.view import view_config, render_view_to_response
 from ticketing.core.models import Order, OrderedProduct, OrderedProductItem, ProductItem, Performance, Seat, TicketPrintHistory
+from ticketing.users.models import User
 from pyramid.httpexceptions import HTTPNotFound
 from sqlalchemy.orm.exc import NoResultFound
 from ticketing.qr import qr
@@ -77,13 +79,14 @@ def contact_view(context, request):
 
 def build_qr(ticket_id):
     ticket = None
+    ##
+    ##  ここjoinしているがTicketPrintHistoryだけしか取得できていない
     try:
         ticket = TicketPrintHistory\
         .filter_by(id = ticket_id)\
         .join(TicketPrintHistory.ordered_product_item)\
         .join(OrderedProductItem.ordered_product)\
         .join(OrderedProduct.order)\
-        .join(Order.user)\
         .join(OrderedProductItem.product_item)\
         .join(ProductItem.performance)\
         .join(Performance.event)\
@@ -173,7 +176,8 @@ def order_review_qr_image(context, request):
     r.body = buf.getvalue()
     return r
 
-@view_config(route_name='order_review.send', renderer=selectable_renderer("%(membership)s/order_review/send.html"))
+@view_config(route_name='order_review.send', request_method="POST", 
+             renderer=selectable_renderer("%(membership)s/order_review/send.html"))
 def order_review_send_mail(context, request):
     ticket_id = int(request.matchdict.get('ticket_id', 0))
     sign = request.matchdict.get('sign', 0)
@@ -198,7 +202,7 @@ def order_review_send_mail(context, request):
         )
 
 @view_config(name="render.mail", 
-             renderer=selectable_renderer("ticketing/orderreview/templates/%(membership)s/order_review/qr.txt"))
+             renderer=selectable_renderer("%(membership)s/order_review/qr.txt"))
 def render_qrmail_viewlet(context, request):
     ticket_id = int(request.matchdict.get('ticket_id', 0))
     sign = request.matchdict.get('sign', 0)

@@ -28,6 +28,7 @@ def main(global_conf, **settings):
     config.include('ticketing.multicheckout')
     config.include('ticketing.cart.plugins')
     config.include('ticketing.cart')
+    config.include('ticketing.cart.import_mail_module')
     config.scan('ticketing.cart.views')
     # config.commit() #これ必要？
     config.include('..mobile')

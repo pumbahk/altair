@@ -69,7 +69,7 @@ def strip_hyphen():
 
 strip_spaces = strip(u' 　')
 
-class OrderReviewSchema(Form):
+class JForm(Form):
     def _get_translations(self):
         return Translations({
             'This field is required.' : u'入力してください',
@@ -80,6 +80,10 @@ class OrderReviewSchema(Form):
             'Invalid input.': u'形式が正しくありません。',
         })
 
+class SendMailSchema(JForm):
+    mail = fields.TextField(u"送り先メールアドレス", validator=[v.Email()])
+
+class OrderReviewSchema(JForm):
     order_no = fields.TextField(u"注文番号", filters=[strip_spaces], validators=[v.Required()])
     tel = fields.TextField(u"電話番号", filters=[strip_spaces, strip_hyphen()], validators=[v.Required()])
 
