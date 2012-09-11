@@ -34,37 +34,20 @@ def deliver_completion_viewlet(context, request):
     for op in order.ordered_products:
         for opi in op.ordered_product_items:
             for s in opi.seats:
+                # TODO: 発行済みかどうかを取得したい
                 class QRTicket:
-                    id = u""
                     order = 0
                     performance = context.order.performance
                     product = op.product
                     seat = s
-                    qr = u""
-                    sign = u""
                 ticket = QRTicket()
-                history = core_models.TicketPrintHistory\
-                    .filter_by(ordered_product_item_id=opi.id, seat_id=s.id).first()
-                if history == None:
-                    # create TicketPrintHistory record
-                    history = core_models.TicketPrintHistory(ordered_product_item_id=opi.id, seat_id=s.id)
-                    m.DBSession.add(history)
-                    m.DBSession.flush()
-                ticket.id = history.id
-                ticket.qr = builder.sign(builder.make(dict(
-                            serial=("%d" % ticket.id),
-                            performance=order.performance.code,
-                            order=order.order_no,
-                            date=order.performance.start_on.strftime("%Y%m%d"),
-                            type=ticket.product.id,
-                            seat=s.l0_id,
-                            seat_name=s.name,
-                            )))
-                ticket.sign = ticket.qr[0:8]
                 tickets.append(ticket)
     
+    # TODO: orderreviewから呼ばれた場合とcartの完了画面で呼ばれた場合で
+    # 処理を分岐したい
+    
     return dict(
-        paid = True,
+        paid = (order.paid_at != None),
         order = order,
         tel = order.shipping_address.tel_1,
         tickets = tickets,

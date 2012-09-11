@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import logging
+import sqlahelper
 import sqlalchemy.orm as orm
 from pyramid.view import view_config, render_view_to_response
 from ticketing.core.models import Order, OrderedProduct, OrderedProductItem, ProductItem, Performance, Seat, TicketPrintHistory
@@ -20,6 +21,7 @@ builder.key = u"THISISIMPORTANTSECRET"
 
 logger = logging.getLogger(__name__)
 
+DBSession = sqlahelper.get_session()
 
 class InvalidForm(Exception):
     def __init__(self, form):
@@ -77,19 +79,37 @@ def notfound_view(context, request):
 def contact_view(context, request):
     return dict()
 
+def build_qr_by_order_seat(order_no, seat_id):
+    seat = Order.filter_by(order_no = order_no)\
+            .join(Order.ordered_products)\
+            .join(OrderedProduct.ordered_product_items)\
+            .join(OrderedProductItem.seats)\
+            .filter_by(id = seat_id)\
+            .one()
+    if seat == None:
+        raise HTTPNotFound()
+    
+    # ここでinsertする
+    opi = DBSession.query(OrderedProductItem)\
+        .join(OrderedProductItem.seats)\
+        .filter_by(id = seat_id)\
+        .one()
+    history = TicketPrintHistory\
+        .filter_by(ordered_product_item_id=opi.id, seat_id=seat_id).first()
+    if history == None:
+        # create TicketPrintHistory record
+        history = TicketPrintHistory(ordered_product_item_id=opi.id, seat_id=seat_id)
+        DBSession.add(history)
+        DBSession.flush()
+    
+    return build_qr(history.id)
+
 def build_qr(ticket_id):
     ticket = None
-    ##
-    ##  ここjoinしているがTicketPrintHistoryだけしか取得できていない
+    
     try:
         ticket = TicketPrintHistory\
         .filter_by(id = ticket_id)\
-        .join(TicketPrintHistory.ordered_product_item)\
-        .join(OrderedProductItem.ordered_product)\
-        .join(OrderedProduct.order)\
-        .join(OrderedProductItem.product_item)\
-        .join(ProductItem.performance)\
-        .join(Performance.event)\
         .one()
     except NoResultFound, e:
         return None
@@ -176,42 +196,50 @@ def order_review_qr_image(context, request):
     r.body = buf.getvalue()
     return r
 
-@view_config(route_name='order_review.send', request_method="POST", 
+@view_config(route_name='order_review.qr_print', request_method='POST', renderer=selectable_renderer("%(membership)s/order_review/qr.html"))
+def order_review_qr_print(context, request):
+    ticket = build_qr_by_order_seat(request.params['order_no'], request.params['seat'])
+    
+    return dict(
+        sign = ticket.qr[0:8],
+        order = ticket.order,
+        ticket = ticket,
+        performance = ticket.performance,
+        event = ticket.event,
+        product = ticket.product,
+        )
+
+@view_config(route_name='order_review.qr_send', request_method="POST", 
              renderer=selectable_renderer("%(membership)s/order_review/send.html"))
 def order_review_send_mail(context, request):
-    ticket_id = int(request.matchdict.get('ticket_id', 0))
-    sign = request.matchdict.get('sign', 0)
-
     # TODO: validate mail address
-
-    vars = dict(
-        mail = request.POST.get('mail'),
-        url = request.route_url('order_review.qr_confirm', ticket_id=ticket_id, sign=sign),
-    )
     
-    # TODO: send mail using template
+    mail = request.params['mail']
+    
+    # send mail using template
     try:
         sender = context.membership.organization.contact_email
-        api.send_qr_mail(request, context, vars["mail"], sender)
+        api.send_qr_mail(request, context, mail, sender)
     except Exception, e:
         logger.error(str(e), exc_info=1)
+        ## この例外は違う...
         raise HTTPNotFound()
+    
     return dict(
-        mail = vars['mail'],
-        url = vars['url'],
+        mail = mail,
         )
 
 @view_config(name="render.mail", 
              renderer=selectable_renderer("%(membership)s/order_review/qr.txt"))
 def render_qrmail_viewlet(context, request):
-    ticket_id = int(request.matchdict.get('ticket_id', 0))
-    sign = request.matchdict.get('sign', 0)
-    ticket = build_qr(ticket_id)
+    ticket = build_qr_by_order_seat(request.params['order_no'], request.params['seat'])
+    sign = ticket.qr[0:8]
+    
     return dict(
         event=ticket.event, 
         performance=ticket.performance, 
         product=ticket.product, 
         seat=ticket.seat, 
-        mail = request.POST.get('mail'),
-        url = request.route_url('order_review.qr_confirm', ticket_id=ticket_id, sign=sign),
+        mail = request.params['mail'],
+        url = request.route_url('order_review.qr_confirm', ticket_id=ticket.id, sign=sign),
     )

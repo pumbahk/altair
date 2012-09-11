@@ -54,10 +54,11 @@ def import_view(config):
     config.add_route('order_review.show', '/show')
     
     ## qr
+    config.add_route('order_review.qr_print', '/qr/print')
+    config.add_route('order_review.qr_send', '/qr/send')
     config.add_route('order_review.qr', '/qr/{ticket_id}/{sign}/ticket')
     config.add_route('order_review.qr_confirm', '/qr/{ticket_id}/{sign}/')
     config.add_route('order_review.qrdraw', '/qr/{ticket_id}/{sign}/image')
-    config.add_route('order_review.send', '/qr/{ticket_id}/{sign}/send')
 
     ## misc
     config.add_route('contact', '/contact')
