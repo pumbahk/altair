@@ -510,10 +510,14 @@
                 selection.push(seat);
               }
             }
-            self._unselectAll();
             self.drawable.erase(self.rubberBand);
-            for (var i = 0; i < selection.length; i++)
-              selection[i].set('selected', true);
+            for (var i = 0; i < selection.length; i++) {
+              if (selection[i].get('selected')) {
+                selection[i].set('selected', false);
+              } else {
+                selection[i].set('selected', true);
+              }
+            }
             self.callbacks.select && self.callbacks.select(self, selection);
           },
 
