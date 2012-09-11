@@ -1,0 +1,19 @@
+<html>
+<head>
+</head>
+<body>
+
+${event.title} <br />
+${performance.name} <br />
+${performance.start_on.strftime(u"%Y年%m月%d(%a) %H:%M-".encode('utf-8')).decode('utf-8')} <br />
+${performance.venue.name} <br />
+${product.name} <br />
+
+<form method="get" action="./" target="_blank">
+<input type="submit" value="以下の注意事項に同意してQRチケットを取得" />
+</form>
+
+携帯電話からご利用の方は、ボタンを押した後で表示される画面を「画面メモ」等にて保存してください。
+
+</body>
+</html>
