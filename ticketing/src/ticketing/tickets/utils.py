@@ -245,7 +245,7 @@ class DictBuilder(object):
                 u"tel_2": shipping_address.tel_2,
                 u"fax": shipping_address.fax
                 } if shipping_address else {},
-            u'aux': ticket_bundle.attributes if ticket_bundle else {},
+            u'aux': dict(ticket_bundle.attributes) if ticket_bundle else {},
             u'券種名': product_item.name or product.name,
             u'商品名': product_item.name or product.name,
             u'商品価格': self.formatter.format_currency(ordered_product.price),
