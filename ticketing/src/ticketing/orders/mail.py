@@ -19,11 +19,16 @@ mail_renderer_names = {
 
 def on_order_canceled(event):
     message = create_cancel_message(event.request, event.order)
-    mailer = get_mailer(event.request)
-    mailer.send(message)
-    logger.info('send cancel mail to %s' % message.recipients)
+    if message:
+        mailer = get_mailer(event.request)
+        mailer.send(message)
+        logger.info('send cancel mail to %s' % message.recipients)
 
 def create_cancel_message(request, order):
+    if not order.shipping_address or not order.shipping_address.email:
+        logger.info('order has not shipping_address or email id=%s' % order.id)
+        return
+
     plugin_id = str(order.payment_delivery_pair.payment_method.payment_plugin_id)
     if plugin_id not in mail_renderer_names:
         logger.warn('mail renderer not found for plugin_id %s' % plugin_id)
