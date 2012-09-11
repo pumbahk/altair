@@ -51,25 +51,26 @@ def import_order_review_view(config):
     config.add_route('order_review.form', '/')
     config.add_route('order_review.show', '/show')
 
-    config.add_view('.views.OrderReviewView', route_name='order_review.form', attr="get", request_method="GET", renderer=selectable_renderer("order_review/%(membership)s/form.html"))
+    config.add_view('.views.OrderReviewView', route_name='order_review.form', attr="get", request_method="GET", renderer=selectable_renderer("%(membership)s/order_review/form.html"))
     config.add_view('.views.OrderReviewView', request_type='ticketing.cart.interfaces.IMobileRequest', route_name='order_review.form',
-                    attr="get", request_method="GET", renderer=selectable_renderer("order_review_mobile/%(membership)s/form.html"))
+                    attr="get", request_method="GET", renderer=selectable_renderer("%(membership)s/order_review_mobile/form.html"))
 
-    config.add_view('.views.OrderReviewView', route_name='order_review.show', attr="post", request_method="POST", renderer=selectable_renderer("order_review/%(membership)s/show.html"))
+    config.add_view('.views.OrderReviewView', route_name='order_review.show', attr="post", request_method="POST", renderer=selectable_renderer("%(membership)s/order_review/show.html"))
     config.add_view('.views.OrderReviewView', request_type='ticketing.cart.interfaces.IMobileRequest', route_name='order_review.show',
-                    attr="post", request_method="POST", renderer=selectable_renderer("order_review_mobile/%(membership)s/show.html"))
+                    attr="post", request_method="POST", renderer=selectable_renderer("%(membership)s/order_review_mobile/show.html"))
 
-    config.add_view('.views.order_review_form_view', context=".views.InvalidForm", renderer=selectable_renderer("order_review/%(membership)s/form.html"))
+    config.add_view('.views.order_review_form_view', context=".views.InvalidForm", renderer=selectable_renderer("%(membership)s/order_review/form.html"))
     config.add_view('.views.order_review_form_view', context=".views.InvalidForm", renderer=selectable_renderer("order_review_mobile%(membership)s/form.html"), request_type='ticketing.cart.interfaces.IMobileRequest')
     
 def import_misc_view(config):
     config.add_route('contact', '/contact')
-    config.add_view('.views.contact_view', route_name="contact", renderer=selectable_renderer("static/%(membership)s/contact.html"))
-    config.add_view('.views.contact_view', route_name="contact", renderer=selectable_renderer("static_mobile/%(membership)s/contact.html"), request_type='ticketing.cart.interfaces.IMobileRequest')
+    config.add_view('.views.contact_view', route_name="contact", renderer=selectable_renderer("%(membership)s/static/contact.html"))
+    config.add_view('.views.contact_view', route_name="contact", renderer=selectable_renderer("%(membership)s/static_mobile/contact.html"), request_type='ticketing.cart.interfaces.IMobileRequest')
+
 
 def import_exc_view(config):
-    config.add_view('.views.notfound_view', context=HTTPNotFound, renderer=selectable_renderer("errors/%(membership)s/not_found.html"))
-    config.add_view('.views.notfound_view', context=HTTPNotFound,  renderer=selectable_renderer("errors_mobile/%(membership)s/not_found.html"), request_type='ticketing.cart.interfaces.IMobileRequest')
-    config.add_view('.views.exception_view',  context=StandardError, renderer=selectable_renderer("errors/%(membership)s/error.html"))
-    config.add_view('.views.exception_view', context=StandardError,  renderer=selectable_renderer("errors_mobile/%(membership)s/error.html"), request_type='ticketing.cart.interfaces.IMobileRequest')
+    config.add_view('.views.notfound_view', context=HTTPNotFound, renderer=selectable_renderer("%(membership)s/errors/not_found.html"))
+    config.add_view('.views.notfound_view', context=HTTPNotFound,  renderer=selectable_renderer("%(membership)s/errors_mobile/not_found.html"), request_type='ticketing.cart.interfaces.IMobileRequest')
+    config.add_view('.views.exception_view',  context=StandardError, renderer=selectable_renderer("%(membership)s/errors/error.html"))
+    config.add_view('.views.exception_view', context=StandardError,  renderer=selectable_renderer("%(membership)s/errors_mobile/error.html"), request_type='ticketing.cart.interfaces.IMobileRequest')
 

@@ -1,0 +1,21 @@
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  <title>秋田 ハピネッツチケット 購入確認ページ</title>
+</head>
+<body background="#FFB700">
+  <img src="${request.static_url('ticketing.orderreview:static/images_m/NH/head_title.jpg')}" alt="ノーザンハピネッツ" width="232" height="72" />
+  <%block name="header">
+<div align="center">
+ハピネッツチケット<br />
+購入確認ページ<br />
+</%block>
+</div>
+  ${next.body()}
+  <hr />
+  <a href="${request.route_url('contact')}">お問い合わせ</a> / <a href="http://privacy.rakuten.co.jp/">個人情報保護方針</a> / <a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a>
+  <div>
+    Copyright (C) 2012 TicketStar, Inc. All Rights Reserved. 
+  </div>
+</body>
+</html>
