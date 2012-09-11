@@ -92,6 +92,24 @@ def build_qr(ticket_id):
     
     return ticket
 
+def order_review_qr_confirm(context, request):
+    ticket_id = int(request.matchdict.get('ticket_id', 0))
+    sign = request.matchdict.get('sign', 0)
+    
+    ticket = build_qr(ticket_id)
+    
+    if ticket == None or ticket.sign != sign:
+        raise HTTPNotFound()
+    
+    return dict(
+        sign = sign,
+        order = ticket.order,
+        ticket = ticket,
+        performance = ticket.performance,
+        event = ticket.event,
+        product = ticket.product,
+    )
+    
 def order_review_qr_html(context, request):
     ticket_id = int(request.matchdict.get('ticket_id', 0))
     sign = request.matchdict.get('sign', 0)
@@ -133,3 +151,23 @@ def order_review_qr_image(context, request):
     img.save(buf, 'PNG')
     r.body = buf.getvalue()
     return r
+
+def order_review_send_mail(context, request):
+    ticket_id = int(request.matchdict.get('ticket_id', 0))
+    sign = request.matchdict.get('sign', 0)
+    
+    ticket = build_qr(ticket_id)
+    
+    # TODO: validate mail address
+    
+    vars = dict(
+        mail = request.POST.get('mail'),
+        url = request.route_url('order_review.qr_confirm', ticket_id=ticket_id, sign=sign),
+    )
+    
+    # TODO: send mail using template
+    
+    return dict(
+        mail = vars['mail'],
+        url = vars['url'],
+        )

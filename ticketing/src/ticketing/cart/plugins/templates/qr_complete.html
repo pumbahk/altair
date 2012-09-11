@@ -12,12 +12,10 @@
 			<form method="get" target="_blank" action="/orderreview/qr/${ticket.serial}/${ticket.sign | u}/">
 				<input type="submit" value="印刷する" />
 			</form>
-<!--
-			<form>
+			<form method="post" target="_blank" action="/orderreview/qr/${ticket.serial}/${ticket.sign | u}/send">
 				メールアドレス: <input type="text" name="mail" size="40" />
 				<input type="submit" name="send" value="メールで送る" />
 			</form>
--->
 		</div>
 	% endfor
 % else:
