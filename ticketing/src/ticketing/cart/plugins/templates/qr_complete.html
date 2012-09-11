@@ -1,6 +1,30 @@
 <div>
     <h4>QRチケット</h4>
 
+% if paid:
+
 試合当日会場専用窓口でのお受け取りです。<br/>
-<a href="/mypage/">購入履歴確認画面</a>より、QRコードを印刷、あるいは、PC/携帯へメール送信の上、試合当日、チケット窓口にてQRコード（印刷したもの、あるいは携帯画面）をお見せください。
+	% for ticket in tickets:
+		<div style="border: 1px solid gray; padding: 8px; margin-bottom: 4px;">
+			商品名 ${ticket.product.name} (${ticket.product.id}) <br />
+			席番号 ${ticket.seat.name} (${ticket.seat.l0_id}) <br />
+			<br />
+			<form method="get" target="_blank" action="/orderreview/qr/${ticket.serial}/${ticket.sign | u}/">
+				<input type="submit" value="印刷する" />
+			</form>
+<!--
+			<form>
+				メールアドレス: <input type="text" name="mail" size="40" />
+				<input type="submit" name="send" value="メールで送る" />
+			</form>
+-->
+		</div>
+	% endfor
+% else:
+
+試合当日会場専用窓口でのお受け取りです。<br/>
+支払い完了後、<a href="/mypage/">購入履歴確認画面</a>より、QRコードを印刷、あるいは、PC/携帯へメール送信の上、試合当日、チケット窓口にてQRコード（印刷したもの、あるいは携帯画面）をお見せください。
+
+% endif
+
 </div>

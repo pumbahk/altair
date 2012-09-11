@@ -37,6 +37,9 @@ def main(global_conf, **settings):
     config.include(import_misc_view)
     config.include(import_exc_view)
     config.add_subscriber('.subscribers.add_helpers', 'pyramid.events.BeforeRender')
+    
+    config.scan()
+    
     return config.make_wsgi_app()
 
 def import_selectable_renderer(config):
@@ -50,6 +53,8 @@ def import_selectable_renderer(config):
 def import_order_review_view(config):
     config.add_route('order_review.form', '/')
     config.add_route('order_review.show', '/show')
+    config.add_route('order_review.qr', '/qr/{ticket_id}/{sign}/')
+    config.add_route('order_review.qrdraw', '/qr/{ticket_id}/{sign}/image')
 
     config.add_view('.views.OrderReviewView', route_name='order_review.form', attr="get", request_method="GET", renderer=selectable_renderer("%(membership)s/order_review/form.html"))
     config.add_view('.views.OrderReviewView', request_type='ticketing.cart.interfaces.IMobileRequest', route_name='order_review.form',
@@ -62,6 +67,8 @@ def import_order_review_view(config):
     config.add_view('.views.order_review_form_view', context=".views.InvalidForm", renderer=selectable_renderer("%(membership)s/order_review/form.html"))
     config.add_view('.views.order_review_form_view', context=".views.InvalidForm", renderer=selectable_renderer("order_review_mobile%(membership)s/form.html"), request_type='ticketing.cart.interfaces.IMobileRequest')
     
+    config.add_view('.views.order_review_qr_html', route_name='order_review.qr', renderer=selectable_renderer("order_review/%(membership)s/qr.html"))
+
 def import_misc_view(config):
     config.add_route('contact', '/contact')
     config.add_view('.views.contact_view', route_name="contact", renderer=selectable_renderer("%(membership)s/static/contact.html"))
