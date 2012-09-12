@@ -10,18 +10,15 @@
     <meta http-equiv="content-script-type" content="text/javascript" />
     <link rel="shortcut icon" href="${request.static_url('ticketing.cart:static/img/common/favicon.ico')}" />
     <link rel="stylesheet" href="${request.static_url('ticketing.cart:static/css/import.css')}" type="text/css" media="all" />
-	<link rel="stylesheet" href="${request.static_url('ticketing.cart:static/css/custom.css')}" type="text/css" media="all" />
+    <link rel="stylesheet" href="${request.static_url('ticketing.cart:static/css/custom.css')}" type="text/css" media="all" />
     <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/jquery.js')}"></script>
 
-	<%block name="javascript"></%block>
-	<%block name="css"></%block>
+    <%block name="javascript"></%block>
+    <%block name="css"></%block>
   </head>
   <body id="settlement">
-
     <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${request.static_url('ticketing.cart:static/img/common/skip.gif')}" alt="本文へジャンプ" width="1" height="1" /></a></p>
-
     <div id="container">
-
       <!-- ========== header ========== -->
       <div id="grpheader">
         <p id="siteID">
@@ -29,17 +26,15 @@
         </p>
       </div>
       <!-- ========== /header ========== -->
-      
       <hr />
-
       <!-- ========== main ========== -->
       <div id="main">
         <h1><img src="${request.static_url('ticketing.cart:static/img/settlement/89ers_title_settlement.gif')}" alt="チケット購入" width="950" height="40" /></h1>
-
-      ${self.body()}
+        ${self.body()}
+      </div>
       <!-- ========== /main ========== -->
-	  </div>
-      <!-- /container --></div>
+    </div>
+    <!-- /container -->
   </body>
 </html>
 
