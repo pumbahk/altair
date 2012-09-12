@@ -77,6 +77,7 @@ class IndexView(object):
         location = self.request.route_url('cart.index.sales', 
             event_id=event_id,
             sales_segment_id=sales_segment.id)
+        # TODO: GETパラメータを保持できるようにする
         return HTTPFound(location=location)
 
     @view_config(route_name='cart.index.sales', renderer=selectable_renderer('carts/%(membership)s/index.html'), xhr=False, permission="buy")
@@ -101,18 +102,6 @@ class IndexView(object):
         # 日程,会場,検索項目のコンボ用
         dates = sorted(list(set([p.start_on.strftime("%Y-%m-%d %H:%M") for p in e.performances])))
         logger.debug("dates:%s" % dates)
-        # 日付ごとの会場リスト
-        # select_venues = {}
-        # for p in e.performances:
-        #     d = p.start_on.strftime('%Y-%m-%d %H:%M')
-        #     logger.debug('performance %d date %s' % (p.id, d))
-        #     ps = select_venues.get(d, [])
-        #     ps.append(dict(id=p.id, name=p.venue.name,
-        #                    seat_types_url=self.request.route_url('cart.seat_types', 
-        #                                                          performance_id=p.id,
-        #                                                          sales_segment_id=sales_segment.id,
-        #                                                          event_id=e.id)))
-        #     select_venues[d] = ps
         performances = api.performance_names(self.request, context.event, context.sales_segment)
         select_venues = {}
         event = self.request.context.event
@@ -133,15 +122,11 @@ class IndexView(object):
         # 会場
         venues = set([p.venue.name for p in e.performances])
 
-        # TODO:支払い方法
-        
-        # TODO:引き取り方法
 
         if performance_id:
             # 指定公演とそれに紐づく会場
             selected_performance = c_models.Performance.query.filter(c_models.Performance.id==performance_id).first()
             selected_date = selected_performance.start_on.strftime('%Y-%m-%d %H:%M')
-
         else:
             # １つ目の会場の1つ目の公演
             selected_performance = e.performances[0]
@@ -154,7 +139,7 @@ class IndexView(object):
         return dict(event=event,
                     dates=dates,
                     cart_release_url=self.request.route_url('cart.release'),
-                    selected=Markup(json.dumps([selected_performance.id, selected_date])),
+                    selected=Markup(json.dumps([selected_performance.name, selected_performance.id])),
                     venues_selection=Markup(json.dumps(select_venues)),
                     sales_segment=Markup(json.dumps(dict(seat_choice=sales_segment.seat_choice))),
                     products_from_selected_date_url = self.request.route_url("cart.date.products", event_id=event_id), 
