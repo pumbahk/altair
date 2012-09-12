@@ -76,8 +76,8 @@ class IndexView(object):
         event_id = self.request.matchdict['event_id']
         location = self.request.route_url('cart.index.sales', 
             event_id=event_id,
-            sales_segment_id=sales_segment.id)
-        # TODO: GETパラメータを保持できるようにする
+            sales_segment_id=sales_segment.id,
+            _query=self.request.GET)
         return HTTPFound(location=location)
 
     @view_config(route_name='cart.index.sales', renderer=selectable_renderer('carts/%(membership)s/index.html'), xhr=False, permission="buy")
