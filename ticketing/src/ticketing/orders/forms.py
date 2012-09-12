@@ -163,21 +163,20 @@ class OrderReserveForm(Form):
                         (pdmp.id, '%s  -  %s' % (pdmp.payment_method.name, pdmp.delivery_method.name))
                     )
 
-            self.product_id.choices = []
+            self.products.choices = []
             if 'stocks' in kwargs and kwargs['stocks']:
                 # 座席選択あり
                 products = Product.filter(Product.event_id==performance.event_id)\
                                   .join(Product.items)\
                                   .filter(ProductItem.performance_id==performance.id)\
                                   .filter(ProductItem.stock_id.in_(kwargs['stocks'])).all()
-                self.product_id.choices += [(p.id, p.name) for p in products]
+                self.products.choices += [(p.id, p.name) for p in products]
             else:
                 # 数受け
                 products = Product.filter(Product.sales_segment_id.in_([ss.id for ss in sales_segments]))\
                                   .join(Product.seat_stock_type)\
                                   .filter(StockType.quantity_only==1).all()
-                self.product_id.choices += [(p.id, p.name) for p in products]
-                self.quantity_only.data = 1
+                self.products.choices += [(p.id, p.name) for p in products]
 
     def _get_translations(self):
         return Translations()
@@ -189,9 +188,6 @@ class OrderReserveForm(Form):
         label=u'座席',
         validators=[Optional()],
     )
-    quantity_only = HiddenField(
-        validators=[Optional()],
-    )
     note = TextAreaField(
         label=u'備考・メモ',
         validators=[
@@ -199,13 +195,9 @@ class OrderReserveForm(Form):
             Length(max=2000, message=u'2000文字以内で入力してください'),
         ],
     )
-    quantity = IntegerField(
-        label=u'個数',
-        validators=[Optional()],
-    )
-    product_id = SelectField(
+    products = SelectMultipleField(
         label=u'商品',
-        validators=[Required(u'予約する商品を選択してください')],
+        validators=[Optional()],
         choices=[],
         coerce=int
     )
@@ -219,13 +211,8 @@ class OrderReserveForm(Form):
     def validate_stocks(form, field):
         if len(field.data) > 1:
             raise ValidationError(u'複数の席種を選択することはできません')
-        if not form.product_id.choices:
+        if not form.products.choices:
             raise ValidationError(u'選択された座席に紐づく予約可能な商品がありません')
-
-    def validate_product_id(form, field):
-        product = Product.get(field.data)
-        if product and product.seat_stock_type.quantity_only and not form.quantity.data:
-            raise ValidationError(u'数受けの場合は個数を入力してください')
 
 class SejTicketForm(Form):
     ticket_type = SelectField(

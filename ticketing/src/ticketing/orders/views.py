@@ -348,7 +348,6 @@ class Orders(BaseView):
         # Stockとkind=vipのSalesSegmentからProductを決定する
         stocks = post_data.get('stocks')
         form_reserve = OrderReserveForm(post_data, performance_id=performance_id, stocks=stocks)
-        form_reserve.product_id.validators = [Optional()]
         form_reserve.payment_delivery_method_pair_id.validators = [Optional()]
         form_reserve.validate()
 
@@ -370,22 +369,28 @@ class Orders(BaseView):
         try:
             # validation
             f = OrderReserveForm(performance_id=performance_id, stocks=post_data.get('stocks'))
-            print post_data
             f.process(post_data)
             if not f.validate():
                 raise ValidationError(reduce(lambda a,b: a+b, f.errors.values(), []))
 
-            product = DBSession.query(Product).filter_by(id=post_data.get('product_id')).one()
             seats = post_data.get('seats')
-            if product.seat_stock_type.quantity_only:
-                quantity = int(post_data.get('quantity') or 0)
-            else:
-                quantity = len(seats)
-                if quantity == 0:
-                    raise ValidationError(u'座席が選択されていません')
+            order_items = []
+            total_quantity = 0
+            for product_id, product_name in f.products.choices:
+                product_quantity = int(post_data.get('product_quantity-%d' % product_id) or 0)
+                if not product_quantity:
+                    continue
+                total_quantity += product_quantity
+
+                product = DBSession.query(Product).filter_by(id=product_id).one()
+                order_items.append((product, product_quantity))
+
+            if not total_quantity:
+                raise ValidationError(u'個数を入力してください')
+            elif seats and total_quantity != len(seats):
+                raise ValidationError(u'個数の合計を選択した座席数（%d席）にしてください' % len(seats))
 
             # create cart
-            order_items = [(product, quantity)]
             cart = api.order_products(self.request, performance_id, order_items, selected_seats=seats)
             pdmp = DBSession.query(PaymentDeliveryMethodPair).filter_by(id=post_data.get('payment_delivery_method_pair_id')).one()
             cart.payment_delivery_pair = pdmp
