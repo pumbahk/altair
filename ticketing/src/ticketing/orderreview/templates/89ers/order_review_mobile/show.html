@@ -1,5 +1,5 @@
-<%inherit file="/89ers/89ers/commons/layout_mobile.html"/>
-<%namespace file="/89ers/89ers/commons/tags_mobile.html" name="mobile" />
+<%inherit file="/89ers/commons/layout_mobile.html"/>
+<%namespace file="/89ers/commons/tags_mobile.html" name="mobile" />
 <%mobile:header>購入確認 検索結果</%mobile:header>
 <%mobile:form_header>受付番号</%mobile:form_header>
 <div>${order.order_no}</div>
@@ -83,7 +83,7 @@ ${shipping.address_2}
 <div>窓口受取</div>
 % elif order.payment_delivery_pair.delivery_method.delivery_plugin.id == 4:
 <div>QRコード</div>
-## QR表示
+${h.render_delivery_finished_viewlet(request, order, mobile=True)}
 %endif
 <div>
 &#xe737;注意事項<br />

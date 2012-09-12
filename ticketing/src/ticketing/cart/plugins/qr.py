@@ -28,6 +28,7 @@ builder = qr()
 builder.key = u"THISISIMPORTANTSECRET"
 
 @view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer="ticketing.cart.plugins:templates/qr_complete.html")
+@view_config(context=IOrderDelivery, name="delivery-%d-mobile" % DELIVERY_PLUGIN_ID, renderer="ticketing.cart.plugins:templates/qr_complete_mobile.html")
 def deliver_completion_viewlet(context, request):
     tickets = [ ]
     order = context.order
