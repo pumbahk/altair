@@ -32,7 +32,10 @@ def create_credential(cart_id, membership_name):
 class OrderReviewResource(TicketingCartResource):
     def __init__(self, request):
         super(OrderReviewResource, self).__init__(request)
-        self.organization_id = request.registry.settings['orderreview.organization_id']
+
+    @property
+    def organization_id(self):
+        return self.membership.organization_id
 
     @reify
     def membership_name(self):
