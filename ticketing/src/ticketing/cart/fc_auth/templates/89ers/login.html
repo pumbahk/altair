@@ -58,8 +58,8 @@
               </form>
             </td>
             <td>
-              <form action="${request.url}" method="post">
-                <table class="login">
+              <form action="" method="get">
+                <table class="login" style="margin-left:5px; height: 290px; opacity:.5;-moz-opacity:.5;-webkit-opacity:.5;filter:alpha(opacity=50);">
                   <thead>
                     <tr>
                       <th>
@@ -78,7 +78,7 @@
                                 <br /><span class="small red">※ 半角英数</span>
                               </td>
                               <td>
-                                <input type="text" name="username" size="20" maxlength="8" value="${username}">
+                                <input type="text" name="username" size="20" maxlength="8" value="${username}" disabled="disabled">
                                 %if message:
                                 <br/><span class="small red">${message}</span>
                                 %endif
@@ -90,12 +90,12 @@
                                 <br /><span class="small red">※ 半角英数</span>
                               </td>
                               <td>
-                                <input type="password" name="password" size="20" maxlength="8" value="">
+                                <input type="password" name="password" size="20" maxlength="8" value="" disabled="disabled">
                               </td>
                             </tr>
                             <tr>
                               <!-- <td colspan="2" class="textC"> <input type="submit" name="login" value="ログイン"  class="redBtn" /> </td> -->
-                              <td colspan="2" class="textC"> <button class="redBtn">ログイン</button> </td>
+                              <td colspan="2" class="textC"> <button class="redBtn" disabled="disabled">ログイン</button> </td>
                             </tr>
                             <tr>
                               <td colspan="2" class="textC"><small>今シーズン用の会員証・先行販売のご案内をご確認ください（昨シーズンのFC会員番号は使用できません。ご注意ください）<br>会員IDとパスワードを忘れてしまった方は<a href="mailto:89ers@ticketstar.jp">こちら</a>からお問い合わせください。</small></td>

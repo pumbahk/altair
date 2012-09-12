@@ -1,40 +1,34 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
-  <head>
-    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-    <title>ナイナーズチケット</title>
-    <meta name="description" content="座席指定、24時間購入可能、QRコードでの発券なら手数料が無料、とチケット購入がより便利になったチケットです！チームがチケットを直接販売するシステムです。" />
-    <meta name="keywords" content="仙台,89ers,仙台89ERS,ナイナーズ,バスケット,バスケ,BJリーグ" />
-    <meta http-equiv="content-style-type" content="text/css" />
-    <meta http-equiv="content-script-type" content="text/javascript" />
-    <link rel="shortcut icon" href="${request.static_url('ticketing.cart:static/img/common/favicon.ico')}" />
-    <link rel="stylesheet" href="${request.static_url('ticketing.cart:static/css/import.css')}" type="text/css" media="all" />
-    <link rel="stylesheet" href="${request.static_url('ticketing.cart:static/css/custom.css')}" type="text/css" media="all" />
-    <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/jquery.js')}"></script>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  <title>仙台89ERS - ナイナーズチケット</title>
+  <link rel="stylesheet" type="text/css" href="${request.static_url('ticketing.cart:static/css/error.css')}" media="all" />
+  <script language="JavaScript" src="${request.static_url('ticketing.cart:static/js/jquery.js')}"></script>
+</head>
 
-    <%block name="javascript"></%block>
-    <%block name="css"></%block>
-  </head>
-  <body id="settlement">
-    <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${request.static_url('ticketing.cart:static/img/common/skip.gif')}" alt="本文へジャンプ" width="1" height="1" /></a></p>
-    <div id="container">
-      <!-- ========== header ========== -->
-      <div id="grpheader">
-        <p id="siteID">
-          <img src="${request.static_url('ticketing.cart:static/img/common/89erslogo_300x40.gif')}" alt="ナイナーズチケット" width="300" height="40"  />
-        </p>
-      </div>
-      <!-- ========== /header ========== -->
-      <hr />
-      <!-- ========== main ========== -->
-      <div id="main">
-        <h1><img src="${request.static_url('ticketing.cart:static/img/settlement/89ers_title_settlement.gif')}" alt="チケット購入" width="950" height="40" /></h1>
-        ${self.body()}
-      </div>
-      <!-- ========== /main ========== -->
+<body>
+  <div align="center">
+    <div class="header">
+      <img src="${request.static_url('ticketing.cart:static/img/errors/head_title.png')}" alt="仙台89ERS" width="780" height="135" />
     </div>
-    <!-- /container -->
-  </body>
-</html>
 
+	<h1 class="title">仙台89ERS ナイナーズチケット</h1>
+
+    ${self.body()}
+  </div>
+
+  <div class="footer">
+    <div class="footernav">
+      <ul>
+        <li class="first"><a href="mailto:89ers@ticketstar.jp">お問い合わせ</a></li>
+        <li><a href="http://privacy.rakuten.co.jp/">個人情報保護方針</a></li>
+        <li class="last"><a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a></li>
+      </ul>
+    </div>
+    <div class="copyright">
+      Copyright &copy; 2010-2012 TicketStar Inc. All Rights Reserved. 
+    </div>
+  </div>
+</body>
+</html>
