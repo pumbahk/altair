@@ -7,7 +7,7 @@ from datetime import datetime
 from sqlalchemy import Table, Column, ForeignKey, func, or_, and_
 from sqlalchemy import ForeignKeyConstraint, UniqueConstraint
 from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode, UnicodeText
-from sqlalchemy.orm import join, backref, column_property, joinedload
+from sqlalchemy.orm import join, backref, column_property, joinedload, deferred
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql.expression import desc, exists, select, table, column
@@ -1865,7 +1865,7 @@ class TicketPrintQueueEntry(Base, BaseModel):
     ticket_id = Column(Identifier, ForeignKey('Ticket.id'), nullable=False)
     ticket = relationship('Ticket')
     summary = Column(Unicode(255), nullable=False, default=u'')
-    data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
+    data = deferred(Column(MutationDict.as_mutable(JSONEncodedDict(65536))))
     created_at = Column(TIMESTAMP, nullable=False,
                         default=datetime.now,
                         server_default=sqlf.current_timestamp())
