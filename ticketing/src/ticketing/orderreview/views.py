@@ -218,7 +218,6 @@ def order_review_qr_print(context, request):
 def order_review_send_mail(context, request):
     # TODO: validate mail address
     
-    logger.debug(request.params)
     mail = request.params['mail']
     
     # send mail using template
