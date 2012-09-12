@@ -49,7 +49,7 @@ class OrderInfoDefault(object):
 
     def get_name_kana(order):
         sa = order.shipping_address
-        return u"{0} {1}".format(sa.last_name_kana, sa.first_name_kana),
+        return u"{0} {1}".format(sa.last_name_kana, sa.first_name_kana)
 
     name_kana = OrderInfo(name="name_kana", label=u"お名前カナ", getval=get_name_kana)
     tel = OrderInfo(name="tel", label=u"電話番号", getval=lambda order : order.shipping_address.tel_1 or "")
