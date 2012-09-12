@@ -145,13 +145,13 @@ def render_payment_confirm_viewlet(request, cart):
         raise ValueError
     return Markup(response.text)
 
-def render_delivery_finished_viewlet(request, order):
+def render_delivery_finished_viewlet(request, order, mobile=False):
     logger.debug("*" * 80)
     plugin_id = order.payment_delivery_pair.delivery_method.delivery_plugin_id
     logger.debug("plugin_id:%d" % plugin_id)
 
     order = OrderDelivery(order)
-    response = render_view_to_response(order, request, name="delivery-%d" % plugin_id, secure=False)
+    response = render_view_to_response(order, request, name="delivery-%d%s" % (plugin_id, '-mobile' if mobile else ''), secure=False)
     if response is None:
         raise ValueError
     return Markup(response.text)
