@@ -63,7 +63,7 @@ class OrderReviewResource(TicketingCartResource):
             organization_id=self.organization_id,
             order_no=order_no
         ).first()
-        logger.debug("organization_id=%s, order_no=%s, order=%s" % (self.organization_id, order_no, order))
+        logger.info("organization_id=%s, order_no=%s, order=%s" % (self.organization_id, order_no, order))
         sej_order = None
         if order:
             payment_method_plugin_id = order.payment_delivery_pair.payment_method.payment_plugin.id
