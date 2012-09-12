@@ -8,6 +8,7 @@ from pyramid_who.whov2 import WhoV2AuthenticationPolicy
 from sqlalchemy import engine_from_config
 import sqlahelper
 from pyramid_beaker import session_factory_from_settings
+from pyramid.interfaces import IDict
 
 import logging
 logger = logging.getLogger(__name__)
@@ -80,6 +81,7 @@ def main(global_config, **settings):
     ### selectable renderer
     config.include(".selectable_renderer")
     domain_candidates = json.loads(config.registry.settings["altair.cart.domain.mapping"])
+    config.registry.utilities.register([], IDict, "altair.cart.domain.mapping", domain_candidates)
     selector = config.maybe_dotted(".selectable_renderer.ByDomainMappingSelector")(domain_candidates)
     config.add_selectable_renderer_selector(selector)
 
