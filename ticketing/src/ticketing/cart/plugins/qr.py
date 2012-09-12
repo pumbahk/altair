@@ -38,7 +38,7 @@ def deliver_completion_viewlet(context, request):
                 # 発行済みかどうかを取得
                 history = core_models.TicketPrintHistory.filter_by(ordered_product_item_id = opi.id, seat_id = s.id).first()
                 class QRTicket:
-                    order = 0
+                    order = context.order
                     performance = context.order.performance
                     product = op.product
                     seat = s
