@@ -68,31 +68,29 @@
 						<th scope="row" ${'class="waitingPayment"' if order.paid_at else ''}>QRチケット</th>
 						<td colspan="2">
 							% for ticket in tickets:
-								<!-- ${ticket.qr} -->
-								<!--
-								<img src="${request.route_path('qr.draw')}?d=${ticket.qr | u}" style="float: left; width: 200px; height: 200px;"/>
-								-->
 								<div style="background-color: white; border: 1px solid #ffcccc; padding: 8px; width: auto; float: left;">
 								<!--
-								発券番号 ${ticket.serial} <br />
 								注文番号 ${order.order_no} <br />
-								パフォーマンス ${ticket.performance_code} <br />
-								興行日 ${ticket.performance_date} <br />
+								パフォーマンス ${ticket.performance.code} <br />
+								興行日 ${ticket.performance.start_on} <br />
 								-->
 								商品名 ${ticket.product.name} (${ticket.product.id}) <br />
 								席番号 ${ticket.seat.name} (${ticket.seat.l0_id}) <br />
 								<br />
-								<form method="get" target="_blank" action="${request.route_path('mypage.qr', order_id=order.id, ticket_id=ticket.serial)}">
-									<input type="submit" value="印刷する" />
-								</form>
+			<form method="post" target="_blank" action="${request.route_path('mypage.qr_print')}">
+				<input type="hidden" name="order_no" value="${order.order_no}" />
+				<input type="hidden" name="tel" value="${tel}" />
+				<input type="hidden" name="seat" value="${ticket.seat.id}" />
+				<input type="submit" value="印刷する" />
+			</form>
 								<br style="clear: left;" />
-								<!--
-								<form>
-									メールアドレス: <input type="text" name="mail" size="40" />
-									<input type="submit" name="send" value="メールで送る" />
-								</form>
-								-->
-								</div>
+			<form method="post" target="_blank" action="${request.route_path('mypage.qr_send')}">
+				<input type="hidden" name="order_no" value="${order.order_no}" />
+				<input type="hidden" name="tel" value="${tel}" />
+				<input type="hidden" name="seat" value="${ticket.seat.id}" />
+				メールアドレス: <input type="text" name="mail" size="40" />
+				<input type="submit" name="send" value="メールで送る" />
+			</form>
 							% endfor
 						</td>
 						</tr>
