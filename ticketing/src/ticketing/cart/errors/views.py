@@ -7,6 +7,7 @@ from ..exceptions import *
 from ..reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from ..stocker import NotEnoughStockException
 from .. import api
+from ticketing.mobile import mobile_view_config
 from ticketing.cart.selectable_renderer import selectable_renderer
 import logging
 

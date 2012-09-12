@@ -1,0 +1,60 @@
+<%inherit file="./base_NH.html"/>
+<%namespace file="./tags_mobile.html" name="mobile" />
+
+<%mobile:header>チケット購入</%mobile:header>
+
+${event.title}
+
+<hr size="1" color="#888888" noshade="noshade" />
+
+商品をお選びください
+
+<form action="${request.url}" method="post">
+  % for product in products:
+    <div>
+      <br/>
+      <div>
+        <font color="#ffbf00">■</font>${product['name']} &yen;${product['price']}
+      </div>
+      % if product['detail']:
+        ${product['detail']}<br/>
+      % endif
+      数量
+      <select name="product-${product['id']}">
+        % for num in range(upper_limit + 1):
+        <option value="${num}">${num}</option>
+        % endfor
+      </select>
+    </div>
+  % endfor
+  <div style="text-align:center;">
+  <br/>
+  <input type="hidden" name="performance_id" value="${performance.id}">
+  <input type="hidden" name="seat_type_id" value="${seat_type.id}">
+  ${form.csrf_token()}
+  <input type="submit" value="次へ">
+  </div>
+</form>
+<form action="${request.route_url('cart.mobile', event_id=event.id, performance_id=performance.id)}" method="get">
+  <div style="text-align:center;">
+  <input type="hidden" name="v" value="${venue.name}">
+  <input type="submit" value="戻る">
+  </div>
+</form>
+
+<hr size="1" color="#888888" noshade="noshade" />
+
+<div style="background-color:#ffdddd">会場</div>
+<div>
+  ${venue.name}
+</div>
+
+<div style="background-color:#ffdddd">日程</div>
+<div>
+  ${performance.start_on}(予定)
+</div>
+
+<div style="background-color:#ffdddd">席種</div>
+<div>
+${seat_type.name}
+</div>

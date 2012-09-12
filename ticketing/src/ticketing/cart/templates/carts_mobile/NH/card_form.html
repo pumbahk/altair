@@ -1,0 +1,67 @@
+<%inherit file="./base_NH.html"/>
+<%namespace file="./tags_mobile.html" name="mobile" />
+<%mobile:header>カード情報の入力</%mobile:header>
+<form id="form1" name="form1" method="post" action="${request.route_url('payment.secure_code')}">
+    ${form.csrf_token()}
+<%mobile:form_header required="true">カード番号(数字16桁)</%mobile:form_header>
+% if request.session.peek_flash():
+<div>
+% for message in request.session.pop_flash():
+<font color="red">${message}</font><br />
+% endfor
+</div>
+% endif
+<div>
+<input size="10" maxlength="16" type="text" name="card_number" istyle="4" /><br />
+${h.error_list(request, form, 'card_number')}
+</div>
+<%mobile:form_header required="true">有効期限</%mobile:form_header>
+<div>
+<select name="exp_month">
+<option value="" selected="selected">-</option>
+<option value="01">01</option>
+<option value="02">02</option>
+<option value="03">03</option>
+<option value="04">04</option>
+<option value="05">05</option>
+<option value="06">06</option>
+<option value="07">07</option>
+<option value="08">08</option>
+<option value="09">09</option>
+<option value="10">10</option>
+<option value="11">11</option>
+<option value="12">12</option>
+</select>月 /
+<select name="exp_year">
+<option value="" selected="selected">-</option>
+<option value="12">2012</option>
+<option value="13">2013</option>
+<option value="14">2014</option>
+<option value="15">2015</option>
+<option value="16">2016</option>
+<option value="17">2017</option>
+<option value="18">2018</option>
+<option value="19">2019</option>
+<option value="20">2020</option>
+</select>年　
+${h.error_list(request, form, 'exp_month')}
+${h.error_list(request, form, 'exp_year')}
+</div>
+<%mobile:form_header required="true">カード名義(半角ローマ字大文字)</%mobile:form_header>
+<div>
+<input type="text" name="card_holder_name" istyle="3" /><br />
+${h.error_list(request, form, 'card_holder_name')}
+</div>
+<%mobile:form_header required="true">セキュリティコード(数字3〜4桁)</%mobile:form_header>
+<div>
+<input type="text" name="secure_code" istyle="4" /><br />
+${h.error_list(request, form, 'secure_code')}
+<font size="-2">
+カード裏面の署名欄に記載された数字のうち末尾3桁のセキュリティコードを入力して下さい。<br />
+（カード会社により、カード表面のクレジットカード番号の左上または右上の数字4桁の場合もあります）。<br />
+クレジットカードの暗証番号とは異なりますのでご注意下さい。<br />
+</font>
+</div>
+<hr />
+<input type="submit" value="送信" />
+</form>
