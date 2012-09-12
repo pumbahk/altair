@@ -48,7 +48,6 @@ class Stocks(BaseView):
                            .join(Seat.venue)\
                            .filter(Venue.performance_id==performance_id).first()
                 if seat and seat.status not in [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v]:
-                    print seat.status
                     raise ValidationError(u'配席を変更可能な座席ではありません (%s)' % seat.name)
 
                 seat.stock_id = post_seat.get('stock_id')

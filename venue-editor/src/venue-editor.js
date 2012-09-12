@@ -408,8 +408,6 @@
           shape: shape,
           events: {
             mouseover: function(evt) {
-              if (self.uiMode == 'select')
-                return;
               var candidate = null;
               if (self.seatAdjacencies) {
                 var candidates = self.seatAdjacencies.getCandidates(id, self.adjacencyLength());
@@ -441,8 +439,6 @@
               }
             },
             mouseout: function(evt) {
-              if (self.uiMode == 'select')
-                return;
               var highlighted = self.highlighted;
               self.highlighted = {};
               for (var i in highlighted)
