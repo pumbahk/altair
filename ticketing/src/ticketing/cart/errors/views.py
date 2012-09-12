@@ -13,17 +13,19 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+@mobile_view_config(context=Forbidden, renderer=selectable_renderer('ticketing.cart:templates/errors_mobile/%(membership)s/forbidden.html'))
 @view_config(context=Forbidden, renderer=selectable_renderer('ticketing.cart:templates/errors/%(membership)s/forbidden.html'))
 def forbidden(request):
     request.response.status = 401
     return {}
 
+@mobile_view_config(context=NotFound, renderer=selectable_renderer('ticketing.cart:templates/errors_mobile/%(membership)s/notfound.html'))
 @view_config(context=NotFound, renderer=selectable_renderer('ticketing.cart:templates/errors/%(membership)s/notfound.html'))
 def notfound(request):
     logger.debug("404 on event_id=%s" % request.context.event_id)
     request.response.status = 404
     return {}
-
+@mobile_view_config(context=NoCartError, renderer=selectable_renderer("ticketing.cart:templates/carts/%(membership)s/timeout.html"))
 @view_config(context=NoCartError, renderer=selectable_renderer("ticketing.cart:templates/carts/%(membership)s/timeout.html"))
 def handle_nocarterror(request):
     logger.error(request.context, exc_info=request.exc_info)
@@ -31,6 +33,7 @@ def handle_nocarterror(request):
     return {}
     # return HTTPFound('/')
 
+@mobile_view_config(context=NoEventError, renderer=selectable_renderer('ticketing.cart:templates/errors_mobile/%(membership)s/notfound.html'))
 @view_config(context=NoEventError, renderer=selectable_renderer('ticketing.cart:templates/errors/%(membership)s/notfound.html'))
 def handle_noeventerror(request):
     logger.error(request.context, exc_info=request.exc_info)
