@@ -506,7 +506,7 @@
             for (var id in self.seats) {
               var seatVO = self.seats[id];
               var seat = seatVO.get('model');
-              if ((hitTest(seatVO.get('shape')) || (self.shift && seat.get('selected')) && seat.get('selectable'))) {
+              if (seat.get('selectable') && (hitTest(seatVO.get('shape') || (self.shift && seat.get('selected'))))) {
                 selection.push(seat);
               }
             }

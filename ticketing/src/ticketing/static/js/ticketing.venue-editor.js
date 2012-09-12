@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['OPO7HIWATB7_N5PA'] = (function (exports) { (function () { 
+__LIBS__['D9RT8D577IRW0X8K'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -70,7 +70,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['zQ1ZCOMNOB31WL_7'] = (function (exports) { (function () { 
+__LIBS__['jXXX7VVMR5SI2S4G'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -96,7 +96,7 @@ exports.ja = {
   } 
 };
  })(); return exports; })({});
-__LIBS__['oFW67OQSUUCGNVW4'] = (function (exports) { (function () { 
+__LIBS__['A2A1GSIRZ8HMAP6U'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -195,7 +195,7 @@ exports.mergeStyle = function mergeStyle(a, b) {
   };
 };
  })(); return exports; })({});
-__LIBS__['tXVRSDIZA4OGPT_B'] = (function (exports) { (function () { 
+__LIBS__['w0UK_4CWTJFRFHTN'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -244,12 +244,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['RSWYV75CE3FVU4J7'] = (function (exports) { (function () { 
+__LIBS__['WMMIJA2G3OU_MWQ4'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['oFW67OQSUUCGNVW4'];
-var CONF = __LIBS__['OPO7HIWATB7_N5PA'];
-var IdentifiableSet = __LIBS__['tXVRSDIZA4OGPT_B'].IdentifiableSet;
+var util = __LIBS__['A2A1GSIRZ8HMAP6U'];
+var CONF = __LIBS__['D9RT8D577IRW0X8K'];
+var IdentifiableSet = __LIBS__['w0UK_4CWTJFRFHTN'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -374,7 +374,8 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
       status: seatDatum.status,
       stock: stocks.get(seatDatum.stock_id),
       attrs: seatDatum.attrs,
-      areas: seatDatum.areas
+      areas: seatDatum.areas,
+      selectable: $.inArray(seatDatum.status, [0, 1]) > -1 ? true : false
     });
     seats.push(seat);
     {
@@ -698,12 +699,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['c77MNYE8F9DOWQI8'] = (function (exports) { (function () { 
+__LIBS__['f3S2HCV5696XXS2I'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['oFW67OQSUUCGNVW4'];
-var CONF = __LIBS__['OPO7HIWATB7_N5PA'];
-var models = __LIBS__['RSWYV75CE3FVU4J7'];
+var util = __LIBS__['A2A1GSIRZ8HMAP6U'];
+var CONF = __LIBS__['D9RT8D577IRW0X8K'];
+var models = __LIBS__['WMMIJA2G3OU_MWQ4'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -899,13 +900,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['OPO7HIWATB7_N5PA'];
-  var models = __LIBS__['RSWYV75CE3FVU4J7'];
-  var util = __LIBS__['oFW67OQSUUCGNVW4'];
-  var viewobjects = __LIBS__['c77MNYE8F9DOWQI8'];
-  var IdentifiableSet = __LIBS__['tXVRSDIZA4OGPT_B'].IdentifiableSet;
+  var CONF = __LIBS__['D9RT8D577IRW0X8K'];
+  var models = __LIBS__['WMMIJA2G3OU_MWQ4'];
+  var util = __LIBS__['A2A1GSIRZ8HMAP6U'];
+  var viewobjects = __LIBS__['f3S2HCV5696XXS2I'];
+  var IdentifiableSet = __LIBS__['w0UK_4CWTJFRFHTN'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['zQ1ZCOMNOB31WL_7'];
+    I18n.translations = __LIBS__['jXXX7VVMR5SI2S4G'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -1405,7 +1406,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
             for (var id in self.seats) {
               var seatVO = self.seats[id];
               var seat = seatVO.get('model');
-              if ((hitTest(seatVO.get('shape')) || (self.shift && seat.get('selected')) && seat.get('selectable'))) {
+              if (seat.get('selectable') && (hitTest(seatVO.get('shape') || (self.shift && seat.get('selected'))))) {
                 selection.push(seat);
               }
             }

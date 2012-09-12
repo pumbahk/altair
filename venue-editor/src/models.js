@@ -125,7 +125,8 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
       status: seatDatum.status,
       stock: stocks.get(seatDatum.stock_id),
       attrs: seatDatum.attrs,
-      areas: seatDatum.areas
+      areas: seatDatum.areas,
+      selectable: $.inArray(seatDatum.status, [0, 1]) > -1 ? true : false
     });
     seats.push(seat);
     {
