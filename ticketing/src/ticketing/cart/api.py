@@ -261,7 +261,9 @@ def performance_names(request, event, sales_segment):
         results[name] = results.get(name, [])
         results[name].append(dict(pid=pid, start=start, open=open, vname=vname))
 
-    return sorted([(k, sorted(v, key=operator.itemgetter('start'))) for k, v in results.items()], key=operator.itemgetter(0))
+    return [(s[0], s[1]) for s in sorted([(k, sorted(v, key=operator.itemgetter('start')), min(*[x['start'] for x in v])) 
+                                          for k, v in results.items()], 
+                                         key=operator.itemgetter(2))]
 
 def performance_venue_by_name(request, event, sales_segment, performance_name):
     q = _query_performance_names(request, event, sales_segment)

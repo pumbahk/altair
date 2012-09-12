@@ -125,12 +125,12 @@ cart.events = {
     ON_VENUE_DATASOURCE_UPDATED: "onVenueDataSourceUpdated"
 };
 cart.init = function(venues_selection, selected, upper_limit, cart_release_url) {
-    venues_selection = $.extend({}, venues_selection); // clone
-    $.each(venues_selection, function (k, v) {
-        for (var i = 0; i < v.length; i++) {
-            v[i].date = k;
-        }
-    });
+    // venues_selection = $.extend({}, venues_selection); // clone
+    // $.each(venues_selection, function (k, v) {
+    //     for (var i = 0; i < v.length; i++) {
+    //         v[i].date = k;
+    //     }
+    // });
     this.app = new cart.ApplicationController();
     this.app.init(venues_selection, selected, upper_limit, cart_release_url);
 };
@@ -518,14 +518,23 @@ cart.PerformanceSearch = Backbone.Model.extend({
     },
     getDates: function() {
         var retval = [];
-        for (var k in this.get('venuesSelection'))
-            retval.push(k);
-        retval = retval.sort();
+        // for (var k in this.get('venuesSelection'))
+        //     retval.push(k);
+        var selections = this.get('venuesSelection');
+        for (var i=0; i < selections.length; i++) {
+            retval.push(selections[i][0]);
+        }
         return retval;
     },
     getVenues: function(selected) {
         var venuesSelection = this.get('venuesSelection');
-        return venuesSelection[selected];
+        var selections = this.get('venuesSelection');
+        for (var i=0; i < selections.length; i++) {
+            if (selections[i][0] == selected) {
+                return selections[i][1];
+            }
+        }
+        return []    
     },
     getPerformance: function(id) {
         var venues = this.getVenues(this.get("performance"));

@@ -103,11 +103,14 @@ class IndexView(object):
         dates = sorted(list(set([p.start_on.strftime("%Y-%m-%d %H:%M") for p in e.performances])))
         logger.debug("dates:%s" % dates)
         performances = api.performance_names(self.request, context.event, context.sales_segment)
-        select_venues = {}
+        from collections import OrderedDict
+        select_venues = OrderedDict()
+        for pname, pvs in performances:
+            select_venues[pname] = []
         event = self.request.context.event
         for pname, pvs in performances:
             for pv in pvs:
-                select_venues[pname] = select_venues.get(pname, [])
+                #select_venues[pname] = select_venues.get(pname, [])
                 logger.debug("performance %s" % pv)
                 select_venues[pname].append(dict(
                     id=pv['pid'],
@@ -123,14 +126,12 @@ class IndexView(object):
         venues = set([p.venue.name for p in e.performances])
 
 
-        if performance_id:
-            # 指定公演とそれに紐づく会場
-            selected_performance = c_models.Performance.query.filter(c_models.Performance.id==performance_id).first()
-            selected_date = selected_performance.start_on.strftime('%Y-%m-%d %H:%M')
-        else:
-            # １つ目の会場の1つ目の公演
-            selected_performance = e.performances[0]
-            selected_date = selected_performance.start_on.strftime('%Y-%m-%d %H:%M')
+        logger.debug('performance selections : %s' % performances)
+        if not performance_id:
+            # GETパラメータ指定がなければ、選択肢の1つ目を採用
+            performance_id = performances[0][1][0]['pid']
+        selected_performance = c_models.Performance.query.filter(c_models.Performance.id==performance_id).first()
+        assert selected_performance, "performance_id = %s" % performance_id
 
 
         event = dict(id=e.id, code=e.code, title=e.title, abbreviated_title=e.abbreviated_title,
@@ -140,7 +141,7 @@ class IndexView(object):
                     dates=dates,
                     cart_release_url=self.request.route_url('cart.release'),
                     selected=Markup(json.dumps([selected_performance.name, selected_performance.id])),
-                    venues_selection=Markup(json.dumps(select_venues)),
+                    venues_selection=Markup(json.dumps(select_venues.items())),
                     sales_segment=Markup(json.dumps(dict(seat_choice=sales_segment.seat_choice))),
                     products_from_selected_date_url = self.request.route_url("cart.date.products", event_id=event_id), 
                     order_url=self.request.route_url("cart.order"),
