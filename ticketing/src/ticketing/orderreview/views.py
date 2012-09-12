@@ -133,6 +133,7 @@ def build_qr(ticket_id):
     
     return ticket
 
+@mobile_view_config(route_name='order_review.qr_confirm', renderer=selectable_renderer("%(membership)s/order_review/qr_confirm.html"))
 @view_config(route_name='order_review.qr_confirm', renderer=selectable_renderer("%(membership)s/order_review/qr_confirm.html"))
 def order_review_qr_confirm(context, request):
     ticket_id = int(request.matchdict.get('ticket_id', 0))
@@ -196,6 +197,7 @@ def order_review_qr_image(context, request):
     r.body = buf.getvalue()
     return r
 
+@mobile_view_config(route_name='order_review.qr_print', request_method='POST', renderer=selectable_renderer("%(membership)s/order_review/qr.html"))
 @view_config(route_name='order_review.qr_print', request_method='POST', renderer=selectable_renderer("%(membership)s/order_review/qr.html"))
 def order_review_qr_print(context, request):
     ticket = build_qr_by_order_seat(request.params['order_no'], request.params['seat'])
@@ -209,11 +211,14 @@ def order_review_qr_print(context, request):
         product = ticket.product,
         )
 
+@mobile_view_config(route_name='order_review.qr_send', request_method="POST", 
+             renderer=selectable_renderer("%(membership)s/order_review/send.html"))
 @view_config(route_name='order_review.qr_send', request_method="POST", 
              renderer=selectable_renderer("%(membership)s/order_review/send.html"))
 def order_review_send_mail(context, request):
     # TODO: validate mail address
     
+    logger.debug(request.params)
     mail = request.params['mail']
     
     # send mail using template
@@ -229,6 +234,8 @@ def order_review_send_mail(context, request):
         mail = mail,
         )
 
+@mobile_view_config(name="render.mail", 
+             renderer=selectable_renderer("%(membership)s/order_review/qr.txt"))
 @view_config(name="render.mail", 
              renderer=selectable_renderer("%(membership)s/order_review/qr.txt"))
 def render_qrmail_viewlet(context, request):
