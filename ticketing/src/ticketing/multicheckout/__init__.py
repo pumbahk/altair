@@ -50,7 +50,6 @@ def includeme(config):
         password = v['auth_password']
         checkout3d = Checkout3D(auth_id, password, shop_code=shop_id, api_base_url=base_url)
 
-
         reg.utilities.register([], interfaces.IMultiCheckout, shop_name, checkout3d)
 
 def main(global_conf, **settings):

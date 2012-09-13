@@ -35,6 +35,7 @@ def main(global_conf, **settings):
 
     config.include(import_selectable_renderer)
     config.include(import_view)
+    config.include(import_exc_view)
     config.add_subscriber('.subscribers.add_helpers', 'pyramid.events.BeforeRender')
     
     config.scan(".views")
@@ -63,10 +64,12 @@ def import_view(config):
     ## misc
     config.add_route('contact', '/contact')
 
+def import_exc_view(config):
     ## exc
     config.add_view('.views.notfound_view', context=HTTPNotFound, renderer=selectable_renderer("%(membership)s/errors/not_found.html"))
     config.add_view('.views.notfound_view', context=HTTPNotFound,  renderer=selectable_renderer("%(membership)s/errors_mobile/not_found.html"), request_type='ticketing.cart.interfaces.IMobileRequest')
     config.add_view('.views.exception_view',  context=StandardError, renderer=selectable_renderer("%(membership)s/errors/error.html"))
     config.add_view('.views.exception_view', context=StandardError,  renderer=selectable_renderer("%(membership)s/errors_mobile/error.html"), request_type='ticketing.cart.interfaces.IMobileRequest')
+
 
 
