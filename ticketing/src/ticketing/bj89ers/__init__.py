@@ -23,6 +23,7 @@ def main(global_conf, **settings):
     ### selectable renderer
     config.include("ticketing.cart.selectable_renderer")
     domain_candidates = json.loads(config.registry.settings["altair.cart.domain.mapping"])
+    selector = config.maybe_dotted(".selectable_renderer.ByDomainMappingSelector")(domain_candidates)
     selector = config.maybe_dotted("ticketing.cart.selectable_renderer.ByDomainMappingSelector")(domain_candidates)
     config.add_selectable_renderer_selector(selector)
 
