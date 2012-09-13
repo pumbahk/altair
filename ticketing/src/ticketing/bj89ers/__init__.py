@@ -4,7 +4,7 @@ from pyramid.httpexceptions import HTTPNotFound
 import json
 from ticketing.cart.interfaces import IPaymentPlugin, ICartPayment, IOrderPayment
 from ticketing.cart.interfaces import IDeliveryPlugin, ICartDelivery, IOrderDelivery
-
+from pyramid.interfaces import IDict
 from sqlalchemy import engine_from_config
 import sqlahelper
 
@@ -23,6 +23,7 @@ def main(global_conf, **settings):
     ### selectable renderer
     config.include("ticketing.cart.selectable_renderer")
     domain_candidates = json.loads(config.registry.settings["altair.cart.domain.mapping"])
+    config.registry.utilities.register([], IDict, "altair.cart.domain.mapping", domain_candidates)
     selector = config.maybe_dotted("ticketing.cart.selectable_renderer.ByDomainMappingSelector")(domain_candidates)
     config.add_selectable_renderer_selector(selector)
 
