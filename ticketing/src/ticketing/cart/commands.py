@@ -9,7 +9,6 @@ import transaction
 from ..core import models as o_m
 from ..multicheckout import api as a
 from sqlalchemy.sql.expression import not_
-from . import models as m
 
 
 # copied from ticketing.cart.plugins.multicheckout
@@ -34,6 +33,7 @@ def inquiry_demo():
 def join_cart_and_order():
     """ 過去データのcart.orderを補正する
     """
+    from . import models as m
     config_file = sys.argv[1]
     app_env = bootstrap(config_file)
 
@@ -53,9 +53,14 @@ def cancel_auth_expired_carts():
     """ 期限切れカートのオーソリをキャンセルする
     """
 
+    from . import models as m
     config_file = sys.argv[1]
 
     app_env = bootstrap(config_file)
+    import sqlahelper
+    assert sqlahelper.get_session().bind
+    m.DBSession.bind = m.DBSession.bind or sqlahelper.get_session().bind
+    
     logfile = os.path.abspath(sys.argv[2])
     logging.config.fileConfig(logfile)
     request = app_env['request']
@@ -103,6 +108,17 @@ def cancel_auth_expired_carts():
         # 状態確認
         logging.info('well, then trying to cancel the authorization request associated with the order (order_no=%s)' % order_no)
         logging.info('check for order_no=%s' % order_no)
+        try:
+            request.registry.settings['altair_checkout3d.override_shop_name'] =  cart.performance.event.organization.memberships[0].name
+        except:
+            logging.info('can not detect shop_name for order_no = %s' % order_no)
+            carts_to_skip.add(cart_id)
+            continue
+        if not request.registry.settings.get('altair_checkout3d.override_shop_name'):
+            logging.info('can not detect shop_name for order_no = %s' % order_no)
+            carts_to_skip.add(cart_id)
+            continue
+
         inquiry = a.checkout_inquiry(request, order_no)
 
         # オーソリOKだったらキャンセル
