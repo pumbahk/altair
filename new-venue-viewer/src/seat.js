@@ -43,23 +43,15 @@ var Seat = exports.Seat = function Seat () {
   this.init.apply(this, arguments);
 };
 
-Seat.prototype.init = function Seat_init(id, shape, meta, parent, events) {
+Seat.prototype.init = function Seat_init(id, meta, parent, events) {
   var self    = this;
   this.id     = id;
   this.parent = parent;
-  this.shape  = shape;
   this.meta   = meta;
 
   this.type = this.parent.stockTypes[meta.stock_type_id];
 
-  var style = mergeStyle(
-    CONF.DEFAULT.SEAT_STYLE,
-    util.convertFromFashionStyle(shape.style()));
-
-  if (this.type)
-    style = mergeStyle(style, this.type.style);
-
-  this.originalStyle = style;
+  this.originalStyle = this.defaultStyle();
 
   if (events) {
     for (var i in events) {
@@ -71,13 +63,38 @@ Seat.prototype.init = function Seat_init(id, shape, meta, parent, events) {
         };
       }).call(this, i);
     }
-    this.shape.addEvent(this.events);
   }
 
   this.refresh();
 };
 
+Seat.prototype.defaultStyle = function Seat_defaultStype() {
+  var style = CONF.DEFAULT.SEAT_STYLE;
+
+  if (this.shape)
+    style = mergeStyle(style, util.convertFromFashionStyle(this.shape.style()));
+
+  if (this.type)
+    style = mergeStyle(style, this.type.style);
+
+  return style;
+}
+
+Seat.prototype.attach = function Seat_attach(shape) {
+  this.shape = shape;
+  this.originalStyle = this.defaultStyle();
+  this.refresh();
+  shape.addEvent(this.events);
+};
+
+Seat.prototype.detach = function Seat_detach(shape) {
+  if (this.shape)
+    this.shape.removeEvent();
+};
+
 Seat.prototype.stylize = function Seat_stylize() {
+  if (!this.shape)
+    return;
   var style = this.originalStyle;
   for (var i = 0; i < this._styleTypes.length; i++) {
     var styleType = this._styleTypes[i];

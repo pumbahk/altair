@@ -41,76 +41,36 @@
     }
   },
   "pages": {
-    "root": {
+    "root.xml": {
       "id": 1,
       "name": "全体図",
       "focused_ids": ["root"],
-      "group_l0_ids": {
-        "rect1151": "block_a",
-        "rect3378": "block_a",
-        "rect7220": "block_a",
-        "rect6310": "block_a",
-        "rect6312": "block_a",
-        "rect60014": "block_a",
-        "rect60016": "block_a",
-        "rect7792": "block_b",
-        "rect8999": "block_b",
-        "rect9961": "block_b",
-        "rect11488": "block_b",
-        "rect60018": "block_b",
-        "rect13092": "block_c",
-        "rect15379": "block_c",
-        "rect19241": "block_c",
-        "rect60020": "block_c",
-        "rect60022": "block_c",
-        "rect60024": "block_c",
-        "rect60026": "block_c",
-        "rect19833": "block_d",
-        "rect21040": "block_d",
-        "rect21727": "block_d",
-        "rect22879": "block_d",
-        "rect60030": "block_d",
-        "rect13": "courtside",
-        "rect65": "courtside",
-        "rect417": "courtside",
-        "rect784": "courtside",
-        "rect60028": "courtside"
-      }
+      "root": true
     },
-    "block_a": {
+    "block_a.xml": {
       "id": 2,
       "name": "Aブロック",
-      "focused_ids": ["g14", "g2278", "g6187"],
-      "group_l0_ids": {
-      }
+      "focused_ids": ["g14", "g2278", "g6187"]
     },
-    "block_b": {
+    "block_b.xml": {
       "id": 3,
       "name": "Bブロック",
-      "focused_ids": ["g33357", "g34501", "g37716"],
-      "group_l0_ids": {
-      }
+      "focused_ids": ["g33357", "g34501", "g37716"]
     },
-    "block_c": {
+    "block_c.xml": {
       "id": 4,
       "name": "Cブロック",
-      "focused_ids": ["g62237", "g64567"],
-      "group_l0_ids": {
-      }
+      "focused_ids": ["g62237", "g64567"]
     },
-    "block_d": {
+    "block_d.xml": {
       "id": 5,
       "name": "Dブロック",
-      "focused_ids": ["g115717", "g116861"],
-      "group_l0_ids": {
-      }
+      "focused_ids": ["g115717", "g116861"]
     },
-    "courtside": {
+    "block_courtside.xml": {
       "id": 6,
       "name": "コートサイド",
-      "focused_ids": ["g95791"],
-      "group_l0_ids": {
-      }
+      "focused_ids": ["g95791"]
     }
   }
 }

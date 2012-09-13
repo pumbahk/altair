@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['y45W3RUFVLK1_02Y'] = (function (exports) { (function () { 
+__LIBS__['w3WXUO0985U4LPIE'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -92,13 +92,13 @@ exports.convertFromFashionStyle = function (style) {
 };
 
 exports.allAttributes = function Util_allAttributes(el) {
-  var rt = {}, attrs=el.attributes, attr;
-  for (var i=0, l=attrs.length; i<l; i++) {
-    attr = attrs[i];
-    rt[attr.nodeName] = attr.nodeValue;
+  var rt = {}, attrs = el.attributes;
+  for (var i = 0, l = attrs.length; i < l; i++) {
+    var attr = attrs[i];
+    rt[attr.namespaceURI ? ('{' + attr.namespaceURI + '}') + attr.localName: attr.nodeName] = attr.nodeValue;
   }
   return rt;
-};  
+};
 
 exports.makeHitTester = function Util_makeHitTester(a) {
   var pa = a.position(),
@@ -121,7 +121,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['CKAHKPVO_EXHBT4P'] = (function (exports) { (function () { 
+__LIBS__['DM434A57HPCL3TXW'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -176,11 +176,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['v5KUJ1KPHLRHG6_7'] = (function (exports) { (function () { 
+__LIBS__['RJ8TQ3ZUXV477YM3'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['y45W3RUFVLK1_02Y'];
-var CONF = __LIBS__['CKAHKPVO_EXHBT4P'];
+var util = __LIBS__['w3WXUO0985U4LPIE'];
+var CONF = __LIBS__['DM434A57HPCL3TXW'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -224,23 +224,15 @@ var Seat = exports.Seat = function Seat () {
   this.init.apply(this, arguments);
 };
 
-Seat.prototype.init = function Seat_init(id, shape, meta, parent, events) {
+Seat.prototype.init = function Seat_init(id, meta, parent, events) {
   var self    = this;
   this.id     = id;
   this.parent = parent;
-  this.shape  = shape;
   this.meta   = meta;
 
   this.type = this.parent.stockTypes[meta.stock_type_id];
 
-  var style = mergeStyle(
-    CONF.DEFAULT.SEAT_STYLE,
-    util.convertFromFashionStyle(shape.style()));
-
-  if (this.type)
-    style = mergeStyle(style, this.type.style);
-
-  this.originalStyle = style;
+  this.originalStyle = this.defaultStyle();
 
   if (events) {
     for (var i in events) {
@@ -252,13 +244,38 @@ Seat.prototype.init = function Seat_init(id, shape, meta, parent, events) {
         };
       }).call(this, i);
     }
-    this.shape.addEvent(this.events);
   }
 
   this.refresh();
 };
 
+Seat.prototype.defaultStyle = function Seat_defaultStype() {
+  var style = CONF.DEFAULT.SEAT_STYLE;
+
+  if (this.shape)
+    style = mergeStyle(style, util.convertFromFashionStyle(this.shape.style()));
+
+  if (this.type)
+    style = mergeStyle(style, this.type.style);
+
+  return style;
+}
+
+Seat.prototype.attach = function Seat_attach(shape) {
+  this.shape = shape;
+  this.originalStyle = this.defaultStyle();
+  this.refresh();
+  shape.addEvent(this.events);
+};
+
+Seat.prototype.detach = function Seat_detach(shape) {
+  if (this.shape)
+    this.shape.removeEvent();
+};
+
 Seat.prototype.stylize = function Seat_stylize() {
+  if (!this.shape)
+    return;
   var style = this.originalStyle;
   for (var i = 0; i < this._styleTypes.length; i++) {
     var styleType = this._styleTypes[i];
@@ -922,9 +939,7 @@ function collectText(node) {
 }
 
 function copyShape(shape) {
-  if (shape instanceof Fashion.Path) {
-    return new Fashion.Path({ points: shape.points(), style:shape.style() });
-  } else if (shape instanceof Fashion.Rect) {
+  if (shape instanceof Fashion.Rect) {
     return new Fashion.Rect({ position: shape.position(), size: shape.size() });
   }
   return null;
@@ -980,9 +995,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['CKAHKPVO_EXHBT4P'];
-  var seat = __LIBS__['v5KUJ1KPHLRHG6_7'];
-  var util = __LIBS__['y45W3RUFVLK1_02Y'];
+  var CONF = __LIBS__['DM434A57HPCL3TXW'];
+  var seat = __LIBS__['RJ8TQ3ZUXV477YM3'];
+  var util = __LIBS__['w3WXUO0985U4LPIE'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1012,7 +1027,8 @@ function parseTransform(transform_str) {
       callbacks: {
         uimodeselect: null,
         load: null,
-        loadstart: null,
+        loadPartStart: null,
+        loadPartEnd: null,
         click: null,
         selectable: null,
         select: null,
@@ -1038,16 +1054,16 @@ function parseTransform(transform_str) {
       keyEvents: null,
       uiMode: 'select1',
       shapes: null,
-      seats: {},
+      link_pairs: null,
+      seats: null,
       selection: {},
       selectionCount: 0,
       highlighted: {},
       animating: false,
-      blocks: null,
       _adjacencyLength: 1,
-      currentPage: 'root',
-      currentFocusedIds: null,
-      parentLinks: [],
+      currentPage: null,
+      rootPage: null,
+      _history: [],
       seatTitles: {},
       optionalViewportSize: null
     },
@@ -1068,43 +1084,49 @@ function parseTransform(transform_str) {
       },
 
       load: function VenueViewer_load() {
-        if (this.drawable !== null)
-          this.drawable.dispose();
-
-        if (this.blocks !== null) {
-          for (id in this.blocks) {
-            this.blocks[id].removeEvent();
-          }
-        }
-
-        this.originalStyles.clear();
-        this.overlayShapes.clear();
-
         this.seatAdjacencies = null;
         var self = this;
-        self.callbacks.loadstart.call(this, 'drawing');
-        var drawingLoader = this.dataSource.drawing(this.currentPage);
-        self.initDrawable(drawingLoader, function () {
-          self.callbacks.loadstart.call(self, 'pages');
-          self.initBlocks(self.dataSource.pages, function() {
-            self.callbacks.loadstart.call(self, 'stockTypes');
-            self.dataSource.stockTypes(function (data) {
-              self.stockTypes = data;
-              self.callbacks.loadstart.call(self, 'info');
-              self.dataSource.info(function (data) {
-                if (!'available_adjacencies' in data) {
-                  self.callbacks.message.call(self, "Invalid data");
-                  return;
-                }
-                self.availableAdjacencies = data.available_adjacencies;
-                self.seatAdjacencies = new seat.SeatAdjacencies(self);
-                self.callbacks.loadstart.call(self, 'seats');
-                self.initSeats(self.dataSource.seats, function () {
+
+        self.callbacks.loadPartStart.call(self, 'pages');
+        self.initBlocks(self.dataSource.pages, function() {
+          self.callbacks.loadPartEnd.call(self, 'pages');
+          self.currentPage = self.rootPage;
+          self.callbacks.loadPartStart.call(self, 'stockTypes');
+          self.dataSource.stockTypes(function (data) {
+            self.callbacks.loadPartEnd.call(self, 'stockTypes');
+            self.stockTypes = data;
+            self.callbacks.loadPartStart.call(self, 'info');
+            self.dataSource.info(function (data) {
+              self.callbacks.loadPartEnd.call(self, 'info');
+              if (!'available_adjacencies' in data) {
+                self.callbacks.message.call(self, "Invalid data");
+                return;
+              }
+              self.availableAdjacencies = data.available_adjacencies;
+              self.seatAdjacencies = new seat.SeatAdjacencies(self);
+              self.callbacks.loadPartStart.call(self, 'seats');
+              self.initSeats(self.dataSource.seats, function () {
+                self.callbacks.loadPartEnd.call(self, 'seats');
+                if (self.currentPage) {
+                  self.loadDrawing(self.currentPage, function () {
+                    self.callbacks.load.call(self, self);
+                  });
+                } else {
                   self.callbacks.load.call(self, self);
-                });
-              }, self.callbacks.message);
+                }
+              });
             }, self.callbacks.message);
-          });
+          }, self.callbacks.message);
+        });
+      },
+
+      loadDrawing: function (page, next) {
+        var self = this;
+        this.callbacks.loadPartStart.call(this, this, 'drawing');
+        this.initDrawable(page, function () {
+          next();
+          self.callbacks.pageChanging.call(self, page);
+          self.callbacks.loadPartEnd.call(self, self, 'drawing');
         });
       },
 
@@ -1119,18 +1141,43 @@ function parseTransform(transform_str) {
         this.highlighted = null;
       },
 
-      initDrawable: function VenueViewer_initDrawable(dataSource, next) {
+      initDrawable: function VenueViewer_initDrawable(page, next) {
+        if (this.link_pairs) {
+          for (var i = this.link_pairs.length; --i >= 0; )
+            this.link_pairs[i][0].removeEvent();
+        }
+
+        if (this.drawable)
+          this.drawable.dispose();
+
+        this.originalStyles.clear();
+        this.overlayShapes.clear();
+
+        this.currentPage = page;
+
         var self = this;
+        var currentFocusedIds = (function () {
+          var retval = {};
+          var focused_ids = self.pages[page]['focused_ids'];
+          if (focused_ids) {
+            for (var i = focused_ids.length; --i >= 0; )
+              retval[focused_ids[i]] = true;
+          }
+          return retval;
+        })();
+
         var isFocused = function isFocused(id){
-          return self.currentFocusedIds == null || self.currentFocusedIds.indexOf(id) > -1;
+          return currentFocusedIds[id];
         };
+
+        var dataSource = this.dataSource.drawing(page);
+
         dataSource(function (drawing) {
           var attrs = util.allAttributes(drawing.documentElement);
           var w = parseFloat(attrs.width), h = parseFloat(attrs.height);
-          var focused = isFocused(attrs.id);
           var vb = null;
-          if (attrs.viewBox) {
-            var comps = attrs.viewBox.split(/\s+/);
+          if (attrs['viewBox']) {
+            var comps = attrs['viewBox'].split(/\s+/);
             vb = new Array(comps.length);
             for (var i = 0; i < comps.length; i++)
               vb[i] = parseFloat(comps[i]);
@@ -1142,32 +1189,33 @@ function parseTransform(transform_str) {
           } : null);
 
           var drawable = new Fashion.Drawable( self.canvas[0], {
-            contentSize: {x: size.x, y: size.y},
+            contentSize: size ? {x: size.x, y: size.y}: null,
             viewportSize: self.optionalViewportSize
           });
 
-          var shapes = {};
+          var shapes = {}, link_pairs = [];
           var styleClasses = CONF.DEFAULT.STYLES;
 
-          var xmax = -Infinity, ymax = -Infinity,
-              xmin = Infinity,  ymin = Infinity;
+          var leftTop = null, rightBottom = null;
 
-          (function iter(svgStyle, block_transform, defs, nodeList, focused) {
+          (function iter(context, nodeList) {
             outer:
             for (var i = 0; i < nodeList.length; i++) {
               var n = nodeList[i];
               if (n.nodeType != 1) continue;
 
               var attrs = util.allAttributes(n);
+              var xlink = context.xlink;
+              var focused = context.focused || (attrs.id && isFocused(attrs.id));
               var transform = attrs["transform"] ?
-                block_transform.multiply(parseTransform(attrs["transform"])):
-                block_transform;
+                context.transform.multiply(parseTransform(attrs["transform"])):
+                context.transform;
               var shape = null;
 
               { // stylize
-                var currentSvgStyle = svgStyle;
+                var currentSvgStyle = context.svgStyle;
                 if (attrs.style)
-                  currentSvgStyle = mergeSvgStyle(currentSvgStyle, parseCSSAsSvgStyle(attrs.style, defs));
+                  currentSvgStyle = mergeSvgStyle(currentSvgStyle, parseCSSAsSvgStyle(attrs.style, context.defs));
                 if (attrs['class']) {
                   var style = styleClasses[attrs['class']];
                   if (style) currentSvgStyle = mergeSvgStyle(currentSvgStyle, style);
@@ -1176,14 +1224,23 @@ function parseTransform(transform_str) {
 
               switch (n.nodeName) {
               case 'defs':
-                parseDefs(n, defs);
+                parseDefs(n, context.defs);
                 break;
 
+              case 'a':
+                xlink = attrs['{http://www.w3.org/1999/xlink}href'];
+                /* fall-through */
               case 'g': {
-                arguments.callee.call(self, currentSvgStyle,
-                                      transform, defs,
-                                      n.childNodes,
-                                      (focused || isFocused(attrs.id)));
+                arguments.callee.call(
+                  self,
+                  {
+                    svgStyle: currentSvgStyle,
+                    transform: transform,
+                    defs: context.defs,
+                    focused: focused,
+                    xlink: xlink
+                  },
+                  n.childNodes);
                 continue outer;
               }
 
@@ -1240,12 +1297,15 @@ function parseTransform(transform_str) {
                 if (!isNaN(x) && !isNaN(y)) {
 
                   if (focused) {
-                    if (xmax < x) xmax = x;
-                    else if (x < xmin) xmin = x;
-                    if (ymax < y) ymax = y;
-                    else if (y < ymin) ymin = y;
+                    leftTop = leftTop ? {
+                      x: Math.min(leftTop.x, x),
+                      y: Math.min(leftTop.y, y)
+                    }: { x: x, y: y };
+                    rightBottom = rightBottom ? {
+                      x: Math.max(rightBottom.x, x),
+                      y: Math.max(rightBottom.y, y)
+                    }: { x: x, y: y };
                   }
-
                   shape.position({ x: x, y: y });
                 }
                 shape.style(buildStyleFromSvgStyle(currentSvgStyle));
@@ -1255,43 +1315,60 @@ function parseTransform(transform_str) {
                 }
                 drawable.draw(shape);
               }
-              shapes[attrs.id] = shape;
+              if (attrs.id) {
+                shapes[attrs.id] = shape;
+                var seat = self.seats[attrs.id];
+                if (seat)
+                  seat.attach(shape);
+              }
+              if (xlink)
+                link_pairs.push([shape, xlink])
             }
           }).call(
             self,
             {
-              fill: false, fillOpacity: false,
-              stroke: false, strokeOpacity: false,
-              fontSize: 10
+              svgStyle: {
+                fill: false, fillOpacity: false,
+                stroke: false, strokeOpacity: false,
+                fontSize: 10
+              },
+              transform: new Fashion.Matrix(),
+              defs: {},
+              focused: false,
+              xlink: null
             },
-            new Fashion.Matrix(),
-            {},
-            drawing.documentElement.childNodes,
-            focused);
+            drawing.documentElement.childNodes);
 
           self.drawable = drawable;
           self.shapes = shapes;
+          self.link_pairs = link_pairs;
+
+          if (!leftTop)
+            leftTop = { x: 0, y: 0 };
+          if (!rightBottom)
+            rightBottom = size;
 
           var center = {
-            x: (xmax + xmin) / 2,
-            y: (ymax + ymin) / 2
+            x: (leftTop.x + rightBottom.x) / 2,
+            y: (leftTop.x + rightBottom.y) / 2
           };
 
-          var width  = (xmax - xmin) / 0.8;
-          var height = (ymax - ymin) / 0.8;
-
-          var origin_of_shapes = {
-            x: center.x - (width/2),
-            y: center.y - (height/2)
+          var focusedRegionSize = {
+            x: (rightBottom.x - leftTop.x) / 0.8,
+            y: (rightBottom.y - leftTop.y) / 0.8
+          };
+          var focusedRegionOffset = {
+            x: center.x - (focusedRegionSize.x / 2),
+            y: center.y - (focusedRegionSize.y / 2)
           };
 
           var vs = drawable.viewportSize();
-          var wr = vs.x / width;
-          var hr = vs.y / height;
+          var wr = vs.x / focusedRegionSize.x;
+          var hr = vs.y / focusedRegionSize.y;
           var r = (wr < hr) ? wr : hr;
           var origin = {
-            x: (wr < hr) ? origin_of_shapes.x : center.x - ((vs.x/2)/hr),
-            y: (wr < hr) ? center.y - ((vs.y/2)/wr) : origin_of_shapes.y
+            x: (wr < hr) ? focusedRegionOffset.x : center.x - ((vs.x/2)/hr),
+            y: (wr < hr) ? center.y - ((vs.y/2)/wr) : focusedRegionOffset.y
           };
           self.zoomRatioMin = r;
           self.contentOriginPosition = origin;
@@ -1302,6 +1379,53 @@ function parseTransform(transform_str) {
 
           drawable.contentSize({x: (vs.x/r) + origin.x, y: (vs.y/r) + origin.y});
 
+          function getSiblings(link) {
+            var rt = [];
+            for (var i = self.link_pairs.length; --i >= 0;) {
+              var shape_and_link = self.link_pairs[i];
+              if (shape_and_link[1] == link)
+                rt.push(shape_and_link[0]);
+            }
+            return rt;
+          }
+
+          for (var i = 0; i < self.link_pairs.length; i++) {
+            (function (shape, link) {
+              var siblings = getSiblings(link);
+              shape.addEvent({
+                mouseover: function(evt) {
+                  if (self.pages && self.uiMode == 'select1') {
+                    for (var i = siblings.length; --i >= 0;) {
+                      var shape = copyShape(siblings[i]);
+                      if (shape) {
+                        shape.style(util.convertToFashionStyle(CONF.DEFAULT.OVERLAYS['highlighted_block']));
+                        self.drawable.draw(shape);
+                        self.overlayShapes.save(siblings[i].id, shape);
+                      }
+                    }
+                    self.callbacks.messageBoard.up.call(self, self.pages[link].name);
+                  }
+                },
+                mouseout: function(evt) {
+                  if (self.pages && self.uiMode == 'select1') {
+                    for (var i = siblings.length; --i >= 0;) {
+                      var shape = self.overlayShapes.restore(siblings[i].id);
+                      if (shape)
+                        self.drawable.erase(shape);
+                    }
+                    self.callbacks.messageBoard.down.call(self);
+                  }
+                },
+                mousedown: function(evt) {
+                  if (self.pages && self.uiMode == 'select1') {
+                    self.callbacks.messageBoard.down.call(self);
+                    self.navigate(link);
+                  }
+                }
+              });
+            }).apply(self, self.link_pairs[i]);
+          }
+
           self.changeUIMode(self.uiMode);
           next.call(this);
 
@@ -1311,106 +1435,39 @@ function parseTransform(transform_str) {
       navigate: function (page) {
         if (!(page in this.pages))
           return;
-        this.currentFocusedIds = this.pages[page]['focused_ids'];
-        this.currentPage = page;
-        this.callbacks.pageChanging.call(this, page);
-        this.load();
-      },
-
-      findParent: function (page) {
-        for (var i in this.pages) {
-          var ids = this.pages[i]["group_l0_ids"];
-          if (ids) {
-            for (var id in ids) {
-              if (ids[id] == page) {
-                return i;
-              }
-            }
-          }
-        }
-        return false;
-      },
-
-      getParents: function () {
-        var retval = [];
+        var previousPage = this.currentPage;
         var self = this;
-        function _parentLink(result, current) {
-          var parent = self.findParent(current);
-          if (!parent)
-            return;
-          result.push(parent);
-          _parentLink(result, parent);
-        }
-        _parentLink(retval, this.currentPage);
-        return retval;
+        this.loadDrawing(page, function () {
+          if (self._history.length > 0 && self._history[self._history.length - 1] == page)
+            self._history.pop();
+          else
+            self._history.push(previousPage);
+        });
+      },
+
+      history: function () {
+        return this._history;
       },
 
       initBlocks: function VenueViewer_initBlocks(dataSource, next) {
         var self = this;
 
-        self.blocks = {};
-        self.pages = { root: { group_l0_ids: {} } };
-
         dataSource(function (pages) {
           self.pages = pages;
-          var currentPageData = pages[self.currentPage];
-
-          function getSiblings(page) {
-            var rt = [];
-            for (var id in currentPageData.group_l0_ids) {
-              if (currentPageData.group_l0_ids[id] == page) rt.push(self.shapes[id]);
-            }
-            return rt;
+          for (var page in pages) {
+            if (pages[page].root)
+              self.rootPage = page;
           }
-
-          for (var id in currentPageData.group_l0_ids) (function(id) {
-            var shape = self.shapes[id];
-            var page = currentPageData.group_l0_ids[id];
-            self.blocks[id] = shape;
-            shape.addEvent({
-              mouseover: function(evt) {
-                if (self.uiMode == 'select1') {
-                  var shapes = getSiblings(page);
-                  for (var i=0, l=shapes.length; i<l; i++) {
-                    var shape = copyShape(shapes[i]);
-                    shape.style(util.convertToFashionStyle(CONF.DEFAULT.OVERLAYS['highlighted_block']));
-                    self.drawable.draw(shape);
-                    self.overlayShapes.save(shapes[i].id, shape);
-                  }
-                  self.callbacks.messageBoard.up.call(self, self.pages[page].name);
-                }
-              },
-              mouseout: function(evt) {
-                if (self.uiMode == 'select1') {
-                  var shapes = getSiblings(page);
-                  for (var i=0, l=shapes.length; i<l; i++) {
-                    var shape = self.overlayShapes.restore(shapes[i].id);
-                    if (shape) self.drawable.erase(shape);
-                  }
-                  self.callbacks.messageBoard.down.call(self);
-                }
-              },
-              mousedown: function(evt) {
-                if (self.uiMode == 'select1') {
-                  self.callbacks.messageBoard.down.call(self);
-                  self.navigate(page);
-                }
-              }
-            });
-          })(id);
-
           next.call(self);
         }, self.callbacks.message);
       },
 
       initSeats: function VenueViewer_initSeats(dataSource, next) {
         var self = this;
-        dataSource(function (seats) {
-          for (var id in self.shapes) {
-            var shape = self.shapes[id];
-            var meta  = seats[id];
-            if (!meta) continue;
-            self.seats[id] = new seat.Seat(id, shape, meta, self, {
+        dataSource(function (seatMeta) {
+          var seats = {};
+          for (var id in seatMeta) {
+            seats[id] = new seat.Seat(id, seatMeta[id], self, {
               mouseover: function(evt) {
                 if (self.uiMode == 'select')
                   return;
@@ -1422,7 +1479,7 @@ function parseTransform(transform_str) {
                   for (var i = 0; i < candidates.length; i++) {
                     candidate = candidates[i];
                     for (var j = 0; j < candidate.length; j++) {
-                      if (!self.seats[candidate[j]].selectable()) {
+                      if (!seats[candidate[j]].selectable()) {
                         candidate = null;
                         break;
                       }
@@ -1434,7 +1491,7 @@ function parseTransform(transform_str) {
                   if (!candidate)
                     return;
                   for (var i = 0; i < candidate.length; i++) {
-                    var seat = self.seats[candidate[i]];
+                    var seat = seats[candidate[i]];
                     seat.addOverlay('highlighted');
                     self.highlighted[seat.id] = seat;
                   }
@@ -1454,6 +1511,8 @@ function parseTransform(transform_str) {
               }
             });
           }
+
+          self.seats = seats;
           next.call(self);
         }, self.callbacks.message);
       },
@@ -1555,7 +1614,7 @@ function parseTransform(transform_str) {
                 var hitTest = util.makeHitTester(self.rubberBand);
                 for (var id in self.seats) {
                   var seat = self.seats[id];
-                  if ((hitTest(seat.shape) || (self.shift && seat.selected())) &&
+                  if (seat.shape && (hitTest(seat.shape) || (self.shift && seat.selected())) &&
                       (!self.callbacks.selectable
                        || self.callbacks.selectable(this, seat))) {
                     selection.push(seat);
@@ -1730,10 +1789,8 @@ function parseTransform(transform_str) {
       },
 
       back: function VenueViewer_back() {
-        if (this.parentLinks.length >= 2) {
-          var link = this.parentLinks[this.parentLinks.length - 2];
-          link[0].call(this);
-        }
+        if (this._history.length > 0)
+          this.navigate(this._history[this._history.length - 1]);
       }
     }
   });
@@ -1841,6 +1898,9 @@ function parseTransform(transform_str) {
         case 'adjacency':
           aux.adjacencyLength(arguments[1]|0);
           break;
+
+        case 'root':
+          return aux.rootPage;
 
         case 'back':
           aux.back();
