@@ -11,6 +11,7 @@ from ticketing.views import BaseView
 from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.fanstatic import with_bootstrap
 from ticketing.core.models import Account, Event
+from ticketing.sej.models import SejTenant
 from ticketing.accounts.forms import AccountForm
 from ticketing.organizations.forms import OrganizationForm
 
@@ -50,6 +51,7 @@ class Accounts(BaseView):
             'account':account,
             'owner_events':Event.get_owner_event(user_id=account.user.id),
             'client_events':Event.get_client_event(user_id=account.user.id),
+            'sej_tenants':SejTenant.filter_by(organization_id=account.user.organization.id).all()
         }
 
     @view_config(route_name='accounts.new', request_method='POST', renderer='ticketing:templates/accounts/_form.html')
