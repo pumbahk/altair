@@ -68,6 +68,7 @@ requires = [
     'repoze.browserid',
     'redis',
     'beaker-extensions >= 0.2.0pre2',
+    'boto',
     ]
 
 setup(name='ticketing',
