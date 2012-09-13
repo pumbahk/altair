@@ -32,11 +32,12 @@ def get_md(request):
 def get_multicheckout_service(request):
     reg = request.registry
     domain_candidates = reg.utilities.lookup([], IDict, 'altair.cart.domain.mapping')
-    host = reg.settings.get('altair_checkout3d.debug_host') or request.host
+    host = reg.settings.get('altair_checkout3d.override_host') or request.host
     shop_name = None
     for k, v in domain_candidates.items():
         if host.startswith(k):
             shop_name = v
+    shop_name = reg.settings.get('altair_checkout3d.override_shop_name') or shop_name
 
     if shop_name is None:
         logger.error('multicheckout setting for shop_name %s is not found' % host)
