@@ -13,7 +13,7 @@ class StockHolderForm(Form):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
         if 'organization_id' in kwargs:
             self.account_id.choices = [
-                (account.id, account.name) for account in Account.get_by_organization_id(kwargs['organization_id'])
+                (account.id, account.name) for account in Account.filter_by_organization_id(kwargs['organization_id'])
             ]
 
     def _get_translations(self):

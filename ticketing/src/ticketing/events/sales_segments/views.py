@@ -14,7 +14,7 @@ from ticketing.core.models import Event, SalesSegment
 from ticketing.events.payment_delivery_method_pairs.forms import PaymentDeliveryMethodPairForm
 from ticketing.events.sales_segments.forms import SalesSegmentForm
 
-@view_defaults(decorator=with_bootstrap)
+@view_defaults(decorator=with_bootstrap, permission='event_editor')
 class SalesSegments(BaseView):
 
     @view_config(route_name='sales_segments.index', renderer='ticketing:templates/sales_segments/index.html')

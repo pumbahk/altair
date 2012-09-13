@@ -13,7 +13,7 @@ from ticketing.views import BaseView
 from ticketing.core.models import Product, ProductItem, Event, Performance
 from ticketing.products.forms import ProductForm, ProductItemForm
 
-@view_defaults(decorator=with_bootstrap)
+@view_defaults(decorator=with_bootstrap, permission='event_editor')
 class Products(BaseView):
 
     @view_config(route_name='products.index', renderer='ticketing:templates/products/index.html')
@@ -103,7 +103,7 @@ class Products(BaseView):
         return HTTPFound(location=location)
 
 
-@view_defaults(decorator=with_bootstrap)
+@view_defaults(decorator=with_bootstrap, permission='event_editor')
 class ProductItems(BaseView):
 
     @view_config(route_name='product_items.new', request_method='POST', renderer='ticketing:templates/product_items/_form.html')

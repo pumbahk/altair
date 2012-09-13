@@ -31,7 +31,7 @@ from ..api.impl import get_communication_api
 from ..api.impl import CMSCommunicationApi
 
 
-@view_defaults(decorator=with_bootstrap, permission="event_editor")
+@view_defaults(decorator=with_bootstrap, permission='event_editor')
 class Events(BaseView):
 
     @view_config(route_name='events.index', renderer='ticketing:templates/events/index.html')
@@ -72,7 +72,7 @@ class Events(BaseView):
     @view_config(route_name='events.show', renderer='ticketing:templates/events/show.html')
     def show(self):
         event_id = int(self.request.matchdict.get('event_id', 0))
-        event = Event.get(event_id)
+        event = Event.get(event_id, organization_id=self.context.user.organization_id)
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
 
@@ -96,7 +96,7 @@ class Events(BaseView):
 
         event_id = int(self.request.matchdict.get('event_id', 0))
         if event_id:
-            event = Event.get(event_id)
+            event = Event.get(event_id, organization_id=self.context.user.organization_id)
             if event is None:
                 return HTTPNotFound('event id %d is not found' % event_id)
 
@@ -127,7 +127,7 @@ class Events(BaseView):
     @view_config(route_name='events.copy', request_method='GET', renderer='ticketing:templates/events/edit.html')
     def edit_get(self):
         event_id = int(self.request.matchdict.get('event_id', 0))
-        event = Event.get(event_id)
+        event = Event.get(event_id, organization_id=self.context.user.organization_id)
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
 
@@ -147,7 +147,7 @@ class Events(BaseView):
     @view_config(route_name='events.copy', request_method='POST', renderer='ticketing:templates/events/edit.html')
     def edit_post(self):
         event_id = int(self.request.matchdict.get('event_id', 0))
-        event = Event.get(event_id)
+        event = Event.get(event_id, organization_id=self.context.user.organization_id)
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
 
@@ -170,7 +170,7 @@ class Events(BaseView):
     @view_config(route_name='events.delete')
     def delete(self):
         event_id = int(self.request.matchdict.get('event_id', 0))
-        event = Event.get(event_id)
+        event = Event.get(event_id, organization_id=self.context.user.organization_id)
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
 
@@ -182,7 +182,7 @@ class Events(BaseView):
     @view_config(route_name='events.send')
     def send(self):
         event_id = int(self.request.matchdict.get('event_id', 0))
-        event = Event.query.filter(Event.id==event_id).first()
+        event = Event.get(event_id, organization_id=self.context.user.organization_id)
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
 

@@ -423,7 +423,7 @@ class Account(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return
 
     @staticmethod
-    def get_by_organization_id(id):
+    def filter_by_organization_id(id):
         return Account.filter(Account.organization_id==id).all()
 
 class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -522,6 +522,12 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             data['deleted'] = 'true'
 
         return data
+
+    @classmethod
+    def get(cls, id, organization_id=None, **kwargs):
+        if organization_id:
+            return Performance.filter(Performance.id==id).join(Event).filter(Event.organization_id==organization_id).first()
+        return super(Performance, cls).get(id, **kwargs)
 
     @staticmethod
     def create_from_template(template, event_id):
@@ -929,7 +935,7 @@ class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 return ft.v[1]
 
     @staticmethod
-    def get_by_organization_id(id):
+    def filter_by_organization_id(id):
         return PaymentMethod.filter(PaymentMethod.organization_id==id).all()
 
 class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -959,7 +965,7 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 return ft.v[1]
 
     @staticmethod
-    def get_by_organization_id(id):
+    def filter_by_organization_id(id):
         return DeliveryMethod.filter(DeliveryMethod.organization_id==id).all()
 
 buyer_condition_set_table =  Table('BuyerConditionSet', Base.metadata,
@@ -1645,6 +1651,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             return True
         else:
             return False
+
+    @staticmethod
+    def get(id, organization_id):
+        return Order.filter_by(id=id, organization_id=organization_id).first()
 
     @classmethod
     def create_from_cart(cls, cart):

@@ -14,7 +14,7 @@ from ticketing.core.models import Account, Event
 from ticketing.accounts.forms import AccountForm
 from ticketing.organizations.forms import OrganizationForm
 
-@view_defaults(decorator=with_bootstrap, permission="event_editor")
+@view_defaults(decorator=with_bootstrap, permission='master_editor')
 class Accounts(BaseView):
 
     @view_config(route_name='accounts.index', renderer='ticketing:templates/accounts/index.html')

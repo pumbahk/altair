@@ -13,7 +13,7 @@ from ticketing.fanstatic import with_bootstrap
 from ticketing.core.models import DeliveryMethod
 from ticketing.delivery_methods.forms import DeliveryMethodForm
 
-@view_defaults(decorator=with_bootstrap, permission="event_editor")
+@view_defaults(decorator=with_bootstrap, permission='master_editor')
 class DeliveryMethods(BaseView):
 
     @view_config(route_name='delivery_methods.index', renderer='ticketing:templates/delivery_methods/index.html')

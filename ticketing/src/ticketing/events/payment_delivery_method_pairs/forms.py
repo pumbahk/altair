@@ -13,10 +13,10 @@ class PaymentDeliveryMethodPairForm(Form):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
         if 'organization_id' in kwargs:
             self.payment_method_id.choices = [
-                (pm.id, pm.name) for pm in PaymentMethod.get_by_organization_id(kwargs['organization_id'])
+                (pm.id, pm.name) for pm in PaymentMethod.filter_by_organization_id(kwargs['organization_id'])
             ]
             self.delivery_method_id.choices = [
-                (dm.id, dm.name) for dm in DeliveryMethod.get_by_organization_id(kwargs['organization_id'])
+                (dm.id, dm.name) for dm in DeliveryMethod.filter_by_organization_id(kwargs['organization_id'])
             ]
 
     def _get_translations(self):

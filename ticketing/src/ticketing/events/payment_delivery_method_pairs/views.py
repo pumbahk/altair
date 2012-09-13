@@ -10,7 +10,7 @@ from ticketing.fanstatic import with_bootstrap
 from ticketing.core.models import SalesSegment, PaymentDeliveryMethodPair, PaymentMethod, DeliveryMethod
 from ticketing.events.payment_delivery_method_pairs.forms import PaymentDeliveryMethodPairForm
 
-@view_defaults(decorator=with_bootstrap)
+@view_defaults(decorator=with_bootstrap, permission='event_editor')
 class PaymentDeliveryMethodPairs(BaseView):
 
     @view_config(route_name='payment_delivery_method_pairs.new', request_method='GET', renderer='ticketing:templates/payment_delivery_method_pairs/edit.html')
