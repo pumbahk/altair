@@ -1,0 +1,38 @@
+<%inherit file="./base_NH.html"/>
+<%namespace file="./tags_mobile.html" name="mobile" />
+
+<%mobile:header>チケット購入</%mobile:header>
+
+${event.title}
+
+<hr size="1" color="#888888" noshade="noshade" />
+
+% for product in cart['products']:
+<div>
+  <div style="background-color:#ddddff">商品名(金額)</div>
+  <div>
+  ${product['name']}(${product['price']}円)
+  </div>
+  <font color="#F12997">■</font>座席番号<br/>
+  % for seat in product['seats']:
+    ${seat['name']}<br/>
+  % endfor
+  <font color="#F12997">■</font>数量<br/>
+  ${product['quantity']}<br/>
+</div>
+% endfor
+<div style="background-color:#ffdddd">合計金額</div>
+<div>
+  ${cart['total_amount']}円
+</div>
+<form action="${request.route_url('cart.payment')}" method="get">
+  <div style="text-align:center;">
+  <br/>
+  <input type="submit" value="決済へ">
+  </div>
+</form>
+<form action="${request.route_url('cart.products', event_id=event.id, performance_id=performance.id, seat_type_id=seat_type_id)}" method="get">
+  <div style="text-align:center;">
+  <input type="submit" value="戻る">
+  </div>
+</form>

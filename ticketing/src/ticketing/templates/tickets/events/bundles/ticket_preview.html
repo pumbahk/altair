@@ -41,25 +41,30 @@
   </div>
 </div>
 
-<form method="POST" action="${request.route_url('events.tickets.bundles.items.enqueue', event_id=request.matchdict["event_id"], bundle_id=request.matchdict["bundle_id"], item_id=request.matchdict["item_id"])}">
-  <button class="btn">印刷キューに追加する</button>
-</form>
-
 <div class="row-fluid">
   %for ticket in tickets:
-    <h3>${ticket.name}</h3> 
-	<div class="wrapbox">
-	  <div class="btn-group">
-		<a class="btn viewer-enlarge" href="#">拡大</a>
-		<a class="btn viewer-undo" href="#">元の大きさに戻す</a>
-	  </div>
+  <h3>${ticket.name}</h3> 
+
+  <form method="POST" action="${request.route_url('events.tickets.bundles.items.enqueue', event_id=request.matchdict["event_id"], bundle_id=request.matchdict["bundle_id"], ticket_id=ticket.id, item_id=request.matchdict["item_id"])}">
+    <button class="btn">印刷キューに追加する</button>
+  </form>
+  <form method="POST" action="${request.route_url('events.tickets.bundles.items.download', event_id=request.matchdict["event_id"], bundle_id=request.matchdict["bundle_id"], ticket_id=ticket.id, item_id=request.matchdict["item_id"])}">
+    <button class="btn">ダウンロード</button>
+  </form>
+
+
+  <div class="wrapbox">
+    <div class="btn-group">
+    <a class="btn viewer-enlarge" href="#">拡大</a>
+    <a class="btn viewer-undo" href="#">元の大きさに戻す</a>
+    </div>
       <div class="viewer-box" id="ticket-viewer${ticket.id}" style="height:300px">
-	  </div>    
-	</div>
-	<script type="text/javascript">
+    </div>    
+  </div>
+  <script type="text/javascript">
   var options = ${json.dumps({ 'dataSource': request.route_url('events.tickets.bundles.items.data', event_id=request.matchdict["event_id"], bundle_id=request.matchdict["bundle_id"], item_id=request.matchdict["item_id"],template_id=ticket.id)})|n};
   $('#ticket-viewer${ticket.id}').ticketviewer(options).ticketviewer('load')
-	</script>
+  </script>
   %endfor 
 </div>
 

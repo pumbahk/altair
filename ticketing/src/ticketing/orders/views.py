@@ -23,8 +23,9 @@ from ticketing.operators.models import Operator, OperatorRole, Permission
 from ticketing.core.models import Order, TicketPrintQueueEntry, Event, Performance, Product, PaymentDeliveryMethodPair, ShippingAddress, OrderedProductItem, Ticket, TicketBundle, ProductItem, OrderedProduct, TicketFormat, Ticket_TicketBundle
 from ticketing.users.models import MailSubscription
 from ticketing.orders.export import OrderCSV
-from ticketing.orders.forms import (OrderForm, OrderSearchForm, PerformanceSearchForm, OrderReserveForm,
-                                    SejOrderForm, SejTicketForm, SejRefundEventForm, SejRefundOrderForm, 
+from ticketing.orders.forms import (OrderForm, OrderSearchForm, SejOrderForm, SejTicketForm, 
+                                    SejRefundEventForm,SejRefundOrderForm, SendingMailForm, 
+                                    PerformanceSearchForm, OrderReserveForm,
                                     PreviewTicketSelectForm, CheckedOrderTicketChoiceForm)
 from lxml import etree
 from ticketing.tickets.convert import to_opcodes
@@ -86,12 +87,21 @@ class OrdersAPIView(BaseView):
         oid = self.request.POST["target"]
         if not oid.startswith("o:"):
             return {"status": False}
-        # order = Order.query.filter(Order.id==oid.lstrip("o:")).first()
-        # if not order:
-        #     return {"status": False}
 
         orders = self.request.session.get("orders") or set()
         orders.add(oid)
+        self.request.session["orders"] = orders
+        return {"status": True, "count": len(orders), "result": list(orders)}
+
+    @view_config(renderer="json", route_name="orders.api.printstatus", request_method="POST", match_param="action=addall")
+    def add_all_printstatus(self):
+        """ [o:1, o:2, o:3, o:4, ....]
+        """
+        oids = self.request.POST.getall("targets[]")
+        orders = self.request.session.get("orders") or set()
+        for oid in oids:
+            if oid.startswith("o:"):
+                orders.add(oid)
         self.request.session["orders"] = orders
         return {"status": True, "count": len(orders), "result": list(orders)}
 
@@ -102,12 +112,21 @@ class OrdersAPIView(BaseView):
         oid = self.request.POST["target"]
         if not oid.startswith("o:"):
             return {"status": False}
-        # order = Order.query.filter(Order.id==oid.lstrip("o:")).first()
-        # if not order:
-        #     return {"status": False}
         
         orders = self.request.session.get("orders") or set()
         orders.remove(oid)
+        self.request.session["orders"] = orders
+        return {"status": True, "count": len(orders), "result": list(orders)}
+
+    @view_config(renderer="json", route_name="orders.api.printstatus", request_method="POST", match_param="action=removeall")
+    def remove_all_printstatus(self):
+        """ [o:1, o:2, o:3, o:4, ....]
+        """
+        oids = self.request.POST.getall("targets[]")
+        orders = self.request.session.get("orders") or set()
+        for oid in oids:
+            if oid.startswith("o:"):
+                orders.remove(oid)
         self.request.session["orders"] = orders
         return {"status": True, "count": len(orders), "result": list(orders)}
 
@@ -329,7 +348,6 @@ class Orders(BaseView):
         # Stockとkind=vipのSalesSegmentからProductを決定する
         stocks = post_data.get('stocks')
         form_reserve = OrderReserveForm(post_data, performance_id=performance_id, stocks=stocks)
-        form_reserve.product_id.validators = [Optional()]
         form_reserve.payment_delivery_method_pair_id.validators = [Optional()]
         form_reserve.validate()
 
@@ -351,22 +369,28 @@ class Orders(BaseView):
         try:
             # validation
             f = OrderReserveForm(performance_id=performance_id, stocks=post_data.get('stocks'))
-            print post_data
             f.process(post_data)
             if not f.validate():
                 raise ValidationError(reduce(lambda a,b: a+b, f.errors.values(), []))
 
-            product = DBSession.query(Product).filter_by(id=post_data.get('product_id')).one()
             seats = post_data.get('seats')
-            if product.seat_stock_type.quantity_only:
-                quantity = int(post_data.get('quantity') or 0)
-            else:
-                quantity = len(seats)
-                if quantity == 0:
-                    raise ValidationError(u'座席が選択されていません')
+            order_items = []
+            total_quantity = 0
+            for product_id, product_name in f.products.choices:
+                product_quantity = int(post_data.get('product_quantity-%d' % product_id) or 0)
+                if not product_quantity:
+                    continue
+                total_quantity += product_quantity
+
+                product = DBSession.query(Product).filter_by(id=product_id).one()
+                order_items.append((product, product_quantity))
+
+            if not total_quantity:
+                raise ValidationError(u'個数を入力してください')
+            elif seats and total_quantity != len(seats):
+                raise ValidationError(u'個数の合計を選択した座席数（%d席）にしてください' % len(seats))
 
             # create cart
-            order_items = [(product, quantity)]
             cart = api.order_products(self.request, performance_id, order_items, selected_seats=seats)
             pdmp = DBSession.query(PaymentDeliveryMethodPair).filter_by(id=post_data.get('payment_delivery_method_pair_id')).one()
             cart.payment_delivery_pair = pdmp
@@ -942,3 +966,104 @@ class SejTicketTemplate(BaseView):
         return dict(
             templates=templates
         )
+
+import ticketing.mails.complete as mails_complete
+import ticketing.mails.order_cancel as mails_cancel
+@view_defaults(decorator=with_bootstrap, permission="authenticated", route_name="orders.mailinfo")
+class MailInfoView(BaseView):
+    @view_config(match_param="action=show", renderer="ticketing:templates/orders/mailinfo/show.html")
+    def show(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id)
+        message = mails_complete.build_message(self.request, order)
+        mail_form = SendingMailForm(subject=message.subject, 
+                                    recipient=message.recipients[0], 
+                                    bcc=message.bcc[0] if message.bcc else "")
+        performance = order.performance
+        return dict(order=order, mail_form=mail_form, performance=performance)
+
+    @view_config(match_param="action=complete_mail_preview", renderer="string")
+    def complete_mail_preview(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id)
+        return mails_complete.preview_text(self.request, order)
+
+    @view_config(match_param="action=complete_mail_send", renderer="string", request_method="POST")
+    def complete_mail_send(self):
+        form = SendingMailForm(self.request.POST)
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        if not form.validate():
+            self.request.session.flash(u'失敗しました: %s' % form.errors)
+            raise HTTPFound(self.request.current_route_url(order_id=order_id, action="show"))
+
+        order = Order.get(order_id)
+        mails_complete.send_mail(self.request, order, override=form.data)
+        self.request.session.flash(u'メール再送信しました')
+        return HTTPFound(self.request.current_route_url(order_id=order_id, action="show"))
+
+    @view_config(match_param="action=cancel_mail_preview", renderer="string")
+    def cancel_mail_preview(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id)
+        return mails_cancel.preview_text(self.request, order)
+
+    @view_config(match_param="action=cancel_mail_send", renderer="string", request_method="POST")
+    def cancel_mail_send(self):
+        form = SendingMailForm(self.request.POST)
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        if not form.validate():
+            self.request.session.flash(u'失敗しました: %s' % form.errors)
+            raise HTTPFound(self.request.current_route_url(order_id=order_id, action="show"))
+
+        order = Order.get(order_id)
+        mails_cancel.send_mail(self.request, order, override=form.data)
+        self.request.session.flash(u'メール再送信しました')
+        return HTTPFound(self.request.current_route_url(order_id=order_id, action="show"))
+
+'''
+from ticketing.core.models import  TicketPrintHistory
+
+@view_defaults(decorator=with_bootstrap, permission="event_editor", renderer="json")
+class TicketPrintApi(BaseView):
+    @view_config(route_name='orders.api.ticket', request_method="GET")
+    def get_ticket(self):
+        ''' '''
+        order = Order.filter_by(id=self.request.matchdict["id"]).first()
+        if not order:
+            return HTTPNotFound()
+
+        tickets = []
+        for ordered_product in order.ordered_products:
+            for ordered_product_item in ordered_product.ordered_product_items:
+                ticket_bundle = ordered_product_item.product_item.ticket_bundle
+                if ticket_bundle:
+                    for ticket in ticket_bundle.tickets:
+                        data = ticket.data
+                        tickets.append(data)
+
+        return dict(tickets = tickets)
+
+    @view_config(route_name='orders.api.ticket', request_method="POST")
+    def print_ticket(self):
+        ''' '''
+        order = Order.filter_by(id=self.request.matchdict["id"]).first()
+        if not order:
+            return HTTPNotFound()
+
+        now = datetime.now()
+        for ordered_product in order.ordered_products:
+            for ordered_product_item in ordered_product.ordered_product_items:
+                ticket_bundle = ordered_product_item.product_item.ticket_bundle
+                if ticket_bundle:
+                    seats = ordered_product_item.seats
+                    for ticket in ticket_bundle.tickets:
+                        for seat in seats:
+                            c = TicketPrintHistory(
+                                operator = self.context.user,
+                                ordered_product_item = ordered_product_item,
+                                seat=seat,
+                                ticket_bundle = ticket_bundle)
+                            c.save()
+
+        return dict(result='ok')
+'''

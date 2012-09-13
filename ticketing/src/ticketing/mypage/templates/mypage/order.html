@@ -62,26 +62,47 @@
                         % endif
                         <span>（${order.payment_delivery_pair.payment_method.name}）</span></td>
 				</tr>
-				% if order.payment_delivery_pair.delivery_method.delivery_plugin_id == 5:
-				<tr>
-					<th scope="row" ${'class="waitingPayment"' if order.paid_at else ''}>QRコード</th>
-					<td colspan="2">
-						% if order.paid_at:
+				% if tickets:
+					% if order.paid_at:
+						<tr>
+						<th scope="row" ${'class="waitingPayment"' if order.paid_at else ''}>QRチケット</th>
+						<td colspan="2">
 							% for ticket in tickets:
-								<img src="/qr?d=${ticket.qr | u}" style="float: left; width: 200px; height: 200px;"/>
-								発券番号 ${ticket.serial} <br />
-								パフォーマンス ${ticket.performance_code} <br />
+								<div style="background-color: white; border: 1px solid #ffcccc; padding: 8px; width: auto; float: left;">
+								<!--
 								注文番号 ${order.order_no} <br />
-								興行日 ${ticket.performance_date} <br />
-								席種 ${ticket.product.name} (${ticket.product.id}) <br />
-								席番号 ${ticket.seat.name} <br />
+								パフォーマンス ${ticket.performance.code} <br />
+								興行日 ${ticket.performance.start_on} <br />
+								-->
+								商品名 ${ticket.product.name} (${ticket.product.id}) <br />
+								席番号 ${ticket.seat.name} (${ticket.seat.l0_id}) <br />
+								<br />
+			<form method="post" target="_blank" action="${request.route_path('mypage.qr_print')}">
+				<input type="hidden" name="order_no" value="${order.order_no}" />
+				<input type="hidden" name="tel" value="${tel}" />
+				<input type="hidden" name="seat" value="${ticket.seat.id}" />
+				<input type="submit" value="印刷する" />
+			</form>
 								<br style="clear: left;" />
+			<form method="post" target="_blank" action="${request.route_path('mypage.qr_send')}">
+				<input type="hidden" name="order_no" value="${order.order_no}" />
+				<input type="hidden" name="tel" value="${tel}" />
+				<input type="hidden" name="seat" value="${ticket.seat.id}" />
+				メールアドレス: <input type="text" name="mail" size="40" />
+				<input type="submit" name="send" value="メールで送る" />
+			</form>
 							% endfor
-						% else:
-							QRコードは支払い完了後に表示されます
-						% endif
-					</td>
-				</tr>
+						</td>
+						</tr>
+					% else:
+						<tr>
+						<th scope="row" ${'class="waitingPayment"' if order.paid_at else ''}>配送ステータス</th>
+						<td colspan="2">
+							QRチケットは支払い完了後に取得できます
+							<span> (${order.payment_delivery_pair.delivery_method.name}）</span>
+						</td>
+						</tr>
+					% endif
 				% else:
 				<tr>
 					<th scope="row" ${'class="waitingPayment"' if order.paid_at else ''}>配送ステータス</th>

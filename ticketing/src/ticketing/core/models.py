@@ -17,7 +17,7 @@ from pyramid.threadlocal import get_current_registry
 
 from .exceptions import *
 from ticketing.models import *
-from ticketing.users.models import User
+from ticketing.users.models import User, UserCredential
 from ticketing.utils import sensible_alnum_decode
 from ticketing.sej.models import SejOrder
 from ticketing.sej.exceptions import SejServerError
@@ -1500,6 +1500,20 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     .where(TicketPrintQueueEntry.processed_at==None)))
 
     @property
+    def payment_plugin_id(self):
+        return self.payment_delivery_pair.payment_method.payment_plugin_id
+
+    @property
+    def delivery_plugin_id(self):
+        return self.payment_delivery_pair.delivery_method.delivery_plugin_id
+
+    @property
+    def sej_order(self):
+        if not hasattr(self, "_sej_order"):
+            self._sej_order = SejOrder.filter(SejOrder.order_id == self.order_no).first()
+        return self._sej_order
+
+    @property
     def status(self):
         if self.canceled_at:
             return 'refunded' if self.paid_at else 'canceled'
@@ -1694,7 +1708,13 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 query = query.filter(or_(*status_cond))
         condition = form.tel.data
         if condition:
-            query = query.join(Order.shipping_address).filter(ShippingAddress.tel_1==condition)
+            query = query.join(Order.shipping_address).filter(or_(ShippingAddress.tel_1==condition, ShippingAddress.tel_2==condition))
+        condition = form.name.data
+        if condition:
+            query = query.join(Order.shipping_address).filter(ShippingAddress.last_name + ShippingAddress.first_name==condition)
+        condition = form.member_id.data
+        if condition:
+            query = query.join(Order.user).join(User.user_credential).filter(UserCredential.auth_identifier==condition)
         condition = form.start_on_from.data
         if condition:
             query = query.join(Order.performance).filter(Performance.start_on>=condition)
@@ -1952,3 +1972,47 @@ class PageFormat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization_id = Column(Identifier, ForeignKey('Organization.id'), nullable=True)
     organization = relationship('Organization', uselist=False, backref='page_formats')
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
+
+    @property
+    def drawing(self):
+        return self.data["drawing"]
+
+    @classmethod
+    def enqueue(self, operator, data):
+        '''
+        '''
+        DBSession.add(TicketPrintQueue(data = data, operator = operator))
+
+    @classmethod
+    def dequeue_all(self, operator):
+        '''
+        '''
+        return TicketPrintQueue.filter_by(deleted_at = None, operator = operator).order_by('created_at desc').all()
+
+class ExtraMailInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = "ExtraMailInfo"
+    id = Column(Identifier, primary_key=True)
+    organization_id = Column(Identifier, ForeignKey('Organization.id'), nullable=True)
+    organization = relationship('Organization', uselist=False, backref=backref('extra_mailinfo', uselist=False))
+    event_id = Column(Identifier, ForeignKey('Event.id'), nullable=True)
+    event = relationship('Event', uselist=False, backref=backref('extra_mailinfo', uselist=False))
+    performance_id = Column(Identifier, ForeignKey('Performance.id'), nullable=True)
+    performance = relationship('Performance', uselist=False, backref=backref('extra_mailinfo', uselist=False))
+    data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
+
+    def is_valid(self):
+        try:
+            json.dumps(self.data, ensure_ascii=False)
+            return True
+        except Exception, e:
+            self._errors = e
+            return False
+
+class MailTypeEnum(StandardEnum):
+    CompleteMail = 1
+    PurchaseCancelMail = 2
+
+MailTypeLabels = (u"購入完了メール", u"購入キャンセルメール")
+assert(len(list(MailTypeEnum)) == len(MailTypeLabels))
+MailTypeChoices = [(str(e), label)for e, label in zip(sorted(MailTypeEnum), MailTypeLabels)]
+

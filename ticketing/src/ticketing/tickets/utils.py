@@ -152,6 +152,7 @@ class DictBuilder(object):
                 },
             u'aux': dict(ticket_bundle.attributes) if ticket_bundle else {}, 
             u'券種名': product_item.name or product.name,
+            u'商品名': product_item.name or product.name,
             u'商品価格': self.formatter.format_currency(product.price),
             u'チケット価格': self.formatter.format_currency(product_item.price),
             }
@@ -246,6 +247,7 @@ class DictBuilder(object):
                 } if shipping_address else {},
             u'aux': dict(ticket_bundle.attributes) if ticket_bundle else {},
             u'券種名': product_item.name or product.name,
+            u'商品名': product_item.name or product.name,
             u'商品価格': self.formatter.format_currency(ordered_product.price),
             u'チケット価格': self.formatter.format_currency(ordered_product_item.price),
             u'注文番号': order.order_no,

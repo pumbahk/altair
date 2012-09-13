@@ -1,0 +1,96 @@
+<%inherit file="../../layout_2cols.html" />
+<%namespace file="/common/helpers.html" import="breadcrumbs,alert_message,flash_messages,form_item"/>
+
+<style type="text/css">
+  .controls select{width: 80%;}
+  .controls input{width: 80%;}
+  .controls textarea{width: 80%; min-height:100px;}
+</style>
+
+<div class="breadcrumbs">
+  ${breadcrumbs(
+      names=[u'イベント', performance.event.title, u'パフォーマンス', performance.name, u"メール付加情報"] ,
+      urls=[
+        request.route_path('events.index'),
+        request.route_path('events.show', event_id=performance.event.id),
+        request.route_path('performances.index', event_id=performance.event.id),
+        request.route_path('performances.show', performance_id=performance.id),
+      ]
+  )}
+</div>
+
+<%
+from ticketing.core.models import MailTypeEnum
+from ticketing.core.models import MailTypeChoices
+if str(MailTypeEnum.CompleteMail) == mailtype:
+    ja_mailtype = u"購入完了メール付加情報"
+elif str(MailTypeEnum.PurchaseCancelMail) == mailtype:
+    ja_mailtype = u"購入キャンセルメール付加情報"
+else:
+    ja_mailtype = u"?????"
+%>
+
+<div class="page-header">
+  <h2>${ja_mailtype} ${performance.name}</h2>
+  <span class="label">取引先</span> &gt
+  <span class="label">イベント</span> &gt
+  <span class="label label-warning">パフォーマンス</span>
+  <br/>
+  <a style="margin-left:30px;" href="${request.route_path("events.mailinfo.edit", event_id=performance.event.id, mailtype=mailtype)}">
+	${performance.name}が所属するイベントの設定に移動
+  </a>
+</div>
+
+<pre>
+メールの付加情報は以下のようにして取得されます
+  1. 購入されたチケットの公演(パフォーマンス)に紐づく設定を取得。
+  2. 購入されたチケットの公演が所属しているイベントに紐づく設定を取得。
+  3. 購入されたチケットの公演が所属しているイベントトが所属している取引先に紐づく設定を取得。
+</pre>
+
+<a href="#PreviewModal" data-toggle="modal">preview</a>
+
+<div class="btn-group" style="margin-bottom:20px;">
+  %for i, label in MailTypeChoices:
+    <a class="btn btn-inverse"
+	   href="${request.current_route_path(organization_id=organization.id, mailtype=i)}">${label}</a>
+  %endfor
+</div>
+
+<div class="content">
+  ${flash_messages(request)}
+  ${alert_message(form)}
+</div>
+
+<div class="well">
+  <form id="submitForm" class="form-horizontal" action="#" method="POST">
+	<fieldset>
+	  %for field in form:
+	  <div class="${field.description}">
+	    ${form_item(field)}
+	  </div>
+	  %endfor
+	</fieldset>
+	<div class="form-actions">
+	  <input class="btn btn-primary" type="submit" name="submit" value="登録">
+	</div>
+  </form>
+</div>
+
+<div class="modal hide" id="PreviewModal">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">×</button>
+    <h3>メールpreview</h3>
+  </div>
+
+  <form class="inline" action="${request.route_path("mails.preview.performance", performance_id=performance.id, mailtype=mailtype)}" method="GET">
+  <div class="modal-body">
+	${choice_form["payment_methods"].label} ${choice_form["payment_methods"]}
+	${choice_form["delivery_methods"].label} ${choice_form["delivery_methods"]}
+  </div>
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">キャンセル</a>
+    <button type="submit" class="btn">preview</button>
+  </div>
+  </form>
+</div>

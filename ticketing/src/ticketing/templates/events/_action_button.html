@@ -72,6 +72,11 @@
 </div>
 
 <div class="btn-group" style="float: left;">
+  <a class="btn" href="${request.route_path('events.mailinfo.index', event_id=event.id)}" style="margin-left: 10px;">
+	メール
+  </a>
+</div>
+<div class="btn-group" style="float: left;">
   <a class="btn" href="${request.route_path('orders.index', _query=dict(event_id=event.id))}" style="margin-left: 10px;">
 	このイベントの商品情報
   </a>

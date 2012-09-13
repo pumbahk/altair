@@ -1,0 +1,49 @@
+<%inherit file="./base_NH.html"/>
+<%namespace file="./tags_mobile.html" name="mobile" />
+
+<%mobile:header>チケット購入</%mobile:header>
+
+<p>
+購入を完了いたしました。
+</p>
+
+<%mobile:header>お買い物内容</%mobile:header>
+<div>
+${order.performance.event.title} ${order.performance.name} ${h.performance_date(order.performance)} ${order.performance.venue.name}
+</div>
+% for idx, product in enumerate(order.ordered_products):
+<%mobile:form_header>商品${idx + 1}</%mobile:form_header>
+<div>
+${product.product.name} ${product.quantity} 枚<br/>
+￥${h.format_number(product.product.price * product.quantity)}<br/>
+% for seat in product.seats:
+${seat['name']}<br/>
+% endfor
+</div>
+% endfor
+<%mobile:form_header>決済手数料</%mobile:form_header>
+<div>
+￥${h.format_number(order.transaction_fee)}
+</div>
+<%mobile:form_header>発券/配送手数料</%mobile:form_header>
+<div>
+￥${h.format_number(order.delivery_fee)}
+</div>
+<%mobile:form_header>システム利用料</%mobile:form_header>
+<div>
+￥${h.format_number(order.system_fee)}
+</div>
+<%mobile:form_header>合計金額</%mobile:form_header>
+<div>
+￥${h.format_number(order.total_amount)}
+</div>
+
+<%mobile:header>お支払い</%mobile:header>
+<div>
+${h.render_payment_finished_viewlet(request, order)}
+</div>
+
+<%mobile:header>お引き取り</%mobile:header>
+<div>
+${h.render_delivery_finished_viewlet(request, order)}
+</div>

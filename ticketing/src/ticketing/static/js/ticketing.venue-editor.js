@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['cOPGCSV32A3O85_8'] = (function (exports) { (function () { 
+__LIBS__['I71N16HZA2K0Y3NM'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -70,7 +70,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['yMS6VUKUQDIY863S'] = (function (exports) { (function () { 
+__LIBS__['XB6EBEY3B9F49ST_'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -96,7 +96,7 @@ exports.ja = {
   } 
 };
  })(); return exports; })({});
-__LIBS__['P77B4A5R4O17X9WK'] = (function (exports) { (function () { 
+__LIBS__['_85SB2H8D13CSMKJ'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -195,7 +195,7 @@ exports.mergeStyle = function mergeStyle(a, b) {
   };
 };
  })(); return exports; })({});
-__LIBS__['M_N8FFKVC0WA1L2_'] = (function (exports) { (function () { 
+__LIBS__['W51HN7PUSN7YWC17'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -244,12 +244,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['q5JQBDYHPEW5CLUE'] = (function (exports) { (function () { 
+__LIBS__['DNQ8V1JL2KOIID94'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['P77B4A5R4O17X9WK'];
-var CONF = __LIBS__['cOPGCSV32A3O85_8'];
-var IdentifiableSet = __LIBS__['M_N8FFKVC0WA1L2_'].IdentifiableSet;
+var util = __LIBS__['_85SB2H8D13CSMKJ'];
+var CONF = __LIBS__['I71N16HZA2K0Y3NM'];
+var IdentifiableSet = __LIBS__['W51HN7PUSN7YWC17'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -374,7 +374,8 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
       status: seatDatum.status,
       stock: stocks.get(seatDatum.stock_id),
       attrs: seatDatum.attrs,
-      areas: seatDatum.areas
+      areas: seatDatum.areas,
+      selectable: $.inArray(seatDatum.status, [0, 1]) > -1 ? true : false
     });
     seats.push(seat);
     {
@@ -698,12 +699,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['TSM0PYGVFKU9DYPI'] = (function (exports) { (function () { 
+__LIBS__['x2FV06RUZ1371RQ1'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['P77B4A5R4O17X9WK'];
-var CONF = __LIBS__['cOPGCSV32A3O85_8'];
-var models = __LIBS__['q5JQBDYHPEW5CLUE'];
+var util = __LIBS__['_85SB2H8D13CSMKJ'];
+var CONF = __LIBS__['I71N16HZA2K0Y3NM'];
+var models = __LIBS__['DNQ8V1JL2KOIID94'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -899,13 +900,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['cOPGCSV32A3O85_8'];
-  var models = __LIBS__['q5JQBDYHPEW5CLUE'];
-  var util = __LIBS__['P77B4A5R4O17X9WK'];
-  var viewobjects = __LIBS__['TSM0PYGVFKU9DYPI'];
-  var IdentifiableSet = __LIBS__['M_N8FFKVC0WA1L2_'].IdentifiableSet;
+  var CONF = __LIBS__['I71N16HZA2K0Y3NM'];
+  var models = __LIBS__['DNQ8V1JL2KOIID94'];
+  var util = __LIBS__['_85SB2H8D13CSMKJ'];
+  var viewobjects = __LIBS__['x2FV06RUZ1371RQ1'];
+  var IdentifiableSet = __LIBS__['W51HN7PUSN7YWC17'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['yMS6VUKUQDIY863S'];
+    I18n.translations = __LIBS__['XB6EBEY3B9F49ST_'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -1307,8 +1308,6 @@ var Seat = exports.Seat = Backbone.Model.extend({
           shape: shape,
           events: {
             mouseover: function(evt) {
-              if (self.uiMode == 'select')
-                return;
               var candidate = null;
               if (self.seatAdjacencies) {
                 var candidates = self.seatAdjacencies.getCandidates(id, self.adjacencyLength());
@@ -1340,8 +1339,6 @@ var Seat = exports.Seat = Backbone.Model.extend({
               }
             },
             mouseout: function(evt) {
-              if (self.uiMode == 'select')
-                return;
               var highlighted = self.highlighted;
               self.highlighted = {};
               for (var i in highlighted)
@@ -1405,14 +1402,18 @@ var Seat = exports.Seat = Backbone.Model.extend({
             for (var id in self.seats) {
               var seatVO = self.seats[id];
               var seat = seatVO.get('model');
-              if ((hitTest(seatVO.get('shape')) || (self.shift && seat.get('selected')) && seat.get('selectable'))) {
+              if (seat.get('selectable') && (hitTest(seatVO.get('shape') || (self.shift && seat.get('selected'))))) {
                 selection.push(seat);
               }
             }
-            self._unselectAll();
             self.drawable.erase(self.rubberBand);
-            for (var i = 0; i < selection.length; i++)
-              selection[i].set('selected', true);
+            for (var i = 0; i < selection.length; i++) {
+              if (selection[i].get('selected')) {
+                selection[i].set('selected', false);
+              } else {
+                selection[i].set('selected', true);
+              }
+            }
             self.callbacks.select && self.callbacks.select(self, selection);
           },
 

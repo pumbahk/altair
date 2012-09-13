@@ -14,7 +14,7 @@ from paste.util.multidict import MultiDict
 
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
-from ticketing.core.models import Stock, StockType, Seat, Venue, Performance
+from ticketing.core.models import Stock, StockType, Seat, SeatStatusEnum, Venue, Performance
 from ticketing.events.stocks.forms import AllocateSeatForm, AllocateStockForm, AllocateStockTypeForm
 
 logger = logging.getLogger(__name__)
@@ -47,6 +47,9 @@ class Stocks(BaseView):
                 seat = Seat.filter_by(l0_id=post_seat.get('id'))\
                            .join(Seat.venue)\
                            .filter(Venue.performance_id==performance_id).first()
+                if seat and seat.status not in [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v]:
+                    raise ValidationError(u'配席を変更可能な座席ではありません (%s)' % seat.name)
+
                 seat.stock_id = post_seat.get('stock_id')
                 seat.save()
 

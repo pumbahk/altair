@@ -1,37 +1,37 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
 <head>
-<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-<title>ハピチケ</title>
-<meta name="description" content="チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などのスポーツ、その他イベントなどのチケットのオンラインショッピングサイトです。" />
-<meta name="keywords" content="チケット,演劇,クラシック,オペラ,コンサート,バレエ,ミュージカル,野球,サッカー,格闘技" />
-<meta http-equiv="content-style-type" content="text/css" />
-<meta http-equiv="content-script-type" content="text/javascript" />
-<link rel="shortcut icon" href="${request.static_url('ticketing.cart:static/img/common/favicon.ico')}" />
-
-<link rel="stylesheet" href="${request.static_url('ticketing.cart:static/css/import.css')}" type="text/css" media="all" />
-<link rel="stylesheet" href="${request.static_url('ticketing.cart:static/css/custom.css')}" type="text/css" media="all" />
-<link rel="stylesheet" href="${request.static_url('ticketing.cart:static/js/css/jquery.smihica_vertical_slider/smihica_vertical_slider.css')}" type="text/css" media="all" />
-
-<script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/fashion.js')}"></script>
-<![if !(lt IE 9)]>
-<script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/fashion.svg.js')}" charset="utf-8"></script>
-<![endif]>
-<!--[if (lt IE 9)]>
-<script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/fashion.vml.js')}" charset="utf-8"></script>
-<![endif]-->
-<script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/underscore-min.js')}"></script>
-<script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/backbone-min.js')}"></script>
-<!-- <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/carts.js')}"></script> -->
-<script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/carts2.js')}"></script>
-<script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/venue-viewer.js')}"></script>
-<script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/jquery.smihica_vertical_slider.js')}" charset="utf-8"></script>
-<style type="text/css">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <title>ハピチケ</title>
+  <meta name="description" content="座席指定、24時間購入可能、QRコードでの発券なら手数料が無料、とチケット購入がより便利になったチケットです！チームがチケットを直接販売するシステムです。" />
+  <meta name="keywords" content="秋田,ハピネッツ,秋田ノーザンハピネッツ,happinets,バスケット,バスケ,BJリーグ" />
+  <meta http-equiv="content-style-type" content="text/css" />
+  <meta http-equiv="content-script-type" content="text/javascript" />
+  <link rel="shortcut icon" href="${request.static_url('ticketing.cart:static/img/common/happinets.ico')}" />
+  
+  <link rel="stylesheet" href="${request.static_url('ticketing.cart:static/css/import.css')}" type="text/css" media="all" />
+  <link rel="stylesheet" href="${request.static_url('ticketing.cart:static/css/custom.css')}" type="text/css" media="all" />
+  <link rel="stylesheet" href="${request.static_url('ticketing.cart:static/js/css/jquery.smihica_vertical_slider/smihica_vertical_slider.css')}" type="text/css" media="all" />
+  
+  <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/fashion.js')}"></script>
+  <![if !(lt IE 9)]>
+  <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/fashion.svg.js')}" charset="utf-8"></script>
+  <![endif]>
+  <!--[if (lt IE 9)]>
+  <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/fashion.vml.js')}" charset="utf-8"></script>
+  <![endif]-->
+  <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/underscore-min.js')}"></script>
+  <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/backbone-min.js')}"></script>
+  <!-- <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/carts.js')}"></script> -->
+  <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/carts2.js')}"></script>
+  <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/venue-viewer.js')}"></script>
+  <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/jquery.smihica_vertical_slider.js')}" charset="utf-8"></script>
+  <style type="text/css">
 .modal {
-	font-size: 150%;
+    font-size: 150%;
 }
-</style>
-<script type="text/javascript">
+  </style>
+  <script type="text/javascript">
 var selected = ${selected};
 var venues_selection = ${venues_selection};
 var upper_limit = ${upper_limit};
@@ -41,55 +41,52 @@ var products_from_selected_date_url = "${products_from_selected_date_url}";
 var cart_release_url = "${cart_release_url}";
 var hardcoded_root = "${request.static_url('ticketing.cart:static/site-data/')}";
 $(function() {cart.init(venues_selection, selected, upper_limit, cart_release_url);});
-</script>
+  </script>
 </head>
 <body id="settlement">
 <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${request.static_url('ticketing.cart:static/img/common/skip.gif')}" alt="本文へジャンプ" width="1" height="1" /></a></p>
-
+<!-- container -->
 <div id="container">
-
-	<!-- ========== header ========== -->
-	<div id="grpheader">
-		<p id="siteID">
-			<img src="${request.static_url('ticketing.cart:static/img/common/happinetslogo_300x40.gif')}" alt="ハピチケ" width="300" height="40"  />
-		</p>
-	</div>
-	<!-- ========== /header ========== -->
-	
-	<hr />
-
-	<!-- ========== main ========== -->
-	<div id="main">
-		<h1><img src="${request.static_url('ticketing.cart:static/img/settlement/happinets_title_settlement.gif')}" alt="チケット購入" width="950" height="40" /></h1>
-				<!-- <p class="cartNickname">ようこそ ${h.get_nickname(request)}</p> -->
-		<h2 id="ticketName">${event['title']} (<span class="performanceNameSpace"></span>)</h2>
-		<form id="form1" name="form1" method="post" action="">
-			<div id="settlementSelectBox">
-				<div id="settlementSelectBoxInner">
-					<table summary="チケット購入の絞り込み">
-						<tr>
-							<th>対象試合</th>
-							<td>
-								<select name="select" id="date-select">
-								</select>
-							</td>
-						</tr>
-						<tr id="settlementSelectEnd">
-							<th>日付・会場</th>
-							<td><select name="select2" id="venue-select">
-							</select></td>
-						</tr>
-					</table>
-				</div>
-			</div>
-		</form>
-		<div id="settlementOperation" class="settlementBox2">
-			<div class="settlementBoxInner2">
-				<h2 id="hallName">
-					<span id="performanceDate">-</span>
-					<span id="performanceVenue">-</span>
-				</h2>
-				<div class="settlementOperationPaneInner">
+  <!-- ========== header ========== -->
+  <div id="grpheader">
+    <p id="siteID">
+      <img src="${request.static_url('ticketing.cart:static/img/common/happinetslogo_600x40.gif')}" alt="ハピチケ" width="600" height="40"  />
+    </p>
+  </div>
+  <!-- ========== /header ========== -->
+  <hr />
+  <!-- ========== main ========== -->
+  <div id="main">
+    <h1><img src="${request.static_url('ticketing.cart:static/img/settlement/happinets_title_settlement.gif')}" alt="チケット購入" width="950" height="40" /></h1>
+    <!-- <p class="cartNickname">ようこそ ${h.get_nickname(request)}</p> -->
+    <h2 id="ticketName">${event['title']} (<span class="performanceNameSpace"></span>)</h2>
+    <form id="form1" name="form1" method="post" action="">
+      <div id="settlementSelectBox">
+        <div id="settlementSelectBoxInner">
+          <table summary="チケット購入の絞り込み">
+            <tr>
+              <th>対象試合</th>
+              <td>
+                <select name="select" id="date-select"></select>
+              </td>
+            </tr>
+            <tr id="settlementSelectEnd">
+              <th>日付・会場</th>
+              <td>  
+                <select name="select2" id="venue-select"></select>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </form>
+    <div id="settlementOperation" class="settlementBox2">
+      <div class="settlementBoxInner2">
+        <h2 id="hallName">
+          <span id="performanceDate">-</span>
+          <span id="performanceVenue">-</span>
+        </h2>
+        <div class="settlementOperationPaneInner">
           <div class="settlementOperationPaneInnerContent">
             <div id="selectSeatType" class="focused">
               <h3 class="lead">席種をお選びください</h3>
@@ -184,9 +181,6 @@ $(function() {cart.init(venues_selection, selected, upper_limit, cart_release_ur
                     </div>
                   </div>
                 </div>
-                <div style="float: right">
-                  <a onclick="$('#venue-detail').click(function () { $(this).overlay().close() }).overlay({ mask: { color: '#999', opacity: .5 }, closeOnClick: true }).load()">会場図の文字が見にくい方はこちら</a>
-                </div>
                 <div>
                   <a class="btn-select-seat">購入</a>
                   <a class="btn-cancel">キャンセル</a>
@@ -194,51 +188,41 @@ $(function() {cart.init(venues_selection, selected, upper_limit, cart_release_ur
               </div>
             </div>
           </div>
-				</div>
-			</div>
-		</div>
-		<div class="settlementBox2" id="settlementEventDetail" style="clear:both">
-			<div class="settlementBoxInner2">
-				<h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_event.gif')}" alt="イベント詳細" width="106" height="29" /></h2>
-				<table summary="イベント詳細情報">
-					<tbody>
+        </div>
+      </div>
+    </div>
+    <div class="settlementBox2" id="settlementEventDetail" style="clear:both">
+      <div class="settlementBoxInner2">
+        <h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_event.gif')}" alt="イベント詳細" width="106" height="29" /></h2>
+        <table summary="イベント詳細情報">
+          <tbody>
             <tr>
               <th scope="row">イベント名</th>
               <td>${event["title"]} (<span class="performanceNameSpace"></span>)</td>
             </tr>
-						<tr>
-							<th scope="row">開催日時</th>
-							<td id="descPerformanceDate"></td>
-						</tr>
-						<tr>
-							<th scope="row">会場</th>
-							<td id="venue"> ${", ".join(event['venues'])}</td>
-						</tr>
-						<tr>
-							<th scope="row">販売期間</th>
-							<td id="descSalesTerm">
-								${event['sales_start_on']} 〜 ${event['sales_end_on']}
-							</td>
-						</tr>
-					%for v in event_extra_info:
-						<tr>
-							<th scope="row">${v['label']}</th>
-							<td>${v['content']|n}</td>
-						</tr>
-					%endfor
-					</tbody>
-				</table>
-			</div>
-		</div>
-	</div>
-	<!-- ========== /main ========== -->
-	
-<!-- /container -->
+            <tr>
+              <th scope="row">販売期間</th>
+              <td id="descSalesTerm">
+                ${event['sales_start_on']} 〜 ${event['sales_end_on']}
+              </td>
+            </tr>
+            %for v in event_extra_info:
+            <tr>
+              <th scope="row">${v['label']}</th>
+              <td>${v['content']|n}</td>
+            </tr>
+            %endfor
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <!-- ========== /main ========== -->
 </div>
+<!-- /container -->
 
 <div class="modal" id="venue-detail" style="display:none; background-image: url(${request.static_url('ticketing.cart:static/site-data/xebio-arena.png')}); width: 833px; height: 637px;">
 </div>
-
 
 <div class="modal payment" id="order-error-template" style="display:none">
   <div class="modal-header"></div>

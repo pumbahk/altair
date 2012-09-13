@@ -125,12 +125,12 @@ cart.events = {
     ON_VENUE_DATASOURCE_UPDATED: "onVenueDataSourceUpdated"
 };
 cart.init = function(venues_selection, selected, upper_limit, cart_release_url) {
-    venues_selection = $.extend({}, venues_selection); // clone
-    $.each(venues_selection, function (k, v) {
-        for (var i = 0; i < v.length; i++) {
-            v[i].date = k;
-        }
-    });
+    // venues_selection = $.extend({}, venues_selection); // clone
+    // $.each(venues_selection, function (k, v) {
+    //     for (var i = 0; i < v.length; i++) {
+    //         v[i].date = k;
+    //     }
+    // });
     this.app = new cart.ApplicationController();
     this.app.init(venues_selection, selected, upper_limit, cart_release_url);
 };
@@ -236,7 +236,8 @@ cart.ApplicationController.prototype.init = function(venues_selection, selected,
     this.performanceSearchPresenter = new cart.PerformanceSearchPresenter({
         viewType: cart.PerformanceSearchView,
         performanceSearch: this.performanceSearch,
-        performance: this.performance
+        performance: this.performance,
+        firstSelection: selected
     });
     // 席種
     this.stockTypeListPresenter = new cart.StockTypeListPresenter({
@@ -265,7 +266,6 @@ cart.ApplicationController.prototype.init = function(venues_selection, selected,
     this.stockTypeListPresenter.initialize();
     this.venuePresenter.initialize();
     this.orderFormPresenter.initialize();
-
 };
 
 cart.PerformanceSearchPresenter = function(params) {
@@ -286,6 +286,7 @@ cart.PerformanceSearchPresenter.prototype = {
             function(performance) {self.onPerformanceResolved(performance);});
         this.view.model = this.performanceSearch;
         this.view.renderDateSelection();
+        this.view.setInitialValue(this.firstSelection[0], this.firstSelection[1]);
     },
     onPerformanceResolved: function(performance_id) {
         var performance = this.performanceSearch.getPerformance(performance_id);
@@ -466,11 +467,11 @@ cart.PerformanceSearchView = Backbone.View.extend({
             function() {self.onVenueSelectionChanged()});
     },
     renderDateSelection: function () {
+        // 公演名
         this.selection.empty();
         var self = this;
         var dates = this.model.getDates();
         $.each(dates, function (_, v) {
-            //self.selection.append($('<option></option>').attr('value', v).text(cart.util.datestring_japanize(v)));
             self.selection.append($('<option></option>').attr('value', v).text(v));
         });
         this.onDateSelectionChanged(dates[0]);
@@ -478,9 +479,13 @@ cart.PerformanceSearchView = Backbone.View.extend({
     render: function() {
         // 絞り込み条件を設定する
         var selected = this.model.get("performance");
+        this.renderPerformanceSelection(selected, null);
+    },
+    renderPerformanceSelection: function(selected, selected_performance_id) {
         var venues = this.model.getVenues(selected);
         var venueSelection = this.$el.find("#venue-select");
         venueSelection.empty();
+        // 公演会場選択
         for (var i=0; i < venues.length; i++) {
             var venue = venues[i];
             var opt = $('<option/>');
@@ -488,6 +493,7 @@ cart.PerformanceSearchView = Backbone.View.extend({
             $(opt).text(venue.name);
             $(venueSelection).append(opt);
         }
+        $(venueSelection).val(selected_performance_id);
         $(venueSelection).change();
     },
     onDateSelectionChanged: function(performanceDate) {
@@ -497,6 +503,11 @@ cart.PerformanceSearchView = Backbone.View.extend({
     onVenueSelectionChanged: function() {
         this.trigger(cart.events.ON_PERFORMANCE_RESOLVED,
             $(this.venueSelection).val());
+    },
+    setInitialValue: function(performance_name, performance_id) {
+        this.selection.val(performance_name);
+        this.model.set("performance", performance_name);
+        this.renderPerformanceSelection(performance_name, performance_id);
     }
 });
 
@@ -507,14 +518,23 @@ cart.PerformanceSearch = Backbone.Model.extend({
     },
     getDates: function() {
         var retval = [];
-        for (var k in this.get('venuesSelection'))
-            retval.push(k);
-        retval = retval.sort();
+        // for (var k in this.get('venuesSelection'))
+        //     retval.push(k);
+        var selections = this.get('venuesSelection');
+        for (var i=0; i < selections.length; i++) {
+            retval.push(selections[i][0]);
+        }
         return retval;
     },
     getVenues: function(selected) {
         var venuesSelection = this.get('venuesSelection');
-        return venuesSelection[selected];
+        var selections = this.get('venuesSelection');
+        for (var i=0; i < selections.length; i++) {
+            if (selections[i][0] == selected) {
+                return selections[i][1];
+            }
+        }
+        return []    
     },
     getPerformance: function(id) {
         var venues = this.getVenues(this.get("performance"));

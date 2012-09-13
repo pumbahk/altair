@@ -3,21 +3,28 @@ import logging
 from pyramid.view import view_config
 
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
-from ticketing.core.models import Order, OrderedProduct, OrderedProductItem, Seat
+from pyramid.response import Response
+from ticketing.core.models import Order, OrderedProduct, OrderedProductItem, ProductItem, Performance, Seat, TicketPrintHistory
 from ticketing.core import models as m
 from ticketing.cart.rakuten_auth.api import authenticated_user, forget
 from ticketing.cart import api
 from .helpers import make_order_data
+from ticketing.orderreview.views import build_qr_by_order_seat, order_review_qr_image
 
 import webhelpers.paginate as paginate
 import ticketing.cart.plugins.qr
 from ticketing.qr import qr
+import StringIO
+import qrcode
 
 import sqlahelper
 
 DBSession = sqlahelper.get_session()
 
 logger = logging.getLogger(__name__)
+
+builder = qr()
+builder.key = u"THISISIMPORTANTSECRET"
 
 class MyPageView(object):
 
@@ -90,44 +97,60 @@ class MyPageView(object):
             raise HTTPNotFound()
 
         tickets = None
-        if order.payment_delivery_pair.delivery_method.delivery_plugin_id == ticketing.cart.plugins.qr.PLUGIN_ID:
+        if order.payment_delivery_pair.delivery_method.delivery_plugin_id == ticketing.cart.plugins.qr.DELIVERY_PLUGIN_ID:
             """QRコード発行の場合"""
-            builder = qr()
-            builder.key = u"THISISIMPORTANTSECRET"
+            # 以下の処理はcart/plugins/qr.py内のと同じ...
             tickets = [ ]
-            pcode = order.performance.code
-            pdate = order.performance.start_on.strftime("%Y%m%d")
-            for ordered_product in order.items:
-                for ordered_product_item in ordered_product.ordered_product_items:
-                    for seat_item in ordered_product_item.seats:
+            for op in order.ordered_products:
+                for opi in op.ordered_product_items:
+                    for s in opi.seats:
+                        # 発行済みかどうかを取得
+                        history = TicketPrintHistory.filter_by(ordered_product_item_id = opi.id, seat_id = s.id).first()
+                        _order = order
                         class QRTicket:
-                            serial = u""
-                            performance_code = pcode
-                            performance_date = pdate
-                            product = ordered_product.product
-                            seat = seat_item
-                            qr = u""
+                            order = _order
+                            performance = order.performance
+                            product = op.product
+                            seat = s
+                            printed_at = history.created_at if history else ''
                         ticket = QRTicket()
-                        history = m.TicketPrintHistory.filter_by(ordered_product_item_id=ordered_product_item.id, seat_id=seat_item.id).first()
-                        if history == None:
-                            history = m.TicketPrintHistory(ordered_product_item_id=ordered_product_item.id, seat_id=seat_item.id)
-                            m.DBSession.add(history)
-                            m.DBSession.flush()
-                        ticket.serial = history.id
-                        ticket.qr = builder.sign(builder.make(dict(
-                                    serial=("%d" % ticket.serial),
-                                    performance=pcode,
-                                    order=order.order_no,
-                                    date=pdate,
-                                    type=100,
-                                    seat=seat_item.name,
-                                    )))
                         tickets.append(ticket)
 
         import locale
         locale.setlocale(locale.LC_ALL, 'ja_JP')
         return dict(
             order = make_order_data(order),
+            tel = order.shipping_address.tel_1,
             tickets = tickets,
             user = user.user_profile
         )
+    
+    @view_config(route_name='mypage.qr_print', renderer='mypage/qr.html', xhr=False, permission="view")
+    def show_qr_page(self):
+        openid = authenticated_user(self.request)
+        user = api.get_or_create_user(self.request, openid['clamed_id'])
+        
+        ticket = build_qr_by_order_seat(self.request.params['order_no'], self.request.params['seat'])
+        
+        return dict(
+            sign = ticket.qr[0:8],
+            ticket = ticket,
+            order = ticket.order,
+            product = ticket.product,
+            performance = ticket.performance,
+            event = ticket.event,
+        )
+
+    @view_config(route_name='mypage.qr_send', renderer='mypage/send.html', xhr=False, permission="view")
+    def send_qr_mail(self):
+        mail = self.request.params['mail']
+        
+        ## TODO: send mail
+        
+        return dict(
+            mail = mail
+            )
+
+    @view_config(route_name='qr.draw', xhr=False, permission="view")
+    def get_qr_image(self):
+        return order_review_qr_image(None, self.request)

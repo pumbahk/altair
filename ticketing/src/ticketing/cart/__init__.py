@@ -8,6 +8,7 @@ from pyramid_who.whov2 import WhoV2AuthenticationPolicy
 from sqlalchemy import engine_from_config
 import sqlahelper
 from pyramid_beaker import session_factory_from_settings
+from pyramid.interfaces import IDict
 
 import logging
 logger = logging.getLogger(__name__)
@@ -36,7 +37,6 @@ def includeme(config):
     # 完了／エラー
     config.add_route('payment.confirm', 'confirm')
     config.add_route('payment.finish', 'completed')
-    config.add_route('qr.make', 'qr')
 
     config.add_subscriber('.subscribers.add_helpers', 'pyramid.events.BeforeRender')
 
@@ -58,12 +58,7 @@ def includeme(config):
 
 
 def import_mail_module(config):
-    config.include(config.registry.settings["altair.mailer"])
-    from pyramid.interfaces import IRequest
-    from .interfaces import ICompleteMail
-    from .sendmail import CompleteMail
-    complete_mail_factory = functools.partial(CompleteMail, "ticketing:templates/mail/complete.mako")
-    config.registry.adapters.register([IRequest], ICompleteMail, "", complete_mail_factory)
+    config.include("ticketing.mails")
     config.add_subscriber('.sendmail.on_order_completed', '.events.OrderCompleted')
 
 
@@ -71,7 +66,7 @@ def main(global_config, **settings):
     from ticketing.logicaldeleting import install as ld_install
     ld_install()
 
-    engine = engine_from_config(settings)
+    engine = engine_from_config(settings, pool_recycle=3600)
     my_session_factory = session_factory_from_settings(settings)
     sqlahelper.add_engine(engine)
 
@@ -86,6 +81,7 @@ def main(global_config, **settings):
     ### selectable renderer
     config.include(".selectable_renderer")
     domain_candidates = json.loads(config.registry.settings["altair.cart.domain.mapping"])
+    config.registry.utilities.register([], IDict, "altair.cart.domain.mapping", domain_candidates)
     selector = config.maybe_dotted(".selectable_renderer.ByDomainMappingSelector")(domain_candidates)
     config.add_selectable_renderer_selector(selector)
 

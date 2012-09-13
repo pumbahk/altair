@@ -1,53 +1,70 @@
+${header}
 ${name}　様
 
 
 以下のご注文の受付が完了しました。ご利用ありがとうございました。
 
 -----
-■お名前カナ
-${name_kana}
-■電話番号
-${tel_no if tel_no else ''}
-■メールアドレス
-${email}
+%if get("name_kana").status:
+■${get("name_kana").label}
+${get("name_kana").body}
+%endif
+%if get("tel").status:
+■${get("tel").label}
+${get("tel").body}
+%endif
+%if get("mail").status:
+■${get("mail").label}
+${get("mail").body}
+%endif
 
 -----
-■受付番号
-${order_no}
+%if get("order_no").status:
+■${get("order_no").label}
+${get("order_no").body}
 予約内容確認の際などに必要です。必ずお控え下さい。
+%endif
 
-■受付日
-${order_datetime}
-
+%if get("order_datetime").status:
+■${get("order_datetime").label}
+${get("order_datetime").body}
+%endif
 -----
-${performance.event.title} ${performance.name} 
+%if get("event_name").status:
+${get("event_name").body}
+%endif
+%if get("pdate").status:
+${get("pdate").label}: ${get("pdate").body}(予定)
+%endif
+%if get("venue").status:
+${get("venue").label}: ${get("venue").body}
+%endif
 
-日時: ${h.japanese_datetime(order.performance.start_on)}(予定) 
-会場: ${order.performance.venue.name}
+%if get("for_seat").status:
+■${get("for_seat").label}
+${get("for_seat").body}
+%endif
 
-■購入いただいた座席
-%for seat in seats:
-* ${seat["name"]}
-%endfor
-
-■商品代金
-%for ordered_product in order_items:
-${ordered_product.product.name} ${h.format_currency(ordered_product.product.price)} x${ordered_product.quantity}枚
-%endfor
+%if get("for_product").status:
+■${get("for_product").label}
+${get("for_product").body}
+%endif
 
 ■サービス利用料・手数料
-%if system_fee:
-システム利用料： ${h.format_currency(system_fee)}
+%if get("system_fee").status:
+${get("system_fee").label}: ${get("system_fee").body}
 %endif
-%if transaction_fee:
-決済手数料：${h.format_currency(transaction_fee)}
+%if get("transaction_fee").status:
+${get("transaction_fee").label}: ${get("transaction_fee").body}
 %endif
-%if delivery_fee:
-発券/配送手数料：${h.format_currency(delivery_fee)}
+%if get("delivery_fee").status:
+${get("delivery_fee").label}: ${get("delivery_fee").body}
 %endif
 
-■合計金額
-${h.format_currency(order_total_amount)}
+%if get("total_amount").status:
+■${get("total_amount").label}
+${get("total_amount").body}
+%endif
 
 -----
 ■お支払
@@ -58,14 +75,10 @@ ${h.render_payment_finished_mail_viewlet(request, order)}
 お受取方法： ${delivery_method_name}
 ${h.render_delivery_finished_mail_viewlet(request, order)}
 
-お申込内容は、「予約・購入履歴確認画面」（ https://89ers.tstar.jp/orderreview  ）からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。
+${notice}
 
 ※本メールは自動配信メールとなり、こちらに返信されても返答はいたしかねます。
 
 ※営利目的としたチケットの転売は禁止となっております。
 
-----
-
-仙台89ERS（ナイナーズチケット）　チケット事務局
-
-お問い合わせ：89ers@ticketstar.jp
+${footer}

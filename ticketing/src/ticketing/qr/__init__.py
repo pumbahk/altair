@@ -4,6 +4,9 @@ import re
 import hashlib
 from struct import pack, unpack
 
+import logging
+logger = logging.getLogger(__name__)
+
 C32 = "0123456789ABCDEFGHIJKLMNOPQRSTUV"
 C42 = "$%*+/.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
@@ -110,7 +113,9 @@ class qr:
         buf.append(self.__pair("order", data["order"]))
         buf.append(self.__pair("date", self.encdate(data["date"])))
         buf.append(self.__pair("type", self.enc32m(data["type"])))
-        buf.append(self.__pair("seat", self.enc42(data["seat"])))
+#       buf.append(self.__pair("seat", data["seat"]))
+        buf.append(self.__pair("seat", self.enc42(data["seat_name"])))
+#       logger.debug("".join(buf))
         return "".join(buf)
     
     def parse(self, qr):

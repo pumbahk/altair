@@ -16,7 +16,7 @@ from ..api.impl import get_communication_api
 from ..api.impl import CMSCommunicationApi
 from .interfaces import IPaymentMethodManager
 from .interfaces import IPaymentPlugin, IDeliveryPlugin, IPaymentDeliveryPlugin
-from .interfaces import IMobileRequest, IStocker, IReserving, ICartFactory, ICompleteMail
+from .interfaces import IMobileRequest, IStocker, IReserving, ICartFactory
 from .models import Cart, PaymentMethodManager, DBSession, CartedProductItem, CartedProduct
 from ..users.models import User, UserCredential, Membership
 from ..core.models import Event, Performance, Stock, StockHolder, Seat, Product, ProductItem, SalesSegment, Venue
@@ -174,10 +174,6 @@ def get_cart_factory(request):
     stocker_cls = reg.adapters.lookup([IRequest], ICartFactory, "")
     return stocker_cls(request)
 
-def get_complete_mail(request):
-    cls = request.registry.adapters.lookup([IRequest], ICompleteMail, "")
-    return cls(request)
-
 def order_products(request, performance_id, product_requires, selected_seats=[]):
     stocker = get_stocker(request)
     reserving = get_reserving(request)
@@ -265,7 +261,9 @@ def performance_names(request, event, sales_segment):
         results[name] = results.get(name, [])
         results[name].append(dict(pid=pid, start=start, open=open, vname=vname))
 
-    return sorted([(k, sorted(v, key=operator.itemgetter('start'))) for k, v in results.items()], key=operator.itemgetter(0))
+    return [(s[0], s[1]) for s in sorted([(k, sorted(v, key=operator.itemgetter('start')), min(*[x['start'] for x in v])) 
+                                          for k, v in results.items()], 
+                                         key=operator.itemgetter(2))]
 
 def performance_venue_by_name(request, event, sales_segment, performance_name):
     q = _query_performance_names(request, event, sales_segment)

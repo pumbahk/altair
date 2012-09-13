@@ -1,0 +1,108 @@
+<%inherit file="/NH/NH/commons/layout_mobile.html"/>
+<%namespace file="/NH/NH/commons/tags_mobile.html" name="mobile" />
+<%mobile:header>購入確認 検索結果</%mobile:header>
+<%mobile:form_header>受付番号</%mobile:form_header>
+<div>${order.order_no}</div>
+<%mobile:form_header>イベント名</%mobile:form_header>
+<div>
+${order.performance.event.title} ${order.performance.name}<br />
+<%mobile:form_header>会場</%mobile:form_header>
+${order.performance.venue.name}<br />
+<%mobile:form_header>購入内容</%mobile:form_header>
+合計金額: ￥${h.format_number(order.total_amount)}<br />
+%for product in order.items:
+・${product.product.name} (${product.quantity}枚)<br />
+% for seat in product.seats:
+　${seat['name']}<br/>
+% endfor
+　￥${h.format_number(product.product.price * product.quantity)}<br />
+%endfor
+・システム利用料: ￥${h.format_number(order.system_fee)}<br />
+</div>
+<div>
+</div>
+<% shipping = order.shipping_address %>
+<%mobile:form_header>氏名</%mobile:form_header>
+${shipping.last_name} ${shipping.first_name}
+<%mobile:form_header>氏名（フリガナ）</%mobile:form_header>
+${shipping.last_name_kana} ${shipping.first_name_kana}
+<%mobile:form_header>住所</%mobile:form_header>
+<div>
+〒${shipping.zip}<br />
+${shipping.prefecture}${shipping.city}${shipping.address_1}<br />
+${shipping.address_2}
+</div>
+<%mobile:form_header>電話番号</%mobile:form_header>
+${shipping.tel_1}<br />
+<%mobile:form_header>メールアドレス</%mobile:form_header>
+${shipping.email}<br />
+<%mobile:form_header>お支払い</%mobile:form_header>
+% if order.payment_delivery_pair.payment_method.payment_plugin.id == 1:
+<div>クレジットカード</div>
+% elif order.payment_delivery_pair.payment_method.payment_plugin.id == 2:
+<div>楽天あんしん決済</div>
+% elif order.payment_delivery_pair.payment_method.payment_plugin.id == 3:
+<div>セブン-イレブン</div>
+<%mobile:form_header>払込票番号</%mobile:form_header>
+<div>${sej_order.billing_number}</div>
+<%mobile:form_header>予約有効期限</%mobile:form_header>
+<div>${h.japanese_date(sej_order.payment_due_at)}${h.japanese_time(sej_order.payment_due_at)}</div>
+<form action="${sej_order.exchange_sheet_url}" method="post" target="_blank">
+  <input type="hidden" name="iraihyo_id_00" value="${sej_order.exchange_sheet_number}" />
+  <input type="submit" class="paymentCoupon" value="払込票印刷">
+</form>
+% elif order.payment_delivery_pair.payment_method.payment_plugin.id == 4:
+<div>窓口支払</div>
+% endif
+<%mobile:form_header>お引き取り</%mobile:form_header>
+% if order.payment_delivery_pair.delivery_method.delivery_plugin.id == 1:
+<div>郵送</div>
+下記、ご登録送付先住所へチケットを配送いたします。
+<% shipping = order.shipping_address %>
+<%mobile:form_header>氏名</%mobile:form_header>
+${shipping.last_name} ${shipping.first_name}
+<%mobile:form_header>氏名（フリガナ）</%mobile:form_header>
+${shipping.last_name_kana} ${shipping.first_name_kana}
+<%mobile:form_header>住所</%mobile:form_header>
+<div>
+〒${shipping.zip}<br />
+${shipping.prefecture}${shipping.city}${shipping.address_1}<br />
+${shipping.address_2}
+% elif order.payment_delivery_pair.delivery_method.delivery_plugin.id == 2:
+<div>セブンイレブン</div>
+<%mobile:form_header>引換票番号</%mobile:form_header>
+<div>${sej_order.exchange_number or sej_order.billing_number}</div>
+<%mobile:form_header>引取受付期間</%mobile:form_header>
+<div>${h.japanese_datetime(sej_order.ticketing_start_at)} から ${h.japanese_datetime(sej_order.ticketing_due_at)}</div>
+<div>引取受付期間内に、引換票または引換票番号をお持ちの上、セブン-イレブン店頭レジにてチケットをお引取り下さい。</div>
+<form action="${sej_order.exchange_sheet_url}" method="post" target="_blank">
+  <input type="hidden" name="iraihyo_id_00" value="${sej_order.exchange_sheet_number}" />
+  <input type="submit" class="paymentCoupon" value="引換票印刷">
+</form>
+% elif order.payment_delivery_pair.delivery_method.delivery_plugin.id == 3:
+<div>窓口受取</div>
+% elif order.payment_delivery_pair.delivery_method.delivery_plugin.id == 4:
+<div>QRコード</div>
+${h.render_delivery_finished_viewlet(request, order, mobile=True)}
+%endif
+<div>
+&#xe737;注意事項<br />
+<font size="-2">
+%if order.payment_delivery_pair.payment_method.payment_plugin.id == 1:
+また、転居等による住所変更があった場合も上記メールアドレスへご連絡をお願いいたします。（送付先変更期限：各試合日の2週間前まで）
+
+なお、住所変更のご連絡がない場合等に起因する配送遅延等にはご対応いたしかねますのでご注意ください。
+%endif
+%if order.payment_delivery_pair.payment_method.payment_plugin.id == 3:
+・セブンイレブン決済の際には払込番号が必要です。下記、「払込票印刷」ボタンをクリックし、払込票を印刷してお持ちになるか、上記の払込票番号をお控えいただき、レジでお伝え下さい。<br />
+・予約有効期限までに、払込票または払込票番号をセブン-イレブン店頭レジにてお申し出の上、代金をお支払いください。<br />
+・支払期日までに入金されない場合は、会員登録/入会申込が無効となりますのでご注意ください。<br />
+% endif
+・お申込時にを記載した確認のメールが、ご登録いただいたメールアドレス宛に送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。<a href="mailto:happinetts@ticketstar.jp">happinetts@ticketstar.jp</a> までご連絡ください。<br /> 
+（お問い合わせの際は、お申込み時のお名前と電話番号を記載お願いします）<br />
+・入力された個人情報は「個人情報保護方針」に基づき適切に取扱われます。<br />
+・会員証やグッズは、2012年9月15日(土)までに入会された方には開幕戦までにお届けします。9月16日(日)以降に入会された方には、直近のホームゲーム会場にてお渡しいたします。直近のホームゲームに来場されない場合には、後日郵送でお届けいたします。<br />
+・入会者多数の場合には、入会受付を2013年3月末日よりも早めに締切る場合がございます。お早めにご入会ください。<br />
+・入会後の会員プランの変更及び会費の返却には応じかねますのでご注意ください。<br />
+</font>
+</div>

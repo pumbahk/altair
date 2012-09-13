@@ -1,0 +1,21 @@
+To: ${mail}
+From: info@nh.example.com
+Subject: QRチケットです
+
+${mail} 様
+
+${event.title}
+${performance.name}
+
+会場: ${performance.venue.name}
+
+日付: ${performance.start_on.strftime(u"%Y年%m月%d(%a)".encode('utf-8')).decode('utf-8')}
+開演: ${performance.start_on.strftime(u"%H:%M-".encode('utf-8')).decode('utf-8')}
+
+席種: ${product.name}
+席番号: ${seat.name}
+
+↓こちらからQRコードを取得してください.
+${url}
+
+このメールには返信できません.

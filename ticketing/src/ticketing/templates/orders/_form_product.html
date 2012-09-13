@@ -40,9 +40,37 @@
           % for ordered_product in order.items:
           <tr>
             <td colspan="2">${ordered_product.product.name}</td>
-            <td><input name="product_price-${ordered_product.id}" type="text" value="${int(ordered_product.price)}"></td>
+            <td>
+              <script type="text/javascript">
+                $(function() {
+                  var product_item_prices = []
+                  % for ordered_product_item in ordered_product.ordered_product_items:
+                  product_item_prices.push('input[name="product_item_price-${ordered_product_item.id}"]');
+                  % endfor
+                  product_item_prices = $(product_item_prices.join(','));
+                  product_item_prices.focusout(function(){
+                    var product_price = 0;
+                    product_item_prices.each(function () {
+                      var price = parseInt($(this).val());
+                      product_price += isNaN(price) ? 0 : price;
+                    });
+                    $('span[name="product_price-${ordered_product.id}"]').text(product_price);
+                    $('input[name="product_price-${ordered_product.id}"]').val(product_price);
+                  });
+                });
+              </script>
+              <span name="product_price-${ordered_product.id}">${int(ordered_product.price)}</span>
+              <input name="product_price-${ordered_product.id}" type="hidden" value="${int(ordered_product.price)}">
+            </td>
             <td>
               % if ordered_product.product.seat_stock_type.quantity_only:
+              <script type="text/javascript">
+                $(function() {
+                  $('input[name="product_quantity-${ordered_product.id}"]').focusout(function(){
+                    $('span[name="product_quantity-${ordered_product.id}"]').text($(this).val());
+                  });
+                });
+              </script>
               <input name="product_quantity-${ordered_product.id}" type="text" value="${ordered_product.quantity}">
               % else:
               ${ordered_product.quantity}
@@ -53,10 +81,12 @@
           <tr>
             <td></td>
             <td>${ordered_product_item.product_item.stock_type.name}</td>
-            <td><input name="product_item_price-${ordered_product_item.id}" type="text" value="${int(ordered_product_item.price)}"></td>
+            <td>
+              <input name="product_item_price-${ordered_product_item.id}" type="text" value="${int(ordered_product_item.price)}">
+            </td>
             <td>
               % if ordered_product.product.seat_stock_type.quantity_only:
-              ${ordered_product.quantity}
+              <span name="product_quantity-${ordered_product.id}">${ordered_product.quantity}</span>
               % else:
               ${len(ordered_product_item.seats)}
               % endif

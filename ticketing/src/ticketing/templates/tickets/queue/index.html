@@ -58,8 +58,20 @@ ${breadcrumbs(
       <td><input type="checkbox" name="queue_entry_id" value="${entry.id}" /></td>
       <td>${entry.summary}</td>
       <td><a href="${request.route_url('events.tickets.boundtickets.show', event_id=entry.ticket.event_id, id=entry.ticket.id)}">${entry.ticket.name}</a></td>
-      <td><a href="${request.route_url('orders.show', order_id=entry.ordered_product_item.ordered_product.order.id)}">${entry.ordered_product_item.ordered_product.order.order_no}</a></td>
-      <td>${entry.ordered_product_item.product_item.name}</td>
+      <td>
+        % if entry.ordered_product_item:
+        <a href="${request.route_url('orders.show', order_id=entry.ordered_product_item.ordered_product.order.id)}">${entry.ordered_product_item.ordered_product.order.order_no}</a>
+        % else:
+        -
+        % endif
+      </td>
+      <td>
+        % if entry.ordered_product_item:
+        ${entry.ordered_product_item.product_item.name}
+        % else:
+        -
+        % endif
+      </td>
       <td>${entry.seat.name if entry.seat else u'-'}</td>
       <td>${entry.created_at}</td>
     </tr>

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import webhelpers.paginate as paginate
+from StringIO import StringIO
 from ticketing.fanstatic import with_bootstrap
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPCreated
@@ -8,6 +9,7 @@ from ticketing.models import DBSession
 from ticketing.core.models import ProductItem, Performance
 from ticketing.core.models import Ticket, TicketBundle, TicketBundleAttribute, TicketPrintQueueEntry
 from ticketing.views import BaseView
+from ticketing.tickets.response import FileLikeResponse
 from . import forms
 
 from ticketing.tickets.utils import build_dict_from_product_item
@@ -266,14 +268,14 @@ def ticket_preview_enqueue_item(context, request):
     renderer = pystache.Renderer()
     operator = context.user
     mdict = request.matchdict
+    ticket = DBSession.query(Ticket).filter_by(id=request.matchdict['ticket_id']).one()
 
-    for template in request.context.bundle.tickets:
-        svg = renderer.render(template.drawing, build_dict_from_product_item(item))
-        queue = TicketPrintQueueEntry(operator_id=operator.id, 
-                                      ticket=template,
-                                      summary=u'券面テンプレート (%s)' % template.name,
-                                      data=dict(drawing=svg))
-        queue.save()
+    svg = renderer.render(ticket.drawing, build_dict_from_product_item(item))
+    queue = TicketPrintQueueEntry(operator_id=operator.id, 
+                                  ticket=ticket,
+                                  summary=u'券面テンプレート (%s)' % ticket.name,
+                                  data=dict(drawing=svg))
+    queue.save()
 
     request.session.flash(u'印刷キューにデータを投入しました')
     return HTTPFound(request.route_path("events.tickets.bundles.items.preview", 
@@ -282,4 +284,21 @@ def ticket_preview_enqueue_item(context, request):
                               item_id=mdict["item_id"]))
 
 
+@view_config(route_name="events.tickets.bundles.items.download",
+             request_method="POST", permission="authenticated")    
+def ticket_preview_download_item(context, request):
+    item = context.product_item
+    renderer = pystache.Renderer()
+    operator = context.user
+    mdict = request.matchdict
+    ticket = DBSession.query(Ticket).filter_by(id=request.matchdict['ticket_id']).one()
 
+    svg = renderer.render(ticket.drawing, build_dict_from_product_item(item))
+
+    return FileLikeResponse(
+        StringIO(svg.encode('utf-8')),
+        filename='%s.svg' % ticket.id,
+        request=request,
+        content_type='text/xml',
+        content_encoding='utf-8'
+        )

@@ -15,6 +15,9 @@ def includeme(config):
     config.add_route('mypage.index', '/')
     config.add_route('mypage.logout', '/logout')
     config.add_route('mypage.order', '/order/{order_id}')
+    config.add_route('mypage.qr_print', '/order/qr/print')
+    config.add_route('mypage.qr_send', '/order/qr/send')
+    config.add_route('qr.draw', '/qr/{ticket_id}/{sign}/image')
 
     config.add_subscriber('ticketing.cart.subscribers.add_helpers', 'pyramid.events.BeforeRender')
 
@@ -23,7 +26,7 @@ def includeme(config):
     config.add_route('rakuten_auth.error', '/error')
 
 def main(global_config, **settings):
-    engine = engine_from_config(settings)
+    engine = engine_from_config(settings, pool_recycle=3600)
     my_session_factory = session_factory_from_settings(settings)
     sqlahelper.add_engine(engine)
 

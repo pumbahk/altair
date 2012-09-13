@@ -408,8 +408,6 @@
           shape: shape,
           events: {
             mouseover: function(evt) {
-              if (self.uiMode == 'select')
-                return;
               var candidate = null;
               if (self.seatAdjacencies) {
                 var candidates = self.seatAdjacencies.getCandidates(id, self.adjacencyLength());
@@ -441,8 +439,6 @@
               }
             },
             mouseout: function(evt) {
-              if (self.uiMode == 'select')
-                return;
               var highlighted = self.highlighted;
               self.highlighted = {};
               for (var i in highlighted)
@@ -506,14 +502,18 @@
             for (var id in self.seats) {
               var seatVO = self.seats[id];
               var seat = seatVO.get('model');
-              if ((hitTest(seatVO.get('shape')) || (self.shift && seat.get('selected')) && seat.get('selectable'))) {
+              if (seat.get('selectable') && (hitTest(seatVO.get('shape') || (self.shift && seat.get('selected'))))) {
                 selection.push(seat);
               }
             }
-            self._unselectAll();
             self.drawable.erase(self.rubberBand);
-            for (var i = 0; i < selection.length; i++)
-              selection[i].set('selected', true);
+            for (var i = 0; i < selection.length; i++) {
+              if (selection[i].get('selected')) {
+                selection[i].set('selected', false);
+              } else {
+                selection[i].set('selected', true);
+              }
+            }
             self.callbacks.select && self.callbacks.select(self, selection);
           },
 

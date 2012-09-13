@@ -360,7 +360,7 @@ class TicketingCartResource(object):
         from .rakuten_auth.api import authenticated_user
         from . import api
         openid = authenticated_user(self.request)
-        if openid.get('is_guest', False):
+        if openid is None or openid.get('is_guest', False):
             return None
 
         if 'clamed_id' in openid:

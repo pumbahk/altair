@@ -1,0 +1,79 @@
+<%page args="order, mail_form, event" />
+<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/modal.html" name="m" />
+
+## uggg
+<%
+from ticketing.core.models import MailTypeEnum
+%>
+<div class="btn-toolbar"  style="margin: 0pt;">
+  <div class="btn-group" style="margin: 0pt;">
+	<a class="btn btn-inverse"
+	   href="${request.route_path('orders.show', order_id=order. id)}">
+	  <i class="icon-step-backward icon-white"> </i>戻る
+	</a>
+  </div>
+
+  <div class="btn-group" style="margin: 0pt;">
+    <button class="btn dropdown-toggle" data-toggle="dropdown">
+	  <i class="icon-minus"> </i>購入完了メール
+	  <span class="caret"></span>
+	</button>
+	<ul class="dropdown-menu">
+	  <li>
+		<a href="${request.route_path("orders.mailinfo", order_id=order.id, action="complete_mail_preview")}">preview</a>
+		<a href="#SendingCompleteMailModal" data-toggle="modal">購入完了メールの再送</a>
+		<a href="${request.route_path("performances.mailinfo.edit", performance_id=performance.id, mailtype=MailTypeEnum.CompleteMail)}">メール付加情報変更</a>
+	  </li>
+	</ul>
+  </div>
+  <div class="btn-group" style="margin: 0pt;">
+    <button class="btn dropdown-toggle" data-toggle="dropdown">
+	  <i class="icon-minus"> </i>購入キャンセルメール
+	  <span class="caret"></span>
+	</button>
+	<ul class="dropdown-menu">
+	  <li>
+		<a href="${request.route_path("orders.mailinfo", order_id=order.id, action="cancel_mail_preview")}">preview</a>
+		<a href="#SendingCancelMailModal" data-toggle="modal">購入キャンセルメールの再送</a>
+		<a href="${request.route_path("performances.mailinfo.edit", performance_id=performance.id, mailtype=MailTypeEnum.PurchaseCancelMail)}">メール付加情報変更</a>
+	  </li>
+	</ul>
+  </div>
+</div>
+
+<div class="modal hide" id="SendingCompleteMailModal">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">×</button>
+    <h3>購入完了メールの再送</h3>
+  </div>
+
+  <form class="inline" action="${request.route_path("orders.mailinfo",order_id=order.id, action="complete_mail_send")}" method="POST">
+  <div class="modal-body">
+	${mail_form["recipient"].label} 	${mail_form["recipient"]}
+	${mail_form["bcc"].label} 	${mail_form["bcc"]}
+  </div>
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">キャンセル</a>
+    <button type="submit" class="btn">再送信</button>
+  </div>
+  </form>
+</div>
+
+<div class="modal hide" id="SendingCancelMailModal">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">×</button>
+    <h3>購入キャンセルメールの再送</h3>
+  </div>
+
+  <form class="inline" action="${request.route_path("orders.mailinfo",order_id=order.id, action="complete_mail_send")}" method="POST">
+  <div class="modal-body">
+	${mail_form["recipient"].label} 	${mail_form["recipient"]}
+	${mail_form["bcc"].label} 	${mail_form["bcc"]}
+  </div>
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">キャンセル</a>
+    <button type="submit" class="btn">再送信</button>
+  </div>
+  </form>
+</div>
