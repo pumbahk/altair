@@ -36,17 +36,17 @@ class OrderReviewView(object):
         return dict()
 
     @mobile_view_config(route_name='order_review.form',
-                        request_method="GET", renderer=selectable_renderer("%(membership)s/order_review_mobile/form.html"))
+                        request_method="GET", renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review_mobile/form.html"))
     @view_config(route_name='order_review.form', request_method="GET", 
-                 renderer=selectable_renderer("%(membership)s/order_review/form.html"))
+                 renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/form.html"))
     def get(self):
         form = schemas.OrderReviewSchema(self.request.params)
         return {"form": form}
 
     @mobile_view_config(route_name='order_review.show', request_method="POST", 
-                        renderer=selectable_renderer("%(membership)s/order_review_mobile/show.html"))
+                        renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review_mobile/show.html"))
     @view_config(route_name='order_review.show', request_method="POST", 
-                 renderer=selectable_renderer("%(membership)s/order_review/show.html"))
+                 renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/show.html"))
     def post(self):
         form = schemas.OrderReviewSchema(self.request.params)
         if not form.validate():
@@ -58,9 +58,9 @@ class OrderReviewView(object):
         return dict(order=order, sej_order=sej_order, shipping_address=order.shipping_address)
 
 @mobile_view_config(context=InvalidForm, 
-                    renderer=selectable_renderer("order_review_mobile%(membership)s/form.html"))
+                    renderer=selectable_renderer("order_review_mobileticketing.orderreview:templates/%(membership)s/form.html"))
 @view_config(context=InvalidForm, 
-             renderer=selectable_renderer("%(membership)s/order_review/form.html"))
+             renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/form.html"))
 def order_review_form_view(context, request):
     request.errors = context.form.errors
     return dict(form=context.form)
@@ -74,8 +74,8 @@ def notfound_view(context, request):
     return dict()
 
 @view_config(name="contact")
-@view_config(route_name="contact", renderer=selectable_renderer("%(membership)s/static/contact.html"))
-@mobile_view_config(route_name="contact", renderer=selectable_renderer("%(membership)s/static_mobile/contact.html"))
+@view_config(route_name="contact", renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/static/contact.html"))
+@mobile_view_config(route_name="contact", renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/static_mobile/contact.html"))
 def contact_view(context, request):
     return dict()
 
@@ -133,8 +133,8 @@ def build_qr(ticket_id):
     
     return ticket
 
-@mobile_view_config(route_name='order_review.qr_confirm', renderer=selectable_renderer("%(membership)s/order_review/qr_confirm.html"))
-@view_config(route_name='order_review.qr_confirm', renderer=selectable_renderer("%(membership)s/order_review/qr_confirm.html"))
+@mobile_view_config(route_name='order_review.qr_confirm', renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/qr_confirm.html"))
+@view_config(route_name='order_review.qr_confirm', renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/qr_confirm.html"))
 def order_review_qr_confirm(context, request):
     ticket_id = int(request.matchdict.get('ticket_id', 0))
     sign = request.matchdict.get('sign', 0)
@@ -153,7 +153,7 @@ def order_review_qr_confirm(context, request):
         product = ticket.product,
     )
     
-@view_config(route_name='order_review.qr', renderer=selectable_renderer("%(membership)s/order_review/qr.html"))
+@view_config(route_name='order_review.qr', renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/qr.html"))
 def order_review_qr_html(context, request):
     ticket_id = int(request.matchdict.get('ticket_id', 0))
     sign = request.matchdict.get('sign', 0)
@@ -197,8 +197,8 @@ def order_review_qr_image(context, request):
     r.body = buf.getvalue()
     return r
 
-@mobile_view_config(route_name='order_review.qr_print', request_method='POST', renderer=selectable_renderer("%(membership)s/order_review/qr.html"))
-@view_config(route_name='order_review.qr_print', request_method='POST', renderer=selectable_renderer("%(membership)s/order_review/qr.html"))
+@mobile_view_config(route_name='order_review.qr_print', request_method='POST', renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/qr.html"))
+@view_config(route_name='order_review.qr_print', request_method='POST', renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/qr.html"))
 def order_review_qr_print(context, request):
     ticket = build_qr_by_order_seat(request.params['order_no'], request.params['seat'])
     
@@ -212,9 +212,9 @@ def order_review_qr_print(context, request):
         )
 
 @mobile_view_config(route_name='order_review.qr_send', request_method="POST", 
-             renderer=selectable_renderer("%(membership)s/order_review/send.html"))
+             renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/send.html"))
 @view_config(route_name='order_review.qr_send', request_method="POST", 
-             renderer=selectable_renderer("%(membership)s/order_review/send.html"))
+             renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/send.html"))
 def order_review_send_mail(context, request):
     # TODO: validate mail address
     
@@ -234,9 +234,9 @@ def order_review_send_mail(context, request):
         )
 
 @mobile_view_config(name="render.mail", 
-             renderer=selectable_renderer("%(membership)s/order_review/qr.txt"))
+             renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/qr.txt"))
 @view_config(name="render.mail", 
-             renderer=selectable_renderer("%(membership)s/order_review/qr.txt"))
+             renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/qr.txt"))
 def render_qrmail_viewlet(context, request):
     ticket = build_qr_by_order_seat(request.params['order_no'], request.params['seat'])
     sign = ticket.qr[0:8]
