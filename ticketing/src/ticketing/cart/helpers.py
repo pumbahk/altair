@@ -51,49 +51,6 @@ def error_list(request, form, name):
 
 def fee_type(type_enum):
     if type_enum == int(FeeTypeEnum.Once.v[0]):
-        return u"1件ごと"
-    if type_enum == int(FeeTypeEnum.PerUnit.v[0]):
-        return u"1枚ごと"
-
-def format_number(num, thousands=","):
-    return _format_number(int(num), thousands)
-
-def format_currency(num, thousands=","):
-    return u"￥" + format_number(num, thousands)
-
-def build_unit_template(product, performance_id):
-    items = product.items_by_performance_id(performance_id)
-    if len(items) == 1:
-        if items[0].quantity == 1:
-            return u"{{num}}枚"
-        else:
-            return u"%d×{{num}}枚" % items[0].quantity
-    else:
-        return u"(%s)×{{num}}" % u" + ".join(
-            u"%s:%d枚" % (escape(item.stock_type.name), item.quantity)
-            for item in items)
-
-def products_filter_by_salessegment(products, sales_segment):
-    if sales_segment is None:
-        logger.debug("debug: products_filter -- salessegment is none")
-    if sales_segment:
-        return products.filter_by(sales_segment=sales_segment)
-    return products
-
-
-# TODO: requestをパラメータから排除
-def error_list(request, form, name):
-    errors = form[name].errors
-    if not errors:
-        return ""
-    
-    html = '<ul class="error-list">'
-    html += "".join(['<li>%s</li>' % e for e in errors])
-    html += '</ul>'
-    return Markup(html)
-
-def fee_type(type_enum):
-    if type_enum == int(FeeTypeEnum.Once.v[0]):
         return u"1申込当り"
     if type_enum == int(FeeTypeEnum.PerUnit.v[0]):
         return u"1枚ごと"
