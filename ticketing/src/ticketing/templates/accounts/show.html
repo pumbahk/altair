@@ -16,7 +16,7 @@
   ${h.flash_messages(request)}
 </div>
 
-<%include file="/organizations/_detail.html" args="form=form_organization, organization=account.user.organization" />
+<%include file="/organizations/_detail.html" args="form=form_organization, organization=account.user.organization, sej_tenants=sej_tenants" />
 <div style="margin-top: 20px;">
   <%include file="/organizations/_events.html" args="events=owner_events, title=u'配券している'" />
 </div>

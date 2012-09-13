@@ -104,13 +104,15 @@
     </tr>
   </thead>
   <tbody>
-% for tenant in sej_tenants:
+% if sej_tenants:
+  % for tenant in sej_tenants:
   <tr>
     <td class="span3">${tenant.shop_name}</td>
     <td>${tenant.contact_01}</td>
     <td>${tenant.contact_02}</td>
   </tr>
-% endfor
+  % endfor
+% endif
   <tbody>
 </table>
 
