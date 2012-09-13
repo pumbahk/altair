@@ -202,9 +202,7 @@ function collectText(node) {
 }
 
 function copyShape(shape) {
-  if (shape instanceof Fashion.Path) {
-    return new Fashion.Path({ points: shape.points(), style:shape.style() });
-  } else if (shape instanceof Fashion.Rect) {
+  if (shape instanceof Fashion.Rect) {
     return new Fashion.Rect({ position: shape.position(), size: shape.size() });
   }
   return null;

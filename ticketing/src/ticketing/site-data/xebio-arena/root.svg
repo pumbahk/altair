@@ -7,6 +7,7 @@
    xmlns:cc="http://creativecommons.org/ns#"
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns="http://www.w3.org/2000/svg"
    version="1.1"
    width="4140"
@@ -172,8 +173,8 @@
        y="1548"
        id="text23768"
        style="text-anchor:middle;fill:#000000">VISITOR BENCH</text>
-    <g
-       id="g33579">
+    <a
+       id="g33579" xlink:href="block_a.svg">
       <rect
          width="316.87778"
          height="135"
@@ -319,9 +320,9 @@
          id="text33503"
          xml:space="preserve"
          style="font-size:96px;fill:#000000;stroke:none">Aブロック</text>
-    </g>
-    <g
-       id="g33612">
+    </a>
+    <a
+       id="g33612" xlink:href="block_c.svg">
       <rect
          width="764.18146"
          height="135"
@@ -467,9 +468,9 @@
          id="text33511"
          xml:space="preserve"
          style="font-size:96px;fill:#000000;stroke:none">Cブロック</text>
-    </g>
-    <g
-       id="g33630">
+    </a>
+    <a
+       id="g33630" xlink:href="block_d.svg">
       <rect
          width="180"
          height="314.9411"
@@ -556,9 +557,8 @@
            xml:space="preserve"
            style="font-size:140px;text-anchor:middle;fill:#000000;stroke:none">10</text>
       </g>
-    </g>
-    <g
-       id="g33589">
+    </a>
+    <a id="g33589" xlink:href="courtside.svg">
       <rect
          width="180"
          height="22.5"
@@ -600,9 +600,8 @@
          y="607.5"
          id="rect60028"
          style="fill:#cccccc;stroke:#888888;stroke-width:0.23717615" />
-    </g>
-    <g
-       id="g33619">
+    </a>
+    <a id="g33619" xlink:href="block_b.svg">
       <rect
          width="180"
          height="314.9411"
@@ -702,7 +701,7 @@
            xml:space="preserve"
            style="font-size:140px;text-anchor:middle;fill:#000000;stroke:none">11</text>
       </g>
-    </g>
+    </a>
   </g>
   <g
      transform="translate(504.79567,1375.7039)"

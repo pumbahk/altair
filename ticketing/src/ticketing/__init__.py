@@ -94,6 +94,11 @@ def main(global_config, **settings):
                             config.registry.settings["altaircms.apikey"]
                             )
 
+    import ticketing.pyramid_boto
+    ticketing.pyramid_boto.register_default_implementations(config)
+    import ticketing.assets
+    ticketing.assets.register_default_implementations(config)
+
     config.scan(".views")
 
 

@@ -968,7 +968,7 @@ cart.VenueView = Backbone.View.extend({
     },
     reset: function () {
         this.currentViewer.venueviewer("unselectAll");
-        this.currentViewer.venueviewer("navigate", "root");
+        this.currentViewer.venueviewer("navigate", this.currentViewer.venueviewer("root"));
     }
 });
 
@@ -1056,14 +1056,23 @@ function newMetadataLoaderFactory(url) {
 }
 
 function createDataSource(params) {
-  var factory = newMetadataLoaderFactory(params.data_source.seats);
+  var factory = newMetadataLoaderFactory(params['data_source']['seats']);
+  var drawingCache = {};
   return {
     drawing: function (page) {
       return function (next, error) {
+        var data = drawingCache[page];
+        if (data) {
+          next(data);
+          return;
+        }
         $.ajax({
-          url: hardcoded_root + "xebio-arena." + page + ".svg", // this is global
+          url: params['data_source']['venue_drawing'].replace('__part__', page),
           dataType: 'xml',
-          success: function (data) { next(data); },
+          success: function (data) {
+            drawingCache[page] = data;
+            next(data);
+          },
           error: function (xhr, text) {
             error("Failed to load drawing data (" + text + ")");
           }
@@ -1090,65 +1099,7 @@ function createDataSource(params) {
         }
       });
     },
-    // pages: factory(function (data) { return data['pages']; })
-    pages: function (next, error) {
-        next({
-            "root": {
-                "name": "全体図",
-                "group_l0_ids": {
-                    "rect1151": "block_a",
-                    "rect3378": "block_a",
-                    "rect7220": "block_a",
-                    "rect6310": "block_a",
-                    "rect6312": "block_a",
-                    "rect60014": "block_a",
-                    "rect60016": "block_a",
-                    "rect7792": "block_b",
-                    "rect8999": "block_b",
-                    "rect9961": "block_b",
-                    "rect11488": "block_b",
-                    "rect60018": "block_b",
-                    "rect13092": "block_c",
-                    "rect15379": "block_c",
-                    "rect19241": "block_c",
-                    "rect60020": "block_c",
-                    "rect60022": "block_c",
-                    "rect60024": "block_c",
-                    "rect60026": "block_c",
-                    "rect19833": "block_d",
-                    "rect21040": "block_d",
-                    "rect21727": "block_d",
-                    "rect22879": "block_d",
-                    "rect60030": "block_d",
-                    "rect13": "courtside",
-                    "rect65": "courtside",
-                    "rect417": "courtside",
-                    "rect784": "courtside",
-                    "rect60028": "courtside"
-                }
-            },
-            "block_a": {
-                "name": "Aブロック",
-                "group_l0_ids": {}
-            },
-            "block_b": {
-                "name": "Bブロック",
-                "group_l0_ids": {}
-            },
-            "block_c": {
-                "name": "Cブロック",
-                "group_l0_ids": {}
-            },
-            "block_d": {
-                "name": "Dブロック",
-                "group_l0_ids": {}
-            },
-            "courtside": {
-                "name": "コートサイド・コートエンド",
-                "group_l0_ids": {}
-            }
-        });
-    }
+    pages: factory(function (data) { return data['pages']; })
   };
 }
 

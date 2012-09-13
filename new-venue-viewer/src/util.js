@@ -87,13 +87,13 @@ exports.convertFromFashionStyle = function (style) {
 };
 
 exports.allAttributes = function Util_allAttributes(el) {
-  var rt = {}, attrs=el.attributes, attr;
-  for (var i=0, l=attrs.length; i<l; i++) {
-    attr = attrs[i];
-    rt[attr.nodeName] = attr.nodeValue;
+  var rt = {}, attrs = el.attributes;
+  for (var i = 0, l = attrs.length; i < l; i++) {
+    var attr = attrs[i];
+    rt[attr.namespaceURI ? ('{' + attr.namespaceURI + '}') + attr.localName: attr.nodeName] = attr.nodeValue;
   }
   return rt;
-};  
+};
 
 exports.makeHitTester = function Util_makeHitTester(a) {
   var pa = a.position(),

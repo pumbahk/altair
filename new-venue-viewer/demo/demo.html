@@ -104,7 +104,7 @@ function loadVenue() {
         return function (next, error) {
           $.ajax({
             type: 'get',
-            url: "data/xebio-arena/drawings/" + key + ".xml",
+            url: "data/xebio-arena/drawings/" + key,
             dataType: 'xml',
             success: function(xml) {
               next(xml);
@@ -142,7 +142,7 @@ function loadVenue() {
     },
     callbacks: {
       pageChanging: function (newPage) {
-        var parentList = this.getParents();
+        var parentList = this.history();
         var holder = $("#current-class-name-holder");
         holder.empty();
         var self = this;
@@ -158,17 +158,16 @@ function loadVenue() {
         var currentPageData = this.pages[this.currentPage];
         holder.append($('<span></span>').text(currentPageData.name));
         var back_btn = $("#back-button");
-        if (parentList.length == 1) {
-          back_btn.hide();
-        } else {
+        if (parentList.length > 0) {
           back_btn.show();
+        } else {
+          back_btn.hide();
         }
       },
       zoomRatioChanging: function (zoomRatio) {
         return Math.min(Math.max(zoomRatio, zoomRatioMin), zoomRatioMax);
       },
       zoomRatioChange: function (zoomRatio) {
-        console.log(zoomRatio);
         var pos = Math.sqrt((zoomRatio - zoomRatioMin) / (zoomRatioMax - zoomRatioMin));
         slider.smihica_vertical_slider('position', pos);
       },
@@ -204,8 +203,6 @@ function loadVenue() {
       },
 
       load: function (viewer) {
-        zoomRatioMin = viewer.zoomRatioMin;
-        viewer.zoom(viewer.zoomRatioMin);
         var n = $("#toolbar-seat-adjacencies-selector");
         $.each(viewer.availableAdjacencies, function(i, v) {
           $('<option></option>').attr("value", v).text(v)
@@ -254,9 +251,15 @@ function loadVenue() {
                                                 //console.log(seat);
         });
       },
-      loadstart: function (category) {
+      loadPartStart: function (viewer, category) {
         if (typeof console != 'undefined');
                                                 //console.log(category);
+      },
+      loadPartEnd: function (viewer, category) {
+        if (category == 'drawing') {
+          zoomRatioMin = viewer.zoomRatioMin;
+          viewer.zoom(viewer.zoomRatioMin);
+        }
       }
     }
   }).venueviewer("load");
@@ -265,7 +268,6 @@ function loadVenue() {
     onchange: function (pos) {
       var level = pos * pos;
       var zoomRatio = zoomRatioMin + ((zoomRatioMax - zoomRatioMin) * level);
-      console.log(zoomRatio);
       venue.venueviewer("zoom", zoomRatio);
     }
   });
