@@ -1836,9 +1836,13 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 seat_status.status = int(SeatStatusEnum.Vacant)
 
         # 在庫数を戻す
-        logger.info('release stock id=%s quantity=%d' % (self.product_item.stock_id, len(self.seats)))
+        if self.product_item.stock.stock_type.quantity_only:
+            release_quantity = self.ordered_product.quantity
+        else:
+            release_quantity = len(self.seats)
+        logger.info('release stock id=%s quantity=%d' % (self.product_item.stock_id, release_quantity))
         query = StockStatus.__table__.update().values(
-            {'quantity': StockStatus.quantity + len(self.seats)}
+            {'quantity': StockStatus.quantity + release_quantity}
         ).where(StockStatus.stock_id==self.product_item.stock_id)
         DBSession.bind.execute(query)
 

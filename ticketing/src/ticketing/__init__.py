@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
+import json
 
 from sqlalchemy import engine_from_config
 from pyramid.config import Configurator
@@ -7,6 +8,7 @@ from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
 from pyramid.tweens import EXCVIEW
+from pyramid.interfaces import IDict
 
 import sqlahelper
 from .api.impl import bound_communication_api ## cmsとの通信
@@ -42,6 +44,13 @@ def main(global_config, **settings):
             ])
         )
     config.set_authorization_policy(ACLAuthorizationPolicy())
+
+    ### selectable renderer
+    config.include("ticketing.cart.selectable_renderer")
+    domain_candidates = json.loads(config.registry.settings["altair.cart.domain.mapping"])
+    config.registry.utilities.register([], IDict, "altair.cart.domain.mapping", domain_candidates)
+    selector = config.maybe_dotted("ticketing.cart.selectable_renderer.ByDomainMappingSelector")(domain_candidates)
+    config.add_selectable_renderer_selector(selector)
 
     config.add_static_view('static', 'ticketing:static', cache_max_age=3600)
 

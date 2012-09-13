@@ -139,10 +139,13 @@ class CartedProductItem(Base):
             seat_status.status = int(c_models.SeatStatusEnum.Vacant)
 
         # 在庫数戻し
-        logger.info('restoring the quantity of stock (id=%s) by +%d' % (self.product_item.stock_id, self.quantity))
+        if self.product_item.stock.stock_type.quantity_only:
+            release_quantity = self.quantity
+        else:
+            release_quantity = len(self.seats)
+        logger.info('restoring the quantity of stock (id=%s) by +%d' % (self.product_item.stock_id, release_quantity))
         up = c_models.StockStatus.__table__.update().values(
-                #{"quantity": c_models.StockStatus.quantity + self.quantity}
-                {"quantity": c_models.StockStatus.quantity + len(self.seats)}
+                {"quantity": c_models.StockStatus.quantity + release_quantity}
         ).where(c_models.StockStatus.stock_id==self.product_item.stock_id)
         DBSession.bind.execute(up)
         logger.info('done for CartedProductItem (id=%d)' % self.id)
