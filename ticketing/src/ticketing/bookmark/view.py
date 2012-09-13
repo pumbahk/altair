@@ -13,7 +13,7 @@ from forms import BookmarkForm
 import sqlahelper
 session = sqlahelper.get_session()
 
-@view_defaults(decorator=with_bootstrap)
+@view_defaults(decorator=with_bootstrap, permission='event_editor')
 class BookmarkView(BaseView):
     @view_config(route_name='bookmark.index', renderer='ticketing:templates/bookmark/index.html')
     def index(self):

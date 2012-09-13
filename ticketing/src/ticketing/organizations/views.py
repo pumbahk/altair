@@ -24,8 +24,7 @@ from ticketing.mails.api import get_mail_utility
 import logging
 logger = logging.getLogger(__name__)
 
-#@view_defaults(decorator=with_bootstrap, permission="administrator")
-@view_defaults(decorator=with_bootstrap)
+@view_defaults(decorator=with_bootstrap, permission="administrator")
 class Organizations(BaseView):
 
     @view_config(route_name='organizations.index', renderer='ticketing:templates/organizations/index.html')

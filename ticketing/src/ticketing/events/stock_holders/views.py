@@ -16,7 +16,7 @@ from ticketing.core.models import Event, StockHolder
 
 logger = logging.getLogger(__name__)
 
-@view_defaults(decorator=with_bootstrap, permission="event_editor")
+@view_defaults(decorator=with_bootstrap, permission='event_editor')
 class StockHolders(BaseView):
 
     @view_config(route_name='stock_holders.index', renderer='ticketing:templates/stock_holders/index.html')

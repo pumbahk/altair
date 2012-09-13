@@ -13,7 +13,7 @@ from ticketing.fanstatic import with_bootstrap
 from ticketing.core.models import Event, StockType
 from ticketing.events.stock_types.forms import StockTypeForm
 
-@view_defaults(decorator=with_bootstrap)
+@view_defaults(decorator=with_bootstrap, permission='event_editor')
 class StockTypes(BaseView):
 
     @view_config(route_name='stock_types.index', renderer='ticketing:templates/stock_types/index.html')

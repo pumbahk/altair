@@ -21,7 +21,7 @@ from deform.exception import ValidationFailure
 import  sqlahelper
 session = sqlahelper.get_session()
 
-@view_defaults(decorator=with_bootstrap, permission='administrator')
+@view_defaults(decorator=with_bootstrap, permission='master_editor')
 class Operators(BaseView):
 
     def _role_id_list_to_role_list(self, role_id_list):
@@ -130,7 +130,7 @@ class Operators(BaseView):
         self.request.session.flash(u'オペレーターを削除しました')
         return HTTPFound(location=route_path('operators.index', self.request))
 
-@view_defaults(decorator=with_bootstrap)
+@view_defaults(decorator=with_bootstrap, permission='administrator')
 class OperatorRoles(BaseView):
 
     @view_config(route_name='operator_roles.index', renderer='ticketing:templates/operator_roles/index.html')
@@ -194,7 +194,7 @@ class OperatorRoles(BaseView):
                 'form':f
             }
 
-@view_defaults(decorator=with_bootstrap, permission="administrator")
+@view_defaults(decorator=with_bootstrap, permission="master_editor")
 class Permissions(BaseView):
 
     @view_config(route_name='permissions.index', renderer='ticketing:templates/permissions/index.html')

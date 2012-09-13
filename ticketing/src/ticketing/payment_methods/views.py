@@ -13,7 +13,7 @@ from ticketing.fanstatic import with_bootstrap
 from ticketing.core.models import PaymentMethod
 from ticketing.payment_methods.forms import PaymentMethodForm
 
-@view_defaults(decorator=with_bootstrap, permission="event_editor")
+@view_defaults(decorator=with_bootstrap, permission='master_editor')
 class PaymentMethods(BaseView):
 
     @view_config(route_name='payment_methods.index', renderer='ticketing:templates/payment_methods/index.html')

@@ -19,7 +19,7 @@ from ticketing.core.models import Event, StockHolder
 from ticketing.events.forms import EventForm
 from ticketing.events.reports import reporting
 
-@view_defaults(decorator=with_bootstrap, permission="event_editor")
+@view_defaults(decorator=with_bootstrap, permission='sales_editor')
 class Reports(BaseView):
 
     @view_config(route_name='reports.index', renderer='ticketing:templates/events/report.html')

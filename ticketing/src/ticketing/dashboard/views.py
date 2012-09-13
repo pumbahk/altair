@@ -14,7 +14,7 @@ import webhelpers.paginate as paginate
 import sqlahelper
 session = sqlahelper.get_session()
 
-@view_defaults(decorator=with_bootstrap)
+@view_defaults(decorator=with_bootstrap, permission='event_editor')
 class Dashboard(BaseView):
 
     @view_config(route_name='dashboard.index', renderer='ticketing:templates/dashboard/index.html')

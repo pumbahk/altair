@@ -18,7 +18,7 @@ from ticketing.tickets.convert import to_opcodes
 from lxml import etree
    
 
-@view_defaults(decorator=with_bootstrap, permission="authenticated")
+@view_defaults(decorator=with_bootstrap, permission="event_editor")
 class IndexView(BaseView):
     @view_config(route_name="events.tickets.index", renderer="ticketing:templates/tickets/events/index.html")
     def index(self):
@@ -42,7 +42,7 @@ class IndexView(BaseView):
 
 
 @view_config(route_name="events.tickets.bind.ticket", request_method="POST", 
-             decorator=with_bootstrap, permission="authenticated")
+             decorator=with_bootstrap, permission="event_editor")
 def bind_ticket(request):
     event = request.context.event
     organization_id = request.context.user.organization_id
@@ -62,7 +62,7 @@ def bind_ticket(request):
     return HTTPFound(request.route_path("events.tickets.index", event_id=event.id))
 
 
-@view_defaults(decorator=with_bootstrap, permission="authenticated")
+@view_defaults(decorator=with_bootstrap, permission="event_editor")
 class BundleView(BaseView):
     """ チケット券面構成(TicketBundle)
     """
@@ -166,7 +166,7 @@ class BundleView(BaseView):
                     product_item_dict=product_item_dict)
 
 
-@view_defaults(decorator=with_bootstrap, permission="authenticated")
+@view_defaults(decorator=with_bootstrap, permission="event_editor")
 class BundleAttributeView(BaseView):
     """ 属性(TicketBundleAttribute)
     """
@@ -245,13 +245,13 @@ class BundleAttributeView(BaseView):
 
 @view_config(route_name="events.tickets.bundles.items.preview", 
              renderer="ticketing:templates/tickets/events/bundles/ticket_preview.html", 
-             permission="authenticated", decorator=with_bootstrap)
+             permission="event_editor", decorator=with_bootstrap)
 def ticket_preview_bound_by_product_item(context, request):
     return {"tickets": request.context.bundle.tickets, 
             "item": request.context.product_item}
 
 @view_config(route_name="events.tickets.bundles.items.data", 
-             renderer="json", permission="authenticated", decorator=with_bootstrap)
+             renderer="json", permission="event_editor", decorator=with_bootstrap)
 def ticket_preview_bound_by_product_item_data(context, request):
     item = context.product_item
     template = context.ticket_template
@@ -262,7 +262,7 @@ def ticket_preview_bound_by_product_item_data(context, request):
     return data
 
 @view_config(route_name="events.tickets.bundles.items.enqueue", 
-             request_method="POST", permission="authenticated")    
+             request_method="POST", permission="event_editor")
 def ticket_preview_enqueue_item(context, request):
     item = context.product_item
     renderer = pystache.Renderer()
@@ -285,7 +285,7 @@ def ticket_preview_enqueue_item(context, request):
 
 
 @view_config(route_name="events.tickets.bundles.items.download",
-             request_method="POST", permission="authenticated")    
+             request_method="POST", permission="event_editor")
 def ticket_preview_download_item(context, request):
     item = context.product_item
     renderer = pystache.Renderer()

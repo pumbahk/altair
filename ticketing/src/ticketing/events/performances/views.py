@@ -28,7 +28,7 @@ class Performances(BaseView):
     @view_config(route_name='performances.index', renderer='ticketing:templates/performances/index.html')
     def index(self):
         event_id = int(self.request.matchdict.get('event_id', 0))
-        event = Event.get(event_id)
+        event = Event.get(event_id, organization_id=self.context.user.organization_id)
 
         sort = self.request.GET.get('sort', 'Performance.id')
         direction = self.request.GET.get('direction', 'asc')
@@ -55,7 +55,7 @@ class Performances(BaseView):
     @view_config(route_name='performances.show_tab', renderer='ticketing:templates/performances/show.html')
     def show(self):
         performance_id = int(self.request.matchdict.get('performance_id', 0))
-        performance = Performance.get(performance_id)
+        performance = Performance.get(performance_id, self.context.user.organization_id)
         if performance is None:
             return HTTPNotFound('performance id %d is not found' % performance_id)
 
@@ -92,7 +92,7 @@ class Performances(BaseView):
     @view_config(route_name='performances.new', request_method='GET', renderer='ticketing:templates/performances/edit.html')
     def new_get(self):
         event_id = int(self.request.matchdict.get('event_id', 0))
-        event = Event.get(event_id)
+        event = Event.get(event_id, organization_id=self.context.user.organization_id)
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
 
@@ -105,7 +105,7 @@ class Performances(BaseView):
     @view_config(route_name='performances.new', request_method='POST', renderer='ticketing:templates/performances/edit.html')
     def new_post(self):
         event_id = int(self.request.matchdict.get('event_id', 0))
-        event = Event.get(event_id)
+        event = Event.get(event_id, organization_id=self.context.user.organization_id)
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
 
@@ -127,7 +127,7 @@ class Performances(BaseView):
     @view_config(route_name='performances.copy', request_method='GET', renderer='ticketing:templates/performances/edit.html')
     def edit_get(self):
         performance_id = int(self.request.matchdict.get('performance_id', 0))
-        performance = Performance.get(performance_id)
+        performance = Performance.get(performance_id, self.context.user.organization_id)
         if performance is None:
             return HTTPNotFound('performance id %d is not found' % performance_id)
 
@@ -153,7 +153,7 @@ class Performances(BaseView):
     @view_config(route_name='performances.copy', request_method='POST', renderer='ticketing:templates/performances/edit.html')
     def edit_post(self):
         performance_id = int(self.request.matchdict.get('performance_id', 0))
-        performance = Performance.get(performance_id)
+        performance = Performance.get(performance_id, self.context.user.organization_id)
         if performance is None:
             return HTTPNotFound('performance id %d is not found' % performance_id)
 
@@ -188,7 +188,7 @@ class Performances(BaseView):
     @view_config(route_name='performances.delete')
     def delete(self):
         performance_id = int(self.request.matchdict.get('performance_id', 0))
-        performance = Performance.get(performance_id)
+        performance = Performance.get(performance_id, self.context.user.organization_id)
         if performance is None:
             return HTTPNotFound('performance id %d is not found' % id)
 
@@ -197,7 +197,7 @@ class Performances(BaseView):
         self.request.session.flash(u'パフォーマンスを削除しました')
         return HTTPFound(location=route_path('events.show', self.request, event_id=performance.event_id))
 
-@view_config(decorator=with_bootstrap, permission="authenticated", 
+@view_config(decorator=with_bootstrap, permission="authenticated",
              route_name="performances.mailinfo.index")
 def mailinfo_index_view(context, request):
     performance_id = request.matchdict["performance_id"]
