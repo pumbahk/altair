@@ -7,7 +7,7 @@
   <meta name="keywords" content="秋田,ハピネッツ,秋田ノーザンハピネッツ,happinets,バスケット,バスケ,BJリーグ" />
   <meta http-equiv="content-style-type" content="text/css" />
   <meta http-equiv="content-script-type" content="text/javascript" />
-  <link rel="shortcut icon" href="${request.static_url('ticketing.cart:static/img/common/favicon.ico')}" />
+  <link rel="shortcut icon" href="${request.static_url('ticketing.cart:static/img/common/happinets.ico')}" />
   
   <link rel="stylesheet" href="${request.static_url('ticketing.cart:static/css/import.css')}" type="text/css" media="all" />
   <link rel="stylesheet" href="${request.static_url('ticketing.cart:static/css/custom.css')}" type="text/css" media="all" />
@@ -181,9 +181,6 @@ $(function() {cart.init(venues_selection, selected, upper_limit, cart_release_ur
                     </div>
                   </div>
                 </div>
-                <div style="float: right">
-                  <a onclick="$('#venue-detail').click(function () { $(this).overlay().close() }).overlay({ mask: { color: '#999', opacity: .5 }, closeOnClick: true }).load()">会場図の文字が見にくい方はこちら</a>
-                </div>
                 <div>
                   <a class="btn-select-seat">購入</a>
                   <a class="btn-cancel">キャンセル</a>
@@ -202,14 +199,6 @@ $(function() {cart.init(venues_selection, selected, upper_limit, cart_release_ur
             <tr>
               <th scope="row">イベント名</th>
               <td>${event["title"]} (<span class="performanceNameSpace"></span>)</td>
-            </tr>
-            <tr>
-              <th scope="row">開催日時</th>
-              <td id="descPerformanceDate"></td>
-            </tr>
-            <tr>
-              <th scope="row">会場</th>
-              <td id="venue"> ${", ".join(event['venues'])}</td>
             </tr>
             <tr>
               <th scope="row">販売期間</th>
