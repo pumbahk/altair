@@ -2,6 +2,8 @@
 import logging
 import itertools
 import operator
+import json
+from urlparse import urljoin
 from datetime import datetime
 
 from sqlalchemy import Table, Column, ForeignKey, func, or_, and_
@@ -22,6 +24,8 @@ from ticketing.utils import sensible_alnum_decode
 from ticketing.sej.models import SejOrder
 from ticketing.sej.exceptions import SejServerError
 from ticketing.sej.payment import request_cancel_order
+from ticketing.assets import IAssetResolver
+from ticketing.utils import myurljoin
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +48,28 @@ class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     tel_2 = Column(String(32))
     fax = Column(String(32))
     drawing_url = Column(String(255))
+    _metadata_url = Column('metadata_url', String(255))
+
+    @property
+    def metadata_url(self):
+        return self._metadata_url and myurljoin(get_current_registry().settings.get('altair.site_data.base_url', ''), self._metadata_url)
+
+    @property
+    def _metadata(self):
+        __metadata = getattr(self, '__metadata', None)
+        if not __metadata:
+            resolver = get_current_registry().queryUtility(IAssetResolver)
+            self.__metadata = self.metadata_url and json.load(resolver.resolve(self.metadata_url).stream())
+        return self.__metadata
+
+    def get_drawing(self, name):
+        page_meta = self._metadata[u'pages'].get(name)
+        print self._metadata
+        if page_meta is not None:
+            resolver = get_current_registry().queryUtility(IAssetResolver)
+            return resolver.resolve(myurljoin(self.metadata_url, name))
+        else:
+            return None
 
 class VenueArea_group_l0_id(Base):
     __tablename__   = "VenueArea_group_l0_id"

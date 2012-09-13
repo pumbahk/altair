@@ -186,7 +186,8 @@ class IndexView(object):
                         'cart.venue_drawing',
                         event_id=event_id,
                         performance_id=performance_id,
-                        venue_id=performance.venue.id),
+                        venue_id=performance.venue.id,
+                        part='__part__'),
                     seats=self.request.route_url(
                         'cart.seats',
                         event_id=event_id,
@@ -281,6 +282,7 @@ class IndexView(object):
         venue_id = self.request.matchdict['venue_id']
         stock_holder = api.get_stock_holder(self.request, event_id)
         logger.debug("stock holder is %s:%s" % (stock_holder.id, stock_holder.name))
+        venue = c_models.Venue.get(venue_id)
         return dict(
             seats=dict(
                 (
@@ -312,7 +314,8 @@ class IndexView(object):
                         DBSession.query(c_models.SeatAdjacencySet) \
                         .filter_by(venue_id=venue_id)
                     ]
-                )
+                ),
+            pages=venue.site._metadata and venue.site._metadata.get('pages')
             )
 
     @view_config(route_name='cart.seat_adjacencies', renderer="json")
@@ -341,9 +344,12 @@ class IndexView(object):
     def get_venue_drawing(self):
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.matchdict['performance_id']
-        venue_id = int(self.request.matchdict.get('venue_id', 0))
+        venue_id = self.request.matchdict.get('venue_id')
+        if not venue_id:
+            raise HTTPNotFound()
+        part = self.request.matchdict.get('part')
         venue = c_models.Venue.get(venue_id)
-        return Response(app_iter=urlopen(venue.site.drawing_url), content_type='text/xml; charset=utf-8')
+        return Response(body=venue.site.get_drawing(part).stream().read(), content_type='text/xml; charset=utf-8')
 
 class ReserveView(object):
     """ 座席選択完了画面(おまかせ) """

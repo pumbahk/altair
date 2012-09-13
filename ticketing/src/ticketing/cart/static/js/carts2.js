@@ -1056,7 +1056,7 @@ function newMetadataLoaderFactory(url) {
 }
 
 function createDataSource(params) {
-  var factory = newMetadataLoaderFactory(params.data_source.seats);
+  var factory = newMetadataLoaderFactory(params['data_source']['seats']);
   var drawingCache = {};
   return {
     drawing: function (page) {
@@ -1067,7 +1067,7 @@ function createDataSource(params) {
           return;
         }
         $.ajax({
-          url: hardcoded_root + page, // this is global
+          url: params['data_source']['venue_drawing'].replace('__part__', page),
           dataType: 'xml',
           success: function (data) {
             drawingCache[page] = data;
@@ -1099,30 +1099,7 @@ function createDataSource(params) {
         }
       });
     },
-    // pages: factory(function (data) { return data['pages']; })
-    pages: function (next, error) {
-        next({
-            "xebio-arena.root.svg": {
-                "name": "全体図",
-                "root": true
-            },
-            "xebio-arena.block_a.svg": {
-                "name": "Aブロック"
-            },
-            "xebio-arena.block_b.svg": {
-                "name": "Bブロック"
-            },
-            "xebio-arena.block_c.svg": {
-                "name": "Cブロック"
-            },
-            "xebio-arena.block_d.svg": {
-                "name": "Dブロック"
-            },
-            "xebio-arena.courtside.svg": {
-                "name": "コートサイド・コートエンド"
-            }
-        });
-    }
+    pages: factory(function (data) { return data['pages']; })
   };
 }
 
