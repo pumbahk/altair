@@ -72,7 +72,6 @@
       <tr>
         <th style="width: 20px;"></th>
         <th style="width: 100px;">席種</th>
-        <th style="width: 50px;">${form.id.label.text}</th>
         <th style="width: 130px;">${form.name.label.text}</th>
         <th style="width: 100px;">${form.price.label.text}</th>
         <th style="width: 60px;">${form.display_order.label.text}</th>
@@ -83,6 +82,7 @@
         <th style="width: 80px;">販売単位</th>
         <th style="width: 100px;">席数</th>
         <th style="width: 60px;">在庫ID</th>
+        <th style="width: 100px;">券面</th>
         <th style="width: 110px;"></th>
         % endif
       </tr>
@@ -104,8 +104,7 @@
             <input type="hidden" id="seat_stock_type_id" value="${stock_type_id}" />
           </td>
           <td ${rowspan}><span>${product.seat_type()}</span></td>
-          <td ${rowspan}><span id="id">${product.id}</span></td>
-          <td ${rowspan}><a href="javascript:edit_product('${product.id}');"><span id="name">${product.name}</span></a></td>
+          <td ${rowspan}><a href="javascript:edit_product('${product.id}');"><span id="name">${product.name}</span></a> (<span id="id">${product.id}</span>)</td>
           <td ${rowspan}><span id="price" value="${product.price}">${h.price_format(product.price)}</span>円</td>
           <td ${rowspan}><span id="display_order">${product.display_order}</span></td>
           % if performance:
@@ -119,6 +118,7 @@
           <td id="quantity-${item.id}">${item.quantity}</td>
           <td>${item.stock.stock_status.quantity} / ${item.stock.quantity}席</td>
           <td id="stock-${item.id}" value="${item.stock.id}">${item.stock.id}</td>
+          <td id="ticket_bundle_id-{$item.id}" value="${item.ticket_bundle_id}">${item.ticket_bundle.name if item.ticket_bundle_id else '-'}</id>
           <td><input type="hidden" id="ticket_bundle_id-${item.id}" value="${item.ticket_bundle_id}" />${h.action_button(actions(product, item), order=iter(['edit', 'preview', 'new', 'delete']), options='btn-small')}</td>
         </tr>
             % endfor
