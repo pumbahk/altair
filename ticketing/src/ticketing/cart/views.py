@@ -130,8 +130,13 @@ class IndexView(object):
         if not performance_id:
             # GETパラメータ指定がなければ、選択肢の1つ目を採用
             performance_id = performances[0][1][0]['pid']
-        selected_performance = c_models.Performance.query.filter(c_models.Performance.id==performance_id).first()
-        assert selected_performance, "performance_id = %s" % performance_id
+        selected_performance = c_models.Performance.query.filter(
+            c_models.Performance.id==performance_id
+        ).filter(
+            c_models.Performance.event_id==event_id
+        ).first()
+        if selected_performance is None and 'performance' in self.request.params:
+            return HTTPFound(location=self.request.path_url)
 
 
         event = dict(id=e.id, code=e.code, title=e.title, abbreviated_title=e.abbreviated_title,
