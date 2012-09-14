@@ -25,7 +25,7 @@ ${event.title}
 <div>
   ${cart['total_amount']}円
 </div>
-<form action="${request.route_url('cart.payment')}" method="get">
+<form action="${request.route_url('cart.payment',sales_segment_id=sales_segment_id)}" method="get">
   <div style="text-align:center;">
   <br/>
   <input type="submit" value="決済へ">

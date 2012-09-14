@@ -1,3 +1,4 @@
+
 # -*- coding:utf-8 -*-
 import logging
 import transaction
@@ -457,7 +458,10 @@ class ReserveView(object):
 
         performance_id = self.request.params.get('performance_id')
         seat_type_id = self.request.params.get('seat_type_id')
-        sales_segment = self.context.get_sales_segument()
+        sales_segment_id = self.request.matchdict["sales_segment_id"]
+
+        # セールスセグメント必須
+        sales_segment = c_models.SalesSegment.filter_by(id=sales_segment_id).first()
 
         performance = c_models.Performance.query.filter(
             c_models.Performance.id==performance_id).first()
@@ -470,6 +474,7 @@ class ReserveView(object):
             event=event,
             performance=performance, 
             seat_type_id=seat_type_id,
+            sales_segment_id=sales_segment_id, 
             payment_url=self.request.route_url("cart.payment", sales_segment_id=sales_segment.id),
             cart=dict(products=[dict(name=p.product.name, 
                                      quantity=p.quantity,
@@ -487,9 +492,10 @@ class ReserveView(object):
         """
         performance_id = self.request.params.get('performance_id')
         seat_type_id = self.request.params.get('seat_type_id')
+        sales_segment_id = self.request.matchdict["sales_segment_id"]
 
         # セールスセグメント必須
-        sales_segment = self.context.get_sales_segument()
+        sales_segment = c_models.SalesSegment.filter_by(id=sales_segment_id).first()
         if sales_segment is None:
             raise NoEventError("No matching sales_segment")
 
@@ -1006,7 +1012,7 @@ class MobileSelectProductView(object):
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.matchdict['performance_id']
         seat_type_id = self.request.matchdict['seat_type_id']
-        sales_segment_id = self.request.matchdict['seat_type_id']
+        sales_segment_id = self.request.matchdict['sales_segment_id']
 
         # イベント
         event = c_models.Event.query.filter(c_models.Event.id==event_id).first()
