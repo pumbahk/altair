@@ -225,18 +225,26 @@ def order_review_send_mail(context, request):
     # TODO: validate mail address
     
     mail = request.params['mail']
-    
     # send mail using template
+    form = schemas.SendMailSchema(request.POST)
+
+    if not form.validate():
+        return dict(mail=mail, 
+                    message=u"Emailの形式が正しくありません")
+
     try:
         sender = context.membership.organization.contact_email
         api.send_qr_mail(request, context, mail, sender)
+        
     except Exception, e:
         logger.error(str(e), exc_info=1)
         ## この例外は違う...
         raise HTTPNotFound()
-    
+
+    message = u"%s宛にメールをお送りしました。" % mail
     return dict(
         mail = mail,
+        message = message
         )
 
 @mobile_view_config(name="render.mail", 
