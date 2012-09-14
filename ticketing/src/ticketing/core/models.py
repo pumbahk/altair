@@ -1853,6 +1853,15 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return ({'name': s.name, 'l0_id': s.l0_id}
                 for s in self.seats)
 
+class OrderedProductItemToken(Base,BaseModel, LogicallyDeleted):
+    __tablename__ = "OrderedProductItemToken"
+    id = Column(Identifier, primary_key=True)
+    ordered_product_item_id = Column(Identifier, ForeignKey("OrderedProductItem.id", ondelete="CASCADE"), nullable=False)
+    seat_id = Column(Identifier, ForeignKey("Seat.id", ondelete='CASCADE'), nullable=True)
+    serial = Column(Integer, nullable=False)
+    key = Column(Unicode(255), nullable=True)
+    valid = Column(Boolean, nullable=False, default=False)
+
 class Ticket_TicketBundle(Base, BaseModel, LogicallyDeleted):
     __tablename__ = 'Ticket_TicketBundle'
     ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id', ondelete='CASCADE'), primary_key=True)
@@ -1993,6 +2002,7 @@ class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             self.product_items.remove(product_item)
         for product_item in news:
             self.product_items.append(product_item)
+
 
 class TicketPrintHistory(Base, BaseModel, WithTimestamp):
     __tablename__ = "TicketPrintHistory"
