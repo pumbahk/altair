@@ -79,27 +79,28 @@ def notfound_view(context, request):
 def contact_view(context, request):
     return dict()
 
-def build_qr_by_order_seat(order_no, seat_id):
-    ## ちょっと意味が分からない
-    # seat = Order.filter_by(order_no = order_no)\
-    #         .join(Order.ordered_products)\
-    #         .join(OrderedProduct.ordered_product_items)\
-    #         .join(OrderedProductItem.seats)\
-    #         .filter_by(id = seat_id)\
-    #         .one()
-    # if seat == None:
-    #     raise HTTPNotFound()
-    
+from ticketing.core.models import OrderedProductItemToken
+def build_qr_by_order_seat(order_no, token_id):
+    token = OrderedProductItemToken.filter(id=token_id)\
+        .filter(TicketPrintHistory.ordered_product_item_id==OrderedProductItem.id)\
+        .filter(OrderedProductItem.ordered_product_id == OrderedProduct.id)\
+        .filter(OrderedProduct.order_id == Order.id)\
+        .filter(Order.order_no == order_no).first()
+    if token is None:
+        raise HTTPNotFound()
+
     # ここでinsertする
-    opi = DBSession.query(OrderedProductItem)\
-        .join(OrderedProductItem.seats)\
-        .filter_by(id = seat_id)\
-        .one()
-    history = TicketPrintHistory\
-        .filter_by(ordered_product_item_id=opi.id, seat_id=seat_id).first()
-    if history == None:
-        # create TicketPrintHistory record
-        history = TicketPrintHistory(ordered_product_item_id=opi.id, seat_id=seat_id)
+    history = TicketPrintHistory.filter(item_token_id=token_id)\
+        .filter(TicketPrintHistory.ordered_product_item_id==OrderedProductItem.id)\
+        .filter(OrderedProductItem.ordered_product_id == OrderedProduct.id)\
+        .filter(OrderedProduct.order_id == Order.id)\
+        .filter(Order.order_no == order_no).first()
+
+    if history is None:
+        history = TicketPrintHistory(
+            seat_id=token.seat_id, 
+            item_token_id=token.id, 
+            ordered_product_item_id=token.ordered_product_item_id)
         DBSession.add(history)
         DBSession.flush()
     
@@ -204,7 +205,7 @@ def order_review_qr_image(context, request):
 @mobile_view_config(route_name='order_review.qr_print', request_method='POST', renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/qr.html"))
 @view_config(route_name='order_review.qr_print', request_method='POST', renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/qr.html"))
 def order_review_qr_print(context, request):
-    ticket = build_qr_by_order_seat(request.params['order_no'], request.params['seat'])
+    ticket = build_qr_by_order_seat(request.params['order_no'], request.params['token'])
     
     return dict(
         sign = ticket.qr[0:8],
