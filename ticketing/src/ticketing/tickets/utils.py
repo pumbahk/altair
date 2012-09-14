@@ -52,7 +52,7 @@ class DictBuilder(object):
         self.formatter = formatter
 
     def build_dict_from_stock(self, stock, retval=None):
-        retval = retval or {}
+        retval = {} if retval is None else retval
         stock_holder = stock.stock_holder
         stock_type = stock.stock_type
         stock_status = stock.stock_status
@@ -119,7 +119,7 @@ class DictBuilder(object):
         return retval
         
     def build_dict_from_seat(self, seat, ticket_number_issuer=None):
-        retval = {} if retval is None else retval
+        retval = {}
         retval = self.build_dict_from_stock(seat.stock, retval)
         retval = self.build_dict_from_venue(seat.venue, retval)
         retval.update({
