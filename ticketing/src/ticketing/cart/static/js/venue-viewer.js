@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['w_5454KFKXOLD0K8'] = (function (exports) { (function () { 
+__LIBS__['KBZ7ZSZN24HC051C'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -101,27 +101,31 @@ exports.allAttributes = function Util_allAttributes(el) {
 };
 
 exports.makeHitTester = function Util_makeHitTester(a) {
-  var pa = a.position(),
-  sa = a.size(),
-  ax0 = pa.x,
-  ax1 = pa.x + sa.x,
-  ay0 = pa.y,
-  ay1 = pa.y + sa.y;
+  var leftTop = a.position(), sa = a.size();
+  var rightBottom = { x: leftTop.x + sa.x, y: leftTop.y + sa.y };
+  if (a.transform()) {
+    leftTop = a.transform().apply(leftTop); 
+    rightBottom = a.transform().apply(rightBottom);
+  }
 
   return function(b) {
-    var pb = b.position(),
-    sb = b.size(),
-    bx0 = pb.x,
-    bx1 = pb.x + sb.x,
-    by0 = pb.y,
-    by1 = pb.y + sb.y;
+    var targetLeftTop = b.position(), sa = b.size();
+    var targetRightBottom = { x: targetLeftTop.x + sa.x, y: targetLeftTop.y + sa.y };
+    if (b.transform()) {
+      targetLeftTop = b.transform().apply(targetLeftTop); 
+      targetRightBottom = b.transform().apply(targetRightBottom);
+    }
 
-    return ((((ax0 < bx0) && (bx0 < ax1)) || (( ax0 < bx1) && (bx1 < ax1)) || ((bx0 < ax0) && (ax1 < bx1))) && // x
-            (((ay0 < by0) && (by0 < ay1)) || (( ay0 < by1) && (by1 < ay1)) || ((by0 < ay0) && (ay1 < by1))));  // y
+    return ((((leftTop.x < targetLeftTop.x) && (targetLeftTop.x < rightBottom.x)) ||
+             ((leftTop.x < targetRightBottom.x) && (targetRightBottom.x < rightBottom.x)) ||
+             ((targetLeftTop.x < leftTop.x) && (rightBottom.x < targetRightBottom.x))) && // x
+            (((leftTop.y < targetLeftTop.y) && (targetLeftTop.y < rightBottom.y)) ||
+             ((leftTop.y < targetRightBottom.y) && (targetRightBottom.y < rightBottom.y)) ||
+             ((targetLeftTop.y < leftTop.y) && (rightBottom.y < targetRightBottom.y))));  // y
   }
 };
  })(); return exports; })({});
-__LIBS__['gC0KJV051LUA6PKD'] = (function (exports) { (function () { 
+__LIBS__['CE3T2Q_I4JJLY4Y1'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -176,11 +180,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['xG9ZLBFRWWD3PIMM'] = (function (exports) { (function () { 
+__LIBS__['F48YAH68ZTVMS0BV'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['w_5454KFKXOLD0K8'];
-var CONF = __LIBS__['gC0KJV051LUA6PKD'];
+var util = __LIBS__['KBZ7ZSZN24HC051C'];
+var CONF = __LIBS__['CE3T2Q_I4JJLY4Y1'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -197,9 +201,9 @@ function mergeStyle(a, b) {
 
 function copyShape(shape) {
   if (shape instanceof Fashion.Path) {
-    return new Fashion.Path({ points: shape.points(), style:shape.style() });
+    return new Fashion.Path({ points: shape.points(), style: shape.style(), transform: shape.transform() });
   } else if (shape instanceof Fashion.Rect) {
-    return new Fashion.Rect({ position: shape.position(), size: shape.size() });
+    return new Fashion.Rect({ position: shape.position(), size: shape.size(), transform: shape.transform() });
   }
   return null;
 }
@@ -957,7 +961,7 @@ function collectText(node) {
 
 function copyShape(shape) {
   if (shape instanceof Fashion.Rect) {
-    return new Fashion.Rect({ position: shape.position(), size: shape.size() });
+    return new Fashion.Rect({ position: shape.position(), size: shape.size(), transform: shape.transform() });
   }
   return null;
 }
@@ -1012,9 +1016,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['gC0KJV051LUA6PKD'];
-  var seat = __LIBS__['xG9ZLBFRWWD3PIMM'];
-  var util = __LIBS__['w_5454KFKXOLD0K8'];
+  var CONF = __LIBS__['CE3T2Q_I4JJLY4Y1'];
+  var seat = __LIBS__['F48YAH68ZTVMS0BV'];
+  var util = __LIBS__['KBZ7ZSZN24HC051C'];
 
   var StoreObject = _class("StoreObject", {
     props: {
