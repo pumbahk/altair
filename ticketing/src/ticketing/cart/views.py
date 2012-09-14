@@ -69,10 +69,11 @@ class IndexView(object):
 
     @view_config(route_name='cart.index', renderer=selectable_renderer("carts/%(membership)s/index.html"), xhr=False, permission="buy")
     def redirect_sale(self):
-        sales_segment = self.context.get_sales_segument()
-        if sales_segment is None:
+        sales_segments = self.context.sales_segments
+        if not sales_segments:
             logger.debug("No matching sales_segment")
             raise NoEventError("No matching sales_segment")
+        sales_segment = sales_segments[0]
         event_id = self.request.matchdict['event_id']
         location = self.request.route_url('cart.index.sales', 
             event_id=event_id,
