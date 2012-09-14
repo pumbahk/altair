@@ -16,9 +16,9 @@ function mergeStyle(a, b) {
 
 function copyShape(shape) {
   if (shape instanceof Fashion.Path) {
-    return new Fashion.Path({ points: shape.points(), style:shape.style() });
+    return new Fashion.Path({ points: shape.points(), style: shape.style(), transform: shape.transform() });
   } else if (shape instanceof Fashion.Rect) {
-    return new Fashion.Rect({ position: shape.position(), size: shape.size() });
+    return new Fashion.Rect({ position: shape.position(), size: shape.size(), transform: shape.transform() });
   }
   return null;
 }
