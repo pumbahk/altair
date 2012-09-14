@@ -157,8 +157,7 @@ def order_review_qr_confirm(context, request):
         performance = ticket.performance,
         event = ticket.event,
         product = ticket.product,
-    )
-    
+        )
 @view_config(route_name='order_review.qr', renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/qr.html"))
 def order_review_qr_html(context, request):
     ticket_id = int(request.matchdict.get('ticket_id', 0))
