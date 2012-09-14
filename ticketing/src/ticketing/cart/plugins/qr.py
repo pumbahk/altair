@@ -87,7 +87,6 @@ class QRTicketDeliveryPlugin(object):
                         item = opi, 
                         serial = i, 
                         seat = seat, 
-                        key = "##",  
                         valid=True
                         )
                     opi.tokens.append(token)

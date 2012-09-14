@@ -1861,7 +1861,7 @@ class OrderedProductItemToken(Base,BaseModel, LogicallyDeleted):
     seat_id = Column(Identifier, ForeignKey("Seat.id", ondelete='CASCADE'), nullable=True)
     seat = relationship("Seat", backref="tokens")
     serial = Column(Integer, nullable=False)
-    key = Column(Unicode(255), nullable=True)
+    key = Column(Unicode(255), nullable=True)    #今は使っていない。https://dev.ticketstar.jp/redmine/altair/issues/499#note-15
     valid = Column(Boolean, nullable=False, default=False)
 
 class Ticket_TicketBundle(Base, BaseModel, LogicallyDeleted):
