@@ -236,7 +236,7 @@ def order_review_send_mail(context, request):
         api.send_qr_mail(request, context, mail, sender)
         
     except Exception, e:
-        logger.error(str(e), exc_info=1)
+        logger.error(e.message, exc_info=1)
         ## この例外は違う...
         raise HTTPNotFound()
 
@@ -253,8 +253,13 @@ def order_review_send_mail(context, request):
 def render_qrmail_viewlet(context, request):
     ticket = build_qr_by_order_seat(request.params['order_no'], request.params['token'])
     sign = ticket.qr[0:8]
+    if ticket.order.shipping_address:
+        name = ticket.order.shipping_address.last_name + ticket.order.shipping_address.first_name
+    else:
+        name = u''
     
     return dict(
+        name=name,
         event=ticket.event, 
         performance=ticket.performance, 
         product=ticket.product, 

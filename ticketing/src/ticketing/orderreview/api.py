@@ -6,7 +6,7 @@ from pyramid_mailer.message import Message
 def send_qr_mail(request, context, recipient, sender):
     mail_body = get_mailbody_from_viewlet(request, context, "render.mail")
     return _send_mail_simple(request, recipient, sender, mail_body, 
-                             subject=u"QRメール", )
+                             subject=u"QRチケットに関しまして", )
 
 def get_mailbody_from_viewlet(request, context, viewname):
     response = render_view_to_response(context, request, name=viewname)
@@ -14,7 +14,7 @@ def get_mailbody_from_viewlet(request, context, viewname):
         raise ValueError
     return response.text
 
-def _send_mail_simple(request, recipient, sender, mail_body, subject=u"QRメール"):
+def _send_mail_simple(request, recipient, sender, mail_body, subject=u"QRチケットに関しまして"):
     message = Message(
             subject=subject, 
             recipients=[recipient], 
