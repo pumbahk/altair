@@ -28,7 +28,7 @@ def includeme(config):
     config.add_route('cart.products', 'events/{event_id}/performances/{performance_id}/sales_segment/{sales_segment_id}/seat_types/{seat_type_id}/products')
     config.add_route('cart.date.products', 'events/{event_id}/products')
 
-    config.add_route('cart.order', 'order')
+    config.add_route('cart.order', 'order/{sales_segment_id}')
     config.add_route('cart.payment', 'payment')
     config.add_route('cart.release', 'release')
 

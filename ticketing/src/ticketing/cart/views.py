@@ -150,7 +150,7 @@ class IndexView(object):
                     venues_selection=Markup(json.dumps(select_venues.items())),
                     sales_segment=Markup(json.dumps(dict(id=sales_segment.id, seat_choice=sales_segment.seat_choice))),
                     products_from_selected_date_url = self.request.route_url("cart.date.products", event_id=event_id), 
-                    order_url=self.request.route_url("cart.order"),
+                    order_url=self.request.route_url("cart.order", sales_segment_id=sales_segment.id),
                     upper_limit=sales_segment.upper_limit,
                     event_extra_info=event_extra_info.get("event") or []
         )
@@ -559,7 +559,7 @@ class ReserveView(object):
             event_id=performance.event_id,
             seat_type_id=seat_type_id,
         )
-        return HTTPFound(self.request.route_url('cart.order', _query=query))
+        return HTTPFound(self.request.route_url('cart.order', sales_segment_id=sales_segment.id, _query=query))
 
     def __call__(self):
         """
