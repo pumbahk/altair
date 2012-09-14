@@ -34,7 +34,14 @@ def upgrade():
     sa.PrimaryKeyConstraint('id')
     )
 
+
+    op.add_column("TicketPrintHistory", sa.Column("item_token_id",  use_alter=True, name="TicketPrintHistory_ibfk_5"), nullable=True)
+    op.execute("alter table TicketPrintHistory add constraint TicketPrintHistory_ibfk_5 foreign key (item_token_id) references OrderedProductItemToken(id);")
+
+
 def downgrade():
+    op.drop_constraint('TicketPrintHistory_ibfk_1', 'TicketPrintHistory', type='foreignkey')
+    op.drop_column("TicketPrintHistory")
     op.drop_constraint('OrderedProductItemToken_ibfk_1', 'OrderedProductItemToken', type='foreignkey')
     op.drop_constraint('OrderedProductItemToken_ibfk_2', 'OrderedProductItemToken', type='foreignkey')
     op.drop_table("OrderedProductItemToken")

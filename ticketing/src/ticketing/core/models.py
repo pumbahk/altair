@@ -2017,6 +2017,8 @@ class TicketPrintHistory(Base, BaseModel, WithTimestamp):
     seat = relationship('Seat', backref='print_histories')
     ticket_id = Column(Identifier, ForeignKey('Ticket.id'), nullable=False)
     ticket = relationship('Ticket')
+    item_token_id = Column(Identifier, ForeignKey('OrderedProductItemToken.id'), nullable=False)
+    item_token = relationship('OrderedProductItemToken')
 
 class PageFormat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "PageFormat"
