@@ -239,7 +239,7 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                                    secondaryjoin=VenueArea_group_l0_id.venue_area_id==VenueArea.id,
                                    backref="seats")
     adjacencies     = relationship("SeatAdjacency", secondary=Seat_SeatAdjacency.__table__, backref="seats")
-    status_ = relationship('SeatStatus', uselist=False, backref='seat') # 1:1
+    status_ = relationship('SeatStatus', uselist=False, backref='seat', cascade='all,delete-orphan') # 1:1
 
     status = association_proxy('status_', 'status')
 
