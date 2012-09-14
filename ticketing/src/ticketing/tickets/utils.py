@@ -77,7 +77,7 @@ class DictBuilder(object):
         return retval
 
     def build_dict_from_venue(self, venue, retval=None):
-        retval = retval or {}
+        retval = {} if retval is None else retval
         performance = venue.performance
         event = performance.event
         organization = event.organization
@@ -119,7 +119,7 @@ class DictBuilder(object):
         return retval
         
     def build_dict_from_seat(self, seat, ticket_number_issuer=None):
-        retval = {}
+        retval = {} if retval is None else retval
         retval = self.build_dict_from_stock(seat.stock, retval)
         retval = self.build_dict_from_venue(seat.venue, retval)
         retval.update({
@@ -288,8 +288,8 @@ class DictBuilder(object):
         retval = []
         if ordered_product_item.product_item.stock.stock_type.quantity_only:
             d = {}
-            self.build_dict_from_stock(ordered_product_item.product_item.stock, d)
-            self.build_dict_from_venue(ordered_product_item.product_item.performance.venue, d)
+            d = self.build_dict_from_stock(ordered_product_item.product_item.stock, d)
+            d = self.build_dict_from_venue(ordered_product_item.product_item.performance.venue, d)
             d[u'発券番号'] = ticket_number_issuer() if ticket_number_issuer else None
             d.update(extra)
             retval.append((None, d))
