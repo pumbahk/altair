@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import logging
+import itertools
 from pyramid.interfaces import IAuthorizationPolicy
 from pyramid.threadlocal import get_current_request
 from zope.interface import implementer
@@ -27,10 +28,14 @@ class MembershipAuthorizationPolicy(object):
 
         if permission == "buy":
             logger.debug('authorize for buy')
-            sales_segment = context.sales_segment
-            if sales_segment is not None and any([m.is_guest for m in sales_segment.membergroups]):
+            sales_segments = context.sales_segments
+            available_membergroups = list(itertools.chain(*[s.membergroups for s in sales_segments]))
+            print "*" * 30
+            print [s.name for s in sales_segments]
+            if all([m.is_guest for m in available_membergroups]):
                 return True
 
+            sales_segment = context.sales_segment
             memberships = context.memberships
             membergroups = context.membergroups
             if not memberships or not membergroups:

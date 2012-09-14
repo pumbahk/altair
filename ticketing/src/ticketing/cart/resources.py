@@ -94,20 +94,47 @@ class TicketingCartResource(object):
     def get_sales_segument(self):
         return self.get_sales_segment()
 
+    @property
+    def sales_segments(self):
+        """ イベントに関連する全販売区分 """
+        now = datetime.now()
+        q = c_models.SalesSegment.query
+        q = q.filter(c_models.SalesSegment.public==1)
+        q = q.filter(c_models.SalesSegment.event_id==self.event_id)
+
+        q = q.filter(
+            c_models.SalesSegment.start_at <= now
+        ).filter(
+            c_models.SalesSegment.end_at >= now
+        )
+
+        user = self.authenticated_user()
+        if user and 'membership' in user:
+            q = q.filter(
+                c_models.SalesSegment.id==u_models.MemberGroup_SalesSegment.c.sales_segment_id
+            ).filter(
+                u_models.MemberGroup_SalesSegment.c.membergroup_id==u_models.MemberGroup.id
+            ).filter(
+                u_models.MemberGroup.name==user['membergroup']
+            )
+        return q.all()
+
     def get_sales_segment(self):
         """ 該当イベントのSalesSegment取得
         """
 
         sales_segment_id = self.request.matchdict.get('sales_segment_id')
+        if sales_segment_id is None:
+            return None
 
         now = datetime.now()
         q = c_models.SalesSegment.query
+        q = q.filter(c_models.SalesSegment.public==1)
         q = q.filter(c_models.SalesSegment.event_id==self.event_id)
 
-        if sales_segment_id is not None:
-            q = q.filter(
-                c_models.SalesSegment.id==sales_segment_id
-            )
+        q = q.filter(
+            c_models.SalesSegment.id==sales_segment_id
+        )
 
         user = self.authenticated_user()
         if user and 'membership' in user:
