@@ -148,7 +148,7 @@ class IndexView(object):
                     cart_release_url=self.request.route_url('cart.release'),
                     selected=Markup(json.dumps([selected_performance.name, selected_performance.id])),
                     venues_selection=Markup(json.dumps(select_venues.items())),
-                    sales_segment=Markup(json.dumps(dict(seat_choice=sales_segment.seat_choice))),
+                    sales_segment=Markup(json.dumps(dict(id=sales_segment.id, seat_choice=sales_segment.seat_choice))),
                     products_from_selected_date_url = self.request.route_url("cart.date.products", event_id=event_id), 
                     order_url=self.request.route_url("cart.order"),
                     upper_limit=sales_segment.upper_limit,
@@ -168,7 +168,7 @@ class IndexView(object):
                 dict(id=s.id, name=s.name,
                     style=s.style,
                     products_url=self.request.route_url('cart.products',
-                        event_id=event_id, performance_id=performance_id, seat_type_id=s.id),
+                        event_id=event_id, performance_id=performance_id, sales_segment_id=sales_segment_id, seat_type_id=s.id),
                     availability=available > 0,
                     availability_text=h.get_availability_text(available),
                     quantity_only=s.quantity_only,
@@ -244,6 +244,7 @@ class IndexView(object):
         """
         seat_type_id = self.request.matchdict['seat_type_id']
         performance_id = self.request.matchdict['performance_id']
+        sales_segment_id = self.request.matchdict['sales_segment_id']
        
         logger.debug("seat_typeid = %(seat_type_id)s, performance_id = %(performance_id)s"
             % dict(seat_type_id=seat_type_id, performance_id=performance_id))
@@ -258,7 +259,7 @@ class IndexView(object):
         query = DBSession.query(c_models.Product)
         query = query.filter(c_models.Product.id.in_(q)).order_by(sa.desc("price"))
         ### filter by salessegment
-        salessegment = self.context.get_sales_segument()
+        salessegment = DBSession.query(c_models.SalesSegment).filter_by(id=sales_segment_id).one()
         query = h.products_filter_by_salessegment(query, salessegment)
 
         products = [dict(id=p.id, 
@@ -887,7 +888,8 @@ class MobileIndexView(object):
             return HTTPFound(self.request.route_url(
                 "cart.mobile",
                 event_id=event_id,
-                performance_id=performance_id))
+                performance_id=performance_id,
+                sales_segment_id=sales_segment.id))
 
         event = c_models.Event.query.filter(c_models.Event.id==event_id).first()
         if event is None:
@@ -944,6 +946,7 @@ class MobileSelectProductView(object):
     def __call__(self):
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.matchdict['performance_id']
+        sales_segment_id = self.request.matchdict['sales_segment_id']
         seat_type_id = self.request.params.get('stid')
 
         if seat_type_id:
@@ -951,6 +954,7 @@ class MobileSelectProductView(object):
                 "cart.products",
                 event_id=event_id,
                 performance_id=performance_id,
+                sales_segment_id=sales_segment_id,
                 seat_type_id=seat_type_id))
 
         # セールスセグメント必須
@@ -975,7 +979,7 @@ class MobileSelectProductView(object):
                 dict(id=s.id, name=s.name,
                      style=s.style,
                      products_url=self.request.route_url('cart.products',
-                                                         event_id=event_id, performance_id=performance_id, seat_type_id=s.id),
+                                                         event_id=event_id, performance_id=performance_id, sales_segment_id=sales_segment.id, seat_type_id=s.id),
                      availability=available > 0,
                      availability_text=h.get_availability_text(available),
                      quantity_only=s.quantity_only,
@@ -988,16 +992,12 @@ class MobileSelectProductView(object):
         )
         return data
 
-    @view_config(route_name='cart.products', renderer=selectable_renderer('carts_mobile/%(membership)s/products.html'), xhr=False, request_type=".interfaces.IMobileRequest", request_method="GET")
+    @view_config(route_name='cart.products', renderer=selectable_renderer('carts_mobile/%(membership)s/products.html'), xhr=False, request_type=".interfaces.IMobileRequest")
     def products(self):
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.matchdict['performance_id']
         seat_type_id = self.request.matchdict['seat_type_id']
-
-        # セールスセグメント必須
-        sales_segment = self.context.get_sales_segument()
-        if sales_segment is None:
-            raise NoEventError("No matching sales_segment")
+        sales_segment_id = self.request.matchdict['seat_type_id']
 
         # イベント
         event = c_models.Event.query.filter(c_models.Event.id==event_id).first()
@@ -1010,6 +1010,13 @@ class MobileSelectProductView(object):
             c_models.Performance.event_id==event.id).first()
         if performance is None:
             raise NoEventError("No such performance (%d)" % performance_id)
+
+        sales_segment = c_models.SalesSegment.query.filter_by(
+            id==sales_segment_id,
+            event_id=event.id).first()
+        if sales_segment is None:
+            raise NoEventError("No such sales segment (%d)" % sales_segment_id)
+        
 
         # 席種(イベントとパフォーマンスにひもづいてること)
         segment_stocks = DBSession.query(c_models.ProductItem.stock_id).filter(

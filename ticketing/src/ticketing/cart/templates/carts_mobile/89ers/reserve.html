@@ -31,7 +31,7 @@ ${event.title}
   <input type="submit" value="決済へ">
   </div>
 </form>
-<form action="${request.route_url('cart.products', event_id=event.id, performance_id=performance.id, seat_type_id=seat_type_id)}" method="get">
+<form action="${request.route_url('cart.products', event_id=event.id, performance_id=performance.id, sales_segment_id=sales_segment_id, seat_type_id=seat_type_id)}" method="get">
   <div style="text-align:center;">
   <input type="submit" value="戻る">
   </div>
