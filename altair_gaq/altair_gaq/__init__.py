@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from .fanstatic_resources import bj89ers, nh
+from .fanstatic_resources import bj89ers, nh, nh_dev
 
 def includeme(config):
     # fanstaticよりも先
@@ -11,11 +11,13 @@ def gaq_tween_factory(handler, registry):
     def tween(request):
         # ドメインによってneedを変える
         # TODO: Domainモデルなど作ってそこにまとめる
-        if request.host.startswith('89ers'):
+        if request.host == 'happinets.dev.ticketstar.jp':
+            nh_dev.need()
+        elif request.host.startswith('89ers'):
             bj89ers.need()
-        if request.host.startswith('secure'):
+        elif request.host.startswith('secure'):
             bj89ers.need()
-        if request.host.startswith('happinets'):
+        elif request.host.startswith('happinets'):
             nh.need()
         return handler(request)
     return tween
