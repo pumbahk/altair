@@ -1020,12 +1020,11 @@ class MobileSelectProductView(object):
         if performance is None:
             raise NoEventError("No such performance (%d)" % performance_id)
 
-        sales_segment = c_models.SalesSegment.query.filter(
-            c_models.SalesSegment.id==sales_segment_id,
-            c_models.SalesSegment.event_id==event.id).first()
+        sales_segment = c_models.SalesSegment.query.filter_by(
+            id==sales_segment_id,
+            event_id=event.id).first()
         if sales_segment is None:
-            raise NoEventError("No such sales segment (%s)" % sales_segment_id)
-        
+            raise NoEventError("No such sales segment (%d)" % sales_segment_id)
 
         # 席種(イベントとパフォーマンスにひもづいてること)
         segment_stocks = DBSession.query(c_models.ProductItem.stock_id).filter(
