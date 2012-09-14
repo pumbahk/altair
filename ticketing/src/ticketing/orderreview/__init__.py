@@ -30,7 +30,9 @@ def main(global_conf, **settings):
     config.include('ticketing.cart')
     config.include('ticketing.cart.import_mail_module')
     config.scan('ticketing.cart.views')
-    # config.commit() #これ必要？
+
+    config.commit() #override qr plugins view
+    config.include(".qr")
     config.include('..mobile')
 
     config.include(import_selectable_renderer)
