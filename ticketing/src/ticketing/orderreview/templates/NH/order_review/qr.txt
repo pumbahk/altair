@@ -13,7 +13,9 @@ ${performance.name}
 開演: ${performance.start_on.strftime(u"%H:%M-".encode('utf-8')).decode('utf-8')}
 
 席種: ${product.name}
+%if seat:
 席番号: ${seat.name}
+%endif
 
 ↓こちらからQRコードを取得してください.
 ${url}

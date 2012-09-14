@@ -80,14 +80,15 @@ def contact_view(context, request):
     return dict()
 
 def build_qr_by_order_seat(order_no, seat_id):
-    seat = Order.filter_by(order_no = order_no)\
-            .join(Order.ordered_products)\
-            .join(OrderedProduct.ordered_product_items)\
-            .join(OrderedProductItem.seats)\
-            .filter_by(id = seat_id)\
-            .one()
-    if seat == None:
-        raise HTTPNotFound()
+    ## ちょっと意味が分からない
+    # seat = Order.filter_by(order_no = order_no)\
+    #         .join(Order.ordered_products)\
+    #         .join(OrderedProduct.ordered_product_items)\
+    #         .join(OrderedProductItem.seats)\
+    #         .filter_by(id = seat_id)\
+    #         .one()
+    # if seat == None:
+    #     raise HTTPNotFound()
     
     # ここでinsertする
     opi = DBSession.query(OrderedProductItem)\
@@ -120,15 +121,18 @@ def build_qr(ticket_id):
     ticket.product = ticket.ordered_product_item.ordered_product.product
     ticket.order = ticket.ordered_product_item.ordered_product.order
     
-    ticket.qr = builder.sign(builder.make(dict(
-                    serial=("%d" % ticket.id),
-                    performance=ticket.performance.code,
-                    order=ticket.order.order_no,
-                    date=ticket.performance.start_on.strftime("%Y%m%d"),
-                    type=ticket.product.id,
-                    seat=ticket.seat.l0_id,
-                    seat_name=ticket.seat.name,
-                    )))
+    params = dict(serial=("%d" % ticket.id),
+                  performance=ticket.performance.code,
+                  order=ticket.order.order_no,
+                  date=ticket.performance.start_on.strftime("%Y%m%d"),
+                  type=ticket.product.id)
+    if ticket.seat:
+        params["seat"] =ticket.seat.l0_id
+        params["seat_name"] = ticket.seat.name
+    else:
+        params["seat"] = ""
+        params["seat_name"] = "" #TicketPrintHistoryはtokenが違えば違うのでuniqueなはず
+    ticket.qr = builder.sign(builder.make(params))
     ticket.sign = ticket.qr[0:8]
     
     return ticket
