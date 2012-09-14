@@ -34,16 +34,16 @@ def deliver_completion_viewlet(context, request):
     order = context.order
     for op in order.ordered_products:
         for opi in op.ordered_product_items:
-            for token in opi.tokens:
+            for t in opi.tokens:
                 history = core_models.TicketPrintHistory.filter_by(ordered_product_item_id = opi.id,
-                                                                   seat_id = token.seat_id,
-                                                                   token_id=token.id).first()
+                                                                   seat_id = t.seat_id,
+                                                                   item_token_id=t.id).first()
                 class QRTicket:
                     order = context.order
                     performance = context.order.performance
                     product = op.product
-                    seat = token.seat
-                    token = token
+                    seat = t.seat
+                    token = t
                     printed_at = history.created_at if history else ''
                 ticket = QRTicket()
                 tickets.append(ticket)
@@ -73,7 +73,7 @@ def _with_serial_and_seat(ordered_product,  ordered_product_item):
             yield i, s
     else:
         for i in xrange(ordered_product.quantity):
-            yield i, s
+            yield i, None
 
 class QRTicketDeliveryPlugin(object):
     def prepare(self, request, cart):

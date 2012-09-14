@@ -81,16 +81,17 @@ def contact_view(context, request):
 
 from ticketing.core.models import OrderedProductItemToken
 def build_qr_by_order_seat(order_no, token_id):
-    token = OrderedProductItemToken.filter(id=token_id)\
-        .filter(TicketPrintHistory.ordered_product_item_id==OrderedProductItem.id)\
+    token = OrderedProductItemToken.filter(OrderedProductItemToken.id==token_id)\
+        .filter(OrderedProductItemToken.ordered_product_item_id==OrderedProductItem.id)\
         .filter(OrderedProductItem.ordered_product_id == OrderedProduct.id)\
         .filter(OrderedProduct.order_id == Order.id)\
         .filter(Order.order_no == order_no).first()
+
     if token is None:
         raise HTTPNotFound()
 
     # ここでinsertする
-    history = TicketPrintHistory.filter(item_token_id=token_id)\
+    history = TicketPrintHistory.filter(TicketPrintHistory.item_token_id==token_id)\
         .filter(TicketPrintHistory.ordered_product_item_id==OrderedProductItem.id)\
         .filter(OrderedProductItem.ordered_product_id == OrderedProduct.id)\
         .filter(OrderedProduct.order_id == Order.id)\
@@ -243,7 +244,7 @@ def order_review_send_mail(context, request):
 @view_config(name="render.mail", 
              renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/qr.txt"))
 def render_qrmail_viewlet(context, request):
-    ticket = build_qr_by_order_seat(request.params['order_no'], request.params['seat'])
+    ticket = build_qr_by_order_seat(request.params['order_no'], request.params['token'])
     sign = ticket.qr[0:8]
     
     return dict(
