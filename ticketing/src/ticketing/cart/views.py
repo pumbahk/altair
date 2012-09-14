@@ -439,7 +439,7 @@ class ReserveView(object):
         DBSession.flush()
         api.set_cart(self.request, cart)
         return dict(result='OK', 
-                    payment_url=self.request.route_url("cart.payment"),
+                    payment_url=self.request.route_url("cart.payment", sales_segment_id=sales_segment.id),
                     cart=dict(products=[dict(name=p.product.name, 
                                              quantity=p.quantity,
                                              price=int(p.product.price),
@@ -457,6 +457,7 @@ class ReserveView(object):
 
         performance_id = self.request.params.get('performance_id')
         seat_type_id = self.request.params.get('seat_type_id')
+        sales_segment = self.context.get_sales_segument()
 
         performance = c_models.Performance.query.filter(
             c_models.Performance.id==performance_id).first()
@@ -469,7 +470,7 @@ class ReserveView(object):
             event=event,
             performance=performance, 
             seat_type_id=seat_type_id,
-            payment_url=self.request.route_url("cart.payment"),
+            payment_url=self.request.route_url("cart.payment", sales_segment_id=sales_segment.id),
             cart=dict(products=[dict(name=p.product.name, 
                                      quantity=p.quantity,
                                      price=int(p.product.price),
@@ -563,8 +564,10 @@ class ReserveView(object):
 
     def __call__(self):
         """
+        TODO: 使われていない？
         座席情報から座席グループを検索する
         """
+        sales_segment = self.context.get_sales_segument()
 
         #seat_type_id = self.request.matchdict['seat_type_id']
         cart = self.context.order_products(self.request.params['performance_id'], self.ordered_items)
@@ -574,7 +577,7 @@ class ReserveView(object):
         #self.request.session['ticketing.cart_id'] = cart.id
         #self.cart = cart
         return dict(result='OK', 
-                    payment_url=self.request.route_url("cart.payment"),
+                    payment_url=self.request.route_url("cart.payment", sales_segment_id=sales_segment.id),
                     cart=dict(products=[dict(name=p.product.name, 
                                              quantity=p.quantity,
                                              price=int(p.product.price),

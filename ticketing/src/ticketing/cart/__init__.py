@@ -29,7 +29,7 @@ def includeme(config):
     config.add_route('cart.date.products', 'events/{event_id}/products')
 
     config.add_route('cart.order', 'order/{sales_segment_id}')
-    config.add_route('cart.payment', 'payment')
+    config.add_route('cart.payment', 'payment/{sales_segment_id}')
     config.add_route('cart.release', 'release')
 
     # 完了／エラー
