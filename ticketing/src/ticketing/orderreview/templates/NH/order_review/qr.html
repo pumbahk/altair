@@ -2,16 +2,16 @@
 <head>
 </head>
 <body><center>
-<hr size="10" color="#82002C">
+<hr size="10" color="#dc0078">
 		<!-- InstanceBeginEditable name="main" -->
 			<div>
 			<h3>${event.title}${u'(%s)' % performance.name if performance.name else ''}</h3>
-<hr size="1" color="#ffb700">
+<hr size="1" color="#B59557">
 				<dl>
 					<dt>${performance.start_on.strftime(u"%Y年%m月%d(%a)".encode('utf-8')).decode('utf-8')}</dt>
 					<dd>${performance.venue.name}</dd>
 				</dl>
-<hr size="1" color="#ffb700">
+<hr size="1" color="#B59557">
 			</div>
 
 								<img src="${request.route_path('order_review.qrdraw', ticket_id=ticket.id, sign=sign)}" style="width: 200px; height: 200px;"/>
@@ -24,7 +24,7 @@
                                 席番号 ${ticket.seat.name} (${ticket.seat.l0_id}) <br />
                                 %endif
 <br style="clear: both;" />
-<div style="background-color:#ffb700;">
+<div style="background-color:#B59557;">
 <b><font size="4" color="#fff">注意事項</font></b></div>
 <div align="left">
 <ul>
@@ -34,8 +34,8 @@
 </ul>
 </div>
 
-<hr size="1" color="#ffb700">
-<hr size="10" color="#82002C">
+<hr size="1" color="#B59557">
+<hr size="10" color="#dc0078">
 
 <a href="javascript:window.close();">閉じる</a>
 
