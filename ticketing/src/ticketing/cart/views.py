@@ -805,17 +805,23 @@ class CompleteView(object):
             payment_delivery_pair.delivery_method.delivery_plugin_id,)
         if payment_delivery_plugin is not None:
             order = payment_delivery_plugin.finish(self.request, cart)
+
+            user = self.context.get_or_create_user()
+            order.user = user
+            order.organization_id = order.performance.event.organization_id
+            cart.order = order
         else:
             payment_plugin = api.get_payment_plugin(self.request, payment_delivery_pair.payment_method.payment_plugin_id)
             order = payment_plugin.finish(self.request, cart)
+
+            user = self.context.get_or_create_user()
+            order.user = user
+            order.organization_id = order.performance.event.organization_id
+            cart.order = order
+
             DBSession.add(order)
             delivery_plugin = api.get_delivery_plugin(self.request, payment_delivery_pair.delivery_method.delivery_plugin_id)
             delivery_plugin.finish(self.request, cart)
-
-        user = self.context.get_or_create_user()
-        order.user = user
-        order.organization_id = order.performance.event.organization_id
-        cart.order = order
 
         notify_order_completed(self.request, order)
 
