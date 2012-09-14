@@ -17,7 +17,7 @@
 								パフォーマンス ${performance.code} <br />
 								興行日 ${performance.start_on} <br />
 								商品名 ${product.name} (${product.id}) <br />
-                                %if ticket.seat
+                                %if ticket.seat:
                                 席番号 ${ticket.seat.name} (${ticket.seat.l0_id}) <br />
                                 %endif
 <br style="clear: both;" />
