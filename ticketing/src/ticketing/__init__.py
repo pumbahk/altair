@@ -45,12 +45,9 @@ def main(global_config, **settings):
         )
     config.set_authorization_policy(ACLAuthorizationPolicy())
 
-    ### selectable renderer
-    config.include("ticketing.cart.selectable_renderer")
+    # multicheckout
     domain_candidates = json.loads(config.registry.settings["altair.cart.domain.mapping"])
     config.registry.utilities.register([], IDict, "altair.cart.domain.mapping", domain_candidates)
-    selector = config.maybe_dotted("ticketing.cart.selectable_renderer.ByDomainMappingSelector")(domain_candidates)
-    config.add_selectable_renderer_selector(selector)
 
     config.add_static_view('static', 'ticketing:static', cache_max_age=3600)
 

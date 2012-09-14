@@ -1578,6 +1578,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 order_no = self.order_no
                 if request.registry.settings.get('multicheckout.testing', False):
                     order_no = '%012d%02d' % (sensible_alnum_decode(order_no[2:12]), 0)
+                organization = Organization.get(self.organization_id)
+                request.registry.settings['altair_checkout3d.override_shop_name'] = organization.code
                 multi_checkout_result = multi_checkout_api.checkout_sales_cancel(request, order_no)
                 DBSession.add(multi_checkout_result)
 

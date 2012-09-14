@@ -228,6 +228,7 @@
                   var style = styleClasses[attrs['class']];
                   if (style) currentSvgStyle = mergeSvgStyle(currentSvgStyle, style);
                 }
+                currentSvgStyle = mergeSvgStyle(currentSvgStyle, svgStylesFromMap(attrs));
               }
 
               switch (n.nodeName) {
@@ -273,7 +274,7 @@
                 break;
 
               case 'rect':
-                var _transform = null;
+                var _transform = attrs.transform || null;
                 shape = new Fashion.Rect({
                   size: {
                     x: parseFloat(attrs.width),

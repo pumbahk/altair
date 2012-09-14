@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['w3WXUO0985U4LPIE'] = (function (exports) { (function () { 
+__LIBS__['w_5454KFKXOLD0K8'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -121,7 +121,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['DM434A57HPCL3TXW'] = (function (exports) { (function () { 
+__LIBS__['gC0KJV051LUA6PKD'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -176,11 +176,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['RJ8TQ3ZUXV477YM3'] = (function (exports) { (function () { 
+__LIBS__['xG9ZLBFRWWD3PIMM'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['w3WXUO0985U4LPIE'];
-var CONF = __LIBS__['DM434A57HPCL3TXW'];
+var util = __LIBS__['w_5454KFKXOLD0K8'];
+var CONF = __LIBS__['gC0KJV051LUA6PKD'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -828,7 +828,10 @@ function parseDefs(node, defset) {
 }
 
 function parseCSSAsSvgStyle(str, defs) {
-  var styles = parseCSSStyleText(str);
+  return svgStylesFromMap(parseCSSStyleText(str), defs);
+}
+
+function svgStylesFromMap(styles, defs) {
   var fill = null;
   var fillString = styles['fill'];
   var fillOpacity = null;
@@ -844,39 +847,53 @@ function parseCSSAsSvgStyle(str, defs) {
   var textAnchor = null;
   var textAnchorString = styles['text-anchor'];
   if (fillString) {
-    if (fillString[0] == 'none') {
+    if (fillString instanceof Array)
+      fillString = fillString[0];
+    if (fillString == 'none') {
       fill = false;
     } else {
-      var g = /url\(#([^)]*)\)/.exec(fillString[0]);
+      var g = /url\(#([^)]*)\)/.exec(fillString);
       if (g) {
         fill = defs[g[1]];
         if (!fill)
           throw new Error();
       } else {
-        fill = new Fashion.Color(fillString[0]);
+        fill = new Fashion.Color(fillString);
       }
     }
   }
   if (fillOpacityString) {
-    fillOpacity = parseFloat(fillOpacityString[0]);
+    if (fillOpacityString instanceof Array)
+      fillOpacityString = fillOpacityString[0];
+    fillOpacity = parseFloat(fillOpacityString);
   }
   if (strokeString) {
-    if (strokeString[0] == 'none')
+    if (strokeString instanceof Array)
+      strokeString = strokeString[0];
+    if (strokeString == 'none')
       stroke = false;
     else
-      stroke = new Fashion.Color(strokeString[0]);
+      stroke = new Fashion.Color(strokeString);
   }
   if (strokeWidthString) {
-    strokeWidth = parseFloat(strokeWidthString[0]);
+    if (strokeWidthString instanceof Array)
+      strokeWidthString = strokeWidthString[0];
+    strokeWidth = parseFloat(strokeWidthString);
   }
   if (strokeOpacityString) {
-    strokeOpacity = parseFloat(strokeOpacityString[0]);
+    if (strokeOpacityString instanceof Array)
+      strokeOpacityString = strokeOpacityString[0];
+    strokeOpacity = parseFloat(strokeOpacityString);
   }
   if (fontSizeString) {
-    fontSize = parseFloat(fontSizeString[0]);
+    if (fontSizeString instanceof Array)
+      fontSizeString = fontSizeString[0];
+    fontSize = parseFloat(fontSizeString);
   }
   if (textAnchorString) {
-    textAnchor = textAnchorString[0];
+    if (textAnchorString instanceof Array)
+      textAnchorString = textAnchorString[0];
+    textAnchor = textAnchorString;
   }
   return {
     fill: fill,
@@ -979,13 +996,13 @@ function parseTransform(transform_str) {
         if (args.length != 1)
             throw new Error("invalid number of arguments for rotate()");
         return Fashion.Matrix.rotate(parseFloat(args[0]) * Math.PI / 180);
-    case 'skeyX':
+    case 'skewX':
         if (args.length != 1)
             throw new Error('invalid number of arguments for skewX()');
         var t = parseFloat(args[0]) * Math.PI / 180;
         var ta = Math.tan(t);
         return new Fashion.Matrix(1, 0, ta, 1, 0, 0);
-    case 'skeyY':
+    case 'skewY':
         if (args.length != 1)
             throw new Error('invalid number of arguments for skewX()');
         var t = parseFloat(args[0]) * Math.PI / 180;
@@ -995,9 +1012,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['DM434A57HPCL3TXW'];
-  var seat = __LIBS__['RJ8TQ3ZUXV477YM3'];
-  var util = __LIBS__['w3WXUO0985U4LPIE'];
+  var CONF = __LIBS__['gC0KJV051LUA6PKD'];
+  var seat = __LIBS__['xG9ZLBFRWWD3PIMM'];
+  var util = __LIBS__['w_5454KFKXOLD0K8'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1220,6 +1237,7 @@ function parseTransform(transform_str) {
                   var style = styleClasses[attrs['class']];
                   if (style) currentSvgStyle = mergeSvgStyle(currentSvgStyle, style);
                 }
+                currentSvgStyle = mergeSvgStyle(currentSvgStyle, svgStylesFromMap(attrs));
               }
 
               switch (n.nodeName) {
@@ -1265,7 +1283,7 @@ function parseTransform(transform_str) {
                 break;
 
               case 'rect':
-                var _transform = null;
+                var _transform = attrs.transform || null;
                 shape = new Fashion.Rect({
                   size: {
                     x: parseFloat(attrs.width),
