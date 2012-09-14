@@ -8,7 +8,7 @@
 <div><font color="#dc0078">■</font>パフォーマンス</div>
 <div>${performance.name}</div>
 <div><font color="#dc0078">■</font>開催日時</div>
-<div>${performance.start_on.strftime(u"%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M〜").decode('utf-8')}</div>
+<div>${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}−</div>
 <div><font color="#dc0078">■</font>会場名</div>
 <div>${performance.venue.name}</div>
 <div><font color="#dc0078">■</font>券種名</div>
@@ -22,7 +22,7 @@
 <br />
 </div>
 </form>
-<div style="background-color:#dc0078;" bgcolor="#dc0078">
+<div style="background-color:#b59557;text-align:center" bgcolor="#b59557" align="center">
 <b><font size="4" color="#fff">注意事項</font></b>
 </div>
 ※携帯電話からご利用の方は、ボタンを押した後で表示される画面を「画面メモ」等にて保存してください。<br />
