@@ -308,6 +308,7 @@ def import_tree(update, organization, tree, file, venue_id=None):
     seats_to_be_deleted = set(seats) - seats_given
     for seat_l0_id in seats_to_be_deleted:
         seat = seats.get(seat_l0_id)
+        print u'[DELETE] Seat(id=%d)' % seat.id
         DBSession.delete(seat)
 
     print 'Number of seats to be added: %d' % new_seat_count
