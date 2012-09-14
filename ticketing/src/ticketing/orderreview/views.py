@@ -58,7 +58,7 @@ class OrderReviewView(object):
         return dict(order=order, sej_order=sej_order, shipping_address=order.shipping_address)
 
 @mobile_view_config(context=InvalidForm, 
-                    renderer=selectable_renderer("order_review_mobileticketing.orderreview:templates/%(membership)s/form.html"))
+                    renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review_mobile/form.html"))
 @view_config(context=InvalidForm, 
              renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/form.html"))
 def order_review_form_view(context, request):
