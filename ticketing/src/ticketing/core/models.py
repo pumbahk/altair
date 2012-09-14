@@ -1857,7 +1857,9 @@ class OrderedProductItemToken(Base,BaseModel, LogicallyDeleted):
     __tablename__ = "OrderedProductItemToken"
     id = Column(Identifier, primary_key=True)
     ordered_product_item_id = Column(Identifier, ForeignKey("OrderedProductItem.id", ondelete="CASCADE"), nullable=False)
+    item = relationship("OrderedProductItem", backref="tokens")
     seat_id = Column(Identifier, ForeignKey("Seat.id", ondelete='CASCADE'), nullable=True)
+    seat = relationship("Seat", backref="tokens")
     serial = Column(Integer, nullable=False)
     key = Column(Unicode(255), nullable=True)
     valid = Column(Boolean, nullable=False, default=False)

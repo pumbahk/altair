@@ -65,6 +65,13 @@ def deliver_completion_mail_viewlet(context, request):
                 notice=trv.data[MailInfoTemplate.delivery_key(context.order, "notice")]
                 )
 
+def _with_serial_and_seat(ordered_product,  ordered_product_item):
+    if ordered_product_item.seats:
+        for i, s in enumerate(ordered_product_item.seats):
+            yield i, s
+    else:
+        for i in xrange(ordered_product.quantity):
+            yield i, s
 
 class QRTicketDeliveryPlugin(object):
     def prepare(self, request, cart):
@@ -72,4 +79,15 @@ class QRTicketDeliveryPlugin(object):
 
     def finish(self, request, cart):
         """ 確定時処理 """
-        pass
+        order = cart.order
+        for op in order.ordered_products:
+            for opi in op.ordered_product_items:
+                for i, seat in _with_serial_and_seat(op, opi):
+                    token = core_models.OrderedProductItemToken(
+                        item = opi, 
+                        serial = i, 
+                        seat = seat, 
+                        key = "##",  
+                        valid=True
+                        )
+                    opi.tokens.append(token)
