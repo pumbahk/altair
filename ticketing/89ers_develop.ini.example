@@ -34,14 +34,30 @@ multicheckout.testing = true
 
 altair_cart.expire_time = 15
 fanstatic.base_url = /89ers/booster/
-
+altair_checkout3d.override_host = 89ers
 89ers.start_at = 2012-07-01 00:00:00
 89ers.end_at = 2013-03-31 23:59:59
-89ers.organization_id = 13
-89ers.event_id = 100001
-89ers.performance_id = 100000
+89ers.organization_id = 1
+89ers.event_id = 1
+89ers.performance_id = 1
 ;89ers.sender = 89ers@ticketstar.jp
 89ers.sender = aodag@beproud.jp
+
+altair_checkout3d.base_url = https://payment.rakuten-card.co.jp:9480/gh-ws/1.0/storecd/
+altair_checkout3d.89ers.shop_id = 0209000105
+altair_checkout3d.89ers.auth_id = Ws0105
+altair_checkout3d.89ers.auth_password = Ws09280105
+altair_checkout3d.NH.shop_id = 0209000105
+altair_checkout3d.NH.auth_id = Ws0105
+altair_checkout3d.NH.auth_password = Ws09280105
+
+altair_checkout.secret = 8c3a04a484fb9c1a37ef
+altair_checkout.auth_method = HMAC-SHA1
+altair_checkout.service_id = 1000002333
+altair_checkout.checkin_url = https://my.checkout.rakuten.co.jp/myc/cdodl/1.0/stepin
+altair_checkout.success_url = http://stg2.rt.ticketstar.jp/cart/completed
+altair_checkout.fail_url = http://stg2.rt.ticketstar.jp/cart/completed
+altair_checkout.is_test = 1
 
 ; Beaker
 session.type = file

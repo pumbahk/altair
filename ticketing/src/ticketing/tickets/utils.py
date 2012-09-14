@@ -6,6 +6,7 @@ from collections import namedtuple
 from ..users.models import SexEnum
 from .constants import *
 from .convert import as_user_unit
+from datetime import datetime
 
 def datetime_as_dict(dt):
     return {
@@ -37,6 +38,12 @@ class Japanese_Japan_Formatter(object):
     def format_time_short(self, time):
         return unicode(time.strftime('%H:%M'), 'utf-8')
 
+    def format_datetime(self, datetime):
+        return self.format_date(datetime) + u' ' + self.format_time(datetime)
+
+    def format_datetime_short(self, datetime):
+        return self.format_date_short(datetime) + u' ' + self.format_time_short(datetime)
+
     def format_currency(self, dec):
         return u'{0:0,.0f}円'.format(dec)
 
@@ -45,7 +52,7 @@ class DictBuilder(object):
         self.formatter = formatter
 
     def build_dict_from_stock(self, stock, retval=None):
-        retval = retval or {}
+        retval = {} if retval is None else retval
         stock_holder = stock.stock_holder
         stock_type = stock.stock_type
         stock_status = stock.stock_status
@@ -70,7 +77,7 @@ class DictBuilder(object):
         return retval
 
     def build_dict_from_venue(self, venue, retval=None):
-        retval = retval or {}
+        retval = {} if retval is None else retval
         performance = venue.performance
         event = performance.event
         organization = event.organization
@@ -251,7 +258,8 @@ class DictBuilder(object):
             u'商品価格': self.formatter.format_currency(ordered_product.price),
             u'チケット価格': self.formatter.format_currency(ordered_product_item.price),
             u'注文番号': order.order_no,
-            u'注文日時': order.created_at,
+            u'注文日時': self.formatter.format_datetime(order.created_at),
+            u'注文日時s': self.formatter.format_datetime_short(order.created_at),
             u'予約番号': order.order_no
             }
 
@@ -280,8 +288,9 @@ class DictBuilder(object):
         retval = []
         if ordered_product_item.product_item.stock.stock_type.quantity_only:
             d = {}
-            self.build_dict_from_stock(ordered_product_item.product_item.stock, d)
-            self.build_dict_from_venue(ordered_product_item.product_item.performance.venue, d)
+            d = self.build_dict_from_stock(ordered_product_item.product_item.stock, d)
+            d = self.build_dict_from_venue(ordered_product_item.product_item.performance.venue, d)
+            d[u'発券番号'] = ticket_number_issuer() if ticket_number_issuer else None
             d.update(extra)
             retval.append((None, d))
         else:
@@ -291,12 +300,133 @@ class DictBuilder(object):
                 retval.append((seat, d))
         return retval
 
+    def build_dicts_from_carted_product_item(self, carted_product_item, payment_delivery_method_pair=None, ordered_product_item_attributes=None, user_profile=None, ticket_number_issuer=None):
+        product_item = carted_product_item.product_item
+        ticket_bundle = product_item.ticket_bundle
+        carted_product = carted_product_item.carted_product
+        cart = carted_product.cart
+        product = carted_product.product
+        shipping_address = cart.shipping_address
+        payment_method = payment_delivery_method_pair and payment_delivery_method_pair.payment_method
+        delivery_method = payment_delivery_method_pair and payment_delivery_method_pair.delivery_method
+        sales_segment = product.sales_segment
+        now = datetime.now()
+        extra = {
+            u'order': {
+                u'total_amount': cart.total_amount,
+                u'system_fee': cart.system_fee,
+                u'transaction_fee': cart.transaction_fee,
+                u'delivery_fee': cart.delivery_fee,
+                u'order_no': cart.order_no
+                },
+            u'orderedProductItem': {
+                u'price': product_item.price
+                },
+            u'orderedProductItemAttributes': ordered_product_item_attributes or {},
+            u'orderedProduct': {
+                u'price': product.price,
+                u'quantity': carted_product.quantity
+                },
+            u'salesSegment': {
+                u'name': sales_segment.name,
+                u'kind': sales_segment.kind,
+                u'start_at': datetime_as_dict(sales_segment.start_at),
+                u'end_at': datetime_as_dict(sales_segment.end_at),
+                u'upper_limit': sales_segment.upper_limit,
+                u'seat_choice': sales_segment.seat_choice
+                },
+            u'paymentMethod': {
+                u'name': payment_method.name,
+                u'fee': payment_method.fee,
+                u'fee_type': payment_method.fee_type
+                } if payment_method else {},
+            u'deliveryMethod': {
+                u'name': delivery_method.name,
+                u'fee': delivery_method.fee,
+                u'fee_type': delivery_method.fee_type
+                } if delivery_method else {},
+            u'product': {
+                u'name': product.name,
+                u'price': product.price
+                },
+            u'productItem': {
+                u'name': product_item.name,
+                u'price': product_item.price,
+                u'quantity': product_item.quantity
+                },
+            u"shippingAddress": {
+                u"email": shipping_address.email,
+                u"nick_name": shipping_address.nick_name,
+                u"first_name": shipping_address.first_name,
+                u"last_name": shipping_address.last_name,
+                u"first_name_kana": shipping_address.first_name_kana,
+                u"last_name_kana": shipping_address.last_name_kana,
+                u"zip": shipping_address.zip,
+                u"country": shipping_address.country,
+                u"prefecture": shipping_address.prefecture,
+                u"city": shipping_address.city,
+                u"address_1": shipping_address.address_1,
+                u"address_2": shipping_address.address_2,
+                u"tel_1": shipping_address.tel_1,
+                u"tel_2": shipping_address.tel_2,
+                u"fax": shipping_address.fax
+                } if shipping_address else {},
+            u'aux': dict(ticket_bundle.attributes) if ticket_bundle else {},
+            u'券種名': product_item.name or product.name,
+            u'商品名': product_item.name or product.name,
+            u'商品価格': self.formatter.format_currency(product.price),
+            u'チケット価格': self.formatter.format_currency(product_item.price),
+            u'注文番号': cart.order_no,
+            u'注文日時': self.formatter.format_datetime(now),
+            u'注文日時s': self.formatter.format_datetime_short(now),
+            u'予約番号': cart.order_no
+            }
+
+        if user_profile is not None:
+            extra["userProfile"] = {
+                u"email": user_profile.email,
+                u"nick_name": user_profile.nick_name,
+                u"first_name": user_profile.first_name,
+                u"last_name": user_profile.last_name,
+                u"first_name_kana": user_profile.first_name_kana,
+                u"last_name_kana": user_profile.last_name_kana,
+                u"birth_day": datetime_as_dict(user_profile.birth_day),
+                u"sex": self.formatter.sex_as_string(user_profile.sex),
+                u"zip": user_profile.zip,
+                u"country": user_profile.country,
+                u"prefecture": user_profile.prefecture,
+                u"city": user_profile.city,
+                u"address_1": user_profile.address_1,
+                u"address_2": user_profile.address_2,
+                u"tel_1": user_profile.tel_1,
+                u"tel_2": user_profile.tel_2,
+                u"fax": user_profile.fax,
+                u"status": user_profile.status
+                }
+
+        retval = []
+        if carted_product_item.product_item.stock.stock_type.quantity_only:
+            d = {}
+            self.build_dict_from_stock(carted_product_item.product_item.stock, d)
+            self.build_dict_from_venue(carted_product_item.product_item.performance.venue, d)
+            d[u'発券番号'] = ticket_number_issuer() if ticket_number_issuer else None
+            d.update(extra)
+            retval.append((None, d))
+        else:
+            for seat in carted_product_item.seats:
+                d = self.build_dict_from_seat(seat, ticket_number_issuer)
+                d.update(extra)
+                retval.append((seat, d))
+        return retval
+
+
 _default_builder = DictBuilder(Japanese_Japan_Formatter())
 build_dict_from_stock = _default_builder.build_dict_from_stock
 build_dict_from_venue = _default_builder.build_dict_from_venue
 build_dict_from_seat = _default_builder.build_dict_from_seat
 build_dict_from_product_item = _default_builder.build_dict_from_product_item
 build_dicts_from_ordered_product_item = _default_builder.build_dicts_from_ordered_product_item
+build_dicts_from_carted_product_item = _default_builder.build_dicts_from_carted_product_item
 
 Size = namedtuple('Size', 'width height')
 Position = namedtuple('Position', 'x y')

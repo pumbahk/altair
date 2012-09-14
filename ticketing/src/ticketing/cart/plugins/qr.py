@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 
 from pyramid.view import view_config
+from ticketing.mobile import mobile_view_config
 from zope.interface import implementer
 from ..interfaces import IOrderDelivery, ICartDelivery, ICompleteMailDelivery
 from . import models as m
@@ -28,20 +29,22 @@ builder = qr()
 builder.key = u"THISISIMPORTANTSECRET"
 
 @view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer="ticketing.cart.plugins:templates/qr_complete.html")
-@view_config(context=IOrderDelivery, name="delivery-%d-mobile" % DELIVERY_PLUGIN_ID, renderer="ticketing.cart.plugins:templates/qr_complete_mobile.html")
+@mobile_view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer="ticketing.cart.plugins:templates/qr_complete_mobile.html")
 def deliver_completion_viewlet(context, request):
     tickets = [ ]
     order = context.order
     for op in order.ordered_products:
         for opi in op.ordered_product_items:
-            for s in opi.seats:
-                # 発行済みかどうかを取得
-                history = core_models.TicketPrintHistory.filter_by(ordered_product_item_id = opi.id, seat_id = s.id).first()
+            for t in opi.tokens:
+                history = core_models.TicketPrintHistory.filter_by(ordered_product_item_id = opi.id,
+                                                                   seat_id = t.seat_id,
+                                                                   item_token_id=t.id).first()
                 class QRTicket:
                     order = context.order
                     performance = context.order.performance
                     product = op.product
-                    seat = s
+                    seat = t.seat
+                    token = t
                     printed_at = history.created_at if history else ''
                 ticket = QRTicket()
                 tickets.append(ticket)
@@ -65,6 +68,13 @@ def deliver_completion_mail_viewlet(context, request):
                 notice=trv.data[MailInfoTemplate.delivery_key(context.order, "notice")]
                 )
 
+def _with_serial_and_seat(ordered_product,  ordered_product_item):
+    if ordered_product_item.seats:
+        for i, s in enumerate(ordered_product_item.seats):
+            yield i, s
+    else:
+        for i in xrange(ordered_product.quantity):
+            yield i, None
 
 class QRTicketDeliveryPlugin(object):
     def prepare(self, request, cart):
@@ -72,4 +82,14 @@ class QRTicketDeliveryPlugin(object):
 
     def finish(self, request, cart):
         """ 確定時処理 """
-        pass
+        order = cart.order
+        for op in order.ordered_products:
+            for opi in op.ordered_product_items:
+                for i, seat in _with_serial_and_seat(op, opi):
+                    token = core_models.OrderedProductItemToken(
+                        item = opi, 
+                        serial = i, 
+                        seat = seat, 
+                        valid=True
+                        )
+                    opi.tokens.append(token)

@@ -1,3 +1,4 @@
+
 # -*- coding:utf-8 -*-
 import logging
 import transaction
@@ -89,6 +90,7 @@ class IndexView(object):
         performance_id = self.request.params.get('performance')
 
         sales_segment = self.context.get_sales_segument()
+
         if sales_segment is None:
             logger.debug("No matching sales_segment")
             raise NoEventError("No matching sales_segment")
@@ -457,7 +459,10 @@ class ReserveView(object):
 
         performance_id = self.request.params.get('performance_id')
         seat_type_id = self.request.params.get('seat_type_id')
-        sales_segment = self.context.get_sales_segument()
+        sales_segment_id = self.request.matchdict["sales_segment_id"]
+
+        # セールスセグメント必須
+        sales_segment = c_models.SalesSegment.filter_by(id=sales_segment_id).first()
 
         performance = c_models.Performance.query.filter(
             c_models.Performance.id==performance_id).first()
@@ -470,6 +475,7 @@ class ReserveView(object):
             event=event,
             performance=performance, 
             seat_type_id=seat_type_id,
+            sales_segment_id=sales_segment_id, 
             payment_url=self.request.route_url("cart.payment", sales_segment_id=sales_segment.id),
             cart=dict(products=[dict(name=p.product.name, 
                                      quantity=p.quantity,
@@ -487,9 +493,10 @@ class ReserveView(object):
         """
         performance_id = self.request.params.get('performance_id')
         seat_type_id = self.request.params.get('seat_type_id')
+        sales_segment_id = self.request.matchdict["sales_segment_id"]
 
         # セールスセグメント必須
-        sales_segment = self.context.get_sales_segument()
+        sales_segment = c_models.SalesSegment.filter_by(id=sales_segment_id).first()
         if sales_segment is None:
             raise NoEventError("No matching sales_segment")
 
@@ -805,17 +812,23 @@ class CompleteView(object):
             payment_delivery_pair.delivery_method.delivery_plugin_id,)
         if payment_delivery_plugin is not None:
             order = payment_delivery_plugin.finish(self.request, cart)
+
+            user = self.context.get_or_create_user()
+            order.user = user
+            order.organization_id = order.performance.event.organization_id
+            cart.order = order
         else:
             payment_plugin = api.get_payment_plugin(self.request, payment_delivery_pair.payment_method.payment_plugin_id)
             order = payment_plugin.finish(self.request, cart)
+
+            user = self.context.get_or_create_user()
+            order.user = user
+            order.organization_id = order.performance.event.organization_id
+            cart.order = order
+
             DBSession.add(order)
             delivery_plugin = api.get_delivery_plugin(self.request, payment_delivery_pair.delivery_method.delivery_plugin_id)
             delivery_plugin.finish(self.request, cart)
-
-        user = self.context.get_or_create_user()
-        order.user = user
-        order.organization_id = order.performance.event.organization_id
-        cart.order = order
 
         notify_order_completed(self.request, order)
 
@@ -882,6 +895,7 @@ class MobileIndexView(object):
 
         # セールスセグメント必須
         sales_segment = self.context.get_sales_segument()
+
         if sales_segment is None:
             raise NoEventError("No matching sales_segment")
 
@@ -1000,7 +1014,7 @@ class MobileSelectProductView(object):
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.matchdict['performance_id']
         seat_type_id = self.request.matchdict['seat_type_id']
-        sales_segment_id = self.request.matchdict['seat_type_id']
+        sales_segment_id = self.request.matchdict['sales_segment_id']
 
         # イベント
         event = c_models.Event.query.filter(c_models.Event.id==event_id).first()

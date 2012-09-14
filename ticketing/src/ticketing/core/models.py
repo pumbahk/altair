@@ -1853,6 +1853,17 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return ({'name': s.name, 'l0_id': s.l0_id}
                 for s in self.seats)
 
+class OrderedProductItemToken(Base,BaseModel, LogicallyDeleted):
+    __tablename__ = "OrderedProductItemToken"
+    id = Column(Identifier, primary_key=True)
+    ordered_product_item_id = Column(Identifier, ForeignKey("OrderedProductItem.id", ondelete="CASCADE"), nullable=False)
+    item = relationship("OrderedProductItem", backref="tokens")
+    seat_id = Column(Identifier, ForeignKey("Seat.id", ondelete='CASCADE'), nullable=True)
+    seat = relationship("Seat", backref="tokens")
+    serial = Column(Integer, nullable=False)
+    key = Column(Unicode(255), nullable=True)    #今は使っていない。https://dev.ticketstar.jp/redmine/altair/issues/499#note-15
+    valid = Column(Boolean, nullable=False, default=False)
+
 class Ticket_TicketBundle(Base, BaseModel, LogicallyDeleted):
     __tablename__ = 'Ticket_TicketBundle'
     ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id', ondelete='CASCADE'), primary_key=True)
@@ -1994,6 +2005,7 @@ class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         for product_item in news:
             self.product_items.append(product_item)
 
+
 class TicketPrintHistory(Base, BaseModel, WithTimestamp):
     __tablename__ = "TicketPrintHistory"
     id = Column(Identifier, primary_key=True, autoincrement=True, nullable=False)
@@ -2005,6 +2017,8 @@ class TicketPrintHistory(Base, BaseModel, WithTimestamp):
     seat = relationship('Seat', backref='print_histories')
     ticket_id = Column(Identifier, ForeignKey('Ticket.id'), nullable=False)
     ticket = relationship('Ticket')
+    item_token_id = Column(Identifier, ForeignKey('OrderedProductItemToken.id'), nullable=False)
+    item_token = relationship('OrderedProductItemToken')
 
 class PageFormat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "PageFormat"

@@ -81,7 +81,7 @@ class JForm(Form):
         })
 
 class SendMailSchema(JForm):
-    mail = fields.TextField(u"送り先メールアドレス", validator=[v.Email()])
+    mail = fields.TextField(u"送り先メールアドレス", validators=[v.Email()])
 
 class OrderReviewSchema(JForm):
     order_no = fields.TextField(u"注文番号", filters=[strip_spaces], validators=[v.Required()])

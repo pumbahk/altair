@@ -53,7 +53,6 @@ class IndexView(object):
         query = query.filter(c_models.Product.event_id == self.context.event_id)
         query = query.order_by(sa.desc("price"))
         query = h.products_filter_by_salessegment(query, salessegment)
-
         products = dict()
         for p in query:
             products[str(p.id)] = p
@@ -96,7 +95,8 @@ class IndexView(object):
         api.set_cart(self.request, cart)
         store_user_profile(self.request, form.data)
         logger.debug('OK redirect')
-        return HTTPFound(location=self.request.route_url("cart.payment"))
+        sales_segment_id = self.context.sales_segment_id
+        return HTTPFound(location=self.request.route_url("cart.payment", sales_segment_id=sales_segment_id))
 
 class PaymentView(_PaymentView):
     def validate(self, payment_delivery_pair):

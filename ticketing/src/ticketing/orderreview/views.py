@@ -58,7 +58,7 @@ class OrderReviewView(object):
         return dict(order=order, sej_order=sej_order, shipping_address=order.shipping_address)
 
 @mobile_view_config(context=InvalidForm, 
-                    renderer=selectable_renderer("order_review_mobileticketing.orderreview:templates/%(membership)s/form.html"))
+                    renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review_mobile/form.html"))
 @view_config(context=InvalidForm, 
              renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/form.html"))
 def order_review_form_view(context, request):
@@ -79,26 +79,29 @@ def notfound_view(context, request):
 def contact_view(context, request):
     return dict()
 
-def build_qr_by_order_seat(order_no, seat_id):
-    seat = Order.filter_by(order_no = order_no)\
-            .join(Order.ordered_products)\
-            .join(OrderedProduct.ordered_product_items)\
-            .join(OrderedProductItem.seats)\
-            .filter_by(id = seat_id)\
-            .one()
-    if seat == None:
+from ticketing.core.models import OrderedProductItemToken
+def build_qr_by_order_seat(order_no, token_id):
+    token = OrderedProductItemToken.filter(OrderedProductItemToken.id==token_id)\
+        .filter(OrderedProductItemToken.ordered_product_item_id==OrderedProductItem.id)\
+        .filter(OrderedProductItem.ordered_product_id == OrderedProduct.id)\
+        .filter(OrderedProduct.order_id == Order.id)\
+        .filter(Order.order_no == order_no).first()
+
+    if token is None:
         raise HTTPNotFound()
-    
+
     # ここでinsertする
-    opi = DBSession.query(OrderedProductItem)\
-        .join(OrderedProductItem.seats)\
-        .filter_by(id = seat_id)\
-        .one()
-    history = TicketPrintHistory\
-        .filter_by(ordered_product_item_id=opi.id, seat_id=seat_id).first()
-    if history == None:
-        # create TicketPrintHistory record
-        history = TicketPrintHistory(ordered_product_item_id=opi.id, seat_id=seat_id)
+    history = TicketPrintHistory.filter(TicketPrintHistory.item_token_id==token_id)\
+        .filter(TicketPrintHistory.ordered_product_item_id==OrderedProductItem.id)\
+        .filter(OrderedProductItem.ordered_product_id == OrderedProduct.id)\
+        .filter(OrderedProduct.order_id == Order.id)\
+        .filter(Order.order_no == order_no).first()
+
+    if history is None:
+        history = TicketPrintHistory(
+            seat_id=token.seat_id, 
+            item_token_id=token.id, 
+            ordered_product_item_id=token.ordered_product_item_id)
         DBSession.add(history)
         DBSession.flush()
     
@@ -120,15 +123,18 @@ def build_qr(ticket_id):
     ticket.product = ticket.ordered_product_item.ordered_product.product
     ticket.order = ticket.ordered_product_item.ordered_product.order
     
-    ticket.qr = builder.sign(builder.make(dict(
-                    serial=("%d" % ticket.id),
-                    performance=ticket.performance.code,
-                    order=ticket.order.order_no,
-                    date=ticket.performance.start_on.strftime("%Y%m%d"),
-                    type=ticket.product.id,
-                    seat=ticket.seat.l0_id,
-                    seat_name=ticket.seat.name,
-                    )))
+    params = dict(serial=("%d" % ticket.id),
+                  performance=ticket.performance.code,
+                  order=ticket.order.order_no,
+                  date=ticket.performance.start_on.strftime("%Y%m%d"),
+                  type=ticket.product.id)
+    if ticket.seat:
+        params["seat"] =ticket.seat.l0_id
+        params["seat_name"] = ticket.seat.name
+    else:
+        params["seat"] = ""
+        params["seat_name"] = "" #TicketPrintHistoryはtokenが違えば違うのでuniqueなはず
+    ticket.qr = builder.sign(builder.make(params))
     ticket.sign = ticket.qr[0:8]
     
     return ticket
@@ -151,8 +157,7 @@ def order_review_qr_confirm(context, request):
         performance = ticket.performance,
         event = ticket.event,
         product = ticket.product,
-    )
-    
+        )
 @view_config(route_name='order_review.qr', renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/qr.html"))
 def order_review_qr_html(context, request):
     ticket_id = int(request.matchdict.get('ticket_id', 0))
@@ -200,7 +205,7 @@ def order_review_qr_image(context, request):
 @mobile_view_config(route_name='order_review.qr_print', request_method='POST', renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/qr.html"))
 @view_config(route_name='order_review.qr_print', request_method='POST', renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/qr.html"))
 def order_review_qr_print(context, request):
-    ticket = build_qr_by_order_seat(request.params['order_no'], request.params['seat'])
+    ticket = build_qr_by_order_seat(request.params['order_no'], request.params['token'])
     
     return dict(
         sign = ticket.qr[0:8],
@@ -219,18 +224,26 @@ def order_review_send_mail(context, request):
     # TODO: validate mail address
     
     mail = request.params['mail']
-    
     # send mail using template
+    form = schemas.SendMailSchema(request.POST)
+
+    if not form.validate():
+        return dict(mail=mail, 
+                    message=u"Emailの形式が正しくありません")
+
     try:
         sender = context.membership.organization.contact_email
         api.send_qr_mail(request, context, mail, sender)
+        
     except Exception, e:
-        logger.error(str(e), exc_info=1)
+        logger.error(e.message, exc_info=1)
         ## この例外は違う...
         raise HTTPNotFound()
-    
+
+    message = u"%s宛にメールをお送りしました。" % mail
     return dict(
         mail = mail,
+        message = message
         )
 
 @mobile_view_config(name="render.mail", 
@@ -238,10 +251,15 @@ def order_review_send_mail(context, request):
 @view_config(name="render.mail", 
              renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/qr.txt"))
 def render_qrmail_viewlet(context, request):
-    ticket = build_qr_by_order_seat(request.params['order_no'], request.params['seat'])
+    ticket = build_qr_by_order_seat(request.params['order_no'], request.params['token'])
     sign = ticket.qr[0:8]
+    if ticket.order.shipping_address:
+        name = ticket.order.shipping_address.last_name + ticket.order.shipping_address.first_name
+    else:
+        name = u''
     
     return dict(
+        name=name,
         event=ticket.event, 
         performance=ticket.performance, 
         product=ticket.product, 

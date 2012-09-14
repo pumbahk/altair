@@ -106,8 +106,8 @@ def get_tickets_from_cart(cart):
     for carted_product in cart.products:
         for carted_product_item in carted_product.items:
             bundle = carted_product_item.product_item.ticket_bundle
-            for seat in carted_product_item.seats:
-                dict_ = build_dict_from_seat(seat, None)
+            dicts = build_dicts_from_carted_product_item(carted_product_item)
+            for (seat, dict_) in dicts:
                 for ticket in bundle.tickets:
                     ticket_format = ticket.ticket_format
                     applicable = False
