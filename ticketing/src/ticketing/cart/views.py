@@ -886,7 +886,7 @@ class MobileIndexView(object):
         performance_id = self.request.params.get('pid') or self.request.params.get('performance')
         if performance_id:
             return HTTPFound(self.request.route_url(
-                "cart.mobile",
+                "cart.seat_types",
                 event_id=event_id,
                 performance_id=performance_id,
                 sales_segment_id=sales_segment.id))
@@ -942,7 +942,7 @@ class MobileSelectProductView(object):
         self.request = request
         self.context = request.context
 
-    @view_config(route_name='cart.mobile', renderer=selectable_renderer('carts_mobile/%(membership)s/seat_types.html'), xhr=False, request_type=".interfaces.IMobileRequest")
+    @view_config(route_name='cart.seat_types', renderer=selectable_renderer('carts_mobile/%(membership)s/seat_types.html'), xhr=False, request_type=".interfaces.IMobileRequest")
     def __call__(self):
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.matchdict['performance_id']
@@ -1011,11 +1011,11 @@ class MobileSelectProductView(object):
         if performance is None:
             raise NoEventError("No such performance (%d)" % performance_id)
 
-        sales_segment = c_models.SalesSegment.query.filter_by(
-            id==sales_segment_id,
-            event_id=event.id).first()
+        sales_segment = c_models.SalesSegment.query.filter(
+            c_models.SalesSegment.id==sales_segment_id,
+            c_models.SalesSegment.event_id==event.id).first()
         if sales_segment is None:
-            raise NoEventError("No such sales segment (%d)" % sales_segment_id)
+            raise NoEventError("No such sales segment (%s)" % sales_segment_id)
         
 
         # 席種(イベントとパフォーマンスにひもづいてること)

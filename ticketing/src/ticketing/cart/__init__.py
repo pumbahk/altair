@@ -31,8 +31,6 @@ def includeme(config):
     config.add_route('cart.order', 'order')
     config.add_route('cart.payment', 'payment')
     config.add_route('cart.release', 'release')
-    # モバイル専用
-    config.add_route('cart.mobile', 'events/{event_id}/performances/{performance_id}/sales_segment/{sales_segment_id}/seat_types')
 
     # 完了／エラー
     config.add_route('payment.confirm', 'confirm')
