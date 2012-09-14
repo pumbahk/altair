@@ -25,14 +25,14 @@ def includeme(config):
     config.add_route('cart.seats', 'events/{event_id}/performances/{performance_id}/venues/{venue_id}/seats')
     config.add_route('cart.seat_adjacencies', 'events/{event_id}/performances/{performance_id}/venues/{venue_id}/seat_adjacencies/{length_or_range}')
     config.add_route('cart.venue_drawing', 'events/{event_id}/performances/{performance_id}/venues/{venue_id}/drawing/{part}')
-    config.add_route('cart.products', 'events/{event_id}/performances/{performance_id}/seat_types/{seat_type_id}/products')
+    config.add_route('cart.products', 'events/{event_id}/performances/{performance_id}/sales_segment/{sales_segment_id}/seat_types/{seat_type_id}/products')
     config.add_route('cart.date.products', 'events/{event_id}/products')
 
     config.add_route('cart.order', 'order')
     config.add_route('cart.payment', 'payment')
     config.add_route('cart.release', 'release')
     # モバイル専用
-    config.add_route('cart.mobile', 'events/{event_id}/performances/{performance_id}/seat_types')
+    config.add_route('cart.mobile', 'events/{event_id}/performances/{performance_id}/sales_segment/{sales_segment_id}/seat_types')
 
     # 完了／エラー
     config.add_route('payment.confirm', 'confirm')
