@@ -474,7 +474,6 @@ cart.PerformanceSearchView = Backbone.View.extend({
         $.each(dates, function (_, v) {
             self.selection.append($('<option></option>').attr('value', v).text(v));
         });
-        this.onDateSelectionChanged(dates[0]);
     },
     render: function() {
         // 絞り込み条件を設定する
