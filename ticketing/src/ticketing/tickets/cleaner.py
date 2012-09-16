@@ -35,6 +35,8 @@ def override_styles(olddecl, newdecl):
 def parse_style(*args, **kwargs):
     decl = cssutils.parseStyle(*args, **kwargs)
     text_align = decl.getProperty(u'text-align')
+    if text_align is not None:
+        text_align = text_align.value
     text_align = ALIGNMENT_COMPAT_MAP.get(text_align)
     if text_align is not None:
         decl.setProperty(u'text-align', text_align)
@@ -102,4 +104,8 @@ def cleanup_svg(svg):
 
 if __name__ == '__main__':
     import sys
-    cleanup_svg(etree.parse(sys.stdin))    
+    import locale
+    encoding = locale.getpreferredencoding()
+    tree = etree.parse(sys.stdin)
+    cleanup_svg(tree)
+    sys.stdout.write(etree.tostring(tree, encoding=encoding))
