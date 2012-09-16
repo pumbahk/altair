@@ -35,13 +35,17 @@ public class FormatLoader {
 		}
 	}
 	
-	int resolveOrientationString(String orientation) {
+	private static int resolveOrientationString(String orientation) {
 		if (orientation.equalsIgnoreCase("landscape")) {
 			return OurPageFormat.LANDSCAPE;
 		} else if (orientation.equalsIgnoreCase("portrait")) {
 			return OurPageFormat.PORTRAIT;
 		}
 		throw new ApplicationException("Invalid orientation string: " + orientation);
+	}
+
+	private static boolean notNull(JsonElement elem) {
+		return elem != null && !elem.isJsonNull();
 	}
 
 	static final Map<String, PageAttributes.MediaType> mediaTypeMap = new HashMap<String, PageAttributes.MediaType>();
@@ -87,12 +91,12 @@ public class FormatLoader {
 			pageFormat.setOrientation(resolveOrientationString(pageFormatDatum.get("orientation").getAsString()));
 			{
 				final JsonElement paper = pageFormatDatum.get("paper");
-				if (paper != null)
+				if (notNull(paper)) 
 					pageFormat.setPreferredMediaType(resolveMediaTypeString(paper.getAsString()));
 			}
 			{
 				final JsonElement printerName = pageFormatDatum.get("printer_name");
-				if (printerName != null)
+				if (notNull(printerName))
 					pageFormat.setPreferredPrinterName(printerName.getAsString());
 			}
 			{
