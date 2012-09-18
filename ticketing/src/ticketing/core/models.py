@@ -2102,3 +2102,13 @@ MailTypeLabels = (u"購入完了メール", u"購入キャンセルメール")
 assert(len(list(MailTypeEnum)) == len(MailTypeLabels))
 MailTypeChoices = [(str(e), label)for e, label in zip(sorted(MailTypeEnum), MailTypeLabels)]
 
+
+class Host(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'Host'
+
+    query = DBSession.query_property()
+
+    id = Column(Identifier, primary_key=True)
+    host_name = Column(Unicode(255), unique=True)
+    organization_id = Column(Identifier, ForeignKey('Organization.id'))
+    organization = relationship('Organization', backref="hosts")

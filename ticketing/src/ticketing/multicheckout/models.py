@@ -14,6 +14,22 @@ import ticketing.core.models
 Base = sqlahelper.get_base()
 DBSession = sqlahelper.get_session()
 
+class MulticheckoutSetting(Base):
+    __tablename__ = 'MulticheckoutSetting'
+    
+    query = DBSession.query_property()
+
+    id = sa.Column(Identifier, primary_key=True)
+    
+    shop_name = sa.Column(sa.Unicode(255), unique=True)
+    shop_id = sa.Column(sa.Unicode(255))
+    auth_id = sa.Column(sa.Unicode(255))
+    auth_password = sa.Column(sa.Unicode(255))
+
+    organization_id = sa.Column(Identifier, sa.ForeignKey('Organization.id'))
+    organization = orm.relationship('Organization', backref='multicheckout_settings')
+
+
 class Secure3DReqEnrolRequest(Base):
     """ 3D認証可否確認依頼処理（リクエスト）
     """
