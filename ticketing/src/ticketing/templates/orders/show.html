@@ -110,6 +110,7 @@ ${h.breadcrumbs(
       <%
 buttons = []
 buttons.append('delivered')
+buttons.append('mailinfo')
 if not order.issued and not order.queued:
   buttons.append('print')
 buttons.append('cancel')
