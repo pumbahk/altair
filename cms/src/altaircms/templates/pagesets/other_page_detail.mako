@@ -65,9 +65,6 @@
 <div id="pageset_items">
   ${myhelpers.pageset_describe_viewlet(request, pageset)}
 </div>
-<script type="text/javascript">
-  $(function(){$("#pageset_items input:radio, #pageset_items .btn-group").css("display", "none");});
-</script>
 <hr/>
 
 <h3>登録しているアセット</h3>
