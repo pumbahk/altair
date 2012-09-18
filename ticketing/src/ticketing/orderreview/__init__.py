@@ -31,8 +31,8 @@ def main(global_conf, **settings):
     config.include('ticketing.cart.import_mail_module')
     config.scan('ticketing.cart.views')
 
-    config.commit() #override qr plugins view
-    config.include(".qr")
+    config.commit() #override qr plugins view(e.g. qr)
+    config.include(".plugin_override")
     config.include('..mobile')
 
     config.include(import_selectable_renderer)
