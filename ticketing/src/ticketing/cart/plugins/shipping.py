@@ -27,7 +27,7 @@ def deliver_confirm_viewlet(context, request):
 def deliver_completion_viewlet(context, request):
     logger.debug(u"郵送")
     order = context.order
-    return dict(shipping_address=order.shipping_address)
+    return dict(shipping_address=order.shipping_address, order=order)
 
 class ShippingDeliveryPlugin(object):
     def prepare(self, request, cart):

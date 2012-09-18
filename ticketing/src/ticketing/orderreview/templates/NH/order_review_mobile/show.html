@@ -9,7 +9,6 @@ ${order.performance.event.title} ${order.performance.name}<br />
 <%mobile:form_header>会場</%mobile:form_header>
 ${order.performance.venue.name}<br />
 <%mobile:form_header>購入内容</%mobile:form_header>
-合計金額: ￥${h.format_number(order.total_amount)}<br />
 %for product in order.items:
 ・${product.product.name} (${product.quantity}枚)<br />
 % for seat in product.seats:
@@ -17,7 +16,11 @@ ${order.performance.venue.name}<br />
 % endfor
 　￥${h.format_number(product.product.price * product.quantity)}<br />
 %endfor
+・ステータス:${h.order_status(order)}<br/>
 ・システム利用料: ￥${h.format_number(order.system_fee)}<br />
+・発券/配送手数料: ￥${h.format_number(order.delivery_fee)}<br/>
+・システム利用料: ￥${h.format_number(order.system_fee)}<br/>
+・合計金額: ￥${h.format_number(order.total_amount)}<br />
 </div>
 <div>
 </div>
