@@ -1,5 +1,4 @@
 <div class="box">
-
   <table class="table">
     <thead>
       <tr>
