@@ -47,13 +47,13 @@
 <div>
 <font color="#ffbf00">■</font>${form['mail_address'].label}
 </div>
+<p>※ 予約受付完了メール等をメールでご案内します。「ticketstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</p>
 <div>
   ${form['mail_address']}
   <div style="color:#ff0000">
     ${h.error_list(request, form, 'mail_address')}
   </div>
 </div>
-
 <div>
 <font color="#ffbf00">■</font>${form['mail_address2'].label}
 </div>
