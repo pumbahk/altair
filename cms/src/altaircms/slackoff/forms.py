@@ -6,7 +6,7 @@ from wtforms import fields
 from wtforms import widgets
 from wtforms import validators
 import wtforms.ext.sqlalchemy.fields as extfields
-
+import urllib
 
 from altaircms.helpers.formhelpers import dynamic_query_select_field_factory
 from altaircms.helpers.formhelpers import required_field, append_errors
@@ -79,8 +79,8 @@ class PerformanceForm(Form):
     start_on = fields.DateTimeField(label=u"開始時間", validators=[required_field()])
     end_on = fields.DateTimeField(label=u"終了時間", validators=[])
 
-    purchase_link = fields.TextField(label=u"購入ページリンク")
-    mobile_purchase_link = fields.TextField(label=u"購入ページリンク(mobile)")
+    purchase_link = fields.TextField(label=u"購入ページリンク", filters=[urllib.urlquote])
+    mobile_purchase_link = fields.TextField(label=u"購入ページリンク(mobile)", filters=[urllib.urlquote])
     calendar_content = fields.TextField(label=u"カレンダーに追加する文字列")
 
     def validate(self, **kwargs):
@@ -161,7 +161,7 @@ class PromotionForm(Form):
     linked_page = dynamic_query_select_field_factory(
         PageSet, allow_blank=True, label=u"リンク先ページ(CMSで作成したもの)",
         get_label=lambda obj: obj.name or u"--なし--")
-    link = fields.TextField(label=u"外部リンク(ページより優先)")
+    link = fields.TextField(label=u"外部リンク(ページより優先)", filters=[urllib.urlquote])
 
     publish_open_on = fields.DateTimeField(label=u"公開開始日", validators=[required_field()])
     publish_close_on = fields.DateTimeField(label=u"公開終了日", validators=[required_field()])
@@ -273,8 +273,8 @@ class TopicForm(Form):
                                                      query_factory=lambda : PageSet.query.order_by("name"), 
                                                      allow_blank=True, 
                                                      get_label=lambda obj: obj.name or u"名前なし")
-    link = fields.TextField(label=u"外部リンク(ページより優先)")
-    mobile_link = fields.TextField(label=u"外部リンク(mobile ページより優先)")
+    link = fields.TextField(label=u"外部リンク(ページより優先)", filters=[urllib.urlquote])
+    mobile_link = fields.TextField(label=u"外部リンク(mobile ページより優先)", filters=[urllib.urlquote])
     event = dynamic_query_select_field_factory(Event, 
                                                label=u"関連イベント",
                                                allow_blank=True, 
@@ -338,8 +338,8 @@ class TopcontentForm(Form):
                                                      query_factory=lambda : PageSet.query.order_by("name"), 
                                                      allow_blank=True, 
                                                      get_label=lambda obj: obj.name or u"名前なし")
-    link = fields.TextField(label=u"外部リンク(ページより優先)")
-    mobile_link = fields.TextField(label=u"外部リンク(mobile ページより優先)")
+    link = fields.TextField(label=u"外部リンク(ページより優先)", filters=[urllib.urlquote])
+    mobile_link = fields.TextField(label=u"外部リンク(mobile ページより優先)", filters=[urllib.urlquote])
 
     __display_fields__= [u"title", u"kind", u"subkind", u"is_global", 
                          u"text", u"countdown_type", u"image_asset",u"mobile_image_asset",  
