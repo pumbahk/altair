@@ -11,8 +11,18 @@ from . import models as m
 from .interfaces import IMultiCheckout
 from datetime import date
 from . import logger
+import ticketing.core.api as core_api
 
 DEFAULT_ITEM_CODE = "120" # 通販
+
+def get_multicheckout_setting(request, override_name):
+    reg = request.registry
+    if override_name:
+        return m.MulticheckoutSetting.query.filter_by(shop_name=override_name).one()
+    else:
+        override_host = reg.settings.get('altair_checkout3d.override_host') or request.host
+        organization = core_api.get_organization(request, override_host)
+        return organization.multicheckout_settings[0]
 
 def is_enable_secure3d(request, card_number):
     """ セキュア3D対応のカード会社か判定する """
@@ -31,18 +41,26 @@ def get_md(request):
 
 def get_multicheckout_service(request):
     reg = request.registry
-    domain_candidates = reg.utilities.lookup([], IDict, 'altair.cart.domain.mapping')
-    host = reg.settings.get('altair_checkout3d.override_host') or request.host
-    shop_name = None
-    for k, v in domain_candidates.items():
-        if host.startswith(k):
-            shop_name = v
-    shop_name = reg.settings.get('altair_checkout3d.override_shop_name') or shop_name
+    # domain_candidates = reg.utilities.lookup([], IDict, 'altair.cart.domain.mapping')
+    # host = reg.settings.get('altair_checkout3d.override_host') or request.host
+    # shop_name = None
+    # for k, v in domain_candidates.items():
+    #     if host.startswith(k):
+    #         shop_name = v
+    # shop_name = reg.settings.get('altair_checkout3d.override_shop_name') or shop_name
 
-    if shop_name is None:
-        logger.error('multicheckout setting for shop_name %s is not found' % host)
+    # if shop_name is None:
+    #     logger.error('multicheckout setting for shop_name %s is not found' % host)
 
-    return reg.utilities.lookup([], IMultiCheckout, shop_name)
+    # return reg.utilities.lookup([], IMultiCheckout, shop_name)
+
+    orverride_name = reg.settings.get('altair_checkout3d.override_shop_name')
+    setting = get_multicheckout_setting(request, override_name=orverride_name)
+    if setting is None:
+        raise Exception
+    base_url = reg.settings['altair_checkout3d.base_url']
+    checkout3d = Checkout3D(setting.auth_id, setting.auth_password, shop_code=setting.shop_id, api_base_url=base_url)
+    return checkout3d
 
 def secure3d_enrol(request, order_no, card_number, exp_year, exp_month, total_amount):
     service = get_multicheckout_service(request)
