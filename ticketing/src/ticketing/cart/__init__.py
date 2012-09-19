@@ -102,8 +102,6 @@ def main(global_config, **settings):
     config.include('.plugins')
     config.include('.errors')
 
-    config.include("ticketing.orderreview.import_view")
-    config.scan("ticketing.orderreview.views")
     if settings.get('altair.debug_mobile'):
         config.add_tween('ticketing.mobile.tweens.mobile_request_factory')
 
