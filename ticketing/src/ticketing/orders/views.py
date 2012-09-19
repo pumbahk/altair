@@ -341,7 +341,7 @@ class Orders(BaseView):
         performance = Performance.get(performance_id, self.context.user.organization_id)
         if performance is None:
             logger.error('performance id %d is not found' % performance_id)
-            return HTTPBadRequest(body=json.dumps({
+            raise HTTPBadRequest(body=json.dumps({
                 'message':u'パフォーマンスが存在しません',
             }))
 
@@ -362,7 +362,7 @@ class Orders(BaseView):
         performance = Performance.get(performance_id, self.context.user.organization_id)
         if performance is None:
             logger.error('performance id %d is not found' % performance_id)
-            return HTTPBadRequest(body=json.dumps({
+            raise HTTPBadRequest(body=json.dumps({
                 'message':u'パフォーマンスが存在しません',
             }))
 
@@ -410,13 +410,13 @@ class Orders(BaseView):
             return {'order_id':order.id}
         except ValidationError, e:
             logger.exception('validation error (%s)' % e.message)
-            return HTTPBadRequest(body=json.dumps({
+            raise HTTPBadRequest(body=json.dumps({
                 'message':e.message,
             }))
 
         except Exception, e:
             logger.exception('save error (%s)' % e.message)
-            return HTTPBadRequest(body=json.dumps({
+            raise HTTPBadRequest(body=json.dumps({
                 'message':u'エラーが発生しました',
             }))
 
@@ -497,14 +497,14 @@ class Orders(BaseView):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id, self.context.user.organization_id)
         if order is None:
-            return HTTPBadRequest(body=json.dumps({
+            raise HTTPBadRequest(body=json.dumps({
                 'message':u'不正なデータです',
             }))
 
         f = OrderReserveForm(MultiDict(self.request.json_body))
         if not f.note.validate(f):
             logger.debug('validation error (%s)' % f.note.errors)
-            return HTTPBadRequest(body=json.dumps({
+            raise HTTPBadRequest(body=json.dumps({
                 'message':f.note.errors,
             }))
 
