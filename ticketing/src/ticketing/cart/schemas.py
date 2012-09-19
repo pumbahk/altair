@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 
+import re
 import unicodedata
 from wtforms import fields
 from wtforms.form import Form
@@ -32,6 +33,14 @@ def NFKC(unistr):
 class CSRFSecureForm(SessionSecureForm):
     SECRET_KEY = 'EPj00jpfj8Gx1SjnyLxwBBSQfnQ9DJYe0Ym'
 
+def ignore_regexp(regexp):
+    def replace(target):
+        if target is None:
+            return None
+        return re.sub(regexp, "", target)
+    return replace
+
+ignore_space_hyphen = ignore_regexp(re.compile(u"[ \-ー　]"))
 
 class CardForm(CSRFSecureForm):
     def _get_translations(self):
@@ -44,7 +53,9 @@ class CardForm(CSRFSecureForm):
             'Invalid input.': u'形式が正しくありません。',
         })
 
-    card_number = fields.TextField('card', validators=[Length(14, 16), Regexp(CARD_NUMBER_REGEXP), Required()])
+    card_number = fields.TextField('card',
+                                   filters=[ignore_space_hyphen], 
+                                   validators=[Length(14, 16), Regexp(CARD_NUMBER_REGEXP), Required()])
     exp_year = fields.TextField('exp_year', validators=[Length(2), Regexp(CARD_EXP_YEAR_REGEXP)])
     exp_month = fields.TextField('exp_month', validators=[Length(2), Regexp(CARD_EXP_MONTH_REGEXP)])
     card_holder_name = fields.TextField('card_holder_name', filters=[capitalize], validators=[Length(2), Regexp(CARD_HOLDER_NAME_REGEXP)])
@@ -93,7 +104,7 @@ class ClientForm(Form):
     )
     tel = fields.TextField(
         label=u"TEL",
-        filters=[strip_spaces],
+        filters=[ignore_space_hyphen], 
         validators=[
             Required(),
             Length(min=1, max=12, message=u'確認してください'),
@@ -102,6 +113,7 @@ class ClientForm(Form):
     )
     fax = fields.TextField(
         label=u"FAX",
+        filters=[ignore_space_hyphen], 
         validators=[
             Optional(),
             Length(min=1, max=12, message=u'確認してください'),
@@ -110,7 +122,7 @@ class ClientForm(Form):
     )
     zip = fields.TextField(
         label=u"郵便番号",
-        filters=[strip_spaces],
+        filters=[ignore_space_hyphen], 
         validators=[
             Required(),
             Regexp(r'^\d{7}$', message=u'-を抜いた数字(7桁)のみを入力してください'), 
