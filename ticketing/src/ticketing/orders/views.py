@@ -264,13 +264,17 @@ class Orders(BaseView):
             return HTTPNotFound('order id %d is not found' % order_id)
 
         if order.shipping_address:
-            mail_magazines = [ms.segment.name for ms in MailSubscription.query.filter_by(email=order.shipping_address.email).all()]
+            mail_subscriptions = MailSubscription.query.filter_by(email=order.shipping_address.email).all()
+            mail_magazines = [ms.segment.name for ms in mail_subscriptions if ms.segment.organization_id == order.organization_id]
             form_shipping_address = ClientForm(record_to_multidict(order.shipping_address))
             form_shipping_address.tel.data = order.shipping_address.tel_1
             form_shipping_address.mail_address.data = order.shipping_address.email
         else:
             mail_magazines = []
             form_shipping_address = ClientForm()
+
+        if order.user and order.user.mail_subscription:
+            mail_magazines += [ms.segment.name for ms in order.user.mail_subscription if ms.segment.organization_id == order.organization_id]
 
         form_order = OrderForm(record_to_multidict(order))
 

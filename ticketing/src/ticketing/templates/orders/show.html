@@ -185,12 +185,6 @@ buttons.append('cancel')
       </tr>
       <tr>
         <th>購読メールマガジン</th>
-        <%
-          if user and user.mail_subscription:
-            for ms in user.mail_subscription:
-              if ms.segment.organization_id == order.organization_id:
-                mail_magazines.append(ms.segment.name)
-        %>
         <td>
           <ul>
           % for name in list(set(mail_magazines)):
