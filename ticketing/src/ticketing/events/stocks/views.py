@@ -59,7 +59,7 @@ class Stocks(BaseView):
                     raise ValidationError(reduce(lambda a,b: a+b, f.errors.values(),[]))
 
                 stock = Stock.filter_by(id=post_stock.get('id')).first()
-                stock.quantity = post_stock.get('quantity')
+                stock.quantity = f.quantity.data
                 stock.save()
 
             for post_stock_type in post_data.get('stock_types'):
