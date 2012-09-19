@@ -21,22 +21,22 @@ def upgrade():
     op.alter_column('SejNotification', 'ticketing_due_datetime',
         name='ticketing_due_at',
         existing_type=sa.DateTime(),
-        existing_server_default=text('NULL'),
+        existing_server_default=None,
         existing_nullable=True)
     op.alter_column('SejNotification', 'ticketing_due_datetime_new',
         name='ticketing_due_at_new',
         existing_type=sa.DateTime(),
-        existing_server_default=text('NULL'),
+        existing_server_default=None,
         existing_nullable=True)
 
 def downgrade():
     op.alter_column('SejNotification', 'ticketing_due_at',
         name='ticketing_due_datetime',
         existing_type=sa.DateTime(),
-        existing_server_default=text('NULL'),
+        existing_server_default=None,
         existing_nullable=True)
     op.alter_column('SejNotification', 'ticketing_due_at_new',
         name='ticketing_due_datetime_new',
         existing_type=sa.DateTime(),
-        existing_server_default=text('NULL'),
+        existing_server_default=None,
         existing_nullable=True)
