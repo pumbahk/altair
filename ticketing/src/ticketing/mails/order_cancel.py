@@ -109,8 +109,6 @@ def create_cancel_message(request, order):
         footer = traverser.data["footer"],
         notice = traverser.data["notice"],
         header = traverser.data["header"],
-        payment_notice = payment_notice(request, order), 
-        delivery_notice = delivery_notice(request, order), 
     )
     mail_body = renderers.render(mail_renderer_names[plugin_id], value, request=request)
     mail_body = unicode(mail_body, 'utf-8')

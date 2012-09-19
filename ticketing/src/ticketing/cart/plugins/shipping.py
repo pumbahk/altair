@@ -3,7 +3,7 @@
 from pyramid.view import view_config
 from pyramid.response import Response
 from zope.interface import implementer
-from ..interfaces import IDeliveryPlugin, IOrderDelivery, ICartDelivery, ICompleteMailDelivery
+from ..interfaces import IDeliveryPlugin, IOrderDelivery, ICartDelivery, ICompleteMailDelivery, IOrderCancelMailDelivery
 from . import models as m
 from . import logger
 from ticketing.cart import helpers as cart_helper
@@ -47,3 +47,13 @@ def completion_delivery_mail_viewlet(context, request):
     return dict(h=cart_helper, shipping_address=shipping_address, 
                 notice=trv.data[MailInfoTemplate.delivery_key(context.order, "notice")]
                 )
+
+@view_config(context=IOrderCancelMailDelivery, name="delivery-%d" % PLUGIN_ID)
+def cancel_delivery_mail_viewlet(context, request):
+    """ cancelメール表示
+    :param context: IOrderCancelMailDelivery
+    """
+    mutil = get_mail_utility(request, c_models.MailTypeEnum.PurchaseCancelMail)
+    trv = mutil.get_traverser(request, context.order)
+    notice=trv.data[MailInfoTemplate.delivery_key(context.order, "notice")]
+    return Response(notice)

@@ -3,8 +3,8 @@ from zope.interface import implementer
 from pyramid.view import view_config
 from pyramid.response import Response
 
-from ..interfaces import IPaymentPlugin, ICartPayment, IOrderPayment, ICompleteMailPayment
-from ..interfaces import IDeliveryPlugin, ICartDelivery, IOrderDelivery, ICompleteMailDelivery
+from ..interfaces import IPaymentPlugin, ICartPayment, IOrderPayment, ICompleteMailPayment, IOrderCancelMailPayment
+from ..interfaces import IDeliveryPlugin, ICartDelivery, IOrderDelivery, ICompleteMailDelivery, IOrderCancelMailDelivery
 
 from .. import logger
 from ticketing.mails.api import get_mail_utility
@@ -351,3 +351,23 @@ def delivery_mail_viewlet(context, request):
     return dict(sej_order=sej_order, h=cart_helper, trv=trv, 
                 is_payment_with_sej=is_payment_with_sej, 
                 notice=trv.data[MailInfoTemplate.delivery_key(context.order, "notice")])
+
+@view_config(context=IOrderCancelMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
+def cancel_payment_mail_viewlet(context, request):
+    """ cancelメール表示
+    :param context: IOrderCancelMailPayment
+    """
+    mutil = get_mail_utility(request, c_models.MailTypeEnum.PurchaseCancelMail)
+    trv = mutil.get_traverser(request, context.order)
+    notice=trv.data[MailInfoTemplate.payment_key(context.order, "notice")]
+    return Response(notice)
+
+@view_config(context=IOrderCancelMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID)
+def cancel_delivery_mail_viewlet(context, request):
+    """ cancelメール表示
+    :param context: IOrderCancelMailDelivery
+    """
+    mutil = get_mail_utility(request, c_models.MailTypeEnum.PurchaseCancelMail)
+    trv = mutil.get_traverser(request, context.order)
+    notice=trv.data[MailInfoTemplate.delivery_key(context.order, "notice")]
+    return Response(notice)

@@ -8,7 +8,7 @@ from pyramid.httpexceptions import HTTPFound
 from ticketing.multicheckout import helpers as m_h
 from ticketing.multicheckout import api as multicheckout_api
 from ticketing.core import models as c_models
-from ..interfaces import IPaymentPlugin, ICartPayment, IOrderPayment, ICompleteMailPayment
+from ..interfaces import IPaymentPlugin, ICartPayment, IOrderPayment, ICompleteMailPayment, IOrderCancelMailPayment
 from .models import DBSession
 from .. import schemas
 from .. import logger
@@ -165,6 +165,16 @@ def completion_payment_mail_viewlet(context, request):
 クレジットカードの引き落としは、カード会社によって異なります。詳細はご利用のカード会社へお問い合わせください。
 %s
 """ % notice)
+
+@view_config(context=IOrderCancelMailPayment, name="payment-%d" % PAYMENT_ID)
+def cancel_payment_mail_viewlet(context, request):
+    """ 完了メール表示
+    :param context: ICompleteMailPayment
+    """
+    mutil = get_mail_utility(request, c_models.MailTypeEnum.PurchaseCancelMail)
+    trv = mutil.get_traverser(request, context.order)
+    notice=trv.data[MailInfoTemplate.payment_key(context.order, "notice")]
+    return Response(notice)
 
 class MultiCheckoutView(object):
     """ マルチ決済API
