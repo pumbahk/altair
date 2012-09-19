@@ -1178,6 +1178,32 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     stock_status = relationship("StockStatus", uselist=False, backref='stock')
 
+    def count_vacant_quantity(self):
+        if self.stock_type and self.stock_type.quantity_only:
+            from ticketing.cart.models import Cart, CartedProduct, CartedProductItem
+            # 販売済みの座席数
+            reserved_quantity = Stock.filter(Stock.id==self.id).join(Stock.product_items)\
+                .join(ProductItem.ordered_product_items)\
+                .join(OrderedProductItem.ordered_product)\
+                .join(OrderedProduct.order)\
+                .filter(Order.canceled_at==None)\
+                .with_entities(func.sum(OrderedProduct.quantity)).scalar()
+            # Cartで確保されている座席数
+            reserved_quantity += Stock.filter(Stock.id==self.id).join(Stock.product_items)\
+                .join(ProductItem.ordered_product_items)\
+                .join(CartedProductItem.carted_product)\
+                .join(CartedProduct.cart)\
+                .filter(Cart.finished_at==None)\
+                .with_entities(func.sum(CartedProduct.quantity)).scalar()
+            vacant_quantity = self.quantity - reserved_quantity
+        else:
+            vacant_quantity = Seat.filter(Seat.stock_id==self.id)\
+                .join(SeatStatus)\
+                .filter(Seat.id==SeatStatus.seat_id)\
+                .filter(SeatStatus.status.in_([SeatStatusEnum.Vacant.v]))\
+                .count()
+        return vacant_quantity
+
     def save(self):
         case_add = False if hasattr(self, 'id') and self.id else True
         super(Stock, self).save()
@@ -1186,17 +1212,9 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             # 登録時にStockStatusを作成
             stock_status = StockStatus(stock_id=self.id, quantity=self.quantity)
         else:
-            # 更新時はquantityを更新
-            stock_status = StockStatus.filter_by(stock_id=self.id).first()
-            if self.stock_type and self.stock_type.quantity_only:
-                seat_quantity = self.quantity
-            else:
-                seat_quantity = Seat.filter(Seat.stock_id==self.id)\
-                    .join(SeatStatus)\
-                    .filter(Seat.id==SeatStatus.seat_id)\
-                    .filter(SeatStatus.status.in_([SeatStatusEnum.Vacant.v]))\
-                    .count()
-            stock_status.quantity = seat_quantity
+            # 更新時はquantityを更新、販売済み座席数を引く
+            stock_status = StockStatus.filter_by(stock_id=self.id).with_lockmode('update').first()
+            stock_status.quantity = self.count_vacant_quantity()
         stock_status.save()
 
     def delete(self):
