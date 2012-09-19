@@ -28,13 +28,13 @@ class Stocks(BaseView):
         performance = Performance.get(performance_id)
         if performance is None:
             logger.error('performance id %d is not found' % performance_id)
-            return HTTPBadRequest(body=json.dumps({
+            raise HTTPBadRequest(body=json.dumps({
                 'message':u'パフォーマンスが存在しません',
             }))
 
         post_data = MultiDict(self.request.json_body)
         if not post_data.get('seats') and not post_data.get('stocks') and not post_data.get('stock_types'):
-            return HTTPBadRequest(body=json.dumps({
+            raise HTTPBadRequest(body=json.dumps({
                 'message':u'保存対象がありません',
             }))
 
@@ -74,13 +74,13 @@ class Stocks(BaseView):
 
         except ValidationError, e:
             logger.exception('validation error (%s)' % e.message)
-            return HTTPBadRequest(body=json.dumps({
+            raise HTTPBadRequest(body=json.dumps({
                 'message':e.message,
             }))
 
         except Exception, e:
             logger.exception('save error (%s)' % e.message)
-            return HTTPBadRequest(body=json.dumps({
+            raise HTTPBadRequest(body=json.dumps({
                 'message':u'例外が発生しました',
             }))
 
