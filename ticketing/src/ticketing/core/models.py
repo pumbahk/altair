@@ -1693,9 +1693,12 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 order=order, product=product.product, price=product.product.price, quantity=product.quantity)
             for item in product.items:
                 ordered_product_item = OrderedProductItem(
-                    ordered_product=ordered_product, product_item=item.product_item, price=item.product_item.price,
-                    seats=item.seats,
-                )
+                    ordered_product=ordered_product,
+                    product_item=item.product_item,
+                    price=item.product_item.price,
+                    quantity=item.product_item.quantity * product.quantity,
+                    seats=item.seats
+                    )
 
         return order
 
@@ -1824,6 +1827,9 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     _attributes = relationship("OrderedProductAttribute", backref='ordered_product_item', collection_class=attribute_mapped_collection('name'), cascade='all,delete-orphan')
     attributes = association_proxy('_attributes', 'value', creator=lambda k, v: OrderedProductAttribute(name=k, value=v))
 
+    # 実際の購入数
+    quantity = Column(Integer, nullable=False, default=1, server_default='1')
+
     @property
     def seat_statuses_for_update(self):
       return DBSession.query(SeatStatus).filter(SeatStatus.seat_id.in_([s.id for s in self.seats])).with_lockmode('update').all()
@@ -1857,7 +1863,7 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         # 在庫数を戻す
         if self.product_item.stock.stock_type.quantity_only:
-            release_quantity = self.ordered_product.quantity
+            release_quantity = self.ordered_product_item.quantity
         else:
             release_quantity = len(self.seats)
         logger.info('release stock id=%s quantity=%d' % (self.product_item.stock_id, release_quantity))

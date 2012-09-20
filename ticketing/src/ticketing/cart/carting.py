@@ -25,6 +25,12 @@ class CartFactory(object):
                 if str(ordered_product_item.performance_id) != str(performance_id):
                     continue
                 logger.debug("carted product item for product_item_id = %s, performance_id = %s" % (ordered_product_item.id, ordered_product_item.performance_id))
+                # TODO: ここで、quantity が
+                # CartedProductItem.quantity==CartedProduct.quantity
+                # になるのはおかしい！
+                # CartedProductItem.quantity = CartedProduct.quantity *
+                #                              CartedProduct.product.quantity
+                # になる必要がある
                 cart_product_item = CartedProductItem(carted_product=cart_product, quantity=quantity,
                     product_item=ordered_product_item)
 

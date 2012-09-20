@@ -287,12 +287,13 @@ class DictBuilder(object):
 
         retval = []
         if ordered_product_item.product_item.stock.stock_type.quantity_only:
-            d = {}
-            d = self.build_dict_from_stock(ordered_product_item.product_item.stock, d)
-            d = self.build_dict_from_venue(ordered_product_item.product_item.performance.venue, d)
-            d[u'発券番号'] = ticket_number_issuer() if ticket_number_issuer else None
-            d.update(extra)
-            retval.append((None, d))
+            for i in range(0, ordered_product_item.quantity):
+                d = {}
+                d = self.build_dict_from_stock(ordered_product_item.product_item.stock, d)
+                d = self.build_dict_from_venue(ordered_product_item.product_item.performance.venue, d)
+                d[u'発券番号'] = ticket_number_issuer() if ticket_number_issuer else None
+                d.update(extra)
+                retval.append((None, d))
         else:
             for seat in ordered_product_item.seats:
                 d = self.build_dict_from_seat(seat, ticket_number_issuer)
@@ -406,12 +407,13 @@ class DictBuilder(object):
 
         retval = []
         if carted_product_item.product_item.stock.stock_type.quantity_only:
-            d = {}
-            self.build_dict_from_stock(carted_product_item.product_item.stock, d)
-            self.build_dict_from_venue(carted_product_item.product_item.performance.venue, d)
-            d[u'発券番号'] = ticket_number_issuer() if ticket_number_issuer else None
-            d.update(extra)
-            retval.append((None, d))
+            for i in range(0, carted_product_item.quantity):
+                d = {}
+                self.build_dict_from_stock(carted_product_item.product_item.stock, d)
+                self.build_dict_from_venue(carted_product_item.product_item.performance.venue, d)
+                d[u'発券番号'] = ticket_number_issuer() if ticket_number_issuer else None
+                d.update(extra)
+                retval.append((None, d))
         else:
             for seat in carted_product_item.seats:
                 d = self.build_dict_from_seat(seat, ticket_number_issuer)
