@@ -46,7 +46,15 @@
 </%def>
 
 <%def name="movie_asset_describe(request, asset)">
-    ${flash_show(request,asset)}
+    <div class="movie-widget" style="margin-left:30px; margin-bottom:20px;">
+        %if asset.mimetype == 'video/quicktime':
+            <embed src="${h.asset.to_show_page(request,asset)}"></embed>
+        %elif asset.mimetype == 'video/mp4':
+            <embed type="video/quicktime" src="${h.asset.to_show_page(request,asset)}"></embed>
+        %else:
+            ${h.asset.not_found_image(request)|n}
+        %endif
+    </div>
 	<div class="span5">
 	  <table class="table">
 		<tbody>
