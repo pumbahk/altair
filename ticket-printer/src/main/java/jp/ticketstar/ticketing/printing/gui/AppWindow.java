@@ -37,7 +37,6 @@ import javax.swing.JPanel;
 
 import javax.swing.JComboBox;
 
-import jp.ticketstar.ticketing.printing.AppService;
 import jp.ticketstar.ticketing.printing.BoundingBoxOverlay;
 import jp.ticketstar.ticketing.printing.GenericComboBoxModel;
 import jp.ticketstar.ticketing.printing.GuidesOverlay;
@@ -50,7 +49,7 @@ import jp.ticketstar.ticketing.printing.PageSetModel;
 import org.apache.batik.swing.gvt.Overlay;
 
 public class AppWindow implements IAppWindow {
-	AppService appService;
+	AppWindowService appService;
 	AppModel model;
 	
 	private JFrame frame;
@@ -149,7 +148,7 @@ public class AppWindow implements IAppWindow {
 	/**
 	 * Create the application.
 	 */
-	public AppWindow(AppService appService) {
+	public AppWindow(AppWindowService appService) {
 		this.appService = appService;
 		initialize();
 		appService.setAppWindow(this);

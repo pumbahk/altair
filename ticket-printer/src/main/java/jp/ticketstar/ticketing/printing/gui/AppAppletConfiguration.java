@@ -7,4 +7,6 @@ public class AppAppletConfiguration {
 	public URL peekUrl;
 	public URL dequeueUrl;
 	public String cookie;
+	public boolean embedded;
+	public String callback;
 }
