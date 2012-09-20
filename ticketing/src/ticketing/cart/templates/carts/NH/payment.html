@@ -13,29 +13,14 @@ ${h.get_nickname(request)}
       <h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_methods.gif')}" alt="お支払い、引き取り方法の指定" width="267" height="30" /></h2>
       <p style="margin-left:20px;">どれかひとつをお選びください</p>
       <% checked_id = request.params.get('payment_delivery_method_pair_id') %>
-      <% from ticketing.cart.plugins.sej import DELIVERY_PLUGIN_ID as SEJ_DELIVERY_PLUGIN_ID %>
-      <style type="text/css">
-.settlementPayBox-disabled {
-    user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    -webkit-user-select: none;
-    position: relative;
-}
-
-.settlementPayBox-disabled .settlementPayBoxInner {
-    opacity: .2;
-    filter: alpha(opacity=20);
-}
-      </style>
       %for m in payment_delivery_methods:
-      <div class="settlementPayBox ${m.delivery_method.delivery_plugin.id == SEJ_DELIVERY_PLUGIN_ID and 'settlementPayBox-disabled' or ''}" onselectstart="return false;">
+      <div class="settlementPayBox">
         <div class="settlementPayBoxInner">
           <table>
             <tr>
               <% checked = 'checked' if str(m.id) == checked_id else '' %>
               <td class="settlementPayRadio">
-                <input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" ${checked} ${m.delivery_method.delivery_plugin.id == SEJ_DELIVERY_PLUGIN_ID and 'disabled="disabled"' or ''}/>
+                <input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" ${checked} />
               </td>
               <td onclick="$(this).parents('tr').find('input').click();">
                 <dl>
@@ -59,11 +44,6 @@ ${h.get_nickname(request)}
             </tr>
           </table>
         </div>
-        % if m.delivery_method.delivery_plugin.id == SEJ_DELIVERY_PLUGIN_ID:
-        <div style="position: absolute; left: 60px; bottom: 40%; font-size: 20px; color: #d00">
-          大変申し訳ございませんが、現在一時的にご利用になれません。ご不便をおかけいたします。
-        </div>
-        % endif
       </div>
       %endfor
     </div>
