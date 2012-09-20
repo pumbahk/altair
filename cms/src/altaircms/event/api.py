@@ -85,9 +85,9 @@ class Scanner(object):
                 performance.title = performance_record['name']
                 performance.venue = performance_record['venue']
                 performance.prefecture = self.prefectures.get(performance_record['prefecture'])
-                performance.open_on = parse_datetime(performance_record['open_on'])
+                performance.open_on = parse_datetime(performance_record['open_on']) if performance_record['open_on'] else None
                 performance.start_on = parse_datetime(performance_record['start_on'])
-                performance.end_on = parse_datetime(performance_record.get('end_on'))
+                performance.end_on = parse_datetime(performance_record.get('end_on')) if performance_record['end_on'] else None
                 def bound_performance_to_tickets():
                     """ チケットが生成されてから、performanceとticketを結びつける。"""
                     ## 更新により通知されるticket.backend`idsが減ったとき、増えたときのテストしていない。
