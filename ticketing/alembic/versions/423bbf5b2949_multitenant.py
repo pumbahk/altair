@@ -33,7 +33,7 @@ def upgrade():
     )
 
     op.create_table('MulticheckoutSetting',
-    sa.Column('id', Identifier(), nullable=False),
+    sa.Column('id', Identifier(), primary_key=True, nullable=False),
     sa.Column('shop_name', sa.Unicode(length=255), nullable=True),
     sa.Column('shop_id', sa.Unicode(length=255), nullable=True),
     sa.Column('auth_id', sa.Unicode(length=255), nullable=True),
