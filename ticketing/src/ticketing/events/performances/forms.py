@@ -46,7 +46,7 @@ class PerformanceForm(Form):
     )
     open_on = DateTimeField(
         label=u'開場',
-        validators=[Required()],
+        validators=[Optional()],
         format='%Y-%m-%d %H:%M',
     )
     start_on = DateTimeField(
@@ -56,7 +56,7 @@ class PerformanceForm(Form):
     )
     end_on = DateTimeField(
         label=u'終演',
-        validators=[Required()],
+        validators=[Optional()],
         format='%Y-%m-%d %H:%M',
     )
     venue_id = SelectField(
