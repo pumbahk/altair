@@ -1187,14 +1187,14 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 .join(OrderedProductItem.ordered_product)\
                 .join(OrderedProduct.order)\
                 .filter(Order.canceled_at==None)\
-                .with_entities(func.sum(OrderedProduct.quantity)).scalar()
+                .with_entities(func.sum(OrderedProduct.quantity)).scalar() or 0
             # Cartで確保されている座席数
             reserved_quantity += Stock.filter(Stock.id==self.id).join(Stock.product_items)\
-                .join(ProductItem.ordered_product_items)\
+                .join(ProductItem.carted_product_items)\
                 .join(CartedProductItem.carted_product)\
                 .join(CartedProduct.cart)\
                 .filter(Cart.finished_at==None)\
-                .with_entities(func.sum(CartedProduct.quantity)).scalar()
+                .with_entities(func.sum(CartedProduct.quantity)).scalar() or 0
             vacant_quantity = self.quantity - reserved_quantity
         else:
             vacant_quantity = Seat.filter(Seat.stock_id==self.id)\
@@ -1863,7 +1863,7 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         # 在庫数を戻す
         if self.product_item.stock.stock_type.quantity_only:
-            release_quantity = self.ordered_product_item.quantity
+            release_quantity = self.quantity
         else:
             release_quantity = len(self.seats)
         logger.info('release stock id=%s quantity=%d' % (self.product_item.stock_id, release_quantity))

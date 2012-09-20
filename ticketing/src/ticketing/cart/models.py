@@ -75,7 +75,7 @@ class CartedProductItem(Base):
 
     #seat_status_id = sa.Column(sa.Integer, sa.ForeignKey(""))
 
-    product_item = orm.relationship("ProductItem")
+    product_item = orm.relationship("ProductItem", backref='carted_product_items')
     seats = orm.relationship("Seat", secondary=cart_seat_table)
     #seat_status = orm.relationship("SeatStatus")
 
