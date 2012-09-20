@@ -11,6 +11,7 @@ from sqlalchemy.types import String, DateTime, Integer, Unicode, Enum
 from sqlalchemy.ext.associationproxy import association_proxy
 from zope.deprecation import deprecation
 from altaircms.models import WithOrganizationMixin
+import hashlib
 
 Base = sqlahelper.get_base()
 _session = sqlahelper.get_session()
@@ -125,6 +126,26 @@ operator_role = Table(
     Column("operator_id", Integer, ForeignKey("operator.id")),
     Column("role_id", Integer, ForeignKey("role.id")),
 )
+
+
+class OperatorSelfAuth(Base):
+    __tablename__ = "operator_selfauth"
+    query = _session.query_property()    
+
+    operator_id = Column(Integer, ForeignKey("operator.id"), primary_key=True)
+    operator = relationship("Operator", uselist=False)
+    password = Column(String(64))
+
+    @classmethod
+    def get_login_user(self, organization_id, name, password):
+        password = hashlib.sha256(password).hexdigest()
+        return Operator.query.filter(Operator.organization_id==organization_id, Operator.screen_name==name)\
+            .filter(OperatorSelfAuth.password==password).first()
+
+    @classmethod
+    def bound_selfauth(cls, operator, password):
+        password = hashlib.sha256(password).hexdigest()
+        return cls(operator=operator, password=password)
 
 
 class Operator(WithOrganizationMixin, Base):

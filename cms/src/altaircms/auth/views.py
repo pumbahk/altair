@@ -18,13 +18,15 @@ import json
 from altaircms.models import DBSession
 from altaircms.lib.fanstatic_decorator import with_bootstrap
 from altaircms.auth.forms import RoleForm
-from .models import Operator, Role, DEFAULT_ROLE
+from .models import Operator, Role, DEFAULT_ROLE, Organization
 
 from . import api
+from . import forms
 from .api import get_or_404
 
-@view_config(route_name='login', renderer='altaircms:templates/login.mako')
-@view_config(context='pyramid.httpexceptions.HTTPForbidden', renderer='altaircms:templates/login.mako',
+@view_config(route_name='login', renderer='altaircms:templates/auth/login/login.mako', 
+             decorator=with_bootstrap)
+@view_config(context='pyramid.httpexceptions.HTTPForbidden', renderer='altaircms:templates/auth/login/login.mako',
              decorator=with_bootstrap)
 def login(request):
     logging.info("request user is %s" % request.user)
@@ -37,6 +39,26 @@ def login(request):
     return dict(
         message=message
     )
+
+@view_defaults(route_name="login.self", decorator=with_bootstrap)
+class LoginSelfView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @view_config(match_param="action=input", renderer="altaircms:templates/auth/login/login.self.mako")
+    def input(self):
+        form = forms.SelfLoginForm().configure(Organization.query)
+        return {"form": form}
+
+    @view_config(match_param="action=login", renderer="altaircms:templates/auth/login/login.self.mako")
+    def login(self):
+        form = forms.SelfLoginForm(self.request.POST).configure(Organization.query)
+        if not form.validate():
+            return {"form": form}
+        headers = remember(self.request, form.user.user_id)
+        url = self.request.route_url('dashboard')
+        return HTTPFound(url, headers=headers)
 
 
 @view_config(route_name='logout')

@@ -30,6 +30,7 @@ def includeme(config):
     config.add_subscriber(".subscribers.touch_operator_after_login", ".subscribers.AfterLogin")
 
     config.add_route('login', '/login')
+    config.add_route("login.self", "/login/self/{action}")
     config.add_route('logout', '/logout')
 
     config.add_route('oauth_entry', '/oauth')
