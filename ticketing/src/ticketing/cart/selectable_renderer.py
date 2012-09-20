@@ -3,6 +3,7 @@ from zope.interface import Interface
 from zope.interface import provider
 from zope.interface import implementer
 from pyramid.renderers import RendererHelper
+import ticketing.core.api as core_api
 
 _lookup_key = "**selectable"
 def includeme(config):
@@ -63,15 +64,11 @@ class ByDomainMappingSelector(object):
     def __init__(self, mapping):
         self.mapping = mapping
 
-    def lookup_mapped(self, domain_name):
-        for k, lookup_key in self.mapping.iteritems():
-            if k in domain_name:
-                return lookup_key
-        return self.mapping.get("default")
-
     def __call__(self, helper, value, system_values, request=None):
         assert request
-        mapped = self.lookup_mapped(request.host)
+        #mapped = self.lookup_mapped(request.host)
+        organization = core_api.get_organization(request)
+        mapped = organization.memberships[0].name
         fmt = helper.format_string
         return fmt % dict(membership=mapped)
 
