@@ -142,6 +142,7 @@ public class PageSetModel {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	private static void dumpGvtNode(GraphicsNode node) {
 		dumpGvtNode(node, 0);
 	}
