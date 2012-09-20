@@ -1,3 +1,5 @@
+<%namespace file="../components.mako" name="co"/>
+
 ## movie widget dialog
 ##  view function is views.MovieWidgetView.dialog
 ##
@@ -6,7 +8,8 @@
   % for g in assets:
   <div>
      % for movie in g:
-       <img pk="${movie.id}" src="${h.asset.to_show_page(request,movie,filepath=movie.imagepath)}" alt=""/>
+         <img pk="${movie.id}" src="${h.asset.to_show_page(request,movie,filepath=movie.imagepath)}" alt="" class="${"managed" if widget.asset==movie else ""}"/>
+         <p>title:${movie.title} width:${movie.width} height:${movie.height} </p>
      % endfor          
   </div>
   % endfor 
@@ -28,3 +31,12 @@
    ${render(assets)}
    </div>
 </div>
+<table class="table">
+  <tbody>
+    ${co.formfield(form, "width")}
+    ${co.formfield(form, "height")}
+    ${co.formfield(form, "alt")}
+  </tbody>
+</table>
+<button type="button" id="movie_submit">登録</button>
+

@@ -3,8 +3,9 @@
 <div class="flash-widget"
      url="${h.asset.to_show_page(request, widget.asset)}"
      pk="${widget.asset.id}"
-     width="${widget.asset.width or 480}"
-     height="${widget.asset.height or 480}"
+     width="${widget.width or widget.asset.width or 480}"
+     height="${widget.height or widget.asset.height or 480}"
+     alt="${widget.alt}"
 ></div>
 ## this is not good
 <script type="text/javascript" src="/static/swfobject.js"></script>

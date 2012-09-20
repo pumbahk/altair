@@ -27,6 +27,10 @@ class FlashWidget(Widget):
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
     asset_id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"))
     asset = orm.relationship(FlashAsset, backref="widget", uselist=False)
+    href = sa.Column(sa.String(255))
+    width = sa.Column(sa.Integer)
+    height = sa.Column(sa.Integer)
+    alt = sa.Column(sa.Unicode(255))
 
     def __init__(self, id=None, asset_id=None):
         self.id = id

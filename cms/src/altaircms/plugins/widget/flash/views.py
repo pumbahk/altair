@@ -1,6 +1,7 @@
 from pyramid.view import view_config, view_defaults
 from altaircms.auth.api import require_login
 from altaircms.lib.itertools import group_by_n
+from . import forms
 
 @view_defaults(custom_predicates=(require_login,))
 class FlashWidgetView(object):
@@ -14,11 +15,14 @@ class FlashWidgetView(object):
             r.update(pk=None, asset_id=None)
             return r
 
+        alt = self.request.json_body["data"].get("alt")
+        width = self.request.json_body["data"].get("width")
+        height = self.request.json_body["data"].get("height")
         page_id = self.request.json_body["page_id"]
         context = self.request.context
         asset = context.get_asset(asset_id);
         widget = context.get_widget(self.request.json_body.get("pk"))
-        widget = context.update_data(widget, page_id=page_id, asset_id=asset_id, asset=asset)
+        widget = context.update_data(widget, page_id=page_id, asset_id=asset_id, asset=asset, alt=alt, width=width, height=height)
         context.add(widget, flush=True)
 
         r = self.request.json_body.copy()
@@ -44,4 +48,10 @@ class FlashWidgetView(object):
     def dialog(self):
         N = 5
         assets = group_by_n(self.request.context.get_asset_query(), N)
-        return {"assets": assets}
+        widget = self.request.context.get_widget(self.request.GET.get("pk"))
+        if widget.width == 0:
+            widget.width = ""
+        if widget.height == 0:
+            widget.height = ""
+        form = forms.FlashInfoForm(**widget.to_dict())
+        return {"assets": assets, "form": form, "widget": widget}
