@@ -12,6 +12,7 @@ import itertools
 from sqlalchemy import sql
 from pyramid.security import Everyone, Authenticated
 from pyramid.security import Allow
+from sqlalchemy.orm.exc import NoResultFound
 
 from zope.interface import implementer
 from .interfaces import IOrderPayment, IOrderDelivery, ICartPayment, ICartDelivery
@@ -20,6 +21,7 @@ from ticketing.mails.resources import CompleteMailPayment, CompleteMailDelivery,
 
 from .exceptions import OutTermSalesException
 from ..core import models as c_models
+from ..core import api as core_api
 from ..users import models as u_models
 from . import models as m
 from . import logger
@@ -61,8 +63,14 @@ class TicketingCartResource(object):
 
     @property
     def event(self):
-        event = c_models.Event.filter(c_models.Event.id==self.event_id).one()
-        return event
+        # TODO: ドメインで許可されるeventのみを使う
+        organization = core_api.get_organization(self.request)
+        try:
+            event = c_models.Event.filter(c_models.Event.id==self.event_id).filter(c_models.Event.organization==organization).one()
+            return event
+
+        except NoResultFound:
+            return None
 
     @property
     def membergroups(self):

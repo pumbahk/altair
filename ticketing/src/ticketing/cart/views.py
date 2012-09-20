@@ -70,6 +70,9 @@ class IndexView(object):
 
     @view_config(route_name='cart.index', renderer=selectable_renderer("carts/%(membership)s/index.html"), xhr=False, permission="buy")
     def redirect_sale(self):
+        event = self.request.context.event
+        if event is None:
+            raise HTTPNotFound()
         sales_segments = self.context.sales_segments
         if not sales_segments:
             logger.debug("No matching sales_segment")
@@ -84,6 +87,9 @@ class IndexView(object):
 
     @view_config(route_name='cart.index.sales', renderer=selectable_renderer('carts/%(membership)s/index.html'), xhr=False, permission="buy")
     def __call__(self):
+        event = self.request.context.event
+        if event is None:
+            raise HTTPNotFound()
         jquery_tools.need()
         context = self.request.context
         event_id = self.request.matchdict['event_id']
