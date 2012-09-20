@@ -40,7 +40,9 @@ def preview(context, request):
 def download(request):
     layout = get_or_404(request.allowable(Layout), Layout.id==request.matchdict["layout_id"])
     path = api.get_layout_creator(request).get_layout_filepath(layout)
-    return FileResponse(path)
+    response = FileResponse(path)
+    response.content_disposition = 'attachment; filename="%s"' % layout.template_filename
+    return response
 
 @view_defaults(route_name="layout_create", 
                decorator="altaircms.lib.fanstatic_decorator.with_bootstrap")
