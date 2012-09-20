@@ -9,7 +9,6 @@ from .api import create_or_update_mailinfo
 from .api import create_fake_order
 from .api import get_mailinfo_traverser
 from .api import get_mail_utility
-from ticketing.cart import helpers as ch ##
 from ticketing.cart import helpers as h
 from ticketing.core.models import MailTypeEnum
 import logging
@@ -91,7 +90,7 @@ def create_cancel_message(request, order):
     pair = order.payment_delivery_pair
 
     value = dict(
-        h=ch, 
+        h=h, 
         order=order,
         sa=order.shipping_address,
         products=products,

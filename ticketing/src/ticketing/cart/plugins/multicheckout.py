@@ -15,8 +15,6 @@ from .. import logger
 from .. import helpers as h
 from .. import api
 from ..exceptions import NoCartError
-from ticketing.mails.api import get_mail_utility
-from ticketing.mails.forms import MailInfoTemplate
 from ticketing.cart.selectable_renderer import selectable_renderer
 
 logger = logging.getLogger(__name__)
@@ -152,9 +150,7 @@ def completion_payment_mail_viewlet(context, request):
     """ 完了メール表示
     :param context: ICompleteMailPayment
     """
-    mutil = get_mail_utility(request, c_models.MailTypeEnum.CompleteMail)
-    trv = mutil.get_traverser(request, context.order)
-    notice=trv.data[MailInfoTemplate.payment_key(context.order, "notice")]
+    notice=context.mail_data("notice")
     return Response(u"""
 ＜クレジットカードでのお支払いの方＞
 
@@ -171,10 +167,7 @@ def cancel_payment_mail_viewlet(context, request):
     """ 完了メール表示
     :param context: ICompleteMailPayment
     """
-    mutil = get_mail_utility(request, c_models.MailTypeEnum.PurchaseCancelMail)
-    trv = mutil.get_traverser(request, context.order)
-    notice=trv.data[MailInfoTemplate.payment_key(context.order, "notice")]
-    return Response(notice)
+    return Response(context.mail_data("notice"))
 
 class MultiCheckoutView(object):
     """ マルチ決済API

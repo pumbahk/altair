@@ -7,8 +7,6 @@ from pyramid.view import view_config
 from pyramid.response import Response
 from pyramid.httpexceptions import HTTPFound
 
-from ticketing.mails.api import get_mail_utility
-from ticketing.mails.forms import MailInfoTemplate
 from ..interfaces import IPaymentPlugin, IOrderPayment, ICompleteMailPayment, IOrderCancelMailPayment
 from ticketing.cart import helpers as h
 from ticketing.cart import api as a
@@ -50,27 +48,11 @@ def completion_viewlet(context, request):
     """
     return Response(text=u"楽天あんしん決済")
 
+@view_config(context=IOrderCancelMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
 @view_config(context=ICompleteMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
              # renderer="ticketing.cart.plugins:templates/card_payment_mail_complete.html")
-def completion_payment_mail_viewlet(context, request):
-    """ 完了メール表示
-    :param context: ICompleteMailPayment
-    """
-    mutil = get_mail_utility(request, MailTypeEnum.CompleteMail)
-    trv = mutil.get_traverser(request, context.order)
-    notice=trv.data[MailInfoTemplate.payment_key(context.order, "notice")]
-    return Response(notice)
-
-@view_config(context=IOrderCancelMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
-def cancel_payment_mail_viewlet(context, request):
-    """ 完了メール表示
-    :param context: ICompleteMailPayment
-    """
-    mutil = get_mail_utility(request, MailTypeEnum.PurchaseCancelMail)
-    trv = mutil.get_traverser(request, context.order)
-    notice=trv.data[MailInfoTemplate.payment_key(context.order, "notice")]
-    return Response(notice)
-
+def payment_mail_viewlet(context, request):
+    return Response(context.mail_data("notice"))
 
 class CheckoutView(object):
     """ 楽天あんしん決済 """

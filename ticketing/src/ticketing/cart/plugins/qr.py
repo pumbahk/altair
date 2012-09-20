@@ -2,7 +2,6 @@
 
 from pyramid.view import view_config
 from ticketing.mobile import mobile_view_config
-from zope.interface import implementer
 from ..interfaces import IOrderDelivery, ICartDelivery, ICompleteMailDelivery, IOrderCancelMailDelivery
 from . import models as m
 from ticketing.core import models as core_models
@@ -13,8 +12,6 @@ from pyramid.response import Response
 from ticketing.qr import qr
 from ticketing.cart import helpers as cart_helper
 from ticketing.core import models as c_models
-from ticketing.mails.api import get_mail_utility
-from ticketing.mails.forms import MailInfoTemplate
 
 DELIVERY_PLUGIN_ID = 4
 
@@ -63,18 +60,13 @@ def deliver_completion_viewlet(context, request):
 @view_config(context=ICompleteMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer="ticketing.cart.plugins:templates/qr_mail_complete.html")
 def deliver_completion_mail_viewlet(context, request):
     shipping_address = context.order.shipping_address
-    mutil = get_mail_utility(request, c_models.MailTypeEnum.CompleteMail)
-    trv = mutil.get_traverser(request, context.order)
     return dict(h=cart_helper, shipping_address=shipping_address, 
-                notice=trv.data[MailInfoTemplate.delivery_key(context.order, "notice")]
+                notice=context.mail_data("notice")
                 )
 
-@view_config(context=IOrderCancelMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer="string")
+@view_config(context=IOrderCancelMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID)
 def delivery_cancel_mail_viewlet(context, request):
-    mutil = get_mail_utility(request, c_models.MailTypeEnum.PurchaseCancelMail)
-    trv = mutil.get_traverser(request, context.order)
-    notice = trv.data[MailInfoTemplate.delivery_key(context.order, "notice")]
-    return Response(notice)
+    return Response(context.mail_data("notice"))
 
 def _with_serial_and_seat(ordered_product,  ordered_product_item):
     if ordered_product_item.seats:

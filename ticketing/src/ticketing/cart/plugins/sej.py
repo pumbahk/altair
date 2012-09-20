@@ -7,8 +7,6 @@ from ..interfaces import IPaymentPlugin, ICartPayment, IOrderPayment, ICompleteM
 from ..interfaces import IDeliveryPlugin, ICartDelivery, IOrderDelivery, ICompleteMailDelivery, IOrderCancelMailDelivery
 
 from .. import logger
-from ticketing.mails.api import get_mail_utility
-from ticketing.mails.forms import MailInfoTemplate
 from pyramid.threadlocal import get_current_registry
 
 from ticketing.core import models as c_models
@@ -331,12 +329,9 @@ def payment_mail_viewlet(context, request):
     """ 完了メール表示
     :param context: ICompleteMailPayment
     """
-    order = context.order
     sej_order=context.order.sej_order
-    mutil = get_mail_utility(request, c_models.MailTypeEnum.CompleteMail)
-    trv = mutil.get_traverser(request, order)
     return dict(sej_order=sej_order, h=cart_helper, 
-                notice=trv.data[MailInfoTemplate.payment_key(order, "notice")])
+                notice=context.mail_data("notice"))
 
 @view_config(context=ICompleteMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer="ticketing.cart.plugins:templates/sej_delivery_mail_complete.html")
 def delivery_mail_viewlet(context, request):
@@ -346,28 +341,14 @@ def delivery_mail_viewlet(context, request):
     sej_order=context.order.sej_order
     payment_id = context.order.payment_delivery_pair.payment_method.payment_plugin_id
     is_payment_with_sej = int(payment_id or -1) == PAYMENT_PLUGIN_ID
-    mutil = get_mail_utility(request, c_models.MailTypeEnum.CompleteMail)
-    trv = mutil.get_traverser(request, context.order)
     return dict(sej_order=sej_order, h=cart_helper, trv=trv, 
                 is_payment_with_sej=is_payment_with_sej, 
-                notice=trv.data[MailInfoTemplate.delivery_key(context.order, "notice")])
+                notice=context.mail_data("notice"))
 
 @view_config(context=IOrderCancelMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
+@view_config(context=IOrderCancelMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID)
 def cancel_payment_mail_viewlet(context, request):
     """ cancelメール表示
     :param context: IOrderCancelMailPayment
     """
-    mutil = get_mail_utility(request, c_models.MailTypeEnum.PurchaseCancelMail)
-    trv = mutil.get_traverser(request, context.order)
-    notice=trv.data[MailInfoTemplate.payment_key(context.order, "notice")]
-    return Response(notice)
-
-@view_config(context=IOrderCancelMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID)
-def cancel_delivery_mail_viewlet(context, request):
-    """ cancelメール表示
-    :param context: IOrderCancelMailDelivery
-    """
-    mutil = get_mail_utility(request, c_models.MailTypeEnum.PurchaseCancelMail)
-    trv = mutil.get_traverser(request, context.order)
-    notice=trv.data[MailInfoTemplate.delivery_key(context.order, "notice")]
-    return Response(notice)
+    return Response(context.mail_data("notice"))
