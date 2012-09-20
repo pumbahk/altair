@@ -1863,7 +1863,7 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         # 在庫数を戻す
         if self.product_item.stock.stock_type.quantity_only:
-            release_quantity = self.ordered_product_item.quantity
+            release_quantity = self.quantity
         else:
             release_quantity = len(self.seats)
         logger.info('release stock id=%s quantity=%d' % (self.product_item.stock_id, release_quantity))
