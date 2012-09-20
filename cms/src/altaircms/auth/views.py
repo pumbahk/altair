@@ -24,18 +24,33 @@ from . import api
 from . import forms
 from .api import get_or_404
 
+_pre_login_location = "_pre_login_location"
+def get_after_login_redirect(request):
+    logger.debug("******")
+    logger.debug(request.session)
+    logger.debug("******")
+    if request.session.get(_pre_login_location):
+        return request.session.pop(_pre_login_location)
+    else:
+        return request.route_url('dashboard')
+        
+def set_after_login_redirect(request):
+    request.session[_pre_login_location] = request.url
+    logger.debug("@@@@@@")
+    logger.debug(request.session)
+    logger.debug("@@@@@@")
+
 @view_config(route_name='login', renderer='altaircms:templates/auth/login/login.mako', 
              decorator=with_bootstrap)
 @view_config(context='pyramid.httpexceptions.HTTPForbidden', renderer='altaircms:templates/auth/login/login.mako',
              decorator=with_bootstrap)
 def login(request):
     logging.info("request user is %s" % request.user)
-
+    set_after_login_redirect(request)
     if request.user is None:
         message = u"まだログインしていません。ログインしてください。"
     else:
         message = u"このページを閲覧する権限が不足しています。ログアウト後、閲覧権限を持ったログインで再ログインしてください"
-
     return dict(
         message=message
     )
@@ -57,7 +72,7 @@ class LoginSelfView(object):
         if not form.validate():
             return {"form": form}
         headers = remember(self.request, form.user.user_id)
-        url = self.request.route_url('dashboard')
+        url = get_after_login_redirect(self.request)
         return HTTPFound(url, headers=headers)
 
 
@@ -102,9 +117,8 @@ class OAuthLogin(object):
 
         logger.info("*login* remember user_id = %s" % data["user_id"])
         headers = remember(self.request, data["user_id"])
-        url = self.request.route_url('dashboard')
+        url = get_after_login_redirect(self.request)
         return HTTPFound(url, headers=headers)
-
 
 @view_defaults(decorator=with_bootstrap)
 class OperatorView(object):
