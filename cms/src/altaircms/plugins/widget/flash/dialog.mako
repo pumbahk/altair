@@ -1,3 +1,5 @@
+<%namespace file="../components.mako" name="co"/>
+
 ## flash widget dialog
 ##  view function is views.FlashWidgetView.dialog
 ##
@@ -5,7 +7,10 @@
   % for g in assets:
   <div>
      % for flash in g:
-       <img pk="${flash.id}" src="${h.asset.to_show_page(request,flash,filepath=flash.imagepath)}" alt=""/>
+       <div class="item">
+         <img pk="${flash.id}" src="${h.asset.to_show_page(request,flash,filepath=flash.imagepath)}" alt="" class="${"managed" if widget.asset==flash else ""}"/>
+         <p>title:${flash.title} width:${flash.width} height:${flash.height} </p>
+       </div>
      % endfor          
   </div>
   % endfor 
@@ -27,3 +32,12 @@
    ${render(assets)}
    </div>
 </div>
+<table class="table">
+  <tbody>
+    ${co.formfield(form, "width")}
+    ${co.formfield(form, "height")}
+    ${co.formfield(form, "alt")}
+  </tbody>
+</table>
+<button type="button" id="flash_submit">登録</button>
+

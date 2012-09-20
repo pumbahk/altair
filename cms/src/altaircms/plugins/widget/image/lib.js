@@ -60,7 +60,7 @@ if(!widget){
                 href: root.find("#href").val() || "", 
                 width: root.find("#width").val() || "", 
                 height: root.find("#height").val() || "", 
-                alt: root.find("#alt").val() || "", 
+                alt: root.find("#alt").val() || ""
                };
     };
 

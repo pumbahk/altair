@@ -28,7 +28,14 @@ widget.configure({
     var _has_click_event = null;
 
     var load_page = function(we){
-        we.dialog.load("/api/widget/flash/dialog");
+        var pk = we.get_pk(we.where);
+        var url = "/api/widget/flash/dialog";
+        var params = {};
+        if(!!pk){
+            params["pk"] = pk;
+        }
+            url += "?" + $.param(params);
+        return we.dialog.load(url);
     };
 
     var on_dialog = function(we){
@@ -36,14 +43,18 @@ widget.configure({
             10, 1.43, 15, 
             function(){return $(".scrollable")}, 
             function(){
-
-                _has_click_event = "#@id@ img".replace("@id@", we.dialog .attr("id"));
-                $(document).on("click", _has_click_event, function(){
+                $("#flash_submit").click(function(){
                     we.finish_dialog(this);
+                })
+
+                $(we.dialog).find("img").click(function(){
+                    selected = this;
+                    $(we.dialog).find(".managed").removeClass("managed")
+                    we.attach_managed(selected);
                 });
-                we.attach_highlight(_has_click_event);
-                var expr = "img[src='@src@']".replace("@src@", we.get_data(we.where).imagefile)
-                we.attach_managed(we.dialog.find(expr));
+
+                selected = $(we.dialog).find(".managed");
+                we.attach_highlight(selected);
 
                 // **scroiing**
                 // horizontal scrollables. each one is circular and has its own navigator instance
@@ -52,7 +63,7 @@ widget.configure({
                 var move = root.data("scrollable").move;
                 $(we.dialog).parent().mousewheel(function(e, delta){
                     move(delta < 0 ? 1 : -1, 50); // 50 is speed
-					          return false;
+                    return false;
                 });
                 // when page loads setup keyboard focus on the first horzontal scrollable
             })();
@@ -63,10 +74,14 @@ widget.configure({
     };
 
     var collect_data = function(we, choiced_elt){
-        var choiced_elt = $(choiced_elt);
+        var choiced_elt = $(selected);
+        var root = $(we.dialog);
         return {imagefile: choiced_elt.attr("src"), 
-                asset_id: choiced_elt.attr("pk")};
-
+                asset_id: choiced_elt.attr("pk"), 
+                width: root.find("#width").val() || "", 
+                height: root.find("#height").val() || "", 
+                alt: root.find("#alt").val() || ""
+               };
     };
     return widget.include("flash", {
         load_page: load_page, 
