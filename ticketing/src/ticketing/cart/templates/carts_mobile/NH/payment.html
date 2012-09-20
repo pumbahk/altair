@@ -122,9 +122,6 @@
 代金の支払方法を指定して、「次へ進む」ボタンをクリックして下さい。<br>
 購入時には、代金のほかに支払方法により、手数料がかかる場合があります。
 </div>
-<div><font color="#f00">
-申し訳ございませんが、現在一時的にセブンイレブン発券ができなくなっております。ご不便をおかけいたします。
-</font></div>
 <% checked_id = request.params.get('payment_delivery_method_pair_id') %>
 
 %if request.session.peek_flash():
@@ -133,9 +130,7 @@
     %endfor
 %endif
 
-<% from ticketing.cart.plugins.sej import DELIVERY_PLUGIN_ID as SEJ_DELIVERY_PLUGIN_ID %>
 %for m in payment_delivery_methods:
-% if m.delivery_method.delivery_plugin.id != SEJ_DELIVERY_PLUGIN_ID:
 <hr />
 <% checked = 'checked' if str(m.id) == checked_id else '' %>
 <input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" ${checked}>${m.payment_method.name}+${m.delivery_method.name}<br/>
@@ -157,7 +152,6 @@
 </font>
 % endif
 </div>
-% endif
 %endfor
 <hr />
 <input type="submit" name="back" value="戻る" class="submit" />
