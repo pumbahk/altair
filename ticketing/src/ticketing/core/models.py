@@ -12,7 +12,7 @@ from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, 
 from sqlalchemy.orm import join, backref, column_property, joinedload, deferred
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.sql.expression import desc, exists, select, table, column
+from sqlalchemy.sql.expression import asc, desc, exists, select, table, column
 from sqlalchemy.ext.associationproxy import association_proxy
 
 from pyramid.threadlocal import get_current_registry
@@ -1972,7 +1972,13 @@ class TicketPrintQueueEntry(Base, BaseModel):
 
     @classmethod
     def peek(self, operator, ticket_format_id):
-        return TicketPrintQueueEntry.filter_by(processed_at=None, operator=operator).filter(Ticket.ticket_format_id==ticket_format_id).order_by(desc(self.created_at)).all()
+        return DBSession.query(TicketPrintQueueEntry) \
+            .filter_by(processed_at=None, operator=operator) \
+            .filter(Ticket.ticket_format_id==ticket_format_id) \
+            .join(OrderedProductItem) \
+            .join(OrderedProduct) \
+            .order_by(asc(OrderedProduct.id), desc(self.created_at)) \
+            .all()
 
     @classmethod
     def dequeue(self, ids):
