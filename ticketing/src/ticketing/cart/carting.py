@@ -17,21 +17,18 @@ class CartFactory(object):
         system_fee = get_system_fee(request)
         cart = Cart(performance_id=performance_id, system_fee=system_fee)
         for ordered_product, quantity in ordered_products:
-            logger.debug("carted product for product_id = %s" % (ordered_product.id))
+            logger.debug("carted product for product_id=%s" % (ordered_product.id))
             # CartedProduct
             cart_product = CartedProduct(cart=cart, product=ordered_product, quantity=quantity)
             for ordered_product_item in ordered_product.items:
                 # CartedProductItem
                 if str(ordered_product_item.performance_id) != str(performance_id):
                     continue
-                logger.debug("carted product item for product_item_id = %s, performance_id = %s" % (ordered_product_item.id, ordered_product_item.performance_id))
-                # TODO: ここで、quantity が
-                # CartedProductItem.quantity==CartedProduct.quantity
-                # になるのはおかしい！
-                # CartedProductItem.quantity = CartedProduct.quantity *
-                #                              CartedProduct.product.quantity
-                # になる必要がある
-                cart_product_item = CartedProductItem(carted_product=cart_product, quantity=quantity,
+                subtotal_quantity = quantity * ordered_product_item.quantity
+                logger.debug("carted product item for product_item_id=%s, performance_id=%s, quantity=%d" % (ordered_product_item.id, ordered_product_item.performance_id, subtotal_quantity))
+                cart_product_item = CartedProductItem(
+                    carted_product=cart_product,
+                    quantity=subtotal_quantity,
                     product_item=ordered_product_item)
 
                 logger.debug('stock_id %s, stock_type %s' % (ordered_product_item.stock.id, ordered_product_item.stock.stock_type_id))
