@@ -228,7 +228,7 @@ class IndexView(object):
 
 
         query = DBSession.query(c_models.Product)
-        query = query.filter(c_models.Product.id.in_(q)).order_by(sa.desc("price"))
+        query = query.filter(c_models.Product.id.in_(q)).order_by(sa.desc("display_order, price"))
         ### filter by salessegment
         salessegment = self.context.get_sales_segument()
         query = h.products_filter_by_salessegment(query, salessegment)
@@ -259,7 +259,7 @@ class IndexView(object):
         q = q.filter(c_models.ProductItem.performance_id==performance_id)
 
         query = DBSession.query(c_models.Product)
-        query = query.filter(c_models.Product.id.in_(q)).order_by(sa.desc("price"))
+        query = query.filter(c_models.Product.id.in_(q)).order_by(sa.desc("display_order, price"))
         ### filter by salessegment
         salessegment = DBSession.query(c_models.SalesSegment).filter_by(id=sales_segment_id).one()
         query = h.products_filter_by_salessegment(query, salessegment)
@@ -1061,7 +1061,7 @@ class MobileSelectProductView(object):
 
         products = c_models.Product.query.filter(
             c_models.Product.id.in_(product_items)).order_by(
-            sa.desc("price")).filter_by(
+            sa.desc("display_order, price")).filter_by(
             sales_segment=sales_segment)
 
         # CSRFトークン発行
