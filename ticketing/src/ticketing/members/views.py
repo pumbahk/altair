@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 import sqlalchemy.orm as orm
 import json
+import webhelpers.paginate as paginate
 from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config, view_defaults
 from ticketing.fanstatic import with_bootstrap
@@ -33,8 +34,15 @@ def members_index_view(context, request):
                  orm.joinedload("user_credential.membership"), 
                  orm.joinedload("member"), 
                  orm.joinedload("member.membergroup"), 
-                 )\
-        .limit(20)
+                 )
+
+    users = paginate.Page(
+        users, 
+        item_count=users.count(), 
+        page=int(request.params.get('page', 0)),
+        items_per_page=50,
+        url=paginate.PageURL_WebOb(request)
+        )
     return {"users": users, "choice_form": choice_form, 
             "membership_id": membership_id}
 
