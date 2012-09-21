@@ -3,18 +3,18 @@
   <title>${event.title} - ${performance.name}</title>
 </head>
 <body>
-<div><font color="#dc0078">■</font>イベント名</div>
+<div><font color="#990018">■</font>イベント名</div>
 <div>${event.title}</div>
-<div><font color="#dc0078">■</font>パフォーマンス</div>
+<div><font color="#990018">■</font>パフォーマンス</div>
 <div>${performance.name}</div>
-<div><font color="#dc0078">■</font>開催日時</div>
+<div><font color="#990018">■</font>開催日時</div>
 <div>${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}−</div>
-<div><font color="#dc0078">■</font>会場名</div>
+<div><font color="#990018">■</font>会場名</div>
 <div>${performance.venue.name}</div>
-<div><font color="#dc0078">■</font>券種名</div>
+<div><font color="#990018">■</font>券種名</div>
 <div>${product.name}</div>
 <form method="get" action="${request.route_path('order_review.qr', ticket_id=ticket.id, sign=sign)}" target="_blank">
-<div align="center" border="2px" bordercolor="#b59557" style="background-color:#ffe0d0; border:2px solid #b59557">
+<div align="center" border="2px" bordercolor="#cccccc" style="background-color:#ffb900; border:2px solid #cccccc">
 <br />
 以下の注意事項に同意し<br />
 <input type="submit" value="QRチケットを取得" />
@@ -22,7 +22,7 @@
 <br />
 </div>
 </form>
-<div style="background-color:#b59557;text-align:center" bgcolor="#b59557" align="center">
+<div style="background-color:#ffb900;text-align:center" bgcolor="#b59557" align="center">
 <b><font size="4" color="#fff">注意事項</font></b>
 </div>
 ※携帯電話からご利用の方は、ボタンを押した後で表示される画面を「画面メモ」等にて保存してください。<br />
