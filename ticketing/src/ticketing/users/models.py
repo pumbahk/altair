@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL, Index, UniqueConstraint
 from sqlalchemy.orm import join, backref, column_property
 
@@ -22,6 +23,10 @@ class User(Base, WithTimestamp):
     def get(user_id):
         return session.query(User).filter(User.id == user_id).first()
 
+    @property
+    def first_user_credential(self):
+        ## 実態としては、user: user_credentialは1:1だけれど、すでに[0]で取得しているコードなどが存在するので
+        return self.user_credential[0]
 
 class Member(Base, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Member'
@@ -66,6 +71,8 @@ class UserProfile(Base, BaseModel, WithTimestamp):
     @property
     def full_name_kana(self):
         return u"%s %s" % (self.last_name_kana,  self.first_name_kana)
+    def full_name(self):
+        return u"%s %s" % (self.last_name, self.firstname)
 
 class UserCredential(Base, WithTimestamp):
     __tablename__ = 'UserCredential'
