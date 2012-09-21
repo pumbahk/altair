@@ -537,7 +537,6 @@ class ReserveView(object):
         old_cart = api.get_cart(self.request)
         if old_cart:
             old_cart.release()
-            DBSession.delete(old_cart)
             api.remove_cart(self.request)
 
         try:
@@ -611,7 +610,6 @@ class ReleaseCartView(object):
     def __call__(self):
         cart = api.get_cart(self.request)
         cart.release()
-        DBSession.delete(cart)
         api.remove_cart(self.request)
 
         return dict()
