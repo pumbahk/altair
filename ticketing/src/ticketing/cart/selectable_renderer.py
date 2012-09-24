@@ -76,5 +76,5 @@ class ByDomainMappingSelector(object):
 def get_membership_from_request(request):
     selector = request.registry.getUtility(ISelectableRendererSelector) ## xxx:
     assert isinstance(selector, ByDomainMappingSelector)
-    return selector.lookup_mapped(request.host)
-
+    organization = core_api.get_organization(request)
+    return organization.memberships[0].name
