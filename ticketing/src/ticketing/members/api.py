@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 
-import csv
+import ticketing.csvutils as csv
 import sqlalchemy.orm as orm
 from ticketing.users.models import MemberGroup, UserCredential, Member, User
 from ticketing.models import DBSession
@@ -77,10 +77,10 @@ class UserForLoginCartBuilder(object):
                              user=user,
                              membership_id=membership_id)
     
-def members_import_from_csv(request, io):
+def members_import_from_csv(request, io, encoding="cp932"):
     """ <Membergroup>, <Id>, <Password>を期待
     """
-    reader = csv.reader(io, quotechar="'")
+    reader = csv.reader(io, quotechar="'", encoding=encoding)
     builder = UserForLoginCartBuilder(request)
     for membergroup_name, loginname, password in reader:
         builder.build_user_for_login_cart_add_session(

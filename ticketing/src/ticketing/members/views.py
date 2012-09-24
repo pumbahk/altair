@@ -4,6 +4,7 @@ import json
 import webhelpers.paginate as paginate
 from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config, view_defaults
+from pyramid.response import FileResponse
 from ticketing.fanstatic import with_bootstrap
 from ticketing.users.models import Membership, MemberGroup, Member, User, UserCredential
 from . import forms
@@ -99,7 +100,12 @@ class MemberView(object):
         if not form.validate():
             return {"form": form, "membership_id": membership_id}
         
-        api.members_import_from_csv(self.request, form.data["csvfile"].file)
+        api.members_import_from_csv(self.request, form.data["csvfile"].file, encoding=form.data["encoding"])
         self.request.session.flash(u"membergroupを変更しました")
         return HTTPFound(self.request.route_url("members.index", membership_id=membership_id))
+
+    @view_config(match_param="csv_export")
+    def csv_export(self):
+        response = FileResponse(path)
+        response.content_disposition = 'attachment; filename="%s"' % layout.template_filename
 

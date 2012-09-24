@@ -25,17 +25,26 @@ class MemberShipChoicesForm(Form):
 
 class MemberCSVImportForm(Form):
     csvfile = fields.FileField(label=u"csvファイル")
+    encoding = fields.SelectField(label=u"エンコーディング", 
+                                  choices=(("cp932", u"windowsのファイル"), ("utf-8", u"UTF-8")))
 
-    def validate_csvfile(form, field):
-        io = field.data.file
+    def validate(self):
+        super(MemberCSVImportForm, self).validate()
+        io = self.data["csvfile"].file
         try:
-            reader = csv.reader(io, quotechar="'")
+            reader = csv.reader(io, quotechar="'", encoding=self.data["encoding"])
             for membergroup_name, loginname, password in reader:
                 pass
-        except Exception as e:
+        except UnicodeDecodeError as e:
             logger.info("*csv import* %s" % (str(e)))
-            raise validators.ValidationError(u"csvファイルが壊れています。")
+            self.csvfile.errors = self.errors["csvfile"] = [u"csvファイルが壊れています。あるいは指定しているエンコーディングが異なっているかもしません。"]
+        except Exception as e:
+            logger.info(e.__class__)
+            logger.info("*csv import* %s" % (str(e)))
+            self.csvfile.errors = self.errors["csvfile"] = [u"csvファイルが壊れています。"]
+        import pdb; pdb.set_trace()
         io.seek(0)
+        return not bool(self.errors)
 
 class MemberGroupChoicesForm(Form):
     membergroup_id = fields.SelectField(
