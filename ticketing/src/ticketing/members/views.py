@@ -87,8 +87,9 @@ class MemberView(object):
     @view_config(match_param="action=csv_import_dialog", 
                  renderer="ticketing:templates/members/_csv_import_dialog.html")
     def csv_import_dialog(self):
+        membership_id = self.request.matchdict["membership_id"]
         form = forms.MemberCSVImportForm()
-        return {"form": form}
+        return {"form": form, "membership_id": membership_id}
 
     @view_config(match_param="action=csv_import", 
                  renderer="ticketing:templates/members/_csv_import_dialog.html")
@@ -96,7 +97,7 @@ class MemberView(object):
         membership_id = self.request.matchdict["membership_id"]
         form = forms.MemberCSVImportForm(self.request.POST)
         if not form.validate():
-            return {"form": form}
+            return {"form": form, "membership_id": membership_id}
         
         api.members_import_from_csv(self.request, form.data["csvfile"].file)
         self.request.session.flash(u"membergroupを変更しました")
