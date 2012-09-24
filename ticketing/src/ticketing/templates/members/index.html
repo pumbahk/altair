@@ -14,9 +14,15 @@ ${breadcrumbs(
 <h2>member</h2>
 
 ${choice_form.membership_id.label}${choice_form.membership_id}
+<div class="btn-group">
 <a href="${request.route_path("members.member",membership_id=membership_id, action="edit_dialog")}"
    id="member_edit"
    class="ajax-modal btn" data-toggle="modal" data-target="#MembershipEditModal">membergroup変更</a>
+
+<a href="${request.route_path("members.member",membership_id=membership_id, action="csv_import_dialog")}"
+   class="ajax-modal btn"  data-toggle="modal" data-target="#CSVImportModal">csvインポート</a>
+</div>
+
 
 <p> ${max(users.items_per_page * (users.page-1) + 1,0)}～${min(users.items_per_page * users.page, users.item_count)} / ${users.item_count}件</p>
 
@@ -45,6 +51,9 @@ ${users.pager()}
 </table>
 
 <div class="modal hide" id="MembershipEditModal">
+</div>
+
+<div class="modal hide" id="CSVImportModal">
 </div>
 
 <script type="text/javascript">

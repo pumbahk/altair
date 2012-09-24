@@ -18,6 +18,10 @@ class MemberShipChoicesForm(Form):
         self.membership_id.choices = [(m.id, m.name) for m in memberships]
         return self
 
+
+class MemberCSVImportForm(Form):
+    csvfile = fields.FileField(label=u"csvファイル")
+
 class MemberGroupChoicesForm(Form):
     membergroup_id = fields.SelectField(
         label=u"Membergroup", 

@@ -6,8 +6,8 @@ from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config, view_defaults
 from ticketing.fanstatic import with_bootstrap
 from ticketing.users.models import Membership, MemberGroup, Member, User, UserCredential
-from ticketing.models import DBSession
 from . import forms
+from . import api
 
 def correct_organization(info, request):
     return unicode(info.user.organization_id) == request.matchdict.get("organization_id")
@@ -78,9 +78,28 @@ class MemberView(object):
             self.request.session.flash(unicode(form.errors))
             return HTTPFound(self.request.route_url("members.index", membership_id=membership_id))
 
-        Member.query.filter(Member.user_id.in_(form.data["user_id_list"]))\
-            .update({"membergroup_id": form.data["membergroup_id"]}, synchronize_session="fetch")
+        api.edit_membergroup(Member.query.filter(Member.user_id.in_(form.data["user_id_list"])), 
+                             form.data["membergroup_id"])
 
+        self.request.session.flash(u"membergroupを変更しました")
+        return HTTPFound(self.request.route_url("members.index", membership_id=membership_id))
+
+    @view_config(match_param="action=csv_import_dialog", 
+                 renderer="ticketing:templates/members/_csv_import_dialog.html")
+    def csv_import_dialog(self):
+        form = forms.MemberCSVImportForm()
+        return {"form": form}
+
+    @view_config(match_param="action=csv_import", 
+                 renderer="ticketing:templates/members/_csv_import_dialog.html")
+    def csv_import(self):
+        membership_id = self.request.matchdict["membership_id"]
+        form = forms.MemberCSVImportForm(self.request.POST)
+        if not form.validate():
+            return {"form": form}
+        
+        mg_finder = api.MemberGroupFinder(self.request)
+        api.members_import_from_csv(self.request, mg_finder, form.data["csvfile"].file)
         self.request.session.flash(u"membergroupを変更しました")
         return HTTPFound(self.request.route_url("members.index", membership_id=membership_id))
 
