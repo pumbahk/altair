@@ -1,8 +1,11 @@
 # -*- coding:utf-8 -*-
 
 import csv
+import sqlalchemy.orm as orm
 from ticketing.users.models import MemberGroup, UserCredential, Member, User
 from ticketing.models import DBSession
+import logging
+logger = logging.getLogger(__name__)
 
 def edit_membergroup(members, member_group_id):
     members.update({"membergroup_id": member_group_id}, synchronize_session="fetch")
@@ -33,31 +36,25 @@ class UserForLoginCartBuilder(object):
         self.users  = []
 
     def _find_user_from_db_same_data(self, membergroup_name, loginname, password):
-        return User.query.filter_by(deleted_at=None)\
+        return User.query\
             .filter(Member.user_id==User.id)\
-            .filter(Member.membergroup_id==MemberGroup.id, MemberGroup.name==membergroup_name)\
             .filter(UserCredential.user_id==User.id)\
-            .filter(UserCredential.auth_identifier==loginname, UserCredential.auth_secret==password)\
+            .filter(UserCredential.auth_identifier==loginname, UserCredential.membership_id==self.membership_id)\
             .first()
 
-    def build_user_for_login_cart_with_save(self, membergroup_name, loginname, password):
+
+    def build_user_for_login_cart_add_session(self, membergroup_name, loginname, password):
         user = self.build_user_for_login_cart(membergroup_name, loginname, password)
         DBSession.add(user)
         return user
 
     def build_user_for_login_cart(self, membergroup_name, loginname, password):
-        user = self._find_user_from_db_same_data(membergroup_name, loginname, password)
-        if user:
-            return user
+        user = self._find_user_from_db_same_data(membergroup_name, loginname, password) or self.build_user()
+        membergroup = self.build_membergroup(membergroup_name)
 
-        membergroup = self.member_group_finder(membergroup_name)
-        membership_id = membergroup.membership_id
-        
-        credential = self.build_credential(loginname, password, membership_id=membership_id)
-    
+        credential = self.build_credential(loginname, password, membership_id=self.membership_id)
         member = self.build_member(membergroup)
-        
-        user = self._build_userself()
+
         member.user = user
         credential.user = user
         self.users.append(user)
@@ -71,7 +68,7 @@ class UserForLoginCartBuilder(object):
         return MemberGroup.get_or_create_by_name(membergroup_name, self.membership_id)
 
     def build_member(self, membergroup):
-        return Member.get_or_create_by_member_group(membergroup=membergroup)
+        return Member.get_or_create_by_member_group(membergroup)
 
     def build_credential(self, name, password, user_id=None, membership_id=None):
         get_or_create = UserCredential.get_or_create_overwrite_password
@@ -86,7 +83,7 @@ def members_import_from_csv(request, io):
     reader = csv.reader(io, quotechar="''")
     builder = UserForLoginCartBuilder(request)
     for membergroup_name, loginname, password in reader:
-        builder.build_user_for_login_cart_with_save(
+        builder.build_user_for_login_cart_add_session(
             membergroup_name, 
             loginname,
             password)

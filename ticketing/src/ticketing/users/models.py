@@ -38,7 +38,7 @@ class Member(Base, WithTimestamp, LogicallyDeleted):
     membergroup = relationship('MemberGroup', backref='users')
 
     @classmethod
-    def get_or_create_by_member_group(cls, member_group):
+    def get_or_create_by_member_group(cls, membergroup):
         qs = cls.query.filter_by(deleted_at=None, membergroup=membergroup)
         return qs.first() or cls(membergroup=membergroup)
 
@@ -104,25 +104,25 @@ class UserCredential(Base, WithTimestamp):
         return qs
 
     @classmethod
-    def get_or_create(cls, loginname, password, membership_id=None, user_id=None):
-        qs = cls.query.filter_by(deleted_at=None, auth_identifier=loginname, auth_secret=password)
+    def get_or_create(cls, auth_identifier, auth_secret, membership_id=None, user_id=None):
+        qs = cls.query.filter_by(auth_identifier=auth_identifier, auth_secret=auth_secret)
         qs = cls._filter_by_miscs(qs, membership_id, user_id)
-        return qs.first() or cls(auth_identifier=loginname, 
-                                 auth_secret=password, 
+        return qs.first() or cls(auth_identifier=auth_identifier, 
+                                 auth_secret=auth_secret, 
                                  membership_id=membership_id, 
                                  user_id=user_id)
     @classmethod
-    def get_or_create_overwrite_password(cls, loginname, password, membership_id=None, user_id=None):
-        qs = cls.query.filter_by(deleted_at=None, auth_identifier=loginname)
+    def get_or_create_overwrite_password(cls, auth_identifier, auth_secret, membership_id=None, user_id=None):
+        qs = cls.query.filter_by(auth_identifier=auth_identifier)
         qs = cls._filter_by_miscs(qs, membership_id, user_id)
         instance = qs.first()
 
         if instance:
-            instance.auth_secret = password
+            instance.auth_secret = auth_secret
             return instance
 
-        return cls(auth_identifier=loginname, 
-                   auth_secret=password, 
+        return cls(auth_identifier=auth_identifier, 
+                   auth_secret=auth_secret, 
                    membership_id=membership_id, 
                    user_id=user_id)
     
@@ -240,7 +240,7 @@ class MemberGroup(Base, WithTimestamp):
    
     @classmethod
     def get_or_create_by_name(cls, name, membership_id=None):
-        qs = cls.query.filter_by(deleted_at=None, name=name)
+        qs = cls.query.filter_by(name=name)
         if membership_id:
             qs = qs.filter_by(membership_id=membership_id)
         return qs.first() or cls(name=name, membership_id=membership_id)
