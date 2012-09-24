@@ -1,11 +1,15 @@
 # -*- coding:utf-8 -*-
 import json
+import logging
+import csv
 import itertools
 from wtforms import Form
 from wtforms import fields
 from wtforms import widgets
 from wtforms import validators
 from collections import namedtuple, OrderedDict
+
+logger = logging.getLogger(__name__)
 
 class MemberShipChoicesForm(Form):
     membership_id = fields.SelectField(
@@ -21,6 +25,17 @@ class MemberShipChoicesForm(Form):
 
 class MemberCSVImportForm(Form):
     csvfile = fields.FileField(label=u"csvファイル")
+
+    def validate_csvfile(form, field):
+        io = field.data.file
+        try:
+            reader = csv.reader(io, quotechar="'")
+            for membergroup_name, loginname, password in reader:
+                pass
+        except Exception as e:
+            logger.info("*csv import* %s" % (str(e)))
+            raise validators.ValidationError(u"csvファイルが壊れています。")
+        io.seek(0)
 
 class MemberGroupChoicesForm(Form):
     membergroup_id = fields.SelectField(
