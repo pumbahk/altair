@@ -31,7 +31,7 @@ formatter = generic
 
 [handler_spool]
 class = ticketing.log.handlers.SpoolingHandler
-args = (5000, WARN)
+args = (5000, WARNING)
 level = INFO
 target = stderr
 formatter = generic
