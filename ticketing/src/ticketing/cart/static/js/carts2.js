@@ -864,6 +864,8 @@ cart.VenueView = Backbone.View.extend({
         this.readOnly = true;
         this.zoomRatioMin = 1;
         this.zoomRatioMax = 2.5;
+        this.updateQueue = [];
+
         var self = this;
         $('#selectSeat .btn-select-seat').click(function () {
             if (self.readOnly)
@@ -907,8 +909,22 @@ cart.VenueView = Backbone.View.extend({
         }
         return retval;
     },
-    updateVenueViewer: function(dataSource, callbacks) {
+    updateVenueViewer: function (dataSource, callbacks) {
+        this.updateQueue.push({ dataSource: dataSource, callbacks: callbacks });
+        if (!this.loading)
+            this._handleQueue();
+    },
+    _handleQueue: function () {
         var self = this;
+
+        if (this.updateQueue.length == 0)
+            return;
+
+        var updateReq = this.updateQueue.shift();
+        var dataSource = updateReq.dataSource;
+        var callbacks = updateReq.callbacks;
+
+        this.currentViewer.venueviewer("remove");
         var _callbacks = $.extend($.extend({}, callbacks), {
             zoomRatioChanging: function (zoomRatio) {
                 return Math.min(Math.max(zoomRatio, self.zoomRatioMin), self.zoomRatioMax);
@@ -920,7 +936,9 @@ cart.VenueView = Backbone.View.extend({
             load: function (viewer) {
                 self.zoomRatioMin = viewer.zoomRatioMin;
                 viewer.zoom(viewer.zoomRatioMin);
+                self.updateUIState();
                 callbacks.load && callbacks.load.apply(this, arguments);
+                self._handleQueue();
             },
             messageBoard: (function() {
                 self.tooltip.hide();
@@ -948,7 +966,6 @@ cart.VenueView = Backbone.View.extend({
             viewportSize: { x: 490, y: 430 }
         })
         this.currentViewer.venueviewer("load");
-        this.render();
     },
     updateUIState: function () {
         if (this.readOnly) {
