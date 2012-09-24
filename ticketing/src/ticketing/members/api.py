@@ -7,6 +7,46 @@ from ticketing.models import DBSession
 def edit_membergroup(members, member_group_id):
     members.update({"membergroup_id": member_group_id}, synchronize_session="fetch")
 
+class UserForLoginCartBuilder(object):
+    def __init__(self, request):
+        self.request = request
+        self.member_group_finder = MemberGroupFinder(request)
+        self.users  = []
+
+    def build_membergroup(self, membergroup_name):
+        return self.member_group_finder(membergroup_name)
+    
+    def build_user_for_login_cart_with_save(self, membergroup_name, loginname, password):
+        user = self.build_user_for_login_cart(membergroup_name, loginname, password)
+        DBSession.add(user)
+        return user
+
+    def build_user_for_login_cart(self, membergroup_name, loginname, password):
+        membergroup = self.member_group_finder(membergroup_name)
+        membership_id = membergroup.membership_id
+        
+        credential = self.build_credential(loginname, password, membership_id=membership_id)
+    
+        member = self.build_member(membergroup)
+        
+        user = self._build_userself()
+        member.user = user
+        credential.user = user
+        self.users.append(user)
+        return user
+
+    def build_user(self):
+        return User()
+        
+    def build_member(self, membergroup, user_id=None):
+        return Member(user_id=user_id, membergroup=membergroup)
+
+    def build_credential(self, name, password, user_id=None, membership_id=None):
+        return UserCredential(auth_identifier=name,
+                   auth_secret=password,
+                   user_id=user_id,
+                   membership_id=membership_id)
+
 class MemberGroupFinder(object):
     def __init__(self, request):
         self.cache = {}
@@ -28,14 +68,12 @@ class MemberGroupFinder(object):
     
 def members_import_from_csv(request, member_group_finder, io):
     """ <Membergroup>, <Id>, <Password>を期待
-    ## 重複した値がきたらどうするの？
     """
     reader = csv.reader(io, quotechar="''")
-    users = []
-    for row in reader:
-        membergroup_name, loginname, password = row
-        mg = member_group_finder(membergroup_name)
-        user = User.create_for_cart_login(mg, loginname, password)
-        DBSession.add(user)
-        users.append(user)
-    return users
+    builder = UserForLoginCartBuilder(request)
+    for membergroup_name, loginname, password in reader:
+        builder.build_user_for_login_cart_with_save(
+            membergroup_name, 
+            loginname,
+            password)
+    return builder.users

@@ -28,18 +28,6 @@ class User(Base, WithTimestamp):
         ## 実態としては、user: user_credentialは1:1だけれど、すでに[0]で取得しているコードなどが存在するので
         return self.user_credential[0]
 
-    @classmethod
-    def create_for_cart_login(cls, membergroup, loginname, password, user_id=None):
-        saved_user = User.filter(Member.user_id==User.id, Member.id==MemberGroup.member_id)
-
-        user = cls()
-        membership_id = membergroup.membership_id
-        credential = UserCredential.create_for_cart_login(loginname, password, membership_id=membership_id)
-        credential.user = user
-        member = Member(membergroup)
-        member.user = user
-        return user
-
 class Member(Base, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Member'
     query = session.query_property()
@@ -48,10 +36,6 @@ class Member(Base, WithTimestamp, LogicallyDeleted):
     user = relationship('User', backref=backref("member", uselist=False))
     membergroup_id = Column(Identifier, ForeignKey('MemberGroup.id'))
     membergroup = relationship('MemberGroup', backref='users')
-
-    @classmethod
-    def create_for_cart_login(cls, membergroup, user_id=None):
-        return cls(user_id=user_id, membergroup=membergroup)
 
 class SexEnum(StandardEnum):
     Male = 1
@@ -105,12 +89,6 @@ class UserCredential(Base, WithTimestamp):
     membership = relationship("Membership", uselist=False)
 
     status = Column(Integer)
-    @classmethod
-    def create_for_cart_login(cls, name, password, user_id=None, membership_id=None):
-        return cls(auth_identifier=name,
-                   auth_secret=password,
-                   user_id=user_id,
-                   membership_id=membership_id)
 
 class UserPointAccount(Base, WithTimestamp):
     __tablename__ = 'UserPointAccount'
