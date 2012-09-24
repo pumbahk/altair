@@ -38,9 +38,11 @@ class Member(Base, WithTimestamp, LogicallyDeleted):
     membergroup = relationship('MemberGroup', backref='users')
 
     @classmethod
-    def get_or_create_by_member_group(cls, membergroup):
-        qs = cls.query.filter_by(deleted_at=None, membergroup=membergroup)
-        return qs.first() or cls(membergroup=membergroup)
+    def get_or_create_by_user(cls, user):
+        assert user
+        qs = cls.query.filter_by(deleted_at=None, user=user)
+        instance = qs.first() or cls(user=user, user_id=user.id)
+        return instance
 
 class SexEnum(StandardEnum):
     Male = 1
@@ -96,25 +98,25 @@ class UserCredential(Base, WithTimestamp):
     status = Column(Integer)
 
     @classmethod
-    def _filter_by_miscs(cls, qs, membership_id, user_id):
+    def _filter_by_miscs(cls, qs, membership_id, user):
         if membership_id:
             qs = qs.filter_by(membership_id=membership_id)
-        if user_id:
-            qs = qs.filter_by(user_id=user_id)
+        if user:
+            qs = qs.filter_by(user=user)
         return qs
 
     @classmethod
-    def get_or_create(cls, auth_identifier, auth_secret, membership_id=None, user_id=None):
+    def get_or_create(cls, auth_identifier, auth_secret, membership_id=None, user=None):
         qs = cls.query.filter_by(auth_identifier=auth_identifier, auth_secret=auth_secret)
-        qs = cls._filter_by_miscs(qs, membership_id, user_id)
+        qs = cls._filter_by_miscs(qs, membership_id, user)
         return qs.first() or cls(auth_identifier=auth_identifier, 
                                  auth_secret=auth_secret, 
                                  membership_id=membership_id, 
-                                 user_id=user_id)
+                                 user=user)
     @classmethod
-    def get_or_create_overwrite_password(cls, auth_identifier, auth_secret, membership_id=None, user_id=None):
+    def get_or_create_overwrite_password(cls, auth_identifier, auth_secret, membership_id=None, user=None):
         qs = cls.query.filter_by(auth_identifier=auth_identifier)
-        qs = cls._filter_by_miscs(qs, membership_id, user_id)
+        qs = cls._filter_by_miscs(qs, membership_id, user)
         instance = qs.first()
 
         if instance:
@@ -124,7 +126,7 @@ class UserCredential(Base, WithTimestamp):
         return cls(auth_identifier=auth_identifier, 
                    auth_secret=auth_secret, 
                    membership_id=membership_id, 
-                   user_id=user_id)
+                   user=user)
     
     
         

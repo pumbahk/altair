@@ -37,9 +37,9 @@ class UserForLoginCartBuilder(object):
 
     def _find_user_from_db_same_data(self, membergroup_name, loginname, password):
         return User.query\
-            .filter(Member.user_id==User.id)\
             .filter(UserCredential.user_id==User.id)\
-            .filter(UserCredential.auth_identifier==loginname, UserCredential.membership_id==self.membership_id)\
+            .filter(UserCredential.auth_identifier==loginname, 
+                    UserCredential.membership_id==self.membership_id)\
             .first()
 
 
@@ -52,11 +52,8 @@ class UserForLoginCartBuilder(object):
         user = self._find_user_from_db_same_data(membergroup_name, loginname, password) or self.build_user()
         membergroup = self.build_membergroup(membergroup_name)
 
-        credential = self.build_credential(loginname, password, membership_id=self.membership_id)
-        member = self.build_member(membergroup)
-
-        member.user = user
-        credential.user = user
+        credential = self.build_credential(loginname, password, membership_id=self.membership_id, user=user)
+        member = self.build_member(membergroup, user=user)
         self.users.append(user)
         return user
 
@@ -67,24 +64,28 @@ class UserForLoginCartBuilder(object):
     def build_membergroup(self, membergroup_name):
         return MemberGroup.get_or_create_by_name(membergroup_name, self.membership_id)
 
-    def build_member(self, membergroup):
-        return Member.get_or_create_by_member_group(membergroup)
+    def build_member(self, membergroup, user=None):
+        assert user
+        member = Member.get_or_create_by_user(user)
+        member.membergroup = membergroup
+        return member
 
-    def build_credential(self, name, password, user_id=None, membership_id=None):
+    def build_credential(self, name, password, user=None, membership_id=None):
         get_or_create = UserCredential.get_or_create_overwrite_password
         return get_or_create(auth_identifier=name,
                              auth_secret=password,
-                             user_id=user_id,
+                             user=user,
                              membership_id=membership_id)
     
 def members_import_from_csv(request, io):
     """ <Membergroup>, <Id>, <Password>を期待
     """
-    reader = csv.reader(io, quotechar="''")
+    reader = csv.reader(io, quotechar="'")
     builder = UserForLoginCartBuilder(request)
     for membergroup_name, loginname, password in reader:
         builder.build_user_for_login_cart_add_session(
             membergroup_name, 
             loginname,
             password)
+    logger.debug("*csv import*: "+str(builder.users))
     return builder.users
