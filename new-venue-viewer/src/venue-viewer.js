@@ -37,6 +37,7 @@
         load: null,
         loadPartStart: null,
         loadPartEnd: null,
+        loadAbort: null,
         click: null,
         selectable: null,
         select: null,
@@ -73,7 +74,10 @@
       rootPage: null,
       _history: [],
       seatTitles: {},
-      optionalViewportSize: null
+      optionalViewportSize: null,
+      loading: false,
+      loadAborted: false,
+      loadAbortionHandler: null
     },
 
     methods: {
@@ -92,19 +96,44 @@
       },
 
       load: function VenueViewer_load() {
+        this.loading = true;
         this.seatAdjacencies = null;
         var self = this;
 
         self.callbacks.loadPartStart.call(self, 'pages');
         self.initBlocks(self.dataSource.pages, function() {
+          self.loading = false;
+          if (self.loadAborted) {
+            self.loadAborted = false;
+            self.loadAbortionHandler && self.loadAbortionHandler.call(self);
+            self.callbacks.loadAbort && self.callbacks.loadAbort.call(self, self);
+            return;
+          }
           self.callbacks.loadPartEnd.call(self, 'pages');
           self.currentPage = self.rootPage;
+          self.loading = true;
           self.callbacks.loadPartStart.call(self, 'stockTypes');
           self.dataSource.stockTypes(function (data) {
+            self.loading = false;
+            if (self.loadAborted) {
+              self.loadAborted = false;
+              self.loadAbortionHandler && self.loadAbortionHandler.call(self);
+              self.callbacks.loadAbort && self.callbacks.loadAbort.call(self, self);
+              return;
+            }
+            self.loading = true;
             self.callbacks.loadPartEnd.call(self, 'stockTypes');
             self.stockTypes = data;
             self.callbacks.loadPartStart.call(self, 'info');
             self.dataSource.info(function (data) {
+              self.loading = false;
+              if (self.loadAborted) {
+                self.loadAborted = false;
+                self.loadAbortionHandler && self.loadAbortionHandler.call(self);
+                self.callbacks.loadAbort && self.callbacks.loadAbort.call(self, self);
+                return;
+              }
+              self.loading = true;
               self.callbacks.loadPartEnd.call(self, 'info');
               if (!'available_adjacencies' in data) {
                 self.callbacks.message.call(self, "Invalid data");
@@ -114,6 +143,14 @@
               self.seatAdjacencies = new seat.SeatAdjacencies(self);
               self.callbacks.loadPartStart.call(self, 'seats');
               self.initSeats(self.dataSource.seats, function () {
+                self.loading = false;
+                if (self.loadAborted) {
+                  self.loadAborted = false;
+                  self.loadAbortionHandler && self.loadAbortionHandler.call(self);
+                  self.callbacks.loadAbort && self.callbacks.loadAbort.call(self, self);
+                  return;
+                }
+                self.loading = true;
                 self.callbacks.loadPartEnd.call(self, 'seats');
                 if (self.currentPage) {
                   self.loadDrawing(self.currentPage, function () {
@@ -138,15 +175,40 @@
         });
       },
 
-      dispose: function VenueViewer_dispose() {
-        this.removeKeyEvent();
-        if (this.drawable) {
-          this.drawable.dispose();
-          this.drawable = null;
+      cancelLoading: function VenueViewer_cancelLoading(next) {
+        if (this.loading) {
+          this.loadAborted = true;
+          this.loadAbortionHandler = next;
+        } else {
+          next.call(this);
         }
-        this.seats = null;
-        this.selection = null;
-        this.highlighted = null;
+      },
+
+      dispose: function VenueViewer_dispose(next) {
+        var self = this;
+        this.cancelLoading(function () {
+          self.removeKeyEvent();
+          if (self.drawable) {
+            self.drawable.dispose();
+            self.drawable = null;
+          }
+          self.seats = null;
+          self.selection = null;
+          self.highlighted = null;
+          self.availableAdjacencies = [1];
+          self.shapes = null;
+          self.link_pairs = null;
+          self.selection = {};
+          self.selectionCount = 0;
+          self.highlighted = {};
+          self.animating = false;
+          self._adjacencyLength = 1;
+          self.currentPage = null;
+          self.rootPage = null;
+          self._history = [];
+          self.seatTitles = {};
+          next && next.call(self);
+        });
       },
 
       initDrawable: function VenueViewer_initDrawable(page, next) {
@@ -181,6 +243,13 @@
         var dataSource = this.dataSource.drawing(page);
 
         dataSource(function (drawing) {
+          self.loading = false;
+          if (self.loadAborted) {
+            self.loadAborted = false;
+            self.loadAbortionHandler && self.loadAbortionHandler.call(self);
+            self.callbacks.loadAbort && self.callbacks.loadAbort.call(self, self);
+            return;
+          }
           var attrs = util.allAttributes(drawing.documentElement);
           var w = parseFloat(attrs.width), h = parseFloat(attrs.height);
           var vb = null;
@@ -814,71 +883,76 @@
     if (typeof options == 'object') {
       if (!options.dataSource || typeof options.dataSource != 'object')
         throw new Error("Required option missing: dataSource");
-      if (aux)
-        aux.dispose();
+      var self = this;
+      function init() {
+        var _options = $.extend({}, options);
 
-      var _options = $.extend({}, options);
-
-      var createMetadataLoader = (function () {
-        var conts = {}, allData = null, first = true;
-        return function createMetadataLoader(key) {
-          return function metadataLoader(next, error) {
-            conts[key] = { next: next, error: error };
-            if (first) {
-              $.ajax({
-                url: options.dataSource.metadata,
-                dataType: 'json',
-                success: function(data) {
-                  allData = data;
-                  var _conts = conts;
-                  conts = {};
-                  for (var k in _conts)
-                    _conts[k].next(data[key]);
-                },
-                error: function(xhr, text) {
-                  var message = "Failed to load " + key + " (reason: " + text + ")";
-                  var _conts = conts;
-                  conts = {};
-                  for (var k in _conts)
-                    _conts[k] && _conts[k].error(message);
+        var createMetadataLoader = (function () {
+          var conts = {}, allData = null, first = true;
+          return function createMetadataLoader(key) {
+            return function metadataLoader(next, error) {
+              conts[key] = { next: next, error: error };
+              if (first) {
+                $.ajax({
+                  url: options.dataSource.metadata,
+                  dataType: 'json',
+                  success: function(data) {
+                    allData = data;
+                    var _conts = conts;
+                    conts = {};
+                    for (var k in _conts)
+                      _conts[k].next(data[key]);
+                  },
+                  error: function(xhr, text) {
+                    var message = "Failed to load " + key + " (reason: " + text + ")";
+                    var _conts = conts;
+                    conts = {};
+                    for (var k in _conts)
+                      _conts[k] && _conts[k].error(message);
+                  }
+                });
+                first = false;
+                return;
+              } else {
+                if (allData) {
+                  conts[key].next(allData[key]);
+                  delete conts[key];
                 }
-              });
-              first = false;
-              return;
-            } else {
-              if (allData) {
-                conts[key].next(allData[key]);
-                delete conts[key];
               }
-            }
+            };
           };
-        };
-      })();
+        })();
 
-      $.each(
-        [
-          [ 'stockTypes', 'stock_types' ],
-          [ 'seats', 'seats' ],
-          [ 'areas', 'areas' ],
-          [ 'info', 'info' ],
-          [ 'seatAdjacencies', 'seat_adjacencies' ],
-          [ 'pages', 'pages' ]
-        ],
-        function(n, k) {
-          _options.dataSource[k[0]] =
-            typeof options.dataSource[k[0]] == 'function' ?
-              options.dataSource[k[0]]:
-              createMetadataLoader(k[1]);
-        }
-      );
-      aux = new VenueViewer(this, _options),
-      this.data('venueviewer', aux);
+        $.each(
+          [
+            [ 'stockTypes', 'stock_types' ],
+            [ 'seats', 'seats' ],
+            [ 'areas', 'areas' ],
+            [ 'info', 'info' ],
+            [ 'seatAdjacencies', 'seat_adjacencies' ],
+            [ 'pages', 'pages' ]
+          ],
+          function(n, k) {
+            _options.dataSource[k[0]] =
+              typeof options.dataSource[k[0]] == 'function' ?
+                options.dataSource[k[0]]:
+                createMetadataLoader(k[1]);
+          }
+        );
+        aux = new VenueViewer(self, _options),
+        self.data('venueviewer', aux);
 
-      if (options.uimode) aux.changeUIMode(options.uimode);
-
+        if (options.uimode) aux.changeUIMode(options.uimode);
+      }
+      if (aux)
+        aux.dispose(init);
+      else
+        init();
     } else if (typeof options == 'string' || options instanceof String) {
       if (options == 'remove') {
-        aux.dispose();
+        if (aux)
+          aux.dispose();
+        this.empty();
         this.data('venueviewer', null);
       } else {
         if (!aux)
