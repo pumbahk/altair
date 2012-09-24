@@ -1,45 +1,41 @@
-
 <html>
 <head>
+  <title>${event.title} - ${performance.name}</title>
 </head>
-<body><center>
-<hr size="10" color="#82002C">
-		<!-- InstanceBeginEditable name="main" -->
-			<div>
-			<h3>${event.title}${u'(%s)' % performance.name if performance.name else ''}</h3>
-<hr size="1" color="#ffb700">
-				<dl>
-					<dt>${performance.start_on.strftime(u"%Y年%m月%d(%a)".encode('utf-8')).decode('utf-8')}</dt>
-					<dd>${performance.venue.name}</dd>
-				</dl>
-<hr size="1" color="#ffb700">
-			</div>
-
-								<img src="${request.route_path('order_review.qrdraw', ticket_id=ticket.id, sign=sign)}" style="width: 200px; height: 200px;"/><br/>
-								発券番号 ${ticket.id} <br />
-								注文番号 ${order.order_no} <br />
-								パフォーマンス ${performance.code} <br />
-								興行日 ${performance.start_on} <br />
-								商品名 ${product.name} (${product.id}) <br />
-                                %if ticket.seat:
-                                席番号 ${ticket.seat.name} (${ticket.seat.l0_id}) <br />
-                                %endif
-<br style="clear: both;" />
-<div style="background-color:#ffb700;">
-<b><font size="4" color="#fff">注意事項</font></b></div>
-<div align="left">
-<ul>
-<li>携帯電話からご利用の方は、ボタンを押した後で表示される画面を「画面メモ」等にて保存してください。</li>
-<li>QRチケットの取得・管理に関しては、お客様ご自身の責任でお願いいたします。</li>
-<li>QRチケットの転送間違い、お渡し間違い等に起因するトラブル等にはご対応いたしかねますのでご注意ください。</li>
-</ul>
+<body>
+<div align="center" style="text-align:center">
+  <hr size="10" color="#82002C">
+  <h3>${event.title}</h3>
+  % if performance and performance.name:
+  <h3>${performance.name}</h3>
+  % endif
+  <hr size="1" color="#ffb700" />
+  <div>${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}−</div>
+  <hr size="1" color="#ffb700" />
+  <img src="${request.route_path('order_review.qrdraw', ticket_id=ticket.id, sign=sign)}" style="width: 200px; height: 200px;" width="200" height="200" /><br/>
+  発券番号 ${ticket.id}<br />
+  注文番号 ${order.order_no}<br />
+  パフォーマンス ${performance.code}<br />
+  興行日 ${performance.start_on}<br />
+  商品名 ${product.name} (${product.id})<br />
+  %if ticket.seat:
+  席番号 ${ticket.seat.name} (${ticket.seat.l0_id}) <br />
+  %endif
+  <br style="clear: both;" />
+  <div style="background-color:#ffb700;">
+    <b><font size="4" color="#fff">注意事項</font></b>
+  </div>
+  <div align="left">
+    <ul>
+      <li>携帯電話からご利用の方は、ボタンを押した後で表示される画面を「画面メモ」等にて保存してください。</li>
+      <li>QRチケットの取得・管理に関しては、お客様ご自身の責任でお願いいたします。</li>
+      <li>QRチケットの転送間違い、お渡し間違い等に起因するトラブル等にはご対応いたしかねますのでご注意ください。</li>
+    </ul>
+  </div>
+  <hr size="1" color="#ffb700" />
+  <hr size="10" color="#82002C" />
+  <a href="javascript:window.close();">閉じる</a>
 </div>
-
-<hr size="1" color="#ffb700">
-<hr size="10" color="#82002C">
-
-<a href="javascript:window.close();">閉じる</a>
-
-</center>
-
-<canvas width="558" height="852" style="display: none;"></canvas><canvas width="516" height="851" style="display: none;"></canvas></body></html>
+<canvas width="558" height="852" style="display: none;"></canvas><canvas width="516" height="851" style="display: none;"></canvas>
+</body>
+</html>
