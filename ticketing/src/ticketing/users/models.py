@@ -37,6 +37,11 @@ class Member(Base, WithTimestamp, LogicallyDeleted):
     membergroup_id = Column(Identifier, ForeignKey('MemberGroup.id'))
     membergroup = relationship('MemberGroup', backref='users')
 
+    @classmethod
+    def get_or_create_by_member_group(cls, member_group):
+        qs = cls.query.filter_by(deleted_at=None, membergroup=membergroup)
+        return qs.first() or cls(membergroup=membergroup)
+
 class SexEnum(StandardEnum):
     Male = 1
     Female = 2
@@ -90,6 +95,39 @@ class UserCredential(Base, WithTimestamp):
 
     status = Column(Integer)
 
+    @classmethod
+    def _filter_by_miscs(cls, qs, membership_id, user_id):
+        if membership_id:
+            qs = qs.filter_by(membership_id=membership_id)
+        if user_id:
+            qs = qs.filter_by(user_id=user_id)
+        return qs
+
+    @classmethod
+    def get_or_create(cls, loginname, password, membership_id=None, user_id=None):
+        qs = cls.query.filter_by(deleted_at=None, auth_identifier=loginname, auth_secret=password)
+        qs = cls._filter_by_miscs(qs, membership_id, user_id)
+        return qs.first() or cls(auth_identifier=loginname, 
+                                 auth_secret=password, 
+                                 membership_id=membership_id, 
+                                 user_id=user_id)
+    @classmethod
+    def get_or_create_overwrite_password(cls, loginname, password, membership_id=None, user_id=None):
+        qs = cls.query.filter_by(deleted_at=None, auth_identifier=loginname)
+        qs = cls._filter_by_miscs(qs, membership_id, user_id)
+        instance = qs.first()
+
+        if instance:
+            instance.auth_secret = password
+            return instance
+
+        return cls(auth_identifier=loginname, 
+                   auth_secret=password, 
+                   membership_id=membership_id, 
+                   user_id=user_id)
+    
+    
+        
 class UserPointAccount(Base, WithTimestamp):
     __tablename__ = 'UserPointAccount'
     query = session.query_property()
@@ -200,6 +238,13 @@ class MemberGroup(Base, WithTimestamp):
         secondary=MemberGroup_SalesSegment,
         backref="membergroups")
    
+    @classmethod
+    def get_or_create_by_name(cls, name, membership_id=None):
+        qs = cls.query.filter_by(deleted_at=None, name=name)
+        if membership_id:
+            qs = qs.filter_by(membership_id=membership_id)
+        return qs.first() or cls(name=name, membership_id=membership_id)
+
 # class Membership_SalesSegment(Base):
 #     __tablename__ = 'Membership_SalesSegment'
 #     query = session.query_property()

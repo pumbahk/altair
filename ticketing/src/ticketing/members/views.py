@@ -98,8 +98,7 @@ class MemberView(object):
         if not form.validate():
             return {"form": form}
         
-        mg_finder = api.MemberGroupFinder(self.request)
-        api.members_import_from_csv(self.request, mg_finder, form.data["csvfile"].file)
+        api.members_import_from_csv(self.request, form.data["csvfile"].file)
         self.request.session.flash(u"membergroupを変更しました")
         return HTTPFound(self.request.route_url("members.index", membership_id=membership_id))
 
