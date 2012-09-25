@@ -14,6 +14,7 @@ var AppRouter = Backbone.Router.extend({
   show_page:  function(page){
     $(".onepage").hide();
     $(".onepage#{0}".replace("{0}", page)).show();
+    $("#tabbar #tab_{0}".replace("{0}", page)).tab("show"); //bootstrap
   }, 
   start: function(){
     var self = this;
@@ -21,7 +22,9 @@ var AppRouter = Backbone.Router.extend({
       self.navigate($(this).attr("href").substr(1), true);
       e.preventDefault();
     });
-    
+    if(location.href.search("#") == -1){
+      self.navigate("#one", true); //todo: cache
+    }
   }
 })
 

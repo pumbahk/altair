@@ -15,12 +15,12 @@ body {
 </script>
 
 <div id="wrapper" class="container">
-  <div class="tabble">
+  <div id="tabbar">
     <ul class="nav nav-tabs">
-      <li><a href="#one" data-toggle="tab" class="active">one</a></li>
-      <li><a href="#two" data-toggle="tab">two</a></li>
-      <li><a href="#three" data-toggle="tab">three</a></li>
-      <li><a href="#four" data-toggle="tab">four</a></li>
+      <li><a id="tab_one" href="#one" data-toggle="tab" class="active">one</a></li>
+      <li><a id="tab_two" href="#two" data-toggle="tab">two</a></li>
+      <li><a id="tab_three" href="#three" data-toggle="tab">three</a></li>
+      <li><a id="tab_four" href="#four" data-toggle="tab">four</a></li>
     </ul>
   </div>
 
@@ -34,6 +34,7 @@ body {
       status:
       <span id="one:status">preload</span>
     </div>
+    <a class="btn" href="#two"><i class="icon-arrow-right"> </i>次へ</a>
   </div>
 
   <div id="two" class="onepage @hide">
@@ -66,8 +67,9 @@ body {
         </tr>
       </tbody>
     </table>
-    
-    <a class="btn" href="#">発券</a>
+
+    <a class="btn btn-inverse" href="#one"><i class="icon-arrow-left icon-white"> </i>戻る</a>    
+    <a class="btn" href="#three"><i class="icon-arrow-right"> </i>次へ</a>
   </div>
 
   <div id="three" class="onepage @hide">
@@ -76,10 +78,18 @@ body {
       印刷に利用するプリンタを選んでください
     </p>
     <div id="three:printer-box">
-      <label>printer0 <input type="radio" name="printer" value="printer0"></label>
-      <label>printer1 <input type="radio" name="printer" value="printer1"></label>
-      <label>printer2 <input type="radio" name="printer" value="printer2"></label>
+      <div class="control-group">
+        print0 <input type="radio" name="printer" value="printer0">
+      </div>
+      <div class="control-group">
+        print1 <input type="radio" name="printer" value="printer1">
+      </div>
+      <div class="control-group">
+        print2 <input type="radio" name="printer" value="printer2">
+      </div>
     </div>
+    <a class="btn btn-inverse" href="#two"><i class="icon-arrow-left icon-white"> </i>戻る</a>
+    <a class="btn" href="#four"><i class="icon-arrow-right"> </i>プリンタを選択</a>
   </div>
 
   <div id="four" class="onepage @hide">
@@ -87,7 +97,7 @@ body {
     <p>
       印刷します。よろしいですか？
     </p>
-    <a class="btn" href="#">キャンセル</a>
+    <a class="btn btn-inverse" href="#">キャンセル</a>
     <a class="btn" href="#">印刷する</a>
   </div>
 </div>
