@@ -630,8 +630,15 @@ class PaymentView(object):
             raise NoCartError()
         cart = api.get_cart(self.request)
         self.context.event_id = cart.performance.event.id
-        payment_delivery_methods = self.context.get_payment_delivery_method_pair()
 
+        performances = DBSession.query(c_models.Performance).filter(
+            c_models.Performance.id==c_models.ProductItem.performance_id
+        ).filter(
+            c_models.ProductItem.product_id.in_([p.product_id for p in cart.products])
+        ).all()
+
+        start_on = min(*[p.start_on for p in performances])
+        payment_delivery_methods = self.context.get_payment_delivery_method_pair(start_on=start_on)
         user = self.context.get_or_create_user()
         user_profile = None
         if user is not None:

@@ -84,9 +84,10 @@ class TicketingCartResource(object):
         return 0
 
 
-    def get_payment_delivery_method_pair(self):
+    def get_payment_delivery_method_pair(self, start_on=None):
         segment = self.get_sales_segument()
-        pairs = c_models.PaymentDeliveryMethodPair.query.filter(
+        now = datetime.now()
+        q = c_models.PaymentDeliveryMethodPair.query.filter(
             c_models.PaymentDeliveryMethodPair.sales_segment_id==segment.id
         ).filter(
             c_models.PaymentDeliveryMethodPair.public==1,
@@ -95,8 +96,13 @@ class TicketingCartResource(object):
             c_models.PaymentDeliveryMethodPair.payment_method_id,
             c_models.PaymentDeliveryMethodPair.delivery_fee,
             c_models.PaymentDeliveryMethodPair.delivery_method_id,
-        ).all()
-
+        )
+        if start_on:
+            period_days = start_on - now
+            q = q.filter(
+                c_models.PaymentDeliveryMethodPair.unavailable_period_days<=period_days.days
+            )
+        pairs = q.all()
         return pairs
 
     def authenticated_user(self):
