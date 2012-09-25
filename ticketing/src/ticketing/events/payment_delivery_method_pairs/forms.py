@@ -3,6 +3,7 @@
 from wtforms import Form
 from wtforms import TextField, SelectField, DecimalField, IntegerField, HiddenField
 from wtforms.validators import NumberRange, Regexp, Length, Optional, ValidationError
+from wtforms.widgets import CheckboxInput
 
 from ticketing.formhelpers import Translations, Required
 from ticketing.core.models import PaymentMethod, DeliveryMethod, PaymentDeliveryMethodPair
@@ -67,6 +68,19 @@ class PaymentDeliveryMethodPairForm(Form):
         validators=[Required(u'選択してください')],
         choices=[],
         coerce=int
+    )
+    unavailable_period_days = IntegerField(
+        label=u'選択不可期間',
+        validators=[
+            Required(),
+            NumberRange(min=0, message=u'有効な値を入力してください'),
+        ],
+        default=0,
+    )
+    public = IntegerField(
+        label=u'一般公開',
+        default=1,
+        widget=CheckboxInput(),
     )
 
     def validate_payment_method_id(form, field):
