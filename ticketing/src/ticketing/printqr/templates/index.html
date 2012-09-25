@@ -1,3 +1,88 @@
 <%inherit file="./base.html"/>
 
-hey
+<style type="text/css">
+  #wrapper{margin-top: 100px; }
+</style>
+
+<script type="text/javascript">
+  
+</script>
+
+<div id="wrapper" class="container">
+  <div class="tabble">
+    <ul class="nav nav-tabs">
+      <li><a href="#one" data-toggle="tab" class="active">one</a></li>
+      <li><a href="#two" data-toggle="tab">two</a></li>
+      <li><a href="#trhee" data-toggle="tab">three</a></li>
+      <li><a href="#four" data-toggle="tab">four</a></li>
+    </ul>
+  </div>
+
+  <div id="one" class="@hide">
+    <h2 class="header" id="one:header">QRコード読み込み</h2>
+    <p>
+      qrコードを読み込ませてください。
+    </p>
+    <label>qrcode: <input type="password" name="qrcode"></input></label>
+    <div id="one:status-box">
+      status:
+      <span id="one:status">preload</span>
+    </div>
+  </div>
+
+  <div id="two" class="@hide">
+    <h2 class="header" id="two:header">チケット情報</h2>
+    <p>
+      購入されたチケット情報は以下のとおりです。
+    </p>
+    <table class="table">
+      <tbody>
+        <tr>
+          <td>購入者</td><td id="two:user"></td>
+        </tr>
+        <tr>
+          <td>発券番号</td><td id="two:codeno">2</td>
+        </tr>
+        <tr>
+          <td>注文番号</td><td id="two:orderno">NH000000031K</td>
+        </tr>
+        <tr>
+          <td>パフォーマンス</td><td id="two:performance_name">NHKTN1210131 </td>
+        </tr>
+        <tr>
+          <td>公演日時</td><td id="two:performance_date">2012-10-13 14:00:00</td>
+        </tr>
+        <tr>
+          <td>商品名</td><td id="two:product_name">商品名 2F自由/大人 (162) </td>
+        </tr>
+        <tr>
+          <td>席番号</td><td id="two:seatno"></td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <a class="btn" href="#">発券</a>
+  </div>
+
+  <div id="three" class="@hide">
+    <h2 class="header" id="three:header">プリンタ選択</h2>
+    <p>
+      印刷に利用するプリンタを選んでください
+    </p>
+    <div id="three:printer-box">
+      <label>printer0 <input type="radio" name="printer" value="printer0"></label>
+      <label>printer1 <input type="radio" name="printer" value="printer1"></label>
+      <label>printer2 <input type="radio" name="printer" value="printer2"></label>
+    </div>
+  </div>
+
+  <div id="four" class="@hide">
+    <h2 class="header" id="four:header">発券確認</h2>
+    <p>
+      印刷します。よろしいですか？
+    </p>
+    <a class="btn" href="#">キャンセル</a>
+    <a class="btn" href="#">印刷する</a>
+  </div>
+</div>
+

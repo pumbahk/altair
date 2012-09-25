@@ -9,4 +9,17 @@
   <body>
     ${next.body()}
   </body>
+<%
+from js.bootstrap import bootstrap,bootstrap_responsive_css
+bootstrap.need()
+bootstrap_responsive_css.need()
+
+from js.jquery import jquery
+jquery.need()
+
+from js.underscore import underscore
+from js.backbone import backbone
+underscore.need()
+backbone.need()
+%>
 </html>
