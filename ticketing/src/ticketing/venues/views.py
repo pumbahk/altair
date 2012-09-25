@@ -13,7 +13,7 @@ from ticketing.models import DBSession
 from ticketing.core.models import Venue, Seat, SeatAdjacencySet, Stock, StockHolder, StockType
 from ticketing.venues.export import SeatCSV
 
-@view_config(route_name="api.get_drawing", request_method="GET", permission='event_editor')
+@view_config(route_name="api.get_drawing", request_method="GET", permission='event_viewer')
 def get_drawing(request):
     venue_id = int(request.matchdict.get('venue_id', 0))
     venue = Venue.get(venue_id)
@@ -22,7 +22,7 @@ def get_drawing(request):
 
     return Response(app_iter=urlopen(venue.site.drawing_url), content_type='text/xml; charset=utf-8')
 
-@view_config(route_name="api.get_seats", request_method="GET", renderer='json', permission='event_editor')
+@view_config(route_name="api.get_seats", request_method="GET", renderer='json', permission='event_viewer')
 def get_seats(request):
     venue_id = int(request.matchdict.get('venue_id', 0))
     _necessary_params = request.params.get(u'n', None)

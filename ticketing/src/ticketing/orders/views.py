@@ -65,7 +65,7 @@ def available_ticket_formats_for_ordered_product_item(ordered_product_item_id):
         .with_entities(TicketFormat.id, TicketFormat.name)\
         .distinct(TicketFormat.id)
 
-@view_defaults(xhr=True, permission='sales_editor') ## todo:適切な位置に移動
+@view_defaults(xhr=True, permission='sales_counter') ## todo:適切な位置に移動
 class OrdersAPIView(BaseView):
     @view_config(renderer="json", route_name="orders.api.performances")
     def get_performances(self):
@@ -174,14 +174,14 @@ def session_has_order_p(context, request):
 @view_defaults(decorator=with_bootstrap, permission='sales_editor')
 class Orders(BaseView):
     @view_config(route_name="orders.checked.queue.dialog", renderer="ticketing:templates/orders/_checked_queue_dialog.html",
-                 custom_predicates=(session_has_order_p,))
+                 custom_predicates=(session_has_order_p,), permission='sales_counter')
     def checked_queue_dialog(self):
         ords = self.request.session["orders"]
         ords = [o.lstrip("o:") for o in ords if o.startswith("o:")]
         form = CheckedOrderTicketChoiceForm(ticket_formats=available_ticket_formats_for_orders(ords))
         return {"form": form}
 
-    @view_config(route_name="orders.checked.queue.dialog", renderer="string")
+    @view_config(route_name="orders.checked.queue.dialog", renderer="string", permission='sales_counter')
     def checked_queue_dialog_error(self):
         params = dict(header=u"エラー", body=u"チェックした注文はありません")
         return u"""
@@ -197,7 +197,7 @@ class Orders(BaseView):
   </div>
 """ % params
 
-    @view_config(route_name="orders.checked.index", renderer='ticketing:templates/orders/index.html')
+    @view_config(route_name="orders.checked.index", renderer='ticketing:templates/orders/index.html', permission='sales_counter')
     def checked_orders_index(self):
         """後でindexと合成。これはチェックされたOrderだけを表示するview
         """
@@ -230,7 +230,7 @@ class Orders(BaseView):
             "page": page,
         }
 
-    @view_config(route_name='orders.index', renderer='ticketing:templates/orders/index.html')
+    @view_config(route_name='orders.index', renderer='ticketing:templates/orders/index.html', permission='sales_counter')
     def index(self):
         organization_id = int(self.context.user.organization_id)
         query = Order.filter(Order.organization_id==organization_id)
@@ -256,7 +256,7 @@ class Orders(BaseView):
             "page": page,
         }
 
-    @view_config(route_name='orders.show', renderer='ticketing:templates/orders/show.html')
+    @view_config(route_name='orders.show', renderer='ticketing:templates/orders/show.html', permission='sales_counter')
     def show(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id, self.context.user.organization_id)
@@ -336,7 +336,8 @@ class Orders(BaseView):
 
         return response
 
-    @view_config(route_name='orders.reserve.form', request_method='POST', renderer='ticketing:templates/orders/_form_reserve.html')
+    @view_config(route_name='orders.reserve.form', request_method='POST',
+                 renderer='ticketing:templates/orders/_form_reserve.html', permission='sales_counter')
     def reserve_form(self):
         post_data = MultiDict(self.request.json_body)
         logger.debug('order reserve post_data=%s' % post_data)
@@ -357,7 +358,7 @@ class Orders(BaseView):
 
         return {'form':form_reserve}
 
-    @view_config(route_name='orders.reserve', request_method='POST', renderer='json')
+    @view_config(route_name='orders.reserve', request_method='POST', renderer='json', permission='sales_counter')
     def reserve(self):
         post_data = MultiDict(self.request.json_body)
         logger.debug('order reserve post_data=%s' % post_data)
@@ -424,7 +425,8 @@ class Orders(BaseView):
                 'message':u'エラーが発生しました',
             }))
 
-    @view_config(route_name='orders.edit.shipping_address', request_method='POST', renderer='ticketing:templates/orders/_form_shipping_address.html')
+    @view_config(route_name='orders.edit.shipping_address', request_method='POST',
+                 renderer='ticketing:templates/orders/_form_shipping_address.html', permission='sales_counter')
     def edit_shipping_address_post(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id, self.context.user.organization_id)
@@ -449,7 +451,8 @@ class Orders(BaseView):
                 'form':f,
             }
 
-    @view_config(route_name='orders.edit.product', request_method='POST', renderer='ticketing:templates/orders/_form_product.html')
+    @view_config(route_name='orders.edit.product', request_method='POST',
+                 renderer='ticketing:templates/orders/_form_product.html', permission='sales_counter')
     def edit_product_post(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id, self.context.user.organization_id)
@@ -496,7 +499,7 @@ class Orders(BaseView):
         self.request.session.flash(u'予約を保存しました')
         return render_to_response('ticketing:templates/refresh.html', {}, request=self.request)
 
-    @view_config(route_name='orders.note', request_method='POST', renderer='json')
+    @view_config(route_name='orders.note', request_method='POST', renderer='json', permission='sales_counter')
     def note(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id, self.context.user.organization_id)
@@ -517,8 +520,7 @@ class Orders(BaseView):
         return {}
 
     @view_config(route_name="orders.item.preview", request_method="GET",
-                 renderer='ticketing:templates/orders/_item_preview_dialog.html'
-                 )
+                 renderer='ticketing:templates/orders/_item_preview_dialog.html', permission='sales_counter')
     def order_item_preview_dialog(self):
         item = OrderedProductItem.query.filter_by(id=self.request.matchdict["item_id"]).first()
         if item is None:
@@ -527,7 +529,7 @@ class Orders(BaseView):
         return {"form": form, "item": item}
 
     @view_config(route_name="orders.item.preview.getdata", request_method="GET",
-                 renderer="json")
+                 renderer="json", permission='sales_counter')
     def order_item_get_data_for_preview(self):
         item = OrderedProductItem.query.filter_by(id=self.request.matchdict["item_id"]).one()
         ticket_format = TicketFormat.query.filter_by(id=self.request.matchdict["ticket_format_id"]).one()
@@ -553,22 +555,22 @@ class Orders(BaseView):
                 results.append(r)
         return {"results": results, "names": names}
 
-    @view_config(route_name="orders.issue_status", request_method="POST", \
-                 request_param='issued')
+    @view_config(route_name="orders.issue_status", request_method="POST",
+                 request_param='issued', permission='sales_counter')
     def issue_status(self):
         order = Order.query.get(self.request.matchdict["order_id"])
         order.issued = int(self.request.params['issued'])
         return HTTPFound(location=self.request.route_path('orders.show', order_id=order.id))
 
     @view_config(route_name="orders.print.queue.dialog", request_method="GET",
-                 renderer="ticketing:templates/orders/_print_queue_dialog.html")
+                 renderer="ticketing:templates/orders/_print_queue_dialog.html", permission='sales_counter')
     def print_queue_dialog(self):
         order = Order.query.get(self.request.matchdict["order_id"])
         form = CheckedOrderTicketChoiceForm(ticket_formats=available_ticket_formats_for_orders([order.id]))
         return {"form": form, "order": order}
 
     @view_config(route_name="orders.print.queue.manymany", request_method="POST",
-                 request_param="ticket_format_id")
+                 request_param="ticket_format_id", permission='sales_counter')
     def order_print_queue_manymany(self):
         ticket_format_id = self.request.POST["ticket_format_id"]
         ticket_format = TicketFormat.query.filter_by(id=ticket_format_id).first()
@@ -604,7 +606,7 @@ class Orders(BaseView):
         self.request.session.flash(u'券面を印刷キューに追加しました')
         return HTTPFound(location=self.request.route_path('orders.index'))
 
-    @view_config(route_name="orders.print.queue.strict", request_method="POST")
+    @view_config(route_name="orders.print.queue.strict", request_method="POST", permission='sales_counter')
     def order_print_queue_strict(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.query.get(order_id)
@@ -623,7 +625,7 @@ class Orders(BaseView):
         return HTTPFound(location=self.request.route_path('orders.show', order_id=order_id))
 
 
-    @view_config(route_name='orders.print.queue')
+    @view_config(route_name='orders.print.queue', permission='sales_counter')
     def order_print_queue(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.query.get(order_id)

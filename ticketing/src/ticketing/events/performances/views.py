@@ -25,7 +25,7 @@ from ticketing.core.models import MailTypeChoices
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class Performances(BaseView):
 
-    @view_config(route_name='performances.index', renderer='ticketing:templates/performances/index.html')
+    @view_config(route_name='performances.index', renderer='ticketing:templates/performances/index.html', permission='event_viewer')
     def index(self):
         event_id = int(self.request.matchdict.get('event_id', 0))
         event = Event.get(event_id, organization_id=self.context.user.organization_id)
@@ -51,8 +51,8 @@ class Performances(BaseView):
             'form':PerformanceForm(organization_id=self.context.user.organization_id),
         }
 
-    @view_config(route_name='performances.show', renderer='ticketing:templates/performances/show.html')
-    @view_config(route_name='performances.show_tab', renderer='ticketing:templates/performances/show.html')
+    @view_config(route_name='performances.show', renderer='ticketing:templates/performances/show.html', permission='event_viewer')
+    @view_config(route_name='performances.show_tab', renderer='ticketing:templates/performances/show.html', permission='event_viewer')
     def show(self):
         performance_id = int(self.request.matchdict.get('performance_id', 0))
         performance = Performance.get(performance_id, self.context.user.organization_id)

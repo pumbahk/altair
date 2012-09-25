@@ -34,7 +34,7 @@ from ..api.impl import CMSCommunicationApi
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class Events(BaseView):
 
-    @view_config(route_name='events.index', renderer='ticketing:templates/events/index.html')
+    @view_config(route_name='events.index', renderer='ticketing:templates/events/index.html', permission='event_viewer')
     def index(self):
         sort = self.request.GET.get('sort', 'Event.id')
         direction = self.request.GET.get('direction', 'desc')
@@ -69,7 +69,7 @@ class Events(BaseView):
             'events':events,
         }
 
-    @view_config(route_name='events.show', renderer='ticketing:templates/events/show.html')
+    @view_config(route_name='events.show', renderer='ticketing:templates/events/show.html', permission='event_viewer')
     def show(self):
         event_id = int(self.request.matchdict.get('event_id', 0))
         event = Event.get(event_id, organization_id=self.context.user.organization_id)

@@ -19,7 +19,7 @@ from ticketing.events.stocks.forms import AllocateSeatForm, AllocateStockForm, A
 
 logger = logging.getLogger(__name__)
 
-@view_defaults(decorator=with_bootstrap)
+@view_defaults(decorator=with_bootstrap, permission='event_editor')
 class Stocks(BaseView):
 
     @view_config(route_name='stocks.allocate', request_method='POST', renderer='json')
