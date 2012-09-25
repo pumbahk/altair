@@ -12,6 +12,8 @@
     <th>${form.delivery_fee.label.text}</th>
     <th>${form.discount.label.text}</th>
     <th>${form.discount_unit.label.text}</th>
+    <th>${form.unavailable_period_days.label.text}</th>
+    <th>${form.public.label.text}</th>
   </tr>
   % for i, pdmp in enumerate(sales_segment.payment_delivery_method_pairs):
   <tr>
@@ -38,6 +40,8 @@
     <td>${h.price_format(pdmp.delivery_fee)}円${fee_type}</td>
     <td>${h.price_format(pdmp.discount)}</td>
     <td>${pdmp.discount_unit or ''}</td>
+    <td>${u'公演%s日前から' % pdmp.unavailable_period_days if pdmp.unavailable_period_days else ''}</td>
+    <td>${u'○' if pdmp.public else u'×'}</td>
   </tr>
   % endfor
 </table>

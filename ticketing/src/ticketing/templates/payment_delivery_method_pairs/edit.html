@@ -37,6 +37,16 @@
     $('#system_fee, #transaction_fee, #delivery_fee, #discount').load(function(){
       $(this).val(Math.floor($(this).val()));
     }).load();
+
+    $('#public').change(function() {
+      if ($(this).attr('checked')) {
+        $(this).val(${form.public.default});
+      } else {
+        $(this).val(0);
+      }
+    }).change();
+
+    $('[rel=popover]').popover();
   });
 </script>
 
@@ -76,6 +86,17 @@
       ${h.form_item(form.delivery_fee, option={'class':'span2'})}
       ${h.form_item(form.discount, option={'class':'span2'})}
       ${h.form_item(form.discount_unit, option={'class':'span2'})}
+      <%
+        help = u'''
+          <span class="help-inline">
+            <a href="#" rel="popover" data-original-title="選択不可期間" data-content="パフォーマンス開始日時の何日前から選択できなくなるかを日数指定してください。" >
+              <i class="icon-question-sign"></i>
+            </a>
+          </span>
+        '''
+      %>
+      ${h.form_item(form.unavailable_period_days, option={'class':'span2'}, help=help)}
+      ${h.form_item(form.public)}
       ${h.form_item(form.sales_segment_id)}
     </fieldset>
     <div class="form-actions">

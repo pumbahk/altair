@@ -874,12 +874,16 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     discount = Column(Numeric(precision=16, scale=2), nullable=False)
     discount_unit = Column(Integer)
 
-    # 申し込日から計算して入金できる期限　日付指定
+    # 申込日から計算して入金できる期限、日数指定
     payment_period_days = Column(Integer, default=3)
     # 入金から発券できるまでの時間
     issuing_interval_days = Column(Integer, default=1)
     issuing_start_at = Column(DateTime, nullable=True)
     issuing_end_at = Column(DateTime, nullable=True)
+    # 選択不可期間(Performance.start_onの何日前から利用できないか、日数指定)
+    unavailable_period_days = Column(Integer, nullable=False, default=0)
+    # 一般公開するか
+    public = Column(Boolean, nullable=False, default=True)
 
     sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'))
     sales_segment = relationship('SalesSegment', backref='payment_delivery_method_pairs')
