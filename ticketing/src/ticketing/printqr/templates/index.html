@@ -1,11 +1,17 @@
 <%inherit file="./base.html"/>
 
 <style type="text/css">
-  #wrapper{margin-top: 100px; }
+#wrapper{
+    margin-top: 100px; 
+}
+body {
+	font: 17px "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
 </style>
 
 <script type="text/javascript">
-  
+  ## todo: move
+  <%include file="./app.js"/>
 </script>
 
 <div id="wrapper" class="container">
@@ -13,12 +19,12 @@
     <ul class="nav nav-tabs">
       <li><a href="#one" data-toggle="tab" class="active">one</a></li>
       <li><a href="#two" data-toggle="tab">two</a></li>
-      <li><a href="#trhee" data-toggle="tab">three</a></li>
+      <li><a href="#three" data-toggle="tab">three</a></li>
       <li><a href="#four" data-toggle="tab">four</a></li>
     </ul>
   </div>
 
-  <div id="one" class="@hide">
+  <div id="one" class="onepage @hide">
     <h2 class="header" id="one:header">QRコード読み込み</h2>
     <p>
       qrコードを読み込ませてください。
@@ -30,7 +36,7 @@
     </div>
   </div>
 
-  <div id="two" class="@hide">
+  <div id="two" class="onepage @hide">
     <h2 class="header" id="two:header">チケット情報</h2>
     <p>
       購入されたチケット情報は以下のとおりです。
@@ -64,7 +70,7 @@
     <a class="btn" href="#">発券</a>
   </div>
 
-  <div id="three" class="@hide">
+  <div id="three" class="onepage @hide">
     <h2 class="header" id="three:header">プリンタ選択</h2>
     <p>
       印刷に利用するプリンタを選んでください
@@ -76,7 +82,7 @@
     </div>
   </div>
 
-  <div id="four" class="@hide">
+  <div id="four" class="onepage @hide">
     <h2 class="header" id="four:header">発券確認</h2>
     <p>
       印刷します。よろしいですか？
