@@ -1534,12 +1534,22 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     order_no = Column(String(255))
     note = Column(UnicodeText, nullable=True, default=None)
 
-    issued = Column(Boolean, nullable=False, default=False)
+    # issued = Column(Boolean, nullable=False, default=False)
     issued_at = Column(DateTime, nullable=True, default=None, doc=u"印刷可能な情報伝達済み")
     printed_at = Column(DateTime, nullable=True, default=None, doc=u"実発券済み")
 
     performance_id = Column(Identifier, ForeignKey('Performance.id'))
     performance = relationship('Performance', backref="orders")
+
+    def is_issued(self):
+        if self.issued_at:
+            return True
+        ## todo: eliminate query
+        qs = OrderedProductItem.query.filter_by(deleted_at=None)\
+            .filter(OrderedProduct.order_id==self.id)\
+            .filter(OrderedProductItem.ordered_product_id==OrderedProduct.id)\
+            .filter(OrderedProductItem.issued_at==None)
+        return qs.first() is None
 
     @classmethod
     def __declare_last__(cls):
@@ -1881,6 +1891,9 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return ({'name': s.name, 'l0_id': s.l0_id}
                 for s in self.seats)
 
+    def is_issued(self):
+        return self.issued_at or self.tokens == [] or all(token.issued_at for token in self.tokens)
+        
 class OrderedProductItemToken(Base,BaseModel, LogicallyDeleted):
     __tablename__ = "OrderedProductItemToken"
     id = Column(Identifier, primary_key=True)
