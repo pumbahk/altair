@@ -1535,6 +1535,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     note = Column(UnicodeText, nullable=True, default=None)
 
     issued = Column(Boolean, nullable=False, default=False)
+    issued_at = Column(DateTime, nullable=True, default=None, doc=u"印刷可能な情報伝達済み")
+    printed_at = Column(DateTime, nullable=True, default=None, doc=u"実発券済み")
 
     performance_id = Column(Identifier, ForeignKey('Performance.id'))
     performance = relationship('Performance', backref="orders")
@@ -1819,6 +1821,8 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     ordered_product = relationship('OrderedProduct', backref='ordered_product_items')
     product_item_id = Column(Identifier, ForeignKey("ProductItem.id"))
     product_item = relationship('ProductItem', backref='ordered_product_items')
+    issued_at = Column(DateTime, nullable=True, default=None)
+    printed_at = Column(DateTime, nullable=True, default=None)
 #    seat_id = Column(Identifier, ForeignKey('Seat.id'))
 #    seat = relationship('Seat')
     seats = relationship("Seat", secondary=orders_seat_table, backref='ordered_product_items')
@@ -1887,6 +1891,8 @@ class OrderedProductItemToken(Base,BaseModel, LogicallyDeleted):
     serial = Column(Integer, nullable=False)
     key = Column(Unicode(255), nullable=True)    #今は使っていない。https://dev.ticketstar.jp/redmine/altair/issues/499#note-15
     valid = Column(Boolean, nullable=False, default=False)
+    issued_at = Column(DateTime, nullable=True, default=None)
+    printed_at = Column(DateTime, nullable=True, default=None)
 
 class Ticket_TicketBundle(Base, BaseModel, LogicallyDeleted):
     __tablename__ = 'Ticket_TicketBundle'
