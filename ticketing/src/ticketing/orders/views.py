@@ -545,7 +545,7 @@ class Orders(BaseView):
         results = []
         names = []
         for seat, dict_ in dicts:
-            names.append(seat.name)
+            names.append(seat.name if seat else dict_["product"]["name"])
             for ticket in tickets:
                 svg = pystache.render(ticket.data['drawing'], dict_)
                 r = data.copy()

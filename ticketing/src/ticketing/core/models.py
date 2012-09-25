@@ -1534,7 +1534,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     order_no = Column(String(255))
     note = Column(UnicodeText, nullable=True, default=None)
 
-    # issued = Column(Boolean, nullable=False, default=False)
+    issued = Column(Boolean, nullable=False, default=False)
     issued_at = Column(DateTime, nullable=True, default=None, doc=u"印刷可能な情報伝達済み")
     printed_at = Column(DateTime, nullable=True, default=None, doc=u"実発券済み")
 
@@ -1893,6 +1893,12 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def is_issued(self):
         return self.issued_at or self.tokens == [] or all(token.issued_at for token in self.tokens)
+
+    @property
+    def issued_at_status(self):
+        total = len(self.tokens)
+        issued_count = len([i for i in self.tokens if i.issued_at])
+        return dict(issued=issued_count, total=total)
         
 class OrderedProductItemToken(Base,BaseModel, LogicallyDeleted):
     __tablename__ = "OrderedProductItemToken"
