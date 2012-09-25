@@ -26,6 +26,8 @@ def deliver_confirm_viewlet(context, request):
 builder = qr()
 builder.key = u"THISISIMPORTANTSECRET"
 
+QRTicket = namedtuple("QRTicket", "order performance product seat token printed_at")
+
 @view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer="ticketing.cart.plugins:templates/qr_complete.html")
 @mobile_view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer="ticketing.cart.plugins:templates/qr_complete_mobile.html")
 def deliver_completion_viewlet(context, request):
@@ -34,17 +36,13 @@ def deliver_completion_viewlet(context, request):
     for op in order.ordered_products:
         for opi in op.ordered_product_items:
             for t in opi.tokens:
-                history = core_models.TicketPrintHistory.filter_by(ordered_product_item_id = opi.id,
-                                                                   seat_id = t.seat_id,
-                                                                   item_token_id=t.id).first()
-                class QRTicket:
-                    order = context.order
-                    performance = context.order.performance
-                    product = op.product
-                    seat = t.seat
-                    token = t
-                    printed_at = token.issued_at
-                ticket = QRTicket()
+                ticket = QRTicket(
+                    order = context.order,
+                    performance = context.order.performance,
+                    product = op.product,
+                    seat = t.seat,
+                    token = t,
+                    printed_at = t.issued_at)
                 tickets.append(ticket)
     
     # TODO: orderreviewから呼ばれた場合とcartの完了画面で呼ばれた場合で
