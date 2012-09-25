@@ -90,6 +90,8 @@ class TicketingCartResource(object):
         segment = self.get_sales_segument()
         pairs = c_models.PaymentDeliveryMethodPair.query.filter(
             c_models.PaymentDeliveryMethodPair.sales_segment_id==segment.id
+        ).filter(
+            c_models.PaymentDeliveryMethodPair.public==1,
         ).order_by(
             c_models.PaymentDeliveryMethodPair.transaction_fee,
             c_models.PaymentDeliveryMethodPair.payment_method_id,
