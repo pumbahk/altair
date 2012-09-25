@@ -12,7 +12,7 @@ from pyramid.response import Response
 from ticketing.qr import qr
 from ticketing.cart import helpers as cart_helper
 from ticketing.core import models as c_models
-
+from collections import namedtuple
 DELIVERY_PLUGIN_ID = 4
 
 def includeme(config):
@@ -43,7 +43,7 @@ def deliver_completion_viewlet(context, request):
                     product = op.product
                     seat = t.seat
                     token = t
-                    printed_at = history.created_at if history else ''
+                    printed_at = token.issued_at
                 ticket = QRTicket()
                 tickets.append(ticket)
     
