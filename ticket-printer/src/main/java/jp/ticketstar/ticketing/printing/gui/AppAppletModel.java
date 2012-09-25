@@ -24,6 +24,7 @@ public class AppAppletModel implements AppModel {
 	GenericComboBoxModel<OurPageFormat> pageFormats;
 	TicketFormat ticketFormat = null;
 	GenericComboBoxModel<TicketFormat> ticketFormats;
+	Integer orderId = null;
 
 	public AppAppletModel() {
 		initialize();
@@ -81,6 +82,7 @@ public class AppAppletModel implements AppModel {
 		propertyChangeSupport.firePropertyChange("pageFormat", null, pageFormat);
 		propertyChangeSupport.firePropertyChange("ticketFormats", null, ticketFormats);
 		propertyChangeSupport.firePropertyChange("ticketFormat", null, ticketFormat);
+		propertyChangeSupport.firePropertyChange("orderId", null, orderId);
 	}
 
 	/* (non-Javadoc)
@@ -208,5 +210,15 @@ public class AppAppletModel implements AppModel {
 
 	public GenericComboBoxModel<TicketFormat> getTicketFormats() {
 		return ticketFormats;
+	}
+
+	public Integer getOrderId() {
+		return orderId;
+	}
+
+	public void setOrderId(Integer orderId) {
+		final Integer prevValue = this.orderId;
+		this.orderId = orderId;
+		propertyChangeSupport.firePropertyChange("orderId", prevValue, orderId);
 	}
 }
