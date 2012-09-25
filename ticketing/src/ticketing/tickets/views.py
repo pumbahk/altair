@@ -445,11 +445,12 @@ class TicketPrinter(BaseView):
     def peek(self):
         page_format_id = self.request.json_body['page_format_id']
         ticket_format_id = self.request.json_body['ticket_format_id']
+        order_id = self.request.json_body.get('order_id')
         page_format = DBSession.query(PageFormat).filter_by(id=page_format_id).one()
         ticket_format = DBSession.query(TicketFormat).filter_by(id=ticket_format_id).one()
         builder = SvgPageSetBuilder(page_format.data, ticket_format.data)
         tickets_per_page = builder.tickets_per_page
-        for entry in TicketPrintQueueEntry.peek(self.context.user, ticket_format_id):
+        for entry in TicketPrintQueueEntry.peek(self.context.user, ticket_format_id, order_id=order_id):
             builder.add(etree.fromstring(entry.data['drawing']), entry.id, title=(entry.summary if tickets_per_page == 1 else None))
         return builder.root
 

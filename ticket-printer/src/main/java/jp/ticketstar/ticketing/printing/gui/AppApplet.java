@@ -226,6 +226,13 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 			}
 		}
 	};
+	private PropertyChangeListener orderIdChangeListener = new PropertyChangeListener() {
+		public void propertyChange(PropertyChangeEvent evt) {
+			if (evt.getNewValue() != null) {
+				doLoadTicketData();
+			}
+		}
+	};
 	private JButton btnPrint;
 	private JComboBox comboBoxPrintService;
 	private JComboBox comboBoxPageFormat;
@@ -243,6 +250,7 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 		model.removePropertyChangeListener(pageFormatChangeListener);
 		model.removePropertyChangeListener(ticketFormatsChangeListener);
 		model.removePropertyChangeListener(ticketFormatChangeListener);
+		model.removePropertyChangeListener(orderIdChangeListener);
 	}
 	
 	public void bind(AppModel model) {
@@ -254,7 +262,9 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 		model.addPropertyChangeListener("pageFormat", pageFormatChangeListener);
 		model.addPropertyChangeListener("ticketFormats", ticketFormatsChangeListener);
 		model.addPropertyChangeListener("ticketFormat", ticketFormatChangeListener);
-		model.refresh();
+		model.addPropertyChangeListener("orderId", orderIdChangeListener);
+		if (!config.embedded)
+			model.refresh();
 		this.model = (AppAppletModel)model;
 	}
 
@@ -319,6 +329,11 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 					writer.value(model.getTicketFormat().getId());
 					writer.name("page_format_id");
 					writer.value(model.getPageFormat().getId());
+					final Integer orderId = model.getOrderId();
+					if (orderId != null) {
+						writer.name("order_id");
+						writer.value(orderId);
+					}
 					writer.endObject();
 					writer.flush();
 					writer.close();
@@ -352,6 +367,11 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 			}
 		}
 	}
+
+	public void reload() {
+		model.refresh();
+	}
+	
 	/**
 	 * Initialize the contents of the frame.
 	 */
