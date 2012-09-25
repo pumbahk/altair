@@ -122,7 +122,8 @@ def build_qr(ticket_id):
     ticket.event = ticket.performance.event
     ticket.product = ticket.ordered_product_item.ordered_product.product
     ticket.order = ticket.ordered_product_item.ordered_product.order
-    
+    ticket.item_token = ticket.item_token
+
     params = dict(serial=("%d" % ticket.id),
                   performance=ticket.performance.code,
                   order=ticket.order.order_no,
@@ -202,11 +203,18 @@ def order_review_qr_image(context, request):
     r.body = buf.getvalue()
     return r
 
+from ticketing.core.utils import IssuedAtBubblingSetter
+from datetime import datetime
+
 @mobile_view_config(route_name='order_review.qr_print', request_method='POST', renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/qr.html"))
 @view_config(route_name='order_review.qr_print', request_method='POST', renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/qr.html"))
 def order_review_qr_print(context, request):
     ticket = build_qr_by_order_seat(request.params['order_no'], request.params['token'])
     
+    issued_setter = IssuedAtBubblingSetter(datetime.now())
+    issued_setter.issued_token(ticket.item_token)
+    issued_setter.start_bubbling()
+
     return dict(
         sign = ticket.qr[0:8],
         order = ticket.order,
