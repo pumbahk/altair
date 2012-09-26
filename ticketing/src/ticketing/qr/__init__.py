@@ -22,7 +22,6 @@ tag2int = {
     "seat": 14,
     }
 int2tag = dict([(tag2int[t], t) for t in tag2int])
-
 class InvalidSignedString(Exception):
     pass
 

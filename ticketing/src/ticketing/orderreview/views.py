@@ -138,7 +138,6 @@ def build_qr(request, ticket_id):
     builder = get_qrdata_builder(request)
     ticket.qr = builder.sign(builder.make(params))
     ticket.sign = ticket.qr[0:8]
-    
     return ticket
 
 @mobile_view_config(route_name='order_review.qr_confirm', renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/qr_confirm.html"))

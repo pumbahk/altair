@@ -1,10 +1,48 @@
 var QRInputView = Backbone.View.extend({
+  events: {
+    "click #load_button": "load_qrsigned"
+  }, 
+  initialize: function(opts){
+    this.api_resource = opts.api_resource;
+    this.$qrcode = this.$el.find('input[name="qrcode"]')
+    this.nextview = null;
+  }, 
+  load_qrsigned: function(){
+    var url = this.api_resource["api.ticket.data"];
+    $.getJSON(url, {qrsigned: this.$qrcode.val()})
+      .done(function(data){return data})
+      .done(this.nextview.update_ticket_info.bind(this.nextview));
+  } 
 });
+
 var TicketInfoView = Backbone.View.extend({
+  initialize: function(opts){
+    this.api_resource = opts.api_resource;
+    this.nextview = null;
+    this.$user = this.$el.find("#user");
+    this.$codeno = this.$el.find("#codeno");
+    this.$orderno = this.$el.find("#orderno");
+    this.$performance_name = this.$el.find("#performance_name");
+    this.$performance_date = this.$el.find("#performance_date");
+    this.$product_name = this.$el.find("#product_name");
+    this.$seatno = this.$el.find("#seatno");
+  }, 
+  update_ticket_info: function(data){
+    console.dir(data);
+    this.$seatno.text(data.seat_name);
+  }
 });
 var PrinterSelectView = Backbone.View.extend({
+  initialize: function(opts){
+    this.api_resource = opts.api_resource;
+    this.nextview = null;
+  }
 });
 var PrintConfirmView = Backbone.View.extend({
+  initialize: function(opts){
+    this.api_resource = opts.api_resource;
+    this.nextview = null;
+  }
 });
 
 var AppRouter = Backbone.Router.extend({
@@ -26,11 +64,4 @@ var AppRouter = Backbone.Router.extend({
       self.navigate("#one", true); //todo: cache
     }
   }
-})
-
-$(function(){
-  var app_router = new AppRouter()
-  //Backbone.history.start({pushState: true,  root: "/"})
-Backbone.history.start({root: "/"})
-  app_router.start.call(app_router);
 })

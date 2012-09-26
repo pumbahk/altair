@@ -12,6 +12,21 @@ body {
 <script type="text/javascript">
   ## todo: move
   <%include file="./app.js"/>
+$(function(){
+  var api_resource = ${json.dumps(api_resource)|n}
+  var app_router = new AppRouter();
+  var one = new QRInputView({api_resource: api_resource, el: $("#one")});
+  var two = new TicketInfoView({api_resource: api_resource, el: $("#two")});
+  var three = new PrinterSelectView({api_resource: api_resource, el: $("#three")});
+  var four = new PrintConfirmView({api_resource: api_resource, el: $("#four")});
+  one.nextview = two;
+  two.nextview = three;
+  three.nextview = four;
+  
+  //Backbone.history.start({pushState: true,  root: "/"})
+Backbone.history.start({root: "/"})
+  app_router.start.call(app_router);
+})
 </script>
 
 <div id="wrapper" class="container">
@@ -24,12 +39,17 @@ body {
     </ul>
   </div>
 
-  <div id="one" class="onepage @hide">
+  <div id="one" class="onepage hide">
     <h2 class="header" id="one:header">QRコード読み込み</h2>
     <p>
       qrコードを読み込ませてください。
     </p>
-    <label>qrcode: <input type="password" name="qrcode"></input></label>
+
+    <div class="form-inline">
+      <label>qrcode: <input type="password" name="qrcode" value="J1CH40PMHH3RSNHKTN1210131QSNH000000031ZSK0SADTI9GU1O1F $72$7B$5SH 4*H. 12*2O"></input></label>
+      <a class="btn" id="load_button">読み込み</a>
+    </div>
+
     <div id="one:status-box">
       status:
       <span id="one:status">preload</span>
@@ -37,7 +57,7 @@ body {
     <a class="btn" href="#two"><i class="icon-arrow-right"> </i>次へ</a>
   </div>
 
-  <div id="two" class="onepage @hide">
+  <div id="two" class="onepage hide">
     <h2 class="header" id="two:header">チケット情報</h2>
     <p>
       購入されたチケット情報は以下のとおりです。
@@ -45,25 +65,25 @@ body {
     <table class="table">
       <tbody>
         <tr>
-          <td>購入者</td><td id="two:user"></td>
+          <td>購入者</td><td id="user"></td>
         </tr>
         <tr>
-          <td>発券番号</td><td id="two:codeno">2</td>
+          <td>発券番号</td><td id="codeno">2</td>
         </tr>
         <tr>
-          <td>注文番号</td><td id="two:orderno">NH000000031K</td>
+          <td>注文番号</td><td id="orderno">NH000000031K</td>
         </tr>
         <tr>
-          <td>パフォーマンス</td><td id="two:performance_name">NHKTN1210131 </td>
+          <td>パフォーマンス</td><td id="performance_name">NHKTN1210131 </td>
         </tr>
         <tr>
-          <td>公演日時</td><td id="two:performance_date">2012-10-13 14:00:00</td>
+          <td>公演日時</td><td id="performance_date">2012-10-13 14:00:00</td>
         </tr>
         <tr>
-          <td>商品名</td><td id="two:product_name">商品名 2F自由/大人 (162) </td>
+          <td>商品名</td><td id="product_name">商品名 2F自由/大人 (162) </td>
         </tr>
         <tr>
-          <td>席番号</td><td id="two:seatno"></td>
+          <td>席番号</td><td id="seatno"></td>
         </tr>
       </tbody>
     </table>
@@ -72,7 +92,7 @@ body {
     <a class="btn" href="#three"><i class="icon-arrow-right"> </i>次へ</a>
   </div>
 
-  <div id="three" class="onepage @hide">
+  <div id="three" class="onepage hide">
     <h2 class="header" id="three:header">プリンタ選択</h2>
     <p>
       印刷に利用するプリンタを選んでください
@@ -92,7 +112,7 @@ body {
     <a class="btn" href="#four"><i class="icon-arrow-right"> </i>プリンタを選択</a>
   </div>
 
-  <div id="four" class="onepage @hide">
+  <div id="four" class="onepage hide">
     <h2 class="header" id="four:header">発券確認</h2>
     <p>
       印刷します。よろしいですか？

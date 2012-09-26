@@ -15,9 +15,11 @@ def main(global_config, **settings):
 
     config = Configurator(settings=settings, session_factory=my_session_factory)
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
-
+    
+    config.include("ticketing.qr")
 
     config.add_route("index", "/")
+    config.add_route("api.ticket.data", "/api/ticket/data")
     config.scan(".views")
 
     # config.set_root_factory('.resources.TicketingPrintqrResource')
