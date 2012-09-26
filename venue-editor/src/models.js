@@ -237,6 +237,24 @@ Venue.prototype.toJSON = function Venue_toJSON () {
   };
 };
 
+Venue.prototype.clearEdited = function Venue_clearEdited () {
+  this.seats.each(function (seat) {
+    if (seat.get('edited')) {
+      seat.set('edited', false);
+    }
+  });
+  this.stocks.each(function (stock) {
+    if (stock.get('edited')) {
+      stock.set('edited', false);
+    }
+  });
+  this.stockTypes.each(function (stockType) {
+    if (stockType.get('edited')) {
+      stockType.set('edited', false);
+    }
+  });
+};
+
 var ProvidesStyle = exports.ProvidesStyle = Backbone.Model.extend({
   venue: null,
 
@@ -364,6 +382,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
     id: null,
     seat_no: null,
+    status: null,
     venue: null,
     stock: null,
     selectable: true,

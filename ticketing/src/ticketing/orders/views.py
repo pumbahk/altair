@@ -411,8 +411,10 @@ class Orders(BaseView):
             DBSession.flush()
             cart.finish()
 
-            self.request.session.flash(u'予約しました')
-            return {'order_id':order.id}
+            return {
+                'order_id':order.id,
+                'message':u'予約しました'
+            }
         except ValidationError, e:
             logger.exception('validation error (%s)' % e.message)
             raise HTTPBadRequest(body=json.dumps({

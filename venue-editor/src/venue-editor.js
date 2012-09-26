@@ -578,6 +578,11 @@
     }
   };
 
+  VenueEditor.prototype.clearAll = function VenueEditor_clearAll() {
+    this.venue.clearEdited();
+    this.unselectAll();
+  };
+
   VenueEditor.prototype.adjacencyLength = function VenueEditor_adjacencyLength(value) {
     if (value !== void(0)) {
       this._adjacencyLength = value;
@@ -647,6 +652,10 @@
 
           case 'clearSelection':
             aux.manager.unselectAll();
+            return;
+
+          case 'clearAll':
+            aux.manager.clearAll();
             return;
 
           case 'adjacency':

@@ -302,7 +302,7 @@ var makeEditable = (function () {
       element: editable,
       set: set,
       get: function () {
-        return value;     
+        return value;
       },
       bindSave: function (_save) {
         save = _save;
@@ -382,11 +382,13 @@ function saveStocks() {
     dataType: 'json',
     data: JSON.stringify(venue.toJSON()),
     success: function(result) {
-      location.reload(true);
+      $('.content').prepend('<div class="alert alert-success"><a class="close" data-dismiss="alert">&times;</a><h4 class="alert-heading">' + result.message + '</h4></div>');
+      modal.modal('hide');
+      venueEditorRoot.venueeditor('clearAll');
     },
     error: function(xhr, text) {
       var responseText = JSON.parse(xhr.responseText);
-      var messages = responseText['message'] || xhr.statusText
+      var messages = responseText['message'] || xhr.statusText;
       var errors = '';
       if (typeof messages == 'string') {
         errors += '<li>' + messages + '</li>';
@@ -441,11 +443,18 @@ function createOrder() {
     dataType: 'json',
     data: JSON.stringify(param),
     success: function(result) {
-      location.href = '/orders/show/' + result.order_id;
+      window.open('/orders/show/' + result.order_id, '_blank');
+      $('.content').prepend('<div class="alert alert-success"><a class="close" data-dismiss="alert">&times;</a><h4 class="alert-heading">' + result.message + '</h4></div>');
+      $('#modal-reserve').modal('hide');
+      selection.each(function (seat) {
+        seat.set('status', 3);
+        seat.set('selectable', false);
+      });
+      venueEditorRoot.venueeditor('clearAll');
     },
     error: function(xhr, text) {
       var responseText = JSON.parse(xhr.responseText);
-      var messages = responseText['message'] || xhr.statusText
+      var messages = responseText['message'] || xhr.statusText;
       var errors = '';
       if (typeof messages == 'string') {
         errors += '<li>' + messages + '</li>';
@@ -465,7 +474,7 @@ callbacks.load = function (viewer) {
 
 callbacks.select = function (viewer, selection) {
   if (selection.length)
-    $(".assignable").addClass("enabled");   
+    $(".assignable").addClass("enabled");
   else
     $(".assignable").removeClass("enabled");
 };
