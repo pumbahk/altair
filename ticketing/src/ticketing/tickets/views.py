@@ -410,12 +410,20 @@ class TicketPrintQueueEntries(BaseView):
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class TicketPrinter(BaseView):
-    @view_config(route_name='tickets.printer', renderer='ticketing:templates/tickets/printer.embedded.html')
-    def printer(self):
-        return dict(endpoints=dict(
+    @property
+    def endpoints(self):
+        return dict(
             (key, self.request.route_path('tickets.printer.api.%s' % key))
             for key in ['formats', 'peek', 'dequeue']
-            ))
+            )
+
+    @view_config(route_name='tickets.printer', renderer='ticketing:templates/tickets/printer.html')
+    def printer(self):
+        return dict(endpoints=self.endpoints)
+
+    @view_config(route_name='tickets.printer', renderer='ticketing:templates/tickets/printer.embedded.html', custom_predicates=(lambda c, r: '__embedded__' in r.GET,))
+    def printer(self):
+        return dict(endpoints=self.endpoints)
 
     @view_config(route_name='tickets.printer.api.enqueue', request_method='POST', renderer='json')
     def enqueue(self):
