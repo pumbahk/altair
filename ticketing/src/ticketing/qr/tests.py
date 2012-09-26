@@ -9,7 +9,8 @@ class QrTest(unittest.TestCase):
              "order": "ORDERNUMBER",
              "date": "20120805",
              "type": 666,
-             "seat": u"ポンチョ席-A列-10",
+             'seat': '$6V$7B$63$7.%Q0-A*H.-10', ## これは利用していないデータらしい, parseしたときに生じる
+             "seat_name": u"ポンチョ席-A列-10",
              }
     
     def setUp(self):
