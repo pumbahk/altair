@@ -26,6 +26,12 @@ int2tag = dict([(tag2int[t], t) for t in tag2int])
 class InvalidSignedString(Exception):
     pass
 
+from zope.interface import Interface, Attribute, implementer
+
+class IQRDataBuilder(Interface):
+    key = Attribute("seed")
+
+@implementer(IQRDataBuilder)
 class qr:
     def enc32(self, i):
         """encode 0-31 integer"""
@@ -182,3 +188,12 @@ class DataExtractorFromSigned(object):
         """ QRコードに入ったsigned stringとそこから生成されたデータを元に改めて作成したsigneヘッダが等しいか調べる
         """
         return self.signed == r_signed
+
+def get_qrdata_builder(request):
+    return request.registry.getUtility(IQRDataBuilder)
+
+def includeme(config):
+    builder = qr()
+    builder.key = u"THISISIMPORTANTSECRET"
+    config.registry.registerUtility(builder, IQRDataBuilder)
+

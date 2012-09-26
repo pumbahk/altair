@@ -23,9 +23,6 @@ def includeme(config):
 def deliver_confirm_viewlet(context, request):
     return dict()
 
-builder = qr()
-builder.key = u"THISISIMPORTANTSECRET"
-
 QRTicket = namedtuple("QRTicket", "order performance product seat token printed_at")
 
 @view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer="ticketing.cart.plugins:templates/qr_complete.html")
