@@ -152,6 +152,12 @@ def is_different_row(seatsource1, seatsource2):
     """seatsource1とseatsource2が別の列、もしくは通路などを
     挟んで連続していない場合にTrueを返す
     """
+    
+    # いずれかのseatがNULLの時は違う列扱い
+    if seatsource1.seat == None or seatsource2.seat == None:
+        return True
+    
+    # FIXME: seatsource1.seat > seatsource2.seatの場合もあるのでは?
     return (int(seatsource1.seat) + 1 != int(seatsource2.seat)) or \
         (seatsource1.source.row_l0_id != seatsource2.source.row_l0_id)
 
@@ -164,7 +170,7 @@ def seat_records_from_seat_sources(seat_sources, unsold=False):
     # block,floor,line,seatの優先順でソートする
     sorted_seat_sources = sorted(
         seat_sources,
-        key=lambda v: (v.block, v.floor, v.line, int(v.seat)))
+        key=lambda v: (v.block, v.floor, v.line, int(v.seat) if (v.seat!=None and v.seat!='') else None))
     # block,floor,lineでグループ化してSeatRecordを作る
     for key, generator in groupby(sorted_seat_sources, lambda v: (v.block, v.floor, v.line)):
         values = list(generator)
