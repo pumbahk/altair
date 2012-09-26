@@ -90,7 +90,7 @@ exports.allAttributes = function Util_allAttributes(el) {
   var rt = {}, attrs = el.attributes;
   for (var i = 0, l = attrs.length; i < l; i++) {
     var attr = attrs[i];
-    rt[attr.namespaceURI ? ('{' + attr.namespaceURI + '}') + attr.localName: attr.nodeName] = attr.nodeValue;
+    rt[attr.namespaceURI ? ('{' + attr.namespaceURI + '}') + attr.nodeName.replace(/^[^:]*:/, ''): attr.nodeName] = attr.nodeValue;
   }
   return rt;
 };

@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['MQWDEHUNIASX1KNN'] = (function (exports) { (function () { 
+__LIBS__['LDP932QNAP6SEFRN'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -95,7 +95,7 @@ exports.allAttributes = function Util_allAttributes(el) {
   var rt = {}, attrs = el.attributes;
   for (var i = 0, l = attrs.length; i < l; i++) {
     var attr = attrs[i];
-    rt[attr.namespaceURI ? ('{' + attr.namespaceURI + '}') + attr.localName: attr.nodeName] = attr.nodeValue;
+    rt[attr.namespaceURI ? ('{' + attr.namespaceURI + '}') + attr.nodeName.replace(/^[^:]*:/, ''): attr.nodeName] = attr.nodeValue;
   }
   return rt;
 };
@@ -125,7 +125,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['FHV2WEFYGKO2M5UQ'] = (function (exports) { (function () { 
+__LIBS__['y_K1P6ML4QFP4RY3'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -180,11 +180,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['TPHR24DLU1EPWL8T'] = (function (exports) { (function () { 
+__LIBS__['C1BYIORY9CY2K_QX'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['MQWDEHUNIASX1KNN'];
-var CONF = __LIBS__['FHV2WEFYGKO2M5UQ'];
+var util = __LIBS__['LDP932QNAP6SEFRN'];
+var CONF = __LIBS__['y_K1P6ML4QFP4RY3'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -1016,9 +1016,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['FHV2WEFYGKO2M5UQ'];
-  var seat = __LIBS__['TPHR24DLU1EPWL8T'];
-  var util = __LIBS__['MQWDEHUNIASX1KNN'];
+  var CONF = __LIBS__['y_K1P6ML4QFP4RY3'];
+  var seat = __LIBS__['C1BYIORY9CY2K_QX'];
+  var util = __LIBS__['LDP932QNAP6SEFRN'];
 
   var StoreObject = _class("StoreObject", {
     props: {
