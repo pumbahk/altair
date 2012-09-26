@@ -1,24 +1,88 @@
-var QRInputView = Backbone.View.extend({
+// model 
+var DataStore = Backbone.Model.extend({
+  defaults: {
+    qrcodeStatus: "preload", 
+    qrcode: null
+  }
+});
+
+// view
+var MessageView = Backbone.View.extend({
+  initialize: function(){
+    this.$alert = this.$el.find("#alert_message");
+    this.$info = this.$el.find("#info_message");
+    this.$error = this.$el.find("#error_message");
+    this.$success = this.$el.find("#success_message");
+    this.$messages = this.$el.find(".alert");
+  }, 
+  _clear: function(){
+    this.$messages.hide();
+  }, 
+  alert: function(message){
+    this._clear();
+    this.$alert.text(message).show();
+  }, 
+  info: function(message){
+    this._clear();
+    this.$info.text(message).show();
+  }, 
+  error: function(message){
+    this._clear();
+    this.$error.text(message).show();
+  }, 
+  success: function(message){
+    this._clear();
+    this.$success.text(message).show();
+  }
+});
+
+var AppPageViewBase = Backbone.View.extend({
+  initialize: function(opts){
+    this.apiResource = opts.apiResource;
+    this.messageView = opts.messageView;
+    this.router = opts.router;
+    this.model = opts.datastore;
+    this.nextView = null;
+  }, 
+  focusNextPage: function(){
+    this.router.navigate(this.nextView.$el.attr("id"), true);
+  }
+});
+
+var QRInputView = AppPageViewBase.extend({
   events: {
-    "click #load_button": "load_qrsigned"
+    "click #load_button": "loadQRSigned"
   }, 
   initialize: function(opts){
-    this.api_resource = opts.api_resource;
+    QRInputView.__super__.initialize.call(this, opts);
     this.$qrcode = this.$el.find('input[name="qrcode"]')
-    this.nextview = null;
+    this.$status = this.$el.find('#status')
+    this.model.bind("change:qrcodeStatus", this.showStatus, this);
   }, 
-  load_qrsigned: function(){
-    var url = this.api_resource["api.ticket.data"];
+  showStatus: function(){
+    this.$status.text(this.model.get("qrcodeStatus"));
+  }, 
+  loadQRSigned: function(){
+    var url = this.apiResource["api.ticket.data"];
+    var self = this;
     $.getJSON(url, {qrsigned: this.$qrcode.val()})
-      .done(function(data){return data})
-      .done(this.nextview.update_ticket_info.bind(this.nextview));
+      .done(function(data){
+        self.messageView.success("QRコードからデータが読み込めました");
+        self.model.set("qrcodeStatus", "loaded");
+        setTimeout(function(){self.focusNextPage();}, 1)
+        return data;})
+      .done(this.nextView.update_ticket_info.bind(this.nextView))
+      .fail(function(){
+        self.messageView.alert("うまくQRコードを読み込むことができませんでした");
+        self.model.set("qrcodeStatus", "fail");
+      });
   } 
 });
 
-var TicketInfoView = Backbone.View.extend({
+var TicketInfoView = AppPageViewBase.extend({
   initialize: function(opts){
-    this.api_resource = opts.api_resource;
-    this.nextview = null;
+    TicketInfoView.__super__.initialize.call(this, opts);
+
     this.$user = this.$el.find("#user");
     this.$codeno = this.$el.find("#codeno");
     this.$orderno = this.$el.find("#orderno");
@@ -32,16 +96,14 @@ var TicketInfoView = Backbone.View.extend({
     this.$seatno.text(data.seat_name);
   }
 });
-var PrinterSelectView = Backbone.View.extend({
+var PrinterSelectView = AppPageViewBase.extend({
   initialize: function(opts){
-    this.api_resource = opts.api_resource;
-    this.nextview = null;
+    PrinterSelectView.__super__.initialize.call(this, opts);
   }
 });
-var PrintConfirmView = Backbone.View.extend({
+var PrintConfirmView = AppPageViewBase.extend({
   initialize: function(opts){
-    this.api_resource = opts.api_resource;
-    this.nextview = null;
+    PrintConfirmView.__super__.initialize.call(this, opts);
   }
 });
 
@@ -61,7 +123,7 @@ var AppRouter = Backbone.Router.extend({
       e.preventDefault();
     });
     if(location.href.search("#") == -1){
-      self.navigate("#one", true); //todo: cache
+      self.navigate("one", true); //todo: cache
     }
   }
 })

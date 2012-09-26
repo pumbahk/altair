@@ -13,23 +13,33 @@ body {
   ## todo: move
   <%include file="./app.js"/>
 $(function(){
-  var api_resource = ${json.dumps(api_resource)|n}
-  var app_router = new AppRouter();
-  var one = new QRInputView({api_resource: api_resource, el: $("#one")});
-  var two = new TicketInfoView({api_resource: api_resource, el: $("#two")});
-  var three = new PrinterSelectView({api_resource: api_resource, el: $("#three")});
-  var four = new PrintConfirmView({api_resource: api_resource, el: $("#four")});
-  one.nextview = two;
-  two.nextview = three;
-  three.nextview = four;
+  var apiResource = ${json.dumps(api_resource)|n}
+  var appRouter = new AppRouter();
+  var datastore = new DataStore({qrcodeStatus: "preload", qrcode: null});
+
+  var messageView = new MessageView({el: $("#message_box")})
+  var one = new QRInputView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#one")});
+  var two = new TicketInfoView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#two")});
+  var three = new PrinterSelectView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#three")});
+  var four = new PrintConfirmView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#four")});
+
+  one.nextView = two;
+  two.nextView = three;
+  three.nextView = four;
   
   //Backbone.history.start({pushState: true,  root: "/"})
-Backbone.history.start({root: "/"})
-  app_router.start.call(app_router);
+  Backbone.history.start({root: "/"})
+  appRouter.start.call(appRouter);
 })
 </script>
 
 <div id="wrapper" class="container">
+  <div id="message_box">
+    <div id="alert_message" class="hide alert"></div>
+    <div id="info_message" class="hide alert alert-info"></div>
+    <div id="error_message" class="hide alert alert-error"></div>
+    <div id="success_message" class="hide alert alert-success"></div>
+  </div>
   <div id="tabbar">
     <ul class="nav nav-tabs">
       <li><a id="tab_one" href="#one" data-toggle="tab" class="active">one</a></li>
@@ -52,7 +62,7 @@ Backbone.history.start({root: "/"})
 
     <div id="one:status-box">
       status:
-      <span id="one:status">preload</span>
+      <span id="status">preload</span>
     </div>
     <a class="btn" href="#two"><i class="icon-arrow-right"> </i>次へ</a>
   </div>
