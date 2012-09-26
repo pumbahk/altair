@@ -8,14 +8,15 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
 window[${json.dumps(callback_name)|n}] = function (applet) {
   var service = applet.getService();
   var createProxy = function () { return applet.createPropertyChangeListenerProxy.apply(applet, arguments); };
+  var $order = $('#order');
   var $page = $('#page');
   var $printService = $('#printService');
   var $pageFormat = $('#pageFormat');
   var $ticketFormat = $('#ticketFormat');
+  var $printButton = $('#printButton');
   function refreshPages() {
     var pages = service.getPages();
     $page.empty();
-    console.log("?");
     if (pages) {
       for (var i = pages.iterator(); i.hasNext();) {
         var page = i.next();
@@ -54,10 +55,23 @@ window[${json.dumps(callback_name)|n}] = function (applet) {
     }
   }
   service.addListenerForPages(createProxy(refreshPages));
+  $printButton.click(function () {
+    service.printAll();
+  });
+  $order.change(function () {
+    var val = $order.val();
+    service.filterByOrderId(val ? val: null);
+  });
   refreshPages();
   refreshPrintServices();
   refreshPageFormats();
   refreshTicketFormats();
+  $page.attr('disabled', null);
+  $printService.attr('disabled', null);
+  $pageFormat.attr('disabled', null);
+  $ticketFormat.attr('disabled', null);
+  $printButton.attr('disabled', null);
+  $('#screen').hide();
 };
 </script>
 <script type="text/javascript">
@@ -167,7 +181,61 @@ writeAppletTag({
   }
 });
 </script>
-<select id="page"></select>
-<select id="pageFormat"></select>
-<select id="ticketFormat"></select>
-<select id="printService"></select>
+<style type="text/css">
+#screen {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 100%;
+  margin: 0 0;
+  padding: 0 0;
+  z-index: 10000;
+  background-color: #000;
+  filter: alpha(opacity=50);
+  opacity: .5;
+}
+
+#screen .splash {
+  position: absolute;
+  width: 30%;
+  height: 100px;
+  left: 50%;
+  top: 50%;
+  margin: -50px 0 0 -15%;
+  background-color: #eee;
+  color: #000;
+  font-size: 20px;
+  text-align: center;
+  line-height: 100px;
+}
+
+</style>
+<div>
+<select id="order">
+  <option value="">すべて</option>
+% for order in orders:
+  <option value="${order.id}">${order.order_no}</option>
+% endfor
+</select>
+</div>
+<div>
+<select id="page" disabled="disabled"></select>
+</div>
+<div>
+<select id="pageFormat" disabled="disabled"></select>
+</div>
+<div>
+<select id="ticketFormat" disabled="disabled"></select>
+</div>
+<div>
+<select id="printService" disabled="disabled"></select>
+</div>
+<div>
+<button class="btn" id="printButton"><i class="icon-print"></i>Print</button>
+</div>
+<div id="screen">
+  <div class="splash">
+    Now loading...
+  </div>
+</div>

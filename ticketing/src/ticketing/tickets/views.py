@@ -423,7 +423,13 @@ class TicketPrinter(BaseView):
 
     @view_config(route_name='tickets.printer', renderer='ticketing:templates/tickets/printer.embedded.html', custom_predicates=(lambda c, r: '__embedded__' in r.GET,))
     def printer(self):
-        return dict(endpoints=self.endpoints)
+        return dict(
+            endpoints=self.endpoints,
+            orders=DBSession.query(Order) \
+                   .join(OrderedProduct) \
+                   .join(OrderedProductItem) \
+                   .join(TicketPrintQueueEntry) \
+                   .filter_by(operator=self.context.user))
 
     @view_config(route_name='tickets.printer.api.enqueue', request_method='POST', renderer='json')
     def enqueue(self):
