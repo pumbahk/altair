@@ -520,6 +520,7 @@
             self._history.pop();
           else
             self._history.push(previousPage);
+          self.callbacks.load.call(self, self);
         });
       },
 
