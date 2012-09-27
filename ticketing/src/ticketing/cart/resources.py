@@ -100,7 +100,7 @@ class TicketingCartResource(object):
             today = date.today()
             period_days = date(start_on.year, start_on.month, start_on.day) - today
             q = q.filter(
-                c_models.PaymentDeliveryMethodPair.unavailable_period_days<period_days.days
+                c_models.PaymentDeliveryMethodPair.unavailable_period_days<=period_days.days
             )
         pairs = q.all()
         return pairs
