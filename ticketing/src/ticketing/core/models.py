@@ -874,12 +874,16 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     discount = Column(Numeric(precision=16, scale=2), nullable=False)
     discount_unit = Column(Integer)
 
-    # 申し込日から計算して入金できる期限　日付指定
+    # 申込日から計算して入金できる期限、日数指定
     payment_period_days = Column(Integer, default=3)
     # 入金から発券できるまでの時間
     issuing_interval_days = Column(Integer, default=1)
     issuing_start_at = Column(DateTime, nullable=True)
     issuing_end_at = Column(DateTime, nullable=True)
+    # 選択不可期間(Performance.start_onの何日前から利用できないか、日数指定)
+    unavailable_period_days = Column(Integer, nullable=False, default=0)
+    # 一般公開するか
+    public = Column(Boolean, nullable=False, default=True)
 
     sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'))
     sales_segment = relationship('SalesSegment', backref='payment_delivery_method_pairs')
@@ -1597,7 +1601,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 if request.registry.settings.get('multicheckout.testing', False):
                     order_no = '%012d%02d' % (sensible_alnum_decode(order_no[2:12]), 0)
                 organization = Organization.get(self.organization_id)
-                request.registry.settings['altair_checkout3d.override_shop_name'] = organization.code
+                request.registry.settings['altair_checkout3d.override_shop_name'] = organization.multicheckout_settings[0].shop_name
+                
                 multi_checkout_result = multi_checkout_api.checkout_sales_cancel(request, order_no)
                 DBSession.add(multi_checkout_result)
 
@@ -2102,3 +2107,13 @@ MailTypeLabels = (u"購入完了メール", u"購入キャンセルメール")
 assert(len(list(MailTypeEnum)) == len(MailTypeLabels))
 MailTypeChoices = [(str(e), label)for e, label in zip(sorted(MailTypeEnum), MailTypeLabels)]
 
+
+class Host(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'Host'
+
+    query = DBSession.query_property()
+
+    id = Column(Identifier, primary_key=True)
+    host_name = Column(Unicode(255), unique=True)
+    organization_id = Column(Identifier, ForeignKey('Organization.id'))
+    organization = relationship('Organization', backref="hosts")

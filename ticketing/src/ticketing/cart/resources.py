@@ -7,17 +7,19 @@ TODO: cart取得
 """
 import logging
 
-from datetime import datetime
+from datetime import datetime, date
 import itertools
 from sqlalchemy import sql
 from pyramid.security import Everyone, Authenticated
 from pyramid.security import Allow
+from sqlalchemy.orm.exc import NoResultFound
 
 from zope.interface import implementer
 from .interfaces import IOrderPayment, IOrderDelivery, ICartPayment, ICartDelivery, ICompleteMailPayment, ICompleteMailDelivery
 
 from .exceptions import OutTermSalesException
 from ..core import models as c_models
+from ..core import api as core_api
 from ..users import models as u_models
 from . import models as m
 from . import logger
@@ -59,8 +61,14 @@ class TicketingCartResource(object):
 
     @property
     def event(self):
-        event = c_models.Event.filter(c_models.Event.id==self.event_id).one()
-        return event
+        # TODO: ドメインで許可されるeventのみを使う
+        organization = core_api.get_organization(self.request)
+        try:
+            event = c_models.Event.filter(c_models.Event.id==self.event_id).filter(c_models.Event.organization==organization).one()
+            return event
+
+        except NoResultFound:
+            return None
 
     @property
     def membergroups(self):
@@ -76,12 +84,25 @@ class TicketingCartResource(object):
         return 0
 
 
-    def get_payment_delivery_method_pair(self):
+    def get_payment_delivery_method_pair(self, start_on=None):
         segment = self.get_sales_segument()
-        pairs = c_models.PaymentDeliveryMethodPair.query.filter(
+        q = c_models.PaymentDeliveryMethodPair.query.filter(
             c_models.PaymentDeliveryMethodPair.sales_segment_id==segment.id
-        ).all()
-
+        ).filter(
+            c_models.PaymentDeliveryMethodPair.public==1,
+        ).order_by(
+            c_models.PaymentDeliveryMethodPair.transaction_fee,
+            c_models.PaymentDeliveryMethodPair.payment_method_id,
+            c_models.PaymentDeliveryMethodPair.delivery_fee,
+            c_models.PaymentDeliveryMethodPair.delivery_method_id,
+        )
+        if start_on:
+            today = date.today()
+            period_days = date(start_on.year, start_on.month, start_on.day) - today
+            q = q.filter(
+                c_models.PaymentDeliveryMethodPair.unavailable_period_days<=period_days.days
+            )
+        pairs = q.all()
         return pairs
 
     def authenticated_user(self):

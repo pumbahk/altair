@@ -40,6 +40,11 @@
                         </tr>
                         %endfor
                         <tr>
+                            <td colspan="3">ステータス</td>
+                            <td class="textR">${h.order_status(order)}</td>
+                        </tr>
+
+                        <tr>
 
                             <td colspan="3">決済手数料</td>
                             <td class="textR">￥${h.format_number(order.transaction_fee)}</td>

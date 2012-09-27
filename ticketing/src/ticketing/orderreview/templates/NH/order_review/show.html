@@ -10,7 +10,7 @@
 <body>
 <h1 class="title">秋田ノーザンハピネッツ ハピチケ 購入確認ページ</h1>
 <div align="center">
-    <img src="${request.static_url('ticketing.orderreview:static/images/NH/head_title.png')}" alt="秋田ノーザンハピネッツ" width="780" height="135" />
+    <img src="${request.static_url('ticketing.orderreview:static/images/NH/head_title.png')}" alt="秋田ノーザンハピネッツ" width="780" height="190" />
     <table class="layout" style="width:760px" class="wrapper">
         <tr>
             <td>
@@ -39,6 +39,11 @@
                             <td class="align1">￥${h.format_number(product.product.price * product.quantity)}</td>
                         </tr>
                         %endfor
+                        <tr>
+                            <td colspan="3">ステータス</td>
+                            <td class="textR">${h.order_status(order)}</td>
+                        </tr>
+
                         <tr>
 
                             <td colspan="3">決済手数料</td>

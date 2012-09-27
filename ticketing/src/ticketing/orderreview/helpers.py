@@ -54,3 +54,17 @@ def sex_value(value):
     else:
         return 0
 
+def order_status(order):
+    if order.status == 'refunded':
+        return u"キャンセル (返金済)"
+    elif order.status == 'canceled':
+        return u"キャンセル"
+    elif order.status == 'delivered':
+        return u"配送済み"
+    elif order.status == 'paid':
+        return u"入金済み"
+    else:
+        return u"未入金"
+
+def safe_strftime(s, format='%Y-%m-%d %H:%M'):
+    return s and s.strftime(format) or ''
