@@ -45,10 +45,10 @@ class TicketingCartResource(object):
     #     return [m.membership for m in membergroups]
     @property
     def memberships(self):
-        logger.debug('event %s' % self.event.title)
-        logger.debug('organization %s' % self.event.organization.code)
-        logger.debug('memberships %s' % self.event.organization.memberships)
-        return self.event.organization.memberships
+        organization = core_api.get_organization(self.request)
+        logger.debug('organization %s' % organization.code)
+        logger.debug('memberships %s' % organization.memberships)
+        return organization.memberships
 
     # @property
     # def membergroup(self):
