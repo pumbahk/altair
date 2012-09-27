@@ -19,11 +19,12 @@ Identifier = sa.BigInteger
 
 
 def upgrade():
-    op.execute("insert into OperatorRole (id, name, status, created_at, updated_at) values (3, 'operator', 1, now(), now())")
-    op.execute("insert into Permission (id, operator_role_id, category_name, permit) values (37, 3, 'event_viewer', 1)")
-    op.execute("insert into Permission (id, operator_role_id, category_name, permit) values (38, 1, 'sales_counter', 1)")
-    op.execute("insert into Permission (id, operator_role_id, category_name, permit) values (39, 2, 'sales_counter', 1)")
-    op.execute("insert into Permission (id, operator_role_id, category_name, permit) values (40, 3, 'sales_counter', 1)")
+    op.execute("INSERT INTO OperatorRole (id, name, status, created_at, updated_at) VALUES (3, 'operator', 1, now(), now())")
+    op.execute("INSERT INTO Permission (id, operator_role_id, category_name, permit) VALUES (37, 3, 'event_viewer', 1)")
+    op.execute("INSERT INTO Permission (id, operator_role_id, category_name, permit) VALUES (38, 1, 'sales_counter', 1)")
+    op.execute("INSERT INTO Permission (id, operator_role_id, category_name, permit) VALUES (39, 2, 'sales_counter', 1)")
+    op.execute("INSERT INTO Permission (id, operator_role_id, category_name, permit) VALUES (40, 3, 'sales_counter', 1)")
 
 def downgrade():
-    pass
+    op.execute("DELETE FROM Permission WHERE id IN (37, 38, 39, 40);")
+    op.execute("DELETE FROM OperatorRole WHERE id=3;")
