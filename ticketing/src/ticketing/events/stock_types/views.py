@@ -10,7 +10,7 @@ from pyramid.url import route_path
 from ticketing.core.models import merge_session_with_post
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
-from ticketing.core.models import Event, StockType
+from ticketing.core.models import Event, StockType, StockTypeEnum
 from ticketing.events.stock_types.forms import StockTypeForm
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
@@ -28,11 +28,15 @@ class StockTypes(BaseView):
         if direction not in ['asc', 'desc']:
             direction = 'asc'
 
-        query = StockType.filter(StockType.event_id==event_id)
-        query = query.order_by(sort + ' ' + direction)
+        seat_stock_types = paginate.Page(
+            StockType.filter_by(event_id=event_id, type=StockTypeEnum.Seat.v).order_by(sort + ' ' + direction),
+            page=int(self.request.params.get('page', 0)),
+            items_per_page=20,
+            url=paginate.PageURL_WebOb(self.request)
+        )
 
-        stock_types = paginate.Page(
-            query,
+        non_seat_stock_types = paginate.Page(
+            StockType.filter_by(event_id=event_id, type=StockTypeEnum.Other.v).order_by(sort + ' ' + direction),
             page=int(self.request.params.get('page', 0)),
             items_per_page=20,
             url=paginate.PageURL_WebOb(self.request)
@@ -40,7 +44,8 @@ class StockTypes(BaseView):
 
         return {
             'form':StockTypeForm(event_id=event_id),
-            'stock_types':stock_types,
+            'seat_stock_types':seat_stock_types,
+            'non_seat_stock_types':non_seat_stock_types,
             'event':event,
         }
 

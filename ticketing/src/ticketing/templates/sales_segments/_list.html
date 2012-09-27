@@ -4,53 +4,63 @@
 <% paging = False if limit else True %>
 
 % if sales_segments:
-  <table class="table table-striped table-bordered table-condensed">
-    <thead>
-    <tr>
-      <th class="minwidth"></th>
-      <th class="minwidth">${h.sortable(form.id, paging)}</th>
-      <th>${h.sortable(form.name, paging)}</th>
-      <th>${h.sortable(form.start_at, paging)}</a></th>
-      <th>${h.sortable(form.end_at, paging)}</a></th>
-      <th>${h.sortable(form.upper_limit, paging)}</a></th>
-      <th>${h.sortable(form.seat_choice, paging)}</a></th>
-      <th>${h.sortable(form.public, paging)}</a></th>
-      <th>決済方法</th>
-      <th>配送方法</th>
-    </tr>
-    </thead>
-    <tbody>
-    % for i, sales_segment in enumerate(sales_segments):
-      <% if limit and i >= limit: break %>
-    <tr id="sales_segment-${sales_segment.id}">
-      <% count = len(sales_segment.payment_delivery_method_pairs) %>
-      <% rowspan = 'rowspan=%s' % (count) %>
-      <td ${rowspan}>
-        <input type="radio" name="sales_segment_id" value="${sales_segment.id}" />
-        <input type="hidden" id="kind" value="${sales_segment.kind}" />
-      </td>
-      <td ${rowspan} id="id">${sales_segment.id}</td>
-      <td ${rowspan} id="name"><a href="${request.route_path('sales_segments.show', sales_segment_id=sales_segment.id)}">${sales_segment.name}</a></td>
-      <td ${rowspan} id="current_start_at">${h.safe_strftime(sales_segment.start_at)}</td>
-      <td ${rowspan} id="current_end_at">${h.safe_strftime(sales_segment.end_at)}</td>
-      <td ${rowspan} id="upper_limit">${sales_segment.upper_limit or u''}</td>
-      <td ${rowspan} id="seat_choice" value="${sales_segment.seat_choice}">${u'○' if sales_segment.seat_choice else u'×'}</td>
-      <td ${rowspan} id="public" value="${sales_segment.public}">${u'○' if sales_segment.public else u'×'}</td>
-      % if count == 0:
-      <td></td>
-      <td></td>
-      % endif
-      % for i, payment_delivery_method_pair in enumerate(sales_segment.payment_delivery_method_pairs):
-        % if i != 0:
-    <tr>
+<div class="row-fluid">
+  <div class="span12">
+    <table class="table table-striped table-bordered table-condensed" style="margin-bottom: 10px;">
+      <thead>
+      <tr>
+        <th class="minwidth"></th>
+        <th class="minwidth">${h.sortable(form.id, paging)}</th>
+        <th>${h.sortable(form.name, paging)}</th>
+        <th>${h.sortable(form.start_at, paging)}</a></th>
+        <th>${h.sortable(form.end_at, paging)}</a></th>
+        <th>${h.sortable(form.upper_limit, paging)}</a></th>
+        <th>${h.sortable(form.seat_choice, paging)}</a></th>
+        <th>${h.sortable(form.public, paging)}</a></th>
+        <th>決済方法</th>
+        <th>配送方法</th>
+      </tr>
+      </thead>
+      <tbody>
+      % for i, sales_segment in enumerate(sales_segments):
+        <% if limit and i >= limit: break %>
+      <tr id="sales_segment-${sales_segment.id}">
+        <% count = len(sales_segment.payment_delivery_method_pairs) %>
+        <% rowspan = 'rowspan=%s' % (count) %>
+        <td ${rowspan}>
+          <input type="radio" name="sales_segment_id" value="${sales_segment.id}" />
+          <input type="hidden" id="kind" value="${sales_segment.kind}" />
+        </td>
+        <td ${rowspan} id="id">${sales_segment.id}</td>
+        <td ${rowspan} id="name"><a href="${request.route_path('sales_segments.show', sales_segment_id=sales_segment.id)}">${sales_segment.name}</a></td>
+        <td ${rowspan} id="current_start_at">${h.safe_strftime(sales_segment.start_at)}</td>
+        <td ${rowspan} id="current_end_at">${h.safe_strftime(sales_segment.end_at)}</td>
+        <td ${rowspan} id="upper_limit">${sales_segment.upper_limit or u''}</td>
+        <td ${rowspan} id="seat_choice" value="${sales_segment.seat_choice}">${u'○' if sales_segment.seat_choice else u'×'}</td>
+        <td ${rowspan} id="public" value="${sales_segment.public}">${u'○' if sales_segment.public else u'×'}</td>
+        % if count == 0:
+        <td></td>
+        <td></td>
         % endif
-      <td style="border-left: 1px solid #ddd;">${payment_delivery_method_pair.payment_method.name}</td>
-      <td>${payment_delivery_method_pair.delivery_method.name}</td>
-    </tr>
+        % for i, payment_delivery_method_pair in enumerate(sales_segment.payment_delivery_method_pairs):
+          % if i != 0:
+      <tr>
+          % endif
+        <td style="border-left: 1px solid #ddd;">${payment_delivery_method_pair.payment_method.name}</td>
+        <td>${payment_delivery_method_pair.delivery_method.name}</td>
+      </tr>
+        % endfor
       % endfor
-    % endfor
-    </tbody>
-  </table>
+      </tbody>
+    </table>
+    % if limit and len(sales_segments) > limit:
+    <div class="pull-right">
+      ${len(sales_segments)}件中${limit}件を表示
+      <a href="${request.route_path('sales_segments.index', event_id=event.id)}">もっと見る</a>
+    </div>
+    % endif
+  </div>
+</div>
 % endif
 
 % if paging:

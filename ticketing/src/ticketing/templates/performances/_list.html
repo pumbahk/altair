@@ -5,46 +5,56 @@
 <% display_only = True if request.matched_route.name == 'events.index' else False %>
 
 % if performances:
-  <table class="table fullwidth checkboxed_table">
-    <thead>
-      <tr>
-        % if not display_only:
-        <th class="minwidth"></th>
-        % endif
-        <th>公演日</th>
-        <th>${h.sortable(form.name, paging)}</th>
-        <th>会場</th>
-        <th style="width:6em">-<th>
-      </tr>
-    </thead>
-    <tbody>
-    % for i, performance in enumerate(performances):
-      <% if limit and i >= limit: break %>
-      <tr>
-        % if not display_only:
-        <td><input type="radio" name="performance_id" value="${performance.id}" /></td>
-        % endif
-        <td>${performance.open_on.strftime("%Y-%m-%d")if performance.open_on else ''}</td>
-        <td><a href="${request.route_path('performances.show', performance_id=performance.id)}">${performance.name}</a></td>
-        <td>${performance.venue.name if performance.venue else u'(なし)'}</td>
-        <td style="white-space: nowrap; font-size: 10px; line-height: 12px">
-          <div>
-            <span>${form.open_on.label.text}</span>
-            <span>${performance.open_on.strftime("%H:%M") if performance.open_on else ''}</span>
-          </div>
-          <div>
-            <span>${form.start_on.label.text}</span>
-            <span>${performance.start_on.strftime("%H:%M") if performance.start_on else ''}</span>
-          </div>
-          <div>
-            <span>${form.end_on.label.text}</span>
-            <span style="white-space: nowrap">${performance.end_on.strftime("%H:%M") if performance.end_on else ''}</span>
-          </div>
-        </td>
-      </tr>
-    % endfor
-    </tbody>
-  </table>
+<div class="row-fluid">
+  <div class="span12">
+    <table class="table fullwidth checkboxed_table" style="margin-bottom: 10px;">
+      <thead>
+        <tr>
+          % if not display_only:
+          <th class="minwidth"></th>
+          % endif
+          <th>公演日</th>
+          <th>${h.sortable(form.name, paging)}</th>
+          <th>会場</th>
+          <th style="width:6em">-<th>
+        </tr>
+      </thead>
+      <tbody>
+      % for i, performance in enumerate(performances):
+        <% if limit and i >= limit: break %>
+        <tr>
+          % if not display_only:
+          <td><input type="radio" name="performance_id" value="${performance.id}" /></td>
+          % endif
+          <td>${performance.open_on.strftime("%Y-%m-%d")if performance.open_on else ''}</td>
+          <td><a href="${request.route_path('performances.show', performance_id=performance.id)}">${performance.name}</a></td>
+          <td>${performance.venue.name if performance.venue else u'(なし)'}</td>
+          <td style="white-space: nowrap; font-size: 10px; line-height: 12px">
+            <div>
+              <span>${form.open_on.label.text}</span>
+              <span>${performance.open_on.strftime("%H:%M") if performance.open_on else ''}</span>
+            </div>
+            <div>
+              <span>${form.start_on.label.text}</span>
+              <span>${performance.start_on.strftime("%H:%M") if performance.start_on else ''}</span>
+            </div>
+            <div>
+              <span>${form.end_on.label.text}</span>
+              <span style="white-space: nowrap">${performance.end_on.strftime("%H:%M") if performance.end_on else ''}</span>
+            </div>
+          </td>
+        </tr>
+      % endfor
+      </tbody>
+    </table>
+    % if limit and len(performances) > limit:
+    <div class="pull-right">
+      ${len(performances)}件中${limit}件を表示
+      <a href="${request.route_path('performances.index', event_id=performances[0].event.id)}">もっと見る</a>
+    </div>
+    % endif
+  </div>
+</div>
 % endif
 
 % if paging:
