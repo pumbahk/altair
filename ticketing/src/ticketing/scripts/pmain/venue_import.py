@@ -9,6 +9,7 @@ import locale
 
 from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 from ticketing.models import DBSession
+from sqlalchemy.orm.session import make_transient
 from ticketing.core.models import (
     Site,
     Venue,
@@ -310,6 +311,7 @@ def import_tree(update, organization, tree, file, venue_id=None):
         seat = seats.get(seat_l0_id)
         print u'[DELETE] Seat(id=%d)' % seat.id
         DBSession.delete(seat)
+        make_transient(seat)
 
     print 'Number of seats to be added: %d' % new_seat_count
     print 'Number of seats to be deleted: %d' % len(seats_to_be_deleted)
