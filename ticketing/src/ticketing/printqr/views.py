@@ -3,6 +3,7 @@ from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPBadRequest
 from ticketing.qr import get_qrdata_builder
 import logging
+from . import utils 
 logger = logging.getLogger(__name__)
 
 @view_config(route_name="index", renderer="ticketing.printqr:templates/index.html")
@@ -18,7 +19,8 @@ def ticket_data(context, request):
     signed = request.params["qrsigned"]
     builder = get_qrdata_builder(request)
     try:
-        return builder.data_from_signed(signed)
+        data = utils.ticketdata_from_qrdata(builder.data_from_signed(signed))
+        return data
     except Exception as e:
         logger.warn("%s: %s" % (e.__class__.__name__,  str(e)))
         raise HTTPBadRequest

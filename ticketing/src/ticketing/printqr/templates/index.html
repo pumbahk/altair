@@ -12,6 +12,7 @@ body {
 <script type="text/javascript">
   ## todo: move
   <%include file="./app.js"/>
+
 $(function(){
   var apiResource = ${json.dumps(api_resource)|n}
   var appRouter = new AppRouter();
@@ -85,7 +86,7 @@ $(function(){
           <td>注文番号</td><td id="orderno"></td>
         </tr>
         <tr>
-          <td>パフォーマンス</td><td id="performance_name"></td>
+          <td>公演</td><td id="performance_name"></td>
         </tr>
         <tr>
           <td>公演日時</td><td id="performance_date"></td>
@@ -142,7 +143,7 @@ $(function(){
           <td>注文番号</td><td id="desc_orderno"></td>
         </tr>
         <tr>
-          <td>パフォーマンス</td><td id="desc_performance"></td>
+          <td>公演</td><td id="desc_performance"></td>
         </tr>
         <tr>
           <td>商品名(席番号)</td><td id="desc_product"></td>

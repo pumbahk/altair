@@ -100,10 +100,10 @@ var QRInputView = AppPageViewBase.extend({
       .done(function(data){
         self.messageView.success("QRコードからデータが読み込めました");
         self.datastore.set("qrcodeStatus", "loaded");
-        setTimeout(function(){self.focusNextPage();}, 1)
+        //setTimeout(function(){self.focusNextPage();}, 1)
         return data;})
       .done(this.nextView.updateTicketInfo.bind(this.nextView))
-      .fail(function(){
+      .fail(function(s, err){
         self.messageView.alert("うまくQRコードを読み込むことができませんでした");
         self.datastore.set("qrcodeStatus", "fail");
       });
@@ -123,15 +123,18 @@ var TicketInfoView = AppPageViewBase.extend({
     this.$seatno = this.$el.find("#seatno");
   }, 
   updateTicketInfo: function(data){
-    this.$orderno.text(data.order);
-    this.$codeno.text(data.serial);
-    this.$performanceDate.text(data.date);
-    this.$performanceName.text(data.performance);
+    console.dir(data);
+    this.$user.text(data.user);
+    this.$codeno.text(data.codeno);
+    this.$orderno.text(data.orderno);
+    this.$performanceDate.text(data.performance_date);
+    this.$performanceName.text(data.performance_name);
+    this.$product_name.text(data.product_name);
     this.$seatno.text(data.seat_name);
    
-    this.datastore.set("orderno", data.order);
-    this.datastore.set("performance", data.performance+"("+data.date+")");
-    this.datastore.set("product", data.seat_name);
+    this.datastore.set("orderno", data.orderno);
+    this.datastore.set("performance", data.performance_name+" -- "+data.performance_date);
+    this.datastore.set("product", data.product_name+"("+data.seat_name+")");
   }
 });
 var PrinterSelectView = AppPageViewBase.extend({

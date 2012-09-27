@@ -1457,7 +1457,7 @@ class SeatIndex(Base, BaseModel):
         seat_index.seat_index_type_id = convert_map['seat_index_type'][template.seat_index_type_id]
         seat_index.save()
 
-class OrganizationTypeEnum(StandardEnum):
+class OranizationTypeEnum(StandardEnum):
     Standard = 1
 
 class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -1508,6 +1508,10 @@ class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     tel_2 = Column(String(32))
     fax = Column(String(32))
     email = Column(String(255))
+
+    @property
+    def full_name_kana(self):
+        return u"%s %s" % (self.last_name_kana,  self.first_name_kana)
 
 class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Order'
