@@ -17,7 +17,8 @@ $(function(){
   var appRouter = new AppRouter();
   var datastore = new DataStore({qrcodeStatus: "preload", qrcode: null});
 
-  var messageView = new MessageView({el: $("#message_box")})
+  var messageView = new MessageView({el: $("#message_box")});
+  var descriptionView = new DataStoreDescriptionView({model: datastore, el: $("#description")});
   var one = new QRInputView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#one")});
   var two = new TicketInfoView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#two")});
   var three = new PrinterSelectView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#three")});
@@ -42,14 +43,14 @@ $(function(){
   </div>
   <div id="tabbar">
     <ul class="nav nav-tabs">
-      <li><a id="tab_one" href="#one" data-toggle="tab" class="active">one</a></li>
-      <li><a id="tab_two" href="#two" data-toggle="tab">two</a></li>
-      <li><a id="tab_three" href="#three" data-toggle="tab">three</a></li>
-      <li><a id="tab_four" href="#four" data-toggle="tab">four</a></li>
+      <li><a id="tab_one" href="#one" data-toggle="tab" class="active">QRコード読み込み</a></li>
+      <li><a id="tab_two" href="#two" data-toggle="tab">チケット情報</a></li>
+      <li><a id="tab_three" href="#three" data-toggle="tab">プリンタ選択</a></li>
+      <li><a id="tab_four" href="#four" data-toggle="tab">発券確認</a></li>
     </ul>
   </div>
 
-  <div id="one" class="onepage hide">
+  <div id="one" class="onepage well hide">
     <h2 class="header" id="one:header">QRコード読み込み</h2>
     <p>
       qrコードを読み込ませてください。
@@ -67,7 +68,7 @@ $(function(){
     <a class="btn" href="#two"><i class="icon-arrow-right"> </i>次へ</a>
   </div>
 
-  <div id="two" class="onepage hide">
+  <div id="two" class="onepage well hide">
     <h2 class="header" id="two:header">チケット情報</h2>
     <p>
       購入されたチケット情報は以下のとおりです。
@@ -78,19 +79,19 @@ $(function(){
           <td>購入者</td><td id="user"></td>
         </tr>
         <tr>
-          <td>発券番号</td><td id="codeno">2</td>
+          <td>発券番号</td><td id="codeno"></td>
         </tr>
         <tr>
-          <td>注文番号</td><td id="orderno">NH000000031K</td>
+          <td>注文番号</td><td id="orderno"></td>
         </tr>
         <tr>
-          <td>パフォーマンス</td><td id="performance_name">NHKTN1210131 </td>
+          <td>パフォーマンス</td><td id="performance_name"></td>
         </tr>
         <tr>
-          <td>公演日時</td><td id="performance_date">2012-10-13 14:00:00</td>
+          <td>公演日時</td><td id="performance_date"></td>
         </tr>
         <tr>
-          <td>商品名</td><td id="product_name">商品名 2F自由/大人 (162) </td>
+          <td>商品名</td><td id="product_name"></td>
         </tr>
         <tr>
           <td>席番号</td><td id="seatno"></td>
@@ -102,7 +103,7 @@ $(function(){
     <a class="btn" href="#three"><i class="icon-arrow-right"> </i>次へ</a>
   </div>
 
-  <div id="three" class="onepage hide">
+  <div id="three" class="onepage well hide">
     <h2 class="header" id="three:header">プリンタ選択</h2>
     <p>
       印刷に利用するプリンタを選んでください
@@ -122,13 +123,32 @@ $(function(){
     <a class="btn" href="#four"><i class="icon-arrow-right"> </i>プリンタを選択</a>
   </div>
 
-  <div id="four" class="onepage hide">
+  <div id="four" class="onepage well hide">
     <h2 class="header" id="four:header">発券確認</h2>
     <p>
       印刷します。よろしいですか？
     </p>
     <a class="btn btn-inverse" href="#">キャンセル</a>
     <a class="btn" href="#">印刷する</a>
+  </div>
+
+  <div id="description">
+    <table class="table">
+      <tbody>
+        <tr>
+          <td>QRコードステータス</td><td id="desc_qrcodeStatus"></td>
+        </tr>
+        <tr>
+          <td>注文番号</td><td id="desc_orderno"></td>
+        </tr>
+        <tr>
+          <td>パフォーマンス</td><td id="desc_performance"></td>
+        </tr>
+        <tr>
+          <td>商品名(席番号)</td><td id="desc_product"></td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </div>
 

@@ -2,11 +2,42 @@
 var DataStore = Backbone.Model.extend({
   defaults: {
     qrcodeStatus: "preload", 
-    qrcode: null
+    qrcode: null, 
+    
+    orderno: null,
+    performance: null,
+    product: null,
   }
 });
 
 // view
+var DataStoreDescriptionView = Backbone.View.extend({
+  initialize: function(){
+    this.model.bind("change:qrcodeStatus", this.showQrcodeStatus, this);
+    this.model.bind("change:orderno", this.showOrderno, this);
+    this.model.bind("change:performance", this.showPerformance, this);
+    this.model.bind("change:product", this.showProduct, this);
+
+    this.$qrcodeStatus = this.$el.find("#desc_qrcodeStatus");
+    this.$orderno = this.$el.find("#desc_orderno");
+    this.$performance = this.$el.find("#desc_performance");
+    this.$product = this.$el.find("#desc_product");
+  }, 
+  showQrcodeStatus: function(){
+    this.$qrcodeStatus.text(this.model.get("qrcodeStatus"));
+  }, 
+  showOrderno: function(){
+    this.$orderno.text(this.model.get("orderno"));
+  }, 
+  showPerformance: function(){
+    this.$performance.text(this.model.get("performance"));
+     }, 
+  showProduct: function(){
+    this.$product.text(this.model.get("product"));
+     }, 
+});
+
+
 var MessageView = Backbone.View.extend({
   initialize: function(){
     this.$alert = this.$el.find("#alert_message");
@@ -41,7 +72,7 @@ var AppPageViewBase = Backbone.View.extend({
     this.apiResource = opts.apiResource;
     this.messageView = opts.messageView;
     this.router = opts.router;
-    this.model = opts.datastore;
+    this.datastore = opts.datastore;
     this.nextView = null;
   }, 
   focusNextPage: function(){
@@ -57,10 +88,10 @@ var QRInputView = AppPageViewBase.extend({
     QRInputView.__super__.initialize.call(this, opts);
     this.$qrcode = this.$el.find('input[name="qrcode"]')
     this.$status = this.$el.find('#status')
-    this.model.bind("change:qrcodeStatus", this.showStatus, this);
+    this.datastore.bind("change:qrcodeStatus", this.showStatus, this);
   }, 
   showStatus: function(){
-    this.$status.text(this.model.get("qrcodeStatus"));
+    this.$status.text(this.datastore.get("qrcodeStatus"));
   }, 
   loadQRSigned: function(){
     var url = this.apiResource["api.ticket.data"];
@@ -68,13 +99,13 @@ var QRInputView = AppPageViewBase.extend({
     $.getJSON(url, {qrsigned: this.$qrcode.val()})
       .done(function(data){
         self.messageView.success("QRコードからデータが読み込めました");
-        self.model.set("qrcodeStatus", "loaded");
+        self.datastore.set("qrcodeStatus", "loaded");
         setTimeout(function(){self.focusNextPage();}, 1)
         return data;})
-      .done(this.nextView.update_ticket_info.bind(this.nextView))
+      .done(this.nextView.updateTicketInfo.bind(this.nextView))
       .fail(function(){
         self.messageView.alert("うまくQRコードを読み込むことができませんでした");
-        self.model.set("qrcodeStatus", "fail");
+        self.datastore.set("qrcodeStatus", "fail");
       });
   } 
 });
@@ -86,14 +117,21 @@ var TicketInfoView = AppPageViewBase.extend({
     this.$user = this.$el.find("#user");
     this.$codeno = this.$el.find("#codeno");
     this.$orderno = this.$el.find("#orderno");
-    this.$performance_name = this.$el.find("#performance_name");
-    this.$performance_date = this.$el.find("#performance_date");
+    this.$performanceName = this.$el.find("#performance_name");
+    this.$performanceDate = this.$el.find("#performance_date");
     this.$product_name = this.$el.find("#product_name");
     this.$seatno = this.$el.find("#seatno");
   }, 
-  update_ticket_info: function(data){
-    console.dir(data);
+  updateTicketInfo: function(data){
+    this.$orderno.text(data.order);
+    this.$codeno.text(data.serial);
+    this.$performanceDate.text(data.date);
+    this.$performanceName.text(data.performance);
     this.$seatno.text(data.seat_name);
+   
+    this.datastore.set("orderno", data.order);
+    this.datastore.set("performance", data.performance+"("+data.date+")");
+    this.datastore.set("product", data.seat_name);
   }
 });
 var PrinterSelectView = AppPageViewBase.extend({
