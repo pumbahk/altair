@@ -27,6 +27,7 @@ def ticketdata_from_qrdata(qrdata):
     return {
         "user": shipping_address.full_name_kana, 
         "codeno": codeno, 
+        "order_id": order.id, 
         "orderno": order.order_no, 
         "performance_name": performance_name, 
         "performance_date": h.japanese_datetime(performance.start_on), 

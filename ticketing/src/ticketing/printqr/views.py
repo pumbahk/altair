@@ -52,9 +52,10 @@ class AppletAPIView(object):
     def formats(self):
         try:
             print "formats!!!"
-            return { u'status': u'success',
-                     u'data': { u'page_formats': [],
-                                u'ticket_formats': []} }
+            ## 初回にpeekを走らせるのを止めようと思ったけれど、そうコスト高くないし良いや
+            # return { u'status': u'success',
+            #          u'data': { u'page_formats': [],
+            #                     u'ticket_formats': []} }
             page_formats = []
             for page_format in DBSession.query(PageFormat).filter_by(organization=self.context.organization):
                 data = dict(page_format.data)
@@ -86,8 +87,8 @@ class AppletAPIView(object):
             order_id = self.request.json_body.get('order_id')
 
             ## order_idが取得できなかった場合何を返せば良いのだろう？
-            if order_id is None:
-                return None #xxx:
+            # if order_id is None:
+            #     return None #xxx:
             page_format = DBSession.query(PageFormat).filter_by(id=page_format_id).one()
             ticket_format = DBSession.query(TicketFormat).filter_by(id=ticket_format_id).one()
             builder = SvgPageSetBuilder(page_format.data, ticket_format.data)

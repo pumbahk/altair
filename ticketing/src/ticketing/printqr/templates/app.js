@@ -1,6 +1,8 @@
 // model 
 var DataStore = Backbone.Model.extend({
   defaults: {
+    orderId: null, 
+
     qrcodeStatus: "preload", 
     qrcode: null, 
     
@@ -123,7 +125,7 @@ var TicketInfoView = AppPageViewBase.extend({
     this.$seatno = this.$el.find("#seatno");
   }, 
   updateTicketInfo: function(data){
-    console.dir(data);
+    //console.dir(data);
     this.$user.text(data.user);
     this.$codeno.text(data.codeno);
     this.$orderno.text(data.orderno);
@@ -132,19 +134,48 @@ var TicketInfoView = AppPageViewBase.extend({
     this.$product_name.text(data.product_name);
     this.$seatno.text(data.seat_name);
    
+    this.datastore.set("orderId", data.order_id);
     this.datastore.set("orderno", data.orderno);
     this.datastore.set("performance", data.performance_name+" -- "+data.performance_date);
     this.datastore.set("product", data.product_name+"("+data.seat_name+")");
   }
 });
+
 var PrinterSelectView = AppPageViewBase.extend({
   initialize: function(opts){
     PrinterSelectView.__super__.initialize.call(this, opts);
+    this.$pageFormat = this.$el.find("#page_format");
   }
 });
+
 var PrintConfirmView = AppPageViewBase.extend({
   initialize: function(opts){
     PrintConfirmView.__super__.initialize.call(this, opts);
+  }
+});
+
+var AppletView = Backbone.View.extend({
+  initialize: function(opts){
+    this.appviews = opts.appviews;
+    this.datastore = opts.datastore;
+    this.service = opts.service;
+    this.createProxy = opts.createProxy;
+    
+    this.datastore.bind("change:orderId", this.fetchFormats, this);
+  }, 
+  
+  fetchFormats: function(){
+    this.service.filterByOrderId(this.datastore.get("orderId"));
+    var formats = this.service.getTicketFormats();
+    var targetArea = this.appviews.three.$pageFormat;
+    targetArea.empty();
+    for(var i = formats.iterator(); i.hasNext();){
+      var format = i.next();
+      var e = $('<div class="control-group">');
+      e.append($('<span>').text(format.getName()));
+      e.append($('<input type="radio" name="pageformat">').attr("value", format.getId()));
+      targetArea.append(e);
+    }
   }
 });
 

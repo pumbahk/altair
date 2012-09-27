@@ -46,61 +46,58 @@ body {
   ## todo: move
   <%include file="./app.js"/>
   <%include file="./applet.js"/>
-
- var onePageApp = function(){
-    var apiResource = ${json.dumps(api_resource)|n}
-    var appRouter = new AppRouter();
-    var datastore = new DataStore({qrcodeStatus: "preload", qrcode: null});
-
-    var messageView = new MessageView({el: $("#message_box")});
-    var descriptionView = new DataStoreDescriptionView({model: datastore, el: $("#description")});
-    var one = new QRInputView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#one")});
-    var two = new TicketInfoView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#two")});
-    var three = new PrinterSelectView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#three")});
-    var four = new PrintConfirmView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#four")});
-
-    one.nextView = two;
-    two.nextView = three;
-    three.nextView = four;
-
-    //Backbone.history.start({pushState: true,  root: "/"})
-    Backbone.history.start({root: "/"})
-    appRouter.start.call(appRouter);
-  };
-
- var appletApp = function(){
-    window[${json.dumps(callback_name)|n}] = function (applet) {
-      alert("hey");
-      /*
-      var service = applet.getService();
-      var createProxy = function () { return applet.createPropertyChangeListenerProxy.apply(applet, arguments); };
-      service.addListenerForPages(createProxy(refreshPages));
-      */
-      $('#screen').hide();
-    };
-
-    writeAppletTag({
-      version: '1.6.0.35',
-      width: 1, height: 1,
-      code: 'jp.ticketstar.ticketing.printing.gui.AppApplet',
-      codebase: ${json.dumps(request.application_url)|n},
-      archive: ${json.dumps(request.static_url('ticketing:static/printing-0.0.0-jar-with-dependencies.jar'))|n},
-      scriptable: true,
-      id: 'applet',
-      params: {
-        endpoints: ${json.dumps(endpoints_json)|n},
-        cookie: ${json.dumps(request.headers.get('cookie'))|n},
-        embedded: true,
-        callback: ${json.dumps(callback_name)|n}
-      }
-    });
-  };
-
-
-
 $(function(){
-  onePageApp();
-  appletApp();
+  var apiResource = ${json.dumps(api_resource)|n}
+  var appRouter = new AppRouter();
+  var datastore = new DataStore({qrcodeStatus: "preload", qrcode: null});
+
+  var messageView = new MessageView({el: $("#message_box")});
+  var descriptionView = new DataStoreDescriptionView({model: datastore, el: $("#description")});
+  var one = new QRInputView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#one")});
+  var two = new TicketInfoView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#two")});
+  var three = new PrinterSelectView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#three")});
+  var four = new PrintConfirmView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#four")});
+
+  one.nextView = two;
+  two.nextView = three;
+  three.nextView = four;
+
+  //Backbone.history.start({pushState: true,  root: "/"})
+  Backbone.history.start({root: "/"})
+  appRouter.start.call(appRouter);
+
+  // create callback
+  window[${json.dumps(callback_name)|n}] = function (applet) {
+    var appviews = {
+      one: one,
+      two: two,
+      three: three,
+      four: four,
+      message: messageView,
+      description: descriptionView
+    };
+    var service = applet.getService();
+    var createProxy = function () { return applet.createPropertyChangeListenerProxy.apply(applet, arguments); };
+    //service.addListenerForPages(createProxy(refreshPages));
+    var appletView = new AppletView({el: $("#applet"), appviews: appviews, datastore: datastore, service: service, createProxy: createProxy})
+    $('#screen').hide();
+  };
+
+  writeAppletTag({
+    version: '1.6.0.35',
+    width: 1, height: 1,
+    code: 'jp.ticketstar.ticketing.printing.gui.AppApplet',
+    codebase: ${json.dumps(request.application_url)|n},
+    archive: ${json.dumps(request.static_url('ticketing:static/printing-0.0.0-jar-with-dependencies.jar'))|n},
+    scriptable: true,
+    id: 'applet',
+    params: {
+      endpoints: ${json.dumps(endpoints_json)|n},
+      cookie: ${json.dumps(request.headers.get('cookie'))|n},
+      embedded: true,
+      callback: ${json.dumps(callback_name)|n}
+    }
+  });
 });
 </script>
 
@@ -115,7 +112,7 @@ $(function(){
     <ul class="nav nav-tabs">
       <li><a id="tab_one" href="#one" data-toggle="tab" class="active">QRコード読み込み</a></li>
       <li><a id="tab_two" href="#two" data-toggle="tab">チケット情報</a></li>
-      <li><a id="tab_three" href="#three" data-toggle="tab">プリンタ選択</a></li>
+      <li><a id="tab_three" href="#three" data-toggle="tab">フォーマット選択</a></li>
       <li><a id="tab_four" href="#four" data-toggle="tab">発券確認</a></li>
     </ul>
   </div>
@@ -174,23 +171,25 @@ $(function(){
   </div>
 
   <div id="three" class="onepage well hide">
-    <h2 class="header" id="three:header">プリンタ選択</h2>
+    <h2 class="header" id="three:header">フォーマット選択</h2>
     <p>
-      印刷に利用するプリンタを選んでください
+      印刷に利用するフォーマットを選んでください
     </p>
-    <div id="three:printer-box">
-      <div class="control-group">
-        print0 <input type="radio" name="printer" value="printer0">
-      </div>
-      <div class="control-group">
-        print1 <input type="radio" name="printer" value="printer1">
-      </div>
-      <div class="control-group">
-        print2 <input type="radio" name="printer" value="printer2">
-      </div>
+
+    <h4>ページフォーマット設定</h4>
+    <div id="page_format">
     </div>
+
+    <h4>チケットフォーマット設定</h4>
+    <div id="ticket_format">
+    </div>
+
+    <h4>プリンタ設定</h4>
+    <div id="printer">
+    </div>
+    
     <a class="btn btn-inverse" href="#two"><i class="icon-arrow-left icon-white"> </i>戻る</a>
-    <a class="btn" href="#four"><i class="icon-arrow-right"> </i>プリンタを選択</a>
+    <a class="btn" href="#four"><i class="icon-arrow-right"> </i>フォーマットを選択</a>
   </div>
 
   <div id="four" class="onepage well hide">
@@ -220,6 +219,10 @@ $(function(){
       </tbody>
     </table>
   </div>
+</div>
+
+<div id="applet">
+  heh
 </div>
 
 <div id="screen">
