@@ -85,5 +85,6 @@ function writeAppletTag(options) {
     buildHTMLForIE();
   else
     buildHTMLForOthers();
-  document.write(buf.join(''));
+  $("#screen").html(buf.join(""));
+  //document.write(buf.join(''));
 }

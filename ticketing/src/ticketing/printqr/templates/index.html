@@ -1,38 +1,107 @@
 <%inherit file="./base.html"/>
+<%
+import json, random
+endpoints_json = json.dumps(endpoints, ensure_ascii=False)
+callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _ in range(0, 10))
+%>
 
 <style type="text/css">
 #wrapper{
-    margin-top: 100px; 
+  margin-top: 100px; 
 }
 body {
-	font: 17px "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font: 17px "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+#screen {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 100%;
+  margin: 0 0;
+  padding: 0 0;
+  z-index: 10000;
+  background-color: #000;
+  filter: alpha(opacity=50);
+  opacity: .5;
+}
+
+#screen .splash {
+  position: absolute;
+  width: 30%;
+  height: 100px;
+  left: 50%;
+  top: 50%;
+  margin: -50px 0 0 -15%;
+  background-color: #eee;
+  color: #000;
+  font-size: 20px;
+  text-align: center;
+  line-height: 100px;
 }
 </style>
 
 <script type="text/javascript">
   ## todo: move
   <%include file="./app.js"/>
+  <%include file="./applet.js"/>
+
+ var onePageApp = function(){
+    var apiResource = ${json.dumps(api_resource)|n}
+    var appRouter = new AppRouter();
+    var datastore = new DataStore({qrcodeStatus: "preload", qrcode: null});
+
+    var messageView = new MessageView({el: $("#message_box")});
+    var descriptionView = new DataStoreDescriptionView({model: datastore, el: $("#description")});
+    var one = new QRInputView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#one")});
+    var two = new TicketInfoView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#two")});
+    var three = new PrinterSelectView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#three")});
+    var four = new PrintConfirmView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#four")});
+
+    one.nextView = two;
+    two.nextView = three;
+    three.nextView = four;
+
+    //Backbone.history.start({pushState: true,  root: "/"})
+    Backbone.history.start({root: "/"})
+    appRouter.start.call(appRouter);
+  };
+
+ var appletApp = function(){
+    window[${json.dumps(callback_name)|n}] = function (applet) {
+      alert("hey");
+      /*
+      var service = applet.getService();
+      var createProxy = function () { return applet.createPropertyChangeListenerProxy.apply(applet, arguments); };
+      service.addListenerForPages(createProxy(refreshPages));
+      */
+      $('#screen').hide();
+    };
+
+    writeAppletTag({
+      version: '1.6.0.35',
+      width: 1, height: 1,
+      code: 'jp.ticketstar.ticketing.printing.gui.AppApplet',
+      codebase: ${json.dumps(request.application_url)|n},
+      archive: ${json.dumps(request.static_url('ticketing:static/printing-0.0.0-jar-with-dependencies.jar'))|n},
+      scriptable: true,
+      id: 'applet',
+      params: {
+        endpoints: ${json.dumps(endpoints_json)|n},
+        cookie: ${json.dumps(request.headers.get('cookie'))|n},
+        embedded: true,
+        callback: ${json.dumps(callback_name)|n}
+      }
+    });
+  };
+
+
 
 $(function(){
-  var apiResource = ${json.dumps(api_resource)|n}
-  var appRouter = new AppRouter();
-  var datastore = new DataStore({qrcodeStatus: "preload", qrcode: null});
-
-  var messageView = new MessageView({el: $("#message_box")});
-  var descriptionView = new DataStoreDescriptionView({model: datastore, el: $("#description")});
-  var one = new QRInputView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#one")});
-  var two = new TicketInfoView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#two")});
-  var three = new PrinterSelectView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#three")});
-  var four = new PrintConfirmView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#four")});
-
-  one.nextView = two;
-  two.nextView = three;
-  three.nextView = four;
-  
-  //Backbone.history.start({pushState: true,  root: "/"})
-  Backbone.history.start({root: "/"})
-  appRouter.start.call(appRouter);
-})
+  onePageApp();
+  appletApp();
+});
 </script>
 
 <div id="wrapper" class="container">
@@ -150,6 +219,12 @@ $(function(){
         </tr>
       </tbody>
     </table>
+  </div>
+</div>
+
+<div id="screen">
+  <div class="splash">
+    Now loading...
   </div>
 </div>
 
