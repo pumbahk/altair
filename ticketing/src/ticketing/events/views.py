@@ -19,7 +19,7 @@ from pyramid.path import AssetResolver
 from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
-from ticketing.core.models import Event, Performance
+from ticketing.core.models import Event, Performance, StockType, StockTypeEnum
 from ticketing.events.forms import EventForm
 from ticketing.events.performances.forms import PerformanceForm
 from ticketing.events.sales_segments.forms import SalesSegmentForm
@@ -81,6 +81,8 @@ class Events(BaseView):
         return {
             'event':event,
             'accounts':accounts,
+            'seat_stock_types':StockType.filter_by(event_id=event_id, type=StockTypeEnum.Seat.v).all(),
+            'non_seat_stock_types':StockType.filter_by(event_id=event_id, type=StockTypeEnum.Other.v).all(),
             'form':EventForm(),
             'form_performance':PerformanceForm(organization_id=self.context.user.organization_id),
             'form_stock_type':StockTypeForm(event_id=event_id),
