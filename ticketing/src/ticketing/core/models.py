@@ -1845,6 +1845,14 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 def no_filter(value):
     return value
 
+class OrderAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__   = "OrderAttribute"
+    order_id  = Column(Identifier, ForeignKey('Order.id'), primary_key=True, nullable=False)
+    name = Column(String(255), primary_key=True, nullable=False)
+    value = Column(String(1023))
+
+    order = relationship('Order', backref="attributes")
+    
 class OrderedProductAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = "OrderedProductAttribute"
     ordered_product_item_id  = Column(Identifier, ForeignKey('OrderedProductItem.id'), primary_key=True, nullable=False)
