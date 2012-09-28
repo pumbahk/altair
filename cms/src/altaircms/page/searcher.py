@@ -19,7 +19,7 @@ def make_pageset_search_by_word(request, qs, data):
         word = data["freeword"]
         # pagesets = pageset_id_list_from_word(request, word)
         # qs = qs.filter(PageSet.id.in_(pagesets))
-        qs.filter(PageSet.name.like(u"%%%s%%" % word))
+        qs = qs.filter(PageSet.name.like(u"%%%s%%" % word))
     return qs
 
 
