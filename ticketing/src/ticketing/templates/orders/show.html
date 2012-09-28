@@ -201,7 +201,10 @@ buttons.append('cancel')
         <th>氏名</th>
         <td>
           % if sa:
-            ${sa.last_name} ${sa.first_name} (${sa.last_name_kana} ${sa.first_name_kana})
+            ${sa.last_name} ${sa.first_name}
+            % if sa.last_name_kana or sa.first_name_kana:
+              (${sa.last_name_kana} ${sa.first_name_kana})
+            % endif
           % endif
         </td>
       </tr>

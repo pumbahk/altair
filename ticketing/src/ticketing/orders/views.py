@@ -25,7 +25,7 @@ from ticketing.users.models import MailSubscription
 from ticketing.orders.export import OrderCSV
 from ticketing.orders.forms import (OrderForm, OrderSearchForm, SejOrderForm, SejTicketForm,
                                     SejRefundEventForm,SejRefundOrderForm, SendingMailForm,
-                                    PerformanceSearchForm, OrderReserveForm,
+                                    PerformanceSearchForm, OrderReserveForm, ClientOptionalForm,
                                     PreviewTicketSelectForm, CheckedOrderTicketChoiceForm)
 from lxml import etree
 from ticketing.tickets.convert import to_opcodes
@@ -266,12 +266,12 @@ class Orders(BaseView):
         if order.shipping_address:
             mail_subscriptions = MailSubscription.query.filter_by(email=order.shipping_address.email).all()
             mail_magazines = [ms.segment.name for ms in mail_subscriptions if ms.segment.organization_id == order.organization_id]
-            form_shipping_address = ClientForm(record_to_multidict(order.shipping_address))
+            form_shipping_address = ClientOptionalForm(record_to_multidict(order.shipping_address))
             form_shipping_address.tel.data = order.shipping_address.tel_1
             form_shipping_address.mail_address.data = order.shipping_address.email
         else:
             mail_magazines = []
-            form_shipping_address = ClientForm()
+            form_shipping_address = ClientOptionalForm()
 
         if order.user and order.user.mail_subscription:
             mail_magazines += [ms.segment.name for ms in order.user.mail_subscription if ms.segment.organization_id == order.organization_id]
@@ -441,7 +441,7 @@ class Orders(BaseView):
         if order is None:
             return HTTPNotFound('order id %d is not found' % order_id)
 
-        f = ClientForm(self.request.POST)
+        f = ClientOptionalForm(self.request.POST)
         # ここでは確認用メールアドレスはチェック対象外
         f.mail_address2.data = self.request.POST.get('mail_address')
 

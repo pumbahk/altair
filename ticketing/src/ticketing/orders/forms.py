@@ -5,10 +5,10 @@ from wtforms import Form, ValidationError
 from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, TextAreaField,
                      BooleanField, RadioField, FieldList, FormField, DecimalField, IntegerField)
 from wtforms.validators import Optional, AnyOf, Length, Email
-from collections import OrderedDict
 from ticketing.formhelpers import DateTimeField, Translations, Required
 from ticketing.core.models import (PaymentMethodPlugin, DeliveryMethodPlugin, StockType,
                                    SalesSegment, Performance, Product, ProductItem)
+from ticketing.cart.schemas import ClientForm
 
 class OrderForm(Form):
 
@@ -213,6 +213,19 @@ class OrderReserveForm(Form):
             raise ValidationError(u'複数の席種を選択することはできません')
         if not form.products.choices:
             raise ValidationError(u'選択された座席に紐づく予約可能な商品がありません')
+
+class ClientOptionalForm(ClientForm):
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        ClientForm.__init__(self, formdata, obj, prefix, **kwargs)
+
+        # 全てのフィールドをOptionalにする
+        for field in self:
+            for i, validator in enumerate(field.validators):
+                setattr(field.flags, 'required', False)
+                if isinstance(validator, Required):
+                    del field.validators[i]
+                    break;
+            field.validators.append(Optional())
 
 class SejTicketForm(Form):
     ticket_type = SelectField(
