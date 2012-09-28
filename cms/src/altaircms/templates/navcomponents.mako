@@ -82,7 +82,7 @@
   <div class="navbar navbar-fixed-top">
 	<div class="navbar-inner">
 	  <div class="container">
-		<a class="brand" href="/cms"><img src="/static/img/altair_logo.png"></a>
+		<a class="brand" href="/"><img src="/static/img/altair_logo.png"></a>
 		<div class="nav-collapse">
 		  <ul class="nav pull-right">
 			  % if request.user:
@@ -112,7 +112,7 @@
 		  <!-- Navigation -->
 		  <div id="navigation">
 			<ul>
-			  <li><a href=""><span>ダッシュボード</span></a></li>
+			  <li><a href="/"><span>ダッシュボード</span></a></li>
 			  <li><a href="/"><span>票券管理</span></a></li>
 			  <li><a href="/" class="active"><span>CMS</span></a></li>
 			</ul>
