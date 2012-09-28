@@ -21,8 +21,8 @@ class Event(BaseOriginalMixin, WithOrganizationMixin, Base):
     id = sa.Column(sa.Integer, primary_key=True)
     backend_id = sa.Column(sa.Integer)
 
-    created_at = sa.Column(sa.DateTime, default=datetime.now())
-    updated_at = sa.Column(sa.DateTime, default=datetime.now())
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
 
     title = sa.Column(sa.Unicode(255))
     subtitle = sa.Column(sa.Unicode(255), default=u"")
