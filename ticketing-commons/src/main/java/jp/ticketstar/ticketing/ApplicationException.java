@@ -1,4 +1,4 @@
-package jp.ticketstar.ticketing.printing;
+package jp.ticketstar.ticketing;
 
 public class ApplicationException extends RuntimeException {
 	private static final long serialVersionUID = 1L;

@@ -9,7 +9,7 @@ import java.security.PrivilegedAction;
 import javax.print.PrintService;
 import javax.swing.event.SwingPropertyChangeSupport;
 
-import jp.ticketstar.ticketing.printing.GenericComboBoxModel;
+import jp.ticketstar.ticketing.swing.GenericComboBoxModel;
 import jp.ticketstar.ticketing.printing.AppModel;
 import jp.ticketstar.ticketing.printing.OurPageFormat;
 import jp.ticketstar.ticketing.printing.PageSetModel;

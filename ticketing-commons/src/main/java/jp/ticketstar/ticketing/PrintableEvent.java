@@ -1,4 +1,4 @@
-package jp.ticketstar.ticketing.printing;
+package jp.ticketstar.ticketing;
 
 import java.awt.print.PrinterJob;
 import java.awt.print.Printable;

@@ -1,4 +1,4 @@
-package jp.ticketstar.ticketing.printing;
+package jp.ticketstar.ticketing.swing;
 
 import java.util.ArrayList;
 import java.util.Collection;

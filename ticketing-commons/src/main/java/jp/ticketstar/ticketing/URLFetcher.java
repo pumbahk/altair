@@ -1,4 +1,4 @@
-package jp.ticketstar.ticketing.printing;
+package jp.ticketstar.ticketing;
 
 import java.io.InputStream;
 import java.io.IOException;

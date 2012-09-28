@@ -9,14 +9,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import jp.ticketstar.ticketing.printing.ApplicationException;
-import jp.ticketstar.ticketing.printing.DDimension2D;
+import jp.ticketstar.ticketing.ApplicationException;
+import jp.ticketstar.ticketing.DDimension2D;
 import jp.ticketstar.ticketing.printing.OurPageFormat;
-import jp.ticketstar.ticketing.printing.PrintingUtils;
+import jp.ticketstar.ticketing.PrintingUtils;
 import jp.ticketstar.ticketing.printing.TicketFormat;
-import jp.ticketstar.ticketing.printing.URLConnectionFactory;
-import jp.ticketstar.ticketing.printing.URLFetcher;
-import jp.ticketstar.ticketing.printing.UnitUtils;
+import jp.ticketstar.ticketing.URLConnectionFactory;
+import jp.ticketstar.ticketing.URLFetcher;
+import jp.ticketstar.ticketing.UnitUtils;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;

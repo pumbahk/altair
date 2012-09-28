@@ -106,6 +106,11 @@
       <version>0.0.0</version>
     </dependency>
     <dependency>
+      <groupId>jp.ticketstar.ticketing</groupId>
+      <artifactId>commons</artifactId>
+      <version>0.0.0</version>
+    </dependency>
+    <dependency>
       <groupId>sun.plugin</groupId>
       <artifactId>plugin</artifactId>
       <version>1.6</version>
@@ -154,16 +159,6 @@
       <artifactId>commons-logging</artifactId>
       <version>1.1.1</version>
 	  </dependency>
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-      <version>4.0-alpha4</version>
-    </dependency>
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-      <version>2.4</version>
-    </dependency>
   </dependencies>
  
   <repositories>

@@ -1,4 +1,4 @@
-package jp.ticketstar.ticketing.printing;
+package jp.ticketstar.ticketing;
 
 import java.awt.geom.Dimension2D;
 

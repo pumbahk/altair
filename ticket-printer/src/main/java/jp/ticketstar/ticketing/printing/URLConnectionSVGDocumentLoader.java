@@ -22,6 +22,8 @@ import java.io.InterruptedIOException;
 import java.net.URLConnection;
 import java.net.HttpURLConnection;
 
+import jp.ticketstar.ticketing.RequestBodySender;
+
 import org.apache.batik.bridge.DocumentLoader;
 import org.apache.batik.swing.svg.SVGDocumentLoader;
 import org.apache.batik.swing.svg.SVGDocumentLoaderEvent;

@@ -1,4 +1,4 @@
-package jp.ticketstar.ticketing.printing;
+package jp.ticketstar.ticketing;
 
 public class NESW implements Cloneable {
 	public static final NESW ZERO = new NESW();
