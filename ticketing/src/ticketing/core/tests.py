@@ -69,7 +69,6 @@ class ProductTests(unittest.TestCase):
 
         self.assertEqual(result, 3)
         
-
 class SeatTests(unittest.TestCase):
     @classmethod
     def setUpClass(self):
@@ -128,6 +127,73 @@ class SeatTests(unittest.TestCase):
 
         self.assertFalse(result)
 
+class TicketPrintHistoryTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(self):
+        self.session = _setup_db(modules=['ticketing.core.models'])
+
+    @classmethod
+    def tearDownClass(self):
+        _teardown_db()
+
+    def tearDown(self):
+        import transaction
+        transaction.abort()
+
+    def test_insert_events(self):
+        from ..models import DomainConstraintError
+        from .models import TicketPrintHistory
+        import transaction
+        self.assertRaises(DomainConstraintError, lambda: TicketPrintHistory().save())
+        transaction.begin()
+        self.assertRaises(DomainConstraintError, lambda: TicketPrintHistory(ticket_id=1, seat_id=1).save())
+        transaction.begin()
+        try:
+            TicketPrintHistory(ticket_id=1, order_id=1).save()
+            self.assert_(True)
+        except DomainConstraintError:
+            self.fail()
+            transaction.begin()
+        try:
+            TicketPrintHistory(ticket_id=1, ordered_product_item_id=1).save()
+            self.assert_(True)
+        except DomainConstraintError:
+            self.fail()
+            transaction.begin()
+        try:
+            TicketPrintHistory(ticket_id=1, item_token_id=1).save()
+            self.assert_(True)
+        except DomainConstraintError:
+            self.fail()
+
+    def test_update_events(self):
+        from ..models import DomainConstraintError
+        from .models import TicketPrintHistory
+        import transaction
+        tp = TicketPrintHistory(id=1, ticket_id=1, order_id=1)
+        tp.save()
+        transaction.commit()
+        tp = TicketPrintHistory.filter_by(id=1).one()
+        tp.order_id = None
+        self.assertRaises(DomainConstraintError, lambda: tp.save())
+        transaction.begin()
+        try:
+            tp = TicketPrintHistory.filter_by(id=1).one()
+            tp.order_id = None
+            tp.ordered_product_item_id = 1
+            tp.save()
+            self.assert_(True)
+        except DomainConstraintError:
+            transaction.begin()
+            self.fail()
+        try:
+            tp = TicketPrintHistory.filter_by(id=1).one()
+            tp.order_id = None
+            tp.item_token_id = 1
+            tp.save()
+            self.assert_(True)
+        except DomainConstraintError:
+            self.fail()
 
 if __name__ == "__main__":
     unittest.main()

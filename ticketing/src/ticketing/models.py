@@ -328,4 +328,5 @@ relationship = _relationship
 #def relationship(argument, secondary=None, **kwargs):
 #    return CustomizedRelationshipProperty(argument, secondary=secondary, **kwargs)
 
-
+class DomainConstraintError(Exception):
+    pass

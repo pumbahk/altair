@@ -6,7 +6,7 @@ import json
 from urlparse import urljoin
 from datetime import datetime
 
-from sqlalchemy import Table, Column, ForeignKey, func, or_, and_
+from sqlalchemy import Table, Column, ForeignKey, func, or_, and_, event
 from sqlalchemy import ForeignKeyConstraint, UniqueConstraint
 from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode, UnicodeText
 from sqlalchemy.orm import join, backref, column_property, joinedload, deferred
@@ -409,9 +409,9 @@ class Account(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def delete(self):
         # 既に使用されている場合は削除できない
         if self.events:
-            raise Exception(u'関連づけされたイベントがある為、削除できません')
+            raise DomainConstraintError(u'関連づけされたイベントがある為、削除できません')
         if self.stock_holders:
-            raise Exception(u'関連づけされた枠がある為、削除できません')
+            raise DomainConstraintError(u'関連づけされた枠がある為、削除できません')
 
         super(Account, self).delete()
 
@@ -2075,10 +2075,20 @@ class TicketPrintHistory(Base, BaseModel, WithTimestamp):
     ordered_product_item = relationship('OrderedProductItem', backref='print_histories')
     seat_id = Column(Identifier, ForeignKey('Seat.id'), nullable=True)
     seat = relationship('Seat', backref='print_histories')
+    item_token_id = Column(Identifier, ForeignKey('OrderedProductItemToken.id'), nullable=True)
+    item_token = relationship('OrderedProductItemToken')
+    order_id = Column(Identifier, ForeignKey('Order.id'), nullable=True)
+    order = relationship('Order')
     ticket_id = Column(Identifier, ForeignKey('Ticket.id'), nullable=False)
     ticket = relationship('Ticket')
-    item_token_id = Column(Identifier, ForeignKey('OrderedProductItemToken.id'), nullable=False)
-    item_token = relationship('OrderedProductItemToken')
+
+    def before_insert_or_update(self):
+        if self.order_id is None and self.item_token_id is None and \
+            self.ordered_product_item_id is None:
+            raise DomainConstraintError('any one of order_id, item_token_id, ordered_product_item_id must have a non-null value')
+
+for event_kind in ['before_insert', 'before_update']:
+    event.listen(TicketPrintHistory, event_kind, lambda mapper, conn, target: target.before_insert_or_update())
 
 class PageFormat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "PageFormat"
