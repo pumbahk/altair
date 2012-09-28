@@ -19,7 +19,7 @@ from wtforms.validators import Optional
 
 from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.core.models import (Order, Event, Performance, PaymentDeliveryMethodPair, ShippingAddress,
-                                   Product, ProductItem, OrderedProduct, OrderedProductItem,
+                                   Product, ProductItem, OrderedProduct, OrderedProductItem, Seat, Venue,
                                    Ticket, TicketBundle, TicketFormat, Ticket_TicketBundle)
 from ticketing.users.models import MailSubscription
 from ticketing.orders.export import OrderCSV
@@ -356,7 +356,13 @@ class Orders(BaseView):
         form_reserve.payment_delivery_method_pair_id.validators = [Optional()]
         form_reserve.validate()
 
-        return {'form':form_reserve}
+        # 選択されたSeat
+        seats = Seat.filter(Seat.l0_id.in_(post_data.get('seats'))).join(Venue).filter(Venue.performance_id==performance_id).all()
+
+        return {
+            'seats':seats,
+            'form':form_reserve
+        }
 
     @view_config(route_name='orders.reserve', request_method='POST', renderer='json', permission='sales_counter')
     def reserve(self):

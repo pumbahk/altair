@@ -403,9 +403,10 @@ function saveStocks() {
 }
 
 function getOrderForm() {
-  var param = {'stocks':[], 'performance_id':${performance.id}};
+  var param = {'seats':[], 'stocks':[], 'performance_id':${performance.id}};
   var selection = venueEditorRoot.venueeditor('selection');
   selection.each(function (seat) {
+    param['seats'].push(seat.id);
     var stock_id = seat.get('stock').get('id');
     if ($.inArray(stock_id, param['stocks']) == -1)
       param['stocks'].push(stock_id);
