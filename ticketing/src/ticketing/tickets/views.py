@@ -441,6 +441,32 @@ class TicketPrinter(BaseView):
                  u'data': { u'page_formats': page_formats,
                             u'ticket_formats': ticket_formats } }
 
+    @view_config(route_name='tickets.printer.api.ticket', request_method='POST', renderer='lxml')
+    def ticket(self):
+        ticket_id = self.request.matchdict['id']
+        return DBSession.query(Ticket) \
+            .filter_by(id=ticket_id,
+                       organization_id=self.context.organization.id) \
+            .one()
+
+    @view_config(route_name='tickets.printer.api.history', request_method='POST', renderer='json')
+    def history(self):
+        seat_id = self.request.json_body.get(u'seat_id')
+        ordered_product_item_token_id = self.request.json_body.get(u'ordered_product_item_token_id')
+        ordered_product_item_id = self.request.json_body.get(u'ordered_product_item_id')
+        order_id = self.request.json_body.get(u'order_id')
+        ticket_id = self.request.json_body[u'ticket_id']
+        DBSession.add(
+            TicketPrintHistory(
+                operator_id=self.context.user.id,
+                seat_id=seat_id,
+                item_token_id=ordered_product_item_token_id,
+                ordered_product_item_id=ordered_product_item_id,
+                order_id=order_id,
+                ticket_id=ticket_id
+                ))
+        return { u'status': u'success' }
+
     @view_config(route_name='tickets.printer.api.peek', request_method='POST', renderer='lxml')
     def peek(self):
         page_format_id = self.request.json_body['page_format_id']
