@@ -1103,7 +1103,14 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         # 同一Performanceの同一StockTypeにおけるStock.quantityの合計
         query = Stock.filter_by(stock_type_id=self.id).with_entities(func.sum(Stock.quantity))
         if performance_id:
-            query = query.filter_by(performance_id==performance_id)
+            query = query.filter_by(performance_id=performance_id)
+        return query.scalar()
+
+    def rest_num_seats(self, performance_id=None):
+        # 同一Performanceの同一StockTypeにおけるStockStatus.quantityの合計
+        query = Stock.filter(Stock.stock_type_id==self.id).join(Stock.stock_status).with_entities(func.sum(StockStatus.quantity))
+        if performance_id:
+            query = query.filter(Stock.performance_id==performance_id)
         return query.scalar()
 
     def set_style(self, data):
@@ -1330,7 +1337,7 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     items = relationship('ProductItem', backref=backref('product', order_by='Product.display_order'))
 
     @staticmethod
-    def find(performance_id=None, event_id=None, sales_segment_id=None, include_deleted=False):
+    def find(performance_id=None, event_id=None, sales_segment_id=None, stock_id=None, include_deleted=False):
         query = Product.query
         if performance_id:
             query = query.join(Product.items).filter(ProductItem.performance_id==performance_id)
@@ -1338,6 +1345,10 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             query = query.filter(Product.event_id==event_id)
         if sales_segment_id:
             query = query.filter(Product.sales_segment_id==sales_segment_id)
+        if stock_id:
+            if not performance_id:
+                query = query.join(Product.items)
+            query = query.filter(ProductItem.stock_id==stock_id)
         if not include_deleted:
             query = query.filter(Product.deleted_at==None)
         return query.all()

@@ -12,9 +12,9 @@ from ticketing.core.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.events.performances.forms import PerformanceForm
-from ticketing.core.models import Event, Performance, Order
+from ticketing.core.models import Event, Performance, Order, Product, ProductItem, Stock
 from ticketing.products.forms import ProductForm, ProductItemForm
-from ticketing.orders.forms import OrderForm, OrderSearchForm, OrderReserveForm
+from ticketing.orders.forms import OrderForm, OrderSearchForm
 
 from ticketing.mails.forms import MailInfoTemplate
 from ticketing.models import DBSession
@@ -85,6 +85,25 @@ class Performances(BaseView):
             )
         elif tab == 'ticket-designer':
             pass
+        elif tab == 'sales-summary':
+            sales_summary = []
+            for stock_type in performance.event.stock_types:
+                stock_data = []
+                stocks = Stock.filter(Stock.performance_id==performance_id)\
+                              .filter(Stock.stock_type_id==stock_type.id)\
+                              .filter(Stock.quantity>0).all()
+                for stock in stocks:
+                    stock_data.append(dict(
+                        stock=stock,
+                        products=Product.find(performance_id=performance.id, stock_id=stock.id),
+                    ))
+                sales_summary.append(dict(
+                    stock_type=stock_type,
+                    total_quantity=stock_type.num_seats(performance_id=performance.id) or 0,
+                    rest_quantity=stock_type.rest_num_seats(performance_id=performance.id) or 0,
+                    stocks=stock_data
+                ))
+            data['sales_summary'] = sales_summary
 
         data['tab'] = tab
         return data
