@@ -82,7 +82,7 @@ def event_list(request):
         search_form = forms.EventSearchForm()
 
     return dict(
-        events=events.order_by(sa.desc("updated_at")), 
+        events=events.order_by(sa.desc("updated_at", "id")), 
         search_form=search_form, 
     )
 
