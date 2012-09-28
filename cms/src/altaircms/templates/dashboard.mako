@@ -14,6 +14,16 @@
             </tr>
             </tbody>
         </table>
+
+        <div class="well">
+          <p class="lead">はじめ</p>
+          <ul style="font-size:150%;">
+            <li><a href="${request.route_path("event_list")}">イベント情報を編集する</a></li>
+            <li><a href="${request.route_path("pageset_list",kind="event")}">イベント関連のページを編集する</a></li>
+            <li><a href="${request.route_path("pageset_list",kind="other")}">トップページのカテゴリトップページなどを編集する</a></li>
+            <li><a>静的なページの編集をする</a></li>
+          </ul>
+        </div>
     </div>
     <div class="span4">
       <h4>イベント</h4>
@@ -23,22 +33,21 @@
           <a class="btn btn-small" href="#">条件付き</a>
         </div>
       </div>
+      最近更新されたイベント
       <table class="table table-striped">
           %for event in events:
         <tr>
-          <td>${event.event_open}</td><td><a href="${request.route_path("event", id=event.id)}">${event.title}</a></td>
+          <td>${event.updated_at}</td><td><a href="${request.route_path("event", id=event.id)}">${event.title}</a></td>
+        </tr>
+          %endfor
+      </table>
+      もうすぐ公開されるイベント
+      <table class="table table-striped">
+          %for event in neary_open_events:
+        <tr>
+          <td>${event.updated_at}</td><td><a href="${request.route_path("event", id=event.id)}">${event.title}</a></td>
         </tr>
           %endfor
       </table>
     </div>
-</div>
-
-<div class="well">
-<p class="lead">はじめ</p>
-<ul style="font-size:150%;">
-  <li><a href="${request.route_path("event_list")}">イベント情報を編集する</a></li>
-  <li><a href="${request.route_path("pageset_list",kind="event")}">イベント関連のページを編集する</a></li>
-  <li><a href="${request.route_path("pageset_list",kind="other")}">トップページのカテゴリトップページなどを編集する</a></li>
-  <li><a>静的なページの編集をする</a></li>
-</ul>
 </div>

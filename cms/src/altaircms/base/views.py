@@ -1,8 +1,9 @@
 # coding: utf-8
+import sqlalchemy as sa
+from datetime import datetime, timedelta
 from pyramid.httpexceptions import HTTPBadRequest, HTTPFound
 from pyramid.view import view_config
 from pyramid.view import view_defaults
-from sqlalchemy.sql.expression import desc
 
 from altaircms.lib.fanstatic_decorator import with_bootstrap
 from altaircms.models import DBSession
@@ -18,12 +19,16 @@ def dashboard(request):
     ログイン後トップページ
     """
     if request.user:
-        events = request.allowable(Event).order_by(desc(Event.event_open)).limit(5)
+        events = request.allowable(Event).order_by(sa.desc(Event.updated_at)).limit(5)
+        today = datetime.now() - timedelta(days=1)
+        neary_open_events = request.allowable(Event).filter(Event.event_open>=today).order_by(sa.asc(Event.event_open)).limit(5)
     else:
         events = []
-    return dict(
-        events=events
-    )
+        neary_open_events = []
+    return {
+        'events'        : events, 
+        'neary_open_events'        : neary_open_events
+        }
 
 @view_defaults(decorator=with_bootstrap)
 class APIKeyView(object):

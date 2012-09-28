@@ -106,8 +106,8 @@ class Scanner(object):
         return organization
 
     def scan_event_record(self, event_record):
-        event = Event.query.filter_by(backend_id=event_record['id']).first() or Event()
-
+        organization = self.get_organization_record(event_record)
+        event = Event.query.filter_by(backend_id=event_record['id'], organization_id=organization.id).first() or Event()
         deleted = event_record.get('deleted', False)
         if not deleted:
             try:
@@ -118,7 +118,7 @@ class Scanner(object):
                 event.event_close = parse_datetime(event_record['end_on'])
                 event.deal_open = parse_datetime(event_record.get('deal_open'))
                 event.deal_close = parse_datetime(event_record.get('deal_close'))
-                event.organization_id = self.get_organization_record(event_record).id
+                event.organization_id = organization.id
             except KeyError as e:
                 raise Exception("missing property '%s' in the event record" % e.message)
             def notify_event_update():
