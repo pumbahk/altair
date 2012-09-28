@@ -19,7 +19,7 @@
           %for de in week:
             <td class="${de["day_class"]}">
               %if de["this_month"]:
-                <span class="day">${de["day"]}&nbsp;</span>
+                ${de["day"]}
               %endif
               %for p in de["day_performances"]:
                   <% status= calendar_status.get_status(p)%>
