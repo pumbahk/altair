@@ -63,7 +63,7 @@ class Performances(BaseView):
 
         tab = self.request.matchdict.get('tab', 'product')
         if tab == 'seat-allocation':
-            data['form_reserve'] = OrderReserveForm(performance_id=performance_id)
+            pass
         elif tab == 'product':
             data['form_product'] = ProductForm(event_id=performance.event_id)
             data['form_product_item'] = ProductItemForm(user_id=self.context.user.id, performance_id=performance_id)

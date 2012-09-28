@@ -1,4 +1,4 @@
-<%page args="performance, form_reserve" />
+<%page args="performance" />
 <%namespace file="./_venue_view.html" name="vv" />
 <%namespace file="/common/helpers.html" name="h" />
 
@@ -533,7 +533,6 @@ callbacks.select = function (viewer, selection) {
 </div>
 
 <div id="reserve-form">
-  <%include file="/orders/_form_reserve.html" args="form=form_reserve" />
 </div>
 
 <div id="modal-download_seats" class="modal hide fade">
