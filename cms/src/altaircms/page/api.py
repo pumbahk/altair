@@ -41,7 +41,7 @@ class StaticPageDirectory(object):
         return self.basedir
 
     def get_managemented_files(self, request):
-        return request.allowable(StaticPage).order_by(sa.desc("updated_at"), sa.asc("id"))
+        return request.allowable(StaticPage).order_by(sa.desc(StaticPage.updated_at))
 
     # def get_static_page_children(self, static_page):
     #     path = os.path.join(self.basedir, static_page.name)

@@ -46,7 +46,6 @@ def make_event_search_by_word(request, qs, data):
         # qs = qs.filter(where | Event.title.like(likeword), Event.subtitle.like(likeword))
     return qs
 
-
 def make_event_search_by_category(qs, data):
     if data["category"]:
         category = data["category"]

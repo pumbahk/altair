@@ -1,7 +1,7 @@
 # coding: utf-8
 import logging
 import os
-
+import sqlalchemy as sa
 from pyramid.view import view_config
 from pyramid.view import view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPBadRequest
@@ -296,7 +296,7 @@ class PageListView(object):
                 pages = searcher.make_pageset_search_query(self.request, search_form.data, qs=pages)
         else:
             search_form = forms.PageSetSearchForm()
-
+        pages = pages.order_by(sa.desc(PageSet.updated_at))
         return {"pages":pages, "search_form": search_form}
 
     @view_config(match_param="kind=other", renderer="altaircms:templates/page/other_page_list.mako")
@@ -304,6 +304,7 @@ class PageListView(object):
         """event詳細ページとは結びついていないページ(e.g. トップ、カテゴリトップ) """
         #kind = self.request.matchdict["kind"]
         pages = self.request.allowable(PageSet).filter(PageSet.event == None)
+        pages = pages.order_by(sa.desc(PageSet.updated_at))
         return {"pages":pages}
 
 def with_pageset_predicate(kind): #don't support static page
