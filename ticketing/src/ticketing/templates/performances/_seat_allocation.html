@@ -183,17 +183,23 @@ function buildColorButton(model, attr) {
   }
   model.on('change:style', refresh);
   if (model.id != "") {
-    button.decentcolorpicker({
-      value: function () {
-        var style = model.get(attr);
-        return style && style.fill && style.fill.color;
-      },
-      select: function (value) {
-        var style = deepClone(model.get(attr));
-        if (!style.fill)
-          style.fill = {};
-        style.fill.color = value.hash;
-        model.set(attr, style);
+    button.click(function () {
+      if (!$(this).data('colorpicker')) {
+        $(this).data('colorpicker', true);
+        $(this).decentcolorpicker({
+          value: function () {
+            var style = model.get(attr);
+            return style && style.fill && style.fill.color;
+          },
+          select: function (value) {
+            var style = deepClone(model.get(attr));
+            if (!style.fill)
+              style.fill = {};
+            style.fill.color = value.hash;
+            model.set(attr, style);
+          }
+        });
+        $(this).click();
       }
     });
   }
