@@ -1,4 +1,4 @@
-package jp.ticketstar.ticketing.printing.svg.extension;
+package jp.ticketstar.ticketing.svg.extension;
 
 import org.w3c.dom.DOMException;
 

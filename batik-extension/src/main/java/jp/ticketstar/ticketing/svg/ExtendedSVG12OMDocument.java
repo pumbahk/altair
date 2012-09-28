@@ -1,4 +1,4 @@
-package jp.ticketstar.ticketing.printing.svg;
+package jp.ticketstar.ticketing.svg;
 
 import org.apache.batik.dom.svg12.SVG12OMDocument;
 import org.w3c.dom.DOMImplementation;

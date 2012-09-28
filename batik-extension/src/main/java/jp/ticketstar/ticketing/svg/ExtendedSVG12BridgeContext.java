@@ -1,4 +1,4 @@
-package jp.ticketstar.ticketing.printing.svg;
+package jp.ticketstar.ticketing.svg;
 
 import java.util.Collections;
 import java.util.Iterator;

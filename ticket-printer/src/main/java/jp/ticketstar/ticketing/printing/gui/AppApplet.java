@@ -61,8 +61,8 @@ import jp.ticketstar.ticketing.printing.TicketPrintable;
 import jp.ticketstar.ticketing.printing.URLConnectionFactory;
 import jp.ticketstar.ticketing.printing.URLConnectionSVGDocumentLoader;
 import jp.ticketstar.ticketing.printing.URLFetcher;
-import jp.ticketstar.ticketing.printing.svg.ExtendedSVG12BridgeContext;
-import jp.ticketstar.ticketing.printing.svg.OurDocumentLoader;
+import jp.ticketstar.ticketing.svg.ExtendedSVG12BridgeContext;
+import jp.ticketstar.ticketing.svg.OurDocumentLoader;
 
 import org.apache.batik.swing.gvt.Overlay;
 

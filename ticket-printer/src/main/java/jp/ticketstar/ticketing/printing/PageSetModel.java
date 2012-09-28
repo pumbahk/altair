@@ -8,11 +8,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import jp.ticketstar.ticketing.printing.svg.ExtendedSVG12BridgeContext;
-import jp.ticketstar.ticketing.printing.svg.ExtendedSVG12OMDocument;
-import jp.ticketstar.ticketing.printing.svg.SVGOMPageElement;
-import jp.ticketstar.ticketing.printing.svg.SVGOMPageSetElement;
-import jp.ticketstar.ticketing.printing.svg.extension.TicketstarSVGExtensionConstants;
+import jp.ticketstar.ticketing.svg.ExtendedSVG12BridgeContext;
+import jp.ticketstar.ticketing.svg.ExtendedSVG12OMDocument;
+import jp.ticketstar.ticketing.svg.SVGOMPageElement;
+import jp.ticketstar.ticketing.svg.SVGOMPageSetElement;
+import jp.ticketstar.ticketing.svg.extension.TicketstarSVGExtensionConstants;
 
 import org.apache.batik.bridge.GVTBuilder;
 import org.apache.batik.dom.AbstractElement;

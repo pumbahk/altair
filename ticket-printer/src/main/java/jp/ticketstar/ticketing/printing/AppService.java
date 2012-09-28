@@ -4,7 +4,6 @@ import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Dimension2D;
-import java.awt.print.Printable;
 import java.awt.print.PrinterJob;
 import java.io.File;
 import java.net.URI;
@@ -15,9 +14,9 @@ import java.util.ArrayList;
 import javax.swing.JFileChooser;
 
 import jp.ticketstar.ticketing.printing.gui.IAppWindow;
-import jp.ticketstar.ticketing.printing.svg.ExtendedSVG12BridgeContext;
-import jp.ticketstar.ticketing.printing.svg.ExtendedSVG12OMDocument;
-import jp.ticketstar.ticketing.printing.svg.OurDocumentLoader;
+import jp.ticketstar.ticketing.svg.ExtendedSVG12BridgeContext;
+import jp.ticketstar.ticketing.svg.ExtendedSVG12OMDocument;
+import jp.ticketstar.ticketing.svg.OurDocumentLoader;
 
 import org.apache.batik.bridge.BridgeExtension;
 import org.apache.batik.bridge.UserAgent;

@@ -1,4 +1,4 @@
-package jp.ticketstar.ticketing.printing.svg;
+package jp.ticketstar.ticketing.svg;
 
 import org.apache.batik.bridge.AbstractGraphicsNodeBridge;
 import org.apache.batik.bridge.BridgeContext;

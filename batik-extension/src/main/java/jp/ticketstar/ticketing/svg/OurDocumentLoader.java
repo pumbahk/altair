@@ -1,4 +1,4 @@
-package jp.ticketstar.ticketing.printing.svg;
+package jp.ticketstar.ticketing.svg;
 
 import org.apache.batik.bridge.DocumentLoader;
 import org.apache.batik.bridge.UserAgent;

@@ -1,4 +1,4 @@
-package jp.ticketstar.ticketing.printing.svg.extension;
+package jp.ticketstar.ticketing.svg.extension;
 
 import org.apache.batik.dom.AbstractDocument;
 import org.apache.batik.dom.DomExtension;

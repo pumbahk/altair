@@ -101,6 +101,11 @@
 
   <dependencies>
     <dependency>
+      <groupId>jp.ticketstar.ticketing</groupId>
+      <artifactId>batik-extension</artifactId>
+      <version>0.0.0</version>
+    </dependency>
+    <dependency>
       <groupId>sun.plugin</groupId>
       <artifactId>plugin</artifactId>
       <version>1.6</version>
