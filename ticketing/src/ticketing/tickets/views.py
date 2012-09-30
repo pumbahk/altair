@@ -22,7 +22,18 @@ from .utils import SvgPageSetBuilder
 from .response import FileLikeResponse
 from .convert import to_opcodes
 
+def ticket_format_to_dict(ticket_format):
+    data = dict(ticket_format.data)
+    data[u'id'] = ticket_format.id
+    data[u'name'] = ticket_format.name
+    return data
 
+def ticket_to_dict(cls, ticket):
+    data = dict(ticket.data)
+    data[u'id'] = ticket.id
+    data[u'name'] = ticket.name
+    data[u'ticket_format_id'] = ticket.ticket_format_id
+    return data
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class TicketMasters(BaseView):
@@ -447,10 +458,7 @@ class TicketPrinter(BaseView):
             page_formats.append(data)
         ticket_formats = []
         for ticket_format in DBSession.query(TicketFormat).filter_by(organization=self.context.organization):
-            data = dict(ticket_format.data)
-            data[u'id'] = ticket_format.id
-            data[u'name'] = ticket_format.name
-            ticket_formats.append(data)
+            ticket_formats.append(ticket_format_to_dict(ticket_format))
         return { u'status': u'success',
                  u'data': { u'page_formats': page_formats,
                             u'ticket_formats': ticket_formats } }
@@ -458,10 +466,18 @@ class TicketPrinter(BaseView):
     @view_config(route_name='tickets.printer.api.ticket', request_method='POST', renderer='lxml')
     def ticket(self):
         ticket_id = self.request.matchdict['id']
-        return DBSession.query(Ticket) \
+        ticket = DBSession.query(Ticket) \
             .filter_by(id=ticket_id,
                        organization_id=self.context.organization.id) \
             .one()
+        return dict(
+            ticket_formats=[
+                ticket_format_to_dict(self.ticket.ticket_format)
+                ],
+            ticket_templates=[
+                ticket_to_dict(ticket)
+                ]
+            )
 
     @view_config(route_name='tickets.printer.api.history', request_method='POST', renderer='json')
     def history(self):
