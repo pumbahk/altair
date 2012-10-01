@@ -67,7 +67,7 @@
   <ul class="nav nav-tabs">
     <li id="seat-allocation-tab"><a href="${route_path}/seat-allocation">席種／配券</a></li>
     <li id="product-tab"><a href="${route_path}/product">商品</a></li>
-    <li id="sales-summary-tab"><a href="${route_path}/sales-summary">販売状況</a></li>
+    <li id="order-tab"><a href="${route_path}/order">購入情報</a></li>
     <li id="reservation-tab"><a href="${route_path}/reservation">予約</a></li>
   </ul>
   <div class="tab-content" id="tabbable-tab-content">
@@ -75,13 +75,13 @@
     <div class="tab-pane" id="product">
       <%include file="./_product.html" args="performance=performance, form_product=form_product, form_product_item=form_product_item" />
     </div>
-    % elif tab == 'sales-summary':
-    <div class="tab-pane" id="sales-summary">
-      <%include file="./_sales_summary.html" args="performance=performance" />
+    % elif tab == 'order':
+    <div class="tab-pane" id="order">
+      <%include file="./_order.html" args="form=form_order, form_search=form_search, orders=orders" />
     </div>
     % elif tab == 'reservation':
     <div class="tab-pane" id="reservation">
-      <%include file="./_reservation.html" args="form=form_order, form_search=form_search, orders=orders" />
+      <%include file="./_reservation.html" args="performance=performance" />
     </div>
     % else:
     <div class="tab-pane" id="seat-allocation">

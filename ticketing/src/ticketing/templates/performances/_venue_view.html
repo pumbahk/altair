@@ -9,13 +9,11 @@
 
 #venue-editor .venue-editor-main .venue-editor-main-root {
   border-right: 1px solid #ccc;
-  width: 65%;
   height: 100%;
   float: left;
 }
 
 #venue-editor .venue-editor-main .venue-editor-main-side {
-  width: 35%;
   height: 100%;
   overflow: scroll;
   margin-left: -2px;
@@ -159,7 +157,7 @@ venueEditor.find(".ui-button").each(function (i, n) {
   n = $(n);
   n.removeClass('ui-button');
   var cssClass = n.attr("class").split(/\s+/);
-  var options = { icons: {} }; 
+  var options = { icons: {} };
   for (var i = 0; i < cssClass.length; i++) {
     var g;
     if ((g = /ui-icon-primary-(.+)/.exec(cssClass[i])))

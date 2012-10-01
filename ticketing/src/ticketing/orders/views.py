@@ -350,6 +350,12 @@ class Orders(BaseView):
                 'message':u'パフォーマンスが存在しません',
             }))
 
+        # 古いカートがセッションの残っていたら削除
+        old_cart = api.get_cart(self.request)
+        if old_cart:
+            old_cart.release()
+            api.remove_cart(self.request)
+
         # Stockとkind=vipのSalesSegmentからProductを決定する
         stocks = post_data.get('stocks')
         form_reserve = OrderReserveForm(post_data, performance_id=performance_id, stocks=stocks)
@@ -359,15 +365,21 @@ class Orders(BaseView):
         # 選択されたSeat
         seats = Seat.filter(Seat.l0_id.in_(post_data.get('seats'))).join(Venue).filter(Venue.performance_id==performance_id).all()
 
+        # セッションに保存
+        self.request.session['ticketing.inner_cart'] = {
+            'stocks':post_data.get('stocks'),
+            'seats':post_data.get('seats'),
+        }
+
         return {
             'seats':seats,
             'form':form_reserve
         }
 
-    @view_config(route_name='orders.reserve', request_method='POST', renderer='json', permission='sales_counter')
-    def reserve(self):
+    @view_config(route_name='orders.reserve.confirm', request_method='POST',
+                 renderer='ticketing:templates/orders/_form_reserve_confirm.html', permission='sales_counter')
+    def reserve_confirm(self):
         post_data = MultiDict(self.request.json_body)
-        logger.debug('order reserve post_data=%s' % post_data)
 
         performance_id = int(post_data.get('performance_id', 0))
         performance = Performance.get(performance_id, self.context.user.organization_id)
@@ -378,6 +390,9 @@ class Orders(BaseView):
             }))
 
         try:
+            post_data.update(self.request.session.get('ticketing.inner_cart'))
+            logger.debug('order reserve confirm post_data=%s' % post_data)
+
             # validation
             f = OrderReserveForm(performance_id=performance_id, stocks=post_data.get('stocks'))
             f.process(post_data)
@@ -408,6 +423,38 @@ class Orders(BaseView):
             cart.system_fee = pdmp.system_fee
             DBSession.add(cart)
             DBSession.flush()
+            api.set_cart(self.request, cart)
+
+            return {
+                'form':f,
+                'cart':cart,
+            }
+        except ValidationError, e:
+            logger.exception('validation error (%s)' % e.message)
+            raise HTTPBadRequest(body=json.dumps({
+                'message':e.message,
+            }))
+
+        except Exception, e:
+            logger.exception('save error (%s)' % e.message)
+            raise HTTPBadRequest(body=json.dumps({
+                'message':u'エラーが発生しました',
+            }))
+
+    @view_config(route_name='orders.reserve.complete', request_method='POST', renderer='json', permission='sales_counter')
+    def reserve_complete(self):
+        post_data = MultiDict(self.request.json_body)
+
+        performance_id = int(post_data.get('performance_id', 0))
+        performance = Performance.get(performance_id, self.context.user.organization_id)
+        if performance is None:
+            logger.error('performance id %d is not found' % performance_id)
+            raise HTTPBadRequest(body=json.dumps({
+                'message':u'パフォーマンスが存在しません',
+            }))
+
+        try:
+            cart = api.get_cart(self.request)
 
             # create order
             order = Order.create_from_cart(cart)
@@ -417,16 +464,36 @@ class Orders(BaseView):
             DBSession.flush()
             cart.finish()
 
+            # clear session
+            api.remove_cart(self.request)
+            if self.request.session.get('ticketing.inner_cart'):
+                del self.request.session['ticketing.inner_cart']
+            logger.debug('order reserve session data=%s' % self.request.session)
+
+            self.request.session.flash(u'予約しました')
             return {
                 'order_id':order.id,
                 'message':u'予約しました'
             }
-        except ValidationError, e:
-            logger.exception('validation error (%s)' % e.message)
+        except Exception, e:
+            logger.exception('save error (%s)' % e.message)
             raise HTTPBadRequest(body=json.dumps({
-                'message':e.message,
+                'message':u'エラーが発生しました',
             }))
 
+    @view_config(route_name='orders.reserve.reselect', request_method='POST', renderer='json', permission='sales_counter')
+    def reserve_reselect(self):
+        try:
+            cart = api.get_cart(self.request)
+
+            # release cart & session
+            cart.release()
+            api.remove_cart(self.request)
+            if self.request.session.get('ticketing.inner_cart'):
+                del self.request.session['ticketing.inner_cart']
+            logger.debug('order reserve session data=%s' % self.request.session)
+
+            return {}
         except Exception, e:
             logger.exception('save error (%s)' % e.message)
             raise HTTPBadRequest(body=json.dumps({

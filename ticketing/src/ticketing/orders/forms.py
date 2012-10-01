@@ -185,7 +185,6 @@ class OrderReserveForm(Form):
         validators=[Required()],
     )
     stocks = HiddenField(
-        label=u'座席',
         validators=[Optional()],
     )
     note = TextAreaField(

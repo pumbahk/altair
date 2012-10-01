@@ -1,10 +1,256 @@
-<%page args="form, form_search, orders" />
+<%page args="performance, sales_summary" />
+<%namespace file="./_venue_view.html" name="vv" />
+<%namespace file="/common/helpers.html" name='h' />
 
-<div style="float: left;">
-  <%include file="/orders/_search.html" args="form=form_search, url=request.route_path('performances.show', performance_id=performance.id) + '/reservation'" />
-</div>
-<div style="clear: both;"></div>
+<style>
+  #tooltip {
+    border: solid 3px #05C;
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    border-radius: 6px;
+    position: absolute;
+    text-decoration: none;
+    margin: 10px;
+    padding: 5px 5px;
+    width: 80px;
+    zoom: 1;
+    -webkit-transition-property: opacity;
+    -webkit-transition-duration: 2s;
+    -webkit-transition-timing-function: ease-in-out;
+    background-color: white;
+    visibility: hidden;
+    z-index: 10;
+    opacity: 1;
+  }
 
-<div class="orders">
-  <%include file="/orders/_list.html" args="form=form, orders=orders, detail=False" />
+  .swatch {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin: -6px 2px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+  }
+
+  #venue-editor .venue-editor-main .venue-editor-main-root {
+    width: 100%;
+  }
+
+  #venue-editor .venue-editor-main .venue-editor-main-side {
+    width: 0%;
+  }
+</style>
+
+<div id="tooltip"></div>
+<div class="tabbable tabs-below tabs-above" id="seat-allocation-tab">
+  <div class="tab-content"  id="seat-allocation-tab-content">
+    <div class="tab-pane active" id="map">
+      <div class="container-fluid">
+        <div class="row-fluid">
+          <%
+            data_source = {
+              'drawing': request.route_path('api.get_drawing', venue_id=performance.venue.id),
+              'metadata': request.route_path('api.get_seats', venue_id=performance.venue.id,
+              _query={u'n':u'seats|stock_types|stock_holders|stocks'})
+            }
+          %>
+          <%vv:venueeditor data_source="${data_source}">
+            <%def name="toolbar_extra()">
+            <div style="float:right">
+              <a href="javascript:getOrderForm();" class="btn btn-primary btn-small">座席指定</a>
+            </div>
+            </%def>
+
+            <%def name="post()">
+<script type="text/javascript">
+  function getOrderForm(stock_id) {
+    var param = {'seats':[], 'stocks':[], 'performance_id':${performance.id}};
+    var selection = venueEditorRoot.venueeditor('selection');
+    if (stock_id) {
+      param['stocks'].push(stock_id);
+    } else {
+      selection.each(function (seat) {
+        param['seats'].push(seat.id);
+        var stock_id = seat.get('stock').get('id');
+        if ($.inArray(stock_id, param['stocks']) == -1)
+          param['stocks'].push(stock_id);
+      });
+    }
+    $.ajax({
+      type: 'post',
+      url: '${request.route_path('orders.reserve.form')}',
+      data: JSON.stringify(param),
+      dataType: 'html',
+      success: function(data) {
+        $('#reserve-form').html(data);
+        $('#modal-reserve').modal('show');
+      }
+    });
+  }
+
+  function confirmOrder() {
+    var modal = $('#modal-reserve');
+    modal.find('.modal-body .alert').remove();
+    var param = {};
+    $(modal.find('form').serializeArray()).each(function(i, v) {
+      param[v.name] = v.value;
+    });
+    $.ajax({
+      type: 'post',
+      url: "${request.route_path('orders.reserve.confirm')}",
+      data: JSON.stringify(param),
+      dataType: 'html',
+      success: function(data) {
+        $('#modal-reserve').modal('hide');
+        $('#reserve-form').html(data);
+        $('#modal-reserve').modal('show');
+      },
+      error: function(xhr, text) {
+        var responseText = JSON.parse(xhr.responseText);
+        var messages = responseText['message'] || xhr.statusText;
+        var errors = '';
+        if (typeof messages == 'string') {
+          errors += '<li>' + messages + '</li>';
+        } else {
+          for (i in messages)
+            errors += '<li>' + messages[i] + '</li>';
+        }
+        modal.find('.modal-body').prepend('<div class="alert alert-error"><ul>' + errors + '</ul></div>');
+      }
+    });
+  }
+
+  function completeOrder() {
+    var modal = $('#modal-reserve');
+    modal.find('.modal-body .alert').remove();
+    var param = {};
+    $(modal.find('form').serializeArray()).each(function(i, v) {
+      param[v.name] = v.value;
+    });
+    $.ajax({
+      type: 'post',
+      url: "${request.route_path('orders.reserve.complete')}",
+      contentType: 'application/json; charset=utf-8',
+      dataType: 'json',
+      data: JSON.stringify(param),
+      success: function(result) {
+        window.open('/orders/show/' + result.order_id, '_blank');
+        $('.content').prepend('<div class="alert alert-success"><a class="close" data-dismiss="alert">&times;</a><h4 class="alert-heading">' + result.message + '</h4></div>');
+        $('#modal-reserve').modal('hide');
+        var selection = venueEditorRoot.venueeditor('selection');
+        selection.each(function (seat) {
+          seat.set('status', 3);
+          seat.set('selectable', false);
+        });
+        venueEditorRoot.venueeditor('clearAll');
+      },
+      error: function(xhr, text) {
+        var responseText = JSON.parse(xhr.responseText);
+        var messages = responseText['message'] || xhr.statusText;
+        var errors = '';
+        if (typeof messages == 'string') {
+          errors += '<li>' + messages + '</li>';
+        } else {
+          for (i in messages)
+            errors += '<li>' + messages[i] + '</li>';
+        }
+        modal.find('.modal-body').prepend('<div class="alert alert-error"><ul>' + errors + '</ul></div>');
+      }
+    });
+  }
+
+  function reselectOrder() {
+    $.ajax({
+      type: 'post',
+      url: '${request.route_path('orders.reserve.reselect')}',
+      dataType: 'html',
+      success: function(data) {
+        $('#modal-reserve').modal('hide');
+      }
+    });
+  }
+
+  $(function() {
+    % for row in sales_summary:
+    $('#stock-type-${row['stock_type'].id}').click(function (){
+      % for stock in row['stocks']:
+      $('.stock-${stock['stock'].id}').toggle();
+      % endfor
+    });
+    % endfor
+  });
+</script>
+            </%def>
+
+          </%vv:venueeditor>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+
+<div>
+  <%include file="_legend_seat_status.html" />
+</div>
+
+<div class="container-fluid" style="margin-top: 20px;">
+  <div class="row-fluid">
+    <div class="span12">
+      <table class="table table-bordered table-condensed" style="margin-bottom: 10px;">
+        <thead>
+        <tr>
+          <th style="width:20px"></th>
+          <th style="width:40px">席種</th>
+          <th style="width:40px">配券先</th>
+          <th class="span3">商品名</th>
+          <th class="span4">販売区分</th>
+          <th class="span1">残席数</th>
+          <th class="span1">販売席数</th>
+          <th class="span1">予約する</th>
+        </tr>
+        </thead>
+        <tbody>
+        % for row in sales_summary:
+        <tr id="stock-type-${row['stock_type'].id}">
+          <td>${h.seat_style(row['stock_type'].style)}</td>
+          <td colspan="4">${row['stock_type'].name}</td>
+          <td>${row['rest_quantity']}</td>
+          <td>${row['total_quantity']}</td>
+          <td></td>
+        </tr>
+          % for stock in row['stocks']:
+        <tr style="display:none;" class="stock-${stock['stock'].id}">
+          <td></td>
+          <td></td>
+          <td colspan="3">${stock['stock'].stock_holder.name}</td>
+          <td>${stock['stock'].stock_status.quantity}</td>
+          <td>${stock['stock'].quantity}</td>
+          <td>
+            % if stock['products']:
+            <a href="javascript:getOrderForm(${stock['stock'].id});" class="btn btn-primary btn-small">おまかせ</a>
+            % endif
+          </td>
+        </tr>
+            % if stock['products']:
+              % for product in stock['products']:
+        <tr style="display:none;" class="stock-${stock['stock'].id}">
+          <td></td>
+          <td colspan="2"></td>
+          <td>${product.name} (${h.price_format(product.price)}円)</td>
+          <td>${product.sales_segment.name} (${h.safe_strftime(product.sales_segment.start_at)} 〜 ${h.safe_strftime(product.sales_segment.end_at)})</td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+              % endfor
+            % endif
+          % endfor
+        % endfor
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="reserve-form"></div>

@@ -1,0 +1,35 @@
+<style type="text/css">
+  #seatStatusLegend .accordion-inner div {
+    width: 1.25em;
+    margin: 0 5px 5px 5px;
+    height: 1.25em;
+    border-radius: 4px 4px;
+    float: left;
+  }
+  #seatStatusLegend .accordion-inner span {
+    margin: 3px 5px 0 0;
+    float: left;
+  }
+</style>
+
+<div class="container-fluid accordion" style="margin-top: 20px;">
+  <div class="accordion-group">
+    <div class="accordion-heading">
+      <a class="accordion-toggle" data-toggle="collapse" href="#seatStatusLegend">
+        <i class="icon-exclamation-sign"></i> 凡例　座席ステータス
+      </a>
+      <div id="seatStatusLegend" class="accordion-body collapse" style="height: 0px;">
+        <div class="accordion-inner">
+          <div style="border:3px solid #929292;"></div><span>未販売</span>
+          <div style="border:3px solid;"></div><span>販売中</span>
+          <div style="border:3px solid #ffff40;"></div><span>カート</span>
+          <div style="border:3px solid #2020d2;"></div><span>販売済</span>
+          <div style="border:3px solid #ff8c40;"></div><span>確認中</span>
+          <div style="border:3px solid #b3d940;"></div><span>配送済</span>
+          <div style="border:3px solid #ff4040;"></div><span>キャンセル</span>
+          <div style="border:3px solid #9f9fec;"></div><span>予約中</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
