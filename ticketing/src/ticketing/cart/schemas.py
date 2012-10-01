@@ -5,7 +5,8 @@ import unicodedata
 from wtforms import fields
 from wtforms.form import Form
 from wtforms.ext.csrf.session import SessionSecureForm
-from wtforms.validators import Regexp, Email, Length, NumberRange, EqualTo, Optional, ValidationError
+from wtforms.validators import Regexp, Length, NumberRange, EqualTo, Optional, ValidationError
+from ticketing.validators import Email
 
 from ticketing.formhelpers import DateTimeField, Translations, Required, Phone
 
