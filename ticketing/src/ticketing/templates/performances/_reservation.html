@@ -207,7 +207,7 @@
           <th class="span4">販売区分</th>
           <th class="span1">残席数</th>
           <th class="span1">販売席数</th>
-          <th class="span1">予約する</th>
+          <th class="span2">予約する</th>
         </tr>
         </thead>
         <tbody>
@@ -221,27 +221,31 @@
         </tr>
           % for stock in row['stocks']:
         <tr style="display:none;" class="stock-${stock['stock'].id}">
-          <td></td>
-          <td></td>
-          <td colspan="3">${stock['stock'].stock_holder.name}</td>
-          <td>${stock['stock'].stock_status.quantity}</td>
-          <td>${stock['stock'].quantity}</td>
-          <td>
+          <% rowspan = len(stock['products']) if stock['products'] else 1 %>
+          <td rowspan="${rowspan}"></td>
+          <td rowspan="${rowspan}"></td>
+          <td rowspan="${rowspan}">${stock['stock'].stock_holder.name}</td>
+            % if stock['products']:
+            <% product = stock['products'][0] %>
+          <td>${product.name} (${h.price_format(product.price)}円)</td>
+          <td>${product.sales_segment.name} (${h.safe_strftime(product.sales_segment.start_at)} 〜 ${h.safe_strftime(product.sales_segment.end_at)})</td>
+            % else:
+          <td rowspan="${rowspan}"></td>
+          <td rowspan="${rowspan}"></td>
+            % endif
+          <td rowspan="${rowspan}">${stock['stock'].stock_status.quantity}</td>
+          <td rowspan="${rowspan}">${stock['stock'].quantity}</td>
+          <td rowspan="${rowspan}">
             % if stock['products']:
             <a href="javascript:getOrderForm(${stock['stock'].id});" class="btn btn-primary btn-small">おまかせ</a>
             % endif
           </td>
         </tr>
             % if stock['products']:
-              % for product in stock['products']:
+              % for product in stock['products'][1:]:
         <tr style="display:none;" class="stock-${stock['stock'].id}">
-          <td></td>
-          <td colspan="2"></td>
-          <td>${product.name} (${h.price_format(product.price)}円)</td>
+          <td style="border-left: 1px solid #ddd;">${product.name} (${h.price_format(product.price)}円)</td>
           <td>${product.sales_segment.name} (${h.safe_strftime(product.sales_segment.start_at)} 〜 ${h.safe_strftime(product.sales_segment.end_at)})</td>
-          <td></td>
-          <td></td>
-          <td></td>
         </tr>
               % endfor
             % endif
