@@ -12,6 +12,7 @@ from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, 
 from sqlalchemy.orm import join, backref, column_property, joinedload, deferred
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.sql import exists
 from sqlalchemy.sql.expression import asc, desc, exists, select, table, column
 from sqlalchemy.ext.associationproxy import association_proxy
 
@@ -1099,18 +1100,22 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         super(StockType, self).delete()
 
-    def num_seats(self, performance_id=None):
+    def num_seats(self, performance_id=None, sale_only=False):
         # 同一Performanceの同一StockTypeにおけるStock.quantityの合計
         query = Stock.filter_by(stock_type_id=self.id).with_entities(func.sum(Stock.quantity))
         if performance_id:
             query = query.filter_by(performance_id=performance_id)
+            if sale_only:
+                query = query.filter(exists().where(and_(ProductItem.performance_id==performance_id, ProductItem.stock_id==Stock.id)))
         return query.scalar()
 
-    def rest_num_seats(self, performance_id=None):
+    def rest_num_seats(self, performance_id=None, sale_only=False):
         # 同一Performanceの同一StockTypeにおけるStockStatus.quantityの合計
         query = Stock.filter(Stock.stock_type_id==self.id).join(Stock.stock_status).with_entities(func.sum(StockStatus.quantity))
         if performance_id:
             query = query.filter(Stock.performance_id==performance_id)
+            if sale_only:
+                query = query.filter(exists().where(and_(ProductItem.performance_id==performance_id, ProductItem.stock_id==Stock.id)))
         return query.scalar()
 
     def set_style(self, data):

@@ -52,7 +52,7 @@
             data_source = {
               'drawing': request.route_path('api.get_drawing', venue_id=performance.venue.id),
               'metadata': request.route_path('api.get_seats', venue_id=performance.venue.id,
-              _query={u'n':u'seats|stock_types|stock_holders|stocks'})
+              _query={u'n':u'seats|stock_types|stock_holders|stocks', u'f':u'sale_only'})
             }
           %>
           <%vv:venueeditor data_source="${data_source}">

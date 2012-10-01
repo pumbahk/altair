@@ -7,10 +7,12 @@ from urllib2 import urlopen
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.response import Response
+from sqlalchemy import and_
+from sqlalchemy.sql import exists
 from sqlalchemy.orm import joinedload, noload
 
 from ticketing.models import DBSession
-from ticketing.core.models import Venue, Seat, SeatAdjacencySet, Stock, StockHolder, StockType
+from ticketing.core.models import Venue, Seat, SeatAdjacencySet, Stock, StockHolder, StockType, ProductItem
 from ticketing.venues.export import SeatCSV
 
 @view_config(route_name="api.get_drawing", request_method="GET", permission='event_viewer')
@@ -27,6 +29,7 @@ def get_seats(request):
     venue_id = int(request.matchdict.get('venue_id', 0))
     _necessary_params = request.params.get(u'n', None)
     necessary_params = set() if _necessary_params is None else set(_necessary_params.split(u'|'))
+    filter_params = request.params.get(u'f', set())
 
     venue = Venue.get(venue_id)
     if venue is None:
@@ -42,7 +45,12 @@ def get_seats(request):
 
     if u'seats' in necessary_params:
         seats_data = {}
-        for seat in DBSession.query(Seat).options(joinedload('attributes_'), joinedload('areas'), joinedload('status_')).filter_by(venue=venue):
+        seats_query = DBSession.query(Seat).options(joinedload('attributes_'), joinedload('areas'), joinedload('status_')).filter_by(venue=venue)
+        # 販売している座席のみの指定がある場合
+        if u'sale_only' in filter_params:
+            seats_query = seats_query.filter(exists().where(and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Seat.stock_id)))
+
+        for seat in seats_query:
             seat_datum = {
                 'id': seat.l0_id,
                 'seat_no': seat.seat_no,
@@ -67,14 +75,18 @@ def get_seats(request):
             for seat_adjacency_set in DBSession.query(SeatAdjacencySet).options(joinedload("adjacencies"), joinedload('adjacencies.seats')).filter(SeatAdjacencySet.venue==venue)
             ]
 
+    # 販売している座席のみの指定がある場合
+    stocks_query = DBSession.query(Stock).options(joinedload('stock_status')).filter_by(performance=venue.performance)
+    if u'sale_only' in filter_params:
+        stocks_query = stocks_query.filter(exists().where(and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Seat.stock_id)))
     retval[u'stocks'] = [
         dict(
             id=stock.id,
             assigned=stock.quantity,
             stock_type_id=stock.stock_type_id,
             stock_holder_id=stock.stock_holder_id,
-            available=stock.stock_status.quantity) \
-        for stock in DBSession.query(Stock).options(joinedload('stock_status')).filter_by(performance=venue.performance)
+            available=stock.stock_status.quantity)\
+        for stock in stocks_query
         ]
 
     retval[u'stock_types'] = [

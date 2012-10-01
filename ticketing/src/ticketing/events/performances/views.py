@@ -7,6 +7,8 @@ import webhelpers.paginate as paginate
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
+from sqlalchemy import and_
+from sqlalchemy.sql import exists
 
 from ticketing.core.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
@@ -91,7 +93,8 @@ class Performances(BaseView):
                 stock_data = []
                 stocks = Stock.filter(Stock.performance_id==performance_id)\
                               .filter(Stock.stock_type_id==stock_type.id)\
-                              .filter(Stock.quantity>0).all()
+                              .filter(Stock.quantity>0)\
+                              .filter(exists().where(and_(ProductItem.performance_id==performance_id, ProductItem.stock_id==Stock.id))).all()
                 for stock in stocks:
                     stock_data.append(dict(
                         stock=stock,
@@ -99,8 +102,8 @@ class Performances(BaseView):
                     ))
                 sales_summary.append(dict(
                     stock_type=stock_type,
-                    total_quantity=stock_type.num_seats(performance_id=performance.id) or 0,
-                    rest_quantity=stock_type.rest_num_seats(performance_id=performance.id) or 0,
+                    total_quantity=stock_type.num_seats(performance_id=performance.id, sale_only=True) or 0,
+                    rest_quantity=stock_type.rest_num_seats(performance_id=performance.id, sale_only=True) or 0,
                     stocks=stock_data
                 ))
             data['sales_summary'] = sales_summary
