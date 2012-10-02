@@ -20,16 +20,16 @@
         <table class="table table-striped table-bordered">
           <tr>
             <th colspan="2">商品</th>
-            <th style="width: 80px;">単価</th>
-            <th style="width: 80px;">個数</th>
+            <th style="width: 80px; text-align: right;">単価</th>
+            <th style="width: 80px; text-align: right;">個数</th>
           </tr>
           % for carted_product in cart.products:
           <tr>
             <td colspan="2">${carted_product.product.name}</td>
-            <td>
-              <span name="product_price-${carted_product.id}">${int(carted_product.product.price)}</span>
+            <td style="text-align: right;">
+              <span name="product_price-${carted_product.id}">${h.price_format(carted_product.product.price)}円</span>
             </td>
-            <td>
+            <td style="text-align: right;">
               ${carted_product.quantity}
             </td>
           </tr>
@@ -44,10 +44,10 @@
                 % endfor
               </ul>
             </td>
-            <td>
-              ${int(carted_product_item.product_item.price)}
+            <td style="text-align: right;">
+              ${h.price_format(carted_product_item.product_item.price)}円
             </td>
-            <td>
+            <td style="text-align: right;">
               % if carted_product.product.seat_stock_type.quantity_only:
               <span name="product_quantity-${carted_product.id}">${carted_product.quantity}</span>
               % else:
@@ -59,22 +59,22 @@
           % else:
           <tr>
             <td colspan="2">決済手数料 (${cart.payment_delivery_pair.payment_method.name})</td>
-            <td>${h.price_format(cart.delivery_fee)}円</td>
+            <td style="text-align: right;">${h.price_format(cart.delivery_fee)}円</td>
             <td></td>
           </tr>
           <tr>
             <td colspan="2">配送手数料 (${cart.payment_delivery_pair.delivery_method.name})</td>
-            <td>${h.price_format(cart.transaction_fee)}円</td>
+            <td style="text-align: right;">${h.price_format(cart.transaction_fee)}円</td>
             <td></td>
           </tr>
           <tr>
             <td colspan="2">システム利用料</td>
-            <td>${h.price_format(cart.system_fee)}円</td>
+            <td style="text-align: right;">${h.price_format(cart.system_fee)}円</td>
             <td></td>
           </tr>
           <tr>
             <td colspan="2">合計金額</td>
-            <td>${h.price_format(cart.total_amount)}円</td>
+            <td style="text-align: right;">${h.price_format(cart.total_amount)}円</td>
             <td></td>
           </tr>
           % endfor

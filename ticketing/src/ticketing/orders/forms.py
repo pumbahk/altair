@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import locale
 from datetime import datetime
+
 from wtforms import Form, ValidationError
 from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, TextAreaField,
                      BooleanField, RadioField, FieldList, FormField, DecimalField, IntegerField)
@@ -170,13 +172,19 @@ class OrderReserveForm(Form):
                                   .join(Product.items)\
                                   .filter(ProductItem.performance_id==performance.id)\
                                   .filter(ProductItem.stock_id.in_(kwargs['stocks'])).all()
-                self.products.choices += [(p.id, p.name) for p in products]
+                for p in products:
+                    self.products.choices += [
+                        (p.id, u'%s (%s円) %s' % (p.name, locale.format('%d', p.price, True), p.sales_segment.name))
+                    ]
             else:
                 # 数受け
                 products = Product.filter(Product.sales_segment_id.in_([ss.id for ss in sales_segments]))\
                                   .join(Product.seat_stock_type)\
                                   .filter(StockType.quantity_only==1).all()
-                self.products.choices += [(p.id, p.name) for p in products]
+                for p in products:
+                    self.products.choices += [
+                        (p.id, u'%s (%s円) %s' % (p.name, locale.format('%d', p.price, True), p.sales_segment.name))
+                    ]
 
     def _get_translations(self):
         return Translations()
