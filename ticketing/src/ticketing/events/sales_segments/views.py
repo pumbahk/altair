@@ -100,6 +100,29 @@ class SalesSegments(BaseView):
                 'form':f,
             }
 
+    @view_config(route_name='sales_segments.copy', request_method='POST', renderer='ticketing:templates/sales_segments/_copy_form.html')
+    def copy_post(self):
+        source_sales_segment_id = int(self.request.matchdict.get('sales_segment_id', 0))
+        source_sales_segment = SalesSegment.get(id=source_sales_segment_id)
+        if source_sales_segment is None:
+            return HTTPNotFound('sales_segment id %d is not found' % sales_segment_id)
+
+        f = SalesSegmentForm(self.request.POST)
+        if f.validate():
+            sales_segment = merge_session_with_post(SalesSegment(), f.data)
+            sales_segment.id = None # XXX!
+            sales_segment.event_id = source_sales_segment.event_id
+            SalesSegment.copy_products(from_=source_sales_segment, to_=sales_segment)
+            sales_segment.save()
+
+
+            self.request.session.flash(u'販売区分を保存しました')
+            return render_to_response('ticketing:templates/refresh.html', {}, request=self.request)
+        else:
+            return {
+                'form':f,
+            }
+
     @view_config(route_name='sales_segments.delete')
     def delete(self):
         sales_segment_id = int(self.request.matchdict.get('sales_segment_id', 0))

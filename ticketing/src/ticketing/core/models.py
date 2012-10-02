@@ -865,6 +865,32 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         return {template.id:sales_segment.id}
 
+    @classmethod
+    def copy_products(cls, from_, to_):
+        products = DBSession.query(Product).filter(Product.sales_segment_id==from_.id).all()
+        for product in products:
+
+            new_product = Product(
+                name=product.name,
+                price=product.price,
+                display_order=product.display_order,
+                seat_stock_type_id=product.seat_stock_type_id,
+                event_id=product.event_id,
+                sales_segment=to_,
+            )
+
+            for product_item in product.items:
+
+                new_product_item = ProductItem(
+                    name=product_item.name,
+                    price=product_item.price,
+                    stock_id=product_item.stock_id,
+                    quantity=product_item.quantity,
+                    ticket_bundle_id=product_item.ticket_bundle_id,
+                    product=new_product,
+                )
+
+
 class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentDeliveryMethodPair'
 
