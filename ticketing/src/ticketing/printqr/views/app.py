@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 @view_config(permission="sales_counter", route_name="index", 
              renderer="ticketing.printqr:templates/index.html")
 def index_view(context, request):
+    print context.operator
     return dict(json=json, 
                 endpoints=context.applet_endpoints, 
                 api_resource=context.api_resource)

@@ -1,5 +1,6 @@
 from pyramid.decorator import reify
-from pyramid.security import Allow
+from pyramid.security import Allow, authenticated_userid
+from ticketing.operators.models import Operator, OperatorAuth
 
 class PrintQRResource(object):
     def __init__(self, request):
@@ -7,6 +8,12 @@ class PrintQRResource(object):
     __acl__ = [
         (Allow, 'group:sales_counter', 'sales_counter')
     ]
+
+    @reify
+    def operator(self):
+        login_id = authenticated_userid(self.request)
+        return Operator.query.filter(Operator.id==OperatorAuth.operator_id)\
+            .filter(OperatorAuth.login_id==login_id).one()
 
     @reify
     def api_resource(self):

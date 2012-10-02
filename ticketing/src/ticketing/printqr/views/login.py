@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
 from ticketing.printqr import forms
