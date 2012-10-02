@@ -80,6 +80,9 @@ class CRUDResource(RootFactory): ## fixme
 
     def confirmed_form(self, obj=None):
         form = self.form(self.request.POST)
+        if hasattr(form, "configure"):
+            form.configure(self.request)
+
         if form.validate():
             if not hasattr(form, "object_validate") or form.object_validate(obj):
                 return form
