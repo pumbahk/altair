@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['WDRXS3GXA0CS1K9P'] = (function (exports) { (function () { 
+__LIBS__['E1XMTGGQERB96C16'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -70,7 +70,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['rFO91HSG1201LMPN'] = (function (exports) { (function () { 
+__LIBS__['UQHUIAEH6THTKVFF'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -96,7 +96,7 @@ exports.ja = {
   } 
 };
  })(); return exports; })({});
-__LIBS__['PS0Y7EDG7GUYQ8XW'] = (function (exports) { (function () { 
+__LIBS__['C1UW93KUM24R6EM1'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -195,7 +195,7 @@ exports.mergeStyle = function mergeStyle(a, b) {
   };
 };
  })(); return exports; })({});
-__LIBS__['gDBX4ZHS7MID0AEM'] = (function (exports) { (function () { 
+__LIBS__['LE7CEFZ25T42URL_'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -244,12 +244,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['qFVT4FR8TS00AXPO'] = (function (exports) { (function () { 
+__LIBS__['_CCJ5XS7IAF0D_UX'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['PS0Y7EDG7GUYQ8XW'];
-var CONF = __LIBS__['WDRXS3GXA0CS1K9P'];
-var IdentifiableSet = __LIBS__['gDBX4ZHS7MID0AEM'].IdentifiableSet;
+var util = __LIBS__['C1UW93KUM24R6EM1'];
+var CONF = __LIBS__['E1XMTGGQERB96C16'];
+var IdentifiableSet = __LIBS__['LE7CEFZ25T42URL_'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -275,7 +275,7 @@ var Venue = exports.Venue = function Venue() {
 _.extend(Venue.prototype, Backbone.Events);
 
 Venue.prototype.initialize = function Venue_initialize(initialData, options) {
-  initialData = initialData || { seats: {}, stock_types: [], stock_holders: [] };
+  initialData = initialData || { seats: {}, stock_types: [], stock_holders: [], stocks: [] };
   var stockTypes = new StockTypeCollection(null, { venue: this });
   var stockHolders = new StockHolderCollection(null, { venue: this });
   var stocks = new StockCollection(null, { venue: this });
@@ -284,6 +284,7 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
   var perStockSeatSet = {};
   var perStockHolderStockMap = {};
   var perStockTypeStockMap = {};
+
   stockTypes.add({
     id: "",
     name: I18n ? I18n.t("altair.venue_editor.unassigned"): "Unassigned",
@@ -292,36 +293,42 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
     quantity: 0,
     style: {}
   });
-  for (var i = 0; i < initialData.stock_types.length; i++) {
-    var stockTypeDatum = initialData.stock_types[i];
-    var stockType = new StockType({
-      id: stockTypeDatum.id,
-      name: stockTypeDatum.name,
-      isSeat: stockTypeDatum.is_seat,
-      quantityOnly: stockTypeDatum.quantity_only,
-      style: stockTypeDatum.style
-    });
-    stockTypes.add(stockType);
-    stockType.on('change:name', function () {
-      this.set('edited', true);
-    });
-    stockType.on('change:style', function () {
-      this.set('edited', true);
-    });
+  if (initialData.stock_types) {
+    for (var i = 0; i < initialData.stock_types.length; i++) {
+      var stockTypeDatum = initialData.stock_types[i];
+      var stockType = new StockType({
+        id: stockTypeDatum.id,
+        name: stockTypeDatum.name,
+        isSeat: stockTypeDatum.is_seat,
+        quantityOnly: stockTypeDatum.quantity_only,
+        style: stockTypeDatum.style
+      });
+      stockTypes.add(stockType);
+      stockType.on('change:name', function () {
+        this.set('edited', true);
+      });
+      stockType.on('change:style', function () {
+        this.set('edited', true);
+      });
+    }
   }
+
   stockHolders.add({
     id: "",
     name: I18n ? I18n.t("altair.venue_editor.unassigned"): "Unassigned",
     style: {}
   });
-  for (var i = 0; i < initialData.stock_holders.length; i++) {
-    var stockHolderDatum = initialData.stock_holders[i];
-    stockHolders.add({
-      id: stockHolderDatum.id,
-      name: stockHolderDatum.name,
-      style: stockHolderDatum.style
-    });
+  if (initialData.stock_holders) {
+    for (var i = 0; i < initialData.stock_holders.length; i++) {
+      var stockHolderDatum = initialData.stock_holders[i];
+      stockHolders.add({
+        id: stockHolderDatum.id,
+        name: stockHolderDatum.name,
+        style: stockHolderDatum.style
+      });
+    }
   }
+
   function normalizedId(id) { return id === null ? "": "" + id; }
   for (var i = 0; i < initialData.stocks.length; i++) {
     var stockDatum = initialData.stocks[i];
@@ -335,33 +342,33 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
       available: stockDatum.available
     });
     stocks.push(stock);
-    {
-      var map = perStockHolderStockMap[stockHolder.id];
-      if (!map)
-        map = perStockHolderStockMap[stockHolder.id] = {};
-      map[stockType.id] = stock;
-    }
-    {
-      var map = perStockTypeStockMap[stockType.id];
-      if (!map)
-        map = perStockTypeStockMap[stockType.id] = {};
-      map[stockHolder.id] = stock;
-    }
     stock.on('change:assigned', function () {
       this.set('edited', true);
       this.get('stockHolder').recalculateQuantity();
       this.get('stockType').recalculateQuantity();
     });
-    stock.on('change:stockHolder change:stockType', function () {
-      var prevStockHolderId = this.previous('stockHolder').id;
-      var newStockHolderId = this.get('stockHolder').id;
-      var prevStockTypeId = this.previous('stockType').id;
-      var newStockTypeId = this.get('stockType').id;
-      delete perStockHolderStockMap[prevStockHolderId][prevStockTypeId];
-      delete perStockTypeStockMap[prevStockTypeId][prevStockHolderId];
-      perStockHolderStockMap[newStockHolderId][newStockTypeId] = this;
-      perStockTypeStockMap[newStockTypeId][newStockHolderId] = this;
-    });
+    if (stockHolder && stockType) {
+      var map = perStockHolderStockMap[stockHolder.id];
+      if (!map)
+        map = perStockHolderStockMap[stockHolder.id] = {};
+      map[stockType.id] = stock;
+
+      map = perStockTypeStockMap[stockType.id];
+      if (!map)
+        map = perStockTypeStockMap[stockType.id] = {};
+      map[stockHolder.id] = stock;
+
+      stock.on('change:stockHolder change:stockType', function () {
+        var prevStockHolderId = this.previous('stockHolder').id;
+        var newStockHolderId = this.get('stockHolder').id;
+        var prevStockTypeId = this.previous('stockType').id;
+        var newStockTypeId = this.get('stockType').id;
+        delete perStockHolderStockMap[prevStockHolderId][prevStockTypeId];
+        delete perStockTypeStockMap[prevStockTypeId][prevStockHolderId];
+        perStockHolderStockMap[newStockHolderId][newStockTypeId] = this;
+        perStockTypeStockMap[newStockTypeId][newStockHolderId] = this;
+      });
+    }
   }
   _.each(Seat.styleProviderAttributes, function (name) {
     perAttributeSeatSet[name] = {};
@@ -432,9 +439,7 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
   this.perStockSeatSet = perStockSeatSet;
   this.perStockHolderStockMap = perStockHolderStockMap;
   this.perStockTypeStockMap = perStockTypeStockMap;
-  this.callbacks = options && options.callbacks ?
-                     _.clone(options.callbacks):
-                     {};
+  this.callbacks = options && options.callbacks ? _.clone(options.callbacks) : {};
 };
 
 Venue.prototype.setCallback = function Venue_setCallback(name, value) {
@@ -718,12 +723,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['vIU0E9KRM51MJEL4'] = (function (exports) { (function () { 
+__LIBS__['xX816GZS_MZ5XCWP'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['PS0Y7EDG7GUYQ8XW'];
-var CONF = __LIBS__['WDRXS3GXA0CS1K9P'];
-var models = __LIBS__['qFVT4FR8TS00AXPO'];
+var util = __LIBS__['C1UW93KUM24R6EM1'];
+var CONF = __LIBS__['E1XMTGGQERB96C16'];
+var models = __LIBS__['_CCJ5XS7IAF0D_UX'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -919,13 +924,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['WDRXS3GXA0CS1K9P'];
-  var models = __LIBS__['qFVT4FR8TS00AXPO'];
-  var util = __LIBS__['PS0Y7EDG7GUYQ8XW'];
-  var viewobjects = __LIBS__['vIU0E9KRM51MJEL4'];
-  var IdentifiableSet = __LIBS__['gDBX4ZHS7MID0AEM'].IdentifiableSet;
+  var CONF = __LIBS__['E1XMTGGQERB96C16'];
+  var models = __LIBS__['_CCJ5XS7IAF0D_UX'];
+  var util = __LIBS__['C1UW93KUM24R6EM1'];
+  var viewobjects = __LIBS__['xX816GZS_MZ5XCWP'];
+  var IdentifiableSet = __LIBS__['LE7CEFZ25T42URL_'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['rFO91HSG1201LMPN'];
+    I18n.translations = __LIBS__['UQHUIAEH6THTKVFF'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;

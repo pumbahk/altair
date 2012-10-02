@@ -75,37 +75,40 @@ def get_seats(request):
             for seat_adjacency_set in DBSession.query(SeatAdjacencySet).options(joinedload("adjacencies"), joinedload('adjacencies.seats')).filter(SeatAdjacencySet.venue==venue)
             ]
 
-    # 販売している座席のみの指定がある場合
-    stocks_query = DBSession.query(Stock).options(joinedload('stock_status')).filter_by(performance=venue.performance)
-    if u'sale_only' in filter_params:
-        stocks_query = stocks_query.filter(exists().where(and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Seat.stock_id)))
-    retval[u'stocks'] = [
-        dict(
-            id=stock.id,
-            assigned=stock.quantity,
-            stock_type_id=stock.stock_type_id,
-            stock_holder_id=stock.stock_holder_id,
-            available=stock.stock_status.quantity)\
-        for stock in stocks_query
-        ]
+    if u'stocks' in necessary_params:
+        stocks_query = DBSession.query(Stock).options(joinedload('stock_status')).filter_by(performance=venue.performance)
+        # 販売している座席のみの指定がある場合
+        if u'sale_only' in filter_params:
+            stocks_query = stocks_query.filter(exists().where(and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Seat.stock_id)))
+        retval[u'stocks'] = [
+            dict(
+                id=stock.id,
+                assigned=stock.quantity,
+                stock_type_id=stock.stock_type_id,
+                stock_holder_id=stock.stock_holder_id,
+                available=stock.stock_status.quantity)\
+            for stock in stocks_query
+            ]
 
-    retval[u'stock_types'] = [
-        dict(
-            id=stock_type.id,
-            name=stock_type.name,
-            is_seat=stock_type.is_seat,
-            quantity_only=stock_type.quantity_only,
-            style=stock_type.style) \
-        for stock_type in DBSession.query(StockType).filter_by(event=venue.performance.event).order_by(StockType.display_order)
-        ]
+    if u'stock_types' in necessary_params:
+        retval[u'stock_types'] = [
+            dict(
+                id=stock_type.id,
+                name=stock_type.name,
+                is_seat=stock_type.is_seat,
+                quantity_only=stock_type.quantity_only,
+                style=stock_type.style) \
+            for stock_type in DBSession.query(StockType).filter_by(event=venue.performance.event).order_by(StockType.display_order)
+            ]
 
-    retval[u'stock_holders'] = [
-        dict(
-            id=stock_holder.id,
-            name=stock_holder.name,
-            style=stock_holder.style) \
-        for stock_holder in DBSession.query(StockHolder).filter_by(event=venue.performance.event)
-        ]
+    if u'stock_holders' in necessary_params:
+        retval[u'stock_holders'] = [
+            dict(
+                id=stock_holder.id,
+                name=stock_holder.name,
+                style=stock_holder.style) \
+            for stock_holder in DBSession.query(StockHolder).filter_by(event=venue.performance.event)
+            ]
 
     return retval
 
