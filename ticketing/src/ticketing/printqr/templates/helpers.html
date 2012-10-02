@@ -1,0 +1,28 @@
+<%def name="alert_message(f)">
+  % if f.errors:
+    <div class="alert alert-error">
+      <a class="close" data-dismiss="alert">&times;</a>
+      <h4 class="alert-heading">エラー</h4>
+      % for field in f:
+        % if field.errors:
+          <ul>
+          % for e in field.errors:
+            <li>${field.label.text} : ${e}</li>
+          % endfor
+          </ul>
+        % endif
+      % endfor
+    </div>
+  % endif
+</%def>
+
+<%def name="flash_messages(request, type='alert-success')">
+  % if request.session.peek_flash():
+    <div class="alert ${type}">
+      <a class="close" data-dismiss="alert">&times;</a>
+      % for message in request.session.pop_flash():
+        <h4 class="alert-heading">${message}</h4>
+      % endfor
+    </div>
+  % endif
+</%def>

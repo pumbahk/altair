@@ -1,8 +1,12 @@
 from pyramid.decorator import reify
+from pyramid.security import Allow
 
 class PrintQRResource(object):
     def __init__(self, request):
         self.request = request
+    __acl__ = [
+        (Allow, 'group:sales_counter', 'sales_counter')
+    ]
 
     @reify
     def api_resource(self):

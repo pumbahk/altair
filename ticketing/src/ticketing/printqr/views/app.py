@@ -5,10 +5,11 @@ from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPBadRequest
 from ticketing.qr import get_qrdata_builder
 import logging
-from . import utils 
+from ticketing.printqr import utils 
 logger = logging.getLogger(__name__)
 
-@view_config(route_name="index", renderer="ticketing.printqr:templates/index.html")
+@view_config(permission="sales_counter", route_name="index", 
+             renderer="ticketing.printqr:templates/index.html")
 def index_view(context, request):
     return dict(json=json, 
                 endpoints=context.applet_endpoints, 
