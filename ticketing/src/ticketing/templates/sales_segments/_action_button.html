@@ -13,6 +13,25 @@
     reset_form(modal, '#event_id, #upper_limit, #seat_choice, #public');
     modal.modal('toggle');
   }
+  function copy_sales_segment() {
+    var id = $('input[name=sales_segment_id]:checked').val() || $('#sales_segments-form').find('#sales_segment_id').attr('value');
+    if (!id) return;
+    var el = '#sales_segment-' + id;
+    var modal = $('#modal-copy-sales_segment');
+    modal.find('#id').val($(el + ' #id').text());
+    modal.find('#kind').val($(el + ' #kind').attr('value'));
+    modal.find('#name').val($(el + ' #name').text() + " コピー");
+    modal.find('#start_at').val($(el + ' #current_start_at').text().trim());
+    modal.find('#end_at').val($(el + ' #current_end_at').text().trim());
+    modal.find('#upper_limit').val($(el + ' #upper_limit').text());
+    if ($(el + ' #seat_choice').attr('value')) {
+      modal.find('#seat_choice').attr('checked');
+    }
+    if ($(el + ' #public').attr('value')) {
+      modal.find('#public').attr('checked');
+    }
+    modal.modal('toggle');
+  }
   function edit_sales_segment() {
     var id = get_id('sales_segment_id');
     if (!id) return;
@@ -47,6 +66,16 @@
     var url = id ? '/events/sales_segments/edit/' + id : '/events/sales_segments/new/' + $(modal).find('#event_id').val();
     post_modal_form(modal, form, url);
   }
+  function post_copy_sales_segment() {
+    var modal = '#modal-copy-sales_segment';
+    var form = '#sales_segments-copy-form';
+    var id = $(modal).find('#id').val();
+    if (!id) {
+        return;
+    }
+    var url = '/events/sales_segments/copy/' + id;
+    post_modal_form(modal, form, url);
+  }
 </script>
 
 <%
@@ -54,6 +83,11 @@
     'new':dict(
       label=u'新規',
       url='javascript:new_sales_segment();',
+      icon='icon-plus',
+    ),
+    'copy':dict(
+      label=u'コピーして新規作成',
+      url='javascript:copy_sales_segment();',
       icon='icon-plus',
     ),
     'edit':dict(
@@ -72,7 +106,7 @@
       icon='icon-th-list',
     ),
   }
-  order = iter(order or ['new', 'show', 'edit', 'delete'])
+  order = iter(order or ['new', 'copy', 'show', 'edit', 'delete'])
 %>
 ${h.action_button(actions, order)}
 

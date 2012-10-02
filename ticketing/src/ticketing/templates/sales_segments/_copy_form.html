@@ -4,14 +4,14 @@
 <script type="text/javascript">
   $(function() {
     $('.datefield').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
-    $('#modal-sales_segment #seat_choice').change(function() {
+    $('#modal-copy-sales_segment #seat_choice').change(function() {
       if ($(this).attr('checked')) {
         $(this).val(${form.seat_choice.default});
       } else {
         $(this).val(0);
       }
     }).change();
-    $('#modal-sales_segment #public').change(function() {
+    $('#modal-copy-sales_segment #public').change(function() {
       if ($(this).attr('checked')) {
         $(this).val(${form.public.default});
       } else {
@@ -21,14 +21,15 @@
   });
 </script>
 
-<div id="modal-sales_segment" class="modal fade">
+<div id="modal-copy-sales_segment" class="modal fade">
   <div class="modal-header">
     <a class="close" data-dismiss="modal">×</a>
-    <h3>販売区分</h3>
+    <h3>販売方法をコピー</h3>
+      <p>コピー元の販売区分に属する商品を新しい販売区分にすべてコピーします。</p>
   </div>
 
   <div class="modal-body">
-    <form id="edit" action="javascript:save_sales_segment();" method="POST">
+    <form id="edit" action="javascript:post_copy_sales_segment();" method="POST">
       ${h.form_item(form.id)}
       ${h.form_item(form.event_id)}
       ${h.form_item(form.kind)}
@@ -44,7 +45,6 @@
 
   <div class="modal-footer">
     <a href="#" class="btn" data-dismiss="modal">閉じる</a>
-    <a href="javascript:void(0);" onclick="$('#modal-sales_segment').find('form').submit();" class="btn">保存</a>
+    <a href="javascript:void(0);" onclick="$('#modal-copy-sales_segment').find('form').submit();" class="btn">保存</a>
   </div>
 </div>
-
