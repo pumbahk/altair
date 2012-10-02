@@ -111,10 +111,11 @@
         <div class="ui-corner-all ui-toolbar clearfix">
           <div style="float:left">
             <span class="ui-buttonset">
-              <input type="radio" name="function" value="select" class="ui-button ui-icon-primary-arrowthick-1-ne action-select ui-no-text" id="toolbar-action-select" checked="checked" /><label for="toolbar-action-select">Select</label>
-              <input type="radio" name="function" value="zoomin" class="ui-button ui-icon-primary-zoomin action-zoomin ui-no-text" id="toolbar-action-zoomin" /><label for="toolbar-action-zoomin">Zoom In</label>
-              <input type="radio" name="function" value="zoomout" class="ui-button ui-icon-primary-zoomout action-zoomout ui-no-text" id="toolbar-action-zoomout" /><label for="toolbar-action-zoomout">Zoom Out</label>
-              <input type="checkbox" value="clearSelection" class="ui-button ui-icon-primary-close action-clearSelection ui-no-text" id="toolbar-action-clearSelection" /><label for="toolbar-action-clearSelection">Clear Selection</label>
+              <input type="radio" name="function" value="select" class="ui-button ui-icon-primary-arrowthick-1-ne action-select ui-no-text" id="toolbar-action-select" checked="checked" /><label for="toolbar-action-select">席を選択</label>
+              <input type="radio" name="function" value="zoomin" class="ui-button ui-icon-primary-zoomin action-zoomin ui-no-text" id="toolbar-action-zoomin" /><label for="toolbar-action-zoomin">縮小</label>
+              <input type="radio" name="function" value="zoomout" class="ui-button ui-icon-primary-zoomout action-zoomout ui-no-text" id="toolbar-action-zoomout" /><label for="toolbar-action-zoomout">拡大</label>
+              <input type="checkbox" value="clearSelection" class="ui-button ui-icon-primary-close action-clearSelection ui-no-text" id="toolbar-action-clearSelection" /><label for="toolbar-action-clearSelection">すべての選択を解除</label>
+              <input type="checkbox" value="refresh" class="ui-button ui-icon-primary-refresh action-refresh ui-no-text" id="toolbar-action-refresh" /><label for="toolbar-action-refresh">最新情報に更新</label>
             </span>
           </div>
           %if hasattr(caller, 'toolbar_extra'):
@@ -203,6 +204,9 @@ venueEditorRoot.venueeditor({
       case 'clearSelection':
         $("#toolbar-action-clearSelection").attr("checked", "checked");
         break;
+      case 'refresh':
+        $("#toolbar-action-refresh").attr("checked", "checked");
+        break;
       }
     },
     click: function (viewer, seat, highlighted) {
@@ -234,6 +238,11 @@ venueEditor.find(".action-zoomout").click(function () {
 venueEditor.find(".action-clearSelection").click(function () {
   $("label[for='toolbar-action-clearSelection']").removeClass("ui-state-active");
   venueEditorRoot.venueeditor("clearSelection");
+  venueEditor.find(".action-select").click();
+});
+venueEditor.find(".action-refresh").click(function () {
+  $("label[for='toolbar-action-refresh']").removeClass("ui-state-active");
+  venueEditorRoot.venueeditor("refresh");
   venueEditor.find(".action-select").click();
 });
 venueEditor.find(".action-select").click(function () {

@@ -52,7 +52,7 @@
             data_source = {
               'drawing': request.route_path('api.get_drawing', venue_id=performance.venue.id),
               'metadata': request.route_path('api.get_seats', venue_id=performance.venue.id,
-              _query={u'n':u'seats|stock_types|stock_holders|stocks', u'f':u'sale_only'})
+                _query={u'n':u'seats|stock_types|stock_holders|stocks', u'f':u'sale_only'})
             }
           %>
           <%vv:venueeditor data_source="${data_source}">
@@ -181,7 +181,7 @@
       dataType: 'html',
       data: {'performance_id':${performance.id}},
       success: function(data) {
-        $('#sales-summary').effect("highlight", {color: '#D9EDF7'}, 1000);
+        $('#sales-summary').effect("highlight", {color: '#DCDCDC'}, 1000);
         $('#sales-summary').html(data);
       }
     });

@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['E1XMTGGQERB96C16'] = (function (exports) { (function () { 
+__LIBS__['wVT5MKPHMGM18XQB'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -70,7 +70,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['UQHUIAEH6THTKVFF'] = (function (exports) { (function () { 
+__LIBS__['C2S4EZ8KEYDFQ8YG'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -96,7 +96,7 @@ exports.ja = {
   } 
 };
  })(); return exports; })({});
-__LIBS__['C1UW93KUM24R6EM1'] = (function (exports) { (function () { 
+__LIBS__['EHHNC0TN6E_5FFU9'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -195,7 +195,7 @@ exports.mergeStyle = function mergeStyle(a, b) {
   };
 };
  })(); return exports; })({});
-__LIBS__['LE7CEFZ25T42URL_'] = (function (exports) { (function () { 
+__LIBS__['wN4IABH73ICB_8A7'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -244,12 +244,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['_CCJ5XS7IAF0D_UX'] = (function (exports) { (function () { 
+__LIBS__['WUIN3F6JS7HW4PUL'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['C1UW93KUM24R6EM1'];
-var CONF = __LIBS__['E1XMTGGQERB96C16'];
-var IdentifiableSet = __LIBS__['LE7CEFZ25T42URL_'].IdentifiableSet;
+var util = __LIBS__['EHHNC0TN6E_5FFU9'];
+var CONF = __LIBS__['wVT5MKPHMGM18XQB'];
+var IdentifiableSet = __LIBS__['wN4IABH73ICB_8A7'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -723,12 +723,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['xX816GZS_MZ5XCWP'] = (function (exports) { (function () { 
+__LIBS__['CTNUGVXPPYKZFDXQ'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['C1UW93KUM24R6EM1'];
-var CONF = __LIBS__['E1XMTGGQERB96C16'];
-var models = __LIBS__['_CCJ5XS7IAF0D_UX'];
+var util = __LIBS__['EHHNC0TN6E_5FFU9'];
+var CONF = __LIBS__['wVT5MKPHMGM18XQB'];
+var models = __LIBS__['WUIN3F6JS7HW4PUL'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -924,13 +924,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['E1XMTGGQERB96C16'];
-  var models = __LIBS__['_CCJ5XS7IAF0D_UX'];
-  var util = __LIBS__['C1UW93KUM24R6EM1'];
-  var viewobjects = __LIBS__['xX816GZS_MZ5XCWP'];
-  var IdentifiableSet = __LIBS__['LE7CEFZ25T42URL_'].IdentifiableSet;
+  var CONF = __LIBS__['wVT5MKPHMGM18XQB'];
+  var models = __LIBS__['WUIN3F6JS7HW4PUL'];
+  var util = __LIBS__['EHHNC0TN6E_5FFU9'];
+  var viewobjects = __LIBS__['CTNUGVXPPYKZFDXQ'];
+  var IdentifiableSet = __LIBS__['wN4IABH73ICB_8A7'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['UQHUIAEH6THTKVFF'];
+    I18n.translations = __LIBS__['C2S4EZ8KEYDFQ8YG'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -1147,7 +1147,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
     this.drawing = null;
     this.metadata = null;
     this.keyEvents = null;
-    this.zoomRatio = 1.0;
+    this.zoomRatio = 1;
     this.uiMode = 'select1';
     this.shapes = null;
     this.seats = null;
@@ -1172,6 +1172,17 @@ var Seat = exports.Seat = Backbone.Model.extend({
     if (data.metadata.seat_adjacencies)
       this.seatAdjacencies = new models.SeatAdjacencies(data.metadata.seat_adjacencies);
     this.initDrawable();
+    this.initModel();
+    this.initSeats();
+    this.callbacks.load && this.callbacks.load(this);
+  };
+
+  VenueEditor.prototype.refresh = function VenueEditor_refresh(data) {
+    for (var key in data.metadata) {
+      for (var id in data.metadata[key]) {
+        this.metadata[key][id] = data.metadata[key][id];
+      }
+    }
     this.initModel();
     this.initSeats();
     this.callbacks.load && this.callbacks.load(this);
@@ -1540,6 +1551,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
             var waiter = new util.AsyncDataWaiter({
               identifiers: ['drawing', 'metadata'],
               after: function main(data) {
+                aux.loaded_at = Math.ceil((new Date).getTime() / 1000);
                 aux.manager.load(data);
               }
             });
@@ -1581,6 +1593,20 @@ var Seat = exports.Seat = Backbone.Model.extend({
           case 'clearAll':
             aux.manager.clearAll();
             return;
+
+          case 'refresh':
+            // Load metadata
+            $.ajax({
+              url: aux.dataSource.metadata + '&loaded_at=' + aux.loaded_at,
+              dataType: 'json',
+              success: function(data) {
+                aux.loaded_at = Math.ceil((new Date).getTime() / 1000);
+                aux.manager.refresh({'metadata':data});
+              },
+              error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load seat data (reason: " + text + ")"); }
+            });
+            aux.callbacks.loading && aux.callbacks.loading(aux.manager);
+            break;
 
           case 'adjacency':
             aux.manager.adjacencyLength(arguments[1]|0);
