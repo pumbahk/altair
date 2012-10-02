@@ -76,26 +76,31 @@ def category_mapper(request, obj):
             setattr(objlike, k, u"-")
     return objlike
 
+def show_cms_detail_page(request, page):
+    if page is None:
+        return u"-"
+    url= request.route_path("page_detail", page_id=page.id)
+    return Markup(u'<a href="%s">%s</a>' % (url, page.name))
+
 def topic_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
     objlike.event = Markup(u'<a href="%s">%s</a>' % (request.route_path("event", id=obj.event.id), obj.event.title)) if obj.event else u"-"
     objlike.text = obj.text if len(obj.text) <= 20 else obj.text[:20]+u"..."
-    objlike.bound_page = obj.bound_page.name if obj.bound_page else u"-"
-    objlike.linked_page = obj.linked_page.name if obj.linked_page else u"-"
-    url = h.link.get_link_from_topic(request, obj)
-    objlike.link = Markup(u'<a href="%s">リンク先</a>' % url)
+    objlike.bound_page = show_cms_detail_page(request, obj.bound_page)
+    objlike.linked_page = show_cms_detail_page(request, obj.linked_page)
+    objlike.link = obj.link or u"-"
+    objlike.mobile_link = obj.mobile_link or u"-"
     return objlike
 
-CDWN_DICT = dict(Topcontent.COUNTDOWN_CANDIDATES)
+CDWN_DICT = dict(Topcontent.COUNTDOWN_CANDIDATES)    
 def topcontent_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
-
     objlike.image_asset = image_asset_layout(request, obj.image_asset)
     objlike.mobile_image_asset = image_asset_layout(request, obj.mobile_image_asset)
-    objlike.bound_page = obj.bound_page.name if obj.bound_page else u"-"
-    objlike.linked_page = obj.linked_page.name if obj.linked_page else u"-"
-    url = h.link.get_link_from_topcontent(request, obj)
-    objlike.link = Markup(u'<a href="%s">リンク先</a>' % url)
+    objlike.bound_page = show_cms_detail_page(request, obj.bound_page)
+    objlike.linked_page = show_cms_detail_page(request, obj.linked_page)
+    objlike.link = obj.link or u"-"
+    objlike.mobile_link = obj.mobile_link or u"-"
     objlike.countdown_type = CDWN_DICT[obj.countdown_type]
     return objlike
 
