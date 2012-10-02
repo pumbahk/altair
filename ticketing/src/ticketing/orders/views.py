@@ -16,11 +16,14 @@ from paste.util.multidict import MultiDict
 import webhelpers.paginate as paginate
 from wtforms import ValidationError
 from wtforms.validators import Optional
+from sqlalchemy import and_
+from sqlalchemy.sql import exists
 
 from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.core.models import (Order, Event, Performance, PaymentDeliveryMethodPair, ShippingAddress,
                                    Product, ProductItem, OrderedProduct, OrderedProductItem, Seat, Venue,
-                                   Ticket, TicketBundle, TicketFormat, Ticket_TicketBundle)
+                                   Ticket, TicketBundle, TicketFormat, Ticket_TicketBundle,
+                                   Stock)
 from ticketing.users.models import MailSubscription
 from ticketing.orders.export import OrderCSV
 from ticketing.orders.forms import (OrderForm, OrderSearchForm, SejOrderForm, SejTicketForm,
@@ -34,7 +37,6 @@ from ticketing.fanstatic import with_bootstrap
 from ticketing.orders.events import notify_order_canceled
 from ticketing.tickets.utils import build_dicts_from_ordered_product_item
 from ticketing.cart import api
-from ticketing.cart.schemas import ClientForm
 
 logger = logging.getLogger(__name__)
 import pystache
@@ -593,6 +595,36 @@ class Orders(BaseView):
         order.note = f.note.data
         order.save()
         return {}
+
+    @view_config(route_name='orders.sales_summary', renderer='ticketing:templates/orders/_sales_summary.html', permission='sales_counter')
+    def sales_summary(self):
+        performance_id = int(self.request.params.get('performance_id', 0))
+        performance = Performance.get(performance_id)
+        if performance is None:
+            return HTTPNotFound('performance id %d is not found' % performance_id)
+
+        sales_summary = []
+        for stock_type in performance.event.stock_types:
+            stock_data = []
+            stocks = Stock.filter(Stock.performance_id==performance_id)\
+                          .filter(Stock.stock_type_id==stock_type.id)\
+                          .filter(Stock.quantity>0)\
+                          .filter(exists().where(and_(ProductItem.performance_id==performance_id, ProductItem.stock_id==Stock.id))).all()
+            for stock in stocks:
+                stock_data.append(dict(
+                    stock=stock,
+                    products=Product.find(performance_id=performance.id, stock_id=stock.id),
+                ))
+            sales_summary.append(dict(
+                stock_type=stock_type,
+                total_quantity=stock_type.num_seats(performance_id=performance.id, sale_only=True) or 0,
+                rest_quantity=stock_type.rest_num_seats(performance_id=performance.id, sale_only=True) or 0,
+                stocks=stock_data
+            ))
+
+        return {
+            'sales_summary':sales_summary
+        }
 
     @view_config(route_name="orders.item.preview", request_method="GET",
                  renderer='ticketing:templates/orders/_item_preview_dialog.html', permission='sales_counter')
