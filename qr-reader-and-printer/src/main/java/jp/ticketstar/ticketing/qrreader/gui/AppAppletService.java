@@ -1,41 +1,32 @@
-package jp.ticketstar.ticketing.qrreader;
+package jp.ticketstar.ticketing.qrreader.gui;
 
 import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Dimension2D;
-import java.awt.print.PageFormat;
-import java.awt.print.Paper;
-import java.awt.print.PrinterJob;
-import java.io.IOException;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.Map;
 
-import javax.print.PrintService;
+import jp.ticketstar.ticketing.qrreader.AppModel;
+import jp.ticketstar.ticketing.qrreader.AppService;
+import jp.ticketstar.ticketing.qrreader.CollectionUtils;
+import jp.ticketstar.ticketing.qrreader.Ticket;
+import jp.ticketstar.ticketing.qrreader.TicketImpl;
+import jp.ticketstar.ticketing.qrreader.gui.liveconnect.LiveConnectUtils;
+import netscape.javascript.JSObject;
 
-import jp.ticketstar.ticketing.ApplicationException;
-import jp.ticketstar.ticketing.qrreader.gui.IAppWindow;
-
-import org.apache.batik.bridge.BridgeContext;
 import org.apache.batik.bridge.BridgeExtension;
 import org.apache.batik.bridge.ExternalResourceSecurity;
-import org.apache.batik.bridge.GVTBuilder;
 import org.apache.batik.bridge.ScriptSecurity;
 import org.apache.batik.bridge.UserAgent;
-import org.apache.batik.dom.svg.SVGOMDocument;
 import org.apache.batik.gvt.event.EventDispatcher;
 import org.apache.batik.gvt.text.Mark;
 import org.apache.batik.util.ParsedURL;
-import org.apache.batik.gvt.GraphicsNode;
 import org.w3c.dom.Element;
 import org.w3c.dom.svg.SVGAElement;
 import org.w3c.dom.svg.SVGDocument;
 
-public class AppService {
-	protected AppModel model;
+public class AppAppletService extends AppService {
+	private AppApplet applet;
 	protected final UserAgent userAgent = new UserAgent() {
 		@Override
 		public EventDispatcher getEventDispatcher() {
@@ -51,20 +42,19 @@ public class AppService {
 	
 		@Override
 		public void displayError(Exception ex) {
-			// TODO Auto-generated method stub
-			
+			ex.printStackTrace(System.err);
 		}
 	
 		@Override
 		public void displayMessage(String message) {
-			// TODO Auto-generated method stub
-			
+	    	final JSObject window = JSObject.getWindow(applet);
+	    	window.call("alert", new Object[] { message });
 		}
 	
 		@Override
 		public void showAlert(String message) {
-			// TODO Auto-generated method stub
-			
+	    	final JSObject window = JSObject.getWindow(applet);
+	    	window.call("alert", new Object[] { message });
 		}
 	
 		@Override
@@ -258,88 +248,23 @@ public class AppService {
 			return null;
 		}
 	};
-	protected final BridgeContextFactory bridgeContextFactory = new DefaultBridgeContextFactory(userAgent);
-	
-	public AppService(AppModel model) {
-		this.model = model;
-	}
 
-	public void setAppWindow(IAppWindow appWindow) {
-		appWindow.bind(model);
-	}
-
-	protected TicketPrintable createTicketPrintable(PrinterJob job) {
-		final List<GraphicsNode> svgs = new ArrayList<GraphicsNode>();
-		final TicketTemplate template = model.getTicketTemplate();
-		final GVTBuilder builder = new GVTBuilder();
+	public Ticket createTicketFromJSObject(JSObject jsobj) {
 		try {
-			for (Ticket ticket: model.getTickets()) {
-				final SVGDocument doc = template.buildSVGDocument(ticket);
-				final BridgeContext ctx = bridgeContextFactory.createBridgeContext((SVGOMDocument)doc);
-				svgs.add(builder.build(ctx, doc));
-			}
-		} catch (IOException e) {
-			throw new ApplicationException(e);
+			final String seatId = (String)jsobj.getMember("seat_id").toString();
+			final String orderedProductItemTokenId = (String)jsobj.getMember("ordered_product_item_token_id").toString();
+			final String orderedProductItemId = (String)jsobj.getMember("ordered_product_item_id").toString();
+			final String orderId = (String)jsobj.getMember("order_id").toString();
+			final Map<String, String> data = CollectionUtils.stringValuedMap(LiveConnectUtils.jsObjectToMap((JSObject)jsobj.getMember("data"), false));
+			return new TicketImpl(seatId, orderedProductItemTokenId, orderedProductItemId, orderId, data);
+		} catch (RuntimeException e) {
+			e.printStackTrace();
+			throw e;
 		}
-		return new TicketPrintable(
-			svgs, job,
-			new AffineTransform(72. / 90, 0, 0, 72. / 90, 0, 0)
-		);
 	}
 
-	public void printAll() {
-		AccessController.doPrivileged(new PrivilegedAction<Object>() {
-			public Object run() {
-				try {
-					final PrinterJob job = PrinterJob.getPrinterJob();
-					job.setPrintService(model.getPrintService());
-					job.setPrintable(
-						createTicketPrintable(job),
-						createPageFormatFromTicketFormat(
-							model.getTicketTemplate().getTicketFormat()));
-					job.print();
-				} catch (Exception e) {
-					throw new ApplicationException(e);
-				}
-				return null;
-			}
-		});
-	}
-
-	protected PageFormat createPageFormatFromTicketFormat(TicketFormat ticketFormat) {
-		final PageFormat retval = new PageFormat(); 
-		{
-			final Paper paper = new Paper();
-			final Dimension2D size = ticketFormat.getSize();
-			final double width = size.getWidth(), height = size.getHeight();
-			paper.setImageableArea(0, 0, width, height);
-			paper.setSize(width, height);
-			retval.setPaper(paper);
-		}
-		return retval;
-	}
-	
-	public void addTicket(Ticket ticket) {
-		model.getTickets().add(ticket);
-	}
-
-	public void removeTicket(Ticket ticket) {
-		model.getTickets().remove(ticket);
-	}
-
-	public List<TicketTemplate> getTicketTemplates() {
-		return Collections.unmodifiableList(model.getTicketTemplates());
-	}
-
-	public List<PrintService> getPrintServices() {
-		return Collections.unmodifiableList(model.getPrintServices());
-	}
-
-	public PrintService getPrintService() {
-		return model.getPrintService();
-	}
-	
-	public void setPrintService(PrintService service) {
-		model.setPrintService(service);
+	public AppAppletService(AppApplet applet, AppModel model) {
+		super(model);
+		this.applet = applet;
 	}
 }

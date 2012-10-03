@@ -1,6 +1,7 @@
 package jp.ticketstar.ticketing.qrreader.gui;
 
 import java.awt.geom.Rectangle2D;
+import java.io.StringReader;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.util.List;
@@ -101,10 +102,11 @@ public class FormatLoader {
 			final TicketFormat ticketFormat = ticketFormats.get(ticketFormatId);
 			if (ticketFormat == null)
 				throw new ApplicationException("No such ticket template: id=" + ticketFormatId);
-			final Mustache mustache = mustacheFactory.compile(ticketTemplateDatum.get("drawing").getAsString());
+			final String name = ticketTemplateDatum.get("name").getAsString();
+			final Mustache mustache = mustacheFactory.compile(new StringReader(ticketTemplateDatum.get("drawing").getAsString()), name);
 			final MustacheTicketTemplate ticketTemplate = new MustacheTicketTemplate(
 					ticketTemplateDatum.get("id").getAsInt(),
-					ticketTemplateDatum.get("name").getAsString(),
+					name,
 					ticketFormat,
 					mustache);
 			retval.add(ticketTemplate);
@@ -112,10 +114,10 @@ public class FormatLoader {
 		return retval;
 	}
 	
-	public LoaderResult fetchFormats(AppAppletConfiguration config) {
+	public LoaderResult fetchTicketTemplates(AppAppletConfiguration config) {
 		JsonObject result;
 		try {
-			final URLConnection conn = connFactory.newURLConnection(config.formatsUrl);
+			final URLConnection conn = connFactory.newURLConnection(config.ticketTemplatesUrl);
 			final URLFetcher.FetchResult fr = URLFetcher.fetch(conn, null);
 			result = new JsonParser().parse(Charset.forName(fr.encoding != null ? fr.encoding: "UTF-8").decode(fr.buf).toString()).getAsJsonObject();
 		} catch (Exception e) {

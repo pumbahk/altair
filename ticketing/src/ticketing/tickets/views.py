@@ -435,7 +435,7 @@ class TicketPrinter(BaseView):
         return dict(endpoints=self.endpoints)
 
     @view_config(route_name='tickets.printer', renderer='ticketing:templates/tickets/printer.embedded.html', custom_predicates=(lambda c, r: '__embedded__' in r.GET,))
-    def printer(self):
+    def printer_embedded(self):
         return dict(
             endpoints=self.endpoints,
             orders=DBSession.query(Order) \
@@ -467,19 +467,19 @@ class TicketPrinter(BaseView):
 
     @view_config(route_name='tickets.printer.api.ticket', renderer='json')
     def ticket(self):
-        ticket_id = self.request.matchdict['id']
-        ticket = DBSession.query(Ticket) \
-            .filter_by(id=ticket_id,
-                       organization_id=self.context.organization.id) \
-            .one()
-        return dict(
-            ticket_formats=[
-                ticket_format_to_dict(ticket.ticket_format)
-                ],
-            ticket_templates=[
-                ticket_to_dict(ticket)
-                ]
-            )
+        ticket_id = self.request.matchdict['id'].strip()
+        q = DBSession.query(Ticket) \
+            .filter_by(organization_id=self.context.organization.id)
+        if ticket_id:
+            q = q.filter_by(id=ticket_id)
+        tickets = q.all()
+        return {
+            u'status': 'success',
+            u'data': {
+                u'ticket_formats': [ticket_format_to_dict(ticket_format) for ticket_format in dict((ticket.ticket_format.id, ticket.ticket_format) for ticket in tickets).itervalues()],
+                u'ticket_templates': [ticket_to_dict(ticket) for ticket in tickets]
+                }
+            }
 
     @view_config(route_name='tickets.printer.api.ticket_data', request_method='POST', renderer='json')
     def ticket_data(self):
@@ -584,3 +584,22 @@ class TicketPrinter(BaseView):
             return { u'status': u'success' }
         else:
             return { u'status': u'error' }
+
+
+@view_defaults(decorator=with_bootstrap, permission="event_editor")
+class QRReaderViewDemo(BaseView):
+    @view_config(route_name='tickets.printer', renderer='ticketing:templates/tickets/qrreader-demo.html', custom_predicates=(lambda c, r: '__qrreader_demo__' in r.GET,))
+    def qrreader_demo(self):
+        return dict(
+            endpoints=dict(
+                tickettemplates=self.request.route_path('tickets.printer.api.ticket', id=''),
+                ticketdata=self.request.route_path('tickets.printer.api.ticket_data'),
+                history=self.request.route_path('tickets.printer.api.history')
+                ),
+            ordered_product_item_tokens= \
+                DBSession.query(OrderedProductItemToken) \
+                    .join(OrderedProductItem) \
+                    .join(OrderedProduct) \
+                    .join(Order) \
+                    .filter_by(organization_id=self.context.organization.id))
+
