@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 import json
 import logging
-import csv
+from ticketing import csvutils as csv
 import itertools
 from wtforms import Form
 from wtforms import fields
@@ -42,7 +42,6 @@ class MemberCSVImportForm(Form):
             logger.info(e.__class__)
             logger.info("*csv import* %s" % (str(e)))
             self.csvfile.errors = self.errors["csvfile"] = [u"csvファイルが壊れています。"]
-        import pdb; pdb.set_trace()
         io.seek(0)
         return not bool(self.errors)
 

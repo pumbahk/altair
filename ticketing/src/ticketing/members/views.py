@@ -93,7 +93,7 @@ class MemberView(object):
         return {"form": form, "membership_id": membership_id}
 
     @view_config(match_param="action=csv_import", 
-                 renderer="ticketing:templates/members/_csv_import_dialog.html")
+                 renderer="ticketing:templates/members/csv_import_confirm.html")
     def csv_import(self):
         membership_id = self.request.matchdict["membership_id"]
         form = forms.MemberCSVImportForm(self.request.POST)
