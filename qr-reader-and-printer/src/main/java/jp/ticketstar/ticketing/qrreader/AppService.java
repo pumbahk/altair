@@ -11,7 +11,10 @@ import java.io.IOException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+
+import javax.print.PrintService;
 
 import jp.ticketstar.ticketing.ApplicationException;
 import jp.ticketstar.ticketing.qrreader.gui.IAppWindow;
@@ -322,5 +325,21 @@ public class AppService {
 
 	public void removeTicket(Ticket ticket) {
 		model.getTickets().remove(ticket);
+	}
+
+	public List<TicketTemplate> getTicketTemplates() {
+		return Collections.unmodifiableList(model.getTicketTemplates());
+	}
+
+	public List<PrintService> getPrintServices() {
+		return Collections.unmodifiableList(model.getPrintServices());
+	}
+
+	public PrintService getPrintService() {
+		return model.getPrintService();
+	}
+	
+	public void setPrintService(PrintService service) {
+		model.setPrintService(service);
 	}
 }

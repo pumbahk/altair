@@ -89,6 +89,13 @@ class Performances(BaseView):
             pass
 
         data['tab'] = tab
+
+        # プリンターAPI
+        data['endpoints'] = dict(
+            (key, self.request.route_path('tickets.printer.api.%s' % key))
+            for key in ['formats', 'peek', 'dequeue']
+            )
+
         return data
 
     @view_config(route_name='performances.new', request_method='GET', renderer='ticketing:templates/performances/edit.html')

@@ -47,6 +47,11 @@ public class AppAppletModel implements AppModel {
 			propertyChangeSupport.firePropertyChange("printServices", prevPrintServices, printServices);
 		}
 		{
+			final GenericListModel<TicketTemplate> prevTicketTemplates = this.ticketTemplates;
+			this.ticketTemplates = new GenericListModel<TicketTemplate>();
+			propertyChangeSupport.firePropertyChange("ticketTemplates", prevTicketTemplates, this.ticketTemplates);
+		}
+		{
 			final PrintService prevPrintService = this.printService;
 			this.printService = this.printServices.size() > 0 ? this.printServices.get(0): null;
 			propertyChangeSupport.firePropertyChange("printService", prevPrintService, this.printService);

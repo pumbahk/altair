@@ -25,6 +25,7 @@ public class MustacheTicketTemplate extends AbstractTicketTemplate {
 	public SVGDocument buildSVGDocument(Ticket ticket) throws IOException {
 		final StringWriter writer = new StringWriter();
 		mustache.execute(writer, ticket.getData());
+		System.out.println(writer.toString());
 		final SAXSVGDocumentFactory documentFactory = new SAXSVGDocumentFactory(
 			XMLResourceDescriptor.getXMLParserClassName(), true);
 		return documentFactory.createSVGDocument(
