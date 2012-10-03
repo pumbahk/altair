@@ -11,17 +11,18 @@ from . import forms
 from . import api
 
 def correct_organization(info, request):
-    return unicode(info.user.organization_id) == request.matchdict.get("organization_id")
+    return info.membership
 
 
 @view_config(route_name="members.empty", 
              decorator=with_bootstrap, renderer="ticketing:templates/members/index.html")
 def members_empty_view(context, request):
-    membership = context.memberships.first()
+    membership = context.membership
     url = request.route_url("members.index", membership_id=membership.id)
     return HTTPFound(url)
 
 @view_config(route_name="members.index", 
+             custom_predicates=(correct_organization, ), 
              decorator=with_bootstrap, renderer="ticketing:templates/members/index.html")
 def members_index_view(context, request):
     membership_id = request.matchdict["membership_id"]

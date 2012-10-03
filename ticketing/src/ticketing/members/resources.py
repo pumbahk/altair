@@ -1,5 +1,7 @@
 from pyramid.interfaces import IRootFactory
+from pyramid.decorator import reify
 from ticketing.users.models import Membership, MemberGroup
+
 
 class MembersResource(object):
     __name__ = 'tickets'
@@ -16,6 +18,11 @@ class MembersResource(object):
     @property
     def memberships(self):
         return Membership.query.filter_by(organization_id = self.user.organization_id)
+
+    @reify
+    def membership(self):
+        return Membership.query.filter_by(organization_id = self.user.organization_id, 
+                                          id = self.request.matchdict["membership_id"]).first()
 
     @property
     def membergroups(self):

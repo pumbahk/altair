@@ -20,7 +20,8 @@ ${choice_form.membership_id.label}${choice_form.membership_id}
      class="ajax-modal btn" data-toggle="modal" data-target="#MembershipEditModal">membergroup変更</a>
   <a href="${request.route_path("members.member",membership_id=membership_id, action="csv_import_dialog")}"
      class="ajax-modal btn"  data-toggle="modal" data-target="#CSVImportModal">csvインポート</a>
-  <a href="${request.route_path("members.member",membership_id=membership_id, action="csv_export")}">
+  <a href="${request.route_path("members.member",membership_id=membership_id, action="csv_export")}"
+     class="btn">
     csvエクスポート</a>
 </div>
 
