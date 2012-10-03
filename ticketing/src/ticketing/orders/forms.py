@@ -154,7 +154,7 @@ class OrderReserveForm(Form):
             self.performance_id.data = performance.id
 
             now = datetime.now()
-            sales_segments = SalesSegment.filter_by(kind='vip')\
+            sales_segments = SalesSegment.filter_by(kind='sales_counter')\
                                          .filter_by(event_id=performance.event_id)\
                                          .filter(SalesSegment.start_at<=now)\
                                          .filter(now<=SalesSegment.end_at).all()

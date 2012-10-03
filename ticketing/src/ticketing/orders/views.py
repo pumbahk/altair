@@ -360,7 +360,7 @@ class Orders(BaseView):
             old_cart.release()
             api.remove_cart(self.request)
 
-        # Stockとkind=vipのSalesSegmentからProductを決定する
+        # Stockとkind=sales_counterのSalesSegmentからProductを決定する
         stocks = post_data.get('stocks')
         form_reserve = OrderReserveForm(post_data, performance_id=performance_id, stocks=stocks)
         form_reserve.payment_delivery_method_pair_id.validators = [Optional()]
