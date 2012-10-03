@@ -10,7 +10,5 @@ public interface StandardAppService extends MinimumAppService {
 	
 	public void setTicketFormat(TicketFormat ticketFormat);
 
-	public void filterByOrderId(Integer orderId);
-	
 	public void addListenerForTicketFormat(PropertyChangeListener listener);
 }

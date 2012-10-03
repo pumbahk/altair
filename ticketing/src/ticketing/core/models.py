@@ -2010,16 +2010,14 @@ class TicketPrintQueueEntry(Base, BaseModel):
         DBSession.add(TicketPrintQueueEntry(operator=operator, ticket=ticket, data=data, summary=summary, ordered_product_item=ordered_product_item))
 
     @classmethod
-    def peek(self, operator, ticket_format_id, order_id=None):
-        q = DBSession.query(TicketPrintQueueEntry) \
+    def peek(self, operator, ticket_format_id):
+        return DBSession.query(TicketPrintQueueEntry) \
             .filter_by(processed_at=None, operator=operator) \
             .filter(Ticket.ticket_format_id==ticket_format_id) \
             .join(OrderedProductItem) \
-            .join(OrderedProduct)
-        if order_id is not None:
-            q = q.filter(OrderedProduct.order_id==order_id)
-        q = q.order_by(asc(OrderedProduct.id), desc(self.created_at))
-        return q.all()
+            .join(OrderedProduct) \
+            .order_by(asc(OrderedProduct.id), desc(self.created_at)) \
+            .all()
 
     @classmethod
     def dequeue(self, ids):

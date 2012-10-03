@@ -128,10 +128,6 @@ public class AppAppletService extends BasicAppService implements StandardAppServ
 		((AppAppletModel)model).setTicketFormat(ticketFormat);
 	}
 
-	public void filterByOrderId(Integer orderId) {
-		((AppAppletModel)model).setOrderId(orderId);
-	}
-
 	public void addListenerForTicketFormat(PropertyChangeListener listener) {
 		((AppAppletModel)model).addPropertyChangeListener("ticketFormat", listener);
 	}
