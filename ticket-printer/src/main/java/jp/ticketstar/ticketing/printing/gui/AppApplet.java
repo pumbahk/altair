@@ -139,6 +139,8 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 					public void intervalAdded(ListDataEvent evt) {}
 
 					public void intervalRemoved(ListDataEvent evt) {
+						if (panel == null)
+							return;
 						final Component[] pageComponents = panel.getComponents();
 						for (int i = evt.getIndex0(), j = evt.getIndex1(); i <= j; i++) {
 							panel.remove(pageComponents[i]);
