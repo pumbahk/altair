@@ -38,7 +38,6 @@ import javax.swing.JPanel;
 import javax.swing.JComboBox;
 
 import jp.ticketstar.ticketing.swing.GenericComboBoxModel;
-import jp.ticketstar.ticketing.printing.AppService;
 import jp.ticketstar.ticketing.printing.BoundingBoxOverlay;
 import jp.ticketstar.ticketing.printing.GuidesOverlay;
 import jp.ticketstar.ticketing.printing.AppModel;

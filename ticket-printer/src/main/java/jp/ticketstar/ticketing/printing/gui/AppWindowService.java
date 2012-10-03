@@ -16,8 +16,8 @@ import jp.ticketstar.ticketing.printing.AppModel;
 import jp.ticketstar.ticketing.printing.BasicAppService;
 import jp.ticketstar.ticketing.printing.Page;
 import jp.ticketstar.ticketing.printing.TicketPrintable;
-import jp.ticketstar.ticketing.printing.svg.ExtendedSVG12BridgeContext;
-import jp.ticketstar.ticketing.printing.svg.OurDocumentLoader;
+import jp.ticketstar.ticketing.svg.ExtendedSVG12BridgeContext;
+import jp.ticketstar.ticketing.svg.OurDocumentLoader;
 
 public class AppWindowService extends BasicAppService {
 	public void openFileDialog() {
