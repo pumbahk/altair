@@ -85,10 +85,10 @@ $(function(){
 
   writeAppletTag({
     version: '1.6.0.35',
-    width: 1, height: 1,
-    code: 'jp.ticketstar.ticketing.printing.gui.AppApplet',
+    width: 100, height: 100,
+    code: 'jp.ticketstar.ticketing.qrreader.gui.AppApplet',
     codebase: ${json.dumps(request.application_url)|n},
-    archive: ${json.dumps(request.static_url('ticketing:static/printing-0.0.0-jar-with-dependencies.jar'))|n},
+    archive: ${json.dumps(request.static_url('ticketing:static/qrreader-0.0.0-jar-with-dependencies.jar'))|n},
     scriptable: true,
     id: 'applet',
     params: {

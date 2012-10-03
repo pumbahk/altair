@@ -56,7 +56,7 @@ def ticket_data(context, request):
         raise HTTPBadRequest
 
 from ticketing.models import DBSession
-from ticketing.core.models import TicketPrintQueueEntry, PageFormat, TicketFormat, TicketPrintHistory
+from ticketing.core.models import TicketPrintQueueEntry, PageFormat, TicketFormat, TicketPrintHistory, Ticket
 from ticketing.tickets.utils import SvgPageSetBuilder
 from lxml import etree
 
@@ -82,26 +82,30 @@ class AppletAPIView(object):
         try:
             print "formats!!!"
             ## 初回にpeekを走らせるのを止めようと思ったけれど、そうコスト高くないし良いや
-            # return { u'status': u'success',
-            #          u'data': { u'page_formats': [],
-            #                     u'ticket_formats': []} }
-            page_formats = []
-            for page_format in DBSession.query(PageFormat).filter_by(organization=self.context.organization):
-                data = dict(page_format.data)
-                data[u'id'] = page_format.id
-                data[u'name'] = page_format.name
-                data[u'printer_name'] = page_format.printer_name
-                page_formats.append(data)
+            return { u'status': u'success',
+                     u'data': { u'ticket_formats': [],
+                                u'ticket_templates': []} }
             ticket_formats = []
             for ticket_format in DBSession.query(TicketFormat).filter_by(organization=self.context.organization):
                 data = dict(ticket_format.data)
                 data[u'id'] = ticket_format.id
                 data[u'name'] = ticket_format.name
+                data[u"size"] = ticket_format.data["size"]
+                data[u"printable_areas"] = ticket_format.data["printable_areas"]
+                data[u"perforations"] = ticket_format.data["perforations"]
                 ticket_formats.append(data)
-            return { u'status': u'success',
-                     u'data': { u'page_formats': page_formats,
-                                u'ticket_formats': ticket_formats } }
 
+            ticket_templates = []
+            for ticket_template in Ticket.templates_query().filter_by(organization=self.context.organization):
+                data = dict(ticket_template.data)
+                data[u'id'] = ticket_template.id
+                data[u'name'] = ticket_template.name
+                data[u'ticket_format_id'] = ticket_template.ticket_format_id
+                data[u"drawing"] = ticket_template.data["drawing"]
+                ticket_templates.append(data)
+            return { u'status': u'success',
+                     u'data': { u'ticket_formats': ticket_formats,
+                                u'ticket_templates': ticket_templates} }
         except:
             print "--------"
             import traceback
