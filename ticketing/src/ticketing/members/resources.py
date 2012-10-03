@@ -22,7 +22,7 @@ class MembersResource(object):
     @reify
     def membership(self):
         return Membership.query.filter_by(organization_id = self.user.organization_id, 
-                                          id = self.request.matchdict["membership_id"]).first()
+                                          ).first()
 
     @property
     def membergroups(self):

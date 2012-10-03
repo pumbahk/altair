@@ -2,22 +2,28 @@
 import sqlalchemy.orm as orm
 import json
 import webhelpers.paginate as paginate
+from StringIO import StringIO
 from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config, view_defaults
-from pyramid.response import FileResponse
+from ticketing.tickets.response import FileLikeResponse ##
 from ticketing.fanstatic import with_bootstrap
 from ticketing.users.models import Membership, MemberGroup, Member, User, UserCredential
 from . import forms
 from . import api
 
 def correct_organization(info, request):
-    return info.membership
-
+    """ [separation] super userか自身の所属するOrganizationのもののみ表示
+    """
+    if info.user.is_superuser:
+        return True
+    if "membership_id" in request.matchdict:
+        return info.memberships.filter_by(id = request.matchdict["membership_id"]).first()
+    return False
 
 @view_config(route_name="members.empty", 
              decorator=with_bootstrap, renderer="ticketing:templates/members/index.html")
 def members_empty_view(context, request):
-    membership = context.membership
+    membership = context.memberships.first()
     url = request.route_url("members.index", membership_id=membership.id)
     return HTTPFound(url)
 
@@ -105,8 +111,37 @@ class MemberView(object):
         self.request.session.flash(u"membergroupを変更しました")
         return HTTPFound(self.request.route_url("members.index", membership_id=membership_id))
 
-    @view_config(match_param="csv_export")
+    @view_config(match_param="action=csv_export_dialog", 
+                 renderer="ticketing:templates/members/_csv_export_dialog.html")
+    def csv_export_dialog(self):
+        membership_id = self.request.matchdict["membership_id"]
+        form = forms.MemberCSVExportForm(csvfile=u"membership.csv")
+        return {"form": form, "membership_id": membership_id}
+
+    @view_config(match_param="action=csv_export", 
+                 renderer="ticketing:templates/members/_csv_export_dialog.html")
     def csv_export(self):
-        response = FileResponse(path)
-        response.content_disposition = 'attachment; filename="%s"' % layout.template_filename
+        membership_id = self.request.matchdict["membership_id"]
+        form = forms.MemberCSVExportForm(self.request.POST)
+        if not form.validate():
+            return {"form": form, "membership_id": membership_id}
+
+        io = StringIO()
+        users = User.query.filter(User.id==UserCredential.user_id)\
+            .filter(UserCredential.membership_id==membership_id)\
+            .filter(Member.user_id==User.id)\
+            .options(orm.joinedload("user_credential"), 
+                     orm.joinedload("user_credential.membership"), 
+                     orm.joinedload("member"), 
+                     orm.joinedload("member.membergroup"), 
+                     )
+        api.members_export_as_csv(self.request, io, users, encoding=form.data["encoding"])
+
+        if "cp932" == form.data["encoding"]:
+            content_encoding = "shift-JIS"
+        else:
+            content_encoding = form.data["encoding"]
+        return FileLikeResponse(io, request=self.request, 
+                                filename=form.data["csvfile"].encode("utf-8"),
+                                content_encoding=content_encoding)
 

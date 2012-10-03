@@ -23,8 +23,13 @@ class MemberShipChoicesForm(Form):
         return self
 
 
+class MemberCSVExportForm(Form):
+    csvfile = fields.TextField(label=u"保存ファイル")
+    encoding = fields.SelectField(label=u"エンコーディング", 
+                                  choices=(("cp932", u"windowsのファイル"), ("utf-8", u"UTF-8")))
+
 class MemberCSVImportForm(Form):
-    csvfile = fields.FileField(label=u"csvファイル")
+    csvfile = fields.FileField(label=u"csvファイル名")
     encoding = fields.SelectField(label=u"エンコーディング", 
                                   choices=(("cp932", u"windowsのファイル"), ("utf-8", u"UTF-8")))
 

@@ -1,84 +1,16 @@
 # -*- coding:utf-8 -*-
 
 import ticketing.csvutils as csv
-import sqlalchemy.orm as orm
-from ticketing.users.models import MemberGroup, UserCredential, Member, User
-from ticketing.models import DBSession
+from .builder import UserForLoginCartBuilder
 import logging
 logger = logging.getLogger(__name__)
 
 def edit_membergroup(members, member_group_id):
     members.update({"membergroup_id": member_group_id}, synchronize_session="fetch")
 
-def cached_method(store_field_name):
-    def _wrapper(method):
-        def _cached(self, key, *args, **kwargs):
-            cache = None
-            try:
-                cache = getattr(self, store_field_name)
-            except AttributeError:
-                cache = {}
-                setattr(self, store_field_name, cache)
-    
-            if key in cache:
-                return cache[key]
-
-            val = method(self, key, *args, **kwargs)
-            cache[key] = val
-            return val
-        return _cached
-    return _wrapper
-
-class UserForLoginCartBuilder(object):
-    def __init__(self, request):
-        self.request = request
-        self.membership_id = request.matchdict["membership_id"]
-        self.users  = []
-
-    def _find_user_from_db_same_data(self, membergroup_name, loginname, password):
-        return User.query\
-            .filter(UserCredential.user_id==User.id)\
-            .filter(UserCredential.auth_identifier==loginname, 
-                    UserCredential.membership_id==self.membership_id)\
-            .first()
-
-
-    def build_user_for_login_cart_add_session(self, membergroup_name, loginname, password):
-        user = self.build_user_for_login_cart(membergroup_name, loginname, password)
-        DBSession.add(user)
-        return user
-
-    def build_user_for_login_cart(self, membergroup_name, loginname, password):
-        user = self._find_user_from_db_same_data(membergroup_name, loginname, password) or self.build_user()
-        membergroup = self.build_membergroup(membergroup_name)
-
-        credential = self.build_credential(loginname, password, membership_id=self.membership_id, user=user)
-        member = self.build_member(membergroup, user=user)
-        self.users.append(user)
-        return user
-
-    def build_user(self):
-        return User()
-
-    @cached_method("_member_groups")
-    def build_membergroup(self, membergroup_name):
-        return MemberGroup.get_or_create_by_name(membergroup_name, self.membership_id)
-
-    def build_member(self, membergroup, user=None):
-        assert user
-        member = Member.get_or_create_by_user(user)
-        member.membergroup = membergroup
-        return member
-
-    def build_credential(self, name, password, user=None, membership_id=None):
-        get_or_create = UserCredential.get_or_create_overwrite_password
-        return get_or_create(auth_identifier=name,
-                             auth_secret=password,
-                             user=user,
-                             membership_id=membership_id)
     
 def members_import_from_csv(request, io, encoding="cp932"):
-    """ <Membergroup>, <Id>, <Password>を期待
+    """ <Membergroup>, <loginId>, <Password>を期待
     """
     reader = csv.reader(io, quotechar="'", encoding=encoding)
     builder = UserForLoginCartBuilder(request)
@@ -89,3 +21,18 @@ def members_import_from_csv(request, io, encoding="cp932"):
             password)
     logger.debug("*csv import*: "+str(builder.users))
     return builder.users
+
+def members_export_as_csv(request, io, users, encoding="cp932"):
+    """ <Membergroup>, <loginId>, <Password>で出力
+    """
+    writer = csv.writer(io, quotechar="'", encoding=encoding)
+    for row in _member_info_triples(users):
+        writer.writerow(row)
+    logger.debug("*csv export*: "+str(users))
+    io.seek(0)
+    return io
+    
+def _member_info_triples(users):
+    for u in users:
+        c = u.first_user_credential
+        yield u.member.membergroup.name, c.auth_identifier, c.auth_secret

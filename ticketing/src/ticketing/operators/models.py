@@ -124,4 +124,8 @@ class Operator(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def print_queue_entry_count(self):
         return DBSession.query(TicketPrintQueueEntry).filter_by(operator=self, processed_at=None).count()
 
+    @property
+    def is_superuser(self):
+        return any(r.name == "superuser" for r in self.roles)
+
 from ..core.models import TicketPrintQueueEntry
