@@ -13,16 +13,16 @@ import java.util.List;
 
 import jp.ticketstar.ticketing.printing.BasicAppService;
 import jp.ticketstar.ticketing.printing.Page;
-import jp.ticketstar.ticketing.printing.PrintableEvent;
-import jp.ticketstar.ticketing.printing.PrintableEventListener;
-import jp.ticketstar.ticketing.printing.RequestBodySender;
+import jp.ticketstar.ticketing.PrintableEvent;
+import jp.ticketstar.ticketing.PrintableEventListener;
+import jp.ticketstar.ticketing.RequestBodySender;
 import jp.ticketstar.ticketing.printing.StandardAppService;
 import jp.ticketstar.ticketing.printing.TicketFormat;
 import jp.ticketstar.ticketing.printing.TicketPrintable;
 import jp.ticketstar.ticketing.printing.URLConnectionSVGDocumentLoader;
-import jp.ticketstar.ticketing.printing.URLFetcher;
-import jp.ticketstar.ticketing.printing.svg.ExtendedSVG12BridgeContext;
-import jp.ticketstar.ticketing.printing.svg.OurDocumentLoader;
+import jp.ticketstar.ticketing.URLFetcher;
+import jp.ticketstar.ticketing.svg.ExtendedSVG12BridgeContext;
+import jp.ticketstar.ticketing.svg.OurDocumentLoader;
 
 import netscape.javascript.JSObject;
 

@@ -38,7 +38,6 @@ import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import jp.ticketstar.ticketing.printing.AppService;
 import jp.ticketstar.ticketing.ApplicationException;
 import jp.ticketstar.ticketing.printing.BoundingBoxOverlay;
 import jp.ticketstar.ticketing.swing.GenericComboBoxModel;
@@ -48,22 +47,15 @@ import jp.ticketstar.ticketing.printing.JGVTComponent;
 import jp.ticketstar.ticketing.printing.OurPageFormat;
 import jp.ticketstar.ticketing.printing.Page;
 import jp.ticketstar.ticketing.printing.PageSetModel;
-import jp.ticketstar.ticketing.PrintableEvent;
-import jp.ticketstar.ticketing.PrintableEventListener;
+import jp.ticketstar.ticketing.printing.StandardAppService;
 import jp.ticketstar.ticketing.RequestBodySender;
 import jp.ticketstar.ticketing.printing.TicketFormat;
-import jp.ticketstar.ticketing.printing.TicketPrintable;
 import jp.ticketstar.ticketing.URLConnectionFactory;
-import jp.ticketstar.ticketing.printing.URLConnectionSVGDocumentLoader;
-import jp.ticketstar.ticketing.URLFetcher;
-import jp.ticketstar.ticketing.svg.ExtendedSVG12BridgeContext;
-import jp.ticketstar.ticketing.svg.OurDocumentLoader;
+import jp.ticketstar.ticketing.printing.gui.liveconnect.JSObjectPropertyChangeListenerProxy;
 
 import org.apache.batik.swing.gvt.Overlay;
 
 import netscape.javascript.JSObject;
-
-import org.apache.batik.swing.gvt.Overlay;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
@@ -147,6 +139,8 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 					public void intervalAdded(ListDataEvent evt) {}
 
 					public void intervalRemoved(ListDataEvent evt) {
+						if (panel == null)
+							return;
 						final Component[] pageComponents = panel.getComponents();
 						for (int i = evt.getIndex0(), j = evt.getIndex1(); i <= j; i++) {
 							panel.remove(pageComponents[i]);

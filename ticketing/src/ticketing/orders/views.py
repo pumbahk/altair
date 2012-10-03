@@ -279,12 +279,14 @@ class Orders(BaseView):
             mail_magazines += [ms.segment.name for ms in order.user.mail_subscription if ms.segment.organization_id == order.organization_id]
 
         form_order = OrderForm(record_to_multidict(order))
+        form_order_reserve = OrderReserveForm(performance_id=order.performance_id)
 
         return {
             'order':order,
             'mail_magazines':mail_magazines,
             'form_shipping_address':form_shipping_address,
             'form_order':form_order,
+            'form_order_reserve':form_order_reserve,
         }
 
     @view_config(route_name='orders.cancel')
@@ -462,6 +464,9 @@ class Orders(BaseView):
             order = Order.create_from_cart(cart)
             order.organization_id = order.performance.event.organization_id
             order.note = post_data.get('note')
+            attr = 'sales_counter_payment_method_id'
+            if int(post_data.get(attr, 0)):
+                order.attributes[attr] = post_data.get(attr)
             DBSession.add(order)
             DBSession.flush()
             cart.finish()

@@ -1591,6 +1591,9 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     performance_id = Column(Identifier, ForeignKey('Performance.id'))
     performance = relationship('Performance', backref="orders")
 
+    _attributes = relationship("OrderAttribute", backref='order', collection_class=attribute_mapped_collection('name'), cascade='all,delete-orphan')
+    attributes = association_proxy('_attributes', 'value', creator=lambda k, v: OrderAttribute(name=k, value=v))
+
     def is_issued(self):
         if self.issued_at:
             return True
@@ -1855,8 +1858,6 @@ class OrderAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     name = Column(String(255), primary_key=True, nullable=False)
     value = Column(String(1023))
 
-    order = relationship('Order', backref="attributes")
-    
 class OrderedProductAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = "OrderedProductAttribute"
     ordered_product_item_id  = Column(Identifier, ForeignKey('OrderedProductItem.id'), primary_key=True, nullable=False)

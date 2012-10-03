@@ -8,7 +8,7 @@ from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, T
                      BooleanField, RadioField, FieldList, FormField, DecimalField, IntegerField)
 from wtforms.validators import Optional, AnyOf, Length, Email
 from ticketing.formhelpers import DateTimeField, Translations, Required
-from ticketing.core.models import (PaymentMethodPlugin, DeliveryMethodPlugin, StockType,
+from ticketing.core.models import (PaymentMethodPlugin, DeliveryMethodPlugin, PaymentMethod, StockType,
                                    SalesSegment, Performance, Product, ProductItem)
 from ticketing.cart.schemas import ClientForm
 
@@ -165,6 +165,10 @@ class OrderReserveForm(Form):
                         (pdmp.id, '%s  -  %s' % (pdmp.payment_method.name, pdmp.delivery_method.name))
                     )
 
+            self.sales_counter_payment_method_id.choices = [(0, '')]
+            for pm in PaymentMethod.filter_by_organization_id(performance.event.organization_id):
+                self.sales_counter_payment_method_id.choices.append((pm.id, pm.name))
+
             self.products.choices = []
             if 'stocks' in kwargs and kwargs['stocks']:
                 # 座席選択あり
@@ -211,6 +215,12 @@ class OrderReserveForm(Form):
     payment_delivery_method_pair_id = SelectField(
         label=u'決済・配送方法',
         validators=[Required(u'決済配送方法を選択してください')],
+        choices=[],
+        coerce=int
+    )
+    sales_counter_payment_method_id = SelectField(
+        label=u'当日窓口決済',
+        validators=[Optional()],
         choices=[],
         coerce=int
     )
