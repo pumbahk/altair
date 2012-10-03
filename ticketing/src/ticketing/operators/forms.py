@@ -5,10 +5,26 @@ from wtforms import TextField, HiddenField, DateField, PasswordField, SelectMult
 from wtforms.validators import Length, Email, Optional
 
 from ticketing.formhelpers import DateTimeField, Translations, Required
-from ticketing.operators.models import OperatorRole
+from ticketing.operators.models import OperatorRole, Permission
+from ticketing.models import DBSession
 
 class OperatorRoleForm(Form):
-    pass
+    name = TextField(
+        label=u'名前',
+        validators=[
+            Required(),
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ]
+    )
+
+    permissions = SelectMultipleField(
+        label=u"権限", 
+        choices=[]
+    )
+
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        Form.__init__(self, formdata, obj, prefix, **kwargs)
+        self.permissions.choices = [(p.id, p.category_name) for p in DBSession.query(Permission)]
 
 class OperatorForm(Form):
 
