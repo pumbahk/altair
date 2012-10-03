@@ -31,8 +31,7 @@ class PrintQRResource(object):
 
     @reify
     def organization(self):
-        from ticketing.core.models import Organization
-        return Organization.query.filter_by(id=1).first()
+        return self.operator.organization
 
     @reify
     def user(self):

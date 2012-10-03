@@ -19,6 +19,7 @@ var DataStoreDescriptionView = Backbone.View.extend({
     this.model.bind("change:orderno", this.showOrderno, this);
     this.model.bind("change:performance", this.showPerformance, this);
     this.model.bind("change:product", this.showProduct, this);
+    this.model.bind("refresh", this.refresh, this);
 
     this.$qrcodeStatus = this.$el.find("#desc_qrcodeStatus");
     this.$orderno = this.$el.find("#desc_orderno");
@@ -33,10 +34,15 @@ var DataStoreDescriptionView = Backbone.View.extend({
   }, 
   showPerformance: function(){
     this.$performance.text(this.model.get("performance"));
-     }, 
+  }, 
   showProduct: function(){
     this.$product.text(this.model.get("product"));
-     }, 
+  }, 
+  refresh: function(){
+    this.$orderno.text("");
+    this.$performance.text("");
+    this.$product.text("");
+  }
 });
 
 
@@ -108,7 +114,8 @@ var QRInputView = AppPageViewBase.extend({
       .fail(function(s, err){
         self.messageView.alert("うまくQRコードを読み込むことができませんでした");
         self.datastore.set("qrcodeStatus", "fail");
-      });
+        self.datastore.trigger("refresh");
+      })
   } 
 });
 
