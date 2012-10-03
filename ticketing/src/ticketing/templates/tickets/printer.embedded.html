@@ -1,0 +1,241 @@
+<%inherit file="../layout.html" />
+<%
+import json, random
+endpoints_json = json.dumps(endpoints, ensure_ascii=False)
+callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _ in range(0, 10))
+%>
+<script type="text/javascript">
+window[${json.dumps(callback_name)|n}] = function (applet) {
+  var service = applet.getService();
+  var createProxy = function () { return applet.createPropertyChangeListenerProxy.apply(applet, arguments); };
+  var $order = $('#order');
+  var $page = $('#page');
+  var $printService = $('#printService');
+  var $pageFormat = $('#pageFormat');
+  var $ticketFormat = $('#ticketFormat');
+  var $printButton = $('#printButton');
+  function refreshPages() {
+    var pages = service.getPages();
+    $page.empty();
+    if (pages) {
+      for (var i = pages.iterator(); i.hasNext();) {
+        var page = i.next();
+        $page.append($('<option></option>').text(page.getName()));
+      }
+    }
+  }
+  function refreshPrintServices() {
+    var printServices = service.getPrintServices();
+    $printService.empty();
+    if (printServices) {
+      for (var i = printServices.iterator(); i.hasNext();) {
+        var printService = i.next();
+        $printService.append($('<option></option>').text(printService.getName()));
+      }
+    }
+  }
+  function refreshPageFormats() {
+    var pageFormats = service.getPageFormats();
+    $pageFormat.empty();
+    if (pageFormats) {
+      for (var i = pageFormats.iterator(); i.hasNext();) {
+        var pageFormat = i.next();
+        $pageFormat.append($('<option></option>').text(pageFormat.getName()));
+      }
+    }
+  }
+  function refreshTicketFormats() {
+    var ticketFormats = service.getTicketFormats();
+    $ticketFormat.empty();
+    if (ticketFormats) {
+      for (var i = ticketFormats.iterator(); i.hasNext();) {
+        var ticketFormat = i.next();
+        $ticketFormat.append($('<option></option>').text(ticketFormat.getName()));
+      }
+    }
+  }
+  service.addListenerForPages(createProxy(refreshPages));
+  $printButton.click(function () {
+    service.printAll();
+  });
+  $order.change(function () {
+    var val = $order.val();
+    service.filterByOrderId(val ? val: null);
+  });
+  refreshPages();
+  refreshPrintServices();
+  refreshPageFormats();
+  refreshTicketFormats();
+  $page.attr('disabled', null);
+  $printService.attr('disabled', null);
+  $pageFormat.attr('disabled', null);
+  $ticketFormat.attr('disabled', null);
+  $printButton.attr('disabled', null);
+  $('#screen').hide();
+};
+</script>
+<script type="text/javascript">
+function writeAppletTag(options) {
+  var buf = [];
+  var version = options.version.split('.');
+  var width = (0|options.width) || 100;
+  var height = (0|options.height) || 100;
+  var id = options.id;
+  var code = options.code;
+  var codebase = options.codebase;
+  var archive = options.archive;
+  var scriptable = options.scriptable || false;
+  var params = options.params;
+
+  function escapeHTMLSpecials(text) {
+    return ("" + text)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function buildHTMLForIE() {
+    buf.push(
+      '<object',
+      ' classid="clsid:8AD9C840-044E-11D1-B3E9-00805F499D93"',
+      ' codebase="http://javadl-esd.sun.com/update/', version.slice(0, 3).join('.'), '/jinstall-6u35-windows-i586.cab#Version=', version.join(','), '"',
+      ' width="', width, '"',
+      ' height="', height, '"');
+    if (id)
+      buf.push(' id="', escapeHTMLSpecials(id), '"');
+    buf.push('>');
+    buf.push('<param name="type" value="application/x-java-applet;version=', version[0], '.', version[1], '" />');
+    buf.push('<param name="code" value="', escapeHTMLSpecials(code), '" />');
+    if (codebase)
+      buf.push('<param name="codebase" value="', escapeHTMLSpecials(codebase), '" />');
+    if (archive)
+      buf.push('<param name="archive" value="', escapeHTMLSpecials(archive), '" />');
+    buf.push('<param name="scriptable" value="', (scriptable ? 'true': 'false'), '" />');
+    for (var k in params)
+      buf.push('<param name="', escapeHTMLSpecials(k), '" value="', escapeHTMLSpecials(params[k]), '" />');
+    buf.push('</object>');
+  }
+
+  function buildHTMLForOthers() {
+    buf.push('<embed',
+      ' type="application/x-java-applet;version=', version[0], '.', version[1], '"',
+      ' pluginspage="http://java.sun.com/products/plugin/index.html#download"',
+      ' code="', escapeHTMLSpecials(code), '"',
+      ' width="', width, '"',
+      ' height="', height, '"',
+      ' scriptable="', (scriptable ? 'true': 'false'), '"');
+    if (codebase)
+      buf.push(' codebase="', escapeHTMLSpecials(codebase), '"');
+    if (archive)
+      buf.push(' archive="', escapeHTMLSpecials(archive), '"');
+    if (id) {
+      buf.push(' name="', escapeHTMLSpecials(id), '"');
+      buf.push(' id="', escapeHTMLSpecials(id), '"');
+    }
+    for (var k in params)
+      buf.push(' ', escapeHTMLSpecials(k), '="', escapeHTMLSpecials(params[k]), '"');
+    buf.push('></embed>');
+  }
+
+  function buildHTMLApplet() {
+    buf.push('<applet',
+      ' code="', escapeHTMLSpecials(code), '"',
+      ' width="', width, '"',
+      ' height="', height, '"',
+      ' scriptable="', (scriptable ? 'true': 'false'), '"');
+    if (codebase)
+      buf.push(' codebase="', escapeHTMLSpecials(codebase), '"');
+    if (archive)
+      buf.push(' archive="', escapeHTMLSpecials(archive), '"');
+    if (id) {
+      buf.push(' name="', escapeHTMLSpecials(id), '"');
+      buf.push(' id="', escapeHTMLSpecials(id), '"');
+    }
+    buf.push('>');
+    for (var k in params)
+      buf.push('<param name="', escapeHTMLSpecials(k), '" value="', escapeHTMLSpecials(params[k]), '" />');
+    buf.push('</applet>');
+  }
+
+  if (navigator.userAgent.indexOf('MSIE') >= 0)
+    buildHTMLForIE();
+  else
+    buildHTMLForOthers();
+  document.write(buf.join(''));
+}
+
+writeAppletTag({
+  version: '1.6.0.35',
+  width: 1, height: 1,
+  code: 'jp.ticketstar.ticketing.printing.gui.AppApplet',
+  codebase: ${json.dumps(request.application_url)|n},
+  archive: ${json.dumps(request.static_url('ticketing:static/printing-0.0.0-jar-with-dependencies.jar'))|n},
+  scriptable: true,
+  id: 'applet',
+  params: {
+    endpoints: ${json.dumps(endpoints_json)|n},
+    cookie: ${json.dumps(request.headers.get('cookie'))|n},
+    embedded: true,
+    callback: ${json.dumps(callback_name)|n}
+  }
+});
+</script>
+<style type="text/css">
+#screen {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 100%;
+  margin: 0 0;
+  padding: 0 0;
+  z-index: 10000;
+  background-color: #000;
+  filter: alpha(opacity=50);
+  opacity: .5;
+}
+
+#screen .splash {
+  position: absolute;
+  width: 30%;
+  height: 100px;
+  left: 50%;
+  top: 50%;
+  margin: -50px 0 0 -15%;
+  background-color: #eee;
+  color: #000;
+  font-size: 20px;
+  text-align: center;
+  line-height: 100px;
+}
+
+</style>
+<div>
+<select id="order">
+  <option value="">すべて</option>
+% for order in orders:
+  <option value="${order.id}">${order.order_no}</option>
+% endfor
+</select>
+</div>
+<div>
+<select id="page" disabled="disabled"></select>
+</div>
+<div>
+<select id="pageFormat" disabled="disabled"></select>
+</div>
+<div>
+<select id="ticketFormat" disabled="disabled"></select>
+</div>
+<div>
+<select id="printService" disabled="disabled"></select>
+</div>
+<div>
+<button class="btn" id="printButton"><i class="icon-print"></i>Print</button>
+</div>
+<div id="screen">
+  <div class="splash">
+    Now loading...
+  </div>
+</div>

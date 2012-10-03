@@ -51,6 +51,55 @@ class DictBuilder(object):
     def __init__(self, formatter):
         self.formatter = formatter
 
+    def build_user_profile_dict(self, data, user_profile):
+        if user_profile is None:
+            data['userProfile'] = {}
+            return data
+        data["userProfile"] = {
+            u"email": user_profile.email,
+            u"nick_name": user_profile.nick_name,
+            u"first_name": user_profile.first_name,
+            u"last_name": user_profile.last_name,
+            u"first_name_kana": user_profile.first_name_kana,
+            u"last_name_kana": user_profile.last_name_kana,
+            u"birth_day": datetime_as_dict(user_profile.birth_day),
+            u"sex": self.formatter.sex_as_string(user_profile.sex),
+            u"zip": user_profile.zip,
+            u"country": user_profile.country,
+            u"prefecture": user_profile.prefecture,
+            u"city": user_profile.city,
+            u"address_1": user_profile.address_1,
+            u"address_2": user_profile.address_2,
+            u"tel_1": user_profile.tel_1,
+            u"tel_2": user_profile.tel_2,
+            u"fax": user_profile.fax,
+            u"status": user_profile.status
+            }
+        return data
+
+    def build_shipping_address_dict(self, data, shipping_address):
+        if shipping_address is None:
+            data['shippingAddress'] = {}
+            return data
+        data[u'shippingAddress'] = {
+            u"email": shipping_address.email,
+            u"nick_name": shipping_address.nick_name,
+            u"first_name": shipping_address.first_name,
+            u"last_name": shipping_address.last_name,
+            u"first_name_kana": shipping_address.first_name_kana,
+            u"last_name_kana": shipping_address.last_name_kana,
+            u"zip": shipping_address.zip,
+            u"country": shipping_address.country,
+            u"prefecture": shipping_address.prefecture,
+            u"city": shipping_address.city,
+            u"address_1": shipping_address.address_1,
+            u"address_2": shipping_address.address_2,
+            u"tel_1": shipping_address.tel_1,
+            u"tel_2": shipping_address.tel_2,
+            u"fax": shipping_address.fax
+            }
+        return data
+
     def build_dict_from_stock(self, stock, retval=None):
         retval = {} if retval is None else retval
         stock_holder = stock.stock_holder
@@ -128,7 +177,7 @@ class DictBuilder(object):
                 u'seat_no': seat.seat_no,
                 u'name': seat.name,
                 },
-            u'seatAttributes': seat.attributes,
+            u'seatAttributes': dict(seat.attributes),
             u'席番': seat.name,
             u'発券番号': ticket_number_issuer() if ticket_number_issuer else None
             })
@@ -176,7 +225,7 @@ class DictBuilder(object):
         })
         return retval
 
-    def build_dicts_from_ordered_product_item(self, ordered_product_item, user_profile=None, ticket_number_issuer=None):
+    def build_basic_dict_from_ordered_product_item(self, ordered_product_item, user_profile=None):
         product_item = ordered_product_item.product_item
         ticket_bundle = product_item.ticket_bundle
         ordered_product = ordered_product_item.ordered_product 
@@ -235,23 +284,6 @@ class DictBuilder(object):
                 u'price': product_item.price,
                 u'quantity': product_item.quantity
                 },
-            u"shippingAddress": {
-                u"email": shipping_address.email,
-                u"nick_name": shipping_address.nick_name,
-                u"first_name": shipping_address.first_name,
-                u"last_name": shipping_address.last_name,
-                u"first_name_kana": shipping_address.first_name_kana,
-                u"last_name_kana": shipping_address.last_name_kana,
-                u"zip": shipping_address.zip,
-                u"country": shipping_address.country,
-                u"prefecture": shipping_address.prefecture,
-                u"city": shipping_address.city,
-                u"address_1": shipping_address.address_1,
-                u"address_2": shipping_address.address_2,
-                u"tel_1": shipping_address.tel_1,
-                u"tel_2": shipping_address.tel_2,
-                u"fax": shipping_address.fax
-                } if shipping_address else {},
             u'aux': dict(ticket_bundle.attributes) if ticket_bundle else {},
             u'券種名': product_item.name or product.name,
             u'商品名': product_item.name or product.name,
@@ -263,28 +295,12 @@ class DictBuilder(object):
             u'予約番号': order.order_no
             }
 
-        if user_profile is not None:
-            extra["userProfile"] = {
-                u"email": user_profile.email,
-                u"nick_name": user_profile.nick_name,
-                u"first_name": user_profile.first_name,
-                u"last_name": user_profile.last_name,
-                u"first_name_kana": user_profile.first_name_kana,
-                u"last_name_kana": user_profile.last_name_kana,
-                u"birth_day": datetime_as_dict(user_profile.birth_day),
-                u"sex": self.formatter.sex_as_string(user_profile.sex),
-                u"zip": user_profile.zip,
-                u"country": user_profile.country,
-                u"prefecture": user_profile.prefecture,
-                u"city": user_profile.city,
-                u"address_1": user_profile.address_1,
-                u"address_2": user_profile.address_2,
-                u"tel_1": user_profile.tel_1,
-                u"tel_2": user_profile.tel_2,
-                u"fax": user_profile.fax,
-                u"status": user_profile.status
-                }
+        self.build_shipping_address_dict(extra, shipping_address)
+        self.build_user_profile_dict(extra, user_profile)
+        return extra
 
+    def build_dicts_from_ordered_product_item(self, ordered_product_item, user_profile=None, ticket_number_issuer=None):
+        extra = self.build_basic_dict_from_ordered_product_item(ordered_product_item, user_profile)
         retval = []
         if ordered_product_item.product_item.stock.stock_type.quantity_only:
             for i in range(0, ordered_product_item.quantity):
@@ -300,6 +316,37 @@ class DictBuilder(object):
                 d.update(extra)
                 retval.append((seat, d))
         return retval
+
+    def build_dicts_from_ordered_product_item_tokens(self, ordered_product_item, user_profile=None, ticket_number_issuer=None):
+        extra = self.build_basic_dict_from_ordered_product_item(ordered_product_item, user_profile)
+        retval = []
+        for token in ordered_product_item.tokens:
+            pair = self._build_dict_from_ordered_product_item_token(extra, ordered_product_item, token, ticket_number_issuer)
+            if pair is not None:
+                retval.append(pair)
+        return retval
+
+    def _build_dict_from_ordered_product_item_token(self, extra, ordered_product_item, ordered_product_item_token, ticket_number_issuer=None):
+        if not ordered_product_item_token.valid:
+            return None
+        if ordered_product_item_token.seat is not None:
+            d = self.build_dict_from_seat(ordered_product_item_token.seat, ticket_number_issuer)
+            d[u'serial'] = ordered_product_item_token.serial
+            d.update(extra)
+            return (ordered_product_item_token.seat, d) 
+        else:
+            d = {}
+            d = self.build_dict_from_stock(ordered_product_item.product_item.stock, d)
+            d = self.build_dict_from_venue(ordered_product_item.product_item.performance.venue, d)
+            d[u'発券番号'] = ticket_number_issuer() if ticket_number_issuer else None
+            d[u'serial'] = ordered_product_item_token.serial
+            d.update(extra)
+            return (None, d)
+
+    def build_dict_from_ordered_product_item_token(self, ordered_product_item_token, user_profile=None, ticket_number_issuer=None):
+        ordered_product_item = ordered_product_item_token.item
+        extra = self.build_basic_dict_from_ordered_product_item(ordered_product_item, user_profile)
+        return self._build_dict_from_ordered_product_item_token(extra, ordered_product_item, ordered_product_item_token, ticket_number_issuer)
 
     def build_dicts_from_carted_product_item(self, carted_product_item, payment_delivery_method_pair=None, ordered_product_item_attributes=None, user_profile=None, ticket_number_issuer=None):
         product_item = carted_product_item.product_item
@@ -355,23 +402,6 @@ class DictBuilder(object):
                 u'price': product_item.price,
                 u'quantity': product_item.quantity
                 },
-            u"shippingAddress": {
-                u"email": shipping_address.email,
-                u"nick_name": shipping_address.nick_name,
-                u"first_name": shipping_address.first_name,
-                u"last_name": shipping_address.last_name,
-                u"first_name_kana": shipping_address.first_name_kana,
-                u"last_name_kana": shipping_address.last_name_kana,
-                u"zip": shipping_address.zip,
-                u"country": shipping_address.country,
-                u"prefecture": shipping_address.prefecture,
-                u"city": shipping_address.city,
-                u"address_1": shipping_address.address_1,
-                u"address_2": shipping_address.address_2,
-                u"tel_1": shipping_address.tel_1,
-                u"tel_2": shipping_address.tel_2,
-                u"fax": shipping_address.fax
-                } if shipping_address else {},
             u'aux': dict(ticket_bundle.attributes) if ticket_bundle else {},
             u'券種名': product_item.name or product.name,
             u'商品名': product_item.name or product.name,
@@ -383,27 +413,8 @@ class DictBuilder(object):
             u'予約番号': cart.order_no
             }
 
-        if user_profile is not None:
-            extra["userProfile"] = {
-                u"email": user_profile.email,
-                u"nick_name": user_profile.nick_name,
-                u"first_name": user_profile.first_name,
-                u"last_name": user_profile.last_name,
-                u"first_name_kana": user_profile.first_name_kana,
-                u"last_name_kana": user_profile.last_name_kana,
-                u"birth_day": datetime_as_dict(user_profile.birth_day),
-                u"sex": self.formatter.sex_as_string(user_profile.sex),
-                u"zip": user_profile.zip,
-                u"country": user_profile.country,
-                u"prefecture": user_profile.prefecture,
-                u"city": user_profile.city,
-                u"address_1": user_profile.address_1,
-                u"address_2": user_profile.address_2,
-                u"tel_1": user_profile.tel_1,
-                u"tel_2": user_profile.tel_2,
-                u"fax": user_profile.fax,
-                u"status": user_profile.status
-                }
+        self.build_shipping_address_dict(extra, shipping_address)
+        self.build_user_profile_dict(extra, user_profile)
 
         retval = []
         if carted_product_item.product_item.stock.stock_type.quantity_only:
@@ -429,6 +440,7 @@ build_dict_from_seat = _default_builder.build_dict_from_seat
 build_dict_from_product_item = _default_builder.build_dict_from_product_item
 build_dicts_from_ordered_product_item = _default_builder.build_dicts_from_ordered_product_item
 build_dicts_from_carted_product_item = _default_builder.build_dicts_from_carted_product_item
+build_dict_from_ordered_product_item_token = _default_builder.build_dict_from_ordered_product_item_token
 
 Size = namedtuple('Size', 'width height')
 Position = namedtuple('Position', 'x y')
