@@ -4,13 +4,15 @@ import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Dimension2D;
+import java.awt.print.Printable;
 import java.awt.print.PrinterJob;
-import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.net.URI;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
-import java.util.List;
 
-import javax.print.PrintService;
+import javax.swing.JFileChooser;
 
 import jp.ticketstar.ticketing.printing.gui.IAppWindow;
 import jp.ticketstar.ticketing.printing.svg.ExtendedSVG12BridgeContext;
@@ -30,7 +32,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.svg.SVGAElement;
 import org.w3c.dom.svg.SVGDocument;
 
-public abstract class BasicAppService extends SVGUserAgentGUIAdapter implements MinimumAppService, UserAgent {
+public class AppService extends SVGUserAgentGUIAdapter implements UserAgent {
 	protected AppModel model;
 	protected HaltingThread documentLoader;
 
@@ -38,17 +40,17 @@ public abstract class BasicAppService extends SVGUserAgentGUIAdapter implements 
 		ExtendedSVG12BridgeContext bridgeContext;
 		
 		public void documentLoadingCancelled(SVGDocumentLoaderEvent arg0) {
-			BasicAppService.this.documentLoader = null;
+			AppService.this.documentLoader = null;
 			displayError("Load cancelled");
 		}
 
 		public void documentLoadingCompleted(SVGDocumentLoaderEvent arg0) {
-			BasicAppService.this.documentLoader = null;
+			AppService.this.documentLoader = null;
 			// TODO: do it async!
 			try {
 				bridgeContext.setInteractive(false);
 				bridgeContext.setDynamic(false);
-				BasicAppService.this.model.setPageSetModel(new PageSetModel(bridgeContext, (ExtendedSVG12OMDocument)arg0.getSVGDocument()));
+				model.setPageSetModel(new PageSetModel(bridgeContext, (ExtendedSVG12OMDocument)arg0.getSVGDocument()));
 			} catch (Exception e) {
 				e.printStackTrace();
 				displayError("Failed to load document\nReason: " + e);
@@ -56,7 +58,7 @@ public abstract class BasicAppService extends SVGUserAgentGUIAdapter implements 
 		}
 
 		public void documentLoadingFailed(SVGDocumentLoaderEvent arg0) {
-			BasicAppService.this.documentLoader = null;
+			AppService.this.documentLoader = null;
 			((SVGDocumentLoader)arg0.getSource()).getException().printStackTrace();
 			displayError("Failed to load document\nReason: " + ((SVGDocumentLoader)arg0.getSource()).getException());
 		}
@@ -70,7 +72,7 @@ public abstract class BasicAppService extends SVGUserAgentGUIAdapter implements 
 		}
 	}
 	
-	public BasicAppService(AppModel model) {
+	public AppService(AppModel model) {
 		super(null);
 		this.model = model;
 	}
@@ -141,6 +143,14 @@ public abstract class BasicAppService extends SVGUserAgentGUIAdapter implements 
 		
 	}
 
+	public void openFileDialog() {
+		JFileChooser chooser = new JFileChooser();
+		chooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
+		if (chooser.showOpenDialog(parentComponent) == JFileChooser.APPROVE_OPTION) {
+			loadDocument(chooser.getSelectedFile().toURI());
+		}
+	}
+
 	public synchronized void loadDocument(URI uri) {
 		if (this.documentLoader != null)
 			return;
@@ -150,7 +160,7 @@ public abstract class BasicAppService extends SVGUserAgentGUIAdapter implements 
 		documentLoader.addSVGDocumentLoaderListener(new LoaderListener(new ExtendedSVG12BridgeContext(this, loader)));
 		documentLoader.start();
 	}
-	
+
 	protected TicketPrintable createTicketPrintable(PrinterJob job) {
 		return new TicketPrintable(
 			new ArrayList<Page>(model.getPageSetModel().getPages()), job,
@@ -158,46 +168,19 @@ public abstract class BasicAppService extends SVGUserAgentGUIAdapter implements 
 		);
 	}
 
-	public List<OurPageFormat> getPageFormats() {
-		return model.getPageFormats() == null ?
-			null: new ArrayList<OurPageFormat>(model.getPageFormats());
-	}
-
-	public OurPageFormat getPageFormat() {
-		return model.getPageFormat();
-	}
-	
-	public void setPageFormat(OurPageFormat pageFormat) {
-		model.setPageFormat(pageFormat);
-	}
-
-	public void addListenerForPageFormat(PropertyChangeListener listener) {
-		model.addPropertyChangeListener("pageFormat", listener);
-	}
-	
-	public List<PrintService> getPrintServices() {
-		return model.getPrintServices() == null ?
-			null: new ArrayList<PrintService>(model.getPrintServices());
-	}
-
-	public PrintService getPrintService() {
-		return model.getPrintService();
-	}
-	
-	public void setPrintService(PrintService printService) {
-		model.setPrintService(printService);
-	}
-
-	public void addListenerForPrintService(PropertyChangeListener listener) {
-		model.addPropertyChangeListener("printService", listener);
-	}
-
-	public List<Page> getPages() {
-		final PageSetModel pageSetModel = model.getPageSetModel();
-		return pageSetModel == null ? null: new ArrayList<Page>(pageSetModel.getPages());
-	}
-
-	public void addListenerForPages(PropertyChangeListener listener) {
-		model.addPropertyChangeListener("pageSetModel", listener);
+	public void printAll() {
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+			public Object run() {
+				try {
+					final PrinterJob job = PrinterJob.getPrinterJob();
+					job.setPrintService(model.getPrintService());
+					job.setPrintable(createTicketPrintable(job), model.getPageFormat());
+					job.print();
+				} catch (Exception e) {
+					displayError("Failed to print tickets\nReason: " + e);
+				}
+				return null;
+			}
+		});
 	}
 }
