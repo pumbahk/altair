@@ -4,6 +4,8 @@ import java.util.Map;
 
 public interface Ticket {
 	public String getSeatId();
+
+	public String getOrderedProductItemTokenId();
 	
 	public String getOrderedProductItemId();
 

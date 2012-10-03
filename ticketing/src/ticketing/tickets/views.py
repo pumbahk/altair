@@ -4,21 +4,23 @@ from StringIO import StringIO
 import json
 import webhelpers.paginate as paginate
 import sqlalchemy as sa
+from sqlalchemy.orm.exc import NoResultFound
 from datetime import datetime
 from lxml import etree
 from ticketing.fanstatic import with_bootstrap
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 
+from ..utils import json_safe_coerce
 from ..views import BaseView
 from ..models import DBSession
 from ..core.models import DeliveryMethod
 from ..core.models import TicketFormat, PageFormat, Ticket
 from ..core.models import TicketPrintQueueEntry, TicketPrintHistory
-from ..core.models import OrderedProductItem, OrderedProduct, Order
+from ..core.models import OrderedProductItemToken, OrderedProductItem, OrderedProduct, Order
 from . import forms
 from . import helpers
-from .utils import SvgPageSetBuilder
+from .utils import SvgPageSetBuilder, build_dict_from_ordered_product_item_token, _default_builder
 from .response import FileLikeResponse
 from .convert import to_opcodes
 
@@ -28,7 +30,7 @@ def ticket_format_to_dict(ticket_format):
     data[u'name'] = ticket_format.name
     return data
 
-def ticket_to_dict(cls, ticket):
+def ticket_to_dict(ticket):
     data = dict(ticket.data)
     data[u'id'] = ticket.id
     data[u'name'] = ticket.name
@@ -463,7 +465,7 @@ class TicketPrinter(BaseView):
                  u'data': { u'page_formats': page_formats,
                             u'ticket_formats': ticket_formats } }
 
-    @view_config(route_name='tickets.printer.api.ticket', request_method='POST', renderer='lxml')
+    @view_config(route_name='tickets.printer.api.ticket', renderer='json')
     def ticket(self):
         ticket_id = self.request.matchdict['id']
         ticket = DBSession.query(Ticket) \
@@ -472,12 +474,69 @@ class TicketPrinter(BaseView):
             .one()
         return dict(
             ticket_formats=[
-                ticket_format_to_dict(self.ticket.ticket_format)
+                ticket_format_to_dict(ticket.ticket_format)
                 ],
             ticket_templates=[
                 ticket_to_dict(ticket)
                 ]
             )
+
+    @view_config(route_name='tickets.printer.api.ticket_data', request_method='POST', renderer='json')
+    def ticket_data(self):
+        ordered_product_item_token_id = self.request.json_body.get('ordered_product_item_token_id')
+        ordered_product_item_id = self.request.json_body.get('ordered_product_item_id')
+        try:
+            if ordered_product_item_token_id is not None:
+                ordered_product_item_token = \
+                    DBSession.query(OrderedProductItemToken) \
+                    .filter_by(id=ordered_product_item_token_id) \
+                    .join(OrderedProductItem) \
+                    .join(OrderedProduct) \
+                    .join(Order) \
+                    .filter_by(organization_id=self.context.organization.id) \
+                    .one()
+                pair = build_dict_from_ordered_product_item_token(ordered_product_item_token)
+                retval = [] 
+                if pair is not None:
+                    retval.append({
+                        u'ordered_product_item_token_id': ordered_product_item_token.id,
+                        u'ordered_product_item_id': ordered_product_item_token.item.id,
+                        u'order_id': ordered_product_item_token.item.ordered_product.order.id,
+                        u'seat_id': ordered_product_item_token.seat_id,
+                        u'serial': ordered_product_item_token.serial,
+                        u'data': json_safe_coerce(pair[1])
+                        })
+                return {
+                    u'status': u'success',
+                    u'data': retval
+                    }
+            elif ordered_product_item_id is not None:
+                ordered_product_item = DBSession.query(OrderedProductItem) \
+                    .filter_by(id=ordered_product_item_id) \
+                    .join(OrderedProduct) \
+                    .join(Order) \
+                    .filter_by(organization_id=self.context.organization.id) \
+                    .one()
+                extra = _default_builder.build_basic_dict_from_ordered_product_item(ordered_product_item)
+                retval = []
+                for ordered_product_item_token in ordered_product_item.tokens:
+                    pair = _default_builder._build_dict_from_ordered_product_item_token(extra, ordered_product_item, ordered_product_item_token)
+                    if pair is not None:
+                        retval.append({
+                            u'ordered_product_item_token_id': ordered_product_item_token.id,
+                            u'ordered_product_item_id': ordered_product_item_token.item.id,
+                            u'order_id': ordered_product_item_token.item.product.order.id,
+                            u'seat_id': ordered_product_item_token.seat_id,
+                            u'serial': ordered_product_item_token.serial,
+                            u'data': pair[1]
+                            })
+                return {
+                    u'status': u'success',
+                    u'data': retval
+                    }
+            return { u'status': u'error', u'message': u'insufficient parameters' }
+        except NoResultFound:
+            return { u'status': u'error', u'message': u'not found' }
 
     @view_config(route_name='tickets.printer.api.history', request_method='POST', renderer='json')
     def history(self):

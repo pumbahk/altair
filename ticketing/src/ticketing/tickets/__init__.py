@@ -29,6 +29,7 @@ def includeme(config):
     config.add_route('tickets.printer.api.formats', '/print/formats')
     config.add_route('tickets.printer.api.enqueue', '/print/enqueue')
     config.add_route('tickets.printer.api.ticket', '/print/ticket/{id}')
+    config.add_route('tickets.printer.api.ticket_data', '/print/ticket_data')
     config.add_route('tickets.printer.api.history', '/print/history')
     config.add_route('tickets.printer.api.peek', '/print/peek')
     config.add_route('tickets.printer.api.dequeue', '/print/dequeue')

@@ -6,6 +6,7 @@ import java.util.HashMap;
 
 public class TicketImpl implements Ticket {
 	final String seatId;
+	final String orderedProductItemTokenId;
 	final String orderedProductItemId;
 	final String orderId;
 	final Map<String, String> data;
@@ -14,6 +15,10 @@ public class TicketImpl implements Ticket {
 		return seatId;
 	}
 
+	public String getOrderedProductItemTokenId() {
+		return orderedProductItemTokenId;
+	}
+	
 	public String getOrderedProductItemId() {
 		return orderedProductItemId;
 	}
@@ -26,8 +31,9 @@ public class TicketImpl implements Ticket {
 		return Collections.unmodifiableMap(data);
 	}
 
-	public TicketImpl(String seatId, String orderedProductItemId, String orderId, Map<String, String> data) {
+	public TicketImpl(String seatId, String orderedProductItemTokenId, String orderedProductItemId, String orderId, Map<String, String> data) {
 		this.seatId = seatId;
+		this.orderedProductItemTokenId = orderedProductItemTokenId;
 		this.orderedProductItemId = orderedProductItemId;
 		this.orderId = orderId;
 		this.data = new HashMap<String, String>(data);
