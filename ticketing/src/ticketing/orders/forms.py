@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 
+import locale
 from datetime import datetime
+
 from wtforms import Form, ValidationError
 from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, TextAreaField,
                      BooleanField, RadioField, FieldList, FormField, DecimalField, IntegerField)
 from wtforms.validators import Optional, AnyOf, Length, Email
-from collections import OrderedDict
 from ticketing.formhelpers import DateTimeField, Translations, Required
 from ticketing.core.models import (PaymentMethodPlugin, DeliveryMethodPlugin, StockType,
                                    SalesSegment, Performance, Product, ProductItem)
+from ticketing.cart.schemas import ClientForm
 
 class OrderForm(Form):
 
@@ -170,13 +172,19 @@ class OrderReserveForm(Form):
                                   .join(Product.items)\
                                   .filter(ProductItem.performance_id==performance.id)\
                                   .filter(ProductItem.stock_id.in_(kwargs['stocks'])).all()
-                self.products.choices += [(p.id, p.name) for p in products]
+                for p in products:
+                    self.products.choices += [
+                        (p.id, u'%s (%s円) %s' % (p.name, locale.format('%d', p.price, True), p.sales_segment.name))
+                    ]
             else:
                 # 数受け
                 products = Product.filter(Product.sales_segment_id.in_([ss.id for ss in sales_segments]))\
                                   .join(Product.seat_stock_type)\
                                   .filter(StockType.quantity_only==1).all()
-                self.products.choices += [(p.id, p.name) for p in products]
+                for p in products:
+                    self.products.choices += [
+                        (p.id, u'%s (%s円) %s' % (p.name, locale.format('%d', p.price, True), p.sales_segment.name))
+                    ]
 
     def _get_translations(self):
         return Translations()
@@ -185,7 +193,6 @@ class OrderReserveForm(Form):
         validators=[Required()],
     )
     stocks = HiddenField(
-        label=u'座席',
         validators=[Optional()],
     )
     note = TextAreaField(
@@ -213,6 +220,19 @@ class OrderReserveForm(Form):
             raise ValidationError(u'複数の席種を選択することはできません')
         if not form.products.choices:
             raise ValidationError(u'選択された座席に紐づく予約可能な商品がありません')
+
+class ClientOptionalForm(ClientForm):
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        ClientForm.__init__(self, formdata, obj, prefix, **kwargs)
+
+        # 全てのフィールドをOptionalにする
+        for field in self:
+            for i, validator in enumerate(field.validators):
+                setattr(field.flags, 'required', False)
+                if isinstance(validator, Required):
+                    del field.validators[i]
+                    break;
+            field.validators.append(Optional())
 
 class SejTicketForm(Form):
     ticket_type = SelectField(

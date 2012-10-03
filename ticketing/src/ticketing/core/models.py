@@ -6,12 +6,13 @@ import json
 from urlparse import urljoin
 from datetime import datetime
 
-from sqlalchemy import Table, Column, ForeignKey, func, or_, and_
+from sqlalchemy import Table, Column, ForeignKey, func, or_, and_, event
 from sqlalchemy import ForeignKeyConstraint, UniqueConstraint
 from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode, UnicodeText
 from sqlalchemy.orm import join, backref, column_property, joinedload, deferred
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.sql import exists
 from sqlalchemy.sql.expression import asc, desc, exists, select, table, column
 from sqlalchemy.ext.associationproxy import association_proxy
 
@@ -409,9 +410,9 @@ class Account(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def delete(self):
         # 既に使用されている場合は削除できない
         if self.events:
-            raise Exception(u'関連づけされたイベントがある為、削除できません')
+            raise DomainConstraintError(u'関連づけされたイベントがある為、削除できません')
         if self.stock_holders:
-            raise Exception(u'関連づけされた枠がある為、削除できません')
+            raise DomainConstraintError(u'関連づけされた枠がある為、削除できません')
 
         super(Account, self).delete()
 
@@ -864,6 +865,32 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         return {template.id:sales_segment.id}
 
+    @classmethod
+    def copy_products(cls, from_, to_):
+        products = DBSession.query(Product).filter(Product.sales_segment_id==from_.id).all()
+        for product in products:
+
+            new_product = Product(
+                name=product.name,
+                price=product.price,
+                display_order=product.display_order,
+                seat_stock_type_id=product.seat_stock_type_id,
+                event_id=product.event_id,
+                sales_segment=to_,
+            )
+
+            for product_item in product.items:
+
+                new_product_item = ProductItem(
+                    name=product_item.name,
+                    price=product_item.price,
+                    stock_id=product_item.stock_id,
+                    quantity=product_item.quantity,
+                    ticket_bundle_id=product_item.ticket_bundle_id,
+                    product=new_product,
+                )
+
+
 class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentDeliveryMethodPair'
 
@@ -1099,11 +1126,22 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         super(StockType, self).delete()
 
-    def num_seats(self, performance_id=None):
+    def num_seats(self, performance_id=None, sale_only=False):
         # 同一Performanceの同一StockTypeにおけるStock.quantityの合計
         query = Stock.filter_by(stock_type_id=self.id).with_entities(func.sum(Stock.quantity))
         if performance_id:
-            query = query.filter_by(performance_id==performance_id)
+            query = query.filter_by(performance_id=performance_id)
+            if sale_only:
+                query = query.filter(exists().where(and_(ProductItem.performance_id==performance_id, ProductItem.stock_id==Stock.id)))
+        return query.scalar()
+
+    def rest_num_seats(self, performance_id=None, sale_only=False):
+        # 同一Performanceの同一StockTypeにおけるStockStatus.quantityの合計
+        query = Stock.filter(Stock.stock_type_id==self.id).join(Stock.stock_status).with_entities(func.sum(StockStatus.quantity))
+        if performance_id:
+            query = query.filter(Stock.performance_id==performance_id)
+            if sale_only:
+                query = query.filter(exists().where(and_(ProductItem.performance_id==performance_id, ProductItem.stock_id==Stock.id)))
         return query.scalar()
 
     def set_style(self, data):
@@ -1330,7 +1368,7 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     items = relationship('ProductItem', backref=backref('product', order_by='Product.display_order'))
 
     @staticmethod
-    def find(performance_id=None, event_id=None, sales_segment_id=None, include_deleted=False):
+    def find(performance_id=None, event_id=None, sales_segment_id=None, stock_id=None, include_deleted=False):
         query = Product.query
         if performance_id:
             query = query.join(Product.items).filter(ProductItem.performance_id==performance_id)
@@ -1338,6 +1376,10 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             query = query.filter(Product.event_id==event_id)
         if sales_segment_id:
             query = query.filter(Product.sales_segment_id==sales_segment_id)
+        if stock_id:
+            if not performance_id:
+                query = query.join(Product.items)
+            query = query.filter(ProductItem.stock_id==stock_id)
         if not include_deleted:
             query = query.filter(Product.deleted_at==None)
         return query.all()
@@ -1617,7 +1659,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 if request.registry.settings.get('multicheckout.testing', False):
                     order_no = '%012d%02d' % (sensible_alnum_decode(order_no[2:12]), 0)
                 organization = Organization.get(self.organization_id)
-                request.registry.settings['altair_checkout3d.override_shop_name'] = organization.code
+                request.registry.settings['altair_checkout3d.override_shop_name'] = organization.multicheckout_settings[0].shop_name
+                
                 multi_checkout_result = multi_checkout_api.checkout_sales_cancel(request, order_no)
                 DBSession.add(multi_checkout_result)
 
@@ -1806,6 +1849,14 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 def no_filter(value):
     return value
 
+class OrderAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__   = "OrderAttribute"
+    order_id  = Column(Identifier, ForeignKey('Order.id'), primary_key=True, nullable=False)
+    name = Column(String(255), primary_key=True, nullable=False)
+    value = Column(String(1023))
+
+    order = relationship('Order', backref="attributes")
+    
 class OrderedProductAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = "OrderedProductAttribute"
     ordered_product_item_id  = Column(Identifier, ForeignKey('OrderedProductItem.id'), primary_key=True, nullable=False)
@@ -2010,14 +2061,16 @@ class TicketPrintQueueEntry(Base, BaseModel):
         DBSession.add(TicketPrintQueueEntry(operator=operator, ticket=ticket, data=data, summary=summary, ordered_product_item=ordered_product_item))
 
     @classmethod
-    def peek(self, operator, ticket_format_id):
-        return DBSession.query(TicketPrintQueueEntry) \
+    def peek(self, operator, ticket_format_id, order_id=None):
+        q = DBSession.query(TicketPrintQueueEntry) \
             .filter_by(processed_at=None, operator=operator) \
             .filter(Ticket.ticket_format_id==ticket_format_id) \
             .join(OrderedProductItem) \
-            .join(OrderedProduct) \
-            .order_by(asc(OrderedProduct.id), desc(self.created_at)) \
-            .all()
+            .join(OrderedProduct)
+        if order_id is not None:
+            q = q.filter(OrderedProduct.order_id==order_id)
+        q = q.order_by(asc(OrderedProduct.id), desc(self.created_at))
+        return q.all()
 
     @classmethod
     def dequeue(self, ids):
@@ -2078,10 +2131,20 @@ class TicketPrintHistory(Base, BaseModel, WithTimestamp):
     ordered_product_item = relationship('OrderedProductItem', backref='print_histories')
     seat_id = Column(Identifier, ForeignKey('Seat.id'), nullable=True)
     seat = relationship('Seat', backref='print_histories')
+    item_token_id = Column(Identifier, ForeignKey('OrderedProductItemToken.id'), nullable=True)
+    item_token = relationship('OrderedProductItemToken')
+    order_id = Column(Identifier, ForeignKey('Order.id'), nullable=True)
+    order = relationship('Order')
     ticket_id = Column(Identifier, ForeignKey('Ticket.id'), nullable=False)
     ticket = relationship('Ticket')
-    item_token_id = Column(Identifier, ForeignKey('OrderedProductItemToken.id'), nullable=False)
-    item_token = relationship('OrderedProductItemToken')
+
+    def before_insert_or_update(self):
+        if self.order_id is None and self.item_token_id is None and \
+            self.ordered_product_item_id is None:
+            raise DomainConstraintError('any one of order_id, item_token_id, ordered_product_item_id must have a non-null value')
+
+for event_kind in ['before_insert', 'before_update']:
+    event.listen(TicketPrintHistory, event_kind, lambda mapper, conn, target: target.before_insert_or_update())
 
 class PageFormat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "PageFormat"

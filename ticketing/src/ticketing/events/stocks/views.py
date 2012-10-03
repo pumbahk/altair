@@ -19,7 +19,7 @@ from ticketing.events.stocks.forms import AllocateSeatForm, AllocateStockForm, A
 
 logger = logging.getLogger(__name__)
 
-@view_defaults(decorator=with_bootstrap)
+@view_defaults(decorator=with_bootstrap, permission='event_editor')
 class Stocks(BaseView):
 
     @view_config(route_name='stocks.allocate', request_method='POST', renderer='json')
@@ -84,5 +84,4 @@ class Stocks(BaseView):
                 'message':u'例外が発生しました',
             }))
 
-        self.request.session.flash(u'席種・配券先を保存しました')
-        return {}
+        return {'message':u'席種・配券先を保存しました'}

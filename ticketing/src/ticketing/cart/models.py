@@ -128,27 +128,30 @@ class CartedProductItem(Base):
 
     def release(self):
         logger.info('trying to release CartedProductItem (id=%d)' % self.id)
-        # 座席開放
-        for seat_status in self.seat_statuses_for_update:
-            logger.info('trying to release seat (id=%d)' % seat_status.seat_id)
-            if seat_status.status != int(c_models.SeatStatusEnum.InCart):
-                logger.info('seat (id=%d) has status=%d, while expecting InCart (%d)' % (seat_status.seat_id, seat_status.status, int(c_models.SeatStatusEnum.InCart)))
-                logger.info('not releaseing CartedProductItem (id=%d) for safety' % self.id)
-                return False
-            logger.info('setting status of seat (id=%d) to Vacant (%d)' % (seat_status.seat_id, int(c_models.SeatStatusEnum.Vacant)))
-            seat_status.status = int(c_models.SeatStatusEnum.Vacant)
+        if not self.finished_at:
+            # 座席開放
+            for seat_status in self.seat_statuses_for_update:
+                logger.info('trying to release seat (id=%d)' % seat_status.seat_id)
+                if seat_status.status != int(c_models.SeatStatusEnum.InCart):
+                    logger.info('seat (id=%d) has status=%d, while expecting InCart (%d)' % (seat_status.seat_id, seat_status.status, int(c_models.SeatStatusEnum.InCart)))
+                    logger.info('not releaseing CartedProductItem (id=%d) for safety' % self.id)
+                    return False
+                logger.info('setting status of seat (id=%d) to Vacant (%d)' % (seat_status.seat_id, int(c_models.SeatStatusEnum.Vacant)))
+                seat_status.status = int(c_models.SeatStatusEnum.Vacant)
 
-        # 在庫数戻し
-        if self.product_item.stock.stock_type.quantity_only:
-            release_quantity = self.quantity
-        else:
-            release_quantity = len(self.seats)
-        logger.info('restoring the quantity of stock (id=%s) by +%d' % (self.product_item.stock_id, release_quantity))
-        up = c_models.StockStatus.__table__.update().values(
-                {"quantity": c_models.StockStatus.quantity + release_quantity}
-        ).where(c_models.StockStatus.stock_id==self.product_item.stock_id)
-        DBSession.bind.execute(up)
-        logger.info('done for CartedProductItem (id=%d)' % self.id)
+            # 在庫数戻し
+            if self.product_item.stock.stock_type.quantity_only:
+                release_quantity = self.quantity
+            else:
+                release_quantity = len(self.seats)
+            logger.info('restoring the quantity of stock (id=%s) by +%d' % (self.product_item.stock_id, release_quantity))
+            up = c_models.StockStatus.__table__.update().values(
+                    {"quantity": c_models.StockStatus.quantity + release_quantity}
+            ).where(c_models.StockStatus.stock_id==self.product_item.stock_id)
+            DBSession.bind.execute(up)
+            logger.info('done for CartedProductItem (id=%d)' % self.id)
+
+            self.finished_at = datetime.now()
         return True
 
     def is_valid(self):
@@ -219,11 +222,13 @@ class CartedProduct(Base):
         """ 開放
         """
         logger.info('trying to release CartedProduct (id=%d)' % self.id)
-        for item in self.items:
-            if not item.release():
-                logger.info('returing False to abort. NO FURTHER SQL EXECUTION IS SUPPOSED!')
-                return False
-        logger.info('CartedProduct (id=%d) successfully released' % self.id)
+        if not self.finished_at:
+            for item in self.items:
+                if not item.release():
+                    logger.info('returing False to abort. NO FURTHER SQL EXECUTION IS SUPPOSED!')
+                    return False
+            self.finished_at = datetime.now()
+            logger.info('CartedProduct (id=%d) successfully released' % self.id)
         return True
 
     def is_valid(self):
@@ -347,7 +352,6 @@ class Cart(Base):
     def release(self):
         """ カート開放
         """
-
         for product in self.products:
             if not product.release():
                 return False

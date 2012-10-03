@@ -67,4 +67,4 @@ def order_status(order):
         return u"未入金"
 
 def safe_strftime(s, format='%Y-%m-%d %H:%M'):
-    return s and s.sftime(format) or ''
+    return s and s.strftime(format) or ''

@@ -46,10 +46,11 @@ def url_not_conflict(form, field):
     ## fixme
     request = get_current_request()
     ####
-    qs = Page.query.filter_by(url=field.data, organization_id=request.organization.id)
+    qs = PageSet.query.filter_by(url=field.data, organization_id=request.organization.id)
     if request.matchdict.get("page_id") or request.matchdict.get("id"):
         pk = request.matchdict.get("page_id") or request.matchdict.get("id")
-        qs = qs.filter(Page.id!=pk)
+        page = Page.query.filter_by(id=pk).first()
+        qs = qs.filter(PageSet.id!=page.pageset_id)
 
     if qs.count() > 0:
         raise validators.ValidationError(u'URL "%s" は既に登録されてます' % field.data)

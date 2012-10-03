@@ -60,7 +60,7 @@ class TagManager(object):
 
     ## history
     def recent_change_tags(self):
-        return self.Tag.query.order_by(saexp.desc(self.Tag.updated_at))
+        return self.Tag.query.order_by(saexp.desc(self.Tag.updated_at), saexp.asc(self.Tag.id))
 
     ## alter
     def delete_tags(self, obj, deletes, public_status=True):

@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 from standardenum import StandardEnum
 from urlparse import uses_relative, uses_netloc, urlparse, urlunparse
+from decimal import Decimal
 
 class DigitCodec(object):
     def __init__(self, digits):
@@ -101,3 +102,22 @@ class URLJoiner(object):
                            params, query, fragment))
 
 myurljoin = URLJoiner(None, None)
+
+def json_safe_coerce(value, encoding='utf-8'):
+    if isinstance(value, dict):
+        return dict((k, json_safe_coerce(v)) for k, v in value.iteritems())
+    elif isinstance(value, (unicode, int, long, float, type(None))):
+        return value
+    elif isinstance(value, str):
+        return value.decode(encoding)
+    elif isinstance(value, Decimal):
+        return float(value)
+    else:
+        i = None
+        try:
+            i = iter(value)
+        except:
+            pass
+        if i is not None:
+            return list(json_safe_coerce(v) for v in i)
+    return unicode(value)

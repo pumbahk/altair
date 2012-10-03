@@ -11,7 +11,9 @@
 	  <a href="${h.link.get_link_from_topic(request, t)}">
 		<img src="${h.asset.to_show_page(request, t.image_asset)}" alt="${t.title  }" width="80" height="80" />
 	  </a><br />
+      %if t.linked_page.event:
 	  <a>${t.countdown_type_ja}まであと${h.base.countdown_days_from(t.countdown_limit)}日</a></p>
+      %endif
   </div>
   % endfor
 </div>

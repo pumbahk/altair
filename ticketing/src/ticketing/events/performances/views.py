@@ -12,9 +12,9 @@ from ticketing.core.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.events.performances.forms import PerformanceForm
-from ticketing.core.models import Event, Performance, Order
+from ticketing.core.models import Event, Performance, Order, Product, ProductItem, Stock
 from ticketing.products.forms import ProductForm, ProductItemForm
-from ticketing.orders.forms import OrderForm, OrderSearchForm, OrderReserveForm
+from ticketing.orders.forms import OrderForm, OrderSearchForm
 
 from ticketing.mails.forms import MailInfoTemplate
 from ticketing.models import DBSession
@@ -25,7 +25,7 @@ from ticketing.core.models import MailTypeChoices
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class Performances(BaseView):
 
-    @view_config(route_name='performances.index', renderer='ticketing:templates/performances/index.html')
+    @view_config(route_name='performances.index', renderer='ticketing:templates/performances/index.html', permission='event_viewer')
     def index(self):
         event_id = int(self.request.matchdict.get('event_id', 0))
         event = Event.get(event_id, organization_id=self.context.user.organization_id)
@@ -51,8 +51,8 @@ class Performances(BaseView):
             'form':PerformanceForm(organization_id=self.context.user.organization_id),
         }
 
-    @view_config(route_name='performances.show', renderer='ticketing:templates/performances/show.html')
-    @view_config(route_name='performances.show_tab', renderer='ticketing:templates/performances/show.html')
+    @view_config(route_name='performances.show', renderer='ticketing:templates/performances/show.html', permission='event_viewer')
+    @view_config(route_name='performances.show_tab', renderer='ticketing:templates/performances/show.html', permission='event_viewer')
     def show(self):
         performance_id = int(self.request.matchdict.get('performance_id', 0))
         performance = Performance.get(performance_id, self.context.user.organization_id)
@@ -63,11 +63,11 @@ class Performances(BaseView):
 
         tab = self.request.matchdict.get('tab', 'product')
         if tab == 'seat-allocation':
-            data['form_reserve'] = OrderReserveForm(performance_id=performance_id)
+            pass
         elif tab == 'product':
             data['form_product'] = ProductForm(event_id=performance.event_id)
             data['form_product_item'] = ProductItemForm(user_id=self.context.user.id, performance_id=performance_id)
-        elif tab == 'reservation':
+        elif tab == 'order':
             data['form_order'] = OrderForm(event_id=performance.event_id)
             data['form_search'] = OrderSearchForm(performance_id=performance_id)
 
@@ -84,6 +84,8 @@ class Performances(BaseView):
                 url=paginate.PageURL_WebOb(self.request)
             )
         elif tab == 'ticket-designer':
+            pass
+        elif tab == 'reservation':
             pass
 
         data['tab'] = tab

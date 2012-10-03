@@ -8,14 +8,14 @@ import java.beans.PropertyChangeSupport;
 import javax.print.PrintService;
 import javax.swing.event.SwingPropertyChangeSupport;
 
-import jp.ticketstar.ticketing.printing.DDimension2D;
-import jp.ticketstar.ticketing.printing.GenericComboBoxModel;
+import jp.ticketstar.ticketing.NESW;
+import jp.ticketstar.ticketing.PrintingUtils;
+import jp.ticketstar.ticketing.UnitUtils;
+import jp.ticketstar.ticketing.DDimension2D;
+import jp.ticketstar.ticketing.swing.GenericComboBoxModel;
 import jp.ticketstar.ticketing.printing.AppModel;
-import jp.ticketstar.ticketing.printing.NESW;
 import jp.ticketstar.ticketing.printing.OurPageFormat;
-import jp.ticketstar.ticketing.printing.PrintingUtils;
 import jp.ticketstar.ticketing.printing.PageSetModel;
-import jp.ticketstar.ticketing.printing.UnitUtils;
 
 public class AppWindowModel implements AppModel {
 	PropertyChangeSupport propertyChangeSupport = new SwingPropertyChangeSupport(this, true);

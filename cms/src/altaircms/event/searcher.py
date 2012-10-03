@@ -40,12 +40,12 @@ def make_event_search_by_word(request, qs, data):
     ## search by solr
     if data["freeword"]:
         word = data["freeword"]
-        pagesets = pageset_id_list_from_word(request, word)
-        where = (Event.id==PageSet.event_id) & (PageSet.id.in_(pagesets))
-        qs = qs.filter(where)
-        # qs = qs.filter(where | Event.title.like(likeword), Event.subtitle.like(likeword))
+        # pagesets = pageset_id_list_from_word(request, word)
+        # where = (Event.id==PageSet.event_id) & (PageSet.id.in_(pagesets))
+        # qs = qs.filter(where)
+        likeword = u"%%%s%%" % word
+        qs = qs.filter((Event.title.like(likeword))|( Event.subtitle.like(likeword)))
     return qs
-
 
 def make_event_search_by_category(qs, data):
     if data["category"]:

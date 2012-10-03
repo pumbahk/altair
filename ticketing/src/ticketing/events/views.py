@@ -19,7 +19,7 @@ from pyramid.path import AssetResolver
 from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
-from ticketing.core.models import Event, Performance
+from ticketing.core.models import Event, Performance, StockType, StockTypeEnum
 from ticketing.events.forms import EventForm
 from ticketing.events.performances.forms import PerformanceForm
 from ticketing.events.sales_segments.forms import SalesSegmentForm
@@ -34,7 +34,7 @@ from ..api.impl import CMSCommunicationApi
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class Events(BaseView):
 
-    @view_config(route_name='events.index', renderer='ticketing:templates/events/index.html')
+    @view_config(route_name='events.index', renderer='ticketing:templates/events/index.html', permission='event_viewer')
     def index(self):
         sort = self.request.GET.get('sort', 'Event.id')
         direction = self.request.GET.get('direction', 'desc')
@@ -69,7 +69,7 @@ class Events(BaseView):
             'events':events,
         }
 
-    @view_config(route_name='events.show', renderer='ticketing:templates/events/show.html')
+    @view_config(route_name='events.show', renderer='ticketing:templates/events/show.html', permission='event_viewer')
     def show(self):
         event_id = int(self.request.matchdict.get('event_id', 0))
         event = Event.get(event_id, organization_id=self.context.user.organization_id)
@@ -81,6 +81,8 @@ class Events(BaseView):
         return {
             'event':event,
             'accounts':accounts,
+            'seat_stock_types':StockType.filter_by(event_id=event_id, type=StockTypeEnum.Seat.v).all(),
+            'non_seat_stock_types':StockType.filter_by(event_id=event_id, type=StockTypeEnum.Other.v).all(),
             'form':EventForm(),
             'form_performance':PerformanceForm(organization_id=self.context.user.organization_id),
             'form_stock_type':StockTypeForm(event_id=event_id),

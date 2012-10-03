@@ -7,7 +7,7 @@ TODO: cart取得
 """
 import logging
 
-from datetime import datetime
+from datetime import datetime, date
 import itertools
 from sqlalchemy import sql
 from pyramid.security import Everyone, Authenticated
@@ -49,10 +49,10 @@ class TicketingCartResource(object):
     #     return [m.membership for m in membergroups]
     @property
     def memberships(self):
-        logger.debug('event %s' % self.event.title)
-        logger.debug('organization %s' % self.event.organization.code)
-        logger.debug('memberships %s' % self.event.organization.memberships)
-        return self.event.organization.memberships
+        organization = core_api.get_organization(self.request)
+        logger.debug('organization %s' % organization.code)
+        logger.debug('memberships %s' % organization.memberships)
+        return organization.memberships
 
     # @property
     # def membergroup(self):
@@ -86,17 +86,25 @@ class TicketingCartResource(object):
         return 0
 
 
-    def get_payment_delivery_method_pair(self):
+    def get_payment_delivery_method_pair(self, start_on=None):
         segment = self.get_sales_segument()
-        pairs = c_models.PaymentDeliveryMethodPair.query.filter(
+        q = c_models.PaymentDeliveryMethodPair.query.filter(
             c_models.PaymentDeliveryMethodPair.sales_segment_id==segment.id
+        ).filter(
+            c_models.PaymentDeliveryMethodPair.public==1,
         ).order_by(
             c_models.PaymentDeliveryMethodPair.transaction_fee,
             c_models.PaymentDeliveryMethodPair.payment_method_id,
             c_models.PaymentDeliveryMethodPair.delivery_fee,
             c_models.PaymentDeliveryMethodPair.delivery_method_id,
-        ).all()
-
+        )
+        if start_on:
+            today = date.today()
+            period_days = date(start_on.year, start_on.month, start_on.day) - today
+            q = q.filter(
+                c_models.PaymentDeliveryMethodPair.unavailable_period_days<=period_days.days
+            )
+        pairs = q.all()
         return pairs
 
     def authenticated_user(self):

@@ -86,18 +86,18 @@ class PerformanceForm(Form):
     calendar_content = fields.TextField(label=u"カレンダーに追加する文字列")
 
     def validate(self, **kwargs):
-        super(PerformanceForm, self).validate()
-        data = self.data
-        try:
-            if data["open_on"] and data["start_on"] is None:
-                data["start_on"] = data["open_on"]
-            elif data["start_on"] and data["open_on"] is None:
-                data["open_on"] = data["start_on"]
+        if super(PerformanceForm, self).validate():
+            data = self.data
+            try:
+                if data["open_on"] and data["start_on"] is None:
+                    data["start_on"] = data["open_on"]
+                elif data["start_on"] and data["open_on"] is None:
+                    data["open_on"] = data["start_on"]
 
-            if not (data["open_on"] <= data["start_on"] <= data["end_on"]):
-                append_errors(self.errors, "open_on", u"開場時間、開始時間、終了時間の順になっていません")
-        except Exception, e:
-            append_errors(self.errors, "__all__", u"不正な文字列が入力されてます。")
+                if not (data["open_on"] <= data["start_on"] <= data["end_on"]):
+                    append_errors(self.errors, "open_on", u"開場時間、開始時間、終了時間の順になっていません")
+            except Exception, e:
+                append_errors(self.errors, "__all__", u"不正な文字列が入力されてます。")
         return not bool(self.errors)
 
     def object_validate(self, obj=None):
@@ -126,10 +126,10 @@ class SaleForm(Form):
     __display_fields__ = [u"event", u"kind", u"name", u"start_on", u"end_on"]
 
     def validate(self, **kwargs):
-        super(SaleForm, self).validate()
-        data = self.data
-        if not data["name"]:
-            data["name"] = data["event"].title
+        if super(SaleForm, self).validate():
+            data = self.data
+            if not data["name"]:
+                data["name"] = data["event"].title
         return not bool(self.errors)
 
 
@@ -172,9 +172,10 @@ class PromotionForm(Form):
     is_vetoed = fields.BooleanField(label=u"公開禁止")
 
     def validate(self, **kwargs):
-        data = self.data
-        if data["publish_open_on"] > data["publish_close_on"]:
-            append_errors(self.errors, "publish_open_on", u"公開開始日よりも後に終了日が設定されています")
+        if super(PromotionForm, self).validate():
+            data = self.data
+            if data["publish_open_on"] > data["publish_close_on"]:
+                append_errors(self.errors, "publish_open_on", u"公開開始日よりも後に終了日が設定されています")
         return not bool(self.errors)
 
     __display_fields__ = [
@@ -289,10 +290,10 @@ class TopicForm(Form):
                           u"bound_page", u"linked_page", u"link", u"mobile_link", u"event"]
 
     def validate(self, **kwargs):
-        super(TopicForm, self).validate()
-        data = self.data
-        if data["publish_close_on"] and data["publish_open_on"] and data["publish_open_on"] > data["publish_close_on"]:
-            append_errors(self.errors, "publish_open_on", u"公開開始日よりも後に終了日が設定されています")
+        if super(TopicForm, self).validate():
+            data = self.data
+            if data["publish_close_on"] and data["publish_open_on"] and data["publish_open_on"] > data["publish_close_on"]:
+                append_errors(self.errors, "publish_open_on", u"公開開始日よりも後に終了日が設定されています")
         return not bool(self.errors)
 
     def configure(self, request):
@@ -350,10 +351,10 @@ class TopcontentForm(Form):
                          u"bound_page", u"linked_page", u"link", u"mobile_link"]
     
     def validate(self, **kwargs):
-        super(TopcontentForm, self).validate()
-        data = self.data
-        if data["publish_close_on"] and data["publish_open_on"] and data["publish_open_on"] > data["publish_close_on"]:
-            append_errors(self.errors, "publish_open_on", u"公開開始日よりも後に終了日が設定されています")
+        if super(TopcontentForm, self).validate():
+            data = self.data
+            if data["publish_close_on"] and data["publish_open_on"] and data["publish_open_on"] > data["publish_close_on"]:
+                append_errors(self.errors, "publish_open_on", u"公開開始日よりも後に終了日が設定されています")
         return not bool(self.errors)
    
     def configure(self, request):
@@ -376,10 +377,10 @@ class HotWordForm(Form):
                           u"display_order"]
 
     def validate(self, **kwargs):
-        super(HotWordForm, self).validate()
-        data = self.data
-        if data["term_begin"] and data["term_end"] and data["term_begin"] > data["term_end"]:
-            append_errors(self.errors, "term_begin", u"開始日よりも後に終了日が設定されています")
+        if super(HotWordForm, self).validate():
+            data = self.data
+            if data["term_begin"] and data["term_end"] and data["term_begin"] > data["term_end"]:
+                append_errors(self.errors, "term_begin", u"開始日よりも後に終了日が設定されています")
         return not bool(self.errors)
 
 class PageDefaultInfoForm(Form):

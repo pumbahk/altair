@@ -1,4 +1,4 @@
-<%page args="form" />
+<%page args="form, seats" />
 <%namespace file="/common/helpers.html" name="h" />
 
 <style type="text/css">
@@ -18,10 +18,18 @@
   <div class="modal-body">
     ${h.alert_message(form)}
 
-    <form action="javascript:createOrder();">
+    <form action="javascript:confirmOrder();">
       <fieldset>
-        ${h.form_item(form.performance_id)}
-        ${h.form_item(form.note, option={'rows':5, 'class':'span10'})}
+        <div class="control-group" style="margin-bottom: 15px;">
+          <label class="control-label" style="font-weight: bold;">予約する座席 (${u'座席指定 %s席' % len(seats) if seats else u'おまかせ'})</label>
+          <div class="controls">
+            <ul>
+            % for seat in seats:
+              <li>${seat.name}</li>
+            % endfor
+            </ul>
+          </div>
+        </div>
 
         % if form.products.choices:
         <table class="table table-striped table-bordered">
@@ -38,7 +46,9 @@
         </table>
         % endif
 
+        ${h.form_item(form.performance_id)}
         ${h.form_item(form.payment_delivery_method_pair_id)}
+        ${h.form_item(form.note, option={'rows':5, 'class':'span10'})}
       </fieldset>
       <p>※ 決済・配送方法は「販売区分」が「関係者」で登録されている方法のみ選択可能です</p>
     </form>
@@ -46,6 +56,6 @@
 
   <div class="modal-footer">
     <a href="javascript:void(0);" onclick="$('#modal-reserve').modal('hide');" class="btn secondary btn-close">キャンセル</a>
-    <a href="javascript:void(0);" onclick="$('#modal-reserve').find('form').submit();" class="btn danger">予約する</a>
+    <a href="javascript:void(0);" onclick="$('#modal-reserve').find('form').submit();" class="btn danger">確認する</a>
   </div>
 </div>

@@ -154,14 +154,26 @@ def tab(widget, calendar_status, performances, request, template_name=None):
     logger.debug("calendar template: "+template_name)
 
     performances = list(performances)
-    start_date, end_date = get_start_date_and_end_date(widget.salessegment, performances)
-    months = sorted(set((p.start_on.year, p.start_on.month) for p in performances 
-                        if start_date <= p.start_on and p.start_on <= end_date))
-    visibilities = itertools.chain([True], itertools.repeat(False))
-    monthly_performances = itertools.groupby(performances, lambda p: (p.start_on.year, p.start_on.month))
-    cals = (CalendarOutput.from_performances(perfs).each_rows(date(y, m, 1), (_next_month_date(date(y, m, 1)) - timedelta(days=1)), this_month=m)\
-                for (y, m), perfs in monthly_performances)
-    return render(template_name, {"cals":cals,
-                                  "months":months,
-                                  "visibilities": visibilities,
-                                  "calendar_status":calendar_status})
+    if performances:
+        start_date, end_date = get_start_date_and_end_date(widget.salessegment, performances)
+        months = sorted(set((p.start_on.year, p.start_on.month) for p in performances 
+                            if start_date <= p.start_on and p.start_on <= end_date))
+        visibilities = itertools.chain([True], itertools.repeat(False))
+        monthly_performances = itertools.groupby(performances, lambda p: (p.start_on.year, p.start_on.month))
+        cals = (CalendarOutput.from_performances(perfs).each_rows(date(y, m, 1), (_next_month_date(date(y, m, 1)) - timedelta(days=1)), this_month=m)\
+                    for (y, m), perfs in monthly_performances)
+        return render(template_name, {"cals":cals,
+                                      "months":months,
+                                      "visibilities": visibilities,
+                                      "calendar_status":calendar_status})
+    else:
+        today = date.today()
+        months = [(today.year, today.month)]
+        start_date = date(today.year, today.month, 1)
+        end_date = _next_month_date(today) - timedelta(days=1)
+        visibilities = [True]
+        cals = [CalendarOutput().each_rows(start_date, end_date, this_month=today.month)]
+        return render(template_name, {"cals":cals,
+                                      "months":months,
+                                      "visibilities": visibilities,
+                                      "calendar_status":calendar_status})

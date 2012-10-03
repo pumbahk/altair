@@ -4,6 +4,8 @@ import java.beans.PropertyChangeListener;
 
 import javax.print.PrintService;
 
+import jp.ticketstar.ticketing.swing.GenericComboBoxModel;
+
 
 public interface AppModel {
 

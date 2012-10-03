@@ -7,25 +7,33 @@ from itertools import groupby
 from ticketing.core.models import SeatStatusEnum
 from ticketing.helpers.base import jdate, jdatetime
 
+import logging
 
 class SeatSource(object):
-    """SeatRecordを作成する際に使うオブジェクトSeatモデルには依存しない
+    """SeatRecordを作成する際に使うオブジェクト, Seatモデルには依存しない
     """
     def __init__(self, block=None, floor=None, line=None, seat=None, status=None, source=None):
         self.source = source
-        self.block = block
-        self.floor = floor
-        self.line = line
-        self.seat = seat
+        self.block = block     # ex: プレミアム
+        self.floor = floor     # ex: 1
+        self.line = line       # ex: 2
+        self.seat = seat       # ex: 10
         self.status = status
 
     def get_block_display(self):
-        if self.block and self.floor:
-            return "%s %s" % (self.block, self.floor)
+        # 席番号から生成する
         if self.source and self.source.name:
             name = re.sub(u' [0-9]+番', '', self.source.name)
             name = re.sub(u' [0-9]+列', '', name)
             return name
+        return ""
+
+    def get_row_display(self):
+        # 席番号から生成する
+        if self.source and self.source.name:
+            match = re.match(u'^.+ ([0-9]+)列 .+$', self.source.name)
+            if match:
+                return match.group(1)
         return ""
 
 
@@ -137,23 +145,48 @@ def seat_source_from_seat(seat):
     attributes = seat.attributes or {}
     seat_source = SeatSource(source=seat)
     if attributes:
-        if 'block' in attributes:
-            seat_source.block = attributes.get('block')
         if 'floor' in attributes:
             seat_source.floor = attributes.get('floor')
+    
+    # ブロック名は、SeatAttributeには無く、
+#   if attributes:
+#       if 'block' in attributes:
+#           seat_source.block = attributes.get('block')
+
+    # こちらを使いたいがSeat.areasがバグっている模様
+#   print "seat: %s" % seat.id
+#   for va in seat.areas:
+#       print "va: %s" % va.name
+#       seat_source.block = va.name
+    
+    # なので、席番号から切りだして使う
+    seat_source.block = seat_source.get_block_display()
+    
+    # 列番号は、SeatAttributeのを使う
+    if attributes:
         if 'row' in attributes:
-            seat_source.line = attributes.get('row')
+           seat_source.line = attributes.get('row')
+#   seat_source.line = seat_source.get_row_display()
+    
     seat_source.seat = seat.seat_no
     seat_source.status = seat.status
     return seat_source
 
 
-def is_different_row(seatsource1, seatsource2):
+def is_series_seat(seatsource1, seatsource2):
     """seatsource1とseatsource2が別の列、もしくは通路などを
     挟んで連続していない場合にTrueを返す
     """
-    return (int(seatsource1.seat) + 1 != int(seatsource2.seat)) or \
-        (seatsource1.source.row_l0_id != seatsource2.source.row_l0_id)
+    
+    # いずれかのseatがNULLの時は違う列扱い
+    if seatsource1.seat == None or seatsource2.seat == None:
+        return False
+
+    # 列IDが同じで、席番号の差が1の場合、連続
+    if (seatsource1.source.row_l0_id == seatsource2.source.row_l0_id) and abs(int(seatsource1.seat)-int(seatsource2.seat)) == 1:
+        return True
+    
+    return False
 
 
 def seat_records_from_seat_sources(seat_sources, unsold=False):
@@ -164,38 +197,34 @@ def seat_records_from_seat_sources(seat_sources, unsold=False):
     # block,floor,line,seatの優先順でソートする
     sorted_seat_sources = sorted(
         seat_sources,
-        key=lambda v: (v.block, v.floor, v.line, int(v.seat)))
+        key=lambda v: (v.block, v.floor, v.line, int(v.seat) if (v.seat!=None and v.seat!='') else None))
     # block,floor,lineでグループ化してSeatRecordを作る
     for key, generator in groupby(sorted_seat_sources, lambda v: (v.block, v.floor, v.line)):
         values = list(generator)
         # 連続した座席はまとめる
         lst_values = []
-        for value in values:
-            # 1つ前の座席と連続していなければ結果に追加してlst_valuesをリセット
-            if lst_values and is_different_row(lst_values[-1], value):
-                # flush
-                seat_record = SeatRecord(
-                    block=lst_values[0].get_block_display(),
-                    line=key[2],
+        def flush():
+            seat_record = SeatRecord(
+                    block=lst_values[0].block,
+                    line=lst_values[0].line,
                     start=lst_values[0].seat,
                     end=lst_values[-1].seat,
                     quantity=len(lst_values),
                 )
-                result.append(seat_record)
-                lst_values = []
+            result.append(seat_record)
+            del lst_values[0:-1]
+
+        for value in values:
+        #   print "b:%s r:%s s:%s" % (value.block, value.line, value.seat)
+            # 1つ前の座席と連続していなければ結果に追加してlst_valuesをリセット
+            if lst_values and not is_series_seat(lst_values[-1], value):
+                flush()
             # 残席のみ
             if not unsold or value.status == SeatStatusEnum.Vacant.v:
                 lst_values.append(value)
         # 残り
         if lst_values:
-            seat_record = SeatRecord(
-                block=lst_values[0].get_block_display(),
-                line=key[2],
-                start=lst_values[0].seat,
-                end=lst_values[-1].seat,
-                quantity=len(lst_values),
-            )
-            result.append(seat_record)
+            flush()
     return result
 
 
