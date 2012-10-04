@@ -288,6 +288,7 @@ public class AppAppletService implements StandardAppService {
 	}
 	
 	public AppAppletService(AppAppletServiceImpl impl) {
+		this.impl = impl;
 		executor = new SerializingExecutor(impl.getApplet());
 	}
 }
