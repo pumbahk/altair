@@ -55,7 +55,7 @@
     <td id="public" value="${sales_segment.public}">${u'○' if sales_segment.public else u'×'}</td>
   </tr>
 </table>
-<%include file="/sales_segments/_action_button.html" args="order=['edit', 'delete']" />
+<%include file="/sales_segments/_action_button.html" args="order=['edit', 'copy', 'delete']" />
 <div id="sales_segments-form">
   <input type="hidden" id="sales_segment_id" value="${sales_segment.id}" />
   <%include file="/sales_segments/_form.html" args="form=form_ss" />

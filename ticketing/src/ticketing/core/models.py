@@ -65,7 +65,6 @@ class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def get_drawing(self, name):
         page_meta = self._metadata[u'pages'].get(name)
-        print self._metadata
         if page_meta is not None:
             resolver = get_current_registry().queryUtility(IAssetResolver)
             return resolver.resolve(myurljoin(self.metadata_url, name))
@@ -745,7 +744,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             # create Product
             for template_product in template_event.products:
                 convert_map['product'].update(
-                    Product.create_from_template(template=template_product, event_id=self.id, convert_map=convert_map)
+                    Product.create_from_template(template=template_product, event_id=self.id, **convert_map)
                 )
 
             # create Performance
@@ -756,7 +755,6 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             Performance以下のコピーしたモデルにidを反映する
             '''
             performances = Performance.filter_by(event_id=self.id).with_entities(Performance.id).all()
-            print performances
             for performance in performances:
                 # 関連テーブルのstock_type_idを書き換える
                 for old_id, new_id in convert_map['stock_type'].iteritems():
@@ -856,38 +854,17 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return data
 
     @staticmethod
-    def create_from_template(template, event_id):
+    def create_from_template(template, with_payment_delivery_method_pairs=False, **kwargs):
         sales_segment = SalesSegment.clone(template)
-        sales_segment.event_id = event_id
+        if 'event_id' in kwargs:
+            sales_segment.event_id = kwargs['event_id']
         sales_segment.save()
 
-        for template_pdmp in template.payment_delivery_method_pairs:
-            PaymentDeliveryMethodPair.create_from_template(template=template_pdmp, sales_segment_id=sales_segment.id)
+        if with_payment_delivery_method_pairs:
+            for template_pdmp in template.payment_delivery_method_pairs:
+                PaymentDeliveryMethodPair.create_from_template(template=template_pdmp, sales_segment_id=sales_segment.id)
 
         return {template.id:sales_segment.id}
-
-    @classmethod
-    def copy_products(cls, from_, to_):
-        products = DBSession.query(Product).filter(Product.sales_segment_id==from_.id).all()
-        for product in products:
-            new_product = Product(
-                name=product.name,
-                price=product.price,
-                display_order=product.display_order,
-                seat_stock_type_id=product.seat_stock_type_id,
-                event_id=product.event_id,
-                sales_segment=to_,
-            )
-            for product_item in product.items:
-                new_product_item = ProductItem(
-                    name=product_item.name,
-                    price=product_item.price,
-                    stock_id=product_item.stock_id,
-                    quantity=product_item.quantity,
-                    ticket_bundle_id=product_item.ticket_bundle_id,
-                    product=new_product,
-                    performance_id=product_item.performance_id,
-                )
 
 class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentDeliveryMethodPair'
@@ -918,9 +895,10 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     delivery_method = relationship('DeliveryMethod', backref='payment_delivery_method_pairs')
 
     @staticmethod
-    def create_from_template(template, sales_segment_id):
+    def create_from_template(template, **kwargs):
         pdmp = PaymentDeliveryMethodPair.clone(template)
-        pdmp.sales_segment_id = sales_segment_id
+        if 'sales_segment_id' in kwargs:
+            pdmp.sales_segment_id = kwargs['sales_segment_id']
         pdmp.save()
 
 class PaymentMethodPlugin(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -1078,10 +1056,14 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 product_item.save()
 
     @staticmethod
-    def create_from_template(template, stock_id, performance_id):
+    def create_from_template(template, **kwargs):
         product_item = ProductItem.clone(template)
-        product_item.performance_id = performance_id
-        product_item.stock_id = stock_id
+        if 'performance_id' in kwargs:
+            product_item.performance_id = kwargs['performance_id']
+        if 'stock_id' in kwargs:
+            product_item.stock_id = kwargs['stock_id']
+        if 'product_id' in kwargs:
+            product_item.product_id = kwargs['product_id']
         product_item.save()
 
 class StockTypeEnum(StandardEnum):
@@ -1461,12 +1443,20 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return self.seat_stock_type.name if self.seat_stock_type else ''
 
     @staticmethod
-    def create_from_template(template, event_id, convert_map):
+    def create_from_template(template, with_product_items=False, **kwargs):
         product = Product.clone(template)
-        product.event_id = event_id
-        product.seat_stock_type_id = convert_map['stock_type'][template.seat_stock_type_id]
-        product.sales_segment_id = convert_map['sales_segment'][template.sales_segment_id]
+        if 'event_id' in kwargs:
+            product.event_id = kwargs['event_id']
+        if 'stock_type' in kwargs:
+            product.seat_stock_type_id = kwargs['stock_type'][template.seat_stock_type_id]
+        if 'sales_segment' in kwargs:
+            product.sales_segment_id = kwargs['sales_segment'][template.sales_segment_id]
         product.save()
+
+        if with_product_items:
+            for template_product_item in template.items:
+                ProductItem.create_from_template(template=template_product_item, product_id=product.id)
+
         return {template.id:product.id}
 
 class SeatIndexType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
