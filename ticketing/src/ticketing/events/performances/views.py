@@ -68,11 +68,8 @@ class Performances(BaseView):
             data['form_product'] = ProductForm(event_id=performance.event_id)
             data['form_product_item'] = ProductItemForm(user_id=self.context.user.id, performance_id=performance_id)
         elif tab == 'order':
-            data['form_order'] = OrderForm(event_id=performance.event_id)
-            data['form_search'] = OrderSearchForm(performance_id=performance_id)
-
             query = Order.filter_by(performance_id=performance_id)
-            form_search = OrderSearchForm(self.request.params)
+            form_search = OrderSearchForm(self.request.params, performance_id=performance_id)
             if form_search.validate():
                 query = Order.set_search_condition(query, form_search)
             else:
@@ -83,6 +80,8 @@ class Performances(BaseView):
                 items_per_page=20,
                 url=paginate.PageURL_WebOb(self.request)
             )
+            data['form_search'] = form_search
+            data['form_order'] = OrderForm(event_id=performance.event_id)
         elif tab == 'ticket-designer':
             pass
         elif tab == 'reservation':
