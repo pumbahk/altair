@@ -2,7 +2,10 @@
 var DataStore = Backbone.Model.extend({
   defaults: {
     ordered_product_item_token_id:  null, 
-    
+    printer_name: null, 
+    ticket_template_name: null, 
+    ticket_template_id: null, 
+
     qrcode_status: "preload", 
     qrcode: null, 
     
@@ -156,16 +159,22 @@ var FormatChoiceView = AppPageViewBase.extend({
   }, 
   initialize: function(opts){
     FormatChoiceView.__super__.initialize.call(this, opts);
+    this.printers = null;
+    this.templates = null;
     this.$printer = this.$el.find("#printer");
     this.$ticketTemplate = this.$el.find("#ticket_template");
   }, 
   printerSettingsChanged: function(){
-    alert("yay");
-  }, 
+    var printer_name = this.$printer.find("input:checked").val();
+    this.datastore.set("printer_name", printer_name);
+  },
   ticketTemplateSettingsChanged: function(){
-    alert("yay, yay");
+    var ticket_template = this.$ticketTemplate.find("input:checked");
+    this.datastore.set("ticket_template_name", ticket_template.attr("data-name"));
+    this.datastore.set("ticket_template_id", ticket_template.val());
   }, 
   redrawPrinterArea: function(printers){
+    this.printers = printers;
     var targetArea = this.$printer;
     targetArea.empty();
     for(var i = printers.iterator(); i.hasNext();){
@@ -183,7 +192,9 @@ var FormatChoiceView = AppPageViewBase.extend({
       var template = i.next();
       var e = $('<div class="control-group">');
       e.append($('<span>').text(template.getName()));
-      e.append($('<input type="radio" name="tickettemplate">').attr("value", template.getId()));
+      e.append($('<input type="radio" name="tickettemplate">')
+               .attr("value", template.getId())
+               .attr("data-name", template.getName()));
       targetArea.append(e);
     }
   }, 
@@ -205,8 +216,30 @@ var AppletView = Backbone.View.extend({
     this.datastore.bind("change:ordered_product_item_token_id", this.createTicket, this);
     this.datastore.bind("change:ordered_product_item_token_id", this.fetchPinterCandidates, this); //eliminate call times:
     this.datastore.bind("change:ordered_product_item_token_id", this.fetchTemplateCandidates, this); //eliminate call times:
-  }, 
 
+    this.datastore.bind("change:printer_name", this.setPrinter, this);
+    this.datastore.bind("change:ticket_template_id", this.setTicketTemplate, this);
+  }, 
+  setPrinter: function(){
+    var printer_name = this.datastore.get("printer_name");
+    var printers = this.service.getPrintServices();
+    for(var i = printers.iterator(); i.hasNext();){
+      var printer = i.next();
+      if(printer.getName() == printer_name){
+        this.service.setPrintService(printer);
+      }
+    }
+  }, 
+  setTicketTemplate: function(){
+    var template_id = this.datastore.get("ticket_template_id");
+    var ticketTemplates = this.service.getTicketTemplates();
+    for(var i = ticketTemplates.iterator(); i.hasNext();){
+      var template = i.next();
+      if(template.getId() == template_id){
+        alert("ここでsetTicketTemplate");
+      }
+    }
+  }, 
   createTicket: function(){
     var tokenId = this.datastore.get("ordered_product_item_token_id");
     var self = this;
