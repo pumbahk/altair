@@ -4,16 +4,16 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.FutureTask;
-import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 public class SerializingExecutor implements Executor {
-	private final SynchronousQueue<Runnable> queue;
+	private final LinkedBlockingQueue<Runnable> queue;
 	private volatile Thread worker;
 
 	public SerializingExecutor(final ThreadFactory threadFactory) {
-		this.queue = new SynchronousQueue<Runnable>();
+		this.queue = new LinkedBlockingQueue<Runnable>();
 		this.worker = threadFactory.newThread(new Runnable() {
 			public void run() {
 				while (worker != null) {
@@ -27,6 +27,16 @@ public class SerializingExecutor implements Executor {
 				}
 			}
 		});
+	}
+
+	public void start() {
+		if (this.worker == null)
+			throw new IllegalStateException("Executor was terminated");
+		this.worker.start();
+	}
+
+	public void terminate() {
+		this.worker = null;
 	}
 	
 	@Override

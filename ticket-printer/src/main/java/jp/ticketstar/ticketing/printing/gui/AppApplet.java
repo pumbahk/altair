@@ -81,10 +81,11 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 	private static final long serialVersionUID = 1L;
 
 	protected AppAppletService appService;
+	protected AppAppletServiceImpl appServiceImpl;
 	protected AppAppletModel model;
 	protected AppAppletConfiguration config;
 	protected boolean interactionEnabled = true;
-	protected Executor threadGenerator = new SerializingExecutor(Executors.defaultThreadFactory());
+	protected SerializingExecutor threadGenerator = new SerializingExecutor(Executors.defaultThreadFactory());
 
 	//private JApplet frame;
 	private JList list;
@@ -336,7 +337,7 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 	protected void doLoadTicketData() {
 		try {
 			final URLConnection conn = newURLConnection(config.peekUrl);
-			appService.loadDocument(conn, new RequestBodySender() {
+			appServiceImpl.loadDocument(conn, new RequestBodySender() {
 				public String getRequestMethod() {
 					return "POST";
 				}
@@ -365,7 +366,8 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 	public void init() {
 		config = getConfiguration();
 		model = new AppAppletModel();
-    	appService = new AppAppletService(this, model);
+    	appServiceImpl = new AppAppletServiceImpl(this, model);
+    	appService = new AppAppletService(appServiceImpl);
     	
 		if (!config.embedded) {
 			initialize();
@@ -373,7 +375,7 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 			boundingBoxOverlay = new BoundingBoxOverlay(model);
 		}
 		
-		appService.setAppWindow(this);
+		appServiceImpl.setAppWindow(this);
 		populateModel();
 
 		if (config.callback != null) {
@@ -386,6 +388,11 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 		}
 	}
 
+	public void destroy() {
+		threadGenerator.terminate();
+		appService.dispose();
+	}
+	
 	public void reload() {
 		model.refresh();
 	}
@@ -421,7 +428,7 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 		btnPrint = new JButton("印刷");
 		btnPrint.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				appService.printAll();
+				appServiceImpl.printAll();
 			}
 		});
 		
@@ -490,5 +497,6 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 	
 	public AppApplet() {
 		setPreferredSize(new Dimension(2147483647, 2147483647));
+		threadGenerator.start();
 	}
 }
