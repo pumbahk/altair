@@ -14,8 +14,12 @@
 
 <div class="breadcrumbs">
 ${h.breadcrumbs(
-  names=[u'トップ', u'購入情報', order.order_no],
-  urls=[request.route_path('index'), request.route_path('orders.index')]
+  names=[u'トップ', u'購入情報', order.performance.name, order.order_no],
+  urls=[
+    request.route_path('index'),
+    request.route_path('orders.index'),
+    request.route_path('performances.show', performance_id=order.performance_id) + '/order'
+  ]
 )}
 </div>
 <div class="page-header">
@@ -317,22 +321,19 @@ buttons.append('cancel')
             <td class="span2" style="text-align: right;">
               <span class="label label-info">${ordered_product_item.product_item.stock.stock_holder.name}</span>
             </td>
-            <%
-              attr = ordered_product_item.attributes.get('t_shirts_size') or ''
-              if ordered_product_item.seats:
-                quantity = len(ordered_product_item.seats)
-                seat_name = ', '.join([(seat.name) for seat in ordered_product_item.seats if seat.name])
-                if seat_name:
-                  seat_name = u'(%s)' % seat_name
-              else:
-                quantity = ordered_product.quantity
-                seat_name = ''
-            %>
+            <% attr = ordered_product_item.attributes.get('t_shirts_size') or '' %>
             <td class="span4">
               <a href="${request.route_path("orders.item.preview", order_id=order.id, item_id=ordered_product_item.id)}"
               data-toggle="modal" data-target="#PreviewModal"
               class="ajax-modal"
-              >${ordered_product_item.product_item.stock_type.name} ${attr} ${seat_name}<i class="icon-eye-open">_</i></a>
+              >${ordered_product_item.product_item.stock_type.name} ${attr}<i class="icon-eye-open"></i></a>
+              % if ordered_product_item.seats:
+                <ul>
+                % for seat in ordered_product_item.seats:
+                  <li>${seat.name}</li>
+                % endfor
+                </ul>
+              % endif
             </td>
             <td>
               %if ordered_product_item.issued_at:
@@ -344,6 +345,7 @@ buttons.append('cancel')
               %endif
             </td>
             <td style="text-align: right;">${h.price_format(ordered_product_item.price)}円</td>
+            <% quantity = len(ordered_product_item.seats) if ordered_product_item.seats else ordered_product.quantity %>
             <td>${quantity}</td>
             <td></td>
           </tr>
