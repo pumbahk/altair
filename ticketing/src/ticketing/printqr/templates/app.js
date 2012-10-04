@@ -22,12 +22,16 @@ var DataStoreDescriptionView = Backbone.View.extend({
     this.model.bind("change:orderno", this.showOrderno, this);
     this.model.bind("change:performance", this.showPerformance, this);
     this.model.bind("change:product", this.showProduct, this);
+    this.model.bind("change:printer_name", this.showPrinter, this);
+    this.model.bind("change:ticket_template_name", this.showTicketTemplate, this);
     this.model.bind("refresh", this.refresh, this);
 
     this.$qrcode_status = this.$el.find("#desc_qrcode_status");
     this.$orderno = this.$el.find("#desc_orderno");
     this.$performance = this.$el.find("#desc_performance");
     this.$product = this.$el.find("#desc_product");
+    this.$printer = this.$el.find("#desc_printer");
+    this.$ticket_template = this.$el.find("#desc_ticket_template");
   }, 
   showQrcodeStatus: function(){
     this.$qrcode_status.text(this.model.get("qrcode_status"));
@@ -40,6 +44,12 @@ var DataStoreDescriptionView = Backbone.View.extend({
   }, 
   showProduct: function(){
     this.$product.text(this.model.get("product"));
+  }, 
+  showPrinter: function(){
+    this.$printer.text(this.model.get("printer_name"));
+  }, 
+  showTicketTemplate: function(){
+    this.$ticket_template.text(this.model.get("ticket_template_name"));
   }, 
   refresh: function(){
     this.$orderno.text("");
@@ -180,7 +190,7 @@ var FormatChoiceView = AppPageViewBase.extend({
     for(var i = printers.iterator(); i.hasNext();){
       var printer = i.next();
       var e = $('<div class="control-group">');
-      e.append($('<span>').text(printer.getName()));
+      e.append($('<span>').text(printer.getName()+": "));
       e.append($('<input type="radio" name="printer">').attr("value", printer.getName()));
       targetArea.append(e);
     }
@@ -191,7 +201,7 @@ var FormatChoiceView = AppPageViewBase.extend({
     for(var i = templates.iterator(); i.hasNext();){
       var template = i.next();
       var e = $('<div class="control-group">');
-      e.append($('<span>').text(template.getName()));
+      e.append($('<span>').text(template.getName()+": "));
       e.append($('<input type="radio" name="tickettemplate">')
                .attr("value", template.getId())
                .attr("data-name", template.getName()));
@@ -287,8 +297,6 @@ var AppRouter = Backbone.Router.extend({
       self.navigate($(this).attr("href").substr(1), true);
       e.preventDefault();
     });
-    if(location.href.search("#") == -1){
-      self.navigate("one", true); //todo: cache
-    }
+    self.navigate("one", true);
   }
 })

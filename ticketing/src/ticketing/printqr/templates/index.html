@@ -62,6 +62,7 @@ $(function(){
   two.nextView = three;
   three.nextView = four;
 
+
   //Backbone.history.start({pushState: true,  root: "/"})
   Backbone.history.start({root: "/"})
   appRouter.start.call(appRouter);
@@ -178,14 +179,18 @@ $(function(){
       印刷に利用するフォーマットを選んでください
     </p>
 
-    <h3>チケットテンプレート設定</h3>
-    <div id="ticket_template">
+    <div class="row-fluid">
+      <div class="span4">
+        <h3>チケットテンプレート設定</h3>
+        <div id="ticket_template">
+        </div>
+      </div>
+      <div class="span4">
+        <h3>プリンタ設定</h3>
+        <div id="printer">
+        </div>
+      </div>
     </div>
-
-    <h3>プリンタ設定</h3>
-    <div id="printer">
-    </div>
-    
     <a class="btn btn-inverse" href="#two"><i class="icon-arrow-left icon-white"> </i>戻る</a>
     <a class="btn" href="#four"><i class="icon-arrow-right"> </i>フォーマットを選択</a>
   </div>
@@ -213,6 +218,12 @@ $(function(){
         </tr>
         <tr>
           <td>商品名(席番号)</td><td id="desc_product"></td>
+        </tr>
+        <tr>
+          <td>プリンタ設定</td><td id="desc_printer"></td>
+        </tr>
+        <tr>
+          <td>券面テンプレート設定</td><td id="desc_ticket_template"></td>
         </tr>
       </tbody>
     </table>

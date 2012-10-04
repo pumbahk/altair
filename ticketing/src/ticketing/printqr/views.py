@@ -163,8 +163,7 @@ class AppletAPIView(object):
     @view_config(route_name='api.applet.ticket', renderer='json')
     def ticket(self):
         ticket_id = self.request.matchdict['id'].strip()
-        q = DBSession.query(Ticket) \
-            .filter_by(organization_id=self.context.organization.id)
+        q = Ticket.templates_query().filter_by(organization_id=self.context.organization.id)
         if ticket_id:
             q = q.filter_by(id=ticket_id)
         tickets = q.all()
