@@ -5,6 +5,7 @@ var DataStore = Backbone.Model.extend({
     printer_name: null, 
     ticket_template_name: null, 
     ticket_template_id: null, 
+    printed: false, 
 
     qrcode_status: "preload", 
     qrcode: null, 
@@ -121,8 +122,9 @@ var QRInputView = AppPageViewBase.extend({
       .done(function(data){
         self.messageView.success("QRコードからデータが読み込めました");
         self.datastore.set("qrcode_status", "loaded");
+        self.datastore.set("printed", false); ///xxx:
         self.nextView.updateTicketInfo(data);
-        //setTimeout(function(){self.focusNextPage();}, 1)
+        setTimeout(function(){self.focusNextPage();}, 1)
         return data;})
       .fail(function(s, err){
         self.messageView.alert("うまくQRコードを読み込むことができませんでした");
@@ -211,8 +213,14 @@ var FormatChoiceView = AppPageViewBase.extend({
 });
 
 var PrintConfirmView = AppPageViewBase.extend({
+  events: {
+    "click #print_button": "clickPrintButton"
+  }, 
   initialize: function(opts){
     PrintConfirmView.__super__.initialize.call(this, opts);
+  }, 
+  clickPrintButton: function(){
+    this.datastore.set("printed", true);
   }
 });
 
@@ -229,6 +237,17 @@ var AppletView = Backbone.View.extend({
 
     this.datastore.bind("change:printer_name", this.setPrinter, this);
     this.datastore.bind("change:ticket_template_id", this.setTicketTemplate, this);
+
+    this.datastore.bind("change:printed", this.sendPrintSignalIfNeed, this);
+  }, 
+  sendPrintSignalIfNeed: function(){
+    if(!!this.datastore.get("printed")){
+      try {
+        this.service.printAll();
+      } catch (e) {
+        this.appviews.messageView.alert(e);
+      }
+    }
   }, 
   setPrinter: function(){
     var printer_name = this.datastore.get("printer_name");
