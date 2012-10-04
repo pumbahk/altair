@@ -1,0 +1,43 @@
+{
+  "info": {"available_adjacencies": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]},
+  "areas": {"312": {"id": 312, "name": "1F"}, "313": {"id": 313, "name": "2F\u30e1\u30a4\u30f3\u5074"}},
+  "stock_types": {
+    "1": {
+      "style": {
+        "text": "",
+        "fill": {
+          "color": "#e0d060"
+        }
+      },
+      "name": "S\u5e2d"
+    },
+    "2": {
+      "style": {
+        "text": "",
+        "fill": {
+          "color": "#ffec9f"
+        }
+      },
+      "name": "A\u5e2d"
+    },
+    "3": {
+      "style": {
+        "text": "",
+        "fill": {
+          "color": "#99b3e6"
+        }
+      },
+      "name": "B\u5e2d"
+    },
+    "4": {
+      "style": {
+        "text": "",
+        "fill": {
+          "color": "#cc8080"
+        }
+      },
+      "name": "C\u5e2d"
+    }
+  },
+  "pages": {"root.svg": {"root": true, "name": "\u5168\u4f53\u56f3"}}
+}

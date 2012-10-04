@@ -58,6 +58,21 @@ class SalesSegmentForm(Form):
         default=1,
         widget=CheckboxInput(),
     )
+    copy = IntegerField(
+        label='',
+        default=0,
+        widget=CheckboxInput(),
+    )
+    copy_payment_delivery_method_pairs = IntegerField(
+        label=u'決済配送方法をコピーする',
+        default=0,
+        widget=CheckboxInput(),
+    )
+    copy_products = IntegerField(
+        label=u'商品をコピーする',
+        default=0,
+        widget=CheckboxInput(),
+    )
 
     def validate_end_at(form, field):
         if field.data is not None and field.data < form.start_at.data:

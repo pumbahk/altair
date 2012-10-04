@@ -65,7 +65,6 @@ class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def get_drawing(self, name):
         page_meta = self._metadata[u'pages'].get(name)
-        print self._metadata
         if page_meta is not None:
             resolver = get_current_registry().queryUtility(IAssetResolver)
             return resolver.resolve(myurljoin(self.metadata_url, name))
@@ -153,7 +152,7 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 template=template_seat,
                 venue_id=venue.id,
                 default_stock_id=default_stock.id,
-                convert_map=convert_map
+                **convert_map
             )
 
         if not original_performance_id:
@@ -181,17 +180,18 @@ class VenueArea(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     groups          = relationship('VenueArea_group_l0_id', backref='area')
 
     @staticmethod
-    def create_from_template(template, venue_id):
+    def create_from_template(template, **kwargs):
         # create VenueArea
         area = VenueArea.clone(template)
-        area.venue_id = venue_id
+        if 'venue_id' in kwargs:
+            area.venue_id = kwargs['venue_id']
         area.save()
 
         # create VenueArea_group_l0_id
         for template_group in template.groups:
             group = VenueArea_group_l0_id(
                 group_l0_id=template_group.group_l0_id,
-                venue_id=venue_id,
+                venue_id=area.venue_id,
                 venue_area_id=area.id
             )
             DBSession.add(group)
@@ -207,13 +207,6 @@ class SeatAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     seat_id         = Column(Identifier, ForeignKey('Seat.id', ondelete='CASCADE'), primary_key=True, nullable=False)
     name            = Column(String(255), primary_key=True, nullable=False)
     value           = Column(String(1023))
-
-    @staticmethod
-    def create_from_template(template, seat_id):
-        # create SeatAttribute
-        attribute = SeatAttribute.clone(template)
-        attribute.seat_id = seat_id
-        attribute.save()
 
 class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = "Seat"
@@ -259,12 +252,12 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return self.stock.stock_holder == stock_holder
 
     @staticmethod
-    def create_from_template(template, venue_id, default_stock_id, convert_map):
+    def create_from_template(template, venue_id, default_stock_id, **kwargs):
         # create Seat
         seat = Seat.clone(template)
         seat.venue_id = venue_id
-        if 'stock_id' in convert_map:
-            seat.stock_id = convert_map['stock_id'][template.stock.id]
+        if 'stock_id' in kwargs:
+            seat.stock_id = kwargs['stock_id'][template.stock.id]
         else:
             seat.stock_id = default_stock_id
         for template_attribute in template.attributes:
@@ -279,7 +272,7 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             SeatIndex.create_from_template(
                 template=template_seat_index,
                 seat_id=seat.id,
-                convert_map=convert_map
+                **kwargs
             )
 
         # create Seat_SeatAdjacency
@@ -287,7 +280,7 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             seat_seat_adjacencies = []
             for template_adjacency in template.adjacencies:
                 seat_seat_adjacencies.append({
-                    'seat_adjacency_id':convert_map['seat_adjacency'][template_adjacency.id],
+                    'seat_adjacency_id':kwargs['seat_adjacency'][template_adjacency.id],
                     'seat_id':seat.id,
                 })
             DBSession.execute(Seat_SeatAdjacency.__table__.insert(), seat_seat_adjacencies)
@@ -531,9 +524,10 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return super(Performance, cls).get(id, **kwargs)
 
     @staticmethod
-    def create_from_template(template, event_id):
+    def create_from_template(template, **kwargs):
         performance = Performance.clone(template)
-        performance.event_id = event_id
+        if 'event_id' in kwargs:
+            performance.event_id = kwargs['event_id']
         performance.original_id = template.id
         performance.venue_id = template.venue.id
         performance.create_venue_id = template.venue.id
@@ -739,13 +733,13 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             # create SalesSegment - PaymentDeliveryMethodPair
             for template_sales_segment in template_event.sales_segments:
                 convert_map['sales_segment'].update(
-                    SalesSegment.create_from_template(template=template_sales_segment, event_id=self.id)
+                    SalesSegment.create_from_template(template=template_sales_segment, with_payment_delivery_method_pairs=True, event_id=self.id)
                 )
 
             # create Product
             for template_product in template_event.products:
                 convert_map['product'].update(
-                    Product.create_from_template(template=template_product, event_id=self.id, convert_map=convert_map)
+                    Product.create_from_template(template=template_product, event_id=self.id, **convert_map)
                 )
 
             # create Performance
@@ -756,7 +750,6 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             Performance以下のコピーしたモデルにidを反映する
             '''
             performances = Performance.filter_by(event_id=self.id).with_entities(Performance.id).all()
-            print performances
             for performance in performances:
                 # 関連テーブルのstock_type_idを書き換える
                 for old_id, new_id in convert_map['stock_type'].iteritems():
@@ -856,38 +849,17 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return data
 
     @staticmethod
-    def create_from_template(template, event_id):
+    def create_from_template(template, with_payment_delivery_method_pairs=False, **kwargs):
         sales_segment = SalesSegment.clone(template)
-        sales_segment.event_id = event_id
+        if 'event_id' in kwargs:
+            sales_segment.event_id = kwargs['event_id']
         sales_segment.save()
 
-        for template_pdmp in template.payment_delivery_method_pairs:
-            PaymentDeliveryMethodPair.create_from_template(template=template_pdmp, sales_segment_id=sales_segment.id)
+        if with_payment_delivery_method_pairs:
+            for template_pdmp in template.payment_delivery_method_pairs:
+                PaymentDeliveryMethodPair.create_from_template(template=template_pdmp, sales_segment_id=sales_segment.id)
 
         return {template.id:sales_segment.id}
-
-    @classmethod
-    def copy_products(cls, from_, to_):
-        products = DBSession.query(Product).filter(Product.sales_segment_id==from_.id).all()
-        for product in products:
-            new_product = Product(
-                name=product.name,
-                price=product.price,
-                display_order=product.display_order,
-                seat_stock_type_id=product.seat_stock_type_id,
-                event_id=product.event_id,
-                sales_segment=to_,
-            )
-            for product_item in product.items:
-                new_product_item = ProductItem(
-                    name=product_item.name,
-                    price=product_item.price,
-                    stock_id=product_item.stock_id,
-                    quantity=product_item.quantity,
-                    ticket_bundle_id=product_item.ticket_bundle_id,
-                    product=new_product,
-                    performance_id=product_item.performance_id,
-                )
 
 class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentDeliveryMethodPair'
@@ -918,9 +890,10 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     delivery_method = relationship('DeliveryMethod', backref='payment_delivery_method_pairs')
 
     @staticmethod
-    def create_from_template(template, sales_segment_id):
+    def create_from_template(template, **kwargs):
         pdmp = PaymentDeliveryMethodPair.clone(template)
-        pdmp.sales_segment_id = sales_segment_id
+        if 'sales_segment_id' in kwargs:
+            pdmp.sales_segment_id = kwargs['sales_segment_id']
         pdmp.save()
 
 class PaymentMethodPlugin(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -1078,10 +1051,14 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 product_item.save()
 
     @staticmethod
-    def create_from_template(template, stock_id, performance_id):
+    def create_from_template(template, **kwargs):
         product_item = ProductItem.clone(template)
-        product_item.performance_id = performance_id
-        product_item.stock_id = stock_id
+        if 'performance_id' in kwargs:
+            product_item.performance_id = kwargs['performance_id']
+        if 'stock_id' in kwargs:
+            product_item.stock_id = kwargs['stock_id']
+        if 'product_id' in kwargs:
+            product_item.product_id = kwargs['product_id']
         product_item.save()
 
 class StockTypeEnum(StandardEnum):
@@ -1158,9 +1135,10 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             self.style = {}
 
     @staticmethod
-    def create_from_template(template, event_id):
+    def create_from_template(template, **kwargs):
         stock_type = StockType.clone(template)
-        stock_type.event_id = event_id
+        if 'event_id' in kwargs:
+            stock_type.event_id = kwargs['event_id']
         stock_type.save()
         return {template.id:stock_type.id}
 
@@ -1201,9 +1179,10 @@ class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                           .order_by('StockHolder.id').all()
 
     @staticmethod
-    def create_from_template(template, event_id):
+    def create_from_template(template, **kwargs):
         stock_holder = StockHolder.clone(template)
-        stock_holder.event_id = event_id
+        if 'event_id' in kwargs:
+            stock_holder.event_id = kwargs['event_id']
         stock_holder.save()
         return {template.id:stock_holder.id}
 
@@ -1461,12 +1440,20 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return self.seat_stock_type.name if self.seat_stock_type else ''
 
     @staticmethod
-    def create_from_template(template, event_id, convert_map):
+    def create_from_template(template, with_product_items=False, **kwargs):
         product = Product.clone(template)
-        product.event_id = event_id
-        product.seat_stock_type_id = convert_map['stock_type'][template.seat_stock_type_id]
-        product.sales_segment_id = convert_map['sales_segment'][template.sales_segment_id]
+        if 'event_id' in kwargs:
+            product.event_id = kwargs['event_id']
+        if 'stock_type' in kwargs:
+            product.seat_stock_type_id = kwargs['stock_type'][template.seat_stock_type_id]
+        if 'sales_segment' in kwargs:
+            product.sales_segment_id = kwargs['sales_segment'][template.sales_segment_id]
         product.save()
+
+        if with_product_items:
+            for template_product_item in template.items:
+                ProductItem.create_from_template(template=template_product_item, product_id=product.id)
+
         return {template.id:product.id}
 
 class SeatIndexType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -1491,10 +1478,11 @@ class SeatIndex(Base, BaseModel):
     seat               = relationship('Seat', backref='indexes')
 
     @staticmethod
-    def create_from_template(template, seat_id, convert_map):
+    def create_from_template(template, seat_id, **kwargs):
         seat_index = SeatIndex.clone(template)
         seat_index.seat_id = seat_id
-        seat_index.seat_index_type_id = convert_map['seat_index_type'][template.seat_index_type_id]
+        if 'seat_index_type' in kwargs:
+            seat_index.seat_index_type_id = kwargs['seat_index_type'][template.seat_index_type_id]
         seat_index.save()
 
 class OranizationTypeEnum(StandardEnum):
