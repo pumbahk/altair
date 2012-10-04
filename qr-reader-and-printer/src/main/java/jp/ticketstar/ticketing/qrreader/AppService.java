@@ -1,7 +1,5 @@
 package jp.ticketstar.ticketing.qrreader;
 
-import java.awt.Cursor;
-import java.awt.Point;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Dimension2D;
 import java.awt.print.PageFormat;
@@ -20,19 +18,11 @@ import jp.ticketstar.ticketing.ApplicationException;
 import jp.ticketstar.ticketing.qrreader.gui.IAppWindow;
 
 import org.apache.batik.bridge.BridgeContext;
-import org.apache.batik.bridge.BridgeExtension;
-import org.apache.batik.bridge.ExternalResourceSecurity;
 import org.apache.batik.bridge.GVTBuilder;
-import org.apache.batik.bridge.ScriptSecurity;
 import org.apache.batik.bridge.UserAgent;
 import org.apache.batik.bridge.UserAgentAdapter;
 import org.apache.batik.dom.svg.SVGOMDocument;
-import org.apache.batik.gvt.event.EventDispatcher;
-import org.apache.batik.gvt.text.Mark;
-import org.apache.batik.util.ParsedURL;
 import org.apache.batik.gvt.GraphicsNode;
-import org.w3c.dom.Element;
-import org.w3c.dom.svg.SVGAElement;
 import org.w3c.dom.svg.SVGDocument;
 
 public class AppService {
