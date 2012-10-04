@@ -299,6 +299,7 @@ public class AppService {
 							model.getTicketTemplate().getTicketFormat()));
 					job.print();
 				} catch (Exception e) {
+					e.printStackTrace();
 					throw new ApplicationException(e);
 				}
 				return null;
