@@ -96,7 +96,8 @@ $(function(){
       endpoints: ${json.dumps(endpoints_json)|n},
       cookie: ${json.dumps(request.headers.get('cookie'))|n},
       embedded: true,
-      callback: ${json.dumps(callback_name)|n}
+      callback: ${json.dumps(callback_name)|n},
+##      cache_option: "no"
     }
   });
 });

@@ -265,7 +265,7 @@ var AppletView = Backbone.View.extend({
     for(var i = ticketTemplates.iterator(); i.hasNext();){
       var template = i.next();
       if(template.getId() == template_id){
-        alert("ここでsetTicketTemplate");
+        this.service.setTicketTemplate(template);
       }
     }
   }, 
