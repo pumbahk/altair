@@ -104,6 +104,7 @@
       success: function(data) {
         $('#modal-reserve').modal('hide');
         $('#reserve-form').html(data);
+        $('#modal-reserve').modal({'backdrop':'static'});
         $('#modal-reserve').modal('show');
       },
       error: function(xhr, text) {
@@ -145,7 +146,7 @@
           seat.set('status', 3);
           seat.set('selectable', false);
         });
-        venueEditorRoot.venueeditor('clearAll');
+        venueEditorRoot.venueeditor('refresh');
         getSalesSummary();
       },
       error: function(xhr, text) {
