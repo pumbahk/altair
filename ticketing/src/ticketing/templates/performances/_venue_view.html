@@ -243,7 +243,6 @@ venueEditor.find(".action-clearSelection").click(function () {
 venueEditor.find(".action-refresh").click(function () {
   $("label[for='toolbar-action-refresh']").removeClass("ui-state-active");
   venueEditorRoot.venueeditor("refresh");
-  venueEditor.find(".action-select").click();
 });
 venueEditor.find(".action-select").click(function () {
   venueEditorRoot.venueeditor("uimode", "select");

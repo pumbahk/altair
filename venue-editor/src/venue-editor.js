@@ -223,7 +223,6 @@
     this.drawing = null;
     this.metadata = null;
     this.keyEvents = null;
-    this.zoomRatio = 1;
     this.uiMode = 'select1';
     this.shapes = null;
     this.seats = null;
@@ -682,6 +681,7 @@
               error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load seat data (reason: " + text + ")"); }
             });
             aux.callbacks.loading && aux.callbacks.loading(aux.manager);
+            aux.manager.clearAll();
             break;
 
           case 'adjacency':

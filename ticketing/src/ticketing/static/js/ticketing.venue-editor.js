@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['wVT5MKPHMGM18XQB'] = (function (exports) { (function () { 
+__LIBS__['zQFIZT1YLBDXDJD0'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -70,7 +70,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['C2S4EZ8KEYDFQ8YG'] = (function (exports) { (function () { 
+__LIBS__['DJ8ODWUNNZ7BEA_P'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -96,7 +96,7 @@ exports.ja = {
   } 
 };
  })(); return exports; })({});
-__LIBS__['EHHNC0TN6E_5FFU9'] = (function (exports) { (function () { 
+__LIBS__['b6DPA9Q4SVJEECH8'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -195,7 +195,7 @@ exports.mergeStyle = function mergeStyle(a, b) {
   };
 };
  })(); return exports; })({});
-__LIBS__['wN4IABH73ICB_8A7'] = (function (exports) { (function () { 
+__LIBS__['lLAIMGHELT3RL_WU'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -244,12 +244,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['WUIN3F6JS7HW4PUL'] = (function (exports) { (function () { 
+__LIBS__['UXE3UAKF0ACWC17K'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['EHHNC0TN6E_5FFU9'];
-var CONF = __LIBS__['wVT5MKPHMGM18XQB'];
-var IdentifiableSet = __LIBS__['wN4IABH73ICB_8A7'].IdentifiableSet;
+var util = __LIBS__['b6DPA9Q4SVJEECH8'];
+var CONF = __LIBS__['zQFIZT1YLBDXDJD0'];
+var IdentifiableSet = __LIBS__['lLAIMGHELT3RL_WU'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -723,12 +723,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['CTNUGVXPPYKZFDXQ'] = (function (exports) { (function () { 
+__LIBS__['q_DNDC2JA8IKOX9C'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['EHHNC0TN6E_5FFU9'];
-var CONF = __LIBS__['wVT5MKPHMGM18XQB'];
-var models = __LIBS__['WUIN3F6JS7HW4PUL'];
+var util = __LIBS__['b6DPA9Q4SVJEECH8'];
+var CONF = __LIBS__['zQFIZT1YLBDXDJD0'];
+var models = __LIBS__['UXE3UAKF0ACWC17K'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -924,13 +924,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['wVT5MKPHMGM18XQB'];
-  var models = __LIBS__['WUIN3F6JS7HW4PUL'];
-  var util = __LIBS__['EHHNC0TN6E_5FFU9'];
-  var viewobjects = __LIBS__['CTNUGVXPPYKZFDXQ'];
-  var IdentifiableSet = __LIBS__['wN4IABH73ICB_8A7'].IdentifiableSet;
+  var CONF = __LIBS__['zQFIZT1YLBDXDJD0'];
+  var models = __LIBS__['UXE3UAKF0ACWC17K'];
+  var util = __LIBS__['b6DPA9Q4SVJEECH8'];
+  var viewobjects = __LIBS__['q_DNDC2JA8IKOX9C'];
+  var IdentifiableSet = __LIBS__['lLAIMGHELT3RL_WU'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['C2S4EZ8KEYDFQ8YG'];
+    I18n.translations = __LIBS__['DJ8ODWUNNZ7BEA_P'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -1147,7 +1147,6 @@ var Seat = exports.Seat = Backbone.Model.extend({
     this.drawing = null;
     this.metadata = null;
     this.keyEvents = null;
-    this.zoomRatio = 1;
     this.uiMode = 'select1';
     this.shapes = null;
     this.seats = null;
@@ -1606,6 +1605,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
               error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load seat data (reason: " + text + ")"); }
             });
             aux.callbacks.loading && aux.callbacks.loading(aux.manager);
+            aux.manager.clearAll();
             break;
 
           case 'adjacency':
