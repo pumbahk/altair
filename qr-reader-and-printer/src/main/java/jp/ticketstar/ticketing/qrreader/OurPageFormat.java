@@ -1,4 +1,4 @@
-package jp.ticketstar.ticketing.printing;
+package jp.ticketstar.ticketing.qrreader;
 
 import java.awt.PageAttributes;
 import java.awt.print.PageFormat;

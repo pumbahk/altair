@@ -108,7 +108,7 @@
     <dependency>
       <groupId>jp.ticketstar.ticketing</groupId>
       <artifactId>commons</artifactId>
-      <version>0.0.0</version>
+      <version>0.0.1</version>
     </dependency>
     <dependency>
       <groupId>sun.plugin</groupId>

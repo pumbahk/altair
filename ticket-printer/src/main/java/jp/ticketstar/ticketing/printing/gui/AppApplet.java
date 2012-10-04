@@ -21,6 +21,12 @@ import java.awt.geom.Dimension2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.ThreadFactory;
 
 import javax.print.PrintService;
 import javax.swing.ImageIcon;
@@ -39,6 +45,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import jp.ticketstar.ticketing.ApplicationException;
+import jp.ticketstar.ticketing.SerializingExecutor;
 import jp.ticketstar.ticketing.printing.BoundingBoxOverlay;
 import jp.ticketstar.ticketing.swing.GenericComboBoxModel;
 import jp.ticketstar.ticketing.printing.GuidesOverlay;
@@ -70,14 +77,15 @@ import javax.swing.SwingConstants;
  * Time: 10:00 PM
  * To change this template use File | Settings | File Templates.
  */
-public class AppApplet extends JApplet implements IAppWindow, URLConnectionFactory {
+public class AppApplet extends JApplet implements IAppWindow, URLConnectionFactory, ThreadFactory {
 	private static final long serialVersionUID = 1L;
 
 	protected AppAppletService appService;
 	protected AppAppletModel model;
 	protected AppAppletConfiguration config;
 	protected boolean interactionEnabled = true;
-	
+	protected Executor threadGenerator = new SerializingExecutor(Executors.defaultThreadFactory());
+
 	//private JApplet frame;
 	private JList list;
 	private JPanel panel;
@@ -461,6 +469,23 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 
 	public static PropertyChangeListener createPropertyChangeListenerProxy(JSObject jsobj) {
 		return new JSObjectPropertyChangeListenerProxy(jsobj);
+	}
+
+	public Thread newThread(Runnable runnable) {
+		final FutureTask<Thread> task = new FutureTask<Thread>(new Callable<Thread>() {
+			@Override
+			public Thread call() throws Exception {
+				return new Thread();
+			}
+		});
+		threadGenerator.execute(task);
+		try {
+			return task.get();
+		} catch (ExecutionException e) {
+			throw new IllegalStateException(e);
+		} catch (InterruptedException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 	
 	public AppApplet() {

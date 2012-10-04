@@ -36,7 +36,7 @@ public abstract class BasicAppService extends SVGUserAgentGUIAdapter implements 
 	protected IAppWindow appWindow;
 	protected LinkedList<Runnable> pendingTasks = new LinkedList<Runnable>();
 
-	protected class LoaderListener implements SVGDocumentLoaderListener {
+	public class LoaderListener implements SVGDocumentLoaderListener {
 		ExtendedSVG12BridgeContext bridgeContext;
 		
 		public void documentLoadingCancelled(SVGDocumentLoaderEvent arg0) {

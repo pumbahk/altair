@@ -4,7 +4,7 @@
 
   <groupId>jp.ticketstar.ticketing</groupId>
   <artifactId>commons</artifactId>
-  <version>0.0.0</version>
+  <version>0.0.1</version>
   <packaging>jar</packaging>
 
   <name>ticketstar-ticketing-commons</name>
