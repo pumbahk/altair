@@ -188,8 +188,8 @@ class AppletAPIView(object):
             .filter_by(id=ordered_product_item_token_id) \
             .join(OrderedProductItem) \
             .join(OrderedProduct) \
-            .join(Order) \
-            .filter_by(organization_id=self.context.organization.id) \
+            .filter(Order.id==OrderedProduct.order_id) \
+            .filter(Order.organization_id==self.context.organization.id) \
 
         ordered_product_item_token = qs.first()
         if ordered_product_item_token is None:
