@@ -809,6 +809,7 @@ class SalesSegmentKindEnum(StandardEnum):
     added_sales     = u'追加販売'
     added_lottery   = u'追加抽選'
     vip             = u'関係者'
+    sales_counter   = u'窓口販売'
     other           = u'その他'
 
 class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -869,7 +870,6 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def copy_products(cls, from_, to_):
         products = DBSession.query(Product).filter(Product.sales_segment_id==from_.id).all()
         for product in products:
-
             new_product = Product(
                 name=product.name,
                 price=product.price,
@@ -878,9 +878,7 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 event_id=product.event_id,
                 sales_segment=to_,
             )
-
             for product_item in product.items:
-
                 new_product_item = ProductItem(
                     name=product_item.name,
                     price=product_item.price,
@@ -888,8 +886,8 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     quantity=product_item.quantity,
                     ticket_bundle_id=product_item.ticket_bundle_id,
                     product=new_product,
+                    performance_id=product_item.performance_id,
                 )
-
 
 class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentDeliveryMethodPair'
