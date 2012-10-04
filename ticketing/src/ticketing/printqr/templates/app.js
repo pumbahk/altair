@@ -5,6 +5,8 @@ var DataStore = Backbone.Model.extend({
     printer_name: null, 
     ticket_template_name: null, 
     ticket_template_id: null, 
+    page_format_name: null, 
+    page_format_id: null, 
     printed: false, 
 
     qrcode_status: "preload", 
@@ -24,6 +26,7 @@ var DataStoreDescriptionView = Backbone.View.extend({
     this.model.bind("change:performance", this.showPerformance, this);
     this.model.bind("change:product", this.showProduct, this);
     this.model.bind("change:printer_name", this.showPrinter, this);
+    this.model.bind("change:page_format_name", this.showPageFormat, this);
     this.model.bind("change:ticket_template_name", this.showTicketTemplate, this);
     this.model.bind("refresh", this.refresh, this);
 
@@ -33,6 +36,7 @@ var DataStoreDescriptionView = Backbone.View.extend({
     this.$product = this.$el.find("#desc_product");
     this.$printer = this.$el.find("#desc_printer");
     this.$ticket_template = this.$el.find("#desc_ticket_template");
+    this.$page_format = this.$el.find("#desc_page_format");
   }, 
   showQrcodeStatus: function(){
     this.$qrcode_status.text(this.model.get("qrcode_status"));
@@ -51,6 +55,9 @@ var DataStoreDescriptionView = Backbone.View.extend({
   }, 
   showTicketTemplate: function(){
     this.$ticket_template.text(this.model.get("ticket_template_name"));
+  }, 
+  showPageFormat: function(){
+    this.$page_format.text(this.model.get("page_format_name"));
   }, 
   refresh: function(){
     this.$orderno.text("");
@@ -168,6 +175,7 @@ var FormatChoiceView = AppPageViewBase.extend({
   events:{
     "change #printer input": "printerSettingsChanged", 
     "change #ticket_template input": "ticketTemplateSettingsChanged", 
+    "change #page_format input": "pageFormatChanged"
   }, 
   initialize: function(opts){
     FormatChoiceView.__super__.initialize.call(this, opts);
@@ -175,6 +183,7 @@ var FormatChoiceView = AppPageViewBase.extend({
     this.templates = null;
     this.$printer = this.$el.find("#printer");
     this.$ticketTemplate = this.$el.find("#ticket_template");
+    this.$pageFormat = this.$el.find("#page_format")
   }, 
   printerSettingsChanged: function(){
     var printer_name = this.$printer.find("input:checked").val();
@@ -184,6 +193,11 @@ var FormatChoiceView = AppPageViewBase.extend({
     var ticket_template = this.$ticketTemplate.find("input:checked");
     this.datastore.set("ticket_template_name", ticket_template.attr("data-name"));
     this.datastore.set("ticket_template_id", ticket_template.val());
+  }, 
+  pageFormatChanged: function(){
+    var page_format = this.$pageFormat.find("input:checked");
+    this.datastore.set("page_format_name", page_format.attr("data-name"));
+    this.datastore.set("page_format_id", page_format.val());
   }, 
   redrawPrinterArea: function(printers){
     this.printers = printers;
@@ -210,6 +224,19 @@ var FormatChoiceView = AppPageViewBase.extend({
       targetArea.append(e);
     }
   }, 
+  redrawPageFormatArea: function(pageformats){
+    var targetArea = this.$pageFormat;
+    targetArea.empty()
+    for(var i = pageformats.iterator(); i.hasNext();){
+      var pageformat = i.next();
+      var e = $('<div class="control-group">');
+      e.append($('<span>').text(pageformat.getName()+": "));
+      e.append($('<input type="radio" name="pageformat">')
+               .attr("value", pageformat.getId())
+               .attr("data-name", pageformat.getName()));
+      targetArea.append(e);
+    }
+  }
 });
 
 var PrintConfirmView = AppPageViewBase.extend({
@@ -234,9 +261,11 @@ var AppletView = Backbone.View.extend({
     this.datastore.bind("change:ordered_product_item_token_id", this.createTicket, this);
     this.datastore.bind("change:ordered_product_item_token_id", this.fetchPinterCandidates, this); //eliminate call times:
     this.datastore.bind("change:ordered_product_item_token_id", this.fetchTemplateCandidates, this); //eliminate call times:
+    this.datastore.bind("change:ordered_product_item_token_id", this.fetchPageFormatCandidates, this); //eliminate call times:
 
     this.datastore.bind("change:printer_name", this.setPrinter, this);
     this.datastore.bind("change:ticket_template_id", this.setTicketTemplate, this);
+    this.datastore.bind("change:page_format_id", this.setPageFormat, this);
 
     this.datastore.bind("change:printed", this.sendPrintSignalIfNeed, this);
   }, 
@@ -252,7 +281,7 @@ var AppletView = Backbone.View.extend({
       }
     }
   }, 
-  setPrinter: function(){
+  setPrinter: function(){ //liner
     var printer_name = this.datastore.get("printer_name");
     var printers = this.service.getPrintServices();
     for(var i = printers.iterator(); i.hasNext();){
@@ -262,13 +291,23 @@ var AppletView = Backbone.View.extend({
       }
     }
   }, 
-  setTicketTemplate: function(){
+  setTicketTemplate: function(){ //liner
     var template_id = this.datastore.get("ticket_template_id");
     var ticketTemplates = this.service.getTicketTemplates();
     for(var i = ticketTemplates.iterator(); i.hasNext();){
       var template = i.next();
       if(template.getId() == template_id){
         this.service.setTicketTemplate(template);
+      }
+    }
+  }, 
+  setPageFormat: function(){ //liner
+    var page_format_id = this.datastore.get("page_format_id");
+    var pageFormats = this.service.getPageFormats();
+    for(var i = pageFormats.iterator(); i.hasNext();){
+      var page_format = i.next();
+      if(page_format.getId() == page_format_id){
+        this.service.setPageFormat(page_format);
       }
     }
   }, 
@@ -301,6 +340,10 @@ var AppletView = Backbone.View.extend({
   fetchTemplateCandidates: function(){
     var ticketTemplates = this.service.getTicketTemplates();
     this.appviews.three.redrawTicketTemplateArea(ticketTemplates);
+  }, 
+  fetchPageFormatCandidates: function(){
+    var pageFormats = this.service.getPageFormats();
+    this.appviews.three.redrawPageFormatArea(pageFormats);
   }
 });
 

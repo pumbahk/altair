@@ -26,7 +26,7 @@ class PrintQRResource(object):
     @reify
     def applet_endpoints(self):
         return {
-            "tickettemplates": self.request.route_path('api.applet.ticket', id=''),
+            "tickettemplates": self.request.route_path('api.applet.ticket', event_id='*', id=''),
             "ticketdata": self.request.route_path('api.applet.ticket_data'),
             "history": self.request.route_path('api.applet.history')
             }

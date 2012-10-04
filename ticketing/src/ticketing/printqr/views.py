@@ -67,103 +67,14 @@ class AppletAPIView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
-
-
-    @view_config(route_name='api.applet.enqueue', request_method='POST', renderer='json')
-    def enqueue(self):
-        try:
-            print "enqueue!"
-            ticket_format_id = self.request.json_body['ticket_format_id']
-            TicketPrintQueueEntry.enqueue(self.context.user)
-        except:
-            print "--------"
-            import traceback
-            traceback.print_exc()
         
-
-    @view_config(route_name='api.applet.formats', renderer='json')
-    def formats(self):
-        try:
-            print "formats!!!"
-            ## 初回にpeekを走らせるのを止めようと思ったけれど、そうコスト高くないし良いや
-            return { u'status': u'success',
-                     u'data': { u'ticket_formats': [],
-                                u'ticket_templates': []} }
-            ticket_formats = []
-            for ticket_format in DBSession.query(TicketFormat).filter_by(organization=self.context.organization):
-                data = dict(ticket_format.data)
-                data[u'id'] = ticket_format.id
-                data[u'name'] = ticket_format.name
-                data[u"size"] = ticket_format.data["size"]
-                data[u"printable_areas"] = ticket_format.data["printable_areas"]
-                data[u"perforations"] = ticket_format.data["perforations"]
-                ticket_formats.append(data)
-
-            ticket_templates = []
-            for ticket_template in Ticket.templates_query().filter_by(organization=self.context.organization):
-                data = dict(ticket_template.data)
-                data[u'id'] = ticket_template.id
-                data[u'name'] = ticket_template.name
-                data[u'ticket_format_id'] = ticket_template.ticket_format_id
-                data[u"drawing"] = ticket_template.data["drawing"]
-                ticket_templates.append(data)
-            return { u'status': u'success',
-                     u'data': { u'ticket_formats': ticket_formats,
-                                u'ticket_templates': ticket_templates} }
-        except:
-            print "--------"
-            import traceback
-            traceback.print_exc()
-
-    @view_config(route_name='api.applet.peek', request_method='POST', renderer='lxml')
-    def peek(self):
-        try:
-            print "peeek!"
-            page_format_id = self.request.json_body['page_format_id']
-            ticket_format_id = self.request.json_body['ticket_format_id']
-            order_id = self.request.json_body.get('order_id')
-
-            ## order_idが取得できなかった場合何を返せば良いのだろう？
-            # if order_id is None:
-            #     return None #xxx:
-            page_format = DBSession.query(PageFormat).filter_by(id=page_format_id).one()
-            ticket_format = DBSession.query(TicketFormat).filter_by(id=ticket_format_id).one()
-            builder = SvgPageSetBuilder(page_format.data, ticket_format.data)
-            tickets_per_page = builder.tickets_per_page
-            for entry in TicketPrintQueueEntry.peek(self.context.user, ticket_format_id, order_id=order_id):
-                builder.add(etree.fromstring(entry.data['drawing']), entry.id, title=(entry.summary if tickets_per_page == 1 else None))
-            return builder.root
-        except:
-            print "--------"
-            import traceback
-            traceback.print_exc()
-
-    @view_config(route_name='api.applet.dequeue', request_method='POST', renderer='json')
-    def dequeue(self):
-        try:
-            print "dequeue!!!"
-            queue_ids = self.request.json_body['queue_ids']
-            entries = TicketPrintQueueEntry.dequeue(queue_ids)
-            for entry in entries:
-                DBSession.add(TicketPrintHistory(
-                    operator_id=entry.operator_id,
-                    ordered_product_item_id=entry.ordered_product_item_id,
-                    seat_id=entry.seat_id,
-                    ticket_id=entry.ticket_id))
-
-            if entries:
-                return { u'status': u'success' }
-            else:
-                return { u'status': u'error' }
-        except:
-            print "--------"
-            import traceback
-            traceback.print_exc()
-
     @view_config(route_name='api.applet.ticket', renderer='json')
     def ticket(self):
+        event_id = self.request.matchdict['event_id']
         ticket_id = self.request.matchdict['id'].strip()
         q = Ticket.templates_query().filter_by(organization_id=self.context.organization.id)
+        if event_id != '*':
+            q = q.filter_by(event_id=event_id)
         if ticket_id:
             q = q.filter_by(id=ticket_id)
         tickets = q.all()
@@ -172,6 +83,7 @@ class AppletAPIView(object):
             u'status': 'success',
             u'data': {
                 u'ticket_formats': [ticket_format_to_dict(ticket_format) for ticket_format in dict((ticket.ticket_format.id, ticket.ticket_format) for ticket in tickets).itervalues()],
+                u'page_formats': page_formats_for_organization(self.context.organization),
                 u'ticket_templates': [ticket_to_dict(ticket) for ticket in tickets]
                 }
             }
@@ -240,6 +152,19 @@ def ticket_to_dict(ticket):
     data[u'name'] = ticket.name
     data[u'ticket_format_id'] = ticket.ticket_format_id
     return data
+
+def page_format_to_dict(page_format):
+    data = dict(page_format.data)
+    data[u'id'] = page_format.id
+    data[u'name'] = page_format.name
+    data[u'printer_name'] = page_format.printer_name
+    return data
+
+def page_formats_for_organization(organization):
+    return [
+        page_format_to_dict(page_format) \
+        for page_format in DBSession.query(PageFormat).filter_by(organization=organization)
+        ]
 
 from sqlalchemy.orm.exc import NoResultFound
 from ticketing.tickets.utils import build_dict_from_ordered_product_item_token, _default_builder
