@@ -57,6 +57,8 @@ def ticket_data(context, request):
     try:
         data = utils.ticketdata_from_qrdata(builder.data_from_signed(signed))
         return data
+    except KeyError:
+        raise HTTPBadRequest
     except Exception as e:
         import traceback
         traceback.print_exc()

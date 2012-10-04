@@ -111,7 +111,8 @@ var AppPageViewBase = Backbone.View.extend({
 
 var QRInputView = AppPageViewBase.extend({
   events: {
-    "click #load_button": "loadQRSigned"
+    "click #load_button": "loadQRSigned", 
+    "keypress input[name='qrcode']": "readOnEnter"
   }, 
   initialize: function(opts){
     QRInputView.__super__.initialize.call(this, opts);
@@ -122,10 +123,16 @@ var QRInputView = AppPageViewBase.extend({
   showStatus: function(){
     this.$status.text(this.datastore.get("qrcode_status"));
   }, 
+  readOnEnter: function(e){
+    // if Enter key is typed then call `loadQRSigned'
+    if(e.keyCode == 13){
+      this.loadQRSigned().always(function(){this.$qrcode.val("");}.bind(this));
+    }
+  }, 
   loadQRSigned: function(){
     var url = this.apiResource["api.ticket.data"];
     var self = this;
-    $.getJSON(url, {qrsigned: this.$qrcode.val()})
+    return $.getJSON(url, {qrsigned: this.$qrcode.val()})
       .done(function(data){
         self.messageView.success("QRコードからデータが読み込めました");
         self.datastore.set("qrcode_status", "loaded");
@@ -137,7 +144,7 @@ var QRInputView = AppPageViewBase.extend({
         self.messageView.alert("うまくQRコードを読み込むことができませんでした");
         self.datastore.set("qrcode_status", "fail");
         self.datastore.trigger("refresh");
-      })
+      });
   } 
 });
 
@@ -355,6 +362,12 @@ var AppRouter = Backbone.Router.extend({
     $(".onepage").hide();
     $(".onepage#{0}".replace("{0}", page)).show();
     $("#tabbar #tab_{0}".replace("{0}", page)).tab("show"); //bootstrap
+    
+    // tooooooooooooooooo ad-hoc
+    if(page == "one"){
+      var $qrinput = $("#one input[name='qrcode']");
+      $qrinput.focus();
+    }
   }, 
   start: function(){
     var self = this;
