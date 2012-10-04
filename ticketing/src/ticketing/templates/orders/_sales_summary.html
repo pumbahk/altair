@@ -55,8 +55,8 @@
           <td rowspan="${rowspan}">${stock['stock'].stock_status.quantity}</td>
           <td rowspan="${rowspan}">${stock['stock'].quantity}</td>
           <td rowspan="${rowspan}">
-            % if stock['products']:
-            <a href="javascript:getOrderForm(${stock['stock'].id});" class="btn btn-primary btn-small">おまかせ</a>
+            % if stock['products'] and stock['stock'].stock_status.quantity:
+            <a href="javascript:getOrderForm(${stock['stock'].id});" class="btn btn-primary">おまかせ</a>
             % endif
           </td>
         </tr>
