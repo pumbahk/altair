@@ -212,7 +212,7 @@ def seat_records_from_seat_sources(seat_sources, unsold=False):
                     quantity=len(lst_values),
                 )
             result.append(seat_record)
-            del lst_values[0:-1]
+            del lst_values[:]
 
         for value in values:
         #   print "b:%s r:%s s:%s" % (value.block, value.line, value.seat)
