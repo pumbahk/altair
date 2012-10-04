@@ -611,6 +611,7 @@ class Orders(BaseView):
         if performance is None:
             return HTTPNotFound('performance id %d is not found' % performance_id)
 
+        now = datetime.now()
         sales_summary = []
         for stock_type in performance.event.stock_types:
             stock_data = []
@@ -619,9 +620,10 @@ class Orders(BaseView):
                           .filter(Stock.quantity>0)\
                           .filter(exists().where(and_(ProductItem.performance_id==performance_id, ProductItem.stock_id==Stock.id))).all()
             for stock in stocks:
+                products = Product.find(performance_id=performance.id, stock_id=stock.id)
                 stock_data.append(dict(
                     stock=stock,
-                    products=Product.find(performance_id=performance.id, stock_id=stock.id),
+                    products=[p for p in products if p.sales_segment.start_at <= now and p.sales_segment.end_at >= now ],
                 ))
             sales_summary.append(dict(
                 stock_type=stock_type,

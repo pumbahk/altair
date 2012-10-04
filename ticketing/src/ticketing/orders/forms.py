@@ -169,23 +169,22 @@ class OrderReserveForm(Form):
             for pm in PaymentMethod.filter_by_organization_id(performance.event.organization_id):
                 self.sales_counter_payment_method_id.choices.append((pm.id, pm.name))
 
+            now = datetime.now()
             self.products.choices = []
+            products = []
             if 'stocks' in kwargs and kwargs['stocks']:
                 # 座席選択あり
                 products = Product.filter(Product.event_id==performance.event_id)\
                                   .join(Product.items)\
                                   .filter(ProductItem.performance_id==performance.id)\
                                   .filter(ProductItem.stock_id.in_(kwargs['stocks'])).all()
-                for p in products:
-                    self.products.choices += [
-                        (p.id, u'%s (%s円) %s' % (p.name, locale.format('%d', p.price, True), p.sales_segment.name))
-                    ]
             else:
                 # 数受け
                 products = Product.filter(Product.sales_segment_id.in_([ss.id for ss in sales_segments]))\
                                   .join(Product.seat_stock_type)\
                                   .filter(StockType.quantity_only==1).all()
-                for p in products:
+            for p in products:
+                if p.sales_segment.start_at <= now and p.sales_segment.end_at >= now:
                     self.products.choices += [
                         (p.id, u'%s (%s円) %s' % (p.name, locale.format('%d', p.price, True), p.sales_segment.name))
                     ]
