@@ -149,11 +149,44 @@ var TicketInfoView = AppPageViewBase.extend({
   }
 });
 
-var PrinterSelectView = AppPageViewBase.extend({
+var FormatChoiceView = AppPageViewBase.extend({
+  events:{
+    "change #printer input": "printerSettingsChanged", 
+    "change #ticket_template input": "ticketTemplateSettingsChanged", 
+  }, 
   initialize: function(opts){
-    PrinterSelectView.__super__.initialize.call(this, opts);
-    this.$pageFormat = this.$el.find("#page_format");
-  }
+    FormatChoiceView.__super__.initialize.call(this, opts);
+    this.$printer = this.$el.find("#printer");
+    this.$ticketTemplate = this.$el.find("#ticket_template");
+  }, 
+  printerSettingsChanged: function(){
+    alert("yay");
+  }, 
+  ticketTemplateSettingsChanged: function(){
+    alert("yay, yay");
+  }, 
+  redrawPrinterArea: function(printers){
+    var targetArea = this.$printer;
+    targetArea.empty();
+    for(var i = printers.iterator(); i.hasNext();){
+      var printer = i.next();
+      var e = $('<div class="control-group">');
+      e.append($('<span>').text(printer.getName()));
+      e.append($('<input type="radio" name="printer">').attr("value", printer.getName()));
+      targetArea.append(e);
+    }
+  }, 
+  redrawTicketTemplateArea: function(templates){
+    var targetArea = this.$ticketTemplate;
+    targetArea.empty()
+    for(var i = templates.iterator(); i.hasNext();){
+      var template = i.next();
+      var e = $('<div class="control-group">');
+      e.append($('<span>').text(template.getName()));
+      e.append($('<input type="radio" name="tickettemplate">').attr("value", template.getId()));
+      targetArea.append(e);
+    }
+  }, 
 });
 
 var PrintConfirmView = AppPageViewBase.extend({
@@ -170,11 +203,14 @@ var AppletView = Backbone.View.extend({
     this.createProxy = opts.createProxy;
     this.apiResource = opts.apiResource;
     this.datastore.bind("change:ordered_product_item_token_id", this.createTicket, this);
+    this.datastore.bind("change:ordered_product_item_token_id", this.fetchPinterCandidates, this); //eliminate call times:
+    this.datastore.bind("change:ordered_product_item_token_id", this.fetchTemplateCandidates, this); //eliminate call times:
   }, 
 
   createTicket: function(){
     var tokenId = this.datastore.get("ordered_product_item_token_id");
     var self = this;
+
     $.ajax({
       type: 'POST',
       processData: false,
@@ -189,23 +225,18 @@ var AppletView = Backbone.View.extend({
       }
       self.appviews.messageView.success("券面データが保存されました");
       $.each(data['data'], function (_, ticket) {
-        service.addTicket(service.createTicketFromJSObject(ticket));
+        self.service.addTicket(self.service.createTicketFromJSObject(ticket));
       });
     }).fail(function(msg){self.appviews.messageView.alert(msg)});
+  }, 
+  fetchPinterCandidates: function(){
+    var printers = this.service.getPrintServices();
+    this.appviews.three.redrawPrinterArea(printers);
+  }, 
+  fetchTemplateCandidates: function(){
+    var ticketTemplates = this.service.getTicketTemplates();
+    this.appviews.three.redrawTicketTemplateArea(ticketTemplates);
   }
-  // fetchFormats: function(){
-  //   this.service.filterByOrderId(this.datastore.get("order_id"));
-  //   var formats = this.service.getTicketFormats();
-  //   var targetArea = this.appviews.three.$pageFormat;
-  //   targetArea.empty();
-  //   for(var i = formats.iterator(); i.hasNext();){
-  //     var format = i.next();
-  //     var e = $('<div class="control-group">');
-  //     e.append($('<span>').text(format.getName()));
-  //     e.append($('<input type="radio" name="pageformat">').attr("value", format.getId()));
-  //     targetArea.append(e);
-  //   }
-  // }
 });
 
 var AppRouter = Backbone.Router.extend({

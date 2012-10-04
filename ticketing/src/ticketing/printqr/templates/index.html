@@ -55,7 +55,7 @@ $(function(){
   var descriptionView = new DataStoreDescriptionView({model: datastore, el: $("#description")});
   var one = new QRInputView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#one")});
   var two = new TicketInfoView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#two")});
-  var three = new PrinterSelectView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#three")});
+  var three = new FormatChoiceView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#three")});
   var four = new PrintConfirmView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#four")});
 
   one.nextView = two;
@@ -178,15 +178,11 @@ $(function(){
       印刷に利用するフォーマットを選んでください
     </p>
 
-    <h4>ページフォーマット設定</h4>
-    <div id="page_format">
+    <h3>チケットテンプレート設定</h3>
+    <div id="ticket_template">
     </div>
 
-    <h4>チケットフォーマット設定</h4>
-    <div id="ticket_format">
-    </div>
-
-    <h4>プリンタ設定</h4>
+    <h3>プリンタ設定</h3>
     <div id="printer">
     </div>
     
