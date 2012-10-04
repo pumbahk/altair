@@ -71,12 +71,16 @@ public class SerializingExecutor implements Executor {
 				} catch (Exception e) {
 					exceptionOccurred[0] = e;
 				}
-				runnable.notifyAll();
+				synchronized (this) {
+					notifyAll();
+				}
 			}
 		};
 		try {
 			execute(wrapper);
-			wrapper.wait();
+			synchronized (wrapper) {
+				wrapper.wait();
+			}
 			if (exceptionOccurred[0] != null)
 				throw exceptionOccurred[0];
 		} catch (InterruptedException e) {
