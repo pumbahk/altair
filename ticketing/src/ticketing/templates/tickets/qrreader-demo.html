@@ -13,30 +13,41 @@ window[${json.dumps(callback_name)|n}] = function (applet) {
   }
 
   var service = applet.getService();
+  var printServices = {};
+  var ticketTemplates = {};
   var $orderedProductItemToken = $('#orderedProductItemToken');
   var $addToPrintListButton = $('#addToPrintListButton');
   var $printService = $('#printService');
   var $ticketTemplate = $('#ticketTemplate');
   var $printButton = $('#printButton');
+
   function refreshPrintServices() {
-    var printServices = service.getPrintServices();
+    var _printServices = service.getPrintServices();
     $printService.empty();
-    if (printServices) {
-      for (var i = printServices.iterator(); i.hasNext();) {
+    var newPrintServices = {};
+    if (_printServices) {
+      for (var i = _printServices.iterator(); i.hasNext();) {
         var printService = i.next();
-        $printService.append($('<option></option>').text(printService.getName()));
+        var name = printService.getName();
+        $printService.append($('<option></option>').attr("value", name).text(printService.getName()));
+        newPrintServices[name] = printService;
       }
     }
+    printServices = newPrintServices;
   }
   function refreshTicketTemplates() {
-    var ticketTemplates = service.getTicketTemplates();
+    var _ticketTemplates = service.getTicketTemplates();
+    var newTicketTemplates = {};
     $ticketTemplate.empty();
-    if (ticketTemplates) {
-      for (var i = ticketTemplates.iterator(); i.hasNext();) {
+    if (_ticketTemplates) {
+      for (var i = _ticketTemplates.iterator(); i.hasNext();) {
         var ticketTemplate = i.next();
-        $ticketTemplate.append($('<option></option>').text(ticketTemplate.getName()));
+        var id = ticketTemplate.getId();
+        $ticketTemplate.append($('<option></option>').attr("value", id).text(ticketTemplate.getName()));
+        newTicketTemplates[id] = ticketTemplate;
       }
     }
+    ticketTemplates = newTicketTemplates;
   }
   $addToPrintListButton.click(function() {
     $.ajax({
@@ -61,11 +72,9 @@ window[${json.dumps(callback_name)|n}] = function (applet) {
     });
   });
   $printButton.click(function () {
-    try {
-      service.printAll();
-    } catch (e) {
-      console.log(e);
-    }
+    service.setPrintService(printServices[$printService.val()]);
+    service.setTicketTemplate(ticketTemplates[$ticketTemplate.val()]);
+    service.printAll();
   });
   refreshPrintServices();
   refreshTicketTemplates();
