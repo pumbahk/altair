@@ -331,6 +331,14 @@ public class AppService {
 		return Collections.unmodifiableList(model.getTicketTemplates());
 	}
 
+	public TicketTemplate getTicketTemplate() {
+		return model.getTicketTemplate();
+	}
+
+	public void setTicketTemplate(TicketTemplate template) {
+		model.setTicketTemplate(template);
+	}
+	
 	public List<PrintService> getPrintServices() {
 		return Collections.unmodifiableList(model.getPrintServices());
 	}
