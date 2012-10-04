@@ -93,10 +93,13 @@ class SalesSegments(BaseView):
         if f.validate():
             if self.request.matched_route.name == 'sales_segments.copy':
                 with_pdmp = bool(f.copy_payment_delivery_method_pairs.data)
-                map = SalesSegment.create_from_template(sales_segment, with_payment_delivery_method_pairs=with_pdmp)
+                id_map = SalesSegment.create_from_template(sales_segment, with_payment_delivery_method_pairs=with_pdmp)
+                f.id.data = id_map[sales_segment_id]
+                new_sales_segment = merge_session_with_post(SalesSegment.get(f.id.data), f.data)
+                new_sales_segment.save()
                 if f.copy_products.data:
                     for product in sales_segment.product:
-                        Product.create_from_template(template=product, with_product_items=True, sales_segment=map)
+                        Product.create_from_template(template=product, with_product_items=True, sales_segment=id_map)
             else:
                 sales_segment = merge_session_with_post(sales_segment, f.data)
                 sales_segment.save()
