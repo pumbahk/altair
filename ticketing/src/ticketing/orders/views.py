@@ -478,7 +478,6 @@ class Orders(BaseView):
                 del self.request.session['ticketing.inner_cart']
             logger.debug('order reserve session data=%s' % self.request.session)
 
-            self.request.session.flash(u'予約しました')
             if with_enqueue:
                 utils.enqueue_for_order(operator=self.context.user, order=order)
             return {
