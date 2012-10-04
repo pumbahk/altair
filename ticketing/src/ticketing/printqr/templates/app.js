@@ -244,6 +244,7 @@ var AppletView = Backbone.View.extend({
     if(!!this.datastore.get("printed")){
       try {
         this.service.printAll();
+        this.appviews.messageView.success("チケット印刷できました。");
       } catch (e) {
         this.appviews.messageView.alert(e);
       }
