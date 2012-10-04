@@ -58,6 +58,8 @@ public class AppWindow implements IAppWindow {
 
 	private GuidesOverlay guidesOverlay;
 	private BoundingBoxOverlay boundingBoxOverlay;
+	private boolean interactionEnabled = true;
+	
 	private ComponentListener centeringListener = new ComponentListener() {
 		public void componentHidden(ComponentEvent e) {}
 
@@ -184,6 +186,13 @@ public class AppWindow implements IAppWindow {
 		this.model = model;
 	}
 
+	public void setInteractionEnabled(boolean value) {
+		final boolean prevValue = this.interactionEnabled;
+		this.interactionEnabled = value;
+		if (prevValue != value)
+			this.frame.setEnabled(value);
+	}
+	
 	/**
 	 * Initialize the contents of the frame.
 	 */

@@ -46,17 +46,21 @@ public class AppWindowService extends BasicAppService {
 	}
 
 	public void printAll() {
-		AccessController.doPrivileged(new PrivilegedAction<Object>() {
-			public Object run() {
-				try {
-					final PrinterJob job = PrinterJob.getPrinterJob();
-					job.setPrintService(model.getPrintService());
-					job.setPrintable(createTicketPrintable(job), model.getPageFormat());
-					job.print();
-				} catch (Exception e) {
-					displayError("Failed to print tickets\nReason: " + e);
-				}
-				return null;
+		invokeWhenReady(new Runnable() {
+			public void run() {
+				AccessController.doPrivileged(new PrivilegedAction<Object>() {
+					public Object run() {
+						try {
+							final PrinterJob job = PrinterJob.getPrinterJob();
+							job.setPrintService(model.getPrintService());
+							job.setPrintable(createTicketPrintable(job), model.getPageFormat());
+							job.print();
+						} catch (Exception e) {
+							displayError("Failed to print tickets\nReason: " + e);
+						}
+						return null;
+					}
+				});
 			}
 		});
 	}

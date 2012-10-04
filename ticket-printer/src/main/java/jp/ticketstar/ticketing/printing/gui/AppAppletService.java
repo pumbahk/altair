@@ -48,49 +48,53 @@ public class AppAppletService extends BasicAppService implements StandardAppServ
 	
 	@Override
 	public void printAll() {
-		AccessController.doPrivileged(new PrivilegedAction<Object>() {
-			public Object run() {
-				try {
-					final PrinterJob job = PrinterJob.getPrinterJob();
-					job.setPrintService(model.getPrintService());
-					final TicketPrintable printable = createTicketPrintable(job);
-					printable.addPrintableEventListener(new PrintableEventListener() {
-						public void pagePrinted(PrintableEvent evt) {
-							final Page page = printable.getPages().get(evt.getPageIndex());
-
-							try {
-								URLFetcher.fetch(applet.newURLConnection(applet.config.dequeueUrl), new RequestBodySender() {
-									public String getRequestMethod() {
-										return "POST";
+		invokeWhenReady(new Runnable() {
+			public void run() {
+				AccessController.doPrivileged(new PrivilegedAction<Object>() {
+					public Object run() {
+						try {
+							final PrinterJob job = PrinterJob.getPrinterJob();
+							job.setPrintService(model.getPrintService());
+							final TicketPrintable printable = createTicketPrintable(job);
+							printable.addPrintableEventListener(new PrintableEventListener() {
+								public void pagePrinted(PrintableEvent evt) {
+									final Page page = printable.getPages().get(evt.getPageIndex());
+		
+									try {
+										URLFetcher.fetch(applet.newURLConnection(applet.config.dequeueUrl), new RequestBodySender() {
+											public String getRequestMethod() {
+												return "POST";
+											}
+			
+											@Override
+											public void send(OutputStream out) throws IOException {
+												final JsonWriter writer = new JsonWriter(new OutputStreamWriter(out, "utf-8"));
+												writer.beginObject();
+												writer.name("queue_ids");
+												writer.beginArray();
+												for (final String queueId: page.getQueueIds())
+													writer.value(queueId);
+												writer.endArray();
+												writer.endObject();
+												writer.flush();
+												writer.close();
+											}
+										});
+									} catch (IOException e) {
+										displayError(e);
 									}
-	
-									@Override
-									public void send(OutputStream out) throws IOException {
-										final JsonWriter writer = new JsonWriter(new OutputStreamWriter(out, "utf-8"));
-										writer.beginObject();
-										writer.name("queue_ids");
-										writer.beginArray();
-										for (final String queueId: page.getQueueIds())
-											writer.value(queueId);
-										writer.endArray();
-										writer.endObject();
-										writer.flush();
-										writer.close();
-									}
-								});
-							} catch (IOException e) {
-								displayError(e);
-							}
-							model.getPageSetModel().getPages().remove(page);
+									model.getPageSetModel().getPages().remove(page);
+								}
+							});
+							job.setPrintable(printable, model.getPageFormat());
+							job.print();
+						} catch (Exception e) {
+							e.printStackTrace();
+							displayError("Failed to print tickets\nReason: " + e);
 						}
-					});
-					job.setPrintable(printable, model.getPageFormat());
-					job.print();
-				} catch (Exception e) {
-					e.printStackTrace();
-					displayError("Failed to print tickets\nReason: " + e);
-				}
-				return null;
+						return null;
+					}
+				});
 			}
 		});
 	}

@@ -9,6 +9,7 @@ import java.beans.PropertyChangeListener;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.LinkedList;
 
 import javax.print.PrintService;
 
@@ -25,14 +26,15 @@ import org.apache.batik.swing.svg.SVGDocumentLoader;
 import org.apache.batik.swing.svg.SVGDocumentLoaderEvent;
 import org.apache.batik.swing.svg.SVGDocumentLoaderListener;
 import org.apache.batik.swing.svg.SVGUserAgentGUIAdapter;
-import org.apache.batik.util.HaltingThread;
 import org.w3c.dom.Element;
 import org.w3c.dom.svg.SVGAElement;
 import org.w3c.dom.svg.SVGDocument;
 
 public abstract class BasicAppService extends SVGUserAgentGUIAdapter implements MinimumAppService, UserAgent {
 	protected AppModel model;
-	protected HaltingThread documentLoader;
+	protected volatile SVGDocumentLoader documentLoader;
+	protected IAppWindow appWindow;
+	protected LinkedList<Runnable> pendingTasks = new LinkedList<Runnable>();
 
 	protected class LoaderListener implements SVGDocumentLoaderListener {
 		ExtendedSVG12BridgeContext bridgeContext;
@@ -49,6 +51,13 @@ public abstract class BasicAppService extends SVGUserAgentGUIAdapter implements 
 				bridgeContext.setInteractive(false);
 				bridgeContext.setDynamic(false);
 				BasicAppService.this.model.setPageSetModel(new PageSetModel(bridgeContext, (ExtendedSVG12OMDocument)arg0.getSVGDocument()));
+				appWindow.setInteractionEnabled(true);
+				synchronized (BasicAppService.this.pendingTasks) {
+					for (final Runnable task: BasicAppService.this.pendingTasks) {
+						task.run();
+					}
+					BasicAppService.this.pendingTasks.clear();
+				}
 			} catch (Exception e) {
 				e.printStackTrace();
 				displayError("Failed to load document\nReason: " + e);
@@ -63,6 +72,7 @@ public abstract class BasicAppService extends SVGUserAgentGUIAdapter implements 
 
 		public void documentLoadingStarted(SVGDocumentLoaderEvent arg0) {
 			System.out.println("load started!!");
+			appWindow.setInteractionEnabled(false);
 		}
 
 		public LoaderListener(ExtendedSVG12BridgeContext bridgeContext) {
@@ -78,6 +88,7 @@ public abstract class BasicAppService extends SVGUserAgentGUIAdapter implements 
 	public void setAppWindow(IAppWindow appWindow) {
 		parentComponent = appWindow.getFrame();
 		appWindow.bind(model);
+		this.appWindow = appWindow;
 	}
 
 	public void deselectAll() {
@@ -143,7 +154,7 @@ public abstract class BasicAppService extends SVGUserAgentGUIAdapter implements 
 
 	public synchronized void loadDocument(URI uri) {
 		if (this.documentLoader != null)
-			return;
+			throw new IllegalStateException("Document is being loaded");
 		final OurDocumentLoader loader = new OurDocumentLoader(this);
 		final SVGDocumentLoader documentLoader = new SVGDocumentLoader(uri.toString(), loader);
 		this.documentLoader = documentLoader;
@@ -167,7 +178,9 @@ public abstract class BasicAppService extends SVGUserAgentGUIAdapter implements 
 		return model.getPageFormat();
 	}
 	
-	public void setPageFormat(OurPageFormat pageFormat) {
+	public synchronized void setPageFormat(OurPageFormat pageFormat) {
+		if (this.documentLoader != null)
+			throw new IllegalStateException("Document is being loaded");
 		model.setPageFormat(pageFormat);
 	}
 
@@ -199,5 +212,13 @@ public abstract class BasicAppService extends SVGUserAgentGUIAdapter implements 
 
 	public void addListenerForPages(PropertyChangeListener listener) {
 		model.addPropertyChangeListener("pageSetModel", listener);
+	}
+
+	public synchronized void invokeWhenReady(Runnable runnable) {
+		if (documentLoader == null) {
+			runnable.run();
+		} else {
+			pendingTasks.add(runnable);
+		}
 	}
 }

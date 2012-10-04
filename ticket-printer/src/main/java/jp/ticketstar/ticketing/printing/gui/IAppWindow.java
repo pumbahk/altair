@@ -14,4 +14,5 @@ public interface IAppWindow {
 
 	public abstract void show();
 
+	public abstract void setInteractionEnabled(boolean enabled);
 }

@@ -76,7 +76,8 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 	protected AppAppletService appService;
 	protected AppAppletModel model;
 	protected AppAppletConfiguration config;
-
+	protected boolean interactionEnabled = true;
+	
 	//private JApplet frame;
 	private JList list;
 	private JPanel panel;
@@ -268,6 +269,13 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 		if (!config.embedded)
 			model.refresh();
 		this.model = (AppAppletModel)model;
+	}
+
+	public void setInteractionEnabled(boolean value) {
+		final boolean prevValue = this.interactionEnabled;
+		this.interactionEnabled = value;
+		if (prevValue != value)
+			this.setEnabled(value);
 	}
 
 	private AppAppletConfiguration getConfiguration() throws ApplicationException {
