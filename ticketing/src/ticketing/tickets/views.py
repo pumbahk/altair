@@ -37,6 +37,19 @@ def ticket_to_dict(ticket):
     data[u'ticket_format_id'] = ticket.ticket_format_id
     return data
 
+def page_format_to_dict(page_format):
+    data = dict(page_format.data)
+    data[u'id'] = page_format.id
+    data[u'name'] = page_format.name
+    data[u'printer_name'] = page_format.printer_name
+    return data
+
+def page_formats_for_organization(organization):
+    return [
+        page_format_to_dict(page_format) \
+        for page_format in DBSession.query(PageFormat).filter_by(organization=organization)
+        ]
+
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class TicketMasters(BaseView):
     @view_config(route_name='tickets.index', renderer='ticketing:templates/tickets/index.html', request_method="GET")
@@ -451,25 +464,21 @@ class TicketPrinter(BaseView):
 
     @view_config(route_name='tickets.printer.api.formats', renderer='json')
     def formats(self):
-        page_formats = []
-        for page_format in DBSession.query(PageFormat).filter_by(organization=self.context.organization):
-            data = dict(page_format.data)
-            data[u'id'] = page_format.id
-            data[u'name'] = page_format.name
-            data[u'printer_name'] = page_format.printer_name
-            page_formats.append(data)
         ticket_formats = []
         for ticket_format in DBSession.query(TicketFormat).filter_by(organization=self.context.organization):
             ticket_formats.append(ticket_format_to_dict(ticket_format))
         return { u'status': u'success',
-                 u'data': { u'page_formats': page_formats,
+                 u'data': { u'page_formats': page_formats_for_organization(self.context.organization),
                             u'ticket_formats': ticket_formats } }
 
     @view_config(route_name='tickets.printer.api.ticket', renderer='json')
     def ticket(self):
+        event_id = self.request.matchdict['event_id']
         ticket_id = self.request.matchdict['id'].strip()
         q = DBSession.query(Ticket) \
             .filter_by(organization_id=self.context.organization.id)
+        if event_id != '*':
+            q = q.filter_by(event_id=event_id)
         if ticket_id:
             q = q.filter_by(id=ticket_id)
         tickets = q.all()
@@ -477,6 +486,7 @@ class TicketPrinter(BaseView):
             u'status': 'success',
             u'data': {
                 u'ticket_formats': [ticket_format_to_dict(ticket_format) for ticket_format in dict((ticket.ticket_format.id, ticket.ticket_format) for ticket in tickets).itervalues()],
+                u'page_formats': page_formats_for_organization(self.context.organization),
                 u'ticket_templates': [ticket_to_dict(ticket) for ticket in tickets]
                 }
             }
@@ -592,7 +602,7 @@ class QRReaderViewDemo(BaseView):
     def qrreader_demo(self):
         return dict(
             endpoints=dict(
-                tickettemplates=self.request.route_path('tickets.printer.api.ticket', id=''),
+                tickettemplates=self.request.route_path('tickets.printer.api.ticket', event_id='*', id=''),
                 ticketdata=self.request.route_path('tickets.printer.api.ticket_data'),
                 history=self.request.route_path('tickets.printer.api.history')
                 ),

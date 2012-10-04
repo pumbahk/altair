@@ -1,9 +1,6 @@
 package jp.ticketstar.ticketing.qrreader;
 
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Dimension2D;
-import java.awt.print.PageFormat;
-import java.awt.print.Paper;
 import java.awt.print.PrinterJob;
 import java.io.IOException;
 import java.security.AccessController;
@@ -65,8 +62,7 @@ public class AppService {
 					job.setPrintService(model.getPrintService());
 					job.setPrintable(
 						createTicketPrintable(job),
-						createPageFormatFromTicketFormat(
-							model.getTicketTemplate().getTicketFormat()));
+						model.getPageFormat());
 					job.print();
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -77,19 +73,6 @@ public class AppService {
 		});
 	}
 
-	protected PageFormat createPageFormatFromTicketFormat(TicketFormat ticketFormat) {
-		final PageFormat retval = new PageFormat(); 
-		{
-			final Paper paper = new Paper();
-			final Dimension2D size = ticketFormat.getSize();
-			final double width = size.getWidth(), height = size.getHeight();
-			paper.setImageableArea(0, 0, width, height);
-			paper.setSize(width, height);
-			retval.setPaper(paper);
-		}
-		return retval;
-	}
-	
 	public void addTicket(Ticket ticket) {
 		model.getTickets().add(ticket);
 	}
@@ -120,5 +103,17 @@ public class AppService {
 	
 	public void setPrintService(PrintService service) {
 		model.setPrintService(service);
+	}
+
+	public List<OurPageFormat> getPageFormats() {
+		return Collections.unmodifiableList(model.getPageFormats());
+	}
+
+	public OurPageFormat getPageFormat() {
+		return model.getPageFormat();
+	}
+	
+	public void setPageFormat(OurPageFormat pageFormat) {
+		model.setPageFormat(pageFormat);
 	}
 }

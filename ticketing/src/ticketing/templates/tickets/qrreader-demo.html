@@ -15,9 +15,11 @@ window[${json.dumps(callback_name)|n}] = function (applet) {
   var service = applet.getService();
   var printServices = {};
   var ticketTemplates = {};
+  var pageFormats = {};
   var $orderedProductItemToken = $('#orderedProductItemToken');
   var $addToPrintListButton = $('#addToPrintListButton');
   var $printService = $('#printService');
+  var $pageFormat = $('#pageFormat');
   var $ticketTemplate = $('#ticketTemplate');
   var $printButton = $('#printButton');
 
@@ -49,6 +51,20 @@ window[${json.dumps(callback_name)|n}] = function (applet) {
     }
     ticketTemplates = newTicketTemplates;
   }
+  function refreshPageFormats() {
+    var _pageFormats = service.getPageFormats();
+    $pageFormat.empty();
+    var newPrintServices = {};
+    if (_pageFormats) {
+      for (var i = _pageFormats.iterator(); i.hasNext();) {
+        var pageFormat = i.next();
+        var id = pageFormat.getId();
+        $pageFormat.append($('<option></option>').attr("value", id).text(pageFormat.getName()));
+        newPrintServices[id] = pageFormat;
+      }
+    }
+    pageFormats = newPrintServices;
+  }
   $addToPrintListButton.click(function() {
     $.ajax({
       type: 'POST',
@@ -73,13 +89,16 @@ window[${json.dumps(callback_name)|n}] = function (applet) {
   });
   $printButton.click(function () {
     service.setPrintService(printServices[$printService.val()]);
+    service.setPageFormat(pageFormats[$pageFormat.val()]);
     service.setTicketTemplate(ticketTemplates[$ticketTemplate.val()]);
     service.printAll();
   });
   refreshPrintServices();
+  refreshPageFormats();
   refreshTicketTemplates();
   $orderedProductItemToken.attr('disabled', null);
   $printService.attr('disabled', null);
+  $pageFormat.attr('disabled', null);
   $ticketTemplate.attr('disabled', null);
   $addToPrintListButton.attr('disabled', null);
   $printButton.attr('disabled', null);
@@ -233,6 +252,9 @@ writeAppletTag({
 </div>
 <div>
 <select id="ticketTemplate" disabled="disabled"></select>
+</div>
+<div>
+<select id="pageFormat" disabled="disabled"></select>
 </div>
 <div>
 <select id="printService" disabled="disabled"></select>

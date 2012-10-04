@@ -178,7 +178,11 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 		final FormatLoader.LoaderResult result = new FormatLoader(this, mustacheFactory).fetchTicketTemplates(config);
 		if (result.ticketTemplates.size() > 0) {
 			model.getTicketTemplates().addAll(result.ticketTemplates);
-			model.setTicketTemplate(result.ticketTemplates.get(0));
+			model.getPageFormats().addAll(result.pageFormats);
+			if (result.ticketTemplates.size() > 0)
+				model.setTicketTemplate(result.ticketTemplates.get(0));
+			if (result.pageFormats.size() > 0)
+				model.setPageFormat(result.pageFormats.get(0));
 		}
 	}
 

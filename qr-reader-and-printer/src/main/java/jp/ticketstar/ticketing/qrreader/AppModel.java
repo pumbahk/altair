@@ -38,6 +38,12 @@ public interface AppModel {
 
 	public abstract GenericComboBoxModel<PrintService> getPrintServices();
 
+	public abstract void setPageFormat(OurPageFormat pageFormat);
+
+	public abstract OurPageFormat getPageFormat();
+	
+	public abstract GenericComboBoxModel<OurPageFormat> getPageFormats();
+
 	public abstract GenericListModel<TicketTemplate> getTicketTemplates();
 	
 	public abstract void setTicketTemplate(TicketTemplate ticketTemplate);

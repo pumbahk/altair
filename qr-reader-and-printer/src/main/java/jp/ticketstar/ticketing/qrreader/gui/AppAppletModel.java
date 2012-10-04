@@ -12,6 +12,7 @@ import javax.swing.event.SwingPropertyChangeSupport;
 import jp.ticketstar.ticketing.swing.GenericComboBoxModel;
 import jp.ticketstar.ticketing.swing.GenericListModel;
 import jp.ticketstar.ticketing.qrreader.AppModel;
+import jp.ticketstar.ticketing.qrreader.OurPageFormat;
 import jp.ticketstar.ticketing.qrreader.Ticket;
 import jp.ticketstar.ticketing.qrreader.TicketTemplate;
 
@@ -21,7 +22,9 @@ public class AppAppletModel implements AppModel {
 	GenericComboBoxModel<PrintService> printServices;
 	GenericListModel<Ticket> tickets;
 	GenericListModel<TicketTemplate> ticketTemplates;
+	GenericComboBoxModel<OurPageFormat> pageFormats;
 	TicketTemplate ticketTemplate;
+	OurPageFormat pageFormat;
 
 	public AppAppletModel() {
 		initialize();
@@ -47,6 +50,12 @@ public class AppAppletModel implements AppModel {
 			propertyChangeSupport.firePropertyChange("printServices", prevPrintServices, printServices);
 		}
 		{
+			final GenericComboBoxModel<OurPageFormat> pageFormats = new GenericComboBoxModel<OurPageFormat>();
+	        final GenericComboBoxModel<OurPageFormat> prevPageFormats = this.pageFormats;
+	        this.pageFormats = pageFormats;
+			propertyChangeSupport.firePropertyChange("pageFormats", prevPageFormats, pageFormats);
+		}
+		{
 			final GenericListModel<TicketTemplate> prevTicketTemplates = this.ticketTemplates;
 			this.ticketTemplates = new GenericListModel<TicketTemplate>();
 			propertyChangeSupport.firePropertyChange("ticketTemplates", prevTicketTemplates, this.ticketTemplates);
@@ -68,7 +77,9 @@ public class AppAppletModel implements AppModel {
 	 */
 	public void refresh() {
 		propertyChangeSupport.firePropertyChange("printServices", null, printServices);
+		propertyChangeSupport.firePropertyChange("pageFormats", null, pageFormats);
 		propertyChangeSupport.firePropertyChange("printService", null, printService);
+		propertyChangeSupport.firePropertyChange("pageFormat", null, pageFormat);
 		propertyChangeSupport.firePropertyChange("tickets", null, tickets);
 	}
 
@@ -163,5 +174,22 @@ public class AppAppletModel implements AppModel {
 		final TicketTemplate prevValue = ticketTemplate;
 		this.ticketTemplate = ticketTemplate;
 		propertyChangeSupport.firePropertyChange("ticketTemplate", prevValue, ticketTemplate);
+	}
+
+	@Override
+	public void setPageFormat(OurPageFormat pageFormat) {
+		final OurPageFormat prevValue = pageFormat;
+		this.pageFormat = pageFormat;
+		propertyChangeSupport.firePropertyChange("pageFormat", prevValue, pageFormat);
+	}
+
+	@Override
+	public OurPageFormat getPageFormat() {
+		return pageFormat;
+	}
+
+	@Override
+	public GenericComboBoxModel<OurPageFormat> getPageFormats() {
+		return pageFormats;
 	}
 }
