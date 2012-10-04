@@ -478,16 +478,17 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 		return new JSObjectPropertyChangeListenerProxy(jsobj);
 	}
 
-	public Thread newThread(Runnable runnable) {
+	public Thread newThread(final Runnable runnable) {
 		final FutureTask<Thread> task = new FutureTask<Thread>(new Callable<Thread>() {
 			@Override
 			public Thread call() throws Exception {
-				return new Thread();
+				return new Thread(runnable);
 			}
 		});
 		threadGenerator.execute(task);
 		try {
-			return task.get();
+			final Thread thread = task.get();
+			return thread;
 		} catch (ExecutionException e) {
 			throw new IllegalStateException(e);
 		} catch (InterruptedException e) {
