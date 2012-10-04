@@ -73,13 +73,13 @@ $(function(){
       two: two,
       three: three,
       four: four,
-      message: messageView,
-      description: descriptionView
+      messageView: messageView,
+      descriptionView: descriptionView
     };
     var service = applet.getService();
     var createProxy = function () { return applet.createPropertyChangeListenerProxy.apply(applet, arguments); };
     //service.addListenerForPages(createProxy(refreshPages));
-    var appletView = new AppletView({el: $("#applet"), appviews: appviews, datastore: datastore, service: service, createProxy: createProxy})
+    var appletView = new AppletView({el: $("#applet"), appviews: appviews, datastore: datastore, service: service, createProxy: createProxy, apiResource: apiResource})
     $('#screen').hide();
   };
 

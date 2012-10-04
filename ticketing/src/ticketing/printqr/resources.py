@@ -1,12 +1,14 @@
 from pyramid.decorator import reify
-from pyramid.security import Allow, authenticated_userid
+from pyramid.security import Allow, Everyone, authenticated_userid
 from ticketing.operators.models import Operator, OperatorAuth
 
 class PrintQRResource(object):
     def __init__(self, request):
         self.request = request
     __acl__ = [
-        (Allow, 'group:sales_counter', 'sales_counter')
+        (Allow, 'group:sales_counter', 'sales_counter'), 
+        (Allow, 'group:sales_counter', 'event_editor'), 
+        (Allow, Everyone, 'everybody'),
     ]
 
     @reify
@@ -18,15 +20,15 @@ class PrintQRResource(object):
     @reify
     def api_resource(self):
         return {
-            "api.ticket.data": self.request.route_url("api.ticket.data")
+            "api.ticket.data": self.request.route_url("api.ticket.data"), 
+            "api.ticketdata_from_token_id": self.request.route_path('api.applet.ticket_data'),
             }
-
     @reify
     def applet_endpoints(self):
         return {
-            "formats": self.request.route_path("api.applet.formats"), 
-            "peek": self.request.route_path("api.applet.peek"), 
-            "dequeue": self.request.route_path("api.applet.dequeue"), 
+            "tickettemplates": self.request.route_path('api.applet.ticket', id=''),
+            "ticketdata": self.request.route_path('api.applet.ticket_data'),
+            "history": self.request.route_path('api.applet.history')
             }
 
     @reify

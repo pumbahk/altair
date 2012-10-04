@@ -1,33 +1,33 @@
-// model 
+// model
 var DataStore = Backbone.Model.extend({
   defaults: {
-    orderId: null, 
-
-    qrcodeStatus: "preload", 
+    ordered_product_item_token_id:  null, 
+    
+    qrcode_status: "preload", 
     qrcode: null, 
     
     orderno: null,
     performance: null,
     product: null,
-  }
+  }, 
 });
 
 // view
 var DataStoreDescriptionView = Backbone.View.extend({
   initialize: function(){
-    this.model.bind("change:qrcodeStatus", this.showQrcodeStatus, this);
+    this.model.bind("change:qrcode_status", this.showQrcodeStatus, this);
     this.model.bind("change:orderno", this.showOrderno, this);
     this.model.bind("change:performance", this.showPerformance, this);
     this.model.bind("change:product", this.showProduct, this);
     this.model.bind("refresh", this.refresh, this);
 
-    this.$qrcodeStatus = this.$el.find("#desc_qrcodeStatus");
+    this.$qrcode_status = this.$el.find("#desc_qrcode_status");
     this.$orderno = this.$el.find("#desc_orderno");
     this.$performance = this.$el.find("#desc_performance");
     this.$product = this.$el.find("#desc_product");
   }, 
   showQrcodeStatus: function(){
-    this.$qrcodeStatus.text(this.model.get("qrcodeStatus"));
+    this.$qrcode_status.text(this.model.get("qrcode_status"));
   }, 
   showOrderno: function(){
     this.$orderno.text(this.model.get("orderno"));
@@ -96,10 +96,10 @@ var QRInputView = AppPageViewBase.extend({
     QRInputView.__super__.initialize.call(this, opts);
     this.$qrcode = this.$el.find('input[name="qrcode"]')
     this.$status = this.$el.find('#status')
-    this.datastore.bind("change:qrcodeStatus", this.showStatus, this);
+    this.datastore.bind("change:qrcode_status", this.showStatus, this);
   }, 
   showStatus: function(){
-    this.$status.text(this.datastore.get("qrcodeStatus"));
+    this.$status.text(this.datastore.get("qrcode_status"));
   }, 
   loadQRSigned: function(){
     var url = this.apiResource["api.ticket.data"];
@@ -107,13 +107,13 @@ var QRInputView = AppPageViewBase.extend({
     $.getJSON(url, {qrsigned: this.$qrcode.val()})
       .done(function(data){
         self.messageView.success("QRコードからデータが読み込めました");
-        self.datastore.set("qrcodeStatus", "loaded");
+        self.datastore.set("qrcode_status", "loaded");
+        self.nextView.updateTicketInfo(data);
         //setTimeout(function(){self.focusNextPage();}, 1)
         return data;})
-      .done(this.nextView.updateTicketInfo.bind(this.nextView))
       .fail(function(s, err){
         self.messageView.alert("うまくQRコードを読み込むことができませんでした");
-        self.datastore.set("qrcodeStatus", "fail");
+        self.datastore.set("qrcode_status", "fail");
         self.datastore.trigger("refresh");
       })
   } 
@@ -139,9 +139,10 @@ var TicketInfoView = AppPageViewBase.extend({
     this.$performanceDate.text(data.performance_date);
     this.$performanceName.text(data.performance_name);
     this.$product_name.text(data.product_name);
-    this.$seatno.text(data.seat_name);
-   
-    this.datastore.set("orderId", data.order_id);
+    this.$seatno.text(data.seat_name);  
+
+    this.datastore.set("ordered_product_item_token_id", data.ordered_product_item_token_id);
+
     this.datastore.set("orderno", data.orderno);
     this.datastore.set("performance", data.performance_name+" -- "+data.performance_date);
     this.datastore.set("product", data.product_name+"("+data.seat_name+")");
@@ -167,23 +168,44 @@ var AppletView = Backbone.View.extend({
     this.datastore = opts.datastore;
     this.service = opts.service;
     this.createProxy = opts.createProxy;
-    
-    this.datastore.bind("change:orderId", this.fetchFormats, this);
+    this.apiResource = opts.apiResource;
+    this.datastore.bind("change:ordered_product_item_token_id", this.createTicket, this);
   }, 
-  
-  fetchFormats: function(){
-    this.service.filterByOrderId(this.datastore.get("orderId"));
-    var formats = this.service.getTicketFormats();
-    var targetArea = this.appviews.three.$pageFormat;
-    targetArea.empty();
-    for(var i = formats.iterator(); i.hasNext();){
-      var format = i.next();
-      var e = $('<div class="control-group">');
-      e.append($('<span>').text(format.getName()));
-      e.append($('<input type="radio" name="pageformat">').attr("value", format.getId()));
-      targetArea.append(e);
-    }
+
+  createTicket: function(){
+    var tokenId = this.datastore.get("ordered_product_item_token_id");
+    var self = this;
+    $.ajax({
+      type: 'POST',
+      processData: false,
+      data: JSON.stringify({ ordered_product_item_token_id: tokenId }),
+      contentType: 'application/json',
+      dataType: 'json',
+      url: this.apiResource["api.ticketdata_from_token_id"]
+    }).done(function (data) {
+      if (data['status'] != 'success') {
+        self.appviews.messageView.alert(data['message']);
+        return;
+      }
+      self.appviews.messageView.success("券面データが保存されました");
+      $.each(data['data'], function (_, ticket) {
+        service.addTicket(service.createTicketFromJSObject(ticket));
+      });
+    }).fail(function(msg){self.appviews.messageView.alert(msg)});
   }
+  // fetchFormats: function(){
+  //   this.service.filterByOrderId(this.datastore.get("order_id"));
+  //   var formats = this.service.getTicketFormats();
+  //   var targetArea = this.appviews.three.$pageFormat;
+  //   targetArea.empty();
+  //   for(var i = formats.iterator(); i.hasNext();){
+  //     var format = i.next();
+  //     var e = $('<div class="control-group">');
+  //     e.append($('<span>').text(format.getName()));
+  //     e.append($('<input type="radio" name="pageformat">').attr("value", format.getId()));
+  //     targetArea.append(e);
+  //   }
+  // }
 });
 
 var AppRouter = Backbone.Router.extend({

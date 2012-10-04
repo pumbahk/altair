@@ -15,9 +15,12 @@ def includeme(config):
     config.add_route("api.ticket.data", "/api/ticket/data")
     config.add_route('api.applet.formats', '/api/applet/formats')
     config.add_route('api.applet.enqueue', '/api/applet/enqueue')
+    config.add_route('api.applet.ticket', '/api/applet/ticket/{id:.*}')
+    config.add_route('api.applet.ticket_data', '/api/applet/ticket_data')
+    config.add_route('api.applet.history', '/api/applet/history')
     config.add_route('api.applet.peek', '/api/applet/peek')
     config.add_route('api.applet.dequeue', '/api/applet/dequeue')
-    
+
     config.add_route("login", "/login")
     config.add_route("logout", "/logout")
     config.scan(".views")
@@ -40,7 +43,6 @@ def main(global_config, **settings):
     config.include("ticketing.qr", route_prefix="qr")
     config.include(".")
     config.add_forbidden_view(".views.login_view", renderer="ticketing.printqr:templates/login.html")
-
     # config.set_root_factory('.resources.TicketingPrintqrResource')
     config.add_static_view('static', 'ticketing.printqr:static', cache_max_age=3600)
     config.add_static_view('_static', 'ticketing:static', cache_max_age=10800)
