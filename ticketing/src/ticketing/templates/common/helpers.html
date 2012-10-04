@@ -182,3 +182,13 @@ ${locale.format("%d", price, grouping=True)}
   % endif
 </div>
 </%def>
+
+<%!
+  from pyramid.security import has_permission as security_has_permission
+  from pyramid.security import ACLAllowed
+%>
+<%def name="has_permission(permission)">
+<%
+  return isinstance(security_has_permission(permission, request.context, request), ACLAllowed)
+%>
+</%def>

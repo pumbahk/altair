@@ -7,6 +7,7 @@ import webhelpers.paginate as paginate
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
+from pyramid.security import has_permission, ACLAllowed
 
 from ticketing.core.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
@@ -62,6 +63,10 @@ class Performances(BaseView):
         data = {'performance':performance}
 
         tab = self.request.matchdict.get('tab', 'product')
+        if not isinstance(has_permission('event_editor', self.request.context, self.request), ACLAllowed):
+            if tab not in ['order', 'reservation']:
+                tab = 'reservation'
+
         if tab == 'seat-allocation':
             pass
         elif tab == 'product':
