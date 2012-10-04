@@ -28,7 +28,9 @@ window[${json.dumps(callback_name)|n}] = function (applet) {
     if (printServices) {
       for (var i = printServices.iterator(); i.hasNext();) {
         var printService = i.next();
-        $printService.append($('<option></option>').text(printService.getName()));
+        var opt = $('<option></option>');
+        opt.data('printService', printService);
+        $printService.append(opt.text(printService.getName()));
       }
     }
   }
@@ -57,7 +59,22 @@ window[${json.dumps(callback_name)|n}] = function (applet) {
   refreshPrintServices();
   refreshPageFormats();
   refreshTicketFormats();
+  function getCurrentPrintService() {
+      return $('#printService option:selected').data('printService');
+  };
+
+  function printOrder(orderId) {
+      service.filterByOrderId(orderId);
+      currentPrintService = getCurrentPrintService();
+      if (!currentPrintService) {
+          alert('no print service');
+      }
+      service.setPrintService(currentPrintService);
+      service.printAll();
+  };
+
   window.ticketPrinterService = service;
+  window.printOrder = printOrder;
 };
 </script>
 <script type="text/javascript">

@@ -448,6 +448,7 @@ class Orders(BaseView):
     @view_config(route_name='orders.reserve.complete', request_method='POST', renderer='json', permission='sales_counter')
     def reserve_complete(self):
         post_data = MultiDict(self.request.json_body)
+        with_enqueue = post_data.get('with_enqueue', False)
 
         performance_id = int(post_data.get('performance_id', 0))
         performance = Performance.get(performance_id, self.context.user.organization_id)
@@ -478,6 +479,8 @@ class Orders(BaseView):
             logger.debug('order reserve session data=%s' % self.request.session)
 
             self.request.session.flash(u'予約しました')
+            if with_enqueue:
+                utils.enqueue_for_order(operator=self.context.user, order=order)
             return {
                 'order_id':order.id,
                 'message':u'予約しました'

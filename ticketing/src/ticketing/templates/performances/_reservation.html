@@ -128,6 +128,7 @@
     $(modal.find('form').serializeArray()).each(function(i, v) {
       param[v.name] = v.value;
     });
+    param['with_enqueue'] = true;
     $.ajax({
       type: 'post',
       url: "${request.route_path('orders.reserve.complete')}",
@@ -135,6 +136,7 @@
       dataType: 'json',
       data: JSON.stringify(param),
       success: function(result) {
+        printOrder(result.order_id); // _printer.html
         window.open('/orders/show/' + result.order_id, '_blank');
         $('.content').prepend('<div class="alert alert-success"><a class="close" data-dismiss="alert">&times;</a><h4 class="alert-heading">' + result.message + '</h4></div>');
         $('#modal-reserve').modal('hide');
