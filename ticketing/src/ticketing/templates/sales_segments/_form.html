@@ -4,16 +4,9 @@
 <script type="text/javascript">
   $(function() {
     $('.datefield').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
-    $('#modal-sales_segment #seat_choice').change(function() {
+    $('#modal-sales_segment').find("input[type='checkbox']").change(function() {
       if ($(this).attr('checked')) {
-        $(this).val(${form.seat_choice.default});
-      } else {
-        $(this).val(0);
-      }
-    }).change();
-    $('#modal-sales_segment #public').change(function() {
-      if ($(this).attr('checked')) {
-        $(this).val(${form.public.default});
+        $(this).val(1);
       } else {
         $(this).val(0);
       }
@@ -33,11 +26,17 @@
       ${h.form_item(form.event_id)}
       ${h.form_item(form.kind)}
       ${h.form_item(form.name, option={'maxlength':255})}
-      ${h.form_item(form.start_at,option={"class":"datefield"})}
-      ${h.form_item(form.end_at,option={"class":"datefield"})}
+      ${h.form_item(form.start_at, option={"class":"datefield"})}
+      ${h.form_item(form.end_at, option={"class":"datefield"})}
       ${h.form_item(form.upper_limit)}
       ${h.form_item(form.seat_choice)}
       ${h.form_item(form.public)}
+      <hr />
+      <div id="copy-fields">
+        ${h.form_item(form.copy, option={"style":"display: none;"})}
+        ${h.form_item(form.copy_payment_delivery_method_pairs)}
+        ${h.form_item(form.copy_products)}
+      </div>
       <p>※セブンイレブン発券では発券日を指定した場合「前払い後日発券」になります。</p>
     </form>
   </div>

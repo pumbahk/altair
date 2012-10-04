@@ -10,7 +10,7 @@ from pyramid.url import route_path
 from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
-from ticketing.core.models import Event, SalesSegment
+from ticketing.core.models import Event, SalesSegment, Product
 from ticketing.events.payment_delivery_method_pairs.forms import PaymentDeliveryMethodPairForm
 from ticketing.events.sales_segments.forms import SalesSegmentForm
 
@@ -81,6 +81,7 @@ class SalesSegments(BaseView):
                 'form':f,
             }
 
+    @view_config(route_name='sales_segments.copy', request_method='POST', renderer='ticketing:templates/sales_segments/_form.html')
     @view_config(route_name='sales_segments.edit', request_method='POST', renderer='ticketing:templates/sales_segments/_form.html')
     def edit_post(self):
         sales_segment_id = int(self.request.matchdict.get('sales_segment_id', 0))
@@ -90,31 +91,15 @@ class SalesSegments(BaseView):
 
         f = SalesSegmentForm(self.request.POST)
         if f.validate():
-            sales_segment = merge_session_with_post(sales_segment, f.data)
-            sales_segment.save()
-
-            self.request.session.flash(u'販売区分を保存しました')
-            return render_to_response('ticketing:templates/refresh.html', {}, request=self.request)
-        else:
-            return {
-                'form':f,
-            }
-
-    @view_config(route_name='sales_segments.copy', request_method='POST', renderer='ticketing:templates/sales_segments/_copy_form.html')
-    def copy_post(self):
-        source_sales_segment_id = int(self.request.matchdict.get('sales_segment_id', 0))
-        source_sales_segment = SalesSegment.get(id=source_sales_segment_id)
-        if source_sales_segment is None:
-            return HTTPNotFound('sales_segment id %d is not found' % sales_segment_id)
-
-        f = SalesSegmentForm(self.request.POST)
-        if f.validate():
-            sales_segment = merge_session_with_post(SalesSegment(), f.data)
-            sales_segment.id = None # XXX!
-            sales_segment.event_id = source_sales_segment.event_id
-            SalesSegment.copy_products(from_=source_sales_segment, to_=sales_segment)
-            sales_segment.save()
-
+            if self.request.matched_route.name == 'sales_segments.copy':
+                with_pdmp = bool(f.copy_payment_delivery_method_pairs.data)
+                map = SalesSegment.create_from_template(sales_segment, with_payment_delivery_method_pairs=with_pdmp)
+                if f.copy_products.data:
+                    for product in sales_segment.product:
+                        Product.create_from_template(template=product, with_product_items=True, sales_segment=map)
+            else:
+                sales_segment = merge_session_with_post(sales_segment, f.data)
+                sales_segment.save()
 
             self.request.session.flash(u'販売区分を保存しました')
             return render_to_response('ticketing:templates/refresh.html', {}, request=self.request)
