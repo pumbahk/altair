@@ -34,5 +34,4 @@ def includeme(config):
     config.add_route('tickets.printer.api.peek', '/print/peek')
     config.add_route('tickets.printer.api.dequeue', '/print/dequeue')
 
-    ## events.tickets.templatesもview`configに含まれている
     config.scan('.views')

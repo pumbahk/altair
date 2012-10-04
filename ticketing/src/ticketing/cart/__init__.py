@@ -87,6 +87,7 @@ def main(global_config, **settings):
     config.include(import_mail_module)
 
     config.include('.')
+    config.include("ticketing.qr")
     config.include('.rakuten_auth')
     who_config = settings['pyramid_who.config']
     from authorization import MembershipAuthorizationPolicy

@@ -316,8 +316,6 @@ class TicketTemplates(BaseView):
         self.request.session.flash(u'チケットテンプレートを登録しました')
         return HTTPFound(location=self.request.route_path("tickets.index"))
 
-    @view_config(route_name="events.tickets.boundtickets.edit", renderer='ticketing:templates/tickets/events/tickets/new.html', 
-                 request_method="GET")
     @view_config(route_name='tickets.templates.edit', renderer='ticketing:templates/tickets/templates/new.html',
                  request_method="GET")
     def edit(self):
@@ -335,8 +333,6 @@ class TicketTemplates(BaseView):
             )
         return dict(h=helpers, form=form, template=template)
 
-    @view_config(route_name="events.tickets.boundtickets.edit", renderer='ticketing:templates/tickets/events/tickets/new.html', 
-                 request_method="POST")
     @view_config(route_name='tickets.templates.edit', renderer='ticketing:templates/tickets/templates/new.html',
                  request_method="POST")
     def edit_post(self):
@@ -361,9 +357,6 @@ class TicketTemplates(BaseView):
         self.request.session.flash(u'チケットテンプレートを更新しました')
         return self.context.after_ticket_action_redirect()
 
-
-    @view_config(route_name='events.tickets.boundtickets.delete', request_method="GET", 
-                 renderer="ticketing:templates/tickets/events/_deleteform.html")
     def delete(self):
         ticket_id = self.request.matchdict["id"]
         event_id = self.request.matchdict["event_id"]
@@ -373,7 +366,6 @@ class TicketTemplates(BaseView):
                                           event_id=event_id)
         return dict(message=message, next_to=next_to)
 
-    @view_config(route_name='events.tickets.boundtickets.delete', request_method="POST")
     @view_config(route_name='tickets.templates.delete', request_method="POST")
     def delete_post(self):
         template = self.context.tickets_query().filter_by(
@@ -388,14 +380,12 @@ class TicketTemplates(BaseView):
 
         return self.context.after_ticket_action_redirect()
 
-    @view_config(route_name='events.tickets.boundtickets.show', renderer='ticketing:templates/tickets/events/tickets/show.html')
     @view_config(route_name='tickets.templates.show', renderer='ticketing:templates/tickets/templates/show.html')
     def show(self):
         qs = self.context.tickets_query().filter_by(id=self.request.matchdict['id'])
         template = qs.filter_by(organization_id=self.context.user.organization_id).one()
         return dict(h=helpers, template=template)
 
-    @view_config(route_name="events.tickets.boundtickets.download")
     @view_config(route_name='tickets.templates.download')
     def download(self):
         qs = self.context.tickets_query().filter_by(id=self.request.matchdict['id'])
@@ -403,7 +393,6 @@ class TicketTemplates(BaseView):
         return FileLikeResponse(StringIO(template.drawing),
                                 request=self.request)
 
-    @view_config(route_name="events.tickets.boundtickets.data", renderer="json")
     @view_config(route_name='tickets.templates.data', renderer='json')
     def data(self):
         qs = self.context.tickets_query().filter_by(id=self.request.matchdict['id'])
