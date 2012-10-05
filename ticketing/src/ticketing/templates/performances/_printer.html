@@ -14,7 +14,6 @@ window[${json.dumps(callback_name)|n}] = function (applet) {
   function refreshPages() {
     var pages = service.getPages();
     $page.empty();
-    console.log("?");
     if (pages) {
       for (var i = pages.iterator(); i.hasNext();) {
         var page = i.next();
@@ -189,4 +188,4 @@ writeAppletTag({
 <select id="pageFormat"></select>
 <select id="ticketFormat"></select>
 -->
-<select id="printService"></select>
+<select id="printService" style="vertical-align: baseline;"></select>

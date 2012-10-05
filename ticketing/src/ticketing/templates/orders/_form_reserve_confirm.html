@@ -1,6 +1,14 @@
 <%page args="form, cart" />
 <%namespace file="/common/helpers.html" name="h" />
 
+<script type="text/javascript">
+  $(function() {
+    if (window.ticketPrinterService) {
+      $('#reserve-button').text('予約して発券する');
+    }
+  });
+</script>
+
 <div id="modal-reserve" class="modal fade">
   <div class="modal-header">
     <h3>予約確認</h3>
@@ -87,6 +95,6 @@
 
   <div class="modal-footer">
     <a href="javascript:void(0);" onclick="javascript:reselectOrder();" class="btn secondary btn-close">戻る</a>
-    <a href="javascript:void(0);" onclick="$('#modal-reserve').find('form').submit();" class="btn danger">予約する</a>
+    <a href="javascript:void(0);" onclick="$('#modal-reserve').find('form').submit();" class="btn danger" id="reserve-button">予約する</a>
   </div>
 </div>

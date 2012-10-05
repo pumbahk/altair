@@ -42,7 +42,24 @@
   }
 </style>
 
-<div id="tooltip"></div>
+
+<script type="text/javascript">
+  $(function() {
+    $('#sales-counter-button').click(function(){
+      $(this).css('display', 'none');
+      $('#sales-counter-label').css('display', 'inline');
+    });
+  });
+</script>
+<div class="container-fluid pull-right">
+  <div class="row-fluid">
+    <input id="sales-counter-button" type="button" class="btn btn-warning" style="vertical-align: baseline; font-size: 100%; display:none;"" value="当日窓口モードにする"></input>
+    <span id="sales-counter-label" class="label label-inverse" style="vertical-align: baseline; font-size: 100%;">発券用プリンタ</span>
+    <%include file="_printer.html" />
+  </div>
+</div>
+<div style="clear: both;"></div>
+
 <div class="tabbable tabs-below tabs-above" id="seat-allocation-tab">
   <div class="tab-content"  id="seat-allocation-tab-content">
     <div class="tab-pane active" id="map">
@@ -137,15 +154,12 @@
       dataType: 'json',
       data: JSON.stringify(param),
       success: function(result) {
-        printOrder(result.order_id); // _printer.html
+        if (window.ticketPrinterService) {
+          printOrder(result.order_id); // _printer.html
+        }
         window.open('/orders/show/' + result.order_id, '_blank');
         $('.content').prepend('<div class="alert alert-success"><a class="close" data-dismiss="alert">&times;</a><h4 class="alert-heading">' + result.message + '</h4></div>');
         $('#modal-reserve').modal('hide');
-        var selection = venueEditorRoot.venueeditor('selection');
-        selection.each(function (seat) {
-          seat.set('status', 3);
-          seat.set('selectable', false);
-        });
         venueEditorRoot.venueeditor('refresh');
         getSalesSummary();
       },
@@ -206,10 +220,6 @@
 <div>
   <%include file="_legend_seat_status.html" />
 </div>
-
+<div id="tooltip"></div>
 <div id="sales-summary"></div>
-
 <div id="reserve-form"></div>
-<div>
-  <%include file="_printer.html" />
-</div>
