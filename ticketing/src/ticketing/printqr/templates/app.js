@@ -141,7 +141,7 @@ var QRInputView = AppPageViewBase.extend({
         setTimeout(function(){self.focusNextPage();}, 1)
         return data;})
       .fail(function(s, err){
-        self.messageView.alert("うまくQRコードを読み込むことができませんでした");
+        self.messageView.error("うまくQRコードを読み込むことができませんでした");
         self.datastore.set("qrcode_status", "fail");
         self.datastore.trigger("refresh");
       });
@@ -253,8 +253,30 @@ var PrintConfirmView = AppPageViewBase.extend({
   initialize: function(opts){
     PrintConfirmView.__super__.initialize.call(this, opts);
   }, 
+  _validationPrePrint: function(){
+    if(this.datastore.get("ticket_template_id") == null){
+      this.messageView.alert("チケットテンプレートが設定されていません")
+      return false;
+    }
+    if(this.datastore.get("page_format_id") == null){
+      this.messageView.alert("ページフォーマットが設定されていません");
+      return false;
+    }
+    if(this.datastore.get("printer_name") == null){
+      this.messageView.alert("プリンタが設定されていません");
+      return false;
+    }
+    return true;
+  }, 
   clickPrintButton: function(){
-    this.datastore.set("printed", true);
+    if(!this._validationPrePrint()){
+      return;
+    }
+    if(this.datastore.get("printed")){
+      this.messageView.alert("既に印刷済みです。");
+    }else{
+      this.datastore.set("printed", true);
+    }
   }
 });
 
@@ -281,7 +303,7 @@ var AppletView = Backbone.View.extend({
       this.service.printAll();
       this.appviews.messageView.success("チケット印刷できました。");
     } catch (e) {
-      this.appviews.messageView.alert(e);
+      this.appviews.messageView.error(e);
     }
   }, 
   setPrinter: function(){ //liner
