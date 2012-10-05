@@ -17,6 +17,12 @@ var DataStore = Backbone.Model.extend({
     product: null,
   }, 
   updateByQRData: function(data){
+    // this order is important for call api.applet.ticket.data(ordered_product_item_token_id, printed)
+    this.set("ordered_product_item_token_id", data.ordered_product_item_token_id);
+    this.set("orderno", data.orderno);
+    this.set("performance", data.performance_name+" -- "+data.performance_date);
+    this.set("product", data.product_name+"("+data.seat_name+")");
+
     if(!!(data.printed)){
       this.set("printed", true);
       this.trigger("*qr.printed.already");
@@ -24,11 +30,6 @@ var DataStore = Backbone.Model.extend({
       this.set("printed", false);
       this.trigger("*qr.not.printed");
     }
-    
-    this.set("ordered_product_item_token_id", data.ordered_product_item_token_id);
-    this.set("orderno", data.orderno);
-    this.set("performance", data.performance_name+" -- "+data.performance_date);
-    this.set("product", data.product_name+"("+data.seat_name+")");
   }
 });
 

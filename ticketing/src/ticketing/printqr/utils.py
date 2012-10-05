@@ -39,7 +39,7 @@ def page_formats_for_organization(organization):
         ]
 
 def _order_and_history_from_qrdata(qrdata):
-    return DBSession.query(Order, TicketPrintHistory, OrderedProductItemToken)\
+    return DBSession.query(Order, TicketPrintHistory)\
         .filter(TicketPrintHistory.id==qrdata["serial"])\
         .filter(TicketPrintHistory.ordered_product_item_id==OrderedProductItem.id)\
         .filter(OrderedProductItem.ordered_product_id == OrderedProduct.id)\
@@ -47,10 +47,11 @@ def _order_and_history_from_qrdata(qrdata):
         .filter(Order.order_no == qrdata["order"]).first()
 
 def ticketdata_from_qrdata(qrdata):
-    order, history, token = _order_and_history_from_qrdata(qrdata)
+    order, history = _order_and_history_from_qrdata(qrdata)
     performance = order.performance
     shipping_address = order.shipping_address
     product_name = history.ordered_product_item.ordered_product.product.name
+    token = history.item_token
     seat = history.seat
     #performance_name = u"%s %s (%s)" % (performance.event.title, performance.name, performance.venue.name)
     performance_name = u"%s (%s)" % (performance.name, performance.venue.name)    
@@ -59,7 +60,7 @@ def ticketdata_from_qrdata(qrdata):
         "user": shipping_address.full_name_kana, 
         "codeno": codeno, 
         "ordered_product_item_token_id": token.id, 
-        "printed": str(token.printed_at), 
+        "printed": str(token.printed_at) if token.printed_at else None, 
         "orderno": order.order_no, 
         "performance_name": performance_name, 
         "performance_date": h.japanese_datetime(performance.start_on), 

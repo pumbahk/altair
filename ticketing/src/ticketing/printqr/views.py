@@ -106,10 +106,12 @@ class AppletAPIView(object):
             .join(OrderedProductItem) \
             .join(OrderedProduct) \
             .filter(Order.id==OrderedProduct.order_id) \
-            .filter(Order.organization_id==self.context.organization.id) \
+            .filter(Order.organization_id==self.context.organization.id)
 
         ordered_product_item_token = qs.first()
         if ordered_product_item_token is None:
+            logger.debug("*api.applet.ticket data: token id=%s,  organization id=%s" \
+                             % (ordered_product_item_token_id, self.context.organization.id))
             return { u'status': u'error', u'message': u'券面データがみつかりません' }
 
         pair = build_dict_from_ordered_product_item_token(ordered_product_item_token)
