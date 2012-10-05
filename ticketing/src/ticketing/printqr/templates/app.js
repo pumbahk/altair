@@ -129,7 +129,8 @@ var AppPageViewBase = Backbone.View.extend({
 
 var QRInputView = AppPageViewBase.extend({
   events: {
-    "click #load_button": "loadQRSigned", 
+    "click #load_button": "loadQRCodeInput", 
+    "click #clear_button": "clearQRCodeInput", 
     "keypress input[name='qrcode']": "readOnEnter"
   }, 
   initialize: function(opts){
@@ -145,13 +146,16 @@ var QRInputView = AppPageViewBase.extend({
   showStatus: function(){
     this.$status.text(this.datastore.get("qrcode_status"));
   }, 
+  clearQRCodeInput: function(){
+    this.$qrcode.val("");
+  }, 
   readOnEnter: function(e){
-    // if Enter key is typed then call `loadQRSigned'
+    // if Enter key is typed then call `loadQRCodeInput'
     if(e.keyCode == 13){
-      this.loadQRSigned().always(function(){this.$qrcode.val("");}.bind(this));
+      this.loadQRCodeInput();//.always(this.clearQRCodeInput.bind(this));
     }
   }, 
-  loadQRSigned: function(){
+  loadQRCodeInput: function(){
     var url = this.apiResource["api.ticket.data"];
     var self = this;
     return $.getJSON(url, {qrsigned: this.$qrcode.val()})
