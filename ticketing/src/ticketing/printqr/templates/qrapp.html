@@ -110,6 +110,10 @@ $(function(){
     } 
   }
 
+  //QRの読み込みページのときqrコードのinputにフォーカスをあてる
+  setInterval(function(){
+   $("#one.active input[name='qrcode']").focus();
+  },500);
 });
 
 </script>
