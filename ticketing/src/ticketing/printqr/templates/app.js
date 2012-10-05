@@ -139,6 +139,7 @@ var QRInputView = AppPageViewBase.extend({
     this.$status = this.$el.find('#status')
     this.datastore.bind("change:qrcode_status", this.showStatus, this);
     this.datastore.bind("*qr.printed.already", this.notifyPrintedAlready, this);
+    this.communicating = false;
   }, 
   notifyPrintedAlready: function(){
     this.messageView.alert("既にそのチケットは印刷されてます");
@@ -152,10 +153,20 @@ var QRInputView = AppPageViewBase.extend({
   readOnEnter: function(e){
     // if Enter key is typed then call `loadQRCodeInput'
     if(e.keyCode == 13){
-      this.loadQRCodeInput();//.always(this.clearQRCodeInput.bind(this));
+      this.loadQRCodeInput();
+    } else if(e.ctrlKey && e.keyCode==74){
+      this.loadQRCodeInput();
     }
   }, 
   loadQRCodeInput: function(){
+    if(!this.communicating){
+      this.communicating = true;
+      var self = this;
+      var delayTime = 150;
+      this._loadQRCodeInput().always(function(){setTimeout(function(){self.communicating = false;}, delayTime)});
+    }
+  }, 
+  _loadQRCodeInput: function(){
     var url = this.apiResource["api.ticket.data"];
     var self = this;
     return $.getJSON(url, {qrsigned: this.$qrcode.val()})
