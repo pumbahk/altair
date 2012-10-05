@@ -159,17 +159,19 @@ var QRInputView = AppPageViewBase.extend({
     }
   }, 
   loadQRCodeInput: function(){
-    if(!this.communicating){
+    var qrsigned = this.$qrcode.val();
+    if((!this.communicating) && this.$el.hasClass("active") && qrsigned != this.datastore.get("qrcode")){
       this.communicating = true;
       var self = this;
       var delayTime = 150;
-      this._loadQRCodeInput().always(function(){setTimeout(function(){self.communicating = false;}, delayTime)});
+      this._loadQRCodeInput(qrsigned).always(function(){setTimeout(function(){self.communicating = false;}, delayTime)});
     }
   }, 
-  _loadQRCodeInput: function(){
+  _loadQRCodeInput: function(qrsigned){
     var url = this.apiResource["api.ticket.data"];
     var self = this;
-    return $.getJSON(url, {qrsigned: this.$qrcode.val()})
+    this.datastore.set("qrcode", qrsigned); //todo: using signal.
+    return $.getJSON(url, {qrsigned: qrsigned})
       .done(function(data){
         if(data.status == "success"){
           self.messageView.success("QRコードからデータが読み込めました");
