@@ -53,9 +53,9 @@ def ticketdata_from_qrdata(qrdata):
     product_name = history.ordered_product_item.ordered_product.product.name
     token = history.item_token
     seat = history.seat
-    #performance_name = u"%s %s (%s)" % (performance.event.title, performance.name, performance.venue.name)
     performance_name = u"%s (%s)" % (performance.name, performance.venue.name)    
-    codeno = hashlib.sha1(str(history.id)).hexdigest()
+    #codeno = hashlib.sha1(str(history.id)).hexdigest()
+    codeno = history.id
     return {
         "user": shipping_address.full_name_kana, 
         "codeno": codeno, 

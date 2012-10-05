@@ -25,6 +25,7 @@ var DataStore = Backbone.Model.extend({
 
     if(!!(data.printed)){
       this.set("printed", true);
+      this.set("qrcode_status", "loaded(印刷済み:"+data.printed+")");
       this.trigger("*qr.printed.already");
     } else {
       this.set("printed", false);
