@@ -68,8 +68,20 @@ class IndexView(object):
         self.request = request
         self.context = request.context
 
-    @view_config(route_name='cart.index', renderer=selectable_renderer("carts/%(membership)s/index.html"), xhr=False, permission="buy")
+    @view_config(route_name='cart.index', renderer=selectable_renderer("carts/%(membership)s/select_sales.html"), xhr=False, permission="buy")
     def redirect_sale(self):
+        """
+        .. todo::
+
+           - イベントで利用可能な販売区分を取得する
+           - 複数の場合は選択画面を表示
+           - １つの場合はその販売区分ページにリダイレクト
+
+           - performance指定の場合、そのperformanceが当日だったら、当日販売区分に遷移する
+           - そうでない場合は、当日販売区分以外の販売区分が１つの場合その販売区分に遷移する
+           -     販売区分が複数の場合は選択画面を表示する
+        """
+
         event = self.request.context.event
         if event is None:
             raise HTTPNotFound()
@@ -77,13 +89,18 @@ class IndexView(object):
         if not sales_segments:
             logger.debug("No matching sales_segment")
             raise NoEventError("No matching sales_segment")
-        sales_segment = sales_segments[0]
-        event_id = self.request.matchdict['event_id']
-        location = self.request.route_url('cart.index.sales', 
-            event_id=event_id,
-            sales_segment_id=sales_segment.id,
-            _query=self.request.GET)
-        return HTTPFound(location=location)
+        if len(sales_segments) == 1:
+            logger.debug("one sales_segment is matched")
+            sales_segment = sales_segments[0]
+            event_id = self.request.matchdict['event_id']
+            location = self.request.route_url('cart.index.sales', 
+                event_id=event_id,
+                sales_segment_id=sales_segment.id,
+                _query=self.request.GET)
+            return HTTPFound(location=location)
+        logger.debug("multiple sales_segments are matched")
+        return dict(sales_segments=sales_segments,
+            event=event)
 
     @view_config(route_name='cart.index.sales', renderer=selectable_renderer('carts/%(membership)s/index.html'), xhr=False, permission="buy")
     def __call__(self):
@@ -112,6 +129,9 @@ class IndexView(object):
         dates = sorted(list(set([p.start_on.strftime("%Y-%m-%d %H:%M") for p in e.performances])))
         logger.debug("dates:%s" % dates)
         performances = api.performance_names(self.request, context.event, context.sales_segment)
+        if not performances:
+            raise NoEventError # NoPerformanceを作る
+
         from collections import OrderedDict
         select_venues = OrderedDict()
         for pname, pvs in performances:
