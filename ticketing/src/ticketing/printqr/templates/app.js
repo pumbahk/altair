@@ -18,14 +18,14 @@ var DataStore = Backbone.Model.extend({
   }, 
   updateByQRData: function(data){
     // this order is important for call api.applet.ticket.data(ordered_product_item_token_id, printed)
-    this.set("ordered_product_item_token_id", data.ordered_product_item_token_id);
+    this.set("ordered_product_item_token_id", data.ordered_product_item_token_id); //order: ordered_product_item_token_id, printed
     this.set("orderno", data.orderno);
     this.set("performance", data.performance_name+" -- "+data.performance_date);
     this.set("product", data.product_name+"("+data.seat_name+")");
 
     if(!!(data.printed)){
+      this.set("qrcode_status", "printed"); //order: qrcode_status ,  printed
       this.set("printed", true);
-      this.set("qrcode_status", "loaded(印刷済み:"+data.printed+")");
       this.trigger("*qr.printed.already");
     } else {
       this.set("printed", false);
@@ -313,14 +313,35 @@ var AppletView = Backbone.View.extend({
     this.datastore.bind("change:printed", this.sendPrintSignalIfNeed, this);
   }, 
   sendPrintSignalIfNeed: function(){
-    if(this.datastore.get("printed")){
+    if(this.datastore.get("printed") && this.datastore.get("qrcode_status") != "printed"){
       try {
         this.service.printAll();
-        this.appviews.messageView.success("チケット印刷できました。");
+        this._updateTicketPrintedAt();
       } catch (e) {
         this.appviews.messageView.error(e);
       }
     }
+  }, 
+  _updateTicketPrintedAt: function(){
+    var params = {
+      ordered_product_item_token_id: this.datastore.get("ordered_product_item_token_id"), 
+      order_no: this.datastore.get("orderno")
+    };
+    var self = this;
+    return $.ajax({
+      type: "POST", 
+      processData: false, 
+      data: JSON.stringify(params), 
+      contentType: 'application/json',
+      dataType: 'json',
+      url: this.apiResource["api.ticket.after_printed"]
+    }).done(function(data){
+      if (data['status'] != 'success') {
+        self.appviews.messageView.error(data['message']);
+        return;
+      }
+      self.appviews.messageView.success("チケット印刷できました。");      
+    }).fail(function(s, msg){console.dir(s);self.appviews.messageView.error(s.responseText)});
   }, 
   setPrinter: function(){ //liner
     var printer_name = this.datastore.get("printer_name");
@@ -371,7 +392,7 @@ var AppletView = Backbone.View.extend({
       $.each(data['data'], function (_, ticket) {
         self.service.addTicket(self.service.createTicketFromJSObject(ticket));
       });
-    }).fail(function(msg){self.appviews.messageView.alert(msg)});
+    }).fail(function(s, msg){self.appviews.messageView.alert(s.responseText)});
   }, 
   fetchPinterCandidates: function(){
     var printers = this.service.getPrintServices();

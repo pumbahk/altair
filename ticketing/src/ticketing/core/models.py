@@ -1581,13 +1581,33 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     attributes = association_proxy('_attributes', 'value', creator=lambda k, v: OrderAttribute(name=k, value=v))
 
     def is_issued(self):
+        """
+        チケット券面が発行済みかどうかを返す。
+        Order, OrderedProductItem, OrderedProductItemTokenという階層中にprinted_atが存在。
+        """
         if self.issued_at:
             return True
-        ## todo: eliminate query
+
         qs = OrderedProductItem.query.filter_by(deleted_at=None)\
             .filter(OrderedProduct.order_id==self.id)\
             .filter(OrderedProductItem.ordered_product_id==OrderedProduct.id)\
             .filter(OrderedProductItem.issued_at==None)
+        return qs.first() is None
+
+    def is_printed(self):
+        """
+        チケット券面が印刷済みかどうかを返す。(順序としてはissued -> printed)
+
+        Order, OrderedProductItem, OrderedProductItemTokenという階層中にprinted_atが存在。
+        各下位オブジェクトが全てprintedであれば、printed = True
+        """
+        if self.printed_at:
+            return True
+
+        qs = OrderedProductItem.query.filter_by(deleted_at=None)\
+            .filter(OrderedProduct.order_id==self.id)\
+            .filter(OrderedProductItem.ordered_product_id==OrderedProduct.id)\
+            .filter(OrderedProductItem.printed_at==None)
         return qs.first() is None
 
     @classmethod
@@ -1939,6 +1959,9 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def is_issued(self):
         return self.issued_at or self.tokens == [] or all(token.issued_at for token in self.tokens)
+
+    def is_printed(self):
+        return self.printed_at or self.tokens == [] or all(token.printed_at for token in self.tokens)
 
     @property
     def issued_at_status(self):

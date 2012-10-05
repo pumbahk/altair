@@ -5,9 +5,7 @@ from ticketing.core.models import Order
 from ticketing.core.models import TicketPrintHistory
 from ticketing.core.models import OrderedProductItem
 from ticketing.core.models import OrderedProduct
-from ticketing.core.models import OrderedProductItemToken
 from ticketing.core.models import PageFormat
-import hashlib
 import logging
 from . import helpers as h
 logger = logging.getLogger(__name__)
@@ -54,6 +52,8 @@ def ticketdata_from_qrdata(qrdata):
     token = history.item_token
     seat = history.seat
     performance_name = u"%s (%s)" % (performance.name, performance.venue.name)    
+
+    ##history.idがあればQRコードを再生成できるそう。それに気づいてもデータがなければ見れなそうなのでhash化しなくて良い
     #codeno = hashlib.sha1(str(history.id)).hexdigest()
     codeno = history.id
     return {
@@ -67,5 +67,3 @@ def ticketdata_from_qrdata(qrdata):
         "product_name": product_name, 
         "seat_name": seat.name if seat else u""
         }
-
-#todo: 券面ステータス

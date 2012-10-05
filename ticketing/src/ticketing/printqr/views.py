@@ -19,6 +19,8 @@ from ticketing.core.models import OrderedProductItem
 from ticketing.core.models import OrderedProduct
 from ticketing.core.models import OrderedProductItemToken
 from ticketing.core.models import Ticket
+from ticketing.core.utils import PrintedAtBubblingSetter
+from datetime import datetime
 
 ## login
 
@@ -54,7 +56,7 @@ def index_view(context, request):
                 api_resource=context.api_resource)
 
 @view_config(route_name="api.ticket.data", renderer="json", 
-             request_param="qrsigned")
+             request_param="qrsigned", xhr=True)
 def ticketdata_from_qrsigned_string(context, request):
     signed = request.params["qrsigned"]
     builder = get_qrdata_builder(request)
@@ -68,6 +70,33 @@ def ticketdata_from_qrsigned_string(context, request):
         traceback.print_exc()
         logger.warn("%s: %s" % (e.__class__.__name__,  str(e)))
         raise HTTPBadRequest
+
+@view_config(route_name="api.ticket.after_printed", renderer="json", xhr=True)
+def ticket_after_printed_edit_status(context, request):
+    token_id = request.json_body["ordered_product_item_token_id"]
+    order_no = request.json_body["order_no"]
+    force_update = request.json_body.get("force_update")
+
+    token = OrderedProductItemToken.query.filter_by(id=token_id)\
+        .filter(OrderedProductItemToken.ordered_product_item_id==OrderedProductItem.id)\
+        .filter(OrderedProductItem.ordered_product_id == OrderedProduct.id)\
+        .filter(OrderedProduct.order_id==Order.id, Order.order_no==order_no).first()
+
+    if token is None:
+        mes = "*after ticket print: token is not found. (token_id = %d,  order_no=%s)"
+        logger.warn(mes % (token_id, order_no))
+        return {"status": "error", "data": {}, "message": "token is not found"}
+    
+    if token.printed_at and not force_update:
+        mes = "*after ticket print: this ticket is already printed (token_id=%s, printed_at=%s)"
+        logger.warn(mes % (token.id, token.printed_at))
+        return {"status": "error", "data": {}, "message": "token is already printed"}
+
+    setter = PrintedAtBubblingSetter(datetime.now())
+    setter.printed_token(token)
+    setter.start_bubbling()
+    DBSession.add(token)
+    return {"status": "success", "data": {}}
 
 class AppletAPIView(object):
     def __init__(self, context, request):
