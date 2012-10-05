@@ -1,28 +1,30 @@
 // model
 var DataStore = Backbone.Model.extend({
   defaults: {
+    qrcode_status: "preload", 
+    qrcode: null,    
+
     ordered_product_item_token_id:  null, 
+    printed: false, 
+    orderno: null,
+
+    event_id: "*", 
     printer_name: null, 
     ticket_template_name: null, 
     ticket_template_id: null, 
     page_format_name: null, 
     page_format_id: null, 
-    printed: false, 
 
-    qrcode_status: "preload", 
-    qrcode: null, 
-    
-    orderno: null,
     performance: null,
     product: null,
   }, 
   updateByQRData: function(data){
     // this order is important for call api.applet.ticket.data(ordered_product_item_token_id, printed)
     this.set("ordered_product_item_token_id", data.ordered_product_item_token_id); //order: ordered_product_item_token_id, printed
+    this.set("event_id",  data.event_id);
     this.set("orderno", data.orderno);
     this.set("performance", data.performance_name+" -- "+data.performance_date);
     this.set("product", data.product_name+"("+data.seat_name+")");
-
     if(!!(data.printed)){
       this.set("qrcode_status", "printed"); //order: qrcode_status ,  printed
       this.set("printed", true);
@@ -154,18 +156,26 @@ var QRInputView = AppPageViewBase.extend({
     var self = this;
     return $.getJSON(url, {qrsigned: this.$qrcode.val()})
       .done(function(data){
-        self.messageView.success("QRコードからデータが読み込めました");
-        self.datastore.set("qrcode_status", "loaded");
-        self.datastore.updateByQRData(data);
-        self.nextView.drawTicketInfo(data);
-        setTimeout(function(){self.focusNextPage();}, 1)
-        return data;})
+        if(data.status == "success"){
+          self.messageView.success("QRコードからデータが読み込めました");
+          self.datastore.set("qrcode_status", "loaded");
+          self.datastore.updateByQRData(data.data);
+          self.nextView.drawTicketInfo(data.data);
+          setTimeout(function(){self.focusNextPage();}, 1)
+          return data;
+        }
+
+        self.messageView.error(data.message);
+        self.datastore.set("qrcode_status", "fail");
+        self.datastore.trigger("refresh");
+        return data;
+      })
       .fail(function(s, err){
-        self.messageView.error("うまくQRコードを読み込むことができませんでした:");
+        self.messageView.error(s.responseText);
         self.datastore.set("qrcode_status", "fail");
         self.datastore.trigger("refresh");
       });
-  } 
+  }
 });
 
 var TicketInfoView = AppPageViewBase.extend({

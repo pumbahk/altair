@@ -2,7 +2,7 @@
 
 import json
 from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPBadRequest, HTTPFound
+from pyramid.httpexceptions import HTTPFound
 from ticketing.qr import get_qrdata_builder
 import logging
 from ticketing.printqr import utils 
@@ -13,6 +13,7 @@ from . import security
 from ticketing.tickets.utils import build_dict_from_ordered_product_item_token
 from ticketing.utils import json_safe_coerce
 from ticketing.models import DBSession
+from ticketing.core.models import Event
 from ticketing.core.models import Order
 from ticketing.core.models import TicketPrintHistory
 from ticketing.core.models import OrderedProductItem
@@ -37,7 +38,7 @@ def login_post_view(request):
         return {"form": form}
     else:
         headers = security.login(request, form.data["login_id"], form.data["password"])
-        return HTTPFound(location=request.route_url("index"), headers=headers)
+        return HTTPFound(location=request.route_url("eventlist"), headers=headers)
 
 @view_config(route_name="logout", request_method="POST")
 def logout_view(request):
@@ -45,12 +46,21 @@ def logout_view(request):
     request.session.flash(u"ログアウトしました")
     return HTTPFound(location=request.route_url("login"), headers=headers)
 
+
+## event list
+
+@view_config(permission="sales_counter", route_name="eventlist", 
+                      renderer="ticketing.printqr:templates/eventlist.html")
+def choice_event_view(context, request):
+    now = datetime.now()
+    events = Event.query.filter_by(organization_id=context.operator.organization_id)
+    return dict(events=events, now=now)
+
 ## app
 
-@view_config(permission="sales_counter", route_name="index", 
-             renderer="ticketing.printqr:templates/index.html")
-def index_view(context, request):
-    print context.operator
+@view_config(permission="sales_counter", route_name="qrapp", 
+             renderer="ticketing.printqr:templates/qrapp.html")
+def qrapp_view(context, request):
     return dict(json=json, 
                 endpoints=context.applet_endpoints, 
                 api_resource=context.api_resource)
@@ -60,16 +70,20 @@ def index_view(context, request):
 def ticketdata_from_qrsigned_string(context, request):
     signed = request.params["qrsigned"]
     builder = get_qrdata_builder(request)
+    event_id = request.matchdict["event_id"]
     try:
-        data = utils.ticketdata_from_qrdata(builder.data_from_signed(signed))
-        return data
-    except KeyError:
-        raise HTTPBadRequest
+        data = utils.ticketdata_from_qrdata(builder.data_from_signed(signed), event_id=event_id)
+        return {"status": "success", 
+                "data": data}
+    except KeyError, e:
+        return {"status": "error", "message": u"うまくQRコードを読み込むことができませんでした"}
+    except utils.UnmatchEventException:
+        return {"status": "error", "message": u"異なるイベントのQRチケットです。このページでは発券できません"}
     except Exception as e:
+        logger.warn("%s: %s" % (e.__class__.__name__,  str(e)))
         import traceback
         traceback.print_exc()
-        logger.warn("%s: %s" % (e.__class__.__name__,  str(e)))
-        raise HTTPBadRequest
+        return {"status": "error", "message": str(e)}
 
 @view_config(route_name="api.ticket.after_printed", renderer="json", xhr=True)
 def ticket_after_printed_edit_status(context, request):
@@ -107,8 +121,9 @@ class AppletAPIView(object):
     def ticket(self):
         event_id = self.request.matchdict['event_id']
         ticket_id = self.request.matchdict['id'].strip()
-        q = Ticket.templates_query().filter_by(organization_id=self.context.organization.id)
+        q = Ticket.query.filter_by(organization_id=self.context.organization.id)
         if event_id != '*':
+            logger.warn("*api.applet.ticket: event id is '*'")
             q = q.filter_by(event_id=event_id)
         if ticket_id:
             q = q.filter_by(id=ticket_id)
