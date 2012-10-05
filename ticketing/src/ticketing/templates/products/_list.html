@@ -101,7 +101,7 @@
             % for product in stock_type['products']:
               <% if limit and row_count >= limit: break %>
               <% count = len(product.items_by_performance_id(performance.id)) if performance else 1 %>
-              <% rowspan = 'rowspan=%s' % (count) %>
+              <% rowspan = 'rowspan=%s' % (count)  if count else '' %>
               <tr id="product-${product.id}">
                 <td ${rowspan}>
                   <input type="radio" name="product_id" value="${product.id}" />
