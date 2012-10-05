@@ -19,6 +19,8 @@ from ticketing.core.models import Event, StockHolder
 from ticketing.events.forms import EventForm
 from ticketing.events.reports import reporting
 
+logger = logging.getLogger(__name__)
+
 @view_defaults(decorator=with_bootstrap, permission='sales_editor')
 class Reports(BaseView):
 
@@ -114,13 +116,11 @@ class Reports(BaseView):
             raise HTTPNotFound('event id %d is not found' % event_id)
 
         # StockHolder
-        stock_holder = StockHolder\
-            .filter(StockHolder.event_id==event_id)\
-            .filter(StockHolder.account_id==self.context.user.id).first()
-        if stock_holder is None:
-            raise HTTPNotFound("StockHolder is not found id=%s" % stock_holder_id)
+        stock_holders = StockHolder.get_seller(event)
+        if stock_holders is None:
+            raise HTTPNotFound("StockHolder is not found event_id=%s" % event_id)
 
-        exporter = reporting.export_for_stock_holder(event, stock_holder)
+        exporter = reporting.export_for_stock_holder(event, stock_holders[0])
 
         # 出力ファイル名
         filename = "assign_%(code)s_%(datetime)s.xls" % dict(
@@ -175,13 +175,11 @@ class Reports(BaseView):
             raise HTTPNotFound('event id %d is not found' % event_id)
 
         # StockHolder
-        stock_holder = StockHolder\
-            .filter(StockHolder.event_id==event_id)\
-            .filter(StockHolder.account_id==self.context.user.id).first()
-        if stock_holder is None:
-            raise HTTPNotFound("StockHolder is not found id=%s" % stock_holder_id)
+        stock_holders = StockHolder.get_seller(event)
+        if stock_holders is None:
+            raise HTTPNotFound("StockHolder is not found event_id=%s" % event_id)
 
-        exporter = reporting.export_for_stock_holder_unsold(event, stock_holder)
+        exporter = reporting.export_for_stock_holder_unsold(event, stock_holders[0])
 
         # 出力ファイル名
         filename = "unsold_%(code)s_%(datetime)s.xls" % dict(
