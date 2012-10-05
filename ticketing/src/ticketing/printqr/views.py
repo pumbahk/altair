@@ -150,7 +150,7 @@ class AppletAPIView(object):
                 u'ordered_product_item_token_id': ordered_product_item_token.id,
                 u'ordered_product_item_id': ordered_product_item_token.item.id,
                 u'order_id': ordered_product_item_token.item.ordered_product.order.id,
-                u'seat_id': ordered_product_item_token.seat_id,
+                u'seat_id': ordered_product_item_token.seat_id or "",
                 u'serial': ordered_product_item_token.serial,
                 u'data': json_safe_coerce(pair[1])
                 })
