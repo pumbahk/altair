@@ -55,7 +55,7 @@ def index_view(context, request):
 
 @view_config(route_name="api.ticket.data", renderer="json", 
              request_param="qrsigned")
-def ticket_data(context, request):
+def ticketdata_from_qrsigned_string(context, request):
     signed = request.params["qrsigned"]
     builder = get_qrdata_builder(request)
     try:

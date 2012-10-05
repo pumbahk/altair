@@ -16,6 +16,20 @@ var DataStore = Backbone.Model.extend({
     performance: null,
     product: null,
   }, 
+  updateByQRData: function(data){
+    if(!!(data.printed)){
+      this.set("printed", true);
+      this.trigger("*qr.printed.already");
+    } else {
+      this.set("printed", false);
+      this.trigger("*qr.not.printed");
+    }
+    
+    this.set("ordered_product_item_token_id", data.ordered_product_item_token_id);
+    this.set("orderno", data.orderno);
+    this.set("performance", data.performance_name+" -- "+data.performance_date);
+    this.set("product", data.product_name+"("+data.seat_name+")");
+  }
 });
 
 // view
@@ -119,6 +133,10 @@ var QRInputView = AppPageViewBase.extend({
     this.$qrcode = this.$el.find('input[name="qrcode"]')
     this.$status = this.$el.find('#status')
     this.datastore.bind("change:qrcode_status", this.showStatus, this);
+    this.datastore.bind("*qr.printed.already", this.notifyPrintedAlready, this);
+  }, 
+  notifyPrintedAlready: function(){
+    this.messageView.alert("既にそのチケットは印刷されてます");
   }, 
   showStatus: function(){
     this.$status.text(this.datastore.get("qrcode_status"));
@@ -136,12 +154,12 @@ var QRInputView = AppPageViewBase.extend({
       .done(function(data){
         self.messageView.success("QRコードからデータが読み込めました");
         self.datastore.set("qrcode_status", "loaded");
-        self.datastore.set("printed", false); ///xxx:
-        self.nextView.updateTicketInfo(data);
+        self.datastore.updateByQRData(data);
+        self.nextView.drawTicketInfo(data);
         setTimeout(function(){self.focusNextPage();}, 1)
         return data;})
       .fail(function(s, err){
-        self.messageView.error("うまくQRコードを読み込むことができませんでした");
+        self.messageView.error("うまくQRコードを読み込むことができませんでした:");
         self.datastore.set("qrcode_status", "fail");
         self.datastore.trigger("refresh");
       });
@@ -160,7 +178,7 @@ var TicketInfoView = AppPageViewBase.extend({
     this.$product_name = this.$el.find("#product_name");
     this.$seatno = this.$el.find("#seatno");
   }, 
-  updateTicketInfo: function(data){
+  drawTicketInfo: function(data){
     //console.dir(data);
     this.$user.text(data.user);
     this.$codeno.text(data.codeno);
@@ -169,12 +187,6 @@ var TicketInfoView = AppPageViewBase.extend({
     this.$performanceName.text(data.performance_name);
     this.$product_name.text(data.product_name);
     this.$seatno.text(data.seat_name);  
-
-    this.datastore.set("ordered_product_item_token_id", data.ordered_product_item_token_id);
-
-    this.datastore.set("orderno", data.orderno);
-    this.datastore.set("performance", data.performance_name+" -- "+data.performance_date);
-    this.datastore.set("product", data.product_name+"("+data.seat_name+")");
   }
 });
 
@@ -287,7 +299,7 @@ var AppletView = Backbone.View.extend({
     this.service = opts.service;
     this.createProxy = opts.createProxy;
     this.apiResource = opts.apiResource;
-    this.datastore.bind("change:ordered_product_item_token_id", this.createTicket, this);
+    this.datastore.bind("*qr.not.printed", this.createTicket, this);
     this.datastore.bind("change:ordered_product_item_token_id", this.fetchPinterCandidates, this); //eliminate call times:
     this.datastore.bind("change:ordered_product_item_token_id", this.fetchTemplateCandidates, this); //eliminate call times:
     this.datastore.bind("change:ordered_product_item_token_id", this.fetchPageFormatCandidates, this); //eliminate call times:
@@ -299,11 +311,13 @@ var AppletView = Backbone.View.extend({
     this.datastore.bind("change:printed", this.sendPrintSignalIfNeed, this);
   }, 
   sendPrintSignalIfNeed: function(){
-    try {
-      this.service.printAll();
-      this.appviews.messageView.success("チケット印刷できました。");
-    } catch (e) {
-      this.appviews.messageView.error(e);
+    if(this.datastore.get("printed")){
+      try {
+        this.service.printAll();
+        this.appviews.messageView.success("チケット印刷できました。");
+      } catch (e) {
+        this.appviews.messageView.error(e);
+      }
     }
   }, 
   setPrinter: function(){ //liner
@@ -339,7 +353,6 @@ var AppletView = Backbone.View.extend({
   createTicket: function(){
     var tokenId = this.datastore.get("ordered_product_item_token_id");
     var self = this;
-
     $.ajax({
       type: 'POST',
       processData: false,
