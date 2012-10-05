@@ -39,7 +39,6 @@ def main(global_config, **settings):
     config.include("ticketing.qr", route_prefix="qr")
     config.include(".")
     config.add_forbidden_view(".views.login_view", renderer="ticketing.printqr:templates/login.html")
-    # config.set_root_factory('.resources.TicketingPrintqrResource')
     config.add_static_view('static', 'ticketing.printqr:static', cache_max_age=3600)
     config.add_static_view('_static', 'ticketing:static', cache_max_age=10800)
     return config.make_wsgi_app()

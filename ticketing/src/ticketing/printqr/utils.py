@@ -1,11 +1,42 @@
 # -*- coding:utf-8 -*-
 
 from ticketing.models import DBSession
-from ticketing.core.models import Order, TicketPrintHistory, OrderedProductItem, OrderedProduct, OrderedProductItemToken
+from ticketing.core.models import Order
+from ticketing.core.models import TicketPrintHistory
+from ticketing.core.models import OrderedProductItem
+from ticketing.core.models import OrderedProduct
+from ticketing.core.models import OrderedProductItemToken
+from ticketing.core.models import PageFormat
 import hashlib
 import logging
 from . import helpers as h
 logger = logging.getLogger(__name__)
+
+def ticket_format_to_dict(ticket_format):
+    data = dict(ticket_format.data)
+    data[u'id'] = ticket_format.id
+    data[u'name'] = ticket_format.name
+    return data
+
+def ticket_to_dict(ticket):
+    data = dict(ticket.data)
+    data[u'id'] = ticket.id
+    data[u'name'] = ticket.name
+    data[u'ticket_format_id'] = ticket.ticket_format_id
+    return data
+
+def page_format_to_dict(page_format):
+    data = dict(page_format.data)
+    data[u'id'] = page_format.id
+    data[u'name'] = page_format.name
+    data[u'printer_name'] = page_format.printer_name
+    return data
+
+def page_formats_for_organization(organization):
+    return [
+        page_format_to_dict(page_format) \
+        for page_format in DBSession.query(PageFormat).filter_by(organization=organization)
+        ]
 
 def _order_and_history_from_qrdata(qrdata):
     return DBSession.query(Order, TicketPrintHistory, OrderedProductItemToken)\

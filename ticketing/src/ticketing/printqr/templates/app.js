@@ -277,15 +277,11 @@ var AppletView = Backbone.View.extend({
     this.datastore.bind("change:printed", this.sendPrintSignalIfNeed, this);
   }, 
   sendPrintSignalIfNeed: function(){
-    if(!this.datastore.get("printed")){
-      this.appviews.messageView.alert("チケットは既に印刷されえます");
-    }else{
-      try {
-        this.service.printAll();
-        this.appviews.messageView.success("チケット印刷できました。");
-      } catch (e) {
-        this.appviews.messageView.alert(e);
-      }
+    try {
+      this.service.printAll();
+      this.appviews.messageView.success("チケット印刷できました。");
+    } catch (e) {
+      this.appviews.messageView.alert(e);
     }
   }, 
   setPrinter: function(){ //liner

@@ -9,12 +9,16 @@ from ticketing.printqr import utils
 logger = logging.getLogger(__name__)
 
 from . import forms
-from .security import login, logout
-from ticketing.core.models import Order, TicketPrintHistory, OrderedProductItem, OrderedProduct, OrderedProductItemToken
+from . import security
+from ticketing.tickets.utils import build_dict_from_ordered_product_item_token
+from ticketing.utils import json_safe_coerce
 from ticketing.models import DBSession
-from ticketing.core.models import TicketPrintQueueEntry, PageFormat, TicketFormat, Ticket
-from ticketing.tickets.utils import SvgPageSetBuilder
-from lxml import etree
+from ticketing.core.models import Order
+from ticketing.core.models import TicketPrintHistory
+from ticketing.core.models import OrderedProductItem
+from ticketing.core.models import OrderedProduct
+from ticketing.core.models import OrderedProductItemToken
+from ticketing.core.models import Ticket
 
 ## login
 
@@ -30,12 +34,12 @@ def login_post_view(request):
     if not form.validate():
         return {"form": form}
     else:
-        headers = login(request, form.data["login_id"], form.data["password"])
+        headers = security.login(request, form.data["login_id"], form.data["password"])
         return HTTPFound(location=request.route_url("index"), headers=headers)
 
 @view_config(route_name="logout", request_method="POST")
 def logout_view(request):
-    headers = logout(request)
+    headers = security.logout(request)
     request.session.flash(u"ログアウトしました")
     return HTTPFound(location=request.route_url("login"), headers=headers)
 
@@ -84,9 +88,9 @@ class AppletAPIView(object):
         params = {
             u'status': 'success',
             u'data': {
-                u'ticket_formats': [ticket_format_to_dict(ticket_format) for ticket_format in dict((ticket.ticket_format.id, ticket.ticket_format) for ticket in tickets).itervalues()],
-                u'page_formats': page_formats_for_organization(self.context.organization),
-                u'ticket_templates': [ticket_to_dict(ticket) for ticket in tickets]
+                u'ticket_formats': [utils.ticket_format_to_dict(ticket_format) for ticket_format in dict((ticket.ticket_format.id, ticket.ticket_format) for ticket in tickets).itervalues()],
+                u'page_formats': utils.page_formats_for_organization(self.context.organization),
+                u'ticket_templates': [utils.ticket_to_dict(ticket) for ticket in tickets]
                 }
             }
         return params
@@ -141,33 +145,3 @@ class AppletAPIView(object):
                 ticket_id=ticket_id
                 ))
         return { u'status': u'success' }
-
-def ticket_format_to_dict(ticket_format):
-    data = dict(ticket_format.data)
-    data[u'id'] = ticket_format.id
-    data[u'name'] = ticket_format.name
-    return data
-
-def ticket_to_dict(ticket):
-    data = dict(ticket.data)
-    data[u'id'] = ticket.id
-    data[u'name'] = ticket.name
-    data[u'ticket_format_id'] = ticket.ticket_format_id
-    return data
-
-def page_format_to_dict(page_format):
-    data = dict(page_format.data)
-    data[u'id'] = page_format.id
-    data[u'name'] = page_format.name
-    data[u'printer_name'] = page_format.printer_name
-    return data
-
-def page_formats_for_organization(organization):
-    return [
-        page_format_to_dict(page_format) \
-        for page_format in DBSession.query(PageFormat).filter_by(organization=organization)
-        ]
-
-from sqlalchemy.orm.exc import NoResultFound
-from ticketing.tickets.utils import build_dict_from_ordered_product_item_token, _default_builder
-from ticketing.utils import json_safe_coerce
