@@ -81,6 +81,7 @@ $(function(){
     var createProxy = function () { return applet.createPropertyChangeListenerProxy.apply(applet, arguments); };
     //service.addListenerForPages(createProxy(refreshPages));
     var appletView = new AppletView({el: $("#applet"), appviews: appviews, datastore: datastore, service: service, createProxy: createProxy, apiResource: apiResource})
+    appletView.start();
     $('#screen').hide();
   };
 

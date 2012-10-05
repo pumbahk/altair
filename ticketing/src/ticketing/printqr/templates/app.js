@@ -302,15 +302,20 @@ var AppletView = Backbone.View.extend({
     this.createProxy = opts.createProxy;
     this.apiResource = opts.apiResource;
     this.datastore.bind("*qr.not.printed", this.createTicket, this);
-    this.datastore.bind("change:ordered_product_item_token_id", this.fetchPinterCandidates, this); //eliminate call times:
-    this.datastore.bind("change:ordered_product_item_token_id", this.fetchTemplateCandidates, this); //eliminate call times:
-    this.datastore.bind("change:ordered_product_item_token_id", this.fetchPageFormatCandidates, this); //eliminate call times:
+    // this.datastore.bind("change:ordered_product_item_token_id", this.fetchPinterCandidates, this); //eliminate call times:
+    // this.datastore.bind("change:ordered_product_item_token_id", this.fetchTemplateCandidates, this); //eliminate call times:
+    // this.datastore.bind("change:ordered_product_item_token_id", this.fetchPageFormatCandidates, this); //eliminate call times:
 
     this.datastore.bind("change:printer_name", this.setPrinter, this);
     this.datastore.bind("change:ticket_template_id", this.setTicketTemplate, this);
     this.datastore.bind("change:page_format_id", this.setPageFormat, this);
 
     this.datastore.bind("change:printed", this.sendPrintSignalIfNeed, this);
+  }, 
+  start: function(){
+    this.fetchPinterCandidates();
+    this.fetchTemplateCandidates();
+    this.fetchPageFormatCandidates();
   }, 
   sendPrintSignalIfNeed: function(){
     if(this.datastore.get("printed") && this.datastore.get("qrcode_status") != "printed"){
@@ -390,21 +395,37 @@ var AppletView = Backbone.View.extend({
       }
       self.appviews.messageView.success("券面データが保存されました");
       $.each(data['data'], function (_, ticket) {
-        self.service.addTicket(self.service.createTicketFromJSObject(ticket));
+        try {
+          self.service.addTicket(self.service.createTicketFromJSObject(ticket));
+        } catch (e) {
+          self.appviews.messageView.error(e);
+        }
       });
     }).fail(function(s, msg){self.appviews.messageView.alert(s.responseText)});
   }, 
   fetchPinterCandidates: function(){
-    var printers = this.service.getPrintServices();
-    this.appviews.three.redrawPrinterArea(printers);
+    try {
+      var printers = this.service.getPrintServices();
+      this.appviews.three.redrawPrinterArea(printers);
+    } catch (e) {
+      this.appviews.messageView.error(e);
+    }
   }, 
   fetchTemplateCandidates: function(){
-    var ticketTemplates = this.service.getTicketTemplates();
-    this.appviews.three.redrawTicketTemplateArea(ticketTemplates);
+    try {
+      var ticketTemplates = this.service.getTicketTemplates();
+      this.appviews.three.redrawTicketTemplateArea(ticketTemplates);
+    } catch (e) {
+      this.appviews.messageView.error(e);
+    }
   }, 
   fetchPageFormatCandidates: function(){
-    var pageFormats = this.service.getPageFormats();
-    this.appviews.three.redrawPageFormatArea(pageFormats);
+    try {
+      var pageFormats = this.service.getPageFormats();
+      this.appviews.three.redrawPageFormatArea(pageFormats);
+    } catch (e) {
+      this.appviews.messageView.error(e);
+    }
   }
 });
 
