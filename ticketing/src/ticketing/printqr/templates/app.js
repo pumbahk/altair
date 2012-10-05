@@ -295,6 +295,10 @@ var PrintConfirmView = AppPageViewBase.extend({
     PrintConfirmView.__super__.initialize.call(this, opts);
   }, 
   _validationPrePrint: function(){
+    if(this.datastore.get("ordered_product_item_token_id") == null){
+      this.messageView.alert("QRコードが読み込まれてません")
+      return false;
+    }
     if(this.datastore.get("ticket_template_id") == null){
       this.messageView.alert("チケットテンプレートが設定されていません")
       return false;
