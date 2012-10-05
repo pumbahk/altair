@@ -92,7 +92,8 @@ class OrderReviewSchema(JForm):
             self.errors["order_no"] = [u'受付番号または電話番号が違います。']
             return False
         address = order.shipping_address
-        if address.tel_1 != self.data["tel"] and address.tel_2 != self.data["tel"] :
+        stripper = strip_hyphen()
+        if stripper(address.tel_1) != self.data["tel"] and stripper(address.tel_2) != self.data["tel"] :
             self.errors["order_no"] = [u'受付番号または電話番号が違います。']
             return False
 
