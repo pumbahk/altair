@@ -6,13 +6,13 @@ from pyramid.threadlocal import manager
 logger = logging.getLogger(__name__)
 
 def _convert_response_for_docomo(response):
-    if response.content_type.startswith('text/html'):
+    if response.content_type is not None and response.content_type.startswith('text/html'):
         response.content_type = 'application/xhtml+xml'
     return response
 
 def _convert_response_sjis(response):
     encoding = 'Shift_JIS'
-    if response.content_type.startswith("text"):
+    if response.content_type is not None and response.content_type.startswith("text"):
         response.body = response.unicode_body.encode("cp932", "replace")
         response.charset = encoding
     return response
