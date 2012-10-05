@@ -42,7 +42,6 @@
   }
 </style>
 
-
 <script type="text/javascript">
   $(function() {
     $('#sales-counter-button').click(function(){
@@ -184,6 +183,12 @@
       url: '${request.route_path('orders.reserve.reselect')}',
       dataType: 'html',
       success: function(data) {
+        $('#modal-reserve').modal('hide');
+      },
+      error: function(xhr, text) {
+        var responseText = JSON.parse(xhr.responseText);
+        var message = responseText['message'] || xhr.statusText;
+        $('.content').prepend('<div class="alert alert-error"><a class="close" data-dismiss="alert">&times;</a><h4 class="alert-heading">' + message + '</h4></div>');
         $('#modal-reserve').modal('hide');
       }
     });
