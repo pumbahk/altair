@@ -1,3 +1,5 @@
+# coding: utf-8
+
 import optparse
 import sys
 import sqlahelper
@@ -17,10 +19,10 @@ sys.path.append(abspath(dirname(dirname(__file__))))
 from paste.deploy import loadapp
 
 import logging
+import logging.config
 import sqlahelper
 
-logging.basicConfig()
-log = logging.getLogger(__file__)
+log = logging.getLogger(__name__)
 
 from sqlalchemy import and_
 
@@ -43,7 +45,30 @@ def get_order(sej_order):
 
 def reflect_ticketing_and_payment(request, sej_order, order, notification):
     sej_order.processed_at = notification.processed_at
-    order.paid_at = sej_order.processed_at
+    payment_type = int(notification.payment_type)
+    exchange_number = notification.exchange_number
+
+    log.info(" payment_type=%s", payment_type)
+    if payment_type == 1:
+        # 代引
+        order.paid_at = sej_order.processed_at
+        order.issued_at = order.printed_at = sej_order.processed_at
+    elif payment_type == 2:
+        # 前払後日発券
+        if exchange_number is None:
+            # 支払
+            order.paid_at = sej_order.processed_at
+        else:
+            # 発券
+            order.issued_at = order.printed_at = sej_order.processed_at
+    elif payment_type == 3:
+        # 代済発券
+        if order.paid_at is None:
+            log.warning("Order #%s: ticketing notification received, but the corresponding order was not marked 'paid'" % (order.order_no))
+        order.issued_at = order.printed_at = sej_order.processed_at
+    elif payment_type == 4:
+        # 前払のみ
+        order.paid_at = sej_order.processed_at
 
     sej_order.process_id = notification.process_number
     sej_order.pay_store_number = notification.pay_store_number
@@ -94,9 +119,9 @@ def process_notifications():
             if order:
                 yield sej_order, order, notification
             else:
-                logging.error("Order Not found: %s,%s,%s" % (notification.order_id, notification.exchange_number,notification.billing_number))
+                logging.error("Order Not found: order_no=%s, exchange_number=%s, billing_number=%s" % (notification.order_id, notification.exchange_number,notification.billing_number))
         else:
-            logging.error("SejOrder Not found: %s,%s,%s" % (notification.order_id, notification.exchange_number,notification.billing_number))
+            logging.error("SejOrder Not found: order_no=%s, exchange_number=%s, billing_number=%s" % (notification.order_id, notification.exchange_number,notification.billing_number))
 
 def process_notification(request):
     reflected_at = datetime.now()
@@ -107,7 +132,9 @@ def process_notification(request):
         '73' : reflect_expire
     }
     for sej_order, order, notification in process_notifications():
-        actions.get(notification.notification_type, dummy)(request, sej_order, order, notification)
+        action = actions.get(notification.notification_type, dummy)
+        log.info("Processing notification: process_number=%s, order_no=%s, exchange_number=%s, billing_number=%s, action=%s", notification.process_number, sej_order.order_id, notification.exchange_number, notification.billing_number, action.__name__)
+        action(request, sej_order, order, notification)
 
 def main(argv=sys.argv):
 
@@ -116,6 +143,7 @@ def main(argv=sys.argv):
         sys.exit()
     ini_file = sys.argv[1]
     env = bootstrap(ini_file)
+    logging.config.fileConfig(ini_file)
     request = env['request']
     registry = env['registry']
     settings = registry.settings
