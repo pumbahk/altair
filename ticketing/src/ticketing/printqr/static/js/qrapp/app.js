@@ -5,6 +5,7 @@ var DataStore = Backbone.Model.extend({
     qrcode: null,    
 
     ordered_product_item_token_id:  null, 
+    ordered_product_item_id:  null, 
     printed: false, 
     orderno: null,
 
@@ -12,6 +13,8 @@ var DataStore = Backbone.Model.extend({
     printer_name: null, 
     ticket_template_name: null, 
     ticket_template_id: null, 
+    order_id: null, 
+    seat_id: null, 
     page_format_name: null, 
     page_format_id: null, 
 
@@ -21,9 +24,14 @@ var DataStore = Backbone.Model.extend({
   updateByQRData: function(data){
     // this order is important for call api.applet.ticket.data(ordered_product_item_token_id, printed)
     this.set("ordered_product_item_token_id", data.ordered_product_item_token_id); //order: ordered_product_item_token_id, printed
+    this.set("ordered_product_item_id", data.ordered_product_item_id);
     this.set("event_id",  data.event_id);
+    this.set("order_id", data.order_id);
+    this.set("seat_id", data.seat_id);
+
     this.set("orderno", data.orderno);
     this.set("performance", data.performance_name+" -- "+data.performance_date);
+
     this.set("product", data.product_name+"("+data.seat_name+")");
     if(!!(data.printed)){
       this.set("qrcode_status", "printed"); //order: qrcode_status ,  printed
@@ -161,7 +169,7 @@ var QRInputView = AppPageViewBase.extend({
   }, 
   loadQRCodeInput: function(){
     var qrsigned = this.$qrcode.val();
-    if((!this.communicating) && this.$el.hasClass("active") && qrsigned != this.datastore.get("qrcode")){
+    if((!this.communicating) && this.$el.hasClass("active") ){
       this.communicating = true;
       var self = this;
       var delayTime = 150;
@@ -361,7 +369,12 @@ var AppletView = Backbone.View.extend({
   _updateTicketPrintedAt: function(){
     var params = {
       ordered_product_item_token_id: this.datastore.get("ordered_product_item_token_id"), 
-      order_no: this.datastore.get("orderno")
+      order_no: this.datastore.get("orderno"), 
+      seat_id: this.datastore.get("seat_id"), 
+      order_id: this.datastore.get("order_id"), 
+      ordered_product_item_token_id: this.datastore.get("ordered_product_item_token_id"), 
+      ordered_product_item_id: this.datastore.get("ordered_product_item_id"), 
+      ticket_id: this.datastore.get("ticket_template_id")
     };
     var self = this;
     return $.ajax({
@@ -378,9 +391,7 @@ var AppletView = Backbone.View.extend({
       }
       self.appviews.messageView.success("チケット印刷できました。");
       self.router.navigate("one", true);
-      self.appviews.one.clearQRCodeInput();
-      self._afterSuccess();
-      
+      self.appviews.one.clearQRCodeInput();      
     }).fail(function(s, msg){console.dir(s);self.appviews.messageView.error(s.responseText)});
   }, 
   setPrinter: function(){ //liner

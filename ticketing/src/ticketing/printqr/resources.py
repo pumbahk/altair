@@ -25,7 +25,7 @@ class PrintQRResource(object):
         return {
             "api.ticket.data": self.request.route_path("api.ticket.data", event_id=event_id), 
             "api.ticketdata_from_token_id": self.request.route_path('api.applet.ticket_data'),
-            "api.ticket.after_printed": self.request.route_path("api.ticket.after_printed")
+            "api.ticket.after_printed": self.request.route_path("api.ticket.after_printed"), 
             }
     @reify
     def applet_endpoints(self):
