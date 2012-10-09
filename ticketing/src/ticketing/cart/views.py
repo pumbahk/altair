@@ -68,47 +68,77 @@ class IndexView(object):
         self.request = request
         self.context = request.context
 
-    @view_config(route_name='cart.index', renderer=selectable_renderer("carts/%(membership)s/select_sales.html"), xhr=False, permission="buy")
-    def redirect_sale(self):
-        """
-        .. todo::
+    #@view_config(route_name='cart.index', renderer=selectable_renderer("carts/%(membership)s/select_sales.html"), xhr=False, permission="buy")
+    #def redirect_sale(self):
+    #    """
+    #    .. todo::
 
-           - [x] イベントで利用可能な販売区分を取得する
-           - [x] 複数の場合は選択画面を表示
-           - [x] １つの場合はその販売区分ページにリダイレクト
+    #       - [x] イベントで利用可能な販売区分を取得する
+    #       - [x] 複数の場合は選択画面を表示
+    #       - [x] １つの場合はその販売区分ページにリダイレクト
 
-           - performance指定の場合、そのperformanceが当日だったら、当日販売区分に遷移する
-           - そうでない場合は、当日販売区分以外の販売区分が１つの場合その販売区分に遷移する
-           -     販売区分が複数の場合は選択画面を表示する
-        """
+    #       - [ ] performance指定の場合、そのperformanceが当日だったら、当日販売区分に遷移する
+    #       - そうでない場合は、当日販売区分以外の販売区分が１つの場合その販売区分に遷移する
+    #       -     販売区分が複数の場合は選択画面を表示する
 
-        event = self.request.context.event
-        if event is None:
-            raise HTTPNotFound()
+    #       - URLから販売区分をはずす
+    #       - 日付・会場・公演選択の裏データとして、販売区分をひもづける
+    #       - 販売区分を表示する
+    #       - フォームに販売区分を入れる
+    #       - cartに販売区分を追加する
+    #       - 決済ページ以降から販売区分をURLに復活
 
-        # イベントで利用可能な販売区分を取得する
-        sales_segments = self.context.sales_segments
-        if not sales_segments:
-            logger.debug("No matching sales_segment")
-            raise NoEventError("No matching sales_segment")
-        if len(sales_segments) == 1:
-            # １つの場合はその販売区分ページにリダイレクト
 
-            logger.debug("one sales_segment is matched")
-            sales_segment = sales_segments[0]
-            event_id = self.request.matchdict['event_id']
-            location = self.request.route_url('cart.index.sales', 
-                event_id=event_id,
-                sales_segment_id=sales_segment.id,
-                _query=self.request.GET)
-            return HTTPFound(location=location)
-        logger.debug("multiple sales_segments are matched")
+    #    """
 
-        # 複数の場合は選択画面を表示
-        return dict(sales_segments=sales_segments,
-            event=event)
+    #    event = self.request.context.event
+    #    if event is None:
+    #        raise HTTPNotFound()
 
-    @view_config(route_name='cart.index.sales', renderer=selectable_renderer('carts/%(membership)s/index.html'), xhr=False, permission="buy")
+    #    # イベントで利用可能な販売区分を取得する
+    #    sales_segments = self.context.sales_segments
+
+    #    performance = None
+    #    performance_id = self.request.params.get('performance')
+    #    if performance_id:
+    #        performance = c_models.Performance.query.filter(c_models.Performance.id==performance_id).one()
+    #        if performance.on_the_day:
+    #            # performance指定の場合、そのperformanceが当日だったら、当日販売区分に遷移する
+    #            # 処理変更：当日の公演だった場合は、販売区分を当日のみにする
+    #            # 上記処理の結果、販売区分が０個になってしまったら、元の販売区分を使う
+    #            on_the_day_sales_segments = [s for s in sales_segments if s.kind == 'sales_counter'] # 当日
+    #            if on_the_day_sales_segments:
+    #                sales_segments = on_the_day_sales_segments
+    #        else:
+    #            # 当日でない場合、当日以外の販売区分が１つならそこに遷移する
+    #            # 処理変更：当日以外の公演だった場合は、販売区分から当日をはずす
+    #            # 上記処理の結果、販売区分が０個になってしまったら、元の販売区分を使う
+    #            non_the_day_sales_segments = [s for s in sales_segments if s.kind != 'sales_counter'] # 当日以外
+    #            if non_the_day_sales_segments:
+    #                sales_segments = non_the_day_sales_segments
+
+    #    if not sales_segments:
+    #        logger.debug("No matching sales_segment")
+    #        raise NoEventError("No matching sales_segment")
+    #    if len(sales_segments) == 1:
+    #        # １つの場合はその販売区分ページにリダイレクト
+
+    #        logger.debug("one sales_segment is matched")
+    #        sales_segment = sales_segments[0]
+    #        event_id = self.request.matchdict['event_id']
+    #        location = self.request.route_url('cart.index.sales', 
+    #            event_id=event_id,
+    #            sales_segment_id=sales_segment.id,
+    #            _query=self.request.GET)
+    #        return HTTPFound(location=location)
+    #    logger.debug("multiple sales_segments are matched")
+
+    #    # 複数の場合は選択画面を表示
+    #    return dict(sales_segments=sales_segments,
+    #        event=event)
+
+    #@view_config(route_name='cart.index.sales', renderer=selectable_renderer('carts/%(membership)s/index.html'), xhr=False, permission="buy")
+    @view_config(route_name='cart.index', renderer=selectable_renderer("carts/%(membership)s/index.html"), xhr=False, permission="buy")
     def __call__(self):
         event = self.request.context.event
         if event is None:
@@ -118,9 +148,11 @@ class IndexView(object):
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.params.get('performance')
 
-        sales_segment = self.context.get_sales_segument()
-
-        if sales_segment is None:
+        
+        #sales_segment = self.context.get_sales_segument()
+        normal_sales_segment = self.context.normal_sales_segment
+        sales_counter_sales_segment = self.context.sales_counter_sales_segment
+        if normal_sales_segment is None:
             logger.debug("No matching sales_segment")
             raise NoEventError("No matching sales_segment")
 
@@ -134,7 +166,7 @@ class IndexView(object):
         # 日程,会場,検索項目のコンボ用
         dates = sorted(list(set([p.start_on.strftime("%Y-%m-%d %H:%M") for p in e.performances])))
         logger.debug("dates:%s" % dates)
-        performances = api.performance_names(self.request, context.event, context.sales_segment)
+        performances = api.performance_names(self.request, context.event, context.normal_sales_segment)
         if not performances:
             raise NoEventError # NoPerformanceを作る
 
@@ -149,10 +181,10 @@ class IndexView(object):
                 logger.debug("performance %s" % pv)
                 select_venues[pname].append(dict(
                     id=pv['pid'],
-                    name=u'{start:%Y-%m-%d %H:%M}開始 {vname}'.format(**pv),
+                    name=u'{start:%Y-%m-%d %H:%M}開始 {vname} {on_the_day} {pid}'.format(**pv),
                     seat_types_url=self.request.route_url('cart.seat_types',
                         performance_id=pv['pid'],
-                        sales_segment_id=sales_segment.id,
+                        sales_segment_id=normal_sales_segment.id,
                         event_id=event.id)))
             
         logger.debug("venues %s" % select_venues)
@@ -182,10 +214,10 @@ class IndexView(object):
                     cart_release_url=self.request.route_url('cart.release'),
                     selected=Markup(json.dumps([selected_performance.name, selected_performance.id])),
                     venues_selection=Markup(json.dumps(select_venues.items())),
-                    sales_segment=Markup(json.dumps(dict(id=sales_segment.id, seat_choice=sales_segment.seat_choice))),
+                    sales_segment=Markup(json.dumps(dict(id=normal_sales_segment.id, seat_choice=normal_sales_segment.seat_choice))),
                     products_from_selected_date_url = self.request.route_url("cart.date.products", event_id=event_id), 
-                    order_url=self.request.route_url("cart.order", sales_segment_id=sales_segment.id),
-                    upper_limit=sales_segment.upper_limit,
+                    order_url=self.request.route_url("cart.order", sales_segment_id=normal_sales_segment.id),
+                    upper_limit=normal_sales_segment.upper_limit,
                     event_extra_info=event_extra_info.get("event") or []
         )
 

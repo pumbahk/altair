@@ -231,7 +231,8 @@ def _query_performance_names(request, event, sales_segment):
         Performance.name,
         Performance.start_on,
         Performance.open_on,
-        Venue.name)
+        Venue.name,
+        Performance.on_the_day)
     q = q.filter(Performance.event_id==event.id)
     q = q.filter(Venue.performance_id==Performance.id)
     q = q.filter(SalesSegment.id==sales_segment.id)
@@ -244,15 +245,14 @@ def _query_performance_names(request, event, sales_segment):
     today = datetime(today.year, today.month, today.day)
     tommorow = today + timedelta(days=1)
 
-    if sales_segment.kind == 'sales_counter': #XXX 当日用のkindを定義
-        # 当日公演の条件
-        q = q.filter(Performance.start_on>=today)
-        q = q.filter(Performance.start_on<tommorow)
-    elif any([s.kind=='sales_counter' for s in event.sales_segments]):
-        # 当日販売区分を持つイベントの場合は、当日販売でない区分で、当日公演を条件からはずす
-        q = q.filter(Performance.start_on<today)
-        q = q.filter(Performance.start_on>=tommorow)
-
+    #if sales_segment.kind == 'sales_counter': #XXX 当日用のkindを定義
+    #    # 当日公演の条件
+    #    q = q.filter(Performance.start_on>=today)
+    #    q = q.filter(Performance.start_on<tommorow)
+    #elif any([s.kind=='sales_counter' for s in event.sales_segments]):
+    #    # 当日販売区分を持つイベントの場合は、当日販売でない区分で、当日公演を条件からはずす
+    #    # q = q.filter(Performance.start_on<today)
+    #    q = q.filter(Performance.start_on>=tommorow)
     return q
 
 def performance_names(request, event, sales_segment):
@@ -270,11 +270,11 @@ def performance_names(request, event, sales_segment):
     values = q.distinct().all()
 
     results = dict()
-    for pid, name, start, open, vname in values:
+    for pid, name, start, open, vname, on_the_day in values:
         results[name] = results.get(name, [])
-        results[name].append(dict(pid=pid, start=start, open=open, vname=vname))
+        results[name].append(dict(pid=pid, start=start, open=open, vname=vname, on_the_day=on_the_day))
 
-    return [(s[0], s[1]) for s in sorted([(k, sorted(v, key=operator.itemgetter('start')), min(*[x['start'] for x in v])) 
+    return [(s[0], s[1]) for s in sorted([(k, sorted(v, key=operator.itemgetter('start')), min([x['start'] for x in v])) 
                                           for k, v in results.items()], 
                                          key=operator.itemgetter(2))]
 

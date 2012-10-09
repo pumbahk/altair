@@ -85,6 +85,21 @@ class TicketingCartResource(object):
         # 暫定で0に設定
         return 0
 
+    @property
+    def sales_counter_sales_segment(self):
+        """ 当日用販売区分"""
+        scs = [s for s in self.sales_segments if s.kind == 'sales_counter']
+        if not scs:
+            return None
+        return scs[0]
+
+    @property
+    def normal_sales_segment(self):
+        """ 当日以外販売区分"""
+        scs = [s for s in self.sales_segments if s.kind != 'sales_counter']
+        if not scs:
+            return None
+        return scs[0]
 
     def get_payment_delivery_method_pair(self, start_on=None):
         segment = self.get_sales_segument()

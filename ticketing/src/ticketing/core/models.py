@@ -4,7 +4,7 @@ import itertools
 import operator
 import json
 from urlparse import urljoin
-from datetime import datetime
+from datetime import datetime, date, timedelta
 
 from sqlalchemy import Table, Column, ForeignKey, func, or_, and_, event
 from sqlalchemy import ForeignKeyConstraint, UniqueConstraint
@@ -15,6 +15,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import exists
 from sqlalchemy.sql.expression import asc, desc, exists, select, table, column
 from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from pyramid.threadlocal import get_current_registry
 
@@ -435,6 +436,21 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     stocks = relationship('Stock', backref='performance')
     product_items = relationship('ProductItem', backref='performance')
     venue = relationship('Venue', uselist=False, backref='performance')
+
+    @hybrid_property
+    def on_the_day(self):
+        today = date.today()
+        today = datetime(today.year, today.month, today.day)
+        tomorrow = today + timedelta(days=1)
+        return (today <= self.start_on) and (self.start_on < tomorrow)
+
+    @on_the_day.expression
+    def on_the_day(self):
+        from sqlalchemy import sql
+        today = date.today()
+        today = datetime(today.year, today.month, today.day)
+        tomorrow = today + timedelta(days=1)
+        return sql.and_(today <= self.start_on, self.start_on < tomorrow)
 
     def add(self):
         BaseModel.add(self)
