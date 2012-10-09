@@ -341,7 +341,7 @@ def delivery_mail_viewlet(context, request):
     sej_order=context.order.sej_order
     payment_id = context.order.payment_delivery_pair.payment_method.payment_plugin_id
     is_payment_with_sej = int(payment_id or -1) == PAYMENT_PLUGIN_ID
-    return dict(sej_order=sej_order, h=cart_helper, trv=trv, 
+    return dict(sej_order=sej_order, h=cart_helper,
                 is_payment_with_sej=is_payment_with_sej, 
                 notice=context.mail_data("notice"))
 
