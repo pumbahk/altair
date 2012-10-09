@@ -185,10 +185,9 @@ body {
   </div>
 </div>
 
-// script
-
 <script type="text/javascript" src="${request.static_url("ticketing.printqr:static/js/qrapp/app.js")}"></script>
 <script type="text/javascript" src="${request.static_url("ticketing.printqr:static/js/qrapp/applet.js")}"></script>
+<script type="text/javascript" src="${request.static_url("ticketing.printqr:static/js/qrapp/keycodeMapping.js")}"></script>
 
 <script type="text/javascript">
 $(function(){
@@ -252,6 +251,12 @@ $(function(){
     e.preventDefault();
     } 
   }
+
+  // QRReaderの日本語／英語の対応
+  document.onkeydown = function (e) {
+    e.keyCode = keycodeMapping.translate(e.shiftKey,e.keyCode);
+    return true;
+  };
 
   //QRの読み込みページのときqrコードのinputにフォーカスをあてる
   setInterval(function(){
