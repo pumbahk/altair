@@ -694,7 +694,9 @@ class PaymentView(object):
                 logger.debug("invalid : %s" % form.errors)
 
             self.context.event_id = cart.performance.event.id
-            payment_delivery_methods = self.context.get_payment_delivery_method_pair()
+
+            start_on = cart.performance.start_on
+            payment_delivery_methods = self.context.get_payment_delivery_method_pair(start_on=start_on)
 
             return dict(form=form,
                 payment_delivery_methods=payment_delivery_methods,
