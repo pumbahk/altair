@@ -3,6 +3,9 @@ import json, random
 endpoints_json = json.dumps(endpoints, ensure_ascii=False)
 callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _ in range(0, 10))
 %>
+
+<span id="applet-tag"></span>
+
 <script type="text/javascript">
 window[${json.dumps(callback_name)|n}] = function (applet) {
   var service = applet.getService();
@@ -164,24 +167,26 @@ function writeAppletTag(options) {
     buildHTMLForIE();
   else
     buildHTMLForOthers();
-  document.write(buf.join(''));
+  $('#applet-tag').append(buf.join(''));
 }
 
-writeAppletTag({
-  version: '1.6.0.35',
-  width: 1, height: 1,
-  code: 'jp.ticketstar.ticketing.printing.gui.AppApplet',
-  codebase: ${json.dumps(request.application_url)|n},
-  archive: ${json.dumps(request.static_url('ticketing:static/printing-0.0.0-jar-with-dependencies.jar'))|n},
-  scriptable: true,
-  id: 'applet',
-  params: {
-    endpoints: ${json.dumps(endpoints_json)|n},
-    cookie: ${json.dumps(request.headers.get('cookie'))|n},
-    embedded: true,
-    callback: ${json.dumps(callback_name)|n}
-  }
-});
+function loadApplet() {
+  writeAppletTag({
+    version: '1.6.0.35',
+    width: 1, height: 1,
+    code: 'jp.ticketstar.ticketing.printing.gui.AppApplet',
+    codebase: ${json.dumps(request.application_url)|n},
+    archive: ${json.dumps(request.static_url('ticketing:static/printing-0.0.0-jar-with-dependencies.jar'))|n},
+    scriptable: true,
+    id: 'applet',
+    params: {
+      endpoints: ${json.dumps(endpoints_json)|n},
+      cookie: ${json.dumps(request.headers.get('cookie'))|n},
+      embedded: true,
+      callback: ${json.dumps(callback_name)|n}
+    }
+  });
+}
 </script>
 <!--
 <select id="page"></select>

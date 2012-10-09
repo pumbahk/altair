@@ -45,6 +45,7 @@
 <script type="text/javascript">
   $(function() {
     $('#sales-counter-button').click(function(){
+      loadApplet();
       $(this).css('display', 'none');
       $('#sales-counter-label').css('display', 'inline');
     });
@@ -52,8 +53,8 @@
 </script>
 <div class="container-fluid pull-right">
   <div class="row-fluid">
-    <input id="sales-counter-button" type="button" class="btn btn-warning" style="vertical-align: baseline; font-size: 100%; display:none;"" value="当日窓口モードにする"></input>
-    <span id="sales-counter-label" class="label label-inverse" style="vertical-align: baseline; font-size: 100%;">発券用プリンタ</span>
+    <input id="sales-counter-button" type="button" class="btn btn-warning" style="vertical-align: baseline; font-size: 100%;" value="当日窓口発券モードにする"></input>
+    <span id="sales-counter-label" class="label label-inverse" style="vertical-align: baseline; font-size: 100%; display:none;">発券用プリンタ</span>
     <%include file="_printer.html" />
   </div>
 </div>
