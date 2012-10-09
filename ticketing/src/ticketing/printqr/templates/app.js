@@ -139,6 +139,7 @@ var QRInputView = AppPageViewBase.extend({
     this.$status = this.$el.find('#status')
     this.datastore.bind("change:qrcode_status", this.showStatus, this);
     this.datastore.bind("*qr.printed.already", this.notifyPrintedAlready, this);
+    this.datastore.bind("*qr.not.printed", this.focusNextPage, this);
     this.communicating = false;
   }, 
   notifyPrintedAlready: function(){
@@ -178,7 +179,6 @@ var QRInputView = AppPageViewBase.extend({
           self.datastore.set("qrcode_status", "loaded");
           self.datastore.updateByQRData(data.data);
           self.nextView.drawTicketInfo(data.data);
-          setTimeout(function(){self.focusNextPage();}, 1)
           return data;
         }
 
@@ -330,7 +330,7 @@ var AppletView = Backbone.View.extend({
     this.appviews = opts.appviews;
     this.datastore = opts.datastore;
     this.service = opts.service;
-    this.createProxy = opts.createProxy;
+    this.router = opts.router;
     this.apiResource = opts.apiResource;
     this.datastore.bind("*qr.not.printed", this.createTicket, this);
     // this.datastore.bind("change:ordered_product_item_token_id", this.fetchPinterCandidates, this); //eliminate call times:
@@ -376,7 +376,11 @@ var AppletView = Backbone.View.extend({
         self.appviews.messageView.error(data['message']);
         return;
       }
-      self.appviews.messageView.success("チケット印刷できました。");      
+      self.appviews.messageView.success("チケット印刷できました。");
+      self.router.navigate("one", true);
+      self.appviews.one.clearQRCodeInput();
+      self._afterSuccess();
+      
     }).fail(function(s, msg){console.dir(s);self.appviews.messageView.error(s.responseText)});
   }, 
   setPrinter: function(){ //liner
@@ -437,7 +441,7 @@ var AppletView = Backbone.View.extend({
   fetchPinterCandidates: function(){
     try {
       var printers = this.service.getPrintServices();
-      this.appviews.three.redrawPrinterArea(printers);
+      this.appviews.zero.redrawPrinterArea(printers);
     } catch (e) {
       this.appviews.messageView.error(e);
     }
@@ -445,7 +449,7 @@ var AppletView = Backbone.View.extend({
   fetchTemplateCandidates: function(){
     try {
       var ticketTemplates = this.service.getTicketTemplates();
-      this.appviews.three.redrawTicketTemplateArea(ticketTemplates);
+      this.appviews.zero.redrawTicketTemplateArea(ticketTemplates);
     } catch (e) {
       this.appviews.messageView.error(e);
     }
@@ -453,7 +457,7 @@ var AppletView = Backbone.View.extend({
   fetchPageFormatCandidates: function(){
     try {
       var pageFormats = this.service.getPageFormats();
-      this.appviews.three.redrawPageFormatArea(pageFormats);
+      this.appviews.zero.redrawPageFormatArea(pageFormats);
     } catch (e) {
       this.appviews.messageView.error(e);
     }
@@ -481,6 +485,6 @@ var AppRouter = Backbone.Router.extend({
       self.navigate($(this).attr("href").substr(1), true);
       e.preventDefault();
     });
-    self.navigate("one", true);
+    self.navigate("zero", true);
   }
 })

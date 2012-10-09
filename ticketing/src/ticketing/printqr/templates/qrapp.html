@@ -53,14 +53,13 @@ $(function(){
 
   var messageView = new MessageView({el: $("#message_box")});
   var descriptionView = new DataStoreDescriptionView({model: datastore, el: $("#description")});
+  var zero = new FormatChoiceView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#zero")});
   var one = new QRInputView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#one")});
   var two = new TicketInfoView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#two")});
-  var three = new FormatChoiceView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#three")});
-  var four = new PrintConfirmView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#four")});
+  var print = new PrintConfirmView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#two")});
 
+  zero.nextView = one;
   one.nextView = two;
-  two.nextView = three;
-  three.nextView = four;
 
 
   //Backbone.history.start({pushState: true,  root: "/"})
@@ -70,17 +69,16 @@ $(function(){
   // create callback
   window[${json.dumps(callback_name)|n}] = function (applet) {
     var appviews = {
+      zero: zero,
       one: one,
       two: two,
-      three: three,
-      four: four,
       messageView: messageView,
       descriptionView: descriptionView
     };
     var service = applet.getService();
     var createProxy = function () { return applet.createPropertyChangeListenerProxy.apply(applet, arguments); };
     //service.addListenerForPages(createProxy(refreshPages));
-    var appletView = new AppletView({el: $("#applet"), appviews: appviews, datastore: datastore, service: service, createProxy: createProxy, apiResource: apiResource})
+    var appletView = new AppletView({el: $("#applet"), appviews: appviews, datastore: datastore, service: service, router: appRouter, apiResource: apiResource})
     appletView.start();
     $('#screen').hide();
   };
@@ -129,11 +127,38 @@ $(function(){
   </div>
   <div id="tabbar">
     <ul class="nav nav-tabs">
+      <li><a id="tab_zero" href="#zero" data-toggle="tab">フォーマット選択</a></li>
       <li><a id="tab_one" href="#one" data-toggle="tab" class="active">QRコード読み込み</a></li>
-      <li><a id="tab_two" href="#two" data-toggle="tab">チケット情報</a></li>
-      <li><a id="tab_three" href="#three" data-toggle="tab">フォーマット選択</a></li>
-      <li><a id="tab_four" href="#four" data-toggle="tab">発券確認</a></li>
+      <li><a id="tab_two" href="#two" data-toggle="tab">チケット情報(発券確認)</a></li>
     </ul>
+  </div>
+
+  <div id="zero" class="onepage well hide">
+    <h2 class="header" id="zero:header">フォーマット選択</h2>
+    <p>
+      印刷に利用するフォーマットを選んでください
+    </p>
+
+    <div class="row-fluid">
+      <div class="span4">
+        <h3>チケットテンプレート設定</h3>
+        <div id="ticket_template">
+        </div>
+      </div>
+      <div class="span4">
+        <h3>プリンタ設定</h3>
+        <div id="printer">
+        </div>
+      </div>
+    </div>
+    <div class="row-fluid">
+      <div class="span4">
+        <h3>ページフォーマット設定</h3>
+        <div id="page_format">
+        </div>
+      </div>
+    </div>
+    <a class="btn" href="#one"><i class="icon-arrow-right"> </i>フォーマットを選択</a>
   </div>
 
   <div id="one" class="onepage well hide">
@@ -153,6 +178,7 @@ $(function(){
       status:
       <span id="status">preload</span>
     </div>
+    <a class="btn btn-inverse" href="#zero"><i class="icon-arrow-left icon-white"> </i>戻る</a>
     <a class="btn" href="#two"><i class="icon-arrow-right"> </i>次へ</a>
   </div>
 
@@ -187,45 +213,11 @@ $(function(){
       </tbody>
     </table>
 
-    <a class="btn btn-inverse" href="#one"><i class="icon-arrow-left icon-white"> </i>戻る</a>    
-    <a class="btn" href="#three"><i class="icon-arrow-right"> </i>次へ</a>
-  </div>
-
-  <div id="three" class="onepage well hide">
-    <h2 class="header" id="three:header">フォーマット選択</h2>
-    <p>
-      印刷に利用するフォーマットを選んでください
-    </p>
-
-    <div class="row-fluid">
-      <div class="span4">
-        <h3>チケットテンプレート設定</h3>
-        <div id="ticket_template">
-        </div>
-      </div>
-      <div class="span4">
-        <h3>プリンタ設定</h3>
-        <div id="printer">
-        </div>
-      </div>
-    </div>
-    <div class="row-fluid">
-      <div class="span4">
-        <h3>ページフォーマット設定</h3>
-        <div id="page_format">
-        </div>
-      </div>
-    </div>
-    <a class="btn btn-inverse" href="#two"><i class="icon-arrow-left icon-white"> </i>戻る</a>
-    <a class="btn" href="#four"><i class="icon-arrow-right"> </i>フォーマットを選択</a>
-  </div>
-
-  <div id="four" class="onepage well hide">
-    <h2 class="header" id="four:header">発券確認</h2>
     <p>
       印刷します。よろしいですか？
     </p>
-    <a class="btn btn-inverse" href="#">キャンセル</a>
+
+    <a class="btn btn-inverse" href="#one"><i class="icon-arrow-left icon-white"> </i>戻る</a>    
     <a class="btn" href="#" id="print_button">印刷する</a>
   </div>
 
