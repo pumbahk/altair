@@ -244,16 +244,12 @@ $(function(){
     }
   });
 
-  // C-jを禁止
-  document.onkeydown = function(e){
-    if(e.ctrlKey && e.keyCode==74) { 
-    one.loadQRCodeInput();
-    e.preventDefault();
-    } 
-  }
-
   // QRReaderの日本語／英語の対応
   document.onkeydown = function (e) {
+    if(e.ctrlKey && e.keyCode==74) { 
+      one.loadQRCodeInput();
+      e.preventDefault();
+    } 
     e.keyCode = keycodeMapping.translate(e.shiftKey,e.keyCode);
     return true;
   };
