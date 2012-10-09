@@ -26,7 +26,7 @@ var Venue = exports.Venue = function Venue() {
 _.extend(Venue.prototype, Backbone.Events);
 
 Venue.prototype.initialize = function Venue_initialize(initialData, options) {
-  initialData = initialData || { seats: {}, stock_types: [], stock_holders: [] };
+  initialData = initialData || { seats: {}, stock_types: [], stock_holders: [], stocks: [] };
   var stockTypes = new StockTypeCollection(null, { venue: this });
   var stockHolders = new StockHolderCollection(null, { venue: this });
   var stocks = new StockCollection(null, { venue: this });
@@ -35,6 +35,7 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
   var perStockSeatSet = {};
   var perStockHolderStockMap = {};
   var perStockTypeStockMap = {};
+
   stockTypes.add({
     id: "",
     name: I18n ? I18n.t("altair.venue_editor.unassigned"): "Unassigned",
@@ -43,36 +44,42 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
     quantity: 0,
     style: {}
   });
-  for (var i = 0; i < initialData.stock_types.length; i++) {
-    var stockTypeDatum = initialData.stock_types[i];
-    var stockType = new StockType({
-      id: stockTypeDatum.id,
-      name: stockTypeDatum.name,
-      isSeat: stockTypeDatum.is_seat,
-      quantityOnly: stockTypeDatum.quantity_only,
-      style: stockTypeDatum.style
-    });
-    stockTypes.add(stockType);
-    stockType.on('change:name', function () {
-      this.set('edited', true);
-    });
-    stockType.on('change:style', function () {
-      this.set('edited', true);
-    });
+  if (initialData.stock_types) {
+    for (var i = 0; i < initialData.stock_types.length; i++) {
+      var stockTypeDatum = initialData.stock_types[i];
+      var stockType = new StockType({
+        id: stockTypeDatum.id,
+        name: stockTypeDatum.name,
+        isSeat: stockTypeDatum.is_seat,
+        quantityOnly: stockTypeDatum.quantity_only,
+        style: stockTypeDatum.style
+      });
+      stockTypes.add(stockType);
+      stockType.on('change:name', function () {
+        this.set('edited', true);
+      });
+      stockType.on('change:style', function () {
+        this.set('edited', true);
+      });
+    }
   }
+
   stockHolders.add({
     id: "",
     name: I18n ? I18n.t("altair.venue_editor.unassigned"): "Unassigned",
     style: {}
   });
-  for (var i = 0; i < initialData.stock_holders.length; i++) {
-    var stockHolderDatum = initialData.stock_holders[i];
-    stockHolders.add({
-      id: stockHolderDatum.id,
-      name: stockHolderDatum.name,
-      style: stockHolderDatum.style
-    });
+  if (initialData.stock_holders) {
+    for (var i = 0; i < initialData.stock_holders.length; i++) {
+      var stockHolderDatum = initialData.stock_holders[i];
+      stockHolders.add({
+        id: stockHolderDatum.id,
+        name: stockHolderDatum.name,
+        style: stockHolderDatum.style
+      });
+    }
   }
+
   function normalizedId(id) { return id === null ? "": "" + id; }
   for (var i = 0; i < initialData.stocks.length; i++) {
     var stockDatum = initialData.stocks[i];
@@ -86,33 +93,33 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
       available: stockDatum.available
     });
     stocks.push(stock);
-    {
-      var map = perStockHolderStockMap[stockHolder.id];
-      if (!map)
-        map = perStockHolderStockMap[stockHolder.id] = {};
-      map[stockType.id] = stock;
-    }
-    {
-      var map = perStockTypeStockMap[stockType.id];
-      if (!map)
-        map = perStockTypeStockMap[stockType.id] = {};
-      map[stockHolder.id] = stock;
-    }
     stock.on('change:assigned', function () {
       this.set('edited', true);
       this.get('stockHolder').recalculateQuantity();
       this.get('stockType').recalculateQuantity();
     });
-    stock.on('change:stockHolder change:stockType', function () {
-      var prevStockHolderId = this.previous('stockHolder').id;
-      var newStockHolderId = this.get('stockHolder').id;
-      var prevStockTypeId = this.previous('stockType').id;
-      var newStockTypeId = this.get('stockType').id;
-      delete perStockHolderStockMap[prevStockHolderId][prevStockTypeId];
-      delete perStockTypeStockMap[prevStockTypeId][prevStockHolderId];
-      perStockHolderStockMap[newStockHolderId][newStockTypeId] = this;
-      perStockTypeStockMap[newStockTypeId][newStockHolderId] = this;
-    });
+    if (stockHolder && stockType) {
+      var map = perStockHolderStockMap[stockHolder.id];
+      if (!map)
+        map = perStockHolderStockMap[stockHolder.id] = {};
+      map[stockType.id] = stock;
+
+      map = perStockTypeStockMap[stockType.id];
+      if (!map)
+        map = perStockTypeStockMap[stockType.id] = {};
+      map[stockHolder.id] = stock;
+
+      stock.on('change:stockHolder change:stockType', function () {
+        var prevStockHolderId = this.previous('stockHolder').id;
+        var newStockHolderId = this.get('stockHolder').id;
+        var prevStockTypeId = this.previous('stockType').id;
+        var newStockTypeId = this.get('stockType').id;
+        delete perStockHolderStockMap[prevStockHolderId][prevStockTypeId];
+        delete perStockTypeStockMap[prevStockTypeId][prevStockHolderId];
+        perStockHolderStockMap[newStockHolderId][newStockTypeId] = this;
+        perStockTypeStockMap[newStockTypeId][newStockHolderId] = this;
+      });
+    }
   }
   _.each(Seat.styleProviderAttributes, function (name) {
     perAttributeSeatSet[name] = {};
@@ -183,9 +190,7 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
   this.perStockSeatSet = perStockSeatSet;
   this.perStockHolderStockMap = perStockHolderStockMap;
   this.perStockTypeStockMap = perStockTypeStockMap;
-  this.callbacks = options && options.callbacks ?
-                     _.clone(options.callbacks):
-                     {};
+  this.callbacks = options && options.callbacks ? _.clone(options.callbacks) : {};
 };
 
 Venue.prototype.setCallback = function Venue_setCallback(name, value) {
@@ -235,6 +240,24 @@ Venue.prototype.toJSON = function Venue_toJSON () {
     stocks:stockData,
     stock_types:stockTypeData
   };
+};
+
+Venue.prototype.clearEdited = function Venue_clearEdited () {
+  this.seats.each(function (seat) {
+    if (seat.get('edited')) {
+      seat.set('edited', false);
+    }
+  });
+  this.stocks.each(function (stock) {
+    if (stock.get('edited')) {
+      stock.set('edited', false);
+    }
+  });
+  this.stockTypes.each(function (stockType) {
+    if (stockType.get('edited')) {
+      stockType.set('edited', false);
+    }
+  });
 };
 
 var ProvidesStyle = exports.ProvidesStyle = Backbone.Model.extend({
@@ -364,6 +387,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
     id: null,
     seat_no: null,
+    status: null,
     venue: null,
     stock: null,
     selectable: true,

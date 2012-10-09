@@ -18,20 +18,21 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Dimension2D;
-import java.awt.print.PrinterJob;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.Collection;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.ThreadFactory;
 
 import javax.print.PrintService;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.ImageIcon;
 import javax.swing.JApplet;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
@@ -43,26 +44,21 @@ import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import jp.ticketstar.ticketing.printing.AppService;
-import jp.ticketstar.ticketing.printing.ApplicationException;
+import jp.ticketstar.ticketing.ApplicationException;
+import jp.ticketstar.ticketing.SerializingExecutor;
 import jp.ticketstar.ticketing.printing.BoundingBoxOverlay;
-import jp.ticketstar.ticketing.printing.GenericComboBoxModel;
+import jp.ticketstar.ticketing.swing.GenericComboBoxModel;
 import jp.ticketstar.ticketing.printing.GuidesOverlay;
 import jp.ticketstar.ticketing.printing.AppModel;
 import jp.ticketstar.ticketing.printing.JGVTComponent;
 import jp.ticketstar.ticketing.printing.OurPageFormat;
 import jp.ticketstar.ticketing.printing.Page;
 import jp.ticketstar.ticketing.printing.PageSetModel;
-import jp.ticketstar.ticketing.printing.PrintableEvent;
-import jp.ticketstar.ticketing.printing.PrintableEventListener;
-import jp.ticketstar.ticketing.printing.RequestBodySender;
+import jp.ticketstar.ticketing.printing.StandardAppService;
+import jp.ticketstar.ticketing.RequestBodySender;
 import jp.ticketstar.ticketing.printing.TicketFormat;
-import jp.ticketstar.ticketing.printing.TicketPrintable;
-import jp.ticketstar.ticketing.printing.URLConnectionFactory;
-import jp.ticketstar.ticketing.printing.URLConnectionSVGDocumentLoader;
-import jp.ticketstar.ticketing.printing.URLFetcher;
-import jp.ticketstar.ticketing.printing.svg.ExtendedSVG12BridgeContext;
-import jp.ticketstar.ticketing.printing.svg.OurDocumentLoader;
+import jp.ticketstar.ticketing.URLConnectionFactory;
+import jp.ticketstar.ticketing.printing.gui.liveconnect.JSObjectPropertyChangeListenerProxy;
 
 import org.apache.batik.swing.gvt.Overlay;
 
@@ -74,108 +70,6 @@ import com.google.gson.stream.JsonWriter;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 
-class AppAppletService extends AppService {
-	private AppApplet applet;
-	
-	public AppAppletService(AppApplet applet, AppModel model) {
-		super(model);
-		this.applet = applet;
-	}
-
-	public synchronized void loadDocument(URLConnection conn, RequestBodySender sender) {
-		if (this.documentLoader != null)
-			return;
-		final OurDocumentLoader loader = new OurDocumentLoader(this);
-		final URLConnectionSVGDocumentLoader documentLoader = new URLConnectionSVGDocumentLoader(conn, sender, loader);
-		this.documentLoader = documentLoader;
-		documentLoader.addSVGDocumentLoaderListener(new LoaderListener(new ExtendedSVG12BridgeContext(this, loader)));
-		documentLoader.start();
-	}
-
-	@Override
-	public void printAll() {
-		AccessController.doPrivileged(new PrivilegedAction<Object>() {
-			public Object run() {
-				try {
-					final PrinterJob job = PrinterJob.getPrinterJob();
-					job.setPrintService(model.getPrintService());
-					final TicketPrintable printable = createTicketPrintable(job);
-					printable.addPrintableEventListener(new PrintableEventListener() {
-						public void pagePrinted(PrintableEvent evt) {
-							final Page page = printable.getPages().get(evt.getPageIndex());
-
-							try {
-								URLFetcher.fetch(applet.newURLConnection(applet.config.dequeueUrl), new RequestBodySender() {
-									public String getRequestMethod() {
-										return "POST";
-									}
-	
-									@Override
-									public void send(OutputStream out) throws IOException {
-										final JsonWriter writer = new JsonWriter(new OutputStreamWriter(out, "utf-8"));
-										writer.beginObject();
-										writer.name("queue_ids");
-										writer.beginArray();
-										for (final String queueId: page.getQueueIds())
-											writer.value(queueId);
-										writer.endArray();
-										writer.endObject();
-										writer.flush();
-										writer.close();
-									}
-								});
-							} catch (IOException e) {
-								displayError(e);
-							}
-							model.getPageSetModel().getPages().remove(page);
-						}
-					});
-					job.setPrintable(printable, model.getPageFormat());
-					job.print();
-				} catch (Exception e) {
-					e.printStackTrace();
-					displayError("Failed to print tickets\nReason: " + e);
-				}
-				return null;
-			}
-		});
-	}
-
-    public void displayError(String message) {
-    	System.out.println(message);
-    	final JSObject window = JSObject.getWindow(applet);
-    	window.call("alert", new Object[] { message });
-    }
-
-    /**
-     * Displays an error resulting from the specified Exception.
-     */
-    public void displayError(Exception ex) {
-    	ex.printStackTrace();
-    }
-
-    /**
-     * Displays a message in the User Agent interface.
-     * The given message is typically displayed in a status bar.
-     */
-    public void displayMessage(String message) {
-        // Can't do anything don't have a status bar...
-    }
-
-}
-
-class TicketFormatCellRenderer extends DefaultListCellRenderer {
-	private static final long serialVersionUID = 1L;
-
-	@Override
-	public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-		JLabel label = (JLabel)super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-		if (value != null)
-			label.setText(((TicketFormat)value).getName());
-		return label;
-	}
-}
-
 /**
  * Created with IntelliJ IDEA.
  * User: mistat
@@ -183,16 +77,15 @@ class TicketFormatCellRenderer extends DefaultListCellRenderer {
  * Time: 10:00 PM
  * To change this template use File | Settings | File Templates.
  */
-public class AppApplet extends JApplet implements IAppWindow, URLConnectionFactory {
+public class AppApplet extends JApplet implements IAppWindow, URLConnectionFactory, ThreadFactory {
 	private static final long serialVersionUID = 1L;
 
-	public AppApplet() {
-		setPreferredSize(new Dimension(2147483647, 2147483647));
-	}
-	
-	AppAppletService appService;
-	AppAppletModel model;
-	AppAppletConfiguration config;
+	protected AppAppletService appService;
+	protected AppAppletServiceImpl appServiceImpl;
+	protected AppAppletModel model;
+	protected AppAppletConfiguration config;
+	protected boolean interactionEnabled = true;
+	protected SerializingExecutor threadGenerator = new SerializingExecutor(Executors.defaultThreadFactory());
 
 	//private JApplet frame;
 	private JList list;
@@ -223,27 +116,31 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 		@SuppressWarnings("unchecked")
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getNewValue() != null) {
-				list.clearSelection();
+				if (list != null)
+					list.clearSelection();
 				final PageSetModel pageSetModel = (PageSetModel)evt.getNewValue();
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
-						panel.removeAll();
-						for (Page page: pageSetModel.getPages()) {
-							final JGVTComponent gvtComponent = new JGVTComponent(false, false);
-							{
-								Collection<Overlay> overlays = gvtComponent.getOverlays();
-								overlays.add(guidesOverlay);
-								overlays.add(boundingBoxOverlay);
+						if (panel != null) {
+							panel.removeAll();
+							for (Page page: pageSetModel.getPages()) {
+								final JGVTComponent gvtComponent = new JGVTComponent(false, false);
+								{
+									Collection<Overlay> overlays = gvtComponent.getOverlays();
+									overlays.add(guidesOverlay);
+									overlays.add(boundingBoxOverlay);
+								}
+								gvtComponent.setPageFormat(model.getPageFormat());
+								gvtComponent.addComponentListener(centeringListener);
+								gvtComponent.setSize(new Dimension((int)panel.getWidth(), (int)panel.getHeight()));
+								gvtComponent.setGraphicsNode(page.getGraphics());
+								gvtComponent.setName(page.getName());
+								panel.add(gvtComponent, page.getName());
 							}
-							gvtComponent.setPageFormat(model.getPageFormat());
-							gvtComponent.addComponentListener(centeringListener);
-							gvtComponent.setSize(new Dimension((int)panel.getWidth(), (int)panel.getHeight()));
-							gvtComponent.setGraphicsNode(page.getGraphics());
-							gvtComponent.setName(page.getName());
-							panel.add(gvtComponent, page.getName());
+							panel.validate();
 						}
-						list.setModel(pageSetModel.getPages());
-						panel.doLayout();
+						if (list != null)
+							list.setModel(pageSetModel.getPages());
 					}
 				});
 				pageSetModel.getPages().addListDataListener(new ListDataListener() {
@@ -252,6 +149,8 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 					public void intervalAdded(ListDataEvent evt) {}
 
 					public void intervalRemoved(ListDataEvent evt) {
+						if (panel == null)
+							return;
 						final Component[] pageComponents = panel.getComponents();
 						for (int i = evt.getIndex0(), j = evt.getIndex1(); i <= j; i++) {
 							panel.remove(pageComponents[i]);
@@ -262,22 +161,27 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 			}
 		}
 	};
+	
 	private PropertyChangeListener printServiceChangeListener = new PropertyChangeListener() {
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getNewValue() != null) {
-				PrintService printService = (PrintService)evt.getNewValue();
-				comboBoxPrintService.setSelectedItem(printService);
+				if (comboBoxPrintService != null) {
+					PrintService printService = (PrintService)evt.getNewValue();
+					comboBoxPrintService.setSelectedItem(printService);
+				}
 			}
 		}
 	};
 	private PropertyChangeListener printServicesChangeListener = new PropertyChangeListener() {
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getNewValue() != null) {
-				@SuppressWarnings("unchecked")
-				GenericComboBoxModel<PrintService> printServices = (GenericComboBoxModel<PrintService>)evt.getNewValue();
-				comboBoxPrintService.setModel(printServices);
-				if (printServices.size() > 0)
-					comboBoxPrintService.setSelectedIndex(0);
+				if (comboBoxPrintService != null) {
+					@SuppressWarnings("unchecked")
+					GenericComboBoxModel<PrintService> printServices = (GenericComboBoxModel<PrintService>)evt.getNewValue();
+					comboBoxPrintService.setModel(printServices);
+					if (printServices.size() > 0)
+						comboBoxPrintService.setSelectedIndex(0);
+				}
 			}
 		}
 	};
@@ -292,7 +196,8 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 						break;
 					}
 				}
-				comboBoxPageFormat.setSelectedItem(pageFormat);
+				if (comboBoxPageFormat != null)
+					comboBoxPageFormat.setSelectedItem(pageFormat);
 			}
 		}
 	};
@@ -301,9 +206,11 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 			if (evt.getNewValue() != null) {
 				@SuppressWarnings("unchecked")
 				GenericComboBoxModel<OurPageFormat> pageFormats = (GenericComboBoxModel<OurPageFormat>)evt.getNewValue();
-				comboBoxPageFormat.setModel(pageFormats);
-				if (pageFormats.size() > 0)
-					comboBoxPageFormat.setSelectedIndex(0);
+				if (comboBoxPageFormat != null) {
+					comboBoxPageFormat.setModel(pageFormats);
+					if (pageFormats.size() > 0)
+						comboBoxPageFormat.setSelectedIndex(0);
+				}
 			}
 		}
 	};
@@ -311,19 +218,30 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getNewValue() != null) {
 				doLoadTicketData();
-				final TicketFormat ticketFormat = (TicketFormat)evt.getNewValue();
-				comboBoxTicketFormat.setSelectedItem(ticketFormat);
+				if (comboBoxTicketFormat != null) {
+					final TicketFormat ticketFormat = (TicketFormat)evt.getNewValue();
+					comboBoxTicketFormat.setSelectedItem(ticketFormat);
+				}
 			}
 		}
 	};
 	private PropertyChangeListener ticketFormatsChangeListener = new PropertyChangeListener() {
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getNewValue() != null) {
-				@SuppressWarnings("unchecked")
-				GenericComboBoxModel<TicketFormat> ticketFormats = (GenericComboBoxModel<TicketFormat>)evt.getNewValue();
-				comboBoxTicketFormat.setModel(ticketFormats);
-				if (ticketFormats.size() > 0)
-					comboBoxTicketFormat.setSelectedIndex(0);
+				if (comboBoxTicketFormat != null) {
+					@SuppressWarnings("unchecked")
+					GenericComboBoxModel<TicketFormat> ticketFormats = (GenericComboBoxModel<TicketFormat>)evt.getNewValue();
+					comboBoxTicketFormat.setModel(ticketFormats);
+					if (ticketFormats.size() > 0)
+						comboBoxTicketFormat.setSelectedIndex(0);
+				}
+			}
+		}
+	};
+	private PropertyChangeListener orderIdChangeListener = new PropertyChangeListener() {
+		public void propertyChange(PropertyChangeEvent evt) {
+			if (evt.getNewValue() != null) {
+				doLoadTicketData();
 			}
 		}
 	};
@@ -344,6 +262,7 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 		model.removePropertyChangeListener(pageFormatChangeListener);
 		model.removePropertyChangeListener(ticketFormatsChangeListener);
 		model.removePropertyChangeListener(ticketFormatChangeListener);
+		model.removePropertyChangeListener(orderIdChangeListener);
 	}
 	
 	public void bind(AppModel model) {
@@ -355,8 +274,17 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 		model.addPropertyChangeListener("pageFormat", pageFormatChangeListener);
 		model.addPropertyChangeListener("ticketFormats", ticketFormatsChangeListener);
 		model.addPropertyChangeListener("ticketFormat", ticketFormatChangeListener);
-		model.refresh();
+		model.addPropertyChangeListener("orderId", orderIdChangeListener);
+		if (!config.embedded)
+			model.refresh();
 		this.model = (AppAppletModel)model;
+	}
+
+	public void setInteractionEnabled(boolean value) {
+		final boolean prevValue = this.interactionEnabled;
+		this.interactionEnabled = value;
+		if (prevValue != value)
+			this.setEnabled(value);
 	}
 
 	private AppAppletConfiguration getConfiguration() throws ApplicationException {
@@ -367,7 +295,10 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 		final String cookie = getParameter("cookie");
 		if (cookie == null)
 			throw new ApplicationException("required parameter \"cookie\" not specified");
+		final String embedded = getParameter("embedded");
 		config.cookie = cookie;
+		config.embedded = embedded == null ? false: Boolean.valueOf(embedded);
+		config.callback = getParameter("callback");
 		try {
 			final JsonElement elem = new JsonParser().parse(endpointsJson);
 			config.formatsUrl = new URL(getCodeBase(), elem.getAsJsonObject().get("formats").getAsString());
@@ -378,6 +309,10 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 		}
 		return config;
 	}
+
+	public StandardAppService getService() {
+		return appService;
+	}
 	
 	public URLConnection newURLConnection(final URL url) throws IOException {
 		URLConnection conn = url.openConnection();
@@ -387,7 +322,7 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 		return conn;
 	}
 
-	void populateModel() {
+	protected void populateModel() {
 		final FormatLoader.FormatPair formatPair = new FormatLoader(this).fetchFormats(config);
 		if (formatPair.pageFormats.size() > 0) {
 			model.getPageFormats().addAll(formatPair.pageFormats);
@@ -402,7 +337,7 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 	protected void doLoadTicketData() {
 		try {
 			final URLConnection conn = newURLConnection(config.peekUrl);
-			appService.loadDocument(conn, new RequestBodySender() {
+			appServiceImpl.loadDocument(conn, new RequestBodySender() {
 				public String getRequestMethod() {
 					return "POST";
 				}
@@ -413,6 +348,11 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 					writer.value(model.getTicketFormat().getId());
 					writer.name("page_format_id");
 					writer.value(model.getPageFormat().getId());
+					final Integer orderId = model.getOrderId();
+					if (orderId != null) {
+						writer.name("order_id");
+						writer.value(orderId);
+					}
 					writer.endObject();
 					writer.flush();
 					writer.close();
@@ -426,20 +366,41 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 	public void init() {
 		config = getConfiguration();
 		model = new AppAppletModel();
-    	appService = new AppAppletService(this, model);
-		initialize();
- 
-		appService.setAppWindow(this);
-		guidesOverlay = new GuidesOverlay(model);
-		boundingBoxOverlay = new BoundingBoxOverlay(model);
-
+    	appServiceImpl = new AppAppletServiceImpl(this, model);
+    	appService = new AppAppletService(appServiceImpl);
+    	
+		if (!config.embedded) {
+			initialize();
+			guidesOverlay = new GuidesOverlay(model);
+			boundingBoxOverlay = new BoundingBoxOverlay(model);
+		}
+		
+		appServiceImpl.setAppWindow(this);
 		populateModel();
+
+		if (config.callback != null) {
+			try {
+				JSObject.getWindow(this).call(config.callback, new Object[] { this });
+			} catch (Exception e) {
+				// any exception from the JS callback will be silently ignored.
+				e.printStackTrace(System.err);
+			}
+		}
 	}
+
+	public void destroy() {
+		threadGenerator.terminate();
+		appService.dispose();
+	}
+	
+	public void reload() {
+		model.refresh();
+	}
+	
 	/**
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		this.setBounds(0, 0, 640, 300);
 		this.getContentPane().setLayout(new BorderLayout(0, 0));
 		
 		JToolBar toolBar = new JToolBar();
@@ -467,7 +428,7 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 		btnPrint = new JButton("印刷");
 		btnPrint.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				appService.printAll();
+				appServiceImpl.printAll();
 			}
 		});
 		
@@ -513,5 +474,30 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 		return this;
 	}
 
+	public static PropertyChangeListener createPropertyChangeListenerProxy(JSObject jsobj) {
+		return new JSObjectPropertyChangeListenerProxy(jsobj);
+	}
+
+	public Thread newThread(final Runnable runnable) {
+		final FutureTask<Thread> task = new FutureTask<Thread>(new Callable<Thread>() {
+			@Override
+			public Thread call() throws Exception {
+				return new Thread(runnable);
+			}
+		});
+		threadGenerator.execute(task);
+		try {
+			final Thread thread = task.get();
+			return thread;
+		} catch (ExecutionException e) {
+			throw new IllegalStateException(e);
+		} catch (InterruptedException e) {
+			throw new IllegalStateException(e);
+		}
+	}
 	
+	public AppApplet() {
+		setPreferredSize(new Dimension(2147483647, 2147483647));
+		threadGenerator.start();
+	}
 }

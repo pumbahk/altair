@@ -6,12 +6,13 @@ import json
 from urlparse import urljoin
 from datetime import datetime
 
-from sqlalchemy import Table, Column, ForeignKey, func, or_, and_
+from sqlalchemy import Table, Column, ForeignKey, func, or_, and_, event
 from sqlalchemy import ForeignKeyConstraint, UniqueConstraint
 from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode, UnicodeText
 from sqlalchemy.orm import join, backref, column_property, joinedload, deferred
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.sql import exists
 from sqlalchemy.sql.expression import asc, desc, exists, select, table, column
 from sqlalchemy.ext.associationproxy import association_proxy
 
@@ -151,7 +152,7 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 template=template_seat,
                 venue_id=venue.id,
                 default_stock_id=default_stock.id,
-                convert_map=convert_map
+                **convert_map
             )
 
         if not original_performance_id:
@@ -179,17 +180,18 @@ class VenueArea(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     groups          = relationship('VenueArea_group_l0_id', backref='area')
 
     @staticmethod
-    def create_from_template(template, venue_id):
+    def create_from_template(template, **kwargs):
         # create VenueArea
         area = VenueArea.clone(template)
-        area.venue_id = venue_id
+        if 'venue_id' in kwargs:
+            area.venue_id = kwargs['venue_id']
         area.save()
 
         # create VenueArea_group_l0_id
         for template_group in template.groups:
             group = VenueArea_group_l0_id(
                 group_l0_id=template_group.group_l0_id,
-                venue_id=venue_id,
+                venue_id=area.venue_id,
                 venue_area_id=area.id
             )
             DBSession.add(group)
@@ -205,13 +207,6 @@ class SeatAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     seat_id         = Column(Identifier, ForeignKey('Seat.id', ondelete='CASCADE'), primary_key=True, nullable=False)
     name            = Column(String(255), primary_key=True, nullable=False)
     value           = Column(String(1023))
-
-    @staticmethod
-    def create_from_template(template, seat_id):
-        # create SeatAttribute
-        attribute = SeatAttribute.clone(template)
-        attribute.seat_id = seat_id
-        attribute.save()
 
 class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = "Seat"
@@ -257,12 +252,12 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return self.stock.stock_holder == stock_holder
 
     @staticmethod
-    def create_from_template(template, venue_id, default_stock_id, convert_map):
+    def create_from_template(template, venue_id, default_stock_id, **kwargs):
         # create Seat
         seat = Seat.clone(template)
         seat.venue_id = venue_id
-        if 'stock_id' in convert_map:
-            seat.stock_id = convert_map['stock_id'][template.stock.id]
+        if 'stock_id' in kwargs:
+            seat.stock_id = kwargs['stock_id'][template.stock.id]
         else:
             seat.stock_id = default_stock_id
         for template_attribute in template.attributes:
@@ -277,7 +272,7 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             SeatIndex.create_from_template(
                 template=template_seat_index,
                 seat_id=seat.id,
-                convert_map=convert_map
+                **kwargs
             )
 
         # create Seat_SeatAdjacency
@@ -285,7 +280,7 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             seat_seat_adjacencies = []
             for template_adjacency in template.adjacencies:
                 seat_seat_adjacencies.append({
-                    'seat_adjacency_id':convert_map['seat_adjacency'][template_adjacency.id],
+                    'seat_adjacency_id':kwargs['seat_adjacency'][template_adjacency.id],
                     'seat_id':seat.id,
                 })
             DBSession.execute(Seat_SeatAdjacency.__table__.insert(), seat_seat_adjacencies)
@@ -408,9 +403,9 @@ class Account(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def delete(self):
         # 既に使用されている場合は削除できない
         if self.events:
-            raise Exception(u'関連づけされたイベントがある為、削除できません')
+            raise DomainConstraintError(u'関連づけされたイベントがある為、削除できません')
         if self.stock_holders:
-            raise Exception(u'関連づけされた枠がある為、削除できません')
+            raise DomainConstraintError(u'関連づけされた枠がある為、削除できません')
 
         super(Account, self).delete()
 
@@ -529,9 +524,10 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return super(Performance, cls).get(id, **kwargs)
 
     @staticmethod
-    def create_from_template(template, event_id):
+    def create_from_template(template, **kwargs):
         performance = Performance.clone(template)
-        performance.event_id = event_id
+        if 'event_id' in kwargs:
+            performance.event_id = kwargs['event_id']
         performance.original_id = template.id
         performance.venue_id = template.venue.id
         performance.create_venue_id = template.venue.id
@@ -737,7 +733,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             # create SalesSegment - PaymentDeliveryMethodPair
             for template_sales_segment in template_event.sales_segments:
                 convert_map['sales_segment'].update(
-                    SalesSegment.create_from_template(template=template_sales_segment, event_id=self.id)
+                    SalesSegment.create_from_template(template=template_sales_segment, with_payment_delivery_method_pairs=True, event_id=self.id)
                 )
 
             # create Product
@@ -1105,11 +1101,22 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         super(StockType, self).delete()
 
-    def num_seats(self, performance_id=None):
+    def num_seats(self, performance_id=None, sale_only=False):
         # 同一Performanceの同一StockTypeにおけるStock.quantityの合計
         query = Stock.filter_by(stock_type_id=self.id).with_entities(func.sum(Stock.quantity))
         if performance_id:
-            query = query.filter_by(performance_id==performance_id)
+            query = query.filter_by(performance_id=performance_id)
+            if sale_only:
+                query = query.filter(exists().where(and_(ProductItem.performance_id==performance_id, ProductItem.stock_id==Stock.id)))
+        return query.scalar()
+
+    def rest_num_seats(self, performance_id=None, sale_only=False):
+        # 同一Performanceの同一StockTypeにおけるStockStatus.quantityの合計
+        query = Stock.filter(Stock.stock_type_id==self.id).join(Stock.stock_status).with_entities(func.sum(StockStatus.quantity))
+        if performance_id:
+            query = query.filter(Stock.performance_id==performance_id)
+            if sale_only:
+                query = query.filter(exists().where(and_(ProductItem.performance_id==performance_id, ProductItem.stock_id==Stock.id)))
         return query.scalar()
 
     def set_style(self, data):
@@ -1128,9 +1135,10 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             self.style = {}
 
     @staticmethod
-    def create_from_template(template, event_id):
+    def create_from_template(template, **kwargs):
         stock_type = StockType.clone(template)
-        stock_type.event_id = event_id
+        if 'event_id' in kwargs:
+            stock_type.event_id = kwargs['event_id']
         stock_type.save()
         return {template.id:stock_type.id}
 
@@ -1171,9 +1179,10 @@ class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                           .order_by('StockHolder.id').all()
 
     @staticmethod
-    def create_from_template(template, event_id):
+    def create_from_template(template, **kwargs):
         stock_holder = StockHolder.clone(template)
-        stock_holder.event_id = event_id
+        if 'event_id' in kwargs:
+            stock_holder.event_id = kwargs['event_id']
         stock_holder.save()
         return {template.id:stock_holder.id}
 
@@ -1336,7 +1345,7 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     items = relationship('ProductItem', backref=backref('product', order_by='Product.display_order'))
 
     @staticmethod
-    def find(performance_id=None, event_id=None, sales_segment_id=None, include_deleted=False):
+    def find(performance_id=None, event_id=None, sales_segment_id=None, stock_id=None, include_deleted=False):
         query = Product.query
         if performance_id:
             query = query.join(Product.items).filter(ProductItem.performance_id==performance_id)
@@ -1344,6 +1353,10 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             query = query.filter(Product.event_id==event_id)
         if sales_segment_id:
             query = query.filter(Product.sales_segment_id==sales_segment_id)
+        if stock_id:
+            if not performance_id:
+                query = query.join(Product.items)
+            query = query.filter(ProductItem.stock_id==stock_id)
         if not include_deleted:
             query = query.filter(Product.deleted_at==None)
         return query.all()
@@ -1465,13 +1478,14 @@ class SeatIndex(Base, BaseModel):
     seat               = relationship('Seat', backref='indexes')
 
     @staticmethod
-    def create_from_template(template, seat_id, convert_map):
+    def create_from_template(template, seat_id, **kwargs):
         seat_index = SeatIndex.clone(template)
         seat_index.seat_id = seat_id
-        seat_index.seat_index_type_id = convert_map['seat_index_type'][template.seat_index_type_id]
+        if 'seat_index_type' in kwargs:
+            seat_index.seat_index_type_id = kwargs['seat_index_type'][template.seat_index_type_id]
         seat_index.save()
 
-class OrganizationTypeEnum(StandardEnum):
+class OranizationTypeEnum(StandardEnum):
     Standard = 1
 
 class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -1523,6 +1537,10 @@ class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     fax = Column(String(32))
     email = Column(String(255))
 
+    @property
+    def full_name_kana(self):
+        return u"%s %s" % (self.last_name_kana,  self.first_name_kana)
+
 class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Order'
     id = Column(Identifier, primary_key=True)
@@ -1553,9 +1571,44 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     note = Column(UnicodeText, nullable=True, default=None)
 
     issued = Column(Boolean, nullable=False, default=False)
+    issued_at = Column(DateTime, nullable=True, default=None, doc=u"印刷可能な情報伝達済み")
+    printed_at = Column(DateTime, nullable=True, default=None, doc=u"実発券済み")
 
     performance_id = Column(Identifier, ForeignKey('Performance.id'))
     performance = relationship('Performance', backref="orders")
+
+    _attributes = relationship("OrderAttribute", backref='order', collection_class=attribute_mapped_collection('name'), cascade='all,delete-orphan')
+    attributes = association_proxy('_attributes', 'value', creator=lambda k, v: OrderAttribute(name=k, value=v))
+
+    def is_issued(self):
+        """
+        チケット券面が発行済みかどうかを返す。
+        Order, OrderedProductItem, OrderedProductItemTokenという階層中にprinted_atが存在。
+        """
+        if self.issued_at:
+            return True
+
+        qs = OrderedProductItem.query.filter_by(deleted_at=None)\
+            .filter(OrderedProduct.order_id==self.id)\
+            .filter(OrderedProductItem.ordered_product_id==OrderedProduct.id)\
+            .filter(OrderedProductItem.issued_at==None)
+        return qs.first() is None
+
+    def is_printed(self):
+        """
+        チケット券面が印刷済みかどうかを返す。(順序としてはissued -> printed)
+
+        Order, OrderedProductItem, OrderedProductItemTokenという階層中にprinted_atが存在。
+        各下位オブジェクトが全てprintedであれば、printed = True
+        """
+        if self.printed_at:
+            return True
+
+        qs = OrderedProductItem.query.filter_by(deleted_at=None)\
+            .filter(OrderedProduct.order_id==self.id)\
+            .filter(OrderedProductItem.ordered_product_id==OrderedProduct.id)\
+            .filter(OrderedProductItem.printed_at==None)
+        return qs.first() is None
 
     @classmethod
     def __declare_last__(cls):
@@ -1805,6 +1858,12 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 def no_filter(value):
     return value
 
+class OrderAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__   = "OrderAttribute"
+    order_id  = Column(Identifier, ForeignKey('Order.id'), primary_key=True, nullable=False)
+    name = Column(String(255), primary_key=True, nullable=False)
+    value = Column(String(1023))
+
 class OrderedProductAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = "OrderedProductAttribute"
     ordered_product_item_id  = Column(Identifier, ForeignKey('OrderedProductItem.id'), primary_key=True, nullable=False)
@@ -1838,6 +1897,8 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     ordered_product = relationship('OrderedProduct', backref='ordered_product_items')
     product_item_id = Column(Identifier, ForeignKey("ProductItem.id"))
     product_item = relationship('ProductItem', backref='ordered_product_items')
+    issued_at = Column(DateTime, nullable=True, default=None)
+    printed_at = Column(DateTime, nullable=True, default=None)
 #    seat_id = Column(Identifier, ForeignKey('Seat.id'))
 #    seat = relationship('Seat')
     seats = relationship("Seat", secondary=orders_seat_table, backref='ordered_product_items')
@@ -1896,6 +1957,18 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return ({'name': s.name, 'l0_id': s.l0_id}
                 for s in self.seats)
 
+    def is_issued(self):
+        return self.issued_at or self.tokens == [] or all(token.issued_at for token in self.tokens)
+
+    def is_printed(self):
+        return self.printed_at or self.tokens == [] or all(token.printed_at for token in self.tokens)
+
+    @property
+    def issued_at_status(self):
+        total = len(self.tokens)
+        issued_count = len([i for i in self.tokens if i.issued_at])
+        return dict(issued=issued_count, total=total)
+        
 class OrderedProductItemToken(Base,BaseModel, LogicallyDeleted):
     __tablename__ = "OrderedProductItemToken"
     id = Column(Identifier, primary_key=True)
@@ -1906,6 +1979,8 @@ class OrderedProductItemToken(Base,BaseModel, LogicallyDeleted):
     serial = Column(Integer, nullable=False)
     key = Column(Unicode(255), nullable=True)    #今は使っていない。https://dev.ticketstar.jp/redmine/altair/issues/499#note-15
     valid = Column(Boolean, nullable=False, default=False)
+    issued_at = Column(DateTime, nullable=True, default=None)
+    printed_at = Column(DateTime, nullable=True, default=None)
 
 class Ticket_TicketBundle(Base, BaseModel, LogicallyDeleted):
     __tablename__ = 'Ticket_TicketBundle'
@@ -1996,14 +2071,16 @@ class TicketPrintQueueEntry(Base, BaseModel):
         DBSession.add(TicketPrintQueueEntry(operator=operator, ticket=ticket, data=data, summary=summary, ordered_product_item=ordered_product_item))
 
     @classmethod
-    def peek(self, operator, ticket_format_id):
-        return DBSession.query(TicketPrintQueueEntry) \
+    def peek(self, operator, ticket_format_id, order_id=None):
+        q = DBSession.query(TicketPrintQueueEntry) \
             .filter_by(processed_at=None, operator=operator) \
             .filter(Ticket.ticket_format_id==ticket_format_id) \
             .join(OrderedProductItem) \
-            .join(OrderedProduct) \
-            .order_by(asc(OrderedProduct.id), desc(self.created_at)) \
-            .all()
+            .join(OrderedProduct)
+        if order_id is not None:
+            q = q.filter(OrderedProduct.order_id==order_id)
+        q = q.order_by(asc(OrderedProduct.id), desc(self.created_at))
+        return q.all()
 
     @classmethod
     def dequeue(self, ids):
@@ -2064,10 +2141,20 @@ class TicketPrintHistory(Base, BaseModel, WithTimestamp):
     ordered_product_item = relationship('OrderedProductItem', backref='print_histories')
     seat_id = Column(Identifier, ForeignKey('Seat.id'), nullable=True)
     seat = relationship('Seat', backref='print_histories')
+    item_token_id = Column(Identifier, ForeignKey('OrderedProductItemToken.id'), nullable=True)
+    item_token = relationship('OrderedProductItemToken')
+    order_id = Column(Identifier, ForeignKey('Order.id'), nullable=True)
+    order = relationship('Order')
     ticket_id = Column(Identifier, ForeignKey('Ticket.id'), nullable=False)
     ticket = relationship('Ticket')
-    item_token_id = Column(Identifier, ForeignKey('OrderedProductItemToken.id'), nullable=False)
-    item_token = relationship('OrderedProductItemToken')
+
+    def before_insert_or_update(self):
+        if self.order_id is None and self.item_token_id is None and \
+            self.ordered_product_item_id is None:
+            raise DomainConstraintError('any one of order_id, item_token_id, ordered_product_item_id must have a non-null value')
+
+for event_kind in ['before_insert', 'before_update']:
+    event.listen(TicketPrintHistory, event_kind, lambda mapper, conn, target: target.before_insert_or_update())
 
 class PageFormat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "PageFormat"

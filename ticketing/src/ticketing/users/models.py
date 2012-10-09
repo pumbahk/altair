@@ -63,6 +63,10 @@ class UserProfile(Base, BaseModel, WithTimestamp):
     fax = Column(String(32))
     status = Column(Integer)
 
+    @property
+    def full_name_kana(self):
+        return u"%s %s" % (self.last_name_kana,  self.first_name_kana)
+
 class UserCredential(Base, WithTimestamp):
     __tablename__ = 'UserCredential'
     query = session.query_property()

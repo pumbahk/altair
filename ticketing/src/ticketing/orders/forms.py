@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 
+import locale
 from datetime import datetime
+
 from wtforms import Form, ValidationError
 from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, TextAreaField,
                      BooleanField, RadioField, FieldList, FormField, DecimalField, IntegerField)
 from wtforms.validators import Optional, AnyOf, Length, Email
-from collections import OrderedDict
 from ticketing.formhelpers import DateTimeField, Translations, Required
-from ticketing.core.models import (PaymentMethodPlugin, DeliveryMethodPlugin, StockType,
+from ticketing.core.models import (PaymentMethodPlugin, DeliveryMethodPlugin, PaymentMethod, StockType,
                                    SalesSegment, Performance, Product, ProductItem)
+from ticketing.cart.schemas import ClientForm
 
 class OrderForm(Form):
 
@@ -152,7 +154,7 @@ class OrderReserveForm(Form):
             self.performance_id.data = performance.id
 
             now = datetime.now()
-            sales_segments = SalesSegment.filter_by(kind='vip')\
+            sales_segments = SalesSegment.filter_by(kind='sales_counter')\
                                          .filter_by(event_id=performance.event_id)\
                                          .filter(SalesSegment.start_at<=now)\
                                          .filter(now<=SalesSegment.end_at).all()
@@ -163,20 +165,29 @@ class OrderReserveForm(Form):
                         (pdmp.id, '%s  -  %s' % (pdmp.payment_method.name, pdmp.delivery_method.name))
                     )
 
+            self.sales_counter_payment_method_id.choices = [(0, '')]
+            for pm in PaymentMethod.filter_by_organization_id(performance.event.organization_id):
+                self.sales_counter_payment_method_id.choices.append((pm.id, pm.name))
+
+            now = datetime.now()
             self.products.choices = []
+            products = []
             if 'stocks' in kwargs and kwargs['stocks']:
                 # 座席選択あり
                 products = Product.filter(Product.event_id==performance.event_id)\
                                   .join(Product.items)\
                                   .filter(ProductItem.performance_id==performance.id)\
                                   .filter(ProductItem.stock_id.in_(kwargs['stocks'])).all()
-                self.products.choices += [(p.id, p.name) for p in products]
             else:
                 # 数受け
                 products = Product.filter(Product.sales_segment_id.in_([ss.id for ss in sales_segments]))\
                                   .join(Product.seat_stock_type)\
                                   .filter(StockType.quantity_only==1).all()
-                self.products.choices += [(p.id, p.name) for p in products]
+            for p in products:
+                if p.sales_segment.start_at <= now and p.sales_segment.end_at >= now:
+                    self.products.choices += [
+                        (p.id, u'%s (%s円) %s' % (p.name, locale.format('%d', p.price, True), p.sales_segment.name))
+                    ]
 
     def _get_translations(self):
         return Translations()
@@ -185,7 +196,6 @@ class OrderReserveForm(Form):
         validators=[Required()],
     )
     stocks = HiddenField(
-        label=u'座席',
         validators=[Optional()],
     )
     note = TextAreaField(
@@ -207,12 +217,31 @@ class OrderReserveForm(Form):
         choices=[],
         coerce=int
     )
+    sales_counter_payment_method_id = SelectField(
+        label=u'当日窓口決済',
+        validators=[Optional()],
+        choices=[],
+        coerce=int
+    )
 
     def validate_stocks(form, field):
         if len(field.data) > 1:
             raise ValidationError(u'複数の席種を選択することはできません')
         if not form.products.choices:
             raise ValidationError(u'選択された座席に紐づく予約可能な商品がありません')
+
+class ClientOptionalForm(ClientForm):
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        ClientForm.__init__(self, formdata, obj, prefix, **kwargs)
+
+        # 全てのフィールドをOptionalにする
+        for field in self:
+            for i, validator in enumerate(field.validators):
+                setattr(field.flags, 'required', False)
+                if isinstance(validator, Required):
+                    del field.validators[i]
+                    break;
+            field.validators.append(Optional())
 
 class SejTicketForm(Form):
     ticket_type = SelectField(

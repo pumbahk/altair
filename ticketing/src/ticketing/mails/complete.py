@@ -4,6 +4,7 @@ from .api import get_complete_mail, preview_text_from_message, message_settings_
 from .api import get_mailinfo_traverser
 from .api import create_or_update_mailinfo,  create_fake_order
 from .forms import OrderInfoRenderer
+from ticketing.cart import helpers as ch ##
 import logging
 logger = logging.getLogger(__name__)
 
@@ -12,7 +13,6 @@ from pyramid import renderers
 from pyramid_mailer.message import Message
 from .interfaces import ICompleteMail
 from zope.interface import implementer
-from ticketing.cart import helpers as ch ##
 from ticketing.core.models import MailTypeEnum
 import functools
 

@@ -30,7 +30,7 @@ var load = function(url) {
 				var block = svgfind($('*', b), 'si:property', 'name', 'name');
 				$('#block').text(block ? block.childNodes.item(0).data : '?');
 				var row = svgfind($('*', r), 'si:property', 'name', 'name');
-				$('#row').text(row ? row.childNodes.item(0).data : '?');
+				$('#row').text(row ? (0 < row.childNodes.length ? row.childNodes.item(0).data : '') : '?');
 				$('#seat').text($('title', this).text());
 				$('#seat_id').text($(this).attr('id'));
 				var obj = svgfind($('metadata *', this), 'si:object');
@@ -68,7 +68,7 @@ $(function() {
 <div>
 	<form style="padding-top: 8px;">
 	<u>Seat Check Tool</u>
-	Location: <input type="text" id="url" value="../akita-shiritsu.xml" style="width: 90%" />
+	Location: <input type="text" id="url" value="svgs/kesennuma.xml" style="width: 90%" />
 	<input type="submit" value="Load" />
 	</form>
 	<div style="height: 20px;" id="status">

@@ -37,9 +37,8 @@ import javax.swing.JPanel;
 
 import javax.swing.JComboBox;
 
-import jp.ticketstar.ticketing.printing.AppService;
+import jp.ticketstar.ticketing.swing.GenericComboBoxModel;
 import jp.ticketstar.ticketing.printing.BoundingBoxOverlay;
-import jp.ticketstar.ticketing.printing.GenericComboBoxModel;
 import jp.ticketstar.ticketing.printing.GuidesOverlay;
 import jp.ticketstar.ticketing.printing.AppModel;
 import jp.ticketstar.ticketing.printing.JGVTComponent;
@@ -50,7 +49,7 @@ import jp.ticketstar.ticketing.printing.PageSetModel;
 import org.apache.batik.swing.gvt.Overlay;
 
 public class AppWindow implements IAppWindow {
-	AppService appService;
+	AppWindowService appService;
 	AppModel model;
 	
 	private JFrame frame;
@@ -59,6 +58,8 @@ public class AppWindow implements IAppWindow {
 
 	private GuidesOverlay guidesOverlay;
 	private BoundingBoxOverlay boundingBoxOverlay;
+	private boolean interactionEnabled = true;
+	
 	private ComponentListener centeringListener = new ComponentListener() {
 		public void componentHidden(ComponentEvent e) {}
 
@@ -149,7 +150,7 @@ public class AppWindow implements IAppWindow {
 	/**
 	 * Create the application.
 	 */
-	public AppWindow(AppService appService) {
+	public AppWindow(AppWindowService appService) {
 		this.appService = appService;
 		initialize();
 		appService.setAppWindow(this);
@@ -185,6 +186,13 @@ public class AppWindow implements IAppWindow {
 		this.model = model;
 	}
 
+	public void setInteractionEnabled(boolean value) {
+		final boolean prevValue = this.interactionEnabled;
+		this.interactionEnabled = value;
+		if (prevValue != value)
+			this.frame.setEnabled(value);
+	}
+	
 	/**
 	 * Initialize the contents of the frame.
 	 */

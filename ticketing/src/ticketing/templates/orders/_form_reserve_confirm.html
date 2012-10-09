@@ -1,0 +1,100 @@
+<%page args="form, cart" />
+<%namespace file="/common/helpers.html" name="h" />
+
+<script type="text/javascript">
+  $(function() {
+    if (window.ticketPrinterService) {
+      $('#reserve-button').text('予約して発券する');
+    }
+  });
+</script>
+
+<div id="modal-reserve" class="modal fade">
+  <div class="modal-header">
+    <h3>予約確認</h3>
+  </div>
+
+  <div class="modal-body">
+    <form action="javascript:completeOrder();" method="POST">
+      <div class="content">
+        <div class="alert alert-success">
+          <h4 class="alert-heading">以下の内容で予約してよいですか？</h4>
+        </div>
+      </div>
+
+      <fieldset>
+        <table class="table table-striped table-bordered">
+          <tr>
+            <th colspan="2">商品</th>
+            <th style="width: 80px; text-align: right;">単価</th>
+            <th style="width: 80px; text-align: right;">個数</th>
+          </tr>
+          % for carted_product in cart.products:
+          <tr>
+            <td colspan="2">${carted_product.product.name}</td>
+            <td style="text-align: right;">
+              <span name="product_price-${carted_product.id}">${h.price_format(carted_product.product.price)}円</span>
+            </td>
+            <td style="text-align: right;">
+              ${carted_product.quantity}
+            </td>
+          </tr>
+            % for carted_product_item in carted_product.items:
+          <tr>
+            <td></td>
+            <td>
+              ${carted_product_item.product_item.stock_type.name}
+              <ul>
+                % for seat in carted_product_item.seats:
+                <li>${seat.name}</li>
+                % endfor
+              </ul>
+            </td>
+            <td style="text-align: right;">
+              ${h.price_format(carted_product_item.product_item.price)}円
+            </td>
+            <td style="text-align: right;">
+              % if carted_product.product.seat_stock_type.quantity_only:
+              <span name="product_quantity-${carted_product.id}">${carted_product.quantity}</span>
+              % else:
+              ${len(carted_product_item.seats)}
+              % endif
+            </td>
+          </tr>
+            % endfor
+          % else:
+          <tr>
+            <td colspan="2">決済手数料 (${cart.payment_delivery_pair.payment_method.name})</td>
+            <td style="text-align: right;">${h.price_format(cart.delivery_fee)}円</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td colspan="2">配送手数料 (${cart.payment_delivery_pair.delivery_method.name})</td>
+            <td style="text-align: right;">${h.price_format(cart.transaction_fee)}円</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td colspan="2">システム利用料</td>
+            <td style="text-align: right;">${h.price_format(cart.system_fee)}円</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td colspan="2">合計金額</td>
+            <td style="text-align: right;">${h.price_format(cart.total_amount)}円</td>
+            <td></td>
+          </tr>
+          % endfor
+        </table>
+
+        ${h.form_item(form.sales_counter_payment_method_id)}
+        ${h.form_item(form.performance_id)}
+        ${h.form_item(form.note, option={'rows':5, 'class':'span10'})}
+      </fieldset>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <a href="javascript:void(0);" onclick="javascript:reselectOrder();" class="btn secondary btn-close">戻る</a>
+    <a href="javascript:void(0);" onclick="$('#modal-reserve').find('form').submit();" class="btn danger" id="reserve-button">予約する</a>
+  </div>
+</div>

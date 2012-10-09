@@ -23,6 +23,7 @@ bookenv/
 jyenv/
 pypyenv/
 env*/
+tmp/
 docs/images/schema.png
 src/schema.dot
 src/schema.plantuml

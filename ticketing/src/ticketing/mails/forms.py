@@ -160,17 +160,6 @@ class MailInfoTemplate(object):
     payment_key_fmt = "P%s%s"
     delivery_key_fmt = "D%s%s"
 
-    @classmethod
-    def payment_key(self, order, k):
-        payment_plugin_id  = order.payment_delivery_pair.payment_method.payment_plugin_id
-        return self.payment_key_fmt % (payment_plugin_id, k)
-
-    @classmethod
-    def delivery_key(self, order, k):
-        delivery_plugin_id  = order.payment_delivery_pair.delivery_method.delivery_plugin_id
-        return self.delivery_key_fmt % (delivery_plugin_id, k)
-
-
     def payment_methods_choices(self):
         return [("P%d" % m.payment_plugin_id, m.name)
             for m in self.organization.payment_method_list]

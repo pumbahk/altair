@@ -1,14 +1,17 @@
 """multitenant
 
 Revision ID: 423bbf5b2949
+<<<<<<< HEAD
+Revises: 49fe03fd8e61
+=======
 Revises: 4d71f19c4087
+>>>>>>> release/20120926
 Create Date: 2012-09-19 16:44:55.019302
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '423bbf5b2949'
-#down_revision = '4d71f19c4087'
 down_revision = "49fe03fd8e61"
 
 from alembic import op

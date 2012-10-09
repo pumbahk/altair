@@ -29,8 +29,20 @@ class ICompleteMail(Interface):
 
 class ICompleteMailPayment(Interface):
     """ 完了メールの配送ビューレットのコンテキスト"""
+    request = Attribute("r")
     order = Attribute(u"注文内容")
 
 class ICompleteMailDelivery(Interface):
     """ 完了メールの配送ビューレットのコンテキスト"""
+    request = Attribute("r")
+    order = Attribute(u"注文内容")
+
+class IOrderCancelMailPayment(Interface):
+    """ 購入キャンセルメールの配送ビューレットのコンテキスト"""
+    request = Attribute("r")
+    order = Attribute(u"注文内容")
+
+class IOrderCancelMailDelivery(Interface):
+    """ 購入キャンセルメールの配送ビューレットのコンテキスト"""
+    request = Attribute("r")
     order = Attribute(u"注文内容")

@@ -8,6 +8,9 @@ import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.util.List;
 
+import jp.ticketstar.ticketing.PrintableEventListener;
+import jp.ticketstar.ticketing.PrintableEventSupport;
+
 public class TicketPrintable implements Printable {
 	protected final List<Page> pages;
 	protected final AffineTransform transform;

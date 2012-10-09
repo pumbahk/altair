@@ -223,7 +223,6 @@
     this.drawing = null;
     this.metadata = null;
     this.keyEvents = null;
-    this.zoomRatio = 1.0;
     this.uiMode = 'select1';
     this.shapes = null;
     this.seats = null;
@@ -248,6 +247,17 @@
     if (data.metadata.seat_adjacencies)
       this.seatAdjacencies = new models.SeatAdjacencies(data.metadata.seat_adjacencies);
     this.initDrawable();
+    this.initModel();
+    this.initSeats();
+    this.callbacks.load && this.callbacks.load(this);
+  };
+
+  VenueEditor.prototype.refresh = function VenueEditor_refresh(data) {
+    for (var key in data.metadata) {
+      for (var id in data.metadata[key]) {
+        this.metadata[key][id] = data.metadata[key][id];
+      }
+    }
     this.initModel();
     this.initSeats();
     this.callbacks.load && this.callbacks.load(this);
@@ -578,6 +588,11 @@
     }
   };
 
+  VenueEditor.prototype.clearAll = function VenueEditor_clearAll() {
+    this.venue.clearEdited();
+    this.unselectAll();
+  };
+
   VenueEditor.prototype.adjacencyLength = function VenueEditor_adjacencyLength(value) {
     if (value !== void(0)) {
       this._adjacencyLength = value;
@@ -611,6 +626,7 @@
             var waiter = new util.AsyncDataWaiter({
               identifiers: ['drawing', 'metadata'],
               after: function main(data) {
+                aux.loaded_at = Math.ceil((new Date).getTime() / 1000);
                 aux.manager.load(data);
               }
             });
@@ -648,6 +664,25 @@
           case 'clearSelection':
             aux.manager.unselectAll();
             return;
+
+          case 'clearAll':
+            aux.manager.clearAll();
+            return;
+
+          case 'refresh':
+            // Load metadata
+            $.ajax({
+              url: aux.dataSource.metadata + '&loaded_at=' + aux.loaded_at,
+              dataType: 'json',
+              success: function(data) {
+                aux.loaded_at = Math.ceil((new Date).getTime() / 1000);
+                aux.manager.refresh({'metadata':data});
+              },
+              error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load seat data (reason: " + text + ")"); }
+            });
+            aux.callbacks.loading && aux.callbacks.loading(aux.manager);
+            aux.manager.clearAll();
+            break;
 
           case 'adjacency':
             aux.manager.adjacencyLength(arguments[1]|0);

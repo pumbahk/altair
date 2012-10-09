@@ -3,16 +3,16 @@
 """
 TODO: cart取得はリソースの役目
 """
-
+import functools
 from pyramid.view import render_view_to_response
 from pyramid.compat import escape
 from markupsafe import Markup
 from webhelpers.html.tags import *
 from webhelpers.number import format_number as _format_number
-from markupsafe import Markup
-from zope.interface import implementer
-from .resources import OrderDelivery, CartDelivery, OrderPayment, CartPayment, CompleteMailDelivery, CompleteMailPayment
+from .resources import OrderDelivery, CartDelivery, OrderPayment, CartPayment
 from ..core.models import FeeTypeEnum, SalesSegment, StockTypeEnum
+from ticketing.mails.helpers import render_delivery_finished_mail_viewlet, render_payment_finished_mail_viewlet
+from ticketing.mails.helpers import render_delivery_cancel_mail_viewlet, render_payment_cancel_mail_viewlet
 import logging
 from .api import get_nickname
 
@@ -134,30 +134,6 @@ def product_name_with_unit(product, performance_id):
             u"%s:%d枚" % (escape(item.stock_type.name), item.quantity)
             for item in items))
 
-def render_delivery_finished_mail_viewlet(request, order):
-    logger.debug("*" * 80)
-    plugin_id = order.payment_delivery_pair.delivery_method.delivery_plugin_id
-    logger.debug("plugin_id:%s" % plugin_id)
-
-    order = CompleteMailDelivery(order)
-    response = render_view_to_response(order, request, name="delivery-%s" % plugin_id, secure=False)
-    if response is None:
-        logger.debug("*complete mail*: %s is not found" % "delivery-%s" % plugin_id)
-        return u""
-    return Markup(response.text)
-
-def render_payment_finished_mail_viewlet(request, order):
-    logger.debug("*" * 80)
-    plugin_id = order.payment_delivery_pair.payment_method.payment_plugin_id
-    logger.debug("plugin_id:%s" % plugin_id)
-    order = CompleteMailPayment(order)
-    response = render_view_to_response(order, request, name="payment-%s" % plugin_id, secure=False)
-
-    if response is None:
-        logger.debug("*complete mail*: %s is not found" % "payment-%s" % plugin_id)
-        return ""
-    return Markup(response.text)
-
 def get_availability_text(quantity):
     if quantity == 0:
         return u'×'
@@ -165,3 +141,4 @@ def get_availability_text(quantity):
         return u'△'
     else:
         return u'◎'
+

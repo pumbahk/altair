@@ -40,7 +40,7 @@
 
     $('#public').change(function() {
       if ($(this).attr('checked')) {
-        $(this).val(${form.public.default});
+        $(this).val(1);
       } else {
         $(this).val(0);
       }
@@ -71,7 +71,7 @@
 </div>
 
 <div class="well">
-  <form class="form-horizontal" action="${route_path}" enctype="multipart/form-data" method="POST">
+  <form class="form-horizontal" action="${route_path}" method="POST">
     <fieldset>
       % if request.matched_route.name == 'payment_delivery_method_pairs.new':
       ${h.form_item(form.payment_method_id)}

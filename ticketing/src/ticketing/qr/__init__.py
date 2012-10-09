@@ -22,7 +22,15 @@ tag2int = {
     "seat": 14,
     }
 int2tag = dict([(tag2int[t], t) for t in tag2int])
+class InvalidSignedString(Exception):
+    pass
 
+from zope.interface import Interface, Attribute, implementer
+
+class IQRDataBuilder(Interface):
+    key = Attribute("seed")
+
+@implementer(IQRDataBuilder)
 class qr:
     def enc32(self, i):
         """encode 0-31 integer"""
@@ -131,8 +139,7 @@ class qr:
         
         d["date"] = self.decdate(d["date"])
         d["type"] = self.__shift32m(list(d["type"]))
-        d["seat"] = self.dec42(list(d["seat"]))
-        
+        d["seat_name"] = self.dec42(list(d["seat"]))
         return d
     
     def sign(self, body):
@@ -152,3 +159,40 @@ class qr:
     
     def validate(self, signbody):
         return self.sign(signbody[8:]) == signbody
+
+    def data_from_signed(self, signbody):
+        return DataExtractorFromSigned(self, signbody).extract()
+
+class DataExtractorFromSigned(object):
+    """ちょっと長い名前にする。
+    したいことは。QR画像に入ったデータ(signed string)から、記録前のデータを取り出すこと。
+    """
+    def __init__(self, qr, signed):
+        self.qr = qr
+        self.signed = signed
+        self.sign_header = signed[:8]
+        self.body= signed[8:]
+
+    def _extract(self):
+        return self.qr.parse(self.body)
+        
+    def extract(self):
+        data = self._extract()
+        r_signed = self.qr.sign(self.qr.make(data))
+        if not self._validate(r_signed):
+            raise InvalidSignedString("not %s == %s" % (self.signed, r_signed))
+        return data
+
+    def _validate(self, r_signed):
+        """ QRコードに入ったsigned stringとそこから生成されたデータを元に改めて作成したsigneヘッダが等しいか調べる
+        """
+        return self.signed == r_signed
+
+def get_qrdata_builder(request):
+    return request.registry.getUtility(IQRDataBuilder)
+
+def includeme(config):
+    builder = qr()
+    builder.key = u"THISISIMPORTANTSECRET"
+    config.registry.registerUtility(builder, IQRDataBuilder)
+

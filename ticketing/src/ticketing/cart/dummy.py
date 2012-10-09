@@ -2,7 +2,6 @@
 
 from pyramid.response import Response
 from pyramid.renderers import render
-
 def includeme(config):
     config.add_route("dummy.cart.payment", "/dummy/payment")
     config.add_view(payment_view, route_name="dummy.cart.payment")
@@ -61,14 +60,14 @@ def confirm_view(request):
         magazines = []
         user = mock.Mock()
         params = dict(cart=cart, mailmagazines=magazines, user=user, form=form)
-        result = render("carts/confirm.html", params, request=request)
+        result = render("carts/89ers/confirm.html", params, request=request)
         return Response(result)
     
 def complete_view(request):
     import mock
     with mock.patch("ticketing.cart.rakuten_auth.api.authenticated_user"):
         order = _dummy_order()
-        result = render("carts/completion.html", dict(order=order), request=request)
+        result = render("carts/89ers/completion.html", dict(order=order), request=request)
         return Response(result)
 
 def payment_view(request):
@@ -80,7 +79,7 @@ def payment_view(request):
                     payment_delivery_methods=[], 
                     user=mock.Mock(), 
                     user_profile=mock.Mock())
-        result = render("carts/payment.html", params, request=request)
+        result = render("carts/89ers/payment.html", params, request=request)
         return Response(result)
     
 def timeout_view(request):

@@ -9,14 +9,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import jp.ticketstar.ticketing.printing.ApplicationException;
-import jp.ticketstar.ticketing.printing.DDimension2D;
+import jp.ticketstar.ticketing.ApplicationException;
+import jp.ticketstar.ticketing.DDimension2D;
 import jp.ticketstar.ticketing.printing.OurPageFormat;
-import jp.ticketstar.ticketing.printing.PrintingUtils;
+import jp.ticketstar.ticketing.PrintingUtils;
 import jp.ticketstar.ticketing.printing.TicketFormat;
-import jp.ticketstar.ticketing.printing.URLConnectionFactory;
-import jp.ticketstar.ticketing.printing.URLFetcher;
-import jp.ticketstar.ticketing.printing.UnitUtils;
+import jp.ticketstar.ticketing.URLConnectionFactory;
+import jp.ticketstar.ticketing.URLFetcher;
+import jp.ticketstar.ticketing.UnitUtils;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -74,14 +74,14 @@ public class FormatLoader {
 		mediaTypeMap.put("JIS_B6", PageAttributes.MediaType.JIS_B6);
 	}
 	
-	PageAttributes.MediaType resolveMediaTypeString(String mediaType) {
+	protected static PageAttributes.MediaType resolveMediaTypeString(String mediaType) {
 		final PageAttributes.MediaType retval = mediaTypeMap.get(mediaType);
 		if (retval == null)
 			throw new ApplicationException("Invalid media type string: " + mediaType);
 		return retval;
 	}
 
-	List<OurPageFormat> buildPageFormats(final JsonArray result) {
+	protected static List<OurPageFormat> buildPageFormats(final JsonArray result) {
 		final List<OurPageFormat> retval = new ArrayList<OurPageFormat>();
 		for (final JsonElement _pageFormatDatum: result) {
 			final JsonObject pageFormatDatum = _pageFormatDatum.getAsJsonObject();
@@ -134,7 +134,7 @@ public class FormatLoader {
 		return retval;
 	}
 	
-	List<TicketFormat> buildTicketFormats(final JsonArray result) {
+	protected static List<TicketFormat> buildTicketFormats(final JsonArray result) {
 		final List<TicketFormat> retval = new ArrayList<TicketFormat>();
 		for (final JsonElement _ticketFormatDatum: result) {
 			final JsonObject ticketFormatDatum = _ticketFormatDatum.getAsJsonObject();
@@ -182,6 +182,12 @@ public class FormatLoader {
 		}
 		return retval;
 	}
+
+	public static FormatPair buildFormatsFromJsonObject(final JsonObject data) {
+		return new FormatPair(
+			buildPageFormats(data.get("page_formats").getAsJsonArray()),
+			buildTicketFormats(data.get("ticket_formats").getAsJsonArray()));
+	}
 	
 	public FormatPair fetchFormats(AppAppletConfiguration config) {
 		JsonObject result;
@@ -194,10 +200,7 @@ public class FormatLoader {
 		}
 		if (!result.get("status").getAsString().equals("success"))
 			throw new ApplicationException("Failed to fetch page formats");
-		JsonObject data = result.get("data").getAsJsonObject();
-		return new FormatPair(
-			buildPageFormats(data.get("page_formats").getAsJsonArray()),
-			buildTicketFormats(data.get("ticket_formats").getAsJsonArray()));
+		return buildFormatsFromJsonObject(result.get("data").getAsJsonObject());
 	}
 
 	public FormatLoader(URLConnectionFactory connFactory) {

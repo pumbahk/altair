@@ -14,11 +14,6 @@
 <script type="text/javascript" src="/static/js/fashion.vml.js"></script>
 <![endif]-->
 <script type="text/javascript" src="/static/js/jquery.decentcolorpicker.js"></script>
-<script type="text/javascript">
-$(function () {
-  $(".kolorPicker").decentcolorpicker();
-});
-</script>
 <script type="text/javascript" src="/static/js/ticketing.performance.js"></script>
 <script type="text/javascript" src="/static/js/ticketing.venue-editor.js"></script>
 </%block>
@@ -70,22 +65,29 @@ $(function () {
 
 <div class="tabbable tabs-top" id="tabbable-content">
   <ul class="nav nav-tabs">
+    % if h.has_permission('event_editor'):
     <li id="seat-allocation-tab"><a href="${route_path}/seat-allocation">席種／配券</a></li>
     <li id="product-tab"><a href="${route_path}/product">商品</a></li>
+    % endif
+    <li id="order-tab"><a href="${route_path}/order">購入情報</a></li>
     <li id="reservation-tab"><a href="${route_path}/reservation">予約</a></li>
   </ul>
   <div class="tab-content" id="tabbable-tab-content">
-    % if tab == 'product':
+    % if tab == 'product' and h.has_permission('event_editor'):
     <div class="tab-pane" id="product">
       <%include file="./_product.html" args="performance=performance, form_product=form_product, form_product_item=form_product_item" />
     </div>
+    % elif tab == 'order':
+    <div class="tab-pane" id="order">
+      <%include file="./_order.html" args="form=form_order, form_search=form_search, orders=orders" />
+    </div>
     % elif tab == 'reservation':
     <div class="tab-pane" id="reservation">
-      <%include file="./_reservation.html" args="form=form_order, form_search=form_search, orders=orders" />
+      <%include file="./_reservation.html" args="performance=performance" />
     </div>
-    % else:
+    % elif h.has_permission('event_editor'):
     <div class="tab-pane" id="seat-allocation">
-      <%include file="./_seat_allocation.html" args="performance=performance, form_reserve=form_reserve" />
+      <%include file="./_seat_allocation.html" args="performance=performance, sales_summary=sales_summary" />
     </div>
     % endif
   </div>

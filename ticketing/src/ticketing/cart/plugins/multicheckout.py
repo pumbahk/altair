@@ -8,15 +8,13 @@ from pyramid.httpexceptions import HTTPFound
 from ticketing.multicheckout import helpers as m_h
 from ticketing.multicheckout import api as multicheckout_api
 from ticketing.core import models as c_models
-from ..interfaces import IPaymentPlugin, ICartPayment, IOrderPayment, ICompleteMailPayment
+from ..interfaces import IPaymentPlugin, ICartPayment, IOrderPayment, ICompleteMailPayment, IOrderCancelMailPayment
 from .models import DBSession
 from .. import schemas
 from .. import logger
 from .. import helpers as h
 from .. import api
 from ..exceptions import NoCartError
-from ticketing.mails.api import get_mail_utility
-from ticketing.mails.forms import MailInfoTemplate
 from ticketing.cart.selectable_renderer import selectable_renderer
 
 logger = logging.getLogger(__name__)
@@ -152,9 +150,7 @@ def completion_payment_mail_viewlet(context, request):
     """ 完了メール表示
     :param context: ICompleteMailPayment
     """
-    mutil = get_mail_utility(request, c_models.MailTypeEnum.CompleteMail)
-    trv = mutil.get_traverser(request, context.order)
-    notice=trv.data[MailInfoTemplate.payment_key(context.order, "notice")]
+    notice=context.mail_data("notice")
     return Response(u"""
 ＜クレジットカードでのお支払いの方＞
 
@@ -165,6 +161,13 @@ def completion_payment_mail_viewlet(context, request):
 クレジットカードの引き落としは、カード会社によって異なります。詳細はご利用のカード会社へお問い合わせください。
 %s
 """ % notice)
+
+@view_config(context=IOrderCancelMailPayment, name="payment-%d" % PAYMENT_ID)
+def cancel_payment_mail_viewlet(context, request):
+    """ 完了メール表示
+    :param context: ICompleteMailPayment
+    """
+    return Response(context.mail_data("notice"))
 
 class MultiCheckoutView(object):
     """ マルチ決済API

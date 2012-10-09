@@ -4,25 +4,51 @@ from StringIO import StringIO
 import json
 import webhelpers.paginate as paginate
 import sqlalchemy as sa
+from sqlalchemy.orm.exc import NoResultFound
 from datetime import datetime
 from lxml import etree
 from ticketing.fanstatic import with_bootstrap
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 
+from ..utils import json_safe_coerce
 from ..views import BaseView
 from ..models import DBSession
 from ..core.models import DeliveryMethod
 from ..core.models import TicketFormat, PageFormat, Ticket
 from ..core.models import TicketPrintQueueEntry, TicketPrintHistory
-from ..core.models import OrderedProductItem, OrderedProduct, Order
+from ..core.models import OrderedProductItemToken, OrderedProductItem, OrderedProduct, Order
 from . import forms
 from . import helpers
-from .utils import SvgPageSetBuilder
+from .utils import SvgPageSetBuilder, build_dict_from_ordered_product_item_token, _default_builder
 from .response import FileLikeResponse
 from .convert import to_opcodes
 
+def ticket_format_to_dict(ticket_format):
+    data = dict(ticket_format.data)
+    data[u'id'] = ticket_format.id
+    data[u'name'] = ticket_format.name
+    return data
 
+def ticket_to_dict(ticket):
+    data = dict(ticket.data)
+    data[u'id'] = ticket.id
+    data[u'name'] = ticket.name
+    data[u'ticket_format_id'] = ticket.ticket_format_id
+    return data
+
+def page_format_to_dict(page_format):
+    data = dict(page_format.data)
+    data[u'id'] = page_format.id
+    data[u'name'] = page_format.name
+    data[u'printer_name'] = page_format.printer_name
+    return data
+
+def page_formats_for_organization(organization):
+    return [
+        page_format_to_dict(page_format) \
+        for page_format in DBSession.query(PageFormat).filter_by(organization=organization)
+        ]
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class TicketMasters(BaseView):
@@ -290,8 +316,6 @@ class TicketTemplates(BaseView):
         self.request.session.flash(u'チケットテンプレートを登録しました')
         return HTTPFound(location=self.request.route_path("tickets.index"))
 
-    @view_config(route_name="events.tickets.boundtickets.edit", renderer='ticketing:templates/tickets/events/tickets/new.html', 
-                 request_method="GET")
     @view_config(route_name='tickets.templates.edit', renderer='ticketing:templates/tickets/templates/new.html',
                  request_method="GET")
     def edit(self):
@@ -309,8 +333,6 @@ class TicketTemplates(BaseView):
             )
         return dict(h=helpers, form=form, template=template)
 
-    @view_config(route_name="events.tickets.boundtickets.edit", renderer='ticketing:templates/tickets/events/tickets/new.html', 
-                 request_method="POST")
     @view_config(route_name='tickets.templates.edit', renderer='ticketing:templates/tickets/templates/new.html',
                  request_method="POST")
     def edit_post(self):
@@ -335,9 +357,6 @@ class TicketTemplates(BaseView):
         self.request.session.flash(u'チケットテンプレートを更新しました')
         return self.context.after_ticket_action_redirect()
 
-
-    @view_config(route_name='events.tickets.boundtickets.delete', request_method="GET", 
-                 renderer="ticketing:templates/tickets/events/_deleteform.html")
     def delete(self):
         ticket_id = self.request.matchdict["id"]
         event_id = self.request.matchdict["event_id"]
@@ -347,7 +366,6 @@ class TicketTemplates(BaseView):
                                           event_id=event_id)
         return dict(message=message, next_to=next_to)
 
-    @view_config(route_name='events.tickets.boundtickets.delete', request_method="POST")
     @view_config(route_name='tickets.templates.delete', request_method="POST")
     def delete_post(self):
         template = self.context.tickets_query().filter_by(
@@ -362,14 +380,12 @@ class TicketTemplates(BaseView):
 
         return self.context.after_ticket_action_redirect()
 
-    @view_config(route_name='events.tickets.boundtickets.show', renderer='ticketing:templates/tickets/events/tickets/show.html')
     @view_config(route_name='tickets.templates.show', renderer='ticketing:templates/tickets/templates/show.html')
     def show(self):
         qs = self.context.tickets_query().filter_by(id=self.request.matchdict['id'])
         template = qs.filter_by(organization_id=self.context.user.organization_id).one()
         return dict(h=helpers, template=template)
 
-    @view_config(route_name="events.tickets.boundtickets.download")
     @view_config(route_name='tickets.templates.download')
     def download(self):
         qs = self.context.tickets_query().filter_by(id=self.request.matchdict['id'])
@@ -377,7 +393,6 @@ class TicketTemplates(BaseView):
         return FileLikeResponse(StringIO(template.drawing),
                                 request=self.request)
 
-    @view_config(route_name="events.tickets.boundtickets.data", renderer="json")
     @view_config(route_name='tickets.templates.data', renderer='json')
     def data(self):
         qs = self.context.tickets_query().filter_by(id=self.request.matchdict['id'])
@@ -410,12 +425,26 @@ class TicketPrintQueueEntries(BaseView):
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class TicketPrinter(BaseView):
-    @view_config(route_name='tickets.printer', renderer='ticketing:templates/tickets/printer.html')
-    def printer(self):
-        return dict(endpoints=dict(
+    @property
+    def endpoints(self):
+        return dict(
             (key, self.request.route_path('tickets.printer.api.%s' % key))
             for key in ['formats', 'peek', 'dequeue']
-            ))
+            )
+
+    @view_config(route_name='tickets.printer', renderer='ticketing:templates/tickets/printer.html')
+    def printer(self):
+        return dict(endpoints=self.endpoints)
+
+    @view_config(route_name='tickets.printer', renderer='ticketing:templates/tickets/printer.embedded.html', custom_predicates=(lambda c, r: '__embedded__' in r.GET,))
+    def printer_embedded(self):
+        return dict(
+            endpoints=self.endpoints,
+            orders=DBSession.query(Order) \
+                   .join(OrderedProduct) \
+                   .join(OrderedProductItem) \
+                   .join(TicketPrintQueueEntry) \
+                   .filter_by(operator=self.context.user))
 
     @view_config(route_name='tickets.printer.api.enqueue', request_method='POST', renderer='json')
     def enqueue(self):
@@ -424,32 +453,118 @@ class TicketPrinter(BaseView):
 
     @view_config(route_name='tickets.printer.api.formats', renderer='json')
     def formats(self):
-        page_formats = []
-        for page_format in DBSession.query(PageFormat).filter_by(organization=self.context.organization):
-            data = dict(page_format.data)
-            data[u'id'] = page_format.id
-            data[u'name'] = page_format.name
-            data[u'printer_name'] = page_format.printer_name
-            page_formats.append(data)
         ticket_formats = []
         for ticket_format in DBSession.query(TicketFormat).filter_by(organization=self.context.organization):
-            data = dict(ticket_format.data)
-            data[u'id'] = ticket_format.id
-            data[u'name'] = ticket_format.name
-            ticket_formats.append(data)
+            ticket_formats.append(ticket_format_to_dict(ticket_format))
         return { u'status': u'success',
-                 u'data': { u'page_formats': page_formats,
+                 u'data': { u'page_formats': page_formats_for_organization(self.context.organization),
                             u'ticket_formats': ticket_formats } }
+
+    @view_config(route_name='tickets.printer.api.ticket', renderer='json')
+    def ticket(self):
+        event_id = self.request.matchdict['event_id']
+        ticket_id = self.request.matchdict['id'].strip()
+        q = DBSession.query(Ticket) \
+            .filter_by(organization_id=self.context.organization.id)
+        if event_id != '*':
+            q = q.filter_by(event_id=event_id)
+        if ticket_id:
+            q = q.filter_by(id=ticket_id)
+        tickets = q.all()
+        return {
+            u'status': 'success',
+            u'data': {
+                u'ticket_formats': [ticket_format_to_dict(ticket_format) for ticket_format in dict((ticket.ticket_format.id, ticket.ticket_format) for ticket in tickets).itervalues()],
+                u'page_formats': page_formats_for_organization(self.context.organization),
+                u'ticket_templates': [ticket_to_dict(ticket) for ticket in tickets]
+                }
+            }
+
+    @view_config(route_name='tickets.printer.api.ticket_data', request_method='POST', renderer='json')
+    def ticket_data(self):
+        ordered_product_item_token_id = self.request.json_body.get('ordered_product_item_token_id')
+        ordered_product_item_id = self.request.json_body.get('ordered_product_item_id')
+        try:
+            if ordered_product_item_token_id is not None:
+                ordered_product_item_token = \
+                    DBSession.query(OrderedProductItemToken) \
+                    .filter_by(id=ordered_product_item_token_id) \
+                    .join(OrderedProductItem) \
+                    .join(OrderedProduct) \
+                    .join(Order) \
+                    .filter_by(organization_id=self.context.organization.id) \
+                    .one()
+                pair = build_dict_from_ordered_product_item_token(ordered_product_item_token)
+                retval = [] 
+                if pair is not None:
+                    retval.append({
+                        u'ordered_product_item_token_id': ordered_product_item_token.id,
+                        u'ordered_product_item_id': ordered_product_item_token.item.id,
+                        u'order_id': ordered_product_item_token.item.ordered_product.order.id,
+                        u'seat_id': ordered_product_item_token.seat_id,
+                        u'serial': ordered_product_item_token.serial,
+                        u'data': json_safe_coerce(pair[1])
+                        })
+                return {
+                    u'status': u'success',
+                    u'data': retval
+                    }
+            elif ordered_product_item_id is not None:
+                ordered_product_item = DBSession.query(OrderedProductItem) \
+                    .filter_by(id=ordered_product_item_id) \
+                    .join(OrderedProduct) \
+                    .join(Order) \
+                    .filter_by(organization_id=self.context.organization.id) \
+                    .one()
+                extra = _default_builder.build_basic_dict_from_ordered_product_item(ordered_product_item)
+                retval = []
+                for ordered_product_item_token in ordered_product_item.tokens:
+                    pair = _default_builder._build_dict_from_ordered_product_item_token(extra, ordered_product_item, ordered_product_item_token)
+                    if pair is not None:
+                        retval.append({
+                            u'ordered_product_item_token_id': ordered_product_item_token.id,
+                            u'ordered_product_item_id': ordered_product_item_token.item.id,
+                            u'order_id': ordered_product_item_token.item.product.order.id,
+                            u'seat_id': ordered_product_item_token.seat_id,
+                            u'serial': ordered_product_item_token.serial,
+                            u'data': pair[1]
+                            })
+                return {
+                    u'status': u'success',
+                    u'data': retval
+                    }
+            return { u'status': u'error', u'message': u'insufficient parameters' }
+        except NoResultFound:
+            return { u'status': u'error', u'message': u'not found' }
+
+    @view_config(route_name='tickets.printer.api.history', request_method='POST', renderer='json')
+    def history(self):
+        seat_id = self.request.json_body.get(u'seat_id')
+        ordered_product_item_token_id = self.request.json_body.get(u'ordered_product_item_token_id')
+        ordered_product_item_id = self.request.json_body.get(u'ordered_product_item_id')
+        order_id = self.request.json_body.get(u'order_id')
+        ticket_id = self.request.json_body[u'ticket_id']
+        DBSession.add(
+            TicketPrintHistory(
+                operator_id=self.context.user.id,
+                seat_id=seat_id,
+                item_token_id=ordered_product_item_token_id,
+                ordered_product_item_id=ordered_product_item_id,
+                order_id=order_id,
+                ticket_id=ticket_id
+                ))
+        return { u'status': u'success' }
 
     @view_config(route_name='tickets.printer.api.peek', request_method='POST', renderer='lxml')
     def peek(self):
         page_format_id = self.request.json_body['page_format_id']
         ticket_format_id = self.request.json_body['ticket_format_id']
+        order_id = self.request.json_body.get('order_id')
         page_format = DBSession.query(PageFormat).filter_by(id=page_format_id).one()
         ticket_format = DBSession.query(TicketFormat).filter_by(id=ticket_format_id).one()
         builder = SvgPageSetBuilder(page_format.data, ticket_format.data)
         tickets_per_page = builder.tickets_per_page
-        for entry in TicketPrintQueueEntry.peek(self.context.user, ticket_format_id):
+        for entry in TicketPrintQueueEntry.peek(self.context.user, ticket_format_id, order_id=order_id):
             builder.add(etree.fromstring(entry.data['drawing']), entry.id, title=(entry.summary if tickets_per_page == 1 else None))
         return builder.root
 
@@ -468,3 +583,22 @@ class TicketPrinter(BaseView):
             return { u'status': u'success' }
         else:
             return { u'status': u'error' }
+
+
+@view_defaults(decorator=with_bootstrap, permission="event_editor")
+class QRReaderViewDemo(BaseView):
+    @view_config(route_name='tickets.printer', renderer='ticketing:templates/tickets/qrreader-demo.html', custom_predicates=(lambda c, r: '__qrreader_demo__' in r.GET,))
+    def qrreader_demo(self):
+        return dict(
+            endpoints=dict(
+                tickettemplates=self.request.route_path('tickets.printer.api.ticket', event_id='*', id=''),
+                ticketdata=self.request.route_path('tickets.printer.api.ticket_data'),
+                history=self.request.route_path('tickets.printer.api.history')
+                ),
+            ordered_product_item_tokens= \
+                DBSession.query(OrderedProductItemToken) \
+                    .join(OrderedProductItem) \
+                    .join(OrderedProduct) \
+                    .join(Order) \
+                    .filter_by(organization_id=self.context.organization.id))
+

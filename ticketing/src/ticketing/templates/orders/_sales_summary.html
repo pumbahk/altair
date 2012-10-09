@@ -1,0 +1,77 @@
+<%page args="sales_summary" />
+<%namespace file="/common/helpers.html" name='h' />
+
+<script type="text/javascript">
+  $(function() {
+    % for row in sales_summary:
+    $('#stock-type-${row['stock_type'].id}').click(function (){
+      % for stock in row['stocks']:
+      $('.stock-${stock['stock'].id}').toggle();
+      % endfor
+    });
+    % endfor
+  });
+</script>
+
+<div class="container-fluid" style="margin-top: 20px;">
+  <div class="row-fluid">
+    <div class="span12">
+      <table class="table table-bordered table-condensed" style="margin-bottom: 10px;">
+        <thead>
+        <tr>
+          <th style="width:20px"></th>
+          <th style="width:40px">席種</th>
+          <th style="width:40px">配券先</th>
+          <th class="span3">商品名</th>
+          <th class="span4">販売区分</th>
+          <th style="width:60px">残席数 <button class="btn btn-mini" onclick="javascript:getSalesSummary();"><i class="icon-refresh"></i></button></th>
+          <th class="span1">販売席数</th>
+          <th class="span2">予約する</th>
+        </tr>
+        </thead>
+        <tbody>
+        % for row in sales_summary:
+        <tr id="stock-type-${row['stock_type'].id}">
+          <td>${h.seat_style(row['stock_type'].style)}</td>
+          <td colspan="4">${row['stock_type'].name}</td>
+          <td>${row['rest_quantity']}</td>
+          <td>${row['total_quantity']}</td>
+          <td></td>
+        </tr>
+          % for stock in row['stocks']:
+        <tr style="display:none;" class="stock-${stock['stock'].id}">
+          <% rowspan = len(stock['products']) if stock['products'] else 1 %>
+          <td rowspan="${rowspan}"></td>
+          <td rowspan="${rowspan}"></td>
+          <td rowspan="${rowspan}">${stock['stock'].stock_holder.name}</td>
+            % if stock['products']:
+            <% product = stock['products'][0] %>
+          <td>${product.name} (${h.price_format(product.price)}円)</td>
+          <td>${product.sales_segment.name} (${h.safe_strftime(product.sales_segment.start_at)} 〜 ${h.safe_strftime(product.sales_segment.end_at)})</td>
+            % else:
+          <td rowspan="${rowspan}"></td>
+          <td rowspan="${rowspan}"></td>
+            % endif
+          <td rowspan="${rowspan}">${stock['stock'].stock_status.quantity}</td>
+          <td rowspan="${rowspan}">${stock['stock'].quantity}</td>
+          <td rowspan="${rowspan}">
+            % if stock['products'] and stock['stock'].stock_status.quantity:
+            <a href="javascript:getOrderForm(${stock['stock'].id});" class="btn btn-primary">おまかせ</a>
+            % endif
+          </td>
+        </tr>
+            % if stock['products']:
+              % for product in stock['products'][1:]:
+        <tr style="display:none;" class="stock-${stock['stock'].id}">
+          <td style="border-left: 1px solid #ddd;">${product.name} (${h.price_format(product.price)}円)</td>
+          <td>${product.sales_segment.name} (${h.safe_strftime(product.sales_segment.start_at)} 〜 ${h.safe_strftime(product.sales_segment.end_at)})</td>
+        </tr>
+              % endfor
+            % endif
+          % endfor
+        % endfor
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

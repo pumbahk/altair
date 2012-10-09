@@ -79,7 +79,7 @@ class PaymentDeliveryMethodPairForm(Form):
     )
     public = IntegerField(
         label=u'一般公開',
-        default=1,
+        default=0,
         widget=CheckboxInput(),
     )
 

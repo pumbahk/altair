@@ -1,3 +1,4 @@
+<%namespace file="/common/helpers.html" name="h" />
 <%
   from pyramid.threadlocal import get_current_registry
   settings = get_current_registry().settings
@@ -16,6 +17,7 @@
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">${request.context.user.name}<b class="caret"></b></a>
                         <ul class="dropdown-menu">
+                            % if h.has_permission('master_viewer'):
                             <li><a href="${request.route_path('login.info')}">
                                 <i class="icon-cog"> </i>
                                 個人設定</a>
@@ -24,11 +26,12 @@
                                   <i class="icon-cog"> </i>
                                 オペレーター管理</a>
                             </li>
-                            % if testing:
+                              % if testing:
                             <li><a href="${request.route_path('organizations.index')}">
                               <i class="icon-cog"> </i>
                               取引先マスタ管理</a>
                             </li>
+                              % endif
                             % endif
                             <li><a href="${request.route_path('login.logout')}">
                                 <i class="icon-off"> </i>

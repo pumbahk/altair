@@ -28,8 +28,10 @@ def includeme(config):
     config.add_route('tickets.printer', '/print/printer')
     config.add_route('tickets.printer.api.formats', '/print/formats')
     config.add_route('tickets.printer.api.enqueue', '/print/enqueue')
+    config.add_route('tickets.printer.api.ticket', '/print/ticket/{event_id}/{id:.*}')
+    config.add_route('tickets.printer.api.ticket_data', '/print/ticket_data')
+    config.add_route('tickets.printer.api.history', '/print/history')
     config.add_route('tickets.printer.api.peek', '/print/peek')
     config.add_route('tickets.printer.api.dequeue', '/print/dequeue')
 
-    ## events.tickets.templatesもview`configに含まれている
     config.scan('.views')

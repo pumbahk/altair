@@ -28,5 +28,31 @@ def includeme(config):
 
     add_route("events.tickets.api.ticketform", "/api/event/{event_id}/_ticketform")
     add_route("events.tickets.api.bundleform", "/api/event/{event_id}/_bundleform")
-
+    
+    config.add_view("ticketing.tickets.views.TicketTemplates",
+                    attr="edit", request_method="GET", 
+                    route_name="events.tickets.boundtickets.edit", 
+                    renderer='ticketing:templates/tickets/events/tickets/new.html')
+    config.add_view("ticketing.tickets.views.TicketTemplates",
+                    attr="edit_post", request_method="POST", 
+                    route_name="events.tickets.boundtickets.edit", 
+                    renderer='ticketing:templates/tickets/events/tickets/new.html')
+    config.add_view("ticketing.tickets.views.TicketTemplates",
+                    attr="delete", request_method="GET", 
+                    route_name="events.tickets.boundtickets.delete", 
+                    renderer='ticketing:templates/tickets/events/_deleteform.html')
+    config.add_view("ticketing.tickets.views.TicketTemplates",
+                    attr="delete_post", request_method="POST", 
+                    route_name="events.tickets.boundtickets.delete")
+    config.add_view("ticketing.tickets.views.TicketTemplates",
+                    attr="show", request_method="GET", 
+                    route_name="events.tickets.boundtickets.show", 
+                    renderer='ticketing:templates/tickets/events/tickets/show.html')
+    config.add_view("ticketing.tickets.views.TicketTemplates",
+                    attr="download", request_method="GET", 
+                    route_name="events.tickets.boundtickets.download")
+    config.add_view("ticketing.tickets.views.TicketTemplates",
+                    attr="data", request_method="GET", 
+                    route_name="events.tickets.boundtickets.data", 
+                    renderer="json")
     config.scan(".views")

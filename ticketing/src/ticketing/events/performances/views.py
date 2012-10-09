@@ -7,14 +7,15 @@ import webhelpers.paginate as paginate
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
+from pyramid.security import has_permission, ACLAllowed
 
 from ticketing.core.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.events.performances.forms import PerformanceForm
-from ticketing.core.models import Event, Performance, Order
+from ticketing.core.models import Event, Performance, Order, Product, ProductItem, Stock
 from ticketing.products.forms import ProductForm, ProductItemForm
-from ticketing.orders.forms import OrderForm, OrderSearchForm, OrderReserveForm
+from ticketing.orders.forms import OrderForm, OrderSearchForm
 
 from ticketing.mails.forms import MailInfoTemplate
 from ticketing.models import DBSession
@@ -25,7 +26,7 @@ from ticketing.core.models import MailTypeChoices
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class Performances(BaseView):
 
-    @view_config(route_name='performances.index', renderer='ticketing:templates/performances/index.html')
+    @view_config(route_name='performances.index', renderer='ticketing:templates/performances/index.html', permission='event_viewer')
     def index(self):
         event_id = int(self.request.matchdict.get('event_id', 0))
         event = Event.get(event_id, organization_id=self.context.user.organization_id)
@@ -51,8 +52,8 @@ class Performances(BaseView):
             'form':PerformanceForm(organization_id=self.context.user.organization_id),
         }
 
-    @view_config(route_name='performances.show', renderer='ticketing:templates/performances/show.html')
-    @view_config(route_name='performances.show_tab', renderer='ticketing:templates/performances/show.html')
+    @view_config(route_name='performances.show', renderer='ticketing:templates/performances/show.html', permission='event_viewer')
+    @view_config(route_name='performances.show_tab', renderer='ticketing:templates/performances/show.html', permission='event_viewer')
     def show(self):
         performance_id = int(self.request.matchdict.get('performance_id', 0))
         performance = Performance.get(performance_id, self.context.user.organization_id)
@@ -62,17 +63,18 @@ class Performances(BaseView):
         data = {'performance':performance}
 
         tab = self.request.matchdict.get('tab', 'product')
+        if not isinstance(has_permission('event_editor', self.request.context, self.request), ACLAllowed):
+            if tab not in ['order', 'reservation']:
+                tab = 'reservation'
+
         if tab == 'seat-allocation':
-            data['form_reserve'] = OrderReserveForm(performance_id=performance_id)
+            pass
         elif tab == 'product':
             data['form_product'] = ProductForm(event_id=performance.event_id)
             data['form_product_item'] = ProductItemForm(user_id=self.context.user.id, performance_id=performance_id)
-        elif tab == 'reservation':
-            data['form_order'] = OrderForm(event_id=performance.event_id)
-            data['form_search'] = OrderSearchForm(performance_id=performance_id)
-
+        elif tab == 'order':
             query = Order.filter_by(performance_id=performance_id)
-            form_search = OrderSearchForm(self.request.params)
+            form_search = OrderSearchForm(self.request.params, performance_id=performance_id)
             if form_search.validate():
                 query = Order.set_search_condition(query, form_search)
             else:
@@ -83,10 +85,21 @@ class Performances(BaseView):
                 items_per_page=20,
                 url=paginate.PageURL_WebOb(self.request)
             )
+            data['form_search'] = form_search
+            data['form_order'] = OrderForm(event_id=performance.event_id)
         elif tab == 'ticket-designer':
+            pass
+        elif tab == 'reservation':
             pass
 
         data['tab'] = tab
+
+        # プリンターAPI
+        data['endpoints'] = dict(
+            (key, self.request.route_path('tickets.printer.api.%s' % key))
+            for key in ['formats', 'peek', 'dequeue']
+            )
+
         return data
 
     @view_config(route_name='performances.new', request_method='GET', renderer='ticketing:templates/performances/edit.html')

@@ -1,4 +1,5 @@
 <%page args="event=None" />
+<%namespace file="/common/helpers.html" name="h" />
 <%
   from ticketing.bookmark.models import Bookmark
   from pyramid.threadlocal import get_current_registry
@@ -19,8 +20,11 @@
       <li><a href="${request.route_path('reports.index', event_id=event.id)}"></i>帳票</a></li>
     </ul>
     % endif
+    % if h.has_permission('master_viewer'):
     <li><a href="${request.route_path('accounts.index')}">取引先</a></li>
+    % endif
     <li class="divider"></li>
+    % if h.has_permission('master_viewer'):
     <li class="nav-header">マスタ管理</li>
     % if testing:
     <li><a href="">会場図</a></li>
@@ -29,6 +33,7 @@
     <li><a href="${request.route_path('delivery_methods.index')}">配送方法</a></li>
     <li><a href="${request.route_path('tickets.index')}">チケット券面</a></li>
     <li class="divider"></li>
+    % endif
     <li class="nav-header">ユーザー管理</li>
     <li><a href="${request.route_path('orders.index')}">購入情報</a></li>
     % if testing:

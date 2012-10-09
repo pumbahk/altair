@@ -87,6 +87,7 @@ def main(global_config, **settings):
     config.include(import_mail_module)
 
     config.include('.')
+    config.include("ticketing.qr")
     config.include('.rakuten_auth')
     who_config = settings['pyramid_who.config']
     from authorization import MembershipAuthorizationPolicy
@@ -102,8 +103,6 @@ def main(global_config, **settings):
     config.include('.plugins')
     config.include('.errors')
 
-    config.include("ticketing.orderreview.import_view")
-    config.scan("ticketing.orderreview.views")
     if settings.get('altair.debug_mobile'):
         config.add_tween('ticketing.mobile.tweens.mobile_request_factory')
 

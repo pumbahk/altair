@@ -3,6 +3,7 @@
 """ TBA
 """
 from ticketing.mails.interfaces import ICompleteMailDelivery, ICompleteMailPayment
+from ticketing.mails.interfaces import IOrderCancelMailDelivery, IOrderCancelMailPayment
 from zope.interface import Interface, Attribute
 
 class IPaymentMethodManager(Interface):

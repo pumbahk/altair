@@ -40,9 +40,10 @@ ${products}
 ${notice}
 
 お支払方法： ${payment_method_name}
-${payment_notice}
+${h.render_payment_cancel_mail_viewlet(request,order)}
 お受取方法： ${delivery_method_name}
-${delivery_notice}
+${h.render_delivery_cancel_mail_viewlet(request,order)}
+
 
 ─────────────問い合わせ─────────────────
 ${order.ordered_from.name}

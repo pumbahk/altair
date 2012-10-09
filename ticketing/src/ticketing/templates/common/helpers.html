@@ -159,9 +159,9 @@ ${locale.format("%d", price, grouping=True)}
         % for key in order:
         <li>
           % if key == 'delete':
-          <a href="${actions[key]['url']}" data-controls-modal="modal-delete" data-backdrop="true" data-keyboard="true" ${attrs_str()|n}>
+          <a href="${actions[key]['url']}" data-controls-modal="modal-delete" data-backdrop="true" data-keyboard="true">
           % else:
-          <a href="${actions[key]['url']}" ${attrs_str()|n}>
+          <a href="${actions[key]['url']}">
           % endif
             <i class="${actions[key]['icon']}"></i> ${actions[key]['label']}
           </a>
@@ -181,4 +181,14 @@ ${locale.format("%d", price, grouping=True)}
     % endif
   % endif
 </div>
+</%def>
+
+<%!
+  from pyramid.security import has_permission as security_has_permission
+  from pyramid.security import ACLAllowed
+%>
+<%def name="has_permission(permission)">
+<%
+  return isinstance(security_has_permission(permission, request.context, request), ACLAllowed)
+%>
 </%def>

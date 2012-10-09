@@ -9,6 +9,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 
+import jp.ticketstar.ticketing.UnitUtils;
 
 import org.apache.batik.swing.gvt.Overlay;
 
