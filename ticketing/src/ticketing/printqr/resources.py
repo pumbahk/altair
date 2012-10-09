@@ -1,6 +1,8 @@
 from pyramid.decorator import reify
 from pyramid.security import Allow, Everyone, authenticated_userid
 from ticketing.operators.models import Operator, OperatorAuth
+import logging
+logger = logging.getLogger(__name__)
 
 class PrintQRResource(object):
     def __init__(self, request):
@@ -19,14 +21,18 @@ class PrintQRResource(object):
 
     @reify
     def api_resource(self):
+        event_id = self.request.matchdict.get("event_id", "*")
         return {
-            "api.ticket.data": self.request.route_url("api.ticket.data"), 
+            "api.ticket.data": self.request.route_path("api.ticket.data", event_id=event_id), 
             "api.ticketdata_from_token_id": self.request.route_path('api.applet.ticket_data'),
+            "api.ticket.after_printed": self.request.route_path("api.ticket.after_printed")
             }
     @reify
     def applet_endpoints(self):
+        event_id = self.request.matchdict.get("event_id", "*")
+        logger.debug("tickettemplates:api -- %s" % self.request.route_path('api.applet.ticket', event_id=event_id, id=''))
         return {
-            "tickettemplates": self.request.route_path('api.applet.ticket', event_id='*', id=''),
+            "tickettemplates": self.request.route_path('api.applet.ticket', event_id=event_id, id=''),
             "ticketdata": self.request.route_path('api.applet.ticket_data'),
             "history": self.request.route_path('api.applet.history')
             }

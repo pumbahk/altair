@@ -1,0 +1,38 @@
+<%inherit file="./base.html"/>
+
+<style type="text/css">
+#wrapper{
+  margin-top: 100px; 
+}
+body {
+  font: 17px "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+</style>
+
+<div id="wrapper" class="container">
+  
+  ${request.context.organization.name}  担当:${request.context.operator.name}
+  <div id="message_box">
+    <div id="alert_message" class="hide alert"></div>
+    <div id="info_message" class="hide alert alert-info"></div>
+    <div id="error_message" class="hide alert alert-error"></div>
+    <div id="success_message" class="hide alert alert-success"></div>
+  </div>
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>イベントid</th>
+        <th>イベント名</th>
+      </tr>
+    </thead>
+    <tbody>
+      %for event in events:
+        <tr>
+          <td>${event.id}</td>
+          <td><a href="${request.route_path("qrapp", event_id=event.id)}">${event.title}</a></td>
+        </tr>
+      %endfor
+    </tbody>
+  </table>
+</div>

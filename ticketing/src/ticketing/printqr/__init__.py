@@ -11,8 +11,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 def includeme(config):
-    config.add_route("index", "/")
-    config.add_route("api.ticket.data", "/api/ticket/data")
+    config.add_route("qrapp", "/qrapp/{event_id}")
+    config.add_route("eventlist", "/")    
+    config.add_route("api.ticket.data", "/api/ticket/data/{event_id}")
+    config.add_route("api.ticket.after_printed", "/api/ticket/after_printed")
+
     config.add_route('api.applet.ticket', '/api/applet/ticket/{event_id}/{id:.*}')
     config.add_route('api.applet.ticket_data', '/api/applet/ticket_data')
     config.add_route('api.applet.history', '/api/applet/history')
@@ -23,6 +26,9 @@ def includeme(config):
 
 
 def main(global_config, **settings):
+    from ticketing.logicaldeleting import install as install_ld
+    install_ld()
+
     engine = engine_from_config(settings, pool_recycle=3600)
     sqlahelper.add_engine(engine)
 
@@ -39,7 +45,6 @@ def main(global_config, **settings):
     config.include("ticketing.qr", route_prefix="qr")
     config.include(".")
     config.add_forbidden_view(".views.login_view", renderer="ticketing.printqr:templates/login.html")
-    # config.set_root_factory('.resources.TicketingPrintqrResource')
     config.add_static_view('static', 'ticketing.printqr:static', cache_max_age=3600)
     config.add_static_view('_static', 'ticketing:static', cache_max_age=10800)
     return config.make_wsgi_app()
