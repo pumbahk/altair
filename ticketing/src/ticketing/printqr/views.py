@@ -106,6 +106,13 @@ def ticket_after_printed_edit_status(context, request):
         logger.warn(mes % (token.id, token.printed_at))
         return {"status": "error", "data": {}, "message": "token is already printed"}
 
+    history = utils.add_history(
+        request, 
+        context.user.id,
+        request.json_body
+        )
+    DBSession.add(history)
+
     setter = PrintedAtBubblingSetter(datetime.now())
     setter.printed_token(token)
     setter.start_bubbling()
@@ -176,18 +183,10 @@ class AppletAPIView(object):
 
     @view_config(route_name='api.applet.history', request_method='POST', renderer='json')
     def history(self):
-        seat_id = self.request.json_body.get(u'seat_id')
-        ordered_product_item_token_id = self.request.json_body.get(u'ordered_product_item_token_id')
-        ordered_product_item_id = self.request.json_body.get(u'ordered_product_item_id')
-        order_id = self.request.json_body.get(u'order_id')
-        ticket_id = self.request.json_body[u'ticket_id']
-        DBSession.add(
-            TicketPrintHistory(
-                operator_id=self.context.user.id,
-                seat_id=seat_id,
-                item_token_id=ordered_product_item_token_id,
-                ordered_product_item_id=ordered_product_item_id,
-                order_id=order_id,
-                ticket_id=ticket_id
-                ))
+        history = utils.add_history(
+            self.request, 
+            self.context.user.id,
+            self.request.json_body
+            )
+        DBSession.add(history)
         return { u'status': u'success' }

@@ -75,11 +75,30 @@ def ticketdata_from_qrdata(qrdata, event_id="*"):
         "user": shipping_address.full_name_kana, 
         "codeno": codeno, 
         "ordered_product_item_token_id": token.id, 
+        "ordered_product_item_id": history.ordered_product_item.id, 
         "printed": str(token.printed_at) if token.printed_at else None, 
         "orderno": order.order_no, 
+        "order_id": order.id, 
         "performance_name": performance_name, 
         "performance_date": h.japanese_datetime(performance.start_on), 
         "event_id": performance.event_id, 
         "product_name": product_name, 
+        "seat_id": seat.id, 
         "seat_name": seat.name if seat else u""
         }
+
+def add_history(request, operator_id, params):
+    seat_id = params.get(u'seat_id')
+    ordered_product_item_token_id = params.get(u'ordered_product_item_token_id')
+    ordered_product_item_id = params.get(u'ordered_product_item_id')
+    order_id = params.get(u'order_id')
+    ticket_id = params[u'ticket_id']
+    return TicketPrintHistory(
+        operator_id=operator_id, 
+        seat_id=seat_id,
+        item_token_id=ordered_product_item_token_id,
+        ordered_product_item_id=ordered_product_item_id,
+        order_id=order_id,
+        ticket_id=ticket_id
+        )
+
