@@ -12,6 +12,8 @@ import java.util.List;
 import javax.print.PrintService;
 
 import jp.ticketstar.ticketing.ApplicationException;
+import jp.ticketstar.ticketing.PrintableEvent;
+import jp.ticketstar.ticketing.PrintableEventListener;
 import jp.ticketstar.ticketing.qrreader.gui.IAppWindow;
 
 import org.apache.batik.bridge.BridgeContext;
@@ -35,12 +37,12 @@ public class AppService {
 		appWindow.bind(model);
 	}
 
-	protected TicketPrintable createTicketPrintable(PrinterJob job) {
+	protected TicketPrintable createTicketPrintable(PrinterJob job, final List<Ticket> tickets) {
 		final List<GraphicsNode> svgs = new ArrayList<GraphicsNode>();
 		final TicketTemplate template = model.getTicketTemplate();
 		final GVTBuilder builder = new GVTBuilder();
 		try {
-			for (Ticket ticket: model.getTickets()) {
+			for (Ticket ticket: tickets) {
 				final SVGDocument doc = template.buildSVGDocument(ticket);
 				final BridgeContext ctx = bridgeContextFactory.createBridgeContext((SVGOMDocument)doc);
 				svgs.add(builder.build(ctx, doc));
@@ -60,9 +62,15 @@ public class AppService {
 				try {
 					final PrinterJob job = PrinterJob.getPrinterJob();
 					job.setPrintService(model.getPrintService());
-					job.setPrintable(
-						createTicketPrintable(job),
-						model.getPageFormat());
+					final List<Ticket> tickets = new ArrayList<Ticket>(model.getTickets());
+					final TicketPrintable printable = createTicketPrintable(job, tickets);
+					printable.addPrintableEventListener(new PrintableEventListener() {
+						@Override
+						public void pagePrinted(PrintableEvent evt) {
+							model.getTickets().remove(tickets.get(evt.getPageIndex()));
+						}
+					});
+					job.setPrintable(printable, model.getPageFormat());
 					job.print();
 				} catch (Exception e) {
 					e.printStackTrace();
