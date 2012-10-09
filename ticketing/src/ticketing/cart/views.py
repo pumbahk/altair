@@ -73,9 +73,9 @@ class IndexView(object):
         """
         .. todo::
 
-           - イベントで利用可能な販売区分を取得する
-           - 複数の場合は選択画面を表示
-           - １つの場合はその販売区分ページにリダイレクト
+           - [x] イベントで利用可能な販売区分を取得する
+           - [x] 複数の場合は選択画面を表示
+           - [x] １つの場合はその販売区分ページにリダイレクト
 
            - performance指定の場合、そのperformanceが当日だったら、当日販売区分に遷移する
            - そうでない場合は、当日販売区分以外の販売区分が１つの場合その販売区分に遷移する
@@ -85,11 +85,15 @@ class IndexView(object):
         event = self.request.context.event
         if event is None:
             raise HTTPNotFound()
+
+        # イベントで利用可能な販売区分を取得する
         sales_segments = self.context.sales_segments
         if not sales_segments:
             logger.debug("No matching sales_segment")
             raise NoEventError("No matching sales_segment")
         if len(sales_segments) == 1:
+            # １つの場合はその販売区分ページにリダイレクト
+
             logger.debug("one sales_segment is matched")
             sales_segment = sales_segments[0]
             event_id = self.request.matchdict['event_id']
@@ -99,6 +103,8 @@ class IndexView(object):
                 _query=self.request.GET)
             return HTTPFound(location=location)
         logger.debug("multiple sales_segments are matched")
+
+        # 複数の場合は選択画面を表示
         return dict(sales_segments=sales_segments,
             event=event)
 
