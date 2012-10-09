@@ -26,7 +26,7 @@
         <% if limit and i >= limit: break %>
       <tr id="sales_segment-${sales_segment.id}">
         <% count = len(sales_segment.payment_delivery_method_pairs) %>
-        <% rowspan = 'rowspan=%s' % (count) %>
+        <% rowspan = 'rowspan=%s' % (count) if count else '' %>
         <td ${rowspan}>
           <input type="radio" name="sales_segment_id" value="${sales_segment.id}" />
           <input type="hidden" id="kind" value="${sales_segment.kind}" />
