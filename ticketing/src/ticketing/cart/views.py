@@ -248,6 +248,8 @@ class IndexView(object):
                 performance_name=performance.name,
                 performance_start=h.performance_date(performance),
                 performance_id=performance_id,
+                order_url=self.request.route_url("cart.order", 
+                        sales_segment_id=sales_segment_id),
                 venue_name=performance.venue.name,
                 event_id=event_id,
                 venue_id=performance.venue.id,
