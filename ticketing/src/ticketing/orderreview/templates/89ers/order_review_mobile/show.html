@@ -40,6 +40,15 @@ ${shipping.address_2}
 ${shipping.tel_1}<br />
 <%mobile:form_header>メールアドレス</%mobile:form_header>
 ${shipping.email}<br />
+% if order.status in ['canceled', 'refunded']:
+<%mobile:form_header>この購入/予約はキャンセルされました</%mobile:form_header>
+<font size="-2">
+キャンセル処理は、下記のような理由によりおこなっております。<br />
+・お客様からキャンセルのご連絡があったため<br />
+・期限内のご入金がなくキャンセル扱いとしたため<br />
+・二重注文により、ひとつをキャンセル処理したため
+</font>
+% else:
 <%mobile:form_header>お支払い</%mobile:form_header>
 % if order.payment_delivery_pair.payment_method.payment_plugin.id == 1:
 <div>クレジットカード</div>
@@ -89,6 +98,7 @@ ${shipping.address_2}
 <div>QRコード</div>
 ${h.render_delivery_finished_viewlet(request, order)}
 %endif
+% endif
 <div>
 &#xe737;注意事項<br />
 <font size="-2">

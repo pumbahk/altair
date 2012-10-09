@@ -71,6 +71,17 @@
 <%
 shipping =order.shipping_address
 %>
+            % if order.status in ['canceled', 'refunded']:
+            <div class="kadomaru">
+              <h3><span class="red">この購入/予約はキャンセルされました</span></h3>
+              <p>
+                キャンセル処理は、下記のような理由によりおこなっております。<br />
+                ・お客様からキャンセルのご連絡があったため<br />
+                ・期限内のご入金がなくキャンセル扱いとしたため<br />
+                ・二重注文により、ひとつをキャンセル処理したため<br />
+              </p>
+            </div>
+            % else:
             <div class="kadomaru">
                 <h3>お支払</h3>
                 ${h.render_payment_finished_viewlet(request, order)}
@@ -79,6 +90,7 @@ shipping =order.shipping_address
                 <h3>お引取</h3>
                 ${h.render_delivery_finished_viewlet(request, order)}
             </div>
+            % endif
             <div class="kadomaru">
                 <h3>購入者情報</h3>
                 <table class="purchasedContents" summary="配送先情報">
