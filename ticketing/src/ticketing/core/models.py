@@ -823,9 +823,9 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     # membergroup = relationship('MemberGroup', backref='salessegments')
 
     def delete(self):
-        # 商品が割り当てられている場合は削除できない
-        if self.product:
-            raise Exception(u'商品の割当がある為、削除できません')
+        # delete Product
+        for product in self.product:
+            product.delete()
 
         # delete PaymentDeliveryMethodPair
         for pdmp in self.payment_delivery_method_pairs:
@@ -1384,9 +1384,9 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         #ProductItem.create_default(product=self)
 
     def delete(self):
-        # 在庫が割り当てられている場合は削除できない
-        if self.items:
-            raise Exception(u'座席および席数の割当がある為、削除できません')
+        # delete ProductItem
+        for product_item in self.items:
+            product_item.delete()
 
         super(Product, self).delete()
 
