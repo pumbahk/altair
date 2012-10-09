@@ -697,7 +697,8 @@ cart.OrderFormPresenter.prototype = {
         var performance = cart.app.performance;
         var values = this.orderForm.serialize();
         $.ajax({
-            url: order_url, //this is global variable
+            //url: order_url, //this is global variable
+            url: performance.order_url,
             dataType: 'json',
             data: values,
             type: 'POST',

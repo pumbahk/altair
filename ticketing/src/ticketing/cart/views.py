@@ -179,12 +179,16 @@ class IndexView(object):
             for pv in pvs:
                 #select_venues[pname] = select_venues.get(pname, [])
                 logger.debug("performance %s" % pv)
+                sales_segment_id = (sales_counter_sales_segment.id 
+                            if pv['on_the_day'] else normal_sales_segment.id)
                 select_venues[pname].append(dict(
                     id=pv['pid'],
                     name=u'{start:%Y-%m-%d %H:%M}開始 {vname} {on_the_day} {pid}'.format(**pv),
+                    order_url=self.request.route_url("cart.order", 
+                        sales_segment_id=sales_segment_id),
                     seat_types_url=self.request.route_url('cart.seat_types',
                         performance_id=pv['pid'],
-                        sales_segment_id=normal_sales_segment.id,
+                        sales_segment_id=sales_segment_id,
                         event_id=event.id)))
             
         logger.debug("venues %s" % select_venues)
@@ -229,7 +233,6 @@ class IndexView(object):
 
         seat_type_triplets = get_seat_type_triplets(event_id, performance_id, sales_segment_id)
         performance = c_models.Performance.query.filter_by(id=performance_id).one()
-
         data = dict(seat_types=[
                 dict(id=s.id, name=s.name,
                     style=s.style,
