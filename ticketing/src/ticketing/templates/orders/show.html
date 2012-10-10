@@ -82,6 +82,18 @@ ${h.breadcrumbs(
         </td>
       </tr>
       <tr>
+        <th>発券済みフラグ</th>
+        <td>
+          % if order.issued:
+            発券済み
+            (<a href="#" data-toggle="modal" data-target="#ForceMarkUnissued">強制的に未発券に戻す</a>)
+          % else:
+            未発券
+            (<a href="#" data-toggle="modal" data-target="#ForceMarkIssued">強制的に発券済にする</a>)
+          % endif
+        </td>
+      </tr>
+      <tr>
         <th>配送日時</th>
         <td>
           % if order.delivered_at:
