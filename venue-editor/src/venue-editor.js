@@ -436,23 +436,32 @@
                   }
                 }
               } else {
-                if (seats[id].get('model').selectable())
-                  candidate = [id];
+                candidate = [id];
               }
               if (!candidate)
                 return;
               for (var i = 0; i < candidate.length; i++) {
                 var _id = candidate[i];
                 var seat = seats[_id];
-                seat.addStyleType('highlighted');
+                if (seat.get('model').selectable()) {
+                  seat.addStyleType('highlighted');
+                } else {
+                  seat.addStyleType('tooltip');
+                }
                 self.highlighted[_id] = seat;
               }
             },
             mouseout: function(evt) {
               var highlighted = self.highlighted;
               self.highlighted = {};
-              for (var i in highlighted)
-                highlighted[i].removeStyleType('highlighted');
+              for (var i in highlighted) {
+                var seat = highlighted[i];
+                if (seat.get('model').selectable()) {
+                  seat.removeStyleType('highlighted');
+                } else {
+                  seat.removeStyleType('tooltip');
+                }
+              }
             },
             mousedown: function(evt) {
               self.callbacks.click && self.callbacks.click(self, self, self.highlighted);

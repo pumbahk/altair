@@ -46,6 +46,8 @@ exports.DEFAULT = {
       fill: null,
       stroke: { color: "#F63", width: 2, pattern: 'solid' }
     },
+    tooltip: {
+    },
     unselectable: {
       text_color: "#888",
       fill:   { color: "#eee" },
