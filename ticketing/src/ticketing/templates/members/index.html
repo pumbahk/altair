@@ -13,7 +13,7 @@ ${breadcrumbs(
 
 <h2>member</h2>
 
-${choice_form.membership_id.label}${choice_form.membership_id}
+##${choice_form.membership_id.label}${choice_form.membership_id}
 <div class="btn-group">
   <a href="${request.route_path("members.member",membership_id=membership_id, action="edit_dialog")}"
      id="member_edit"
@@ -34,7 +34,7 @@ ${users.pager()}
       <th class="minwidth"></th>
       <th><a href="#" class="sortable">user id</a></th>
       <th><a href="#" class="sortable">名前</a></th>
-      <th><a href="#" class="sortable">membership</a></th>
+##      <th><a href="#" class="sortable">membership</a></th>
       <th><a href="#" class="sortable">membergroup</a></th>
     </tr>
   </thead>
@@ -44,7 +44,7 @@ ${users.pager()}
       <td><input type="checkbox" name="user_id" value="${user.id}" /></td>
       <td><a href="#">${user.id}</a></td>
       <td><a href="#">${user.first_user_credential.auth_identifier}</a></td>
-      <td><a href="#">${user.first_user_credential.membership.name}</a></td>
+##      <td><a href="#">${user.first_user_credential.membership.name}</a></td>
       <td><a href="#">${user.member.membergroup.name}</a></td>
     </tr>
   % endfor

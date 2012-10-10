@@ -8,6 +8,13 @@
  <form method="POST" action="${request.route_path("members.member",membership_id=membership_id,action="csv_import")}",
        enctype="multipart/form-data">
   <div class="modal-body">
+以下のような形式のcsvを受け取ります。
+<pre>
+&ltmembergroup&gt,&ltloginuser&gt,&ltpassword&gt
+&ltmembergroup&gt,&ltloginuser&gt,&ltpassword&gt
+...
+</pre>
+
 	  %for field in form:
 	    ${form_item(field)}
 	  %endfor
