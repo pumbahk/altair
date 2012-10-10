@@ -2099,7 +2099,7 @@ class TicketPrintQueueEntry(Base, BaseModel):
             entry.processed_at = now
             order = entry.ordered_product_item.ordered_product.order
             if not (entry.ticket.flags & Ticket.FLAG_ALWAYS_REISSUABLE):
-                entry.ordered_product_item.ordered_product.order.isseud = True
+                entry.ordered_product_item.ordered_product.order.issued = True
                 entry.ordered_product_item.issued_at = entry.ordered_product_item.printed_at = now
             order.last_issued_at = order.issued_at = order.printed_at = now
             order.issued = True
