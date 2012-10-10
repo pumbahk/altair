@@ -35,7 +35,7 @@ var DataStore = Backbone.Model.extend({
     this.set("product", data.product_name+"("+data.seat_name+")");
     if(!!(data.printed)){
       this.set("qrcode_status", "printed"); //order: qrcode_status ,  printed
-      this.set("printed", true);
+      this.set("printed", data.printed);
       this.trigger("*qr.printed.already");
     } else {
       this.set("printed", false);
@@ -54,7 +54,7 @@ var DataStoreDescriptionView = Backbone.View.extend({
     this.model.bind("change:printer_name", this.showPrinter, this);
     this.model.bind("change:page_format_name", this.showPageFormat, this);
     this.model.bind("change:ticket_template_name", this.showTicketTemplate, this);
-    this.model.bind("refresh", this.refresh, this);
+    this.model.bind("*refresh", this.refresh, this);
 
     this.$qrcode_status = this.$el.find("#desc_qrcode_status");
     this.$orderno = this.$el.find("#desc_orderno");
@@ -94,7 +94,18 @@ var DataStoreDescriptionView = Backbone.View.extend({
 
 
 var MessageView = Backbone.View.extend({
+  events: {
+    "click #printed_at_force_refresh": "sendRefreshPrintedStatusSignal", 
+  }, 
+  sendRefreshPrintedStatusSignal: function(){
+    if(!!(this.refreshCallback && window.confirm("本当に強制再発見しますか？"))){
+      this.refreshCallback();
+      this.refreshCallback = false;
+    }
+  }, 
   initialize: function(){
+    this.refreshCallback = false;
+
     this.$alert = this.$el.find("#alert_message");
     this.$info = this.$el.find("#info_message");
     this.$error = this.$el.find("#error_message");
@@ -104,21 +115,25 @@ var MessageView = Backbone.View.extend({
   _clear: function(){
     this.$messages.hide();
   }, 
-  alert: function(message){
+  alert: function(message, forcehtml){
     this._clear();
-    this.$alert.text(message).show();
+    var updator = !!(forcehtml)? this.$alert.html : this.$alert.text;
+    updator.call(this.$alert, message).show();
   }, 
-  info: function(message){
+  info: function(message, forcehtml){
     this._clear();
-    this.$info.text(message).show();
+    var updator = !!(forcehtml)? this.$info.html : this.$info.text;
+    updator.call(this.$info, message).show();
   }, 
-  error: function(message){
+  error: function(message, forcehtml){
     this._clear();
-    this.$error.text(message).show();
+    var updator = !!(forcehtml)? this.$error.html : this.$error.text;
+    updator.call(this.$error, message).show();
   }, 
-  success: function(message){
+  success: function(message, forcehtml){
     this._clear();
-    this.$success.text(message).show();
+    var updator = !!(forcehtml)? this.$success.html : this.$success.text;
+    updator.call(this.$success, message).show();
   }
 });
 
@@ -151,7 +166,34 @@ var QRInputView = AppPageViewBase.extend({
     this.communicating = false;
   }, 
   notifyPrintedAlready: function(){
-    this.messageView.alert("既にそのチケットは印刷されてます");
+    var fmt = 'そのチケットは既に印刷されてます(前回印刷日時:{0}) -- 強制発券しますか？<a id="{1}" class="btn">強制発券する</a>';
+    this.messageView.refreshCallback = this.refreshPrintedStatus.bind(this);
+    this.messageView.alert(fmt.replace("{0}", this.datastore.get("printed"))
+                              .replace("{1}", "printed_at_force_refresh") //see: messagView.events
+                            ,  true);
+  }, 
+  refreshPrintedStatus: function(){
+    var params = {
+      "ordered_product_item_token_id": this.datastore.get("ordered_product_item_token_id"), 
+      "order_no": this.datastore.get("orderno")
+    };
+    var self = this;
+    return $.ajax({
+      type: "POST", 
+      processData: false, 
+      data: JSON.stringify(params), 
+      contentType: 'application/json',
+      dataType: 'json',
+      url: this.apiResource["api.ticket.refresh.printed_status"]
+    }).done(function(data){
+      if (data['status'] != 'success') {
+        self.messageView.error(data['message']);
+        return;
+      }
+      self.datastore.set("printed", false);
+      self.messageView.success("チケットを再発券可能にしました");
+      self._loadQRCodeInput(self.$qrcode.val());
+    }).fail(function(s, msg){self.messageView.error(s.responseText)});
   }, 
   showStatus: function(){
     this.$status.text(this.datastore.get("qrcode_status"));
@@ -192,14 +234,14 @@ var QRInputView = AppPageViewBase.extend({
 
         self.messageView.error(data.message);
         self.datastore.set("qrcode_status", "fail");
-        self.datastore.trigger("refresh");
+        self.datastore.trigger("*refresh");
         return data;
       })
       .fail(function(s, err){
         self.messageView.error(s.responseText);
         self.datastore.set("qrcode_status", "fail");
-        self.datastore.trigger("refresh");
-      });
+        self.datastore.trigger("*refresh");
+      }).promise();;
   }
 });
 
@@ -325,7 +367,7 @@ var PrintConfirmView = AppPageViewBase.extend({
     if(!this._validationPrePrint()){
       return;
     }
-    if(this.datastore.get("printed")){
+    if(!!this.datastore.get("printed")){
       this.messageView.alert("既に印刷済みです。");
     }else{
       this.datastore.set("printed", true);
@@ -392,7 +434,7 @@ var AppletView = Backbone.View.extend({
       self.appviews.messageView.success("チケット印刷できました。");
       self.router.navigate("one", true);
       self.appviews.one.clearQRCodeInput();      
-    }).fail(function(s, msg){console.dir(s);self.appviews.messageView.error(s.responseText)});
+    }).fail(function(s, msg){self.appviews.messageView.error(s.responseText)});
   }, 
   setPrinter: function(){ //liner
     var printer_name = this.datastore.get("printer_name");
