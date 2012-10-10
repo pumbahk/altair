@@ -1595,6 +1595,9 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     _attributes = relationship("OrderAttribute", backref='order', collection_class=attribute_mapped_collection('name'), cascade='all,delete-orphan')
     attributes = association_proxy('_attributes', 'value', creator=lambda k, v: OrderAttribute(name=k, value=v))
 
+    def is_canceled(self):
+        return bool(self.canceled_at)
+
     def is_issued(self):
         """
         チケット券面が発行済みかどうかを返す。

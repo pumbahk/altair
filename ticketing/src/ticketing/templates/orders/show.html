@@ -84,12 +84,20 @@ ${h.breadcrumbs(
       <tr>
         <th>発券済みフラグ</th>
         <td>
-          % if order.issued:
-            発券済み
-            (<a href="#" data-toggle="modal" data-target="#ForceMarkUnissued">強制的に未発券に戻す</a>)
+          % if order.is_canceled():
+            % if order.issued:
+              発券済み
+            % else:
+              未発券
+            % endif
           % else:
-            未発券
-            (<a href="#" data-toggle="modal" data-target="#ForceMarkIssued">強制的に発券済にする</a>)
+            % if order.issued:
+              発券済み
+              (<a href="#" data-toggle="modal" data-target="#ForceMarkUnissued">強制的に未発券に戻す</a>)
+            % else:
+              未発券
+              (<a href="#" data-toggle="modal" data-target="#ForceMarkIssued">強制的に発券済にする</a>)
+            % endif
           % endif
         </td>
       </tr>
@@ -113,11 +121,12 @@ ${h.breadcrumbs(
     <div class="pull-right">
       <%
 buttons = []
-buttons.append('delivered')
 buttons.append('mailinfo')
-if not order.issued and not order.queued:
-  buttons.append('print')
-buttons.append('cancel')
+if not order.is_canceled():
+  buttons.append('delivered')
+  uttons.append('cancel')
+  if not order.issued_at and not order.queued:
+    buttons.append('print')
 %>
       <%include file="/orders/_action_button.html" args="order=order, sort=buttons" />
     </div>
