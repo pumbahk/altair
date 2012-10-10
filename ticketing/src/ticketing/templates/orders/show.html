@@ -30,6 +30,7 @@ ${h.breadcrumbs(
   ${h.flash_messages(request)}
 </div>
 
+<% order_is_already_queued_p = order.queued %>
 <div class="row-fluid">
   <div class="span6">
     <div class="page-header">
@@ -77,7 +78,11 @@ ${h.breadcrumbs(
           % if order.issued_at:
             ${h.safe_strftime(order.issued_at)}
           % else:
-            -
+            % if order_is_already_queued_p:
+              - <span class="label label-info">既に印刷キューに入っています</span>
+            % else:
+              -
+            % endif
           % endif
         </td>
       </tr>
@@ -124,9 +129,11 @@ buttons = []
 buttons.append('mailinfo')
 if not order.is_canceled():
   buttons.append('delivered')
-  uttons.append('cancel')
-  if not order.issued_at and not order.queued:
+  buttons.append('cancel')
+  if not order.issued_at and not order_is_already_queued_p:
     buttons.append('print')
+  else:
+    buttons.append('force_print')
 %>
       <%include file="/orders/_action_button.html" args="order=order, sort=buttons" />
     </div>

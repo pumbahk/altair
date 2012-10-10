@@ -83,6 +83,16 @@ actions = {
         },
     icon='icon-print'
   ),
+  'force_print':dict(
+    label=u'強制発券する',
+    url=request.route_path("orders.print.queue.dialog", order_id=order.id),
+    attrs={
+        "data-toggle": "modal",
+        "data-target": "#PrintQueueModal",
+        "class": "ajax-modal btn"
+        },
+    icon='icon-print'
+  ),
   'cancel':dict(
     label=u'キャンセル',
     url='javascript:cancel_order(%d);' % order.id,
