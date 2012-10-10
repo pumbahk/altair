@@ -178,11 +178,11 @@ class OrderReserveForm(Form):
                                   .join(Product.items)\
                                   .filter(ProductItem.performance_id==performance.id)\
                                   .filter(ProductItem.stock_id.in_(kwargs['stocks'])).all()
-            else:
-                # 数受け
-                products = Product.filter(Product.sales_segment_id.in_([ss.id for ss in sales_segments]))\
-                                  .join(Product.seat_stock_type)\
-                                  .filter(StockType.quantity_only==1).all()
+            #else:
+            #    # 数受け
+            #    products = Product.filter(Product.sales_segment_id.in_([ss.id for ss in sales_segments]))\
+            #                      .join(Product.seat_stock_type)\
+            #                      .filter(StockType.quantity_only==1).all()
             for p in products:
                 if p.sales_segment.start_at <= now and p.sales_segment.end_at >= now:
                     self.products.choices += [
@@ -196,6 +196,7 @@ class OrderReserveForm(Form):
         validators=[Required()],
     )
     stocks = HiddenField(
+        label='',
         validators=[Optional()],
     )
     note = TextAreaField(
@@ -225,6 +226,8 @@ class OrderReserveForm(Form):
     )
 
     def validate_stocks(form, field):
+        if len(field.data) == 0:
+            raise ValidationError(u'座席および席種を選択してください')
         if len(field.data) > 1:
             raise ValidationError(u'複数の席種を選択することはできません')
         if not form.products.choices:

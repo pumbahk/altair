@@ -87,10 +87,10 @@
 <script type="text/javascript">
   function getOrderForm(stock_id) {
     var param = {'seats':[], 'stocks':[], 'performance_id':${performance.id}};
-    var selection = venueEditorRoot.venueeditor('selection');
     if (stock_id) {
       param['stocks'].push(stock_id);
     } else {
+      var selection = venueEditorRoot.venueeditor('selection');
       selection.each(function (seat) {
         param['seats'].push(seat.id);
         var stock_id = seat.get('stock').get('id');
