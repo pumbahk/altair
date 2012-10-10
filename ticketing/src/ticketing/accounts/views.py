@@ -12,7 +12,7 @@ from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.fanstatic import with_bootstrap
 from ticketing.core.models import Account, Event
 from ticketing.sej.models import SejTenant
-from ticketing.accounts.forms import AccountForm
+from .forms import AccountForm, my_int_coerce
 from ticketing.organizations.forms import OrganizationForm
 
 @view_defaults(decorator=with_bootstrap, permission='master_editor')
@@ -58,8 +58,12 @@ class Accounts(BaseView):
     def new_post(self):
         f = AccountForm(self.request.POST, organization_id=self.context.user.organization.id)
         if f.validate():
-            account = merge_session_with_post(Account(), f.data)
-            account.organization_id = self.context.user.organization.id
+            account = Account(
+                account_type=f.data['account_type'],
+                user_id=my_int_coerce(f.data['user_id']),
+                name=f.data['name'],
+                organization_id = self.context.user.organization.id
+                )
             account.save()
 
             self.request.session.flash(u'取引先を保存しました')
