@@ -6,10 +6,11 @@
     if (window.ticketPrinterService) {
       $('#reserve-button').text('予約して発券する');
     }
+    $('.draggable').draggable();
   });
 </script>
 
-<div id="modal-reserve" class="modal fade">
+<div id="modal-reserve" class="modal fade draggable">
   <div class="modal-header">
     <h3>予約確認</h3>
   </div>
