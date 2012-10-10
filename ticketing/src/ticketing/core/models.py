@@ -1565,7 +1565,6 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     paid_at = Column(DateTime, nullable=True, default=None)
     delivered_at = Column(DateTime, nullable=True, default=None)
     canceled_at = Column(DateTime, nullable=True, default=None)
-    last_issued_at = Column(DateTime, nullable=True, default=None)
 
     order_no = Column(String(255))
     note = Column(UnicodeText, nullable=True, default=None)
@@ -2101,7 +2100,7 @@ class TicketPrintQueueEntry(Base, BaseModel):
             if not (entry.ticket.flags & Ticket.FLAG_ALWAYS_REISSUABLE):
                 entry.ordered_product_item.ordered_product.order.issued = True
                 entry.ordered_product_item.issued_at = entry.ordered_product_item.printed_at = now
-            order.last_issued_at = order.issued_at = order.printed_at = now
+            order.issued_at = order.printed_at = now
             order.issued = True
         return entries
 

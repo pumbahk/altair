@@ -74,8 +74,8 @@ ${h.breadcrumbs(
       <tr>
         <th>最終発券 (印字) 日時</th>
         <td>
-          % if order.last_issued_at:
-            ${h.safe_strftime(order.last_issued_at)}
+          % if order.issued_at:
+            ${h.safe_strftime(order.issued_at)}
           % else:
             -
           % endif
