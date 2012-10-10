@@ -71,7 +71,7 @@ def get_seats(request):
         for seat in query:
             seat_datum = {
                 'id': seat.l0_id,
-                'seat_no': seat.seat_no,
+                'seat_no': seat.name,
                 'stock_id': seat.stock_id,
                 'status': seat.status,
                 'areas': [area.id for area in seat.areas],

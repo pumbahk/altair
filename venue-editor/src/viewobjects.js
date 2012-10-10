@@ -146,7 +146,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
         posy = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
       }
       $('#tooltip').attr('style', 'visibility: visible; top: ' + posy + 'px; left: ' + posx + 'px;');
-      $('#tooltip').text('座席番号:' + model.get('seat_no'));
+      $('#tooltip').text(model.get('seat_no'));
     } else {
       $('#tooltip').attr('style', 'visibility: hidden;');
     }
