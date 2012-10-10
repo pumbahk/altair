@@ -1663,9 +1663,14 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         else:
             return 'ordered'
 
+    def can_cancel(self):
+        # キャンセル済み、売上キャンセル済み、配送済み、発券済みはキャンセルできない
+        if self.status in ['canceled', 'refunded', 'delivered'] or self.printed_at or self.issued:
+            return False
+        return True
+
     def cancel(self, request):
-        # キャンセル済み、売上キャンセル済み、配送済みはキャンセルできない
-        if self.status == 'canceled' or self.status == 'refunded' or self.status == 'delivered':
+        if not self.can_cancel():
             return False
 
         '''
