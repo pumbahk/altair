@@ -515,6 +515,32 @@ class Orders(BaseView):
                 'message':u'エラーが発生しました',
             }))
 
+    @view_config(route_name='orders.api.get', renderer='json', permission='sales_counter')
+    def api_get(self):
+        l0_id = self.request.params.get('l0_id', 0)
+        order = Order.filter_by(organization_id=self.context.user.organization_id)\
+                     .join(Order.ordered_products)\
+                     .join(OrderedProduct.ordered_product_items)\
+                     .join(OrderedProductItem.seats)\
+                     .filter(Seat.l0_id==l0_id).first()
+        if not order:
+            raise HTTPBadRequest(body=json.dumps({'message':u'予約データが見つかりません'}))
+
+        name = order.shipping_address.last_name + order.shipping_address.first_name if order.shipping_address else ''
+        products = [ordered_product.product.name for ordered_product in order.ordered_products]
+        seat_names = []
+        for op in order.ordered_products:
+            for opi in op.ordered_product_items:
+                seat_names += [seat.name for seat in opi.seats]
+
+        return {
+            'order_no':order.order_no,
+            'name':name,
+            'price':int(order.total_amount),
+            'products':products,
+            'seat_names':seat_names
+        }
+
     @view_config(route_name='orders.edit.shipping_address', request_method='POST',
                  renderer='ticketing:templates/orders/_form_shipping_address.html', permission='sales_counter')
     def edit_shipping_address_post(self):

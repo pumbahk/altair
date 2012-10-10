@@ -225,7 +225,36 @@ venueEditorRoot.venueeditor({
         loadingPanel = null;
       }
       callbacks.load && callbacks.load(viewer);
-    }
+    },
+    tooltip: function (l0_id) {
+      $.ajax({
+        url: '/orders/api/get/',
+        data: {'l0_id':l0_id},
+        dataType: 'json',
+        success: function(data) {
+          var products = '';
+          for (var i = 0; i < data.products.length; i++) {
+            products += "<li>" + data.products[i] + "</li>";
+          }
+          var seat_names = '';
+          for (var i = 0; i < data.seat_names.length; i++) {
+            seat_names += "<li>" + data.seat_names[i] + "</li>";
+          }
+          $('#tooltip').html(
+            "予約番号: " + data.order_no + "<br>" +
+            "氏名: " + data.name + "<br>" +
+            "商品: " + "<br><ul>" + products + "</ul>" +
+            "座席番号: " + "<br><ul>" + seat_names + "</ul>" +
+            "合計金額: " + data.price + "円"
+          ).css('width', '200px');
+        },
+        error: function(xhr, text) {
+          var responseText = JSON.parse(xhr.responseText);
+          var messages = responseText['message'] || xhr.statusText
+          $('#tooltip').text(messages).css('width', '200px');
+        }
+      });
+    },
   }
 }).venueeditor("load");
 

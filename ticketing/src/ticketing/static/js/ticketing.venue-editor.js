@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['nJSO5_VKMBJVTTZH'] = (function (exports) { (function () { 
+__LIBS__['wVG5FS8X207GN7L0'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -72,7 +72,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['fULJFDLKH4AGC76E'] = (function (exports) { (function () { 
+__LIBS__['CULWDIABZSXPB241'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -98,7 +98,7 @@ exports.ja = {
   } 
 };
  })(); return exports; })({});
-__LIBS__['eD6XRA0VFFF5W5VA'] = (function (exports) { (function () { 
+__LIBS__['PNATUWU5ETB3K9GF'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -197,7 +197,7 @@ exports.mergeStyle = function mergeStyle(a, b) {
   };
 };
  })(); return exports; })({});
-__LIBS__['BRFBYWC5529KMI7D'] = (function (exports) { (function () { 
+__LIBS__['eZTIGBE_O8HS29VO'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -246,12 +246,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['FMX7OZ_ROMB5_S8N'] = (function (exports) { (function () { 
+__LIBS__['MTMAK8ES4XPQ3ZMM'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['eD6XRA0VFFF5W5VA'];
-var CONF = __LIBS__['nJSO5_VKMBJVTTZH'];
-var IdentifiableSet = __LIBS__['BRFBYWC5529KMI7D'].IdentifiableSet;
+var util = __LIBS__['PNATUWU5ETB3K9GF'];
+var CONF = __LIBS__['wVG5FS8X207GN7L0'];
+var IdentifiableSet = __LIBS__['eZTIGBE_O8HS29VO'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -725,12 +725,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['QIP2MGPPZCVGV7ZE'] = (function (exports) { (function () { 
+__LIBS__['WCPYF_MFY7J5VWCS'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['eD6XRA0VFFF5W5VA'];
-var CONF = __LIBS__['nJSO5_VKMBJVTTZH'];
-var models = __LIBS__['FMX7OZ_ROMB5_S8N'];
+var util = __LIBS__['PNATUWU5ETB3K9GF'];
+var CONF = __LIBS__['wVG5FS8X207GN7L0'];
+var models = __LIBS__['MTMAK8ES4XPQ3ZMM'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -926,13 +926,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['nJSO5_VKMBJVTTZH'];
-  var models = __LIBS__['FMX7OZ_ROMB5_S8N'];
-  var util = __LIBS__['eD6XRA0VFFF5W5VA'];
-  var viewobjects = __LIBS__['QIP2MGPPZCVGV7ZE'];
-  var IdentifiableSet = __LIBS__['BRFBYWC5529KMI7D'].IdentifiableSet;
+  var CONF = __LIBS__['wVG5FS8X207GN7L0'];
+  var models = __LIBS__['MTMAK8ES4XPQ3ZMM'];
+  var util = __LIBS__['PNATUWU5ETB3K9GF'];
+  var viewobjects = __LIBS__['WCPYF_MFY7J5VWCS'];
+  var IdentifiableSet = __LIBS__['eZTIGBE_O8HS29VO'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['fULJFDLKH4AGC76E'];
+    I18n.translations = __LIBS__['CULWDIABZSXPB241'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -1120,7 +1120,8 @@ var Seat = exports.Seat = Backbone.Model.extend({
       loadstart: null,
       click: null,
       selectable: null,
-      select: null
+      select: null,
+      tooltip: null
     };
     if (options.callbacks) {
       for (var k in this.callbacks)
@@ -1373,6 +1374,9 @@ var Seat = exports.Seat = Backbone.Model.extend({
                   seat.addStyleType('highlighted');
                 } else {
                   seat.addStyleType('tooltip');
+                  seats[id].get('model').set('timer', setTimeout(function() {
+                    self.callbacks.tooltip && self.callbacks.tooltip(id);
+                  }, 3000));
                 }
                 self.highlighted[_id] = seat;
               }
@@ -1386,6 +1390,9 @@ var Seat = exports.Seat = Backbone.Model.extend({
                   seat.removeStyleType('highlighted');
                 } else {
                   seat.removeStyleType('tooltip');
+                  if (seats[id].get('model').get('timer')) {
+                    clearTimeout(seats[id].get('model').get('timer'));
+                  }
                 }
               }
             },

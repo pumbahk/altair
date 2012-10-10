@@ -194,7 +194,8 @@
       loadstart: null,
       click: null,
       selectable: null,
-      select: null
+      select: null,
+      tooltip: null
     };
     if (options.callbacks) {
       for (var k in this.callbacks)
@@ -447,6 +448,9 @@
                   seat.addStyleType('highlighted');
                 } else {
                   seat.addStyleType('tooltip');
+                  seats[id].get('model').set('timer', setTimeout(function() {
+                    self.callbacks.tooltip && self.callbacks.tooltip(id);
+                  }, 3000));
                 }
                 self.highlighted[_id] = seat;
               }
@@ -460,6 +464,9 @@
                   seat.removeStyleType('highlighted');
                 } else {
                   seat.removeStyleType('tooltip');
+                  if (seats[id].get('model').get('timer')) {
+                    clearTimeout(seats[id].get('model').get('timer'));
+                  }
                 }
               }
             },
