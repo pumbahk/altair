@@ -183,7 +183,7 @@ class IndexView(object):
                             if pv['on_the_day'] else normal_sales_segment.id)
                 select_venues[pname].append(dict(
                     id=pv['pid'],
-                    name=u'{start:%Y-%m-%d %H:%M}開始 {vname} {on_the_day} {pid}'.format(**pv),
+                    name=u'{start:%Y-%m-%d %H:%M}開始 {vname} {on_the_day}'.format(**pv),
                     order_url=self.request.route_url("cart.order", 
                         sales_segment_id=sales_segment_id),
                     seat_types_url=self.request.route_url('cart.seat_types',
