@@ -121,7 +121,7 @@
       success: function(data) {
         $('#modal-reserve').modal('hide');
         $('#reserve-form').html(data);
-        $('#modal-reserve').modal({'backdrop':'static'});
+        $('#modal-reserve').modal({'backdrop':'static', 'keyboard':false});
         $('#modal-reserve').modal('show');
       },
       error: function(xhr, text) {
