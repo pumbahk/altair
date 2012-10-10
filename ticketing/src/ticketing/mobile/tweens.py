@@ -28,8 +28,7 @@ def mobile_encoding_convert_factory(handler, registry):
         request._ua = uamobile.detect(request.environ)
         debug_mobile = request.registry.settings.get('altair.debug_mobile', False)
 
-        #if not request._ua.is_nonmobile() or debug_mobile:
-        if True:
+        if not request._ua.is_nonmobile():
             ## DeprecationWarning: Use req = req.decode('cp932')
             session = getattr(request, 'session', None)
             decoded = request.decode("cp932")

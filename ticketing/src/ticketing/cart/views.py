@@ -1015,7 +1015,7 @@ class MobileIndexView(object):
         performance_name = self.request.params.get('performance_name')
         venues = []
         if performance_name:
-            venues = [(x['pid'], u"{start:%Y-%m-%d %H:%M} {vname}".format(**x)) for x in api.performance_venue_by_name(self.request, event, sales_segment, performance_name)]
+            venues = [(x['pid'], u"{start:%Y-%m-%d %H:%M} {vname} {on_the_day}".format(**x)) for x in api.performance_venue_by_name(self.request, event, sales_segment, performance_name)]
 
         return dict(
             event=event,
