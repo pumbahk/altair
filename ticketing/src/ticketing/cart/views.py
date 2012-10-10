@@ -47,7 +47,8 @@ def back(func):
 def get_seat_type_triplets(event_id, performance_id, sales_segment_id):
     segment_stocks = DBSession.query(c_models.ProductItem.stock_id).filter(
         c_models.ProductItem.product_id==c_models.Product.id).filter(
-        c_models.Product.sales_segment_id==sales_segment_id)
+        c_models.Product.sales_segment_id==sales_segment_id).filter(
+        c_models.Product.public==True)
 
     seat_type_triplets = DBSession.query(c_models.StockType, c_models.Stock.quantity, c_models.StockStatus.quantity).filter(
             c_models.Stock.id==c_models.StockStatus.stock_id).filter(
@@ -295,8 +296,8 @@ class IndexView(object):
         q = q.filter(c_models.Performance.start_on==selected_date)
         q = q.filter(c_models.Performance.id == c_models.ProductItem.performance_id)
 
-
         query = DBSession.query(c_models.Product)
+        query = query.filter(c_models.Product.public==True)
         query = query.filter(c_models.Product.id.in_(q)).order_by(sa.desc("display_order, price"))
         ### filter by salessegment
         salessegment = self.context.get_sales_segument()
@@ -310,7 +311,7 @@ class IndexView(object):
 
     @view_config(route_name='cart.products', renderer="json")
     def get_products(self):
-        """ 席種別ごとの購入単位 
+        """ 席種別ごとの購入単位
         SeatType -> ProductItem -> Product
         """
         seat_type_id = self.request.matchdict['seat_type_id']
@@ -328,6 +329,7 @@ class IndexView(object):
         q = q.filter(c_models.ProductItem.performance_id==performance_id)
 
         query = DBSession.query(c_models.Product)
+        query = query.filter(c_models.Product.public==True)
         query = query.filter(c_models.Product.id.in_(q)).order_by(sa.desc("display_order, price"))
         ### filter by salessegment
         salessegment = DBSession.query(c_models.SalesSegment).filter_by(id=sales_segment_id).one()
@@ -1113,7 +1115,8 @@ class MobileSelectProductView(object):
         # 席種(イベントとパフォーマンスにひもづいてること)
         segment_stocks = DBSession.query(c_models.ProductItem.stock_id).filter(
             c_models.ProductItem.product_id==c_models.Product.id).filter(
-            c_models.Product.sales_segment_id==sales_segment.id)
+            c_models.Product.sales_segment_id==sales_segment.id).filter(
+            c_models.Product.public==True)
 
         seat_type = DBSession.query(c_models.StockType).filter(
             c_models.Performance.event_id==event_id).filter(
@@ -1135,6 +1138,7 @@ class MobileSelectProductView(object):
             c_models.ProductItem.performance_id==performance_id)
 
         products = c_models.Product.query.filter(
+            c_models.Product.public==True).filter(
             c_models.Product.id.in_(product_items)).order_by(
             sa.desc("display_order, price")).filter_by(
             sales_segment=sales_segment)

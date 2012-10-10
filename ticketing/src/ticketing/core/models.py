@@ -1360,6 +1360,9 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     items = relationship('ProductItem', backref=backref('product', order_by='Product.display_order'))
 
+    # 一般公開するか
+    public = Column(Boolean, nullable=False, default=True)
+
     @staticmethod
     def find(performance_id=None, event_id=None, sales_segment_id=None, stock_id=None, include_deleted=False):
         query = Product.query

@@ -98,7 +98,6 @@ class Stocker(object):
     def get_stock_holder(self, event_id):
         """ イベントに対する主枠ホルダー """
 
-        
         now = datetime.now()
 
         return StockHolder.query.filter(
@@ -115,6 +114,8 @@ class Stocker(object):
             ProductItem.stock_id==Stock.id
         ).filter(
             Product.id==ProductItem.product_id
+        ).filter(
+            Product.public==True
         ).filter(
             SalesSegment.id==Product.sales_segment_id
         ).filter(

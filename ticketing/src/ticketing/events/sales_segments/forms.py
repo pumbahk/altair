@@ -73,7 +73,7 @@ class SalesSegmentForm(Form):
         widget=CheckboxInput(),
     )
     public = IntegerField(
-        label=u'一般販売',
+        label=u'一般公開',
         default=1,
         widget=CheckboxInput(),
     )
