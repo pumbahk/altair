@@ -958,13 +958,14 @@ class MobileIndexView(object):
         self.request = request
         self.context = request.context
 
-    @view_config(route_name='cart.index.sales', renderer=selectable_renderer('carts_mobile/%(membership)s/index.html'), xhr=False, permission="buy", request_type=".interfaces.IMobileRequest")
+    @view_config(route_name='cart.index', renderer=selectable_renderer('carts_mobile/%(membership)s/index.html'), xhr=False, permission="buy", request_type=".interfaces.IMobileRequest")
     def __call__(self):
         event_id = self.request.matchdict['event_id']
         venue_name = self.request.params.get('v')
 
         # セールスセグメント必須
-        sales_segment = self.context.get_sales_segument()
+        #sales_segment = self.context.get_sales_segument()
+        sales_segment = self.context.normal_sales_segment
 
         if sales_segment is None:
             raise NoEventError("No matching sales_segment")
@@ -972,6 +973,10 @@ class MobileIndexView(object):
         # パフォーマンスIDが確定しているなら商品選択へリダイレクト
         performance_id = self.request.params.get('pid') or self.request.params.get('performance')
         if performance_id:
+            performance = c_models.Performance.query.filter(c_models.Performance.id==performance_id).one()
+            if performance.on_the_day:
+                sales_segment = self.context.sales_counter_sales_segment
+
             return HTTPFound(self.request.route_url(
                 "cart.seat_types",
                 event_id=event_id,

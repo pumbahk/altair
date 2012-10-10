@@ -283,7 +283,8 @@ def performance_venue_by_name(request, event, sales_segment, performance_name):
     q = q.filter(Performance.name==performance_name)
     values = q.distinct().all()
 
-    return sorted([dict(pid=pid, name=name, start=start, open=open, vname=vname) for pid, name, start, open, vname in values],
+    return sorted([dict(pid=pid, name=name, start=start, open=open, vname=vname, on_the_day=on_the_day) 
+                    for pid, name, start, open, vname, on_the_day in values],
             key=operator.itemgetter('start'))
 
 class JSONEncoder(json.JSONEncoder):

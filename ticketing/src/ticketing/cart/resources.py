@@ -161,6 +161,8 @@ class TicketingCartResource(object):
         """ 該当イベントのSalesSegment取得
         """
 
+        if not getattr(self.request, 'matchdict'):
+            return None
         sales_segment_id = self.request.matchdict.get('sales_segment_id')
         if sales_segment_id is None:
             return None
