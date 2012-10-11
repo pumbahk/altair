@@ -1,25 +1,46 @@
-<%page args="order"/>
+<%page args="membership,order,redirect_to"/>
 <%namespace file="/common/helpers.html" name="h" />
 <%namespace file="/common/modal.html" import="delete_modal" />
 
 <script type="text/javascript">
+  function edit_member_group(baseurl){
+    var id = $('input.[name="sales_segment_id"]:checked').val();
+    if (!id) return;
+    location.href = baseurl.replace("__id__", pk);
+  };
+  function delete_member_group(baseurl) {
+    var id = $('input.[name="sales_segment_id"]:checked').val();
+    if (!id) return;
+    var modal = $('#modal-delete');
+    modal.find('#message').text('選択したmembershipを削除します。よろしいですか？');
+    modal.find("#delete").click(function(){
+      $("#delete_form").attr("action", baseurl.replace("__id__", id)).submit();
+      return false;
+    })
+    modal.modal("toggle");
+  };
 </script>
+
+<form id="delete_form" method="POST">
+  <input type="hidden" name="membership_id" value="${membership.id}">
+  <input type="hidden" name="redirect_to" value="${redirect_to}">
+</form>
 
 <%
   actions = {
     'new':dict(
       label=u'新規',
-      url='javascript:new_member_group();',
+      url=request.route_path("membergroups",membergroup_id="*", action="new",_query={"membership_id": membership.id,"redirect_to":redirect_to}),
       icon='icon-plus',
     ),
     'edit':dict(
       label=u'編集',
-      url='javascript:edit_member_group();',
+      url='javascript:edit_member_group("%s")' % request.route_path("membergroups",membergroup_id="__id__",action="edit",_query={"membership_id": membership.id,"redirect_to":redirect_to}),
       icon='icon-pencil',
     ),
     'delete':dict(
       label=u'削除',
-      url='javascript:delete_member_group();',
+      url='javascript:delete_member_group("%s")' % request.route_path("membergroups",membergroup_id="__id__",action="delete"),
       icon='icon-minus',
     ),
   }

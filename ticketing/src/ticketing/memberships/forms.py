@@ -39,6 +39,14 @@ class MemberGroupForm(Form):
     def _get_translations(self):
         return Translations()
 
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        Form.__init__(self, formdata, obj, prefix, **kwargs)
+        if obj:
+            self.id.data = obj.id
+            self.name.data = obj.name
+            self.is_guest.data = obj.is_guest
+            self.membership_id.data = obj.membership_id
+
     id = HiddenField(
         label=u'ID',
         validators=[Optional()],
@@ -54,5 +62,5 @@ class MemberGroupForm(Form):
 
     membership_id = HiddenField(
         label=u"membership", 
-        validators=[Optional]
+        validators=[Optional()]
     )

@@ -7,14 +7,18 @@
     <th class="minwidth"></th>
     <th>${form.name.label.text}</th>
     <th>${form.is_guest.label.text}</th>
+    <th>ステータス</th>
   </tr>
   </thead>
   <tbody>
   %for g in member_groups:
   <tr>
-        <td><input type="radio" name="sales_segment_id" value="${g.id}" /></td>
+    <td><input type="radio" name="sales_segment_id" value="${g.id}" /></td>
     <td><a href="${request.route_path("membergroups", membergroup_id=g.id, action="show")}">${g.name}</a></td>
     <td>${g.is_guest}</td>
+    <td>
+      (本当はここに削除可能かどうか表示する)
+    </td>
   </tr>
   %endfor
   </tbody>
