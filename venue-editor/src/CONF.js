@@ -56,13 +56,13 @@ exports.DEFAULT = {
   },
 
   SEAT_STATUS_STYLE: {
-    0: { stroke: { color: "#929292", width: 4, pattern: 'solid' } },
-    1: {},
-    2: { stroke: { color: "#ffff40", width: 4, pattern: 'solid' } },
-    3: { stroke: { color: "#2020d2", width: 4, pattern: 'solid' } },
-    4: { stroke: { color: "#ff8c40", width: 4, pattern: 'solid' } },
-    5: { stroke: { color: "#b3d940", width: 4, pattern: 'solid' } },
-    6: { stroke: { color: "#ff4040", width: 4, pattern: 'solid' } },
-    7: { stroke: { color: "#9f9fec", width: 4, pattern: 'solid' } }
+    0: { stroke: { color: "#929292", width: 3, pattern: 'solid' } },
+    1: { stroke: { color: "#FFFFFF", width: 1, pattern: 'solid' } },
+    2: { stroke: { color: "#ffff40", width: 3, pattern: 'solid' } },
+    3: { stroke: { color: "#2020d2", width: 3, pattern: 'solid' } },
+    4: { stroke: { color: "#ff8c40", width: 3, pattern: 'solid' } },
+    5: { stroke: { color: "#b3d940", width: 3, pattern: 'solid' } },
+    6: { stroke: { color: "#ff4040", width: 3, pattern: 'solid' } },
+    7: { stroke: { color: "#9f9fec", width: 3, pattern: 'solid' } }
   }
 };
