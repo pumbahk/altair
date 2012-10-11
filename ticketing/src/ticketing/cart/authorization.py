@@ -42,6 +42,7 @@ class MembershipAuthorizationPolicy(object):
                 logger.debug('event %s do not require login' % event.title)
                 return True            
 
+            principals = [p for p in principals if p != 'system.Everyone']
             return principals
 
     def principals_allowed_by_permission(self, context, permission):

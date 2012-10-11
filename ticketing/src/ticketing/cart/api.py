@@ -26,7 +26,7 @@ def is_login_required(request, event):
     """ 指定イベントがログイン画面を必要とするか """
     # 終了分もあわせて、このeventからひもづく sales_segment -> membergroupに1つでもguestがあれば True 
     q = MemberGroup.query.filter(
-        MemberGroup.is_guest==True
+        MemberGroup.is_guest==False
     ).filter(
         MemberGroup.id==MemberGroup_SalesSegment.c.membergroup_id
     ).filter(

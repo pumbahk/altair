@@ -111,7 +111,8 @@ class IndexView(object):
                 #select_venues[pname] = select_venues.get(pname, [])
                 logger.debug("performance %s" % pv)
                 sales_segment_id = (sales_counter_sales_segment.id 
-                            if pv['on_the_day'] else normal_sales_segment.id)
+                            if pv['on_the_day'] and sales_counter_sales_segment 
+                                else normal_sales_segment.id)
                 select_venues[pname].append(dict(
                     id=pv['pid'],
                     name=u'{start:%Y-%m-%d %H:%M}開始 {vname} (当日券)'.format(**pv) 
