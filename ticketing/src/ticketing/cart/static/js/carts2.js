@@ -1055,7 +1055,7 @@ function newMetadataLoaderFactory(url) {
               _conts[i].next(_conts[i].fetch(data));
           },
           error: function(xhr, text) {
-            var message = "Failed to load " + key + " (reason: " + text + ")";
+            var message = "Failed to load " + url + " (reason: " + text + ")";
             var _conts = conts;
             conts = [];
             for (var i = 0; i < _conts.length; i++)
