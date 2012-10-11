@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['xMAZSSG2ZHN9P8V7'] = (function (exports) { (function () { 
+__LIBS__['fJSCV_CD9954SV0M'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -72,7 +72,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['MGNGKJJ4UY_YYRL6'] = (function (exports) { (function () { 
+__LIBS__['o_XVDWSQX3835ILY'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -98,7 +98,7 @@ exports.ja = {
   } 
 };
  })(); return exports; })({});
-__LIBS__['i2R2QACMZSDFJU8Q'] = (function (exports) { (function () { 
+__LIBS__['d5S9R5LDLS_6C2KM'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -197,7 +197,7 @@ exports.mergeStyle = function mergeStyle(a, b) {
   };
 };
  })(); return exports; })({});
-__LIBS__['cN3FWR8VXIQPP7WN'] = (function (exports) { (function () { 
+__LIBS__['e8J99J17BUX8CAEY'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -246,12 +246,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['EIHSMYNHSIX8KA0G'] = (function (exports) { (function () { 
+__LIBS__['pRYMO2VGBT3P2VBX'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['i2R2QACMZSDFJU8Q'];
-var CONF = __LIBS__['xMAZSSG2ZHN9P8V7'];
-var IdentifiableSet = __LIBS__['cN3FWR8VXIQPP7WN'].IdentifiableSet;
+var util = __LIBS__['d5S9R5LDLS_6C2KM'];
+var CONF = __LIBS__['fJSCV_CD9954SV0M'];
+var IdentifiableSet = __LIBS__['e8J99J17BUX8CAEY'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -379,6 +379,7 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
     var seatDatum = initialData.seats[id];
     var seat = new Seat({
       id: seatDatum.id,
+      name: seatDatum.name,
       seat_no: seatDatum.seat_no,
       status: seatDatum.status,
       stock: stocks.get(seatDatum.stock_id),
@@ -637,6 +638,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
 
   defaults: {
     id: null,
+    name: null,
     seat_no: null,
     status: null,
     venue: null,
@@ -725,12 +727,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['PJPM4BBS_6Y8K180'] = (function (exports) { (function () { 
+__LIBS__['F8JFH1FCUZPOU7PS'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['i2R2QACMZSDFJU8Q'];
-var CONF = __LIBS__['xMAZSSG2ZHN9P8V7'];
-var models = __LIBS__['EIHSMYNHSIX8KA0G'];
+var util = __LIBS__['d5S9R5LDLS_6C2KM'];
+var CONF = __LIBS__['fJSCV_CD9954SV0M'];
+var models = __LIBS__['pRYMO2VGBT3P2VBX'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -876,7 +878,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
         posy = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
       }
       $('#tooltip').attr('style', 'visibility: visible; top: ' + posy + 'px; left: ' + posx + 'px;');
-      $('#tooltip').text(model.get('seat_no'));
+      $('#tooltip').html(model.get('stock').get('stockType').get('name') + "<br>" + model.get('name'));
     } else {
       $('#tooltip').attr('style', 'visibility: hidden;');
     }
@@ -926,13 +928,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['xMAZSSG2ZHN9P8V7'];
-  var models = __LIBS__['EIHSMYNHSIX8KA0G'];
-  var util = __LIBS__['i2R2QACMZSDFJU8Q'];
-  var viewobjects = __LIBS__['PJPM4BBS_6Y8K180'];
-  var IdentifiableSet = __LIBS__['cN3FWR8VXIQPP7WN'].IdentifiableSet;
+  var CONF = __LIBS__['fJSCV_CD9954SV0M'];
+  var models = __LIBS__['pRYMO2VGBT3P2VBX'];
+  var util = __LIBS__['d5S9R5LDLS_6C2KM'];
+  var viewobjects = __LIBS__['F8JFH1FCUZPOU7PS'];
+  var IdentifiableSet = __LIBS__['e8J99J17BUX8CAEY'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['MGNGKJJ4UY_YYRL6'];
+    I18n.translations = __LIBS__['o_XVDWSQX3835ILY'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;

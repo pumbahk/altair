@@ -128,6 +128,7 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
     var seatDatum = initialData.seats[id];
     var seat = new Seat({
       id: seatDatum.id,
+      name: seatDatum.name,
       seat_no: seatDatum.seat_no,
       status: seatDatum.status,
       stock: stocks.get(seatDatum.stock_id),
@@ -386,6 +387,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
 
   defaults: {
     id: null,
+    name: null,
     seat_no: null,
     status: null,
     venue: null,
