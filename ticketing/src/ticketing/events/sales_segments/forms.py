@@ -8,25 +8,6 @@ from wtforms.widgets import CheckboxInput
 from ticketing.formhelpers import DateTimeField, Translations, Required
 from ticketing.core.models import SalesSegmentKindEnum
 
-
-## todo: move it
-class MemberGroupForm(Form):
-    def _get_translations(self):
-        return Translations()
-
-    id = HiddenField(
-        label=u'ID',
-        validators=[Optional()],
-    )
-
-    name = TextField(
-        label=u"名前"
-        )
-
-    is_guest = BooleanField(
-        label=u"ゲストログイン"
-        )
-
 class SalesSegmentForm(Form):
 
     def _get_translations(self):

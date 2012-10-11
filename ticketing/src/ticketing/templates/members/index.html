@@ -45,7 +45,7 @@ ${users.pager()}
       <td><a href="#">${user.id}</a></td>
       <td><a href="#">${user.first_user_credential.auth_identifier}</a></td>
 ##      <td><a href="#">${user.first_user_credential.membership.name}</a></td>
-      <td><a href="#">${user.member.membergroup.name}</a></td>
+      <td><a href="${request.route_path("membergroups", action="show", membergroup_id=user.member.membergroup.id)}">${user.member.membergroup.name}</a></td>
     </tr>
   % endfor
   </tbody>

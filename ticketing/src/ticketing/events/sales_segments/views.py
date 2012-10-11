@@ -13,7 +13,7 @@ from ticketing.fanstatic import with_bootstrap
 from ticketing.core.models import Event, SalesSegment, Product
 from ticketing.events.payment_delivery_method_pairs.forms import PaymentDeliveryMethodPairForm
 from ticketing.events.sales_segments.forms import SalesSegmentForm
-from ticketing.events.sales_segments.forms import MemberGroupForm
+from ticketing.memberships.forms import MemberGroupForm
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class SalesSegments(BaseView):

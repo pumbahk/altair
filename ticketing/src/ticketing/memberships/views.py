@@ -11,7 +11,9 @@ from ticketing.users import models as umodels
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from . import forms
-from ticketing.events.sales_segments.forms import MemberGroupForm
+from ticketing.events.sales_segments.forms import SalesSegmentForm
+
+## admin権限を持っている人以外見れない想定。ログインしたオペレータのorganizationによるseparationは行っていない
 
 @view_defaults(permission="administrator", decorator=with_bootstrap, route_name="memberships")
 class MembershipView(BaseView):
@@ -28,7 +30,7 @@ class MembershipView(BaseView):
         membergroups = membership.membergroups
         return {"membership": membership,
                 "form": forms.MembershipForm(),
-                "form_mg": MemberGroupForm(), 
+                "form_mg": forms.MemberGroupForm(), 
                 "membergroups": membergroups}
 
     @view_config(match_param="action=new", renderer="ticketing:templates/memberships/new.html", request_method="GET")
@@ -77,3 +79,17 @@ class MembershipView(BaseView):
         DBSession.delete(membership)
         self.request.session.flash(u"membershipを削除しました")
         return HTTPFound(self.request.route_url("memberships", action="index", membership_id="*"))
+
+@view_defaults(decorator=with_bootstrap, route_name="membergroups", permission="administrator")
+class MemberGroupView(BaseView):
+    @view_config(match_param="action=show", renderer="ticketing:templates/members/groups/show.html")
+    def show(self):
+        membergroup = umodels.MemberGroup.query.filter_by(id=self.request.matchdict["membergroup_id"]).first()
+        if membergroup is None:
+            raise HTTPNotFound
+        salessegments = membergroup.sales_segments
+        return {"membergroup": membergroup, 
+                "form": forms.MemberGroupForm(), 
+                "salessegments": salessegments, 
+                "form_sg": SalesSegmentForm()}
+

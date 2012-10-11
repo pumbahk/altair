@@ -1,0 +1,24 @@
+<%page args="form, membergroup" />
+<%namespace file="/common/helpers.html" name="h" />
+
+<div class="page-header">
+  <h3>membergroup情報</h3>
+</div>
+
+<table class="table table-bordered fullwidth">
+  <tbody>
+  <tr>
+    <th class="span3">${form.membership_id.label.text}</th>
+    <td><a href="${request.route_path("memberships", action="show",membership_id=membergroup.membership.id)}">${membergroup.membership.name}</a></td>
+  </tr>
+  <tr>
+    <th class="span3">${form.name.label.text}</th>
+    <td>${membergroup.name}</td>
+  </tr>
+  <tr>
+    <th class="span3">${form.is_guest.label.text}</th>
+    <td>${membergroup.is_guest}</td>
+  </tr>
+  </tbody>
+</table>
+

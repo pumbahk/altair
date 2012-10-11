@@ -13,7 +13,7 @@
   %for g in member_groups:
   <tr>
         <td><input type="radio" name="sales_segment_id" value="${g.id}" /></td>
-    <td>${g.name}</td>
+    <td><a href="${request.route_path("membergroups", membergroup_id=g.id, action="show")}">${g.name}</a></td>
     <td>${g.is_guest}</td>
   </tr>
   %endfor

@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from wtforms import Form
-from wtforms import TextField, HiddenField, DateField, PasswordField, SelectField
+from wtforms import TextField, HiddenField, DateField, PasswordField, SelectField, BooleanField
 from wtforms.validators import Length, Email, Optional
 from ticketing.formhelpers import DateTimeField, Translations, Required
 from ticketing.core import models as cmodels
+
+
 class MembershipForm(Form):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
@@ -31,4 +33,26 @@ class MembershipForm(Form):
     membership_id = HiddenField(
         label=u'ID',
         validators=[Optional()],
+    )
+
+class MemberGroupForm(Form):
+    def _get_translations(self):
+        return Translations()
+
+    id = HiddenField(
+        label=u'ID',
+        validators=[Optional()],
+    )
+
+    name = TextField(
+        label=u"名前"
+        )
+
+    is_guest = BooleanField(
+        label=u"ゲストログイン"
+        )
+
+    membership_id = HiddenField(
+        label=u"membership", 
+        validators=[Optional]
     )
