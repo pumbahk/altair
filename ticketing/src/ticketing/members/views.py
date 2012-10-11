@@ -33,7 +33,7 @@ def members_empty_view(context, request):
 def members_index_view(context, request):
     membership_id = request.matchdict["membership_id"]
     memberships = context.memberships
-    choice_form = forms.MemberShipChoicesForm().configure(memberships)
+    choice_form = forms.MemberShipChoicesForm(membership_id=membership_id).configure(memberships)
 
     users = User.query.filter(User.id==UserCredential.user_id)\
         .filter(UserCredential.membership_id==membership_id)\

@@ -13,7 +13,15 @@ ${breadcrumbs(
 
 <h2>member</h2>
 
-##${choice_form.membership_id.label}${choice_form.membership_id}
+${choice_form.membership_id.label}${choice_form.membership_id(id="membership_id")}
+<script type="text/javascript">
+$(function(){
+  $("#membership_id").change(function(){
+    var url = "${request.route_path("members.index", membership_id="__id__")}";
+    location.href = url.replace("__id__", $(this).val());
+  });
+});
+</script>
 <div class="btn-group">
   <a href="${request.route_path("members.member",membership_id=membership_id, action="edit_dialog")}"
      id="member_edit"
