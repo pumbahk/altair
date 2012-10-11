@@ -65,8 +65,15 @@
 
 <%doc>
 ## not enough to show this function.
-<%include file="/members/groups/_list.html" args="member_groups=member_groups, form=form_mg" />
+%if member_groups:
+<h3>member group</h3>
 
+<div class="row-fluid">
+  <div class="span12">
+  <%include file="/members/groups/_list.html" args="member_groups=member_groups, form=form_mg" />
+  </div>
+</div>
+%endif
 <hr />
 </%doc>
 

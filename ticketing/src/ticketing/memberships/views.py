@@ -11,6 +11,7 @@ from ticketing.users import models as umodels
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from . import forms
+from ticketing.events.sales_segments.forms import MemberGroupForm
 
 @view_defaults(permission="administrator", decorator=with_bootstrap, route_name="memberships")
 class MembershipView(BaseView):
@@ -22,7 +23,13 @@ class MembershipView(BaseView):
     @view_config(match_param="action=show", renderer="ticketing:templates/memberships/show.html")
     def show(self):
         membership = umodels.Membership.query.filter_by(id=self.request.matchdict["membership_id"]).first()
-        return {"membership": membership, "form":forms.MembershipForm()}
+        if membership is None:
+            raise HTTPNotFound
+        membergroups = membership.membergroups
+        return {"membership": membership,
+                "form": forms.MembershipForm(),
+                "form_mg": MemberGroupForm(), 
+                "membergroups": membergroups}
 
     @view_config(match_param="action=new", renderer="ticketing:templates/memberships/new.html", request_method="GET")
     def new_get(self):
@@ -42,6 +49,9 @@ class MembershipView(BaseView):
     @view_config(match_param="action=edit", renderer="ticketing:templates/memberships/edit.html", request_method="GET")
     def edit_get(self):
         membership = umodels.Membership.query.filter_by(id=self.request.matchdict["membership_id"]).first()
+        if membership is None:
+            raise HTTPNotFound
+
         form = forms.MembershipForm(obj=membership)
         return {"membership": membership, "form":form}
 
@@ -62,6 +72,8 @@ class MembershipView(BaseView):
     @view_config(match_param="action=delete", renderer="ticketing:templates/memberships/delete.html")
     def delete(self):
         membership = umodels.Membership.query.filter_by(id=self.request.matchdict["membership_id"]).first()
+        if membership is None:
+            raise HTTPNotFound
         DBSession.delete(membership)
         self.request.session.flash(u"membershipを削除しました")
         return HTTPFound(self.request.route_url("memberships", action="index", membership_id="*"))

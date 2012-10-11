@@ -1,0 +1,31 @@
+<%page args="order"/>
+<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+
+<script type="text/javascript">
+</script>
+
+<%
+  actions = {
+    'new':dict(
+      label=u'新規',
+      url='javascript:new_member_group();',
+      icon='icon-plus',
+    ),
+    'edit':dict(
+      label=u'編集',
+      url='javascript:edit_member_group();',
+      icon='icon-pencil',
+    ),
+    'delete':dict(
+      label=u'削除',
+      url='javascript:delete_member_group();',
+      icon='icon-minus',
+    ),
+  }
+  order = iter(order or ['new', 'edit', 'delete'])
+%>
+${h.action_button(actions, order)}
+
+${delete_modal()}
+

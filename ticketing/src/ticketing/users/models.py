@@ -233,7 +233,7 @@ class MemberGroup(Base, WithTimestamp):
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
     membership_id = Column(Identifier, ForeignKey('Membership.id'))
-    membership = relationship('Membership', backref='membergruops')
+    membership = relationship('Membership', backref='membergroups')
     is_guest = Column(Boolean, default=False, server_default='0', nullable=False)
 
     sales_segments = relationship('SalesSegment',
