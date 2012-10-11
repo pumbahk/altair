@@ -13,6 +13,7 @@ from ticketing.fanstatic import with_bootstrap
 from ticketing.core.models import Event, SalesSegment, Product
 from ticketing.events.payment_delivery_method_pairs.forms import PaymentDeliveryMethodPairForm
 from ticketing.events.sales_segments.forms import SalesSegmentForm
+from ticketing.events.sales_segments.forms import MemberGroupForm
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class SalesSegments(BaseView):
@@ -53,12 +54,16 @@ class SalesSegments(BaseView):
         if sales_segment is None:
             return HTTPNotFound('sales_segment id %d is not found' % sales_segment_id)
 
+        member_groups = sales_segment.membergroups
+        form_mg = MemberGroupForm()
         form_ss = SalesSegmentForm()
         form_ss.process(record_to_multidict(sales_segment))
 
         return {
             'form_ss':form_ss,
+            'form_mg': form_mg, 
             'form_pdmp':PaymentDeliveryMethodPairForm(),
+            'member_groups': member_groups, 
             'sales_segment':sales_segment,
         }
 

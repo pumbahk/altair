@@ -85,16 +85,27 @@ def ticketdata_from_qrsigned_string(context, request):
         traceback.print_exc()
         return {"status": "error", "message": str(e)}
 
+@view_config(route_name="api.ticket.refresh.printed_status", renderer="json", xhr=True)
+def refresh_printed_status(context, request):
+    logger.info("*api.refresh.printed: force refresh status `printed_at'")
+    token_id = request.json_body["ordered_product_item_token_id"]
+    order_no = request.json_body["order_no"]
+
+    token = utils.token_from_orderno_and_id(order_no, token_id).first()
+    setter = PrintedAtBubblingSetter(None)
+    setter.printed_token(token)
+    setter.start_refresh_status_bubbling()
+    DBSession.add(token)
+    return {"status": "success", "data": {}}
+    
+
 @view_config(route_name="api.ticket.after_printed", renderer="json", xhr=True)
 def ticket_after_printed_edit_status(context, request):
     token_id = request.json_body["ordered_product_item_token_id"]
     order_no = request.json_body["order_no"]
     force_update = request.json_body.get("force_update")
 
-    token = OrderedProductItemToken.query.filter_by(id=token_id)\
-        .filter(OrderedProductItemToken.ordered_product_item_id==OrderedProductItem.id)\
-        .filter(OrderedProductItem.ordered_product_id == OrderedProduct.id)\
-        .filter(OrderedProduct.order_id==Order.id, Order.order_no==order_no).first()
+    token = utils.token_from_orderno_and_id(order_no, token_id).first()
 
     if token is None:
         mes = "*after ticket print: token is not found. (token_id = %d,  order_no=%s)"

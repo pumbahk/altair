@@ -133,7 +133,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
     }
     shape.style(util.convertToFashionStyle(style));
     var styleText = style.text || model.get('seat_no');
-    if (style.text && $.inArray('highlighted', this.styleTypes) != -1) {
+    if (style.text && ($.inArray('tooltip', this.styleTypes) != -1 || $.inArray('highlighted', this.styleTypes) != -1)) {
       var posx = 0;
       var posy = 0;
       var e = window.event;
@@ -146,7 +146,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
         posy = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
       }
       $('#tooltip').attr('style', 'visibility: visible; top: ' + posy + 'px; left: ' + posx + 'px;');
-      $('#tooltip').text('座席番号:' + model.get('seat_no'));
+      $('#tooltip').html(model.get('stock').get('stockType').get('name') + "<br>" + model.get('name'));
     } else {
       $('#tooltip').attr('style', 'visibility: hidden;');
     }

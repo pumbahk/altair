@@ -65,12 +65,14 @@ class OrderCSV(object):
         'name',
         'price',
         'quantity',
+        'sales_segment',
         ]
     product_item_header = [
         'name',
         'price',
         'quantity',
         'seat_name',
+        'ticket_printed_by',
         ]
 
     def __init__(self, orders):
@@ -131,6 +133,8 @@ class OrderCSV(object):
                     product_list.append((column_name, format_number(ordered_product.price)))
                 if column == 'quantity':
                     product_list.append((column_name, ordered_product.quantity))
+                if column == 'sales_segment':
+                    product_list.append((column_name, ordered_product.product.sales_segment.name))
 
             for ordered_product_item in ordered_product.ordered_product_items:
                 for column in self.product_item_header:
@@ -151,6 +155,11 @@ class OrderCSV(object):
                         if ordered_product_item.seats:
                             seat_name = ', '.join([(seat.name) for seat in ordered_product_item.seats if seat.name])
                         product_item_list.append((column_name, seat_name))
+                    if column == 'ticket_printed_by':
+                        operator_name = ''
+                        if ordered_product_item.issued_at:
+                            operator_name = ', '.join(list(set([(ph.operator.name) for ph in ordered_product_item.print_histories if ph.operator])))
+                        product_item_list.append((column_name, operator_name))
 
                 # for bj89ers
                 for key, value in ordered_product_item.attributes.items():

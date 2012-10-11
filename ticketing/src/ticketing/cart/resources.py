@@ -85,6 +85,21 @@ class TicketingCartResource(object):
         # 暫定で0に設定
         return 0
 
+    @property
+    def sales_counter_sales_segment(self):
+        """ 当日用販売区分"""
+        scs = [s for s in self.sales_segments if s.kind == 'sales_counter']
+        if not scs:
+            return None
+        return scs[0]
+
+    @property
+    def normal_sales_segment(self):
+        """ 当日以外販売区分"""
+        scs = [s for s in self.sales_segments if s.kind != 'sales_counter']
+        if not scs:
+            return None
+        return scs[0]
 
     def get_payment_delivery_method_pair(self, start_on=None):
         segment = self.get_sales_segument()
@@ -132,7 +147,16 @@ class TicketingCartResource(object):
         )
 
         user = self.authenticated_user()
-        if user and 'membership' in user:
+        if user and user.get('is_guest'):
+            q = q.filter(
+                c_models.SalesSegment.id==u_models.MemberGroup_SalesSegment.c.sales_segment_id
+            ).filter(
+                u_models.MemberGroup_SalesSegment.c.membergroup_id==u_models.MemberGroup.id
+            ).filter(
+                u_models.MemberGroup.is_guest==True
+            )
+
+        elif user and 'membership' in user:
             q = q.filter(
                 c_models.SalesSegment.id==u_models.MemberGroup_SalesSegment.c.sales_segment_id
             ).filter(
@@ -140,12 +164,17 @@ class TicketingCartResource(object):
             ).filter(
                 u_models.MemberGroup.name==user['membergroup']
             )
-        return q.all()
+        sales_segments = q.all()
+        if not sales_segments:
+            raise Exception, "query = %s, user=%s" % (q, user)
+        return sales_segments
 
     def get_sales_segment(self):
         """ 該当イベントのSalesSegment取得
         """
 
+        if not getattr(self.request, 'matchdict'):
+            return None
         sales_segment_id = self.request.matchdict.get('sales_segment_id')
         if sales_segment_id is None:
             return None

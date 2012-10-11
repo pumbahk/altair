@@ -103,8 +103,8 @@ def main(global_config, **settings):
     config.include('.plugins')
     config.include('.errors')
 
-    if settings.get('altair.debug_mobile'):
-        config.add_tween('ticketing.mobile.tweens.mobile_request_factory')
+    # if settings.get('altair.debug_mobile'):
+    #     config.add_tween('ticketing.mobile.tweens.mobile_request_factory')
 
     ## cmsとの通信
     bound_communication_api(config, 

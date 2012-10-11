@@ -5,7 +5,7 @@ import operator
 import urllib2
 import logging
 import contextlib
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from zope.deprecation import deprecate
 import sqlalchemy as sa
 
@@ -18,9 +18,30 @@ from .interfaces import IPaymentMethodManager
 from .interfaces import IPaymentPlugin, IDeliveryPlugin, IPaymentDeliveryPlugin
 from .interfaces import IMobileRequest, IStocker, IReserving, ICartFactory
 from .models import Cart, PaymentMethodManager, DBSession, CartedProductItem, CartedProduct
-from ..users.models import User, UserCredential, Membership
+from ..users.models import User, UserCredential, Membership, MemberGroup, MemberGroup_SalesSegment
 from ..core.models import Event, Performance, Stock, StockHolder, Seat, Product, ProductItem, SalesSegment, Venue
     
+# こいつは users.apiあたりに移動すべきか
+def is_login_required(request, event):
+    """ 指定イベントがログイン画面を必要とするか """
+    # 終了分もあわせて、このeventからひもづく sales_segment -> membergroupに1つでもguestがあれば True 
+    q = MemberGroup.query.filter(
+        MemberGroup.is_guest==False
+    ).filter(
+        MemberGroup.id==MemberGroup_SalesSegment.c.membergroup_id
+    ).filter(
+        SalesSegment.id==MemberGroup_SalesSegment.c.sales_segment_id
+    ).filter(
+        SalesSegment.event_id==event.id
+    )
+    return bool(q.count())
+
+def get_event(request):
+    event_id = request.matchdict.get('event_id')
+    if not event_id:
+        return None
+    return Event.query.filter(Event.id==event_id).first()
+
 def is_mobile(request):
     return IMobileRequest.providedBy(request)
 
@@ -231,7 +252,8 @@ def _query_performance_names(request, event, sales_segment):
         Performance.name,
         Performance.start_on,
         Performance.open_on,
-        Venue.name)
+        Venue.name,
+        Performance.on_the_day)
     q = q.filter(Performance.event_id==event.id)
     q = q.filter(Venue.performance_id==Performance.id)
     q = q.filter(SalesSegment.id==sales_segment.id)
@@ -240,6 +262,18 @@ def _query_performance_names(request, event, sales_segment):
     q = q.filter(Stock.id==ProductItem.stock_id)
     q = q.filter(Stock.performance_id==Performance.id)
 
+    today = date.today()
+    today = datetime(today.year, today.month, today.day)
+    tommorow = today + timedelta(days=1)
+
+    #if sales_segment.kind == 'sales_counter': #XXX 当日用のkindを定義
+    #    # 当日公演の条件
+    #    q = q.filter(Performance.start_on>=today)
+    #    q = q.filter(Performance.start_on<tommorow)
+    #elif any([s.kind=='sales_counter' for s in event.sales_segments]):
+    #    # 当日販売区分を持つイベントの場合は、当日販売でない区分で、当日公演を条件からはずす
+    #    # q = q.filter(Performance.start_on<today)
+    #    q = q.filter(Performance.start_on>=tommorow)
     return q
 
 def performance_names(request, event, sales_segment):
@@ -257,11 +291,11 @@ def performance_names(request, event, sales_segment):
     values = q.distinct().all()
 
     results = dict()
-    for pid, name, start, open, vname in values:
+    for pid, name, start, open, vname, on_the_day in values:
         results[name] = results.get(name, [])
-        results[name].append(dict(pid=pid, start=start, open=open, vname=vname))
+        results[name].append(dict(pid=pid, start=start, open=open, vname=vname, on_the_day=on_the_day))
 
-    return [(s[0], s[1]) for s in sorted([(k, sorted(v, key=operator.itemgetter('start')), min(*[x['start'] for x in v])) 
+    return [(s[0], s[1]) for s in sorted([(k, sorted(v, key=operator.itemgetter('start')), min([x['start'] for x in v])) 
                                           for k, v in results.items()], 
                                          key=operator.itemgetter(2))]
 
@@ -270,7 +304,8 @@ def performance_venue_by_name(request, event, sales_segment, performance_name):
     q = q.filter(Performance.name==performance_name)
     values = q.distinct().all()
 
-    return sorted([dict(pid=pid, name=name, start=start, open=open, vname=vname) for pid, name, start, open, vname in values],
+    return sorted([dict(pid=pid, name=name, start=start, open=open, vname=vname, on_the_day=on_the_day) 
+                    for pid, name, start, open, vname, on_the_day in values],
             key=operator.itemgetter('start'))
 
 class JSONEncoder(json.JSONEncoder):

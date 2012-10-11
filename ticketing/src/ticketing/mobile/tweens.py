@@ -19,13 +19,15 @@ def _convert_response_sjis(response):
 
 def mobile_request_factory(handler, registry):
     def tween(request):
-        directlyProvides(request, IMobileRequest)
+        #directlyProvides(request, IMobileRequest)
         return handler(request)
     return tween
     
 def mobile_encoding_convert_factory(handler, registry):
     def tween(request):
         request._ua = uamobile.detect(request.environ)
+        debug_mobile = request.registry.settings.get('altair.debug_mobile', False)
+
         if not request._ua.is_nonmobile():
             ## DeprecationWarning: Use req = req.decode('cp932')
             session = getattr(request, 'session', None)

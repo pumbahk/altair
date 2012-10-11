@@ -194,7 +194,8 @@
       loadstart: null,
       click: null,
       selectable: null,
-      select: null
+      select: null,
+      tooltip: null
     };
     if (options.callbacks) {
       for (var k in this.callbacks)
@@ -436,23 +437,38 @@
                   }
                 }
               } else {
-                if (seats[id].get('model').selectable())
-                  candidate = [id];
+                candidate = [id];
               }
               if (!candidate)
                 return;
               for (var i = 0; i < candidate.length; i++) {
                 var _id = candidate[i];
                 var seat = seats[_id];
-                seat.addStyleType('highlighted');
+                if (seat.get('model').selectable()) {
+                  seat.addStyleType('highlighted');
+                } else {
+                  seat.addStyleType('tooltip');
+                  //seats[id].get('model').set('timer', setTimeout(function() {
+                  //  self.callbacks.tooltip && self.callbacks.tooltip(id);
+                  //}, 3000));
+                }
                 self.highlighted[_id] = seat;
               }
             },
             mouseout: function(evt) {
               var highlighted = self.highlighted;
               self.highlighted = {};
-              for (var i in highlighted)
-                highlighted[i].removeStyleType('highlighted');
+              for (var i in highlighted) {
+                var seat = highlighted[i];
+                if (seat.get('model').selectable()) {
+                  seat.removeStyleType('highlighted');
+                } else {
+                  seat.removeStyleType('tooltip');
+                  //if (seats[id].get('model').get('timer')) {
+                  //  clearTimeout(seats[id].get('model').get('timer'));
+                  //}
+                }
+              }
             },
             mousedown: function(evt) {
               self.callbacks.click && self.callbacks.click(self, self, self.highlighted);

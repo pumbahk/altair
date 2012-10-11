@@ -12,6 +12,9 @@ class FCAuthTween(object):
 
         try:
             return self.handler(request)
+        except Exception, e:
+            logger.exception(e)
+            raise
         finally:
             if hasattr(request, 'context'):
                 logger.debug('fc auth tween %s' % request.context)

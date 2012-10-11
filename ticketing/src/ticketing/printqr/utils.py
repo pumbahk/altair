@@ -4,6 +4,7 @@ import sqlalchemy.orm as orm
 from ticketing.models import DBSession
 from ticketing.core.models import Order
 from ticketing.core.models import TicketPrintHistory
+from ticketing.core.models import OrderedProductItemToken
 from ticketing.core.models import OrderedProductItem
 from ticketing.core.models import OrderedProduct
 from ticketing.core.models import PageFormat
@@ -39,6 +40,12 @@ def page_formats_for_organization(organization):
         page_format_to_dict(page_format) \
         for page_format in DBSession.query(PageFormat).filter_by(organization=organization)
         ]
+
+def token_from_orderno_and_id(order_no, token_id):
+    return OrderedProductItemToken.query.filter_by(id=token_id)\
+        .filter(OrderedProductItemToken.ordered_product_item_id==OrderedProductItem.id)\
+        .filter(OrderedProductItem.ordered_product_id == OrderedProduct.id)\
+        .filter(OrderedProduct.order_id==Order.id, Order.order_no==order_no)
 
 def _order_and_history_from_qrdata(qrdata):
     return DBSession.query(Order, TicketPrintHistory)\

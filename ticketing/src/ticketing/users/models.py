@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL, Index, UniqueConstraint
 from sqlalchemy.orm import join, backref, column_property
 
@@ -22,6 +23,10 @@ class User(Base, WithTimestamp):
     def get(user_id):
         return session.query(User).filter(User.id == user_id).first()
 
+    @property
+    def first_user_credential(self):
+        ## 実態としては、user: user_credentialは1:1だけれど、すでに[0]で取得しているコードなどが存在するので
+        return self.user_credential[0]
 
 class Member(Base, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Member'
@@ -31,6 +36,13 @@ class Member(Base, WithTimestamp, LogicallyDeleted):
     user = relationship('User', backref=backref("member", uselist=False))
     membergroup_id = Column(Identifier, ForeignKey('MemberGroup.id'))
     membergroup = relationship('MemberGroup', backref='users')
+
+    @classmethod
+    def get_or_create_by_user(cls, user):
+        assert user
+        qs = cls.query.filter_by(deleted_at=None, user=user)
+        instance = qs.first() or cls(user=user, user_id=user.id)
+        return instance
 
 class SexEnum(StandardEnum):
     Male = 1
@@ -66,6 +78,8 @@ class UserProfile(Base, BaseModel, WithTimestamp):
     @property
     def full_name_kana(self):
         return u"%s %s" % (self.last_name_kana,  self.first_name_kana)
+    def full_name(self):
+        return u"%s %s" % (self.last_name, self.firstname)
 
 class UserCredential(Base, WithTimestamp):
     __tablename__ = 'UserCredential'
@@ -83,6 +97,39 @@ class UserCredential(Base, WithTimestamp):
 
     status = Column(Integer)
 
+    @classmethod
+    def _filter_by_miscs(cls, qs, membership_id, user):
+        if membership_id:
+            qs = qs.filter_by(membership_id=membership_id)
+        if user:
+            qs = qs.filter_by(user=user)
+        return qs
+
+    @classmethod
+    def get_or_create(cls, auth_identifier, auth_secret, membership_id=None, user=None):
+        qs = cls.query.filter_by(auth_identifier=auth_identifier, auth_secret=auth_secret)
+        qs = cls._filter_by_miscs(qs, membership_id, user)
+        return qs.first() or cls(auth_identifier=auth_identifier, 
+                                 auth_secret=auth_secret, 
+                                 membership_id=membership_id, 
+                                 user=user)
+    @classmethod
+    def get_or_create_overwrite_password(cls, auth_identifier, auth_secret, membership_id=None, user=None):
+        qs = cls.query.filter_by(auth_identifier=auth_identifier)
+        qs = cls._filter_by_miscs(qs, membership_id, user)
+        instance = qs.first()
+
+        if instance:
+            instance.auth_secret = auth_secret
+            return instance
+
+        return cls(auth_identifier=auth_identifier, 
+                   auth_secret=auth_secret, 
+                   membership_id=membership_id, 
+                   user=user)
+    
+    
+        
 class UserPointAccount(Base, WithTimestamp):
     __tablename__ = 'UserPointAccount'
     query = session.query_property()
@@ -193,6 +240,13 @@ class MemberGroup(Base, WithTimestamp):
         secondary=MemberGroup_SalesSegment,
         backref="membergroups")
    
+    @classmethod
+    def get_or_create_by_name(cls, name, membership_id=None):
+        qs = cls.query.filter_by(name=name)
+        if membership_id:
+            qs = qs.filter_by(membership_id=membership_id)
+        return qs.first() or cls(name=name, membership_id=membership_id)
+
 # class Membership_SalesSegment(Base):
 #     __tablename__ = 'Membership_SalesSegment'
 #     query = session.query_property()

@@ -26,6 +26,17 @@ class IssuedAtBubblingSetter(object):
         if target.issued_at is None:
             target.issued_at = self.dt
 
+    def start_refresh_status_bubbling(self):
+        assert self.dt is None
+        for token in self.tokens:
+            token.issued_at = None
+            self.items.add(token.item)
+        for item in self.items:
+            item.issued_at = None
+            self.orders.add(item.ordered_product.order)
+        for order in self.orders:
+            order.issued_at = None
+
     def start_bubbling(self):
         self.bubbling_tokens()
         self.bubbling_items()
@@ -81,6 +92,17 @@ class PrintedAtBubblingSetter(object):
         self.bubbling_tokens()
         self.bubbling_items()
         self.bubbling_orders()
+
+    def start_refresh_status_bubbling(self):
+        assert self.dt is None
+        for token in self.tokens:
+            token.printed_at = None
+            self.items.add(token.item)
+        for item in self.items:
+            item.printed_at = None
+            self.orders.add(item.ordered_product.order)
+        for order in self.orders:
+            order.printed_at = None
 
     def bubbling_tokens(self):
         for token in self.tokens:

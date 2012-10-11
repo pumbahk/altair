@@ -24,6 +24,11 @@
     modal.find('#display_order').val($(el).find('#display_order').text());
     modal.find('#sales_segment_id').val($(el).find('input[name=sales_segment_id]').attr('value'));
     modal.find('#seat_stock_type_id').val($(el).find('#seat_stock_type_id').attr('value'));
+    if ($(el + ' #public').attr('value') == 'True') {
+      modal.find('#public').val(1).attr('checked', 'checked');
+    } else {
+      modal.find('#public').val(0).removeAttr('checked');
+    }
     modal.modal('toggle');
   }
   function delete_product() {

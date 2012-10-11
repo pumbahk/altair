@@ -1,0 +1,16 @@
+<%inherit file="../layout_2cols.html" />
+<%namespace file="/common/helpers.html" import="breadcrumbs,pager,flash_messages"/>
+<div class="breadcrumbs">
+${breadcrumbs(
+  names=[u'トップ', u'member',u"csvインポート"],
+  urls=[request.route_path('index'),
+        request.route_path('members.index',membership_id=request.matchdict["membership_id"])]
+)}
+</div>
+
+<div class="content">
+  ${flash_messages(request)}
+</div>
+
+<h2>member</h2>
+<%include file="./_csv_import_dialog.html" args="form=form" />

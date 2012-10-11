@@ -1,0 +1,37 @@
+<%namespace file="/common/helpers.html" import="form_item"/>
+
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">×</button>
+    <h3>membergroup設定</h3>
+  </div>
+
+ <form method="POST" action="${request.route_path("members.member", membership_id=membership_id, action="edit")}">
+  <div class="modal-body">
+	  %for field in form:
+	    ${form_item(field)}
+	  %endfor
+      選択されたユーザ
+      <ul>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ログイン名</th><th>membership</th><th>membergroup</th>
+          </tr>
+        </thead>
+        <tbody>
+          %for user in users:
+          <tr>
+            <td>${user.first_user_credential.auth_identifier}</td>
+            <td>${user.member.membergroup.membership.name}</td>
+            <td>${user.member.membergroup.name}</td>
+          </tr>
+          %endfor
+        </tbody>
+      </table>
+  </div>
+
+  <div class="modal-footer">
+	<a href="#" class="btn" data-dismiss="modal">キャンセル</a>
+    <input class="btn btn-primary" type="submit" name="submit" value="選択したmembergroupに変更">
+  </div>
+ </form>

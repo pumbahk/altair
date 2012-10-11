@@ -1,0 +1,15 @@
+<%page args="form, route_name, route_path" />
+<%namespace file="/common/helpers.html" name="h" />
+
+<div class="well">
+  <form class="form-horizontal" action="${route_path}" method="POST">
+    <fieldset>
+      ${h.form_item(form.membership_id)}
+      ${h.form_item(form.organization_id)}
+      ${h.form_item(form.name, option={'class':'span5', 'maxlength':255})}
+    </fieldset>
+    <div class="form-actions">
+      <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">
+    </div>
+  </form>
+</div>

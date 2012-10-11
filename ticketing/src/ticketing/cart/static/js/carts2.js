@@ -697,7 +697,8 @@ cart.OrderFormPresenter.prototype = {
         var performance = cart.app.performance;
         var values = this.orderForm.serialize();
         $.ajax({
-            url: order_url, //this is global variable
+            //url: order_url, //this is global variable
+            url: performance.get('order_url'),
             dataType: 'json',
             data: values,
             type: 'POST',
@@ -943,18 +944,22 @@ cart.VenueView = Backbone.View.extend({
             messageBoard: (function() {
                 self.tooltip.hide();
                 $(document.body).mousemove(function(e){
-                    self.tooltip.css({
-                        left: (e.pageX + 10) + 'px', 
-                        top:  (e.pageY + 10) + 'px'
-                    });
+                    if (self.tooltip) {
+                        self.tooltip.css({
+                            left: (e.pageX + 10) + 'px', 
+                            top:  (e.pageY + 10) + 'px'
+                        });
+                    }
                 });
 
                 return {
                     up: function(msg) {
-                        self.tooltip.show().stop().text(msg).fadeIn(100);
+                        if (self.tooltop && msg)
+                            self.tooltip.show().stop().text(msg).fadeIn(100);
                     },
                     down: function() {
-                        self.tooltip.stop().fadeOut(100);
+                        if (self.tooltip)
+                            self.tooltip.stop().fadeOut(100);
                     }
                 }
             })()
@@ -1054,7 +1059,7 @@ function newMetadataLoaderFactory(url) {
               _conts[i].next(_conts[i].fetch(data));
           },
           error: function(xhr, text) {
-            var message = "Failed to load " + key + " (reason: " + text + ")";
+            var message = "Failed to load " + url + " (reason: " + text + ")";
             var _conts = conts;
             conts = [];
             for (var i = 0; i < _conts.length; i++)

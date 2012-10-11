@@ -5,6 +5,7 @@ from decimal import Decimal
 from wtforms import Form
 from wtforms import TextField, SelectField, IntegerField, DecimalField, SelectMultipleField, HiddenField
 from wtforms.validators import Length, NumberRange, EqualTo, Optional, ValidationError
+from wtforms.widgets import CheckboxInput
 from sqlalchemy.sql import func
 
 from ticketing.formhelpers import Translations, Required, BugFreeSelectField
@@ -61,6 +62,11 @@ class ProductForm(Form):
         validators=[Required(u'選択してください')],
         choices=[],
         coerce=int
+    )
+    public = IntegerField(
+        label=u'一般公開',
+        default=1,
+        widget=CheckboxInput(),
     )
 
     def validate_price(form, field):

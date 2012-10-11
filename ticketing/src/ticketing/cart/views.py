@@ -47,7 +47,8 @@ def back(func):
 def get_seat_type_triplets(event_id, performance_id, sales_segment_id):
     segment_stocks = DBSession.query(c_models.ProductItem.stock_id).filter(
         c_models.ProductItem.product_id==c_models.Product.id).filter(
-        c_models.Product.sales_segment_id==sales_segment_id)
+        c_models.Product.sales_segment_id==sales_segment_id).filter(
+        c_models.Product.public==True)
 
     seat_type_triplets = DBSession.query(c_models.StockType, c_models.Stock.quantity, c_models.StockStatus.quantity).filter(
             c_models.Stock.id==c_models.StockStatus.stock_id).filter(
@@ -69,23 +70,6 @@ class IndexView(object):
         self.context = request.context
 
     @view_config(route_name='cart.index', renderer=selectable_renderer("carts/%(membership)s/index.html"), xhr=False, permission="buy")
-    def redirect_sale(self):
-        event = self.request.context.event
-        if event is None:
-            raise HTTPNotFound()
-        sales_segments = self.context.sales_segments
-        if not sales_segments:
-            logger.debug("No matching sales_segment")
-            raise NoEventError("No matching sales_segment")
-        sales_segment = sales_segments[0]
-        event_id = self.request.matchdict['event_id']
-        location = self.request.route_url('cart.index.sales', 
-            event_id=event_id,
-            sales_segment_id=sales_segment.id,
-            _query=self.request.GET)
-        return HTTPFound(location=location)
-
-    @view_config(route_name='cart.index.sales', renderer=selectable_renderer('carts/%(membership)s/index.html'), xhr=False, permission="buy")
     def __call__(self):
         event = self.request.context.event
         if event is None:
@@ -95,9 +79,11 @@ class IndexView(object):
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.params.get('performance')
 
-        sales_segment = self.context.get_sales_segument()
-
-        if sales_segment is None:
+        
+        #sales_segment = self.context.get_sales_segument()
+        normal_sales_segment = self.context.normal_sales_segment
+        sales_counter_sales_segment = self.context.sales_counter_sales_segment
+        if normal_sales_segment is None:
             logger.debug("No matching sales_segment")
             raise NoEventError("No matching sales_segment")
 
@@ -111,7 +97,10 @@ class IndexView(object):
         # 日程,会場,検索項目のコンボ用
         dates = sorted(list(set([p.start_on.strftime("%Y-%m-%d %H:%M") for p in e.performances])))
         logger.debug("dates:%s" % dates)
-        performances = api.performance_names(self.request, context.event, context.sales_segment)
+        performances = api.performance_names(self.request, context.event, context.normal_sales_segment)
+        if not performances:
+            raise NoEventError # NoPerformanceを作る
+
         from collections import OrderedDict
         select_venues = OrderedDict()
         for pname, pvs in performances:
@@ -121,12 +110,18 @@ class IndexView(object):
             for pv in pvs:
                 #select_venues[pname] = select_venues.get(pname, [])
                 logger.debug("performance %s" % pv)
+                sales_segment_id = (sales_counter_sales_segment.id 
+                            if pv['on_the_day'] and sales_counter_sales_segment 
+                                else normal_sales_segment.id)
                 select_venues[pname].append(dict(
                     id=pv['pid'],
-                    name=u'{start:%Y-%m-%d %H:%M}開始 {vname}'.format(**pv),
+                    name=u'{start:%Y-%m-%d %H:%M}開始 {vname} (当日券)'.format(**pv) 
+                        if pv.get('on_the_day') else u'{start:%Y-%m-%d %H:%M}開始 {vname}'.format(**pv),
+                    order_url=self.request.route_url("cart.order", 
+                        sales_segment_id=sales_segment_id),
                     seat_types_url=self.request.route_url('cart.seat_types',
                         performance_id=pv['pid'],
-                        sales_segment_id=sales_segment.id,
+                        sales_segment_id=sales_segment_id,
                         event_id=event.id)))
             
         logger.debug("venues %s" % select_venues)
@@ -156,10 +151,10 @@ class IndexView(object):
                     cart_release_url=self.request.route_url('cart.release'),
                     selected=Markup(json.dumps([selected_performance.name, selected_performance.id])),
                     venues_selection=Markup(json.dumps(select_venues.items())),
-                    sales_segment=Markup(json.dumps(dict(id=sales_segment.id, seat_choice=sales_segment.seat_choice))),
+                    sales_segment=Markup(json.dumps(dict(id=normal_sales_segment.id, seat_choice=normal_sales_segment.seat_choice))),
                     products_from_selected_date_url = self.request.route_url("cart.date.products", event_id=event_id), 
-                    order_url=self.request.route_url("cart.order", sales_segment_id=sales_segment.id),
-                    upper_limit=sales_segment.upper_limit,
+                    order_url=self.request.route_url("cart.order", sales_segment_id=normal_sales_segment.id),
+                    upper_limit=normal_sales_segment.upper_limit,
                     event_extra_info=event_extra_info.get("event") or []
         )
 
@@ -171,7 +166,6 @@ class IndexView(object):
 
         seat_type_triplets = get_seat_type_triplets(event_id, performance_id, sales_segment_id)
         performance = c_models.Performance.query.filter_by(id=performance_id).one()
-
         data = dict(seat_types=[
                 dict(id=s.id, name=s.name,
                     style=s.style,
@@ -187,6 +181,8 @@ class IndexView(object):
                 performance_name=performance.name,
                 performance_start=h.performance_date(performance),
                 performance_id=performance_id,
+                order_url=self.request.route_url("cart.order", 
+                        sales_segment_id=sales_segment_id),
                 venue_name=performance.venue.name,
                 event_id=event_id,
                 venue_id=performance.venue.id,
@@ -232,8 +228,8 @@ class IndexView(object):
         q = q.filter(c_models.Performance.start_on==selected_date)
         q = q.filter(c_models.Performance.id == c_models.ProductItem.performance_id)
 
-
         query = DBSession.query(c_models.Product)
+        query = query.filter(c_models.Product.public==True)
         query = query.filter(c_models.Product.id.in_(q)).order_by(sa.desc("display_order, price"))
         ### filter by salessegment
         salessegment = self.context.get_sales_segument()
@@ -247,7 +243,7 @@ class IndexView(object):
 
     @view_config(route_name='cart.products', renderer="json")
     def get_products(self):
-        """ 席種別ごとの購入単位 
+        """ 席種別ごとの購入単位
         SeatType -> ProductItem -> Product
         """
         seat_type_id = self.request.matchdict['seat_type_id']
@@ -265,6 +261,7 @@ class IndexView(object):
         q = q.filter(c_models.ProductItem.performance_id==performance_id)
 
         query = DBSession.query(c_models.Product)
+        query = query.filter(c_models.Product.public==True)
         query = query.filter(c_models.Product.id.in_(q)).order_by(sa.desc("display_order, price"))
         ### filter by salessegment
         salessegment = DBSession.query(c_models.SalesSegment).filter_by(id=sales_segment_id).one()
@@ -895,13 +892,14 @@ class MobileIndexView(object):
         self.request = request
         self.context = request.context
 
-    @view_config(route_name='cart.index.sales', renderer=selectable_renderer('carts_mobile/%(membership)s/index.html'), xhr=False, permission="buy", request_type=".interfaces.IMobileRequest")
+    @view_config(route_name='cart.index', renderer=selectable_renderer('carts_mobile/%(membership)s/index.html'), xhr=False, permission="buy", request_type=".interfaces.IMobileRequest")
     def __call__(self):
         event_id = self.request.matchdict['event_id']
         venue_name = self.request.params.get('v')
 
         # セールスセグメント必須
-        sales_segment = self.context.get_sales_segument()
+        #sales_segment = self.context.get_sales_segument()
+        sales_segment = self.context.normal_sales_segment
 
         if sales_segment is None:
             raise NoEventError("No matching sales_segment")
@@ -909,6 +907,10 @@ class MobileIndexView(object):
         # パフォーマンスIDが確定しているなら商品選択へリダイレクト
         performance_id = self.request.params.get('pid') or self.request.params.get('performance')
         if performance_id:
+            performance = c_models.Performance.query.filter(c_models.Performance.id==performance_id).one()
+            if performance.on_the_day:
+                sales_segment = self.context.sales_counter_sales_segment
+
             return HTTPFound(self.request.route_url(
                 "cart.seat_types",
                 event_id=event_id,
@@ -947,7 +949,9 @@ class MobileIndexView(object):
         performance_name = self.request.params.get('performance_name')
         venues = []
         if performance_name:
-            venues = [(x['pid'], u"{start:%Y-%m-%d %H:%M} {vname}".format(**x)) for x in api.performance_venue_by_name(self.request, event, sales_segment, performance_name)]
+            venues = [(x['pid'], u"{start:%Y-%m-%d %H:%M} {vname} 当日券".format(**x) 
+                if x.get('on_the_day') else u"{start:%Y-%m-%d %H:%M} {vname}".format(**x)) 
+                for x in api.performance_venue_by_name(self.request, event, sales_segment, performance_name)]
 
         return dict(
             event=event,
@@ -1045,7 +1049,8 @@ class MobileSelectProductView(object):
         # 席種(イベントとパフォーマンスにひもづいてること)
         segment_stocks = DBSession.query(c_models.ProductItem.stock_id).filter(
             c_models.ProductItem.product_id==c_models.Product.id).filter(
-            c_models.Product.sales_segment_id==sales_segment.id)
+            c_models.Product.sales_segment_id==sales_segment.id).filter(
+            c_models.Product.public==True)
 
         seat_type = DBSession.query(c_models.StockType).filter(
             c_models.Performance.event_id==event_id).filter(
@@ -1067,6 +1072,7 @@ class MobileSelectProductView(object):
             c_models.ProductItem.performance_id==performance_id)
 
         products = c_models.Product.query.filter(
+            c_models.Product.public==True).filter(
             c_models.Product.id.in_(product_items)).order_by(
             sa.desc("display_order, price")).filter_by(
             sales_segment=sales_segment)

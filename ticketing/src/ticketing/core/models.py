@@ -4,7 +4,7 @@ import itertools
 import operator
 import json
 from urlparse import urljoin
-from datetime import datetime
+from datetime import datetime, date, timedelta
 
 from sqlalchemy import Table, Column, ForeignKey, func, or_, and_, event
 from sqlalchemy import ForeignKeyConstraint, UniqueConstraint
@@ -15,6 +15,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import exists
 from sqlalchemy.sql.expression import asc, desc, exists, select, table, column
 from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from pyramid.threadlocal import get_current_registry
 
@@ -436,6 +437,21 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     product_items = relationship('ProductItem', backref='performance')
     venue = relationship('Venue', uselist=False, backref='performance')
 
+    @hybrid_property
+    def on_the_day(self):
+        today = date.today()
+        today = datetime(today.year, today.month, today.day)
+        tomorrow = today + timedelta(days=1)
+        return (today <= self.start_on) and (self.start_on < tomorrow)
+
+    @on_the_day.expression
+    def on_the_day(self):
+        from sqlalchemy import sql
+        today = date.today()
+        today = datetime(today.year, today.month, today.day)
+        tomorrow = today + timedelta(days=1)
+        return sql.and_(today <= self.start_on, self.start_on < tomorrow)
+
     def add(self):
         BaseModel.add(self)
 
@@ -823,9 +839,9 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     # membergroup = relationship('MemberGroup', backref='salessegments')
 
     def delete(self):
-        # 商品が割り当てられている場合は削除できない
-        if self.product:
-            raise Exception(u'商品の割当がある為、削除できません')
+        # delete Product
+        for product in self.product:
+            product.delete()
 
         # delete PaymentDeliveryMethodPair
         for pdmp in self.payment_delivery_method_pairs:
@@ -1344,6 +1360,9 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     items = relationship('ProductItem', backref=backref('product', order_by='Product.display_order'))
 
+    # 一般公開するか
+    public = Column(Boolean, nullable=False, default=True)
+
     @staticmethod
     def find(performance_id=None, event_id=None, sales_segment_id=None, stock_id=None, include_deleted=False):
         query = Product.query
@@ -1384,9 +1403,9 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         #ProductItem.create_default(product=self)
 
     def delete(self):
-        # 在庫が割り当てられている場合は削除できない
-        if self.items:
-            raise Exception(u'座席および席数の割当がある為、削除できません')
+        # delete ProductItem
+        for product_item in self.items:
+            product_item.delete()
 
         super(Product, self).delete()
 
@@ -1565,7 +1584,6 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     paid_at = Column(DateTime, nullable=True, default=None)
     delivered_at = Column(DateTime, nullable=True, default=None)
     canceled_at = Column(DateTime, nullable=True, default=None)
-    last_issued_at = Column(DateTime, nullable=True, default=None)
 
     order_no = Column(String(255))
     note = Column(UnicodeText, nullable=True, default=None)
@@ -1579,6 +1597,9 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     _attributes = relationship("OrderAttribute", backref='order', collection_class=attribute_mapped_collection('name'), cascade='all,delete-orphan')
     attributes = association_proxy('_attributes', 'value', creator=lambda k, v: OrderAttribute(name=k, value=v))
+
+    def is_canceled(self):
+        return bool(self.canceled_at)
 
     def is_issued(self):
         """
@@ -1645,9 +1666,14 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         else:
             return 'ordered'
 
+    def can_cancel(self):
+        # キャンセル済み、売上キャンセル済み、配送済み、発券済みはキャンセルできない
+        if self.status in ['canceled', 'refunded', 'delivered'] or self.printed_at or self.issued:
+            return False
+        return True
+
     def cancel(self, request):
-        # キャンセル済み、売上キャンセル済み、配送済みはキャンセルできない
-        if self.status == 'canceled' or self.status == 'refunded' or self.status == 'delivered':
+        if not self.can_cancel():
             return False
 
         '''
@@ -2099,8 +2125,9 @@ class TicketPrintQueueEntry(Base, BaseModel):
             entry.processed_at = now
             order = entry.ordered_product_item.ordered_product.order
             if not (entry.ticket.flags & Ticket.FLAG_ALWAYS_REISSUABLE):
-                entry.ordered_product_item.ordered_product.order.isseud = True
-            order.last_issued_at = now
+                entry.ordered_product_item.ordered_product.order.issued = True
+                entry.ordered_product_item.issued_at = entry.ordered_product_item.printed_at = now
+            order.issued_at = order.printed_at = now
             order.issued = True
         return entries
 

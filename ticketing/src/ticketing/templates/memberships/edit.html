@@ -1,0 +1,23 @@
+<%inherit file="/layout_2cols.html"/>
+<%namespace file="/common/helpers.html" name="h" />
+
+<div class="breadcrumbs">
+  ${h.breadcrumbs(
+      names=[u'トップ', u'membership',u"詳細"],
+      urls=[request.route_path('index'), request.route_path('memberships',action="index",membership_id="*"),request.route_path('memberships',action="show",membership_id=membership.id),]
+  )}
+</div>
+
+<div class="page-header">
+  <h3>membership編集</h3>
+</div>
+
+<div class="content">
+  ${h.flash_messages(request)}
+  ${h.alert_message(form)}
+</div>
+<%
+route_name=u'編集'
+route_path=request.route_path('memberships',action='edit', membership_id=membership.id)
+%>
+<%include file="/memberships/_form.html" args="form=form,route_name=route_name,route_path=route_path" />

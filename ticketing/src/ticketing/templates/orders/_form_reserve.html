@@ -9,9 +9,17 @@
   }
 </style>
 
-<div id="modal-reserve" class="modal fade">
+<script type="text/javascript">
+  $(function() {
+    if (window.ticketPrinterService) {
+      $('#sales_counter_payment_method_id').val($('#sales_counter_payment_method_id > option:contains(現金)').val());
+    }
+    $('.draggable').draggable();
+  });
+</script>
+
+<div id="modal-reserve" class="modal fade draggable">
   <div class="modal-header">
-    <a class="close" data-dismiss="modal">&times;</a>
     <h3>予約する</h3>
   </div>
 
@@ -56,7 +64,7 @@
   </div>
 
   <div class="modal-footer">
-    <a href="javascript:void(0);" onclick="$('#modal-reserve').modal('hide');" class="btn secondary btn-close">キャンセル</a>
+    <a href="javascript:void(0);" onclick="javascript:reselectOrder();" class="btn secondary btn-close">戻る</a>
     <a href="javascript:void(0);" onclick="$('#modal-reserve').find('form').submit();" class="btn danger">確認する</a>
   </div>
 </div>

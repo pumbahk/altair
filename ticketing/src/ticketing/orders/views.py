@@ -21,9 +21,9 @@ from sqlalchemy.sql import exists
 
 from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.core.models import (Order, Event, Performance, PaymentDeliveryMethodPair, ShippingAddress,
-                                   Product, ProductItem, OrderedProduct, OrderedProductItem, Seat, Venue,
+                                   Product, ProductItem, OrderedProduct, OrderedProductItem, Venue,
                                    Ticket, TicketBundle, TicketFormat, Ticket_TicketBundle,
-                                   Stock)
+                                   Stock, StockStatus, Seat, SeatStatus, SeatStatusEnum)
 from ticketing.users.models import MailSubscription
 from ticketing.orders.export import OrderCSV
 from ticketing.orders.forms import (OrderForm, OrderSearchForm, SejOrderForm, SejTicketForm,
@@ -37,6 +37,8 @@ from ticketing.fanstatic import with_bootstrap
 from ticketing.orders.events import notify_order_canceled
 from ticketing.tickets.utils import build_dicts_from_ordered_product_item
 from ticketing.cart import api
+from ticketing.cart.stocker import NotEnoughStockException
+from ticketing.cart.reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 
 logger = logging.getLogger(__name__)
 import pystache
@@ -340,6 +342,28 @@ class Orders(BaseView):
 
         return response
 
+    def release_seats(self, l0_ids):
+        # 確保座席があるならステータスを戻す
+        logger.info("release seats : %s" % l0_ids)
+        if l0_ids:
+            seat_statuses = SeatStatus.filter(SeatStatus.status==int(SeatStatusEnum.InCart))\
+                                      .join(SeatStatus.seat)\
+                                      .filter(Seat.l0_id.in_(l0_ids))\
+                                      .with_lockmode('update').all()
+            for seat_status in seat_statuses:
+                logger.info("seat(%s) status InCart to Vacant" % seat_status.seat_id)
+                seat_status.status = int(SeatStatusEnum.Vacant)
+                seat_status.save()
+
+    def clear_inner_cart_session(self):
+        inner_cart_session = self.request.session.get('ticketing.inner_cart')
+        logger.info("clear cart session : %s" % inner_cart_session)
+
+        if inner_cart_session:
+            if inner_cart_session.get('seats'):
+                self.release_seats(inner_cart_session.get('seats'))
+            del self.request.session['ticketing.inner_cart']
+
     @view_config(route_name='orders.reserve.form', request_method='POST',
                  renderer='ticketing:templates/orders/_form_reserve.html', permission='sales_counter')
     def reserve_form(self):
@@ -360,14 +384,27 @@ class Orders(BaseView):
             old_cart.release()
             api.remove_cart(self.request)
 
-        # Stockとkind=sales_counterのSalesSegmentからProductを決定する
+        # 古い確保座席がセッションに残っていたら削除
+        self.clear_inner_cart_session()
+
         stocks = post_data.get('stocks')
         form_reserve = OrderReserveForm(post_data, performance_id=performance_id, stocks=stocks)
         form_reserve.payment_delivery_method_pair_id.validators = [Optional()]
         form_reserve.validate()
 
-        # 選択されたSeat
-        seats = Seat.filter(Seat.l0_id.in_(post_data.get('seats'))).join(Venue).filter(Venue.performance_id==performance_id).all()
+        # 選択されたSeatがあるならステータスをInCartにして確保する
+        seats = []
+        if post_data.get('seats'):
+            try:
+                reserving = api.get_reserving(self.request)
+                stock_status = [(stock, 0) for stock in StockStatus.filter(StockStatus.stock_id.in_(stocks))]
+                seats = reserving.reserve_selected_seats(stock_status, performance_id, post_data.get('seats'))
+            except InvalidSeatSelectionException:
+                logger.info("seat selection is invalid.")
+                raise HTTPBadRequest(body=json.dumps({'message':u'既に予約済か選択できない座席です。画面を最新の情報に更新した上で再度座席を選択してください。'}))
+            except Exception, e:
+                logger.exception('save error (%s)' % e.message)
+                raise HTTPBadRequest(body=json.dumps({'message':u'エラーが発生しました'}))
 
         # セッションに保存
         self.request.session['ticketing.inner_cart'] = {
@@ -420,6 +457,9 @@ class Orders(BaseView):
             elif seats and total_quantity != len(seats):
                 raise ValidationError(u'個数の合計を選択した座席数（%d席）にしてください' % len(seats))
 
+            # 選択されたSeatのステータスをいったん戻してカートデータとして再確保する
+            self.release_seats(seats)
+
             # create cart
             cart = api.order_products(self.request, performance_id, order_items, selected_seats=seats)
             pdmp = DBSession.query(PaymentDeliveryMethodPair).filter_by(id=post_data.get('payment_delivery_method_pair_id')).one()
@@ -435,15 +475,19 @@ class Orders(BaseView):
             }
         except ValidationError, e:
             logger.exception('validation error (%s)' % e.message)
-            raise HTTPBadRequest(body=json.dumps({
-                'message':e.message,
-            }))
-
+            raise HTTPBadRequest(body=json.dumps({'message':e.message}))
+        except NotEnoughAdjacencyException:
+            logger.info("not enough adjacency")
+            raise HTTPBadRequest(body=json.dumps({'message':u'連席で座席を確保できません。座席を直接指定するか、席数を減らして確保してください。'}))
+        except InvalidSeatSelectionException:
+            logger.info("seat selection is invalid.")
+            raise HTTPBadRequest(body=json.dumps({'message':u'既に予約済か選択できない座席です。画面を最新の情報に更新した上で再度座席を選択してください。'}))
+        except NotEnoughStockException as e:
+            logger.info("not enough stock quantity :%s" % e)
+            raise HTTPBadRequest(body=json.dumps({'message':u'在庫がありません'}))
         except Exception, e:
             logger.exception('save error (%s)' % e.message)
-            raise HTTPBadRequest(body=json.dumps({
-                'message':u'エラーが発生しました',
-            }))
+            raise HTTPBadRequest(body=json.dumps({'message':u'エラーが発生しました'}))
 
     @view_config(route_name='orders.reserve.complete', request_method='POST', renderer='json', permission='sales_counter')
     def reserve_complete(self):
@@ -472,14 +516,15 @@ class Orders(BaseView):
             DBSession.flush()
             cart.finish()
 
+            if with_enqueue:
+                utils.enqueue_for_order(operator=self.context.user, order=order)
+
             # clear session
             api.remove_cart(self.request)
             if self.request.session.get('ticketing.inner_cart'):
                 del self.request.session['ticketing.inner_cart']
             logger.debug('order reserve session data=%s' % self.request.session)
 
-            if with_enqueue:
-                utils.enqueue_for_order(operator=self.context.user, order=order)
             return {
                 'order_id':order.id,
                 'message':u'予約しました'
@@ -493,14 +538,14 @@ class Orders(BaseView):
     @view_config(route_name='orders.reserve.reselect', request_method='POST', renderer='json', permission='sales_counter')
     def reserve_reselect(self):
         try:
+            # release cart
             cart = api.get_cart(self.request)
-
-            # release cart & session
-            cart.release()
+            if cart:
+                cart.release()
             api.remove_cart(self.request)
-            if self.request.session.get('ticketing.inner_cart'):
-                del self.request.session['ticketing.inner_cart']
-            logger.debug('order reserve session data=%s' % self.request.session)
+
+            # clear session
+            self.clear_inner_cart_session()
 
             return {}
         except Exception, e:
@@ -508,6 +553,33 @@ class Orders(BaseView):
             raise HTTPBadRequest(body=json.dumps({
                 'message':u'エラーが発生しました',
             }))
+
+    @view_config(route_name='orders.api.get', renderer='json', permission='sales_counter')
+    def api_get(self):
+        l0_id = self.request.params.get('l0_id', 0)
+        logger.debug('call get order api (seat l0_id = %s)' % l0_id)
+        order = Order.filter_by(organization_id=self.context.user.organization_id)\
+                     .join(Order.ordered_products)\
+                     .join(OrderedProduct.ordered_product_items)\
+                     .join(OrderedProductItem.seats)\
+                     .filter(Seat.l0_id==l0_id).first()
+        if not order:
+            raise HTTPBadRequest(body=json.dumps({'message':u'予約データが見つかりません'}))
+
+        name = order.shipping_address.last_name + order.shipping_address.first_name if order.shipping_address else ''
+        products = [ordered_product.product.name for ordered_product in order.ordered_products]
+        seat_names = []
+        for op in order.ordered_products:
+            for opi in op.ordered_product_items:
+                seat_names += [seat.name for seat in opi.seats]
+
+        return {
+            'order_no':order.order_no,
+            'name':name,
+            'price':int(order.total_amount),
+            'products':products,
+            'seat_names':seat_names
+        }
 
     @view_config(route_name='orders.edit.shipping_address', request_method='POST',
                  renderer='ticketing:templates/orders/_form_shipping_address.html', permission='sales_counter')

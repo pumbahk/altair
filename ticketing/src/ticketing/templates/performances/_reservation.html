@@ -12,7 +12,7 @@
     text-decoration: none;
     margin: 10px;
     padding: 5px 5px;
-    width: 80px;
+    width: 160px;
     zoom: 1;
     -webkit-transition-property: opacity;
     -webkit-transition-duration: 2s;
@@ -40,6 +40,10 @@
   #venue-editor .venue-editor-main .venue-editor-main-side {
     width: 0%;
   }
+
+  .modal-backdrop.fade.in {
+    opacity: 0.1;
+  }
 </style>
 
 <script type="text/javascript">
@@ -51,6 +55,7 @@
     });
   });
 </script>
+
 <div class="container-fluid pull-right">
   <div class="row-fluid">
     <input id="sales-counter-button" type="button" class="btn btn-warning" style="vertical-align: baseline; font-size: 100%;" value="当日窓口発券モードにする"></input>
@@ -83,10 +88,10 @@
 <script type="text/javascript">
   function getOrderForm(stock_id) {
     var param = {'seats':[], 'stocks':[], 'performance_id':${performance.id}};
-    var selection = venueEditorRoot.venueeditor('selection');
     if (stock_id) {
       param['stocks'].push(stock_id);
     } else {
+      var selection = venueEditorRoot.venueeditor('selection');
       selection.each(function (seat) {
         param['seats'].push(seat.id);
         var stock_id = seat.get('stock').get('id');
@@ -101,7 +106,13 @@
       dataType: 'html',
       success: function(data) {
         $('#reserve-form').html(data);
+        $('#modal-reserve').modal({'backdrop':'static', 'keyboard':false});
         $('#modal-reserve').modal('show');
+      },
+      error: function(xhr, text) {
+        var responseText = JSON.parse(xhr.responseText);
+        var messages = responseText['message'] || xhr.statusText;
+        $('.content').prepend('<div class="alert alert-error"><a class="close" data-dismiss="alert">&times;</a><h4 class="alert-heading">' + messages + '</h4></div>');
       }
     });
   }
@@ -121,7 +132,7 @@
       success: function(data) {
         $('#modal-reserve').modal('hide');
         $('#reserve-form').html(data);
-        $('#modal-reserve').modal({'backdrop':'static'});
+        $('#modal-reserve').modal({'backdrop':'static', 'keyboard':false});
         $('#modal-reserve').modal('show');
       },
       error: function(xhr, text) {
@@ -146,7 +157,9 @@
     $(modal.find('form').serializeArray()).each(function(i, v) {
       param[v.name] = v.value;
     });
-    param['with_enqueue'] = true;
+    if (window.ticketPrinterService) {
+      param['with_enqueue'] = true;
+    }
     $.ajax({
       type: 'post',
       url: "${request.route_path('orders.reserve.complete')}",

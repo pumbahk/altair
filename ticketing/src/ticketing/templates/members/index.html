@@ -1,0 +1,85 @@
+<%inherit file="../layout_2cols.html" />
+<%namespace file="/common/helpers.html" import="breadcrumbs,pager,flash_messages"/>
+<div class="breadcrumbs">
+${breadcrumbs(
+  names=[u'トップ', u'member'],
+  urls=[request.route_path('index')]
+)}
+</div>
+
+<div class="content">
+  ${flash_messages(request)}
+</div>
+
+<h2>member</h2>
+
+##${choice_form.membership_id.label}${choice_form.membership_id}
+<div class="btn-group">
+  <a href="${request.route_path("members.member",membership_id=membership_id, action="edit_dialog")}"
+     id="member_edit"
+     class="ajax-modal btn" data-toggle="modal" data-target="#MembershipEditModal">membergroup変更</a>
+  <a href="${request.route_path("members.member",membership_id=membership_id, action="csv_import_dialog")}"
+     class="ajax-modal btn"  data-toggle="modal" data-target="#CSVImportModal">csvインポート</a>
+  <a href="${request.route_path("members.member",membership_id=membership_id, action="csv_export_dialog")}"
+     class="ajax-modal btn"  data-toggle="modal" data-target="#CSVExportModal">csvエクスポート</a>
+</div>
+
+
+<p> ${max(users.items_per_page * (users.page-1) + 1,0)}～${min(users.items_per_page * users.page, users.item_count)} / ${users.item_count}件</p>
+
+${users.pager()}
+<table class="table fullwidth checkboxed_table">
+  <thead>
+    <tr>
+      <th class="minwidth"></th>
+      <th><a href="#" class="sortable">user id</a></th>
+      <th><a href="#" class="sortable">名前</a></th>
+##      <th><a href="#" class="sortable">membership</a></th>
+      <th><a href="#" class="sortable">membergroup</a></th>
+    </tr>
+  </thead>
+  <tbody>
+  % for user in users:
+    <tr>
+      <td><input type="checkbox" name="user_id" value="${user.id}" /></td>
+      <td><a href="#">${user.id}</a></td>
+      <td><a href="#">${user.first_user_credential.auth_identifier}</a></td>
+##      <td><a href="#">${user.first_user_credential.membership.name}</a></td>
+      <td><a href="#">${user.member.membergroup.name}</a></td>
+    </tr>
+  % endfor
+  </tbody>
+</table>
+
+<div class="modal hide" id="MembershipEditModal">
+</div>
+
+<div class="modal hide" id="CSVImportModal">
+</div>
+
+<div class="modal hide" id="CSVExportModal">
+</div>
+
+<script type="text/javascript">
+  $(function(){
+    // ajax modal
+	$("a.ajax-modal[data-toggle=modal]").click(function(){
+      var $this = $(this);
+      var wrap = $($this.attr("data-target"));
+      wrap.empty();
+      if($this.data("preload")){
+        $(this).data("preload")($(wrap).load.bind($(wrap), $this.attr("href")));
+      } else {
+        $(wrap).load($this.attr("href"));
+      }
+	});
+
+    // pre-hook
+    $("#member_edit").data("preload", function(cont){
+      var checkeds = $('input[type="checkbox"]:checked');
+      var user_id_list = $.makeArray(checkeds.map(function(i,e){return $(e).val();}));
+      return cont({user_id_list: JSON.stringify(user_id_list)});
+    });
+  });
+</script>
+

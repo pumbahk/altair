@@ -30,6 +30,7 @@ ${h.breadcrumbs(
   ${h.flash_messages(request)}
 </div>
 
+<% order_is_already_queued_p = order.queued %>
 <div class="row-fluid">
   <div class="span6">
     <div class="page-header">
@@ -74,10 +75,34 @@ ${h.breadcrumbs(
       <tr>
         <th>最終発券 (印字) 日時</th>
         <td>
-          % if order.last_issued_at:
-            ${h.safe_strftime(order.last_issued_at)}
+          % if order.issued_at:
+            ${h.safe_strftime(order.issued_at)}
           % else:
-            -
+            % if order_is_already_queued_p:
+              - <span class="label label-info">既に印刷キューに入っています</span>
+            % else:
+              -
+            % endif
+          % endif
+        </td>
+      </tr>
+      <tr>
+        <th>発券済みフラグ</th>
+        <td>
+          % if order.is_canceled():
+            % if order.issued:
+              発券済み
+            % else:
+              未発券
+            % endif
+          % else:
+            % if order.issued:
+              発券済み
+              (<a href="#" data-toggle="modal" data-target="#ForceMarkUnissued">強制的に未発券に戻す</a>)
+            % else:
+              未発券
+              (<a href="#" data-toggle="modal" data-target="#ForceMarkIssued">強制的に発券済にする</a>)
+            % endif
           % endif
         </td>
       </tr>
@@ -101,11 +126,15 @@ ${h.breadcrumbs(
     <div class="pull-right">
       <%
 buttons = []
-buttons.append('delivered')
 buttons.append('mailinfo')
-if not order.issued and not order.queued:
-  buttons.append('print')
-buttons.append('cancel')
+if not order.is_canceled():
+  buttons.append('delivered')
+  if order.can_cancel():
+    buttons.append('cancel')
+  if not order.issued_at and not order_is_already_queued_p:
+    buttons.append('print')
+  else:
+    buttons.append('force_print')
 %>
       <%include file="/orders/_action_button.html" args="order=order, sort=buttons" />
     </div>
@@ -308,7 +337,10 @@ buttons.append('cancel')
           </tr>
       % endif
           <tr>
-            <td colspan="2">${ordered_product.product.name}</td>
+            <td colspan="2">
+              <span class="label label-info">${ordered_product.product.sales_segment.name}</span>
+              ${ordered_product.product.name}
+            </td>
             <td></td>
             <td style="text-align: right;">${h.price_format(ordered_product.price)}円</td>
             <td >${ordered_product.quantity}</td>
@@ -339,6 +371,9 @@ buttons.append('cancel')
               %if ordered_product_item.issued_at:
                 ${ordered_product_item.issued_at}
                 <span alt="${ordered_product_item.issued_at}" class="label label-warning">済</span>
+                % for operator_name in list(set([ph.operator.name for ph in ordered_product_item.print_histories if ph.operator])):
+                  <div>作業者: ${operator_name}</div>
+                % endfor
               %else:
                 ${u"%(issued)s/%(total)s" % ordered_product_item.issued_at_status}
                 <span class="label label-inverse">未発券</span>
