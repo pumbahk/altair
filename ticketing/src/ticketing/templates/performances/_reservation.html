@@ -156,7 +156,9 @@
     $(modal.find('form').serializeArray()).each(function(i, v) {
       param[v.name] = v.value;
     });
-    param['with_enqueue'] = true;
+    if (window.ticketPrinterService) {
+      param['with_enqueue'] = true;
+    }
     $.ajax({
       type: 'post',
       url: "${request.route_path('orders.reserve.complete')}",
