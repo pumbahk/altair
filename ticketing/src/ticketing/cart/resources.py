@@ -147,7 +147,16 @@ class TicketingCartResource(object):
         )
 
         user = self.authenticated_user()
-        if user and 'membership' in user:
+        if user and user.get('is_guest'):
+            q = q.filter(
+                c_models.SalesSegment.id==u_models.MemberGroup_SalesSegment.c.sales_segment_id
+            ).filter(
+                u_models.MemberGroup_SalesSegment.c.membergroup_id==u_models.MemberGroup.id
+            ).filter(
+                u_models.MemberGroup.is_guest==True
+            )
+
+        elif user and 'membership' in user:
             q = q.filter(
                 c_models.SalesSegment.id==u_models.MemberGroup_SalesSegment.c.sales_segment_id
             ).filter(
@@ -155,7 +164,10 @@ class TicketingCartResource(object):
             ).filter(
                 u_models.MemberGroup.name==user['membergroup']
             )
-        return q.all()
+        sales_segments = q.all()
+        if not sales_segments:
+            raise Exception, "query = %s, user=%s" % (q, user)
+        return sales_segments
 
     def get_sales_segment(self):
         """ 該当イベントのSalesSegment取得
