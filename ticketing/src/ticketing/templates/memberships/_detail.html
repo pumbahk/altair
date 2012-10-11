@@ -1,0 +1,18 @@
+<%page args="form, membership" />
+<%namespace file="/common/helpers.html" name="h" />
+
+<div class="page-header">
+  <h4>membership情報</h4>
+</div>
+<table class="table table-bordered fullwidth">
+  <tbody>
+  <tr>
+    <th class="span3">${form.name.label.text}</th>
+    <td>${membership.name}</td>
+  </tr>
+  <tr>
+    <th class="span3">${form.organization_id.label.text}</th>
+    <td>${membership.organization_id}</td>
+  </tr>
+  </tbody>
+</table>

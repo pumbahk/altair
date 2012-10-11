@@ -19,10 +19,9 @@
     <thead>
     <tr>
       <th class="minwidth">ID</th>
-      <th>ログインID</th>
       <th>名前</th>
       <th>ステータス</th>
-      <th>organization</th>
+      <th>会社名</th>
     </tr>
     </thead>
     <tbody>
@@ -30,6 +29,7 @@
     <tr>
       <td><a href="${request.route_path('memberships', action="show",membership_id=membership.id)}">${membership.id}</a></td>
       <td><a href="${request.route_path('memberships', action="show",membership_id=membership.id)}">${membership.name}</a></td>
+      <td>${membership.status}</td>
       %if membership.organization:
       <td><a href="${request.route_path('organizations.show', organization_id=membership.organization.id)}">${membership.organization.name}</a></td>
       %else:
