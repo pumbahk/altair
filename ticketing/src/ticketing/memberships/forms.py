@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from wtforms import Form
-from wtforms import TextField, HiddenField, DateField, PasswordField, SelectField, BooleanField
+from wtforms import TextField, HiddenField, DateField, PasswordField, SelectField, BooleanField, SelectMultipleField
 from wtforms.validators import Length, Email, Optional
 from ticketing.formhelpers import DateTimeField, Translations, Required
 from ticketing.core import models as cmodels
@@ -64,3 +64,22 @@ class MemberGroupForm(Form):
         label=u"membership", 
         validators=[Optional()]
     )
+
+class SalesSegmentToMemberGroupForm(Form):
+    def _get_translations(self):
+        return Translations()
+
+    def __init__(self, formdata=None, obj=None, prefix='', salessegments=None, **kwargs):
+        Form.__init__(self, formdata, obj, prefix, **kwargs)
+        salessegments = list(salessegments)
+        self.salessegments.choices = [(unicode(s.id), s.name) for s in salessegments]
+        self.salessegments_height = "%spx" % (len(salessegments)*20)
+        if obj:
+            self.salessegments.data = [unicode(s.id) for s in obj.sales_segments]
+
+    salessegments = SelectMultipleField(
+        label=u"販売区分", 
+        choices=[], 
+        coerce=unicode, 
+    )
+

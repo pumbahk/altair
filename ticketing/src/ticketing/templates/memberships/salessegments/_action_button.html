@@ -22,29 +22,24 @@
 </script>
 
 <form id="delete_form" method="POST">
-  <input type="hidden" name="membership_id" value="${membership.id}">
+  <input type="hidden" name="membergroup_id" value="${membergroup.id}">
   <input type="hidden" name="redirect_to" value="${redirect_to}">
 </form>
 
 <%
   actions = {
     'new':dict(
-      label=u'新規',
-      url=request.route_path("membergroups",membergroup_id="*", action="new",_query={"membership_id": membership.id,"redirect_to":redirect_to}),
+      label=u'新しい販売条件を作成して追加',
+      url=request.route_path("membergroups.salessegments",membergroup_id="*", action="new",_query={"redirect_to":redirect_to}),
       icon='icon-plus',
     ),
-    'edit':dict(
-      label=u'編集',
-      url='javascript:edit_member_group("%s")' % request.route_path("membergroups",membergroup_id="__id__",action="edit",_query={"membership_id": membership.id,"redirect_to":redirect_to}),
+   'edit':dict(
+      label=u'販売条件の結びつき変更',
+      url=request.route_path("membergroups.salessegments",membergroup_id=membergroup.id, action="edit",_query={"membergroup_id": membergroup.id,"redirect_to":redirect_to}),
       icon='icon-pencil',
     ),
-    'delete':dict(
-      label=u'削除',
-      url='javascript:delete_member_group("%s")' % request.route_path("membergroups",membergroup_id="__id__",action="delete"),
-      icon='icon-minus',
-    ),
   }
-  order = iter(order or ['new', 'edit', 'delete'])
+  order = iter(['edit'])
 %>
 ${h.action_button(actions, order)}
 

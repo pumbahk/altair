@@ -1,0 +1,37 @@
+<%page args="form, route_name, route_path, redirect_to,membergroup_id" />
+<%namespace file="/common/helpers.html" name="h" />
+
+<script type="text/javascript">
+  $(function() {
+    $('.datefield').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
+    $('#edit').find("input[type='checkbox']").change(function() {
+      if ($(this).attr('checked')) {
+        $(this).val(1);
+      } else {
+        $(this).val(0);
+      }
+    }).change();
+  });
+</script>
+
+<div class="well">
+  <form id="edit" action="${route_path}" method="POST">
+    <input type="hidden" name="redirect_to" value="${redirect_to}">
+    <input type="hidden" name="membergroup_id" value="${membergroup_id}">
+
+    ${h.form_item(form.id)}
+    ${h.form_item(form.event_id)}
+    ${h.form_item(form.kind)}
+    ${h.form_item(form.name, option={'maxlength':255})}
+    ${h.form_item(form.start_at, option={"class":"datefield"})}
+    ${h.form_item(form.end_at, option={"class":"datefield"})}
+    ${h.form_item(form.upper_limit)}
+    ${h.form_item(form.seat_choice)}
+    ${h.form_item(form.public)}
+    <hr />
+    <p>※セブンイレブン発券では発券日を指定した場合「前払い後日発券」になります。</p>
+    <div class="form-actions">
+      <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">
+    </div>
+  </form>
+</div>

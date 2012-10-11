@@ -1,0 +1,13 @@
+<%page args="form, route_name, route_path, redirect_to,membergroup_id" />
+<%namespace file="/common/helpers.html" name="h" />
+
+<div class="well">
+  <form id="edit" action="${route_path}" method="POST">
+    <input type="hidden" name="redirect_to" value="${redirect_to}">
+
+    ${h.form_item(form.salessegments,option=dict(style="height:%s" % form.salessegments_height))}
+    <div class="form-actions">
+      <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">
+    </div>
+  </form>
+</div>

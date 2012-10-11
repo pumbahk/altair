@@ -1,0 +1,32 @@
+<%inherit file="/layout_2cols.html"/>
+<%namespace file="/common/helpers.html" name="h" />
+
+<%doc>
+<div class="breadcrumbs">
+  ${h.breadcrumbs(
+      names=[u'トップ', u'membergroup'],
+      urls=[request.route_path('index'), request.route_path('membergroups',action="index",membergroup_id="*")]
+  )}
+</div>
+</%doc>
+
+<div class="content">
+  ${h.flash_messages(request)}
+  ${h.alert_message(form)}
+</div>
+<%
+route_name=u'編集'
+route_path=request.route_path('membergroups.salessegments',action='edit', membergroup_id=membergroup_id)
+%>
+
+<div class="page-header">
+  <h3>現在結びついている販売区分</h3>
+</div>
+
+<%include file="/sales_segments/_list.html" args="form=form_sg, sales_segments=membergroup.sales_segments" />
+
+<div class="page-header">
+  <h3>販売区分の結びつき変更</h3>
+</div>
+
+<%include file="./_editform.html" args="form=form,route_name=route_name,route_path=route_path,redirect_to=redirect_to,membergroup_id=membergroup_id" />

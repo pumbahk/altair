@@ -3,6 +3,7 @@
 from datetime import datetime, timedelta
 
 import webhelpers.paginate as paginate
+from ticketing.models import merge_session_with_post
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from ticketing.models import DBSession
@@ -84,18 +85,20 @@ class MembershipView(BaseView):
 
 @view_defaults(decorator=with_bootstrap, route_name="membergroups", permission="administrator")
 class MemberGroupView(BaseView):
-    @view_config(match_param="action=show", renderer="ticketing:templates/members/groups/show.html")
+    @view_config(match_param="action=show", renderer="ticketing:templates/memberships/groups/show.html")
     def show(self):
         membergroup = umodels.MemberGroup.query.filter_by(id=self.request.matchdict["membergroup_id"]).first()
         if membergroup is None:
             raise HTTPNotFound
         salessegments = membergroup.sales_segments
+        redirect_to = self.request.url
         return {"membergroup": membergroup, 
                 "form": forms.MemberGroupForm(), 
+                "redirect_to": redirect_to, 
                 "salessegments": salessegments, 
                 "form_sg": SalesSegmentForm()}
 
-    @view_config(match_param="action=new", renderer="ticketing:templates/members/groups/new.html", 
+    @view_config(match_param="action=new", renderer="ticketing:templates/memberships/groups/new.html", 
                  request_param="membership_id", request_method="GET")
     def new_get(self):
         membership = umodels.Membership.query.filter_by(id=self.request.params["membership_id"]).first()
@@ -104,7 +107,7 @@ class MemberGroupView(BaseView):
         form = forms.MemberGroupForm(membership_id=membership.id)
         return {"form": form, "redirect_to": self.request.params["redirect_to"]}
 
-    @view_config(match_param="action=new", renderer="ticketing:templates/members/groups/new.html", 
+    @view_config(match_param="action=new", renderer="ticketing:templates/memberships/groups/new.html", 
                  request_param="membership_id", request_method="POST")
     def new_post(self):
         form = forms.MemberGroupForm(self.request.POST)
@@ -119,7 +122,7 @@ class MemberGroupView(BaseView):
         dummy_url = self.request.route_path("memberships", action="index", membership_id="*") ## this is dummy
         return HTTPFound(self.request.POST.get("redirect_to") or dummy_url)
 
-    @view_config(match_param="action=edit", renderer="ticketing:templates/members/groups/edit.html", 
+    @view_config(match_param="action=edit", renderer="ticketing:templates/memberships/groups/edit.html", 
                  request_param="membership_id", request_method="GET")
     def edit_get(self):
         membergroup = umodels.MemberGroup.query.filter_by(id=self.request.matchdict["membergroup_id"], 
@@ -129,7 +132,7 @@ class MemberGroupView(BaseView):
         form = forms.MemberGroupForm(obj=membergroup)
         return {"form": form, "redirect_to": self.request.params["redirect_to"], "membergroup": membergroup}
 
-    @view_config(match_param="action=edit", renderer="ticketing:templates/members/groups/edit.html", 
+    @view_config(match_param="action=edit", renderer="ticketing:templates/memberships/groups/edit.html", 
                  request_param="membership_id", request_method="POST")
     def edit_post(self):
         membergroup = umodels.MemberGroup.query.filter_by(id=self.request.matchdict["membergroup_id"], 
@@ -163,3 +166,65 @@ class MemberGroupView(BaseView):
         self.request.session.flash(u"membergroupを削除しました")
         dummy_url = self.request.route_path("memberships", action="index", membership_id="*") ## this is dummy
         return HTTPFound(self.request.POST.get("redirect_to") or dummy_url)
+
+@view_defaults(decorator=with_bootstrap, route_name="membergroups.salessegments", permission="administrator")
+class SalesSegmentView(BaseView):
+    # @view_config(match_param="action=new", renderer="ticketing:templates/memberships/salessegments/new.html", 
+    #              request_param="membergroup_id", request_method="GET")
+    # def new_get(self):
+    #     form = SalesSegmentForm()
+    #     return {"form": form, 
+    #             "redirect_to": self.request.params["redirect_to"], 
+    #             "membergroup_id": self.request.params["membergroup_id"], 
+    #             }
+
+    # @view_config(match_param="action=new", renderer="ticketing:templates/memberships/salessegments/new.html", 
+    #              request_param="membergroup_id", request_method="POST")
+    # def new_post(self):
+    #     form = SalesSegmentForm(self.request.POST)
+    #     if not form.validate():
+    #         return {"form": form, 
+    #                 "redirect_to": self.request.params["redirect_to"], 
+    #                 "membergroup_id": self.request.params["membergroup_id"], 
+    #                 }
+
+    #     membergroup = umodels.MemberGroup.query.filter_by(id=self.request.params["membergroup_id"]).first()
+    #     sales_segment = merge_session_with_post(cmodels.SalesSegment(), form.data)
+    #     membergroup.sales_segments.append(sales_segment)
+
+    #     DBSession.add(membergroup)        
+    #     DBSession.add(sales_segment)
+
+    #     self.request.session.flash(u'販売区分を保存しました')
+    #     return HTTPFound(self.request.POST["redirect_to"])
+
+    @view_config(match_param="action=edit", renderer="ticketing:templates/memberships/salessegments/edit.html", 
+                 request_method="GET")
+    def edit_get(self):
+        membergroup = umodels.MemberGroup.query.filter_by(id=self.request.matchdict["membergroup_id"]).first()
+        candidates_salessegments = cmodels.SalesSegment.query.join(cmodels.Event)\
+            .filter(cmodels.Event.organization_id==self.context.user.organization_id)
+        form = forms.SalesSegmentToMemberGroupForm(obj=membergroup, salessegments=candidates_salessegments)
+        return {"form": form, 
+                "redirect_to": self.request.params["redirect_to"], 
+                "membergroup_id": self.request.params["membergroup_id"], 
+                "membergroup": membergroup, 
+                "form_sg": SalesSegmentForm()}
+
+
+    @view_config(match_param="action=edit", renderer="ticketing:templates/memberships/salessegments/edit.html", 
+                 request_method="POST")
+    def edit_post(self):
+        membergroup = umodels.MemberGroup.query.filter_by(id=self.request.matchdict["membergroup_id"]).first()
+        candidates_salessegments = cmodels.SalesSegment.query.join(cmodels.Event)\
+            .filter(cmodels.Event.organization_id==self.context.user.organization_id)
+        will_bounds = candidates_salessegments.filter(cmodels.SalesSegment.id.in_(self.request.POST.getall("salessegments")))
+
+        for s in membergroup.sales_segments:
+            membergroup.sales_segments.remove(s)
+        for s in will_bounds:
+            membergroup.sales_segments.append(s)
+        DBSession.add(membergroup)
+
+        self.request.session.flash(u'販売区分の結びつき変更しました')
+        return HTTPFound(self.request.POST["redirect_to"])
