@@ -1,15 +1,15 @@
-<%page args="membership,order,redirect_to"/>
+<%page args="membergroup,redirect_to"/>
 <%namespace file="/common/helpers.html" name="h" />
 <%namespace file="/common/modal.html" import="delete_modal" />
 
 <script type="text/javascript">
   function edit_member_group(baseurl){
-    var id = $('input.[name="membership_id"]:checked').val();
+    var id = $('input.[name="sales_segment_id"]:checked').val();
     if (!id) return;
-    location.href = baseurl.replace("__id__", id);
+    location.href = baseurl.replace("__id__", pk);
   };
   function delete_member_group(baseurl) {
-    var id = $('input.[name="membership_id"]:checked').val();
+    var id = $('input.[name="sales_segment_id"]:checked').val();
     if (!id) return;
     var modal = $('#modal-delete');
     modal.find('#message').text('選択したmembershipを削除します。よろしいですか？');

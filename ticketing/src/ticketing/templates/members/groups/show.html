@@ -28,14 +28,13 @@
 
 <hr/>
 
-%if salessegments:
+
 <div class="page-header">
 <h3>結びついている販売条件</h3>
 </div>
 <div class="row-fluid">
   <div class="span12">
     <%include file="/sales_segments/_list.html" args="form=form_sg, sales_segments=salessegments" />
-    <%include file="./_action_buttons_for_membergroup.html" args="form=form_sg, sales_segments=salessegments" />
+    <%include file="./_action_buttons_for_membergroup.html" args="membergroup=membergroup,redirect_to=redirect_to" />
   </div>
 </div>
-%endif
