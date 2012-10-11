@@ -30,8 +30,8 @@ class MembershipAuthorizationPolicy(object):
             logger.debug('authorize for buy')
             sales_segments = context.sales_segments
             available_membergroups = list(itertools.chain(*[s.membergroups for s in sales_segments]))
-            print "*" * 30
-            print [s.name for s in sales_segments]
+            # print "*" * 30
+            # print [s.name for s in sales_segments]
             if all([m.is_guest for m in available_membergroups]):
                 return True
 
