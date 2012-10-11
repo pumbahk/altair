@@ -337,7 +337,10 @@ if not order.is_canceled():
           </tr>
       % endif
           <tr>
-            <td colspan="2">${ordered_product.product.name}</td>
+            <td colspan="2">
+              <span class="label label-info">${ordered_product.product.sales_segment.name}</span>
+              ${ordered_product.product.name}
+            </td>
             <td></td>
             <td style="text-align: right;">${h.price_format(ordered_product.price)}円</td>
             <td >${ordered_product.quantity}</td>
@@ -368,6 +371,9 @@ if not order.is_canceled():
               %if ordered_product_item.issued_at:
                 ${ordered_product_item.issued_at}
                 <span alt="${ordered_product_item.issued_at}" class="label label-warning">済</span>
+                % for operator_name in list(set([ph.operator.name for ph in ordered_product_item.print_histories])):
+                  <div>作業者: ${operator_name}</div>
+                % endfor
               %else:
                 ${u"%(issued)s/%(total)s" % ordered_product_item.issued_at_status}
                 <span class="label label-inverse">未発券</span>
