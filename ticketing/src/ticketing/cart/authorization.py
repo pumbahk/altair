@@ -32,10 +32,6 @@ class MembershipAuthorizationPolicy(object):
         if permission == "buy":
             logger.debug('authorize for buy %s' % (principals,))
             sales_segments = context.sales_segments
-            # available_membergroups = list(itertools.chain(*[s.membergroups for s in sales_segments]))
-
-            # if all([m.is_guest for m in available_membergroups]):
-            #     return True
 
             event = api.get_event(request)
             if not event:
@@ -47,28 +43,6 @@ class MembershipAuthorizationPolicy(object):
                 return True            
 
             return principals
-            #sales_segment = context.sales_segment
-            #memberships = context.memberships
-            #membergroups = context.membergroups
-            #logger.debug("context: %s %s %s" % (sales_segment, memberships, membergroups))
-            #if not memberships or not membergroups:
-            #    # 楽天認証
-            #    return "rakuten_auth" in principals
-
-            #membership_principals = ["membership:%s" % m.name for m in memberships]
-            #membergroup_principals = ["membergroup:%s" % m.name for m in membergroups]
-
-            #logger.debug('permit for %s %s' % (membership_principals, membergroup_principals))
-            #permit_membership = any([(ms in principals) for ms in membership_principals])
-            #permit_membergroup = any([(mp in principals) for mp in membergroup_principals])
-            #if not permit_membership:
-            #    logger.debug("%s not in %s" % (membership_principals, principals))
-            #    return False
-
-            #if not permit_membergroup:
-            #    raise InvalidMemberGroupException(context.event_id)
-
-            #return permit_membership and permit_membergroup
 
     def principals_allowed_by_permission(self, context, permission):
         raise NotImplementedError
