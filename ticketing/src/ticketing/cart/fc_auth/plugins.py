@@ -46,6 +46,9 @@ class FCAuthPlugin(object):
                 if 'membership' in userdata:
                     userdata['identify'] = True
                     logger.debug('fc auth identified %s' % userdata)
+                    is_guest = userdata.get('is_guest', False)
+                    if is_guest:
+                        logger.debug('fc auth this is guest')
                     return userdata
             except Exception, e:
                 logger.exception(e)
@@ -66,6 +69,10 @@ class FCAuthPlugin(object):
     # IAuthenticator
     def authenticate(self, environ, identity):
         logger.debug('authenticate fc_auth')
+        if 'repoze.who.plugins.auth_tkt.userid' in identity:
+            identity = pickle.loads(identity['repoze.who.plugins.auth_tkt.userid'].decode('base64'))
+
+
         is_guest = identity.get('is_guest', False)
         
         if is_guest:

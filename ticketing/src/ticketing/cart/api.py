@@ -18,9 +18,30 @@ from .interfaces import IPaymentMethodManager
 from .interfaces import IPaymentPlugin, IDeliveryPlugin, IPaymentDeliveryPlugin
 from .interfaces import IMobileRequest, IStocker, IReserving, ICartFactory
 from .models import Cart, PaymentMethodManager, DBSession, CartedProductItem, CartedProduct
-from ..users.models import User, UserCredential, Membership
+from ..users.models import User, UserCredential, Membership, MemberGroup, MemberGroup_SalesSegment
 from ..core.models import Event, Performance, Stock, StockHolder, Seat, Product, ProductItem, SalesSegment, Venue
     
+# こいつは users.apiあたりに移動すべきか
+def is_login_required(request, event):
+    """ 指定イベントがログイン画面を必要とするか """
+    # 終了分もあわせて、このeventからひもづく sales_segment -> membergroupに1つでもguestがあれば True 
+    q = MemberGroup.query.filter(
+        MemberGroup.is_guest==True
+    ).filter(
+        MemberGroup.id==MemberGroup_SalesSegment.c.membergroup_id
+    ).filter(
+        SalesSegment.id==MemberGroup_SalesSegment.c.sales_segment_id
+    ).filter(
+        SalesSegment.event_id==event.id
+    )
+    return bool(q.count())
+
+def get_event(request):
+    event_id = request.matchdict.get('event_id')
+    if not event_id:
+        return None
+    return Event.query.filter(Event.id==event_id).first()
+
 def is_mobile(request):
     return IMobileRequest.providedBy(request)
 
