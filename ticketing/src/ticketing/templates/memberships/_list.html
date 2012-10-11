@@ -1,0 +1,49 @@
+<%page args="form, memberships" />
+<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/modal.html" name="m" />
+
+<script type="text/javascript">
+  function delete_membership(id) {
+    var modal = $('#modal-delete');
+    modal.find('#delete').attr('href', '/memberships/delete/' + id);
+    modal.find('#message').text('選択したMembershipを削除します。よろしいですか？');
+    modal.modal('toggle');
+  }
+</script>
+
+<form>
+  <div>
+    <a href="${request.route_path('memberships',action="new",membership_id="*")}" class="btn">新規Membership</a>
+  </div>
+  <table class="table fullwidth checkboxed_table">
+    <thead>
+    <tr>
+      <th class="minwidth">ID</th>
+      <th>ログインID</th>
+      <th>名前</th>
+      <th>ステータス</th>
+      <th>organization</th>
+    </tr>
+    </thead>
+    <tbody>
+    % for membership in memberships:
+    <tr>
+      <td><a href="${request.route_path('memberships', action="show",membership_id=membership.id)}">${membership.id}</a></td>
+      <td><a href="${request.route_path('memberships', action="show",membership_id=membership.id)}">${membership.name}</a></td>
+      %if membership.organization:
+      <td><a href="${request.route_path('organizations.show', organization_id=membership.organization.id)}">${membership.organization.name}</a></td>
+      %else:
+      <td></td>
+      %endif
+      <td>
+        <a class="btn btn-small" href="${request.route_path('memberships', action="edit",membership_id=membership.id)}">編集</a>
+        <a class="btn btn-small btn-danger" href="javascript:delete_membership(${membership.id});">削除</a>
+      </td>
+    </tr>
+    % endfor
+    </tbody>
+  </table>
+##  ${h.pager(memberships)}
+</form>
+
+${m.delete_modal()}
