@@ -57,7 +57,7 @@ exports.DEFAULT = {
 
   SEAT_STATUS_STYLE: {
     0: { stroke: { color: "#929292", width: 3, pattern: 'solid' } },
-    1: { stroke: { color: "#FFFFFF", width: 1, pattern: 'solid' } },
+    1: {},
     2: { stroke: { color: "#ffff40", width: 3, pattern: 'solid' } },
     3: { stroke: { color: "#2020d2", width: 3, pattern: 'solid' } },
     4: { stroke: { color: "#ff8c40", width: 3, pattern: 'solid' } },
