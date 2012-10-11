@@ -158,7 +158,7 @@ class OrderCSV(object):
                     if column == 'ticket_printed_by':
                         operator_name = ''
                         if ordered_product_item.issued_at:
-                            operator_name = ', '.join(list(set([(ph.operator.name) for ph in ordered_product_item.print_histories])))
+                            operator_name = ', '.join(list(set([(ph.operator.name) for ph in ordered_product_item.print_histories if ph.operator])))
                         product_item_list.append((column_name, operator_name))
 
                 # for bj89ers
