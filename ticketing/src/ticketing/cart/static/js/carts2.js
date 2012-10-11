@@ -944,18 +944,22 @@ cart.VenueView = Backbone.View.extend({
             messageBoard: (function() {
                 self.tooltip.hide();
                 $(document.body).mousemove(function(e){
-                    self.tooltip.css({
-                        left: (e.pageX + 10) + 'px', 
-                        top:  (e.pageY + 10) + 'px'
-                    });
+                    if (self.tooltip) {
+                        self.tooltip.css({
+                            left: (e.pageX + 10) + 'px', 
+                            top:  (e.pageY + 10) + 'px'
+                        });
+                    }
                 });
 
                 return {
                     up: function(msg) {
-                        self.tooltip.show().stop().text(msg).fadeIn(100);
+                        if (self.tooltop && msg)
+                            self.tooltip.show().stop().text(msg).fadeIn(100);
                     },
                     down: function() {
-                        self.tooltip.stop().fadeOut(100);
+                        if (self.tooltip)
+                            self.tooltip.stop().fadeOut(100);
                     }
                 }
             })()
