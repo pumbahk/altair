@@ -91,7 +91,7 @@ def ticketdata_from_qrdata(qrdata, event_id="*"):
         "performance_date": h.japanese_datetime(performance.start_on), 
         "event_id": performance.event_id, 
         "product_name": product_name, 
-        "seat_id": seat.id if seat else u"",
+        "seat_id": seat.id if seat else None,
         "seat_name": seat.name if seat else u""
         }
 
