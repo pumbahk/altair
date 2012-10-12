@@ -316,10 +316,11 @@ var TicketInfoView = AppPageViewBase.extend({
     this.$performanceName.text(data.performance_name);
     this.$product_name.text(data.product_name);
     this.$seatno.text(data.seat_name);  
+    var $note = this.$note;
+    $note.empty();
     if (data.note) {
-      this.$note.parent().show();
+      $note.parent().show();
       var first = true;
-      var $note = this.$note;
       jQuery.each((data.note + "").split(/\s*\n\s*/), function (_, line) {
         if (!first)
           $note[0].appendChild(document.createElement("br"));
