@@ -112,13 +112,13 @@ var MessageView = Backbone.View.extend({
     "click #canceled_force_print": "sendCanceledForcePrintSignal"
   }, 
   sendRefreshPrintedStatusSignal: function(){
-    if(!!(this.refreshCallback && window.confirm("本当に強制再発券ますか？"))){
+    if(!!(this.refreshCallback && window.confirm("本当に強制再発券しますか？"))){
       this.refreshCallback();
       this.refreshCallback = false;
     }
   }, 
   sendCanceledForcePrintSignal: function(){
-    if(!!(this.canceledCallback && window.confirm("本当に強制発券しますか？"))){
+    if(!!(this.canceledCallback && window.confirm("本当にキャンセル済みのチケットを発券しますか？"))){
       this.canceledCallback();
       this.canceledCallback = false;
     }
@@ -234,7 +234,7 @@ var QRInputView = AppPageViewBase.extend({
   refreshCanceled: function(){
     this.datastore.set("canceled", false);
     this.datastore.set("qrcode_status", "canceld(but force print)")
-    this.messageView.success("（キャンセルされたチケットなど本来印刷できない）チケットを印刷できるようにしました。")
+    this.messageView.success("キャンセルされたチケットを印刷できるようにしました。")
 
     // log
     var message = "*qrlog* canceled ticket force print order={0} token={1}"
