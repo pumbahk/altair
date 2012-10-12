@@ -68,7 +68,23 @@ class Reserving(object):
             stat.status = int(SeatStatusEnum.InCart)
         return statuses
         
-    def _get_single_seat(self, stock_id):
+    def get_default_seat_index_type_id(self, stock_id):
+        """ Stock -> Performance -> Venue """
+
+        seat_index_type = DBSession.query(SeatIndexType).filter(
+            SeatIndexType.venue_id==Venue.id
+        ).filter(
+            Venue.performance_id==Stock.performance_id
+        ).filter(
+            Stock.id==stock_id
+        ).order_by(SeatIndexType.id).first()
+
+        if seat_index_type is None:
+            return None
+
+        return seat_index_type.id
+        
+    def _get_single_seat(self, stock_id, seat_index_type_id):
         return Seat.query.filter(
             Seat.stock_id==stock_id
         ).filter(
@@ -77,14 +93,19 @@ class Reserving(object):
             SeatStatus.status==int(SeatStatusEnum.Vacant)
         ).filter(
             SeatIndex.seat_id==Seat.id
+        ).filter(
+            SeatIndex.seat_index_type_id==seat_index_type_id
         ).order_by(SeatIndex.index, Seat.l0_id)[:1]
 
-    def get_vacant_seats(self, stock_id, quantity):
+    def get_vacant_seats(self, stock_id, quantity, seat_index_type_id=None):
         """ 空き席を取得 """
+
+        if seat_index_type_id is None:
+            seat_index_type_id = self.get_default_seat_index_type_id(stock_id)
 
         if quantity == 1:
             
-            return self._get_single_seat(stock_id)
+            return self._get_single_seat(stock_id, seat_index_type_id)
 
         # すでに確保済みのSeatを持つ連席
         reserved_adjacencies = DBSession.query(SeatAdjacency.id).filter(
@@ -118,6 +139,8 @@ class Reserving(object):
             not_(SeatAdjacency.id.in_(reserved_adjacencies))
         ).filter(
             SeatIndex.seat_id==Seat.id
+        ).filter(
+            SeatIndex.seat_index_type_id==seat_index_type_id
         ).order_by(SeatIndex.index, Seat.l0_id).all()
 
         adjacency = None
