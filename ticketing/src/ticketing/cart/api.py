@@ -247,6 +247,7 @@ def logout(request):
 
 def _query_performance_names(request, event, sales_segment):
 
+    now = datetime.now()
     q = DBSession.query(
         Performance.id,
         Performance.name,
@@ -261,22 +262,8 @@ def _query_performance_names(request, event, sales_segment):
     q = q.filter(ProductItem.product_id==Product.id)
     q = q.filter(Stock.id==ProductItem.stock_id)
     q = q.filter(Stock.performance_id==Performance.id)
-
-    now = datetime.now()
-    today = date.today()
-    today = datetime(today.year, today.month, today.day)
-    tommorow = today + timedelta(days=1)
-
     q = q.filter(Performance.end_on>=now)
 
-    #if sales_segment.kind == 'sales_counter': #XXX 当日用のkindを定義
-    #    # 当日公演の条件
-    #    q = q.filter(Performance.start_on>=today)
-    #    q = q.filter(Performance.start_on<tommorow)
-    #elif any([s.kind=='sales_counter' for s in event.sales_segments]):
-    #    # 当日販売区分を持つイベントの場合は、当日販売でない区分で、当日公演を条件からはずす
-    #    # q = q.filter(Performance.start_on<today)
-    #    q = q.filter(Performance.start_on>=tommorow)
     return q
 
 def performance_names(request, event, sales_segment):
