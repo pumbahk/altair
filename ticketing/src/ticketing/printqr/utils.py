@@ -68,7 +68,8 @@ def ticketdata_from_qrdata(qrdata, event_id="*"):
     product_name = history.ordered_product_item.ordered_product.product.name
     token = history.item_token
     seat = history.seat
-    performance_name = u"%s (%s)" % (performance.name, performance.venue.name)    
+    performance_name = u"%s (%s)" % (performance.name, performance.venue.name)
+    note = order.note
 
     if event_id != "*" and str(performance.event_id) != str(event_id):
         fmt = "ticketdata_from_qrdata: unmatched event id (order.id=%s, expected event_id=%s, event_id=%s)"
@@ -92,7 +93,8 @@ def ticketdata_from_qrdata(qrdata, event_id="*"):
         "event_id": performance.event_id, 
         "product_name": product_name, 
         "seat_id": seat.id if seat else None,
-        "seat_name": seat.name if seat else u""
+        "seat_name": seat.name if seat else u"",
+        "note": note,
         }
 
 def add_history(request, operator_id, params):

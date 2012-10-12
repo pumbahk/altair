@@ -113,31 +113,41 @@ body {
     <p>
       購入されたチケット情報は以下のとおりです。
     </p>
-    <table class="table">
-      <tbody>
-        <tr>
-          <td>購入者</td><td id="user"></td>
-        </tr>
-        <tr>
-          <td>発券番号</td><td id="codeno"></td>
-        </tr>
-        <tr>
-          <td>注文番号</td><td id="orderno"></td>
-        </tr>
-        <tr>
-          <td>公演</td><td id="performance_name"></td>
-        </tr>
-        <tr>
-          <td>公演日時</td><td id="performance_date"></td>
-        </tr>
-        <tr>
-          <td>商品名</td><td id="product_name"></td>
-        </tr>
-        <tr>
-          <td>席番号</td><td id="seatno"></td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="row-fluid">
+      <div class="span8">
+        <table class="table">
+          <tbody>
+            <tr>
+              <td>購入者</td><td id="user"></td>
+            </tr>
+            <tr>
+              <td>発券番号</td><td id="codeno"></td>
+            </tr>
+            <tr>
+              <td>注文番号</td><td id="orderno"></td>
+            </tr>
+            <tr>
+              <td>公演</td><td id="performance_name"></td>
+            </tr>
+            <tr>
+              <td>公演日時</td><td id="performance_date"></td>
+            </tr>
+            <tr>
+              <td>商品名</td><td id="product_name"></td>
+            </tr>
+            <tr>
+              <td>席番号</td><td id="seatno"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="note-container" class="span4">
+        <div class="alert alert-info">
+          <div>メモ:</div>
+          <div id="note"></div>
+        </div>
+      </div>
+    </div>
 
     <p>
       印刷します。よろしいですか？

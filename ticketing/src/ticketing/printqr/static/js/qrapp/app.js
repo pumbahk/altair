@@ -305,6 +305,7 @@ var TicketInfoView = AppPageViewBase.extend({
     this.$performanceDate = this.$el.find("#performance_date");
     this.$product_name = this.$el.find("#product_name");
     this.$seatno = this.$el.find("#seatno");
+    this.$note = this.$el.find("#note");
   }, 
   drawTicketInfo: function(data){
     //console.dir(data);
@@ -315,6 +316,19 @@ var TicketInfoView = AppPageViewBase.extend({
     this.$performanceName.text(data.performance_name);
     this.$product_name.text(data.product_name);
     this.$seatno.text(data.seat_name);  
+    if (data.note) {
+      this.$note.parent().show();
+      var first = true;
+      var $note = this.$note;
+      jQuery.each((data.note + "").split(/\s*\n\s*/), function (_, line) {
+        if (!first)
+          $note[0].appendChild(document.createElement("br"));
+        $note[0].appendChild(document.createTextNode(line));
+        first = false;
+      });
+    } else {
+      this.$note.parent().hide();
+    }
   }
 });
 
