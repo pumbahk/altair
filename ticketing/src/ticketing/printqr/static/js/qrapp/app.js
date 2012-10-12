@@ -480,6 +480,8 @@ var AppletView = Backbone.View.extend({
         self.appviews.messageView.error(data['message']);
         return;
       }
+      self.datastore.set("qrcode_status", "printed");
+      self.datastore.set("printed", data.printed);
       self.appviews.messageView.success("チケット印刷できました。");
       self.router.navigate("one", true);
       self.appviews.one.clearQRCodeInput();      

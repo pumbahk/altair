@@ -141,7 +141,8 @@ def ticket_after_printed_edit_status(context, request):
     ## log
     logger.info("*qrlog* print ticket token=%s" % (token_id))
 
-    return {"status": "success", "data": {}}
+    printed = str(token.printed_at) if token.printed_at else None, ##todo:データ整理
+    return {"status": "success", "data": {"printed": printed}}
 
 class AppletAPIView(object):
     def __init__(self, context, request):
