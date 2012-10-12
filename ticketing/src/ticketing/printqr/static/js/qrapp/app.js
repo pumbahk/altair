@@ -242,7 +242,7 @@ var QRInputView = AppPageViewBase.extend({
       .replace("{1}", this.datastore.get("ordered_product_item_token_id"))
     $.post(this.apiResource["api.log"], {"log": message})
 
-    this.focusNextPage();
+    this.datastore.trigger("*qr.not.printed");
   }, 
   showStatus: function(){
     this.$status.text(this.datastore.get("qrcode_status"));
@@ -450,6 +450,7 @@ var AppletView = Backbone.View.extend({
   sendPrintSignalIfNeed: function(){
     if(this.datastore.get("printed") && this.datastore.get("qrcode_status") != "printed" && (!this.datastore.get("canceled"))){
       try {
+        //alert("print!!");
         this.service.printAll();
         this._updateTicketPrintedAt();
       } catch (e) {
@@ -535,6 +536,7 @@ var AppletView = Backbone.View.extend({
       self.appviews.messageView.success("券面データが保存されました");
       $.each(data['data'], function (_, ticket) {
         try {
+          //alert(self.datastore.get("ordered_product_item_token_id"));
           self.service.addTicket(self.service.createTicketFromJSObject(ticket));
         } catch (e) {
           self.appviews.messageView.error(e);
