@@ -6,7 +6,7 @@
     if (window.ticketPrinterService) {
       $('#reserve-button').text('予約して発券する');
     }
-    $('.draggable').draggable();
+  $('.draggable').draggable({scroll: true, handle:$('.draggable .modal-body')});
   });
 </script>
 
