@@ -154,8 +154,9 @@ class AppletAPIView(object):
         ticket_id = self.request.matchdict['id'].strip()
         q = Ticket.query.filter_by(organization_id=self.context.organization.id)
         if event_id != '*':
-            logger.warn("*api.applet.ticket: event id is '*'")
             q = q.filter_by(event_id=event_id)
+        else:
+            logger.warn("*api.applet.ticket: event id is '*'")
         if ticket_id:
             q = q.filter_by(id=ticket_id)
         tickets = q.all()
