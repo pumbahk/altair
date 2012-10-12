@@ -3,6 +3,7 @@ var DataStore = Backbone.Model.extend({
   defaults: {
     qrcode_status: "preload", 
     qrcode: null,    
+    canceled: false, 
 
     ordered_product_item_token_id:  null, 
     ordered_product_item_id:  null, 
@@ -23,21 +24,33 @@ var DataStore = Backbone.Model.extend({
   }, 
   updateByQRData: function(data){
     // this order is important for call api.applet.ticket.data(ordered_product_item_token_id, printed)
+
+    // initialize
+    this.set("printed", false);
+    this.set("canceled", false);
+
+    // important data
     this.set("ordered_product_item_token_id", data.ordered_product_item_token_id); //order: ordered_product_item_token_id, printed
     this.set("ordered_product_item_id", data.ordered_product_item_id);
     this.set("event_id",  data.event_id);
     this.set("order_id", data.order_id);
     this.set("seat_id", data.seat_id);
 
+    // description data
     this.set("orderno", data.orderno);
     this.set("performance", data.performance_name+" -- "+data.performance_date);
-
     this.set("product", data.product_name+"("+data.seat_name+")");
+
     if(!!(data.printed)){
       this.set("qrcode_status", "printed"); //order: qrcode_status ,  printed
       this.set("printed", data.printed);
       this.trigger("*qr.printed.already");
-    } else {
+    } else if(data.canceled){
+      this.set("qrcode_status", "canceled")
+      this.set("canceled", data.canceled);
+      this.set("printed", data.printed);
+      this.trigger("*qr.canceled.ticket")
+    }else {
       this.set("printed", false);
       this.trigger("*qr.not.printed");
     }
@@ -96,16 +109,23 @@ var DataStoreDescriptionView = Backbone.View.extend({
 var MessageView = Backbone.View.extend({
   events: {
     "click #printed_at_force_refresh": "sendRefreshPrintedStatusSignal", 
+    "click #canceled_force_print": "sendCanceledForcePrintSignal"
   }, 
   sendRefreshPrintedStatusSignal: function(){
-    if(!!(this.refreshCallback && window.confirm("本当に強制再発見しますか？"))){
+    if(!!(this.refreshCallback && window.confirm("本当に強制再発券ますか？"))){
       this.refreshCallback();
       this.refreshCallback = false;
     }
   }, 
+  sendCanceledForcePrintSignal: function(){
+    if(!!(this.canceledCallback && window.confirm("本当に強制発券しますか？"))){
+      this.canceledCallback();
+      this.canceledCallback = false;
+    }
+  }, 
   initialize: function(){
     this.refreshCallback = false;
-
+    this.canceledCallback = false;
     this.$alert = this.$el.find("#alert_message");
     this.$info = this.$el.find("#info_message");
     this.$error = this.$el.find("#error_message");
@@ -161,11 +181,13 @@ var QRInputView = AppPageViewBase.extend({
     this.$qrcode = this.$el.find('input[name="qrcode"]')
     this.$status = this.$el.find('#status')
     this.datastore.bind("change:qrcode_status", this.showStatus, this);
-    this.datastore.bind("*qr.printed.already", this.notifyPrintedAlready, this);
+    this.datastore.bind("*qr.canceled.ticket", this.notifyMessageForCanceled, this);
+    this.datastore.bind("*qr.printed.already", this.notifyMessageForPrintedAlready, this);
     this.datastore.bind("*qr.not.printed", this.focusNextPage, this);
+
     this.communicating = false;
   }, 
-  notifyPrintedAlready: function(){
+  notifyMessageForPrintedAlready: function(){
     var fmt = 'そのチケットは既に印刷されてます(前回印刷日時:{0}) -- 強制発券しますか？<a id="{1}" class="btn">強制発券する</a>';
     this.messageView.refreshCallback = this.refreshPrintedStatus.bind(this);
     this.messageView.alert(fmt.replace("{0}", this.datastore.get("printed"))
@@ -194,6 +216,19 @@ var QRInputView = AppPageViewBase.extend({
       self.messageView.success("チケットを再発券可能にしました");
       self._loadQRCodeInput(self.$qrcode.val());
     }).fail(function(s, msg){self.messageView.error(s.responseText)});
+  }, 
+  notifyMessageForCanceled: function(){
+    var fmt = 'そのチケットはキャンセルされています(キャンセルされた日付:{0}) -- 強制発券しますか？<a id="{1}" class="btn">強制発券する</a>';
+    this.messageView.canceledCallback = this.refreshCanceled.bind(this);
+    this.messageView.alert(fmt.replace("{0}", this.datastore.get("canceled"))
+                              .replace("{1}", "canceled_force_print") //see: messagView.events
+                            ,  true);
+  }, 
+  refreshCanceled: function(){
+    this.datastore.set("canceled", false);
+    this.datastore.set("qrcode_status", "canceld(but force print)")
+    this.messageView.success("（キャンセルされたチケットなど本来印刷できない）チケットを印刷できるようにしました。")
+    this.focusNextPage();
   }, 
   showStatus: function(){
     this.$status.text(this.datastore.get("qrcode_status"));
@@ -399,7 +434,7 @@ var AppletView = Backbone.View.extend({
     this.fetchPageFormatCandidates();
   }, 
   sendPrintSignalIfNeed: function(){
-    if(this.datastore.get("printed") && this.datastore.get("qrcode_status") != "printed"){
+    if(this.datastore.get("printed") && this.datastore.get("qrcode_status") != "printed" && (!this.datastore.get("canceled"))){
       try {
         this.service.printAll();
         this._updateTicketPrintedAt();
