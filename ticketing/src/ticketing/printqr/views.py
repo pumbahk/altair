@@ -98,6 +98,15 @@ def refresh_printed_status(context, request):
     DBSession.add(token)
     return {"status": "success", "data": {}}
     
+@view_config(route_name="api.log", renderer="json", 
+             request_param="log")
+def log_view(context, request):
+    try:
+        ## todo:loglevel分ける
+        logger.info(request.params["log"])
+        return {"status": "success"}
+    except Exception, e:
+        return {"status": "error", "message": str(e)}
 
 @view_config(route_name="api.ticket.after_printed", renderer="json", xhr=True)
 def ticket_after_printed_edit_status(context, request):
@@ -128,6 +137,10 @@ def ticket_after_printed_edit_status(context, request):
     setter.printed_token(token)
     setter.start_bubbling()
     DBSession.add(token)
+
+    ## log
+    logger.info("*qrlog* print ticket token=%s" % (token_id))
+
     return {"status": "success", "data": {}}
 
 class AppletAPIView(object):

@@ -23,6 +23,7 @@ class PrintQRResource(object):
     def api_resource(self):
         event_id = self.request.matchdict.get("event_id", "*")
         return {
+            "api.log": self.request.route_path("api.log"), 
             "api.ticket.data": self.request.route_path("api.ticket.data", event_id=event_id), 
             "api.ticketdata_from_token_id": self.request.route_path('api.applet.ticket_data'),
             "api.ticket.after_printed": self.request.route_path("api.ticket.after_printed"), 
@@ -31,6 +32,7 @@ class PrintQRResource(object):
     @reify
     def applet_endpoints(self):
         event_id = self.request.matchdict.get("event_id", "*")
+        print event_id, 
         logger.debug("tickettemplates:api -- %s" % self.request.route_path('api.applet.ticket', event_id=event_id, id=''))
         return {
             "tickettemplates": self.request.route_path('api.applet.ticket', event_id=event_id, id=''),

@@ -214,6 +214,13 @@ var QRInputView = AppPageViewBase.extend({
       }
       self.datastore.set("printed", false);
       self.messageView.success("チケットを再発券可能にしました");
+
+      // log
+      var message = "*qrlog* refresh printed_at order={0} token={1}"
+        .replace("{0}", self.datastore.get("order_id"))
+        .replace("{1}", self.datastore.get("ordered_product_item_token_id"))
+      $.post(self.apiResource["api.log"], {"log": message})
+
       self._loadQRCodeInput(self.$qrcode.val());
     }).fail(function(s, msg){self.messageView.error(s.responseText)});
   }, 
@@ -228,6 +235,13 @@ var QRInputView = AppPageViewBase.extend({
     this.datastore.set("canceled", false);
     this.datastore.set("qrcode_status", "canceld(but force print)")
     this.messageView.success("（キャンセルされたチケットなど本来印刷できない）チケットを印刷できるようにしました。")
+
+    // log
+    var message = "*qrlog* canceled ticket force print order={0} token={1}"
+      .replace("{0}", this.datastore.get("order_id"))
+      .replace("{1}", this.datastore.get("ordered_product_item_token_id"))
+    $.post(this.apiResource["api.log"], {"log": message})
+
     this.focusNextPage();
   }, 
   showStatus: function(){
