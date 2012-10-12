@@ -43,7 +43,3 @@ class PrintQRResource(object):
     @reify
     def organization(self):
         return self.operator.organization
-
-    @reify
-    def user(self):
-        return self.organization.user

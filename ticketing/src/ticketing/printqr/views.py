@@ -128,7 +128,7 @@ def ticket_after_printed_edit_status(context, request):
 
     history = utils.add_history(
         request, 
-        context.user.id,
+        context.operator.id,
         request.json_body
         )
     DBSession.add(history)
@@ -211,7 +211,7 @@ class AppletAPIView(object):
     def history(self):
         history = utils.add_history(
             self.request, 
-            self.context.user.id,
+            self.context.operator.id,
             self.request.json_body
             )
         DBSession.add(history)
