@@ -262,9 +262,12 @@ def _query_performance_names(request, event, sales_segment):
     q = q.filter(Stock.id==ProductItem.stock_id)
     q = q.filter(Stock.performance_id==Performance.id)
 
+    now = datetime.now()
     today = date.today()
     today = datetime(today.year, today.month, today.day)
     tommorow = today + timedelta(days=1)
+
+    q = q.filter(Performance.end_on>=now)
 
     #if sales_segment.kind == 'sales_counter': #XXX 当日用のkindを定義
     #    # 当日公演の条件
