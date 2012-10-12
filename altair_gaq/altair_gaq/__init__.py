@@ -9,15 +9,17 @@ def includeme(config):
 
 def gaq_tween_factory(handler, registry):
     def tween(request):
-        # ドメインによってneedを変える
-        # TODO: Domainモデルなど作ってそこにまとめる
-        if request.host == 'happinets.dev.ticketstar.jp':
-            nh_dev.need()
-        elif request.host.startswith('89ers'):
-            bj89ers.need()
-        elif request.host.startswith('secure'):
-            bj89ers.need()
-        elif request.host.startswith('happinets'):
-            nh.need()
+        ua = getattr(request, '_ua', None)
+        if ua is None or ua.is_nonmobile():
+            # ドメインによってneedを変える
+            # TODO: Domainモデルなど作ってそこにまとめる
+            if request.host == 'happinets.dev.ticketstar.jp':
+                nh_dev.need()
+            elif request.host.startswith('89ers'):
+                bj89ers.need()
+            elif request.host.startswith('secure'):
+                bj89ers.need()
+            elif request.host.startswith('happinets'):
+                nh.need()
         return handler(request)
     return tween
