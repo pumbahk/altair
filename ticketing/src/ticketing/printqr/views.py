@@ -25,7 +25,6 @@ from ticketing.core.utils import PrintedAtBubblingSetter
 from datetime import datetime
 
 ## login
-
 @view_config(route_name="login", request_method="GET", renderer="ticketing.printqr:templates/login.html")
 def login_view(request):
     logger.debug("login")
@@ -48,10 +47,87 @@ def logout_view(request):
     return HTTPFound(location=request.route_url("login"), headers=headers)
 
 
+## misc
+@view_config(permission="sales_counter", route_name="misc.order.qr", 
+             request_method="GET", 
+             renderer="ticketing.printqr:templates/misc/orderqr.input.html")
+def orderno_input(context, request):
+    form = forms.MiscOrderFindForm()
+    return {"form": form}
+
+@view_config(permission="sales_counter", route_name="misc.order.qr", 
+             request_method="POST", 
+             renderer="ticketing.printqr:templates/misc/orderqr.input.html")
+def orderno_show_qrsigned(context, request):
+    form = forms.MiscOrderFindForm(request.POST)
+    organization_id = context.operator.organization_id
+    if not form.validate() or not form.object_validate(organization_id):
+        return {"form": form}
+    
+    ## boo
+    try:
+        return orderno_show_qrsigned_after_validated(context, request, form)
+    except Exception, e:
+        import traceback
+        traceback.print_exc()
+        raise
+
+## todo:  refactoring
+from ticketing.printqr.scripts.signed_string_from_token_id import qr_from_history
+import sqlalchemy.orm as orm
+from collections import defaultdict
+import itertools
+def orderno_show_qrsigned_after_validated(context, request, form):
+    request.override_renderer = "ticketing.printqr:templates/misc/orderqr.show.html"
+    order = form.order
+    order_no = order.order_no
+
+    items = OrderedProductItem.query.filter(OrderedProductItem.ordered_product_id == OrderedProduct.id)\
+        .filter(OrderedProduct.order_id == Order.id)\
+        .filter(Order.order_no == order_no).all()
+
+    histories = []
+    for item in items:
+        qs = TicketPrintHistory.query\
+            .filter(TicketPrintHistory.ordered_product_item_id == OrderedProductItemToken.ordered_product_item_id == item.id, OrderedProductItemToken.printed_at==None)\
+            .filter(OrderedProductItemToken.ordered_product_item_id==OrderedProductItem.id)\
+            .filter(OrderedProductItem.ordered_product_id == OrderedProduct.id)\
+            .filter(OrderedProduct.order_id == Order.id)\
+            .filter(Order.order_no == order_no)\
+            .options(orm.joinedload(TicketPrintHistory.ordered_product_item), 
+                     orm.joinedload(TicketPrintHistory.item_token), 
+                     orm.joinedload(TicketPrintHistory.seat))
+        histories = itertools.chain(histories, qs)
+
+    ## 最も古いHistoryがQR用 
+    ## 本当はQR用のPrintHistoryか見分けがつけるようにしたい
+    qr_history_dict = defaultdict(list)
+    for h in histories:
+        qr_history_dict[h.item_token_id].append(h)
+
+    qr_histories = []
+    ## min by欲しい
+    for k,  vs in qr_history_dict.items():
+        if k is None:
+            continue
+        m = vs[0]
+        mt = m.item_token
+        for v in vs[1:]:
+            vt = v.item_token
+            if vt is None:
+                logger.debug("history is None (token=%s)" % v.id)
+                continue
+            if vt.issued_at < mt.issued_at:
+                m = v
+                mt = vt
+        qr_histories.append(m)
+    signed_history_doubles = sorted([(qr_from_history(request, h), h) for h in qr_histories], key=lambda xs : xs[1].id)
+    return {"signed_history_doubles": signed_history_doubles, "order": order}
+    
 ## event list
 
 @view_config(permission="sales_counter", route_name="eventlist", 
-                      renderer="ticketing.printqr:templates/eventlist.html")
+             renderer="ticketing.printqr:templates/eventlist.html")
 def choice_event_view(context, request):
     now = datetime.now()
     events = Event.query.filter_by(organization_id=context.operator.organization_id)
