@@ -174,7 +174,7 @@ var QRInputView = AppPageViewBase.extend({
   events: {
     "click #load_button": "loadQRCodeInput", 
     "click #clear_button": "clearQRCodeInput", 
-    "keypress input[name='qrcode']": "readOnEnter"
+    "keydown input[name='qrcode']": "readOnEnter"
   }, 
   initialize: function(opts){
     QRInputView.__super__.initialize.call(this, opts);
@@ -252,11 +252,14 @@ var QRInputView = AppPageViewBase.extend({
   }, 
   readOnEnter: function(e){
     // if Enter key is typed then call `loadQRCodeInput'
-    if(e.keyCode == 13){
+    if (e.keyCode == 13 || (e.ctrlKey && e.keyCode == 74 /* CTRL-J */)) {
       this.loadQRCodeInput();
-    } else if(e.ctrlKey && e.keyCode==74){
-      this.loadQRCodeInput();
+    } else if (e.keyCode == 8) {
+      this.$qrcode[0].value = '';
+    } else {
+      this.$qrcode[0].value += String.fromCharCode(KeycodeMapping.translate(e.shiftKey, e.keyCode));
     }
+    return false;
   }, 
   loadQRCodeInput: function(){
     var qrsigned = this.$qrcode.val();
