@@ -69,6 +69,7 @@ requires = [
     'redis',
     'beaker-extensions >= 0.2.0pre2',
     'boto',
+    'fluent-logger == 0.3.3moriyoshi',
     ]
 
 setup(name='ticketing',
@@ -96,7 +97,8 @@ setup(name='ticketing',
         'https://github.com/moriyoshi/tableau/tarball/master#egg=tableau-0.0.4pre',
         'https://bitbucket.org/moriyoshi/alembic/get/9fe8d037f71f.zip#egg=alembic-0.3.5moriyoshi', 
         "https://github.com/numpy/numpy/tarball/v1.6.2#egg=numpy-1.6.2",
-        'https://github.com/moriyoshi/beaker_extensions/tarball/0.2.0pre2#egg=beaker-extensions-0.2.0pre2', 
+        'https://github.com/moriyoshi/beaker_extensions/tarball/0.2.0pre2#egg=beaker-extensions-0.2.0pre2',
+        'https://github.com/moriyoshi/fluent-logger-python/tarball/0.3.3moriyoshi#egg=fluent-logger-0.3.3moriyoshi',
       ],
       tests_require=requires,
       test_suite="ticketing",
