@@ -1,0 +1,16 @@
+<%page args="form, route_name, route_path, redirect_to" />
+<%namespace file="/common/helpers.html" name="h" />
+
+<div class="well">
+  <form class="form-horizontal" action="${route_path}" method="POST">
+    ${form.membership_id}
+    <input type="hidden" name="redirect_to" value="${redirect_to}">
+    <fieldset>
+      ${h.form_item(form.name, option={'class':'span5', 'maxlength':255})}
+      ${h.form_item(form.is_guest)}
+    </fieldset>
+    <div class="form-actions">
+      <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">
+    </div>
+  </form>
+</div>
