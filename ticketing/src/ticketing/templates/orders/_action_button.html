@@ -6,7 +6,11 @@
   function cancel_order(id) {
     modal = $('#modal-delete');
     modal.find('#delete').attr('href', '/orders/cancel/' + id);
-    modal.find('#message').text("${u'選択した受注をキャンセルします。よろしいですか？'}");
+    message = '選択した予約をキャンセルします。よろしいですか？';
+    % if order.printed_at or order.issued_at or order.issued:
+      message += '<br><div class="alert alert-error">この予約は既に発券済み(または発券予約中)です。</div>'
+    % endif
+    modal.find('#message').html('<p>' + message + '</p>');
     modal.modal('toggle');
   }
   function edit_shipping_address() {
