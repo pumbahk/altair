@@ -15,7 +15,7 @@ from ticketing.events.payment_delivery_method_pairs.forms import PaymentDelivery
 from ticketing.events.sales_segments.forms import SalesSegmentForm
 from ticketing.memberships.forms import MemberGroupForm
 from .forms import MemberGroupToSalesSegmentForm
-from ticketing.users.models import MemberGroup
+from ticketing.users.models import MemberGroup, Membership
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class SalesSegments(BaseView):
@@ -144,7 +144,8 @@ class SalesSegments(BaseView):
             return HTTPNotFound('sales_segment id %d is not found' % sales_segment_id)
         
         redirect_to = self.request.route_path("sales_segments.show",  sales_segment_id=sales_segment_id)
-        form = MemberGroupToSalesSegmentForm(obj=sales_segment, membergroups=MemberGroup.query)
+        membergroups = MemberGroup.query.filter(MemberGroup.membership_id==Membership.id, Membership.organization_id==self.context.user.organization_id)
+        form = MemberGroupToSalesSegmentForm(obj=sales_segment, membergroups=membergroups)
         form_mg = MemberGroupForm()
         return {"form": form,
                 "membergroups": sales_segment.membergroups,
