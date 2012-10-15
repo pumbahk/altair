@@ -52,7 +52,7 @@ class CartFactory(object):
         logger.debug("seat stocks = %s" % [s.stock_id for s in seats])
         my_seats = [seat for seat in seats if seat.stock_id == product_item.stock_id][:quantity]
         if len(my_seats) != quantity:
-            logger.debug("stock %d, quantity error %d != %d" % (product_item.stock_id, len(my_seats), quantity))
+            logger.error("stock %d, quantity error %d != %d" % (product_item.stock_id, len(my_seats), quantity))
             raise Exception
         map(seats.remove, my_seats)
         return my_seats
