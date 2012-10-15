@@ -167,6 +167,16 @@ class MemberGroupView(BaseView):
         dummy_url = self.request.route_path("memberships", action="index", membership_id="*") ## this is dummy
         return HTTPFound(self.request.POST.get("redirect_to") or dummy_url)
 
+@view_config(route_name="membergrups.api.salessegments.candidates", permission="administrator", 
+             request_method="GET", xhr=True, renderer="json")
+def candidates_sales_segment(context, request):
+    qs = cmodels.SalesSegment.query
+    event_id = request.matchdict["event_id"]
+    if event_id != "*":
+        qs = qs.filter(cmodels.Event.id==event_id, cmodels.SalesSegment.event_id==cmodels.Event.id)
+    salessegments = [{"id": s.id, "name": s.name} for s in qs]
+    return {"status": "success", "salessegments": salessegments}
+
 @view_defaults(decorator=with_bootstrap, route_name="membergroups.salessegments", permission="administrator")
 class SalesSegmentView(BaseView):
     # @view_config(match_param="action=new", renderer="ticketing:templates/memberships/salessegments/new.html", 
@@ -202,12 +212,13 @@ class SalesSegmentView(BaseView):
                  request_method="GET")
     def edit_get(self):
         membergroup = umodels.MemberGroup.query.filter_by(id=self.request.matchdict["membergroup_id"]).first()
-        candidates_salessegments = cmodels.SalesSegment.query.join(cmodels.Event)\
-            .filter(cmodels.Event.organization_id==self.context.user.organization_id)
-        form = forms.SalesSegmentToMemberGroupForm(obj=membergroup, salessegments=candidates_salessegments)
+        candidates_salessegments = []
+        events = cmodels.Event.query.filter_by(organization_id=self.context.user.organization_id)
+        form = forms.SalesSegmentToMemberGroupForm(obj=membergroup, salessegments=candidates_salessegments, events=events)
         return {"form": form, 
                 "redirect_to": self.request.params["redirect_to"], 
                 "membergroup_id": self.request.params["membergroup_id"], 
+                "salessegments_source": self.request.route_path("membergrups.api.salessegments.candidates", event_id="__id__"), 
                 "membergroup": membergroup, 
                 "form_sg": SalesSegmentForm()}
 

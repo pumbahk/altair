@@ -1,11 +1,32 @@
 <%page args="form, route_name, route_path, redirect_to,membergroup_id" />
 <%namespace file="/common/helpers.html" name="h" />
 
+<script type="text/javascript">
+  $(function(){
+    $("#event_id").change(function(){
+      var event_id = $(this).find("option:selected").val();
+      $.get("${salessegments_source}".replace("__id__", event_id)).done(function(data){
+        if(data.status != "success"){
+          return;
+        }
+console.dir(data)
+        var salessegments_area=$("#salessegments");
+        salessegments_area.empty();
+        var salessegments = data.salessegments;
+        for(var i=0,j=salessegments.length; i<j; i++){
+          salessegments_area.append($("<option>").attr("value",salessegments[i].id).text(salessegments[i].name));
+        }
+        salessegments_area.height(20*salessegments.length);
+      }).fail(function(s,e){ alert(e); });
+    });
+  })
+</script>
 <div class="well">
+  <p>イベントを選んでから。対応する販売条件を選んでください</p>
   <form id="edit" action="${route_path}" method="POST">
     <input type="hidden" name="redirect_to" value="${redirect_to}">
-
-    ${h.form_item(form.salessegments,option=dict(style="height:%s" % form.salessegments_height))}
+    ${h.form_item(form.event_id,option=dict(id="event_id"))}
+    ${h.form_item(form.salessegments,option=dict(id="salessegments", style="height:%s" % form.salessegments_height))}
     <div class="form-actions">
       <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">
     </div>

@@ -19,7 +19,7 @@ class MembershipForm(Form):
     def _get_translations(self):
         return Translations()
     organization_id = SelectField(
-        label=u"会社名", 
+        label=u"取引先名", 
         choices=[], 
         coerce=unicode, 
         validators=[Optional()],
@@ -69,10 +69,11 @@ class SalesSegmentToMemberGroupForm(Form):
     def _get_translations(self):
         return Translations()
 
-    def __init__(self, formdata=None, obj=None, prefix='', salessegments=None, **kwargs):
+    def __init__(self, formdata=None, obj=None, prefix='', salessegments=None, events=None, **kwargs):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
         salessegments = list(salessegments)
-        self.salessegments.choices = [(unicode(s.id), s.name) for s in salessegments]
+        self.salessegments.choices = [(unicode(s.id), s.name) for s in salessegments or []]
+        self.event_id.choices = [(unicode(s.id), s.title) for s in events or []]
         self.salessegments_height = "%spx" % (len(salessegments)*20)
         if obj:
             self.salessegments.data = [unicode(s.id) for s in obj.sales_segments]
@@ -83,3 +84,8 @@ class SalesSegmentToMemberGroupForm(Form):
         coerce=unicode, 
     )
 
+    event_id = SelectField(
+        label=u"イベント", 
+        choices=[], 
+        coerce=unicode, 
+        )
