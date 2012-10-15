@@ -525,9 +525,9 @@ class Orders(BaseView):
                 del self.request.session['ticketing.inner_cart']
             logger.debug('order reserve session data=%s' % self.request.session)
 
+            self.request.session.flash(u'予約しました')
             return {
                 'order_id':order.id,
-                'message':u'予約しました'
             }
         except Exception, e:
             logger.exception('save error (%s)' % e.message)
