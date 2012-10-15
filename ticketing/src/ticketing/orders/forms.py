@@ -133,6 +133,30 @@ class OrderSearchForm(Form):
         self.event_id.choices = [("", "")]+[(e.id, e.title) for e in event_query]
         return self
 
+    def get_conditions(self):
+        conditions = {}
+        for name, field in self._fields.items():
+            print name, field.data
+            if isinstance(field, HiddenField):
+                continue
+            if not field.data:
+                continue
+
+            if isinstance(field, SelectMultipleField) or isinstance(field, SelectField):
+                data = []
+                for choice in field.choices:
+                    if isinstance(field.data, list) and choice[0] in field.data:
+                        data.append(choice[1])
+                    elif choice[0] == field.data:
+                        data.append(choice[1])
+                data = ', '.join(data)
+            elif isinstance(field, DateTimeField):
+                data = field.data.strftime('%Y-%m-%d %H:%M')
+            else:
+                data = field.data
+            conditions[name] = (field.label.text, data)
+        return conditions
+
 class PerformanceSearchForm(Form):
     event_id =  HiddenField(
         validators=[Optional()],

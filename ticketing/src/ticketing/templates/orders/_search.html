@@ -159,7 +159,47 @@
 
   <div class="modal-body">
     <p>購入情報(CSV)をダウンロードします。よろしいですか？<br>
-      <div class="alert alert-error">現在の検索条件で抽出されます。</div>
+      <div class="alert alert-error">
+        <ul>
+        <% conditions = form.get_conditions() %>
+        % if conditions:
+          <div style="margin-bottom: 5px;">現在の検索条件で抽出されます。</div>
+        % else:
+          <div style="margin-bottom: 5px;">検索条件がありません。</div>
+        % endif
+
+        <% listed = [] %>
+        % for k, v in conditions.items():
+          % if k in listed:
+            <% continue %>
+          % elif k in ['ordered_from', 'ordered_to']:
+            <%
+              ordered_from = conditions.pop('ordered_from', '')
+              if ordered_from:
+                (label, ordered_from) = ordered_from
+              ordered_to = conditions.pop('ordered_to', '')
+              if ordered_to:
+                (label, ordered_to) = ordered_to
+              listed += ['ordered_from', 'ordered_to']
+            %>
+            <li>${u'%s : %s 〜 %s' % (label, ordered_from, ordered_to)}</li>
+          % elif k in ['start_on_from', 'start_on_to']:
+            <%
+              start_on_from = conditions.pop('start_on_from', '')
+              if start_on_from:
+                (label, start_on_from) = start_on_from
+              start_on_to = conditions.pop('start_on_to', '')
+              if start_on_to:
+                (label, start_on_to) = start_on_to
+              listed += ['start_on_from', 'start_on_to']
+            %>
+            <li>${u'%s : %s 〜 %s' % (label, start_on_from, start_on_to)}</li>
+          % else:
+            <li>${'%s : %s' % v}</li>
+          % endif
+        % endfor
+        </ul>
+      </div>
     </p>
   </div>
 
