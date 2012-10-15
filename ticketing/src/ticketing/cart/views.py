@@ -401,7 +401,7 @@ class ReserveView(object):
         if not order_items:
             return dict(result='NG', reason="no products")
 
-        performance = c_models.Performance.get(self.request.params['performance_id'])
+        performance = c_models.Performance.query.filter(c_models.Performance.id==self.request.params['performance_id']).with_lockmode('update').one()
         if not order_items:
             return dict(result='NG', reason="no performance")
 

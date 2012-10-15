@@ -63,7 +63,7 @@ class Reserving(object):
     def _reserve(self, seats):
         statuses = SeatStatus.query.filter(
             SeatStatus.seat_id.in_([s.id for s in seats])
-        ).all()
+        ).with_lockmode('update').all()
         for stat in statuses:
             stat.status = int(SeatStatusEnum.InCart)
         return statuses
