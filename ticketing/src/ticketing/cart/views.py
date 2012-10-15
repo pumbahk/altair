@@ -659,13 +659,6 @@ class PaymentView(object):
             #user=user, user_profile=user.user_profile,
             )
 
-    def validate(self, payment_delivery_pair):
-        form = schemas.ClientForm(formdata=self.request.params)
-        if form.validate() and payment_delivery_pair:
-            return None 
-        else:
-            return form
-
     @view_config(route_name='cart.payment', request_method="POST", renderer=selectable_renderer("carts/%(membership)s/payment.html"))
     @view_config(route_name='cart.payment', request_type='.interfaces.IMobileRequest', request_method="POST", renderer=selectable_renderer("carts_mobile/%(membership)s/payment.html"))
     def post(self):
@@ -681,9 +674,10 @@ class PaymentView(object):
 
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id', 0)
         payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter_by(id=payment_delivery_method_pair_id).first()
-        form = self.validate(payment_delivery_pair)
+        form = schemas.ClientForm(formdata=params)
+        form.validate()
 
-        if not payment_delivery_pair or form:
+        if not payment_delivery_pair or form.errors:
             if not payment_delivery_pair:
                 self.request.session.flash(u"お支払い方法／受け取り方法をどれかひとつお選びください")
                 logger.debug("invalid : %s" % 'payment_delivery_method_pair_id')
@@ -703,7 +697,7 @@ class PaymentView(object):
         cart.payment_delivery_pair = payment_delivery_pair
         cart.system_fee = payment_delivery_pair.system_fee
 
-        shipping_address = self.create_shipping_address(user)
+        shipping_address = self.create_shipping_address(user, form.data)
 
         DBSession.add(shipping_address)
         cart.shipping_address = shipping_address
@@ -735,25 +729,24 @@ class PaymentView(object):
     def get_client_name(self):
         return self.request.params['last_name'] + self.request.params['first_name']
 
-    def create_shipping_address(self, user):
-        params = self.request.params
+    def create_shipping_address(self, user, data):
         shipping_address = c_models.ShippingAddress(
-            first_name=params['first_name'],
-            last_name=params['last_name'],
-            first_name_kana=params['first_name_kana'],
-            last_name_kana=params['last_name_kana'],
-            zip=params['zip'],
-            prefecture=params['prefecture'],
-            city=params['city'],
-            address_1=params['address_1'],
-            address_2=params['address_2'],
-            #country=params['country'],
+            first_name=data['first_name'],
+            last_name=data['last_name'],
+            first_name_kana=data['first_name_kana'],
+            last_name_kana=data['last_name_kana'],
+            zip=data['zip'],
+            prefecture=data['prefecture'],
+            city=data['city'],
+            address_1=data['address_1'],
+            address_2=data['address_2'],
+            #country=data['country'],
             country=u"日本国",
-            tel_1=params['tel'],
-            #tel_2=params['tel_2'],
-            fax=params.get('fax'),
+            tel_1=data['tel'],
+            #tel_2=data['tel_2'],
+            fax=data['fax'],
             user=user,
-            email=params['mail_address']
+            email=data['mail_address']
         )
         return shipping_address
 
