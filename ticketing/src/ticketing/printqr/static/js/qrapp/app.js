@@ -42,7 +42,7 @@ var DataStore = Backbone.Model.extend({
     this.set("product", data.product_name+"("+data.seat_name+")");
 
     if(!!(data.printed)){
-      this.set("qrcode_status", "printed"); //order: qrcode_status ,  printed
+      this.set("qrcode_status", "printed");
       this.set("printed", data.printed);
       this.trigger("*qr.printed.already");
     } else if(data.canceled){
@@ -410,6 +410,7 @@ var PrintConfirmView = AppPageViewBase.extend({
   }, 
   initialize: function(opts){
     PrintConfirmView.__super__.initialize.call(this, opts);
+    this.datastore.bind("*qr.validate.preprint", this.clickPrintButton, this);
   }, 
   _validationPrePrint: function(){
     if(this.datastore.get("ordered_product_item_token_id") == null){
@@ -438,6 +439,7 @@ var PrintConfirmView = AppPageViewBase.extend({
       this.messageView.alert("既に印刷済みです。");
     }else{
       this.datastore.set("printed", true);
+      this.datastore.trigger("*qr.print.signal");
     }
   }
 });
@@ -450,15 +452,12 @@ var AppletView = Backbone.View.extend({
     this.router = opts.router;
     this.apiResource = opts.apiResource;
     this.datastore.bind("*qr.not.printed", this.createTicket, this);
-    // this.datastore.bind("change:ordered_product_item_token_id", this.fetchPinterCandidates, this); //eliminate call times:
-    // this.datastore.bind("change:ordered_product_item_token_id", this.fetchTemplateCandidates, this); //eliminate call times:
-    // this.datastore.bind("change:ordered_product_item_token_id", this.fetchPageFormatCandidates, this); //eliminate call times:
 
     this.datastore.bind("change:printer_name", this.setPrinter, this);
     this.datastore.bind("change:ticket_template_id", this.setTicketTemplate, this);
     this.datastore.bind("change:page_format_id", this.setPageFormat, this);
 
-    this.datastore.bind("change:printed", this.sendPrintSignalIfNeed, this);
+    this.datastore.bind("*qr.print.signal", this.sendPrintSignalIfNeed, this);
   }, 
   start: function(){
     this.fetchPinterCandidates();
@@ -466,7 +465,8 @@ var AppletView = Backbone.View.extend({
     this.fetchPageFormatCandidates();
   }, 
   sendPrintSignalIfNeed: function(){
-    if(this.datastore.get("printed") && this.datastore.get("qrcode_status") != "printed" && (!this.datastore.get("canceled"))){
+    //if(this.datastore.get("printed") && this.datastore.get("qrcode_status") != "printed" && (!this.datastore.get("canceled"))){
+    if(this.datastore.get("printed")){
       try {
         //alert("print!!");
         this.service.printAll();
@@ -560,6 +560,7 @@ var AppletView = Backbone.View.extend({
           self.appviews.messageView.error(e);
         }
       });
+      self.datastore.trigger("*qr.validate.preprint");
     }).fail(function(s, msg){self.appviews.messageView.alert(s.responseText)});
   }, 
   fetchPinterCandidates: function(){
