@@ -24,7 +24,7 @@
   <a href="#" class="btn">削除</a>
 </div>
 
-<%include file="./_detail.html" args="form=form, membergroup=membergroup" />
+<%include file="./_detail.html" args="form=form, membergroup=membergroup" /> 
 
 <hr/>
 
@@ -35,6 +35,6 @@
 <div class="row-fluid">
   <div class="span12">
     <%include file="/sales_segments/_list.html" args="form=form_sg, sales_segments=salessegments" />
-    <%include file="/memberships/salessegments/_action_button.html" args="membergroup=membergroup,redirect_to=redirect_to,order=None" />
+    <%include file="/memberships/salessegments/_action_button.html" args="membergroup=membergroup,redirect_to=redirect_to,order=None,event_id=None" />
   </div>
 </div>

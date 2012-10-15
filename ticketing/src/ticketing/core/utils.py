@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 ## todo:test
+
 class IssuedAtBubblingSetter(object):
     """
     s = IssuedAtBubblingSetter(datetime.now())

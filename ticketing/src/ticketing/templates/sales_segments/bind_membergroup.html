@@ -1,0 +1,31 @@
+<%inherit file="/layout_2cols.html"/>
+<%namespace file="/common/helpers.html" name="h" />
+
+<div class="content">
+  ${h.flash_messages(request)}
+  ${h.alert_message(form)}
+</div>
+<%
+route_name=u'編集'
+route_path=request.route_path("sales_segments.bind_membergroup", sales_segment_id=request.matchdict["sales_segment_id"])
+%>
+
+<div class="page-header">
+  <h3>現在結びついているmembergroup</h3>
+</div>
+
+<%include file="/memberships/groups/_list.html" args="member_groups=membergroups, form=form_mg" />
+
+<div class="page-header">
+  <h3>memvergroupの結びつき変更</h3>
+</div>
+
+<div class="well">
+  <form id="edit" action="${route_path}" method="POST">
+    <input type="hidden" name="redirect_to" value="${redirect_to}">
+    ${h.form_item(form.membergroups,option=dict(id="membergroups", style="height:%s" % form.membergroups_height))}
+    <div class="form-actions">
+      <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">
+    </div>
+  </form>
+</div>

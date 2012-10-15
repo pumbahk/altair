@@ -8,8 +8,7 @@
       $.get("${salessegments_source}".replace("__id__", event_id)).done(function(data){
         if(data.status != "success"){
           return;
-        }
-console.dir(data)
+         }
         var salessegments_area=$("#salessegments");
         salessegments_area.empty();
         var salessegments = data.salessegments;

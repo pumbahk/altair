@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from wtforms import Form
-from wtforms import TextField, SelectField, HiddenField, IntegerField, BooleanField
+from wtforms import TextField, SelectField, HiddenField, IntegerField, BooleanField, SelectMultipleField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 from wtforms.widgets import CheckboxInput
 
@@ -77,3 +77,22 @@ class SalesSegmentForm(Form):
     def validate_end_at(form, field):
         if field.data is not None and field.data < form.start_at.data:
             raise ValidationError(u'開演日時より過去の日時は入力できません')
+
+class MemberGroupToSalesSegmentForm(Form):
+    def _get_translations(self):
+        return Translations()
+
+    def __init__(self, formdata=None, obj=None, prefix='', membergroups=None, **kwargs):
+        Form.__init__(self, formdata, obj, prefix, **kwargs)
+        membergroups = list(membergroups)
+        self.membergroups.choices = [(unicode(s.id), s.name) for s in membergroups or []]
+        self.membergroups_height = "%spx" % (len(membergroups)*20)
+        if obj:
+            self.membergroups.data = [unicode(s.id) for s in obj.membergroups]
+
+    membergroups = SelectMultipleField(
+        label=u"membergroups", 
+        choices=[], 
+        coerce=unicode, 
+    )
+

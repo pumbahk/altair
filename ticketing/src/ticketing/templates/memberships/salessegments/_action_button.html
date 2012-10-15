@@ -1,4 +1,4 @@
-<%page args="membergroup,redirect_to"/>
+<%page args="membergroup,redirect_to,event_id"/>
 <%namespace file="/common/helpers.html" name="h" />
 <%namespace file="/common/modal.html" import="delete_modal" />
 
@@ -35,7 +35,7 @@
     ),
    'edit':dict(
       label=u'販売条件の結びつき変更',
-      url=request.route_path("membergroups.salessegments",membergroup_id=membergroup.id, action="edit",_query={"membergroup_id": membergroup.id,"redirect_to":redirect_to}),
+      url=request.route_path("membergroups.salessegments",membergroup_id=membergroup.id, action="edit",_query={"event_id": event_id, "membergroup_id": membergroup.id,"redirect_to":redirect_to}),
       icon='icon-pencil',
     ),
   }

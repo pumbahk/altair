@@ -19,6 +19,8 @@ route_name=u'編集'
 route_path=request.route_path('membergroups.salessegments',action='edit', membergroup_id=membergroup_id)
 %>
 
+<%include file="/memberships/groups/_detail.html" args="form=form_mg, membergroup=membergroup" />
+
 <div class="page-header">
   <h3>現在結びついている販売区分</h3>
 </div>

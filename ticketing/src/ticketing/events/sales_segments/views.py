@@ -14,6 +14,8 @@ from ticketing.core.models import Event, SalesSegment, Product
 from ticketing.events.payment_delivery_method_pairs.forms import PaymentDeliveryMethodPairForm
 from ticketing.events.sales_segments.forms import SalesSegmentForm
 from ticketing.memberships.forms import MemberGroupForm
+from .forms import MemberGroupToSalesSegmentForm
+from ticketing.users.models import MemberGroup
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class SalesSegments(BaseView):
@@ -132,3 +134,51 @@ class SalesSegments(BaseView):
             raise HTTPFound(location=location)
 
         return HTTPFound(location=location)
+
+    @view_config(route_name="sales_segments.bind_membergroup", 
+                 renderer='ticketing:templates/sales_segments/bind_membergroup.html', request_method="GET")
+    def bind_membergroup_get(self):
+        sales_segment_id = int(self.request.matchdict.get('sales_segment_id', 0))
+        sales_segment = SalesSegment.get(sales_segment_id)
+        if sales_segment is None:
+            return HTTPNotFound('sales_segment id %d is not found' % sales_segment_id)
+        
+        redirect_to = self.request.route_path("sales_segments.show",  sales_segment_id=sales_segment_id)
+        form = MemberGroupToSalesSegmentForm(obj=sales_segment, membergroups=MemberGroup.query)
+        form_mg = MemberGroupForm()
+        return {"form": form,
+                "membergroups": sales_segment.membergroups,
+                'form_mg': form_mg,
+                "sales_segment":sales_segment,
+                "redirect_to": redirect_to,
+                "sales_segment_id": sales_segment_id}
+
+    @view_config(route_name="sales_segments.bind_membergroup", 
+                 renderer='ticketing:templates/sales_segments/bind_membergroup.html', request_method="POST")
+    def bind_membergroup_post(self):
+        sales_segment_id = int(self.request.matchdict.get('sales_segment_id', 0))
+        sales_segment = SalesSegment.get(sales_segment_id)
+        if sales_segment is None:
+            return HTTPNotFound('sales_segment id %d is not found' % sales_segment_id)
+        
+        candidates_membergroups = MemberGroup.query
+        will_bounds = candidates_membergroups.filter(MemberGroup.id.in_(self.request.POST.getall("membergroups")))
+
+        will_removes = {}
+        for mg in sales_segment.membergroups:
+            will_removes[unicode(mg.id)] = mg
+
+        for mg in will_bounds:
+            if unicode(mg.id) in will_removes:
+                del will_removes[unicode(mg.id)]
+            else:
+                sales_segment.membergroups.append(mg)
+
+        for mg in will_removes.values():
+            sales_segment.membergroups.remove(mg)
+
+        sales_segment.save()
+
+        self.request.session.flash(u'membergroupの結びつき変更しました')
+        return HTTPFound(self.request.POST["redirect_to"])
+

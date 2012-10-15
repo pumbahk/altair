@@ -63,19 +63,29 @@
 
 <hr />
 
-<%doc>
-## not enough to show this function.
-%if member_groups:
-<h3>member group</h3>
+<%include file="/payment_delivery_method_pairs/_list.html" args="sales_segment=sales_segment, form=form_pdmp" />
+<%include file="/payment_delivery_method_pairs/_action_button.html" args="sales_segment=sales_segment" />
+
+<hr />
+
+<h4 style="margin-bottom:10px;">結び付けられているmembergroupの情報</h4>
 
 <div class="row-fluid">
   <div class="span12">
-  <%include file="/members/groups/_list.html" args="member_groups=member_groups, form=form_mg" />
+  <%include file="/memberships/groups/_list.html" args="member_groups=member_groups, form=form_mg" />
   </div>
 </div>
-%endif
-<hr />
-</%doc>
 
-<%include file="/payment_delivery_method_pairs/_list.html" args="sales_segment=sales_segment, form=form_pdmp" />
-<%include file="/payment_delivery_method_pairs/_action_button.html" args="sales_segment=sales_segment" />
+
+
+<div class="btn-group">
+  <a href="${request.route_path("sales_segments.bind_membergroup", sales_segment_id=sales_segment.id)}" class="btn">
+    <i class="icon-pencil"></i> membergroupの結びつきを変更
+  </a>
+  <button class="btn dropdown-toggle" data-toggle="dropdown">
+    <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu">
+  </ul>
+</div>
+

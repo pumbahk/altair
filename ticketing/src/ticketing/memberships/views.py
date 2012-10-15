@@ -214,12 +214,21 @@ class SalesSegmentView(BaseView):
         membergroup = umodels.MemberGroup.query.filter_by(id=self.request.matchdict["membergroup_id"]).first()
         candidates_salessegments = []
         events = cmodels.Event.query.filter_by(organization_id=self.context.user.organization_id)
-        form = forms.SalesSegmentToMemberGroupForm(obj=membergroup, salessegments=candidates_salessegments, events=events)
+
+        ## optinal
+        event_id=self.request.params.get("event_id")
+        if event_id:
+            events.filter_by(id=event_id)
+
+        form = forms.SalesSegmentToMemberGroupForm(obj=membergroup, 
+                                                   salessegments=candidates_salessegments,
+                                                   events=events)
         return {"form": form, 
                 "redirect_to": self.request.params["redirect_to"], 
                 "membergroup_id": self.request.params["membergroup_id"], 
                 "salessegments_source": self.request.route_path("membergrups.api.salessegments.candidates", event_id="__id__"), 
                 "membergroup": membergroup, 
+                "form_mg": forms.MemberGroupForm(), 
                 "form_sg": SalesSegmentForm()}
 
 
@@ -227,15 +236,23 @@ class SalesSegmentView(BaseView):
                  request_method="POST")
     def edit_post(self):
         membergroup = umodels.MemberGroup.query.filter_by(id=self.request.matchdict["membergroup_id"]).first()
-        candidates_salessegments = cmodels.SalesSegment.query.join(cmodels.Event)\
-            .filter(cmodels.Event.organization_id==self.context.user.organization_id)
+        event_id = unicode(self.request.POST["event_id"])
+        candidates_salessegments = cmodels.SalesSegment.query
         will_bounds = candidates_salessegments.filter(cmodels.SalesSegment.id.in_(self.request.POST.getall("salessegments")))
 
+        will_removes = {}
         for s in membergroup.sales_segments:
-            membergroup.sales_segments.remove(s)
-        for s in will_bounds:
-            membergroup.sales_segments.append(s)
-        DBSession.add(membergroup)
+            if unicode(s.event_id) == event_id:
+                will_removes[unicode(s.id)] = s
 
+        for s in will_bounds:
+            if unicode(s.id) in will_removes:
+                del will_removes[unicode(s.id)]
+            else:
+                membergroup.sales_segments.append(s)
+        for s in will_removes.values():
+            membergroup.sales_segments.remove(s)
+
+        DBSession.add(membergroup)
         self.request.session.flash(u'販売区分の結びつき変更しました')
         return HTTPFound(self.request.POST["redirect_to"])
