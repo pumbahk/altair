@@ -79,7 +79,7 @@ class MembershipView(BaseView):
         membership = umodels.Membership.query.filter_by(id=self.request.matchdict["membership_id"]).first()
         if membership is None:
             raise HTTPNotFound
-        DBSession.delete(membership)
+        membership.delete()
         self.request.session.flash(u"membershipを削除しました")
         return HTTPFound(self.request.route_url("memberships", action="index", membership_id="*"))
 
@@ -161,7 +161,7 @@ class MemberGroupView(BaseView):
         if membergroup is None:
             raise HTTPNotFound
 
-        DBSession.delete(membergroup)
+        membergroup.delete()
 
         self.request.session.flash(u"membergroupを削除しました")
         dummy_url = self.request.route_path("memberships", action="index", membership_id="*") ## this is dummy
