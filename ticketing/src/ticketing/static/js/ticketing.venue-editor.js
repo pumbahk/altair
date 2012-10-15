@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['BSA_Y65WZAHBJHT2'] = (function (exports) { (function () { 
+__LIBS__['pSBVX21YL9P_VZPH'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -72,7 +72,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['dXETPYOO6MC5S1Q_'] = (function (exports) { (function () { 
+__LIBS__['y0U4_P13X00KERMP'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -98,7 +98,7 @@ exports.ja = {
   } 
 };
  })(); return exports; })({});
-__LIBS__['jPQ9QSFCF68QZZ7P'] = (function (exports) { (function () { 
+__LIBS__['dAULTNACV_R9FA5K'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -197,7 +197,7 @@ exports.mergeStyle = function mergeStyle(a, b) {
   };
 };
  })(); return exports; })({});
-__LIBS__['dHA7DF7XKP0ICOXT'] = (function (exports) { (function () { 
+__LIBS__['oIXONSIZA6E355QO'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -246,12 +246,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['tSQ38JJYWGSJJX0W'] = (function (exports) { (function () { 
+__LIBS__['NM6ATD7K23IEJ978'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['jPQ9QSFCF68QZZ7P'];
-var CONF = __LIBS__['BSA_Y65WZAHBJHT2'];
-var IdentifiableSet = __LIBS__['dHA7DF7XKP0ICOXT'].IdentifiableSet;
+var util = __LIBS__['dAULTNACV_R9FA5K'];
+var CONF = __LIBS__['pSBVX21YL9P_VZPH'];
+var IdentifiableSet = __LIBS__['oIXONSIZA6E355QO'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -727,12 +727,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['WW09P3TWMROBUL7T'] = (function (exports) { (function () { 
+__LIBS__['qOMQJEE9BA_P0J4Y'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['jPQ9QSFCF68QZZ7P'];
-var CONF = __LIBS__['BSA_Y65WZAHBJHT2'];
-var models = __LIBS__['tSQ38JJYWGSJJX0W'];
+var util = __LIBS__['dAULTNACV_R9FA5K'];
+var CONF = __LIBS__['pSBVX21YL9P_VZPH'];
+var models = __LIBS__['NM6ATD7K23IEJ978'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -928,13 +928,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['BSA_Y65WZAHBJHT2'];
-  var models = __LIBS__['tSQ38JJYWGSJJX0W'];
-  var util = __LIBS__['jPQ9QSFCF68QZZ7P'];
-  var viewobjects = __LIBS__['WW09P3TWMROBUL7T'];
-  var IdentifiableSet = __LIBS__['dHA7DF7XKP0ICOXT'].IdentifiableSet;
+  var CONF = __LIBS__['pSBVX21YL9P_VZPH'];
+  var models = __LIBS__['NM6ATD7K23IEJ978'];
+  var util = __LIBS__['dAULTNACV_R9FA5K'];
+  var viewobjects = __LIBS__['qOMQJEE9BA_P0J4Y'];
+  var IdentifiableSet = __LIBS__['oIXONSIZA6E355QO'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['dXETPYOO6MC5S1Q_'];
+    I18n.translations = __LIBS__['y0U4_P13X00KERMP'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -1616,7 +1616,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
           case 'refresh':
             // Load metadata
             $.ajax({
-              url: aux.dataSource.metadata + '&loaded_at=' + aux.loaded_at,
+              url: aux.dataSource.metadata + '&loaded_at=' + (aux.loaded_at || ''),
               dataType: 'json',
               success: function(data) {
                 aux.loaded_at = Math.ceil((new Date).getTime() / 1000);

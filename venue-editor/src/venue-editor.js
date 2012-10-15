@@ -688,7 +688,7 @@
           case 'refresh':
             // Load metadata
             $.ajax({
-              url: aux.dataSource.metadata + '&loaded_at=' + aux.loaded_at,
+              url: aux.dataSource.metadata + '&loaded_at=' + (aux.loaded_at || ''),
               dataType: 'json',
               success: function(data) {
                 aux.loaded_at = Math.ceil((new Date).getTime() / 1000);
