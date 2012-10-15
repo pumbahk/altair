@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 
 import json
+import re
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound
 from ticketing.qr import get_qrdata_builder
@@ -69,6 +70,7 @@ def qrapp_view(context, request):
              request_param="qrsigned", xhr=True)
 def ticketdata_from_qrsigned_string(context, request):
     signed = request.params["qrsigned"]
+    signed = re.sub(r"[\x01-\x1F\x7F]", "", signed.encode("utf-8")) .decode("utf-8")    
     builder = get_qrdata_builder(request)
     event_id = request.matchdict["event_id"]
     try:

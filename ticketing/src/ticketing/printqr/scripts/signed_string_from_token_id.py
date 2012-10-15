@@ -28,7 +28,8 @@ def qr_from_history(config, history):
         params["seat"] = ""
         params["seat_name"] = "" #TicketPrintHistoryはtokenが違えば違うのでuniqueなはず
     builder = ticketing.qr.get_qrdata_builder(config)
-    return builder.sign(builder.make(params))
+    signed = builder.sign(builder.make(params))
+    return signed
 
 def signed_seed(config, token_id):
     history = TicketPrintHistory.query.filter_by(item_token_id=token_id).first()
