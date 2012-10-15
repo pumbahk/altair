@@ -1,9 +1,17 @@
 import logging
+import fluent.handler
 from pyramid.threadlocal import get_current_request
 
-class BrowserIdHandler(logging.StreamHandler):
+class BrowserIdStreamHandler(logging.StreamHandler):
     def __init__(self, *args, **kwargs):
-        super(BrowserIdHandler, self).__init__(*args, **kwargs)
+        super(BrowserIdStreamHandler, self).__init__(*args, **kwargs)
+        self.addFilter(BrowserIdFilter())
+
+BrowserIdHandler = BrowserIdStreamHandler
+
+class BrowserIdFluentHandler(fluent.handler.FluentHandler):
+    def __init__(self, *args, **kwargs):
+        super(BrowserIdFluentHandler, self).__init__(*args, **kwargs)
         self.addFilter(BrowserIdFilter())
 
 class BrowserIdFilter(logging.Filter):
