@@ -31,7 +31,8 @@ requires = [
     'pyramid_who',
     'altair-commons',
     'uamobile', 
-    'tableau'
+    'tableau',
+    'fluent-logger == 0.3.3moriyoshi',
     ]
 
 solr_require = [
@@ -84,7 +85,10 @@ setup(name='altair-cms',
       zip_safe=False,
       test_suite='altaircms',
       install_requires = requires,
-      dependency_links = ['file:../commons#egg=altair-commons-0.0'], 
+      dependency_links = [
+        'file:../commons#egg=altair-commons-0.0',
+        'https://github.com/moriyoshi/fluent-logger-python/tarball/0.3.3moriyoshi#egg=fluent-logger-0.3.3moriyoshi',
+        ],
       tests_require=tests_require,
       extras_require=extras_require,
       entry_points = """\
