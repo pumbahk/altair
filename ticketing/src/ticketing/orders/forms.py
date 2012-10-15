@@ -186,7 +186,7 @@ class OrderReserveForm(Form):
             for p in products:
                 if p.sales_segment.start_at <= now and p.sales_segment.end_at >= now:
                     self.products.choices += [
-                        (p.id, u'%s (%s円) %s' % (p.name, locale.format('%d', p.price, True), p.sales_segment.name))
+                        (p.id, dict(name=p.name, sales_segment=p.sales_segment.name, price=p.price))
                     ]
 
     def _get_translations(self):

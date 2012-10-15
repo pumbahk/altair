@@ -45,17 +45,53 @@
         </div>
 
         % if form.products.choices:
+        <script type="text/javascript">
+          $(function() {
+            var product_quantity = [];
+            % for product in form.products.choices:
+              var el = 'input[name="product_quantity-${product[0]}"]';
+              product_quantity.push(el);
+              $(el).data('price', ${product[1]['price']});
+            % endfor
+            product_quantity = $(product_quantity.join(','));
+
+            product_quantity.focusout(function(){
+              var total_price = 0;
+              var total_quantity = 0;
+              product_quantity.each(function () {
+                var price = $(this).data('price');
+                var quantity = parseInt($(this).val());
+                quantity = (isNaN(quantity) || quantity < 0) ? 0 : quantity;
+                total_price += price * quantity;
+                total_quantity += quantity;
+              });
+
+              total_price = String(total_price);
+              while(total_price != (total_price = total_price.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
+
+              $('span[name="total-price"]').text(total_price + '円');
+              $('span[name="total-quantity"]').text(total_quantity);
+            });
+          });
+        </script>
         <table class="table table-striped table-bordered">
           <tr>
             <th>商品</th>
+            <th>単価</th>
             <th style="width: 80px;">個数</th>
           </tr>
           % for product in form.products.choices:
           <tr>
-            <td>${product[1]}</td>
+            <td>${product[1]['name']} (${product[1]['sales_segment']})</td>
+            <td>${h.price_format(product[1]['price'])}円</td>
             <td><input id="product_quantity-${product[0]}" name="product_quantity-${product[0]}" type="text" value=""></td>
           </tr>
           % endfor
+          <tr>
+            <td>合計</td>
+            <td><span name="total-price"></span></td>
+            <td><span name="total-quantity"></span></td>
+          </tr>
         </table>
         % endif
 
