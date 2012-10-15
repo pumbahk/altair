@@ -2,6 +2,7 @@
 var DataStore = Backbone.Model.extend({
   defaults: {
     qrcode_status: "preload", 
+    auto_trigger: true, 
     qrcode: null,    
     canceled: false, 
 
@@ -221,7 +222,7 @@ var QRInputView = AppPageViewBase.extend({
         .replace("{1}", self.datastore.get("ordered_product_item_token_id"))
       $.post(self.apiResource["api.log"], {"log": message})
 
-      self._loadQRCodeInput(self.$qrcode.val());
+      self._loadQRCodeInput(self.$qrcode.val(), false);
     }).fail(function(s, msg){self.messageView.error(s.responseText)});
   }, 
   notifyMessageForCanceled: function(){
@@ -242,6 +243,7 @@ var QRInputView = AppPageViewBase.extend({
       .replace("{1}", this.datastore.get("ordered_product_item_token_id"))
     $.post(this.apiResource["api.log"], {"log": message})
 
+    this.datastore.set("auto_trigger", false);
     this.datastore.trigger("*qr.not.printed");
   }, 
   showStatus: function(){
@@ -267,13 +269,15 @@ var QRInputView = AppPageViewBase.extend({
       this.communicating = true;
       var self = this;
       var delayTime = 150;
-      this._loadQRCodeInput(qrsigned).always(function(){setTimeout(function(){self.communicating = false;}, delayTime)});
+      this._loadQRCodeInput(qrsigned, true).always(function(){setTimeout(function(){self.communicating = false;}, delayTime)});
     }
   }, 
-  _loadQRCodeInput: function(qrsigned){
+  _loadQRCodeInput: function(qrsigned,  auto_trigger){
     var url = this.apiResource["api.ticket.data"];
     var self = this;
     this.datastore.set("qrcode", qrsigned); //todo: using signal.
+    this.datastore.set("auto_trigger",  auto_trigger);
+
     return $.getJSON(url, {qrsigned: qrsigned})
       .done(function(data){
         if(data.status == "success"){
@@ -470,7 +474,6 @@ var AppletView = Backbone.View.extend({
     this.fetchPageFormatCandidates();
   }, 
   sendPrintSignalIfNeed: function(){
-    //if(this.datastore.get("printed") && this.datastore.get("qrcode_status") != "printed" && (!this.datastore.get("canceled"))){
     if(this.datastore.get("printed")){
       try {
         //alert("print!!");
@@ -572,7 +575,12 @@ var AppletView = Backbone.View.extend({
           self.appviews.messageView.error(e);
         }
       });
-      self.datastore.trigger("*qr.validate.preprint");
+      if(self.datastore.get("auto_trigger")){
+        self.datastore.trigger("*qr.validate.preprint");
+      }else{
+        var fmt = "キャンセル済みのチケットあるいはチケットは自動的に印刷しません。印刷するには、購入情報を確認した後、印刷ボタンを押してください";
+        self.appviews.messageView.alert(fmt);
+      }
     }).fail(function(s, msg){self.appviews.messageView.alert(s.responseText)});
   }, 
   fetchPinterCandidates: function(){
