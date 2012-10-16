@@ -676,13 +676,34 @@ class PaymentView(object):
             #user=user, user_profile=user.user_profile,
             )
 
+    def get_validated_address_data(self):
+        """フォームから ShippingAddress などの値を取りたいときはこれで"""
+        form = self.form
+        if form.validate():
+            return dict(
+                first_name=form.data['first_name'],
+                last_name=form.data['last_name'],
+                first_name_kana=form.data['first_name_kana'],
+                last_name_kana=form.data['last_name_kana'],
+                zip=form.data['zip'],
+                prefecture=form.data['prefecture'],
+                city=form.data['city'],
+                address_1=form.data['address_1'],
+                address_2=form.data['address_2'],
+                country=u"日本国",
+                email=form.data['mail_address'],
+                tel_1=form.data['tel'],
+                tel_2=None,
+                fax=form.data['fax']
+                )
+        else:
+            return None
+
     @view_config(route_name='cart.payment', request_method="POST", renderer=selectable_renderer("carts/%(membership)s/payment.html"))
     @view_config(route_name='cart.payment', request_type='.interfaces.IMobileRequest', request_method="POST", renderer=selectable_renderer("carts_mobile/%(membership)s/payment.html"))
     def post(self):
         """ 支払い方法、引き取り方法選択
         """
-
-        params = self.request.params
         if not api.has_cart(self.request):
             raise NoCartError()
         cart = api.get_cart(self.request)
@@ -691,22 +712,23 @@ class PaymentView(object):
 
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id', 0)
         payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter_by(id=payment_delivery_method_pair_id).first()
-        form = schemas.ClientForm(formdata=params)
-        form.validate()
 
-        if not payment_delivery_pair or form.errors:
+        self.form = schemas.ClientForm(formdata=self.request.params)
+        shipping_address_params = self.get_validated_address_data()
+
+        if not payment_delivery_pair or shipping_address_params is None:
             if not payment_delivery_pair:
                 self.request.session.flash(u"お支払い方法／受け取り方法をどれかひとつお選びください")
                 logger.debug("invalid : %s" % 'payment_delivery_method_pair_id')
             else:
-                logger.debug("invalid : %s" % form.errors)
+                logger.debug("invalid : %s" % self.form.errors)
 
             self.context.event_id = cart.performance.event.id
 
             start_on = cart.performance.start_on
             payment_delivery_methods = self.context.get_payment_delivery_method_pair(start_on=start_on)
 
-            return dict(form=form,
+            return dict(form=self.form,
                 payment_delivery_methods=payment_delivery_methods,
                 #user=user, user_profile=user.user_profile,
                 )
@@ -714,7 +736,7 @@ class PaymentView(object):
         cart.payment_delivery_pair = payment_delivery_pair
         cart.system_fee = payment_delivery_pair.system_fee
 
-        shipping_address = self.create_shipping_address(user, form.data)
+        shipping_address = self.create_shipping_address(user, shipping_address_params)
 
         DBSession.add(shipping_address)
         cart.shipping_address = shipping_address
@@ -747,7 +769,8 @@ class PaymentView(object):
         return self.request.params['last_name'] + self.request.params['first_name']
 
     def create_shipping_address(self, user, data):
-        shipping_address = c_models.ShippingAddress(
+        logger.debug('shipping_address=%r', data)
+        return c_models.ShippingAddress(
             first_name=data['first_name'],
             last_name=data['last_name'],
             first_name_kana=data['first_name_kana'],
@@ -757,16 +780,13 @@ class PaymentView(object):
             city=data['city'],
             address_1=data['address_1'],
             address_2=data['address_2'],
-            #country=data['country'],
-            country=u"日本国",
-            tel_1=data['tel'],
-            #tel_2=data['tel_2'],
+            country=data['country'],
+            email=data['email'],
+            tel_1=data['tel_1'],
+            tel_2=data['tel_2'],
             fax=data['fax'],
-            user=user,
-            email=data['mail_address']
+            user=user
         )
-        return shipping_address
-
 
 class ConfirmView(object):
     """ 決済確認画面 """
