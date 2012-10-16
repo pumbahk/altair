@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!--
      Creator: site-builder 20121002
-     Create Time: 2012/10/10 13:44:56
+     Create Time: 2012/10/10 13:44:56 + 2012/10/16
      Create User: taku@PAIRXPVM
 -->
 
@@ -10615,13 +10615,13 @@
      y="114.70312"
      text-anchor="left"
      style="fill:#000000;stroke:none"
-     id="text1649">コートサイドA 2列</text>
+     id="text1649">コートサイドA列</text>
   <text
      x="242.5"
      y="138.70312"
      text-anchor="left"
      style="fill:#000000;stroke:none"
-     id="text1651">コートサイドS 1列</text>
+     id="text1651">コートサイドS列</text>
   <text
      x="163.75"
      y="150.70312"
