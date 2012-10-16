@@ -5,7 +5,7 @@
 <script type="text/javascript">
   function delete_membership(baseurl) {
     var modal = $('#modal-delete');
-    modal.find('#message').text('このmembergroupを削除します。よろしいですか？');
+    modal.find('#message').text('この会員種別を削除します。よろしいですか？');
     modal.find("#delete").click(function(){
       $("#delet_form form").append($("<input type='hidden'>").attr("name", "membership_id").attr("value", "${membergroup.membership_id}"));
       $("#delete_form").attr("action", "${request.route_path("membergroups", action="delete", membergroup_id=membergroup.id)}").submit();
@@ -27,7 +27,7 @@
 </%doc>
 
 <div class="page-header">
-  <h3>membergroup詳細</h3>
+  <h3>会員種別詳細</h3>
 </div>
 
 <div class="content">
