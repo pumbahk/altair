@@ -10,7 +10,7 @@ import sqlahelper
 session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
 
-class User(Base, WithTimestamp):
+class User(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     __tablename__ = 'User'
     query = session.query_property()
     id = Column(Identifier, primary_key=True)
@@ -28,7 +28,7 @@ class User(Base, WithTimestamp):
         ## 実態としては、user: user_credentialは1:1だけれど、すでに[0]で取得しているコードなどが存在するので
         return self.user_credential[0]
 
-class Member(Base, WithTimestamp, LogicallyDeleted):
+class Member(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     __tablename__ = 'Member'
     query = session.query_property()
     id = Column(Identifier, primary_key=True)
@@ -49,7 +49,7 @@ class SexEnum(StandardEnum):
     Female = 2
     NoAnswer = 0
 
-class UserProfile(Base, BaseModel, WithTimestamp):
+class UserProfile(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     __tablename__ = 'UserProfile'
     query = session.query_property()
     id = Column(Identifier, primary_key=True)
@@ -81,7 +81,7 @@ class UserProfile(Base, BaseModel, WithTimestamp):
     def full_name(self):
         return u"%s %s" % (self.last_name, self.firstname)
 
-class UserCredential(Base, WithTimestamp):
+class UserCredential(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     __tablename__ = 'UserCredential'
     query = session.query_property()
     id = Column(Identifier, primary_key=True)
@@ -190,7 +190,7 @@ class MailMagazine(Base, WithTimestamp):
         if subscription:
             session.delete(subscription)
 
-class MailSubscription(Base, WithTimestamp):
+class MailSubscription(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     __tablename__ = 'MailSubscription'
     __table_args__ = (
         Index('email_segment_idx', 'email', 'segment_id', unique=True),
@@ -205,7 +205,7 @@ class MailSubscription(Base, WithTimestamp):
 
     status = Column(Integer)
 
-class Membership(Base, WithTimestamp):
+class Membership(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     '''
       Membership ex) Rakuten Fanclub ....
     '''
@@ -227,7 +227,7 @@ MemberGroup_SalesSegment = Table('MemberGroup_SalesSegment', Base.metadata,
     UniqueConstraint('membergroup_id', 'sales_segment_id'),
 )
 
-class MemberGroup(Base, WithTimestamp):
+class MemberGroup(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     __tablename__ = 'MemberGroup'
     query = session.query_property()
     id = Column(Identifier, primary_key=True)
