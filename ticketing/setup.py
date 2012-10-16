@@ -70,6 +70,7 @@ requires = [
     'beaker-extensions >= 0.2.0pre2',
     'boto',
     'fluent-logger == 0.3.3moriyoshi',
+    'PIL', # for qrcode.image.pil
     ]
 
 setup(name='ticketing',
