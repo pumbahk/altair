@@ -205,7 +205,7 @@ class Orders(BaseView):
     def checked_orders_index(self):
         """後でindexと合成。これはチェックされたOrderだけを表示するview
         """
-        if not self.request.session["orders"]:
+        if not self.request.session.get("orders"):
             return HTTPFound(self.request.route_url("orders.index"))
 
         organization_id = int(self.context.user.organization_id)
