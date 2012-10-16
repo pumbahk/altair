@@ -20,7 +20,7 @@ requires = [
     'oauth2',
     "solrpy", 
     "WTForms",
-    "js.jquery", 
+    "js.jquery == 1.7.1", 
     "js.bootstrap==2.1.1", 
     "js.json2", 
     "js.jqueryui", 
