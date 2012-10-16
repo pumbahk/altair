@@ -167,6 +167,32 @@ class TicketingCartResource(object):
         sales_segments = q.all()
         return sales_segments
 
+    def get_next_sales_segment(self):
+        """ 該当イベントの次回SalesSegment取得
+        """
+
+
+        now = datetime.now()
+        q = c_models.SalesSegment.query
+        q = q.filter(c_models.SalesSegment.public==1)
+        q = q.filter(c_models.SalesSegment.event_id==self.event_id)
+        q = q.filter(c_models.SalesSegment.start_at>=now)
+
+        user = self.authenticated_user()
+        if user and 'membership' in user:
+            q = q.filter(
+                c_models.SalesSegment.id==u_models.MemberGroup_SalesSegment.c.sales_segment_id
+            ).filter(
+                u_models.MemberGroup_SalesSegment.c.membergroup_id==u_models.MemberGroup.id
+            ).filter(
+                u_models.MemberGroup.name==user['membergroup']
+            )
+
+        sales_segment = q.first()
+
+
+        return sales_segment
+
     def get_sales_segment(self):
         """ 該当イベントのSalesSegment取得
         """

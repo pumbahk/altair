@@ -96,10 +96,13 @@ class IndexView(object):
 
         sales_counter_sales_segment = self.context.sales_counter_sales_segment
         if normal_sales_segment is None:
+            next_sales_segment = self.context.get_next_sales_segment()
+            if next_sales_segment:
+                raise OutTermSalesException(event, next_sales_segment)
+
             logger.debug("No matching sales_segment")
             raise NoSalesSegment("No matching sales_segment")
-        if not normal_sales_segment.in_term(now):
-            raise OutTermSalesException(event, normal_sales_segment)
+        
 
         from .api import get_event_info_from_cms
         event_extra_info = get_event_info_from_cms(self.request, event_id)
