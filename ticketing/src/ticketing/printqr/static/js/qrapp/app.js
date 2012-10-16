@@ -256,6 +256,9 @@ var QRInputView = AppPageViewBase.extend({
     // if Enter key is typed then call `loadQRCodeInput'
     if (e.keyCode == 13 || (e.ctrlKey && e.keyCode == 74 /* CTRL-J */)) {
       this.loadQRCodeInput();
+    } else if ((e.ctrlKey || e.metaKey) && e.keyCode == 86) {
+      // CTRL-V or META-V
+      return true;
     } else if (e.keyCode == 8) {
       this.$qrcode[0].value = '';
     } else {
