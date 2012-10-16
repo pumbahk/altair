@@ -7,7 +7,8 @@
     var modal = $('#modal-delete');
     modal.find('#message').text('この会員種別を削除します。よろしいですか？');
     modal.find("#delete").click(function(){
-      $("#delet_form form").append($("<input type='hidden'>").attr("name", "membership_id").attr("value", "${membergroup.membership_id}"));
+      $("#delet form").append($("<input type='hidden'>").attr("name", "membership_id").attr("value", "${membergroup.membership_id}"));
+      $("#delet form").append($("<input type='hidden'>").attr("name", "redirect_to").attr("value", "${request.route_path("memberships",action="show", membership_id="membergroup.membership_id")}"));
       $("#delete_form").attr("action", "${request.route_path("membergroups", action="delete", membergroup_id=membergroup.id)}").submit();
       return false;
     })
@@ -15,6 +16,9 @@
   };
   $(function(){  $("#delete_link").click(delete_membership);  })
 </script>
+
+<form id="delete_form" method="POST">
+</form>
 
 <%doc>
 ## breadcrumbs are not supported yet
