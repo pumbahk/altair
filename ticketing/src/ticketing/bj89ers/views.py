@@ -99,31 +99,24 @@ class IndexView(object):
         return HTTPFound(location=self.request.route_url("cart.payment", sales_segment_id=sales_segment_id))
 
 class PaymentView(_PaymentView):
-    def validate(self, payment_delivery_pair):
-        return None
-
-    def create_shipping_address(self, user):
-        params = load_user_profile(self.request)
-        logger.debug('user_profile %s' % params)
-        shipping_address = c_models.ShippingAddress(
-            first_name=params['first_name'],
-            last_name=params['last_name'],
-            first_name_kana=params['first_name_kana'],
-            last_name_kana=params['last_name_kana'],
-            zip=params['zipcode1'] + params['zipcode2'],
-            prefecture=params['prefecture'],
-            city=params['city'],
-            address_1=params['address1'],
-            address_2=params['address2'],
-            email=params['email'],
-            #country=params['country'],
-            #country=u"日本国",
-            tel_1=params['tel_1'],
-            tel_2=params['tel_2'],
-            #fax=params['fax'],
-            user=None,
-        )
-        return shipping_address
+    def get_validated_address_data(self):
+        address_data = load_user_profile(self.request)
+        return dict(
+            first_name=address_data['first_name'],
+            last_name=address_data['last_name'],
+            first_name_kana=address_data['first_name_kana'],
+            last_name_kana=address_data['last_name_kana'],
+            zip=address_data['zipcode1'] + address_data['zipcode2'],
+            prefecture=address_data['prefecture'],
+            city=address_data['city'],
+            address_1=address_data['address1'],
+            address_2=address_data['address2'],
+            email=address_data['email'],
+            country=u"日本国",
+            tel_1=address_data['tel_1'],
+            tel_2=address_data['tel_2'],
+            fax=None
+            )
 
     def get_client_name(self):
         user_profile = load_user_profile(self.request)
