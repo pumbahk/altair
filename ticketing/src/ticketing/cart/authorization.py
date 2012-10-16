@@ -31,7 +31,6 @@ class MembershipAuthorizationPolicy(object):
 
         if permission == "buy":
             logger.debug('authorize for buy %s' % (principals,))
-            sales_segments = context.sales_segments
 
             event = api.get_event(request)
             if not event:

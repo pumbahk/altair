@@ -165,8 +165,6 @@ class TicketingCartResource(object):
                 u_models.MemberGroup.name==user['membergroup']
             )
         sales_segments = q.all()
-        if not sales_segments:
-            raise Exception, "query = %s, user=%s" % (q, user)
         return sales_segments
 
     def get_sales_segment(self):
