@@ -1,23 +1,18 @@
 # -*- coding:utf-8 -*-
 import logging
 import sqlahelper
-import sqlalchemy.orm as orm
-from pyramid.view import view_config, render_view_to_response
-from ticketing.core.models import Order, OrderedProduct, OrderedProductItem, ProductItem, Performance, Seat, TicketPrintHistory
-from ticketing.users.models import User
+from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPNotFound
-from sqlalchemy.orm.exc import NoResultFound
-from pyramid.response import Response
-import StringIO
-import qrcode
 from ticketing.cart.selectable_renderer import selectable_renderer
+from ticketing.qr.image import qrdata_as_image_response
 from . import schemas
 from . import api
 from ticketing.mobile import mobile_view_config
-from ticketing.core.models import OrderedProductItemToken
 from ticketing.core.utils import IssuedAtBubblingSetter
 from datetime import datetime
-from ticketing.qr import get_qrdata_builder
+
+from ticketing.qr.utils import build_qr_by_history_id
+from ticketing.qr.utils import build_qr_by_token_id
 
 logger = logging.getLogger(__name__)
 
@@ -79,74 +74,13 @@ def notfound_view(context, request):
 def contact_view(context, request):
     return dict()
 
-
-def build_qr_by_order_seat(request, order_no, token_id):
-    token = OrderedProductItemToken.filter(OrderedProductItemToken.id==token_id)\
-        .filter(OrderedProductItemToken.ordered_product_item_id==OrderedProductItem.id)\
-        .filter(OrderedProductItem.ordered_product_id == OrderedProduct.id)\
-        .filter(OrderedProduct.order_id == Order.id)\
-        .filter(Order.order_no == order_no).first()
-
-    if token is None:
-        raise HTTPNotFound()
-
-    # ここでinsertする
-    history = TicketPrintHistory.filter(TicketPrintHistory.item_token_id==token_id)\
-        .filter(TicketPrintHistory.ordered_product_item_id==OrderedProductItem.id)\
-        .filter(OrderedProductItem.ordered_product_id == OrderedProduct.id)\
-        .filter(OrderedProduct.order_id == Order.id)\
-        .filter(Order.order_no == order_no).first()
-
-    if history is None:
-        history = TicketPrintHistory(
-            seat_id=token.seat_id, 
-            item_token_id=token.id, 
-            ordered_product_item_id=token.ordered_product_item_id)
-        DBSession.add(history)
-        DBSession.flush()
-    
-    return build_qr(request, history.id)
-
-def build_qr(request, ticket_id):
-    ticket = None
-    
-    try:
-        ticket = TicketPrintHistory\
-        .filter_by(id = ticket_id)\
-        .one()
-    except NoResultFound, e:
-        return None
-    
-    ticket.seat = ticket.seat
-    ticket.performance = ticket.ordered_product_item.product_item.performance
-    ticket.event = ticket.performance.event
-    ticket.product = ticket.ordered_product_item.ordered_product.product
-    ticket.order = ticket.ordered_product_item.ordered_product.order
-    ticket.item_token = ticket.item_token
-
-    params = dict(serial=("%d" % ticket.id),
-                  performance=ticket.performance.code,
-                  order=ticket.order.order_no,
-                  date=ticket.performance.start_on.strftime("%Y%m%d"),
-                  type=ticket.product.id)
-    if ticket.seat:
-        params["seat"] =ticket.seat.l0_id
-        params["seat_name"] = ticket.seat.name
-    else:
-        params["seat"] = ""
-        params["seat_name"] = "" #TicketPrintHistoryはtokenが違えば違うのでuniqueなはず
-    builder = get_qrdata_builder(request)
-    ticket.qr = builder.sign(builder.make(params))
-    ticket.sign = ticket.qr[0:8]
-    return ticket
-
 @mobile_view_config(route_name='order_review.qr_confirm', renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/qr_confirm.html"))
 @view_config(route_name='order_review.qr_confirm', renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/qr_confirm.html"))
 def order_review_qr_confirm(context, request):
     ticket_id = int(request.matchdict.get('ticket_id', 0))
     sign = request.matchdict.get('sign', 0)
     
-    ticket = build_qr(request, ticket_id)
+    ticket = build_qr_by_history_id(request, ticket_id)
     
     if ticket == None or ticket.sign != sign:
         raise HTTPNotFound()
@@ -164,7 +98,7 @@ def order_review_qr_html(context, request):
     ticket_id = int(request.matchdict.get('ticket_id', 0))
     sign = request.matchdict.get('sign', 0)
     
-    ticket = build_qr(request, ticket_id)
+    ticket = build_qr_by_history_id(request, ticket_id)
     
     if ticket == None or ticket.sign != sign:
         raise HTTPNotFound()
@@ -178,35 +112,21 @@ def order_review_qr_html(context, request):
         product = ticket.product,
     )
 
-    
 @view_config(route_name='order_review.qrdraw', xhr=False, permission="view")
 def order_review_qr_image(context, request):
     ticket_id = int(request.matchdict.get('ticket_id', 0))
     sign = request.matchdict.get('sign', 0)
     
-    ticket = build_qr(request, ticket_id)
+    ticket = build_qr_by_history_id(request, ticket_id)
     
     if ticket == None or ticket.sign != sign:
         raise HTTPNotFound()
-    
-    qr = qrcode.QRCode(
-        version=None,
-        error_correction=qrcode.constants.ERROR_CORRECT_H,
-        box_size=10,
-        )
-    qr.add_data(ticket.qr)
-    qr.make(fit=True)
-    img = qr.make_image()
-    r = Response(status=200, content_type="image/png")
-    buf = StringIO.StringIO()
-    img.save(buf, 'PNG')
-    r.body = buf.getvalue()
-    return r
+    return qrdata_as_image_response(ticket)
 
 @mobile_view_config(route_name='order_review.qr_print', request_method='POST', renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/qr.html"))
 @view_config(route_name='order_review.qr_print', request_method='POST', renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/qr.html"))
 def order_review_qr_print(context, request):
-    ticket = build_qr_by_order_seat(request, request.params['order_no'], request.params['token'])
+    ticket = build_qr_by_token_id(request, request.params['order_no'], request.params['token'])
     
     issued_setter = IssuedAtBubblingSetter(datetime.now())
     issued_setter.issued_token(ticket.item_token)
@@ -256,7 +176,7 @@ def order_review_send_mail(context, request):
 @view_config(name="render.mail", 
              renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/qr.txt"))
 def render_qrmail_viewlet(context, request):
-    ticket = build_qr_by_order_seat(request, request.params['order_no'], request.params['token'])
+    ticket = build_qr_by_token_id(request, request.params['order_no'], request.params['token'])
     sign = ticket.qr[0:8]
     if ticket.order.shipping_address:
         name = ticket.order.shipping_address.last_name + ticket.order.shipping_address.first_name

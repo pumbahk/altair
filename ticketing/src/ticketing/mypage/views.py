@@ -9,7 +9,7 @@ from ticketing.core import models as m
 from ticketing.cart.rakuten_auth.api import authenticated_user, forget
 from ticketing.cart import api
 from .helpers import make_order_data
-from ticketing.orderreview.views import build_qr_by_order_seat, order_review_qr_image
+from ticketing.orderreview.views import build_qr_by_token_id, order_review_qr_image
 
 import webhelpers.paginate as paginate
 import ticketing.cart.plugins.qr
@@ -130,7 +130,7 @@ class MyPageView(object):
         openid = authenticated_user(self.request)
         user = api.get_or_create_user(self.request, openid['clamed_id'])
         
-        ticket = build_qr_by_order_seat(self.request.params['order_no'], self.request.params['seat'])
+        ticket = build_qr_by_token_id(self.request.params['order_no'], self.request.params['seat'])
         
         return dict(
             sign = ticket.qr[0:8],

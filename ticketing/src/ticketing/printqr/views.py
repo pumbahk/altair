@@ -24,8 +24,11 @@ from ticketing.core.models import Ticket
 from ticketing.core.utils import PrintedAtBubblingSetter
 from datetime import datetime
 
-## login
+from ticketing.qr.utils import get_matched_token_query_from_order_no
+from ticketing.qr.utils import get_or_create_matched_history_from_token
+from ticketing.qr.utils import make_data_for_qr
 
+## login
 @view_config(route_name="login", request_method="GET", renderer="ticketing.printqr:templates/login.html")
 def login_view(request):
     logger.debug("login")
@@ -48,10 +51,51 @@ def logout_view(request):
     return HTTPFound(location=request.route_url("login"), headers=headers)
 
 
+## misc
+@view_config(permission="sales_counter", route_name="misc.order.qr", 
+             request_method="GET", 
+             renderer="ticketing.printqr:templates/misc/orderqr.input.html")
+def orderno_input(context, request):
+    form = forms.MiscOrderFindForm()
+    return {"form": form}
+
+@view_config(permission="sales_counter", route_name="misc.order.qr", 
+             request_method="POST", 
+             renderer="ticketing.printqr:templates/misc/orderqr.input.html")
+def orderno_show_qrsigned(context, request):
+    form = forms.MiscOrderFindForm(request.POST)
+    organization_id = context.operator.organization_id
+    if not form.validate() or not form.object_validate(organization_id):
+        return {"form": form}
+    
+    ## boo
+    try:
+        return orderno_show_qrsigned_after_validated(context, request, form)
+    except Exception, e:
+        import traceback
+        traceback.print_exc()
+        raise
+
+def _signed_string_from_history(builder, history):
+    params = make_data_for_qr(history)
+    return builder.sign(builder.make(params))
+
+def orderno_show_qrsigned_after_validated(context, request, form):
+    request.override_renderer = "ticketing.printqr:templates/misc/orderqr.show.html"
+    order = form.order
+    order_no = order.order_no
+
+    tokens = get_matched_token_query_from_order_no(order_no)
+    histories = (get_or_create_matched_history_from_token(order_no, tk) for tk in tokens)
+    builder = get_qrdata_builder(request)
+
+    signed_history_doubles = sorted([(_signed_string_from_history(builder, h), h) for h in histories], key=lambda xs : xs[1].id)
+    return {"signed_history_doubles": signed_history_doubles, "order": order}
+    
 ## event list
 
 @view_config(permission="sales_counter", route_name="eventlist", 
-                      renderer="ticketing.printqr:templates/eventlist.html")
+             renderer="ticketing.printqr:templates/eventlist.html")
 def choice_event_view(context, request):
     now = datetime.now()
     events = Event.query.filter_by(organization_id=context.operator.organization_id)

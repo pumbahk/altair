@@ -1,0 +1,55 @@
+<%inherit file="/base.html"/>
+<style type="text/css">
+#wrapper{
+  margin-top: 100px; 
+}
+body {
+  font: 17px "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+</style>
+
+<div id="wrapper" class="container">
+  ${request.context.organization.name}  担当:${request.context.operator.name}
+  <div id="message_box">
+    <div id="alert_message" class="hide alert"></div>
+    <div id="info_message" class="hide alert alert-info"></div>
+    <div id="error_message" class="hide alert alert-error"></div>
+    <div id="success_message" class="hide alert alert-success"></div>
+  </div>
+  <h1>QR署名付き文字一覧表示</h1>  
+
+  <ul>
+    <li>公演：${order.performance.event.title} -- ${order.performance.name}</li>
+    <li>注文番号: ${order.order_no}</li>
+    <li>購入者: ${order.shipping_address.full_name_kana if order.shipping_address else u"-"}</li>
+    <li>ステータス:${order.status}</li>
+  </ul>
+  
+  <hr/>
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>発券番号</th>
+        <th>購入した商品</th>
+        <th width="200px">受け取り日時/印刷日時</th>
+        <th>署名付き文字列</th>
+      </tr>
+    </thead>
+    <tbody>
+      %for signed,history in signed_history_doubles:
+        <tr>
+          <td>${history.id}</td>
+          <td>${history.ordered_product_item.ordered_product.product.name} (${history.seat.name if history.seat else ""})</td>
+          <td>
+            <ul>
+              <li>${history.item_token.issued_at or u"未受け取り"}</li>
+              <li>${history.item_token.printed_at or u"未印刷"}</li>
+            </ul>
+          </td>
+          <td>${signed}</td>
+        </tr>
+      %endfor
+    </tbody>
+  </table>
+</div>
