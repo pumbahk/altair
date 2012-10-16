@@ -144,14 +144,13 @@ def completion_viewlet(context, request):
     """
     return dict()
 
-@view_config(context=ICompleteMailPayment, name="payment-%d" % PAYMENT_ID)
-             # renderer="ticketing.cart.plugins:templates/card_payment_mail_complete.html")
+@view_config(context=ICompleteMailPayment, name="payment-%d" % PAYMENT_ID, renderer="ticketing.cart.plugins:templates/card_mail_complete.html")
 def completion_payment_mail_viewlet(context, request):
     """ 完了メール表示
     :param context: ICompleteMailPayment
     """
     notice=context.mail_data("notice")
-    return Response(notice)
+    return dict(notice=notice)
 
 @view_config(context=IOrderCancelMailPayment, name="payment-%d" % PAYMENT_ID)
 def cancel_payment_mail_viewlet(context, request):

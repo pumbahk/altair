@@ -59,7 +59,7 @@ class ReservedNumberDeliveryPlugin(object):
         m.DBSession.add(reserved_number)
         logger.debug("引き換え番号: %s" % reserved_number.number)
 
-@view_config(context=ICompleteMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
+@view_config(context=ICompleteMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer="ticketing.cart.plugins:templates/reserved_number_payment_mail_complete.html")
 @view_config(context=ICompleteMailDelivery, name="delivery-%d" % PLUGIN_ID, renderer="ticketing.cart.plugins:templates/reserved_number_mail_complete.html")
 def completion_delivery_mail_viewlet(context, request):
     """ 完了メール表示

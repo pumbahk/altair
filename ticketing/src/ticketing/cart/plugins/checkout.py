@@ -48,10 +48,13 @@ def completion_viewlet(context, request):
     """
     return Response(text=u"楽天あんしん決済")
 
-@view_config(context=IOrderCancelMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
-@view_config(context=ICompleteMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
-             # renderer="ticketing.cart.plugins:templates/card_payment_mail_complete.html")
+@view_config(context=ICompleteMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer="ticketing.cart.plugins:templates/checkout_mail_complete.html")
 def payment_mail_viewlet(context, request):
+    notice=context.mail_data("notice")
+    return dict(notice=notice)
+
+@view_config(context=IOrderCancelMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
+def cancel_mail_viewlet(context, request):
     return Response(context.mail_data("notice"))
 
 class CheckoutView(object):
