@@ -77,6 +77,8 @@ from ticketing.printqr.scripts.signed_string_from_token_id import qr_from_histor
 import sqlalchemy.orm as orm
 from collections import defaultdict
 import itertools
+from ticketing.qr.utils import build_qr_by_token_id
+
 def orderno_show_qrsigned_after_validated(context, request, form):
     request.override_renderer = "ticketing.printqr:templates/misc/orderqr.show.html"
     order = form.order
