@@ -1965,7 +1965,7 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             logger.info('trying to release seat (id=%d)' % seat_status.seat_id)
             if seat_status.status not in cancellable_status:
                 logger.info('not releasing OrderedProductItem (id=%d, seat_id=%d, status=%d) for safety' % (self.id, seat_status.seat_id, seat_status.status))
-                raise InvalidStockStateError("This order is associated with a seat (id=%d, status=%d) that is not marked ordered" % seat_status.seat_id, seat_status.status)
+                raise InvalidStockStateError("This order is associated with a seat (id=%d, status=%d) that is not marked ordered" % (seat_status.seat_id, seat_status.status))
             else:
                 logger.info('setting status of seat (id=%d, status=%d) to Vacant (%d)' % (seat_status.seat_id, seat_status.status, int(SeatStatusEnum.Vacant)))
                 seat_status.status = int(SeatStatusEnum.Vacant)
