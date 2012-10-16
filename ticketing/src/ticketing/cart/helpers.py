@@ -23,10 +23,10 @@ def performance_date(performance):
     return u'{0.month}月{0.day}日 {0.hour:02}:{0.minute:02}'.format(s)
 
 def japanese_date(date):
-    return u"%d年%d月%d日(%s)" % (date.year, date.month, date.day, u"月火水木金土日"[date.weekday()])
+    return u"%d年%d月%02d日(%s)" % (date.year, date.month, date.day, u"月火水木金土日"[date.weekday()])
 
 def japanese_time(time):
-    return u"%d時%d分" % (time.hour, time.minute)
+    return u"%d時%02d分" % (time.hour, time.minute)
 
 def japanese_datetime(dt):
     try:
@@ -36,7 +36,7 @@ def japanese_datetime(dt):
         return ""
 
 def mail_date(date):
-    return u'{d.year}年 {d.month}月 {d.day}日 {d.hour}時 {d.minute}分'.format(d=date)
+    return u'{d.year}年 {d.month}月 {d.day}日 {d.hour:02}時 {d.minute:02}分'.format(d=date)
 
 # TODO: requestをパラメータから排除
 def error_list(request, form, name):

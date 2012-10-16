@@ -5,7 +5,7 @@
 <script type="text/javascript">
   function delete_membership(id) {
     var modal = $('#modal-delete');
-    modal.find('#delete').attr('href', '/memberships/delete/' + id);
+    modal.find('#delete').attr('href', '${request.route_path('memberships', action="delete",membership_id="__id__")}'.replace("__id__", id));
     modal.find('#message').text('選択したMembershipを削除します。よろしいですか？');
     modal.modal('toggle');
   }
