@@ -24,6 +24,10 @@ from ticketing.core.models import Ticket
 from ticketing.core.utils import PrintedAtBubblingSetter
 from datetime import datetime
 
+from ticketing.qr.utils import get_matched_token_query_from_order_no
+from ticketing.qr.utils import get_or_create_matched_history_from_token
+from ticketing.qr.utils import make_data_for_qr
+
 ## login
 @view_config(route_name="login", request_method="GET", renderer="ticketing.printqr:templates/login.html")
 def login_view(request):
@@ -72,58 +76,20 @@ def orderno_show_qrsigned(context, request):
         traceback.print_exc()
         raise
 
-## todo:  refactoring
-from ticketing.printqr.scripts.signed_string_from_token_id import qr_from_history
-import sqlalchemy.orm as orm
-from collections import defaultdict
-import itertools
-from ticketing.qr.utils import build_qr_by_token_id
+def _signed_string_from_history(builder, history):
+    params = make_data_for_qr(history)
+    return builder.sign(builder.make(params))
 
 def orderno_show_qrsigned_after_validated(context, request, form):
     request.override_renderer = "ticketing.printqr:templates/misc/orderqr.show.html"
     order = form.order
     order_no = order.order_no
 
-    items = OrderedProductItem.query.filter(OrderedProductItem.ordered_product_id == OrderedProduct.id)\
-        .filter(OrderedProduct.order_id == Order.id)\
-        .filter(Order.order_no == order_no).all()
+    tokens = get_matched_token_query_from_order_no(order_no)
+    histories = (get_or_create_matched_history_from_token(order_no, tk) for tk in tokens)
+    builder = get_qrdata_builder(request)
 
-    histories = []
-    for item in items:
-        qs = TicketPrintHistory.query\
-            .filter(TicketPrintHistory.ordered_product_item_id == OrderedProductItemToken.ordered_product_item_id == item.id, OrderedProductItemToken.printed_at==None)\
-            .filter(OrderedProductItemToken.ordered_product_item_id==OrderedProductItem.id)\
-            .filter(OrderedProductItem.ordered_product_id == OrderedProduct.id)\
-            .filter(OrderedProduct.order_id == Order.id)\
-            .filter(Order.order_no == order_no)\
-            .options(orm.joinedload(TicketPrintHistory.ordered_product_item), 
-                     orm.joinedload(TicketPrintHistory.item_token), 
-                     orm.joinedload(TicketPrintHistory.seat))
-        histories = itertools.chain(histories, qs)
-
-    ## 最も古いHistoryがQR用 
-    ## 本当はQR用のPrintHistoryか見分けがつけるようにしたい
-    qr_history_dict = defaultdict(list)
-    for h in histories:
-        qr_history_dict[h.item_token_id].append(h)
-
-    qr_histories = []
-    ## min by欲しい
-    for k,  vs in qr_history_dict.items():
-        if k is None:
-            continue
-        m = vs[0]
-        mt = m.item_token
-        for v in vs[1:]:
-            vt = v.item_token
-            if vt is None:
-                logger.debug("history is None (token=%s)" % v.id)
-                continue
-            if vt.issued_at < mt.issued_at:
-                m = v
-                mt = vt
-        qr_histories.append(m)
-    signed_history_doubles = sorted([(qr_from_history(request, h), h) for h in qr_histories], key=lambda xs : xs[1].id)
+    signed_history_doubles = sorted([(_signed_string_from_history(builder, h), h) for h in histories], key=lambda xs : xs[1].id)
     return {"signed_history_doubles": signed_history_doubles, "order": order}
     
 ## event list
