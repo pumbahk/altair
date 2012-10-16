@@ -3,10 +3,8 @@ import logging
 import sqlahelper
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPNotFound
-from pyramid.response import Response
-import StringIO
-import qrcode
 from ticketing.cart.selectable_renderer import selectable_renderer
+from ticketing.qr.image import qrdata_as_image_response
 from . import schemas
 from . import api
 from ticketing.mobile import mobile_view_config
@@ -114,7 +112,6 @@ def order_review_qr_html(context, request):
         product = ticket.product,
     )
 
-    
 @view_config(route_name='order_review.qrdraw', xhr=False, permission="view")
 def order_review_qr_image(context, request):
     ticket_id = int(request.matchdict.get('ticket_id', 0))
@@ -124,20 +121,7 @@ def order_review_qr_image(context, request):
     
     if ticket == None or ticket.sign != sign:
         raise HTTPNotFound()
-    
-    qr = qrcode.QRCode(
-        version=None,
-        error_correction=qrcode.constants.ERROR_CORRECT_H,
-        box_size=10,
-        )
-    qr.add_data(ticket.qr)
-    qr.make(fit=True)
-    img = qr.make_image()
-    r = Response(status=200, content_type="image/png")
-    buf = StringIO.StringIO()
-    img.save(buf, 'PNG')
-    r.body = buf.getvalue()
-    return r
+    return qrdata_as_image_response(ticket)
 
 @mobile_view_config(route_name='order_review.qr_print', request_method='POST', renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/qr.html"))
 @view_config(route_name='order_review.qr_print', request_method='POST', renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/qr.html"))
