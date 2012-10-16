@@ -151,16 +151,7 @@ def completion_payment_mail_viewlet(context, request):
     :param context: ICompleteMailPayment
     """
     notice=context.mail_data("notice")
-    return Response(u"""
-＜クレジットカードでのお支払いの方＞
-
-予約成立と同時に、ご登録のクレジットカードにて自動的に決済手続きを行わせて頂きます。
-
-お申込の取消、公演日・席種・枚数等の変更は出来ませんのでご注意ください。
-
-クレジットカードの引き落としは、カード会社によって異なります。詳細はご利用のカード会社へお問い合わせください。
-%s
-""" % notice)
+    return Response(notice)
 
 @view_config(context=IOrderCancelMailPayment, name="payment-%d" % PAYMENT_ID)
 def cancel_payment_mail_viewlet(context, request):
