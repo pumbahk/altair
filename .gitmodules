@@ -1,6 +1,3 @@
 [submodule "bundle/Fashion"]
 	path = bundle/Fashion
 	url = git@github.com:smihica/Fashion
-[submodule "bundle/js.underscore"]
-	path = bundle/js.underscore
-	url = git@github.com:ticketstar/js.underscore
