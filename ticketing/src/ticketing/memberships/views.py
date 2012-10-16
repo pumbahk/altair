@@ -154,12 +154,11 @@ class MemberGroupView(BaseView):
         return HTTPFound(self.request.POST.get("redirect_to") or dummy_url)
 
     @view_config(match_param="action=delete", 
-                 request_param="membership_id", request_method="POST")
+                 request_method="POST")
     def delete_post(self):
-        membergroup = umodels.MemberGroup.query.filter_by(id=self.request.matchdict["membergroup_id"], 
-                                                          membership_id=self.request.params["membership_id"]).first()
+        membergroup = umodels.MemberGroup.query.filter_by(id=self.request.matchdict["membergroup_id"]).first()
         if membergroup is None:
-            raise HTTPNotFound
+            raise HTTPNotFound("member group not found")
 
         membergroup.delete()
 

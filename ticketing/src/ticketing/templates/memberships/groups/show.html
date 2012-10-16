@@ -1,5 +1,20 @@
 <%inherit file="/layout_2cols.html"/>
 <%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+
+<script type="text/javascript">
+  function delete_membership(baseurl) {
+    var modal = $('#modal-delete');
+    modal.find('#message').text('このmembergroupを削除します。よろしいですか？');
+    modal.find("#delete").click(function(){
+      $("#delet_form form").append($("<input type='hidden'>").attr("name", "membership_id").attr("value", "${membergroup.membership_id}"));
+      $("#delete_form").attr("action", "${request.route_path("membergroups", action="delete", membergroup_id=membergroup.id)}").submit();
+      return false;
+    })
+    modal.modal("toggle");
+  };
+  $(function(){  $("#delete_link").click(delete_membership);  })
+</script>
 
 <%doc>
 ## breadcrumbs are not supported yet
@@ -21,7 +36,7 @@
 
 <div>
   <a href="${request.route_path('membergroups',action="edit", membergroup_id=membergroup.id, _query=dict(membership_id=membergroup.membership_id,redirect_to=redirect_to))}" class="btn">編集</a>
-  <a href="#" class="btn">削除</a>
+  <a id="delete_link" href="#" class="btn">削除</a>
 </div>
 
 <%include file="./_detail.html" args="form=form, membergroup=membergroup" /> 
@@ -38,3 +53,5 @@
     <%include file="/memberships/salessegments/_action_button.html" args="membergroup=membergroup,redirect_to=redirect_to,order=None,event_id=None" />
   </div>
 </div>
+
+${delete_modal()}

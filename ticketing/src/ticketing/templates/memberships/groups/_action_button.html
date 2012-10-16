@@ -12,7 +12,7 @@
     var id = $('input.[name="membership_id"]:checked').val();
     if (!id) return;
     var modal = $('#modal-delete');
-    modal.find('#message').text('選択したmembershipを削除します。よろしいですか？');
+    modal.find('#message').text('選択したmembergroupを削除します。よろしいですか？');
     modal.find("#delete").click(function(){
       $("#delete_form").attr("action", baseurl.replace("__id__", id)).submit();
       return false;
