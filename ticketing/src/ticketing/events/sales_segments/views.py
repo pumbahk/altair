@@ -146,10 +146,10 @@ class SalesSegments(BaseView):
         redirect_to = self.request.route_path("sales_segments.show",  sales_segment_id=sales_segment_id)
         membergroups = MemberGroup.query.filter(MemberGroup.membership_id==Membership.id, Membership.organization_id==self.context.user.organization_id)
         form = MemberGroupToSalesSegmentForm(obj=sales_segment, membergroups=membergroups)
-        form_mg = MemberGroupForm()
         return {"form": form,
                 "membergroups": sales_segment.membergroups,
-                'form_mg': form_mg,
+                'form_mg': MemberGroupForm(),
+                'form_ss': SalesSegmentForm(),
                 "sales_segment":sales_segment,
                 "redirect_to": redirect_to,
                 "sales_segment_id": sales_segment_id}

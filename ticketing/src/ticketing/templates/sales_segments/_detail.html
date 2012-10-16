@@ -1,0 +1,38 @@
+<%page args="form,sales_segment"/>
+<%namespace file="/common/helpers.html" name="h"/>
+
+<table class="table table-striped table-bordered table-condensed" id="sales_segment-${sales_segment.id}">
+  <tr>
+    <th class="span3">${form.id.label.text}</th>
+    <td id="id">${sales_segment.id}</td>
+  </tr>
+  <tr>
+    <th>${form.kind.label.text}</th>
+    <% kind = [v for k, v in form.kind.choices if k == sales_segment.kind] %>
+    <td id="kind" value="${sales_segment.kind}">${kind.pop() or ''}</td>
+  </tr>
+  <tr>
+    <th>${form.name.label.text}</th>
+    <td id="name">${sales_segment.name}</td>
+  </tr>
+  <tr>
+    <th>${form.start_at.label.text}</th>
+    <td id="current_start_at">${h.safe_strftime(sales_segment.start_at)}</td>
+  </tr>
+  <tr>
+    <th>${form.end_at.label.text}</th>
+    <td id="current_end_at">${h.safe_strftime(sales_segment.end_at)}</td>
+  </tr>
+  <tr>
+    <th>${form.upper_limit.label.text}</th>
+    <td id="upper_limit">${sales_segment.upper_limit or u''}</td>
+  </tr>
+  <tr>
+    <th>${form.seat_choice.label.text}</th>
+    <td id="seat_choice" value="${sales_segment.seat_choice}">${u'○' if sales_segment.seat_choice else u'×'}</td>
+  </tr>
+  <tr>
+    <th>${form.public.label.text}</th>
+    <td id="public" value="${sales_segment.public}">${u'○' if sales_segment.public else u'×'}</td>
+  </tr>
+</table>

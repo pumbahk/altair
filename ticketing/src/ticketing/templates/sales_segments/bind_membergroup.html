@@ -5,6 +5,12 @@
   ${h.flash_messages(request)}
   ${h.alert_message(form)}
 </div>
+
+<div class="page-header">
+  <h3>対象となる販売区分</h3>
+</div>
+<%include file="/sales_segments/_detail.html", args="form=form_ss, sales_segment=sales_segment"/>
+
 <%
 route_name=u'編集'
 route_path=request.route_path("sales_segments.bind_membergroup", sales_segment_id=request.matchdict["sales_segment_id"])
@@ -17,7 +23,7 @@ route_path=request.route_path("sales_segments.bind_membergroup", sales_segment_i
 <%include file="/memberships/groups/_list.html" args="member_groups=membergroups, form=form_mg" />
 
 <div class="page-header">
-  <h3>memvergroupの結びつき変更</h3>
+  <h3>membergroupの結びつき変更</h3>
 </div>
 
 <div class="well">
