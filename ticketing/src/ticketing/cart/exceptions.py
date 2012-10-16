@@ -9,6 +9,9 @@ class NoCartError(CartException):
 class NoEventError(CartException):
     pass
 
+class NoSalesSegment(Exception):
+    pass
+
 class OutTermSalesException(Exception):
     """ 期限外の販売区分に対するアクセス"""
     def __init__(self, event, sales_segment):

@@ -838,6 +838,9 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     # membergroup_id = Column(Identifier, ForeignKey('MemberGroup.id'))
     # membergroup = relationship('MemberGroup', backref='salessegments')
 
+    def in_term(self, dt):
+        return self.start_at <= dt and dt <= self.end_at 
+
     def delete(self):
         # delete Product
         for product in self.product:

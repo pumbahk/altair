@@ -24,7 +24,17 @@ from ..users import models as u_models
 from .models import Cart
 from . import helpers as h
 from . import schemas
-from .exceptions import CartException, NoCartError, NoEventError, InvalidCSRFTokenException, OverQuantityLimitError, ZeroQuantityError, CartCreationExceptoion
+from .exceptions import (
+    CartException, 
+    NoCartError, 
+    NoEventError, 
+    NoSalesSegment,
+    InvalidCSRFTokenException, 
+    OverQuantityLimitError, 
+    ZeroQuantityError, 
+    CartCreationExceptoion,
+    OutTermSalesException,
+)
 from .rakuten_auth.api import authenticated_user
 from .events import notify_order_completed
 from webob.multidict import MultiDict
@@ -71,6 +81,7 @@ class IndexView(object):
 
     @view_config(route_name='cart.index', renderer=selectable_renderer("carts/%(membership)s/index.html"), xhr=False, permission="buy")
     def __call__(self):
+        now = datetime.now()
         event = self.request.context.event
         if event is None:
             raise HTTPNotFound()
@@ -82,10 +93,13 @@ class IndexView(object):
         
         #sales_segment = self.context.get_sales_segument()
         normal_sales_segment = self.context.normal_sales_segment
+
         sales_counter_sales_segment = self.context.sales_counter_sales_segment
         if normal_sales_segment is None:
             logger.debug("No matching sales_segment")
-            raise NoEventError("No matching sales_segment")
+            raise NoSalesSegment("No matching sales_segment")
+        if not normal_sales_segment.in_term(now):
+            raise OutTermSalesException(event, normal_sales_segment)
 
         from .api import get_event_info_from_cms
         event_extra_info = get_event_info_from_cms(self.request, event_id)
