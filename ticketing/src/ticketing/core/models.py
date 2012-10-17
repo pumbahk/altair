@@ -2271,8 +2271,7 @@ class MailTypeEnum(StandardEnum):
 
 MailTypeLabels = (u"購入完了メール", u"購入キャンセルメール")
 assert(len(list(MailTypeEnum)) == len(MailTypeLabels))
-MailTypeChoices = [(str(e), label)for e, label in zip(sorted(MailTypeEnum), MailTypeLabels)]
-
+MailTypeChoices = [(str(e) , label) for e, label in zip([MailTypeEnum.CompleteMail,  MailTypeEnum.PurchaseCancelMail], MailTypeLabels)]
 
 class Host(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Host'
