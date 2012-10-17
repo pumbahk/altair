@@ -333,7 +333,7 @@ class Orders(BaseView):
         ]
         response = Response(headers=headers)
 
-        order_csv = OrderCSV(orders)
+        order_csv = OrderCSV(orders, self.request.params.get('export_type'))
 
         writer = csv.DictWriter(response, order_csv.header, delimiter=',', quoting=csv.QUOTE_ALL)
         writer.writeheader()
