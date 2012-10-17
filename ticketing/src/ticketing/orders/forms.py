@@ -111,6 +111,22 @@ class OrderSearchForm(Form):
         label=u'電話番号',
         validators=[Optional()],
     )
+    seat_number = TextField(
+        label=u'座席番号',
+        validators=[Optional()],
+    )
+    event_id = SelectField(
+        label=u"イベント",
+        coerce=lambda x : int(x) if x else u"",
+        choices=[],
+        validators=[Optional()],
+    )
+    performance_id = SelectField(
+        label=u"公演",
+        coerce=lambda x : int(x) if x else u"",
+        choices=[],
+        validators=[Optional()],
+    )
     start_on_from = DateTimeField(
         label=u'公演日時',
         validators=[Optional()],
@@ -127,18 +143,6 @@ class OrderSearchForm(Form):
     direction = HiddenField(
         validators=[Optional(), AnyOf(['asc', 'desc'], message='')],
         default='desc',
-    )
-    event_id = SelectField(
-        label=u"イベント",
-        coerce=lambda x : int(x) if x else u"",
-        choices=[],
-        validators=[Optional()],
-    )
-    performance_id = SelectField(
-        label=u"公演",
-        coerce=lambda x : int(x) if x else u"",
-        choices=[],
-        validators=[Optional()],
     )
 
     def get_conditions(self):

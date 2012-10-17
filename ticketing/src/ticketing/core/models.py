@@ -1881,8 +1881,13 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         condition = form.start_on_to.data
         if condition:
             query = query.join(Order.performance).filter(Performance.start_on<=condition)
+        condition = form.seat_number.data
+        if condition:
+            query = query.join(Order.ordered_products)
+            query = query.join(OrderedProduct.ordered_product_items)
+            query = query.join(OrderedProductItem.seats)
+            query = query.filter(Seat.name==condition)
         return query
-
 
 def no_filter(value):
     return value
