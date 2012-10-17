@@ -2,9 +2,17 @@
 from ticketing.cart.helpers import format_number as _format_number
 from ticketing.core.models import no_filter
 from ticketing.models import record_to_multidict
+from ticketing.users.models import MailSubscription
+from collections import defaultdict
 
 def format_number(value):
     return _format_number(float(value))
+
+def _create_mailsubscription_cache():
+    D = defaultdict(str)
+    for ms in MailSubscription.query:
+        D[ms.email] = "1"
+    return D
 
 class OrderCSV(object):
     order_value_filters = dict((k, format_number) for k in ['transaction_fee', 'delivery_fee', 'system_fee', 'total_amount'])
@@ -82,7 +90,17 @@ class OrderCSV(object):
                     + self.member_header \
                     + ['shipping_' + sa for sa in self.shipping_address_header] \
                     + self.other_header
+        self._mailsubscription_cache = None
         self.rows = [self._convert_to_csv(order) for order in orders]
+
+
+    @property
+    def mailsubscription_cache(self):
+        if self._mailsubscription_cache is None:
+            if "mail_permission_0" not in self.header:
+                self.header.append("mail_permission_0")
+            self._mailsubscription_cache = _create_mailsubscription_cache()
+        return self._mailsubscription_cache
 
     def _convert_to_csv(self, order):
         order_dict = record_to_multidict(order)
@@ -183,6 +201,9 @@ class OrderCSV(object):
             + product_list
             + product_item_list
         )
+        if "shipping_email" in row and not row.get("mail_permission_0"): #suffixがつくらしい。
+            row["mail_permission_0"] = self.mailsubscription_cache[row["shipping_email"]]
+
         for key, value in row.items():
             if value:
                 if not isinstance(value, unicode):
