@@ -3,6 +3,7 @@ import logging
 import itertools
 import operator
 import json
+import re
 from urlparse import urljoin
 from datetime import datetime, date, timedelta
 
@@ -1567,6 +1568,7 @@ class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def full_name(self):
         return self.last_name + u' ' + self.first_name
 
+
 class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Order'
     id = Column(Identifier, primary_key=True)
@@ -1822,6 +1824,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @staticmethod
     def set_search_condition(query, form):
+        """TODO: query を構築するクラスを別に作る等したい"""
         sort = form.sort.data or 'id'
         direction = form.direction.data or 'desc'
         query = query.order_by('Order.' + sort + ' ' + direction)
@@ -1875,7 +1878,18 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             query = query.join(Order.shipping_address).filter(or_(ShippingAddress.tel_1==condition, ShippingAddress.tel_2==condition))
         condition = form.name.data
         if condition:
-            query = query.join(Order.shipping_address).filter(ShippingAddress.last_name + ShippingAddress.first_name==condition)
+            query = query.join(Order.shipping_address)
+            items = re.split(ur'[ 　]', condition)
+            # 前方一致で十分かと
+            for item in items:
+                query = query.filter(
+                    or_(
+                        or_(ShippingAddress.first_name.like('%s%%' % item),
+                            ShippingAddress.last_name.like('%s%%' % item)),
+                        or_(ShippingAddress.first_name_kana.like('%s%%' % item),
+                            ShippingAddress.last_name_kana.like('%s%%' % item))
+                        )
+                    )
         condition = form.member_id.data
         if condition:
             query = query.join(Order.user).join(User.user_credential).filter(UserCredential.auth_identifier==condition)
@@ -1885,6 +1899,12 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         condition = form.start_on_to.data
         if condition:
             query = query.join(Order.performance).filter(Performance.start_on<=condition)
+        condition = form.seat_number.data
+        if condition:
+            query = query.join(Order.ordered_products)
+            query = query.join(OrderedProduct.ordered_product_items)
+            query = query.join(OrderedProductItem.seats)
+            query = query.filter(Seat.name==condition)
         condition = form.seat_number.data
         if condition:
             query = query.join(Order.ordered_products)
