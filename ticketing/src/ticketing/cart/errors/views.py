@@ -30,7 +30,6 @@ def notfound(request):
 @mobile_view_config(context=NoCartError, renderer=selectable_renderer("ticketing.cart:templates/carts/%(membership)s/timeout.html"))
 @view_config(context=NoCartError, renderer=selectable_renderer("ticketing.cart:templates/carts/%(membership)s/timeout.html"))
 def handle_nocarterror(request):
-    logger.error(request.context, exc_info=request.exc_info)
     api.remove_cart(request)
     return {}
     # return HTTPFound('/')
@@ -38,20 +37,17 @@ def handle_nocarterror(request):
 @mobile_view_config(context=NoEventError, renderer=selectable_renderer('ticketing.cart:templates/errors_mobile/%(membership)s/notfound.html'))
 @view_config(context=NoEventError, renderer=selectable_renderer('ticketing.cart:templates/errors/%(membership)s/notfound.html'))
 def handle_noeventerror(request):
-    logger.error(request.context, exc_info=request.exc_info)
     request.response.status = 404
     return {}
 
 @mobile_view_config(context=NoSalesSegment, renderer=selectable_renderer('ticketing.cart:templates/errors_mobile/%(membership)s/notfound.html'))
 @view_config(context=NoSalesSegment, renderer=selectable_renderer('ticketing.cart:templates/errors/%(membership)s/notfound.html'))
 def handle_noeventerror(request):
-    logger.error(request.context, exc_info=request.exc_info)
     request.response.status = 404
     return {}
 
 @view_config(context=InvalidCSRFTokenException, renderer=selectable_renderer('ticketing.cart:templates/errors/%(membership)s/forbidden.html'))
 def csrf(request):
-    logger.error(request.context, exc_info=request.exc_info)
     request.response.status = 403
     return {}
 
