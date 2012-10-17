@@ -1559,9 +1559,10 @@ class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     fax = Column(String(32))
     email = Column(String(255))
 
-    @property
+    @hybrid_property
     def full_name_kana(self):
-        return u"%s %s" % (self.last_name_kana,  self.first_name_kana)
+        return self.last_name_kana + u' ' + self.first_name_kana
+
 
 class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Order'
