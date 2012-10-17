@@ -111,6 +111,10 @@ class OrderSearchForm(Form):
         label=u'電話番号',
         validators=[Optional()],
     )
+    email = TextField(
+        label=u'メールアドレス',
+        validators=[Optional()],
+    )
     seat_number = TextField(
         label=u'座席番号',
         validators=[Optional()],

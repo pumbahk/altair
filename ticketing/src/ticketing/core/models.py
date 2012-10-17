@@ -1890,6 +1890,12 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                             ShippingAddress.last_name_kana.like('%s%%' % item))
                         )
                     )
+        condition = form.email.data
+        if condition:
+            # 完全一致です
+            query = query \
+                .join(Order.shipping_address) \
+                .filter(ShippingAddress.email == condition)
         condition = form.member_id.data
         if condition:
             query = query.join(Order.user).join(User.user_credential).filter(UserCredential.auth_identifier==condition)
