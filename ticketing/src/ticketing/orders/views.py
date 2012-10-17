@@ -79,7 +79,7 @@ class OrdersAPIView(BaseView):
 
         query = Performance.query.filter(Performance.deleted_at == None)
         query = Performance.set_search_condition(query, form_search)
-        performances = itertools.chain(query, [testing.DummyResource(id="", name="")])
+        performances = itertools.chain([testing.DummyResource(id="", name="")], query)
         performances = [dict(pk=p.id, name=p.name) for p in performances]
         return {"result": performances, "status": True}
 
@@ -213,8 +213,7 @@ class Orders(BaseView):
         ords = [o.lstrip("o:") for o in self.request.session["orders"] if o.startswith("o:")]
         query = query.filter(Order.id.in_(ords))
 
-        event_query = Event.filter_by(organization_id=organization_id)
-        form_search = OrderSearchForm(self.request.params).configure(event_query)
+        form_search = OrderSearchForm(self.request.params, organization_id=organization_id)
         if form_search.validate():
             query = Order.set_search_condition(query, form_search)
 
@@ -239,8 +238,7 @@ class Orders(BaseView):
         organization_id = int(self.context.user.organization_id)
         query = Order.filter(Order.organization_id==organization_id)
 
-        event_query = Event.filter_by(organization_id=organization_id)
-        form_search = OrderSearchForm(self.request.params).configure(event_query)
+        form_search = OrderSearchForm(self.request.params, organization_id=organization_id)
         if form_search.validate():
             query = Order.set_search_condition(query, form_search)
 
@@ -320,9 +318,10 @@ class Orders(BaseView):
 
     @view_config(route_name='orders.download')
     def download(self):
-        query = Order.filter(Order.organization_id==self.context.user.organization_id)
+        organization_id = self.context.user.organization_id
+        query = Order.filter(Order.organization_id==organization_id)
 
-        form_search = OrderSearchForm(self.request.params)
+        form_search = OrderSearchForm(self.request.params, organization_id=organization_id)
         if form_search.validate():
             query = Order.set_search_condition(query, form_search)
 
