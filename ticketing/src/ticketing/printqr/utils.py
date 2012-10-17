@@ -8,6 +8,9 @@ from ticketing.core.models import OrderedProductItemToken
 from ticketing.core.models import OrderedProductItem
 from ticketing.core.models import OrderedProduct
 from ticketing.core.models import PageFormat
+from ticketing.tickets.utils import build_dict_from_ordered_product_item_token
+from ticketing.utils import json_safe_coerce
+
 import logging
 from . import helpers as h
 logger = logging.getLogger(__name__)
@@ -80,7 +83,7 @@ def ticketdata_from_qrdata(qrdata, event_id="*"):
     #codeno = hashlib.sha1(str(history.id)).hexdigest()
     codeno = history.id
     return {
-        "user": shipping_address.full_name_kana, 
+        "user": shipping_address.full_name_kana if shipping_address else u"", 
         "codeno": codeno, 
         "ordered_product_item_token_id": token.id, 
         "ordered_product_item_id": history.ordered_product_item.id, 
@@ -96,6 +99,38 @@ def ticketdata_from_qrdata(qrdata, event_id="*"):
         "seat_name": seat.name if seat else u"",
         "note": note,
         }
+
+def svg_data_from_token(ordered_product_item_token):
+    pair = build_dict_from_ordered_product_item_token(ordered_product_item_token)
+    retval = [] 
+    if pair is not None:
+        retval.append({
+                u'ordered_product_item_token_id': ordered_product_item_token.id,
+                u'ordered_product_item_id': ordered_product_item_token.item.id,
+                u'order_id': ordered_product_item_token.item.ordered_product.order.id,
+                u'seat_id': ordered_product_item_token.seat_id or "",
+                u'serial': ordered_product_item_token.serial,
+                u'data': json_safe_coerce(pair[1])
+                })
+    return retval
+
+def svg_data_from_token_with_descinfo(ordered_product_item_token):
+    pair = build_dict_from_ordered_product_item_token(ordered_product_item_token)
+    retval = [] 
+    if pair is not None:
+        seat = ordered_product_item_token.seat
+        item = ordered_product_item_token.item
+        ticket_name = "%s(%s)" % (item.ordered_product.product.name, seat.name if seat else u"自由席")
+        retval.append({
+                u'ordered_product_item_token_id': ordered_product_item_token.id,
+                u'ordered_product_item_id': ordered_product_item_token.item.id,
+                u'order_id': ordered_product_item_token.item.ordered_product.order.id,
+                u'seat_id': ordered_product_item_token.seat_id or "",
+                u'serial': ordered_product_item_token.serial,
+                u"ticket_name": ticket_name, 
+                u'data': json_safe_coerce(pair[1])
+                })
+    return retval
 
 def add_history(request, operator_id, params):
     seat_id = params.get(u'seat_id')

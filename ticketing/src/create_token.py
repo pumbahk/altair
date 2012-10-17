@@ -2,7 +2,7 @@ from ticketing.cart.plugins.qr import QRTicketDeliveryPlugin
 from ticketing.core.models import *
 # order = Order.query.filter(Order.order_no=="NH000000031K").one()
 #08020933640 
-order = Order.query.filter(Order.order_no=="NH00000003YG").one()
+order = Order.query.filter(Order.order_no=="NH000000040S").one()
 
 request = None
 class cart:

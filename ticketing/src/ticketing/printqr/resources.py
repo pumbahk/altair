@@ -26,6 +26,7 @@ class PrintQRResource(object):
             "api.log": self.request.route_path("api.log"), 
             "api.ticket.data": self.request.route_path("api.ticket.data", event_id=event_id), 
             "api.ticketdata_from_token_id": self.request.route_path('api.applet.ticket_data'),
+            "api.ticketdata_from_order_no": self.request.route_path('api.applet.ticket_data_order'),
             "api.ticket.after_printed": self.request.route_path("api.ticket.after_printed"), 
             "api.ticket.refresh.printed_status": self.request.route_path("api.ticket.refresh.printed_status")
             }

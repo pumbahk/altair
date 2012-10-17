@@ -520,6 +520,12 @@ var AppletView = Backbone.View.extend({
     }
   }, 
   _updateTicketPrintedAt: function(){
+    if(this.datastore.get("print_unit") == "order"){
+      var apiUrl = this.apiResource["api.ticket.after_printed"]      
+    }else {
+      var apiUrl = this.apiResource["api.ticket.after_printed"]      
+    }
+
     var params = {
       ordered_product_item_token_id: this.datastore.get("ordered_product_item_token_id"), 
       order_no: this.datastore.get("orderno"), 
@@ -536,7 +542,7 @@ var AppletView = Backbone.View.extend({
       data: JSON.stringify(params), 
       contentType: 'application/json',
       dataType: 'json',
-      url: this.apiResource["api.ticket.after_printed"]
+      url: apiUrl
     }).done(function(data){
       if (data['status'] != 'success') {
         self.appviews.messageView.error(data['message']);
@@ -584,6 +590,47 @@ var AppletView = Backbone.View.extend({
     }
   }, 
   createTicket: function(){
+    var print_unit = this.datastore.get("print_unit");
+    if(print_unit == "order"){
+      return this.createTicketUnitByOrder()
+    }else {
+      return this.createTicketUnitByToken()
+    }
+  }, 
+  createTicketUnitByOrder: function(){
+    var orderno = this.datastore.get("orderno");
+    var self = this;
+    $.ajax({
+      type: 'POST',
+      processData: false,
+      data: JSON.stringify({ order_no: orderno }),
+      contentType: 'application/json',
+      dataType: 'json',
+      url: this.apiResource["api.ticketdata_from_order_no"]
+    }).done(function (data) {
+      if (data['status'] != 'success') {
+        self.appviews.messageView.alert(data['message']);
+        return;
+      }
+      self.appviews.messageView.success("券面データが保存されました");
+      var printing_tickets = []
+      self.appviews.messageView.info("券面印刷用データを追加中です...");
+      $.each(data['data'], function (_, ticket) {
+        try {
+          //alert(self.datastore.get("ordered_product_item_token_id"));
+          printing_tickets.push(ticket.ticket_name)
+          self.service.addTicket(self.service.createTicketFromJSObject(ticket));
+          alert("yay")
+        } catch (e) {
+          self.appviews.messageView.error(e);
+        }
+      });
+      var fmt = "まとめて注文した際には自動的に印刷しません。印刷するには、購入情報を確認した後、印刷ボタンを押してください<br/>";
+      fmt = fmt + "<ul><li>" + printing_tickets.join("</li>\n<li>") + "</li></ul>";
+      self.appviews.messageView.info(fmt, true);
+    }).fail(function(s, msg){self.appviews.messageView.alert(s.responseText)});
+  }, 
+  createTicketUnitByToken: function(){
     var tokenId = this.datastore.get("ordered_product_item_token_id");
     var self = this;
     $.ajax({
