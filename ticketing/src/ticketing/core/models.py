@@ -1563,6 +1563,9 @@ class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def full_name_kana(self):
         return self.last_name_kana + u' ' + self.first_name_kana
 
+    @hybrid_property
+    def full_name(self):
+        return self.last_name + u' ' + self.first_name
 
 class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Order'
