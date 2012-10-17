@@ -98,6 +98,7 @@ body {
       <label>qrcode: <input type="text" name="qrcode" value=""/></label>
       <a class="btn" id="load_button">読み込み</a>
       <a class="btn" id="clear_button">入力値のクリア</a>
+      <label>　※ 同一注文のQR全て発券する<input type="checkbox" name="print_unit_is_order" value=""/></label>
     </div>
 
     <div id="one:status-box">
@@ -161,25 +162,28 @@ body {
     <table class="table">
       <tbody>
         <tr>
-          <td>QRコードステータス</td><td id="desc_qrcode_status"></td>
+          <td width="200px">印刷方法</td><td id="desc_print_strategy">個別に発券</td>
         </tr>
         <tr>
-          <td>注文番号</td><td id="desc_orderno"></td>
+          <td width="200px">QRコードステータス</td><td id="desc_qrcode_status"></td>
         </tr>
         <tr>
-          <td>公演</td><td id="desc_performance"></td>
+          <td width="200px">注文番号</td><td id="desc_orderno"></td>
         </tr>
         <tr>
-          <td>商品名(席番号)</td><td id="desc_product"></td>
+          <td width="200px">公演</td><td id="desc_performance"></td>
         </tr>
         <tr>
-          <td>プリンタ設定</td><td id="desc_printer"></td>
+          <td width="200px">商品名(席番号)</td><td id="desc_product"></td>
         </tr>
         <tr>
-          <td>券面テンプレート設定</td><td id="desc_ticket_template"></td>
+          <td width="200px">プリンタ設定</td><td id="desc_printer"></td>
         </tr>
         <tr>
-          <td>ページフォーマット</td><td id="desc_page_format"></td>
+          <td width="200px">券面テンプレート設定</td><td id="desc_ticket_template"></td>
+        </tr>
+        <tr>
+          <td width="200px">ページフォーマット</td><td id="desc_page_format"></td>
         </tr>
       </tbody>
     </table>
@@ -246,11 +250,11 @@ $(function(){
     scriptable: true,
     id: 'applet',
     params: {
-      endpoints: ${json.dumps(endpoints_json)|n},
-      cookie: ${json.dumps(request.headers.get('cookie'))|n},
-      embedded: true,
-      callback: ${json.dumps(callback_name)|n},
-##      cache_option: "no"
+      endpoints: ${json.dumps(endpoints_json)|n}
+      ,cookie: ${json.dumps(request.headers.get('cookie'))|n}
+      ,embedded: true
+      ,callback: ${json.dumps(callback_name)|n}
+##      ,cache_option: "no"
     }
   });
 

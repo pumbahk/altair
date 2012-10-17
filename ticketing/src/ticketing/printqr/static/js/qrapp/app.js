@@ -22,6 +22,19 @@ var DataStore = Backbone.Model.extend({
 
     performance: null,
     product: null,
+
+    print_unit: "token", //token or order
+    print_strategy: "個別に発券"
+  }, 
+  setPrintStrategy: function(print_unit){
+    console.info("strategy");
+    if(print_unit=="order"){
+      this.set("print_unit", "order");
+      this.set("print_strategy", "同一注文の券面まとめて発券");
+    }else {
+      this.set("print_unit", "token");
+      this.set("print_strategy", "個別に発券");
+    }
   }, 
   updateByQRData: function(data){
     // this order is important for call api.applet.ticket.data(ordered_product_item_token_id, printed)
@@ -61,6 +74,8 @@ var DataStore = Backbone.Model.extend({
 // view
 var DataStoreDescriptionView = Backbone.View.extend({
   initialize: function(){
+    this.model.bind("change", function(){console.info(JSON.stringify(this.model.toJSON()))}, this);
+    this.model.bind("change:print_strategy", this.showPageStrategy, this);
     this.model.bind("change:qrcode_status", this.showQrcodeStatus, this);
     this.model.bind("change:orderno", this.showOrderno, this);
     this.model.bind("change:performance", this.showPerformance, this);
@@ -70,6 +85,7 @@ var DataStoreDescriptionView = Backbone.View.extend({
     this.model.bind("change:ticket_template_name", this.showTicketTemplate, this);
     this.model.bind("*refresh", this.refresh, this);
 
+    this.$print_strategy = this.$el.find("#desc_print_strategy");
     this.$qrcode_status = this.$el.find("#desc_qrcode_status");
     this.$orderno = this.$el.find("#desc_orderno");
     this.$performance = this.$el.find("#desc_performance");
@@ -77,6 +93,9 @@ var DataStoreDescriptionView = Backbone.View.extend({
     this.$printer = this.$el.find("#desc_printer");
     this.$ticket_template = this.$el.find("#desc_ticket_template");
     this.$page_format = this.$el.find("#desc_page_format");
+  }, 
+  showPageStrategy: function(){
+    this.$print_strategy.text(this.model.get("print_strategy"));
   }, 
   showQrcodeStatus: function(){
     this.$qrcode_status.text(this.model.get("qrcode_status"));
@@ -175,18 +194,29 @@ var QRInputView = AppPageViewBase.extend({
   events: {
     "click #load_button": "loadQRCodeInput", 
     "click #clear_button": "clearQRCodeInput", 
+    "click input[name='print_unit_is_order']": "checkPrintUnitIsOrder", 
     "keydown input[name='qrcode']": "readOnEnter"
   }, 
   initialize: function(opts){
     QRInputView.__super__.initialize.call(this, opts);
-    this.$qrcode = this.$el.find('input[name="qrcode"]')
-    this.$status = this.$el.find('#status')
+    this.$qrcode = this.$el.find('input[name="qrcode"]');
+    this.$status = this.$el.find('#status');
+    this.$print_unit_is_order = this.$el.find("input[name='print_unit_is_order']");
+
     this.datastore.bind("change:qrcode_status", this.showStatus, this);
     this.datastore.bind("*qr.canceled.ticket", this.notifyMessageForCanceled, this);
     this.datastore.bind("*qr.printed.already", this.notifyMessageForPrintedAlready, this);
     this.datastore.bind("*qr.not.printed", this.focusNextPage, this);
 
     this.communicating = false;
+  }, 
+  checkPrintUnitIsOrder: function(){
+    console.warn("check")
+    if(this.$print_unit_is_order.attr("checked") == "checked"){
+      this.datastore.setPrintStrategy("order");
+    }else {
+      this.datastore.setPrintStrategy("token");
+    }
   }, 
   notifyMessageForPrintedAlready: function(){
     var fmt = 'そのチケットは既に印刷されてます(前回印刷日時:{0}) -- 強制発券しますか？<a id="{1}" class="btn">強制発券する</a>';
