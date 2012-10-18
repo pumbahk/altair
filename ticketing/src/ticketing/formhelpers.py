@@ -111,3 +111,25 @@ def strip_hyphen():
     return stripper
 
 strip_spaces = strip(u' 　')
+
+class SejCompliantEmail(validators.Regexp):
+    def __init__(self, message=None):
+        super(SejCompliantEmail, self).__init__(r'^[0-9A-Za-z_./+?-]+@(?:[0-9A-Za-z_-]+\.)*[0-9A-Za-z_-]+$', 0, message)
+
+    def __call__(self, form, field):
+        if self.message is None:
+            self.message = field.gettext('Invalid email address.')
+
+        super(SejCompliantEmail, self).__call__(form, field)
+
+def capitalize(unistr):
+    return unistr and unistr.upper()
+
+def ignore_regexp(regexp):
+    def replace(target):
+        if target is None:
+            return None
+        return re.sub(regexp, "", target)
+    return replace
+
+ignore_space_hyphen = ignore_regexp(re.compile(u"[ \-ー　]"))

@@ -8,7 +8,21 @@ from wtforms.ext.csrf.session import SessionSecureForm
 from wtforms.validators import Regexp, Length, NumberRange, EqualTo, Optional, ValidationError
 from ticketing.validators import Email
 
-from ticketing.formhelpers import DateTimeField, Translations, Required, Phone
+from ticketing.formhelpers import (
+    DateTimeField,
+    Translations,
+    Required,
+    Phone,
+    NFKC,
+    Zenkaku,
+    Katakana,
+    SejCompliantEmail,
+    strip,
+    strip_spaces,
+    capitalize,
+    ignore_regexp,
+    ignore_space_hyphen
+    )
 
 CARD_NUMBER_REGEXP = r'^\d{14,16}$'
 CARD_HOLDER_NAME_REGEXP = r'^[A-Z\s]+$'
@@ -16,32 +30,8 @@ CARD_EXP_YEAR_REGEXP = r'^\d{2}$'
 CARD_EXP_MONTH_REGEXP = r'^\d{2}$'
 CARD_SECURE_CODE_REGEXP = r'^\d{3,4}$'
 
-Zenkaku = Regexp(r"^[^\x01-\x7f]+$", message=u'全角で入力してください')
-Katakana = Regexp(ur'^[ァ-ヶ]+$', message=u'カタカナで入力してください')
-
-def capitalize(unistr):
-    return unistr and unistr.upper()
-
-def strip(chars):
-    def stripper(unistr):
-        return unistr and unistr.strip(chars)
-    return stripper
-strip_spaces = strip(u' 　')
-
-def NFKC(unistr):
-    return unistr and unicodedata.normalize('NFKC', unistr)
-
 class CSRFSecureForm(SessionSecureForm):
     SECRET_KEY = 'EPj00jpfj8Gx1SjnyLxwBBSQfnQ9DJYe0Ym'
-
-def ignore_regexp(regexp):
-    def replace(target):
-        if target is None:
-            return None
-        return re.sub(regexp, "", target)
-    return replace
-
-ignore_space_hyphen = ignore_regexp(re.compile(u"[ \-ー　]"))
 
 class CardForm(CSRFSecureForm):
     def _get_translations(self):
@@ -167,7 +157,7 @@ class ClientForm(Form):
         filters=[strip_spaces],
         validators=[
             Required(),
-            Email(),
+            SejCompliantEmail(),
         ]
     )
     mail_address2 = fields.TextField(
@@ -175,7 +165,7 @@ class ClientForm(Form):
         filters=[strip_spaces],
         validators=[
             Required(),
-            Email(),
+            SejCompliantEmail(),
         ]
     )
 
