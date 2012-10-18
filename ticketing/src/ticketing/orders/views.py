@@ -39,10 +39,8 @@ from ticketing.tickets.utils import build_dicts_from_ordered_product_item
 from ticketing.cart import api
 from ticketing.cart.stocker import NotEnoughStockException
 from ticketing.cart.reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
-
 from ticketing.core.utils import IssuedPrintedAtSetter
 
-logger = logging.getLogger(__name__)
 import pystache
 from . import utils
 
@@ -347,7 +345,7 @@ class Orders(BaseView):
         # 確保座席があるならステータスを戻す
         logger.info("release seats : %s" % l0_ids)
         if l0_ids:
-            seat_statuses = SeatStatus.filter(SeatStatus.status==int(SeatStatusEnum.InCart))\
+            seat_statuses = SeatStatus.filter(SeatStatus.status.in_([int(SeatStatusEnum.Keep), int(SeatStatusEnum.InCart)]))\
                                       .join(SeatStatus.seat)\
                                       .filter(Seat.l0_id.in_(l0_ids))\
                                       .with_lockmode('update').all()
@@ -393,13 +391,13 @@ class Orders(BaseView):
         form_reserve.payment_delivery_method_pair_id.validators = [Optional()]
         form_reserve.validate()
 
-        # 選択されたSeatがあるならステータスをInCartにして確保する
+        # 選択されたSeatがあるならステータスをKeepにして確保する
         seats = []
         if post_data.get('seats'):
             try:
                 reserving = api.get_reserving(self.request)
                 stock_status = [(stock, 0) for stock in StockStatus.filter(StockStatus.stock_id.in_(stocks))]
-                seats = reserving.reserve_selected_seats(stock_status, performance_id, post_data.get('seats'))
+                seats = reserving.reserve_selected_seats(stock_status, performance_id, post_data.get('seats'), reserve_status=SeatStatusEnum.Keep)
             except InvalidSeatSelectionException:
                 logger.info("seat selection is invalid.")
                 raise HTTPBadRequest(body=json.dumps({'message':u'既に予約済か選択できない座席です。画面を最新の情報に更新した上で再度座席を選択してください。'}))

@@ -309,6 +309,7 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 class SeatStatusEnum(StandardEnum):
     NotOnSale = 0
     Vacant = 1
+    Keep = 8  # インナー予約で座席確保した状態、カート生成前
     InCart = 2
     Ordered = 3
     Confirmed = 4
