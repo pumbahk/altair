@@ -20,6 +20,7 @@ from .interfaces import IMobileRequest, IStocker, IReserving, ICartFactory
 from .models import Cart, PaymentMethodManager, DBSession, CartedProductItem, CartedProduct
 from ..users.models import User, UserCredential, Membership, MemberGroup, MemberGroup_SalesSegment
 from ..core.models import Event, Performance, Stock, StockHolder, Seat, Product, ProductItem, SalesSegment, Venue
+from .exceptions import OutTermSalesException, NoSalesSegment
     
 # こいつは users.apiあたりに移動すべきか
 def is_login_required(request, event):
@@ -35,6 +36,16 @@ def is_login_required(request, event):
         SalesSegment.event_id==event.id
     )
     return bool(q.count())
+
+def check_sales_segment_term(request):
+    now = datetime.now()
+    sales_segment = request.context.sales_segment
+    if not sales_segment:
+        
+        raise NoSalesSegment
+
+    if not sales_segment.in_term(now):
+        raise OutTermSalesException(sales_segment)
 
 def get_event(request):
     event_id = request.matchdict.get('event_id')

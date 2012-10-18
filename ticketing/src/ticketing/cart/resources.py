@@ -179,7 +179,16 @@ class TicketingCartResource(object):
         q = q.filter(c_models.SalesSegment.start_at>=now)
 
         user = self.authenticated_user()
-        if user and 'membership' in user:
+        if user and user.get('is_guest'):
+            q = q.filter(
+                c_models.SalesSegment.id==u_models.MemberGroup_SalesSegment.c.sales_segment_id
+            ).filter(
+                u_models.MemberGroup_SalesSegment.c.membergroup_id==u_models.MemberGroup.id
+            ).filter(
+                u_models.MemberGroup.is_guest==True
+            )
+
+        elif user and 'membership' in user:
             q = q.filter(
                 c_models.SalesSegment.id==u_models.MemberGroup_SalesSegment.c.sales_segment_id
             ).filter(
@@ -206,14 +215,24 @@ class TicketingCartResource(object):
         now = datetime.now()
         q = c_models.SalesSegment.query
         q = q.filter(c_models.SalesSegment.public==1)
-        q = q.filter(c_models.SalesSegment.event_id==self.event_id)
+        if self.event_id:
+            q = q.filter(c_models.SalesSegment.event_id==self.event_id)
 
         q = q.filter(
             c_models.SalesSegment.id==sales_segment_id
         )
 
         user = self.authenticated_user()
-        if user and 'membership' in user:
+        if user and user.get('is_guest'):
+            q = q.filter(
+                c_models.SalesSegment.id==u_models.MemberGroup_SalesSegment.c.sales_segment_id
+            ).filter(
+                u_models.MemberGroup_SalesSegment.c.membergroup_id==u_models.MemberGroup.id
+            ).filter(
+                u_models.MemberGroup.is_guest==True
+            )
+
+        elif user and 'membership' in user:
             q = q.filter(
                 c_models.SalesSegment.id==u_models.MemberGroup_SalesSegment.c.sales_segment_id
             ).filter(
@@ -223,12 +242,11 @@ class TicketingCartResource(object):
             )
 
         sales_segment = q.first()
-
         if sales_segment is None:
             return None
 
         if sales_segment.start_at >= now or sales_segment.end_at <= now:
-            event = c_models.Event.filter(c_models.Event.id==self.event_id).one()
+            event = sales_segment.event
             raise OutTermSalesException(event, sales_segment)
 
         return sales_segment
