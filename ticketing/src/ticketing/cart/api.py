@@ -39,7 +39,11 @@ def is_login_required(request, event):
 
 def check_sales_segment_term(request):
     now = datetime.now()
-    sales_segment = request.context.sales_segment
+    cart = get_cart(request)
+    if cart is not None:
+        sales_segment = cart.sales_segment
+    else:
+        sales_segment = request.context.sales_segment
     if not sales_segment:
         
         raise NoSalesSegment
