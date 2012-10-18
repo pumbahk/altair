@@ -18,6 +18,9 @@ from .api import get_nickname
 
 logger = logging.getLogger(__name__)
 
+def cart_timeout(request):
+    return request.registry.settings['altair_cart.expire_time']
+
 def performance_date(performance):
     s = performance.start_on
     return u'{0.month}月{0.day}日 {0.hour:02}:{0.minute:02}'.format(s)
