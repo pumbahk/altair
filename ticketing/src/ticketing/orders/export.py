@@ -2,15 +2,18 @@
 from ticketing.cart.helpers import format_number as _format_number
 from ticketing.core.models import no_filter
 from ticketing.models import record_to_multidict
-from ticketing.users.models import MailSubscription
+from ticketing.users.models import MailSubscription, MailMagazine
 from collections import defaultdict
 
 def format_number(value):
     return _format_number(float(value))
 
-def _create_mailsubscription_cache():
+def _create_mailsubscription_cache(organization_id):
     D = defaultdict(str)
-    for ms in MailSubscription.query:
+    query = MailSubscription.query.filter(MailSubscription.segment_id==MailMagazine.id)
+    if organization_id:
+        query = query.filter(MailMagazine.organization_id==organization_id)
+    for ms in query:
         D[ms.email] = "1"
     return D
 
@@ -88,9 +91,9 @@ class OrderCSV(object):
         'name',
         ]
 
-    def __init__(self, orders, export_type=EXPORT_TYPE_ORDER):
+    def __init__(self, orders, export_type=EXPORT_TYPE_ORDER, organization_id=None):
         export_type = int(export_type)
-
+        self.organization_id = organization_id
         # shipping_addressのヘッダーにはuser_profileのカラムと区別する為にprefix(shipping_)をつける
         self.header = self.order_header \
                     + self.user_profile_header \
@@ -112,7 +115,7 @@ class OrderCSV(object):
         if self._mailsubscription_cache is None:
             if "mail_permission_0" not in self.header:
                 self.header.append("mail_permission_0")
-            self._mailsubscription_cache = _create_mailsubscription_cache()
+            self._mailsubscription_cache = _create_mailsubscription_cache(self.organization_id)
         return self._mailsubscription_cache
 
     def encode(self, row):
