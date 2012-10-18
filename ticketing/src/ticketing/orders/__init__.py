@@ -14,6 +14,7 @@ def includeme(config):
     config.add_route('orders.reserve.form'              , '/reserve/form/')
     config.add_route('orders.reserve.confirm'           , '/reserve/confirm/')
     config.add_route('orders.reserve.complete'          , '/reserve/complete/')
+    config.add_route('orders.reserve.after_printed'          , '/reserve/after_printed/')
     config.add_route('orders.reserve.reselect'          , '/reserve/reselect/')
     config.add_route('orders.note'                      , '/note/{order_id}')
     config.add_route('orders.issue_status'              , '/issue_status/{order_id}')
