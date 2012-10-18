@@ -9,11 +9,11 @@ from wtforms import ValidationError
 from ticketing.master.models import Prefecture
 from ticketing.core import models as c_models
 from datetime import date, datetime
-import unicodedata
 from ticketing.formhelpers import Translations
 
 from . import fields as my_fields
 from . import widgets as my_widgets
+from ..formhelpers import text_type_but_none_if_not_given, Zenkaku, Katakana, NFKC, lstrip, strip, strip_hyphen, strip_spaces
 
 import re
 
@@ -29,9 +29,6 @@ radio_list_widget = my_widgets.Switcher(
     plain=my_widgets.GenericSerializerWidget(prefix_label=False)
     )
 
-def text_type_but_none_if_not_given(value):
-    return unicode(value) if value is not None else None
-
 def get_year_choices():
     current_year = datetime.now().year
     years =  [(str(year), year) for year in range(current_year-100, current_year)]
@@ -45,33 +42,7 @@ def get_year_days():
     days =  [(str(month), month) for month in range(1,32)]
     return days
 
-Zenkaku = v.Regexp(r"^[^\x01-\x7f]+$", message=u'全角で入力してください')
-Katakana = v.Regexp(ur'^[ァ-ヶ]+$', message=u'カタカナで入力してください')
-
-def NFKC(unistr):
-    return unistr and unicodedata.normalize('NFKC', unistr)
-
-def lstrip(chars):
-    def stripper(unistr):
-        return unistr and unistr.lstrip(chars)
-    return stripper
-
-def strip(chars):
-    def stripper(unistr):
-        return unistr and unistr.strip(chars)
-    return stripper
-
-REGEX_HYPHEN = re.compile('\-')
-def strip_hyphen():
-    def stripper(unistr):
-        print unistr
-        return unistr and REGEX_HYPHEN.sub('', unistr)
-    return stripper
-
-strip_spaces = strip(u' 　')
-
 class OrderFormSchema(Form):
-
     def _get_translations(self):
         return Translations({
             'This field is required.' : u'入力してください',
