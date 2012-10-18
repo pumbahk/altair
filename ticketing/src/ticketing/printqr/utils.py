@@ -44,12 +44,6 @@ def page_formats_for_organization(organization):
         for page_format in DBSession.query(PageFormat).filter_by(organization=organization)
         ]
 
-def token_from_orderno_and_id(order_no, token_id):
-    return OrderedProductItemToken.query.filter_by(id=token_id)\
-        .filter(OrderedProductItemToken.ordered_product_item_id==OrderedProductItem.id)\
-        .filter(OrderedProductItem.ordered_product_id == OrderedProduct.id)\
-        .filter(OrderedProduct.order_id==Order.id, Order.order_no==order_no)
-
 def _order_and_history_from_qrdata(qrdata):
     return DBSession.query(Order, TicketPrintHistory)\
         .filter(TicketPrintHistory.id==qrdata["serial"])\
@@ -128,9 +122,19 @@ def svg_data_from_token_with_descinfo(ordered_product_item_token):
                 u'seat_id': ordered_product_item_token.seat_id or "",
                 u'serial': ordered_product_item_token.serial,
                 u"ticket_name": ticket_name, 
-                u'data': json_safe_coerce(pair[1])
+                u'data': json_safe_coerce(pair[1]), 
+                u"printed_at": str(ordered_product_item_token.printed_at) if ordered_product_item_token.printed_at else None
                 })
     return retval
+
+def history_from_token(request, operator_id, order_id, token):
+    return TicketPrintHistory(
+        operator_id=operator_id, 
+        seat_id=token.seat_id, 
+        item_token_id=token.id,
+        ordered_product_item_id=token.item.id,
+        order_id=order_id,
+        )
 
 def add_history(request, operator_id, params):
     seat_id = params.get(u'seat_id')
