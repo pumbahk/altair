@@ -19,7 +19,7 @@ propagate = 0
 
 [handler_rotate]
 class = logging.handlers.RotatingFileHandler
-args = ("${buildout:directory}/var/log/cancel_auth_expired_carts",)
+args = ("${buildout:directory}/var/log/update_seat_status",)
 level = NOTSET
 formatter = generic
 
