@@ -510,6 +510,7 @@ class Orders(BaseView):
             order.note = post_data.get('note')
             attr = 'sales_counter_payment_method_id'
             if int(post_data.get(attr, 0)):
+                order.paid_at = datetime.now()
                 order.attributes[attr] = post_data.get(attr)
             DBSession.add(order)
             DBSession.flush()

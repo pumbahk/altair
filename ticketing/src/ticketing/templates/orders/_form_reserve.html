@@ -97,10 +97,11 @@
 
         ${h.form_item(form.performance_id)}
         ${h.form_item(form.payment_delivery_method_pair_id)}
+        <p>※ 決済・配送方法は「販売区分」が「窓口販売」で登録されている方法のみ選択可能です</p>
         ${h.form_item(form.sales_counter_payment_method_id)}
+        <p>※ 当日窓口決済を選択すると、予約のステータスが「入金済み」になります</p>
         ${h.form_item(form.note, option={'rows':5, 'class':'span10'})}
       </fieldset>
-      <p>※ 決済・配送方法は「販売区分」が「窓口販売」で登録されている方法のみ選択可能です</p>
     </form>
   </div>
 
