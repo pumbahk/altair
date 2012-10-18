@@ -169,13 +169,6 @@
       success: function(result) {
         if (window.ticketPrinterService) {
           printOrder(result.order_id); // _printer.html
-          $.ajax({
-            type: 'post',
-            async: false,
-            datatype: 'json',
-            data: JSON.stringify({order_id: result.order_id}),
-            url: "${request.route_path("orders.reserve.after_printed")}"
-          })
         }
         window.open('/orders/show/' + result.order_id, '_blank');
         $('#modal-reserve').modal('hide');

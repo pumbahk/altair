@@ -535,29 +535,6 @@ class Orders(BaseView):
                 'message':u'エラーが発生しました',
             }))
 
-    @view_config(route_name="orders.reserve.after_printed", request_method='POST', renderer='json', permission='sales_counter')
-    def after_printed(self):
-        order_id = self.request.json_body["order_id"]
-        items = OrderedProductItem.query.filter(
-            OrderedProductItem.ordered_product_id==OrderedProduct.id, 
-            OrderedProduct.order_id==Order.id, 
-            Order.id==order_id)\
-            .options(orm.joinedload(OrderedProductItem.tokens))
-
-        if items.count() <= 0:
-            mes = "*reservatioin after_printed: items is empty (order_id=%s)" % order_id
-            logger.warn(mes)
-            raise HTTPBadRequest(mes)
-
-        now_time = datetime.now()
-        setter = IssuedPrintedAtSetter(now_time)
-        for item in items:
-            for token in item.tokens:
-                setter.add_token(token)
-            setter.add_item(item)
-        setter.start_bubbling()
-        return {"order_id": order_id, "printed_at": now_time, "issued_at": now_time}
-
     @view_config(route_name='orders.reserve.reselect', request_method='POST', renderer='json', permission='sales_counter')
     def reserve_reselect(self):
         try:
