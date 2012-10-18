@@ -123,4 +123,6 @@ class PrintedAtBubblingSetter(object):
     def bubbling_orders(self):
         for order in self.orders:
             if order.is_printed():
-                self._set_printed_at_iff_none(order)
+                if order.printed_at is None:
+                    order.printed_at = self.dt
+                    order.issued = True
