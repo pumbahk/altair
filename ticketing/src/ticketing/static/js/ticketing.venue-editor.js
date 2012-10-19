@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['IF3IZYIATUI6Y9IO'] = (function (exports) { (function () { 
+__LIBS__['HRCTQXZ03063WK4I'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -65,14 +65,15 @@ exports.DEFAULT = {
     1: {},
     2: { stroke: { color: "#ffff40", width: 3, pattern: 'solid' } },
     3: { stroke: { color: "#2020d2", width: 3, pattern: 'solid' } },
-    4: { stroke: { color: "#ff8c40", width: 3, pattern: 'solid' } },
+    4: { stroke: { color: "#006666", width: 3, pattern: 'solid' } },
     5: { stroke: { color: "#b3d940", width: 3, pattern: 'solid' } },
     6: { stroke: { color: "#ff4040", width: 3, pattern: 'solid' } },
-    7: { stroke: { color: "#9f9fec", width: 3, pattern: 'solid' } }
+    7: { stroke: { color: "#9f9fec", width: 3, pattern: 'solid' } },
+    8: { stroke: { color: "#ff8c40", width: 3, pattern: 'solid' } }
   }
 };
  })(); return exports; })({});
-__LIBS__['q0EA0W7ARNU0_5FI'] = (function (exports) { (function () { 
+__LIBS__['tIKIN_R_0FF_7NWV'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -98,7 +99,7 @@ exports.ja = {
   } 
 };
  })(); return exports; })({});
-__LIBS__['jLFDNJSTPZM9A76I'] = (function (exports) { (function () { 
+__LIBS__['NG892HOPA7SP0JQT'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -197,7 +198,7 @@ exports.mergeStyle = function mergeStyle(a, b) {
   };
 };
  })(); return exports; })({});
-__LIBS__['KFWN6TWAU3CW_X81'] = (function (exports) { (function () { 
+__LIBS__['EN50RZT_ETH4TWP3'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -246,12 +247,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['w_9I4GRKFIJCA0DV'] = (function (exports) { (function () { 
+__LIBS__['TBHXPNLV4VO4N0NQ'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['jLFDNJSTPZM9A76I'];
-var CONF = __LIBS__['IF3IZYIATUI6Y9IO'];
-var IdentifiableSet = __LIBS__['KFWN6TWAU3CW_X81'].IdentifiableSet;
+var util = __LIBS__['NG892HOPA7SP0JQT'];
+var CONF = __LIBS__['HRCTQXZ03063WK4I'];
+var IdentifiableSet = __LIBS__['EN50RZT_ETH4TWP3'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -727,12 +728,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['AFNL_PAM_F4P23YS'] = (function (exports) { (function () { 
+__LIBS__['k_L7HCLX4CRNS4FY'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['jLFDNJSTPZM9A76I'];
-var CONF = __LIBS__['IF3IZYIATUI6Y9IO'];
-var models = __LIBS__['w_9I4GRKFIJCA0DV'];
+var util = __LIBS__['NG892HOPA7SP0JQT'];
+var CONF = __LIBS__['HRCTQXZ03063WK4I'];
+var models = __LIBS__['TBHXPNLV4VO4N0NQ'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -928,13 +929,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['IF3IZYIATUI6Y9IO'];
-  var models = __LIBS__['w_9I4GRKFIJCA0DV'];
-  var util = __LIBS__['jLFDNJSTPZM9A76I'];
-  var viewobjects = __LIBS__['AFNL_PAM_F4P23YS'];
-  var IdentifiableSet = __LIBS__['KFWN6TWAU3CW_X81'].IdentifiableSet;
+  var CONF = __LIBS__['HRCTQXZ03063WK4I'];
+  var models = __LIBS__['TBHXPNLV4VO4N0NQ'];
+  var util = __LIBS__['NG892HOPA7SP0JQT'];
+  var viewobjects = __LIBS__['k_L7HCLX4CRNS4FY'];
+  var IdentifiableSet = __LIBS__['EN50RZT_ETH4TWP3'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['q0EA0W7ARNU0_5FI'];
+    I18n.translations = __LIBS__['tIKIN_R_0FF_7NWV'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
