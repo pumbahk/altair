@@ -22,6 +22,9 @@ body {
     <li>公演：${order.performance.event.title} -- ${order.performance.name}</li>
     <li>注文番号: ${order.order_no}</li>
     <li>購入者: ${order.shipping_address.full_name_kana if order.shipping_address else u"-"}</li>
+    <li>注文日時: ${order.created_at}</li>
+    <li>支払方法：${order.payment_delivery_pair.payment_method.name}</li>
+    <li>受取方法: ${order.payment_delivery_pair.delivery_method.name}</li>
     <li>ステータス:${order.status}</li>
   </ul>
   

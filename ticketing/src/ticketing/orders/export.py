@@ -208,7 +208,10 @@ class OrderCSV(object):
                     if column == 'quantity':
                         quantity = ordered_product.quantity
                         if ordered_product_item.seats:
-                            quantity = len(ordered_product_item.seats)
+                            if export_type == self.EXPORT_TYPE_ORDER:
+                                quantity = len(ordered_product_item.seats)
+                            else:
+                                quantity = 1
                         buffer.append((column_name, quantity))
                     if column == 'ticket_printed_by':
                         operator_name = ''
