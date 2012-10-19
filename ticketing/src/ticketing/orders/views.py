@@ -79,8 +79,7 @@ class OrdersAPIView(BaseView):
 
         query = Performance.query.filter(Performance.deleted_at == None)
         query = Performance.set_search_condition(query, form_search)
-        performances = itertools.chain([testing.DummyResource(id="", name="")], query)
-        performances = [dict(pk=p.id, name=p.name) for p in performances]
+        performances = [dict(pk='', name='')]+[dict(pk=p.id, name='%s (%s)' % (p.name, p.start_on.strftime('%Y-%m-%d %H:%M'))) for p in query]
         return {"result": performances, "status": True}
 
 

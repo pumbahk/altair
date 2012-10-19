@@ -65,7 +65,7 @@ class OrderSearchForm(Form):
             self.performance_id.choices = [(performance.id, performance.name)]
         elif formdata and 'event_id' in formdata:
             performances = Performance.filter_by(event_id=formdata['event_id'])
-            self.performance_id.choices = [('', '')]+[(p.id, p.name) for p in performances]
+            self.performance_id.choices = [('', '')]+[(p.id, '%s (%s)' % (p.name, p.start_on.strftime('%Y-%m-%d %H:%M'))) for p in performances]
 
     order_no = TextField(
         label=u'予約番号',
