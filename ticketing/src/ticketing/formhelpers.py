@@ -51,6 +51,7 @@ class Translations(object):
         'This field is required.':u'入力してください',
         'Field must be at least %(min)d characters long.' : u'%(min)d文字以上で入力してください。',
         'Field cannot be longer than %(max)d characters.' : u'%(max)d文字以内で入力してください。',
+        'Field must be between %(min)d and %(max)d characters long.' : u'%(min)d文字から%(max)d文字の間で入力してください。',
     }
     def __init__(self, messages = None):
         if messages:
