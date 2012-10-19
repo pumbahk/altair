@@ -560,6 +560,7 @@ class ReserveView(object):
                 self.request,
                 performance_id,
                 order_items)
+            cart.sales_segment = sales_segment
             if cart is None:
                 transaction.abort()
                 logger.debug("cart is None. aborted.")
