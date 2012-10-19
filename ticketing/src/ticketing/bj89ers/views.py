@@ -96,7 +96,7 @@ class IndexView(object):
         store_user_profile(self.request, form.data)
         logger.debug('OK redirect')
         sales_segment_id = self.context.sales_segment_id
-        cart.sales_segment = sales_segment_id
+        cart.sales_segment = sales_segment
         return HTTPFound(location=self.request.route_url("cart.payment", sales_segment_id=sales_segment_id))
 
 class PaymentView(_PaymentView):
