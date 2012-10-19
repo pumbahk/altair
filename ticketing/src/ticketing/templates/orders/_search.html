@@ -20,8 +20,9 @@
   }
 
   function download_orders() {
+    var params = $('#modal-download_orders').find('form').serialize();
     modal = $('#modal-search');
-    modal.find('#search').attr('action', '/orders/download/').submit();
+    modal.find('#search').attr('action', '/orders/download/?' + params).submit();
     $('#modal-download_orders').modal('hide');
   }
 </script>
@@ -89,15 +90,17 @@
         ${h.form_item(form.name)}
         ${h.form_item(form.member_id)}
         ${h.form_item(form.tel)}
+        ${h.form_item(form.email)}
+        ${h.form_item(form.seat_number)}
 
         ${h.form_item(form.event_id)}
         ${h.form_item(form.performance_id)}
         <script type="text/javascript">
           $(function(){
             var update_on_empty = function(){
-                var $target = $(this).parents("form").find("select[name='performance_id']").eq(0);
-                $target.empty();
-		        return ;
+              var $target = $(this).parents("form").find("select[name='performance_id']").eq(0);
+              $target.empty();
+		          return;
             };
             var update_on_hasvalue = function(v){
               var self = this;
@@ -118,7 +121,7 @@
               var self = this;
               var v = $(this).val();
               if(!v){
-                return update_on_empty.call(self, v);
+                return update_on_empty.call(self);
               } else {
                 return update_on_hasvalue.call(self, v);
               }
@@ -126,7 +129,7 @@
             $("#search select[name='event_id']").change(update_performances);
             //update_performances.call($("#search select[name='event_id'] option:selected"));
           });
-		</script>
+    		</script>
         <div class="control-group ">
           <label class="control-label">
             ${form.start_on_from.label.text}
@@ -158,49 +161,61 @@
   </div>
 
   <div class="modal-body">
-    <p>購入情報(CSV)をダウンロードします。よろしいですか？<br>
-      <div class="alert alert-error">
-        <ul>
-        <% conditions = form.get_conditions() %>
-        % if conditions:
-          <div style="margin-bottom: 5px;">現在の検索条件で抽出されます。</div>
-        % else:
-          <div style="margin-bottom: 5px;">検索条件がありません。</div>
-        % endif
-
-        <% listed = [] %>
-        % for k, v in conditions.items():
-          % if k in listed:
-            <% continue %>
-          % elif k in ['ordered_from', 'ordered_to']:
-            <%
-              ordered_from = conditions.pop('ordered_from', '')
-              if ordered_from:
-                (label, ordered_from) = ordered_from
-              ordered_to = conditions.pop('ordered_to', '')
-              if ordered_to:
-                (label, ordered_to) = ordered_to
-              listed += ['ordered_from', 'ordered_to']
-            %>
-            <li>${u'%s : %s 〜 %s' % (label, ordered_from, ordered_to)}</li>
-          % elif k in ['start_on_from', 'start_on_to']:
-            <%
-              start_on_from = conditions.pop('start_on_from', '')
-              if start_on_from:
-                (label, start_on_from) = start_on_from
-              start_on_to = conditions.pop('start_on_to', '')
-              if start_on_to:
-                (label, start_on_to) = start_on_to
-              listed += ['start_on_from', 'start_on_to']
-            %>
-            <li>${u'%s : %s 〜 %s' % (label, start_on_from, start_on_to)}</li>
+    <form id="download" class="form-horizontal" action="/orders/download/" method="POST">
+      <p>購入情報(CSV)をダウンロードします。よろしいですか？<br>
+        <div class="alert alert-error">
+          <% conditions = form.get_conditions() %>
+          % if conditions:
+            <div style="margin-bottom: 5px;">現在の検索条件で抽出されます。</div>
           % else:
-            <li>${'%s : %s' % v}</li>
+            <div style="margin-bottom: 5px;">検索条件がありません。<br>対象が多すぎると時間がかかる可能性があるので条件を指定してください。</div>
           % endif
-        % endfor
-        </ul>
-      </div>
-    </p>
+
+          <ul>
+          <% listed = [] %>
+          % for k, v in conditions.items():
+            % if k in listed:
+              <% continue %>
+            % elif k in ['ordered_from', 'ordered_to']:
+              <%
+                ordered_from = conditions.pop('ordered_from', '')
+                if ordered_from:
+                  (label, ordered_from) = ordered_from
+                ordered_to = conditions.pop('ordered_to', '')
+                if ordered_to:
+                  (label, ordered_to) = ordered_to
+                listed += ['ordered_from', 'ordered_to']
+              %>
+              <li>${u'%s : %s 〜 %s' % (label, ordered_from, ordered_to)}</li>
+            % elif k in ['start_on_from', 'start_on_to']:
+              <%
+                start_on_from = conditions.pop('start_on_from', '')
+                if start_on_from:
+                  (label, start_on_from) = start_on_from
+                start_on_to = conditions.pop('start_on_to', '')
+                if start_on_to:
+                  (label, start_on_to) = start_on_to
+                listed += ['start_on_from', 'start_on_to']
+              %>
+              <li>${u'%s : %s 〜 %s' % (label, start_on_from, start_on_to)}</li>
+            % else:
+              <li>${'%s : %s' % v}</li>
+            % endif
+          % endfor
+          </ul>
+        </div>
+      </p>
+      <fieldset>
+        <div>
+          <input id="export_type_1" name="export_type" type="radio" value="1" style="float: left; margin-right: 5px;" checked>
+          <label for="export_type_1">予約ごとに1行ずつ出力する</label>
+        </div>
+        <div>
+          <input id="export_type_2" name="export_type" type="radio" value="2" style="float: left; margin-right: 5px;">
+          <label for="export_type_2">座席ごとに1行ずつ出力する</label>
+        </div>
+      </fieldset>
+    </form>
   </div>
 
   <div class="modal-footer">

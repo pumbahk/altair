@@ -94,7 +94,7 @@ setup(name='ticketing',
       install_requires=requires,
       dependency_links = [
         'file:../commons#egg=altair-commons-0.0',
-        'https://github.com/moriyoshi/tableau/tarball/master#egg=tableau-0.0.4pre',
+        'https://github.com/moriyoshi/tableau/tarball/master#egg=tableau-0.0.4pre2',
         'https://bitbucket.org/moriyoshi/alembic/get/9fe8d037f71f.zip#egg=alembic-0.3.5moriyoshi', 
         "https://github.com/numpy/numpy/tarball/v1.6.2#egg=numpy-1.6.2",
         'https://github.com/moriyoshi/beaker_extensions/tarball/0.2.0pre2#egg=beaker-extensions-0.2.0pre2',
@@ -108,6 +108,7 @@ setup(name='ticketing',
       [console_scripts]
       inquiry_demo=ticketing.cart.commands:inquiry_demo
       cancel_auth_expired_carts=ticketing.cart.commands:cancel_auth_expired_carts
+      update_seat_status=ticketing.orders.commands:update_seat_status
       join_cart_and_order=ticketing.cart.commands:join_cart_and_order
       sej_notification=ticketing.sej.scripts.sej_notification:main
       """,

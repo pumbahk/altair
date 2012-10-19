@@ -1,4 +1,5 @@
 import logging
+from pyramid.httpexceptions import HTTPException
 from .api import login_url
 
 logger = logging.getLogger(__name__)
@@ -13,7 +14,8 @@ class FCAuthTween(object):
         try:
             return self.handler(request)
         except Exception, e:
-            logger.exception(e)
+            if not isinstance(e, HTTPException):
+                logger.exception(e)
             raise
         finally:
             if hasattr(request, 'context'):

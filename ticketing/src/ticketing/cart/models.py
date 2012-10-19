@@ -262,6 +262,9 @@ class Cart(Base):
     order_id = sa.Column(Identifier, sa.ForeignKey("Order.id"))
     order = orm.relationship('Order', backref='carts')
 
+    sales_segment_id = sa.Column(Identifier, sa.ForeignKey('SalesSegment.id'))
+    sales_segment = orm.relationship('SalesSegment', backref='carts')
+
     @property
     def order_no(self):
         logger.debug("organization.id = %d" % self.performance.event.organization.id)

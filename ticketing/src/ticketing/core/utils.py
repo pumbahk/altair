@@ -123,4 +123,31 @@ class PrintedAtBubblingSetter(object):
     def bubbling_orders(self):
         for order in self.orders:
             if order.is_printed():
-                self._set_printed_at_iff_none(order)
+                if order.printed_at is None:
+                    order.printed_at = self.dt
+                order.issued = True
+
+class IssuedPrintedAtSetter(object):
+    def __init__(self, dt):
+        self.for_issued = IssuedAtBubblingSetter(dt)
+        self.for_printed = PrintedAtBubblingSetter(dt)
+
+    def add_token(self, token):
+        self.for_issued.issued_token(token)
+        self.for_printed.printed_token(token)
+
+    def add_item(self, item):
+        self.for_issued.issued_item(item)
+        self.for_printed.printed_item(item)
+
+    def add_order(self, order):
+        self.for_issued.issued_order(order)
+        self.for_printed.printed_order(order)
+
+    def start_bubbling(self):
+        self.for_issued.start_bubbling()
+        self.for_printed.start_bubbling()
+
+    def start_refresh_status_bubbling(self):
+        self.for_issued.start_refresh_status_bubbling()
+        self.for_printed.start_refresh_status_bubbling()

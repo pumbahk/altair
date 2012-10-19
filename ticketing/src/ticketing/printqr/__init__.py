@@ -15,10 +15,12 @@ def includeme(config):
     config.add_route("eventlist", "/")    
     config.add_route("api.ticket.data", "/api/ticket/data/{event_id}")
     config.add_route("api.ticket.after_printed", "/api/ticket/after_printed")
+    config.add_route("api.ticket.after_printed_order", "/api/ticket/after_printed_order")
     config.add_route("api.ticket.refresh.printed_status", "/api/ticket/refresh_printed_status")
     config.add_route("api.log", "/api/log")
     config.add_route('api.applet.ticket', '/api/applet/ticket/{event_id}/{id:.*}')
     config.add_route('api.applet.ticket_data', '/api/applet/ticket_data')
+    config.add_route('api.applet.ticket_data_order', '/api/applet/ticket_data_order')
     config.add_route('api.applet.history', '/api/applet/history')
 
     config.add_route("login", "/login")

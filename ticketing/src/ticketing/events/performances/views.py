@@ -74,7 +74,7 @@ class Performances(BaseView):
             data['form_product_item'] = ProductItemForm(user_id=self.context.user.id, performance_id=performance_id)
         elif tab == 'order':
             query = Order.filter_by(performance_id=performance_id)
-            form_search = OrderSearchForm(self.request.params, performance_id=performance_id)
+            form_search = OrderSearchForm(self.request.params, event_id=performance.event_id, performance_id=performance_id)
             if form_search.validate():
                 query = Order.set_search_condition(query, form_search)
             else:

@@ -13,9 +13,9 @@ def make_qrimage_from_qrdata(ticket):
     return qr.make_image()
 
 def qrimage_as_response(img):
-    r = Response(status=200, content_type="image/png")
+    r = Response(status=200, content_type="image/gif")
     buf = StringIO.StringIO()
-    img.save(buf, 'PNG')
+    img.save(buf, 'GIF')
     r.body = buf.getvalue()
     return r
 

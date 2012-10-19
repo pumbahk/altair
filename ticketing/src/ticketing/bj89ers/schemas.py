@@ -9,11 +9,11 @@ from wtforms import ValidationError
 from ticketing.master.models import Prefecture
 from ticketing.core import models as c_models
 from datetime import date, datetime
-import unicodedata
 from ticketing.formhelpers import Translations
 
 from . import fields as my_fields
 from . import widgets as my_widgets
+from ..formhelpers import text_type_but_none_if_not_given, Zenkaku, Katakana, NFKC, lstrip, strip, strip_hyphen, strip_spaces, SejCompliantEmail
 
 import re
 
@@ -29,9 +29,6 @@ radio_list_widget = my_widgets.Switcher(
     plain=my_widgets.GenericSerializerWidget(prefix_label=False)
     )
 
-def text_type_but_none_if_not_given(value):
-    return unicode(value) if value is not None else None
-
 def get_year_choices():
     current_year = datetime.now().year
     years =  [(str(year), year) for year in range(current_year-100, current_year)]
@@ -45,33 +42,7 @@ def get_year_days():
     days =  [(str(month), month) for month in range(1,32)]
     return days
 
-Zenkaku = v.Regexp(r"^[^\x01-\x7f]+$", message=u'全角で入力してください')
-Katakana = v.Regexp(ur'^[ァ-ヶ]+$', message=u'カタカナで入力してください')
-
-def NFKC(unistr):
-    return unistr and unicodedata.normalize('NFKC', unistr)
-
-def lstrip(chars):
-    def stripper(unistr):
-        return unistr and unistr.lstrip(chars)
-    return stripper
-
-def strip(chars):
-    def stripper(unistr):
-        return unistr and unistr.strip(chars)
-    return stripper
-
-REGEX_HYPHEN = re.compile('\-')
-def strip_hyphen():
-    def stripper(unistr):
-        print unistr
-        return unistr and REGEX_HYPHEN.sub('', unistr)
-    return stripper
-
-strip_spaces = strip(u' 　')
-
 class OrderFormSchema(Form):
-
     def _get_translations(self):
         return Translations({
             'This field is required.' : u'入力してください',
@@ -112,8 +83,8 @@ class OrderFormSchema(Form):
     address2 = fields.TextField(u"住所", filters=[strip_spaces])
     tel_1 = fields.TextField(u"電話番号(携帯)", filters=[strip_spaces], validators=[v.Regexp(r'^\d*$', message=u'-を抜いた数字のみを入力してください')])
     tel_2 = fields.TextField(u"電話番号(自宅)", filters=[strip_spaces], validators=[v.Regexp(r'^\d*$', message=u'-を抜いた数字のみを入力してください')])
-    email = fields.TextField(u"メールアドレス", filters=[strip_spaces], validators=[v.Email()])
-    email2 = fields.TextField(u"メールアドレス（確認用）", filters=[strip_spaces], validators=[v.Email(), v.EqualTo('email', u'確認用メールアドレスが一致しません。')])
+    email = fields.TextField(u"メールアドレス", filters=[strip_spaces], validators=[SejCompliantEmail()])
+    email2 = fields.TextField(u"メールアドレス（確認用）", filters=[strip_spaces], validators=[SejCompliantEmail(), v.EqualTo('email', u'確認用メールアドレスが一致しません。')])
     publicity = fields.SelectField(u"媒体への掲載希望", validators=[v.Optional()], choices=[('yes', u'希望する'),('no', u'希望しない')], coerce=text_type_but_none_if_not_given)
     mail_permission = fields.BooleanField(u"メルマガ配信", default=True)
 

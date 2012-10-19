@@ -11,8 +11,6 @@ logger = logging.getLogger(__name__)
 
 from . import forms
 from . import security
-from ticketing.tickets.utils import build_dict_from_ordered_product_item_token
-from ticketing.utils import json_safe_coerce
 from ticketing.models import DBSession
 from ticketing.core.models import Event
 from ticketing.core.models import Order
@@ -137,7 +135,7 @@ def refresh_printed_status(context, request):
     token_id = request.json_body["ordered_product_item_token_id"]
     order_no = request.json_body["order_no"]
 
-    token = utils.token_from_orderno_and_id(order_no, token_id).first()
+    token = get_matched_token_query_from_order_no(order_no).filter(OrderedProductItemToken.id==token_id).first()
     setter = PrintedAtBubblingSetter(None)
     setter.printed_token(token)
     setter.start_refresh_status_bubbling()
@@ -153,14 +151,14 @@ def log_view(context, request):
         return {"status": "success"}
     except Exception, e:
         return {"status": "error", "message": str(e)}
-
+    
 @view_config(route_name="api.ticket.after_printed", renderer="json", xhr=True)
 def ticket_after_printed_edit_status(context, request):
     token_id = request.json_body["ordered_product_item_token_id"]
     order_no = request.json_body["order_no"]
     force_update = request.json_body.get("force_update")
 
-    token = utils.token_from_orderno_and_id(order_no, token_id).first()
+    token = get_matched_token_query_from_order_no(order_no).filter(OrderedProductItemToken.id==token_id).first()
 
     if token is None:
         mes = "*after ticket print: token is not found. (token_id = %d,  order_no=%s)"
@@ -179,16 +177,38 @@ def ticket_after_printed_edit_status(context, request):
         )
     DBSession.add(history)
 
-    setter = PrintedAtBubblingSetter(datetime.now())
+    now_time = datetime.now()
+    setter = PrintedAtBubblingSetter(now_time)
     setter.printed_token(token)
     setter.start_bubbling()
     DBSession.add(token)
 
     ## log
     logger.info("*qrlog* print ticket token=%s" % (token_id))
+    return {"status": "success", "data": {"printed": str(now_time)}}
 
-    printed = str(token.printed_at) if token.printed_at else None, ##todo:データ整理
-    return {"status": "success", "data": {"printed": printed}}
+@view_config(route_name="api.ticket.after_printed_order", renderer="json", xhr=True)
+def ticket_after_printed_edit_status_order(context, request):
+    token_id = request.json_body["ordered_product_item_token_id"]
+    order_no = request.json_body["order_no"]
+    order_id = request.json_body["order_id"]
+    force_update = request.json_body.get("force_update")
+
+    tokens = get_matched_token_query_from_order_no(order_no)
+    if not force_update:
+        tokens = tokens.filter(OrderedProductItemToken.printed_at == None)
+
+    now_time = datetime.now()
+    setter = PrintedAtBubblingSetter(now_time)
+    for token in tokens:
+        DBSession.add(token)
+        DBSession.add(utils.history_from_token(request, context.operator.id, order_id, token))
+        setter.printed_token(token)
+
+    setter.start_bubbling()
+    ## log
+    logger.info("*qrlog* print ticket token=%s" % (token_id))
+    return {"status": "success", "data": {"printed": str(now_time)}}
 
 class AppletAPIView(object):
     def __init__(self, context, request):
@@ -236,18 +256,23 @@ class AppletAPIView(object):
             logger.debug("*api.applet.ticket data: token id=%s,  organization id=%s" \
                              % (ordered_product_item_token_id, self.context.organization.id))
             return { u'status': u'error', u'message': u'券面データがみつかりません' }
+        retval = utils.svg_data_from_token(ordered_product_item_token)
+        return {
+            u'status': u'success',
+            u'data': retval
+            }
 
-        pair = build_dict_from_ordered_product_item_token(ordered_product_item_token)
-        retval = [] 
-        if pair is not None:
-            retval.append({
-                u'ordered_product_item_token_id': ordered_product_item_token.id,
-                u'ordered_product_item_id': ordered_product_item_token.item.id,
-                u'order_id': ordered_product_item_token.item.ordered_product.order.id,
-                u'seat_id': ordered_product_item_token.seat_id or "",
-                u'serial': ordered_product_item_token.serial,
-                u'data': json_safe_coerce(pair[1])
-                })
+    @view_config(route_name='api.applet.ticket_data_order', request_method='POST', renderer='json')
+    def ticket_data_order(self):
+        order_no = self.request.json_body.get('order_no')
+        if order_no is None:
+            return { u'status': u'error', u'message': u'注文番号がみつかりません' }
+
+        qs = get_matched_token_query_from_order_no(order_no)
+        
+        retval = []
+        for ordered_product_item_token in qs:
+            retval.extend(utils.svg_data_from_token_with_descinfo(ordered_product_item_token))
         return {
             u'status': u'success',
             u'data': retval

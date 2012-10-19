@@ -20,6 +20,12 @@
     }
     % endif
     $('.draggable').draggable({scroll: true, handle:$('.draggable .modal-body')});
+    $('#modal-reserve').on('shown', function(){
+      $(this).css('max-height', '700px')
+             .css('max-width', '600px')
+             .css('margin-top', ($(this).outerHeight()/2)*-1)
+             .css('margin-left',($(this).outerWidth()/2)*-1);
+    });
   });
 </script>
 
@@ -32,75 +38,74 @@
     ${h.alert_message(form)}
 
     <form action="javascript:confirmOrder();">
-      <fieldset>
-        <div class="control-group" style="margin-bottom: 15px;">
-          <label class="control-label" style="font-weight: bold;">予約する座席 (${u'座席指定 %s席' % len(seats) if seats else u'おまかせ'})</label>
-          <div class="controls">
-            <ul>
-            % for seat in seats:
-              <li>${seat.name}</li>
-            % endfor
-            </ul>
-          </div>
-        </div>
-
-        % if form.products.choices:
-        <script type="text/javascript">
-          $(function() {
-            var product_quantity = [];
-            % for product in form.products.choices:
-              var el = 'input[name="product_quantity-${product[0]}"]';
-              product_quantity.push(el);
-              $(el).data('price', ${product[1]['price']});
-            % endfor
-            product_quantity = $(product_quantity.join(','));
-
-            product_quantity.focusout(function(){
-              var total_price = 0;
-              var total_quantity = 0;
-              product_quantity.each(function () {
-                var price = $(this).data('price');
-                var quantity = parseInt($(this).val());
-                quantity = (isNaN(quantity) || quantity < 0) ? 0 : quantity;
-                total_price += price * quantity;
-                total_quantity += quantity;
-              });
-
-              total_price = String(total_price);
-              while(total_price != (total_price = total_price.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
-
-              $('span[name="total-price"]').text(total_price + '円');
-              $('span[name="total-quantity"]').text(total_quantity);
-            });
-          });
-        </script>
-        <table class="table table-striped table-bordered">
-          <tr>
-            <th>商品</th>
-            <th>単価</th>
-            <th style="width: 80px;">個数</th>
-          </tr>
-          % for product in form.products.choices:
-          <tr>
-            <td>${product[1]['name']} (${product[1]['sales_segment']})</td>
-            <td>${h.price_format(product[1]['price'])}円</td>
-            <td><input id="product_quantity-${product[0]}" name="product_quantity-${product[0]}" type="text" value=""></td>
-          </tr>
+      <div class="control-group" style="margin-bottom: 15px;">
+        <label class="control-label" style="font-weight: bold;">予約する座席 (${u'座席指定 %s席' % len(seats) if seats else u'おまかせ'})</label>
+        <div class="controls">
+          <ul>
+          % for seat in seats:
+            <li>${seat.name}</li>
           % endfor
-          <tr>
-            <td>合計</td>
-            <td><span name="total-price"></span></td>
-            <td><span name="total-quantity"></span></td>
-          </tr>
-        </table>
-        % endif
+          </ul>
+        </div>
+      </div>
 
-        ${h.form_item(form.performance_id)}
-        ${h.form_item(form.payment_delivery_method_pair_id)}
-        ${h.form_item(form.sales_counter_payment_method_id)}
-        ${h.form_item(form.note, option={'rows':5, 'class':'span10'})}
-      </fieldset>
+      % if form.products.choices:
+      <script type="text/javascript">
+        $(function() {
+          var product_quantity = [];
+          % for product in form.products.choices:
+            var el = 'input[name="product_quantity-${product[0]}"]';
+            product_quantity.push(el);
+            $(el).data('price', ${product[1]['price']});
+          % endfor
+          product_quantity = $(product_quantity.join(','));
+
+          product_quantity.focusout(function(){
+            var total_price = 0;
+            var total_quantity = 0;
+            product_quantity.each(function () {
+              var price = $(this).data('price');
+              var quantity = parseInt($(this).val());
+              quantity = (isNaN(quantity) || quantity < 0) ? 0 : quantity;
+              total_price += price * quantity;
+              total_quantity += quantity;
+            });
+
+            total_price = String(total_price);
+            while(total_price != (total_price = total_price.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
+
+            $('span[name="total-price"]').text(total_price + '円');
+            $('span[name="total-quantity"]').text(total_quantity);
+          });
+        });
+      </script>
+      <table class="table table-striped table-bordered">
+        <tr>
+          <th>商品</th>
+          <th>単価</th>
+          <th style="width: 80px;">個数</th>
+        </tr>
+        % for product in form.products.choices:
+        <tr>
+          <td>${product[1]['name']} (${product[1]['sales_segment']})</td>
+          <td>${h.price_format(product[1]['price'])}円</td>
+          <td><input id="product_quantity-${product[0]}" name="product_quantity-${product[0]}" type="text" value=""></td>
+        </tr>
+        % endfor
+        <tr>
+          <td>合計</td>
+          <td><span name="total-price"></span></td>
+          <td><span name="total-quantity"></span></td>
+        </tr>
+      </table>
+      % endif
+
+      ${h.form_item(form.performance_id)}
+      ${h.form_item(form.payment_delivery_method_pair_id)}
       <p>※ 決済・配送方法は「販売区分」が「窓口販売」で登録されている方法のみ選択可能です</p>
+      ${h.form_item(form.sales_counter_payment_method_id)}
+      <p>※ 当日窓口決済を選択すると、予約のステータスが「入金済み」になります</p>
+      ${h.form_item(form.note, option={'rows':3, 'class':'span6'})}
     </form>
   </div>
 

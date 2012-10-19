@@ -3,6 +3,7 @@
 import re
 from datetime import datetime
 from exceptions import ValueError
+import unicodedata
 
 from wtforms import validators, fields
 import logging
@@ -82,3 +83,53 @@ class Phone(validators.Regexp):
         if self.message is None:
             self.message = field.gettext(u'電話番号を確認してください')
         super(Phone, self).__call__(form, field)
+
+def text_type_but_none_if_not_given(value):
+    return unicode(value) if value is not None else None
+
+Zenkaku = validators.Regexp(r"^[^\x01-\x7f]+$", message=u'全角で入力してください')
+Katakana = validators.Regexp(ur'^[ァ-ヶ]+$', message=u'カタカナで入力してください')
+
+def NFKC(unistr):
+    return unistr and unicodedata.normalize('NFKC', unistr)
+
+def lstrip(chars):
+    def stripper(unistr):
+        return unistr and unistr.lstrip(chars)
+    return stripper
+
+def strip(chars):
+    def stripper(unistr):
+        return unistr and unistr.strip(chars)
+    return stripper
+
+REGEX_HYPHEN = re.compile('\-')
+def strip_hyphen():
+    def stripper(unistr):
+        print unistr
+        return unistr and REGEX_HYPHEN.sub('', unistr)
+    return stripper
+
+strip_spaces = strip(u' 　')
+
+class SejCompliantEmail(validators.Regexp):
+    def __init__(self, message=None):
+        super(SejCompliantEmail, self).__init__(r'^[0-9A-Za-z_./+?-]+@(?:[0-9A-Za-z_-]+\.)*[0-9A-Za-z_-]+$', 0, message)
+
+    def __call__(self, form, field):
+        if self.message is None:
+            self.message = field.gettext('Invalid email address.')
+
+        super(SejCompliantEmail, self).__call__(form, field)
+
+def capitalize(unistr):
+    return unistr and unistr.upper()
+
+def ignore_regexp(regexp):
+    def replace(target):
+        if target is None:
+            return None
+        return re.sub(regexp, "", target)
+    return replace
+
+ignore_space_hyphen = ignore_regexp(re.compile(u"[ \-ー　]"))

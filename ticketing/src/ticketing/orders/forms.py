@@ -8,8 +8,8 @@ from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, T
                      BooleanField, RadioField, FieldList, FormField, DecimalField, IntegerField)
 from wtforms.validators import Optional, AnyOf, Length, Email
 from ticketing.formhelpers import DateTimeField, Translations, Required
-from ticketing.core.models import (PaymentMethodPlugin, DeliveryMethodPlugin, PaymentMethod, StockType,
-                                   SalesSegment, Performance, Product, ProductItem)
+from ticketing.core.models import (PaymentMethodPlugin, DeliveryMethodPlugin, PaymentMethod,
+                                   SalesSegment, Performance, Product, ProductItem, Event)
 from ticketing.cart.schemas import ClientForm
 
 class OrderForm(Form):
@@ -49,6 +49,23 @@ class OrderForm(Form):
     )
 
 class OrderSearchForm(Form):
+
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        Form.__init__(self, formdata, obj, prefix, **kwargs)
+
+        if 'event_id' in kwargs:
+            event = Event.get(kwargs['event_id'])
+            self.event_id.choices = [(event.id, event.title)]
+        elif 'organization_id' in kwargs:
+            events = Event.filter_by(organization_id=kwargs['organization_id'])
+            self.event_id.choices = [('', '')]+[(e.id, e.title) for e in events]
+
+        if 'performance_id' in kwargs:
+            performance = Performance.get(kwargs['performance_id'])
+            self.performance_id.choices = [(performance.id, performance.name)]
+        elif formdata and 'event_id' in formdata:
+            performances = Performance.filter_by(event_id=formdata['event_id'])
+            self.performance_id.choices = [('', '')]+[(p.id, p.name) for p in performances]
 
     order_no = TextField(
         label=u'予約番号',
@@ -94,6 +111,26 @@ class OrderSearchForm(Form):
         label=u'電話番号',
         validators=[Optional()],
     )
+    email = TextField(
+        label=u'メールアドレス',
+        validators=[Optional()],
+    )
+    seat_number = TextField(
+        label=u'座席番号',
+        validators=[Optional()],
+    )
+    event_id = SelectField(
+        label=u"イベント",
+        coerce=lambda x : int(x) if x else u"",
+        choices=[],
+        validators=[Optional()],
+    )
+    performance_id = SelectField(
+        label=u"公演",
+        coerce=lambda x : int(x) if x else u"",
+        choices=[],
+        validators=[Optional()],
+    )
     start_on_from = DateTimeField(
         label=u'公演日時',
         validators=[Optional()],
@@ -111,32 +148,10 @@ class OrderSearchForm(Form):
         validators=[Optional(), AnyOf(['asc', 'desc'], message='')],
         default='desc',
     )
-    def force_maybe(form, field):
-        if not field.choices:
-            field.data = None
-            field.errors[:] = []
-        return True
-
-    event_id = SelectField(
-        label=u"イベント", 
-        coerce=lambda x : int(x) if x else u"", 
-        choices=[], 
-        validators=[Optional(), force_maybe],
-    )
-    performance_id = SelectField(
-        label=u"公演", 
-        coerce=lambda x : int(x) if x else u"", 
-        choices=[], 
-        validators=[Optional(), force_maybe],
-    )
-    def configure(self, event_query):
-        self.event_id.choices = [("", "")]+[(e.id, e.title) for e in event_query]
-        return self
 
     def get_conditions(self):
         conditions = {}
         for name, field in self._fields.items():
-            print name, field.data
             if isinstance(field, HiddenField):
                 continue
             if not field.data:

@@ -14,16 +14,22 @@ class MembershipForm(Form):
         if obj:
             self.name.data = obj.name
             self.membership_id.data = obj.id
-        self.organization_id.choices = [(unicode(o.id), o.name) for o in cmodels.Organization.query]
+            self.organization_id.data = obj.organization_id
+        # self.organization_id.choices = [(unicode(o.id), o.name) for o in cmodels.Organization.query]
 
     def _get_translations(self):
         return Translations()
-    organization_id = SelectField(
+    # organization_id = SelectField(
+    #     label=u"取引先名", 
+    #     choices=[], 
+    #     coerce=unicode, 
+    #     validators=[Optional()],
+    # )
+    organization_id = HiddenField(
         label=u"取引先名", 
-        choices=[], 
-        coerce=unicode, 
         validators=[Optional()],
     )
+    
     name = TextField(
         label=u'名前',
         validators=[

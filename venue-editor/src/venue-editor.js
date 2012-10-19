@@ -254,11 +254,14 @@
   };
 
   VenueEditor.prototype.refresh = function VenueEditor_refresh(data) {
+    if (this.drawable !== null)
+      this.drawable.dispose();
     for (var key in data.metadata) {
       for (var id in data.metadata[key]) {
         this.metadata[key][id] = data.metadata[key][id];
       }
     }
+    this.initDrawable();
     this.initModel();
     this.initSeats();
     this.callbacks.load && this.callbacks.load(this);
@@ -448,9 +451,9 @@
                   seat.addStyleType('highlighted');
                 } else {
                   seat.addStyleType('tooltip');
-                  //seats[id].get('model').set('timer', setTimeout(function() {
-                  //  self.callbacks.tooltip && self.callbacks.tooltip(id);
-                  //}, 3000));
+                  seats[id].get('model').set('timer', setTimeout(function() {
+                    self.callbacks.tooltip && self.callbacks.tooltip(id);
+                  }, 3000));
                 }
                 self.highlighted[_id] = seat;
               }
@@ -464,9 +467,9 @@
                   seat.removeStyleType('highlighted');
                 } else {
                   seat.removeStyleType('tooltip');
-                  //if (seats[id].get('model').get('timer')) {
-                  //  clearTimeout(seats[id].get('model').get('timer'));
-                  //}
+                  if (seats[id].get('model').get('timer')) {
+                    clearTimeout(seats[id].get('model').get('timer'));
+                  }
                 }
               }
             },

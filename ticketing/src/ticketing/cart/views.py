@@ -441,6 +441,7 @@ class ReserveView(object):
 
         try:
             cart = api.order_products(self.request, self.request.params['performance_id'], order_items, selected_seats=selected_seats)
+            cart.sales_segment = sales_segment
             if cart is None:
                 transaction.abort()
                 return dict(result='NG')
@@ -640,6 +641,9 @@ class PaymentView(object):
     def __call__(self):
         """ 支払い方法、引き取り方法選択
         """
+
+        api.check_sales_segment_term(self.request)
+
         if not api.has_cart(self.request):
             raise NoCartError()
         cart = api.get_cart(self.request)
@@ -704,6 +708,8 @@ class PaymentView(object):
     def post(self):
         """ 支払い方法、引き取り方法選択
         """
+        api.check_sales_segment_term(self.request)
+
         if not api.has_cart(self.request):
             raise NoCartError()
         cart = api.get_cart(self.request)
@@ -797,6 +803,7 @@ class ConfirmView(object):
     @view_config(route_name='payment.confirm', request_method="GET", renderer=selectable_renderer("carts/%(membership)s/confirm.html"))
     @view_config(route_name='payment.confirm', request_type='.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer("carts_mobile/%(membership)s/confirm.html"))
     def get(self):
+        api.check_sales_segment_term(self.request)
         form = schemas.CSRFSecureForm(csrf_context=self.request.session)
         if not api.has_cart(self.request):
             raise NoCartError()
@@ -824,6 +831,7 @@ class CompleteView(object):
     @view_config(route_name='payment.finish', renderer=selectable_renderer("carts/%(membership)s/completion.html"), request_method="POST")
     @view_config(route_name='payment.finish', request_type='.interfaces.IMobileRequest', renderer=selectable_renderer("carts_mobile/%(membership)s/completion.html"), request_method="POST")
     def __call__(self):
+        api.check_sales_segment_term(self.request)
         form = schemas.CSRFSecureForm(formdata=self.request.params, csrf_context=self.request.session)
         form.validate()
         #assert not form.csrf_token.errors

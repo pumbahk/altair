@@ -1,6 +1,9 @@
 <%page args="form" />
 <%namespace file="/common/helpers.html" import="form_item" />
 
+<link rel="stylesheet" type="text/css" href="/static/css/decentcolorpicker.css" />
+<script type="text/javascript" src="/static/js/jquery.decentcolorpicker.js"></script>
+
 <script type="text/javascript">
   $(function() {
     $('#modal-stock_holder').on('shown', function(){
@@ -9,7 +12,7 @@
           .css('margin-left',($(this).outerWidth()/2)*-1);
     });
 
-    $("#modal-stock_holder #text_color").decentcolorpicker();  
+    $("#modal-stock_holder #text_color").decentcolorpicker();
   });
 </script>
 

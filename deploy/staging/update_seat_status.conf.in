@@ -2,20 +2,26 @@
 keys = root, ticketing
 
 [handlers]
-keys = stderr, spool, fluent
+keys = rotate, stderr, spool
 
 [formatters]
 keys = generic
 
 [logger_root]
 level = INFO
-handlers = spool, fluent
+handlers = rotate, spool
 
 [logger_ticketing]
-level = DEBUG
-handlers = spool, fluent
+level = INFO
+handlers = rotate, spool
 qualname = ticketing
 propagate = 0
+
+[handler_rotate]
+class = logging.handlers.RotatingFileHandler
+args = ("${buildout:directory}/var/log/update_seat_status",)
+level = NOTSET
+formatter = generic
 
 [handler_stderr]
 class = logging.StreamHandler
@@ -28,12 +34,6 @@ class = ticketing.log.handlers.SpoolingHandler
 args = (5000, WARNING)
 level = INFO
 target = stderr
-formatter = generic
-
-[handler_fluent]
-class = fluent.handler.FluentHandler
-args = ('altair.ticketing.batch.cancel_auth_expired_carts', '127.0.0.1', 24224)
-level = NOTSET
 formatter = generic
 
 [formatter_generic]

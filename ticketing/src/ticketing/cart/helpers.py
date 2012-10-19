@@ -18,6 +18,9 @@ from .api import get_nickname
 
 logger = logging.getLogger(__name__)
 
+def cart_timeout(request):
+    return request.registry.settings['altair_cart.expire_time']
+
 def performance_date(performance):
     s = performance.start_on
     return u'{0.month}月{0.day}日 {0.hour:02}:{0.minute:02}'.format(s)
@@ -37,6 +40,7 @@ def japanese_datetime(dt):
 
 def mail_date(date):
     return u'{d.year}年 {d.month}月 {d.day}日 {d.hour:02}時 {d.minute:02}分'.format(d=date)
+
 
 # TODO: requestをパラメータから排除
 def error_list(request, form, name):
