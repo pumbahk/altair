@@ -37,11 +37,3 @@ class TopicChoiceForm(form.Form):
         qs1 = Topcontent.query.filter(Topcontent.kind.in_(extra_resource["topcontent_kinds"]))
         qs1 = qs1.with_entities("subkind").group_by("subkind")
         self.subkind.choices = [(q[0], q[0]) for q in itertools.chain(qs0, qs1)]
-
-
-
-    # def transform(self, topic_type):
-    #     if topic_type == "topcontent":
-    #         self.kind.choices = [(x, x) for x in Topcontent.KIND_CANDIDATES]
-    #     else:
-    #         self.kind.choices = [(x, x) for x in Topic.KIND_CANDIDATES]
