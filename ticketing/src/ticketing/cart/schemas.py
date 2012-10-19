@@ -98,7 +98,7 @@ class ClientForm(Form):
         filters=[ignore_space_hyphen], 
         validators=[
             Required(),
-            Length(min=1, max=12, message=u'確認してください'),
+            Length(min=1, max=11),
             Regexp(r'^\d*$', message=u'-を抜いた数字のみを入力してください'), 
         ]
     )
@@ -107,7 +107,7 @@ class ClientForm(Form):
         filters=[ignore_space_hyphen], 
         validators=[
             Optional(),
-            Length(min=1, max=12, message=u'確認してください'),
+            Length(min=1, max=11),
             Phone(u'FAX番号を確認してください'),
         ]
     )
