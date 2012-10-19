@@ -163,7 +163,6 @@ topic widgetでは
     query = DBSession.query_property()
 
     __tablename__ = "topic"
-    KIND_CANDIDATES = [u"89ers質問", u"NH質問", u"公演中止情報", u"トピックス", u"その他", u"ヘルプ", u"特集", u"特集(サブカテゴリ)"]
 
     id = sa.Column(sa.Integer, primary_key=True)
     created_at = sa.Column(sa.DateTime, default=datetime.now)
@@ -245,7 +244,6 @@ class Topcontent(AboutPublishMixin,
     __tablename__ = "topcontent"
     query = DBSession.query_property()
     COUNTDOWN_CANDIDATES = h.base.COUNTDOWN_KIND_MAPPING.items()
-    KIND_CANDIDATES = [u"注目のイベント"]
 
     id = sa.Column(sa.Integer, primary_key=True)
     created_at = sa.Column(sa.DateTime, default=datetime.now)

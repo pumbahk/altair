@@ -253,7 +253,7 @@ class CategoryFilterForm(Form):
 class TopicForm(Form):
     title = fields.TextField(label=u"タイトル", validators=[required_field()])
     kind = fields.SelectField(label=u"トピックの種別", 
-                              choices=[(x, x) for x in Topic.KIND_CANDIDATES],
+                              choices=[],
                               validators=[required_field()])
     subkind = fields.TextField(label=u"サブ分類")
     is_global = fields.BooleanField(label=u"全体に公開", default=True)
