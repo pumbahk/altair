@@ -26,7 +26,9 @@ def notfound(request):
     if event_id is not None:
         logger.debug("404 on event_id=%s" % event_id)
     request.response.status = 404
+    api.logout(request)
     return {}
+
 @mobile_view_config(context=NoCartError, renderer=selectable_renderer("ticketing.cart:templates/carts/%(membership)s/timeout.html"))
 @view_config(context=NoCartError, renderer=selectable_renderer("ticketing.cart:templates/carts/%(membership)s/timeout.html"))
 def handle_nocarterror(request):
@@ -38,17 +40,20 @@ def handle_nocarterror(request):
 @view_config(context=NoEventError, renderer=selectable_renderer('ticketing.cart:templates/errors/%(membership)s/notfound.html'))
 def handle_noeventerror(request):
     request.response.status = 404
+    api.logout(request)
     return {}
 
 @mobile_view_config(context=NoSalesSegment, renderer=selectable_renderer('ticketing.cart:templates/errors_mobile/%(membership)s/notfound.html'))
 @view_config(context=NoSalesSegment, renderer=selectable_renderer('ticketing.cart:templates/errors/%(membership)s/notfound.html'))
 def handle_noeventerror(request):
     request.response.status = 404
+    api.logout(request)
     return {}
 
 @view_config(context=InvalidCSRFTokenException, renderer=selectable_renderer('ticketing.cart:templates/errors/%(membership)s/forbidden.html'))
 def csrf(request):
     request.response.status = 403
+    api.logout(request)
     return {}
 
 class OverQuantityLimitErrorView(object):

@@ -241,9 +241,11 @@ def get_valid_sales_url(request, event):
             if "membergroup:%s" % membergroup.name in principals:
                 return request.route_url('cart.index.sales', event_id=event.id, sales_segment_id=salessegment.id)
 
-def logout(request):
+def logout(request, response=None):
     headers = forget(request)
-    request.response.headerlist.extend(headers)
+    if response is None:
+        response = request.response
+    response.headerlist.extend(headers)
 
 def _query_performance_names(request, event, sales_segment):
 
