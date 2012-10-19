@@ -28,7 +28,6 @@ var DataStore = Backbone.Model.extend({
     print_num: 0
   }, 
   setPrintStrategy: function(print_unit){
-    console.info("strategy");
     if(print_unit=="order"){
       this.set("print_unit", "order");
       this.set("print_strategy", "同一注文の券面まとめて発券");
@@ -75,7 +74,7 @@ var DataStore = Backbone.Model.extend({
 // view
 var DataStoreDescriptionView = Backbone.View.extend({
   initialize: function(){
-    this.model.bind("change", function(){console.info(JSON.stringify(this.model.toJSON()))}, this);
+    // this.model.bind("change", function(){console.info(JSON.stringify(this.model.toJSON()))}, this);
     this.model.bind("change:print_strategy", this.showPageStrategy, this);
     this.model.bind("change:print_num", this.showPageNum, this);
     this.model.bind("change:qrcode_status", this.showQrcodeStatus, this);
@@ -217,7 +216,6 @@ var QRInputView = AppPageViewBase.extend({
     this.communicating = false;
   }, 
   checkPrintUnitIsOrder: function(){
-    console.warn("check")
     if(this.$print_unit_is_order.attr("checked") == "checked"){
       this.datastore.setPrintStrategy("order");
     }else {
@@ -636,7 +634,7 @@ var AppletView = Backbone.View.extend({
       url: this.apiResource["api.ticketdata_from_order_no"]
     }).done(function (data) {
       if (data['status'] != 'success') {
-        self.appviews.messageView.alert(data['message']);
+        self.appviews.messageView.error(data['message']);
         return;
       }
       self.appviews.messageView.success("券面データが保存されました");
@@ -655,7 +653,7 @@ var AppletView = Backbone.View.extend({
       fmt = fmt + "(既に印刷された券面については印刷されません。)<br/";
       fmt = fmt + "<ul><li>" + printing_tickets.join("</li>\n<li>") + "</li></ul>";
       self.appviews.messageView.info(fmt, true);
-    }).fail(function(s, msg){self.appviews.messageView.alert(s.responseText)});
+    }).fail(function(s, msg){self.appviews.messageView.error(s.responseText)});
   }, 
   createTicketUnitByToken: function(){
     var tokenId = this.datastore.get("ordered_product_item_token_id");
@@ -669,7 +667,7 @@ var AppletView = Backbone.View.extend({
       url: this.apiResource["api.ticketdata_from_token_id"]
     }).done(function (data) {
       if (data['status'] != 'success') {
-        self.appviews.messageView.alert(data['message']);
+        self.appviews.messageView.error(data['message']);
         return;
       }
       self.appviews.messageView.success("券面データが保存されました");
@@ -684,7 +682,7 @@ var AppletView = Backbone.View.extend({
         var fmt = "キャンセル済みのチケットあるいはチケットは自動的に印刷しません。印刷するには、購入情報を確認した後、印刷ボタンを押してください";
         self.appviews.messageView.alert(fmt);
       }
-    }).fail(function(s, msg){self.appviews.messageView.alert(s.responseText)});
+    }).fail(function(s, msg){self.appviews.messageView.error(s.responseText)});
   }, 
   fetchPinterCandidates: function(){
     try {
