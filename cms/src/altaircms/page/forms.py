@@ -111,7 +111,6 @@ class PageForm(Form):
             urlerrors = self.errors.get('url', [])
             urlerrors.append(u'URLの一部かページセットのどちらかを指定してください。')
             self.errors['url'] = urlerrors
-        
         return not bool(self.errors)
 
 
