@@ -10,6 +10,10 @@
       % endfor
     });
     % endfor
+
+    $('#stock-type-total').click(function (){
+      $('.stock-holder-total').toggle();
+    });
   });
 </script>
 
@@ -69,6 +73,37 @@
               % endfor
             % endif
           % endfor
+        % endfor
+
+        <%
+          sum_quantity = {'total':{'rest':0, 'total':0}}
+          for row in sales_summary:
+            sum_quantity['total']['rest'] += row['rest_quantity']
+            sum_quantity['total']['total'] += row['total_quantity']
+            for stock in row['stocks']:
+              stock_holder = stock['stock'].stock_holder.name
+              if stock_holder not in sum_quantity:
+                sum_quantity.update({stock_holder:{'rest':0, 'total':0}})
+              sum_quantity[stock_holder]['rest'] += stock['stock'].stock_status.quantity
+              sum_quantity[stock_holder]['total'] += stock['stock'].quantity
+        %>
+        <% sq = sum_quantity.pop('total') %>
+        <tr id="stock-type-total">
+          <td></td>
+          <td colspan="4"><strong>合計</strong></td>
+          <td><strong>${sq['rest']}</strong></td>
+          <td><strong>${sq['total']}</strong></td>
+          <td></td>
+        </tr>
+        % for stock_holder, sq in sum_quantity.items():
+        <tr style="display:none;" class="stock-holder-total">
+          <td></td>
+          <td></td>
+          <td colspan="3">${stock_holder}</td>
+          <td>${sq['rest']}</td>
+          <td>${sq['total']}</td>
+          <td></td>
+        </tr>
         % endfor
         </tbody>
       </table>

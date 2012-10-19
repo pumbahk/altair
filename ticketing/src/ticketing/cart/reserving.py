@@ -21,7 +21,7 @@ class Reserving(object):
     def __init__(self, request):
         self.request = request
 
-    def reserve_selected_seats(self, stockstatus, performance_id, selected_seat_l0_ids):
+    def reserve_selected_seats(self, stockstatus, performance_id, selected_seat_l0_ids, reserve_status=SeatStatusEnum.InCart):
         """ ユーザー選択座席予約 """
         logger.debug('user select seats %s, performance_id %s' % (selected_seat_l0_ids, performance_id))
         logger.debug('stock %s' % [s[0].stock_id for s in stockstatus])
@@ -51,7 +51,7 @@ class Reserving(object):
             raise InvalidSeatSelectionException
 
         for s in seat_statuses:
-            s.status = int(SeatStatusEnum.InCart)
+            s.status = int(reserve_status)
         return selected_seats
 
     def reserve_seats(self, stock_id, quantity):

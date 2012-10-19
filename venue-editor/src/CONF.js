@@ -60,9 +60,10 @@ exports.DEFAULT = {
     1: {},
     2: { stroke: { color: "#ffff40", width: 3, pattern: 'solid' } },
     3: { stroke: { color: "#2020d2", width: 3, pattern: 'solid' } },
-    4: { stroke: { color: "#ff8c40", width: 3, pattern: 'solid' } },
+    4: { stroke: { color: "#006666", width: 3, pattern: 'solid' } },
     5: { stroke: { color: "#b3d940", width: 3, pattern: 'solid' } },
     6: { stroke: { color: "#ff4040", width: 3, pattern: 'solid' } },
-    7: { stroke: { color: "#9f9fec", width: 3, pattern: 'solid' } }
+    7: { stroke: { color: "#9f9fec", width: 3, pattern: 'solid' } },
+    8: { stroke: { color: "#ff8c40", width: 3, pattern: 'solid' } }
   }
 };

@@ -20,25 +20,29 @@ from ticketing.events.sales_segments.forms import SalesSegmentForm
 class MembershipView(BaseView):
     @view_config(match_param="action=index", renderer="ticketing:templates/memberships/index.html")
     def index(self):
-        memberships = umodels.Membership.query
+        organization_id = self.context.user.organization_id
+        memberships = umodels.Membership.query.filter_by(organization_id=organization_id)
         return {"memberships": memberships}
 
     @view_config(match_param="action=show", renderer="ticketing:templates/memberships/show.html")
     def show(self):
-        membership = umodels.Membership.query.filter_by(id=self.request.matchdict["membership_id"]).first()
+        organization_id = self.context.user.organization_id
+        membership = umodels.Membership.query.filter_by(id=self.request.matchdict["membership_id"], 
+                                                        organization_id=organization_id).first()
         if membership is None:
             raise HTTPNotFound
         membergroups = membership.membergroups
         redirect_to = self.request.url
         return {"membership": membership,
-                "form": forms.MembershipForm(),
+                "form": forms.MembershipForm(organization_id=organization_id),
                 "form_mg": forms.MemberGroupForm(), 
                 "membergroups": membergroups, 
                 "redirect_to": redirect_to}
 
     @view_config(match_param="action=new", renderer="ticketing:templates/memberships/new.html", request_method="GET")
     def new_get(self):
-        return {"form":forms.MembershipForm()}
+        organization_id = self.context.user.organization_id
+        return {"form":forms.MembershipForm(organization_id=organization_id)}
 
     @view_config(match_param="action=new", renderer="ticketing:templates/memberships/new.html", request_method="POST")
     def new_post(self):
@@ -53,7 +57,8 @@ class MembershipView(BaseView):
 
     @view_config(match_param="action=edit", renderer="ticketing:templates/memberships/edit.html", request_method="GET")
     def edit_get(self):
-        membership = umodels.Membership.query.filter_by(id=self.request.matchdict["membership_id"]).first()
+        membership = umodels.Membership.query.filter_by(id=self.request.matchdict["membership_id"], 
+                                                        organization_id = self.context.user.organization_id).first()
         if membership is None:
             raise HTTPNotFound
 

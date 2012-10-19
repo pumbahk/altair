@@ -3,6 +3,7 @@ from .interfaces import (
     ICompleteMail, 
     IMailUtility
 )
+from datetime import datetime
 from .fake import FakeObject
 from .traverser import EmailInfoTraverser
 from pyramid.interfaces import IRequest
@@ -89,8 +90,10 @@ def message_settings_override(message, override):
 ## fake
 def create_fake_order(request, organization, payment_plugin_id, delivery_plugin_id, event=None, performance=None):
     ## must not save models 
+    now = datetime.now()
     order = FakeObject("T")
     order.ordered_from = organization
+    order.created_at = now
     order._mailinfo_traverser = None
     _fake_order_add_settings(order, payment_plugin_id, delivery_plugin_id, event, performance)
     _fake_order_add_fake_chain(order, organization, event, performance)

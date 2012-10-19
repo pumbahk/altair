@@ -64,7 +64,8 @@ def main(global_config, **settings):
     from ticketing.logicaldeleting import install as ld_install
     ld_install()
 
-    engine = engine_from_config(settings, pool_recycle=3600)
+    from sqlalchemy.pool import NullPool
+    engine = engine_from_config(settings, poolclass=NullPool)
     my_session_factory = session_factory_from_settings(settings)
     sqlahelper.add_engine(engine)
 

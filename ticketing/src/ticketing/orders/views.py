@@ -5,7 +5,7 @@ import logging
 import csv
 import itertools
 from datetime import datetime
-
+import sqlalchemy.orm as orm
 from pyramid import testing
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
@@ -39,8 +39,8 @@ from ticketing.tickets.utils import build_dicts_from_ordered_product_item
 from ticketing.cart import api
 from ticketing.cart.stocker import NotEnoughStockException
 from ticketing.cart.reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
+from ticketing.core.utils import IssuedPrintedAtSetter
 
-logger = logging.getLogger(__name__)
 import pystache
 from . import utils
 
@@ -79,8 +79,7 @@ class OrdersAPIView(BaseView):
 
         query = Performance.query.filter(Performance.deleted_at == None)
         query = Performance.set_search_condition(query, form_search)
-        performances = itertools.chain(query, [testing.DummyResource(id="", name="")])
-        performances = [dict(pk=p.id, name=p.name) for p in performances]
+        performances = [dict(pk='', name='')]+[dict(pk=p.id, name='%s (%s)' % (p.name, p.start_on.strftime('%Y-%m-%d %H:%M'))) for p in query]
         return {"result": performances, "status": True}
 
 
@@ -213,8 +212,7 @@ class Orders(BaseView):
         ords = [o.lstrip("o:") for o in self.request.session["orders"] if o.startswith("o:")]
         query = query.filter(Order.id.in_(ords))
 
-        event_query = Event.filter_by(organization_id=organization_id)
-        form_search = OrderSearchForm(self.request.params).configure(event_query)
+        form_search = OrderSearchForm(self.request.params, organization_id=organization_id)
         if form_search.validate():
             query = Order.set_search_condition(query, form_search)
 
@@ -239,8 +237,7 @@ class Orders(BaseView):
         organization_id = int(self.context.user.organization_id)
         query = Order.filter(Order.organization_id==organization_id)
 
-        event_query = Event.filter_by(organization_id=organization_id)
-        form_search = OrderSearchForm(self.request.params).configure(event_query)
+        form_search = OrderSearchForm(self.request.params, organization_id=organization_id)
         if form_search.validate():
             query = Order.set_search_condition(query, form_search)
 
@@ -320,9 +317,10 @@ class Orders(BaseView):
 
     @view_config(route_name='orders.download')
     def download(self):
-        query = Order.filter(Order.organization_id==self.context.user.organization_id)
+        organization_id = self.context.user.organization_id
+        query = Order.filter(Order.organization_id==organization_id)
 
-        form_search = OrderSearchForm(self.request.params)
+        form_search = OrderSearchForm(self.request.params, organization_id=organization_id)
         if form_search.validate():
             query = Order.set_search_condition(query, form_search)
 
@@ -334,7 +332,7 @@ class Orders(BaseView):
         ]
         response = Response(headers=headers)
 
-        order_csv = OrderCSV(orders)
+        order_csv = OrderCSV(orders, self.request.params.get('export_type'), organization_id=self.context.user.organization_id)
 
         writer = csv.DictWriter(response, order_csv.header, delimiter=',', quoting=csv.QUOTE_ALL)
         writer.writeheader()
@@ -346,7 +344,7 @@ class Orders(BaseView):
         # 確保座席があるならステータスを戻す
         logger.info("release seats : %s" % l0_ids)
         if l0_ids:
-            seat_statuses = SeatStatus.filter(SeatStatus.status==int(SeatStatusEnum.InCart))\
+            seat_statuses = SeatStatus.filter(SeatStatus.status.in_([int(SeatStatusEnum.Keep), int(SeatStatusEnum.InCart)]))\
                                       .join(SeatStatus.seat)\
                                       .filter(Seat.l0_id.in_(l0_ids))\
                                       .with_lockmode('update').all()
@@ -392,13 +390,13 @@ class Orders(BaseView):
         form_reserve.payment_delivery_method_pair_id.validators = [Optional()]
         form_reserve.validate()
 
-        # 選択されたSeatがあるならステータスをInCartにして確保する
+        # 選択されたSeatがあるならステータスをKeepにして確保する
         seats = []
         if post_data.get('seats'):
             try:
                 reserving = api.get_reserving(self.request)
                 stock_status = [(stock, 0) for stock in StockStatus.filter(StockStatus.stock_id.in_(stocks))]
-                seats = reserving.reserve_selected_seats(stock_status, performance_id, post_data.get('seats'))
+                seats = reserving.reserve_selected_seats(stock_status, performance_id, post_data.get('seats'), reserve_status=SeatStatusEnum.Keep)
             except InvalidSeatSelectionException:
                 logger.info("seat selection is invalid.")
                 raise HTTPBadRequest(body=json.dumps({'message':u'既に予約済か選択できない座席です。画面を最新の情報に更新した上で再度座席を選択してください。'}))
@@ -511,6 +509,7 @@ class Orders(BaseView):
             order.note = post_data.get('note')
             attr = 'sales_counter_payment_method_id'
             if int(post_data.get(attr, 0)):
+                order.paid_at = datetime.now()
                 order.attributes[attr] = post_data.get(attr)
             DBSession.add(order)
             DBSession.flush()
@@ -525,7 +524,6 @@ class Orders(BaseView):
                 del self.request.session['ticketing.inner_cart']
             logger.debug('order reserve session data=%s' % self.request.session)
 
-            self.request.session.flash(u'予約しました')
             return {
                 'order_id':order.id,
             }
