@@ -49,7 +49,8 @@ class Translations(object):
         'Not a valid integer value': u'数字で入力してください',
         'Invalid email address.':u'不正なメールアドレスです',
         'This field is required.':u'入力してください',
-        'Field must be at least %(min)d characters long.' : u'%(min)d文字以上で入力してください。'
+        'Field must be at least %(min)d characters long.' : u'%(min)d文字以上で入力してください。',
+        'Field cannot be longer than %(max)d characters.' : u'%(max)d文字以内で入力してください。',
     }
     def __init__(self, messages = None):
         if messages:
