@@ -1911,13 +1911,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             query = query.join(Order.ordered_products)
             query = query.join(OrderedProduct.ordered_product_items)
             query = query.join(OrderedProductItem.seats)
-            query = query.filter(Seat.name==condition)
-        condition = form.seat_number.data
-        if condition:
-            query = query.join(Order.ordered_products)
-            query = query.join(OrderedProduct.ordered_product_items)
-            query = query.join(OrderedProductItem.seats)
-            query = query.filter(Seat.name==condition)
+            query = query.filter(Seat.name.like('%s%%' % condition))
         return query
 
 def no_filter(value):
