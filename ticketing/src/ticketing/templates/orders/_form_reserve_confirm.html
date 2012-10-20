@@ -8,6 +8,7 @@
     }
     $('.draggable').draggable({scroll: true, handle:$('.draggable .modal-body')});
     $('#modal-reserve').on('shown', function(){
+      $('#reserve-button').attr('disabled', null); 
       $(this).css('max-height', '700px')
              .css('max-width', '600px')
              .css('margin-top', ($(this).outerHeight()/2)*-1)
@@ -99,7 +100,7 @@
   </div>
 
   <div class="modal-footer">
-    <a href="javascript:void(0);" onclick="javascript:reselectOrder();" class="btn secondary btn-close">戻る</a>
-    <a href="javascript:void(0);" onclick="$('#modal-reserve').find('form').submit();" class="btn danger" id="reserve-button">予約する</a>
+    <button onclick="reselectOrder(); return false;" class="btn secondary btn-close">戻る</a>
+    <button onclick="$(this).attr('disabled', 'disabled'); $('#modal-reserve').find('form').submit(); return false;" class="btn danger" id="reserve-button">予約する</a>
   </div>
 </div>
