@@ -3,7 +3,7 @@ import sqlalchemy.orm as orm
 import json
 import webhelpers.paginate as paginate
 from StringIO import StringIO
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.view import view_config, view_defaults
 from ticketing.tickets.response import FileLikeResponse ##
 from ticketing.fanstatic import with_bootstrap
@@ -24,6 +24,8 @@ def correct_organization(info, request):
              decorator=with_bootstrap, renderer="ticketing:templates/members/index.html")
 def members_empty_view(context, request):
     membership = context.memberships.first()
+    if membership is None:
+        return HTTPNotFound(u"membershipが登録されていません。")
     url = request.route_url("members.index", membership_id=membership.id)
     return HTTPFound(url)
 
