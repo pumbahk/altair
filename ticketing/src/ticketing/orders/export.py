@@ -195,7 +195,7 @@ class OrderCSV(object):
                 buffer = []
                 for column in self.product_item_header:
                     if export_type == self.EXPORT_TYPE_ORDER:
-                        column_name = 'product_item_%s_%s' % (column, j)
+                        column_name = 'product_item_%s_%s_%s' % (column, i, j)
                     else:
                         column_name = 'product_item_%s' % column
                     if not column_name in self.header:
