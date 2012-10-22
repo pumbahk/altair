@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
-from zope.interface import implements
+from zope.interface import implements, implementer
 from altaircms.interfaces import IWidget
+from altaircms.plugins.interfaces import IWidgetUtility
 import functools
 from collections import namedtuple
 import sqlalchemy as sa
@@ -9,6 +10,7 @@ from pyramid.renderers import render
 
 from altaircms.widget.models import Widget
 from altaircms.plugins.base import DBSession
+from altaircms.plugins.api import list_from_setting_value
 from altaircms.plugins.base.mixins import HandleSessionMixin
 from altaircms.plugins.base.mixins import HandleWidgetMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
@@ -17,6 +19,25 @@ import altaircms.helpers as h
 from altaircms.topic.models import Kind
 from altaircms.topic.models import Promotion
 
+@implementer(IWidgetUtility)
+class PromotionWidgetUtilityDefault(object):
+    def __init__(self):
+        self.renderers = None
+        self.choices = None
+        self.status_impl = None
+
+    def parse_settings(self, config, configparser):
+        """以下のような形式のものを見る
+        values = 
+          チケットスター:Topプロモーション枠
+          チケットスター:カテゴリTopプロモーション枠
+        """
+        self.settings = dict(configparser.items(PromotionWidget.type))
+        values = list_from_setting_value(self.settings["values"].decode("utf-8"))
+        self.choices = zip(values, values)
+        return self
+
+    
 ## fixme: rename **info
 PromotionInfo = namedtuple("PromotionInfo", "idx thumbnails message main main_link links messages interval_time unit_candidates")
 

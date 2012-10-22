@@ -159,9 +159,20 @@ class WidgetAggregatorDispatcher(object):
         logger.debug("widget aggregator dispach:%s" % (k,))
         try:
             subdispatch = self.conts[k]
-        except KeyError:
-            fmt = "Organization(id=%d, backend_id=%d, auth_source=%s) doesn't bound to %s. please check the 'organization.json' file."
-            raise WidgetAggregateDispatcherException((fmt % (organization.id, organization.backend_id, organization.auth_source, k, )))
+        except KeyError, e:
+            fmt = """\
+Organization(id=%d, backend_id=%d, auth_source=%s) isn't bound to %s. please check the 'organization.json' file.
+or 
+matched plugin config file is not found
+ (candidates: 
+%s
+)
+or
+plugin config file name is not found in altaircms.widget.each_organization.settings (in development.ini).
+"""
+            logger.exception(str(e))
+            candidates = u"\n".join((u"  * "+s for s in request.registry.settings["altaircms.widget.each_organization.settings"].split("\n")[1:]))
+            raise WidgetAggregateDispatcherException(fmt % (organization.id, organization.backend_id, organization.auth_source, k, candidates))
         return subdispatch(request, page)
 
 
