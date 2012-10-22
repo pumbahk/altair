@@ -4,6 +4,7 @@
         "ticketstar": {"backend_id": 1,  "auth_source": "oauth"},
         "rakuten-baseball": {"backend_id": 2, "auth_source": "oauth"}, 
         "BJ:89ers": {"backend_id": 1, "auth_source": "oauth"}, 
-        "BJ:NH": {"backend_id": 2, "auth_source": "oauth"}
+        "BJ:NH": {"backend_id": 2, "auth_source": "oauth"},
+        "BJ:CR": {"backend_id": 3, "auth_source": "oauth"} 
     }
 }
