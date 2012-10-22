@@ -21,6 +21,16 @@ from .models import Cart, PaymentMethodManager, DBSession, CartedProductItem, Ca
 from ..users.models import User, UserCredential, Membership, MemberGroup, MemberGroup_SalesSegment
 from ..core.models import Event, Performance, Stock, StockHolder, Seat, Product, ProductItem, SalesSegment, Venue
 from .exceptions import OutTermSalesException, NoSalesSegment
+
+def is_multicheckout_payment(cart):
+    if cart is None:
+        return False
+    if cart.payment_delivery_pair is None:
+        return False
+    if cart.payment_delivery_pair.payment_method is None:
+        return False
+    return cart.payment_delivery_pair.payment_method.payment_plugin_id == 1
+        
     
 # こいつは users.apiあたりに移動すべきか
 def is_login_required(request, event):

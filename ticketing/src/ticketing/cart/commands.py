@@ -8,6 +8,7 @@ from pyramid.paster import bootstrap
 import transaction
 from ..core import models as o_m
 from ..multicheckout import api as a
+from . import api
 from sqlalchemy.sql.expression import not_
 
 
@@ -105,28 +106,29 @@ def cancel_auth_expired_carts():
             logging.info('cart (id=%d) IS GONE FOR SOME REASONS. SIGH.')
             continue
 
-        # 状態確認
-        logging.info('well, then trying to cancel the authorization request associated with the order (order_no=%s)' % order_no)
-        logging.info('check for order_no=%s' % order_no)
-        try:
-            request.registry.settings['altair_checkout3d.override_shop_name'] =  cart.performance.event.organization.memberships[0].name
-        except:
-            logging.info('can not detect shop_name for order_no = %s' % order_no)
-            carts_to_skip.add(cart_id)
-            continue
-        if not request.registry.settings.get('altair_checkout3d.override_shop_name'):
-            logging.info('can not detect shop_name for order_no = %s' % order_no)
-            carts_to_skip.add(cart_id)
-            continue
+        if api.is_multicheckout_payment(cart):
+            # 状態確認
+            logging.info('well, then trying to cancel the authorization request associated with the order (order_no=%s)' % order_no)
+            logging.info('check for order_no=%s' % order_no)
+            try:
+                request.registry.settings['altair_checkout3d.override_shop_name'] =  cart.performance.event.organization.memberships[0].name
+            except:
+                logging.info('can not detect shop_name for order_no = %s' % order_no)
+                carts_to_skip.add(cart_id)
+                continue
+            if not request.registry.settings.get('altair_checkout3d.override_shop_name'):
+                logging.info('can not detect shop_name for order_no = %s' % order_no)
+                carts_to_skip.add(cart_id)
+                continue
 
-        inquiry = a.checkout_inquiry(request, order_no)
+            inquiry = a.checkout_inquiry(request, order_no)
 
-        # オーソリOKだったらキャンセル
-        if inquiry.Status == m.MULTICHECKOUT_AUTH_OK:
-            logging.info("cancel auth for order_no=%s" % order_no)
-            a.checkout_auth_cancel(request, order_no)
-        else:
-            logging.info("Order(order_no = %s) status = %s " % (order_no, inquiry.Status))
+            # オーソリOKだったらキャンセル
+            if inquiry.Status == m.MULTICHECKOUT_AUTH_OK:
+                logging.info("cancel auth for order_no=%s" % order_no)
+                a.checkout_auth_cancel(request, order_no)
+            else:
+                logging.info("Order(order_no = %s) status = %s " % (order_no, inquiry.Status))
 
         cart.finished_at = now
         logging.info("TRANSACTION IS BEING COMMITTED AGAIN...")
