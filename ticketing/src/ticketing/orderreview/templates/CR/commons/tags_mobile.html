@@ -1,7 +1,7 @@
-<%def name="header(bgcolor='#dc0078')">
+<%def name="header(bgcolor='#8D62AA')">
 <div style="background-color:${bgcolor}" bgcolor="${bgcolor}"><font size="+1" color="white">${caller.body()}</font></div>
 </%def>
-<%def name="form_header(markercolor='#dc0078', requiredmarkcolor='#ff0000', required=False)">
+<%def name="form_header(markercolor='#8D62AA', requiredmarkcolor='#ff0000', required=False)">
 <div><font color="${markercolor}">■</font>${caller.body()}</font>
 %if required:
 <font color="${requiredmarkcolor}">*</font>
