@@ -65,7 +65,7 @@ def main(global_config, **settings):
     ld_install()
 
     from sqlalchemy.pool import NullPool
-    engine = engine_from_config(settings, poolclass=NullPool)
+    engine = engine_from_config(settings, poolclass=NullPool, isolation_level='READ COMMITTED')
     my_session_factory = session_factory_from_settings(settings)
     sqlahelper.add_engine(engine)
 
