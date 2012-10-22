@@ -1232,8 +1232,7 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             reserved_quantity += Stock.filter(Stock.id==self.id).join(Stock.product_items)\
                 .join(ProductItem.carted_product_items)\
                 .join(CartedProductItem.carted_product)\
-                .join(CartedProduct.cart)\
-                .filter(Cart.finished_at==None)\
+                .filter(CartedProduct.finished_at==None)\
                 .with_entities(func.sum(CartedProduct.quantity)).scalar() or 0
             vacant_quantity = self.quantity - reserved_quantity
         else:
