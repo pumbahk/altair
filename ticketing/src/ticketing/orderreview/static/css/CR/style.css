@@ -972,3 +972,44 @@ table.login td input{
 .submitBtn input{
 	padding:3px 7px;
 }
+
+/* added */
+table.formCR{
+	border-collapse: collapse;
+	margin: 0px auto 20px auto;
+	padding: 10px;
+	width: 700px;
+	border: 5px solid #672e8e;
+}
+
+table.formCR tbody th{
+	background-color: #efefef;
+	border-collapse: collapse;
+	padding: 10px;
+	border-bottom: 1px solid #8d62aa;
+	text-align: right;
+}
+
+
+table.formCR thead th{
+	background-color: #efefef;
+	border-collapse: collapse;
+	padding: 10px;
+	border-bottom: 1px solid #8d62aa;
+	text-align: left;
+	font-size: 16px;
+}
+
+
+table.formCR td{
+	background-color: #fff;
+	padding: 10px;
+	border-bottom: 1px solid #8d62aa;
+}
+
+table.formCR tfoot td{
+	background-color: #fff;
+	padding: 10px;
+	border-top: 2px solid #8d62aa;
+	font-size: 16px;
+}
