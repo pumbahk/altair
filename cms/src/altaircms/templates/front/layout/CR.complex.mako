@@ -11,6 +11,22 @@
 	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
 	<link rel="stylesheet" type="text/css" href="/static/CR/css/style.css" media="all" />
 	    <title>${page.title}</title>    <meta name="description" content="${page.description}">    <meta name="keywords" content="${page.keywords}">
+
+<script type="text/javascript">
+  $(function(){
+    var e = $("<a>");
+    e.attr("href","http://tokyo-cinqreves.jp/")
+    e.css({"position": "relative",
+	  "top": "10px",
+	  "left": "50px",
+    "display": "block",
+    "width": "140px",
+    "height": "100px",
+     });
+    $(".header").append(e);
+   });
+</script>
+
 </head>
 <body>
 	<!-- wrapper -->	
