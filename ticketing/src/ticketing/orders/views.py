@@ -605,8 +605,7 @@ class Orders(BaseView):
                 'form':f,
             }
 
-    @view_config(route_name='orders.edit.product', request_method='POST',
-                 renderer='ticketing:templates/orders/_form_product.html', permission='sales_counter')
+    @view_config(route_name='orders.edit.product', request_method='POST', permission='sales_counter')
     def edit_product_post(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id, self.context.user.organization_id)
@@ -614,6 +613,7 @@ class Orders(BaseView):
             return HTTPNotFound('order id %d is not found' % order_id)
 
         f = OrderForm(self.request.POST)
+        has_error = False
 
         try:
             if not f.validate():
@@ -625,11 +625,18 @@ class Orders(BaseView):
 
             for op in order.items:
                 op.price = int(self.request.params.get('product_price-%d' % op.id) or 0)
-                # 個数が変更できるのは数受けのケースのみ
-                if op.product.seat_stock_type.quantity_only:
-                    op.quantity = int(self.request.params.get('product_quantity-%d' % op.id) or 0)
                 for opi in op.ordered_product_items:
                     opi.price = int(self.request.params.get('product_item_price-%d' % opi.id) or 0)
+                    # 個数が変更できるのは数受けのケースのみ
+                    if op.product.seat_stock_type.quantity_only:
+                        stock_status = opi.product_item.stock.stock_status
+                        new_quantity = int(self.request.params.get('product_quantity-%d' % op.id) or 0)
+                        old_quantity = op.quantity
+                        if stock_status.quantity < (new_quantity - old_quantity):
+                            raise NotEnoughStockException(stock_status.stock, stock_status.quantity, new_quantity)
+                        stock_status.quantity -= (new_quantity - old_quantity)
+                        op.quantity = new_quantity
+                        opi.quantity = new_quantity
                 if sum(opi.price for opi in op.ordered_product_items) != op.price:
                     raise ValidationError(u'小計金額が正しくありません')
 
@@ -644,11 +651,20 @@ class Orders(BaseView):
         except ValidationError, e:
             if e.message:
                 self.request.session.flash(e.message)
-            return {'form':f, 'order':order}
+            has_error = True
+        except NotEnoughStockException, e:
+            logger.info("not enough stock quantity :%s" % e)
+            self.request.session.flash(u'在庫がありません')
+            has_error = True
         except Exception, e:
             logger.exception('save error (%s)' % e.message)
             self.request.session.flash(u'入力された金額および個数が不正です')
-            return {'form':f, 'order':order}
+            has_error = True
+        finally:
+            if has_error:
+                response = render_to_response('ticketing:templates/orders/_form_product.html', {'form':f, 'order':order}, request=self.request)
+                response.status_int = 400
+                return response
 
         self.request.session.flash(u'予約を保存しました')
         return render_to_response('ticketing:templates/refresh.html', {}, request=self.request)

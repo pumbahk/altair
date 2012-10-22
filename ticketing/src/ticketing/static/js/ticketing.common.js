@@ -26,6 +26,11 @@ function post_modal_form(modal, form, url) {
       $(form).html(data);
       $(modal).modal('show');
     },
+    error: function(xhr, text) {
+      $(modal).modal('hide');
+      $(form).html(xhr.responseText);
+      $(modal).modal('show');
+    },
     dataType: 'html'
   });
 }
