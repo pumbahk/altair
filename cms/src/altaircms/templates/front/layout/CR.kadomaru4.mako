@@ -20,19 +20,19 @@
     <![endif]-->  
 
 <script type="text/javascript">
-     $(function(){
-var e = $("<a>");
-e.attr("href","http://happinets.net/")
-e.css({"position": "relative",
-	   "top": "10px",
-	   "left": "510px",
-       "display": "block",
-       "width": "175px",
-       "height": "120px"
-       });
-$(".header").append(e);
+  $(function(){
+    var e = $("<a>");
+    e.attr("href","http://tokyo-cinqreves.jp/")
+    e.css({"position": "relative",
+	  "top": "10px",
+	  "left": "50px",
+    "display": "block",
+    "width": "140px",
+    "height": "100px",
      });
-   </script>
+    $(".header").append(e);
+   });
+</script>
 </head>
 <body>
 	<!-- wrapper -->	
