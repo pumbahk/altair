@@ -2,6 +2,8 @@ from pyramid.view import view_config, view_defaults
 from altaircms.auth.api import require_login
 from . import api
 from . import forms
+from altaircms.page.models import Page    
+from altaircms.auth.api import get_or_404
 
 @view_defaults(custom_predicates=(require_login,))
 class PromotionWidgetView(object):
@@ -42,7 +44,8 @@ class PromotionWidgetView(object):
     def dialog(self):
         context = self.request.context
         widget = context.get_widget(self.request.GET.get("pk"))
-        form = forms.PromotionWidgetForm(**widget.to_dict())
+        page = get_or_404(self.request.allowable(Page), Page.id==self.request.GET["page"])
+        form = forms.PromotionWidgetForm(**widget.to_dict()).configure(self.request, page)
         return {"widget": widget, "form": form}
 
 @view_config(route_name="api_promotion_main_image", request_method="GET", request_param="promotion_unit_id", renderer="json")
