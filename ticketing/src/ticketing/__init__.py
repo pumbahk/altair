@@ -23,7 +23,8 @@ def main(global_config, **settings):
     from .resources import newRootFactory, groupfinder
     from .authentication import CombinedAuthenticationPolicy, APIAuthenticationPolicy
     from .authentication.apikey.impl import newDBAPIKeyEntryResolver
-    engine = engine_from_config(settings, 'sqlalchemy.')
+    from sqlalchemy.pool import NullPool
+    engine = engine_from_config(settings, poolclass=NullPool)
     sqlahelper.add_engine(engine)
 
     config = Configurator(settings=settings,

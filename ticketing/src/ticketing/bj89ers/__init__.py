@@ -9,7 +9,8 @@ from sqlalchemy import engine_from_config
 import sqlahelper
 
 def main(global_conf, **settings):
-    engine = engine_from_config(settings)
+    from sqlalchemy.pool import NullPool
+    engine = engine_from_config(settings, poolclass=NullPool)
     sqlahelper.add_engine(engine)
 
     my_session_factory = session_factory_from_settings(settings)
