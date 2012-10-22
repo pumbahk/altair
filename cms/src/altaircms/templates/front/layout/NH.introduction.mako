@@ -12,6 +12,21 @@
 	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
 	<link rel="stylesheet" type="text/css" href="/static/NH/css/style.css" media="all" />
 	    <title>${page.title}</title>    <meta name="description" content="${page.description}">    <meta name="keywords" content="${page.keywords}">
+<script type="text/javascript">
+     $(function(){
+var e = $("<a>");
+e.attr("href","http://happinets.net/")
+e.css({"position": "relative",
+	   "top": "10px",
+	   "left": "510px",
+       "display": "block",
+       "width": "175px",
+       "height": "120px"
+       });
+$(".header").append(e);
+     });
+   </script>
+
 </head>
 <body>
 	<!-- wrapper -->	
