@@ -4,6 +4,7 @@ from zope.interface import provider
 from zope.interface import implementer
 from pyramid.renderers import RendererHelper
 import ticketing.core.api as core_api
+from ticketing.users.models import Membership
 
 _lookup_key = "**selectable"
 def includeme(config):
@@ -68,7 +69,7 @@ class ByDomainMappingSelector(object):
         assert request
         #mapped = self.lookup_mapped(request.host)
         organization = core_api.get_organization(request)
-        mapped = organization.memberships[0].name
+        mapped = Membership.query.filter_by(deleted_at=None, organization=organization).first().name
         fmt = helper.format_string
         return fmt % dict(membership=mapped)
 
@@ -77,4 +78,5 @@ def get_membership_from_request(request):
     selector = request.registry.getUtility(ISelectableRendererSelector) ## xxx:
     assert isinstance(selector, ByDomainMappingSelector)
     organization = core_api.get_organization(request)
-    return organization.memberships[0].name
+    return Membership.query.filter_by(deleted_at=None, organization=organization).first().name
+
