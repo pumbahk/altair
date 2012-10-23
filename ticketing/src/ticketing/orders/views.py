@@ -442,9 +442,13 @@ class Orders(BaseView):
             order_items = []
             total_quantity = 0
             for product_id, product_name in f.products.choices:
-                product_quantity = int(post_data.get('product_quantity-%d' % product_id) or 0)
-                if not product_quantity:
+                quantity = post_data.get('product_quantity-%d' % product_id)
+                if not quantity:
                     continue
+                quantity = quantity.encode('utf-8')
+                if not quantity.isdigit():
+                    raise ValidationError(u'個数が不正です')
+                product_quantity = int(quantity)
                 total_quantity += product_quantity
 
                 product = DBSession.query(Product).filter_by(id=product_id).one()
