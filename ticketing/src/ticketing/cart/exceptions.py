@@ -15,7 +15,7 @@ class NoPerformanceError(CartException):
 class NoSalesSegment(CartException):
     pass
 
-class OutTermSalesException(Exception):
+class OutTermSalesException(CartException):
     """ 期限外の販売区分に対するアクセス"""
     def __init__(self, event, sales_segment):
         Exception.__init__(self)
@@ -25,13 +25,13 @@ class OutTermSalesException(Exception):
 class InvalidCSRFTokenException(Exception):
     pass
 
-class OverQuantityLimitError(Exception):
+class OverQuantityLimitError(CartException):
     def __init__(self, upper_limit):
         Exception.__init__(self)
         self.upper_limit = upper_limit
 
-class ZeroQuantityError(Exception):
+class ZeroQuantityError(CartException):
     pass
 
-class CartCreationExceptoion(Exception):
+class CartCreationExceptoion(CartException):
     pass
