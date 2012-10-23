@@ -9,19 +9,19 @@ ${event.title}
 
 % for product in cart['products']:
 <div>
-  <div style="background-color:#ddddff">商品名(金額)</div>
+  <div style="background-color:#c5aedb">商品名(金額)</div>
   <div>
   ${product['name']}(${product['price']}円)
   </div>
-  <font color="#9B63C0">■</font>座席番号<br/>
+  <font color="#580d9a">■</font>座席番号<br/>
   % for seat in product['seats']:
     ${seat['name']}<br/>
   % endfor
-  <font color="#9B63C0">■</font>数量<br/>
+  <font color="#580d9a">■</font>数量<br/>
   ${product['quantity']}<br/>
 </div>
 % endfor
-<div style="background-color:#ffdddd">合計金額</div>
+<div style="background-color:#c5aedb">合計金額</div>
 <div>
   ${cart['total_amount']}円
 </div>

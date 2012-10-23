@@ -6,8 +6,8 @@
 ${event.title}
 
 % if not venues:
-  <hr size="1" color="#888888" noshade="noshade" />
-  <p><font color="#9B63C0">■</font>対象試合をお選びください</p>
+  <hr size="1" color="#9b63c0" noshade="noshade" />
+  <p><font color="#580d9a">■</font>対象試合をお選びください</p>
   <form action="${request.url}" method="get">
     <select name="performance_name">
   % for performance in performances:
@@ -20,8 +20,8 @@ ${event.title}
     </div>
   </form>
 % else:
-  <hr size="1" color="#888888" noshade="noshade" />
-  <p><font color="#9B63C0">■</font>日時・会場をお選びください</p>
+  <hr size="1" color="#9b63c0" noshade="noshade" />
+  <p><font color="#580d9a">■</font>日時・会場をお選びください</p>
   <form action="${request.url}" method="get">
     <select name="pid">
   % for pid, venue_name in venues:
@@ -33,5 +33,5 @@ ${event.title}
     <input type="submit" value="次へ">
     </div>
   </form>
-  <hr size="1" color="#888888" noshade="noshade" />
+  <hr size="1" color="#9b63c0" noshade="noshade" />
 % endif
