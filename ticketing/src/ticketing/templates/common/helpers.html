@@ -140,6 +140,8 @@ ${locale.format("%d", price, grouping=True)}
 <%def name="action_button(actions, order=None, vertical=True, options=None)">
 <%
   count = 0
+  if order is None:
+    order = actions.keys()
   def attrs_str():
     attrs = actions[key].get('attrs', {})
     attrs['class'] = attrs.get('class', u'')
