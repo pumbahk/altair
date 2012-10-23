@@ -27,7 +27,8 @@ from . import schemas
 from .exceptions import (
     CartException, 
     NoCartError, 
-    NoEventError, 
+    NoEventError,
+    NoPerformanceError,
     NoSalesSegment,
     InvalidCSRFTokenException, 
     OverQuantityLimitError, 
@@ -116,7 +117,7 @@ class IndexView(object):
         logger.debug("dates:%s" % dates)
         performances = api.performance_names(self.request, context.event, context.normal_sales_segment)
         if not performances:
-            raise NoEventError # NoPerformanceを作る
+            raise NoPerformanceError(context.event, context.normal_sales_segment) # NoPerformanceを作る
 
         from collections import OrderedDict
         select_venues = OrderedDict()

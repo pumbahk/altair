@@ -9,6 +9,9 @@ class NoCartError(CartException):
 class NoEventError(CartException):
     pass
 
+class NoPerformanceError(CartException):
+    pass
+
 class NoSalesSegment(CartException):
     pass
 
