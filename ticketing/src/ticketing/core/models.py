@@ -5,7 +5,6 @@ import operator
 import json
 import re
 from urlparse import urljoin
-from urllib2 import urlopen
 from datetime import datetime, date, timedelta
 
 from sqlalchemy import Table, Column, ForeignKey, func, or_, and_, event
@@ -63,7 +62,7 @@ class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         __metadata = getattr(self, '__metadata', None)
         if not __metadata:
             resolver = get_current_registry().queryUtility(IAssetResolver)
-           self.__metadata = self.metadata_url and json.load(resolver.resolve(self.metadata_url))
+            self.__metadata = self.metadata_url and json.load(resolver.resolve(self.metadata_url).stream())
         return self.__metadata
 
     def get_drawing(self, name):
