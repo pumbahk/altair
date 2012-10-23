@@ -1,4 +1,4 @@
-<%inherit file="./base_NH.html"/>
+<%inherit file="./base.html"/>
 <%namespace file="./tags_mobile.html" name="mobile" />
 
 <%mobile:header>チケット購入</%mobile:header>
@@ -7,7 +7,7 @@ ${event.title}
 
 % if not venues:
   <hr size="1" color="#888888" noshade="noshade" />
-  <p><font color="#F12997">■</font>対象試合をお選びください</p>
+  <p><font color="#9B63C0">■</font>対象試合をお選びください</p>
   <form action="${request.url}" method="get">
     <select name="performance_name">
   % for performance in performances:
@@ -21,7 +21,7 @@ ${event.title}
   </form>
 % else:
   <hr size="1" color="#888888" noshade="noshade" />
-  <p><font color="#F12997">■</font>日時・会場をお選びください</p>
+  <p><font color="#9B63C0">■</font>日時・会場をお選びください</p>
   <form action="${request.url}" method="get">
     <select name="pid">
   % for pid, venue_name in venues:

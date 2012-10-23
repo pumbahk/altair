@@ -1,4 +1,4 @@
-<%inherit file="./base_NH.html"/>
+<%inherit file="./base.html"/>
 <%namespace file="./tags_mobile.html" name="mobile" />
 
 <%mobile:header>チケット購入</%mobile:header>
@@ -14,7 +14,7 @@ ${event.title}
     <div>
       <br/>
       <div>
-        <font color="#F12997">■</font>${product['name']} &yen;${product['price']}
+        <font color="#9B63C0">■</font>${product['name']} &yen;${product['price']}
       </div>
       % if product['detail']:
         ${product['detail']}<br/>

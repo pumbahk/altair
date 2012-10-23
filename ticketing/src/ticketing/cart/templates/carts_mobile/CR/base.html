@@ -5,10 +5,14 @@
 </head>
 <body>
 <div align="center">
-  <img src="${request.static_url('ticketing.cart:static/img/mobile/logo-CR.jpg')}" width="232" height="72" alt="サンレーヴスチケット" />
+  <img src="${request.static_url('ticketing.cart:static/img/mobile/logo-NH.jpg')}" width="232" height="72" alt="サンレーヴスチケット" />
   <hr size="2" noshade="noshade" color="#000000" />
 </div>
 <div>
+
+<div style="font-size:x-small">
+${h.get_nickname(request)}
+</div>
 
 ${self.body()}
 

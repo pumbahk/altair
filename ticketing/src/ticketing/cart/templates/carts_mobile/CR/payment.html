@@ -1,4 +1,4 @@
-<%inherit file="./base_NH.html"/>
+<%inherit file="./base.html"/>
 <%namespace file="./tags_mobile.html" name="mobile" />
 
 <%mobile:header>チケット購入</%mobile:header>
@@ -9,7 +9,7 @@
 </div>
 
 <div>
-<font color="#F12997">■</font>購入者氏名(全角)
+<font color="#9B63C0">■</font>購入者氏名(全角)
 </div>
 <div>
   ${form['last_name'].label}
@@ -27,7 +27,7 @@
 <div color="#ff0000">
 
 <div>
-<font color="#F12997">■</font>購入者氏名(カナ)
+<font color="#9B63C0">■</font>購入者氏名(カナ)
 </div>
 <div>
   ${form['last_name_kana'].label}
@@ -45,7 +45,7 @@
 </div>
 
 <div>
-<font color="#F12997">■</font>${form['mail_address'].label}
+<font color="#9B63C0">■</font>${form['mail_address'].label}
 </div>
 <p>※ 予約受付完了メール等をメールでご案内します。「ticketstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</p>
 <div>
@@ -56,7 +56,7 @@
 </div>
 
 <div>
-<font color="#F12997">■</font>${form['mail_address2'].label}
+<font color="#9B63C0">■</font>${form['mail_address2'].label}
 </div>
 <div>
   ${form['mail_address2']}
@@ -65,7 +65,7 @@
   </div>
 </div>
 <div>
-<font color="#F12997">■</font>住所
+<font color="#9B63C0">■</font>住所
 </div>
 <div>
   ${form['zip'].label}(例:1410022)<br/>
@@ -98,7 +98,7 @@
 </div>
 
 <div>
-<font color="#F12997">■</font>電話番号
+<font color="#9B63C0">■</font>電話番号
 </div>
 <div>
   ${form['tel'].label}<br/>

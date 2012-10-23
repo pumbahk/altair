@@ -1,4 +1,4 @@
-<%inherit file="./base_nh.html"/>
+<%inherit file="./base.html"/>
 <%block name="css">
 <style type="text/css">
   .settlementPayInputInner dd { margin-left: 36px; }
@@ -8,7 +8,7 @@
 ${h.get_nickname(request)} 
 %if request.session.peek_flash():
   %for message in request.session.pop_flash():
-     <table cellpadding="0" cellspacing="0" class="formhappinets">
+     <table cellpadding="0" cellspacing="0" class="formcingreves">
      <tr><td colspan="2" style="text-align:left;"><div class="error">${message}</div></td></tr>
      </table>
   %endfor
