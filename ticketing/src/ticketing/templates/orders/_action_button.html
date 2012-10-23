@@ -119,8 +119,28 @@ actions = {
     icon='icon-pencil',
   ),
 }
-sort = iter(sort or ['mailinfo', 'delivered','cancel'])
+sort = sort or ['mailinfo', 'delivered','cancel']
+
+if 'mailinfo' in sort:
+  if not h.has_permission('event_editor') or not order.shipping_address:
+    sort.remove('mailinfo')
+if 'cancel' in sort:
+  if not h.has_permission('event_viewer') or not order.can_cancel():
+    sort.remove('cancel')
+if 'delivered' in sort:
+  if not h.has_permission('event_viewer') or not order.can_cancel():
+    sort.remove('delivered')
+if 'print' in sort:
+  if order.is_canceled():
+    sort.remove('print')
+  elif order.issued_at or order.queued:
+    sort.remove('print')
+    sort.append('force_print')
+if sort:
+  sort = iter(sort)
 %>
-${h.action_button(actions, sort, vertical=False)}
+% if sort:
+  ${h.action_button(actions, sort, vertical=False)}
+% endif
 
 ${m.delete_modal(label_delete=u'注文をキャンセルする (取消不可)', label_cancel=u'戻る')}
