@@ -513,6 +513,7 @@ class Orders(BaseView):
                 order.attributes[attr] = post_data.get(attr)
             DBSession.add(order)
             DBSession.flush()
+            cart.order = order
             cart.finish()
 
             if with_enqueue:
