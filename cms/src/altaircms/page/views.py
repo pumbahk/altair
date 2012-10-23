@@ -110,7 +110,7 @@ class PageAddView(object):
             ## flash messsage
             mes = u'page created <a href="%s">作成されたページを編集する</a>' % self.request.route_path("pageset_detail", pageset_id=page.pageset.id, kind="event")
             FlashMessage.success(mes, request=self.request)
-            return HTTPFound(get_endpoint(self.request)) or HTTPFound(self.request.route_path("event", id=self.request.matchdict["event_id"]))
+            return HTTPFound(get_endpoint(self.request) or self.request.route_path("event", id=self.request.matchdict["event_id"]))
         else:
             event_id = self.request.matchdict["event_id"]
             self.request._form = form
@@ -127,7 +127,7 @@ class PageAddView(object):
             ## flash messsage
             mes = u'page created <a href="%s">作成されたページを編集する</a>' % self.request.route_path("pageset_detail", pageset_id=page.pageset.id, kind="other")
             FlashMessage.success(mes, request=self.request)
-            return HTTPFound(get_endpoint(self.request)) or HTTPFound(self.request.route_path("pageset_list", kind="other"))
+            return HTTPFound(get_endpoint(self.request) or self.request.route_path("pageset_list", kind="other"))
         else:
             self.request._form = form
             self.request._setup_form = forms.PageInfoSetupForm(name=form.data["name"])

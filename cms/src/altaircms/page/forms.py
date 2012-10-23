@@ -107,11 +107,10 @@ class PageForm(Form):
             if data["publish_begin"] > data["publish_end"]:
                 append_errors(self.errors, "publish_begin", u"開始日よりも後に終了日が設定されています")
 
-        if (self.data.get('url') and self.data.get('pageset')) or (not self.data.get('url') and not self.data.get('pageset')):
+        if (self.data.get('url') and self.data.get('pageset')):
             urlerrors = self.errors.get('url', [])
             urlerrors.append(u'URLの一部かページセットのどちらかを指定してください。')
             self.errors['url'] = urlerrors
-
         return not bool(self.errors)
 
 

@@ -19,7 +19,7 @@ def purchase_simple_render(request, widget, event):
         href = widget.external_link
     else:
         href = h.link.get_purchase_page_from_event(request, event)  
-    return u'<a href="%s"><div class="purchase-simple"></div></a>' % href
+    return u'<a href="%s"><img src="%s" alt="購入"></a>' % (href, request.static_url("altaircms:static/ticketstar/img/settlement/btn_buy.gif"))
 
 PURCHASE_DISPATCH = {
     "simple": purchase_simple_render, 
