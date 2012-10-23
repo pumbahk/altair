@@ -1,0 +1,85 @@
+<%inherit file="./base_NH.html"/>
+<%namespace file="./tags_mobile.html" name="mobile" />
+
+<%mobile:header>チケット購入</%mobile:header>
+注文内容をご確認ください
+<%mobile:header>申込内容確認</%mobile:header>
+<form id="form1" action="${request.route_url('payment.finish')}" method="post">
+${form.csrf_token()}
+<div>
+${cart.performance.event.title} ${cart.performance.name} ${h.performance_date(cart.performance)} ${cart.performance.venue.name}
+</div>
+% for idx, product in enumerate(cart.products):
+<%mobile:form_header>商品${idx + 1}</%mobile:form_header>
+<div>
+${product.product.name} ${product.quantity} 枚<br/>
+￥${h.format_number(product.product.price * product.quantity)}<br/>
+% for seat in product.seats:
+${seat['name']}<br/>
+% endfor
+</div>
+% endfor
+<%mobile:form_header>決済手数料</%mobile:form_header>
+<div>
+￥${h.format_number(cart.transaction_fee)}
+</div>
+<%mobile:form_header>発券/配送手数料</%mobile:form_header>
+<div>
+￥${h.format_number(cart.delivery_fee)}
+</div>
+<%mobile:form_header>システム利用料</%mobile:form_header>
+<div>
+￥${h.format_number(cart.system_fee)}
+</div>
+<%mobile:form_header>合計金額</%mobile:form_header>
+<div>
+￥${h.format_number(cart.total_amount)}
+</div>
+
+<%
+shipping = cart.shipping_address
+%>
+
+<%mobile:header>お支払い</%mobile:header>
+<div>
+${h.render_payment_confirm_viewlet(request, cart)}
+</div>
+
+<%mobile:header>お引き取り</%mobile:header>
+<div>
+${h.render_delivery_confirm_viewlet(request, cart)}
+</div>
+
+<%mobile:header>購入者情報</%mobile:header>
+<%mobile:form_header>氏名(漢字)</%mobile:form_header>
+<div>
+${shipping.last_name} ${shipping.first_name}
+</div>
+<%mobile:form_header>氏名(カナ)</%mobile:form_header>
+<div>
+${shipping.last_name_kana} ${shipping.first_name_kana}
+</div>
+<%mobile:form_header>電話番号</%mobile:form_header>
+<div>
+${shipping.tel_1}
+</div>
+<%mobile:form_header>配送先住所</%mobile:form_header>
+<div>
+${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}
+</div>
+
+<%mobile:header>メールマガジンの配信</%mobile:header>
+<p>
+ご利用いただいた方には、秋田ノーザンハピネッツからのメールマガジンをお送りします。不要な方はチェックをはずしてください。
+</p>
+% for mailmagazine in mailmagazines:
+<input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />${mailmagazine.name}<br/>
+<div style="font-size:x-small;">
+${mailmagazine.description|n}
+</div>
+% endfor
+
+<hr />
+<input type="submit" name="back" value="戻る" />
+<input type="submit" value="申し込む" />
+</form>
