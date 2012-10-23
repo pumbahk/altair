@@ -24,7 +24,7 @@
 
 <div class="row-fluid">
     <h3>${master_env.title}追加</h3>
-    <form action="${master_env.flow_api.next_flow_path(request)}" method="POST">
+    <form action="${request.current_route_path(action="confirm")}" method="POST">
        ${fco.form_as_table_strict(form, display_fields)}
         <button class="btn" type="submit">保存</button>
     </form>
