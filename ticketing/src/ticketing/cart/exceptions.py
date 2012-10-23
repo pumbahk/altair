@@ -9,7 +9,7 @@ class NoCartError(CartException):
 class NoEventError(CartException):
     pass
 
-class NoSalesSegment(Exception):
+class NoSalesSegment(CartException):
     pass
 
 class OutTermSalesException(Exception):
