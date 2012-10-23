@@ -1,3 +1,4 @@
+# encoding: utf-8
 ## todo:
 from zope.interface import Interface
 from zope.interface import provider
@@ -5,6 +6,10 @@ from zope.interface import implementer
 from pyramid.renderers import RendererHelper
 import ticketing.core.api as core_api
 from ticketing.users.models import Membership
+from sqlalchemy.orm.exc import NoResultFound
+import logging
+
+logger = logging.getLogger(__name__)
 
 _lookup_key = "**selectable"
 def includeme(config):
@@ -17,6 +22,11 @@ def add_selectable_renderer_selector(config, fun):
 
 class ISelectableRendererSelector(Interface):
     def __call__(vals, system_vals, request=None):
+        """
+        リクエストから、レンダリング対象となるテンプレートを決定する。
+        テンプレートが決定できない場合は
+        デフォルトのパスをビルドして返す。
+        """
         pass
 
 class StringLike(str):
@@ -32,7 +42,7 @@ class SelectableRenderer(object):
     def __init__(self, info):
         self.info = info
         ## xxx: this is hack.
-        self.format_string = self.info.name._format_string
+        self.path_format = self.info.name._path_format
         ### todo: default value
         self.renderers = {}
 
@@ -46,19 +56,30 @@ class SelectableRenderer(object):
         self.renderers[path] = renderer
         return renderer
 
+    @property
+    def default_renderer(self):
+        return self.get_sub_renderer('__default__')
+
     def __call__(self, value, system_values, request=None):
         request = request or system_values["request"]
         selector = request.registry.getUtility(ISelectableRendererSelector)
-        renderer = self.get_sub_renderer(selector(self, value, system_values, request=request))
+        try:
+            renderer = self.get_sub_renderer(selector(self, value, system_values, request=request))
+        except NoRenderableTemplateSetError as e:
+            return self.default_renderer.render('notfound.html', system_values, request)
         return renderer.render(value, system_values, request=request)
 
 def selectable_renderer(fmt, defaults=None):
     global _lookup_key
     lookup_key = StringLike(_lookup_key)
-    lookup_key._format_string = fmt
+    lookup_key._path_format = fmt
     return lookup_key
 
 ## individual utility
+
+
+def build_renderer_path(path_format, membership):
+    return path_format % dict(membership=membership)
 
 @implementer(ISelectableRendererSelector)
 class ByDomainMappingSelector(object):
@@ -69,9 +90,12 @@ class ByDomainMappingSelector(object):
         assert request
         #mapped = self.lookup_mapped(request.host)
         organization = core_api.get_organization(request)
-        mapped = Membership.query.filter_by(deleted_at=None, organization=organization).first().name
-        fmt = helper.format_string
-        return fmt % dict(membership=mapped)
+        try:
+            mapped = Membership.query.filter_by(deleted_at=None, organization=organization).one()
+            return build_renderer_path(helper.path_format, membership=mapped.name)
+        except NoResultFound:
+            logger.warning("No matching template configuration found: using default configuration")
+            return build_renderer_path(helper.path_format, membership='__default__')
 
 ## xxx: move
 def get_membership_from_request(request):
