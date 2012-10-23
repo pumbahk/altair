@@ -5,6 +5,7 @@ import operator
 import json
 import re
 from urlparse import urljoin
+from urllib2 import urlopen
 from datetime import datetime, date, timedelta
 
 from sqlalchemy import Table, Column, ForeignKey, func, or_, and_, event
@@ -62,14 +63,13 @@ class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         __metadata = getattr(self, '__metadata', None)
         if not __metadata:
             resolver = get_current_registry().queryUtility(IAssetResolver)
-            self.__metadata = self.metadata_url and json.load(resolver.resolve(self.metadata_url).stream())
+            self.__metadata = self.metadata_url and json.load(urlopen(self.metadata_url))
         return self.__metadata
 
-    def get_drawing(self, name):
+    def get_drawing_url(self, name):
         page_meta = self._metadata[u'pages'].get(name)
         if page_meta is not None:
-            resolver = get_current_registry().queryUtility(IAssetResolver)
-            return resolver.resolve(myurljoin(self.metadata_url, name))
+            return myurljoin(self.metadata_url, name)
         else:
             return None
 

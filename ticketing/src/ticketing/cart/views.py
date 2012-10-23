@@ -373,7 +373,7 @@ class IndexView(object):
             raise HTTPNotFound()
         part = self.request.matchdict.get('part')
         venue = c_models.Venue.get(venue_id)
-        return Response(body=venue.site.get_drawing(part).stream().read(), content_type='text/xml; charset=utf-8')
+        return Response(app_iter=urlopen(venue.site.get_drawing_url(part)), content_type='text/xml; charset=utf-8')
 
 class ReserveView(object):
     """ 座席選択完了画面(おまかせ) """
