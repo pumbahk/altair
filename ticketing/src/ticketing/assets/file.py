@@ -52,5 +52,4 @@ class FileSchemeAssetResolver(object):
                 return self.parent.resolve(spec)
             else:
                 return ValueError(spec)
-        print url
         return FileSchemeAssetDescriptor(path=url.path)
