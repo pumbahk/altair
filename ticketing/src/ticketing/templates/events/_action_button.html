@@ -1,5 +1,5 @@
 <%page args="event, order=None" />
-<%namespace file="/common/helpers.html" import="action_button" />
+<%namespace file="/common/helpers.html" name="h" />
 <%namespace file="/common/modal.html" import="delete_modal" />
 
 <script type="text/javascript">
@@ -25,32 +25,38 @@
       label=u'新規',
       url=request.route_path('events.new'),
       icon='icon-plus',
+      permission='event_editor',
     ),
     'edit':dict(
       label=u'編集',
       url=request.route_path('events.edit', event_id=event.id),
       icon='icon-pencil',
+      permission='event_editor',
     ),
     'delete':dict(
       label=u'削除',
       url='javascript:delete_event(%d);' % event.id,
       icon='icon-minus',
+      permission='event_editor',
     ),
     'show':dict(
       label=u'詳細',
       url=request.route_path('events.show', event_id=event.id),
       icon='icon-th-list',
+      permission='event_viewer',
     ),
     'copy':dict(
       label=u'コピーして新規作成',
       url='javascript:copy_event(%d);' % event.id,
       icon='icon-plus',
+      permission='event_editor',
     ),
-}
+  }
+
   order = iter(order or ['new', 'show', 'edit', 'delete', 'copy'])
 %>
 <div style="float: left;">
-  ${action_button(actions, order)}
+  ${h.action_button(actions, order)}
 </div>
 
 <div class="btn-group" style="float: left;">

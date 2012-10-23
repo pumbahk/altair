@@ -69,13 +69,15 @@
 actions = {
   'mailinfo':dict(
     label=u"メール",
-    url=request.route_path('orders.mailinfo', order_id=order. id,action="show"),
-    icon="icon-envelope"
+    url=request.route_path('orders.mailinfo', order_id=order.id, action="show"),
+    icon='icon-envelope',
+    permission='event_editor',
   ),
   'delivered':dict(
     label=u'配送済みにする',
     url=request.route_path('orders.delivered', order_id=order.id),
     icon='icon-ok',
+    permission='event_viewer',
   ),
   'print':dict(
     label=u'発券する',
@@ -85,7 +87,8 @@ actions = {
         "data-target": "#PrintQueueModal",
         "class": "ajax-modal btn"
         },
-    icon='icon-print'
+    icon='icon-print',
+    permission='event_viewer',
   ),
   'force_print':dict(
     label=u'強制発券する',
@@ -95,40 +98,45 @@ actions = {
         "data-target": "#PrintQueueModal",
         "class": "ajax-modal btn"
         },
-    icon='icon-print'
+    icon='icon-print',
+    permission='event_viewer',
   ),
   'cancel':dict(
     label=u'キャンセル',
     url='javascript:cancel_order(%d);' % order.id,
     icon='icon-remove',
-    attrs={ 'class': 'btn-danger' }
+    attrs={ 'class': 'btn-danger' },
+    permission='event_editor',
   ),
   'edit_shipping_address':dict(
     label=u'編集',
     url='javascript:edit_shipping_address(%d);' % order.id,
     icon='icon-edit',
+    permission='event_viewer',
   ),
   'edit_product':dict(
     label=u'編集',
     url='javascript:edit_product(%d);' % order.id,
     icon='icon-edit',
+    permission='event_viewer',
   ),
   'note':dict(
     label=u'メモを保存',
     url='javascript:save_note(%d);' % order.id,
     icon='icon-pencil',
+    permission='event_viewer',
   ),
 }
 sort = sort or ['mailinfo', 'delivered','cancel']
 
 if 'mailinfo' in sort:
-  if not h.has_permission('event_editor') or not order.shipping_address:
+  if not order.shipping_address:
     sort.remove('mailinfo')
 if 'cancel' in sort:
-  if not h.has_permission('event_viewer') or not order.can_cancel():
+  if not order.can_cancel():
     sort.remove('cancel')
 if 'delivered' in sort:
-  if not h.has_permission('event_viewer') or not order.can_cancel():
+  if not order.can_cancel():
     sort.remove('delivered')
 if 'print' in sort:
   if order.is_canceled():
@@ -139,8 +147,6 @@ if 'print' in sort:
 if sort:
   sort = iter(sort)
 %>
-% if sort:
-  ${h.action_button(actions, sort, vertical=False)}
-% endif
+${h.action_button(actions, sort, vertical=False)}
 
 ${m.delete_modal(label_delete=u'注文をキャンセルする (取消不可)', label_cancel=u'戻る')}

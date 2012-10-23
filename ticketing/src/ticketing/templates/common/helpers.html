@@ -134,51 +134,49 @@ ${locale.format("%d", price, grouping=True)}
 % endif
 </%def>
 
+<%!
+  from webhelpers.util import html_escape
+%>
 <%def name="action_button(actions, order=None, vertical=True, options=None)">
 <%
-  from webhelpers.util import html_escape
-  multi = True if len(actions) > 1 and order else False
-  key = order.next() if multi else actions.keys()[0]
+  count = 0
   def attrs_str():
     attrs = actions[key].get('attrs', {})
-    attrs['class'] = u'btn ' + attrs.get('class', u'')
+    attrs['class'] = attrs.get('class', u'')
+    if count == 0 or not vertical:
+      attrs['class'] += ' ' + u'btn'
+    if key == 'delete':
+      attrs['data-controls-modal'] = u'modal-delete'
+      attrs['data-backdrop'] = u'true'
+      attrs['data-keyboard'] = u'true'
     if options is not None:
       attrs['class'] += ' ' + options
     return ' '.join(u'%s="%s"' % (name, html_escape(value)) for name, value in attrs.iteritems())
 %>
 <div class="btn-group">
-  <a href="${actions[key]['url']}" ${attrs_str()|n}>
-    <i class="${actions[key]['icon']}"></i> ${actions[key]['label']}
-  </a>
-  % if multi:
-    % if vertical:
-      <button class="btn dropdown-toggle" data-toggle="dropdown">
-        <span class="caret"></span>
-      </button>
-      <ul class="dropdown-menu">
-        % for key in order:
-        <li>
-          % if key == 'delete':
-          <a href="${actions[key]['url']}" data-controls-modal="modal-delete" data-backdrop="true" data-keyboard="true">
-          % else:
-          <a href="${actions[key]['url']}">
-          % endif
-            <i class="${actions[key]['icon']}"></i> ${actions[key]['label']}
-          </a>
-        </li>
-        % endfor
-      </ul>
-    % else:
-      % for key in order:
-        % if key == 'delete':
-        <a href="${actions[key]['url']}" data-controls-modal="modal-delete" data-backdrop="true" data-keyboard="true" ${attrs_str()|n}>
-        % else:
+  % for key in order:
+    % if 'permission' in actions[key] and not has_permission(actions[key]['permission']):
+      <% continue %>
+    % endif
+    % if vertical and count == 1:
+    <button class="btn dropdown-toggle" data-toggle="dropdown">
+      <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu">
+    % endif
+    % if vertical and count > 0:
+      <li>
+    % endif
         <a href="${actions[key]['url']}" ${attrs_str()|n}>
-        % endif
           <i class="${actions[key]['icon']}"></i> ${actions[key]['label']}
         </a>
-      % endfor
+    % if vertical and count > 0:
+      </li>
     % endif
+    <% count += 1 %>
+  % endfor
+  % if vertical and count > 0:
+    </ul>
   % endif
 </div>
 </%def>
