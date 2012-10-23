@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 from standardenum import StandardEnum
-from urlparse import uses_relative, uses_netloc, urlparse, urlunparse
+from urlparse import uses_relative, uses_netloc, urlparse
 from decimal import Decimal
 
 class DigitCodec(object):
@@ -39,12 +39,31 @@ encoder = DigitCodec("0123456789ACFGHJKLPRSUWXYZ")
 sensible_alnum_encode = encoder.encode
 sensible_alnum_decode = encoder.decode
 
-class URLJoiner(object):
+class URLHandler(object):
     def __init__(self, uses_relative=uses_relative, uses_netloc=uses_netloc):
         self.uses_relative = uses_relative
         self.uses_netloc = uses_netloc
 
-    def __call__(self, base, url, allow_fragments=True):
+    def unsplit(self, data):
+        scheme, netloc, url, query, fragment = data
+        if netloc or (scheme and self.uses_netloc is not None and scheme in self.uses_netloc and url[:2] != '//'):
+            if url and scheme and self.uses_relative is not None and scheme in self.uses_relative and url[:1] != '/': url = '/' + url
+            url = '//' + (netloc or '') + url
+        if scheme:
+            url = scheme + ':' + url
+        if query:
+            url = url + '?' + query
+        if fragment:
+            url = url + '#' + fragment
+        return url
+
+    def unparse(self, data):
+        scheme, netloc, url, params, query, fragment = data
+        if params:
+            url = "%s;%s" % (url, params)
+        return self.unsplit((scheme, netloc, url, query, fragment))
+
+    def join(self, base, url, allow_fragments=True):
         if not base:
             return url
         if not url:
@@ -98,10 +117,13 @@ class URLJoiner(object):
             segments[-1] = ''
         elif len(segments) >= 2 and segments[-1] == '..':
             segments[-2:] = ['']
-        return urlunparse((scheme, netloc, '/'.join(segments),
-                           params, query, fragment))
+        return self.unparse((scheme, netloc, '/'.join(segments),
+                            params, query, fragment))
 
-myurljoin = URLJoiner(None, None)
+urlhandler = URLHandler(None, None)
+myurljoin = urlhandler.join
+myurlunparse = urlhandler.unparse
+myurlunsplit = urlhandler.unsplit
 
 def json_safe_coerce(value, encoding='utf-8'):
     if isinstance(value, dict):
