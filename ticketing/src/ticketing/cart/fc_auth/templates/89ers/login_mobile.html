@@ -12,13 +12,17 @@
 <p style="text-align:center;">
 仙台89ERS<br/>
 <div>
-<font color="#ffbf00">■</font>一般の方はこちらから
+<font color="#ffbf00">■</font>一般販売はこちらから
 </div>
 <form action="${request.route_url('fc_auth.guest', membership=request.matchdict['membership'])}" method="post">
 <div style="text-align:center;">
 <br/>
 <input type="submit" value="&gt;&gt;チケット購入&lt;&lt;"/><br />
-10月19日(金) 10:00より販売開始予定です。</div>
+<font color="#bf0000">11/17・18 気仙沼市総合体育館</font><br />
+10/19(金) 10:00より販売中<br />
+<font color="#bf0000">12/6～1/12 仙台市青葉体育館</font><br />
+11/1(木) 10:00より一般販売開始予定<br />
+</div>
 </div>
 %if guest_message:
 <div style="color:#ff0000">${guest_message}</div>
@@ -26,7 +30,7 @@
 </form>
 </p>
 <div id="login_form">
-<font color="#ffbf00">■</font>ブースター会員ログイン
+<font color="#ffbf00">■</font>ブースター会員先行販売
 </div>
 <form action="${request.url}" method="post">
 <input type="hidden" name="membership" value="89ers" />
