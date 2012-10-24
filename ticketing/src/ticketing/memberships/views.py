@@ -14,7 +14,7 @@ from ticketing.fanstatic import with_bootstrap
 from . import forms
 from ticketing.events.sales_segments.forms import SalesSegmentForm
 
-## admin権限を持っている人以外見れない想定。ログインしたオペレータのorganizationによるseparationは行っていない
+## admin権限を持っている人以外見れない想定。
 
 @view_defaults(permission="administrator", decorator=with_bootstrap, route_name="memberships")
 class MembershipView(BaseView):

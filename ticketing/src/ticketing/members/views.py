@@ -14,6 +14,8 @@ from . import api
 def correct_organization(info, request):
     """ [separation] super userか自身の所属するOrganizationのもののみ表示
     """
+    if info.user is None:
+        return False
     if info.user.is_superuser:
         return True
     if "membership_id" in request.matchdict:
@@ -21,6 +23,7 @@ def correct_organization(info, request):
     return False
 
 @view_config(route_name="members.empty", 
+             permission="administrator", 
              decorator=with_bootstrap, renderer="ticketing:templates/members/index.html")
 def members_empty_view(context, request):
     membership = context.memberships.first()
@@ -30,6 +33,7 @@ def members_empty_view(context, request):
     return HTTPFound(url)
 
 @view_config(route_name="members.index", 
+             permission="administrator", 
              custom_predicates=(correct_organization, ), 
              decorator=with_bootstrap, renderer="ticketing:templates/members/index.html")
 def members_index_view(context, request):
@@ -56,7 +60,7 @@ def members_index_view(context, request):
     return {"users": users, "choice_form": choice_form, 
             "membership_id": membership_id}
 
-@view_defaults(route_name="members.member", decorator=with_bootstrap)
+@view_defaults(route_name="members.member", permission="administrator", decorator=with_bootstrap)
 class MemberView(object):
     def __init__(self, context, request):
         self.context = context
