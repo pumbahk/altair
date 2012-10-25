@@ -12,7 +12,6 @@ logger = logging.getLogger(__name__)
 
 def includeme(config):
     config.add_route("qrapp", "/qrapp/{event_id}")
-    config.add_route("progress", "/progress/{event_id}")
     config.add_route("eventlist", "/")    
     config.add_route("api.ticket.data", "/api/ticket/data/{event_id}")
     config.add_route("api.ticket.after_printed", "/api/ticket/after_printed")
@@ -23,6 +22,9 @@ def includeme(config):
     config.add_route('api.applet.ticket_data', '/api/applet/ticket_data')
     config.add_route('api.applet.ticket_data_order', '/api/applet/ticket_data_order')
     config.add_route('api.applet.history', '/api/applet/history')
+
+    config.add_route("progress", "/progress/{event_id}")
+    config.add_route('api.progress.total_result_data', '/api/progress/total_result/{event_id}')
 
     config.add_route("login", "/login")
     config.add_route("logout", "/logout")

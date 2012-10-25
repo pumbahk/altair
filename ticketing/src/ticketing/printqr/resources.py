@@ -29,7 +29,9 @@ class PrintQRResource(object):
             "api.ticketdata_from_order_no": self.request.route_path('api.applet.ticket_data_order'),
             "api.ticket.after_printed": self.request.route_path("api.ticket.after_printed"), 
             "api.ticket.after_printed_order": self.request.route_path("api.ticket.after_printed_order"), 
-            "api.ticket.refresh.printed_status": self.request.route_path("api.ticket.refresh.printed_status")
+            "api.ticket.refresh.printed_status": self.request.route_path("api.ticket.refresh.printed_status"), 
+
+            "api.progress.total_result_data": self.request.route_path("api.progress.total_result_data", event_id=event_id)
             }
     @reify
     def applet_endpoints(self):

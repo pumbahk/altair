@@ -131,7 +131,7 @@ var DataStoreDescriptionView = Backbone.View.extend({
 });
 
 
-var MessageView = Backbone.View.extend({
+var MessageView = message({}).MessageInformationView.extend({
   events: {
     "click #printed_at_force_refresh": "sendRefreshPrintedStatusSignal", 
     "click #canceled_force_print": "sendCanceledForcePrintSignal"
@@ -148,37 +148,10 @@ var MessageView = Backbone.View.extend({
       this.canceledCallback = false;
     }
   }, 
-  initialize: function(){
+  initialize: function(opts){
+    MessageView.__super__.initialize.call(this, opts);
     this.refreshCallback = false;
     this.canceledCallback = false;
-    this.$alert = this.$el.find("#alert_message");
-    this.$info = this.$el.find("#info_message");
-    this.$error = this.$el.find("#error_message");
-    this.$success = this.$el.find("#success_message");
-    this.$messages = this.$el.find(".alert");
-  }, 
-  _clear: function(){
-    this.$messages.hide();
-  }, 
-  alert: function(message, forcehtml){
-    this._clear();
-    var updator = !!(forcehtml)? this.$alert.html : this.$alert.text;
-    updator.call(this.$alert, message.toString()).show();
-  }, 
-  info: function(message, forcehtml){
-    this._clear();
-    var updator = !!(forcehtml)? this.$info.html : this.$info.text;
-    updator.call(this.$info, message.toString()).show();
-  }, 
-  error: function(message, forcehtml){
-    this._clear();
-    var updator = !!(forcehtml)? this.$error.html : this.$error.text;
-    updator.call(this.$error, message.toString()).show();
-  }, 
-  success: function(message, forcehtml){
-    this._clear();
-    var updator = !!(forcehtml)? this.$success.html : this.$success.text;
-    updator.call(this.$success, message.toString()).show();
   }
 });
 

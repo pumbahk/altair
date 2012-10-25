@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 from . import forms
 from . import security
+from . import helpers as h
 from ticketing.models import DBSession
 from ticketing.core.models import Event
 from ticketing.core.models import Order
@@ -86,7 +87,7 @@ def orderno_show_qrsigned_after_validated(context, request, form):
     histories = (get_or_create_matched_history_from_token(order_no, tk) for tk in tokens)
     builder = get_qrdata_builder(request)
 
-    signed_history_doubles = sorted([(_signed_string_from_history(builder, h), h) for h in histories], key=lambda xs : xs[1].id)
+    signed_history_doubles = sorted([(_signed_string_from_history(builder, history), history) for history in histories], key=lambda xs : xs[1].id)
     return {"signed_history_doubles": signed_history_doubles, "order": order}
 
 
@@ -101,6 +102,18 @@ def progress_notify_view(context, request):
                 endpoints=context.applet_endpoints, 
                 api_resource=context.api_resource)
     
+@view_config(permission="sales_counter", route_name="api.progress.total_result_data", 
+             renderer="json", request_method="GET")
+def progress_total_result_data(context, request):
+    performance_id = request.GET["performance_id"]
+    event_id = request.matchdict["event_id"]
+
+    return dict(
+        status="success", 
+        data=dict(
+            performance=utils.performance_data_from_performance_id(event_id, performance_id), 
+            total_result=utils.total_result_data_from_performance_id(event_id, performance_id), 
+            current_time=h.japanese_datetime(datetime.now())))
 ## event list
 
 @view_config(permission="sales_counter", route_name="eventlist", 
