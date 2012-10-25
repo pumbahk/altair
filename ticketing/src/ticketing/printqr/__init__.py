@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 def includeme(config):
     config.add_route("qrapp", "/qrapp/{event_id}")
+    config.add_route("progress", "/progress/{event_id}")
     config.add_route("eventlist", "/")    
     config.add_route("api.ticket.data", "/api/ticket/data/{event_id}")
     config.add_route("api.ticket.after_printed", "/api/ticket/after_printed")

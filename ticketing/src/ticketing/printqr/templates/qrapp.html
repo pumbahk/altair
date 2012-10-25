@@ -1,4 +1,9 @@
 <%inherit file="./base.html"/>
+
+<%block name="extra_button">
+ <a target="_blank" class="btn" href="${request.route_url("progress", event_id=request.matchdict["event_id"])}">進捗状況確認</a>
+</%block>
+
 <%
 import json, random
 endpoints_json = json.dumps(endpoints, ensure_ascii=False)

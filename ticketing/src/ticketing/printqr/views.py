@@ -66,7 +66,6 @@ def orderno_show_qrsigned(context, request):
     if not form.validate() or not form.object_validate(organization_id):
         return {"form": form}
     
-    ## boo
     try:
         return orderno_show_qrsigned_after_validated(context, request, form)
     except Exception, e:
@@ -89,6 +88,18 @@ def orderno_show_qrsigned_after_validated(context, request, form):
 
     signed_history_doubles = sorted([(_signed_string_from_history(builder, h), h) for h in histories], key=lambda xs : xs[1].id)
     return {"signed_history_doubles": signed_history_doubles, "order": order}
+
+
+## progress notify
+@view_config(permission="sales_counter", route_name="progress", 
+             renderer="ticketing.printqr:templates/progress.html")
+def progress_notify_view(context, request):
+    event_id = request.matchdict["event_id"]
+    form = forms.PerformanceSelectForm(event_id=event_id)
+    return dict(json=json, 
+                form=form, 
+                endpoints=context.applet_endpoints, 
+                api_resource=context.api_resource)
     
 ## event list
 

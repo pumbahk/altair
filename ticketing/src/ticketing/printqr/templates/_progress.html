@@ -1,0 +1,40 @@
+<%page args="form"/>
+
+<div id="desctime" style="margin-left:60%;">
+  <span id="year"></span>年<span id="month"></span>月 <span id="day"></span>日 <span id="time"></span>現在の情報
+</div>
+
+<div class="well">
+  <fieldset>
+    <div class="control-group">
+      <label class="control-label">${form.performance_id.label.text}</label>
+      <div class="controls">${form.performance_id(style="width:70%;")}</div>
+    </div>
+  </fieldset>
+</div>
+
+<div class="page-header">
+  <h4>現在の券面印刷状況</h4>
+</div>
+
+  <table class="table table">
+    <tbody>
+      <tr>
+        <th rowspan="5">トータル注文数</th>
+        <td rowspan="5"><span id="total_count"></span>枚</td>
+        <th rowspan="2">QR引き取り</th>
+        <td rowspan="2"><span id="total_qr_count"></span>枚</td>
+        <th>未印刷</th>
+        <td><span id="qr_unprintted_count"></span>枚</td>
+      </tr>
+      <tr>
+        <th>印刷済み</th>
+        <td><span id="qr_printed_count"></span>枚</td>
+      </tr>
+      <tr>
+        <th colspan="2">QR引き取り以外</th>
+        <td colspan="2"><span id="total_other_count"></span>枚</td>
+      </tr>
+    </tbody>
+  </table>
+
