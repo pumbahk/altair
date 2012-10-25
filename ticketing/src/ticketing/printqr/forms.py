@@ -5,7 +5,8 @@ from wtforms import fields
 from wtforms import validators
 from ticketing.formhelpers import Translations
 from ticketing.operators.models import Operator
-from ticketing.core.models import Order
+from ticketing.core.models import Order, Performance
+from . import helpers as h
 
 class LoginForm(Form):
     def _get_translations(self):
@@ -37,4 +38,26 @@ class MiscOrderFindForm(Form):
         self.order = order
         return True
 
-        
+def _performance_describe(p):
+    return u"%s  (%s)" % (p.name, h.japanese_datetime(p.start_on))
+
+class PerformanceSelectForm(Form):
+    def __init__(self, formdata=None, obj=None, prefix='',event_id=None,  **kwargs):
+        Form.__init__(self, formdata, obj, prefix, **kwargs)
+        if event_id:
+            qs = Performance.query.filter_by(event_id=event_id)
+            self.performance_id.choices = [(unicode(p.id), _performance_describe(p)) for p in qs]
+        if obj:
+            self.performance_id.data = unicode(obj.id)
+
+    def _get_translations(self):
+        return Translations()
+
+    performance_id = fields.SelectField(
+        label=u"公演", 
+        choices=[], 
+        coerce=unicode, 
+        )
+
+
+    
