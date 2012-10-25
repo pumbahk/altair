@@ -56,6 +56,15 @@ namespace TECImageWriterGateway
             {
                 Invoke(new MethodInvoker(delegate()
                 {
+                    Monitor.Enter(currentRequest);
+                    try
+                    {
+                        Monitor.Pulse(currentRequest);
+                    }
+                    finally
+                    {
+                        Monitor.Exit(currentRequest);
+                    }
                     currentRequest.Callback(args.Image);
                 }));
             };
@@ -97,6 +106,16 @@ namespace TECImageWriterGateway
                                 webBrowser1.DocumentCompleted += hdlr;                            
                             }
                         ));
+                        Monitor.Enter(currentRequest);
+                        try
+                        {
+                            Monitor.Wait(currentRequest);
+                        }
+                        finally
+                        {
+                            Monitor.Exit(currentRequest);
+                        }
+
                     }
                 }
             );
