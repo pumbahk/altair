@@ -7,7 +7,7 @@ def japanese_date(date):
     return u"%d年%d月%d日(%s)" % (date.year, date.month, date.day, u"月火水木金土日"[date.weekday()])
 
 def japanese_time(time):
-    return u"%d時%d分" % (time.hour, time.minute)
+    return u"%d時%d分%d秒" % (time.hour, time.minute, time.second)
 
 def japanese_datetime(dt):
     try:

@@ -8,6 +8,8 @@ from ticketing.core.models import OrderedProductItemToken
 from ticketing.core.models import OrderedProductItem
 from ticketing.core.models import OrderedProduct
 from ticketing.core.models import PageFormat
+from ticketing.core.models import Event
+from ticketing.core.models import Performance
 from ticketing.tickets.utils import build_dict_from_ordered_product_item_token
 from ticketing.utils import json_safe_coerce
 
@@ -150,4 +152,30 @@ def add_history(request, operator_id, params):
         order_id=order_id,
         ticket_id=ticket_id
         )
+
+## progress
+def performance_data_from_performance_id(event_id, performance_id):
+    performance = Performance.query.join(Event)\
+        .filter(Event.id==event_id, Performance.id==performance_id)\
+        .first()
+    return {"name": performance.name, 
+            "start_on": h.japanese_datetime(performance.start_on), 
+            "pk": performance.id}
+
+
+def total_result_data_from_performance_id(event_id, performance_id):
+    # opi_query = OrderedProductItem.query.join(ProductItem).join(Product)\
+    #     .filter(ProductItem.performance_id==performance_id)\
+    #     .filter(Product.event_id==event_id)
+
+    return {
+        "total": 1, 
+
+        "total_qr": 1, 
+        "total_other": 1, 
+
+        "qr_printed": 1, 
+        "qr_unprinted": 1
+        }
+    
 
