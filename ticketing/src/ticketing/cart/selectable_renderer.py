@@ -20,6 +20,9 @@ def add_selectable_renderer_selector(config, fun):
     fun = config.maybe_dotted(fun)
     config.registry.registerUtility(provider(ISelectableRendererSelector)(fun))
 
+class NoRenderableTemplateSetError(Exception):
+    pass
+
 class ISelectableRendererSelector(Interface):
     def __call__(vals, system_vals, request=None):
         """
@@ -91,7 +94,7 @@ class ByDomainMappingSelector(object):
         #mapped = self.lookup_mapped(request.host)
         organization = core_api.get_organization(request)
         try:
-            mapped = Membership.query.filter_by(deleted_at=None, organization=organization).one()
+            mapped = Membership.query.filter_by(deleted_at=None, organization=organization).first()
             return build_renderer_path(helper.path_format, membership=mapped.name)
         except NoResultFound:
             logger.warning("No matching template configuration found: using default configuration")
