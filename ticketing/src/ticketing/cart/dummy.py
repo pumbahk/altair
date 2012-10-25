@@ -1,16 +1,24 @@
 # -*- coding:utf-8 -*-
+from ticketing.cart.selectable_renderer import selectable_renderer
+from ticketing.core.api import get_organization
+from ticketing.users import models as u_models
 
-from pyramid.response import Response
-from pyramid.renderers import render
 def includeme(config):
     config.add_route("dummy.cart.payment", "/dummy/payment")
-    config.add_view(payment_view, route_name="dummy.cart.payment")
+    config.add_view(payment_view, route_name='dummy.cart.payment', request_method="GET", renderer=selectable_renderer("carts/%(membership)s/payment.html"))
+    config.add_view(payment_view, route_name='dummy.cart.payment', request_type='.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer("carts_mobile/%(membership)s/payment.html"))
+
     config.add_route("dummy.payment.confirm", "/dummy/confirm")
-    config.add_view(confirm_view, route_name="dummy.payment.confirm")
-    config.add_route("dummy.payment.finish", "/dummy/completed")
-    config.add_view(complete_view, route_name="dummy.payment.finish")
+    config.add_view(confirm_view, route_name='dummy.payment.confirm', request_method="GET", renderer=selectable_renderer("carts/%(membership)s/confirm.html"))
+    config.add_view(confirm_view, route_name='dummy.payment.confirm', request_type='.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer("carts_mobile/%(membership)s/confirm.html"))
+
+    config.add_route("dummy.payment.complete", "/dummy/complete")
+    config.add_view(complete_view, route_name='dummy.payment.complete', request_method="GET", renderer=selectable_renderer("carts/%(membership)s/complete.html"))
+    config.add_view(complete_view, route_name='dummy.payment.complete', request_type='.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer("carts_mobile/%(membership)s/complete.html"))
+
     config.add_route("dummy.timeout", "/dummy/timeout")
     config.add_view(timeout_view, route_name="dummy.timeout", renderer="carts/timeout.html")
+
 
 def _dummy_performance():
     from datetime import datetime
@@ -50,6 +58,12 @@ def _dummy_cart():
     cart.payment_delivery_pair.delivery_method.delivery_plugin_id = 1
     return cart
 
+
+def _get_mailmagazines_from_organization(organization):
+    return u_models.MailMagazine.query.outerjoin(u_models.MailSubscription) \
+            .filter(u_models.MailMagazine.organization==organization)
+           
+
 def confirm_view(request):
     import mock
     from collections import defaultdict
@@ -57,18 +71,16 @@ def confirm_view(request):
         form = mock.Mock()
         cart = _dummy_cart()
         request.session["order"] = defaultdict(str)
-        magazines = []
+        magazines = _get_mailmagazines_from_organization(get_organization(request))
         user = mock.Mock()
-        params = dict(cart=cart, mailmagazines=magazines, user=user, form=form)
-        result = render("carts/89ers/confirm.html", params, request=request)
-        return Response(result)
-    
+        return dict(cart=cart, mailmagazines=magazines, user=user, form=form)
+
+
 def complete_view(request):
     import mock
     with mock.patch("ticketing.cart.rakuten_auth.api.authenticated_user"):
         order = _dummy_order()
-        result = render("carts/89ers/completion.html", dict(order=order), request=request)
-        return Response(result)
+        return dict(order=order)
 
 def payment_view(request):
     import mock
@@ -79,8 +91,7 @@ def payment_view(request):
                     payment_delivery_methods=[], 
                     user=mock.Mock(), 
                     user_profile=mock.Mock())
-        result = render("carts/89ers/payment.html", params, request=request)
-        return Response(result)
+        return params
     
 def timeout_view(request):
     return {}
