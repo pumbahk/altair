@@ -118,12 +118,12 @@
 		<div id="mailMagazineBoxInner">
 		  <dl>
 			<dt>
-			  ご利用いただいた方には、秋田ノーザンハピネッツからのメールマガジンをお送りします。不要な方はチェックをはずしてください。
+        ご利用いただいた方には、秋田ノーザンハピネッツからのメールマガジン（Happinets Times）をお送りします。不要な方はチェックをはずしてください。
 			</dt>
             <dd>
               <ul>
                 %for mailmagazine in mailmagazines:
-                <li>
+                <li style="width:100%;">
                   <div>
                     <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
                     <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
