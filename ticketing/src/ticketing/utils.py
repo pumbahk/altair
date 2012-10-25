@@ -78,11 +78,11 @@ class URLHandler(object):
             return url
         if self.uses_netloc is None or scheme in self.uses_netloc:
             if netloc:
-                return urlunparse((scheme, netloc, path,
+                return self.unparse((scheme, netloc, path,
                                    params, query, fragment))
             netloc = bnetloc
         if path[:1] == '/':
-            return urlunparse((scheme, netloc, path,
+            return self.unparse((scheme, netloc, path,
                                params, query, fragment))
         if not path:
             path = bpath
@@ -90,11 +90,11 @@ class URLHandler(object):
                 params = bparams
             else:
                 path = path[:-1]
-                return urlunparse((scheme, netloc, path,
+                return self.unparse((scheme, netloc, path,
                                     params, query, fragment))
             if not query:
                 query = bquery
-            return urlunparse((scheme, netloc, path,
+            return self.unparse((scheme, netloc, path,
                                params, query, fragment))
         segments = bpath.split('/')[:-1] + path.split('/')
         # XXX The stuff below is bogus in various ways...
