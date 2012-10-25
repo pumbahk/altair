@@ -47,8 +47,13 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(292, 266);
+            this.ControlBox = false;
             this.Controls.Add(this.webBrowser1);
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "RendererForm";
+            this.ShowIcon = false;
+            this.ShowInTaskbar = false;
             this.Text = "RendererForm";
             this.Load += new System.EventHandler(this.RendererForm_Load);
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.RendererForm_FormClosed);

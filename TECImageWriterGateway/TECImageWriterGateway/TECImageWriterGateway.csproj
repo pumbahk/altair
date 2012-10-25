@@ -5,10 +5,12 @@
     <ProductVersion>8.0.50727</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{B581C502-B2C7-465E-84F7-26D4264B68D9}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>TECImageWriterGateway</RootNamespace>
     <AssemblyName>TECImageWriterGateway</AssemblyName>
+    <StartupObject>
+    </StartupObject>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -77,8 +79,15 @@
     <Compile Include="RendererForm.Designer.cs">
       <DependentUpon>RendererForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Server.cs" />
     <Compile Include="TECImageWriterPoller.cs" />
     <Compile Include="Win32API.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MIMER\MIMER.csproj">
+      <Project>{45E121CB-8758-416E-B204-C867920A128A}</Project>
+      <Name>MIMER</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
