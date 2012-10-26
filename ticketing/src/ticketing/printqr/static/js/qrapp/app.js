@@ -95,6 +95,9 @@ var DataStoreDescriptionView = Backbone.View.extend({
     this.$printer = this.$el.find("#desc_printer");
     this.$ticket_template = this.$el.find("#desc_ticket_template");
     this.$page_format = this.$el.find("#desc_page_format");
+
+    this.$qr_printed_shortcut = this.$el.find("#desc_qr_printed_shortcut");
+    this.$qr_unprinted_shortcut = this.$el.find("#desc_qr_unprinted_shortcut");
   }, 
   showPageStrategy: function(){
     this.$print_strategy.text(this.model.get("print_strategy"));
@@ -127,6 +130,10 @@ var DataStoreDescriptionView = Backbone.View.extend({
     this.$orderno.text("");
     this.$performance.text("");
     this.$product.text("");
+  }, 
+  onCurrenttimeChanged: function(data){
+    this.$qr_printed_shortcut.text(data.qr_printed);
+    this.$qr_unprinted_shortcut.text(data.qr_unprinted);
   }
 });
 
@@ -314,7 +321,7 @@ var QRInputView = AppPageViewBase.extend({
         self.datastore.set("qrcode_status", "fail");
         self.datastore.trigger("*refresh");
       })
-      .always(function(){self.trigger("*event.qr.loaded")})
+      .always(function(){self.trigger("*event.qr.loaded");})
       .promise();
   }
 });
@@ -520,6 +527,9 @@ var AppletView = Backbone.View.extend({
       }).fail(function(s, msg){
         self.datastore.set("printed", false);
         self.appviews.messageView.error(s.responseText)
+      })
+      .always(function(){
+        self.trigger("*event.qr.printed");
       });
   }, 
   sendPrintSignalIfNeed: function(){
