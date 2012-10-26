@@ -130,6 +130,17 @@ var DescribeTimeView = Backbone.View.extend({
   }, 
   updateCurrentTime: function(){
     // this is string not calculatable value
-    this.$current_time.text(this.datastore.get("current_time"));
+    var current_time = this.datastore.get("current_time");
+    this.$current_time.text(current_time);
+    this._triggerUpdateCurrenttimeEvent(current_time);
+  }, 
+  _triggerUpdateCurrenttimeEvent: function(current_time){
+    var total_result = this.datastore.get("total_result");
+    var bubbling_data = {
+      current_time: current_time, 
+      qr_printed: total_result.get("qr_printed"), 
+      qr_unprinted: total_result.get("qr_unprinted")
+    };
+    this.trigger("*event.progress.currenttime.changed", bubbling_data);
   }
 });

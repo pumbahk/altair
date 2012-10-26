@@ -1,7 +1,7 @@
 <%inherit file="./base.html"/>
 
 <%block name="extra_button">
- <a target="_blank" class="btn" href="${request.route_url("progress", event_id=request.matchdict["event_id"])}">進捗状況確認</a>
+## <a target="_blank" class="btn" href="${request.route_url("progress", event_id=request.matchdict["event_id"])}">進捗状況確認</a>
 </%block>
 
 <%
@@ -44,6 +44,11 @@ body {
   font-size: 20px;
   text-align: center;
   line-height: 100px;
+}
+
+td.progress-shortcut{
+  background-color: #ddf5dd;
+  color: #468847;
 }
 </style>
 
@@ -175,28 +180,31 @@ body {
     <table class="table">
       <tbody>
         <tr>
-          <td width="200px">印刷方法</td><td> <span id="desc_print_strategy">個別に発券</span><span  style="color:gray">　　　印刷キューに入っている券面:<span id="desc_print_num">0</span>枚</span></td>
+          <td colspan="2" width="200px">印刷方法</td><td colspan="2"> <span id="desc_print_strategy">個別に発券</span><span  style="color:gray">　　　印刷キューに入っている券面:<span id="desc_print_num">0</span>枚</span></td>
         </tr>
         <tr>
-          <td width="200px">QRコードステータス</td><td id="desc_qrcode_status"></td>
+          <td colspan="2" width="200px">QRコードステータス</td><td colspan="2" id="desc_qrcode_status"></td>
         </tr>
         <tr>
-          <td width="200px">注文番号</td><td id="desc_orderno"></td>
+          <td colspan="2" width="200px">注文番号</td><td colspan="2" id="desc_orderno"></td>
         </tr>
         <tr>
-          <td width="200px">公演</td><td id="desc_performance"></td>
+          <td colspan="2" width="200px">公演</td><td colspan="2" id="desc_performance"></td>
         </tr>
         <tr>
-          <td width="200px">商品名(席番号)</td><td id="desc_product"></td>
+          <td colspan="2" width="200px">商品名(席番号)</td><td colspan="2" id="desc_product"></td>
         </tr>
         <tr>
           <td width="200px">プリンタ設定</td><td id="desc_printer"></td>
+          <td colspan="2" style="text-align: center;" class="progress-shortcut">進捗状況</td>
         </tr>
         <tr>
-          <td width="200px">券面テンプレート設定</td><td id="desc_ticket_template"></td>
+          <td width="200px">券面テンプレート設定</td><td width="25%" id="desc_ticket_template"></td>
+          <td width="200px" class="progress-shortcut">未印刷</td><td id="desc_qr_unprinted_shortcut" class="progress-shortcut"></td>
         </tr>
         <tr>
-          <td width="200px">ページフォーマット</td><td id="desc_page_format"></td>
+          <td width="200px">ページフォーマット</td><td width="25%" id="desc_page_format"></td>
+          <td width="200px" class="progress-shortcut">印刷済み</td><td id="desc_qr_printed_shortcut" class="progress-shortcut"></td>
         </tr>
       </tbody>
     </table>
@@ -231,19 +239,29 @@ $(function(){
   var two = new TicketInfoView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#two")});
   var print = new PrintConfirmView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#two")});
 
-  zero.nextView = one;
-  one.nextView = two;
-
   // progress view
   var progressDatastore = new ProgressDataStore({performance: new Performance(), total_result: new TotalResult()});
   var apiService = new ApiService({apiResource: apiResource});
   var performanceChoiceView = new PerformanceChoiceView({datastore: progressDatastore, el: $("#performance_input"), messageView: messageView, apiService: apiService});
-  performanceChoiceView.onPerformanceChange();
-  one.bind("*event.qr.loaded", performanceChoiceView.onPerformanceChange, performanceChoiceView);
 
   var describeTotalResultView = new DescribeTotalResultView({datastore: progressDatastore, el: $("#describe_total_result"), messageView: messageView, apiService: apiService});
   var describeTimeView = new DescribeTimeView({datastore: progressDatastore, el: $("#describe_time"), messageView: messageView, apiService: apiService});
 
+  // configure
+  zero.nextView = one;
+  one.nextView = two;
+  performanceChoiceView.onPerformanceChange();
+  one.bind("*event.qr.loaded", performanceChoiceView.onPerformanceChange, performanceChoiceView);
+  describeTimeView.bind("*event.progress.currenttime.changed", descriptionView.onCurrenttimeChanged, descriptionView);
+  var appletViewConfigureAfterCreate = function(appletView){
+    appletView.bind("*event.qr.printed", function(){
+      setTimeout(function(){
+        performanceChoiceView.onPerformanceChange();
+      }, 1000);
+    });
+    appletView.start();
+    $('#screen').hide();
+  };
 
   //Backbone.history.start({pushState: true,  root: "/"})
   Backbone.history.start({root: "/"})
@@ -262,8 +280,7 @@ $(function(){
     var createProxy = function () { return applet.createPropertyChangeListenerProxy.apply(applet, arguments); };
     //service.addListenerForPages(createProxy(refreshPages));
     var appletView = new AppletView({el: $("#applet"), appviews: appviews, datastore: datastore, service: service, router: appRouter, apiResource: apiResource})
-    appletView.start();
-    $('#screen').hide();
+    appletViewConfigureAfterCreate(appletView);
   };
 
   writeAppletTag({
