@@ -61,6 +61,7 @@ body {
       <li><a id="tab_zero" href="#zero" data-toggle="tab">フォーマット選択</a></li>
       <li><a id="tab_one" href="#one" data-toggle="tab" class="active">QRコード読み込み</a></li>
       <li><a id="tab_two" href="#two" data-toggle="tab">チケット情報(発券確認)</a></li>
+      <li><a id="tab_three" href="#three" data-toggle="tab">発券進捗状況確認</a></li>
     </ul>
   </div>
 
@@ -163,6 +164,12 @@ body {
     <a class="btn" href="#" id="print_button">印刷する</a>
   </div>
 
+  <div id="three" class="onepage hide well">
+    <h2 class="header" id="three:header">発券進捗状況確認</h2>
+    <%include file="_progress.html" args="form=form"/>
+    
+  </div>
+
   <div id="description">
     <table class="table">
       <tbody>
@@ -208,6 +215,7 @@ body {
 <script type="text/javascript" src="${request.static_url("ticketing.printqr:static/js/qrapp/app.js")}"></script>
 <script type="text/javascript" src="${request.static_url("ticketing.printqr:static/js/qrapp/applet.js")}"></script>
 <script type="text/javascript" src="${request.static_url("ticketing.printqr:static/js/qrapp/keycodeMapping.js")}"></script>
+<script type="text/javascript" src="${request.static_url("ticketing.printqr:static/js/progress/app.js")}"></script>
 
 <script type="text/javascript">
 $(function(){
@@ -224,6 +232,16 @@ $(function(){
 
   zero.nextView = one;
   one.nextView = two;
+
+  // progress view
+  var progressDatastore = new ProgressDataStore({performance: new Performance(), total_result: new TotalResult()});
+  var apiService = new ApiService({apiResource: apiResource});
+  var performanceChoiceView = new PerformanceChoiceView({datastore: progressDatastore, el: $("#performance_input"), messageView: messageView, apiService: apiService});
+  performanceChoiceView.onPerformanceChange();
+  one.bind("*event.qr.loaded", performanceChoiceView.onPerformanceChange, performanceChoiceView);
+
+  var describeTotalResultView = new DescribeTotalResultView({datastore: progressDatastore, el: $("#describe_total_result"), messageView: messageView, apiService: apiService});
+  var describeTimeView = new DescribeTimeView({datastore: progressDatastore, el: $("#describe_time"), messageView: messageView, apiService: apiService});
 
 
   //Backbone.history.start({pushState: true,  root: "/"})

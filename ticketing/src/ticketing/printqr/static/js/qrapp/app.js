@@ -313,7 +313,9 @@ var QRInputView = AppPageViewBase.extend({
         self.messageView.error(s.responseText);
         self.datastore.set("qrcode_status", "fail");
         self.datastore.trigger("*refresh");
-      }).promise();;
+      })
+      .always(function(){self.trigger("*event.qr.loaded")})
+      .promise();
   }
 });
 

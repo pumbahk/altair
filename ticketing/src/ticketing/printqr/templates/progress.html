@@ -12,3 +12,20 @@
 
   <%include file="_progress.html" args="form=form"/>
 </div>
+
+<script type="text/javascript" src="${request.static_url("ticketing.printqr:static/js/message.js")}"></script>
+<script type="text/javascript" src="${request.static_url("ticketing.printqr:static/js/progress/app.js")}"></script>
+
+<script type="text/javascript">
+$(function(){
+  var apiResource = ${json.dumps(api_resource)|n}
+  var datastore = new ProgressDataStore({performance: new Performance(), total_result: new TotalResult()});
+  var messageView = new (message({}).MessageInformationView)({el: $("#message_box")});
+  var apiService = new ApiService({apiResource: apiResource});
+  var performanceChoiceView = new PerformanceChoiceView({datastore: datastore, el: $("#performance_input"), messageView: messageView, apiService: apiService});
+  performanceChoiceView.onPerformanceChange();
+
+  var describeTotalResultView = new DescribeTotalResultView({datastore: datastore, el: $("#describe_total_result"), messageView: messageView, apiService: apiService});
+  var describeTimeView = new DescribeTimeView({datastore: datastore, el: $("#describe_time"), messageView: messageView, apiService: apiService});
+})
+</script>

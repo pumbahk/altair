@@ -2,7 +2,7 @@
 
 // model
 // model structure is tree.
-var DataStore = Backbone.Model.extend({
+var ProgressDataStore = Backbone.Model.extend({
   defaults: {
     performance: null, 
     total_result: null, 
