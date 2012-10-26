@@ -4,7 +4,7 @@ var message = (function(){
     info: "#info_message", 
     error: "#error_message", 
     success: "#success_message", 
-    messages: ".messages"
+    messages: ".message"
   };
 
   return function(opts){
