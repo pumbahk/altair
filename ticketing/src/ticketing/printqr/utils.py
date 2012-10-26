@@ -175,7 +175,9 @@ def _query_filtered_by_performance(query, event_id, performance_id):
         .join(c_models.Product)\
         .join(c_models.Order)\
         .filter(c_models.Order.performance_id==performance_id)\
-        .filter(c_models.Product.event_id==event_id)
+        .filter(c_models.Product.event_id==event_id)\
+        .filter(c_models.Order.canceled_at==None)\
+        .filter(c_models.Order.deleted_at==None)
 
 def _query_filtered_by_delivery_plugin(query, delivery_plugin_id):
     return query.join(c_models.PaymentDeliveryMethodPair)\
