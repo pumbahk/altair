@@ -49,6 +49,8 @@ $(function(){
   var messageView = new (message({}).MessageInformationView)({el: $("#message_box")});
   var apiService = new ApiService({apiResource: apiResource});
   var performanceChoiceView = new PerformanceChoiceView({datastore: datastore, el: $("#performance_input"), messageView: messageView, apiService: apiService});
+  performanceChoiceView.onPerformanceChange();
+
   var describeTotalResultView = new DescribeTotalResultView({datastore: datastore, el: $("#describe_total_result"), messageView: messageView, apiService: apiService});
   var describeTimeView = new DescribeTimeView({datastore: datastore, el: $("#describe_time"), messageView: messageView, apiService: apiService});
 })
