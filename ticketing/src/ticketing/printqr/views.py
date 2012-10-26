@@ -128,7 +128,9 @@ def choice_event_view(context, request):
 @view_config(permission="sales_counter", route_name="qrapp", 
              renderer="ticketing.printqr:templates/qrapp.html")
 def qrapp_view(context, request):
+    event_id = request.matchdict["event_id"]
     return dict(json=json, 
+                form = forms.PerformanceSelectForm(event_id=event_id), 
                 endpoints=context.applet_endpoints, 
                 api_resource=context.api_resource)
 

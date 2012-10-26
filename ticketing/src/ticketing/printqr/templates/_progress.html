@@ -1,6 +1,6 @@
 <%page args="form"/>
 
-<div style="margin-left:60%;" id="describe_time">
+<div style="margin-left:45%;" id="describe_time">
   <!-- <span id="year"></span>年<span id="month"></span>月 <span id="day"></span>日 <span id="time"></span>現在の情報 -->
   <span id="desc_current_time"></span>現在の情報
 </div>
@@ -39,19 +39,3 @@
     </tbody>
   </table>
 
-<script type="text/javascript" src="${request.static_url("ticketing.printqr:static/js/message.js")}"></script>
-<script type="text/javascript" src="${request.static_url("ticketing.printqr:static/js/progress/app.js")}"></script>
-
-<script type="text/javascript">
-$(function(){
-  var apiResource = ${json.dumps(api_resource)|n}
-  var datastore = new DataStore({performance: new Performance(), total_result: new TotalResult()});
-  var messageView = new (message({}).MessageInformationView)({el: $("#message_box")});
-  var apiService = new ApiService({apiResource: apiResource});
-  var performanceChoiceView = new PerformanceChoiceView({datastore: datastore, el: $("#performance_input"), messageView: messageView, apiService: apiService});
-  performanceChoiceView.onPerformanceChange();
-
-  var describeTotalResultView = new DescribeTotalResultView({datastore: datastore, el: $("#describe_total_result"), messageView: messageView, apiService: apiService});
-  var describeTimeView = new DescribeTimeView({datastore: datastore, el: $("#describe_time"), messageView: messageView, apiService: apiService});
-})
-</script>
