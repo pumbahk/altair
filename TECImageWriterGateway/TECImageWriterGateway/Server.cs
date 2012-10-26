@@ -8,6 +8,8 @@ using System.Threading;
 using System.Text.RegularExpressions;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Diagnostics;
+using Microsoft.Practices.EnterpriseLibrary.Logging;
 
 namespace TECImageWriterGateway
 {
@@ -61,7 +63,11 @@ namespace TECImageWriterGateway
             }
         }
 
-        class BadRequest : Exception { }
+        class BadRequest : Exception
+        {
+            public BadRequest() : base() { }
+            public BadRequest(string msg) : base(msg) { }
+        }
 
         static void SendBadRequest(HttpListenerResponse resp)
         {
@@ -125,6 +131,19 @@ namespace TECImageWriterGateway
             return retval;
         }
 
+        void LogRequest(HttpListenerRequest req)
+        {
+            Logger.Write(new LogEntry(
+                String.Format("{0} {1} {2} {3}", req.HttpMethod, req.Url, req.UrlReferrer, req.UserAgent),
+                "HttpRequest",
+                4,
+                0,
+                TraceEventType.Transfer,
+                req.HttpMethod + ":" + req.Url,
+                null));
+                
+        }
+
         void HandleRequest(IAsyncResult result)
         {
             try
@@ -133,72 +152,50 @@ namespace TECImageWriterGateway
                 HttpListenerRequest req = ctx.Request;
                 HttpListenerResponse resp = ctx.Response;
 
+                LogRequest(req);
+
                 try
                 {
                     if (req.HttpMethod.ToUpper() != "POST")
                     {
-                        throw new BadRequest();
+                        throw new BadRequest("POST method required");
                     }
 
                     MIMER.RFC2045.ContentTypeField contentType = req.ContentType == null ? null : ParseContentTypeField(req.ContentType);
                     if (contentType == null || contentType.Type != "multipart" || contentType.SubType != "form-data")
                     {
-                        throw new BadRequest();
+                        throw new BadRequest("Content-Type is not multipart/form-data");
                     }
                     string boundary = contentType.Parameters["boundary"];
                     if (boundary == null)
                     {
-                        throw new BadRequest();
+                        throw new BadRequest("Content-Type header does not contain boundary parameter");
                     }
                     Dictionary<string, MIMER.RFC2045.IEntity> data = ParseMultipart(req.InputStream, boundary);
                     MIMER.RFC2045.IEntity template = data["template"], ptct = data["ptct"];
                     if (template == null || ptct == null)
-                        throw new BadRequest();
+                        throw new BadRequest("Request does not contain \"template\" and \"ptct\"");
                     DirectoryInfo tempDir = CreateTemporaryDirectory();
                     try
                     {
                         string templateFile = Path.Combine(tempDir.FullName, "template.html");
                         File.WriteAllBytes(templateFile, template.Body);
                         File.WriteAllBytes(Path.Combine(tempDir.FullName, "ptct.xml"), ptct.Body);
-                        Image resultingImage = null;
-                        RendererCallback callback = null;
-                        callback = delegate(Image image)
-                            {
-                                resultingImage = image;
-                                Monitor.Enter(callback);
-                                try
-                                {
-                                    Monitor.Pulse(callback);
-                                }
-                                finally
-                                {
-                                    Monitor.Exit(callback);
-                                }
-                            };
-                        renderer.Render(new Uri(templateFile), callback);
-                        Monitor.Enter(callback);
-                        try
+                        Image resultingImage = renderer.Render(new Uri(templateFile), new TimeSpan(0, 0, 20));
+                        if (resultingImage == null)
                         {
-                            if (!Monitor.Wait(callback, 20000))
-                            {
-                                SendInternalServerError(resp);
-                                return;
-                            }
-                            resp.StatusCode = 200;
-                            resp.StatusDescription = "OK";
-                            resp.ContentType = "image/png";
-                            using (MemoryStream outStream = new MemoryStream())
-                            {
-                                resultingImage.Save(outStream, ImageFormat.Png);
-                                resp.ContentLength64 = outStream.Length;
-                                outStream.Flush();
-                                byte[] buffer = outStream.GetBuffer();
-                                resp.OutputStream.Write(buffer, 0, buffer.Length);
-                            }
+                            throw new TimeoutException("Timeout");
                         }
-                        finally
+                        resp.StatusCode = 200;
+                        resp.StatusDescription = "OK";
+                        resp.ContentType = "image/png";
+                        using (MemoryStream outStream = new MemoryStream())
                         {
-                            Monitor.Exit(callback);
+                            resultingImage.Save(outStream, ImageFormat.Png);
+                            resp.ContentLength64 = outStream.Length;
+                            outStream.Flush();
+                            byte[] buffer = outStream.GetBuffer();
+                            resp.OutputStream.Write(buffer, 0, buffer.Length);
                         }
                     }
                     finally
@@ -206,13 +203,14 @@ namespace TECImageWriterGateway
                         RemoveAll(tempDir);
                     }
                 }
-                catch (BadRequest)
+                catch (BadRequest e)
                 {
+                    Logger.Write(e);
                     SendBadRequest(resp);
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    Logger.Write(e);
                     SendInternalServerError(resp);
                 }
                 finally
@@ -263,7 +261,6 @@ namespace TECImageWriterGateway
 
         public Server(string prefix)
         {
-            renderer = new RendererForm();
             listener = new HttpListener();
             listener.Prefixes.Add(prefix);
             netThread = new Thread(
@@ -281,6 +278,7 @@ namespace TECImageWriterGateway
             uiThread = new Thread(
                 delegate()
                 {
+                    renderer = new RendererForm();
                     Application.Run(renderer);
                 }
             );

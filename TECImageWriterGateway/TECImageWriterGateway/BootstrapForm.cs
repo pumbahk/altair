@@ -23,19 +23,19 @@ namespace TECImageWriterGateway
         {
             OpenFileDialog d = new OpenFileDialog();
             d.Multiselect = false;
-            DialogResult result = d.ShowDialog();
-            if (result == DialogResult.OK)
+            DialogResult dialogResult = d.ShowDialog();
+            if (dialogResult == DialogResult.OK)
             {
                 rendererForm.Show();
                 rendererForm.Render(
                     new System.Uri(d.FileName),
-                    delegate(Image image)
+                    delegate(RenderingResult result)
                     {
                         pictureBox1.Invoke(
                             new MethodInvoker(
                                 delegate
                                 {
-                                    pictureBox1.Image = image;
+                                    pictureBox1.Image = result.image;
                                 }
                             )
                         );

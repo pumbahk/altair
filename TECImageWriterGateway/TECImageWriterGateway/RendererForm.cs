@@ -9,11 +9,11 @@ using System.Threading;
 
 namespace TECImageWriterGateway
 {
-    public delegate void RendererCallback(Image image);
+    public delegate void RendererCallback(RenderingResult result);
 
     public partial class RendererForm : Form
     {
-        class RenderRequest
+        class RenderingRequest
         {
             Uri url;
             RendererCallback callback;
@@ -28,16 +28,16 @@ namespace TECImageWriterGateway
                 get { return callback; }
             }
 
-            public RenderRequest(Uri url, RendererCallback callback)
+            public RenderingRequest(Uri url, RendererCallback callback)
             {
                 this.url = url;
                 this.callback = callback;
             }
         }
 
-        private BlockingQueue<RenderRequest> queue = new BlockingQueue<RenderRequest>();
+        private BlockingQueue<RenderingRequest> queue = new BlockingQueue<RenderingRequest>();
         private Thread worker;
-        private RenderRequest currentRequest;
+        private RenderingRequest currentRequest;
         private TimeSpan maximumRenderingTime;
         private TECImageWriterPoller poller = new TECImageWriterPoller();
 
@@ -54,32 +54,39 @@ namespace TECImageWriterGateway
             InitializeComponent();
             poller.ImageAvailable += delegate(object src, TECImageWriterPollerImageAvailableEventArgs args)
             {
-                Invoke(new MethodInvoker(delegate()
+                try
                 {
-                    RenderRequest currentRequest = this.currentRequest;
-                    Monitor.Enter(currentRequest);
-                    try
+                    Invoke(new MethodInvoker(delegate()
                     {
-                        Monitor.Pulse(currentRequest);
-                    }
-                    finally
-                    {
-                        Monitor.Exit(currentRequest);
-                    }
-                    currentRequest.Callback(args.Image);
-                }));
+                        RenderingRequest currentRequest = this.currentRequest;
+                        Monitor.Enter(currentRequest);
+                        try
+                        {
+                            Monitor.Pulse(currentRequest);
+                        }
+                        finally
+                        {
+                            Monitor.Exit(currentRequest);
+                        }
+                        currentRequest.Callback(new RenderingResult(args.Image));
+                    }));
+                }
+                catch (Exception e)
+                {
+                    currentRequest.Callback(new RenderingResult(e));
+                }
             };
             poller.Start();
         }
 
-        private void RendererForm_Load(object sender, EventArgs e)
+        private void RendererForm_Load(object sender, EventArgs args)
         {
             worker = new Thread(
                 delegate()
                 {
                     while (queue != null)
                     {
-                        RenderRequest currentRequest = queue.Poll(1000);
+                        RenderingRequest currentRequest = queue.Poll(1000);
                         if (currentRequest == null)
                             continue;
                         this.currentRequest = currentRequest;
@@ -93,18 +100,26 @@ namespace TECImageWriterGateway
                                     {
                                         webBrowser1.DocumentCompleted -= hdlr;
                                         System.Timers.Timer t = new System.Timers.Timer(maximumRenderingTime.TotalMilliseconds);
-                                        t.Elapsed += delegate(object src, System.Timers.ElapsedEventArgs args)
+                                        t.Elapsed += delegate(object src, System.Timers.ElapsedEventArgs _args)
                                         {
                                             t.Stop();
                                             t.Dispose();
-                                            webBrowser1.Invoke(new MethodInvoker(
-                                                delegate() {
-                                                    webBrowser1.Print();
-                                                }));
+                                            try
+                                            {
+                                                webBrowser1.Invoke(new MethodInvoker(
+                                                    delegate()
+                                                    {
+                                                        webBrowser1.Print();
+                                                    }));
+                                            }
+                                            catch (Exception e)
+                                            {
+                                                currentRequest.Callback(new RenderingResult(e));
+                                            }
                                         };
                                         t.Start();
                                     };
-                                webBrowser1.DocumentCompleted += hdlr;                            
+                                webBrowser1.DocumentCompleted += hdlr;
                             }
                         ));
                         Monitor.Enter(currentRequest);
@@ -124,7 +139,52 @@ namespace TECImageWriterGateway
 
         public void Render(System.Uri url, RendererCallback callback)
         {
-            queue.Enqueue(new RenderRequest(url, callback));
+            queue.Enqueue(new RenderingRequest(url, callback));
+        }
+
+        public Image Render(System.Uri url)
+        {
+            return Render(url, new TimeSpan());
+        }
+
+        public Image Render(System.Uri url, TimeSpan timeout)
+        {
+            RenderingResult result = null;
+            RendererCallback callback = null;
+            callback = delegate(RenderingResult _result)
+            {
+                result = _result;
+                Monitor.Enter(callback);
+                try
+                {
+                    Monitor.Pulse(callback);
+                }
+                finally
+                {
+                    Monitor.Exit(callback);
+                }
+            };
+            Render(url, callback);
+            Monitor.Enter(callback);
+            try
+            {
+                if (timeout == new TimeSpan())
+                {
+                    Monitor.Wait(callback);
+                }
+                else
+                {
+                    if (!Monitor.Wait(callback, (int)timeout.TotalMilliseconds))
+                        return null;
+                }
+            }
+            finally
+            {
+                Monitor.Exit(callback);
+            }
+            if (result.Type == RenderingResultType.Fail)
+                throw result.Exception;
+            return result.Image;
         }
 
         private void RendererForm_FormClosed(object sender, FormClosedEventArgs e)
