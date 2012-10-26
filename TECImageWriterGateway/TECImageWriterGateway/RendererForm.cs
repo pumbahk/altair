@@ -56,6 +56,7 @@ namespace TECImageWriterGateway
             {
                 Invoke(new MethodInvoker(delegate()
                 {
+                    RenderRequest currentRequest = this.currentRequest;
                     Monitor.Enter(currentRequest);
                     try
                     {
@@ -78,10 +79,10 @@ namespace TECImageWriterGateway
                 {
                     while (queue != null)
                     {
-                        RenderRequest nextRequest = queue.Poll(1000);
-                        if (nextRequest == null)
+                        RenderRequest currentRequest = queue.Poll(1000);
+                        if (currentRequest == null)
                             continue;
-                        currentRequest = nextRequest;
+                        this.currentRequest = currentRequest;
                         webBrowser1.Invoke(new MethodInvoker(
                             delegate
                             {
@@ -115,7 +116,6 @@ namespace TECImageWriterGateway
                         {
                             Monitor.Exit(currentRequest);
                         }
-
                     }
                 }
             );
