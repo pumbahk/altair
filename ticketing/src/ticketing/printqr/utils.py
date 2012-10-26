@@ -182,6 +182,11 @@ def _query_filtered_by_delivery_plugin(query, delivery_plugin_id):
         .join(c_models.DeliveryMethod)\
         .filter(c_models.DeliveryMethod.delivery_plugin_id==delivery_plugin_id)
 
+def _query_removed_by_delivery_plugin(query, delivery_plugin_id):
+    return query.join(c_models.PaymentDeliveryMethodPair)\
+        .join(c_models.DeliveryMethod)\
+        .filter(c_models.DeliveryMethod.delivery_plugin_id!=delivery_plugin_id)
+
 ## 余事象取れば計算で求められるけれど。実際にDBアクセスした方が良いのかな。
 def total_result_data_from_performance_id(event_id, performance_id):
     opi_query = _query_filtered_by_performance(OrderedProductItem.query, event_id, performance_id)
@@ -193,6 +198,8 @@ def total_result_data_from_performance_id(event_id, performance_id):
     total_tokens = token_query.count()
     total_qr_printed = token_query.filter(OrderedProductItemToken.printed_at != None).count()
 
+    total_other_printed = _as_total_quantity(_query_removed_by_delivery_plugin(opi_query, QR_DELIVERY_ID).filter(OrderedProductItem.printed_at != None))
+
     return {
         "total": total, 
 
@@ -201,6 +208,9 @@ def total_result_data_from_performance_id(event_id, performance_id):
 
         "qr_printed": total_qr_printed, 
         "qr_unprinted": total_tokens - total_qr_printed, 
+
+        "other_printed": total_other_printed, 
+        "other_unprinted": total - total_qr - total_other_printed, 
         }
     
 

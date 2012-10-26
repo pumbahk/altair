@@ -36,7 +36,10 @@ var TotalResult = Backbone.Model.extend({
     total_other: 0, 
 
     qr_printed: 0, 
-    qr_unprinted: 0
+    qr_unprinted: 0, 
+
+    other_printed: 0, 
+    other_unprinted: 0
   }, 
   updateFromPerformanceChangeApi: function(data){
     this.set("total", data.total);
@@ -44,6 +47,8 @@ var TotalResult = Backbone.Model.extend({
     this.set("total_other", data.total_other);
     this.set("qr_printed", data.qr_printed);
     this.set("qr_unprinted", data.qr_unprinted);
+    this.set("other_printed", data.other_printed);
+    this.set("other_unprinted", data.other_unprinted);
     this.trigger("*update.total_result");
   }
 });
@@ -108,6 +113,8 @@ var DescribeTotalResultView = Backbone.View.extend({
     this.$total_other = this.$el.find("#desc_total_other");
     this.$qr_printed = this.$el.find("#desc_qr_printed");
     this.$qr_unprinted = this.$el.find("#desc_qr_unprinted");
+    this.$other_printed = this.$el.find("#desc_other_printed");
+    this.$other_unprinted = this.$el.find("#desc_other_unprinted");
   }, 
   updateTotalResult: function(){
     var total_result = this.datastore.get("total_result");
@@ -116,6 +123,8 @@ var DescribeTotalResultView = Backbone.View.extend({
     this.$total_other.text(total_result.get("total_other"));
     this.$qr_printed.text(total_result.get("qr_printed"));
     this.$qr_unprinted.text(total_result.get("qr_unprinted"));
+    this.$other_printed.text(total_result.get("other_printed"));
+    this.$other_unprinted.text(total_result.get("other_unprinted"));
   }
 });
 
