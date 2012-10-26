@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
 
+import sqlalchemy as sa
 import sqlalchemy.orm as orm
+
 from ticketing.models import DBSession
 from ticketing.core.models import Order
 from ticketing.core.models import TicketPrintHistory
@@ -8,8 +10,11 @@ from ticketing.core.models import OrderedProductItemToken
 from ticketing.core.models import OrderedProductItem
 from ticketing.core.models import OrderedProduct
 from ticketing.core.models import PageFormat
-from ticketing.core.models import Event
-from ticketing.core.models import Performance
+
+
+from ticketing.cart.plugins.qr import DELIVERY_PLUGIN_ID as QR_DELIVERY_ID
+from ticketing.core import models as c_models
+
 from ticketing.tickets.utils import build_dict_from_ordered_product_item_token
 from ticketing.utils import json_safe_coerce
 
@@ -155,27 +160,47 @@ def add_history(request, operator_id, params):
 
 ## progress
 def performance_data_from_performance_id(event_id, performance_id):
-    performance = Performance.query.join(Event)\
-        .filter(Event.id==event_id, Performance.id==performance_id)\
+    performance = c_models.Performance.query.join(c_models.Event)\
+        .filter(c_models.Event.id==event_id, c_models.Performance.id==performance_id)\
         .first()
     return {"name": performance.name, 
             "start_on": h.japanese_datetime(performance.start_on), 
             "pk": performance.id}
 
+def _as_total_quantity(opi_query):
+    return int(opi_query.with_entities(sa.func.sum(OrderedProductItem.quantity)).first()[0] or 0)
 
+def _query_filtered_by_performance(query, event_id, performance_id):
+    return query.join(c_models.OrderedProduct)\
+        .join(c_models.Product)\
+        .join(c_models.Order)\
+        .filter(c_models.Order.performance_id==performance_id)\
+        .filter(c_models.Product.event_id==event_id)
+
+def _query_filtered_by_delivery_plugin(query, delivery_plugin_id):
+    return query.join(c_models.PaymentDeliveryMethodPair)\
+        .join(c_models.DeliveryMethod)\
+        .filter(c_models.DeliveryMethod.delivery_plugin_id==delivery_plugin_id)
+
+## 余事象取れば計算で求められるけれど。実際にDBアクセスした方が良いのかな。
 def total_result_data_from_performance_id(event_id, performance_id):
-    # opi_query = OrderedProductItem.query.join(ProductItem).join(Product)\
-    #     .filter(ProductItem.performance_id==performance_id)\
-    #     .filter(Product.event_id==event_id)
+    opi_query = _query_filtered_by_performance(OrderedProductItem.query, event_id, performance_id)
+
+    total = _as_total_quantity(opi_query)
+    total_qr = _as_total_quantity(_query_filtered_by_delivery_plugin(opi_query, QR_DELIVERY_ID))
+
+    token_query = _query_filtered_by_performance(OrderedProductItemToken.query.join(OrderedProductItem), event_id, performance_id)
+    total_tokens = token_query.count()
+    total_qr_printed = token_query.filter(OrderedProductItemToken.printed_at != None).count()
 
     return {
-        "total": 1, 
+        "total": total, 
 
-        "total_qr": 1, 
-        "total_other": 1, 
+        "total_qr": total_qr, 
+        "total_other": total - total_qr, 
 
-        "qr_printed": 1, 
-        "qr_unprinted": 1
+        "qr_printed": total_qr_printed, 
+        "qr_unprinted": total_tokens - total_qr_printed, 
         }
     
 
