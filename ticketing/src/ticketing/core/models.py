@@ -2076,7 +2076,13 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     ticket_format = relationship('TicketFormat', uselist=False, backref='tickets')
     name = Column(Unicode(255), nullable=False, default=u'')
     flags = Column(Integer, nullable=False, default=0)
+    original_ticket_id = Column(Identifier, ForeignKey('Ticket.id', ondelete='SET NULL'), nullable=True)
+    derived_tickets = relationship('Ticket', backref=backref('original_ticket', remote_side=[id]))
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
+
+    def before_insert_or_update(self):
+        if self.original_ticket and self.data != self.original_ticket.data:
+            self.original_ticket_id = None
 
     @classmethod
     def templates_query(cls):
@@ -2089,7 +2095,11 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def create_event_bound(self, event):
         new_object = self.__class__.clone(self)
         new_object.event_id = event.id
+        new_object.original_ticket = self
         return new_object
+
+for event_kind in ['before_insert', 'before_update']:
+    event.listen(Ticket, event_kind, lambda mapper, conn, target: target.before_insert_or_update())
 
 class TicketBundleAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "TicketBundleAttribute" 

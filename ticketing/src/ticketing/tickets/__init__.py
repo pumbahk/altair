@@ -21,6 +21,7 @@ def includeme(config):
     config.add_route('tickets.templates.download', '/templates/{id}/download', factory=".resources.TicketsResource")
     config.add_route('tickets.templates.delete', '/templates/{id}/delete', factory=".resources.TicketsResource")
     config.add_route('tickets.templates.data', '/templates/{id}/data', factory=".resources.TicketsResource")
+    config.add_route('tickets.templates.update_derivatives', '/templates/{id}/update_derivatives')
 
     config.add_route('tickets.queue.index', '/queue', factory=".resources.TicketsResource")
     config.add_route('tickets.queue.delete', '/queue/delete', factory=".resources.TicketsResource")

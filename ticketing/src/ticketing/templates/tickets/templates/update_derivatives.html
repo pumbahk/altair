@@ -1,0 +1,45 @@
+<%inherit file="../../layout_2cols.html" />
+<%namespace file="/common/helpers.html" import="breadcrumbs,flash_messages,form_item"/>
+
+<div class="breadcrumbs">
+${breadcrumbs(
+  names=[u'トップ', u'チケット券面', u"テンプレート登録"],
+  urls=[request.route_path('index'), request.route_path("tickets.index")]
+)}
+</div>
+
+<div class="page-header">
+  <h3>チケットテンプレート登録</h3>
+</div>
+
+<div class="content">
+  ${flash_messages(request)}
+</div>
+
+<p>このテンプレートから派生している以下のテンプレートを更新しますか?</p>
+<% sortable = lambda *args, **kwargs: h.sortable('ticket', *args, **kwargs) %>
+<table class="table fullwidth checkboxed_table">
+  <thead>
+    <tr>
+      <th><a href="${sortable(request, "event", direction="desc")}" class="sortable">イベント名</a></th>
+      <th><a href="${sortable(request, "name", direction="desc")}" class="sortable">チケット名</a></th>
+      <th><a href="${sortable(request, "updated_at", direction="desc")}" class="sortable">更新日時</a></th>
+      <th><a href="${sortable(request, "created_at", direction="desc")}" class="sortable">作成日時</a></th>
+    </tr>
+  </thead>
+  <tbody>
+  % for ticket in tickets:
+    <tr>
+      <td><a href="${request.route_path('events.show', event_id=ticket.event.id)}" target="_blank">${ticket.event.title}</a></td>
+      <td><a href="${request.route_path('events.tickets.boundtickets.show', event_id=ticket.event.id, id=ticket.id)}" target="_blank">${ticket.name}</a></td>
+      <td>${ticket.updated_at}</td>
+      <td>${ticket.created_at}</td>
+    </tr>
+  % endfor
+  </tbody>
+</table>
+
+<form class="form-horizontal" action="${request.route_path('tickets.templates.update_derivatives', id=template.id)}" method="post">
+  <input class="btn btn-primary" type="submit" name="do_update" value="更新する" />
+  <input class="btn" type="submit" name="no_update" value="更新しない" />
+</form>

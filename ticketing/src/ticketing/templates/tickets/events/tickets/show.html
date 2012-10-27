@@ -49,8 +49,15 @@ event = request.context.event
           <th class="span2">チケット様式</th>
           <td class="span3"><a href="${request.route_path("tickets.ticketformats.show",id=template.ticket_format_id)}">
 			  ${template.ticket_format.name}
-		  </td>
+        </td>
+        % if template.original_ticket:
+        <tr>
+          <th class="span2">派生元テンプレート</th>
+          <td class="span3"><a href="${request.route_path("tickets.templates.show",id=template.original_ticket.id)}">
+			  ${template.original_ticket.name}
+          </td>
         </tr>
+        % endif
         <tr>
           <th class="span2">作成日時</th>
           <td class="span3">${template.created_at}</td>
