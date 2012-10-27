@@ -69,6 +69,7 @@
   </ul>
 
   <div class="tab-content" id="tabbable-tab-content">
+    <p>※このアイコン<i class="icon-eye-open"></i>をクリックすると券面のプレビューができます</p>
   % for i, sales_segment_id in enumerate(map):
     <% sales_segment = map[sales_segment_id] %>
     <div class="tab-pane ${'active' if i == 0 else ''}" id="sales-segment-${sales_segment_id}">
@@ -125,7 +126,13 @@
                 <td id="quantity-${item.id}">${item.quantity}</td>
                 <td>${item.stock.stock_status.quantity} / ${item.stock.quantity}席</td>
                 <td id="stock-${item.id}" value="${item.stock.id}">${item.stock.id}</td>
-                <td id="ticket_bundle_id-{$item.id}" value="${item.ticket_bundle_id}">${item.ticket_bundle.name if item.ticket_bundle_id else '-'}</id>
+                <td id="ticket_bundle_id-{$item.id}" value="${item.ticket_bundle_id}">
+                  % if item.ticket_bundle_id:
+                    <a href="${request.route_path("events.tickets.bundles.items.preview", event_id=product.event_id, bundle_id=item.ticket_bundle.id, item_id=item.id)}" target="_blank">${item.ticket_bundle.name}<i class="icon-eye-open"></i></a>
+                  % else:
+                    -
+                  % endif
+                </td>
                 <td><input type="hidden" id="ticket_bundle_id-${item.id}" value="${item.ticket_bundle_id}" />${h.action_button(actions(product, item), order=['edit', 'preview', 'new', 'delete'], options='btn-small')}</td>
               </tr>
                   % endfor

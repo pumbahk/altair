@@ -355,7 +355,23 @@ class TicketTemplates(BaseView):
             template.data = form.data_value
         template.save()
         self.request.session.flash(u'チケットテンプレートを更新しました')
-        return self.context.after_ticket_action_redirect()
+        return self.context.after_ticket_action_redirect(template)
+
+    @view_config(route_name='tickets.templates.update_derivatives', renderer='ticketing:templates/tickets/templates/update_derivatives.html')
+    def update_derivatives(self):
+        template = Ticket.query.filter_by(id=self.request.matchdict['id']).one()
+        tickets = Ticket.query.filter_by(original_ticket_id=self.request.matchdict['id'])
+        return dict(h=helpers, tickets=tickets, template=template)
+
+    @view_config(route_name='tickets.templates.update_derivatives', renderer='ticketing:templates/tickets/templates/update_derivatives.html', request_method='POST')
+    def update_derivatives_post(self):
+        template = Ticket.query.filter_by(id=self.request.matchdict['id']).one()
+        tickets = Ticket.query.filter_by(original_ticket_id=self.request.matchdict['id'])
+        if self.request.POST.get('do_update'):
+            for ticket in tickets:
+                ticket.data = template.data
+        self.request.session.pop_flash()
+        return HTTPFound(location=self.request.route_path("tickets.index"))
 
     def delete(self):
         ticket_id = self.request.matchdict["id"]
