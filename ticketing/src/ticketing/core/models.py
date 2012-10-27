@@ -2142,12 +2142,13 @@ class TicketPrintQueueEntry(Base, BaseModel):
     def peek(self, operator, ticket_format_id, order_id=None):
         q = DBSession.query(TicketPrintQueueEntry) \
             .filter_by(processed_at=None, operator=operator) \
-            .filter(Ticket.ticket_format_id==ticket_format_id) \
-            .join(OrderedProductItem) \
-            .join(OrderedProduct)
+            .filter(Ticket.ticket_format_id==ticket_format_id)
         if order_id is not None:
-            q = q.filter(OrderedProduct.order_id==order_id)
-        q = q.order_by(asc(OrderedProduct.id), desc(self.created_at))
+            q = q.join(OrderedProductItem) \
+                .join(OrderedProduct) \
+                .filter(OrderedProduct.order_id==order_id)
+            q = q.order_by(asc(OrderedProduct.id))
+        q = q.order_by(desc(self.created_at))
         return q.all()
 
     @classmethod
