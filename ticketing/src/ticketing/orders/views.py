@@ -562,6 +562,7 @@ class Orders(BaseView):
         l0_id = self.request.params.get('l0_id', 0)
         logger.debug('call get order api (seat l0_id = %s)' % l0_id)
         order = Order.filter_by(organization_id=self.context.user.organization_id)\
+                     .filter(Order.canceled_at==None)\
                      .join(Order.ordered_products)\
                      .join(OrderedProduct.ordered_product_items)\
                      .join(OrderedProductItem.seats)\

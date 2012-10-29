@@ -451,9 +451,6 @@
                   seat.addStyleType('highlighted');
                 } else {
                   seat.addStyleType('tooltip');
-                  seats[id].get('model').set('timer', setTimeout(function() {
-                    self.callbacks.tooltip && self.callbacks.tooltip(id);
-                  }, 3000));
                 }
                 self.highlighted[_id] = seat;
               }
@@ -467,14 +464,15 @@
                   seat.removeStyleType('highlighted');
                 } else {
                   seat.removeStyleType('tooltip');
-                  if (seats[id].get('model').get('timer')) {
-                    clearTimeout(seats[id].get('model').get('timer'));
-                  }
                 }
               }
             },
             mousedown: function(evt) {
-              self.callbacks.click && self.callbacks.click(self, self, self.highlighted);
+              if (seats[id].get('model').selectable()) {
+                self.callbacks.click && self.callbacks.click(self, self, self.highlighted);
+              } else {
+                self.callbacks.tooltip && self.callbacks.tooltip(id);
+              }
             }
           }
         });
