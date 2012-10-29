@@ -205,10 +205,15 @@ class Performances(BaseView):
         if performance is None:
             return HTTPNotFound('performance id %d is not found' % id)
 
-        performance.delete()
+        location = route_path('events.show', self.request, event_id=performance.event_id)
+        try:
+            performance.delete()
+            self.request.session.flash(u'パフォーマンスを削除しました')
+        except Exception, e:
+            self.request.session.flash(e.message)
+            raise HTTPFound(location=route_path('performances.show', self.request, performance_id=performance.id))
 
-        self.request.session.flash(u'パフォーマンスを削除しました')
-        return HTTPFound(location=route_path('events.show', self.request, event_id=performance.event_id))
+        return HTTPFound(location=location)
 
 @view_config(decorator=with_bootstrap, permission="authenticated",
              route_name="performances.mailinfo.index")

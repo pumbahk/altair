@@ -176,9 +176,13 @@ class Events(BaseView):
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
 
-        event.delete()
+        try:
+            event.delete()
+            self.request.session.flash(u'イベントを削除しました')
+        except Exception, e:
+            self.request.session.flash(e.message)
+            raise HTTPFound(location=route_path('events.show', self.request, event_id=event.id))
 
-        self.request.session.flash(u'イベントを削除しました')
         return HTTPFound(location=route_path('events.index', self.request))
 
     @view_config(route_name='events.send')

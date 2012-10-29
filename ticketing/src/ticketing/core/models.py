@@ -511,6 +511,24 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             venue = Venue.get(self.delete_venue_id)
             venue.delete_cascade()
 
+    def delete(self):
+        # 既に販売されている場合は削除できない
+        if self.event.sales_start_on < datetime.now():
+            raise Exception(u'既に販売開始日時を経過している為、削除できません')
+
+        # delete ProductItem
+        for product_item in self.product_items:
+            product_item.delete()
+
+        # delete Stock
+        for stock in self.stocks:
+            stock.delete(force=True)
+
+        # delete Venue
+        self.venue.delete()
+
+        super(Performance, self).delete()
+
     def get_cms_data(self):
         start_on = isodate.datetime_isoformat(self.start_on) if self.start_on else ''
         end_on = isodate.datetime_isoformat(self.end_on) if self.end_on else ''
@@ -811,6 +829,33 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 style={"text": u"自", "text_color": "#a62020"},
             )
             stock_holder.save()
+
+    def delete(self):
+        # 既に販売されている場合は削除できない
+        if self.sales_start_on < datetime.now():
+            raise Exception(u'既に販売開始日時を経過している為、削除できません')
+
+        # delete Performance
+        for performance in self.performances:
+            performance.delete()
+
+        # delete SalesSegment
+        for sales_segment in self.sales_segments:
+            sales_segment.delete()
+
+        # delete StockType
+        for stock_type in self.stock_types:
+            stock_type.delete()
+
+        # delete StockHolder
+        for stock_holder in self.stock_holders:
+            stock_holder.delete()
+
+        # delete Product
+        for product in self.products:
+            product.delete()
+
+        super(Event, self).delete()
 
 class SalesSegmentKindEnum(StandardEnum):
     first_lottery   = u'最速抽選'
@@ -1256,9 +1301,9 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             stock_status.quantity = self.count_vacant_quantity()
         stock_status.save()
 
-    def delete(self):
+    def delete(self, force=False):
         # 在庫が割り当てられている場合は削除できない
-        if self.quantity > 0 or self.product_items:
+        if not force and (self.quantity > 0 or self.product_items):
             raise Exception(u'座席および席数の割当がある為、削除できません')
 
         # delete StockStatus
@@ -2173,8 +2218,6 @@ class TicketPrintQueueEntry(Base, BaseModel):
             order.issued_at = order.printed_at = now
             order.issued = True
         return entries
-
-from ..operators.models import Operator
 
 class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "TicketBundle"
