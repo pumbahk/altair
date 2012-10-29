@@ -16,7 +16,6 @@ from ticketing.tickets.utils import build_dict_from_product_item
 import pystache
 from ticketing.tickets.convert import to_opcodes
 from lxml import etree
-   
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class IndexView(BaseView):
@@ -144,7 +143,7 @@ class BundleView(BaseView):
             performance = product_item_dict.get(product_item.performance_id)
             if performance is None:
                 performance = product_item_dict[product_item.performance_id] = {
-                    'name': product_item.performance.name,
+                    'name': u"%s(%s)" % (product_item.performance.name, product_item.performance.start_on),
                     'products': {},
                     'product_items': {}
                     }
