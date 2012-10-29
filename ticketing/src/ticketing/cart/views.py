@@ -1,7 +1,6 @@
 
 # -*- coding:utf-8 -*-
 import logging
-import transaction
 import json
 from datetime import datetime, timedelta
 import re
@@ -35,6 +34,7 @@ from .exceptions import (
     ZeroQuantityError, 
     CartCreationExceptoion,
     OutTermSalesException,
+    DeliveryFailedException,
 )
 from .rakuten_auth.api import authenticated_user
 from .events import notify_order_completed
@@ -871,8 +871,24 @@ class CompleteView(object):
             cart.order = order
 
             DBSession.add(order)
-            delivery_plugin = api.get_delivery_plugin(self.request, payment_delivery_pair.delivery_method.delivery_plugin_id)
-            delivery_plugin.finish(self.request, cart)
+            try:
+                delivery_plugin = api.get_delivery_plugin(self.request, payment_delivery_pair.delivery_method.delivery_plugin_id)
+                delivery_plugin.finish(self.request, cart)
+            except Exception as e:
+                import sys
+                import traceback
+                import StringIO
+                exc_info = sys.exc_info()
+                out = StringIO.StringIO()
+                traceback.print_exception(*exc_info, file=out)
+                logger.error(out.getvalue())
+                order.cancel(self.request)
+                order.note = str(e)
+                order_no = order.order_no
+                event_id = cart.sales_segment.event_id
+                # 追跡用にエラー内容とともにキャンセル状態のorderをコミットする
+                transaction.commit()
+                raise DeliveryFailedException(order_no, event_id)
 
         notify_order_completed(self.request, order)
 

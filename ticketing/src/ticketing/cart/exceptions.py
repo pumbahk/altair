@@ -36,3 +36,8 @@ class ZeroQuantityError(CartException):
 
 class CartCreationExceptoion(CartException):
     pass
+
+class DeliveryFailedException(Exception):
+    def __init__(self, order_no, event_id):
+        self.order_no = order_no
+        self.event_id = event_id

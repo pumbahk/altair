@@ -1,5 +1,5 @@
 # coding: utf-8
-
+from markupsafe import Markup
 from pyramid.view import view_config
 from pyramid.exceptions import NotFound, Forbidden
 from pyramid.httpexceptions import HTTPFound
@@ -12,6 +12,8 @@ from ticketing.cart.selectable_renderer import selectable_renderer
 import logging
 
 logger = logging.getLogger(__name__)
+
+
 
 @mobile_view_config(context=Forbidden, renderer=selectable_renderer('ticketing.cart:templates/errors_mobile/%(membership)s/forbidden.html'))
 @view_config(context=Forbidden, renderer=selectable_renderer('ticketing.cart:templates/errors/%(membership)s/forbidden.html'))
@@ -90,3 +92,10 @@ def cart_creation_exception(request):
 @view_config(context=InvalidCSRFTokenException, renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/error.html'), request_type="..interfaces.IMobileRequest")
 def cart_creation_exception(request):
     return dict(message=u"ウェブブラウザの戻るボタンは使用できません。画面上の戻るボタンから操作して下さい。")
+
+@view_config(context=DeliveryFailedException, renderer=selectable_renderer('ticketing.cart:templates/carts/%(membership)s/message.html'))
+@view_config(context=DeliveryFailedException, renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/error.html'), request_type="..interfaces.IMobileRequest")
+def cart_creation_exception(context, request):
+    event_id = context.event_id
+    location = request.route_url('cart.index', event_id=event_id)
+    return dict(message=Markup(u'決済中にエラーが発生しました。しばらく時間を於いてから<a href="%s">再度お試しください。</a>' % location))
