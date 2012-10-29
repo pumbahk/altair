@@ -39,7 +39,14 @@ def members_empty_view(context, request):
 def members_index_view(context, request):
     membership_id = request.matchdict["membership_id"]
     memberships = context.memberships
-    choice_form = forms.MemberShipChoicesForm(membership_id=membership_id).configure(memberships)
+    membership = memberships.filter_by(id=membership_id).first()
+    if membership is None:
+        return HTTPNotFound(u"membershipが登録されていません。")
+    membergroup_id = request.GET.get("membergroup_id")
+    username = request.GET.get("username")
+
+    choice_form = forms.SearchMemberForm(membership_id=membership_id, membergroup_id=membergroup_id, username=username)\
+        .configure(memberships, membership.membergroups)
 
     users = User.query.filter(User.id==UserCredential.user_id)\
         .filter(UserCredential.membership_id==membership_id)\
@@ -50,6 +57,11 @@ def members_index_view(context, request):
                  orm.joinedload("member.membergroup"), 
                  )
 
+    if membergroup_id:
+        users = users.filter(Member.membergroup_id == membergroup_id)
+    if username:
+        users = users.filter(UserCredential.auth_identifier.like(u"%%%s%%" % username))
+
     users = paginate.Page(
         users, 
         item_count=users.count(), 
@@ -58,7 +70,7 @@ def members_index_view(context, request):
         url=paginate.PageURL_WebOb(request)
         )
     return {"users": users, "choice_form": choice_form, 
-            "membership_id": membership_id}
+            "membership": membership}
 
 @view_defaults(route_name="members.member", permission="administrator", decorator=with_bootstrap)
 class MemberView(object):

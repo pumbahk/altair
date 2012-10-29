@@ -11,24 +11,46 @@ ${breadcrumbs(
   ${flash_messages(request)}
 </div>
 
-<h2>member</h2>
+<div class="navbar">
+  <div class="navbar-inner">
+    <div class="container">
+      <form class="navbar-search pull-left form-inline">
+        <span class="navbar-text">${choice_form.membership_id.label.text}</span>
+        ${choice_form.membership_id(id="membership_id", class_="search-query input-small")}
+        <span class="navbar-text">${choice_form.membergroup_id.label.text}</span>
+        ${choice_form.membergroup_id(id="membergroup_id", class_="search-query input-medium")}
+        <span class="navbar-text">${choice_form.username.label.text}</span>
+        ${choice_form.username(id="username", class_="search-query input-medium")}
+      </form>
+      <script type="text/javascript">
+        $("#membership_id").change(function(){
+          var url = "${request.route_path("members.index", membership_id="__id__")}";
+          location.href = url.replace("__id__", $(this).val());
+        });
+        $("#membergroup_id").change(function(){
+          var url = "${request.route_path("members.index", membership_id=membership.id, _query=dict(membergroup_id="__membergroup_id__",username="__username__"))}";
+          location.href = url.replace("__membergroup_id__", $(this).val()).replace("__username__", $(this).parents("form").find("#username").val());
+        });
+        $("#username").change(function(){
+          var url = "${request.route_path("members.index", membership_id=membership.id, _query=dict(membergroup_id="__membergroup_id__",username="__username__"))}";
+          location.href = url.replace("__username__", $(this).val()).replace("__membergroup_id__", $(this).parents("form").find("#membergroup_id:selected").val());
+        });
+      </script>
+    </div>
+  </div>
+</div>
 
-${choice_form.membership_id.label}${choice_form.membership_id(id="membership_id")}
-<script type="text/javascript">
-$(function(){
-  $("#membership_id").change(function(){
-    var url = "${request.route_path("members.index", membership_id="__id__")}";
-    location.href = url.replace("__id__", $(this).val());
-  });
-});
-</script>
+<div class="page-header">
+  ${membership.name}
+</div>
+
 <div class="btn-group">
-  <a href="${request.route_path("members.member",membership_id=membership_id, action="edit_dialog")}"
+  <a href="${request.route_path("members.member",membership_id=membership.id, action="edit_dialog")}"
      id="member_edit"
      class="ajax-modal btn" data-toggle="modal" data-target="#MembershipEditModal">membergroup変更</a>
-  <a href="${request.route_path("members.member",membership_id=membership_id, action="csv_import_dialog")}"
+  <a href="${request.route_path("members.member",membership_id=membership.id, action="csv_import_dialog")}"
      class="ajax-modal btn"  data-toggle="modal" data-target="#CSVImportModal">csvインポート</a>
-  <a href="${request.route_path("members.member",membership_id=membership_id, action="csv_export_dialog")}"
+  <a href="${request.route_path("members.member",membership_id=membership.id, action="csv_export_dialog")}"
      class="ajax-modal btn"  data-toggle="modal" data-target="#CSVExportModal">csvエクスポート</a>
 </div>
 

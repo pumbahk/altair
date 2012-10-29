@@ -11,15 +11,23 @@ from collections import namedtuple, OrderedDict
 
 logger = logging.getLogger(__name__)
 
-class MemberShipChoicesForm(Form):
+class SearchMemberForm(Form):
     membership_id = fields.SelectField(
         label=u"Membership", 
         choices=[], 
         coerce=unicode
         )
-    
-    def configure(self, memberships):
+    membergroup_id = fields.SelectField(
+        label=u"Membergroup", 
+        choices=[], 
+        coerce=unicode
+        )
+    username = fields.TextField(
+        label=u"名前検索"
+    )
+    def configure(self, memberships, membergroups=[]):
         self.membership_id.choices = [(m.id, m.name) for m in memberships]
+        self.membergroup_id.choices = [("", u"-----")]+[(g.id, g.name) for g in membergroups]
         return self
 
 
