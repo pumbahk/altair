@@ -108,6 +108,7 @@ setup(name='ticketing',
       [console_scripts]
       inquiry_demo=ticketing.cart.commands:inquiry_demo
       cancel_auth_expired_carts=ticketing.cart.commands:cancel_auth_expired_carts
+      venue_import=ticketing.commands.venue_import:main
       update_seat_status=ticketing.orders.commands:update_seat_status
       join_cart_and_order=ticketing.cart.commands:join_cart_and_order
       sej_notification=ticketing.sej.scripts.sej_notification:main
