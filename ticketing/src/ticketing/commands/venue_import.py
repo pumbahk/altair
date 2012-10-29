@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # encoding: utf-8
 from lxml import etree
 import os
@@ -6,6 +7,8 @@ import transaction
 import re
 import argparse
 import locale
+
+from pyramid.paster import get_app, bootstrap
 
 from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 from ticketing.models import DBSession
@@ -331,7 +334,7 @@ def import_tree(update, organization, tree, file, venue_id=None):
     DBSession.add(site)
     DBSession.add(venue)
 
-def import_or_update_svg(update, organization_name, file, venue_id):
+def import_or_update_svg(env, update, organization_name, file, venue_id):
     organization = DBSession.query(Organization).filter_by(name=organization_name).one()
     print 'Importing %s for %s...' % (file, organization_name.encode(io_encoding))
     xmldoc = etree.parse(file)
@@ -344,20 +347,29 @@ def import_or_update_svg(update, organization_name, file, venue_id):
     import_tree(update, organization, object_tree, file, venue_id)
     transaction.commit()
  
-def main(env, args):
+def main():
     parser = argparse.ArgumentParser(description='import venue data')
+    parser.add_argument('config_uri', metavar='config', type=str, nargs=1,
+                        help='config file')
     parser.add_argument('svg_files', metavar='svg', type=str, nargs='+',
                         help='an svg file')
     parser.add_argument('-O', '--organization', metavar='organization',
-                        help='organization name')
+                        required=True, help='organization name')
     parser.add_argument('-u', '--update', action='store_true',
                         help='update existing data')
     parser.add_argument('--venue', metavar='venue-id',
                         help='specify venue id (use with -u)')
-    parsed_args = parser.parse_args(args)
+    parsed_args = parser.parse_args()
+
+    env = bootstrap(parsed_args.config_uri[0])
+
     for svg_file in parsed_args.svg_files:
         import_or_update_svg(
+            env,
             parsed_args.update,
             unicode(parsed_args.organization, io_encoding),
             svg_file,
             parsed_args.venue)
+
+if __name__ == '__main__':
+    main()
