@@ -2219,6 +2219,8 @@ class TicketPrintQueueEntry(Base, BaseModel):
             order.issued = True
         return entries
 
+from ..operators.models import Operator
+
 class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "TicketBundle"
     id = Column(Identifier, primary_key=True)
