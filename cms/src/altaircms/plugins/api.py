@@ -89,7 +89,7 @@ def get_widget_aggregator_dispatcher(request):
     return request.registry.getUtility(IWidgetAggregateDispatcher)
 
 def get_widget_utility(request, page,_type):
-    logger.warn("*get widget utility* %s" % _type)
+    logger.debug("*get widget utility* %s" % _type)
     if not hasattr(request, "_widget_utilities"):
         request._widget_utilities = {}
     utility = request._widget_utilities.get((page.organization_id, _type))
