@@ -1,0 +1,47 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="h" />
+
+<%
+  if request.matched_route.name == 'organizations.sej_tenant.new':
+    route_name = u'登録'
+    route_path = request.route_path('organizations.sej_tenant.new', organization_id=form.organization_id.data)
+  else:
+    route_name = u'編集'
+    route_path = request.route_path('organizations.sej_tenant.edit', organization_id=form.organization_id.data)
+%>
+
+<div class="breadcrumbs">
+  ${h.breadcrumbs(
+      names=[u'トップ', u'コンビニ設定'],
+      urls=[
+        request.route_path('index'),
+        route_path,
+      ]
+  )}
+</div>
+
+<div class="page-header">
+  <h1>コンビニ設定 ${route_name}</h1>
+</div>
+
+<div class="content">
+  ${h.flash_messages(request)}
+  ${h.alert_message(form)}
+</div>
+
+<div class="well">
+  <form class="form-horizontal" action="${route_path}" method="POST">
+    <fieldset>
+      ${h.form_item(form.id)}
+      ${h.form_item(form.shop_name, option={'class':'span5', 'maxlength':255})}
+      ${h.form_item(form.shop_id)}
+      ${h.form_item(form.contact_01, option={'class':'span5', 'maxlength':255})}
+      ${h.form_item(form.contact_02, option={'class':'span5', 'maxlength':255})}
+      ${h.form_item(form.api_key)}
+      ${h.form_item(form.inticket_api_url, option={'class':'span5'})}
+    </fieldset>
+    <div class="form-actions">
+      <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">
+    </div>
+  </form>
+</div>
