@@ -4,7 +4,7 @@ import locale
 from datetime import datetime
 
 from wtforms import Form, ValidationError
-from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, TextAreaField,
+from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, TextAreaField, DateField,
                      BooleanField, RadioField, FieldList, FormField, DecimalField, IntegerField)
 from wtforms.validators import Optional, AnyOf, Length, Email
 from ticketing.formhelpers import DateTimeField, Translations, Required
@@ -131,15 +131,15 @@ class OrderSearchForm(Form):
         choices=[],
         validators=[Optional()],
     )
-    start_on_from = DateTimeField(
-        label=u'公演日時',
+    start_on_from = DateField(
+        label=u'公演日',
         validators=[Optional()],
-        format='%Y-%m-%d %H:%M',
+        format='%Y-%m-%d',
     )
-    start_on_to = DateTimeField(
-        label=u'公演日時',
+    start_on_to = DateField(
+        label=u'公演日',
         validators=[Optional()],
-        format='%Y-%m-%d %H:%M',
+        format='%Y-%m-%d',
     )
     sort = HiddenField(
         validators=[Optional()],
