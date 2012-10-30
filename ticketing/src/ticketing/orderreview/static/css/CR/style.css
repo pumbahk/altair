@@ -1063,3 +1063,8 @@ background: -ms-linear-gradient(top, #A37400 0%,#A37400 50%,#A37400 51%,#A37400 
 background: linear-gradient(top, #A37400 0%,#A37400 50%,#A37400 51%,#A37400 75%,#A37400 100%); /* W3C */
 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#A37400', endColorstr='#A37400',GradientType=0 ); /* IE6-9 */
 }
+
+/* form中のinput要素に枠をつける */
+form input {
+  border: 1px solid rgb(141, 98, 170);
+}
