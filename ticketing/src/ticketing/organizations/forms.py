@@ -109,9 +109,18 @@ class OrganizationForm(Form):
 
 class SejTenantForm(Form):
 
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        Form.__init__(self, formdata, obj, prefix, **kwargs)
+        if 'organization_id' in kwargs:
+            self.organization_id.data = kwargs['organization_id']
+
     def _get_translations(self):
         return Translations()
 
+    organization_id = HiddenField(
+        label='',
+        validators=[Optional()],
+    )
     id = HiddenField(
         label=u'ID',
         validators=[Optional()],
@@ -147,14 +156,14 @@ class SejTenantForm(Form):
     api_key = TextField(
         label=u'API KEY',
         validators=[
-            Required(),
+            Optional(),
             Length(max=255, message=u'255文字以内で入力してください'),
         ]
     )
     inticket_api_url = TextField(
         label=u'API URL',
         validators=[
-            Required(),
+            Optional(),
             Length(max=255, message=u'255文字以内で入力してください'),
         ]
     )

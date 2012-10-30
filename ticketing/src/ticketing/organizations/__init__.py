@@ -7,10 +7,9 @@ def includeme(config):
     config.add_route('organizations.edit', '/edit/{organization_id}')
     config.add_route('organizations.delete', '/delete/{organization_id}')
 
-
-    config.add_route('organizations.sej_tenant_new', '/sej/{organization_id}/new')
-    config.add_route('organizations.sej_tenant_edit', '/sej/{organization_id}/edit/{id}')
-    config.add_route('organizations.sej_tenant_delete', '/sej/{organization_id}/delete/{id}')
+    config.add_route('organizations.sej_tenant.new', '/{organization_id}/sej_tenant/new')
+    config.add_route('organizations.sej_tenant.edit', '/{organization_id}/sej_tenant/edit')
+    config.add_route('organizations.sej_tenant.delete', '/{organization_id}/sej_tenant/delete')
 
     # config.add_route("organizations.mails.index", "/organizations/{organization_id}/mailinfo")
     ## mail_type is MailTypeEnum
