@@ -2332,3 +2332,26 @@ class Host(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     host_name = Column(Unicode(255), unique=True)
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
     organization = relationship('Organization', backref="hosts")
+
+class GlobalSequence(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'GlobalSequence'
+
+
+    query = DBSession.query_property()
+
+    id = Column(Identifier, primary_key=True)
+    name = Column(Unicode(255), unique=True)
+    value = Column(BigInteger, default=0, nullable=False)
+
+    @classmethod
+    def by_name(cls, name):
+        return cls.query.filter_by(name=name).one()
+
+    @classmethod
+    def get_next_value(cls, name):
+        seq = cls.by_name(name)
+        return seq._get_next_value()
+
+    def _get_next_value(self):
+        self.value += 1
+        return self.value

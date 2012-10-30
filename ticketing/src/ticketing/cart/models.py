@@ -35,6 +35,7 @@ from zope.deprecation import deprecate
 from ticketing.utils import sensible_alnum_encode
 from ticketing.models import Identifier
 from ..core import models as c_models
+from ..core import api as c_api
 from ..models import Identifier
 from . import logger
 from .exceptions import NoCartError
@@ -259,16 +260,26 @@ class Cart(Base):
     payment_delivery_method_pair_id = sa.Column(Identifier, sa.ForeignKey("PaymentDeliveryMethodPair.id"))
     payment_delivery_pair = orm.relationship("PaymentDeliveryMethodPair")
 
+    _order_no = sa.Column("order_no", sa.String(255))
     order_id = sa.Column(Identifier, sa.ForeignKey("Order.id"))
     order = orm.relationship('Order', backref='carts')
 
     sales_segment_id = sa.Column(Identifier, sa.ForeignKey('SalesSegment.id'))
     sales_segment = orm.relationship('SalesSegment', backref='carts')
 
+    def refresh_order_no(self):
+        logger.debug("organization.id = %d" % self.performance.event.organization.id)
+        base_id = c_api.get_next_order_no()
+        self._order_no = self.performance.event.organization.code + sensible_alnum_encode(base_id).zfill(10)
+
     @property
     def order_no(self):
-        logger.debug("organization.id = %d" % self.performance.event.organization.id)
-        return self.performance.event.organization.code + sensible_alnum_encode(self.id).zfill(10)
+        if self._order_no is None:
+            self.refresh_order_no()
+        return self._order_no
+
+        #logger.debug("organization.id = %d" % self.performance.event.organization.id)
+        #return self.performance.event.organization.code + sensible_alnum_encode(self.id).zfill(10)
 
     @property
     def total_amount(self):
