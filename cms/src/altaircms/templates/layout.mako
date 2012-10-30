@@ -8,33 +8,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="/static/favicon.ico">
     <style>
-        body {
-            padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
-        }
-        .container {
-            width:auto;
-            margin-left: 10px;
-            margin-right: 10px;
-        }
-		// header css
-		#navigation { height:25px; }
-		#navigation ul{ list-style-type: none; padding-top:17px; font-size:11px; }
-		#navigation ul li{ float:left; display:inline; margin-right:5px;}
-		#navigation ul li a,
-		#navigation ul li a span { float:left; display:inline; height:25px; padding:0 0 0 8px; background:url(/static/img/nav.gif) no-repeat 0 0; }
-		#navigation ul li a span { padding:0 8px 0 0; background-position:right 0; }
-		#navigation ul li a { color:#ddadab; line-height:29px;}
-		#navigation ul li a.active { font-weight: bold;}
+  body {
+      padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+  }
+  .container {
+      width:auto;
+      margin-left: 10px;
+      margin-right: 10px;
+  }
 
-		#navigation ul li a:hover,
-		#navigation ul li a.active { background-position:0 bottom; color:#887e42; }
+  .container form textarea {
+      min-width: 450px;
+      min-height: 180px;
+  }
+  .container form input {
+      min-width: 450px;
+  }
+  .container form select {
+      min-width: 450px;
+  }
+	// header css
+  #navigation { height:25px; }
+  #navigation ul{ list-style-type: none; padding-top:17px; font-size:11px; }
+  #navigation ul li{ float:left; display:inline; margin-right:5px;}
+  #navigation ul li a,
+  #navigation ul li a span { float:left; display:inline; height:25px; padding:0 0 0 8px; background:url(/static/img/nav.gif) no-repeat 0 0; }
+  #navigation ul li a span { padding:0 8px 0 0; background-position:right 0; }
+  #navigation ul li a { color:#ddadab; line-height:29px;}
+  #navigation ul li a.active { font-weight: bold;}
 
-		#navigation ul li a:hover span,
-		#navigation ul li a.active span{ background-position:right bottom; }
-		.big-modal{
+  #navigation ul li a:hover,
+  #navigation ul li a.active { background-position:0 bottom; color:#887e42; }
+
+  #navigation ul li a:hover span,
+  #navigation ul li a.active span{ background-position:right bottom; }
+
+	.big-modal{
 		 width:840px;
 		 margin-left:-420px;
-	  }
+  }
 
  </style>
 	## for date picker
