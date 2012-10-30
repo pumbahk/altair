@@ -6,6 +6,7 @@ from wtforms import validators as v
 from wtforms.ext.i18n.utils import DefaultTranslations
 from wtforms import ValidationError
 
+from ticketing.formhelpers import SejCompliantEmail
 from ticketing.master.models import Prefecture
 from ticketing.core import models as c_models
 from datetime import date, datetime
@@ -81,7 +82,7 @@ class JForm(Form):
         })
 
 class SendMailSchema(JForm):
-    mail = fields.TextField(u"送り先メールアドレス", validators=[v.Email()])
+    mail = fields.TextField(u"送り先メールアドレス", validators=[SejCompliantEmail(u'Emailの形式が正しくありません。')])
 
 class OrderReviewSchema(JForm):
     order_no = fields.TextField(u"注文番号", filters=[strip_spaces], validators=[v.Required()])
