@@ -8,17 +8,25 @@ def jdate(d):
     u'2011\u5e7401\u670801\u65e5'
     """
     if d:
-        datestr = d.strftime(u"%Y年-%m月-%d日".encode("utf-8")).decode("utf-8")
+        datestr = d.strftime(u"%Y年%m月%d日".encode("utf-8")).decode("utf-8")
         return u"%s（%s）" % (datestr, unicode(WEEK[d.weekday()]))
     else:
         return u"-"
 
-def jdatetime(d):
+def jtime(d):
     """datetimeオブジェクトを受け取り日本語の時刻を返す
     """
     if d:
+        return d.strftime(u"%H時%M分".encode("utf-8")).decode("utf-8")
+    else:
+        return u"-"
+
+def jdatetime(d):
+    """datetimeオブジェクトを受け取り日本語の日時を返す
+    """
+    if d:
         datestr = jdate(d)
-        timestr = d.strftime(u"%H時%M分".encode("utf-8")).decode("utf-8")
+        timestr = jtime(d)
         return u"%s%s" % (datestr, timestr)
     else:
         return u"-"

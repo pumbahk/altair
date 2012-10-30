@@ -575,17 +575,32 @@ class SeatAssignExporter(BaseExporter):
     def set_event_name(self, sheet, value):
         """イベント名
         """
-        self.update_cell_text(sheet, 7, 0, value)
-
-    def set_performance_datetime(self, sheet, value):
-        """パフォーマンス日時
-        """
-        self.update_cell_text(sheet, 9, 0, value)
+        self.update_cell_text(sheet, 4, 0, u'イベント名：%s' % value)
 
     def set_performance_name(self, sheet, value):
         """パフォーマンス名
         """
-        self.update_cell_text(sheet, 9, 7, value)
+        self.update_cell_text(sheet, 5, 0, u'公演名：%s' % value)
+
+    def set_performance_datetime(self, sheet, value):
+        """パフォーマンス日時
+        """
+        self.update_cell_text(sheet, 6, 0, u'公演日：%s' % value)
+
+    def set_performance_open_at(self, sheet, value):
+        """開場時間
+        """
+        self.update_cell_text(sheet, 7, 0, u'開場：%s' % value)
+
+    def set_performance_start_at(self, sheet, value):
+        """開演時間
+        """
+        self.update_cell_text(sheet, 8, 0, u'開演：%s' % value)
+
+    def set_performance_venue(self, sheet, value):
+        """会場
+        """
+        self.update_cell_text(sheet, 9, 0, u'会場：%s' % value)
 
     def add_records(self, sheet, data):
         """シートに席種ごとのデータを追加する

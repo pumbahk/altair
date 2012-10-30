@@ -5,7 +5,7 @@ from datetime import datetime
 from itertools import groupby
 
 from ticketing.core.models import SeatStatusEnum
-from ticketing.helpers.base import jdate, jdatetime
+from ticketing.helpers.base import jdate, jtime
 
 import logging
 
@@ -134,7 +134,10 @@ def process_sheet(exporter, sheet, event, performance, stock_holder, stock_recor
     exporter.set_datetime(sheet, today_stamp)
     exporter.set_event_name(sheet, event.title or "")
     exporter.set_performance_name(sheet, performance.name or "")
-    exporter.set_performance_datetime(sheet, jdatetime(performance.start_on))
+    exporter.set_performance_datetime(sheet, jdate(performance.start_on))
+    exporter.set_performance_open_at(sheet, jtime(performance.open_on))
+    exporter.set_performance_start_at(sheet, jtime(performance.start_on))
+    exporter.set_performance_venue(sheet, performance.venue.name or "")
     for stock_record in stock_records:
         exporter.add_records(sheet, stock_record.get_records())
 
