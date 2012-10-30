@@ -2,7 +2,6 @@
 
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
-from pyramid.url import route_path
 
 from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.core.models import Event
@@ -11,9 +10,6 @@ from ticketing.fanstatic import with_bootstrap
 
 import webhelpers.paginate as paginate
 
-import sqlahelper
-session = sqlahelper.get_session()
-
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class Dashboard(BaseView):
 
@@ -21,8 +17,8 @@ class Dashboard(BaseView):
     def index(self):
         current_page = int(self.request.params.get("page", 0))
         page_url = paginate.PageURL_WebOb(self.request)
-        query = session.query(Event)
+        query = Event.filter_by(organization_id=self.context.user.organization_id)
         events = paginate.Page(query.order_by(Event.id), current_page, url=page_url)
         return {
-            'events'        : events
+            'events':events
         }
