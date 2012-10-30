@@ -26,11 +26,22 @@
     if (!id) return;
     $(location).attr('href', '/events/performances/copy/' + id);
   }
-
   function mail_info(){
     var id = get_id('performance_id');
     if (!id) return;
     $(location).attr('href', '/events/performances/mailinfo/' + id);
+  }
+  function confirm_open_performance(id){
+    var modal = '#modal-performance-open';
+    var form = '#performance-open-form';
+    var url = '/events/performances/open/' + id;
+    get_modal_form(modal, form, url);
+  }
+  function open_performance(id){
+    var modal = '#modal-performance-open';
+    var form = '#performance-open-form';
+    var url = '/events/performances/open/' + id;
+    post_modal_form(modal, form, url);
   }
 </script>
 
@@ -72,3 +83,5 @@
 ${action_button(actions, order)}
 
 ${delete_modal()}
+
+<div id="performance-open-form"></div>

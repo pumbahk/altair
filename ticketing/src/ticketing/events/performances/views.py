@@ -7,12 +7,13 @@ import webhelpers.paginate as paginate
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
+from pyramid.renderers import render_to_response
 from pyramid.security import has_permission, ACLAllowed
 
 from ticketing.core.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
-from ticketing.events.performances.forms import PerformanceForm
+from ticketing.events.performances.forms import PerformanceForm, PerformancePublicForm
 from ticketing.core.models import Event, Performance, Order, Product, ProductItem, Stock
 from ticketing.products.forms import ProductForm, ProductItemForm
 from ticketing.orders.forms import OrderForm, OrderSearchForm
@@ -214,6 +215,43 @@ class Performances(BaseView):
             raise HTTPFound(location=route_path('performances.show', self.request, performance_id=performance.id))
 
         return HTTPFound(location=location)
+
+    @view_config(route_name='performances.open', request_method='GET',renderer='ticketing:templates/performances/_form_open.html')
+    def open_get(self):
+        performance_id = int(self.request.matchdict.get('performance_id', 0))
+        performance = Performance.get(performance_id, self.context.user.organization_id)
+        if performance is None:
+            return HTTPNotFound('performance id %d is not found' % id)
+
+        f = PerformancePublicForm(record_to_multidict(performance))
+        f.public.data = 0 if f.public.data == 1 else 1
+        return {
+            'form':f,
+            'performance':performance
+        }
+
+    @view_config(route_name='performances.open', request_method='POST',renderer='ticketing:templates/performances/_form_open.html')
+    def open_post(self):
+        performance_id = int(self.request.matchdict.get('performance_id', 0))
+        performance = Performance.get(performance_id, self.context.user.organization_id)
+        if performance is None:
+            return HTTPNotFound('performance id %d is not found' % id)
+
+        f = PerformancePublicForm(self.request.POST)
+        if f.validate():
+            performance = merge_session_with_post(performance, f.data)
+            performance.save()
+
+            if performance.public:
+                self.request.session.flash(u'パフォーマンスを公開しました')
+            else:
+                self.request.session.flash(u'パフォーマンスを非公開にしました')
+            return render_to_response('ticketing:templates/refresh.html', {}, request=self.request)
+
+        return {
+            'form':f,
+            'performance':performance
+        }
 
 @view_config(decorator=with_bootstrap, permission="authenticated",
              route_name="performances.mailinfo.index")

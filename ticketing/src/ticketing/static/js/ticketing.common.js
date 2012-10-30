@@ -2,6 +2,23 @@ function get_id(id) {
   return $('input[name=' + id + ']:checked').val() || $('#' + id).val();
 }
 
+function get_modal_form(modal, form, url) {
+  $.ajax({
+    type: 'get',
+    url: url,
+    dataType: 'html',
+    traditional: true,
+    success: function(data) {
+      $(form).html(data);
+      $(modal).modal('show');
+    },
+    error: function(xhr, text) {
+      $(form).html(xhr.responseText);
+      $(modal).modal('show');
+    }
+  });
+}
+
 function post_modal_form(modal, form, url) {
   var param = {}, counts = {};
   $(modal).find(':input').each(function(i, v) {

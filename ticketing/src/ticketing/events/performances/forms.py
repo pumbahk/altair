@@ -82,3 +82,28 @@ class PerformanceForm(Form):
             return
         if field.data and Performance.filter_by(code=field.data).count():
             raise ValidationError(u'既に使用されています')
+
+
+class PerformancePublicForm(Form):
+
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        Form.__init__(self, formdata, obj, prefix, **kwargs)
+        self.public.data = int(formdata.get('public', 0))
+
+    id = HiddenField(
+        label='',
+        validators=[Optional()],
+    )
+    public = HiddenField(
+        label='',
+        validators=[Required()],
+    )
+
+    def validate_public(form, field):
+        # 公開する場合のみチェック
+        if field.data == 1:
+            # 配下の全てのProductItemに券種が紐づいていること
+            performance = Performance.filter_by(id=form.id.data).first()
+            for product_item in performance.product_items:
+                if not product_item.ticket_bundle:
+                    raise ValidationError(u'券種が設定されていない商品設定がある為、公開できません')

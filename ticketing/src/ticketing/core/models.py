@@ -432,6 +432,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     open_on = Column(DateTime)
     start_on = Column(DateTime)
     end_on = Column(DateTime)
+    public = Column(Boolean, nullable=False, default=False)  # 一般公開するか
 
     event_id = Column(Identifier, ForeignKey('Event.id'))
 

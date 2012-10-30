@@ -4,6 +4,12 @@
 <% paging = False if limit else True %>
 <% display_only = True if request.matched_route.name == 'events.index' else False %>
 
+<style>
+  .checkboxed_table tr td {
+    vertical-align: middle;
+  }
+</style>
+
 % if performances:
 <div class="row-fluid">
   <div class="span12">
@@ -12,6 +18,7 @@
         <tr>
           % if not display_only:
           <th class="minwidth"></th>
+          <th>状態</th>
           % endif
           <th>公演日</th>
           <th>${h.sortable(form.name, paging)}</th>
@@ -25,6 +32,15 @@
         <tr>
           % if not display_only:
           <td><input type="radio" name="performance_id" value="${performance.id}" /></td>
+          <td>
+            <div>
+              % if performance.public:
+              <button class="btn btn-info btn-mini" type="button" onclick="javascript:confirm_open_performance(${performance.id});">公　開</button>
+              % else:
+              <button class="btn btn-warning btn-mini" type="button" onclick="javascript:confirm_open_performance(${performance.id});">未公開</button>
+              % endif
+            </div>
+          </td>
           % endif
           <td>${performance.open_on.strftime("%Y-%m-%d")if performance.open_on else ''}</td>
           <td><a href="${request.route_path('performances.show', performance_id=performance.id)}">${performance.name}</a></td>
