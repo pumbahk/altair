@@ -595,7 +595,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
     organization = relationship('Organization', backref='events')
 
-    performances = relationship('Performance', backref='event')
+    performances = relationship('Performance', backref='event', order_by='Performance.start_on')
     stock_types = relationship('StockType', backref='event', order_by='StockType.display_order')
     stock_holders = relationship('StockHolder', backref='event')
 
