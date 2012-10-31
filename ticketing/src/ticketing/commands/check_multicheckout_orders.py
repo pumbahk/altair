@@ -16,7 +16,7 @@ from sqlalchemy.orm.attributes import manager_of_class
 from sqlalchemy.orm.properties import ColumnProperty, RelationshipProperty
 
 from datetime import datetime
-from dateutil.parser import parse
+from dateutil.parser import parse as parsedate
 
 from ticketing.models import DBSession
 from ticketing.core import models as c_models
@@ -57,9 +57,9 @@ def check(env, start, end):
                 [mc_models.MultiCheckoutStatusEnum.Settled.v,
                  mc_models.MultiCheckoutStatusEnum.Authorized.v]))
     if start is not None:
-        q = q.filter(mc_models.MultiCheckoutResponseCard.ReqYmd >= start.strftime("%Y%m%d", start))
+        q = q.filter(mc_models.MultiCheckoutResponseCard.ReqYmd >= parsedate(start).strftime("%Y%m%d"))
     if end is not None:
-        q = q.filter(mc_models.MultiCheckoutResponseCard.ReqYmd <= start.strftime("%Y%m%d", end))
+        q = q.filter(mc_models.MultiCheckoutResponseCard.ReqYmd <= parsedate(end).strftime("%Y%m%d"))
     for resp, order in q.all():
         logger.debug('Checking order %s...' % resp.OrderNo)
         if order is None:
