@@ -376,6 +376,4 @@ class Cart(Base):
 
     @classmethod
     def from_order_no(cls, order_no):
-        if len(order_no) < 10:
-            raise ValueError("order_no must be equal to or more than 10 digits")
-        return cls.query.filter_by(id=sensible_alnum_decode(order_no[len(order_no) - 10:].lstrip('0'))).one()
+        return Cart.query.filter_by(_order_no=order_no).one()
