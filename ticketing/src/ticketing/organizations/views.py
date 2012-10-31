@@ -3,7 +3,7 @@
 import webhelpers.paginate as paginate
 
 from pyramid.view import view_config, view_defaults
-from pyramid.httpexceptions import HTTPFound, HTTPNotFound
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPForbidden
 from pyramid.url import route_path
 
 from deform.form import Form,Button
@@ -204,6 +204,8 @@ class MailInfoNewView(BaseView):
     @view_config(request_method="GET")
     def mailinfo_new(self):
         organization_id = int(self.request.matchdict.get("organization_id", 0))
+        if unicode(organization_id) != unicode(self.request.context.user.organization_id):
+            raise HTTPForbidden
         organization = Organization.get(organization_id)
         template = MailInfoTemplate(self.request, organization)
         choice_form = template.as_choice_formclass()()
