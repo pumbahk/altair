@@ -232,6 +232,9 @@ class IndexView(object):
         need: request.GET["selected_date"] # e.g. format: 2011-11-11
         """
 
+        if 'selected_date' not in self.request.GET:
+            return dict()
+
         selected_date_string = self.request.GET["selected_date"]
         event_id = self.request.matchdict["event_id"]
 
