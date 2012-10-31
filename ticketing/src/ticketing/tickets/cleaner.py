@@ -78,6 +78,7 @@ def attach_fill_and_stroke_none_if_not_specified(elem):
 def handle_flowregion(flowregion):
     first_child = flowregion[0]
     del flowregion[1:]
+    first_child.set(u'style', u'fill:none; stroke:none;')
     attach_fill_and_stroke_none_if_not_specified(first_child)
 
 def cleanup_elem(elem):
