@@ -3,6 +3,7 @@ import logging
 from zope.interface import directlyProvides
 from ticketing.cart.interfaces import IMobileRequest
 from pyramid.threadlocal import manager
+from pyramid.response import Response
 logger = logging.getLogger(__name__)
 
 def _convert_response_for_docomo(response):
@@ -30,23 +31,27 @@ def mobile_encoding_convert_factory(handler, registry):
 
         if not request._ua.is_nonmobile():
             ## DeprecationWarning: Use req = req.decode('cp932')
-            session = getattr(request, 'session', None)
-            decoded = request.decode("cp932")
-            request.environ.update(decoded.environ)
-            decoded.environ = request.environ
-            decoded.session = session
-            manager.get()['request'] = decoded # hack!
-            decoded.is_mobile = True
-            directlyProvides(decoded, IMobileRequest)
-            decoded.is_docomo = request._ua.is_docomo()
-            decoded.registry = request.registry
-            decoded._ua = request._ua
-            logger.debug("**this is mobile access**")
-            response = handler(decoded)
-            response = _convert_response_sjis(response)
-            if request._ua.is_docomo():
-                response = _convert_response_for_docomo(response)
-            return response
+            try:
+                session = getattr(request, 'session', None)
+                decoded = request.decode("cp932")
+                request.environ.update(decoded.environ)
+                decoded.environ = request.environ
+                decoded.session = session
+                manager.get()['request'] = decoded # hack!
+                decoded.is_mobile = True
+                directlyProvides(decoded, IMobileRequest)
+                decoded.is_docomo = request._ua.is_docomo()
+                decoded.registry = request.registry
+                decoded._ua = request._ua
+                logger.debug("**this is mobile access**")
+                response = handler(decoded)
+                response = _convert_response_sjis(response)
+                if request._ua.is_docomo():
+                    response = _convert_response_for_docomo(response)
+                return response
+            except UnicodeDecodeError as e:
+                logger.warning(str(e))
+                return Response(status=400, body=str(e))
         else:
             request.is_mobile = False
             logger.debug("**this is pc access**")
