@@ -112,6 +112,7 @@ setup(name='ticketing',
       join_cart_and_order=ticketing.cart.commands:join_cart_and_order
       sej_notification=ticketing.sej.scripts.sej_notification:main
       populate_order_no=ticketing.commands.populate_order_no:main
+      check_multicheckout_orders=ticketing.commands.check_multicheckout_orders:main
       """,
       paster_plugins=['pyramid'],
       )

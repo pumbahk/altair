@@ -32,7 +32,7 @@ from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm.exc import NoResultFound
 from zope.deprecation import deprecate
 
-from ticketing.utils import sensible_alnum_encode
+from ticketing.utils import sensible_alnum_encode, sensible_alnum_decode
 from ticketing.models import Identifier
 from ..core import models as c_models
 from ..core import api as c_api
@@ -373,3 +373,9 @@ class Cart(Base):
 
     def is_valid(self):
         return all([p.is_valid() for p in self.products])
+
+    @classmethod
+    def from_order_no(cls, order_no):
+        if len(order_no) < 10:
+            raise ValueError("order_no must be equal to or more than 10 digits")
+        return cls.query.filter_by(id=sensible_alnum_decode(order_no[len(order_no) - 10:].lstrip('0'))).one()

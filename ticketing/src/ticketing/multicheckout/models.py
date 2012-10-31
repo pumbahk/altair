@@ -7,6 +7,7 @@ import sqlalchemy as sa
 import sqlalchemy.orm as orm
 
 from ..models import Identifier
+from ..utils import StandardEnum
 
 # for schema dependencies
 import ticketing.core.models
@@ -134,6 +135,16 @@ class MultiCheckoutRequestCard(Base):
     ECI = sa.Column(sa.Unicode(2), doc=u"ECI")
     CAVV = sa.Column(sa.Unicode(28), doc=u"CAVV")
     CavvAlgorithm = sa.Column(sa.Unicode(1), doc=u"CAVVアルゴリズム")
+
+class MultiCheckoutStatusEnum(StandardEnum):
+    NotAuthorized   = u'100'
+    BeingAuthorized = u'105'
+    Authorized      = u'110'
+    Rejected        = u'105'
+    BeingSettled    = u'115'
+    Settled         = u'120'
+    ValidCard       = u'210'
+    InvalidCard     = u'209'
 
 class MultiCheckoutResponseCard(Base):
     __tablename__ = 'multicheckout_response_card'
