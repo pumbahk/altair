@@ -1066,6 +1066,8 @@ class Visitor(object):
             else:
                 if elem.tag == u'{%s}flowSpan' % SVG_NAMESPACE:
                     tag = 'span'
+                if elem.tag == u'{%s}flowLine' % SVG_NAMESPACE:
+                    tag = 'div'
                 elif elem.tag == u'{%s}flowPara' % SVG_NAMESPACE:
                     tag = 'div'
                 else:
