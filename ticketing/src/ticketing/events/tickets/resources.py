@@ -15,8 +15,11 @@ class EventBoundTicketsResource(object):
             self.__acl__ = parent.__acl__
         self.user = parent.user
 
-    def after_ticket_action_redirect(self):
-        return HTTPFound(location=self.request.route_path("events.tickets.index", event_id=self.request.matchdict["event_id"]))
+    def after_ticket_action_redirect(self, template=None):
+        if template is None or not template.derived_tickets:
+            return HTTPFound(location=self.request.route_path("events.tickets.index", event_id=self.request.matchdict["event_id"]))
+        else:
+            return HTTPFound(location=self.request.route_path("tickets.templates.update_derivatives", id=template.id)) 
     
     def tickets_query(self):
         return Ticket.filter_by(event_id=self.request.matchdict["event_id"])
