@@ -8,7 +8,7 @@ border:none;
 body{
 	margin: 0;
 	padding: 0;
-	background: url(/static/CR/images/bg.png) repeat-y 50% 0 #cebedc;
+	background: url(../../images/CR/bg.png) repeat-y 50% 0 #cebedc;
 	color: #555;
 	font-size: 12px;
 }
