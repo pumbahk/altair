@@ -406,7 +406,7 @@ class TicketTemplates(BaseView):
     def download(self):
         qs = self.context.tickets_query().filter_by(id=self.request.matchdict['id'])
         template = qs.filter_by(organization_id=self.context.user.organization_id).one()
-        return FileLikeResponse(StringIO(template.drawing),
+        return FileLikeResponse(StringIO(template.drawing.encode("utf-8")),
                                 request=self.request)
 
     @view_config(route_name='tickets.templates.data', renderer='json')
