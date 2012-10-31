@@ -1,72 +1,70 @@
-
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html lang="en">
 <head>
-    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
   <title>東京サンレーヴス サンレーヴスチケット 購入確認ページ</title>
-    <link rel="stylesheet" type="text/css" href="${request.static_url('ticketing.orderreview:static/css/CR/style.css')}" media="all" />
-    <script language="JavaScript" src="${request.static_url('ticketing.orderreview:static/js/jquery.js')}"></script>
+  <link rel="stylesheet" type="text/css" href="${request.static_url('ticketing.orderreview:static/css/CR/style.css')}" media="all" />
+  <script language="JavaScript" src="${request.static_url('ticketing.orderreview:static/js/jquery.js')}"></script>
 </head>
 <body>
-<h1 class="title">東京サンレーヴス サンレーヴスチケット 購入確認ページ</h1>
-<div align="center">
-    <img src="${request.static_url('ticketing.orderreview:static/images/CR/head_title.png')}" alt="東京サンレーヴス" width="780" height="190" />
-    <table class="layout" style="width:760px" class="wrapper">
+  <div class="wrapper">
+    <div class="maincol">
+      <div class="header">
+        <img src="${request.static_url('ticketing.orderreview:static/images/CR/head_title.png')}" alt="東京サンレーヴス" width="734" height="170" />
+      </div>
+      <h1 class="title">東京サンレーヴス サンレーヴスチケット 購入確認ページ</h1>
+      <table class="layout" class="wrapper">
         <tr>
-            <td>
-              <h2>受付履歴確認 検索結果</h2>
+          <td>
+            <h2>受付履歴確認 検索結果</h2>
             <div class="purchased">
 % if order.performance.event.id != 0:
-                <% pm,t_shirts = h.order_desc(order) %>
-                <div class="kadomaru">
-                <h3>購入情報</h3>
-                <table class="purchasedContents">
-                    <tbody>
-                        <tr>
-                            <thead>
-                            <th colspan="4"><span>${order.performance.event.title} <br />${order.performance.name}<br />${h.japanese_date(order.performance.start_on)} ${h.japanese_time(order.performance.start_on)} ${order.performance.venue.name}</span></th>
-                            </thead>
-                        </tr>
-                        %for product in order.items:
-                        <tr>
-                            <th scope="row"><img src="${request.static_url('ticketing.cart:static/img/settlement/icon_dummy.gif')}" alt="" width="22" height="21" /> ${product.product.name}</th>
-                            <td><strong>${product.quantity}</strong>枚</td>
-                            <td>
-                            % for seat in product.seats:
-                                ${seat['name']}<br/>
-                            % endfor
-                            </td>
-                            <td class="align1">￥${h.format_number(product.product.price * product.quantity)}</td>
-                        </tr>
-                        %endfor
-                        <tr>
-                            <td colspan="3">ステータス</td>
-                            <td class="textR">${h.order_status(order)}</td>
-                        </tr>
+              <% pm,t_shirts = h.order_desc(order) %>
+              <div class="kadomaru">
+              <h3>購入情報</h3>
+              <table class="purchasedContents">
+                <tbody>
+                  <tr>
+                    <thead>
+                      <th colspan="4"><span>${order.performance.event.title} <br />${order.performance.name}<br />${h.japanese_date(order.performance.start_on)} ${h.japanese_time(order.performance.start_on)} ${order.performance.venue.name}</span></th>
+                    </thead>
+                  </tr>
+                  %for product in order.items:
+                  <tr>
+                    <th scope="row"><img src="${request.static_url('ticketing.cart:static/img/settlement/icon_dummy.gif')}" alt="" width="22" height="21" /> ${product.product.name}</th>
+                    <td><strong>${product.quantity}</strong>枚</td>
+                    <td>
+                    % for seat in product.seats:
+                      ${seat['name']}<br/>
+                    % endfor
+                    </td>
+                    <td class="align1">￥${h.format_number(product.product.price * product.quantity)}</td>
+                  </tr>
+                  %endfor
+                  <tr>
+                    <td colspan="3">ステータス</td>
+                    <td class="textR">${h.order_status(order)}</td>
+                  </tr>
+                  <tr>
+                    <td colspan="3">決済手数料</td>
+                    <td class="textR">￥${h.format_number(order.transaction_fee)}</td>
+                  </tr>
 
-                        <tr>
+                  <tr>
+                    <td colspan="3">発券/配送手数料</td>
+                    <td class="textR">￥${h.format_number(order.delivery_fee)}</td>
+                  </tr>
 
-                            <td colspan="3">決済手数料</td>
-                            <td class="textR">￥${h.format_number(order.transaction_fee)}</td>
-                        </tr>
-
-                        <tr>
-                            <td colspan="3">発券/配送手数料</td>
-                            <td class="textR">￥${h.format_number(order.delivery_fee)}</td>
-                        </tr>
-
-                        <tr>
-                            <td colspan="3">システム利用料</td>
-                            <td class="textR">￥${h.format_number(order.system_fee)}</td>
-                        </tr>
-                        <tr>
-                            <td colspan="3">合計金額</td>
-                            <td class="textR">￥${h.format_number(order.total_amount)}</td>
-                        </tr>
-
-
-                    </tbody>
-                </table>
+                  <tr>
+                    <td colspan="3">システム利用料</td>
+                    <td class="textR">￥${h.format_number(order.system_fee)}</td>
+                  </tr>
+                  <tr>
+                    <td colspan="3">合計金額</td>
+                    <td class="textR">￥${h.format_number(order.total_amount)}</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
 <%
 shipping =order.shipping_address
@@ -83,227 +81,221 @@ shipping =order.shipping_address
             </div>
             % else:
             <div class="kadomaru">
-                <h3>お支払</h3>
-                ${h.render_payment_finished_viewlet(request, order)}
+              <h3>お支払</h3>
+              ${h.render_payment_finished_viewlet(request, order)}
             </div>
             <div class="kadomaru">
-                <h3>お引取</h3>
-                ${h.render_delivery_finished_viewlet(request, order)}
+              <h3>お引取</h3>
+              ${h.render_delivery_finished_viewlet(request, order)}
             </div>
             % endif
             <div class="kadomaru">
-                <h3>購入者情報</h3>
-                <table class="purchasedContents" summary="配送先情報">
-                    <tbody>
-                        <tr>
-                            <th scope="row">氏名（漢字）</th>
-                            <td>${shipping.last_name} ${shipping.first_name}</td>
-                        </tr>
-                        <tr>
-                            <th scope="row">氏名（カナ）</th>
-                            <td>${shipping.last_name_kana} ${shipping.first_name_kana}</td>
-                        </tr>
-                        <tr>
-                            <th scope="row">電話番号</th>
-                            <td>${shipping.tel_1}</td>
-                        </tr>
-                        <!--
-                        <tr>
-                            <th scope="row">電話番号（携帯電話）</th>
-                            <td>000-0000-0000</td>
-                        </tr>
-                        -->
-                        <tr>
-                            <th scope="row">住所</th>
-                            <td>${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}</td>
-                        </tr>
-                    </tbody>
-                </table>
+              <h3>購入者情報</h3>
+              <table class="purchasedContents" summary="配送先情報">
+                <tbody>
+                  <tr>
+                    <th scope="row">氏名（漢字）</th>
+                    <td>${shipping.last_name} ${shipping.first_name}</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">氏名（カナ）</th>
+                    <td>${shipping.last_name_kana} ${shipping.first_name_kana}</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">電話番号</th>
+                    <td>${shipping.tel_1}</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">住所</th>
+                    <td>${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
 % else:
             <div class="kadomaru">
-                <table class="purchasedContents">
-                    <thead>
-                        <tr>
-                            <th><span>受付番号</span></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="textC font20">${order.order_no}</td>
-                        </tr>
-                    </tbody>
-                </table>
+              <table class="purchasedContents">
+                <thead>
+                  <tr>
+                    <th><span>受付番号</span></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="textC font20">${order.order_no}</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
             <!-- kadomaruおわり -->
 
             <% pm,t_shirts = h.order_desc(order) %>
             <div class="kadomaru">
-                <h3>購入情報</h3>
-                <table class="purchasedContents">
-                    <tbody>
-                        <tr>
-                            <thead>
-                            <th colspan="2"><span>東京サンレーヴス 2012-2013 ブースタークラブ</span></th>
-                            </thead>
-                        </tr>
-                        <tr>
-                            <td>新規／継続</td>
-                            <td class="textR">${u'継続' if pm.get('cont') == 'yes' else u'新規'}</td>
-                        </tr>
-                        % if pm.get('old_id_number') and pm.get('cont') == 'yes':
-                   　　 <tr>
-                            <td>2011-12会員番号</td>
-                        　　<td class="textR">${pm.get('old_id_number')}</td>
-                        </tr>
-                        % endif
-                        <tr>
-                            <td>会員種別</td>
-                            <td class="textR">${order.items[0].product.name}</td>
-                        </tr>
-                        <% t_shirts_size = order.items[0].ordered_product_items[0].attributes.get('t_shirts_size') %>
-                        % if t_shirts_size:
-                        <tr>
-                            <td>Tシャツサイズ</td>
-                            <td class="textR">${t_shirts_size}</td>
-                        </tr>
-                        % endif
-                        <tr>
-                            <td>氏名</td>
-                            <td class="textR">${pm.get('last_name')} ${pm.get('first_name')}</td>
-                        </tr>
-                        <tr>
-                            <td>氏名（フリガナ）</td>
-                            <td class="textR">${pm.get('last_name_kana')} ${pm.get('first_name_kana')}</td>
-                        </tr>
-                        <tr>
-                            <td>誕生日</td>
-                            <td class="textR">${pm.get('year')}年${pm.get('month')}月${pm.get('day')}日</td>
-                        </tr>
-                        <tr>
-                            <td>性別</td>
-                            <td class="textR">
-                            %if pm.get('sex')=='male':
-                                男性
-                            %endif
-                            %if pm.get('sex')==2:
-                                女性
-                            %endif
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>郵便番号</td>
-                            <td class="textR">${pm.get('zipcode1')}-${pm.get('zipcode2')}</td>
-                        </tr>
-                        <tr>
-                            <td>住所</td>
-                            <td class="textR">${pm.get('prefecture')} ${pm.get('city')} ${pm.get('address1')} ${pm.get('address2')}</td>
-                        </tr>
-                        <tr>
-                            <td>電話番号（携帯）</td>
-                            <td class="textR">${pm.get('tel_1', '-')}</td>
-                        </tr>
-                        <tr>
-                            <td>電話番号（自宅）</td>
-                            <td class="textR">${pm.get('tel_2', '-')}</td>
-                        </tr>
-                        <tr>
-                            <td>メールアドレス</td>
-                            <td class="textR">${pm.get('email')}</td>
-                        </tr>
-                        <tr>
-                            <td>東京サンレーヴスからのメールマガジンの配信    </td>
-                            <td class="textR">${u'希望する' if pm.get('mail_permission') else u'希望しない'}</td>
-                        </tr>
-                        <tr>
-                            <td>メモリアルブックへの掲載希望</td>
-                            <td class="textR">${u'はい' if pm.get('publicity') == 'yes' else u'いいえ'}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="kadomaru">
-                <h3>お支払い</h3>
-
-                %if order.payment_delivery_pair.payment_method.payment_plugin.id == 3:
-                <table class="purchasedContents">
+              <h3>購入情報</h3>
+              <table class="purchasedContents">
+                <tbody>
+                  <tr>
                     <thead>
-                        <tr>
-                            <th colspan="2"><span>セブン-イレブン</span></th>
-                        </tr>
+                    <th colspan="2"><span>東京サンレーヴス 2012-2013 ブースタークラブ</span></th>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td>払込票番号</td>
-                            <td class="textR">${sej_order.billing_number}</td>
-                        </tr>
-                        <tr>
-                            <td>予約有効期限</td>
-                            <td class="textR">${h.japanese_date(sej_order.payment_due_at)}${h.japanese_time(sej_order.payment_due_at)}</td>
-                        </tr>
-                        <tr>
-                            <td colspan="2">
-                                注意事項
-                                <ul>
-                                    <li>セブンイレブン決済の際には払込番号が必要です。下記、「払込票印刷」ボタンをクリックし、払込票を印刷してお持ちになるか、上記の払込票番号をお控えいただき、レジでお伝え下さい。</li>
-                                    <li>予約有効期限までに、払込票または払込票番号をセブン-イレブン店頭レジにてお申し出の上、代金をお支払いください。</li>
-                                    <li>支払期日までに入金されない場合は、会員登録/入会申込が無効となりますのでご注意ください。</li>
-                                </ul>
-                            </td>
-                        </tr>
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <td colspan="2" class="textC">
-                                <form action="${sej_order.exchange_sheet_url}" method="post" target="_blank">
-                                    <input type="hidden" name="iraihyo_id_00" value="${sej_order.exchange_sheet_number}" />
-                                    <input type="submit" class="paymentCoupon" value="払込票印刷">
-                                </form>
-                            </td>
-                        </tr>
-                    </tfoot>
-                </table>
-                % else:
-                <table class="purchasedContents">
-                    <thead>
-                        <tr>
-                            <th colspan="2"><span>クレジットカード</span></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                    <tfoot>
-                    </tfoot>
-                </table>
-                % endif
+                  </tr>
+                  <tr>
+                    <td>新規／継続</td>
+                    <td class="textR">${u'継続' if pm.get('cont') == 'yes' else u'新規'}</td>
+                  </tr>
+                  % if pm.get('old_id_number') and pm.get('cont') == 'yes':
+             　　 <tr>
+                    <td>2011-12会員番号</td>
+                　　<td class="textR">${pm.get('old_id_number')}</td>
+                  </tr>
+                  % endif
+                  <tr>
+                    <td>会員種別</td>
+                    <td class="textR">${order.items[0].product.name}</td>
+                  </tr>
+                  <% t_shirts_size = order.items[0].ordered_product_items[0].attributes.get('t_shirts_size') %>
+                  % if t_shirts_size:
+                  <tr>
+                    <td>Tシャツサイズ</td>
+                    <td class="textR">${t_shirts_size}</td>
+                  </tr>
+                  % endif
+                  <tr>
+                    <td>氏名</td>
+                    <td class="textR">${pm.get('last_name')} ${pm.get('first_name')}</td>
+                  </tr>
+                  <tr>
+                    <td>氏名（フリガナ）</td>
+                    <td class="textR">${pm.get('last_name_kana')} ${pm.get('first_name_kana')}</td>
+                  </tr>
+                  <tr>
+                    <td>誕生日</td>
+                    <td class="textR">${pm.get('year')}年${pm.get('month')}月${pm.get('day')}日</td>
+                  </tr>
+                  <tr>
+                    <td>性別</td>
+                    <td class="textR">
+                    %if pm.get('sex')=='male':
+                      男性
+                    %endif
+                    %if pm.get('sex')==2:
+                      女性
+                    %endif
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>郵便番号</td>
+                    <td class="textR">${pm.get('zipcode1')}-${pm.get('zipcode2')}</td>
+                  </tr>
+                  <tr>
+                    <td>住所</td>
+                    <td class="textR">${pm.get('prefecture')} ${pm.get('city')} ${pm.get('address1')} ${pm.get('address2')}</td>
+                  </tr>
+                  <tr>
+                    <td>電話番号（携帯）</td>
+                    <td class="textR">${pm.get('tel_1', '-')}</td>
+                  </tr>
+                  <tr>
+                    <td>電話番号（自宅）</td>
+                    <td class="textR">${pm.get('tel_2', '-')}</td>
+                  </tr>
+                  <tr>
+                    <td>メールアドレス</td>
+                    <td class="textR">${pm.get('email')}</td>
+                  </tr>
+                  <tr>
+                    <td>東京サンレーヴスからのメールマガジンの配信    </td>
+                    <td class="textR">${u'希望する' if pm.get('mail_permission') else u'希望しない'}</td>
+                  </tr>
+                  <tr>
+                    <td>メモリアルブックへの掲載希望</td>
+                    <td class="textR">${u'はい' if pm.get('publicity') == 'yes' else u'いいえ'}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="kadomaru">
+              <h3>お支払い</h3>
+
+              %if order.payment_delivery_pair.payment_method.payment_plugin.id == 3:
+              <table class="purchasedContents">
+                <thead>
+                  <tr>
+                    <th colspan="2"><span>セブン-イレブン</span></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>払込票番号</td>
+                    <td class="textR">${sej_order.billing_number}</td>
+                  </tr>
+                  <tr>
+                    <td>予約有効期限</td>
+                    <td class="textR">${h.japanese_date(sej_order.payment_due_at)}${h.japanese_time(sej_order.payment_due_at)}</td>
+                  </tr>
+                  <tr>
+                    <td colspan="2">
+                      注意事項
+                      <ul>
+                        <li>セブンイレブン決済の際には払込番号が必要です。下記、「払込票印刷」ボタンをクリックし、払込票を印刷してお持ちになるか、上記の払込票番号をお控えいただき、レジでお伝え下さい。</li>
+                        <li>予約有効期限までに、払込票または払込票番号をセブン-イレブン店頭レジにてお申し出の上、代金をお支払いください。</li>
+                        <li>支払期日までに入金されない場合は、会員登録/入会申込が無効となりますのでご注意ください。</li>
+                      </ul>
+                    </td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="2" class="textC">
+                      <form action="${sej_order.exchange_sheet_url}" method="post" target="_blank">
+                        <input type="hidden" name="iraihyo_id_00" value="${sej_order.exchange_sheet_number}" />
+                        <input type="submit" class="paymentCoupon" value="払込票印刷">
+                      </form>
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+              % else:
+              <table class="purchasedContents">
+                <thead>
+                  <tr>
+                    <th colspan="2"><span>クレジットカード</span></th>
+                  </tr>
+                </thead>
+                <tbody>
+                </tbody>
+                <tfoot>
+                </tfoot>
+              </table>
+              % endif
             </div>
             <!-- kadomaruおわり -->
 
             <div class="kadomaru">
-                <h3>注意事項</h3>
-                <ul>
-                    <li>入力された個人情報は「個人情報保護方針」に基づき適切に取扱われます。</li>
-                    <li>会員証やグッズは、2012年9月15日(土)までに入会された方には開幕戦までにお届けします。9月16日(日)以降に入会された方には、直近のホームゲーム会場にてお渡しいたします。直近のホームゲームに来場されない場合には、後日郵送でお届けいたします。</li>
-                    <li>入会後の会員プランの変更及び会費の返却には応じかねますのでご注意ください。</li>
-                </ul>
+              <h3>注意事項</h3>
+              <ul>
+                  <li>入力された個人情報は「個人情報保護方針」に基づき適切に取扱われます。</li>
+                  <li>会員証やグッズは、2012年9月15日(土)までに入会された方には開幕戦までにお届けします。9月16日(日)以降に入会された方には、直近のホームゲーム会場にてお渡しいたします。直近のホームゲームに来場されない場合には、後日郵送でお届けいたします。</li>
+                  <li>入会後の会員プランの変更及び会費の返却には応じかねますのでご注意ください。</li>
+              </ul>
             </div>
             <!-- kadomaruおわり -->
-
 
             <div class="kadomaru">
-                <h3>お問い合わせ先</h3>
-                <ul class="markNone font14">
-                    <li>東京プロバスケットボールクラブ (株)</li>
-                    <li>TEL: 042-444-8634</li>
-                </ul>
-                
+              <h3>お問い合わせ先</h3>
+              <ul class="markNone font14">
+                <li>東京プロバスケットボールクラブ (株)</li>
+                <li>TEL: 042-444-8634</li>
+              </ul>
             </div>
             <!-- kadomaruおわり -->
-% endif
-            </td>
+%endif
+          </td>
         </tr>
-    </table>
-</div>
-<%include file="/CR/commons/footer.inc" />
+      </table>
+    </div>
+    <%include file="/CR/commons/footer.inc" />
+  </div>
 </body>
 </html>

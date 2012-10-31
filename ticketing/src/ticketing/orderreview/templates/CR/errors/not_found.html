@@ -2,43 +2,47 @@
 <html lang="en">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-  <title>東京サンレーヴス 購入確認ページ</title>
+  <title>東京サンレーヴス サンレーヴスチケット 購入確認ページ</title>
   <link rel="stylesheet" type="text/css" href="${request.static_url('ticketing.orderreview:static/css/CR/style.css')}" media="all" />
   <script language="JavaScript" src="${request.static_url('ticketing.orderreview:static/js/jquery.js')}"></script>
 </head>
 <body>
-  <div align="center">
-    <div class="header">
-      <img src="${request.static_url('ticketing.orderreview:static/images/CR/head_title.png')}" alt="東京サンレーヴス" width="780" height="190" />
+  <div class="wrapper">
+    <div class="maincol">
+      <div class="header">
+        <img src="${request.static_url('ticketing.orderreview:static/images/CR/head_title.png')}" alt="東京サンレーヴス" width="734" height="179" />
+      </div>
+      <h1 class="title">東京サンレーヴス サンレーヴスチケット 購入確認ページ</h1>
+      <table class="layout">
+        <tr>
+          <td>
+            <h2>ページが見つかりません</h2>
+            <div class="formWrapper">
+              <table cellpadding="0" cellspacing="0" class="formCR">
+                <colgroup>
+                  <col style="width:180px;">
+                  <col style="width:310px;">
+                </colgroup>
+                <tbody>
+                  <tr>
+                    <td>
+                      <h4>指定されたページが見つかりません </h4>
+                      なおリンクをクリックされていた場合、ページが削除された、またはURL（ページアドレス）が変更された可能性があります。
+                      <ul>
+                        <li> ブラウザの再読み込みを行う</li>
+                        <li> 入力したURL（ページアドレス）にタイプミスがないか確認する</li>
+                        <li> ブラウザの「戻る」ボタンを押して前画面からやり直す</li>
+                      </ul>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </td>
+        </tr>
+      </table> 
+      <%include file="/CR/commons/footer.inc" />
     </div>
-    <h1 class="title">東京サンレーヴス 購入確認ページ</h1>
-	<table class="layout" style="width:760px" class="wrapper">
-      <tr>
-		<td>
-		  <h2>ページが見つかりません</h2>
-          <div class="formWrapper">
-           <table cellpadding="0" cellspacing="0" class="formCR">
-             <colgroup>
-               <col style="width:180px;">
-               <col style="width:310px;">
-             </colgroup>
-             <tbody>
-               <tr>
-                 <td>
-                 <h4>指定されたページが見つかりません </h4>
-                 なおリンクをクリックされていた場合、ページが削除された、またはURL（ページアドレス）が変更された可能性があります。
-                 <ul>
-                     <li> ブラウザの再読み込みを行う</li>
-                     <li> 入力したURL（ページアドレス）にタイプミスがないか確認する</li>
-                     <li> ブラウザの「戻る」ボタンを押して前画面からやり直す</li>
-                 </ul>
-                 </td>
-             </tr>
-           </tbody>
-       </table>
-		</tr>
-    </table>
   </div>
-  <%include file="/CR/commons/footer.inc" />
 </body>
 </html>
