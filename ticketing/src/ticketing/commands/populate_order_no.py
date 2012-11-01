@@ -33,7 +33,7 @@ def calculate_order_no(cart):
     return cart.performance.event.organization.code + sensible_alnum_encode(cart.id).zfill(10)
 
 def populate(env):
-    q = DBSession.query(cart_models.Cart)
+    q = DBSession.query(cart_models.Cart).filter_by(_order_no=None)
     for cart in q.all():
         calculated_order_no = calculate_order_no(cart)
         print 'Processing %s...' % calculated_order_no
