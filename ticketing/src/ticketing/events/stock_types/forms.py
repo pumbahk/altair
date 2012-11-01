@@ -27,12 +27,12 @@ class StockTypeForm(Form):
         ]
     )
     quantity_only = IntegerField(
-        label=u'数受け(自由席等)',
+        label=u'数受け(自由席等、座席の割当をせずに在庫数の設定のみで販売するもの)',
         default=0,
         widget=CheckboxInput(),
     )
     type = IntegerField(
-        label=u'座席以外(駐車場等)を登録する',
+        label=u'座席以外(駐車場、グッズ等)を登録する',
         default=StockTypeEnum.Seat.v,
         widget=CheckboxInput(),
     )

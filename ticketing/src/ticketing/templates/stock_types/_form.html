@@ -10,9 +10,11 @@
       if ($(this).attr('checked')) {
         $(this).val(1);
         $('#modal-stock_type #color-picker').css('display', 'none');
+        $('#modal-stock_type #quantity_only').attr('disabled', 'disabled').attr('checked','checked').val(1);
       } else {
         $(this).val(0);
         $('#modal-stock_type #color-picker').css('display', 'block');
+        $('#modal-stock_type #quantity_only').removeAttr('disabled');
       }
     });
 
