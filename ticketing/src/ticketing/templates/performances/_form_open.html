@@ -1,0 +1,44 @@
+<%page args="form, performance" />
+<%namespace file="/common/helpers.html" name="h" />
+
+<div id="modal-performance-open" class="modal fade">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">&times;</a>
+    <h3>確認</h3>
+  </div>
+
+  <div class="modal-body">
+    <div class="content">
+      ${h.flash_messages(request, type='alert-error')}
+      ${h.alert_message(form)}
+    </div>
+
+    % if not form.errors:
+    <p id="message">
+      % if performance.public:
+        選択したパフォーマンスを非公開にします。よろしいですか？
+      % else:
+        選択したパフォーマンスを公開します。よろしいですか？
+      % endif
+    </p>
+
+    <form action="" method="POST">
+      ${h.form_item(form.id)}
+      ${h.form_item(form.public)}
+    </form>
+    % endif
+  </div>
+
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+    % if not form.errors:
+    <a href="javascript:open_performance(${performance.id});" class="btn btn-danger">
+      % if performance.public:
+        非公開にする
+      % else:
+        公開する
+      % endif
+    </a>
+    % endif
+  </div>
+</div>
