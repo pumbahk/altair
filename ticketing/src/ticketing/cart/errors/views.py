@@ -47,7 +47,14 @@ def handle_noeventerror(request):
 
 @mobile_view_config(context=NoSalesSegment, renderer=selectable_renderer('ticketing.cart:templates/errors_mobile/%(membership)s/notfound.html'))
 @view_config(context=NoSalesSegment, renderer=selectable_renderer('ticketing.cart:templates/errors/%(membership)s/notfound.html'))
-def handle_noeventerror(request):
+def handle_nosalessegmenterror(request):
+    request.response.status = 404
+    api.logout(request)
+    return {}
+
+@mobile_view_config(context=NoPerformanceError, renderer=selectable_renderer('ticketing.cart:templates/errors_mobile/%(membership)s/notfound.html'))
+@view_config(context=NoPerformanceError, renderer=selectable_renderer('ticketing.cart:templates/errors/%(membership)s/notfound.html'))
+def handle_noperformanceerror(request):
     request.response.status = 404
     api.logout(request)
     return {}
