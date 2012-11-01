@@ -5,10 +5,16 @@
 <% display_only = True if request.matched_route.name == 'events.index' else False %>
 
 <style>
-  .checkboxed_table tr td {
+  .checkboxed_table tr th, .checkboxed_table tr td {
     vertical-align: middle;
   }
 </style>
+
+<script>
+  $(function() {
+    $('[rel=popover]').popover()
+  });
+</script>
 
 % if performances:
 <div class="row-fluid">
@@ -18,7 +24,14 @@
         <tr>
           % if not display_only:
           <th class="minwidth"></th>
-          <th>状態</th>
+          <th>
+            状態
+            <span class="help-inline">
+              <a rel="popover" data-original-title="状態" data-content="現在の公開状態です。<br>ボタン押下で公開または非公開状態に変更できます。">
+                <i class="icon-question-sign"></i>
+              </a>
+            </span>
+          </th>
           % endif
           <th>公演日</th>
           <th>${h.sortable(form.name, paging)}</th>
