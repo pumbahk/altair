@@ -1,6 +1,16 @@
 <%inherit file="/layout_2cols.html" />
 <%namespace file="/common/helpers.html" name="h" />
 
+<style>
+  .form-horizontal .control-label {
+    float: left;
+    width: 180px;
+    padding-top: 5px;
+    text-align: right;
+    margin-right: 15px;
+  }
+</style>
+
 <%
   if request.matched_route.name == 'organizations.new':
     route_name = u'登録'

@@ -51,7 +51,7 @@ class OrganizationForm(Form):
         choices=[(pref.name, pref.name) for pref in Prefecture.all()]
     )
     city = TextField(
-        label=u'市町村区',
+        label=u'市区町村',
         validators=[
             Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
