@@ -8,7 +8,7 @@ from pyramid.renderers import render_to_response
 from pyramid.url import route_path
 
 from ticketing.fanstatic import with_bootstrap
-from ticketing.models import merge_session_with_post
+from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
 from ticketing.core.models import Product, ProductItem, Event, Performance
 from ticketing.products.forms import ProductForm, ProductItemForm
@@ -128,7 +128,7 @@ class ProductItems(BaseView):
         else:
             return {
                 'form':f,
-                'form_product':ProductForm(event_id=performance.event_id),
+                'form_product':ProductForm(record_to_multidict(Product.get(product_id)), event_id=performance.event_id),
                 'performance':performance,
             }
 
@@ -154,7 +154,7 @@ class ProductItems(BaseView):
         else:
             return {
                 'form':f,
-                'form_product':ProductForm(event_id=performance.event_id),
+                'form_product':ProductForm(record_to_multidict(Product.get(product_item.product_id)), event_id=performance.event_id),
                 'performance':performance,
             }
 

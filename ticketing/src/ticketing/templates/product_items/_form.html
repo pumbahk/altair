@@ -1,5 +1,5 @@
 <%page args="form, form_product, performance" />
-<%namespace file="/common/helpers.html" import="form_item" />
+<%namespace file="/common/helpers.html" name="h" />
 
 <script type="text/javascript">
   var stock_holder2stocks = {
@@ -61,31 +61,37 @@
           <table class="table table-bordered">
             <tr>
               <th>${form_product.name.label.text}</th>
-              <td><span id="name"></span></td>
+              <td><span id="name">${form_product.name.data}</span></td>
             </tr>
             <tr>
               <th>${form_product.price.label.text}</th>
-              <td><span id="price"></span></td>
+              <td><span id="price">${h.price_format(form_product.price.data or 0)}</span></td>
             </tr>
             <tr>
               <th>${form_product.sales_segment_id.label.text}</th>
               <td>
-                <span id="sales_segment_id"></span>
+                <span id="sales_segment_id">
+                % for choice in form_product.sales_segment_id.choices:
+                  % if choice[0] == form_product.sales_segment_id.data:
+                    ${choice[1]}
+                  % endif
+                % endfor
+                </span>
                 <input id="seat_stock_type_id" type="hidden" />
               </td>
             </tr>
           </table>
         </div>
         <div id="product-item">
-          ${form_item(form.id)}
-          ${form_item(form.performance_id)}
-          ${form_item(form.product_id)}
-          ${form_item(form.stock_holders)}
-          ${form_item(form.stock_id)}
-          ${form_item(form.name)}
-          ${form_item(form.price)}
-          ${form_item(form.quantity)}
-          ${form_item(form.ticket_bundle_id)}
+          ${h.form_item(form.id)}
+          ${h.form_item(form.performance_id)}
+          ${h.form_item(form.product_id)}
+          ${h.form_item(form.stock_holders)}
+          ${h.form_item(form.stock_id)}
+          ${h.form_item(form.name)}
+          ${h.form_item(form.price)}
+          ${h.form_item(form.quantity)}
+          ${h.form_item(form.ticket_bundle_id)}
         </div>
       </fieldset>
     </form>
