@@ -7,6 +7,10 @@
 購入を完了いたしました。
 </p>
 
+<%mobile:header>注文番号</%mobile:header>
+<div>
+${order.order_no}
+</div>
 <%mobile:header>お買い物内容</%mobile:header>
 <div>
 ${order.performance.event.title} ${order.performance.name} ${h.performance_date(order.performance)} ${order.performance.venue.name}
