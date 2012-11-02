@@ -19,6 +19,7 @@ Identifier = sa.BigInteger
 
 def upgrade():
     op.add_column('Performance', sa.Column('public', sa.Boolean(), nullable=False, default=False, server_default=text('0')))
+    op.execute("UPDATE Performance SET public = 1 WHERE deleted_at IS NULL")
 
 def downgrade():
     op.drop_column('Performance', 'public')
