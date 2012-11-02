@@ -199,6 +199,4 @@ class Permissions(BaseView):
 
     @view_config(route_name='permissions.index', renderer='ticketing:templates/permissions/index.html')
     def index(self):
-        return {
-            'permissions':Permission.all()
-        }
+        return {}
