@@ -1,19 +1,12 @@
-*{
-margin:0;
-padding:0;
-border:none;
-}
-
-
 body{
 	margin: 0;
 	padding: 0;
-	background: url(/static/CR/images/bg.png) repeat-y 50% 0 #cebedc;
 	color: #555;
 	font-size: 12px;
 }
 
 table.layout {
+    width: 740px;
 	border: 0;
 	border-collapse: collapse;
 	border-spacing: 0;
@@ -30,29 +23,19 @@ table.layout td {
 	text-align: left;
 }
 
-.wrapper{
-	width: 960px;
-	margin: 0 auto;
+.wrapper {
+    text-align: center;
 }
 
-.wrapper .maincol{
-	width: 735px;
-	float: left;
-	margin: 0;
+.wrapper .maincol {
+    margin: 0 auto;
+    width: 780px;
 }
 
-.wrapper .sidebar{
-	width: 225px;
+.header {
+  width:734px;
+  height:179px;
 }
-
-/* .header{
- * 	background: url(/static/CR/images/header.png) no-repeat 50% 0;
- * 	width:734px;
- * 	height:179px;
- * 	margin:0;
- * 	padding: 0;
- * 	position: relative;
- * } */
 
 .gnavi{
 	margin: 137px 0 0 40px;
@@ -71,13 +54,15 @@ table.layout td {
 
 
 .kadomaru{
-	width:625px;
+	width:650px;
 	margin: 20px auto;
 	background: #fff;
-	padding: 30px;
-	border-radius: 10px;
+	padding: 20px;
+    border: 1px solid #eee;
+	border-radius: 10px 1px;
 	-webkit-border-radius: 10px;
 	-moz-border-radius: 10px;
+    box-shadow: 4px 4px 10px #888;
 }
 
 .kadomaru ul{
@@ -896,7 +881,7 @@ div#performance-calendar .month-tab span a{
     border-top: 1px solid #CCCCCC;
     clear: both;
     text-align: center;
-    width:760px;
+    width:740px;
     margin: 0 auto;
     padding: 0 0 10px 0;
     
@@ -1032,39 +1017,39 @@ table.formCR tfoot td{
 
 table.formCR input{
   border: 1px solid #8d62aa;
+  font-size: 20px;
+  line-height: 120%;
+  height: 30px;
 }
 
-input.submit{
-background: #FFB700; /* Old browsers */
-background: -moz-linear-gradient(top, #FFB700 0%, #FFB700 50%, #FFB700 51%, #FFB700 75%, #FFB700 100%); /* FF3.6+ */
-background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#FFB700), color-stop(50%,#FFB700), color-stop(51%,#FFB700), color-stop(75%,#FFB700), color-stop(100%,#FFB700)); /* Chrome,Safari4+ */
-background: -webkit-linear-gradient(top, #FFB700 0%,#FFB700 50%,#FFB700 51%,#FFB700 75%,#FFB700 100%); /* Chrome10+,Safari5.1+ */
-background: -o-linear-gradient(top, #FFB700 0%,#FFB700 50%,#FFB700 51%,#FFB700 75%,#FFB700 100%); /* Opera 11.10+ */
-background: -ms-linear-gradient(top, #FFB700 0%,#FFB700 50%,#FFB700 51%,#FFB700 75%,#FFB700 100%); /* IE10+ */
-background: linear-gradient(top, #FFB700 0%,#FFB700 50%,#FFB700 51%,#FFB700 75%,#FFB700 100%); /* W3C */
-filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#FFB700', endColorstr='#FFB700',GradientType=0 ); /* IE6-9 */
-text-align: center;
-color: #fff;
-padding: 5px;
-border: 2px solid #926200;
-margin: 10px auto;
-font-size: 20px;
-font-weight: bold;
-display: inline-block;
+table.formCR input.submit {
+  text-align: center;
+  color: #fff;
+  padding: 5px;
+  border: 1px solid #A37400;
+  margin: 10px auto;
+  font-size: 20px;
+  font-weight: bold;
+  display: inline-block;
+  background: #FFB700; /* Old browsers */
+  background: -moz-linear-gradient(top, #FFD720 0%, #FFC710 50%, #FFB700 51%, #D6A710 75%, #D6A710 100%); /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#FFD720), color-stop(50%,#FFC710), color-stop(51%,#FFB700), color-stop(75%,#D6A710), color-stop(100%,#D6A710)); /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top, #FFD720 0%,#FFC710 50%,#FFB700 51%,#D6A710 75%,#D6A710 100%); /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(top, #FFD720 0%,#FFC710 50%,#FFB700 51%,#D6A710 75%,#D6A710 100%); /* Opera 11.10+ */
+  background: -ms-linear-gradient(top, #FFD720 0%,#FFC710 50%,#FFB700 51%,#D6A710 75%,#D6A710 100%); /* IE10+ */
+  background: linear-gradient(top, #FFD720 0%,#FFC710 50%,#FFB700 51%,#D6A710 75%,#D6A710 100%); /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#FFD720', endColorstr='#D6A710',GradientType=0); /* IE6-9 */
 }
 
-input.submit:hover{
-	background: #A37400; /* Old browsers */
-background: -moz-linear-gradient(top, #A37400 0%, #A37400 50%, #A37400 51%, #A37400 75%, #A37400 100%); /* FF3.6+ */
-background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#A37400), color-stop(50%,#A37400), color-stop(51%,#A37400), color-stop(75%,#A37400), color-stop(100%,#A37400)); /* Chrome,Safari4+ */
-background: -webkit-linear-gradient(top, #A37400 0%,#A37400 50%,#A37400 51%,#A37400 75%,#A37400 100%); /* Chrome10+,Safari5.1+ */
-background: -o-linear-gradient(top, #A37400 0%,#A37400 50%,#A37400 51%,#A37400 75%,#A37400 100%); /* Opera 11.10+ */
-background: -ms-linear-gradient(top, #A37400 0%,#A37400 50%,#A37400 51%,#A37400 75%,#A37400 100%); /* IE10+ */
-background: linear-gradient(top, #A37400 0%,#A37400 50%,#A37400 51%,#A37400 75%,#A37400 100%); /* W3C */
-filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#A37400', endColorstr='#A37400',GradientType=0 ); /* IE6-9 */
+table.formCR input.submit:hover {
+  background: #A37400; /* Old browsers */
+  background: -moz-linear-gradient(top, #D6A710 0%, #C89F08 50%, #B38400 51%, #A37400 75%, #A37400 100%); /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#D6A710), color-stop(50%,#C89F08), color-stop(51%,#B38400), color-stop(75%,#A37400), color-stop(100%,#A37400)); /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top, #D6A710 0%,#C89F08 50%,#B38400 51%,#A37400 75%,#A37400 100%); /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(top, #D6A710 0%,#C89F08 50%,#B38400 51%,#A37400 75%,#A37400 100%); /* Opera 11.10+ */
+  background: -ms-linear-gradient(top, #D6A710 0%,#C89F08 50%,#B38400 51%,#A37400 75%,#A37400 100%); /* IE10+ */
+  background: linear-gradient(top, #D6A710 0%,#C89F08 50%,#B38400 51%,#A37400 75%,#A37400 100%); /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#D6A710', endColorstr='#A37400',GradientType=0 ); /* IE6-9 */
 }
 
 /* form中のinput要素に枠をつける */
-form input {
-  border: 1px solid rgb(141, 98, 170);
-}

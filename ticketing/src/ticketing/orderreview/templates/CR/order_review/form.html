@@ -15,64 +15,62 @@
   </style>
 </head>
 <body>
-  <div align="center">
-    <div class="header">
-      <img src="${request.static_url('ticketing.orderreview:static/images/CR/head_title.png')}" alt="東京サンレーヴス" width="780" height="190" />
-    </div>
-    <!-- これはdisplay none指定, なぜか... -->
-    <h1 class="title">東京サンレーヴス サンレーヴスチケット 購入確認ページ</h1>
+  <div class="wrapper">
+    <div class="maincol">
+      <div class="header">
+        <img src="${request.static_url('ticketing.orderreview:static/images/CR/head_title.png')}" alt="東京サンレーヴス" width="734" height="179" />
+      </div>
+      <!-- これはdisplay none指定, なぜか... -->
+      <h1 class="title">東京サンレーヴス サンレーヴスチケット 購入確認ページ</h1>
 
       <form action="${request.route_path('order_review.show')}" method="post">
-	<table class="layout" style="width:760px" class="wrapper">
-      <tr>
-		<td>
-		  <h2>東京サンレーヴス サンレーヴスチケット 購入確認ページ</h2>
-          <div class="formWrapper">
-            <table cellpadding="0" cellspacing="0" class="formCR">
-              <colgroup>
-                <col style="width:180px;">
-                <col style="width:310px;">
-              </colgroup>
-              <tbody>
-                <tr>
-                  <th>受付番号 <span class="red">*</span></th>
-                  <td>
-                    ${form.order_no}
-                    ${h.error('order_no')}
-                  </td>
-                </tr>
-                <tr>
-                  <th>電話番号 <span class="red">*</span></th>
-                  <td>
-                    ${form.tel}<br><small>電話番号は、ご登録時の電話番号をご入力ください（携帯・自宅をどちらもご登録した場合、どちらの番号でも構いません）</small>
-                    ${h.error('tel')}
-                  </td>
-                </tr>
-                <tr>
-                    <td colspan="2" style="text-align:center">
-                     <div class="textRight red" style="font-size:12px;">*は入力必須項目です。<br></div>
-                     <input type="submit" value="次に進む" class="submit" style="width:400px;height:50px;">
-                  </td>
-              </tr>
-            </tbody>
+        <table class="layout">
+          <tr>
+            <td>
+              <h2>東京サンレーヴス サンレーヴスチケット 購入確認ページ</h2>
+              <div class="formWrapper">
+                <table cellpadding="0" cellspacing="0" class="formCR">
+                  <colgroup>
+                    <col style="width:180px;">
+                    <col style="width:310px;">
+                  </colgroup>
+                  <tbody>
+                    <tr>
+                      <th>受付番号 <span class="red">*</span></th>
+                      <td>
+                        ${form.order_no}
+                        ${h.error('order_no')}
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>電話番号 <span class="red">*</span></th>
+                      <td>
+                        ${form.tel}<br><small>電話番号は、ご登録時の電話番号をご入力ください（携帯・自宅をどちらもご登録した場合、どちらの番号でも構いません）</small>
+                        ${h.error('tel')}
+                      </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="text-align:center">
+                         <div class="textRight red" style="font-size:12px;">*は入力必須項目です。<br></div>
+                         <input type="submit" value="次に進む" class="submit" style="width:400px;height:50px;">
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <br />
+              <br />
+            </td>
+          </tr>
         </table>
+      </form>
+      <%include file="/CR/commons/footer.inc" />
     </div>
-
-
-<br />
-<br />
-<br />
-			</td>
-		</tr>
-    </table>
-</form>
   </div>
   <script type="text/javascript">
   $('#member_type').change(function(){
       $('#t_shirts_size').css('display', $('#member_type option:selected').attr('with-shirt') == 'true' ? '' : 'none');
   });
   </script>
-	<%include file="/CR/commons/footer.inc" />
-
 </body>
 </html>
