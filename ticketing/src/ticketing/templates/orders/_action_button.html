@@ -71,13 +71,13 @@ actions = {
     label=u"メール",
     url=request.route_path('orders.mailinfo', order_id=order.id, action="show"),
     icon='icon-envelope',
-    permission='event_editor',
+    route_name='orders.mailinfo',
   ),
   'delivered':dict(
     label=u'配送済みにする',
     url=request.route_path('orders.delivered', order_id=order.id),
     icon='icon-ok',
-    permission='event_viewer',
+    route_name='orders.delivered',
   ),
   'print':dict(
     label=u'発券する',
@@ -88,7 +88,7 @@ actions = {
         "class": "ajax-modal btn"
         },
     icon='icon-print',
-    permission='event_viewer',
+    route_name='orders.print.queue.dialog',
   ),
   'force_print':dict(
     label=u'強制発券する',
@@ -99,32 +99,32 @@ actions = {
         "class": "ajax-modal btn"
         },
     icon='icon-print',
-    permission='event_viewer',
+    route_name='orders.print.queue.dialog',
   ),
   'cancel':dict(
     label=u'キャンセル',
     url='javascript:cancel_order(%d);' % order.id,
     icon='icon-remove',
     attrs={ 'class': 'btn-danger' },
-    permission='event_editor',
+    route_name='orders.cancel',
   ),
   'edit_shipping_address':dict(
     label=u'編集',
     url='javascript:edit_shipping_address(%d);' % order.id,
     icon='icon-edit',
-    permission='event_viewer',
+    route_name='orders.edit.shipping_address',
   ),
   'edit_product':dict(
     label=u'編集',
     url='javascript:edit_product(%d);' % order.id,
     icon='icon-edit',
-    permission='event_viewer',
+    route_name='orders.edit.product',
   ),
   'note':dict(
     label=u'メモを保存',
     url='javascript:save_note(%d);' % order.id,
     icon='icon-pencil',
-    permission='event_viewer',
+    route_name='orders.note',
   ),
 }
 sort = sort or ['mailinfo', 'delivered','cancel']

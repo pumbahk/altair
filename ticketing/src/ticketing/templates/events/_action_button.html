@@ -25,31 +25,31 @@
       label=u'新規',
       url=request.route_path('events.new'),
       icon='icon-plus',
-      permission='event_editor',
+      route_name='events.new',
     ),
     'edit':dict(
       label=u'編集',
       url=request.route_path('events.edit', event_id=event.id),
       icon='icon-pencil',
-      permission='event_editor',
+      route_name='events.edit',
     ),
     'delete':dict(
       label=u'削除',
       url='javascript:delete_event(%d);' % event.id,
       icon='icon-minus',
-      permission='event_editor',
+      route_name='events.delete',
     ),
     'show':dict(
       label=u'詳細',
       url=request.route_path('events.show', event_id=event.id),
       icon='icon-th-list',
-      permission='event_viewer',
+      route_name='events.show',
     ),
     'copy':dict(
       label=u'コピーして新規作成',
       url='javascript:copy_event(%d);' % event.id,
       icon='icon-plus',
-      permission='event_editor',
+      route_name='events.copy',
     ),
   }
 

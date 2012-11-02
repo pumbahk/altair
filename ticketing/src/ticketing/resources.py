@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
 from zope.interface import Interface, Attribute, implements
 from zope.interface.verify import verifyObject
-
+from pyramid.interfaces import IView, IRoutesMapper, IRouteRequest, IViewClassifier, IMultiView
 from pyramid.security import Allow, Everyone, Authenticated, authenticated_userid
-from .operators.models import OperatorAuth, OperatorRole, Operator
+
+from ticketing.operators.models import OperatorAuth, OperatorRole, Operator
 
 import sqlahelper
 session = sqlahelper.get_session()
@@ -33,6 +35,29 @@ def newRootFactory(exemption_matcher):
             self.user = Operator.get_by_login_id(user_id) if user_id is not None else None
             self.organization = self.user and self.user.organization
             self.request = request
+
+            # route_name:permission のリストを生成し、ビューでのリンク生成時に権限有無の確認につかう
+            registry = self.request.registry
+            route_permission = getattr(registry, 'route_permission', None)
+            if not route_permission:
+                self.mapper = registry.queryUtility(IRoutesMapper)
+                if self.mapper:
+                    route_permission = {}
+                    routes = self.mapper.get_routes()
+                    for route in routes:
+                        request_iface = registry.queryUtility(IRouteRequest, name=route.name)
+                        if request_iface:
+                            view_callable = registry.adapters.lookup(
+                                (IViewClassifier, request_iface, Interface), IView, name='', default=None
+                            )
+                            if IMultiView.providedBy(view_callable):
+                                permissions = []
+                                for order, view, phash in view_callable.get_views(request):
+                                    permissions.append(getattr(view, '__permission__', None))
+                                route_permission[route.name] = list(set(permissions))
+                            else:
+                                route_permission[route.name] = getattr(view_callable, '__permission__', None)
+                    registry.route_permission = route_permission
 
     return Root
 

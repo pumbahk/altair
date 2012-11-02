@@ -136,12 +136,16 @@ ${locale.format("%d", price, grouping=True)}
 
 <%!
   from webhelpers.util import html_escape
+  from pyramid.threadlocal import get_current_registry
 %>
 <%def name="action_button(actions, order=None, vertical=True, options=None)">
 <%
+  registry = get_current_registry()
+  route_permission = registry.route_permission if hasattr(registry, 'route_permission') else None
   count = 0
   if order is None:
     order = actions.keys()
+
   def attrs_str():
     attrs = actions[key].get('attrs', {})
     attrs['class'] = attrs.get('class', u'')
@@ -157,9 +161,23 @@ ${locale.format("%d", price, grouping=True)}
 %>
 <div class="btn-group">
   % for key in order:
-    % if 'permission' in actions[key] and not has_permission(actions[key]['permission']):
-      <% continue %>
-    % endif
+    <%
+      if 'route_name' in actions[key]:
+        if not route_permission:
+          continue
+        permission = route_permission.get(actions[key]['route_name'], None)
+        if isinstance(permission, list):
+          allowed = False
+          for p in permission:
+            if p and has_permission(p):
+              allowed = True
+              break
+          if not allowed:
+            continue
+        else:
+          if not permission or not has_permission(permission):
+            continue
+    %>
     % if vertical and count == 1:
     <button class="btn dropdown-toggle" data-toggle="dropdown">
       <span class="caret"></span>

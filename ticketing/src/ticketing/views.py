@@ -5,14 +5,11 @@ from pyramid.httpexceptions import HTTPFound, HTTPForbidden
 from pyramid.renderers import render_to_response
 from pyramid.security import Authenticated
 from pyramid.security import authenticated_userid
-from pyramid.view import view_config
+from pyramid.url import route_path
 
 from ticketing.fanstatic import with_bootstrap
-from ticketing.fanstatic import bootstrap_need
+from ticketing.interfaces import IAPIContext
 
-from .interfaces import IAPIContext
-
-from pyramid.url import route_path
 class BaseView(object):
 
     def __init__(self, context, request):
