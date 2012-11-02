@@ -31,6 +31,7 @@ def upgrade():
         sa.Column('deleted_at', sa.TIMESTAMP, nullable=True),
         sa.PrimaryKeyConstraint('id'),
     )
+    op.execute('ALTER TABLE OrderNoSequence AUTO_INCREMENT = 10010')
 
 def downgrade():
     op.drop_table(u'OrderNoSequence')
