@@ -8,7 +8,7 @@ from urlparse import urljoin
 from datetime import datetime, date, timedelta
 
 from sqlalchemy import Table, Column, ForeignKey, func, or_, and_, event
-from sqlalchemy import ForeignKeyConstraint, UniqueConstraint
+from sqlalchemy import ForeignKeyConstraint, UniqueConstraint, PrimaryKeyConstraint
 from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode, UnicodeText
 from sqlalchemy.orm import join, backref, column_property, joinedload, deferred
 from sqlalchemy.orm.collections import attribute_mapped_collection
@@ -2335,25 +2335,13 @@ class Host(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
     organization = relationship('Organization', backref="hosts")
 
-class GlobalSequence(Base, BaseModel, WithTimestamp, LogicallyDeleted):
-    __tablename__ = 'GlobalSequence'
-
-
-    query = DBSession.query_property()
-
+class OrderNoSequence(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'OrderNoSequence'
     id = Column(Identifier, primary_key=True)
-    name = Column(Unicode(255), unique=True)
-    value = Column(BigInteger, default=0, nullable=False)
-
-    @classmethod
-    def by_name(cls, name):
-        return cls.query.filter_by(name=name).one()
 
     @classmethod
     def get_next_value(cls, name):
-        seq = cls.by_name(name)
-        return seq._get_next_value()
-
-    def _get_next_value(self):
-        self.value += 1
-        return self.value
+        seq = cls()
+        DBSession.add(seq)
+        DBSession.flush()
+        return seq.id

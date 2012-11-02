@@ -1,5 +1,5 @@
 from sqlalchemy.orm.exc import NoResultFound
-from .models import Host, GlobalSequence
+from .models import Host, OrderNoSequence
 
 def get_organization(request, override_host=None):
     reg = request.registry
@@ -12,4 +12,4 @@ def get_organization(request, override_host=None):
 
 
 def get_next_order_no(name="order_no"):
-    return GlobalSequence.get_next_value(name)
+    return OrderNoSequence.get_next_value(name)
