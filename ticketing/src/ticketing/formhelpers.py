@@ -89,7 +89,14 @@ class Phone(validators.Regexp):
 def text_type_but_none_if_not_given(value):
     return unicode(value) if value is not None else None
 
-Zenkaku = validators.Regexp(r"^[^\x01-\x7f]+$", message=u'全角で入力してください')
+def Zenkaku(form, field):
+    try:
+        cp932_value = field.data.encode('Shift_JIS')
+        if not re.match(r"^(?:[\x81-\x9f\xe0-\xfe][\x40-\x7e\x80-\xfc])+$", cp932_value):
+            raise Exception()
+    except:
+        raise validators.ValidationError(field.gettext(u'全角で入力してください'))
+
 Katakana = validators.Regexp(ur'^[ァ-ヶ]+$', message=u'カタカナで入力してください')
 
 def NFKC(unistr):
