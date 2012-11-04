@@ -65,3 +65,4 @@ DB環境などの更新はそれぞれで行うこと
   $ cd /srv/altair/deploy
   $ bin/supervisordctl
   supervisor> restart all
+
