@@ -4,7 +4,9 @@ if echo $ROOT | grep -v -q '^/'; then
     ROOT="$PWD/$ROOT"
 fi
 
-HTTPD=httpd
+if test -z "$HTTPD"; then
+    HTTPD=httpd
+fi
 
 stop() {
     if test -e "${ROOT}/var/run/pid"; then
