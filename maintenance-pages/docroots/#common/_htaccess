@@ -1,5 +1,7 @@
 RewriteEngine On
 Options FollowSymLinks
 RewriteBase /
-RewriteCond %{REQUEST_URI} !^/(assets/|maintenance\.php)
-RewriteRule .* dispatch.php [PT]
+RewriteCond %{REQUEST_URI} !^/(assets/|dispatch\.php|maintenance$)
+RewriteRule .* /maintenance [R=302,L]
+RewriteCond %{REQUEST_URI} ^/maintenance$
+RewriteRule .* /dispatch.php [PT,L]
