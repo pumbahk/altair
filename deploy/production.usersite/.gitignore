@@ -1,0 +1,7 @@
+bin/*
+var/*
+*.pid
+cancel_auth_expired_carts.conf
+develop-eggs
+eggs
+parts
