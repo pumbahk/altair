@@ -1,3 +1,47 @@
 <%inherit file="../layout_2cols.html" />
-<%block name="title">新規ロール登録</%block>
-${form|n}
+<%namespace file="/common/helpers.html" name="h" />
+
+<%
+  if request.matched_route.name == 'operator_roles.new':
+    route_name = u'登録'
+    route_path = request.route_path('operator_roles.new')
+  else:
+    route_name = u'編集'
+    route_path = request.route_path('operator_roles.edit', operator_role_id=form.id.data)
+%>
+
+<div class="container row">
+  <div class="span12">
+    ${h.breadcrumbs(
+        names=[u'トップ', u'ロール', route_name],
+        urls=[
+          request.route_path('index'),
+          request.route_path('operator_roles.index'),
+        ]
+    )}
+  </div>
+
+  <div class="span12">
+    <div class="page-header">
+      <h3>ロール ${route_name}</h3>
+    </div>
+
+    <div class="content">
+      ${h.flash_messages(request)}
+      ${h.alert_message(form)}
+    </div>
+
+    <div class="well">
+      <form class="form-horizontal" action="${route_path}" method="POST">
+        <fieldset>
+          ${h.form_item(form.id)}
+          ${h.form_item(form.name, option={'class':'span5', 'maxlength':255})}
+          ${h.form_item(form.permissions)}
+        </fieldset>
+        <div class="form-actions">
+          <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

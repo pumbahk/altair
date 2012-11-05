@@ -9,6 +9,7 @@ def includeme(config):
     config.add_route('operator_roles.index', '/roles')
     config.add_route('operator_roles.new', '/roles/new')
     config.add_route('operator_roles.edit', '/roles/edit/{operator_role_id}')
+    config.add_route('operator_roles.delete', '/roles/delete/{operator_role_id}')
 
     config.add_route('permissions.index', '/permissions')
 

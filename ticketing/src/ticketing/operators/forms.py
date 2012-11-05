@@ -9,6 +9,19 @@ from ticketing.operators.models import OperatorRole, Permission
 from ticketing.models import DBSession
 
 class OperatorRoleForm(Form):
+
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        Form.__init__(self, formdata, obj, prefix, **kwargs)
+
+        category_names = DBSession.query(Permission.category_name).distinct().all()
+        self.permissions.choices = [(name[0], name[0]) for name in category_names]
+        if obj and obj.permissions:
+            self.permissions.data = [p.category_name for p in obj.permissions]
+
+    id = HiddenField(
+        label=u'ID',
+        validators=[Optional()],
+    )
     name = TextField(
         label=u'名前',
         validators=[
@@ -16,15 +29,10 @@ class OperatorRoleForm(Form):
             Length(max=255, message=u'255文字以内で入力してください'),
         ]
     )
-
     permissions = SelectMultipleField(
         label=u"権限", 
         choices=[]
     )
-
-    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
-        Form.__init__(self, formdata, obj, prefix, **kwargs)
-        self.permissions.choices = [(p.id, p.category_name) for p in DBSession.query(Permission)]
 
 class OperatorForm(Form):
 

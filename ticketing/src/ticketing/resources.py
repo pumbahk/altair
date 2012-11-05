@@ -54,7 +54,11 @@ def newRootFactory(exemption_matcher):
                                 permissions = []
                                 for order, view, phash in view_callable.get_views(request):
                                     permissions.append(getattr(view, '__permission__', None))
-                                route_permission[route.name] = list(set(permissions))
+                                permissions = list(set(permissions))
+                                if len(permissions) == 1:
+                                    route_permission[route.name] = permissions[0]
+                                else:
+                                    route_permission[route.name] = permissions
                             else:
                                 route_permission[route.name] = getattr(view_callable, '__permission__', None)
                     registry.route_permission = route_permission

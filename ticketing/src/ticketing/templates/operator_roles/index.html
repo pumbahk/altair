@@ -4,8 +4,8 @@
 <div class="container row">
   <div class="span12">
     ${h.breadcrumbs(
-        names=[u'トップ', u'ロール'],
-        urls=[request.route_path('index')]
+      names=[u'トップ', u'オペレーター', u'ロール'],
+      urls=[request.route_path('index'), request.route_path('operators.index')]
     )}
   </div>
 

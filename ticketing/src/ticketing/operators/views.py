@@ -10,22 +10,19 @@ from pyramid.url import route_path
 
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
-from ticketing.models import merge_session_with_post, record_to_appstruct, merge_and_flush, record_to_multidict
+from ticketing.models import DBSession, merge_session_with_post
 from ticketing.organizations.forms import OrganizationForm
-from ..core.models import Organization
+from ticketing.core.models import Organization
 from ticketing.operators.models import Operator, OperatorRole, Permission
 from ticketing.operators.forms import OperatorForm, OperatorRoleForm
 from deform.form import Form,Button
 from deform.exception import ValidationFailure
 
-import  sqlahelper
-session = sqlahelper.get_session()
-
 @view_defaults(decorator=with_bootstrap, permission='master_editor')
 class Operators(BaseView):
 
     def _role_id_list_to_role_list(self, role_id_list):
-        return [session.query(OperatorRole).filter(OperatorRole.id==role_id).one() for role_id in role_id_list]
+        return [DBSession.query(OperatorRole).filter(OperatorRole.id==role_id).one() for role_id in role_id_list]
 
     @view_config(route_name='operators.index', renderer='ticketing:templates/operators/index.html')
     def index(self):
@@ -140,7 +137,7 @@ class OperatorRoles(BaseView):
         if direction not in ['asc', 'desc']:
             direction = 'asc'
 
-        query = session.query(OperatorRole).order_by(sort + ' ' + direction)
+        query = DBSession.query(OperatorRole).order_by(sort + ' ' + direction)
 
         roles = paginate.Page(
             query,
@@ -153,48 +150,82 @@ class OperatorRoles(BaseView):
             'roles':roles
         }
 
-    @view_config(route_name='operator_roles.new', renderer='ticketing:templates/operator_roles/edit.html')
-    def new(self):
-        f = Form(OperatorRoleForm(), buttons=(Button(name='submit',title=u'新規'),))
-        if 'submit' in self.request.POST:
-            controls = self.request.POST.items()
-            try:
-                data = f.validate(controls)
-                record = OperatorRole()
-                record = merge_session_with_post(record, data)
-                session.add(record)
-                return HTTPFound(location=route_path('operator_roles.index', self.request))
-            except ValidationFailure, e:
-                return {'form':e.render()}
-        else:
-            return {
-                'form':f.render()
-            }
+    @view_config(route_name='operator_roles.new', request_method='GET', renderer='ticketing:templates/operator_roles/edit.html')
+    def new_get(self):
+        return {
+            'form':OperatorRoleForm(),
+        }
 
-    @view_config(route_name='operator_roles.edit', renderer='ticketing:templates/operator_roles/edit.html')
-    def edit(self):
-        operator_id = int(self.request.matchdict.get("operator_id", 0))
-        operator = session.query(OperatorRole).filter(OperatorRole.id == operator_id)
-        if operator is None:
-            return HTTPNotFound("Operator id %d is not found" % operator_id)
+    @view_config(route_name='operator_roles.new', request_method='POST', renderer='ticketing:templates/operator_roles/edit.html')
+    def new_post(self):
+        f = OperatorRoleForm(self.request.POST)
+        if f.validate():
+            operator_role = merge_session_with_post(OperatorRole(), f.data)
+            permissions = []
+            for p in f.permissions.data:
+                permissions.append(Permission(category_name=p, permit=1))
+            operator_role.permissions = permissions
+            operator_role.save()
 
-        f = OperatorRoleForm()
-        if 'submit' in self.request.POST:
-            controls = self.request.POST.items()
-            try:
-                data = f.validate(controls)
-                record = merge_session_with_post(operator, data)
-                merge_and_flush(record)
-
-                return HTTPFound(location=route_path('operator_roles.index', self.request))
-            except ValidationFailure, e:
-                return {'form':e.render()}
+            self.request.session.flash(u'ロールを保存しました')
+            return HTTPFound(location=route_path('operator_roles.index', self.request))
         else:
             return {
                 'form':f
             }
 
-@view_defaults(decorator=with_bootstrap, permission="master_editor")
+    @view_config(route_name='operator_roles.edit', request_method='GET', renderer='ticketing:templates/operator_roles/edit.html')
+    def edit_get(self):
+        operator_role_id = int(self.request.matchdict.get('operator_role_id', 0))
+        operator_role = OperatorRole.get(operator_role_id)
+        if operator_role is None:
+            return HTTPNotFound("OperatorRole id %d is not found" % operator_role_id)
+
+        return {
+            'form':OperatorRoleForm(obj=operator_role),
+        }
+
+    @view_config(route_name='operator_roles.edit', request_method='POST', renderer='ticketing:templates/operator_roles/edit.html')
+    def edit_post(self):
+        operator_role_id = int(self.request.matchdict.get('operator_role_id', 0))
+        operator_role = OperatorRole.get(operator_role_id)
+        if operator_role is None:
+            return HTTPNotFound("OperatorRole id %d is not found" % operator_role_id)
+
+        f = OperatorRoleForm(self.request.POST)
+        if f.validate():
+            operator_role = merge_session_with_post(operator_role, f.data)
+            permissions = []
+            for p in operator_role.permissions:
+                if p.category_name not in f.permissions.data:
+                    DBSession.delete(p)
+                else:
+                    permissions.append(p.category_name)
+            for p in f.permissions.data:
+                if p not in permissions:
+                    operator_role.permissions.append(Permission(category_name=p, permit=1))
+            operator_role.save()
+
+            self.request.session.flash(u'ロールを保存しました')
+            return HTTPFound(location=route_path('operator_roles.index', self.request))
+        else:
+            return {
+                'form':f,
+            }
+
+    @view_config(route_name='operator_roles.delete')
+    def delete(self):
+        operator_role_id = int(self.request.matchdict.get('operator_role_id', 0))
+        operator_role = OperatorRole.get(operator_role_id)
+        if operator_role is None:
+            return HTTPNotFound("OperatorRole id %d is not found" % operator_role_id)
+
+        DBSession.delete(operator_role)
+
+        self.request.session.flash(u'ロールを削除しました')
+        return HTTPFound(location=route_path('operator_roles.index', self.request))
+
+@view_defaults(decorator=with_bootstrap, permission="administrator")
 class Permissions(BaseView):
 
     @view_config(route_name='permissions.index', renderer='ticketing:templates/permissions/index.html')

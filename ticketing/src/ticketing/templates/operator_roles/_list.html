@@ -5,7 +5,7 @@
 <script type="text/javascript">
   function delete_role(id) {
     var modal = $('#modal-delete');
-    modal.find('#delete').attr('href', '/operators/delete/' + id);
+    modal.find('#delete').attr('href', '/operators/roles/delete/' + id);
     modal.find('#message').text('選択したロールを削除します。よろしいですか？');
     modal.modal('toggle');
   }

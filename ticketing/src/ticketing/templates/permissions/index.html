@@ -3,8 +3,8 @@
 
 <div class="breadcrumbs">
   ${h.breadcrumbs(
-      names=[u'トップ', u'権限'],
-      urls=[request.route_path('index')]
+      names=[u'トップ', u'オペレーター', u'権限'],
+      urls=[request.route_path('index'), request.route_path('operators.index')]
   )}
 </div>
 
@@ -33,11 +33,11 @@
   <tr>
     <td>${route_name}</td>
     % if not route_permission[route_name]:
-    <td style="background-color: red;">
+    <td style="background-color: #DA4F49;">
     % else:
     <td>
     % endif
-      ${route_permission[route_name]}
+      ${route_permission[route_name] or u'未設定'}
     </td>
   </tr>
   % endfor
