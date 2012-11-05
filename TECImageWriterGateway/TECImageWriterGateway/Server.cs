@@ -218,8 +218,13 @@ namespace TECImageWriterGateway
                     resp.Close();
                 }
             }
-            catch (HttpListenerException)
+            catch (HttpListenerException e)
             {
+                Logger.Write(e);
+            }
+            catch (Exception e)
+            {
+                Logger.Write(e);
             }
         }
 
@@ -270,7 +275,10 @@ namespace TECImageWriterGateway
                     while (listener.IsListening)
                     {
                         IAsyncResult result = listener.BeginGetContext(HandleRequest, listener);
-                        result.AsyncWaitHandle.WaitOne(1000);
+                        using (WaitHandle waitHandle = result.AsyncWaitHandle)
+                        {
+                            waitHandle.WaitOne(1000);
+                        }
                     }
                 }
             );
