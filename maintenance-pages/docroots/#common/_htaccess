@@ -2,4 +2,4 @@ RewriteEngine On
 Options FollowSymLinks
 RewriteBase /
 RewriteCond %{REQUEST_URI} !^/(assets/|maintenance\.php)
-RewriteRule .* maintenance.php [PT]
+RewriteRule .* dispatch.php [PT]
