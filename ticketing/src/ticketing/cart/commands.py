@@ -16,7 +16,8 @@ from sqlalchemy.sql.expression import not_
 def get_order_no(request, cart):
     
     if request.registry.settings.get('multicheckout.testing', False):
-        return "%012d" % cart.id + "00"
+        #return "%012d" % cart.id + "00"
+        return cart.order_no + "00"
     return cart.order_no
 
 def inquiry_demo():
