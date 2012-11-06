@@ -1562,6 +1562,7 @@ class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
     code = Column(String(3))  # 2桁英字大文字のみ
+    short_name = Column(String(32), nullable=False, index=True, doc=u"templateの出し分けなどに使う e.g. %(short_name)s/index.html")
     client_type = Column(Integer)
     contact_email = Column(String(255))
     city = Column(String(255))
