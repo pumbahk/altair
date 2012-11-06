@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from wtforms import Form
+from wtforms import Form, ValidationError
 from wtforms import TextField, HiddenField, DateField, PasswordField, SelectMultipleField
 from wtforms.validators import Length, Email, Optional
+from pyramid.security import has_permission, ACLAllowed
 
 from ticketing.formhelpers import DateTimeField, Translations, Required
-from ticketing.operators.models import OperatorRole, Permission
+from ticketing.operators.models import Operator, OperatorAuth, OperatorRole, Permission
 from ticketing.models import DBSession
 
 class OperatorRoleForm(Form):
@@ -44,6 +45,8 @@ class OperatorForm(Form):
             self.password.validators.append(Optional())
         else:
             self.password.validators.append(Required())
+        if 'request' in kwargs:
+            self.request = kwargs['request']
 
     def _get_translations(self):
         return Translations()
@@ -95,3 +98,11 @@ class OperatorForm(Form):
         choices=[(role.id, role.name) for role in OperatorRole.all()],
         coerce=int,
     )
+
+    def validate_id(form, field):
+        # administratorロールのオペレータはadministratorロールがないと編集できない
+        if field.data:
+            if not isinstance(has_permission('administrator', form.request.context, form.request), ACLAllowed):
+                operator = Operator.filter_by(id=field.data).first()
+                if 'administrator' in [(role.name) for role in operator.roles]:
+                    raise ValidationError(u'このオペレータを編集する権限がありません')

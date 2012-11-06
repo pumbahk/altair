@@ -2,6 +2,7 @@
 
 import hashlib
 from datetime import datetime, timedelta
+from paste.util.multidict import MultiDict
 
 import webhelpers.paginate as paginate
 from pyramid.view import view_config, view_defaults
@@ -15,8 +16,6 @@ from ticketing.organizations.forms import OrganizationForm
 from ticketing.core.models import Organization
 from ticketing.operators.models import Operator, OperatorRole, Permission
 from ticketing.operators.forms import OperatorForm, OperatorRoleForm
-from deform.form import Form,Button
-from deform.exception import ValidationFailure
 
 @view_defaults(decorator=with_bootstrap, permission='master_editor')
 class Operators(BaseView):
@@ -87,7 +86,13 @@ class Operators(BaseView):
         if operator is None:
             return HTTPNotFound("Operator id %d is not found" % operator_id)
 
-        f = OperatorForm(obj=operator)
+        f = OperatorForm(obj=operator, request=self.request)
+        try:
+            f.validate_id(f.id)
+        except Exception, e:
+            self.request.session.flash(e.message)
+            return HTTPFound(location=route_path('operators.show', self.request, operator_id=operator.id))
+
         return {
             'form':f,
         }
@@ -99,7 +104,7 @@ class Operators(BaseView):
         if operator is None:
             return HTTPNotFound("Operator id %d is not found" % operator_id)
 
-        f = OperatorForm(self.request.POST)
+        f = OperatorForm(self.request.POST, request=self.request)
         f.password.data = operator.auth.password
         f.expire_at.data = operator.expire_at
         if f.validate():
@@ -121,6 +126,13 @@ class Operators(BaseView):
         operator = Operator.get(operator_id)
         if operator is None:
             return HTTPNotFound("Operator id %d is not found" % operator_id)
+
+        f = OperatorForm(obj=operator, request=self.request)
+        try:
+            f.validate_id(f.id)
+        except Exception, e:
+            self.request.session.flash(e.message)
+            return HTTPFound(location=route_path('operators.show', self.request, operator_id=operator.id))
 
         operator.delete()
 
