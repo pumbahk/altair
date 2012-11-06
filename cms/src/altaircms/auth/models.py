@@ -5,12 +5,12 @@
 from datetime import datetime
 import sqlahelper
 from sqlalchemy.orm import relationship, backref
-
+import sqlalchemy as sa
 from sqlalchemy.schema import Table, Column, ForeignKey, UniqueConstraint
 from sqlalchemy.types import String, DateTime, Integer, Unicode, Enum
 from sqlalchemy.ext.associationproxy import association_proxy
 from zope.deprecation import deprecation
-from altaircms.models import WithOrganizationMixin
+from altaircms.models import WithOrganizationMixin, BaseOriginalMixin, DBSession
 import hashlib
 
 Base = sqlahelper.get_base()
@@ -266,3 +266,12 @@ class APIKey(Base):
 
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now())
+
+class Host(BaseOriginalMixin, WithOrganizationMixin, Base):
+    __tablename__ = 'host'
+
+    query = DBSession.query_property()
+
+    id = sa.Column(sa.Integer, primary_key=True)
+    host_name = sa.Column(sa.Unicode(255), unique=True, index=True)
+

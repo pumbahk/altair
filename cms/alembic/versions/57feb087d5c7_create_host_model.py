@@ -17,7 +17,7 @@ def upgrade():
     op.create_table('host',
                     sa.Column('organization_id', sa.Integer(), nullable=True),
                     sa.Column('id', sa.Integer(), nullable=False),
-                    sa.Column('host_name', sa.Unicode(length=255), nullable=True),
+                    sa.Column('host_name', sa.Unicode(length=255), nullable=True, index=True),
                     sa.PrimaryKeyConstraint('id'),
                     sa.UniqueConstraint('host_name')
                     )
