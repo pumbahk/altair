@@ -104,6 +104,10 @@ class PerformancePublicForm(Form):
         if field.data == 1:
             # 配下の全てのProductItemに券種が紐づいていること
             performance = Performance.filter_by(id=form.id.data).first()
+            no_ticket_bundles = ''
             for product_item in performance.product_items:
                 if not product_item.ticket_bundle:
-                    raise ValidationError(u'券種が設定されていない商品設定がある為、公開できません')
+                    p = product_item.product
+                    no_ticket_bundles += u'<div>販売区分: %s、商品名: %s</div>' % (p.sales_segment.name, p.name)
+            if no_ticket_bundles:
+                raise ValidationError(u'券種が設定されていない商品設定がある為、公開できません %s' % no_ticket_bundles)
