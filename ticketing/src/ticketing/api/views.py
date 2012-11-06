@@ -37,6 +37,7 @@ def access_token(context, request):
             'roles'         : [role.name for role in operator.roles],
             'organization_id'     : operator.organization.id,
             'organization_name'   : operator.organization.name,
+            'organization_short_name': operator.organization.short_name,
             'screen_name'   : operator.name,
         }
         logger.info("*api login* return api access token: %s" % params)

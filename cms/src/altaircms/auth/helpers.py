@@ -50,15 +50,16 @@ def get_roles_from_role_names(role_names):
     else:
         return []
 
-def get_or_create_organization(source, organization_id, organization_name):
+def get_or_create_organization(source, organization_id, organization_name,  organization_short_name):
     organization = Organization.query.filter_by(backend_id=organization_id, auth_source=source).first()
     if organization is None:
         logger.info("*login* organization is not found. create it")
-        organization = Organization(backend_id=organization_id, name=organization_name, 
-                                    auth_source=source)
+        organization = Organization(backend_id=organization_id, auth_source=source)
         created_data = dict(backend_id=organization_id, name=organization_name, 
                             auth_source=source)
         logger.info("*login* created organization: %s" % created_data)
+    organization.name=organization_name
+    organization.short_name=organization_short_name
     return organization
 
 def get_or_create_operator(source, user_id, screen_name):
