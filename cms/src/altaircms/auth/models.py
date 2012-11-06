@@ -225,6 +225,7 @@ class Organization(Base):
     updated_at = Column(DateTime, default=datetime.now())
 
     auth_source = Column(String(255)) ##nullable=False?
+    short_name = Column(String(32),index=True, nullable=False)
     name = Column(Unicode(255))
     prefecture = Column(Unicode(255))
     address = Column(Unicode(255))
