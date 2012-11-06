@@ -46,6 +46,7 @@ def model_clone(obj):
     return cloned
             
 class BaseOriginalMixin(object):
+
     def to_dict(self):
         return model_to_dict(self)
 
@@ -238,3 +239,12 @@ class Category(Base, WithOrganizationMixin):
         if not include_self:
             r.pop(0)
         return r
+
+class Host(BaseOriginalMixin, WithOrganizationMixin, Base):
+    __tablename__ = 'host'
+
+    query = DBSession.query_property()
+
+    id = sa.Column(sa.Integer, primary_key=True)
+    host_name = sa.Column(sa.Unicode(255), unique=True)
+
