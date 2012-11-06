@@ -8,7 +8,6 @@ from sqlalchemy.orm import aliased
 親カテゴリからがmusicである。中カテゴリを盗る
 """
 def main(*args, **kwargs):
-    import pdb; pdb.set_trace()
     sub_stmt = DBSession.query(Category.id).filter_by(name="music").subquery()
     parents_ids =  aliased(Category, sub_stmt)
 

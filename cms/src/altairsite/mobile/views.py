@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 from pyramid.view import view_config
+from pyramid.httpexceptions import HTTPNotFound
 from altaircms.models import Category
 from altaircms.page.models import PageSet
 from altaircms.topic.models import Topic, Topcontent
@@ -12,7 +13,8 @@ from altairsite.search import api as search_api
 def mobile_index(request):
     today = datetime.now()
     pageset = PageSet.query.filter(Category.name=="index").filter(PageSet.id==Category.pageset_id).first()
-
+    if pageset is None:
+        return {"topics": Topic.query.filter_by(id=-1), "picks": Topcontent.query.filter_by(id=-1)}
     topics = Topic.matched_qs(d=today, kind=u"トピックス", page=pageset)
     picks = Topcontent.matched_qs(d=today, kind=u"注目のイベント", page=pageset)
     return {"page": pageset.current(), "topics": topics, "picks":picks}
@@ -22,6 +24,9 @@ def mobile_index(request):
 def mobile_detail(request):
     today = datetime.now()
     pageset = PageSet.query.filter_by(id=request.matchdict["pageset_id"]).first()
+    if pageset is None or pageset.event is None:
+        raise HTTPNotFound
+    
     return {"page": pageset.current(), "event": pageset.event, "performances": pageset.event.performances, 
             "today": today}
 
@@ -35,6 +40,8 @@ def mobile_category(request):
     today = datetime.now()
     category_name = request.matchdict["category"]
     root = Category.query.filter_by(name=category_name).first()
+    if root is None:
+        raise HTTPNotFound
     picks = Topcontent.matched_qs(d=today, kind=u"注目のイベント", page=root.pageset)
 
     topics = Topic.matched_qs(d=today, kind=u"トピックス", page=root.pageset).filter_by(is_global=False)
