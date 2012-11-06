@@ -226,6 +226,7 @@ class Organization(Base):
 
     auth_source = Column(String(255)) ##nullable=False?
     short_name = Column(String(32),index=True, nullable=False)
+    use_full_usersite = Column(sa.Boolean, default=False)
     name = Column(Unicode(255))
     prefecture = Column(Unicode(255))
     address = Column(Unicode(255))
