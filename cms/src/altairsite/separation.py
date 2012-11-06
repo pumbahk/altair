@@ -34,7 +34,7 @@ class AllowableQueryFilterByOrganization(object):
 
 ## selectable renderer
 from pyramid_selectable_renderer import SelectableRendererSetup 
-from pyramid_selectable_renderer.custom import RecieveTemplatePathFormat
+from pyramid_selectable_renderer.custom import RecieveTemplatePathFormat, RecieveTemplatePathCandidatesDict
 from pyramid_selectable_renderer.custom import SelectByRequestGen
 
 @SelectByRequestGen.generate
@@ -50,6 +50,11 @@ selectable_renderer = SelectableRendererSetup(
     get_template_path_args, 
     renderer_name = "selectable_renderer")
 
+tstar_mobile_or_not_renderer = SelectableRendererSetup(
+    RecieveTemplatePathCandidatesDict, 
+    SelectByRequestGen.generate(lambda r : r.organization.short_name), 
+    renderer_name = "tstar_mobile_or_not_renderer"
+)
 
 def includeme(config):
     """
@@ -59,3 +64,4 @@ def includeme(config):
     config.set_request_property(AllowableQueryFilterByOrganization, "allowable", reify=True)
     
     selectable_renderer.register_to(config)
+    tstar_mobile_or_not_renderer.register_to(config)
