@@ -277,7 +277,7 @@ namespace TECImageWriterGateway
                         IAsyncResult result = listener.BeginGetContext(HandleRequest, listener);
                         using (WaitHandle waitHandle = result.AsyncWaitHandle)
                         {
-                            waitHandle.WaitOne(1000);
+                            waitHandle.WaitOne();
                         }
                     }
                 }
