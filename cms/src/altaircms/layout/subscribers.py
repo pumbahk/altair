@@ -19,6 +19,8 @@ def notify_layout_create(request, params=None):
     return registry.notify(LayoutCreate(request, None, params))
 
 def create_template_layout(self):
+    self.params["prefix"] = self.request.organization.short_name #xxx:(for LayoutCreator.get_filename)
+
     layout_creator = api.get_layout_creator(self.request)
     layout_creator = self.request.registry.getUtility(ILayoutCreator)
     layout_creator.create_file(self.params) ##

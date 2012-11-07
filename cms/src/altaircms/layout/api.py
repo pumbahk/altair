@@ -1,6 +1,8 @@
 import os
 from zope.interface import implementer
 from .interfaces import ILayoutCreator
+import logging
+logger = logging.getLogger(__name__)
 from pyramid.path import AssetResolver
 
 def get_layout_creator(request):
@@ -38,10 +40,13 @@ class LayoutCreator(object):
         return os.path.basename(params["filepath"].filename)
 
     def get_filename(self, params):
-        return os.path.join(self.template_path, self.get_basename(params))
+        if "prefix" in params: #xxx:
+            return os.path.join(self.template_path, params["prefix"],  self.get_basename(params))            
+        else:
+            return os.path.join(self.template_path, self.get_basename(params))
 
     def get_layout_filepath(self, layout):
-        return os.path.join(self.template_path, layout.template_filename)
+        return os.path.join(self.template_path, layout.prefixed_template_filename)
 
     def get_buf(self, params):
         return params["filepath"].file
@@ -49,7 +54,7 @@ class LayoutCreator(object):
     def create_file(self, params):
         filename = self.get_filename(params)
         buf = self.get_buf(params)
-
+        logger.info("*create layout* create layout path: %s" % filename)
         with open(filename, "w+b") as wf:
             buf.seek(0)
             while 1:

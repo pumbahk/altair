@@ -24,8 +24,18 @@
   .container form input {
       min-width: 450px;
   }
+  .container form input[type=submit] {
+      min-width: auto;
+  }
   .container form select {
       min-width: 450px;
+  }
+
+  .container form .controls input{
+      min-width: auto;
+  }
+  .container form .controls select{
+      min-width: auto;
   }
 	// header css
   #navigation { height:25px; }

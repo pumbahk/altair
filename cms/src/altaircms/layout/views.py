@@ -26,7 +26,7 @@ from collections import defaultdict
 def preview(context, request):
     layout_creator = get_layout_creator(request) ##
     layout = get_or_404(request.allowable(Layout), Layout.id==request.matchdict["layout_id"])
-    template = os.path.join(layout_creator.template_path_asset_spec, layout.template_filename)
+    template = os.path.join(layout_creator.template_path_asset_spec, layout.prefixed_template_filename)
     request.override_renderer = template
     blocks = defaultdict(list)
     class Page(object):
