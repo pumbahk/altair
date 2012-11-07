@@ -248,6 +248,15 @@ class Organization(Base):
         if obj:
             return obj
         return cls(backend_id=backend_id, auth_source=source)
+
+class WithOrganizationMixin(object):
+    organization_id = sa.Column(sa.Integer, index=True) ## need FK?(organization.id)
+
+    @property
+    def organization(self):
+        if self.organization_id is None:
+            return None
+        return Organization.query.filter_by(id=self.organization_id)
         
 
 class APIKey(Base):

@@ -14,7 +14,7 @@
 ## side{side_top,side_bottom}
 ##
 
-<%namespace file="../ticketstar/components.mako" name="co"/>
+<%namespace file="../../ticketstar/components.mako" name="co"/>
 <%namespace file="altaircms:templates/front/ticketstar/gadgets.mako" name="gadgets"/>
 
 <?xml version="1.0" encoding="utf-8"?>

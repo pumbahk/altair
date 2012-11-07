@@ -1,17 +1,21 @@
+#### variables
+## subcategories
+## categories
+## top_ourter_categories
+## top_inner_categories
+
+#### block
+## main{main,main_left,main_right,main_bottom }
+## side
+
 <%def name="widgets(name)">
   % for w in display_blocks[name]:
       ${w|n}
   % endfor
 </%def>
+<%namespace file="../../ticketstar/components.mako" name="co"/>
+<%namespace file="altaircms:templates/front/ticketstar/gadgets.mako" name="gadgets"/>
 
-#### blocks
-## info {description,keywords,title  }
-## custom {css_prerender,js_prerender}
-##
-##
-##
-
-<%namespace file="../ticketstar/components.mako" name="co"/>
 
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -32,7 +36,7 @@
 	<%block name="css_prerender"/>
     <script type="text/javascript" src="/static/ticketstar/js/jquery.js"></script>
   </head>
-<body id="help">
+<body id="music">
 
 <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="/static/ticketstar/img/common/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
 
@@ -44,19 +48,30 @@
     </div>
     ${co.global_navigation()}
     ${co.header_search()}
-
 	<!-- ========== /header ========== -->
 	
 	<hr />
 	
-	<!-- InstanceBeginEditable name="cat" --><h1><img id="titleImage" src="/static/ticketstar/img/help/title_help.gif" alt="ヘルプ"/></h1><!-- InstanceEndEditable -->
+	<!-- InstanceBeginEditable name="cat" --><h1><img id="titleImage" src="/static/ticketstar/img/music/title_music.gif" alt="音楽"/></h1><!-- InstanceEndEditable -->
 	
 	<!-- ========== main ========== -->
 	<div id="main">
 <%block name="main">
    ${widgets("main")}
 </%block>
-    </div>
+	  <div id="mainLeft">
+<%block name="main_left">
+   ${widgets("main_left")}
+</%block>
+	  </div>
+	  <div id="mainRight">
+<%block name="main_right">
+   ${widgets("main_right")}
+</%block>
+	  </div>
+<%block name="main_bottom">
+</%block>
+	</div>
 	<!-- ========== /main ========== -->
 	
 	<hr />
@@ -64,7 +79,20 @@
 	<!-- ========== side ========== -->
 	<div id="side">
 <%block name="side">
-   ${widgets("side")}
+		<!-- InstanceBeginEditable name="side" -->
+		${widgets("side")}
+  	    ${gadgets.sidebar_genre_listing(sub_categories)}
+
+		<dl id="sideRefineSearch">
+            ${gadgets.sidebar_area_listing(areas)}
+            ${gadgets.sidebar_deal_cond_listing()}
+			${gadgets.sidebar_deal_open_listing()}
+			${gadgets.sidebar_event_open_listing()}
+		</dl>
+
+##		${gadgets.sidebar_maintenance()}
+		<!-- InstanceEndEditable -->
+##		${gadgets.sidebar_sideBtn()}
 </%block>
 	</div>
 	<!-- ========== /side ========== -->

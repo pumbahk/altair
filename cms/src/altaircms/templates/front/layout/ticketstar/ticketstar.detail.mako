@@ -8,10 +8,12 @@
 ## info {description,keywords,title  }
 ## custom {css_prerender,js_prerender}
 ## header{subCategoryMenulist, topicPath}
-## + main_top,main_bottom,main_left,main_right,footer
+## + main
+## + side
+## + userBox
+## + footer
 
-
-<%namespace file="../ticketstar/components.mako" name="co"/>
+<%namespace file="../../ticketstar/components.mako" name="co"/>
 
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -28,23 +30,13 @@
     <link rel="shortcut icon" href="/static/ticketstar/img/common/favicon.ico" />
     <link rel="stylesheet" href="/static/ticketstar/css/import.css" type="text/css" media="all" />
 
-	<%block name="js_prerender"/>
-	<%block name="css_prerender"/>
-
-	<style type="text/css">
+    <style type="text/css">
 	  h1 {font-size:200%; }
 	  h2 {font-size:170%; }
-
-      #main_left img{max-width:380px; max-height:285px;}
-      #main_right img{max-width:250px; max-height:187px;}
-
-      #main_left p {width:380px;}
-      #main_right p {width:250px;}
-
-	  #main_left{width:58%; float: left;}
-	  #main_right{width:38%; float: left;}
-      .clear{clear:both;  }
     </style>
+
+	<%block name="js_prerender"/>
+	<%block name="css_prerender"/>
   </head>
 
   <body id="detail">
@@ -58,56 +50,44 @@
     </div>
     ${co.global_navigation()}
     ${co.header_search()}
-
 	<!-- ========== /header ========== -->
 
 	<hr />
 
 	<!-- ========== main ========== --> 
 	<div id="main" style="margin-top: 20px;">
-<div id="main_top">
-  <%block name="main_top">
-  ${widgets("main_top")}
-  </%block>
-</div>
-<div id="main_left">
-  <%block name="main_left">
-  ${widgets("main_left")}
-  </%block>
-</div>
-<div id="main_right">
-  <%block name="main_right">
-  ${widgets("main_right")}
-  </%block>
-</div>
-<div class="clear"></div>
-<div id="main_bottom">
-  <%block name="main_bottom">
-  ${widgets("main_bottom")}
-  </%block>
-</div>
 
+<%block name="topicPath">
+  ${widgets("topicPath")}
+</%block>
+
+<%block name="main">
+   ${widgets("main")}
+</%block>
 	</div>
 	<!-- ========== /main ========== -->
 
 	<hr />
 
 	<!-- ========== side ========== -->
-	<div id="side"  style="margin-top: 20px;">
+	<div id="side" style="margin-top: 20px;">
 <%block name="side">
     ${widgets("side")}
 </%block>
 	</div>
 	<!-- ========== /side ========== -->
 
+	<div id="userBox">
+<%block name="userBox">
+    ${widgets("userBox")}
+</%block>
+	</div>  
 	<hr />
 
 	<!-- ========== footer ========== -->
 	${co.master_footer()}
 	<!-- ========== /footer ========== -->
-<%block name="footer">
-    ${widgets("footer")}
-</%block>
+
 	<!-- /container --></div>
   </body>
 </html>

@@ -16,7 +16,7 @@ class PageRenderingResource(object):
         return api.FrontPageRenderer(self.request)
 
     def frontpage_template(self, page):
-        filename = page.layout.template_filename
+        filename = page.layout.prefixed_template_filename
         return api.get_frontpage_template(self.request, filename)
 
     def pc_access_control(self):
