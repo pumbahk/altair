@@ -1596,6 +1596,8 @@ orders_seat_table = Table("orders_seat", Base.metadata,
 
 class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'ShippingAddress'
+    __clone_excluded__ = ['user', 'cart']
+
     id = Column(Identifier, primary_key=True)
     user_id = Column(Identifier, ForeignKey("User.id"))
     user = relationship('User', backref='shipping_addresses')
@@ -1631,7 +1633,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __table_args__= (
         UniqueConstraint('order_no', 'branch_no', name="ix_Order_order_no_branch_no"),
         )
-    __clone_excluded__ = ['carts', 'ordered_from', 'payment_delivery_pair', 'performance', 'user']
+    __clone_excluded__ = ['carts', 'ordered_from', 'payment_delivery_pair', 'performance', 'user', '_attributes']
 
     id = Column(Identifier, primary_key=True)
     user_id = Column(Identifier, ForeignKey("User.id"))
@@ -1848,6 +1850,9 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         for ordered_product in self.items:
             ordered_product.delete()
 
+        # delete ShippingAddress
+        self.shipping_address.delete()
+
         super(Order, self).delete()
 
     @staticmethod
@@ -2033,7 +2038,7 @@ class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderedProductItem'
-    __clone_excluded__ = ['ordered_product_id', 'print_histories', 'product_item', 'seats']
+    __clone_excluded__ = ['ordered_product_id', 'print_histories', 'product_item', 'seats', '_attributes']
 
     id = Column(Identifier, primary_key=True)
     ordered_product_id = Column(Identifier, ForeignKey("OrderedProduct.id"))
@@ -2042,8 +2047,6 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     product_item = relationship('ProductItem', backref='ordered_product_items')
     issued_at = Column(DateTime, nullable=True, default=None)
     printed_at = Column(DateTime, nullable=True, default=None)
-#    seat_id = Column(Identifier, ForeignKey('Seat.id'))
-#    seat = relationship('Seat')
     seats = relationship("Seat", secondary=orders_seat_table, backref='ordered_product_items')
     price = Column(Numeric(precision=16, scale=2), nullable=False)
 
@@ -2111,9 +2114,11 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         total = len(self.tokens)
         issued_count = len([i for i in self.tokens if i.issued_at])
         return dict(issued=issued_count, total=total)
-        
+
 class OrderedProductItemToken(Base,BaseModel, LogicallyDeleted):
     __tablename__ = "OrderedProductItemToken"
+    __clone_excluded__ = ['seat']
+
     id = Column(Identifier, primary_key=True)
     ordered_product_item_id = Column(Identifier, ForeignKey("OrderedProductItem.id", ondelete="CASCADE"), nullable=False)
     item = relationship("OrderedProductItem", backref="tokens")

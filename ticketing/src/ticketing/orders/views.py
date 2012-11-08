@@ -634,11 +634,13 @@ class Orders(BaseView):
             cloned_order.system_fee = f.system_fee.data
             cloned_order.transaction_fee = f.transaction_fee.data
             cloned_order.delivery_fee = f.delivery_fee.data
+            cloned_order.attributes = order.attributes
 
             for op, cop in itertools.izip(order.items, cloned_order.items):
                 cop.price = int(self.request.params.get('product_price-%d' % op.id) or 0)
                 for opi, copi in itertools.izip(op.ordered_product_items, cop.ordered_product_items):
                     copi.seats = opi.seats
+                    copi.attributes = opi.attributes
                     copi.price = int(self.request.params.get('product_item_price-%d' % opi.id) or 0)
                     # 個数が変更できるのは数受けのケースのみ
                     if op.product.seat_stock_type.quantity_only:
