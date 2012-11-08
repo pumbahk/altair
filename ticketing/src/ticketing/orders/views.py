@@ -260,9 +260,13 @@ class Orders(BaseView):
     @view_config(route_name='orders.show', renderer='ticketing:templates/orders/show.html', permission='sales_counter')
     def show(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
-        order = Order.get(order_id, self.context.user.organization_id)
+        order = Order.get(order_id, self.context.user.organization_id, include_deleted=True)
+        if order and order.deleted_at:
+            order = Order.filter_by(order_no=order.order_no).first()
+            if order:
+                return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
         if order is None:
-            return HTTPNotFound('order id %d is not found' % order_id)
+            raise HTTPNotFound('order id %d is not found' % order_id)
 
         if order.shipping_address:
             mail_subscriptions = MailSubscription.query.filter_by(email=order.shipping_address.email).all()
@@ -625,14 +629,17 @@ class Orders(BaseView):
             if not f.validate():
                 raise ValidationError()
 
-            order.system_fee = f.system_fee.data
-            order.transaction_fee = f.transaction_fee.data
-            order.delivery_fee = f.delivery_fee.data
+            cloned_order = Order.clone(order, deep=True)
+            cloned_order.branch_no = order.branch_no + 1
+            cloned_order.system_fee = f.system_fee.data
+            cloned_order.transaction_fee = f.transaction_fee.data
+            cloned_order.delivery_fee = f.delivery_fee.data
 
-            for op in order.items:
-                op.price = int(self.request.params.get('product_price-%d' % op.id) or 0)
-                for opi in op.ordered_product_items:
-                    opi.price = int(self.request.params.get('product_item_price-%d' % opi.id) or 0)
+            for op, cop in itertools.izip(order.items, cloned_order.items):
+                cop.price = int(self.request.params.get('product_price-%d' % op.id) or 0)
+                for opi, copi in itertools.izip(op.ordered_product_items, cop.ordered_product_items):
+                    copi.seats = opi.seats
+                    copi.price = int(self.request.params.get('product_item_price-%d' % opi.id) or 0)
                     # 個数が変更できるのは数受けのケースのみ
                     if op.product.seat_stock_type.quantity_only:
                         stock_status = opi.product_item.stock.stock_status
@@ -641,19 +648,20 @@ class Orders(BaseView):
                         if stock_status.quantity < (new_quantity - old_quantity):
                             raise NotEnoughStockException(stock_status.stock, stock_status.quantity, new_quantity)
                         stock_status.quantity -= (new_quantity - old_quantity)
-                        op.quantity = new_quantity
-                        opi.quantity = new_quantity
-                if sum(opi.price for opi in op.ordered_product_items) != op.price:
+                        cop.quantity = new_quantity
+                        copi.quantity = new_quantity
+                if sum(copi.price for copi in cop.ordered_product_items) != cop.price:
                     raise ValidationError(u'小計金額が正しくありません')
 
-            total_amount = sum(op.price * op.quantity for op in order.items)\
-                           + order.system_fee + order.transaction_fee + order.delivery_fee
-            if order.status in ('paid', 'delivered'):
-                if total_amount != order.total_amount:
+            total_amount = sum(cop.price * cop.quantity for cop in cloned_order.items)\
+                           + cloned_order.system_fee + cloned_order.transaction_fee + cloned_order.delivery_fee
+            if cloned_order.status in ('paid', 'delivered'):
+                if total_amount != cloned_order.total_amount:
                     raise ValidationError(u'入金済みの為、合計金額は変更できません')
-            order.total_amount = total_amount
+            cloned_order.total_amount = total_amount
 
-            order.save()
+            cloned_order.save()
+            order.delete()
         except ValidationError, e:
             if e.message:
                 self.request.session.flash(e.message)

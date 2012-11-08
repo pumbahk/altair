@@ -1628,6 +1628,11 @@ class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Order'
+    __table_args__= (
+        UniqueConstraint('order_no', 'branch_no', name="ix_Order_order_no_branch_no"),
+        )
+    __clone_excluded__ = ['carts', 'ordered_from', 'payment_delivery_pair', 'performance', 'user']
+
     id = Column(Identifier, primary_key=True)
     user_id = Column(Identifier, ForeignKey("User.id"))
     user = relationship('User')
@@ -1652,6 +1657,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     canceled_at = Column(DateTime, nullable=True, default=None)
 
     order_no = Column(String(255))
+    branch_no = Column(Integer, nullable=False, default=1, server_default='1')
     note = Column(UnicodeText, nullable=True, default=None)
 
     issued = Column(Boolean, nullable=False, default=False)
@@ -1838,8 +1844,11 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             return False
 
     @staticmethod
-    def get(id, organization_id):
-        return Order.filter_by(id=id, organization_id=organization_id).first()
+    def get(id, organization_id, include_deleted=False):
+        query = DBSession.query(Order, include_deleted=include_deleted).filter_by(id=id, organization_id=organization_id)
+        if include_deleted:
+            query = query.filter(include_deleted=include_deleted)
+        return query.first()
 
     @classmethod
     def create_from_cart(cls, cart):
@@ -1988,6 +1997,8 @@ class OrderedProductAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderedProduct'
+    __clone_excluded__ = ['order_id', 'product']
+
     id = Column(Identifier, primary_key=True)
     order_id = Column(Identifier, ForeignKey("Order.id"))
     order = relationship('Order', backref='ordered_products')
@@ -2008,6 +2019,8 @@ class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderedProductItem'
+    __clone_excluded__ = ['ordered_product_id', 'print_histories', 'product_item', 'seats']
+
     id = Column(Identifier, primary_key=True)
     ordered_product_id = Column(Identifier, ForeignKey("OrderedProduct.id"))
     ordered_product = relationship('OrderedProduct', backref='ordered_product_items')
