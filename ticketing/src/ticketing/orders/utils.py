@@ -27,7 +27,7 @@ def enqueue_item(operator, order, ordered_product_item, ticket_format=None):
     bundle = ordered_product_item.product_item.ticket_bundle
     dicts = build_dicts_from_ordered_product_item(ordered_product_item)
     for index, (seat, dict_) in enumerate(dicts):
-        for ticket in ApplicableTicketsProducer.from_bundle(bundle).issued_by_own_tickets(format_id=ticket_format):
+        for ticket in ApplicableTicketsProducer.from_bundle(bundle).will_issued_by_own_tickets(format_id=ticket_format):
             TicketPrintQueueEntry.enqueue(
                 operator=operator,
                 ticket=ticket,
