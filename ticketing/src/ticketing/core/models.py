@@ -1852,7 +1852,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             ordered_product.delete()
 
         # delete ShippingAddress
-        self.shipping_address.delete()
+        if self.shipping_address:
+            self.shipping_address.delete()
 
         super(Order, self).delete()
 
