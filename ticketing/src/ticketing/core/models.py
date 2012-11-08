@@ -2,6 +2,7 @@
 import logging
 import itertools
 import operator
+import operator as op
 import json
 import re
 from urlparse import urljoin
@@ -2290,17 +2291,6 @@ class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             self.product_items.remove(product_item)
         for product_item in news:
             self.product_items.append(product_item)
-
-    def applicable_ticket_iter(self,  delivery_plugin_id):
-        for ticket in self.tickets:
-            ticket_format = ticket.ticket_format
-            applicable = False
-            for delivery_method in ticket_format.delivery_methods:
-                if delivery_method.delivery_plugin_id == delivery_plugin_id:
-                    applicable = True
-                    break
-            if applicable:
-                yield ticket
 
     def can_issue_by_that_delivery(self,  delivery_plugin_id):
         return any(True for _ in self.applicable_ticket_iter(delivery_plugin_id))

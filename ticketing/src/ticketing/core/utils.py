@@ -1,5 +1,43 @@
 # -*- coding:utf-8 -*-
-## todo:test
+
+## todo move
+from ticketing.cart.plugins.sej import DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID_SEJ
+"""
+まだcart.plugins.sejを ApplicableTicketsProducerで書き換えていないのでエラーが起きない。
+書き換えると循環importしてしまう(plugin_idをこちらで参照しているため)
+"""
+import operator as op
+
+class ApplicableTicketsProducer(object):
+    @classmethod
+    def from_bundle(cls, bundle):
+        return cls(bundle=bundle)
+
+    def __init__(self, bundle=None):
+        self.tickets = bundle.tickets if bundle else  []
+
+    def include_delivery_id_ticket_iter(self, delivery_plugin_id, cmp_fn=op.eq, format_id=None): # ==
+        for ticket in self.tickets:
+            if format_id and format_id != ticket.ticket_format_id:
+                continue
+            ticket_format = ticket.ticket_format
+            if any(cmp_fn(m.delivery_plugin_id, delivery_plugin_id) for m in ticket_format.delivery_methods):
+                yield ticket
+
+    def sej_only_tickets(self, format_id=None):
+        """SEJ発券"""
+        return self.include_delivery_id_ticket_iter(DELIVERY_PLUGIN_ID_SEJ, format_id=format_id)
+
+    def issued_by_own_tickets(self, format_id=None):
+        """自社発券"""
+        return self.include_delivery_id_ticket_iter(DELIVERY_PLUGIN_ID_SEJ, cmp_fn=op.ne, format_id=format_id)
+    
+    qr_only_tickets = issued_by_own_tickets # 今は同じ
+
+    def any_exist(self, itr):
+        for _ in itr:
+            return True
+        return False
 
 class IssuedAtBubblingSetter(object):
     """
