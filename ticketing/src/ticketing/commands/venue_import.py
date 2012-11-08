@@ -11,21 +11,8 @@ import locale
 from pyramid.paster import get_app, bootstrap
 
 from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
-from ticketing.models import DBSession
-from sqlalchemy.orm.session import make_transient
-from ticketing.core.models import (
-    Site,
-    Venue,
-    VenueArea,
-    VenueArea_group_l0_id,
-    Seat,
-    SeatAttribute,
-    SeatIndexType,
-    SeatIndex,
-    SeatAdjacencySet,
-    SeatAdjacency,
-    Organization,
-    )
+
+from ticketing.logicaldeleting import install as ld_install
 
 io_encoding = locale.getpreferredencoding()
 
@@ -146,6 +133,22 @@ class ObjectRetriever(object):
         return self.retrieve_si_objects([self.doc.getroot()])[0]
 
 def import_tree(update, organization, tree, file, venue_id=None):
+    # 論理削除をインストールする都合でコードの先頭でセッションが初期化
+    # されてほしくないので、ここで import する
+    from ticketing.models import DBSession
+    from ticketing.core.models import (
+        Site,
+        Venue,
+        VenueArea,
+        VenueArea_group_l0_id,
+        Seat,
+        SeatAttribute,
+        SeatIndexType,
+        SeatIndex,
+        SeatAdjacencySet,
+        SeatAdjacency
+        )
+
     if tree['class'] != 'Venue':
         raise FormatError('The root object is not a Venue')
     if update:
@@ -163,6 +166,8 @@ def import_tree(update, organization, tree, file, venue_id=None):
         except MultipleResultsFound:
             print "More than one venues with the same name found; venue_id (--venue) needs to be given in order to specify the venue"
             return
+        venue.site.delete() # 論理削除
+        venue.site = site
     else:
         site = Site(name=tree['properties']['name'], drawing_url='file:'+file)
         venue = Venue(site=site, name=tree['properties']['name'])
@@ -204,12 +209,14 @@ def import_tree(update, organization, tree, file, venue_id=None):
             if seat_index_type_obj is None:
                 # なければ既存のやつを削除する
                 print u'[DELETE] SeatIndexType(id=%d)' % seat_index_type.id
-                DBSession.delete(seat_index_type)
+                seat_index_type.delete()
             else:
                 # あれば、紐づいている SeatIndex を削除しておく
                 # (あとで追加されるので)
                 print u'[UPDATE] SeatIndexType(id=%d)' % seat_index_type.id
-                DBSession.query(SeatIndex).filter_by(seat_index_type=seat_index_type).delete()
+                for seat_index in DBSession.query(SeatIndex).filter_by(seat_index_type=seat_index_type):
+                    # 論理削除したいのでループ
+                    seat_index.delete()
 
         # new_seat_index_type_objs に入っているものに対応する SeatIndexType
         # を作る
@@ -227,7 +234,9 @@ def import_tree(update, organization, tree, file, venue_id=None):
     new_blocks = []
 
     # 連席情報をクリア
-    DBSession.query(SeatAdjacencySet).filter_by(venue=venue).delete()
+    for _set in DBSession.query(SeatAdjacencySet).filter_by(venue=venue):
+        # 論理削除したいのでループ
+        _set.delete()
 
     new_seat_count = 0
     deleted_seat_count = 0
@@ -255,6 +264,7 @@ def import_tree(update, organization, tree, file, venue_id=None):
                 if group.group_l0_id == group_l0_id:
                     break
             else:
+                # 論理削除の必要なし
                 DBSession.query(VenueArea_group_l0_id).filter_by(venue=venue, group_l0_id=group_l0_id).delete()
                 DBSession.add(VenueArea_group_l0_id(area=block, venue=venue, group_l0_id=group_l0_id))
 
@@ -271,6 +281,8 @@ def import_tree(update, organization, tree, file, venue_id=None):
                 if seat is None:
                     seat = Seat(venue=venue, l0_id=seat_l0_id, group_l0_id=group_l0_id, row_l0_id=row_l0_id)
                     DBSession.add(seat)
+                    if update:
+                        print u'[ADD] Seat(l0_id=%s)' % seat.l0_id
                     new_seat_count += 1
                 name = seat_obj['properties'].get('name')
                 seat_no = seat_obj['properties'].get('seat_no')
@@ -313,8 +325,7 @@ def import_tree(update, organization, tree, file, venue_id=None):
     for seat_l0_id in seats_to_be_deleted:
         seat = seats.get(seat_l0_id)
         print u'[DELETE] Seat(id=%d)' % seat.id
-        DBSession.delete(seat)
-        make_transient(seat)
+        seat.delete() # 論理削除
 
     print 'Number of seats to be added: %d' % new_seat_count
     print 'Number of seats to be deleted: %d' % len(seats_to_be_deleted)
@@ -325,16 +336,18 @@ def import_tree(update, organization, tree, file, venue_id=None):
                 break
         else:
             print u'[DELETE] VenueArea(id=%d)' % venue_area.id
-            DBSession.remove(venue_area)
+            venue_area.delete()
 
     for adjacency_set in adjacency_sets.values():
         print u'[ADD] SeatAdjacencySet(seat_count=%d)' % adjacency_set.seat_count
         DBSession.add(adjacency_set)
 
-    DBSession.add(site)
-    DBSession.add(venue)
+    DBSession.merge(site)
+    DBSession.merge(venue)
 
 def import_or_update_svg(env, update, organization_name, file, venue_id):
+    from ticketing.models import DBSession
+    from ticketing.core.models import Organization
     organization = DBSession.query(Organization).filter_by(name=organization_name).one()
     print 'Importing %s for %s...' % (file, organization_name.encode(io_encoding))
     xmldoc = etree.parse(file)
@@ -348,6 +361,7 @@ def import_or_update_svg(env, update, organization_name, file, venue_id):
     transaction.commit()
  
 def main():
+    ld_install()
     parser = argparse.ArgumentParser(description='import venue data')
     parser.add_argument('config_uri', metavar='config', type=str, nargs=1,
                         help='config file')
