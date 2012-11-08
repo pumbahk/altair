@@ -20,11 +20,10 @@ from ticketing.cart.selectable_renderer import selectable_renderer
 
 logger = logging.getLogger(__name__)
 
-PLUGIN_ID = 1
-
+from . import MULTICHECKOUT_PAYMENT_PLUGIN_ID as PAYMENT_ID
 def includeme(config):
     # 決済系(マルチ決済)
-    config.add_payment_plugin(MultiCheckoutPlugin(), PLUGIN_ID)
+    config.add_payment_plugin(MultiCheckoutPlugin(), PAYMENT_ID)
     config.add_route("payment.secure3d", 'payment/3d')
     config.add_route("cart.secure3d_result", 'payment/3d/result')
     config.add_route("payment.secure_code", 'payment/scode')
@@ -132,7 +131,7 @@ def card_number_mask(number):
     """ 下4桁以外をマスク"""
     return "*" * (len(number) - 4) + number[-4:]
 
-PAYMENT_ID = 1
+
 @view_config(context=ICartPayment, name="payment-%d" % PAYMENT_ID, renderer="ticketing.cart.plugins:templates/card_confirm.html")
 def confirm_viewlet(context, request):
     """ 確認画面表示 

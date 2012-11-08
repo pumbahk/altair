@@ -28,8 +28,8 @@ import pystache
 from ticketing.cart import helpers as cart_helper
 import re
 
-PAYMENT_PLUGIN_ID = 3
-DELIVERY_PLUGIN_ID = 2
+from . import SEJ_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
+from . import SEJ_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
 
 def includeme(config):
     # 決済系(マルチ決済)
