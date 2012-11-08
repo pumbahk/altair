@@ -787,13 +787,15 @@ class Orders(BaseView):
         form = CheckedOrderTicketChoiceForm(ticket_formats=available_ticket_formats_for_orders([order.id]))
         return {"form": form, "order": order}
 
+    @view_config(route_name="orders.checked.queue", request_method="POST", permission='sales_counter')
     @view_config(route_name="orders.print.queue.manymany", request_method="POST",
                  request_param="ticket_format_id", permission='sales_counter')
     def order_print_queue_manymany(self):
-        ticket_format_id = self.request.POST["ticket_format_id"]
-        ticket_format = TicketFormat.query.filter_by(id=ticket_format_id).first()
-        if ticket_format is None:
-            raise HTTPFound(location=self.request.route_path('orders.index'))
+        ticket_format_id = self.request.POST.get("ticket_format_id")
+        if ticket_format_id:
+            ticket_format = TicketFormat.query.filter_by(id=ticket_format_id).first()
+            if ticket_format is None:
+                raise HTTPFound(location=self.request.route_path('orders.index'))
 
         ords = self.request.session["orders"]
         ords = [o.lstrip("o:") for o in ords if o.startswith("o:")]
@@ -801,17 +803,19 @@ class Orders(BaseView):
         qs = DBSession.query(Order)\
             .filter(Order.deleted_at==None).filter(Order.id.in_(ords))\
             .filter(Order.issued==False)\
-            .filter(OrderedProduct.order_id.in_(ords))\
-            .filter(OrderedProductItem.ordered_product_id==OrderedProduct.id)\
-            .filter(ProductItem.id==OrderedProductItem.product_item_id)\
-            .filter(TicketBundle.id==ProductItem.ticket_bundle_id)\
-            .filter(Ticket_TicketBundle.ticket_bundle_id==TicketBundle.id)\
-            .filter(Ticket.id==Ticket_TicketBundle.ticket_id)\
-            .filter(TicketFormat.id==ticket_format_id) \
-            .distinct()
+
+        if ticket_format_id:
+            qs = qs.filter(OrderedProduct.order_id.in_(ords))\
+                .filter(OrderedProductItem.ordered_product_id==OrderedProduct.id)\
+                .filter(ProductItem.id==OrderedProductItem.product_item_id)\
+                .filter(TicketBundle.id==ProductItem.ticket_bundle_id)\
+                .filter(Ticket_TicketBundle.ticket_bundle_id==TicketBundle.id)\
+                .filter(Ticket.id==Ticket_TicketBundle.ticket_id)\
+                .filter(TicketFormat.id==ticket_format_id) \
+                .distinct()
 
         for order in qs:
-            utils.enqueue_for_order(operator=self.context.user, order=order, ticket_format=ticket_format)
+            utils.enqueue_for_order(operator=self.context.user, order=order, ticket_format_id=ticket_format_id)
 
         # def clean_session_callback(request):
         logger.info("*ticketing print queue many* clean session")
@@ -820,8 +824,7 @@ class Orders(BaseView):
             session_values.remove("o:%s" % order.id)
         self.request.session["orders"] = session_values
         # self.request.add_finished_callback(clean_session_callback)
-
-        self.request.session.flash(u'券面を印刷キューに追加しました')
+        self.request.session.flash(u'券面を印刷キューに追加しました. (既に印刷済みの注文は印刷キューに追加されません)')
         return HTTPFound(location=self.request.route_path('orders.index'))
 
     @view_config(route_name="orders.print.queue.strict", request_method="POST", permission='sales_counter')
@@ -837,7 +840,7 @@ class Orders(BaseView):
         utils.enqueue_for_order(
             operator=self.context.user,
             order=order,
-            ticket_format=TicketFormat.query.filter_by(id=form.data['ticket_format_id']).one()
+            ticket_format_id=TicketFormat.query.filter_by(id=form.data['ticket_format_id']).one().id
             )
         self.request.session.flash(u'券面を印刷キューに追加しました')
         return HTTPFound(location=self.request.route_path('orders.show', order_id=order_id))

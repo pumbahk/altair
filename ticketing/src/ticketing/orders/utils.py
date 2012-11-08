@@ -17,17 +17,17 @@ def item_ticket_pairs(order, ticket_dict=None, ticket=None):
                 continue
             yield ordered_product_item, ticket
 
-def enqueue_for_order(operator, order, ticket_format=None):
+def enqueue_for_order(operator, order, ticket_format_id=None):
     for ordered_product in order.items:
         for ordered_product_item in ordered_product.ordered_product_items:
-            enqueue_item(operator, order, ordered_product_item, ticket_format)
+            enqueue_item(operator, order, ordered_product_item, ticket_format_id)
 
 
-def enqueue_item(operator, order, ordered_product_item, ticket_format=None):
+def enqueue_item(operator, order, ordered_product_item, ticket_format_id=None):
     bundle = ordered_product_item.product_item.ticket_bundle
     dicts = build_dicts_from_ordered_product_item(ordered_product_item)
     for index, (seat, dict_) in enumerate(dicts):
-        for ticket in ApplicableTicketsProducer.from_bundle(bundle).will_issued_by_own_tickets(format_id=ticket_format):
+        for ticket in ApplicableTicketsProducer.from_bundle(bundle).will_issued_by_own_tickets(format_id=ticket_format_id):
             TicketPrintQueueEntry.enqueue(
                 operator=operator,
                 ticket=ticket,
