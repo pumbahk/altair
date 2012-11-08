@@ -1,14 +1,14 @@
 """add column Order.branch_no
 
 Revision ID: 54d62937d132
-Revises: 3aa73a04193d
+Revises: 2d3bab513d5
 Create Date: 2012-11-08 10:33:02.138176
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '54d62937d132'
-down_revision = '3aa73a04193d'
+down_revision = '2d3bab513d5'
 
 from alembic import op
 import sqlalchemy as sa
