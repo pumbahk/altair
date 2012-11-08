@@ -2040,7 +2040,7 @@ class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderedProductItem'
-    __clone_excluded__ = ['ordered_product_id', 'print_histories', 'product_item', 'seats', '_attributes']
+    __clone_excluded__ = ['ordered_product_id', 'product_item', 'seats', '_attributes']
 
     id = Column(Identifier, primary_key=True)
     ordered_product_id = Column(Identifier, ForeignKey("OrderedProduct.id"))
@@ -2150,7 +2150,7 @@ class TicketFormat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization = relationship('Organization', uselist=False, backref='ticket_formats')
     delivery_methods = relationship('DeliveryMethod', secondary=TicketFormat_DeliveryMethod.__table__, backref='ticket_formats')
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
-    
+
 class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     """
     Ticket.event_idがNULLのものはマスターデータ。これを雛形として実際にeventとひもづけるTicketオブジェクトを作成する。
@@ -2298,6 +2298,8 @@ class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class TicketPrintHistory(Base, BaseModel, WithTimestamp):
     __tablename__ = "TicketPrintHistory"
+    __clone_excluded__ = ['operator', 'seat', 'ticket']
+
     id = Column(Identifier, primary_key=True, autoincrement=True, nullable=False)
     operator_id = Column(Identifier, ForeignKey('Operator.id'), nullable=True)
     operator = relationship('Operator', uselist=False)
