@@ -31,6 +31,7 @@ def enqueue_for_order(operator, order, ticket_format=None):
         for ordered_product_item in ordered_product.ordered_product_items:
             enqueue_item(operator, order, ordered_product_item, ticket_format)
 
+
 def enqueue_item(operator, order, ordered_product_item, ticket_format=None):
     bundle = ordered_product_item.product_item.ticket_bundle
     dicts = build_dicts_from_ordered_product_item(ordered_product_item)

@@ -582,6 +582,16 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         return query
 
+    def has_that_delivery(self, delivery_plugin_id):
+        qs = DBSession.query(DeliveryMethod)\
+            .filter(DeliveryMethod.delivery_plugin_id==delivery_plugin_id)\
+            .filter(DeliveryMethod.id==PaymentDeliveryMethodPair.delivery_method_id)\
+            .filter(PaymentDeliveryMethodPair.sales_segment_id == SalesSegment.id)\
+            .filter(SalesSegment.id==Product.sales_segment_id)\
+            .filter(Product.id==ProductItem.product_id)\
+            .filter(ProductItem.performance_id==self.id)
+        return bool(qs.first())
+
 class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Event'
 
@@ -2106,7 +2116,7 @@ class TicketFormat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization = relationship('Organization', uselist=False, backref='ticket_formats')
     delivery_methods = relationship('DeliveryMethod', secondary=TicketFormat_DeliveryMethod.__table__, backref='ticket_formats')
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
-
+    
 class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     """
     Ticket.event_idがNULLのものはマスターデータ。これを雛形として実際にeventとひもづけるTicketオブジェクトを作成する。
@@ -2249,6 +2259,19 @@ class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         for product_item in news:
             self.product_items.append(product_item)
 
+    def applicable_ticket_iter(self,  delivery_plugin_id):
+        for ticket in self.tickets:
+            ticket_format = ticket.ticket_format
+            applicable = False
+            for delivery_method in ticket_format.delivery_methods:
+                if delivery_method.delivery_plugin_id == delivery_plugin_id:
+                    applicable = True
+                    break
+            if not applicable:
+                yield ticket
+
+    def can_issue_by_that_delivery(self,  delivery_plugin_id):
+        return any(True for _ in self.applicable_ticket_iter(delivery_plugin_id))
 
 class TicketPrintHistory(Base, BaseModel, WithTimestamp):
     __tablename__ = "TicketPrintHistory"

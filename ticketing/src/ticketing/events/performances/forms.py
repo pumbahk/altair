@@ -6,6 +6,7 @@ from wtforms.validators import Regexp, Length, Optional, ValidationError
 
 from ticketing.formhelpers import DateTimeField, Translations, Required
 from ticketing.core.models import Venue, Account, Performance
+from ticketing.cart.plugins.sej import DELIVERY_PLUGIN_ID as SEJ_DELIVERY_PLUGIN_ID
 
 class PerformanceForm(Form):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
@@ -105,9 +106,16 @@ class PerformancePublicForm(Form):
             # 配下の全てのProductItemに券種が紐づいていること
             performance = Performance.filter_by(id=form.id.data).first()
             no_ticket_bundles = ''
+
+            has_sej = performance.has_that_delivery(SEJ_DELIVERY_PLUGIN_ID)
+
             for product_item in performance.product_items:
                 if not product_item.ticket_bundle:
                     p = product_item.product
                     no_ticket_bundles += u'<div>販売区分: %s、商品名: %s</div>' % (p.sales_segment.name, p.name)
+                elif has_sej and not product_item.ticket_bundle.can_issue_by_that_delivery(SEJ_DELIVERY_PLUGIN_ID):
+                    p = product_item.product
+                    no_ticket_bundles += u'<div>販売区分: %s、商品名: %s(SEJ券面なし)</div>' % (p.sales_segment.name, p.name)
+                    
             if no_ticket_bundles:
                 raise ValidationError(u'券種が設定されていない商品設定がある為、公開できません %s' % no_ticket_bundles)
