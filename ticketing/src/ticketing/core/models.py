@@ -2267,7 +2267,7 @@ class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 if delivery_method.delivery_plugin_id == delivery_plugin_id:
                     applicable = True
                     break
-            if not applicable:
+            if applicable:
                 yield ticket
 
     def can_issue_by_that_delivery(self,  delivery_plugin_id):
