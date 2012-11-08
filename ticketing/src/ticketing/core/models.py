@@ -1843,6 +1843,13 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         else:
             return False
 
+    def delete(self):
+        # delete OrderedProduct
+        for ordered_product in self.items:
+            ordered_product.delete()
+
+        super(Order, self).delete()
+
     @staticmethod
     def get(id, organization_id, include_deleted=False):
         query = DBSession.query(Order, include_deleted=include_deleted).filter_by(id=id, organization_id=organization_id)
@@ -2007,15 +2014,22 @@ class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     price = Column(Numeric(precision=16, scale=2), nullable=False)
     quantity = Column(Integer)
 
+    @property
+    def seats(self):
+        return sorted(itertools.chain.from_iterable(i.seatdicts for i in self.ordered_product_items),
+            key=operator.itemgetter('l0_id'))
+
     def release(self):
         # 在庫を解放する
         for item in self.ordered_product_items:
             item.release()
 
-    @property
-    def seats(self):
-        return sorted(itertools.chain.from_iterable(i.seatdicts for i in self.ordered_product_items),
-            key=operator.itemgetter('l0_id'))
+    def delete(self):
+        # delete OrderedProductItem
+        for ordered_product_item in self.ordered_product_items:
+            ordered_product_item.delete()
+
+        super(OrderedProduct, self).delete()
 
 class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderedProductItem'
