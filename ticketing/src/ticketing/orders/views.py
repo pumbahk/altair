@@ -18,6 +18,7 @@ from wtforms import ValidationError
 from wtforms.validators import Optional
 from sqlalchemy import and_
 from sqlalchemy.sql import exists
+from sqlalchemy.orm import joinedload
 
 from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.core.models import (Order, Event, Performance, PaymentDeliveryMethodPair, ShippingAddress,
@@ -268,6 +269,11 @@ class Orders(BaseView):
         if order is None:
             raise HTTPNotFound('order id %d is not found' % order_id)
 
+        order_history = DBSession.query(Order, include_deleted=True)\
+                                 .filter(Order.order_no==order.order_no, include_deleted=True)\
+                                 .options(joinedload('ordered_products'), joinedload('ordered_products.ordered_product_items'))\
+                                 .order_by(Order.branch_no.desc()).all()
+
         if order.shipping_address:
             mail_subscriptions = MailSubscription.query.filter_by(email=order.shipping_address.email).all()
             mail_magazines = [ms.segment.name for ms in mail_subscriptions if ms.segment.organization_id == order.organization_id]
@@ -285,7 +291,8 @@ class Orders(BaseView):
         form_order_reserve = OrderReserveForm(performance_id=order.performance_id)
 
         return {
-            'order':order,
+            'order_current':order,
+            'order_history':order_history,
             'mail_magazines':mail_magazines,
             'form_shipping_address':form_shipping_address,
             'form_order':form_order,
