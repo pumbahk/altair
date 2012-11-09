@@ -229,7 +229,7 @@ venueEditorRoot.venueeditor({
     tooltip: function (l0_id) {
       $.ajax({
         url: '/orders/api/get/',
-        data: {'l0_id':l0_id},
+        data: {'l0_id':l0_id, 'performance_id':${performance.id}},
         dataType: 'json',
         success: function(data) {
           var products = '';

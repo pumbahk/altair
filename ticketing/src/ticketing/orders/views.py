@@ -560,8 +560,10 @@ class Orders(BaseView):
     @view_config(route_name='orders.api.get', renderer='json', permission='sales_counter')
     def api_get(self):
         l0_id = self.request.params.get('l0_id', 0)
+        performance_id = self.request.params.get('performance_id', 0)
         logger.debug('call get order api (seat l0_id = %s)' % l0_id)
         order = Order.filter_by(organization_id=self.context.user.organization_id)\
+                     .filter(Order.performance_id==performance_id)\
                      .filter(Order.canceled_at==None)\
                      .join(Order.ordered_products)\
                      .join(OrderedProduct.ordered_product_items)\
