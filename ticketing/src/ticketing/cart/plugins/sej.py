@@ -18,10 +18,10 @@ from ticketing.sej.resources import SejPaymentType, SejTicketType
 from ticketing.sej.utils import han2zen
 
 from ticketing.tickets.convert import convert_svg, as_user_unit
-from ticketing.tickets.utils import *
+from ticketing.tickets.utils import build_dicts_from_ordered_product_item
+from ticketing.tickets.utils import build_dicts_from_carted_product_item
 
-from lxml import html, etree
-from lxml.builder import E
+from lxml import etree
 from datetime import datetime, timedelta
 import numpy
 import pystache
@@ -57,7 +57,7 @@ def get_ticketing_start_at(current_date, cart):
 def get_sej_order(order):
     return SejOrder.filter(SejOrder.order_id == order.order_no).first()
 
-def get_ticket(order_no, product_item, svg):
+def get_sej_ticket_data(order_no, product_item, svg):
     performance = product_item.performance
     return dict(
         ticket_type         = SejTicketType.TicketWithBarcode,
@@ -77,25 +77,29 @@ def translate(x, y):
             ],
         dtype=numpy.float64)
 
+def applicable_tickets_iter(bundle):
+    for ticket in bundle.tickets:
+        ticket_format = ticket.ticket_format
+        applicable = False
+        for delivery_method in ticket_format.delivery_methods:
+            if delivery_method.delivery_plugin_id == DELIVERY_PLUGIN_ID:
+                applicable = True
+                break
+        if applicable:
+            yield ticket
+
 def get_tickets(order):
     tickets = []
     for ordered_product in order.items:
         for ordered_product_item in ordered_product.ordered_product_items:
-            bundle = ordered_product_item.product_item.ticket_bundle
             dicts = build_dicts_from_ordered_product_item(ordered_product_item)
+            bundle = ordered_product_item.product_item.ticket_bundle
             for seat, dict_ in dicts:
-                for ticket in bundle.tickets:
+                for ticket in applicable_tickets_iter(bundle):
                     ticket_format = ticket.ticket_format
-                    applicable = False
-                    for delivery_method in ticket_format.delivery_methods:
-                        if delivery_method.delivery_plugin_id == DELIVERY_PLUGIN_ID:
-                            applicable = True
-                            break
-                    if not applicable:
-                        continue
                     transform = translate(-as_user_unit(ticket_format.data['print_offset']['x']), -as_user_unit(ticket_format.data['print_offset']['y']))
                     svg = etree.tostring(convert_svg(etree.ElementTree(etree.fromstring(pystache.render(ticket.data['drawing'], dict_))), transform), encoding=unicode)
-                    ticket = get_ticket(order.order_no, ordered_product_item.product_item, svg)
+                    ticket = get_sej_ticket_data(order.order_no, ordered_product_item.product_item, svg)
                     tickets.append(ticket)
     return tickets
 
@@ -106,18 +110,11 @@ def get_tickets_from_cart(cart):
             bundle = carted_product_item.product_item.ticket_bundle
             dicts = build_dicts_from_carted_product_item(carted_product_item)
             for (seat, dict_) in dicts:
-                for ticket in bundle.tickets:
+                for ticket in applicable_tickets_iter(bundle):
                     ticket_format = ticket.ticket_format
-                    applicable = False
-                    for delivery_method in ticket_format.delivery_methods:
-                        if delivery_method.delivery_plugin_id == DELIVERY_PLUGIN_ID:
-                            applicable = True
-                            break
-                    if not applicable:
-                        continue
                     transform = translate(-as_user_unit(ticket_format.data['print_offset']['x']), -as_user_unit(ticket_format.data['print_offset']['y']))
                     svg = etree.tostring(convert_svg(etree.ElementTree(etree.fromstring(pystache.render(ticket.data['drawing'], dict_))), transform), encoding=unicode)
-                    ticket = get_ticket(cart.order_no, carted_product_item.product_item, svg)
+                    ticket = get_sej_ticket_data(cart.order_no, carted_product_item.product_item, svg)
                     tickets.append(ticket)
     return tickets
 
