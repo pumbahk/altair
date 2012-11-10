@@ -20,6 +20,7 @@ from ticketing.sej.utils import han2zen
 from ticketing.tickets.convert import convert_svg, as_user_unit
 from ticketing.tickets.utils import build_dicts_from_ordered_product_item
 from ticketing.tickets.utils import build_dicts_from_carted_product_item
+from ticketing.core.utils import ApplicableTicketsProducer
 
 from lxml import etree
 from datetime import datetime, timedelta
@@ -78,15 +79,7 @@ def translate(x, y):
         dtype=numpy.float64)
 
 def applicable_tickets_iter(bundle):
-    for ticket in bundle.tickets:
-        ticket_format = ticket.ticket_format
-        applicable = False
-        for delivery_method in ticket_format.delivery_methods:
-            if delivery_method.delivery_plugin_id == DELIVERY_PLUGIN_ID:
-                applicable = True
-                break
-        if applicable:
-            yield ticket
+    return ApplicableTicketsProducer(bundle).sej_only_tickets()
 
 def get_tickets(order):
     tickets = []

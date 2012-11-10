@@ -1,11 +1,7 @@
 # -*- coding:utf-8 -*-
 
 ## todo move
-from ticketing.cart.plugins.sej import DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID_SEJ
-"""
-まだcart.plugins.sejを ApplicableTicketsProducerで書き換えていないのでエラーが起きない。
-書き換えると循環importしてしまう(plugin_idをこちらで参照しているため)
-"""
+from ticketing.cart.plugins import SEJ_DELIVERY_PLUGIN_ID
 import operator as op
 
 class ApplicableTicketsProducer(object):
@@ -29,11 +25,11 @@ class ApplicableTicketsProducer(object):
 
     def sej_only_tickets(self, format_id=None):
         """SEJ発券"""
-        return self.include_delivery_id_ticket_iter(DELIVERY_PLUGIN_ID_SEJ, format_id=format_id)
+        return self.include_delivery_id_ticket_iter(SEJ_DELIVERY_PLUGIN_ID, format_id=format_id)
 
     def will_issued_by_own_tickets(self, format_id=None):
         """自社発券"""
-        return self.include_delivery_id_ticket_iter(DELIVERY_PLUGIN_ID_SEJ, cmp_fn=op.ne, format_id=format_id)
+        return self.include_delivery_id_ticket_iter(SEJ_DELIVERY_PLUGIN_ID, cmp_fn=op.ne, format_id=format_id)
     
     qr_only_tickets = will_issued_by_own_tickets # 今は同じ
 
