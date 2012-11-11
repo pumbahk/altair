@@ -11,6 +11,6 @@ public interface Ticket {
 
 	public String getOrderId();
 
-	public Map<String, String> getData();
+	public Map<String, Object> getData();
 
 }
