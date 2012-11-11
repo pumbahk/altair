@@ -36,7 +36,7 @@ public class AppAppletService extends AppService {
 			final String orderedProductItemTokenId = (String)jsobj.getMember("ordered_product_item_token_id").toString();
 			final String orderedProductItemId = (String)jsobj.getMember("ordered_product_item_id").toString();
 			final String orderId = (String)jsobj.getMember("order_id").toString();
-			final Map<String, String> data = CollectionUtils.stringValuedMap(LiveConnectUtils.jsObjectToMap((JSObject)jsobj.getMember("data"), false));
+			final Map<String, Object> data = LiveConnectUtils.jsObjectToMap((JSObject)jsobj.getMember("data"), true);
 			return new TicketImpl(seatId, orderedProductItemTokenId, orderedProductItemId, orderId, data);
 		} catch (RuntimeException e) {
 			e.printStackTrace();

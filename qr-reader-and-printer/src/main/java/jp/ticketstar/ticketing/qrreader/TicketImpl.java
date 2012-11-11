@@ -9,7 +9,7 @@ public class TicketImpl implements Ticket {
 	final String orderedProductItemTokenId;
 	final String orderedProductItemId;
 	final String orderId;
-	final Map<String, String> data;
+	final Map<String, Object> data;
 
 	public String getSeatId() {
 		return seatId;
@@ -27,15 +27,15 @@ public class TicketImpl implements Ticket {
 		return orderId;
 	}
 
-	public Map<String, String> getData() {
+	public Map<String, Object> getData() {
 		return Collections.unmodifiableMap(data);
 	}
 
-	public TicketImpl(String seatId, String orderedProductItemTokenId, String orderedProductItemId, String orderId, Map<String, String> data) {
+	public TicketImpl(String seatId, String orderedProductItemTokenId, String orderedProductItemId, String orderId, Map<String, Object> data) {
 		this.seatId = seatId;
 		this.orderedProductItemTokenId = orderedProductItemTokenId;
 		this.orderedProductItemId = orderedProductItemId;
 		this.orderId = orderId;
-		this.data = new HashMap<String, String>(data);
+		this.data = new HashMap<String, Object>(data);
 	}
 }
