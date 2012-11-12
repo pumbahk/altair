@@ -572,11 +572,13 @@ var AppletView = Backbone.View.extend({
       var size = buf.length;
       self.datastore.set("ticket_template_id", ticket_template.id);
       self.datastore.set("ticket_template_name", ticket_template.name);
+      // alert(ticket_template.name);
       //変更内容伝搬されるまで時間がかかる？信じるよ？
       _.each(buf.tickets, function(ticket){
         self.service.addTicket(self.service.createTicketFromJSObject(ticket));
       });
       self.service.printAll();
+      // console.log("fire!");
       self.datastore.set("print_num", self.datastore.get("print_num") - size);
     });
   }, 
@@ -584,7 +586,7 @@ var AppletView = Backbone.View.extend({
     if(this.datastore.get("printed")){
       try {
         //alert("print!!");
-        if(this.datastore.get("buffer").length <= 0){
+        if(this.datastore.get("ticket_buffers").buffers.length <= 0){
           this.appviews.messageView.info("チケット印刷中です.....");
           this.service.printAll();
         }else{
@@ -713,7 +715,7 @@ var AppletView = Backbone.View.extend({
       _.each(data['data'], function (ticket) {
         if(!!(ticket.ticket_template_id)){
             self.datastore.set("ticket_template_id", ticket.ticket_template_id);
-            self.datastore.set("ticket_template_id", ticket.ticket_template_id);
+            self.datastore.set("ticket_template_name", ticket.ticket_template_name);
         }
         //alert(self.datastore.get("ordered_product_item_token_id"));
         self.appviews.messageView.info("券面印刷用データを追加中です...");

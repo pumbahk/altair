@@ -3,6 +3,7 @@ import logging
 logger = logging.getLogger(__name__)
 from .interfaces import IQRDataBuilder
 from .builder import qr
+from .builder import InvalidSignedString
 
 def get_qrdata_builder(request):
     return request.registry.getUtility(IQRDataBuilder)

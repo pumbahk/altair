@@ -116,7 +116,7 @@ def svg_data_from_token(ordered_product_item_token):
         u'serial': ordered_product_item_token.serial,
         u'data': json_safe_coerce(pair[1])
         }
-    producer = ApplicableTicketsProducer.from_bundle(ordered_product_item_token.item.product_item.bundle)
+    producer = ApplicableTicketsProducer.from_bundle(ordered_product_item_token.item.product_item.ticket_bundle)
     ticket_template = producer.qr_only_tickets().next()
 
     if ticket_template is None:
