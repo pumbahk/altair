@@ -10,6 +10,11 @@ var ticketBuffers = {
     this.templates[ticket.ticket_template_id].push(ticket);
   }, 
   consumeAll: function(fn){
+    if(!!fn[null]){
+      fn(this.tickets[null], this.buffers[null]);
+      delete this.tickets[null];
+      delete this.buffers[null];
+    }
     for(var k in this.buffers){
       if(this.buffers.hasOwnProperty(k)){
         fn(this.tickets[k], this.buffers[k]);
