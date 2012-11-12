@@ -15,6 +15,7 @@
 
 <script type="text/javascript">
   $(function() {
+    $('form').disableOnSubmit();
     $('#start_on').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
     $('#end_on').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
     $('#open_on').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
