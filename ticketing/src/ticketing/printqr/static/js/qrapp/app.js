@@ -1,6 +1,32 @@
+// buffer
+var ticketBuffers = {
+  buffers: {}, 
+  templates: {}, 
+  addTicket: function(ticket){
+    if(!!this.buffers[ticket.ticket_template_id]){
+      this.buffers[ticket.ticket_template_id] = [];
+    }
+    this.buffers[ticket.ticket_template_id].push(ticket);
+    this.templates[ticket.ticket_template_id].push(ticket);
+  }, 
+  consumeAll: function(fn){
+    for(var k in this.buffers){
+      if(this.buffers.hasOwnProperty(k)){
+        fn(this.tickets[k], this.buffers[k]);
+      }
+    }
+    this.clean();
+  }, 
+  clean: function(){
+    this.buffers = {};
+    this.templates = {};
+  }
+};
+
 // model
 var DataStore = Backbone.Model.extend({
   defaults: {
+    ticket_buffers: ticketBuffers, 
     qrcode_status: "preload", 
     auto_trigger: true, 
     qrcode: null,    
@@ -500,16 +526,18 @@ var AppletView = Backbone.View.extend({
   }, 
   _addTicket: function(ticket){
     try {
-      this.service.addTicket(this.service.createTicketFromJSObject(ticket));
+      if(this.datastore.get("print_unit") == "token"){
+          this.service.addTicket(this.service.createTicketFromJSObject(ticket));
+      }else {
+          this.datastore.get("ticket_buffers").addTicket(ticket);
+      }           
       this.datastore.set("print_num",  this.datastore.get("print_num") + 1);
     } catch (e) {
       this.appviews.messageView.error(e);
     }
   }, 
-  _printAll: function(){
+  _afterPrintAll: function(){
     var self = this;
-    this.appviews.messageView.info("チケット印刷中です.....");
-    this.service.printAll();
     this._updateTicketPrintedAt()
       .done(function(data){
         if (data['status'] != 'success') {
@@ -532,11 +560,32 @@ var AppletView = Backbone.View.extend({
         self.trigger("*event.qr.printed");
       });
   }, 
+  _printAllWithBuffer: function(){
+    this.appviews.messageView.info("チケット印刷中です.....");
+    var self = this;
+    this.datastore.get("ticket_buffers").consumeAll(function(ticket_template, buf){
+      var size = buf.length;
+      self.datastore.set("ticket_template_id", ticket_template.id);
+      self.datastore.set("ticket_template_name", ticket_template.name);
+      //変更内容伝搬されるまで時間がかかる？信じるよ？
+      _.each(buf.tickets, function(ticket){
+        self.service.addTicket(self.service.createTicketFromJSObject(ticket));
+      });
+      self.service.printAll();
+      self.datastore.set("print_num", self.datastore.get("print_num") - size);
+    });
+  }, 
   sendPrintSignalIfNeed: function(){
     if(this.datastore.get("printed")){
       try {
         //alert("print!!");
-        this._printAll();
+        if(this.datastore.get("buffer").length <= 0){
+          this.appviews.messageView.info("チケット印刷中です.....");
+          this.service.printAll();
+        }else{
+          this._printAllWithBuffer();
+        }
+        this._afterPrintAll();
       } catch (e) {
         this.datastore.set("printed", false);
         this.appviews.messageView.error(e);
@@ -625,7 +674,7 @@ var AppletView = Backbone.View.extend({
       self.appviews.messageView.success("券面データが保存されました");
       var printing_tickets = []
       self.appviews.messageView.info("券面印刷用データを追加中です...");
-      $.each(data['data'], function (_, ticket) {
+      _.each(data['data'], function (ticket) {
         //alert(self.datastore.get("ordered_product_item_token_id"));
         if(!ticket.printed_at){
           printing_tickets.push(ticket.ticket_name);
@@ -656,7 +705,11 @@ var AppletView = Backbone.View.extend({
         return;
       }
       self.appviews.messageView.success("券面データが保存されました");
-      $.each(data['data'], function (_, ticket) {
+      _.each(data['data'], function (ticket) {
+        if(!!(ticket.ticket_template_id)){
+            self.datastore.set("ticket_template_id", ticket.ticket_template_id);
+            self.datastore.set("ticket_template_id", ticket.ticket_template_id);
+        }
         //alert(self.datastore.get("ordered_product_item_token_id"));
         self.appviews.messageView.info("券面印刷用データを追加中です...");
         self._addTicket(ticket);

@@ -15,7 +15,6 @@ from . import helpers as h
 from ticketing.models import DBSession
 from ticketing.core.models import Event
 from ticketing.core.models import Order
-from ticketing.core.models import TicketPrintHistory
 from ticketing.core.models import OrderedProductItem
 from ticketing.core.models import OrderedProduct
 from ticketing.core.models import OrderedProductItemToken
