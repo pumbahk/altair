@@ -1137,10 +1137,18 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         product_item = ProductItem.clone(template)
         if 'performance_id' in kwargs:
             product_item.performance_id = kwargs['performance_id']
-        if 'stock_id' in kwargs:
-            product_item.stock_id = kwargs['stock_id']
         if 'product_id' in kwargs:
             product_item.product_id = kwargs['product_id']
+        if 'stock_id' in kwargs:
+            product_item.stock_id = kwargs['stock_id']
+        elif 'stock_holder_id' in kwargs and kwargs['stock_holder_id']:
+            conditions ={
+                'performance_id':product_item.performance_id,
+                'stock_holder_id':kwargs['stock_holder_id'],
+                'stock_type_id':template.stock.stock_type_id
+            }
+            stock = Stock.filter_by(**conditions).first()
+            product_item.stock = stock
         product_item.save()
 
 class StockTypeEnum(StandardEnum):
@@ -1533,8 +1541,9 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         product.save()
 
         if with_product_items:
+            stock_holder_id = kwargs['stock_holder_id'] if 'stock_holder_id' in kwargs else None
             for template_product_item in template.items:
-                ProductItem.create_from_template(template=template_product_item, product_id=product.id)
+                ProductItem.create_from_template(template=template_product_item, product_id=product.id, stock_holder_id=stock_holder_id)
 
         return {template.id:product.id}
 
