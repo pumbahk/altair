@@ -145,7 +145,7 @@ def svg_data_from_token_with_descinfo(ordered_product_item_token):
             u'data': json_safe_coerce(pair[1]), 
             u"printed_at": str(ordered_product_item_token.printed_at) if ordered_product_item_token.printed_at else None
             }
-    producer = ApplicableTicketsProducer.from_bundle(item.product_item.bundle)
+    producer = ApplicableTicketsProducer.from_bundle(item.product_item.ticket_bundle)
     ticket_template = producer.qr_only_tickets().next()
 
     if ticket_template is None:
@@ -153,7 +153,7 @@ def svg_data_from_token_with_descinfo(ordered_product_item_token):
     else:
         retval_data[u'ticket_template_name'] = ticket_template.name
         retval_data[u'ticket_template_id'] = ticket_template.id
-    return ticket_template, retval_data
+    return [retval_data]
 
 def history_from_token(request, operator_id, order_id, token):
     return TicketPrintHistory(

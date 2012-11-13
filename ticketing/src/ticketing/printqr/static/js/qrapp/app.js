@@ -685,6 +685,7 @@ var AppletView = Backbone.View.extend({
       self.appviews.messageView.success("券面データが保存されました");
       var printing_tickets = []
       self.appviews.messageView.info("券面印刷用データを追加中です...");
+
       _.each(data['data'], function (ticket) {
         //alert(self.datastore.get("ordered_product_item_token_id"));
         if(!ticket.printed_at){
