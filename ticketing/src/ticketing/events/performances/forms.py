@@ -5,7 +5,7 @@ from wtforms import TextField, SelectField, HiddenField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 
 from ticketing.formhelpers import DateTimeField, Translations, Required
-from ticketing.core.models import Venue, Account, Performance
+from ticketing.core.models import Venue, Performance, Stock
 from ticketing.cart.plugins.sej import DELIVERY_PLUGIN_ID as SEJ_DELIVERY_PLUGIN_ID
 from ticketing.core.utils import ApplicableTicketsProducer
 
@@ -85,6 +85,16 @@ class PerformanceForm(Form):
         if field.data and Performance.filter_by(code=field.data).count():
             raise ValidationError(u'既に使用されています')
 
+    def validate_venue_id(form, field):
+        if form.id.data:
+            performance = Performance.get(form.id.data)
+            if field.data != performance.venue.id:
+                if performance.public:
+                    raise ValidationError(u'既に公開されているため、会場を変更できません')
+                stocks = Stock.filter_by(performance_id=performance.id).filter(Stock.stock_type_id!=None).filter(Stock.quantity>0).count()
+                if stocks:
+                    raise ValidationError(u'この会場で既に配席されている為、会場を変更できません')
+
 
 class PerformancePublicForm(Form):
 
@@ -105,7 +115,7 @@ class PerformancePublicForm(Form):
         # 公開する場合のみチェック
         if field.data == 1:
             # 配下の全てのProductItemに券種が紐づいていること
-            performance = Performance.filter_by(id=form.id.data).first()
+            performance = Performance.get(form.id.data)
             no_ticket_bundles = ''
 
             has_sej = performance.has_that_delivery(SEJ_DELIVERY_PLUGIN_ID)
