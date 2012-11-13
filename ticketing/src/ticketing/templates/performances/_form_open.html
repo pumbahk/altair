@@ -10,7 +10,7 @@
   <div class="modal-body">
     <div class="content">
       ${h.flash_messages(request, type='alert-error')}
-      ${h.alert_message(form)}
+      ${h.alert_message(form, escape=False)}
     </div>
 
     % if not form.errors:

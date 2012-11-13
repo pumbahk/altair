@@ -52,4 +52,4 @@ def dispatch_view(context, request):
         raise mobile_api.dispatch_context(request, pageset)
     else:
         logging.info(control.error_message)
-        return HTTPNotFound(control.error_message)
+        raise HTTPNotFound(control.error_message)

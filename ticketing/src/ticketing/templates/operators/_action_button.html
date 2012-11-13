@@ -1,0 +1,64 @@
+<%page args="operator=None, order=None" />
+<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+
+<script type="text/javascript">
+  function delete_operator(id) {
+    var modal = $('#modal-delete');
+    modal.find('#delete').attr('href', '/operators/delete/' + id);
+    modal.find('#message').text('選択したオペレーターを削除します。よろしいですか？');
+    modal.modal('toggle');
+  }
+</script>
+
+<%
+  actions = {
+    'new':dict(
+      label=u'新規',
+      url=request.route_path('operators.new'),
+      icon='icon-plus',
+      route_name='operators.new',
+    ),
+    'role':dict(
+      label=u'ロール設定',
+      url=request.route_path('operator_roles.index'),
+      icon='icon-th-list',
+      route_name='operator_roles.index',
+    ),
+    'permission':dict(
+      label=u'権限',
+      url=request.route_path('permissions.index'),
+      icon='icon-th-list',
+      route_name='permissions.index',
+    )
+  }
+
+  if operator:
+    actions.update({
+      'edit':dict(
+        label=u'編集',
+        url=request.route_path('operators.edit', operator_id=operator.id),
+        icon='icon-pencil',
+        route_name='operators.edit',
+      ),
+      'delete':dict(
+        label=u'削除',
+        url='javascript:delete_operator(%d);' % operator.id,
+        icon='icon-minus',
+        attrs={'class':'btn-danger'},
+        route_name='operators.delete',
+      ),
+    })
+
+    if 'administrator' in [(role.name) for role in operator.roles] and not h.has_permission('administrator'):
+      order.remove('edit')
+      order.remove('delete')
+
+  order = iter(order)
+%>
+<div style="float: left;">
+  ${h.action_button(actions, order, vertical=False)}
+</div>
+<div style="clear: left;"></div>
+
+${delete_modal()}

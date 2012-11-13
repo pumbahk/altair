@@ -38,9 +38,25 @@ def _get_policies(settings):
     return authentication, authorization
 
 
+## mako Undefined object patch. this object behaves as iteable object
+def iterable_undefined_patch():
+    from mako import runtime
+    class IterableUndefined(object):
+        def __str__(self):
+            raise NameError("Undefined")
+        def __nonzero__(self):
+            return False
+        def __iter__(self):
+            return iter([])
+    runtime.__dict__["Undefined"] = IterableUndefined
+    runtime.__dict__["UNDEFINED"] = IterableUndefined()
+
+
+
 def main(global_config, **settings):
     """ apprications main
     """
+    iterable_undefined_patch()
     session_factory = UnencryptedCookieSessionFactoryConfig(settings.get('session.secret'))
     authn_policy, authz_policy = _get_policies(settings)
     config = Configurator(

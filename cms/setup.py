@@ -33,6 +33,7 @@ requires = [
     'uamobile', 
     'tableau',
     'fluent-logger == 0.3.3moriyoshi',
+    'pyramid_selectable_renderer'
     ]
 
 solr_require = [

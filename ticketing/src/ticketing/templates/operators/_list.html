@@ -2,22 +2,11 @@
 <%namespace file="/common/helpers.html" name="h"/>
 <%namespace file="/common/modal.html" import="delete_modal" />
 
-<script type="text/javascript">
-  function delete_operator(id) {
-    var modal = $('#modal-delete');
-    modal.find('#delete').attr('href', '/operators/delete/' + id);
-    modal.find('#message').text('選択したオペレーターを削除します。よろしいですか？');
-    modal.modal('toggle');
-  }
-</script>
-
 <form>
   <div>
-    <a href="${request.route_path('operators.new')}" class="btn">新規オペレーター</a>
-    <a href="${request.route_path('operator_roles.index')}" class="btn">ロール設定</a>
-    <a href="${request.route_path('permissions.index')}" class="btn">権限</a>
+    <%include file="/operators/_action_button.html" args="order=['new', 'role', 'permission']" />
   </div>
-  <table class="table fullwidth checkboxed_table">
+  <table class="table fullwidth checkboxed_table" style="margin-top: 10px;">
     <thead>
     <tr>
       <th class="minwidth">ID</th>
@@ -43,8 +32,7 @@
         % endfor
       </td>
       <td>
-        <a class="btn btn-small" href="${request.route_path('operators.edit', operator_id=operator.id)}">編集</a>
-        <a class="btn btn-small btn-danger" href="javascript:delete_operator(${operator.id});">削除</a>
+        <%include file="/operators/_action_button.html" args="operator=operator, order=['edit', 'delete']" />
       </td>
     </tr>
     % endfor

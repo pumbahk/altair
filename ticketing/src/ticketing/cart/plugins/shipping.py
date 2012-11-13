@@ -9,7 +9,8 @@ from . import logger
 from ticketing.cart import helpers as cart_helper
 from ticketing.core import models as c_models
 
-PLUGIN_ID = 1
+from . import SHIPPING_DELIVERY_PLUGIN_ID as PLUGIN_ID
+
 def includeme(config):
     config.add_delivery_plugin(ShippingDeliveryPlugin(), PLUGIN_ID)
     config.scan(__name__)

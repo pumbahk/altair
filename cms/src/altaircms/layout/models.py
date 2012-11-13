@@ -1,5 +1,6 @@
 # coding: utf-8
 import json
+import os
 from datetime import datetime
 from altaircms.models import DBSession
 from sqlalchemy import Column, Integer, DateTime, Unicode, String, ForeignKey, Text
@@ -7,6 +8,7 @@ import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from altaircms.models import Base, BaseOriginalMixin
 from altaircms.models import WithOrganizationMixin
+from altaircms.auth.models import Organization
 
 class Layout(BaseOriginalMixin, WithOrganizationMixin, Base):
     """
@@ -24,6 +26,17 @@ class Layout(BaseOriginalMixin, WithOrganizationMixin, Base):
     DEFAULT_BLOCKS = "[]"
     blocks = Column(Text, default=DEFAULT_BLOCKS)
 
+
+    @property
+    def organization(self):
+        if self.organization_id is None:
+            return None
+        return Organization.query.filter_by(id=self.organization_id).first()
+
+    @property
+    def prefixed_template_filename(self):
+        return os.path.join(self.organization.short_name, self.template_filename)
+
     def __repr__(self):
         return '<%s %s>' % (self.__class__.__name__, self.template_filename)
 
@@ -36,5 +49,4 @@ class Layout(BaseOriginalMixin, WithOrganizationMixin, Base):
         except ValueError:
             return False
         return True
-            
             

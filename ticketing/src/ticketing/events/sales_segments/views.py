@@ -23,7 +23,7 @@ class SalesSegments(BaseView):
     @view_config(route_name='sales_segments.index', renderer='ticketing:templates/sales_segments/index.html')
     def index(self):
         event_id = int(self.request.matchdict.get('event_id', 0))
-        event = Event.get(event_id)
+        event = Event.get(event_id, organization_id=self.context.user.organization_id)
 
         sort = self.request.GET.get('sort', 'SalesSegment.id')
         direction = self.request.GET.get('direction', 'asc')
@@ -58,8 +58,7 @@ class SalesSegments(BaseView):
 
         member_groups = sales_segment.membergroups
         form_mg = MemberGroupForm()
-        form_ss = SalesSegmentForm()
-        form_ss.process(record_to_multidict(sales_segment))
+        form_ss = SalesSegmentForm(obj=sales_segment, event_id=sales_segment.event_id)
 
         return {
             'form_ss':form_ss,
@@ -75,7 +74,7 @@ class SalesSegments(BaseView):
         if not event_id:
             return HTTPNotFound('event id %d is not found' % event_id)
 
-        f = SalesSegmentForm(self.request.POST)
+        f = SalesSegmentForm(self.request.POST, event_id=event_id)
         if f.validate():
             sales_segment = merge_session_with_post(SalesSegment(), f.data)
             sales_segment.event_id = event_id
@@ -96,7 +95,7 @@ class SalesSegments(BaseView):
         if sales_segment is None:
             return HTTPNotFound('sales_segment id %d is not found' % sales_segment_id)
 
-        f = SalesSegmentForm(self.request.POST)
+        f = SalesSegmentForm(self.request.POST, event_id=sales_segment.event_id)
         if f.validate():
             if self.request.matched_route.name == 'sales_segments.copy':
                 with_pdmp = bool(f.copy_payment_delivery_method_pairs.data)
@@ -106,7 +105,7 @@ class SalesSegments(BaseView):
                 new_sales_segment.save()
                 if f.copy_products.data:
                     for product in sales_segment.product:
-                        Product.create_from_template(template=product, with_product_items=True, sales_segment=id_map)
+                        Product.create_from_template(template=product, with_product_items=True, stock_holder_id=f.copy_to_stock_holder.data, sales_segment=id_map)
             else:
                 sales_segment = merge_session_with_post(sales_segment, f.data)
                 sales_segment.save()

@@ -18,6 +18,7 @@ from wtforms import ValidationError
 from wtforms.validators import Optional
 from sqlalchemy import and_
 from sqlalchemy.sql import exists
+from sqlalchemy.orm import joinedload
 
 from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.core.models import (Order, Event, Performance, PaymentDeliveryMethodPair, ShippingAddress,
@@ -260,9 +261,18 @@ class Orders(BaseView):
     @view_config(route_name='orders.show', renderer='ticketing:templates/orders/show.html', permission='sales_counter')
     def show(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
-        order = Order.get(order_id, self.context.user.organization_id)
+        order = Order.get(order_id, self.context.user.organization_id, include_deleted=True)
+        if order and order.deleted_at:
+            order = Order.filter_by(order_no=order.order_no).first()
+            if order:
+                return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
         if order is None:
-            return HTTPNotFound('order id %d is not found' % order_id)
+            raise HTTPNotFound('order id %d is not found' % order_id)
+
+        order_history = DBSession.query(Order, include_deleted=True)\
+                                 .filter(Order.order_no==order.order_no)\
+                                 .options(joinedload('ordered_products'), joinedload('ordered_products.ordered_product_items'))\
+                                 .order_by(Order.branch_no.desc()).all()
 
         if order.shipping_address:
             mail_subscriptions = MailSubscription.query.filter_by(email=order.shipping_address.email).all()
@@ -281,7 +291,8 @@ class Orders(BaseView):
         form_order_reserve = OrderReserveForm(performance_id=order.performance_id)
 
         return {
-            'order':order,
+            'order_current':order,
+            'order_history':order_history,
             'mail_magazines':mail_magazines,
             'form_shipping_address':form_shipping_address,
             'form_order':form_order,
@@ -627,14 +638,19 @@ class Orders(BaseView):
             if not f.validate():
                 raise ValidationError()
 
-            order.system_fee = f.system_fee.data
-            order.transaction_fee = f.transaction_fee.data
-            order.delivery_fee = f.delivery_fee.data
+            cloned_order = Order.clone(order, deep=True)
+            cloned_order.branch_no = order.branch_no + 1
+            cloned_order.system_fee = f.system_fee.data
+            cloned_order.transaction_fee = f.transaction_fee.data
+            cloned_order.delivery_fee = f.delivery_fee.data
+            cloned_order.attributes = order.attributes
 
-            for op in order.items:
-                op.price = int(self.request.params.get('product_price-%d' % op.id) or 0)
-                for opi in op.ordered_product_items:
-                    opi.price = int(self.request.params.get('product_item_price-%d' % opi.id) or 0)
+            for op, cop in itertools.izip(order.items, cloned_order.items):
+                cop.price = int(self.request.params.get('product_price-%d' % op.id) or 0)
+                for opi, copi in itertools.izip(op.ordered_product_items, cop.ordered_product_items):
+                    copi.seats = opi.seats
+                    copi.attributes = opi.attributes
+                    copi.price = int(self.request.params.get('product_item_price-%d' % opi.id) or 0)
                     # 個数が変更できるのは数受けのケースのみ
                     if op.product.seat_stock_type.quantity_only:
                         stock_status = opi.product_item.stock.stock_status
@@ -643,19 +659,20 @@ class Orders(BaseView):
                         if stock_status.quantity < (new_quantity - old_quantity):
                             raise NotEnoughStockException(stock_status.stock, stock_status.quantity, new_quantity)
                         stock_status.quantity -= (new_quantity - old_quantity)
-                        op.quantity = new_quantity
-                        opi.quantity = new_quantity
-                if sum(opi.price for opi in op.ordered_product_items) != op.price:
+                        cop.quantity = new_quantity
+                        copi.quantity = new_quantity
+                if sum(copi.price for copi in cop.ordered_product_items) != cop.price:
                     raise ValidationError(u'小計金額が正しくありません')
 
-            total_amount = sum(op.price * op.quantity for op in order.items)\
-                           + order.system_fee + order.transaction_fee + order.delivery_fee
-            if order.status in ('paid', 'delivered'):
-                if total_amount != order.total_amount:
+            total_amount = sum(cop.price * cop.quantity for cop in cloned_order.items)\
+                           + cloned_order.system_fee + cloned_order.transaction_fee + cloned_order.delivery_fee
+            if cloned_order.status in ('paid', 'delivered'):
+                if total_amount != cloned_order.total_amount:
                     raise ValidationError(u'入金済みの為、合計金額は変更できません')
-            order.total_amount = total_amount
+            cloned_order.total_amount = total_amount
 
-            order.save()
+            cloned_order.save()
+            order.delete()
         except ValidationError, e:
             if e.message:
                 self.request.session.flash(e.message)
@@ -779,13 +796,15 @@ class Orders(BaseView):
         form = CheckedOrderTicketChoiceForm(ticket_formats=available_ticket_formats_for_orders([order.id]))
         return {"form": form, "order": order}
 
+    @view_config(route_name="orders.checked.queue", request_method="POST", permission='sales_counter')
     @view_config(route_name="orders.print.queue.manymany", request_method="POST",
                  request_param="ticket_format_id", permission='sales_counter')
     def order_print_queue_manymany(self):
-        ticket_format_id = self.request.POST["ticket_format_id"]
-        ticket_format = TicketFormat.query.filter_by(id=ticket_format_id).first()
-        if ticket_format is None:
-            raise HTTPFound(location=self.request.route_path('orders.index'))
+        ticket_format_id = self.request.POST.get("ticket_format_id")
+        if ticket_format_id:
+            ticket_format = TicketFormat.query.filter_by(id=ticket_format_id).first()
+            if ticket_format is None:
+                raise HTTPFound(location=self.request.route_path('orders.index'))
 
         ords = self.request.session["orders"]
         ords = [o.lstrip("o:") for o in ords if o.startswith("o:")]
@@ -793,17 +812,19 @@ class Orders(BaseView):
         qs = DBSession.query(Order)\
             .filter(Order.deleted_at==None).filter(Order.id.in_(ords))\
             .filter(Order.issued==False)\
-            .filter(OrderedProduct.order_id.in_(ords))\
-            .filter(OrderedProductItem.ordered_product_id==OrderedProduct.id)\
-            .filter(ProductItem.id==OrderedProductItem.product_item_id)\
-            .filter(TicketBundle.id==ProductItem.ticket_bundle_id)\
-            .filter(Ticket_TicketBundle.ticket_bundle_id==TicketBundle.id)\
-            .filter(Ticket.id==Ticket_TicketBundle.ticket_id)\
-            .filter(TicketFormat.id==ticket_format_id) \
-            .distinct()
+
+        if ticket_format_id:
+            qs = qs.filter(OrderedProduct.order_id.in_(ords))\
+                .filter(OrderedProductItem.ordered_product_id==OrderedProduct.id)\
+                .filter(ProductItem.id==OrderedProductItem.product_item_id)\
+                .filter(TicketBundle.id==ProductItem.ticket_bundle_id)\
+                .filter(Ticket_TicketBundle.ticket_bundle_id==TicketBundle.id)\
+                .filter(Ticket.id==Ticket_TicketBundle.ticket_id)\
+                .filter(TicketFormat.id==ticket_format_id) \
+                .distinct()
 
         for order in qs:
-            utils.enqueue_for_order(operator=self.context.user, order=order, ticket_format=ticket_format)
+            utils.enqueue_for_order(operator=self.context.user, order=order, ticket_format_id=ticket_format_id)
 
         # def clean_session_callback(request):
         logger.info("*ticketing print queue many* clean session")
@@ -812,8 +833,7 @@ class Orders(BaseView):
             session_values.remove("o:%s" % order.id)
         self.request.session["orders"] = session_values
         # self.request.add_finished_callback(clean_session_callback)
-
-        self.request.session.flash(u'券面を印刷キューに追加しました')
+        self.request.session.flash(u'券面を印刷キューに追加しました. (既に印刷済みの注文は印刷キューに追加されません)')
         return HTTPFound(location=self.request.route_path('orders.index'))
 
     @view_config(route_name="orders.print.queue.strict", request_method="POST", permission='sales_counter')
@@ -829,7 +849,7 @@ class Orders(BaseView):
         utils.enqueue_for_order(
             operator=self.context.user,
             order=order,
-            ticket_format=TicketFormat.query.filter_by(id=form.data['ticket_format_id']).one()
+            ticket_format_id=TicketFormat.query.filter_by(id=form.data['ticket_format_id']).one().id
             )
         self.request.session.flash(u'券面を印刷キューに追加しました')
         return HTTPFound(location=self.request.route_path('orders.show', order_id=order_id))

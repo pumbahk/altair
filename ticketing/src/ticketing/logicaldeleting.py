@@ -16,15 +16,14 @@ def install():
 class LogicalDeletableQuery(orm.Query):
     def filter(self, *args, **kwargs):
         q = super(LogicalDeletableQuery, self).filter(*args, **kwargs)
-
-        condition = args[0]
-        for side in ('left', 'right'):
-
-            if hasattr(condition, side):
-                operand = getattr(condition, side)
-                if hasattr(operand, "table"):
-                    if hasattr(operand.table.c, "deleted_at"):
-                        q = orm.Query.filter(q, operand.table.c.deleted_at==None)
+        if hasattr(q, '_enable_logical_delete') and q._enable_logical_delete:
+            condition = args[0]
+            for side in ('left', 'right'):
+                if hasattr(condition, side):
+                    operand = getattr(condition, side)
+                    if hasattr(operand, "table"):
+                        if hasattr(operand.table.c, "deleted_at"):
+                            q = orm.Query.filter(q, operand.table.c.deleted_at==None)
         return q
 
 class LogicalDeletableSession(orm.Session):
@@ -33,7 +32,10 @@ class LogicalDeletableSession(orm.Session):
         super(LogicalDeletableSession, self).__init__(*args, **kwargs)
 
     def query(self, *args, **kwargs):
+        include_deleted = kwargs.pop('include_deleted', False)
         q = super(LogicalDeletableSession, self).query(*args, **kwargs)
+        if include_deleted:
+            return q
         option = LogicalDeletingOption("deleted_at")
         return option._process(q)
 
@@ -47,12 +49,10 @@ class LogicalDeletingOption(MapperOption):
     def process_query_conditionally(self, query):
         self._process(query)
 
-
     def _process(self, query):
-        
         _query = query
         assert query._entities
-        for e in  query._entities:
+        for e in query._entities:
             if hasattr(e.type, self.attr_name):
                 query = query.filter(getattr(e.type, self.attr_name)==None)
             elif hasattr(e, 'actual_froms'):
@@ -61,5 +61,5 @@ class LogicalDeletingOption(MapperOption):
                         query = query.filter(getattr(t.c, self.attr_name)==None)
         _query._criterion = query._criterion
         _query._enable_assertions = False
+        _query._enable_logical_delete = True
         return _query
-

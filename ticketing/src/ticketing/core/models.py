@@ -2,6 +2,7 @@
 import logging
 import itertools
 import operator
+import operator as op
 import json
 import re
 from urlparse import urljoin
@@ -582,6 +583,16 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         return query
 
+    def has_that_delivery(self, delivery_plugin_id):
+        qs = DBSession.query(DeliveryMethod)\
+            .filter(DeliveryMethod.delivery_plugin_id==delivery_plugin_id)\
+            .filter(DeliveryMethod.id==PaymentDeliveryMethodPair.delivery_method_id)\
+            .filter(PaymentDeliveryMethodPair.sales_segment_id == SalesSegment.id)\
+            .filter(SalesSegment.id==Product.sales_segment_id)\
+            .filter(Product.id==ProductItem.product_id)\
+            .filter(ProductItem.performance_id==self.id)
+        return bool(qs.first())
+
 class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Event'
 
@@ -715,16 +726,20 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if not (sales_start_on and sales_end_on) and not self.deleted_at:
             raise Exception(u'販売期間が登録されていないイベントは送信できません')
 
-        # 論理削除レコードも含めるので{Model}.query.filter()で取得している
+        # 論理削除レコードも含めて取得
+        performances = DBSession.query(Performance, include_deleted=True).filter_by(event_id=self.id)\
+                                .options(joinedload('product_items'), joinedload('venue'), joinedload('product_items.product')).all()
+        products = Product.find(event_id=self.id, include_deleted=True)
+        sales_segments = DBSession.query(SalesSegment, include_deleted=True).filter_by(event_id=self.id).all()
         data = self._get_self_cms_data()
         data.update({
             'start_on':start_on,
             'end_on':end_on,
             'deal_open':sales_start_on,
             'deal_close':sales_end_on,
-            'performances':[p.get_cms_data() for p in Performance.query.filter_by(event_id=self.id).all()],
-            'tickets':[p.get_cms_data() for p in Product.find(event_id=self.id, include_deleted=True)],
-            'sales':[s.get_cms_data() for s in SalesSegment.query.filter_by(event_id=self.id).all()],
+            'performances':[p.get_cms_data() for p in performances],
+            'tickets':[p.get_cms_data() for p in products],
+            'sales':[s.get_cms_data() for s in sales_segments],
         })
         if self.deleted_at:
             data['deleted'] = 'true'
@@ -1122,10 +1137,18 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         product_item = ProductItem.clone(template)
         if 'performance_id' in kwargs:
             product_item.performance_id = kwargs['performance_id']
-        if 'stock_id' in kwargs:
-            product_item.stock_id = kwargs['stock_id']
         if 'product_id' in kwargs:
             product_item.product_id = kwargs['product_id']
+        if 'stock_id' in kwargs:
+            product_item.stock_id = kwargs['stock_id']
+        elif 'stock_holder_id' in kwargs and kwargs['stock_holder_id']:
+            conditions ={
+                'performance_id':product_item.performance_id,
+                'stock_holder_id':kwargs['stock_holder_id'],
+                'stock_type_id':template.stock.stock_type_id
+            }
+            stock = Stock.filter_by(**conditions).first()
+            product_item.stock = stock
         product_item.save()
 
 class StockTypeEnum(StandardEnum):
@@ -1415,7 +1438,7 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @staticmethod
     def find(performance_id=None, event_id=None, sales_segment_id=None, stock_id=None, include_deleted=False):
-        query = Product.query
+        query = DBSession.query(Product, include_deleted=include_deleted)
         if performance_id:
             query = query.join(Product.items).filter(ProductItem.performance_id==performance_id)
         if event_id:
@@ -1426,8 +1449,6 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             if not performance_id:
                 query = query.join(Product.items)
             query = query.filter(ProductItem.stock_id==stock_id)
-        if not include_deleted:
-            query = query.filter(Product.deleted_at==None)
         return query.all()
 
     @staticmethod
@@ -1520,8 +1541,9 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         product.save()
 
         if with_product_items:
+            stock_holder_id = kwargs['stock_holder_id'] if 'stock_holder_id' in kwargs else None
             for template_product_item in template.items:
-                ProductItem.create_from_template(template=template_product_item, product_id=product.id)
+                ProductItem.create_from_template(template=template_product_item, product_id=product.id, stock_holder_id=stock_holder_id)
 
         return {template.id:product.id}
 
@@ -1562,6 +1584,7 @@ class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
     code = Column(String(3))  # 2桁英字大文字のみ
+    short_name = Column(String(32), nullable=False, index=True, doc=u"templateの出し分けなどに使う e.g. %(short_name)s/index.html")
     client_type = Column(Integer)
     contact_email = Column(String(255))
     city = Column(String(255))
@@ -1585,6 +1608,8 @@ orders_seat_table = Table("orders_seat", Base.metadata,
 
 class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'ShippingAddress'
+    __clone_excluded__ = ['user', 'cart']
+
     id = Column(Identifier, primary_key=True)
     user_id = Column(Identifier, ForeignKey("User.id"))
     user = relationship('User', backref='shipping_addresses')
@@ -1617,6 +1642,11 @@ class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Order'
+    __table_args__= (
+        UniqueConstraint('order_no', 'branch_no', name="ix_Order_order_no_branch_no"),
+        )
+    __clone_excluded__ = ['carts', 'ordered_from', 'payment_delivery_pair', 'performance', 'user', '_attributes']
+
     id = Column(Identifier, primary_key=True)
     user_id = Column(Identifier, ForeignKey("User.id"))
     user = relationship('User')
@@ -1641,6 +1671,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     canceled_at = Column(DateTime, nullable=True, default=None)
 
     order_no = Column(String(255))
+    branch_no = Column(Integer, nullable=False, default=1, server_default='1')
     note = Column(UnicodeText, nullable=True, default=None)
 
     issued = Column(Boolean, nullable=False, default=False)
@@ -1826,9 +1857,21 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         else:
             return False
 
+    def delete(self):
+        # delete OrderedProduct
+        for ordered_product in self.items:
+            ordered_product.delete()
+
+        # delete ShippingAddress
+        if self.shipping_address:
+            self.shipping_address.delete()
+
+        super(Order, self).delete()
+
     @staticmethod
-    def get(id, organization_id):
-        return Order.filter_by(id=id, organization_id=organization_id).first()
+    def get(id, organization_id, include_deleted=False):
+        query = DBSession.query(Order, include_deleted=include_deleted).filter_by(id=id, organization_id=organization_id)
+        return query.first()
 
     @classmethod
     def create_from_cart(cls, cart):
@@ -1977,6 +2020,8 @@ class OrderedProductAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderedProduct'
+    __clone_excluded__ = ['order_id', 'product']
+
     id = Column(Identifier, primary_key=True)
     order_id = Column(Identifier, ForeignKey("Order.id"))
     order = relationship('Order', backref='ordered_products')
@@ -1985,18 +2030,27 @@ class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     price = Column(Numeric(precision=16, scale=2), nullable=False)
     quantity = Column(Integer)
 
-    def release(self):
-        # 在庫を解放する
-        for item in self.ordered_product_items:
-            item.release()
-
     @property
     def seats(self):
         return sorted(itertools.chain.from_iterable(i.seatdicts for i in self.ordered_product_items),
             key=operator.itemgetter('l0_id'))
 
+    def release(self):
+        # 在庫を解放する
+        for item in self.ordered_product_items:
+            item.release()
+
+    def delete(self):
+        # delete OrderedProductItem
+        for ordered_product_item in self.ordered_product_items:
+            ordered_product_item.delete()
+
+        super(OrderedProduct, self).delete()
+
 class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderedProductItem'
+    __clone_excluded__ = ['ordered_product_id', 'product_item', 'seats', '_attributes']
+
     id = Column(Identifier, primary_key=True)
     ordered_product_id = Column(Identifier, ForeignKey("OrderedProduct.id"))
     ordered_product = relationship('OrderedProduct', backref='ordered_product_items')
@@ -2004,8 +2058,6 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     product_item = relationship('ProductItem', backref='ordered_product_items')
     issued_at = Column(DateTime, nullable=True, default=None)
     printed_at = Column(DateTime, nullable=True, default=None)
-#    seat_id = Column(Identifier, ForeignKey('Seat.id'))
-#    seat = relationship('Seat')
     seats = relationship("Seat", secondary=orders_seat_table, backref='ordered_product_items')
     price = Column(Numeric(precision=16, scale=2), nullable=False)
 
@@ -2073,9 +2125,11 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         total = len(self.tokens)
         issued_count = len([i for i in self.tokens if i.issued_at])
         return dict(issued=issued_count, total=total)
-        
+
 class OrderedProductItemToken(Base,BaseModel, LogicallyDeleted):
     __tablename__ = "OrderedProductItemToken"
+    __clone_excluded__ = ['seat']
+
     id = Column(Identifier, primary_key=True)
     ordered_product_item_id = Column(Identifier, ForeignKey("OrderedProductItem.id", ondelete="CASCADE"), nullable=False)
     item = relationship("OrderedProductItem", backref="tokens")
@@ -2248,9 +2302,13 @@ class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         for product_item in news:
             self.product_items.append(product_item)
 
+    def can_issue_by_that_delivery(self,  delivery_plugin_id):
+        return any(True for _ in self.applicable_ticket_iter(delivery_plugin_id))
 
 class TicketPrintHistory(Base, BaseModel, WithTimestamp):
     __tablename__ = "TicketPrintHistory"
+    __clone_excluded__ = ['operator', 'seat', 'ticket']
+
     id = Column(Identifier, primary_key=True, autoincrement=True, nullable=False)
     operator_id = Column(Identifier, ForeignKey('Operator.id'), nullable=True)
     operator = relationship('Operator', uselist=False)

@@ -4,11 +4,20 @@
 <script type="text/javascript">
   $(function() {
     $('.datefield').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
+
     $('#modal-sales_segment').find("input[type='checkbox']").change(function() {
       if ($(this).attr('checked')) {
         $(this).val(1);
       } else {
         $(this).val(0);
+      }
+    }).change();
+
+    $('#modal-sales_segment #copy_products').change(function() {
+      if ($(this).attr('checked')) {
+        $('#copy-products-fields').css('display', 'block');
+      } else {
+        $('#copy-products-fields').css('display', 'none');
       }
     }).change();
   });
@@ -36,6 +45,9 @@
         ${h.form_item(form.copy, option={"style":"display: none;"})}
         ${h.form_item(form.copy_payment_delivery_method_pairs)}
         ${h.form_item(form.copy_products)}
+        <span id="copy-products-fields" style="display: none;">
+          ${h.form_item(form.copy_to_stock_holder)}
+        </span>
       </div>
       <p>※セブンイレブン発券では発券日を指定した場合「前払い後日発券」になります。</p>
     </form>

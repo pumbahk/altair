@@ -25,7 +25,7 @@ class PageRenderingResource(object):
         return api.get_frontpage_render(self.request)
 
     def frontpage_template(self, page):
-        filename = page.layout.template_filename
+        filename = page.layout.prefixed_template_filename
         return api.get_frontpage_template(self.request, filename)
 
 

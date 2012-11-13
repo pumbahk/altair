@@ -46,7 +46,6 @@ class SelectableRenderer(object):
         self.info = info
         ## xxx: this is hack.
         self.path_format = self.info.name._path_format
-        ### todo: default value
         self.renderers = {}
 
     def get_sub_renderer(self, path):
@@ -91,19 +90,10 @@ class ByDomainMappingSelector(object):
 
     def __call__(self, helper, value, system_values, request=None):
         assert request
-        #mapped = self.lookup_mapped(request.host)
         organization = core_api.get_organization(request)
         try:
-            mapped = Membership.query.filter_by(deleted_at=None, organization=organization).first()
-            return build_renderer_path(helper.path_format, membership=mapped.name)
+            return build_renderer_path(helper.path_format, membership=organization.short_name)
         except NoResultFound:
             logger.warning("No matching template configuration found: using default configuration")
             return build_renderer_path(helper.path_format, membership='__default__')
-
-## xxx: move
-def get_membership_from_request(request):
-    selector = request.registry.getUtility(ISelectableRendererSelector) ## xxx:
-    assert isinstance(selector, ByDomainMappingSelector)
-    organization = core_api.get_organization(request)
-    return Membership.query.filter_by(deleted_at=None, organization=organization).first().name
 

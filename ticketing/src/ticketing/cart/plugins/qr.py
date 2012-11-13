@@ -13,7 +13,8 @@ from ticketing.qr import qr
 from ticketing.cart import helpers as cart_helper
 from ticketing.core import models as c_models
 from collections import namedtuple
-DELIVERY_PLUGIN_ID = 4
+
+from . import QR_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
 
 def includeme(config):
     config.add_delivery_plugin(QRTicketDeliveryPlugin(), DELIVERY_PLUGIN_ID)

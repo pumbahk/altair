@@ -11,7 +11,11 @@ from . import searcher
 
 logger = logging.getLogger(__file__)
 
-@view_config(route_name="page_search_input", renderer="altaircms:templates/front/layout/ticketstar.search.input.mako")
+def enable_search_function(info, request):
+    return request.organization.use_full_usersite if request.organization else False
+
+@view_config(custom_predicates=(enable_search_function, ), 
+             route_name="page_search_input", renderer="altaircms:templates/front/layout/ticketstar/ticketstar.search.input.mako")
 def page_search_input(request):
     """ 絞り込み検索フォーム画面
     """
@@ -19,7 +23,8 @@ def page_search_input(request):
     params.update(forms=forms.get_search_forms())
     return params
 
-@view_config(route_name="page_search_result", renderer="altaircms:templates/front/layout/ticketstar.search.mako")
+@view_config(custom_predicates=(enable_search_function, ), 
+             route_name="page_search_result", renderer="altaircms:templates/front/layout/ticketstar/ticketstar.search.mako")
 def page_search_result(request):
     """ 詳細検索 検索結果
     """
@@ -39,8 +44,9 @@ def page_search_result(request):
         logger.exception(e)
         raise HTTPNotFound
 
-@view_config(request_param="q", route_name="page_search_by_freeword", 
-             renderer="altaircms:templates/front/layout/ticketstar.search.mako")
+@view_config(custom_predicates=(enable_search_function, ), 
+             request_param="q", route_name="page_search_by_freeword", 
+             renderer="altaircms:templates/front/layout/ticketstar/ticketstar.search.mako")
 def search_by_freeword(context, request):
     """ フリーワード検索
     """
@@ -63,8 +69,9 @@ def search_by_freeword(context, request):
         raise HTTPNotFound
 
 
-@view_config(route_name="page_search_by_multi", 
-             renderer="altaircms:templates/front/layout/ticketstar.search.mako")
+@view_config(custom_predicates=(enable_search_function, ), 
+             route_name="page_search_by_multi", 
+             renderer="altaircms:templates/front/layout/ticketstar/ticketstar.search.mako")
 def search_by_multi(request):
     """ topページの複数記入できるフォーム。
     """
@@ -85,7 +92,8 @@ def search_by_multi(request):
         raise HTTPNotFound
 
 
-@view_defaults(route_name="page_search_by", renderer="altaircms:templates/front/layout/ticketstar.search.mako")
+@view_defaults(custom_predicates=(enable_search_function, ), 
+               route_name="page_search_by", renderer="altaircms:templates/front/layout/ticketstar/ticketstar.search.mako")
 class SearchByKindView(object):
     def __init__(self, context, request):
         self.request = request

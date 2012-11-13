@@ -16,7 +16,8 @@ from ticketing.core.models import MailTypeEnum
 from ticketing.checkout import api
 from ticketing.checkout import helpers
 
-PAYMENT_PLUGIN_ID = 2
+
+from . import CHECKOUT_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 
 def includeme(config):
     # 決済系(楽天あんしん決済)

@@ -19,7 +19,7 @@ def touch_operator_after_login(self): ## self is AfterLogin
     roles = h.get_roles_from_role_names(role_names)
 
     auth_source = "oauth" ## これ本当はResponseでもらわないといけない
-    organization = h.get_or_create_organization(auth_source, data["organization_id"], data["organization_name"])
+    organization = h.get_or_create_organization(auth_source, data["organization_id"], data["organization_name"],  data["organization_short_name"])
 
     operator = h.get_or_create_operator(auth_source, data["user_id"], data["screen_name"])
     operator = h.update_operator_with_data(operator, roles, data)

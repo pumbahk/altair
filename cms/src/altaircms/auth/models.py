@@ -5,12 +5,13 @@
 from datetime import datetime
 import sqlahelper
 from sqlalchemy.orm import relationship, backref
-
+import sqlalchemy as sa
 from sqlalchemy.schema import Table, Column, ForeignKey, UniqueConstraint
 from sqlalchemy.types import String, DateTime, Integer, Unicode, Enum
 from sqlalchemy.ext.associationproxy import association_proxy
 from zope.deprecation import deprecation
-from altaircms.models import WithOrganizationMixin
+from altaircms.models import WithOrganizationMixin, BaseOriginalMixin, DBSession
+import hashlib
 
 Base = sqlahelper.get_base()
 _session = sqlahelper.get_session()
@@ -127,6 +128,26 @@ operator_role = Table(
 )
 
 
+class OperatorSelfAuth(Base):
+    __tablename__ = "operator_selfauth"
+    query = _session.query_property()    
+
+    operator_id = Column(Integer, ForeignKey("operator.id"), primary_key=True)
+    operator = relationship("Operator", uselist=False)
+    password = Column(String(64))
+
+    @classmethod
+    def get_login_user(self, organization_id, name, password):
+        password = hashlib.sha256(password).hexdigest()
+        return Operator.query.filter(Operator.organization_id==organization_id, Operator.screen_name==name)\
+            .filter(OperatorSelfAuth.password==password).first()
+
+    @classmethod
+    def bound_selfauth(cls, operator, password):
+        password = hashlib.sha256(password).hexdigest()
+        return cls(operator=operator, password=password)
+
+
 class Operator(WithOrganizationMixin, Base):
     """
     サイト管理者
@@ -204,6 +225,8 @@ class Organization(Base):
     updated_at = Column(DateTime, default=datetime.now())
 
     auth_source = Column(String(255)) ##nullable=False?
+    short_name = Column(String(32),index=True, nullable=False)
+    use_full_usersite = Column(sa.Boolean, default=False)
     name = Column(Unicode(255))
     prefecture = Column(Unicode(255))
     address = Column(Unicode(255))
@@ -225,6 +248,15 @@ class Organization(Base):
         if obj:
             return obj
         return cls(backend_id=backend_id, auth_source=source)
+
+class WithOrganizationMixin(object):
+    organization_id = sa.Column(sa.Integer, index=True) ## need FK?(organization.id)
+
+    @property
+    def organization(self):
+        if self.organization_id is None:
+            return None
+        return Organization.query.filter_by(id=self.organization_id)
         
 
 class APIKey(Base):
@@ -244,3 +276,12 @@ class APIKey(Base):
 
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now())
+
+class Host(BaseOriginalMixin, WithOrganizationMixin, Base):
+    __tablename__ = 'host'
+
+    query = DBSession.query_property()
+
+    id = sa.Column(sa.Integer, primary_key=True)
+    host_name = sa.Column(sa.Unicode(255), unique=True, index=True)
+

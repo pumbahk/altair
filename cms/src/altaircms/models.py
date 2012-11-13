@@ -46,6 +46,7 @@ def model_clone(obj):
     return cloned
             
 class BaseOriginalMixin(object):
+
     def to_dict(self):
         return model_to_dict(self)
 

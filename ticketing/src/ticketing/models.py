@@ -193,10 +193,12 @@ class Cloner(object):
                         if not hasattr(obj.__class__, 'clone'):
                             raise TypeError('%s, contained in property %s is not cloneable' % (obj, key))
                         objs.append(self(obj.__class__, obj))
-                    setattr(retval, key, objs)
+                    if objs:
+                        setattr(retval, key, objs)
                 else:
                     obj = getattr(origin, key)
-                    setattr(retval, key, self(obj.__class__, obj))
+                    if obj:
+                        setattr(retval, key, self(obj.__class__, obj))
 
         return retval
 

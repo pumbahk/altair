@@ -10,10 +10,20 @@ from .bsettings import BlockSettings
 from . import helpers as h
 from .impl import ILayoutTemplateLookUp
 
-from .helpers import get_navigation_categories
-
 import logging
 logger = logging.getLogger(__file__)
+
+def get_navigation_categories(request):
+    """ ページヘッダのナビゲーション用のcategoryを取得する。
+    """
+    top_outer_categories = h._get_categories(request, hierarchy=u"top_outer")
+    top_inner_categories = h._get_categories(request, hierarchy=u"top_inner")
+
+    categories = h._get_categories(request, hierarchy=u"大")
+
+    return dict(categories=categories,
+                top_outer_categories=top_outer_categories,
+                top_inner_categories=top_inner_categories)
 
 def get_current_hotwords(request, _nowday=datetime.now):
     today = _nowday()
@@ -78,7 +88,7 @@ class FrontPageRenderer(object):
         return bsettings
 
     def build_render_params(self, page):
-        params = h.get_navigation_categories(self.request)
+        params = {}
         params.update(sub_categories=h.get_subcategories_from_page(self.request, page), 
                       myhelper=h)
         return params

@@ -6,9 +6,17 @@ from wtforms.validators import Regexp, Length, Optional, ValidationError
 from wtforms.widgets import CheckboxInput
 
 from ticketing.formhelpers import DateTimeField, Translations, Required
-from ticketing.core.models import SalesSegmentKindEnum
+from ticketing.core.models import SalesSegmentKindEnum, Event, StockHolder
 
 class SalesSegmentForm(Form):
+
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        Form.__init__(self, formdata, obj, prefix, **kwargs)
+        if 'event_id' in kwargs:
+            event = Event.get(kwargs['event_id'])
+            self.copy_to_stock_holder.choices = [('', u'変更しない')] + [
+                (str(sh.id), sh.name) for sh in StockHolder.get_seller(event)
+            ]
 
     def _get_translations(self):
         return Translations()
@@ -72,6 +80,12 @@ class SalesSegmentForm(Form):
         label=u'商品をコピーする',
         default=0,
         widget=CheckboxInput(),
+    )
+    copy_to_stock_holder = SelectField(
+        label=u'商品在庫の配券先を一括設定する',
+        validators=[Optional()],
+        choices=[],
+        coerce=str,
     )
 
     def validate_end_at(form, field):

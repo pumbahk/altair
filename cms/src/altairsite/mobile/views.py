@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 from pyramid.view import view_config
+from pyramid.httpexceptions import HTTPNotFound
 from altaircms.models import Category
 from altaircms.page.models import PageSet
 from altaircms.topic.models import Topic, Topcontent
@@ -8,20 +9,29 @@ from . import helpers as h
 from . import api
 from altairsite.search import api as search_api
 
-@view_config(route_name="mobile_index", renderer="altaircms:templates/mobile/index.mako")
+def enable_usersite_function(info, request):
+    return request.organization.use_full_usersite if request.organization else False
+
+@view_config(custom_predicates=(enable_usersite_function, ), 
+             route_name="mobile_index", renderer="altaircms:templates/mobile/index.mako")
 def mobile_index(request):
     today = datetime.now()
     pageset = PageSet.query.filter(Category.name=="index").filter(PageSet.id==Category.pageset_id).first()
-
+    if pageset is None:
+        return {"topics": Topic.query.filter_by(id=-1), "picks": Topcontent.query.filter_by(id=-1)}
     topics = Topic.matched_qs(d=today, kind=u"トピックス", page=pageset)
     picks = Topcontent.matched_qs(d=today, kind=u"注目のイベント", page=pageset)
     return {"page": pageset.current(), "topics": topics, "picks":picks}
 
 
-@view_config(route_name="mobile_detail", renderer="altaircms:templates/mobile/detail.mako")
+@view_config(custom_predicates=(enable_usersite_function, ), 
+             route_name="mobile_detail", renderer="altaircms:templates/mobile/detail.mako")
 def mobile_detail(request):
     today = datetime.now()
     pageset = PageSet.query.filter_by(id=request.matchdict["pageset_id"]).first()
+    if pageset is None or pageset.event is None:
+        raise HTTPNotFound
+    
     return {"page": pageset.current(), "event": pageset.event, "performances": pageset.event.performances, 
             "today": today}
 
@@ -29,12 +39,14 @@ def mobile_detail(request):
 def enable_categories(info, request):
     return request.matchdict["category"] in ("music", "sports", "stage", "event")
 
-@view_config(route_name="mobile_category", custom_predicates=(enable_categories,), 
+@view_config(route_name="mobile_category", custom_predicates=(enable_categories, enable_usersite_function), 
              renderer="altaircms:templates/mobile/category.mako")
 def mobile_category(request):
     today = datetime.now()
     category_name = request.matchdict["category"]
     root = Category.query.filter_by(name=category_name).first()
+    if root is None:
+        raise HTTPNotFound
     picks = Topcontent.matched_qs(d=today, kind=u"注目のイベント", page=root.pageset)
 
     topics = Topic.matched_qs(d=today, kind=u"トピックス", page=root.pageset).filter_by(is_global=False)
@@ -47,7 +59,8 @@ def mobile_category(request):
             "subcategories": Category.query.filter_by(parent=root)}
 
 
-@view_config(request_param="q", route_name="mobile_search", 
+@view_config(custom_predicates=(enable_usersite_function, ), 
+             request_param="q", route_name="mobile_search", 
              renderer="altaircms:templates/mobile/search.mako")
 def search_by_freeword(context, request):
     """ フリーワード検索 + categoryごとの数
@@ -72,7 +85,7 @@ def search_by_freeword(context, request):
 from pyramid.renderers import render_to_response
 import os.path
 
-@view_config(route_name="mobile_semi_static")
+@view_config(custom_predicates=(enable_usersite_function, ), route_name="mobile_semi_static")
 def mobile_semi_static(request):
     ## normalize
     filename = request.matchdict["filename"]

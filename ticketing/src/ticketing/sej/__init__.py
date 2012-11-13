@@ -14,7 +14,8 @@ def includeme(config):
     config.add_route('sej.callback.form'            , '/callback/form')
 
 def main(global_config, **settings):
-    engine = engine_from_config(settings)
+    from sqlalchemy.pool import NullPool
+    engine = engine_from_config(settings, poolclass=NullPool)
     sqlahelper.add_engine(engine)
 
     config = Configurator(settings=settings)

@@ -91,8 +91,8 @@ class ProductItemForm(Form):
         event_id = kwargs.get('event_id')
         if performance_id is not None:
             performance = Performance.get(performance_id)
-            stock_holders = StockHolder.get_seller(performance.event)
             event_id = performance.event_id
+            stock_holders = StockHolder.get_seller(performance.event)
             self.stock_holders.choices = [(sh.id, sh.name) for sh in stock_holders]
         if event_id is not None:
             ticket_bundles = TicketBundle.filter_by(event_id=event_id)

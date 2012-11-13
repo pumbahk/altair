@@ -11,8 +11,8 @@ from ..interfaces import IPaymentPlugin, IOrderPayment, ICartPayment
 from . import models as m
 from . import logger
 
-PLUGIN_ID = 3
-PAYMENT_PLUGIN_ID = 4
+from . import RESERVE_NUMBER_DELIVERY_PLUGIN_ID as PLUGIN_ID
+from . import RESERVE_NUMBER_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 
 def includeme(config):
     config.add_delivery_plugin(ReservedNumberDeliveryPlugin(), PLUGIN_ID)
