@@ -4,7 +4,8 @@ import re
 from datetime import datetime
 from itertools import groupby
 
-from ticketing.core.models import SeatStatusEnum
+from ticketing.models import DBSession
+from ticketing.core.models import SeatStatusEnum, VenueArea
 from ticketing.helpers.base import jdate, jtime
 
 import logging
@@ -147,28 +148,31 @@ def seat_source_from_seat(seat):
     """
     attributes = seat.attributes or {}
     seat_source = SeatSource(source=seat)
-    if attributes:
-        if 'floor' in attributes:
-            seat_source.floor = attributes.get('floor')
     
-    # ブロック名は、SeatAttributeには無く、
+    # フロアは、SeatAttributeのを使う
+    if 'floor' in attributes:
+        seat_source.floor = attributes.get('floor')
+
+    # ブロック名は、SeatAttributeには無い
 #   if attributes:
 #       if 'block' in attributes:
 #           seat_source.block = attributes.get('block')
 
-    # こちらを使いたいがSeat.areasがバグっている模様
-#   print "seat: %s" % seat.id
-#   for va in seat.areas:
-#       print "va: %s" % va.name
-#       seat_source.block = va.name
+    # ブロック名は、VenueAreaを検索して使う
+    area = DBSession.query(VenueArea).join(VenueArea.groups)\
+        .filter_by(venue_id=seat.venue_id)\
+        .filter_by(group_l0_id=seat.group_l0_id).one()
+    seat_source.block = area.name
     
-    # なので、席番号から切りだして使う
-    seat_source.block = seat_source.get_block_display()
+    # ブロック名は、席番号から切りだして使う（いまいち）
+#   seat_source.block = seat_source.get_block_display()
     
     # 列番号は、SeatAttributeのを使う
-    if attributes:
-        if 'row' in attributes:
-           seat_source.line = attributes.get('row')
+    seat_source.line = ''
+    if 'row' in attributes:
+       seat_source.line = attributes.get('row')
+
+    # 列番号は、席番号から切りだして使う（いまいち）
 #   seat_source.line = seat_source.get_row_display()
     
     seat_source.seat = seat.seat_no
