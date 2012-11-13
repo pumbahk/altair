@@ -726,16 +726,20 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if not (sales_start_on and sales_end_on) and not self.deleted_at:
             raise Exception(u'販売期間が登録されていないイベントは送信できません')
 
-        # 論理削除レコードも含めるので{Model}.query.filter()で取得している
+        # 論理削除レコードも含めて取得
+        performances = DBSession.query(Performance, include_deleted=True).filter_by(event_id=self.id)\
+                                .options(joinedload('product_items'), joinedload('venue'), joinedload('product_items.product')).all()
+        products = Product.find(event_id=self.id, include_deleted=True)
+        sales_segments = DBSession.query(SalesSegment, include_deleted=True).filter_by(event_id=self.id).all()
         data = self._get_self_cms_data()
         data.update({
             'start_on':start_on,
             'end_on':end_on,
             'deal_open':sales_start_on,
             'deal_close':sales_end_on,
-            'performances':[p.get_cms_data() for p in Performance.query.filter_by(event_id=self.id).all()],
-            'tickets':[p.get_cms_data() for p in Product.find(event_id=self.id, include_deleted=True)],
-            'sales':[s.get_cms_data() for s in SalesSegment.query.filter_by(event_id=self.id).all()],
+            'performances':[p.get_cms_data() for p in performances],
+            'tickets':[p.get_cms_data() for p in products],
+            'sales':[s.get_cms_data() for s in sales_segments],
         })
         if self.deleted_at:
             data['deleted'] = 'true'
@@ -1426,7 +1430,7 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @staticmethod
     def find(performance_id=None, event_id=None, sales_segment_id=None, stock_id=None, include_deleted=False):
-        query = Product.query
+        query = DBSession.query(Product, include_deleted=include_deleted)
         if performance_id:
             query = query.join(Product.items).filter(ProductItem.performance_id==performance_id)
         if event_id:
@@ -1437,8 +1441,6 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             if not performance_id:
                 query = query.join(Product.items)
             query = query.filter(ProductItem.stock_id==stock_id)
-        if not include_deleted:
-            query = query.filter(Product.deleted_at==None)
         return query.all()
 
     @staticmethod
@@ -1860,8 +1862,6 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @staticmethod
     def get(id, organization_id, include_deleted=False):
         query = DBSession.query(Order, include_deleted=include_deleted).filter_by(id=id, organization_id=organization_id)
-        if include_deleted:
-            query = query.filter(include_deleted=include_deleted)
         return query.first()
 
     @classmethod

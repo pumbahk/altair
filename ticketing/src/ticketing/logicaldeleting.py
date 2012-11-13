@@ -15,18 +15,15 @@ def install():
 
 class LogicalDeletableQuery(orm.Query):
     def filter(self, *args, **kwargs):
-        include_deleted = kwargs.pop('include_deleted', False)
         q = super(LogicalDeletableQuery, self).filter(*args, **kwargs)
-        if include_deleted:
-            return q
-
-        condition = args[0]
-        for side in ('left', 'right'):
-            if hasattr(condition, side):
-                operand = getattr(condition, side)
-                if hasattr(operand, "table"):
-                    if hasattr(operand.table.c, "deleted_at"):
-                        q = orm.Query.filter(q, operand.table.c.deleted_at==None)
+        if hasattr(q, '_enable_logical_delete') and q._enable_logical_delete:
+            condition = args[0]
+            for side in ('left', 'right'):
+                if hasattr(condition, side):
+                    operand = getattr(condition, side)
+                    if hasattr(operand, "table"):
+                        if hasattr(operand.table.c, "deleted_at"):
+                            q = orm.Query.filter(q, operand.table.c.deleted_at==None)
         return q
 
 class LogicalDeletableSession(orm.Session):
@@ -64,4 +61,5 @@ class LogicalDeletingOption(MapperOption):
                         query = query.filter(getattr(t.c, self.attr_name)==None)
         _query._criterion = query._criterion
         _query._enable_assertions = False
+        _query._enable_logical_delete = True
         return _query

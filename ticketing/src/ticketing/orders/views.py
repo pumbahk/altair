@@ -270,7 +270,7 @@ class Orders(BaseView):
             raise HTTPNotFound('order id %d is not found' % order_id)
 
         order_history = DBSession.query(Order, include_deleted=True)\
-                                 .filter(Order.order_no==order.order_no, include_deleted=True)\
+                                 .filter(Order.order_no==order.order_no)\
                                  .options(joinedload('ordered_products'), joinedload('ordered_products.ordered_product_items'))\
                                  .order_by(Order.branch_no.desc()).all()
 
