@@ -159,16 +159,18 @@ def seat_source_from_seat(seat):
 #           seat_source.block = attributes.get('block')
 
     # ブロック名は、VenueAreaを検索して使う
+    # まれにgroup_l0_idがNULLな席とかがあってVenueArea.nameが拾えない場合があるので
+    # one()じゃなくてfirst()を使う
     area = DBSession.query(VenueArea).join(VenueArea.groups)\
         .filter_by(venue_id=seat.venue_id)\
-        .filter_by(group_l0_id=seat.group_l0_id).one()
-    seat_source.block = area.name
+        .filter_by(group_l0_id=seat.group_l0_id).first()
+    if area is not None:
+        seat_source.block = area.name
     
     # ブロック名は、席番号から切りだして使う（いまいち）
 #   seat_source.block = seat_source.get_block_display()
     
     # 列番号は、SeatAttributeのを使う
-    seat_source.line = ''
     if 'row' in attributes:
        seat_source.line = attributes.get('row')
 
