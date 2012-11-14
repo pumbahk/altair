@@ -219,7 +219,7 @@ class Events(BaseView):
             logging.warn("cms sync http error: response status url=(%s) %s" % (e.reason, e))
             self.request.session.flash(u'イベント送信に失敗しました (%s)' % e.reason)
         except Exception, e:
-            logging.error("cms sync error: %s, %s" % (e.reason, e.message))
+            logging.error("cms sync error: %s" % (e.message))
             self.request.session.flash(u'イベント送信に失敗しました')
 
         return HTTPFound(location=route_path('events.show', self.request, event_id=event.id))
