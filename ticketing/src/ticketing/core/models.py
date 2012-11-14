@@ -543,8 +543,8 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         data = {
             'id':self.id,
             'name':self.name,
-            'venue':self.venue.name,
-            'prefecture':self.venue.site.prefecture,
+            'venue':(self.venue.name if self.venue else ''),
+            'prefecture':(self.venue.site.prefecture if self.venue and self.venue.site else ''),
             'open_on':open_on,
             'start_on':start_on,
             'end_on':end_on,
@@ -727,8 +727,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             raise Exception(u'販売期間が登録されていないイベントは送信できません')
 
         # 論理削除レコードも含めて取得
-        performances = DBSession.query(Performance, include_deleted=True).filter_by(event_id=self.id)\
-                                .options(joinedload('product_items'), joinedload('venue'), joinedload('product_items.product')).all()
+        performances = DBSession.query(Performance, include_deleted=True).filter_by(event_id=self.id).all()
         products = Product.find(event_id=self.id, include_deleted=True)
         sales_segments = DBSession.query(SalesSegment, include_deleted=True).filter_by(event_id=self.id).all()
         data = self._get_self_cms_data()
