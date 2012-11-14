@@ -793,8 +793,7 @@ class Orders(BaseView):
                  renderer="ticketing:templates/orders/_print_queue_dialog.html", permission='sales_counter')
     def print_queue_dialog(self):
         order = Order.query.get(self.request.matchdict["order_id"])
-        form = CheckedOrderTicketChoiceForm(ticket_formats=available_ticket_formats_for_orders([order.id]))
-        return {"form": form, "order": order}
+        return {"order": order}
 
     @view_config(route_name="orders.checked.queue", request_method="POST", permission='sales_counter')
     @view_config(route_name="orders.print.queue.manymany", request_method="POST",
@@ -835,25 +834,6 @@ class Orders(BaseView):
         # self.request.add_finished_callback(clean_session_callback)
         self.request.session.flash(u'券面を印刷キューに追加しました. (既に印刷済みの注文は印刷キューに追加されません)')
         return HTTPFound(location=self.request.route_path('orders.index'))
-
-    @view_config(route_name="orders.print.queue.strict", request_method="POST", permission='sales_counter')
-    def order_print_queue_strict(self):
-        order_id = int(self.request.matchdict.get('order_id', 0))
-        order = Order.query.get(order_id)
-
-        form = CheckedOrderTicketChoiceForm(formdata=self.request.POST, ticket_formats=available_ticket_formats_for_orders([order.id]))
-        if not form.validate():
-            self.request.session.flash(u'失敗: %s' % form.errors)
-            return HTTPFound(location=self.request.route_path('orders.show', order_id=order_id))
-
-        utils.enqueue_for_order(
-            operator=self.context.user,
-            order=order,
-            ticket_format_id=TicketFormat.query.filter_by(id=form.data['ticket_format_id']).one().id
-            )
-        self.request.session.flash(u'券面を印刷キューに追加しました')
-        return HTTPFound(location=self.request.route_path('orders.show', order_id=order_id))
-
 
     @view_config(route_name='orders.print.queue', permission='sales_counter')
     def order_print_queue(self):
