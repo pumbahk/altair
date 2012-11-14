@@ -6,11 +6,8 @@
   </div>
 
 % if not order.issued and not order.queued:
- <form method="POST" action="${request.route_path("orders.print.queue.strict",order_id=order.id)}">
+ <form method="POST" action="${request.route_path("orders.print.queue",order_id=order.id)}">
   <div class="modal-body">
-	  %for field in form:
-	    ${form_item(field)}
-	  %endfor
   </div>
 
   <div class="modal-footer">
@@ -19,21 +16,17 @@
   </div>
  </form>
 % else:
- <form method="POST" action="${request.route_path("orders.print.queue.strict",order_id=order.id)}">
+ <form method="POST" action="${request.route_path("orders.print.queue",order_id=order.id)}">
   <div class="modal-body">
     %if order.issued_at:
-    <div class="alert alert-info">この注文は${order.issued_at}に発券済みです。
+    <div class="alert alert-warn">この注文は${order.issued_at}に発券済みです。
       本当に強制印刷しますか？
     </div>
     %else:
-    <div class="alert alert-info">この注文は既に印刷キューに入っています。
+    <div class="alert alert-warn">この注文は既に印刷キューに入っています。
       再度、印刷キューに登録しますか？
     </div>
     %endif
-
-	  %for field in form:
-	    ${form_item(field)}
-	  %endfor
   </div>
 
   <div class="modal-footer">

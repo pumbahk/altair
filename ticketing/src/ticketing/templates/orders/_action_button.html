@@ -82,17 +82,12 @@ actions = {
   'print':dict(
     label=u'発券する',
     url=request.route_path("orders.print.queue", order_id=order.id),
-    attrs={
-        "data-toggle": "modal",
-        "data-target": "#PrintQueueModal",
-        "class": "ajax-modal btn"
-        },
     icon='icon-print',
     route_name='orders.print.queue',
   ),
   'force_print':dict(
     label=u'強制発券する',
-    url=request.route_path("orders.print.queue", order_id=order.id),
+    url=request.route_path("orders.print.queue.dialog", order_id=order.id),
     attrs={
         "data-toggle": "modal",
         "data-target": "#PrintQueueModal",
@@ -141,7 +136,7 @@ if 'delivered' in sort:
 if 'print' in sort:
   if order.is_canceled():
     sort.remove('print')
-  elif order.issued_at or order.queued:
+  elif order.issued or order.queued:
     sort.remove('print')
     sort.append('force_print')
 if sort:
