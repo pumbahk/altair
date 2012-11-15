@@ -138,13 +138,22 @@ class EliminatedTagNormalizeUnitTests(unittest.TestCase):
         return _normalize(*args, **kwargs)
 
     def test_it(self):
-        """<F0>{{<F1>zz</F1><f2>}}</f2></F0> -> <F0>{{zz}}</F0>"""
+        """<F id=1>{{<F id=2>zz</F><f id=3>}}</F></F> -> <F id=1>{{zz}}</F>"""
         from StringIO import StringIO
-        io = StringIO("<F0>{{<F1>zz</F1><f2>}}</f2></F0>")
+        io = StringIO('<F id="1">{{<F id="2">zz</F><F id="3">}}</F></F>')
 
         result = StringIO()
         self._callFUT(io, result, eliminate=True)
-        print result.getvalue() 
+        self.assertEquals('<F id="1">{zz}</F>', result.getvalue())
+
+    def test_it2(self):
+        """<F id=1>{{<F id=2>zz</F><f id=3>}}</F></F> -> <F id=1>{{zz}}</F>"""
+        from StringIO import StringIO
+        io = StringIO('<doc>{{<F id="2">zz</F><F id="3">}}</F></doc>')
+
+        result = StringIO()
+        self._callFUT(io, result, eliminate=True)
+        self.assertEquals('<doc><F id="2">{zz}</F></doc>', result.getvalue())
 
 if __name__ == "__main__":
     unittest.main()

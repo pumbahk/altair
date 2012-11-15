@@ -186,20 +186,40 @@ class ConvertXmlForTicketTemplateRenderingFilter(XMLFilterBase):
     def endDocument(self):
         sm = self.sm
         downstream = self._downstream
-        self._simple_dump_to_downstream(sm, downstream)
+        if self.eliminate:
+            return _eliminated_dump_to_downstream(sm, downstream)
+        else:
+            return _simple_dump_to_downstream(sm, downstream)
 
-    def _simple_dump_to_downstream(self, sm, downstream):
-        for i in xrange(len(sm.heads)):
-            for xs in (sm.heads[i], sm.content[i], sm.tails[i]):
-                for x in xs:
-                    if isinstance(x, Start):
-                        downstream.startElement(x.val, x.attrs)
-                    elif isinstance(x, End):
-                        downstream.endElement(x.val)
-                    else:
-                        downstream.characters(x.val)
 
-def _output_header(inp, outp):
+def _simple_dump_to_downstream(sm, downstream):
+    for i in xrange(len(sm.heads)):
+        for xs in (sm.heads[i], sm.content[i], sm.tails[i]):
+            for x in xs:
+                if isinstance(x, Start):
+                    downstream.startElement(x.val, x.attrs)
+                elif isinstance(x, End):
+                    downstream.endElement(x.val)
+                else:
+                    downstream.characters(x.val)
+
+def _eliminated_dump_to_downstream(sm, downstream):
+    prev = None
+    for i in xrange(len(sm.heads)):
+        for xs in (sm.heads[i], sm.content[i], sm.tails[i]):
+            for x in xs:
+                if type(prev) == type(x) and prev.val == x.val:
+                    continue
+                if isinstance(x, Start):
+                    downstream.startElement(x.val, x.attrs)
+                elif isinstance(x, End):
+                    downstream.endElement(x.val)
+                else:
+                    downstream.characters(x.val)
+                prev = x
+
+    
+def _attach_header(inp, outp):
     while True:
         pos = inp.tell()
         line = inp.readline()
@@ -210,7 +230,7 @@ def _output_header(inp, outp):
             break
 
 def normalize(inp, outp=sys.stdout, encoding="UTF-8", header="", eliminate=True):
-    _output_header(inp, outp)
+    _attach_header(inp, outp)
     return _normalize(inp, outp, encoding, eliminate=True)
 
 def _normalize(inp, outp=sys.stdout, encoding="UTF-8", eliminate=False):
@@ -221,6 +241,8 @@ def _normalize(inp, outp=sys.stdout, encoding="UTF-8", eliminate=False):
 
 
 if __name__ == "__main__":
-    with open("/home/podhmo/a.svg") as rf:
-        with open("/home/podhmo/b.svg", "w") as wf:
-            normalize(rf, wf, encoding="utf-8")
+    import sys
+    if len(sys.argv) >= 3:
+        with open(sys.argv[1]) as rf:
+            with open(sys.argv[2], "w") as wf:
+                normalize(rf, wf, encoding="utf-8")
