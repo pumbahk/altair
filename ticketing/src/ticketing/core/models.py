@@ -2266,12 +2266,15 @@ class TicketPrintQueueEntry(Base, BaseModel):
         now = datetime.now()
         for entry in entries:
             entry.processed_at = now
-            order = entry.ordered_product_item.ordered_product.order
-            if not (entry.ticket.flags & Ticket.FLAG_ALWAYS_REISSUABLE):
-                entry.ordered_product_item.ordered_product.order.issued = True
-                entry.ordered_product_item.issued_at = entry.ordered_product_item.printed_at = now
-            order.issued_at = order.printed_at = now
-            order.issued = True
+            order = entry.ordered_product_item.ordered_product.order if entry.ordered_product_item is not None and entry.ordered_product_item.ordered_product is not None else None
+            if order is not None:
+                if not (entry.ticket.flags & Ticket.FLAG_ALWAYS_REISSUABLE):
+                    entry.ordered_product_item.ordered_product.order.issued = True
+                    entry.ordered_product_item.issued_at = entry.ordered_product_item.printed_at = now
+                order.issued_at = order.printed_at = now
+                order.issued = True
+            else:
+                logger.info("TicketPrintQueueEntry #%d is not associated with the order" % entry.id)
         return entries
 
 from ..operators.models import Operator
@@ -2321,14 +2324,6 @@ class TicketPrintHistory(Base, BaseModel, WithTimestamp):
     order = relationship('Order')
     ticket_id = Column(Identifier, ForeignKey('Ticket.id'), nullable=False)
     ticket = relationship('Ticket')
-
-    def before_insert_or_update(self):
-        if self.order_id is None and self.item_token_id is None and \
-            self.ordered_product_item_id is None:
-            raise DomainConstraintError('any one of order_id, item_token_id, ordered_product_item_id must have a non-null value')
-
-for event_kind in ['before_insert', 'before_update']:
-    event.listen(TicketPrintHistory, event_kind, lambda mapper, conn, target: target.before_insert_or_update())
 
 class PageFormat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "PageFormat"

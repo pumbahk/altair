@@ -162,8 +162,8 @@ class DictBuilder(object):
             u'開場時刻s': self.formatter.format_time_short(performance.open_on),
             u'開始時刻': self.formatter.format_time(performance.start_on),
             u'開始時刻s': self.formatter.format_time_short(performance.start_on),
-            u'終了時刻': self.formatter.format_time(performance.end_on),
-            u'終了時刻s': self.formatter.format_time_short(performance.end_on),
+            u'終了時刻': performance.end_on and self.formatter.format_time(performance.end_on) or "",
+            u'終了時刻s': performance.end_on and self.formatter.format_time_short(performance.end_on) or "",
             })
         return retval
         
