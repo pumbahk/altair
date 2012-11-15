@@ -104,7 +104,7 @@ def after_second_rbrace(helper, tokens):
             helper.content[-1].append(token)            
             return after_first_lbrace(helper, tokens)
         else:
-            helper.content[-1].append(token)            
+            helper.tails[-1].append(token)            
     return after_second_rbrace
 
 class StateHandleHelper(object):
@@ -186,6 +186,9 @@ class ConvertXmlForTicketTemplateRenderingFilter(XMLFilterBase):
     def endDocument(self):
         sm = self.sm
         downstream = self._downstream
+        self._simple_dump_to_downstream(sm, downstream)
+
+    def _simple_dump_to_downstream(self, sm, downstream):
         for i in xrange(len(sm.heads)):
             for xs in (sm.heads[i], sm.content[i], sm.tails[i]):
                 for x in xs:
@@ -218,6 +221,6 @@ def _normalize(inp, outp=sys.stdout, encoding="UTF-8", eliminate=False):
 
 
 if __name__ == "__main__":
-    with open("./a.svg") as rf:
-        normalize(rf, sys.stdout, encoding="utf-8")
-
+    with open("/home/podhmo/a.svg") as rf:
+        with open("/home/podhmo/b.svg", "w") as wf:
+            normalize(rf, wf, encoding="utf-8")

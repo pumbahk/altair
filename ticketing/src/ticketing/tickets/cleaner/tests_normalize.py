@@ -28,7 +28,7 @@ class EventsFromStringTests(unittest.TestCase):
         self.assertEquals(result, [Content("@@@"), LBrace("{"), Content("bbb"), LBrace("{"), Content("cc"), RBrace("}"), Content("dd"), LBrace("{"), RBrace("}"), Content("e"), RBrace("}")])
 
 
-class BufferedConsumerUnitTests(unittest.TestCase):
+class SVGNormalizeUnitTests(unittest.TestCase):
     def _callFUT(self, *args, **kwargs):
         from ticketing.tickets.cleaner.normalize import _normalize
         return _normalize(*args, **kwargs)
@@ -131,6 +131,20 @@ class BufferedConsumerUnitTests(unittest.TestCase):
         result = StringIO()
         self._callFUT(io, result)
         self.assertEquals("<doc><a><b> xxx </b> {{yyy}}</a></doc>", result.getvalue())
+
+class EliminatedTagNormalizeUnitTests(unittest.TestCase):
+    def _callFUT(self, *args, **kwargs):
+        from ticketing.tickets.cleaner.normalize import _normalize
+        return _normalize(*args, **kwargs)
+
+    def test_it(self):
+        """<F0>{{<F1>zz</F1><f2>}}</f2></F0> -> <F0>{{zz}}</F0>"""
+        from StringIO import StringIO
+        io = StringIO("<F0>{{<F1>zz</F1><f2>}}</f2></F0>")
+
+        result = StringIO()
+        self._callFUT(io, result, eliminate=True)
+        print result.getvalue() 
 
 if __name__ == "__main__":
     unittest.main()
