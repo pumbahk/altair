@@ -698,6 +698,7 @@ var AppletView = Backbone.View.extend({
       var fmt = "まとめて注文した際には自動的に印刷しません。印刷するには、購入情報を確認した後、印刷ボタンを押してください<br/>";
       fmt = fmt + "(既に印刷された券面については印刷されません。)<br/";
       fmt = fmt + "<ul><li>" + printing_tickets.join("</li>\n<li>") + "</li></ul>";
+      self.router.navigate("two", true); //確認画面へfocus
       self.appviews.messageView.info(fmt, true);
     }).fail(function(s, msg){self.appviews.messageView.error(s.responseText)});
   }, 
