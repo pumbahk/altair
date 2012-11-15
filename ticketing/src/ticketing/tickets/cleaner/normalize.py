@@ -17,12 +17,16 @@ LBrace = namedtuple("L", "val")
 RBrace = namedtuple("R", "val")
 Content = namedtuple("C", "val")
 
+white_rx = re.compile(r"^[ \n]*$", re.M)
 def lbrace(scanner, x):
     return LBrace(x)
 def rbrace(scanner, x):
     return RBrace(x)
 def content(scanner, x):
-    return Content(x)
+    if white_rx.match(x):
+        return Content("")
+    else:
+        return Content(x)
 
 scanner = re.Scanner([
         (r"\{", lbrace),
@@ -128,11 +132,6 @@ class StateHandleHelper(object):
         t = self.tails.pop()
         self.tails[-1].extend(t)
 
-    def consume(self):
-        ## 試しに
-        pass
-        # print self.heads, self.content, self.tails
-
 class ConvertXmlForTicketTemplateRenderingFilter(XMLFilterBase):
     def __init__(self, upstream, downstream, eliminate=False):
         XMLFilterBase.__init__(self, upstream)
@@ -208,7 +207,7 @@ def _eliminated_dump_to_downstream(sm, downstream):
     for i in xrange(len(sm.heads)):
         for xs in (sm.heads[i], sm.content[i], sm.tails[i]):
             for x in xs:
-                if type(prev) == type(x) and prev.val == x.val:
+                if isinstance(x, (Start, End)) and type(prev) == type(x) and prev.val == x.val:
                     continue
                 if isinstance(x, Start):
                     downstream.startElement(x.val, x.attrs)
@@ -231,7 +230,7 @@ def _attach_header(inp, outp):
 
 def normalize(inp, outp=sys.stdout, encoding="UTF-8", header="", eliminate=True):
     _attach_header(inp, outp)
-    return _normalize(inp, outp, encoding, eliminate=True)
+    return _normalize(inp, outp, encoding, eliminate=eliminate)
 
 def _normalize(inp, outp=sys.stdout, encoding="UTF-8", eliminate=False):
     downstream_handler = XMLGenerator(outp, encoding.lower())
@@ -242,7 +241,6 @@ def _normalize(inp, outp=sys.stdout, encoding="UTF-8", eliminate=False):
 
 if __name__ == "__main__":
     import sys
-    if len(sys.argv) >= 3:
-        with open(sys.argv[1]) as rf:
-            with open(sys.argv[2], "w") as wf:
-                normalize(rf, wf, encoding="utf-8")
+    with open(sys.argv[1]) as rf:
+        with open(sys.argv[2], "w") as wf:
+            normalize(rf, wf, encoding="utf-8", eliminate=True)
