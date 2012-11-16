@@ -2102,11 +2102,11 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             release_quantity = self.quantity
         else:
             release_quantity = len(self.seats)
-        logger.info('release stock id=%s quantity=%d' % (self.product_item.stock_id, release_quantity))
-        query = StockStatus.__table__.update().values(
-            {'quantity': StockStatus.quantity + release_quantity}
-        ).where(StockStatus.stock_id==self.product_item.stock_id)
-        DBSession.bind.execute(query)
+        stock_status = StockStatus.filter_by(stock_id=self.product_item.stock_id).with_lockmode('update').one()
+        logger.info('restoring the quantity of stock (id=%s, quantity=%d) by +%d' % (stock_status.stock_id, stock_status.quantity, release_quantity))
+        stock_status.quantity += release_quantity
+        stock_status.save()
+        logger.info('done for OrderedProductItem (id=%d)' % self.id)
 
     @property
     def seatdicts(self):
