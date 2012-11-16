@@ -23,10 +23,7 @@ def lbrace(scanner, x):
 def rbrace(scanner, x):
     return RBrace(x)
 def content(scanner, x):
-    if white_rx.match(x):
-        return Content("")
-    else:
-        return Content(x)
+    return Content(x)
 
 scanner = re.Scanner([
         (r"\{", lbrace),
@@ -57,10 +54,10 @@ def after_first_lbrace(helper, tokens):
             return after_second_lbrace(helper, tokens)
         elif isinstance(token, RBrace):
             helper.merge_stack()
-            helper.content[-1].append(token)
+            helper.heads[-1].append(token)
             return on_external(helper, tokens)
         else:
-            helper.content[-1].append(token)
+            helper.heads[-1].append(token)
     return after_first_lbrace
 
 def after_second_lbrace(helper, tokens):
