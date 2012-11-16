@@ -140,6 +140,10 @@ class ConvertXmlForTicketTemplateRenderingFilter(XMLFilterBase):
         pass
 
     def startElement(self, name, attrs):
+        # todo: refactoring
+        if name == "svg":
+            attrs._attrs["version"] = "1.2"
+
         state = self.sm.state
         if state == on_external:
             self.sm.heads[-1].append(Start(name, attrs))

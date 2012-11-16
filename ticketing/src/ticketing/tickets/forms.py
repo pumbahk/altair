@@ -38,10 +38,13 @@ class FileRequired(object):
         else:
             return self.__call__(form, field)
 
+from .cleaner.normalize import normalize
+
 def build_template_data_value(drawing):
     if drawing:
         out = StringIO()
-        drawing.write(out, encoding="UTF-8") #doc declaration?
+        normalize(drawing, out, encoding="UTF-8")
+        # drawing.write(out, encoding="UTF-8") #doc declaration?
         return dict(drawing=out.getvalue())
     return dict()
 
