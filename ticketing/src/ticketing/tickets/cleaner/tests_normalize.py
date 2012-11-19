@@ -144,7 +144,7 @@ class EliminatedTagNormalizeUnitTests(unittest.TestCase):
 
         result = StringIO()
         self._callFUT(io, result, eliminate=True)
-        self.assertEquals('<F id="1">{zz}</F>', result.getvalue())
+        self.assertEquals('<F id="1">{{zz}}</F>', result.getvalue())
 
     def test_it2(self):
         """<F id=1>{{<F id=2>zz</F><f id=3>}}</F></F> -> <F id=1>{{zz}}</F>"""
@@ -153,7 +153,7 @@ class EliminatedTagNormalizeUnitTests(unittest.TestCase):
 
         result = StringIO()
         self._callFUT(io, result, eliminate=True)
-        self.assertEquals('<doc><F id="2">{zz}</F></doc>', result.getvalue())
+        self.assertEquals('<doc><F id="2">{{zz}}</F></doc>', result.getvalue())
 
 if __name__ == "__main__":
     unittest.main()
