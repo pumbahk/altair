@@ -98,8 +98,11 @@ class NewslettersForm(Form):
             field.data.file.seek(0)
 
             csv_reader = csv.DictReader(field.data.file)
+            error_email = ''
             for row in csv_reader:
                 if not ('email' in row and Newsletter.validate_email(row['email'].strip())):
-                    raise ValidationError(u'CSVデータが不正です (emailフォーマットエラー:%s)' % row['email'])
+                    error_email += u'<li>%s</li>' % row['email']
             else:
                 field.data.file.seek(0)
+            if error_email:
+                raise ValidationError(u'CSVデータが不正です (emailフォーマットエラー)<ul>%s</ul>' % error_email)
