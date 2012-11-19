@@ -1092,7 +1092,7 @@ class Visitor(object):
                 if line_height is not None:
                     html_styles.append((u'line-height', unicode(line_height) + u'px'))
                 if self.current_style_ctx.style.fill_color != style.fill_color:
-                    html_styles.append((u'color', stype.fill_color))
+                    html_styles.append((u'color', style.fill_color))
                 current_font_family_class = self.font_classes.get(self.current_style_ctx.style.font_family)
                 new_font_family_class = self.font_classes.get(style.font_family)
                 subelem = self._build_html_from_flow_elements(text_and_elements(elem), tag)
