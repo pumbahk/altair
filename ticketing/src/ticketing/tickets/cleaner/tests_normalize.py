@@ -155,5 +155,36 @@ class EliminatedTagNormalizeUnitTests(unittest.TestCase):
         self._callFUT(io, result, eliminate=True)
         self.assertEquals('<doc><F id="2">{{zz}}</F></doc>', result.getvalue())
 
+    def test_complex(self):
+        """ そのまま{{}}の中の文字列をmustacheで文字列を埋め込もうとするとxmlとして不正な形式になり失敗する.normalizeした後のものはok
+        """
+        from StringIO import StringIO
+        import pystache
+        import lxml.etree
+
+        ## occur xml syntax error using non normalized svg 
+        render = pystache.Renderer()
+        emitted = render.render(open("./sample.svg").read().decode("utf-8"), {u"name": "--name--"})
+        io = StringIO()
+        io.write(emitted.encode("utf-8"))
+        io.seek(0)
+
+        with self.assertRaises(lxml.etree.XMLSyntaxError):
+            lxml.etree.parse(io)
+
+        ## normalized svg
+        io = StringIO()
+        with open("./sample.svg") as rf:
+            self._callFUT(rf, io, eliminate=True)            
+
+        render = pystache.Renderer()
+        emitted = render.render(io.getvalue().decode("utf-8"), {u"名前": "--name--"})
+        io = StringIO()
+        io.write(emitted.encode("utf-8"))
+        io.seek(0)
+        
+        self.assertTrue(lxml.etree.parse(io))
+
+        
 if __name__ == "__main__":
     unittest.main()

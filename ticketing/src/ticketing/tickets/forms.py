@@ -55,8 +55,11 @@ def normalize_svgio(svgio):
     except Exception, e:
         raise ValidationError("xml:" + str(e))
     out = StringIO()
-    normalize(svgio, out, encoding="UTF-8")
-    out.seek(0)
+    try:
+        normalize(svgio, out, encoding="UTF-8")
+        out.seek(0)
+    except Exception, e:
+        raise ValidationError("normalize:" + str(e))
     return out
 
 def get_validated_xmltree_as_opcode_source(svgio):
