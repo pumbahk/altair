@@ -146,11 +146,17 @@ class Newsletters(BaseView):
         return HTTPFound(location=route_path('newsletters.index', self.request))
 
     @view_config(route_name='newsletters.download')
+    @view_config(route_name='newsletters.download.error')
     def download(self):
         id = int(self.request.matchdict.get('id', 0)) 
         newsletter = Newsletter.get(id)
 
-        fname = os.path.join(Newsletter.subscriber_dir(), newsletter.subscriber_file())
+        if self.request.matched_route.name == 'newsletters.download.error':
+            fname = newsletter.subscriber_error_file()
+        else:
+            fname = newsletter.subscriber_file()
+        fname = os.path.join(Newsletter.subscriber_dir(), fname)
+
         f = open(fname)
         headers = [
             ('Content-Type', 'application/octet-stream'),

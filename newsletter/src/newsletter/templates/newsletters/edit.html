@@ -22,6 +22,14 @@
       $(this).css({width:"600px",height:"400px"});
     }).load();
     $('[rel=popover]').popover()
+
+    $('.form-horizontal').find("input[type='checkbox']").change(function() {
+      if ($(this).attr('checked')) {
+        $(this).val(1);
+      } else {
+        $(this).val(0);
+      }
+    }).change();
   });
 </script>
 
@@ -77,6 +85,7 @@
             </span>
           ''' %>
           ${form_item('subscriber_file', help)}
+          ${form_item('force_upload')}
           ${form_item('start_date')}
           ${form_item('start_time')}
         </fieldset>

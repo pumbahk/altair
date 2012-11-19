@@ -31,9 +31,10 @@
     $('#html_mail').collapse()
   });
 
-  function download(id) {
+  function download(id, file_type) {
+    file_type = (file_type == 'error' ? '/error' : '');
     $('#download-modal').modal('toggle');
-    $('#download-modal #download').attr('href', '/newsletters/download/' + id);
+    $('#download-modal #download').attr('href', '/newsletters/download/' + id + file_type);
   } 
 </script>
 
@@ -106,6 +107,11 @@
             % if newsletter.subscriber_file() is not None:
               <a href="javascript:download(${newsletter.id})" data-controls-modal="download-modal" data-backdrop="true" data-keyboard="true">
                 <span class="label label-info"><i class="icon-download-alt"></i> ${newsletter.subscriber_file()}</span>
+              </a>
+            % endif
+            % if newsletter.subscriber_error_file() is not None:
+              <a href="javascript:download(${newsletter.id}, 'error')" data-controls-modal="download-modal" data-backdrop="true" data-keyboard="true">
+                <span class="label label-important"><i class="icon-download-alt"></i> ${newsletter.subscriber_error_file()}</span>
               </a>
             % endif
             ${download_modal(u'送信データファイルをダウンロードします。よろしいですか？')} 

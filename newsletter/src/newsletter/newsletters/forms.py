@@ -7,6 +7,7 @@ from datetime import datetime
 from wtforms import (TextField, PasswordField, TextAreaField, DateField, DateTimeField,
                      SelectField, SubmitField, HiddenField, BooleanField, FileField, IntegerField)
 from wtforms.validators import Required, Email, Length, NumberRange, EqualTo, optional, ValidationError
+from wtforms.widgets import CheckboxInput
 from wtforms import Form
 
 from paste.util.multidict import MultiDict
@@ -41,6 +42,11 @@ class NewslettersForm(Form):
     sender_name = TextField(u'送信者名', validators=[])
     subscriber_file = FileField(u'送信先リスト', validators=[])
     subscriber_count = TextField(u'送信件数', validators=[])
+    force_upload = IntegerField(
+        label=u'エラーレコードを無視',
+        default=0,
+        widget=CheckboxInput(),
+    )
     start_date = DateField(u'送信日', validators=[
         Required(u'入力してください')
         ], format='%Y-%m-%d')
@@ -53,22 +59,6 @@ class NewslettersForm(Form):
         if args:
             # set start_on
             args[0].add('start_on', args[0].get('start_date') + ' ' + args[0].get('start_time') + ':00')
-
-            # set subscriber_count
-            subscriber_file = args[0].get('subscriber_file')
-            count = 0 
-            if hasattr(subscriber_file, 'file'):
-                for row in csv.DictReader(subscriber_file.file):
-                    count += 1
-                else:
-                    subscriber_file.file.seek(0)
-            elif 'id' in args[0]:
-                newsletter = Newsletter.get(args[0].get('id'))
-                if newsletter.subscriber_file():
-                    csv_file = os.path.join(Newsletter.subscriber_dir(), newsletter.subscriber_file())
-                    for row in csv.DictReader(open(csv_file)):
-                        count += 1
-            args[0].add('subscriber_count', str(count))
 
         Form.__init__(self, *args, **kw)
 
@@ -83,10 +73,6 @@ class NewslettersForm(Form):
 
         Form.process(self, formdata, obj, **kwargs)
 
-    def validate_status(form, field):
-        if field.data == 'waiting' and form.subscriber_count.data == '0':
-            raise ValidationError(u'送信先リストが0件なので送信予約できません')
-
     def validate_start_on(form, field):
         if field.data is not None and field.data < datetime.now() and form.status.data != 'completed':
             raise ValidationError(u'過去の日付を指定することはできません')
@@ -97,12 +83,18 @@ class NewslettersForm(Form):
                  raise ValidationError(u'CSVデータが不正です')
             field.data.file.seek(0)
 
+            if form.force_upload.data:
+                 return
+
             csv_reader = csv.DictReader(field.data.file)
-            error_email = ''
-            for row in csv_reader:
-                if not ('email' in row and Newsletter.validate_email(row['email'].strip())):
-                    error_email += u'<li>%s</li>' % row['email']
-            else:
-                field.data.file.seek(0)
+            error_email = []
+            try:
+                for row in csv_reader:
+                    if not ('email' in row and Newsletter.validate_email(row['email'])):
+                        error_email.append(u'<li>%s</li>' % row)
+                else:
+                    field.data.file.seek(0)
+            except Exception, e:
+                raise ValidationError(u'CSVデータが不正です %s' % e)
             if error_email:
-                raise ValidationError(u'CSVデータが不正です (emailフォーマットエラー)<ul>%s</ul>' % error_email)
+                raise ValidationError(u'CSVデータが不正です (emailフォーマットエラー:%d件)<ul>%s</ul>' % (len(error_email), ''.join(error_email)))
