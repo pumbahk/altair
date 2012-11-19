@@ -16,16 +16,6 @@ class TemplateValidateTests(unittest.TestCase):
         target = get_dummy_io(u"""<a>h</a>""")
         self._callFUT(target)
 
-    def test_not_xml(self):
-        target = get_dummy_io(u"""h""")
-        
-        with self.assertRaises(ValidationError):
-            self._callFUT(target)
-
-        try:
-            self._callFUT(target)
-        except Exception as e:
-            self.assertTrue( str(e).startswith("xml:"))
 
     template = u"""\
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>

@@ -43,17 +43,25 @@ from .cleaner.normalize import normalize
 def build_template_data_value(drawing):
     if drawing:
         out = StringIO()
-        normalize(drawing, out, encoding="UTF-8")
-        # drawing.write(out, encoding="UTF-8") #doc declaration?
+        drawing.write(out, encoding="UTF-8") #doc declaration?
         return dict(drawing=out.getvalue())
     return dict()
 
-def get_validated_xmltree_as_opcode_source(svgio):
+def normalize_svgio(svgio):
     try:
         xmltree = etree.parse(svgio)
         cleanup_svg(xmltree)
+        svgio.seek(0)
     except Exception, e:
         raise ValidationError("xml:" + str(e))
+    out = StringIO()
+    normalize(svgio, out, encoding="UTF-8")
+    out.seek(0)
+    return out
+
+def get_validated_xmltree_as_opcode_source(svgio):
+    xmltree = etree.parse(svgio)
+    cleanup_svg(xmltree)
     try:
         to_opcodes(xmltree)
         svgio.seek(0)
@@ -180,7 +188,7 @@ class TicketTemplateForm(Form):
      )    
 
     def validate_drawing(form, field):
-        form._drawing = get_validated_xmltree_as_opcode_source(field.data.file)
+        form._drawing = get_validated_xmltree_as_opcode_source(normalize_svgio(field.data.file))
         return field.data
 
     def validate(self):
@@ -226,7 +234,7 @@ class TicketTemplateEditForm(Form):
     def validate_drawing(form, field):
         if not filestorage_has_file(field.data):
             return None
-        form._drawing = get_validated_xmltree_as_opcode_source(field.data.file)
+        form._drawing = get_validated_xmltree_as_opcode_source(normalize_svgio(field.data.file))
         return field.data
 
     def validate(self):
