@@ -1,0 +1,153 @@
+@charset "utf-8";
+
+/*
+	File Name   : default.css
+	Author      : Kensuke Takahashi
+	Description : デフォルトのスタイルのリセット及び基本設定
+*/
+
+
+/* Universal reset
+----------------------------------------------------------- */
+* {
+	margin: 0;
+	padding: 0;
+	font-style: normal;
+}
+
+html {
+	overflow-y: scroll;
+}
+
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+	empty-cells: show;
+	font-size: 100%;
+}
+
+caption, th {
+	text-align: left;
+}
+
+object, embed {
+	vertical-align: top;
+}
+
+hr, legend {
+	display: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	font-size: 100%;
+}
+
+img {
+	border: none;
+	vertical-align: bottom;
+}
+
+li {
+	list-style: none;
+}
+
+p {
+	margin-bottom: 1em;
+}
+
+input {
+	padding: 1px;
+}
+
+textarea {
+	padding: 2px;
+	overflow: auto;
+	font-size: 100%;
+}
+
+option {
+	padding-right: 10px;
+}
+
+*+html option {
+	padding-right: 0; /* for IE7&Opera */
+}
+
+* html option {
+	padding-right: 0; /* for IE6 */
+}
+
+acronym, abbr {
+	cursor: help;
+}
+
+
+/* Body setting
+----------------------------------------------------------- */
+body {
+	color: #000000;
+	font-size: 62.5%;
+	text-align: center;
+	background-color: #ffffff;
+}
+
+#mypage {
+	background: url(../img/mypage/bg_body.gif) no-repeat 50% 130px;
+}
+
+#search {
+	background: url(../img/search/bg_body.gif) no-repeat 50% 130px;
+}
+
+#music {
+	background: url(../img/music/bg_body.gif) no-repeat 50% 130px;
+}
+
+#stage {
+	background: url(../img/stage/bg_body.gif) no-repeat 50% 130px;
+}
+
+#sports {
+	background: url(../img/sports/bg_body.gif) no-repeat 50% 130px;
+}
+
+#event {
+	background: url(../img/event/bg_body.gif) no-repeat 50% 130px;
+}
+
+#change,
+#first,
+#help,
+#sitemap {
+	background: url(../img/first/bg_body.gif) no-repeat 50% 130px;
+}
+
+
+/* Link setting
+----------------------------------------------------------- */
+a:link {
+	color: #5353f2;
+	text-decoration: underline;
+}
+
+a:visited {
+	color: #800080;
+	text-decoration: underline;
+}
+
+a:hover {
+	text-decoration: none;
+}
+
+a:focus {
+}
+
+a:active {
+}
+
+#naviSkip {
+	position: absolute;
+	top: 0;
+	left: 0;
+	margin: 0;
+}
