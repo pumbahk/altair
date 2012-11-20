@@ -87,9 +87,14 @@ class Newsletter(Base):
     @staticmethod
     def save_file(id, file):
         if file:
+            newsletter = Newsletter.get(id)
             csv_dir = Newsletter.subscriber_dir()
             if not os.path.isdir(csv_dir):
                 os.mkdir(csv_dir)
+            error_file = newsletter.subscriber_error_file()
+            if error_file:
+                error_file = os.path.join(Newsletter.subscriber_dir(), error_file)
+                os.remove(error_file)
 
             csv_reader = csv.DictReader(file)
             csv_file = csv.DictWriter(
@@ -98,17 +103,20 @@ class Newsletter(Base):
                 quotechar='"',
                 quoting=csv.QUOTE_MINIMAL
             )
-            error_file = csv.DictWriter(
-                open(os.path.join(csv_dir, 'altair' + str(id) + '.error.csv'), 'w'),
-                csv_reader.fieldnames,
-                quotechar='"',
-                quoting=csv.QUOTE_MINIMAL
-            )
+            error_file = None
+
             unique_email = []
             csv_file.writerow(dict([(n, n) for n in csv_file.fieldnames]))
             for row in csv_reader:
                 row['name'] = Newsletter.encode(row['name'])
                 if not ('email' in row and Newsletter.validate_email(row['email'])):
+                    if not error_file:
+                        error_file = csv.DictWriter(
+                            open(os.path.join(csv_dir, 'altair' + str(id) + '.error.csv'), 'w'),
+                            csv_reader.fieldnames,
+                            quotechar='"',
+                            quoting=csv.QUOTE_MINIMAL
+                        )
                     error_file.writerow(row)
                 else:
                     row['email'] = row['email'].strip()
@@ -117,7 +125,6 @@ class Newsletter(Base):
                         csv_file.writerow(row)
 
             count = 0
-            newsletter = Newsletter.get(id)
             if newsletter.subscriber_file():
                 csv_file = os.path.join(Newsletter.subscriber_dir(), newsletter.subscriber_file())
                 for row in csv.DictReader(open(csv_file)):
