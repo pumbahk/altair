@@ -110,9 +110,11 @@
               </a>
             % endif
             % if newsletter.subscriber_error_file() is not None:
+              <span style="margin-left: 30px;">(アップロード時に除外されたリスト
               <a href="javascript:download(${newsletter.id}, 'error')" data-controls-modal="download-modal" data-backdrop="true" data-keyboard="true">
                 <span class="label label-important"><i class="icon-download-alt"></i> ${newsletter.subscriber_error_file()}</span>
               </a>
+              )</span>
             % endif
             ${download_modal(u'送信データファイルをダウンロードします。よろしいですか？')} 
           </td>

@@ -43,7 +43,7 @@ class NewslettersForm(Form):
     subscriber_file = FileField(u'送信先リスト', validators=[])
     subscriber_count = TextField(u'送信件数', validators=[])
     force_upload = IntegerField(
-        label=u'エラーレコードを無視',
+        label=u'エラーリストを無視',
         default=0,
         widget=CheckboxInput(),
     )

@@ -104,6 +104,7 @@ class Newsletter(Base):
                 quotechar='"',
                 quoting=csv.QUOTE_MINIMAL
             )
+            unique_email = []
             csv_file.writerow(dict([(n, n) for n in csv_file.fieldnames]))
             for row in csv_reader:
                 row['name'] = Newsletter.encode(row['name'])
@@ -111,7 +112,9 @@ class Newsletter(Base):
                     error_file.writerow(row)
                 else:
                     row['email'] = row['email'].strip()
-                    csv_file.writerow(row)
+                    if row['email'] not in unique_email:
+                        unique_email.append(row['email'])
+                        csv_file.writerow(row)
 
             count = 0
             newsletter = Newsletter.get(id)
