@@ -344,7 +344,7 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
       assigned: stockDatum.assigned,
       available: stockDatum.available
     });
-    stocks.push(stock);
+    stocks.add(stock);
     stock.on('change:assigned', function () {
       this.set('edited', true);
       this.get('stockHolder').recalculateQuantity();
@@ -388,7 +388,7 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
       areas: seatDatum.areas,
       selectable: $.inArray(seatDatum.status, [0, 1]) > -1 ? true : false
     });
-    seats.push(seat);
+    seats.add(seat);
     {
       var attrs = seat.get('attrs');
       for (name in attrs) {
