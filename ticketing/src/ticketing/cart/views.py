@@ -560,8 +560,6 @@ class ReserveView(object):
         if sum_quantity == 0:
             raise ZeroQuantityError
 
-        # --- これより前に更新操作は入れない事 --- 
-
         try:
             # カート生成(席はおまかせ)
             cart = api.order_products(
