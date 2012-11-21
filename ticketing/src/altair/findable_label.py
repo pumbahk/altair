@@ -25,12 +25,14 @@ class AppendHeaderElementOutput(object):
         return response
 
     def output(self, html):
-        return html.replace(u"<body>", u"""
-<body>
-<div style="font-size:20px;">
+        return html.replace(u"</body>", u"""
+<div style="width:20px; height:100%%; position: fixed; top:00px; left:0px; background-color: #222; color: #ccc">
+  <div style="font-size:14pt; position:relative; top: 60px;">
   %s
+  </div>
 </div>
-""" % self.labelname)
+</body>
+""" % self.labelname,  1)
     
 
 def findable_label_tween_factory(handler, registry):
