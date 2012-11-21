@@ -14,6 +14,8 @@
     modal.find('#id').val('');
     modal.find('#performance_id').val(${performance.id});
     modal.find('#product_id').val($(product).find('#id').text());
+    modal.find('#stock_holders').removeAttr('disabled').change();
+    modal.find('#stock_id').removeAttr('disabled');
     modal.find('#product-item #name').val(product_name);
     modal.find('#product-item #price').val(product_price);
     modal.find('#quantity').val(1);
@@ -31,7 +33,9 @@
     modal.find('#performance_id').val(${performance.id});
     modal.find('#product_id').val(product_id);
     modal.find('#stock_holders').val($('#stock_holder-' + product_item_id).attr('value')).change();
+    modal.find('#stock_holders').attr('disabled', 'disabled');
     modal.find('#stock_id').val($('#stock-' + product_item_id).attr('value'));
+    modal.find('#stock_id').attr('disabled', 'disabled');
     modal.find('#product-item #name').val($('#item_name-' + product_item_id).attr('value'));
     modal.find('#product-item #price').val(Math.floor($('#item_price-' + product_item_id).attr('value')));
     modal.find('#quantity').val($('#quantity-' + product_item_id).text());
