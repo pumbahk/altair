@@ -555,8 +555,12 @@ class ReserveView(object):
         # 古いカートを削除
         old_cart = api.get_cart(self.request)
         if old_cart:
+            # !!! ここでトランザクションをコミットする !!!
             old_cart.release()
             api.remove_cart(self.request)
+            transaction.commit()
+
+        # --- これより前に更新操作は入れない事 --- 
 
         try:
             # カート生成(席はおまかせ)
