@@ -520,6 +520,14 @@ class ReserveView(object):
         seat_type_id = self.request.params.get('seat_type_id')
         sales_segment_id = self.request.matchdict["sales_segment_id"]
 
+        # 古いカートを削除
+        old_cart = api.get_cart(self.request)
+        if old_cart:
+            # !!! ここでトランザクションをコミットする !!!
+            old_cart.release()
+            api.remove_cart(self.request)
+            transaction.commit()
+
         # セールスセグメント必須
         sales_segment = c_models.SalesSegment.filter_by(id=sales_segment_id).first()
         if sales_segment is None:
@@ -551,14 +559,6 @@ class ReserveView(object):
 
         if sum_quantity == 0:
             raise ZeroQuantityError
-
-        # 古いカートを削除
-        old_cart = api.get_cart(self.request)
-        if old_cart:
-            # !!! ここでトランザクションをコミットする !!!
-            old_cart.release()
-            api.remove_cart(self.request)
-            transaction.commit()
 
         # --- これより前に更新操作は入れない事 --- 
 
