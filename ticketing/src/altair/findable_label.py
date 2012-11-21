@@ -4,8 +4,7 @@ from zope.interface import provider
 def includeme(config):
     config.add_tween(".findable_label.findable_label_tween_factory")
     output = config.maybe_dotted(config.registry.settings.get("altair.findable_label.output", ".findable_label.AppendHeaderElementOutput"))
-    labelname = config.registry.settings.get("altair.findable_label.label", "[unknown]").decode("utf-8")
-    config.registry.registerUtility(provider(IFindableLabelOutput)(output(labelname)))
+    config.registry.registerUtility(provider(IFindableLabelOutput)(output(config)))
 
 class IFindableLabelOutput(Interface):
     def rewrite(response):
@@ -14,9 +13,10 @@ class IFindableLabelOutput(Interface):
         pass
 
 class AppendHeaderElementOutput(object):
-    def __init__(self, labelname, description=None):
-        self.labelname = labelname
-        self.description = description
+    def __init__(self, config):
+        self.labelname = config.registry.settings.get("altair.findable_label.label", "[unknown]").decode("utf-8")
+        self.color = config.registry.settings.get("altair.findable_label.color", "#220000")
+        self.background_color = config.registry.settings.get("altair.findable_label.background_color", "#ffaaaa")
 
     def rewrite(self, response):
         result = self.output(response.text)
@@ -26,13 +26,11 @@ class AppendHeaderElementOutput(object):
 
     def output(self, html):
         return html.replace(u"</body>", u"""
-<div style="width:20px; height:100%%; position: fixed; top:00px; left:0px; background-color: #222; color: #ccc">
-  <div style="font-size:14pt; position:relative; top: 60px;">
+<div style="width:60px; height:32px; position: fixed; top:5px; left:10px; background-color: %s; color: %s; z-index: 10000;">
   %s
-  </div>
 </div>
 </body>
-""" % self.labelname,  1)
+""" % (self.background_color, self.color, self.labelname),  1)
     
 
 def findable_label_tween_factory(handler, registry):
