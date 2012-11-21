@@ -10,6 +10,8 @@ from datetime import datetime, date, timedelta
 
 from sqlalchemy import Table, Column, ForeignKey, func, or_, and_, event
 from sqlalchemy import ForeignKeyConstraint, UniqueConstraint, PrimaryKeyConstraint
+from sqlalchemy.util import warn_deprecated
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode, UnicodeText
 from sqlalchemy.orm import join, backref, column_property, joinedload, deferred
 from sqlalchemy.orm.collections import attribute_mapped_collection
@@ -17,7 +19,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import exists
 from sqlalchemy.sql.expression import asc, desc, exists, select, table, column
 from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy.ext.hybrid import hybrid_property
+
 
 from pyramid.threadlocal import get_current_registry
 
@@ -1002,7 +1004,12 @@ class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
     organization = relationship('Organization', uselist=False, backref='payment_method_list')
     payment_plugin_id = Column(Identifier, ForeignKey('PaymentMethodPlugin.id'))
-    payment_plugin = relationship('PaymentMethodPlugin', uselist=False)
+    
+    _payment_plugin = relationship('PaymentMethodPlugin', uselist=False)
+    @hybrid_property
+    def payment_plugin(self):
+        warn_deprecated("deprecated attribute `payment_plugin' is accessed")
+        return self._payment_plugin
 
     def delete(self):
         # 既に使用されている場合は削除できない
@@ -1031,8 +1038,14 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
     organization = relationship('Organization', uselist=False , backref='delivery_method_list')
+
+    
     delivery_plugin_id = Column(Identifier, ForeignKey('DeliveryMethodPlugin.id'))
-    delivery_plugin = relationship('DeliveryMethodPlugin', uselist=False)
+    _delivery_plugin = relationship('DeliveryMethodPlugin', uselist=False)
+    @hybrid_property
+    def delivery_plugin(self):
+        warn_deprecated("deprecated attribute `delivery_plugin' is accessed")
+        return self._delivery_plugin
 
     def delete(self):
         # 既に使用されている場合は削除できない

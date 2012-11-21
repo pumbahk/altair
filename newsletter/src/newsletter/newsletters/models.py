@@ -43,6 +43,11 @@ class Newsletter(Base):
         csv_file = os.path.join(Newsletter.subscriber_dir(), fname)
         return fname if os.path.exists(csv_file) else None
 
+    def subscriber_error_file(self):
+        fname = 'altair' + str(self.id) + '.error.csv'
+        csv_file = os.path.join(Newsletter.subscriber_dir(), fname)
+        return fname if os.path.exists(csv_file) else None
+
     @staticmethod
     def subscriber_dir():
         return os.path.abspath(dirname(dirname(__file__))) + '/csv'
@@ -82,9 +87,14 @@ class Newsletter(Base):
     @staticmethod
     def save_file(id, file):
         if file:
+            newsletter = Newsletter.get(id)
             csv_dir = Newsletter.subscriber_dir()
             if not os.path.isdir(csv_dir):
                 os.mkdir(csv_dir)
+            error_file = newsletter.subscriber_error_file()
+            if error_file:
+                error_file = os.path.join(Newsletter.subscriber_dir(), error_file)
+                os.remove(error_file)
 
             csv_reader = csv.DictReader(file)
             csv_file = csv.DictWriter(
@@ -93,11 +103,34 @@ class Newsletter(Base):
                 quotechar='"',
                 quoting=csv.QUOTE_MINIMAL
             )
+            error_file = None
+
+            unique_email = []
             csv_file.writerow(dict([(n, n) for n in csv_file.fieldnames]))
             for row in csv_reader:
                 row['name'] = Newsletter.encode(row['name'])
-                row['email'] = row['email'].strip()
-                csv_file.writerow(row)
+                if not ('email' in row and Newsletter.validate_email(row['email'])):
+                    if not error_file:
+                        error_file = csv.DictWriter(
+                            open(os.path.join(csv_dir, 'altair' + str(id) + '.error.csv'), 'w'),
+                            csv_reader.fieldnames,
+                            quotechar='"',
+                            quoting=csv.QUOTE_MINIMAL
+                        )
+                    error_file.writerow(row)
+                else:
+                    row['email'] = row['email'].strip()
+                    if row['email'] not in unique_email:
+                        unique_email.append(row['email'])
+                        csv_file.writerow(row)
+
+            count = 0
+            if newsletter.subscriber_file():
+                csv_file = os.path.join(Newsletter.subscriber_dir(), newsletter.subscriber_file())
+                for row in csv.DictReader(open(csv_file)):
+                    count += 1
+            newsletter.subscriber_count = count
+            Newsletter.update(newsletter)
 
     @staticmethod
     def encode(string):
@@ -118,8 +151,11 @@ class Newsletter(Base):
 
     @staticmethod
     def validate_email(email):
+        if not isinstance(email, str):
+            return False
+        email = email.strip()
         if email is not None and len(email) > 6:
-            if re.match(r'^.+@[^.].*\.[a-z]{2,10}$', email) is not None:
+            if re.match(r'^[a-zA-Z0-9_+\-*/=.]+@[^.][a-zA-Z0-9_\-.]*\.[a-z]{2,10}$', email) is not None:
                 return True
         return False
 
