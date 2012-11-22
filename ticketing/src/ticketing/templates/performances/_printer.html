@@ -189,6 +189,21 @@ function loadApplet() {
 }
 </script>
 <select id="pageFormat" style="vertical-align: baseline;"></select>
+<script type="text/javascript">
+  $("#pageFormat").change(function(){
+  var name = $(this).val(); 
+  var pageFormats = window.ticketPrinterService.getPageFormats();
+    if (pageFormats) {
+      for (var i = pageFormats.iterator(); i.hasNext();) {
+        var pageFormat = i.next();
+        if(pageFormat.getName() == name){
+          window.ticketPrinterService.setPageFormat(pageFormat);
+          break;
+        }
+      }
+    }
+  });
+</script>
 <!--
 <select id="page"></select>
 <select id="ticketFormat"></select>
