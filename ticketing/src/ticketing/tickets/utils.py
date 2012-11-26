@@ -15,6 +15,11 @@ def datetime_as_dict(dt):
         u'weekday': dt.weekday()
         } if dt is not None else None
 
+def safe_format(formatter, target, default=u""):
+    if target is None:
+        return default
+    return formatter(target)
+    
 class Japanese_Japan_Formatter(object):
     SEX_TO_STRING_MAP = {
         SexEnum.NoAnswer.v: u'未回答',
@@ -156,14 +161,14 @@ class DictBuilder(object):
             u'対戦名': performance.name,
             u'会場名': venue.name,
             u'公演コード': performance.code,
-            u'開催日': self.formatter.format_date(performance.start_on),
-            u'開催日s': self.formatter.format_date_short(performance.start_on),
-            u'開場時刻': self.formatter.format_time(performance.open_on),
-            u'開場時刻s': self.formatter.format_time_short(performance.open_on),
-            u'開始時刻': self.formatter.format_time(performance.start_on),
-            u'開始時刻s': self.formatter.format_time_short(performance.start_on),
-            u'終了時刻': performance.end_on and self.formatter.format_time(performance.end_on) or "",
-            u'終了時刻s': performance.end_on and self.formatter.format_time_short(performance.end_on) or "",
+            u'開催日': safe_format(self.formatter.format_date, performance.start_on), 
+            u'開催日s': safe_format(self.formatter.format_date_short, performance.start_on),
+            u'開場時刻': safe_format(self.formatter.format_time, performance.open_on), 
+            u'開場時刻s': safe_format(self.formatter.format_time_short, performance.open_on),
+            u'開始時刻': safe_format(self.formatter.format_time, performance.start_on), 
+            u'開始時刻s': safe_format(self.formatter.format_time_short, performance.start_on),
+            u'終了時刻': safe_format(self.formatter.format_time, performance.end_on), 
+            u'終了時刻s': safe_format(self.formatter.format_time_short, performance.end_on),
             })
         return retval
         
@@ -290,8 +295,8 @@ class DictBuilder(object):
             u'商品価格': self.formatter.format_currency(ordered_product.price),
             u'チケット価格': self.formatter.format_currency(ordered_product_item.price),
             u'注文番号': order.order_no,
-            u'注文日時': self.formatter.format_datetime(order.created_at),
-            u'注文日時s': self.formatter.format_datetime_short(order.created_at),
+            u'注文日時': safe_format(self.formatter.format_datetime,  order.created_at),
+            u'注文日時s': safe_format(self.formatter.format_datetime_short, order.created_at),
             u'予約番号': order.order_no
             }
 
