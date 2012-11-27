@@ -679,7 +679,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 "organization_id": self.organization.id, 
                 }
 
-    def get_cms_data(self):
+    def get_cms_data(self, validation=True):
         '''
         CMSに連携するデータを生成する
         インターフェースのデータ構造は以下のとおり
@@ -723,10 +723,11 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         sales_end_on = isodate.datetime_isoformat(self.sales_end_on) if self.sales_end_on else ''
 
         # cmsでは日付は必須項目
-        if not (start_on and end_on) and not self.deleted_at:
-            raise Exception(u'パフォーマンスが登録されていないイベントは送信できません')
-        if not (sales_start_on and sales_end_on) and not self.deleted_at:
-            raise Exception(u'販売期間が登録されていないイベントは送信できません')
+        if validation:
+            if not (start_on and end_on) and not self.deleted_at:
+                raise Exception(u'パフォーマンスが登録されていないイベントは送信できません')
+            if not (sales_start_on and sales_end_on) and not self.deleted_at:
+                raise Exception(u'販売期間が登録されていないイベントは送信できません')
 
         # 論理削除レコードも含めて取得
         performances = DBSession.query(Performance, include_deleted=True).filter_by(event_id=self.id).all()
