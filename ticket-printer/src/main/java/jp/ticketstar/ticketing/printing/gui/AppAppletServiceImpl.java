@@ -75,6 +75,7 @@ class AppAppletServiceImpl extends BasicAppService {
 							});
 							job.setPrintable(printable, model.getPageFormat());
 							job.print();
+              model.setPrintingStatus(Boolean.valueOf(false)); 
 						} catch (Exception e) {
 							e.printStackTrace();
 							displayError("Failed to print tickets\nReason: " + e);
