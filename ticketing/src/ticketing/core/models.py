@@ -2400,6 +2400,7 @@ class Host(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     host_name = Column(Unicode(255), unique=True)
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
     organization = relationship('Organization', backref="hosts")
+    base_url = Column(Unicode(255))
 
 class OrderNoSequence(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderNoSequence'
