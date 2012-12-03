@@ -12,6 +12,7 @@ import itertools
 from sqlalchemy import sql
 from pyramid.security import Everyone, Authenticated
 from pyramid.security import Allow
+from pyramid.decorator import reify
 from sqlalchemy.orm.exc import NoResultFound
 
 from zope.interface import implementer
@@ -492,6 +493,10 @@ class TicketingCartResource(object):
             membership = openid['membership']
         user = api.get_or_create_user(self.request, auth_identifier, membership)
         return user
+
+    @reify
+    def host_base_url(self):
+        return core_api.get_host_base_url(self.request)
 
 @implementer(IOrderDelivery)
 class OrderDelivery(object):
