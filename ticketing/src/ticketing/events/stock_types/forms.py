@@ -37,7 +37,7 @@ class StockTypeForm(OurForm):
         default=StockTypeEnum.Seat.v,
         widget=CheckboxInput(),
     )
-    display_order = OurIntegerField(
+    display_order = OurTextField(
         label=u'表示順',
         hide_on_new=True
     )
