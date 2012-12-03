@@ -10,12 +10,37 @@
   }
   function new_sales_segment() {
     var modal = $('#modal-sales_segment');
-    reset_form(modal, '#event_id, #upper_limit');
+    reset_form(modal, '#event_id, #upper_limit', true);
     modal.find('#seat_choice').val(1).attr('checked', 'checked');
     modal.find('#public').val(1).attr('checked', 'checked');
     modal.find('#copy').val(0).removeAttr('checked');
     modal.find('#copy-fields').css('display', 'none');
     modal.find('h3').text('販売区分');
+    // FIXME: formをsubmitしたらページ遷移が発生する挙動に頼っていて
+    // onchangeイベントハンドラはずしてないの注意
+    (function() {
+      var $kind = $('#modal-sales_segment #kind');
+      var $name = $('#modal-sales_segment #name');
+      if (!$name.val()) {
+        var fillDefault = true;
+        function onchange() {
+          if (fillDefault) {
+            var selected = $kind.val();
+            $kind.children().each(function (_, n) {
+              if (selected == n.value || selected == null) {
+                $name.val(n.firstChild.nodeValue);
+                return false;
+              }
+            });
+          }
+        }
+        $name.change(function () {
+          fillDefault = false;
+        });
+        $kind.change(onchange);
+        onchange();
+      }
+    })();
     modal.modal('toggle');
   }
   function edit_sales_segment(copy) {
@@ -23,6 +48,7 @@
     if (!id) return;
     var el = '#sales_segment-' + id;
     var modal = $('#modal-sales_segment');
+    reset_form(modal, '#event_id, #upper_limit', false);
     modal.find('#id').val($(el + ' #id').text());
     modal.find('#kind').val($(el + ' #kind').attr('value'));
     modal.find('#name').val($(el + ' #name').text());

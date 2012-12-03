@@ -4,6 +4,23 @@
 
 <%include file="/parts/_toggle_menu.html" />
 
+<script>
+// ajax modal
+$(function(){
+  $("a.id-action").click(function() {
+    var form = $(this).closest('form'); 
+    var pk = form.find("input:radio:checked, input:checkbox:checked").val();
+    if(!pk){ return false; }
+    $(this).attr("href", $(this).attr("data-base-url").replace("__id__", pk));
+    return true;
+  });
+
+	$("a.ajax-modal[data-toggle=modal]").click(function(){
+    $($(this).attr("data-target")).load($(this).attr("href"));
+	});
+});
+</script>
+
 <div class="row-fluid">
   <div id="left-menu" class="span2" style="${tm.menu_style()}">
     <%include file="/parts/_menu.html" args="event=event" />
@@ -121,7 +138,7 @@
         <%include file="/stock_holders/_list.html" args="form=form_stock_holder, stock_holders=event.stock_holders, limit=10" />
         <%include file="/stock_holders/_action_button.html" args="event=event" />
         <div id="stock_holders-form">
-          <%include file="/stock_holders/_form.html" args="form=form_stock_holder" />
+        <%include file="/stock_holders/_form.html" args="form=form_stock_holder" />
         </div>
       </div>
     </div>

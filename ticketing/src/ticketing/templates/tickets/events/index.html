@@ -11,23 +11,6 @@
 <style type="text/css">
   h3 {margin-top: 20px;  }
 </style>
-<script>
-  // ajax modal
-  $(function(){
-    $("a.id-action").click(  
-      function() {
-        var form = $(this).closest('form'); 
-        var pk = form.find("input:radio:checked, input:checkbox:checked").val();
-        if(!pk){ return false; }
-        $(this).attr("href", $(this).attr("data-base-url").replace("__id__", pk));
-        return true;
-    });
-
-	$("a.ajax-modal[data-toggle=modal]").click(function(){
-      $($(this).attr("data-target")).load($(this).attr("href"));
-	});
-  });
-</script>
 <div class="modal hide" id="AjaxModal">
 </div>
 

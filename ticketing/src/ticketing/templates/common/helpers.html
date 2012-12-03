@@ -64,6 +64,9 @@
 </%def>
 
 <%def name="form_item(item, help='', **options)">
+  <% hide_on_new = getattr(item, 'hide_on_new', False) %>
+  % if not getattr(getattr(item, 'form', None), 'new_form', False) or not hide_on_new:
+  <% if hide_on_new: options['data-hide-on-new'] = 'hide-on-new' %>
   <div class="control-group ${'error' if item.errors else ''}">
     % if item.type != 'HiddenField':
       <label class="control-label">
@@ -78,6 +81,7 @@
       ${validate_errors(item)}
     </div>
   </div>
+  % endif
 </%def>
 
 <%def name="safe_strftime(str, format='%Y-%m-%d %H:%M')">
