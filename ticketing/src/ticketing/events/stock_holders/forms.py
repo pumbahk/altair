@@ -8,9 +8,8 @@ from ticketing.formhelpers import OurForm, DateTimeField, Translations, Required
 from ticketing.core.models import Account
 
 class StockHolderForm(OurForm):
-
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
-        Form.__init__(self, formdata, obj, prefix, **kwargs)
+        super(StockHolderForm, self).__init__(formdata, obj, prefix, **kwargs)
         if 'organization_id' in kwargs:
             self.account_id.choices = [
                 (account.id, account.name) for account in Account.filter_by_organization_id(kwargs['organization_id'])
