@@ -71,6 +71,7 @@ requires = [
     'boto',
     'fluent-logger == 0.3.3moriyoshi',
     'PIL', # for qrcode.image.pil
+    "jsonrpclib"
     ]
 
 setup(name='ticketing',

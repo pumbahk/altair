@@ -618,3 +618,19 @@ class QRReaderViewDemo(BaseView):
                     .join(Order) \
                     .filter_by(organization_id=self.context.organization.id))
 
+## todo:refactoring 
+from jsonrpclib import jsonrpc
+
+@view_config(route_name="tickets.preview", request_method="GET")
+def preview_ticket(context, request):
+    pass
+
+@view_config(route_name="tickets.preview", request_method="POST", 
+             request_param="svgfile")
+def preview_ticket_post(context, request):
+    # filename = request.POST["svgfile"].filename,
+    apiurl = "http://localhost:4444"
+    rpc_proxy =  jsonrpc.ServerProxy(apiurl, version="2.0")
+    img_url = rpc_proxy.renderSVG(request.POST["svgfile"].file.read(), apiurl)
+    return HTTPFound(img_url)
+
