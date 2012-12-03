@@ -80,8 +80,8 @@
     var id = $('input[name=sales_segment_id]:checked').val() || $('#sales_segments-form').find('#sales_segment_id').attr('value');
     if (!id) return;
     var modal = $('#modal-delete');
-    modal.find('##delete').attr('href', '/events/sales_segments/delete/' + id);
-    modal.find('##message').text('選択した販売区分を削除します。よろしいですか？');
+    modal.find('#delete').attr('href', '/events/sales_segments/delete/' + id);
+    modal.find('#message').text('選択した販売区分を削除します。よろしいですか？');
     modal.modal('toggle');
   }
   function save_sales_segment() {
