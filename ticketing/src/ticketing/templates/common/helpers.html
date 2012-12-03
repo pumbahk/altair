@@ -63,7 +63,7 @@
   % endif
 </%def>
 
-<%def name="form_item(item, option={}, help='')">
+<%def name="form_item(item, help='', **options)">
   <div class="control-group ${'error' if item.errors else ''}">
     % if item.type != 'HiddenField':
       <label class="control-label">
@@ -74,7 +74,7 @@
       </label>
     % endif
     <div class="controls">
-      ${item(**option)}
+      ${item(**options)}
       ${validate_errors(item)}
     </div>
   </div>

@@ -58,10 +58,10 @@ ${h.breadcrumbs(
     <fieldset>
       ${h.form_item(form.id)}
       ${h.form_item(form.original_id)}
-      ${h.form_item(form.account_id, option={'class':'span5'})}
-      ${h.form_item(form.title, option={'class':'span8', 'maxlength':200})}
-      ${h.form_item(form.abbreviated_title, option={'class':'span4', 'maxlength':100})}
-      ${h.form_item(form.code, option={'style':'width:100px', 'maxlength':5, 'placeholder':request.context.user.organization.code})}
+      ${h.form_item(form.account_id, class_='span5')}
+      ${h.form_item(form.title, class_='span8', maxlength=200)}
+      ${h.form_item(form.abbreviated_title, class_='span4', maxlength=100)}
+      ${h.form_item(form.code, style='width:100px', maxlength=5, placeholder=request.context.user.organization.code)}
     </fieldset>
     <div class="form-actions">
       <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">

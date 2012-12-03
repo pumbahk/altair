@@ -57,12 +57,12 @@
     <fieldset>
       ${h.form_item(form.id)}
       ${h.form_item(form.original_id)}
-      ${h.form_item(form.name, option={'class':'span8', 'maxlength':255})}
+      ${h.form_item(form.name, class_='span8', maxlength=255)}
       ${h.form_item(form.open_on)}
       ${h.form_item(form.start_on)}
       ${h.form_item(form.end_on)}
-      ${h.form_item(form.code, option={'class':'span3', 'maxlength':12, 'placeholder':event.code})}
-      ${h.form_item(form.venue_id, option={'class':'span6'})}
+      ${h.form_item(form.code, class_='span3', maxlength=12, placeholder=event.code)}
+      ${h.form_item(form.venue_id, class_='span6')}
     </fieldset>
     <div class="form-actions">
       <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">
