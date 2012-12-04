@@ -1,10 +1,26 @@
+from lxml import etree
 from StringIO import StringIO
+
 from . import cleanup_svg
 from .normalize import normalize
 from ..convert import to_opcodes
 
+
 class TicketCleanerValidationError(Exception):
     pass
+
+def get_validated_xmltree(svgio, exc_class=TicketCleanerValidationError):
+    try:
+        xmltree = etree.parse(svgio)
+        svgio.seek(0)
+        return xmltree
+    except Exception, e:
+        raise exc_class("xml: "+str(e))
+
+def get_validated_svg_cleaner(svgio, exc_class=TicketCleanerValidationError):
+    xmltree = get_validated_xmltree(svgio, exc_class=exc_class)
+    TicketSVGValidator(exc_class=exc_class).validate(svgio, xmltree)
+    return TicketSVGCleaner(svgio, xmltree)
 
 class TicketSVGCleaner(object):
     def __init__(self, svgio, xmltree, io_create=StringIO):

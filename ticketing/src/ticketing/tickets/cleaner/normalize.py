@@ -206,7 +206,6 @@ class ConvertXmlForTicketTemplateRenderingFilter(XMLFilterBase):
         else:
             return _simple_dump_to_downstream(sm, downstream)
 
-
 def _simple_dump_to_downstream(sm, downstream):
     for i in xrange(len(sm.heads)):
         for xs in (sm.heads[i], sm.content[i], sm.tails[i]):
@@ -238,8 +237,12 @@ def _attach_header(inp, outp):
     while True:
         pos = inp.tell()
         line = inp.readline()
-        if line.startswith("<?xml") or line.startswith("<!--"):
-            outp.write(line)
+        if line.startswith(("<?xml", "<!--")):
+            comment_end_tag = "-->"
+            if not comment_end_tag in line:
+                outp.write(line)
+            else:
+                inp.seek(pos+line.index(comment_end_tag)+len(comment_end_tag))
         else:
             inp.seek(pos)
             break
@@ -251,6 +254,7 @@ def normalize(inp, outp=sys.stdout, encoding="UTF-8", header="", eliminate=True)
 def _normalize(inp, outp=sys.stdout, encoding="UTF-8", eliminate=False):
     downstream_handler = XMLGenerator(outp, encoding.lower())
     parser = xml.sax.make_parser()
+    parser.setFeature(xml.sax.handler.feature_external_ges, False)
     attrs_hook = ConvertXmlForTicketTemplateAttrsHook
     filter_handler = ConvertXmlForTicketTemplateRenderingFilter(
         parser, downstream_handler, eliminate=eliminate, attrs_hook=attrs_hook

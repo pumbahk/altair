@@ -620,6 +620,8 @@ class QRReaderViewDemo(BaseView):
 
 ## todo:refactoring 
 from jsonrpclib import jsonrpc
+from pyramid.httpexceptions import HTTPBadRequest
+from cleaner.api import get_validated_cleaner
 
 @view_config(route_name="tickets.preview", request_method="GET")
 def preview_ticket(context, request):
@@ -628,9 +630,14 @@ def preview_ticket(context, request):
 @view_config(route_name="tickets.preview", request_method="POST", 
              request_param="svgfile")
 def preview_ticket_post(context, request):
-    # filename = request.POST["svgfile"].filename,
     apiurl = "http://localhost:4444"
-    rpc_proxy =  jsonrpc.ServerProxy(apiurl, version="2.0")
-    img_url = rpc_proxy.renderSVG(request.POST["svgfile"].file.read(), apiurl)
-    return HTTPFound(img_url)
 
+    rpc_proxy =  jsonrpc.ServerProxy(apiurl, version="2.0")
+    cleaner = get_validated_cleaner(request.POST["svgfile"].file, exc_class=HTTPBadRequest)
+    svgio = cleaner.get_cleaned_svgio()
+
+    try:
+        img_url = rpc_proxy.renderSVG(svgio.getvalue(), apiurl)
+        return HTTPFound(img_url)
+    except jsonrpc.ProtocolError, e:
+        raise HTTPBadRequest(str(e))

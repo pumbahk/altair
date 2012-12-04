@@ -2,7 +2,6 @@
 
 import json
 import os.path
-from lxml import etree
 #import xml.etree.ElementTree as etree
 from wtforms import Form
 from wtforms import TextField, IntegerField, HiddenField, SelectField, SelectMultipleField, FileField
@@ -13,7 +12,7 @@ from ticketing.core.models import Event, Account, DeliveryMethod
 from ticketing.core.models import TicketFormat
 from .convert import as_user_unit
 from .constants import PAPERS, ORIENTATIONS
-from .cleaner.api import TicketSVGCleaner, TicketSVGValidator
+from .cleaner.api import get_validated_svg_cleaner
 
 def filestorage_has_file(storage):
     return hasattr(storage, "filename") and storage.file
@@ -120,19 +119,6 @@ def validate_margin(key, data):
         except Exception as e:
             raise ValidationError("%s[\"%s\"] is bad-formatted (%s)" % (key, k, e.args[0]))
 
-def get_validated_xmltree(svgio, exc_class=ValidationError):
-    try:
-        xmltree = etree.parse(svgio)
-        svgio.seek(0)
-        return xmltree
-    except Exception, e:
-        raise exc_class("xml: "+str(e))
-
-def get_validated_cleaner(svgio, exc_class=ValidationError):
-    xmltree = get_validated_xmltree(svgio, exc_class=exc_class)
-    TicketSVGValidator(exc_class=exc_class).validate(svgio, xmltree)
-    return TicketSVGCleaner(svgio, xmltree)
-
 class TicketTemplateForm(Form):
     def _get_translations(self):
         return Translations()
@@ -169,7 +155,7 @@ class TicketTemplateForm(Form):
 
     def validate_drawing(form, field):
         svgio = field.data.file
-        form._cleaner = get_validated_cleaner(svgio)
+        form._cleaner = get_validated_svg_cleaner(svgio)
         return field.data
 
     def validate(self):
@@ -219,7 +205,7 @@ class TicketTemplateEditForm(Form):
         if not filestorage_has_file(field.data):
             return None
         svgio = field.data.file
-        form._cleaner = get_validated_cleaner(svgio, exc_class=ValidationError)
+        form._cleaner = get_validated_svg_cleaner(svgio, exc_class=ValidationError)
         return field.data
 
     def validate(self):
