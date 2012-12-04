@@ -7,6 +7,7 @@ from wtforms.form import Form
 from wtforms.ext.csrf.session import SessionSecureForm
 from wtforms.validators import Regexp, Length, NumberRange, EqualTo, Optional, ValidationError
 from ticketing.validators import Email
+from ticketing.core import models as c_models
 
 from ticketing.formhelpers import (
     DateTimeField,
@@ -53,6 +54,49 @@ class CardForm(CSRFSecureForm):
     secure_code = fields.TextField('secure_code', validators=[Length(3, 4), Regexp(CARD_SECURE_CODE_REGEXP)])
 
 class ClientForm(Form):
+
+    def get_validated_address_data(self):
+        """フォームから ShippingAddress などの値を取りたいときはこれで"""
+        if self.validate():
+            return dict(
+                first_name=self.data['first_name'],
+                last_name=self.data['last_name'],
+                first_name_kana=self.data['first_name_kana'],
+                last_name_kana=self.data['last_name_kana'],
+                zip=self.data['zip'],
+                prefecture=self.data['prefecture'],
+                city=self.data['city'],
+                address_1=self.data['address_1'],
+                address_2=self.data['address_2'],
+                country=u"日本国",
+                email=self.data['mail_address'],
+                tel_1=self.data['tel'],
+                tel_2=self.data.get('mobile_tel'),
+                fax=self.data['fax']
+                )
+        else:
+            return None
+
+    def create_shipping_address(self, user, data):
+        return c_models.ShippingAddress(
+            first_name=data['first_name'],
+            last_name=data['last_name'],
+            first_name_kana=data['first_name_kana'],
+            last_name_kana=data['last_name_kana'],
+            zip=data['zip'],
+            prefecture=data['prefecture'],
+            city=data['city'],
+            address_1=data['address_1'],
+            address_2=data['address_2'],
+            country=data['country'],
+            email=data['email'],
+            tel_1=data['tel_1'],
+            tel_2=data['tel_2'],
+            fax=data['fax'],
+            sex=data.get('sex'),
+            user=user
+        )
+
 
     def _get_translations(self):
         return Translations()

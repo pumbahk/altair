@@ -35,7 +35,7 @@ from .exceptions import (
     OutTermSalesException,
     DeliveryFailedException,
 )
-from .rakuten_auth.api import authenticated_user
+from ticketing.rakuten_auth.api import authenticated_user
 from .events import notify_order_completed
 from webob.multidict import MultiDict
 from . import api
@@ -44,6 +44,7 @@ from .stocker import NotEnoughStockException
 import transaction
 from ticketing.cart.selectable_renderer import selectable_renderer
 logger = logging.getLogger(__name__)
+from ticketing.payments.payment import Payment
 
 def back(func):
     def retval(*args, **kwargs):
@@ -686,28 +687,42 @@ class PaymentView(object):
             #user=user, user_profile=user.user_profile,
             )
 
-    def get_validated_address_data(self):
-        """フォームから ShippingAddress などの値を取りたいときはこれで"""
-        form = self.form
-        if form.validate():
-            return dict(
-                first_name=form.data['first_name'],
-                last_name=form.data['last_name'],
-                first_name_kana=form.data['first_name_kana'],
-                last_name_kana=form.data['last_name_kana'],
-                zip=form.data['zip'],
-                prefecture=form.data['prefecture'],
-                city=form.data['city'],
-                address_1=form.data['address_1'],
-                address_2=form.data['address_2'],
-                country=u"日本国",
-                email=form.data['mail_address'],
-                tel_1=form.data['tel'],
-                tel_2=None,
-                fax=form.data['fax']
-                )
-        else:
-            return None
+    # ClientFormに移動
+    # def get_validated_address_data(self):
+    #     """フォームから ShippingAddress などの値を取りたいときはこれで"""
+    #     form = self.form
+    #     if form.validate():
+    #         return dict(
+    #             first_name=form.data['first_name'],
+    #             last_name=form.data['last_name'],
+    #             first_name_kana=form.data['first_name_kana'],
+    #             last_name_kana=form.data['last_name_kana'],
+    #             zip=form.data['zip'],
+    #             prefecture=form.data['prefecture'],
+    #             city=form.data['city'],
+    #             address_1=form.data['address_1'],
+    #             address_2=form.data['address_2'],
+    #             country=u"日本国",
+    #             email=form.data['mail_address'],
+    #             tel_1=form.data['tel'],
+    #             tel_2=None,
+    #             fax=form.data['fax']
+    #             )
+    #     else:
+    #         return None
+
+    def _validate_extras(self, cart, payment_delivery_pair, shipping_address_params):
+        if not payment_delivery_pair or shipping_address_params is None:
+            if not payment_delivery_pair:
+                self.request.session.flash(u"お支払い方法／受け取り方法をどれかひとつお選びください")
+                logger.debug("invalid : %s" % 'payment_delivery_method_pair_id')
+            else:
+                logger.debug("invalid : %s" % self.form.errors)
+
+            self.context.event_id = cart.performance.event.id
+
+            return False
+        return True
 
     @view_config(route_name='cart.payment', request_method="POST", renderer=selectable_renderer("carts/%(membership)s/payment.html"))
     @view_config(route_name='cart.payment', request_type='.interfaces.IMobileRequest', request_method="POST", renderer=selectable_renderer("carts_mobile/%(membership)s/payment.html"))
@@ -726,20 +741,10 @@ class PaymentView(object):
         payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter_by(id=payment_delivery_method_pair_id).first()
 
         self.form = schemas.ClientForm(formdata=self.request.params)
-        shipping_address_params = self.get_validated_address_data()
-
-        if not payment_delivery_pair or shipping_address_params is None:
-            if not payment_delivery_pair:
-                self.request.session.flash(u"お支払い方法／受け取り方法をどれかひとつお選びください")
-                logger.debug("invalid : %s" % 'payment_delivery_method_pair_id')
-            else:
-                logger.debug("invalid : %s" % self.form.errors)
-
-            self.context.event_id = cart.performance.event.id
-
+        shipping_address_params = self.form.get_validated_address_data()
+        if not self._validate_extras(cart, payment_delivery_pair, shipping_address_params):
             start_on = cart.performance.start_on
             payment_delivery_methods = self.context.get_payment_delivery_method_pair(start_on=start_on)
-
             return dict(form=self.form,
                 payment_delivery_methods=payment_delivery_methods,
                 #user=user, user_profile=user.user_profile,
@@ -748,57 +753,70 @@ class PaymentView(object):
         cart.payment_delivery_pair = payment_delivery_pair
         cart.system_fee = payment_delivery_pair.system_fee
 
-        shipping_address = self.create_shipping_address(user, shipping_address_params)
+        shipping_address = self.form.create_shipping_address(user, shipping_address_params)
 
-        DBSession.add(shipping_address)
+        # DBSession.add(shipping_address) # いらない
         cart.shipping_address = shipping_address
         DBSession.add(cart)
 
         client_name = self.get_client_name()
 
-        order = dict(
+        order = api.new_order_session(
+            self.request,
             client_name=client_name,
             payment_delivery_method_pair_id=payment_delivery_method_pair_id,
             mail_address=shipping_address.email,
         )
-        self.request.session['order'] = order
+        #order = dict(
+        #    client_name=client_name,
+        #    payment_delivery_method_pair_id=payment_delivery_method_pair_id,
+        #    mail_address=shipping_address.email,
+        #)
+        #self.request.session['order'] = order
 
-        payment_delivery_plugin = api.get_payment_delivery_plugin(self.request, 
-            payment_delivery_pair.payment_method.payment_plugin_id,
-            payment_delivery_pair.delivery_method.delivery_plugin_id,)
-        if payment_delivery_plugin is not None:
-            res = payment_delivery_plugin.prepare(self.request, cart)
-            if res is not None and callable(res):
-                return res
-        else:
-            payment_plugin = api.get_payment_plugin(self.request, payment_delivery_pair.payment_method.payment_plugin_id)
-            res = payment_plugin.prepare(self.request, cart)
-            if res is not None and callable(res):
-                return res
+        # == begin Payment.prepare ==
+        # payment_delivery_plugin = api.get_payment_delivery_plugin(self.request, 
+        #     payment_delivery_pair.payment_method.payment_plugin_id,
+        #     payment_delivery_pair.delivery_method.delivery_plugin_id,)
+        # if payment_delivery_plugin is not None:
+        #     res = payment_delivery_plugin.prepare(self.request, cart)
+        #     if res is not None and callable(res):
+        #         return res
+        # else:
+        #     payment_plugin = api.get_payment_plugin(self.request, payment_delivery_pair.payment_method.payment_plugin_id)
+        #     res = payment_plugin.prepare(self.request, cart)
+        #     if res is not None and callable(res):
+        #         return res
+        # == end Payment.prepare ==
+        payment = Payment(cart, self.request)
+        result = payment.call_prepare()
+        if callable(result):
+            return result
         return HTTPFound(self.request.route_url("payment.confirm"))
 
     def get_client_name(self):
         return self.request.params['last_name'] + self.request.params['first_name']
 
-    def create_shipping_address(self, user, data):
-        logger.debug('shipping_address=%r', data)
-        return c_models.ShippingAddress(
-            first_name=data['first_name'],
-            last_name=data['last_name'],
-            first_name_kana=data['first_name_kana'],
-            last_name_kana=data['last_name_kana'],
-            zip=data['zip'],
-            prefecture=data['prefecture'],
-            city=data['city'],
-            address_1=data['address_1'],
-            address_2=data['address_2'],
-            country=data['country'],
-            email=data['email'],
-            tel_1=data['tel_1'],
-            tel_2=data['tel_2'],
-            fax=data['fax'],
-            user=user
-        )
+    # == ClientFormに移動 ==
+    # def create_shipping_address(self, user, data):
+    #     logger.debug('shipping_address=%r', data)
+    #     return c_models.ShippingAddress(
+    #         first_name=data['first_name'],
+    #         last_name=data['last_name'],
+    #         first_name_kana=data['first_name_kana'],
+    #         last_name_kana=data['last_name_kana'],
+    #         zip=data['zip'],
+    #         prefecture=data['prefecture'],
+    #         city=data['city'],
+    #         address_1=data['address_1'],
+    #         address_2=data['address_2'],
+    #         country=data['country'],
+    #         email=data['email'],
+    #         tel_1=data['tel_1'],
+    #         tel_2=data['tel_2'],
+    #         fax=data['fax'],
+    #         user=user
+    #     )
 
 class ConfirmView(object):
     """ 決済確認画面 """
@@ -815,6 +833,7 @@ class ConfirmView(object):
             raise NoCartError()
         cart = api.get_cart(self.request)
 
+        # == MailMagazinに移動 ==
         magazines = u_models.MailMagazine.query.outerjoin(u_models.MailSubscription) \
             .filter(u_models.MailMagazine.organization==cart.performance.event.organization) \
             .all()
@@ -850,53 +869,64 @@ class CompleteView(object):
 
         order_session = self.request.session['order']
 
+        # get_payment_delivery_pair
         payment_delivery_method_pair_id = order_session['payment_delivery_method_pair_id']
         payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter(
             c_models.PaymentDeliveryMethodPair.id==payment_delivery_method_pair_id
         ).one()
 
-        payment_delivery_plugin = api.get_payment_delivery_plugin(self.request, 
-            payment_delivery_pair.payment_method.payment_plugin_id,
-            payment_delivery_pair.delivery_method.delivery_plugin_id,)
-        if payment_delivery_plugin is not None:
-            order = payment_delivery_plugin.finish(self.request, cart)
+        payment = Payment(cart, self.request)
+        order = payment.call_payment()
+        # == begin Payment.call_payment ==
+        # payment_delivery_plugin = api.get_payment_delivery_plugin(self.request, 
+        #     payment_delivery_pair.payment_method.payment_plugin_id,
+        #     payment_delivery_pair.delivery_method.delivery_plugin_id,)
+        # if payment_delivery_plugin is not None:
+        #     order = payment_delivery_plugin.finish(self.request, cart)
 
-            user = self.context.get_or_create_user()
-            order.user = user
-            order.organization_id = order.performance.event.organization_id
-            cart.order = order
-        else:
-            payment_plugin = api.get_payment_plugin(self.request, payment_delivery_pair.payment_method.payment_plugin_id)
-            order = payment_plugin.finish(self.request, cart)
+        #     user = self.context.get_or_create_user()
+        #     order.user = user
+        #     order.organization_id = order.performance.event.organization_id
+        #     cart.order = order
+        # else:
+        #     payment_plugin = api.get_payment_plugin(self.request, payment_delivery_pair.payment_method.payment_plugin_id)
+        #     order = payment_plugin.finish(self.request, cart)
 
-            user = self.context.get_or_create_user()
-            order.user = user
-            order.organization_id = order.performance.event.organization_id
-            cart.order = order
+        #     user = self.context.get_or_create_user()
+        #     order.user = user
+        #     order.organization_id = order.performance.event.organization_id
+        #     cart.order = order
 
-            DBSession.add(order)
-            try:
-                delivery_plugin = api.get_delivery_plugin(self.request, payment_delivery_pair.delivery_method.delivery_plugin_id)
-                delivery_plugin.finish(self.request, cart)
-            except Exception as e:
-                import sys
-                import traceback
-                import StringIO
-                exc_info = sys.exc_info()
-                out = StringIO.StringIO()
-                traceback.print_exception(*exc_info, file=out)
-                logger.error(out.getvalue())
-                order.cancel(self.request)
-                order.note = str(e)
-                order_no = order.order_no
-                event_id = cart.sales_segment.event_id
-                # 追跡用にエラー内容とともにキャンセル状態のorderをコミットする
-                transaction.commit()
-                raise DeliveryFailedException(order_no, event_id)
+        #     DBSession.add(order)
+        #     try:
+        #         delivery_plugin = api.get_delivery_plugin(self.request, payment_delivery_pair.delivery_method.delivery_plugin_id)
+        #         delivery_plugin.finish(self.request, cart)
+        #     except Exception as e:
+        #         import sys
+        #         import traceback
+        #         import StringIO
+        #         exc_info = sys.exc_info()
+        #         out = StringIO.StringIO()
+        #         traceback.print_exception(*exc_info, file=out)
+        #         logger.error(out.getvalue())
+        #         order.cancel(self.request)
+        #         order.note = str(e)
+        #         order_no = order.order_no
+        #         event_id = cart.sales_segment.event_id
+        #         # 追跡用にエラー内容とともにキャンセル状態のorderをコミットする
+        #         transaction.commit()
+        #         raise DeliveryFailedException(order_no, event_id)
 
+        # == end Payment.callPayment ==
         notify_order_completed(self.request, order)
 
         # メール購読でエラーが出てロールバックされても困る
+        transaction.commit()
+
+
+        # == begin MailMagazineRegistration ==
+        del self.request._cart
+        cart = api.get_cart(self.request)
         order_id = order.id
         mail_address = cart.shipping_address.email
         plain_user = self.context.get_or_create_user()
@@ -904,7 +934,6 @@ class CompleteView(object):
         if plain_user is not None:
             user_id = plain_user.id
             user_cls = plain_user.__class__
-        transaction.commit()
         user = None
         if user_id is not None:
             user = DBSession.query(user_cls).get(user_id)
@@ -912,6 +941,7 @@ class CompleteView(object):
  
         # メール購読
         self.save_subscription(user, mail_address)
+        # == end MailMagazineRegistration ==
         api.remove_cart(self.request)
 
         api.logout(self.request)

@@ -9,7 +9,9 @@ from pyramid.httpexceptions import HTTPFound
 from ticketing.multicheckout import helpers as m_h
 from ticketing.multicheckout import api as multicheckout_api
 from ticketing.core import models as c_models
-from ..interfaces import IPaymentPlugin, ICartPayment, IOrderPayment, ICompleteMailPayment, IOrderCancelMailPayment
+from ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment
+from ticketing.cart.interfaces import ICartPayment
+from ticketing.mails.interfaces import ICompleteMailPayment, IOrderCancelMailPayment
 from .models import DBSession
 from .. import schemas
 from .. import logger

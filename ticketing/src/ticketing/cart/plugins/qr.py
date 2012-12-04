@@ -2,7 +2,9 @@
 
 from pyramid.view import view_config
 from ticketing.mobile import mobile_view_config
-from ..interfaces import IOrderDelivery, ICartDelivery, ICompleteMailDelivery, IOrderCancelMailDelivery
+from ticketing.payments.interfaces import IOrderDelivery
+from ticketing.cart.interfaces import ICartDelivery
+from ticketing.mails.interfaces import ICompleteMailDelivery, IOrderCancelMailDelivery
 from . import models as m
 from ticketing.core import models as core_models
 from . import logger

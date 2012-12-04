@@ -3,7 +3,9 @@
 from pyramid.view import view_config
 from pyramid.response import Response
 from zope.interface import implementer
-from ..interfaces import IDeliveryPlugin, IOrderDelivery, ICartDelivery, ICompleteMailDelivery, IOrderCancelMailDelivery
+from ticketing.payments.interfaces import IDeliveryPlugin, IOrderDelivery
+from ticketing.cart.interfaces import ICartDelivery
+from ticketing.mails.interfaces import ICompleteMailDelivery, IOrderCancelMailDelivery
 from . import models as m
 from . import logger
 from ticketing.cart import helpers as cart_helper

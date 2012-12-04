@@ -10,5 +10,5 @@ def on_order_completed(order_completed):
         api.send_mail(request, order)
     except Exception:
         ## id見れないと困る
-        DBSession.flush(order)
+        #DBSession.flush(order)
         logger.error("*complete mail* send mail is failed. order id: %d" % order.id,  exc_info=1)

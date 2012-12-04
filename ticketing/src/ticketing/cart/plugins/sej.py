@@ -3,8 +3,14 @@ from zope.interface import implementer
 from pyramid.view import view_config
 from pyramid.response import Response
 
-from ..interfaces import IPaymentPlugin, ICartPayment, IOrderPayment, ICompleteMailPayment, IOrderCancelMailPayment
-from ..interfaces import IDeliveryPlugin, ICartDelivery, IOrderDelivery, ICompleteMailDelivery, IOrderCancelMailDelivery
+from ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment, IDeliveryPlugin, IOrderDelivery
+from ticketing.cart.interfaces import ICartPayment, ICartDelivery
+from ticketing.mails.interfaces import (
+    ICompleteMailPayment, 
+    IOrderCancelMailPayment,
+    ICompleteMailDelivery,
+    IOrderCancelMailDelivery,
+)
 
 from .. import logger
 from pyramid.threadlocal import get_current_registry

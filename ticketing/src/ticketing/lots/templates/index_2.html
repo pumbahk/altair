@@ -1,0 +1,200 @@
+<%inherit file="${context['main_template'].uri}" />
+<div id="main">
+    <h1><img src="${request.static_url('ticketing.lots:static/img/order/title_settlement.gif')}" alt="チケット申込" width="950" height="40" /></h1>
+        <p class="pageTitle">申込内容をご確認ください。</p>
+        <p>修正・変更箇所があれば訂正の上、「次へ」をクリックしてください。</p>
+	  <div class="settlementBox2" id="settlementEventDetail"></div>
+      <div class="settlementBox2" id="settlementEventDetail">
+	    <div class="settlementBoxInner2">
+            <h2><img src="${request.static_url('ticketing.lots:static/img/order/title_content.gif')}" alt="公演一覧" width="97" height="30" /></h2>
+		   <table class="border" summary="イベント詳細情報">
+					<tr>
+						<th colspan="2" scope="row"><span><strong>ディズニーライブ東京追加公演</strong></span></th>
+					</tr>
+
+					<tr class="none">
+						<th scope="row">公演日</th>
+						<td>2012/12/23（日・祝）17：30開演</td>
+				    </tr>
+					<tr>
+						<th scope="row">会場</th>
+						<td>東京国際フォーラム　Aホール</td>
+				    </tr> 
+                    <tr>
+						<td colspan="2" scope="row">
+<table border="0">
+  <tr>
+    <th>アリーナ席　大人　2枚</th>
+    <td>￥16,000</td>
+  </tr>
+  <tr>
+    <th>アリーナ席　子ども　1枚</th>
+    <td>￥4,000</td>
+  </tr>
+  <tr>
+    <th>決済手数料</th>
+    <td>￥0</td>
+  </tr> 
+  <tr>
+    <th>発券/配達手数料</th>
+    <td>￥630</td>
+  </tr>
+  <tr>
+    <th class="line">システム利用料</th>
+    <td class="line">￥315</td>
+  </tr>
+  <tr>
+    <th><strong>合計金額</strong></th>
+    <td><strong>￥20,945</strong></td>
+  </tr>         
+</table>
+    
+                        
+                        
+                        
+                        
+                        </td>
+					</tr>                  
+	      </table>
+
+                </div>
+      </div>
+		<form id="form1" name="form1" method="post" action="">        
+		  <div class="settlementBox"></div>          
+
+	    <div class="settlementBox">
+			  <div class="settlementBoxInner">
+                  <h2><img src="${request.static_url('ticketing.lots:static/img/order/title_how.gif')}" alt="お支払・お引取り方法選択" width="208" height="30" /></h2>
+                    %for m in payment_delivery_pairs:
+					<div class="settlementPayBox">
+						<div class="settlementPayBoxInner">
+							<table>
+								<tr>
+                                    <% checked = 'checked' if m.id == payment_delivery_method_pair_id else '' %>
+                                    <td class="settlementPayRadio"><input type="radio" name="payment_delivery_method_pair_id" id="radio" value="${m.id}" ${checked} /></td>
+									<td><dl class="left">
+                                            <dt>${m.payment_method.name}　￥${m.transaction_fee} (${m.payment_method.fee_type})</dt>
+                                            <dd>${m.payment_method.description or '' | n}<br />
+                                        <img src="${request.static_url('ticketing.lots:static/img/settlement/card.gif')}" alt="カードの種類" width="374" height="35" /></dd>
+									</dl>
+                                    <dl class=" left">
+                                        <dt>${m.delivery_method.name}　￥${m.delivery_fee} (${m.delivery_method.fee_type})</dt>
+                                        <dd>${m.delivery_method.description or '' | n}</dd>
+									</dl>
+                                    
+                                    </td>
+							    </tr>
+							</table>
+						</div>
+					</div>
+                    %endfor
+
+			  </div>
+			</div>
+
+
+			<div class="settlementBox">
+			  <div class="settlementBoxInner">
+                  <h2><img src="${request.static_url('ticketing.lots:static/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
+				<div id="settlementSelectBox">
+				<div id="settlementSelectBoxInner02">
+			  <table summary="お支払・お引取り方法選択">
+						<tr>
+							<th><label>購入者氏名（全角）</label></th>
+					  <td>                        ${form['last_name']}
+                        ${form['first_name']}
+                        ${self.error(form, 'last_name')}
+                        ${self.error(form, 'first_name')}
+                      </td>
+						</tr>
+						<tr>
+							<th><label>購入者氏名（カナ）</label></th>
+					  <td>
+                        ${form['last_name_kana']}
+                        ${form['first_name_kana']}
+                        ${self.error(form, 'last_name_kana')}
+                        ${self.error(form, 'first_name_kana')}
+						</tr>
+						<tr>
+							<th><label>メールアドレス</label></th>
+					  <td>
+                        ${form['mail_address']}
+                        ${self.error(form, 'mail_address')}
+                      </td>
+						</tr>
+						<tr>
+							<th><label>メールアドレス（確認）</label></th>
+					  <td>
+                        ${form['mail_address2']}
+                        ${self.error(form, 'mail_address2')}
+                      </td>
+						</tr>
+						<tr>
+							<th><label>電話番号（自宅）</label></th>
+					  <td>
+                        ${form['tel']}
+                        ${self.error(form, 'tel')}
+                    </td>
+						</tr>
+						<tr>
+							<th><label>電話番号（携帯電話）</label></th>
+					  <td>
+                        ${form['mobile_tel']}
+                        ${self.error(form, 'mobile_tel')}
+						</tr>
+						<tr>
+							<th><label>配送先住所</label></th>
+					  <td>
+                          <table>
+                              <tr><th><label>郵便番号</label></th>
+                                  <td>
+                                    ${form['zip']}
+                                    ${self.error(form, 'zip')}
+                                </td></tr>
+                              <tr><th><label>都道府県</label></th>
+                                  <td>
+                                    ${form['prefecture']}
+                                    ${self.error(form, 'prefecture')}
+                                </td></tr>
+                              <tr><th><label>市区町村</label></th>
+                                  <td>
+                                    ${form['city']}
+                                    ${self.error(form, 'city')}
+                              </td></tr>
+                              <tr><th><label>住所１</label></th>
+                                  <td>
+                                    ${form['address_1']}
+                                    ${self.error(form, 'address_1')}
+                              </td></tr>
+                              <tr><th><label>住所２</label></th>
+                                  <td>
+                                    ${form['address_2']}
+                                    ${self.error(form, 'address_2')}
+                              </td></tr>
+                          </table>
+                      </td>
+						</tr>
+					<tr>
+							<th><label>生年月日</label></th>
+					  <td><input name="textfield" type="text" id="textfield" size="10" /> 年　<input name="textfield" type="text" id="textfield" size="10" /> 月　<input name="textfield" type="text" id="textfield" size="10" /> 日</td>
+				</tr>
+				<tr>
+							<th><label>性別</label></th>
+					  <td>
+					    <input type="radio" name="sex" id="radio3" value="radio3" />　男性
+				        <input type="radio" name="sex" id="radio4" value="radio3" />　女性</td>
+				</tr>
+					<tr id="settlementSelectEnd">
+							<th><label>メモ欄</label></th>
+					  <td><textarea cols="50" rows="5"></textarea></td>
+				</tr>
+				  </table>
+				</div>
+			</div>
+
+				</div>
+			</div>
+            <p class="align2"><input type="image" src="${request.static_url('ticketing.lots:static/img/settlement/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
+  		</form>      
+
+  </div>

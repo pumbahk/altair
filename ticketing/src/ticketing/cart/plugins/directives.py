@@ -1,9 +1,9 @@
 # -*- coding:utf-8 -*-
 
-from ..interfaces import IOrderDelivery, IOrderPayment
-from ..interfaces import ICartDelivery, ICartPayment
-from ..interfaces import IPaymentPlugin, IDeliveryPlugin
-from ..interfaces import IPaymentDeliveryPlugin
+from ticketing.payments.interfaces import IOrderDelivery, IOrderPayment
+from ticketing.cart.interfaces import ICartDelivery, ICartPayment
+from ticketing.payments.interfaces import IPaymentDeliveryPlugin
+from ticketing.payments.interfaces import IPaymentPlugin, IDeliveryPlugin
 from . import logger
 
 def add_payment_delivery_plugin(config, plugin, payment_plugin_id, delivery_plugin_id):

@@ -6,8 +6,15 @@ from pyramid.view import view_config
 from pyramid.response import Response
 from zope.interface import implementer
 from ticketing.core import models as c_models
-from ..interfaces import IDeliveryPlugin, IOrderDelivery, ICartDelivery, ICompleteMailDelivery, ICompleteMailPayment, IOrderCancelMailDelivery, IOrderCancelMailPayment
-from ..interfaces import IPaymentPlugin, IOrderPayment, ICartPayment
+from ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment, IDeliveryPlugin, IOrderDelivery
+from ticketing.cart.interfaces import ICartDelivery, ICartPayment
+from ticketing.mails.interfaces import (
+    ICompleteMailDelivery, 
+    ICompleteMailPayment, 
+    IOrderCancelMailDelivery, 
+    IOrderCancelMailPayment,
+)
+
 from . import models as m
 from . import logger
 

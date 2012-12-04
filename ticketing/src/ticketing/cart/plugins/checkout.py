@@ -7,7 +7,9 @@ from pyramid.view import view_config
 from pyramid.response import Response
 from pyramid.httpexceptions import HTTPFound
 
-from ..interfaces import IPaymentPlugin, IOrderPayment, ICompleteMailPayment, IOrderCancelMailPayment
+from ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment
+from ticketing.mails.interfaces import ICompleteMailDelivery, ICompleteMailPayment
+from ticketing.mails.interfaces import IOrderCancelMailDelivery, IOrderCancelMailPayment
 from ticketing.cart import helpers as h
 from ticketing.cart import api as a
 from ticketing.cart.models import Cart, CartedProduct
