@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.UUID;
+import java.util.Date;
+import java.util.Formatter;
 import java.net.URL;
 
 class Helper {
@@ -16,10 +18,25 @@ class Helper {
         return new PNGRasterizer();
     }
 
+    protected static String getOutputDirPrefix(){
+        Date now = new Date();
+        Formatter f = new Formatter();
+        return f.format("%tY%tm%td", now,now,now).toString();
+    }
+
+    protected static String createOutputDirName(String rootDir){
+        String prefix = Helper.getOutputDirPrefix();
+        File dir = new File(rootDir+"/"+prefix);
+        if (!dir.exists()){
+            dir.mkdir();
+        }
+        return dir.toString();
+    }
+
     protected static String createOutputName(String rootDir){ // todo: move
         String fnamePeace = UUID.randomUUID().toString();
-        // String fnamePeace = "hey";
-        return rootDir+"/"+fnamePeace+".png";
+        String dir = createOutputDirName(rootDir);
+        return dir+"/"+fnamePeace+".png";
     }
 }
 
@@ -46,7 +63,7 @@ public class SVGRenderingServiceImpl implements SVGRenderingService{
             OutputStream out = new FileOutputStream(outname);
             
             rasterizer.rasterize(in, out);
-            return new URL(fetchURL+"?filename="+(new File(outname).getName()));
+            return new URL(fetchURL+"?filename="+Helper.getOutputDirPrefix()+"/"+(new File(outname).getName()));
         } catch(java.net.MalformedURLException e){
             throw new AppException(e);
         } catch(java.io.FileNotFoundException e){
