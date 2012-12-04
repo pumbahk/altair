@@ -11,7 +11,7 @@ from pyramid.tweens import EXCVIEW
 from pyramid.interfaces import IDict
 
 import sqlahelper
-from .api.impl import bound_communication_api ## cmsとの通信
+from .api.impl import bind_communication_api ## cmsとの通信
 
 authn_exemption = re.compile(r'^(/_deform)|(/static)|(/_debug_toolbar)|(/favicon.ico)')
 
@@ -97,11 +97,20 @@ def main(global_config, **settings):
     #config.scan('ticketing') # Bad Code
     
     ## cmsとの通信
-    bound_communication_api(config, 
-                            ".api.impl.CMSCommunicationApi", 
-                            config.registry.settings["altaircms.event.notification_url"], 
-                            config.registry.settings["altaircms.apikey"]
-                            )
+    from .api.impl import CMSCommunicationApi
+    event_push_communication = CMSCommunicationApi(
+        settings["altaircms.event.notification_url"], 
+        settings["altaircms.apikey"]
+        )
+    event_push_communication.bind_instance(config)
+
+    ## svg preview serverとの通信
+    from .tickets.api import SVGPreviewCommunication
+    svg_preview_communication = SVGPreviewCommunication(
+        settings["altair.preview.svg.post_url"], 
+        settings["altair.preview.svg.fetch_url"]
+        )
+    svg_preview_communication.bind_instance(config)
 
     import ticketing.pyramid_boto
     ticketing.pyramid_boto.register_default_implementations(config)

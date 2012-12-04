@@ -5,3 +5,4 @@ class ICommunicationApi(Interface):
     def create_connection(request, *args, **kwargs):
         """ create validated connection(usually, urllib2.Request object)"""
         pass
+        

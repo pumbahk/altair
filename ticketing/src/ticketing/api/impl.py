@@ -5,8 +5,16 @@ import logging
 logger=logging.getLogger(__file__)
 from zope.interface import implementer
 
+class BaseCommunicationApi(object):
+    def bind_instance(self, config):
+        config.registry.registerUtility(self, ICommunicationApi, self.__class__.__name__)
+
+    @classmethod
+    def get_instance(cls, request):
+        return get_communication_api(request, cls)
+
 @implementer(ICommunicationApi)
-class CMSCommunicationApi(object):
+class CMSCommunicationApi(BaseCommunicationApi):
     def __init__(self, baseurl, apikey):
         self.baseurl = baseurl
         self.apikey = apikey
@@ -27,7 +35,7 @@ class CMSCommunicationApi(object):
 def get_communication_api(request, cls):
     return request.registry.queryUtility(ICommunicationApi, cls.__name__)
 
-def bound_communication_api(config, cls, *args, **kwargs):
+def bind_communication_api(config, cls, *args, **kwargs):
     """ init でapiを設定"""
     cls = config.maybe_dotted(cls)
     instance = cls(*args, **kwargs)
