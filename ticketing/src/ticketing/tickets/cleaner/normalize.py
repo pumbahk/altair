@@ -145,7 +145,8 @@ class ConvertXmlForTicketTemplateAttrsHook(object):
         return attrs
 
 class ConvertXmlForTicketTemplateRenderingFilter(XMLFilterBase):
-    def __init__(self, upstream, downstream, eliminate=False, attrs_hook=ConvertXmlForTicketTemplateAttrsHook):
+    def __init__(self, upstream, downstream, eliminate=False,
+                 attrs_hook=ConvertXmlForTicketTemplateAttrsHook):
         XMLFilterBase.__init__(self, upstream)
         self._downstream = downstream
         self.sm = StateHandleHelper()

@@ -9,8 +9,8 @@ def get_dummy_io(string):
 
 class TemplateValidateTests(unittest.TestCase):
     def _callFUT(self, *args, **kwargs):
-        from ticketing.tickets.forms import get_validated_xmltree_as_opcode_source
-        return get_validated_xmltree_as_opcode_source(*args, **kwargs)
+        from ticketing.tickets.forms import get_validated_cleaner
+        return get_validated_cleaner(*args, **kwargs)
 
     def test_simple_xml(self):
         target = get_dummy_io(u"""<a>h</a>""")

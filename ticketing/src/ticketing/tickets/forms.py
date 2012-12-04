@@ -2,7 +2,6 @@
 
 import json
 import os.path
-from StringIO import StringIO
 from lxml import etree
 #import xml.etree.ElementTree as etree
 from wtforms import Form
@@ -12,9 +11,9 @@ from wtforms.widgets import TextArea
 from ticketing.formhelpers import DateTimeField, Translations, Required
 from ticketing.core.models import Event, Account, DeliveryMethod
 from ticketing.core.models import TicketFormat
-from .convert import to_opcodes, as_user_unit
-from .cleaner import cleanup_svg
+from .convert import as_user_unit
 from .constants import PAPERS, ORIENTATIONS
+from .cleaner.api import TicketSVGCleaner, TicketSVGValidator
 
 def filestorage_has_file(storage):
     return hasattr(storage, "filename") and storage.file
@@ -37,41 +36,6 @@ class FileRequired(object):
             return None
         else:
             return self.__call__(form, field)
-
-from .cleaner.normalize import normalize
-
-def build_template_data_value(drawing):
-    if drawing:
-        out = StringIO()
-        drawing.write(out, encoding="UTF-8") #doc declaration?
-        return dict(drawing=out.getvalue())
-    return dict()
-
-def normalize_svgio(svgio):
-    try:
-        xmltree = etree.parse(svgio)
-        cleanup_svg(xmltree)
-        svgio.seek(0)
-    except Exception, e:
-        raise ValidationError("xml:" + str(e))
-    out = StringIO()
-    try:
-        normalize(svgio, out, encoding="UTF-8")
-        out.seek(0)
-    except Exception, e:
-        raise ValidationError("normalize:" + str(e))
-    return out
-
-def get_validated_xmltree_as_opcode_source(svgio):
-    xmltree = etree.parse(svgio)
-    cleanup_svg(xmltree)
-    try:
-        to_opcodes(xmltree)
-        svgio.seek(0)
-        return xmltree
-    except Exception, e:
-        raise ValidationError("opcode:" + str(e))
-
 
 def validate_extent(key, data):
     width = data.get(u"width")
@@ -156,6 +120,19 @@ def validate_margin(key, data):
         except Exception as e:
             raise ValidationError("%s[\"%s\"] is bad-formatted (%s)" % (key, k, e.args[0]))
 
+def get_validated_xmltree(svgio, exc_class=ValidationError):
+    try:
+        xmltree = etree.parse(svgio)
+        svgio.seek(0)
+        return xmltree
+    except Exception, e:
+        raise exc_class("xml: "+str(e))
+
+def get_validated_cleaner(svgio, exc_class=ValidationError):
+    xmltree = get_validated_xmltree(svgio, exc_class=exc_class)
+    TicketSVGValidator(exc_class=exc_class).validate(svgio, xmltree)
+    return TicketSVGCleaner(svgio, xmltree)
+
 class TicketTemplateForm(Form):
     def _get_translations(self):
         return Translations()
@@ -166,7 +143,7 @@ class TicketTemplateForm(Form):
             self.ticket_format.choices = [
                 (format.id, format.name) for format in TicketFormat.filter_by(organization_id=kwargs['organization_id'])
             ]
-        self._drawing = None
+        self._cleaner = None
 
     name = TextField(
         label = u'名前',
@@ -191,12 +168,16 @@ class TicketTemplateForm(Form):
      )    
 
     def validate_drawing(form, field):
-        form._drawing = get_validated_xmltree_as_opcode_source(normalize_svgio(field.data.file))
+        svgio = field.data.file
+        form._cleaner = get_validated_cleaner(svgio)
         return field.data
 
     def validate(self):
         super(type(self), self).validate()
-        self.data_value = build_template_data_value(self._drawing)
+        if self._cleaner:
+            self.data_value = {"drawing": self._cleaner.get_cleaned_svgio().getvalue()}
+        else:
+            self.data_value = {}
         return not bool(self.errors)
 
 class TicketTemplateEditForm(Form):
@@ -209,7 +190,7 @@ class TicketTemplateEditForm(Form):
             self.ticket_format.choices = [
                 (format.id, format.name) for format in TicketFormat.filter_by(organization_id=kwargs['organization_id'])
             ]
-        self._drawing = None
+        self._cleaner = None
 
     name = TextField(
         label = u'名前',
@@ -237,12 +218,16 @@ class TicketTemplateEditForm(Form):
     def validate_drawing(form, field):
         if not filestorage_has_file(field.data):
             return None
-        form._drawing = get_validated_xmltree_as_opcode_source(normalize_svgio(field.data.file))
+        svgio = field.data.file
+        form._cleaner = get_validated_cleaner(svgio, exc_class=ValidationError)
         return field.data
 
     def validate(self):
         super(type(self), self).validate()
-        self.data_value = build_template_data_value(self._drawing)
+        if self._cleaner:
+            self.data_value = {"drawing": self._cleaner.get_cleaned_svgio().getvalue()}
+        else:
+            self.data_value = {}
         return not bool(self.errors)
         
 class TicketFormatForm(Form):
