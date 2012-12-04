@@ -8,6 +8,21 @@ import java.io.OutputStream;
 import java.util.UUID;
 import java.net.URL;
 
+class Helper {
+    protected static SVGRasterizer selectRasterizer(String filetype){
+        return new PNGRasterizer(); //todo not implemented
+    }
+    protected static SVGRasterizer selectRasterizer(){
+        return new PNGRasterizer();
+    }
+
+    protected static String createOutputName(String rootDir){ // todo: move
+        String fnamePeace = UUID.randomUUID().toString();
+        // String fnamePeace = "hey";
+        return rootDir+"/"+fnamePeace+".png";
+    }
+}
+
 public class SVGRenderingServiceImpl implements SVGRenderingService{
     private String rootDir;
 
@@ -19,33 +34,18 @@ public class SVGRenderingServiceImpl implements SVGRenderingService{
         return x + 1;
     }
 
-    private SVGRasterizer selectRasterizer(String filetype){
-        return new PNGRasterizer(); //todo not implemented
-    }
-    private SVGRasterizer selectRasterizer(){
-        return new PNGRasterizer();
-    }
-
-    private String createOutputName(){ // todo: move
-        String fnamePeace = UUID.randomUUID().toString();
-        // String fnamePeace = "hey";
-        return this.rootDir+"/"+fnamePeace+".png";
-    }
-
     public URL renderSVG(String svg, String fetchURL, String fileType) throws AppException{
         return this.renderSVG(svg, fetchURL); // not implemented yet;
     }
     public URL renderSVG(String svg, String fetchURL) throws AppException{
-        SVGRasterizer rasterizer = this.selectRasterizer();
+        SVGRasterizer rasterizer = Helper.selectRasterizer();
         InputStream in = new ByteArrayInputStream(svg.getBytes());
-        String outname = this.createOutputName();
+        String outname = Helper.createOutputName(this.rootDir);
 
         try{
             OutputStream out = new FileOutputStream(outname);
             
             rasterizer.rasterize(in, out);
-
-            // todo: refactoring
             return new URL(fetchURL+"?filename="+(new File(outname).getName()));
         } catch(java.net.MalformedURLException e){
             throw new AppException(e);
