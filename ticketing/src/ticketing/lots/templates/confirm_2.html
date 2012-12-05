@@ -21,29 +21,27 @@
                     <tr>
 						<td colspan="2" scope="row">
 <table border="0">
+    %for cp in cart.products:
   <tr>
-    <th>アリーナ席　大人　2枚</th>
-    <td>￥16,000</td>
+      <th>${cp.product.name}　${cp.quantity}枚</th>
+      <td>${cp.product.price}</td>
   </tr>
-  <tr>
-    <th>アリーナ席　子ども　1枚</th>
-    <td>￥4,000</td>
-  </tr>
+    %endfor
   <tr>
     <th>決済手数料</th>
-    <td>￥0</td>
+    <td>${h.format_currency(cart.payment_delivery_pair.transaction_fee)}</td>
   </tr> 
   <tr>
     <th>発券/配達手数料</th>
-    <td>￥630</td>
+    <td>${h.format_currency(cart.payment_delivery_pair.delivery_fee)}</td>
   </tr>
   <tr>
     <th class="line">システム利用料</th>
-    <td class="line">￥315</td>
+    <td class="line">${h.format_currency(cart.payment_delivery_pair.system_fee)}</td>
   </tr>
   <tr>
     <th><strong>合計金額</strong></th>
-    <td><strong>￥20,945</strong></td>
+    <td><strong>${h.format_currency(cart.total_amount)}</strong></td>
   </tr>         
 </table>
     

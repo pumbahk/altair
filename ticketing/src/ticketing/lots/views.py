@@ -258,8 +258,15 @@ class PaymentView(object):
         shipping_address = lot_entry.shipping_address
         form_data = h.shipping_address_form_data(shipping_address)
         form = schemas.ClientForm(form_data)
-        return dict(form=form, lot=lot, elected=elected, lot_entry=lot_entry, 
+        wish=elected.lot_entry_wish
+        payment_delivery_method_pair=lot_entry.payment_delivery_method_pair
+        total_amount = sum([wp.product.price * wp.quantity for wp in wish.products]) + payment_delivery_method_pair.transaction_fee + payment_delivery_method_pair.delivery_fee + payment_delivery_method_pair.system_fee
+
+        return dict(form=form, lot=lot, elected=elected, wish=wish, lot_entry=lot_entry, 
+            total_amount=total_amount,
+            performance=elected.lot_entry_wish.performance,
             payment_delivery_method_pair_id=lot_entry.payment_delivery_method_pair_id,
+            payment_delivery_method_pair=payment_delivery_method_pair,
             payment_delivery_pairs=payment_delivery_method_pairs)
 
     @view_config(request_method="POST")
