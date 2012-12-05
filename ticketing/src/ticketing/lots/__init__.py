@@ -19,17 +19,17 @@ def includeme(config):
     config.add_renderer('json'  , 'ticketing.renderers.json_renderer_factory')
 
     # 申し込みフェーズ
-    config.add_route('lots.entry.index', '/lots/events/{event_id}/entry/{lot_id}')
-    config.add_route('lots.entry.confirm', '/lots/events/{event_id}/entry/{lot_id}/confirm')
-    config.add_route('lots.entry.completion', '/lots/events/{event_id}/entry/{lot_id}/completion')
+    config.add_route('lots.entry.index', 'events/{event_id}/entry/{lot_id}')
+    config.add_route('lots.entry.confirm', 'events/{event_id}/entry/{lot_id}/confirm')
+    config.add_route('lots.entry.completion', 'events/{event_id}/entry/{lot_id}/completion')
 
     # 申し込み確認
-    config.add_route('lots.review.index', '/lots/review')
+    config.add_route('lots.review.index', 'review')
 
     # 当選フェーズ
-    config.add_route('lots.payment.index', '/lots/events/{event_id}/payment/{lot_id}')
-    config.add_route('lots.payment.confirm', '/lots/events/{event_id}/payment/{lot_id}/confirm')
-    config.add_route('lots.payment.completion', '/lots/events/{event_id}/payment/{lot_id}/completion')
+    config.add_route('lots.payment.index', 'events/{event_id}/payment/{lot_id}')
+    config.add_route('lots.payment.confirm', 'events/{event_id}/payment/{lot_id}/confirm')
+    config.add_route('lots.payment.completion', 'events/{event_id}/payment/{lot_id}/completion')
   
     config.scan(".")
 
@@ -48,7 +48,7 @@ def main(global_conf, **settings):
     config = Configurator(settings=settings)
     session_factory = UnencryptedCookieSessionFactoryConfig("secret")
     config.set_session_factory(session_factory)
-    config.add_static_view('static', 'static')
+    config.add_static_view('static', 'static', cache_max_age=3600)
     config.include(".")
     config.include(".secure")
     config.include("ticketing.cart.plugins")
