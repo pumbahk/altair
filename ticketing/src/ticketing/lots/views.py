@@ -213,6 +213,7 @@ class LotReviewView(object):
         lot_id = lot_entry.lot.id
         # 当選して、未決済の場合、決済画面に移動可能
         return dict(entry=lot_entry,
+            lot=lot_entry.lot,
             is_elected=lot_entry.is_elected,
             is_rejected=lot_entry.is_rejected,
             is_ordered=lot_entry.is_ordered,
@@ -304,7 +305,7 @@ class PaymentConfirm(object):
         cart = cart_api.get_cart(self.request)
         return dict(cart=cart)
 
-    @view_config(request_method="POST", renderer="json")
+    @view_config(request_method="POST")
     def post(self):
         lot_entry = apis.entry_session(self.request)
         if lot_entry is None:
@@ -325,8 +326,9 @@ class PaymentConfirm(object):
         cart_api.remove_cart(self.request)
         lot_entry = apis.entry_session(self.request)
         lot_entry.order = order
-        return dict(order_no=order.order_no)
+        return HTTPFound(self.request.route_url('lots.payment.completion', **self.request.matchdict))
 
+@view_defaults(route_name='lots.payment.completion', renderer='completion_2.html')
 class PaymentCompleted(object):
     """ [当選者のみ]
     """
@@ -334,7 +336,20 @@ class PaymentCompleted(object):
     def __init__(self, request):
         self.request = request
 
+    @view_config(request_method="GET")
     def __call__(self):
         """ 完了画面 (表示のみ)
         """
-        return dict()
+        lot_entry = apis.entry_session(self.request)
+        if lot_entry is None:
+            raise HTTPNotFound
+
+        order = lot_entry.order
+        if not order:
+            raise HTTPNotFound()
+
+        return dict(order=order,
+            entry=lot_entry,
+            lot=lot_entry.lot,
+            payment_delivery_method_pair=order.payment_delivery_pair,
+            shipping_address=order.shipping_address)

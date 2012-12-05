@@ -63,46 +63,46 @@
 <div class="confirmBox">
 				<div class="confirmBoxInner">
                     <h2><img src="${request.static_url('ticketing.lots:static/img/order/title_how.gif')}" alt="お支払・お引取り方法選択" width="208" height="30" /></h2>
-				   <h3>クレジットカード決済　￥0　郵送　\630</h3>
+                    <h3>${cart.payment_delivery_pair.payment_method.name}　${h.format_currency(cart.payment_delivery_pair.transaction_fee)}　${cart.payment_delivery_pair.delivery_method.name}　${h.format_currency(cart.payment_delivery_pair.delivery_fee)}</h3>
 				</div>
 			</div>
 <div class="settlementBox">
 				<div class="settlementBoxInner">
-                    <h2><img src="request.static_url('ticketing.lots:static/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
+                    <h2><img src="${request.static_url('ticketing.lots:static/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
 				<div id="settlementSelectBox">
 				<div id="settlementSelectBoxInner02">
 			  <table summary="お支払・お引取り方法選択">
 						<tr>
 							<th><label>購入者氏名（全角）</label></th>
-					  <td>購入者氏名</td>
+                            <td>${cart.shipping_address.last_name} ${cart.shipping_address.first_name}</td>
 						</tr>
 						<tr>
 							<th><label>購入者氏名（カナ）</label></th>
-					  <td>購入者氏名カナ</td>
+                            <td>${cart.shipping_address.last_name_kana} ${cart.shipping_address.first_name_kana}</td>
 						</tr>
 						<tr>
 							<th><label>電話番号（自宅）</label></th>
-					  <td>電話番号（自宅）</td>
+                            <td>${cart.shipping_address.tel_1}</td>
 						</tr>
 						<tr>
 							<th><label>電話番号（携帯電話）</label></th>
-					  <td>電話番号（携帯電話）</td>
+                            <td>${cart.shipping_address.tel_2}</td>
 						</tr>
 						<tr>
 							<th><label>配送先住所</label></th>
-					  <td>配送先住所</td>
+                            <td>${cart.shipping_address.zip} ${cart.shipping_address.prefecture}${cart.shipping_address.city} ${cart.shipping_address.address_1}${cart.shipping_address.address_2}</td>
 						</tr>
 					<tr>
 							<th><label>生年月日</label></th>
-					  <td>2012年　10月　16日</td>
+					  <td>$$</td>
 				</tr>
 				<tr>
 							<th><label>性別</label></th>
-					  <td>男性</td>
+                            <td>${cart.shipping_address.sex}</td>
 				</tr>
 					<tr id="settlementSelectEnd">
 							<th><label>メモ欄</label></th>
-					  <td>テキストテキストテキストテキストテキストテキストテキストテキストテキストテキスト</td>
+					  <td>$$</td>
 				</tr>
 				  </table>
 				</div>
@@ -154,6 +154,6 @@
 				</div>
 		  </div>
 			
-			<p class="align2"><input type="image" src="../img/order/btn_back.gif" alt="戻る" width="236" height="46" />　<input type="image" src="../img/order/btn_confirm.gif" alt="確定する" width="236" height="46" /></p>
+          <p class="align2"><input type="image" src="${request.static_url('ticketing.lots:static/img/order/btn_back.gif')}" value="back" alt="戻る" width="236" height="46" />　<input type="image" src="${request.static_url('ticketing.lots:static/img/order/btn_confirm.gif')}" alt="確定する" width="236" height="46" /></p>
 	  </form>
 	</div>

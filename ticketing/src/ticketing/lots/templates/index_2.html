@@ -73,12 +73,11 @@
                                     <% checked = 'checked' if m.id == payment_delivery_method_pair_id else '' %>
                                     <td class="settlementPayRadio"><input type="radio" name="payment_delivery_method_pair_id" id="radio" value="${m.id}" ${checked} /></td>
 									<td><dl class="left">
-                                            <dt>${m.payment_method.name}　￥${m.transaction_fee} (${m.payment_method.fee_type})</dt>
+                                            <dt>${m.payment_method.name}　${h.format_currency(m.transaction_fee)} (${h.fee_type(m.payment_method.fee_type)})</dt>
                                             <dd>${m.payment_method.description or '' | n}<br />
-                                        <img src="${request.static_url('ticketing.lots:static/img/settlement/card.gif')}" alt="カードの種類" width="374" height="35" /></dd>
 									</dl>
                                     <dl class=" left">
-                                        <dt>${m.delivery_method.name}　￥${m.delivery_fee} (${m.delivery_method.fee_type})</dt>
+                                        <dt>${m.delivery_method.name}　${h.format_currency(m.delivery_fee)} (${h.fee_type(m.delivery_method.fee_type)})</dt>
                                         <dd>${m.delivery_method.description or '' | n}</dd>
 									</dl>
                                     
@@ -179,10 +178,12 @@
 					  <td><input name="textfield" type="text" id="textfield" size="10" /> 年　<input name="textfield" type="text" id="textfield" size="10" /> 月　<input name="textfield" type="text" id="textfield" size="10" /> 日</td>
 				</tr>
 				<tr>
-							<th><label>性別</label></th>
+                    <th><label>${form['sex'].label}</label></th>
 					  <td>
-					    <input type="radio" name="sex" id="radio3" value="radio3" />　男性
-				        <input type="radio" name="sex" id="radio4" value="radio3" />　女性</td>
+                          %for subfields in form['sex']:
+                          ${subfields}　${subfields.label}
+                            %endfor
+                    </td>
 				</tr>
 					<tr id="settlementSelectEnd">
 							<th><label>メモ欄</label></th>

@@ -41,7 +41,7 @@
 <div class="confirmBox">
 				<div class="confirmBoxInner">
                     <h2><img src="${request.static_url('ticketing.lots:static/img/order/title_caution.gif')}" alt="注意事項" width="97" height="30" /></h2>
-                  <p>注意事項が入ります。注意事項が入ります。注意事項が入ります。注意事項が入ります。注意事項が入ります。</p>
+                    <p>${lot.description}</p>
 				</div>
 			</div>
             %if is_elected and not is_ordered:

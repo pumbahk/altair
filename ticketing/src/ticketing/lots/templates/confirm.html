@@ -36,7 +36,7 @@
             <div class="confirmBox">
 				<div class="confirmBoxInner">
                     <h2><img src="${request.static_url('ticketing.lots:static/img/order/title_how.gif')}" alt="お支払・お引取り方法選択" width="208" height="30" /></h2>
-                  <h3>${payment_delivery_method_pair.payment_method.name}　￥${payment_delivery_method_pair.transaction_fee}　${payment_delivery_method_pair.delivery_method.name}　￥${payment_delivery_method_pair.delivery_fee}</h3>
+                  <h3>${payment_delivery_method_pair.payment_method.name}　${h.format_currency(payment_delivery_method_pair.transaction_fee)}　${payment_delivery_method_pair.delivery_method.name}　${h.format_currency(payment_delivery_method_pair.delivery_fee)}</h3>
 				</div>
 			</div>
 <div class="settlementBox">
