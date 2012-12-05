@@ -80,7 +80,7 @@ SET @performance_id = (select last_insert_id() from Performance limit 1);
 INSERT INTO Venue (
 site_id, performance_id, organization_id, name, sub_name, attributes
 ) VALUES (
-@site_id, @performance_id, @organization_id, '会場２', '会場２', ''
+@site_id, @performance_id, @organization_id, '会場２', '会場２', NULL
 );
 
 
@@ -107,7 +107,7 @@ SET @performance_id = (select last_insert_id() from Performance limit 1);
 INSERT INTO Venue (
 site_id, performance_id, organization_id, name, sub_name, attributes
 ) VALUES (
-@site_id, @performance_id, @organization_id, '会場３', '会場３', ''
+@site_id, @performance_id, @organization_id, '会場３', '会場３', NULL
 );
 
 INSERT INTO Lots_Performance (
@@ -133,7 +133,7 @@ SET @performance_id = (select last_insert_id() from Performance limit 1);
 INSERT INTO Venue (
 site_id, performance_id, organization_id, name, sub_name, attributes
 ) VALUES (
-@site_id, @performance_id, @organization_id, '会場４', '会場４', ''
+@site_id, @performance_id, @organization_id, '会場４', '会場４', NULL
 );
 
 INSERT INTO Lots_Performance (
