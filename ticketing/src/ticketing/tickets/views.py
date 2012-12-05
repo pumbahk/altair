@@ -624,7 +624,7 @@ class QRReaderViewDemo(BaseView):
                     .join(Order) \
                     .filter_by(organization_id=self.context.organization.id))
 
-
+## preview 
 
 @view_config(route_name="tickets.preview", request_method="GET", renderer="ticketing:templates/tickets/preview.html", 
              decorator=with_bootstrap)
@@ -636,10 +636,7 @@ def preview_ticket(context, request):
 def preview_ticket_post(context, request):
     preview = SVGPreviewCommunication.get_instance(request)
 
-    if request.POST["svgfile"] == False:
-        svgio = request.POST["svgfile"].file 
-    else:
-        svgio = StringIO(unicode(request.POST["svg"]).encode("utf-8")) #unicode only
+    svgio = request.POST["svgfile"].file 
     cleaner = get_validated_svg_cleaner(svgio, exc_class=HTTPBadRequest)
     svgio = cleaner.get_cleaned_svgio()
     try:
@@ -648,19 +645,28 @@ def preview_ticket_post(context, request):
     except jsonrpc.ProtocolError, e:
         raise HTTPBadRequest(str(e))
 
-@view_config(route_name="tickets.preview.base64", request_method="POST", 
-             request_param="svgfile")
+#api
+"""
+raw svg -> normalize svg -> base64 png
+"""
+@view_config(route_name="tickets.preview.api.normalize", request_method="GET", renderer="json", 
+             request_param="svg")
+def preview_api_normalize(context, request):
+    try:
+        svgio = StringIO(unicode(request.POST["svg"]).encode("utf-8")) #unicode only
+        cleaner = get_validated_svg_cleaner(svgio, exc_class=Exception)
+        svgio = cleaner.get_cleaned_svgio()
+        return {"status": True, "data": svgio.getvalue()}
+    except Exception, e:
+        return {"status": False, "message": str(e)}
+    
+@view_config(route_name="tickets.preview.api.base64", request_method="GET", renderer="json", 
+             request_param="svg")
 def preview_ticket_post64(context, request):
     preview = SVGPreviewCommunication.get_instance(request)
-
-    if request.POST["svgfile"] == False:
-        svgio = request.POST["svgfile"].file 
-    else:
-        svgio = StringIO(unicode(request.POST["svg"]).encode("utf-8")) #unicode only
-    cleaner = get_validated_svg_cleaner(svgio, exc_class=HTTPBadRequest)
-    svgio = cleaner.get_cleaned_svgio()
+    svg = request.POST["svg"]
     try:
-        imgdata_base64 = preview.communicate(request, svgio.getvalue())
-        return preview.as_filelike_response64(request, imgdata_base64)
+        imgdata_base64 = preview.communicate(request, svg)
+        return {"status": True, "data": preview.as_filelike_response64(request, imgdata_base64)}
     except jsonrpc.ProtocolError, e:
-        raise HTTPBadRequest(str(e))
+        return {"status": False, "message": str(e)}

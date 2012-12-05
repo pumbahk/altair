@@ -55,7 +55,7 @@ Drag and Drop
   };
 
   var onLoadSVG = function(e){
-    $.post("${request.route_path("tickets.preview.base64")}", {"svgfile": false, "svg": e.target.result})
+    $.get("${request.route_path("tickets.preview.api.base64")}", {"svg": e.target.result})
      .done(function(data){
        var $preview = $("#preview_area");
        $preview.empty();
