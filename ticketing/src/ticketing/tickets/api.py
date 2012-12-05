@@ -13,6 +13,11 @@ class SVGPreviewCommunication(BaseCommunicationApi):
         imgdata = rpc_proxy.renderSVG(svg,"image/png")
         return imgdata
 
+    def as_filelike_response64(self, request, imgdata):
+        return FileLikeResponse(StringIO(imgdata), 
+                                content_type="image/png", 
+                                request=request)
+
     def as_filelike_response(self, request, imgdata):
         return FileLikeResponse(StringIO(base64.b64decode(imgdata)), 
                                 content_type="image/png", 

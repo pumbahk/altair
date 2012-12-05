@@ -624,18 +624,43 @@ class QRReaderViewDemo(BaseView):
                     .join(Order) \
                     .filter_by(organization_id=self.context.organization.id))
 
-@view_config(route_name="tickets.preview", request_method="GET")
+
+
+@view_config(route_name="tickets.preview", request_method="GET", renderer="ticketing:templates/tickets/preview.html", 
+             decorator=with_bootstrap)
 def preview_ticket(context, request):
-    pass
+    return {}
 
 @view_config(route_name="tickets.preview", request_method="POST", 
              request_param="svgfile")
 def preview_ticket_post(context, request):
     preview = SVGPreviewCommunication.get_instance(request)
-    cleaner = get_validated_svg_cleaner(request.POST["svgfile"].file, exc_class=HTTPBadRequest)
+
+    if request.POST["svgfile"] == False:
+        svgio = request.POST["svgfile"].file 
+    else:
+        svgio = StringIO(unicode(request.POST["svg"]).encode("utf-8")) #unicode only
+    cleaner = get_validated_svg_cleaner(svgio, exc_class=HTTPBadRequest)
     svgio = cleaner.get_cleaned_svgio()
     try:
         imgdata_base64 = preview.communicate(request, svgio.getvalue())
         return preview.as_filelike_response(request, imgdata_base64)
+    except jsonrpc.ProtocolError, e:
+        raise HTTPBadRequest(str(e))
+
+@view_config(route_name="tickets.preview.base64", request_method="POST", 
+             request_param="svgfile")
+def preview_ticket_post64(context, request):
+    preview = SVGPreviewCommunication.get_instance(request)
+
+    if request.POST["svgfile"] == False:
+        svgio = request.POST["svgfile"].file 
+    else:
+        svgio = StringIO(unicode(request.POST["svg"]).encode("utf-8")) #unicode only
+    cleaner = get_validated_svg_cleaner(svgio, exc_class=HTTPBadRequest)
+    svgio = cleaner.get_cleaned_svgio()
+    try:
+        imgdata_base64 = preview.communicate(request, svgio.getvalue())
+        return preview.as_filelike_response64(request, imgdata_base64)
     except jsonrpc.ProtocolError, e:
         raise HTTPBadRequest(str(e))

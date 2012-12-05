@@ -4,6 +4,7 @@ def includeme(config):
     config.add_route('tickets.index', '/')
 
     config.add_route('tickets.preview', '/preview')
+    config.add_route('tickets.preview.base64', '/preview64')
 
     config.add_route('tickets.ticketformats.new', '/ticketformats/new')
     config.add_route('tickets.ticketformats.show', '/ticketformats/{id}')

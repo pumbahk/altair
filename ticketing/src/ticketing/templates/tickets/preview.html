@@ -1,0 +1,73 @@
+<%inherit file="../layout.html" />
+
+<h1 class="page">
+  ticket template preview
+</h1>
+
+<style type="text/css">
+  .droparea{
+    height: 200px;
+    background-color: #ccc;
+  }
+  .droparea.touched{
+    background-color: #cfc;
+  }
+</style>
+
+<div class="droparea" id="svg_droparea">
+Drag and Drop
+<div id="preview_area">
+</div>
+</div>
+
+<script>
+  var EventUtils = {
+    compose: function(f,g){
+      return function(){
+        f.apply(this, arguments);
+        return g.apply(this, arguments);
+      }
+  　},
+    cancel: function(e){
+      e.stopPropagation();
+      e.preventDefault();
+    },
+    onDrop: function(file_use_fn){
+      return function(e){
+        var files = e.dataTransfer.files;
+        for (var i=0, file; file=files[i]; i++){
+          var reader = new FileReader();
+
+          reader.onerror = function(e){ 
+           alert('Error code: ' + e.target.error.code);
+          }
+
+          reader.onload = (function(aFile){
+            return function(e){ //?
+              file_use_fn(e);
+            }
+          })(file);
+          reader.readAsText(file, "UTF-8");
+        }
+        return false;
+      }
+    },
+  };
+
+  var onLoadSVG = function(e){
+    $.post("${request.route_path("tickets.preview.base64")}", {"svgfile": false, "svg": e.target.result})
+     .done(function(data){
+       var $preview = $("#preview_area");
+       $preview.empty();
+       $preview.append($("<img title='preview' alt='preview todo upload file'>").attr("src", "data:image/png;base64,"+data));
+     })
+     .fail(function(s,err){alert(s.responseText)});
+  }
+  var droparea = document.getElementById("svg_droparea");
+
+  droparea.addEventListener("dragenter", EventUtils.cancel, false);
+  droparea.addEventListener('dragover', EventUtils.compose(EventUtils.cancel, function(e){$(e).addClass("touched")}), false);
+  droparea.addEventListener('dragleave', EventUtils.compose(EventUtils.cancel, function(e){$(e).removeClass("touched")}), false);
+  droparea.addEventListener('drop', EventUtils.compose(EventUtils.compose(EventUtils.cancel, function(e){$(e).removeClass("touched")}),
+                                                      EventUtils.onDrop(onLoadSVG)), false);
+</script>
