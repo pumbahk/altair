@@ -20,10 +20,10 @@ public class SVGRenderingServiceImpl implements SVGRenderingService{
         return x + 1;
     }
 
-    public String renderSVG(String svg, String fetchString, String fileType) throws AppException{
-        return this.renderSVG(svg, fetchString); // not implemented yet;
+    public String renderSVG(String svg, String fileType) throws AppException{
+        return this.renderSVG(svg); // not implemented yet;
     }
-    public String renderSVG(String svg, String fetchString) throws AppException{
+    public String renderSVG(String svg) throws AppException{
         SVGRasterizer rasterizer = Helper.selectRasterizer();
         InputStream in = new ByteArrayInputStream(svg.getBytes());
         ByteArrayOutputStream out = new ByteArrayOutputStream();

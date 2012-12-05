@@ -636,6 +636,6 @@ def preview_ticket_post(context, request):
     svgio = cleaner.get_cleaned_svgio()
     try:
         imgdata_base64 = preview.communicate(request, svgio.getvalue())
-        return preview.as_filelike_response(imgdata_base64)
+        return preview.as_filelike_response(request, imgdata_base64)
     except jsonrpc.ProtocolError, e:
         raise HTTPBadRequest(str(e))

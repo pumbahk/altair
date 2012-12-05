@@ -108,7 +108,6 @@ def main(global_config, **settings):
     from .tickets.api import SVGPreviewCommunication
     svg_preview_communication = SVGPreviewCommunication(
         settings["altair.preview.svg.post_url"], 
-        settings["altair.preview.svg.fetch_url"]
         )
     svg_preview_communication.bind_instance(config)
 
