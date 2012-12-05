@@ -39,6 +39,18 @@ def get_md(request):
     """
     return request.params['MD']
 
+def sanitize_card_number(xml_data):
+    et = None
+    try:
+        et = etree.fromstring(xml_data)
+        target = ['Auth/Card/CardNo', 'CardNumber', 'Auth/Secure3D/CardNo']
+        for t in target:
+            if et.find(t) is not None:
+                et.find(t).text = 'XXXXXXXXXXXXXXXX'
+    except Exception, e:
+        logger.warn('credit card number sanitize error: %s' % e.message)
+    return etree.tostring(et) if et is not None else xml_data
+
 def get_multicheckout_service(request):
     reg = request.registry
     # domain_candidates = reg.utilities.lookup([], IDict, 'altair.cart.domain.mapping')
@@ -151,6 +163,14 @@ def checkout_auth_cancel(request, order_no):
     service = get_multicheckout_service(request)
     return service.request_card_cancel_auth(order_no)
 
+def checkout_sales_part_cancel(request, order_no, sales_amount_cancellation, tax_carriage_cancellation):
+    params = m.MultiCheckoutRequestCardSalesPartCancel(
+        SalesAmountCancellation=int(sales_amount_cancellation),
+        TaxCarriageCancellation=int(tax_carriage_cancellation),
+    )
+    service = get_multicheckout_service(request)
+    return service.request_card_sales_part_cancel(order_no, params)
+
 def checkout_sales_cancel(request, order_no):
     service = get_multicheckout_service(request)
     return service.request_card_cancel_sales(order_no)
@@ -252,6 +272,9 @@ class Checkout3D(object):
     def card_sales_url(self, order_no):
         return self.api_url + "/card/OrderNo/%(order_no)s/Sales" % dict(order_no=order_no)
 
+    def card_sales_part_cancel_url(self, order_no):
+        return self.api_url + "/card/OrderNo/%(order_no)s/SalesPartCan" % dict(order_no=order_no)
+
     def card_cancel_sales_url(self, order_no):
         return self.api_url + "/card/OrderNo/%(order_no)s/SalesCan" % dict(order_no=order_no)
 
@@ -299,6 +322,13 @@ class Checkout3D(object):
         logger.debug("got response %s" % etree.tostring(res))
         return self._parse_response_card_xml(res)
 
+    def request_card_sales_part_cancel(self, order_no, params):
+        message = self._create_request_card_sales_part_cancel_xml(params)
+        url = self.card_sales_part_cancel_url(order_no)
+        res = self._request(url, message)
+        logger.debug("got response %s" % etree.tostring(res))
+        return self._parse_response_card_xml(res)
+
     def request_card_cancel_sales(self, order_no):
         url = self.card_cancel_sales_url(order_no)
         res = self._request(url)
@@ -315,7 +345,7 @@ class Checkout3D(object):
     def _request(self, url, message=None):
         content_type = "application/xhtml+xml;charset=UTF-8"
         #body = etree.tostring(message, encoding='utf-8') if message else ''
-        body = etree.tostring(message) if message else ''
+        body = etree.tostring(message) if message is not None else ''
         url_parts = urlparse.urlparse(url)
 
         if url_parts.scheme == "http":
@@ -331,7 +361,7 @@ class Checkout3D(object):
 
         headers.update(self.auth_header)
 
-        logger.debug("request %s body = %s" % (url, body))
+        logger.debug("request %s body = %s" % (url, sanitize_card_number(body)))
         http.request(
             "POST", url_parts.path, body=body,
             headers=headers)
@@ -385,7 +415,6 @@ class Checkout3D(object):
     def _create_request_card_xml(self, card_auth, check=False):
         """
         :param card_auth: :class:`.models.MultiCheckoutRequestCard`
-
         """
 
         # メッセージタグ <Message>
@@ -432,6 +461,15 @@ class Checkout3D(object):
             self._add_param(secure_3d, 'CAVV', card_auth.CAVV, optional=card_auth.SecureKind != '3')
             self._add_param(secure_3d, 'CavvAlgorithm', card_auth.CavvAlgorithm, optional=card_auth.SecureKind != '3')
             self._add_param(secure_3d, 'CardNo', card_auth.CardNo, optional=card_auth.SecureKind != '3')
+
+        return message
+
+    def _create_request_card_sales_part_cancel_xml(self, params):
+        message = etree.Element('Message')
+        sales_part_cancel = etree.SubElement(message, 'SalesPartCan')
+        order = etree.SubElement(sales_part_cancel, 'Order')
+        self._add_param(order, 'SalesAmountCancellation', str(params.SalesAmountCancellation))
+        self._add_param(order, 'TaxCarriageCancellation', str(params.TaxCarriageCancellation))
 
         return message
 

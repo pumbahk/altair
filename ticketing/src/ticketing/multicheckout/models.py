@@ -67,7 +67,6 @@ class Secure3DAuthRequest(Base):
     Md = sa.Column(sa.UnicodeText, doc="マーチャントデータ")
     PaRes = sa.Column(sa.UnicodeText, doc="PARes 電文")
 
-
 class Secure3DAuthResponse(Base):
     """ 3D認証結果確認依頼処理（リクエスト）
     """
@@ -88,6 +87,14 @@ class Secure3DAuthResponse(Base):
 
     def is_enable_auth_checkout(self):
         return self.ErrorCd == '000000' and self.RetCd == '0'
+
+class MultiCheckoutRequestCardSalesPartCancel(Base):
+    """ 売上一部取消依頼処理（リクエスト）
+    """
+    __tablename__ = 'multicheckout_request_card_sales_part_cancel'
+    id = sa.Column(Identifier, primary_key=True)
+    SalesAmountCancellation = sa.Column(sa.Integer, doc='取消売上金額')
+    TaxCarriageCancellation = sa.Column(sa.Integer, doc='取消税送料')
 
 class MultiCheckoutRequestCard(Base):
     """

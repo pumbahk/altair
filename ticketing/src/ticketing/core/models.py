@@ -1787,7 +1787,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             # 入金済みなら決済をキャンセル
             if self.status == 'paid':
                 # 売り上げキャンセル
-                from ticketing.multicheckout import api as multi_checkout_api
+                from ticketing.multicheckout import api as multicheckout_api
 
                 order_no = self.order_no
                 if request.registry.settings.get('multicheckout.testing', False):
@@ -1795,8 +1795,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     order_no = self.order_no + "00"
                 organization = Organization.get(self.organization_id)
                 request.registry.settings['altair_checkout3d.override_shop_name'] = organization.multicheckout_settings[0].shop_name
-                
-                multi_checkout_result = multi_checkout_api.checkout_sales_cancel(request, order_no)
+
+                # 払戻期限を越えてもキャンセルできるようにキャンセルAPIでなく売上一部キャンセルAPIを使う
+                #multi_checkout_result = multicheckout_api.checkout_sales_cancel(request, order_no)
+                multi_checkout_result = multicheckout_api.checkout_sales_part_cancel(request, order_no, self.total_amount, 0)
                 DBSession.add(multi_checkout_result)
 
                 error_code = ''
