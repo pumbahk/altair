@@ -55,11 +55,21 @@ Drag and Drop
   };
 
   var onLoadSVG = function(e){
-    $.get("${request.route_path("tickets.preview.api.base64")}", {"svg": e.target.result})
+    $.get("${request.route_path("tickets.preview.api.normalize")}", {"svg": e.target.result})
      .done(function(data){
-       var $preview = $("#preview_area");
-       $preview.empty();
-       $preview.append($("<img title='preview' alt='preview todo upload file'>").attr("src", "data:image/png;base64,"+data));
+       if(!data.status){
+         alert(data.message);
+       }
+       $.get("${request.route_path("tickets.preview.api.base64")}", {"svg": data.data})
+       .done(function(data){
+         if(!data.status){
+           alert(data.message);
+         }
+         var $preview = $("#preview_area");
+         $preview.empty();
+         $preview.append($("<img title='preview' alt='preview todo upload file'>").attr("src", "data:image/png;base64,"+data.data));
+       })
+       .fail(function(s,err){alert(s.responseText)});
      })
      .fail(function(s,err){alert(s.responseText)});
   }

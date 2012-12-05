@@ -653,7 +653,7 @@ raw svg -> normalize svg -> base64 png
              request_param="svg")
 def preview_api_normalize(context, request):
     try:
-        svgio = StringIO(unicode(request.POST["svg"]).encode("utf-8")) #unicode only
+        svgio = StringIO(unicode(request.GET["svg"]).encode("utf-8")) #unicode only
         cleaner = get_validated_svg_cleaner(svgio, exc_class=Exception)
         svgio = cleaner.get_cleaned_svgio()
         return {"status": True, "data": svgio.getvalue()}
@@ -664,9 +664,9 @@ def preview_api_normalize(context, request):
              request_param="svg")
 def preview_ticket_post64(context, request):
     preview = SVGPreviewCommunication.get_instance(request)
-    svg = request.POST["svg"]
+    svg = request.GET["svg"]
     try:
         imgdata_base64 = preview.communicate(request, svg)
-        return {"status": True, "data": preview.as_filelike_response64(request, imgdata_base64)}
+        return {"status": True, "data":imgdata_base64}
     except jsonrpc.ProtocolError, e:
         return {"status": False, "message": str(e)}
