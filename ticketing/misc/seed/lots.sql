@@ -53,7 +53,7 @@ SET @performance_id = (select last_insert_id() from Performance limit 1);
 INSERT INTO Venue (
 site_id, performance_id, organization_id, name, sub_name, attributes
 ) VALUES (
-@site_id, @performance_id, 1, '会場１', '会場１', ''
+@site_id, @performance_id, 1, '会場１', '会場１', NULL
 );
 
 INSERT INTO Lots_Performance (
