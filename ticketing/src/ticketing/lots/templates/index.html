@@ -21,7 +21,7 @@
 				    </tr>
 					<tr>
 						<th scope="row">申込受付期間</th>
-                        <td>${sales_segment.start_at}～${sales_segment.end_at}</td>
+                        <td>${h.japanese_datetime(sales_segment.start_at)}～${h.japanese_datetime(sales_segment.end_at)}</td>
 				    </tr>
                     %if sales_segment.upper_limit:
 					<tr>
@@ -57,7 +57,7 @@
 					</tr>
 					<tr class="none">
 						<th scope="row">公演日</th>
-                        <td>${performance.open_on}開演</td>
+                        <td>${h.japanese_datetime(performance.open_on)}開演</td>
 				    </tr>
 					<tr>
 						<th scope="row">会場</th>
@@ -83,7 +83,7 @@
 							<th><label>公演日・会場</label></th>
                             <td><select name="performance-${i}" id="select" class="performance-select">
                               %for performance in lot.performances:
-                              <option value="${performance.id}">${performance.open_on} ${performance.venue.name}</option>
+                              <option value="${performance.id}">${h.japanese_datetime(performance.open_on)} ${performance.venue.name}</option>
                                 %endfor
 							</select></td>
 						</tr>
@@ -132,12 +132,12 @@
                                     <% checked = 'checked' if str(m.id) == payment_delivery_method_pair_id else '' %>
                                     <td class="settlementPayRadio"><input type="radio" name="payment_delivery_method_pair_id" id="radio" value="${m.id}" ${checked} /></td>
 									<td><dl class="left">
-                                            <dt>${m.payment_method.name}　￥${m.transaction_fee} (${m.payment_method.fee_type})</dt>
+                                            <dt>${m.payment_method.name}　￥${m.transaction_fee} (${h.fee_type(m.payment_method.fee_type)})</dt>
                                             <dd>${m.payment_method.description or '' | n}<br />
                                         </dd>
 									</dl>
                                     <dl class=" left">
-                                        <dt>${m.delivery_method.name}　￥${m.delivery_fee} (${m.delivery_method.fee_type})</dt>
+                                        <dt>${m.delivery_method.name}　￥${m.delivery_fee} (${h.fee_type(m.delivery_method.fee_type)})</dt>
                                         <dd>${m.delivery_method.description or '' | n}</dd>
 									</dl>
                                     

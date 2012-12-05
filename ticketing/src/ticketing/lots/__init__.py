@@ -8,8 +8,13 @@ from pyramid.session import UnencryptedCookieSessionFactoryConfig
 import sqlalchemy as sa
 import sqlahelper
 
+def register_globals(event):
+    from . import helpers
+    event.update(h=helpers)
+
 def includeme(config):
     config.include(setup_cart)
+    config.add_subscriber(register_globals, 'pyramid.events.BeforeRender')
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_renderer('json'  , 'ticketing.renderers.json_renderer_factory')
 
