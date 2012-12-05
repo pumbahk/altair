@@ -24,29 +24,12 @@ public class SVGRenderingServlet
         jsonRpcServer.handle(req, resp);
     }
 
-    public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        
-        ServletContext sc = getServletContext();
-        String filename = sc.getRealPath(req.getParameter("filename"));
-
-        String mimeType = sc.getMimeType(filename);
-        if (mimeType == null) {
-            sc.log("Could not get MIME type of "+filename);
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            return;
-        }
-
-        ImageWriter iw = new ImageWriter(filename, mimeType);
-        iw.writeResponse(resp);
-    }
-
     public void init(ServletConfig config) throws ServletException{
         super.init(config);
 
         ServletContext sc = getServletContext();
-        String rootDir = sc.getRealPath("./");
 
-        this.service = new SVGRenderingServiceImpl(rootDir);
+        this.service = new SVGRenderingServiceImpl();
         this.jsonRpcServer = new JsonRpcServer(this.service, SVGRenderingService.class);
     }
 }

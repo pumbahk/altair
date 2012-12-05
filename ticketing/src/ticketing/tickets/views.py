@@ -23,7 +23,12 @@ from . import helpers
 from .utils import SvgPageSetBuilder, build_dict_from_ordered_product_item_token, _default_builder
 from .response import FileLikeResponse
 from .convert import to_opcodes
+
+## svg preview
 from .api import SVGPreviewCommunication
+from jsonrpclib import jsonrpc
+from pyramid.httpexceptions import HTTPBadRequest
+from cleaner.api import get_validated_svg_cleaner
 
 def ticket_format_to_dict(ticket_format):
     data = dict(ticket_format.data)
@@ -619,11 +624,6 @@ class QRReaderViewDemo(BaseView):
                     .join(Order) \
                     .filter_by(organization_id=self.context.organization.id))
 
-## todo:refactoring 
-from jsonrpclib import jsonrpc
-from pyramid.httpexceptions import HTTPBadRequest
-from cleaner.api import get_validated_svg_cleaner
-
 @view_config(route_name="tickets.preview", request_method="GET")
 def preview_ticket(context, request):
     pass
@@ -635,7 +635,7 @@ def preview_ticket_post(context, request):
     cleaner = get_validated_svg_cleaner(request.POST["svgfile"].file, exc_class=HTTPBadRequest)
     svgio = cleaner.get_cleaned_svgio()
     try:
-        img_url = preview.communicate(request, svgio.getvalue())
-        return HTTPFound(img_url)
+        imgdata_base64 = preview.communicate(request, svgio.getvalue())
+        return preview.as_filelike_response(imgdata_base64)
     except jsonrpc.ProtocolError, e:
         raise HTTPBadRequest(str(e))
