@@ -93,6 +93,9 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     status = sa.Column(sa.Integer, default=int(LotStatusEnum.New))
 
+    description = sa.Column(sa.UnicodeText)
+    entry_limit = sa.Column(sa.Integer, default=0, server_default="0")
+
     def validate_entry(self, entry):
         return True
 

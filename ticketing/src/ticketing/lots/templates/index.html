@@ -31,16 +31,18 @@
                     %endif
 					<tr>
 					  <th scope="row">申込回数制限</th>
-                      <td>$回</td>
+                      <td>${u"{0} 回".format(lot.entry_limit) if lot.entry_limit else u"無制限"}</td>
 				  </tr>
 					<tr>
 					  <th scope="row">受付希望数</th>
                       <td>一度の申込で第${lot.limit_wishes}希望まで</td>
 				  </tr>
+                  %if lot.description:
 					<tr>
 					  <th scope="row">注意事項</th>
-					  <td>$ 3歳以下入場不可。4歳以上有料</td>
+                      <td>${lot.description}</td>
 				  </tr>
+                  %endif
 				</table>
 			</div>
 		</div>
