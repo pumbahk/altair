@@ -148,7 +148,7 @@ lot_id, performance_id
 INSERT INTO StockType (
 name, type, event_id, quantity_only, style, display_order
 ) VALUES (
-'S席', 0, @event_id, 1, "", 1
+'S席', 0, @event_id, 1, "{}", 1
 );
 
 SET @stock_type_id = (select last_insert_id() from StockType limit 1);
@@ -176,7 +176,7 @@ name, price, sales_segment_id, event_id, seat_stock_type_id, display_order, publ
 INSERT INTO StockType (
 name, type, event_id, quantity_only, style, display_order
 ) VALUES (
-'A席', 0, @event_id, 1, "", 2
+'A席', 0, @event_id, 1, "{}", 2
 );
 
 SET @stock_type_id = (select last_insert_id() from StockType limit 1);
