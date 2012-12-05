@@ -6,7 +6,7 @@ import ticketing.cart.api as cart_api
 from ticketing.models import DBSession
 from ticketing.core.models import PaymentDeliveryMethodPair
 from sqlalchemy.orm.exc import NoResultFound
-from . import apis
+from . import api
 from . import helpers as h
 from . import schemas
 from .exceptions import NotElectedException
@@ -41,11 +41,11 @@ class EntryLotView(object):
         self.request = request
 
     def _get_lot_info(self):
-        event = apis.get_event(self.request)
-        member_group = apis.get_member_group(self.request)
-        sales_segment = apis.get_sales_segment(self.request, event, member_group)
+        event = api.get_event(self.request)
+        member_group = api.get_member_group(self.request)
+        sales_segment = api.get_sales_segment(self.request, event, member_group)
         lot_id = self.request.matchdict.get('lot_id')
-        return apis.get_lot(self.request, event, sales_segment, lot_id)
+        return api.get_lot(self.request, event, sales_segment, lot_id)
 
     @view_config(request_method="GET")
     def get(self, form=None):
@@ -58,7 +58,7 @@ class EntryLotView(object):
         lot, performances, stocks = self._get_lot_info()
         event = lot.event
         sales_segment = lot.sales_segment
-        products = apis.get_products(self.request, sales_segment)
+        products = api.get_products(self.request, sales_segment)
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
         return dict(form=form, event=event, sales_segment=sales_segment,
             payment_delivery_pairs=payment_delivery_pairs,
@@ -135,11 +135,11 @@ class ConfirmLotEntryView(object):
             lot_id=self.request.matchdict.get('lot_id')))
 
     def get_lot(self):
-        event = apis.get_event(self.request)
-        member_group = apis.get_member_group(self.request)
-        sales_segment = apis.get_sales_segment(self.request, event, member_group)
+        event = api.get_event(self.request)
+        member_group = api.get_member_group(self.request)
+        sales_segment = api.get_sales_segment(self.request, event, member_group)
         lot_id = self.request.matchdict.get('lot_id')
-        return apis.get_lot(self.request, event, sales_segment, lot_id)
+        return api.get_lot(self.request, event, sales_segment, lot_id)
 
     @view_config(request_method="POST")
     def post(self):
@@ -161,7 +161,7 @@ class ConfirmLotEntryView(object):
         payment_delivery_method_pair = PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id==payment_delivery_method_pair_id).one()
 
         user = None
-        entry = apis.entry_lot(self.request, lot, shipping_address, wishes, payment_delivery_method_pair, user)
+        entry = api.entry_lot(self.request, lot, shipping_address, wishes, payment_delivery_method_pair, user)
         self.request.session['lots.entry_no'] = entry.entry_no
         return HTTPFound(self.request.route_url('lots.entry.completion', **self.request.matchdict))
 
@@ -203,12 +203,12 @@ class LotReviewView(object):
             return dict(form=form)
         entry_no = form["entry_no"].data
         tel_no = form["tel_no"].data
-        lot_entry = apis.get_entry(self.request, entry_no, tel_no)
+        lot_entry = api.get_entry(self.request, entry_no, tel_no)
         if lot_entry is None:
             self.request.override_renderer = "review_form.html"
             return dict(form=form)
 
-        apis.entry_session(self.request, lot_entry)
+        api.entry_session(self.request, lot_entry)
         event_id = lot_entry.lot.event.id
         lot_id = lot_entry.lot.id
         # 当選して、未決済の場合、決済画面に移動可能
@@ -234,7 +234,7 @@ class PaymentView(object):
     def show_form(self):
         """
         """
-        lot_entry = apis.entry_session(self.request)
+        lot_entry = api.entry_session(self.request)
         if lot_entry is None:
             location = self.request.route_url('lots.review.index')
             return HTTPFound(location)
@@ -243,7 +243,7 @@ class PaymentView(object):
         if not lot_entry.is_elected:
             return # Forbidden? NotFound?
 
-        lot = apis.get_requested_lot(self.request)
+        lot = api.get_requested_lot(self.request)
         payment_delivery_method_pairs = lot.sales_segment.payment_delivery_method_pairs
         # 当選情報
         elected = DBSession.query(LotElectedEntry).filter(
@@ -269,13 +269,13 @@ class PaymentView(object):
         """
 
         event_id = self.request.matchdict['event_id']
-        lot_entry = apis.entry_session(self.request)
+        lot_entry = api.entry_session(self.request)
         if lot_entry is None:
             raise HTTPNotFound
 
         if not lot_entry.is_elected:
             raise NotElectedException
-        cart = apis.create_cart(self.request, lot_entry)
+        cart = api.create_cart(self.request, lot_entry)
         DBSession.add(cart)
         DBSession.flush()
         cart_api.set_cart(self.request, cart)
@@ -296,7 +296,7 @@ class PaymentConfirm(object):
         """
         """
         event_id = self.request.matchdict['event_id']
-        lot_entry = apis.entry_session(self.request)
+        lot_entry = api.entry_session(self.request)
         if lot_entry is None:
             raise HTTPNotFound
 
@@ -307,7 +307,7 @@ class PaymentConfirm(object):
 
     @view_config(request_method="POST")
     def post(self):
-        lot_entry = apis.entry_session(self.request)
+        lot_entry = api.entry_session(self.request)
         if lot_entry is None:
             raise HTTPNotFound
 
@@ -324,7 +324,7 @@ class PaymentConfirm(object):
         order = payment.call_payment()
         logger.debug("order_no = {0}".format(order.order_no))
         cart_api.remove_cart(self.request)
-        lot_entry = apis.entry_session(self.request)
+        lot_entry = api.entry_session(self.request)
         lot_entry.order = order
         return HTTPFound(self.request.route_url('lots.payment.completion', **self.request.matchdict))
 
@@ -340,7 +340,7 @@ class PaymentCompleted(object):
     def __call__(self):
         """ 完了画面 (表示のみ)
         """
-        lot_entry = apis.entry_session(self.request)
+        lot_entry = api.entry_session(self.request)
         if lot_entry is None:
             raise HTTPNotFound
 

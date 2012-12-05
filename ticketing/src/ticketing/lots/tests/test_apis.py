@@ -32,8 +32,8 @@ class create_cartTests(unittest.TestCase):
         testing.tearDown()
 
     def _callFUT(self, *args, **kwargs):
-        from .. import apis
-        return apis.create_cart(*args, **kwargs)
+        from .. import api
+        return api.create_cart(*args, **kwargs)
 
 
     def test_it(self):
@@ -106,8 +106,8 @@ class get_lotTests(unittest.TestCase):
         transaction.abort()
 
     def _callFUT(self, *args, **kwargs):
-        from .. import apis
-        return apis.get_lot(*args, **kwargs)
+        from .. import api
+        return api.get_lot(*args, **kwargs)
 
 
     def test_it(self):
@@ -147,8 +147,8 @@ class entry_lotTests(unittest.TestCase):
         transaction.abort()
 
     def _callFUT(self, *args, **kwargs):
-        from .. import apis
-        return apis.entry_lot(*args, **kwargs)
+        from .. import api
+        return api.entry_lot(*args, **kwargs)
 
 
     def test_it(self):
@@ -228,8 +228,8 @@ class get_entryTests(unittest.TestCase):
         transaction.abort()
 
     def _callFUT(self, *args, **kwargs):
-        from .. import apis
-        return apis.get_entry(*args, **kwargs)
+        from .. import api
+        return api.get_entry(*args, **kwargs)
 
     def test_it(self):
         from ticketing.core.models import ShippingAddress, DBSession
@@ -248,8 +248,8 @@ class get_entryTests(unittest.TestCase):
 
 class entry_infoTests(unittest.TestCase):
     def _callFUT(self, *args, **kwargs):
-        from .. import apis
-        return apis._entry_info(*args, **kwargs)
+        from .. import api
+        return api._entry_info(*args, **kwargs)
 
     def test_it(self):
         from datetime import datetime
@@ -276,8 +276,8 @@ class elect_entryTests(unittest.TestCase):
         self.datetime = datetime
 
     def _callFUT(self, *args, **kwargs):
-        from .. import apis
-        return apis.elect_entry(*args, **kwargs)
+        from .. import api
+        return api.elect_entry(*args, **kwargs)
 
     def test_it(self):
 
