@@ -25,9 +25,9 @@ from ticketing.formhelpers import (
 )
 from .models import DBSession
 from .. import logger
-from .. import helpers as h
-from .. import api
-from ..exceptions import NoCartError
+#from .. import helpers as h
+from ticketing.cart import api
+from ticketing.cart.exceptions import NoCartError
 from ticketing.cart.selectable_renderer import selectable_renderer
 
 logger = logging.getLogger(__name__)

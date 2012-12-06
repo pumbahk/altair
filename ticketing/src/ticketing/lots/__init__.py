@@ -52,6 +52,6 @@ def main(global_conf, **settings):
     config.include(".")
     config.include(".secure")
     config.include("ticketing.payments")
-    config.include("ticketing.cart.plugins")
+    config.include("ticketing.payments.plugins")
 
     return config.make_wsgi_app()
