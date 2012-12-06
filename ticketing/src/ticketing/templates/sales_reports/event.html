@@ -49,7 +49,7 @@
         <h5>開始から本日付け</h5>
       % endif
     </th>
-
+  </tr>
   <tr>
     <th>イベント名</th>
     <th>配席数</th>
@@ -65,7 +65,7 @@
     <td class="numeric">${h.price_format(event_report['vacant_quantity'])}</td>
     <td class="numeric">${h.price_format(event_total_report['product_quantity'])}</td>
     <td class="price">${h.price_format(event_total_report['price_amount'])}円</td>
-    <td class="price">${h.price_format(event_report['product_quantity'])}</td>
+    <td class="numeric">${h.price_format(event_report['product_quantity'])}</td>
     <td class="price">${h.price_format(event_report['price_amount'])}円</td>
   </tr>
 </table>

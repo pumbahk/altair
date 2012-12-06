@@ -211,9 +211,15 @@ class SalesReports(BaseView):
         form = SalesReportForm(self.request.params)
         event_reports = self._get_sales_summary(form)
 
+        form_total = SalesReportForm(self.request.params)
+        form_total.limited_from.data = None
+        form_total.limited_to.data = None
+        event_total_reports = self._get_sales_summary(form_total)
+
         return {
             'form':form,
             'event_reports':event_reports,
+            'event_total_reports':event_total_reports
         }
 
     @view_config(route_name='sales_reports.event', renderer='ticketing:templates/sales_reports/event.html')

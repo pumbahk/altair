@@ -16,6 +16,7 @@
           <h5>開始から本日付け</h5>
           % endif
         </th>
+      </tr>
       <tr>
         <th>パフォーマンス名</th>
         <th>配席数</th>
@@ -30,9 +31,9 @@
         <td><a href="${request.route_path('sales_reports.performance', performance_id=performance_report['id'])}">${performance_report['title']}</a></td>
         <td class="numeric">${h.price_format(performance_report['total_quantity'])}</td>
         <td class="numeric">${h.price_format(performance_report['vacant_quantity'])}</td>
-        <td class="price">${h.price_format(performance_total_report['product_quantity'])}</td>
+        <td class="numeric">${h.price_format(performance_total_report['product_quantity'])}</td>
         <td class="price">${h.price_format(performance_total_report['price_amount'])}円</td>
-        <td class="price">${h.price_format(performance_report['product_quantity'])}</td>
+        <td class="numeric">${h.price_format(performance_report['product_quantity'])}</td>
         <td class="price">${h.price_format(performance_report['price_amount'])}円</td>
       </tr>
       % endfor

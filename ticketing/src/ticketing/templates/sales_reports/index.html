@@ -40,34 +40,37 @@
   </div>
 </form>
 
-<div class="indication">
-% if form.limited_from.data or form.limited_to.data:
-  <h5>${h.safe_strftime(form.limited_from.data)} ~ ${h.safe_strftime(form.limited_to.data)}</h5>
-% else:
-  <h5>開始から本日付け</h5>
-% endif
-</div>
-
 <table class="table table-striped table-bordered table-condensed">
+  <tr>
+    <th></th>
+    <th colspan=4>累計</th>
+    <th colspan=2>
+      % if form.limited_from.data or form.limited_to.data:
+      <h5>${h.safe_strftime(form.limited_from.data)} ~ ${h.safe_strftime(form.limited_to.data)}</h5>
+      % else:
+      <h5>開始から本日付け</h5>
+      % endif
+    </th>
+  </tr>
   <tr>
     <th>イベント名</th>
     <th>配席数</th>
     <th>残席数</th>
     <th>販売枚数</th>
     <th>販売金額</th>
-    <th>手数料</th>
-    <th>合計</th>
+    <th>販売枚数</th>
+    <th>販売金額</th>
   </tr>
 
-  % for event_report in event_reports:
+  % for event_report, event_total_report in zip(event_reports, event_total_reports):
   <tr>
     <td><a href='javascript:event_link("${request.route_path("sales_reports.event", event_id=event_report["id"])}");'}>${event_report['title']}</a></td>
     <td class="numeric">${h.price_format(event_report['total_quantity'])}</td>
     <td class="numeric">${h.price_format(event_report['vacant_quantity'])}</td>
+    <td class="numeric">${h.price_format(event_total_report['product_quantity'])}</td>
+    <td class="price">${h.price_format(event_total_report['price_amount'])}円</td>
     <td class="numeric">${h.price_format(event_report['product_quantity'])}</td>
     <td class="price">${h.price_format(event_report['price_amount'])}円</td>
-    <td class="price">${h.price_format(event_report['fee_amount'])}円</td>
-    <td class="price">${h.price_format(event_report['total_amount'])}円</td>
   </tr>
   % endfor
 </table>
