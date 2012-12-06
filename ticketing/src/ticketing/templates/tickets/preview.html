@@ -2,18 +2,27 @@
 <script type="text/javascript" src="${request.static_url("ticketing:static/js/altair/showhide.js")}"></script>
 <script type="text/javascript" src="${request.static_url("ticketing:static/js/altair/spinner.js")}"></script>
 
-<h1 class="page">
-  ticket template preview
-</h1>
 
 <style type="text/css">
   .droparea{
+    margin-left:5%;
+    margin-right:5%;
+  }
+  .droparea.empty{
     height: 200px;
     background-color: #ccc;
-    position:relative;
+    text-align: center;
+    margin: 0 auto;
   }
   .droparea.touched{
     background-color: #cfc;
+  }
+  input {
+      width:90%;
+  }
+  #preview_area img{
+    margin-top: 20px;
+    margin-bottom: 20px;
   }
   #loading_area {
     z-index: 1;
@@ -22,15 +31,81 @@
   }
   #loading_area img{
   }
+
+  #subnav a.brand{
+    color: #777
+  }
+
+  #subnav.navbar .nav > li > a:hover {
+    background-color: transparent;
+    color: #faf;
+    text-decoration: none;
+  }
 </style>
 
-<div class="droparea" id="svg_droparea">
-  <div id="preview_area">
-    Drag and Drop
+<h1 class="page">
+  ticket template preview
+</h1>
+
+<div class="description" style="margin-left:3%; line-height:0.5em;">
+  <p style="line-height:1.5em;">
+    券面templateのpreview pageです。
+  </p>
+  <p>
+    1. 作成した券面用のテンプレートファイル(SVG)をドラッグ&ドロップしてください。preview結果が表示されます。
+  </p>
+  <p>
+    2. プレースホルダー({{ }}で囲まれた部分)に埋め込む文字列を対応するinput要素に入力してください。
+  </p>
+</div>
+
+<div class="well">
+  <div id="subnav" class="navbar">
+    <div class="navbar-inner">
+      <a class="brand" href="#">preview画像表示</a>
+      <ul class="nav">
+        <li class=""><a href="#">reDraw</a></li>
+        <li class=""><a href="#">download</a></li>
+      </ul>
+    </div>
   </div>
-  <div id="loading_area">
+  <div class="droparea empty" id="svg_droparea" style="margin-top:40px;">
+    <div id="preview_area">
+      Drag and Drop
+    </div>
+    <div id="loading_area">
+    </div>
   </div>
 </div>
+
+<table class="table" style="margin-left:20px; margin-top:20px">
+  <thead>
+  </thead>
+    <tbody>
+      <tr><td>開催日</td><td><input name="heh" placeholder="xxxx"/></td>
+      <td>開催日s</td><td><input name="heh" placeholder="xxxx"/></td></tr>
+      <tr><td>開始時刻s</td><td><input name="heh" placeholder="xxxx"/></td>
+        <td>会場名</td><td><input name="heh" placeholder="xxxx"/></td></tr>
+      <tr><td>チケット価格</td><td><input name="heh" placeholder="xxxx"/></td>
+      <td>商品名</td><td><input name="heh" placeholder="xxxx"/></td></tr>
+      <tr><td>席番</td><td><input name="heh" placeholder="xxxx"/></td>
+      <td>aux.販売区分</td><td><input name="heh" placeholder="xxxx"/></td></tr>
+      <tr><td>注文番号</td><td><input name="heh" placeholder="xxxx"/></td>
+      <td>注文日時s</td><td><input name="heh" placeholder="xxxx"/></td></tr>
+      <tr><td>aux.会場アクセス</td><td><input name="heh" placeholder="xxxx"/></td>
+      <td>席番</td><td><input name="heh" placeholder="xxxx"/></td></tr>
+      <tr><td>チケット価格</td><td><input name="heh" placeholder="xxxx"/></td>
+      <td>会場名</td><td><input name="heh" placeholder="xxxx"/></td></tr>
+      <tr><td>商品名</td><td><input name="heh" placeholder="xxxx"/></td>
+      <td>対戦名</td><td><input name="heh" placeholder="xxxx"/></td></tr>
+      <tr><td>開場時刻s</td><td><input name="heh" placeholder="xxxx"/></td>
+      <td>開始時刻s</td><td><input name="heh" placeholder="xxxx"/></td></tr>
+      <tr><td>注文番号</td><td><input name="heh" placeholder="xxxx"/></td>
+      <td>aux.販売区分</td><td><input name="heh" placeholder="xxxx"/></td></tr>
+      <tr><td>aux.マッチナンバー</td><td><input name="heh" placeholder="xxxx"/></td></tr>
+    </tbody>
+</table>
+
 
 <script type="text/javascript">
   var EventUtils = {
