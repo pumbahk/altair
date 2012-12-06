@@ -658,7 +658,7 @@ class PreviewApiView(object):
         self.context = context
         self.request = request
 
-    @view_config(match_param="normalize", request_param="svg")
+    @view_config(match_param="action=normalize", request_param="svg")
     def preview_api_normalize(self):
         try:
             svgio = StringIO(unicode(self.request.GET["svg"]).encode("utf-8")) #unicode only
@@ -668,7 +668,7 @@ class PreviewApiView(object):
         except Exception, e:
             return {"status": False, "message": str(e)}
 
-    @view_config(match_param="collectvars", request_param="svg")
+    @view_config(match_param="action=collectvars", request_param="svg")
     def preview_collectvars(self):
         svg = self.request.GET["svg"]
         try:
@@ -676,7 +676,7 @@ class PreviewApiView(object):
         except Exception, e:
             return {"status": False, "message": str(e)}
 
-    @view_config(match_param="fillvalues", request_param="svg")
+    @view_config(match_param="action=fillvalues", request_param="svg")
     def preview_fillvalus(self):
         svg = self.request.GET["svg"]
         try:
@@ -684,8 +684,7 @@ class PreviewApiView(object):
             return {"status": True, "data": template_fillvalues(svg, params)}
         except Exception, e:
             return {"status": False, "message": str(e)}
-
-    @view_config(match_param="preview.base64", request_param="svg")
+    @view_config(match_param="action=preview.base64", request_param="svg")
     def preview_ticket_post64(self):
         preview = SVGPreviewCommunication.get_instance(self.request)
         svg = self.request.GET["svg"]

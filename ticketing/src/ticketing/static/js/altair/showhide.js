@@ -2,6 +2,7 @@
 // side-effect jquery.altair.showhide
 // rdepends: ./spinner.js
 
+
 (function($){
     if(!$.altair){
         $.altair = {};
