@@ -4,6 +4,7 @@ import re
 import unicodedata
 from wtforms import fields
 from wtforms.form import Form
+from wtforms.ext.csrf.session import SessionSecureForm
 from wtforms.validators import Regexp, Length, NumberRange, EqualTo, Optional, ValidationError
 from ticketing.validators import Email
 from ticketing.core import models as c_models
@@ -24,6 +25,8 @@ from ticketing.formhelpers import (
     ignore_space_hyphen
     )
 
+class CSRFSecureForm(SessionSecureForm):
+    SECRET_KEY = 'EPj00jpfj8Gx1SjnyLxwBBSQfnQ9DJYe0Ym'
 
 class ClientForm(Form):
 

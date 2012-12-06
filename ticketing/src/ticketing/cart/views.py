@@ -788,6 +788,9 @@ class PaymentView(object):
         #     if res is not None and callable(res):
         #         return res
         # == end Payment.prepare ==
+        payment_confirm_url = self.request.route_url('payment.confirm')
+        self.request.session['payment_confirm_url'] = payment_confirm_url
+
         payment = Payment(cart, self.request)
         result = payment.call_prepare()
         if callable(result):

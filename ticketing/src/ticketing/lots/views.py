@@ -104,6 +104,8 @@ class EntryLotView(object):
             wishes=wishes,
             payment_delivery_method_pair_id=payment_delivery_method_pair_id,
             shipping_address=shipping_address)
+
+
         location = self.request.route_url('lots.entry.confirm', **self.request.matchdict)
         return HTTPFound(location=location)
 
@@ -286,6 +288,11 @@ class PaymentView(object):
         DBSession.add(cart)
         DBSession.flush()
         cart_api.set_cart(self.request, cart)
+
+        payment = Payment(cart, self.request)
+        result = payment.call_prepare()
+        if callable(result):
+            return result
 
         location = self.request.route_url('lots.payment.confirm', 
             event_id=event_id,

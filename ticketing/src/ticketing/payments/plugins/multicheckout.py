@@ -25,7 +25,6 @@ from ticketing.formhelpers import (
 )
 from .models import DBSession
 from .. import logger
-#from .. import helpers as h
 from ticketing.cart import api
 from ticketing.cart.exceptions import NoCartError
 from ticketing.cart.selectable_renderer import selectable_renderer
@@ -33,6 +32,17 @@ from ticketing.cart.selectable_renderer import selectable_renderer
 logger = logging.getLogger(__name__)
 
 from . import MULTICHECKOUT_PAYMENT_PLUGIN_ID as PAYMENT_ID
+
+def back_url(request):
+    return request.route_url("payment.secure3d")
+
+def confirm_url(request):
+    return request.session.get('payment_confirm_url')
+    #return request.route_url('payment.confirm')
+
+def complete_url(request):
+    return request.route_url('cart.secure3d_result')
+
 def includeme(config):
     # 決済系(マルチ決済)
     config.add_payment_plugin(MultiCheckoutPlugin(), PAYMENT_ID)
@@ -95,7 +105,7 @@ def get_order_no(request, cart):
 class MultiCheckoutPlugin(object):
     def prepare(self, request, cart):
         """ 3Dセキュア認証 """
-        return HTTPFound(location=request.route_url("payment.secure3d"))
+        return HTTPFound(location=back_url(request))
 
     def finish(self, request, cart):
         if request.session.get('secure_type') == 'secure_code':
@@ -128,7 +138,7 @@ class MultiCheckoutPlugin(object):
             request.session.flash(get_error_message(request, checkout_sales_result.CmnErrorCd))
             cart.refresh_order_no()
             transaction.commit()
-            raise HTTPFound(location=request.route_url('payment.secure3d'))
+            raise HTTPFound(location=back_url(request))
 
         DBSession.add(checkout_sales_result)
 
@@ -158,7 +168,7 @@ class MultiCheckoutPlugin(object):
             request.session.flash(get_error_message(request, checkout_sales_result.CmnErrorCd))
             cart.refresh_order_no()
             transaction.commit()
-            raise HTTPFound(location=request.route_url('payment.secure3d'))
+            raise HTTPFound(location=back_url(request))
 
         DBSession.add(checkout_sales_result)
 
@@ -306,13 +316,13 @@ class MultiCheckoutView(object):
             logger.info(u'card_info_secure3d_callback: 決済エラー order_no = %s, error_code = %s' % (order['order_no'], checkout_auth_result.CmnErrorCd))
             self.request.session.flash(get_error_message(self.request, checkout_auth_result.CmnErrorCd))
             cart.refresh_order_no()
-            return HTTPFound(location=self.request.route_url('payment.secure3d'))
+            return HTTPFound(location=back_url(self.request))
 
         self.request.session['order'] = order
 
         DBSession.add(checkout_auth_result)
 
-        return HTTPFound(location=self.request.route_url('payment.confirm'))
+        return HTTPFound(location=confirm_url(self.request))
 
 
     def _secure3d(self, card_number, exp_year, exp_month):
@@ -321,7 +331,7 @@ class MultiCheckoutView(object):
         order = self.request.session['order']
         enrol = multicheckout_api.secure3d_enrol(self.request, get_order_no(self.request, cart), card_number, exp_year, exp_month, cart.total_amount)
         if enrol.is_enable_auth_api():
-            form=m_h.secure3d_acs_form(self.request, self.request.route_url('cart.secure3d_result'), enrol)
+            form=m_h.secure3d_acs_form(self.request, complete_url(self.request), enrol)
             self.request.response.text = form
             return self.request.response
         # elif enrol.is_enable_secure3d():
@@ -357,12 +367,12 @@ class MultiCheckoutView(object):
 
         # TODO: エラーメッセージ
         #if not auth_result.is_enable_auth_checkout():
-        #    return HTTPFound(self.request.route_url('payment.secure3d'))
+        #    return HTTPFound(back_url(self.request))
 
         # TODO: エラーメッセージ
         if not auth_result.is_enable_secure3d():
             cart.refresh_order_no()
-            return HTTPFound(self.request.route_url('payment.secure3d'))
+            return HTTPFound(back_url(self.request))
 
         logger.debug('call checkout auth')
         checkout_auth_result = multicheckout_api.checkout_auth_secure3d(
@@ -378,7 +388,7 @@ class MultiCheckoutView(object):
             logger.info(u'card_info_secure3d_callback: 決済エラー order_no = %s, error_code = %s' % (order['order_no'], checkout_auth_result.CmnErrorCd))
             self.request.session.flash(get_error_message(self.request, checkout_auth_result.CmnErrorCd))
             cart.refresh_order_no()
-            return HTTPFound(location=self.request.route_url('payment.secure3d'))
+            return HTTPFound(location=back_url(self.request))
 
         tran = dict(
             mvn=auth_result.Mvn, xid=auth_result.Xid, ts=auth_result.Ts,
@@ -389,4 +399,4 @@ class MultiCheckoutView(object):
 
         DBSession.add(checkout_auth_result)
 
-        return HTTPFound(location=self.request.route_url('payment.confirm'))
+        return HTTPFound(location=confirm_url(self.request))
