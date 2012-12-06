@@ -16,6 +16,13 @@
       <br>
       <h3 style="color:#004040">申込状況（速報)</h3>
       <br>
+      <p>◆集計期間:
+      % if form.limited_from.data or form.limited_to.data:
+      ${h.safe_strftime(form.limited_from.data)} ~ ${h.safe_strftime(form.limited_to.data)}
+      % else:
+      開始から本日付け
+      % endif
+      </p>
 
       % for id, value in performances_reports.items():
       <%

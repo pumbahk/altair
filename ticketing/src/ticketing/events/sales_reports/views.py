@@ -300,7 +300,6 @@ class SalesReports(BaseView):
         event = Event.get(event_id, organization_id=self.context.user.organization_id)
         if event is None:
             raise HTTPNotFound('event id %d is not found' % event_id)
-        form = SalesReportForm(self.request.params)
         performances_reports = {}
         for performance in event.performances:
             report_by_sales_segment = {}
@@ -312,6 +311,7 @@ class SalesReports(BaseView):
                 performance=performance,
                 report_by_sales_segment=report_by_sales_segment
             )
+            form = SalesReportForm(self.request.params)
 
         return {
             'form':form,
@@ -337,7 +337,8 @@ class SalesReports(BaseView):
                   report_by_sales_segment=report_by_sales_segment
                 )
             render_param = {
-                'performances_reports':performances_reports,
+                'form':form,
+                'performances_reports':performances_reports
             }
 
             settings = self.request.registry.settings
