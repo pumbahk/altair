@@ -28,7 +28,7 @@
       </tr>
       % for performance_report, performance_total_report in zip(performances_reports, performances_total_reports):
       <tr>
-        <td><a href="${request.route_path('sales_reports.performance', performance_id=performance_report['id'])}">${performance_report['title']}</a></td>
+        <td><a href="${request.route_path('sales_reports.performance', performance_id=performance_report['id'])}">${performance_report['title']} (${h.safe_strftime(performance_report['start_on'])}開始)</a></td>
         <td class="numeric">${h.price_format(performance_report['total_quantity'])}</td>
         <td class="numeric">${h.price_format(performance_report['vacant_quantity'])}</td>
         <td class="numeric">${h.price_format(performance_total_report['product_quantity'])}</td>

@@ -45,6 +45,7 @@ class SalesReports(BaseView):
                 .with_entities(
                     Performance.id,
                     Performance.name,
+                    Performance.start_on,
                     func.sum(Stock.quantity),
                     func.sum(StockStatus.quantity)
                 )
@@ -53,14 +54,16 @@ class SalesReports(BaseView):
                 .with_entities(
                     Event.id,
                     Event.title,
+                    Event.id, # dummy
                     func.sum(Stock.quantity),
                     func.sum(StockStatus.quantity)
                 )
 
-        for id, title, total_quantity, vacant_quantity in query.all():
+        for id, title, start_on, total_quantity, vacant_quantity in query.all():
             reports[id] = dict(
                 id=id,
                 title=title,
+                start_on=start_on,
                 total_quantity=total_quantity or 0,
                 vacant_quantity=vacant_quantity or 0,
                 total_amount=0,
@@ -69,6 +72,7 @@ class SalesReports(BaseView):
                 product_quantity=0,
             )
 
+        '''
         # 売上合計、手数料合計
         query = Event.query.filter(Event.organization_id==self.context.user.organization_id)\
             .outerjoin(Performance).filter(Performance.deleted_at==None)\
@@ -99,6 +103,7 @@ class SalesReports(BaseView):
 
         for id, total_amount, fee_amount in query.all():
             reports[id].update(dict(total_amount=total_amount or 0, fee_amount=fee_amount or 0))
+        '''
 
         # 販売金額、販売枚数
         query = Event.query.filter(Event.organization_id==self.context.user.organization_id)\
@@ -146,6 +151,7 @@ class SalesReports(BaseView):
             .outerjoin(SalesSegment).filter(SalesSegment.id==Product.sales_segment_id, SalesSegment.id==form.sales_segment_id.data)\
             .outerjoin(ProductItem).filter(ProductItem.product_id==Product.id, ProductItem.performance_id==form.performance_id.data)\
             .outerjoin(Stock).filter(Stock.id==ProductItem.stock_id, Stock.stock_holder_id.in_(stock_holder_ids))\
+            .outerjoin(StockHolder).filter(StockHolder.id==Stock.stock_holder_id)\
             .outerjoin(StockStatus).filter(StockStatus.stock_id==Stock.id)\
             .with_entities(
                 StockType.id.label('stock_type_id'),
