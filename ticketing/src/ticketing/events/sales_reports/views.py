@@ -143,10 +143,10 @@ class SalesReports(BaseView):
         # 商品ごとの情報、配席数、在庫数
         query = StockType.query.filter(StockType.id==Stock.stock_type_id)\
             .join(Product).filter(Product.seat_stock_type_id==StockType.id)\
-            .join(SalesSegment).filter(SalesSegment.id==Product.sales_segment_id, SalesSegment.id==form.sales_segment_id.data)\
-            .join(ProductItem).filter(ProductItem.product_id==Product.id, ProductItem.performance_id==form.performance_id.data)\
-            .join(Stock).filter(Stock.id==ProductItem.stock_id, Stock.stock_holder_id.in_(stock_holder_ids))\
-            .join(StockStatus).filter(StockStatus.stock_id==Stock.id)\
+            .outerjoin(SalesSegment).filter(SalesSegment.id==Product.sales_segment_id, SalesSegment.id==form.sales_segment_id.data)\
+            .outerjoin(ProductItem).filter(ProductItem.product_id==Product.id, ProductItem.performance_id==form.performance_id.data)\
+            .outerjoin(Stock).filter(Stock.id==ProductItem.stock_id, Stock.stock_holder_id.in_(stock_holder_ids))\
+            .outerjoin(StockStatus).filter(StockStatus.stock_id==Stock.id)\
             .with_entities(
                 StockType.id.label('stock_type_id'),
                 StockType.name.label('stock_type_name'),
@@ -180,7 +180,7 @@ class SalesReports(BaseView):
         query = OrderedProduct.query.join(Order).filter(Order.performance_id==form.performance_id.data)\
             .filter(Order.canceled_at==None, Order.paid_at!=None)\
             .join(Product).filter(Product.id==OrderedProduct.product_id)\
-            .join(SalesSegment).filter(SalesSegment.id==Product.sales_segment_id, SalesSegment.id==form.sales_segment_id.data)\
+            .outerjoin(SalesSegment).filter(SalesSegment.id==Product.sales_segment_id, SalesSegment.id==form.sales_segment_id.data)\
             .with_entities(OrderedProduct.product_id, func.sum(OrderedProduct.quantity))
         if form.limited_from.data:
             query = query.filter(Order.created_at > form.limited_from.data)
@@ -194,7 +194,7 @@ class SalesReports(BaseView):
         query = OrderedProduct.query.join(Order).filter(Order.performance_id==form.performance_id.data)\
             .filter(Order.canceled_at==None, Order.paid_at==None)\
             .join(Product).filter(Product.id==OrderedProduct.product_id)\
-            .join(SalesSegment).filter(SalesSegment.id==Product.sales_segment_id, SalesSegment.id==form.sales_segment_id.data)\
+            .outerjoin(SalesSegment).filter(SalesSegment.id==Product.sales_segment_id, SalesSegment.id==form.sales_segment_id.data)\
             .with_entities(OrderedProduct.product_id, func.sum(OrderedProduct.quantity))
         if form.limited_from.data:
             query = query.filter(Order.created_at > form.limited_from.data)
