@@ -304,11 +304,14 @@ def import_tree(update, organization, tree, file, venue_id=None):
                     seat['floor'] = floor
                 if indexes is not None:
                     for index_obj in indexes:
-                        DBSession.add(
-                            SeatIndex(
-                                seat=seat,
-                                index=index_obj['properties']['index'],
-                                seat_index_type=seat_index_type_map[index_obj['properties']['index_type']['id']]))
+                        seat_index_type = sseat_index_type_map[index_obj['properties']['index_type']['id']]
+                        index = index_obj['properties']['index']
+                        try:
+                            seat_index = SeatIndex.query.filter_by(seat_index_type=seat_index_type, seat_id=seat.id).one()
+                        except NoResultFound:
+                            seat_index = SeatIndex(seat=seat, seat_index_type=seat_index_type)
+                            DBSession.add(seat_index)
+                        seat_index.index = index
                 seats_in_row.append(seat)
 
             # sort by l0_id
