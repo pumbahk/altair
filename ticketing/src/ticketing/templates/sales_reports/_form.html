@@ -20,7 +20,7 @@
     <form action="javascript:save_sales_reports_mail();" method="POST">
       ${h.form_item(form.id)}
       ${h.form_item(form.event_id)}
-      ${h.form_item(form.operator_id, option={'maxlength':255, 'class':'span3'})}
+      ${h.form_item(form.operator_id, class_='span3')}
       ${h.form_item(form.frequency)}
       * オペレーターの追加は<a href="${request.route_path('operators.index')}">こちら</a>
     </form>

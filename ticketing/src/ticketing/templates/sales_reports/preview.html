@@ -39,8 +39,8 @@
 </div>
 
 <form id="form" action="${request.route_path('sales_reports.preview',event_id=event_id)}" method="GET">
-  ${h.form_item(form.recipient, option={'style':'width: 580px;'})}
-  ${h.form_item(form.subject, option={'style':'width: 580px;'})}
+  ${h.form_item(form.recipient, style='width: 580px;')}
+  ${h.form_item(form.subject, style='width: 580px;')}
   <div class="control-group">
     <label class="control-label">
       ${form.limited_from.label.text}
