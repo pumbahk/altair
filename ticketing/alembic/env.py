@@ -20,7 +20,7 @@ from ticketing import models
 import ticketing.bj89ers.models
 import ticketing.bookmark.models
 import ticketing.cart.models
-import ticketing.cart.plugins.models
+import ticketing.payments.plugins.models
 import ticketing.checkout.models
 import ticketing.core.models
 import ticketing.master.models
