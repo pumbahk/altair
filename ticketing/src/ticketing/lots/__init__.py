@@ -51,6 +51,7 @@ def main(global_conf, **settings):
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.include(".")
     config.include(".secure")
+    config.include("ticketing.payments")
     config.include("ticketing.cart.plugins")
 
     return config.make_wsgi_app()

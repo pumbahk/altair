@@ -101,6 +101,7 @@ def main(global_config, **settings):
     config.include('..checkout')
     config.include('..multicheckout')
     config.include('..mobile')
+    config.include("ticketing.payments")
     config.include('.plugins')
     config.include('.errors')
 
