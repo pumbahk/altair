@@ -6,14 +6,24 @@ from zope.interface import implementer
 from pyramid.view import view_config
 from pyramid.response import Response
 from pyramid.httpexceptions import HTTPFound
+
+from wtforms import fields
+from wtforms.ext.csrf.session import SessionSecureForm
+from wtforms.validators import Regexp, Length
+
 from ticketing.multicheckout import helpers as m_h
 from ticketing.multicheckout import api as multicheckout_api
 from ticketing.core import models as c_models
 from ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment
 from ticketing.cart.interfaces import ICartPayment
 from ticketing.mails.interfaces import ICompleteMailPayment, IOrderCancelMailPayment
+from ticketing.formhelpers import (
+    Required,
+    Translations,
+    ignore_space_hyphen,
+    capitalize,
+)
 from .models import DBSession
-from .. import schemas
 from .. import logger
 from .. import helpers as h
 from .. import api
@@ -40,6 +50,36 @@ error_messages = {
     '001014': u'カード名義人が不正です',
     '001018': u'セキュリティコードが不正です',
 }
+
+
+class CSRFSecureForm(SessionSecureForm):
+    SECRET_KEY = 'EPj00jpfj8Gx1SjnyLxwBBSQfnQ9DJYe0Ym'
+
+CARD_NUMBER_REGEXP = r'^\d{14,16}$'
+CARD_HOLDER_NAME_REGEXP = r'^[A-Z\s]+$'
+CARD_EXP_YEAR_REGEXP = r'^\d{2}$'
+CARD_EXP_MONTH_REGEXP = r'^\d{2}$'
+CARD_SECURE_CODE_REGEXP = r'^\d{3,4}$'
+
+class CardForm(CSRFSecureForm):
+    def _get_translations(self):
+        return Translations({
+            'This field is required.' : u'入力してください',
+            'Not a valid choice' : u'選択してください',
+            'Invalid email address.' : u'Emailの形式が正しくありません。',
+            'Field must be at least %(min)d characters long.' : u'正しく入力してください。',
+            'Field must be between %(min)d and %(max)d characters long.': u'正しく入力してください。',
+            'Invalid input.': u'形式が正しくありません。',
+        })
+
+    card_number = fields.TextField('card',
+                                   filters=[ignore_space_hyphen], 
+                                   validators=[Length(14, 16), Regexp(CARD_NUMBER_REGEXP), Required()])
+    exp_year = fields.TextField('exp_year', validators=[Length(2), Regexp(CARD_EXP_YEAR_REGEXP)])
+    exp_month = fields.TextField('exp_month', validators=[Length(2), Regexp(CARD_EXP_MONTH_REGEXP)])
+    card_holder_name = fields.TextField('card_holder_name', filters=[capitalize], validators=[Length(2), Regexp(CARD_HOLDER_NAME_REGEXP)])
+    secure_code = fields.TextField('secure_code', validators=[Length(3, 4), Regexp(CARD_SECURE_CODE_REGEXP)])
+
 
 def get_error_message(request, error_code):
     return u'決済エラー:' + error_messages.get(error_code, u'決済に失敗しました。カードや内容を確認の上再度お試しください。')
@@ -177,14 +217,14 @@ class MultiCheckoutView(object):
     @view_config(route_name='payment.secure3d', request_type='ticketing.cart.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer('carts_mobile/%(membership)s/card_form.html'))
     def card_info_secure3d_form(self):
         """ カード情報入力"""
-        form = schemas.CardForm(formdata=self.request.params, csrf_context=self.request.session)
+        form = CardForm(formdata=self.request.params, csrf_context=self.request.session)
         return dict(form=form)
 
     @view_config(route_name='payment.secure_code', request_method="POST", renderer=selectable_renderer('carts/%(membership)s/card_form.html'))
     @view_config(route_name='payment.secure_code', request_type='ticketing.cart.interfaces.IMobileRequest', request_method="POST", renderer=selectable_renderer('carts_mobile/%(membership)s/card_form.html'))
     def card_info_secure_code(self):
         """ カード決済処理(セキュアコード)"""
-        form = schemas.CardForm(formdata=self.request.params, csrf_context=self.request.session)
+        form = CardForm(formdata=self.request.params, csrf_context=self.request.session)
         if not form.validate():
             logger.debug("form error %s" % (form.errors,))
             self.request.errors = form.errors
@@ -204,7 +244,7 @@ class MultiCheckoutView(object):
     def card_info_secure3d(self):
         """ カード決済処理(3Dセキュア)
         """
-        form = schemas.CardForm(formdata=self.request.params, csrf_context=self.request.session)
+        form = CardForm(formdata=self.request.params, csrf_context=self.request.session)
         if not form.validate():
             logger.debug("form error %s" % (form.errors,))
             self.request.errors = form.errors
@@ -292,7 +332,7 @@ class MultiCheckoutView(object):
             logger.debug("3d secure is failed ErrorCd = %s RetCd = %s" %(enrol.ErrorCd, enrol.RetCd))
             self.request.session['secure_type'] = 'secure_code'
             return self._secure_code(order['order_no'], order['card_number'], order['exp_year'], order['exp_month'], order['secure_code'])
-        form = schemas.CardForm(csrf_context=self.request.session)
+        form = CardForm(csrf_context=self.request.session)
         return dict(form=form)
 
     @view_config(route_name='cart.secure3d_result', request_method="POST", renderer=selectable_renderer("carts/%(membership)s/confirm.html"))

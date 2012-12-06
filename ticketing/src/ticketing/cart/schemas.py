@@ -4,7 +4,6 @@ import re
 import unicodedata
 from wtforms import fields
 from wtforms.form import Form
-from wtforms.ext.csrf.session import SessionSecureForm
 from wtforms.validators import Regexp, Length, NumberRange, EqualTo, Optional, ValidationError
 from ticketing.validators import Email
 from ticketing.core import models as c_models
@@ -25,33 +24,6 @@ from ticketing.formhelpers import (
     ignore_space_hyphen
     )
 
-CARD_NUMBER_REGEXP = r'^\d{14,16}$'
-CARD_HOLDER_NAME_REGEXP = r'^[A-Z\s]+$'
-CARD_EXP_YEAR_REGEXP = r'^\d{2}$'
-CARD_EXP_MONTH_REGEXP = r'^\d{2}$'
-CARD_SECURE_CODE_REGEXP = r'^\d{3,4}$'
-
-class CSRFSecureForm(SessionSecureForm):
-    SECRET_KEY = 'EPj00jpfj8Gx1SjnyLxwBBSQfnQ9DJYe0Ym'
-
-class CardForm(CSRFSecureForm):
-    def _get_translations(self):
-        return Translations({
-            'This field is required.' : u'入力してください',
-            'Not a valid choice' : u'選択してください',
-            'Invalid email address.' : u'Emailの形式が正しくありません。',
-            'Field must be at least %(min)d characters long.' : u'正しく入力してください。',
-            'Field must be between %(min)d and %(max)d characters long.': u'正しく入力してください。',
-            'Invalid input.': u'形式が正しくありません。',
-        })
-
-    card_number = fields.TextField('card',
-                                   filters=[ignore_space_hyphen], 
-                                   validators=[Length(14, 16), Regexp(CARD_NUMBER_REGEXP), Required()])
-    exp_year = fields.TextField('exp_year', validators=[Length(2), Regexp(CARD_EXP_YEAR_REGEXP)])
-    exp_month = fields.TextField('exp_month', validators=[Length(2), Regexp(CARD_EXP_MONTH_REGEXP)])
-    card_holder_name = fields.TextField('card_holder_name', filters=[capitalize], validators=[Length(2), Regexp(CARD_HOLDER_NAME_REGEXP)])
-    secure_code = fields.TextField('secure_code', validators=[Length(3, 4), Regexp(CARD_SECURE_CODE_REGEXP)])
 
 class ClientForm(Form):
 
