@@ -210,6 +210,9 @@ class SalesReports(BaseView):
             query = query.filter(Order.created_at < form.limited_to.data)
 
         for id, unpaid_quantity in query.group_by(OrderedProduct.product_id).all():
+            if id not in performance_reports:
+                logger.warn('invalid key (product_id:%s)' % id)
+                continue
             performance_reports[id].update(dict(unpaid_quantity=unpaid_quantity or 0))
 
         return performance_reports.values()
