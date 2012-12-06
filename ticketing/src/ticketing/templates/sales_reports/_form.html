@@ -1,0 +1,33 @@
+<%page args="form" />
+<%namespace file="/common/helpers.html" name="h" />
+
+<script type="text/javascript">
+  $(function() {
+    $('#modal-sales_reports_mail').on('shown', function(){
+      $(this).css('max-height', '750px')
+          .css('margin-top', ($(this).outerHeight()/2)*-1)
+          .css('margin-left',($(this).outerWidth()/2)*-1);
+    });
+  });
+</script>
+
+<div id="modal-sales_reports_mail" class="modal fade">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">&times;</a>
+    <h3>新規メール送信先</h3>
+  </div>
+  <div class="modal-body">
+    <form action="javascript:save_sales_reports_mail();" method="POST">
+      ${h.form_item(form.id)}
+      ${h.form_item(form.event_id)}
+      ${h.form_item(form.operator_id, option={'maxlength':255, 'class':'span3'})}
+      ${h.form_item(form.frequency)}
+      * オペレーターの追加は<a href="${request.route_path('operators.index')}">こちら</a>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+    <a href="javascript:void(0);" onclick="$('#modal-sales_reports_mail').find('form').submit();" class="btn">保存</a>
+  </div>
+</div>

@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 class Reports(BaseView):
 
     @view_config(route_name='reports.index', renderer='ticketing:templates/events/report.html')
-    def report(self):
+    def download_index(self):
         event_id = int(self.request.matchdict.get('event_id', 0))
         event = Event.get(event_id)
         if event is None:
@@ -116,7 +116,7 @@ class Reports(BaseView):
             raise HTTPNotFound('event id %d is not found' % event_id)
 
         # StockHolder
-        stock_holders = StockHolder.get_seller(event)
+        stock_holders = StockHolder.get_own_stock_holders(event=event)
         if stock_holders is None:
             raise HTTPNotFound("StockHolder is not found event_id=%s" % event_id)
 
@@ -175,7 +175,7 @@ class Reports(BaseView):
             raise HTTPNotFound('event id %d is not found' % event_id)
 
         # StockHolder
-        stock_holders = StockHolder.get_seller(event)
+        stock_holders = StockHolder.get_own_stock_holders(event=event)
         if stock_holders is None:
             raise HTTPNotFound("StockHolder is not found event_id=%s" % event_id)
 

@@ -1,0 +1,58 @@
+<%inherit file="/layout_2cols.html"/>
+<%namespace file="/common/helpers.html" name="h" />
+
+<script type="text/javascript">
+  $(function(){
+    $('.datetimefield').datetimepicker({dateFormat:'yy-mm-dd',timeFormat:'hh:mm'});
+  });
+</script>
+
+<script type="text/javascript">
+  function send_report(){
+    var params = $('#form').serialize();
+    $(location).attr('href', '/events/sales_reports/send_mail/${event_id}?' + params);
+  };
+
+  function preview(){
+    var params = $('#form').serialize();
+    $(location).attr('href', '/events/sales_reports/preview/${event_id}?' + params);
+  };
+</script>
+
+<div class="breadcrumbs">
+  ${h.breadcrumbs(
+      names=[u'トップ', u'レポート', u'イベント', u'送信確認'],
+      urls=[
+        request.route_path('index'),
+        request.route_path('sales_reports.index'),
+        request.route_path('sales_reports.event', event_id=event_id)
+      ]
+  )}
+</div>
+
+<div class="page-header">
+  <h2>売上レポート 送信確認</h2>
+</div>
+
+<div class="content">
+  ${h.flash_messages(request)}
+</div>
+
+<form id="form" action="${request.route_path('sales_reports.preview',event_id=event_id)}" method="GET">
+  ${h.form_item(form.recipient, option={'style':'width: 580px;'})}
+  ${h.form_item(form.subject, option={'style':'width: 580px;'})}
+  <div class="control-group">
+    <label class="control-label">
+      ${form.limited_from.label.text}
+    </label>
+    <div class="controls">
+      <input class="datetimefield" style="width: 140px; vertical-align: middle; margin-bottom: 0px;" id="limited_from" name="limited_from" type="text" value="${h.safe_strftime(form.limited_from.data)}" placeholder="開始期限"> 〜
+      <input class="datetimefield" style="width: 140px; vertical-align: middle; margin-bottom: 0px;" id="limited_to" name="limited_to" type="text" value="${h.safe_strftime(form.limited_to.data)}" placeholder="終了期限">
+      <input class="btn" type="button" value="プレビュー" onclick="javascript:preview();">
+      <input class="btn" type="button" value="送信" onclick="javascript:send_report();">
+    </div>
+  </div>
+</form>
+<br>
+<iframe src="${request.route_path('sales_reports.mail_body', event_id=event_id, _query=request.params)}" name="sample" width="1000" height="800">
+</iframe>

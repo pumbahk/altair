@@ -7,6 +7,10 @@ import json
 import re
 from urlparse import urljoin
 from datetime import datetime, date, timedelta
+import smtplib
+from email.MIMEText import MIMEText
+from email.Header import Header
+from email.Utils import formatdate
 
 from sqlalchemy import Table, Column, ForeignKey, func, or_, and_, event
 from sqlalchemy import ForeignKeyConstraint, UniqueConstraint, PrimaryKeyConstraint
@@ -19,8 +23,6 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import exists
 from sqlalchemy.sql.expression import asc, desc, exists, select, table, column
 from sqlalchemy.ext.associationproxy import association_proxy
-
-
 from pyramid.threadlocal import get_current_registry
 
 from .exceptions import *
@@ -595,6 +597,19 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             .filter(ProductItem.performance_id==self.id)
         return bool(qs.first())
 
+class ReportFrequencyEnum(StandardEnum):
+    Daily = 1
+    Weekly = 2
+
+class ReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__   = 'ReportSetting'
+    id = Column(Identifier, primary_key=True)
+    event_id = Column(Identifier, ForeignKey('Event.id', ondelete='CASCADE'), nullable=False)
+    event = relationship('Event', backref='report_setting')
+    operator_id = Column(Identifier, ForeignKey('Operator.id', ondelete='CASCADE'), nullable=False)
+    operator = relationship('Operator', backref='report_setting')
+    frequency = Column(Integer, nullable=True)
+
 class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Event'
 
@@ -1132,7 +1147,7 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             product_item = [item for item in product.items if item.performance_id == performance.id]
             if not product_item:
                 # デフォルト(自社)のStockHolderに紐づける
-                stock_holders = StockHolder.get_seller(performance.event)
+                stock_holders = StockHolder.get_own_stock_holders(event=performance.event)
                 stock = Stock.filter_by(performance_id=performance.id)\
                              .filter_by(stock_type_id=product.seat_stock_type_id)\
                              .filter_by(stock_holder_id=stock_holders[0].id)\
@@ -1180,6 +1195,7 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     stocks = relationship('Stock', backref=backref('stock_type', order_by='StockType.display_order'))
 
     @property
+
     def is_seat(self):
         return self.type == StockTypeEnum.Seat.v
 
@@ -1275,11 +1291,13 @@ class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return filter(performance_filter, self.stocks)
 
     @staticmethod
-    def get_seller(event):
-        return StockHolder.filter(StockHolder.event_id==event.id)\
-                          .join(StockHolder.account)\
-                          .filter(Account.user_id==event.organization.user_id)\
-                          .order_by('StockHolder.id').all()
+    def get_own_stock_holders(event=None, user_id=None):
+        query = StockHolder.query.join(Account)
+        if event is not None:
+            query = query.filter(StockHolder.event_id==event.id)
+            user_id = event.organization.user_id
+        query = query.filter(Account.user_id==user_id)
+        return query.order_by('StockHolder.id').all()
 
     @staticmethod
     def create_from_template(template, **kwargs):
@@ -1642,7 +1660,6 @@ class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     tel_1 = Column(String(32))
     tel_2 = Column(String(32))
     fax = Column(String(32))
-    email = Column(String(255))
 
     @hybrid_property
     def full_name_kana(self):
@@ -2414,3 +2431,36 @@ class OrderNoSequence(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         DBSession.add(seq)
         DBSession.flush()
         return seq.id
+
+class Mailer(object):
+    def __init__(self, settings):
+        self.settings = settings
+
+    def create_message(self,
+                       sender=None,
+                       recipient=None,
+                       subject=None,
+                       body=None,
+                       html=None,
+                       encoding=None):
+
+        encoding = self.settings['mail.message.encoding']
+        if html:
+            mime_type = 'html' 
+            mime_text = html
+        else:
+            mime_type = 'plain'
+            mime_text = body
+
+        msg = MIMEText(mime_text.encode(encoding, 'ignore'), mime_type, encoding)
+        msg['Subject'] = Header(subject, encoding)
+        msg['From'] = sender
+        msg['To'] = recipient
+        msg['Date'] = formatdate()
+        self.message = msg
+
+    def send(self, from_addr, to_addr):
+        smtp = smtplib.SMTP(self.settings['mail.host'], self.settings['mail.port'])
+        smtp.sendmail(from_addr, to_addr, self.message.as_string())
+        smtp.close()
+
