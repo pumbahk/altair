@@ -118,5 +118,4 @@ def main(global_config, **settings):
 
     config.scan(".views")
 
-
     return config.make_wsgi_app()
