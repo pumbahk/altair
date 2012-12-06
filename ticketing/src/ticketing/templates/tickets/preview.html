@@ -1,4 +1,6 @@
 <%inherit file="../layout.html" />
+<script type="text/javascript" src="${request.static_url("ticketing:static/js/altair/showhide.js")}"></script>
+<script type="text/javascript" src="${request.static_url("ticketing:static/js/altair/spinner.js")}"></script>
 
 <h1 class="page">
   ticket template preview
@@ -8,19 +10,29 @@
   .droparea{
     height: 200px;
     background-color: #ccc;
+    position:relative;
   }
   .droparea.touched{
     background-color: #cfc;
   }
+  #loading_area {
+    z-index: 1;
+    position:absolute;
+    top:0px;
+  }
+  #loading_area img{
+  }
 </style>
 
 <div class="droparea" id="svg_droparea">
-Drag and Drop
-<div id="preview_area">
-</div>
+  <div id="preview_area">
+    Drag and Drop
+  </div>
+  <div id="loading_area">
+  </div>
 </div>
 
-<script>
+<script type="text/javascript">
   var EventUtils = {
     compose: function(f,g){
       return function(){
@@ -55,23 +67,31 @@ Drag and Drop
   };
 
   var onLoadSVG = function(e){
+    var $loading = $("#loading_area");
+    $loading.spinner("start");
     $.get("${request.route_path("tickets.preview.api.normalize")}", {"svg": e.target.result})
      .done(function(data){
        if(!data.status){
          alert(data.message);
+         $loading.spinner("stop");
        }
        $.get("${request.route_path("tickets.preview.api.base64")}", {"svg": data.data})
        .done(function(data){
          if(!data.status){
            alert(data.message);
+           $loading.spinner("stop"); 
          }
          var $preview = $("#preview_area");
          $preview.empty();
          $preview.append($("<img title='preview' alt='preview todo upload file'>").attr("src", "data:image/png;base64,"+data.data));
+         $loading.spinner("stop");
        })
-       .fail(function(s,err){alert(s.responseText)});
+       .fail(function(s,err){
+          alert(s.responseText);
+          $loading.spinner("stop");
+       });
      })
-     .fail(function(s,err){alert(s.responseText)});
+     .fail(function(s,err){alert(s.responseText); $loading.spinner("stop");});
   }
   var droparea = document.getElementById("svg_droparea");
 
@@ -80,4 +100,14 @@ Drag and Drop
   droparea.addEventListener('dragleave', EventUtils.compose(EventUtils.cancel, function(e){$(e).removeClass("touched")}), false);
   droparea.addEventListener('drop', EventUtils.compose(EventUtils.compose(EventUtils.cancel, function(e){$(e).removeClass("touched")}),
                                                       EventUtils.onDrop(onLoadSVG)), false);
+</script>
+
+      <div class="foo"></div>
+      <div class="foo"></div>
+      <div class="foo"></div>
+      <script type="text/javascript">
+$(".foo").spinner();
+setTimeout(function(){ $(".foo").spinner("stop"); }, 2000);
+setTimeout(function(){ $(".foo").spinner("stop"); }, 2000);
+$("#loading_area").spinner("start");
 </script>
