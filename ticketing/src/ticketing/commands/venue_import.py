@@ -304,7 +304,7 @@ def import_tree(update, organization, tree, file, venue_id=None):
                     seat['floor'] = floor
                 if indexes is not None:
                     for index_obj in indexes:
-                        seat_index_type = sseat_index_type_map[index_obj['properties']['index_type']['id']]
+                        seat_index_type = seat_index_type_map[index_obj['properties']['index_type']['id']]
                         index = index_obj['properties']['index']
                         try:
                             seat_index = SeatIndex.query.filter_by(seat_index_type=seat_index_type, seat_id=seat.id).one()
@@ -371,6 +371,7 @@ def import_or_update_svg(env, update, organization_name, file, venue_id, dry_run
             transaction.commit()
     except:
         transaction.abort()
+        raise
  
 def main():
     ld_install()
