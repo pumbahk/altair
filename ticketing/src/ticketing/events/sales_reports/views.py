@@ -147,7 +147,7 @@ class SalesReports(BaseView):
 
         # 商品ごとの情報、配席数、在庫数
         query = StockType.query.filter(StockType.id==Stock.stock_type_id)\
-            .join(Product).filter(Product.seat_stock_type_id==StockType.id)\
+            .outerjoin(Product).filter(Product.seat_stock_type_id==StockType.id)\
             .outerjoin(SalesSegment).filter(SalesSegment.id==Product.sales_segment_id, SalesSegment.id==form.sales_segment_id.data)\
             .outerjoin(ProductItem).filter(ProductItem.product_id==Product.id, ProductItem.performance_id==form.performance_id.data)\
             .outerjoin(Stock).filter(Stock.id==ProductItem.stock_id, Stock.stock_holder_id.in_(stock_holder_ids))\
@@ -159,14 +159,16 @@ class SalesReports(BaseView):
                 Product.id.label('product_id'),
                 Product.name.label('product_name'),
                 Product.price.label('product_price'),
-                func.sum(Stock.quantity).label('total_quantity'),
-                func.sum(StockStatus.quantity).label('vacant_quantity'),
+                Stock.quantity.label('total_quantity'),
+                StockStatus.quantity.label('vacant_quantity'),
                 StockHolder.id.label('stock_holder_id'),
                 StockHolder.name.label('stock_holder_name'),
                 SalesSegment.name.label('sales_segment_name'),
+                Stock.id.label('stock_id'),
             )
-        for row in query.group_by(Product.id).all():
+        for row in query.all():
             performance_reports[row[2]] = dict(
+                stock_id=row[10],
                 stock_type_id=row[0],
                 stock_type_name=row[1],
                 product_id=row[2],
@@ -185,7 +187,7 @@ class SalesReports(BaseView):
         # 入金済み
         query = OrderedProduct.query.join(Order).filter(Order.performance_id==form.performance_id.data)\
             .filter(Order.canceled_at==None, Order.paid_at!=None)\
-            .join(Product).filter(Product.id==OrderedProduct.product_id)\
+            .outerjoin(Product).filter(Product.id==OrderedProduct.product_id)\
             .outerjoin(SalesSegment).filter(SalesSegment.id==Product.sales_segment_id, SalesSegment.id==form.sales_segment_id.data)\
             .with_entities(OrderedProduct.product_id, func.sum(OrderedProduct.quantity))
         if form.limited_from.data:
@@ -199,7 +201,7 @@ class SalesReports(BaseView):
         # 未入金
         query = OrderedProduct.query.join(Order).filter(Order.performance_id==form.performance_id.data)\
             .filter(Order.canceled_at==None, Order.paid_at==None)\
-            .join(Product).filter(Product.id==OrderedProduct.product_id)\
+            .outerjoin(Product).filter(Product.id==OrderedProduct.product_id)\
             .outerjoin(SalesSegment).filter(SalesSegment.id==Product.sales_segment_id, SalesSegment.id==form.sales_segment_id.data)\
             .with_entities(OrderedProduct.product_id, func.sum(OrderedProduct.quantity))
         if form.limited_from.data:

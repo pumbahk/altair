@@ -41,38 +41,52 @@
     <th>入金済み</th>
   </tr>
   <%
-    stock_type_id = None
+    stock_id = None
     performance_total = {
       'total_quantity':0,
       'vacant_quantity':0,
       'unpaid_quantity':0,
       'paid_quantity':0,
     }
+
+    stock_reports = {}
+    for report in performance_reports:
+      t = stock_reports[report['stock_id']] if report['stock_id'] in stock_reports else []
+      t.append(report)
+      stock_reports[report['stock_id']] = t
   %>
   % for performance_report in sorted(performance_reports, key=lambda x:(x['sales_segment_name'], x['stock_type_id'], x['stock_holder_id'], x['product_id'])):
     <%
-      performance_total['total_quantity'] += performance_report['total_quantity']
-      performance_total['vacant_quantity'] += performance_report['vacant_quantity']
-      performance_total['unpaid_quantity'] += performance_report['unpaid_quantity']
-      performance_total['paid_quantity'] += performance_report['paid_quantity']
+      if stock_id == performance_report['stock_id']:
+        continue
+      count = len(stock_reports[performance_report['stock_id']])
     %>
-    % if stock_type_id == performance_report['stock_type_id']:
-  <tr class="">
-    <td></td>
-    % else:
-      <% stock_type_id = performance_report['stock_type_id'] %>
-  <tr id="stock_type-${performance_report['stock_type_id']}">
-    <td>${performance_report['stock_type_name']}</td>
-    % endif
-    <td>${performance_report['stock_holder_name']}</td>
-    <td>${performance_report['product_name']}</td>
-    <td class="price">${h.price_format(performance_report['product_price'])}円</td>
-    <td class="numeric">${performance_report['total_quantity'] or ''}</td>
-    <td class="numeric">${performance_report['vacant_quantity'] or ''}</td>
-    <td class="numeric">${(performance_report['paid_quantity'] + performance_report['unpaid_quantity']) or ''}</td>
-    <td class="numeric">${performance_report['unpaid_quantity'] or ''}</td>
-    <td class="numeric">${performance_report['paid_quantity'] or ''}</td>
+    % for i, report in enumerate(stock_reports[performance_report['stock_id']]):
+  <tr>
+      % if i == 0:
+    <td rowspan="${count}">${report['stock_type_name']}</td>
+      % endif
+    <td style="border-left: 1px solid #ddd;">${report['stock_holder_name']}</td>
+    <td>${report['product_name']}</td>
+    <td class="price">${h.price_format(report['product_price'])}円</td>
+      % if i == 0:
+    <td rowspan="${count}" class="numeric">${report['total_quantity'] or ''}</td>
+    <td rowspan="${count}" class="numeric">${report['vacant_quantity'] or ''}</td>
+      <%
+        performance_total['total_quantity'] += report['total_quantity']
+        performance_total['vacant_quantity'] += report['vacant_quantity']
+      %>
+      % endif
+    <td class="numeric">${(report['paid_quantity'] + report['unpaid_quantity']) or ''}</td>
+    <td class="numeric">${report['unpaid_quantity'] or ''}</td>
+    <td class="numeric">${report['paid_quantity'] or ''}</td>
+    <%
+      performance_total['unpaid_quantity'] += report['unpaid_quantity']
+      performance_total['paid_quantity'] += report['paid_quantity']
+    %>
   </tr>
+    % endfor
+    <% stock_id = performance_report['stock_id'] %>
   % endfor
   <tr>
     <td colspan="4">合計</td>
