@@ -26,7 +26,7 @@ def includeme(config):
     config.add_payment_plugin(ReservedNumberPaymentPlugin(), PAYMENT_PLUGIN_ID)
     config.scan(__name__)
 
-@view_config(context=IOrderDelivery, name="delivery-%d" % PLUGIN_ID, renderer="ticketing.cart.plugins:templates/reserved_number_completion.html")
+@view_config(context=IOrderDelivery, name="delivery-%d" % PLUGIN_ID, renderer="ticketing.payments.plugins:templates/reserved_number_completion.html")
 def reserved_number_viewlet(context, request):
     logger.debug(u"窓口")
     order = context.order
@@ -34,12 +34,12 @@ def reserved_number_viewlet(context, request):
     reserved_number = m.ReservedNumber.query.filter_by(order_no=order.order_no).one()
     return dict(reserved_number=reserved_number)
 
-@view_config(context=ICartDelivery, name="delivery-%d" % PLUGIN_ID, renderer="ticketing.cart.plugins:templates/reserved_number_confirm.html")
+@view_config(context=ICartDelivery, name="delivery-%d" % PLUGIN_ID, renderer="ticketing.payments.plugins:templates/reserved_number_confirm.html")
 def reserved_number_confirm_viewlet(context, request):
     logger.debug(u"窓口")
     return dict()
 
-@view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer="ticketing.cart.plugins:templates/reserved_number_payment_completion.html")
+@view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer="ticketing.payments.plugins:templates/reserved_number_payment_completion.html")
 def reserved_number_payment_viewlet(context, request):
     logger.debug(u"窓口")
     order = context.order
@@ -47,7 +47,7 @@ def reserved_number_payment_viewlet(context, request):
     reserved_number = m.PaymentReservedNumber.query.filter_by(order_no=order.order_no).one()
     return dict(reserved_number=reserved_number)
 
-@view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer="ticketing.cart.plugins:templates/reserved_number_payment_confirm.html")
+@view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer="ticketing.payments.plugins:templates/reserved_number_payment_confirm.html")
 def reserved_number_payment_confirm_viewlet(context, request):
     logger.debug(u"窓口")
     return dict()
@@ -66,8 +66,8 @@ class ReservedNumberDeliveryPlugin(object):
         m.DBSession.add(reserved_number)
         logger.debug("引き換え番号: %s" % reserved_number.number)
 
-@view_config(context=ICompleteMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer="ticketing.cart.plugins:templates/reserved_number_payment_mail_complete.html")
-@view_config(context=ICompleteMailDelivery, name="delivery-%d" % PLUGIN_ID, renderer="ticketing.cart.plugins:templates/reserved_number_mail_complete.html")
+@view_config(context=ICompleteMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer="ticketing.payments.plugins:templates/reserved_number_payment_mail_complete.html")
+@view_config(context=ICompleteMailDelivery, name="delivery-%d" % PLUGIN_ID, renderer="ticketing.payments.plugins:templates/reserved_number_mail_complete.html")
 def completion_delivery_mail_viewlet(context, request):
     """ 完了メール表示
     :param context: ICompleteMailDelivery

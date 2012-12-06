@@ -174,7 +174,7 @@ def card_number_mask(number):
     return "*" * (len(number) - 4) + number[-4:]
 
 
-@view_config(context=ICartPayment, name="payment-%d" % PAYMENT_ID, renderer="ticketing.cart.plugins:templates/card_confirm.html")
+@view_config(context=ICartPayment, name="payment-%d" % PAYMENT_ID, renderer="ticketing.payments.plugins:templates/card_confirm.html")
 def confirm_viewlet(context, request):
     """ 確認画面表示 
     :param context: ICartPayment
@@ -184,14 +184,14 @@ def confirm_viewlet(context, request):
     logger.debug("order_session %s" % order_session)
     return dict(order=order_session, card_number_mask=card_number_mask)
 
-@view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_ID, renderer="ticketing.cart.plugins:templates/card_complete.html")
+@view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_ID, renderer="ticketing.payments.plugins:templates/card_complete.html")
 def completion_viewlet(context, request):
     """ 完了画面表示 
     :param context: IOrderPayment
     """
     return dict()
 
-@view_config(context=ICompleteMailPayment, name="payment-%d" % PAYMENT_ID, renderer="ticketing.cart.plugins:templates/card_mail_complete.html")
+@view_config(context=ICompleteMailPayment, name="payment-%d" % PAYMENT_ID, renderer="ticketing.payments.plugins:templates/card_mail_complete.html")
 def completion_payment_mail_viewlet(context, request):
     """ 完了メール表示
     :param context: ICompleteMailPayment

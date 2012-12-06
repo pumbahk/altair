@@ -5,11 +5,11 @@ from pyramid import testing
 
 class FindApplicableTicketsTest(unittest.TestCase):
     def _callFUT(self, *args, **kwargs):
-        from ticketing.cart.plugins.sej import applicable_tickets_iter
+        from ticketing.payments.plugins.sej import applicable_tickets_iter
         return applicable_tickets_iter(*args,  **kwargs)
 
     def test_it(self):
-        from ticketing.cart.plugins import SEJ_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
+        from ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
         class bundle(object):
             class sej_ticket:
                 class ticket_format:
@@ -21,7 +21,7 @@ class FindApplicableTicketsTest(unittest.TestCase):
         self.assertEquals(len(result), 1)
 
     def test_with_another_ticket(self):
-        from ticketing.cart.plugins import SEJ_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
+        from ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
         class bundle(object):
             class sej_ticket:
                 class ticket_format:

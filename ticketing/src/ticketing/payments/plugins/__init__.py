@@ -19,7 +19,7 @@ QR_DELIVERY_PLUGIN_ID = 4
 
 
 def includeme(config):
-    config.add_static_view('static', 'ticketing.cart.plugins:static', cache_max_age=3600)
+    config.add_static_view('static', 'ticketing.payments.plugins:static', cache_max_age=3600)
     config.include(".multicheckout")
     config.include(".reservednumber")
     config.include(".shipping")

@@ -106,7 +106,8 @@ class SendCompleteMailTest(unittest.TestCase):
         ## TBA
         self.config.add_route("qr.make", "__________")
 
-        self.config.include("ticketing.cart.plugins")
+        self.config.include("ticketing.payments")
+        self.config.include("ticketing.payments.plugins")
         self.config.add_subscriber('ticketing.cart.subscribers.add_helpers', 'pyramid.events.BeforeRender')
 
     def tearDown(self):
@@ -298,11 +299,11 @@ class SendCompleteMailTest(unittest.TestCase):
         order = _build_order()
         
         payment_method = PaymentMethod(payment_plugin_id=1, name=u"クレジットカード決済")
-        from ticketing.cart.plugins.multicheckout import PAYMENT_ID
+        from ticketing.payments.plugins.multicheckout import PAYMENT_ID
         self.assertEquals(payment_method.payment_plugin_id, PAYMENT_ID)
 
         delivery_method = DeliveryMethod(delivery_plugin_id=4, name=u"QR受け取り")
-        from ticketing.cart.plugins.qr import DELIVERY_PLUGIN_ID
+        from ticketing.payments.plugins.qr import DELIVERY_PLUGIN_ID
         self.assertEquals(delivery_method.delivery_plugin_id, DELIVERY_PLUGIN_ID)
 
         method_pair = PaymentDeliveryMethodPair(payment_method=payment_method, 
@@ -335,11 +336,11 @@ class SendCompleteMailTest(unittest.TestCase):
         order.order_no = sejorder.order_id
         
         payment_method = PaymentMethod(payment_plugin_id=1, name=u"クレジットカード決済")
-        from ticketing.cart.plugins.multicheckout import PAYMENT_ID
+        from ticketing.payments.plugins.multicheckout import PAYMENT_ID
         self.assertEquals(payment_method.payment_plugin_id, PAYMENT_ID)
 
         delivery_method = DeliveryMethod(delivery_plugin_id=2, name=u"セブン受け取り")
-        from ticketing.cart.plugins.sej import DELIVERY_PLUGIN_ID
+        from ticketing.payments.plugins.sej import DELIVERY_PLUGIN_ID
         self.assertEquals(delivery_method.delivery_plugin_id, DELIVERY_PLUGIN_ID)
 
         method_pair = PaymentDeliveryMethodPair(payment_method=payment_method, 
@@ -381,11 +382,11 @@ class SendCompleteMailTest(unittest.TestCase):
             )
         
         payment_method = PaymentMethod(payment_plugin_id=1, name=u"クレジットカード決済")
-        from ticketing.cart.plugins.multicheckout import PAYMENT_ID
+        from ticketing.payments.plugins.multicheckout import PAYMENT_ID
         self.assertEquals(payment_method.payment_plugin_id, PAYMENT_ID)
 
         delivery_method = DeliveryMethod(delivery_plugin_id=1, name=u"郵送")
-        from ticketing.cart.plugins.shipping import PLUGIN_ID
+        from ticketing.payments.plugins.shipping import PLUGIN_ID
         self.assertEquals(delivery_method.delivery_plugin_id, PLUGIN_ID)
 
         method_pair = PaymentDeliveryMethodPair(payment_method=payment_method, 
@@ -423,12 +424,12 @@ class SendCompleteMailTest(unittest.TestCase):
         order.order_no = sejorder.order_id
         
         payment_method = PaymentMethod(payment_plugin_id=3, name=u"セブン支払い")
-        from ticketing.cart.plugins.sej import PAYMENT_PLUGIN_ID
+        from ticketing.payments.plugins.sej import PAYMENT_PLUGIN_ID
         self.assertEquals(payment_method.payment_plugin_id, PAYMENT_PLUGIN_ID)
 
 
         delivery_method = DeliveryMethod(delivery_plugin_id=2, name=u"セブン受け取り")
-        from ticketing.cart.plugins.sej import DELIVERY_PLUGIN_ID
+        from ticketing.payments.plugins.sej import DELIVERY_PLUGIN_ID
         self.assertEquals(delivery_method.delivery_plugin_id, DELIVERY_PLUGIN_ID)
 
         method_pair = PaymentDeliveryMethodPair(payment_method=payment_method, 

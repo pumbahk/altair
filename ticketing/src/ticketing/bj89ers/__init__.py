@@ -36,7 +36,8 @@ def main(global_conf, **settings):
     config.add_route('notready', '/notready')
     config.include('ticketing.checkout')
     config.include('ticketing.multicheckout')
-    config.include('ticketing.cart.plugins')
+    config.include('ticketing.payments')
+    config.include('ticketing.payments.plugins')
     config.include('ticketing.cart')
     config.scan('ticketing.cart.views')
     config.add_subscriber('.api.on_order_completed', 'ticketing.cart.events.OrderCompleted')
@@ -92,14 +93,14 @@ def main(global_conf, **settings):
     PAYMENT_PLUGIN_ID_SEJ = 3
     PAYMENT_PLUGIN_ID_CARD = 1
 
-    config.add_view('ticketing.cart.plugins.sej.sej_payment_viewlet', context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID_SEJ,
+    config.add_view('ticketing.payments.plugins.sej.sej_payment_viewlet', context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID_SEJ,
                     renderer='carts/sej_payment_complete.html')
-    config.add_view('ticketing.cart.plugins.sej.sej_payment_viewlet', context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID_SEJ, request_type='ticketing.cart.interfaces.IMobileRequest',
+    config.add_view('ticketing.payments.plugins.sej.sej_payment_viewlet', context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID_SEJ, request_type='ticketing.cart.interfaces.IMobileRequest',
                     renderer="carts_mobile/sej_payment_complete.html")
 
-    config.add_view('ticketing.cart.plugins.multicheckout.completion_viewlet', context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID_CARD,
+    config.add_view('ticketing.payments.plugins.multicheckout.completion_viewlet', context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID_CARD,
                     renderer='carts/multicheckout_payment_complete.html')
-    config.add_view('ticketing.cart.plugins.multicheckout.completion_viewlet', context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID_CARD, request_type='ticketing.cart.interfaces.IMobileRequest',
+    config.add_view('ticketing.payments.plugins.multicheckout.completion_viewlet', context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID_CARD, request_type='ticketing.cart.interfaces.IMobileRequest',
                     renderer="carts_mobile/multicheckout_payment_complete.html")
 
     config.add_subscriber('.subscribers.add_helpers', 'pyramid.events.BeforeRender')

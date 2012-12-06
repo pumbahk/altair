@@ -284,9 +284,9 @@ class SejPaymentDeliveryPlugin(object):
         return order
 
 
-@view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer='ticketing.cart.plugins:templates/sej_delivery_complete.html')
+@view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer='ticketing.payments.plugins:templates/sej_delivery_complete.html')
 @view_config(context=IOrderDelivery, request_type='ticketing.cart.interfaces.IMobileRequest',
-             name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer='ticketing.cart.plugins:templates/sej_delivery_complete_mobile.html')
+             name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer='ticketing.payments.plugins:templates/sej_delivery_complete_mobile.html')
 def sej_delivery_viewlet(context, request):
     order = context.order
     sej_order = get_sej_order(order)
@@ -299,14 +299,14 @@ def sej_delivery_viewlet(context, request):
     )
 
 @view_config(context=ICartDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, 
-             renderer='ticketing.cart.plugins:templates/sej_delivery_confirm.html')
+             renderer='ticketing.payments.plugins:templates/sej_delivery_confirm.html')
 def sej_delivery_confirm_viewlet(context, request):
     return Response(text=u'セブンイレブン受け取り')
 
 @view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, 
-             renderer='ticketing.cart.plugins:templates/sej_payment_complete.html')
+             renderer='ticketing.payments.plugins:templates/sej_payment_complete.html')
 @view_config(context=IOrderPayment, request_type='ticketing.cart.interfaces.IMobileRequest',
-             name="payment-%d" % PAYMENT_PLUGIN_ID, renderer='ticketing.cart.plugins:templates/sej_payment_complete_mobile.html')
+             name="payment-%d" % PAYMENT_PLUGIN_ID, renderer='ticketing.payments.plugins:templates/sej_payment_complete_mobile.html')
 def sej_payment_viewlet(context, request):
     order = context.order
     sej_order = get_sej_order(order)
@@ -315,12 +315,12 @@ def sej_payment_viewlet(context, request):
         sej_order=sej_order
     )
 
-@view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer='ticketing.cart.plugins:templates/sej_payment_confirm.html')
+@view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer='ticketing.payments.plugins:templates/sej_payment_confirm.html')
 def sej_payment_confirm_viewlet(context, request):
     return Response(text=u'セブンイレブン支払い')
 
 
-@view_config(context=ICompleteMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer="ticketing.cart.plugins:templates/sej_payment_mail_complete.html")
+@view_config(context=ICompleteMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer="ticketing.payments.plugins:templates/sej_payment_mail_complete.html")
 def payment_mail_viewlet(context, request):
     """ 完了メール表示
     :param context: ICompleteMailPayment
@@ -329,7 +329,7 @@ def payment_mail_viewlet(context, request):
     return dict(sej_order=sej_order, h=cart_helper, 
                 notice=context.mail_data("notice"))
 
-@view_config(context=ICompleteMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer="ticketing.cart.plugins:templates/sej_delivery_mail_complete.html")
+@view_config(context=ICompleteMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer="ticketing.payments.plugins:templates/sej_delivery_mail_complete.html")
 def delivery_mail_viewlet(context, request):
     """ 完了メール表示
     :param context: ICompleteMailDelivery

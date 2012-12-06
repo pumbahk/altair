@@ -51,7 +51,7 @@ def completion_viewlet(context, request):
     """
     return Response(text=u"楽天あんしん決済")
 
-@view_config(context=ICompleteMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer="ticketing.cart.plugins:templates/checkout_mail_complete.html")
+@view_config(context=ICompleteMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer="ticketing.payments.plugins:templates/checkout_mail_complete.html")
 def payment_mail_viewlet(context, request):
     notice=context.mail_data("notice")
     return dict(notice=notice)
@@ -66,7 +66,7 @@ class CheckoutView(object):
     def __init__(self, request):
         self.request = request
 
-    @view_config(route_name='payment.checkout_login', request_method="GET", renderer="ticketing.cart.plugins:templates/checkout_login.html")
+    @view_config(route_name='payment.checkout_login', request_method="GET", renderer="ticketing.payments.plugins:templates/checkout_login.html")
     def login(self):
         cart = a.get_cart(self.request)
 
@@ -77,7 +77,7 @@ class CheckoutView(object):
 
         return dict(form=form)
 
-    @view_config(route_name='payment.checkout_order_complete', renderer="ticketing.cart.plugins:templates/checkout_response.html")
+    @view_config(route_name='payment.checkout_order_complete', renderer="ticketing.payments.plugins:templates/checkout_response.html")
     def order_complete(self):
         '''
         注文完了通知を保存する

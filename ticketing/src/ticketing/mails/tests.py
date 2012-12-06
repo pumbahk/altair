@@ -27,7 +27,8 @@ class CompletMailSettingsTest(unittest.TestCase):
         ## TBA
         self.config.add_route("qr.make", "__________")
 
-        self.config.include("ticketing.cart.plugins")
+        self.config.include("ticketing.payments")
+        self.config.include("ticketing.payments.plugins")
         self.config.add_subscriber('ticketing.cart.subscribers.add_helpers', 'pyramid.events.BeforeRender')
 
     def _getTarget(self):
@@ -93,7 +94,8 @@ class CreateMailFromFakeOrderTests(unittest.TestCase):
         ## TBA
         self.config.add_route("qr.make", "__________")
 
-        self.config.include("ticketing.cart.plugins")
+        self.config.include("ticketing.payments")
+        self.config.include("ticketing.payments.plugins")
 
     def test_it(self):
         from ticketing.core.models import Organization

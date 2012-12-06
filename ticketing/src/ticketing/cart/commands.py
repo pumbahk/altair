@@ -12,7 +12,7 @@ from . import api
 from sqlalchemy.sql.expression import not_
 
 
-# copied from ticketing.cart.plugins.multicheckout
+# copied from ticketing.payments.plugins.multicheckout
 def get_order_no(request, cart):
     
     if request.registry.settings.get('multicheckout.testing', False):
