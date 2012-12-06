@@ -186,16 +186,16 @@ namespace TECImageWriterGateway
                         {
                             throw new TimeoutException("Timeout");
                         }
+                        resultingImage = ImageUtils.whiteAsAlpha(resultingImage as Bitmap);
                         resp.StatusCode = 200;
                         resp.StatusDescription = "OK";
                         resp.ContentType = "image/png";
                         using (MemoryStream outStream = new MemoryStream())
                         {
                             resultingImage.Save(outStream, ImageFormat.Png);
-                            resp.ContentLength64 = outStream.Length;
                             outStream.Flush();
-                            byte[] buffer = outStream.GetBuffer();
-                            resp.OutputStream.Write(buffer, 0, buffer.Length);
+                            resp.ContentLength64 = outStream.Length;
+                            resp.OutputStream.Write(outStream.GetBuffer(), 0, (int)outStream.Length);
                         }
                     }
                     finally

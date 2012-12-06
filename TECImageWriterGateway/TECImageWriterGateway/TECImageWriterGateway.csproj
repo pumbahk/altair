@@ -46,6 +46,7 @@
     <Compile Include="BootstrapForm.Designer.cs">
       <DependentUpon>BootstrapForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="ImageUtils.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="BootstrapForm.resx">
