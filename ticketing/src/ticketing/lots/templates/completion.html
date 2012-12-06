@@ -14,11 +14,11 @@
                   %for wish in entry.wishes:
 			<div class="settlementSelectBox">
 			  <div class="settlementSelectBoxInner02">
-                <p><strong>第一希望</strong><span>ディズニーライブ東京公演</span></p>
+                  <p><strong>第一希望</strong><span>${wish.performance.name}</span></p>
 			    <table summary="第一希望">
                   <tr>
                     <th><label>公演日・会場</label></th>
-                    <td>2012/12/23（日・祝）17：30　東京国際フォーラム</td>
+                    <td>${h.japanese_datetime(wish.performance.open_on)}　${wish.performance.venue.name}</td>
                   </tr>
                   %for product in wish.products:
                   <tr>
@@ -36,13 +36,13 @@
             <div class="confirmBox">
 				<div class="confirmBoxInner">
                     <h2><img src="${request.static_url('ticketing.lots:static/img/order/title_how.gif')}" alt="お支払・お引取り方法選択" width="208" height="30" /></h2>
-                  <h3>${entry.payment_delivery_method_pair.payment_method.name}　￥${entry.payment_delivery_method_pair.transaction_fee}　${entry.payment_delivery_method_pair.delivery_method.name}　￥${entry.payment_delivery_method_pair.delivery_fee}</h3>
+                  <h3>${entry.payment_delivery_method_pair.payment_method.name}　${h.format_currency(entry.payment_delivery_method_pair.transaction_fee)}　${entry.payment_delivery_method_pair.delivery_method.name}　${h.format_currency(entry.payment_delivery_method_pair.delivery_fee)}</h3>
 				</div>
 	  </div>
 <div class="confirmBox">
 				<div class="confirmBoxInner">
                     <h2><img src="${request.static_url('ticketing.lots:static/img/order/title_caution.gif')}" alt="注意事項" width="97" height="30" /></h2>
-                  <p>注意事項が入ります。注意事項が入ります。注意事項が入ります。注意事項が入ります。注意事項が入ります。</p>
+                    <p>${entry.lot.description}</p>
 				</div>
 			</div>
 			
