@@ -14,7 +14,7 @@ class SalesSegmentForm(OurForm):
         if 'event_id' in kwargs:
             event = Event.get(kwargs['event_id'])
             self.copy_to_stock_holder.choices = [('', u'変更しない')] + [
-                (str(sh.id), sh.name) for sh in StockHolder.get_seller(event)
+                (str(sh.id), sh.name) for sh in StockHolder.get_own_stock_holders(event)
             ]
 
     def _get_translations(self):
