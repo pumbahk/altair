@@ -144,13 +144,13 @@
   var onLoadSVG = function(e){
     var $loading = $("#loading_area");
     $loading.spinner("start");
-    $.get("${request.route_path("tickets.preview.api.normalize")}", {"svg": e.target.result})
+    $.get("${request.route_path("tickets.preview.api",action="normalize")}", {"svg": e.target.result})
      .done(function(data){
        if(!data.status){
          alert(data.message);
          $loading.spinner("stop");
        }
-       $.get("${request.route_path("tickets.preview.api.base64")}", {"svg": data.data})
+       $.get("${request.route_path("tickets.preview.api",action="prview.base64")}", {"svg": data.data})
        .done(function(data){
          if(!data.status){
            alert(data.message);

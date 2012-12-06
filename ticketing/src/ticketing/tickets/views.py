@@ -29,6 +29,9 @@ from .api import SVGPreviewCommunication
 from jsonrpclib import jsonrpc
 from pyramid.httpexceptions import HTTPBadRequest
 from cleaner.api import get_validated_svg_cleaner
+from .fillvalues import template_collect_vars
+from .fillvalues import template_fillvalues
+
 
 def ticket_format_to_dict(ticket_format):
     data = dict(ticket_format.data)
@@ -649,24 +652,45 @@ def preview_ticket_post(context, request):
 """
 raw svg -> normalize svg -> base64 png
 """
-@view_config(route_name="tickets.preview.api.normalize", request_method="GET", renderer="json", 
-             request_param="svg")
-def preview_api_normalize(context, request):
-    try:
-        svgio = StringIO(unicode(request.GET["svg"]).encode("utf-8")) #unicode only
-        cleaner = get_validated_svg_cleaner(svgio, exc_class=Exception)
-        svgio = cleaner.get_cleaned_svgio()
-        return {"status": True, "data": svgio.getvalue()}
-    except Exception, e:
-        return {"status": False, "message": str(e)}
-    
-@view_config(route_name="tickets.preview.api.base64", request_method="GET", renderer="json", 
-             request_param="svg")
-def preview_ticket_post64(context, request):
-    preview = SVGPreviewCommunication.get_instance(request)
-    svg = request.GET["svg"]
-    try:
-        imgdata_base64 = preview.communicate(request, svg)
-        return {"status": True, "data":imgdata_base64}
-    except jsonrpc.ProtocolError, e:
-        return {"status": False, "message": str(e)}
+@view_defaults(route_name="tickets.preview.api", request_method="GET", renderer="json")
+class PreviewApiView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @view_config(match_param="normalize", request_param="svg")
+    def preview_api_normalize(self):
+        try:
+            svgio = StringIO(unicode(self.request.GET["svg"]).encode("utf-8")) #unicode only
+            cleaner = get_validated_svg_cleaner(svgio, exc_class=Exception)
+            svgio = cleaner.get_cleaned_svgio()
+            return {"status": True, "data": svgio.getvalue()}
+        except Exception, e:
+            return {"status": False, "message": str(e)}
+
+    @view_config(match_param="collectvars", request_param="svg")
+    def preview_collectvars(self):
+        svg = self.request.GET["svg"]
+        try:
+            return {"status": True, "data": template_collect_vars(svg)}
+        except Exception, e:
+            return {"status": False, "message": str(e)}
+
+    @view_config(match_param="fillvalues", request_param="svg")
+    def preview_fillvalus(self):
+        svg = self.request.GET["svg"]
+        try:
+            params = self.request.GET["params"]
+            return {"status": True, "data": template_fillvalues(svg, params)}
+        except Exception, e:
+            return {"status": False, "message": str(e)}
+
+    @view_config(match_param="preview.base64", request_param="svg")
+    def preview_ticket_post64(self):
+        preview = SVGPreviewCommunication.get_instance(self.request)
+        svg = self.request.GET["svg"]
+        try:
+            imgdata_base64 = preview.communicate(self.request, svg)
+            return {"status": True, "data":imgdata_base64}
+        except jsonrpc.ProtocolError, e:
+            return {"status": False, "message": str(e)}
