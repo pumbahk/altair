@@ -1,8 +1,14 @@
 // require backbone.js
 // require altair/deferredqueue.js
 
-/// services
+// todo: auto redraw?
+// todo: 見た目綺麗に
+// todo: buttonをまともに機能させる
+// todo: download
+// todo: errorをページ上に表示
+// todo: 拡大/縮小
 
+/// services
 var ApiDeferredService = {
     rejectIfStatusFail: function(fn){
         return function(data){
@@ -130,6 +136,16 @@ var TemplateVarStore = Backbone.Model.extend({
             return {name: k, value: ""};
         }));
         this.trigger("*vars.update.vars");
+    }, 
+    commitVarsValues: function(){
+        if(this.get("vars").length <= 0){
+            return this.trigger("*vars.commit.vars", {});
+        }
+        var var_values = {};
+        _(this.get("vars").models).each(function(m){
+            var_values[m.get("name")] = m.get("value");
+        });
+        return this.trigger("*vars.commit.vars",  var_values);
     }
 });
 
@@ -151,15 +167,25 @@ _.extend(ApiCommunicationGateWay.prototype, { // view?
         this.svg.on("*svg.update.normalize", this.svgNormalizeToX, this);
         this.svg.on("*svg.update.normalize", this.collectTemplateVars, this);
         this.svg.on("*svg.update.filled", this.svgFilledToX, this);
+
+        this.vars.on("*vars.commit.vars", this.commitVarsValues, this);
     }, 
     _apiFail: function(s, err){
         console.warn(s.responseText, arguments);
         this.preview.cancelRendering();
     }, 
+    commitVarsValues: function(vars_values){
+        var self = this;
+        return $.post(this.apis.fillvalues, {"svg": this.svg.get("normalize"), "params": JSON.stringify(vars_values)})
+            .pipe(ApiDeferredService.rejectIfStatusFail(function(data){
+                self.svg.updateToFilled(data.data);
+            }))
+            .fail(this._apiFail.bind(this));
+    }, 
     svgRawToX: function(){
         this.preview.beforeRendering();
         var self = this;
-        return $.post(this.apis.normalize, {"svg": this.models.svg.get("data")})
+        return $.post(this.apis.normalize, {"svg": this.svg.get("data")})
             .pipe(ApiDeferredService.rejectIfStatusFail(function(data){
                 self.svg.updateToNormalize(data.data);
             }))
@@ -168,7 +194,16 @@ _.extend(ApiCommunicationGateWay.prototype, { // view?
     svgNormalizeToX: function(){
         this.preview.beforeRendering();
         var self = this;
-        return $.post(this.apis.previewbase64, {"svg": this.models.svg.get("data")})
+        return $.post(this.apis.previewbase64, {"svg": this.svg.get("data")})
+            .pipe(ApiDeferredService.rejectIfStatusFail(function(data){
+                self.preview.startRendering("data:image/png;base64,"+data.data); //add-hoc
+            }))
+            .fail(this._apiFail.bind(this));
+    }, 
+    svgFilledToX: function(){
+        this.preview.beforeRendering();
+        var self = this;
+        return $.post(this.apis.previewbase64, {"svg": this.svg.get("data")})
             .pipe(ApiDeferredService.rejectIfStatusFail(function(data){
                 self.preview.startRendering("data:image/png;base64,"+data.data); //add-hoc
             }))
@@ -257,17 +292,31 @@ var TemplateVarsTableViewModel = ViewModel.extend({
 var TemplateVarRowView = Backbone.View.extend({
     tagName: "tr", 
     className: "vars-row", 
-    template: _.template('<td><%- name %></td><td><input name="<%- name %>" value="<%- value %>" placeholder="ここに文字を入力してください"></input></td>'), 
+    template: _.template('<td><%- name %></td><td><input class="<%- position%>" name="<%- name %>" value="<%- value %>" placeholder="ここに文字を入力してください"></input></td>'), 
+    events: {
+        "change input.left": "onUpdateLeft", 
+        "change input.right": "onUpdateRight", 
+    }, 
     initialize: function(opts){
         this.left = opts.left;
         if(!this.left) throw "opts.left is not found";
         this.right = opts.right;
     }, 
     render: function(){
-        this.$el.html(this.template(this.left.toJSON()) + ((!!this.right) ? this.template(this.right.toJSON()) : ""));
+        var left = this.template(_.extend(this.left.toJSON(), {position: "left"}));
+        var right = ((!!this.right) ? this.template(_.extend(this.right.toJSON(), {position: "right"})) : "");
+        this.$el.html(left + right);
         return this;
+    }, 
+    onUpdateLeft: function(){ //todo: e.currentTarget ?
+        this.left.set("value", this.$el.find("input.left").val());
+        // console.log(this.left.toJSON());
+    }, 
+    onUpdateRight: function(){ //todo: e.currentTarget ?
+        this.right.set("value", this.$el.find("input.right").val());
+        // console.log(this.right.toJSON());
     }
-});
+ });
 
 var DragAndDropSVGSupportView = Backbone.View.extend({
   events: {
@@ -315,14 +364,19 @@ var PreviewImageView = Backbone.View.extend({
 });
 
 var TemplateFillValuesView = Backbone.View.extend({
+    events: {
+        "click a#redraw_btn": "onRedrawBtnClick"
+    }, 
     initialize: function(opts){
         this.model.on("*vars.update.vars", this.onUpdateTemplateVars, this);
         this.vms = opts.vms;
     }, 
+    // user action
+    onRedrawBtnClick: function(){
+        this.model.commitVarsValues();
+    }, 
+    // model -> view
     onUpdateTemplateVars: function(){
         this.vms.vars_input.redraw(this.model.get("vars").models);
     }
-});
-
-var ManagementTemplateValuesView = Backbone.View.extend({
 });

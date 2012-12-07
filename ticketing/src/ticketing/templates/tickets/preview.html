@@ -56,13 +56,13 @@
   </p>
 </div>
 
-<div class="well">
+<div id="preview_block" class="well">
   <div id="subnav" class="navbar">
     <div class="navbar-inner">
       <a class="brand" href="#">preview画像表示</a>
       <ul class="nav">
-        <li class=""><a href="#">reDraw</a></li>
-        <li class=""><a href="#">download</a></li>
+        <li class="" ><a id="redraw_btn" href="#">reDraw</a></li>
+        <li class=""><a id="download_btn" href="#">download</a></li>
       </ul>
     </div>
   </div>
@@ -96,15 +96,15 @@
   gateway = new ApiCommunicationGateWay({models: {svg: svg, preview: preview, vars: vars}, apis: ${apis|n}});
 
   view_models = {
-    preview: new PreviewImageViewModel({el: $("#preview_area")}),
-    droparea: new DropAreaViewModel({el: $("#svg_droparea")}),
-    spinner: new LoadingSpinnerViewModel({el: $("#preview_area")}),
+    preview: new PreviewImageViewModel({el: $("#preview_block #preview_area")}),
+    droparea: new DropAreaViewModel({el: $("#preview_block #svg_droparea")}),
+    spinner: new LoadingSpinnerViewModel({el: $("#preview_block #preview_area")}),
     vars_input: new TemplateVarsTableViewModel({el: $("#template_vars_table")})
   };
 
   dad_view = new DragAndDropSVGSupportView({el: droparea, vms: view_models, model: svg});
-  preview_image_view = new PreviewImageView({el: $("#preview_area"), vms: view_models, model: preview});
-  template_fillvalues_view = new TemplateFillValuesView({el: $("#template_vars_table"), vms: view_models, model: vars});
+  preview_image_view = new PreviewImageView({el: $("#preview_block"), vms: view_models, model: preview});
+  template_fillvalues_view = new TemplateFillValuesView({el: $("#preview_block"), vms: view_models, model: vars});
   window.view_models = view_models;
   });
 </script>

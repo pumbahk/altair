@@ -635,7 +635,8 @@ def preview_ticket(context, request):
     apis = {
         "normalize": request.route_path("tickets.preview.api", action="normalize"), 
         "previewbase64": request.route_path("tickets.preview.api", action="preview.base64"), 
-        "collectvars": request.route_path("tickets.preview.api", action="collectvars")
+        "collectvars": request.route_path("tickets.preview.api", action="collectvars"), 
+        "fillvalues": request.route_path("tickets.preview.api", action="fillvalues")
         }
     return {"apis": json.dumps(apis)}
 
@@ -671,7 +672,7 @@ class PreviewApiView(object):
             svgio = cleaner.get_cleaned_svgio()
             return {"status": True, "data": svgio.getvalue()}
         except Exception, e:
-            return {"status": False, "message": str(e)}
+            return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
 
     @view_config(match_param="action=collectvars", request_param="svg")
     def preview_collectvars(self):
@@ -679,16 +680,23 @@ class PreviewApiView(object):
         try:
             return {"status": True, "data": list(sorted(template_collect_vars(svg)))}
         except Exception, e:
-            return {"status": False, "message": str(e)}
+            return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
 
     @view_config(match_param="action=fillvalues", request_param="svg")
     def preview_fillvalus(self):
         svg = self.request.POST["svg"]
         try:
-            params = self.request.POST["params"]
+            params = json.loads(self.request.POST["params"])
+            dels = []
+            for k in params:
+                if not params[k]:
+                    dels.append(k)
+            for k in dels:
+                del params[k]
             return {"status": True, "data": template_fillvalues(svg, params)}
         except Exception, e:
-            return {"status": False, "message": str(e)}
+            return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
+
     @view_config(match_param="action=preview.base64", request_param="svg")
     def preview_ticket_post64(self):
         preview = SVGPreviewCommunication.get_instance(self.request)
@@ -697,4 +705,4 @@ class PreviewApiView(object):
             imgdata_base64 = preview.communicate(self.request, svg)
             return {"status": True, "data":imgdata_base64}
         except jsonrpc.ProtocolError, e:
-            return {"status": False, "message": str(e)}
+            return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
