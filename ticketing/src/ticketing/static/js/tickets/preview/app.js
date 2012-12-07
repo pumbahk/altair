@@ -2,7 +2,7 @@
 // require altair/deferredqueue.js
 
 /// models
-var SVGStage = {"empty":0, "raw":1, "normalize":2}
+var SVGStage = {"empty":0, "raw":1, "normalize":2, "filled":3}
 var SVGStore = Backbone.Model.extend({
     defaults:{
         svg: null, 
@@ -18,6 +18,18 @@ var TemplateVarStore = Backbone.Model.extend({
 });
 
 /// services
+var DeferredChainService = {
+    rejectIfStatusFail: function(fn){
+        return function(data){
+            if (data && data.status){
+                return fn(data);
+            }else {
+                return $.Deferred().rejectWith(this, [{responseText: data.message}]);
+            }
+        };
+    }
+};
+
 var DragAndDropSupportService = {
     compose: function(){
         var fns = arguments;
@@ -99,20 +111,8 @@ var DragAndDropSVGSupportView = Backbone.View.extend({
       var self = this;
 
       return $.get(this.apis.normalize, {"svg": svg})
-          .pipe(function(data){
-             if (data && data.status){
-                 return $.get(self.apis.previewbase64, {"svg": data.data});
-             }else {
-                 return $.Deferred().rejectWith(this, [{responseText: data.message}]);
-             }
-          })
-          .pipe(function(data){
-              if (data && data.status){
-                  return data;
-              }else{
-                  return $.Deferred().rejectWith(this, [{responseText: data.message}]);
-              }
-          })
+          .pipe(DeferredChainService.rejectIfStatusFail(function(data){return $.get(self.apis.previewbase64, {"svg": data.data});}))
+          .pipe(DeferredChainService.rejectIfStatusFail(function(data){return data;}))
           .fail(function(s,err){alert(s.responseText); $loading.spinner("stop");})
           .done(function(data){
               var $preview = $("#preview_area");
