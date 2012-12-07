@@ -1,33 +1,17 @@
 // require backbone.js
 // require altair/deferredqueue.js
 
-/// models
-var SVGStage = {"empty":0, "raw":1, "normalize":2, "filled":3}
-var SVGStore = Backbone.Model.extend({
-    defaults:{
-        svg: null, 
-        stage: SVGStage.empty
-    }
-});
-
-var TemplateVarStore = Backbone.Model.extend({
-    defaults: {
-        vars: [], 
-        values: {} // change to model, iff auto redrawing image after each change values of one.
-    }
-});
-
 /// services
-var DeferredChainService = {
+var ApiDeferredService = {
     rejectIfStatusFail: function(fn){
         return function(data){
             if (data && data.status){
-                return fn(data);
+                return fn? fn(data) : data;
             }else {
                 return $.Deferred().rejectWith(this, [{responseText: data.message}]);
             }
         };
-    }
+    }, 
 };
 
 var DragAndDropSupportService = {
@@ -74,7 +58,114 @@ var ConsoleMessage = { //use info, log, warn, error, dir
     warn: console.debug
 }
 
+/// models
+var SVGStage = {"empty":0, "raw":1, "normalize":2, "filled":3};
+var PreviewStage = {"empty": 0, "before":1, "rendering":2, "after": 3}
+var SVGStore = Backbone.Model.extend({
+    defaults:{
+        data: null, 
+        normalize: null, 
+        stage: SVGStage.empty
+    }, 
+    _updateValue: function(stage, svg){
+        this.set("stage", stage);
+        this.set("data", svg);
+    }, 
+    updateToRaw: function(svg){
+        this._updateValue(SVGStage.raw, svg);
+        this.set("normalize", null);
+        this.trigger("*svg.update.raw");
+    }, 
+    updateToNormalize: function(svg){
+        this._updateValue(SVGStage.normalize, svg);
+        this.set("normalize", svg);
+        this.trigger("*svg.update.normalize");
+    }, 
+    updateToFilled: function(svg){
+        this._updateValue(SVGStage.filled, svg);
+        this.trigger("*svg.update.filled");
+    }, 
+});
+
+var PreviewImageStore = Backbone.Model.extend({
+    defaults: {
+        data: null, //base64
+        stage: PreviewStage.empty
+    }, 
+    beforeRendering: function(){
+        this.set("stage", PreviewStage.before);
+        this.trigger("*preview.update.loading");
+    }, 
+    cancelRendering: function(){
+        this.set("stage", PreviewStage.after);
+        this.trigger("*preview.update.cancel");
+    }, 
+    startRendering: function(imgdata){
+        this.set("stage", PreviewStage.rendering);
+        this.set("data", imgdata)
+        this.trigger("*preview.update.rendering")
+    }, 
+    afterRendering: function(){
+        this.set("stage", PreviewStage.after);
+        this.trigger("*preview.update.rendered");
+    }
+})
+
+var TemplateVarStore = Backbone.Model.extend({
+    defaults: {
+        vars: [], 
+        values: {} // change to model, iff auto redrawing image after each change values of one.
+    }
+});
+
+var ApiCommunicationGateWay = function(opts){
+    this.apis = opts.apis;
+    if (!this.apis) throw "opts.apis is not found";
+    this.models = opts.models;
+    if (!this.models) throw "opts.models is not found";
+    this.initialize();
+};
+
+_.extend(ApiCommunicationGateWay.prototype, { // view?
+    initialize: function(){
+        this.preview = this.models.preview;
+        this.svg = this.models.svg;
+        this.svg.on("*svg.update.raw", this.svgRawToX, this);
+        this.svg.on("*svg.update.normalize", this.svgNormalizeToX, this);
+        this.svg.on("*svg.update.filled", this.svgFilledToX, this);
+    }, 
+    _apiFail: function(s, err){
+        alert(s.responseText);
+        this.preview.cancelRendering();
+    }, 
+    svgRawToX: function(){
+        this.preview.beforeRendering();
+        var self = this;
+        return $.get(this.apis.normalize, {"svg": this.models.svg.get("data")})
+            .pipe(ApiDeferredService.rejectIfStatusFail(function(data){
+                self.svg.updateToNormalize(data.data);
+            }))
+            .fail(this._apiFail);
+    }, 
+    svgNormalizeToX: function(){
+        this.preview.beforeRendering();
+        var self = this;
+        return $.get(this.apis.previewbase64, {"svg": this.models.svg.get("data")})
+            .pipe(ApiDeferredService.rejectIfStatusFail(function(data){
+                self.preview.startRendering("data:image/png;base64,"+data.data); //add-hoc
+            }))
+            .fail(this._apiFail);
+    }
+})
+
 /// viewmodels
+var PreviewImageViewModel = Backbone.View.extend({
+    draw: function(imgdata){
+        this.$el.empty();
+        this.$el.append($("<img title='preview' alt='preview todo upload file'>").attr("src", imgdata));
+    }
+});
+
 var DropAreaViewModel = Backbone.View.extend({ //View?
     touched: function(){
         this.$el.addClass("touched");
@@ -84,49 +175,59 @@ var DropAreaViewModel = Backbone.View.extend({ //View?
     }, 
 });
 
+var LoadingSpinnerViewModel = Backbone.View.extend({
+    loading: function(){
+        this.$el.spinner("start");
+    }, 
+    noloading: function(){
+        this.$el.spinner("stop");
+    }
+});
 
 /// views
 var DragAndDropSVGSupportView = Backbone.View.extend({
   events: {
   }, 
   initialize: function(opts){
-      this.message = opts.message || ConsoleMessage;
-      this.vms = opts.vms || {};
-      this.apis = opts.apis || {};
-      var compose = DragAndDropSupportService.compose, 
-          default_action_cancel = DragAndDropSupportService.cancel;
-
+      this.vms = opts.vms || {}
+      var compose = DragAndDropSupportService.compose;
+      var default_action_cancel = DragAndDropSupportService.cancel;
+      
       this.el.addEventListener("dragenter", default_action_cancel, false);
-      this.el.addEventListener('dragover',  compose(default_action_cancel, this.vms.drop_area.touched.bind(this.vms.drop_area)), false);
-      this.el.addEventListener('dragleave', compose(default_action_cancel, this.vms.drop_area.untouched.bind(this.vms.drop_area)), false);
+      this.el.addEventListener('dragover',  compose(default_action_cancel, this.vms.droparea.touched.bind(this.vms.droparea)), false);
+      this.el.addEventListener('dragleave', compose(default_action_cancel, this.vms.droparea.untouched.bind(this.vms.droparea)), false);
       this.el.addEventListener('drop',
-                                compose(default_action_cancel,
-                                        this.vms.drop_area.untouched.bind(this.vms.drop_area), 
-                                        DragAndDropSupportService.onDrop(this.onLoadSVG.bind(this))),
-                                false);
+                               compose(default_action_cancel,
+                                       this.vms.droparea.untouched.bind(this.vms.droparea), 
+                                       DragAndDropSupportService.onDrop(this.onLoadSVG.bind(this))),
+                               false);
   }, 
   _onLoadSVGPassed: function(svg){
-      var $loading = $("#loading_area");
-      $loading.spinner("start");
-      var self = this;
-
-      return $.get(this.apis.normalize, {"svg": svg})
-          .pipe(DeferredChainService.rejectIfStatusFail(function(data){return $.get(self.apis.previewbase64, {"svg": data.data});}))
-          .pipe(DeferredChainService.rejectIfStatusFail(function(data){return data;}))
-          .fail(function(s,err){alert(s.responseText); $loading.spinner("stop");})
-          .done(function(data){
-              var $preview = $("#preview_area");
-              $preview.empty();
-              $preview.append($("<img title='preview' alt='preview todo upload file'>").attr("src", "data:image/png;base64,"+data.data));
-              $loading.spinner("stop");
-          });
+      this.vms.spinner.loading();
+      return this.model.updateToRaw(svg);
   }, 
   onLoadSVG: function(e){
       return this._onLoadSVGPassed(e.target.result)
   }
 });
 
-var NormalizeSVGCommunicationView = Backbone.View.extend({
+var PreviewImageView = Backbone.View.extend({
+    initialize: function(opts){
+        this.model.on("*preview.update.loading", this.onLoading, this);
+        this.model.on("*preview.update.loading", this.onCancel, this);
+        this.model.on("*preview.update.rendering", this.onRendering, this);
+        this.vms = opts.vms;
+    }, 
+    onLoading: function(){
+        this.vms.spinner.loading();
+    }, 
+    onCancel: function(){
+        this.vms.spinner.noloading();
+    }, 
+    onRendering: function(){
+        this.vms.spinner.noloading();
+        this.vms.preview.draw(this.model.get("data"));
+    }
 });
 
 var RenderingSVGCommunicationView = Backbone.View.extend({

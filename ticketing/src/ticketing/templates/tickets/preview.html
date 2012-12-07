@@ -108,13 +108,23 @@
 <script type="text/javascript" src="${request.static_url("ticketing:static/js/altair/spinner.js")}"></script>
 <script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/preview/app.js")}"></script>
 <script type="text/javascript">
-  var apis = {
-    normalize: "${request.route_path("tickets.preview.api", action="normalize")}",
-    previewbase64:"${request.route_path("tickets.preview.api",action="preview.base64")}"
-  }
+  $(function(){
   var droparea = document.getElementById("svg_droparea");
   var droparea_vm = new DropAreaViewModel({el: droparea});
-  var dad_view = new DragAndDropSVGSupportView({el: droparea, apis: apis, vms:{drop_area: droparea_vm}});
+
+  var svg = new SVGStore();
+  var preview = new PreviewImageStore();
+  var gateway = new ApiCommunicationGateWay({models: {svg: svg, preview: preview}, apis: ${apis|n}});
+
+  var view_models = {
+    preview: new PreviewImageViewModel({el: $("#preview_area")}),
+    droparea: new DropAreaViewModel({el: $("#svg_droparea")}),
+    spinner: new LoadingSpinnerViewModel({el: $("#preview_area")})
+  };
+  var dad_view = new DragAndDropSVGSupportView({el: droparea, vms: view_models, model: svg});
+  var preview_image_view = new PreviewImageView({el: $("#preview_area"), vms: view_models, model: preview});
+
+  })
 </script>
 
       <div class="foo"></div>

@@ -632,7 +632,11 @@ class QRReaderViewDemo(BaseView):
 @view_config(route_name="tickets.preview", request_method="GET", renderer="ticketing:templates/tickets/preview.html", 
              decorator=with_bootstrap)
 def preview_ticket(context, request):
-    return {}
+    apis = {
+        "normalize": request.route_path("tickets.preview.api", action="normalize"), 
+        "previewbase64": request.route_path("tickets.preview.api",action="preview.base64")
+        }
+    return {"apis": json.dumps(apis)}
 
 @view_config(route_name="tickets.preview", request_method="POST", 
              request_param="svgfile")
