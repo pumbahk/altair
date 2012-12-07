@@ -99,28 +99,27 @@ var DragAndDropSVGSupportView = Backbone.View.extend({
       var self = this;
 
       return $.get(this.apis.normalize, {"svg": svg})
-          .done(function(data){
-              if(!data.status){
-                  alert(data.message);
-                  $loading.spinner("stop");
-              }
-              $.get(self.apis.previewbase64, {"svg": data.data})
-                  .done(function(data){
-                      if(!data.status){
-                          $loading.spinner("stop"); 
-                          return;
-                      }
-                      var $preview = $("#preview_area");
-                      $preview.empty();
-                      $preview.append($("<img title='preview' alt='preview todo upload file'>").attr("src", "data:image/png;base64,"+data.data));
-                      $loading.spinner("stop");
-                  })
-                  .fail(function(s,err){
-                      alert(s.responseText);
-                      $loading.spinner("stop");
-                  });
+          .pipe(function(data){
+             if (data && data.status){
+                 return $.get(self.apis.previewbase64, {"svg": data.data});
+             }else {
+                 return $.Deferred().rejectWith(this, [{responseText: data.message}]);
+             }
           })
-          .fail(function(s,err){alert(s.responseText); $loading.spinner("stop");});
+          .pipe(function(data){
+              if (data && data.status){
+                  return data;
+              }else{
+                  return $.Deferred().rejectWith(this, [{responseText: data.message}]);
+              }
+          })
+          .fail(function(s,err){alert(s.responseText); $loading.spinner("stop");})
+          .done(function(data){
+              var $preview = $("#preview_area");
+              $preview.empty();
+              $preview.append($("<img title='preview' alt='preview todo upload file'>").attr("src", "data:image/png;base64,"+data.data));
+              $loading.spinner("stop");
+          });
   }, 
   onLoadSVG: function(e){
       return this._onLoadSVGPassed(e.target.result)
