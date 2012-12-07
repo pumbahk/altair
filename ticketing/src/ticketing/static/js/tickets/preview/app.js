@@ -8,7 +8,7 @@ var ApiDeferredService = {
             if (data && data.status){
                 return fn? fn(data) : data;
             }else {
-                return $.Deferred().rejectWith(this, [{responseText: "status: false, "+data.message}]);
+                return $.Deferred().rejectWith(this, [{responseText: "status: false, "+data.message+arguments[0]}, ]);
             }
         };
     }, 
@@ -36,7 +36,7 @@ var DragAndDropSupportService = {
           var reader = new FileReader();
 
           reader.onerror = function(e){ 
-           alert('Error code: ' + e.target.error.code);
+           console.warn('Error code: ' + e.target.error.code);
           }
 
           reader.onload = (function(aFile){
@@ -152,46 +152,59 @@ _.extend(ApiCommunicationGateWay.prototype, { // view?
         this.svg.on("*svg.update.filled", this.svgFilledToX, this);
     }, 
     _apiFail: function(s, err){
-        alert(s.responseText);
+        console.warn(s.responseText, arguments);
         this.preview.cancelRendering();
     }, 
     svgRawToX: function(){
         this.preview.beforeRendering();
         var self = this;
-        return $.get(this.apis.normalize, {"svg": this.models.svg.get("data")})
+        return $.post(this.apis.normalize, {"svg": this.models.svg.get("data")})
             .pipe(ApiDeferredService.rejectIfStatusFail(function(data){
                 self.svg.updateToNormalize(data.data);
             }))
-            .fail(this._apiFail);
+            .fail(this._apiFail.bind(this));
     }, 
     svgNormalizeToX: function(){
         this.preview.beforeRendering();
         var self = this;
-        return $.get(this.apis.previewbase64, {"svg": this.models.svg.get("data")})
+        return $.post(this.apis.previewbase64, {"svg": this.models.svg.get("data")})
             .pipe(ApiDeferredService.rejectIfStatusFail(function(data){
                 self.preview.startRendering("data:image/png;base64,"+data.data); //add-hoc
             }))
-            .fail(this._apiFail);
+            .fail(this._apiFail.bind(this));
     }, 
     collectTemplateVars: function(){ // todo:move it?
         var self = this;
-        $.get(this.apis.collectvars, {"svg": this.models.svg.get("normalize")})
+        $.post(this.apis.collectvars, {"svg": this.models.svg.get("normalize")})
             .pipe(ApiDeferredService.rejectIfStatusFail(function(data){
                 self.vars.updateVars(data.data);
             }))
-            .fail(this._apiFail);
+            .fail(this._apiFail.bind(this));
     }
 })
 
 /// viewmodels
-var PreviewImageViewModel = Backbone.View.extend({
+var ViewModel = function(options){
+    this.cid = _.uniqueId("viewmodel");
+    this.model = options.model;
+    this.el = options.el;
+    this.$el = $(this.el);
+    this.initialize.apply(this, arguments);
+}
+ViewModel.extend = Backbone.Model.extend
+_.extend(ViewModel.prototype, Backbone.Events, {
+    initialize: function(){}
+});
+
+
+var PreviewImageViewModel = ViewModel.extend({
     draw: function(imgdata){
         this.$el.empty();
         this.$el.append($("<img title='preview' alt='preview todo upload file'>").attr("src", imgdata));
     }
 });
 
-var DropAreaViewModel = Backbone.View.extend({ //View?
+var DropAreaViewModel = ViewModel.extend({ //View?
     touched: function(){
         this.$el.addClass("touched");
     }, 
@@ -200,7 +213,7 @@ var DropAreaViewModel = Backbone.View.extend({ //View?
     }, 
 });
 
-var LoadingSpinnerViewModel = Backbone.View.extend({
+var LoadingSpinnerViewModel = ViewModel.extend({
     loading: function(){
         this.$el.spinner("start");
     }, 
@@ -219,7 +232,7 @@ var TemplateVarRowViewModel = Backbone.View.extend({
     }
 });
 
-var TemplateVarsTableViewModel = Backbone.View.extend({
+var TemplateVarsTableViewModel = ViewModel.extend({
     initialize: function(){
         this.$tbody = this.$el.find("tbody");
         this.inputs = [];

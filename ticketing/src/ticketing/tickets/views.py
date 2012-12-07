@@ -657,7 +657,7 @@ def preview_ticket_post(context, request):
 """
 raw svg -> normalize svg -> base64 png
 """
-@view_defaults(route_name="tickets.preview.api", request_method="GET", renderer="json")
+@view_defaults(route_name="tickets.preview.api", request_method="POST", renderer="json")
 class PreviewApiView(object):
     def __init__(self, context, request):
         self.context = context
@@ -666,7 +666,7 @@ class PreviewApiView(object):
     @view_config(match_param="action=normalize", request_param="svg")
     def preview_api_normalize(self):
         try:
-            svgio = StringIO(unicode(self.request.GET["svg"]).encode("utf-8")) #unicode only
+            svgio = StringIO(unicode(self.request.POST["svg"]).encode("utf-8")) #unicode only
             cleaner = get_validated_svg_cleaner(svgio, exc_class=Exception)
             svgio = cleaner.get_cleaned_svgio()
             return {"status": True, "data": svgio.getvalue()}
@@ -675,7 +675,7 @@ class PreviewApiView(object):
 
     @view_config(match_param="action=collectvars", request_param="svg")
     def preview_collectvars(self):
-        svg = self.request.GET["svg"]
+        svg = self.request.POST["svg"]
         try:
             return {"status": True, "data": list(sorted(template_collect_vars(svg)))}
         except Exception, e:
@@ -683,16 +683,16 @@ class PreviewApiView(object):
 
     @view_config(match_param="action=fillvalues", request_param="svg")
     def preview_fillvalus(self):
-        svg = self.request.GET["svg"]
+        svg = self.request.POST["svg"]
         try:
-            params = self.request.GET["params"]
+            params = self.request.POST["params"]
             return {"status": True, "data": template_fillvalues(svg, params)}
         except Exception, e:
             return {"status": False, "message": str(e)}
     @view_config(match_param="action=preview.base64", request_param="svg")
     def preview_ticket_post64(self):
         preview = SVGPreviewCommunication.get_instance(self.request)
-        svg = self.request.GET["svg"]
+        svg = self.request.POST["svg"]
         try:
             imgdata_base64 = preview.communicate(self.request, svg)
             return {"status": True, "data":imgdata_base64}
