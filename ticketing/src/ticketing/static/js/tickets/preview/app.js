@@ -8,7 +8,7 @@ var ApiDeferredService = {
             if (data && data.status){
                 return fn? fn(data) : data;
             }else {
-                return $.Deferred().rejectWith(this, [{responseText: data.message}]);
+                return $.Deferred().rejectWith(this, [{responseText: "status: false, "+data.message}]);
             }
         };
     }, 
@@ -60,7 +60,7 @@ var ConsoleMessage = { //use info, log, warn, error, dir
 
 /// models
 var SVGStage = {"empty":0, "raw":1, "normalize":2, "filled":3};
-var PreviewStage = {"empty": 0, "before":1, "rendering":2, "after": 3}
+var PreviewStage = {"empty": 0, "before":1, "rendering":2, "after": 3};
 var SVGStore = Backbone.Model.extend({
     defaults:{
         data: null, 
@@ -111,10 +111,24 @@ var PreviewImageStore = Backbone.Model.extend({
     }
 })
 
+var TemplateVar = Backbone.Model.extend({
+    defaults: {
+        name: null, 
+        value: null
+    }
+});
+var TemplateVarCollection = Backbone.Collection.extend({
+    model: TemplateVar
+});
 var TemplateVarStore = Backbone.Model.extend({
     defaults: {
-        vars: [], 
-        values: {} // change to model, iff auto redrawing image after each change values of one.
+        vars: new TemplateVarCollection(),  //collection
+    }, 
+    updateVars: function(vars){
+        this.get("vars").reset(_(vars).map(function(k){
+            return {name: k, value: ""};
+        }));
+        this.trigger("*vars.update.vars");
     }
 });
 
@@ -130,8 +144,11 @@ _.extend(ApiCommunicationGateWay.prototype, { // view?
     initialize: function(){
         this.preview = this.models.preview;
         this.svg = this.models.svg;
+        this.vars = this.models.vars;
+
         this.svg.on("*svg.update.raw", this.svgRawToX, this);
         this.svg.on("*svg.update.normalize", this.svgNormalizeToX, this);
+        this.svg.on("*svg.update.normalize", this.collectTemplateVars, this);
         this.svg.on("*svg.update.filled", this.svgFilledToX, this);
     }, 
     _apiFail: function(s, err){
@@ -153,6 +170,14 @@ _.extend(ApiCommunicationGateWay.prototype, { // view?
         return $.get(this.apis.previewbase64, {"svg": this.models.svg.get("data")})
             .pipe(ApiDeferredService.rejectIfStatusFail(function(data){
                 self.preview.startRendering("data:image/png;base64,"+data.data); //add-hoc
+            }))
+            .fail(this._apiFail);
+    }, 
+    collectTemplateVars: function(){ // todo:move it?
+        var self = this;
+        $.get(this.apis.collectvars, {"svg": this.models.svg.get("normalize")})
+            .pipe(ApiDeferredService.rejectIfStatusFail(function(data){
+                self.vars.updateVars(data.data);
             }))
             .fail(this._apiFail);
     }
@@ -181,6 +206,33 @@ var LoadingSpinnerViewModel = Backbone.View.extend({
     }, 
     noloading: function(){
         this.$el.spinner("stop");
+    }
+});
+
+var TemplateVarRowViewModel = Backbone.View.extend({
+    tagName: "tr", 
+    className: "vars-row", 
+    template: _.template('<td><%- name %></td><td><input name="<%- name %>" value="<%- value %>"></input></td>'), 
+    render: function(){
+        this.$el.html(this.template(this.model.toJSON())); //redraw is inefficient. todo: fix
+        return this;
+    }
+});
+
+var TemplateVarsTableViewModel = Backbone.View.extend({
+    initialize: function(){
+        this.$tbody = this.$el.find("tbody");
+        this.inputs = [];
+    }, 
+    redraw: function(vars){
+        this.inputs = [];
+        this.$tbody.empty();
+        _(vars).each(this.addOne.bind(this));
+    }, 
+    addOne: function(v){
+        var row = new TemplateVarRowViewModel({model: v});
+        this.inputs.push(row);
+        this.$tbody.append(row.render().el);
     }
 });
 
@@ -230,7 +282,14 @@ var PreviewImageView = Backbone.View.extend({
     }
 });
 
-var RenderingSVGCommunicationView = Backbone.View.extend({
+var TemplateFillValuesView = Backbone.View.extend({
+    initialize: function(opts){
+        this.model.on("*vars.update.vars", this.onUpdateTemplateVars, this);
+        this.vms = opts.vms;
+    }, 
+    onUpdateTemplateVars: function(){
+        this.vms.vars_input.redraw(this.model.get("vars").models);
+    }
 });
 
 var ManagementTemplateValuesView = Backbone.View.extend({

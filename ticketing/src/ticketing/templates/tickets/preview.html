@@ -75,31 +75,10 @@
   </div>
 </div>
 
-<table class="table" style="margin-left:20px; margin-top:20px">
+<table id="template_vars_table" class="table" style="margin-left:20px; margin-top:20px">
   <thead>
   </thead>
     <tbody>
-      <tr><td>開催日</td><td><input name="heh" placeholder="xxxx"/></td>
-      <td>開催日s</td><td><input name="heh" placeholder="xxxx"/></td></tr>
-      <tr><td>開始時刻s</td><td><input name="heh" placeholder="xxxx"/></td>
-        <td>会場名</td><td><input name="heh" placeholder="xxxx"/></td></tr>
-      <tr><td>チケット価格</td><td><input name="heh" placeholder="xxxx"/></td>
-      <td>商品名</td><td><input name="heh" placeholder="xxxx"/></td></tr>
-      <tr><td>席番</td><td><input name="heh" placeholder="xxxx"/></td>
-      <td>aux.販売区分</td><td><input name="heh" placeholder="xxxx"/></td></tr>
-      <tr><td>注文番号</td><td><input name="heh" placeholder="xxxx"/></td>
-      <td>注文日時s</td><td><input name="heh" placeholder="xxxx"/></td></tr>
-      <tr><td>aux.会場アクセス</td><td><input name="heh" placeholder="xxxx"/></td>
-      <td>席番</td><td><input name="heh" placeholder="xxxx"/></td></tr>
-      <tr><td>チケット価格</td><td><input name="heh" placeholder="xxxx"/></td>
-      <td>会場名</td><td><input name="heh" placeholder="xxxx"/></td></tr>
-      <tr><td>商品名</td><td><input name="heh" placeholder="xxxx"/></td>
-      <td>対戦名</td><td><input name="heh" placeholder="xxxx"/></td></tr>
-      <tr><td>開場時刻s</td><td><input name="heh" placeholder="xxxx"/></td>
-      <td>開始時刻s</td><td><input name="heh" placeholder="xxxx"/></td></tr>
-      <tr><td>注文番号</td><td><input name="heh" placeholder="xxxx"/></td>
-      <td>aux.販売区分</td><td><input name="heh" placeholder="xxxx"/></td></tr>
-      <tr><td>aux.マッチナンバー</td><td><input name="heh" placeholder="xxxx"/></td></tr>
     </tbody>
 </table>
 
@@ -109,30 +88,23 @@
 <script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/preview/app.js")}"></script>
 <script type="text/javascript">
   $(function(){
-  var droparea = document.getElementById("svg_droparea");
-  var droparea_vm = new DropAreaViewModel({el: droparea});
+  droparea = document.getElementById("svg_droparea");
 
-  var svg = new SVGStore();
-  var preview = new PreviewImageStore();
-  var gateway = new ApiCommunicationGateWay({models: {svg: svg, preview: preview}, apis: ${apis|n}});
+  svg = new SVGStore();
+  preview = new PreviewImageStore();
+  vars = new TemplateVarStore();
+  gateway = new ApiCommunicationGateWay({models: {svg: svg, preview: preview, vars: vars}, apis: ${apis|n}});
 
-  var view_models = {
+  view_models = {
     preview: new PreviewImageViewModel({el: $("#preview_area")}),
     droparea: new DropAreaViewModel({el: $("#svg_droparea")}),
-    spinner: new LoadingSpinnerViewModel({el: $("#preview_area")})
+    spinner: new LoadingSpinnerViewModel({el: $("#preview_area")}),
+    vars_input: new TemplateVarsTableViewModel({el: $("#template_vars_table")})
   };
-  var dad_view = new DragAndDropSVGSupportView({el: droparea, vms: view_models, model: svg});
-  var preview_image_view = new PreviewImageView({el: $("#preview_area"), vms: view_models, model: preview});
 
-  })
-</script>
-
-      <div class="foo"></div>
-      <div class="foo"></div>
-      <div class="foo"></div>
-      <script type="text/javascript">
-$(".foo").spinner();
-setTimeout(function(){ $(".foo").spinner("stop"); }, 2000);
-setTimeout(function(){ $(".foo").spinner("stop"); }, 2000);
-$("#loading_area").spinner("start");
+  dad_view = new DragAndDropSVGSupportView({el: droparea, vms: view_models, model: svg});
+  preview_image_view = new PreviewImageView({el: $("#preview_area"), vms: view_models, model: preview});
+  template_fillvalues_view = new TemplateFillValuesView({el: $("#template_vars_table"), vms: view_models, model: vars});
+  window.view_models = view_models;
+  });
 </script>

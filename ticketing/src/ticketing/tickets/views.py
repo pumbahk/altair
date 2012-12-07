@@ -634,7 +634,8 @@ class QRReaderViewDemo(BaseView):
 def preview_ticket(context, request):
     apis = {
         "normalize": request.route_path("tickets.preview.api", action="normalize"), 
-        "previewbase64": request.route_path("tickets.preview.api",action="preview.base64")
+        "previewbase64": request.route_path("tickets.preview.api", action="preview.base64"), 
+        "collectvars": request.route_path("tickets.preview.api", action="collectvars")
         }
     return {"apis": json.dumps(apis)}
 
@@ -676,7 +677,7 @@ class PreviewApiView(object):
     def preview_collectvars(self):
         svg = self.request.GET["svg"]
         try:
-            return {"status": True, "data": template_collect_vars(svg)}
+            return {"status": True, "data": list(sorted(template_collect_vars(svg)))}
         except Exception, e:
             return {"status": False, "message": str(e)}
 
