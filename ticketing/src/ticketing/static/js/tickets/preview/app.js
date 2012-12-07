@@ -2,6 +2,7 @@
 // require altair/deferredqueue.js
 
 /// services
+
 var ApiDeferredService = {
     rejectIfStatusFail: function(fn){
         return function(data){
@@ -200,7 +201,9 @@ _.extend(ViewModel.prototype, Backbone.Events, {
 var PreviewImageViewModel = ViewModel.extend({
     draw: function(imgdata){
         this.$el.empty();
-        this.$el.append($("<img title='preview' alt='preview todo upload file'>").attr("src", imgdata));
+        var preview_img = $("<img title='preview' alt='preview todo upload file'>").attr("src", imgdata);
+        this.$el.append(preview_img);
+        this.$el.parents(".empty").removeClass("empty");
     }
 });
 
@@ -222,34 +225,50 @@ var LoadingSpinnerViewModel = ViewModel.extend({
     }
 });
 
-var TemplateVarRowViewModel = Backbone.View.extend({
-    tagName: "tr", 
-    className: "vars-row", 
-    template: _.template('<td><%- name %></td><td><input name="<%- name %>" value="<%- value %>"></input></td>'), 
-    render: function(){
-        this.$el.html(this.template(this.model.toJSON())); //redraw is inefficient. todo: fix
-        return this;
-    }
-});
-
 var TemplateVarsTableViewModel = ViewModel.extend({
     initialize: function(){
         this.$tbody = this.$el.find("tbody");
         this.inputs = [];
     }, 
+    emptyInfoTemplate: _.template('<td><div class="alert alert-info"><%= message %></div></td>'), 
+
     redraw: function(vars){
         this.inputs = [];
         this.$tbody.empty();
-        _(vars).each(this.addOne.bind(this));
+        if(vars.length <= 0){
+            return this.addEmptyInfo();
+        }
+        for(var i=0, size=vars.length; i<size; i+=2){
+            this.addRow(vars[i], vars[i+1]);
+        };
     }, 
-    addOne: function(v){
-        var row = new TemplateVarRowViewModel({model: v});
+    addRow: function(left, right){
+        var row = new TemplateVarRowView({left:left, right:right});
         this.inputs.push(row);
         this.$tbody.append(row.render().el);
+    }, 
+    addEmptyInfo: function(){
+        var message = "この券面テンプレートには プレースホルダーが設定されていません";
+        this.$tbody.append($("<tr>").html(this.emptyInfoTemplate({"message": message})));
     }
 });
 
 /// views
+var TemplateVarRowView = Backbone.View.extend({
+    tagName: "tr", 
+    className: "vars-row", 
+    template: _.template('<td><%- name %></td><td><input name="<%- name %>" value="<%- value %>" placeholder="ここに文字を入力してください"></input></td>'), 
+    initialize: function(opts){
+        this.left = opts.left;
+        if(!this.left) throw "opts.left is not found";
+        this.right = opts.right;
+    }, 
+    render: function(){
+        this.$el.html(this.template(this.left.toJSON()) + ((!!this.right) ? this.template(this.right.toJSON()) : ""));
+        return this;
+    }
+});
+
 var DragAndDropSVGSupportView = Backbone.View.extend({
   events: {
   }, 
