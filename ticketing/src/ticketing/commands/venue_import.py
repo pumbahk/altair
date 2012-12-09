@@ -371,7 +371,10 @@ def import_or_update_svg(env, update, organization_name, file, venue_id, dry_run
             transaction.commit()
     except:
         transaction.abort()
+<<<<<<< HEAD
         raise
+=======
+>>>>>>> master
  
 def main():
     ld_install()
