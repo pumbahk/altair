@@ -687,29 +687,28 @@ class PaymentView(object):
             #user=user, user_profile=user.user_profile,
             )
 
-    # ClientFormに移動
-    # def get_validated_address_data(self):
-    #     """フォームから ShippingAddress などの値を取りたいときはこれで"""
-    #     form = self.form
-    #     if form.validate():
-    #         return dict(
-    #             first_name=form.data['first_name'],
-    #             last_name=form.data['last_name'],
-    #             first_name_kana=form.data['first_name_kana'],
-    #             last_name_kana=form.data['last_name_kana'],
-    #             zip=form.data['zip'],
-    #             prefecture=form.data['prefecture'],
-    #             city=form.data['city'],
-    #             address_1=form.data['address_1'],
-    #             address_2=form.data['address_2'],
-    #             country=u"日本国",
-    #             email=form.data['mail_address'],
-    #             tel_1=form.data['tel'],
-    #             tel_2=None,
-    #             fax=form.data['fax']
-    #             )
-    #     else:
-    #         return None
+    def get_validated_address_data(self):
+        """フォームから ShippingAddress などの値を取りたいときはこれで"""
+        form = self.form
+        if form.validate():
+            return dict(
+                first_name=form.data['first_name'],
+                last_name=form.data['last_name'],
+                first_name_kana=form.data['first_name_kana'],
+                last_name_kana=form.data['last_name_kana'],
+                zip=form.data['zip'],
+                prefecture=form.data['prefecture'],
+                city=form.data['city'],
+                address_1=form.data['address_1'],
+                address_2=form.data['address_2'],
+                country=u"日本国",
+                email=form.data['mail_address'],
+                tel_1=form.data['tel'],
+                tel_2=None,
+                fax=form.data['fax']
+                )
+        else:
+            return None
 
     def _validate_extras(self, cart, payment_delivery_pair, shipping_address_params):
         if not payment_delivery_pair or shipping_address_params is None:
@@ -741,7 +740,7 @@ class PaymentView(object):
         payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter_by(id=payment_delivery_method_pair_id).first()
 
         self.form = schemas.ClientForm(formdata=self.request.params)
-        shipping_address_params = self.form.get_validated_address_data()
+        shipping_address_params = self.get_validated_address_data()
         if not self._validate_extras(cart, payment_delivery_pair, shipping_address_params):
             start_on = cart.performance.start_on
             payment_delivery_methods = self.context.get_payment_delivery_method_pair(start_on=start_on)
@@ -753,7 +752,7 @@ class PaymentView(object):
         cart.payment_delivery_pair = payment_delivery_pair
         cart.system_fee = payment_delivery_pair.system_fee
 
-        shipping_address = self.form.create_shipping_address(user, shipping_address_params)
+        shipping_address = self.create_shipping_address(user, shipping_address_params)
 
         # DBSession.add(shipping_address) # いらない
         cart.shipping_address = shipping_address
@@ -800,26 +799,25 @@ class PaymentView(object):
     def get_client_name(self):
         return self.request.params['last_name'] + self.request.params['first_name']
 
-    # == ClientFormに移動 ==
-    # def create_shipping_address(self, user, data):
-    #     logger.debug('shipping_address=%r', data)
-    #     return c_models.ShippingAddress(
-    #         first_name=data['first_name'],
-    #         last_name=data['last_name'],
-    #         first_name_kana=data['first_name_kana'],
-    #         last_name_kana=data['last_name_kana'],
-    #         zip=data['zip'],
-    #         prefecture=data['prefecture'],
-    #         city=data['city'],
-    #         address_1=data['address_1'],
-    #         address_2=data['address_2'],
-    #         country=data['country'],
-    #         email=data['email'],
-    #         tel_1=data['tel_1'],
-    #         tel_2=data['tel_2'],
-    #         fax=data['fax'],
-    #         user=user
-    #     )
+    def create_shipping_address(self, user, data):
+        logger.debug('shipping_address=%r', data)
+        return c_models.ShippingAddress(
+            first_name=data['first_name'],
+            last_name=data['last_name'],
+            first_name_kana=data['first_name_kana'],
+            last_name_kana=data['last_name_kana'],
+            zip=data['zip'],
+            prefecture=data['prefecture'],
+            city=data['city'],
+            address_1=data['address_1'],
+            address_2=data['address_2'],
+            country=data['country'],
+            email=data['email'],
+            tel_1=data['tel_1'],
+            tel_2=data['tel_2'],
+            fax=data['fax'],
+            user=user
+        )
 
 class ConfirmView(object):
     """ 決済確認画面 """
