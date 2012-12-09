@@ -9,7 +9,7 @@
   <tr>
     <th>${form.kind.label.text}</th>
     <% kind = [v for k, v in form.kind.choices if k == sales_segment.kind] %>
-    <td id="kind" value="${sales_segment.kind}">${kind.pop() or ''}</td>
+    <td id="kind" value="${sales_segment.kind}">${kind and kind.pop() or ''}</td>
   </tr>
   <tr>
     <th>${form.name.label.text}</th>

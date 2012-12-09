@@ -33,12 +33,12 @@
   <form class="form-horizontal" action="${route_path}" method="POST">
     <fieldset>
       ${h.form_item(form.id)}
-      ${h.form_item(form.shop_name, option={'class':'span5', 'maxlength':255})}
+      ${h.form_item(form.shop_name, class_='span5', maxlength=255)}
       ${h.form_item(form.shop_id)}
-      ${h.form_item(form.contact_01, option={'class':'span5', 'maxlength':255})}
-      ${h.form_item(form.contact_02, option={'class':'span5', 'maxlength':255})}
+      ${h.form_item(form.contact_01, class_='span5', maxlength=255)}
+      ${h.form_item(form.contact_02, class_='span5', maxlength=255)}
       ${h.form_item(form.api_key)}
-      ${h.form_item(form.inticket_api_url, option={'class':'span5'})}
+      ${h.form_item(form.inticket_api_url, class_='span5')}
     </fieldset>
     <div class="form-actions">
       <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">

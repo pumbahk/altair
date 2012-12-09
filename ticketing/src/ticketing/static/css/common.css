@@ -1,3 +1,11 @@
 .sidebar-nav {
   padding: 8px 8px 8px 8px;
 }
+
+.table td.price {
+  text-align: right;
+}
+
+.table td.numeric {
+  text-align: right;
+}

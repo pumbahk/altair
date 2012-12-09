@@ -1,0 +1,76 @@
+<%inherit file="/layout_2cols.html"/>
+<%namespace file="/common/helpers.html" name="h" />
+
+<script type="text/javascript">
+  $(function(){
+    $('.datetimefield').datetimepicker({dateFormat:'yy-mm-dd',timeFormat:'hh:mm'});
+  });
+</script>
+
+<script type="text/javascript">
+  function event_link(url){
+    //var params = limited_to=${form.limited_to.data}&limited_from=${form.limited_from.data};
+    var params = $('#limitation').serialize();
+    $(location).attr('href', url + '?' + params);
+  };
+</script>
+
+<div class="breadcrumbs">
+  ${h.breadcrumbs(
+      names=[u'トップ', u'レポート'],
+      urls=[request.route_path('index')]
+  )}
+</div>
+
+<div class="page-header">
+  <h2>売上レポート</h2>
+</div>
+
+<div class="content">
+  ${h.flash_messages(request)}
+</div>
+
+<form id="limitation" action="${request.route_path('sales_reports.index')}" method="POST">
+  <div class="control-group">
+    <div class="controls">
+      <input class="datetimefield" style="width: 140px; vertical-align: middle; margin-bottom: 0px;" id="limited_from" name="limited_from" type="text" value="${h.safe_strftime(form.limited_from.data)}" placeholder="開始期限"> 〜
+      <input class="datetimefield" style="width: 140px; vertical-align: middle; margin-bottom: 0px;" id="limited_to" name="limited_to" type="text" value="${h.safe_strftime(form.limited_to.data)}" placeholder="終了期限">
+      <input type="submit" class="btn" value="集計期間を絞り込む" >
+    </div>
+  </div>
+</form>
+
+<table class="table table-striped table-bordered table-condensed">
+  <tr>
+    <th></th>
+    <th colspan=4>累計</th>
+    <th colspan=2>
+      % if form.limited_from.data or form.limited_to.data:
+      <h5>${h.safe_strftime(form.limited_from.data)} ~ ${h.safe_strftime(form.limited_to.data)}</h5>
+      % else:
+      <h5>開始から本日付け</h5>
+      % endif
+    </th>
+  </tr>
+  <tr>
+    <th>イベント名</th>
+    <th>配席数</th>
+    <th>残席数</th>
+    <th>販売枚数</th>
+    <th>販売金額</th>
+    <th>販売枚数</th>
+    <th>販売金額</th>
+  </tr>
+
+  % for event_report, event_total_report in zip(event_reports, event_total_reports):
+  <tr>
+    <td><a href='javascript:event_link("${request.route_path("sales_reports.event", event_id=event_report["id"])}");'}>${event_report['title']}</a></td>
+    <td class="numeric">${h.price_format(event_report['total_quantity'])}</td>
+    <td class="numeric">${h.price_format(event_report['vacant_quantity'])}</td>
+    <td class="numeric">${h.price_format(event_total_report['product_quantity'])}</td>
+    <td class="price">${h.price_format(event_total_report['price_amount'])}円</td>
+    <td class="numeric">${h.price_format(event_report['product_quantity'])}</td>
+    <td class="price">${h.price_format(event_report['price_amount'])}円</td>
+  </tr>
+  % endfor
+</table>

@@ -29,7 +29,7 @@ route_path=request.route_path("sales_segments.bind_membergroup", sales_segment_i
 <div class="well">
   <form id="edit" action="${route_path}" method="POST">
     <input type="hidden" name="redirect_to" value="${redirect_to}">
-    ${h.form_item(form.membergroups,option=dict(id="membergroups", style="height:%s" % form.membergroups_height))}
+    ${h.form_item(form.membergroups, id="membergroups", style="height:%s" % form.membergroups_height)}
     <div class="form-actions">
       <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">
     </div>

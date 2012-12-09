@@ -24,8 +24,8 @@
   <p>イベントを選んでから。対応する販売条件を選んでください</p>
   <form id="edit" action="${route_path}" method="POST">
     <input type="hidden" name="redirect_to" value="${redirect_to}">
-    ${h.form_item(form.event_id,option=dict(id="event_id"))}
-    ${h.form_item(form.salessegments,option=dict(id="salessegments", style="height:%s" % form.salessegments_height))}
+    ${h.form_item(form.event_id, id="event_id")}
+    ${h.form_item(form.salessegments, id="salessegments", style="height:%s" % form.salessegments_height)}
     <div class="form-actions">
       <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">
     </div>

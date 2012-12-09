@@ -146,22 +146,3 @@ PrintStatusPresenter.prototype = {
     });
   }
 };
-
-$.event.add(window, "load", function(){
-  var model = new PrintStatus(0);
-  var view = new PrintStatusAppView($("#printstatus_count"), $("input.printstatus"));
-  var urls = {
-    load: "${request.route_url('orders.api.printstatus', action='load')}", 
-    add: "${request.route_url('orders.api.printstatus', action='add')}", 
-    addall: "${request.route_url('orders.api.printstatus', action='addall')}", 
-    remove: "${request.route_url('orders.api.printstatus', action='remove')}", 
-    removeall: "${request.route_url('orders.api.printstatus', action='removeall')}", 
-    reset: "${request.route_url('orders.api.printstatus', action='reset')}"
-  }
-  var presenter = new PrintStatusPresenter(model, view, urls);
-  $("input.printstatus[type='checkbox']").on("change", presenter.on_check.bind(presenter));
-  $("#printstatus_reset").click(presenter.on_reset.bind(presenter));
-  $("#addall").click(presenter.on_addall.bind(presenter));
-  $("#removeall").click(presenter.on_removeall.bind(presenter));
-  presenter.on_load();
-});

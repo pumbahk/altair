@@ -36,7 +36,7 @@ from ticketing.operators.models import Operator, OperatorActionHistory, Operator
 from ticketing.bookmark.models import Bookmark
 from ticketing.sej.models import SejOrder, SejTicket, SejFile, SejNotification
 from ticketing.cart.models import Cart, CartedProduct, CartedProductItem
-from ticketing.cart.plugins.models import ReservedNumber
+from ticketing.payments.plugins.models import ReservedNumber
 from ticketing.multicheckout.models import MultiCheckoutRequestCard, MultiCheckoutResponseCard
 from ticketing.checkout.models import Checkout, CheckoutItem
 

@@ -98,4 +98,15 @@ public interface AppModel {
 	 */
 	public abstract GenericComboBoxModel<OurPageFormat> getPageFormats();
 
+
+	/* (non-Javadoc)
+	 * @see jp.ticketstar.ticketing.printing.gui.IAppWindowModel#getPrintingStatus()
+	 */
+	public abstract Boolean getPrintingStatus();
+
+	/* (non-Javadoc)
+	 * @see jp.ticketstar.ticketing.printing.gui.IAppWindowModel#setPrintingStatus()
+	 */
+	public abstract void setPrintingStatus(Boolean status);
+    
 }

@@ -52,9 +52,18 @@ function post_modal_form(modal, form, url) {
   });
 }
 
-function reset_form(form, exclude) {
+function reset_form(form, exclude, new_form) {
   exclude = exclude || '';
-  form.find(':input').not(exclude).each(function() {
+  new_form = new_form || false;
+  form.find(':input').each(function() {
+    var $this = $(this);
+    if (new_form && $this.attr('data-hide-on-new') == 'hide-on-new') {
+      $this.parent().parent().hide();
+    } else {
+      $this.parent().parent().show();
+    }
+    if (!$this.not(exclude).length)
+      return;
     switch(this.type) {
       case 'password':
       case 'select-multiple':
@@ -62,12 +71,14 @@ function reset_form(form, exclude) {
       case 'text':
       case 'textarea':
       case 'hidden':
-        $(this).val('');
+        $this.val('');
         break;
       case 'checkbox':
+        $this.removeAttr('checked');
+        break;
       case 'radio':
-        $(this).removeAttr('checked');
-        $(this).removeAttr('selected');
+        $this.removeAttr('selected');
+        break;
     }
   });
 }

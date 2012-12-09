@@ -42,7 +42,7 @@
         <fieldset>
           ${h.form_item(form.id)}
           ${h.form_item(form.organization_id)}
-          ${h.form_item(form.name, option={'class':'span5', 'maxlength':255})}
+          ${h.form_item(form.name, class_='span5', maxlength=255)}
           ${h.form_item(form.login_id)}
           % if request.matched_route.name == 'operators.new':
           ${h.form_item(form.password)}

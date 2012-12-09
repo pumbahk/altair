@@ -26,7 +26,8 @@ def main(global_conf, **settings):
 
     config.include('ticketing.checkout')
     config.include('ticketing.multicheckout')
-    config.include('ticketing.cart.plugins')
+    config.include('ticketing.payments')
+    config.include('ticketing.payments.plugins')
     config.include('ticketing.cart')
     config.include('ticketing.cart.import_mail_module')
     config.include("ticketing.qr")

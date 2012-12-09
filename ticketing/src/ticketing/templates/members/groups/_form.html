@@ -6,7 +6,7 @@
     ${form.membership_id}
     <input type="hidden" name="redirect_to" value="${redirect_to}">
     <fieldset>
-      ${h.form_item(form.name, option={'class':'span5', 'maxlength':255})}
+      ${h.form_item(form.name, class_='span5', maxlength=255)}
       ${h.form_item(form.is_guest)}
     </fieldset>
     <div class="form-actions">

@@ -348,7 +348,8 @@ class Cart(Base):
             seats = cart_product.pop_seats(seats, self.performance_id)
         # CartProductでseatsから必要な座席を取り出し
 
-    @deprecate("deprecated method")
+    #@deprecate("deprecated method") 
+    # 抽選から使う
     def add_products(self, ordered_products):
         for ordered_product, quantity in ordered_products:
             # ordered_productでCartProductを作成

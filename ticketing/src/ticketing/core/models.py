@@ -7,6 +7,10 @@ import json
 import re
 from urlparse import urljoin
 from datetime import datetime, date, timedelta
+import smtplib
+from email.MIMEText import MIMEText
+from email.Header import Header
+from email.Utils import formatdate
 
 from sqlalchemy import Table, Column, ForeignKey, func, or_, and_, event
 from sqlalchemy import ForeignKeyConstraint, UniqueConstraint, PrimaryKeyConstraint
@@ -19,8 +23,6 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import exists
 from sqlalchemy.sql.expression import asc, desc, exists, select, table, column
 from sqlalchemy.ext.associationproxy import association_proxy
-
-
 from pyramid.threadlocal import get_current_registry
 
 from .exceptions import *
@@ -595,6 +597,19 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             .filter(ProductItem.performance_id==self.id)
         return bool(qs.first())
 
+class ReportFrequencyEnum(StandardEnum):
+    Daily = 1
+    Weekly = 2
+
+class ReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__   = 'ReportSetting'
+    id = Column(Identifier, primary_key=True)
+    event_id = Column(Identifier, ForeignKey('Event.id', ondelete='CASCADE'), nullable=False)
+    event = relationship('Event', backref='report_setting')
+    operator_id = Column(Identifier, ForeignKey('Operator.id', ondelete='CASCADE'), nullable=False)
+    operator = relationship('Operator', backref='report_setting')
+    frequency = Column(Integer, nullable=True)
+
 class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Event'
 
@@ -679,7 +694,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 "organization_id": self.organization.id, 
                 }
 
-    def get_cms_data(self):
+    def get_cms_data(self, validation=True):
         '''
         CMSに連携するデータを生成する
         インターフェースのデータ構造は以下のとおり
@@ -723,10 +738,11 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         sales_end_on = isodate.datetime_isoformat(self.sales_end_on) if self.sales_end_on else ''
 
         # cmsでは日付は必須項目
-        if not (start_on and end_on) and not self.deleted_at:
-            raise Exception(u'パフォーマンスが登録されていないイベントは送信できません')
-        if not (sales_start_on and sales_end_on) and not self.deleted_at:
-            raise Exception(u'販売期間が登録されていないイベントは送信できません')
+        if validation:
+            if not (start_on and end_on) and not self.deleted_at:
+                raise Exception(u'パフォーマンスが登録されていないイベントは送信できません')
+            if not (sales_start_on and sales_end_on) and not self.deleted_at:
+                raise Exception(u'販売期間が登録されていないイベントは送信できません')
 
         # 論理削除レコードも含めて取得
         performances = DBSession.query(Performance, include_deleted=True).filter_by(event_id=self.id).all()
@@ -1131,7 +1147,7 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             product_item = [item for item in product.items if item.performance_id == performance.id]
             if not product_item:
                 # デフォルト(自社)のStockHolderに紐づける
-                stock_holders = StockHolder.get_seller(performance.event)
+                stock_holders = StockHolder.get_own_stock_holders(event=performance.event)
                 stock = Stock.filter_by(performance_id=performance.id)\
                              .filter_by(stock_type_id=product.seat_stock_type_id)\
                              .filter_by(stock_holder_id=stock_holders[0].id)\
@@ -1179,6 +1195,7 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     stocks = relationship('Stock', backref=backref('stock_type', order_by='StockType.display_order'))
 
     @property
+
     def is_seat(self):
         return self.type == StockTypeEnum.Seat.v
 
@@ -1274,11 +1291,13 @@ class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return filter(performance_filter, self.stocks)
 
     @staticmethod
-    def get_seller(event):
-        return StockHolder.filter(StockHolder.event_id==event.id)\
-                          .join(StockHolder.account)\
-                          .filter(Account.user_id==event.organization.user_id)\
-                          .order_by('StockHolder.id').all()
+    def get_own_stock_holders(event=None, user_id=None):
+        query = StockHolder.query.join(Account)
+        if event is not None:
+            query = query.filter(StockHolder.event_id==event.id)
+            user_id = event.organization.user_id
+        query = query.filter(Account.user_id==user_id)
+        return query.order_by('StockHolder.id').all()
 
     @staticmethod
     def create_from_template(template, **kwargs):
@@ -1641,7 +1660,6 @@ class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     tel_1 = Column(String(32))
     tel_2 = Column(String(32))
     fax = Column(String(32))
-    email = Column(String(255))
 
     @hybrid_property
     def full_name_kana(self):
@@ -1786,7 +1804,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             # 入金済みなら決済をキャンセル
             if self.status == 'paid':
                 # 売り上げキャンセル
-                from ticketing.multicheckout import api as multi_checkout_api
+                from ticketing.multicheckout import api as multicheckout_api
 
                 order_no = self.order_no
                 if request.registry.settings.get('multicheckout.testing', False):
@@ -1794,8 +1812,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     order_no = self.order_no + "00"
                 organization = Organization.get(self.organization_id)
                 request.registry.settings['altair_checkout3d.override_shop_name'] = organization.multicheckout_settings[0].shop_name
-                
-                multi_checkout_result = multi_checkout_api.checkout_sales_cancel(request, order_no)
+
+                # 払戻期限を越えてもキャンセルできるようにキャンセルAPIでなく売上一部キャンセルAPIを使う
+                #multi_checkout_result = multicheckout_api.checkout_sales_cancel(request, order_no)
+                multi_checkout_result = multicheckout_api.checkout_sales_part_cancel(request, order_no, self.total_amount, 0)
                 DBSession.add(multi_checkout_result)
 
                 error_code = ''
@@ -2399,6 +2419,7 @@ class Host(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     host_name = Column(Unicode(255), unique=True)
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
     organization = relationship('Organization', backref="hosts")
+    base_url = Column(Unicode(255))
 
 class OrderNoSequence(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderNoSequence'
@@ -2410,3 +2431,36 @@ class OrderNoSequence(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         DBSession.add(seq)
         DBSession.flush()
         return seq.id
+
+class Mailer(object):
+    def __init__(self, settings):
+        self.settings = settings
+
+    def create_message(self,
+                       sender=None,
+                       recipient=None,
+                       subject=None,
+                       body=None,
+                       html=None,
+                       encoding=None):
+
+        encoding = self.settings['mail.message.encoding']
+        if html:
+            mime_type = 'html' 
+            mime_text = html
+        else:
+            mime_type = 'plain'
+            mime_text = body
+
+        msg = MIMEText(mime_text.encode(encoding, 'ignore'), mime_type, encoding)
+        msg['Subject'] = Header(subject, encoding)
+        msg['From'] = sender
+        msg['To'] = recipient
+        msg['Date'] = formatdate()
+        self.message = msg
+
+    def send(self, from_addr, to_addr):
+        smtp = smtplib.SMTP(self.settings['mail.host'], self.settings['mail.port'])
+        smtp.sendmail(from_addr, to_addr, self.message.as_string())
+        smtp.close()
+

@@ -19,6 +19,7 @@ public class AppAppletModel implements AppModel {
 	PropertyChangeSupport propertyChangeSupport = new SwingPropertyChangeSupport(this, true);
 	PageSetModel pageSetModel = null;
 	PrintService printService = null;
+	Boolean printingStatus = false;
 	GenericComboBoxModel<PrintService> printServices;
 	OurPageFormat pageFormat = null;
 	GenericComboBoxModel<OurPageFormat> pageFormats;
@@ -37,16 +38,16 @@ public class AppAppletModel implements AppModel {
 				System.getSecurityManager().checkPrintJobAccess();
 				AccessController.doPrivileged(new PrivilegedAction<Object>() {
 					public Object run() {
-				        for (PrintService service: PrinterJob.lookupPrintServices())
-				        	printServices.add(service);
-				        return null;
+						for (PrintService service: PrinterJob.lookupPrintServices())
+							printServices.add(service);
+						return null;
 					}
 				});	
 			} catch (SecurityException e) {
 				throw e;
 			}
-	        final GenericComboBoxModel<PrintService> prevPrintServices = this.printServices;
-	        this.printServices = printServices;
+			final GenericComboBoxModel<PrintService> prevPrintServices = this.printServices;
+			this.printServices = printServices;
 			propertyChangeSupport.firePropertyChange("printServices", prevPrintServices, printServices);
 		}
 		{
@@ -55,12 +56,12 @@ public class AppAppletModel implements AppModel {
 			propertyChangeSupport.firePropertyChange("printService", prevPrintService, this.printService);
 		}
 		{
-	        final GenericComboBoxModel<OurPageFormat> prevPageFormats = this.pageFormats;
+			final GenericComboBoxModel<OurPageFormat> prevPageFormats = this.pageFormats;
 			this.pageFormats = new GenericComboBoxModel<OurPageFormat>();
 			propertyChangeSupport.firePropertyChange("pageFormats", prevPageFormats, this.pageFormats);
 		}
 		{
-	        final GenericComboBoxModel<TicketFormat> prevPageFormats = this.ticketFormats;
+			final GenericComboBoxModel<TicketFormat> prevPageFormats = this.ticketFormats;
 			this.ticketFormats = new GenericComboBoxModel<TicketFormat>();
 			propertyChangeSupport.firePropertyChange("ticketFormats", prevPageFormats, this.ticketFormats);
 		}
@@ -83,6 +84,7 @@ public class AppAppletModel implements AppModel {
 		propertyChangeSupport.firePropertyChange("ticketFormats", null, ticketFormats);
 		propertyChangeSupport.firePropertyChange("ticketFormat", null, ticketFormat);
 		propertyChangeSupport.firePropertyChange("orderId", null, orderId);
+		propertyChangeSupport.firePropertyChange("printingStatus", true, false);
 	}
 
 	/* (non-Javadoc)
@@ -106,7 +108,7 @@ public class AppAppletModel implements AppModel {
 	public PropertyChangeListener[] getPropertyChangeListeners() {
 		return propertyChangeSupport.getPropertyChangeListeners();
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see jp.ticketstar.ticketing.printing.gui.IAppWindowModel#getPropertyChangeListeners(java.lang.String)
 	 */
@@ -134,6 +136,22 @@ public class AppAppletModel implements AppModel {
 	public void removePropertyChangeListener(String arg0,
 			PropertyChangeListener arg1) {
 		propertyChangeSupport.removePropertyChangeListener(arg0, arg1);
+	}
+
+	/* (non-Javadoc)
+	 * @see jp.ticketstar.ticketing.printing.gui.IAppWindowModel#getPrintingStatus()
+	 */
+	public Boolean getPrintingStatus(){
+		return printingStatus;
+	}
+
+	/* (non-Javadoc)
+	 * @see jp.ticketstar.ticketing.printing.gui.IAppWindowModel#setPrintingStatus()
+	 */
+	public void setPrintingStatus(Boolean status){
+		final Boolean prevValue = this.printingStatus;
+		this.printingStatus = status;
+		propertyChangeSupport.firePropertyChange("printingStatus", prevValue, printingStatus);
 	}
 
 	/* (non-Javadoc)

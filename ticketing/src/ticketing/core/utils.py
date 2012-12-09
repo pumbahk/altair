@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 
 ## todo move
-from ticketing.cart.plugins import SEJ_DELIVERY_PLUGIN_ID
+from ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
 import operator as op
 
 class ApplicableTicketsProducer(object):

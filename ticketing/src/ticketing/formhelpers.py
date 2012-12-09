@@ -5,34 +5,11 @@ from datetime import datetime
 from exceptions import ValueError
 import unicodedata
 
+from wtforms import Form
 from wtforms import validators, fields
 import logging
 
 logger = logging.getLogger(__name__)
-
-'''
-Customized field definition datetime format of "%Y-%m-%d %H:%M"
-'''
-class DateTimeField(fields.DateTimeField):
-
-    def _value(self):
-        if self.raw_data:
-            try:
-                dt = datetime.strptime(self.raw_data[0], '%Y-%m-%d %H:%M:%S')
-                return dt.strftime(self.format)
-            except:
-                return u' '.join(self.raw_data)
-        else:
-            return self.data.strftime(self.format) if self.data else u''
-
-    def process_formdata(self, valuelist):
-        if valuelist:
-            date_str = u' '.join(valuelist)
-            try:
-                self.data = datetime.strptime(date_str, self.format)
-            except ValueError:
-                self.data = None
-                raise validators.ValidationError(u'日付の形式を確認してください')
 
 class BugFreeSelectField(fields.SelectField):
     def pre_validate(self, form):
@@ -71,11 +48,18 @@ class Translations(object):
 
 
 class Required(validators.Required):
-
     def __call__(self, form, field):
         # allow Zero input
         if field.data != 0:
             super(Required, self).__call__(form, field)
+
+class RequiredOnUpdate(validators.Required):
+    def __init__(self):
+        self.delegated = Required()
+
+    def __call__(self, form, field):
+        if not getattr(form, 'new_form', False):
+            self.delegated(form, field)
 
 class Phone(validators.Regexp):
     def __init__(self, message=None):
@@ -142,3 +126,54 @@ def ignore_regexp(regexp):
     return replace
 
 ignore_space_hyphen = ignore_regexp(re.compile(u"[ \-ー　]"))
+
+class OurForm(Form):
+    def __init__(self, *args, **kwargs):
+        self.new_form = kwargs.pop('new_form', False)
+        super(OurForm, self).__init__(*args, **kwargs)
+
+def __our_field_init__(self, _form=None, hide_on_new=False, *args, **kwargs):
+    super(type(self), self).__init__(*args, **kwargs)
+    self.form = _form
+    self.hide_on_new=hide_on_new
+
+class OurTextField(fields.TextField):
+    __init__ = __our_field_init__
+
+class OurSelectField(BugFreeSelectField):
+    __init__ = __our_field_init__
+
+class OurIntegerField(fields.IntegerField):
+    __init__ = __our_field_init__
+
+class OurBooleanField(fields.BooleanField):
+    __init__ = __our_field_init__
+
+class OurDateTimeField(fields.DateTimeField):
+    '''
+    Customized field definition datetime format of "%Y-%m-%d %H:%M"
+    '''
+
+    __init__ = __our_field_init__
+
+    def _value(self):
+        if self.raw_data:
+            try:
+                dt = datetime.strptime(self.raw_data[0], '%Y-%m-%d %H:%M:%S')
+                return dt.strftime(self.format)
+            except:
+                return u' '.join(self.raw_data)
+        else:
+            return self.data.strftime(self.format) if self.data else u''
+
+    def process_formdata(self, valuelist):
+        if valuelist:
+            date_str = u' '.join(valuelist)
+            if date_str:
+                try:
+                    self.data = datetime.strptime(date_str, self.format)
+                except ValueError:
+                    self.data = None
+                    raise validators.ValidationError(u'日付の形式を確認してください')
+
+DateTimeField = OurDateTimeField # for compatibility

@@ -12,6 +12,31 @@
 		<fieldset>
 		  ${form_item(form.ticket_template)}
 		  ${form_item(form.name)}
+      <script type="text/javascript">
+        (function() {
+          var $name = $('#name');
+          var $ticket_template = $('#ticket_template');
+          if (!$name.val()) {
+            var fillDefault = true;
+            function onchange() {
+              if (fillDefault) {
+                var selected = $ticket_template.val();
+                $ticket_template.children().each(function (_, n) {
+                  if (selected == n.value || selected == null) {
+                    $name.val(n.firstChild.nodeValue);
+                    return false;
+                  }
+                });
+              }
+            }
+            $name.change(function () {
+              fillDefault = false;
+            });
+            $ticket_template.change(onchange);
+            onchange();
+          }
+        })();
+      </script>
 		</fieldset>
 	</div>
 	<div class="modal-footer">

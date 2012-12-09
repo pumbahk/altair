@@ -12,10 +12,12 @@ import itertools
 from sqlalchemy import sql
 from pyramid.security import Everyone, Authenticated
 from pyramid.security import Allow
+from pyramid.decorator import reify
 from sqlalchemy.orm.exc import NoResultFound
 
 from zope.interface import implementer
-from .interfaces import IOrderPayment, IOrderDelivery, ICartPayment, ICartDelivery
+from .interfaces import ICartPayment, ICartDelivery
+from ticketing.payments.interfaces import IOrderPayment, IOrderDelivery 
 from ticketing.mails.interfaces import ICompleteMailPayment, ICompleteMailDelivery, IOrderCancelMailPayment, IOrderCancelMailDelivery
 from ticketing.mails.resources import CompleteMailPayment, CompleteMailDelivery, OrderCancelMailPayment, OrderCancelMailDelivery
 
@@ -123,7 +125,7 @@ class TicketingCartResource(object):
         return pairs
 
     def authenticated_user(self):
-        from .rakuten_auth.api import authenticated_user
+        from ticketing.rakuten_auth.api import authenticated_user
         user = authenticated_user(self.request)
         return user
 
@@ -466,7 +468,7 @@ class TicketingCartResource(object):
 
     @property
     def membership(self):
-        from .rakuten_auth.api import authenticated_user
+        from ticketing.rakuten_auth.api import authenticated_user
         user = authenticated_user(self.request)
         if user is None:
             return None
@@ -476,9 +478,10 @@ class TicketingCartResource(object):
         membership = user['membership']
         return membership
 
+    # TODO: users.api に移動
     def get_or_create_user(self):
         # TODO: 依存関係がおかしいので確認 なぜrakuten_authがcart.apiを使うのか？
-        from .rakuten_auth.api import authenticated_user
+        from ticketing.rakuten_auth.api import authenticated_user
         from . import api
         openid = authenticated_user(self.request)
         if openid is None or openid.get('is_guest', False):
@@ -492,6 +495,10 @@ class TicketingCartResource(object):
             membership = openid['membership']
         user = api.get_or_create_user(self.request, auth_identifier, membership)
         return user
+
+    @reify
+    def host_base_url(self):
+        return core_api.get_host_base_url(self.request)
 
 @implementer(IOrderDelivery)
 class OrderDelivery(object):

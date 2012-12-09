@@ -79,7 +79,6 @@ import javax.swing.SwingConstants;
  */
 public class AppApplet extends JApplet implements IAppWindow, URLConnectionFactory, ThreadFactory {
 	private static final long serialVersionUID = 1L;
-
 	protected AppAppletService appService;
 	protected AppAppletServiceImpl appServiceImpl;
 	protected AppAppletModel model;
@@ -187,7 +186,7 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 	};
 	private PropertyChangeListener pageFormatChangeListener = new PropertyChangeListener() {
 		public void propertyChange(PropertyChangeEvent evt) {
-			if (evt.getNewValue() != null) {
+			if (evt.getNewValue() != null && !model.getPrintingStatus()) {
 				doLoadTicketData();
 				final OurPageFormat pageFormat = (OurPageFormat)evt.getNewValue();
 				for (final PrintService printService: model.getPrintServices()) {
@@ -216,7 +215,7 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 	};
 	private PropertyChangeListener ticketFormatChangeListener = new PropertyChangeListener() {
 		public void propertyChange(PropertyChangeEvent evt) {
-			if (evt.getNewValue() != null) {
+			if (evt.getNewValue() != null && !model.getPrintingStatus()) {
 				doLoadTicketData();
 				if (comboBoxTicketFormat != null) {
 					final TicketFormat ticketFormat = (TicketFormat)evt.getNewValue();
@@ -240,9 +239,14 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 	};
 	private PropertyChangeListener orderIdChangeListener = new PropertyChangeListener() {
 		public void propertyChange(PropertyChangeEvent evt) {
-			if (evt.getNewValue() != null) {
+			if (evt.getNewValue() != null && !model.getPrintingStatus()) {
 				doLoadTicketData();
 			}
+		}
+	};
+	private PropertyChangeListener printingStatusChangeListener = new PropertyChangeListener(){
+		public void propertyChange(PropertyChangeEvent evt){
+			btnPrint.setEnabled(!model.getPrintingStatus());
 		}
 	};
 	private JButton btnPrint;
@@ -263,6 +267,7 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 		model.removePropertyChangeListener(ticketFormatsChangeListener);
 		model.removePropertyChangeListener(ticketFormatChangeListener);
 		model.removePropertyChangeListener(orderIdChangeListener);
+		model.removePropertyChangeListener(printingStatusChangeListener);
 	}
 	
 	public void bind(AppModel model) {
@@ -275,6 +280,7 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 		model.addPropertyChangeListener("ticketFormats", ticketFormatsChangeListener);
 		model.addPropertyChangeListener("ticketFormat", ticketFormatChangeListener);
 		model.addPropertyChangeListener("orderId", orderIdChangeListener);
+		model.addPropertyChangeListener("printingStatus", printingStatusChangeListener);
 		if (!config.embedded)
 			model.refresh();
 		this.model = (AppAppletModel)model;
@@ -358,6 +364,7 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 					writer.close();
 				}
 			});
+			model.setPrintingStatus(Boolean.valueOf(false));
 		} catch (IOException e) {
 			throw new ApplicationException(e);
 		}
@@ -366,9 +373,9 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 	public void init() {
 		config = getConfiguration();
 		model = new AppAppletModel();
-    	appServiceImpl = new AppAppletServiceImpl(this, model);
-    	appService = new AppAppletService(appServiceImpl);
-    	
+		appServiceImpl = new AppAppletServiceImpl(this, model);
+		appService = new AppAppletService(appServiceImpl);
+		
 		if (!config.embedded) {
 			initialize();
 			guidesOverlay = new GuidesOverlay(model);
@@ -426,12 +433,14 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 		toolBar.add(comboBoxTicketFormat);
 		
 		btnPrint = new JButton("印刷");
+
 		btnPrint.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				model.setPrintingStatus(Boolean.valueOf(true));
 				appServiceImpl.printAll();
 			}
 		});
-		
+
 		comboBoxPrintService = new JComboBox();
 		comboBoxPrintService.setRenderer(new PrintServiceCellRenderer());
 		comboBoxPrintService.addItemListener(new ItemListener() {
