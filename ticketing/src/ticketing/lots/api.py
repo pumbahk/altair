@@ -35,11 +35,15 @@ from ticketing.rakuten_auth.api import authenticated_user
 
 from ticketing.core.models import (
     Organization,
+    Account,
     Event,
     SalesSegment,
-    Performance,
     StockType,
+    Stock,
+    StockHolder,
+    Performance,
     Product,
+    ProductItem,
     ShippingAddress,
     DBSession,
 )
@@ -66,8 +70,21 @@ def get_event(request):
     event_id = request.matchdict['event_id']
     return Event.query.filter(Event.id==event_id).one()
 
-def get_products(request, sales_segment):
-    products = DBSession.query(Product).filter(Product.sales_segment_id==sales_segment.id).order_by(Product.display_order).all()
+def get_products(request, sales_segment, performances):
+    """ """
+    # TODO: 公演ごとに在庫とひもづく商品を表示する
+    # 販売区分 -> 商品 -> 商品アイテム -> 在庫 -> 公演
+    products = DBSession.query(Product, Performance
+    ).filter(
+        Product.sales_segment_id==sales_segment.id
+    ).filter(
+        Product.id==ProductItem.product_id
+    ).filter(
+        ProductItem.performance_id.in_([p.id for p in performances])
+    ).filter(
+        Performance.id==ProductItem.performance_id
+    ).distinct().order_by(Performance.id, Product.display_order).all()
+
     return products
 
 def get_member_group(request):
