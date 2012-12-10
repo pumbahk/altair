@@ -115,6 +115,9 @@ var PreviewImageStore = Backbone.Model.extend({
     afterRendering: function(){
         this.set("stage", PreviewStage.after);
         this.trigger("*preview.update.rendered");
+    }, 
+    reDraw: function(){
+        this.trigger("*preview.redraw");
     }
 })
 
@@ -169,10 +172,15 @@ _.extend(ApiCommunicationGateWay.prototype, { // view?
         this.svg.on("*svg.update.filled", this.svgFilledToX, this);
 
         this.vars.on("*vars.commit.vars", this.commitVarsValues, this);
+
+        this.preview.on("*preview.redraw",  this.previewReDraw, this);
     }, 
     _apiFail: function(s, err){
         console.warn(s.responseText, arguments);
         this.preview.cancelRendering();
+    }, 
+    previewReDraw: function(){
+        this.vars.commitVarsValues();
     }, 
     commitVarsValues: function(vars_values){
         var self = this;
@@ -236,7 +244,7 @@ _.extend(ViewModel.prototype, Backbone.Events, {
 var PreviewImageViewModel = ViewModel.extend({
     draw: function(imgdata){
         this.$el.empty();
-        var preview_img = $("<img title='preview' alt='preview todo upload file'>").attr("src", imgdata);
+        var preview_img = $('<img id="preview_img" title="clickして再描画" alt="clickして再描画">').attr('src', imgdata);
         this.$el.append(preview_img);
         this.$el.parents(".empty").removeClass("empty");
     }
@@ -345,11 +353,17 @@ var DragAndDropSVGSupportView = Backbone.View.extend({
 });
 
 var PreviewImageView = Backbone.View.extend({
+    events: {
+        "click #preview_area img#preview_img": "reDrawImage"
+    }, 
     initialize: function(opts){
         this.model.on("*preview.update.loading", this.onLoading, this);
         this.model.on("*preview.update.loading", this.onCancel, this);
         this.model.on("*preview.update.rendering", this.onRendering, this);
         this.vms = opts.vms;
+    }, 
+    reDrawImage: function(){
+        this.model.reDraw();
     }, 
     onLoading: function(){
         this.vms.spinner.loading();
