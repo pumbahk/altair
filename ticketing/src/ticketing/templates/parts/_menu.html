@@ -36,9 +36,11 @@
     % endif
     <li class="nav-header">ユーザー管理</li>
     <li><a href="${request.route_path('orders.index')}">購入情報</a></li>
-    % if testing:
+    % if h.has_permission('sales_editor'):
     <li class="nav-header">営業管理</li>
     <li><a href="${request.route_path('sales_reports.index')}">売上レポート</a></li>
+    % endif
+    % if testing:
     <li><a href="">週報／日報設定</a></li>
     <li><a href="">ポイント付与履歴</a></li>
     <li class="nav-header">マーケティング</li>
