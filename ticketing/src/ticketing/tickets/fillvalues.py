@@ -3,7 +3,46 @@ from pystache.context import ContextStack
 from pystache.renderengine import RenderEngine
 from collections import namedtuple
 
-def template_collect_vars(template):
+class IndexedVariation(object):
+    """ with colored and indexed string. like 10.{{fooo}}"""
+    def __init__(self, style="fill:#015a01", ):
+        self.style = style
+        self.count = _CachedCounter(1)
+        
+    def rendering_string(self, name, v):
+        i = self.count(name)
+        fmt = u'<flowSpan style="%s">%s. </flowSpan>{{{%s}}}'
+        return fmt % (self.style, i, name)
+
+    padding = len(". </flowSpan>")    
+    def make_escape_method(self, renderer):
+        default_escape = renderer.escape
+        def escape(pair):
+            try:
+                midpoint = pair.index(". </flowSpan>{{")+self.padding
+                prefix, x = pair[:midpoint], pair[midpoint:]
+                if x.startswith("{") and x.endswith("}"):
+                    return prefix + default_escape(x[1:-1])
+                return prefix + default_escape(x)
+            except ValueError:
+                return default_escape(pair) # rendered string
+        return escape
+
+
+class IdentityVariation(object):
+    """ no change output. like {{fooo}}"""
+    def rendering_string(self, name, v):
+        return u"{{{%s}}}" % name
+
+    def make_escape_method(self, renderer):
+        default_escape = renderer.escape
+        def escape(x):
+            if x.startswith("{") and x.endswith("}"):
+                return default_escape(x[1:-1])
+            return default_escape(x)
+        return escape
+
+def template_collect_vars(template, variation=IdentityVariation()):
     """
     >>> template = u"{{hello}} this is a {{item}} {{{heee}}}"
     >>> template_collect_vars(template)
@@ -12,7 +51,7 @@ def template_collect_vars(template):
     tokens = CollectVarsRenderEngine().parse(template)
     return {x.name for x in tokens if isinstance(x, RenderingVar)}
 
-def template_fillvalues(template, params):
+def template_fillvalues(template, params, variation=IdentityVariation()):
     """
     >>> template = u"{{hello}} this is a {{item}} {{{heee}}}"
     >>> template_fillvalues(template, {})
@@ -21,19 +60,38 @@ def template_fillvalues(template, params):
     >>> template_fillvalues(template, {"hello": "good-bye, "})
     u"good-bye,  this is a {{item}} {{heee}}"    
     """
-    return FillValuesRenderer().render(template, params)
+    return FillValuesRenderer(variation).render(template, params)
 
+class _CachedCounter(object):
+    def __init__(self, default=0):
+        self.c  = default
+        self.m = {}
+        self.default = default
+
+    def __call__(self, name):
+        if name in self.m:
+            return self.m[name]
+        v = self.m[name] = self.c
+        self.c += 1
+        return v
+
+    def reset(self, default=None):
+        self.m = {}
+        self.c = self.default or default
 
 class DefaultNoChangeContext(ContextStack):
     @classmethod
-    def create(cls, *context, **kwargs):
+    def create(cls, variation_impl, *context, **kwargs):
         instance = super(DefaultNoChangeContext, cls).create(*context, **kwargs)
+        instance.variation = variation_impl ##
         instance.__class__ = cls
         return instance
 
     def get(self, name, default=object()):
         v = super(DefaultNoChangeContext, self).get(name, default=default)
-        return u"{{%s}}" % name if v == default else v
+        if v == default:
+            return self.variation.rendering_string(name, v) ##
+        return v
 
 class FillValuesRenderer(pystache.Renderer):
     """
@@ -48,6 +106,10 @@ class FillValuesRenderer(pystache.Renderer):
     expected:
       render "{{foo}} -- {{{bar}}}" with {} => "{{foo}} -- {{{bar}}}"
     """
+    def __init__(self, variation_impl, *args, **kwargs):
+        super(FillValuesRenderer, self).__init__(*args, **kwargs)
+        self.variation = variation_impl
+        self.escape = variation_impl.make_escape_method(self) ##
 
     def _render_string(self, template, *context, **kwargs):
         """
@@ -57,7 +119,7 @@ class FillValuesRenderer(pystache.Renderer):
         # RenderEngine.render() requires that the template string be unicode.
         template = self._to_unicode_hard(template)
 
-        context = DefaultNoChangeContext.create(*context, **kwargs)
+        context = DefaultNoChangeContext.create(self.variation, *context, **kwargs)##
         self._context = context
         engine = self._make_render_engine()
         rendered = engine.render(template, context)
