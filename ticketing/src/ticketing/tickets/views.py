@@ -28,7 +28,7 @@ from .convert import to_opcodes
 from .api import SVGPreviewCommunication
 from jsonrpclib import jsonrpc
 from pyramid.httpexceptions import HTTPBadRequest
-from cleaner.api import get_validated_svg_cleaner
+from cleaner.api import get_validated_svg_cleaner, skip_needless_part
 from .fillvalues import template_collect_vars
 from .fillvalues import template_fillvalues
 
@@ -700,6 +700,7 @@ class PreviewApiView(object):
     @view_config(match_param="action=preview.base64", request_param="svg")
     def preview_ticket_post64(self):
         preview = SVGPreviewCommunication.get_instance(self.request)
+        # svg = skip_needless_part(self.request.POST["svg"])
         svg = self.request.POST["svg"]
         try:
             imgdata_base64 = preview.communicate(self.request, svg)

@@ -16,10 +16,11 @@
   </div>
 
   <div class="modal-footer">
-	<a href="#" class="btn" data-dismiss="modal">キャンセル</a>
+##	<a href="#" class="btn" data-dismiss="modal">キャンセル</a>
 ##	<input class="btn btn-primary" type="submit" name="submit" value="登録">
   </div>
 
+<script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/preview/preview_api.js")}"></script>
 <script type="text/javascript">
 $(function(){
     url = "${request.route_path("orders.item.preview.getdata", item_id=item.id, ticket_format_id="__id__")}";
@@ -31,15 +32,14 @@ $(function(){
         var names = data.names;
         for (var i = 0; i < results.length; i++) {
           var jsondata = results[i];
-          var options = {"dataSource": function(next, err){ next(jsondata); }}
-
           root.append($("<h3>").text(names[i]));
-          var wrap = $("<div>").attr("id", "diagram:"+i).attr("style", "height:200px;");
-          root.append(wrap)
-          wrap.ticketviewer(options).ticketviewer("load");
+          var wrap = $("<div>").attr("id", "diagram:"+i);//.attr("style", "height:200px;");
+          root.append(wrap);
+          svg_preview(wrap, "${request.route_path("tickets.preview.api", action="preview.base64")}", jsondata["drawing"]);
         }
       });
     }
+
     draw_viewer(url, $("#preview_select select[name='ticket_format_id']").val());
     $("#preview_select select[name='ticket_format_id']").change(function(){
     var ticket_format_id = $(this).val();

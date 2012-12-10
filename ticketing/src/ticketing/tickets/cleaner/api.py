@@ -9,6 +9,13 @@ from ..convert import to_opcodes
 class TicketCleanerValidationError(Exception):
     pass
 
+def skip_needless_part(string):
+    comment_end_tag = "-->"
+    if string.startswith(("<?xml", "<!--")) and comment_end_tag in string:
+        return string[string.index(comment_end_tag)+len(comment_end_tag):]
+    else:
+        return string
+
 def get_validated_xmltree(svgio, exc_class=TicketCleanerValidationError):
     try:
         xmltree = etree.parse(svgio)

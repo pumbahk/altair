@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+from StringIO import StringIO
 import sys
 import re
 from collections import namedtuple
@@ -232,7 +233,6 @@ def _eliminated_dump_to_downstream(sm, downstream):
                     downstream.characters(x.val)
                 prev = x
 
-    
 def _attach_header(inp, outp):
     while True:
         pos = inp.tell()

@@ -778,7 +778,7 @@ class Orders(BaseView):
             for ticket in tickets:
                 svg = pystache.render(ticket.data['drawing'], dict_)
                 r = data.copy()
-                r.update(dict(drawing=' '.join(to_opcodes(etree.ElementTree(etree.fromstring(svg))))))
+                r.update(dict(drawing=svg))
                 results.append(r)
         return {"results": results, "names": names}
 
