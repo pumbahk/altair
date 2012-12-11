@@ -37,6 +37,11 @@ def preview_ticket_post(context, request):
     except jsonrpc.ProtocolError, e:
         raise HTTPBadRequest(str(e))
 
+@view_config(route_name="tickets.preview.combobox", request_method="GET", renderer="ticketing:templates/tickets/combobox.html", 
+             decorator=with_bootstrap, permission="event_editor")
+def combbox_for_preview(context, request):
+    return {"organization": context.organization}
+
 #api
 """
 raw svg -> normalize svg -> base64 png
