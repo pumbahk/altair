@@ -40,13 +40,19 @@ def preview_ticket_post(context, request):
 @view_config(route_name="tickets.preview.combobox", request_method="GET", renderer="ticketing:templates/tickets/combobox.html", 
              decorator=with_bootstrap, permission="event_editor")
 def combbox_for_preview(context, request):
-    return {"organization": context.organization}
+    apis = {
+        "organization_list": request.route_path("tickets.preview.combobox.api", model="organization"), 
+        "event_list": request.route_path("tickets.preview.combobox.api", model="event"), 
+        "performance_list": request.route_path("tickets.preview.combobox.api", model="performance"), 
+        "product_list": request.route_path("tickets.preview.combobox.api", model="product"), 
+        }
+    return {"organization": context.organization, "apis": json.dumps(apis)}
 
 #api
 """
 raw svg -> normalize svg -> base64 png
 """
-@view_defaults(route_name="tickets.preview.api", request_method="POST", renderer="json")
+@view_defaults(route_name="tickets.preview.combobox.api", request_method="POST", renderer="json")
 class PreviewApiView(object):
     def __init__(self, context, request):
         self.context = context
@@ -95,4 +101,29 @@ class PreviewApiView(object):
             return {"status": True, "data":imgdata_base64}
         except jsonrpc.ProtocolError, e:
             return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
+
+
+@view_defaults(route_name="tickets.preview.combobox.api", request_method="GET", renderer="json")
+class PreviewApiView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    result = [{"name": "foo", "pk": 1},{"name": "fooo", "pk": 2},{"name": "foooo", "pk": 3},{"name": "fooooo", "pk": 4},{"name": "foooooooo", "pk": 5}, ]
+
+    @view_config(match_param="model=organization")
+    def organization(self):
+        return {"status": True, "data": self.result}
+
+    @view_config(match_param="model=event")
+    def event(self):
+        return {"status": True, "data": self.result}
+
+    @view_config(match_param="model=performance")
+    def performance(self):
+        return {"status": True, "data": self.result}
+
+    @view_config(match_param="model=product")
+    def product(self):
+        return {"status": True, "data": self.result}
 
