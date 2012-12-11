@@ -50,7 +50,9 @@ _.extend(CandidatesFetcher.prototype, {
     }, 
     getDependsValues: function(params){
         var params = params || {};
-        _(this.depends).each(function(o){params[o.model.get("targetObject")] = o.model.get("result").pk});
+        _(this.depends).each(function(o){
+            params[o.model.get("targetObject")] = o.model.get("result").pk;
+        });
         return params;
     }, 
     getCandidates: function(params){
@@ -60,9 +62,8 @@ _.extend(CandidatesFetcher.prototype, {
             .pipe(preview.ApiDeferredService.rejectIfStatusFail(function(data){
                 self.model.changeCandidates(data.data);
             }))
-
             .fail(function(){
-                this.model.trigger("*combobox.fetcher.fail", self.api, arguments);
+                self.model.trigger("*combobox.fetcher.fail", self.api, {responseText: self.ap+":"+arguments[0]["responseText"]});
             });
     }, 
     getResult: function(){
@@ -87,14 +88,13 @@ var ForTicketPreviewComboxGateway = core.ApiCommunicationGateway.extend({
         this.performance.model.on("*combobox.select.result", this.performanceChanged, this);
         this.product.model.on("*combobox.select.result", this.productChanged, this);
 
-        this.organization.model.on("*combobox.fetcher.fail", this.organizationChanged, this);
-        this.event.model.on("*combobox.fetcher.fail", this.eventChanged, this);
-        this.performance.model.on("*combobox.fetcher.fail", this.performanceChanged, this);
-        this.product.model.on("*combobox.fetcher.fail", this.productChanged, this);
+        this.organization.model.on("*combobox.fetcher.fail", this._apiFail, this);
+        this.event.model.on("*combobox.fetcher.fail", this.apiFail, this);
+        this.performance.model.on("*combobox.fetcher.fail", this._apiFail,  this);
+        this.product.model.on("*combobox.fetcher.fail", this._apiFail, this);
     }, 
     _apiFail: function(s, err){
         console.warn(s.responseText, arguments);
-        this.preview.cancelRendering();
     }, 
     organizationChanged: function(){
         this.models.event.changeCandidates(this.event.getCandidates());
@@ -118,27 +118,18 @@ var ForTicketPreviewComboxGateway = core.ApiCommunicationGateway.extend({
 var ComboboxViewModel = core.ViewModel.extend({
     initialize: function(){
         this.$el.delegate("select", "change", this.onSelect.bind(this));
-        this.model.on("*combobox.change.candidates", this.draw, this);
-        this.model.on("*combobox.refresh.candidates", this.refresh, this);
-    }, 
-    refreshChild: function(){
-        this.model.cascade("*combobox.refresh.candidates");
     }, 
     refresh: function(){
         this.$el.empty();
     }, 
     draw: function(candidates){
-        this.refresh();
         var root = $("<select>");
-
         _(candidates).each(function(c){
             root.append($("<option>").text(c.name).attr("value", c.pk));
         });
         this.$el.append(root);
-        this.refreshChild();
     }, 
     onSelect: function(){
-
         var o = this.$el.find("option:selected");
         this.model.selectValue({"name": o.text(), "pk": o.val()});
     }
@@ -146,6 +137,17 @@ var ComboboxViewModel = core.ViewModel.extend({
 var ComboboxView = Backbone.View.extend({
     initialize: function(opts){
         this.vms = opts.vms;
-        this.models = opts.models;
+        this.model.on("*combobox.change.candidates", this.draw, this);
+        this.model.on("*combobox.refresh.candidates", this.refresh, this);
+    }, 
+    draw: function(candidates){
+        this.vms.input.refresh();
+        this.vms.input.draw(candidates);
+        this.refreshChild();
+        if (candidates.length <= 1)
+            this.vms.input.onSelect();
+    }, 
+    refreshChild: function(){
+        this.model.cascade("*combobox.refresh.candidates");
     }
 });

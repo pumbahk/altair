@@ -7,6 +7,7 @@ from jsonrpclib import jsonrpc
 from pyramid.httpexceptions import HTTPBadRequest
 
 from ticketing.fanstatic import with_bootstrap
+from ticketing.core import models as c_models
 from .api import SVGPreviewCommunication
 from ..cleaner.api import get_validated_svg_cleaner, skip_needless_part
 from .fillvalues import template_collect_vars
@@ -113,17 +114,27 @@ class PreviewApiView(object):
 
     @view_config(match_param="model=organization")
     def organization(self):
-        return {"status": True, "data": self.result}
+        o = self.context.organization
+        return {"status": True, "data": [{"name": o.name, "pk": o.id}]}
 
-    @view_config(match_param="model=event")
+    @view_config(match_param="model=event", request_param="organization")
     def event(self):
-        return {"status": True, "data": self.result}
+        qs = c_models.Event.query.filter(c_models.Organization.id==self.request.GET["organization"]) #filter?
+        seq = [{"pk": q.id, "name": q.title} for q in qs]
+        return {"status": True, "data": seq}
 
-    @view_config(match_param="model=performance")
+    @view_config(match_param="model=performance", request_param="event")
     def performance(self):
-        return {"status": True, "data": self.result}
+        qs = c_models.Performance.query.filter(c_models.Performance.event_id==self.request.GET["event"], 
+                                              c_models.Event.organization_id==self.request.GET["organization"]) #filter?
+        seq = [{"pk": q.id, "name": q.name} for q in qs]
+        return {"status": True, "data": seq}
 
-    @view_config(match_param="model=product")
+    @view_config(match_param="model=product", request_param="performance")
     def product(self):
-        return {"status": True, "data": self.result}
+        qs = c_models.Product.query.filter(c_models.Product.event_id==self.request.GET["event"],
+                                           c_models.Product.id==c_models.ProductItem.product_id, 
+                                           c_models.ProductItem.performance_id==self.request.GET["performance"])
+        seq = [{"pk": q.id, "name": "%s(%se)" % (q.name, q.price)} for q in qs]
+        return {"status": True, "data": seq}
 

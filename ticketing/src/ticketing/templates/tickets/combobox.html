@@ -19,10 +19,10 @@
   $(function(){
     apis = ${apis|n};
     models = {
-      organization:  new ComboboxSelection({targetObject: "Organization"}),
-      event:  new ComboboxSelection({targetObject: "Event"}),
-      performance:  new ComboboxSelection({targetObject: "Performance" }),
-      product:  new ComboboxSelection({targetObject: "Product"})
+      organization:  new ComboboxSelection({targetObject: "organization"}),
+      event:  new ComboboxSelection({targetObject: "event"}),
+      performance:  new ComboboxSelection({targetObject: "performance" }),
+      product:  new ComboboxSelection({targetObject: "product"})
     };
     afterAllSelect = function(data){
       alert("yay");
@@ -34,7 +34,12 @@
       performance:  new ComboboxViewModel({model: models.performance, el: $("#performance_select")}),
       product:  new ComboboxViewModel({model: models.product, el: $("#product_select")})
     };
-   var comboboxView = new ComboboxView({vms: view_models, models: models });
+    view = {
+      organization:  new ComboboxView({vms: {input: view_models["organization"]}, model: models.organization, el: $("#organization_select")}),
+      event:  new ComboboxView({vms: {input: view_models["event"]}, model: models.event, el: $("#event_select")}),
+      performance:  new ComboboxView({vms: {input: view_models["performance"]}, model: models.performance, el: $("#performance_select")}),
+      product:  new ComboboxView({vms: {input: view_models["product"]}, model: models.product, el: $("#product_select")})
+    };
    gateway.organization.getCandidates();
   });
 </script>
