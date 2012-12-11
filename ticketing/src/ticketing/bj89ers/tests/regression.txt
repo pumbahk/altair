@@ -82,9 +82,13 @@ StockType
 
 Stock
 
->>> 
+>>> stock = testing.t_data('ticketing.core.models.Stock', stock_type=stock_type, performance=performance)
 
 Product
+
+>>> product = testing.t_data('ticketing.core.models.Product', name=u'商品１', event=event, price=3000, sales_segment=sales_segment)
+>>> product = testing.t_data('ticketing.core.models.Product', name=u'商品２', event=event, price=2000, sales_segment=sales_segment)
+>>> product = testing.t_data('ticketing.core.models.Product', name=u'商品３', event=event, price=1000, sales_segment=sales_segment)
 
 ProductItem
 
@@ -100,7 +104,40 @@ ProductItem
 25
 >>> res.form.fields.keys()
 [u'cont', u'old_id_number', u'member_type', u't_shirts_size', u'last_name', u'first_name', u'last_name_kana', u'first_name_kana', u'year', u'month', u'day', u'sex', u'zipcode1', u'zipcode2', u'prefecture', u'city', u'address1', u'address2', u'tel_1', u'tel_2', u'email', u'email2', u'mail_permission', u'publicity', None]
+>>> res.form['cont'] = 'no'
+>>> res.form['old_id_number'] = ''
+>>> res.form['member_type'].options
+[('', False), (u'1', False), (u'2', False), (u'3', False)]
+>>> res.form['member_type'] = '1'
+>>> res.form['t_shirts_size'] = 'L'
+>>> res.form['last_name'] = 'ああああ'
+>>> res.form['first_name'] = 'いいいい'
+>>> res.form['last_name_kana'] = 'アアアア'
+>>> res.form['first_name_kana'] = 'イイイイ'
+>>> res.form['year'] = '1980'
+>>> res.form['month'].options
+[(u'1', False), (u'2', False), (u'3', False), (u'4', False), (u'5', False), (u'6', False), (u'7', False), (u'8', False), (u'9', False), (u'10', False), (u'11', False), (u'12', False)]
+>>> res.form['month'] = u'1'
+>>> res.form['day'].options
+[(u'1', False), (u'2', False), (u'3', False), (u'4', False), (u'5', False), (u'6', False), (u'7', False), (u'8', False), (u'9', False), (u'10', False), (u'11', False), (u'12', False), (u'13', False), (u'14', False), (u'15', False), (u'16', False), (u'17', False), (u'18', False), (u'19', False), (u'20', False), (u'21', False), (u'22', False), (u'23', False), (u'24', False), (u'25', False), (u'26', False), (u'27', False), (u'28', False), (u'29', False), (u'30', False), (u'31', False)]
+>>> res.form['day'] = u'1'
+>>> res.form['sex'].options
+[(u'male', False), (u'female', False)]
+>>> res.form['sex'] = 'male'
+>>> res.form['zipcode1'] = '123'
+>>> res.form['zipcode2'] = '4567'
+>>> res.form['prefecture'] = res.form['prefecture'].options[13][0]
+>>> res.form['city'] = '渋谷区'
+>>> res.form['address1'] = '代々木１－２－９'
+>>> res.form['address2'] = '森京ビル２'
+>>> res.form['tel_1'] = '0362761430'
+>>> res.form['tel_2'] = ''
+>>> res.form['email'] = 'aodag@beproud.jp'
+>>> res.form['email2'] = 'aodag@beproud.jp'
 
+
+>>> res = res.form.submit()
+>>> res.location
 
 決済選択画面 :class:`ticketing.bj89ers.views.PaymentView`
 --------------------------------------------------------------
