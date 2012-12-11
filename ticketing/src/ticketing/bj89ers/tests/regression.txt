@@ -18,6 +18,7 @@ Booster リグレッションテスト
 >>> oneday = timedelta(days=1)
 >>> yesterday = now - oneday
 >>> tommorow = now + oneday
+>>> dbfile = testing.tmp_dbfile()
 
 >>> settings = {
 ...     '89ers.organization_id':         "1",
@@ -26,7 +27,7 @@ Booster リグレッションテスト
 ...     '89ers.start_at':                format(yesterday, '%Y-%m-%d %H:%M:%S'),
 ...     '89ers.end_at':                  format(tommorow, '%Y-%m-%d %H:%M:%S'),
 ...     'altair.cart.domain.mapping':    "{}",
-...     'sqlalchemy.url':                'sqlite:///tmp/data.sqlite',
+...     'sqlalchemy.url':                'sqlite:///{0}'.format(dbfile),
 ...     'sqlalchemy.echo':               False,
 ...     'mako.directories':              'ticketing.bj89ers:templates',
 ... }
@@ -78,23 +79,35 @@ PaymentDeliveryMethodPair
 
 StockType
 
->>> stock_type = testing.t_data('ticketing.core.models.StockType', event=event)
+>>> stock_type1 = testing.t_data('ticketing.core.models.StockType', event=event)
+>>> stock_type2 = testing.t_data('ticketing.core.models.StockType', event=event)
+>>> stock_type3 = testing.t_data('ticketing.core.models.StockType', event=event)
 
 Stock
 
->>> stock = testing.t_data('ticketing.core.models.Stock', stock_type=stock_type, performance=performance)
+>>> stock1 = testing.t_data('ticketing.core.models.Stock', stock_type=stock_type1, performance=performance, quantity=9999999999999999)
+>>> stock_status1 = testing.t_data('ticketing.core.models.StockStatus', stock=stock1, quantity=stock1.quantity)
+>>> stock2 = testing.t_data('ticketing.core.models.Stock', stock_type=stock_type2, performance=performance, quantity=9999999999999999)
+>>> stock_status2 = testing.t_data('ticketing.core.models.StockStatus', stock=stock2, quantity=stock2.quantity)
+>>> stock3 = testing.t_data('ticketing.core.models.Stock', stock_type=stock_type3, performance=performance, quantity=9999999999999999)
+>>> stock_status3 = testing.t_data('ticketing.core.models.StockStatus', stock=stock3, quantity=stock3.quantity)
 
 Product
 
->>> product = testing.t_data('ticketing.core.models.Product', name=u'商品１', event=event, price=3000, sales_segment=sales_segment)
->>> product = testing.t_data('ticketing.core.models.Product', name=u'商品２', event=event, price=2000, sales_segment=sales_segment)
->>> product = testing.t_data('ticketing.core.models.Product', name=u'商品３', event=event, price=1000, sales_segment=sales_segment)
+>>> product1 = testing.t_data('ticketing.core.models.Product', name=u'商品１', event=event, price=3000, sales_segment=sales_segment)
+>>> product2 = testing.t_data('ticketing.core.models.Product', name=u'商品２', event=event, price=2000, sales_segment=sales_segment)
+>>> product3 = testing.t_data('ticketing.core.models.Product', name=u'商品３', event=event, price=1000, sales_segment=sales_segment)
 
 ProductItem
 
+>>> product_item1 = testing.t_data('ticketing.core.models.ProductItem', product=product1, price=product1.price, stock=stock1)
+>>> product_item2 = testing.t_data('ticketing.core.models.ProductItem', product=product2, price=product2.price, stock=stock2)
+>>> product_item3 = testing.t_data('ticketing.core.models.ProductItem', product=product3, price=product3.price, stock=stock3)
+>>> performance.product_items = [product_item1, product_item2, product_item3]
 
 >>> testing.flush()
-
+>>> import transaction
+>>> transaction.commit()
 
 購入画面 :class:`ticketing.bj89ers.views.IndexView`
 --------------------------------------------------------------
@@ -138,9 +151,14 @@ ProductItem
 
 >>> res = res.form.submit()
 >>> res.location
+'http://localhost/payment/sales/1'
+
 
 決済選択画面 :class:`ticketing.bj89ers.views.PaymentView`
 --------------------------------------------------------------
+
+>>> res = res.follow()
+>>> 
 
 確認画面
 --------------------------------------------------------------------

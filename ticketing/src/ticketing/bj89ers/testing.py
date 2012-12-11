@@ -37,6 +37,17 @@ def setup():
     import ticketing.users.models
     from ticketing.models import Base, DBSession
 
+def tmp_dbfile():
+    import tempfile
+    import atexit
+    import os
+    f = tempfile.NamedTemporaryFile(delete=False)
+    f.close()
+    name = f.name
+    atexit.register(lambda: os.unlink(name))
+    return name
+    
+
 def flush():
     from ticketing.models import Base, DBSession
     Base.metadata.create_all(bind=DBSession.bind)
