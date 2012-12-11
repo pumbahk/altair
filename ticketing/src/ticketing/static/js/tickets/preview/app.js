@@ -1,5 +1,14 @@
 // require backbone.js
 // require altair/deferredqueue.js
+// require core/viewmodel.js
+// require core/gateway.js
+
+// require ./models.js
+// require ./gateway.js
+// require ./preview_api.js
+// require ./services.js
+// require ./viewmodels.js
+// require ./views.js
 
 // todo: auto redraw?
 // todo: 見た目綺麗に
@@ -9,388 +18,42 @@
 // todo: 拡大/縮小
 
 /// services
-var ApiDeferredService = {
-    rejectIfStatusFail: function(fn){
-        return function(data){
-            if (data && data.status){
-                return fn? fn(data) : data;
-            }else {
-                return $.Deferred().rejectWith(this, [{responseText: "status: false, "+data.message+arguments[0]}, ]);
-            }
-        };
-    }, 
+// give me. module!
+if (!window.preview)
+    window.preview = {}
+
+preview.ApplicationView = Backbone.View.extend({
+    initialize: function(opts){
+        this.models = opts.models;
+        if(!this.models) throw "models is not found";
+        this.apis = opts.apis;
+        if(!this.apis) throw "apis is not found";
+        this.view_models = opts.view_models;
+        if(!this.view_models) throw "view_models is not found";
+        this.gateway = opts.gateway;
+
+        this.gateway = new preview.ApiCommunicationGateway({models: this.models, apis: this.apis});
+    }
+});
+
+preview.ApplicationViewFactory = function(apis,  $preview_block,  $preview_area,  $svg_droparea, $template_vars_table){
+       var models = {
+         svg: new preview.SVGStore(),
+         preview: new preview.PreviewImageStore(),
+         vars: new preview.TemplateVarStore()
+       };
+
+      var view_models = {
+        preview: new preview.PreviewImageViewModel({el: $preview_area}),
+        droparea: new preview.DropAreaViewModel({el: $svg_droparea}),
+        spinner: new preview.LoadingSpinnerViewModel({el: $preview_area}),
+        vars_input: new preview.TemplateVarsTableViewModel({el: $template_vars_table})
+      };
+
+      var views = {
+        dad_view:  new preview.DragAndDropSVGSupportView({el: $svg_droparea, vms: view_models, model: models.svg}), 
+        preview_image_view:  new preview.PreviewImageView({el: $preview_block, vms: view_models, model: models.preview}), 
+        template_fillvalues_view:  new preview.TemplateFillValuesView({el: $preview_block, vms: view_models, model: models.vars})
+      };
+      return new preview.ApplicationView({models: models, apis: apis, view_models: view_models, views: views});
 };
-
-var DragAndDropSupportService = {
-    compose: function(){
-        var fns = arguments;
-        return function(){
-            var r;
-            for (var i=0, j=fns.length; i<j; i++){
-                r = fns[i].apply(this, arguments);
-            }
-            return r;
-        }
-  　},
-    cancel: function(e){
-        e.stopPropagation();
-        e.preventDefault();
-    },
-    onDrop: function(file_use_fn){
-      return function(e){
-        var files = e.dataTransfer.files;
-        for (var i=0, file; file=files[i]; i++){
-          var reader = new FileReader();
-
-          reader.onerror = function(e){ 
-           console.warn('Error code: ' + e.target.error.code);
-          }
-
-          reader.onload = (function(aFile){
-            return function(e){ //?
-              file_use_fn(e);
-            }
-          })(file);
-          reader.readAsText(file, "UTF-8");
-        }
-        return false;
-      }
-    },
-}
-
-var ConsoleMessage = { //use info, log, warn, error, dir
-    success: console.debug, 
-    error: console.debug, 
-    info: console.debug, 
-    warn: console.debug
-}
-
-/// models
-var SVGStage = {"empty":0, "raw":1, "normalize":2, "filled":3};
-var PreviewStage = {"empty": 0, "before":1, "rendering":2, "after": 3};
-var SVGStore = Backbone.Model.extend({
-    defaults:{
-        data: null, 
-        normalize: null, 
-        stage: SVGStage.empty
-    }, 
-    _updateValue: function(stage, svg){
-        this.set("stage", stage);
-        this.set("data", svg);
-    }, 
-    updateToRaw: function(svg){
-        this._updateValue(SVGStage.raw, svg);
-        this.set("normalize", null);
-        this.trigger("*svg.update.raw");
-    }, 
-    updateToNormalize: function(svg){
-        this._updateValue(SVGStage.normalize, svg);
-        this.set("normalize", svg);
-        this.trigger("*svg.update.normalize");
-    }, 
-    updateToFilled: function(svg){
-        this._updateValue(SVGStage.filled, svg);
-        this.trigger("*svg.update.filled");
-    }, 
-});
-
-var PreviewImageStore = Backbone.Model.extend({
-    defaults: {
-        data: null, //base64
-        stage: PreviewStage.empty
-    }, 
-    beforeRendering: function(){
-        this.set("stage", PreviewStage.before);
-        this.trigger("*preview.update.loading");
-    }, 
-    cancelRendering: function(){
-        this.set("stage", PreviewStage.after);
-        this.trigger("*preview.update.cancel");
-    }, 
-    startRendering: function(imgdata){
-        this.set("stage", PreviewStage.rendering);
-        this.set("data", imgdata)
-        this.trigger("*preview.update.rendering")
-    }, 
-    afterRendering: function(){
-        this.set("stage", PreviewStage.after);
-        this.trigger("*preview.update.rendered");
-    }, 
-    reDraw: function(){
-        this.trigger("*preview.redraw");
-    }
-})
-
-var TemplateVar = Backbone.Model.extend({
-    defaults: {
-        name: null, 
-        value: null
-    }
-});
-var TemplateVarCollection = Backbone.Collection.extend({
-    model: TemplateVar
-});
-var TemplateVarStore = Backbone.Model.extend({
-    defaults: {
-        vars: new TemplateVarCollection(),  //collection
-    }, 
-    updateVars: function(vars){
-        this.get("vars").reset(_(vars).map(function(k){
-            return {name: k, value: ""};
-        }));
-        this.trigger("*vars.update.vars");
-    }, 
-    commitVarsValues: function(){
-        if(this.get("vars").length <= 0){
-            return this.trigger("*vars.commit.vars", {});
-        }
-        var var_values = {};
-        _(this.get("vars").models).each(function(m){
-            var_values[m.get("name")] = m.get("value");
-        });
-        return this.trigger("*vars.commit.vars",  var_values);
-    }
-});
-
-var ApiCommunicationGateWay = function(opts){
-    this.apis = opts.apis;
-    if (!this.apis) throw "opts.apis is not found";
-    this.models = opts.models;
-    if (!this.models) throw "opts.models is not found";
-    this.initialize();
-};
-
-_.extend(ApiCommunicationGateWay.prototype, { // view?
-    initialize: function(){
-        this.preview = this.models.preview;
-        this.svg = this.models.svg;
-        this.vars = this.models.vars;
-
-        this.svg.on("*svg.update.raw", this.svgRawToX, this);
-        this.svg.on("*svg.update.normalize", this.svgNormalizeToX, this);
-        this.svg.on("*svg.update.normalize", this.collectTemplateVars, this);
-        this.svg.on("*svg.update.filled", this.svgFilledToX, this);
-
-        this.vars.on("*vars.commit.vars", this.commitVarsValues, this);
-
-        this.preview.on("*preview.redraw",  this.previewReDraw, this);
-    }, 
-    _apiFail: function(s, err){
-        console.warn(s.responseText, arguments);
-        this.preview.cancelRendering();
-    }, 
-    previewReDraw: function(){
-        this.vars.commitVarsValues();
-    }, 
-    commitVarsValues: function(vars_values){
-        var self = this;
-        return $.post(this.apis.fillvalues, {"svg": this.svg.get("normalize"), "params": JSON.stringify(vars_values)})
-            .pipe(ApiDeferredService.rejectIfStatusFail(function(data){
-                self.svg.updateToFilled(data.data);
-            }))
-            .fail(this._apiFail.bind(this));
-    }, 
-    svgRawToX: function(){
-        this.preview.beforeRendering();
-        var self = this;
-        return $.post(this.apis.normalize, {"svg": this.svg.get("data")})
-            .pipe(ApiDeferredService.rejectIfStatusFail(function(data){
-                self.svg.updateToNormalize(data.data);
-            }))
-            .fail(this._apiFail.bind(this));
-    }, 
-    svgNormalizeToX: function(){
-        this.preview.beforeRendering();
-        var self = this;
-        return $.post(this.apis.previewbase64, {"svg": this.svg.get("data")})
-            .pipe(ApiDeferredService.rejectIfStatusFail(function(data){
-                self.preview.startRendering("data:image/png;base64,"+data.data); //add-hoc
-            }))
-            .fail(this._apiFail.bind(this));
-    }, 
-    svgFilledToX: function(){
-        this.preview.beforeRendering();
-        var self = this;
-        return $.post(this.apis.previewbase64, {"svg": this.svg.get("data")})
-            .pipe(ApiDeferredService.rejectIfStatusFail(function(data){
-                self.preview.startRendering("data:image/png;base64,"+data.data); //add-hoc
-            }))
-            .fail(this._apiFail.bind(this));
-    }, 
-    collectTemplateVars: function(){ // todo:move it?
-        var self = this;
-        $.post(this.apis.collectvars, {"svg": this.models.svg.get("normalize")})
-            .pipe(ApiDeferredService.rejectIfStatusFail(function(data){
-                self.vars.updateVars(data.data);
-            }))
-            .fail(this._apiFail.bind(this));
-    }
-})
-
-/// viewmodels
-var ViewModel = function(options){
-    this.cid = _.uniqueId("viewmodel");
-    this.model = options.model;
-    this.el = options.el;
-    this.$el = $(this.el);
-    this.initialize.apply(this, arguments);
-}
-ViewModel.extend = Backbone.Model.extend
-_.extend(ViewModel.prototype, Backbone.Events, {
-    initialize: function(){}
-});
-
-
-var PreviewImageViewModel = ViewModel.extend({
-    draw: function(imgdata){
-        this.$el.empty();
-        var preview_img = $('<img id="preview_img" title="clickして再描画" alt="clickして再描画">').attr('src', imgdata);
-        this.$el.append(preview_img);
-        this.$el.parents(".empty").removeClass("empty");
-    }
-});
-
-var DropAreaViewModel = ViewModel.extend({ //View?
-    touched: function(){
-        this.$el.addClass("touched");
-    }, 
-    untouched: function(){
-        this.$el.removeClass("touched")
-    }, 
-});
-
-var LoadingSpinnerViewModel = ViewModel.extend({
-    loading: function(){
-        this.$el.spinner("start");
-    }, 
-    noloading: function(){
-        this.$el.spinner("stop");
-    }
-});
-
-var TemplateVarsTableViewModel = ViewModel.extend({
-    initialize: function(){
-        this.$tbody = this.$el.find("tbody");
-        this.inputs = [];
-    }, 
-    emptyInfoTemplate: _.template('<td><div class="alert alert-info"><%= message %></div></td>'), 
-
-    redraw: function(vars){
-        this.inputs = [];
-        this.$tbody.empty();
-        if(vars.length <= 0){
-            return this.addEmptyInfo();
-        }
-        for(var i=0, size=vars.length; i<size; i+=2){
-            this.addRow(vars[i], vars[i+1]);
-        };
-    }, 
-    addRow: function(left, right){
-        var row = new TemplateVarRowView({left:left, right:right});
-        this.inputs.push(row);
-        this.$tbody.append(row.render().el);
-    }, 
-    addEmptyInfo: function(){
-        var message = "この券面テンプレートには プレースホルダーが設定されていません";
-        this.$tbody.append($("<tr>").html(this.emptyInfoTemplate({"message": message})));
-    }
-});
-
-/// views
-var TemplateVarRowView = Backbone.View.extend({
-    tagName: "tr", 
-    className: "vars-row", 
-    template: _.template('<td><%- name %></td><td><input class="<%- position%>" name="<%- name %>" value="<%- value %>" placeholder="ここに文字を入力してください"></input></td>'), 
-    events: {
-        "change input.left": "onUpdateLeft", 
-        "change input.right": "onUpdateRight", 
-    }, 
-    initialize: function(opts){
-        this.left = opts.left;
-        if(!this.left) throw "opts.left is not found";
-        this.right = opts.right;
-    }, 
-    render: function(){
-        var left = this.template(_.extend(this.left.toJSON(), {position: "left"}));
-        var right = ((!!this.right) ? this.template(_.extend(this.right.toJSON(), {position: "right"})) : "");
-        this.$el.html(left + right);
-        return this;
-    }, 
-    onUpdateLeft: function(){ //todo: e.currentTarget ?
-        this.left.set("value", this.$el.find("input.left").val());
-        // console.log(this.left.toJSON());
-    }, 
-    onUpdateRight: function(){ //todo: e.currentTarget ?
-        this.right.set("value", this.$el.find("input.right").val());
-        // console.log(this.right.toJSON());
-    }
- });
-
-var DragAndDropSVGSupportView = Backbone.View.extend({
-  events: {
-  }, 
-  initialize: function(opts){
-      this.vms = opts.vms || {}
-      var compose = DragAndDropSupportService.compose;
-      var default_action_cancel = DragAndDropSupportService.cancel;
-      
-      this.el.addEventListener("dragenter", default_action_cancel, false);
-      this.el.addEventListener('dragover',  compose(default_action_cancel, this.vms.droparea.touched.bind(this.vms.droparea)), false);
-      this.el.addEventListener('dragleave', compose(default_action_cancel, this.vms.droparea.untouched.bind(this.vms.droparea)), false);
-      this.el.addEventListener('drop',
-                               compose(default_action_cancel,
-                                       this.vms.droparea.untouched.bind(this.vms.droparea), 
-                                       DragAndDropSupportService.onDrop(this.onLoadSVG.bind(this))),
-                               false);
-  }, 
-  _onLoadSVGPassed: function(svg){
-      this.vms.spinner.loading();
-      return this.model.updateToRaw(svg);
-  }, 
-  onLoadSVG: function(e){
-      return this._onLoadSVGPassed(e.target.result)
-  }
-});
-
-var PreviewImageView = Backbone.View.extend({
-    events: {
-        "click #preview_area img#preview_img": "reDrawImage"
-    }, 
-    initialize: function(opts){
-        this.model.on("*preview.update.loading", this.onLoading, this);
-        this.model.on("*preview.update.loading", this.onCancel, this);
-        this.model.on("*preview.update.rendering", this.onRendering, this);
-        this.vms = opts.vms;
-    }, 
-    reDrawImage: function(){
-        this.model.reDraw();
-    }, 
-    onLoading: function(){
-        this.vms.spinner.loading();
-    }, 
-    onCancel: function(){
-        this.vms.spinner.noloading();
-    }, 
-    onRendering: function(){
-        this.vms.spinner.noloading();
-        this.vms.preview.draw(this.model.get("data"));
-    }
-});
-
-var TemplateFillValuesView = Backbone.View.extend({
-    events: {
-        "click a#redraw_btn": "onRedrawBtnClick"
-    }, 
-    initialize: function(opts){
-        this.model.on("*vars.update.vars", this.onUpdateTemplateVars, this);
-        this.vms = opts.vms;
-    }, 
-    // user action
-    onRedrawBtnClick: function(){
-        this.model.commitVarsValues();
-    }, 
-    // model -> view
-    onUpdateTemplateVars: function(){
-        this.vms.vars_input.redraw(this.model.get("vars").models);
-    }
-});

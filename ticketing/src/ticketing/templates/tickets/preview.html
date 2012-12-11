@@ -82,29 +82,20 @@
     </tbody>
 </table>
 
-
 <script type="text/javascript" src="${request.static_url("ticketing:static/js/altair/showhide.js")}"></script>
 <script type="text/javascript" src="${request.static_url("ticketing:static/js/altair/spinner.js")}"></script>
+<script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/core/gateway.js")}"></script>
+<script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/core/viewmodel.js")}"></script>
+<script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/preview/models.js")}"></script>
+<script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/preview/gateway.js")}"></script>
+<script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/preview/preview_api.js")}"></script>
+<script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/preview/services.js")}"></script>
+<script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/preview/viewmodels.js")}"></script>
+<script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/preview/views.js")}"></script>
 <script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/preview/app.js")}"></script>
 <script type="text/javascript">
   $(function(){
-  droparea = document.getElementById("svg_droparea");
-
-  svg = new SVGStore();
-  preview = new PreviewImageStore();
-  vars = new TemplateVarStore();
-  gateway = new ApiCommunicationGateWay({models: {svg: svg, preview: preview, vars: vars}, apis: ${apis|n}});
-
-  view_models = {
-    preview: new PreviewImageViewModel({el: $("#preview_block #preview_area")}),
-    droparea: new DropAreaViewModel({el: $("#preview_block #svg_droparea")}),
-    spinner: new LoadingSpinnerViewModel({el: $("#preview_block #preview_area")}),
-    vars_input: new TemplateVarsTableViewModel({el: $("#template_vars_table")})
-  };
-
-  dad_view = new DragAndDropSVGSupportView({el: droparea, vms: view_models, model: svg});
-  preview_image_view = new PreviewImageView({el: $("#preview_block"), vms: view_models, model: preview});
-  template_fillvalues_view = new TemplateFillValuesView({el: $("#preview_block"), vms: view_models, model: vars});
-  window.view_models = view_models;
+    window.apis = ${apis|n};
+    window.appView = preview.ApplicationViewFactory(apis, $("#preview_block"), $("#preview_block #preview_area"), $("#preview_block #svg_droparea"), $("#template_vars_table"));
   });
 </script>
