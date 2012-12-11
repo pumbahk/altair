@@ -324,7 +324,7 @@ def create_cart(request, lot_entry):
     wish = elected.lot_entry_wish
     performance_id = wish.performance_id
     payment_delivery_method_pair = lot_entry.payment_delivery_method_pair
-    cart = Cart(lot_entries=[lot_entry], 
+    cart = Cart.create(lot_entries=[lot_entry], 
         system_fee=payment_delivery_method_pair.system_fee,
         payment_delivery_pair=payment_delivery_method_pair, 
         shipping_address=lot_entry.shipping_address,

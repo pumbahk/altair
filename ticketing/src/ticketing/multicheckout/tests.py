@@ -5,6 +5,7 @@ from xml.etree import ElementTree as etree
 from pyramid import testing
 
 from ticketing.testing import _setup_db as _setup_db_, _teardown_db
+from .testing import DummyHTTPLib
 from . import api, models, interfaces
 
 def _setup_db(echo=False):
@@ -1364,44 +1365,3 @@ class Checkout3DTests(unittest.TestCase):
         self.assertEqual(result.Cavv, "0123456789012345678901234567")
         self.assertEqual(result.Eci, "01")
         self.assertEqual(result.Mvn, "0123456789")
-
-
-class DummyHTTPLib(object):
-    def __init__(self, response_body, status=200, reason="OK"):
-        self.called = []
-        self.response_body = response_body
-        self.status = status
-        self.reason = reason
-        from io import BytesIO
-        self.response_body = BytesIO(self.response_body)
-
-    def HTTPConnection(self, host, port):
-        self.host = host
-        self.port = port
-        self.called.append(('HTTPConnection', [host, port]))
-        return self
-
-    def HTTPSConnection(self, host, port):
-        self.host = host
-        self.port = port
-        self.called.append(('HTTPSConnection', [host, port]))
-        return self
-
-    def request(self, method, path, body, headers):
-        self.method = method
-        self.path = path
-        self.body = body
-        self.headers = headers
-        self.called.append(('request', [method, path, body, headers]))
-
-    def getresponse(self):
-        self.called.append(('getresponse', []))
-        return self
-
-    def read(self, block=-1):
-        self.called.append(('read', [block]))
-        return self.response_body.read(block)
-
-    def close(self):
-        self.called.append(('close', []))
-        self.response_body.close()

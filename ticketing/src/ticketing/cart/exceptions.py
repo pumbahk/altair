@@ -41,3 +41,8 @@ class DeliveryFailedException(Exception):
     def __init__(self, order_no, event_id):
         self.order_no = order_no
         self.event_id = event_id
+
+class UnassignedOrderNumberError(CartException):
+    def __init__(self, cart_id):
+        self.cart_id = cart_id
+
