@@ -115,6 +115,157 @@ class get_md_Tests(unittest.TestCase):
         self.assertEqual(api.get_md(request), 'test_md')
 
 
+class sanitize_card_number_Tests(unittest.TestCase):
+    def test_no_parameter(self):
+        xml_data = None
+        self.assertEqual(api.sanitize_card_number(xml_data), None)
+
+    def test_secure_code(self):
+        xml_data = '''
+        <Message>
+            <Auth>
+                <Order>
+                    <ItemCd>this-is-item-cd</ItemCd>
+                    <ItemName>&#x5546;&#x54C1;&#x540D;</ItemName>
+                    <OrderYMD>20120520</OrderYMD>
+                    <SalesAmount>100</SalesAmount>
+                    <TaxCarriage>50</TaxCarriage>
+                    <FreeData>&#x4EFB;&#x610F;&#x9805;&#x76EE;</FreeData>
+                    <ClientName>&#x697D;&#x5929;&#x592A;&#x90CE;</ClientName>
+                    <MailAddress>ticketstar@example.com</MailAddress>
+                    <MailSend>1</MailSend>
+                </Order>
+                <Card>
+                    <CardNo>1111111111111111</CardNo>
+                    <CardLimit>2009</CardLimit>
+                    <CardHolderName>RAKUTEN TAROU</CardHolderName>
+                    <PayKindCd>61</PayKindCd>
+                    <PayCount>10</PayCount>
+                    <SecureKind>1</SecureKind>
+                </Card>
+            </Auth>
+        </Message>
+        '''
+        result = '''
+        <Message>
+            <Auth>
+                <Order>
+                    <ItemCd>this-is-item-cd</ItemCd>
+                    <ItemName>&#x5546;&#x54C1;&#x540D;</ItemName>
+                    <OrderYMD>20120520</OrderYMD>
+                    <SalesAmount>100</SalesAmount>
+                    <TaxCarriage>50</TaxCarriage>
+                    <FreeData>&#x4EFB;&#x610F;&#x9805;&#x76EE;</FreeData>
+                    <ClientName>&#x697D;&#x5929;&#x592A;&#x90CE;</ClientName>
+                    <MailAddress>ticketstar@example.com</MailAddress>
+                    <MailSend>1</MailSend>
+                </Order>
+                <Card>
+                    <CardNo>XXXXXXXXXXXXXXXX</CardNo>
+                    <CardLimit>2009</CardLimit>
+                    <CardHolderName>RAKUTEN TAROU</CardHolderName>
+                    <PayKindCd>61</PayKindCd>
+                    <PayCount>10</PayCount>
+                    <SecureKind>1</SecureKind>
+                </Card>
+            </Auth>
+        </Message>
+        '''
+        self.assertTrue(compare_xml(api.sanitize_card_number(xml_data), result))
+
+    def test_enrol(self):
+        xml_data = '''
+        <Message>
+            <CardNumber>0123456789012345</CardNumber>
+            <ExpYear>12</ExpYear>
+            <ExpMonth>11</ExpMonth>
+            <TotalAmount>1234567</TotalAmount>
+            <Currency>392</Currency>
+        </Message>
+        '''
+        result = '''
+        <Message>
+            <CardNumber>XXXXXXXXXXXXXXXX</CardNumber>
+            <ExpYear>12</ExpYear>
+            <ExpMonth>11</ExpMonth>
+            <TotalAmount>1234567</TotalAmount>
+            <Currency>392</Currency>
+        </Message>
+        '''
+        self.assertTrue(compare_xml(api.sanitize_card_number(xml_data), result))
+
+    def test_secure3d(self):
+        xml_data = '''
+        <Message>
+            <Auth>
+                <Order>
+                    <ItemCd>this-is-item-cd</ItemCd>
+                    <ItemName>&#x5546;&#x54C1;&#x540D;</ItemName>
+                    <OrderYMD>20120520</OrderYMD>
+                    <SalesAmount>100</SalesAmount>
+                    <TaxCarriage>50</TaxCarriage>
+                    <FreeData>&#x4EFB;&#x610F;&#x9805;&#x76EE;</FreeData>
+                    <ClientName>&#x697D;&#x5929;&#x592A;&#x90CE;</ClientName>
+                    <MailAddress>ticketstar@example.com</MailAddress>
+                    <MailSend>1</MailSend>
+                </Order>
+                <Card>
+                    <CardNo>1111111111111111</CardNo>
+                    <CardLimit>2009</CardLimit>
+                    <CardHolderName>RAKUTEN TAROU</CardHolderName>
+                    <PayKindCd>61</PayKindCd>
+                    <PayCount>10</PayCount>
+                    <SecureKind>3</SecureKind>
+                </Card>
+                <Secure3D>
+                    <Mvn>mvn</Mvn>
+                    <Xid>Xid</Xid>
+                    <Ts>Ts</Ts>
+                    <ECI>ECI</ECI>
+                    <CAVV>CAVV</CAVV>
+                    <CavvAlgorithm>CavvAlgorithm</CavvAlgorithm>
+                    <CardNo>1111111111111111</CardNo>
+                </Secure3D>
+            </Auth>
+        </Message>
+        '''
+        result = '''
+        <Message>
+            <Auth>
+                <Order>
+                    <ItemCd>this-is-item-cd</ItemCd>
+                    <ItemName>&#x5546;&#x54C1;&#x540D;</ItemName>
+                    <OrderYMD>20120520</OrderYMD>
+                    <SalesAmount>100</SalesAmount>
+                    <TaxCarriage>50</TaxCarriage>
+                    <FreeData>&#x4EFB;&#x610F;&#x9805;&#x76EE;</FreeData>
+                    <ClientName>&#x697D;&#x5929;&#x592A;&#x90CE;</ClientName>
+                    <MailAddress>ticketstar@example.com</MailAddress>
+                    <MailSend>1</MailSend>
+                </Order>
+                <Card>
+                    <CardNo>XXXXXXXXXXXXXXXX</CardNo>
+                    <CardLimit>2009</CardLimit>
+                    <CardHolderName>RAKUTEN TAROU</CardHolderName>
+                    <PayKindCd>61</PayKindCd>
+                    <PayCount>10</PayCount>
+                    <SecureKind>3</SecureKind>
+                </Card>
+                <Secure3D>
+                    <Mvn>mvn</Mvn>
+                    <Xid>Xid</Xid>
+                    <Ts>Ts</Ts>
+                    <ECI>ECI</ECI>
+                    <CAVV>CAVV</CAVV>
+                    <CavvAlgorithm>CavvAlgorithm</CavvAlgorithm>
+                    <CardNo>XXXXXXXXXXXXXXXX</CardNo>
+                </Secure3D>
+            </Auth>
+        </Message>
+        '''
+        self.assertTrue(compare_xml(api.sanitize_card_number(xml_data), result))
+
+
 class is_enable_secure3d_Tests(unittest.TestCase):
     def test_it(self):
         request = testing.DummyRequest()
