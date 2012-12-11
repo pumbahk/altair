@@ -519,7 +519,6 @@ class FixtureBuilder(object):
                     ],
                 'organization_id',
                 ),
-<<<<<<< Updated upstream
             user=many_to_one(
                 [
                     account_datum.user \
@@ -527,11 +526,10 @@ class FixtureBuilder(object):
                     if account_datum.name == name
                     ][0],
                 'user_id'
-=======
+                ),
             sej_organization=one_to_many(
                 [self.build_sej_organization_datum(name)],
                 'organization_id'
->>>>>>> Stashed changes
                 )
             ),
         payment_method_data = [
