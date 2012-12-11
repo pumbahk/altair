@@ -11,7 +11,6 @@ from pyramid.tweens import EXCVIEW
 from pyramid.interfaces import IDict
 
 import sqlahelper
-from .api.impl import bind_communication_api ## cmsとの通信
 
 authn_exemption = re.compile(r'^(/_deform)|(/static)|(/_debug_toolbar)|(/favicon.ico)')
 
@@ -105,7 +104,7 @@ def main(global_config, **settings):
     event_push_communication.bind_instance(config)
 
     ## svg preview serverとの通信
-    from .tickets.api import SVGPreviewCommunication
+    from .tickets.preview.api import SVGPreviewCommunication
     svg_preview_communication = SVGPreviewCommunication(
         settings["altair.preview.svg.post_url"], 
         )

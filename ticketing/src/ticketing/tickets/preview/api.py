@@ -2,7 +2,7 @@ from jsonrpclib import jsonrpc
 from ticketing.api.impl import BaseCommunicationApi
 import base64
 from StringIO import StringIO
-from .response import FileLikeResponse
+from ..response import FileLikeResponse
 
 class SVGPreviewCommunication(BaseCommunicationApi):
     def __init__(self, post_url):
