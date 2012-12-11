@@ -1,7 +1,3 @@
-<%inherit file="../layout.html" />
-
-##<link rel="stylesheet" type="text/css" href="${request.static_url("ticketing:static/css/combobox.css")}"></link>
-<style type="text/css">
 .combobox{
   min-width:80px;
 }
@@ -98,51 +94,3 @@
   background-repeat: repeat-x;
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff0088cc', endColorstr='#ff0077b3', GradientType=0);
 }
-</style>
-
-<h1 class="page">
-  combobox demo
-</h1>
-
-<div class="modal"  style="margin-top:0px; min-width:800px;">
-  <div class="modal-header">
-    heh
-  </div>
-  <div class="modal-body">
-
-    
-    <div class="span2 combobox combobox-first event">
-      <div class="label" style="text-align:center;">イベント</div>
-      <ul class="combobox-menu">
-        <li class=""><a>ABCababababba<i class="icon-chevron-right"></i></a></li>
-        <li class="active"><a>XYZ<i class="icon-chevron-right"></i></a></li>
-        <li><a>XYZ<i class="icon-chevron-right"></i></a></li>
-      </ul>
-    </div>
-    <div class="span2 combobox combobox-else performance">
-      <div class="label" style="text-align:center;">パフォーマンス</div>
-      <ul class="combobox-menu">
-        <li class=""><a>ABC<i class="icon-chevron-right"></i></a></li>
-        <li class="active"><a>XYZ<i class="icon-chevron-right"></i></a></li>
-        <li><a>XYZ<i class="icon-chevron-right"></i></a></li>
-      </ul>
-    </div>
-    <div class="span2 combobox combobox-else product">
-      <div class="label" style="text-align:center;">商品</div>
-      <ul class="combobox-menu">
-        <li class=""><a>ABC<i class="icon-chevron-right"></i></a></li>
-        <li class="active"><a>XYZ<i class="icon-chevron-right"></i></a></li>
-        <li><a>XYZ<i class="icon-chevron-right"></i></a></li>
-      </ul>
-    </div>
-    <div class="span2 combobox combobox-else ticket">
-      <div class="label" style="text-align:center;">チケット様式</div>
-      <ul class="combobox-menu">
-        <li class=""><a>ABC<i class="icon-chevron-right"></i></a></li>
-        <li class="active"><a>XYZ<i class="icon-chevron-right"></i></a></li>
-        <li><a>XYZ<i class="icon-chevron-right"></i></a></li>
-      </ul>
-    </div>
-  </div>
-</div>
-

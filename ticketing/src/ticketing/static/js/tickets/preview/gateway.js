@@ -1,7 +1,7 @@
 if (!window.preview)
     window.preview = {}
 
-preview.ApiCommunicationGateway = core.CommunicationGateway.extend({
+preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
     initialize: function(){
         this.preview = this.models.preview;
         this.svg = this.models.svg;
