@@ -1,3 +1,6 @@
+// static/spin.js
+// altair/spinner.js
+
 if (!window.modal){
     window.modal = {};
     window.modal.api = {};
@@ -22,25 +25,32 @@ if (!window.modal){
         tmpl_header: '<div class="modal-header">',
         tmpl_body: '<div class="modal-body">',
         tmpl_footer: '<div class="modal-footer">',
-        onLoad: function(){
+
+        onLoad: function(){ // todo: refactoring;
             var wrap = $('<div class="modal">');
             wrap.empty();
             if (!wrap.hasClass("modal")){
                 wrap.addClass("modal");
             }
-            var close_button = $('<button type="button" class="close" data-dismiss="modal" aria-hidden="true">').text("×");
-            wrap.append($(this.tmpl_header).append(close_button).text(this.header || ""));
-            wrap.append($(this.tmpl_body).load(this.href));
+
+            var close_button = $('<button>').attr("type","button").attr("class","close").attr("data-dismiss", "modal").attr("aria-hidden", "true").text("×");
+            if(!!this.header){
+                wrap.append($(this.tmpl_header).append(close_button).append($("<h2>").text(this.header)));
+            }else{
+                wrap.append($(this.tmpl_header).append(close_button));
+            }
+
+            var body = $(this.tmpl_body);
+            body.load(this.href, function(){this.$el.spin(false)}.bind(this));
+            wrap.append(body);
             wrap.append($(this.tmpl_footer).text(this.footer || ""));
             this.$modalArea.append(wrap);            
             this.loaded = true;
         }, 
         onClick: function(){
             if(!this.loaded){
-                $.Deferred().done(function(){
-                    
-                    this.onLoad();
-                }.bind(this)).resolve();
+                this.$el.spin("large");
+                this.onLoad();
             }
             this.$modalArea.modal(this.option || {});
         }
