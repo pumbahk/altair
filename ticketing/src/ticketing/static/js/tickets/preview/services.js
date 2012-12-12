@@ -1,18 +1,6 @@
 if (!window.preview)
     window.preview = {}
 
-preview.ApiDeferredService = {
-    rejectIfStatusFail: function(fn){
-        return function(data){
-            if (data && data.status){
-                return fn? fn(data) : data;
-            }else {
-                return $.Deferred().rejectWith(this, [{responseText: "status: false, "+data.message+arguments[0]}, ]);
-            }
-        };
-    }, 
-};
-
 preview.DragAndDropSupportService = {
     compose: function(){
         var fns = arguments;

@@ -26,7 +26,7 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
     commitVarsValues: function(vars_values){
         var self = this;
         return $.post(this.apis.fillvalues, {"svg": this.svg.get("normalize"), "params": JSON.stringify(vars_values)})
-            .pipe(preview.ApiDeferredService.rejectIfStatusFail(function(data){
+            .pipe(core.ApiService.rejectIfStatusFail(function(data){
                 self.svg.updateToFilled(data.data);
             }))
             .fail(this._apiFail.bind(this));
@@ -35,7 +35,7 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
         this.preview.beforeRendering();
         var self = this;
         return $.post(this.apis.normalize, {"svg": this.svg.get("data")})
-            .pipe(preview.ApiDeferredService.rejectIfStatusFail(function(data){
+            .pipe(core.ApiService.rejectIfStatusFail(function(data){
                 self.svg.updateToNormalize(data.data);
             }))
             .fail(this._apiFail.bind(this));
@@ -44,7 +44,7 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
         this.preview.beforeRendering();
         var self = this;
         return $.post(this.apis.previewbase64, {"svg": this.svg.get("data")})
-            .pipe(preview.ApiDeferredService.rejectIfStatusFail(function(data){
+            .pipe(core.ApiService.rejectIfStatusFail(function(data){
                 self.preview.startRendering("data:image/png;base64,"+data.data); //add-hoc
             }))
             .fail(this._apiFail.bind(this));
@@ -53,7 +53,7 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
         this.preview.beforeRendering();
         var self = this;
         return $.post(this.apis.previewbase64, {"svg": this.svg.get("data")})
-            .pipe(preview.ApiDeferredService.rejectIfStatusFail(function(data){
+            .pipe(core.ApiService.rejectIfStatusFail(function(data){
                 self.preview.startRendering("data:image/png;base64,"+data.data); //add-hoc
             }))
             .fail(this._apiFail.bind(this));
@@ -61,7 +61,7 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
     collectTemplateVars: function(){ // todo:move it?
         var self = this;
         $.post(this.apis.collectvars, {"svg": this.models.svg.get("normalize")})
-            .pipe(preview.ApiDeferredService.rejectIfStatusFail(function(data){
+            .pipe(core.ApiService.rejectIfStatusFail(function(data){
                 self.vars.updateVars(data.data);
             }))
             .fail(this._apiFail.bind(this));

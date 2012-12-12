@@ -1,3 +1,5 @@
+# -*- coding:utf-8 -*-
+
 ## svg preview
 import json
 from StringIO import StringIO
@@ -135,6 +137,6 @@ class PreviewApiView(object):
         qs = c_models.Product.query.filter(c_models.Product.event_id==self.request.GET["event"],
                                            c_models.Product.id==c_models.ProductItem.product_id, 
                                            c_models.ProductItem.performance_id==self.request.GET["performance"])
-        seq = [{"pk": q.id, "name": "%s(%se)" % (q.name, q.price)} for q in qs]
+        seq = [{"pk": q.id, "name": u"%s(￥%s)" % (q.name, q.price)} for q in qs]
         return {"status": True, "data": seq}
 

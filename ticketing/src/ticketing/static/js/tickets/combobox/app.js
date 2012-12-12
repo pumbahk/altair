@@ -58,8 +58,8 @@ _.extend(CandidatesFetcher.prototype, {
     getCandidates: function(params){
         var params = this.getDependsValues(params);
         var self = this;
-        return $.get(this.api, params)
-            .pipe(preview.ApiDeferredService.rejectIfStatusFail(function(data){
+        return this.api(params)
+            .pipe(core.ApiService.rejectIfStatusFail(function(data){
                 self.model.changeCandidates(data.data);
             }))
             .fail(function(){
@@ -79,10 +79,19 @@ var ForTicketPreviewComboxGateway = core.ApiCommunicationGateway.extend({
         this.finishCallback = opts.finishCallback;
         if(!this.finishCallback) throw "finishCallback is not found";        
 
-        this.organization = new CandidatesFetcher({api: this.apis.organization_list, depends: [], model: this.models.organization});
-        this.event = new CandidatesFetcher({api: this.apis.event_list, depends: [this.organization], model: this.models.event});
-        this.performance = new CandidatesFetcher({api: this.apis.performance_list, depends: [this.organization, this.event], model: this.models.performance});
-        this.product = new CandidatesFetcher({api: this.apis.product_list, depends: [this.organization, this.event, this.performance], model: this.models.product});
+        this.organization = new CandidatesFetcher({api: core.ApiService.asGetFunction(this.apis.organization_list),
+                                                   depends: [],
+                                                   model: this.models.organization});
+        this.event = new CandidatesFetcher({api: core.ApiService.asGetFunction(this.apis.event_list), 
+                                            depends: [this.organization], 
+                                            model: this.models.event});
+        this.performance = new CandidatesFetcher({api: core.ApiService.asGetFunction(this.apis.performance_list),
+                                                  depends: [this.organization, this.event],
+                                                  model: this.models.performance});
+        this.product = new CandidatesFetcher({api: core.ApiService.asGetFunction(this.apis.product_list),
+                                              depends: [this.organization, this.event, this.performance],
+                                              model: this.models.product});
+
         this.organization.model.on("*combobox.select.result", this.organizationChanged, this);
         this.event.model.on("*combobox.select.result", this.eventChanged, this);
         this.performance.model.on("*combobox.select.result", this.performanceChanged, this);
