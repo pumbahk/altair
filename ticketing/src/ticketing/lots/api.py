@@ -66,6 +66,8 @@ from .models import (
     LotElectedEntry,
 )
 
+from .events import LotEntriedEvent
+
 def get_event(request):
     event_id = request.matchdict['event_id']
     return Event.query.filter(Event.id==event_id).one()
@@ -325,3 +327,7 @@ def get_ordered_lot_entry(order):
     ).filter(
         Cart.order_id==order.id
     ).first()
+
+def notify_entry_lot(request, entry):
+    event = LotEntriedEvent(entry)
+    request.registry.notify(event)
