@@ -3,6 +3,7 @@ if (!window.combobox)
 
 combobox.ComboboxSelection = Backbone.Model.extend({
     defaults: {
+        label: "<model名>", 
         targetObject: "", 
         candidates: [], 
         result: null // e.g. {name: "foo", pk: "1"}

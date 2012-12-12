@@ -19,6 +19,8 @@
 <script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/combobox/models.js")}"></script>
 <script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/combobox/app.js")}"></script>
 
+<script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/modal/api.js")}"></script>
+
 
 <script type="text/javascript">
   $(function(){
@@ -33,5 +35,9 @@
       $("#product_select"),
       afterAllSelect
     ).start();
+    new modal.api.AjaxModalView({el: $("#modal_btn"), href:"/", modalArea: $("#ajax_modal")});
   });
 </script>
+
+<a id="modal_btn">modal</a>
+<div id="ajax_modal"></div>

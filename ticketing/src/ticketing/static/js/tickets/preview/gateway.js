@@ -1,5 +1,5 @@
 if (!window.preview)
-    window.preview = {}
+    window.preview = {};
 
 preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
     initialize: function(){
@@ -66,4 +66,4 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
             }))
             .fail(this._apiFail.bind(this));
     }
-})
+});

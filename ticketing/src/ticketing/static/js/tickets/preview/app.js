@@ -20,7 +20,7 @@
 /// services
 // give me. module!
 if (!window.preview)
-    window.preview = {}
+    window.preview = {};
 
 preview.ApplicationView = Backbone.View.extend({
     initialize: function(opts){
@@ -55,6 +55,6 @@ preview.ApplicationViewFactory = function(apis,  gateway_impl,  $preview_block, 
         template_fillvalues_view:  new preview.TemplateFillValuesView({el: $preview_block, vms: view_models, model: models.vars})
       };
 
-    var gateway = new gateway_impl({models: this.models, apis: this.apis});
+    var gateway = new gateway_impl({models: models, apis: apis});
     return new preview.ApplicationView({models: models, apis: apis, view_models: view_models, views: views, gateway:gateway});
 };

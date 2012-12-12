@@ -10,11 +10,13 @@ combobox.ComboboxViewModel = core.ViewModel.extend({
         }, 
         draw: function(candidates){
             this.refresh();
-            var root = $("<select>");
+            var select = $("<select>");
             _(candidates).each(function(c){
-                root.append($("<option>").text(c.name).attr("value", c.pk));
+                select.append($("<option>").text(c.name).attr("value", c.pk));
             });
-            this.$el.append(root);
+            
+            this.$el.append($("<p>").text(this.model.get("label")));
+            this.$el.append(select);
         }, 
         onSelect: function(){
             var o = this.$el.find("option:selected");

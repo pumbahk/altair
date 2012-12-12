@@ -23,10 +23,10 @@ combobox.ApplicationView = Backbone.View.extend({
 // event receiver and api user.
 combobox.ApplicationViewFactory = function(apis, gateway_impl, $organization, $event, $performance, $product, afterAllSelect){
     var models = {
-      organization:  new combobox.ComboboxSelection({targetObject: "organization"}),
-      event:  new combobox.ComboboxSelection({targetObject: "event"}),
-      performance:  new combobox.ComboboxSelection({targetObject: "performance" }),
-      product:  new combobox.ComboboxSelection({targetObject: "product"})
+        organization:  new combobox.ComboboxSelection({targetObject: "organization", label: "Organization"}),
+        event:  new combobox.ComboboxSelection({targetObject: "event", label: "イベント"}),
+        performance:  new combobox.ComboboxSelection({targetObject: "performance", label: "公演"}),
+        product:  new combobox.ComboboxSelection({targetObject: "product", label: "商品"})
     };
     var gateway = new combobox.ForTicketPreviewComboboxGateway({models:models, apis:apis, finishCallback:afterAllSelect  });
     var view_models = {
@@ -41,5 +41,5 @@ combobox.ApplicationViewFactory = function(apis, gateway_impl, $organization, $e
       performance:  new combobox.ComboboxView({vms: {input: view_models["performance"]}, model: models.performance, el: $performance}),
       product:  new combobox.ComboboxView({vms: {input: view_models["product"]}, model: models.product, el: $product})
     };
-  return new combobox.ApplicationView({models: models, apis: apis, view_models: view_models, views: views, gateway:gateway});
+    return new combobox.ApplicationView({models: models, apis: apis, view_models: view_models, views: views, gateway:gateway});
 };
