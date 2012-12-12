@@ -11,17 +11,17 @@ describe("Combobox ui ",  function(){
         var models;
         beforeEach(function(){
             models = {
-                organization:  new ComboboxSelection({targetObject: "organization"}),
-                event:  new ComboboxSelection({targetObject: "event"}),
-                performance:  new ComboboxSelection({targetObject: "performance" }),
-                product:  new ComboboxSelection({targetObject: "product"})
+                organization:  new combobox.ComboboxSelection({targetObject: "organization"}),
+                event:  new combobox.ComboboxSelection({targetObject: "event"}),
+                performance:  new combobox.ComboboxSelection({targetObject: "performance" }),
+                product:  new combobox.ComboboxSelection({targetObject: "product"})
             };
         });
 
         describe("model logic only", function(){
             it("after last combo selection is selected, then, call back is called", function(){
                 var finishResult = null;            
-                var gateway = new ForTicketPreviewComboboxGateway({
+                var gateway = new combobox.ForTicketPreviewComboboxGateway({
                     models:models, 
                     apis: {}, 
                     finishCallback: function(r){finishResult = r;}
@@ -35,7 +35,7 @@ describe("Combobox ui ",  function(){
                 var finishResult = null;            
                 var product_list_candidates = [{"name": "foo", "pk": 1}, {"name": "bar", "pk": 2}];            
 
-                var gateway = new ForTicketPreviewComboboxGateway({
+                var gateway = new combobox.ForTicketPreviewComboboxGateway({
                     models:models, 
                     apis: {
                         product_list: utils.makeDummyFetchApi(product_list_candidates)
@@ -69,8 +69,8 @@ describe("Combobox ui ",  function(){
                         product: createViewModel(["refresh", "draw", "onSelect"])
                     };
                     views = {
-                        performance:  new ComboboxView({vms: {input: view_models.performance}, model: models.performance}), 
-                        product:  new ComboboxView({vms: {input: view_models.product}, model: models.product})
+                        performance:  new combobox.ComboboxView({vms: {input: view_models.performance}, model: models.performance}), 
+                        product:  new combobox.ComboboxView({vms: {input: view_models.product}, model: models.product})
                     };
                 });
                 it("chained view calll draw()", function(){
@@ -80,7 +80,7 @@ describe("Combobox ui ",  function(){
                         product_list: utils.makeDummyFetchApi(product_candidats)
                     };
                     
-                    var gateway = new ForTicketPreviewComboboxGateway({
+                    var gateway = new combobox.ForTicketPreviewComboboxGateway({
                         models:models, apis: apis, 
                         finishCallback: function(r){finishResult = r;}
                     });
@@ -91,14 +91,14 @@ describe("Combobox ui ",  function(){
 
                     expect(view_models.product.onSelect.callCount).toEqual(0);
                 });
-                it("chained view calll draw() and if fetched candidates length is 1, then, auto select it.", function(){
+                it("chained view calll draw() and if a length of fetched candidates is 1, then, auto select it.", function(){
                     // chain: performance -> product
                     var product_candidats = [{name: "foo", pk: 1}];
                     var apis = {
                         product_list: utils.makeDummyFetchApi(product_candidats)
                     };
                     
-                    var gateway = new ForTicketPreviewComboboxGateway({
+                    var gateway = new combobox.ForTicketPreviewComboboxGateway({
                         models:models, apis: apis, 
                         finishCallback: function(r){finishResult = r;}
                     });
@@ -138,10 +138,10 @@ describe("Combobox ui ",  function(){
                     }
                 };
                 var views = {
-                    organization:  new ComboboxView({vms: {input: view_models.organization}, model: models.organization}), 
-                    event:  new ComboboxView({vms: {input: view_models.event}, model: models.event}), 
-                    performance:  new ComboboxView({vms: {input: view_models.performance}, model: models.performance}), 
-                    product:  new ComboboxView({vms: {input: view_models.product}, model: models.product})
+                    organization:  new combobox.ComboboxView({vms: {input: view_models.organization}, model: models.organization}), 
+                    event:  new combobox.ComboboxView({vms: {input: view_models.event}, model: models.event}), 
+                    performance:  new combobox.ComboboxView({vms: {input: view_models.performance}, model: models.performance}), 
+                    product:  new combobox.ComboboxView({vms: {input: view_models.product}, model: models.product})
                 };
 
                 var apis = {
@@ -151,7 +151,7 @@ describe("Combobox ui ",  function(){
                     product_list: utils.makeDummyFetchApi([{name: "product:1", pk: 1}, {name: "product:2", pk: 2}])
                 };
 
-                var gateway = new ForTicketPreviewComboboxGateway({
+                var gateway = new combobox.ForTicketPreviewComboboxGateway({
                     models:models, apis: apis, 
                     finishCallback: function(r){finishResult = r;}
                 });

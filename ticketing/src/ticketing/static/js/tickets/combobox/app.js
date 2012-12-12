@@ -1,173 +1,45 @@
 // core.ViewModel
 // core.CommunicationGateway
+if (!window.combobox)
+    window.combobox = {}
 
-var ComboboxSelection = Backbone.Model.extend({
-    defaults: {
-        targetObject: "", 
-        candidates: [], 
-        result: null // e.g. {name: "foo", pk: "1"}
-    }, 
-    refresh: function(){
-        this.set("result", null); // warning.
-        this.set("candidates", []);
-    }, 
-    changeCandidates: function(data){
-        this.set("candidates", _(data).map(function(o){
-            return {"name": o.name, "pk": o.pk};
-        }));
-        this.trigger("*combobox.change.candidates", this.get("candidates"));
-    }, 
-    selectValue: function(result){
-        this.set("result", result);
-        this.trigger("*combobox.select.result");
-    }, 
-    cascade: function(){
-        args = Array.prototype.slice.apply(arguments);
-        args.unshift("*combobox.cascade");
-        this.trigger.apply(this, args);
-    }
-});
-
-var CandidatesFetcher = function(opts){
-    this.api = opts.api;
-    if(!this.api) throw "api is not found";
-    this.model = opts.model;
-    if(!this.model) throw "model is not found";
-    this.initialize.apply(this, arguments);
-};
-// cascade functions.
-_.extend(CandidatesFetcher.prototype, {
+combobox.ApplicationView = Backbone.View.extend({
     initialize: function(opts){
-        this.depends = opts.depends || [];
-
-        if(this.depends.length>0){
-            _(this.depends).each(function(dep){
-                dep.model.on("*combobox.cascade", this.cascade, this);
-            }.bind(this));
-            this.depends[0].model.trigger("*combobox.cascade", ":");
-        }
+        this.models = opts.models;
+        if(!this.models) throw "models is not found";
+        this.apis = opts.apis;
+        if(!this.apis) throw "apis is not found";
+        this.view_models = opts.view_models;
+        if(!this.view_models) throw "view_models is not found";
+        this.gateway = opts.gateway;
+        if(!this.gateway) throw "gateway is not found";
     }, 
-    cascade: function(){ // cascade event
-        // console.log("cascade:"+ this.model.get("targetObject"));
-        // console.log(Array.prototype.slice.apply(arguments));
-        this.model.trigger.apply(this.model, Array.prototype.slice.apply(arguments));
-    }, 
-    getDependsValues: function(params){
-        var params = params || {};
-        _(this.depends).each(function(o){
-            if(!!o.model.get("result")){
-                params[o.model.get("targetObject")] = o.model.get("result").pk;
-            }
-        });
-        return params;
-    }, 
-    updateCandidates: function(params){
-        var params = this.getDependsValues(params);
-        var self = this;
-        return this.api(params)
-            .pipe(core.ApiService.rejectIfStatusFail(function(data){
-                self.model.changeCandidates(data.data);
-            }))
-            .fail(function(){
-                self.model.trigger("*combobox.fetcher.fail", self.api, {responseText: self.ap+":"+arguments[0]["responseText"]});
-            });
-    }, 
-    getResult: function(){
-        return this.model.get("result");
+    start: function(){
+        this.gateway.organization.updateCandidates();
+        return this;
     }
 });
-CandidatesFetcher.extend = Backbone.Model.extend;
 
 // event receiver and api user.
-
-var ForTicketPreviewComboboxGateway = core.ApiCommunicationGateway.extend({
-    initialize: function(opts){
-        this.finishCallback = opts.finishCallback;
-        if(!this.finishCallback) throw "finishCallback is not found";        
-
-        this.organization = new CandidatesFetcher({api: core.ApiService.asGetFunction(this.apis.organization_list),
-                                                   depends: [],
-                                                   model: this.models.organization});
-        this.event = new CandidatesFetcher({api: core.ApiService.asGetFunction(this.apis.event_list), 
-                                            depends: [this.organization], 
-                                            model: this.models.event});
-        this.performance = new CandidatesFetcher({api: core.ApiService.asGetFunction(this.apis.performance_list),
-                                                  depends: [this.organization, this.event],
-                                                  model: this.models.performance});
-        this.product = new CandidatesFetcher({api: core.ApiService.asGetFunction(this.apis.product_list),
-                                              depends: [this.organization, this.event, this.performance],
-                                              model: this.models.product});
-
-        this.organization.model.on("*combobox.select.result", this.organizationChanged, this);
-        this.event.model.on("*combobox.select.result", this.eventChanged, this);
-        this.performance.model.on("*combobox.select.result", this.performanceChanged, this);
-        this.product.model.on("*combobox.select.result", this.productChanged, this);
-
-        this.organization.model.on("*combobox.fetcher.fail", this._apiFail, this);
-        this.event.model.on("*combobox.fetcher.fail", this.apiFail, this);
-        this.performance.model.on("*combobox.fetcher.fail", this._apiFail,  this);
-        this.product.model.on("*combobox.fetcher.fail", this._apiFail, this);
-    }, 
-    _apiFail: function(s, err){
-        console.warn(s.responseText, arguments);
-    }, 
-    organizationChanged: function(){
-        this.event.updateCandidates();
-    }, 
-    eventChanged: function(){
-        this.performance.updateCandidates();
-    }, 
-    performanceChanged: function(){
-        this.product.updateCandidates();
-    }, 
-    productChanged: function(){
-        this.finishCallback({
-            organization: this.organization.getResult(), 
-            event: this.event.getResult(), 
-            performance: this.performance.getResult(), 
-            product: this.product.getResult()
-        });
-    }, 
-});
-
-var ComboboxViewModel = core.ViewModel.extend({
-    initialize: function(){
-        this.$el.delegate("select", "change", this.onSelect.bind(this));
-    }, 
-    refresh: function(){
-        this.$el.empty();
-    }, 
-    draw: function(candidates){
-        this.refresh();
-        var root = $("<select>");
-        _(candidates).each(function(c){
-            root.append($("<option>").text(c.name).attr("value", c.pk));
-        });
-        this.$el.append(root);
-    }, 
-    onSelect: function(){
-        var o = this.$el.find("option:selected");
-        this.model.selectValue({"name": o.text(), "pk": o.val()});
-    }
-})
-var ComboboxView = Backbone.View.extend({
-    initialize: function(opts){
-        this.vms = opts.vms;
-        this.model.on("*combobox.change.candidates", this.draw, this);
-        this.model.on("*combobox.refresh.candidates", this.refresh, this);
-    }, 
-    draw: function(candidates){
-        this.vms.input.draw(candidates);
-        this.refreshChild();
-        if (candidates.length <= 1)
-            this.vms.input.onSelect();
-    }, 
-    refresh: function(){
-        this.model.refresh();
-        this.vms.input.refresh();
-    }, 
-    refreshChild: function(){
-        this.model.set("result", null);
-        this.model.cascade("*combobox.refresh.candidates");
-    }
-});
+combobox.ApplicationViewFactory = function(apis, gateway_impl, $organization, $event, $performance, $product, afterAllSelect){
+    var models = {
+      organization:  new combobox.ComboboxSelection({targetObject: "organization"}),
+      event:  new combobox.ComboboxSelection({targetObject: "event"}),
+      performance:  new combobox.ComboboxSelection({targetObject: "performance" }),
+      product:  new combobox.ComboboxSelection({targetObject: "product"})
+    };
+    var gateway = new combobox.ForTicketPreviewComboboxGateway({models:models, apis:apis, finishCallback:afterAllSelect  });
+    var view_models = {
+      organization:  new combobox.ComboboxViewModel({model: models.organization, el: $organization}),
+      event:  new combobox.ComboboxViewModel({model: models.event, el: $event}),
+      performance:  new combobox.ComboboxViewModel({model: models.performance, el: $performance}),
+      product:  new combobox.ComboboxViewModel({model: models.product, el: $product})
+    };
+    var views = {
+      organization:  new combobox.ComboboxView({vms: {input: view_models["organization"]}, model: models.organization, el: $organization}),
+      event:  new combobox.ComboboxView({vms: {input: view_models["event"]}, model: models.event, el: $event}),
+      performance:  new combobox.ComboboxView({vms: {input: view_models["performance"]}, model: models.performance, el: $performance}),
+      product:  new combobox.ComboboxView({vms: {input: view_models["product"]}, model: models.product, el: $product})
+    };
+  return new combobox.ApplicationView({models: models, apis: apis, view_models: view_models, views: views, gateway:gateway});
+};
