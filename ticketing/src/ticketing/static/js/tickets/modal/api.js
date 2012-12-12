@@ -10,6 +10,9 @@ if (!window.modal){
 (function(api){
     api.AjaxModalView = Backbone.View.extend({
         events: {"click": "onClick"}, 
+        /*
+        new _({el: <>, model: <>,  modelArea: <>, href: <>, header: <>,  footer: <>,  callback: <>, option: <>})
+        */
         initialize: function(opts){
             this.loaded = false;
 
@@ -21,6 +24,8 @@ if (!window.modal){
             this.header = opts.header;
             this.footer = opts.footer;
             this.option = opts.option; // modal option
+
+            this.callback = opts.callback;
         }, 
         tmpl_header: '<div class="modal-header">',
         tmpl_body: '<div class="modal-body">',
@@ -41,7 +46,10 @@ if (!window.modal){
             }
 
             var body = $(this.tmpl_body);
-            body.load(this.href, function(){this.$el.spin(false)}.bind(this));
+            body.load(this.href, function(){
+                this.$el.spin(false);
+                if(!!this.callback){this.callback(this.$modalArea);}
+            }.bind(this));
             wrap.append(body);
             wrap.append($(this.tmpl_footer).text(this.footer || ""));
             this.$modalArea.append(wrap);            

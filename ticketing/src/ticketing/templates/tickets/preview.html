@@ -61,7 +61,8 @@
     <div class="navbar-inner">
       <a class="brand" href="#">preview画像表示</a>
       <ul class="nav">
-        <li class="" ><a id="redraw_btn" href="#">reDraw</a></li>
+        <li class="" ><a id="redraw_btn" href="#">再描画</a></li>
+        <li class="" ><a id="combobox_btn" href="#">入力補助ダイアログ</a></li>
         <li class=""><a id="download_btn" href="#">download</a></li>
       </ul>
     </div>
@@ -82,19 +83,12 @@
   </tbody>
 </table>
 
-<div class="modal" style="margin-top:0px;">
-  <div class="modal-header">
-    heh
-  </div>
-  <div class="modal-body">
-    heh
-  </div>
-  <div class="modal-footer">
-    heh
-  </div>
-</div>
+<div id="combobox_modal"></div>
+
+
 <script type="text/javascript" src="${request.static_url("ticketing:static/js/spin.js")}"></script>
 <script type="text/javascript" src="${request.static_url("ticketing:static/js/altair/spinner.js")}"></script>
+<script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/modal/api.js")}"></script>
 <script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/core/gateway.js")}"></script>
 <script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/core/viewmodel.js")}"></script>
 <script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/core/services.js")}"></script>
@@ -111,15 +105,33 @@
 <script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/combobox/models.js")}"></script>
 <script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/combobox/app.js")}"></script>
 
-
 <script type="text/javascript">
   $(function(){
+    if(!window.apps)
+       window.apps = {}; 
+
     window.apis = ${apis|n};
-    window.appView = preview.ApplicationViewFactory(apis,
+    window.apps["preview"] = window.appView = preview.ApplicationViewFactory(apis,
      preview.ApiCommunicationGateway,
      $("#preview_block"), 
      $("#preview_block #preview_area"),
      $("#preview_block #svg_droparea"), 
      $("#template_vars_table"));
+
+    window.comboboxModalView = new modal.api.AjaxModalView({
+      el: $("#combobox_btn"),
+      href:"${request.route_path("tickets.preview.combobox")}",
+      modalArea: $("#combobox_modal"),
+      callback: function(area){
+        var btn = $("<a>").attr("class", "btn").text("プレースホルダに値を挿入");
+        area.find(".modal-footer").append(btn);
+
+        apps["combobox"].setFinishBack(function(result){
+    　　  console.dir(result);
+          alert("hehheh");
+    　　})
+        btn.click(function(){apps["combobox"].getFinishBack()()});
+      }
+    });
   });
 </script>

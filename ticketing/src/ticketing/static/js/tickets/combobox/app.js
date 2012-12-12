@@ -14,6 +14,12 @@ combobox.ApplicationView = Backbone.View.extend({
         this.gateway = opts.gateway;
         if(!this.gateway) throw "gateway is not found";
     }, 
+    setFinishBack: function(fn){
+        this.gateway.finishCallback = fn;
+    }, 
+    getFinishBack: function(){
+        return this.gateway.productChanged.bind(this.gateway);
+    }, 
     start: function(){
         this.gateway.organization.updateCandidates();
         return this;
