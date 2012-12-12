@@ -30,8 +30,13 @@ preview.ApplicationView = Backbone.View.extend({
         if(!this.apis) throw "apis is not found";
         this.view_models = opts.view_models;
         if(!this.view_models) throw "view_models is not found";
+        this.views = opts.views;
+        if(!this.views) throw "views is not found";
         this.gateway = opts.gateway;
         if(!this.gateway) throw "gateway is not found";
+    }, 
+    fillsVarsWithParams: function(params){
+        this.views.template_fillvalues_view.fillsVarsWithParams(params);
     }
 });
 
@@ -50,9 +55,9 @@ preview.ApplicationViewFactory = function(apis,  gateway_impl,  $preview_block, 
       };
 
       var views = {
-        dad_view:  new preview.DragAndDropSVGSupportView({el: $svg_droparea, vms: view_models, model: models.svg}), 
-        preview_image_view:  new preview.PreviewImageView({el: $preview_block, vms: view_models, model: models.preview}), 
-        template_fillvalues_view:  new preview.TemplateFillValuesView({el: $preview_block, vms: view_models, model: models.vars})
+          dad_view:  new preview.DragAndDropSVGSupportView({el: $svg_droparea, vms: view_models, model: models.svg}), 
+          preview_image_view:  new preview.PreviewImageView({el: $preview_block, vms: view_models, model: models.preview}), 
+          template_fillvalues_view:  new preview.TemplateFillValuesView({el: $preview_block, vms: view_models, model: models.vars})
       };
 
     var gateway = new gateway_impl({models: models, apis: apis});

@@ -60,7 +60,20 @@ def template_fillvalues(template, params, variation=IdentityVariation()):
     >>> template_fillvalues(template, {"hello": "good-bye, "})
     u"good-bye,  this is a {{item}} {{heee}}"    
     """
-    return FillValuesRenderer(variation).render(template, params)
+    return FillValuesRenderer(variation).render(template, convert_to_nested_dict(params))
+
+def convert_to_nested_dict(D, delim="."):
+    r = D.copy()
+    for k in r.keys():
+        if delim in k:
+            parts = k.split(delim);
+            ptr = r
+            for part in parts[:-1:1]:
+                if not part in ptr:
+                    ptr[part] = {}
+                ptr = ptr[part]
+            ptr[parts[-1]] = D[k]
+    return r
 
 class _CachedCounter(object):
     def __init__(self, default=0):

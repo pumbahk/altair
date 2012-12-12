@@ -48,7 +48,7 @@ if (!window.modal){
             var body = $(this.tmpl_body);
             body.load(this.href, function(){
                 this.$el.spin(false);
-                if(!!this.callback){this.callback(this.$modalArea);}
+                if(!!this.callback){this.callback(this);}
             }.bind(this));
             wrap.append(body);
             wrap.append($(this.tmpl_footer).text(this.footer || ""));
@@ -61,6 +61,9 @@ if (!window.modal){
                 this.onLoad();
             }
             this.$modalArea.modal(this.option || {});
+        }, 
+        hide: function(){
+            this.$modalArea.modal("hide");
         }
     });
 })(window.modal.api);

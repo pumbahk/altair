@@ -218,14 +218,6 @@ class DictBuilder(object):
         sales_segment = product.sales_segment
 
         retval.update({
-            u'salesSegment': {
-                u'name': sales_segment.name,
-                u'kind': sales_segment.kind,
-                u'start_at': datetime_as_dict(sales_segment.start_at),
-                u'end_at': datetime_as_dict(sales_segment.end_at),
-                u'upper_limit': sales_segment.upper_limit,
-                u'seat_choice': sales_segment.seat_choice
-                }, 
             u'product': {
                 u'name': product.name,
                 u'price': product.price
@@ -233,7 +225,18 @@ class DictBuilder(object):
             u'券種名': product.name,
             u'商品名': product.name,
             u'商品価格': self.formatter.format_currency(product.price),
+            u'チケット価格': self.formatter.format_currency(product.price),
             })
+
+        if sales_segment:
+            retval.update({u'salesSegment': {
+                u'name': sales_segment.name,
+                u'kind': sales_segment.kind,
+                u'start_at': datetime_as_dict(sales_segment.start_at),
+                u'end_at': datetime_as_dict(sales_segment.end_at),
+                u'upper_limit': sales_segment.upper_limit,
+                u'seat_choice': sales_segment.seat_choice
+                }})
         return retval
 
 

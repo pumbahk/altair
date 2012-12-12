@@ -17,7 +17,7 @@ from .fillvalues import template_collect_vars
 from .fillvalues import template_fillvalues
 
 from ticketing.tickets.utils import build_dict_from_product
-from ticketing.tickets.utils import build_dict_from_performance
+from ticketing.tickets.utils import build_dict_from_venue
 from ticketing.tickets.utils import build_dict_from_event
 from ticketing.tickets.utils import build_dict_from_organization
 import logging
@@ -145,7 +145,7 @@ class PreviewApiView(object):
             
             if performance and "pk" in performance:
                 performance = c_models.Performance.query.filter_by(id=performance["pk"]).first()
-                v = build_dict_from_performance(performance, retval=v)
+                v = build_dict_from_venue(performance.venue, retval=v)
                 return {"status": True, "data": decimal_converter(v, converter=float)}
             elif event and "pk" in event:
                 event = c_models.Event.query.filter_by(id=event["pk"]).first()

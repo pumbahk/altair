@@ -21,10 +21,10 @@ preview.DropAreaViewModel = core.ViewModel.extend({ //View?
 
 preview.LoadingSpinnerViewModel = core.ViewModel.extend({
     loading: function(){
-        this.$el.spinner("start");
+        this.$el.spin();
     }, 
     noloading: function(){
-        this.$el.spinner("stop");
+        this.$el.spin(false);
     }
 });
 
@@ -34,7 +34,12 @@ preview.TemplateVarsTableViewModel = core.ViewModel.extend({
         this.inputs = [];
     }, 
     emptyInfoTemplate: _.template('<td><div class="alert alert-info"><%= message %></div></td>'), 
-
+    each_input: function(fn){
+        _(this.inputs).each(function(row){
+            !!row.left && fn(row.$left);
+            !!row.right && fn(row.$right);
+        });
+    }, 
     redraw: function(vars){
         this.inputs = [];
         this.$tbody.empty();
