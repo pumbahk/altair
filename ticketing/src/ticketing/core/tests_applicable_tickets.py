@@ -30,7 +30,7 @@ class IssuedPrintedSetterTests(unittest.TestCase):
     def test_sej_only_with_other(self):
         """ SEJの券面だけを取り出す"""
         from ticketing.models import DBSession
-        from ticketing.cart.plugins.sej import DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID_SEJ
+        from ticketing.payments.plugins.sej import DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID_SEJ
         from ticketing.core.models import TicketBundle, Ticket, TicketFormat, DeliveryMethod
 
         sej_ticket_fmt = TicketFormat(name="", )
@@ -56,7 +56,7 @@ class IssuedPrintedSetterTests(unittest.TestCase):
     def test_sej_only_with_format_id(self):
         """(format_idが渡された場合) SEJ券面を探し かつ 指定されたformat_idと等しいものだけを取り出す"""
         from ticketing.models import DBSession
-        from ticketing.cart.plugins.sej import DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID_SEJ
+        from ticketing.payments.plugins.sej import DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID_SEJ
         from ticketing.core.models import TicketBundle, Ticket, TicketFormat, DeliveryMethod
 
         sej_ticket_fmt1 = TicketFormat(name="", )
@@ -84,7 +84,7 @@ class IssuedPrintedSetterTests(unittest.TestCase):
     def test_will_issued_by_own(self):
         """自社発券用の券面を取り出す。"""
         from ticketing.models import DBSession
-        from ticketing.cart.plugins.sej import DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID_SEJ
+        from ticketing.payments.plugins.sej import DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID_SEJ
         from ticketing.core.models import TicketBundle, Ticket, TicketFormat, DeliveryMethod
 
         sej_ticket_fmt1 = TicketFormat(name="", )

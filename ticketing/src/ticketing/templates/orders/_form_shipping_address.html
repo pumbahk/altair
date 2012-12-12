@@ -10,16 +10,16 @@
   <div class="modal-body">
     <form action="javascript:save_shipping_address();" method="POST">
       <fieldset>
-        ${h.form_item(form.last_name, option={'maxlength':255})}
-        ${h.form_item(form.first_name, option={'maxlength':255})}
-        ${h.form_item(form.last_name_kana, option={'maxlength':255})}
-        ${h.form_item(form.first_name_kana, option={'maxlength':255})}
-        ${h.form_item(form.zip, option={'maxlength':7})}
-        ${h.form_item(form.prefecture, option={'maxlength':255})}
-        ${h.form_item(form.city, option={'maxlength':255})}
-        ${h.form_item(form.address_1, option={'maxlength':255})}
-        ${h.form_item(form.address_2, option={'maxlength':255})}
-        ${h.form_item(form.tel, option={'maxlength':12})}
+        ${h.form_item(form.last_name, maxlength=255)}
+        ${h.form_item(form.first_name, maxlength=255)}
+        ${h.form_item(form.last_name_kana, maxlength=255)}
+        ${h.form_item(form.first_name_kana, maxlength=255)}
+        ${h.form_item(form.zip, maxlength=7)}
+        ${h.form_item(form.prefecture, maxlength=255)}
+        ${h.form_item(form.city, maxlength=255)}
+        ${h.form_item(form.address_1, maxlength=255)}
+        ${h.form_item(form.address_2, maxlength=255)}
+        ${h.form_item(form.tel, maxlength=12)}
         ${h.form_item(form.mail_address)}
       </fieldset>
     </form>

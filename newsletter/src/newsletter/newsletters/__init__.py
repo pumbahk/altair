@@ -8,6 +8,7 @@ def includeme(config):
     config.add_route('newsletters.edit' ,'/edit/{id}')
     config.add_route('newsletters.delete' ,'/delete/{id}')
     config.add_route('newsletters.download' ,'/download/{id}')
+    config.add_route('newsletters.download.error' ,'/download/{id}/error')
     config.add_route('newsletters.test_mail' ,'/test_mail/{id}')
     config.add_route('newsletters.html_mail', '/html_mail/{id}')
 

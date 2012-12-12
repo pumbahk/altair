@@ -5,7 +5,32 @@
 <script type="text/javascript">
   function new_stock_holder() {
     var modal = $('#modal-stock_holder');
-    reset_form(modal, '#event_id');
+    reset_form(modal, '#event_id', true);
+    // FIXME: formをsubmitしたらページ遷移が発生する挙動に頼っていて
+    // onchangeイベントハンドラはずしてないの注意
+    (function() {
+      var $account_id = $('#modal-stock_holder #account_id');
+      var $name = $('#modal-stock_holder #name');
+      if (!$name.val()) {
+        var fillDefault = true;
+        function onchange() {
+          if (fillDefault) {
+            var selected = $account_id.val();
+            $account_id.children().each(function (_, n) {
+              if (selected == n.value || selected == null) {
+                $name.val(n.firstChild.nodeValue);
+                return false;
+              }
+            });
+          }
+        }
+        $name.change(function () {
+          fillDefault = false;
+        });
+        $account_id.change(onchange);
+        onchange();
+      }
+    })();
     modal.modal('toggle');
   }
   function edit_stock_holder(id) {
@@ -13,6 +38,7 @@
     if (!id) return;
     var el = '#stock_holder-' + id;
     var modal = $('#modal-stock_holder');
+    reset_form(modal, '#event_id', false);
     modal.find('#id').val(id);
     modal.find('#name').val($(el).attr('name'));
     modal.find('#account_id').val($(el + ' #account_id').attr('value'));

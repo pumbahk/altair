@@ -15,7 +15,7 @@ from pyramid.security import effective_principals, forget
 from ..api.impl import get_communication_api
 from ..api.impl import CMSCommunicationApi
 from .interfaces import IPaymentMethodManager
-from .interfaces import IPaymentPlugin, IDeliveryPlugin, IPaymentDeliveryPlugin
+#from .interfaces import IPaymentPlugin, IDeliveryPlugin, IPaymentDeliveryPlugin
 from .interfaces import IMobileRequest, IStocker, IReserving, ICartFactory
 from .models import Cart, PaymentMethodManager, DBSession, CartedProductItem, CartedProduct
 from ..users.models import User, UserCredential, Membership, MemberGroup, MemberGroup_SalesSegment
@@ -131,7 +131,7 @@ def get_item_name(request, performance):
     return _maybe_encoded(base_item_name) + " " + str(performance.id)
 
 def get_nickname(request, suffix=u'さん'):
-    from .rakuten_auth.api import authenticated_user
+    from ticketing.rakuten_auth.api import authenticated_user
     user = authenticated_user(request) or {}
     nickname = user.get('nickname', '')
     if not nickname:
@@ -191,19 +191,22 @@ def get_salessegment(request, event_id, salessegment_id, selected_date):
     else:
         return None
 
-def get_payment_plugin(request, plugin_id):
-    logger.debug("get_payment_plugin: %s" % plugin_id)
-    registry = request.registry
-    return registry.utilities.lookup([], IPaymentPlugin, name="payment-%s" % plugin_id)
-
-def get_delivery_plugin(request, plugin_id):
-    registry = request.registry
-    return registry.utilities.lookup([], IDeliveryPlugin, name="delivery-%s" % plugin_id)
-
-def get_payment_delivery_plugin(request, payment_plugin_id, delivery_plugin_id):
-    registry = request.registry
-    return registry.utilities.lookup([], IPaymentDeliveryPlugin, 
-        "payment-%s:delivery-%s" % (payment_plugin_id, delivery_plugin_id))
+# @deprecation("ticketing.payments.paymentに移動")
+# def get_payment_plugin(request, plugin_id):
+#     logger.debug("get_payment_plugin: %s" % plugin_id)
+#     registry = request.registry
+#     return registry.utilities.lookup([], IPaymentPlugin, name="payment-%s" % plugin_id)
+# 
+# @deprecation("ticketing.payments.paymentに移動")
+# def get_delivery_plugin(request, plugin_id):
+#     registry = request.registry
+#     return registry.utilities.lookup([], IDeliveryPlugin, name="delivery-%s" % plugin_id)
+# 
+# @deprecation("ticketing.payments.paymentに移動")
+# def get_payment_delivery_plugin(request, payment_plugin_id, delivery_plugin_id):
+#     registry = request.registry
+#     return registry.utilities.lookup([], IPaymentDeliveryPlugin, 
+#         "payment-%s:delivery-%s" % (payment_plugin_id, delivery_plugin_id))
 
 def get_stocker(request):
     reg = request.registry
@@ -335,3 +338,11 @@ class JSONEncoder(json.JSONEncoder):
         if isinstance(o, datetime):
             return o.strftime(self.datetime_format)
         return super(JSONEncoder, self).default(o)
+
+def new_order_session(request, **kw):
+    request.session['order'] = kw
+    return request.session['order']
+
+def update_order_session(request, **kw):
+    request.session['order'].update(kw)
+    return request.session['order']

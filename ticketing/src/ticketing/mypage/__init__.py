@@ -41,7 +41,7 @@ def main(global_config, **settings):
 
     config.include('.')
     config.include('.errors')
-    config.include('..cart.rakuten_auth')
+    config.include('ticketing.rakuten_auth')
     who_config = settings['pyramid_who.config']
     from ..cart.authorization import MembershipAuthorizationPolicy
     config.set_authorization_policy(MembershipAuthorizationPolicy())

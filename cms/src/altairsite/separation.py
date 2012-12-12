@@ -21,7 +21,7 @@ class AllowableQueryFilterByOrganization(object):
         self.request = request
 
     def __call__(self,  model,  qs=None):
-        return self.call(model, qs=None)
+        return self.call(model, qs=qs)
 
     def allowable_query(self, model, qs=None):
         query = qs or model.query

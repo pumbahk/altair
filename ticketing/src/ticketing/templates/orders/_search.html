@@ -72,7 +72,7 @@
   <div class="modal-body">
     <form id="search" class="form-horizontal" action="/orders/" method="POST">
       <fieldset>
-        ${h.form_item(form.order_no, option={'style':'width: 200px;', 'maxlength':12})}
+        ${h.form_item(form.order_no, style='width: 200px;', maxlength=12)}
         <div class="control-group ">
           <label class="control-label">
             ${form.ordered_from.label.text}
@@ -95,7 +95,7 @@
         ${h.form_item(form.seat_number)}
 
         ${h.form_item(form.event_id)}
-        ${h.form_item(form.performance_id, option={'class':'span4'})}
+        ${h.form_item(form.performance_id, class_='span4')}
         <script type="text/javascript">
           $(function(){
             var update_on_empty = function(){

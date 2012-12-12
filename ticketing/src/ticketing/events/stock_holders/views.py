@@ -55,8 +55,10 @@ class StockHolders(BaseView):
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
 
-        f = StockHolderForm(self.request.POST, organization_id=self.context.user.organization_id)
+        f = StockHolderForm(self.request.POST, organization_id=self.context.user.organization_id, new_form=True)
         if f.validate():
+            if not f.text.data:
+                f.text.data = f.name.data[0]
             stock_holder = merge_session_with_post(StockHolder(), f.data)
             style = {
                 'text':f.data.get('text'),

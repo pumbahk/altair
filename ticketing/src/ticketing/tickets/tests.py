@@ -7,7 +7,7 @@ from datetime import datetime
 
 class TicketsUtilsTest(TestCase):
     def build_seat_fixture(self):
-        from ..core.models import Organization, Event, Performance, StockType, StockTypeEnum, StockHolder, Stock, StockStatus, Venue, Seat, SeatStatus, SeatStatusEnum
+        from ticketing.core.models import Organization, Event, Performance, StockType, StockTypeEnum, StockHolder, Stock, StockStatus, Venue, Seat, SeatStatus, SeatStatusEnum
         organization = Organization(
             name=u'組織名',
             code=u'RT'
@@ -24,7 +24,7 @@ class TicketsUtilsTest(TestCase):
             code=u'RTTST0000000',
             open_on=datetime(2012, 12, 31, 10, 1, 2),
             start_on=datetime(2012, 12, 31, 11, 3, 4),
-            end_on=datetime(2012, 12, 31, 12, 5, 6)
+            end_on=None, 
             )
         stock_type = StockType(
             name=u'S席',
@@ -65,7 +65,7 @@ class TicketsUtilsTest(TestCase):
         return seat 
 
     def test_build_dict_from_seat(self):
-        from .utils import build_dict_from_seat
+        from ticketing.tickets.utils import build_dict_from_seat
 
         seat = self.build_seat_fixture()
         out = build_dict_from_seat(seat, None)
@@ -84,16 +84,15 @@ class TicketsUtilsTest(TestCase):
                 u"code": u"RTTST0000000",
                 u"open_on": {
                     u"year": 2012, u"month": 12, u"day": 31,
-                    u"hour": 10, u"minute": 1, u"second": 2
+                    u"hour": 10, u"minute": 1, u"second": 2, 
+                    u"weekday": 0, 
                     },
                 u"start_on": {
                     u"year": 2012, u"month": 12, u"day": 31,
-                    u"hour": 11, u"minute": 3, u"second": 4
+                    u"hour": 11, u"minute": 3, u"second": 4, 
+                    u"weekday": 0, 
                     },
-                u"end_on": {
-                    u"year": 2012, u"month": 12, u"day": 31,
-                    u"hour": 12, u"minute": 5, u"second": 6
-                    }
+                u"end_on": None, 
                 },
             u"venue": {
                 u"name": u"会場名",
@@ -124,10 +123,10 @@ class TicketsUtilsTest(TestCase):
             u"対戦名": u"パフォーマンス名",
             u"会場名": u"会場名",
             u"公演コード": u"RTTST0000000",
-            u"開催日": u"2012年 12月 31日",
+            u"開催日": u"2012年 12月 31日 (月)",
             u"開場時刻": u"10時 01分",
             u"開始時刻": u"11時 03分",
-            u"終了時刻": u"12時 05分",
+            u"終了時刻": u"",
             u"席種名": u"S席",
             u"席番": u"seat_name",
             u"発券番号": None 

@@ -304,11 +304,14 @@ def import_tree(update, organization, tree, file, venue_id=None):
                     seat['floor'] = floor
                 if indexes is not None:
                     for index_obj in indexes:
-                        DBSession.add(
-                            SeatIndex(
-                                seat=seat,
-                                index=index_obj['properties']['index'],
-                                seat_index_type=seat_index_type_map[index_obj['properties']['index_type']['id']]))
+                        seat_index_type = seat_index_type_map[index_obj['properties']['index_type']['id']]
+                        index = index_obj['properties']['index']
+                        try:
+                            seat_index = SeatIndex.query.filter_by(seat_index_type=seat_index_type, seat_id=seat.id).one()
+                        except NoResultFound:
+                            seat_index = SeatIndex(seat=seat, seat_index_type=seat_index_type)
+                            DBSession.add(seat_index)
+                        seat_index.index = index
                 seats_in_row.append(seat)
 
             # sort by l0_id
@@ -348,7 +351,7 @@ def import_tree(update, organization, tree, file, venue_id=None):
     DBSession.merge(site)
     DBSession.merge(venue)
 
-def import_or_update_svg(env, update, organization_name, file, venue_id):
+def import_or_update_svg(env, update, organization_name, file, venue_id, dry_run):
     from ticketing.models import DBSession
     from ticketing.core.models import Organization
     organization = DBSession.query(Organization).filter_by(name=organization_name).one()
@@ -360,8 +363,18 @@ def import_or_update_svg(env, update, organization_name, file, venue_id):
     title = root.find('{%s}title' % SVG_NAMESPACE)
     print '  Title: %s' % title.text.encode(io_encoding)
     object_tree = ObjectRetriever(xmldoc)()
-    import_tree(update, organization, object_tree, file, venue_id)
-    transaction.commit()
+    try:
+        import_tree(update, organization, object_tree, file, venue_id)
+        if dry_run:
+            transaction.abort()
+        else:
+            transaction.commit()
+    except:
+        transaction.abort()
+<<<<<<< HEAD
+        raise
+=======
+>>>>>>> master
  
 def main():
     ld_install()
@@ -374,6 +387,8 @@ def main():
                         required=True, help='organization name')
     parser.add_argument('-u', '--update', action='store_true',
                         help='update existing data')
+    parser.add_argument('-n', '--dry-run', action='store_true',
+                        help='show what would have been done')
     parser.add_argument('--venue', metavar='venue-id',
                         help='specify venue id (use with -u)')
     parsed_args = parser.parse_args()
@@ -383,10 +398,11 @@ def main():
     for svg_file in parsed_args.svg_files:
         import_or_update_svg(
             env,
-            parsed_args.update,
-            unicode(parsed_args.organization, io_encoding),
-            svg_file,
-            parsed_args.venue)
+            update=parsed_args.update,
+            organization_name=unicode(parsed_args.organization, io_encoding),
+            file=svg_file,
+            venue_id=parsed_args.venue,
+            dry_run=parsed_args.dry_run)
 
 if __name__ == '__main__':
     main()

@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
 
 from wtforms import Form
-from wtforms import TextField, SelectField, HiddenField
+from wtforms import HiddenField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 
-from ticketing.formhelpers import DateTimeField, Translations, Required
+from ticketing.formhelpers import OurForm, DateTimeField, Translations, Required, RequiredOnUpdate, OurTextField, OurSelectField
 from ticketing.core.models import Account
 
-class StockHolderForm(Form):
-
+class StockHolderForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
-        Form.__init__(self, formdata, obj, prefix, **kwargs)
+        super(StockHolderForm, self).__init__(formdata, obj, prefix, **kwargs)
         if 'organization_id' in kwargs:
             self.account_id.choices = [
                 (account.id, account.name) for account in Account.filter_by_organization_id(kwargs['organization_id'])
@@ -25,24 +24,26 @@ class StockHolderForm(Form):
     event_id = HiddenField(
         validators=[Required()],
     )
-    name = TextField(
+    name = OurTextField(
         label=u'枠名',
         validators=[
-            Required(),
+            RequiredOnUpdate(),
             Length(max=255, message=u'255文字以内で入力してください'),
         ],
     )
-    account_id = SelectField(
+    account_id = OurSelectField(
         label=u'配券先',
         validators=[Required()],
         choices=[],
         coerce=int
     )
-    text = TextField(
+    text = OurTextField(
         label=u'記号',
-        validators=[Required()]
+        validators=[RequiredOnUpdate()],
+        hide_on_new=True
     )
-    text_color = TextField(
+    text_color = OurTextField(
         label=u'記号色',
-        validators=[Required()]
+        validators=[RequiredOnUpdate()],
+        hide_on_new=True
     )

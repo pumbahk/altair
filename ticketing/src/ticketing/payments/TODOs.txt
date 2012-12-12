@@ -1,0 +1,1 @@
+[ ] get_payment_delivery_plugin を payment.apisに移動

@@ -1,0 +1,50 @@
+<%inherit file="${context['main_template'].uri}" />
+	<div id="main">
+        <h1><img src="${request.static_url('ticketing.lots:static/img/order/title_settlement.gif')}" alt="チケット申込" width="950" height="40" /></h1>
+        <p class="pageTitle">申込を完了しました</p>
+        <div class="confirmBox">
+				<div class="confirmBoxInner">
+                    <h2><img src="${request.static_url('ticketing.lots:static/img/order/title_number.gif')}" alt="申込番号" width="97" height="30" /></h2>
+                    <h3>${entry.entry_no}</h3>
+				</div>
+			</div>        
+		  <div class="settlementBox">
+			<div class="settlementBoxInner">
+                <h2 class="title"><img src="${request.static_url('ticketing.lots:static/img/order/title_hope.gif')}" alt="希望選択" width="97" height="30" /></h2>
+                  %for wish in entry.wishes:
+			<div class="settlementSelectBox">
+			  <div class="settlementSelectBoxInner02">
+                  <p><strong>第一希望</strong><span>${wish.performance.name}</span></p>
+			    <table summary="第一希望">
+                  <tr>
+                    <th><label>公演日・会場</label></th>
+                    <td>${h.japanese_datetime(wish.performance.open_on)}　${wish.performance.venue.name}</td>
+                  </tr>
+                  %for product in wish.products:
+                  <tr>
+                    <th><label>席種券種</label></th>
+                    <td>${product.product.name}　${product.quantity} 枚</td>
+                  </tr>
+                  %endfor
+                </table>
+			  </div>
+			</div>
+            %endfor
+                
+		    </div>
+		  </div> 
+            <div class="confirmBox">
+				<div class="confirmBoxInner">
+                    <h2><img src="${request.static_url('ticketing.lots:static/img/order/title_how.gif')}" alt="お支払・お引取り方法選択" width="208" height="30" /></h2>
+                  <h3>${entry.payment_delivery_method_pair.payment_method.name}　${h.format_currency(entry.payment_delivery_method_pair.transaction_fee)}　${entry.payment_delivery_method_pair.delivery_method.name}　${h.format_currency(entry.payment_delivery_method_pair.delivery_fee)}</h3>
+				</div>
+	  </div>
+<div class="confirmBox">
+				<div class="confirmBoxInner">
+                    <h2><img src="${request.static_url('ticketing.lots:static/img/order/title_caution.gif')}" alt="注意事項" width="97" height="30" /></h2>
+                    <p>${entry.lot.description}</p>
+				</div>
+			</div>
+			
+	</div>
+	<!-- ========== /main ========== -->

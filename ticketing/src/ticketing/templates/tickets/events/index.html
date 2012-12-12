@@ -12,7 +12,6 @@
   h3 {margin-top: 20px;  }
 </style>
 <script>
-  // ajax modal
   $(function(){
     $("a.id-action").click(  
       function() {
@@ -23,11 +22,12 @@
         return true;
     });
 
-	$("a.ajax-modal[data-toggle=modal]").click(function(){
+   $("a.ajax-modal[data-toggle=modal]").click(function(){
       $($(this).attr("data-target")).load($(this).attr("href"));
-	});
+   });
   });
 </script>
+
 <div class="modal hide" id="AjaxModal">
 </div>
 

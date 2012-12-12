@@ -17,6 +17,8 @@ from ticketing.memberships.forms import MemberGroupForm
 from .forms import MemberGroupToSalesSegmentForm
 from ticketing.users.models import MemberGroup, Membership
 
+from datetime import datetime
+
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class SalesSegments(BaseView):
 
@@ -74,8 +76,12 @@ class SalesSegments(BaseView):
         if not event_id:
             return HTTPNotFound('event id %d is not found' % event_id)
 
-        f = SalesSegmentForm(self.request.POST, event_id=event_id)
+        f = SalesSegmentForm(self.request.POST, event_id=event_id, new_form=True)
         if f.validate():
+            if f.start_at.data is None:
+                f.start_at.data = datetime.now() 
+            if f.end_at.data is None:
+                f.end_at.data = datetime.now() 
             sales_segment = merge_session_with_post(SalesSegment(), f.data)
             sales_segment.event_id = event_id
             sales_segment.save()

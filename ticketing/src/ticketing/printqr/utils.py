@@ -13,7 +13,7 @@ from ticketing.core.models import OrderedProduct
 from ticketing.core.models import PageFormat
 
 
-from ticketing.cart.plugins.qr import DELIVERY_PLUGIN_ID as QR_DELIVERY_ID
+from ticketing.payments.plugins.qr import DELIVERY_PLUGIN_ID as QR_DELIVERY_ID
 from ticketing.core import models as c_models
 
 from ticketing.tickets.utils import build_dict_from_ordered_product_item_token

@@ -145,11 +145,10 @@ class CartedProductItem(Base):
                 release_quantity = self.quantity
             else:
                 release_quantity = len(self.seats)
-            logger.info('restoring the quantity of stock (id=%s) by +%d' % (self.product_item.stock_id, release_quantity))
-            up = c_models.StockStatus.__table__.update().values(
-                    {"quantity": c_models.StockStatus.quantity + release_quantity}
-            ).where(c_models.StockStatus.stock_id==self.product_item.stock_id)
-            DBSession.bind.execute(up)
+            stock_status = c_models.StockStatus.filter_by(stock_id=self.product_item.stock_id).with_lockmode('update').one()
+            logger.info('restoring the quantity of stock (id=%s, quantity=%d) by +%d' % (stock_status.stock_id, stock_status.quantity, release_quantity))
+            stock_status.quantity += release_quantity
+            stock_status.save()
             logger.info('done for CartedProductItem (id=%d)' % self.id)
 
             self.finished_at = datetime.now()
@@ -349,7 +348,8 @@ class Cart(Base):
             seats = cart_product.pop_seats(seats, self.performance_id)
         # CartProductでseatsから必要な座席を取り出し
 
-    @deprecate("deprecated method")
+    #@deprecate("deprecated method") 
+    # 抽選から使う
     def add_products(self, ordered_products):
         for ordered_product, quantity in ordered_products:
             # ordered_productでCartProductを作成

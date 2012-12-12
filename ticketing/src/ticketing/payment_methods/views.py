@@ -1,16 +1,23 @@
 # -*- coding: utf-8 -*-
 
+import logging
+logger = logging.getLogger(__name__)
 import webhelpers.paginate as paginate
 
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.renderers import render_to_response
 from pyramid.url import route_path
+from sqlalchemy.sql import func
 
 from ticketing.views import BaseView
 from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.fanstatic import with_bootstrap
 from ticketing.core.models import PaymentMethod
+from ticketing.core.models import StockType
+from ticketing.core.models import Stock
+from ticketing.core.models import Performance
+from ticketing.core.models import Event, Product, ProductItem, StockStatus, Order, OrderedProduct, OrderedProductItem
 from ticketing.payment_methods.forms import PaymentMethodForm
 
 @view_defaults(decorator=with_bootstrap, permission='master_editor')
@@ -18,6 +25,7 @@ class PaymentMethods(BaseView):
 
     @view_config(route_name='payment_methods.index', renderer='ticketing:templates/payment_methods/index.html')
     def index(self):
+        #logger.info(self.request.GET, '******************************************')
         sort = self.request.GET.get('sort', 'PaymentMethod.id')
         direction = self.request.GET.get('direction', 'asc')
         if direction not in ['asc', 'desc']:
@@ -25,7 +33,9 @@ class PaymentMethods(BaseView):
 
         query = PaymentMethod.filter_by(organization_id=self.context.user.organization_id)
         query = query.order_by(sort + ' ' + direction)
-
+        performance_id = int(self.request.matchdict.get('performance_id',1))
+        performance=Performance.get(performance_id)
+        stock_types = StockType.query.join(Stock).join(Performance).filter(StockType.event_id==Performance.event_id).filter(Performance.id==performance.id).all()
         payment_methods = paginate.Page(
             query,
             page=int(self.request.params.get('page', 0)),
@@ -34,6 +44,7 @@ class PaymentMethods(BaseView):
         )
 
         return {
+            'stock_types':stock_types,
             'form':PaymentMethodForm(),
             'payment_methods':payment_methods,
         }
@@ -89,3 +100,45 @@ class PaymentMethods(BaseView):
             raise HTTPFound(location=location)
 
         return HTTPFound(location=location)
+
+'''以下付け足し'''
+'''
+@view_config(route_name="sample", request_method="GET",
+             request_param="_search")
+def sample_search(request):
+    return Response("You searched!")
+
+
+@view_config(route_name="sample", request_method="POST",
+             request_param="_confirm")
+def sample_confirm(request):
+    return Response("You confirmed!")
+
+
+@view_config(route_name="sample", request_method="POST",
+             request_param="_complete")
+def sample_complete(request):
+    return Response("You completed!")
+
+
+@view_config(route_name="sample", request_method="GET",
+             request_param="_back")
+def sample_back(request):
+    return Response("You backed!")
+
+@view_config(route_name="sample", request_method="GET")
+def welcome(request):
+    return Response('<form action="/sample" method="GET">'
+                        '<input type="submit" name="_search" value="検索">'
+                    '</form>'
+                    '<form action="/sample" method="POST">'
+                        '<input type="submit" name="_confirm" value="確認">'
+                    '</form>'
+                    '<form action="/sample" method="POST">'
+                        '<input type="submit" name="_complete" value="確定">'
+                    '</form>'
+                    '<form action="/sample" method="GET">'
+                        '<input type="submit" name="_back" value="戻る">'
+                    '</form>'
+                    )
+'''

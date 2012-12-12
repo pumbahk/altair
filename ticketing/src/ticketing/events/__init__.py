@@ -18,4 +18,5 @@ def includeme(config):
     config.include("ticketing.events.tickets", route_prefix="tickets")
     config.include("ticketing.events.mailinfo", route_prefix="mailinfo")
     config.include("ticketing.events.reports", route_prefix="reports")
+    config.include('ticketing.events.sales_reports', route_prefix='sales_reports')
     config.scan(".")

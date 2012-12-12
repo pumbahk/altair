@@ -1,0 +1,97 @@
+<%namespace file="/common/helpers.html" name="h" />
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+
+  <body>
+    <div style="margin-left:40px;">
+      <br>
+      <p>いつもお世話になっております。</p>
+      <br>
+      <p>以下の内容で最新の申込状況（速報）をお送りいたします。</p>
+      <p>ご査収のほど、宜しくお願いいたします。</p>
+      <br>
+      <h3 style="color:#004040">申込状況（速報)</h3>
+      <br>
+      <p>◆集計期間:
+      % if form.limited_from.data or form.limited_to.data:
+      ${h.safe_strftime(form.limited_from.data)} ~ ${h.safe_strftime(form.limited_to.data)}
+      % else:
+      開始から本日付け
+      % endif
+      </p>
+
+      % for id, value in performances_reports.items():
+      <%
+        performance = value['performance']
+        report_by_sales_segment = value['report_by_sales_segment']
+      %>
+        % for sale_segment_name, performance_reports in report_by_sales_segment.items():
+      <h4 style="margin-top: 20px;">開催日:${h.safe_strftime(performance.start_on)}　${performance.name}</h4>
+      <table style="width: 95%; border: 1px #DCDCDC solid; background-color: #DCDCDC;">
+        <tr>
+          <th colspan="4"></th>
+          <th colspan="5">累計</th>
+        </tr>
+        <tr>
+          <th style="width: 13%">席種</th>
+          <th style="width: 15%">配券先</th>
+          <th style="width: 20%">商品</th>
+          <th style="width: 10%">価格</th>
+          <th style="width: 8%">配席数</th>
+          <th style="width: 8%">残数</th>
+          <th style="width: 8%">受付</th>
+          <th style="width: 8%">未入金</th>
+          <th style="width: 10%">入金済み</th>
+        </tr>
+
+        <%
+          stock_type_id = None
+          performance_total = {
+            'total_quantity':0,
+            'vacant_quantity':0,
+            'unpaid_quantity':0,
+            'paid_quantity':0,
+          }
+        %>
+        % for performance_report in sorted(performance_reports, key=lambda x:(x['stock_type_id'], x['stock_holder_id'], x['product_id'])):
+          <%
+            performance_total['total_quantity'] += performance_report['total_quantity']
+            performance_total['vacant_quantity'] += performance_report['vacant_quantity']
+            performance_total['unpaid_quantity'] += performance_report['unpaid_quantity']
+            performance_total['paid_quantity'] += performance_report['paid_quantity']
+          %>
+        <tr>
+          % if stock_type_id == performance_report['stock_type_id']:
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;"></td>
+          % else:
+          <% stock_type_id = performance_report['stock_type_id'] %>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${performance_report['stock_type_name']}</td>
+          % endif
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${performance_report['stock_holder_name']}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${performance_report['product_name']}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_report['product_price'])}円</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${performance_report['total_quantity'] or ''}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${performance_report['vacant_quantity'] or ''}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${(performance_report['paid_quantity'] + performance_report['unpaid_quantity']) or ''}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${performance_report['unpaid_quantity'] or ''}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${performance_report['paid_quantity'] or ''}</td>
+        </tr>
+        % endfor
+        <tr>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;" colspan="4">合計</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${performance_total['total_quantity'] or ''}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${performance_total['vacant_quantity'] or ''}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${(performance_total['paid_quantity'] + performance_total['unpaid_quantity']) or ''}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${performance_total['unpaid_quantity'] or ''}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${performance_total['paid_quantity'] or ''}</td>
+        </tr>
+      </table>
+        % endfor
+      % endfor
+    </div>
+  </body>
+</html>

@@ -5,17 +5,16 @@ from wtforms import TextField, SelectField, HiddenField, IntegerField, BooleanFi
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 from wtforms.widgets import CheckboxInput
 
-from ticketing.formhelpers import DateTimeField, Translations, Required
+from ticketing.formhelpers import OurDateTimeField, Translations, Required, RequiredOnUpdate, OurForm, OurIntegerField
 from ticketing.core.models import SalesSegmentKindEnum, Event, StockHolder
 
-class SalesSegmentForm(Form):
-
+class SalesSegmentForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
-        Form.__init__(self, formdata, obj, prefix, **kwargs)
+        super(SalesSegmentForm, self).__init__(formdata, obj, prefix, **kwargs)
         if 'event_id' in kwargs:
             event = Event.get(kwargs['event_id'])
             self.copy_to_stock_holder.choices = [('', u'変更しない')] + [
-                (str(sh.id), sh.name) for sh in StockHolder.get_seller(event)
+                (str(sh.id), sh.name) for sh in StockHolder.get_own_stock_holders(event)
             ]
 
     def _get_translations(self):
@@ -41,30 +40,34 @@ class SalesSegmentForm(Form):
             Length(max=255, message=u'255文字以内で入力してください'),
         ],
     )
-    start_at = DateTimeField(
+    start_at = OurDateTimeField(
         label=u'販売開始日時',
-        validators=[Required()],
-        format='%Y-%m-%d %H:%M'
+        validators=[RequiredOnUpdate()],
+        format='%Y-%m-%d %H:%M',
+        hide_on_new=True
     )
-    end_at = DateTimeField(
+    end_at = OurDateTimeField(
         label=u'販売終了日時',
-        validators=[Required()],
-        format='%Y-%m-%d %H:%M'
-    )
-    upper_limit = IntegerField(
-        label=u'購入上限枚数',
-        default=10,
-        validators=[Required()],
+        validators=[RequiredOnUpdate()],
+        format='%Y-%m-%d %H:%M',
+        hide_on_new=True
     )
     seat_choice = IntegerField(
         label=u'座席選択可',
         default=1,
         widget=CheckboxInput(),
     )
-    public = IntegerField(
+    upper_limit = OurIntegerField(
+        label=u'購入上限枚数',
+        default=10,
+        validators=[RequiredOnUpdate()],
+        hide_on_new=True
+    )
+    public = OurIntegerField(
         label=u'一般公開',
         default=1,
         widget=CheckboxInput(),
+        hide_on_new=True
     )
     copy = IntegerField(
         label='',
@@ -92,12 +95,12 @@ class SalesSegmentForm(Form):
         if field.data is not None and field.data < form.start_at.data:
             raise ValidationError(u'開演日時より過去の日時は入力できません')
 
-class MemberGroupToSalesSegmentForm(Form):
+class MemberGroupToSalesSegmentForm(OurForm):
     def _get_translations(self):
         return Translations()
 
     def __init__(self, formdata=None, obj=None, prefix='', membergroups=None, **kwargs):
-        Form.__init__(self, formdata, obj, prefix, **kwargs)
+        super(MemberGroupToSalesSegmentForm, self).__init__(formdata, obj, prefix, **kwargs)
         membergroups = list(membergroups)
         self.membergroups.choices = [(unicode(s.id), s.name) for s in membergroups or []]
         self.membergroups_height = "%spx" % (len(membergroups)*20)

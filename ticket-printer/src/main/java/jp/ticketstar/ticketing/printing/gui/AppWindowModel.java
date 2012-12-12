@@ -249,3 +249,4 @@ public class AppWindowModel implements AppModel {
 		return pageFormats;
 	}
 }
+

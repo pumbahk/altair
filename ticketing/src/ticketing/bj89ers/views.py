@@ -12,7 +12,8 @@ from webob.multidict import MultiDict
 from ..cart.events import notify_order_completed
 from ..cart.exceptions import NoCartError
 from ..cart.views import PaymentView as _PaymentView, CompleteView as _CompleteView
-from ..cart import api
+from ..cart import api as cart_api
+from ..payments import payment as payment_api # XXX: aodag!
 from ..cart import helpers as h
 from ..core import models as c_models
 
@@ -92,7 +93,7 @@ class IndexView(object):
             logger.debug('cart is None')
             return dict(form=form, products=products)
         logger.debug('cart %s' % cart)
-        api.set_cart(self.request, cart)
+        cart_api.set_cart(self.request, cart)
         store_user_profile(self.request, form.data)
         logger.debug('OK redirect')
         sales_segment_id = self.context.sales_segment_id
@@ -134,8 +135,8 @@ class PaymentView(_PaymentView):
 class CompleteView(_CompleteView):
     @back
     def __call__(self):
-        assert api.has_cart(self.request)
-        cart = api.get_cart(self.request)
+        assert cart_api.has_cart(self.request)
+        cart = cart_api.get_cart(self.request)
 
         order_session = self.request.session['order']
 
@@ -144,16 +145,16 @@ class CompleteView(_CompleteView):
             c_models.PaymentDeliveryMethodPair.id==payment_delivery_method_pair_id
         ).one()
 
-        payment_delivery_plugin = api.get_payment_delivery_plugin(self.request,
+        payment_delivery_plugin = payment_api.get_payment_delivery_plugin(self.request,
             payment_delivery_pair.payment_method.payment_plugin_id,
             payment_delivery_pair.delivery_method.delivery_plugin_id,)
         if payment_delivery_plugin is not None:
             order = payment_delivery_plugin.finish(self.request, cart)
         else:
-            payment_plugin = api.get_payment_plugin(self.request, payment_delivery_pair.payment_method.payment_plugin_id)
+            payment_plugin = payment_api.get_payment_plugin(self.request, payment_delivery_pair.payment_method.payment_plugin_id)
             order = payment_plugin.finish(self.request, cart)
             DBSession.add(order)
-            delivery_plugin = api.get_delivery_plugin(self.request, payment_delivery_pair.delivery_method.delivery_plugin_id)
+            delivery_plugin = payment_api.get_delivery_plugin(self.request, payment_delivery_pair.delivery_method.delivery_plugin_id)
             delivery_plugin.finish(self.request, cart)
 
         profile = load_user_profile(self.request)

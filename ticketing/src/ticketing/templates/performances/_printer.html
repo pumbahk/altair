@@ -4,6 +4,36 @@ endpoints_json = json.dumps(endpoints, ensure_ascii=False)
 callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _ in range(0, 10))
 %>
 
+<style type="text/css">
+#screen {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 100%;
+  margin: 0 0;
+  padding: 0 0;
+  z-index: 10000;
+  background-color: #000;
+  filter: alpha(opacity=50);
+  opacity: .5;
+}
+
+#screen .splash {
+  position: absolute;
+  width: 30%;
+  height: 100px;
+  left: 50%;
+  top: 50%;
+  margin: -50px 0 0 -15%;
+  background-color: #eee;
+  color: #000;
+  font-size: 20px;
+  text-align: center;
+  line-height: 100px;
+}
+</style>
+
 <span id="applet-tag"></span>
 
 <script type="text/javascript">
@@ -77,6 +107,20 @@ window[${json.dumps(callback_name)|n}] = function (applet) {
 
   window.ticketPrinterService = service;
   window.printOrder = printOrder;
+  $('#screen').hide();
+  $("#pageFormat").change(function(){
+  var name = $(this).val(); 
+  var pageFormats = window.ticketPrinterService.getPageFormats();
+    if (pageFormats) {
+      for (var i = pageFormats.iterator(); i.hasNext();) {
+        var pageFormat = i.next();
+        if(pageFormat.getName() == name){
+          window.ticketPrinterService.setPageFormat(pageFormat);
+          break;
+        }
+      }
+    }
+  });
 };
 </script>
 <script type="text/javascript">
@@ -171,6 +215,7 @@ function writeAppletTag(options) {
 }
 
 function loadApplet() {
+  $('#screen').show();
   writeAppletTag({
     version: '1.6.0.35',
     width: 1, height: 1,
@@ -194,3 +239,9 @@ function loadApplet() {
 <select id="ticketFormat"></select>
 -->
 <select id="printService" style="vertical-align: baseline;"></select>
+
+<div id="screen" style="display:none;">
+  <div class="splash">
+    Now loading...
+  </div>
+</div>

@@ -1,0 +1,111 @@
+<%inherit file="/layout_2cols.html"/>
+<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+
+<script type="text/javascript">
+  $(function(){
+    $('.datetimefield').datetimepicker({dateFormat:'yy-mm-dd',timeFormat:'hh:mm'});
+  });
+</script>
+
+<div class="breadcrumbs">
+  ${h.breadcrumbs(
+      names=[u'トップ',u'レポート', u'イベント'],
+      urls=[
+        request.route_path('index'),
+        request.route_path('sales_reports.index')]
+  )}
+</div>
+
+<div class="page-header">
+  <h2>売上レポート イベント</h2>
+</div>
+
+<div class="content">
+  ${h.flash_messages(request)}
+</div>
+
+<h3><a href="${request.route_path('sales_reports.preview',event_id=event.id)}">レポート送信画面へ</a></h3>
+
+<form id="limitation" action="${request.route_path('sales_reports.event',event_id=event.id)}" method="POST">
+  <div class="control-group">
+    <div class="controls">
+      <input class="datetimefield" style="width: 140px; vertical-align: middle; margin-bottom: 0px;" id="limited_from" name="limited_from" type="text" value="${h.safe_strftime(form.limited_from.data)}" placeholder="開始期限"> 〜
+      <input class="datetimefield" style="width: 140px; vertical-align: middle; margin-bottom: 0px;" id="limited_to" name="limited_to" type="text" value="${h.safe_strftime(form.limited_to.data)}" placeholder="終了期限">
+      <input type="submit" class="btn" value="集計期間を絞り込む" >
+    </div>
+  </div>
+</form>
+
+<table class="table table-striped table-bordered table-condensed">
+  <tr>
+    <th></th>
+    <th colspan=2></th>
+    <th colspan=2>累計</th>
+    <th colspan=2>
+      % if form.limited_from.data or form.limited_to.data:
+        <h5>${h.safe_strftime(form.limited_from.data)} ~ ${h.safe_strftime(form.limited_to.data)}</h5>
+      % else:
+        <h5>開始から本日付け</h5>
+      % endif
+    </th>
+  </tr>
+  <tr>
+    <th>イベント名</th>
+    <th>配席数</th>
+    <th>残席数</th>
+    <th>販売枚数</th>
+    <th>販売金額</th>
+    <th>販売枚数</th>
+    <th>販売金額</th>
+  </tr>
+  <tr>
+    <td>${event_report['title']}</td>
+    <td class="numeric">${h.price_format(event_report['total_quantity'])}</td>
+    <td class="numeric">${h.price_format(event_report['vacant_quantity'])}</td>
+    <td class="numeric">${h.price_format(event_total_report['product_quantity'])}</td>
+    <td class="price">${h.price_format(event_total_report['price_amount'])}円</td>
+    <td class="numeric">${h.price_format(event_report['product_quantity'])}</td>
+    <td class="price">${h.price_format(event_report['price_amount'])}円</td>
+  </tr>
+</table>
+
+<div style="margin-bottom: 50px;">
+  <h3>メール送信先</h3>
+
+  <%include file="/sales_reports/_action_button.html" args="event=event" />
+  <div id="sales_reports_mail-form">
+    <%include file="/sales_reports/_form.html" args="form=form_report_mail" />
+  </div>
+
+  % if report_settings:
+  <table class="table table-striped table-bordered table-condensed">
+    <tr>
+      <th></th>
+      <th>名前</th>
+      <th>Email</th>
+      <th>メール通知頻度</th>
+    </tr>
+    <%! from ticketing.core.models import ReportFrequencyEnum %>
+    % for rs in report_settings:
+    <tr>
+      <td><input type="radio" name="sales_reports_mail_id" value=${rs.id}></td>
+      <td>${rs.operator.name}</td>
+      <td>${rs.operator.email}</td>
+      <%
+        frequency = ''
+        for enum in ReportFrequencyEnum:
+          if enum.v == rs.frequency:
+            frequency = enum.k
+            break
+      %>
+      <td>${frequency}</td>
+    </tr>
+    % endfor
+  </table>
+  % endif
+</div>
+
+<h3>パフォーマンス別レポート</h3>
+
+<%include file="./_list.html" args="form=form, performances_reports=performances_reports, performances_total_reports=performances_total_reports" />

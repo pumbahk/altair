@@ -5,7 +5,7 @@
 <script type="text/javascript">
   function new_stock_type() {
     var modal = $('#modal-stock_type');
-    reset_form(modal, '#event_id');
+    reset_form(modal, '#event_id', true);
     modal.modal('toggle');
   }
   function edit_stock_type(id) {
@@ -13,7 +13,7 @@
     if (!id) return;
     var el = '#stock_type-' + id;
     var modal = $('#modal-stock_type');
-    reset_form(modal, '#event_id');
+    reset_form(modal, '#event_id', false);
     modal.find('#id').val(id);
     modal.find('#name').val($(el).attr('name'));
     modal.find('#display_order').val($(el).attr('display_order'));

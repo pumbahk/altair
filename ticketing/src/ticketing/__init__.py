@@ -6,7 +6,7 @@ from sqlalchemy import engine_from_config
 from pyramid.config import Configurator
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
-from pyramid.session import UnencryptedCookieSessionFactoryConfig
+from pyramid_beaker import session_factory_from_settings
 from pyramid.tweens import EXCVIEW
 from pyramid.interfaces import IDict
 
@@ -28,7 +28,7 @@ def main(global_config, **settings):
 
     config = Configurator(settings=settings,
                           root_factory=newRootFactory(lambda request:authn_exemption.match(request.path)),
-                          session_factory=UnencryptedCookieSessionFactoryConfig('altair'))
+                          session_factory=session_factory_from_settings(settings))
 
     config.set_authentication_policy(
         CombinedAuthenticationPolicy([
@@ -80,7 +80,8 @@ def main(global_config, **settings):
     config.include("ticketing.qr")
     config.include("ticketing.members", route_prefix='/members')
     config.include("ticketing.memberships", route_prefix="/memberships")
-    config.include('ticketing.cart.plugins')
+    config.include('ticketing.payments')
+    config.include('ticketing.payments.plugins')
     ## TBA
     config.add_route("qr.make", "___________") ##xxx:
     config.include(config.maybe_dotted("ticketing.cart.import_mail_module"))

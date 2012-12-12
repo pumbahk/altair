@@ -12,7 +12,7 @@ from .helpers import make_order_data
 from ticketing.orderreview.views import build_qr_by_token_id, order_review_qr_image
 
 import webhelpers.paginate as paginate
-import ticketing.cart.plugins.qr
+import ticketing.payments.plugins.qr
 from ticketing.qr import qr
 import StringIO
 import qrcode
@@ -97,9 +97,9 @@ class MyPageView(object):
             raise HTTPNotFound()
 
         tickets = None
-        if order.payment_delivery_pair.delivery_method.delivery_plugin_id == ticketing.cart.plugins.qr.DELIVERY_PLUGIN_ID:
+        if order.payment_delivery_pair.delivery_method.delivery_plugin_id == ticketing.payments.plugins.qr.DELIVERY_PLUGIN_ID:
             """QRコード発行の場合"""
-            # 以下の処理はcart/plugins/qr.py内のと同じ...
+            # 以下の処理はpayments/plugins/qr.py内のと同じ...
             tickets = [ ]
             for op in order.ordered_products:
                 for opi in op.ordered_product_items:

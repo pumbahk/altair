@@ -823,7 +823,8 @@ class Orders(BaseView):
                 .distinct()
 
         for order in qs:
-            utils.enqueue_for_order(operator=self.context.user, order=order, ticket_format_id=ticket_format_id)
+            if not order.queued:
+                utils.enqueue_for_order(operator=self.context.user, order=order, ticket_format_id=ticket_format_id)
 
         # def clean_session_callback(request):
         logger.info("*ticketing print queue many* clean session")
