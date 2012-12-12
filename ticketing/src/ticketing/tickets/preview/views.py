@@ -135,7 +135,7 @@ class PreviewApiView(object):
         v = {}
         try:
             product = params.get("product")
-            if product:
+            if product and "pk" in product:
                 product = c_models.Product.query.filter_by(id=product["pk"]).first()
                 v = build_dict_from_product(product, retval=v)
 

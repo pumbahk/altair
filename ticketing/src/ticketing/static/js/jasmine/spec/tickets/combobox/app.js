@@ -186,14 +186,14 @@ describe("Combobox ui ",  function(){
                 // });
 
                 // it("performance is selected", function(){
-                models.performance.selectValue({name: "performance:1", pk:1});
+                models.performance.selectValue({name: "performance:2", pk:2});
 
                 expect(models.organization.get("candidates")).toNotEqual([]);
                 expect(models.event.get("candidates")).toNotEqual([]); 
                 expect(models.performance.get("candidates")).toNotEqual([]);
                 expect(models.product.get("candidates")).toNotEqual([]);
 
-                expect(models.performance.get("result")).toEqual({name: "performance:1", "pk": 1});
+                expect(models.performance.get("result")).toEqual({name: "performance:2", "pk": 2});
                 // });
 
                 // it("product is selected", function(){
@@ -201,7 +201,7 @@ describe("Combobox ui ",  function(){
                 expect(finishResult).toEqual({
                     organization: {name: "organization:1", pk: 1}, 
                     event: {name: "event:2", pk: 2}, 
-                    performance: {name: "performance:1", pk: 1}, 
+                    performance: {name: "performance:2", pk: 2}, 
                     product: {name: "product:2", pk: 2}, 
                 })
                 // })
@@ -211,11 +211,11 @@ describe("Combobox ui ",  function(){
 
                 expect(models.organization.get("candidates")).toNotEqual([]);
                 expect(models.event.get("candidates")).toNotEqual([]); 
-                expect(models.performance.get("candidates")).toNotEqual([]);
+                expect(models.performance.get("candidates")).toNotEqual([]); // fetch new candidates
                 expect(models.product.get("candidates")).toEqual([]);
 
                 expect(models.event.get("result")).toEqual({name: "event:2", "pk": 2});
-                expect(models.performance.get("result")).toBeNull();
+                expect(models.performance.get("result")).toEqual({name: "performance:1", "pk": 1}); // first selection is set(default)
                 expect(models.product.get("result")).toBeNull();
 
             });

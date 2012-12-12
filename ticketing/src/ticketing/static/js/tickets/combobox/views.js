@@ -18,7 +18,6 @@ combobox.ComboboxView = Backbone.View.extend({
         this.vms.input.refresh();
     }, 
     refreshChild: function(){
-        this.model.set("result", null);
         this.model.cascade("*combobox.refresh.candidates");
     }
 });

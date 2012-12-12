@@ -14,7 +14,7 @@ combobox.ComboboxSelection = Backbone.Model.extend({
     }, 
     setFirstValue: function(){
         var cands = this.get("candidates");
-        if(cands.length > 0 && !this.get("result")){
+        if(cands.length > 0){
             this.set("result", cands[0]);
         }
     }, 
@@ -23,7 +23,6 @@ combobox.ComboboxSelection = Backbone.Model.extend({
             return {"name": o.name, "pk": o.pk};
         }));
         this.setFirstValue();
-        console.log(this.get("result"));
         this.trigger("*combobox.change.candidates", this.get("candidates"));
     }, 
     selectValue: function(result){
