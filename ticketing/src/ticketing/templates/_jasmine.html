@@ -19,12 +19,13 @@ backbone.need()
   <script type="text/javascript" src="${request.static_url("ticketing:static/js/jasmine/lib/jasmine-1.2.0/jasmine-html.js")}"></script>
 
   <!-- include source files here... -->
-  <script type="text/javascript" src="${request.static_url("ticketing:static/js/jasmine/spec/SpecHelper.js")}"></script>
-  <!-- <script type="text/javascript" src="${request.static_url("ticketing:static/js/message.js")}"></script>
-   !-- <script type="text/javascript" src="${request.static_url("ticketing:static/js/qrapp/app.js")}"></script> -->
+  <script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/core/gateway.js")}"></script>
+  <script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/core/viewmodel.js")}"></script>
+  <script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/core/services.js")}"></script>
+  <script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/combobox/app.js")}"></script>
 
   <!-- include spec files here... -->
-    <!-- <script type="text/javascript" src="${request.static_url("ticketing:static/js/spec/qrapp/app.js")}"></script> -->
+  <script type="text/javascript" src="${request.static_url("ticketing:static/js/jasmine/spec/tickets/combobox/app.js")}"></script>
   
   <script type="text/javascript">
     (function() {

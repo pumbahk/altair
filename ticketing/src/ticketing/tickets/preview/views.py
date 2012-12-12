@@ -107,7 +107,7 @@ class PreviewApiView(object):
 
 
 @view_defaults(route_name="tickets.preview.combobox.api", request_method="GET", renderer="json")
-class PreviewApiView(object):
+class ComboboxApiView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request

@@ -27,7 +27,7 @@
     afterAllSelect = function(data){
       alert("yay");
     };
-    gateway = new ForTicketPreviewComboxGateway({models:models, apis:apis, finishCallback:afterAllSelect  });
+    gateway = new ForTicketPreviewComboboxGateway({models:models, apis:apis, finishCallback:afterAllSelect  });
     view_models = {
       organization:  new ComboboxViewModel({model: models.organization, el: $("#organization_select")}),
       event:  new ComboboxViewModel({model: models.event, el: $("#event_select")}),
@@ -40,6 +40,6 @@
       performance:  new ComboboxView({vms: {input: view_models["performance"]}, model: models.performance, el: $("#performance_select")}),
       product:  new ComboboxView({vms: {input: view_models["product"]}, model: models.product, el: $("#product_select")})
     };
-   gateway.organization.getCandidates();
+   gateway.organization.updateCandidates();
   });
 </script>

@@ -7,6 +7,10 @@ var ComboboxSelection = Backbone.Model.extend({
         candidates: [], 
         result: null // e.g. {name: "foo", pk: "1"}
     }, 
+    refresh: function(){
+        this.set("result", null); // warning.
+        this.set("candidates", []);
+    }, 
     changeCandidates: function(data){
         this.set("candidates", _(data).map(function(o){
             return {"name": o.name, "pk": o.pk};
@@ -51,11 +55,13 @@ _.extend(CandidatesFetcher.prototype, {
     getDependsValues: function(params){
         var params = params || {};
         _(this.depends).each(function(o){
-            params[o.model.get("targetObject")] = o.model.get("result").pk;
+            if(!!o.model.get("result")){
+                params[o.model.get("targetObject")] = o.model.get("result").pk;
+            }
         });
         return params;
     }, 
-    getCandidates: function(params){
+    updateCandidates: function(params){
         var params = this.getDependsValues(params);
         var self = this;
         return this.api(params)
@@ -74,7 +80,7 @@ CandidatesFetcher.extend = Backbone.Model.extend;
 
 // event receiver and api user.
 
-var ForTicketPreviewComboxGateway = core.ApiCommunicationGateway.extend({
+var ForTicketPreviewComboboxGateway = core.ApiCommunicationGateway.extend({
     initialize: function(opts){
         this.finishCallback = opts.finishCallback;
         if(!this.finishCallback) throw "finishCallback is not found";        
@@ -106,13 +112,13 @@ var ForTicketPreviewComboxGateway = core.ApiCommunicationGateway.extend({
         console.warn(s.responseText, arguments);
     }, 
     organizationChanged: function(){
-        this.models.event.changeCandidates(this.event.getCandidates());
+        this.event.updateCandidates();
     }, 
     eventChanged: function(){
-        this.models.performance.changeCandidates(this.performance.getCandidates());
+        this.performance.updateCandidates();
     }, 
     performanceChanged: function(){
-        this.models.product.changeCandidates(this.product.getCandidates());
+        this.product.updateCandidates();
     }, 
     productChanged: function(){
         this.finishCallback({
@@ -132,6 +138,7 @@ var ComboboxViewModel = core.ViewModel.extend({
         this.$el.empty();
     }, 
     draw: function(candidates){
+        this.refresh();
         var root = $("<select>");
         _(candidates).each(function(c){
             root.append($("<option>").text(c.name).attr("value", c.pk));
@@ -150,13 +157,17 @@ var ComboboxView = Backbone.View.extend({
         this.model.on("*combobox.refresh.candidates", this.refresh, this);
     }, 
     draw: function(candidates){
-        this.vms.input.refresh();
         this.vms.input.draw(candidates);
         this.refreshChild();
         if (candidates.length <= 1)
             this.vms.input.onSelect();
     }, 
+    refresh: function(){
+        this.model.refresh();
+        this.vms.input.refresh();
+    }, 
     refreshChild: function(){
+        this.model.set("result", null);
         this.model.cascade("*combobox.refresh.candidates");
     }
 });
