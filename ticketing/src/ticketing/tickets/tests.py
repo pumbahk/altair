@@ -134,4 +134,3 @@ class TicketsUtilsTest(TestCase):
             }
         for k in expected:
             self.assertEqual(expected[k], out[k], k.encode('utf-8'))
-

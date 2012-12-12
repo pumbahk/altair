@@ -4,8 +4,8 @@ from lxml import etree
 from collections import namedtuple
 
 from ..users.models import SexEnum
-from .constants import *
 from .convert import as_user_unit
+from .constants import SVG_NAMESPACE, TS_SVG_EXT_NAMESPACE
 from datetime import datetime
 
 def datetime_as_dict(dt):
@@ -125,11 +125,20 @@ class DictBuilder(object):
             })
         return retval
 
-    def build_dict_from_venue(self, venue, retval=None):
+    def build_dict_from_organization(self, organization, retval=None):
         retval = {} if retval is None else retval
-        performance = venue.performance
-        event = performance.event
+        retval.update({
+            u'organization': {
+                u'name': organization.name,
+                u'code': organization.code
+                },
+            })
+        return retval
+
+    def build_dict_from_event(self, event, retval=None):
+        retval = {} if retval is None else retval
         organization = event.organization
+        retval = self.build_dict_from_organization(organization, retval=retval)
         retval.update({
             u'organization': {
                 u'name': organization.name,
@@ -140,6 +149,15 @@ class DictBuilder(object):
                 u'title': event.title,
                 u'abbreviated_title': event.abbreviated_title,
                 },
+            u'イベント名': event.title,
+            })
+        return retval
+
+    def build_dict_from_performance(self, performance, retval=None):
+        retval = retval or {}
+        event = performance.event
+        retval = self.build_dict_from_event(event, retval=retval)
+        retval.update({
             u'performance': {
                 u'name': performance.name,
                 u'code': performance.code,
@@ -147,14 +165,8 @@ class DictBuilder(object):
                 u'start_on': datetime_as_dict(performance.start_on),
                 u'end_on': datetime_as_dict(performance.end_on)
                 },
-            u'venue': {
-                u'name': venue.name,
-                u'sub_name': venue.sub_name
-                },
-            u'イベント名': event.title,
             u'パフォーマンス名': performance.name,
             u'対戦名': performance.name,
-            u'会場名': venue.name,
             u'公演コード': performance.code,
             u'開催日': self.formatter.format_date(performance.start_on),
             u'開催日s': self.formatter.format_date_short(performance.start_on),
@@ -164,6 +176,19 @@ class DictBuilder(object):
             u'開始時刻s': self.formatter.format_time_short(performance.start_on),
             u'終了時刻': self.formatter.format_time(performance.end_on),
             u'終了時刻s': self.formatter.format_time_short(performance.end_on),
+            })
+        return retval
+        
+    def build_dict_from_venue(self, venue, retval=None):
+        retval = {} if retval is None else retval
+        performance = venue.performance
+        retval = self.build_dict_from_performance(performance, retval=retval)
+        retval.update({
+            u'venue': {
+                u'name': venue.name,
+                u'sub_name': venue.sub_name
+                },
+            u'会場名': venue.name,
             })
         return retval
         
@@ -182,6 +207,29 @@ class DictBuilder(object):
             u'発券番号': ticket_number_issuer() if ticket_number_issuer else None
             })
         return retval
+
+    def build_dict_from_product(self, product):
+        sales_segment = product.sales_segment
+
+        retval = {
+            u'salesSegment': {
+                u'name': sales_segment.name,
+                u'kind': sales_segment.kind,
+                u'start_at': datetime_as_dict(sales_segment.start_at),
+                u'end_at': datetime_as_dict(sales_segment.end_at),
+                u'upper_limit': sales_segment.upper_limit,
+                u'seat_choice': sales_segment.seat_choice
+                }, 
+            u'product': {
+                u'name': product.name,
+                u'price': product.price
+                },
+            u'券種名': product.name,
+            u'商品名': product.name,
+            u'商品価格': self.formatter.format_currency(product.price),
+            }
+        return retval
+
 
     def build_dict_from_product_item(self, product_item):
         ticket_bundle = product_item.ticket_bundle
@@ -537,3 +585,5 @@ class SvgPageSetBuilder(object):
         svgroot.set(u'{%s}queue-id' % TS_SVG_EXT_NAMESPACE, unicode(queue_id))
         self.page.append(svgroot)
         self.offset = Position(self.offset.x + self.ticket_size.width + self.ticket_margin.left + self.ticket_margin.right, self.offset.y)
+
+
