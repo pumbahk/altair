@@ -74,7 +74,7 @@ class MyProxyRequest(proxy.ProxyRequest):
             self.target_parsed = urlparse(new_request_uri_str)
             if ':' in self.target_parsed.netloc:
                 # TODO: IPv6?
-                self.target_host, port = target_host.split(':')
+                self.target_host, port = self.target_parsed.netloc.split(':')
                 self.target_port = int(port)
             else:
                 self.target_host = self.target_parsed.netloc
