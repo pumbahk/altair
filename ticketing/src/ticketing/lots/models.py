@@ -220,6 +220,6 @@ class LotRejectedEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     id = sa.Column(Identifier, primary_key=True)
     lot_entry_id = sa.Column(Identifier, sa.ForeignKey('LotEntry.id'))
-    lot_entry = orm.relationship('LotEntry', backref="lot_elected_entries")
+    lot_entry = orm.relationship('LotEntry', backref="lot_rejected_entries")
 
     mail_sent_at = sa.Column(sa.DateTime)

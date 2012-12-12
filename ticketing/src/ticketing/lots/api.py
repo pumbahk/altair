@@ -24,6 +24,7 @@
 
 """
 
+import transaction
 from datetime import datetime
 import itertools
 from sqlalchemy import sql
@@ -64,6 +65,7 @@ from .models import (
     Lot_Performance,
     Lot_StockType,
     LotElectedEntry,
+    LotRejectedEntry,
 )
 
 from .events import LotEntriedEvent
@@ -250,9 +252,11 @@ def elect_lot_entries(lot_id):
     """ 抽選申し込み確定 
     申し込み番号と希望順で、当選確定処理を行う
     ワークに入っているものから当選処理をする
-    当選処理：
+    それ以外を落選処理にする
     """
 
+
+    # 当選処理
     lot = DBSession.query(Lot).filter_by(id=lot_id).one()
 
     elected_wishes = DBSession.query(LotEntryWish).filter(
@@ -263,8 +267,28 @@ def elect_lot_entries(lot_id):
 
     for ew in elected_wishes:
         elect_entry(lot, ew)
+        # TODO: 再選処理
+
+
+
+    # 落選処理
+    q = DBSession.query(LotEntry).filter(
+        LotEntry.elected_at==None
+    ).filter(
+        LotEntry.rejected_at==None
+    ).all()
+
+    for entry in q:
+        reject_entry(lot, entry)
 
     lot.status = int(LotStatusEnum.Elected)
+
+def reject_entry(lot, entry):
+    now = datetime.now()
+    entry.rejected_at = now
+    rejected = LotRejectedEntry(lot_entry=elected_wish.lot_entry)
+    DBSession.add(rejected)
+    return rejected
 
 def elect_entry(lot, elected_wish):
     """ 個々の希望申し込みに対する処理 
@@ -344,6 +368,7 @@ def send_elected_mails(request):
     for elected_entry in q:
         sendmail.send_elected_mail(request, elected_entry)
         elected_entry.mail_sent_at = datetime.now()
+        transaction.commit()
 
 def send_rejected_mails(request):
     q = DBSession.query(LotRejectedEntry).filter(LotRejectedEntry.mail_sent_at==None).all()
@@ -351,3 +376,4 @@ def send_rejected_mails(request):
     for rejected_entry in q:
         sendmail.send_rejected_mail(request, rejected_entry)
         rejected_entry.mail_sent_at = datetime.now()
+        transaction.commit()
