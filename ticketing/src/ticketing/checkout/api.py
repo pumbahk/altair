@@ -5,6 +5,7 @@ import hmac
 import uuid
 import functools
 import xml.etree.ElementTree as et
+from datetime import datetime
 
 from . import interfaces
 from . import models as m
@@ -19,9 +20,8 @@ def generate_requestid():
 def get_checkout_service(request):
     return request.registry.utilities.lookup([], interfaces.ICheckout)
 
-
 def sign_to_xml(request, xml):
-    signer = request.registry.utilities.lookup([], interfaces.ISigner, "HMAC")
+    signer = request.registry.utilities.lookup([], interfaces.ISigner, 'HMAC')
     return signer(xml)
 
 
@@ -137,15 +137,15 @@ class Checkout(object):
         checkout = m.Checkout()
         for e in root:
             if e.tag == 'orderId':
-                checkout.orderId = e.text.strip()
+                checkout.orderId = unicode(e.text.strip())
             elif e.tag == 'orderControlId':
-                checkout.orderControlId = e.text.strip()
+                checkout.orderControlId = unicode(e.text.strip())
             elif e.tag == 'orderCartId':
-                checkout.orderCartId = e.text.strip()
+                checkout.orderCartId = unicode(e.text.strip())
             elif e.tag == 'orderTotalFee':
                 checkout.orderTotalFee = e.text.strip()
             elif e.tag == 'orderDate':
-                checkout.orderDate = e.text.strip()
+                checkout.orderDate = datetime.strptime(e.text.strip(), '%Y-%m-%d %H:%M:%S')
             elif e.tag == 'isTMode':
                 checkout.isTMode = e.text.strip()
             elif e.tag == 'usedPoint':
@@ -165,7 +165,7 @@ class Checkout(object):
                 if e.tag == 'itemId':
                     item.itemId = e.text.strip()
                 elif e.tag == 'itemName':
-                    item.itemName = e.text.strip()
+                    item.itemName = unicode(e.text.strip())
                 elif e.tag == 'itemNumbers':
                     item.itemNumbers = int(e.text.strip())
                 elif e.tag == 'itemFee':
