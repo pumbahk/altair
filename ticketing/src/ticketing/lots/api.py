@@ -331,3 +331,23 @@ def get_ordered_lot_entry(order):
 def notify_entry_lot(request, entry):
     event = LotEntriedEvent(entry)
     request.registry.notify(event)
+
+def send_result_mails(request):
+    """ 当選落選メール送信
+    """
+    send_elected_mails(request)
+    send_rejected_mails(request)
+
+def send_elected_mails(request):
+    q = DBSession.query(LotElectedEntry).filter(LotElectedEntry.mail_sent_at==None).all()
+
+    for elected_entry in q:
+        sendmail.send_elected_mail(request, elected_entry)
+        elected_entry.mail_sent_at = datetime.now()
+
+def send_rejected_mails(request):
+    q = DBSession.query(LotRejectedEntry).filter(LotRejectedEntry.mail_sent_at==None).all()
+
+    for rejected_entry in q:
+        sendmail.send_rejected_mail(request, rejected_entry)
+        rejected_entry.mail_sent_at = datetime.now()
