@@ -23,6 +23,7 @@ combobox.ComboboxSelection = Backbone.Model.extend({
             return {"name": o.name, "pk": o.pk};
         }));
         this.setFirstValue();
+        console.log(this.get("result"));
         this.trigger("*combobox.change.candidates", this.get("candidates"));
     }, 
     selectValue: function(result){

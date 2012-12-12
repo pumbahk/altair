@@ -208,10 +208,11 @@ class DictBuilder(object):
             })
         return retval
 
-    def build_dict_from_product(self, product):
+    def build_dict_from_product(self, product, retval=None):
+        retval = retval or {}
         sales_segment = product.sales_segment
 
-        retval = {
+        retval.update({
             u'salesSegment': {
                 u'name': sales_segment.name,
                 u'kind': sales_segment.kind,
@@ -227,7 +228,7 @@ class DictBuilder(object):
             u'券種名': product.name,
             u'商品名': product.name,
             u'商品価格': self.formatter.format_currency(product.price),
-            }
+            })
         return retval
 
 
@@ -485,6 +486,10 @@ _default_builder = DictBuilder(Japanese_Japan_Formatter())
 build_dict_from_stock = _default_builder.build_dict_from_stock
 build_dict_from_venue = _default_builder.build_dict_from_venue
 build_dict_from_seat = _default_builder.build_dict_from_seat
+build_dict_from_organization = _default_builder.build_dict_from_organization
+build_dict_from_event = _default_builder.build_dict_from_event
+build_dict_from_performance = _default_builder.build_dict_from_performance
+build_dict_from_product = _default_builder.build_dict_from_product
 build_dict_from_product_item = _default_builder.build_dict_from_product_item
 build_dicts_from_ordered_product_item = _default_builder.build_dicts_from_ordered_product_item
 build_dicts_from_carted_product_item = _default_builder.build_dicts_from_carted_product_item

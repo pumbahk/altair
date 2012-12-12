@@ -16,7 +16,12 @@ from ..cleaner.api import get_validated_svg_cleaner, skip_needless_part
 from .fillvalues import template_collect_vars
 from .fillvalues import template_fillvalues
 
-from ticketing.tickets.utils import build_dict_from_product_item
+from ticketing.tickets.utils import build_dict_from_product
+from ticketing.tickets.utils import build_dict_from_performance
+from ticketing.tickets.utils import build_dict_from_event
+from ticketing.tickets.utils import build_dict_from_organization
+import logging
+logger = logging.getLogger(__name__)
 
 ## todo move it
 def decimal_converter(target, converter=float):
@@ -127,15 +132,36 @@ class PreviewApiView(object):
     @view_config(match_param="action=fillvalues_with_models", request_param="data")
     def preview_fillvalues_with_models(self):
         params = json.loads(self.request.POST["data"])
-        product = params.get("product")
+        v = {}
         try:
+            product = params.get("product")
             if product:
-                product_item = c_models.ProductItem.query.filter_by(product_id=product["pk"]).first()
-                v = build_dict_from_product_item(product_item)
+                product = c_models.Product.query.filter_by(id=product["pk"]).first()
+                v = build_dict_from_product(product, retval=v)
+
+            performance = params.get("performance")
+            event = params.get("event")
+            organization = params.get("organization")
+            
+            if performance and "pk" in performance:
+                performance = c_models.Performance.query.filter_by(id=performance["pk"]).first()
+                v = build_dict_from_performance(performance, retval=v)
                 return {"status": True, "data": decimal_converter(v, converter=float)}
-            raise Exception("nil")
+            elif event and "pk" in event:
+                event = c_models.Event.query.filter_by(id=event["pk"]).first()
+                v = build_dict_from_event(event, retval=v)
+                return {"status": True, "data": decimal_converter(v, converter=float)}
+            elif organization and "pk" in organization:
+                organization = c_models.Organization.query.filter_by(id=organization["pk"]).first()
+                v = build_dict_from_organization(organization, retval=v)
+                return {"status": True, "data": decimal_converter(v, converter=float)}
+            else:
+                return {"status": True, "data": decimal_converter(v, converter=float)}
         except Exception, e:
-            print e
+            import sys
+            logger.warning(str(e),exc_info=sys.exc_info())
+            return {"status": True, "data": decimal_converter(v, converter=float), "message": e.message}
+
 
 @view_defaults(route_name="tickets.preview.combobox.api", request_method="GET", renderer="json")
 class ComboboxApiView(object):
