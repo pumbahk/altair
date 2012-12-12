@@ -1822,7 +1822,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 # - 払戻期限を越えてもキャンセルできる為
                 # - 売上一部取消で減額したあと、キャンセルAPIをつかうことはできない為
                 # - ただし、売上一部取消APIを有効にする以前に予約があったものはキャンセルAPIをつかう
-                sales_part_cancel_enabled_from = '2012-12-23 08:00'
+                sales_part_cancel_enabled_from = '2012-12-03 08:00'
                 if self.created_at < datetime.strptime(sales_part_cancel_enabled_from, "%Y-%m-%d %H:%M"):
                     logger.info(u'キャンセルAPIでキャンセル %s' % self.order_no)
                     multi_checkout_result = multicheckout_api.checkout_sales_cancel(request, order_no)
