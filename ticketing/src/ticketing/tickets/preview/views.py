@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 
 ## svg preview
+from decimal import Decimal
 import json
 from StringIO import StringIO
 from pyramid.view import view_config, view_defaults
@@ -15,6 +16,23 @@ from ..cleaner.api import get_validated_svg_cleaner, skip_needless_part
 from .fillvalues import template_collect_vars
 from .fillvalues import template_fillvalues
 
+from ticketing.tickets.utils import build_dict_from_product_item
+
+## todo move it
+def decimal_converter(target, converter=float):
+    """ for product.price ... etc"""
+    if isinstance(target, (list, tuple)):
+        for e in target:
+            decimal_converter(e, converter=converter)
+    elif hasattr(target, "keys"):
+        for k in target.keys():
+            v = target.get(k)
+            if isinstance(v, Decimal):
+                target[k] = converter(v)
+            else:
+                decimal_converter(v, converter)
+        return target
+
 @view_config(route_name="tickets.preview", request_method="GET", renderer="ticketing:templates/tickets/preview.html", 
              decorator=with_bootstrap)
 def preview_ticket(context, request):
@@ -22,7 +40,8 @@ def preview_ticket(context, request):
         "normalize": request.route_path("tickets.preview.api", action="normalize"), 
         "previewbase64": request.route_path("tickets.preview.api", action="preview.base64"), 
         "collectvars": request.route_path("tickets.preview.api", action="collectvars"), 
-        "fillvalues": request.route_path("tickets.preview.api", action="fillvalues")
+        "fillvalues": request.route_path("tickets.preview.api", action="fillvalues"), 
+        "fillvalues_with_models": request.route_path("tickets.preview.api", action="fillvalues_with_models")
         }
     return {"apis": json.dumps(apis)}
 
@@ -55,7 +74,7 @@ def combbox_for_preview(context, request):
 """
 raw svg -> normalize svg -> base64 png
 """
-@view_defaults(route_name="tickets.preview.combobox.api", request_method="POST", renderer="json")
+@view_defaults(route_name="tickets.preview.api", request_method="POST", renderer="json")
 class PreviewApiView(object):
     def __init__(self, context, request):
         self.context = context
@@ -71,6 +90,17 @@ class PreviewApiView(object):
         except Exception, e:
             return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
 
+    @view_config(match_param="action=preview.base64", request_param="svg")
+    def preview_ticket_post64(self):
+        preview = SVGPreviewCommunication.get_instance(self.request)
+        # svg = skip_needless_part(self.request.POST["svg"])
+        svg = self.request.POST["svg"]
+        try:
+            imgdata_base64 = preview.communicate(self.request, svg)
+            return {"status": True, "data":imgdata_base64}
+        except jsonrpc.ProtocolError, e:
+            return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
+
     @view_config(match_param="action=collectvars", request_param="svg")
     def preview_collectvars(self):
         svg = self.request.POST["svg"]
@@ -80,7 +110,7 @@ class PreviewApiView(object):
             return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
 
     @view_config(match_param="action=fillvalues", request_param="svg")
-    def preview_fillvalus(self):
+    def preview_fillvalues(self):
         svg = self.request.POST["svg"]
         try:
             params = json.loads(self.request.POST["params"])
@@ -94,17 +124,18 @@ class PreviewApiView(object):
         except Exception, e:
             return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
 
-    @view_config(match_param="action=preview.base64", request_param="svg")
-    def preview_ticket_post64(self):
-        preview = SVGPreviewCommunication.get_instance(self.request)
-        # svg = skip_needless_part(self.request.POST["svg"])
-        svg = self.request.POST["svg"]
+    @view_config(match_param="action=fillvalues_with_models", request_param="data")
+    def preview_fillvalues_with_models(self):
+        params = json.loads(self.request.POST["data"])
+        product = params.get("product")
         try:
-            imgdata_base64 = preview.communicate(self.request, svg)
-            return {"status": True, "data":imgdata_base64}
-        except jsonrpc.ProtocolError, e:
-            return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
-
+            if product:
+                product_item = c_models.ProductItem.query.filter_by(product_id=product["pk"]).first()
+                v = build_dict_from_product_item(product_item)
+                return {"status": True, "data": decimal_converter(v, converter=float)}
+            raise Exception("nil")
+        except Exception, e:
+            print e
 
 @view_defaults(route_name="tickets.preview.combobox.api", request_method="GET", renderer="json")
 class ComboboxApiView(object):

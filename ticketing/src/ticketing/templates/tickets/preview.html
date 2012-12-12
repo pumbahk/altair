@@ -127,8 +127,9 @@
         area.find(".modal-footer").append(btn);
 
         apps["combobox"].setFinishBack(function(result){
-    　　  console.dir(result);
-          alert("hehheh");
+          $.post(apis["fillvalues_with_models"], {data: JSON.stringify(result)}).done(function(data){
+            console.dir(data);
+          });
     　　})
         btn.click(function(){apps["combobox"].getFinishBack()()});
       }

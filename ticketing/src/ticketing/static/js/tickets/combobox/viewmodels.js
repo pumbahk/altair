@@ -3,7 +3,7 @@ if (!window.combobox)
 
 combobox.ComboboxViewModel = core.ViewModel.extend({
     initialize: function(){
-        this.$el.delegate("select", "change", this.onSelect.bind(this));
+        this.$el.delegate("select", "click", this.onSelect.bind(this)); // click ? change?
         }, 
         refresh: function(){
             this.$el.empty();
