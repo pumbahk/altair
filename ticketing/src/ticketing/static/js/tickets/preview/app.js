@@ -35,6 +35,9 @@ preview.ApplicationView = Backbone.View.extend({
         this.gateway = opts.gateway;
         if(!this.gateway) throw "gateway is not found";
     }, 
+    reDrawImage: function(){
+        this.models.vars.commitVarsValues();
+    }, 
     fillsVarsWithParams: function(params){
         this.views.template_fillvalues_view.fillsVarsWithParams(params);
     }

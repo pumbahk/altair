@@ -112,11 +112,12 @@
   // application viewは作成と同時にwindow.appsに入れる。(comboboxも同様)
     window.apis = ${apis|n};
     window.apps["preview"] = window.appView = preview.ApplicationViewFactory(apis,
-     preview.ApiCommunicationGateway,
-     $("#preview_block"), 
-     $("#preview_block #preview_area"),
-     $("#preview_block #svg_droparea"), 
-     $("#template_vars_table"));
+      preview.ApiCommunicationGateway,
+      $("#preview_block"), 
+      $("#preview_block #preview_area"),
+      $("#preview_block #svg_droparea"), 
+      $("#template_vars_table")
+    );
 
     window.comboboxModalView = new modal.api.AjaxModalView({
       el: $("#combobox_btn"),
@@ -135,8 +136,8 @@
         var btn = $("<a>").attr("class", "btn").text("プレースホルダに値を挿入");
         modalview.$modalArea.find(".modal-footer").append(btn);
         btn.click(function(){
-          console.log("heh");
           apps["combobox"].getFinishBack()(); 
+          apps["preview"].reDrawImage(); // 動かない？.文字列の挿入が終わった後redrawされる
           modalview.hide();
         });
    }});
