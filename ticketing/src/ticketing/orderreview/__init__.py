@@ -3,7 +3,6 @@ import json
 from pyramid.config import Configurator
 from pyramid_beaker import session_factory_from_settings
 from pyramid.httpexceptions import HTTPNotFound
-from ticketing.cart.selectable_renderer import selectable_renderer
 
 # from ticketing.cart.interfaces import IPaymentPlugin, ICartPayment, IOrderPayment
 # from ticketing.cart.interfaces import IDeliveryPlugin, ICartDelivery, IOrderDelivery
@@ -12,6 +11,9 @@ from sqlalchemy import engine_from_config
 import sqlahelper
 
 def main(global_conf, **settings):
+    from ticketing.logicaldeleting import install as ld_install
+    ld_install()
+
     engine = engine_from_config(settings)
     sqlahelper.add_engine(engine)
 
@@ -70,6 +72,7 @@ def import_view(config):
 
 def import_exc_view(config):
     ## exc
+    from ticketing.cart.selectable_renderer import selectable_renderer
     config.add_view('.views.notfound_view', context=HTTPNotFound, renderer=selectable_renderer("%(membership)s/errors/not_found.html"))
     config.add_view('.views.notfound_view', context=HTTPNotFound,  renderer=selectable_renderer("%(membership)s/errors_mobile/not_found.html"), request_type='ticketing.cart.interfaces.IMobileRequest')
     config.add_view('.views.exception_view',  context=StandardError, renderer=selectable_renderer("%(membership)s/errors/error.html"))
