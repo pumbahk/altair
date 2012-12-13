@@ -3,7 +3,6 @@ from twisted.web import proxy, http
 from twisted.internet import reactor
 from twisted.python import log
 from twisted.internet import protocol
-from twisted.protocols import portforward
 from urlparse import urlparse, urlunparse
 import sys
 import re
