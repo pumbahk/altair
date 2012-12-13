@@ -2,9 +2,11 @@
 
 import hashlib
 import hmac
+import httplib
 import uuid
 import functools
 import logging
+import urlparse
 import xml.etree.ElementTree as et
 from datetime import datetime
 
@@ -84,12 +86,13 @@ class HMAC_MD5(object):
 
 class Checkout(object):
 
-    def __init__(self, service_id, success_url, fail_url, auth_method, secret, is_test):
+    def __init__(self, service_id, success_url, fail_url, auth_method, secret, api_url, is_test):
         self.service_id = service_id
         self.success_url = success_url
         self.fail_url = fail_url
         self.auth_method = auth_method
         self.secret = secret
+        self.api_url = api_url
         self.is_test = is_test
 
     def create_checkout_request_xml(self, cart):
@@ -226,3 +229,69 @@ class Checkout(object):
             subelement('orderControlId').text = order.cart.checkout.orderControlId
 
         return et.tostring(root)
+
+    def _request(self, url, message=None):
+        content_type = "application/xhtml+xml;charset=UTF-8"
+        body = message if message is not None else ''
+        url_parts = urlparse.urlparse(url)
+
+        if url_parts.scheme == "http":
+            http = self._httplib.HTTPConnection(host=url_parts.hostname, port=url_parts.port)
+        elif url_parts.scheme == "https":
+            http = self._httplib.HTTPSConnection(host=url_parts.hostname, port=url_parts.port)
+        else:
+            raise ValueError, "unknown scheme %s" % (url_parts.scheme)
+
+        headers = {
+            "Content-Type": content_type,
+        }
+
+        #headers.update(self.auth_header)
+
+        logger.debug("request %s body = %s" % (url, body))
+        http.request(
+            "POST", url_parts.path, body=body,
+            headers=headers)
+        res = http.getresponse()
+        try:
+            logger.debug('%(url)s %(status)s %(reason)s' % dict(
+                url=url,
+                status=res.status,
+                reason=res.reason,
+            ))
+            if res.status != 200:
+                raise Exception, res.reason
+
+            return et.parse(res).getroot()
+        finally:
+            res.close()
+
+    def order_cancel_url(self):
+        return self.api_url + '/odrctla/cancelorder/1.0/'
+
+    def request_order_cancel(self, orders):
+        url = self.order_cancel_url()
+        message = self.create_order_cancel_request_xml(orders)
+        res = self._request(url, 'rparam=%s' % message.encode('base64'))
+        logger.debug('got response %s' % et.tostring(res))
+        return self._parse_response_order_cancel_xml(res)
+
+    def _parse_response_order_cancel_xml(self, root):
+        if root.tag != 'root':
+            return None
+
+        response = {}
+        for e in root:
+            if e.tag == 'orders':
+                response['orders'] = []
+                for sub_el in e:
+                    if sub_el.tag != 'order':
+                        continue
+                    order = {}
+                    for order_el in sub_el:
+                        if order_el.tag in ['orderControlId', 'orderErrorCode']:
+                            order[order_el.tag] = order_el.text.strip()
+                    response['orders'].append(order)
+            elif e.tag in ['statusCode', 'acceptNumber', 'successNumber', 'failedNumber', 'apiErrorCode']:
+                response[e.tag] = e.text.strip()
+        return response

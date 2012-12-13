@@ -13,9 +13,10 @@ def includeme(config):
     fail_url = config.registry.settings.get('altair_checkout.fail_url')
     auth_method = config.registry.settings.get('altair_checkout.auth_method')
     secret = config.registry.settings.get('altair_checkout.secret')
+    api_url = config.registry.settings.get('altair_checkout.api_url')
     is_test = config.registry.settings.get('altair_checkout.is_test', False)
 
-    checkout_api = api.Checkout(service_id, success_url, fail_url, auth_method, secret, is_test)
+    checkout_api = api.Checkout(service_id, success_url, fail_url, auth_method, secret, api_url, is_test)
     config.registry.utilities.register([], interfaces.ICheckout, "", checkout_api)
 
     """

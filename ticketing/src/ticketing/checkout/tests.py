@@ -108,6 +108,7 @@ class CheckoutTests(unittest.TestCase):
             '/failed',
             'HMAC-SHA1',
             'access_key',
+            'https://example.com/api_url',
             '1'
         ]
         return self._getTarget()(*args, **kwargs)
@@ -249,6 +250,7 @@ class CheckoutTests(unittest.TestCase):
             '/failed',
             'HMAC-MD5',
             'access_key',
+            'https://example.com/api_url',
             '0'
         ]
         target = self._makeOne(*args)
@@ -483,6 +485,85 @@ class CheckoutTests(unittest.TestCase):
             '</orders>'
             '</root>' % dict(request_id=request_id)
         )
+
+    def test_order_cancel_url(self):
+        target = self._makeOne()
+        self.assertEqual(target.order_cancel_url(), 'https://example.com/api_url/odrctla/cancelorder/1.0/')
+
+    def test__parse_response_order_cancel_xml(self):
+        import xml.etree.ElementTree as et
+        xml = et.XML(
+            '<root>'
+            '<statusCode>1</statusCode>'
+            '<acceptNumber>2</acceptNumber>'
+            '<successNumber>3</successNumber>'
+            '<failedNumber>4</failedNumber>'
+            '<orders>'
+            '<order>'
+            '<orderControlId>dc-1234567890-110415-0000022222</orderControlId>'
+            '<orderErrorCode>090</orderErrorCode>'
+            '</order>'
+            '</orders>'
+            '<apiErrorCode>100</apiErrorCode>'
+            '</root>'
+        )
+        target = self._makeOne()
+        result = target._parse_response_order_cancel_xml(xml)
+
+        self.assertEqual(result['statusCode'], '1')
+        self.assertEqual(result['acceptNumber'], '2')
+        self.assertEqual(result['successNumber'], '3')
+        self.assertEqual(result['failedNumber'], '4')
+        self.assertEqual(result['apiErrorCode'], '100')
+        self.assertEqual(len(result['orders']), 1)
+        self.assertEqual(result['orders'][0]['orderControlId'], 'dc-1234567890-110415-0000022222')
+        self.assertEqual(result['orders'][0]['orderErrorCode'], '090')
+
+    def test_request_order_cancel(self):
+        import xml.etree.ElementTree as et
+        from ticketing.multicheckout.testing import DummyHTTPLib
+
+        res_data = et.XML(
+            '<root>'
+            '<statusCode>1</statusCode>'
+            '<acceptNumber>2</acceptNumber>'
+            '<successNumber>3</successNumber>'
+            '<failedNumber>4</failedNumber>'
+            '<orders>'
+            '<order>'
+            '<orderControlId>dc-1234567890-110415-0000022222</orderControlId>'
+            '<orderErrorCode>090</orderErrorCode>'
+            '</order>'
+            '</orders>'
+            '<apiErrorCode>100</apiErrorCode>'
+            '</root>'
+        )
+        target = self._makeOne()
+        target._httplib = DummyHTTPLib(et.tostring(res_data))
+
+        orders = [
+            testing.DummyResource(
+                cart = testing.DummyResource(
+                    checkout = testing.DummyResource(orderControlId='10')
+                )
+            ),
+            testing.DummyResource(
+                cart = testing.DummyResource(
+                    checkout = testing.DummyResource(orderControlId='20')
+                )
+            )
+        ]
+        result = target.request_order_cancel(orders)
+
+        self.assertEqual(target._httplib.path, '/api_url/odrctla/cancelorder/1.0/')
+        self.assertEqual(result['statusCode'], '1')
+        self.assertEqual(result['acceptNumber'], '2')
+        self.assertEqual(result['successNumber'], '3')
+        self.assertEqual(result['failedNumber'], '4')
+        self.assertEqual(result['apiErrorCode'], '100')
+        self.assertEqual(len(result['orders']), 1)
+        self.assertEqual(result['orders'][0]['orderControlId'], 'dc-1234567890-110415-0000022222')
+        self.assertEqual(result['orders'][0]['orderErrorCode'], '090')
 
 
 if __name__ == "__main__":
