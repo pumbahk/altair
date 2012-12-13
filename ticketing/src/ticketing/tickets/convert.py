@@ -7,6 +7,7 @@ import re
 import cssutils
 import numpy
 import logging
+import itertools
 
 __all__ = (
     'to_opcodes',
@@ -1070,6 +1071,8 @@ class Visitor(object):
                     tag = 'div'
                 elif elem.tag == u'{%s}flowPara' % SVG_NAMESPACE:
                     tag = 'div'
+                elif elem.tag == u'{%s}flowDiv' % SVG_NAMESPACE:
+                    tag = 'div'
                 else:
                     tag = None
                 if tag is None:
@@ -1111,6 +1114,7 @@ class Visitor(object):
         return E(container, *nodes)
 
     def build_html_from_flow_elements(self, elems):
+        elems = list(elems)
         result = self._build_html_from_flow_elements(elems)
         retval = []
         if result.text:
@@ -1311,32 +1315,35 @@ class Visitor(object):
     @namespace(SVG_NAMESPACE)
     @stylable
     @transformable
-    def visit_flowDiv(self, scanner, ns, local_name, elem):
-        self.emitter.emit_move_to(self.flow_bbox[0], self.flow_bbox[1])
-        self.emitter.emit_show_text(self.flow_bbox[2], self.flow_bbox[3], self.build_html_from_flow_elements(text_and_elements(elem)))
-
-    @namespace(SVG_NAMESPACE)
-    @stylable
-    @transformable
     def visit_flowRoot(self, scanner, ns, local_name, elem):
         flow_region_visited = False
         flow_div_visited = False
         self.apply_styles(elem)
+        contents = []
         for n in elem:
             if n.tag == u'{%s}flowRegion' % SVG_NAMESPACE:
                 if flow_region_visited:
                     raise Exception('<flowRoot> contains more than one <flowRegion>')
                 self.visit_flowRegion(scanner, ns, local_name, n)
                 flow_region_visited = True
+            elif n.tag == u'{%s}flowPara' % SVG_NAMESPACE:
+                contents.append(n)
             elif n.tag == u'{%s}flowDiv' % SVG_NAMESPACE:
-                if flow_div_visited:
-                    raise Exception('<flowRoot> must contain only one <flowDiv>')
-                self.visit_flowDiv(scanner, ns, local_name, n)
-                flow_div_visited = True
+                contents.append(n)
+
         if not flow_region_visited:
             raise Exception('<flowRoot> contains no <flowRegion>')
-        if not flow_div_visited:
-            raise Exception('<flowRoot> contains no <flowDiv>')
+
+        if contents: 
+            self.emitter.emit_move_to(self.flow_bbox[0], self.flow_bbox[1])
+            if len(contents) == 1:
+                # Specially treat a sole container element :-p
+                self.apply_styles(contents[0])
+                self.emitter.emit_show_text(self.flow_bbox[2], self.flow_bbox[3], self.build_html_from_flow_elements(text_and_elements(contents[0])))
+                self.unapply_styles()
+            else:
+                self.emitter.emit_show_text(self.flow_bbox[2], self.flow_bbox[3], self.build_html_from_flow_elements(contents))
+
 
     @namespace(SVG_NAMESPACE)
     @stylable
@@ -1451,4 +1458,7 @@ def convert_svg(doc, global_transform=None):
 
 if __name__ == '__main__':
     import sys
-    print re.sub(r'''encoding=(["'])Windows-31J\1''', 'encoding="Shift_JIS"', etree.tostring(convert_svg(etree.parse(sys.stdin), Visitor.parse_transform(sys.argv[1]) if len(sys.argv) >= 2 else None), encoding='Windows-31J'))
+    from .cleaner import cleanup_svg
+    tree = etree.parse(sys.stdin)
+    cleanup_svg(tree)
+    print re.sub(r'''encoding=(["'])Windows-31J\1''', 'encoding="Shift_JIS"', etree.tostring(convert_svg(tree, Visitor.parse_transform(sys.argv[1]) if len(sys.argv) >= 2 else None), encoding='Windows-31J'))
