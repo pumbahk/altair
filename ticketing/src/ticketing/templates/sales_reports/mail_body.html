@@ -31,21 +31,22 @@
       %>
         % for sale_segment_name, performance_reports in report_by_sales_segment.items():
       <h4 style="margin-top: 20px;">開催日:${h.safe_strftime(performance.start_on)}　${performance.name}</h4>
-      <table style="width: 95%; border: 1px #DCDCDC solid; background-color: #DCDCDC;">
+      <h4>${sale_segment_name}</h4>
+      <table style="width: 95%; border: 1px #DCDCDC solid; background-color: #C0FFFF;">
         <tr>
-          <th colspan="4"></th>
-          <th colspan="5">累計</th>
+          <th style="width: 13%; border: 1px #DCDCDC solid;" colspan="4"></th>
+          <th style="width: 13%; border: 1px #DCDCDC solid;" colspan="5">累計</th>
         </tr>
         <tr>
-          <th style="width: 13%">席種</th>
-          <th style="width: 15%">配券先</th>
-          <th style="width: 20%">商品</th>
-          <th style="width: 10%">価格</th>
-          <th style="width: 8%">配席数</th>
-          <th style="width: 8%">残数</th>
-          <th style="width: 8%">受付</th>
-          <th style="width: 8%">未入金</th>
-          <th style="width: 10%">入金済み</th>
+          <th style="width: 13%; border: 1px #DCDCDC solid;">席種</th>
+          <th style="width: 15%; border: 1px #DCDCDC solid;">配券先</th>
+          <th style="width: 20%; border: 1px #DCDCDC solid;">商品</th>
+          <th style="width: 10%; border: 1px #DCDCDC solid;">価格</th>
+          <th style="width: 8%; border: 1px #DCDCDC solid;">配席数</th>
+          <th style="width: 8%; border: 1px #DCDCDC solid;">残数</th>
+          <th style="width: 8%; border: 1px #DCDCDC solid;">受付</th>
+          <th style="width: 8%; border: 1px #DCDCDC solid;">未入金</th>
+          <th style="width: 10%; border: 1px #DCDCDC solid;">入金済み</th>
         </tr>
 
         <%
@@ -74,20 +75,20 @@
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${performance_report['stock_holder_name']}</td>
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${performance_report['product_name']}</td>
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_report['product_price'])}円</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${performance_report['total_quantity'] or ''}</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${performance_report['vacant_quantity'] or ''}</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${(performance_report['paid_quantity'] + performance_report['unpaid_quantity']) or ''}</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${performance_report['unpaid_quantity'] or ''}</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${performance_report['paid_quantity'] or ''}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_report['total_quantity']) or ''}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_report['vacant_quantity']) or ''}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_report['paid_quantity'] + performance_report['unpaid_quantity']) or ''}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_report['unpaid_quantity']) or ''}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_report['paid_quantity']) or ''}</td>
         </tr>
         % endfor
         <tr>
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;" colspan="4">合計</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${performance_total['total_quantity'] or ''}</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${performance_total['vacant_quantity'] or ''}</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${(performance_total['paid_quantity'] + performance_total['unpaid_quantity']) or ''}</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${performance_total['unpaid_quantity'] or ''}</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${performance_total['paid_quantity'] or ''}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_total['total_quantity']) or ''}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_total['vacant_quantity']) or ''}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_total['paid_quantity'] + performance_total['unpaid_quantity']) or ''}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_total['unpaid_quantity']) or ''}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_total['paid_quantity']) or ''}</td>
         </tr>
       </table>
         % endfor

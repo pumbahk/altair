@@ -16,6 +16,7 @@
   function preview(){
     var params = $('#form').serialize();
     $(location).attr('href', '/events/sales_reports/preview/${event_id}?' + params);
+
   };
 </script>
 
@@ -39,7 +40,11 @@
 </div>
 
 <form id="form" action="${request.route_path('sales_reports.preview',event_id=event_id)}" method="GET">
+% if form.email.data:
+  ${h.form_item(form.email, class_='span6')}
+% else:
   ${h.form_item(form.recipient, class_='span6')}
+% endif
   ${h.form_item(form.subject, class_='span8')}
   <div class="control-group">
     <label class="control-label">

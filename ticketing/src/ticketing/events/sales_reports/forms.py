@@ -16,10 +16,12 @@ class SalesReportForm(Form):
 
         if 'event_id' in kwargs:
             self.event_id.data = kwargs['event_id']
+        if 'email' in kwargs:
+            self.email.data = kwargs['email']
 
     def _get_translations(self):
         return Translations()
-
+   
     event_id = HiddenField(
         validators=[Optional()],
     )
@@ -43,6 +45,11 @@ class SalesReportForm(Form):
         label=u'送信先',
         validators=[Required()],
     )
+    email = TextField(
+        label=u'送信先',
+        validators=[Required()],
+    )
+
     subject = TextField(
         label=u'件名',
         validators=[Required()],

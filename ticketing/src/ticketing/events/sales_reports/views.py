@@ -174,8 +174,8 @@ class SalesReports(BaseView):
                 product_id=row[2],
                 product_name=row[3],
                 product_price=row[4],
-                total_quantity=row[5],
-                vacant_quantity=row[6],
+                total_quantity=row[5] or 0,
+                vacant_quantity=row[6] or 0,
                 stock_holder_id=row[7],
                 stock_holder_name=row[8],
                 sales_segment_name=row[9],
@@ -343,7 +343,7 @@ class SalesReports(BaseView):
 
             settings = self.request.registry.settings
             sender = settings['mail.message.sender']
-            recipient =  form.recipient.data
+            recipient =  form.recipient.data or form.email.data
             subject = form.subject.data
             html = render_to_response('ticketing:templates/sales_reports/mail_body.html', render_param, request=self.request)
             mailer = Mailer(settings)

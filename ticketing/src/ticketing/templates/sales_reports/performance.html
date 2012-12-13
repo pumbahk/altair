@@ -70,16 +70,16 @@
     <td>${report['product_name']}</td>
     <td class="price">${h.price_format(report['product_price'])}円</td>
       % if i == 0:
-    <td rowspan="${count}" class="numeric">${report['total_quantity'] or ''}</td>
-    <td rowspan="${count}" class="numeric">${report['vacant_quantity'] or ''}</td>
+    <td rowspan="${count}" class="numeric">${h.price_format(report['total_quantity']) or ''}</td>
+    <td rowspan="${count}" class="numeric">${h.price_format(report['vacant_quantity']) or ''}</td>
       <%
         performance_total['total_quantity'] += report['total_quantity']
         performance_total['vacant_quantity'] += report['vacant_quantity']
       %>
       % endif
-    <td class="numeric">${(report['paid_quantity'] + report['unpaid_quantity']) or ''}</td>
-    <td class="numeric">${report['unpaid_quantity'] or ''}</td>
-    <td class="numeric">${report['paid_quantity'] or ''}</td>
+    <td class="numeric">${h.price_format(report['paid_quantity'] + report['unpaid_quantity']) or ''}</td>
+    <td class="numeric">${h.price_format(report['unpaid_quantity']) or ''}</td>
+    <td class="numeric">${h.price_format(report['paid_quantity']) or ''}</td>
     <%
       performance_total['unpaid_quantity'] += report['unpaid_quantity']
       performance_total['paid_quantity'] += report['paid_quantity']
@@ -90,11 +90,11 @@
   % endfor
   <tr>
     <td colspan="4">合計</td>
-    <td class="numeric">${performance_total['total_quantity'] or ''}</td>
-    <td class="numeric">${performance_total['vacant_quantity'] or ''}</td>
-    <td class="numeric">${(performance_total['paid_quantity'] + performance_total['unpaid_quantity']) or ''}</td>
-    <td class="numeric">${performance_total['unpaid_quantity'] or ''}</td>
-    <td class="numeric">${performance_total['paid_quantity'] or ''}</td>
+    <td class="numeric">${h.price_format(performance_total['total_quantity']) or ''}</td>
+    <td class="numeric">${h.price_format(performance_total['vacant_quantity']) or ''}</td>
+    <td class="numeric">${h.price_format(performance_total['paid_quantity'] + performance_total['unpaid_quantity']) or ''}</td>
+    <td class="numeric">${h.price_format(performance_total['unpaid_quantity']) or ''}</td>
+    <td class="numeric">${h.price_format(performance_total['paid_quantity']) or ''}</td>
   </tr>
 </table>
 % endfor
