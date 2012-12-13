@@ -60,12 +60,12 @@
   <div id="subnav" class="navbar">
     <div class="navbar-inner">
       <a class="brand" href="#">preview画像表示</a>
-      <ul class="nav">
+      <ul class="nav" id="params_settings_nav">
         <li><a id="combobox_btn" href="#">入力補助ダイアログ</a></li>
         <li><a id="download_btn" href="#">現在のsvgをdownload</a></li>
         <li><a id="redraw_btn" href="#">再描画</a></li>
         <li style="margin-left:50px;">チケット様式の選択
-          <select>
+          <select id="ticket_format">
             %for tf in ticket_formats:
               <option value="${tf["pk"]}">${tf["name"]}</option>
             %endfor
@@ -145,7 +145,7 @@
       $("#preview_block #preview_area"),
       $("#preview_block #svg_droparea"), 
       $("#template_vars_table"),
-      $("#transform_form")
+      $("#params_settings_nav")
     );
 
     window.comboboxModalView = new modal.api.AjaxModalView({

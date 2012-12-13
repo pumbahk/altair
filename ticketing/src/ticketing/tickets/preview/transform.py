@@ -3,15 +3,25 @@ import logging
 logger = logging.getLogger(__name__)
 import re
 import ast
-from wtforms import Form, fields
+from wtforms import Form, fields, validators
 from lxml import etree
 from webob.multidict import MultiDict
+from .materialize import svg_with_ticketformat
+from ticketing.core.models import TicketFormat #uggg
 
 class SVGTransformValidator(Form):
     sx = fields.FloatField(default=1.0)
     sy = fields.FloatField(default=1.0)
-    # pageformat
+    ticket_format = fields.IntegerField()
 
+    def validate_ticket_format(form, field):
+        ticket_format = TicketFormat.query.filter_by(id=field.data).first()
+        if ticket_format is None:
+            logger.warn("validation failure")
+            raise validators.ValidationError("Ticket Format is not found")
+        field.data = form.data["ticket_format"] = ticket_format
+
+        
 def parse(postdata):
     if not hasattr(postdata, "getlist"):
         postdata = MultiDict(postdata)
@@ -58,7 +68,8 @@ class SVGTransformer(object):
         return self.as_string(self.scale_image(self.put_pageformat(xmltree)))
 
     def put_pageformat(self, xmltree):
-        logger.warn( "not implemented")
+        svg = self._find_svg(xmltree)
+        svg_with_ticketformat(svg, self.data["ticket_format"])
         return xmltree
 
     fullsvg = etree.QName("http://www.w3.org/2000/svg", "svg")

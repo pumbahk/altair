@@ -4,11 +4,18 @@ if (!window.preview)
 preview.ParamaterManageView = Backbone.View.extend({
     events: {
         'hover input[name="sx"]': "onChangeSx", 
-        'change input[name="sy"]': "onChangeSy"
+        'hover input[name="sy"]': "onChangeSy", 
+        "change #ticket_format": "onChangeTicketFormat"
     }, 
     initialize: function(opts){
         this.$sx = this.$el.find('input[name="sx"]');
         this.$sy = this.$el.find('input[name="sy"]');
+        this.$ticket_format = this.$el.find("#ticket_format");
+        // remove it
+        this.onChangeTicketFormat();
+    }, 
+    onChangeTicketFormat: function(){
+        this.model.set("ticket_format", {"pk":this.$ticket_format.val(), "name": this.$ticket_format.text()});
     }, 
     onChangeSx: function(){
         this.model.set("sx", this.$sx.val());

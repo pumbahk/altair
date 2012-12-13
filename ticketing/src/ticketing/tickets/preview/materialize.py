@@ -63,8 +63,7 @@ class Middle(object):
 
 def create_svg(svg):
     svg = svg or etree.Element("svg")
-    if not "version" in svg.attrib:
-        svg.attrib["version"] = u"1.2"
+    svg.attrib["version"] = u"1.2"
     return svg
 
 ## high
@@ -76,8 +75,7 @@ class TicketFormatMaterializer(object):
         self.height = size["height"]
         self.middle = Middle(self.width, self.height)
 
-    def materialize(self, svg=None):
-        svg = create_svg(svg)
+    def materialize(self, svg):
         data = self.pageformat.data
         self.middle.add_printable_areas(svg, data["printable_areas"])
         self.middle.add_perforations(svg, data["perforations"])
@@ -85,7 +83,7 @@ class TicketFormatMaterializer(object):
 
 def svg_with_ticketformat(svg, ticketformat):
     g = etree.Element("g")
-    TicketFormatMaterializer(ticketformat).materialize(g)
+    etree.tostring(TicketFormatMaterializer(ticketformat).materialize(g))
     svg.insert(0, g)
     ## width, heightの調整が必要
     return svg
@@ -99,4 +97,4 @@ if __name__ == "__main__":
     from ticketing.tickets.preview.materialize import TicketFormatMaterializer
     tf = TicketFormat.query.first()
     m = TicketFormatMaterializer(tf)
-    print etree.tostring(m.materialize())
+    print etree.tostring(m.materialize(create_svg()))

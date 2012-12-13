@@ -53,7 +53,11 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
     svgFilledToX: function(){
         var self = this;
         this.preview.beforeRendering();
-        return $.post(this.apis.previewbase64, {svg: this.svg.get("data"), sx: this.params.get("sx"), sy: this.params.get("sy")})
+        var params = {svg: this.svg.get("data"),
+                      sx: this.params.get("sx"),
+                      sy: this.params.get("sy"), 
+                      ticket_format: this.params.get("ticket_format").pk};
+        return $.post(this.apis.previewbase64, params)
             .pipe(core.ApiService.rejectIfStatusFail(function(data){
                 self.preview.startRendering("data:image/png;base64,"+data.data); //add-hoc
             }))

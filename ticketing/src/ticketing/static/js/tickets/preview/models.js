@@ -5,7 +5,8 @@ if (!window.preview)
     preview.ParamaterStore = Backbone.Model.extend({
         defaults:{
             sx: 1.0, 
-            sy: 1.0
+            sy: 1.0, 
+            ticket_format: null
         }
     });
 
