@@ -1,0 +1,19 @@
+<%inherit file="/layout_2cols.html"/>
+<%namespace file="/common/helpers.html" name="h" />
+
+<div class="breadcrumbs">
+  ${h.breadcrumbs(
+      names=[u'トップ', u'会場'],
+      urls=[request.route_path('index')]
+  )}
+</div>
+
+<div class="page-header">
+  <h3>会場</h3>
+</div>
+
+<div class="content">
+  ${h.flash_messages(request)}
+</div>
+
+<%include file="/venues/_list.html" args="items=items" />
