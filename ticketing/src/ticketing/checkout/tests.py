@@ -89,6 +89,11 @@ class CheckoutTests(unittest.TestCase):
         self.config = testing.setUp()
         self.session = _setup_db()
 
+        from pyramid.threadlocal import get_current_request, manager
+        thread = manager.pop()
+        thread['request'] = testing.DummyRequest()
+        manager.push(thread)
+
     def tearDown(self):
         testing.tearDown()
         _teardown_db()
@@ -99,9 +104,10 @@ class CheckoutTests(unittest.TestCase):
     def _makeOne(self, *args, **kwargs):
         args = args or [
             'this-is-serviceId',
-            'http://example.com/completed',
-            'http://example.com/failed',
+            '/completed',
+            '/failed',
             'HMAC-SHA1',
+            'access_key',
             '1'
         ]
         return self._getTarget()(*args, **kwargs)
@@ -144,8 +150,8 @@ class CheckoutTests(unittest.TestCase):
         self.assertEqual(result,
             '<orderItemsInfo>'
             '<serviceId>this-is-serviceId</serviceId>'
-            '<orderCompleteUrl>http://example.com/completed</orderCompleteUrl>'
-            '<orderFailedUrl>http://example.com/failed</orderFailedUrl>'
+            '<orderCompleteUrl>https://example.com:80/completed</orderCompleteUrl>'
+            '<orderFailedUrl>https://example.com:80/failed</orderFailedUrl>'
             '<authMethod>1</authMethod>'
             '<isTMode>1</isTMode>'
             '<orderCartId>10</orderCartId>'
@@ -196,8 +202,8 @@ class CheckoutTests(unittest.TestCase):
         self.assertEqual(result,
             '<orderItemsInfo>'
             '<serviceId>this-is-serviceId</serviceId>'
-            '<orderCompleteUrl>http://example.com/completed</orderCompleteUrl>'
-            '<orderFailedUrl>http://example.com/failed</orderFailedUrl>'
+            '<orderCompleteUrl>https://example.com:80/completed</orderCompleteUrl>'
+            '<orderFailedUrl>https://example.com:80/failed</orderFailedUrl>'
             '<authMethod>1</authMethod>'
             '<isTMode>1</isTMode>'
             '<orderCartId>10</orderCartId>'
@@ -239,9 +245,10 @@ class CheckoutTests(unittest.TestCase):
     def test_create_checkout_item_xml_without_tmode(self):
         args = [
             'this-is-serviceId',
-            'http://example.com/completed',
-            'http://example.com/failed',
+            '/completed',
+            '/failed',
             'HMAC-MD5',
+            'access_key',
             '0'
         ]
         target = self._makeOne(*args)
@@ -267,8 +274,8 @@ class CheckoutTests(unittest.TestCase):
         self.assertEqual(result,
             '<orderItemsInfo>'
             '<serviceId>this-is-serviceId</serviceId>'
-            '<orderCompleteUrl>http://example.com/completed</orderCompleteUrl>'
-            '<orderFailedUrl>http://example.com/failed</orderFailedUrl>'
+            '<orderCompleteUrl>https://example.com:80/completed</orderCompleteUrl>'
+            '<orderFailedUrl>https://example.com:80/failed</orderFailedUrl>'
             '<authMethod>2</authMethod>'
             '<isTMode>0</isTMode>'
             '<orderCartId>10</orderCartId>'
@@ -424,6 +431,58 @@ class CheckoutTests(unittest.TestCase):
         target = self._makeOne()
         request = testing.DummyRequest(dict(confirmId=confirmId))
         result = target.save_order_complete(request)
+
+    def test_create_order_cancel_request_xml_no_orders(self):
+        target = self._makeOne()
+        orders = []
+        request_id = api.generate_requestid()
+        result = target.create_order_cancel_request_xml(orders, request_id)
+
+        self.assertIsNotNone(result)
+        self.assertEqual(
+            result,
+            '<root>'
+            '<serviceId>this-is-serviceId</serviceId>'
+            '<accessKey>access_key</accessKey>'
+            '<requestId>%(request_id)s</requestId>'
+            '<orders />'
+            '</root>' % dict(request_id=request_id)
+        )
+
+    def test_create_order_cancel_request_xml_with_orders(self):
+        target = self._makeOne()
+        orders = [
+            testing.DummyResource(
+                cart = testing.DummyResource(
+                    checkout = testing.DummyResource(orderControlId='10')
+                )
+            ),
+            testing.DummyResource(
+                cart = testing.DummyResource(
+                    checkout = testing.DummyResource(orderControlId='20')
+                )
+            )
+        ]
+        request_id = api.generate_requestid()
+        result = target.create_order_cancel_request_xml(orders, request_id)
+
+        self.assertIsNotNone(result)
+        self.assertEqual(
+            result,
+            '<root>'
+            '<serviceId>this-is-serviceId</serviceId>'
+            '<accessKey>access_key</accessKey>'
+            '<requestId>%(request_id)s</requestId>'
+            '<orders>'
+            '<order>'
+            '<orderControlId>10</orderControlId>'
+            '</order>'
+            '<order>'
+            '<orderControlId>20</orderControlId>'
+            '</order>'
+            '</orders>'
+            '</root>' % dict(request_id=request_id)
+        )
 
 
 if __name__ == "__main__":

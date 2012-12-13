@@ -16,10 +16,43 @@ from . import models as m
 
 logger = logging.getLogger(__name__)
 
+AUTH_METHOD_TYPE = {
+    'HMAC-SHA1':'1',
+    'HMAC-MD5':'2',
+    }
+
+RESULT_FLG_SUCCESS = 0
+RESULT_FLG_FAILED = 1
+
+ERROR_CODES = {
+    "100": u"メンテナンス中",
+    "200": u"システムエラー",
+    "300": u"入力値のフォーマットエラー",
+    "400": u"サービス ID、アクセスキーのエラー",
+    "500": u"リクエスト ID 重複エラー または 実在しないリクエスト ID に対するリクエストエラー",
+    "600": u"XML 解析エラー",
+    "700": u"全て受付エラー(成功件数が0件)",
+    "800": u"最大処理件数エラー(リクエストの処理依頼件数超過)",
+    }
+
+ORDER_ERROR_CODES = {
+    "10", u"設定された注文管理番号が存在しない",
+    "11", u"設定された注文管理番号が不正",
+    "20", u"􏰀済ステータスが不正",
+    "30", u"締め日チェックエラー",
+    "40", u"商品 ID が不一致",
+    "41", u"商品数が不足",
+    "42", u"商品個数が不正(商品個数が 501 以上)",
+    "50", u"リクエストの総合計金額が不正(100 円未満)",
+    "51", u"リクエストの総合計金額が不正(合計金額が 0 円)",
+    "52", u"リクエストの総合計金額が不正(合計金額が 9 桁以上)",
+    "60", u"別処理を既に受付(当該データが受付済みで処理待ち)",
+    "90", u"システムエラー",
+    }
 
 def generate_requestid():
     """
-    安心決済の一意なリクエストIDを生成する
+    あんしん決済の一意なリクエストIDを生成する
     """
     return uuid.uuid4().hex[:16]  # uuidの前半16桁
 
@@ -51,11 +84,12 @@ class HMAC_MD5(object):
 
 class Checkout(object):
 
-    def __init__(self, service_id, success_url, fail_url, auth_method, is_test):
+    def __init__(self, service_id, success_url, fail_url, auth_method, secret, is_test):
         self.service_id = service_id
         self.success_url = success_url
         self.fail_url = fail_url
         self.auth_method = auth_method
+        self.secret = secret
         self.is_test = is_test
 
     def create_checkout_request_xml(self, cart):
@@ -149,7 +183,7 @@ class Checkout(object):
             elif e.tag == 'orderControlId':
                 checkout.orderControlId = unicode(e.text.strip())
             elif e.tag == 'orderCartId':
-                checkout.orderCartId = unicode(e.text.strip())
+                checkout.orderCartId = e.text.strip()
             elif e.tag == 'orderTotalFee':
                 checkout.orderTotalFee = e.text.strip()
             elif e.tag == 'orderDate':
@@ -179,59 +213,16 @@ class Checkout(object):
                 elif e.tag == 'itemFee':
                     item.itemFee = int(e.text.strip())
 
+    def create_order_cancel_request_xml(self, orders, request_id=None):
+        request_id = request_id or generate_requestid()
+        root = et.Element('root')
+        et.SubElement(root, 'serviceId').text = self.service_id
+        et.SubElement(root, 'accessKey').text = self.secret
+        et.SubElement(root, 'requestId').text = request_id
+        sub_element = et.SubElement(root, 'orders')
+        for order in orders:
+            el = et.SubElement(sub_element, 'order')
+            subelement = functools.partial(et.SubElement, el)
+            subelement('orderControlId').text = order.cart.checkout.orderControlId
 
-AUTH_METHOD_TYPE = {
-    'HMAC-SHA1':'1',
-    'HMAC-MD5':'2',
-}
-
-IS_NOT_TO_MODE = 0
-IS_T_MODE = 1
-
-API_STATUS_SUCCESS = 0
-API_STATUS_ERROR = 1
-
-
-ITEM_SETTLEMENT_RESULT_NOT_REQUIRED = 0
-ITEM_SETTLEMENT_RESULT_REQUIRED = 1
-
-RESULT_OK = 0
-RESULT_ERROR = 1
-
-
-PAYMENT_STATUS_YET = 0
-PAYMENT_STATUS_PROGRESS = 1
-PAYMENT_STATUS_COMPLETED = 2
-
-PROCCES_STATUE_PROGRESS = 0
-PROCCES_STATUE_COMPLETED = 1
-
-RESULT_FLG_SUCCESS = 0
-RESULT_FLG_FAILED = 1
-
-
-ERROR_CODES = {
-    "100": u"メンテナンス中",
-    "200": u"システムエラー",
-    "300": u"入力値のフォーマットエラー",
-    "400": u"サービス ID、アクセスキーのエラー",
-    "500": u"リクエスト ID 重複エラー または 実在しないリクエスト ID に対するリクエストエラー",
-    "600": u"XML 解析エラー",
-    "700": u"全て受付エラー(成功件数が0件)",
-    "800": u"最大処理件数エラー(リクエストの処理依頼件数超過)",
-}
-
-ORDER_ERROR_CODES = {
-    "10", u"設定された注文管理番号が存在しない",
-    "11", u"設定された注文管理番号が不正",
-    "20", u"􏰀済ステータスが不正",
-    "30", u"締め日チェックエラー",
-    "40", u"商品 ID が不一致",
-    "41", u"商品数が不足",
-    "42", u"商品個数が不正(商品個数が 501 以上)",
-    "50", u"リクエストの総合計金額が不正(100 円未満)",
-    "51", u"リクエストの総合計金額が不正(合計金額が 0 円)",
-    "52", u"リクエストの総合計金額が不正(合計金額が 9 桁以上)",
-    "60", u"別処理を既に受付(当該データが受付済みで処理待ち)",
-    "90", u"システムエラー",
-}
+        return et.tostring(root)
