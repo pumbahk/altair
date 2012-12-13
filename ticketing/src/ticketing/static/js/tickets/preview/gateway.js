@@ -2,10 +2,11 @@ if (!window.preview)
     window.preview = {};
 
 preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
-    initialize: function(){
+    initialize: function(opts){
         this.preview = this.models.preview;
         this.svg = this.models.svg;
         this.vars = this.models.vars;
+        this.params = this.models.params;
 
         this.svg.on("*svg.update.raw", this.svgRawToX, this);
         this.svg.on("*svg.update.normalize", this.svgNormalizeToX, this);
@@ -50,9 +51,9 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
             .fail(this._apiFail.bind(this));
     }, 
     svgFilledToX: function(){
-        this.preview.beforeRendering();
         var self = this;
-        return $.post(this.apis.previewbase64, {"svg": this.svg.get("data")})
+        this.preview.beforeRendering();
+        return $.post(this.apis.previewbase64, {svg: this.svg.get("data"), sx: this.params.get("sx"), sy: this.params.get("sy")})
             .pipe(core.ApiService.rejectIfStatusFail(function(data){
                 self.preview.startRendering("data:image/png;base64,"+data.data); //add-hoc
             }))

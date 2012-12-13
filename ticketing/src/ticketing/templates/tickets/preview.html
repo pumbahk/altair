@@ -61,13 +61,15 @@
     <div class="navbar-inner">
       <a class="brand" href="#">preview画像表示</a>
       <ul class="nav">
-        <li><a id="redraw_btn" href="#">再描画</a></li>
         <li><a id="combobox_btn" href="#">入力補助ダイアログ</a></li>
         <li><a id="download_btn" href="#">現在のsvgをdownload</a></li>
-        <li style="margin-left:50px;">縮尺の設定　 
-          x: <input class="inline input-mini" type="number" name="x" min="0" max="10.0" step="0.1" value="1.0"></input>
-          y: <input class="inline input-mini" type="number" name="y" min="0" max="10.0" step="0.1" value="1.0"></input>
+        <li style="margin-left:50px;">縮尺の設定
+          <form id="transform_form" style="display:inline;">　 
+            x: <input class="inline input-mini" type="number" name="sx" min="0" max="10.0" step="0.1" value="1.0"></input>
+            y: <input class="inline input-mini" type="number" name="sy" min="0" max="10.0" step="0.1" value="1.0"></input>
+          </form>
         </li>
+        <li><a id="redraw_btn" href="#">再描画</a></li>
       </ul>
     </div>
   </div>
@@ -135,7 +137,8 @@
       $("#preview_block"), 
       $("#preview_block #preview_area"),
       $("#preview_block #svg_droparea"), 
-      $("#template_vars_table")
+      $("#template_vars_table"),
+      $("#transform_form")
     );
 
     window.comboboxModalView = new modal.api.AjaxModalView({

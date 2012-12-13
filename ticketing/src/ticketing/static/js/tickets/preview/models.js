@@ -2,6 +2,13 @@ if (!window.preview)
     window.preview = {};
 
 (function(preview){
+    preview.ParamaterStore = Backbone.Model.extend({
+        defaults:{
+            sx: 1.0, 
+            sy: 1.0
+        }
+    });
+
     var SVGStage = {"empty":0, "raw":1, "normalize":2, "filled":3};
     var PreviewStage = {"empty": 0, "before":1, "rendering":2, "after": 3};
     preview.SVGStore = Backbone.Model.extend({

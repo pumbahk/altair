@@ -6,6 +6,7 @@ import ast
 from wtforms import Form, fields
 from lxml import etree
 from webob.multidict import MultiDict
+
 class SVGTransformValidator(Form):
     sx = fields.FloatField(default=1.0)
     sy = fields.FloatField(default=1.0)
@@ -60,12 +61,13 @@ class SVGTransformer(object):
         logger.warn( "not implemented")
         return xmltree
 
+    fullsvg = etree.QName("http://www.w3.org/2000/svg", "svg")
     def _find_svg(self, xmltree):
-        if xmltree.tag.lower() == "svg":
+        if xmltree.tag == "svg" or xmltree.tag == self.fullsvg:
             return xmltree
         else:
-            return xmltree.find("svg")
-    
+            return xmltree.find("svg") or xmltree.find(self.fullsvg)
+            
     def scale_image(self, xmltree):
         sx, sy = self.data["sx"], self.data["sy"]
         if sx == sy == 1:

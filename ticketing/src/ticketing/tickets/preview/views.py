@@ -20,6 +20,7 @@ from ticketing.tickets.utils import build_dict_from_event
 from ticketing.tickets.utils import build_dict_from_organization
 
 from .api import SVGPreviewCommunication
+from .transform import SVGTransformer
 from .fillvalues import template_collect_vars
 from .fillvalues import template_fillvalues
 from ..cleaner.api import get_validated_svg_cleaner, skip_needless_part
@@ -111,7 +112,7 @@ class PreviewApiView(object):
         preview = SVGPreviewCommunication.get_instance(self.request)
         svg = self.request.POST["svg"]
         try:
-            svg = transform.SVGTransformer(svg, self.request.POST).transform()
+            svg = SVGTransformer(svg, self.request.POST).transform()
             imgdata_base64 = preview.communicate(self.request, svg)
             return {"status": True, "data":imgdata_base64}
         except jsonrpc.ProtocolError, e:

@@ -1,9 +1,24 @@
 if (!window.preview)
     window.preview = {}
 
+preview.ParamaterManageView = Backbone.View.extend({
+    events: {
+        'hover input[name="sx"]': "onChangeSx", 
+        'change input[name="sy"]': "onChangeSy"
+    }, 
+    initialize: function(opts){
+        this.$sx = this.$el.find('input[name="sx"]');
+        this.$sy = this.$el.find('input[name="sy"]');
+    }, 
+    onChangeSx: function(){
+        this.model.set("sx", this.$sx.val());
+    }, 
+    onChangeSy: function(){
+        this.model.set("sy", this.$sy.val());
+    }
+});
+
 preview.DragAndDropSVGSupportView = Backbone.View.extend({
-  events: {
-  }, 
   initialize: function(opts){
       this.vms = opts.vms || {}
       var compose = preview.DragAndDropSupportService.compose;

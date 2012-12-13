@@ -52,5 +52,24 @@ class TransformTests(unittest.TestCase):
         self.assertIn('viewBox="0 0 5 3"', result)
         self.assertNotIn('<g transform="scale(1.0, 1.0)"', result)
 
+    ## find svg
+    def test_find_svg_nons(self):
+        from lxml import etree
+        xml = "<svg/>"
+        result = self._makeOne(None)._find_svg(etree.fromstring(xml))
+        self.assertIn("svg", result.tag)
+
+    def test_find_svg_ns(self):
+        from lxml import etree
+        xml = """<!-- Created with Inkscape (http://www.inkscape.org/) --><svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg">aaa</svg>"""
+        result = self._makeOne(None)._find_svg(etree.fromstring(xml))
+        self.assertIn("svg", result.tag)
+
+    def test_find_svg_ns_childelement(self):
+        from lxml import etree
+        xml = """<xml><!-- Created with Inkscape (http://www.inkscape.org/) --><svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg">aaa</svg></xml>"""
+        result = self._makeOne(None)._find_svg(etree.fromstring(xml))
+        self.assertIn("svg", result.tag)
+
 if __name__ == "__main__":
     unittest.main()
