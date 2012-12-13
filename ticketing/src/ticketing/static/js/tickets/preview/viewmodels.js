@@ -15,16 +15,18 @@ preview.DropAreaViewModel = core.ViewModel.extend({ //View?
         this.$el.addClass("touched");
     }, 
     untouched: function(){
-        this.$el.removeClass("touched")
+        this.$el.removeClass("touched");
     }, 
 });
 
 preview.LoadingSpinnerViewModel = core.ViewModel.extend({
     loading: function(){
+        console.log("loading");
         this.$el.spin();
     }, 
     noloading: function(){
         this.$el.spin(false);
+        console.log("loading-end");
     }
 });
 

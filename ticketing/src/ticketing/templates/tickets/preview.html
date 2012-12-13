@@ -123,6 +123,7 @@
       el: $("#combobox_btn"),
       href:"${request.route_path("tickets.preview.combobox")}",
       modalArea: $("#combobox_modal"),
+      option: {backdrop: false},
       callback: function(modalview){
         apps["combobox"].setFinishBack(function(result){
           $.post(apis["fillvalues_with_models"], {data: JSON.stringify(result)})

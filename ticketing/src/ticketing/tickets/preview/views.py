@@ -2,6 +2,7 @@
 
 ## svg preview
 from decimal import Decimal
+import sqlalchemy.orm as orm
 import json
 from StringIO import StringIO
 from pyramid.view import view_config, view_defaults
@@ -66,6 +67,8 @@ def preview_ticket_post(context, request):
 
 @view_config(route_name="tickets.preview.combobox", request_method="GET", renderer="ticketing:templates/tickets/combobox.html", 
              decorator=with_bootstrap, permission="event_editor")
+@view_config(route_name="tickets.preview.combobox", request_method="GET", renderer="ticketing:templates/tickets/_combobox.html", 
+             permission="event_editor", xhr=True)
 def combbox_for_preview(context, request):
     apis = {
         "organization_list": request.route_path("tickets.preview.combobox.api", model="organization"), 
@@ -178,15 +181,16 @@ class ComboboxApiView(object):
 
     @view_config(match_param="model=event", request_param="organization")
     def event(self):
-        qs = c_models.Event.query.filter(c_models.Organization.id==self.request.GET["organization"]) #filter?
+        qs = c_models.Event.query.filter(c_models.Event.organization_id==self.request.GET["organization"]) #filter?
         seq = [{"pk": q.id, "name": q.title} for q in qs]
         return {"status": True, "data": seq}
 
     @view_config(match_param="model=performance", request_param="event")
     def performance(self):
         qs = c_models.Performance.query.filter(c_models.Performance.event_id==self.request.GET["event"], 
-                                              c_models.Event.organization_id==self.request.GET["organization"]) #filter?
-        seq = [{"pk": q.id, "name": q.name} for q in qs]
+                                               c_models.Event.organization_id==self.request.GET["organization"]) #filter?
+        qs = qs.options(orm.joinedload(c_models.Performance.venue))
+        seq = [{"pk": q.id, "name": u"%s(%s)" % (q.name, q.venue.name)} for q in qs]
         return {"status": True, "data": seq}
 
     @view_config(match_param="model=product", request_param="performance")
@@ -194,6 +198,7 @@ class ComboboxApiView(object):
         qs = c_models.Product.query.filter(c_models.Product.event_id==self.request.GET["event"],
                                            c_models.Product.id==c_models.ProductItem.product_id, 
                                            c_models.ProductItem.performance_id==self.request.GET["performance"])
-        seq = [{"pk": q.id, "name": u"%s(￥%s)" % (q.name, q.price)} for q in qs]
-        return {"status": True, "data": seq}
+        ## salessegmentがあるので重複した(name, price)が現れてしまう.nameだけで絞り込み
+        seq = {q.name: {"pk": q.id, "name": u"%s(￥%s)" % (q.name, q.price)} for q in qs}
+        return {"status": True, "data": sorted(seq.values())}
 
