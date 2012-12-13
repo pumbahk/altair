@@ -43,7 +43,7 @@ def decimal_converter(target, converter=float):
         return target
 
 @view_config(route_name="tickets.preview", request_method="GET", renderer="ticketing:templates/tickets/preview.html", 
-             decorator=with_bootstrap)
+             decorator=with_bootstrap, permission="event_editor")
 def preview_ticket(context, request):
     apis = {
         "normalize": request.route_path("tickets.preview.api", action="normalize"), 
@@ -52,7 +52,9 @@ def preview_ticket(context, request):
         "fillvalues": request.route_path("tickets.preview.api", action="fillvalues"), 
         "fillvalues_with_models": request.route_path("tickets.preview.api", action="fillvalues_with_models")
         }
-    return {"apis": json.dumps(apis)}
+    ticket_formats = c_models.TicketFormat.query.filter_by(organization_id=context.user.organization_id)
+    ticket_formats = [{"pk": t.id, "name": t.name} for t in ticket_formats]
+    return {"apis": json.dumps(apis), "ticket_formats": ticket_formats}
 
 @view_config(route_name="tickets.preview", request_method="POST", 
              request_param="svgfile")

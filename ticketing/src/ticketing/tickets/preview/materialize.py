@@ -83,6 +83,13 @@ class TicketFormatMaterializer(object):
         self.middle.add_perforations(svg, data["perforations"])
         return svg
 
+def svg_with_ticketformat(svg, ticketformat):
+    g = etree.Element("g")
+    TicketFormatMaterializer(ticketformat).materialize(g)
+    svg.insert(0, g)
+    ## width, heightの調整が必要
+    return svg
+
 if __name__ == "__main__":
     import sys
     from pyramid.paster import bootstrap

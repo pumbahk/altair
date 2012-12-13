@@ -63,13 +63,20 @@
       <ul class="nav">
         <li><a id="combobox_btn" href="#">入力補助ダイアログ</a></li>
         <li><a id="download_btn" href="#">現在のsvgをdownload</a></li>
-        <li style="margin-left:50px;">縮尺の設定
+        <li><a id="redraw_btn" href="#">再描画</a></li>
+        <li style="margin-left:50px;">チケット様式の選択
+          <select>
+            %for tf in ticket_formats:
+              <option value="${tf["pk"]}">${tf["name"]}</option>
+            %endfor
+          </select>
+        </li>
+        <li style="margin-left:20px;">縮尺の設定
           <form id="transform_form" style="display:inline;">　 
             x: <input class="inline input-mini" type="number" name="sx" min="0" max="10.0" step="0.1" value="1.0"></input>
             y: <input class="inline input-mini" type="number" name="sy" min="0" max="10.0" step="0.1" value="1.0"></input>
           </form>
         </li>
-        <li><a id="redraw_btn" href="#">再描画</a></li>
       </ul>
     </div>
   </div>

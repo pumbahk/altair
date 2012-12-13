@@ -123,5 +123,9 @@ preview.TemplateVarRowView = Backbone.View.extend({
     onUpdateRight: function(){ //todo: e.currentTarget ?
         this.right.set("value", this.$el.find("input.right").val());
         // console.log(this.right.toJSON());
+    }, 
+    remove: function(){
+        this.left.off();
+        this.right.off();
     }
  });

@@ -42,9 +42,13 @@ preview.TemplateVarsTableViewModel = core.ViewModel.extend({
             !!row.right && fn(row.$right);
         });
     }, 
-    redraw: function(vars){
+    remove: function(){
+        _.each(this.inputs, function(row){row.remove();});
         this.inputs = [];
         this.$tbody.empty();
+    }, 
+    redraw: function(vars){
+        this.remove();
         if(vars.length <= 0){
             return this.addEmptyInfo();
         }
