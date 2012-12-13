@@ -390,7 +390,7 @@ class TicketingCartResource(object):
             return seat_statuses
 
     def _create_cart(self, seat_statuses, ordered_products, performance_id):
-        cart = m.Cart(system_fee=self.get_system_fee())
+        cart = m.Cart.create(system_fee=self.get_system_fee())
         seats = m.DBSession.query(c_models.Seat).filter(c_models.Seat.id.in_(seat_statuses)).all()
         cart.add_seat(seats, ordered_products)
         m.DBSession.add(cart)
@@ -398,7 +398,7 @@ class TicketingCartResource(object):
         return cart
 
     def _create_cart_with_quantity(self, stock_quantity, ordered_products, performance_id):
-        cart = m.Cart(performance_id=performance_id, system_fee=self.get_system_fee())
+        cart = m.Cart.create(performance_id=performance_id, system_fee=self.get_system_fee())
         cart.add_products(ordered_products)
         m.DBSession.add(cart)
         m.DBSession.flush()

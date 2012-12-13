@@ -1,260 +1,27 @@
 # -*- coding:utf-8 -*-
 
 import unittest
+from datetime import datetime
+
 from pyramid import testing
 
-from ticketing.checkout import models
 import ticketing.models
 import ticketing.core.models
+from ticketing.testing import _setup_db as _setup_db_, _teardown_db
+from ticketing.checkout import api, models, interfaces
 
 
-class SignToXml(unittest.TestCase):
-    def setUp(self):
-        self.config = testing.setUp()
+def _setup_db(echo=False):
+    return _setup_db_(
+        modules=[
+            'ticketing.models',
+            'ticketing.cart.models',
+            'ticketing.users.models',
+            'ticketing.checkout.models',
+            ],
+        echo=echo
+    )
 
-    def tearDown(self):
-        testing.tearDown()
-
-    def _callFUT(self, *args, **kwargs):
-        from ticketing.checkout.api import sign_to_xml
-        return sign_to_xml(*args, **kwargs)
-
-    def test_it(self):
-        from ticketing.checkout import interfaces
-        class DummySigner(object):
-            def __call__(self, xml):
-                self.called = xml
-                return "sign!"
-        dummySigner = DummySigner()
-        self.config.registry.utilities.register([], interfaces.ISigner, "", dummySigner)
-
-        request = testing.DummyRequest()
-        xml = object()
-
-        result = self._callFUT(request, xml)
-        self.assertEqual(result, "sign!")
-
-class ItemXmlVisitorTests(unittest.TestCase):
-    def _getTarget(self):
-        from ticketing.checkout.api import ItemXmlVisitor
-        return ItemXmlVisitor
-
-    def _makeOne(self, *args, **kwargs):
-        return self._getTarget()(*args, **kwargs)
-
-
-    def test_it(self):
-        import xml.etree.ElementTree as et
-        xml = et.XML('<item>'
-                     '<itemId>this-is-itemId</itemId>'
-                     '<itemName>なまえ</itemName>'
-                     '<itemNumbers>100</itemNumbers>'
-                     '<itemFee>2112</itemFee>'
-                     '</item>')
-
-        target = self._makeOne()
-        cart = testing.DummyResource(items=[])
-        target.visit_item(xml, cart)
-        item = cart.items[0]
-        self.assertEqual(item.itemId, 'this-is-itemId')
-        self.assertEqual(item.itemName, u'なまえ')
-        self.assertEqual(item.itemNumbers, 100)
-        self.assertEqual(item.itemFee, 2112)
-
-class CompletedOrderXmlVisitor(unittest.TestCase):
-
-    def _getTarget(self):
-        from ticketing.checkout.api import CompletedOrderXmlVisitor
-        return CompletedOrderXmlVisitor
-
-    def _makeOne(self, *args, **kwargs):
-        return self._getTarget()(*args, **kwargs)
-
-    def test_visit_invalid_root(self):
-        import xml.etree.ElementTree as et
-
-        xml = et.XML('<root />')
-
-        target = self._makeOne()
-        result = target.visit(xml)
-
-        self.assertIsNone(result)
-
-
-    def test_visit_valid_root(self):
-        import xml.etree.ElementTree as et
-
-        xml = et.XML('<orderCompletedRequest />')
-
-        target = self._makeOne()
-        result = target.visit(xml)
-
-        self.assertIsNotNone(result)
-
-
-
-    def test_visit_root(self):
-        import xml.etree.ElementTree as et
-
-        xml = et.XML('<orderCompletedRequest>'
-                     '<orderId>this-is-order-id</orderId>'
-                     '<orderControlId>this-is-control-id</orderControlId>'
-                     '<orderCartId>this-is-order-cart-id</orderCartId>'
-                     '<items>'
-                     '<item/>'
-                     '<item/>'
-                     '</items>'
-                     '</orderCompletedRequest>'
-        )
-
-        target = self._makeOne()
-        result = target.visit_root(xml)
-
-        self.assertIsNotNone(result)
-        self.assertEqual(result.orderId, 'this-is-order-id')
-        self.assertEqual(result.orderControlId, 'this-is-control-id')
-        self.assertEqual(result.orderCartId, 'this-is-order-cart-id')
-        self.assertEqual(len(result.items), 2)
-
-class CartXmlVisitorTests(unittest.TestCase):
-    def _getTarget(self):
-        from ticketing.checkout.api import CartXmlVisitor
-        return CartXmlVisitor
-
-    def _makeOne(self):
-        return self._getTarget()()
-
-    def test_visit_invalid(self):
-        import xml.etree.ElementTree as et
-
-        xml = et.XML('<root />')
-        target = self._makeOne()
-        result = target.visit(xml)
-
-        self.assertIsNone(result)
-
-    def test_visit_empty(self):
-        import xml.etree.ElementTree as et
-
-        xml = et.XML('<cartConfirmationRequest />')
-        target = self._makeOne()
-        result = target.visit(xml)
-
-        self.assertIsNotNone(result)
-
-
-    def test_visit_cart(self):
-        import xml.etree.ElementTree as et
-        xml = et.XML('<cart>'
-                     '<cartConfirmationId>this-is-info-id</cartConfirmationId>'
-                     '<orderCartId>this-is-cart-id</orderCartId>'
-                     '<orderItemsTotalFee>1123</orderItemsTotalFee>'
-                     '<items>'
-                     '<item />'
-                     '<item />'
-                     '<item />'
-                     '</items>'
-                      '</cart>'
-            )
-        
-        target = self._makeOne()
-        cart_confirm = testing.DummyResource(carts=[])
-        target.visit_cart(xml, cart_confirm)
-
-        cart = cart_confirm.carts[0]
-
-        self.assertEqual(cart.cartConfirmationId, 'this-is-info-id')
-        self.assertEqual(cart.orderCartId, 'this-is-cart-id')
-        self.assertEqual(cart.orderItemsTotalFee, 1123)
-        self.assertEqual(len(cart.items), 3)
-
-
-    def test_visit_carts(self):
-        import xml.etree.ElementTree as et
-        xml = et.XML('<carts>'
-                     '<cart />'
-                     '</carts>')
-
-        context = testing.DummyResource(carts=[])
-
-        target = self._makeOne()
-        target.visit_carts(xml, context)
-        
-        self.assertEqual(len(context.carts), 1)
-
-    def test_visit_cartConfirmationRequest(self):
-        import xml.etree.ElementTree as et
-        xml = et.XML('<cartConfirmationRequest>'
-                     '<openId>http://example.com/user</openId>'
-                     '<carts>'
-                     '<cart/>'
-                     '<cart/>'
-                     '</carts>'
-                     '<isTMode>1</isTMode>'
-                     '</cartConfirmationRequest>')
-        
-        target = self._makeOne()
-        result = target.visit_cartConfirmationRequest(xml)
-        
-        self.assertEqual(result.openid, 'http://example.com/user')
-        self.assertEqual(len(result.carts), 2)
-        self.assertEqual(result.isTMode, '1')
-
-class GetCartConfirmTests(unittest.TestCase):
-    def _callFUT(self, request):
-        from ticketing.checkout.api import get_cart_confirm
-        return get_cart_confirm(request)
-
-    def test_it(self):
-        xml = """<?xml version="1.0" encoding="UTF-8"?>
-<cartConfirmationRequest>
-<openId>https://myid.rakuten.co.jp/openid/user/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</openId>
-<carts>
-<cart>
-<cartConfirmationId>10000000000-20111201000000-01</cartConfirmationId>
-<orderCartId>ABCXYZ</orderCartId>
-<orderItemsTotalFee>5000</orderItemsTotalFee>
-<items>
-<item>
-<itemId>product1</itemId>
-<itemName>テスト用商品 1</itemName>
-<itemNumbers>1</itemNumbers>
-<itemFee>1000</itemFee>
-</item>
-<item>
-<itemId> product2</itemId>
-<itemName>テスト用商品 2</itemName>
-<itemNumbers>2</itemNumbers>
-<itemFee>2000</itemFee>
-</item>
-</items>
-</cart>
-</carts>
-<isTMode>0</isTMode>
-</cartConfirmationRequest>"""
-
-        request = testing.DummyRequest(params={'confirmId': xml.encode('base64')})
-
-        result = self._callFUT(request)
-
-        self.assertEqual(result.openid, 'https://myid.rakuten.co.jp/openid/user/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
-        self.assertEqual(len(result.carts), 1)
-        cart = result.carts[0]
-        self.assertEqual(cart.cartConfirmationId, '10000000000-20111201000000-01')
-        self.assertEqual(cart.orderCartId, 'ABCXYZ')
-        self.assertEqual(cart.orderItemsTotalFee, 5000)
-        self.assertEqual(len(cart.items), 2)
-        item1 = cart.items[0]
-        self.assertEqual(item1.itemId, 'product1')
-        self.assertEqual(item1.itemName, u'テスト用商品 1')
-        self.assertEqual(item1.itemNumbers, 1)
-        self.assertEqual(item1.itemFee, 1000)
-        item2 = cart.items[1]
-        self.assertEqual(item2.itemId, 'product2')
-        self.assertEqual(item2.itemName, u'テスト用商品 2')
-        self.assertEqual(item2.itemNumbers, 2)
-        self.assertEqual(item2.itemFee, 2000)
-        self.assertEqual(result.isTMode, '0')
 
 class IncludeMe(unittest.TestCase):
     def setUp(self):
@@ -269,232 +36,535 @@ class IncludeMe(unittest.TestCase):
 
     def test_it_with_sha1(self):
         from ticketing.checkout.interfaces import ISigner
-        self.config.registry.settings.update(
-            {
-                'altair_checkout.secret': 'this-is-secret',
-                'altair_checkout.authmethod': 'HMAC-SHA1',
-                }
-            )
+        self.config.registry.settings.update({
+            'altair_checkout.secret': 'this-is-secret',
+            'altair_checkout.auth_method': 'HMAC-SHA1',
+        })
         self._callFUT(self.config)
 
-        lookup = self.config.registry.utilities.lookup([], ISigner, "")
+        lookup = self.config.registry.utilities.lookup([], ISigner, 'HMAC')
         self.assertIsNotNone(lookup)
-        self.assertEqual(lookup.hash_algorithm, "SHA1")
-
-        lookup = self.config.registry.utilities.lookup([], ISigner, "HMAC-SHA1")
-        self.assertEqual(lookup.hash_algorithm, "SHA1")
-        lookup = self.config.registry.utilities.lookup([], ISigner, "HMAC-MD5")
-        self.assertEqual(lookup.hash_algorithm, "MD5")
+        self.assertTrue(isinstance(lookup, api.HMAC_SHA1))
 
     def test_it_with_md5(self):
         from ticketing.checkout.interfaces import ISigner
-        self.config.registry.settings.update(
-            {
-                'altair_checkout.secret': 'this-is-secret',
-                'altair_checkout.authmethod': 'HMAC-MD5',
-                }
-            )
+        self.config.registry.settings.update({
+            'altair_checkout.secret': 'this-is-secret',
+            'altair_checkout.auth_method': 'HMAC-MD5',
+        })
         self._callFUT(self.config)
 
-        lookup = self.config.registry.utilities.lookup([], ISigner, "")
+        lookup = self.config.registry.utilities.lookup([], ISigner, 'HMAC')
         self.assertIsNotNone(lookup)
-        self.assertEqual(lookup.hash_algorithm, "MD5")
+        self.assertTrue(isinstance(lookup, api.HMAC_MD5))
 
 
-class ConfirmationToXmlTests(unittest.TestCase):
+class SignToXml(unittest.TestCase):
+    def setUp(self):
+        self.config = testing.setUp()
+
+    def tearDown(self):
+        testing.tearDown()
+
     def _callFUT(self, *args, **kwargs):
-        from ticketing.checkout.api import confirmation_to_xml
-        return confirmation_to_xml(*args, **kwargs)
+        return api.sign_to_xml(*args, **kwargs)
 
-    def test_it_no_carts(self):
-        resource = testing.DummyResource(carts=[])
+    def test_it(self):
+        class DummySigner(object):
+            def __call__(self, xml):
+                self.called = xml
+                return 'sign!'
+        dummySigner = DummySigner()
+        self.config.registry.utilities.register([], interfaces.ISigner, 'HMAC', dummySigner)
 
-        result = self._callFUT(resource)
+        request = testing.DummyRequest()
+        xml = object()
+
+        result = self._callFUT(request, xml)
+        self.assertEqual(result, 'sign!')
+
+
+class CheckoutTests(unittest.TestCase):
+    def setUp(self):
+        self.config = testing.setUp()
+        self.session = _setup_db()
+
+        from pyramid.threadlocal import get_current_request, manager
+        thread = manager.pop()
+        thread['request'] = testing.DummyRequest()
+        manager.push(thread)
+
+    def tearDown(self):
+        testing.tearDown()
+        _teardown_db()
+
+    def _getTarget(self):
+        return api.Checkout
+
+    def _makeOne(self, *args, **kwargs):
+        args = args or [
+            'this-is-serviceId',
+            '/completed',
+            '/failed',
+            'HMAC-SHA1',
+            'access_key',
+            'https://example.com/api_url',
+            '1'
+        ]
+        return self._getTarget()(*args, **kwargs)
+
+    def test__create_checkout_item_xml(self):
+        import xml.etree.ElementTree as et
+        xml = et.XML('<root></root>')
+
+        target = self._makeOne()
+        params = dict(
+            itemId='this-is-itemId',
+            itemName=u'なまえ',
+            itemNumbers='100',
+            itemFee='2112'
+        )
+        target._create_checkout_item_xml(xml, **params)
+        self.assertEqual(et.tostring(xml),
+            '<root>'
+            '<item>'
+            '<itemId>this-is-itemId</itemId>'
+            '<itemNumbers>100</itemNumbers>'
+            '<itemFee>2112</itemFee>'
+            '<itemName>&#12394;&#12414;&#12360;</itemName>'
+            '</item>'
+            '</root>'
+        )
+
+    def test_create_checkout_request_xml_no_products(self):
+        target = self._makeOne()
+        cart = testing.DummyResource(
+            id=10,
+            total_amount=1000,
+            system_fee=80,
+            transaction_fee=70,
+            delivery_fee=60,
+            products=[]
+        )
+        result = target.create_checkout_request_xml(cart)
 
         self.assertEqual(result,
-                         "<cartConfirmationResponse><carts /></cartConfirmationResponse>")
+            '<orderItemsInfo>'
+            '<serviceId>this-is-serviceId</serviceId>'
+            '<orderCompleteUrl>https://example.com:80/completed</orderCompleteUrl>'
+            '<orderFailedUrl>https://example.com:80/failed</orderFailedUrl>'
+            '<authMethod>1</authMethod>'
+            '<isTMode>1</isTMode>'
+            '<orderCartId>10</orderCartId>'
+            '<orderTotalFee>1000</orderTotalFee>'
+            '<itemsInfo>'
+            '<item>'
+            '<itemId>system_fee</itemId>'
+            '<itemNumbers>1</itemNumbers>'
+            '<itemFee>80</itemFee>'
+            '<itemName>&#12471;&#12473;&#12486;&#12512;&#21033;&#29992;&#26009;</itemName>'
+            '</item>'
+            '<item>'
+            '<itemId>transaction_fee</itemId>'
+            '<itemNumbers>1</itemNumbers>'
+            '<itemFee>70</itemFee>'
+            '<itemName>&#27770;&#28168;&#25163;&#25968;&#26009;</itemName>'
+            '</item>'
+            '<item>'
+            '<itemId>delivery_fee</itemId>'
+            '<itemNumbers>1</itemNumbers>'
+            '<itemFee>60</itemFee>'
+            '<itemName>&#37197;&#36865;&#25163;&#25968;&#26009;</itemName>'
+            '</item>'
+            '</itemsInfo>'
+            '</orderItemsInfo>')
 
-    def test_it_with_carts(self):
-        resource = testing.DummyResource(carts=[
+    def test_create_checkout_item_xml_with_items(self):
+        target = self._makeOne()
+        cart = testing.DummyResource(
+            id=10,
+            total_amount=1000,
+            system_fee=80,
+            transaction_fee=70,
+            delivery_fee=60,
+            products=[
                 testing.DummyResource(
-                    cartConfirmationId="this-is-cart-confirmation-id1",
-                    orderCartId='this-is-order-cart-id1',
-                    orderItemsTotalFee=100,
-                    items=[],
+                    product=testing.DummyResource(
+                        id='item-%02d' % i,
+                        name='item %d' % i,
                     ),
-                testing.DummyResource(
-                    cartConfirmationId="this-is-cart-confirmation-id2",
-                    orderCartId='this-is-order-cart-id2',
-                    orderItemsTotalFee=200,
-                    items=[],
-                    ),
-                ])
-
-        result = self._callFUT(resource)
+                    quantity=i,
+                    amount=20 + i * 10
+                ) for i in range(2)
+            ]
+        )
+        result = target.create_checkout_request_xml(cart)
 
         self.assertEqual(result,
-                         '<cartConfirmationResponse>'
-                         '<carts>'
-                         '<cart>'
-                         '<cartConfirmationId>this-is-cart-confirmation-id1</cartConfirmationId>'
-                         '<orderCartId>this-is-order-cart-id1</orderCartId>'
-                         '<orderItemsTotalFee>100</orderItemsTotalFee>'
-                         '<items />'
-                         '</cart>'
-                         '<cart>'
-                         '<cartConfirmationId>this-is-cart-confirmation-id2</cartConfirmationId>'
-                         '<orderCartId>this-is-order-cart-id2</orderCartId>'
-                         '<orderItemsTotalFee>200</orderItemsTotalFee>'
-                         '<items />'
-                         '</cart>'
-                         '</carts>'
-                         '</cartConfirmationResponse>')
+            '<orderItemsInfo>'
+            '<serviceId>this-is-serviceId</serviceId>'
+            '<orderCompleteUrl>https://example.com:80/completed</orderCompleteUrl>'
+            '<orderFailedUrl>https://example.com:80/failed</orderFailedUrl>'
+            '<authMethod>1</authMethod>'
+            '<isTMode>1</isTMode>'
+            '<orderCartId>10</orderCartId>'
+            '<orderTotalFee>1000</orderTotalFee>'
+            '<itemsInfo>'
+            '<item>'
+            '<itemId>item-00</itemId>'
+            '<itemNumbers>0</itemNumbers>'
+            '<itemFee>20</itemFee>'
+            '<itemName>item 0</itemName>'
+            '</item>'
+            '<item>'
+            '<itemId>item-01</itemId>'
+            '<itemNumbers>1</itemNumbers>'
+            '<itemFee>30</itemFee>'
+            '<itemName>item 1</itemName>'
+            '</item>'
+            '<item>'
+            '<itemId>system_fee</itemId>'
+            '<itemNumbers>1</itemNumbers>'
+            '<itemFee>80</itemFee>'
+            '<itemName>&#12471;&#12473;&#12486;&#12512;&#21033;&#29992;&#26009;</itemName>'
+            '</item>'
+            '<item>'
+            '<itemId>transaction_fee</itemId>'
+            '<itemNumbers>1</itemNumbers>'
+            '<itemFee>70</itemFee>'
+            '<itemName>&#27770;&#28168;&#25163;&#25968;&#26009;</itemName>'
+            '</item>'
+            '<item>'
+            '<itemId>delivery_fee</itemId>'
+            '<itemNumbers>1</itemNumbers>'
+            '<itemFee>60</itemFee>'
+            '<itemName>&#37197;&#36865;&#25163;&#25968;&#26009;</itemName>'
+            '</item>'
+            '</itemsInfo>'
+            '</orderItemsInfo>')
 
-    def test_it_with_items(self):
-        resource = testing.DummyResource(carts=[
-                testing.DummyResource(
-                    cartConfirmationId="this-is-cart-confirmation-id1",
-                    orderCartId='this-is-order-cart-id1',
-                    orderItemsTotalFee=100,
-                    items=[
-                        testing.DummyResource(
-                            itemId='this-is-itemId1',
-                            itemNumbers=10,
-                            itemFee=1111,
-                            itemConfirmationResult='1',
-                            itemNumbersMessage=u'あああああ',
-                            itemFeeMessage=u'あああああ',
-                            )
-                        ],
-                    ),
-                ])
-
-        result = self._callFUT(resource)
+    def test_create_checkout_item_xml_without_tmode(self):
+        args = [
+            'this-is-serviceId',
+            '/completed',
+            '/failed',
+            'HMAC-MD5',
+            'access_key',
+            'https://example.com/api_url',
+            '0'
+        ]
+        target = self._makeOne(*args)
+        cart = testing.DummyResource(
+            id=10,
+            total_amount=1000,
+            system_fee=80,
+            transaction_fee=70,
+            delivery_fee=60,
+            products=[
+            testing.DummyResource(
+                product=testing.DummyResource(
+                    id='item-%02d' % i,
+                    name='item %d' % i,
+                ),
+                quantity=i,
+                amount=20 + i * 10
+            ) for i in range(2)
+            ]
+        )
+        result = target.create_checkout_request_xml(cart)
 
         self.assertEqual(result,
-                         '<cartConfirmationResponse>'
-                         '<carts>'
-                         '<cart>'
-                         '<cartConfirmationId>this-is-cart-confirmation-id1</cartConfirmationId>'
-                         '<orderCartId>this-is-order-cart-id1</orderCartId>'
-                         '<orderItemsTotalFee>100</orderItemsTotalFee>'
-                         '<items>'
-                         '<item>'
-                         '<itemId>this-is-itemId1</itemId>'
-                         '<itemNumbers>10</itemNumbers>'
-                         '<itemFee>1111</itemFee>'
-                         '<itemConfirmationResult>1</itemConfirmationResult>'
-                         '<itemNumbersMessage>&#12354;&#12354;&#12354;&#12354;&#12354;</itemNumbersMessage>'
-                         '<itemFeeMessage>&#12354;&#12354;&#12354;&#12354;&#12354;</itemFeeMessage>'
-                         '</item>'
-                         '</items>'
-                         '</cart>'
-                         '</carts>'
-                         '</cartConfirmationResponse>')
+            '<orderItemsInfo>'
+            '<serviceId>this-is-serviceId</serviceId>'
+            '<orderCompleteUrl>https://example.com:80/completed</orderCompleteUrl>'
+            '<orderFailedUrl>https://example.com:80/failed</orderFailedUrl>'
+            '<authMethod>2</authMethod>'
+            '<isTMode>0</isTMode>'
+            '<orderCartId>10</orderCartId>'
+            '<orderTotalFee>1000</orderTotalFee>'
+            '<itemsInfo>'
+            '<item>'
+            '<itemId>item-00</itemId>'
+            '<itemNumbers>0</itemNumbers>'
+            '<itemFee>20</itemFee>'
+            '<itemName>item 0</itemName>'
+            '</item>'
+            '<item>'
+            '<itemId>item-01</itemId>'
+            '<itemNumbers>1</itemNumbers>'
+            '<itemFee>30</itemFee>'
+            '<itemName>item 1</itemName>'
+            '</item>'
+            '<item>'
+            '<itemId>system_fee</itemId>'
+            '<itemNumbers>1</itemNumbers>'
+            '<itemFee>80</itemFee>'
+            '<itemName>&#12471;&#12473;&#12486;&#12512;&#21033;&#29992;&#26009;</itemName>'
+            '</item>'
+            '<item>'
+            '<itemId>transaction_fee</itemId>'
+            '<itemNumbers>1</itemNumbers>'
+            '<itemFee>70</itemFee>'
+            '<itemName>&#27770;&#28168;&#25163;&#25968;&#26009;</itemName>'
+            '</item>'
+            '<item>'
+            '<itemId>delivery_fee</itemId>'
+            '<itemNumbers>1</itemNumbers>'
+            '<itemFee>60</itemFee>'
+            '<itemName>&#37197;&#36865;&#25163;&#25968;&#26009;</itemName>'
+            '</item>'
+            '</itemsInfo>'
+            '</orderItemsInfo>')
 
+    def test_create_order_complete_response_xml(self):
+        target = self._makeOne()
+        complete_time = datetime.strptime('2012-12-12 12:12:12', '%Y-%m-%d %H:%M:%S')
+        result = target.create_order_complete_response_xml(0, complete_time)
 
+        self.assertIsNotNone(result)
+        self.assertEqual(result,
+            '<orderCompleteResponse>'
+            '<result>0</result>'
+            '<completeTime>2012-12-12 12:12:12</completeTime>'
+            '</orderCompleteResponse>')
 
-class CheckoutToXmlTests(unittest.TestCase):
-    def _callFUT(self, *args, **kwargs):
-        from ticketing.checkout.api import checkout_to_xml
-        return checkout_to_xml(*args, **kwargs)
+    def test__parse_order_complete_xml(self):
+        import xml.etree.ElementTree as et
+        xml = et.XML(
+            '<orderCompleteRequest>'
+            '<orderId>this-is-order-id</orderId>'
+            '<orderControlId>this-is-order-control-id</orderControlId>'
+            '<orderCartId>this-is-order-cart-id</orderCartId>'
+            '<openId>https://example.com/openid/user/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</openId>'
+            '<isTMode>0</isTMode>'
+            '<orderTotalFee>3000</orderTotalFee>'
+            '<orderDate>2011-04-15 01:23:45</orderDate>'
+            '<items>'
+            '<item>'
+            '<itemId>product1</itemId>'
+            '<itemName>テスト用商品 1</itemName>'
+            '<itemFee>1000</itemFee>'
+            '<itemNumbers>1</itemNumbers>'
+            '</item>'
+            '<item>'
+            '<itemId>product2</itemId>'
+            '<itemName>テスト用商品 2</itemName>'
+            '<itemFee>2000</itemFee>'
+            '<itemNumbers>2</itemNumbers>'
+            '</item>'
+            '</items>'
+            '</orderCompleteRequest>'
+        )
+        target = self._makeOne()
+        checkout = target._parse_order_complete_xml(xml)
 
-    def test_it_no_items(self):
-        resource = testing.DummyResource(serviceId='this-is-serviceId',
-                                         orderCartId='this-is-cart-id',
-                                         orderCompleteUrl='http://example.com/completed',
-                                         orderFailedUrl='http://example.com/failed',
-                                         authMethod='2',
-                                         itemsInfo=[],
-                                         isTMode='1')
-        result = self._callFUT(resource)
+        self.assertIsNotNone(checkout)
+        self.assertEqual(checkout.orderId, 'this-is-order-id')
+        self.assertEqual(checkout.orderControlId, 'this-is-order-control-id')
+        self.assertEqual(checkout.orderCartId, 'this-is-order-cart-id')
+        self.assertEqual(checkout.orderTotalFee, '3000')
+        self.assertEqual(checkout.orderDate, datetime(2011, 4, 15, 1, 23, 45))
+        self.assertEqual(checkout.isTMode, '0')
+        self.assertEqual(checkout.usedPoint, None)
+        self.assertEqual(len(checkout.items), 2)
 
-        self.assertEqual(result, 
-                         '<orderItemsInfo>'
-                         '<serviceId>this-is-serviceId</serviceId>'
-                         '<itemsInfo />'
-                         '<orderCartId>this-is-cart-id</orderCartId>'
-                         '<orderCompleteUrl>http://example.com/completed</orderCompleteUrl>'
-                         '<orderFailedUrl>http://example.com/failed</orderFailedUrl>'
-                         '<authMethod>2</authMethod>'
-                         '<isTMode>1</isTMode>'
-                         '</orderItemsInfo>')
+    def test__parse_item_xml(self):
+        import xml.etree.ElementTree as et
+        xml = et.XML(
+            '<items>'
+            '<item>'
+            '<itemId>product1</itemId>'
+            '<itemName>テスト用商品 1</itemName>'
+            '<itemFee>1000</itemFee>'
+            '<itemNumbers>1</itemNumbers>'
+            '</item>'
+            '<item>'
+            '<itemId>product2</itemId>'
+            '<itemName>テスト用商品 2</itemName>'
+            '<itemFee>2000</itemFee>'
+            '<itemNumbers>2</itemNumbers>'
+            '</item>'
+            '</items>'
+        )
+        target = self._makeOne()
+        checkout = testing.DummyResource(items=[])
+        target._parse_item_xml(xml, checkout)
 
+        self.assertEqual(len(checkout.items), 2)
+        self.assertEqual(checkout.items[0].itemId, 'product1')
+        self.assertEqual(checkout.items[0].itemName, u'テスト用商品 1')
+        self.assertEqual(checkout.items[0].itemNumbers, 1)
+        self.assertEqual(checkout.items[0].itemFee, 1000)
+        self.assertEqual(checkout.items[1].itemId, 'product2')
+        self.assertEqual(checkout.items[1].itemName, u'テスト用商品 2')
+        self.assertEqual(checkout.items[1].itemNumbers, 2)
+        self.assertEqual(checkout.items[1].itemFee, 2000)
 
-    def test_it_with_items(self):
-        resource = testing.DummyResource(serviceId='this-is-serviceId',
-                                         orderCartId='this-is-cart-id',
-                                         orderCompleteUrl='http://example.com/completed',
-                                         orderFailedUrl='http://example.com/failed',
-                                         authMethod='2',
-                                         itemsInfo=[testing.DummyResource(itemId="item-%02d" % i,
-                                                                          itemName="item %d" % i,
-                                                                          itemNumbers=i,
-                                                                          itemFee=100 + i * 10)
-                                                    for i in range(2)],
-                                         isTMode='1')
-        result = self._callFUT(resource)
+    def test_save_order_complete(self):
+        import xml.etree.ElementTree as et
+        xml = et.XML(
+            '<orderCompleteRequest>'
+            '<orderId>this-is-order-id</orderId>'
+            '<orderControlId>this-is-order-control-id</orderControlId>'
+            '<orderCartId>this-is-order-cart-id</orderCartId>'
+            '<openId>https://example.com/openid/user/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</openId>'
+            '<isTMode>0</isTMode>'
+            '<orderTotalFee>3000</orderTotalFee>'
+            '<orderDate>2011-04-15 01:23:45</orderDate>'
+            '<items>'
+            '<item>'
+            '<itemId>product1</itemId>'
+            '<itemName>テスト用商品 1</itemName>'
+            '<itemFee>1000</itemFee>'
+            '<itemNumbers>1</itemNumbers>'
+            '</item>'
+            '<item>'
+            '<itemId>product2</itemId>'
+            '<itemName>テスト用商品 2</itemName>'
+            '<itemFee>2000</itemFee>'
+            '<itemNumbers>2</itemNumbers>'
+            '</item>'
+            '</items>'
+            '</orderCompleteRequest>'
+        )
+        xml_str = et.tostring(xml)
+        confirmId = xml_str.replace('+', ' ').encode('base64')
 
-        self.assertEqual(result, 
-                         '<orderItemsInfo>'
-                         '<serviceId>this-is-serviceId</serviceId>'
-                         '<itemsInfo>'
-                         # item 1
-                         '<item><itemId>item-00</itemId><itemName>item 0</itemName><itemNumbers>0</itemNumbers><itemFee>100</itemFee></item>'
-                         # item 2
-                         '<item><itemId>item-01</itemId><itemName>item 1</itemName><itemNumbers>1</itemNumbers><itemFee>110</itemFee></item>'
-                         '</itemsInfo>'
-                         '<orderCartId>this-is-cart-id</orderCartId>'
-                         '<orderCompleteUrl>http://example.com/completed</orderCompleteUrl>'
-                         '<orderFailedUrl>http://example.com/failed</orderFailedUrl>'
-                         '<authMethod>2</authMethod>'
-                         '<isTMode>1</isTMode>'
-                         '</orderItemsInfo>')
+        target = self._makeOne()
+        request = testing.DummyRequest(dict(confirmId=confirmId))
+        result = target.save_order_complete(request)
 
-    def test_it_without_tmode(self):
-        resource = testing.DummyResource(serviceId='this-is-serviceId',
-                                         orderCartId='this-is-cart-id',
-                                         orderCompleteUrl='http://example.com/completed',
-                                         orderFailedUrl='http://example.com/failed',
-                                         authMethod='2',
-                                         isTMode=None,
-                                         itemsInfo=[],
-                                         )
+    def test_create_order_cancel_request_xml_no_orders(self):
+        target = self._makeOne()
+        orders = []
+        request_id = api.generate_requestid()
+        result = target.create_order_cancel_request_xml(orders, request_id)
 
-        result = self._callFUT(resource)
+        self.assertIsNotNone(result)
+        self.assertEqual(
+            result,
+            '<root>'
+            '<serviceId>this-is-serviceId</serviceId>'
+            '<accessKey>access_key</accessKey>'
+            '<requestId>%(request_id)s</requestId>'
+            '<orders />'
+            '</root>' % dict(request_id=request_id)
+        )
 
-        self.assertEqual(result, 
-                         '<orderItemsInfo>'
-                         '<serviceId>this-is-serviceId</serviceId>'
-                         '<itemsInfo />'
-                         '<orderCartId>this-is-cart-id</orderCartId>'
-                         '<orderCompleteUrl>http://example.com/completed</orderCompleteUrl>'
-                         '<orderFailedUrl>http://example.com/failed</orderFailedUrl>'
-                         '<authMethod>2</authMethod>'
-                         '</orderItemsInfo>')
+    def test_create_order_cancel_request_xml_with_orders(self):
+        target = self._makeOne()
+        orders = [
+            testing.DummyResource(
+                cart = testing.DummyResource(
+                    checkout = testing.DummyResource(orderControlId='10')
+                )
+            ),
+            testing.DummyResource(
+                cart = testing.DummyResource(
+                    checkout = testing.DummyResource(orderControlId='20')
+                )
+            )
+        ]
+        request_id = api.generate_requestid()
+        result = target.create_order_cancel_request_xml(orders, request_id)
 
-    def test_it_without_failed_url(self):
-        resource = testing.DummyResource(serviceId='this-is-serviceId',
-                                         orderCartId='this-is-cart-id',
-                                         orderCompleteUrl='http://example.com/completed',
-                                         orderFailedUrl=None,
-                                         authMethod='2',
-                                         isTMode='1',
-                                         itemsInfo=[],
-                                         )
+        self.assertIsNotNone(result)
+        self.assertEqual(
+            result,
+            '<root>'
+            '<serviceId>this-is-serviceId</serviceId>'
+            '<accessKey>access_key</accessKey>'
+            '<requestId>%(request_id)s</requestId>'
+            '<orders>'
+            '<order>'
+            '<orderControlId>10</orderControlId>'
+            '</order>'
+            '<order>'
+            '<orderControlId>20</orderControlId>'
+            '</order>'
+            '</orders>'
+            '</root>' % dict(request_id=request_id)
+        )
 
-        result = self._callFUT(resource)
+    def test_order_cancel_url(self):
+        target = self._makeOne()
+        self.assertEqual(target.order_cancel_url(), 'https://example.com/api_url/odrctla/cancelorder/1.0/')
 
-        self.assertEqual(result, 
-                         '<orderItemsInfo>'
-                         '<serviceId>this-is-serviceId</serviceId>'
-                         '<itemsInfo />'
-                         '<orderCartId>this-is-cart-id</orderCartId>'
-                         '<orderCompleteUrl>http://example.com/completed</orderCompleteUrl>'
-                         '<authMethod>2</authMethod>'
-                         '<isTMode>1</isTMode>'
-                         '</orderItemsInfo>')
+    def test__parse_response_order_cancel_xml(self):
+        import xml.etree.ElementTree as et
+        xml = et.XML(
+            '<root>'
+            '<statusCode>1</statusCode>'
+            '<acceptNumber>2</acceptNumber>'
+            '<successNumber>3</successNumber>'
+            '<failedNumber>4</failedNumber>'
+            '<orders>'
+            '<order>'
+            '<orderControlId>dc-1234567890-110415-0000022222</orderControlId>'
+            '<orderErrorCode>090</orderErrorCode>'
+            '</order>'
+            '</orders>'
+            '<apiErrorCode>100</apiErrorCode>'
+            '</root>'
+        )
+        target = self._makeOne()
+        result = target._parse_response_order_cancel_xml(xml)
+
+        self.assertEqual(result['statusCode'], '1')
+        self.assertEqual(result['acceptNumber'], '2')
+        self.assertEqual(result['successNumber'], '3')
+        self.assertEqual(result['failedNumber'], '4')
+        self.assertEqual(result['apiErrorCode'], '100')
+        self.assertEqual(len(result['orders']), 1)
+        self.assertEqual(result['orders'][0]['orderControlId'], 'dc-1234567890-110415-0000022222')
+        self.assertEqual(result['orders'][0]['orderErrorCode'], '090')
+
+    def test_request_order_cancel(self):
+        import xml.etree.ElementTree as et
+        from ticketing.multicheckout.testing import DummyHTTPLib
+
+        res_data = et.XML(
+            '<root>'
+            '<statusCode>1</statusCode>'
+            '<acceptNumber>2</acceptNumber>'
+            '<successNumber>3</successNumber>'
+            '<failedNumber>4</failedNumber>'
+            '<orders>'
+            '<order>'
+            '<orderControlId>dc-1234567890-110415-0000022222</orderControlId>'
+            '<orderErrorCode>090</orderErrorCode>'
+            '</order>'
+            '</orders>'
+            '<apiErrorCode>100</apiErrorCode>'
+            '</root>'
+        )
+        target = self._makeOne()
+        target._httplib = DummyHTTPLib(et.tostring(res_data))
+
+        orders = [
+            testing.DummyResource(
+                cart = testing.DummyResource(
+                    checkout = testing.DummyResource(orderControlId='10')
+                )
+            ),
+            testing.DummyResource(
+                cart = testing.DummyResource(
+                    checkout = testing.DummyResource(orderControlId='20')
+                )
+            )
+        ]
+        result = target.request_order_cancel(orders)
+
+        self.assertEqual(target._httplib.path, '/api_url/odrctla/cancelorder/1.0/')
+        self.assertEqual(result['statusCode'], '1')
+        self.assertEqual(result['acceptNumber'], '2')
+        self.assertEqual(result['successNumber'], '3')
+        self.assertEqual(result['failedNumber'], '4')
+        self.assertEqual(result['apiErrorCode'], '100')
+        self.assertEqual(len(result['orders']), 1)
+        self.assertEqual(result['orders'][0]['orderControlId'], 'dc-1234567890-110415-0000022222')
+        self.assertEqual(result['orders'][0]['orderErrorCode'], '090')
+
 
 if __name__ == "__main__":
     unittest.main()
-

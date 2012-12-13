@@ -478,9 +478,7 @@ class ReserveView(object):
 
     @view_config(route_name='cart.order', request_method="GET", renderer=selectable_renderer('carts_mobile/%(membership)s/reserve.html'), request_type=".interfaces.IMobileRequest")
     def reserve_mobile(self):
-        cart = api.get_cart(self.request)
-        if not cart:
-            raise NotFound
+        cart = api.get_cart_safe(self.request)
 
         performance_id = self.request.params.get('performance_id')
         seat_type_id = self.request.params.get('seat_type_id')
@@ -651,9 +649,7 @@ class PaymentView(object):
 
         api.check_sales_segment_term(self.request)
 
-        if not api.has_cart(self.request):
-            raise NoCartError()
-        cart = api.get_cart(self.request)
+        cart = api.get_cart_safe(self.request)
         self.context.event_id = cart.performance.event.id
 
         start_on = cart.performance.start_on
@@ -730,9 +726,7 @@ class PaymentView(object):
         """
         api.check_sales_segment_term(self.request)
 
-        if not api.has_cart(self.request):
-            raise NoCartError()
-        cart = api.get_cart(self.request)
+        cart = api.get_cart_safe(self.request)
 
         user = self.context.get_or_create_user()
 
@@ -830,9 +824,7 @@ class ConfirmView(object):
     def get(self):
         api.check_sales_segment_term(self.request)
         form = schemas.CSRFSecureForm(csrf_context=self.request.session)
-        if not api.has_cart(self.request):
-            raise NoCartError()
-        cart = api.get_cart(self.request)
+        cart = api.get_cart_safe(self.request)
 
         # == MailMagazinに移動 ==
         magazines = u_models.MailMagazine.query.outerjoin(u_models.MailSubscription) \
@@ -861,10 +853,7 @@ class CompleteView(object):
         form = schemas.CSRFSecureForm(formdata=self.request.params, csrf_context=self.request.session)
         form.validate()
         #assert not form.csrf_token.errors
-        if not api.has_cart(self.request):
-            raise NoCartError()
-
-        cart = api.get_cart(self.request)
+        cart = api.get_cart_safe(self.request)
         if not cart.is_valid():
             raise NoCartError()
 
@@ -948,6 +937,13 @@ class CompleteView(object):
         api.logout(self.request)
         return dict(order=order)
 
+    @view_config(route_name='payment.callback.finish', renderer=selectable_renderer("carts/%(membership)s/completion.html"), request_method="GET")
+    @view_config(route_name='payment.callback.finish', request_type='.interfaces.IMobileRequest', renderer=selectable_renderer("carts_mobile/%(membership)s/completion.html"), request_method="GET")
+    def callback(self):
+        '''
+        決済完了画面(あんしん決済の戻り先)
+        '''
+        return self()
 
     def save_subscription(self, user, mail_address):
         magazines = u_models.MailMagazine.query.all()

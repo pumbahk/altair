@@ -20,7 +20,7 @@ from .interfaces import IMobileRequest, IStocker, IReserving, ICartFactory
 from .models import Cart, PaymentMethodManager, DBSession, CartedProductItem, CartedProduct
 from ..users.models import User, UserCredential, Membership, MemberGroup, MemberGroup_SalesSegment
 from ..core.models import Event, Performance, Stock, StockHolder, Seat, Product, ProductItem, SalesSegment, Venue
-from .exceptions import OutTermSalesException, NoSalesSegment
+from .exceptions import OutTermSalesException, NoSalesSegment, NoCartError
 
 def is_multicheckout_payment(cart):
     if cart is None:
@@ -111,15 +111,29 @@ def remove_cart(request):
     if request.session.get("ticketing.cart_id"):
         del request.session['ticketing.cart_id']
 
+@deprecate
 def has_cart(request):
+    try:
+        get_cart_safe(request)
+        return True
+    except NoCartError:
+        return False
+
+def get_cart_safe(request):
     minutes = max(int(request.registry.settings['altair_cart.expire_time']) - 1, 0)
     cart = get_cart(request)
     if cart is None:
-        return False
+        raise NoCartError('Cart is not associated to the request')
     expired = cart.is_expired(minutes) or cart.finished_at
     if expired:
         remove_cart(request)
-    return not expired
+        raise NoCartError('Cart is expired')
+    return cart
+
+def recover_cart(request):
+    cart = get_cart_safe(request)
+    set_cart(request, Cart.create_from(cart))
+    return cart
 
 def _maybe_encoded(s, encoding='utf-8'):
     if isinstance(s, unicode):

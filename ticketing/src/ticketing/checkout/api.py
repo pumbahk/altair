@@ -2,26 +2,67 @@
 
 import hashlib
 import hmac
+import httplib
 import uuid
 import functools
+import logging
+import urlparse
 import xml.etree.ElementTree as et
+from datetime import datetime
 
+from pyramid.threadlocal import get_current_request
+
+from ticketing.core import api as core_api
 from . import interfaces
 from . import models as m
 
+logger = logging.getLogger(__name__)
+
+AUTH_METHOD_TYPE = {
+    'HMAC-SHA1':'1',
+    'HMAC-MD5':'2',
+    }
+
+RESULT_FLG_SUCCESS = 0
+RESULT_FLG_FAILED = 1
+
+ERROR_CODES = {
+    "100": u"メンテナンス中",
+    "200": u"システムエラー",
+    "300": u"入力値のフォーマットエラー",
+    "400": u"サービス ID、アクセスキーのエラー",
+    "500": u"リクエスト ID 重複エラー または 実在しないリクエスト ID に対するリクエストエラー",
+    "600": u"XML 解析エラー",
+    "700": u"全て受付エラー(成功件数が0件)",
+    "800": u"最大処理件数エラー(リクエストの処理依頼件数超過)",
+    }
+
+ORDER_ERROR_CODES = {
+    "10", u"設定された注文管理番号が存在しない",
+    "11", u"設定された注文管理番号が不正",
+    "20", u"􏰀済ステータスが不正",
+    "30", u"締め日チェックエラー",
+    "40", u"商品 ID が不一致",
+    "41", u"商品数が不足",
+    "42", u"商品個数が不正(商品個数が 501 以上)",
+    "50", u"リクエストの総合計金額が不正(100 円未満)",
+    "51", u"リクエストの総合計金額が不正(合計金額が 0 円)",
+    "52", u"リクエストの総合計金額が不正(合計金額が 9 桁以上)",
+    "60", u"別処理を既に受付(当該データが受付済みで処理待ち)",
+    "90", u"システムエラー",
+    }
 
 def generate_requestid():
     """
-    安心決済の一意なリクエストIDを生成する
+    あんしん決済の一意なリクエストIDを生成する
     """
     return uuid.uuid4().hex[:16]  # uuidの前半16桁
 
 def get_checkout_service(request):
     return request.registry.utilities.lookup([], interfaces.ICheckout)
 
-
 def sign_to_xml(request, xml):
-    signer = request.registry.utilities.lookup([], interfaces.ISigner, "HMAC")
+    signer = request.registry.utilities.lookup([], interfaces.ISigner, 'HMAC')
     return signer(xml)
 
 
@@ -45,19 +86,22 @@ class HMAC_MD5(object):
 
 class Checkout(object):
 
-    def __init__(self, service_id, success_url, fail_url, auth_method, is_test):
+    def __init__(self, service_id, success_url, fail_url, auth_method, secret, api_url, is_test):
         self.service_id = service_id
         self.success_url = success_url
         self.fail_url = fail_url
         self.auth_method = auth_method
+        self.secret = secret
+        self.api_url = api_url
         self.is_test = is_test
 
     def create_checkout_request_xml(self, cart):
+        request = get_current_request()
         root = et.Element('orderItemsInfo')
 
         et.SubElement(root, 'serviceId').text = self.service_id
-        et.SubElement(root, 'orderCompleteUrl').text = self.success_url
-        et.SubElement(root, 'orderFailedUrl').text = self.fail_url
+        et.SubElement(root, 'orderCompleteUrl').text = 'https://%(host)s%(path)s' % dict(host=request.host, path=self.success_url)
+        et.SubElement(root, 'orderFailedUrl').text = 'https://%(host)s%(path)s' % dict(host=request.host, path=self.fail_url)
         et.SubElement(root, 'authMethod').text = AUTH_METHOD_TYPE.get(self.auth_method)
         if self.is_test is not None:
             et.SubElement(root, 'isTMode').text = self.is_test
@@ -100,6 +144,7 @@ class Checkout(object):
             itemFee=str(int(cart.delivery_fee))
         ))
 
+        logger.debug(et.tostring(root))
         return et.tostring(root)
 
     def create_order_complete_response_xml(self, result, complete_time):
@@ -137,15 +182,15 @@ class Checkout(object):
         checkout = m.Checkout()
         for e in root:
             if e.tag == 'orderId':
-                checkout.orderId = e.text.strip()
+                checkout.orderId = unicode(e.text.strip())
             elif e.tag == 'orderControlId':
-                checkout.orderControlId = e.text.strip()
+                checkout.orderControlId = unicode(e.text.strip())
             elif e.tag == 'orderCartId':
                 checkout.orderCartId = e.text.strip()
             elif e.tag == 'orderTotalFee':
                 checkout.orderTotalFee = e.text.strip()
             elif e.tag == 'orderDate':
-                checkout.orderDate = e.text.strip()
+                checkout.orderDate = datetime.strptime(e.text.strip(), '%Y-%m-%d %H:%M:%S')
             elif e.tag == 'isTMode':
                 checkout.isTMode = e.text.strip()
             elif e.tag == 'usedPoint':
@@ -165,65 +210,88 @@ class Checkout(object):
                 if e.tag == 'itemId':
                     item.itemId = e.text.strip()
                 elif e.tag == 'itemName':
-                    item.itemName = e.text.strip()
+                    item.itemName = unicode(e.text.strip())
                 elif e.tag == 'itemNumbers':
                     item.itemNumbers = int(e.text.strip())
                 elif e.tag == 'itemFee':
                     item.itemFee = int(e.text.strip())
 
+    def create_order_cancel_request_xml(self, orders, request_id=None):
+        request_id = request_id or generate_requestid()
+        root = et.Element('root')
+        et.SubElement(root, 'serviceId').text = self.service_id
+        et.SubElement(root, 'accessKey').text = self.secret
+        et.SubElement(root, 'requestId').text = request_id
+        sub_element = et.SubElement(root, 'orders')
+        for order in orders:
+            el = et.SubElement(sub_element, 'order')
+            subelement = functools.partial(et.SubElement, el)
+            subelement('orderControlId').text = order.cart.checkout.orderControlId
 
-AUTH_METHOD_TYPE = {
-    'HMAC-SHA1':'1',
-    'HMAC-MD5':'2',
-}
+        return et.tostring(root)
 
-IS_NOT_TO_MODE = 0
-IS_T_MODE = 1
+    def _request(self, url, message=None):
+        content_type = "application/xhtml+xml;charset=UTF-8"
+        body = message if message is not None else ''
+        url_parts = urlparse.urlparse(url)
 
-API_STATUS_SUCCESS = 0
-API_STATUS_ERROR = 1
+        if url_parts.scheme == "http":
+            http = self._httplib.HTTPConnection(host=url_parts.hostname, port=url_parts.port)
+        elif url_parts.scheme == "https":
+            http = self._httplib.HTTPSConnection(host=url_parts.hostname, port=url_parts.port)
+        else:
+            raise ValueError, "unknown scheme %s" % (url_parts.scheme)
 
+        headers = {
+            "Content-Type": content_type,
+        }
 
-ITEM_SETTLEMENT_RESULT_NOT_REQUIRED = 0
-ITEM_SETTLEMENT_RESULT_REQUIRED = 1
+        #headers.update(self.auth_header)
 
-RESULT_OK = 0
-RESULT_ERROR = 1
+        logger.debug("request %s body = %s" % (url, body))
+        http.request(
+            "POST", url_parts.path, body=body,
+            headers=headers)
+        res = http.getresponse()
+        try:
+            logger.debug('%(url)s %(status)s %(reason)s' % dict(
+                url=url,
+                status=res.status,
+                reason=res.reason,
+            ))
+            if res.status != 200:
+                raise Exception, res.reason
 
+            return et.parse(res).getroot()
+        finally:
+            res.close()
 
-PAYMENT_STATUS_YET = 0
-PAYMENT_STATUS_PROGRESS = 1
-PAYMENT_STATUS_COMPLETED = 2
+    def order_cancel_url(self):
+        return self.api_url + '/odrctla/cancelorder/1.0/'
 
-PROCCES_STATUE_PROGRESS = 0
-PROCCES_STATUE_COMPLETED = 1
+    def request_order_cancel(self, orders):
+        url = self.order_cancel_url()
+        message = self.create_order_cancel_request_xml(orders)
+        res = self._request(url, 'rparam=%s' % message.encode('base64'))
+        logger.debug('got response %s' % et.tostring(res))
+        return self._parse_response_order_cancel_xml(res)
 
-RESULT_FLG_SUCCESS = 0
-RESULT_FLG_FAILED = 1
+    def _parse_response_order_cancel_xml(self, root):
+        if root.tag != 'root':
+            return None
 
-
-ERROR_CODES = {
-    "100": u"メンテナンス中",
-    "200": u"システムエラー",
-    "300": u"入力値のフォーマットエラー",
-    "400": u"サービス ID、アクセスキーのエラー",
-    "500": u"リクエスト ID 重複エラー または 実在しないリクエスト ID に対するリクエストエラー",
-    "600": u"XML 解析エラー",
-    "700": u"全て受付エラー(成功件数が0件)",
-    "800": u"最大処理件数エラー(リクエストの処理依頼件数超過)",
-}
-
-ORDER_ERROR_CODES = {
-    "10", u"設定された注文管理番号が存在しない",
-    "11", u"設定された注文管理番号が不正",
-    "20", u"􏰀済ステータスが不正",
-    "30", u"締め日チェックエラー",
-    "40", u"商品 ID が不一致",
-    "41", u"商品数が不足",
-    "42", u"商品個数が不正(商品個数が 501 以上)",
-    "50", u"リクエストの総合計金額が不正(100 円未満)",
-    "51", u"リクエストの総合計金額が不正(合計金額が 0 円)",
-    "52", u"リクエストの総合計金額が不正(合計金額が 9 桁以上)",
-    "60", u"別処理を既に受付(当該データが受付済みで処理待ち)",
-    "90", u"システムエラー",
-}
+        response = {}
+        for e in root:
+            if e.tag == 'orders':
+                response['orders'] = []
+                for sub_el in e:
+                    if sub_el.tag != 'order':
+                        continue
+                    order = {}
+                    for order_el in sub_el:
+                        if order_el.tag in ['orderControlId', 'orderErrorCode']:
+                            order[order_el.tag] = order_el.text.strip()
+                    response['orders'].append(order)
+            elif e.tag in ['statusCode', 'acceptNumber', 'successNumber', 'failedNumber', 'apiErrorCode']:
+                response[e.tag] = e.text.strip()
+        return response

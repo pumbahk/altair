@@ -61,26 +61,26 @@ class FunctinalTests(unittest.TestCase):
         self.session.add(event)
         self.session.flush()
 
-    def test_get_index(self):
-        self._add_lot(1000, 1001)
-        res = self.app.get('/lots/events/1000/entry/1001')
+    # def test_get_index(self):
+    #     self._add_lot(1000, 1001)
+    #     res = self.app.get('/lots/events/1000/entry/1001')
 
-    def test_post_index(self):
-        self._add_lot(2000, 2001)
-        res = self.app.post('/lots/events/2000/entry/2001')
+    # def test_post_index(self):
+    #     self._add_lot(2000, 2001)
+    #     res = self.app.post('/lots/events/2000/entry/2001')
 
-    def test_get_confirm_without_session(self):
-        self._add_lot(3000, 3001)
-        res = self.app.get('/lots/events/3000/entry/3001/confirm')
-        self.assertEqual(res.location, 'http://localhost/lots/events/3000/entry/3001')
+    # def test_get_confirm_without_session(self):
+    #     self._add_lot(3000, 3001)
+    #     res = self.app.get('/lots/events/3000/entry/3001/confirm')
+    #     self.assertEqual(res.location, 'http://localhost/lots/events/3000/entry/3001')
 
-    def test_get_confirm(self):
-        self._add_lot(3010, 3011)
-        res = self.app.get('/lots/events/3010/entry/3011/confirm')
+    # def test_get_confirm(self):
+    #     self._add_lot(3010, 3011)
+    #     res = self.app.get('/lots/events/3010/entry/3011/confirm')
 
-    def test_post_confirm(self):
-        self._add_lot(4000, 4001)
-        res = self.app.post('/lots/events/4000/entry/4001/confirm')
+    # def test_post_confirm(self):
+    #     self._add_lot(4000, 4001)
+    #     res = self.app.post('/lots/events/4000/entry/4001/confirm')
 
     # def test_get_completion(self):
     #     self._add_lot(5000, 5001)

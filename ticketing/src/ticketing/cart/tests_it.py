@@ -3,7 +3,7 @@
 import unittest
 import mock
 from pyramid import testing
-from .testing import _setup_db as _setup_db_, _teardown_db
+from ..testing import _setup_db as _setup_db_, _teardown_db
 
 def _setup_db(echo=False):
     return _setup_db_(

@@ -2,8 +2,8 @@
 
 import unittest
 from pyramid import testing
-from .testing import DummyRequest, DummySecure3D
-from ..testing import _setup_db as _setup_db_, _teardown_db
+from ..multicheckout.testing import DummySecure3D
+from ..testing import _setup_db as _setup_db_, _teardown_db, DummyRequest
 import mock
 
 def _setup_db(echo=False):
@@ -92,7 +92,7 @@ class CartTests(unittest.TestCase):
         from . import models
         if created_at is None:
             created_at = datetime.now()
-        cart = models.Cart(cart_session_id=cart_session_id, created_at=created_at)
+        cart = models.Cart.create(cart_session_id=cart_session_id, created_at=created_at)
         self.session.add(cart)
         return cart
 

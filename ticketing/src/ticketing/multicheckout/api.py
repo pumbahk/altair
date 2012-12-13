@@ -42,11 +42,12 @@ def get_md(request):
 def sanitize_card_number(xml_data):
     et = None
     try:
-        et = etree.fromstring(xml_data)
-        target = ['Auth/Card/CardNo', 'CardNumber', 'Auth/Secure3D/CardNo']
-        for t in target:
-            if et.find(t) is not None:
-                et.find(t).text = 'XXXXXXXXXXXXXXXX'
+        if isinstance(xml_data, str) and len(xml_data) > 0:
+            et = etree.fromstring(xml_data)
+            target = ['Auth/Card/CardNo', 'CardNumber', 'Auth/Secure3D/CardNo']
+            for t in target:
+                if et.find(t) is not None:
+                    et.find(t).text = 'XXXXXXXXXXXXXXXX'
     except Exception, e:
         logger.warn('credit card number sanitize error: %s' % e.message)
     return etree.tostring(et) if et is not None else xml_data

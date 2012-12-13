@@ -9,7 +9,9 @@ from ..stocker import NotEnoughStockException
 from .. import api
 from ticketing.mobile import mobile_view_config
 from ticketing.cart.selectable_renderer import selectable_renderer
+from ticketing.payments.exceptions import PaymentPluginException
 import logging
+import transaction
 
 logger = logging.getLogger(__name__)
 
@@ -104,4 +106,21 @@ def cart_creation_exception(request):
 def cart_creation_exception(context, request):
     event_id = context.event_id
     location = request.route_url('cart.index', event_id=event_id)
-    return dict(message=Markup(u'決済中にエラーが発生しました。しばらく時間を於いてから<a href="%s">再度お試しください。</a>' % location))
+    return dict(message=Markup(u'決済中にエラーが発生しました。しばらく時間を置いてから<a href="%s">再度お試しください。</a>' % location))
+
+@view_config(context=PaymentPluginException, renderer=selectable_renderer('ticketing.cart:templates/carts/%(membership)s/message.html'))
+@view_config(context=PaymentPluginException, renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/error.html'), request_type="..interfaces.IMobileRequest")
+def cart_creation_exception(context, request):
+    if context.back_url is not None:
+        # カートの救済可能な場合
+        api.recover_cart(request) 
+        transaction.commit()
+        return HTTPFound(location=context.back_url)
+    else:
+        # カートの救済不可能
+        if cart is not None:
+            location = request.route_url('cart.index', event_id=cart.performance.event_id)
+        else:
+            location = request.context.host_base_url
+    return dict(message=Markup(u'決済中にエラーが発生しました。しばらく時間を置いてから<a href="%s">再度お試しください。</a>' % location))
+

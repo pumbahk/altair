@@ -293,3 +293,29 @@ class elect_entryTests(unittest.TestCase):
 
         self.assertEqual(result.lot_entry, wish.lot_entry)
         self.assertEqual(result.lot_entry_wish, wish)
+
+class notify_entry_lotTests(unittest.TestCase):
+    def setUp(self):
+        self.config = testing.setUp()
+
+    def tearDown(self):
+        testing.tearDown()
+
+    def _callFUT(self, *args, **kwargs):
+        from .. import api
+        return api.notify_entry_lot(*args, **kwargs)
+
+    def test_it(self):
+        from ..events import LotEntriedEvent
+
+        called = []
+        def handler(event):
+            called.append(event)
+
+        self.config.add_subscriber(handler, LotEntriedEvent)
+
+        entry = testing.DummyModel()
+        request = testing.DummyRequest()
+        self._callFUT(request, entry)
+
+        self.assertEqual(called[0].lot_entry, entry)

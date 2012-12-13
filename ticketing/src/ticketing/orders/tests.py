@@ -37,7 +37,7 @@ class OrderTests(unittest.TestCase):
         from ..cart import models as c_models
         from ..core import models as core_models
 
-        cart = c_models.Cart(
+        cart = c_models.Cart.create(
             products=[
                 c_models.CartedProduct(
                     items=[

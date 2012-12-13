@@ -212,3 +212,14 @@ class LotElectedEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     order_id = sa.Column(Identifier, sa.ForeignKey('Order.id'))
 
+class LotRejectedEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    """ 抽選落選情報 """
+
+
+    __tablename__ = 'LotRejectedEntry'
+
+    id = sa.Column(Identifier, primary_key=True)
+    lot_entry_id = sa.Column(Identifier, sa.ForeignKey('LotEntry.id'))
+    lot_entry = orm.relationship('LotEntry', backref="lot_rejected_entries")
+
+    mail_sent_at = sa.Column(sa.DateTime)

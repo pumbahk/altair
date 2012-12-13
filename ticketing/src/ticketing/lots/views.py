@@ -15,6 +15,7 @@ from .exceptions import NotElectedException
 from pyramid.httpexceptions import HTTPNotFound
 from uuid import uuid4
 from ticketing.payments.payment import Payment
+from ticketing.cart.exceptions import NoCartError
 
 from .models import (
     LotEntry,
@@ -28,6 +29,11 @@ logger = logging.getLogger(__name__)
 def no_results_found(context, request):
     """ 改良が必要。ログに該当のクエリを出したい。 """
     logger.warning(context)    
+    return HTTPNotFound()
+
+@view_config(context=NoCartError)
+def no_cart_error(context, request):
+    logger.warning(context)
     return HTTPNotFound()
 
 @view_defaults(route_name='lots.entry.index', renderer="index.html")
@@ -345,10 +351,7 @@ class PaymentConfirm(object):
 
         if not lot_entry.is_elected:
             raise NotElectedException
-        if not cart_api.has_cart(self.request):
-            raise HTTPNotFound()
-
-        cart = cart_api.get_cart(self.request)
+        cart = cart_api.get_cart_safe(self.request)
         if not cart.is_valid():
             raise HTTPNotFound()
 

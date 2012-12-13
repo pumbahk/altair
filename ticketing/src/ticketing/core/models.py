@@ -1799,8 +1799,13 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if not ppid:
             return False
 
+        # インナー予約の場合はAPI決済していないのでスキップ
+        if 'sales_counter_payment_method_id' in self.attributes:
+            logger.info(u'インナー予約のキャンセルなので決済払戻処理をスキップ %s' % self.order_no)
+            pass
+
         # クレジットカード決済
-        if ppid == 1:
+        elif ppid == 1:
             # 入金済みなら決済をキャンセル
             if self.status == 'paid':
                 # 売り上げキャンセル
@@ -1813,9 +1818,17 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 organization = Organization.get(self.organization_id)
                 request.registry.settings['altair_checkout3d.override_shop_name'] = organization.multicheckout_settings[0].shop_name
 
-                # 払戻期限を越えてもキャンセルできるようにキャンセルAPIでなく売上一部キャンセルAPIを使う
-                #multi_checkout_result = multicheckout_api.checkout_sales_cancel(request, order_no)
-                multi_checkout_result = multicheckout_api.checkout_sales_part_cancel(request, order_no, self.total_amount, 0)
+                # キャンセルAPIでなく売上一部取消APIを使う
+                # - 払戻期限を越えてもキャンセルできる為
+                # - 売上一部取消で減額したあと、キャンセルAPIをつかうことはできない為
+                # - ただし、売上一部取消APIを有効にする以前に予約があったものはキャンセルAPIをつかう
+                sales_part_cancel_enabled_from = '2012-12-03 08:00'
+                if self.created_at < datetime.strptime(sales_part_cancel_enabled_from, "%Y-%m-%d %H:%M"):
+                    logger.info(u'キャンセルAPIでキャンセル %s' % self.order_no)
+                    multi_checkout_result = multicheckout_api.checkout_sales_cancel(request, order_no)
+                else:
+                    logger.info(u'売上一部取消APIで全額取消 %s' % self.order_no)
+                    multi_checkout_result = multicheckout_api.checkout_sales_part_cancel(request, order_no, self.total_amount, 0)
                 DBSession.add(multi_checkout_result)
 
                 error_code = ''
