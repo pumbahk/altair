@@ -109,9 +109,9 @@ class PreviewApiView(object):
     @view_config(match_param="action=preview.base64", request_param="svg")
     def preview_ticket_post64(self):
         preview = SVGPreviewCommunication.get_instance(self.request)
-        # svg = skip_needless_part(self.request.POST["svg"])
         svg = self.request.POST["svg"]
         try:
+            svg = transform.SVGTransformer(svg, self.request.POST).transform()
             imgdata_base64 = preview.communicate(self.request, svg)
             return {"status": True, "data":imgdata_base64}
         except jsonrpc.ProtocolError, e:
