@@ -4,11 +4,17 @@ import hashlib
 import hmac
 import uuid
 import functools
+import logging
 import xml.etree.ElementTree as et
 from datetime import datetime
 
+from pyramid.threadlocal import get_current_request
+
+from ticketing.core import api as core_api
 from . import interfaces
 from . import models as m
+
+logger = logging.getLogger(__name__)
 
 
 def generate_requestid():
@@ -53,11 +59,12 @@ class Checkout(object):
         self.is_test = is_test
 
     def create_checkout_request_xml(self, cart):
+        request = get_current_request()
         root = et.Element('orderItemsInfo')
 
         et.SubElement(root, 'serviceId').text = self.service_id
-        et.SubElement(root, 'orderCompleteUrl').text = self.success_url
-        et.SubElement(root, 'orderFailedUrl').text = self.fail_url
+        et.SubElement(root, 'orderCompleteUrl').text = 'https://%(host)s%(path)s' % dict(host=request.host, path=self.success_url)
+        et.SubElement(root, 'orderFailedUrl').text = 'https://%(host)s%(path)s' % dict(host=request.host, path=self.fail_url)
         et.SubElement(root, 'authMethod').text = AUTH_METHOD_TYPE.get(self.auth_method)
         if self.is_test is not None:
             et.SubElement(root, 'isTMode').text = self.is_test
@@ -100,6 +107,7 @@ class Checkout(object):
             itemFee=str(int(cart.delivery_fee))
         ))
 
+        logger.debug(et.tostring(root))
         return et.tostring(root)
 
     def create_order_complete_response_xml(self, result, complete_time):
