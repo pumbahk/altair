@@ -47,6 +47,46 @@ def parse_style(*args, **kwargs):
 def css_text(decl):
     return re.sub(ur'\r\n|\r|\n', ' ', decl.cssText)
 
+def set_or_remove_if_empty(elem, name, value):
+    if not isinstance(value, basestring):
+        value = unicode(value)
+    attrib = elem.attrib
+    if len(value) > 0:
+        attrib[name] = value
+    else:
+        if name in attrib:
+            del attrib[name]
+
+def strip_common_style_properties(elems):
+    common_style = cssutils.css.CSSStyleDeclaration()
+    uncommons = set()
+    for elem in elems:
+        style_str = elem.get(u'style')
+        style = parse_style(style_str, validate=False)
+        commons = common_style.keys()
+        for v in style.getProperties():
+            cv = common_style.getProperty(v.name)
+            if v.name not in uncommons:
+                if cv is None:
+                    common_style.setProperty(v)
+                else:
+                    if cv.propertyValue.cssText != v.propertyValue.cssText:
+                        common_style.removeProperty(v.name)
+                        uncommons.add(v.name)
+        for k in commons:
+            if style.getProperty(k) is None:
+                common_style.removeProperty(k)
+                uncommons.add(k)
+
+    for elem in elems:
+        style_str = elem.get(u'style')
+        style = parse_style(style_str, validate=False)
+        for k in common_style.keys():
+            style.removeProperty(k)
+        set_or_remove_if_empty(elem, u'style', css_text(style))
+
+    return common_style 
+
 def collect_flowpara_and_flowdivs(retval, style, elem):
     for child_elem in elem:
         if child_elem.tag == u'{%s}flowDiv' % SVG_NAMESPACE:
@@ -63,7 +103,7 @@ def collect_flowpara_and_flowdivs(retval, style, elem):
                 _style = override_styles(style, parse_style(style_str, validate=False))
             else:
                 _style = style
-            child_elem.set(u'style', css_text(_style))
+            set_or_remove_if_empty(child_elem, u'style', css_text(_style))
             retval.append(child_elem)
             elem.remove(child_elem)
 
@@ -86,22 +126,36 @@ def cleanup_elem(elem):
         if child_elem.tag == u'{%s}flowRoot' % SVG_NAMESPACE:
             retval = [] 
             collect_flowpara_and_flowdivs(retval, cssutils.css.CSSStyleDeclaration(), child_elem)
+            common_style = strip_common_style_properties(retval)
             flowdiv = etree.Element(u'{%s}flowDiv' % SVG_NAMESPACE)
             for _elem in retval:
                 flowdiv.append(_elem)
+            set_or_remove_if_empty(flowdiv, u'style', css_text(common_style))
             child_elem.append(flowdiv)
             flowregion = child_elem.find(u'{%s}flowRegion' % SVG_NAMESPACE)
             if flowregion is not None:
                 handle_flowregion(flowregion)
             style_str = child_elem.get(u'style')
             if style_str is not None:
-                child_elem.set(u'style', css_text(parse_style(style_str, validate=False)))
+                set_or_remove_if_empty(child_elem, u'style', css_text(parse_style(style_str, validate=False)))
         elif child_elem.tag == u'{%s}image' % SVG_NAMESPACE:
             elem.remove(child_elem)
         cleanup_elem(child_elem)
 
+class IDStripper(object):
+    def __init__(self, tags):
+        self.tags = set(tags)
+    
+    def __call__(self, elem):
+        attrib = elem.attrib
+        if elem.tag in self.tags and u'id' in attrib:
+            del attrib[u'id']
+        for child_elem in elem:
+            self(child_elem)
+
 def cleanup_svg(svg):
     cleanup_elem(svg.getroot())
+    IDStripper(u'{%s}%s' % (SVG_NAMESPACE, tag_name) for tag_name in [u'flowPara', u'flowDiv', u'flowSpan', u'flowRegion'])(svg.getroot())
 
 if __name__ == '__main__':
     import sys
