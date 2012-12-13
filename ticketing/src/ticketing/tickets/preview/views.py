@@ -9,20 +9,22 @@ from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from jsonrpclib import jsonrpc
 from pyramid.httpexceptions import HTTPBadRequest
+import logging
+logger = logging.getLogger(__name__)
 
 from ticketing.fanstatic import with_bootstrap
 from ticketing.core import models as c_models
-from .api import SVGPreviewCommunication
-from ..cleaner.api import get_validated_svg_cleaner, skip_needless_part
-from .fillvalues import template_collect_vars
-from .fillvalues import template_fillvalues
-
 from ticketing.tickets.utils import build_dict_from_product
 from ticketing.tickets.utils import build_dict_from_venue
 from ticketing.tickets.utils import build_dict_from_event
 from ticketing.tickets.utils import build_dict_from_organization
-import logging
-logger = logging.getLogger(__name__)
+
+from .api import SVGPreviewCommunication
+from .fillvalues import template_collect_vars
+from .fillvalues import template_fillvalues
+from ..cleaner.api import get_validated_svg_cleaner, skip_needless_part
+from ..response import FileLikeResponse
+
 
 ## todo move it
 def decimal_converter(target, converter=float):
@@ -64,6 +66,12 @@ def preview_ticket_post(context, request):
         return preview.as_filelike_response(request, imgdata_base64)
     except jsonrpc.ProtocolError, e:
         raise HTTPBadRequest(str(e))
+
+@view_config(route_name="tickets.preview.download", request_method="POST", 
+             request_param="svg")
+def preview_ticket_download(context, request):
+    io = StringIO(request.POST["svg"].encode("utf-8"))
+    return FileLikeResponse(io, request=request, filename="preview.svg")
 
 @view_config(route_name="tickets.preview.combobox", request_method="GET", renderer="ticketing:templates/tickets/combobox.html", 
              decorator=with_bootstrap, permission="event_editor")
@@ -201,4 +209,3 @@ class ComboboxApiView(object):
         ## salessegmentがあるので重複した(name, price)が現れてしまう.nameだけで絞り込み
         seq = {q.name: {"pk": q.id, "name": u"%s(￥%s)" % (q.name, q.price)} for q in qs}
         return {"status": True, "data": sorted(seq.values())}
-

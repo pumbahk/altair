@@ -61,12 +61,19 @@
     <div class="navbar-inner">
       <a class="brand" href="#">preview画像表示</a>
       <ul class="nav">
-        <li class="" ><a id="redraw_btn" href="#">再描画</a></li>
-        <li class="" ><a id="combobox_btn" href="#">入力補助ダイアログ</a></li>
-        <li class=""><a id="download_btn" href="#">download</a></li>
+        <li><a id="redraw_btn" href="#">再描画</a></li>
+        <li><a id="combobox_btn" href="#">入力補助ダイアログ</a></li>
+        <li><a id="download_btn" href="#">現在のsvgをdownload</a></li>
+        <li style="margin-left:50px;">
+          x: <input class="inline input-small" type="number" name="x" min="0" max="4.0" step="0.1" value="1.0"></input>
+          y: <input class="inline input-small" type="number" name="y" min="0" max="4.0" step="0.1" value="1.0"></input>
+        </li>
       </ul>
     </div>
   </div>
+  <form id="svg_download_form" action="${request.route_path("tickets.preview.download")}" method="POST">
+    <input type="hidden" name="svg" value=""></input>
+  </form>
   <div class="droparea empty" id="svg_droparea" style="margin-top:40px;">
     <div id="preview_area">
       Drag and Drop
@@ -109,6 +116,18 @@
   $(function(){
     if(!window.apps)
        window.apps = {}; 
+
+  // download svg
+  $("#download_btn").on("click", function(e){
+    var form = $('#svg_download_form'), v = apps["preview"].models.svg.get("data");
+    if(!!v){
+      form.find('input[name="svg"]').val(v);
+      form.submit();
+    } else {
+      alert("svgありません。")
+    }
+  });
+
   // application viewは作成と同時にwindow.appsに入れる。(comboboxも同様)
     window.apis = ${apis|n};
     window.apps["preview"] = window.appView = preview.ApplicationViewFactory(apis,
