@@ -56,7 +56,7 @@ class SalesReports(BaseView):
                     Event.title,
                     Event.id, # dummy
                     func.sum(Stock.quantity),
-                    func.sum(StockStatus.quantity)
+                    func.sum(StockStatus.quantity),
                 )
 
         for id, title, start_on, total_quantity, vacant_quantity in query.all():
@@ -70,6 +70,8 @@ class SalesReports(BaseView):
                 fee_amount=0,
                 price_amount=0,
                 product_quantity=0,
+                event_start_day='',
+                event_end_day='',
             )
 
         '''
@@ -136,6 +138,26 @@ class SalesReports(BaseView):
 
         for id, price_amount, product_quantity in query.all():
             reports[id].update(dict(price_amount=price_amount or 0, product_quantity=product_quantity or 0))
+
+        # イベント開始、イベント終了
+        event_id = Event.query.filter(Event.organization_id==self.context.user.organization_id).with_entities(Event.id).all()
+
+        event_start_days = {}
+        for e_id in event_id:
+             query = Event.query.filter(Event.organization_id==self.context.user.organization_id)\
+                .join(Performance).filter(Event.id==e_id[0]).with_entities(Performance.start_on).all()
+             event_start_days[e_id[0]]=query
+        for id, performance_days in event_start_days.items():
+             performance_days.sort()
+             reports[id].update(dict(event_start_day=performance_days[0] or ''))
+        event_end_days = {} 
+        for e_id in event_id:
+             query = Event.query.filter(Event.organization_id==self.context.user.organization_id)\
+                .join(Performance).filter(Event.id==e_id[0]).with_entities(Performance.end_on).all()
+             event_end_days[e_id[0]]=query
+        for id, performance_days in event_end_days.items():
+             performance_days.reverse()
+             reports[id].update(dict(event_end_day=performance_days[0] or ''))
 
         return reports.values()
 
