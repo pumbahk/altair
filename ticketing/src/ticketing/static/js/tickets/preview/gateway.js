@@ -59,7 +59,7 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
         return $.post(this.apis.previewbase64, params)
             .pipe(core.ApiService.rejectIfStatusFail(function(data){
                 self.preview.startRendering("data:image/png;base64,"+data.data); //add-hoc
-                self.message.info("preview画像がレンダリングされました");
+                self.message.info("preview画像がレンダリングされました。下のinput要素を変更しプレースホルダーに埋める値を入力してください");
             }))
             .fail(this._apiFail.bind(this));
     }, 
