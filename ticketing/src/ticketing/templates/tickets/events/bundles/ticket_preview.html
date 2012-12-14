@@ -55,10 +55,12 @@
   <script type="text/javascript">
     $(function(){
       svg_preview(
-        $(".viewer-box#ticket-viewer${ticket.id}"),"${request.route_path("tickets.preview.api", action="preview.base64")}", 
-        '${ticket.drawing.replace("\n","")|n}'
-      );
-    })
+        $(".viewer-box#ticket-viewer${ticket.id}"),"${request.route_path("tickets.preview.api", action="preview.base64.withmodels")}", 
+         {svg: '${ticket.drawing.replace("\n","")|n}',
+          ticket_format: "${ticket.ticket_format_id}",
+          model_name: "ProductItem",
+          model: "${item.id}"});
+    });
   </script>
   %endfor 
 </div>

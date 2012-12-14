@@ -8,8 +8,10 @@ from lxml import etree
 from webob.multidict import MultiDict
 
 from ticketing.core.models import TicketFormat #uggg
-from .materialize import svg_with_ticketformat
-from .fillvalues import template_fillvalues
+from ticketing.core.models import ProductItem #uggg
+from ticketing.tickets.preview.materialize import svg_with_ticketformat
+from ticketing.tickets.preview.fillvalues import template_fillvalues
+from ticketing.tickets.utils import build_dict_from_product_item
 
 class SVGTransformValidator(Form):
     sx = fields.FloatField(default=1.0)
@@ -27,7 +29,7 @@ class SVGTransformValidator(Form):
 class FillValuesFromModelsValidator(Form):
     model_name = fields.TextField()
     model = fields.TextField(default=object())
-    model_candidates = []
+    model_candidates = ["ProductItem"]
 
     def validate_model_name(form, field):
         if field.data and field.data not in form.model_candidates:
@@ -39,6 +41,9 @@ class FillValuesFromModelsValidator(Form):
         model_name = self.data.get("model_name")
         if model_name is None:
             return True
+        elif model_name == "ProductItem":
+            self.data["model"] = self.model.data = ProductItem.query.filter_by(id=self.data["model"]).first()
+            return True
         else:
             logger.warn("never call")
 
@@ -46,7 +51,9 @@ def parse(validator, postdata):
     if not hasattr(postdata, "getlist"):
         postdata = MultiDict(postdata)
     form = validator(postdata)
-    return form.data if form.validate() else None
+    if form.validate():
+        return form.data 
+    return None
 
 def wrap_element(parent, tag, attrs):
     """
@@ -130,7 +137,11 @@ class FillvaluesTransformer(object):
         self.encoding = encoding
 
     def params_from_model(self):
-        return None
+        model_name = self.data["model_name"]
+        if model_name == "ProductItem":
+            return build_dict_from_product_item(self.data["model"])
+        else:
+            return None
 
     def transform(self):
         if self.data is None:

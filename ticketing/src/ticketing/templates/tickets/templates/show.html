@@ -52,8 +52,7 @@ ${breadcrumbs(
     $(function(){
       svg_preview(
         $("#ticket-viewer"),"${request.route_path("tickets.preview.api", action="preview.base64.withmodels")}", 
-        '${template.drawing.replace("\n","")|n}',
-         ${ticket_format_id}
+        {svg:  '${template.drawing.replace("\n","")|n}', "ticket_formart": "${ticket_format_id}"}
       );
     })
 </script>

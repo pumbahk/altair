@@ -771,6 +771,7 @@ class Orders(BaseView):
             .all()
         dicts = build_dicts_from_ordered_product_item(item)
         data = dict(ticket_format.data)
+        data["ticket_format_id"] = ticket_format.id
         results = []
         names = []
         for seat, dict_ in dicts:
@@ -778,7 +779,7 @@ class Orders(BaseView):
             for ticket in tickets:
                 svg = pystache.render(ticket.data['drawing'], dict_)
                 r = data.copy()
-                r.update(dict(drawing=svg))
+                r.update(drawing=svg)
                 results.append(r)
         return {"results": results, "names": names}
 

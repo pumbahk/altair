@@ -247,7 +247,7 @@ class BundleAttributeView(BaseView):
              permission="event_editor", decorator=with_bootstrap)
 def ticket_preview_bound_by_product_item(context, request):
     return {"tickets": request.context.bundle.tickets, 
-            "item": request.context.product_item}
+            "item": request.context.product_item,}
 
 @view_config(route_name="events.tickets.bundles.items.data", 
              renderer="json", permission="event_editor", decorator=with_bootstrap)
