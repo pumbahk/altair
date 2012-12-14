@@ -38,10 +38,21 @@ class TicketingCartResource(object):
 
     def __init__(self, request):
         self.request = request
+        self._event_id = None
+        self._event = None
         if request.matchdict:
             self.event_id = self.request.matchdict.get('event_id')
         else:
             self.event_id = None
+
+    def _get_event_id(self):
+        return self._event_id
+
+    def _set_event_id(self, value):
+        self._event_id = value
+        self._event = None
+
+    event_id = property(_get_event_id, _set_event_id)
 
     # @property
     # def memberships(self):
@@ -65,14 +76,14 @@ class TicketingCartResource(object):
 
     @property
     def event(self):
-        # TODO: ドメインで許可されるeventのみを使う
-        organization = core_api.get_organization(self.request)
-        try:
-            event = c_models.Event.filter(c_models.Event.id==self.event_id).filter(c_models.Event.organization==organization).one()
-            return event
-
-        except NoResultFound:
-            return None
+        if self._event is None:
+            # TODO: ドメインで許可されるeventのみを使う
+            organization = core_api.get_organization(self.request)
+            try:
+                self._event = c_models.Event.filter(c_models.Event.id==self.event_id).filter(c_models.Event.organization==organization).one()
+            except NoResultFound:
+                self._event = None
+        return self._event
 
     @property
     def membergroups(self):
