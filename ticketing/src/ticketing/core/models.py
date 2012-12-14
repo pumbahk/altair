@@ -2121,7 +2121,9 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def seat_statuses_for_update(self):
-      return DBSession.query(SeatStatus).filter(SeatStatus.seat_id.in_([s.id for s in self.seats])).with_lockmode('update').all()
+        if len(self.seats) > 0:
+            return DBSession.query(SeatStatus).filter(SeatStatus.seat_id.in_([s.id for s in self.seats])).with_lockmode('update').all()
+        return []
 
     @property
     def name(self):

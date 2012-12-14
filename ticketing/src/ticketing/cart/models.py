@@ -110,13 +110,19 @@ class CartedProductItem(Base):
     def seat_statuses(self):
         """ 確保済の座席ステータス
         """
-        return DBSession.query(c_models.SeatStatus).filter(c_models.SeatStatus.seat_id.in_([s.id for s in self.seats])).all()
+        if len(self.seats) > 0:
+            return DBSession.query(c_models.SeatStatus).filter(c_models.SeatStatus.seat_id.in_([s.id for s in self.seats])).all()
+        else:
+            return []
 
     @property
     def seat_statuses_for_update(self):
         """ 確保済の座席ステータス
         """
-        return DBSession.query(c_models.SeatStatus).filter(c_models.SeatStatus.seat_id.in_([s.id for s in self.seats])).with_lockmode('update').all()
+        if len(self.seats) > 0:
+            return DBSession.query(c_models.SeatStatus).filter(c_models.SeatStatus.seat_id.in_([s.id for s in self.seats])).with_lockmode('update').all()
+        else:
+            return []
 
     def finish(self):
         """ 決済処理
