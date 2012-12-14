@@ -3,8 +3,7 @@
 import logging
 import sqlalchemy as sa
 
-from .utils import Size
-from .convert import as_user_unit
+from .utils import Size, as_user_unit
 from .constants import *
 
 def extract_paper_size(ticket_format):

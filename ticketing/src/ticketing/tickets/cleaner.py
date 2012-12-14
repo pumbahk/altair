@@ -3,7 +3,9 @@ import re
 import cssutils
 import logging
 from lxml import etree
-from ticketing.tickets.constants import *
+import numpy
+from .constants import *
+from .utils import parse_transform, tokenize_path_data, parse_poly_data, PathDataScanner, I
 
 __all__ = (
     'cleanup_svg',
@@ -153,9 +155,66 @@ class IDStripper(object):
         for child_elem in elem:
             self(child_elem)
 
+class TransformApplier(object):
+    def __init__(self):
+        self.trans_stack = []
+        self.trans = I
+
+    def push_transform(self, mat):
+        self.trans_stack.append(self.trans)
+        self.trans = self.trans * mat
+
+    def pop_transform(self):
+        self.trans = self.trans_stack.pop()
+
+    def __call__(self, elem):
+        trans = I
+        trans_str = elem.attrib.pop(u'transform', None)
+        if trans_str is not None:
+            trans = parse_transform(trans_str)
+        self.push_transform(trans)
+
+        if elem.tag == u'{%s}rect' % SVG_NAMESPACE:
+            p1 = numpy.matrix([float(elem.get(u'x')), float(elem.get(u'y')), 1.]).transpose()
+            p2 = p1 + numpy.matrix([float(elem.get(u'width')), float(elem.get(u'height')), 0.]).transpose()
+            p1 = self.trans * p1
+            p2 = self.trans * p2
+            elem.set(u'x', unicode(p1[0, 0]))
+            elem.set(u'y', unicode(p1[1, 0]))
+            elem.set(u'width', unicode(p2[0, 0] - p1[0, 0]))
+            elem.set(u'height', unicode(p2[1, 0] - p1[1, 0]))
+        elif elem.tag == u'{%s}circle' % SVG_NAMESPACE:
+            p1 = numpy.matrix([float(elem.get(u'cx')), float(elem.get(u'cy')), 1.]).transpose()
+            p1 = self.trans * p1
+            elem.set(u'cx', unicode(p1[0, 0]))
+            elem.set(u'cy', unicode(p1[1, 0]))
+        elif elem.tag == u'{%s}line' % SVG_NAMESPACE:
+            p1 = numpy.matrix([float(elem.get(u'x1')), float(elem.get(u'y1')), 1.]).transpose()
+            p2 = numpy.matrix([float(elem.get(u'x2')), float(elem.get(u'y2')), 1.]).transpose()
+            p1 = self.trans * p1
+            p2 = self.trans * p2
+            elem.set(u'x1', unicode(p1[0, 0]))
+            elem.set(u'y1', unicode(p1[1, 0]))
+            elem.set(u'x2', unicode(p2[0, 0]))
+            elem.set(u'y2', unicode(p2[1, 0]))
+        elif elem.tag in (u'{%s}polyline' % SVG_NAMESPACE, u'{%s}polygon' % SVG_NAMESPACE):
+            _points = list(parse_poly_data(elem.get(u'points')))
+            points = numpy.ndarray(shape=(3, len(_points)), dtype=numpy.float64)
+            for i, coord_pair in enumerate(_points):
+                points[:,i] = coord_pair[0], coord_pair[1], 1.
+
+            points = self.trans * points
+            elem.set(u'points', u' '.join(u"%g,%g" % (x, y) for x, y, _ in points.transpose().getA()))
+
+        for child_elem in elem:
+            self(child_elem)
+
+        self.pop_transform()
+
 def cleanup_svg(svg):
     cleanup_elem(svg.getroot())
     IDStripper(u'{%s}%s' % (SVG_NAMESPACE, tag_name) for tag_name in [u'flowPara', u'flowDiv', u'flowSpan', u'flowRegion'])(svg.getroot())
+    TransformApplier()(svg.getroot())
 
 if __name__ == '__main__':
     import sys

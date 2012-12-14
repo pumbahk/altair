@@ -12,7 +12,8 @@ from wtforms.widgets import TextArea
 from ticketing.formhelpers import DateTimeField, Translations, Required
 from ticketing.core.models import Event, Account, DeliveryMethod
 from ticketing.core.models import TicketFormat
-from .convert import to_opcodes, as_user_unit
+from .utils import as_user_unit
+from .convert import to_opcodes
 from .cleaner import cleanup_svg
 from .constants import PAPERS, ORIENTATIONS
 
