@@ -19,8 +19,8 @@
 
 /// services
 // give me. module!
-if (!window.preview)
-    window.preview = {};
+    if (!window.preview)
+        window.preview = {};
 
 preview.ApplicationView = Backbone.View.extend({
     initialize: function(opts){
@@ -43,28 +43,36 @@ preview.ApplicationView = Backbone.View.extend({
     }
 });
 
-preview.ApplicationViewFactory = function(apis,  gateway_impl,  $preview_block,  $preview_area,  $svg_droparea, $template_vars_table, $paramater_settings_area){
-       var models = {
-           svg: new preview.SVGStore(),
-           preview: new preview.PreviewImageStore(),
-           vars: new preview.TemplateVarStore(), 
-           params: new preview.ParamaterStore()
-       };
+preview.ApplicationViewFactory = function(apis,
+                                          gateway_impl,
+                                          $preview_block,
+                                          $preview_area,
+                                          $svg_droparea,
+                                          $template_vars_table,
+                                          $paramater_settings_area,
+                                          $message_area){
+    var models = {
+        svg: new preview.SVGStore(),
+        preview: new preview.PreviewImageStore(),
+        vars: new preview.TemplateVarStore(), 
+        params: new preview.ParamaterStore()
+    };
 
-      var view_models = {
-          preview: new preview.PreviewImageViewModel({el: $preview_area}),
-          droparea: new preview.DropAreaViewModel({el: $svg_droparea}),
-          spinner: new preview.LoadingSpinnerViewModel({el: $preview_area}),
-          vars_input: new preview.TemplateVarsTableViewModel({el: $template_vars_table}), 
-      };
+    var view_models = {
+        preview: new preview.PreviewImageViewModel({el: $preview_area}),
+        droparea: new preview.DropAreaViewModel({el: $svg_droparea}),
+        spinner: new preview.LoadingSpinnerViewModel({el: $preview_area}),
+        vars_input: new preview.TemplateVarsTableViewModel({el: $template_vars_table}), 
+    };
 
-      var views = {
-          dad_view:  new preview.DragAndDropSVGSupportView({el: $svg_droparea, vms: view_models, model: models.svg}), 
-          preview_image_view:  new preview.PreviewImageView({el: $preview_block, vms: view_models, model: models.preview}), 
-          template_fillvalues_view:  new preview.TemplateFillValuesView({el: $preview_block, vms: view_models, model: models.vars}), 
-          params_view: new preview.ParamaterManageView({el: $paramater_settings_area, vms: view_models, model: models.params})
-      };
+    var views = {
+        dad_view:  new preview.DragAndDropSVGSupportView({el: $svg_droparea, vms: view_models, model: models.svg}), 
+        preview_image_view:  new preview.PreviewImageView({el: $preview_block, vms: view_models, model: models.preview}), 
+        template_fillvalues_view:  new preview.TemplateFillValuesView({el: $preview_block, vms: view_models, model: models.vars}), 
+        params_view: new preview.ParamaterManageView({el: $paramater_settings_area, vms: view_models, model: models.params}), 
+        message_view: core.MessageViewFactory({el: $message_area, vms: view_models})
+    };
 
-    var gateway = new gateway_impl({models: models, apis: apis});
+    var gateway = new gateway_impl({models: models, apis: apis, message: views.message_view});
     return new preview.ApplicationView({models: models, apis: apis, view_models: view_models, views: views, gateway:gateway});
 };

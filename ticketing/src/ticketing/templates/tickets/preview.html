@@ -41,19 +41,28 @@
 </style>
 
 <h1 class="page">
-  ticket template preview
+  券面テンプレートのpreview
 </h1>
+<p style="line-height:1.5em;">
+  券面テンプレートのpreview pageです。
+</p>
 
-<div class="description" style="margin-left:3%; line-height:0.5em;">
-  <p style="line-height:1.5em;">
-    券面templateのpreview pageです。
-  </p>
-  <p>
-    1. 作成した券面用のテンプレートファイル(SVG)をドラッグ&ドロップしてください。preview結果が表示されます。
-  </p>
-  <p>
-    2. プレースホルダー({{ }}で囲まれた部分)に埋め込む文字列を対応するinput要素に入力してください。
-  </p>
+<div class="row">
+  <div class="description span7" style="margin-left:3%; line-height:0.5em;">
+    <p>
+      1. 作成した券面用のテンプレートファイル(SVG)をドラッグ&ドロップしてください。preview結果が表示されます。
+    </p>
+    <p>
+      2. プレースホルダー({{ }}で囲まれた部分)に埋め込む文字列を対応するinput要素に入力してください。
+    </p>
+  </div>
+
+  <div id="message_box" class="span6" style="">
+    <div id="alert_message" class="message hide alert"></div>
+    <div id="info_message" class="message hide alert alert-info"></div>
+    <div id="error_message" class="message hide alert alert-error"></div>
+    <div id="success_message" class="message hide alert alert-success"></div>
+  </div>
 </div>
 
 <div id="preview_block" class="well">
@@ -108,6 +117,7 @@
 <script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/core/gateway.js")}"></script>
 <script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/core/viewmodel.js")}"></script>
 <script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/core/services.js")}"></script>
+<script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/core/message.js")}"></script>
 <script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/preview/models.js")}"></script>
 <script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/preview/gateway.js")}"></script>
 <script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/preview/preview_api.js")}"></script>
@@ -133,7 +143,7 @@
       form.find('input[name="svg"]').val(v);
       form.submit();
     } else {
-      alert("svgありません。")
+      apps["preview"].views.message_view.alert("券面テンプレートがされてません。downloadできるsvgがありません");
     }
   });
 
@@ -145,7 +155,8 @@
       $("#preview_block #preview_area"),
       $("#preview_block #svg_droparea"), 
       $("#template_vars_table"),
-      $("#params_settings_nav")
+      $("#params_settings_nav"),
+      $("#message_box")
     );
 
     window.comboboxModalView = new modal.api.AjaxModalView({
@@ -163,11 +174,11 @@
         });
 
         // append button
-        var btn = $("<a>").attr("class", "btn").text("プレースホルダに値を挿入");
+        var btn = $("<a>").attr("class", "btn").text("プレースホルダーに値を挿入");
         modalview.$modalArea.find(".modal-footer").append(btn);
         btn.click(function(){
           apps["combobox"].getFinishBack()(); 
-          apps["preview"].reDrawImage(); // 動かない？.文字列の挿入が終わった後redrawされる
+          apps["preview"].reDrawImage(); // 文字列の挿入が終わった後redrawされる
           modalview.hide();
         });
    }});

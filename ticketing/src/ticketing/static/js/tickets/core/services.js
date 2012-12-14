@@ -16,7 +16,8 @@ if (!window.core)
                 if (data && data.status){
                     return fn? fn(data) : data;
                 }else {
-                    return $.Deferred().rejectWith(this, [{responseText: "status: false, "+data.message+arguments[0]}, ]);
+                    return $.Deferred().rejectWith(this, [{responseText: "response=200. but fail:: "+data.message+arguments[0]}, ]);
+                    // return $.Deferred().rejectWith(this, [{responseText: "status: false, "+data.message+arguments[0]}, ]);
                 }
             };
         }, 
