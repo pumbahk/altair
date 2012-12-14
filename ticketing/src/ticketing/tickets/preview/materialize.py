@@ -50,14 +50,14 @@ class Middle(object):
         self.low = self.LowClass(width, height)
 
     def add_perforations(self, svg, data):
-        option = {"stroke-dasharray":"1.5mm,1.5mm", "stroke": "red"}
+        option = {"stroke-dasharray":"1.5mm,1.5mm", "stroke": "#cccccc", "stroke-opacity": "1", "stroke-width": "1"}
         for y in data.get("horizontal"):
             svg.append(self.low.hline(y, option))
         for x in data.get("vertical", data):
             svg.append(self.low.vline(x, option))
 
     def add_printable_areas(self, svg, data):
-        option = {"fill": "green"}
+        option = {"fill": "#ffffcc", "fill-opacity": "1",  "stroke": "#cccc88", "stroke-opacity": "1", "stroke-width": "1"}
         for area in data:
             svg.append(self.low.rect(area["x"], area["y"], area["width"], area["height"], option))
 
@@ -79,13 +79,14 @@ class TicketFormatMaterializer(object):
         data = self.pageformat.data
         self.middle.add_printable_areas(svg, data["printable_areas"])
         self.middle.add_perforations(svg, data["perforations"])
+        ## todo: ticket_margin
         return svg
 
 def svg_with_ticketformat(svg, ticketformat):
     g = etree.Element("g")
     etree.tostring(TicketFormatMaterializer(ticketformat).materialize(g))
     svg.insert(0, g)
-    ## width, heightの調整が必要
+    ## width, heightの調整が必要?
     return svg
 
 if __name__ == "__main__":
