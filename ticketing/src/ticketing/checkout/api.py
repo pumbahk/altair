@@ -149,13 +149,6 @@ class Checkout(object):
         logger.debug(et.tostring(root))
         return et.tostring(root)
 
-    def create_order_complete_response_xml(self, result, complete_time):
-        root = et.Element('orderCompleteResponse')
-        et.SubElement(root, 'result').text = str(result)
-        et.SubElement(root, 'completeTime').text = str(complete_time)
-
-        return et.tostring(root)
-
     def _create_checkout_item_xml(self, parent, **kwargs):
         el = et.SubElement(parent, 'item')
         subelement = functools.partial(et.SubElement, el)
@@ -164,16 +157,17 @@ class Checkout(object):
         subelement('itemFee').text = str(int(kwargs.get('itemFee')))
         subelement('itemName').text = kwargs.get('itemName')
 
+    def create_order_complete_response_xml(self, result, complete_time):
+        root = et.Element('orderCompleteResponse')
+        et.SubElement(root, 'result').text = str(result)
+        et.SubElement(root, 'completeTime').text = str(complete_time)
+
+        return et.tostring(root)
+
     def save_order_complete(self, request):
         confirmId = request.params['confirmId']
         xml = confirmId.replace(' ', '+').decode('base64')
         checkout = self._parse_order_complete_xml(et.XML(xml))
-
-        # セッションタイムアウトで確保在庫が解放されてないかチェックする
-        # ToDo
-        # if validate:
-        #     return RESULT_FLG_FAILED
-
         checkout.save()
         return RESULT_FLG_SUCCESS
 
@@ -218,7 +212,35 @@ class Checkout(object):
                 elif e.tag == 'itemFee':
                     item.itemFee = int(e.text.strip())
 
-    def create_order_cancel_request_xml(self, orders, request_id=None):
+    def _request_order_control(self, url, message=None):
+        content_type = "application/xhtml+xml;charset=UTF-8"
+        body = message if message is not None else ''
+        url_parts = urlparse.urlparse(url)
+
+        if url_parts.scheme == "http":
+            http = self._httplib.HTTPConnection(host=url_parts.hostname, port=url_parts.port)
+        elif url_parts.scheme == "https":
+            http = self._httplib.HTTPSConnection(host=url_parts.hostname, port=url_parts.port)
+        else:
+            raise ValueError, "unknown scheme %s" % (url_parts.scheme)
+
+        logger.debug("request %s body = %s" % (url, body))
+        headers = {"Content-Type": content_type}
+        http.request("POST", url_parts.path, body=body, headers=headers)
+        res = http.getresponse()
+        try:
+            logger.debug('%(url)s %(status)s %(reason)s' % dict(
+                url=url,
+                status=res.status,
+                reason=res.reason,
+            ))
+            if res.status != 200:
+                raise Exception, res.reason
+            return et.parse(res).getroot()
+        finally:
+            res.close()
+
+    def _create_order_control_request_xml(self, orders, request_id=None):
         request_id = request_id or generate_requestid()
         root = et.Element('root')
         et.SubElement(root, 'serviceId').text = self.service_id
@@ -232,61 +254,7 @@ class Checkout(object):
 
         return et.tostring(root)
 
-    def _request(self, url, message=None):
-        content_type = "application/xhtml+xml;charset=UTF-8"
-        body = message if message is not None else ''
-        url_parts = urlparse.urlparse(url)
-
-        if url_parts.scheme == "http":
-            http = self._httplib.HTTPConnection(host=url_parts.hostname, port=url_parts.port)
-        elif url_parts.scheme == "https":
-            http = self._httplib.HTTPSConnection(host=url_parts.hostname, port=url_parts.port)
-        else:
-            raise ValueError, "unknown scheme %s" % (url_parts.scheme)
-
-        headers = {
-            "Content-Type": content_type,
-        }
-
-        #headers.update(self.auth_header)
-
-        logger.debug("request %s body = %s" % (url, body))
-        http.request(
-            "POST", url_parts.path, body=body,
-            headers=headers)
-        res = http.getresponse()
-        try:
-            logger.debug('%(url)s %(status)s %(reason)s' % dict(
-                url=url,
-                status=res.status,
-                reason=res.reason,
-            ))
-            if res.status != 200:
-                raise Exception, res.reason
-
-            return et.parse(res).getroot()
-        finally:
-            res.close()
-
-    def order_cancel_url(self):
-        return self.api_url + '/odrctla/cancelorder/1.0/'
-
-    def request_order_cancel(self, orders):
-        url = self.order_cancel_url()
-        message = self.create_order_cancel_request_xml(orders)
-        logger.info('checkout cancel request body = %s' % message)
-
-        res = self._request(url, 'rparam=%s' % urllib.quote(message.encode('base64')))
-        logger.info('got response %s' % et.tostring(res))
-        result = self._parse_response_order_cancel_xml(res)
-
-        if 'statusCode' in result and result['statusCode'] != '0':
-            error_code = result['apiErrorCode'] if 'apiErrorCode' in result else ''
-            logger.warn(u'あんしん決済のキャンセルに失敗しました (%s:%s)' % (error_code, ERROR_CODES.get(error_code)))
-            return result
-        return True
-
-    def _parse_response_order_cancel_xml(self, root):
+    def _parse_order_control_response_xml(self, root):
         if root.tag != 'root':
             return None
 
@@ -305,3 +273,33 @@ class Checkout(object):
             elif e.tag in ['statusCode', 'acceptNumber', 'successNumber', 'failedNumber', 'apiErrorCode']:
                 response[e.tag] = e.text.strip()
         return response
+
+    def request_fixation_order(self, orders):
+        url = self.api_url + '/odrctla/fixationorder/1.0/'
+        message = self._create_order_control_request_xml(orders)
+        logger.info('checkout fixation request body = %s' % message)
+
+        res = self._request_order_control(url, 'rparam=%s' % urllib.quote(message.encode('base64')))
+        logger.info('got response %s' % et.tostring(res))
+        result = self._parse_order_control_response_xml(res)
+
+        if 'statusCode' in result and result['statusCode'] != '0':
+            error_code = result['apiErrorCode'] if 'apiErrorCode' in result else ''
+            logger.warn(u'あんしん決済の決済確定に失敗しました (%s:%s)' % (error_code, ERROR_CODES.get(error_code)))
+            return result
+        return True
+
+    def request_cancel_order(self, orders):
+        url = self.api_url + '/odrctla/cancelorder/1.0/'
+        message = self._create_order_control_request_xml(orders)
+        logger.info('checkout cancel request body = %s' % message)
+
+        res = self._request_order_control(url, 'rparam=%s' % urllib.quote(message.encode('base64')))
+        logger.info('got response %s' % et.tostring(res))
+        result = self._parse_order_control_response_xml(res)
+
+        if 'statusCode' in result and result['statusCode'] != '0':
+            error_code = result['apiErrorCode'] if 'apiErrorCode' in result else ''
+            logger.warn(u'あんしん決済のキャンセルに失敗しました (%s:%s)' % (error_code, ERROR_CODES.get(error_code)))
+            return result
+        return True
