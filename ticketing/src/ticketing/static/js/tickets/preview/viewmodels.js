@@ -21,12 +21,10 @@ preview.DropAreaViewModel = core.ViewModel.extend({ //View?
 
 preview.LoadingSpinnerViewModel = core.ViewModel.extend({
     loading: function(){
-        console.log("loading");
         this.$el.spin();
     }, 
     noloading: function(){
         this.$el.spin(false);
-        console.log("loading-end");
     }
 });
 

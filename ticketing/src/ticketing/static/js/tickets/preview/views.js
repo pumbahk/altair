@@ -55,7 +55,7 @@ preview.PreviewImageView = Backbone.View.extend({
     }, 
     initialize: function(opts){
         this.model.on("*preview.update.loading", this.onLoading, this);
-        this.model.on("*preview.update.loading", this.onCancel, this);
+        this.model.on("*preview.update.cancel", this.onCancel, this);
         this.model.on("*preview.update.rendering", this.onRendering, this);
         this.vms = opts.vms;
     }, 
@@ -69,8 +69,8 @@ preview.PreviewImageView = Backbone.View.extend({
         this.vms.spinner.noloading();
     }, 
     onRendering: function(){
-        this.vms.spinner.noloading();
         this.vms.preview.draw(this.model.get("data"));
+        this.vms.spinner.noloading();
     }
 });
 
