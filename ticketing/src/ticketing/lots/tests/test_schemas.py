@@ -31,6 +31,7 @@ class ClientFormTests(unittest.TestCase):
             city=u'渋谷区',
             address_1=u"代々木１丁目",
             address_2=u"森京ビル",
+            sex=u"1",
             mail_address=u"test@example.com",
             mail_address2=u"test@example.com",
         )

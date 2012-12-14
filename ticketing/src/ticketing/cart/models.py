@@ -38,7 +38,7 @@ from ..core import models as c_models
 from ..core import api as c_api
 from ..models import Identifier
 from . import logger
-from .exceptions import NoCartError
+from .exceptions import NoCartError, UnassignedOrderNumberError
 
 class PaymentMethodManager(object):
     def __init__(self):
@@ -110,13 +110,19 @@ class CartedProductItem(Base):
     def seat_statuses(self):
         """ 確保済の座席ステータス
         """
-        return DBSession.query(c_models.SeatStatus).filter(c_models.SeatStatus.seat_id.in_([s.id for s in self.seats])).all()
+        if len(self.seats) > 0:
+            return DBSession.query(c_models.SeatStatus).filter(c_models.SeatStatus.seat_id.in_([s.id for s in self.seats])).all()
+        else:
+            return []
 
     @property
     def seat_statuses_for_update(self):
         """ 確保済の座席ステータス
         """
-        return DBSession.query(c_models.SeatStatus).filter(c_models.SeatStatus.seat_id.in_([s.id for s in self.seats])).with_lockmode('update').all()
+        if len(self.seats) > 0:
+            return DBSession.query(c_models.SeatStatus).filter(c_models.SeatStatus.seat_id.in_([s.id for s in self.seats])).with_lockmode('update').all()
+        else:
+            return []
 
     def finish(self):
         """ 決済処理
@@ -261,24 +267,60 @@ class Cart(Base):
 
     _order_no = sa.Column("order_no", sa.String(255))
     order_id = sa.Column(Identifier, sa.ForeignKey("Order.id"))
-    order = orm.relationship('Order', backref='carts')
+    order = orm.relationship('Order', backref=orm.backref('cart', uselist=False))
 
     sales_segment_id = sa.Column(Identifier, sa.ForeignKey('SalesSegment.id'))
     sales_segment = orm.relationship('SalesSegment', backref='carts')
 
-    def refresh_order_no(self):
-        logger.debug("organization.id = %d" % self.performance.event.organization.id)
+    disposed = False
+
+    @classmethod 
+    def create(cls, **kwargs):
+        performance = kwargs.pop('performance', None)
+        if performance is None:
+            performance_id = kwargs.pop('performance_id', None)
+            if performance_id is None:
+                raise Exception('performance or performance_id must be specified')
+            performance = c_models.Performance.query.filter_by(id=performance_id).one()
+        organization = performance.event.organization
+        logger.debug("organization.id = %d" % organization.id)
         base_id = c_api.get_next_order_no()
-        self._order_no = self.performance.event.organization.code + sensible_alnum_encode(base_id).zfill(10)
+        order_no = organization.code + sensible_alnum_encode(base_id).zfill(10)
+        new_cart = cls(
+            _order_no=order_no,
+            performance=performance,
+            **kwargs)
+        DBSession.add(new_cart)
+        return new_cart
+
+    @classmethod
+    def create_from(cls, that):
+        # すでに detach しているかもしれないので、merge を試みる
+        that = DBSession.merge(that) 
+        if that.order_id is not None:
+            raise CartCreationException("Cannot translate the contents of a cart that has already been associated to the order")
+        if that.finished_at is not None:
+            raise CartCreationException("Cannot translate the contents of a cart that has already been marked as finished")
+        new_cart = cls.create(
+            cart_session_id=that.cart_session_id,
+            system_fee=that.system_fee,
+            shipping_address=that.shipping_address,
+            payment_delivery_pair=that.payment_delivery_pair,
+            performance=that.performance,
+            sales_segment=that.sales_segment
+            )
+        # translate all the products in the specified cart to the new cart
+        for carted_product in that.products:
+            new_cart.products.append(carted_product) 
+        that.disposed = True
+        that.products = []
+        return new_cart
 
     @property
     def order_no(self):
         if self._order_no is None:
-            self.refresh_order_no()
+            raise UnassignedOrderNumberError(self.id)
         return self._order_no
-
-        #logger.debug("organization.id = %d" % self.performance.event.organization.id)
-        #return self.performance.event.organization.code + sensible_alnum_encode(self.id).zfill(10)
 
     @property
     def total_amount(self):
@@ -317,13 +359,11 @@ class Cart(Base):
             return 0
 
     @classmethod
-    def get_or_create(cls, cart_session_id):
+    def get_or_create(cls, performance, cart_session_id):
         try:
             return cls.query.filter_by(cart_session_id=cart_session_id).one()
         except NoResultFound:
-            cart = cls(cart_session_id=cart_session_id)
-            DBSession.add(cart)
-            return cart
+            return cls.create(performance=performance, cart_session_id=cart_session_id)
 
     @classmethod
     def is_existing_cart_session_id(cls, cart_session_id):
@@ -366,6 +406,7 @@ class Cart(Base):
     def release(self):
         """ カート開放
         """
+        logger.info('trying to release Cart (id=%d, order_no=%s)' % (self.id, self.order_no))
         for product in self.products:
             if not product.release():
                 return False

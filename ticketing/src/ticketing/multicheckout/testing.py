@@ -1,24 +1,5 @@
-from zope.interface import implementer
-from ..checkout import interfaces
 from pyramid import testing
-from ..testing import _setup_db, _teardown_db
-
-@implementer(interfaces.ISigner)
-class DummySigner(object):
-    def __init__(self, sign_result):
-        self.sign_result = sign_result
-        self.called = []
-
-    def __call__(self, target):
-        self.called.append(target)
-        return self.sign_result
-
-class DummyRequest(testing.DummyRequest):
-    def __init__(self, *args, **kwargs):
-        super(DummyRequest, self).__init__(*args, **kwargs)
-        from webob.multidict import MultiDict
-        if hasattr(self, 'params'):
-            self.params = MultiDict(self.params)
+from .api import Checkout3D
 
 class DummySecure3D(object):
     def __init__(self, AcsUrl, PaReq, Md, enable_auth_api=True,
@@ -72,3 +53,43 @@ class DummySecure3D(object):
         from ..multicheckout import models
         self.called.append(('request_card_auth', args, kwargs))
         return models.MultiCheckoutResponseCard(ApprovalNo=self.ApprovalNo)
+
+class DummyHTTPLib(object):
+    def __init__(self, response_body, status=200, reason="OK"):
+        self.called = []
+        self.response_body = response_body
+        self.status = status
+        self.reason = reason
+        from io import BytesIO
+        self.response_body = BytesIO(self.response_body)
+
+    def HTTPConnection(self, host, port):
+        self.host = host
+        self.port = port
+        self.called.append(('HTTPConnection', [host, port]))
+        return self
+
+    def HTTPSConnection(self, host, port):
+        self.host = host
+        self.port = port
+        self.called.append(('HTTPSConnection', [host, port]))
+        return self
+
+    def request(self, method, path, body, headers):
+        self.method = method
+        self.path = path
+        self.body = body
+        self.headers = headers
+        self.called.append(('request', [method, path, body, headers]))
+
+    def getresponse(self):
+        self.called.append(('getresponse', []))
+        return self
+
+    def read(self, block=-1):
+        self.called.append(('read', [block]))
+        return self.response_body.read(block)
+
+    def close(self):
+        self.called.append(('close', []))
+        self.response_body.close()

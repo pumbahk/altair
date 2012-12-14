@@ -1,4 +1,5 @@
 from pyramid.path import DottedNameResolver
+from pyramid.testing import DummyRequest as _DummyRequest
 
 def _setup_db(modules=[], echo=False):
     resolver = DottedNameResolver()
@@ -22,3 +23,10 @@ def _teardown_db():
     import sqlahelper
     session = sqlahelper.get_session()
     session.remove()
+
+class DummyRequest(_DummyRequest):
+    def __init__(self, *args, **kwargs):
+        super(DummyRequest, self).__init__(*args, **kwargs)
+        from webob.multidict import MultiDict
+        if hasattr(self, 'params'):
+            self.params = MultiDict(self.params)

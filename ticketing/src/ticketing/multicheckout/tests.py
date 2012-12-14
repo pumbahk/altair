@@ -5,6 +5,7 @@ from xml.etree import ElementTree as etree
 from pyramid import testing
 
 from ticketing.testing import _setup_db as _setup_db_, _teardown_db
+from .testing import DummyHTTPLib
 from . import api, models, interfaces
 
 def _setup_db(echo=False):
@@ -113,6 +114,157 @@ class get_md_Tests(unittest.TestCase):
         request = testing.DummyRequest()
         request.params = dict(MD='test_md')
         self.assertEqual(api.get_md(request), 'test_md')
+
+
+class sanitize_card_number_Tests(unittest.TestCase):
+    def test_no_parameter(self):
+        xml_data = None
+        self.assertEqual(api.sanitize_card_number(xml_data), None)
+
+    def test_secure_code(self):
+        xml_data = '''
+        <Message>
+            <Auth>
+                <Order>
+                    <ItemCd>this-is-item-cd</ItemCd>
+                    <ItemName>&#x5546;&#x54C1;&#x540D;</ItemName>
+                    <OrderYMD>20120520</OrderYMD>
+                    <SalesAmount>100</SalesAmount>
+                    <TaxCarriage>50</TaxCarriage>
+                    <FreeData>&#x4EFB;&#x610F;&#x9805;&#x76EE;</FreeData>
+                    <ClientName>&#x697D;&#x5929;&#x592A;&#x90CE;</ClientName>
+                    <MailAddress>ticketstar@example.com</MailAddress>
+                    <MailSend>1</MailSend>
+                </Order>
+                <Card>
+                    <CardNo>1111111111111111</CardNo>
+                    <CardLimit>2009</CardLimit>
+                    <CardHolderName>RAKUTEN TAROU</CardHolderName>
+                    <PayKindCd>61</PayKindCd>
+                    <PayCount>10</PayCount>
+                    <SecureKind>1</SecureKind>
+                </Card>
+            </Auth>
+        </Message>
+        '''
+        result = '''
+        <Message>
+            <Auth>
+                <Order>
+                    <ItemCd>this-is-item-cd</ItemCd>
+                    <ItemName>&#x5546;&#x54C1;&#x540D;</ItemName>
+                    <OrderYMD>20120520</OrderYMD>
+                    <SalesAmount>100</SalesAmount>
+                    <TaxCarriage>50</TaxCarriage>
+                    <FreeData>&#x4EFB;&#x610F;&#x9805;&#x76EE;</FreeData>
+                    <ClientName>&#x697D;&#x5929;&#x592A;&#x90CE;</ClientName>
+                    <MailAddress>ticketstar@example.com</MailAddress>
+                    <MailSend>1</MailSend>
+                </Order>
+                <Card>
+                    <CardNo>XXXXXXXXXXXXXXXX</CardNo>
+                    <CardLimit>2009</CardLimit>
+                    <CardHolderName>RAKUTEN TAROU</CardHolderName>
+                    <PayKindCd>61</PayKindCd>
+                    <PayCount>10</PayCount>
+                    <SecureKind>1</SecureKind>
+                </Card>
+            </Auth>
+        </Message>
+        '''
+        self.assertTrue(compare_xml(api.sanitize_card_number(xml_data), result))
+
+    def test_enrol(self):
+        xml_data = '''
+        <Message>
+            <CardNumber>0123456789012345</CardNumber>
+            <ExpYear>12</ExpYear>
+            <ExpMonth>11</ExpMonth>
+            <TotalAmount>1234567</TotalAmount>
+            <Currency>392</Currency>
+        </Message>
+        '''
+        result = '''
+        <Message>
+            <CardNumber>XXXXXXXXXXXXXXXX</CardNumber>
+            <ExpYear>12</ExpYear>
+            <ExpMonth>11</ExpMonth>
+            <TotalAmount>1234567</TotalAmount>
+            <Currency>392</Currency>
+        </Message>
+        '''
+        self.assertTrue(compare_xml(api.sanitize_card_number(xml_data), result))
+
+    def test_secure3d(self):
+        xml_data = '''
+        <Message>
+            <Auth>
+                <Order>
+                    <ItemCd>this-is-item-cd</ItemCd>
+                    <ItemName>&#x5546;&#x54C1;&#x540D;</ItemName>
+                    <OrderYMD>20120520</OrderYMD>
+                    <SalesAmount>100</SalesAmount>
+                    <TaxCarriage>50</TaxCarriage>
+                    <FreeData>&#x4EFB;&#x610F;&#x9805;&#x76EE;</FreeData>
+                    <ClientName>&#x697D;&#x5929;&#x592A;&#x90CE;</ClientName>
+                    <MailAddress>ticketstar@example.com</MailAddress>
+                    <MailSend>1</MailSend>
+                </Order>
+                <Card>
+                    <CardNo>1111111111111111</CardNo>
+                    <CardLimit>2009</CardLimit>
+                    <CardHolderName>RAKUTEN TAROU</CardHolderName>
+                    <PayKindCd>61</PayKindCd>
+                    <PayCount>10</PayCount>
+                    <SecureKind>3</SecureKind>
+                </Card>
+                <Secure3D>
+                    <Mvn>mvn</Mvn>
+                    <Xid>Xid</Xid>
+                    <Ts>Ts</Ts>
+                    <ECI>ECI</ECI>
+                    <CAVV>CAVV</CAVV>
+                    <CavvAlgorithm>CavvAlgorithm</CavvAlgorithm>
+                    <CardNo>1111111111111111</CardNo>
+                </Secure3D>
+            </Auth>
+        </Message>
+        '''
+        result = '''
+        <Message>
+            <Auth>
+                <Order>
+                    <ItemCd>this-is-item-cd</ItemCd>
+                    <ItemName>&#x5546;&#x54C1;&#x540D;</ItemName>
+                    <OrderYMD>20120520</OrderYMD>
+                    <SalesAmount>100</SalesAmount>
+                    <TaxCarriage>50</TaxCarriage>
+                    <FreeData>&#x4EFB;&#x610F;&#x9805;&#x76EE;</FreeData>
+                    <ClientName>&#x697D;&#x5929;&#x592A;&#x90CE;</ClientName>
+                    <MailAddress>ticketstar@example.com</MailAddress>
+                    <MailSend>1</MailSend>
+                </Order>
+                <Card>
+                    <CardNo>XXXXXXXXXXXXXXXX</CardNo>
+                    <CardLimit>2009</CardLimit>
+                    <CardHolderName>RAKUTEN TAROU</CardHolderName>
+                    <PayKindCd>61</PayKindCd>
+                    <PayCount>10</PayCount>
+                    <SecureKind>3</SecureKind>
+                </Card>
+                <Secure3D>
+                    <Mvn>mvn</Mvn>
+                    <Xid>Xid</Xid>
+                    <Ts>Ts</Ts>
+                    <ECI>ECI</ECI>
+                    <CAVV>CAVV</CAVV>
+                    <CavvAlgorithm>CavvAlgorithm</CavvAlgorithm>
+                    <CardNo>XXXXXXXXXXXXXXXX</CardNo>
+                </Secure3D>
+            </Auth>
+        </Message>
+        '''
+        self.assertTrue(compare_xml(api.sanitize_card_number(xml_data), result))
 
 
 class is_enable_secure3d_Tests(unittest.TestCase):
@@ -1213,44 +1365,3 @@ class Checkout3DTests(unittest.TestCase):
         self.assertEqual(result.Cavv, "0123456789012345678901234567")
         self.assertEqual(result.Eci, "01")
         self.assertEqual(result.Mvn, "0123456789")
-
-
-class DummyHTTPLib(object):
-    def __init__(self, response_body, status=200, reason="OK"):
-        self.called = []
-        self.response_body = response_body
-        self.status = status
-        self.reason = reason
-        from io import BytesIO
-        self.response_body = BytesIO(self.response_body)
-
-    def HTTPConnection(self, host, port):
-        self.host = host
-        self.port = port
-        self.called.append(('HTTPConnection', [host, port]))
-        return self
-
-    def HTTPSConnection(self, host, port):
-        self.host = host
-        self.port = port
-        self.called.append(('HTTPSConnection', [host, port]))
-        return self
-
-    def request(self, method, path, body, headers):
-        self.method = method
-        self.path = path
-        self.body = body
-        self.headers = headers
-        self.called.append(('request', [method, path, body, headers]))
-
-    def getresponse(self):
-        self.called.append(('getresponse', []))
-        return self
-
-    def read(self, block=-1):
-        self.called.append(('read', [block]))
-        return self.response_body.read(block)
-
-    def close(self):
-        self.called.append(('close', []))
-        self.response_body.close()

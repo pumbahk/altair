@@ -1132,7 +1132,7 @@ class SejRefundView(BaseView):
             try:
                 ct = SejRefundTicket.filter(
                     and_(
-                        SejRefundTicket.order_id == ticket.ticket.order_id,
+                        SejRefundTicket.order_id == ticket.order_id,
                         SejRefundTicket.ticket_barcode_number == ticket.barcode_number
                     )).one()
             except NoResultFound, e:
@@ -1143,7 +1143,7 @@ class SejRefundView(BaseView):
             ct.available     = 1
             ct.event_code_01 = event.event_code_01
             ct.event_code_02 = event.event_code_02
-            ct.order_id = ticket.ticket.order_id
+            ct.order_id = ticket.order_id
             ct.ticket_barcode_number = ticket.barcode_number
             ct.refund_ticket_amount = data.get('refund_ticket_amount')
             ct.refund_other_amount = data.get('refund_other_amount')
@@ -1154,7 +1154,7 @@ class SejRefundView(BaseView):
         else:
             self.request.session.flash(u'失敗しました')
 
-        return HTTPFound(location=self.request.route_path('orders.sej.order.info', order_id=ticket.ticket.id))
+        return HTTPFound(location=self.request.route_path('orders.sej.order.info', order_id=ticket.order.id))
 
 # @TODO move this
 @view_defaults(decorator=with_bootstrap, permission='administrator')
