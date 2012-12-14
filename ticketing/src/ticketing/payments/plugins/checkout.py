@@ -18,6 +18,7 @@ from ticketing.cart import api as a
 from ticketing.cart.models import Cart, CartedProduct
 from ticketing.core.models import Product, PaymentDeliveryMethodPair, Order
 from ticketing.core.models import MailTypeEnum
+from ticketing.cart.interfaces import ICartPayment
 from ticketing.checkout import api
 from ticketing.checkout import helpers
 from ticketing.payments.exceptions import PaymentPluginException
@@ -52,8 +53,7 @@ class CheckoutPlugin(object):
 
     def finish(self, request, cart):
         """ 売り上げ確定 """
-        order = request.session['order']
-        order_no = order['order_no']
+        order_no = cart.order_no
 
         checkout = api.get_checkout_service(request)
         result = checkout.request_fixation_order([cart.checkout.orderControlId])
@@ -74,6 +74,13 @@ class CheckoutPlugin(object):
 
         return order
 
+
+@view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
+def confirm_viewlet(context, request):
+    """ 確認画面表示
+    :param context: ICartPayment
+    """
+    return Response(text=u"楽天あんしん決済")
 
 @view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
 def completion_viewlet(context, request):
