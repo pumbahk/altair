@@ -240,17 +240,17 @@ class Checkout(object):
         finally:
             res.close()
 
-    def _create_order_control_request_xml(self, orders, request_id=None):
+    def _create_order_control_request_xml(self, order_control_ids, request_id=None):
         request_id = request_id or generate_requestid()
         root = et.Element('root')
         et.SubElement(root, 'serviceId').text = self.service_id
         et.SubElement(root, 'accessKey').text = self.secret
         et.SubElement(root, 'requestId').text = request_id
         sub_element = et.SubElement(root, 'orders')
-        for order in orders:
+        for order_control_id in order_control_ids:
             el = et.SubElement(sub_element, 'order')
-            subelement = functools.partial(et.SubElement, el)
-            subelement('orderControlId').text = order.cart.checkout.orderControlId
+            id_el = functools.partial(et.SubElement, el)
+            id_el('orderControlId').text = order_control_id
 
         return et.tostring(root)
 
@@ -274,9 +274,9 @@ class Checkout(object):
                 response[e.tag] = e.text.strip()
         return response
 
-    def request_fixation_order(self, orders):
+    def request_fixation_order(self, order_control_ids):
         url = self.api_url + '/odrctla/fixationorder/1.0/'
-        message = self._create_order_control_request_xml(orders)
+        message = self._create_order_control_request_xml(order_control_ids)
         logger.info('checkout fixation request body = %s' % message)
 
         res = self._request_order_control(url, 'rparam=%s' % urllib.quote(message.encode('base64')))
@@ -286,12 +286,11 @@ class Checkout(object):
         if 'statusCode' in result and result['statusCode'] != '0':
             error_code = result['apiErrorCode'] if 'apiErrorCode' in result else ''
             logger.warn(u'あんしん決済の決済確定に失敗しました (%s:%s)' % (error_code, ERROR_CODES.get(error_code)))
-            return result
-        return True
+        return result
 
-    def request_cancel_order(self, orders):
+    def request_cancel_order(self, order_control_ids):
         url = self.api_url + '/odrctla/cancelorder/1.0/'
-        message = self._create_order_control_request_xml(orders)
+        message = self._create_order_control_request_xml(order_control_ids)
         logger.info('checkout cancel request body = %s' % message)
 
         res = self._request_order_control(url, 'rparam=%s' % urllib.quote(message.encode('base64')))
@@ -301,5 +300,4 @@ class Checkout(object):
         if 'statusCode' in result and result['statusCode'] != '0':
             error_code = result['apiErrorCode'] if 'apiErrorCode' in result else ''
             logger.warn(u'あんしん決済のキャンセルに失敗しました (%s:%s)' % (error_code, ERROR_CODES.get(error_code)))
-            return result
-        return True
+        return result

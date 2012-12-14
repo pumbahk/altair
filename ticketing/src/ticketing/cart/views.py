@@ -937,14 +937,6 @@ class CompleteView(object):
         api.logout(self.request)
         return dict(order=order)
 
-    @view_config(route_name='payment.callback.finish', renderer=selectable_renderer("carts/%(membership)s/completion.html"), request_method="GET")
-    @view_config(route_name='payment.callback.finish', request_type='.interfaces.IMobileRequest', renderer=selectable_renderer("carts_mobile/%(membership)s/completion.html"), request_method="GET")
-    def callback(self):
-        '''
-        決済完了画面(あんしん決済の戻り先)
-        '''
-        return self()
-
     def save_subscription(self, user, mail_address):
         magazines = u_models.MailMagazine.query.all()
 

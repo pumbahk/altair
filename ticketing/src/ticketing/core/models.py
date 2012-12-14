@@ -1851,10 +1851,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 from pyramid.threadlocal import get_current_request
                 from ticketing.checkout import api as checkout_api
                 checkout = checkout_api.get_checkout_service(get_current_request())
-                result = checkout.request_cancel_order([self])
-                if result == True:
-                    logger.info(u'あんしん決済をキャンセルしました %s' % self.order_no)
-                else:
+                result = checkout.request_cancel_order([self.cart.checkout.orderControlId])
+                if 'statusCode' in result and result['statusCode'] != '0':
                     logger.info(u'あんしん決済をキャンセルできませんでした %s' % result)
                     return False
 

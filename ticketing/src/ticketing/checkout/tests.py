@@ -453,20 +453,8 @@ class CheckoutTests(unittest.TestCase):
 
     def test__create_order_control_request_xml_with_orders(self):
         target = self._makeOne()
-        orders = [
-            testing.DummyResource(
-                cart = testing.DummyResource(
-                    checkout = testing.DummyResource(orderControlId='10')
-                )
-            ),
-            testing.DummyResource(
-                cart = testing.DummyResource(
-                    checkout = testing.DummyResource(orderControlId='20')
-                )
-            )
-        ]
         request_id = api.generate_requestid()
-        result = target._create_order_control_request_xml(orders, request_id)
+        result = target._create_order_control_request_xml(['10', '20'], request_id)
 
         self.assertIsNotNone(result)
         self.assertEqual(
@@ -535,14 +523,8 @@ class CheckoutTests(unittest.TestCase):
         target = self._makeOne()
         target._httplib = DummyHTTPLib(et.tostring(res_data))
 
-        orders = [
-            testing.DummyResource(
-                cart = testing.DummyResource(
-                    checkout = testing.DummyResource(orderControlId='dc-1234567890-110415-0000022222')
-                )
-            )
-        ]
-        result = target.request_cancel_order(orders)
+        order_control_id = ['dc-1234567890-110415-0000022222']
+        result = target.request_cancel_order(order_control_id)
 
         self.assertEqual(target._httplib.path, '/api_url/odrctla/cancelorder/1.0/')
         self.assertTrue(result)
@@ -569,14 +551,8 @@ class CheckoutTests(unittest.TestCase):
         target = self._makeOne()
         target._httplib = DummyHTTPLib(et.tostring(res_data))
 
-        orders = [
-            testing.DummyResource(
-                cart = testing.DummyResource(
-                    checkout = testing.DummyResource(orderControlId='dc-1234567890-110415-0000022222')
-                )
-            )
-        ]
-        result = target.request_cancel_order(orders)
+        order_control_id = ['dc-1234567890-110415-0000022222']
+        result = target.request_cancel_order(order_control_id)
 
         self.assertEqual(target._httplib.path, '/api_url/odrctla/cancelorder/1.0/')
         self.assertEqual(result['statusCode'], '1')
@@ -608,14 +584,8 @@ class CheckoutTests(unittest.TestCase):
         target = self._makeOne()
         target._httplib = DummyHTTPLib(et.tostring(res_data))
 
-        orders = [
-            testing.DummyResource(
-                cart = testing.DummyResource(
-                    checkout = testing.DummyResource(orderControlId='dc-1234567890-110415-0000022222')
-                )
-            )
-        ]
-        result = target.request_fixation_order(orders)
+        order_control_id = ['dc-1234567890-110415-0000022222']
+        result = target.request_fixation_order(order_control_id)
 
         self.assertEqual(target._httplib.path, '/api_url/odrctla/fixationorder/1.0/')
         self.assertTrue(result)
@@ -642,14 +612,8 @@ class CheckoutTests(unittest.TestCase):
         target = self._makeOne()
         target._httplib = DummyHTTPLib(et.tostring(res_data))
 
-        orders = [
-            testing.DummyResource(
-                cart = testing.DummyResource(
-                    checkout = testing.DummyResource(orderControlId='dc-1234567890-110415-0000022222')
-                )
-            )
-        ]
-        result = target.request_fixation_order(orders)
+        order_control_id = ['dc-1234567890-110415-0000022222']
+        result = target.request_fixation_order(order_control_id)
 
         self.assertEqual(target._httplib.path, '/api_url/odrctla/fixationorder/1.0/')
         self.assertEqual(result['statusCode'], '1')
