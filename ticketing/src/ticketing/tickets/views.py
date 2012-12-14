@@ -401,7 +401,7 @@ class TicketTemplates(BaseView):
     def show(self):
         qs = self.context.tickets_query().filter_by(id=self.request.matchdict['id'])
         template = qs.filter_by(organization_id=self.context.user.organization_id).one()
-        return dict(h=helpers, template=template)
+        return dict(h=helpers, template=template, ticket_format_id=template.ticket_format_id)
 
     @view_config(route_name='tickets.templates.download')
     def download(self):

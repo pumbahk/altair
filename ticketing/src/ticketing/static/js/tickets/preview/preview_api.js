@@ -1,6 +1,5 @@
-// backbone
-function svg_preview($el, apiurl, svg){
-    $.post(apiurl, {"svg": svg}).done(function(data){
+function svg_preview($el, apiurl, svg, ticket_format){
+    $.post(apiurl, {"svg": svg, "ticket_format": ticket_format}).done(function(data){
         if(data.status){
             $el.empty();
             var imgdata = "data:image/png;base64,"+data.data;

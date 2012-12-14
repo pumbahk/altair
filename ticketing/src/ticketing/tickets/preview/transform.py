@@ -6,8 +6,10 @@ import ast
 from wtforms import Form, fields, validators
 from lxml import etree
 from webob.multidict import MultiDict
-from .materialize import svg_with_ticketformat
+
 from ticketing.core.models import TicketFormat #uggg
+from .materialize import svg_with_ticketformat
+from .fillvalues import template_fillvalues
 
 class SVGTransformValidator(Form):
     sx = fields.FloatField(default=1.0)
@@ -21,11 +23,29 @@ class SVGTransformValidator(Form):
             raise validators.ValidationError("Ticket Format is not found")
         field.data = form.data["ticket_format"] = ticket_format
 
-        
-def parse(postdata):
+       
+class FillValuesFromModelsValidator(Form):
+    model_name = fields.TextField()
+    model = fields.TextField(default=object())
+    model_candidates = []
+
+    def validate_model_name(form, field):
+        if field.data and field.data not in form.model_candidates:
+            raise validators.ValidatioinError("invalid model name %s" % field.data)
+
+    def validate(self):
+        if not super(FillValuesFromModelsValidator, self).validate():
+            return False
+        model_name = self.data.get("model_name")
+        if model_name is None:
+            return True
+        else:
+            logger.warn("never call")
+
+def parse(validator, postdata):
     if not hasattr(postdata, "getlist"):
         postdata = MultiDict(postdata)
-    form = SVGTransformValidator(postdata)
+    form = validator(postdata)
     return form.data if form.validate() else None
 
 def wrap_element(parent, tag, attrs):
@@ -58,7 +78,7 @@ def transform_unit(fn, unit):
 class SVGTransformer(object):
     def __init__(self, svg, postdata=None, encoding="utf-8"):
         self.svg = svg
-        self.data = parse(postdata or {})
+        self.data = parse(SVGTransformValidator, postdata or {})
         self.encoding = encoding
 
     def transform(self):
@@ -102,6 +122,22 @@ class SVGTransformer(object):
 
     def as_string(self, xmltree):
         return etree.tostring(xmltree, encoding=self.encoding)
+
+class FillvaluesTransformer(object):
+    def __init__(self, svg, postdata=None, encoding="utf-8"):
+        self.svg = svg
+        self.data = parse(FillValuesFromModelsValidator, postdata or {})
+        self.encoding = encoding
+
+    def params_from_model(self):
+        return None
+
+    def transform(self):
+        if self.data is None:
+            return self.svg
+
+        params = self.params_from_model()
+        return template_fillvalues(self.svg, params)
 
 if __name__ == "__main__":
     import doctest

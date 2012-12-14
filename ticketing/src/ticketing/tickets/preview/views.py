@@ -21,9 +21,10 @@ from ticketing.tickets.utils import build_dict_from_organization
 
 from .api import SVGPreviewCommunication
 from .transform import SVGTransformer
+from .transform import FillvaluesTransformer
 from .fillvalues import template_collect_vars
 from .fillvalues import template_fillvalues
-from ..cleaner.api import get_validated_svg_cleaner, skip_needless_part
+from ..cleaner.api import get_validated_svg_cleaner
 from ..response import FileLikeResponse
 
 
@@ -114,6 +115,18 @@ class PreviewApiView(object):
         preview = SVGPreviewCommunication.get_instance(self.request)
         svg = self.request.POST["svg"]
         try:
+            svg = SVGTransformer(svg, self.request.POST).transform()
+            imgdata_base64 = preview.communicate(self.request, svg)
+            return {"status": True, "data":imgdata_base64}
+        except jsonrpc.ProtocolError, e:
+            return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
+
+    @view_config(match_param="action=preview.base64.withmodels", request_param="svg")
+    def preview_ticket_post64_with_models(self):
+        preview = SVGPreviewCommunication.get_instance(self.request)
+        svg = self.request.POST["svg"]
+        try:
+            svg = FillvaluesTransformer(svg, self.request.POST).transform()
             svg = SVGTransformer(svg, self.request.POST).transform()
             imgdata_base64 = preview.communicate(self.request, svg)
             return {"status": True, "data":imgdata_base64}
