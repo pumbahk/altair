@@ -3,6 +3,7 @@
 import hashlib
 import hmac
 import httplib
+import urllib
 import uuid
 import functools
 import logging
@@ -85,6 +86,7 @@ class HMAC_MD5(object):
 
 
 class Checkout(object):
+    _httplib = httplib
 
     def __init__(self, service_id, success_url, fail_url, auth_method, secret, api_url, is_test):
         self.service_id = service_id
@@ -272,8 +274,10 @@ class Checkout(object):
     def request_order_cancel(self, orders):
         url = self.order_cancel_url()
         message = self.create_order_cancel_request_xml(orders)
-        res = self._request(url, 'rparam=%s' % message.encode('base64'))
-        logger.debug('got response %s' % et.tostring(res))
+        message = '<?xml version="1.0" encoding="UTF-8"?>' + message
+        logger.info('request body = %s' % message)
+        res = self._request(url, 'rparam=%s' % urllib.quote(message.encode('base64')))
+        logger.info('got response %s' % et.tostring(res))
         return self._parse_response_order_cancel_xml(res)
 
     def _parse_response_order_cancel_xml(self, root):

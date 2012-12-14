@@ -1845,8 +1845,14 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         # 楽天あんしん決済
         elif ppid == 2:
-            # ToDo
-            pass
+            # 入金済みなら決済をキャンセル
+            if self.status == 'paid':
+                # 売り上げキャンセル
+                from pyramid.threadlocal import get_current_request
+                from ticketing.checkout import api as checkout_api
+                checkout = checkout_api.get_checkout_service(get_current_request())
+                result = checkout.request_order_cancel([self])
+                logger.debug(u'あんしん決済をキャンセルしました %s' % result)
 
         # コンビニ決済 (セブンイレブン)
         elif ppid == 3:

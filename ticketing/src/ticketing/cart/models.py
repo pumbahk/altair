@@ -261,7 +261,7 @@ class Cart(Base):
 
     _order_no = sa.Column("order_no", sa.String(255))
     order_id = sa.Column(Identifier, sa.ForeignKey("Order.id"))
-    order = orm.relationship('Order', backref='cart')
+    order = orm.relationship('Order', backref=orm.backref('cart', uselist=False))
 
     sales_segment_id = sa.Column(Identifier, sa.ForeignKey('SalesSegment.id'))
     sales_segment = orm.relationship('SalesSegment', backref='carts')
