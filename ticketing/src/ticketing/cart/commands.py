@@ -132,7 +132,7 @@ def cancel_auth_expired_carts():
             else:
                 logging.info("Order(order_no = %s) status = %s " % (order_no, inquiry.Status))
 
-        elif api.is_checkout_payment(cart):
+        elif api.is_checkout_payment(cart) and cart.checkout:
             logging.info("cancel auth for order_no=%s" % order_no)
             checkout = checkout_api.get_checkout_service(request)
             result = checkout.request_cancel_order([cart.checkout.orderControlId])
