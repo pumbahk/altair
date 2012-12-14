@@ -1852,7 +1852,11 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 from ticketing.checkout import api as checkout_api
                 checkout = checkout_api.get_checkout_service(get_current_request())
                 result = checkout.request_order_cancel([self])
-                logger.debug(u'あんしん決済をキャンセルしました %s' % result)
+                if result == True:
+                    logger.info(u'あんしん決済をキャンセルしました %s' % self.order_no)
+                else:
+                    logger.info(u'あんしん決済をキャンセルできませんでした %s' % result)
+                    return False
 
         # コンビニ決済 (セブンイレブン)
         elif ppid == 3:

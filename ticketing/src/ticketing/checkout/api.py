@@ -274,11 +274,17 @@ class Checkout(object):
     def request_order_cancel(self, orders):
         url = self.order_cancel_url()
         message = self.create_order_cancel_request_xml(orders)
-        message = '<?xml version="1.0" encoding="UTF-8"?>' + message
-        logger.info('request body = %s' % message)
+        logger.info('checkout cancel request body = %s' % message)
+
         res = self._request(url, 'rparam=%s' % urllib.quote(message.encode('base64')))
         logger.info('got response %s' % et.tostring(res))
-        return self._parse_response_order_cancel_xml(res)
+        result = self._parse_response_order_cancel_xml(res)
+
+        if 'statusCode' in result and result['statusCode'] != '0':
+            error_code = result['apiErrorCode'] if 'apiErrorCode' in result else ''
+            logger.warn(u'あんしん決済のキャンセルに失敗しました (%s:%s)' % (error_code, ERROR_CODES.get(error_code)))
+            return result
+        return True
 
     def _parse_response_order_cancel_xml(self, root):
         if root.tag != 'root':
