@@ -30,8 +30,16 @@ def is_multicheckout_payment(cart):
     if cart.payment_delivery_pair.payment_method is None:
         return False
     return cart.payment_delivery_pair.payment_method.payment_plugin_id == 1
-        
-    
+
+def is_checkout_payment(cart):
+    if cart is None:
+        return False
+    if cart.payment_delivery_pair is None:
+        return False
+    if cart.payment_delivery_pair.payment_method is None:
+        return False
+    return cart.payment_delivery_pair.payment_method.payment_plugin_id == 2
+
 # こいつは users.apiあたりに移動すべきか
 def is_login_required(request, event):
     """ 指定イベントがログイン画面を必要とするか """

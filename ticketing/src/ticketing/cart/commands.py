@@ -6,8 +6,9 @@ from datetime import datetime, timedelta
 from pyramid.paster import bootstrap
 
 import transaction
-from ..core import models as o_m
-from ..multicheckout import api as a
+from ticketing.core import models as o_m
+from ticketing.multicheckout import api as multicheckout_api
+from ticketing.checkout import api as checkout_api
 from . import api
 from sqlalchemy.sql.expression import not_
 
@@ -26,11 +27,11 @@ def inquiry_demo():
     app_env = bootstrap(config_file)
     request = app_env['request']
     order_no = sys.argv[2]
-    inquiry = a.checkout_inquiry(request, order_no)
+    inquiry = multicheckout_api.checkout_inquiry(request, order_no)
 
     print inquiry.Status
 
-    a.checkout_auth_cancel(request, order_no)
+    multicheckout_api.checkout_auth_cancel(request, order_no)
 
 def join_cart_and_order():
     """ 過去データのcart.orderを補正する
@@ -122,14 +123,24 @@ def cancel_auth_expired_carts():
                 carts_to_skip.add(cart_id)
                 continue
 
-            inquiry = a.checkout_inquiry(request, order_no)
+            inquiry = multicheckout_api.checkout_inquiry(request, order_no)
 
             # オーソリOKだったらキャンセル
             if inquiry.Status == m.MULTICHECKOUT_AUTH_OK:
                 logging.info("cancel auth for order_no=%s" % order_no)
-                a.checkout_auth_cancel(request, order_no)
+                multicheckout_api.checkout_auth_cancel(request, order_no)
             else:
                 logging.info("Order(order_no = %s) status = %s " % (order_no, inquiry.Status))
+
+        elif api.is_checkout_payment(cart):
+            logging.info("cancel auth for order_no=%s" % order_no)
+            checkout = checkout_api.get_checkout_service(request)
+            result = checkout.request_cancel_order([cart.checkout.orderControlId])
+            if 'statusCode' in result and result['statusCode'] != '0':
+                error_code = result['apiErrorCode'] if 'apiErrorCode' in result else ''
+                logging.warn('can not cancel auth for order_no=%s (error_code:%s)' % (order_no, error_code))
+                carts_to_skip.add(cart_id)
+                continue
 
         cart.finished_at = now
         logging.info("TRANSACTION IS BEING COMMITTED AGAIN...")
