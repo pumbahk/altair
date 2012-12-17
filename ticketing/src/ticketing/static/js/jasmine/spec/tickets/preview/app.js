@@ -22,7 +22,8 @@ describe("ticket preview ui",  function(){
 
             finished = {
                 normalize: false, 
-                previewbase64: false
+                previewbase64: false, 
+                collectvars: false
             };
 
             gateway = new preview.ApiCommunicationGateway({
@@ -36,6 +37,10 @@ describe("ticket preview ui",  function(){
                     previewbase64: function(params){
                         finished.previewbase64 = true;
                         return $.Deferred().resolve({data: "+svg-data+", width: "300px", height: "200px", status:true }).promise();
+                    }, 
+                    collectvars: function(params){
+                        finished.collectvars = true;
+                        return $.Deferred().resolve({data: ["foo", "bar", "event", "performance"], status:true }).promise();
                     }
                 }
             });
@@ -55,11 +60,19 @@ describe("ticket preview ui",  function(){
             expect(models.preview.get("height")).toEqual("200px");
             expect(finished.previewbase64).toBe(true);
 
-            expect(models.preview.resizeImage.argsForCall).toEqual([["300px", "200px"]]);
-
+            expect(models.preview.get("rendering_width")).toEqual("300px");
+            expect(models.preview.get("rendering_height")).toEqual("200px");
         });
-
-        describe ("after initial fetch image ....", function(){
+        describe ("after initial fetch image ... access template vars", function(){
+            it("", function(){
+                // normalize -> template vars
+                expect(finished.collectvars).toBe(true);
+                expect(models.vars.get("changed")).toBe(false);
+                models.vars.get("vars").models[0].set("value", 100);
+                expect(models.vars.get("changed")).toBe(true);
+            })
+        });
+        describe ("after initial fetch image .... access around image", function(){
             var finished; 
             var gateway2;
             beforeEach(function(){

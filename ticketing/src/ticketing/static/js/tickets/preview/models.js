@@ -102,11 +102,14 @@ if (!window.preview)
             vars: new preview.TemplateVarCollection(),  //collection
             changed: false 
         }, 
-        updateVars: function(vars){
+        varsChanged: function(){
             this.set("changed", true);
+        }, 
+        updateVars: function(vars){
             this.get("vars").reset(_(vars).map(function(k){
                 return {name: k, value: ""};
             }));
+            this.get("vars").on("change", this.varsChanged, this); // todo: avoid leak
             this.trigger("*vars.update.vars");
         }, 
         commitVarsValues: function(){

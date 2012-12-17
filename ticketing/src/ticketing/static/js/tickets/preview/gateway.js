@@ -102,10 +102,10 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
 
         var sx = this.params.get("sx");
         var sy = this.params.get("sy");
-        if((sx <= this.params.get("default_sx") && sy <= this.params.get("default_sy")) || this.vars.get("changed")){
-            this.vars.set("changed", false);
+        if(sx <= this.params.get("default_sx") && sy <= this.params.get("default_sy")  && !this.vars.get("changed")){
             return this._svgFilledResize(sx, sy);
         }else {
+            this.vars.set("changed", false);
             return this._svgFilledFetchImage(sx, sy);
         }
     }, 
