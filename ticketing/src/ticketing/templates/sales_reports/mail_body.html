@@ -24,6 +24,29 @@
       % endif
       </p>
 
+      <h4>全販売区分集計</h4>
+      <table style="width: 95%; border: 1px #DCDCDC solid; background-color: #C0FFFF;">
+        <tr>
+          <th style="width: 13%; border: 1px #DCDCDC solid;">商品</th>
+          <th style="width: 13%; border: 1px #DCDCDC solid;">配席数</th>
+          <th style="width: 13%; border: 1px #DCDCDC solid;">残数</th>
+          <th style="width: 13%; border: 1px #DCDCDC solid;">受付数</th>
+          <th style="width: 13%; border: 1px #DCDCDC solid;">未入金</th>
+          <th style="width: 13%; border: 1px #DCDCDC solid;">入金済み</th>　
+        </tr>
+      % for product in event_product:
+        <tr>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${product['name']}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${h.price_format(product['total_quantity'])}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${h.price_format(product['vacant_quantity'])}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${h.price_format(product['paid_quantity'] + product['unpaid_quantity']) or ''}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${h.price_format(product['paid_quantity'])}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${h.price_format(product['unpaid_quantity'])}</td>
+        </tr>
+      % endfor
+
+      </table>
+
       % for id, value in performances_reports.items():
       <%
         performance = value['performance']

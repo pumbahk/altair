@@ -10,7 +10,7 @@
 
 <script type="text/javascript">
   function send_individualy(email){
-    $(location).attr('href', '/events/sales_reports/preview/${event.id}?email=' + email);
+    $(location).attr('href', '/events/sales_reports/preview/${event.id}?email=' + encodeURIComponent(email));
   };
 </script>
 
