@@ -1,11 +1,12 @@
 if (!window.core)
     window.core = {};
 
+console.debu = function(){}
 core.ConsoleMessage = { //use info, log, warn, error, dir
-    success: console.debug, 
-    error: console.debug, 
-    info: console.debug, 
-    warn: console.debug, 
+    success: console.debu, 
+    error: console.debu, 
+    info: console.debu, 
+    warn: console.debu, 
     alert: alert
 }
 

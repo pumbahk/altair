@@ -10,10 +10,10 @@ if (!window.preview)
             default_sy: 2.0, 
             ticket_format: null
         }, 
-        refreshDefault(): function(){
+        refreshDefault: function(){
             this.set("default_sx", 2.0);
             this.set("default_sy", 2.0);
-        }, 
+        }
     });
 
     var SVGStage = {"empty":0, "raw":1, "normalize":2, "filled":3};

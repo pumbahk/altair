@@ -9,6 +9,15 @@ if (!window.core)
     core.InspectService = {
         isCallable: isCallable
     };
+    
+    var unitRx = /([+-]?(?:\d+|\d+\.\d+))([a-z%]*)$/i;
+
+    core.UnitCalcService = {
+        mul: function(unit, x){
+            var m = unitRx.exec(unit);
+            return String(Number(m[1])*x) + m[2];
+        }
+    };
 
     core.ApiService = {
         rejectIfStatusFail: function(fn){

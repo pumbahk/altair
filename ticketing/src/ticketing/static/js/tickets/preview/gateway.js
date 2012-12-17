@@ -3,6 +3,13 @@ if (!window.preview)
 
 preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
     initialize: function(opts){
+        // string -> api functions
+        this.apis.normalize = core.ApiService.asPostFunction(this.apis.normalize);
+        this.apis.previewbase64 = core.ApiService.asPostFunction(this.apis.previewbase64);
+        this.apis.collectvars = core.ApiService.asPostFunction(this.apis.collectvars);
+        this.apis.fillvalues = core.ApiService.asPostFunction(this.apis.fillvalues);
+        this.apis.fillvalues_with_models = core.ApiService.asPostFunction(this.apis.fillvalues_with_models);
+
         this.message = opts.message;
         this.preview = this.models.preview;
         this.svg = this.models.svg;
@@ -32,7 +39,7 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
             return;
         }
         self.message.info("プレースホルダーに値を挿入しています....");
-        return $.post(this.apis.fillvalues, {"svg": this.svg.get("normalize"), "params": JSON.stringify(vars_values)})
+        return this.apis.fillvalues({"svg": this.svg.get("normalize"), "params": JSON.stringify(vars_values)})
             .pipe(core.ApiService.rejectIfStatusFail(function(data){
                 self.svg.updateToFilled(data.data);
                 self.message.info("プレースホルダーに値が挿入されました");
@@ -43,7 +50,7 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
         this.preview.beforeRendering();
         var self = this;
         self.message.info("券面テンプレートを正規化しています....");
-        return $.post(this.apis.normalize, {"svg": this.svg.get("data")})
+        return this.apis.normalize({"svg": this.svg.get("data")})
             .pipe(core.ApiService.rejectIfStatusFail(function(data){
                 self.params.refreshDefault();
                 self.svg.updateToNormalize(data.data);
@@ -59,31 +66,33 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
                       sx: this.params.get("default_sx"),
                       sy: this.params.get("default_sy"), 
                       ticket_format: this.params.get("ticket_format").pk};
-        return $.post(this.apis.previewbase64, params)
+        return this.apis.previewbase64(params)
             .pipe(core.ApiService.rejectIfStatusFail(function(data){
-                self.preview.startRendering("data:image/png;base64,"+data.data); //add-hoc
+                var data = data.data;
                 self.preview.initialImage(data.width, data.height);
+                self.preview.startRendering("data:image/png;base64,"+data.data); //add-hoc
                 self.message.info("preview画像がレンダリングされました。下のinput要素を変更しプレースホルダーに埋める値を入力してください");
             }))
             .fail(this._apiFail.bind(this));
     }, 
     _svgFilledResize: function(sx, sy){
-        var mul = service.UnitCalcService.mul;
-        return this.preview.resizeImage(mul(this.preview("width"), sx), 
-                                        mul(this.preview("height"), sy));
+        var mul = core.UnitCalcService.mul;
+        return this.preview.resizeImage(mul(this.preview.get("width"), sx), 
+                                        mul(this.preview.get("height"), sy));
     }, 
     _svgFilledFetchImage: function(sx, sy){
         var ma = Math.max(sx, sy);
         var params = {svg: this.svg.get("data"),
                       sx: ma, sy: ma, 
                       ticket_format: this.params.get("ticket_format").pk};
-        return $.post(this.apis.previewbase64, params)
+        var self = this;
+        return this.apis.previewbase64(params)
             .pipe(core.ApiService.rejectIfStatusFail(function(data){
-                this.params.set("default_sx", ma);
-                this.params.set("default_sy", ma);
+                self.params.set("default_sx", ma);
+                self.params.set("default_sy", ma);
                 self.preview.startRendering("data:image/png;base64,"+data.data); //add-hoc
                 self.message.info("preview画像がレンダリングされました");
-                this._svgFilledResize(sx, sy);
+                self._svgFilledResize(sx, sy);
             }))
             .fail(this._apiFail.bind(this));
     }, 
@@ -103,7 +112,7 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
     collectTemplateVars: function(){ // todo:move it?
         var self = this;
         self.message.info("券面テンプレートからプレースホルダーを抽出しています....");
-        $.post(this.apis.collectvars, {"svg": this.models.svg.get("normalize")})
+        this.apis.collectvars({"svg": this.models.svg.get("normalize")})
             .pipe(core.ApiService.rejectIfStatusFail(function(data){
                 self.vars.updateVars(data.data);
                 self.message.info("券面テンプレートからプレースホルダーを抽出しました");
