@@ -227,6 +227,11 @@ class DictBuilder(object):
         retval.update({
             u"席番": u"{{席番}}", 
             u'注文番号': u"{{注文番号}}",
+            u'注文日時': u"{{注文日時}}",
+            u'注文日時s': u"{{注文日時s}}",
+            u'受付番号': u"{{注文番号}}",
+            u'受付日時': u"{{受付日時}}",
+            u'受付日時s': u"{{受付日時s}}",
             u'予約番号': u"{{予約番号}}", 
             u'発券番号': u"{{発券番号}}", 
             u"公演コード": u"xxx"
@@ -300,6 +305,9 @@ class DictBuilder(object):
             u'注文番号': order.order_no,
             u'注文日時': safe_format(self.formatter.format_datetime,  order.created_at),
             u'注文日時s': safe_format(self.formatter.format_datetime_short, order.created_at),
+            u'受付番号': order.order_no,
+            u'受付日時': safe_format(self.formatter.format_datetime,  order.created_at),
+            u'受付日時s': safe_format(self.formatter.format_datetime_short, order.created_at),
             u'予約番号': order.order_no
             }
 
@@ -416,9 +424,12 @@ class DictBuilder(object):
             u'商品価格': self.formatter.format_currency(product.price),
             u'チケット価格': self.formatter.format_currency(product_item.price),
             u'注文番号': cart.order_no,
-            u'注文日時': self.formatter.format_datetime(now),
-            u'注文日時s': self.formatter.format_datetime_short(now),
-            u'予約番号': cart.order_no
+            u'注文日時': safe_format(self.formatter.format_datetime, now),
+            u'注文日時s': safe_format(self.formatter.format_datetime_short, now),
+            u'受付番号': cart.order_no,
+            u'受付日時': safe_format(self.formatter.format_datetime, now),
+            u'受付日時s': safe_format(self.formatter.format_datetime_short, now),
+            u'予約番号': cart.order_no,
             }
 
         self.build_shipping_address_dict(extra, shipping_address)
