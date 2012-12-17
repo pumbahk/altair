@@ -1,5 +1,7 @@
 # -*- coding:utf-8 -*-
 
+import logging
+import transaction
 from datetime import datetime
 
 from zope.interface import implementer
@@ -7,6 +9,7 @@ from pyramid.view import view_config
 from pyramid.response import Response
 from pyramid.httpexceptions import HTTPFound
 
+from ticketing.models import DBSession
 from ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment
 from ticketing.mails.interfaces import ICompleteMailDelivery, ICompleteMailPayment
 from ticketing.mails.interfaces import IOrderCancelMailDelivery, IOrderCancelMailPayment
@@ -15,11 +18,14 @@ from ticketing.cart import api as a
 from ticketing.cart.models import Cart, CartedProduct
 from ticketing.core.models import Product, PaymentDeliveryMethodPair, Order
 from ticketing.core.models import MailTypeEnum
+from ticketing.cart.interfaces import ICartPayment
 from ticketing.checkout import api
 from ticketing.checkout import helpers
-
+from ticketing.payments.exceptions import PaymentPluginException
 
 from . import CHECKOUT_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
+
+logger = logging.getLogger(__name__)
 
 def includeme(config):
     # 決済系(楽天あんしん決済)
@@ -27,6 +33,16 @@ def includeme(config):
     config.add_route("payment.checkout_login", 'payment/checkout/login')
     config.add_route("payment.checkout_order_complete", 'payment/checkout/order_complete')
     config.scan(__name__)
+
+def back_url(request):
+    return request.route_url('payment.confirm')
+
+
+class CheckoutSettlementFailure(PaymentPluginException):
+    def __init__(self, message, order_no, back_url, error_code=None, return_code=None):
+        super(CheckoutSettlementFailure, self).__init__(message, order_no, back_url)
+        self.error_code = error_code
+        self.return_code = return_code
 
 
 @implementer(IPaymentPlugin)
@@ -37,12 +53,34 @@ class CheckoutPlugin(object):
 
     def finish(self, request, cart):
         """ 売り上げ確定 """
+        order_no = cart.order_no
+
+        checkout = api.get_checkout_service(request)
+        result = checkout.request_fixation_order([cart.checkout.orderControlId])
+        if 'statusCode' in result and result['statusCode'] != '0':
+            logger.info(u'CheckoutPlugin finish: 決済エラー order_no = %s, result = %s' % (order_no, result))
+            request.session.flash(u'決済に失敗しました。再度お試しください。(%s)' % result['apiErrorCode'])
+            transaction.commit()
+            raise CheckoutSettlementFailure(
+                message='finish: generic failure',
+                order_no=order_no,
+                back_url=back_url(request),
+                error_code=result['apiErrorCode']
+            )
+
         order = Order.create_from_cart(cart)
         order.paid_at = datetime.now()
         cart.finish()
 
         return order
 
+
+@view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
+def confirm_viewlet(context, request):
+    """ 確認画面表示
+    :param context: ICartPayment
+    """
+    return Response(text=u"楽天あんしん決済")
 
 @view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
 def completion_viewlet(context, request):
@@ -59,6 +97,7 @@ def payment_mail_viewlet(context, request):
 @view_config(context=IOrderCancelMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
 def cancel_mail_viewlet(context, request):
     return Response(context.mail_data("notice"))
+
 
 class CheckoutView(object):
     """ 楽天あんしん決済 """

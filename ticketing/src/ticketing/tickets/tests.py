@@ -2,8 +2,7 @@
 
 from unittest import TestCase
 from datetime import datetime
-
-
+from lxml import etree
 
 class TicketsUtilsTest(TestCase):
     def build_seat_fixture(self):
@@ -133,3 +132,50 @@ class TicketsUtilsTest(TestCase):
             }
         for k in expected:
             self.assertEqual(expected[k], out[k], k.encode('utf-8'))
+
+class TicketsCleanerTest(TestCase):
+    def testTransformApplier(self):
+        from ticketing.tickets.cleaner import TransformApplier
+        svg = etree.fromstring('''<svg xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="10" height="10" transform="matrix(1, 1, 1, 1, 10, 20)" /></svg>''')
+        TransformApplier()(svg)
+        elem = svg[0]
+        self.assertEqual(10, float(elem.get(u'x')))
+        self.assertEqual(20, float(elem.get(u'y')))
+        self.assertEqual(20, float(elem.get(u'width')))
+        self.assertEqual(20, float(elem.get(u'height')))
+
+        svg = etree.fromstring('''<svg xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="10" transform="matrix(1, 1, 1, 1, 10, 20)" /></svg>''')
+        TransformApplier()(svg)
+        elem = svg[0]
+        self.assertEqual(30, float(elem.get(u'cx')))
+        self.assertEqual(40, float(elem.get(u'cy')))
+        self.assertEqual(10, float(elem.get(u'r')))
+
+        svg = etree.fromstring('''<svg xmlns="http://www.w3.org/2000/svg"><line x1="20" y1="10" x2="0" y2="10" transform="matrix(1, 1, 1, 1, 10, 20)" /></svg>''')
+        TransformApplier()(svg)
+        elem = svg[0]
+        self.assertEqual(40, float(elem.get(u'x1')))
+        self.assertEqual(50, float(elem.get(u'y1')))
+        self.assertEqual(20, float(elem.get(u'x2')))
+        self.assertEqual(30, float(elem.get(u'y2')))
+
+        from ticketing.tickets.utils import parse_poly_data
+        svg = etree.fromstring('''<svg xmlns="http://www.w3.org/2000/svg"><polyline points="1,2 3,4 5,6" transform="matrix(1, 1, 1, 1, 10, 20)" /></svg>''')
+        TransformApplier()(svg)
+        elem = svg[0]
+        points = list(parse_poly_data(elem.get(u'points')))
+        self.assertEqual(3, len(points))
+        self.assertEqual((13., 23.), points[0])
+        self.assertEqual((17., 27.), points[1])
+        self.assertEqual((21., 31.), points[2])
+
+    def testTransformApplierNested(self):
+        from ticketing.tickets.cleaner import TransformApplier
+        svg = etree.fromstring('''<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(10, 20)"><g transform="matrix(1, 1, 1, 1, 0, 0)"><rect x="0" y="0" width="10" height="10" transform="matrix(1, 1, 1, 1, 10, 20)" /></g></g></svg>''')
+        TransformApplier()(svg)
+        elem = svg[0][0][0]
+        self.assertEqual(40, float(elem.get(u'x')))
+        self.assertEqual(50, float(elem.get(u'y')))
+        self.assertEqual(40, float(elem.get(u'width')))
+        self.assertEqual(40, float(elem.get(u'height')))
+

@@ -42,7 +42,8 @@ def handle_nocarterror(request):
 
 @mobile_view_config(context=NoEventError, renderer=selectable_renderer('ticketing.cart:templates/errors_mobile/%(membership)s/notfound.html'))
 @view_config(context=NoEventError, renderer=selectable_renderer('ticketing.cart:templates/errors/%(membership)s/notfound.html'))
-def handle_noeventerror(request):
+def handle_noeventerror(context, request):
+    logger.debug(repr(context))
     request.response.status = 404
     api.logout(request)
     return {}

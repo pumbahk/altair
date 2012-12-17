@@ -6,7 +6,9 @@ APIに合わせるためPEP8命名規約に従わない
 import sqlahelper
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
-from ..models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier
+
+from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier
+from ticketing.cart.models import Cart
 
 
 class CheckoutItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -39,4 +41,4 @@ class Checkout(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     orderTotalFee = sa.Column(sa.Integer)
     orderDate = sa.Column(sa.DateTime)
     items = orm.relationship('CheckoutItem', backref="checkout")
-    cart = orm.relationship('Cart', backref='checkout', uselist=False)
+    cart = orm.relationship('Cart', backref=orm.backref('checkout', uselist=False), uselist=False)

@@ -8,12 +8,13 @@ from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.response import Response
 from sqlalchemy import and_
-from sqlalchemy.sql import exists
-from sqlalchemy.orm import joinedload, noload
+from sqlalchemy.sql import exists, join, func
+from sqlalchemy.orm import joinedload, noload, aliased
 
 from ticketing.models import DBSession
-from ticketing.core.models import Venue, Seat, SeatStatus, SeatAdjacencySet, Stock, StockStatus, StockHolder, StockType, ProductItem
+from ticketing.core.models import Venue, VenueArea, Seat, SeatAttribute, SeatStatus, SeatAdjacencySet, Stock, StockStatus, StockHolder, StockType, ProductItem, Performance, Event
 from ticketing.venues.export import SeatCSV
+from ticketing.fanstatic import with_bootstrap
 
 @view_config(route_name="api.get_drawing", request_method="GET", permission='event_viewer')
 def get_drawing(request):
@@ -148,3 +149,59 @@ def download(request):
     writer.writerows(seats_csv.rows)
 
     return response
+
+# FIXME: add permission limitation
+@view_config(route_name='venues.index', renderer='ticketing:templates/venues/index.html', decorator=with_bootstrap)
+def index(request):
+    sort = request.GET.get('sort', 'Venue.site_id')
+    direction = request.GET.get('direction', 'asc')
+    if direction not in ['asc', 'desc']:
+        direction = 'asc'
+
+    query = DBSession.query(Venue, func.count(Seat.id))
+    query = query.outerjoin(Performance).filter(Performance.deleted_at==None)
+    query = query.outerjoin(Event).filter(Event.deleted_at==None)
+    query = query.filter_by(organization_id=request.context.user.organization_id)
+    query = query.outerjoin(Seat)
+    query = query.group_by(Venue.id)
+    query = query.order_by(sort + ' ' + direction)
+
+    class VenueCount:
+        def __init__(self, venue, count):
+            self.venue = venue
+            self.count = count
+
+    items = []
+    for venue, count in query:
+        items.append(VenueCount(venue, count))
+
+    return {
+        'items': items
+    }
+
+# FIXME: add permission limitation
+@view_config(route_name='venues.show', renderer='ticketing:templates/venues/show.html', decorator=with_bootstrap)
+def show(request):
+    venue_id = int(request.matchdict.get('venue_id', 0))
+    venue = Venue.get(venue_id, organization_id=request.context.user.organization_id)
+    
+    class SeatInfo:
+        def __init__(self, seat, venuearea, attr, status):
+            self.seat = seat
+            self.venuearea = venuearea
+            self.row = attr
+            self.status = status
+
+    seats = DBSession.query(Seat, VenueArea, SeatAttribute, SeatStatus)\
+        .filter_by(venue_id=venue_id)\
+        .join(Seat.areas)\
+        .join(SeatAttribute).filter_by(name="row")\
+        .join(SeatStatus)
+    items = []
+    for seat, venuearea, attr, status in seats:
+        items.append(SeatInfo(seat, venuearea, attr, status))
+    
+    return {
+        'venue': venue,
+        'items': items,
+    }

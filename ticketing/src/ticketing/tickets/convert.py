@@ -3,15 +3,16 @@
 from lxml import html, etree
 from lxml.builder import E
 from .constants import *
+from .utils import parse_transform, tokenize_path_data, parse_poly_data, PathDataScanner, as_user_unit, I
 import re
 import cssutils
 import numpy
 import logging
+import itertools
 
 __all__ = (
     'to_opcodes',
     'convert_svg',
-    'as_user_unit',
     )
 
 logging.basicConfig(level=logging.INFO)
@@ -451,352 +452,6 @@ class EmittingPathDataHandler(object):
     def curve_to_qb(self, x1, y1, x, y):
         self.emitter.emit_quadratic_curve_to(x1, y1, x, y)
 
-class PathDataScanner(object):
-    def __init__(self, iter, handler):
-        self.iter = iter
-        self.handler = handler
-        self.current_position = (0, 0)
-        self.last_qb_control_point = None
-        self.last_cb_control_point = None
-        self.next_op = None
-
-    def scan_z(self, operand):
-        if len(operand) > 0:
-            raise Exception('closepath does not take any arguments')
-        self.handler.close_path()
-        self.last_qb_control_point = None
-        self.last_cb_control_point = None
-
-    scan_Z = scan_z
-
-    def scan_h(self, operand):
-        if len(operand) == 0:
-            raise Exception('horizontalline takes at least 1 argument')
-        for oper in operand:
-            y = self.current_position[0] + float(oper)
-            self.handler.horizontal_line_to(self.current_position[0], y)
-            self.current_position = (self.current_position[0], y)
-        self.last_qb_control_point = None
-        self.last_cb_control_point = None
-
-    def scan_H(self, operand):
-        if len(operand) == 0:
-            raise Exception('horizontalline takes at least 1 argument')
-        for oper in operand:
-            y = float(oper)
-            self.handler.horizontal_line_to(self.current_position[0], y)
-            self.current_position = (self.current_position[0], y)
-        self.last_qb_control_point = None
-        self.last_cb_control_point = None
-
-    def scan_v(self, operand):
-        if len(operand) == 0:
-            raise Exception('verticalline takes at least 1 argument')
-        for oper in operand:
-            x = self.current_position[0] + float(oper)
-            self.handler.vertical_line_to(x, self.current_position[1])
-            self.current_position = (x, self.current_position[1])
-        self.last_qb_control_point = None
-        self.last_cb_control_point = None
-
-    def scan_V(self, operand):
-        if operand == 0:
-            raise Exception('verticalline takes at least 1 argument')
-        for oper in operand:
-            x = float(oper)
-            self.handler.vertical_line_to(x, self.current_position[1])
-            self.current_position = (x, self.current_position[1])
-        self.last_qb_control_point = None
-        self.last_cb_control_point = None
-
-    def scan_m(self, operand):
-        if operand == 0 or len(operand) % 2 != 0:
-            raise Exception('moveto takes 2 * n arguments')
-        i = iter(operand)
-        try:
-            x = self.current_position[0] + float(i.next())
-            y = self.current_position[1] + float(i.next())
-            self.handler.move_to(x, y)
-            self.current_position = (x, y)
-            while True:
-                x = self.current_position[0] + float(i.next())
-                y = self.current_position[1] + float(i.next())
-                self.handler.line_to(x, y)
-                self.current_position = (x, y)
-        except StopIteration:
-            pass
-        self.last_qb_control_point = None
-        self.last_cb_control_point = None
-
-    def scan_M(self, operand):
-        if operand == 0 or len(operand) % 2 != 0:
-            raise Exception('moveto takes 2 * n arguments')
-        i = iter(operand)
-        try:
-            x = float(i.next())
-            y = float(i.next())
-            self.handler.move_to(x, y)
-            self.current_position = (x, y)
-            while True:
-                x = float(i.next())
-                y = float(i.next())
-                self.handler.line_to(x, y)
-                self.current_position = (x, y)
-        except StopIteration:
-            pass
-        self.last_qb_control_point = None
-        self.last_cb_control_point = None
-
-    def scan_l(self, operand):
-        if operand == 0 or len(operand) % 2 != 0:
-            raise Exception('lineto takes 2 * n arguments')
-        i = iter(operand)
-        try:
-            while True:
-                x = self.current_position[0] + float(i.next())
-                y = self.current_position[1] + float(i.next())
-                self.handler.line_to(x, y)
-                self.current_position = (x, y)
-        except StopIteration:
-            pass
-        self.last_qb_control_point = None
-        self.last_cb_control_point = None
-
-    def scan_L(self, operand):
-        if operand == 0 or len(operand) % 2 != 0:
-            raise Exception('lineto takes 2 * n arguments')
-        i = iter(operand)
-        try:
-            while True:
-                x = float(i.next())
-                y = float(i.next())
-                self.handler.line_to(x, y)
-                self.current_position = (x, y)
-        except StopIteration:
-            pass
-        self.last_qb_control_point = None
-        self.last_cb_control_point = None
-
-    def scan_t(self, operand):
-        if operand == 0 or len(operand) % 2 != 0:
-            raise Exception('curvetosmooth takes 2 * n arguments')
-        i = iter(operand)
-        try:
-            while True:
-                x = self.current_position[0] + float(i.next())
-                y = self.current_position[1] + float(i.next())
-                if self.last_qb_control_point is None:
-                    x1 = self.current_position[0]
-                    y1 = self.current_position[1]
-                else:
-                    x1 = self.current_position[0] + (self.current_position[0] - self.last_qb_control_point[0])
-                    y1 = self.current_position[1] + (self.current_position[1] - self.last_qb_control_point[1])
-                self.handler.curve_to_qb(x1, y1, x, y)
-                self.current_position = (x, y)
-                self.last_qb_control_point = (x1, y1)
-        except StopIteration:
-            pass
-        self.last_cb_control_point = None
-
-    def scan_T(self, operand):
-        if operand == 0 or len(operand) % 2 != 0:
-            raise Exception('curvetosmooth takes 2 * n arguments')
-        i = iter(operand)
-        try:
-            while True:
-                x = float(i.next())
-                y = float(i.next())
-                if self.last_qb_control_point is None:
-                    x1 = self.current_position[0]
-                    y1 = self.current_position[1]
-                else:
-                    x1 = self.current_position[0] + (self.current_position[0] - self.last_qb_control_point[0])
-                    y1 = self.current_position[1] + (self.current_position[1] - self.last_qb_control_point[1])
-                self.handler.curve_to_qb(x1, y1, x, y)
-                self.current_position = (x, y)
-                self.last_qb_control_point = (x1, y1)
-        except StopIteration:
-            pass
-        self.last_cb_control_point = None
-
-    def scan_s(self, operand):
-        if operand == 0 or len(operand) % 4 != 0:
-            raise Exception('curvetosmooth takes 4 * n arguments')
-        i = iter(operand)
-        try:
-            while True:
-                if self.last_cb_control_point is None:
-                    x1 = self.current_position[0]
-                    y1 = self.current_position[1]
-                else:
-                    x1 = self.current_position[0] + (self.current_position[0] - self.last_cb_control_point[0])
-                    y1 = self.current_position[1] + (self.current_position[1] - self.last_cb_control_point[1])
-                x2 = self.current_position[0] + float(i.next())
-                y2 = self.current_position[1] + float(i.next())
-                x = self.current_position[0] + float(i.next())
-                y = self.current_position[1] + float(i.next())
-                self.handler.curve_to(x1, y1, x2, y2, x, y)
-                self.current_position = (x, y)
-                self.last_cb_control_point = (x2, y2)
-        except StopIteration:
-            pass
-        self.last_qb_control_point = None
-
-    def scan_S(self, operand):
-        if operand == 0 or len(operand) % 4 != 0:
-            raise Exception('curvetosmooth takes 4 * n arguments')
-        i = iter(operand)
-        try:
-            while True:
-                if self.last_cb_control_point is None:
-                    x1 = self.current_position[0]
-                    y1 = self.current_position[1]
-                else:
-                    x1 = self.current_position[0] + (self.current_position[0] - self.last_cb_control_point[0])
-                    y1 = self.current_position[1] + (self.current_position[1] - self.last_cb_control_point[1])
-                x2 = float(i.next())
-                y2 = float(i.next())
-                x = float(i.next())
-                y = float(i.next())
-                self.handler.curve_to(x1, y1, x2, y2, x, y)
-                self.current_position = (x, y)
-                self.last_cb_control_point = (x2, y2)
-        except StopIteration:
-            pass
-        self.last_qb_control_point = None
-
-    def scan_q(self, operand):
-        if operand == 0 or len(operand) % 4 != 0:
-            raise Exception('curvetoqb takes 4 * n arguments')
-        i = iter(operand)
-        try:
-            while True:
-                x1 = self.current_position[0] + float(i.next())
-                y1 = self.current_position[1] + float(i.next())
-                x = self.current_position[0] + float(i.next())
-                y = self.current_position[1] + float(i.next())
-                self.last_qb_control_point = (x1, y1)
-                self.handler.curve_to_qb(x1, y1, x, y)
-                self.current_position = (x, y)
-        except StopIteration:
-            pass
-        self.last_cb_control_point = None
-
-    def scan_Q(self, operand):
-        if operand == 0 or len(operand) % 4 != 0:
-            raise Exception('curvetoqb takes 4 * n arguments')
-        i = iter(operand)
-        try:
-            while True:
-                x1 = float(i.next())
-                y1 = float(i.next())
-                x = float(i.next())
-                y = float(i.next())
-                self.last_qb_control_point = (x1, y1)
-                self.handler.curve_to_qb(x1, y1, x, y)
-                self.current_position = (x, y)
-        except StopIteration:
-            pass
-        self.last_cb_control_point = None
-
-    def scan_c(self, operand):
-        if operand == 0 or len(operand) % 6 != 0:
-            raise Exception('curveto takes 6 * n arguments')
-        i = iter(operand)
-        try:
-            while True:
-                x1 = self.current_position[0] + float(i.next())
-                y1 = self.current_position[1] + float(i.next())
-                x2 = self.current_position[0] + float(i.next())
-                y2 = self.current_position[1] + float(i.next())
-                x = self.current_position[0] + float(i.next())
-                y = self.current_position[1] + float(i.next())
-                self.handler.curve_to(x1, y1, x2, y2, x, y)
-                self.current_position = (x, y)
-                self.last_cb_control_point = (x2, y2)
-        except StopIteration:
-            pass
-        self.last_qb_control_point = None
-
-    def scan_C(self, operand):
-        if operand == 0 or len(operand) % 6 != 0:
-            raise Exception('curveto takes 6 * n arguments')
-        i = iter(operand)
-        try:
-            while True:
-                x1 = float(i.next())
-                y1 = float(i.next())
-                x2 = float(i.next())
-                y2 = float(i.next())
-                x = float(i.next())
-                y = float(i.next())
-                self.handler.curve_to(x1, y1, x2, y2, x, y)
-                self.current_position = (x, y)
-                self.last_cb_control_point = (x2, y2)
-        except StopIteration:
-            pass
-        self.last_qb_control_point = None
-
-    def scan_a(self, operand):
-        if operand == 0 or len(operand) % 7 != 0:
-            raise Exception('curvetoqb takes 7 * n arguments')
-        i = iter(operand)
-        try:
-            while True:
-                rx = self.current_position[0] + float(i.next())
-                ry = self.current_position[1] + float(i.next())
-                phi = float(i.next())
-                largearc = bool(i.next())
-                sweep = bool(i.next())
-                x = self.current_position[0] + float(i.next())
-                y = self.current_position[1] + float(i.next())
-                self.handler.arc(rx, ry, phi, largearc, sweep, x, y)
-                self.current_position = (x, y)
-        except StopIteration:
-            pass
-        self.last_cb_control_point = none
-        self.last_qb_control_point = None
-
-    def scan_A(self, operand):
-        if operand == 0 or len(operand) % 7 != 0:
-            raise Exception('curvetoqb takes 7 * n arguments')
-        i = iter(operand)
-        try:
-            while True:
-                rx = float(i.next())
-                ry = float(i.next())
-                phi = float(i.next())
-                largearc = bool(i.next())
-                sweep = bool(i.next())
-                x = float(i.next())
-                y = float(i.next())
-                self.handler.arc(rx, ry, phi, largearc, sweep, x, y)
-                self.current_position = (x, y)
-        except StopIteration:
-            pass
-        self.last_cb_control_point = none
-        self.last_qb_control_point = none
-
-    def __call__(self):
-        fn = None
-        operand = []
-        for op in self.iter:
-            next_fn = getattr(self, 'scan_' + op, None)
-            if fn is not None:
-                if next_fn is not None:
-                    fn(operand)
-                    fn = next_fn
-                    operand = []
-                else:
-                    operand.append(op)
-            else:
-                fn = next_fn
-        if fn is not None:
-            fn(operand)
-
-def tokenize_path_data(path):
-    return (g.group(0) for g in re.finditer(ur'-?((?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)(?:[eE][-+]?[0-9]+)?)|[A-Za-z_]+', path))
-
 class StyleNoneType(object):
     pass
 
@@ -827,8 +482,6 @@ class Style(object):
                 )
             )
 
-I = numpy.matrix('1 0 0; 0 1 0; 0 0 1', dtype=numpy.float64)
-
 def text_and_elements(elem):
     if elem.text:
         yield unicode(elem.text)
@@ -836,35 +489,6 @@ def text_and_elements(elem):
         yield subelem
         if subelem.tail:
             yield unicode(subelem.tail)
-
-def as_user_unit(size, rel_unit=None):
-    if size is None:
-        return None
-    spec = re.match('(-?[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(pt|pc|mm|cm|in|px|em|%)?', size.strip().lower())
-    if spec is None:
-        raise Exception('Invalid length / size specifier: ' + size)
-    degree = float(spec.group(1))
-    unit = spec.group(2) or 'px'
-    if unit == 'pt':
-        return degree * 1.25
-    elif unit == 'pc':
-        return degree * 15
-    elif unit == 'mm':
-        return degree * 90 / 25.4
-    elif unit == 'cm':
-        return degree * 90 / 2.54
-    elif unit == 'in':
-        return degree * 90.
-    elif unit == 'px':
-        return degree
-    elif unit == 'em':
-        if rel_unit is None:
-            raise Exception('Relative size specified where no unit size is given in the applied context')
-        return rel_unit * degree
-    elif unit == '%':
-        if rel_unit is None:
-            raise Exception('Relative size specified where no unit size is given in the applied context')
-        return rel_unit * degree / 100.
 
 def namespace(ns):
     def decorator(f):
@@ -957,79 +581,6 @@ class Visitor(object):
         else:
             return color
 
-    @staticmethod
-    def parse_transform(transform_str):
-        for g in re.finditer(ur'\s*([A-Za-z_-][0-9A-Za-z_-]*)\s*\(\s*((?:[^\s,]+(?:\s*,\s*|\s+))*[^\s,]+)\s*\)\s*', transform_str):
-            f = g.group(1)
-            args = re.split(ur'\s*,\s*|\s+',g.group(2).strip())
-            if f == u'matrix':
-                if len(args) != 6:
-                    raise Exception('invalid number of arguments for matrix()')
-                return numpy.matrix(
-                    [
-                        [float(args[0]), float(args[2]), float(args[4])],
-                        [float(args[1]), float(args[3]), float(args[5])],
-                        [0., 0., 1.]
-                        ],
-                    dtype=numpy.float64)
-            elif f == u'translate':
-                if len(args) != 2:
-                    raise Exception('invalid number of arguments for translate()')
-                return numpy.matrix(
-                    [
-                        [1., 0., float(args[0])],
-                        [0., 1., float(args[1])],
-                        [0., 0., 1.]
-                        ],
-                    dtype=numpy.float64)
-            elif f == u'scale':
-                if len(args) != 2:
-                    raise Exception('invalid number of arguments for scale()')
-                return numpy.matrix(
-                    [
-                        [float(args[0]), 0., 0.],
-                        [0., float(args[1]), 0.],
-                        [0., 0., 1.]
-                        ],
-                    dtype=numpy.float64)
-            elif f == u'rotate':
-                if len(args) != 1:
-                    raise Exception('invalid number of arguments for rotate()')
-                t = float(args[0]) * numpy.pi / 180.
-                c = numpy.sin(t)
-                s = numpy.sin(t)
-                return numpy.matrix(
-                    [
-                        [c, -s, 0.],
-                        [s, c, 0.],
-                        [0., 0., 1.]
-                        ],
-                    dtype=numpy.float64)
-            elif f == u'skeyX':
-                if len(args) != 1:
-                    raise Exception('invalid number of arguments for skewX()')
-                t = float(args[0]) * numpy.pi / 180.
-                ta = numpy.tan(t)
-                return numpy.matrix(
-                    [
-                        [1., ta, 0.],
-                        [0., 1., 0.],
-                        [0., 0., 1.]
-                        ],
-                    dtype=numpy.float64)
-            elif f == u'skeyY':
-                if len(args) != 1:
-                    raise Exception('invalid number of arguments for skewY()')
-                t = float(args[0]) * numpy.pi / 180.
-                ta = numpy.tan(t)
-                return numpy.matrix(
-                    [
-                        [1., 0., 0.],
-                        [ta, 1., 0.],
-                        [0., 0., 1.]
-                        ],
-                    dtype=numpy.float64)
-
     def fetch_styles_from_element(self, elem):
         css_style_decl = self.css_parser.parseStyle(elem.get(u'style', ''), validate=False)
 
@@ -1069,6 +620,8 @@ class Visitor(object):
                 elif elem.tag == u'{%s}flowLine' % SVG_NAMESPACE:
                     tag = 'div'
                 elif elem.tag == u'{%s}flowPara' % SVG_NAMESPACE:
+                    tag = 'div'
+                elif elem.tag == u'{%s}flowDiv' % SVG_NAMESPACE:
                     tag = 'div'
                 else:
                     tag = None
@@ -1111,6 +664,7 @@ class Visitor(object):
         return E(container, *nodes)
 
     def build_html_from_flow_elements(self, elems):
+        elems = list(elems)
         result = self._build_html_from_flow_elements(elems)
         retval = []
         if result.text:
@@ -1215,7 +769,7 @@ class Visitor(object):
         self.transform_stack.append(self.current_transform)
         transform_str = elem.get(u'transform', None)
         if transform_str != None:
-            self._apply_transform(self.parse_transform(transform_str))
+            self._apply_transform(parse_transform(transform_str))
 
     def _apply_transform(self, matrix):
         new_transform = self.current_transform * matrix
@@ -1311,32 +865,35 @@ class Visitor(object):
     @namespace(SVG_NAMESPACE)
     @stylable
     @transformable
-    def visit_flowDiv(self, scanner, ns, local_name, elem):
-        self.emitter.emit_move_to(self.flow_bbox[0], self.flow_bbox[1])
-        self.emitter.emit_show_text(self.flow_bbox[2], self.flow_bbox[3], self.build_html_from_flow_elements(text_and_elements(elem)))
-
-    @namespace(SVG_NAMESPACE)
-    @stylable
-    @transformable
     def visit_flowRoot(self, scanner, ns, local_name, elem):
         flow_region_visited = False
         flow_div_visited = False
         self.apply_styles(elem)
+        contents = []
         for n in elem:
             if n.tag == u'{%s}flowRegion' % SVG_NAMESPACE:
                 if flow_region_visited:
                     raise Exception('<flowRoot> contains more than one <flowRegion>')
                 self.visit_flowRegion(scanner, ns, local_name, n)
                 flow_region_visited = True
+            elif n.tag == u'{%s}flowPara' % SVG_NAMESPACE:
+                contents.append(n)
             elif n.tag == u'{%s}flowDiv' % SVG_NAMESPACE:
-                if flow_div_visited:
-                    raise Exception('<flowRoot> must contain only one <flowDiv>')
-                self.visit_flowDiv(scanner, ns, local_name, n)
-                flow_div_visited = True
+                contents.append(n)
+
         if not flow_region_visited:
             raise Exception('<flowRoot> contains no <flowRegion>')
-        if not flow_div_visited:
-            raise Exception('<flowRoot> contains no <flowDiv>')
+
+        if contents: 
+            self.emitter.emit_move_to(self.flow_bbox[0], self.flow_bbox[1])
+            if len(contents) == 1:
+                # Specially treat a sole container element :-p
+                self.apply_styles(contents[0])
+                self.emitter.emit_show_text(self.flow_bbox[2], self.flow_bbox[3], self.build_html_from_flow_elements(text_and_elements(contents[0])))
+                self.unapply_styles()
+            else:
+                self.emitter.emit_show_text(self.flow_bbox[2], self.flow_bbox[3], self.build_html_from_flow_elements(contents))
+
 
     @namespace(SVG_NAMESPACE)
     @stylable
@@ -1451,4 +1008,7 @@ def convert_svg(doc, global_transform=None):
 
 if __name__ == '__main__':
     import sys
-    print re.sub(r'''encoding=(["'])Windows-31J\1''', 'encoding="Shift_JIS"', etree.tostring(convert_svg(etree.parse(sys.stdin), Visitor.parse_transform(sys.argv[1]) if len(sys.argv) >= 2 else None), encoding='Windows-31J'))
+    from .cleaner import cleanup_svg
+    tree = etree.parse(sys.stdin)
+    cleanup_svg(tree)
+    print re.sub(r'''encoding=(["'])Windows-31J\1''', 'encoding="Shift_JIS"', etree.tostring(convert_svg(tree, parse_transform(sys.argv[1]) if len(sys.argv) >= 2 else None), encoding='Windows-31J'))
