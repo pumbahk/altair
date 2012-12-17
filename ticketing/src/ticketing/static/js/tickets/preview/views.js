@@ -92,11 +92,10 @@ preview.TemplateFillValuesView = Backbone.View.extend({
     }, 
     // api
     fillsVarsWithParams: function(params){
-        this.vms.vars_input.each_input(function($input){
+        this.vms.vars_input.each_input(function($input, model){
             var k = $input.attr("name");
             if(!!params[k]){
-                $input.val(params[k]);
-                $input.change();
+                model.set("value", params[k]);
             }
         });
     }
@@ -113,7 +112,11 @@ preview.TemplateVarRowView = Backbone.View.extend({
     initialize: function(opts){
         this.left = opts.left;
         if(!this.left) throw "opts.left is not found";
-        this.right = opts.right;
+        this.left.on("change", this.reDrawLeft, this)
+        if(!!opts.right){
+            this.right = opts.right;
+            this.right.on("change", this.reDrawRight, this);
+        }
     }, 
     render: function(){
         var left = this.template(_.extend(this.left.toJSON(), {position: "left"}));
@@ -123,16 +126,22 @@ preview.TemplateVarRowView = Backbone.View.extend({
         this.$right = this.$el.find(".right");
         return this;
     }, 
+    reDrawLeft: function(){
+        this.$left.val(this.left.get("value"));
+    }, 
+    reDrawRight: function(){
+        this.$right.val(this.right.get("value"))
+    }, 
     onUpdateLeft: function(){ //todo: e.currentTarget ?
         this.left.set("value", this.$el.find("input.left").val());
-        // console.log(this.left.toJSON());
     }, 
     onUpdateRight: function(){ //todo: e.currentTarget ?
         this.right.set("value", this.$el.find("input.right").val());
-        // console.log(this.right.toJSON());
     }, 
     remove: function(){
         this.left.off();
-        this.right.off();
+        if(!!this.right){
+            this.right.off();
+        }
     }
  });

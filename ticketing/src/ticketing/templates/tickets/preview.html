@@ -125,11 +125,6 @@
 <script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/preview/viewmodels.js")}"></script>
 <script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/preview/views.js")}"></script>
 <script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/preview/app.js")}"></script>
-<script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/combobox/gateway.js")}"></script>
-<script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/combobox/viewmodels.js")}"></script>
-<script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/combobox/views.js")}"></script>
-<script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/combobox/models.js")}"></script>
-<script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/combobox/app.js")}"></script>
 
 <script type="text/javascript">
   $(function(){
@@ -169,6 +164,7 @@
           $.post(apis["fillvalues_with_models"], {data: JSON.stringify(result)})
             .pipe(core.ApiService.rejectIfStatusFail(function(data){
             apps["preview"].fillsVarsWithParams(data.data);
+            apps["preview"].reDrawImage(); // 文字列の挿入が終わった後redrawされる
             }))
             .fail(function(s,err){console.warn(s.responseText, arguments);});
         });
@@ -178,7 +174,6 @@
         modalview.$modalArea.find(".modal-footer").append(btn);
         btn.click(function(){
           apps["combobox"].getFinishBack()(); 
-          apps["preview"].reDrawImage(); // 文字列の挿入が終わった後redrawされる
           modalview.hide();
         });
    }});

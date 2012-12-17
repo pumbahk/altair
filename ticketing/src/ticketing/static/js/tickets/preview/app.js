@@ -19,8 +19,8 @@
 
 /// services
 // give me. module!
-    if (!window.preview)
-        window.preview = {};
+if (!window.preview)
+    window.preview = {};
 
 preview.ApplicationView = Backbone.View.extend({
     initialize: function(opts){

@@ -36,8 +36,8 @@ preview.TemplateVarsTableViewModel = core.ViewModel.extend({
     emptyInfoTemplate: _.template('<td><div class="alert alert-info"><%= message %></div></td>'), 
     each_input: function(fn){
         _(this.inputs).each(function(row){
-            !!row.left && fn(row.$left);
-            !!row.right && fn(row.$right);
+            !!row.left && fn(row.$left, row.left);
+            !!row.right && fn(row.$right, row.right);
         });
     }, 
     remove: function(){
