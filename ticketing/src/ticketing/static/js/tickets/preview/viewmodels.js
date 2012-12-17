@@ -7,6 +7,23 @@ preview.PreviewImageViewModel = core.ViewModel.extend({
         var preview_img = $('<img id="preview_img" title="clickして再描画" alt="clickして再描画">').attr('src', imgdata);
         this.$el.append(preview_img);
         this.$el.parents(".empty").removeClass("empty");
+    }, 
+    resize: function(width, height){
+        var self = this;
+        var life = 50;
+        var loop = function (){
+            console.log(life);
+            var $img = self.$el.find("img#preview_img");
+            if($img.length > 0){
+                $img.width(width);
+                $img.height(height);
+
+            }else if(life > 0){
+                life -= 1;
+                setTimeout(loop, 100);
+            }
+        }
+        setTimeout(loop, 0);
     }
 });
 

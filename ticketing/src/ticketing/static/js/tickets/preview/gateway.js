@@ -67,10 +67,9 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
                       sy: this.params.get("default_sy"), 
                       ticket_format: this.params.get("ticket_format").pk};
         return this.apis.previewbase64(params)
-            .pipe(core.ApiService.rejectIfStatusFail(function(data){
-                var data = data.data;
+            .pipe(core.ApiService.rejectIfStatusFail(function(data){                
+                self.preview.startRendering("data:image/png;base64,"+data.data); //add-hoc                
                 self.preview.initialImage(data.width, data.height);
-                self.preview.startRendering("data:image/png;base64,"+data.data); //add-hoc
                 self.message.info("preview画像がレンダリングされました。下のinput要素を変更しプレースホルダーに埋める値を入力してください");
             }))
             .fail(this._apiFail.bind(this));

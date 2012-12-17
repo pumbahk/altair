@@ -35,10 +35,11 @@ describe("ticket preview ui",  function(){
                     }, 
                     previewbase64: function(params){
                         finished.previewbase64 = true;
-                        return $.Deferred().resolve({data: {data: "+svg-data+", width: "300px", height: "200px"}, status:true }).promise();
+                        return $.Deferred().resolve({data: "+svg-data+", width: "300px", height: "200px", status:true }).promise();
                     }
                 }
             });
+            models.preview.resizeImage = jasmine.createSpy("");
             gateway.svgRawToX();            
         });
         it("initial fetch iamge", function(){
@@ -53,6 +54,9 @@ describe("ticket preview ui",  function(){
             expect(models.preview.get("width")).toEqual("300px");
             expect(models.preview.get("height")).toEqual("200px");
             expect(finished.previewbase64).toBe(true);
+
+            expect(models.preview.resizeImage.argsForCall).toEqual([["300px", "200px"]]);
+
         });
 
         describe ("after initial fetch image ....", function(){
@@ -68,7 +72,7 @@ describe("ticket preview ui",  function(){
                     apis: {
                         previewbase64: function(params){
                             finished.previewbase64 = true;
-                            return $.Deferred().resolve({data: {data: "+svg-data+", width: "300px", height: "200px"}, status:true }).promise();
+                            return $.Deferred().resolve({data: "+svg-data+", width: "300px", height: "200px", status:true }).promise();
                         }
                     }
                 });
@@ -123,7 +127,7 @@ describe("ticket preview ui",  function(){
                             }, 
                             previewbase64: function(params){
                                 finished.previewbase64 = true;
-                                return $.Deferred().resolve({data: {data: "+second:svg-data+", width: "200px", height: "500px"}, status:true }).promise();
+                                return $.Deferred().resolve({data: "+second:svg-data+", width: "200px", height: "500px", status:true }).promise();
                             }
                         }
                     });
