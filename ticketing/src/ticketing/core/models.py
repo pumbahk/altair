@@ -2342,8 +2342,8 @@ class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     event = relationship('Event', uselist=False, backref='ticket_bundles')
     operator_id = Column(Identifier, ForeignKey('Operator.id'))
     operator = relationship('Operator', uselist=False)
-    attributes_ = relationship("TicketBundleAttribute", backref='bundle', collection_class=attribute_mapped_collection('name'), cascade='all,delete-orphan')
-    attributes = association_proxy('attributes_', 'value', creator=lambda k, v: SeatAttribute(name=k, value=v))
+    attributes_ = relationship("TicketBundleAttribute", backref='ticket_bundle', collection_class=attribute_mapped_collection('name'), cascade='all,delete-orphan')
+    attributes = association_proxy('attributes_', 'value', creator=lambda k, v: TicketBundleAttribute(name=k, value=v))
     tickets = relationship('Ticket', secondary=Ticket_TicketBundle.__table__, backref='bundles')
     product_items = relationship('ProductItem', backref='ticket_bundle')
 
