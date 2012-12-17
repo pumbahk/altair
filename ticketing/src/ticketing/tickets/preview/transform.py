@@ -87,6 +87,8 @@ class SVGTransformer(object):
         self.svg = svg
         self.data = parse(SVGTransformValidator, postdata or {})
         self.encoding = encoding
+        self.width = None #ugg
+        self.height = None
 
     def transform(self):
         if self.data is None:
@@ -105,7 +107,7 @@ class SVGTransformer(object):
             return xmltree
         else:
             return xmltree.find("svg") or xmltree.find(self.fullsvg)
-            
+        
     def scale_image(self, xmltree):
         sx, sy = self.data["sx"], self.data["sy"]
         if sx == sy == 1:
@@ -115,9 +117,11 @@ class SVGTransformer(object):
         attrib = svg.attrib
         
         if "width" in attrib:
-            attrib["width"] = transform_unit(lambda x : sx*x, attrib["width"])
+            self.width = attrib["width"]
+            attrib["width"] = transform_unit(lambda x : sx*x, self.width)
         if "height" in attrib:
-            attrib["height"] = transform_unit(lambda y : sy*y, attrib["height"])
+            self.height = attrib["height"]
+            attrib["height"] = transform_unit(lambda y : sy*y, self.height)
         if "viewBox" in attrib:
             box_val = attrib["viewBox"].split(" ")
             box_val[2] = str(sx * ast.literal_eval(box_val[2]))

@@ -115,9 +115,11 @@ class PreviewApiView(object):
         preview = SVGPreviewCommunication.get_instance(self.request)
         svg = self.request.POST["svg"]
         try:
-            svg = SVGTransformer(svg, self.request.POST).transform()
+            transformer = SVGTransformer(svg, self.request.POST)
+            svg = transformer.transform()
             imgdata_base64 = preview.communicate(self.request, svg)
-            return {"status": True, "data":imgdata_base64}
+            return {"status": True, "data":imgdata_base64, 
+                    "width": transformer.width, "height": transformer.height} #original size
         except jsonrpc.ProtocolError, e:
             return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
 
@@ -126,10 +128,11 @@ class PreviewApiView(object):
         preview = SVGPreviewCommunication.get_instance(self.request)
         svg = self.request.POST["svg"]
         try:
-            svg = FillvaluesTransformer(svg, self.request.POST).transform()
-            svg = SVGTransformer(svg, self.request.POST).transform()
+            transformer = SVGTransformer(svg, self.request.POST)
+            svg = transformer.transform()
             imgdata_base64 = preview.communicate(self.request, svg)
-            return {"status": True, "data":imgdata_base64}
+            return {"status": True, "data":imgdata_base64, 
+                    "width": transformer.width, "height": transformer.height} #original size
         except jsonrpc.ProtocolError, e:
             return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
 

@@ -6,8 +6,14 @@ if (!window.preview)
         defaults:{
             sx: 1.0, 
             sy: 1.0, 
+            default_sx: 2.0,  //fetch default
+            default_sy: 2.0, 
             ticket_format: null
-        }
+        }, 
+        refreshDefault(): function(){
+            this.set("default_sx", 2.0);
+            this.set("default_sy", 2.0);
+        }, 
     });
 
     var SVGStage = {"empty":0, "raw":1, "normalize":2, "filled":3};
@@ -41,6 +47,8 @@ if (!window.preview)
     preview.PreviewImageStore = Backbone.Model.extend({
         defaults: {
             data: null, //base64
+            width: 0, 
+            height: 0, 
             stage: PreviewStage.empty
         }, 
         beforeRendering: function(){
@@ -53,8 +61,16 @@ if (!window.preview)
         }, 
         startRendering: function(imgdata){
             this.set("stage", PreviewStage.rendering);
-            this.set("data", imgdata)
+            this.set("data", imgdata);
             this.trigger("*preview.update.rendering")
+        }, 
+        initialImage: function(width, height){
+            this.set("width", width);
+            this.set("height", height);
+            this.resizeImage(width, height);
+        }, 
+        resizeImage: function(width, height){
+            this.trigger("*preview.resize", width, height);
         }, 
         afterRendering: function(){
             this.set("stage", PreviewStage.after);

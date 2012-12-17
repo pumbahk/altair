@@ -45,6 +45,7 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
         self.message.info("券面テンプレートを正規化しています....");
         return $.post(this.apis.normalize, {"svg": this.svg.get("data")})
             .pipe(core.ApiService.rejectIfStatusFail(function(data){
+                self.params.refreshDefault();
                 self.svg.updateToNormalize(data.data);
                 self.message.info("券面テンプレートを正規化しました");
             }))
@@ -53,30 +54,51 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
     svgNormalizeToX: function(){
         this.preview.beforeRendering();
         var self = this;
-        self.message.info("preview画像がレンダリングしています....");
+        self.message.info("preview画像をレンダリングしています....");
         var params = {"svg": this.svg.get("data"), 
+                      sx: this.params.get("default_sx"),
+                      sy: this.params.get("default_sy"), 
                       ticket_format: this.params.get("ticket_format").pk};
         return $.post(this.apis.previewbase64, params)
             .pipe(core.ApiService.rejectIfStatusFail(function(data){
                 self.preview.startRendering("data:image/png;base64,"+data.data); //add-hoc
+                self.preview.initialImage(data.width, data.height);
                 self.message.info("preview画像がレンダリングされました。下のinput要素を変更しプレースホルダーに埋める値を入力してください");
+            }))
+            .fail(this._apiFail.bind(this));
+    }, 
+    _svgFilledResize: function(sx, sy){
+        var mul = service.UnitCalcService.mul;
+        return this.preview.resizeImage(mul(this.preview("width"), sx), 
+                                        mul(this.preview("height"), sy));
+    }, 
+    _svgFilledFetchImage: function(sx, sy){
+        var ma = Math.max(sx, sy);
+        var params = {svg: this.svg.get("data"),
+                      sx: ma, sy: ma, 
+                      ticket_format: this.params.get("ticket_format").pk};
+        return $.post(this.apis.previewbase64, params)
+            .pipe(core.ApiService.rejectIfStatusFail(function(data){
+                this.params.set("default_sx", ma);
+                this.params.set("default_sy", ma);
+                self.preview.startRendering("data:image/png;base64,"+data.data); //add-hoc
+                self.message.info("preview画像がレンダリングされました");
+                this._svgFilledResize(sx, sy);
             }))
             .fail(this._apiFail.bind(this));
     }, 
     svgFilledToX: function(){
         var self = this;
         this.preview.beforeRendering();
-        self.message.info("preview画像がレンダリングしています....");
-        var params = {svg: this.svg.get("data"),
-                      sx: this.params.get("sx"),
-                      sy: this.params.get("sy"), 
-                      ticket_format: this.params.get("ticket_format").pk};
-        return $.post(this.apis.previewbase64, params)
-            .pipe(core.ApiService.rejectIfStatusFail(function(data){
-                self.preview.startRendering("data:image/png;base64,"+data.data); //add-hoc
-                self.message.info("preview画像がレンダリングされました");
-            }))
-            .fail(this._apiFail.bind(this));
+        self.message.info("preview画像をレンダリングしています....");
+
+        var sx = this.params.get("sx");
+        var sy = this.params.get("sy");
+        if(sx <= this.params.get("default_sx") && sy <= this.params.get("default_sy")){
+            return this._svgFilledResize(sx, sy);
+        }else {
+            return this._svgFilledFetchImage(sx, sy);
+        }
     }, 
     collectTemplateVars: function(){ // todo:move it?
         var self = this;
