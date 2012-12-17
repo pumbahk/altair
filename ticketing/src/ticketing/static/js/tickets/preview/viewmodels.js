@@ -2,35 +2,18 @@ if (!window.preview)
     window.preview = {}
 
 preview.PreviewImageViewModel = core.ViewModel.extend({
-    _doCallback: function(target){
-        var cb = this.$el.data("cb")
-        if(!!cb){
-            var b = cb(target);
-            this.$el.data("cb", null);
-        }
-        return target;
-    }, 
-    _appendCallback: function(fn){
-        this.$el.data("cb", fn);
-    }, 
-    draw: function(imgdata){
+    draw: function(imgdata, width, height){
         this.$el.empty();
         var preview_img = $('<img id="preview_img" title="clickして再描画" alt="clickして再描画">').attr('src', imgdata);
-        this._doCallback(preview_img);
+        if(!!width){preview_img.width(core.UnitCalcService.convert(width));}
+        if(!!height){preview_img.height(core.UnitCalcService.convert(height));}
         this.$el.append(preview_img);
         this.$el.parents(".empty").removeClass("empty");
     }, 
     resize: function(width, height){
         var $img = this.$el.find("img#preview_img");
-        if($img.length > 0){
-            $img.width(width);
-            $img.height(height);
-        }else {
-            this._appendCallback(function($img){
-                $img.width(width);
-                $img.height(height);
-            })
-        }
+        $img.width(core.UnitCalcService.convert(width));
+        $img.height(core.UnitCalcService.convert(height));
     }
 });
 

@@ -68,8 +68,8 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
                       ticket_format: this.params.get("ticket_format").pk};
         return this.apis.previewbase64(params)
             .pipe(core.ApiService.rejectIfStatusFail(function(data){                
-                self.preview.startRendering("data:image/png;base64,"+data.data); //add-hoc                
                 self.preview.initialImage(data.width, data.height);
+                self.preview.startRendering("data:image/png;base64,"+data.data); //add-hoc                
                 self.message.info("preview画像がレンダリングされました。下のinput要素を変更しプレースホルダーに埋める値を入力してください");
             }))
             .fail(this._apiFail.bind(this));
@@ -89,9 +89,9 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
             .pipe(core.ApiService.rejectIfStatusFail(function(data){
                 self.params.set("default_sx", ma);
                 self.params.set("default_sy", ma);
+                self._svgFilledResize(sx, sy);
                 self.preview.startRendering("data:image/png;base64,"+data.data); //add-hoc
                 self.message.info("preview画像がレンダリングされました");
-                self._svgFilledResize(sx, sy);
             }))
             .fail(this._apiFail.bind(this));
     }, 
@@ -102,7 +102,8 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
 
         var sx = this.params.get("sx");
         var sy = this.params.get("sy");
-        if(sx <= this.params.get("default_sx") && sy <= this.params.get("default_sy")){
+        if((sx <= this.params.get("default_sx") && sy <= this.params.get("default_sy")) || this.vars.get("changed")){
+            this.vars.set("changed", false);
             return this._svgFilledResize(sx, sy);
         }else {
             return this._svgFilledFetchImage(sx, sy);

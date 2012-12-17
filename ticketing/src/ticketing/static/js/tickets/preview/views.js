@@ -13,6 +13,8 @@ preview.ParamaterManageView = Backbone.View.extend({
         this.$ticket_format = this.$el.find("#ticket_format");
         // remove it
         this.onChangeTicketFormat();
+        this.model.on("change:sx", this.reDrawSx, this);
+        this.model.on("change:sy", this.reDrawSy, this);
     }, 
     onChangeTicketFormat: function(){
         this.model.set("ticket_format", {"pk":this.$ticket_format.val(), "name": this.$ticket_format.text()});
@@ -22,6 +24,12 @@ preview.ParamaterManageView = Backbone.View.extend({
     }, 
     onChangeSy: function(){
         this.model.set("sy", this.$sy.val());
+    }, 
+    reDrawSx: function(){
+        this.$sx.val(this.model.get("sx"));
+    }, 
+    reDrawSy: function(){
+        this.$sy.val(this.model.get("sy"));
     }
 });
 
@@ -70,11 +78,12 @@ preview.PreviewImageView = Backbone.View.extend({
         this.vms.spinner.noloading();
     }, 
     onRendering: function(){
-        this.vms.preview.draw(this.model.get("data"));
+        this.vms.preview.draw(this.model.get("data"), this.model.get("rendering_width"), this.model.get("rendering_height"));
         this.vms.spinner.noloading();
     }, 
-    onResizing: function(width, height){
-        this.vms.preview.resize(width, height);
+    onResizing: function(){
+        this.vms.preview.resize(this.model.get("rendering_width"), this.model.get("rendering_height"));
+        this.vms.spinner.noloading();
     }
 });
 

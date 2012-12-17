@@ -11,11 +11,17 @@ if (!window.core)
     };
     
     var unitRx = /([+-]?(?:\d+|\d+\.\d+))([a-z%]*)$/i;
-
+    var numOnlyRx = /\d+$/;
     core.UnitCalcService = {
         mul: function(unit, x){
             var m = unitRx.exec(unit);
             return String(Number(m[1])*x) + m[2];
+        }, 
+        convert: function(x){
+            if(numOnlyRx.test(x)){
+                return x+"px";
+            }
+            return x;
         }
     };
 

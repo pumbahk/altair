@@ -13,6 +13,8 @@ if (!window.preview)
         refreshDefault: function(){
             this.set("default_sx", 2.0);
             this.set("default_sy", 2.0);
+            this.set("sx", 1.0);
+            this.set("sy", 1.0);
         }
     });
 
@@ -49,6 +51,8 @@ if (!window.preview)
             data: null, //base64
             width: 0, 
             height: 0, 
+            rendering_width: 0, 
+            rendering_height: 0, 
             stage: PreviewStage.empty
         }, 
         beforeRendering: function(){
@@ -67,10 +71,13 @@ if (!window.preview)
         initialImage: function(width, height){
             this.set("width", width);
             this.set("height", height);
-            this.resizeImage(width, height);
+            this.set("rendering_width", width);
+            this.set("rendering_height", height);
         }, 
         resizeImage: function(width, height){
-            this.trigger("*preview.resize", width, height);
+            this.set("rendering_width", width);
+            this.set("rendering_height", height);
+            this.trigger("*preview.resize");
         }, 
         afterRendering: function(){
             this.set("stage", PreviewStage.after);
@@ -93,8 +100,10 @@ if (!window.preview)
     preview.TemplateVarStore = Backbone.Model.extend({
         defaults: {
             vars: new preview.TemplateVarCollection(),  //collection
+            changed: false 
         }, 
         updateVars: function(vars){
+            this.set("changed", true);
             this.get("vars").reset(_(vars).map(function(k){
                 return {name: k, value: ""};
             }));
