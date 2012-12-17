@@ -2,28 +2,35 @@ if (!window.preview)
     window.preview = {}
 
 preview.PreviewImageViewModel = core.ViewModel.extend({
+    _doCallback: function(target){
+        var cb = this.$el.data("cb")
+        if(!!cb){
+            var b = cb(target);
+            this.$el.data("cb", null);
+        }
+        return target;
+    }, 
+    _appendCallback: function(fn){
+        this.$el.data("cb", fn);
+    }, 
     draw: function(imgdata){
         this.$el.empty();
         var preview_img = $('<img id="preview_img" title="clickして再描画" alt="clickして再描画">').attr('src', imgdata);
+        this._doCallback(preview_img);
         this.$el.append(preview_img);
         this.$el.parents(".empty").removeClass("empty");
     }, 
     resize: function(width, height){
-        var self = this;
-        var life = 50;
-        var loop = function (){
-            console.log(life);
-            var $img = self.$el.find("img#preview_img");
-            if($img.length > 0){
+        var $img = this.$el.find("img#preview_img");
+        if($img.length > 0){
+            $img.width(width);
+            $img.height(height);
+        }else {
+            this._appendCallback(function($img){
                 $img.width(width);
                 $img.height(height);
-
-            }else if(life > 0){
-                life -= 1;
-                setTimeout(loop, 100);
-            }
+            })
         }
-        setTimeout(loop, 0);
     }
 });
 
