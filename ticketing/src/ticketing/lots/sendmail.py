@@ -32,6 +32,9 @@ def _send_mail(request, message):
     mailer.send(message)
 
 def send_accepted_mail(request, lot_entry):
+    """ 申し込み完了メール
+    """
+
     recipients = [lot_entry.shipping_address.email]
     subject = get_accepted_mail_subject(request)
     sender = get_accepted_mail_sender(request)
