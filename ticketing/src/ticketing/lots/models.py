@@ -96,6 +96,8 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     description = sa.Column(sa.UnicodeText)
     entry_limit = sa.Column(sa.Integer, default=0, server_default="0")
 
+    lotting_announce_datetime = sa.Column(sa.DateTime, doc=u"抽選結果発表予定日")
+
     def validate_entry(self, entry):
         return True
 

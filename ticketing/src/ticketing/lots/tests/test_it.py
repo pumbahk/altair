@@ -529,19 +529,24 @@ class PaymentViewTests(unittest.TestCase):
             PaymentDeliveryMethodPair,
             PaymentMethod,
             DeliveryMethod,
+            Performance,
+            Event,
+            Organization,
         )
         from ..models import LotEntry, LotElectedEntry, LotEntryWish, Lot
         lot = Lot()
+        performance = Performance(event=Event(organization=Organization(short_name="testing", code="TEST")))
         entry = LotEntry(id=entry_id, elected_at=datetime.now(), lot=lot,
             payment_delivery_method_pair=PaymentDeliveryMethodPair(system_fee=999, 
                 transaction_fee=100, delivery_fee=234, discount=0,
                 payment_method=PaymentMethod(fee=11),
                 delivery_method=DeliveryMethod(fee=22)))
         elected = LotElectedEntry(lot_entry=entry,
-            lot_entry_wish=LotEntryWish())
+            lot_entry_wish=LotEntryWish(performance=performance))
 
         self.session.add(entry)
         self.session.flush()
+
         return entry
 
 
@@ -559,8 +564,15 @@ class PaymentViewTests(unittest.TestCase):
 
     def test_elected(self):
         from ..exceptions import NotElectedException
+        from ticketing.payments.interfaces import IPaymentDeliveryPlugin
         from ticketing.cart.models import Cart
 
+        reg = self.config.registry
+        dummy_preparer = DummyPreperer()
+        reg.utilities.register([], IPaymentDeliveryPlugin,
+            "payment-None:delivery-None", 
+            dummy_preparer,
+            )
         request = testing.DummyRequest(
             matchdict={"event_id": None},
         )
@@ -576,3 +588,12 @@ class PaymentViewTests(unittest.TestCase):
         cart = Cart.query.filter(Cart.id==cart_id).one()
         self.assertIsNotNone(cart.tickets_amount)
         self.assertIsNotNone(cart.transaction_fee)
+        self.assertEqual(dummy_preparer.called,
+            [('prepare', request, cart)])
+
+class DummyPreperer(object):
+    def __init__(self):
+        self.called = []
+
+    def prepare(self, request, cart):
+        self.called.append(("prepare", request, cart))

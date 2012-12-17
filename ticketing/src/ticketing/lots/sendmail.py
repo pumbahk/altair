@@ -35,7 +35,9 @@ def send_accepted_mail(request, lot_entry):
     recipients = [lot_entry.shipping_address.email]
     subject = get_accepted_mail_subject(request)
     sender = get_accepted_mail_sender(request)
-    vars = dict(lot_entry=lot_entry, lot=lot_entry.lot)
+    vars = dict(lot_entry=lot_entry, lot=lot_entry.lot, 
+        shipping_address=lot_entry.shipping_address,
+        entry_review_url=request.route_url('lots.review.index'))
     body = create_mail_body(request, vars, 'lots.accepted_mail_template')
 
     message = Message(sender=sender,
@@ -52,6 +54,7 @@ def send_elected_mail(request, elected_entry):
     recipients = [lot_entry.shipping_address.email]
     subject = get_subject(request)
     sender = get_sender(request)
+    vars = dict(lot_entry=lot_entry, lot=lot_entry.lot, shipping_address=lot_entry.shipping_address)
     body = create_mail_body(request, vars, 'lots.elected_mail_template')
 
     message = Message(sender=sender,
@@ -69,6 +72,7 @@ def send_rejected_mail(request, rejected_entry):
     recipients = [lot_entry.shipping_address.email]
     subject = get_subject(request)
     sender = get_sender(request)
+    vars = dict(lot_entry=lot_entry, lot=lot_entry.lot)
     body = create_mail_body(request, vars, 'lots.rejected_mail_template')
 
     message = Message(sender=sender,

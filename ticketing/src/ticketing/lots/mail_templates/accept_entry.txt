@@ -1,0 +1,72 @@
+件名：抽選申込完了のご連絡
+
+${shipping_address.last_name}　${shipping_address.first_name}　様
+
+この度は、お申込みいただき、誠にありがとうございました。
+抽選申込が完了いたしましたので、ご連絡させていただきます。
+
+抽選結果発表日時以降、抽選結果確認ページにて当選・落選をご確認下さい。
+
+-----
+■お名前カナ
+${shipping_address.last_name_kana} ${shipping_address.first_name_kana}
+■電話番号
+${shipping_address.tel_1}
+■メールアドレス
+${shipping_address.email}
+-----
+■受付番号
+${lot_entry.entry_no}
+抽選結果確認の際などに必要です。必ずお控え下さい。
+
+■受付日
+${lot_entry.created_at}
+-----
+■イベント名：${lot_entry.lot.event.title}
+■受付名称：${lot_entry.lot.name}
+■抽選結果発表日時：20xx年x月yy日[z]12:00～
+■抽選結果確認ページ： ${entry_review_url}
+%for wish in lot_entry.wishes:
+第${wish.wish_order_no}希望
+公演日：${wish.performance.open_on}
+会場：${wish.performance.venue.name}
+席種：${wish.products[n].product.name}
+枚数：${wish.products[n].quantity}枚
+%endfor
+第2希望
+公演日：～
+会場：
+席種：～
+枚数：ｘ枚
+
+第3希望
+公演日：～
+会場：
+席種：～
+枚数：ｘ枚
+
+■お支払
+お支払方法： ${lot_entry.payment_delivery_method_pair.payment_method.name}
+※決済手数料：${lot_entry.payment_delivery_method_pair.transaction_fee}円/${lot_entry.payment_delivery_method_pair.payment_method.fee_type}をチケット代金とは別に頂戴いたします。
+
+■お受取
+お受取方法： 配送
+※配送手数料：ｘｘ円/件をチケット代金とは別に頂戴いたします。
+
+お申込内容は、「お申込確認ページ」（ https://xxxxxxx/orderreview  ）からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。
+---------------
+<注意事項>
+※ご当選の場合、決済期間内にご登録のクレジットカードにてお支払いとなります。→クレジットカード専用文言。
+※ご当選の場合、入金期間内にセブン-イレブン店内レジにてお支払いとなります。→店頭入金専用文言
+※配送でのお引取りを希望の場合は、ご登録の住所へ宅配便にてお届けいたします。→配送専用の文言。店頭発券などは別文言を差込
+※セブン-イレブン店頭でのお引取りを希望の場合は、ご入金時にレジにてチケットをお渡しいたします。→店頭発券専用文言。
+※お申込後のキャンセル、変更はできませんのでご注意下さい。
+
+---------------
+お問い合わせ
+メアドor電話番号
+---------------
+
+■株式会社チケットスター
+■東京都品川区東五反田5-21-15　メタリオンOSビル7F
+
