@@ -1845,8 +1845,15 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         # 楽天あんしん決済
         elif ppid == 2:
-            # ToDo
-            pass
+            # 入金済みなら決済をキャンセル
+            if self.status == 'paid':
+                # 売り上げキャンセル
+                from ticketing.checkout import api as checkout_api
+                checkout = checkout_api.get_checkout_service(request)
+                result = checkout.request_cancel_order([self.cart.checkout.orderControlId])
+                if 'statusCode' in result and result['statusCode'] != '0':
+                    logger.info(u'あんしん決済をキャンセルできませんでした %s' % result)
+                    return False
 
         # コンビニ決済 (セブンイレブン)
         elif ppid == 3:
@@ -2114,7 +2121,9 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def seat_statuses_for_update(self):
-      return DBSession.query(SeatStatus).filter(SeatStatus.seat_id.in_([s.id for s in self.seats])).with_lockmode('update').all()
+        if len(self.seats) > 0:
+            return DBSession.query(SeatStatus).filter(SeatStatus.seat_id.in_([s.id for s in self.seats])).with_lockmode('update').all()
+        return []
 
     @property
     def name(self):
@@ -2333,8 +2342,8 @@ class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     event = relationship('Event', uselist=False, backref='ticket_bundles')
     operator_id = Column(Identifier, ForeignKey('Operator.id'))
     operator = relationship('Operator', uselist=False)
-    attributes_ = relationship("TicketBundleAttribute", backref='bundle', collection_class=attribute_mapped_collection('name'), cascade='all,delete-orphan')
-    attributes = association_proxy('attributes_', 'value', creator=lambda k, v: SeatAttribute(name=k, value=v))
+    attributes_ = relationship("TicketBundleAttribute", backref='ticket_bundle', collection_class=attribute_mapped_collection('name'), cascade='all,delete-orphan')
+    attributes = association_proxy('attributes_', 'value', creator=lambda k, v: TicketBundleAttribute(name=k, value=v))
     tickets = relationship('Ticket', secondary=Ticket_TicketBundle.__table__, backref='bundles')
     product_items = relationship('ProductItem', backref='ticket_bundle')
 

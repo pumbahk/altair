@@ -23,9 +23,12 @@ from ticketing.sej.payment import request_order
 from ticketing.sej.resources import SejPaymentType, SejTicketType
 from ticketing.sej.utils import han2zen
 
-from ticketing.tickets.convert import convert_svg, as_user_unit
-from ticketing.tickets.utils import build_dicts_from_ordered_product_item
-from ticketing.tickets.utils import build_dicts_from_carted_product_item
+from ticketing.tickets.convert import convert_svg
+from ticketing.tickets.utils import (
+    as_user_unit,
+    build_dicts_from_ordered_product_item,
+    build_dicts_from_carted_product_item
+    )
 from ticketing.core.utils import ApplicableTicketsProducer
 
 from lxml import etree

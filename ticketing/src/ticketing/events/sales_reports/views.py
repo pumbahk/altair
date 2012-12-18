@@ -56,7 +56,7 @@ class SalesReports(BaseView):
                     Event.title,
                     Event.id, # dummy
                     func.sum(Stock.quantity),
-                    func.sum(StockStatus.quantity)
+                    func.sum(StockStatus.quantity),
                 )
 
         for id, title, start_on, total_quantity, vacant_quantity in query.all():
@@ -70,6 +70,8 @@ class SalesReports(BaseView):
                 fee_amount=0,
                 price_amount=0,
                 product_quantity=0,
+                event_start_day='',
+                event_end_day='',
             )
 
         '''
@@ -133,11 +135,101 @@ class SalesReports(BaseView):
                     func.sum(OrderedProduct.price * OrderedProduct.quantity).label('price_amount'),
                     func.sum(OrderedProduct.quantity).label('product_quantity')
                 )
-
         for id, price_amount, product_quantity in query.all():
             reports[id].update(dict(price_amount=price_amount or 0, product_quantity=product_quantity or 0))
 
+        # イベント開始、イベント終了
+        if not group == 'Performance':
+            if form.event_id.data:
+                event_id = form.event_id.data
+            else:
+                event_id = Event.query.filter(Event.organization_id==self.context.user.organization_id).with_entities(Event.id).all()
+
+                event_start_days = {}
+                for id in event_id:
+                    query = Event.query.filter(Event.organization_id==self.context.user.organization_id)\
+                        .join(Performance).filter(Event.id==id[0]).with_entities(Performance.start_on).all()
+                    event_start_days[id[0]]=query
+                for id, performance_days in event_start_days.items():
+                     performance_days.sort()
+                     reports[id].update(dict(event_start_day=performance_days[0] or ''))
+                event_end_days = {} 
+                for id in event_id:
+                     query = Event.query.filter(Event.organization_id==self.context.user.organization_id)\
+                        .join(Performance).filter(Event.id==id[0]).with_entities(Performance.end_on).all()
+                     event_end_days[id[0]]=query
+                event_end_day = {}
+                for id, performance_days in event_end_days.items():
+                     performance_days.reverse()
+                     reports[id].update(dict(event_end_day=performance_days[0] or ''))
+
         return reports.values()
+
+
+    def _get_product_name_summary(self, form, group='Event'):
+        product_name_reports = {}
+
+        # 自社分のみが対象
+        stock_holder_ids = [sh.id for sh in StockHolder.get_own_stock_holders(user_id=self.context.organization.user_id)]
+
+        # 配席数、在庫数
+        query = Event.query.filter(Event.organization_id==self.context.user.organization_id)\
+            .outerjoin(Product).filter(Product.event_id==Event.id)\
+            .outerjoin(ProductItem).filter(ProductItem.product_id==Product.id)\
+            .outerjoin(Stock).filter(Stock.id==ProductItem.stock_id, Stock.stock_holder_id.in_(stock_holder_ids))\
+            .outerjoin(StockStatus).filter(StockStatus.stock_id==Stock.id)
+        query = query.filter(Event.id==form.event_id.data)
+        query = query.group_by(Product.name)\
+            .with_entities(
+                Product.name,
+                func.sum(Stock.quantity),
+                func.sum(StockStatus.quantity)
+            )
+
+        for name, total_quantity, vacant_quantity in query.all():
+            product_name_reports[name] = dict(
+                name=name,
+                total_quantity=total_quantity or 0,
+                vacant_quantity=vacant_quantity or 0,
+                order_quantity=0,
+                paid_quantity=0,
+                unpaid_quantity=0,
+                )
+
+       # 入金済み
+        query = OrderedProduct.query.join(Order).filter(Order.performance_id==Performance.id)\
+            .outerjoin(Performance).filter(Performance.event_id==form.event_id.data)\
+            .filter(Order.canceled_at==None, Order.paid_at!=None)\
+            .outerjoin(Product).filter(Product.id==OrderedProduct.product_id)\
+            .outerjoin(SalesSegment).filter(SalesSegment.id==Product.sales_segment_id)\
+            .with_entities(Product.name, func.sum(OrderedProduct.quantity))
+        if form.limited_from.data:
+            query = query.filter(Order.created_at > form.limited_from.data)
+        if form.limited_to.data:
+            query = query.filter(Order.created_at < form.limited_to.data)
+
+        for name, paid_quantity in query.group_by(Product.name).all():
+            product_name_reports[name].update(dict(paid_quantity=paid_quantity or 0))
+
+        # 未入金
+        query = OrderedProduct.query.join(Order).filter(Order.performance_id==Performance.id)\
+            .outerjoin(Performance).filter(Performance.event_id==form.event_id.data)\
+            .filter(Order.canceled_at==None, Order.paid_at==None)\
+            .outerjoin(Product).filter(Product.id==OrderedProduct.product_id)\
+            .outerjoin(SalesSegment).filter(SalesSegment.id==Product.sales_segment_id)\
+            .with_entities(Product.name, func.sum(OrderedProduct.quantity))
+        if form.limited_from.data:
+            query = query.filter(Order.created_at > form.limited_from.data)
+        if form.limited_to.data:
+            query = query.filter(Order.created_at < form.limited_to.data)
+
+        for name, unpaid_quantity in query.group_by(Product.name).all():
+            if name not in product_name_reports:
+                logger.warn('invalid key (product_id:%s)' % id)
+                continue
+            product_name_reports[name].update(dict(unpaid_quantity=unpaid_quantity or 0))
+
+        return product_name_reports.values()
 
     def _get_performance_sales_summary(self, form):
         performance_reports = {}
@@ -174,8 +266,8 @@ class SalesReports(BaseView):
                 product_id=row[2],
                 product_name=row[3],
                 product_price=row[4],
-                total_quantity=row[5],
-                vacant_quantity=row[6],
+                total_quantity=row[5] or 0,
+                vacant_quantity=row[6] or 0,
                 stock_holder_id=row[7],
                 stock_holder_name=row[8],
                 sales_segment_name=row[9],
@@ -242,7 +334,6 @@ class SalesReports(BaseView):
         form = SalesReportForm(self.request.params, event_id=event_id)
         event_report = self._get_sales_summary(form)
         performances_reports = self._get_sales_summary(form, group='Performance')
-
         form_total = SalesReportForm(self.request.params, event_id=event_id)
         form_total.limited_from.data = None
         form_total.limited_to.data = None
@@ -300,7 +391,9 @@ class SalesReports(BaseView):
         event = Event.get(event_id, organization_id=self.context.user.organization_id)
         if event is None:
             raise HTTPNotFound('event id %d is not found' % event_id)
-        form = SalesReportForm(self.request.params)
+        form = SalesReportForm(event_id=event_id)
+        event_product = self._get_product_name_summary(form)
+
         performances_reports = {}
         for performance in event.performances:
             report_by_sales_segment = {}
@@ -312,8 +405,10 @@ class SalesReports(BaseView):
                 performance=performance,
                 report_by_sales_segment=report_by_sales_segment
             )
+            form = SalesReportForm(self.request.params)
 
         return {
+            'event_product':event_product,
             'form':form,
             'performances_reports':performances_reports,
         }
@@ -337,12 +432,13 @@ class SalesReports(BaseView):
                   report_by_sales_segment=report_by_sales_segment
                 )
             render_param = {
-                'performances_reports':performances_reports,
+                'form':form,
+                'performances_reports':performances_reports
             }
 
             settings = self.request.registry.settings
             sender = settings['mail.message.sender']
-            recipient =  form.recipient.data
+            recipient =  form.recipient.data or form.email.data
             subject = form.subject.data
             html = render_to_response('ticketing:templates/sales_reports/mail_body.html', render_param, request=self.request)
             mailer = Mailer(settings)

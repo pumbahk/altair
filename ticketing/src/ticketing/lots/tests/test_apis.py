@@ -39,7 +39,7 @@ class create_cartTests(unittest.TestCase):
     def test_it(self):
         from ticketing.core.models import (
             Performance, Product, PaymentDeliveryMethodPair, ShippingAddress, SalesSegment,
-            PaymentMethod, DeliveryMethod,
+            PaymentMethod, DeliveryMethod, Event, Organization
         )
         from ticketing.lots.models import Lot, LotEntry, LotEntryWish, LotElectedEntry, LotEntryProduct
         from pyramid.interfaces import IRequest
@@ -49,11 +49,18 @@ class create_cartTests(unittest.TestCase):
         stocks = []
         self.config.registry.adapters.register([IRequest], IStocker, "", DummyStockerFactory(stocks))
 
-        performance = Performance(id=999999)
+        performance = Performance(id=999999,
+            event=Event(organization=Organization(code="TT", short_name=u"testing")),
+        )
+        self.session.add(performance)
+        self.session.flush()
         product = Product(price=10)
         payment_delivery_method_pair = PaymentDeliveryMethodPair(system_fee=9999,
-            payment_method=PaymentMethod(),
-            delivery_method=DeliveryMethod())
+            transaction_fee=0,
+            delivery_fee=0,
+            discount=0,
+            payment_method=PaymentMethod(fee=0),
+            delivery_method=DeliveryMethod(fee=0))
         shipping_address = ShippingAddress()
         sales_segment = SalesSegment()
 
@@ -293,3 +300,41 @@ class elect_entryTests(unittest.TestCase):
 
         self.assertEqual(result.lot_entry, wish.lot_entry)
         self.assertEqual(result.lot_entry_wish, wish)
+
+class notify_entry_lotTests(unittest.TestCase):
+    def setUp(self):
+        self.config = testing.setUp()
+
+    def tearDown(self):
+        testing.tearDown()
+
+    def _callFUT(self, *args, **kwargs):
+        from .. import api
+        return api.notify_entry_lot(*args, **kwargs)
+
+    def test_it(self):
+        from ..events import LotEntriedEvent
+
+        called = []
+        def handler(event):
+            called.append(event)
+
+        self.config.add_subscriber(handler, LotEntriedEvent)
+
+        entry = testing.DummyModel()
+        request = testing.DummyRequest()
+        self._callFUT(request, entry)
+
+        self.assertEqual(called[0].lot_entry, entry)
+
+#class elect_lot_entriesTests(unittest.TestCase):
+#    def _callFUT(self, *args, **kwargs):
+#        from ..api import elect_lot_entries
+#        return elect_lot_entries(*args, **kwargs)
+#
+#    def test_it(self):
+#
+#        # 当選データ
+#        # 落選データ
+#
+#        result = self._callFUT()

@@ -74,6 +74,7 @@ class EntryLotViewTests(unittest.TestCase):
         return lot, products
 
     def test_post(self):
+        self.config.add_route('lots.entry.confirm', '/lots/events/{event_id}/entry/{lot_id}/confirm')
         lot, products = self._add_datas([
             {'name': u'商品 A', 'price': 100},
             {'name': u'商品 B', 'price': 100},
@@ -109,6 +110,7 @@ class EntryLotViewTests(unittest.TestCase):
             address_2=u"森京ビル",
             mail_address=u"test@example.com",
             mail_address2=u"test@example.com",
+            sex='1',
             payment_delivery_method_pair_id=str(payment_delivery_method_pair.id),
             **wishes
         )
@@ -118,9 +120,8 @@ class EntryLotViewTests(unittest.TestCase):
         )
         target = self._makeOne(request)        
         result = target.post()
-
-        if "form" in result:
-            print "".join(request.session.pop_flash())
+        if isinstance(result, dict):
+            print result['form'].errors
 
         self.assertEqual(result.location, "http://example.com/lots/events/1111/entry/1/confirm")
         self.assertIsNotNone(request.session['lots.entry']['token'])
@@ -147,6 +148,7 @@ class EntryLotViewTests(unittest.TestCase):
              'prefecture': u'東京都',
              'tel_1': u'01234567899',
              'tel_2': u'',
+             'sex': u'1',
              'zip': u'1234567'})
 
     def _params(self, **kwargs):
@@ -417,7 +419,7 @@ class LotReviewViewTests(unittest.TestCase):
 
     def test_post_with_elected(self):
         from datetime import datetime
-        self.config.add_route('lots.payment', '/lots/payment')
+        self.config.add_route('lots.payment.index', '/lots/events/{event_id}/payment/{lot_id}')
         from ticketing.core.models import ShippingAddress, DBSession, Event
         from ticketing.lots.models import LotEntry, Lot
         request = testing.DummyRequest()
@@ -527,19 +529,24 @@ class PaymentViewTests(unittest.TestCase):
             PaymentDeliveryMethodPair,
             PaymentMethod,
             DeliveryMethod,
+            Performance,
+            Event,
+            Organization,
         )
         from ..models import LotEntry, LotElectedEntry, LotEntryWish, Lot
         lot = Lot()
+        performance = Performance(event=Event(organization=Organization(short_name="testing", code="TEST")))
         entry = LotEntry(id=entry_id, elected_at=datetime.now(), lot=lot,
             payment_delivery_method_pair=PaymentDeliveryMethodPair(system_fee=999, 
                 transaction_fee=100, delivery_fee=234, discount=0,
                 payment_method=PaymentMethod(fee=11),
                 delivery_method=DeliveryMethod(fee=22)))
         elected = LotElectedEntry(lot_entry=entry,
-            lot_entry_wish=LotEntryWish())
+            lot_entry_wish=LotEntryWish(performance=performance))
 
         self.session.add(entry)
         self.session.flush()
+
         return entry
 
 
@@ -557,8 +564,15 @@ class PaymentViewTests(unittest.TestCase):
 
     def test_elected(self):
         from ..exceptions import NotElectedException
+        from ticketing.payments.interfaces import IPaymentDeliveryPlugin
         from ticketing.cart.models import Cart
 
+        reg = self.config.registry
+        dummy_preparer = DummyPreperer()
+        reg.utilities.register([], IPaymentDeliveryPlugin,
+            "payment-None:delivery-None", 
+            dummy_preparer,
+            )
         request = testing.DummyRequest(
             matchdict={"event_id": None},
         )
@@ -574,3 +588,12 @@ class PaymentViewTests(unittest.TestCase):
         cart = Cart.query.filter(Cart.id==cart_id).one()
         self.assertIsNotNone(cart.tickets_amount)
         self.assertIsNotNone(cart.transaction_fee)
+        self.assertEqual(dummy_preparer.called,
+            [('prepare', request, cart)])
+
+class DummyPreperer(object):
+    def __init__(self):
+        self.called = []
+
+    def prepare(self, request, cart):
+        self.called.append(("prepare", request, cart))

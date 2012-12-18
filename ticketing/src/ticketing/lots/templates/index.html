@@ -81,14 +81,14 @@
                 <table summary="チケット購入の絞り込み" id="wish-cell-table-${i}">
 						<tr>
 							<th><label>公演日・会場</label></th>
-                            <td><select name="performance-${i}" id="select" class="performance-select">
+                            <td><select name="performance-${i}" data-wishOrder="${i}" data-wishCellTableId="wish-cell-table-${i}"class="performance-select">
                               %for performance in lot.performances:
                               <option value="${performance.id}">${h.japanese_datetime(performance.open_on)} ${performance.venue.name}</option>
                                 %endfor
 							</select></td>
 						</tr>
                         %for j, product in enumerate(products):
-						<tr id="settlementSelectEnd">
+						<tr id="settlementSelectEnd" class="product-select-tr">
 							<th>
                                 %if j == 0:
                                 <label>席種券種</label>
@@ -97,13 +97,6 @@
                                 %endif;
                             </th>
                             <td>
-                                <!--
-                                <select class="w170 product-select" name="select" id="select" data-parentTable="wish-cell-table-${i}">
-                              <option value="${product.id}">${product.name}</option>
-							</select>
-                            -->
-                            <span>${product.name}</span>
-                            　<input type="hidden" name="product-id-${i}-${j}" value="${product.id}">
                             　<select name="product-quantity-${i}-${j}" >
                                 <option></option>
                                 %for k in range(sales_segment.upper_limit):
@@ -258,3 +251,39 @@
   		</form>      
 
   </div>
+<script>
+var data = ${products_json | n};
+var postedValues = ${posted_values | n};
+var upperLimit = ${sales_segment.upper_limit};
+
+$(function() {
+
+    function refreshProducts(performanceSelect, values) {
+        var products = data[$(performanceSelect).val()];
+        var wishOrder = $(performanceSelect).data('wishorder');
+        var wishCellTableId = $(performanceSelect).data('wishcelltableid');
+        var rows = $("#" + wishCellTableId + " > tbody > tr.product-select-tr");
+        rows.remove();
+        if (!products) {
+            return;
+        }
+        var html = product_select_tmpl({wishOrder: wishOrder, products: products, values: values});
+        $("#" + wishCellTableId + " tbody").append(html);
+    };
+
+    var product_select_tmpl = _.template($('#product-select-tmpl').text());
+    $(".performance-select").change(function() {
+        refreshProducts($(this), {});
+    });
+
+    $(".performance-select").each(function(index, performanceSelect) {
+        var postedPerformance = postedValues['performance-' + index];
+        $(performanceSelect).val(postedPerformance);
+        refreshProducts($(performanceSelect), postedValues);
+    });
+
+});
+</script>
+<script type="text/x-template" id="product-select-tmpl">
+<%include file="_product_selection.html_" />
+</script>

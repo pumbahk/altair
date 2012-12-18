@@ -72,6 +72,8 @@ requires = [
     'boto',
     'fluent-logger == 0.3.3moriyoshi',
     'PIL', # for qrcode.image.pil
+    'altair.findable_label', 
+    'altair.log'
     ]
 
 setup(name='ticketing',
@@ -95,6 +97,8 @@ setup(name='ticketing',
       install_requires=requires,
       dependency_links = [
         'file:../commons#egg=altair-commons-0.0',
+        "file:../altair_findable_label#egg=altair.findable_label-0.0", 
+        "file:../altair_log#egg=altair.log-0.0", 
         'https://github.com/moriyoshi/tableau/tarball/master#egg=tableau-0.0.4pre2',
         "https://github.com/numpy/numpy/tarball/v1.6.2#egg=numpy-1.6.2",
         'https://github.com/moriyoshi/beaker_extensions/tarball/0.2.0dev-moriyoshi2#egg=beaker-extensions-0.2.0dev-moriyoshi2',

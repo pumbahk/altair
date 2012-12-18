@@ -55,16 +55,11 @@ Cart test how-to
 
 次のコマンドでテスト環境用プロキシを立ち上げる::
 
-  $ misc/proxy/run.sh start
+  $ misc/proxy/proxy.py
 
 ブラウザのプロキシ設定を次の物に変更する::
 
   http://localhost:58080/
-
-テスト環境用プロキシを止めたい場合::
-
-  $ misc/proxy/run.sh stop
-
 
 Useful Resources
 ================

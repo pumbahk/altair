@@ -16,6 +16,7 @@
   function preview(){
     var params = $('#form').serialize();
     $(location).attr('href', '/events/sales_reports/preview/${event_id}?' + params);
+
   };
 </script>
 
@@ -39,8 +40,12 @@
 </div>
 
 <form id="form" action="${request.route_path('sales_reports.preview',event_id=event_id)}" method="GET">
-  ${h.form_item(form.recipient, style='width: 580px;')}
-  ${h.form_item(form.subject, style='width: 580px;')}
+% if form.email.data:
+  ${h.form_item(form.email, class_='span6')}
+% else:
+  ${h.form_item(form.recipient, class_='span6')}
+% endif
+  ${h.form_item(form.subject, class_='span8')}
   <div class="control-group">
     <label class="control-label">
       ${form.limited_from.label.text}
@@ -54,5 +59,5 @@
   </div>
 </form>
 <br>
-<iframe src="${request.route_path('sales_reports.mail_body', event_id=event_id, _query=request.params)}" name="sample" width="1000" height="800">
+<iframe src="${request.route_path('sales_reports.mail_body', event_id=event_id, _query=request.params, form=form)}" name="sample" width="1000" height="800">
 </iframe>

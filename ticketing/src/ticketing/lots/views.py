@@ -1,5 +1,7 @@
 # -*- coding:utf-8 -*-
 import logging
+import operator
+import json
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 import ticketing.cart.api as cart_api
@@ -13,6 +15,7 @@ from .exceptions import NotElectedException
 from pyramid.httpexceptions import HTTPNotFound
 from uuid import uuid4
 from ticketing.payments.payment import Payment
+from ticketing.cart.exceptions import NoCartError
 
 from .models import (
     LotEntry,
@@ -26,6 +29,11 @@ logger = logging.getLogger(__name__)
 def no_results_found(context, request):
     """ 改良が必要。ログに該当のクエリを出したい。 """
     logger.warning(context)    
+    return HTTPNotFound()
+
+@view_config(context=NoCartError)
+def no_cart_error(context, request):
+    logger.warning(context)
     return HTTPNotFound()
 
 @view_defaults(route_name='lots.entry.index', renderer="index.html")
@@ -47,6 +55,18 @@ class EntryLotView(object):
         lot_id = self.request.matchdict.get('lot_id')
         return api.get_lot(self.request, event, sales_segment, lot_id)
 
+    def _create_product_performance_map(self, products):
+        product_performance_map = {}
+        for product, performance in products:
+            products = product_performance_map.get(performance.id, [])
+            products.append(dict(id=product.id, name=product.name, display_order=product.display_order))
+            product_performance_map[performance.id] = products
+
+        key_func = operator.itemgetter('display_order', 'id')
+        for p in product_performance_map.values():
+            p.sort(key=key_func)
+        return product_performance_map
+
     @view_config(request_method="GET")
     def get(self, form=None):
         """
@@ -58,11 +78,15 @@ class EntryLotView(object):
         lot, performances, stocks = self._get_lot_info()
         event = lot.event
         sales_segment = lot.sales_segment
-        products = api.get_products(self.request, sales_segment)
+        products = api.get_products(self.request, sales_segment, performances)
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
+        product_performance_map = self._create_product_performance_map(products)
+
         return dict(form=form, event=event, sales_segment=sales_segment,
             payment_delivery_pairs=payment_delivery_pairs,
             products=products,
+            posted_values=json.dumps(dict(self.request.POST)),
+            products_json=json.dumps(product_performance_map),
             payment_delivery_method_pair_id=self.request.params.get('payment_delivery_method_pair_id'),
             lot=lot, performances=performances, stocks=stocks)
 
@@ -327,10 +351,7 @@ class PaymentConfirm(object):
 
         if not lot_entry.is_elected:
             raise NotElectedException
-        if not cart_api.has_cart(self.request):
-            raise HTTPNotFound()
-
-        cart = cart_api.get_cart(self.request)
+        cart = cart_api.get_cart_safe(self.request)
         if not cart.is_valid():
             raise HTTPNotFound()
 

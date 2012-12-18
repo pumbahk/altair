@@ -2,7 +2,10 @@
 
 import unittest
 from pyramid import testing
-from ..testing import DummyRequest, DummySecure3D
+from pyramid.testing import DummySession
+from ...testing import DummyRequest
+from ...multicheckout.testing import DummySecure3D
+from ...multicheckout.api import Checkout3D
 import mock
 
 class MultiCheckoutViewTests(unittest.TestCase):
@@ -27,9 +30,27 @@ class MultiCheckoutViewTests(unittest.TestCase):
         self.config.registry.utilities.register([], interfaces.IMultiCheckout, "", dummy)
         return dummy
 
-    def test_card_info_secure3d_enable_api(self):
+    @mock.patch('wtforms.ext.csrf.SecureForm.validate')
+    @mock.patch('ticketing.multicheckout.api.Checkout3D.secure3d_enrol')
+    @mock.patch('ticketing.multicheckout.api.get_multicheckout_service')
+    def test_card_info_secure3d_enable_api(self, get_multicheckout_service, secure3d_enrol, validate):
+        from ...multicheckout import models as mc_models
+        get_multicheckout_service.return_value = Checkout3D(
+            auth_id='auth_id',
+            auth_password='password',
+            shop_code='000000',
+            api_base_url='http://example.com/'
+            )
+        secure3d_enrol.return_value = mc_models.Secure3DReqEnrolResponse(
+            ErrorCd='000000',
+            RetCd='0',
+            AcsUrl='http://example.com/AcsUrl',
+            Md='this-is-Md',
+            PaReq='this-is-pareq'
+            )
+        validate.return_value = True
+        self.config.registry.settings['altair_cart.expire_time'] = 15
         self.config.add_route('cart.secure3d_result', '/this-is-secure3d-callback')
-        dummy_secure3d = self._register_dummy_secure3d(AcsUrl='http://example.com/AcsUrl', PaReq='this-is-pareq', Md='this-is-Md')
         params = {
             'card_number': 'XXXXXXXXXXXXXXXX',
             'exp_year': '13',
@@ -40,7 +61,13 @@ class MultiCheckoutViewTests(unittest.TestCase):
             }
 
         cart_id = 500
-        dummy_cart = testing.DummyModel(id=cart_id, total_amount=1234)
+        dummy_cart = testing.DummyModel(
+            id=cart_id,
+            total_amount=1234,
+            is_expired=lambda self: False,
+            finished_at=None,
+            order_no='000000000000'
+            )
 
         request = DummyRequest(params=params, _cart=dummy_cart)
         request.session['order'] = {}
@@ -48,33 +75,46 @@ class MultiCheckoutViewTests(unittest.TestCase):
 
         result = target.card_info_secure3d()
 
-        self.assertEqual(result.text, "<form name='PAReqForm' method='POST' action='http://example.com/AcsUrl'>\n        <input type='hidden' name='PaReq' value='this-is-pareq'>\n        <input type='hidden' name='TermUrl' value='http://example.com/this-is-secure3d-callback'>\n        <input type='hidden' name='MD' value='this-is-Md'>\n        </form>\n        <script type='text/javascript'>function onLoadHandler(){document.PAReqForm.submit();};window.onload = onLoadHandler; </script>\n        ")
-        #self.assertIsNotNone(result.get('form'))
-        #form = result['form']
-        #self.assertIn('http://example.com/AcsUrl', form)
-        #self.assertIn('this-is-pareq', form)
-        #self.assertIn('this-is-Md', form)
-        #self.assertIn('/this-is-secure3d-callback', form)
-
-        #self.assertEqual(dummy_secure3d.called[0][0], 'secure3d_enrol')
-        #self.assertEqual(dummy_secure3d.called[0][1][0], 500)
-        #self.assertEqual(dummy_secure3d.called[0][1][1].CardNumber, "XXXXXXXXXXXXXXXX")
-        #self.assertEqual(dummy_secure3d.called[0][1][1].ExpYear, "13")
-        #self.assertEqual(dummy_secure3d.called[0][1][1].ExpMonth, "07")
-
-        #self.assertEqual(dummy_secure3d.called[1],('is_enable_auth_api', (), {}))
+        self.assertEqual(result.text.strip(), """
+<form name='PAReqForm' method='POST' action='http://example.com/AcsUrl'>
+        <input type='hidden' name='PaReq' value='this-is-pareq'>
+        <input type='hidden' name='TermUrl' value='http://example.com/this-is-secure3d-callback'>
+        <input type='hidden' name='MD' value='this-is-Md'>
+        </form>
+        <script type='text/javascript'>function onLoadHandler(){document.PAReqForm.submit();};window.onload = onLoadHandler; </script>
+        """.strip())
 
         session_order = request.session['order']
         self.assertEqual(session_order['card_number'], 'XXXXXXXXXXXXXXXX')
-        #self.assertEqual(session_order['client_name'], u'楽天太郎')
-        #self.assertEqual(session_order['mail_address'], u'ticketstar@example.com')
         self.assertEqual(session_order['exp_year'], '13')
         self.assertEqual(session_order['exp_month'], '07')
         self.assertEqual(session_order['card_holder_name'], u'RAKUTEN TAROU')
 
-    def test_card_info_secure3d_disabled_api(self):
+    @mock.patch('wtforms.ext.csrf.SecureForm.validate')
+    @mock.patch('ticketing.multicheckout.api.Checkout3D.request_card_auth')
+    @mock.patch('ticketing.multicheckout.api.Checkout3D.secure3d_enrol')
+    @mock.patch('ticketing.multicheckout.api.get_multicheckout_service')
+    def test_card_info_secure3d_disabled_api(self, get_multicheckout_service, secure3d_enrol, request_card_auth, validate):
+        from ...multicheckout import models as mc_models
+        get_multicheckout_service.return_value = Checkout3D(
+            auth_id='auth_id',
+            auth_password='password',
+            shop_code='000000',
+            api_base_url='http://example.com/'
+            )
+        secure3d_enrol.return_value = mc_models.Secure3DReqEnrolResponse(
+            ErrorCd='000000',
+            RetCd='4',
+            AcsUrl='http://example.com/AcsUrl',
+            Md='this-is-Md',
+            PaReq='this-is-pareq'
+            )
+        request_card_auth.return_value = mc_models.MultiCheckoutResponseCard(
+            CmnErrorCd='000000')
+        validate.return_value = True
+        self.config.registry.settings['altair_cart.expire_time'] = 15
+        self.config.registry.settings['cart.item_name'] = '楽天チケット' # configはバイト読み取り
         self.config.add_route('cart.secure3d_result', '/this-is-secure3d-callback')
-        dummy_secure3d = self._register_dummy_secure3d(AcsUrl='http://example.com/AcsUrl', PaReq='this-is-pareq', Md='this-is-Md', enable_auth_api=False)
         params = {
             'card_number': 'XXXXXXXXXXXXXXXX',
             'exp_year': '13',
@@ -85,48 +125,129 @@ class MultiCheckoutViewTests(unittest.TestCase):
         }
 
         cart_id = 500
-        dummy_cart = testing.DummyModel(id=cart_id, total_amount=1234)
+        dummy_cart = testing.DummyModel(
+            id=cart_id,
+            total_amount=1234,
+            is_expired=lambda self: False,
+            finished_at=None,
+            order_no='000000000000',
+            performance=testing.DummyModel(id=1)
+            )
 
-        request = DummyRequest(params=params, _cart=dummy_cart)
-        request.session['order'] = {}
+        request = DummyRequest(
+            params=params,
+            _cart=dummy_cart,
+            session=DummySession(
+                order=params,
+                payment_confirm_url='http://example.com/payment_confirm'
+                )
+            )
         target = self._makeOne(request)
 
         result = target.card_info_secure3d()
+        self.assertTrue(secure3d_enrol.called)
+        self.assertTrue(request_card_auth.called)
 
-#        self.assertIsNotNone(result.get('form'))
-#        form = result['form']
-#        self.assertIn('http://example.com/AcsUrl', form)
-#        self.assertIn('this-is-pareq', form)
-#        self.assertIn('this-is-Md', form)
-#        self.assertIn('/this-is-secure3d-callback', form)
+    @mock.patch('wtforms.ext.csrf.SecureForm.validate')
+    @mock.patch('ticketing.multicheckout.api.Checkout3D.request_card_auth')
+    @mock.patch('ticketing.multicheckout.api.Checkout3D.secure3d_enrol')
+    @mock.patch('ticketing.multicheckout.api.get_multicheckout_service')
+    def test_card_info_secure3d_disabled_api_fail(self, get_multicheckout_service, secure3d_enrol, request_card_auth, validate):
+        from ...multicheckout import models as mc_models
+        get_multicheckout_service.return_value = Checkout3D(
+            auth_id='auth_id',
+            auth_password='password',
+            shop_code='000000',
+            api_base_url='http://example.com/'
+            )
+        secure3d_enrol.return_value = mc_models.Secure3DReqEnrolResponse(
+            ErrorCd='000000',
+            RetCd='4',
+            AcsUrl='http://example.com/AcsUrl',
+            Md='this-is-Md',
+            PaReq='this-is-pareq'
+            )
+        request_card_auth.return_value = mc_models.MultiCheckoutResponseCard(
+            CmnErrorCd='000001')
+        validate.return_value = True
+        self.config.registry.settings['altair_cart.expire_time'] = 15
+        self.config.registry.settings['cart.item_name'] = '楽天チケット' # configはバイト読み取り
+        self.config.add_route('payment.secure3d', 'secure3d')
+        self.config.add_route('cart.secure3d_result', '/this-is-secure3d-callback')
+        params = {
+            'card_number': 'XXXXXXXXXXXXXXXX',
+            'exp_year': '13',
+            'exp_month': '07',
+            'client_name': u'楽天太郎',
+            'card_holder_name': u'RAKUTEN TAROU',
+            'mail_address': u'ticketstar@example.com',
+        }
 
-        self.assertEqual(dummy_secure3d.called[0][0], 'secure3d_enrol')
-        self.assertEqual(dummy_secure3d.called[0][1][0], 500)
-        self.assertEqual(dummy_secure3d.called[0][1][1].CardNumber, "XXXXXXXXXXXXXXXX")
-        self.assertEqual(dummy_secure3d.called[0][1][1].ExpYear, "13")
-        self.assertEqual(dummy_secure3d.called[0][1][1].ExpMonth, "07")
+        cart_id = 500
+        dummy_cart = testing.DummyModel(
+            id=cart_id,
+            total_amount=1234,
+            is_expired=lambda self: False,
+            finished_at=None,
+            order_no='000000000000',
+            performance=testing.DummyModel(id=1)
+            )
 
-        self.assertEqual(dummy_secure3d.called[1],('is_enable_auth_api', (), {}))
+        request = DummyRequest(
+            params=params,
+            _cart=dummy_cart,
+            session=DummySession(
+                order=params,
+                payment_confirm_url='http://example.com/payment_confirm'
+                )
+            )
+        target = self._makeOne(request)
 
-        self.assertEqual(dummy_secure3d.called[2],('is_enable_secure3d', (), {}))
+        from multicheckout import MultiCheckoutSettlementFailure
+        with self.assertRaises(MultiCheckoutSettlementFailure) as m:
+            target.card_info_secure3d()
+        self.assertEqual(m.exception.error_code, '000001')
 
-    def test_card_info_secure3d_callback(self):
+
+    @mock.patch('ticketing.multicheckout.api.Checkout3D.request_card_auth')
+    @mock.patch('ticketing.multicheckout.api.Checkout3D.secure3d_auth')
+    @mock.patch('ticketing.multicheckout.api.get_multicheckout_service')
+    def test_card_info_secure3d_callback(self, get_multicheckout_service, secure3d_auth, request_card_auth):
+        from ...multicheckout import models as mc_models
+        get_multicheckout_service.return_value = Checkout3D(
+            auth_id='auth_id',
+            auth_password='password',
+            shop_code='000000',
+            api_base_url='http://example.com/'
+            )
+        secure3d_auth.return_value = mc_models.Secure3DAuthResponse(
+            ErrorCd='000000',
+            RetCd='0'
+            )
+        request_card_auth.return_value = mc_models.MultiCheckoutResponseCard(
+            CmnErrorCd='000000')
+
+        self.config.registry.settings['altair_cart.expire_time'] = 15
         # dummy rakuten user
         self.config.add_route('payment.secure3d', 'secure3d')
         userdata = {'clamed_id': 'http://example.com/this-is-openid'}
         import pickle
         userdata = pickle.dumps(userdata).encode('base64')
         self.config.testing_securitypolicy(userid=userdata)
-        dummy_secure3d = self._register_dummy_secure3d(AcsUrl='http://example.com/AcsUrl', PaReq='this-is-pareq', Md='this-is-Md', enable_auth_api=False)
         self.config.registry.settings['cart.item_name'] = '楽天チケット' # configはバイト読み取り
         params = {
             'PaRes': 'this-is-pa-res',
             'MD': 'this-is-md',
         }
         cart_id = 500
-        dummy_cart = testing.DummyModel(id=cart_id, total_amount=1234,
+        dummy_cart = testing.DummyModel(
+            id=cart_id,
+            total_amount=1234,
             performance=testing.DummyModel(id=100, name=u'テスト公演'),
             products=[],
+            is_expired=lambda self: False,
+            finished_at=None,
+            order_no='000000000000'
         )
         dummy_cart.finish = lambda: None
 
@@ -138,9 +259,383 @@ class MultiCheckoutViewTests(unittest.TestCase):
             'exp_month': '06',
             'card_holder_name': u'RAKUTEN TAROU',
         }
-        request = DummyRequest(params=params, _cart=dummy_cart, session=dict(order=session_order))
+        request = DummyRequest(
+            params=params,
+            _cart=dummy_cart,
+            session=DummySession(
+                order=session_order,
+                payment_confirm_url='http://example.com/payment_confirm'
+                ))
         target = self._makeOne(request)
 
         result = target.card_info_secure3d_callback()
 
+        self.assertEqual(result.location, 'http://example.com/payment_confirm')
 
+    @mock.patch('ticketing.multicheckout.api.Checkout3D.request_card_auth')
+    @mock.patch('ticketing.multicheckout.api.Checkout3D.secure3d_auth')
+    @mock.patch('ticketing.multicheckout.api.get_multicheckout_service')
+    def test_card_info_secure3d_callback_fail(self, get_multicheckout_service, secure3d_auth, request_card_auth):
+        from ...multicheckout import models as mc_models
+        get_multicheckout_service.return_value = Checkout3D(
+            auth_id='auth_id',
+            auth_password='password',
+            shop_code='000000',
+            api_base_url='http://example.com/'
+            )
+        request_card_auth.return_value = mc_models.MultiCheckoutResponseCard(
+            CmnErrorCd='000000')
+
+        self.config.registry.settings['altair_cart.expire_time'] = 15
+        # dummy rakuten user
+        self.config.add_route('payment.secure3d', 'secure3d')
+        userdata = {'clamed_id': 'http://example.com/this-is-openid'}
+        import pickle
+        userdata = pickle.dumps(userdata).encode('base64')
+        self.config.testing_securitypolicy(userid=userdata)
+        self.config.registry.settings['cart.item_name'] = '楽天チケット' # configはバイト読み取り
+        params = {
+            'PaRes': 'this-is-pa-res',
+            'MD': 'this-is-md',
+        }
+        cart_id = 500
+        dummy_cart = testing.DummyModel(
+            id=cart_id,
+            total_amount=1234,
+            performance=testing.DummyModel(id=100, name=u'テスト公演'),
+            products=[],
+            is_expired=lambda self: False,
+            finished_at=None,
+            order_no='000000000000'
+        )
+        dummy_cart.finish = lambda: None
+
+        session_order = {
+            'client_name': u'楽天太郎',
+            'mail_address': u'ticketstar@example.com',
+            'card_number': u'XXXXXXXXXXXXXXXX',
+            'exp_year': '12',
+            'exp_month': '06',
+            'card_holder_name': u'RAKUTEN TAROU',
+        }
+        request = DummyRequest(
+            params=params,
+            _cart=dummy_cart,
+            session=DummySession(
+                order=session_order,
+                payment_confirm_url='http://example.com/payment_confirm'
+                ))
+
+        for error_code, return_code in [('000000', '4'), ('000001', '0')]:
+            secure3d_auth.return_value = mc_models.Secure3DAuthResponse(
+                ErrorCd=error_code,
+                RetCd=return_code
+                )
+            target = self._makeOne(request)
+
+            from multicheckout import MultiCheckoutSettlementFailure
+            with self.assertRaises(MultiCheckoutSettlementFailure) as m:
+                target.card_info_secure3d_callback()
+
+            self.assertEqual(m.exception.error_code, error_code)
+            self.assertEqual(m.exception.return_code, return_code)
+
+
+class MultiCheckoutPluginTests(unittest.TestCase):
+    def setUp(self):
+        self.config = testing.setUp()
+        self.config.add_route('payment.secure3d', '/payment.secure3d')
+        #self.session = _setup_db()
+
+    def tearDown(self):
+        import transaction
+        transaction.abort()
+        testing.tearDown()
+        #_teardown_db()
+
+    def _getTarget(self):
+        from . import multicheckout
+        return multicheckout.MultiCheckoutPlugin
+
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
+    @mock.patch('ticketing.core.models.Order.create_from_cart')
+    @mock.patch('ticketing.multicheckout.api.Checkout3D.request_card_sales')
+    @mock.patch('ticketing.multicheckout.api.get_multicheckout_service')
+    def test_finish_secure_3d(self, get_multicheckout_service, request_card_sales, create_from_cart):
+        from ...multicheckout import models as mc_models
+        get_multicheckout_service.return_value = Checkout3D(
+            auth_id='auth_id',
+            auth_password='password',
+            shop_code='000000',
+            api_base_url='http://example.com/'
+            )
+        request_card_sales.return_value = mc_models.MultiCheckoutResponseCard(
+            CmnErrorCd='000000'
+            )
+        create_from_cart.return_value = testing.DummyModel()
+
+        self.config.registry.settings['cart.item_name'] = '楽天チケット' # configはバイト読み取り
+        self.config.registry.settings['altair_cart.expire_time'] = 15
+        cart_id = 500
+        dummy_cart = testing.DummyModel(
+            id=cart_id,
+            total_amount=1234,
+            performance=testing.DummyModel(id=100, name=u'テスト公演'),
+            products=[],
+            is_expired=lambda self: False,
+            finished_at=None,
+            order_no='000000000000',
+            shipping_address=testing.DummyModel()
+        )
+        dummy_cart.finish = lambda: None
+
+        session_order = {
+            'client_name': u'楽天太郎',
+            'mail_address': u'ticketstar@example.com',
+            'card_number': u'XXXXXXXXXXXXXXXX',
+            'exp_year': '12',
+            'exp_month': '06',
+            'card_holder_name': u'RAKUTEN TAROU',
+            'order_no': '000000000000',
+            'pares': '*pares*',
+            'md': '*md*',
+            'tran': {
+                'mvn': '*tran*',
+                'xid': '*xid*',
+                'ts': '*ts*',
+                'eci': '*eci*',
+                'cavv': '*cavv*',
+                'cavv_algorithm': '*cavv_algorithm*',
+                },
+            }
+        params = {
+            'PaRes': 'this-is-pa-res',
+            'MD': 'this-is-md',
+        }
+        request = DummyRequest(
+            params=params,
+            _cart=dummy_cart,
+            session=DummySession(
+                order=session_order,
+                payment_confirm_url='http://example.com/payment_confirm'
+                ))
+
+        target = self._makeOne()
+
+        result = target.finish_secure_3d(request, dummy_cart)
+
+    @mock.patch('transaction._transaction.Transaction.commit')
+    @mock.patch('ticketing.core.models.Order.create_from_cart')
+    @mock.patch('ticketing.multicheckout.api.Checkout3D.request_card_cancel_auth')
+    @mock.patch('ticketing.multicheckout.api.Checkout3D.request_card_sales')
+    @mock.patch('ticketing.multicheckout.api.get_multicheckout_service')
+    def test_finish_secure_3d_fail(self, get_multicheckout_service, request_card_sales, request_card_cancel_auth, create_from_cart, commit):
+        from ...multicheckout import models as mc_models
+        get_multicheckout_service.return_value = Checkout3D(
+            auth_id='auth_id',
+            auth_password='password',
+            shop_code='000000',
+            api_base_url='http://example.com/'
+            )
+        request_card_sales.return_value = mc_models.MultiCheckoutResponseCard(
+            CmnErrorCd='000001'
+            )
+        request_card_cancel_auth.return_value = mc_models.MultiCheckoutResponseCard(
+            CmnErrorCd='000000'
+            )
+        create_from_cart.return_value = testing.DummyModel()
+
+        self.config.registry.settings['cart.item_name'] = u'楽天チケット'
+        self.config.registry.settings['altair_cart.expire_time'] = 15
+        cart_id = 500
+        dummy_cart = testing.DummyModel(
+            id=cart_id,
+            total_amount=1234,
+            performance=testing.DummyModel(id=100, name=u'テスト公演'),
+            products=[],
+            is_expired=lambda self: False,
+            finished_at=None,
+            order_no='000000000000',
+            shipping_address=testing.DummyModel()
+        )
+        dummy_cart.finish = lambda: None
+
+        session_order = {
+            'client_name': u'楽天太郎',
+            'mail_address': u'ticketstar@example.com',
+            'card_number': u'XXXXXXXXXXXXXXXX',
+            'exp_year': '12',
+            'exp_month': '06',
+            'card_holder_name': u'RAKUTEN TAROU',
+            'order_no': '000000000000',
+            'pares': '*pares*',
+            'md': '*md*',
+            'tran': {
+                'mvn': '*tran*',
+                'xid': '*xid*',
+                'ts': '*ts*',
+                'eci': '*eci*',
+                'cavv': '*cavv*',
+                'cavv_algorithm': '*cavv_algorithm*',
+                },
+            }
+        params = {
+            'PaRes': 'this-is-pa-res',
+            'MD': 'this-is-md',
+        }
+        request = DummyRequest(
+            params=params,
+            _cart=dummy_cart,
+            session=DummySession(
+                order=session_order,
+                payment_confirm_url='http://example.com/payment_confirm'
+                ))
+
+        target = self._makeOne()
+
+        from multicheckout import MultiCheckoutSettlementFailure
+        with self.assertRaises(MultiCheckoutSettlementFailure) as m:
+            target.finish_secure_3d(request, dummy_cart)
+        self.assertEqual(m.exception.error_code, '000001')
+
+    @mock.patch('ticketing.core.models.Order.create_from_cart')
+    @mock.patch('ticketing.multicheckout.api.Checkout3D.request_card_sales')
+    @mock.patch('ticketing.multicheckout.api.get_multicheckout_service')
+    def test_finish_secure_code(self, get_multicheckout_service, request_card_sales, create_from_cart):
+        from ...multicheckout import models as mc_models
+        get_multicheckout_service.return_value = Checkout3D(
+            auth_id='auth_id',
+            auth_password='password',
+            shop_code='000000',
+            api_base_url='http://example.com/'
+            )
+        request_card_sales.return_value = mc_models.MultiCheckoutResponseCard(
+            CmnErrorCd='000000'
+            )
+        create_from_cart.return_value = testing.DummyModel()
+
+        self.config.registry.settings['cart.item_name'] = u'楽天チケット'
+        self.config.registry.settings['altair_cart.expire_time'] = 15
+        cart_id = 500
+        dummy_cart = testing.DummyModel(
+            id=cart_id,
+            total_amount=1234,
+            performance=testing.DummyModel(id=100, name=u'テスト公演'),
+            products=[],
+            is_expired=lambda self: False,
+            finished_at=None,
+            order_no='000000000000',
+            shipping_address=testing.DummyModel()
+        )
+        dummy_cart.finish = lambda: None
+
+        session_order = {
+            'client_name': u'楽天太郎',
+            'mail_address': u'ticketstar@example.com',
+            'card_number': u'XXXXXXXXXXXXXXXX',
+            'exp_year': '12',
+            'exp_month': '06',
+            'card_holder_name': u'RAKUTEN TAROU',
+            'order_no': '000000000000',
+            'secure_code': '000',
+            'pares': '*pares*',
+            'md': '*md*',
+            'tran': {
+                'mvn': '*tran*',
+                'xid': '*xid*',
+                'ts': '*ts*',
+                'eci': '*eci*',
+                'cavv': '*cavv*',
+                'cavv_algorithm': '*cavv_algorithm*',
+                },
+            }
+        params = {
+            'PaRes': 'this-is-pa-res',
+            'MD': 'this-is-md',
+        }
+        request = DummyRequest(
+            params=params,
+            _cart=dummy_cart,
+            session=DummySession(
+                order=session_order,
+                payment_confirm_url='http://example.com/payment_confirm'
+                ))
+
+        target = self._makeOne()
+
+        target.finish_secure_code(request, dummy_cart)
+
+    @mock.patch('transaction._transaction.Transaction.commit')
+    @mock.patch('ticketing.core.models.Order.create_from_cart')
+    @mock.patch('ticketing.multicheckout.api.Checkout3D.request_card_cancel_auth')
+    @mock.patch('ticketing.multicheckout.api.Checkout3D.request_card_sales')
+    @mock.patch('ticketing.multicheckout.api.get_multicheckout_service')
+    def test_finish_secure_code(self, get_multicheckout_service, request_card_sales, request_card_cancel_auth, create_from_cart, commit):
+        from ...multicheckout import models as mc_models
+        get_multicheckout_service.return_value = Checkout3D(
+            auth_id='auth_id',
+            auth_password='password',
+            shop_code='000000',
+            api_base_url='http://example.com/'
+            )
+        request_card_sales.return_value = mc_models.MultiCheckoutResponseCard(
+            CmnErrorCd='000002'
+            )
+        create_from_cart.return_value = testing.DummyModel()
+
+        self.config.registry.settings['cart.item_name'] = u'楽天チケット'
+        self.config.registry.settings['altair_cart.expire_time'] = 15
+        cart_id = 500
+        dummy_cart = testing.DummyModel(
+            id=cart_id,
+            total_amount=1234,
+            performance=testing.DummyModel(id=100, name=u'テスト公演'),
+            products=[],
+            is_expired=lambda self: False,
+            finished_at=None,
+            order_no='000000000000',
+            shipping_address=testing.DummyModel()
+        )
+        dummy_cart.finish = lambda: None
+
+        session_order = {
+            'client_name': u'楽天太郎',
+            'mail_address': u'ticketstar@example.com',
+            'card_number': u'XXXXXXXXXXXXXXXX',
+            'exp_year': '12',
+            'exp_month': '06',
+            'card_holder_name': u'RAKUTEN TAROU',
+            'order_no': '000000000000',
+            'secure_code': '000',
+            'pares': '*pares*',
+            'md': '*md*',
+            'tran': {
+                'mvn': '*tran*',
+                'xid': '*xid*',
+                'ts': '*ts*',
+                'eci': '*eci*',
+                'cavv': '*cavv*',
+                'cavv_algorithm': '*cavv_algorithm*',
+                },
+            }
+        params = {
+            'PaRes': 'this-is-pa-res',
+            'MD': 'this-is-md',
+        }
+        request = DummyRequest(
+            params=params,
+            _cart=dummy_cart,
+            session=DummySession(
+                order=session_order,
+                payment_confirm_url='http://example.com/payment_confirm'
+                ))
+
+        target = self._makeOne()
+
+        from multicheckout import MultiCheckoutSettlementFailure
+        with self.assertRaises(MultiCheckoutSettlementFailure) as m:
+            target.finish_secure_code(request, dummy_cart)
+
+        self.assertEqual(m.exception.error_code, '000002')

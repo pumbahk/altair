@@ -96,6 +96,8 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     description = sa.Column(sa.UnicodeText)
     entry_limit = sa.Column(sa.Integer, default=0, server_default="0")
 
+    lotting_announce_datetime = sa.Column(sa.DateTime, doc=u"抽選結果発表予定日")
+
     def validate_entry(self, entry):
         return True
 
@@ -212,3 +214,14 @@ class LotElectedEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     order_id = sa.Column(Identifier, sa.ForeignKey('Order.id'))
 
+class LotRejectedEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    """ 抽選落選情報 """
+
+
+    __tablename__ = 'LotRejectedEntry'
+
+    id = sa.Column(Identifier, primary_key=True)
+    lot_entry_id = sa.Column(Identifier, sa.ForeignKey('LotEntry.id'))
+    lot_entry = orm.relationship('LotEntry', backref="lot_rejected_entries")
+
+    mail_sent_at = sa.Column(sa.DateTime)

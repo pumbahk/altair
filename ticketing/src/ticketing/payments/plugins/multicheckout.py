@@ -28,10 +28,17 @@ from .. import logger
 from ticketing.cart import api
 from ticketing.cart.exceptions import NoCartError
 from ticketing.cart.selectable_renderer import selectable_renderer
+from ..exceptions import PaymentPluginException
 
 logger = logging.getLogger(__name__)
 
 from . import MULTICHECKOUT_PAYMENT_PLUGIN_ID as PAYMENT_ID
+
+class MultiCheckoutSettlementFailure(PaymentPluginException):
+    def __init__(self, message, order_no, back_url, error_code=None, return_code=None):
+        super(MultiCheckoutSettlementFailure, self).__init__(message, order_no, back_url)
+        self.error_code = error_code
+        self.return_code = return_code
 
 def back_url(request):
     return request.route_url("payment.secure3d")
@@ -136,9 +143,13 @@ class MultiCheckoutPlugin(object):
             logger.info(u'finish_secure_3d: 決済エラー order_no = %s, error_code = %s' % (order_no, checkout_sales_result.CmnErrorCd))
             multicheckout_api.checkout_auth_cancel(request, get_order_no(request, cart))
             request.session.flash(get_error_message(request, checkout_sales_result.CmnErrorCd))
-            cart.refresh_order_no()
             transaction.commit()
-            raise HTTPFound(location=back_url(request))
+            raise MultiCheckoutSettlementFailure(
+                message='finish_secure_3d: generic failure',
+                order_no=order_no,
+                back_url=back_url(request),
+                error_code=checkout_sales_result.CmnErrorCd
+                )
 
         DBSession.add(checkout_sales_result)
 
@@ -166,9 +177,13 @@ class MultiCheckoutPlugin(object):
             logger.info(u'finish_secure_code: 決済エラー order_no = %s, error_code = %s' % (order_no, checkout_sales_result.CmnErrorCd))
             multicheckout_api.checkout_auth_cancel(request, get_order_no(request, cart))
             request.session.flash(get_error_message(request, checkout_sales_result.CmnErrorCd))
-            cart.refresh_order_no()
             transaction.commit()
-            raise HTTPFound(location=back_url(request))
+            raise MultiCheckoutSettlementFailure(
+                message='finish_secure_code: generic failure',
+                order_no=order_no,
+                back_url=back_url(request),
+                error_code=checkout_sales_result.CmnErrorCd
+                )
 
         DBSession.add(checkout_sales_result)
 
@@ -240,9 +255,7 @@ class MultiCheckoutView(object):
             self.request.errors = form.errors
             return dict(form=form)
         assert not form.csrf_token.errors
-        if not api.has_cart(self.request):
-            raise NoCartError()
-        cart = api.get_cart(self.request)
+        cart = api.get_cart_safe(self.request)
         order = self._form_to_order(form)
 
         self.request.session['order'] = order
@@ -260,8 +273,7 @@ class MultiCheckoutView(object):
             self.request.errors = form.errors
             return dict(form=form)
         assert not form.csrf_token.errors
-        if not api.has_cart(self.request):
-            raise NoCartError()
+        api.get_cart_safe(self.request) # raises NoCartError if no cart is bound to the request
 
         order = self._form_to_order(form)
 
@@ -274,7 +286,7 @@ class MultiCheckoutView(object):
         return self._secure3d(order['card_number'], order['exp_year'], order['exp_month'])
 
     def _form_to_order(self, form):
-        cart = api.get_cart(self.request)
+        cart = api.get_cart_safe(self.request)
 
         # 変換
         card_number = form['card_number'].data
@@ -315,8 +327,12 @@ class MultiCheckoutView(object):
         if checkout_auth_result.CmnErrorCd != '000000':
             logger.info(u'card_info_secure3d_callback: 決済エラー order_no = %s, error_code = %s' % (order['order_no'], checkout_auth_result.CmnErrorCd))
             self.request.session.flash(get_error_message(self.request, checkout_auth_result.CmnErrorCd))
-            cart.refresh_order_no()
-            return HTTPFound(location=back_url(self.request))
+            raise MultiCheckoutSettlementFailure(
+                message='card_info_secure3d_callback: generic failure',
+                order_no=order['order_no'],
+                back_url=back_url(self.request),
+                error_code=checkout_auth_result.CmnErrorCd
+                )
 
         self.request.session['order'] = order
 
@@ -350,9 +366,7 @@ class MultiCheckoutView(object):
         """ カード情報入力(3Dセキュア)コールバック
         3Dセキュア認証結果取得
         """
-        if not api.has_cart(self.request):
-            raise NoCartError()
-        cart = api.get_cart(self.request)
+        cart = api.get_cart_safe(self.request)
 
         order = self.request.session['order']
         # 変換
@@ -371,8 +385,13 @@ class MultiCheckoutView(object):
 
         # TODO: エラーメッセージ
         if not auth_result.is_enable_secure3d():
-            cart.refresh_order_no()
-            return HTTPFound(back_url(self.request))
+            raise MultiCheckoutSettlementFailure(
+                message='card_info_secure3d_callback: secure3d not enabled?',
+                order_no=order['order_no'],
+                back_url=back_url(self.request),
+                error_code=auth_result.ErrorCd,
+                return_code=auth_result.RetCd
+                )
 
         logger.debug('call checkout auth')
         checkout_auth_result = multicheckout_api.checkout_auth_secure3d(
@@ -387,8 +406,12 @@ class MultiCheckoutView(object):
         if checkout_auth_result.CmnErrorCd != '000000':
             logger.info(u'card_info_secure3d_callback: 決済エラー order_no = %s, error_code = %s' % (order['order_no'], checkout_auth_result.CmnErrorCd))
             self.request.session.flash(get_error_message(self.request, checkout_auth_result.CmnErrorCd))
-            cart.refresh_order_no()
-            return HTTPFound(location=back_url(self.request))
+            raise MultiCheckoutSettlementFailure(
+                message='card_info_secure3d_callback: generic failure',
+                order_no=order['order_no'],
+                back_url=back_url(self.request),
+                error_code=checkout_auth_result.CmnErrorCd
+                )
 
         tran = dict(
             mvn=auth_result.Mvn, xid=auth_result.Xid, ts=auth_result.Ts,

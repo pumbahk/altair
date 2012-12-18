@@ -7,13 +7,14 @@ from urllib2 import urlopen
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.response import Response
-from sqlalchemy import and_
-from sqlalchemy.sql import exists
-from sqlalchemy.orm import joinedload, noload
+from sqlalchemy import and_, distinct
+from sqlalchemy.sql import exists, join, func
+from sqlalchemy.orm import joinedload, noload, aliased
 
 from ticketing.models import DBSession
-from ticketing.core.models import Venue, Seat, SeatStatus, SeatAdjacencySet, Stock, StockStatus, StockHolder, StockType, ProductItem
+from ticketing.core.models import Site, Venue, VenueArea, Seat, SeatAttribute, SeatStatus, SeatAdjacencySet, SeatAdjacency, Seat_SeatAdjacency, Stock, StockStatus, StockHolder, StockType, ProductItem, Performance, Event
 from ticketing.venues.export import SeatCSV
+from ticketing.fanstatic import with_bootstrap
 
 @view_config(route_name="api.get_drawing", request_method="GET", permission='event_viewer')
 def get_drawing(request):
@@ -148,3 +149,91 @@ def download(request):
     writer.writerows(seats_csv.rows)
 
     return response
+
+@view_config(route_name='venues.index', renderer='ticketing:templates/venues/index.html', decorator=with_bootstrap, permission='event_editor')
+def index(request):
+    sort = request.GET.get('sort', 'Venue.site_id')
+    direction = request.GET.get('direction', 'asc')
+    if direction not in ['asc', 'desc']:
+        direction = 'asc'
+
+    query = DBSession.query(Venue, func.count(Seat.id))
+    query = query.outerjoin(Performance).filter(Performance.deleted_at==None)
+    query = query.outerjoin(Event).filter(Event.deleted_at==None)
+    query = query.filter_by(organization_id=request.context.user.organization_id)
+    query = query.outerjoin(Seat)
+    query = query.group_by(Venue.id)
+    query = query.order_by(sort + ' ' + direction)
+
+    class VenueCount:
+        def __init__(self, venue, count):
+            self.venue = venue
+            self.count = count
+
+    items = []
+    for venue, count in query:
+        items.append(VenueCount(venue, count))
+
+    return {
+        'items': items
+    }
+
+@view_config(route_name="api.get_frontend", request_method="GET", permission='event_viewer')
+def frontend_drawing(request):
+    venue_id = int(request.matchdict.get('venue_id', 0))
+    venue = Venue.get(venue_id, organization_id=request.context.user.organization_id)
+    part = request.matchdict.get('part')
+    return Response(body=venue.site.get_drawing(part).stream().read(), content_type='text/xml; charset=utf-8')
+
+# FIXME: add permission limitation
+@view_config(route_name='venues.show', renderer='ticketing:templates/venues/show.html', decorator=with_bootstrap)
+def show(request):
+    venue_id = int(request.matchdict.get('venue_id', 0))
+    venue = Venue.get(venue_id, organization_id=request.context.user.organization_id)
+    site = Site.get(venue.site_id)
+    root = None
+    for page, info in site._metadata.get('pages').items():
+        if info.get('root'):
+            root = page
+    
+    class SeatInfo:
+        def __init__(self, seat, venuearea, attr, status):
+            self.seat = seat
+            self.venuearea = venuearea
+            self.row = attr
+            self.status = status
+
+    seats = DBSession.query(Seat, VenueArea, SeatAttribute, SeatStatus)\
+        .filter_by(venue_id=venue_id)\
+        .join(Seat.areas)\
+        .join(SeatAttribute).filter_by(name="row")\
+        .join(SeatStatus)
+    items = []
+    for seat, venuearea, attr, status in seats:
+        items.append(SeatInfo(seat, venuearea, attr, status))
+    
+    class SeatAdjacencyInfo:
+        def __init__(self, adj, count):
+            self.adj = adj
+            self.count = count
+
+    _adjs = DBSession\
+        .query(SeatAdjacencySet, func.count(distinct(Seat.id)))\
+        .filter_by(venue_id=venue.id)\
+        .outerjoin(SeatAdjacencySet.adjacencies)\
+        .join(Seat_SeatAdjacency)\
+        .join(Seat, Seat_SeatAdjacency.seat_id==Seat.id)\
+        .order_by('seat_count')\
+        .group_by(SeatAdjacencySet.id)\
+        .all()
+    adjs = []
+    for adj, count in _adjs:
+        adjs.append(SeatAdjacencyInfo(adj, count))
+
+    return {
+        'venue': venue,
+        'site': site,
+        'root': root,
+        'items': items,
+        'adjs': adjs,
+    }
