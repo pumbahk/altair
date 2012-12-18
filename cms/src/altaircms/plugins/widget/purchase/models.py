@@ -13,6 +13,7 @@ from altaircms.plugins.base.mixins import HandleWidgetMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
 import altaircms.helpers as h
+from altaircms.plugins.base.interception import not_support_if_keyerror
 
 def purchase_simple_render(request, widget, event):
     if widget.external_link:
@@ -42,6 +43,7 @@ class PurchaseWidget(Widget):
     def merge_settings(self, bname, bsettings):
         bsettings.need_extra_in_scan("event")
         bsettings.need_extra_in_scan("request")
+        @not_support_if_keyerror("purchase widget: %(err)s")
         def render_purchase_button():
             event = bsettings.extra["event"]
             request = bsettings.extra["request"]
