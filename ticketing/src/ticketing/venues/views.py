@@ -195,10 +195,11 @@ def show(request):
     venue = Venue.get(venue_id, organization_id=request.context.user.organization_id)
     site = Site.get(venue.site_id)
     root = None
-    for page, info in site._metadata.get('pages').items():
-        if info.get('root'):
-            root = page
-    
+    if site._metadata != None:
+        for page, info in site._metadata.get('pages').items():
+            if info.get('root'):
+                root = page
+
     class SeatInfo:
         def __init__(self, seat, venuearea, attr, status):
             self.seat = seat
