@@ -57,6 +57,10 @@ namespace TECImageWriterGateway
         {
             using (RegistryKey k = Registry.CurrentUser.OpenSubKey(PageSetupKey, true))
             {
+                if (k == null)
+                {
+                    return;
+                }
                 k.SetValue("header", "", RegistryValueKind.String);
                 k.SetValue("footer", "", RegistryValueKind.String);
                 k.SetValue("margin_bottom", "0", RegistryValueKind.String);
