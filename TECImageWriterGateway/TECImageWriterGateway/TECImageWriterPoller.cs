@@ -48,7 +48,7 @@ namespace TECImageWriterGateway
 
         public EventHandler<TECImageWriterPollerImageAvailableEventArgs> ImageAvailable;
 
-        public TECImageWriterPoller(): this(Win32API.GetSystemDirectory() + "\\TECIMAGE\\image.bmp")
+        public TECImageWriterPoller(): this(System.Environment.SystemDirectory + "\\TECIMAGE\\image.bmp")
         {
         }
 

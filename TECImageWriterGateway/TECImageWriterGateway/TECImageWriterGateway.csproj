@@ -85,7 +85,6 @@
     <Compile Include="RenderingResult.cs" />
     <Compile Include="Server.cs" />
     <Compile Include="TECImageWriterPoller.cs" />
-    <Compile Include="Win32API.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MIMER\MIMER.csproj">
