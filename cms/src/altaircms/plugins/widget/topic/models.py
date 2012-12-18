@@ -107,6 +107,10 @@ MERGE_SETTINGS_DISPATH = {
         topics_merge_settings, 
         "altaircms.plugins.widget:topic/89ers_faq_render.mako"
         ), 
+    ("noimage", u"vissel質問"): functools.partial(
+        topics_merge_settings, 
+        "altaircms.plugins.widget:topic/vissel_faq_render.mako"
+        ), 
     ("noimage", u"89ers取引方法詳細"): functools.partial(
         topics_merge_settings, 
         "altaircms.plugins.widget:topic/89ers_info_render.mako"
