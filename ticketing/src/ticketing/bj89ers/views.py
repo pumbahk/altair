@@ -151,7 +151,7 @@ class PaymentView(_PaymentView):
 class CompleteView(_CompleteView):
     @back
     def __call__(self):
-        cart = api.get_cart_safe(self.request)
+        cart = cart_api.get_cart_safe(self.request)
 
         order_session = self.request.session['order']
 
