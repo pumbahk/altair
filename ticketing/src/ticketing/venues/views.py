@@ -7,12 +7,12 @@ from urllib2 import urlopen
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.response import Response
-from sqlalchemy import and_
+from sqlalchemy import and_, distinct
 from sqlalchemy.sql import exists, join, func
 from sqlalchemy.orm import joinedload, noload, aliased
 
 from ticketing.models import DBSession
-from ticketing.core.models import Venue, VenueArea, Seat, SeatAttribute, SeatStatus, SeatAdjacencySet, Stock, StockStatus, StockHolder, StockType, ProductItem, Performance, Event
+from ticketing.core.models import Site, Venue, VenueArea, Seat, SeatAttribute, SeatStatus, SeatAdjacencySet, SeatAdjacency, Seat_SeatAdjacency, Stock, StockStatus, StockHolder, StockType, ProductItem, Performance, Event
 from ticketing.venues.export import SeatCSV
 from ticketing.fanstatic import with_bootstrap
 
@@ -150,8 +150,7 @@ def download(request):
 
     return response
 
-# FIXME: add permission limitation
-@view_config(route_name='venues.index', renderer='ticketing:templates/venues/index.html', decorator=with_bootstrap)
+@view_config(route_name='venues.index', renderer='ticketing:templates/venues/index.html', decorator=with_bootstrap, permission='event_editor')
 def index(request):
     sort = request.GET.get('sort', 'Venue.site_id')
     direction = request.GET.get('direction', 'asc')
@@ -179,11 +178,23 @@ def index(request):
         'items': items
     }
 
+@view_config(route_name="api.get_frontend", request_method="GET", permission='event_viewer')
+def frontend_drawing(request):
+    venue_id = int(request.matchdict.get('venue_id', 0))
+    venue = Venue.get(venue_id, organization_id=request.context.user.organization_id)
+    part = request.matchdict.get('part')
+    return Response(body=venue.site.get_drawing(part).stream().read(), content_type='text/xml; charset=utf-8')
+
 # FIXME: add permission limitation
 @view_config(route_name='venues.show', renderer='ticketing:templates/venues/show.html', decorator=with_bootstrap)
 def show(request):
     venue_id = int(request.matchdict.get('venue_id', 0))
     venue = Venue.get(venue_id, organization_id=request.context.user.organization_id)
+    site = Site.get(venue.site_id)
+    root = None
+    for page, info in site._metadata.get('pages').items():
+        if info.get('root'):
+            root = page
     
     class SeatInfo:
         def __init__(self, seat, venuearea, attr, status):
@@ -201,7 +212,28 @@ def show(request):
     for seat, venuearea, attr, status in seats:
         items.append(SeatInfo(seat, venuearea, attr, status))
     
+    class SeatAdjacencyInfo:
+        def __init__(self, adj, count):
+            self.adj = adj
+            self.count = count
+
+    _adjs = DBSession\
+        .query(SeatAdjacencySet, func.count(distinct(Seat.id)))\
+        .filter_by(venue_id=venue.id)\
+        .outerjoin(SeatAdjacencySet.adjacencies)\
+        .join(Seat_SeatAdjacency)\
+        .join(Seat, Seat_SeatAdjacency.seat_id==Seat.id)\
+        .order_by('seat_count')\
+        .group_by(SeatAdjacencySet.id)\
+        .all()
+    adjs = []
+    for adj, count in _adjs:
+        adjs.append(SeatAdjacencyInfo(adj, count))
+
     return {
         'venue': venue,
+        'site': site,
+        'root': root,
         'items': items,
+        'adjs': adjs,
     }
