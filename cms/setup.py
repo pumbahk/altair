@@ -22,11 +22,10 @@ requires = [
     "js.json2", 
     "js.jqueryui", 
     "js.jquery_tools", 
-    "js.underscore",
+    'js.underscore >= 1.3.3',
     'js.backbone',
     'js.tinymce',
     'pyramid_who',
-    'altair-commons',
     'uamobile', 
     'fluent-logger == 0.3.3moriyoshi',
     'pyramid_selectable_renderer'
@@ -95,9 +94,6 @@ setup(name='altair-cms',
       [pyramid.scaffold]
       cms_widget = scaffolds:WidgetPluginTemplate
       cms_asset_widget = scaffolds:AssetWidgetPluginTemplate
-
-      [distutils.commands]
-      migrate_db = altaircms.distext.migrate:MigrateCommand
 
       [console_scripts]
       loadfromcsv = altaircms.scripts.loadfromcsv:main
