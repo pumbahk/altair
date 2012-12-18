@@ -9,7 +9,7 @@ border:none;
 body{
 	margin: 0;
 	padding: 0;
-	background: url(images/bg_c.gif) repeat #eee;
+	background: url(/static/vissel/images/bg_c.gif) repeat #eee;
 	color: #555;
 	font-size: 12px;
     height: 100%;
@@ -67,7 +67,7 @@ a:hover img {
 }
 
 .header{
-    background: url(images/header-bg.gif) repeat scroll 0 0 transparent;
+    background: url(/static/vissel/images/header-bg.gif) repeat scroll 0 0 transparent;
     height: 82px;
     width:100%;
 	margin:0;
@@ -752,7 +752,7 @@ dl.faq dd{
 }
 
 .function{
-	background: url(images/functions.png) no-repeat;
+	background: url(/static/vissel/images/functions.png) no-repeat;
 	width:575px;
 	height: 180px;
 	padding: 110px 50px 50px 50px;
@@ -975,21 +975,21 @@ div#performance-calendar table tbody td.holiday .day {
 
 
 div#performance-calendar table td ul li.maru{
-	background: url(images/maru.png) #f1fbff no-repeat left top;
+	background: url(/static/vissel/images/maru.png) #f1fbff no-repeat left top;
 	padding: 3px;
 	text-align: center;
 	font-size: 11px;
 }
 
 div#performance-calendar table td ul li.sankaku{
-	background: url(images/sankaku.png) #fffcf0 no-repeat left top;
+	background: url(/static/vissel/images/sankaku.png) #fffcf0 no-repeat left top;
 	padding: 3px;
 	text-align: center;
 	font-size: 11px;
 }
 
 div#performance-calendar table td ul li.batsu{
-	background: url(images/batsu.png) #eee no-repeat left top;
+	background: url(/static/vissel/images/batsu.png) #eee no-repeat left top;
 	padding: 3px;
 	text-align: center;
 	font-size: 11px;
@@ -1050,7 +1050,7 @@ div#performance-calendar .month-tab span a{
 
 
 .footer {
-    background: url(images/header-bg.gif) repeat scroll 0 0 transparent;
+    background: url(/static/vissel/images/header-bg.gif) repeat scroll 0 0 transparent;
     clear: both;
     text-align: right;
     width:100%;
