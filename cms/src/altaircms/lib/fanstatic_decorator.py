@@ -7,7 +7,6 @@ from js.json2 import json2
 # from js.jqueryui import black_tie
 from js.jqueryui import smoothness
 from js.jqueryui import jqueryui
-from js.tinymce import tinymce
 from js.backbone import backbone
 from js.bootstrap import bootstrap
 
@@ -71,13 +70,6 @@ with_fanstatic_jqueries = FanstaticDecoratorFactory(
     backbone.need
     )
 
-with_wysiwyg_editor = FanstaticDecoratorFactory(
-    tinymce.need
-)
 with_bootstrap = FanstaticDecoratorFactory(
     bootstrap.need
  )
-
-# with_bootstrap = FanstaticDecoratorFactory(
-#     jquery.need
-# )

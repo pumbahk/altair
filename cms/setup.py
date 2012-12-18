@@ -11,13 +11,10 @@ requires = [
     'pyramid == 1.3.4',
     'webhelpers', 
     'pyramid_tm',
-    'pyramid_openid',
     "pyramid_fanstatic", 
     'sqlahelper',
     "pil",
-    "bpmappers",
     'isodate',
-    'oauth2',
     "solrpy", 
     "WTForms",
     "js.jquery == 1.7.1", 
@@ -31,7 +28,6 @@ requires = [
     'pyramid_who',
     'altair-commons',
     'uamobile', 
-    'tableau',
     'fluent-logger == 0.3.3moriyoshi',
     'pyramid_selectable_renderer'
     ]
