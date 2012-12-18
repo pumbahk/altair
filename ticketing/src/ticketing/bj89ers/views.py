@@ -8,6 +8,7 @@ from pyramid.threadlocal import get_current_request
 from pyramid.view import view_config, render_view_to_response
 from pyramid.view import notfound_view_config
 from webob.multidict import MultiDict
+import transaction
 
 from ..cart.events import notify_order_completed
 from ..cart.exceptions import NoCartError
@@ -31,6 +32,21 @@ logger = logging.getLogger(__name__)
 def no_cart(context, request):
     logger.error("No cart!")
     return HTTPFound(request.route_url('index'))
+
+def cart_creation_exception(context, request):
+    if context.back_url is not None:
+        # カートの救済可能な場合
+        cart_api.recover_cart(request) 
+        transaction.commit()
+        return HTTPFound(location=context.back_url)
+    else:
+        # カートの救済不可能
+        if cart is not None:
+            location = request.route_url('cart.index', event_id=cart.performance.event_id)
+        else:
+            location = request.context.host_base_url
+    return dict(message=Markup(u'決済中にエラーが発生しました。しばらく時間を置いてから<a href="%s">再度お試しください。</a>' % location))
+
 
 def back(func):
     def retval(*args, **kwargs):
