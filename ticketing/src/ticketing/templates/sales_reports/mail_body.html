@@ -27,22 +27,56 @@
       <h4>全商品名区分集計</h4>
       <table style="width: 95%; border: 1px #DCDCDC solid; background-color: #C0FFFF;">
         <tr>
+          <th style="width: 13%; border: 1px #DCDCDC solid;">席種</th>
           <th style="width: 13%; border: 1px #DCDCDC solid;">商品</th>
+          <th style="width: 10%; border: 1px #DCDCDC solid;">価格</th>
           <th style="width: 13%; border: 1px #DCDCDC solid;">配席数</th>
-          <th style="width: 13%; border: 1px #DCDCDC solid;">残数</th>
-          <th style="width: 13%; border: 1px #DCDCDC solid;">受付数</th>
-          <th style="width: 13%; border: 1px #DCDCDC solid;">未入金</th>
-          <th style="width: 13%; border: 1px #DCDCDC solid;">入金済み</th>　
+          <th style="width: 9%; border: 1px #DCDCDC solid;">残数</th>
+          <th style="width: 9%; border: 1px #DCDCDC solid;">受付数</th>
+          <th style="width: 9%; border: 1px #DCDCDC solid;">未入金</th>
+          <th style="width: 9%; border: 1px #DCDCDC solid;">入金済み</th>
+          <th style="width: 9%; border: 1px #DCDCDC solid;">小合計</th>
         </tr>
-      % for product in event_product:
+      <%
+        stock_type_id = None
+        product_total = {
+          'total_quantity':0,
+          'vacant_quantity':0,
+          'unpaid_quantity':0,
+          'paid_quantity':0,
+          'price_total':0,
+        }
+
+        product_array = {}
+        for p in event_product:
+          t = product_array[p['stock_type_id']] if p['stock_type_id'] in product_array else []
+          t.append(p)
+          product_array[p['stock_type_id']] = t 
+      %>
+      % for eventproduct in sorted(event_product, key=lambda x:(x['stock_type_id'], x['stock_holder_id'], x['product_id'])):
+        <%
+          if stock_type_id == eventproduct['stock_type_id']:
+            continue
+          count = len(product_array[eventproduct['stock_type_id']])
+
+        %>
+        % for i, product in enumerate(product_array[eventproduct['stock_type_id']]):
         <tr>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${product['name']}</td>
+          % if i == 0:
+          <td rowspan="${count}" style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${product['stock_type_name']}</td>
+          % endif
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${product['product_name']}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product['product_price'])}円</td>
+
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${h.price_format(product['total_quantity'])}</td>
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${h.price_format(product['vacant_quantity'])}</td>
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${h.price_format(product['paid_quantity'] + product['unpaid_quantity']) or ''}</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${h.price_format(product['paid_quantity'])}</td>
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${h.price_format(product['unpaid_quantity'])}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${h.price_format(product['paid_quantity'])}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${h.price_format(product['product_price']*product['paid_quantity'])}円</td>
         </tr>
+        % endfor
+        <% stock_type_id = eventproduct['stock_type_id'] %>
       % endfor
 
       </table>
