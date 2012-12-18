@@ -2,6 +2,7 @@ from pyramid.config import Configurator
 from pyramid_beaker import session_factory_from_settings
 from pyramid.httpexceptions import HTTPNotFound
 import json
+from ..payments.exceptions import PaymentPluginException
 from ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment
 from ticketing.payments.interfaces import IDeliveryPlugin, IOrderDelivery
 from ticketing.cart.interfaces import ICartDelivery
@@ -83,6 +84,8 @@ def main(global_conf, **settings):
     config.add_view('.views.notfound_view', context=HTTPNotFound,  renderer="errors_mobile/not_found.html", request_type='ticketing.cart.interfaces.IMobileRequest')
     config.add_view('.views.forbidden_view', context="pyramid.httpexceptions.HTTPForbidden", renderer="errors/not_found.html", )
     config.add_view('.views.forbidden_view', context="pyramid.httpexceptions.HTTPForbidden", renderer="errors_mobile/not_found.html", request_type='ticketing.cart.interfaces.IMobileRequest')
+    config.add_view('.views.cart_creation_exception', context=PaymentPluginException, renderer='ticketing.cart:templates/errors/error.html')
+    config.add_view('.views.cart_creation_exception', context=PaymentPluginException, renderer='ticketing.cart:templates/errors_mobile/error.html', request_type="ticketing.cart.interfaces.IMobileRequest")
     config.add_view('.views.exception_view',  context=StandardError, renderer="errors/error.html")
     config.add_view('.views.exception_view', context=StandardError,  renderer="errors_mobile/error.html", request_type='ticketing.cart.interfaces.IMobileRequest')
     ## xxxx

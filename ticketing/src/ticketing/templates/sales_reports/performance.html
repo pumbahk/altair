@@ -27,7 +27,7 @@
 <table class="table table-striped table-bordered table-condensed">
   <tr>
     <th colspan="4"></th>
-    <th colspan="5">累計</th>
+    <th colspan="6">累計</th>
   </tr>
   <tr>
     <th>席種</th>
@@ -39,6 +39,7 @@
     <th>受付</th>
     <th>未入金</th>
     <th>入金済み</th>
+    <th>小計</th>
   </tr>
   <%
     stock_id = None
@@ -47,6 +48,7 @@
       'vacant_quantity':0,
       'unpaid_quantity':0,
       'paid_quantity':0,
+      'price_total':0,
     }
 
     stock_reports = {}
@@ -80,9 +82,11 @@
     <td class="numeric">${h.price_format(report['paid_quantity'] + report['unpaid_quantity']) or ''}</td>
     <td class="numeric">${h.price_format(report['unpaid_quantity']) or ''}</td>
     <td class="numeric">${h.price_format(report['paid_quantity']) or ''}</td>
+    <td class="numeric">${h.price_format(report['paid_quantity']*report['product_price'])}円</td>
     <%
       performance_total['unpaid_quantity'] += report['unpaid_quantity']
       performance_total['paid_quantity'] += report['paid_quantity']
+      performance_total['price_total'] += report['paid_quantity']*report['product_price']
     %>
   </tr>
     % endfor
@@ -95,6 +99,7 @@
     <td class="numeric">${h.price_format(performance_total['paid_quantity'] + performance_total['unpaid_quantity']) or ''}</td>
     <td class="numeric">${h.price_format(performance_total['unpaid_quantity']) or ''}</td>
     <td class="numeric">${h.price_format(performance_total['paid_quantity']) or ''}</td>
+    <td class="numeric">${h.price_format(performance_total['price_total']) or ''}円</td>
   </tr>
 </table>
 % endfor

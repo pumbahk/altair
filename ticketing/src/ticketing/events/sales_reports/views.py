@@ -166,6 +166,7 @@ class SalesReports(BaseView):
         return reports.values()
 
 
+    '''
     def _get_product_name_summary(self, form, group='Event'):
         product_name_reports = {}
 
@@ -177,17 +178,19 @@ class SalesReports(BaseView):
             .outerjoin(Product).filter(Product.event_id==Event.id)\
             .outerjoin(ProductItem).filter(ProductItem.product_id==Product.id)\
             .outerjoin(Stock).filter(Stock.id==ProductItem.stock_id, Stock.stock_holder_id.in_(stock_holder_ids))\
+            .outerjoin(StockType).filter(Stock.stock_type_id==StockType.id)\
             .outerjoin(StockStatus).filter(StockStatus.stock_id==Stock.id)
         query = query.filter(Event.id==form.event_id.data)
-        query = query.group_by(Product.name)\
+        query = query.group_by(StockType.id)\
             .with_entities(
-                Product.name,
+                StockType.id,
+                StockType.name,
                 func.sum(Stock.quantity),
                 func.sum(StockStatus.quantity)
             )
 
-        for name, total_quantity, vacant_quantity in query.all():
-            product_name_reports[name] = dict(
+        for id, name, total_quantity, vacant_quantity in query.all():
+            product_name_reports[id] = dict(
                 name=name,
                 total_quantity=total_quantity or 0,
                 vacant_quantity=vacant_quantity or 0,
@@ -196,20 +199,20 @@ class SalesReports(BaseView):
                 unpaid_quantity=0,
                 )
 
-       # 入金済み
+        # 入金済み
         query = OrderedProduct.query.join(Order).filter(Order.performance_id==Performance.id)\
             .outerjoin(Performance).filter(Performance.event_id==form.event_id.data)\
             .filter(Order.canceled_at==None, Order.paid_at!=None)\
             .outerjoin(Product).filter(Product.id==OrderedProduct.product_id)\
-            .outerjoin(SalesSegment).filter(SalesSegment.id==Product.sales_segment_id)\
-            .with_entities(Product.name, func.sum(OrderedProduct.quantity))
+            .outerjoin(ProductItem).filter(ProductItem.product_id==OrderedProduct.product_id)\
+            .with_entities(StockType.id, StockType.name, func.sum(OrderedProduct.quantity))
         if form.limited_from.data:
             query = query.filter(Order.created_at > form.limited_from.data)
         if form.limited_to.data:
             query = query.filter(Order.created_at < form.limited_to.data)
 
-        for name, paid_quantity in query.group_by(Product.name).all():
-            product_name_reports[name].update(dict(paid_quantity=paid_quantity or 0))
+        for id, name, paid_quantity in query.group_by(StockType.id).all():
+            product_name_reports[id].update(dict(paid_quantity=paid_quantity or 0))
 
         # 未入金
         query = OrderedProduct.query.join(Order).filter(Order.performance_id==Performance.id)\
@@ -230,6 +233,7 @@ class SalesReports(BaseView):
             product_name_reports[name].update(dict(unpaid_quantity=unpaid_quantity or 0))
 
         return product_name_reports.values()
+    '''
 
     def _get_performance_sales_summary(self, form):
         performance_reports = {}
@@ -239,25 +243,40 @@ class SalesReports(BaseView):
 
         # 商品ごとの情報、配席数、在庫数
         query = StockType.query.filter(StockType.id==Stock.stock_type_id)\
-            .outerjoin(Product).filter(Product.seat_stock_type_id==StockType.id)\
-            .outerjoin(SalesSegment).filter(SalesSegment.id==Product.sales_segment_id, SalesSegment.id==form.sales_segment_id.data)\
-            .outerjoin(ProductItem).filter(ProductItem.product_id==Product.id, ProductItem.performance_id==form.performance_id.data)\
             .outerjoin(Stock).filter(Stock.id==ProductItem.stock_id, Stock.stock_holder_id.in_(stock_holder_ids))\
             .outerjoin(StockHolder).filter(StockHolder.id==Stock.stock_holder_id)\
             .outerjoin(StockStatus).filter(StockStatus.stock_id==Stock.id)\
-            .with_entities(
+            .outerjoin(Product).filter(Product.seat_stock_type_id==StockType.id)
+        if form.event_id.data:
+            query = query.filter(Product.event_id==form.event_id.data)
+            total_quantity_entity = func.sum(Stock.quantity).label('total_quantity')
+            stock_quantity_entity = func.sum(StockStatus.quantity).label('vacant_quantity')
+        else:
+            total_quantity_entity = Stock.quantity.label('total_quantity')
+            stock_quantity_entity = StockStatus.quantity.label('vacant_quantity')
+        if form.performance_id.data:
+            query = query.outerjoin(ProductItem).filter(ProductItem.product_id==Product.id, ProductItem.performance_id==form.performance_id.data)
+        if form.sales_segment_id.data:
+            query = query.outerjoin(SalesSegment).filter(SalesSegment.id==Product.sales_segment_id, SalesSegment.id==form.sales_segment_id.data)
+            sales_segment_name_entity = SalesSegment.name.label('sales_segment_name')
+        else:
+            sales_segment_name_entity = 'null'
+
+        query = query.with_entities(
                 StockType.id.label('stock_type_id'),
                 StockType.name.label('stock_type_name'),
                 Product.id.label('product_id'),
                 Product.name.label('product_name'),
                 Product.price.label('product_price'),
-                Stock.quantity.label('total_quantity'),
-                StockStatus.quantity.label('vacant_quantity'),
+                total_quantity_entity,
+                stock_quantity_entity,
                 StockHolder.id.label('stock_holder_id'),
                 StockHolder.name.label('stock_holder_name'),
-                SalesSegment.name.label('sales_segment_name'),
+                sales_segment_name_entity,
                 Stock.id.label('stock_id'),
             )
+        if form.event_id.data:
+            query = query.group_by(Product.name, Product.price)
         for row in query.all():
             performance_reports[row[2]] = dict(
                 stock_id=row[10],
@@ -277,31 +296,64 @@ class SalesReports(BaseView):
             )
 
         # 入金済み
-        query = OrderedProduct.query.join(Order).filter(Order.performance_id==form.performance_id.data)\
+        query = OrderedProduct.query.join(Order)\
             .filter(Order.canceled_at==None, Order.paid_at!=None)\
-            .outerjoin(Product).filter(Product.id==OrderedProduct.product_id)\
-            .outerjoin(SalesSegment).filter(SalesSegment.id==Product.sales_segment_id, SalesSegment.id==form.sales_segment_id.data)\
-            .with_entities(OrderedProduct.product_id, func.sum(OrderedProduct.quantity))
+            .outerjoin(Product).filter(Product.id==OrderedProduct.product_id)
+        if form.event_id.data:
+            query = query.filter(Product.event_id==form.event_id.data)
+            ordered_product_quantity_entity = func.sum(OrderedProduct.quantity).label('ordered_product_quantity')
+        else:
+            ordered_product_quantity_entity = OrderedProduct.quantity.label('ordered_product_quantity')
+        if form.performance_id.data:
+            query = query.filter(Order.performance_id==form.performance_id.data)
+        if form.sales_segment_id.data:
+            query = query.outerjoin(SalesSegment).filter(SalesSegment.id==Product.sales_segment_id, SalesSegment.id==form.sales_segment_id.data)
         if form.limited_from.data:
             query = query.filter(Order.created_at > form.limited_from.data)
         if form.limited_to.data:
             query = query.filter(Order.created_at < form.limited_to.data)
+        
+        query = query.with_entities(
+                OrderedProduct.product_id,
+                ordered_product_quantity_entity,
+            )
+        if form.event_id.data:
+            query = query.group_by(Product.name, Product.price)
+        else:
+            query = query.group_by(OrderedProduct.product_id)
 
-        for id, paid_quantity in query.group_by(OrderedProduct.product_id).all():
+        for id, paid_quantity in query.all():
             performance_reports[id].update(dict(paid_quantity=paid_quantity or 0))
 
         # 未入金
-        query = OrderedProduct.query.join(Order).filter(Order.performance_id==form.performance_id.data)\
+        query = OrderedProduct.query.join(Order)\
             .filter(Order.canceled_at==None, Order.paid_at==None)\
-            .outerjoin(Product).filter(Product.id==OrderedProduct.product_id)\
-            .outerjoin(SalesSegment).filter(SalesSegment.id==Product.sales_segment_id, SalesSegment.id==form.sales_segment_id.data)\
-            .with_entities(OrderedProduct.product_id, func.sum(OrderedProduct.quantity))
+            .outerjoin(Product).filter(Product.id==OrderedProduct.product_id)
+        if form.event_id.data:
+            query = query.filter(Product.event_id==form.event_id.data)
+            ordered_product_quantity_entity = func.sum(OrderedProduct.quantity).label('ordered_product_quantity')
+        else:
+            ordered_product_quantity_entity = OrderedProduct.quantity.label('ordered_product_quantity')
+        if form.performance_id.data:
+            query = query.filter(Order.performance_id==form.performance_id.data)
+        if form.sales_segment_id.data:
+            query = query.outerjoin(SalesSegment).filter(SalesSegment.id==Product.sales_segment_id, SalesSegment.id==form.sales_segment_id.data)
         if form.limited_from.data:
             query = query.filter(Order.created_at > form.limited_from.data)
         if form.limited_to.data:
             query = query.filter(Order.created_at < form.limited_to.data)
+        
+        query = query.with_entities(
+                OrderedProduct.product_id,
+                ordered_product_quantity_entity,
+            )
 
-        for id, unpaid_quantity in query.group_by(OrderedProduct.product_id).all():
+        if form.event_id.data:
+            query = query.group_by(Product.name, Product.price)
+        else:
+            query = query.group_by(OrderedProduct.product_id)
+
+        for id, unpaid_quantity in query.all():
             if id not in performance_reports:
                 logger.warn('invalid key (product_id:%s)' % id)
                 continue
@@ -392,7 +444,7 @@ class SalesReports(BaseView):
         if event is None:
             raise HTTPNotFound('event id %d is not found' % event_id)
         form = SalesReportForm(event_id=event_id)
-        event_product = self._get_product_name_summary(form)
+        event_product = self._get_performance_sales_summary(form)
 
         performances_reports = {}
         for performance in event.performances:

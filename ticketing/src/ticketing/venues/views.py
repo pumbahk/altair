@@ -64,7 +64,7 @@ def get_seats(request):
 
     if u'seats' in necessary_params:
         seats_data = {}
-        query = DBSession.query(Seat).options(joinedload('attributes_'), joinedload('areas'), joinedload('status_')).filter_by(venue=venue)
+        query = DBSession.query(Seat).options(joinedload('areas'), joinedload('status_')).filter_by(venue=venue)
         if u'sale_only' in filter_params:
             query = query.filter(exists().where(and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Seat.stock_id)))
         if loaded_at:
@@ -78,9 +78,12 @@ def get_seats(request):
                 'status': seat.status,
                 'areas': [area.id for area in seat.areas],
                 }
-            for attr in seat.attributes:
-                seat_datum[attr] = seat[attr]
             seats_data[seat.l0_id] = seat_datum
+
+        attrs = DBSession.query(SeatAttribute, Seat.l0_id).join(SeatAttribute.seat).filter(Seat.venue_id==venue.id).filter(SeatAttribute.name=='row')
+        for attr, l0_id in attrs:
+            seats_data[l0_id][attr.name] = attr.value
+
         retval[u'seats'] = seats_data
 
     if u'stocks' in necessary_params:
@@ -192,10 +195,11 @@ def show(request):
     venue = Venue.get(venue_id, organization_id=request.context.user.organization_id)
     site = Site.get(venue.site_id)
     root = None
-    for page, info in site._metadata.get('pages').items():
-        if info.get('root'):
-            root = page
-    
+    if site._metadata != None:
+        for page, info in site._metadata.get('pages').items():
+            if info.get('root'):
+                root = page
+
     class SeatInfo:
         def __init__(self, seat, venuearea, attr, status):
             self.seat = seat
