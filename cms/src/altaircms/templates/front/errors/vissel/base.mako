@@ -1,9 +1,3 @@
-## kadomaru
-<%def name="widgets(name)">
-  % for w in display_blocks[name]:
-      ${w|n}
-  % endfor
-</%def>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html lang="jp">
 <head>
@@ -25,9 +19,8 @@
             <div class="gnavi">
                 <a href="" class="historybtn">購入履歴の確認</a><br />
                 <ul>
-%for c in myhelper._get_categories(request, "header_menu"):
-    <li><a href="${h.link.get_link_from_category(request,c)}">${c.label}</a></li>
-%endfor
+            <%block name="header_navigation">
+            </%block>
                 </ul>　　
             </div>
         </div>
@@ -35,21 +28,12 @@
 
     <!-- wrapper -->    
     <div class="wrapper">
-      <%block name="above_kadomaru">
-        ${widgets("above_kadomaru")}
-      </%block>
-
-      <div class="kadomaru">
-        <%block name="kadomaru">
-          ${widgets("kadomaru")}
-        </%block>
-      </div>
+			<div class="kadomaru">
+				<div class="textC" style="font-size:28px;font-weight:bold;">
+    ${next.body()}
+        </div>
+			</div>
       <!-- kadomaru終わり -->
-
-      <%block name="bellow_kadomaru">
-        ${widgets("bellow_kadomaru")}
-      </%block>
-        
     </div>
     <!-- wrapperおわり -->
 
@@ -58,20 +42,8 @@
     <div class="footer-inner">
         <img src="images/tomoni.gif" alt="" />
             <div class="footernav">
-              <ul>
-                 <% xs = myhelper._get_categories(request, "footer_menu").all()%>
-                  %if len(xs) >= 2:
-                    <li><a class="first" href="${h.link.get_link_from_category(request,xs[0])}">${xs[0].label}</a></li>
-                    %for c in xs[1:-1]:
-                            <li><a href="${h.link.get_link_from_category(request,c)}">${c.label}</a></li>
-                    %endfor
-                    <li><a class="last" href="${h.link.get_link_from_category(request,xs[-1])}">${xs[-1].label}</a></li>
-                  %else:
-                    %for c in xs:
-                      <li><a class="first last" href="${h.link.get_link_from_category(request,c)}">${c.label}</a></li>
-                    %endfor
-                  %endif
-              </ul>
+          <%block name="footer_navigation">
+         </%block>
             </div>
         <div class="copyright">
             Copyright &copy; 2010-2011 TicketStar Inc. All Rights Reserved. 
