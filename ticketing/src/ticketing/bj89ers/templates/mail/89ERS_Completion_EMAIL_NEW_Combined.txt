@@ -34,7 +34,7 @@ ${ORDERED_PRODUCT_ITEM_NAME_1: 法人会員}
 ${ORDERED_PRODUCT_VALUE: 10,500} 円
 
 ■サービス利用料・手数料
-${PAYMENT_METHOD_NAME: セブン-イレブン}決済手数料：${PAYMENT_METHOD_FEE: 158} 円　//セブンイレブンの場合（クレカの場合は0円出してOK）
+${PAYMENT_METHOD_NAME: セブン-イレブン}決済手数料：${PAYMENT_METHOD_FEE: 158} 円　//セブン-イレブンの場合（クレカの場合は0円出してOK）
 
 ■合計金額
 ${ORDERED_AMOUNT: 10,658} 円

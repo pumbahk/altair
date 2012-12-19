@@ -1855,7 +1855,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     logger.info(u'あんしん決済をキャンセルできませんでした %s' % result)
                     return False
 
-        # コンビニ決済 (セブンイレブン)
+        # コンビニ決済 (セブン-イレブン)
         elif ppid == 3:
             # 入金済みならキャンセル不可
             if self.status == 'paid':
@@ -1868,7 +1868,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     settings = get_current_registry().settings
                     shop_id = settings.get('sej.shop_id', 0)
                     if sej_order.shop_id != shop_id:
-                        logger.error(u'コンビニ決済(セブンイレブン)のキャンセルに失敗しました Invalid shop_id : %s' % shop_id)
+                        logger.error(u'コンビニ決済(セブン-イレブン)のキャンセルに失敗しました Invalid shop_id : %s' % shop_id)
                         return False
 
                     try:
@@ -1881,7 +1881,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                             hostname=settings.get('sej.inticket_api_url')
                         )
                     except SejServerError, e:
-                        logger.error(u'コンビニ決済(セブンイレブン)のキャンセルに失敗しました %s' % e)
+                        logger.error(u'コンビニ決済(セブン-イレブン)のキャンセルに失敗しました %s' % e)
                         return False
 
         # 窓口支払

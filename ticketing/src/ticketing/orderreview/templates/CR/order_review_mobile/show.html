@@ -82,7 +82,7 @@ ${shipping.last_name_kana} ${shipping.first_name_kana}
 ${shipping.prefecture}${shipping.city}${shipping.address_1}<br />
 ${shipping.address_2}
 % elif order.payment_delivery_pair.delivery_method.delivery_plugin.id == 2:
-<div>セブンイレブン</div>
+<div>セブン-イレブン</div>
 <%mobile:form_header>引換票番号</%mobile:form_header>
 <div>${sej_order.exchange_number or sej_order.billing_number}</div>
 <%mobile:form_header>引取受付期間</%mobile:form_header>
@@ -108,7 +108,7 @@ ${h.render_delivery_finished_viewlet(request, order)}
 なお、住所変更のご連絡がない場合等に起因する配送遅延等にはご対応いたしかねますのでご注意ください。
 %endif
 %if order.payment_delivery_pair.payment_method.payment_plugin.id == 3:
-・セブンイレブン決済の際には払込番号が必要です。下記、「払込票印刷」ボタンをクリックし、払込票を印刷してお持ちになるか、上記の払込票番号をお控えいただき、レジでお伝え下さい。<br />
+・セブン-イレブン決済の際には払込番号が必要です。下記、「払込票印刷」ボタンをクリックし、払込票を印刷してお持ちになるか、上記の払込票番号をお控えいただき、レジでお伝え下さい。<br />
 ・予約有効期限までに、払込票または払込票番号をセブン-イレブン店頭レジにてお申し出の上、代金をお支払いください。<br />
 ・支払期日までに入金されない場合は、申込が無効となりますのでご注意ください。<br />
 % endif

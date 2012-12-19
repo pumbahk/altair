@@ -815,7 +815,7 @@ class PaymentViewTests(unittest.TestCase):
 
     def _register_starndard_payment_methods(self):
         from ..core import models
-        self.session.add(models.PaymentMethod(id=1, name=u"セブンイレブン", fee=100))
+        self.session.add(models.PaymentMethod(id=1, name=u"セブン-イレブン", fee=100))
         self.session.add(models.PaymentMethod(id=2, name=u"楽天あんしん決済", fee=100))
         self.session.add(models.PaymentMethod(id=3, name=u"クレジットカード", fee=100))
         self.config.add_route('route.1', 'sej')
@@ -881,7 +881,7 @@ class PaymentViewTests(unittest.TestCase):
 
         # self.assertEqual(result,
         #         {'payments': [
-        #             {'name': u'セブンイレブン',
+        #             {'name': u'セブン-イレブン',
         #              'url': 'http://example.com/sej'},
         #             {'name': u'楽天あんしん決済',
         #              'url': 'http://example.com/checkout'},
