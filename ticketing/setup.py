@@ -45,6 +45,7 @@ requires = [
     'js.jquery_colorpicker',
     'js.i18n',
     'js.jquery_cookie',
+    'js.jqgrid',
     'simplejson',
     'waitress',
     'altair-commons',

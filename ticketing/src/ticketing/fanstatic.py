@@ -12,6 +12,7 @@ from js.bootstrap import bootstrap, bootstrap_responsive_css
 from js.jquery_timepicker_addon import timepicker
 from js.jquery_colorpicker import jquery_colorpicker
 from js.jquery_cookie import cookie
+from js.jqgrid import jqgrid, jqgrid_i18n_en
 from js.jqueryui_bootstrap import jqueryui_bootstrap
 from js.i18n import i18n
 
@@ -64,7 +65,7 @@ def view_function(request):
 
 with_jquery = FanstaticDecoratorFactory(
     jquery.need
-)
+    )
 
 with_fanstatic_jqueries = FanstaticDecoratorFactory(
     jquery.need,
@@ -93,5 +94,8 @@ with_bootstrap = FanstaticDecoratorFactory(
     bootstrap.need,
     bootstrap_responsive_css.need,
     timepicker.need,
-    i18n.need
+    i18n.need,
+    jqgrid.need,
+    jqgrid_i18n_en.need
     )
+

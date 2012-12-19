@@ -135,6 +135,7 @@ class SalesReports(BaseView):
                     func.sum(OrderedProduct.price * OrderedProduct.quantity).label('price_amount'),
                     func.sum(OrderedProduct.quantity).label('product_quantity')
                 )
+
         for id, price_amount, product_quantity in query.all():
             reports[id].update(dict(price_amount=price_amount or 0, product_quantity=product_quantity or 0))
 
@@ -165,76 +166,6 @@ class SalesReports(BaseView):
 
         return reports.values()
 
-
-    '''
-    def _get_product_name_summary(self, form, group='Event'):
-        product_name_reports = {}
-
-        # 自社分のみが対象
-        stock_holder_ids = [sh.id for sh in StockHolder.get_own_stock_holders(user_id=self.context.organization.user_id)]
-
-        # 配席数、在庫数
-        query = Event.query.filter(Event.organization_id==self.context.user.organization_id)\
-            .outerjoin(Product).filter(Product.event_id==Event.id)\
-            .outerjoin(ProductItem).filter(ProductItem.product_id==Product.id)\
-            .outerjoin(Stock).filter(Stock.id==ProductItem.stock_id, Stock.stock_holder_id.in_(stock_holder_ids))\
-            .outerjoin(StockType).filter(Stock.stock_type_id==StockType.id)\
-            .outerjoin(StockStatus).filter(StockStatus.stock_id==Stock.id)
-        query = query.filter(Event.id==form.event_id.data)
-        query = query.group_by(StockType.id)\
-            .with_entities(
-                StockType.id,
-                StockType.name,
-                func.sum(Stock.quantity),
-                func.sum(StockStatus.quantity)
-            )
-
-        for id, name, total_quantity, vacant_quantity in query.all():
-            product_name_reports[id] = dict(
-                name=name,
-                total_quantity=total_quantity or 0,
-                vacant_quantity=vacant_quantity or 0,
-                order_quantity=0,
-                paid_quantity=0,
-                unpaid_quantity=0,
-                )
-
-        # 入金済み
-        query = OrderedProduct.query.join(Order).filter(Order.performance_id==Performance.id)\
-            .outerjoin(Performance).filter(Performance.event_id==form.event_id.data)\
-            .filter(Order.canceled_at==None, Order.paid_at!=None)\
-            .outerjoin(Product).filter(Product.id==OrderedProduct.product_id)\
-            .outerjoin(ProductItem).filter(ProductItem.product_id==OrderedProduct.product_id)\
-            .with_entities(StockType.id, StockType.name, func.sum(OrderedProduct.quantity))
-        if form.limited_from.data:
-            query = query.filter(Order.created_at > form.limited_from.data)
-        if form.limited_to.data:
-            query = query.filter(Order.created_at < form.limited_to.data)
-
-        for id, name, paid_quantity in query.group_by(StockType.id).all():
-            product_name_reports[id].update(dict(paid_quantity=paid_quantity or 0))
-
-        # 未入金
-        query = OrderedProduct.query.join(Order).filter(Order.performance_id==Performance.id)\
-            .outerjoin(Performance).filter(Performance.event_id==form.event_id.data)\
-            .filter(Order.canceled_at==None, Order.paid_at==None)\
-            .outerjoin(Product).filter(Product.id==OrderedProduct.product_id)\
-            .outerjoin(SalesSegment).filter(SalesSegment.id==Product.sales_segment_id)\
-            .with_entities(Product.name, func.sum(OrderedProduct.quantity))
-        if form.limited_from.data:
-            query = query.filter(Order.created_at > form.limited_from.data)
-        if form.limited_to.data:
-            query = query.filter(Order.created_at < form.limited_to.data)
-
-        for name, unpaid_quantity in query.group_by(Product.name).all():
-            if name not in product_name_reports:
-                logger.warn('invalid key (product_id:%s)' % id)
-                continue
-            product_name_reports[name].update(dict(unpaid_quantity=unpaid_quantity or 0))
-
-        return product_name_reports.values()
-    '''
-
     def _get_performance_sales_summary(self, form):
         performance_reports = {}
 
@@ -249,6 +180,7 @@ class SalesReports(BaseView):
             .outerjoin(Product).filter(Product.seat_stock_type_id==StockType.id)
         if form.event_id.data:
             query = query.filter(Product.event_id==form.event_id.data)
+            query = query.outerjoin(ProductItem).filter(ProductItem.product_id==Product.id)
             total_quantity_entity = func.sum(Stock.quantity).label('total_quantity')
             stock_quantity_entity = func.sum(StockStatus.quantity).label('vacant_quantity')
         else:
@@ -276,7 +208,8 @@ class SalesReports(BaseView):
                 Stock.id.label('stock_id'),
             )
         if form.event_id.data:
-            query = query.group_by(Product.name, Product.price)
+            query = query.group_by(Product.id)
+
         for row in query.all():
             performance_reports[row[2]] = dict(
                 stock_id=row[10],
@@ -301,9 +234,6 @@ class SalesReports(BaseView):
             .outerjoin(Product).filter(Product.id==OrderedProduct.product_id)
         if form.event_id.data:
             query = query.filter(Product.event_id==form.event_id.data)
-            ordered_product_quantity_entity = func.sum(OrderedProduct.quantity).label('ordered_product_quantity')
-        else:
-            ordered_product_quantity_entity = OrderedProduct.quantity.label('ordered_product_quantity')
         if form.performance_id.data:
             query = query.filter(Order.performance_id==form.performance_id.data)
         if form.sales_segment_id.data:
@@ -315,14 +245,14 @@ class SalesReports(BaseView):
         
         query = query.with_entities(
                 OrderedProduct.product_id,
-                ordered_product_quantity_entity,
+                func.sum(OrderedProduct.quantity).label('ordered_product_quantity')
             )
-        if form.event_id.data:
-            query = query.group_by(Product.name, Product.price)
-        else:
-            query = query.group_by(OrderedProduct.product_id)
+        query = query.group_by(OrderedProduct.product_id)
 
         for id, paid_quantity in query.all():
+            if id not in performance_reports:
+                logger.warn('invalid key (product_id:%s)' % id)
+                continue
             performance_reports[id].update(dict(paid_quantity=paid_quantity or 0))
 
         # 未入金
@@ -331,9 +261,6 @@ class SalesReports(BaseView):
             .outerjoin(Product).filter(Product.id==OrderedProduct.product_id)
         if form.event_id.data:
             query = query.filter(Product.event_id==form.event_id.data)
-            ordered_product_quantity_entity = func.sum(OrderedProduct.quantity).label('ordered_product_quantity')
-        else:
-            ordered_product_quantity_entity = OrderedProduct.quantity.label('ordered_product_quantity')
         if form.performance_id.data:
             query = query.filter(Order.performance_id==form.performance_id.data)
         if form.sales_segment_id.data:
@@ -345,13 +272,9 @@ class SalesReports(BaseView):
         
         query = query.with_entities(
                 OrderedProduct.product_id,
-                ordered_product_quantity_entity,
+                func.sum(OrderedProduct.quantity).label('ordered_product_quantity')
             )
-
-        if form.event_id.data:
-            query = query.group_by(Product.name, Product.price)
-        else:
-            query = query.group_by(OrderedProduct.product_id)
+        query = query.group_by(OrderedProduct.product_id)
 
         for id, unpaid_quantity in query.all():
             if id not in performance_reports:
