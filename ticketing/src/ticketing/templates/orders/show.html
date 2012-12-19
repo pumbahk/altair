@@ -285,7 +285,7 @@ ${h.breadcrumbs(
               <td>${order.multicheckout_approval_no}</td>
             </tr>
             % endif
-            % if order.cart.checkout:
+            % if order.cart and order.cart.checkout:
             <tr>
               <th>楽天あんしん決済注文番号</th>
               <td>${order.cart.checkout.orderId}</td>
