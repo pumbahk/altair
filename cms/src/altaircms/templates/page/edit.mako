@@ -32,6 +32,8 @@ ${nco.breadcrumbs(
   .size3{ width:28%; }
   .left{ float:left; }
   .clear{ clear:both; }
+
+
 </style>
 </%block>
 
@@ -44,15 +46,58 @@ ${nco.breadcrumbs(
 <div style="margin-bottom: 9px">
   <h2 class="span6"ページのタイトル - ${page.name} (ID: ${page.id})></h2>
 </div>
+<div class="bs-docs-example">
+  <div class="navbar navbar-inverse">
+    <div class="navbar-inner">
+      <div class="container">
+        <div class="nav-collapse collapse navbar-inverse-collapse">
+          <a class="pull-left brand" href="#">編集中のページ</a>
+          <form class="pull-left navbar-search" action="">
+            <select class="search-query" style="min-width: 100px;" onchange="window.location = this.value">
+            %for p in page.pageset.pages:
+            <option value="${request.route_url('page_edit_', page_id=p.id)}" ${'selected="selected"' if p.id == page.id else ''}>${p.version} ${p.title}</option>
+            %endfor
+          </select>
+          </form>
+          ## layoutの変更
+          <ul class="nav pull-right">
+            <li><a class="pull-right brand" href="#">現在のLayout</a></li>
+            <form id="layout_update_form" class="pull-right navbar-form">
+              <select id="layout" style="min-width: 100px;" >
+                %for layout in layout_candidates:
+                  %if layout.id == page.layout_id:
+                  <option selected="selected" value="${layout.id}">${layout.title}(${layout.template_filename})</option>
+                  %else:
+                  <option value="${layout.id}">${layout.title}(${layout.template_filename})</option>
+                  %endif
+                %endfor
+              </select>
+              <button type="submit" class="btn">layoutを変更</button>
+            </form>
+            <script type="text/javascript">
+              $(function(){
+                $("#layout_update_form > button").on("click", function(e){
+                  if(!window.confirm("ページのレイアウトを変更します。よろしいですか？(保存していないデータは失われます)")){
+                     return false;
+                   }
+                  var layout_id = $('#layout_update_form > #layout > :selected').val(),
+                      url       = '${request.route_path("page_partial_update", part="layout",id=page.id)}';
+                  $.post(url, {layout_id: layout_id}).done(function(data){ if(data.status){location.reload(); }});
+                  return false;
+                })
+              });
+            </script>
+          </ul>
+        </div><!-- /.nav-collapse -->
+      </div>
+    </div><!-- /navbar-inner -->
+  </div><!-- /navbar -->
+</div>
 
 <div class="row">
-<div class="span6">
-<select onchange="window.location = this.value">
-%for p in page.pageset.pages:
-<option value="${request.route_url('page_edit_', page_id=p.id)}" ${'selected="selected"' if p.id == page.id else ''}>${p.version} ${p.title}</option>
-%endfor
-</select>
-</div>
+  <div class="span6">
+  </div>
+
 <div class="span6">
   <a class="btn" href="${h.link.preview_page_from_page(request,page)}" target="_blank"><i class="icon-eye-open"> </i> Preview</a>
 </div>

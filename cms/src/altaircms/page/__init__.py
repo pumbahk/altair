@@ -24,7 +24,7 @@ def includeme(config):
     add_route("page_delete", "/page/{id}/delete")
     add_route("page_update", "/page/{id}/update")
     add_route("page_duplicate", "/page/{id}/duplicate")
-    
+    add_route("page_partial_update", "/page/{id}/partial/{part}")
     add_route('page', '/page/')
     add_route('pageset_list', '/page/{kind}/list')
 

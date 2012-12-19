@@ -11,9 +11,11 @@ from altaircms.helpers.viewhelpers import FlashMessage
 from . import forms
 from . import searcher
 import altaircms.widget.forms as wf
+from ..models import DBSession
 from altaircms.page.models import PageSet
 from altaircms.page.models import Page
 from altaircms.page.models import StaticPage
+from altaircms.layout.models import Layout
 from altaircms.widget.models import WidgetDisposition
 from altaircms.event.models import Event
 from altaircms.auth.api import get_or_404
@@ -271,10 +273,31 @@ class PageUpdateView(object):
         else:
             return self._input_page(page, form)
 
+@view_defaults(permission="page_update", route_name="page_partial_update", request_method="POST")
+class PagePartialUpdateAPIView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @view_config(match_param="part=layout", renderer="json")
+    def layout_update(self):
+        layout_id = self.request.POST["layout_id"]
+        layout = self.request.allowable(Layout).filter_by(id=layout_id).first()
+        if layout is None:
+            return {"status": False, "message": "layout is not found", "data": {"layout_id": layout_id}}
+        page = self.request.allowable(Page).filter_by(id=self.request.matchdict["id"]).first()
+        if page is None:
+            return {"status": False, "message": "page is not found", "data": {"layout_id": layout_id}}
+        page.layout = layout
+        DBSession.add(page)
+        return {"status": True, "data": {"layout_id": layout_id}}
+
+
 
 @view_defaults(permission="page_read", route_name="pageset_list", decorator=with_bootstrap, request_method="GET")
 class PageListView(object):
-    def __init__(self, request):
+    def __init__(self, context, request):
+        self.context = context
         self.request = request
 
     @view_config(match_param="kind=static", renderer="altaircms:templates/page/static_page_list.mako")
@@ -375,11 +398,13 @@ def page_edit(request):
     disposition_select = wf.WidgetDispositionSelectForm()
     user = request.user
     disposition_save = wf.WidgetDispositionSaveForm(page=page.id, owner_id=user.id if user else None)
+    layout_qs = request.allowable(Layout)
     return {
             'event':page.event,
             'page':page,
             "disposition_select": disposition_select, 
             "disposition_save": disposition_save, 
+            "layout_candidates": layout_qs, 
             "layout_render":layout_render, 
             "widget_aggregator": get_widget_aggregator_dispatcher(request).dispatch(request, page)
         }

@@ -18,17 +18,17 @@
   }
 
   .container form textarea {
-      min-width: 450px;
+      min-width: 400px;
       min-height: 180px;
   }
   .container form input {
-      min-width: 450px;
+      min-width: 400px;
   }
   .container form input[type=submit] {
       min-width: auto;
   }
   .container form select {
-      min-width: 450px;
+      min-width: 400px;
   }
 
   .container form .controls input{
