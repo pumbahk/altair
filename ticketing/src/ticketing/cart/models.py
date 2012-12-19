@@ -409,7 +409,7 @@ class Cart(Base):
     def release(self):
         """ カート開放
         """
-        logger.info('trying to release Cart (id=%d, order_no=%s)' % (self.id, self.order_no))
+        logger.info('trying to release Cart (id=%d, order_no=%s)' % (self.id, self._order_no))
         for product in self.products:
             if not product.release():
                 return False
