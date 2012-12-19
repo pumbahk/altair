@@ -24,7 +24,7 @@
   </ul>
 </div>
 
-<div class="row show-grid">
+<div class="row-fluid show-grid">
 	<h4>アセットの検索</h4>
 
 	<form action="${request.route_path("asset_search_flash")}" method="GET">

@@ -23,7 +23,7 @@
   </ul>
 </div>
 
-<div class="row show-grid">
+<div class="row-fluid show-grid">
   <div class="span5">
 	<h4>アセットの追加</h4>
   </div>

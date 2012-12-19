@@ -37,10 +37,10 @@ $(".header").append(e);
    </script>
 
   <style type="text/css">
-      #main_left img{max-width:380px; max-height:285px;}
+      #main_left img{max-width:350px; max-height:285px;}
       #main_right img{max-width:250px; max-height:187px;}
 
-      #main_left p {width:380px;}
+      #main_left p {width:350px;}
       #main_right p {width:250px;}
 
       #main_left{width:58%; float: left;}
