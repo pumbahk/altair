@@ -69,7 +69,8 @@
     };
     $.fn.clearRetainChanges = function() {
       this.data('retainedChanges', {});
-      this.setGridParam({treedatatype:'json'}).trigger('reloadGrid');
+      this.setGridParam({datatype:'json', treedatatype:'json'}).trigger('reloadGrid');
+      this.setGridParam({treedatatype:'local'});
     };
     $.fn.getColumnLabel = function(grid, columnName) {
       var cm = grid.jqGrid('getGridParam','colModel');
@@ -77,9 +78,11 @@
         if (cm[i].name == columnName) return grid.jqGrid('getGridParam','colNames')[i];
       }
     };
-    % if performance:
     $.fn.linkFormatter = function(cellvalue, options, rowObject) {
-      var link = '<a href="javascript:addRow(' + "'" + options.gid + "'," + options.rowId + ');"><i class="icon-plus"></i></a>';
+      var link = '';
+      if (!rowObject.level) {
+        link += '<a href="javascript:addRow(' + "'" + options.gid + "'," + options.rowId + ');"><i class="icon-plus"></i></a>';
+      }
       if (rowObject.product_item) {
         link += '<a href="javascript:deleteRow(' + "'" + options.gid + "'," + options.rowId + ');"><i class="icon-trash"></i></a>';
       }
@@ -91,15 +94,18 @@
       }
       return link;
     };
-    % endif
   })(jQuery);
 
   function addRow(gid, rowId) {
     var grid = $('#' + gid);
     var row = grid.getRowData(rowId);
-    grid.setCell(rowId, 'parent', 'null');
-    grid.setCell(rowId, 'level', 0);
-    grid.setCell(rowId, 'stock_type_name', '', {editable:true});
+    if (!row.level) {
+      grid.setCell(rowId, 'parent', 'null');
+      grid.setCell(rowId, 'level', 0);
+      grid.setCell(rowId, 'isLeaf', false);
+      grid.setCell(rowId, 'expanded', true);
+      grid.setCell(rowId, 'loaded', true);
+    }
 
     var data ={
       product_id:row.product_id,
@@ -151,7 +157,7 @@
         $(function() {
           <% options = ["%s:%s" % sh for sh in form_product_item.stock_type_id.choices] %>
           var stock_type_options = {value:"${';'.join(options)|n}"};
-          <% options = ["%s:%s" % sh for sh in form_product_item.stock_holders.choices] %>
+          <% options = ["%s:%s" % sh for sh in form_product_item.stock_holder_id.choices] %>
           var stock_holder_options = {value:"${';'.join(options)|n}"};
           <% options = ["%s:%s" % tb for tb in form_product_item.ticket_bundle_id.choices] %>
           var ticket_bundle_options = {value:"${';'.join(options)|n}"};
@@ -210,9 +216,9 @@
             sortorder: 'asc',
             loadonce: true,
             //caption: '',  //ヘッダーのキャプション
-            height : '100%',  //高さ
-            width : '100%',  //幅
-            shrinkToFit : false,  //画面サイズに依存せず固定の大きさを表示する設定
+            height: '100%',  //高さ
+            width: '100%',  //幅
+            shrinkToFit: false,  //画面サイズに依存せず固定の大きさを表示する設定
             viewrecords: true,  //footerの右下に表示する
             treeGrid: true,
             treeGridModel: 'adjacency',
