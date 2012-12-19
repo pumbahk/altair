@@ -278,10 +278,9 @@ class Cart(Base):
     def create(cls, **kwargs):
         performance = kwargs.pop('performance', None)
         if performance is None:
-            performance_id = kwargs.pop('performance_id', None)
-            if performance_id is None:
+            if 'performance_id' not in kwargs:
                 raise Exception('performance or performance_id must be specified')
-            performance = c_models.Performance.query.filter_by(id=performance_id).one()
+            performance = c_models.Performance.query.filter_by(id=kwargs['performance_id']).one()
         organization = performance.event.organization
         logger.debug("organization.id = %d" % organization.id)
         base_id = c_api.get_next_order_no()
