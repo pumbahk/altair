@@ -10,6 +10,7 @@ from ticketing.core import models as o_m
 from ticketing.multicheckout import api as multicheckout_api
 from ticketing.checkout import api as checkout_api
 from . import api
+from ticketing.cart.exceptions import UnassignedOrderNumberError
 from sqlalchemy.sql.expression import not_
 
 
@@ -92,7 +93,11 @@ def cancel_auth_expired_carts():
             logging.info('not found unfinished cart')
             break
 
-        order_no = get_order_no(request, cart)
+        try:
+            order_no = get_order_no(request, cart)
+        except UnassignedOrderNumberError:
+            order_no = None
+
         cart_id = cart.id
         logging.info("begin releasing cart (id=%d, order_no=%s)" % (cart_id, order_no))
         if not cart.release():
