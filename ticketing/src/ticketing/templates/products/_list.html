@@ -151,7 +151,7 @@
         $(function() {
           <% options = ["%s:%s" % sh for sh in form_product_item.stock_type_id.choices] %>
           var stock_type_options = {value:"${';'.join(options)|n}"};
-          <% options = ["%s:%s" % sh for sh in form_product_item.stock_holders.choices] %>
+          <% options = ["%s:%s" % sh for sh in form_product_item.stock_holder_id.choices] %>
           var stock_holder_options = {value:"${';'.join(options)|n}"};
           <% options = ["%s:%s" % tb for tb in form_product_item.ticket_bundle_id.choices] %>
           var ticket_bundle_options = {value:"${';'.join(options)|n}"};

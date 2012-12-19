@@ -96,8 +96,6 @@ class ProductItemForm(Form):
             self.stock_holders.choices = [(sh.id, sh.name) for sh in stock_holders]
 
         if event_id is not None:
-            stock_types = StockType.query.filter_by(event_id=event_id).all()
-            self.stock_type_id.choices = [(st.id, st.name) for st in stock_types]
             ticket_bundles = TicketBundle.filter_by(event_id=event_id)
             self.ticket_bundle_id.choices = [(u'', u'(なし)')] + [(tb.id, tb.name) for tb in ticket_bundles]
 
@@ -136,12 +134,6 @@ class ProductItemForm(Form):
     quantity = IntegerField(
         label=u'販売単位 (席数・個数)',
         validators=[Required()]
-    )
-    stock_type_id = SelectField(
-        label=u'席種',
-        validators=[],
-        choices=[],
-        coerce=int
     )
     stock_holders = SelectField(
         label=u'配券先',
@@ -209,9 +201,11 @@ class ProductItemGridForm(Form):
             self.performance_id.data = performance_id
             performance = Performance.get(performance_id)
             event_id = performance.event_id
-            stock_holders = StockHolder.get_seller(performance.event)
+            stock_holders = StockHolder.get_own_stock_holders(event=performance.event)
             self.stock_holder_id.choices = [(sh.id, sh.name) for sh in stock_holders]
         if event_id is not None:
+            stock_types = StockType.query.filter_by(event_id=event_id).all()
+            self.stock_type_id.choices = [(st.id, st.name) for st in stock_types]
             ticket_bundles = TicketBundle.filter_by(event_id=event_id)
             self.ticket_bundle_id.choices = [(u'', u'(なし)')] + [(tb.id, tb.name) for tb in ticket_bundles]
         if self.stock_holder_id.data:
@@ -249,6 +243,12 @@ class ProductItemGridForm(Form):
     product_item_quantity = IntegerField(
         label=u'販売単位 (席数・個数)',
         validators=[Required()]
+    )
+    stock_type_id = SelectField(
+        label=u'席種',
+        validators=[],
+        choices=[],
+        coerce=int
     )
     stock_holder_id = SelectField(
         label=u'配券先',

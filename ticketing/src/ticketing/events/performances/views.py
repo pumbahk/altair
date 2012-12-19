@@ -15,7 +15,7 @@ from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.events.performances.forms import PerformanceForm, PerformancePublicForm
 from ticketing.core.models import Event, Performance, Order, Product, ProductItem, Stock
-from ticketing.products.forms import ProductForm, ProductItemForm
+from ticketing.products.forms import ProductForm, ProductItemForm, ProductItemGridForm
 from ticketing.orders.forms import OrderForm, OrderSearchForm
 
 from ticketing.mails.forms import MailInfoTemplate
@@ -73,6 +73,7 @@ class Performances(BaseView):
         elif tab == 'product':
             data['form_product'] = ProductForm(event_id=performance.event_id)
             data['form_product_item'] = ProductItemForm(user_id=self.context.user.id, performance_id=performance_id)
+            data['form_product_item_grid'] = ProductItemGridForm(user_id=self.context.user.id, performance_id=performance_id)
         elif tab == 'order':
             query = Order.filter_by(performance_id=performance_id)
             form_search = OrderSearchForm(self.request.params, event_id=performance.event_id, performance_id=performance_id)
