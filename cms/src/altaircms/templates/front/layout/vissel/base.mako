@@ -49,6 +49,21 @@
       <%block name="bellow_kadomaru">
         ${widgets("bellow_kadomaru")}
       </%block>
+
+      <!-- サイドバー -->
+      <div class="sidebar">
+        <a href="http://www.vissel-kobe.co.jp/" class="sidebtnA">オフィシャルサイト</a>
+        %for c in  myhelper._get_categories(request, "side_menu"):
+          <a href="${h.link.get_link_from_category(request,c)}" class="sidebtnB">${c.label}</a>
+        %endfor 
+
+        %for c in  myhelper._get_categories(request, "side_banner"):
+          <a href="${h.link.get_link_from_category(request,c)}" class="sidebtnB"><img src="${c.imgsrc}" alt="${c.label}" width="160" /></a>
+        %endfor 
+      </div>  
+      <!-- サイドバーおわり -->
+      <br class="clear" />
+    </div>
         
     </div>
     <!-- wrapperおわり -->
