@@ -276,11 +276,14 @@ class Cart(Base):
 
     @classmethod 
     def create(cls, **kwargs):
-        performance = kwargs.pop('performance', None)
-        if performance is None:
-            if 'performance_id' not in kwargs:
+        performance_id = kwargs.pop('performance_id', None)
+        if performance_id is None:
+            performance = kwargs.pop('performance', None)
+            if performance is None:
                 raise Exception('performance or performance_id must be specified')
-            performance = c_models.Performance.query.filter_by(id=kwargs['performance_id']).one()
+            performance_id = performance.id
+        else:
+            performance = c_models.Performance.query.filter_by(id=performance_id).one()
         organization = performance.event.organization
         logger.debug("organization.id = %d" % organization.id)
         base_id = c_api.get_next_order_no()
@@ -288,6 +291,7 @@ class Cart(Base):
         new_cart = cls(
             _order_no=order_no,
             performance=performance,
+            performance_id=performance_id,
             **kwargs)
         DBSession.add(new_cart)
         return new_cart
