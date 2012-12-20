@@ -18,6 +18,8 @@ class SalesReportForm(Form):
             self.event_id.data = kwargs['event_id']
         if 'email' in kwargs:
             self.email.data = kwargs['email']
+        if not 'subject' in kwargs:
+            self.subject.data = None
 
     def _get_translations(self):
         return Translations()

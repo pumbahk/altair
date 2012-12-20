@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 import logging
 logger = logging.getLogger(__file__)
+from markupsafe import Markup
 
 def get_purchase_page_from_event(request, event):
     if event.backend_id is None:
@@ -35,6 +36,19 @@ def get_link_from_topic(request, topic):
 
 get_link_from_topcontent = get_link_from_topic
 get_link_from_promotion = get_link_from_topic
+
+
+def get_link_tag_from_category(request, category):
+    return _as_banner_link(request, category) if category.imgsrc else _as_link(request, category)
+
+def _as_banner_link(request, category):
+    href = get_link_from_category(request, category)
+    return Markup(u'<a href="%s" %s><img src="%s" alt="%s"/>%s</a>' % (href, category.attributes, category.imgsrc, category.label))
+
+def _as_link(request, category):
+    href = get_link_from_category(request, category)
+    return Markup(u'<a href="%s" %s>%s</a>' % (href, category.attributes, category.label))
+
 
 def unquote_path_segment(string):
     """ request.route_pathの結果"foo/bar"が "foo%2Fbar"になってしまう部分の修正。

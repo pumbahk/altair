@@ -1,6 +1,16 @@
 ## twitter widget output template
 ## 
-
+<style type="text/css">
+  .twitter-widget h2 {
+    background: none;
+  }
+  .twitter-widget h3 {
+    background: none;
+  }
+  .twitter-widget h4 {
+    background: none;
+  }
+</style>
 <div class="twitter-widget">
   <script charset="utf-8" src="http://widgets.twimg.com/j/2/widget.js"></script>
   <script>

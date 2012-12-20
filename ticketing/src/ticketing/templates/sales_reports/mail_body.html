@@ -35,7 +35,7 @@
           <th style="width: 9%; border: 1px #DCDCDC solid;">受付数</th>
           <th style="width: 9%; border: 1px #DCDCDC solid;">未入金</th>
           <th style="width: 9%; border: 1px #DCDCDC solid;">入金済み</th>
-          <th style="width: 9%; border: 1px #DCDCDC solid;">小合計</th>
+          <th style="width: 9%; border: 1px #DCDCDC solid;">小計</th>
         </tr>
       <%
         import itertools
@@ -83,7 +83,7 @@
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${h.price_format(product_total['paid_quantity'] + product_total['unpaid_quantity']) or ''}</td>
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${h.price_format(product_total['unpaid_quantity'])}</td>
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${h.price_format(product_total['paid_quantity'])}</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${h.price_format(product['product_price'] * product_total['paid_quantity'])}円</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product['product_price'] * product_total['paid_quantity'])}円</td>
         </tr>
         <%
           stock_type_id = product['stock_type_id']

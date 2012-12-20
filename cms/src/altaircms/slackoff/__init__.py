@@ -29,8 +29,23 @@ def includeme(config):
     config.add_subscriber(".subscribers.update_kind", ".subscribers.PromotionCreate")
     config.add_subscriber(".subscribers.update_kind", ".subscribers.PromotionUpdate")
     config.add_crud("category", title="category", model="..models.Category",
+                    bind_actions=["delete", "update", "create"], 
                     form=".forms.CategoryForm", mapper=".mappers.category_mapper", 
                     filter_form=".forms.CategoryFilterForm")
+    config.add_route("category_list", "/category")
+    config.add_view(".views.category_list_view", route_name="category_list", permission="category_read", 
+                    decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", 
+                    renderer="altaircms:templates/category/list.mako")
+    config.add_crud("category.link", title="external link", model="..models.Category",
+                    has_auto_generated_permission=False, 
+                    bind_actions=["create", "update"], 
+                    endpoint="category_list", 
+                    form=".forms.ExternalLinkForm", mapper=".mappers.category_mapper")
+    config.add_crud("category.banner", title="external banner", model="..models.Category",
+                    has_auto_generated_permission=False, 
+                    bind_actions=["create", "update"], 
+                    endpoint="category_list", 
+                    form=".forms.ExternalBannerForm", mapper=".mappers.category_mapper")
     config.add_crud("topic", title="topic", model="..topic.models.Topic", 
                     form=".forms.TopicForm", mapper=".mappers.topic_mapper", 
                     filter_form=".forms.TopicFilterForm")

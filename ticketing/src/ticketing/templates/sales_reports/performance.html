@@ -82,11 +82,11 @@
     <td class="numeric">${h.price_format(report['paid_quantity'] + report['unpaid_quantity']) or ''}</td>
     <td class="numeric">${h.price_format(report['unpaid_quantity']) or ''}</td>
     <td class="numeric">${h.price_format(report['paid_quantity']) or ''}</td>
-    <td class="numeric">${h.price_format(report['paid_quantity']*report['product_price'])}円</td>
+    <td class="numeric">${h.price_format((report['paid_quantity'] + report['unpaid_quantity']) * report['product_price'])}円</td>
     <%
       performance_total['unpaid_quantity'] += report['unpaid_quantity']
       performance_total['paid_quantity'] += report['paid_quantity']
-      performance_total['price_total'] += report['paid_quantity']*report['product_price']
+      performance_total['price_total'] += (report['paid_quantity'] + report['unpaid_quantity'])*report['product_price']
     %>
   </tr>
     % endfor

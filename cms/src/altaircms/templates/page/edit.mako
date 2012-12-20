@@ -32,6 +32,13 @@ ${nco.breadcrumbs(
   .size3{ width:28%; }
   .left{ float:left; }
   .clear{ clear:both; }
+  input{ width:auto;}
+
+  .flow-last {
+    clear:both;
+    height:1px;
+    overflow:hidden;
+  }
 </style>
 </%block>
 
@@ -45,68 +52,119 @@ ${nco.breadcrumbs(
   <h2 class="span6"ページのタイトル - ${page.name} (ID: ${page.id})></h2>
 </div>
 
-<div class="row">
-<div class="span6">
-<select onchange="window.location = this.value">
-%for p in page.pageset.pages:
-<option value="${request.route_url('page_edit_', page_id=p.id)}" ${'selected="selected"' if p.id == page.id else ''}>${p.version} ${p.title}</option>
-%endfor
-</select>
-</div>
-<div class="span6">
-  <a class="btn" href="${h.link.preview_page_from_page(request,page)}" target="_blank"><i class="icon-eye-open"> </i> Preview</a>
-</div>
-</div>
-<hr/>
+<div class="navbar navbar-inverse">
+  <div class="navbar-inner">
+    <div class="container" style="width: auto;">
+      <a class="pull-left brand" href="#">編集中のページ</a>
+      <form class="pull-left navbar-search" action="">
+        <select class="search-query" style="min-width: 100px;" onchange="window.location = this.value">
+          %for p in page.pageset.pages:
+          <option value="${request.route_url('page_edit_', page_id=p.id)}" ${'selected="selected"' if p.id == page.id else ''}>${p.version} ${p.title}</option>
+          %endfor
+          </select>
+          </form>
+          ## layoutの変更
+                  <ul class="nav pull-right">
+                    <li id="fat-menu" class="dropdown">
+                      <a href="#" id="drop3" role="button" class="dropdown-toggle" data-toggle="dropdown">widget layout <b class="caret"></b></a>
+                      <ul class="dropdown-menu" role="menu" aria-labelledby="drop3">
+                        <li><a tabindex="-1" href="${h.widget.to_disposition_list(request)}">widget layout一覧へ移動</a></li>
+                        <li class="divider"></li>
+                        <li><a tabindex="-1" href="#load_widget_layout_modal" data-toggle="modal">widget layoutの読込</a></li>
+                        <li><a tabindex="-1" href="#save_widget_layout_modal" data-toggle="modal">widget layoutの保存</a></li>
+                      </ul>
+                    </li>
+                  </ul>
+          <ul class="nav pull-right" role="navigation">
+            <li><a class="pull-right brand" href="#">現在のLayout</a></li>
+            <form id="layout_update_form" class="pull-right navbar-form">
+              <select id="layout" style="min-width: 100px;" >
+                %for layout in layout_candidates:
+                  %if layout.id == page.layout_id:
+                  <option selected="selected" value="${layout.id}">${layout.title}(${layout.template_filename})</option>
+                  %else:
+                  <option value="${layout.id}">${layout.title}(${layout.template_filename})</option>
+                  %endif
+                %endfor
+              </select>
+              <button type="submit" class="btn">layoutを変更</button>
+            </form>
+            <script type="text/javascript">
+              $(function(){
+                $("#layout_update_form > button").on("click", function(e){
+                  if(!window.confirm("ページのレイアウトを変更します。よろしいですか？(保存していないデータは失われます)")){
+                     return false;
+                   }
+                  var layout_id = $('#layout_update_form > #layout > :selected').val(),
+                      url       = '${request.route_path("page_partial_update", part="layout",id=page.id)}';
+                  $.post(url, {layout_id: layout_id}).done(function(data){ if(data.status){location.reload(); }});
+                  return false;
+                })
+              });
+            </script>
+          </ul>
+    </div>
+  </div><!-- /navbar-inner -->
+</div><!-- /navbar -->
 
-<a href="${h.widget.to_disposition_list(request)}">widget layout一覧へ</a>
-<div class="row">
-  <div class="span6">
-	<form action="${h.page.to_widget_disposition(request,page)}" method="POST">
-	   <h4>現在のwidget layoutを保存</h4>
-	   <table class="table">
-		 <tr><th>${disposition_save.title.label}</th><td>${disposition_save.title}</td></tr>
-		 <tr><th>${disposition_save.is_public.label}</th><td>${disposition_save.is_public}</td></tr>
-		 <tr><th>${disposition_save.save_type.label}</th><td>${disposition_save.save_type}</td></tr>
+<div class="modal hide" id="save_widget_layout_modal">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">×</button>
+	  <h3>現在のwidget layoutを保存</h3>
+  </div>
+  <div class="modal-body">
+	<form class="form" action="${h.page.to_widget_disposition(request,page)}" method="POST">
+		${disposition_save.title.label} ${disposition_save.title}
+    ${disposition_save.is_public.label} ${disposition_save.is_public()}
+		${disposition_save.save_type.label} ${disposition_save.save_type}
 		 ## submit button
-		 <tr><th>${disposition_save.page}${disposition_save.owner_id}<button class="btn" type="submit"><i class="icon-cog"></i>save</button></th><td></td></tr>
-	   </table>
-	</form>
+		${disposition_save.page}${disposition_save.owner_id}
   </div>
+  <div class="modal-footer">
+    <button class="btn" type="button" data-dismiss="modal">キャンセル</button>
+    <button class="btn btn-primary" type="submit"><i class="icon-cog"></i>保存</button>
+  </div>
+	</form>
+</div>
 
-  <div class="span6">
-	<form action="${h.page.to_widget_disposition(request,page)}" method="GET">
-	  <h4>widget layoutの読み込み</h4>
-	   <table class="table table-condensed">
-		 <tr><th>${disposition_select.disposition.label}</th><td>${disposition_select.disposition}</td></tr>
-		 <tr><th><button class="btn" type="submit"><i class="icon-cog"></i>load</button></th><td></td></tr>
-	   </table>
-	</form>
+<div class="modal hide" id="load_widget_layout_modal">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">×</button>
+	  <h3>widget layoutの読み込み</h3>
   </div>
+  <div class="modal-body">
+	  <form action="${h.page.to_widget_disposition(request,page)}" method="GET">
+		  ${disposition_select.disposition.label} ${disposition_select.disposition}
+  </div>
+  <div class="modal-footer">
+    <button class="btn" type="button" data-dismiss="modal">キャンセル</button>
+    <button class="btn btn-primary" type="submit"><i class="icon-plus"></i>読み込み</button>
+  </div>
+	</form>
 </div>
 
 ## widget layout 
-<h2>ページ内容の編集 <a class="btn" href="${h.link.preview_page_from_page(request,page)}" target="_blank"><i class="icon-eye-open"> </i> Preview</a></h2>
+<a class="btn" href="${h.link.preview_page_from_page(request,page)}" target="_blank"><i class="icon-eye-open"> </i> Preview</a>
 
-<div id="pagecontentform" style="margin-top:20px;">
+<div class="well" id="pagecontentform" style="margin-top:20px;">
   <!-- <div id="pagelayout">レイアウト選択</div>
    !-- <div id="pageversion">ページのバージョンが入る</div> -->
   <div id="pagewidget" class="well">ウィジェット
 	### paletに表示するwidget
 	${widget_aggregator.get_widget_paletcode(request)|n}
   </div>
-  <br class="clear"/>
-    <div id="main_page">ページ編集
-      <div id="selected_layout" class="clear">
-
-        ${co.render_blocks(layout_render.blocks_image())}
-      </div>
-
-      <div class="dialog_overlay" id="overlay">
-        <!-- the external content is loaded inside this tag -->
-        <div id="wrap" class="contentWrap"></div>
-      </div>
+  <div class="clear clear-flow"></div>
+  <div id="main_page">ページ編集
+    <div id="selected_layout" class="clear">
+      ${co.render_blocks(layout_render.blocks_image())}
     </div>
+    
+    <div class="dialog_overlay" id="overlay">
+      <!-- the external content is loaded inside this tag -->
+      <div id="wrap" class="contentWrap"></div>
+    </div>
+  </div>
+  <div class="flow-last"></div>
 </div>
 
 <script type="text/javascript">

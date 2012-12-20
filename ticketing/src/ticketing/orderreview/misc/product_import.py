@@ -78,7 +78,7 @@ def main():
         payment_plugin = c_model.PaymentMethodPlugin.get(1)
     )
     payment_method2 = c_model.PaymentMethod(
-        name = 'セブンイレブン支払い',
+        name = 'セブン-イレブン支払い',
         fee = 158,
         fee_type = c_model.FeeTypeEnum.Once.v[0],
         organization = org,

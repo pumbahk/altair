@@ -17,7 +17,7 @@ class PaymentMethodPluginData(DataSet):
         updated_at  = datetime.now()
         created_at  = datetime.now()
     class CvsSEJ:
-        name = u'セブンイレブン決済'
+        name = u'セブン-イレブン決済'
         updated_at  = datetime.now()
         created_at  = datetime.now()
 
@@ -31,7 +31,7 @@ class DeliveryMethodPluginData(DataSet):
         updated_at  = datetime.now()
         created_at  = datetime.now()
     class CvsSEJ:
-        name = u'セブンイレブン受取'
+        name = u'セブン-イレブン受取'
         updated_at  = datetime.now()
         created_at  = datetime.now()
 
@@ -53,7 +53,7 @@ class PaymentMethodData(DataSet):
         updated_at  = datetime.now()
         created_at  = datetime.now()
     class cvs:
-        name        = u'セブンイレブン'
+        name        = u'セブン-イレブン'
         fee         = 100
         fee_type    = FeeTypeEnum.PerUnit.v[0]
         organization   = OrganizationData.organization_0
@@ -79,7 +79,7 @@ class DeliveryMethodData(DataSet):
         updated_at  = datetime.now()
         created_at  = datetime.now()
     class cvs:
-        name        = u'セブンイレブン'
+        name        = u'セブン-イレブン'
         fee         = 100
         fee_type    = FeeTypeEnum.PerUnit.v[0]
         organization    = OrganizationData.organization_0
