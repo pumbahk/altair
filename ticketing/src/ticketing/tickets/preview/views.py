@@ -128,6 +128,7 @@ class PreviewApiView(object):
         preview = SVGPreviewCommunication.get_instance(self.request)
         svg = self.request.POST["svg"]
         try:
+            svg = FillvaluesTransformer(svg, self.request.POST).transform()
             transformer = SVGTransformer(svg, self.request.POST)
             svg = transformer.transform()
             imgdata_base64 = preview.communicate(self.request, svg)

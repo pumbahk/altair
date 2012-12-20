@@ -13,7 +13,7 @@ class CollectVarsTests(unittest.TestCase):
         self.assertEquals(list(sorted(result)), ["bar", "foo", "fooo"])
 
     def test_with_expression(self):
-        tmpl = "{{aux.販売区分}}"
+        tmpl = u"{{aux.販売区分}}"
         result = self._callFUT(tmpl)
         self.assertEquals(list(sorted(result)), [u"aux.販売区分"])
 
