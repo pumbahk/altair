@@ -74,6 +74,7 @@ def category_mapper(request, obj):
 
     objlike.pageset = Markup(u'<a href="%s">%s</a>' % (h.link.preview_page_from_pageset(request, obj.pageset), obj.pageset.name)) if obj.pageset else u"-"
     objlike.imgsrc = Markup(u'<img src="%s"/>' % obj.imgsrc)
+    objlike.url = Markup(u'<a href="%s">%s</a>' % (obj.url, obj.url)) if obj.url else u"-"
     for k, v in objlike.iteritems():
         if v is None:
             setattr(objlike, k, u"-")

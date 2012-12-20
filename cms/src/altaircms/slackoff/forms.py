@@ -197,11 +197,12 @@ class PromotionFilterForm(Form):
         return qs
 
 _hierarchy_choices = [(x, x) for x in [u"大", u"中", u"小", "top_couter", "top_inner", "header_menu", "footer_menu", "masked", "side_banner", "side_menu"]]
-
+_link_choices =  [(x, x) for x in ["header_menu", "footer_menu", "masked", "side_banner", "side_menu", "top_inner", ]]
 class CategoryForm(Form):
     name = fields.TextField(label=u"カテゴリ名")
     origin = fields.TextField(label=u"分類")
     label = fields.TextField(label=u"label")
+    attributes = fields.TextField(label=u"attributes")
     parent = dynamic_query_select_field_factory(
         Category, allow_blank=True, blank_text=u"--------", label=u"親カテゴリ",
         get_label=lambda obj: obj.label or u"--なし--")
@@ -215,7 +216,7 @@ class CategoryForm(Form):
     url = fields.TextField(label=u"リンク(外部ページのURL)")
     display_order = fields.IntegerField(label=u"表示順序")
 
-    __display_fields__ = [u"name", u"origin", u"label",
+    __display_fields__ = [u"name", u"origin", u"label", u"attributes", 
                           u"parent", u"hierarchy", 
                           u"imgsrc", u"url", u"pageset", 
                           u"display_order"]
@@ -240,6 +241,36 @@ class CategoryForm(Form):
     #         self.warns["hierarchy"] = u"まだ子を持ったカテゴリを消そうとしています"
     ## organization
 
+
+class ExternalLinkForm(Form):
+    label = fields.TextField(label=u"ページ上の表記")
+    attributes = fields.TextField(label=u"attributes")
+    pageset = dynamic_query_select_field_factory(
+        PageSet, allow_blank=True, blank_text=u"--------", label=u"リンク(CMSで作成したもの)",
+        get_label=lambda obj: obj.name or u"--なし--")
+    hierarchy = fields.SelectField(label=u"リンクの種類", choices=_link_choices)
+    url = fields.TextField(label=u"リンク(外部ページのURL)")
+    display_order = fields.IntegerField(label=u"表示順序")
+
+    __display_fields__ = [u"hierarchy", 
+                          u"label",u"attributes", 
+                          u"url", u"pageset", 
+                          u"display_order"]
+
+class ExternalBannerForm(Form):
+    label = fields.TextField(label=u"バナー画像の説明文")
+    attributes = fields.TextField(label=u"attributes")
+    pageset = dynamic_query_select_field_factory(
+        PageSet, allow_blank=True, blank_text=u"--------", label=u"リンク(CMSで作成したもの)",
+        get_label=lambda obj: obj.name or u"--なし--")
+    hierarchy = fields.SelectField(label=u"階層", choices=_link_choices)
+    imgsrc = fields.TextField(label=u"imgsrc(e.g. /static/ticketstar/img/common/header_nav_top.gif)")
+    url = fields.TextField(label=u"リンク(外部ページのURL)")
+    display_order = fields.IntegerField(label=u"表示順序")
+    __display_fields__ = [u"hierarchy", 
+                          u"label", u"attributes", u"imgsrc", 
+                          u"url", u"pageset", 
+                          u"display_order"]
 
 class CategoryFilterForm(Form):
     hierarchy = fields.SelectField(label=u"階層", choices=[("__None", "----------")]+_hierarchy_choices)

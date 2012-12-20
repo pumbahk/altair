@@ -23,8 +23,9 @@
 
 <div class="row-fluid">
     <h3 class="first">Category追加</h3>
+    <a href="${request.route_path("category.link_create", action="input")}"  class="btn btn-success btn-large">新しいリンクを作成する</a>
+    <a href="${request.route_path("category.banner_create", action="input")}"  class="btn btn-success btn-large">新しいバナーを作成する</a>
     <a href="${request.route_path("category_create", action="input")}"  class="btn btn-success btn-large">新しいCategoryを作成する</a>
-
     %if query_form:
       <h3>絞り込み検索</h3>
        <form class="well" action="#" method="GET">
