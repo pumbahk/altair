@@ -189,6 +189,7 @@ class ConfirmLotEntryView(object):
         user = None
         entry = api.entry_lot(self.request, lot, shipping_address, wishes, payment_delivery_method_pair, user)
         self.request.session['lots.entry_no'] = entry.entry_no
+        api.notify_entry_lot(self.request, entry)
         return HTTPFound(self.request.route_url('lots.entry.completion', **self.request.matchdict))
 
 @view_defaults(route_name='lots.entry.completion', renderer="completion.html")
