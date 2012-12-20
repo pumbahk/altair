@@ -1,10 +1,10 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 ## kadomaru
 <%def name="widgets(name)">
   % for w in display_blocks[name]:
       ${w|n}
   % endfor
 </%def>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html lang="jp">
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
@@ -21,12 +21,12 @@
 <body>
     <div class="header">
         <div class="header-inner">
-            <img src="images/logo.gif" alt="VISSEL TICKET" />
+            <img src="${request.static_url("altaircms:static/vissel/images/logo.gif")}" alt="VISSEL TICKET" />
             <div class="gnavi">
                 <a href="" class="historybtn">購入履歴の確認</a><br />
                 <ul>
 %for c in myhelper._get_categories(request, "header_menu"):
-    <li>${h.get_link_tag_from_category(request,c)</li>
+    <li>${h.link.get_link_tag_from_category(request,c)}</li>
 %endfor
                 </ul>　　
             </div>
@@ -43,35 +43,31 @@
         <%block name="kadomaru">
           ${widgets("kadomaru")}
         </%block>
-      </div>
       <!-- kadomaru終わり -->
 
-      <%block name="bellow_kadomaru">
-        ${widgets("bellow_kadomaru")}
-      </%block>
-
       <!-- サイドバー -->
-      <div class="sidebar">
-        <a href="http://www.vissel-kobe.co.jp/" class="sidebtnA">オフィシャルサイト</a>
-        %for c in  myhelper._get_categories(request, "side_menu"):
-          ${h.get_link_tag_from_category(request,c)
-        %endfor 
+        <div class="sidebar">
+          %for c in  myhelper._get_categories(request, "side_menu"):
+            ${h.link.get_link_tag_from_category(request,c)}
+          %endfor 
 
-        %for c in  myhelper._get_categories(request, "side_banner"):
-          ${h.get_link_tag_from_category(request,c)
-        %endfor 
-      </div>  
+          %for c in  myhelper._get_categories(request, "side_banner"):
+            ${h.link.get_link_tag_from_category(request,c)}
+          %endfor 
+        </div>  
       <!-- サイドバーおわり -->
       <br class="clear" />
     </div>
-        
-    </div>
+    <%block name="bellow_kadomaru">
+      ${widgets("bellow_kadomaru")}
+    </%block>
+  </div>
     <!-- wrapperおわり -->
 
 
 <div class="footer">
     <div class="footer-inner">
-        <img src="images/tomoni.gif" alt="" />
+        <img src="${request.static_url("altaircms:static/vissel/images/tomoni.gif")}" alt="" />
             <div class="footernav">
               <ul>
                  <% xs = myhelper._get_categories(request, "footer_menu").all()%>
