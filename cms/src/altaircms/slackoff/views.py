@@ -17,9 +17,10 @@ def performance_detail(request):
             "display_fields": form.__display_fields__}
 
 def category_list_view(context, request):
-    qs = request.allowable(Category)
+    qs = request.allowable(Category).order_by(Category.hierarchy, Category.display_order)
     form = forms.CategoryForm()
     return {"categories": h.paginate(request, qs, item_count=qs.count()), 
             "form": form, 
             "mapper": mappers.category_mapper, 
             "display_fields": form.__display_fields__}
+

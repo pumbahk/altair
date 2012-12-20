@@ -26,7 +26,7 @@
                 <a href="" class="historybtn">購入履歴の確認</a><br />
                 <ul>
 %for c in myhelper._get_categories(request, "header_menu"):
-    <li><a href="${h.link.get_link_from_category(request,c)}">${c.label}</a></li>
+    <li>${h.get_link_tag_from_category(request,c)</li>
 %endfor
                 </ul>　　
             </div>
@@ -54,11 +54,11 @@
       <div class="sidebar">
         <a href="http://www.vissel-kobe.co.jp/" class="sidebtnA">オフィシャルサイト</a>
         %for c in  myhelper._get_categories(request, "side_menu"):
-          <a href="${h.link.get_link_from_category(request,c)}" class="sidebtnB">${c.label}</a>
+          ${h.get_link_tag_from_category(request,c)
         %endfor 
 
         %for c in  myhelper._get_categories(request, "side_banner"):
-          <a href="${h.link.get_link_from_category(request,c)}" class="sidebtnB"><img src="${c.imgsrc}" alt="${c.label}" width="160" /></a>
+          ${h.get_link_tag_from_category(request,c)
         %endfor 
       </div>  
       <!-- サイドバーおわり -->

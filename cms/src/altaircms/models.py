@@ -172,7 +172,7 @@ class Ticket(BaseOriginalMixin, Base):
     name = sa.Column(sa.Unicode(255))
     seattype = sa.Column(sa.Unicode(255))
     
-class Category(Base, WithOrganizationMixin):
+class Category(Base, WithOrganizationMixin): # todo: refactoring
     """
     サイト内カテゴリマスター
 
@@ -219,6 +219,7 @@ class Category(Base, WithOrganizationMixin):
     origin = sa.Column(sa.Unicode(length=255), 
                        doc=u"祖先を選定するためのフィールド今のところ{music, sports, stage, other}以外入らない。")
     ## originはenumにしても良いかもしれない
+    attributes = sa.Column(sa.Unicode(length=255), default=u"")
 
     @classmethod
     def get_toplevel_categories(cls, hierarchy=u"大", request=None): ## fixme

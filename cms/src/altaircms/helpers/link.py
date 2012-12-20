@@ -36,6 +36,19 @@ def get_link_from_topic(request, topic):
 get_link_from_topcontent = get_link_from_topic
 get_link_from_promotion = get_link_from_topic
 
+
+def get_link_tag_from_category(request, category):
+    return category._as_banner_link(request, category) if category.imgsrc else category._as_link(request, category)
+
+def _as_banner_link(request, category):
+    href = get_link_from_category(request, category)
+    return u'<a href="%s" %s><img src="%s" alt="%s"/></a>' % (href, category.attributes, category.imgsrc, category.label)
+
+def _as_link(request, category):
+    href = get_link_from_category(request, category)
+    return u'<a href="%s" %s></a>' % (href, category.attributes, category.label)
+
+
 def unquote_path_segment(string):
     """ request.route_pathの結果"foo/bar"が "foo%2Fbar"になってしまう部分の修正。
     (request_route_pathは、pyramid.traversal.qoute_path_segmentを実行された結果を利用する)
