@@ -519,7 +519,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def delete(self):
         # 既に販売されている場合は削除できない
-        if self.event.sales_start_on < datetime.now():
+        if self.event.sales_start_on and self.event.sales_start_on < datetime.now():
             raise Exception(u'既に販売開始日時を経過している為、削除できません')
 
         # delete ProductItem
@@ -865,7 +865,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def delete(self):
         # 既に販売されている場合は削除できない
-        if self.sales_start_on < datetime.now():
+        if self.sales_start_on and self.sales_start_on < datetime.now():
             raise Exception(u'既に販売開始日時を経過している為、削除できません')
 
         # delete Performance
