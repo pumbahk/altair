@@ -280,10 +280,11 @@ class SimpleCRUDFactory(object):
     def bind(self, config, bind_actions, events=None,
              has_auto_generated_permission=True, 
              after_input_context=AfterInput, 
+             endpoint=None, 
              **default_kwargs):
 
         after_input_context = config.maybe_dotted(after_input_context)
-        self.endpoint = endpoint = self._join("list")
+        self.endpoint = endpoint or self._join("list")
         self.resource = resource = functools.partial(
             self.Resource, 
             self.prefix, self.title, self.model, self.form, self.mapper, endpoint, self.filter_form, 

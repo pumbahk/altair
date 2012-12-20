@@ -38,11 +38,13 @@ def includeme(config):
                     renderer="altaircms:templates/category/list.mako")
     config.add_crud("category.link", title="external link", model="..models.Category",
                     has_auto_generated_permission=False, 
-                    bind_actions=["create"], 
+                    bind_actions=["create", "update"], 
+                    endpoint="category_list", 
                     form=".forms.ExternalLinkForm", mapper=".mappers.category_mapper")
     config.add_crud("category.banner", title="external banner", model="..models.Category",
                     has_auto_generated_permission=False, 
-                    bind_actions=["create"], 
+                    bind_actions=["create", "update"], 
+                    endpoint="category_list", 
                     form=".forms.ExternalBannerForm", mapper=".mappers.category_mapper")
     config.add_crud("topic", title="topic", model="..topic.models.Topic", 
                     form=".forms.TopicForm", mapper=".mappers.topic_mapper", 
