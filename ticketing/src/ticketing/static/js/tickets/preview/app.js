@@ -40,6 +40,11 @@ preview.ApplicationView = Backbone.View.extend({
     }, 
     fillsVarsWithParams: function(params){
         this.views.template_fillvalues_view.fillsVarsWithParams(params);
+    }, 
+    loadSVG: function(svg){
+        if(!!svg){
+            this.models.svg.updateToRaw(svg);
+        }
     }
 });
 
@@ -76,3 +81,4 @@ preview.ApplicationViewFactory = function(apis,
     var gateway = new gateway_impl({models: models, apis: apis, message: views.message_view});
     return new preview.ApplicationView({models: models, apis: apis, view_models: view_models, views: views, gateway:gateway});
 };
+

@@ -24,6 +24,7 @@ from .transform import SVGTransformer
 from .transform import FillvaluesTransformer
 from .fillvalues import template_collect_vars
 from .fillvalues import template_fillvalues
+from .fetchsvg import fetch_svg_from_postdata
 from ..cleaner.api import get_validated_svg_cleaner
 from ..response import FileLikeResponse
 
@@ -53,6 +54,7 @@ def preview_ticket(context, request):
         "fillvalues": request.route_path("tickets.preview.api", action="fillvalues"), 
         "fillvalues_with_models": request.route_path("tickets.preview.api", action="fillvalues_with_models")
         }
+
     ticket_formats = c_models.TicketFormat.query.filter_by(organization_id=context.user.organization_id)
     ticket_formats = [{"pk": t.id, "name": t.name} for t in ticket_formats]
     return {"apis": json.dumps(apis), "ticket_formats": ticket_formats}
@@ -77,6 +79,7 @@ def preview_ticket_download(context, request):
     io = StringIO(request.POST["svg"].encode("utf-8"))
     return FileLikeResponse(io, request=request, filename="preview.svg")
 
+
 @view_config(route_name="tickets.preview.combobox", request_method="GET", renderer="ticketing:templates/tickets/combobox.html", 
              decorator=with_bootstrap, permission="event_editor")
 @view_config(route_name="tickets.preview.combobox", request_method="GET", renderer="ticketing:templates/tickets/_combobox.html", 
@@ -99,6 +102,22 @@ class PreviewApiView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
+
+    @view_config(match_param="action=loadsvg")
+    def preview_api_loadsvg(self):
+        """
+        data = {"for_svg": {"model_name": "TicketBundle", model: 1}, 
+                "for_fillvalues": {"model_name": "ProductItem", model: 1}}
+        """
+        try:
+            data = json.loads(self.request.POST["data"])
+            svg = fetch_svg_from_postdata(data.get("for_svg", {}))
+            if svg is None:
+                return {"status": False, "data": svg, "message": "svg is not found"}
+            svg = FillvaluesTransformer(svg, data.get("for_fillvalues", {})).transform()
+            return {"status": True, "data": svg}
+        except Exception, e:
+            return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
 
     @view_config(match_param="action=normalize", request_param="svg")
     def preview_api_normalize(self):
