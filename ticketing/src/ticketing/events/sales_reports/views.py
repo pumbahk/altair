@@ -39,8 +39,8 @@ class SalesReports(BaseView):
             query = query.filter(Performance.id==form.performance_id.data)
         if form.event_id.data:
             query = query.filter(Event.id==form.event_id.data)
-            performance_start_on = func.min(Performance.start_on.label('performance_start_on'))
-            performance_end_on = func.max(Performance.end_on.label('performance_end_on'))
+        event_start_day = func.min(Performance.start_on.label('performance_start_on'))
+        event_end_day = func.max(Performance.end_on.label('performance_end_on'))
 
         if group == 'Performance':
             query = query.group_by(Performance.id)\
@@ -49,7 +49,9 @@ class SalesReports(BaseView):
                     Performance.name,
                     Performance.start_on,
                     func.sum(Stock.quantity),
-                    func.sum(StockStatus.quantity)
+                    func.sum(StockStatus.quantity),
+                    event_start_day,
+                    event_end_day,
                 )
         else:
             query = query.group_by(Event.id)\
@@ -59,9 +61,11 @@ class SalesReports(BaseView):
                     Event.id, # dummy
                     func.sum(Stock.quantity),
                     func.sum(StockStatus.quantity),
+                    event_start_day,
+                    event_end_day,
                 )
 
-        for id, title, start_on, total_quantity, vacant_quantity in query.all():
+        for id, title, start_on, total_quantity, vacant_quantity, event_start_day, event_end_day in query.all():
             reports[id] = dict(
                 id=id,
                 title=title,
@@ -72,8 +76,8 @@ class SalesReports(BaseView):
                 fee_amount=0,
                 price_amount=0,
                 product_quantity=0,
-                event_start_day='',
-                event_end_day='',
+                event_start_day=event_start_day,
+                event_end_day=event_end_day,
             )
 
         '''
@@ -122,7 +126,7 @@ class SalesReports(BaseView):
             query = query.filter(Performance.id==form.performance_id.data)
         if form.event_id.data:
             query = query.filter(Event.id==form.event_id.data)
-
+        
         if group == 'Performance':
             query = query.group_by(Performance.id)\
                 .with_entities(
@@ -140,31 +144,6 @@ class SalesReports(BaseView):
 
         for id, price_amount, product_quantity in query.all():
             reports[id].update(dict(price_amount=price_amount or 0, product_quantity=product_quantity or 0))
-
-        # イベント開始、イベント終了
-        if not group == 'Performance':
-            if form.event_id.data:
-                event_id = form.event_id.data
-            else:
-                event_id = Event.query.filter(Event.organization_id==self.context.user.organization_id).with_entities(Event.id).all()
-
-                event_start_days = {}
-                for id in event_id:
-                    query = Event.query.filter(Event.organization_id==self.context.user.organization_id)\
-                        .join(Performance).filter(Event.id==id[0]).with_entities(Performance.start_on).all()
-                    event_start_days[id[0]]=query
-                for id, performance_days in event_start_days.items():
-                     performance_days.sort()
-                     reports[id].update(dict(event_start_day=performance_days[0] or ''))
-                event_end_days = {} 
-                for id in event_id:
-                     query = Event.query.filter(Event.organization_id==self.context.user.organization_id)\
-                        .join(Performance).filter(Event.id==id[0]).with_entities(Performance.end_on).all()
-                     event_end_days[id[0]]=query
-                event_end_day = {}
-                for id, performance_days in event_end_days.items():
-                     performance_days.reverse()
-                     reports[id].update(dict(event_end_day=performance_days[0] or ''))
 
         return reports.values()
 
