@@ -39,6 +39,8 @@ class SalesReports(BaseView):
             query = query.filter(Performance.id==form.performance_id.data)
         if form.event_id.data:
             query = query.filter(Event.id==form.event_id.data)
+            performance_start_on = func.min(Performance.start_on.label('performance_start_on'))
+            performance_end_on = func.max(Performance.end_on.label('performance_end_on'))
 
         if group == 'Performance':
             query = query.group_by(Performance.id)\
