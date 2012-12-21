@@ -40,11 +40,11 @@
       </%block>
 
       <div class="kadomaru">
+        <div class="maincol">
         <%block name="kadomaru">
           ${widgets("kadomaru")}
         </%block>
-      <!-- kadomaru終わり -->
-
+        </div>
       <!-- サイドバー -->
         <div class="sidebar">
           %for c in  myhelper._get_categories(request, "side_menu"):

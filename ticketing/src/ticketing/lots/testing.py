@@ -22,10 +22,13 @@ class DummyStockerFactory(object):
 
 def _add_lots(session, product_data, membergroups):
 
-    from ticketing.core.models import Organization
+    from ticketing.core.models import Organization, Event, SalesSegment, Performance
     
-    event = testing.DummyModel(id=1111)
-    sales_segment = testing.DummyModel(id=12345)
+    #event = Event(id=1111)
+    event = Event()
+    performance = Performance(event=event, id=123)
+    session.add(performance)
+    sales_segment = SalesSegment(id=12345)
     lot = _add_lot(session, event.id, sales_segment.id, 5, 3, membergroups=membergroups)
     lot.event.organization = Organization(code="test", short_name="test")
     lot.limit_wishes =3 

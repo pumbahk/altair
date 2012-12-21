@@ -13,7 +13,7 @@
     modal.find('#product #seat_stock_type_id').val($(product).find('#seat_stock_type_id').attr('value'));
     modal.find('#id').val('');
     modal.find('#performance_id').val(${performance.id});
-    modal.find('#product_id').val($(product).find('#id').text());
+    modal.find('#product_id').val(product_id);
     modal.find('#stock_holders').removeAttr('disabled').change();
     modal.find('#stock_id').removeAttr('disabled');
     modal.find('#product-item #name').val(product_name);

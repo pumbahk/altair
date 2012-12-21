@@ -63,8 +63,7 @@ def topics_merge_settings(template_name, widget, bname, bsettings):
     def topics_render():
         d = widget.now_date_function()
         request = bsettings.extra["request"]
-        page = bsettings.extra["page"] if widget.display_page else None
-
+        page = bsettings.extra["page"].pageset if widget.display_page else None
         qs = Topic.matched_qs(page=page, d=d, kind=widget.kind, subkind=widget.subkind)
         qs = request.allowable(Topic, qs=qs)
         qs = _qs_refine(qs, Topic, widget).options(orm.joinedload("linked_page"))

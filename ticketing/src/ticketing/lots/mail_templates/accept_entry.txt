@@ -27,7 +27,7 @@ ${lot_entry.created_at}
 ■抽選結果発表日時：20xx年x月yy日[z]12:00～
 ■抽選結果確認ページ： ${entry_review_url}
 %for wish in lot_entry.wishes:
-第${wish.wish_order_no}希望
+第${wish.wish_order}希望
 公演日：${wish.performance.open_on}
 会場：${wish.performance.venue.name}
 席種：${wish.products[n].product.name}

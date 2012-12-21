@@ -519,7 +519,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def delete(self):
         # 既に販売されている場合は削除できない
-        if self.event.sales_start_on < datetime.now():
+        if self.event.sales_start_on and self.event.sales_start_on < datetime.now():
             raise Exception(u'既に販売開始日時を経過している為、削除できません')
 
         # delete ProductItem
@@ -865,7 +865,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def delete(self):
         # 既に販売されている場合は削除できない
-        if self.sales_start_on < datetime.now():
+        if self.sales_start_on and self.sales_start_on < datetime.now():
             raise Exception(u'既に販売開始日時を経過している為、削除できません')
 
         # delete Performance
@@ -959,6 +959,11 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 PaymentDeliveryMethodPair.create_from_template(template=template_pdmp, sales_segment_id=sales_segment.id)
 
         return {template.id:sales_segment.id}
+
+    def get_products(self, performances):
+        """ この販売区分で購入可能な商品一覧 """
+        import itertools
+        return [product for product in self.product if product.performances in performances]
 
 class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentDeliveryMethodPair'
@@ -1463,6 +1468,8 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     event = relationship('Event', backref=backref('products', order_by='Product.display_order'))
 
     items = relationship('ProductItem', backref=backref('product', order_by='Product.display_order'))
+
+    performances = association_proxy('items', 'performance')
 
     # 一般公開するか
     public = Column(Boolean, nullable=False, default=True)

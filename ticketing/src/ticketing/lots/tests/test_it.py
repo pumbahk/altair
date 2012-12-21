@@ -115,7 +115,7 @@ class EntryLotViewTests(unittest.TestCase):
             **wishes
         )
         request = testing.DummyRequest(
-            matchdict=dict(event_id=1111, lot_id=lot.id),
+            matchdict=dict(event_id=lot.event_id, lot_id=lot.id),
             params=data,
         )
         target = self._makeOne(request)        
@@ -303,6 +303,7 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
             {'name': u'商品 C', 'price': 100},
         ])
         self.config.add_route('lots.entry.index', '/back/to/form')
+        self.config.add_renderer('.txt' , 'pyramid.mako_templating.renderer_factory')
         sales_segment = lot.sales_segment
         payment_delivery_method_pair = sales_segment.payment_delivery_method_pairs[0]
         event_id = lot.event_id
@@ -324,7 +325,6 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
                          'tel_1': u'01234567899',
                          'tel_2': None,
                          'zip': u'1234567'}, #shipping_address
-                    #'wishes': [[(1, '1', 10, "123"), (1, '2', 5, "123")], [(2, '3', 5, "124")]], # wishes
                     'wishes': [{"performance_id": "123", 
                                 "wished_products": [
                                     {"wish_order": 1, "product_id": '1', "quantity": 10}, 
@@ -342,6 +342,9 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
                 lot_id=lot.id,
             )
         )
+        request.registry.settings['lots.accepted_mail_subject'] = '抽選テスト'
+        request.registry.settings['lots.accepted_mail_sender'] = 'testing@sender.example.com'
+        request.registry.settings['lots.accepted_mail_template'] = 'ticketing.lots:mail_templates/accept_entry.txt'
         context = testing.DummyResource()
 
         target = self._makeOne(context, request)

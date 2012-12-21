@@ -199,7 +199,7 @@ class Products(BaseView):
         performance_id = int(self.request.params.get('performance_id', 0))
         performance = Performance.get(performance_id, self.context.user.organization_id)
         if performance is None:
-            logger.error('performance id %d is not found' % performance_id)
+            logger.info('performance id %d is not found' % performance_id)
             raise HTTPBadRequest(body=json.dumps({
                 'message':u'パフォーマンスが存在しません',
             }))
@@ -223,8 +223,8 @@ class Products(BaseView):
                 try:
                     product_item.delete()
                 except Exception, e:
-                    logger.error(row_data)
-                    logger.error('validation error:%s' % e.message)
+                    logger.info(row_data)
+                    logger.info('validation error:%s' % e.message)
                     raise HTTPBadRequest(body=json.dumps({
                         'message':u'入力データを確認してください',
                         'rows':{'rowid':row_data.get('id'), 'errors':[e.message]}
@@ -237,11 +237,22 @@ class Products(BaseView):
                     'stock_type_id':row_data.get('stock_type_id')
                 }
                 stock = Stock.filter_by(**conditions).first()
+                if stock is None:
+                    errors = {}
+                    if not row_data.get('stock_holder_id'):
+                        errors['stock_holder_id'] = [u'選択してください']
+                    if not row_data.get('stock_type_id'):
+                        errors['stock_type_id'] = [u'選択してください']
+                    logger.info('validation error:%s' % errors)
+                    raise HTTPBadRequest(body=json.dumps({
+                        'message':u'入力データを確認してください',
+                        'rows':{'rowid':row_data.get('id'), 'errors':errors}
+                    }))
                 row_data['stock_id'] = stock.id
 
                 f = ProductItemGridForm(row_data, user_id=self.context.user.id, performance_id=performance_id)
                 if not f.validate():
-                    logger.error('validation error:%s' % f.errors)
+                    logger.info('validation error:%s' % f.errors)
                     raise HTTPBadRequest(body=json.dumps({
                         'message':u'入力データを確認してください',
                         'rows':{'rowid':row_data.get('id'), 'errors':f.errors}
