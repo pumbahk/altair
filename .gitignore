@@ -18,3 +18,4 @@ cms/doc/source
 .coverage
 coverage.xml
 nosetests.xml
+*.orig
