@@ -18,7 +18,7 @@
      %for topic in topics:
   <tr>
 	<td><input type="radio" name="object_id" value="${topic.id}"></td>
-	<td>${topic.title}</td>
+	<td><a href="${request.route_path("topic_update",action="input", id=topic.id)}">${topic.title}</a></td>
 	<td>${topic.kind}</td>
 	<td>${topic.subkind}</td>
 	<td>${topic.publish_open_on}</td>
