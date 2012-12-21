@@ -3,7 +3,7 @@
 
 <h2>画像アセット詳細</h2>
 <div class="row">
-    <div class="span10">
+    <div class="span12">
         <ul class="breadcrumb">
             <li><a href="${request.route_path("dashboard")}">Top</a> <span class="divider">/</span></li>
             <li><a href="${request.route_path("asset_list")}">Asset</a> <span class="divider">/</span></li>

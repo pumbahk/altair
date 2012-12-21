@@ -6,7 +6,7 @@
 <h2>image asset 検索結果()</h2>
 
 <div class="row-fluid">
-  <div class="span10">
+  <div class="span12">
     ${nco.breadcrumbs(
 	    names=["Top", "imageAsset", "search"], 
 	    urls=[request.route_path("dashboard"),

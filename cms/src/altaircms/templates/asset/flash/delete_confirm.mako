@@ -2,7 +2,7 @@
 <%namespace name="co" file="../components.mako"/>
 
 <div class="row">
-    <div class="span10">
+    <div class="span12">
         <ul class="breadcrumb">
             <li><a href="${request.route_path("asset_list")}">アセット</a> <span class="divider">/</span></li>
             <li>${asset.filepath}</li>

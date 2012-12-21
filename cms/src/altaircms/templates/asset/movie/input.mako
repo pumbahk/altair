@@ -5,12 +5,11 @@
 <h2>movie asset</h2>
 
 <div class="row">
-    <div class="span10">
+    <div class="span12">
         <ul class="breadcrumb">
             <li><a href="${request.route_path("asset_list")}">asset</a> <span class="divider">/</span></li>
             <li><a href="${request.route_path("asset_movie_list")}">movie</a> <span class="divider">/</span></li>
             <li><a href="${request.route_path("asset_movie_detail", asset_id=asset.id)}">${asset.filepath}</a></li>
-            <li>${asset.filepath}</li>
         </ul>
     </div>
 </div>
