@@ -30,7 +30,7 @@ def _setup_performance(session):
     import itertools
     import ticketing.core.models as c_m
     # organization
-    org = c_m.Organization()
+    org = c_m.Organization(code="TEST", short_name='testing')
     # event
     event = c_m.Event(organization=org)
     # performance
@@ -282,7 +282,7 @@ class StockerTests(unittest.TestCase):
     def _add_stock(self, quantity):
         import ticketing.core.models as c_m
         # organization
-        org = c_m.Organization()
+        org = c_m.Organization(code="TEST", short_name="testing")
         # event
         event = c_m.Event(organization=org)
         # performance
@@ -342,7 +342,7 @@ class pop_seatTests(unittest.TestCase):
     def _add_seats(self):
         import ticketing.core.models as c_m
         # organization
-        org = c_m.Organization()
+        org = c_m.Organization(code="TEST", short_name="testing")
         # event
         event = c_m.Event(organization=org)
         # performance
@@ -393,7 +393,7 @@ class CartFactoryTests(unittest.TestCase):
     def _add_seats(self):
         import ticketing.core.models as c_m
         # organization
-        org = c_m.Organization()
+        org = c_m.Organization(code="TEST", short_name="testing")
         # event
         event = c_m.Event(organization=org)
         # performance
@@ -619,6 +619,53 @@ class logout_Tests(unittest.TestCase):
         request = testing.DummyRequest()
         self._callFUT(request)
 
+class query_performance_namesTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.session = _setup_db()
+
+    def setUp(self):
+        self.config = testing.setUp()
+
+    def tearDown(self):
+        import transaction
+        transaction.abort()
+        self.session.remove()
+        testing.tearDown()
+
+    def _callFUT(self, *args, **kwargs):
+        from .api import _query_performance_names
+        return _query_performance_names(*args, **kwargs)
+
+    def test_one(self):
+        from datetime import datetime
+        from ..core.models import Event, SalesSegmentGroup, Performance, Venue, Product, ProductItem, Stock, Site, Organization
+        request = testing.DummyRequest()
+        organization = Organization(code="TEST", short_name="testing")
+        event = Event(organization=organization)
+        sales_segment = SalesSegmentGroup(event=event)        
+        product = Product(sales_segment=sales_segment, price=100)
+        performance = Performance(event=event, name=u"公演1", 
+            open_on=datetime(2012, 8, 31, 10), start_on=datetime(2012, 8, 31, 10, 30),
+            public=True)
+        site = Site()
+        venue = Venue(performance=performance, site=site, organization=organization, name=u"会場1")
+        stock = Stock(performance=performance)
+        product_item = ProductItem(stock=stock, product=product, price=100)
+
+        self.session.add(event)
+        self.session.add(sales_segment)
+        self.session.flush()
+
+        result = self._callFUT(request, event, sales_segment)
+
+        self.assertEqual(result.all(),
+            [(1,
+              u'\u516c\u6f141',
+              datetime(2012, 8, 31, 10, 30),
+              datetime(2012, 8, 31, 10, 0),
+              u'\u4f1a\u58341',
+              False)])
         
 class performance_namesTests(unittest.TestCase):
 
@@ -628,6 +675,7 @@ class performance_namesTests(unittest.TestCase):
 
     def setUp(self):
         self.config = testing.setUp()
+        self.maxDiff = None
 
     def tearDown(self):
         import transaction
@@ -656,12 +704,13 @@ class performance_namesTests(unittest.TestCase):
         from datetime import datetime
         from ..core.models import Event, SalesSegment, Performance, Venue, Product, ProductItem, Stock, Site, Organization
         request = testing.DummyRequest()
-        organization = Organization()
+        organization = Organization(code="TEST", short_name="testing")
         event = Event(organization=organization)
         sales_segment = SalesSegment(event=event)        
         product = Product(sales_segment=sales_segment, price=100)
         performance = Performance(event=event, name=u"公演1", 
-            open_on=datetime(2012, 8, 31, 10), start_on=datetime(2012, 8, 31, 10, 30))
+            open_on=datetime(2012, 8, 31, 10), start_on=datetime(2012, 8, 31, 10, 30),
+            public=True)
         site = Site()
         venue = Venue(performance=performance, site=site, organization=organization, name=u"会場1")
         stock = Stock(performance=performance)
@@ -674,21 +723,22 @@ class performance_namesTests(unittest.TestCase):
         result = self._callFUT(request, event, sales_segment)
 
         self.assertEqual(result, [
-            (u'公演1', [ {'vname': u'会場1', 'pid': 1, 'open': datetime(2012, 8, 31, 10), 'start': datetime(2012, 8, 31, 10, 30)}]),
+            (u'公演1', [ {'on_the_day': False, 'vname': u'会場1', 'pid': 1, 'open': datetime(2012, 8, 31, 10), 'start': datetime(2012, 8, 31, 10, 30)}]),
         ])
 
     def test_two(self):
         from datetime import datetime
         from ..core.models import Event, SalesSegment, Performance, Venue, Product, ProductItem, Stock, Site, Organization
         request = testing.DummyRequest()
-        organization = Organization()
+        organization = Organization(code="TEST", short_name="testing")
         event = Event(organization=organization)
         sales_segment = SalesSegment(event=event)        
         site = Site()
         for i in range(2):
             product = Product(sales_segment=sales_segment, price=100)
             performance = Performance(event=event, name=u"公演1", 
-                open_on=datetime(2012, 8 + i, 10, 10), start_on=datetime(2012, 8 + i, 10, 10, 30))
+                open_on=datetime(2012, 8 + i, 10, 10), start_on=datetime(2012, 8 + i, 10, 10, 30),
+                public=True)
             venue = Venue(performance=performance, site=site, organization=organization, name=u"会場1")
             stock = Stock(performance=performance)
             product_item = ProductItem(stock=stock, product=product, price=100)
@@ -696,7 +746,8 @@ class performance_namesTests(unittest.TestCase):
         for i in range(2):
             product = Product(sales_segment=sales_segment, price=100)
             performance = Performance(event=event, name=u"公演2", 
-                open_on=datetime(2012, 10 - i, 10, 10), start_on=datetime(2012, 10 - i, 10, 10, 30))
+                open_on=datetime(2012, 10 - i, 10, 10), start_on=datetime(2012, 10 - i, 10, 10, 30),
+                public=True)
             venue = Venue(performance=performance, site=site, organization=organization, name=u"会場1")
             stock = Stock(performance=performance)
             product_item = ProductItem(stock=stock, product=product, price=100)
@@ -709,11 +760,11 @@ class performance_namesTests(unittest.TestCase):
 
         self.assertEqual(result, [
             (u'公演1', [
-                {'vname': u'会場1', 'pid': 1, 'open': datetime(2012, 8, 10, 10), 'start': datetime(2012, 8, 10, 10, 30)},
-                {'vname': u'会場1', 'pid': 2, 'open': datetime(2012, 9, 10, 10), 'start': datetime(2012, 9, 10, 10, 30)},
+                {'on_the_day': False, 'vname': u'会場1', 'pid': 1, 'open': datetime(2012, 8, 10, 10), 'start': datetime(2012, 8, 10, 10, 30)},
+                {'on_the_day': False, 'vname': u'会場1', 'pid': 2, 'open': datetime(2012, 9, 10, 10), 'start': datetime(2012, 9, 10, 10, 30)},
             ]),
             (u'公演2', [
-                {'vname': u'会場1', 'pid': 4, 'open': datetime(2012, 9, 10, 10), 'start': datetime(2012, 9, 10, 10, 30)},
-                {'vname': u'会場1', 'pid': 3, 'open': datetime(2012, 10, 10, 10), 'start': datetime(2012, 10, 10, 10, 30)},
+                {'on_the_day': False, 'vname': u'会場1', 'pid': 4, 'open': datetime(2012, 9, 10, 10), 'start': datetime(2012, 9, 10, 10, 30)},
+                {'on_the_day': False, 'vname': u'会場1', 'pid': 3, 'open': datetime(2012, 10, 10, 10), 'start': datetime(2012, 10, 10, 10, 30)},
             ]),
         ])
