@@ -8,9 +8,10 @@
 <h2>page編集</h2>
 
 ${nco.breadcrumbs(
-  names=["Top", "Page", u"詳細ページ",page.name], 
+  names=["Top", "Page", u"Pageset詳細", u"詳細ページ", page.name], 
   urls=[request.route_path("dashboard"),
         h.page.to_list_page(request,page),
+        h.link.pageset_detail(request, page.pageset),
         request.route_path("page_detail",page_id=page.id)]
 )}
 
