@@ -34,7 +34,7 @@ class AssetImageUpdateTests(unittest.TestCase):
                 "private_tags": "",
                 })
 
-        asset = self._makeAsset()
+        asset = self._makeAsset(filepath="prev-file-path.jpg")
         request = testing.DummyRequest()
         target = self._makeOne(request)
         result = target.update_image_asset(asset, 
@@ -46,7 +46,7 @@ class AssetImageUpdateTests(unittest.TestCase):
         self.assertEqual(result, asset)
         self.assertEquals(result.updated_by, operator)
 
-        self.assertTrue(".jpg" in result.filepath)
+        self.assertEquals(result.filepath, "prev-file-path.jpg")
 
         self.assertEquals(result.mimetype,'image/jpeg')
         self.assertEquals(result.width, 300)
@@ -111,7 +111,7 @@ class AssetMovieUpdateTests(unittest.TestCase):
                 })
         operator = _makeOperator("this-is-operator")
 
-        asset = self._makeAsset()
+        asset = self._makeAsset(filepath="prev-file-path.mp4")
         request = testing.DummyRequest()
         target = self._makeOne(request)
         result = target.update_movie_asset(asset, 
@@ -121,8 +121,7 @@ class AssetMovieUpdateTests(unittest.TestCase):
                                            _put_tags = lambda *args: args, 
                                            _add_operator=lambda asset, r: setattr(asset, "updated_by", operator))
         self.assertEqual(result, asset)
-
-        self.assertTrue(".mp4" in result.filepath)
+        self.assertEqual(result.filepath, "prev-file-path.mp4")
 
         self.assertEquals(result.mimetype,'video/mp4')
         self.assertEquals(result.width, 300)
@@ -184,8 +183,7 @@ class AssetFlashUpdateTests(unittest.TestCase):
                 })
 
         operator = _makeOperator("this-is-operator")
-
-        asset = self._makeAsset()
+        asset = self._makeAsset(filepath="prev-file-path.swf")
         request = testing.DummyRequest()
         target = self._makeOne(request)
         result = target.update_flash_asset(asset, 
@@ -197,7 +195,7 @@ class AssetFlashUpdateTests(unittest.TestCase):
         self.assertEqual(result, asset)
 
         self.assertTrue(".swf" in result.filepath)
-
+        self.assertEqual(result.filepath, "prev-file-path.swf")
         self.assertEquals(result.mimetype,'application/x-shockwave-flash')
         self.assertEquals(result.width, 300)
         self.assertEquals(result.height, 200)
