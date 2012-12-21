@@ -4,6 +4,8 @@ from altaircms.auth.models import Organization
 from altaircms.auth.interfaces import IAllowableQuery
 from altaircms.auth.models import Host
 from sqlalchemy.orm.exc import NoResultFound
+import logging
+logger = logging.getLogger(__name__)
 
 def get_organization_from_request(request, override_host=None):
     host_name = override_host or request.host
@@ -28,6 +30,7 @@ class AllowableQueryFilterByOrganization(object):
         query = qs or model.query
         organization = self.request.organization
         if organization is None:
+            logger.warn("*separation host=%s organization is not found",  self.request.host)
             raise self.ExceptionClass("organization is not found")
         return query.with_transformation(organization.inthere("organization_id"))
 
@@ -35,6 +38,7 @@ class AllowableQueryFilterByOrganization(object):
         query = qs or model.query
         organization = get_organization_from_request(self.request)
         if organization is None:
+            logger.warn("*separation host=%s organization is not found",  self.request.host)
             raise self.ExceptionClass("organization is not found")
         return query.with_transformation(organization.inthere("organization_id"))
 
