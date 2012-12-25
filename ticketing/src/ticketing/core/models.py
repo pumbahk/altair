@@ -35,6 +35,9 @@ from ticketing.sej.payment import request_cancel_order
 from ticketing.assets import IAssetResolver
 from ticketing.utils import myurljoin
 
+import sqlahelper
+session = sqlahelper.get_session()
+
 logger = logging.getLogger(__name__)
 
 class Seat_SeatAdjacency(Base):
