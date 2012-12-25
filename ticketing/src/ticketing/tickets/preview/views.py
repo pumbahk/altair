@@ -129,7 +129,11 @@ class PreviewApiView(object):
         except Exception, e:
             return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
 
-    @view_config(match_param="action=preview.base64", request_param="svg")
+    @view_config(match_param="action=preview.base64", request_param=("type=sej", "svg"))
+    def preview_ticket_post64_svg(self):
+        pass
+
+    @view_config(match_param="action=preview.base64")
     def preview_ticket_post64(self):
         preview = SVGPreviewCommunication.get_instance(self.request)
         svg = self.request.POST["svg"]
@@ -141,6 +145,10 @@ class PreviewApiView(object):
                     "width": transformer.width, "height": transformer.height} #original size
         except jsonrpc.ProtocolError, e:
             return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
+
+    @view_config(match_param="action=preview.base64.withmodels", request_param=("type=sej", "svg"))
+    def preview_ticket_post64_sej_with_models(self):
+        pass
 
     @view_config(match_param="action=preview.base64.withmodels", request_param="svg")
     def preview_ticket_post64_with_models(self):
