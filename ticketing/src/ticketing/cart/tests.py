@@ -87,12 +87,12 @@ class CartTests(unittest.TestCase):
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
 
-    def _add_cart(self, cart_session_id, created_at=None):
+    def _add_cart(self, cart_session_id, performance, created_at=None):
         from datetime import datetime
         from . import models
         if created_at is None:
             created_at = datetime.now()
-        cart = models.Cart.create(cart_session_id=cart_session_id, created_at=created_at)
+        cart = models.Cart.create(cart_session_id=cart_session_id, created_at=created_at, performance=performance)
         self.session.add(cart)
         return cart
 
@@ -129,7 +129,9 @@ class CartTests(unittest.TestCase):
         self.assertFalse(result)
 
     def test_is_existing_cart_session_id_exsiting(self):
-        self._add_cart(u"x")
+        from ticketing.core.models import Performance
+        performance = Performance()
+        self._add_cart(u"x", performance=performance)
         target = self._getTarget()
 
         result = target.is_existing_cart_session_id(u"x")
@@ -152,6 +154,8 @@ class CartTests(unittest.TestCase):
 
     def test_is_expired_class(self):
         from datetime import datetime, timedelta
+        from ticketing.core.models import Performance
+        performance = Performance()
         valid_created = datetime.now() - timedelta(minutes=14)
         expired_created = datetime.now() - timedelta(minutes=16)
         self._add_cart(u"valid", created_at=valid_created)
@@ -259,7 +263,7 @@ class CartedProductItemTests(unittest.TestCase):
         from ..core import models as c_models
 
         seat_statuses = []
-        organization = c_models.Organization(id=532)
+        organization = c_models.Organization(id=532, short_name='testing')
         site = c_models.Site(id=899)
         venue = c_models.Venue(id=100, site=site, organization=organization)
         for i in range(quantity):
@@ -443,7 +447,7 @@ class TicketingCartResourceTests(unittest.TestCase):
     def _add_venue(self, organization_id, site_id, venue_id):
         from ticketing.core.models import Venue, Site
         from ..core.models import Organization
-        organization = Organization(id=organization_id)
+        organization = Organization(id=organization_id, short_name='testing')
         site = Site(id=site_id)
         venue = Venue(id=venue_id, site=site, organization_id=organization.id)
         return venue
@@ -575,7 +579,7 @@ class ReserveViewTests(unittest.TestCase):
     def _add_venue(self, organization_id, site_id, venue_id):
         from ticketing.core.models import Venue, Site
         from ..core.models import Organization
-        organization = Organization(id=organization_id)
+        organization = Organization(id=organization_id, short_name='testing')
         site = Site(id=site_id)
         venue = Venue(id=venue_id, site=site, organization_id=organization.id)
         return venue
