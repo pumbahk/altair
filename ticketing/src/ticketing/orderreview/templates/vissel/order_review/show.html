@@ -2,17 +2,17 @@
 <html lang="en">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-  <title>東京サンレーヴス サンレーヴスチケット 購入確認ページ</title>
-  <link rel="stylesheet" type="text/css" href="${request.static_url('ticketing.orderreview:static/css/CR/style.css')}" media="all" />
+  <title>ヴィッセル神戸 ヴィッセルチケット 購入確認ページ</title>
+  <link rel="stylesheet" type="text/css" href="${request.static_url('ticketing.orderreview:static/css/vissel/style.css')}" media="all" />
   <script language="JavaScript" src="${request.static_url('ticketing.orderreview:static/js/jquery.js')}"></script>
 </head>
 <body>
   <div class="wrapper">
     <div class="maincol">
       <div class="header">
-        <img src="${request.static_url('ticketing.orderreview:static/images/CR/head_title.png')}" alt="東京サンレーヴス" width="734" height="170" />
+        <img src="${request.static_url('ticketing.orderreview:static/images/vissel/head_title.png')}" alt="ヴィッセル神戸" width="734" height="170" />
       </div>
-      <h1 class="title">東京サンレーヴス サンレーヴスチケット 購入確認ページ</h1>
+      <h1 class="title">ヴィッセル神戸 ヴィッセルチケット 購入確認ページ</h1>
       <table class="layout" class="wrapper">
         <tr>
           <td>
@@ -136,7 +136,7 @@ shipping =order.shipping_address
                 <tbody>
                   <tr>
                     <thead>
-                    <th colspan="2"><span>東京サンレーヴス 2012-2013 ブースタークラブ</span></th>
+                    <th colspan="2"><span>ヴィッセル神戸</span></th>
                     </thead>
                   </tr>
                   <tr>
@@ -204,7 +204,7 @@ shipping =order.shipping_address
                     <td class="textR">${pm.get('email')}</td>
                   </tr>
                   <tr>
-                    <td>東京サンレーヴスからのメールマガジンの配信    </td>
+                    <td>ヴィッセル神戸からのメールマガジンの配信    </td>
                     <td class="textR">${u'希望する' if pm.get('mail_permission') else u'希望しない'}</td>
                   </tr>
                   <tr>
@@ -283,8 +283,8 @@ shipping =order.shipping_address
             <div class="kadomaru">
               <h3>お問い合わせ先</h3>
               <ul class="markNone font14">
-                <li>東京プロバスケットボールクラブ (株)</li>
-                <li>TEL: 042-444-8634</li>
+                <li>ヴィッセル神戸チケットセンター</li>
+                <li>TEL: 078-651-1222</li>
               </ul>
             </div>
             <!-- kadomaruおわり -->
@@ -293,7 +293,7 @@ shipping =order.shipping_address
         </tr>
       </table>
     </div>
-    <%include file="/CR/commons/footer.inc" />
+    <%include file="/vissel/commons/footer.inc" />
   </div>
 </body>
 </html>
