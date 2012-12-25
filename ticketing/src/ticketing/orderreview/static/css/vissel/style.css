@@ -1,7 +1,6 @@
 *{
 margin:0;
 padding:0;
-border:none;
 }
 
 
@@ -269,9 +268,8 @@ a:hover img {
 
 }
 
-
-.kadomaru{
-	width:924px;
+.kadomaru2{
+	width:720px;
 	margin: 20px auto;
 	background: #fff;
 	padding: 30px;
@@ -280,6 +278,18 @@ a:hover img {
 	-moz-border-radius: 10px;
 	clear: both;
 }
+
+.kadomaru{
+	width:650px;
+	margin: 20px auto;
+	background: #fff;
+	padding: 30px;
+	border-radius: 10px;
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
+	clear: both;
+}
+
 
 .kadomaru ul{
 	padding: 0 0 0 40px;
@@ -1161,7 +1171,7 @@ div#performance-calendar .month-tab span a{
 	color:#f00;
 }
 
-.#fff{
+.white{
 	color: #fff;
 }
 
@@ -1241,7 +1251,7 @@ table.schedule tr.row td.presale, table.schedule tr.row td.onsale {
 
 
 /* added */
-table.formCR{
+table.formvissel{
 	border-collapse: collapse;
 	margin: 0px auto 20px auto;
 	padding: 10px;
@@ -1249,7 +1259,7 @@ table.formCR{
 	border: 5px solid #811527;
 }
 
-table.formCR tbody th{
+table.formvissel tbody th{
 	background-color: #efefef;
 	border-collapse: collapse;
 	padding: 10px;
@@ -1258,7 +1268,7 @@ table.formCR tbody th{
 }
 
 
-table.formCR thead th{
+table.formvissel thead th{
 	background-color: #efefef;
 	border-collapse: collapse;
 	padding: 10px;
@@ -1268,27 +1278,27 @@ table.formCR thead th{
 }
 
 
-table.formCR td{
+table.formvissel td{
 	background-color: #fff;
 	padding: 10px;
 	border-bottom: 1px solid #bc1739;
 }
 
-table.formCR tfoot td{
+table.formvissel tfoot td{
 	background-color: #fff;
 	padding: 10px;
 	border-top: 2px solid #bc1739;
 	font-size: 16px;
 }
 
-table.formCR input{
+table.formvissel input{
   border: 1px solid #bc1739;
   font-size: 20px;
   line-height: 120%;
   height: 30px;
 }
 
-table.formCR input.submit {
+table.formvissel input.submit {
   text-align: center;
   color: #fff;
   padding: 5px;
@@ -1307,7 +1317,7 @@ table.formCR input.submit {
   filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#D7D7D7', endColorstr='#A7A7A7',GradientType=0); /* IE6-9 */
 }
 
-table.formCR input.submit:hover {
+table.formvissel input.submit:hover {
   background: #747474; /* Old browsers */
   background: -moz-linear-gradient(top, #A7A7A7 0%, #9F9F9F 50%, #848484 51%, #747474 75%, #747474 100%); /* FF3.6+ */
   background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#A7A7A7), color-stop(50%,#9F9F9F), color-stop(51%,#848484), color-stop(75%,#747474), color-stop(100%,#747474)); /* Chrome,Safari4+ */

@@ -1,26 +1,14 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html lang="en">
-<head>
-  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-  <title>ヴィッセル神戸 ヴィッセルチケット 購入確認ページ</title>
-  <link rel="stylesheet" type="text/css" href="${request.static_url('ticketing.orderreview:static/css/vissel/style.css')}" media="all" />
-  <script language="JavaScript" src="${request.static_url('ticketing.orderreview:static/js/jquery.js')}"></script>
-</head>
-<body>
-  <div class="wrapper">
+<%inherit file="./base.html" />
+<div class="wrapper">
     <div class="maincol">
-      <div class="header">
-        <img src="${request.static_url('ticketing.orderreview:static/images/vissel/head_title.png')}" alt="ヴィッセル神戸" width="734" height="170" />
-      </div>
-      <h1 class="title">ヴィッセル神戸 ヴィッセルチケット 購入確認ページ</h1>
-      <table class="layout" class="wrapper">
+      <table class="layout wrapper">
         <tr>
           <td>
-            <h2>受付履歴確認 検索結果</h2>
             <div class="purchased">
 % if order.performance.event.id != 0:
               <% pm,t_shirts = h.order_desc(order) %>
               <div class="kadomaru">
+                <h2>受付履歴確認 検索結果</h2>
               <h3>購入情報</h3>
               <table class="purchasedContents">
                 <tbody>
@@ -293,7 +281,4 @@ shipping =order.shipping_address
         </tr>
       </table>
     </div>
-    <%include file="/vissel/commons/footer.inc" />
-  </div>
-</body>
-</html>
+ </div>
