@@ -30,7 +30,7 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
     }, 
     useChangedModels: function(){
         this.vars.set("changed", false);
-        this.paramss.set("changed", false);
+        this.params.set("changed", false);
     }, 
     _apiFail: function(s, err){
         this.message.error(s.responseText);
@@ -113,7 +113,7 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
 
         var sx = this.params.get("sx");
         var sy = this.params.get("sy");
-        if(sx <= this.params.get("default_sx") && sy <= this.params.get("default_sy")  && !this.hasChangedModels()){
+        if(sx <= this.params.get("default_sx") && sy <= this.params.get("default_sy")  &&  !this.hasChangedModels()){
             return this._svgFilledResize(sx, sy);
         }else {
             this.useChangedModels();

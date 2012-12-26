@@ -11,13 +11,17 @@ if (!window.preview)
             ticket_format: null, 
             changed: false, 
         }, 
-        changeSx: function(v){
+        changeSx: function(v){ //todo: use this;
             this.set("sx", v);
-            this.set("changed", true);
+            if(this.get("default_sx") < v){
+                this.set("changed", true);
+            }
         }, 
         changeSy: function(v){
             this.set("sy", v);
-            this.set("changed", true);
+            if(this.get("default_sy") < v){
+                this.set("changed", true);
+            }
         }, 
         changeTicketFormat: function(v){
             this.set("ticket_format", v);
