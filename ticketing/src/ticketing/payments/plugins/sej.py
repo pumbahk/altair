@@ -43,8 +43,9 @@ from . import SEJ_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
 
 def includeme(config):
     # 決済系(マルチ決済)
+    settings = config.registry.settings
     config.add_payment_plugin(SejPaymentPlugin(), PAYMENT_PLUGIN_ID)
-    config.add_delivery_plugin(SejDeliveryPlugin(), DELIVERY_PLUGIN_ID)
+    config.add_delivery_plugin(SejDeliveryPlugin(template=settings["altair.sej.template"]), DELIVERY_PLUGIN_ID)
     config.add_payment_delivery_plugin(SejPaymentDeliveryPlugin(), PAYMENT_PLUGIN_ID, DELIVERY_PLUGIN_ID)
     config.scan(__name__)
 
@@ -180,6 +181,9 @@ class SejPaymentPlugin(object):
 
 @implementer(IDeliveryPlugin)
 class SejDeliveryPlugin(object):
+    def __init__(self, template=None):
+        self.template = template
+
     def prepare(self, request, cart):
         """  """
 
