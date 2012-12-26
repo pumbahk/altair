@@ -206,8 +206,8 @@ def show(request):
 
     seats = DBSession.query(Seat, VenueArea, SeatAttribute, SeatStatus)\
         .filter_by(venue_id=venue_id)\
-        .join(Seat.areas)\
-        .join(SeatAttribute).filter_by(name="row")\
+        .outerjoin(VenueArea, Seat.areas)\
+        .outerjoin(SeatAttribute, and_(SeatAttribute.seat_id==Seat.id, SeatAttribute.name=="row"))\
         .join(SeatStatus)
     items = []
     for seat, venuearea, attr, status in seats:

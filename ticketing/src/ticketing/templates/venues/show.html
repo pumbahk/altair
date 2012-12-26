@@ -64,10 +64,29 @@ table.nowrap td { white-space: nowrap; }
   % for item in items:
 	<tr>
 	  <td></td>
-	  <td>${item.seat.group_l0_id}</td><td>${item.venuearea.name}</td>
-	  <td>${item.seat.row_l0_id}</td><td>${item.row.value}</td>
-  	  <td>${item.seat.l0_id}</td><td>${item.seat.name}</td>
-  	  <td>${item.seat.seat_no}</td>
+	  <td>
+		% if item.seat.group_l0_id != None:
+			${item.seat.group_l0_id}
+		% endif
+	  </td>
+	  <td>
+		% if item.venuearea != None:
+			${item.venuearea.name}
+		% endif
+	  </td>
+	  <td>
+		% if item.seat.row_l0_id != None:
+			${item.seat.row_l0_id}
+		% endif
+	  </td>
+	  <td>${item.row.value}</td>
+      <td>${item.seat.l0_id}</td>
+	  <td>${item.seat.name}</td>
+      <td>
+        % if item.seat.seat_no != None:
+			${item.seat.seat_no}
+		% endif
+	  </td>
 	  <td>${item.status.status}</td>
 	</tr>
   % endfor
