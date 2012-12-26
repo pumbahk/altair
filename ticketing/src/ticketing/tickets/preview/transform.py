@@ -108,6 +108,31 @@ class FillvaluesTransformer(object):
         params = self.params_from_model()
         return template_fillvalues(self.svg, params)
 
+
+from ticketing.tickets.cleaner import cleanup_svg
+from ticketing.tickets.convert import convert_svg
+from ticketing.tickets.utils import parse_transform
+
+class SEJTemplateTransformer(object):
+    def __init__(self, svg=None, svgio=None, encoding="Shift_JIS"):
+        self.svg = svg
+        self.svgio = svgio
+        self.encoding = encoding
+
+    def transform(self): #todo: parse_transform
+        if self.svg:
+            xmltree = etree.fromstring(self.svg)
+        elif self.svgio:
+            xmltree = etree.parse(self.svgio)
+        cleanup_svg(xmltree)
+        global_transform = None #parse_transform(sys.argv[1]
+        converted = convert_svg(xmltree, global_transform)
+
+        pat = r'''encoding=(["'])Windows-31J\1'''
+        rep = 'encoding=%s'% self.encoding
+        return re.sub(pat, rep, etree.tostring(converted, encoding='Windows-31J'))
+
+
 if __name__ == "__main__":
     import doctest
     doctest.testmod()

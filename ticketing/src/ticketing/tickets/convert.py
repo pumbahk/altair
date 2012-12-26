@@ -2,8 +2,8 @@
 
 from lxml import html, etree
 from lxml.builder import E
-from .constants import *
-from .utils import parse_transform, tokenize_path_data, parse_poly_data, PathDataScanner, as_user_unit, I
+from ticketing.tickets.constants import *
+from ticketing.tickets.utils import parse_transform, tokenize_path_data, parse_poly_data, PathDataScanner, as_user_unit, I
 import re
 import cssutils
 import numpy
@@ -1008,7 +1008,7 @@ def convert_svg(doc, global_transform=None):
 
 if __name__ == '__main__':
     import sys
-    from .cleaner import cleanup_svg
+    from ticketing.tickets.cleaner import cleanup_svg
     tree = etree.parse(sys.stdin)
     cleanup_svg(tree)
     print re.sub(r'''encoding=(["'])Windows-31J\1''', 'encoding="Shift_JIS"', etree.tostring(convert_svg(tree, parse_transform(sys.argv[1]) if len(sys.argv) >= 2 else None), encoding='Windows-31J'))

@@ -104,14 +104,6 @@ def main(global_config, **settings):
         settings["altaircms.apikey"]
         )
     event_push_communication.bind_instance(config)
-
-    ## svg preview serverとの通信
-    from .tickets.preview.api import SVGPreviewCommunication
-    svg_preview_communication = SVGPreviewCommunication(
-        settings["altair.preview.svg.post_url"], 
-        )
-    svg_preview_communication.bind_instance(config)
-
     import ticketing.pyramid_boto
     ticketing.pyramid_boto.register_default_implementations(config)
     import ticketing.assets

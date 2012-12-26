@@ -4,6 +4,7 @@
 from decimal import Decimal
 import sqlalchemy.orm as orm
 import json
+import base64
 from StringIO import StringIO
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
@@ -20,8 +21,13 @@ from ticketing.tickets.utils import build_dict_from_event
 from ticketing.tickets.utils import build_dict_from_organization
 
 from .api import SVGPreviewCommunication
+from .api import SEJPreviewCommunication
+from .api import as_filelike_response
+
 from .transform import SVGTransformer
 from .transform import FillvaluesTransformer
+from .transform import SEJTemplateTransformer
+
 from .fillvalues import template_collect_vars
 from .fillvalues import template_fillvalues
 from .fetchsvg import fetch_svg_from_postdata
@@ -44,6 +50,7 @@ def decimal_converter(target, converter=float):
                 decimal_converter(v, converter)
         return target
 
+
 @view_config(route_name="tickets.preview", request_method="GET", renderer="ticketing:templates/tickets/preview.html", 
              decorator=with_bootstrap, permission="event_editor")
 def preview_ticket(context, request):
@@ -59,8 +66,8 @@ def preview_ticket(context, request):
     ticket_formats = [{"pk": t.id, "name": t.name} for t in ticket_formats]
     return {"apis": json.dumps(apis), "ticket_formats": ticket_formats}
 
-@view_config(route_name="tickets.preview", request_method="POST", 
-             request_param="svgfile")
+
+@view_config(route_name="tickets.preview", request_method="POST")
 def preview_ticket_post(context, request):
     preview = SVGPreviewCommunication.get_instance(request)
 
@@ -69,15 +76,31 @@ def preview_ticket_post(context, request):
     svgio = cleaner.get_cleaned_svgio()
     try:
         imgdata_base64 = preview.communicate(request, svgio.getvalue())
-        return preview.as_filelike_response(request, imgdata_base64)
+        return as_filelike_response(request, base64.b64decode(imgdata_base64))
     except jsonrpc.ProtocolError, e:
         raise HTTPBadRequest(str(e))
+
+@view_config(route_name="tickets.preview", request_method="POST", request_param="type=sej") # +svgfile
+def preview_ticket_post_sej(context, request):
+    preview = SEJPreviewCommunication.get_instance(request)
+
+    svgio = request.POST["svgfile"].file
+    cleaner = get_validated_svg_cleaner(svgio, exc_class=HTTPBadRequest)
+    svgio = cleaner.get_cleaned_svgio()
+    svgio.seek(0)
+
+    ptct = SEJTemplateTransformer(svgio=svgio).transform()
+    imgdata = preview.communicate(request, ptct)
+    return as_filelike_response(request, imgdata)
+    
+
 
 @view_config(route_name="tickets.preview.download", request_method="POST", 
              request_param="svg")
 def preview_ticket_download(context, request):
     io = StringIO(request.POST["svg"].encode("utf-8"))
     return FileLikeResponse(io, request=request, filename="preview.svg")
+
 
 
 @view_config(route_name="tickets.preview.combobox", request_method="GET", renderer="ticketing:templates/tickets/combobox.html", 
@@ -97,11 +120,13 @@ def combbox_for_preview(context, request):
 """
 raw svg -> normalize svg -> base64 png
 """
+
 @view_defaults(route_name="tickets.preview.api", request_method="POST", renderer="json")
 class PreviewApiView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
+
 
     @view_config(match_param="action=loadsvg")
     def preview_api_loadsvg(self):
@@ -119,6 +144,7 @@ class PreviewApiView(object):
         except Exception, e:
             return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
 
+
     @view_config(match_param="action=normalize", request_param="svg")
     def preview_api_normalize(self):
         try:
@@ -129,9 +155,11 @@ class PreviewApiView(object):
         except Exception, e:
             return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
 
+
     @view_config(match_param="action=preview.base64", request_param="type=sej")
     def preview_ticket_post64_sej(self):
         pass
+
 
     @view_config(match_param="action=preview.base64", request_param="svg")
     def preview_ticket_post64(self):
@@ -146,9 +174,11 @@ class PreviewApiView(object):
         except jsonrpc.ProtocolError, e:
             return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
 
+
     @view_config(match_param="action=preview.base64.withmodels", request_param="type=sej") #+svg
     def preview_ticket_post64_sej_with_models(self):
         pass
+
 
     @view_config(match_param="action=preview.base64.withmodels", request_param="svg")
     def preview_ticket_post64_with_models(self):
@@ -164,6 +194,7 @@ class PreviewApiView(object):
         except jsonrpc.ProtocolError, e:
             return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
 
+
     @view_config(match_param="action=collectvars", request_param="svg")
     def preview_collectvars(self):
         svg = self.request.POST["svg"]
@@ -171,6 +202,7 @@ class PreviewApiView(object):
             return {"status": True, "data": list(sorted(template_collect_vars(svg)))}
         except Exception, e:
             return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
+
 
     @view_config(match_param="action=fillvalues", request_param="svg")
     def preview_fillvalues(self):
@@ -186,6 +218,7 @@ class PreviewApiView(object):
             return {"status": True, "data": template_fillvalues(svg, params)}
         except Exception, e:
             return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
+
 
     @view_config(match_param="action=fillvalues_with_models", request_param="data")
     def preview_fillvalues_with_models(self):
@@ -221,6 +254,7 @@ class PreviewApiView(object):
             return {"status": True, "data": decimal_converter(v, converter=float), "message": e.message}
 
 
+
 @view_defaults(route_name="tickets.preview.combobox.api", request_method="GET", renderer="json")
 class ComboboxApiView(object):
     def __init__(self, context, request):
@@ -229,16 +263,19 @@ class ComboboxApiView(object):
 
     result = [{"name": "foo", "pk": 1},{"name": "fooo", "pk": 2},{"name": "foooo", "pk": 3},{"name": "fooooo", "pk": 4},{"name": "foooooooo", "pk": 5}, ]
 
+
     @view_config(match_param="model=organization")
     def organization(self):
         o = self.context.organization
         return {"status": True, "data": [{"name": o.name, "pk": o.id}]}
+
 
     @view_config(match_param="model=event", request_param="organization")
     def event(self):
         qs = c_models.Event.query.filter(c_models.Event.organization_id==self.request.GET["organization"]) #filter?
         seq = [{"pk": q.id, "name": q.title} for q in qs]
         return {"status": True, "data": seq}
+
 
     @view_config(match_param="model=performance", request_param="event")
     def performance(self):
@@ -247,6 +284,7 @@ class ComboboxApiView(object):
         qs = qs.options(orm.joinedload(c_models.Performance.venue))
         seq = [{"pk": q.id, "name": u"%s(%s)" % (q.name, q.venue.name)} for q in qs]
         return {"status": True, "data": seq}
+
 
     @view_config(match_param="model=product", request_param="performance")
     def product(self):
