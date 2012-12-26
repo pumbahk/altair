@@ -129,7 +129,7 @@ class SEJTemplateTransformer(object):
         converted = convert_svg(xmltree, global_transform)
 
         pat = r'''encoding=(["'])Windows-31J\1'''
-        rep = 'encoding=%s'% self.encoding
+        rep = 'encoding="%s"'% self.encoding
         return re.sub(pat, rep, etree.tostring(converted, encoding='Windows-31J'))
 
 
