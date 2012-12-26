@@ -130,7 +130,7 @@ class StateHandleHelper(object):
         t = self.tails.pop()
         self.tails[-1].extend(t)
 
-font_family_rx = re.compile("font-family *?: *?(\S+)")
+font_family_rx = re.compile("font-family ?: *?([^;]+;?)")
 class ConvertXmlForTicketTemplateAttrsHook(object):
     @classmethod
     def startElement(cls, name, attrs):
