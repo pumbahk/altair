@@ -4,7 +4,7 @@ import json
 from pyramid.config import Configurator
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
 import functools
-from pyramid_who.whov2 import WhoV2AuthenticationPolicy
+#from pyramid_who.whov2 import WhoV2AuthenticationPolicy
 from sqlalchemy import engine_from_config
 import sqlahelper
 from pyramid_beaker import session_factory_from_settings
@@ -93,8 +93,9 @@ def main(global_config, **settings):
     who_config = settings['pyramid_who.config']
     from authorization import MembershipAuthorizationPolicy
     config.set_authorization_policy(MembershipAuthorizationPolicy())
-    from .security import auth_model_callback
-    config.set_authentication_policy(WhoV2AuthenticationPolicy(who_config, 'auth_tkt', callback=auth_model_callback))
+    #from .security import auth_model_callback
+    #config.set_authentication_policy(WhoV2AuthenticationPolicy(who_config, 'auth_tkt', callback=auth_model_callback))
+    config.include('ticketing.whotween')
     config.add_tween('.tweens.CacheControlTween')
     config.include('ticketing.fc_auth')
     config.scan()
