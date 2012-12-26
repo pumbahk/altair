@@ -1,19 +1,80 @@
 import unittest
+from pyramid import testing
 import json
+import mock
 
-class PreviewApiViewTests(unittest.TestCase):
-    def _getTarget(self):
-        from ticketing.tickets.views import PreviewApiView
-        return PreviewApiView
+def identity_tween_factory(handler, registry):
+    def call(request):
+        return handler(request)
+    return call
 
-    def _makeOne(self, *args, **kwargs):
-        return self._getTarget()(*args, **kwargs)
+def _make_router(config):
+    from pyramid.router import Router
+    from pyramid.interfaces import ITweens
+    config.registry.registerUtility(identity_tween_factory, ITweens)
+    router = Router(config.registry)
+    return router
 
-    def test_fillvalues_with_product(self):
-        class request:
-            POST = {"data": json.dumps(dict())}
-        target = self._makeOne(None)
-        target.preview_fillvalues_with_models()
+def _make_request(registry=None, path=None, **kwargs):
+    request = testing.DummyRequest(path=path, **kwargs)            
+    if registry:
+        request.__dict__["registry"] = registry
+    if path:
+        request.environ["PATH_INFO"] = path
+    if request.GET:
+        request.params = request.GET
+    if request.POST:
+        request.params = request.POST
+    return request
+    
+class APIViewDispatchTests(unittest.TestCase):
+    def tearDown(self):
+        testing.tearDown()
+
+    def setUp(self):
+        self.config = testing.setUp()        
+
+    def test_router_dummy_view_is_exactly_select(self):
+        config = self.config
+        config.add_route("home", "/")
+        config.add_view(lambda r: "this-is-view-result", renderer="string", route_name="home")
+
+        router = _make_router(config)
+        request = _make_request(path="/", registry=config.registry)
+        response = router.handle_request(request)
+        self.assertEqual(response.body, "this-is-view-result")
+
+    @mock.patch("ticketing.tickets.preview.views.PreviewApiView.preview_ticket_post64")
+    def test_it(self, m):
+        m.return_value = {"result": "preview.base64 is called"}
+
+        config = self.config
+        config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
+        config.include("ticketing.tickets.preview")
+        router = _make_router(config)
+
+
+        request = _make_request(path="/api/preview/preview.base64",
+                                post={"svg": "this-is-svg-data"}, 
+                                registry=config.registry)
+        result = router.handle_request(request)
+        self.assertEqual(result.body, json.dumps({"result": "preview.base64 is called"}))
+
+    @mock.patch("ticketing.tickets.preview.views.PreviewApiView.preview_ticket_post64_sej")
+    def test_call_with_sej(self, m):
+        m.return_value = {"result": "sej version is called"}
+
+        config = self.config
+        config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
+        config.include("ticketing.tickets.preview")
+        router = _make_router(config)
+
+
+        request = _make_request(path="/api/preview/preview.base64",
+                                post={"type": "sej"}, 
+                                registry=config.registry)
+        result = router.handle_request(request)
+        self.assertEqual(result.body, json.dumps({"result": "sej version is called"}))
 
 if __name__ == "__main__":
     unittest.main()
