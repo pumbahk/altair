@@ -18,7 +18,10 @@ def includeme(config):
 
     ## sej preview serverとの通信
     from .api import SEJPreviewCommunication
+    args = settings["altair.preview.sej.request_create"].split(":")
+    create_api_request = config.maybe_dotted(args.pop(0))(*args)
     sej_preview_communication = SEJPreviewCommunication(
         settings["altair.preview.sej.post_url"], 
+        create_api_request
         )
     sej_preview_communication.bind_instance(config)

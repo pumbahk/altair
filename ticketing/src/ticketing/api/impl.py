@@ -1,6 +1,9 @@
 # -*- coding:utf-8 -*-
 import urllib2
+import base64
 from .interfaces import ICommunicationApi
+from .interfaces import IAPIRequestCreate
+
 import logging
 logger=logging.getLogger(__file__)
 from zope.interface import implementer
@@ -40,3 +43,19 @@ def bind_communication_api(config, cls, *args, **kwargs):
     cls = config.maybe_dotted(cls)
     instance = cls(*args, **kwargs)
     config.registry.registerUtility(instance, ICommunicationApi, cls.__name__)
+
+
+## request create
+class BasicAuthRequestCreate(object):
+    def __init__(self, username, password):
+        self.username = username
+        self.password = password
+
+    def __call__(self, url, data=None, headers=None, encoding="utf-8"):
+        req = urllib2.Request(url, data, headers)
+        base64string = base64.encodestring('%s:%s' % (self.username, self.password)).replace('\n', '')
+        req.add_header("Authorization", "Basic %s" % base64string)   
+        return req
+
+DefaultAPIRequestCreate = urllib2.Request
+
