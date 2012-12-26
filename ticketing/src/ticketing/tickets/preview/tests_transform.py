@@ -10,7 +10,6 @@ class TransformTests(unittest.TestCase):
         return self._getTarget()(*args, **kwargs)
 
     svg = """\
-<?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg width="5cm" height="3cm" viewBox="0 0 5 3" version="1.1">
   <rect x=".01" y=".01" width="4.98" height="2.98" 
@@ -33,7 +32,7 @@ class TransformTests(unittest.TestCase):
         from lxml import etree
 
         svg = u"<!-- Created with Inkscape (http://www.inkscape.org/) -->"+self.svg
-        target = self._makeOne(self.svg, {"sx": "2.0", "sy": "3"})
+        target = self._makeOne(svg, {"sx": "2.0", "sy": "3"})
         result = etree.tostring(target.scale_image(etree.fromstring(target.svg)))
        
         self.assertIn('width="10.0cm"', result)
@@ -72,4 +71,9 @@ class TransformTests(unittest.TestCase):
         self.assertIn("svg", result.tag)
 
 if __name__ == "__main__":
+    from ticketing.testing import _setup_db
+    _setup_db(modules=[
+            "ticketing.models",
+            "ticketing.core.models",
+            ])
     unittest.main()

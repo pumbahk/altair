@@ -3,15 +3,8 @@ from pyramid import testing
 import json
 import mock
 
-def identity_tween_factory(handler, registry):
-    def call(request):
-        return handler(request)
-    return call
-
 def _make_router(config):
     from pyramid.router import Router
-    from pyramid.interfaces import ITweens
-    config.registry.registerUtility(identity_tween_factory, ITweens)
     router = Router(config.registry)
     return router
 
@@ -71,7 +64,7 @@ class APIViewDispatchTests(unittest.TestCase):
 
 
         request = _make_request(path="/api/preview/preview.base64",
-                                post={"type": "sej"}, 
+                                post={"type": "sej", "svg": "this-is-svg-data"}, 
                                 registry=config.registry)
         result = router.handle_request(request)
         self.assertEqual(result.body, json.dumps({"result": "sej version is called"}))

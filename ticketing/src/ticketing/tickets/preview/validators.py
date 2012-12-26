@@ -12,8 +12,8 @@ def parse(validator, postdata):
         postdata = MultiDict(postdata)
     form = validator(postdata)
     if form.validate():
-        logger.warn(form.errors)
         return form.data 
+    logger.warn(form.errors)
     return None
 
 class SVGTransformValidator(Form):
@@ -22,6 +22,8 @@ class SVGTransformValidator(Form):
     ticket_format = fields.IntegerField()
 
     def validate_ticket_format(form, field):
+        if field.data is None:
+            return
         ticket_format = TicketFormat.query.filter_by(id=field.data).first()
         if ticket_format is None:
             logger.warn("validation failure")
