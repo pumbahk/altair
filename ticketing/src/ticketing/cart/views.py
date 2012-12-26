@@ -106,7 +106,7 @@ class IndexView(IndexViewMixin):
         # normal_sales_segment で良い
         performances = api.performance_names(self.request, self.context.event, self.context.normal_sales_segment)
         if not performances:
-            raise NoPerformanceError(event_id=context.event.id, sales_segment_id=context.normal_sales_segment.id) # NoPerformanceを作る
+            raise NoPerformanceError(event_id=self.context.event.id, sales_segment_id=self.context.normal_sales_segment.id) # NoPerformanceを作る
 
         from collections import OrderedDict
         select_venues = OrderedDict()
