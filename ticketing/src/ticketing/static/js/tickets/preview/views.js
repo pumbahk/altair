@@ -17,7 +17,11 @@ preview.ParamaterManageView = Backbone.View.extend({
         this.model.on("change:sy", this.reDrawSy, this);
     }, 
     onChangeTicketFormat: function(){
-        this.model.set("ticket_format", {"pk":this.$ticket_format.val(), "name": this.$ticket_format.text()});
+        var name_and_type = this.$ticket_format.find(":selected").text().split(":"); // <ticket_format_name>:<delivery_method_type>
+        this.model.set("ticket_format", {"pk":this.$ticket_format.val(),
+                                         "name": name_and_type[0],
+                                         "type": name_and_type[1]});
+        console.dir(this.model.get("ticket_format"));
     }, 
     onChangeSx: function(){
         this.model.set("sx", this.$sx.val());

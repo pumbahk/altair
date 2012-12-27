@@ -25,6 +25,13 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
 
         this.preview.on("*preview.redraw",  this.previewReDraw, this);
     }, 
+    hasChangedModels: function(){
+        return this.vars.get("changed") || this.params.get("changed");
+    }, 
+    useChangedModels: function(){
+        this.vars.set("changed", false);
+        this.paramss.set("changed", false);
+    }, 
     _apiFail: function(s, err){
         this.message.error(s.responseText);
         this.preview.cancelRendering();
@@ -65,7 +72,9 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
         var params = {"svg": this.svg.get("data"), 
                       sx: this.params.get("default_sx"),
                       sy: this.params.get("default_sy"), 
-                      ticket_format: this.params.get("ticket_format").pk};
+                      ticket_format: this.params.get("ticket_format").pk, 
+                      type: this.params.get("ticket_format").type || "default"
+                     };
         return this.apis.previewbase64(params)
             .pipe(core.ApiService.rejectIfStatusFail(function(data){                
                 self.preview.initialImage(data.width, data.height);
@@ -83,7 +92,9 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
         var ma = Math.max(sx, sy);
         var params = {svg: this.svg.get("data"),
                       sx: ma, sy: ma, 
-                      ticket_format: this.params.get("ticket_format").pk};
+                      ticket_format: this.params.get("ticket_format").pk, 
+                      type: this.params.get("ticket_format").type || "default"
+                     };
         var self = this;
         return this.apis.previewbase64(params)
             .pipe(core.ApiService.rejectIfStatusFail(function(data){
@@ -102,20 +113,20 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
 
         var sx = this.params.get("sx");
         var sy = this.params.get("sy");
-        if(sx <= this.params.get("default_sx") && sy <= this.params.get("default_sy")  && !this.vars.get("changed")){
+        if(sx <= this.params.get("default_sx") && sy <= this.params.get("default_sy")  && !this.hasChangedModels()){
             return this._svgFilledResize(sx, sy);
         }else {
-            this.vars.set("changed", false);
+            this.useChangedModels();
             return this._svgFilledFetchImage(sx, sy);
         }
     }, 
     collectTemplateVars: function(){ // todo:move it?
         var self = this;
-        self.message.info("券面テンプレートからプレースホルダーを抽出しています....");
+        self.message.info("券面テンプレートからプレースホルダーを抽出しています....", "weak");
         this.apis.collectvars({"svg": this.models.svg.get("normalize")})
             .pipe(core.ApiService.rejectIfStatusFail(function(data){
                 self.vars.updateVars(data.data);
-                self.message.info("券面テンプレートからプレースホルダーを抽出しました");
+                self.message.info("券面テンプレートからプレースホルダーを抽出しました", "weak");
             }))
             .fail(this._apiFail.bind(this));
     }

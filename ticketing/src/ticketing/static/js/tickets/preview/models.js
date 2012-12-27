@@ -8,7 +8,20 @@ if (!window.preview)
             sy: 1.0, 
             default_sx: 2.0,  //fetch default
             default_sy: 2.0, 
-            ticket_format: null
+            ticket_format: null, 
+            changed: false, 
+        }, 
+        changeSx: function(v){
+            this.set("sx", v);
+            this.set("changed", true);
+        }, 
+        changeSy: function(v){
+            this.set("sy", v);
+            this.set("changed", true);
+        }, 
+        changeTicketFormat: function(v){
+            this.set("ticket_format", v);
+            this.set("changed", true);
         }, 
         refreshDefault: function(){
             this.set("default_sx", 2.0);

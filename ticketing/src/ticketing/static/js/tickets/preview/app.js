@@ -12,10 +12,7 @@
 
 // todo: auto redraw?
 // todo: 見た目綺麗に
-// todo: buttonをまともに機能させる
-// todo: download
 // todo: errorをページ上に表示
-// todo: 拡大/縮小
 
 /// services
 // give me. module!
