@@ -10,6 +10,7 @@ from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from jsonrpclib import jsonrpc
 from pyramid.httpexceptions import HTTPBadRequest
+from ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
 import logging
 logger = logging.getLogger(__name__)
 
@@ -61,11 +62,19 @@ def preview_ticket(context, request):
         "fillvalues": request.route_path("tickets.preview.api", action="fillvalues"), 
         "fillvalues_with_models": request.route_path("tickets.preview.api", action="fillvalues_with_models")
         }
-
     ticket_formats = c_models.TicketFormat.query.filter_by(organization_id=context.user.organization_id)
-    ticket_formats = [{"pk": t.id, "name": t.name} for t in ticket_formats]
+    ticket_formats = _build_ticket_format_dicts(ticket_formats)
     return {"apis": json.dumps(apis), "ticket_formats": ticket_formats}
 
+def _build_ticket_format_dicts(ticket_format_qs):
+    sej_qs = ticket_format_qs.filter(
+        c_models.TicketFormat.id==c_models.TicketFormat_DeliveryMethod.ticket_format_id,
+        c_models.TicketFormat_DeliveryMethod.delivery_method_id==c_models.DeliveryMethod.id, 
+        c_models.DeliveryMethod.delivery_plugin_id==SEJ_DELIVERY_PLUGIN_ID)
+
+    excludes_sej = [{"pk": t.id,"name": t.name, "type": ""} for t in ticket_format_qs]
+    includes_sej = [{"pk": t.id,"name": t.name, "type": ":sej"} for t in sej_qs]
+    return excludes_sej + includes_sej
 
 @view_config(route_name="tickets.preview", request_method="POST")
 def preview_ticket_post(context, request):
