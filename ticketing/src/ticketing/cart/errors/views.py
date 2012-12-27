@@ -17,11 +17,11 @@ logger = logging.getLogger(__name__)
 
 
 
-@mobile_view_config(context=Forbidden, renderer=selectable_renderer('ticketing.cart:templates/errors_mobile/%(membership)s/forbidden.html'))
-@view_config(context=Forbidden, renderer=selectable_renderer('ticketing.cart:templates/errors/%(membership)s/forbidden.html'))
-def forbidden(request):
-    request.response.status = 401
-    return {}
+#@mobile_view_config(context=Forbidden, renderer=selectable_renderer('ticketing.cart:templates/errors_mobile/%(membership)s/forbidden.html'))
+#@view_config(context=Forbidden, renderer=selectable_renderer('ticketing.cart:templates/errors/%(membership)s/forbidden.html'))
+#def forbidden(request):
+#    request.response.status = 401
+#    return {}
 
 @mobile_view_config(context=NotFound, renderer=selectable_renderer('ticketing.cart:templates/errors_mobile/%(membership)s/notfound.html'))
 @view_config(context=NotFound, renderer=selectable_renderer('ticketing.cart:templates/errors/%(membership)s/notfound.html'))
@@ -60,6 +60,7 @@ def handle_nosalessegmenterror(request):
 def handle_noperformanceerror(request):
     request.response.status = 404
     api.logout(request)
+    logger.debug("NoPerformance {0}".format(request.exception))
     return {}
 
 @view_config(context=InvalidCSRFTokenException, renderer=selectable_renderer('ticketing.cart:templates/errors/%(membership)s/forbidden.html'))
