@@ -1,11 +1,16 @@
 def add_credential(membership, membergroup, username, password):
     import ticketing.core.models
-    from ticketing.users.models import Membership, User, UserCredential, MemberGroup
+    from ticketing.core.models import Organization, Host
+    from ticketing.users.models import Membership, User, UserCredential, MemberGroup, Member
     
-    m = Membership(name=membership)
-    mg = MemberGroup(membership=m, name=membergroup)
-    u = User(membergroup=mg)
-    uc = UserCredential(membership=m,
+    
+    org = Organization(short_name="testing")
+    host = Host(host_name="example.com:80", base_url="/login", organization=org)
+    ms = Membership(name=membership, organization=org)
+    mg = MemberGroup(membership=ms, name=membergroup)
+    u = User()
+    m = Member(membergroup=mg, user=u)
+    uc = UserCredential(membership=ms,
                         user=u,
                         auth_identifier=username,
                         auth_secret=password)

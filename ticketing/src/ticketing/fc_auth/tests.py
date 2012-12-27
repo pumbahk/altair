@@ -100,7 +100,12 @@ class TestIt(unittest.TestCase):
     def tearDownClass(cls):
         _teardown_db()
 
+    def setUp(self):
+        self.request = testing.DummyRequest()
+        self.config = testing.setUp(request=self.request)
+
     def tearDown(self):
+        testing.tearDown()
         _teardown_db()
 
     def _makeAPIFactory(self, *args, **kwargs):
@@ -177,20 +182,31 @@ class TestIt(unittest.TestCase):
         result = api.challenge()
         self.assertIsNone(result)
 
+
+        
     def test_challenge_redirect(self):
-        login_url = 'http://example.com/login'
+        self.config.add_route('fc_auth.login', '/membership/{membership}/login')
+        membership = "fc"
+        membergroup = "fc_plutinum"
+        username = "test_user"
+        password = "secret"
+        self._addCredential(membership, membergroup, username, password)
+
+        from pyramid.threadlocal import get_current_request
+        request = get_current_request()
+        request.context = testing.DummyResource()
+        request.context.memberships = [testing.DummyModel()]
+
         factory = self._makeAPIFactory()
         environ = self._makeEnv()
-        environ['ticketing.cart.fc_auth.required'] = True
         api = factory(environ)
         environ['repoze.who.plugins'] = api.name_registry
-        environ['ticketing.cart.fc_auth.login_url'] = login_url
         session = DummySession()
         environ['session.rakuten_openid'] = session
 
         result = api.challenge()
 
-        self.assertEqual(result.location, login_url)
+        self.assertEqual(result.location, 'http://example.com/membership/fc/login')
         self.assertEqual(session['return_url'], 'http://127.0.0.1/')
 
 
@@ -244,6 +260,7 @@ class guest_authenticateTests(unittest.TestCase):
         return guest
 
     def test_it(self):
+        import pickle
         environ = {
         }
         identity = {
@@ -252,10 +269,14 @@ class guest_authenticateTests(unittest.TestCase):
 
         self._create_guest(identity['membership'])
         result = self._callFUT(environ, identity)
-
-        self.assertEqual(result['membership'], 'testing')
-        self.assertEqual(result['membergroup'], 'testing_guest')
-        self.assertTrue(result['is_guest'])
+        try:
+            result = pickle.loads(result.decode('base64'))
+        except:
+            print result
+        else:
+            self.assertEqual(result['membership'], 'testing')
+            self.assertEqual(result['membergroup'], 'testing_guest')
+            self.assertTrue(result['is_guest'])
 
 class LoginViewTests(unittest.TestCase):
     
@@ -279,7 +300,7 @@ class LoginViewTests(unittest.TestCase):
 
         result = target.guest_login()
 
-        self.assertIn('message', result)
+        self.assertIn('guest_message', result)
 
     def test_guest_login(self):
         membership_name = 'testing'
