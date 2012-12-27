@@ -26,7 +26,10 @@ core.MessageInformationView = Backbone.View.extend({
         var updator = !!(forcehtml)? this.$alert.html : this.$alert.text;
         updator.call(this.$alert, message.toString()).show();
     }, 
-    info: function(message, forcehtml){
+    info: function(message, forcehtml, weak){
+        if(weak && this.$error.is(":visible")){
+            return;
+        }
         this._clear();
         var updator = !!(forcehtml)? this.$info.html : this.$info.text;
         updator.call(this.$info, message.toString()).show();

@@ -122,11 +122,11 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
     }, 
     collectTemplateVars: function(){ // todo:move it?
         var self = this;
-        self.message.info("券面テンプレートからプレースホルダーを抽出しています....", "weak");
+        self.message.info("券面テンプレートからプレースホルダーを抽出しています....", false,  "weak");
         this.apis.collectvars({"svg": this.models.svg.get("normalize")})
             .pipe(core.ApiService.rejectIfStatusFail(function(data){
                 self.vars.updateVars(data.data);
-                self.message.info("券面テンプレートからプレースホルダーを抽出しました", "weak");
+                self.message.info("券面テンプレートからプレースホルダーを抽出しました", false, "weak");
             }))
             .fail(this._apiFail.bind(this));
     }
