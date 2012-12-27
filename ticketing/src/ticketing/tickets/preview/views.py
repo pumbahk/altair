@@ -110,8 +110,11 @@ def _build_ticket_format_dicts(ticket_format_qs):
     includes_sej = [{"pk": t.id,"name": t.name, "type": ":sej"} for t in sej_qs]
     return excludes_sej + includes_sej
 
-@view_config(route_name="tickets.preview", request_method="POST")
+@view_config(route_name="tickets.preview", request_method="POST") 
 def preview_ticket_post(context, request):
+    """
+    curl -Fsvgfile=@<file> <url> > out.png
+    """
     preview = SVGPreviewCommunication.get_instance(request)
 
     svgio = request.POST["svgfile"].file 
@@ -328,8 +331,8 @@ class ComboboxApiView(object):
     @view_config(match_param="model=event", request_param="organization")
     def event(self):
         qs = c_models.Event.query.filter(c_models.Event.organization_id==self.request.GET["organization"]) #filter?
-        if self.request.get("event_id"):
-            qs = qs.filter(c_models.Event.id==self.request.get("event_id"))
+        if self.request.GET.get("event_id"):
+            qs = qs.filter(c_models.Event.id==self.request.GET.get("event_id"))
 
         seq = [{"pk": q.id, "name": q.title} for q in qs]
         return {"status": True, "data": seq}
@@ -339,8 +342,8 @@ class ComboboxApiView(object):
     def performance(self):
         qs = c_models.Performance.query.filter(c_models.Performance.event_id==self.request.GET["event"], 
                                                c_models.Event.organization_id==self.request.GET["organization"]) #filter?
-        if self.request.get("performance_id"):
-            qs = qs.filter(c_models.Performance.id==self.request.get("performance_id"))
+        if self.request.GET.get("performance_id"):
+            qs = qs.filter(c_models.Performance.id==self.request.GET.get("performance_id"))
 
         qs = qs.options(orm.joinedload(c_models.Performance.venue))
         seq = [{"pk": q.id, "name": u"%s(%s)" % (q.name, q.venue.name)} for q in qs]
@@ -353,8 +356,5 @@ class ComboboxApiView(object):
                                            c_models.Product.id==c_models.ProductItem.product_id, 
                                            c_models.ProductItem.performance_id==self.request.GET["performance"])
         ## salessegmentがあるので重複した(name, price)が現れてしまう.nameだけで絞り込み
-        if self.request.get("product_id"):
-            qs = qs.filter(c_models.Product.id==self.request.get("product_id"))
-
         seq = {q.name: {"pk": q.id, "name": u"%s(￥%s)" % (q.name, q.price)} for q in qs}
         return {"status": True, "data": sorted(seq.values())}
