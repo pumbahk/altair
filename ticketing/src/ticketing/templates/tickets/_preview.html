@@ -151,5 +151,10 @@
           modalview.hide();
         });
    }});
+
+%if svg:
+   var svg = '${svg|n}';
+   apis["preview"].loadSVG(svg);
+%endif
   });
 </script>

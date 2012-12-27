@@ -51,6 +51,7 @@ def decimal_converter(target, converter=float):
                 decimal_converter(v, converter)
         return target
 
+
 def route_path_with_params(request, url, _query=None, **kwargs):
     """
     request.route_path("http://foo.bar.net", _query(query=None)) => "http://foo.bar.net/"
@@ -61,6 +62,16 @@ def route_path_with_params(request, url, _query=None, **kwargs):
             if _query[k] is None:
                 del _query[k]
     return request.route_path(url, _query=_query, **kwargs)
+
+def _build_ticket_format_dicts(ticket_format_qs):
+    sej_qs = ticket_format_qs.filter(
+        c_models.TicketFormat.id==c_models.TicketFormat_DeliveryMethod.ticket_format_id,
+        c_models.TicketFormat_DeliveryMethod.delivery_method_id==c_models.DeliveryMethod.id, 
+        c_models.DeliveryMethod.delivery_plugin_id==SEJ_DELIVERY_PLUGIN_ID)
+
+    excludes_sej = [{"pk": t.id,"name": t.name, "type": ""} for t in ticket_format_qs]
+    includes_sej = [{"pk": t.id,"name": t.name, "type": ":sej"} for t in sej_qs]
+    return excludes_sej + includes_sej
 
 
 @view_config(route_name="tickets.preview", request_method="GET", renderer="ticketing:templates/tickets/preview.html", 
@@ -76,39 +87,8 @@ def preview_ticket(context, request):
         }
     ticket_formats = c_models.TicketFormat.query.filter_by(organization_id=context.user.organization_id)
     ticket_formats = _build_ticket_format_dicts(ticket_formats)
-    return {"apis": apis, "ticket_formats": ticket_formats}
+    return {"apis": apis, "ticket_formats": ticket_formats, "svg": None}
 
-
-@view_config(route_name="tickets.preview", request_method="GET", renderer="ticketing:templates/tickets/_preview.html", 
-             xhr=True,  permission="event_editor")
-def preview_ticket_dialog(context, request): # as modal dialog
-    get = request.GET.get
-    combobox_params = dict(organization_id=get("organization_id"), 
-                           event_id=get("event_id"), 
-                           performance_id=get("performance_id"), 
-                           product_id=get("product_id"), 
-                           )
-    apis = {
-        "normalize": request.route_path("tickets.preview.api", action="normalize"), 
-        "previewbase64": request.route_path("tickets.preview.api", action="preview.base64"), 
-        "collectvars": request.route_path("tickets.preview.api", action="collectvars"), 
-        "fillvalues": request.route_path("tickets.preview.api", action="fillvalues"), 
-        "fillvalues_with_models": request.route_path("tickets.preview.api", action="fillvalues_with_models"), 
-        "combobox": request.route_path("tickets.preview.combobox", _query=combobox_params)
-        }
-    ticket_formats = c_models.TicketFormat.query.filter_by(organization_id=context.user.organization_id)
-    ticket_formats = _build_ticket_format_dicts(ticket_formats)
-    return {"apis": apis, "ticket_formats": ticket_formats}
-
-def _build_ticket_format_dicts(ticket_format_qs):
-    sej_qs = ticket_format_qs.filter(
-        c_models.TicketFormat.id==c_models.TicketFormat_DeliveryMethod.ticket_format_id,
-        c_models.TicketFormat_DeliveryMethod.delivery_method_id==c_models.DeliveryMethod.id, 
-        c_models.DeliveryMethod.delivery_plugin_id==SEJ_DELIVERY_PLUGIN_ID)
-
-    excludes_sej = [{"pk": t.id,"name": t.name, "type": ""} for t in ticket_format_qs]
-    includes_sej = [{"pk": t.id,"name": t.name, "type": ":sej"} for t in sej_qs]
-    return excludes_sej + includes_sej
 
 @view_config(route_name="tickets.preview", request_method="POST") 
 def preview_ticket_post(context, request):
@@ -139,7 +119,6 @@ def preview_ticket_post_sej(context, request):
     ptct = SEJTemplateTransformer(svgio=svgio).transform()
     imgdata = preview.communicate(request, ptct)
     return as_filelike_response(request, imgdata)
-    
 
 
 @view_config(route_name="tickets.preview.download", request_method="POST", 
@@ -147,7 +126,6 @@ def preview_ticket_post_sej(context, request):
 def preview_ticket_download(context, request):
     io = StringIO(request.POST["svg"].encode("utf-8"))
     return FileLikeResponse(io, request=request, filename="preview.svg")
-
 
 
 @view_config(route_name="tickets.preview.combobox", request_method="GET", renderer="ticketing:templates/tickets/combobox.html", 
@@ -358,3 +336,51 @@ class ComboboxApiView(object):
         ## salessegmentがあるので重複した(name, price)が現れてしまう.nameだけで絞り込み
         seq = {q.name: {"pk": q.id, "name": u"%s(￥%s)" % (q.name, q.price)} for q in qs}
         return {"status": True, "data": sorted(seq.values())}
+
+
+## dialog
+# todo: refactoring
+from ..utils import build_dict_from_product_item
+
+@view_defaults(route_name="tickets.preview.dialog", request_method="GET", renderer="ticketing:templates/tickets/_preview.html", 
+               xhr=True,  permission="event_editor")
+class PreviewWithDefaultParamaterDialogView(object):
+    def __init__(self, context, request): # as modal dialog
+        self.context = context
+        self.request = request
+
+    def _combobox_defaults(self):
+        get = self.request.GET.get
+        combobox_params = dict(organization_id=get("organization_id"), 
+                               event_id=get("event_id"), 
+                               performance_id=get("performance_id"), 
+                               product_id=get("product_id"), 
+                               )
+        return combobox_params
+
+    def _apis_defaults(self):
+        apis = {
+            "normalize": self.request.route_path("tickets.preview.api", action="normalize"), 
+            "previewbase64": self.request.route_path("tickets.preview.api", action="preview.base64"), 
+            "collectvars": self.request.route_path("tickets.preview.api", action="collectvars"), 
+            "fillvalues": self.request.route_path("tickets.preview.api", action="fillvalues"), 
+            "fillvalues_with_models": self.request.route_path("tickets.preview.api", action="fillvalues_with_models"), 
+            }
+        return apis
+
+    @view_config(match_param="model=productitem", request_param="pk")
+    def product_item(self):
+        combobox_params = self._combobox_defaults()
+        apis = self._apis_defaults()
+        apis["combobox"] =  self.request.route_path("tickets.preview.combobox", _query=combobox_params)
+
+        product_item = c_models.ProductItem.query.filter_by(id=self.request.GET["pk"]).first()
+        if product_item is None:
+            raise HTTPNotFound("product item is not found: pk=%s" % self.request.GET["pk"])
+
+        ticket_formats = c_models.TicketFormat.query.filter_by(organization_id=self.context.user.organization_id)
+        ticket_formats = ticket_formats.filter(c_models.TicketFormat.id==c_models.Ticket.ticket_format_id)
+        ticket_formats = _build_ticket_format_dicts(ticket_formats)
+        
+        svg = template_fillvalues(ticket.drawing, build_dict_from_product_item(product_item))
+        return {"apis": apis, "ticket_formats": ticket_formats, "svg": svg}

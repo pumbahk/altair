@@ -2,6 +2,7 @@
 
 def includeme(config):
     config.add_route('tickets.preview', '/preview')
+    config.add_route('tickets.preview.dialog', '/preview/dialog/{model}')
     config.add_route("tickets.preview.download", '/preview/download')
     config.add_route("tickets.preview.combobox", '/preview/combobox')
     config.add_route("tickets.preview.api", "/api/preview/{action}")
