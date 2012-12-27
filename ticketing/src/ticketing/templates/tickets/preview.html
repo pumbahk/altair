@@ -1,43 +1,4 @@
 <%inherit file="../layout.html" />
-
-<style type="text/css">
-  .droparea{
-    margin-left:5%;
-    margin-right:5%;
-  }
-  .droparea.empty{
-    height: 200px;
-    background-color: #ccc;
-    text-align: center;
-    margin: 0 auto;
-  }
-  .droparea.touched{
-    background-color: #cfc;
-  }
-  input {
-      width:90%;
-  }
-  #preview_area img{
-    margin-top: 20px;
-    margin-bottom: 20px;
-  }
-  #loading_area {
-    z-index: 1;
-    position:absolute;
-    top:0px;
-  }
-
-  #subnav a.brand{
-    color: #777
-  }
-
-  #subnav.navbar .nav > li > a:hover {
-    background-color: transparent;
-    color: #faf;
-    text-decoration: none;
-  }
-</style>
-
 <h1 class="page">
   券面テンプレートのpreview
 </h1>
@@ -63,4 +24,4 @@
   </div>
 </div>
 
-<%include file="./_preview.html" args="apis=apis,ticket_format=ticket_format"/>
+<%include file="./_preview.html" args="apis=apis,ticket_formats=ticket_formats"/>

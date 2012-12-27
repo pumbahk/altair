@@ -1,4 +1,43 @@
-<%page args="apis,ticket_format"/>
+<%page args="apis,ticket_formats"/>
+<% import json %>
+
+<style type="text/css">
+  .droparea{
+    margin-left:5%;
+    margin-right:5%;
+  }
+  .droparea.empty{
+    height: 200px;
+    background-color: #ccc;
+    text-align: center;
+    margin: 0 auto;
+  }
+  .droparea.touched{
+    background-color: #cfc;
+  }
+  input {
+      width:90%;
+  }
+  #preview_area img{
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+  #loading_area {
+    z-index: 1;
+    position:absolute;
+    top:0px;
+  }
+
+  #subnav a.brand{
+    color: #777
+  }
+
+  #subnav.navbar .nav > li > a:hover {
+    background-color: transparent;
+    color: #faf;
+    text-decoration: none;
+  }
+</style>
 
 <div id="preview_block" class="well">
   <div id="subnav" class="navbar">
@@ -78,7 +117,7 @@
   });
 
   // application viewは作成と同時にwindow.appsに入れる。(comboboxも同様)
-    window.apis = ${apis|n};
+    window.apis = ${json.dumps(apis)|n};
     window.apps["preview"] = window.appView = preview.ApplicationViewFactory(apis,
       preview.ApiCommunicationGateway,
       $("#preview_block"), 
@@ -91,7 +130,7 @@
 
     window.apps["modal"] = new modal.api.AjaxModalView({
       el: $("#combobox_btn"),
-      href:"${request.route_path("tickets.preview.combobox")}",
+      href:'${apis["combobox"]}',
       modalArea: $("#combobox_modal"),
       option: {backdrop: false},
       callback: function(modalview){

@@ -10,4 +10,16 @@ function svg_preview($el, apiurl, params){
             alert(data.message);
         }
     }).fail(function(s, err){alert(s.responseText)});
-}
+};
+
+// use: static/js/spin.js
+// use: static/js/altair/spinner.js
+// use: static/js/tickets/modal/api.js
+function svg_preview_component($el, $modalArea, apiurl, params){
+    return new modal.api.AjaxModalView({
+        el: $el, 
+        href: apiurl, 
+        modalArea: $modalArea, 
+        option: {backdrop: false}, 
+    });
+};

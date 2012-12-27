@@ -128,7 +128,7 @@
                 <td id="stock-${item.id}" value="${item.stock.id}">${item.stock.id}</td>
                 <td id="ticket_bundle_id-{$item.id}" value="${item.ticket_bundle_id}">
                   % if item.ticket_bundle_id:
-                    <a href="${request.route_path("events.tickets.bundles.items.preview", event_id=product.event_id, bundle_id=item.ticket_bundle.id, item_id=item.id)}" target="_blank">${item.ticket_bundle.name}<i class="icon-eye-open"></i></a>
+                    <a class="preview-link" href="${request.route_path("events.tickets.bundles.items.preview", event_id=product.event_id, bundle_id=item.ticket_bundle.id, item_id=item.id)}" target="_blank">${item.ticket_bundle.name}<i class="icon-eye-open"></i></a>
                   % else:
                     -
                   % endif
@@ -165,6 +165,22 @@
   </div>
 </div>
 
+## preview link javascript
+<script type="text/javascript" src="${request.static_url("ticketing:static/js/spin.js")}"></script>
+<script type="text/javascript" src="${request.static_url("ticketing:static/js/altair/spinner.js")}"></script>
+<script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/modal/api.js")}"></script>
+<script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/preview/preview_api.js")}"></script>
+<script type="text/javascript">
+  $(function(){
+    $("a.preview-link").on("click", function(){
+      var $el = $(this);
+      var params = {};
+      svg_preview_component($el, $("#preview_ticket_modal"), "${request.route_path('tickets.preview')}", params);
+      return false;
+    });
+  });
+</script>
+<div id="preview_ticket_modal">
 % if paging:
   ${h.pager(products)}
 % endif

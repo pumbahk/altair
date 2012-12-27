@@ -1,3 +1,6 @@
+<%page args="apis"/>
+<% import json %>
+
 <h1 class="page">
   券面入力補助ダイアログ
 </h1>
@@ -30,7 +33,7 @@
     if(!window.apps)
        window.apps = {}; 
 
-    var apis = ${apis|n};
+    var apis = ${json.dumps(apis)|n};
     var afterAllSelect = function(data){};
     window.apps["combobox"] = window.appView = combobox.ApplicationViewFactory(apis, combobox.ForTicketPreviewComboboxGateway,
       $("#organization_select"),
