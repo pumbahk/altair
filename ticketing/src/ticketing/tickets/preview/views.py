@@ -89,6 +89,7 @@ def preview_ticket_post(context, request):
     except jsonrpc.ProtocolError, e:
         raise HTTPBadRequest(str(e))
 
+
 @view_config(route_name="tickets.preview", request_method="POST", request_param="type=sej") # +svgfile
 def preview_ticket_post_sej(context, request):
     preview = SEJPreviewCommunication.get_instance(request)
@@ -167,7 +168,12 @@ class PreviewApiView(object):
 
     @view_config(match_param="action=preview.base64", request_param="type=sej")
     def preview_ticket_post64_sej(self):
-        pass
+        preview = SEJPreviewCommunication.get_instance(self.request)
+        transformer = SEJTemplateTransformer(svgio=StringIO(self.request.POST["svg"]))
+        ptct = transformer.transform()
+        imgdata = preview.communicate(self.request, ptct)
+        return {"status": True, "data":base64.b64encode(imgdata), 
+                "width": transformer.width, "height": transformer.height} #original size}
 
 
     @view_config(match_param="action=preview.base64", request_param="svg")

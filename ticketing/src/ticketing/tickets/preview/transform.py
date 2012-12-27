@@ -36,6 +36,13 @@ def transform_unit(fn, unit):
         return str(fn(ast.literal_eval(m.group(1))))+m.group(2)
     return num_rx.sub(_num_repl, unit, 1)
 
+fullsvg = etree.QName("http://www.w3.org/2000/svg", "svg")
+def _find_svg(xmltree):
+    if xmltree.tag == "svg" or xmltree.tag == fullsvg:
+        return xmltree
+    else:
+        return xmltree.find("svg") or xmltree.find(fullsvg)
+
 class SVGTransformer(object):
     def __init__(self, svg, postdata=None, encoding="utf-8"):
         self.svg = svg
@@ -51,23 +58,16 @@ class SVGTransformer(object):
         return self.as_string(self.scale_image(self.put_pageformat(xmltree)))
 
     def put_pageformat(self, xmltree):
-        svg = self._find_svg(xmltree)
+        svg = _find_svg(xmltree)
         svg_with_ticketformat(svg, self.data["ticket_format"])
         return xmltree
-
-    fullsvg = etree.QName("http://www.w3.org/2000/svg", "svg")
-    def _find_svg(self, xmltree):
-        if xmltree.tag == "svg" or xmltree.tag == self.fullsvg:
-            return xmltree
-        else:
-            return xmltree.find("svg") or xmltree.find(self.fullsvg)
         
     def scale_image(self, xmltree):
         sx, sy = self.data["sx"], self.data["sy"]
         if sx == sy == 1:
             return xmltree
 
-        svg = self._find_svg(xmltree)
+        svg = _find_svg(xmltree)
         attrib = svg.attrib
         
         if "width" in attrib:
@@ -119,11 +119,26 @@ class SEJTemplateTransformer(object):
         self.svgio = svgio
         self.encoding = encoding
 
+        self.height = None #uggg
+        self.width = None
+
+    def _detect_size(self, xmltree):
+        svg = _find_svg(xmltree)
+        attrib = svg.attrib
+        
+        if "width" in attrib:
+            self.width = attrib["width"]
+        if "height" in attrib:
+            self.height = attrib["height"]
+
     def transform(self): #todo: parse_transform
         if self.svg:
-            xmltree = etree.fromstring(self.svg)
+            xmltree = etree.fromstring(self.svg) #xxx:
         elif self.svgio:
             xmltree = etree.parse(self.svgio)
+
+        self._detect_size(xmltree.getroot())
+
         cleanup_svg(xmltree)
         global_transform = None #parse_transform(sys.argv[1]
         converted = convert_svg(xmltree, global_transform)
