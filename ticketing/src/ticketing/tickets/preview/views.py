@@ -34,6 +34,8 @@ from .fillvalues import template_fillvalues
 from .fetchsvg import fetch_svg_from_postdata
 from ..cleaner.api import get_validated_svg_cleaner
 from ..response import FileLikeResponse
+# todo: refactoring
+from ..utils import build_dict_from_product_item
 
 
 ## todo move it
@@ -87,7 +89,7 @@ def preview_ticket(context, request):
         }
     ticket_formats = c_models.TicketFormat.query.filter_by(organization_id=context.user.organization_id)
     ticket_formats = _build_ticket_format_dicts(ticket_formats)
-    return {"apis": apis, "ticket_formats": ticket_formats, "svg": None}
+    return {"apis": apis, "ticket_formats": ticket_formats}
 
 
 @view_config(route_name="tickets.preview", request_method="POST") 
@@ -175,7 +177,7 @@ class PreviewApiView(object):
         self.request = request
 
     @view_config(match_param="action=loadsvg")
-    def preview_api_loadsvg(self):
+    def preview_api_loadsvg(self): #deprecated
         """
         data = {"for_svg": {"model_name": "TicketBundle", model: 1}, 
                 "for_fillvalues": {"model_name": "ProductItem", model: 1}}
@@ -290,6 +292,31 @@ class PreviewApiView(object):
             return {"status": True, "data": decimal_converter(v, converter=float), "message": e.message}
 
 
+@view_defaults(route_name="tickets.preview.loadsvg.api", request_method="GET", renderer="json")
+class LoadSVGFromModelApiView(object):
+    """
+      data = {"svg_resource": {"model_name": "TicketBundle", model: 1}, 
+              "fillvalues_resource": {"model_name": "ProductItem", model: 1}}
+    """
+
+    def __init__(self, context, request):
+        self.context = context 
+        self.request = request
+
+    @view_config(match_param="model=ProductItem", request_param="svg_resource")
+    def svg_from_product_item(self):
+        ticket_format_id = self.requset.GET["svg_resource"]
+        product_item_id = self.request.GET["fillvalues_resource"]
+
+        product_item = c_models.ProductItem.query.filter_by(id=product_item_id).first()
+        ticket = c_models.Ticket.query.filter(c_models.TicketBundle.id==product_item.ticket_bundle_id, 
+                                              c_models.Ticket_TicketBundle.ticket_bundle_id==c_models.TicketBundle.id, 
+                                              c_models.Ticket.id==c_models.Ticket_TicketBundle.ticket_id, 
+                                              c_models.Ticket.ticket_format_id==ticket_format_id)
+
+        svg = template_fillvalues(ticket.drawing, build_dict_from_product_item(product_item))
+        return {"status": True, "data": svg}
+
 
 @view_defaults(route_name="tickets.preview.combobox.api", request_method="GET", renderer="json")
 class ComboboxApiView(object):
@@ -338,12 +365,8 @@ class ComboboxApiView(object):
         return {"status": True, "data": sorted(seq.values())}
 
 
-## dialog
-# todo: refactoring
-from ..utils import build_dict_from_product_item
-
 @view_defaults(route_name="tickets.preview.dialog", request_method="GET", renderer="ticketing:templates/tickets/_preview.html", 
-               xhr=True,  permission="event_editor")
+               permission="event_editor")
 class PreviewWithDefaultParamaterDialogView(object):
     def __init__(self, context, request): # as modal dialog
         self.context = context
@@ -368,19 +391,14 @@ class PreviewWithDefaultParamaterDialogView(object):
             }
         return apis
 
-    @view_config(match_param="model=productitem", request_param="pk")
+    @view_config(match_param="model=ProductItem")
     def product_item(self):
         combobox_params = self._combobox_defaults()
         apis = self._apis_defaults()
+        apis["loadsvg"]  =  self.request.route_path("tickets.preview.loadsvg.api", model="ProductItem"), 
         apis["combobox"] =  self.request.route_path("tickets.preview.combobox", _query=combobox_params)
-
-        product_item = c_models.ProductItem.query.filter_by(id=self.request.GET["pk"]).first()
-        if product_item is None:
-            raise HTTPNotFound("product item is not found: pk=%s" % self.request.GET["pk"])
 
         ticket_formats = c_models.TicketFormat.query.filter_by(organization_id=self.context.user.organization_id)
         ticket_formats = ticket_formats.filter(c_models.TicketFormat.id==c_models.Ticket.ticket_format_id)
         ticket_formats = _build_ticket_format_dicts(ticket_formats)
-        
-        svg = template_fillvalues(ticket.drawing, build_dict_from_product_item(product_item))
-        return {"apis": apis, "ticket_formats": ticket_formats, "svg": svg}
+        return {"apis": apis, "ticket_formats": ticket_formats}

@@ -128,7 +128,7 @@
                 <td id="stock-${item.id}" value="${item.stock.id}">${item.stock.id}</td>
                 <td id="ticket_bundle_id-{$item.id}" value="${item.ticket_bundle_id}">
                   % if performance and item.ticket_bundle_id:
-                    <a class="preview-link" href="${request.route_path("events.tickets.bundles.items.preview", event_id=product.event_id, bundle_id=item.ticket_bundle.id, item_id=item.id)}" target="_blank">${item.ticket_bundle.name}<i class="icon-eye-open"></i></a>
+                    <a class="preview-link" data-pk="${item.id}" data-name="${item.name}" href="${request.route_path("events.tickets.bundles.items.preview", event_id=product.event_id, bundle_id=item.ticket_bundle.id, item_id=item.id)}" target="_blank">${item.ticket_bundle.name}<i class="icon-eye-open"></i></a>
                   % else:
                     -
                   % endif
@@ -173,10 +173,40 @@
   <script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/preview/preview_api.js")}"></script>
   <script type="text/javascript">
     $(function(){
+    
+      var candidates = [];
+      var modalView = false;
+      $(".preview-link").each(function(_,e){
+        var $e = $(e); 
+        candidates.push({pk: $e.attr("data-pk"), name: $e.attr("data-name")}); 
+　    });
+
       $("a.preview-link").on("click", function(){
+        if(!!modalView){
+          modalView.onClick();
+          return false;
+        }
+
         var $el = $(this);
         var qs = "event_id="+"${performance.event_id}"+"&performance_id="+"${performance.id}"; //ugly
-        svg_preview_component($el, $("#preview_ticket_modal"), "${request.route_path('tickets.preview')}"+"?"+qs);
+        var url = "${request.route_path('tickets.preview.dialog', model="ProductItem")}"+"?"+qs
+        var callback = function(modalview){
+           // append select
+            var select = $("<select>");
+            _(candidates).each(function(c){
+                select.append($("<option>").text(c.name).attr("value", c.pk));
+            });
+            var root = modalview.$modalArea.find(".modal-header");
+            root.append($("<p>").text("商品選択:"));
+            root.append(select);
+        };
+        modalView = new modal.api.AjaxModalView({
+          el: $el,
+          href: url, 
+          modalArea: $("#preview_ticket_modal"), 
+          option: {backdrop: false}, 
+          callback: callback
+        });
         return false;
       });
     });

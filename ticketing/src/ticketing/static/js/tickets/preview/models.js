@@ -9,6 +9,7 @@ if (!window.preview)
             default_sx: 2.0,  //fetch default
             default_sy: 2.0, 
             ticket_format: null, 
+            holder: null,  //holder is svg data source{name: "", pk: ""}
             changed: false, 
         }, 
         changeSx: function(v){ //todo: use this;
@@ -26,6 +27,10 @@ if (!window.preview)
         changeTicketFormat: function(v){
             this.set("ticket_format", v);
             this.set("changed", true);
+        }, 
+        changeHolder: function(h){
+            this.set("holder", h);
+            this.trigger("*params.change.holder");
         }, 
         refreshDefault: function(){
             this.set("default_sx", 2.0);

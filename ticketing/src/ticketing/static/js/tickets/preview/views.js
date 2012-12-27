@@ -36,6 +36,18 @@ preview.ParamaterManageView = Backbone.View.extend({
     }
 });
 
+preview.SVGFromModelView = Backbone.View.extend({
+    // id, model_name -> svg
+    initialize: function(opts){
+        this.modelname = opts.modelname 
+        if(!this.modelanme) throw "model name is not found"
+    }, 
+    onChangeModel: function(){
+        var pk = this.$el.val();
+        this.model.changeHolder({pk: pk, name: this.modelname}); //params
+    }
+});
+
 preview.DragAndDropSVGSupportView = Backbone.View.extend({
   initialize: function(opts){
       this.vms = opts.vms || {}

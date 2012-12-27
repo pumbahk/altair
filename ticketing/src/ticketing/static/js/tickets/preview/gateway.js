@@ -10,6 +10,8 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
         this.apis.fillvalues = core.ApiService.asPostFunction(this.apis.fillvalues);
         this.apis.fillvalues_with_models = core.ApiService.asPostFunction(this.apis.fillvalues_with_models);
 
+        this.apis.loadsvg = core.ApiService.asGetFunction(this.apis.loadsvg);
+
         this.message = opts.message;
         this.preview = this.models.preview;
         this.svg = this.models.svg;
@@ -24,6 +26,8 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
         this.vars.on("*vars.commit.vars", this.commitVarsValues, this);
 
         this.preview.on("*preview.redraw",  this.previewReDraw, this);
+
+        this.params.on("*params.change.holder", this.changeHolderLoadSVG, this);
     }, 
     hasChangedModels: function(){
         return this.vars.get("changed") || this.params.get("changed");
@@ -127,6 +131,22 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
             .pipe(core.ApiService.rejectIfStatusFail(function(data){
                 self.vars.updateVars(data.data);
                 self.message.info("券面テンプレートからプレースホルダーを抽出しました", false, "weak");
+            }))
+            .fail(this._apiFail.bind(this));
+    }, 
+    changeHolderLoadSVG: function(){
+        this.preview.beforeRendering();
+        var self = this;
+        self.message.info("テンプレートを取得しています");
+        return this.apis.loadsvg({fillvalues_resource: {modelname: this.params.get("holder").name, 
+                                                        model: this.params.get("holder").pk, }, 
+                                  svg_resource: {modelname: "TicketFormat", 
+                                                 model: this.params.get("ticket_format").pk}
+                                 })
+            .pipe(core.ApiService.rejectIfStatusFail(function(data){
+                self.params.refreshDefault();
+                self.svg.updateToNormalize(data.data);
+                self.message.info("テンプレートを取得しました");
             }))
             .fail(this._apiFail.bind(this));
     }

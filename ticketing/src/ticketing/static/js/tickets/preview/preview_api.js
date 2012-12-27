@@ -15,11 +15,12 @@ function svg_preview($el, apiurl, params){
 // use: static/js/spin.js
 // use: static/js/altair/spinner.js
 // use: static/js/tickets/modal/api.js
-function svg_preview_component($el, $modalArea, apiurl){
+function svg_preview_component($el, $modalArea, apiurl, callback){
     return new modal.api.AjaxModalView({
         el: $el, 
         href: apiurl, 
         modalArea: $modalArea, 
         option: {backdrop: false}, 
+        callback: callback
     });
 };
