@@ -57,5 +57,5 @@ class BasicAuthRequestCreate(object):
         req.add_header("Authorization", "Basic %s" % base64string)   
         return req
 
-DefaultAPIRequestCreate = urllib2.Request
+DefaultAPIRequestCreate = lambda : urllib2.Request
 
