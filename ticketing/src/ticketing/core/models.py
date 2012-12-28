@@ -445,6 +445,9 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     product_items = relationship('ProductItem', backref='performance')
     venue = relationship('Venue', uselist=False, backref='performance')
 
+    redirect_url_pc = Column(String(1024))
+    redirect_url_mobile = Column(String(1024))
+
     @hybrid_property
     def on_the_day(self):
         today = date.today()
