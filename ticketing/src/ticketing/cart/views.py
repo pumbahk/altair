@@ -164,7 +164,7 @@ class IndexView(IndexViewMixin):
         ).filter(
             c_models.Performance.event_id==self.context.event_id
         ).first()
-        if selected_performance is None and 'performance' in self.request.params:
+        if selected_performance is None and performance_id is not None:
             return HTTPFound(location=self.request.path_url)
 
         return dict(
