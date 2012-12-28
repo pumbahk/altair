@@ -276,14 +276,14 @@ class DictBuilder(object):
 
         retval = self.build_dict_from_stock(product_item.stock, retval)
         retval = self.build_dict_from_venue(product_item.performance.venue, retval)
-        ## 不足分
-        retval.update({
-            u"席番": u"{{席番}}", 
-            u'注文番号': u"{{注文番号}}",
-            u'予約番号': u"{{予約番号}}", 
-            u'発券番号': u"{{発券番号}}", 
-            u"公演コード": u"xxx"
-        })
+        # ## 不足分
+        # retval.update({
+        #     u"席番": u"{{席番}}", 
+        #     u'注文番号': u"{{注文番号}}",
+        #     u'予約番号': u"{{予約番号}}", 
+        #     u'発券番号': u"{{発券番号}}", 
+        #     u"公演コード": u"xxx"
+        # })
         return retval
 
     def build_basic_dict_from_ordered_product_item(self, ordered_product_item, user_profile=None):
