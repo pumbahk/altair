@@ -148,28 +148,6 @@ def combbox_for_preview(context, request):
 """
 raw svg -> normalize svg -> base64 png
 """
-
-@view_defaults(route_name="tickets.preview.api", request_method="POST", renderer="json")
-class SEJPreviewApiView(object):
-    def __init__(self, context, request):
-        self.context = context
-        self.request = request
-
-    @view_config(match_param="action=preview.base64.withmodels", request_param="type=sej") #+svg
-    def preview_ticket_post64_sej_with_models(self):
-        pass
-
-
-    @view_config(match_param="action=preview.base64", request_param="type=sej")
-    def preview_ticket_post64_sej(self):
-        preview = SEJPreviewCommunication.get_instance(self.request)
-        transformer = SEJTemplateTransformer(svgio=StringIO(self.request.POST["svg"]))
-        ptct = transformer.transform()
-        imgdata = preview.communicate(self.request, ptct)
-        return {"status": True, "data":base64.b64encode(imgdata), 
-                "width": transformer.width, "height": transformer.height} #original size}
-
-
 @view_defaults(route_name="tickets.preview.api", request_method="POST", renderer="json")
 class PreviewApiView(object):
     def __init__(self, context, request):
@@ -192,6 +170,14 @@ class PreviewApiView(object):
         except Exception, e:
             return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
 
+    @view_config(match_param="action=preview.base64", request_param="type=sej")
+    def preview_ticket_post64_sej(self):
+        preview = SEJPreviewCommunication.get_instance(self.request)
+        transformer = SEJTemplateTransformer(svgio=StringIO(self.request.POST["svg"]))
+        ptct = transformer.transform()
+        imgdata = preview.communicate(self.request, ptct)
+        return {"status": True, "data":base64.b64encode(imgdata), 
+                "width": transformer.width, "height": transformer.height} #original size}
 
     @view_config(match_param="action=normalize", request_param="svg")
     def preview_api_normalize(self):
@@ -303,16 +289,17 @@ class LoadSVGFromModelApiView(object):
         self.context = context 
         self.request = request
 
-    @view_config(match_param="model=ProductItem", request_param="svg_resource")
+    @view_config(match_param="model=ProductItem", request_param="data")
     def svg_from_product_item(self):
-        ticket_format_id = self.requset.GET["svg_resource"]
-        product_item_id = self.request.GET["fillvalues_resource"]
+        data = json.loads(self.request.GET["data"])
+        ticket_format_id = data["svg_resource"]["model"]
+        product_item_id = data["fillvalues_resource"]["model"]
 
         product_item = c_models.ProductItem.query.filter_by(id=product_item_id).first()
         ticket = c_models.Ticket.query.filter(c_models.TicketBundle.id==product_item.ticket_bundle_id, 
                                               c_models.Ticket_TicketBundle.ticket_bundle_id==c_models.TicketBundle.id, 
                                               c_models.Ticket.id==c_models.Ticket_TicketBundle.ticket_id, 
-                                              c_models.Ticket.ticket_format_id==ticket_format_id)
+                                              c_models.Ticket.ticket_format_id==ticket_format_id).first()
 
         svg = template_fillvalues(ticket.drawing, build_dict_from_product_item(product_item))
         return {"status": True, "data": svg}

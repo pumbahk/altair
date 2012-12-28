@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 
-def includeme(config):
+def include_views(config):
     config.add_route('tickets.preview', '/preview')
     config.add_route('tickets.preview.dialog', '/preview/dialog/{model}')
     config.add_route("tickets.preview.download", '/preview/download')
@@ -10,6 +10,7 @@ def includeme(config):
     config.add_route("tickets.preview.loadsvg.api", "/api/preview/loadsvg/{model}")
     config.scan(".views")
 
+def include_utilities(config):
     settings = config.registry.settings
     ## svg preview serverとの通信
     from .api import SVGPreviewCommunication
@@ -27,3 +28,7 @@ def includeme(config):
         create_api_request
         )
     sej_preview_communication.bind_instance(config)
+
+def includeme(config):
+    config.include(include_views)
+    config.include(include_utilities)

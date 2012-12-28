@@ -38,13 +38,23 @@ preview.ParamaterManageView = Backbone.View.extend({
 
 preview.SVGFromModelView = Backbone.View.extend({
     // id, model_name -> svg
+    events: {"change #model_candidates": "onChangeModel"}, 
     initialize: function(opts){
-        this.modelname = opts.modelname 
-        if(!this.modelanme) throw "model name is not found"
+        this.modelname = opts.modelname;
+        if(!this.modelname) throw "modelname is not found";
     }, 
     onChangeModel: function(){
-        var pk = this.$el.val();
+        var pk = this.$el.find("select").val();
         this.model.changeHolder({pk: pk, name: this.modelname}); //params
+    }, 
+    render: function(label, candidates){
+        var select = $('<select class="inline input-medium">').attr("id","model_candidates");
+        _(candidates).each(function(c){
+            select.append($("<option>").text(c.name).attr("value", c.pk));
+        });
+        this.$el.find(".brand").hide();
+        var root = this.$el.find("#subnav .nav");
+        root.append($('<li style="margin-left:20px;">').text(label).append(select));
     }
 });
 

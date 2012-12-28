@@ -43,7 +43,7 @@ class APIViewDispatchTests(unittest.TestCase):
 
         config = self.config
         config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
-        config.include("ticketing.tickets.preview")
+        config.include("ticketing.tickets.preview.include_views")
         router = _make_router(config)
 
 
@@ -59,7 +59,7 @@ class APIViewDispatchTests(unittest.TestCase):
 
         config = self.config
         config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
-        config.include("ticketing.tickets.preview")
+        config.include("ticketing.tickets.preview.include_views")
         router = _make_router(config)
 
 

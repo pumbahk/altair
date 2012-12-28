@@ -173,7 +173,6 @@
   <script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/preview/preview_api.js")}"></script>
   <script type="text/javascript">
     $(function(){
-    
       var candidates = [];
       var modalView = false;
       $(".preview-link").each(function(_,e){
@@ -192,21 +191,18 @@
         var url = "${request.route_path('tickets.preview.dialog', model="ProductItem")}"+"?"+qs
         var callback = function(modalview){
            // append select
-            var select = $("<select>");
-            _(candidates).each(function(c){
-                select.append($("<option>").text(c.name).attr("value", c.pk));
-            });
-            var root = modalview.$modalArea.find(".modal-header");
-            root.append($("<p>").text("商品選択:"));
-            root.append(select);
+            apps["loadsvg"] = new preview.SVGFromModelView({el: modalview.$modalArea, model: apps["preview"].models["params"], modelname: "ProductItem"});
+            apps["loadsvg"].render("商品選択:", candidates);
         };
         modalView = new modal.api.AjaxModalView({
           el: $el,
           href: url, 
           modalArea: $("#preview_ticket_modal"), 
-          option: {backdrop: false}, 
-          callback: callback
+          option: {backdrop: false, stretch: true}, 
+          callback: callback,
+          header: "チケット券面のpreview"
         });
+        modalView.onClick();
         return false;
       });
     });

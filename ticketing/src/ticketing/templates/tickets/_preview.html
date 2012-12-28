@@ -39,6 +39,15 @@
   }
 </style>
 
+<div class="row">
+  <div id="message_box" class="span6" style="">
+    <div id="alert_message" class="message hide alert"></div>
+    <div id="info_message" class="message hide alert alert-info"></div>
+    <div id="error_message" class="message hide alert alert-error"></div>
+    <div id="success_message" class="message hide alert alert-success"></div>
+  </div>
+</div>
+
 <div id="preview_block" class="well">
   <div id="subnav" class="navbar">
     <div class="navbar-inner">
@@ -48,14 +57,14 @@
         <li><a id="download_btn" href="#">現在のsvgをdownload</a></li>
         <li><a id="redraw_btn" href="#">再描画</a></li>
         <li style="margin-left:50px;">チケット様式の選択
-          <select id="ticket_format">
-            %for tf in ticket_formats:
-              <option value="${tf["pk"]}">${tf["name"]}${tf["type"]}</option>
-            %endfor
-          </select>
+            <select id="ticket_format" class="inline input-medium">
+              %for tf in ticket_formats:
+                <option value="${tf["pk"]}">${tf["name"]}${tf["type"]}</option>
+              %endfor
+            </select>
         </li>
         <li style="margin-left:20px;">縮尺の設定
-          <form id="transform_form" style="display:inline;">　 
+          <form class="" id="transform_form" style="display:inline;">　 
             x: <input class="inline input-mini" type="number" name="sx" min="0" max="10.0" step="0.1" value="1.0"></input>
             y: <input class="inline input-mini" type="number" name="sy" min="0" max="10.0" step="0.1" value="1.0"></input>
           </form>

@@ -34,10 +34,9 @@ if (!window.modal){
         onLoad: function(){ // todo: refactoring;
             var wrap = $('<div class="modal">');
             wrap.empty();
-            if (!wrap.hasClass("modal")){
-                wrap.addClass("modal");
+            if(this.option.stretch){
+                this.stretch(wrap);
             }
-
             var close_button = $('<button>').attr("type","button").attr("class","close").attr("data-dismiss", "modal").attr("aria-hidden", "true").text("×");
             if(!!this.header){
                 wrap.append($(this.tmpl_header).append(close_button).append($("<h2>").text(this.header)));
@@ -64,6 +63,18 @@ if (!window.modal){
         }, 
         hide: function(){
             this.$modalArea.modal("hide");
+        }, 
+        stretch: function($e){
+	          var uniwin = {
+		            width: window.innerWidth || document.documentElement.clientWidth
+			              || document.body.offsetWidth,
+		            height: window.innerHeight || document.documentElement.clientHeight
+			              || document.body.offsetHeight
+	          };
+            var w = uniwin.width*0.9;
+            var h = uniwin.height*0.9;
+            var $e = $e || this.$modalArea.find(".modal");
+            $e.width(w).height(h).css("margin-left",-(w/2));
         }
     });
 })(window.modal.api);
