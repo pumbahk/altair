@@ -99,12 +99,12 @@ class IndexViewMixin(object):
         performance_id = self.request.params.get('pid') or self.request.params.get('performance')
 
         if performance_id:
-            specified = c_models.Performance.query.filter(c_models.Performance.id==performance_id).first()
+            specified = c_models.Performance.query.filter(c_models.Performance.id==performance_id).filter(c_models.Performance.public==True).first()
             if mobile:
-                if specified.redirect_url_mobile:
+                if specified is not None and specified.redirect_url_mobile:
                     raise HTTPFound(specified.redirect_url_mobile)
             else:
-                if specified.redirect_url_pc:
+                if specified is not None and specified.redirect_url_pc:
                     raise HTTPFound(specified.redirect_url_pc)
 
 class IndexView(IndexViewMixin):
