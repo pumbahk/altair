@@ -95,7 +95,7 @@ class IndexViewMixin(object):
                 logger.debug("No matching sales_segment")
                 raise NoSalesSegment("No matching sales_segment")
 
-    def check_redirect(self, mobile=False):
+    def check_redirect(self, mobile):
         performance_id = self.request.params.get('pid') or self.request.params.get('performance')
 
         if performance_id:
@@ -116,7 +116,7 @@ class IndexView(IndexViewMixin):
 
     @view_config(route_name='cart.index', renderer=selectable_renderer("carts/%(membership)s/index.html"), xhr=False, permission="buy")
     def __call__(self):
-        self.check_redirect()
+        self.check_redirect(mobile=False)
         jquery_tools.need()
         # ただ単にパフォーマンスのリストが欲しいだけなので
         # normal_sales_segment で良い
