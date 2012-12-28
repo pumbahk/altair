@@ -63,16 +63,42 @@ event = request.context.event
 </div>
 
 <div class="row-fluid">
-  preview image
   <div id="ticket-viewer"></div>
-  <script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/preview/preview_api.js")}"></script>
+  <script type="text/javascript" src="${request.static_url("ticketing:static/js/spin.js")}"></script>
+  <script type="text/javascript" src="${request.static_url("ticketing:static/js/altair/spinner.js")}"></script>
+  <script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/modal/api.js")}"></script>
   <script type="text/javascript">
     $(function(){
-      svg_preview(
-        $("#ticket-viewer"),"${request.route_path("tickets.preview.api", action="preview.base64")}", 
-        '${template.drawing.replace("\n","")|n}'
-      );
-    })
+      var modalView = false;
+      var modelname = "Ticket";
+
+      // preview component
+      $("a.#preview_btn").on("click", function(){
+
+        var $el = $(this);
+        var pk = $el.attr("data-pk");
+        if(!!modalView){
+          modalView.onClick();
+          apps["loadsvg"].model.changeHolder({pk: pk, name: modelname})
+          return true;
+        }
+        var qstring = "event_id="+"${event_id}"; //ugly
+        modalView = new modal.api.AjaxModalView({
+          el: $el,
+          href: "${request.route_path('tickets.preview.dialog', model="Ticket")}"+"?"+qstring,
+          modalArea: $("#ticket-viewer"), 
+          option: {backdrop: false, stretch: true}, 
+          header: "チケット券面のpreview",
+          callback: function(modalview){
+           // append select
+            apps["loadsvg"] = new preview.SVGFromModelView({el: modalview.$modalArea, model: apps["preview"].models["params"], modelname: modelname});
+            apps["loadsvg"].model.changeHolder({pk: ${template.id}, name: modelname})
+          }
+        });
+        modalView.onClick();
+        return true;
+      });
+    });
 </script>
 </div>
 
@@ -81,21 +107,22 @@ event = request.context.event
     <a href="${request.route_path("events.tickets.boundtickets.edit",event_id=event_id, id=template.id)}" class="btn">
       <i class="icon-pencil"></i> 編集
     </a>
-        <button class="btn dropdown-toggle" data-toggle="dropdown">
-          <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu">
-          <li>
-            <a href="#deleteModal" data-toggle="modal">
-              <i class="icon-minus"></i> 削除
-            </a>
-          </li>
+    <button class="btn dropdown-toggle" data-toggle="dropdown">
+      <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu">
+      <li>
+        <a href="#deleteModal" data-toggle="modal">
+          <i class="icon-minus"></i> 削除
+        </a>
+      </li>
 		  <li>
-			<a href="${request.route_path("events.tickets.boundtickets.download",event_id=event_id, id=template.id)}">
-			  <i class="icon-minus"></i> 登録されている内容をdownload
-			</a>
+			  <a href="${request.route_path("events.tickets.boundtickets.download",event_id=event_id, id=template.id)}">
+			    <i class="icon-minus"></i> 登録されている内容をdownload
+			  </a>
 		  </li>
-        </ul>
+      <li><a id="preview_btn"> <i class="icon-eye-open"></i> preview</a></li>
+    </ul>
   </div>
 </div>
 

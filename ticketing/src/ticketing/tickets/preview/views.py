@@ -61,7 +61,8 @@ def route_path_with_params(request, url, _query=None, **kwargs):
     """
     if _query:
         for k in _query.keys():
-            if _query[k] is None:
+            v = _query[k]
+            if v is None or v == "None": # todo: refactoring
                 del _query[k]
     return request.route_path(url, _query=_query, **kwargs)
 
