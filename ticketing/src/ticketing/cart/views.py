@@ -79,6 +79,7 @@ class IndexViewMixin(object):
         self.request = request
         self.context = request.context
 
+    def prepare(self):
         if self.context.event is None:
             raise NoEventError(self.context.event_id)
 
@@ -94,13 +95,28 @@ class IndexViewMixin(object):
                 logger.debug("No matching sales_segment")
                 raise NoSalesSegment("No matching sales_segment")
 
+    def check_redirect(self, mobile=False):
+        performance_id = self.request.params.get('pid') or self.request.params.get('performance')
+
+        if performance_id:
+            specified = c_models.Performance.query.filter(c_models.Performance.id==performance_id).first()
+            if mobile:
+                if specified.redirect_url_mobile:
+                    raise HTTPFound(specified.redirect_url_mobile)
+            else:
+                if specified.redirect_url_pc:
+                    raise HTTPFound(specified.redirect_url_pc)
+
 class IndexView(IndexViewMixin):
     """ 座席選択画面 """
     def __init__(self, request):
         super(IndexView, self).__init__(request)
+        self.prepare()
+
 
     @view_config(route_name='cart.index', renderer=selectable_renderer("carts/%(membership)s/index.html"), xhr=False, permission="buy")
     def __call__(self):
+        self.check_redirect()
         jquery_tools.need()
         # ただ単にパフォーマンスのリストが欲しいだけなので
         # normal_sales_segment で良い
@@ -975,9 +991,11 @@ class MobileIndexView(IndexViewMixin):
     """
     def __init__(self, request):
         super(MobileIndexView, self).__init__(request)
+        self.prepare()
 
     @view_config(route_name='cart.index', renderer=selectable_renderer('carts_mobile/%(membership)s/index.html'), xhr=False, permission="buy", request_type=".interfaces.IMobileRequest")
     def __call__(self):
+        self.check_redirect(mobile=True)
         venue_name = self.request.params.get('v')
 
         # パフォーマンスIDが確定しているなら商品選択へリダイレクト
