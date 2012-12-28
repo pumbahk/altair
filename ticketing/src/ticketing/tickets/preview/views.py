@@ -179,6 +179,7 @@ class PreviewApiView(object):
         return {"status": True, "data":base64.b64encode(imgdata), 
                 "width": transformer.width, "height": transformer.height} #original size}
 
+
     @view_config(match_param="action=normalize", request_param="svg")
     def preview_api_normalize(self):
         try:
@@ -304,6 +305,13 @@ class LoadSVGFromModelApiView(object):
         svg = template_fillvalues(ticket.drawing, build_dict_from_product_item(product_item))
         return {"status": True, "data": svg}
 
+    @view_config(match_param="model=Ticket", request_param="data")
+    def svg_from_ticket(self):
+        data = json.loads(self.request.GET["data"])
+        ticket_id = data["fillvalues_resource"]["model"]
+        ticket = c_models.Ticket.query.filter_by(id=ticket_id).first()
+        return {"status": True, "data": ticket.drawing}
+
 
 @view_defaults(route_name="tickets.preview.combobox.api", request_method="GET", renderer="json")
 class ComboboxApiView(object):
@@ -378,14 +386,26 @@ class PreviewWithDefaultParamaterDialogView(object):
             }
         return apis
 
+
     @view_config(match_param="model=ProductItem")
-    def product_item(self):
+    def svg_dialog_via_product_item(self):
         combobox_params = self._combobox_defaults()
         apis = self._apis_defaults()
         apis["loadsvg"]  =  self.request.route_path("tickets.preview.loadsvg.api", model="ProductItem"), 
         apis["combobox"] =  self.request.route_path("tickets.preview.combobox", _query=combobox_params)
 
         ticket_formats = c_models.TicketFormat.query.filter_by(organization_id=self.context.user.organization_id)
-        ticket_formats = ticket_formats.filter(c_models.TicketFormat.id==c_models.Ticket.ticket_format_id)
+        ticket_formats = _build_ticket_format_dicts(ticket_formats)
+        return {"apis": apis, "ticket_formats": ticket_formats}
+
+
+    @view_config(match_param="model=Ticket")
+    def svg_dialog_via_ticket(self):
+        combobox_params = self._combobox_defaults()
+        apis = self._apis_defaults()
+        apis["loadsvg"]  =  self.request.route_path("tickets.preview.loadsvg.api", model="Ticket"), 
+        apis["combobox"] =  self.request.route_path("tickets.preview.combobox", _query=combobox_params)
+
+        ticket_formats = c_models.TicketFormat.query.filter_by(organization_id=self.context.user.organization_id)
         ticket_formats = _build_ticket_format_dicts(ticket_formats)
         return {"apis": apis, "ticket_formats": ticket_formats}
