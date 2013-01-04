@@ -79,6 +79,7 @@ class IndexViewMixin(object):
         self.request = request
         self.context = request.context
 
+    def prepare(self):
         if self.context.event is None:
             raise NoEventError(self.context.event_id)
 
@@ -94,19 +95,34 @@ class IndexViewMixin(object):
                 logger.debug("No matching sales_segment")
                 raise NoSalesSegment("No matching sales_segment")
 
+    def check_redirect(self, mobile):
+        performance_id = self.request.params.get('pid') or self.request.params.get('performance')
+
+        if performance_id:
+            specified = c_models.Performance.query.filter(c_models.Performance.id==performance_id).filter(c_models.Performance.public==True).first()
+            if mobile:
+                if specified is not None and specified.redirect_url_mobile:
+                    raise HTTPFound(specified.redirect_url_mobile)
+            else:
+                if specified is not None and specified.redirect_url_pc:
+                    raise HTTPFound(specified.redirect_url_pc)
+
 class IndexView(IndexViewMixin):
     """ 座席選択画面 """
     def __init__(self, request):
         super(IndexView, self).__init__(request)
+        self.prepare()
+
 
     @view_config(route_name='cart.index', renderer=selectable_renderer("carts/%(membership)s/index.html"), xhr=False, permission="buy")
     def __call__(self):
+        self.check_redirect(mobile=False)
         jquery_tools.need()
         # ただ単にパフォーマンスのリストが欲しいだけなので
         # normal_sales_segment で良い
         performances = api.performance_names(self.request, self.context.event, self.context.normal_sales_segment)
         if not performances:
-            raise NoPerformanceError(event_id=context.event.id, sales_segment_id=context.normal_sales_segment.id) # NoPerformanceを作る
+            raise NoPerformanceError(event_id=self.context.event.id, sales_segment_id=self.context.normal_sales_segment.id) # NoPerformanceを作る
 
         from collections import OrderedDict
         select_venues = OrderedDict()
@@ -147,9 +163,11 @@ class IndexView(IndexViewMixin):
             c_models.Performance.id==performance_id
         ).filter(
             c_models.Performance.event_id==self.context.event_id
+        ).filter(
+            c_models.Performance.public == True
         ).first()
-        if selected_performance is None and 'performance' in self.request.params:
-            return HTTPFound(location=self.request.path_url)
+        if selected_performance is None and performance_id is not None:
+            raise NoPerformanceError(event_id=self.context.event.id)
 
         return dict(
             event=dict(
@@ -975,9 +993,11 @@ class MobileIndexView(IndexViewMixin):
     """
     def __init__(self, request):
         super(MobileIndexView, self).__init__(request)
+        self.prepare()
 
     @view_config(route_name='cart.index', renderer=selectable_renderer('carts_mobile/%(membership)s/index.html'), xhr=False, permission="buy", request_type=".interfaces.IMobileRequest")
     def __call__(self):
+        self.check_redirect(mobile=True)
         venue_name = self.request.params.get('v')
 
         # パフォーマンスIDが確定しているなら商品選択へリダイレクト

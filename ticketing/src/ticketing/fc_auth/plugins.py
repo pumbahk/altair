@@ -37,7 +37,7 @@ class FCAuthPlugin(object):
         logging.debug(identity)
 
         if identity is None:
-            logger.debug("fc_auth identity failed")
+            #logger.debug("fc_auth identity failed")
             return None
 
         if 'repoze.who.plugins.auth_tkt.userid' in identity:

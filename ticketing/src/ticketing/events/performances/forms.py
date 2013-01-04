@@ -4,7 +4,7 @@ from wtforms import Form
 from wtforms import TextField, SelectField, HiddenField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 
-from ticketing.formhelpers import DateTimeField, Translations, Required
+from ticketing.formhelpers import DateTimeField, Translations, Required, NullableTextField
 from ticketing.core.models import Venue, Performance, Stock
 from ticketing.payments.plugins.sej import DELIVERY_PLUGIN_ID as SEJ_DELIVERY_PLUGIN_ID
 from ticketing.core.utils import ApplicableTicketsProducer
@@ -66,6 +66,18 @@ class PerformanceForm(Form):
         validators=[Required(u'選択してください')],
         choices=[],
         coerce=int,
+    )
+    redirect_url_pc = NullableTextField(
+        label=u'リダイレクト先URL (PC)',
+        validators=[
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ]
+    )
+    redirect_url_mobile = NullableTextField(
+        label=u'リダイレクト先URL (携帯)',
+        validators=[
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ]
     )
     original_id = HiddenField(
         validators=[Optional()],

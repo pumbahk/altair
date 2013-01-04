@@ -60,7 +60,7 @@ class RakutenOpenIDPlugin(object):
         logging.debug(identity)
 
         if identity is None:
-            logger.debug("identity failed")
+            #logger.debug("identity failed")
             return None
 
         if 'repoze.who.plugins.auth_tkt.userid' in identity:
