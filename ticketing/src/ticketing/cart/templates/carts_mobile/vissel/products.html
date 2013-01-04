@@ -1,12 +1,12 @@
 <%inherit file="./base.html"/>
 <%namespace file="./tags_mobile.html" name="mobile" />
-
 <%mobile:header>チケット購入</%mobile:header>
-
 ${event.title}
-
 <hr size="1" color="#888888" noshade="noshade" />
-
+% if seat_type.description:
+<div>${seat_type.description|n}</div>
+<hr size="1" color="#888888" noshade="noshade" />
+% endif
 商品をお選びください
 
 <form action="${request.url}" method="post">
@@ -16,6 +16,9 @@ ${event.title}
       <div>
         <font color="#7e1421">■</font>${product['name']} &yen;${product['price']}
       </div>
+      % if product['description']:
+        <div>${product['description']}</div>
+      % endif
       % if product['detail']:
         ${product['detail']}<br/>
       % endif

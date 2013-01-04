@@ -208,8 +208,12 @@ class IndexView(IndexViewMixin):
 
         seat_type_triplets = get_seat_type_triplets(event_id, performance_id, sales_segment_id)
         performance = c_models.Performance.query.filter_by(id=performance_id).one()
-        data = dict(seat_types=[
-                dict(id=s.id, name=s.name,
+        data = dict(
+            seat_types=[
+                dict(
+                    id=s.id,
+                    name=s.name,
+                    description=s.description,
                     style=s.style,
                     products_url=self.request.route_url('cart.products',
                         event_id=event_id, performance_id=performance_id, sales_segment_id=sales_segment_id, seat_type_id=s.id),
@@ -219,33 +223,33 @@ class IndexView(IndexViewMixin):
                     )
                 for s, total, available in seat_type_triplets
                 ],
-                event_name=performance.event.title,
-                performance_name=performance.name,
-                performance_start=h.performance_date(performance),
-                performance_id=performance_id,
-                order_url=self.request.route_url("cart.order", 
-                        sales_segment_id=sales_segment_id),
-                venue_name=performance.venue.name,
-                event_id=event_id,
-                venue_id=performance.venue.id,
-                data_source=dict(
-                    venue_drawing=self.request.route_url(
-                        'cart.venue_drawing',
-                        event_id=event_id,
-                        performance_id=performance_id,
-                        venue_id=performance.venue.id,
-                        part='__part__'),
-                    seats=self.request.route_url(
-                        'cart.seats',
-                        event_id=event_id,
-                        performance_id=performance_id,
-                        venue_id=performance.venue.id),
-                    seat_adjacencies=self.request.application_url \
-                        + api.get_route_pattern(
-                          self.request.registry,
-                          'cart.seat_adjacencies')
-                    )
+            event_name=performance.event.title,
+            performance_name=performance.name,
+            performance_start=h.performance_date(performance),
+            performance_id=performance_id,
+            order_url=self.request.route_url("cart.order", 
+                    sales_segment_id=sales_segment_id),
+            venue_name=performance.venue.name,
+            event_id=event_id,
+            venue_id=performance.venue.id,
+            data_source=dict(
+                venue_drawing=self.request.route_url(
+                    'cart.venue_drawing',
+                    event_id=event_id,
+                    performance_id=performance_id,
+                    venue_id=performance.venue.id,
+                    part='__part__'),
+                seats=self.request.route_url(
+                    'cart.seats',
+                    event_id=event_id,
+                    performance_id=performance_id,
+                    venue_id=performance.venue.id),
+                seat_adjacencies=self.request.application_url \
+                    + api.get_route_pattern(
+                      self.request.registry,
+                      'cart.seat_adjacencies')
                 )
+            )
         return data
 
     @view_config(route_name="cart.date.products", renderer="json")
@@ -280,9 +284,15 @@ class IndexView(IndexViewMixin):
         salessegment = self.context.get_sales_segument()
         query = h.products_filter_by_salessegment(query, salessegment)
 
-
-        products = [dict(name=p.name, price=h.format_number(p.price, ","), id=p.id)
-                    for p in query]
+        products = [
+            dict(
+                id=p.id,
+                name=p.name,
+                description=p.description,
+                price=h.format_number(p.price, ",")
+                )
+            for p in query
+            ]
         return dict(selected_date=selected_date_string, 
                     products=products)
 
@@ -312,12 +322,17 @@ class IndexView(IndexViewMixin):
         salessegment = DBSession.query(c_models.SalesSegment).filter_by(id=sales_segment_id).one()
         query = h.products_filter_by_salessegment(query, salessegment)
 
-        products = [dict(id=p.id, 
-                         name=p.name, 
-                         price=h.format_number(p.price, ","), 
-                         unit_template=h.build_unit_template(p, performance_id),
-                         quantity_power=p.get_quantity_power(seat_type, performance_id))
-            for p in query]
+        products = [
+            dict(
+                id=p.id, 
+                name=p.name, 
+                description=p.description,
+                price=h.format_number(p.price, ","), 
+                unit_template=h.build_unit_template(p, performance_id),
+                quantity_power=p.get_quantity_power(seat_type, performance_id)
+                )
+            for p in query
+            ]
 
         return dict(products=products,
                     seat_type=dict(id=seat_type.id, name=seat_type.name),
@@ -1080,20 +1095,23 @@ class MobileSelectProductView(object):
 
         data = dict(
             seat_types=[
-                dict(id=s.id, name=s.name,
-                     style=s.style,
-                     products_url=self.request.route_url('cart.products',
-                                                         event_id=event_id, performance_id=performance_id, sales_segment_id=sales_segment.id, seat_type_id=s.id),
-                     availability=available > 0,
-                     availability_text=h.get_availability_text(available),
-                     quantity_only=s.quantity_only,
-                     )
-            for s, total, available in seat_type_triplets
-            ],
+                dict(
+                    id=s.id,
+                    name=s.name,
+                    description=s.description,
+                    style=s.style,
+                    products_url=self.request.route_url('cart.products',
+                                                        event_id=event_id, performance_id=performance_id, sales_segment_id=sales_segment.id, seat_type_id=s.id),
+                    availability=available > 0,
+                    availability_text=h.get_availability_text(available),
+                    quantity_only=s.quantity_only,
+                    )
+                for s, total, available in seat_type_triplets
+                ],
             event=event,
             performance=performance,
             venue=performance.venue,
-        )
+            )
         return data
 
     @view_config(route_name='cart.products', renderer=selectable_renderer('carts_mobile/%(membership)s/products.html'), xhr=False, request_type=".interfaces.IMobileRequest")
@@ -1156,7 +1174,7 @@ class MobileSelectProductView(object):
         # CSRFトークン発行
         form = schemas.CSRFSecureForm(csrf_context=self.request.session)
 
-        data = dict(
+        return dict(
             event=event,
             performance=performance,
             venue=performance.venue,
@@ -1166,6 +1184,7 @@ class MobileSelectProductView(object):
                 dict(
                     id=product.id,
                     name=product.name,
+                    description=product.description,
                     detail=h.product_name_with_unit(product, performance_id),
                     price=h.format_number(product.price, ","),
                 )
@@ -1173,7 +1192,6 @@ class MobileSelectProductView(object):
             ],
             form=form,
         )
-        return data
 
 class OutTermSalesView(object):
     def __init__(self, context, request):

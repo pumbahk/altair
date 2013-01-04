@@ -149,6 +149,11 @@ class OurSelectField(BugFreeSelectField):
 
 _gen_field_init(OurSelectField)
 
+class OurDecimalField(fields.DecimalField):
+    pass
+
+_gen_field_init(OurDecimalField)
+
 class OurIntegerField(fields.IntegerField):
     pass
 

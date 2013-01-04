@@ -148,15 +148,18 @@ $(function() {cart.init(venues_selection, selected, upper_limit, cart_release_ur
                     })();
                   </script>
                   <div style="display:none; overflow: hidden" class="selectProduct" id="selectProductTemplate">
-                    <ul class="productList payment-seat-products">
-                    </ul>
-                    <fieldset style="display:none;" class="selected-seats">
-                    </fieldset>
-                    <ul class="buttonSet">
-                      <li><a class="btn-select-buy">座席を選んで購入</a></li>
-                      <li><a class="btn-entrust-buy">おまかせで購入</a></li>
-                      <li><a class="btn-buy">購入</a></li>
-                    </ul>
+                    <div class="selectProduct-description"></div>
+                    <div class="productListContainer">
+                      <ul class="productList payment-seat-products">
+                      </ul>
+                      <fieldset style="display:none;" class="selected-seats">
+                      </fieldset>
+                      <ul class="buttonSet">
+                        <li><a class="btn-select-buy">座席を選んで購入</a></li>
+                        <li><a class="btn-entrust-buy">おまかせで購入</a></li>
+                        <li><a class="btn-buy">購入</a></li>
+                      </ul>
+                    </div>
                   </div>
                 </div>
               </form>
