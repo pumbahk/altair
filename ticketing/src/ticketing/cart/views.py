@@ -41,19 +41,49 @@ from webob.multidict import MultiDict
 from . import api
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from .stocker import NotEnoughStockException
+from .interfaces import IMobileRequest
 import transaction
 from ticketing.cart.selectable_renderer import selectable_renderer
 logger = logging.getLogger(__name__)
 from ticketing.payments.payment import Payment
 
-def back(func):
-    def retval(*args, **kwargs):
-        request = get_current_request()
-        if request.params.has_key('back'):
-            ReleaseCartView(request)()
-            return HTTPFound(request.route_url('cart.index', event_id=request.params.get('event_id')))
-        return func(*args, **kwargs)
-    return retval
+def back_to_product_list_for_mobile(request):
+    cart = api.get_cart_safe(request)
+    cart.release()
+    api.remove_cart(request)
+    return HTTPFound(
+        request.route_url(
+            route_name='cart.products',
+            event_id=cart.performance.event_id,
+            performance_id=cart.performance_id,
+            sales_segment_id=cart.sales_segment_id,
+            seat_type_id=cart.products[0].product.items[0].stock.stock_type_id))
+
+
+def back_to_top(request):
+    event_id = request.params.get('event_id')
+    if event_id is None:
+        cart = api.get_cart(request)
+        if cart is not None:
+            event_id = cart.performance.event_id
+    ReleaseCartView(request)()
+    return HTTPFound(event_id and request.route_url('cart.index', event_id=event_id) or '/')
+
+def back(pc=back_to_top, mobile=None):
+    if mobile is None:
+        mobile = pc
+
+    def factory(func):
+        def retval(*args, **kwargs):
+            request = get_current_request()
+            if request.params.has_key('back'):
+                if IMobileRequest.providedBy(request):
+                    return mobile(request)
+                else:
+                    return pc(request)
+            return func(*args, **kwargs)
+        return retval
+    return factory
 
 def get_seat_type_triplets(event_id, performance_id, sales_segment_id):
     segment_stocks = DBSession.query(c_models.ProductItem.stock_id).filter(
@@ -758,6 +788,7 @@ class PaymentView(object):
             return False
         return True
 
+    @back(back_to_top, back_to_product_list_for_mobile)
     @view_config(route_name='cart.payment', request_method="POST", renderer=selectable_renderer("carts/%(membership)s/payment.html"))
     @view_config(route_name='cart.payment', request_type='.interfaces.IMobileRequest', request_method="POST", renderer=selectable_renderer("carts_mobile/%(membership)s/payment.html"))
     def post(self):
@@ -884,7 +915,7 @@ class CompleteView(object):
         self.context = request.context
         # TODO: Orderを表示？
 
-    @back
+    @back(back_to_top, back_to_product_list_for_mobile)
     @view_config(route_name='payment.finish', renderer=selectable_renderer("carts/%(membership)s/completion.html"), request_method="POST")
     @view_config(route_name='payment.finish', request_type='.interfaces.IMobileRequest', renderer=selectable_renderer("carts_mobile/%(membership)s/completion.html"), request_method="POST")
     def __call__(self):
@@ -1049,6 +1080,7 @@ class MobileIndexView(IndexViewMixin):
             event=self.context.event,
             sales_segment=self.context.normal_sales_segment,
             venues=venues,
+            venue_name=venue_name,
             performances=performances,
             performance_name=performance_name
             )
@@ -1111,6 +1143,7 @@ class MobileSelectProductView(object):
             event=event,
             performance=performance,
             venue=performance.venue,
+            sales_segment=sales_segment
             )
         return data
 
@@ -1178,6 +1211,7 @@ class MobileSelectProductView(object):
             event=event,
             performance=performance,
             venue=performance.venue,
+            sales_segment=sales_segment,
             seat_type=seat_type,
             upper_limit=sales_segment.upper_limit,
             products=[
