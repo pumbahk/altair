@@ -393,10 +393,12 @@ class IndexView(IndexViewMixin):
                         is_hold=seat.stock.stock_holder_id==stock_holder.id,
                         )
                     ) 
-                for seat in DBSession.query(c_models.Seat) \
+                for seat in DBSession.query(c_models.Seat)\
                             .options(joinedload('areas'),
-                                     joinedload('status_')) \
-                            .filter_by(venue_id=venue_id)
+                                     joinedload('status_'))\
+                            .join(c_models.Stock)\
+                            .filter(c_models.Seat.venue_id==venue_id)\
+                            .filter(c_models.Stock.stock_holder_id==stock_holder.id)
                 ),
             areas=dict(
                 (area.id, { 'id': area.id, 'name': area.name }) \
