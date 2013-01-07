@@ -776,9 +776,12 @@ class Orders(BaseView):
         names = []
         for seat, dict_ in dicts:
             names.append(seat.name if seat else dict_["product"]["name"])
+            preview_type = utils.delivery_type_from_built_dict(dict_)
+
             for ticket in tickets:
                 svg = pystache.render(ticket.data['drawing'], dict_)
                 r = data.copy()
+                r["preview_type"] = preview_type
                 r.update(drawing=svg)
                 results.append(r)
         return {"results": results, "names": names}

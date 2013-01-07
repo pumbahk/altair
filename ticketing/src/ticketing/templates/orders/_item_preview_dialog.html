@@ -36,8 +36,8 @@ $(function(){
           var wrap = $("<div>").attr("id", "diagram:"+i);//.attr("style", "height:200px;");
           root.append(wrap);
           svg_preview(wrap,
-                      "${request.route_path("tickets.preview.api", action="preview.base64.withmodels")}", 
-                      {svg: jsondata["drawing"], ticket_format: jsondata["ticket_format_id"]});
+                      "${request.route_path("tickets.preview.api", action="preview.base64")}", 
+                      {svg: jsondata["drawing"], ticket_format: jsondata["ticket_format_id"], type: jsondata["preview_type"]});
         }
       });
     }

@@ -48,7 +48,7 @@ class FetchSVGFromModelsValidator(Form):
             self.data["model"] = self.model.data = Ticket.query.filter_by(id=self.data["model"]).first()
             return True
         else:
-            logger.warn("never call")
+            logger.warn("never call: model_name: %s (id=%s)" % (model_name,  self.data.get("model")))
             return False
 
 class FillValuesFromModelsValidator(Form):
@@ -71,5 +71,5 @@ class FillValuesFromModelsValidator(Form):
             self.data["model"] = self.model.data = ProductItem.query.filter_by(id=self.data["model"]).first()
             return True
         else:
-            logger.warn("never call")
+            logger.warn("never call: model_name: %s (id=%s)" % (model_name,  self.data.get("model")))
 

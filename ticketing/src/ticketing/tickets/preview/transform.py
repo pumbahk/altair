@@ -114,8 +114,7 @@ from ticketing.tickets.convert import convert_svg
 from ticketing.tickets.utils import parse_transform
 
 class SEJTemplateTransformer(object):
-    def __init__(self, svg=None, svgio=None, encoding="Shift_JIS"):
-        self.svg = svg
+    def __init__(self, svgio=None, encoding="Shift_JIS"):
         self.svgio = svgio
         self.encoding = encoding
 
@@ -132,11 +131,7 @@ class SEJTemplateTransformer(object):
             self.height = attrib["height"]
 
     def transform(self): #todo: parse_transform
-        if self.svg:
-            xmltree = etree.fromstring(self.svg) #xxx:
-        elif self.svgio:
-            xmltree = etree.parse(self.svgio)
-
+        xmltree = etree.parse(self.svgio)
         self._detect_size(xmltree.getroot())
 
         cleanup_svg(xmltree)

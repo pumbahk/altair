@@ -171,16 +171,6 @@ class PreviewApiView(object):
         except Exception, e:
             return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
 
-    @view_config(match_param="action=preview.base64", request_param="type=sej")
-    def preview_ticket_post64_sej(self):
-        preview = SEJPreviewCommunication.get_instance(self.request)
-        transformer = SEJTemplateTransformer(svgio=StringIO(self.request.POST["svg"]))
-        ptct = transformer.transform()
-        imgdata = preview.communicate(self.request, ptct)
-        return {"status": True, "data":base64.b64encode(imgdata), 
-                "width": transformer.width, "height": transformer.height} #original size}
-
-
     @view_config(match_param="action=normalize", request_param="svg")
     def preview_api_normalize(self):
         try:
@@ -192,7 +182,7 @@ class PreviewApiView(object):
             return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
 
 
-    @view_config(match_param="action=preview.base64", request_param="svg")
+    @view_config(match_param="action=preview.base64")
     def preview_ticket_post64(self):
         preview = SVGPreviewCommunication.get_instance(self.request)
         svg = self.request.POST["svg"]
@@ -206,7 +196,16 @@ class PreviewApiView(object):
             return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
 
 
-    @view_config(match_param="action=preview.base64.withmodels", request_param="svg")
+    @view_config(match_param="action=preview.base64", request_param="type=sej") #svg
+    def preview_ticket_post64_sej(self):
+        preview = SEJPreviewCommunication.get_instance(self.request)
+        transformer = SEJTemplateTransformer(svgio=StringIO(self.request.POST["svg"]))
+        ptct = transformer.transform()
+        imgdata = preview.communicate(self.request, ptct)
+        return {"status": True, "data":base64.b64encode(imgdata), 
+                "width": transformer.width, "height": transformer.height} #original size
+
+    @view_config(match_param="action=preview.base64.withmodels")
     def preview_ticket_post64_with_models(self):
         preview = SVGPreviewCommunication.get_instance(self.request)
         svg = self.request.POST["svg"]
@@ -219,6 +218,21 @@ class PreviewApiView(object):
                     "width": transformer.width, "height": transformer.height} #original size
         except jsonrpc.ProtocolError, e:
             return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
+
+
+    @view_config(match_param="action=preview.base64.withmodels", request_param="type=sej")
+    def preview_ticket_post64_with_models_sej(self):
+        preview = SEJPreviewCommunication.get_instance(self.request)
+        svg = self.request.POST["svg"]
+        try:
+            svg = FillvaluesTransformer(svg, self.request.POST).transform()
+            transformer = SEJTemplateTransformer(svgio=StringIO(svg))
+            ptct = transformer.transform()
+            imgdata = preview.communicate(self.request, ptct)
+            return {"status": True, "data":base64.b64encode(imgdata), 
+                    "width": transformer.width, "height": transformer.height} #original size}
+        except Exception, e:
+            return {"status": False,  "message": "%s: %s" % (e.__class__.__name__,  str(e))}
 
 
     @view_config(match_param="action=collectvars", request_param="svg")
@@ -308,6 +322,7 @@ class LoadSVGFromModelApiView(object):
 
     @view_config(match_param="model=Ticket", request_param="data")
     def svg_from_ticket(self):
+        # print self.request.GET
         data = json.loads(self.request.GET["data"])
         ticket_id = data["fillvalues_resource"]["model"]
         ticket = c_models.Ticket.query.filter_by(id=ticket_id).first()

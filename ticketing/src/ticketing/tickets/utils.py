@@ -329,12 +329,14 @@ class DictBuilder(object):
             u'paymentMethod': {
                 u'name': payment_method.name,
                 u'fee': payment_method.fee,
-                u'fee_type': payment_method.fee_type
+                u'fee_type': payment_method.fee_type, 
+                u'plugin_id': payment_method.payment_plugin_id
                 },
             u'deliveryMethod': {
                 u'name': delivery_method.name,
                 u'fee': delivery_method.fee,
-                u'fee_type': delivery_method.fee_type
+                u'fee_type': delivery_method.fee_type, 
+                u'plugin_id': delivery_method.delivery_plugin_id
                 },
             u'product': {
                 u'name': product.name,
