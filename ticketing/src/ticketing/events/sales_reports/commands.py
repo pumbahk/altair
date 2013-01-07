@@ -44,7 +44,6 @@ def main(argv=sys.argv):
     report = []
     for report_setting in ReportSetting.get_reservations(frequency_num):
         event_id = report_setting.event_id
-        print 'event_id=%s' % event_id
         event = Event.get(event_id)
         if event is None:
             raise HTTPNotFound('event id %d is not found' % event_id)
@@ -57,10 +56,8 @@ def main(argv=sys.argv):
         event_product = sales_reports._get_performance_sales_summary(sales_reports.form)
 
         for performance in event.performances:
-            print 'performance_id=%s' % performance.id
             report_by_sales_segment = {}
             for sales_segment in event.sales_segments:
-                print 'sales_segment_id=%s' % sales_segment.id
                 sales_report_form = SalesReportForm(performance_id=performance.id, sales_segment_id=sales_segment.id)
                 report_by_sales_segment[sales_segment.name] = sales_reports._get_performance_sales_summary(sales_report_form)
             performances_reports[performance.id] = dict(
@@ -76,11 +73,9 @@ def main(argv=sys.argv):
 
         sender = settings['mail.message.sender']
         operator = Operator.get(report_setting.operator_id)
-        recipient = 'ribontolili@gmail.com' #operator
+        recipient = operator.email
         subject = event.title
-        print 'create html'
         html = render_to_response('ticketing:templates/sales_reports/mail_body.html', render_param, request=sales_reports.request)
-        print 'create html done'
         mailer = Mailer(settings)
         mailer.create_message(
             sender = sender,
@@ -94,9 +89,6 @@ def main(argv=sys.argv):
             mailer.send(sender, recipient.split(','))
         except Exception, e:
             logging.error(e.message)
-
-    print 'success'
-
 
 if __name__ == '__main__':
     main()
