@@ -19,7 +19,7 @@
      %for topcontent in topcontents:
   <tr>
 	<td><input type="radio" name="object_id" value="${topcontent.id}"></td>
-	<td>${topcontent.title}</td>
+	<td><a href="${request.route_path("topcontent_update",action="input", id=topcontent.id)}">${topcontent.title}</a></td>
 	<td><img src="${h.asset.to_show_page(request,topcontent.image_asset)}" width=50px height=50px/></td>
 	<td>${topcontent.kind}</td>
 	<td>${topcontent.subkind}</td>

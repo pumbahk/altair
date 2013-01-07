@@ -448,6 +448,9 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     product_items = relationship('ProductItem', backref='performance')
     venue = relationship('Venue', uselist=False, backref='performance')
 
+    redirect_url_pc = Column(String(1024))
+    redirect_url_mobile = Column(String(1024))
+
     @hybrid_property
     def on_the_day(self):
         today = date.today()
@@ -1257,6 +1260,7 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     event_id = Column(Identifier, ForeignKey("Event.id"))
     quantity_only = Column(Boolean, default=False)
     style = Column(MutationDict.as_mutable(JSONEncodedDict(1024)))
+    description=Column(Unicode(2000), nullable=True, default=None)
     stocks = relationship('Stock', backref=backref('stock_type', order_by='StockType.display_order'))
 
     @property
@@ -1533,6 +1537,8 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     # 一般公開するか
     public = Column(Boolean, nullable=False, default=True)
+
+    description = Column(Unicode(2000), nullable=True, default=None)
 
     @staticmethod
     def find(performance_id=None, event_id=None, sales_segment_id=None, stock_id=None, include_deleted=False):

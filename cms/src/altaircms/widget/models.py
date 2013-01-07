@@ -11,7 +11,7 @@ from altaircms.models import Base, DBSession, BaseOriginalMixin
 from altaircms.models import WithOrganizationMixin
 
 from datetime import datetime
-from zope.interface import implements
+from collections import defaultdict
 from altaircms.page.models import Page
 from altaircms.layout.models import Layout
 
@@ -95,7 +95,10 @@ class WidgetDisposition(WithOrganizationMixin, BaseOriginalMixin, Base): #todo: 
     def shallow_copy_from_page(cls, page, session):
         instance = cls._create_empty_from_page(page, title_fmt=u"%sより") ##
         structure = json.loads(page.structure)
-        new_structure = {k:[{"name": d["name"] for d in vs}] for k, vs in structure.iteritems()}
+        new_structure = defaultdict(list)
+        for k, vs in structure.iteritems():
+            for v in vs:
+                new_structure[k].append({"name": v["name"]})
         instance.structure = json.dumps(new_structure)
         return instance
 

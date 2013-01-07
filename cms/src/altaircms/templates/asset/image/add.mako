@@ -5,7 +5,7 @@
 <h2>image asset</h2>
 
 <div class="row-fluid">
-  <div class="span10">
+  <div class="span12">
     ${nco.breadcrumbs(
 	    names=["Top", "Asset"], 
 	    urls=[request.route_path("dashboard")]

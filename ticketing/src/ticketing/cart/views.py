@@ -41,19 +41,49 @@ from webob.multidict import MultiDict
 from . import api
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from .stocker import NotEnoughStockException
+from .interfaces import IMobileRequest
 import transaction
 from ticketing.cart.selectable_renderer import selectable_renderer
 logger = logging.getLogger(__name__)
 from ticketing.payments.payment import Payment
 
-def back(func):
-    def retval(*args, **kwargs):
-        request = get_current_request()
-        if request.params.has_key('back'):
-            ReleaseCartView(request)()
-            return HTTPFound(request.route_url('cart.index', event_id=request.params.get('event_id')))
-        return func(*args, **kwargs)
-    return retval
+def back_to_product_list_for_mobile(request):
+    cart = api.get_cart_safe(request)
+    cart.release()
+    api.remove_cart(request)
+    return HTTPFound(
+        request.route_url(
+            route_name='cart.products',
+            event_id=cart.performance.event_id,
+            performance_id=cart.performance_id,
+            sales_segment_id=cart.sales_segment_id,
+            seat_type_id=cart.products[0].product.items[0].stock.stock_type_id))
+
+
+def back_to_top(request):
+    event_id = request.params.get('event_id')
+    if event_id is None:
+        cart = api.get_cart(request)
+        if cart is not None:
+            event_id = cart.performance.event_id
+    ReleaseCartView(request)()
+    return HTTPFound(event_id and request.route_url('cart.index', event_id=event_id) or '/')
+
+def back(pc=back_to_top, mobile=None):
+    if mobile is None:
+        mobile = pc
+
+    def factory(func):
+        def retval(*args, **kwargs):
+            request = get_current_request()
+            if request.params.has_key('back'):
+                if IMobileRequest.providedBy(request):
+                    return mobile(request)
+                else:
+                    return pc(request)
+            return func(*args, **kwargs)
+        return retval
+    return factory
 
 def get_seat_type_triplets(event_id, performance_id, sales_segment_id):
     segment_stocks = DBSession.query(c_models.ProductItem.stock_id).filter(
@@ -79,6 +109,7 @@ class IndexViewMixin(object):
         self.request = request
         self.context = request.context
 
+    def prepare(self):
         if self.context.event is None:
             raise NoEventError(self.context.event_id)
 
@@ -94,19 +125,34 @@ class IndexViewMixin(object):
                 logger.debug("No matching sales_segment")
                 raise NoSalesSegment("No matching sales_segment")
 
+    def check_redirect(self, mobile):
+        performance_id = self.request.params.get('pid') or self.request.params.get('performance')
+
+        if performance_id:
+            specified = c_models.Performance.query.filter(c_models.Performance.id==performance_id).filter(c_models.Performance.public==True).first()
+            if mobile:
+                if specified is not None and specified.redirect_url_mobile:
+                    raise HTTPFound(specified.redirect_url_mobile)
+            else:
+                if specified is not None and specified.redirect_url_pc:
+                    raise HTTPFound(specified.redirect_url_pc)
+
 class IndexView(IndexViewMixin):
     """ 座席選択画面 """
     def __init__(self, request):
         super(IndexView, self).__init__(request)
+        self.prepare()
+
 
     @view_config(route_name='cart.index', renderer=selectable_renderer("carts/%(membership)s/index.html"), xhr=False, permission="buy")
     def __call__(self):
+        self.check_redirect(mobile=False)
         jquery_tools.need()
         # ただ単にパフォーマンスのリストが欲しいだけなので
         # normal_sales_segment で良い
         performances = api.performance_names(self.request, self.context.event, self.context.normal_sales_segment)
         if not performances:
-            raise NoPerformanceError(event_id=context.event.id, sales_segment_id=context.normal_sales_segment.id) # NoPerformanceを作る
+            raise NoPerformanceError(event_id=self.context.event.id, sales_segment_id=self.context.normal_sales_segment.id) # NoPerformanceを作る
 
         from collections import OrderedDict
         select_venues = OrderedDict()
@@ -147,9 +193,11 @@ class IndexView(IndexViewMixin):
             c_models.Performance.id==performance_id
         ).filter(
             c_models.Performance.event_id==self.context.event_id
+        ).filter(
+            c_models.Performance.public == True
         ).first()
-        if selected_performance is None and 'performance' in self.request.params:
-            return HTTPFound(location=self.request.path_url)
+        if selected_performance is None and performance_id is not None:
+            raise NoPerformanceError(event_id=self.context.event.id)
 
         return dict(
             event=dict(
@@ -190,8 +238,12 @@ class IndexView(IndexViewMixin):
 
         seat_type_triplets = get_seat_type_triplets(event_id, performance_id, sales_segment_id)
         performance = c_models.Performance.query.filter_by(id=performance_id).one()
-        data = dict(seat_types=[
-                dict(id=s.id, name=s.name,
+        data = dict(
+            seat_types=[
+                dict(
+                    id=s.id,
+                    name=s.name,
+                    description=s.description,
                     style=s.style,
                     products_url=self.request.route_url('cart.products',
                         event_id=event_id, performance_id=performance_id, sales_segment_id=sales_segment_id, seat_type_id=s.id),
@@ -201,33 +253,33 @@ class IndexView(IndexViewMixin):
                     )
                 for s, total, available in seat_type_triplets
                 ],
-                event_name=performance.event.title,
-                performance_name=performance.name,
-                performance_start=h.performance_date(performance),
-                performance_id=performance_id,
-                order_url=self.request.route_url("cart.order", 
-                        sales_segment_id=sales_segment_id),
-                venue_name=performance.venue.name,
-                event_id=event_id,
-                venue_id=performance.venue.id,
-                data_source=dict(
-                    venue_drawing=self.request.route_url(
-                        'cart.venue_drawing',
-                        event_id=event_id,
-                        performance_id=performance_id,
-                        venue_id=performance.venue.id,
-                        part='__part__'),
-                    seats=self.request.route_url(
-                        'cart.seats',
-                        event_id=event_id,
-                        performance_id=performance_id,
-                        venue_id=performance.venue.id),
-                    seat_adjacencies=self.request.application_url \
-                        + api.get_route_pattern(
-                          self.request.registry,
-                          'cart.seat_adjacencies')
-                    )
+            event_name=performance.event.title,
+            performance_name=performance.name,
+            performance_start=h.performance_date(performance),
+            performance_id=performance_id,
+            order_url=self.request.route_url("cart.order", 
+                    sales_segment_id=sales_segment_id),
+            venue_name=performance.venue.name,
+            event_id=event_id,
+            venue_id=performance.venue.id,
+            data_source=dict(
+                venue_drawing=self.request.route_url(
+                    'cart.venue_drawing',
+                    event_id=event_id,
+                    performance_id=performance_id,
+                    venue_id=performance.venue.id,
+                    part='__part__'),
+                seats=self.request.route_url(
+                    'cart.seats',
+                    event_id=event_id,
+                    performance_id=performance_id,
+                    venue_id=performance.venue.id),
+                seat_adjacencies=self.request.application_url \
+                    + api.get_route_pattern(
+                      self.request.registry,
+                      'cart.seat_adjacencies')
                 )
+            )
         return data
 
     @view_config(route_name="cart.date.products", renderer="json")
@@ -262,9 +314,15 @@ class IndexView(IndexViewMixin):
         salessegment = self.context.get_sales_segument()
         query = h.products_filter_by_salessegment(query, salessegment)
 
-
-        products = [dict(name=p.name, price=h.format_number(p.price, ","), id=p.id)
-                    for p in query]
+        products = [
+            dict(
+                id=p.id,
+                name=p.name,
+                description=p.description,
+                price=h.format_number(p.price, ",")
+                )
+            for p in query
+            ]
         return dict(selected_date=selected_date_string, 
                     products=products)
 
@@ -294,12 +352,17 @@ class IndexView(IndexViewMixin):
         salessegment = DBSession.query(c_models.SalesSegment).filter_by(id=sales_segment_id).one()
         query = h.products_filter_by_salessegment(query, salessegment)
 
-        products = [dict(id=p.id, 
-                         name=p.name, 
-                         price=h.format_number(p.price, ","), 
-                         unit_template=h.build_unit_template(p, performance_id),
-                         quantity_power=p.get_quantity_power(seat_type, performance_id))
-            for p in query]
+        products = [
+            dict(
+                id=p.id, 
+                name=p.name, 
+                description=p.description,
+                price=h.format_number(p.price, ","), 
+                unit_template=h.build_unit_template(p, performance_id),
+                quantity_power=p.get_quantity_power(seat_type, performance_id)
+                )
+            for p in query
+            ]
 
         return dict(products=products,
                     seat_type=dict(id=seat_type.id, name=seat_type.name),
@@ -725,6 +788,7 @@ class PaymentView(object):
             return False
         return True
 
+    @back(back_to_top, back_to_product_list_for_mobile)
     @view_config(route_name='cart.payment', request_method="POST", renderer=selectable_renderer("carts/%(membership)s/payment.html"))
     @view_config(route_name='cart.payment', request_type='.interfaces.IMobileRequest', request_method="POST", renderer=selectable_renderer("carts_mobile/%(membership)s/payment.html"))
     def post(self):
@@ -851,7 +915,7 @@ class CompleteView(object):
         self.context = request.context
         # TODO: Orderを表示？
 
-    @back
+    @back(back_to_top, back_to_product_list_for_mobile)
     @view_config(route_name='payment.finish', renderer=selectable_renderer("carts/%(membership)s/completion.html"), request_method="POST")
     @view_config(route_name='payment.finish', request_type='.interfaces.IMobileRequest', renderer=selectable_renderer("carts_mobile/%(membership)s/completion.html"), request_method="POST")
     def __call__(self):
@@ -975,9 +1039,11 @@ class MobileIndexView(IndexViewMixin):
     """
     def __init__(self, request):
         super(MobileIndexView, self).__init__(request)
+        self.prepare()
 
     @view_config(route_name='cart.index', renderer=selectable_renderer('carts_mobile/%(membership)s/index.html'), xhr=False, permission="buy", request_type=".interfaces.IMobileRequest")
     def __call__(self):
+        self.check_redirect(mobile=True)
         venue_name = self.request.params.get('v')
 
         # パフォーマンスIDが確定しているなら商品選択へリダイレクト
@@ -1014,6 +1080,7 @@ class MobileIndexView(IndexViewMixin):
             event=self.context.event,
             sales_segment=self.context.normal_sales_segment,
             venues=venues,
+            venue_name=venue_name,
             performances=performances,
             performance_name=performance_name
             )
@@ -1060,20 +1127,24 @@ class MobileSelectProductView(object):
 
         data = dict(
             seat_types=[
-                dict(id=s.id, name=s.name,
-                     style=s.style,
-                     products_url=self.request.route_url('cart.products',
-                                                         event_id=event_id, performance_id=performance_id, sales_segment_id=sales_segment.id, seat_type_id=s.id),
-                     availability=available > 0,
-                     availability_text=h.get_availability_text(available),
-                     quantity_only=s.quantity_only,
-                     )
-            for s, total, available in seat_type_triplets
-            ],
+                dict(
+                    id=s.id,
+                    name=s.name,
+                    description=s.description,
+                    style=s.style,
+                    products_url=self.request.route_url('cart.products',
+                                                        event_id=event_id, performance_id=performance_id, sales_segment_id=sales_segment.id, seat_type_id=s.id),
+                    availability=available > 0,
+                    availability_text=h.get_availability_text(available),
+                    quantity_only=s.quantity_only,
+                    )
+                for s, total, available in seat_type_triplets
+                ],
             event=event,
             performance=performance,
             venue=performance.venue,
-        )
+            sales_segment=sales_segment
+            )
         return data
 
     @view_config(route_name='cart.products', renderer=selectable_renderer('carts_mobile/%(membership)s/products.html'), xhr=False, request_type=".interfaces.IMobileRequest")
@@ -1136,16 +1207,18 @@ class MobileSelectProductView(object):
         # CSRFトークン発行
         form = schemas.CSRFSecureForm(csrf_context=self.request.session)
 
-        data = dict(
+        return dict(
             event=event,
             performance=performance,
             venue=performance.venue,
+            sales_segment=sales_segment,
             seat_type=seat_type,
             upper_limit=sales_segment.upper_limit,
             products=[
                 dict(
                     id=product.id,
                     name=product.name,
+                    description=product.description,
                     detail=h.product_name_with_unit(product, performance_id),
                     price=h.format_number(product.price, ","),
                 )
@@ -1153,7 +1226,6 @@ class MobileSelectProductView(object):
             ],
             form=form,
         )
-        return data
 
 class OutTermSalesView(object):
     def __init__(self, context, request):

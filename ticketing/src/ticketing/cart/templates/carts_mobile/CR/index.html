@@ -10,8 +10,8 @@ ${event.title}
   <p><font color="#580d9a">■</font>対象試合をお選びください</p>
   <form action="${request.url}" method="get">
     <select name="performance_name">
-  % for performance in performances:
-    <option value="${performance}">${performance}</option>
+  % for _performance_name in performances:
+    <option value="${_performance_name}">${_performance_name}</option>
   % endfor
     </select>
     <div style="text-align:center;">
@@ -24,13 +24,18 @@ ${event.title}
   <p><font color="#580d9a">■</font>日時・会場をお選びください</p>
   <form action="${request.url}" method="get">
     <select name="pid">
-  % for pid, venue_name in venues:
-    <option value="${pid}">${venue_name}</option>
+  % for pid, _venue_name in venues:
+    <option value="${pid}" ${_venue_name == venue_name and u'selected="selected"' or u''}>${_venue_name}</option>
   % endfor
     </select>
     <div style="text-align:center;">
     <br/>
     <input type="submit" value="次へ">
+    </div>
+  </form>
+  <form action="${request.route_url('cart.index', event_id=event.id)}" method="get">
+    <div style="text-align:center;">
+      <input type="submit" value="戻る">
     </div>
   </form>
   <hr size="1" color="#9b63c0" noshade="noshade" />

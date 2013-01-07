@@ -47,7 +47,7 @@ class ReserveViewTests(unittest.TestCase):
     def _add_seats(self):
         import ticketing.core.models as c_m
         # organization
-        org = c_m.Organization()
+        org = c_m.Organization(code="TEST", short_name="testing")
         # event
         event = c_m.Event(organization=org)
         # performance

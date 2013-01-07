@@ -54,6 +54,14 @@
           <th>会場</th>
           <td>${performance.venue.name}</td>
         </tr>
+        <tr>
+          <th>リダイレクト先URL (PC)</th>
+          <td colspan="3">${performance.redirect_url_pc or u'未設定'}</td>
+        </tr>
+        <tr>
+          <th>リダイレクト先URL (モバイル)</th>
+          <td colspan="3">${performance.redirect_url_mobile or u'未設定'}</td>
+        </tr>
       </tbody>
     </table>
   </div>

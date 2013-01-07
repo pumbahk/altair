@@ -3,9 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
     <link rel="stylesheet" type="text/css" href="${request.static_url("altaircms:static/vissel/css/style.css")}" media="all" />
-    <title>${page.title}</title>
-  <meta name="description" content="${page.description}">
-  <meta name="keywords" content="${page.keywords}">
+    <title>ヴィッセル神戸</title>
     <!--[if lte IE 6]>  
     <script type="text/javascript" src="/static/vissel/js/DD_belatedPNG.js">  
     </script>  
@@ -15,7 +13,7 @@
 <body>
     <div class="header">
         <div class="header-inner">
-            <img src="images/logo.gif" alt="VISSEL TICKET" />
+            <img src="${request.static_url("altaircms:static/vissel/images/logo.gif")}" alt="VISSEL TICKET" />
             <div class="gnavi">
                 <a href="" class="historybtn">購入履歴の確認</a><br />
                 <ul>
@@ -40,7 +38,7 @@
 
 <div class="footer">
     <div class="footer-inner">
-        <img src="images/tomoni.gif" alt="" />
+        <img src="${request.static_url("altaircms:static/vissel/images/tomoni.gif")}" alt="" />
             <div class="footernav">
           <%block name="footer_navigation">
          </%block>

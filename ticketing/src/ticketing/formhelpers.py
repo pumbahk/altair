@@ -132,29 +132,41 @@ class OurForm(Form):
         self.new_form = kwargs.pop('new_form', False)
         super(OurForm, self).__init__(*args, **kwargs)
 
-def __our_field_init__(self, _form=None, hide_on_new=False, *args, **kwargs):
-    super(type(self), self).__init__(*args, **kwargs)
-    self.form = _form
-    self.hide_on_new=hide_on_new
+def _gen_field_init(klass):
+    def __init__(self, _form=None, hide_on_new=False, *args, **kwargs):
+        super(klass, self).__init__(*args, **kwargs)
+        self.form = _form
+        self.hide_on_new=hide_on_new
+    klass.__init__ = __init__
 
 class OurTextField(fields.TextField):
-    __init__ = __our_field_init__
+    pass
+
+_gen_field_init(OurTextField)
 
 class OurSelectField(BugFreeSelectField):
-    __init__ = __our_field_init__
+    pass
+
+_gen_field_init(OurSelectField)
+
+class OurDecimalField(fields.DecimalField):
+    pass
+
+_gen_field_init(OurDecimalField)
 
 class OurIntegerField(fields.IntegerField):
-    __init__ = __our_field_init__
+    pass
+
+_gen_field_init(OurIntegerField)
 
 class OurBooleanField(fields.BooleanField):
-    __init__ = __our_field_init__
+    pass
+_gen_field_init(OurBooleanField)
 
 class OurDateTimeField(fields.DateTimeField):
     '''
     Customized field definition datetime format of "%Y-%m-%d %H:%M"
     '''
-
-    __init__ = __our_field_init__
 
     def _value(self):
         if self.raw_data:
@@ -176,4 +188,12 @@ class OurDateTimeField(fields.DateTimeField):
                     self.data = None
                     raise validators.ValidationError(u'日付の形式を確認してください')
 
+_gen_field_init(OurDateTimeField)
+
 DateTimeField = OurDateTimeField # for compatibility
+
+class NullableTextField(OurTextField):
+    def process_formdata(self, valuelist):
+        super(NullableTextField, self).process_formdata(valuelist)
+        if self.data == '':
+            self.data = None

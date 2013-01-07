@@ -43,7 +43,7 @@ def get_link_tag_from_category(request, category):
 
 def _as_banner_link(request, category):
     href = get_link_from_category(request, category)
-    return Markup(u'<a href="%s" %s><img src="%s" alt="%s"/>%s</a>' % (href, category.attributes, category.imgsrc, category.label))
+    return Markup(u'<a href="%s" %s><img src="%s" alt="%s"/></a>' % (href, category.attributes, category.imgsrc, category.label))
 
 def _as_link(request, category):
     href = get_link_from_category(request, category)

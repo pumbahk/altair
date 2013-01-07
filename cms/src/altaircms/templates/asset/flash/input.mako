@@ -5,12 +5,11 @@
 <h2>flash asset</h2>
 
 <div class="row">
-    <div class="span10">
+    <div class="span12">
         <ul class="breadcrumb">
             <li><a href="${request.route_path("asset_list")}">asset</a> <span class="divider">/</span></li>
             <li><a href="${request.route_path("asset_flash_list")}">flash</a> <span class="divider">/</span></li>
             <li><a href="${request.route_path("asset_flash_detail", asset_id=asset.id)}">${asset.filepath}</a></li>
-            <li>${asset.filepath}</li>
         </ul>
     </div>
 </div>

@@ -5,13 +5,13 @@ from decimal import Decimal
 from wtforms import Form
 from wtforms import TextField, SelectField, IntegerField, DecimalField, SelectMultipleField, HiddenField
 from wtforms.validators import Length, NumberRange, EqualTo, Optional, ValidationError
-from wtforms.widgets import CheckboxInput
+from wtforms.widgets import CheckboxInput, TextArea
 from sqlalchemy.sql import func
 
-from ticketing.formhelpers import Translations, Required, BugFreeSelectField
+from ticketing.formhelpers import Translations, Required, BugFreeSelectField, OurTextField, OurSelectField, OurIntegerField, OurDecimalField, OurForm, NullableTextField
 from ticketing.core.models import SalesSegment, Product, ProductItem, StockHolder, StockType, Stock, Performance, TicketBundle
 
-class ProductForm(Form):
+class ProductForm(OurForm):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
@@ -36,38 +36,46 @@ class ProductForm(Form):
     event_id = HiddenField(
         validators=[Required()]
     )
-    name = TextField(
+    name = OurTextField(
         label=u'商品名',
         validators=[
             Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
         ]
     )
-    price = DecimalField(
+    price = OurDecimalField(
         label=u'価格',
         places=2,
         validators=[Required()]
     )
-    display_order = IntegerField(
+    display_order = OurIntegerField(
         label=u'表示順',
+        default=1,
+        hide_on_new=True,
     )
-    seat_stock_type_id = SelectField(
+    seat_stock_type_id = OurSelectField(
         label=u'席種',
         validators=[Required(u'選択してください')],
         choices=[],
         coerce=int
     )
-    sales_segment_id = SelectField(
+    sales_segment_id = OurSelectField(
         label=u'販売区分',
         validators=[Required(u'選択してください')],
         choices=[],
         coerce=int
     )
-    public = IntegerField(
+    public = OurIntegerField(
         label=u'一般公開',
         default=1,
+        hide_on_new=True,
         widget=CheckboxInput(),
     )
+    description = NullableTextField(
+        label=u'説明',
+        hide_on_new=True,
+        widget=TextArea()
+        )
 
     def validate_price(form, field):
         if field.data and form.id.data:

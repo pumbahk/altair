@@ -3,11 +3,12 @@
 import pickle
 import logging
 import wsgiref.util
-import webob
+from pyramid.threadlocal import get_current_request
 from webob.exc import HTTPFound
 from zope.interface import implementer
 from repoze.who.api import get_api as get_who_api
 from repoze.who.interfaces import IIdentifier, IChallenger, IAuthenticator
+from .api import login_url
 
 import ticketing.users.models as u_m
 
@@ -30,14 +31,18 @@ class FCAuthPlugin(object):
         rememberer = self._get_rememberer(req.environ)
         return rememberer.identify(req.environ)
 
+    @property
+    def request(self):
+        return get_current_request()
+
     # IIdentifier
     def identify(self, environ):
-        req = webob.Request(environ)
+        req = self.request
         identity = self.get_identity(req)
         logging.debug(identity)
 
         if identity is None:
-            logger.debug("fc_auth identity failed")
+            #logger.debug("fc_auth identity failed")
             return None
 
         if 'repoze.who.plugins.auth_tkt.userid' in identity:
@@ -116,17 +121,25 @@ class FCAuthPlugin(object):
         return pickle.dumps(data).encode('base64')
 
         
+    def is_auth_required(self, environ):
+        #return environ.get('ticketing.cart.fc_auth.required')
+        request = get_current_request()
+        if hasattr(request, 'context') and hasattr(request.context, 'memberships'):
+            return bool(request.context.memberships)
+
     # IChallenger
     def challenge(self, environ, status, app_headers, forget_headers):
         logger.debug('challenge')
-        if not environ.get('ticketing.cart.fc_auth.required'):
+        if not self.is_auth_required(environ):
             logger.debug('fc auth is not required')
             return
         logger.debug('fc auth is required')
         session = environ['session.rakuten_openid']
         session['return_url'] = wsgiref.util.request_uri(environ)
         session.save()
-        return HTTPFound(location=environ['ticketing.cart.fc_auth.login_url'])
+        #return HTTPFound(location=environ['ticketing.cart.fc_auth.login_url'])
+        request = get_current_request()
+        return HTTPFound(location=login_url(request))
 
     # IMetadataProvider
     def add_metadata(self, environ, identity):

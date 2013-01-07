@@ -314,7 +314,7 @@ def _query_performance_names(request, event, sales_segment):
     q = q.filter(ProductItem.product_id==Product.id)
     q = q.filter(Stock.id==ProductItem.stock_id)
     q = q.filter(Stock.performance_id==Performance.id)
-    q = q.filter(Performance.end_on>=now)
+    q = q.filter(sa.or_(Performance.end_on>=now, Performance.end_on==None))
     q = q.filter(Performance.public==True)
 
     return q

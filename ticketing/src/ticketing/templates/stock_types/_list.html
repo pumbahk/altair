@@ -25,9 +25,10 @@
         <tr>
           <th style="width:30px"></th>
           <th style="width:20px"></th>
-          <th>名称</th>
+          <th style="width: 60px">名称</th>
           <th>席数</th>
           <th style="width:40px">表示順</th>
+          <th>説明</th>
         </tr>
       </thead>
       <tbody>
@@ -44,7 +45,7 @@
           <td>
             ${h.seat_style(stock_type.style)}
           </td>
-          <td>
+          <td style="white-space: nowrap">
             <a href="javascript:edit_stock_type(${stock_type.id});"
                id="stock_type-${stock_type.id}"
                name="${stock_type.name}"
@@ -52,15 +53,19 @@
                quantity_only="${1 if stock_type.quantity_only else 0}"
                quantity="${quantity}"
                display_order="${stock_type.display_order}"
+               description="${stock_type.description or ''}"
                data="${h.json(stock_type.style)}">
               ${stock_type.name}
             </a>
           </td>
-          <td style="width: 60px">
+          <td>
             ${quantity}
           </td>
           <td>
             ${stock_type.display_order}
+          </td>
+          <td>
+            ${stock_type.description}
           </td>
         </tr>
       % endfor
@@ -84,8 +89,9 @@
         <tr>
           <th style="width:30px"></th>
           <th>名称</th>
-          <th>在庫数</th>
+          <th style="width: 60px">在庫数</th>
           <th style="width:40px">表示順</th>
+          <th>説明</th>
         </tr>
       </thead>
       <tbody>
@@ -99,7 +105,7 @@
           <td>
             <input type="radio" name="stock_type_id" value=${stock_type.id} />
           </td>
-          <td>
+          <td style="white-space: nowrap">
             <a href="javascript:edit_stock_type(${stock_type.id});"
                id="stock_type-${stock_type.id}"
                name="${stock_type.name}"
@@ -107,15 +113,19 @@
                quantity_only="${1 if stock_type.quantity_only else 0}"
                quantity="${quantity}"
                display_order="${stock_type.display_order}"
+               description="${stock_type.description or ''}"
                data='${h.json(stock_type.style)}'>
               ${stock_type.name}
             </a>
           </td>
-          <td style="width: 60px">
+          <td>
             ${quantity}
           </td>
           <td>
             ${stock_type.display_order}
+          </td>
+          <td>
+            ${stock_type.description}
           </td>
         </tr>
       % endfor

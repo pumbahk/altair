@@ -1,3 +1,8 @@
+# -*- coding:utf-8 -*-
+"""
+TODO: cart下にあるのはおかしいので、どこかに移動
+"""
+
 import logging
 
 logger = logging.getLogger(__name__)

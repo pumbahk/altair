@@ -136,8 +136,10 @@ class AssetUpdateView(object):
         form = self.context.forms.ImageAssetUpdateForm(self.request.POST)
         asset_id = self.request.matchdict["asset_id"]
         asset = self.request.context.get_image_asset(asset_id)
-
-        if not form.validate():
+        if hasattr(form.data["filepath"], "filename") and os.path.splitext(form.data["filepath"].filename)[1] != os.path.splitext(asset.filepath)[1]:
+            FlashMessage.error(u"ファイルの拡張子が異なっています。変更できません。", request=self.request)    
+            return HTTPFound(self.request.route_path("asset_image_input", asset_id=asset.id))
+        elif not form.validate():
             FlashMessage.error(str(form.errors), request=self.request)    
             return HTTPFound(self.request.route_path("asset_image_input", asset_id=asset.id))
         else:
@@ -153,7 +155,10 @@ class AssetUpdateView(object):
         asset_id = self.request.matchdict["asset_id"]
         asset = self.request.context.get_movie_asset(asset_id)
 
-        if not form.validate():
+        if hasattr(form.data["filepath"], "filename") and os.path.splitext(form.data["filepath"].filename)[1] != os.path.splitext(asset.filepath)[1]:
+            FlashMessage.error(str(u"ファイルの拡張子が異なっています。変更できません。"), request=self.request)    
+            return HTTPFound(self.request.route_path("asset_movie_input", asset_id=asset.id))
+        elif not form.validate():
             FlashMessage.error(str(form.errors), request=self.request)    
             return HTTPFound(self.request.route_path("asset_movie_input", asset_id=asset.id))
         else:
@@ -170,11 +175,13 @@ class AssetUpdateView(object):
         asset_id = self.request.matchdict["asset_id"]
         asset = self.request.context.get_flash_asset(asset_id)
 
-        if not form.validate():
+        if hasattr(form.data["filepath"], "filename") and os.path.splitext(form.data["filepath"].filename)[1] != os.path.splitext(asset.filepath)[1]:
+            FlashMessage.error(str(u"ファイルの拡張子が異なっています。変更できません。"), request=self.request)    
+            return HTTPFound(self.request.route_path("asset_flash_input", asset_id=asset.id))
+        elif not form.validate():
             FlashMessage.error(str(form.errors), request=self.request)    
             return HTTPFound(self.request.route_path("asset_flash_input", asset_id=asset.id))
         else:
-
             updated_asset = self.context.update_flash_asset(asset, form)
             self.context.add(updated_asset)
 
