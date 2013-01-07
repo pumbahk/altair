@@ -356,7 +356,6 @@ class SalesReports(BaseView):
             for sales_segment in event.sales_segments:
                 form = SalesReportForm(performance_id=performance.id, sales_segment_id=sales_segment.id)
                 report_by_sales_segment[sales_segment.name] = self._get_performance_sales_summary(form)
-
             performances_reports[performance.id] = dict(
                 performance=performance,
                 report_by_sales_segment=report_by_sales_segment
@@ -376,6 +375,8 @@ class SalesReports(BaseView):
         if event is None:
             raise HTTPNotFound('event id %d is not found' % event_id)
         form = SalesReportForm(self.request.params)
+        event_product = self._get_performance_sales_summary(form)
+
         if form.validate():
             performances_reports = {}
             for performance in event.performances:
@@ -388,6 +389,7 @@ class SalesReports(BaseView):
                   report_by_sales_segment=report_by_sales_segment
                 )
             render_param = {
+                'event_product':event_product,
                 'form':form,
                 'performances_reports':performances_reports
             }
