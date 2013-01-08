@@ -190,8 +190,8 @@ ${h.breadcrumbs(
               <th>購読メールマガジン</th>
               <td>
                 <ul>
-                % for name in list(set(mail_magazines)):
-                  <li>${name}</li>
+                % for mail_magazine in list(set(mail_magazines)):
+                  <li><a href="${request.route_path('mailmags.show', id=mail_magazine.id)}">${mail_magazine.name}</a></li>
                 % endfor
                 </ul>
               </td>

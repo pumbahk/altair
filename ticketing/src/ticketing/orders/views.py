@@ -18,6 +18,7 @@ from wtforms import ValidationError
 from wtforms.validators import Optional
 from sqlalchemy import and_
 from sqlalchemy.sql import exists
+from sqlalchemy.sql.expression import or_
 from sqlalchemy.orm import joinedload
 
 from ticketing.models import merge_session_with_post, record_to_multidict
@@ -27,7 +28,7 @@ from ticketing.core.models import (Order, Performance, PaymentDeliveryMethodPair
                                    DeliveryMethod, TicketFormat_DeliveryMethod, 
                                    Stock, StockStatus, Seat, SeatStatus, SeatStatusEnum)
 
-from ticketing.users.models import MailSubscription
+from ticketing.users.models import MailSubscription, MailMagazine, MailSubscriptionStatus
 from ticketing.orders.export import OrderCSV
 from ticketing.orders.forms import (OrderForm, OrderSearchForm, SejOrderForm, SejTicketForm,
                                     SejRefundEventForm,SejRefundOrderForm, SendingMailForm,
@@ -274,8 +275,12 @@ class Orders(BaseView):
                                  .order_by(Order.branch_no.desc()).all()
 
         if order.shipping_address:
-            mail_subscriptions = MailSubscription.query.filter_by(email=order.shipping_address.email).all()
-            mail_magazines = [ms.segment.name for ms in mail_subscriptions if ms.segment.organization_id == order.organization_id]
+            mail_magazines = MailMagazine.query \
+                .filter(MailMagazine.organization_id == order.organization_id) \
+                .filter(MailSubscription.email == order.shipping_address.email) \
+                .filter(or_(MailSubscription.status is None,
+                            MailSubscription.status == MailSubscriptionStatus.Subscribed.v)) \
+                .distinct().all()
             form_shipping_address = ClientOptionalForm(record_to_multidict(order.shipping_address))
             form_shipping_address.tel.data = order.shipping_address.tel_1
             form_shipping_address.mail_address.data = order.shipping_address.email

@@ -1,0 +1,11 @@
+<%page args="route_path, route_name" />
+<%namespace file="/common/helpers.html" name="h" />
+<form class="form-horizontal" action="${route_path}" method="post">
+  <fieldset>
+    ${h.form_item(mailmag_form.name)}
+    ${h.form_item(mailmag_form.description)}
+  </fieldset>
+  <div class="form-actions">
+    <input class="btn btn-primary" type="submit" value="${route_name}" />
+  </div>
+</form>
