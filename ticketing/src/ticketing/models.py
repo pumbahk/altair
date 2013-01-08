@@ -157,7 +157,7 @@ class Cloner(object):
 
         manager = manager_of_class(cls)
         if manager is None:
-            raise TypeError("No mapper is defined for %s" % type(obj))
+            raise TypeError("No mapper is defined for %s" % cls)
 
         columns = {}
         relationships = {}
