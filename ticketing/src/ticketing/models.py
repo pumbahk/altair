@@ -2,27 +2,19 @@
 
 from datetime import datetime, date
 from decimal import Decimal
-from math import floor
-import isodate
-import transaction
 import json
 
 from sqlalchemy import Table, Column, ForeignKey, ForeignKeyConstraint, Index, func
 from sqlalchemy.types import TypeEngine, TypeDecorator, VARCHAR, BigInteger, Integer, String, TIMESTAMP
 from sqlalchemy.orm import column_property, scoped_session, deferred, relationship as _relationship
 from sqlalchemy.orm.attributes import manager_of_class
-from sqlalchemy.orm.collections import InstrumentedList
 from sqlalchemy.orm.properties import ColumnProperty, RelationshipProperty
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.mutable import Mutable
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.sql.expression import text
 from sqlalchemy.sql import functions as sqlf, and_
-from zope.sqlalchemy import ZopeTransactionExtension
 import sqlahelper
 from paste.util.multidict import MultiDict
-
-from ticketing.utils import StandardEnum
 
 Base = sqlahelper.get_base()
 DBSession = sqlahelper.get_session()

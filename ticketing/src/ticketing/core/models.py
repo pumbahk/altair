@@ -2,22 +2,24 @@
 import logging
 import itertools
 import operator
-import operator as op
 import json
 import re
-from urlparse import urljoin
+from math import floor
+import isodate
 from datetime import datetime, date, timedelta
 import smtplib
+
 from email.MIMEText import MIMEText
 from email.Header import Header
 from email.Utils import formatdate
 
+from sqlalchemy.sql import functions as sqlf
 from sqlalchemy import Table, Column, ForeignKey, func, or_, and_, event
 from sqlalchemy import ForeignKeyConstraint, UniqueConstraint, PrimaryKeyConstraint
 from sqlalchemy.util import warn_deprecated
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode, UnicodeText
-from sqlalchemy.orm import join, backref, column_property, joinedload, deferred
+from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode, UnicodeText, TIMESTAMP
+from sqlalchemy.orm import join, backref, column_property, joinedload, deferred, relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import exists
@@ -25,10 +27,15 @@ from sqlalchemy.sql.expression import asc, desc, exists, select, table, column
 from sqlalchemy.ext.associationproxy import association_proxy
 from pyramid.threadlocal import get_current_registry
 
-from .exceptions import *
-from ticketing.models import *
+from .exceptions import InvalidStockStateError
+from ticketing.models import (
+    Base, DBSession, 
+    MutationDict, JSONEncodedDict, 
+    LogicallyDeleted, Identifier, DomainConstraintError, 
+    WithTimestamp, BaseModel
+)
+from ticketing.utils import StandardEnum
 from ticketing.users.models import User, UserCredential
-from ticketing.utils import sensible_alnum_decode
 from ticketing.sej.models import SejOrder
 from ticketing.sej.exceptions import SejServerError
 from ticketing.sej.payment import request_cancel_order
@@ -459,7 +466,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return (today <= self.start_on) and (self.start_on < tomorrow)
 
     @on_the_day.expression
-    def on_the_day(self):
+    def on_the_day_expr(self):
         from sqlalchemy import sql
         today = date.today()
         today = datetime(today.year, today.month, today.day)
@@ -1025,7 +1032,6 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def get_products(self, performances):
         """ この販売区分で購入可能な商品一覧 """
-        import itertools
         return [product for product in self.product if product.performances in performances]
 
 class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -1389,7 +1395,7 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def count_vacant_quantity(self):
         if self.stock_type and self.stock_type.quantity_only:
-            from ticketing.cart.models import Cart, CartedProduct, CartedProductItem
+            from ticketing.cart.models import CartedProduct, CartedProductItem
             # 販売済みの座席数
             reserved_quantity = Stock.filter(Stock.id==self.id).join(Stock.product_items)\
                 .join(ProductItem.ordered_product_items)\
