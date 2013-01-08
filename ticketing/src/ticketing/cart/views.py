@@ -396,8 +396,10 @@ class IndexView(IndexViewMixin):
                 for seat in DBSession.query(c_models.Seat)\
                             .options(joinedload('areas'),
                                      joinedload('status_'))\
+                            .join(c_models.SeatStatus)\
                             .join(c_models.Stock)\
                             .filter(c_models.Seat.venue_id==venue_id)\
+                            .filter(c_models.SeatStatus.status==int(c_models.SeatStatusEnum.Vacant))\
                             .filter(c_models.Stock.stock_holder_id==stock_holder.id)
                 ),
             areas=dict(
