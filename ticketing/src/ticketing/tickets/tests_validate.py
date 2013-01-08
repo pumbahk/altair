@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 
 import unittest
-from wtforms.validators import ValidationError
+from ticketing.tickets.cleaner.api import TicketCleanerValidationError
 from StringIO import StringIO
 
 def get_dummy_io(string):
@@ -9,23 +9,13 @@ def get_dummy_io(string):
 
 class TemplateValidateTests(unittest.TestCase):
     def _callFUT(self, *args, **kwargs):
-        from ticketing.tickets.forms import get_validated_xmltree_as_opcode_source
-        return get_validated_xmltree_as_opcode_source(*args, **kwargs)
+        from ticketing.tickets.forms import get_validated_svg_cleaner
+        return get_validated_svg_cleaner(*args, **kwargs)
 
     def test_simple_xml(self):
         target = get_dummy_io(u"""<a>h</a>""")
         self._callFUT(target)
 
-    def test_not_xml(self):
-        target = get_dummy_io(u"""h""")
-        
-        with self.assertRaises(ValidationError):
-            self._callFUT(target)
-
-        try:
-            self._callFUT(target)
-        except Exception as e:
-            self.assertTrue( str(e).startswith("xml:"))
 
     template = u"""\
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -95,7 +85,7 @@ class TemplateValidateTests(unittest.TestCase):
     <flowDiv><flowPara>{{発券番号}}</flowPara></flowDiv>
   </flowRoot>
 """)
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(TicketCleanerValidationError):
             self._callFUT(target)
 
         try:

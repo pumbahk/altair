@@ -1,0 +1,20 @@
+<%inherit file="../layout.html" />
+<h1 class="page">
+  券面テンプレートのpreview
+</h1>
+<p style="line-height:1.5em;">
+  券面テンプレートのpreview pageです。
+</p>
+
+<div class="row">
+  <div class="description span7" style="margin-left:3%; line-height:0.5em;">
+    <p>
+      1. 作成した券面用のテンプレートファイル(SVG)をドラッグ&ドロップしてください。preview結果が表示されます。
+    </p>
+    <p>
+      2. プレースホルダー({{ }}で囲まれた部分)に埋め込む文字列を対応するinput要素に入力してください。
+    </p>
+  </div>
+</div>
+
+<%include file="./_preview.html" args="apis=apis,ticket_formats=ticket_formats"/>

@@ -21,18 +21,18 @@ from sqlalchemy.sql import exists
 from sqlalchemy.orm import joinedload
 
 from ticketing.models import merge_session_with_post, record_to_multidict
-from ticketing.core.models import (Order, Event, Performance, PaymentDeliveryMethodPair, ShippingAddress,
-                                   Product, ProductItem, OrderedProduct, OrderedProductItem, Venue,
+from ticketing.core.models import (Order, Performance, PaymentDeliveryMethodPair, ShippingAddress,
+                                   Product, ProductItem, OrderedProduct, OrderedProductItem, 
                                    Ticket, TicketBundle, TicketFormat, Ticket_TicketBundle,
+                                   DeliveryMethod, TicketFormat_DeliveryMethod, 
                                    Stock, StockStatus, Seat, SeatStatus, SeatStatusEnum)
+
 from ticketing.users.models import MailSubscription
 from ticketing.orders.export import OrderCSV
 from ticketing.orders.forms import (OrderForm, OrderSearchForm, SejOrderForm, SejTicketForm,
                                     SejRefundEventForm,SejRefundOrderForm, SendingMailForm,
                                     PerformanceSearchForm, OrderReserveForm, ClientOptionalForm,
                                     PreviewTicketSelectForm, CheckedOrderTicketChoiceForm)
-from lxml import etree
-from ticketing.tickets.convert import to_opcodes
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.orders.events import notify_order_canceled
@@ -40,7 +40,6 @@ from ticketing.tickets.utils import build_dicts_from_ordered_product_item
 from ticketing.cart import api
 from ticketing.cart.stocker import NotEnoughStockException
 from ticketing.cart.reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
-from ticketing.core.utils import IssuedPrintedAtSetter
 
 import pystache
 from . import utils
@@ -61,14 +60,14 @@ def available_ticket_formats_for_orders(orders):
 
 def available_ticket_formats_for_ordered_product_item(ordered_product_item_id):
     return TicketFormat.query\
-        .filter(TicketFormat.id==Ticket.ticket_format_id)\
-        .filter(Ticket.id==Ticket_TicketBundle.ticket_id)\
-        .filter(Ticket_TicketBundle.ticket_bundle_id==TicketBundle.id)\
-        .filter(TicketBundle.id==ProductItem.ticket_bundle_id)\
-        .filter(ProductItem.id==OrderedProductItem.product_item_id)\
         .filter(OrderedProductItem.id==ordered_product_item_id)\
+        .filter(OrderedProduct.id==OrderedProductItem.ordered_product_id)\
+        .filter(Order.id==OrderedProduct.order_id)\
+        .filter(PaymentDeliveryMethodPair.id==Order.payment_delivery_method_pair_id)\
+        .filter(DeliveryMethod.id==PaymentDeliveryMethodPair.delivery_method_id)\
+        .filter(TicketFormat_DeliveryMethod.delivery_method_id==DeliveryMethod.id)\
+        .filter(TicketFormat.id==TicketFormat_DeliveryMethod.ticket_format_id)\
         .with_entities(TicketFormat.id, TicketFormat.name)\
-        .distinct(TicketFormat.id)
 
 @view_defaults(xhr=True, permission='sales_counter') ## todo:適切な位置に移動
 class OrdersAPIView(BaseView):
@@ -771,14 +770,18 @@ class Orders(BaseView):
             .all()
         dicts = build_dicts_from_ordered_product_item(item)
         data = dict(ticket_format.data)
+        data["ticket_format_id"] = ticket_format.id
         results = []
         names = []
         for seat, dict_ in dicts:
             names.append(seat.name if seat else dict_["product"]["name"])
+            preview_type = utils.delivery_type_from_built_dict(dict_)
+
             for ticket in tickets:
                 svg = pystache.render(ticket.data['drawing'], dict_)
                 r = data.copy()
-                r.update(dict(drawing=' '.join(to_opcodes(etree.ElementTree(etree.fromstring(svg))))))
+                r["preview_type"] = preview_type
+                r.update(drawing=svg)
                 results.append(r)
         return {"results": results, "names": names}
 

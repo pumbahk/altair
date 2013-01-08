@@ -66,7 +66,7 @@ requires = [
     'cssutils',
     'numpy',
     'qrcode',
-    'pystache',
+    'pystache == 0.5.2',
     'repoze.browserid',
     'redis',
     'beaker-extensions == 0.2.0dev-moriyoshi2',
@@ -75,6 +75,8 @@ requires = [
     'PIL', # for qrcode.image.pil
     'altair.findable_label', 
     'altair.log'
+    "jsonrpclib", 
+    "poster"
     ]
 
 setup(name='ticketing',

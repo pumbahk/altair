@@ -35,6 +35,10 @@ ${breadcrumbs(
   });
 </script>
 
+<div style="margin-bottom:30px;">
+  <a href="${request.route_path("tickets.preview")}">preview pageへ</a>
+</div>
+
 <h2>出力形式</h2>
 <div id="pageformat_menu" class="btn-group">
   <a href="${request.route_path("tickets.pageformats.new")}" class="btn">
