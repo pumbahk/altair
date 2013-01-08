@@ -61,26 +61,33 @@ class SVGTransformer(object):
         svg = _find_svg(xmltree)
         svg_with_ticketformat(svg, self.data["ticket_format"])
         return xmltree
-        
+
+    def detect_size(self, attrib):
+        if "width" in attrib:
+            self.width = attrib["width"] ## this is base_width. (sx = 1.0 )
+        if "height" in attrib:
+            self.height = attrib["height"]
+            
     def scale_image(self, xmltree):
         sx, sy = self.data["sx"], self.data["sy"]
+        svg = _find_svg(xmltree)
+        attrib = svg.attrib
+
+        self.detect_size(attrib)
+
         if sx == sy == 1:
             return xmltree
 
-        svg = _find_svg(xmltree)
-        attrib = svg.attrib
-        
         if "width" in attrib:
-            self.width = attrib["width"] ## this is base_width. (sx = 1.0 )
             attrib["width"] = transform_unit(lambda x : sx*x, self.width)
         if "height" in attrib:
-            self.height = attrib["height"]
             attrib["height"] = transform_unit(lambda y : sy*y, self.height)
         if "viewBox" in attrib:
             box_val = attrib["viewBox"].split(" ")
             box_val[2] = str(sx * ast.literal_eval(box_val[2]))
             box_val[3] = str(sy * ast.literal_eval(box_val[3]))
             attrib["viewBox"] = " ".join(box_val)
+
         attrs = {"transform": "scale(%s, %s)" % (self.data["sx"], self.data["sy"])}
         wrap_element(svg, "g", attrs)
         return xmltree
