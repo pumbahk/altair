@@ -322,7 +322,6 @@ class LoadSVGFromModelApiView(object):
 
     @view_config(match_param="model=Ticket", request_param="data")
     def svg_from_ticket(self):
-        # print self.request.GET
         data = json.loads(self.request.GET["data"])
         ticket_id = data["fillvalues_resource"]["model"]
         ticket = c_models.Ticket.query.filter_by(id=ticket_id).first()

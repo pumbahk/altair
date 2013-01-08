@@ -71,7 +71,7 @@ if (!window.preview)
     preview.PreviewImageStore = Backbone.Model.extend({
         defaults: {
             data: null, //base64
-            width: 0, 
+            width: 0,  // this is base_width (sx = 1.0 ). so, real image width is default_sx * width
             height: 0, 
             rendering_width: 0, 
             rendering_height: 0, 
@@ -90,11 +90,14 @@ if (!window.preview)
             this.set("data", imgdata);
             this.trigger("*preview.update.rendering")
         }, 
-        initialImage: function(width, height){
+        isNotShown: function(){
+            return String(this.get("width")) == "0" || String(this.get("height")) == "0";
+        }, 
+        initialImage: function(width, height, rendering_width, rendering_height){
             this.set("width", width);
             this.set("height", height);
-            this.set("rendering_width", width);
-            this.set("rendering_height", height);
+            this.set("rendering_width", rendering_width);
+            this.set("rendering_height", rendering_height);
         }, 
         resizeImage: function(width, height){
             this.set("rendering_width", width);

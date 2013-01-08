@@ -71,7 +71,7 @@ class SVGTransformer(object):
         attrib = svg.attrib
         
         if "width" in attrib:
-            self.width = attrib["width"]
+            self.width = attrib["width"] ## this is base_width. (sx = 1.0 )
             attrib["width"] = transform_unit(lambda x : sx*x, self.width)
         if "height" in attrib:
             self.height = attrib["height"]

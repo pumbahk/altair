@@ -105,7 +105,7 @@ describe("ticket preview ui",  function(){
             });
             describe("scale image (default_sx < sx) .. fetch image and resize", function(){
                 it("fetch image and resize", function(){
-                    models.preview.resizeImage = jasmine.createSpy("");
+                    models.preview.initialImage = jasmine.createSpy("");
                     models.params.set("sx", 3.0);
                     models.params.set("sy", 1.4);
 
@@ -113,7 +113,7 @@ describe("ticket preview ui",  function(){
                     gateway2.svgFilledToX();
 
                     expect(finished.previewbase64).toBe(true);
-                    expect(models.preview.resizeImage.argsForCall).toEqual([["900px", "280px"]]);
+                    expect(models.preview.initialImage.argsForCall).toEqual([["300px", "200px", "900px", "280px"]]);
                     expect(models.params.get("default_sx", 3.0)); //max(sx, sy)
                     expect(models.params.get("default_sy", 3.0));
                 });

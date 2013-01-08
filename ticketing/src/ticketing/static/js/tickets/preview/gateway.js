@@ -81,8 +81,12 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
                      };
         return this.apis.previewbase64(params)
             .pipe(core.ApiService.rejectIfStatusFail(function(data){                
-                self.preview.initialImage(data.width, data.height);
+                var mul = core.UnitCalcService.mul;
+                self.preview.initialImage(data.width, data.height, 
+                                          mul(data.width, self.params.get("sx")), 
+                                          mul(data.height, self.params.get("sy")));
                 self.preview.startRendering("data:image/png;base64,"+data.data); //add-hoc                
+                self.useChangedModels();
                 self.message.info("preview画像がレンダリングされました。下のinput要素を変更しプレースホルダーに埋める値を入力してください");
             }))
             .fail(this._apiFail.bind(this));
@@ -104,7 +108,10 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
             .pipe(core.ApiService.rejectIfStatusFail(function(data){
                 self.params.set("default_sx", ma);
                 self.params.set("default_sy", ma);
-                self._svgFilledResize(sx, sy);
+                var mul = core.UnitCalcService.mul;
+                self.preview.initialImage(data.width, data.height, 
+                                          mul(data.width, self.params.get("sx")), 
+                                          mul(data.height, self.params.get("sy")));
                 self.preview.startRendering("data:image/png;base64,"+data.data); //add-hoc
                 self.message.info("preview画像がレンダリングされました");
             }))
