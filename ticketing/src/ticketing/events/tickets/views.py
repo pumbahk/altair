@@ -242,24 +242,6 @@ class BundleAttributeView(BaseView):
         return HTTPFound(self.request.route_path("events.tickets.bundles.show",
                                                  event_id=event_id, bundle_id=bundle_id))
 
-@view_config(route_name="events.tickets.bundles.items.preview", 
-             renderer="ticketing:templates/tickets/events/bundles/ticket_preview.html", 
-             permission="event_editor", decorator=with_bootstrap)
-def ticket_preview_bound_by_product_item(context, request):
-    return {"tickets": request.context.bundle.tickets, 
-            "item": request.context.product_item,}
-
-@view_config(route_name="events.tickets.bundles.items.data", 
-             renderer="json", permission="event_editor", decorator=with_bootstrap)
-def ticket_preview_bound_by_product_item_data(context, request):
-    item = context.product_item
-    template = context.ticket_template
-    renderer = pystache.Renderer()
-    svg = renderer.render(template.drawing, build_dict_from_product_item(item))
-    data = dict(template.ticket_format.data)
-    data.update(dict(drawing=' '.join(to_opcodes(etree.ElementTree(etree.fromstring(svg))))))
-    return data
-
 @view_config(route_name="events.tickets.bundles.items.enqueue", 
              request_method="POST", permission="event_editor")
 def ticket_preview_enqueue_item(context, request):
@@ -288,8 +270,6 @@ def ticket_preview_enqueue_item(context, request):
 def ticket_preview_download_item(context, request):
     item = context.product_item
     renderer = pystache.Renderer()
-    operator = context.user
-    mdict = request.matchdict
     ticket = DBSession.query(Ticket).filter_by(id=request.matchdict['ticket_id']).one()
 
     svg = renderer.render(ticket.drawing, build_dict_from_product_item(item))

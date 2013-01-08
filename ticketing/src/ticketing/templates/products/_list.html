@@ -20,8 +20,8 @@
       ),
       'preview':dict(
         label=u'券面プレビュー',
-        url=request.route_path('events.tickets.bundles.items.preview', event_id=product.event_id, bundle_id=product_item.ticket_bundle_id, item_id=product_item.id),
-        icon='icon-print',
+        url='javascript:preview_ticket(%s);' % product_item.id,
+        icon='icon-print'
       ),
     })
   action_dict.update({
@@ -128,7 +128,7 @@
                 <td id="stock-${item.id}" value="${item.stock.id}">${item.stock.id}</td>
                 <td id="ticket_bundle_id-{$item.id}" value="${item.ticket_bundle_id}">
                   % if performance and item.ticket_bundle_id:
-                    <a class="preview-link" data-pk="${item.id}" data-name="${item.name}" href="${request.route_path("events.tickets.bundles.items.preview", event_id=product.event_id, bundle_id=item.ticket_bundle.id, item_id=item.id)}" target="_blank">${item.ticket_bundle.name}<i class="icon-eye-open"></i></a>
+                    <a id="productItem${item.id}" class="preview-link" data-pk="${item.id}" data-name="${item.name}">${item.ticket_bundle.name}<i class="icon-eye-open"></i></a>
                   % else:
                     -
                   % endif
