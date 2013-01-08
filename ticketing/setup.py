@@ -74,7 +74,7 @@ requires = [
     'fluent-logger == 0.3.3moriyoshi',
     'PIL', # for qrcode.image.pil
     'altair.findable_label', 
-    'altair.log'
+    'altair.log',
     "jsonrpclib", 
     "poster"
     ]
