@@ -186,7 +186,7 @@ class BundleAttributeView(BaseView):
 
         attr = TicketBundleAttribute(name=form.data["name"], 
                                      value=form.data["value"], 
-                                     bundle=bundle)
+                                     ticket_bundle=bundle)
         attr.save()
         self.request.session.flash(u'属性(TicketBundleAttribute)を追加しました')
 
