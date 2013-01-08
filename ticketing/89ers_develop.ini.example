@@ -69,6 +69,7 @@ sej.api_key = E6PuZ7Vhe7nWraFW
 [filter:prefix]
 use = egg:PasteDeploy#prefix
 prefix = /89ers/booster
+altair_sej.template_file = %(here)s/misc/sej/template.html
 
 [pipeline:main]
 pipeline =
