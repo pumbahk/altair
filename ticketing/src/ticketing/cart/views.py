@@ -616,9 +616,11 @@ class ReserveView(object):
             csrf_context=self.request.session)
         if not form.validate():
             raise InvalidCSRFTokenException
+
         # セッションからCSRFトークンを削除して再利用不可にしておく
         if 'csrf' in self.request.session:
             del self.request.session['csrf']
+            self.request.session.persist()
 
         order_items = self.ordered_items
 
@@ -925,8 +927,15 @@ class CompleteView(object):
     def __call__(self):
         api.check_sales_segment_term(self.request)
         form = schemas.CSRFSecureForm(formdata=self.request.params, csrf_context=self.request.session)
-        form.validate()
-        #assert not form.csrf_token.errors
+        if not form.validate():
+            logger.info('invalid csrf token: %s' % form.errors)
+            raise InvalidCSRFTokenException
+
+        # セッションからCSRFトークンを削除して再利用不可にしておく
+        if 'csrf' in self.request.session:
+            del self.request.session['csrf']
+            self.request.session.persist()
+
         cart = api.get_cart_safe(self.request)
         if not cart.is_valid():
             raise NoCartError()
