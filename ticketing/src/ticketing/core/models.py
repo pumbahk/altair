@@ -631,7 +631,7 @@ class ReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def send(self, settings=None, **options):
         # settings
         if not settings:
-            registry = threadlocal.get_current_registry()
+            registry = get_current_registry()
             settings = registry.settings
 
         # sender
@@ -2476,13 +2476,13 @@ class PageFormat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def enqueue(self, operator, data):
         '''
         '''
-        DBSession.add(TicketPrintQueue(data = data, operator = operator))
+        DBSession.add(TicketPrintQueueEntry(data = data, operator = operator))
 
     @classmethod
     def dequeue_all(self, operator):
         '''
         '''
-        return TicketPrintQueue.filter_by(deleted_at = None, operator = operator).order_by('created_at desc').all()
+        return TicketPrintQueueEntry.filter_by(deleted_at = None, operator = operator).order_by('created_at desc').all()
 
 class ExtraMailInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "ExtraMailInfo"
