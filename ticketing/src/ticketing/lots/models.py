@@ -25,9 +25,9 @@ from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm.exc import NoResultFound
 from zope.deprecation import deprecate
 
+from ticketing.utils import StandardEnum
 from ticketing.models import (
     Identifier,
-    StandardEnum,
     Base,
     BaseModel,
     WithTimestamp,
