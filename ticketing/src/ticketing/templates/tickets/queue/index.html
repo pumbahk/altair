@@ -56,12 +56,12 @@ ${breadcrumbs(
   <thead>
     <tr>
       <th class="minwidth"></th>
-      <th><a href="${sortable(request, "summary")}" class="sortable">内容</a></th>
-      <th><a href="${sortable(request, "ticket", direction="desc")}" class="sortable">テンプレート</a></th>
+      <th><a href="${sortable(request, "TicketPrintQueueEntry.summary")}" class="sortable">内容</a></th>
+      <th><a href="${sortable(request, "TicketPrintQueueEntry.ticket_id", direction="desc")}" class="sortable">テンプレート</a></th>
       <th><a href="${sortable(request, "Order.order_no", direction="desc")}" class="sortable">注文番号</a></th>
-      <th><a href="${sortable(request, "OrderedProductItem.id", direction="desc")}" class="sortable">券種</a></th>
-      <th><a href="${sortable(request, "Seat.id", direction="desc")}" class="sortable">座席</a></th>
-      <th><a href="${sortable(request, "created_at", direction="desc")}" class="sortable">作成日時</a></th>
+      <th><a href="${sortable(request, "TicketPrintQueueEntry.ordered_product_item_id", direction="desc")}" class="sortable">券種</a></th>
+      <th><a href="${sortable(request, "TicketPrintQueueEntry.seat_id", direction="desc")}" class="sortable">座席</a></th>
+      <th><a href="${sortable(request, "TicketPrintQueueEntry.created_at", direction="desc")}" class="sortable">作成日時</a></th>
     </tr>
   </thead>
   <tbody>
