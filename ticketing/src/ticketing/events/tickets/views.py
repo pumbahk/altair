@@ -259,10 +259,9 @@ def ticket_preview_enqueue_item(context, request):
     queue.save()
 
     request.session.flash(u'印刷キューにデータを投入しました')
-    return HTTPFound(request.route_path("events.tickets.bundles.items.preview", 
+    return HTTPFound(request.route_path("events.tickets.bundles.show", 
                               event_id=mdict["event_id"], 
-                              bundle_id=mdict["bundle_id"], 
-                              item_id=mdict["item_id"]))
+                              bundle_id=mdict["bundle_id"]))
 
 
 @view_config(route_name="events.tickets.bundles.items.download",
