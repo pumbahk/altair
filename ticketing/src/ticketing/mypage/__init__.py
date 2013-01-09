@@ -25,7 +25,10 @@ def includeme(config):
     config.add_route('rakuten_auth.verify', '/verify')
     config.add_route('rakuten_auth.error', '/error')
 
-def main(global_config, **settings):
+def main(global_config, **local_config):
+    settings = dict(global_config)
+    settings.update(local_config)
+
     engine = engine_from_config(settings, pool_recycle=3600)
     my_session_factory = session_factory_from_settings(settings)
     sqlahelper.add_engine(engine)

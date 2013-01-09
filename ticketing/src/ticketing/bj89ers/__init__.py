@@ -11,7 +11,10 @@ from pyramid.interfaces import IDict
 from sqlalchemy import engine_from_config
 import sqlahelper
 
-def main(global_conf, **settings):
+def main(global_config, **local_config):
+    settings = dict(global_config)
+    settings.update(local_config)
+
     from sqlalchemy.pool import NullPool
     engine = engine_from_config(settings, poolclass=NullPool)
     sqlahelper.add_engine(engine)

@@ -53,9 +53,12 @@ def iterable_undefined_patch():
 
 
 
-def main(global_config, **settings):
+def main(global_config, **local_config):
     """ apprications main
     """
+    settings = dict(global_config)
+    settings.update(local_config)
+
     iterable_undefined_patch()
     session_factory = UnencryptedCookieSessionFactoryConfig(settings.get('session.secret'))
     authn_policy, authz_policy = _get_policies(settings)
