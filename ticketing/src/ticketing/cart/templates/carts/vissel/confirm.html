@@ -1,4 +1,12 @@
 <%inherit file="./base.html"/>
+<%block name="javascript">
+<script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/disable_on_submit.js')}"></script>
+<script type="text/javascript">
+  $(function() {
+    $('form').disableOnSubmit('input[type=submit][name!="back"]');
+  });
+</script>
+</%block>
 <%block name="css">
 <style>
   #btn-back {
