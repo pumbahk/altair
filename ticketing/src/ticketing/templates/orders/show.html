@@ -527,6 +527,22 @@ ${h.breadcrumbs(
 
 <div class="modal hide" id="PreviewModal">
 </div>
+<script type="text/javascript">
+$(function(){
+// stretch size
+  var uniwin = {
+      width: window.innerWidth || document.documentElement.clientWidth
+          || document.body.offsetWidth,
+      height: window.innerHeight || document.documentElement.clientHeight
+          || document.body.offsetHeight
+  };
+  var w = uniwin.width*0.7;
+  var h = uniwin.height*0.7;
+  var $e = $("#PreviewModal");
+  $e.width(w).height(h).css("margin-left",-(w/2));
+});
+</script>
+
 <div class="modal hide" id="PrintQueueModal">
 </div>
 <div class="modal hide" id="ForceMarkIssued">

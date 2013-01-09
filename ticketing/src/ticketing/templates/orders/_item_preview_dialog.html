@@ -15,11 +15,6 @@
 	</div>
   </div>
 
-  <div class="modal-footer">
-##	<a href="#" class="btn" data-dismiss="modal">キャンセル</a>
-##	<input class="btn btn-primary" type="submit" name="submit" value="登録">
-  </div>
-
 <script type="text/javascript" src="${request.static_url("ticketing:static/js/spin.js")}"></script>
 <script type="text/javascript" src="${request.static_url("ticketing:static/js/altair/spinner.js")}"></script>
 <script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/preview/preview_api.js")}"></script>
@@ -34,7 +29,7 @@ $(function(){
     for(var i = start; i < end; i++){
       var jsondata = results[i];
       root.append($("<h3>").text(names[i]));
-      var wrap = $("<div>").attr("id", "diagram:"+i);//.attr("style", "height:200px;");
+      var wrap = $("<div>").attr("id", "diagram:"+i);
       root.append(wrap);
       svg_preview(wrap,
             "${request.route_path("tickets.preview.api", action="preview.base64")}", 
