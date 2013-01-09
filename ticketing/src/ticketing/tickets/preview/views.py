@@ -72,9 +72,12 @@ def _build_ticket_format_dicts(ticket_format_qs):
         c_models.TicketFormat_DeliveryMethod.delivery_method_id==c_models.DeliveryMethod.id, 
         c_models.DeliveryMethod.delivery_plugin_id==SEJ_DELIVERY_PLUGIN_ID)
 
-    excludes_sej = [{"pk": t.id,"name": t.name, "type": ""} for t in ticket_format_qs]
-    includes_sej = [{"pk": t.id,"name": t.name, "type": ":sej"} for t in sej_qs]
-    return excludes_sej + includes_sej
+    D = {}
+    for t in ticket_format_qs:
+        D[t.id] = {"name": t.name, "type": ""}
+    for t in sej_qs:
+        D[t.id] = {"name": t.name, "type": ":sej"}
+    return [dict(pk=k, **vs) for k, vs in D.iteritems()]
 
 
 @view_config(route_name="tickets.preview", request_method="GET", renderer="ticketing:templates/tickets/preview.html", 
