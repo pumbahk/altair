@@ -61,7 +61,6 @@
   <dl>
 	<dt>チェックされた数</dt><dd id="printstatus_count"></dd>
   </dl>
-
   %if request.matched_route.name == "orders.checked.index":
     <a href="${request.route_path("orders.index")}">全部の購入情報を表示</a>
   %else:
@@ -70,6 +69,7 @@
   <!-- <button type="button" class="btn" id="printstatus_save">save</button> -->
   <button type="button" class="btn" id="printstatus_reset">reset</button>
   <form style="display:inline" action="${request.route_path("orders.checked.queue")}" method="POST">
+     <input type="hidden" name="redirect_url" value="${request.url}" />
 	   <button class="btn" type="submit"><i class="icon-print"></i> チェックしている注文をキューに入れる</button>
   </form>
    <a type="button" class="btn" id="addall">全部ON</a>

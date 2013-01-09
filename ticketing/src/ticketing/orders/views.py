@@ -795,6 +795,8 @@ class Orders(BaseView):
         self.request.session["orders"] = session_values
         # self.request.add_finished_callback(clean_session_callback)
         self.request.session.flash(u'券面を印刷キューに追加しました. (既に印刷済みの注文は印刷キューに追加されません)')
+        if self.request.POST.get("redirect_url"):
+            return HTTPFound(location=self.request.POST.get("redirect_url"))            
         return HTTPFound(location=self.request.route_path('orders.index'))
 
 
