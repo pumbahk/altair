@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 import logging
 import webhelpers.paginate as paginate
 from StringIO import StringIO
@@ -138,7 +139,7 @@ class BundleView(BaseView):
     @view_config(route_name="events.tickets.bundles.show",
                  renderer="ticketing:templates/tickets/events/bundles/show.html")
     def show(self):
-        product_item_dict = {}
+        product_item_dict = {} # {<performance_id>: {<name>: "",  <products>: {}, <product_items> : {}}}
         for product_item in self.context.bundle.product_items:
             performance = product_item_dict.get(product_item.performance_id)
             if performance is None:
@@ -160,9 +161,15 @@ class BundleView(BaseView):
                 'created_at': product_item.created_at
                 }
 
+        ## for ticket-preview
+        preview_item_candidates = [{"pk": pk,  "name": item_dict["name"]} 
+                                   for performance in product_item_dict.itervalues()
+                                   for pk, item_dict in performance["product_items"].iteritems()]
+
         return dict(bundle=self.context.bundle, 
                     event=self.context.event,
-                    product_item_dict=product_item_dict)
+                    product_item_dict=product_item_dict, 
+                    preview_item_candidates=json.dumps(preview_item_candidates))
 
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
