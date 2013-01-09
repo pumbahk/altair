@@ -177,30 +177,6 @@ def session_has_order_p(context, request):
 
 @view_defaults(decorator=with_bootstrap, permission='sales_editor')
 class Orders(BaseView):
-    @view_config(route_name="orders.checked.queue.dialog", renderer="ticketing:templates/orders/_checked_queue_dialog.html",
-                 custom_predicates=(session_has_order_p,), permission='sales_counter')
-    def checked_queue_dialog(self):
-        ords = self.request.session["orders"]
-        ords = [o.lstrip("o:") for o in ords if o.startswith("o:")]
-        form = CheckedOrderTicketChoiceForm(ticket_formats=available_ticket_formats_for_orders(ords))
-        return {"form": form}
-
-    @view_config(route_name="orders.checked.queue.dialog", renderer="string", permission='sales_counter')
-    def checked_queue_dialog_error(self):
-        params = dict(header=u"エラー", body=u"チェックした注文はありません")
-        return u"""
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal">×</button>
-    %(header)s
-  </div>
-  <div class="modal-body">
-    %(body)s
-  </div>
-  <div class="modal-footer">
-	<a href="#" class="btn" data-dismiss="modal">キャンセル</a>
-  </div>
-""" % params
-
     @view_config(route_name="orders.checked.index", renderer='ticketing:templates/orders/index.html', permission='sales_counter')
     def checked_orders_index(self):
         """後でindexと合成。これはチェックされたOrderだけを表示するview
@@ -799,15 +775,7 @@ class Orders(BaseView):
         return {"order": order}
 
     @view_config(route_name="orders.checked.queue", request_method="POST", permission='sales_counter')
-    @view_config(route_name="orders.print.queue.manymany", request_method="POST",
-                 request_param="ticket_format_id", permission='sales_counter')
-    def order_print_queue_manymany(self):
-        ticket_format_id = self.request.POST.get("ticket_format_id")
-        if ticket_format_id:
-            ticket_format = TicketFormat.query.filter_by(id=ticket_format_id).first()
-            if ticket_format is None:
-                raise HTTPFound(location=self.request.route_path('orders.index'))
-
+    def enqueue_checked_order(self):
         ords = self.request.session["orders"]
         ords = [o.lstrip("o:") for o in ords if o.startswith("o:")]
 
@@ -815,19 +783,9 @@ class Orders(BaseView):
             .filter(Order.deleted_at==None).filter(Order.id.in_(ords))\
             .filter(Order.issued==False)\
 
-        if ticket_format_id:
-            qs = qs.filter(OrderedProduct.order_id.in_(ords))\
-                .filter(OrderedProductItem.ordered_product_id==OrderedProduct.id)\
-                .filter(ProductItem.id==OrderedProductItem.product_item_id)\
-                .filter(TicketBundle.id==ProductItem.ticket_bundle_id)\
-                .filter(Ticket_TicketBundle.ticket_bundle_id==TicketBundle.id)\
-                .filter(Ticket.id==Ticket_TicketBundle.ticket_id)\
-                .filter(TicketFormat.id==ticket_format_id) \
-                .distinct()
-
         for order in qs:
             if not order.queued:
-                utils.enqueue_for_order(operator=self.context.user, order=order, ticket_format_id=ticket_format_id)
+                utils.enqueue_for_order(operator=self.context.user, order=order)
 
         # def clean_session_callback(request):
         logger.info("*ticketing print queue many* clean session")
@@ -838,6 +796,7 @@ class Orders(BaseView):
         # self.request.add_finished_callback(clean_session_callback)
         self.request.session.flash(u'券面を印刷キューに追加しました. (既に印刷済みの注文は印刷キューに追加されません)')
         return HTTPFound(location=self.request.route_path('orders.index'))
+
 
     @view_config(route_name='orders.print.queue', permission='sales_counter')
     def order_print_queue(self):
