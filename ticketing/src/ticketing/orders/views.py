@@ -386,7 +386,6 @@ class Orders(BaseView):
         performance_id = int(post_data.get('performance_id', 0))
         performance = Performance.get(performance_id, self.context.user.organization_id)
         if performance is None:
-            logger.error('performance id %d is not found' % performance_id)
             raise HTTPBadRequest(body=json.dumps({
                 'message':u'パフォーマンスが存在しません',
             }))
@@ -438,7 +437,6 @@ class Orders(BaseView):
         performance_id = int(post_data.get('performance_id', 0))
         performance = Performance.get(performance_id, self.context.user.organization_id)
         if performance is None:
-            logger.error('performance id %d is not found' % performance_id)
             raise HTTPBadRequest(body=json.dumps({
                 'message':u'パフォーマンスが存在しません',
             }))
@@ -491,7 +489,6 @@ class Orders(BaseView):
                 'cart':cart,
             }
         except ValidationError, e:
-            logger.exception('validation error (%s)' % e.message)
             raise HTTPBadRequest(body=json.dumps({'message':e.message}))
         except NotEnoughAdjacencyException:
             logger.info("not enough adjacency")
@@ -514,7 +511,6 @@ class Orders(BaseView):
         performance_id = int(post_data.get('performance_id', 0))
         performance = Performance.get(performance_id, self.context.user.organization_id)
         if performance is None:
-            logger.error('performance id %d is not found' % performance_id)
             raise HTTPBadRequest(body=json.dumps({
                 'message':u'パフォーマンスが存在しません',
             }))
@@ -709,7 +705,6 @@ class Orders(BaseView):
 
         f = OrderReserveForm(MultiDict(self.request.json_body))
         if not f.note.validate(f):
-            logger.debug('validation error (%s)' % f.note.errors)
             raise HTTPBadRequest(body=json.dumps({
                 'message':f.note.errors,
             }))
