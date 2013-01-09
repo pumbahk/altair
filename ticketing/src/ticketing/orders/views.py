@@ -999,7 +999,7 @@ class SejOrderInfoView(object):
             except SejServerError, e:
                 self.request.session.flash(u'オーダー情報を送信に失敗しました。 %s' % e)
         else:
-            print f.errors
+            logger.info(str(f.errors))
             self.request.session.flash(u'バリデーションエラー：更新出来ませんでした。')
 
         return HTTPFound(location=self.request.route_path('orders.sej.order.info', order_id=order_id))
@@ -1029,7 +1029,6 @@ class SejOrderInfoView(object):
         if order:
             ticket = SejTicket.query.get(ticket_id)
             f = SejTicketForm(self.request.POST)
-            print self.request.POST
             if f.validate():
                 data = f.data
                 ticket.event_name = data.get('event_name')
@@ -1145,7 +1144,6 @@ class SejRefundView(BaseView):
             except NoResultFound, e:
                 ct = SejRefundTicket()
                 DBSession.add(ct)
-            print event
 
             ct.available     = 1
             ct.event_code_01 = event.event_code_01
