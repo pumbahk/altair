@@ -207,7 +207,7 @@ def show(request):
         .filter_by(venue_id=venue_id)\
         .outerjoin(VenueArea, Seat.areas)\
         .outerjoin(SeatAttribute, and_(SeatAttribute.seat_id==Seat.id, SeatAttribute.name=="row"))\
-        .join(SeatStatus)
+        .outerjoin(SeatStatus, SeatStatus.seat_id==Seat.id)
     items = []
     for seat, venuearea, attr, status in seats:
         items.append(SeatInfo(seat, venuearea, attr, status))
