@@ -42,9 +42,6 @@ from ticketing.sej.payment import request_cancel_order
 from ticketing.assets import IAssetResolver
 from ticketing.utils import myurljoin
 
-import sqlahelper
-session = sqlahelper.get_session()
-
 logger = logging.getLogger(__name__)
 
 class Seat_SeatAdjacency(Base):
@@ -622,63 +619,6 @@ class ReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     operator_id = Column(Identifier, ForeignKey('Operator.id', ondelete='CASCADE'), nullable=False)
     operator = relationship('Operator', backref='report_setting')
     frequency = Column(Integer, nullable=True)
-
-    @staticmethod
-    def get_reservations(frequency_num):
-        return ReportSetting.query.filter(ReportSetting.frequency==frequency_num)\
-            .with_entities(ReportSetting.event_id, ReportSetting.operator_id).all()
-
-    def send(self, settings=None, **options):
-        # settings
-        if not settings:
-            registry = get_current_registry()
-            settings = registry.settings
-
-        # sender
-        if self.sender_address:
-            from_addr = self.sender_address
-            if self.sender_name:
-                sender_name = str(Header(self.sender_name, 'ISO-2022-JP'))
-                sender = u'%s <%s>' % (sender_name, self.sender_address)
-            else:
-                sender = self.sender_address
-        else:
-            from_addr = sender = settings['mail.message.sender']
-
-        # recipient
-        if 'recipient' in options:
-            recipient = options['recipient']
-        else:
-            recipient = settings['mail.report.recipient']
-
-        # replacement subject, body, html
-        subject = options['subject'] if 'subject' in options else self.subject
-        description = self.description
-        for k, v in options.items():
-            if not isinstance(v, unicode):
-                v = unicode(v, 'utf-8')
-            subject = subject.replace('${%s}' % k, v)
-            description = description.replace('${%s}' % k, v)
-
-        body = html = None
-        if self.type == 'html':
-            html = description
-        else:
-            body = description
-
-        mailer = Mailer(settings)
-        mailer.create_message(
-            sender = sender,
-            recipient = recipient,
-            subject = subject,
-            body = body,
-            html = html
-        )
-
-        try:
-            mailer.send(from_addr, recipient)
-        except Exception, e:
-            print vars(e)
 
 class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Event'
