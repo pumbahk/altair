@@ -152,18 +152,17 @@ def download(request):
 
 @view_config(route_name='venues.index', renderer='ticketing:templates/venues/index.html', decorator=with_bootstrap, permission='event_editor')
 def index(request):
-    sort = request.GET.get('sort', 'Venue.site_id')
     direction = request.GET.get('direction', 'asc')
     if direction not in ['asc', 'desc']:
         direction = 'asc'
 
     query = DBSession.query(Venue, func.count(Seat.id))
-    query = query.outerjoin(Performance).filter(Performance.deleted_at==None)
-    query = query.outerjoin(Event).filter(Event.deleted_at==None)
     query = query.filter_by(organization_id=request.context.user.organization_id)
+    query = query.outerjoin((Performance, and_(Performance.id==Venue.performance_id, Performance.deleted_at==None)))
+    query = query.outerjoin((Event, and_(Event.id==Performance.event_id, Event.deleted_at==None)))
     query = query.outerjoin(Seat)
     query = query.group_by(Venue.id)
-    query = query.order_by(sort + ' ' + direction)
+    query = query.order_by('Venue.site_id ASC, -Venue.performance_id ASC')
 
     class VenueCount:
         def __init__(self, venue, count):
