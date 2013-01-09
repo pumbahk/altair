@@ -42,19 +42,23 @@ preview.SVGFromModelView = Backbone.View.extend({
     initialize: function(opts){
         this.modelname = opts.modelname;
         if(!this.modelname) throw "modelname is not found";
+        this.idname = opts.idname
+        if(!this.idname) {this.idname = "model_candidates";}
     }, 
     onChangeModel: function(){
-        var pk = this.$el.find("select").val();
+        var pk = this.$select.val();
         this.model.changeHolder({pk: pk, name: this.modelname}); //params
     }, 
     render: function(label, candidates){
-        var select = $('<select class="inline input-medium">').attr("id","model_candidates");
+        var $select = $('<select class="inline input-medium">').attr("id", this.idname);
+        this.$select = $select;
+
         _(candidates).each(function(c){
-            select.append($("<option>").text(c.name).attr("value", c.pk));
+            $select.append($("<option>").text(c.name).attr("value", c.pk));
         });
         this.$el.find(".brand").hide();
         var root = this.$el.find("#subnav .nav");
-        root.append($('<li style="margin-left:20px;">').text(label).append(select));
+        root.append($('<li style="margin-left:20px;">').text(label).append($select));
     }
 });
 

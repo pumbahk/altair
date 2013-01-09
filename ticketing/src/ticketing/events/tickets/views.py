@@ -162,9 +162,10 @@ class BundleView(BaseView):
                 }
 
         ## for ticket-preview
-        preview_item_candidates = [{"pk": pk,  "name": item_dict["name"]} 
-                                   for performance in product_item_dict.itervalues()
-                                   for pk, item_dict in performance["product_items"].iteritems()]
+        preview_item_candidates = []
+        for performance in product_item_dict.itervalues():
+            for pk, item_dict in performance["product_items"].iteritems():
+                preview_item_candidates.append({"pk": pk, "name": u"%s: %s" % (performance["name"] , item_dict["name"])})
 
         return dict(bundle=self.context.bundle, 
                     event=self.context.event,

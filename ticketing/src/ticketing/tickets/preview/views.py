@@ -316,7 +316,8 @@ class LoadSVGFromModelApiView(object):
                                               c_models.Ticket_TicketBundle.ticket_bundle_id==c_models.TicketBundle.id, 
                                               c_models.Ticket.id==c_models.Ticket_TicketBundle.ticket_id, 
                                               c_models.Ticket.ticket_format_id==ticket_format_id).first()
-
+        if ticket is None:
+            return {"status": False, "message": "matched ticket is not found"}
         svg = template_fillvalues(ticket.drawing, build_dict_from_product_item(product_item))
         return {"status": True, "data": svg}
 
