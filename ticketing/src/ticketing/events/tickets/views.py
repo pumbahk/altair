@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
+
 import json
-import logging
-import webhelpers.paginate as paginate
 from StringIO import StringIO
 from ticketing.fanstatic import with_bootstrap
 from pyramid.view import view_config, view_defaults
-from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPCreated
+from pyramid.httpexceptions import HTTPFound
 from ticketing.models import DBSession
 from ticketing.core.models import ProductItem, Performance
 from ticketing.core.models import Ticket, TicketBundle, TicketBundleAttribute, TicketPrintQueueEntry
@@ -15,8 +14,6 @@ from . import forms
 
 from ticketing.tickets.utils import build_dict_from_product_item
 import pystache
-from ticketing.tickets.convert import to_opcodes
-from lxml import etree
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class IndexView(BaseView):
