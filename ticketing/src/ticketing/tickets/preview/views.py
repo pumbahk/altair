@@ -423,5 +423,9 @@ class PreviewWithDefaultParamaterDialogView(object):
         apis["combobox"] =  self.request.route_path("tickets.preview.combobox", _query=combobox_params)
 
         ticket_formats = c_models.TicketFormat.query.filter_by(organization_id=self.context.user.organization_id)
+
+        if self.request.GET.get("ticket_id"):
+            ticket_formats = ticket_formats.filter(c_models.TicketFormat.id==c_models.Ticket.ticket_format_id,
+                                                   c_models.Ticket.id==self.request.GET.get("ticket_id"))
         ticket_formats = _build_ticket_format_dicts(ticket_formats)
         return {"apis": apis, "ticket_formats": ticket_formats}

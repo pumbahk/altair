@@ -67,7 +67,7 @@ ${breadcrumbs(
 
         modalView = new modal.api.AjaxModalView({
           el: $el,
-          href: "${request.route_path('tickets.preview.dialog', model="Ticket")}",
+          href: "${request.route_path('tickets.preview.dialog', model="Ticket", _query=dict(ticket_id=request.matchdict["id"]))}",
           modalArea: $("#ticket-viewer"), 
           option: {backdrop: false, stretch: true}, 
           header: "チケット券面のpreview",
