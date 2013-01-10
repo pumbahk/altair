@@ -10,7 +10,10 @@ from pyramid.httpexceptions import HTTPNotFound
 from sqlalchemy import engine_from_config
 import sqlahelper
 
-def main(global_conf, **settings):
+def main(global_config, **local_config):
+    settings = dict(global_config)
+    settings.update(local_config)
+
     from ticketing.logicaldeleting import install as ld_install
     ld_install()
 

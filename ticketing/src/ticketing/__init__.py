@@ -14,15 +14,19 @@ import sqlahelper
 
 authn_exemption = re.compile(r'^(/_deform)|(/static)|(/_debug_toolbar)|(/favicon.ico)')
 
-def main(global_config, **settings):
+def main(global_config, **local_config):
     """ This function returns a Pyramid WSGI application.
     """
+    settings = dict(global_config)
+    settings.update(local_config)
+
     from ticketing.logicaldeleting import install as install_ld
     install_ld()
     from .resources import newRootFactory, groupfinder
     from .authentication import CombinedAuthenticationPolicy, APIAuthenticationPolicy
     from .authentication.apikey.impl import newDBAPIKeyEntryResolver
     from sqlalchemy.pool import NullPool
+
     engine = engine_from_config(settings, poolclass=NullPool)
     sqlahelper.add_engine(engine)
 
