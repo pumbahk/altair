@@ -1,7 +1,8 @@
 [app:89ers]
 use = config:%(here)s/../deploy/baseconf/common.ini#89ers
+pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_beaker pyramid_mailer ticketing.tbview altair_gaq altair.findable_label
 pyramid.debug_templates = true
-altair_sej.template_file = %(here)s/../../../ticketing/misc/sej/template.html
+altair.findable_label.label = develop
 
 ; Beaker
 session.type = file
