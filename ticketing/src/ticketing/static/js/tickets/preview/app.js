@@ -50,6 +50,7 @@ preview.ApplicationViewFactory = function(apis,
                                           $preview_block,
                                           $preview_area,
                                           $svg_droparea,
+                                          $ticket_format_candidates, 
                                           $template_vars_table,
                                           $paramater_settings_area,
                                           $message_area){
@@ -65,6 +66,7 @@ preview.ApplicationViewFactory = function(apis,
         droparea: new preview.DropAreaViewModel({el: $svg_droparea}),
         spinner: new preview.LoadingSpinnerViewModel({el: $preview_area}),
         vars_input: new preview.TemplateVarsTableViewModel({el: $template_vars_table}), 
+        ticket_format: new preview.SelectCandidatesViewModel({el: $ticket_format_candidates})
     };
 
     var views = {

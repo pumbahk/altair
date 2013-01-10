@@ -55,20 +55,23 @@ def page_formats_for_organization(organization):
 class TicketMasters(BaseView):
     @view_config(route_name='tickets.index', renderer='ticketing:templates/tickets/index.html', request_method="GET")
     def index(self):
+
         ticket_format_sort_by, ticket_format_direction = helpers.sortparams('ticket_format', self.request, ('updated_at', 'desc'))
-
         page_format_sort_by, page_format_direction = helpers.sortparams('page_format', self.request, ('updated_at', 'desc'))
-
         ticket_template_sort_by, ticket_template_direction = helpers.sortparams('ticket_template', self.request, ('updated_at', 'desc'))
 
         ticket_format_qs = TicketFormat.filter_by(organization_id=self.context.user.organization_id)
+        ticket_format_qs = ticket_format_qs.order_by(helpers.get_direction(ticket_format_direction)(ticket_format_sort_by))
         page_format_qs = PageFormat.filter_by(organization_id=self.context.user.organization_id)
         ticket_template_qs = Ticket.templates_query().filter_by(organization_id=self.context.user.organization_id)
-
-        ticket_format_qs = ticket_format_qs.order_by(helpers.get_direction(ticket_format_direction)(ticket_format_sort_by))
-
         ticket_template_qs = ticket_template_qs.order_by(helpers.get_direction(ticket_template_direction)(ticket_template_sort_by))
-        return dict(h=helpers, page_formats=page_format_qs, ticket_formats=ticket_format_qs, templates=ticket_template_qs)
+
+        ticket_candidates = [{"name": t.name,"pk": t.id }for t in ticket_template_qs]
+        return dict(h=helpers, 
+                    page_formats=page_format_qs,
+                    ticket_formats=ticket_format_qs,
+                    templates=ticket_template_qs, 
+                    ticket_candidates=json.dumps(ticket_candidates))
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class TicketFormats(BaseView):
