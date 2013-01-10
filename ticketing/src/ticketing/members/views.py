@@ -5,9 +5,11 @@ import webhelpers.paginate as paginate
 from StringIO import StringIO
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.view import view_config, view_defaults
+
+from ticketing.models import merge_session_with_post
 from ticketing.tickets.response import FileLikeResponse ##
 from ticketing.fanstatic import with_bootstrap
-from ticketing.users.models import Membership, MemberGroup, Member, User, UserCredential
+from ticketing.users.models import Member, User, UserCredential
 from . import forms
 from . import api
 
@@ -162,4 +164,35 @@ class MemberView(object):
         return FileLikeResponse(io, request=self.request, 
                                 filename=form.data["csvfile"].encode("utf-8"),
                                 content_encoding=content_encoding)
+
+
+@view_defaults(permission="administrator", decorator=with_bootstrap, route_name="members.loginuser")
+class LoginUserView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @view_config(match_param="action=edit", renderer="ticketing:templates/members/_edit_loginuser_dialog.html", request_method="GET")
+    def edit_dialog(self):
+        loginuser = UserCredential.filter_by(id=self.request.matchdict["loginuser_id"]).first()
+        form = forms.LoginUserEditForm(auth_identifier=loginuser.auth_identifier, 
+                                       auth_secret=loginuser.auth_secret,
+                                       )
+        return {"form": form}
+
+    @view_config(match_param="action=edit", request_method="POST")
+    def edit(self):
+        membership_id = self.request.matchdict["membership_id"]
+        qs = UserCredential.filter(UserCredential.membership_id==membership_id)
+        loginuser = qs.filter_by(id=self.request.matchdict["loginuser_id"]).first()
+        form = forms.LoginUserEditForm(self.request.POST)
+
+        if form.object_validate(qs, loginuser):
+            loginuser = merge_session_with_post(loginuser, form.data)
+            loginuser.save()
+            self.request.session.flash(u"loginuserの設定を変更しました")
+            return HTTPFound(self.request.route_path("members.index", membership_id=membership_id))
+        else:
+            self.request.session.flash(u"同じ名前(%s)が既に登録されています" % form.data["auth_identifier"])
+            return HTTPFound(self.request.route_path("members.index", membership_id=membership_id))
 

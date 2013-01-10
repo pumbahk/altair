@@ -74,8 +74,10 @@ ${users.pager()}
     <tr>
       <td><input type="checkbox" name="user_id" value="${user.id}" /></td>
       <td><a href="#">${user.id}</a></td>
-      <td><a href="#">${user.first_user_credential.auth_identifier}</a></td>
-      <td><a href="#">${user.first_user_credential.auth_secret}</a></td>
+      <td><a href="${request.route_path("members.loginuser",membership_id=membership.id, loginuser_id=user.first_user_credential.id, action="edit")}"
+             class="ajax-modal" data-toggle="modal" data-target="#AjaxLoginUserModal">${user.first_user_credential.auth_identifier}</a></td>
+      <td><a href="${request.route_path("members.loginuser",membership_id=membership.id, loginuser_id=user.first_user_credential.id, action="edit")}"
+             class="ajax-modal" data-toggle="modal" data-target="#AjaxLoginUserModal">${user.first_user_credential.auth_secret}</a></td>
 ##      <td><a href="#">${user.first_user_credential.membership.name}</a></td>
       <td><a href="${request.route_path("membergroups", action="show", membergroup_id=user.member.membergroup.id)}">${user.member.membergroup.name}</a></td>
     </tr>
@@ -90,6 +92,9 @@ ${users.pager()}
 </div>
 
 <div class="modal hide" id="CSVExportModal">
+</div>
+
+<div class="modal hide" id="AjaxLoginUserModal">
 </div>
 
 <script type="text/javascript">
@@ -114,4 +119,3 @@ ${users.pager()}
     });
   });
 </script>
-
