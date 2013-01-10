@@ -81,8 +81,8 @@ class Events(BaseView):
         return {
             'event':event,
             'accounts':accounts,
-            'seat_stock_types':StockType.filter_by(event_id=event_id, type=StockTypeEnum.Seat.v).all(),
-            'non_seat_stock_types':StockType.filter_by(event_id=event_id, type=StockTypeEnum.Other.v).all(),
+            'seat_stock_types':StockType.filter_by(event_id=event_id, type=StockTypeEnum.Seat.v).order_by(StockType.display_order).all(),
+            'non_seat_stock_types':StockType.filter_by(event_id=event_id, type=StockTypeEnum.Other.v).order_by(StockType.display_order).all(),
             'form':EventForm(),
             'form_performance':PerformanceForm(organization_id=self.context.user.organization_id),
             'form_stock_type':StockTypeForm(event_id=event_id),
