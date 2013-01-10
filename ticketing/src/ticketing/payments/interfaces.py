@@ -26,8 +26,6 @@ class IDeliveryPlugin(Interface):
 
 class IPaymentPlugin(Interface, IPaymentPreparer):
     """ 決済プラグイン"""
-
-
     def finish(request, cart):
         """ 確定処理 """
 

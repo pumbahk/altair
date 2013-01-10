@@ -10,15 +10,17 @@ from markupsafe import Markup
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.exceptions import NotFound
 from pyramid.response import Response
-from pyramid.view import view_config
+from pyramid.view import view_config, view_defaults
 from pyramid.threadlocal import get_current_request
 from pyramid import security
-from js.jquery_tools import jquery_tools
+import js.jquery, js.jquery_tools
 from urllib2 import urlopen
 from zope.deprecation import deprecate
 from ..models import DBSession
 from ..core import models as c_models
 from ..users import models as u_models
+from ticketing.views import mobile_request
+from ticketing.fanstatic import with_jquery, with_jquery_tools
 from .models import Cart
 from . import helpers as h
 from . import schemas
@@ -41,19 +43,49 @@ from webob.multidict import MultiDict
 from . import api
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from .stocker import NotEnoughStockException
+from .interfaces import IMobileRequest
 import transaction
 from ticketing.cart.selectable_renderer import selectable_renderer
 logger = logging.getLogger(__name__)
 from ticketing.payments.payment import Payment
 
-def back(func):
-    def retval(*args, **kwargs):
-        request = get_current_request()
-        if request.params.has_key('back'):
-            ReleaseCartView(request)()
-            return HTTPFound(request.route_url('cart.index', event_id=request.params.get('event_id')))
-        return func(*args, **kwargs)
-    return retval
+def back_to_product_list_for_mobile(request):
+    cart = api.get_cart_safe(request)
+    cart.release()
+    api.remove_cart(request)
+    return HTTPFound(
+        request.route_url(
+            route_name='cart.products',
+            event_id=cart.performance.event_id,
+            performance_id=cart.performance_id,
+            sales_segment_id=cart.sales_segment_id,
+            seat_type_id=cart.products[0].product.items[0].stock.stock_type_id))
+
+
+def back_to_top(request):
+    event_id = request.params.get('event_id')
+    if event_id is None:
+        cart = api.get_cart(request)
+        if cart is not None:
+            event_id = cart.performance.event_id
+    ReleaseCartView(request)()
+    return HTTPFound(event_id and request.route_url('cart.index', event_id=event_id) or '/')
+
+def back(pc=back_to_top, mobile=None):
+    if mobile is None:
+        mobile = pc
+
+    def factory(func):
+        def retval(*args, **kwargs):
+            request = get_current_request()
+            if request.params.has_key('back'):
+                if IMobileRequest.providedBy(request):
+                    return mobile(request)
+                else:
+                    return pc(request)
+            return func(*args, **kwargs)
+        return retval
+    return factory
 
 def get_seat_type_triplets(event_id, performance_id, sales_segment_id):
     segment_stocks = DBSession.query(c_models.ProductItem.stock_id).filter(
@@ -107,17 +139,16 @@ class IndexViewMixin(object):
                 if specified is not None and specified.redirect_url_pc:
                     raise HTTPFound(specified.redirect_url_pc)
 
+@view_defaults(decorator=with_jquery.not_when(mobile_request))
 class IndexView(IndexViewMixin):
     """ 座席選択画面 """
     def __init__(self, request):
         super(IndexView, self).__init__(request)
         self.prepare()
 
-
-    @view_config(route_name='cart.index', renderer=selectable_renderer("carts/%(membership)s/index.html"), xhr=False, permission="buy")
+    @view_config(decorator=with_jquery_tools, route_name='cart.index', renderer=selectable_renderer("carts/%(membership)s/index.html"), xhr=False, permission="buy")
     def __call__(self):
         self.check_redirect(mobile=False)
-        jquery_tools.need()
         # ただ単にパフォーマンスのリストが欲しいだけなので
         # normal_sales_segment で良い
         performances = api.performance_names(self.request, self.context.event, self.context.normal_sales_segment)
@@ -208,8 +239,12 @@ class IndexView(IndexViewMixin):
 
         seat_type_triplets = get_seat_type_triplets(event_id, performance_id, sales_segment_id)
         performance = c_models.Performance.query.filter_by(id=performance_id).one()
-        data = dict(seat_types=[
-                dict(id=s.id, name=s.name,
+        data = dict(
+            seat_types=[
+                dict(
+                    id=s.id,
+                    name=s.name,
+                    description=s.description,
                     style=s.style,
                     products_url=self.request.route_url('cart.products',
                         event_id=event_id, performance_id=performance_id, sales_segment_id=sales_segment_id, seat_type_id=s.id),
@@ -219,33 +254,33 @@ class IndexView(IndexViewMixin):
                     )
                 for s, total, available in seat_type_triplets
                 ],
-                event_name=performance.event.title,
-                performance_name=performance.name,
-                performance_start=h.performance_date(performance),
-                performance_id=performance_id,
-                order_url=self.request.route_url("cart.order", 
-                        sales_segment_id=sales_segment_id),
-                venue_name=performance.venue.name,
-                event_id=event_id,
-                venue_id=performance.venue.id,
-                data_source=dict(
-                    venue_drawing=self.request.route_url(
-                        'cart.venue_drawing',
-                        event_id=event_id,
-                        performance_id=performance_id,
-                        venue_id=performance.venue.id,
-                        part='__part__'),
-                    seats=self.request.route_url(
-                        'cart.seats',
-                        event_id=event_id,
-                        performance_id=performance_id,
-                        venue_id=performance.venue.id),
-                    seat_adjacencies=self.request.application_url \
-                        + api.get_route_pattern(
-                          self.request.registry,
-                          'cart.seat_adjacencies')
-                    )
+            event_name=performance.event.title,
+            performance_name=performance.name,
+            performance_start=h.performance_date(performance),
+            performance_id=performance_id,
+            order_url=self.request.route_url("cart.order", 
+                    sales_segment_id=sales_segment_id),
+            venue_name=performance.venue.name,
+            event_id=event_id,
+            venue_id=performance.venue.id,
+            data_source=dict(
+                venue_drawing=self.request.route_url(
+                    'cart.venue_drawing',
+                    event_id=event_id,
+                    performance_id=performance_id,
+                    venue_id=performance.venue.id,
+                    part='__part__'),
+                seats=self.request.route_url(
+                    'cart.seats',
+                    event_id=event_id,
+                    performance_id=performance_id,
+                    venue_id=performance.venue.id),
+                seat_adjacencies=self.request.application_url \
+                    + api.get_route_pattern(
+                      self.request.registry,
+                      'cart.seat_adjacencies')
                 )
+            )
         return data
 
     @view_config(route_name="cart.date.products", renderer="json")
@@ -280,9 +315,15 @@ class IndexView(IndexViewMixin):
         salessegment = self.context.get_sales_segument()
         query = h.products_filter_by_salessegment(query, salessegment)
 
-
-        products = [dict(name=p.name, price=h.format_number(p.price, ","), id=p.id)
-                    for p in query]
+        products = [
+            dict(
+                id=p.id,
+                name=p.name,
+                description=p.description,
+                price=h.format_number(p.price, ",")
+                )
+            for p in query
+            ]
         return dict(selected_date=selected_date_string, 
                     products=products)
 
@@ -312,12 +353,17 @@ class IndexView(IndexViewMixin):
         salessegment = DBSession.query(c_models.SalesSegment).filter_by(id=sales_segment_id).one()
         query = h.products_filter_by_salessegment(query, salessegment)
 
-        products = [dict(id=p.id, 
-                         name=p.name, 
-                         price=h.format_number(p.price, ","), 
-                         unit_template=h.build_unit_template(p, performance_id),
-                         quantity_power=p.get_quantity_power(seat_type, performance_id))
-            for p in query]
+        products = [
+            dict(
+                id=p.id, 
+                name=p.name, 
+                description=p.description,
+                price=h.format_number(p.price, ","), 
+                unit_template=h.build_unit_template(p, performance_id),
+                quantity_power=p.get_quantity_power(seat_type, performance_id)
+                )
+            for p in query
+            ]
 
         return dict(products=products,
                     seat_type=dict(id=seat_type.id, name=seat_type.name),
@@ -348,10 +394,14 @@ class IndexView(IndexViewMixin):
                         is_hold=seat.stock.stock_holder_id==stock_holder.id,
                         )
                     ) 
-                for seat in DBSession.query(c_models.Seat) \
+                for seat in DBSession.query(c_models.Seat)\
                             .options(joinedload('areas'),
-                                     joinedload('status_')) \
-                            .filter_by(venue_id=venue_id)
+                                     joinedload('status_'))\
+                            .join(c_models.SeatStatus)\
+                            .join(c_models.Stock)\
+                            .filter(c_models.Seat.venue_id==venue_id)\
+                            .filter(c_models.SeatStatus.status==int(c_models.SeatStatusEnum.Vacant))\
+                            .filter(c_models.Stock.stock_holder_id==stock_holder.id)
                 ),
             areas=dict(
                 (area.id, { 'id': area.id, 'name': area.name }) \
@@ -403,6 +453,7 @@ class IndexView(IndexViewMixin):
         venue = c_models.Venue.get(venue_id)
         return Response(body=venue.site.get_drawing(part).stream().read(), content_type='text/xml; charset=utf-8')
 
+@view_defaults(decorator=with_jquery)
 class ReserveView(object):
     """ 座席選択完了画面(おまかせ) """
 
@@ -567,9 +618,11 @@ class ReserveView(object):
             csrf_context=self.request.session)
         if not form.validate():
             raise InvalidCSRFTokenException
+
         # セッションからCSRFトークンを削除して再利用不可にしておく
         if 'csrf' in self.request.session:
             del self.request.session['csrf']
+            self.request.session.persist()
 
         order_items = self.ordered_items
 
@@ -646,6 +699,7 @@ class ReserveView(object):
         """ 座席確保できなかった場合
         """
 
+@view_defaults(decorator=with_jquery.not_when(mobile_request))
 class ReleaseCartView(object):
     def __init__(self, request):
         self.request = request
@@ -659,6 +713,7 @@ class ReleaseCartView(object):
         return dict()
 
 
+@view_defaults(decorator=with_jquery.not_when(mobile_request))
 class PaymentView(object):
     """ 支払い方法、引き取り方法選択 """
     def __init__(self, request):
@@ -743,6 +798,7 @@ class PaymentView(object):
             return False
         return True
 
+    @back(back_to_top, back_to_product_list_for_mobile)
     @view_config(route_name='cart.payment', request_method="POST", renderer=selectable_renderer("carts/%(membership)s/payment.html"))
     @view_config(route_name='cart.payment', request_type='.interfaces.IMobileRequest', request_method="POST", renderer=selectable_renderer("carts_mobile/%(membership)s/payment.html"))
     def post(self):
@@ -837,6 +893,7 @@ class PaymentView(object):
             user=user
         )
 
+@view_defaults(decorator=with_jquery.not_when(mobile_request))
 class ConfirmView(object):
     """ 決済確認画面 """
     def __init__(self, request):
@@ -862,6 +919,7 @@ class ConfirmView(object):
             )
 
 
+@view_defaults(decorator=with_jquery.not_when(mobile_request))
 class CompleteView(object):
     """ 決済完了画面"""
     def __init__(self, request):
@@ -869,14 +927,21 @@ class CompleteView(object):
         self.context = request.context
         # TODO: Orderを表示？
 
-    @back
+    @back(back_to_top, back_to_product_list_for_mobile)
     @view_config(route_name='payment.finish', renderer=selectable_renderer("carts/%(membership)s/completion.html"), request_method="POST")
     @view_config(route_name='payment.finish', request_type='.interfaces.IMobileRequest', renderer=selectable_renderer("carts_mobile/%(membership)s/completion.html"), request_method="POST")
     def __call__(self):
         api.check_sales_segment_term(self.request)
         form = schemas.CSRFSecureForm(formdata=self.request.params, csrf_context=self.request.session)
-        form.validate()
-        #assert not form.csrf_token.errors
+        if not form.validate():
+            logger.info('invalid csrf token: %s' % form.errors)
+            raise InvalidCSRFTokenException
+
+        # セッションからCSRFトークンを削除して再利用不可にしておく
+        if 'csrf' in self.request.session:
+            del self.request.session['csrf']
+            self.request.session.persist()
+
         cart = api.get_cart_safe(self.request)
         if not cart.is_valid():
             raise NoCartError()
@@ -974,6 +1039,7 @@ class CompleteView(object):
                 logger.debug("User %s is already subscribing %s for <%s>" % (user, subscription.name, mail_address))
 
 
+@view_defaults(decorator=with_jquery.not_when(mobile_request))
 class InvalidMemberGroupView(object):
     def __init__(self, request):
         self.request = request
@@ -1034,6 +1100,7 @@ class MobileIndexView(IndexViewMixin):
             event=self.context.event,
             sales_segment=self.context.normal_sales_segment,
             venues=venues,
+            venue_name=venue_name,
             performances=performances,
             performance_name=performance_name
             )
@@ -1080,20 +1147,24 @@ class MobileSelectProductView(object):
 
         data = dict(
             seat_types=[
-                dict(id=s.id, name=s.name,
-                     style=s.style,
-                     products_url=self.request.route_url('cart.products',
-                                                         event_id=event_id, performance_id=performance_id, sales_segment_id=sales_segment.id, seat_type_id=s.id),
-                     availability=available > 0,
-                     availability_text=h.get_availability_text(available),
-                     quantity_only=s.quantity_only,
-                     )
-            for s, total, available in seat_type_triplets
-            ],
+                dict(
+                    id=s.id,
+                    name=s.name,
+                    description=s.description,
+                    style=s.style,
+                    products_url=self.request.route_url('cart.products',
+                                                        event_id=event_id, performance_id=performance_id, sales_segment_id=sales_segment.id, seat_type_id=s.id),
+                    availability=available > 0,
+                    availability_text=h.get_availability_text(available),
+                    quantity_only=s.quantity_only,
+                    )
+                for s, total, available in seat_type_triplets
+                ],
             event=event,
             performance=performance,
             venue=performance.venue,
-        )
+            sales_segment=sales_segment
+            )
         return data
 
     @view_config(route_name='cart.products', renderer=selectable_renderer('carts_mobile/%(membership)s/products.html'), xhr=False, request_type=".interfaces.IMobileRequest")
@@ -1156,16 +1227,18 @@ class MobileSelectProductView(object):
         # CSRFトークン発行
         form = schemas.CSRFSecureForm(csrf_context=self.request.session)
 
-        data = dict(
+        return dict(
             event=event,
             performance=performance,
             venue=performance.venue,
+            sales_segment=sales_segment,
             seat_type=seat_type,
             upper_limit=sales_segment.upper_limit,
             products=[
                 dict(
                     id=product.id,
                     name=product.name,
+                    description=product.description,
                     detail=h.product_name_with_unit(product, performance_id),
                     price=h.format_number(product.price, ","),
                 )
@@ -1173,8 +1246,8 @@ class MobileSelectProductView(object):
             ],
             form=form,
         )
-        return data
 
+@view_defaults(decorator=with_jquery.not_when(mobile_request))
 class OutTermSalesView(object):
     def __init__(self, context, request):
         self.request = request
@@ -1193,7 +1266,7 @@ class OutTermSalesView(object):
         return dict(event=self.context.event, 
                     sales_segment=self.context.sales_segment)
 
-@view_config(route_name='cart.logout')
+@view_config(decorator=with_jquery.not_when(mobile_request), route_name='cart.logout')
 def logout(request):
     headers = security.forget(request)
     res = HTTPFound(location='/')

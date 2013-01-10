@@ -2,7 +2,8 @@
 from ticketing.cart.helpers import format_number as _format_number
 from ticketing.core.models import no_filter
 from ticketing.models import record_to_multidict
-from ticketing.users.models import MailSubscription, MailMagazine
+from ticketing.users.models import MailSubscription, MailMagazine, MailSubscriptionStatus
+from sqlalchemy.sql.expression import or_
 from collections import defaultdict
 
 def format_number(value):
@@ -10,9 +11,11 @@ def format_number(value):
 
 def _create_mailsubscription_cache(organization_id):
     D = defaultdict(str)
-    query = MailSubscription.query.filter(MailSubscription.segment_id==MailMagazine.id)
+    query = MailSubscription.query \
+        .filter(MailSubscription.segment_id == MailMagazine.id) \
+        .filter(or_(MailSubscription.status is None, MailSubscription.status == MailSubscriptionStatus.Subscribed.v))
     if organization_id:
-        query = query.filter(MailMagazine.organization_id==organization_id)
+        query = query.filter(MailMagazine.organization_id == organization_id)
     for ms in query:
         D[ms.email] = "1"
     return D

@@ -8,6 +8,8 @@ from .consts import AUTHENTICATION_METHOD, MAC, BEARER, MAC_KEY_LENGTH
 from .exceptions import *
 from .util.uri import add_parameters, add_fragments, normalize
 
+## too-bad
+from ticketing.models import *
 from ticketing.core.models import *
 from ticketing.oauth2.models import *
 from ticketing.operators.models import Permission

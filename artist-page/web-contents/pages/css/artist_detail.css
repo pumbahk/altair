@@ -1,0 +1,191 @@
+
+/*artist.detail.php*/
+
+#main_center{
+	
+}
+
+#main_right{
+	border:soli 1px transparent;
+	width:240px;
+	background-color:#ffffff;
+	float:right;
+}
+
+
+#title_check{
+	background: url(../../img/music/title_check.gif) repeat-x 0 50%;
+	background-size:600px 40px;
+	width:600px;
+	height:40px;
+	border:solid 1px transparent;
+	clear:left;
+}
+
+#discography_title{
+        background-size: 240px 50px;
+	background: url(../../img/artistpage/artistname.png) repeat-x 0 50%;
+        width:240px;
+        height:50px;
+        border:solid 1px transparent;
+	color:#FFFFFF;
+	font-size:1.4em;
+}
+#discography_title p{
+	margin-left:12px;
+	margin-top:10px;
+}
+
+#carousel_container {
+	background: url(../../img/music/bg_check.gif) repeat-x 0 50%;
+	background-size: 600px 130px;
+	width:600px;
+	height:130px;
+	border:solid 1px transparent;
+}
+
+#left_scroll {
+        background: url(../../img/music/btn_check_prev.gif) repeat-x 0 50%;
+	width:15px;
+	height:100px;
+	margin-left:10px;
+	display: block;
+}
+
+#right_scroll {
+	background: url(../../img/music/btn_check_next.gif) repeat-x 0 50%;
+	width:15px;
+	height:100px;
+	display: block;
+}
+
+#plof_box{
+	background-color:#f0f0f0;
+        border:1px solid transparent;
+	width:490px;
+	height:500px;
+	float:left;
+}
+#main_all {
+	clear:both;
+	border:1px solid transparent;
+
+}
+#artistname {
+        background: url(../../img/artistpage/artistname.png) repeat-x 0 50%;
+        background-size: 495px 50px;
+        width:495px;
+        height:50px;
+	border:solid 1px transparent;
+	font-size:1.3em;
+	color:#ffffff;
+}
+
+#artistname p {
+	margin-left:30px;
+}
+#main_bg {
+	background-size: 700px 500px;
+	width:740px;
+	height:100%;
+}
+
+#main_bg h3 {
+        background: url(../../img/artistpage/genre_small_title.png) norepeat 0 50%;
+        background-size: 130px 23px;
+        width:200px;
+        height:23px;
+        border:1px solid transparent;
+	margin-left:5px;
+}
+
+#picture {
+        background-color:#ccc;
+	width:370px;
+	height:200px;
+}
+
+#photos {
+	border:1px solid transparent;
+        background: url(../../img/artistpage/genre_big_title.png) repeat-x 0 50%;
+        background-size: 470px 200px;
+}
+
+#photos img {
+        border:1px solid transparent;
+	margin:4px;
+}
+
+ #plof {
+}
+
+#salesdate {
+	margin:10px;
+        background-color:#E0FFFF;
+        border-radius:5px;
+        -webkit-border-radius:5px;
+        -moz-border-radius:5px;
+        width:600px;
+        padding:10px;
+}
+
+#cd_slide {
+        border:1px solid black;
+        width:200px;
+        height:350px;
+        overflow:auto;
+}
+		
+.jScrollPaneContainer {
+	position: relative;
+	overflow: hidden;
+	z-index: 1;
+}
+
+.jScrollPaneTrack {
+	position: absolute;
+	cursor: pointer;
+	right: 0;
+	top: 0;
+	height: 300px;
+	background: #aaa;
+}
+.jScrollPaneDrag {
+	position: absolute;
+	background: #f0f0f0;
+	cursor: pointer;
+	overflow: hidden;
+}
+.jScrollPaneDragTop {
+	position: absolute;
+	top: 0;
+	left: 0;
+	overflow: hidden;
+}
+.jScrollPaneDragBottom {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	overflow: hidden;
+}
+a.jScrollArrowUp {
+	display: block;
+	position: absolute;
+	z-index: 1;
+	top: 0;
+	right: 0;
+	text-indent: -2000px;
+	overflow: hidden;
+	/*background-color: #666;*/
+	height: 9px;
+}
+a.jScrollArrowUp:hover {
+	/*background-color: #f60;*/
+}
+
+a.jScrollArrowDown {
+	display: block;
+}
+
+
+

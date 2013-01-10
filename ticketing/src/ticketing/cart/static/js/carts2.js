@@ -788,6 +788,12 @@ cart.OrderFormView = Backbone.View.extend({
         products.each(function(product) {
             payment_seat_products.append(self.buildProduct(product));
         });
+        var description = orderForm.find('.selectProduct-description');
+        var descriptionText = stock_type.get('description');
+        if (!descriptionText)
+            description.remove();
+        else
+            description.html(descriptionText);
         var btn_select_seat = orderForm.find('.btn-select-buy');
         var btn_entrust = orderForm.find('.btn-entrust-buy');
         var btn_buy = orderForm.find('.btn-buy');
@@ -817,11 +823,16 @@ cart.OrderFormView = Backbone.View.extend({
         for (var i = 0; i < upper_limit+1; i++) {
             $('<option></option>').text(i).val(i).appendTo(pullDown);
         }
+        var descriptionText = product.get('description');
+        var description = descriptionText ?
+            $('<div class="productListItem-description"></div>').text(product.get('description')):
+            $();
         cart.util.render_template_into(quantity, product.get("unit_template"), { num: pullDown });
         return $('<li class="productListItem"></li>')
             .append(quantity)
             .append(payment)
-            .append(name);
+            .append(name)
+            .append(description);
     }
 });
 

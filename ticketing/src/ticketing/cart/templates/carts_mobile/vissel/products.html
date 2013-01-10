@@ -1,0 +1,62 @@
+<%inherit file="./base.html"/>
+<%namespace file="./tags_mobile.html" name="mobile" />
+<%mobile:header>チケット購入</%mobile:header>
+${event.title}
+<hr size="1" color="#888888" noshade="noshade" />
+% if seat_type.description:
+<div>${seat_type.description|n}</div>
+<hr size="1" color="#888888" noshade="noshade" />
+% endif
+商品をお選びください
+
+<form action="${request.url}" method="post">
+  % for product in products:
+    <div>
+      <br/>
+      <div>
+        <font color="#960020">■</font>${product['name']} &yen;${product['price']}
+      </div>
+      % if product['description']:
+        <div>${product['description']}</div>
+      % endif
+      % if product['detail']:
+        ${product['detail']}<br/>
+      % endif
+      数量
+      <select name="product-${product['id']}">
+        % for num in range(upper_limit + 1):
+        <option value="${num}">${num}</option>
+        % endfor
+      </select>
+    </div>
+  % endfor
+  <div style="text-align:center;">
+  <br/>
+  <input type="hidden" name="performance_id" value="${performance.id}">
+  <input type="hidden" name="seat_type_id" value="${seat_type.id}">
+  ${form.csrf_token()}
+  <input type="submit" value="次へ">
+  </div>
+</form>
+<form action="${request.route_url('cart.seat_types', event_id=event.id, performance_id=performance.id, sales_segment_id=sales_segment.id)}" method="get">
+  <div style="text-align:center;">
+  <input type="submit" value="戻る">
+  </div>
+</form>
+
+<hr size="1" color="#888888" noshade="noshade" />
+
+<div style="background-color:#dc3759">会場</div>
+<div>
+  ${venue.name}
+</div>
+
+<div style="background-color:#dc3759">日程</div>
+<div>
+  ${performance.start_on}(予定)
+</div>
+
+<div style="background-color:#dc3759">席種</div>
+<div>
+${seat_type.name}
+</div>

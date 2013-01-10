@@ -10,7 +10,7 @@ from pyramid.url import route_path
 from pyramid.renderers import render_to_response
 from pyramid.security import has_permission, ACLAllowed
 
-from ticketing.core.models import merge_session_with_post, record_to_multidict
+from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.events.performances.forms import PerformanceForm, PerformancePublicForm

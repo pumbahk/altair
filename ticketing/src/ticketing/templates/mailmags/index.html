@@ -1,0 +1,44 @@
+<%inherit file="/layout_2cols.html"/>
+<%namespace file="/common/helpers.html" import="pager"/>
+<%namespace file="/common/helpers.html" import="flash_messages" />
+<%namespace file="/common/helpers.html" import="breadcrumbs" />
+
+<div class="breadcrumbs">
+  ${breadcrumbs(
+      names=[u'トップ', u'メールマガジン'],
+      urls=[request.route_path('index')]
+  )}
+</div>
+
+<div class="page-header">
+  <h3>メールマガジン</h3>
+</div>
+
+<div class="content">
+  ${flash_messages(request)}
+</div>
+
+<div class="mailmags">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>メールマガジン名</th>
+        <th>説明</th>
+      </tr>
+    </thead>
+    <tbody>
+      </tr>
+  % for mailmag in mailmags.items:
+      <tr>
+        <td>
+          <a href="${request.route_path('mailmags.show', id=mailmag.id)}">${mailmag.name}</a>
+        </td>
+        <td>
+          ${mailmag.description|n}
+        </td>
+      </tr>
+  % endfor
+    </tbody>
+  </table>
+  ${pager(mailmags)}
+</div>

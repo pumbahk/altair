@@ -11,7 +11,6 @@ from pyramid.tweens import EXCVIEW
 from pyramid.interfaces import IDict
 
 import sqlahelper
-from .api.impl import bound_communication_api ## cmsとの通信
 
 authn_exemption = re.compile(r'^(/_deform)|(/static)|(/_debug_toolbar)|(/favicon.ico)')
 
@@ -76,7 +75,7 @@ def main(global_config, **local_config):
     config.include('ticketing.master' , route_prefix='/master')
     config.include('ticketing.tickets' , route_prefix='/tickets')
     config.include('ticketing.products' , route_prefix='/products')
-    config.include('ticketing.users' , route_prefix='/users')
+    config.include('ticketing.users.mailmags' , route_prefix='/mailmags')
     config.include('ticketing.venues' , route_prefix='/venues')
     config.include('ticketing.dashboard' , route_prefix='/dashboard')
     config.include('ticketing.bookmark' , route_prefix='/bookmark')
@@ -103,18 +102,17 @@ def main(global_config, **local_config):
     #config.scan('ticketing') # Bad Code
     
     ## cmsとの通信
-    bound_communication_api(config, 
-                            ".api.impl.CMSCommunicationApi", 
-                            config.registry.settings["altaircms.event.notification_url"], 
-                            config.registry.settings["altaircms.apikey"]
-                            )
-
+    from .api.impl import CMSCommunicationApi
+    event_push_communication = CMSCommunicationApi(
+        settings["altaircms.event.notification_url"], 
+        settings["altaircms.apikey"]
+        )
+    event_push_communication.bind_instance(config)
     import ticketing.pyramid_boto
     ticketing.pyramid_boto.register_default_implementations(config)
     import ticketing.assets
     ticketing.assets.register_default_implementations(config)
 
     config.scan(".views")
-
 
     return config.make_wsgi_app()

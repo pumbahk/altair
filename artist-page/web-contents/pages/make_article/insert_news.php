@@ -16,6 +16,7 @@
 <div id ="main">
 
 <?php
+include 'db.php';
 
 if(!$_POST){
 	echo "<a class='btn'><i class='icon-pencil'></i> 黒いアイコンを使うとき</a>";
@@ -27,12 +28,6 @@ if(!$_POST){
 <?
 
 exit;}
-
-
-
-$dbh = new mysqli("127.0.0.1:3306","root",'root');
-$dbh -> select_db("artistpage");
-$dbh ->set_charset("UTF8");
 
 /*confirmedがあったら確認なしでテーブルに入れて更新終わり*/
 $confirmed_flag=0;

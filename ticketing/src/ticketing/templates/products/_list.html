@@ -297,8 +297,8 @@
       ),
       'preview':dict(
         label=u'券面プレビュー',
-        url=request.route_path('events.tickets.bundles.items.preview', event_id=product.event_id, bundle_id=product_item.ticket_bundle_id, item_id=product_item.id),
-        icon='icon-print',
+        url='javascript:preview_ticket(%s);' % product_item.id,
+        icon='icon-print'
       ),
     })
   action_dict.update({
@@ -388,7 +388,7 @@
                   <input type="hidden" id="seat_stock_type_id" value="${stock_type_id}" />
                 </td>
                 <td ${rowspan}><span>${product.seat_type()}</span></td>
-                <td ${rowspan}><a href="javascript:edit_product('${product.id}');"><span id="name">${product.name}</span></a> (<span id="id">${product.id}</span>)</td>
+                <td ${rowspan}><a href="javascript:edit_product('${product.id}');"><span id="name">${product.name}</span></a></td>
                 <td ${rowspan}><span id="price" value="${product.price}">${h.price_format(product.price)}</span>円</td>
                 <td ${rowspan}><span id="display_order">${product.display_order}</span></td>
                 <td ${rowspan}><span id="public" value="${product.public}">${u'○' if product.public else u'×'}</span></td>
@@ -404,8 +404,8 @@
                 <td>${item.stock.stock_status.quantity} / ${item.stock.quantity}席</td>
                 <td id="stock-${item.id}" value="${item.stock.id}">${item.stock.id}</td>
                 <td id="ticket_bundle_id-{$item.id}" value="${item.ticket_bundle_id}">
-                  % if item.ticket_bundle_id:
-                    <a href="${request.route_path("events.tickets.bundles.items.preview", event_id=product.event_id, bundle_id=item.ticket_bundle.id, item_id=item.id)}" target="_blank">${item.ticket_bundle.name}<i class="icon-eye-open"></i></a>
+                  % if performance and item.ticket_bundle_id:
+                    <a id="productItem${item.id}" class="preview-link" data-pk="${item.id}" data-name="${item.name}">${item.ticket_bundle.name}<i class="icon-eye-open"></i></a>
                   % else:
                     -
                   % endif
@@ -442,6 +442,58 @@
   </div>
 </div>
 
+## preview link javascript
+% if performance:
+  <script type="text/javascript" src="${request.static_url("ticketing:static/js/spin.js")}"></script>
+  <script type="text/javascript" src="${request.static_url("ticketing:static/js/altair/spinner.js")}"></script>
+  <script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/modal/api.js")}"></script>
+  <script type="text/javascript">
+    $(function(){
+      var candidates = [];
+      var modalView = false;
+      var modelname = "ProductItem";
+
+      // collect candidates info
+      $(".preview-link").each(function(_,e){
+        var $e = $(e); 
+        candidates.push({pk: $e.attr("data-pk"), name: $e.attr("data-name")}); 
+　    });
+
+      // preview component
+      $("a.preview-link").on("click", function(){
+
+        var $el = $(this);
+        var pk = $el.attr("data-pk");
+
+        if(!!modalView){
+          modalView.onClick();
+          apps["loadsvg"].model.changeHolder({pk: pk, name: modelname})
+          return false;
+        }
+
+        var qstring = "event_id="+"${performance.event_id}"+"&performance_id="+"${performance.id}"; //ugly
+        modalView = new modal.api.AjaxModalView({
+          el: $el,
+          href: "${request.route_path('tickets.preview.dialog', model="ProductItem")}"+"?"+qstring, 
+          modalArea: $("#preview_ticket_modal"), 
+          option: {backdrop: false, stretch: true}, 
+          header: "チケット券面のpreview",
+          callback: function(modalview){
+           // append select
+            apps["loadsvg"] = new preview.SVGFromModelView({el: modalview.$modalArea, model: apps["preview"].models["params"], modelname: modelname});
+            apps["loadsvg"].render("商品選択:", candidates);
+            apps["loadsvg"].model.changeHolder({pk: pk, name: modelname})
+          }
+        });
+        modalView.onClick();
+        return false;
+      });
+    });
+  </script>
+  <div id="preview_ticket_modal">
+% endif
+
 % if paging:
   ${h.pager(products)}
 % endif
+

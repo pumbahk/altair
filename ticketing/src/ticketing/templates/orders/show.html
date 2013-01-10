@@ -1,17 +1,6 @@
 <%inherit file="/layout_2cols.html" />
 <%namespace file="/common/helpers.html" name="h" />
 
-<%block name="javascript">
-<script type="text/javascript" src="/static/js/fashion.js"></script>
-<![if !(lt IE 9)]>
-<script type="text/javascript" src="/static/js/fashion.svg.js"></script>
-<![endif]>
-<!--[if (lt IE 9)]> 
-<script type="text/javascript" src="/static/js/fashion.vml.js"></script>
-<![endif]-->
-<script type="text/javascript" src="/static/js/ticketing.ticket-viewer.js"></script>
-</%block>
-
 <div class="breadcrumbs">
 ${h.breadcrumbs(
   names=[u'トップ', u'購入情報', order_current.performance.name, order_current.order_no],
@@ -201,8 +190,8 @@ ${h.breadcrumbs(
               <th>購読メールマガジン</th>
               <td>
                 <ul>
-                % for name in list(set(mail_magazines)):
-                  <li>${name}</li>
+                % for mail_magazine in list(set(mail_magazines)):
+                  <li><a href="${request.route_path('mailmags.show', id=mail_magazine.id)}">${mail_magazine.name}</a></li>
                 % endfor
                 </ul>
               </td>
@@ -538,6 +527,22 @@ ${h.breadcrumbs(
 
 <div class="modal hide" id="PreviewModal">
 </div>
+<script type="text/javascript">
+$(function(){
+// stretch size
+  var uniwin = {
+      width: window.innerWidth || document.documentElement.clientWidth
+          || document.body.offsetWidth,
+      height: window.innerHeight || document.documentElement.clientHeight
+          || document.body.offsetHeight
+  };
+  var w = uniwin.width*0.7;
+  var h = uniwin.height*0.7;
+  var $e = $("#PreviewModal");
+  $e.width(w).height(h).css("margin-left",-(w/2));
+});
+</script>
+
 <div class="modal hide" id="PrintQueueModal">
 </div>
 <div class="modal hide" id="ForceMarkIssued">

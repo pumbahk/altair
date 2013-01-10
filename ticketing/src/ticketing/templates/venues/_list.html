@@ -7,8 +7,8 @@
   <tr>
     <th class="span1"></th>
     <th class="span1">site ID</th>
-    <th class="span1">元venue ID</th>
     <th class="span1">venue ID</th>
+    <!--<th class="span1">元venue ID</th>-->
     <th>名称</th>
     <th>席数</th>
     <th>パフォーマンス</th>
@@ -22,8 +22,8 @@
       <!--<input name="venue_id" type="radio" value=${item.venue.id} />-->
     </td>
     <td><span class="id">${item.venue.site.id}</span></td>
-    <td><span class="id">${item.venue.original_venue_id}</span></td>
     <td><span class="id">${item.venue.id}</span></td>
+    <!--<td><span class="id">${item.venue.original_venue_id}</span></td>-->
     <td><a href="${request.route_path('venues.show', venue_id=item.venue.id)}"><span class="name">${item.venue.name}</span></a></td>
 	<td>${item.count}</td>
 	<td>

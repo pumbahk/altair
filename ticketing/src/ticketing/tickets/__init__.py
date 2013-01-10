@@ -36,3 +36,4 @@ def includeme(config):
     config.add_route('tickets.printer.api.dequeue', '/print/dequeue')
 
     config.scan('.views')
+    config.include(".preview")

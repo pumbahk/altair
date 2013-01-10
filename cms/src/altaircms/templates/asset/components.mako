@@ -21,14 +21,14 @@
 </%def>
 
 <%def name="asset_show(request, asset)">
-	<div class="span5">
+	<div class="span6">
 	  <img src="${h.asset.to_show_page(request, asset)}" alt="${asset.alt}"/>
 	</div>
 </%def>
 
 <%def name="image_asset_describe(request, asset)">
     ${asset_show(request,asset)}
-	<div class="span5">
+	<div class="span6">
 	  <table class="table">
 		<tbody>
 		${asset_tr_attr(asset, u"タイトル", "title")}
@@ -55,7 +55,7 @@
             ${h.asset.not_found_image(request)|n}
         %endif
     </div>
-	<div class="span5">
+	<div class="span6">
 	  <table class="table">
 		<tbody>
 		${asset_tr_attr(asset, u"タイトル", "title")}
@@ -97,14 +97,14 @@
 	})
 	</script>
 
-	<div class="span5">
+	<div class="span6">
       <div id="asset"></div>
 	</div>
 </%def>
 
 <%def name="flash_asset_describe(request, asset)">
     ${flash_show(request, asset)}
-	<div class="span5">
+	<div class="span6">
 	  <table class="table">
 		<tbody>
 		${asset_tr_attr(asset, u"タイトル", "title")}

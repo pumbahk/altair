@@ -1717,23 +1717,41 @@
 	background-image: url(../img/settlement/btn_buy.small.d.gif);
 }
 
-.selectProduct ul.productList {
-	padding: 2px 8px;
+#selectSeatType .selectProduct .productListContainer {
+	margin: 0 20px 0 0px;
+	padding: 0 8px 0 8px;
+	background-color: #eee;
 }
 
-.selectProduct ul.productList li.productListItem {
-	padding: 2px 2px;
+#selectSeatType .selectProduct .selectProduct-description {
+	padding: 8px 7px;
+	margin-left: 2px;
+	margin-right: 20px;
+	background: url(../img/settlement/bg_seat.gif) repeat-y 0 0;
+}
+
+#selectSeatType .selectProduct ul.productList {
+  margin: 0 0;
+	padding: 0 0;
+}
+
+#selectSeatType .selectProduct ul.productList li.productListItem {
+	padding: 2px 0;
 	clear: both;
 }
 
-.selectProduct ul.productList li.productListItem .productPrice {
+#selectSeatType .selectProduct ul.productList li.productListItem .productPrice {
 	padding-left: 4px;
 	padding-right: 4px;
 	float: right;
 }
 
-.selectProduct ul.productList li.productListItem .productQuantity {
+#selectSeatType .selectProduct ul.productList li.productListItem .productQuantity {
 	float: right;
+}
+
+#selectSeatType .selectProduct ul.productList li.productListItem .productListItem-description {
+	margin-left: 1em;
 }
 
 #selectBuy {
@@ -1975,7 +1993,8 @@
 
 #selectSeatType ul.buttonSet {
 	clear:right;
-	padding: 0 0 0 0;
+	padding: 0 0;
+	margin: 2px 0px 0 10px;
 	text-align: right;
 }
 

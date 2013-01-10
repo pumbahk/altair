@@ -110,8 +110,6 @@ class RakutenOpenIDPlugin(object):
     # IMetadataProvider
     def add_metadata(self, environ, identity):
         # identityをデシリアライズして、nicknameを取得する
-        print 'metadata'
-        print identity
         identity = self.get_identity(req)
         userdata = pickle.loads(identity.decode('base64'))
         identity.update(nickname=userdata['clamed_id'])

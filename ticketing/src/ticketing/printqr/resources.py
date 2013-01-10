@@ -36,7 +36,6 @@ class PrintQRResource(object):
     @reify
     def applet_endpoints(self):
         event_id = self.request.matchdict.get("event_id", "*")
-        print event_id, 
         logger.debug("tickettemplates:api -- %s" % self.request.route_path('api.applet.ticket', event_id=event_id, id=''))
         return {
             "tickettemplates": self.request.route_path('api.applet.ticket', event_id=event_id, id=''),

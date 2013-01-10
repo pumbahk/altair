@@ -175,7 +175,7 @@ class AssetResource(RootFactory):
         else:
             params = h.get_asset_params_from_form_data(form_params)
             params.update(_get_extra_status(form_params, form_params["filepath"].file))
-            params["filepath"] = h.get_writename(form_params["filepath"].filename)
+            params["filepath"] = asset.filepath
 
             params["size"] = _write_buf(self.storepath, params["filepath"], params["buf"])
 
@@ -198,7 +198,7 @@ class AssetResource(RootFactory):
         else:
             params = h.get_asset_params_from_form_data(form_params)
             params.update(_get_extra_status(form_params, form_params["filepath"].file))
-            params["filepath"] = h.get_writename(form_params["filepath"].filename)
+            params["filepath"] = asset.filepath
 
             params["size"] = _write_buf(self.storepath, params["filepath"], params["buf"])
 
@@ -221,7 +221,7 @@ class AssetResource(RootFactory):
         else:
             params = h.get_asset_params_from_form_data(form_params)
             params.update(_get_extra_status(form_params, form_params["filepath"].file))
-            params["filepath"] = h.get_writename(form_params["filepath"].filename)
+            params["filepath"] = asset.filepath
 
             params["size"] = _write_buf(self.storepath, params["filepath"], params["buf"])
 

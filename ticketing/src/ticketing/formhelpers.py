@@ -99,7 +99,6 @@ def strip(chars):
 REGEX_HYPHEN = re.compile('\-')
 def strip_hyphen():
     def stripper(unistr):
-        print unistr
         return unistr and REGEX_HYPHEN.sub('', unistr)
     return stripper
 
@@ -148,6 +147,11 @@ class OurSelectField(BugFreeSelectField):
     pass
 
 _gen_field_init(OurSelectField)
+
+class OurDecimalField(fields.DecimalField):
+    pass
+
+_gen_field_init(OurDecimalField)
 
 class OurIntegerField(fields.IntegerField):
     pass

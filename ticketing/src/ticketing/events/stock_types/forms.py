@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from wtforms import Form
-from ticketing.formhelpers import OurForm, OurTextField, OurSelectField, OurIntegerField, OurBooleanField
+from ticketing.formhelpers import OurForm, OurTextField, OurSelectField, OurIntegerField, OurBooleanField, NullableTextField
 from wtforms import HiddenField, FieldList
 from wtforms.validators import Length, Optional
-from wtforms.widgets import CheckboxInput
+from wtforms.widgets import CheckboxInput, TextArea
 
 from ticketing.formhelpers import Translations, Required
 from ticketing.core.models import StockTypeEnum
@@ -39,9 +39,15 @@ class StockTypeForm(OurForm):
     )
     display_order = OurTextField(
         label=u'表示順',
-        hide_on_new=True
+        hide_on_new=True,
+        default=u'1'
     )
     fill_color = OurTextField(
         label=u'塗りつぶし色',
         hide_on_new=True
     )
+    description = NullableTextField(
+        widget=TextArea(),
+        label=u'説明',
+        hide_on_new=True
+        )

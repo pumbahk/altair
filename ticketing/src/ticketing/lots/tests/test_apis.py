@@ -12,6 +12,20 @@ dependency_modules = [
     'ticketing.lots.models',
 ]
 
+class get_productsTests(unittest.TestCase):
+    def _callFUT(self, *args, **kwargs):
+        from ..api import get_products
+        return get_products(*args, **kwargs)
+
+    def test_it(self):
+        request = testing.DummyRequest()
+        sales_segment = mock.Mock()
+        performances = [
+            testing.DummyModel()
+        ]
+        results = self._callFUT(request, sales_segment, performances)
+        sales_segment.get_products.assert_called_with(performances)
+        
 class create_cartTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

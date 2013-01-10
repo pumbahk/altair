@@ -1,7 +1,5 @@
 <?php
-$dbh = new mysqli("127.0.0.1:3306","root",'root');
-$dbh -> select_db("artistpage");
-$dbh ->set_charset("UTF8");
+include 'db.php';
 $stmt_get_genre = $dbh -> prepare("select * from genre");
 $stmt_get_genre ->execute();
 $stmt_get_genre ->bind_result($id,$genre,$parent_id);

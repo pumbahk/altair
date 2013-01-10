@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   width="177.96mm"
+   height="65.04mm"
+   id="svg2"
+   version="1.2">
+
+  <rect id="rect1" x="3mm" y="3mm" width="134mm" height="59.04mm" fill="green"/>
+  <rect id="rect2" x="143.1mm" y="3mm" width="31.86mm" height="59.04mm" fill="green"/>
+
+  <line x1="140.01mm" x2="140.01mm" y1="0mm" y2="65.04mm" stroke-dasharray="1.5mm,1.5mm" stroke="red" />
+</svg>

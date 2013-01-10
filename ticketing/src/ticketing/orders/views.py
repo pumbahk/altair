@@ -18,21 +18,22 @@ from wtforms import ValidationError
 from wtforms.validators import Optional
 from sqlalchemy import and_
 from sqlalchemy.sql import exists
+from sqlalchemy.sql.expression import or_
 from sqlalchemy.orm import joinedload
 
 from ticketing.models import merge_session_with_post, record_to_multidict
-from ticketing.core.models import (Order, Event, Performance, PaymentDeliveryMethodPair, ShippingAddress,
-                                   Product, ProductItem, OrderedProduct, OrderedProductItem, Venue,
+from ticketing.core.models import (Order, Performance, PaymentDeliveryMethodPair, ShippingAddress,
+                                   Product, ProductItem, OrderedProduct, OrderedProductItem, 
                                    Ticket, TicketBundle, TicketFormat, Ticket_TicketBundle,
+                                   DeliveryMethod, TicketFormat_DeliveryMethod, 
                                    Stock, StockStatus, Seat, SeatStatus, SeatStatusEnum)
-from ticketing.users.models import MailSubscription
+
+from ticketing.users.models import MailSubscription, MailMagazine, MailSubscriptionStatus
 from ticketing.orders.export import OrderCSV
 from ticketing.orders.forms import (OrderForm, OrderSearchForm, SejOrderForm, SejTicketForm,
                                     SejRefundEventForm,SejRefundOrderForm, SendingMailForm,
                                     PerformanceSearchForm, OrderReserveForm, ClientOptionalForm,
                                     PreviewTicketSelectForm, CheckedOrderTicketChoiceForm)
-from lxml import etree
-from ticketing.tickets.convert import to_opcodes
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.orders.events import notify_order_canceled
@@ -40,7 +41,6 @@ from ticketing.tickets.utils import build_dicts_from_ordered_product_item
 from ticketing.cart import api
 from ticketing.cart.stocker import NotEnoughStockException
 from ticketing.cart.reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
-from ticketing.core.utils import IssuedPrintedAtSetter
 
 import pystache
 from . import utils
@@ -61,14 +61,14 @@ def available_ticket_formats_for_orders(orders):
 
 def available_ticket_formats_for_ordered_product_item(ordered_product_item_id):
     return TicketFormat.query\
-        .filter(TicketFormat.id==Ticket.ticket_format_id)\
-        .filter(Ticket.id==Ticket_TicketBundle.ticket_id)\
-        .filter(Ticket_TicketBundle.ticket_bundle_id==TicketBundle.id)\
-        .filter(TicketBundle.id==ProductItem.ticket_bundle_id)\
-        .filter(ProductItem.id==OrderedProductItem.product_item_id)\
         .filter(OrderedProductItem.id==ordered_product_item_id)\
+        .filter(OrderedProduct.id==OrderedProductItem.ordered_product_id)\
+        .filter(Order.id==OrderedProduct.order_id)\
+        .filter(PaymentDeliveryMethodPair.id==Order.payment_delivery_method_pair_id)\
+        .filter(DeliveryMethod.id==PaymentDeliveryMethodPair.delivery_method_id)\
+        .filter(TicketFormat_DeliveryMethod.delivery_method_id==DeliveryMethod.id)\
+        .filter(TicketFormat.id==TicketFormat_DeliveryMethod.ticket_format_id)\
         .with_entities(TicketFormat.id, TicketFormat.name)\
-        .distinct(TicketFormat.id)
 
 @view_defaults(xhr=True, permission='sales_counter') ## todo:適切な位置に移動
 class OrdersAPIView(BaseView):
@@ -177,30 +177,6 @@ def session_has_order_p(context, request):
 
 @view_defaults(decorator=with_bootstrap, permission='sales_editor')
 class Orders(BaseView):
-    @view_config(route_name="orders.checked.queue.dialog", renderer="ticketing:templates/orders/_checked_queue_dialog.html",
-                 custom_predicates=(session_has_order_p,), permission='sales_counter')
-    def checked_queue_dialog(self):
-        ords = self.request.session["orders"]
-        ords = [o.lstrip("o:") for o in ords if o.startswith("o:")]
-        form = CheckedOrderTicketChoiceForm(ticket_formats=available_ticket_formats_for_orders(ords))
-        return {"form": form}
-
-    @view_config(route_name="orders.checked.queue.dialog", renderer="string", permission='sales_counter')
-    def checked_queue_dialog_error(self):
-        params = dict(header=u"エラー", body=u"チェックした注文はありません")
-        return u"""
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal">×</button>
-    %(header)s
-  </div>
-  <div class="modal-body">
-    %(body)s
-  </div>
-  <div class="modal-footer">
-	<a href="#" class="btn" data-dismiss="modal">キャンセル</a>
-  </div>
-""" % params
-
     @view_config(route_name="orders.checked.index", renderer='ticketing:templates/orders/index.html', permission='sales_counter')
     def checked_orders_index(self):
         """後でindexと合成。これはチェックされたOrderだけを表示するview
@@ -275,8 +251,12 @@ class Orders(BaseView):
                                  .order_by(Order.branch_no.desc()).all()
 
         if order.shipping_address:
-            mail_subscriptions = MailSubscription.query.filter_by(email=order.shipping_address.email).all()
-            mail_magazines = [ms.segment.name for ms in mail_subscriptions if ms.segment.organization_id == order.organization_id]
+            mail_magazines = MailMagazine.query \
+                .filter(MailMagazine.organization_id == order.organization_id) \
+                .filter(MailSubscription.email == order.shipping_address.email) \
+                .filter(or_(MailSubscription.status is None,
+                            MailSubscription.status == MailSubscriptionStatus.Subscribed.v)) \
+                .distinct().all()
             form_shipping_address = ClientOptionalForm(record_to_multidict(order.shipping_address))
             form_shipping_address.tel.data = order.shipping_address.tel_1
             form_shipping_address.mail_address.data = order.shipping_address.email
@@ -382,7 +362,6 @@ class Orders(BaseView):
         performance_id = int(post_data.get('performance_id', 0))
         performance = Performance.get(performance_id, self.context.user.organization_id)
         if performance is None:
-            logger.error('performance id %d is not found' % performance_id)
             raise HTTPBadRequest(body=json.dumps({
                 'message':u'パフォーマンスが存在しません',
             }))
@@ -434,7 +413,6 @@ class Orders(BaseView):
         performance_id = int(post_data.get('performance_id', 0))
         performance = Performance.get(performance_id, self.context.user.organization_id)
         if performance is None:
-            logger.error('performance id %d is not found' % performance_id)
             raise HTTPBadRequest(body=json.dumps({
                 'message':u'パフォーマンスが存在しません',
             }))
@@ -487,7 +465,6 @@ class Orders(BaseView):
                 'cart':cart,
             }
         except ValidationError, e:
-            logger.exception('validation error (%s)' % e.message)
             raise HTTPBadRequest(body=json.dumps({'message':e.message}))
         except NotEnoughAdjacencyException:
             logger.info("not enough adjacency")
@@ -510,7 +487,6 @@ class Orders(BaseView):
         performance_id = int(post_data.get('performance_id', 0))
         performance = Performance.get(performance_id, self.context.user.organization_id)
         if performance is None:
-            logger.error('performance id %d is not found' % performance_id)
             raise HTTPBadRequest(body=json.dumps({
                 'message':u'パフォーマンスが存在しません',
             }))
@@ -705,7 +681,6 @@ class Orders(BaseView):
 
         f = OrderReserveForm(MultiDict(self.request.json_body))
         if not f.note.validate(f):
-            logger.debug('validation error (%s)' % f.note.errors)
             raise HTTPBadRequest(body=json.dumps({
                 'message':f.note.errors,
             }))
@@ -771,14 +746,18 @@ class Orders(BaseView):
             .all()
         dicts = build_dicts_from_ordered_product_item(item)
         data = dict(ticket_format.data)
+        data["ticket_format_id"] = ticket_format.id
         results = []
         names = []
         for seat, dict_ in dicts:
             names.append(seat.name if seat else dict_["product"]["name"])
+            preview_type = utils.delivery_type_from_built_dict(dict_)
+
             for ticket in tickets:
                 svg = pystache.render(ticket.data['drawing'], dict_)
                 r = data.copy()
-                r.update(dict(drawing=' '.join(to_opcodes(etree.ElementTree(etree.fromstring(svg))))))
+                r["preview_type"] = preview_type
+                r.update(drawing=svg)
                 results.append(r)
         return {"results": results, "names": names}
 
@@ -796,15 +775,7 @@ class Orders(BaseView):
         return {"order": order}
 
     @view_config(route_name="orders.checked.queue", request_method="POST", permission='sales_counter')
-    @view_config(route_name="orders.print.queue.manymany", request_method="POST",
-                 request_param="ticket_format_id", permission='sales_counter')
-    def order_print_queue_manymany(self):
-        ticket_format_id = self.request.POST.get("ticket_format_id")
-        if ticket_format_id:
-            ticket_format = TicketFormat.query.filter_by(id=ticket_format_id).first()
-            if ticket_format is None:
-                raise HTTPFound(location=self.request.route_path('orders.index'))
-
+    def enqueue_checked_order(self):
         ords = self.request.session["orders"]
         ords = [o.lstrip("o:") for o in ords if o.startswith("o:")]
 
@@ -812,19 +783,9 @@ class Orders(BaseView):
             .filter(Order.deleted_at==None).filter(Order.id.in_(ords))\
             .filter(Order.issued==False)\
 
-        if ticket_format_id:
-            qs = qs.filter(OrderedProduct.order_id.in_(ords))\
-                .filter(OrderedProductItem.ordered_product_id==OrderedProduct.id)\
-                .filter(ProductItem.id==OrderedProductItem.product_item_id)\
-                .filter(TicketBundle.id==ProductItem.ticket_bundle_id)\
-                .filter(Ticket_TicketBundle.ticket_bundle_id==TicketBundle.id)\
-                .filter(Ticket.id==Ticket_TicketBundle.ticket_id)\
-                .filter(TicketFormat.id==ticket_format_id) \
-                .distinct()
-
         for order in qs:
             if not order.queued:
-                utils.enqueue_for_order(operator=self.context.user, order=order, ticket_format_id=ticket_format_id)
+                utils.enqueue_for_order(operator=self.context.user, order=order)
 
         # def clean_session_callback(request):
         logger.info("*ticketing print queue many* clean session")
@@ -834,7 +795,10 @@ class Orders(BaseView):
         self.request.session["orders"] = session_values
         # self.request.add_finished_callback(clean_session_callback)
         self.request.session.flash(u'券面を印刷キューに追加しました. (既に印刷済みの注文は印刷キューに追加されません)')
+        if self.request.POST.get("redirect_url"):
+            return HTTPFound(location=self.request.POST.get("redirect_url"))            
         return HTTPFound(location=self.request.route_path('orders.index'))
+
 
     @view_config(route_name='orders.print.queue', permission='sales_counter')
     def order_print_queue(self):
@@ -991,7 +955,7 @@ class SejOrderInfoView(object):
             except SejServerError, e:
                 self.request.session.flash(u'オーダー情報を送信に失敗しました。 %s' % e)
         else:
-            print f.errors
+            logger.info(str(f.errors))
             self.request.session.flash(u'バリデーションエラー：更新出来ませんでした。')
 
         return HTTPFound(location=self.request.route_path('orders.sej.order.info', order_id=order_id))
@@ -1021,7 +985,6 @@ class SejOrderInfoView(object):
         if order:
             ticket = SejTicket.query.get(ticket_id)
             f = SejTicketForm(self.request.POST)
-            print self.request.POST
             if f.validate():
                 data = f.data
                 ticket.event_name = data.get('event_name')
@@ -1137,7 +1100,6 @@ class SejRefundView(BaseView):
             except NoResultFound, e:
                 ct = SejRefundTicket()
                 DBSession.add(ct)
-            print event
 
             ct.available     = 1
             ct.event_code_01 = event.event_code_01

@@ -12,14 +12,14 @@
                 var left_indent = parseInt($('#carousel_ul').css('left')) - item_width;  
       
                 //make the sliding effect using jquery's anumate function '  
-                $('#carousel_ul').animate({'left' : left_indent},{queue:false, duration:500},function(){  
+                $('#carousel_ul').animate({'left' : left_indent},{queue:false, duration:500,complete:function(){  
       
                     //get the first list item and put it after the last list item (that's how the infinite effects is made) '  
                     $('#carousel_ul li:last').after($('#carousel_ul li:first'));  
       
                     //and get the left indent to the default -210px  
                     $('#carousel_ul').css({'left' : '-210px'});  
-                });  
+                }});  
             });  
       
             //when user clicks the image for sliding left  
@@ -30,7 +30,7 @@
                 /* same as for sliding right except that it's current left indent + the item width (for the sliding right it's - item_width) */  
                 var left_indent = parseInt($('#carousel_ul').css('left')) + item_width;  
       
-                $('#carousel_ul').animate({'left' : left_indent},{queue:false, duration:500},function(){  
+                $('#carousel_ul').animate({'left' : left_indent},{queue:false, duration:500,complete:function(){   
       
                 /* when sliding to left we are moving the last item before the first item */  
                 $('#carousel_ul li:first').before($('#carousel_ul li:last'));  

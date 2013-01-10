@@ -45,9 +45,6 @@ class MyPageView(object):
 
         query = Order.filter(Order.user_id == user.id)
         if q:
-            print ">>>>>>>>>>>>>>"
-            print q
-            print ">>>>>>>>>>>>>>"
             query = Order.filter(Order.order_no == q)
         query = query.order_by(sort + ' ' + direction)
 
@@ -64,7 +61,6 @@ class MyPageView(object):
             url=paginate.PageURL_WebOb(self.request)
         )
 
-        print user.user_profile
         logger.debug(user.user_profile)
         return dict(
             q = q,

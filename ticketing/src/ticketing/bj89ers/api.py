@@ -23,7 +23,6 @@ def on_order_completed(event):
     order = event.order
 
     user_profile = load_user_profile(event.request)
-    print user_profile
     set_user_profile_for_order(event.request, order, user_profile)
 
 

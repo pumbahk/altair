@@ -76,20 +76,7 @@ def get_event(request):
 
 def get_products(request, sales_segment, performances):
     """ """
-    # TODO: 公演ごとに在庫とひもづく商品を表示する
-    # 販売区分 -> 商品 -> 商品アイテム -> 在庫 -> 公演
-    products = DBSession.query(Product, Performance
-    ).filter(
-        Product.sales_segment_id==sales_segment.id
-    ).filter(
-        Product.id==ProductItem.product_id
-    ).filter(
-        ProductItem.performance_id.in_([p.id for p in performances])
-    ).filter(
-        Performance.id==ProductItem.performance_id
-    ).distinct().order_by(Performance.id, Product.display_order).all()
-
-    return products
+    return sales_segment.get_products(performances)
 
 def get_member_group(request):
     user = authenticated_user(request)
@@ -353,7 +340,7 @@ def get_ordered_lot_entry(order):
     ).first()
 
 def notify_entry_lot(request, entry):
-    event = LotEntriedEvent(entry)
+    event = LotEntriedEvent(request, entry)
     request.registry.notify(event)
 
 def send_result_mails(request):
