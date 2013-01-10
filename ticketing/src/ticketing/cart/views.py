@@ -10,15 +10,17 @@ from markupsafe import Markup
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.exceptions import NotFound
 from pyramid.response import Response
-from pyramid.view import view_config
+from pyramid.view import view_config, view_defaults
 from pyramid.threadlocal import get_current_request
 from pyramid import security
-from js.jquery_tools import jquery_tools
+import js.jquery, js.jquery_tools
 from urllib2 import urlopen
 from zope.deprecation import deprecate
 from ..models import DBSession
 from ..core import models as c_models
 from ..users import models as u_models
+from ticketing.views import mobile_request
+from ticketing.fanstatic import with_jquery, with_jquery_tools
 from .models import Cart
 from . import helpers as h
 from . import schemas
@@ -137,17 +139,16 @@ class IndexViewMixin(object):
                 if specified is not None and specified.redirect_url_pc:
                     raise HTTPFound(specified.redirect_url_pc)
 
+@view_defaults(decorator=with_jquery.not_when(mobile_request))
 class IndexView(IndexViewMixin):
     """ 座席選択画面 """
     def __init__(self, request):
         super(IndexView, self).__init__(request)
         self.prepare()
 
-
-    @view_config(route_name='cart.index', renderer=selectable_renderer("carts/%(membership)s/index.html"), xhr=False, permission="buy")
+    @view_config(decorator=with_jquery_tools, route_name='cart.index', renderer=selectable_renderer("carts/%(membership)s/index.html"), xhr=False, permission="buy")
     def __call__(self):
         self.check_redirect(mobile=False)
-        jquery_tools.need()
         # ただ単にパフォーマンスのリストが欲しいだけなので
         # normal_sales_segment で良い
         performances = api.performance_names(self.request, self.context.event, self.context.normal_sales_segment)
@@ -393,10 +394,14 @@ class IndexView(IndexViewMixin):
                         is_hold=seat.stock.stock_holder_id==stock_holder.id,
                         )
                     ) 
-                for seat in DBSession.query(c_models.Seat) \
+                for seat in DBSession.query(c_models.Seat)\
                             .options(joinedload('areas'),
-                                     joinedload('status_')) \
-                            .filter_by(venue_id=venue_id)
+                                     joinedload('status_'))\
+                            .join(c_models.SeatStatus)\
+                            .join(c_models.Stock)\
+                            .filter(c_models.Seat.venue_id==venue_id)\
+                            .filter(c_models.SeatStatus.status==int(c_models.SeatStatusEnum.Vacant))\
+                            .filter(c_models.Stock.stock_holder_id==stock_holder.id)
                 ),
             areas=dict(
                 (area.id, { 'id': area.id, 'name': area.name }) \
@@ -448,6 +453,7 @@ class IndexView(IndexViewMixin):
         venue = c_models.Venue.get(venue_id)
         return Response(body=venue.site.get_drawing(part).stream().read(), content_type='text/xml; charset=utf-8')
 
+@view_defaults(decorator=with_jquery)
 class ReserveView(object):
     """ 座席選択完了画面(おまかせ) """
 
@@ -612,9 +618,11 @@ class ReserveView(object):
             csrf_context=self.request.session)
         if not form.validate():
             raise InvalidCSRFTokenException
+
         # セッションからCSRFトークンを削除して再利用不可にしておく
         if 'csrf' in self.request.session:
             del self.request.session['csrf']
+            self.request.session.persist()
 
         order_items = self.ordered_items
 
@@ -691,6 +699,7 @@ class ReserveView(object):
         """ 座席確保できなかった場合
         """
 
+@view_defaults(decorator=with_jquery.not_when(mobile_request))
 class ReleaseCartView(object):
     def __init__(self, request):
         self.request = request
@@ -704,6 +713,7 @@ class ReleaseCartView(object):
         return dict()
 
 
+@view_defaults(decorator=with_jquery.not_when(mobile_request))
 class PaymentView(object):
     """ 支払い方法、引き取り方法選択 """
     def __init__(self, request):
@@ -883,6 +893,7 @@ class PaymentView(object):
             user=user
         )
 
+@view_defaults(decorator=with_jquery.not_when(mobile_request))
 class ConfirmView(object):
     """ 決済確認画面 """
     def __init__(self, request):
@@ -908,6 +919,7 @@ class ConfirmView(object):
             )
 
 
+@view_defaults(decorator=with_jquery.not_when(mobile_request))
 class CompleteView(object):
     """ 決済完了画面"""
     def __init__(self, request):
@@ -921,8 +933,15 @@ class CompleteView(object):
     def __call__(self):
         api.check_sales_segment_term(self.request)
         form = schemas.CSRFSecureForm(formdata=self.request.params, csrf_context=self.request.session)
-        form.validate()
-        #assert not form.csrf_token.errors
+        if not form.validate():
+            logger.info('invalid csrf token: %s' % form.errors)
+            raise InvalidCSRFTokenException
+
+        # セッションからCSRFトークンを削除して再利用不可にしておく
+        if 'csrf' in self.request.session:
+            del self.request.session['csrf']
+            self.request.session.persist()
+
         cart = api.get_cart_safe(self.request)
         if not cart.is_valid():
             raise NoCartError()
@@ -1020,6 +1039,7 @@ class CompleteView(object):
                 logger.debug("User %s is already subscribing %s for <%s>" % (user, subscription.name, mail_address))
 
 
+@view_defaults(decorator=with_jquery.not_when(mobile_request))
 class InvalidMemberGroupView(object):
     def __init__(self, request):
         self.request = request
@@ -1227,6 +1247,7 @@ class MobileSelectProductView(object):
             form=form,
         )
 
+@view_defaults(decorator=with_jquery.not_when(mobile_request))
 class OutTermSalesView(object):
     def __init__(self, context, request):
         self.request = request
@@ -1245,7 +1266,7 @@ class OutTermSalesView(object):
         return dict(event=self.context.event, 
                     sales_segment=self.context.sales_segment)
 
-@view_config(route_name='cart.logout')
+@view_config(decorator=with_jquery.not_when(mobile_request), route_name='cart.logout')
 def logout(request):
     headers = security.forget(request)
     res = HTTPFound(location='/')

@@ -176,7 +176,6 @@ class RakutenOpenID(object):
             logger.debug("authentication NG")
             return None
 
-        print point_account
         logger.debug('user_info : %s' % user_info)
         user = cart_api.get_or_create_user(None, identity['claimed_id'])
         if user.user_profile is None:

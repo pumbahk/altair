@@ -12,7 +12,7 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
 from pyramid.response import Response
 
-from ticketing.core.models import record_to_multidict
+from ticketing.models import record_to_multidict
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.core.models import Event, StockHolder

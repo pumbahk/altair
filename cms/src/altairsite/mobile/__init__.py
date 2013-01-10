@@ -11,9 +11,12 @@ def includeme(config):
 
     config.scan(".views")
     
-def main(global_config, **settings):
+def main(global_config, **local_config):
     """ This function returns a Pyramid WSGI application.
     """
+    settings = dict(global_config)
+    settings.update(local_config)
+
     from pyramid.config import Configurator
     from sqlalchemy import engine_from_config
     import sqlahelper

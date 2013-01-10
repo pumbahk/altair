@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-import logging
-import webhelpers.paginate as paginate
+
+import json
 from StringIO import StringIO
 from ticketing.fanstatic import with_bootstrap
 from pyramid.view import view_config, view_defaults
-from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPCreated
+from pyramid.httpexceptions import HTTPFound
 from ticketing.models import DBSession
 from ticketing.core.models import ProductItem, Performance
 from ticketing.core.models import Ticket, TicketBundle, TicketBundleAttribute, TicketPrintQueueEntry
@@ -14,8 +14,6 @@ from . import forms
 
 from ticketing.tickets.utils import build_dict_from_product_item
 import pystache
-from ticketing.tickets.convert import to_opcodes
-from lxml import etree
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class IndexView(BaseView):
@@ -138,7 +136,7 @@ class BundleView(BaseView):
     @view_config(route_name="events.tickets.bundles.show",
                  renderer="ticketing:templates/tickets/events/bundles/show.html")
     def show(self):
-        product_item_dict = {}
+        product_item_dict = {} # {<performance_id>: {<name>: "",  <products>: {}, <product_items> : {}}}
         for product_item in self.context.bundle.product_items:
             performance = product_item_dict.get(product_item.performance_id)
             if performance is None:
@@ -160,9 +158,16 @@ class BundleView(BaseView):
                 'created_at': product_item.created_at
                 }
 
+        ## for ticket-preview
+        preview_item_candidates = []
+        for performance in product_item_dict.itervalues():
+            for pk, item_dict in performance["product_items"].iteritems():
+                preview_item_candidates.append({"pk": pk, "name": u"%s: %s" % (performance["name"] , item_dict["name"])})
+
         return dict(bundle=self.context.bundle, 
                     event=self.context.event,
-                    product_item_dict=product_item_dict)
+                    product_item_dict=product_item_dict, 
+                    preview_item_candidates=json.dumps(preview_item_candidates))
 
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
@@ -186,7 +191,7 @@ class BundleAttributeView(BaseView):
 
         attr = TicketBundleAttribute(name=form.data["name"], 
                                      value=form.data["value"], 
-                                     bundle=bundle)
+                                     ticket_bundle=bundle)
         attr.save()
         self.request.session.flash(u'属性(TicketBundleAttribute)を追加しました')
 
@@ -242,24 +247,6 @@ class BundleAttributeView(BaseView):
         return HTTPFound(self.request.route_path("events.tickets.bundles.show",
                                                  event_id=event_id, bundle_id=bundle_id))
 
-@view_config(route_name="events.tickets.bundles.items.preview", 
-             renderer="ticketing:templates/tickets/events/bundles/ticket_preview.html", 
-             permission="event_editor", decorator=with_bootstrap)
-def ticket_preview_bound_by_product_item(context, request):
-    return {"tickets": request.context.bundle.tickets, 
-            "item": request.context.product_item}
-
-@view_config(route_name="events.tickets.bundles.items.data", 
-             renderer="json", permission="event_editor", decorator=with_bootstrap)
-def ticket_preview_bound_by_product_item_data(context, request):
-    item = context.product_item
-    template = context.ticket_template
-    renderer = pystache.Renderer()
-    svg = renderer.render(template.drawing, build_dict_from_product_item(item))
-    data = dict(template.ticket_format.data)
-    data.update(dict(drawing=' '.join(to_opcodes(etree.ElementTree(etree.fromstring(svg))))))
-    return data
-
 @view_config(route_name="events.tickets.bundles.items.enqueue", 
              request_method="POST", permission="event_editor")
 def ticket_preview_enqueue_item(context, request):
@@ -277,10 +264,9 @@ def ticket_preview_enqueue_item(context, request):
     queue.save()
 
     request.session.flash(u'印刷キューにデータを投入しました')
-    return HTTPFound(request.route_path("events.tickets.bundles.items.preview", 
+    return HTTPFound(request.route_path("events.tickets.bundles.show", 
                               event_id=mdict["event_id"], 
-                              bundle_id=mdict["bundle_id"], 
-                              item_id=mdict["item_id"]))
+                              bundle_id=mdict["bundle_id"]))
 
 
 @view_config(route_name="events.tickets.bundles.items.download",
@@ -288,8 +274,6 @@ def ticket_preview_enqueue_item(context, request):
 def ticket_preview_download_item(context, request):
     item = context.product_item
     renderer = pystache.Renderer()
-    operator = context.user
-    mdict = request.matchdict
     ticket = DBSession.query(Ticket).filter_by(id=request.matchdict['ticket_id']).one()
 
     svg = renderer.render(ticket.drawing, build_dict_from_product_item(item))

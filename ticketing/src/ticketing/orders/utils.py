@@ -5,7 +5,18 @@ import pystache
 from ticketing.tickets.utils import build_dicts_from_ordered_product_item
 from ticketing.core.models import TicketPrintQueueEntry
 from ticketing.core.utils import ApplicableTicketsProducer
+from ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
 logger = logging.getLogger(__name__)
+
+def delivery_type_from_built_dict(dict_):
+    try:
+        if int(dict_["deliveryMethod"][u"plugin_id"]) == int(SEJ_DELIVERY_PLUGIN_ID):
+            return "sej"
+        return "other"
+    except (KeyError, ValueError),  e:
+        logger.warn("orderes: preview ticket: %s" % e)
+        return "other"
+
 
 def item_ticket_pairs(order, ticket_dict=None, ticket=None):
     for ordered_product in order.items:

@@ -3,7 +3,7 @@ import logging
 import transaction
 from datetime import datetime
 from zope.interface import implementer
-from pyramid.view import view_config
+from pyramid.view import view_config, view_defaults
 from pyramid.response import Response
 from pyramid.httpexceptions import HTTPFound
 
@@ -29,6 +29,8 @@ from ticketing.cart import api
 from ticketing.cart.exceptions import NoCartError
 from ticketing.cart.selectable_renderer import selectable_renderer
 from ..exceptions import PaymentPluginException
+from ticketing.views import mobile_request
+from ticketing.fanstatic import with_jquery
 
 logger = logging.getLogger(__name__)
 
@@ -231,6 +233,7 @@ def cancel_payment_mail_viewlet(context, request):
     """
     return Response(context.mail_data("notice"))
 
+@view_defaults(decorator=with_jquery.not_when(mobile_request))
 class MultiCheckoutView(object):
     """ マルチ決済API
     """

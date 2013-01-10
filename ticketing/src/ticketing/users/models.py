@@ -154,7 +154,7 @@ class UserPointHistory(Base, WithTimestamp):
     rate = Column(Integer)
     status = Column(Integer)
 
-class MailMagazine(Base, WithTimestamp):
+class MailMagazine(Base, BaseModel, WithTimestamp):
     __tablename__ = 'MailMagazine'
     query = session.query_property()
     id = Column(Identifier, primary_key=True)
@@ -190,6 +190,11 @@ class MailMagazine(Base, WithTimestamp):
         if subscription:
             session.delete(subscription)
 
+class MailSubscriptionStatus(StandardEnum):
+    Unsubscribed = 0
+    Subscribed = 1
+    Reserved = 2
+
 class MailSubscription(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     __tablename__ = 'MailSubscription'
     __table_args__ = (
@@ -201,7 +206,7 @@ class MailSubscription(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     user_id = Column(Identifier, ForeignKey("User.id"), nullable=True)
     user = relationship('User', uselist=False, backref='mail_subscription')
     segment_id = Column(Identifier, ForeignKey("MailMagazine.id"), nullable=True)
-    segment = relationship('MailMagazine', uselist=False)
+    segment = relationship('MailMagazine', uselist=False, backref='subscriptions')
 
     status = Column(Integer)
 

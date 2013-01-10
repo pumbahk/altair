@@ -35,6 +35,10 @@ ${breadcrumbs(
   });
 </script>
 
+<div style="margin-bottom:30px;">
+  <a href="${request.route_path("tickets.preview")}">preview pageへ</a>
+</div>
+
 <h2>出力形式</h2>
 <div id="pageformat_menu" class="btn-group">
   <a href="${request.route_path("tickets.pageformats.new")}" class="btn">
@@ -211,6 +215,11 @@ ${breadcrumbs(
           </a>
         </li>
         <li>
+          <a id="preview_ticket" href="#">
+            <i class="icon-eye-open"></i> 券面preview
+          </a>
+        </li>
+        <li>
           <a class="id-delegate-action" href="#" 
              data-delegated="#deleteModalTemplate"
              data-base-url="${request.route_path("tickets.templates.delete",id="__id__")}"
@@ -243,7 +252,7 @@ ${breadcrumbs(
   <tbody>
   % for template in templates:
     <tr>
-      <td><input type="radio" name="template_id" value="${template.id}" /></td>
+      <td class="ticketTemplate"><input type="radio" name="template_id" value="${template.id}" /></td>
       <td><a href="${request.route_url('tickets.templates.show', id=template.id)}">${template.name}</a></td>
       <td>${template.ticket_format.name}</td>
       <td>${template.updated_at}</td>
@@ -252,6 +261,8 @@ ${breadcrumbs(
   % endfor
   </tbody>
 </table>
+
+## delete ticket format
 
 <div class="modal hide" id="deleteModalFormat">
   <div class="modal-header">
@@ -269,6 +280,8 @@ ${breadcrumbs(
   </div>
 </div>
 
+## delete ticket template
+
 <div class="modal hide" id="deleteModalTemplate">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal">×</button>
@@ -284,4 +297,49 @@ ${breadcrumbs(
     </form>
   </div>
 </div>
+
+
+## preview ticket template
+## ticket preview
+<script type="text/javascript" src="${request.static_url("ticketing:static/js/spin.js")}"></script>
+<script type="text/javascript" src="${request.static_url("ticketing:static/js/altair/spinner.js")}"></script>
+<script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/modal/api.js")}"></script>
+<script type="text/javascript">
+  $(function(){
+    // collect candidates info
+    var candidates = ${ticket_candidates|n};  //[{pk,name}]
+    var modalView = false;
+    var modelname = "Ticket";
+
+    // preview component
+    $("a#preview_ticket").on("click", function(){
+
+      var $el = $(this);
+      var pk = $(".ticketTemplate").find("input[name='template_id']:checked").val();
+      if(!pk){ pk = $(".ticketTemplate").find("input[name='template_id']:first").val();}
+      if(!!modalView){
+        modalView.onClick();
+        apps["loadsvg"].model.changeHolder({pk: pk, name: modelname})
+        return false;
+      }
+
+      modalView = new modal.api.AjaxModalView({
+        el: $el,
+        href: "${request.route_path('tickets.preview.dialog', model="Ticket")}",
+        modalArea: $("#preview_ticket_modal"), 
+        option: {backdrop: false, stretch: true}, 
+        header: "チケット券面のpreview",
+        callback: function(modalview){
+         // append select
+          apps["loadsvg"] = new preview.SVGFromModelView({el: modalview.$modalArea, model: apps["preview"].models["params"], modelname: modelname});
+          apps["loadsvg"].render("テンプレート選択:", candidates);
+          apps["loadsvg"].model.changeHolder({pk: pk, name: modelname})
+        }
+      });
+      modalView.onClick();
+      return true;
+    });
+  });
+</script>
+<div id="preview_ticket_modal">
 

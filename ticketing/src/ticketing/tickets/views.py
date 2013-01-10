@@ -24,6 +24,7 @@ from .utils import SvgPageSetBuilder, build_dict_from_ordered_product_item_token
 from .response import FileLikeResponse
 from .convert import to_opcodes
 
+
 def ticket_format_to_dict(ticket_format):
     data = dict(ticket_format.data)
     data[u'id'] = ticket_format.id
@@ -54,20 +55,23 @@ def page_formats_for_organization(organization):
 class TicketMasters(BaseView):
     @view_config(route_name='tickets.index', renderer='ticketing:templates/tickets/index.html', request_method="GET")
     def index(self):
+
         ticket_format_sort_by, ticket_format_direction = helpers.sortparams('ticket_format', self.request, ('updated_at', 'desc'))
-
         page_format_sort_by, page_format_direction = helpers.sortparams('page_format', self.request, ('updated_at', 'desc'))
-
         ticket_template_sort_by, ticket_template_direction = helpers.sortparams('ticket_template', self.request, ('updated_at', 'desc'))
 
         ticket_format_qs = TicketFormat.filter_by(organization_id=self.context.user.organization_id)
+        ticket_format_qs = ticket_format_qs.order_by(helpers.get_direction(ticket_format_direction)(ticket_format_sort_by))
         page_format_qs = PageFormat.filter_by(organization_id=self.context.user.organization_id)
         ticket_template_qs = Ticket.templates_query().filter_by(organization_id=self.context.user.organization_id)
-
-        ticket_format_qs = ticket_format_qs.order_by(helpers.get_direction(ticket_format_direction)(ticket_format_sort_by))
-
         ticket_template_qs = ticket_template_qs.order_by(helpers.get_direction(ticket_template_direction)(ticket_template_sort_by))
-        return dict(h=helpers, page_formats=page_format_qs, ticket_formats=ticket_format_qs, templates=ticket_template_qs)
+
+        ticket_candidates = [{"name": t.name,"pk": t.id }for t in ticket_template_qs]
+        return dict(h=helpers, 
+                    page_formats=page_format_qs,
+                    ticket_formats=ticket_format_qs,
+                    templates=ticket_template_qs, 
+                    ticket_candidates=json.dumps(ticket_candidates))
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class TicketFormats(BaseView):
@@ -400,7 +404,7 @@ class TicketTemplates(BaseView):
     def show(self):
         qs = self.context.tickets_query().filter_by(id=self.request.matchdict['id'])
         template = qs.filter_by(organization_id=self.context.user.organization_id).one()
-        return dict(h=helpers, template=template)
+        return dict(h=helpers, template=template, ticket_format_id=template.ticket_format_id)
 
     @view_config(route_name='tickets.templates.download')
     def download(self):
@@ -422,10 +426,17 @@ class TicketPrintQueueEntries(BaseView):
     @view_config(route_name='tickets.queue.index', renderer='ticketing:templates/tickets/queue/index.html')
     def index(self):
         queue_entries_sort_by, queue_entries_direction = helpers.sortparams('queue_entry', self.request, ('TicketPrintQueueEntry.created_at', 'desc'))
+
         queue_entries_qs = DBSession.query(TicketPrintQueueEntry) \
-            .filter_by(operator=self.context.user, processed_at=None) \
-            .join(OrderedProductItem.ordered_product) \
-            .join(OrderedProduct.order)
+            .filter_by(operator=self.context.user, processed_at=None)
+
+        if queue_entries_sort_by == "Order.order_no":
+            # queue_entries_qs = queue_entries_qs\
+            #     .join(OrderedProductItem.ordered_product) \
+            #     .join(OrderedProduct.order)
+            ## これはsummaryのフォーマットが"注文 <order_no> - <message>"という形式のため。これで十分
+            queue_entries_sort_by = "TicketPrintQueueEntry.summary"
+
         queue_entries_qs = queue_entries_qs.order_by(helpers.get_direction(queue_entries_direction)(queue_entries_sort_by))
         return dict(h=helpers, queue_entries=queue_entries_qs)
 

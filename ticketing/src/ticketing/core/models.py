@@ -2,22 +2,24 @@
 import logging
 import itertools
 import operator
-import operator as op
 import json
 import re
-from urlparse import urljoin
+from math import floor
+import isodate
 from datetime import datetime, date, timedelta
 import smtplib
+
 from email.MIMEText import MIMEText
 from email.Header import Header
 from email.Utils import formatdate
 
+from sqlalchemy.sql import functions as sqlf
 from sqlalchemy import Table, Column, ForeignKey, func, or_, and_, event
 from sqlalchemy import ForeignKeyConstraint, UniqueConstraint, PrimaryKeyConstraint
 from sqlalchemy.util import warn_deprecated
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode, UnicodeText
-from sqlalchemy.orm import join, backref, column_property, joinedload, deferred
+from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode, UnicodeText, TIMESTAMP
+from sqlalchemy.orm import join, backref, column_property, joinedload, deferred, relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import exists
@@ -25,18 +27,20 @@ from sqlalchemy.sql.expression import asc, desc, exists, select, table, column
 from sqlalchemy.ext.associationproxy import association_proxy
 from pyramid.threadlocal import get_current_registry
 
-from .exceptions import *
-from ticketing.models import *
+from .exceptions import InvalidStockStateError
+from ticketing.models import (
+    Base, DBSession, 
+    MutationDict, JSONEncodedDict, 
+    LogicallyDeleted, Identifier, DomainConstraintError, 
+    WithTimestamp, BaseModel
+)
+from ticketing.utils import StandardEnum
 from ticketing.users.models import User, UserCredential
-from ticketing.utils import sensible_alnum_decode
 from ticketing.sej.models import SejOrder
 from ticketing.sej.exceptions import SejServerError
 from ticketing.sej.payment import request_cancel_order
 from ticketing.assets import IAssetResolver
 from ticketing.utils import myurljoin
-
-import sqlahelper
-session = sqlahelper.get_session()
 
 logger = logging.getLogger(__name__)
 
@@ -459,7 +463,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return (today <= self.start_on) and (self.start_on < tomorrow)
 
     @on_the_day.expression
-    def on_the_day(self):
+    def on_the_day_expr(self):
         from sqlalchemy import sql
         today = date.today()
         today = datetime(today.year, today.month, today.day)
@@ -615,63 +619,6 @@ class ReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     operator_id = Column(Identifier, ForeignKey('Operator.id', ondelete='CASCADE'), nullable=False)
     operator = relationship('Operator', backref='report_setting')
     frequency = Column(Integer, nullable=True)
-
-    @staticmethod
-    def get_reservations(frequency_num):
-        return ReportSetting.query.filter(ReportSetting.frequency==frequency_num)\
-            .with_entities(ReportSetting.event_id, ReportSetting.operator_id).all()
-
-    def send(self, settings=None, **options):
-        # settings
-        if not settings:
-            registry = threadlocal.get_current_registry()
-            settings = registry.settings
-
-        # sender
-        if self.sender_address:
-            from_addr = self.sender_address
-            if self.sender_name:
-                sender_name = str(Header(self.sender_name, 'ISO-2022-JP'))
-                sender = u'%s <%s>' % (sender_name, self.sender_address)
-            else:
-                sender = self.sender_address
-        else:
-            from_addr = sender = settings['mail.message.sender']
-
-        # recipient
-        if 'recipient' in options:
-            recipient = options['recipient']
-        else:
-            recipient = settings['mail.report.recipient']
-
-        # replacement subject, body, html
-        subject = options['subject'] if 'subject' in options else self.subject
-        description = self.description
-        for k, v in options.items():
-            if not isinstance(v, unicode):
-                v = unicode(v, 'utf-8')
-            subject = subject.replace('${%s}' % k, v)
-            description = description.replace('${%s}' % k, v)
-
-        body = html = None
-        if self.type == 'html':
-            html = description
-        else:
-            body = description
-
-        mailer = Mailer(settings)
-        mailer.create_message(
-            sender = sender,
-            recipient = recipient,
-            subject = subject,
-            body = body,
-            html = html
-        )
-
-        try:
-            mailer.send(from_addr, recipient)
-        except Exception, e:
-            print vars(e)
 
 class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Event'
@@ -1025,7 +972,6 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def get_products(self, performances):
         """ この販売区分で購入可能な商品一覧 """
-        import itertools
         return [product for product in self.product if product.performances in performances]
 
 class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -1389,7 +1335,7 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def count_vacant_quantity(self):
         if self.stock_type and self.stock_type.quantity_only:
-            from ticketing.cart.models import Cart, CartedProduct, CartedProductItem
+            from ticketing.cart.models import CartedProduct, CartedProductItem
             # 販売済みの座席数
             reserved_quantity = Stock.filter(Stock.id==self.id).join(Stock.product_items)\
                 .join(ProductItem.ordered_product_items)\
@@ -2470,13 +2416,13 @@ class PageFormat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def enqueue(self, operator, data):
         '''
         '''
-        DBSession.add(TicketPrintQueue(data = data, operator = operator))
+        DBSession.add(TicketPrintQueueEntry(data = data, operator = operator))
 
     @classmethod
     def dequeue_all(self, operator):
         '''
         '''
-        return TicketPrintQueue.filter_by(deleted_at = None, operator = operator).order_by('created_at desc').all()
+        return TicketPrintQueueEntry.filter_by(deleted_at = None, operator = operator).order_by('created_at desc').all()
 
 class ExtraMailInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "ExtraMailInfo"

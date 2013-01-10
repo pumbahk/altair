@@ -1,4 +1,12 @@
 <%inherit file="./base.html"/>
+<%block name="javascript">
+<script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/disable_on_submit.js')}"></script>
+<script type="text/javascript">
+  $(function() {
+    $('form').disableOnSubmit('input[type=submit][name!="back"]');
+  });
+</script>
+</%block>
 <%block name="css">
 <style>
   #btn-back {
@@ -17,11 +25,6 @@
     background: url("${request.static_url('ticketing.cart:static/img/settlement/btn_buy.gif')}") left top no-repeat;
   }
 </style>
-<script type="text/javascript">
-$('#form1').bind('submit', function() {
-  $(this).find('input[type=submit]').attr('disabled',true);
-});
-</script>
 </%block>
 <div style="margin-left:10px; margin-bottom: 10px; font-size:150%;">注文内容をご確認ください</div>
 <form id="form1" action="${request.route_url('payment.finish')}" method="post">

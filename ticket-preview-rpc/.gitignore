@@ -1,0 +1,6 @@
+work
+target
+*.png
+.project
+.classpath
+.settings

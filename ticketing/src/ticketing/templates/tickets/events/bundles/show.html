@@ -130,10 +130,7 @@
 
   <div class="row-fluid well">
 	<div class="btn-group" style="float: left; margin-right: 20px;">
-	  <a class="id-action btn" href="#"
-		 data-base-url="${request.route_path("events.tickets.bundles.items.preview",bundle_id=bundle.id, event_id=event.id, item_id="__id__")}">
-		<i class="icon-eye-open"></i> 選択した商品の券面を表示
-	  </a>
+	  <a id="preview_ticket" class="btn" href="#"><i class="icon-eye-open"></i> 選択した商品の券面を表示 </a>
 		  <button class="btn dropdown-toggle" data-toggle="dropdown">
 			<span class="caret"></span>
 		  </button>
@@ -143,6 +140,50 @@
 	<div style="clear:both;"></div>
   </div>
 </div>
+
+## ticket preview
+<script type="text/javascript" src="${request.static_url("ticketing:static/js/spin.js")}"></script>
+<script type="text/javascript" src="${request.static_url("ticketing:static/js/altair/spinner.js")}"></script>
+<script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/modal/api.js")}"></script>
+<script type="text/javascript">
+  $(function(){
+    // collect candidates info
+    var candidates = ${preview_item_candidates|n};  //[{pk,name}]
+    var modalView = false;
+    var modelname = "ProductItem";
+
+    // preview component
+    $("a#preview_ticket").on("click", function(){
+
+      var $el = $(this);
+      var pk = $el.parents(".box").find("input[name='id']:checked").val();
+      if(!pk){ pk = $el.parents(".box").find("input[name='id']:first").val();}
+      if(!!modalView){
+        modalView.onClick();
+        apps["loadsvg"].model.changeHolder({pk: pk, name: modelname})
+        return false;
+      }
+
+      var qstring = "event_id="+"${event.id}"; //ugly
+      modalView = new modal.api.AjaxModalView({
+        el: $el,
+        href: "${request.route_path('tickets.preview.dialog', model="ProductItem")}"+"?"+qstring, 
+        modalArea: $("#preview_ticket_modal"), 
+        option: {backdrop: false, stretch: true}, 
+        header: "チケット券面のpreview",
+        callback: function(modalview){
+         // append select
+          apps["loadsvg"] = new preview.SVGFromModelView({el: modalview.$modalArea, model: apps["preview"].models["params"], modelname: modelname});
+          apps["loadsvg"].render("商品選択:", candidates);
+          apps["loadsvg"].model.changeHolder({pk: pk, name: modelname})
+        }
+      });
+      modalView.onClick();
+      return false;
+    });
+  });
+</script>
+<div id="preview_ticket_modal">
 
 <hr/>
 

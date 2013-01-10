@@ -99,7 +99,6 @@ def strip(chars):
 REGEX_HYPHEN = re.compile('\-')
 def strip_hyphen():
     def stripper(unistr):
-        print unistr
         return unistr and REGEX_HYPHEN.sub('', unistr)
     return stripper
 

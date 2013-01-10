@@ -1,0 +1,106 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>jp.ticketstar.ticketing</groupId>
+  <artifactId>svgrpc</artifactId>
+  <version>0.0.0</version>
+  <packaging>jar</packaging>
+
+  <name>svgrpc</name>
+  <url>http://maven.apache.org</url>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <build>
+    <plugins>
+      <!-- <finalName>servlet-test</finalName> -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.0</version>
+        <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>2.2</version>
+        <configuration>
+          <failOnMissingWebXml>false</failOnMissingWebXml>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.mortbay.jetty</groupId>
+        <artifactId>jetty-maven-plugin</artifactId>
+        <configuration>
+          <scanIntervalSeconds>10</scanIntervalSeconds>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+    
+  <dependencies>
+    <dependency>
+      <groupId>javax</groupId>
+      <artifactId>javaee-web-api</artifactId>
+      <version>6.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+    	<groupId>org.apache.xmlgraphics</groupId>
+    	<artifactId>batik-transcoder</artifactId>
+    	<version>1.7</version>
+    </dependency>
+    <dependency>
+    	<groupId>org.apache.xmlgraphics</groupId>
+    	<artifactId>batik-codec</artifactId>
+    	<version>1.7</version>
+    </dependency>
+    <dependency>
+      <groupId>com.googlecode</groupId>
+      <artifactId>jsonrpc4j</artifactId>
+      <version>0.26</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>2.0.2</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.0.2</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.portlet</groupId>
+      <artifactId>portlet-api</artifactId>
+      <version>2.0</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <version>1.7</version>
+    </dependency>
+    <dependency>
+      <groupId>jp.ticketstar.ticketing</groupId>
+      <artifactId>batik-extension</artifactId>
+      <version>0.0.0</version>
+    </dependency>
+  </dependencies>
+
+  <repositories>
+    <repository>
+      <id>jsonrpc4j-webdav-maven-repo</id>
+      <name>jsonrpc4j maven repository</name>
+      <url>http://jsonrpc4j.googlecode.com/svn/maven/repo/</url>
+      <layout>default</layout>
+    </repository>
+  </repositories>
+</project>

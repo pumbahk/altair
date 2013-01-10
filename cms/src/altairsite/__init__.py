@@ -6,9 +6,11 @@ import sqlahelper
 
 from altaircms.models import Base
 
-def main(global_config, **settings):
+def main(global_config, **local_config):
     """ This function returns a Pyramid WSGI application.
     """
+    settings = dict(global_config)
+    settings.update(local_config)
     engine = engine_from_config(settings, 'sqlalchemy.', pool_recycle=3600)
     sqlahelper.get_session().remove()
     sqlahelper.set_base(Base)

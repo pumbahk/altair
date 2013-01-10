@@ -13,7 +13,7 @@ from pyramid.interfaces import IDict
 import logging
 logger = logging.getLogger(__name__)
 
-from ..api.impl import bound_communication_api ## cmsとの通信
+from ..api.impl import bind_communication_api ## cmsとの通信
 
 def includeme(config):
     # ディレクティブ
@@ -60,7 +60,10 @@ def import_mail_module(config):
     config.add_subscriber('.sendmail.on_order_completed', '.events.OrderCompleted')
 
 
-def main(global_config, **settings):
+def main(global_config, **local_config):
+    settings = dict(global_config)
+    settings.update(local_config)
+
     from ticketing.logicaldeleting import install as ld_install
     ld_install()
 
@@ -110,7 +113,7 @@ def main(global_config, **settings):
     #     config.add_tween('ticketing.mobile.tweens.mobile_request_factory')
 
     ## cmsとの通信
-    bound_communication_api(config, 
+    bind_communication_api(config, 
                             "..api.impl.CMSCommunicationApi", 
                             config.registry.settings["altaircms.event.notification_url"], 
                             config.registry.settings["altaircms.apikey"]
