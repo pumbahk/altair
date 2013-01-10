@@ -146,8 +146,7 @@ class IndexView(IndexViewMixin):
         super(IndexView, self).__init__(request)
         self.prepare()
 
-    @with_jquery_tools
-    @view_config(route_name='cart.index', renderer=selectable_renderer("carts/%(membership)s/index.html"), xhr=False, permission="buy")
+    @view_config(decorator=with_jquery_tools, route_name='cart.index', renderer=selectable_renderer("carts/%(membership)s/index.html"), xhr=False, permission="buy")
     def __call__(self):
         self.check_redirect(mobile=False)
         # ただ単にパフォーマンスのリストが欲しいだけなので
@@ -1267,8 +1266,7 @@ class OutTermSalesView(object):
         return dict(event=self.context.event, 
                     sales_segment=self.context.sales_segment)
 
-@with_jquery.not_when(mobile_request)
-@view_config(route_name='cart.logout')
+@view_config(decorator=with_jquery.not_when(mobile_request), route_name='cart.logout')
 def logout(request):
     headers = security.forget(request)
     res = HTTPFound(location='/')
