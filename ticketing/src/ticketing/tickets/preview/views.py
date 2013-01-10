@@ -79,6 +79,10 @@ def _build_ticket_format_dicts(ticket_format_qs):
         D[t.id] = {"name": t.name, "type": ":sej"}
     return [dict(pk=k, **vs) for k, vs in D.iteritems()]
 
+def _build_ticket_format_dict(ticket_format):
+    has_sej = any(dm.delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID for dm in ticket_format.delivery_methods)
+    ticket_format_type =  ":sej" if has_sej else ""
+    return {"pk": ticket_format.id, "name": ticket_format.name, "type": ticket_format_type}
 
 @view_config(route_name="tickets.preview", request_method="GET", renderer="ticketing:templates/tickets/preview.html", 
              decorator=with_bootstrap, permission="event_editor")
@@ -329,8 +333,8 @@ class LoadSVGFromModelApiView(object):
         data = json.loads(self.request.GET["data"])
         ticket_id = data["fillvalues_resource"]["model"]
         ticket = c_models.Ticket.query.filter_by(id=ticket_id).first()
-        return {"status": True, "data": ticket.drawing}
-
+        ticket_formats = [_build_ticket_format_dict(ticket.ticket_format)]
+        return {"status": True, "data": ticket.drawing, "ticket_formats": ticket_formats}
 
 @view_defaults(route_name="tickets.preview.combobox.api", request_method="GET", renderer="json")
 class ComboboxApiView(object):

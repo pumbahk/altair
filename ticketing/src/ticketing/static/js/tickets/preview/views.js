@@ -5,7 +5,7 @@ preview.ParamaterManageView = Backbone.View.extend({
     events: {
         'hover input[name="sx"]': "onChangeSx", 
         'hover input[name="sy"]': "onChangeSy", 
-        "change #ticket_format": "onChangeTicketFormat"
+        "change #ticket_format": "onChangeTicketFormat", 
     }, 
     initialize: function(opts){
         this.$sx = this.$el.find('input[name="sx"]');
@@ -15,6 +15,15 @@ preview.ParamaterManageView = Backbone.View.extend({
         this.onChangeTicketFormat();
         this.model.on("change:sx", this.reDrawSx, this);
         this.model.on("change:sy", this.reDrawSy, this);
+        this.model.on("*params.ticketformat.update", this.reDrawTicketFormatCandidates, this);
+        this.vms = opts.vms;
+    }, 
+    reDrawTicketFormatCandidates: function(candidates){
+        // candidates: [{name: "foo", type: ":sej", pk: "10"}, ...];
+        this.vms.ticket_format.redraw(candidates); 
+        this.model.changeTicketFormat({"pk": candidates[0] .pk, 
+                                       "name": candidates[0].name, 
+                                       "type": candidates[0].type.replace(":", "", 1)});
     }, 
     onChangeTicketFormat: function(){
         var name_and_type = this.$ticket_format.find(":selected").text().split(":"); // <ticket_format_name>:<delivery_method_type>
@@ -44,6 +53,7 @@ preview.SVGFromModelView = Backbone.View.extend({
         if(!this.modelname) throw "modelname is not found";
         this.idname = opts.idname
         if(!this.idname) {this.idname = "model_candidates";}
+        this.vms = opts.vms;
     }, 
     onChangeModel: function(){
         var pk = this.$select.val();

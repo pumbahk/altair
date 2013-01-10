@@ -158,6 +158,9 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
         return this.apis.loadsvg({data: JSON.stringify(params)})
             .pipe(core.ApiService.rejectIfStatusFail(function(data){
                 self.params.refreshDefault();
+                if(!!data.ticket_formats){
+                    self.params.trigger("*params.ticketformat.update", data.ticket_formats); //move to model.js?
+                }
                 self.svg.updateToNormalize(data.data);
                 self.message.info("テンプレートを取得しました");
             }))

@@ -35,6 +35,16 @@ preview.LoadingSpinnerViewModel = core.ViewModel.extend({
     }
 });
 
+preview.SelectCandidatesViewModel = core.ViewModel.extend({
+    redraw: function(candidates){
+        var root = this.$el;
+        root.empty();
+        _(candidates).each(function(e){
+            root.append($("<option>").attr("value", e.pk).text(e.name+e.type))
+        });
+    }, 
+});
+
 preview.TemplateVarsTableViewModel = core.ViewModel.extend({
     initialize: function(){
         this.$tbody = this.$el.find("tbody");
