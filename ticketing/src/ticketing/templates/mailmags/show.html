@@ -41,7 +41,7 @@
 <div class="subscribers">
   ${pager(mail_subscriptions)}
   <form action="${request.route_path('mailmags.subscriptions.edit', id=mailmag.id)}" method="post" style="margin-top: 1em">
-    <input type="hidden" name="page" value="${request.params.get('page')}" />
+    <input type="hidden" name="page" value="${request.params.get('page') or 1}" />
     <div class="well">
       状態を
       <select name="status">
