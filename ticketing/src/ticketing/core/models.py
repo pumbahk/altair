@@ -2500,7 +2500,7 @@ class Mailer(object):
         msg['Date'] = formatdate()
         self.message = msg
 
-    def send(self, from_addr, to_addr):
+    def send(self,from_addr,to_addr):
         smtp = smtplib.SMTP(self.settings['mail.host'], self.settings['mail.port'])
         smtp.sendmail(from_addr, to_addr, self.message.as_string())
         smtp.close()
