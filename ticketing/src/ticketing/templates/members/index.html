@@ -47,7 +47,10 @@ ${breadcrumbs(
 <div class="btn-group">
   <a href="${request.route_path("members.member",membership_id=membership.id, action="edit_dialog")}"
      id="member_edit"
-     class="ajax-modal btn" data-toggle="modal" data-target="#MembershipEditModal">membergroup変更</a>
+     class="ajax-modal btn" data-toggle="modal" data-target="#MembershipEditModal">ユーザのmembergroup変更</a>
+  <a href="${request.route_path("members.member",membership_id=membership.id, action="delete_dialog")}"
+     id="member_delete"
+     class="ajax-modal btn" data-toggle="modal" data-target="#MembershipEditModal">ユーザの削除</a>
   <a href="${request.route_path("members.member",membership_id=membership.id, action="csv_import_dialog")}"
      class="ajax-modal btn"  data-toggle="modal" data-target="#CSVImportModal">csvインポート</a>
   <a href="${request.route_path("members.member",membership_id=membership.id, action="csv_export_dialog")}"
@@ -112,7 +115,7 @@ ${users.pager()}
 	});
 
     // pre-hook
-    $("#member_edit").data("preload", function(cont){
+    $("#member_edit,#member_delete").data("preload", function(cont){
       var checkeds = $('input[type="checkbox"]:checked');
       var user_id_list = $.makeArray(checkeds.map(function(i,e){return $(e).val();}));
       return cont({user_id_list: JSON.stringify(user_id_list)});

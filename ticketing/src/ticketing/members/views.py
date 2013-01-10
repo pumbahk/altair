@@ -80,6 +80,35 @@ class MemberView(object):
         self.context = context
         self.request = request
 
+    @view_config(match_param="action=delete_dialog", 
+                 renderer="ticketing:templates/members/_delete_member_dialog.html")
+    def delete_member_dialog(self):
+        membership_id = self.request.matchdict["membership_id"]
+        user_id_list = self.request.params["user_id_list"]
+        users = User.query.filter(User.id.in_(json.loads(user_id_list)))\
+            .options(orm.joinedload("user_credential"), 
+                     orm.joinedload("member"), 
+                     orm.joinedload("member.membergroup"), 
+                     orm.joinedload("member.membergroup.membership"), 
+                     )
+        return {"users": users,"membership_id": membership_id, "user_id_list": user_id_list}
+
+
+    @view_config(match_param="action=delete", 
+                 renderer="json")
+    def delete_member(self):
+        user_id_list = self.request.params["user_id_list"]
+        membership_id = self.request.matchdict["membership_id"]
+        users = User.query.filter(User.id.in_(json.loads(user_id_list)))\
+            .options(orm.joinedload("user_credential"), 
+                     orm.joinedload("member"), 
+                     orm.joinedload("member.membergroup"), 
+                     orm.joinedload("member.membergroup.membership"), 
+                     )
+        api.delete_loginuser(self.request, users)
+        self.request.session.flash(u"指定したユーザを削除しました")
+        return HTTPFound(self.request.route_url("members.index", membership_id=membership_id))
+
     @view_config(match_param="action=edit_dialog", 
                  renderer="ticketing:templates/members/_edit_member_dialog.html")
     def edit_member_dialog(self):
@@ -106,7 +135,7 @@ class MemberView(object):
             self.request.session.flash(unicode(form.errors))
             return HTTPFound(self.request.route_url("members.index", membership_id=membership_id))
 
-        api.edit_membergroup(Member.query.filter(Member.user_id.in_(form.data["user_id_list"])), 
+        api.edit_membergroup(self.request, Member.query.filter(Member.user_id.in_(form.data["user_id_list"])), 
                              form.data["membergroup_id"])
 
         self.request.session.flash(u"membergroupを変更しました")

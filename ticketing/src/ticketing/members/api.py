@@ -5,8 +5,15 @@ from .builder import UserForLoginCartBuilder
 import logging
 logger = logging.getLogger(__name__)
 
-def edit_membergroup(members, member_group_id):
+def edit_membergroup(request, members, member_group_id):
     members.update({"membergroup_id": member_group_id}, synchronize_session="fetch")
+
+def delete_loginuser(request, users):
+    for user in users:
+        user.member.delete()
+        for c in user.user_credential:
+            c.delete()
+        user.delete()
 
     
 def members_import_from_csv(request, io, encoding="cp932"):
