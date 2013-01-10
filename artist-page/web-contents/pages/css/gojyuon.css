@@ -1,0 +1,295 @@
+/*gojyuon.php*/
+#search_buttons {
+        width:660px;
+        height:210px;
+	border:1px solid transparent;
+        display:block;
+	margin-top:10px;
+	margin-left:20px;
+}
+
+b {
+	background-color:#ED6502;
+	color:#ffffff;
+	border:1px solid transparent;
+	padding:1px 5px 1px 5px;
+}
+
+#paging a{
+	padding:1px 5px 1px 5px;
+}
+#pages_link{
+	margin-left:550px;
+}
+
+
+#search_title {
+        background: url(../../img/artistpage/artistname.png) repeat-x 0 50%;
+        background-size: 700px 35px;
+        width:700px;
+        height:35px;
+        border:solid 1px transparent;
+        color:#ffffff;
+	margin-bottom:10px;
+}
+#search_title p{
+        font-size: 1.3em;
+	margin-top:1px;
+	margin-left:20px;
+}
+		
+#artists ul li {
+	float:left;
+	margin-left: 3px;
+	}
+#artists ul li a{
+	text-decoration: none;
+}
+#search_block a:link {color:#ffffff;}
+#search_block_z {
+        width:40px;
+        float:left;
+	position:relative;
+	top:140px;
+}
+
+#border_length {
+        background: url(../../img/artistpage/artistname.png) repeat-y 0 100%;
+        background-size:1px 120px;
+        width:1px;
+        height:120px;
+        border:solid 1px transparent;
+}
+#artists {
+       background-color:#fffaf0;
+	background-size:700px;
+	width:700px;
+        border:1px solid transparent;
+        display:block;
+	padding:10px;
+}
+#artists p {
+	font-size:1.3em;
+}
+
+
+	
+#tx_main_header ul {
+ 	list-style-type:none;
+        border: 1px  solid transparent;
+	margin:0px;
+}
+#tx_main_header ul li {
+       float:left;
+       	margin-left:1px;
+	margin-bottom:5px;
+	background-color:#57BB22;
+	width:33px;
+	height:28px;
+	line-height:28px;	
+        text-align:center;
+	border-radius:1px;
+        -webkit-border-radius:1px;
+        -moz-border-radius:1px;
+        border:1px solid transparent;
+	display:block;
+	
+}
+
+#tx_main_header ul li a {
+        display:block;
+}
+
+#tx_main_header ul li a:visited {
+	color:#fff;
+}
+#tx_main_header ul li a:hover {
+        background-color:#82E650;
+
+}
+
+
+#tx_main_header ul li.space{
+       float:left;
+        margin-left:1px;
+        margin-bottom:5px;
+        background-color:#f0f0f0;
+        width:33px;
+        height:28px;
+        border-radius:1px;
+        -webkit-border-radius:1px;
+        -moz-border-radius:1px;
+        border:1px solid transparent;
+}
+
+#tx_main_header ul li.space:hover{
+       float:left;
+        margin-left:1px;
+        margin-bottom:5px;
+        background-color:#f0f0f0;
+        width:33px;
+        height:28px;
+        border-radius:1px;
+        -webkit-border-radius:1px;
+        -moz-border-radius:1px;
+}
+
+#page_artist {
+	width:655px;
+	heigth:1000px;
+	min-height: 500px;
+        border-radius:2px;
+        -webkit-border-radius:2px;
+        -moz-border-radius:2px;
+        border:1px solid transparent;
+	clear:left;	
+}
+.page_artist_border {
+	
+}
+.page_artist_border img{
+	width:670px;
+}
+
+#page_artist a:link{
+	color:#0066ff;
+}
+
+
+#page_artist_array {
+	border: 1px  solid transparent;
+	margin-bottom: 1px;
+        border-radius:3px;
+        -webkit-border-radius:3px;
+        -moz-border-radius:3px;
+}
+
+#page_artist_array:hover{
+        border: 1px  solid transparent;
+        margin-bottom: 1px;
+        border-radius:3px;
+        -webkit-border-radius:3px;
+        -moz-border-radius:3px;
+}
+
+.array_block{
+	border:solid 1px transparent;
+	float:left;
+	width:220px;
+}
+div.tooltip	{
+	width: 100px;
+	position: absolute;
+	left: -9999px;
+	background: #EEE;
+	padding: 5px;
+	border: 1px solid #AAA;
+}
+
+div.tooltip p{
+	color: #FFF;
+	background: #222;
+	padding: 5px 10px;
+}
+
+#clear_left {
+	clear:left;
+	height:10px;
+	border:solid 1px transparent;
+}
+#detail_img {
+	border:solid 1px transparent;
+	width:80px;
+	height:100px;
+	float:left;
+}
+
+
+#tx_main_header {
+	border:solid 1px transparent;
+}
+
+#tx_main_header ul li a {
+	text-decoration:none;
+}
+
+#search_block{
+	width:190px;
+	float:left;
+}
+#artists ul li{
+	float:left;
+	margin-left:8px;
+}
+
+#artists a {
+	text-decoration: none;
+}
+
+
+#page_artist a {
+	text-decoration: none;
+}
+
+#paging {
+	clear:left;
+}
+#pagenation_ul{
+        background: url(../../img/artistpage/genre_small_title.png) no-repeat 0 100%;
+        background-size: 150px 25px;
+
+}
+
+#pagenation_li{
+        border:solid 1px #ccc;
+        color:#ff80ff;
+	width:28px;
+	height:28px;
+        line-height:28px;
+        text-align:center;
+
+}
+
+#pagenation_li a {
+	display:block;
+	color:#000000;
+}
+
+#pagenation_hilight_li {
+        border:solid 1px #ccc;
+        color:red;
+        width:28px;
+        height:28px;
+        line-height:28px;
+        text-align:center;
+	background-color:red;	
+}	
+#artists ul li {
+	float:left;
+	margin-left: 3px;
+}
+#artists ul li a{
+	text-decoration: none;
+}
+
+	
+#tx_main_header ul {
+ 	list-style-type:none;
+        border: 1px  solid transparent;
+	margin:0px;
+}
+#tx_main_header ul li.space{
+       float:left;
+        margin-left:1px;
+        margin-bottom:5px;
+        background-color:#f0f0f0;
+        width:33px;
+        height:28px;
+        border-radius:1px;
+        -webkit-border-radius:1px;
+        -moz-border-radius:1px;
+        border:1px solid transparent;
+}
+
+
+

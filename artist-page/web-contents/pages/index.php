@@ -1,157 +1,9 @@
 <?php
-	
-$dbh = new mysqli("127.0.0.1:3306","artistpage_user",'artistpage_user_pass');
-$dbh -> select_db("artistpage");
-$dbh -> set_charset("UTF8");
 
-
-$id_zero = 0;
-function parent_get_genre($dbh, $id_zero) {
-        $stmt_parent = $dbh->prepare("select genre  from genre where parent_id = ?");
-        $stmt_parent->bind_param('i', $id_zero);
-        $stmt_parent->execute();
-        $stmt_parent->bind_result($parent_genres);
-        $parent_genres_array = array();
-        while ($stmt_parent->fetch()) {
-                $parent_genres_array[] = $parent_genres;        }
-        $stmt_parent->close();
-         return $parent_genres_array;}
-
-$rank_set_jap = array();
-$rank_set = array();
-	$xml_str = file_get_contents('http://api.rakuten.co.jp/rws/3.0/rest?developerId=12657057e6e263dfe5dd57b5565078da&operation=ItemRanking&version=2010-08-05&genreId=200533');
-	$xml_str = str_replace('header:Header','Header',$xml_str);
-	$xml_str = str_replace('itemRanking:ItemRanking xmlns:itemRanking="http://api.rakuten.co.jp/rws/rest/ItemRanking/2011-12-01"', 'itemRanking', $xml_str);
-        $xml_str = str_replace('itemRanking:ItemRanking', 'itemRanking', $xml_str);
-	$xml  = simplexml_load_string($xml_str);
-	echo "\n";
-	for ($x =0;$x<=9;$x++){
-		$rank_set_jap[$x+1] =  $xml->Body->itemRanking->Item[$x]->itemName;
-		$imgurl_jap[$x+1] = $xml->Body->itemRanking->Item[$x]->smallImageUrl;
-		$artist_long_jap[$x+1] = $xml->Body->itemRanking->Item[$x]->itemCaption;
-		$artist_jap[$x+1] = explode("発売日",$artist_long_jap[$x+1]);
-			
-	}
-
-
-	$xml_str = file_get_contents('http://api.rakuten.co.jp/rws/3.0/rest?developerId=12657057e6e263dfe5dd57b5565078da&operation=ItemRanking&version=2010-08-05&genreId=200534');
-        $xml_str = str_replace('header:Header','Header',$xml_str);
-        $xml_str = str_replace('itemRanking:ItemRanking xmlns:itemRanking="http://api.rakuten.co.jp/rws/rest/ItemRanking/2011-12-01"', 'itemRanking', $xml_str);
-        $xml_str = str_replace('itemRanking:ItemRanking', 'itemRanking', $xml_str);
-	$xml  = simplexml_load_string($xml_str);
-        echo "\n";
-        for ($x =0;$x<=9;$x++){
-		$rank_set[$x+1] = $xml->Body->itemRanking->Item[$x]->itemName;
-		$imgurl[$x+1] = $xml->Body->itemRanking->Item[$x]->smallImageUrl;
-		$artist_long[$x+1] = $xml->Body->itemRanking->Item[$x]->itemCaption;
-                $artist[$x+1] = explode("発売日",$artist_long[$x+1]);
-
-        }
-	
-
-	$l=0;
-	
-        $stmt_new_rank = $dbh->prepare("select rank, itemname from domestic_ranking DESK limit 10 offset 10");
-        $stmt_new_rank->execute();
-        $stmt_new_rank->bind_result($rank,$itemname);
-        $new_rank_array = array();
-        while ($stmt_new_rank->fetch()) {
-                $new_rank_array[$l]['rank'] = $rank;  
-	
-		$new_rank_array[$l]['itemname'] = $itemname;
-		$l++;
-	 }
-        $stmt_new_rank->close();
-
-
-
-
-	$l=0;
-
-	$stmt_old_rank = $dbh->prepare("select rank, itemname from domestic_ranking DESK limit 10");
-	$stmt_old_rank->execute();
-	$stmt_old_rank->bind_result($rank,$itemname);       
-	$old_rank_array = array();
-        while ($stmt_old_rank->fetch()) {
-                $old_rank_array[$l]['rank'] = $rank;   
-                $old_rank_array[$l]['itemname'] = $itemname;
-        	$l++;
-		 }
-        $stmt_old_rank->close();
-	echo "\n";
-
-
-	$img = "new";
-	for($i=0;$i<=9;$i++){
-		for($e=0;$e<=9;$e++){
-			if($old_rank_array[$i][itemname]==$new_rank_array[$e][itemname]){
-				if($old_rank_array[$e]['rank'] == $new_rank_array[$i]['rank']){
-					$img =' <img src="../img/common/plane.jpg">';
-				}
-				else if($old_rank_array[$i]['rank'] <= $new_rank_array[$e]['rank']){
-					$img =' <img src="../img/common/down.jpg">';
-				}
-				else if($old_rank_array[$i]['rank'] >= $new_rank_array[$e]['rank']){
-					$img = '<img src="../img/common/up.jpg">';
-				}
-				
-			}
-		}
-	 $new_rank_updown_imgs[] =$img; 
-	}
-
-        $l=0;
-
-        $stmt_new_rank_overseas = $dbh->prepare("select rank, itemname from overseas_ranking DESK limit 10 offset 10");
-        $stmt_new_rank_overseas->execute();
-        $stmt_new_rank_overseas->bind_result($rank,$itemname);
-        $new_rank_array_overseas = array();
-        while ($stmt_new_rank_overseas->fetch()) {
-                $new_rank_overseas_array[$l]['rank'] = $rank;
-
-                $new_rank_overseas_array[$l]['itemname'] = $itemname;
-                $l++;
-         }
-        $stmt_new_rank_overseas->close();
-      
-
-
-
-
-        $l=0;
-
-        $stmt_old_rank_overseas = $dbh->prepare("select rank, itemname from overseas_ranking DESK limit 10");
-        $stmt_old_rank_overseas->execute();
-        $stmt_old_rank_overseas->bind_result($rank,$itemname);
-        $old_rank_array_overseas = array();
-        while ($stmt_old_rank_overseas->fetch()) {
-                $old_rank_overseas_array[$l]['rank'] = $rank;
-                $old_rank_overseas_array[$l]['itemname'] = $itemname;
-                $l++;
-                 }
-        $stmt_old_rank_overseas->close();
-        echo "\n";
-
-
-        $img = "new";
-        for($i=0;$i<=9;$i++){
-                for($e=0;$e<=9;$e++){
-                        if($old_rank_overseas_array[$i][itemname]==$new_rank_overseas_array[$e][itemname]){
-                                if($old_rank_overseas_array[$e]['rank'] == $new_rank_overseas_array[$i]['rank']){
-                                $img = '<img src="../img/common/plane.jpg">';
-				}
-                                else if($old_rank_overseas_array[$i]['rank'] <= $new_rank_overseas_array[$e]['rank']){
-                                        $img = '<img src="../img/common/down.jpg">';
-                                }
-                                else if($old_rank_overseas_array[$i]['rank'] >= $new_rank_overseas_array[$e]['rank']){
-                                        $img = '<img src="../img/common/up.jpg">';
-                                }
-
-                        }
-                }
-         $new_rank_updown_imgs_overseas[] =$img;
-        }
-
+include 'config.php';
+include 'index_function.php';
+$result = index_function();
+extract($result);
 ?>
 
 
@@ -166,7 +18,8 @@ $rank_set = array();
 <meta http-equiv="content-style-type" content="text/css" />
 <meta http-equiv="content-script-type" content="text/javascript" />
 <link rel="shortcut icon" href="../design/img/common/favicon.ico" />
-<link rel="stylesheet" href="./import.css" type="text/css" media="all" />
+<link rel="stylesheet" href="./css/import.css" type="text/css" media="all" />
+<link rel="stylesheet" href="./css/index.css" type="text/css" media="all" />
 
 <script type="text/javascript" src="http://www.google.com/jsapi"></script>
 <script type="text/javascript">google.load("jquery", "1.6.1");</script>
@@ -183,34 +36,30 @@ $(function(){
 <!-- InstanceParam name="id" type="text" value="theater" -->
 </head>
 <body id="theater">
-
 <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="../img/common/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
-
 <div id="container">
 
-	<!-- ========== header ========== -->
-	<div id="grpheader">
-		<p id="tagLine">チケット販売・イベント予約</p>
-		<p id="siteID"><a href="http://ticket.rakuten.co.jp/"><img src="../img/common/header_logo_01.gif" alt="楽天チケット" class="serviceLogo" width="97" height="35" /></a><a href="http://ticket.rakuten.co.jp/"><img src="../img/common/header_logo_02.gif" alt="チケット" class="serviceTitle" width="88" height="23" /></a></p>
-		<dl id="remoteNav">
-			<dt>楽天グループ関連</dt>
-			<dd class="grpRelation">
-				<ul><!--
-				--><li id="grpNote"><noscript><a href="https://card.rakuten.co.jp/entry/">今すぐ2,000ポイント！</a></noscript></li><!--
-				--><li><a href="#">必見！5,000ポイントがもらえる</a></li><!--
-				--><li class="grpHome"><a href="http://www.rakuten.co.jp/">楽天市場へ</a></li><!--
-				--></ul>
+<!-- ========== header ========== -->
+<div id="grpheader">
+	<p id="tagLine">チケット販売・イベント予約</p>
+	<p id="siteID"><a href="http://ticket.rakuten.co.jp/"><img src="../img/common/header_logo_01.gif" alt="楽天チケット" class="serviceLogo" width="97" height="35" /></a><a href="http://ticket.rakuten.co.jp/"><img src="../img/common/header_logo_02.gif" alt="チケット" class="serviceTitle" width="88" height="23" /></a></p>
+	<dl id="remoteNav">
+	<dt>楽天グループ関連</dt>
+		<dd class="grpRelation">
+			<ul><!----><li id="grpNote"><noscript><a href="https://card.rakuten.co.jp/entry/">今すぐ2,000ポイント！</a></noscript></li>
+			<!----><li><a href="#">必見！5,000ポイントがもらえる</a></li>
+			<!----><li class="grpHome"><a href="http://www.rakuten.co.jp/">楽天市場へ</a></li>
+			<!----></ul>
 				<script type="text/javascript" src="//jp.rakuten-static.com/1/js/lib/prm_selector.js"></script>
 				<script type="text/javascript" src="//jp.rakuten-static.com/1/js/grp/hdr/prm_sender.js"></script>
 			</dd>
 			<dt>補助メニュー</dt>
 			<dd class="siteUtility">
-				<ul><!--
-				--><li><a href="#">初めての方へ</a></li><!--
-				--><li><a href="#">公演中止・変更情報</a></li><!--
-				--><li><a href="#">ヘルプ</a></li><!--
-				--><li class="last"><a href="#">サイトマップ</a></li><!--
-				--></ul>
+				<ul><!----><li><a href="#">初めての方へ</a></li>
+				<!----><li><a href="#">公演中止・変更情報</a></li>
+				<!----><li><a href="#">ヘルプ</a></li>
+				<!----><li class="last"><a href="#">サイトマップ</a></li>
+				<!----></ul>
 			</dd>
 		</dl>
 	</div>
@@ -255,64 +104,95 @@ $(function(){
 	
 	<hr />
 	
-	<!-- InstanceBeginEditable name="cat" -->インデックスページ<!--<h1><img src="../img/theater/title_theater.gif" alt="演劇" width="60" height="60" />--></h1>
+	<!-- InstanceBeginEditable name="cat" -->
 <!-- InstanceEndEditable -->
 	
 	<!-- ========== main ========== -->
 	<div id="main">
-	 
+
+
+	 	<form method ="post" action =<?php echo $_SERVER['PHP_SELF'];?>">
+			<input type="hidden" name="name" value="<?php print $_POST[name];?>">
+		</form>
+	
+
 		 <div id = "notice">
-			<h2>注目アーティスト</h2>
-
+			<div id ="index_artist"><p>注目アーティスト</p></div>
+			<div class ="featured_cd_imgs">
 			 <? for($k = 1; $k<=10; $k++): ?>
-				<? if($k==5){?>
-					<a href='./artist_detail.php?artist=<?=urlencode($artist_jap[$k])?>'> <img src = '<?=  $imgurl_jap[$k]; ?>'></a><img src ='../img/common/artist_border.png'>
-				<? } ?>
+				<? if($k==2 or $k==6 or $k==8){?>
+					<div id ="focused"><a href='./artist_detail.php?artist=<?=urlencode($artist_jap[$k])?>'> <div class ="focused_img"><img src = '<?=  $imgurl_jap[$k]; ?>'></div><div class ="focused_p"><p><?= $artist_jap[$k][0] ?></p></div></a></div><img src ='../img/common/artist_border.png'>
+                <? }else if($k==4){ ?>
+                    <div id ="focused"><a href='./artist_detail.php?artist=<?=urlencode($artist_jap[$k])?>'> <div class ="focused_img"><img src = '<?=  $imgurl_jap[$k]; ?>'></div><div class ="focused_p"><p><?= $artist_jap[$k][0] ?></p></div></a></div><img src ='../img/common/artist_border.png'>
+				<? }else{?>
+				    <div id ="focused"><a href='./artist_detail.php?artist=<?=urlencode($artist_jap[$k])?>'> <div class ="focused_img"><img src = '<?=	$imgurl_jap[$k]; ?>'></div><div class ="focused_p"><p><?= $artist_jap[$k][0] ?></p></div></a></div>
+                <? } ?>
 
-                                 <a href='./artist_detail.php?artist=<?=urlencode($artist_jap[$k])?>'> <img src = '<?=  $imgurl_jap[$k]; ?>'></a>
-         		 <? endfor ?>
-
-			<h2>ニュース</h2>
-
+			 <? endfor ?>
+			</div>
 		</div>
-		<div id = "ranks">
+		
+		<div id = "main_right">
 			  <div id = "rank_border">
-				<div class="sideCategoryGenre">
-              				 <h2> 邦楽CDシングルランキング</h2>
-                
+				<div class="sideCategoryGenre_rank">
+					 <div class="rank_title"><p> 邦楽CDシングルランキング</p></div>
+					<div class="rank_date"><p>2012.04.28発表</p></div>	
 					<table id="ranking">
-                       			 <? for($k = 1; $k<=10; $k++): ?>
-					 <tr><td><?= $new_rank_updown_imgs[$k-1] ?><a href='./artist_detail.php?artist=<?=urlencode($artist_jap[$k][0])?>'><?=  $k.$rank_set_jap[$k]; ?></a></td></tr>
+					 <? for($k = 1; $k<=10; $k++): ?>
+					 <tr><td>
+					<?if($k==1){?><img src ="../img/artistpage/artist_genre.png"><?}?>
+					<?if($k==2){?><img src ="../img/artistpage/artist_genre_r1_c1.png"><?}?>
+					<?if($k==3){?><img src ="../img/artistpage/artist_genre_r3_c1.png"><?}?>
+					<?if($k==4){?><img src ="../img/artistpage/four.gif"><?}?>
+					<?if($k==5){?><img src="../img/artistpage/five.gif"><?}?>
+					<?if($k==6){?><img src="../img/artistpage/six.gif"><?}?>
+					<?if($k==7){?><img src="../img/artistpage/seven.gif"><?}?>
+					<?if($k==8){?><img src="../img/artistpage/eight.gif"><?}?>
+					<?if($k==9){?><img src="../img/artistpage/nine.gif"><?}?>
+					<?if($k==10){?><img src="../img/artistpage/ten.gif"><?}?>
+					<?= $new_rank_updown_imgs[$k-1] ?><a href='./artist_detail.php?artist=<?=urlencode($artist_jap[$k][0])?>'><?=	$k.$rank_set_jap[$k]; ?></a></td></tr>
 
-                       			 <? endfor ?>
+					 <? endfor ?>
 					</table>
 
-               
+	       
 				</div>
 			</div>
 			 <div id = "rank_border">
-             			 <div class="sideCategoryGenre">
+				 <div class="sideCategoryGenre_rank">
  
-					<h2>洋楽CDシングルランキング</h2>
-               				 <table>
+					<div class ="rank_title"><p>洋楽CDシングルランキング</p></div>
+					<div class="rank_date"><p>2012.04.28発表</p></div> 
+					<table id="ranking">
 
-                        		 <? for($k = 1; $k<=10; $k++): ?>
-                               			 <tr><td><?= $new_rank_updown_imgs[$k-1] ?><a href='./artist_detail.php?artist=<?=urlencode($artist[$k][0])?>'><?=  $k.$rank_set[$k]; ?></a></td></tr>
+					 <? for($k = 1; $k<=10; $k++): ?>
+						 <tr><td>					
+					<?if($k==1){?><img src ="../img/artistpage/artist_genre.png"><?}?>
+					<?if($k==2){?><img src ="../img/artistpage/artist_genre_r1_c1.png"><?}?>
+					<?if($k==3){?><img src ="../img/artistpage/artist_genre_r3_c1.png"><?}?>
+					<?if($k==4){?><img src ="../img/artistpage/four.gif"><?}?>
+					<?if($k==5){?><img src="../img/artistpage/five.gif"><?}?>
+					<?if($k==6){?><img src="../img/artistpage/six.gif"><?}?>
+					<?if($k==7){?><img src="../img/artistpage/seven.gif"><?}?>
+					<?if($k==8){?><img src="../img/artistpage/eight.gif"><?}?>
+					<?if($k==9){?><img src="../img/artistpage/nine.gif"><?}?>
+					<?if($k==10){?><img src="../img/artistpage/ten.gif"><?}?>
+<?= $new_rank_updown_imgs[$k-1] ?><a href='./artist_detail.php?artist=<?=urlencode($artist[$k][0])?>'><?=  $k.$rank_set[$k]; ?></a></td></tr>
 
-                        		 <? endfor ?>
+					 <? endfor ?>
 
-               				 </table>
+					 </table>
 				 </div>
 			</div>
 		</div>
 <script type ="text/javascript">
 $(function(){
      $("tr:odd").addClass("odd");
-         $("tr:first").addClass("fir");
+	 $("tr:first").addClass("fir");
 });
 </script>
 
-        </div>
+	</div>
 
 
 	<!-- ========== /main ========== -->
@@ -323,33 +203,48 @@ $(function(){
 	<div id="side">
 		<!-- InstanceBeginEditable name="side" -->
 		 <div class="sideCategoryGenre">
-        <h2>検索</h2>
-        <ul>
-        <li>
-        <form id="form1" name="form1" method="post" action="">
-                <input name="textfield" type="text" id="textfield" size="20" value="" onblur="if(this.value=='') this.value='';" onfocus="if(this.value=
+	<h2>検索</h2>
+	<ul>
+	<li>
+	<form id="form1" name="form1" method="post" action="">
+		<input name="textfield" type="text" id="textfield" size="20" value="" onblur="if(this.value=='') this.value='';" onfocus="if(this.value=
 ='アーティスト名、公演名、会場名など') this.value='';" />
-                <input name="imageField" type="image" id="imageField" src="../img/common/header_search_btn.
+		<input name="imageField" type="image" id="imageField" src="../img/common/header_search_btn.
 gif" alt="検索" />
-        </form></li>
+	</form></li>
 
-                <li> <a href="/~katosaori/web-contents/pages/gojyuon.php?domestic=1">邦楽50音順検索</a></li>
-		<li><a href="/~katosaori/web-contents/pages/gojyuon.php?overseas=1">洋楽ABC検索</a></li>
+		<li> <a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?&page_moji=ア,あ&page_domestic=1&count_artist=356">邦楽50音順検索</a></li>
+		<li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?&page_figure=A&page_overseas=1&count_artist=1490">洋楽ABC検索</a></li>
 
-        </ul>
-        </div>
-        <div class="sideCategoryGenre">
-        <h2>ジャンル一覧</h2>
-        <ul>
-        <? $p = parent_get_genre($dbh,$id_zero) ?>
-                <? for($q=0;$q<=11;$q++): ?>
+	</ul>
+	</div>
+	<div class="sideCategoryGenre">
+	<h2>ジャンル一覧</h2>
+<ul>
+                        <? for($q=0;$q<=12;$q++): ?>
+                        <?
+                        if(htmlspecialchars($p[$q]) == "洋楽"){
+                        ?>
+                        <li id ='#'><a href ='./genre.php?genre=<?=urlencode($p[$q])?>&alternate=overseas'><?= htmlspecialchars($p[$q]); ?></a></li>
+                        <?
+                        }
 
-                <li id ='#'><a href ='./genre.php?genre=<?=urlencode($p[$q])?>'><?= htmlspecialchars($p[$q]); ?></a></li>
+                        elseif(htmlspecialchars($p[$q]) == "邦楽"){
+                        ?>
+                         <li id ='#'><a href ='./genre.php?genre=<?=urlencode($p[$q])?>&alternate=domestic'><?= htmlspecialchars($p[$q]); ?></a></li>
+                        <?
+                        }
+                        else{
+                        ?>
+                         <li id ='#'><a href ='./genre.php?genre=<?=urlencode($p[$q])?>'><?= htmlspecialchars($p[$q]); ?></a></li>
+                        <?
+                        }
+                        ?>
+                <? endfor ?>
 
-        <? endfor ?>
 
-        </ul>
-        </div>
+	</ul>
+	</div>
 		<dl id="sideRefineSearch">
 			<dt>エリアを選択</dt>
 			<dd>
@@ -524,7 +419,7 @@ gif" alt="検索" />
 						<li><a href="http://recipe.rakuten.co.jp" onclick="s.gclick('recipe','ftr')">レシピ</a></li>
 						<li><a href="http://www.nikki.ne.jp/" onclick="s.gclick('minshu','ftr')">就職活動</a></li>
 						<li><a href="http://career.rakuten.co.jp/" onclick="s.gclick('carrer','ftr')">仕事紹介</a></li>
-						<li><a href="http://realestate.rakuten.co.jp/"  onclick="s.gclick('is:house','ftr')">不動産情報</a></li>
+						<li><a href="http://realestate.rakuten.co.jp/"	onclick="s.gclick('is:house','ftr')">不動産情報</a></li>
 						<li><a href="http://onet.rakuten.co.jp/" onclick="s.gclick('onet','ftr')">結婚相談所</a></li>
 						<li><a href="http://wedding.rakuten.co.jp/" onclick="s.gclick('wedding','ftr')">結婚式場情報</a></li>
 						<li><a href="http://shashinkan.rakuten.co.jp/" onclick="s.gclick('shashinkan','ftr')">写真プリント</a></li>

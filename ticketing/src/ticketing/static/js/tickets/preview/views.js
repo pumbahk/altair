@@ -23,7 +23,7 @@ preview.ParamaterManageView = Backbone.View.extend({
         this.vms.ticket_format.redraw(candidates); 
         this.model.changeTicketFormat({"pk": candidates[0] .pk, 
                                        "name": candidates[0].name, 
-                                       "type": candidates[0].type.replace(":", "", 1)});
+                                       "type": candidates[0].type.replace(":", "")});
     }, 
     onChangeTicketFormat: function(){
         var name_and_type = this.$ticket_format.find(":selected").text().split(":"); // <ticket_format_name>:<delivery_method_type>
