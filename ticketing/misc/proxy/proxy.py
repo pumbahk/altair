@@ -112,6 +112,7 @@ class MyProxy(proxy.Proxy):
         (r'http://backend.stg2.rt.ticketstar.jp(/.*)?', r'http://localhost:7654\1'),
         (r'http://cms.stg2.rt.ticketstar.jp(/.*)?', r'http://localhost:6543\1'),
         (r'http://stg2.rt.ticketstar.jp(/89ers/booster(?:/.*)?)', r'http://localhost:7657\1'),
+        (r'http://89ers.stg2.rt.ticketstar.jp(/89ers/booster(?:/.*)?)', r'http://localhost:7657\1'),
         (r'http://stg2.rt.ticketstar.jp(/mypage(?:/.*)?)', r'http://localhost:7656\1'),
         ]
 
