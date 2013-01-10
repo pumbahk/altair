@@ -75,7 +75,7 @@ ${users.pager()}
   <tbody>
   % for user in users:
     <tr>
-      <td><input type="checkbox" name="user_id" value="${user.id}" /></td>
+      <td class="checkbox-row"><input type="checkbox" name="user_id" value="${user.id}" /></td>
       <td><a href="#">${user.id}</a></td>
       <td><a href="${request.route_path("members.loginuser",membership_id=membership.id, loginuser_id=user.first_user_credential.id, action="edit")}"
              class="ajax-modal" data-toggle="modal" data-target="#AjaxLoginUserModal">${user.first_user_credential.auth_identifier}</a></td>
@@ -119,6 +119,18 @@ ${users.pager()}
       var checkeds = $('input[type="checkbox"]:checked');
       var user_id_list = $.makeArray(checkeds.map(function(i,e){return $(e).val();}));
       return cont({user_id_list: JSON.stringify(user_id_list)});
+    });
+
+  // click by selectable
+  $("table.checkboxed_table").selectable({
+    filter: "td.checkbox-row",
+    distance: 1,
+    stop: function(){
+        $(".ui-selected input[type='checkbox']", this).each(function(_,e){
+            $(e).click();
+         });
+        $(".ui-selected").removeClass("ui-selected");
+      }
     });
   });
 </script>
