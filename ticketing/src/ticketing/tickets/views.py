@@ -428,9 +428,12 @@ class TicketPrintQueueEntries(BaseView):
             .filter_by(operator=self.context.user, processed_at=None)
 
         if queue_entries_sort_by == "Order.order_no":
-            queue_entries_qs = queue_entries_qs\
-                .join(OrderedProductItem.ordered_product) \
-                .join(OrderedProduct.order)
+            # queue_entries_qs = queue_entries_qs\
+            #     .join(OrderedProductItem.ordered_product) \
+            #     .join(OrderedProduct.order)
+            ## これはsummaryのフォーマットが"注文 <order_no> - <message>"という形式のため。これで十分
+            queue_entries_sort_by = "TicketPrintQueueEntry.summary"
+
         queue_entries_qs = queue_entries_qs.order_by(helpers.get_direction(queue_entries_direction)(queue_entries_sort_by))
         return dict(h=helpers, queue_entries=queue_entries_qs)
 
