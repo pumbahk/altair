@@ -79,13 +79,12 @@ class FanstaticDecoratorFactory(object):
             # call the view function
             response = wrapped(*args, **kwargs)
 
-            if request is not None:
-                if all(predicate(request) for predicate in self.predicates):
-                    for fn in self.fns:
-                        if hasattr(fn, "need"):
-                            fn.need()
-                        else:
-                            fn()
+            if (request is None and not self.predicates) or all(predicate(request) for predicate in self.predicates):
+                for fn in self.fns:
+                    if hasattr(fn, "need"):
+                        fn.need()
+                    else:
+                        fn()
             return response
         return wraps
 
