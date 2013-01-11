@@ -67,7 +67,7 @@ class ProductForm(OurForm):
     )
     public = OurIntegerField(
         label=u'一般公開',
-        default=1,
+        default=0,
         hide_on_new=True,
         widget=CheckboxInput(),
     )
@@ -75,7 +75,7 @@ class ProductForm(OurForm):
         label=u'説明',
         hide_on_new=True,
         widget=TextArea()
-        )
+    )
 
     def validate_price(form, field):
         if field.data and form.id.data:
