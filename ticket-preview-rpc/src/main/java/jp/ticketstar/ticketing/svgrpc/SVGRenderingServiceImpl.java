@@ -1,9 +1,7 @@
 package jp.ticketstar.ticketing.svgrpc;
 
-import java.io.ByteArrayInputStream;
+import java.io.StringReader;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
 import org.apache.commons.codec.binary.Base64;
 
 class Helper {
@@ -25,9 +23,8 @@ public class SVGRenderingServiceImpl implements SVGRenderingService{
     }
     public String renderSVG(String svg) throws AppException{
         SVGRasterizer rasterizer = Helper.selectRasterizer();
-        InputStream in = new ByteArrayInputStream(svg.getBytes());
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        rasterizer.rasterize(in, out);
+        ByteArrayOutputStream out = new ByteArrayOutputStream(); 
+        rasterizer.rasterize(new StringReader(svg), out);
         return Base64.encodeBase64String(out.toByteArray());
     }
 }

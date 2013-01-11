@@ -1,9 +1,9 @@
 package jp.ticketstar.ticketing.svgrpc;
 
 
-import java.io.InputStream;
+import java.io.Reader;
 import java.io.OutputStream;
 
 public interface SVGRasterizer{
-    void rasterize(InputStream in, OutputStream out) throws AppException;
+    void rasterize(Reader in, OutputStream out) throws AppException;
 }
