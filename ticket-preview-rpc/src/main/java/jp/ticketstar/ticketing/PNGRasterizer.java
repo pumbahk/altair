@@ -1,5 +1,6 @@
 package jp.ticketstar.ticketing.svgrpc;
 
+import org.apache.batik.transcoder.image.ImageTranscoder;
 import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
@@ -21,8 +22,13 @@ class ExtendedPNGTranscoder extends PNGTranscoder {
 }
 
 public class PNGRasterizer implements SVGRasterizer{
+    protected static double DOT_PER_INCH = 90.0;
+    protected static double MM_PER_INCH = 25.4;
+    protected static float MM_PER_PIXEL = (float)((1/DOT_PER_INCH) * MM_PER_INCH);
+
     public void rasterize(InputStream in, OutputStream out){
         PNGTranscoder t = new ExtendedPNGTranscoder();
+        t.addTranscodingHint(ImageTranscoder.KEY_PIXEL_UNIT_TO_MILLIMETER , MM_PER_PIXEL);
         try {
             TranscoderInput input = new TranscoderInput(in);
             TranscoderOutput output = new TranscoderOutput(out);
