@@ -12,7 +12,7 @@ class IPaymentPreparer(Interface):
 
 class IPaymentPreparerFactory(Interface):
     def __call__(request, payment_delivery_pair):
-        """ 決済配送方法に対応する前処理を取得する
+        """ 決済・引取方法に対応する前処理を取得する
         """
 
 class IDeliveryPlugin(Interface):

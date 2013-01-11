@@ -111,7 +111,7 @@ class EntryLotView(object):
             return self.get(form=cform)
         
 
-        # 決済配送方法選択
+        # 決済・引取方法選択
         if payment_delivery_method_pair_id not in [str(m.id) for m in payment_delivery_pairs]:
             self.request.session.flash(u"お支払お引き取り方法を選択してください")
             return self.get(form=cform)

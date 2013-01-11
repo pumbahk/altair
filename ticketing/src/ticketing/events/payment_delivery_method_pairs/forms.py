@@ -64,7 +64,7 @@ class PaymentDeliveryMethodPairForm(Form):
         coerce=int
     )
     delivery_method_id = SelectField(
-        label=u'配送方法',
+        label=u'引取方法',
         validators=[Required(u'選択してください')],
         choices=[],
         coerce=int
@@ -93,4 +93,4 @@ class PaymentDeliveryMethodPairForm(Form):
         }
         pdmp = PaymentDeliveryMethodPair.filter_by(**kwargs).first()
         if pdmp and (form.id is None or pdmp.id != form.id.data):
-            raise ValidationError(u'既に設定済みの決済・配送方法の組み合せがあります')
+            raise ValidationError(u'既に設定済みの決済・引取方法の組み合せがあります')

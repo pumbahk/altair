@@ -248,7 +248,7 @@ class TicketFormatForm(Form):
         )
 
     delivery_methods = SelectMultipleField(
-        label=u"配送方法",
+        label=u"引取方法",
         validators=[Required()], 
         coerce=long , 
         choices=[])
