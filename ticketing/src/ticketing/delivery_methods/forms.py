@@ -21,14 +21,14 @@ class DeliveryMethodForm(Form):
         validators=[Optional()],
     )
     name = TextField(
-        label=u'配送方法名',
+        label=u'引取方法名',
         validators=[
             Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
         ]
     )
     fee = DecimalField(
-        label=u'配送手数料',
+        label=u'発券/配送手数料',
         places=2,
         validators=[Required()]
     )
@@ -39,7 +39,7 @@ class DeliveryMethodForm(Form):
         coerce=int
     )
     delivery_plugin_id = SelectField(
-        label=u'配送方法',
+        label=u'引取方法',
         validators=[Required(u'選択してください')],
         choices=[(pmp.id, pmp.name) for pmp in DeliveryMethodPlugin.all()],
         coerce=int

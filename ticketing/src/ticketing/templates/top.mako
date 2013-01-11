@@ -47,17 +47,17 @@
         </ul>
       </li>
       <li>
-        <a href="${request.route_path('admin.delivery_methods.top')}">配送方法マスタ登録</a>
+        <a href="${request.route_path('admin.delivery_methods.top')}">引取方法マスタ登録</a>
         <ul>
-          <li><a href="${request.route_path('admin.delivery_methods.list')}">配送方法マスタ一覧</a></li>
-          <li><a href="${request.route_path('admin.delivery_methods.new')}">配送方法マスタ新規登録 / 編集</a></li>
+          <li><a href="${request.route_path('admin.delivery_methods.list')}">引取方法マスタ一覧</a></li>
+          <li><a href="${request.route_path('admin.delivery_methods.new')}">引取方法マスタ新規登録 / 編集</a></li>
         </ul>
       </li>
       <li>
-        <a href="${request.route_path('admin.payment_delivery_method_pairs.top')}">支払配送方法マスタ登録</a>
+        <a href="${request.route_path('admin.payment_delivery_method_pairs.top')}">支払引取方法マスタ登録</a>
         <ul>
-          <li><a href="${request.route_path('admin.payment_delivery_method_pairs.list')}">支払配送方法マスタ一覧</a></li>
-          <li><a href="${request.route_path('admin.payment_delivery_method_pairs.new')}">支払配送方法マスタ新規登録 / 編集</a></li>
+          <li><a href="${request.route_path('admin.payment_delivery_method_pairs.list')}">支払引取方法マスタ一覧</a></li>
+          <li><a href="${request.route_path('admin.payment_delivery_method_pairs.new')}">支払引取方法マスタ新規登録 / 編集</a></li>
         </ul>
       </li>
       <li>

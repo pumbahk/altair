@@ -20,7 +20,7 @@ ${sa.last_name} ${sa.first_name} 様
 [受付日時]  ${order.created_at}
 [注文者]    ${sa.last_name} ${sa.first_name} 様
 [支払方法]  ${order.payment_delivery_pair.payment_method.name}
-[配送方法]  ${order.payment_delivery_pair.delivery_method.name}
+[引取方法]  ${order.payment_delivery_pair.delivery_method.name}
 ==========
 [送付先]    ${sa.last_name} ${sa.first_name} 様
 〒 ${sa.zip}

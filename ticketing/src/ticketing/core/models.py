@@ -1044,7 +1044,7 @@ class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def delete(self):
         # 既に使用されている場合は削除できない
         if self.payment_delivery_method_pairs:
-            raise Exception(u'関連づけされた決済配送方法がある為、削除できません')
+            raise Exception(u'関連づけされた決済・引取方法がある為、削除できません')
 
         super(PaymentMethod, self).delete()
 
@@ -1080,7 +1080,7 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def delete(self):
         # 既に使用されている場合は削除できない
         if self.payment_delivery_method_pairs:
-            raise Exception(u'関連づけされた決済配送方法がある為、削除できません')
+            raise Exception(u'関連づけされた決済・引取方法がある為、削除できません')
 
         super(DeliveryMethod, self).delete()
 

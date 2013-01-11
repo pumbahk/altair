@@ -16,7 +16,7 @@ def MethodChoicesFormFactory(template):
 
     choices = [(m.delivery_plugin_id, m.name)
                for m in template.organization.delivery_method_list]
-    attrs["delivery_methods"] = fields.SelectField(label=u"配送方法", choices=choices, id="delivery_methods")
+    attrs["delivery_methods"] = fields.SelectField(label=u"引取方法", choices=choices, id="delivery_methods")
     return type("MethodChoiceForm", (Form, ), attrs)
 
 OrderInfo = namedtuple("OrderInfo", "name label getval")

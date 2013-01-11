@@ -15,14 +15,14 @@
     if (!id) return;
     var modal = $('#modal-delete');
     modal.find('#delete').attr('href', '/events/payment_delivery_method_pairs/delete/' + id);
-    modal.find('#message').text('選択した決済配送方法を削除します。よろしいですか？');
+    modal.find('#message').text('選択した決済・引取方法を削除します。よろしいですか？');
     modal.modal('toggle');
   }
 </script>
 
 <div class="btn-group">
   <a href="javascript:new_pdmp()" class="btn">
-    <i class="icon-pencil"></i> 決済・配送方法を追加
+    <i class="icon-pencil"></i> 決済・引取方法を追加
   </a>
   <button class="btn dropdown-toggle" data-toggle="dropdown">
     <span class="caret"></span>

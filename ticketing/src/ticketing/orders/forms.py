@@ -88,7 +88,7 @@ class OrderSearchForm(Form):
         coerce=int,
     )
     delivery_method = SelectMultipleField(
-        label=u'配送方法',
+        label=u'引取方法',
         validators=[Optional()],
         choices=[(pm.id, pm.name) for pm in DeliveryMethodPlugin.all()],
         coerce=int,
@@ -252,8 +252,8 @@ class OrderReserveForm(Form):
         coerce=int
     )
     payment_delivery_method_pair_id = SelectField(
-        label=u'決済・配送方法',
-        validators=[Required(u'決済配送方法を選択してください')],
+        label=u'決済・引取方法',
+        validators=[Required(u'決済・引取方法を選択してください')],
         choices=[],
         coerce=int
     )
