@@ -4,7 +4,7 @@ import org.apache.batik.transcoder.image.ImageTranscoder;
 import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
-import java.io.InputStream;
+import java.io.Reader;
 import java.io.OutputStream;
 
 import jp.ticketstar.ticketing.svg.ExtendedSVG12BridgeContext;
@@ -26,7 +26,7 @@ public class PNGRasterizer implements SVGRasterizer{
     protected static double MM_PER_INCH = 25.4;
     protected static float MM_PER_PIXEL = (float)((1/DOT_PER_INCH) * MM_PER_INCH);
 
-    public void rasterize(InputStream in, OutputStream out){
+    public void rasterize(Reader in, OutputStream out){
         PNGTranscoder t = new ExtendedPNGTranscoder();
         t.addTranscodingHint(ImageTranscoder.KEY_PIXEL_UNIT_TO_MILLIMETER , MM_PER_PIXEL);
         try {
