@@ -402,7 +402,8 @@ class Orders(BaseView):
 
         return {
             'seats':seats,
-            'form':form_reserve
+            'form':form_reserve, 
+            "performance": performance, 
         }
 
     @view_config(route_name='orders.reserve.confirm', request_method='POST',
@@ -463,6 +464,7 @@ class Orders(BaseView):
             return {
                 'form':f,
                 'cart':cart,
+                "performance": performance, 
             }
         except ValidationError, e:
             raise HTTPBadRequest(body=json.dumps({'message':e.message}))
