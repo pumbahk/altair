@@ -6,12 +6,16 @@
 <table class="table table-bordered fullwidth">
   <tbody>
   <tr>
-    <th class="span3">${form.code.label.text}</th>
-    <td>${organization.code or ''}</td>
-  </tr>
-  <tr>
     <th class="span3">${form.name.label.text}</th>
     <td>${organization.name or ''}</td>
+  </tr>
+  <tr>
+    <th class="span3">${form.short_name.label.text}</th>
+    <td>${organization.short_name or ''}</td>
+  </tr>
+  <tr>
+    <th class="span3">${form.code.label.text}</th>
+    <td>${organization.code or ''}</td>
   </tr>
   <tr>
     <th class="span3">${form.client_type.label.text}</th>
@@ -64,7 +68,7 @@
   </tbody>
 </table>
 
-% if organization.user.bank_account:
+% if organization.user and organization.user.bank_account:
 <div class="page-header">
   <h4>振込先</h4>
 </div>
