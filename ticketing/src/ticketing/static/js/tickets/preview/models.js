@@ -37,6 +37,9 @@ if (!window.preview)
             this.set("default_sy", 2.0);
             this.set("sx", 1.0);
             this.set("sy", 1.0);
+        }, 
+        reDraw: function(){
+            this.trigger("*params.preview.redraw");
         }
     });
 

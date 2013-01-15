@@ -30,6 +30,7 @@ preview.ParamaterManageView = Backbone.View.extend({
         this.model.changeTicketFormat({"pk":this.$ticket_format.val(),
                                        "name": name_and_type[0],
                                        "type": name_and_type[1]});
+        this.model.reDraw();
     }, 
     onChangeSx: function(){
         this.model.set("sx", this.$sx.val());
