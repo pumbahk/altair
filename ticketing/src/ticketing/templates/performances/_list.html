@@ -16,6 +16,11 @@
   });
 </script>
 
+<%
+from datetime import datetime
+nowdate = datetime.now()
+%>
+
 % if performances:
 <div class="row-fluid">
   <div class="span12">
@@ -56,7 +61,13 @@
           </td>
           % endif
           <td>${performance.open_on.strftime("%Y-%m-%d")if performance.open_on else ''}</td>
-          <td><a href="${request.route_path('performances.show', performance_id=performance.id)}">${performance.name}</a></td>
+          <td><a href="${request.route_path('performances.show', performance_id=performance.id)}">
+					    ${performance.name}
+              %if performance.end_on and nowdate > performance.end_on:
+                <span class="label">終了</span>
+              %endif
+					  </a>
+					</td>			
           <td>${performance.venue.name if performance.venue else u'(なし)'}</td>
           <td style="white-space: nowrap; font-size: 10px; line-height: 12px">
             <div>
