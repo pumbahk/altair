@@ -1,5 +1,15 @@
 # -*- coding:utf-8 -*-
 
+class TicketPreviewException(Exception):
+    pass
+
+class TicketPreviewFillValuesException(TicketPreviewException):
+    pass
+class TicketPreviewTransformException(TicketPreviewException):
+    pass
+class TicketPreviewAPIException(TicketPreviewException):
+    pass
+
 def include_views(config):
     config.add_route('tickets.preview', '/preview')
     config.add_route('tickets.preview.dialog', '/preview/dialog/{model}')
