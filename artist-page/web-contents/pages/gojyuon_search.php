@@ -23,8 +23,8 @@ function artist_array($a,$b,$genre_id,$page){
 	$limit = 64;
 	$offset = ($page-1) * $limit;
 	$page_artist_array = array();
-	$stmt_artist_page = $dbh -> prepare("select name,prof from artist where name like ? or artist.name like ? and  name IN ( select name from artist inner join artist_genre on artist.id  = artist_genre.artist_id  where artist_genre.genre_id =?) limit ? offset ?");
-	$stmt_artist_page -> bind_param('ssiii',$a,$b,$genre_id,$limit,$offset);
+	$stmt_artist_page = $dbh -> prepare("select name,prof from artist where name like ? or artist.name like ? and  name IN ( select name from artist inner join artist_genre on artist.id  = artist_genre.artist_id  where artist_genre.genre_id =?)");
+	$stmt_artist_page -> bind_param('ssi',$a,$b,$genre_id);
 	$stmt_artist_page ->execute();
 	$stmt_artist_page ->bind_result($page_artist,$page_artist_prof);
 	while($stmt_artist_page ->fetch()){

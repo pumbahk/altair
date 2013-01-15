@@ -1,13 +1,13 @@
 <script language="php">
-# ¤³¤ó¤Ê´¶¤¸¤Ç
+# ã“ã‚“ãªæ„Ÿã˜ã§
 #	$unit = 10;
 #	$pager = build_pager(array(
-#		'unit' => $unit,	# £±¥Ú¡¼¥¸¤¢¤¿¤êºÇÂçÉ½¼¨·ï¿ô
+#		'unit' => $unit,	# ï¼‘ãƒšãƒ¼ã‚¸ã‚ãŸã‚Šæœ€å¤§è¡¨ç¤ºä»¶æ•°
 #		'self' => preg_replace('{([^/]*/)*}', '', $base),
-#		'query' => $param_saved,	# ¥ê¥ó¥¯Àè¤Ë°ú¤­·Ñ¤°¥Ñ¥é¥á¡¼¥¿(str or hash)
-#		'qname' => 'p',	# ¥Ú¡¼¥¸ÈÖ¹æ»ØÄêÍÑ¤Îkey
-#		'item' => $a,	# ¥Ç¡¼¥¿ÇÛÎó
-#		'limit' => 10,	# ¥Ê¥Ó¤ËÉ½¼¨¤¹¤ë¥Ú¡¼¥¸¿ô¾å¸Â
+#		'query' => $param_saved,	# ãƒªãƒ³ã‚¯å…ˆã«å¼•ãç¶™ããƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿(str or hash)
+#		'qname' => 'p',	# ãƒšãƒ¼ã‚¸ç•ªå·æŒ‡å®šç”¨ã®key
+#		'item' => $a,	# ãƒ‡ãƒ¼ã‚¿é…åˆ—
+#		'limit' => 10,	# ãƒŠãƒ“ã«è¡¨ç¤ºã™ã‚‹ãƒšãƒ¼ã‚¸æ•°ä¸Šé™
 #	));
 #	$data['pager'] = $pager['navi'];
 #	$data['item'] = array_splice($a, ($pager['page']-1)*$unit, $unit);
@@ -21,14 +21,14 @@ function build_pager($param) {
 	if(!is_array($query)) {
 		parse_str($query, $query);
 	}
-	$pt = count($a);				# Áípage¿ô
-	$px = floor(($pt+$pu-1)/$pu);	# ºÇ½ªpage
+	$pt = count($a);				# ç·pageæ•°
+	$px = floor(($pt+$pu-1)/$pu);	# æœ€çµ‚page
 	$pc = !empty($query[$qname]) ? 1*$query[$qname] : 0;
-	$pc = (1<=$pc && $pc<=$px) ? $pc : 1;	# ¸½ºßpage
-	$pp = (1<$pc) ? $pc-1 : "";		# Á°¥Ú¡¼¥¸
-	$pn = ($pc<$px) ? $pc+1 : "";	# ¼¡¥Ú¡¼¥¸
+	$pc = (1<=$pc && $pc<=$px) ? $pc : 1;	# ç¾åœ¨page
+	$pp = (1<$pc) ? $pc-1 : "";		# å‰ãƒšãƒ¼ã‚¸
+	$pn = ($pc<$px) ? $pc+1 : "";	# æ¬¡ãƒšãƒ¼ã‚¸
 	
-	# n0¤Ï1¤«3°Ê¾å / nx¤Ïpx¤«px-2°Ê²¼
+	# n0ã¯1ã‹3ä»¥ä¸Š / nxã¯pxã‹px-2ä»¥ä¸‹
 	if(!empty($param['limit'])) {
 		$limit = $param['limit'];
 		$n0 = max(1, min($px-$limit+1, ($pc-$limit/2 <= 1) ? 1 : ($pc-$limit/2 + 1)));
@@ -56,18 +56,18 @@ function build_pager($param) {
 	$result = array();
 	$result['page'] = $pc;
 	$result['navi'] = array(array(
-		'item_count_unit' => $pu,								# ¥Ú¡¼¥¸¤¢¤¿¤êÉ½¼¨·ï¿ô(¾å¸ÂÃÍ)
-		'item_count' => $pt,									# [xx·ï¤ß¤Ä¤«¤ê¤Ş¤·¤¿]¤ÎÁí·ï¿ô
-		'item_count_from' => ($pc-1)*$pu+1,						# [xx·ïÌÜ¤«¤éyy·ïÌÜ¤òÉ½¼¨Ãæ]¤Îxx
-		'item_count_to' => min($pc*$pu, $pt),					# [xx·ïÌÜ¤«¤éyy·ïÌÜ¤òÉ½¼¨Ãæ]¤Îyy
-		'item_count_prev' => $pp ? $pu : '',					# [Á°¤Îxx·ï]¤ÎxxÃÍ
-		'item_count_next' => $pn ? min($pt-$pc*$pu, $pu) : '',	# [¼¡¤Îxx·ï]¤ÎxxÃÍ
-		'prev_page' => $pp ? "$fname?$qstring&$qname=$pp" : '',	# Á°¤Î¥Ú¡¼¥¸¤Ø¤Î¥ê¥ó¥¯
-		'next_page' => $pn ? "$fname?$qstring&$qname=$pn" : '',	# ¼¡¤Î¥Ú¡¼¥¸¤Ø¤Î¥ê¥ó¥¯
-		'goto_page' => "$fname?$qstring&$qname=",				# »ØÄê¥Ú¡¼¥¸¤Ø¤Î¥ê¥ó¥¯
-		'navi_prev' => (1 < $n0) ? 1 : 0,						# naviÁ°¾ÊÎ¬¤¢¤ê/¤Ê¤·
-		'navi_next' => ($nx < $px) ? 1 : 0,						# navi¸å¾ÊÎ¬¤¢¤ê/¤Ê¤·
-		'page_count' => $px,									# Áí¥Ú¡¼¥¸¿ô=ºÇ½ª¥Ú¡¼¥¸ÈÖ¹æ
+		'item_count_unit' => $pu,								# ãƒšãƒ¼ã‚¸ã‚ãŸã‚Šè¡¨ç¤ºä»¶æ•°(ä¸Šé™å€¤)
+		'item_count' => $pt,									# [xxä»¶ã¿ã¤ã‹ã‚Šã¾ã—ãŸ]ã®ç·ä»¶æ•°
+		'item_count_from' => ($pc-1)*$pu+1,						# [xxä»¶ç›®ã‹ã‚‰yyä»¶ç›®ã‚’è¡¨ç¤ºä¸­]ã®xx
+		'item_count_to' => min($pc*$pu, $pt),					# [xxä»¶ç›®ã‹ã‚‰yyä»¶ç›®ã‚’è¡¨ç¤ºä¸­]ã®yy
+		'item_count_prev' => $pp ? $pu : '',					# [å‰ã®xxä»¶]ã®xxå€¤
+		'item_count_next' => $pn ? min($pt-$pc*$pu, $pu) : '',	# [æ¬¡ã®xxä»¶]ã®xxå€¤
+		'prev_page' => $pp ? "$fname?$qstring&$qname=$pp" : '',	# å‰ã®ãƒšãƒ¼ã‚¸ã¸ã®ãƒªãƒ³ã‚¯
+		'next_page' => $pn ? "$fname?$qstring&$qname=$pn" : '',	# æ¬¡ã®ãƒšãƒ¼ã‚¸ã¸ã®ãƒªãƒ³ã‚¯
+		'goto_page' => "$fname?$qstring&$qname=",				# æŒ‡å®šãƒšãƒ¼ã‚¸ã¸ã®ãƒªãƒ³ã‚¯
+		'navi_prev' => (1 < $n0) ? 1 : 0,						# naviå‰çœç•¥ã‚ã‚Š/ãªã—
+		'navi_next' => ($nx < $px) ? 1 : 0,						# naviå¾Œçœç•¥ã‚ã‚Š/ãªã—
+		'page_count' => $px,									# ç·ãƒšãƒ¼ã‚¸æ•°=æœ€çµ‚ãƒšãƒ¼ã‚¸ç•ªå·
 		'pages' => $pages,
 	));
 	
