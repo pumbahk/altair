@@ -8,6 +8,7 @@ from ..response import FileLikeResponse
 from ticketing.api.impl import BaseCommunicationApi
 from ticketing.payments.payment import get_delivery_plugin
 from ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
+from ticketing import urllib2ext
 
 
 def as_filelike_response(request, imgdata):
@@ -33,9 +34,8 @@ def _make_named_io(name, data):
 
 
 class SEJPreviewCommunication(BaseCommunicationApi):
-    def __init__(self, post_url, create_request):
+    def __init__(self, post_url):
         self.post_url = post_url
-        self.create_request = create_request #see. ticketing.api.impl
         
     def _normalize(self, ptct):
         return ptct
@@ -46,5 +46,8 @@ class SEJPreviewCommunication(BaseCommunicationApi):
         values = {'template': open(delivery_plugin.template, "rb"), 
                   'ptct': _make_named_io("ptct.xml", self._normalize(ptct))}
         data, headers = multipart_encode(values)
-        req = self.create_request(self.post_url, data, headers)
-        return urllib2.urlopen(req).read()
+        return urllib2.urlopen(urllib2ext.BasicAuthSensibleRequest(
+            self.post_url,
+            data=data,
+            headers=headers)
+            ).read()
