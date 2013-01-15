@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+from ticketing.logicaldeleting import install as install_ld
+install_ld()
+
 import re
 import json
 
@@ -20,8 +23,6 @@ def main(global_config, **local_config):
     settings = dict(global_config)
     settings.update(local_config)
 
-    from ticketing.logicaldeleting import install as install_ld
-    install_ld()
     from .resources import newRootFactory, groupfinder
     from .authentication import CombinedAuthenticationPolicy, APIAuthenticationPolicy
     from .authentication.apikey.impl import newDBAPIKeyEntryResolver
