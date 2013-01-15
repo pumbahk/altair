@@ -83,10 +83,13 @@ class UserProfile(Base, BaseModel, LogicallyDeleted, WithTimestamp):
 
 class UserCredential(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     __tablename__ = 'UserCredential'
+    __table_args__= (
+        UniqueConstraint("auth_identifier", "membership_id", "deleted_at", name="ib_unique_1"), 
+        )
     query = session.query_property()
     id = Column(Identifier, primary_key=True)
 
-    auth_identifier = Column(String(255), unique=True)
+    auth_identifier = Column(String(255))
     auth_secret= Column(String(255))
 
     user_id = Column(Identifier, ForeignKey('User.id'))
