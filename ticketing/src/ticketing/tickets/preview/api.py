@@ -1,4 +1,10 @@
+# -*- coding:utf-8 -*-
+
+import logging
+logger = logging.getLogger(__name__)
+
 import urllib2
+import socket
 from poster.encode import multipart_encode
 from poster.streaminghttp import register_openers
 from jsonrpclib import jsonrpc
@@ -9,23 +15,30 @@ from ticketing.api.impl import BaseCommunicationApi
 from ticketing.payments.payment import get_delivery_plugin
 from ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
 from ticketing import urllib2ext
-
+from . import TicketPreviewAPIException
 
 def as_filelike_response(request, imgdata):
     return FileLikeResponse(StringIO(imgdata), 
                             content_type="image/png", 
                             request=request)
-
     
 class SVGPreviewCommunication(BaseCommunicationApi):
     def __init__(self, post_url):
         self.post_url = post_url
 
     def communicate(self, request, svg):
-        rpc_proxy = jsonrpc.ServerProxy(self.post_url, version="2.0")
-        imgdata = rpc_proxy.renderSVG(svg,"image/png")
-        return imgdata
-
+        try:
+            rpc_proxy = jsonrpc.ServerProxy(self.post_url, version="2.0")
+            imgdata = rpc_proxy.renderSVG(svg,"image/png")
+            return imgdata
+        except jsonrpc.ProtocolError, e:
+            logger.exception(e)
+            logger.error("*preview.preview.svg access=%s" % self.post_url)
+            raise TicketPreviewAPIException(u"通信に失敗しました。設定ファイルを見なおしてください")
+        except socket.error, e:
+            logger.exception(e)
+            logger.error("*preview.preview.svg access=%s" % self.post_url)
+            raise TicketPreviewAPIException(u"通信に失敗しました。previewサーバのアクセスURLが異なるかもしれません。設定ファイルを見なおしてください")
 
 def _make_named_io(name, data):
     io = StringIO(data)

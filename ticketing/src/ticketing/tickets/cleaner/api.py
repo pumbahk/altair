@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 from lxml import etree
 from StringIO import StringIO
 
@@ -22,6 +24,7 @@ def get_validated_xmltree(svgio, exc_class=TicketCleanerValidationError):
         svgio.seek(0)
         return xmltree
     except Exception, e:
+        logger.exception(e)
         raise exc_class("xml: "+str(e))
 
 def get_validated_svg_cleaner(svgio, exc_class=TicketCleanerValidationError):
@@ -66,12 +69,14 @@ class TicketSVGValidator(object):
         try:
             to_opcodes(xmltree)
         except Exception, e:
+            logger.exception(e)
             raise self.exc_class("opcode:" + str(e))
 
     def _validate_on_cleanup_phase(self, xmltree):
         try:
             cleanup_svg(xmltree)
         except Exception, e:
+            logger.exception(e)
             raise self.exc_class("cleanup: "+str(e))
 
     def _validate_on_normalize_phase(self, svgio):
@@ -79,4 +84,5 @@ class TicketSVGValidator(object):
             out = self.io_create()
             normalize(svgio, out, encoding="UTF-8")
         except Exception, e:
+            logger.exception(e)
             raise self.exc_class("normalize: "+str(e))
