@@ -16,10 +16,10 @@ class SalesReportForm(Form):
 
         if 'event_id' in kwargs:
             self.event_id.data = kwargs['event_id']
-        if 'email' in kwargs:
-            self.email.data = kwargs['email']
-        if not 'subject' in kwargs:
-            self.subject.data = None
+        if 'performance_id' in kwargs:
+            self.performance_id.data = kwargs['performance_id']
+        if 'sales_segment_id' in kwargs:
+            self.sales_segment_id.data = kwargs['sales_segment_id']
 
     def _get_translations(self):
         return Translations()
@@ -47,11 +47,6 @@ class SalesReportForm(Form):
         label=u'送信先',
         validators=[Required()],
     )
-    email = TextField(
-        label=u'送信先',
-        validators=[Required()],
-    )
-
     subject = TextField(
         label=u'件名',
         validators=[Required()],
@@ -74,13 +69,12 @@ class SalesReportMailForm(Form):
         return Translations()
 
     def validate_operator_id(form, field):
-        result = ReportSetting.query.filter(
+        count = ReportSetting.query.filter(
             ReportSetting.operator_id==field.data,
             ReportSetting.frequency==form.frequency.data,
             ReportSetting.event_id==form.event_id.data
         ).count()
-        print result
-        if result:
+        if count > 0:
            raise ValidationError(u"既に登録済みのオペレーターです")
 
     id = HiddenField(
