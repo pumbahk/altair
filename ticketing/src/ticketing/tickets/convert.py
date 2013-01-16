@@ -1,3 +1,4 @@
+# encoding: utf-8
 
 from lxml import html, etree
 from lxml.builder import E
