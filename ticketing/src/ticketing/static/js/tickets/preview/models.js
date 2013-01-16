@@ -2,6 +2,9 @@ if (!window.preview)
     window.preview = {};
 
 (function(preview){
+    var NONE_CHANGED = 0;
+    var REDRAW_IMAGE = 1;
+    var RELOAD_SVG = 2;
     preview.ParamaterStore = Backbone.Model.extend({
         defaults:{
             sx: 1.0, 
@@ -10,27 +13,28 @@ if (!window.preview)
             default_sy: 2.0, 
             ticket_format: null, 
             holder: null,  //holder is svg data source{name: "", pk: ""}
-            changed: false, 
+            changed: NONE_CHANGED
         }, 
         changeSx: function(v){ //todo: use this;
             this.set("sx", v);
             if(this.get("default_sx") < v){
-                this.set("changed", true);
+                this.set("changed", REDRAW_IMAGE);
             }
         }, 
         changeSy: function(v){
             this.set("sy", v);
             if(this.get("default_sy") < v){
-                this.set("changed", true);
+                this.set("changed", REDRAW_IMAGE);
             }
         }, 
         changeTicketFormat: function(v){
             this.set("ticket_format", v);
-            this.set("changed", true);
+            this.set("changed", RELOAD_SVG);
         }, 
         changeHolder: function(h){
             this.set("holder", h);
-            this.trigger("*params.change.holder");
+            this.set("changed", RELOAD_SVG);
+            this.reDraw();
         }, 
         refreshDefault: function(){
             this.set("default_sx", 2.0);
@@ -39,7 +43,14 @@ if (!window.preview)
             this.set("sy", 1.0);
         }, 
         reDraw: function(){
-            this.trigger("*params.preview.redraw");
+            switch (this.get("changed")) {
+            case REDRAW_IMAGE:
+                this.trigger("*params.preview.redraw");
+                break;
+            case RELOAD_SVG:
+                this.trigger("*params.change.holder");
+                break;
+            }
         }
     });
 
