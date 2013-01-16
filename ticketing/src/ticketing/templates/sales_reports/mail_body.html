@@ -18,24 +18,24 @@
       <br>
       <p>◆集計期間:
       % if form.limited_from.data or form.limited_to.data:
-      ${h.safe_strftime(form.limited_from.data)} ~ ${h.safe_strftime(form.limited_to.data)}
+        ${h.safe_strftime(form.limited_from.data)} 〜 ${h.safe_strftime(form.limited_to.data)}
       % else:
-      開始から本日付け
+        全期間
       % endif
       </p>
 
       <h4>全商品名区分集計</h4>
       <table style="width: 95%; border: 1px #DCDCDC solid; background-color: #C0FFFF;">
         <tr>
-          <th style="width: 13%; border: 1px #DCDCDC solid;">席種</th>
-          <th style="width: 13%; border: 1px #DCDCDC solid;">商品</th>
-          <th style="width: 10%; border: 1px #DCDCDC solid;">価格</th>
-          <th style="width: 13%; border: 1px #DCDCDC solid;">配席数</th>
-          <th style="width: 9%; border: 1px #DCDCDC solid;">残数</th>
-          <th style="width: 9%; border: 1px #DCDCDC solid;">受付数</th>
-          <th style="width: 9%; border: 1px #DCDCDC solid;">未入金</th>
-          <th style="width: 9%; border: 1px #DCDCDC solid;">入金済み</th>
-          <th style="width: 9%; border: 1px #DCDCDC solid;">小計</th>
+          <th style="width: 20%; border: 1px #DCDCDC solid;">席種</th>
+          <th style="width: 20%; border: 1px #DCDCDC solid;">商品</th>
+          <th style="width: 8%; border: 1px #DCDCDC solid;">価格</th>
+          <th style="width: 8%; border: 1px #DCDCDC solid;">配席数</th>
+          <th style="width: 8%; border: 1px #DCDCDC solid;">残数</th>
+          <th style="width: 8%; border: 1px #DCDCDC solid;">受付数</th>
+          <th style="width: 8%; border: 1px #DCDCDC solid;">未入金</th>
+          <th style="width: 8%; border: 1px #DCDCDC solid;">入金済み</th>
+          <th style="width: 8%; border: 1px #DCDCDC solid;">小計</th>
         </tr>
       <%
         import itertools
@@ -78,11 +78,11 @@
           % endif
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${product['product_name']}</td>
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product['product_price'])}円</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${h.price_format(product_total['total_quantity'])}</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${h.price_format(product_total['vacant_quantity'])}</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${h.price_format(product_total['paid_quantity'] + product_total['unpaid_quantity']) or ''}</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${h.price_format(product_total['unpaid_quantity'])}</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${h.price_format(product_total['paid_quantity'])}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total['total_quantity'])}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total['vacant_quantity'])}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total['paid_quantity'] + product_total['unpaid_quantity']) or ''}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total['unpaid_quantity'])}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total['paid_quantity'])}</td>
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product['product_price'] * product_total['paid_quantity'])}円</td>
         </tr>
         <%
@@ -109,19 +109,25 @@
       <h4>${sale_segment_name}</h4>
       <table style="width: 95%; border: 1px #DCDCDC solid; background-color: #C0FFFF;">
         <tr>
-          <th style="width: 13%; border: 1px #DCDCDC solid;" colspan="4"></th>
-          <th style="width: 13%; border: 1px #DCDCDC solid;" colspan="5">累計</th>
+          <th style="border: 1px #DCDCDC solid;" colspan="6"></th>
+          <th style="border: 1px #DCDCDC solid;" colspan="3">
+          % if form.limited_from.data or form.limited_to.data:
+            ${h.safe_strftime(form.limited_from.data)} 〜 ${h.safe_strftime(form.limited_to.data)}
+          % else:
+            累計
+          % endif
+          </th>
         </tr>
         <tr>
-          <th style="width: 13%; border: 1px #DCDCDC solid;">席種</th>
-          <th style="width: 15%; border: 1px #DCDCDC solid;">配券先</th>
+          <th style="width: 20%; border: 1px #DCDCDC solid;">席種</th>
+          <th style="width: 8%; border: 1px #DCDCDC solid;">配券先</th>
           <th style="width: 20%; border: 1px #DCDCDC solid;">商品</th>
-          <th style="width: 10%; border: 1px #DCDCDC solid;">価格</th>
+          <th style="width: 8%; border: 1px #DCDCDC solid;">価格</th>
           <th style="width: 8%; border: 1px #DCDCDC solid;">配席数</th>
           <th style="width: 8%; border: 1px #DCDCDC solid;">残数</th>
           <th style="width: 8%; border: 1px #DCDCDC solid;">受付</th>
           <th style="width: 8%; border: 1px #DCDCDC solid;">未入金</th>
-          <th style="width: 10%; border: 1px #DCDCDC solid;">入金済み</th>
+          <th style="width: 8%; border: 1px #DCDCDC solid;">入金済み</th>
         </tr>
 
         <%

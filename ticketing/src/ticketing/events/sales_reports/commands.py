@@ -1,61 +1,68 @@
+# -*- coding: utf-8 -*-
+
 from ticketing.logicaldeleting import install as install_ld
 install_ld()
+
 import logging
 import os
 import sys
-from os.path import abspath, dirname
-sys.path.append(abspath(dirname(dirname(__file__))))
+from datetime import datetime, timedelta
 
+from paste.util.multidict import MultiDict
 from pyramid.paster import bootstrap
-from pyramid.renderers import render_to_response
-from ticketing.core.models import ReportSetting, Mailer, Event, Organization
+
+from ticketing.core.models import ReportSetting, Mailer, Event, Organization, ReportFrequencyEnum
 from ticketing.operators.models import Operator
 from ticketing.events.sales_reports.forms import SalesReportForm
 from ticketing.events.sales_reports.sendmail import sendmail, get_performance_sales_summary
 
 logger = logging.getLogger(__name__)
 
-logging.basicConfig()
-
-def get_settings(frequency_num):
-    return ReportSetting.query.filter(ReportSetting.frequency==frequency_num)\
-        .with_entities(ReportSetting.event_id, ReportSetting.operator_id).all()
-
 def main(argv=sys.argv):
-    config_file = argv[1]
-    # configuration
-    if config_file is None:
-        print 'You must give a config file'
+
+    if len(sys.argv) < 4:
+        print 'ERROR: invalid args %s' % sys.argv
         return
 
-    log_file = os.path.abspath(argv[2])
-    frequency = argv[3]
-    if frequency == "Daily":
-        frequency_num = 1
-    elif frequency == "Weekly":
-        frequency_num = 2
-    else:
-        logging.error(e.message)
-
-    logging.config.fileConfig(log_file)
+    config_file = argv[1]
     app_env = bootstrap(config_file)
-    registry = app_env['registry']
-    settings = registry.settings
 
-    # send mail magazine
-    report = []
-    for report_setting in get_settings(frequency_num):
+    log_file = os.path.abspath(argv[2])
+    logging.config.fileConfig(log_file)
+    logger.info('start send_sales_report batch')
+
+    frequency = argv[3]
+    if frequency == ReportFrequencyEnum.Daily.k:
+        frequency_num = ReportFrequencyEnum.Daily.v
+        target = datetime.now() - timedelta(days=1)
+        limited_from = target.strftime('%Y-%m-%d 00:00')
+        limited_to = target.strftime('%Y-%m-%d 23:59')
+    elif frequency == ReportFrequencyEnum.Weekly.k:
+        frequency_num = ReportFrequencyEnum.Weekly.v
+        target = datetime.now() - timedelta(days=7)
+        limited_from = target.strftime('%Y-%m-%d 00:00')
+        limited_to = target.strftime('%Y-%m-%d 23:59')
+    else:
+        logging.error('invalid args %s' % sys.argv)
+        return
+
+    report_settings = ReportSetting.query.filter_by(frequency=frequency_num).all()
+    for report_setting in report_settings:
         event_id = report_setting.event_id
         event = Event.get(event_id)
         if event is None:
-            logging.error(e.message)
+            logging.error('event not found (id=%s)' % event_id)
+            continue
 
-        performances_reports = {}
-        form = SalesReportForm(event_id=event_id)
-        event_product = get_performance_sales_summary(form,event.organization)
-        mailer = sendmail(event, form, report_setting.operator_id);
+        params = dict(
+            recipient=report_setting.operator.email,
+            limited_from=limited_from,
+            limited_to=limited_to
+        )
+        form = SalesReportForm(MultiDict(params), event_id=event_id)
+        sendmail(event, form)
 
- 
+    logger.info('end send_sales_report batch (sent=%s)' % len(report_settings))
 
 if __name__ == '__main__':
     main()

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from pyramid.threadlocal import get_current_registry
 from sqlalchemy.sql import func
 from ticketing.operators.models import Operator
@@ -10,10 +12,93 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-logging.basicConfig()
+def get_sales_summary(form, organization, group='Event'):
+    reports = {}
 
+    # 自社分のみが対象
+    stock_holder_ids = [sh.id for sh in StockHolder.get_own_stock_holders(user_id=organization.user_id)]
 
-def get_performance_sales_summary(form,organization):
+    # 配席数、在庫数
+    query = Event.query.filter(Event.organization_id==organization.id)\
+        .outerjoin(Performance).filter(Performance.deleted_at==None)\
+        .outerjoin(Stock).filter(Stock.deleted_at==None, Stock.stock_holder_id.in_(stock_holder_ids))\
+        .outerjoin(StockStatus).filter(StockStatus.deleted_at==None)
+    if form.performance_id.data:
+        query = query.filter(Performance.id==form.performance_id.data)
+    if form.event_id.data:
+        query = query.filter(Event.id==form.event_id.data)
+    event_start_day = func.min(Performance.start_on.label('performance_start_on'))
+    event_end_day = func.max(Performance.end_on.label('performance_end_on'))
+
+    if group == 'Performance':
+        query = query.with_entities(
+            Performance.id,
+            Performance.name,
+            Performance.start_on,
+            func.sum(Stock.quantity),
+            func.sum(StockStatus.quantity),
+            event_start_day,
+            event_end_day,
+        ).group_by(Performance.id)
+    else:
+        query = query.with_entities(
+            Event.id,
+            Event.title,
+            Event.id, # dummy
+            func.sum(Stock.quantity),
+            func.sum(StockStatus.quantity),
+            event_start_day,
+            event_end_day,
+        ).group_by(Event.id)
+
+    for id, title, start_on, total_quantity, vacant_quantity, event_start_day, event_end_day in query.all():
+        reports[id] = dict(
+            id=id,
+            title=title,
+            start_on=start_on,
+            total_quantity=total_quantity or 0,
+            vacant_quantity=vacant_quantity or 0,
+            total_amount=0,
+            fee_amount=0,
+            price_amount=0,
+            product_quantity=0,
+            event_start_day=event_start_day,
+            event_end_day=event_end_day,
+        )
+
+    # 販売金額、販売枚数
+    query = Event.query.filter(Event.organization_id==organization.id)\
+        .outerjoin(Performance).filter(Performance.deleted_at==None)\
+        .outerjoin(Order).filter(Order.canceled_at==None, Order.deleted_at==None)\
+        .outerjoin(OrderedProduct).filter(OrderedProduct.deleted_at==None)
+    if form.limited_from.data:
+        query = query.filter(Order.created_at > form.limited_from.data)
+    if form.limited_to.data:
+        query = query.filter(Order.created_at < form.limited_to.data)
+    if form.performance_id.data:
+        query = query.filter(Performance.id==form.performance_id.data)
+    if form.event_id.data:
+        query = query.filter(Event.id==form.event_id.data)
+
+    if group == 'Performance':
+        query = query.with_entities(
+            Performance.id,
+            func.sum(OrderedProduct.price * OrderedProduct.quantity).label('price_amount'),
+            func.sum(OrderedProduct.quantity).label('product_quantity')
+        ).group_by(Performance.id)
+    else:
+        query = query.with_entities(
+            Event.id,
+            func.sum(OrderedProduct.price * OrderedProduct.quantity).label('price_amount'),
+            func.sum(OrderedProduct.quantity).label('product_quantity')
+        ).group_by(Event.id)
+
+    for id, price_amount, product_quantity in query.all():
+        reports[id].update(dict(price_amount=price_amount or 0, product_quantity=product_quantity or 0))
+
+    return reports.values()
+
+def get_performance_sales_summary(form, organization):
     performance_reports = {}
 
     # in-house
@@ -39,7 +124,7 @@ def get_performance_sales_summary(form,organization):
         query = query.outerjoin(SalesSegment).filter(SalesSegment.id==Product.sales_segment_id, SalesSegment.id==form.sales_segment_id.data)
         sales_segment_name_entity = SalesSegment.name.label('sales_segment_name')
     else:
-        sales_segment_name_entity = 'null'
+        sales_segment_name_entity = 'NULL'
 
     query = query.with_entities(
             StockType.id.label('stock_type_id'),
@@ -131,12 +216,12 @@ def get_performance_sales_summary(form,organization):
 
     return performance_reports.values()
 
-def sendmail(event, form=None, frequency_operator_id=None):
+def sendmail(event, form=None):
     performances_reports = {}
     for performance in event.performances:
         report_by_sales_segment = {}
         for sales_segment in event.sales_segments:
-            sales_report_form = form or SalesReportForm(performance_id=performance.id, sales_segment_id=sales_segment.id)
+            sales_report_form = form or SalesReportForm(form.data, performance_id=performance.id, sales_segment_id=sales_segment.id)
             report_by_sales_segment[sales_segment.name] = get_performance_sales_summary(sales_report_form, event.organization)
         performances_reports[performance.id] = dict(
             performance=performance,
@@ -151,23 +236,19 @@ def sendmail(event, form=None, frequency_operator_id=None):
 
     registry = get_current_registry()
     settings = registry.settings
-    
 
     sender = settings['mail.message.sender']
-    operator = Operator.get(frequency_operator_id)
-    recipient = operator.email
-    subject = event.title
+    recipient = form.recipient.data
     html = render_to_response('ticketing:templates/sales_reports/mail_body.html', render_param, request=None)
     mailer = Mailer(settings)
     mailer.create_message(
         sender = sender,
         recipient = recipient,
-        subject = subject,
+        subject = u'[売上レポート] %s' % event.title,
         body = '',
         html = html.text
     ) 
     try:
         mailer.send(sender, recipient.split(','))
-        print 'mail send'
     except Exception, e:
-            logging.error(e.message)
+        logging.error(e.message)
