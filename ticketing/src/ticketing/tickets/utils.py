@@ -128,6 +128,7 @@ class DictBuilder(object):
                 u'abbreviated_title': event.abbreviated_title,
                 },
             u'イベント名': event.title,
+            u'イベント名略称': event.abbreviated_title,
             })
         return retval
 
