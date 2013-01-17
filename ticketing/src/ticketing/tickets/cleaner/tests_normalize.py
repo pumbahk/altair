@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import unittest
+import os.path
 from ticketing.tickets.cleaner.normalize import LBrace, RBrace, Content
 
 class EventsFromStringTests(unittest.TestCase):
@@ -161,10 +162,11 @@ class EliminatedTagNormalizeUnitTests(unittest.TestCase):
         from StringIO import StringIO
         import pystache
         import lxml.etree
+        svg_file = os.path.join(os.path.dirname(__file__), "sample.svg")
 
         ## occur xml syntax error using non normalized svg 
         render = pystache.Renderer()
-        emitted = render.render(open("./sample.svg").read().decode("utf-8"), {u"name": "--name--"})
+        emitted = render.render(open(svg_file).read().decode("utf-8"), {u"name": "--name--"})
         io = StringIO()
         io.write(emitted.encode("utf-8"))
         io.seek(0)
@@ -174,7 +176,7 @@ class EliminatedTagNormalizeUnitTests(unittest.TestCase):
 
         ## normalized svg
         io = StringIO()
-        with open("./sample.svg") as rf:
+        with open(svg_file) as rf:
             self._callFUT(rf, io, eliminate=True)            
 
         render = pystache.Renderer()
