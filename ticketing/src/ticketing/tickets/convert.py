@@ -485,10 +485,12 @@ class Style(object):
 def text_and_elements(elem):
     if elem.text:
         yield unicode(elem.text)
+        elem.text = None
     for subelem in elem:
         yield subelem
         if subelem.tail:
             yield unicode(subelem.tail)
+            subelem.tail = None
 
 def namespace(ns):
     def decorator(f):

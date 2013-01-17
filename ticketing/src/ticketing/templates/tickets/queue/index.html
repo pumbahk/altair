@@ -26,29 +26,41 @@ ${breadcrumbs(
       return true;
     });
 
-  // click by selectable
-  $("table").selectable({
-    filter: "td.printstatus-wrap",
-    distance: 1,
-    stop: function(){
-        $(".ui-selected input[type='checkbox']", this).each(function(_,e){
-            $(e).click();
-         });
-        $(".ui-selected").removeClass("ui-selected");
-      }
-    })
+    // click by selectable
+    $("table").selectable({
+      filter: "td.printstatus-wrap",
+      distance: 1,
+      stop: function(){
+          $(".ui-selected input[type='checkbox']", this).each(function(_,e){
+              $(e).click();
+           });
+          $(".ui-selected").removeClass("ui-selected");
+        }
+      });
+
+    // add-all,remove-all
+    $("#addall").on("click", function(){
+      var candidates = $("input.printstatus[type='checkbox']:not(:checked)")
+      candidates.attr("checked", "checked");
+    });
+    $("#removeall").on("click", function(){
+      var candidates = $("input.printstatus[type='checkbox']:checked")
+      candidates.removeAttr("checked");
+    });
   });
 </script>
 
 <h2>印刷キュー</h2>
 <div id="queue_entry_menu" class="btn-group">
   <a class="btn" href="${request.route_path("tickets.printer")}" target="_blank"><i class="icon-print"></i> 印刷ツールを開く</a>
-  <button class="btn id-delegate-action"
+  <a class="btn id-delegate-action"
      data-delegated="#deleteModalQueueEntry"
      data-base-url="${request.route_path("tickets.queue.delete")}"
      href="#deleteModalQueueEntry">
     <i class="icon-minus"></i> 削除
-  </button>
+  </a>
+  <a type="button" class="btn" id="addall">全部ON</a>
+  <a type="button" class="btn" id="removeall">全部OFF</a>
 </div>
 
 <% sortable = lambda *args, **kwargs: h.sortable('queue_entry', *args, **kwargs) %>
@@ -67,7 +79,7 @@ ${breadcrumbs(
   <tbody>
   % for entry in queue_entries:
     <tr>
-      <td class="printstatus-wrap"><input type="checkbox" name="queue_entry_id" value="${entry.id}" /></td>
+      <td class="printstatus-wrap"><input class="printstatus" type="checkbox" name="queue_entry_id" value="${entry.id}" /></td>
       <td>${entry.summary}</td>
       <td><a href="${request.route_url('events.tickets.boundtickets.show', event_id=entry.ticket.event_id, id=entry.ticket.id)}">${entry.ticket.name}</a></td>
       <td>

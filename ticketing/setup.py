@@ -121,7 +121,7 @@ setup(name='ticketing',
       sej_notification=ticketing.sej.scripts.sej_notification:main
       check_multicheckout_orders=ticketing.commands.check_multicheckout_orders:main
       populate_order_no=ticketing.commands.populate_order_no:main
-      send_sales_reports=ticketing.sales_reports.commands:main
+      send_sales_reports=ticketing.events.sales_reports.commands:main
       """,
       paster_plugins=['pyramid'],
       )
