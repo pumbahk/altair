@@ -144,6 +144,26 @@ def preview_ticket_download(context, request):
     return FileLikeResponse(io, request=request, filename="preview.svg")
 
 
+@view_config(route_name="tickets.preview.enqueue", request_method="POST", 
+             request_param="svg", renderer="json")
+def ticket_preview_enqueue(context, request):
+    svg = request.POST["svg"]
+    ticket_format_id = request.POST["ticket_format_id"]
+    #uggg.
+    ticket = c_models.Ticket.query.filter(c_models.Ticket.ticket_format_id==ticket_format_id).first()
+    try:
+        c_models.TicketPrintQueueEntry.enqueue(
+            context.user,  
+            ticket, 
+            data=dict(drawing=svg),                                                   
+            summary=u'券面テンプレート (preview)',
+            ) #todo seat
+        return {"status": True, "data": "ok"}
+    except Exception, e:
+        logger.exception(e)
+        return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
+
+
 @view_config(route_name="tickets.preview.combobox", request_method="GET", renderer="ticketing:templates/tickets/combobox.html", 
              decorator=with_bootstrap, permission="event_editor")
 @view_config(route_name="tickets.preview.combobox", request_method="GET", renderer="ticketing:templates/tickets/_combobox.html", 
@@ -295,7 +315,6 @@ class PreviewApiView(object):
         except Exception, e:
             logger.exception(e)
             return {"status": False,  "message": "%s: %s" % (e.__class__.__name__,  str(e))}
-
 
     @view_config(match_param="action=collectvars", request_param="svg")
     def preview_collectvars(self):

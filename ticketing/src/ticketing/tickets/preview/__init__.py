@@ -14,6 +14,7 @@ def include_views(config):
     config.add_route('tickets.preview', '/preview')
     config.add_route('tickets.preview.dialog', '/preview/dialog/{model}')
     config.add_route("tickets.preview.download", '/preview/download')
+    config.add_route("tickets.preview.enqueue", '/preview/enqueue')
     config.add_route("tickets.preview.combobox", '/preview/combobox')
     config.add_route("tickets.preview.api", "/api/preview/{action}")
     config.add_route("tickets.preview.combobox.api", "/api/preview/combobox/{model}")

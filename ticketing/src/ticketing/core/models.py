@@ -2313,10 +2313,10 @@ class TicketPrintQueueEntry(Base, BaseModel):
     @classmethod
     def enqueue(self, operator, ticket, data, summary, ordered_product_item=None, seat=None):
         entry = TicketPrintQueueEntry(operator=operator, 
-                                      ticket_id=ticket.id, 
+                                      ticket=ticket, 
                                       data=data, 
                                       summary=summary, 
-                                      ordered_product_item_id=ordered_product_item.id, 
+                                      ordered_product_item=ordered_product_item, 
                                       seat=seat)
         DBSession.add(entry)
 
