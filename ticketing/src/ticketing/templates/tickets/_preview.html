@@ -53,10 +53,19 @@
     <div class="navbar-inner">
       <a class="brand" href="#">preview画像表示</a>
       <ul class="nav" id="params_settings_nav">
-        <li><a id="combobox_btn" href="#">入力補助ダイアログ</a></li>
-        <li><a id="download_btn" href="#">現在のsvgをdownload</a></li>
-        <li><a id="enqueue_btn" href="#">印刷キューに追加</a></li>
-        <li><a id="redraw_btn" href="#">再描画</a></li>
+        <li>
+          <div class="btn-group">
+            <a id="redraw_btn" class="btn" href="#"><i class="icon-pencil icon-black"></i> 再描画</a>
+            <a class="btn dropdown-toggle" data-toggle="dropdown">
+              <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+              <li><a id="combobox_btn" href="#"><i class="icon-plus"></i> 入力補助ダイアログ</a></li>
+              <li><a id="download_btn" href="#"><i class="icon-download"></i> 現在のsvgをdownload</a></li>
+              <li><a id="enqueue_btn" href="#"><i class="icon-print"></i> 印刷キューに追加</a></li>
+            </ul>
+          </div>
+        </li>
         <li style="margin-left:50px;">チケット様式の選択
             <select id="ticket_format" class="inline input-medium">
               %for tf in ticket_formats:

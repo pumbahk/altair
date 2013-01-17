@@ -61,13 +61,13 @@ preview.SVGFromModelView = Backbone.View.extend({
         this.model.changeHolder({pk: pk, name: this.modelname}); //params
     }, 
     render: function(label, candidates){
-        var $select = $('<select class="inline input-medium">').attr("id", this.idname);
+        var $select = $('<select class="inline input">').attr("id", this.idname);
         this.$select = $select;
 
         _(candidates).each(function(c){
             $select.append($("<option>").text(c.name).attr("value", c.pk));
         });
-        this.$el.find(".brand").hide();
+        // this.$el.find(".brand").hide();
         var root = this.$el.find("#subnav .nav");
         root.append($('<li style="margin-left:20px;">').text(label).append($select));
     }
