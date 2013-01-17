@@ -149,8 +149,8 @@ def preview_ticket_download(context, request):
 def ticket_preview_enqueue(context, request):
     svg = request.POST["svg"]
     ticket_format_id = request.POST["ticket_format_id"]
-    #uggg.
-    ticket = c_models.Ticket.query.filter(c_models.Ticket.ticket_format_id==ticket_format_id).first()
+    ticket = c_models.Ticket.query.filter(c_models.Ticket.ticket_format_id==ticket_format_id, 
+                                          c_models.Ticket.event==None).first()
     try:
         c_models.TicketPrintQueueEntry.enqueue(
             context.user,  
