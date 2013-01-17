@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 import re
 import ast
 from lxml import etree
-from ticketing.tickets.utils import build_dict_from_product_item
+from ticketing.tickets.utils import build_dict_from_product_item, as_user_unit
 from ticketing.tickets.preview.materialize import svg_with_ticketformat
 from ticketing.tickets.preview.fillvalues import template_fillvalues
 from ticketing.tickets.preview.validators import parse, SVGTransformValidator, FillValuesFromModelsValidator
@@ -135,8 +135,9 @@ from ticketing.tickets.cleaner import cleanup_svg
 from ticketing.tickets.convert import convert_svg
 
 class SEJTemplateTransformer(object):
-    def __init__(self, svgio=None, encoding="Shift_JIS"):
+    def __init__(self, svgio=None, global_transform=None, encoding="Shift_JIS"):
         self.svgio = svgio
+        self.global_transform = global_transform
         self.encoding = encoding
 
         self.height = None #uggg
@@ -157,8 +158,7 @@ class SEJTemplateTransformer(object):
             self._detect_size(xmltree.getroot())
 
             cleanup_svg(xmltree)
-            global_transform = None #parse_transform(sys.argv[1]
-            converted = convert_svg(xmltree, global_transform)
+            converted = convert_svg(xmltree, self.global_transform)
 
             pat = r'''encoding=(["'])Windows-31J\1'''
             rep = 'encoding="%s"'% self.encoding

@@ -34,7 +34,7 @@ from .fetchsvg import fetch_svg_from_postdata
 from ..cleaner.api import get_validated_svg_cleaner
 from ..response import FileLikeResponse
 # todo: refactoring
-from ..utils import build_dict_from_product_item
+from ..utils import build_dict_from_product_item, parse_transform
 
 from . import TicketPreviewAPIException
 from . import TicketPreviewTransformException
@@ -76,10 +76,20 @@ def _build_ticket_format_dicts(ticket_format_qs):
         c_models.DeliveryMethod.delivery_plugin_id==SEJ_DELIVERY_PLUGIN_ID)
 
     D = {}
-    for t in ticket_format_qs:
-        D[t.id] = {"name": t.name, "type": ""}
-    for t in sej_qs:
-        D[t.id] = {"name": t.name, "type": ":sej"}
+    for _type, _iter in [('', ticket_format_qs), ('sej', sej_qs)]:
+        for t in _iter:
+            po = t.data.get(u'print_offset')
+            if po is not None:
+                pox = po.get(u'x')
+                poy = po.get(u'y')
+            else:
+                pox = poy = None
+            D[t.id] = {
+                "name": t.name,
+                "type": _type,
+                "transform": "translate(%s,%s)" % (pox, poy) if pox and poy else ""
+                }
+    print D
     return [dict(pk=k, **vs) for k, vs in D.iteritems()]
 
 def _build_ticket_format_dict(ticket_format):
@@ -125,11 +135,13 @@ def preview_ticket_post_sej(context, request):
     preview = SEJPreviewCommunication.get_instance(request)
 
     svgio = request.POST["svgfile"].file
+    transform_str = request.POST.get("transform")
+    transform = parse_transform(transform_str) if transform_str else None
     cleaner = get_validated_svg_cleaner(svgio, exc_class=HTTPBadRequest)
     svgio = cleaner.get_cleaned_svgio()
     svgio.seek(0)
 
-    ptct = SEJTemplateTransformer(svgio=svgio).transform()
+    ptct = SEJTemplateTransformer(svgio=svgio, transform=transform).transform()
     imgdata = preview.communicate(request, ptct)
     return as_filelike_response(request, imgdata)
 
