@@ -78,8 +78,7 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
                       sx: this.params.get("default_sx"),
                       sy: this.params.get("default_sy"), 
                       ticket_format: this.params.get("ticket_format").pk, 
-                      type: this.params.get("ticket_format").type || "default",
-                      transform: this.params.get("ticket_format").transform
+                      type: this.params.get("ticket_format").type || "default"
                      };
         return this.apis.previewbase64(params)
             .pipe(core.ApiService.rejectIfStatusFail(function(data){                
