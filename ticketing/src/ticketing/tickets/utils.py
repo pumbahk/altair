@@ -615,6 +615,14 @@ def as_user_unit(size, rel_unit=None):
             raise Exception('Relative size specified where no unit size is given in the applied context')
         return rel_unit * degree / 100.
 
+def translate(x, y):
+    return numpy.matrix(
+        [
+            [1., 0., float(x)],
+            [0., 1., float(y)],
+            [0., 0., 1.]
+            ],
+        dtype=numpy.float64)
 
 def parse_transform(transform_str):
     for g in re.finditer(ur'\s*([A-Za-z_-][0-9A-Za-z_-]*)\s*\(\s*((?:[^\s,]+(?:\s*,\s*|\s+))*[^\s,]+)\s*\)\s*', transform_str):
@@ -633,13 +641,7 @@ def parse_transform(transform_str):
         elif f == u'translate':
             if len(args) != 2:
                 raise Exception('invalid number of arguments for translate()')
-            return numpy.matrix(
-                [
-                    [1., 0., float(args[0])],
-                    [0., 1., float(args[1])],
-                    [0., 0., 1.]
-                    ],
-                dtype=numpy.float64)
+            return translate(args[0], args[1])
         elif f == u'scale':
             if len(args) != 2:
                 raise Exception('invalid number of arguments for scale()')

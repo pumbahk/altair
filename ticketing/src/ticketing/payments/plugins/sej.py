@@ -27,7 +27,8 @@ from ticketing.tickets.convert import convert_svg
 from ticketing.tickets.utils import (
     as_user_unit,
     build_dicts_from_ordered_product_item,
-    build_dicts_from_carted_product_item
+    build_dicts_from_carted_product_item,
+    translate,
     )
 from ticketing.core.utils import ApplicableTicketsProducer
 
@@ -78,15 +79,6 @@ def get_sej_ticket_data(order_no, product_item, svg):
         performance_datetime= performance.start_on,
         xml = SejTicketDataXml(svg)
     )
-
-def translate(x, y):
-    return numpy.matrix(
-        [
-            [1., 0., float(x)],
-            [0., 1., float(y)],
-            [0., 0., 1.]
-            ],
-        dtype=numpy.float64)
 
 def applicable_tickets_iter(bundle):
     return ApplicableTicketsProducer(bundle).sej_only_tickets()
