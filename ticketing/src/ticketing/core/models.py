@@ -2310,7 +2310,7 @@ class TicketPrintQueueEntry(Base, BaseModel):
 
     @classmethod
     def enqueue(self, operator, ticket, data, summary, ordered_product_item=None, seat=None):
-        DBSession.add(TicketPrintQueueEntry(operator=operator, ticket=ticket, data=data, summary=summary, ordered_product_item=ordered_product_item))
+        DBSession.add(TicketPrintQueueEntry(operator=operator, ticket_id=ticket.id, data=data, summary=summary, ordered_product_item_id=ordered_product_item.id))
 
     @classmethod
     def peek(self, operator, ticket_format_id, order_id=None):
