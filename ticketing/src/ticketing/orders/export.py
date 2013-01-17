@@ -13,7 +13,7 @@ def _create_mailsubscription_cache(organization_id):
     D = defaultdict(str)
     query = MailSubscription.query \
         .filter(MailSubscription.segment_id == MailMagazine.id) \
-        .filter(or_(MailSubscription.status is None, MailSubscription.status == MailSubscriptionStatus.Subscribed.v))
+        .filter(or_(MailSubscription.status == None, MailSubscription.status == MailSubscriptionStatus.Subscribed.v))
     if organization_id:
         query = query.filter(MailMagazine.organization_id == organization_id)
     for ms in query:
