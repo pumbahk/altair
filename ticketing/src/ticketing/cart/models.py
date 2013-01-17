@@ -57,192 +57,13 @@ MULTICHECKOUT_SALES_OK = '120'
 Base = sqlahelper.get_base()
 DBSession = sqlahelper.get_session()
 
-cart_seat_table = sa.Table("cat_seat", Base.metadata,
+cart_seat_table = sa.Table("CartedProductItem_Seat", Base.metadata,
     sa.Column("seat_id", Identifier, sa.ForeignKey("Seat.id")),
-    sa.Column("cartproductitem_id", Identifier, sa.ForeignKey("ticketing_cartedproductitems.id")),
+    sa.Column("carted_product_item_id", Identifier, sa.ForeignKey("CartedProductItem.id")),
 )
 
-class CartedProductItem(Base):
-    """ カート内プロダクトアイテム + 座席 + 座席状況
-    """
-    __tablename__ = 'ticketing_cartedproductitems'
-    query = DBSession.query_property()
-
-    id = sa.Column(Identifier, primary_key=True)
-
-    quantity = sa.Column(sa.Integer)
-
-    product_item_id = sa.Column(Identifier, sa.ForeignKey("ProductItem.id"))
-
-    #seat_status_id = sa.Column(sa.Integer, sa.ForeignKey(""))
-
-    product_item = orm.relationship("ProductItem", backref='carted_product_items')
-    seats = orm.relationship("Seat", secondary=cart_seat_table)
-    #seat_status = orm.relationship("SeatStatus")
-
-    carted_product_id = sa.Column(Identifier, sa.ForeignKey("ticketing_cartedproducts.id", onupdate='cascade', ondelete='cascade'))
-    carted_product = orm.relationship("CartedProduct", backref="items", cascade='all')
-
-    created_at = sa.Column(sa.DateTime, default=datetime.now)
-    updated_at = sa.Column(sa.DateTime, nullable=True, onupdate=datetime.now)
-    deleted_at = sa.Column(sa.DateTime, nullable=True)
-    finished_at = sa.Column(sa.DateTime)
-
-    @property
-    def seatdicts(self):
-        return ({'name': s.name, 'l0_id': s.l0_id}
-                for s in self.seats)
-
-    @deprecate("deprecated method")
-    def pop_seats(self, seats):
-        """ 必要な座席を取り出して保持する
-
-        必要な座席： :attr:`product_item` の stockが一致する Seat
-        :param seats: list of :class:`ticketing.models.Seat`
-        """
-
-        my_seats = [seat for seat in seats if seat.stock_id == self.product_item.stock_id][:self.quantity]
-        map(seats.remove, my_seats)
-        self.seats.extend(my_seats)
-        return seats
-
-    @property
-    def seat_statuses(self):
-        """ 確保済の座席ステータス
-        """
-        if len(self.seats) > 0:
-            return DBSession.query(c_models.SeatStatus).filter(c_models.SeatStatus.seat_id.in_([s.id for s in self.seats])).all()
-        else:
-            return []
-
-    @property
-    def seat_statuses_for_update(self):
-        """ 確保済の座席ステータス
-        """
-        if len(self.seats) > 0:
-            return DBSession.query(c_models.SeatStatus).filter(c_models.SeatStatus.seat_id.in_([s.id for s in self.seats])).with_lockmode('update').all()
-        else:
-            return []
-
-    def finish(self):
-        """ 決済処理
-        """
-        for seat_status in self.seat_statuses_for_update:
-            if seat_status.status != int(c_models.SeatStatusEnum.InCart):
-                raise NoCartError()
-            seat_status.status = int(c_models.SeatStatusEnum.Ordered)
-        self.finished_at = datetime.now()
-
-    def release(self):
-        logger.info('trying to release CartedProductItem (id=%d)' % self.id)
-        if not self.finished_at:
-            # 座席開放
-            for seat_status in self.seat_statuses_for_update:
-                logger.info('trying to release seat (id=%d)' % seat_status.seat_id)
-                if seat_status.status != int(c_models.SeatStatusEnum.InCart):
-                    logger.info('seat (id=%d) has status=%d, while expecting InCart (%d)' % (seat_status.seat_id, seat_status.status, int(c_models.SeatStatusEnum.InCart)))
-                    logger.info('not releaseing CartedProductItem (id=%d) for safety' % self.id)
-                    return False
-                logger.info('setting status of seat (id=%d) to Vacant (%d)' % (seat_status.seat_id, int(c_models.SeatStatusEnum.Vacant)))
-                seat_status.status = int(c_models.SeatStatusEnum.Vacant)
-
-            # 在庫数戻し
-            if self.product_item.stock.stock_type.quantity_only:
-                release_quantity = self.quantity
-            else:
-                release_quantity = len(self.seats)
-            stock_status = c_models.StockStatus.filter_by(stock_id=self.product_item.stock_id).with_lockmode('update').one()
-            logger.info('restoring the quantity of stock (id=%s, quantity=%d) by +%d' % (stock_status.stock_id, stock_status.quantity, release_quantity))
-            stock_status.quantity += release_quantity
-            stock_status.save()
-            logger.info('done for CartedProductItem (id=%d)' % self.id)
-
-            self.finished_at = datetime.now()
-        return True
-
-    def is_valid(self):
-        for seat_status in self.seat_statuses:
-            if seat_status.status != int(c_models.SeatStatusEnum.InCart):
-                return False
-        return True
-        
-
-class CartedProduct(Base):
-    __tablename__ = 'ticketing_cartedproducts'
-
-    query = DBSession.query_property()
-
-    id = sa.Column(Identifier, primary_key=True)
-    quantity = sa.Column(sa.Integer)
-    cart_id = sa.Column(Identifier, sa.ForeignKey('ticketing_carts.id', onupdate='cascade', ondelete='cascade'))
-    cart = orm.relationship("Cart", backref="products", cascade='all')
-
-    product_id = sa.Column(Identifier, sa.ForeignKey("Product.id"))
-    product = orm.relationship("Product")
-
-    created_at = sa.Column(sa.DateTime, default=datetime.now)
-    updated_at = sa.Column(sa.DateTime, nullable=True, onupdate=datetime.now)
-    deleted_at = sa.Column(sa.DateTime, nullable=True)
-    finished_at = sa.Column(sa.DateTime)
-
-    @property
-    def amount(self):
-        """ 購入額小計
-        """
-        return self.product.price * self.quantity
-
-    @property
-    def seats(self):
-        return sorted(itertools.chain.from_iterable(i.seatdicts for i in self.items), 
-            key=operator.itemgetter('l0_id'))
-
-    @deprecate("deprecated method")
-    def pop_seats(self, seats, performance_id):
-        for product_item in self.product.items:
-            if product_item.performance_id != performance_id:
-                continue
-            cart_product_item = CartedProductItem(carted_product=self, quantity=self.quantity, product_item=product_item)
-            seats = cart_product_item.pop_seats(seats)
-        return seats
-
-    @deprecate("deprecated method")
-    def adjust_items(self, performance_id):
-        for product_item in self.product.items:
-            if product_item.performance_id != performance_id:
-                continue
-            cart_product_item = CartedProductItem(carted_product=self, quantity=self.quantity, product_item=product_item)
-
-    @classmethod
-    def get_reserved_amount(cls, product_item):
-        return DBSession.query(sql.func.sum(cls.amount)).filter(cls.product_item==product_item).filter(cls.state=="reserved").first()[0] or 0
-
-
-    def finish(self):
-        """ 決済処理
-        """
-        for item in self.items:
-            item.finish()
-        self.finished_at = datetime.now()
-
-    def release(self):
-        """ 開放
-        """
-        logger.info('trying to release CartedProduct (id=%d)' % self.id)
-        if not self.finished_at:
-            for item in self.items:
-                if not item.release():
-                    logger.info('returing False to abort. NO FURTHER SQL EXECUTION IS SUPPOSED!')
-                    return False
-            self.finished_at = datetime.now()
-            logger.info('CartedProduct (id=%d) successfully released' % self.id)
-        return True
-
-    def is_valid(self):
-        return all([i.is_valid() for i in self.items])
-        
-
 class Cart(Base):
-    __tablename__ = 'ticketing_carts'
+    __tablename__ = 'Cart'
 
     query = DBSession.query_property()
 
@@ -269,7 +90,7 @@ class Cart(Base):
     order_id = sa.Column(Identifier, sa.ForeignKey("Order.id"))
     order = orm.relationship('Order', backref=orm.backref('cart', uselist=False))
 
-    sales_segment_id = sa.Column(Identifier, sa.ForeignKey('SalesSegment.id'))
+    sales_segment_id = sa.Column(Identifier, sa.ForeignKey('SalesSegmentGroup.id'))
     sales_segment = orm.relationship('SalesSegment', backref='carts')
 
     disposed = False
@@ -421,3 +242,181 @@ class Cart(Base):
     @classmethod
     def from_order_no(cls, order_no):
         return Cart.query.filter_by(_order_no=order_no).one()
+
+class CartedProduct(Base):
+    __tablename__ = 'CartedProduct'
+
+    query = DBSession.query_property()
+
+    id = sa.Column(Identifier, primary_key=True)
+    quantity = sa.Column(sa.Integer)
+    cart_id = sa.Column(Identifier, sa.ForeignKey(Cart.id, onupdate='cascade', ondelete='cascade'))
+    cart = orm.relationship("Cart", backref="products", cascade='all')
+
+    product_id = sa.Column(Identifier, sa.ForeignKey("Product.id"))
+    product = orm.relationship("Product")
+
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, nullable=True, onupdate=datetime.now)
+    deleted_at = sa.Column(sa.DateTime, nullable=True)
+    finished_at = sa.Column(sa.DateTime)
+
+    @property
+    def amount(self):
+        """ 購入額小計
+        """
+        return self.product.price * self.quantity
+
+    @property
+    def seats(self):
+        return sorted(itertools.chain.from_iterable(i.seatdicts for i in self.items), 
+            key=operator.itemgetter('l0_id'))
+
+    @deprecate("deprecated method")
+    def pop_seats(self, seats, performance_id):
+        for product_item in self.product.items:
+            if product_item.performance_id != performance_id:
+                continue
+            cart_product_item = CartedProductItem(carted_product=self, quantity=self.quantity, product_item=product_item)
+            seats = cart_product_item.pop_seats(seats)
+        return seats
+
+    @deprecate("deprecated method")
+    def adjust_items(self, performance_id):
+        for product_item in self.product.items:
+            if product_item.performance_id != performance_id:
+                continue
+            cart_product_item = CartedProductItem(carted_product=self, quantity=self.quantity, product_item=product_item)
+
+    @classmethod
+    def get_reserved_amount(cls, product_item):
+        return DBSession.query(sql.func.sum(cls.amount)).filter(cls.product_item==product_item).filter(cls.state=="reserved").first()[0] or 0
+
+
+    def finish(self):
+        """ 決済処理
+        """
+        for item in self.items:
+            item.finish()
+        self.finished_at = datetime.now()
+
+    def release(self):
+        """ 開放
+        """
+        logger.info('trying to release CartedProduct (id=%d)' % self.id)
+        if not self.finished_at:
+            for item in self.items:
+                if not item.release():
+                    logger.info('returing False to abort. NO FURTHER SQL EXECUTION IS SUPPOSED!')
+                    return False
+            self.finished_at = datetime.now()
+            logger.info('CartedProduct (id=%d) successfully released' % self.id)
+        return True
+
+    def is_valid(self):
+        return all([i.is_valid() for i in self.items])
+        
+
+class CartedProductItem(Base):
+    """ カート内プロダクトアイテム + 座席 + 座席状況
+    """
+    __tablename__ = 'CartedProductItem'
+    query = DBSession.query_property()
+
+    id = sa.Column(Identifier, primary_key=True)
+
+    quantity = sa.Column(sa.Integer)
+
+    product_item_id = sa.Column(Identifier, sa.ForeignKey("ProductItem.id"))
+
+    #seat_status_id = sa.Column(sa.Integer, sa.ForeignKey(""))
+
+    product_item = orm.relationship("ProductItem", backref='carted_product_items')
+    seats = orm.relationship("Seat", secondary=cart_seat_table)
+    #seat_status = orm.relationship("SeatStatus")
+
+    carted_product_id = sa.Column(Identifier, sa.ForeignKey(CartedProduct.id, onupdate='cascade', ondelete='cascade'))
+    carted_product = orm.relationship("CartedProduct", backref="items", cascade='all')
+
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, nullable=True, onupdate=datetime.now)
+    deleted_at = sa.Column(sa.DateTime, nullable=True)
+    finished_at = sa.Column(sa.DateTime)
+
+    @property
+    def seatdicts(self):
+        return ({'name': s.name, 'l0_id': s.l0_id}
+                for s in self.seats)
+
+    @deprecate("deprecated method")
+    def pop_seats(self, seats):
+        """ 必要な座席を取り出して保持する
+
+        必要な座席： :attr:`product_item` の stockが一致する Seat
+        :param seats: list of :class:`ticketing.models.Seat`
+        """
+
+        my_seats = [seat for seat in seats if seat.stock_id == self.product_item.stock_id][:self.quantity]
+        map(seats.remove, my_seats)
+        self.seats.extend(my_seats)
+        return seats
+
+    @property
+    def seat_statuses(self):
+        """ 確保済の座席ステータス
+        """
+        if len(self.seats) > 0:
+            return DBSession.query(c_models.SeatStatus).filter(c_models.SeatStatus.seat_id.in_([s.id for s in self.seats])).all()
+        else:
+            return []
+
+    @property
+    def seat_statuses_for_update(self):
+        """ 確保済の座席ステータス
+        """
+        if len(self.seats) > 0:
+            return DBSession.query(c_models.SeatStatus).filter(c_models.SeatStatus.seat_id.in_([s.id for s in self.seats])).with_lockmode('update').all()
+        else:
+            return []
+
+    def finish(self):
+        """ 決済処理
+        """
+        for seat_status in self.seat_statuses_for_update:
+            if seat_status.status != int(c_models.SeatStatusEnum.InCart):
+                raise NoCartError()
+            seat_status.status = int(c_models.SeatStatusEnum.Ordered)
+        self.finished_at = datetime.now()
+
+    def release(self):
+        logger.info('trying to release CartedProductItem (id=%d)' % self.id)
+        if not self.finished_at:
+            # 座席開放
+            for seat_status in self.seat_statuses_for_update:
+                logger.info('trying to release seat (id=%d)' % seat_status.seat_id)
+                if seat_status.status != int(c_models.SeatStatusEnum.InCart):
+                    logger.info('seat (id=%d) has status=%d, while expecting InCart (%d)' % (seat_status.seat_id, seat_status.status, int(c_models.SeatStatusEnum.InCart)))
+                    logger.info('not releaseing CartedProductItem (id=%d) for safety' % self.id)
+                    return False
+                logger.info('setting status of seat (id=%d) to Vacant (%d)' % (seat_status.seat_id, int(c_models.SeatStatusEnum.Vacant)))
+                seat_status.status = int(c_models.SeatStatusEnum.Vacant)
+
+            # 在庫数戻し
+            if self.product_item.stock.stock_type.quantity_only:
+                release_quantity = self.quantity
+            else:
+                release_quantity = len(self.seats)
+            stock_status = c_models.StockStatus.filter_by(stock_id=self.product_item.stock_id).with_lockmode('update').one()
+            logger.info('restoring the quantity of stock (id=%s, quantity=%d) by +%d' % (stock_status.stock_id, stock_status.quantity, release_quantity))
+            stock_status.quantity += release_quantity
+            stock_status.save()
+            logger.info('done for CartedProductItem (id=%d)' % self.id)
+
+            self.finished_at = datetime.now()
+        return True
+
+    def is_valid(self):
+        for seat_status in self.seat_statuses:
+            if seat_status.status != int(c_models.SeatStatusEnum.InCart):
+                return False
+        return True

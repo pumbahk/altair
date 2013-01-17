@@ -638,6 +638,8 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     stock_types = relationship('StockType', backref='event', order_by='StockType.display_order')
     stock_holders = relationship('StockHolder', backref='event')
 
+    sales_segments = relationship('SalesSegment')
+
     _first_performance = None
     _final_performance = None
 
@@ -912,7 +914,7 @@ class SalesSegmentKindEnum(StandardEnum):
     other           = u'その他'
 
 class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
-    __tablename__ = 'SalesSegment'
+    __tablename__ = 'SalesSegmentGroup'
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
     kind = Column(String(255))
@@ -923,7 +925,7 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     public = Column(Boolean, default=True)
 
     event_id = Column(Identifier, ForeignKey('Event.id'))
-    event = relationship('Event', backref='sales_segments')
+    event = relationship('Event')
 
     # membergroup_id = Column(Identifier, ForeignKey('MemberGroup.id'))
     # membergroup = relationship('MemberGroup', backref='salessegments')
@@ -995,7 +997,7 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     # 一般公開するか
     public = Column(Boolean, nullable=False, default=True)
 
-    sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'))
+    sales_segment_id = Column(Identifier, ForeignKey('SalesSegmentGroup.id'))
     sales_segment = relationship('SalesSegment', backref='payment_delivery_method_pairs')
     payment_method_id = Column(Identifier, ForeignKey('PaymentMethod.id'))
     payment_method = relationship('PaymentMethod', backref='payment_delivery_method_pairs')
@@ -1468,7 +1470,7 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     price = Column(Numeric(precision=16, scale=2), nullable=False)
     display_order = Column(Integer, nullable=False, default=1)
 
-    sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'), nullable=True)
+    sales_segment_id = Column(Identifier, ForeignKey('SalesSegmentGroup.id'), nullable=True)
     sales_segment = relationship('SalesSegment', uselist=False, backref=backref('product', order_by='Product.display_order'))
 
     seat_stock_type_id = Column(Identifier, ForeignKey('StockType.id'), nullable=True)

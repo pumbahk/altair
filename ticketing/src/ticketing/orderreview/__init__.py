@@ -14,9 +14,6 @@ def main(global_config, **local_config):
     settings = dict(global_config)
     settings.update(local_config)
 
-    from ticketing.logicaldeleting import install as ld_install
-    ld_install()
-
     engine = engine_from_config(settings)
     sqlahelper.add_engine(engine)
 

@@ -11,9 +11,6 @@ from pyramid.paster import bootstrap
 logger = logging.getLogger(__name__)
 
 def main(argv=sys.argv):
-    from ticketing.logicaldeleting import install as install_ld
-    install_ld()
-
     from ticketing.core.models import ReportSetting, Mailer, Event, Organization, ReportFrequencyEnum
     from ticketing.operators.models import Operator
     from ticketing.events.sales_reports.forms import SalesReportForm

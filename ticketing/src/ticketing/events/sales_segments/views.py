@@ -27,7 +27,7 @@ class SalesSegments(BaseView):
         event_id = int(self.request.matchdict.get('event_id', 0))
         event = Event.get(event_id, organization_id=self.context.user.organization_id)
 
-        sort = self.request.GET.get('sort', 'SalesSegment.id')
+        sort = self.request.GET.get('sort', 'SalesSegmentGroup.id')
         direction = self.request.GET.get('direction', 'asc')
         if direction not in ['asc', 'desc']:
             direction = 'asc'
