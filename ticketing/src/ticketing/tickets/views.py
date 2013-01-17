@@ -175,13 +175,19 @@ class TicketFormats(BaseView):
     @view_config(route_name='tickets.ticketformats.show', renderer='ticketing:templates/tickets/ticketformats/show.html')
     def show(self):
         qs = TicketFormat.filter_by(id=self.request.matchdict['id'])
-        format = qs.filter_by(organization_id=self.context.user.organization_id).one()
+        format = qs.filter_by(organization_id=self.context.user.organization_id).first()
+        if format is None:
+            raise HTTPNotFound("this is not found")
+
         return dict(h=helpers, format=format)
 
     @view_config(route_name='tickets.ticketformats.data', renderer='json')
     def data(self):
         qs = TicketFormat.filter_by(id=self.request.matchdict['id'])
-        format = qs.filter_by(organization_id=self.context.user.organization_id).one()
+        format = qs.filter_by(organization_id=self.context.user.organization_id).first()
+        if format is None:
+            raise HTTPNotFound("this is not found")
+
         return format.data
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
@@ -286,13 +292,19 @@ class PageFormats(BaseView):
     @view_config(route_name='tickets.pageformats.show', renderer='ticketing:templates/tickets/pageformats/show.html')
     def show(self):
         qs = PageFormat.filter_by(id=self.request.matchdict['id'])
-        format = qs.filter_by(organization_id=self.context.user.organization_id).one()
+        format = qs.filter_by(organization_id=self.context.user.organization_id).first()
+        if format is None:
+            raise HTTPNotFound("this is not found")
+
         return dict(h=helpers, format=format)
 
     @view_config(route_name='tickets.pageformats.data', renderer='json')
     def data(self):
         qs = PageFormat.filter_by(id=self.request.matchdict['id'])
-        format = qs.filter_by(organization_id=self.context.user.organization_id).one()
+        format = qs.filter_by(organization_id=self.context.user.organization_id).first()
+        if format is None:
+            raise HTTPNotFound("this is not found")
+
         return format.data
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
@@ -363,13 +375,19 @@ class TicketTemplates(BaseView):
 
     @view_config(route_name='tickets.templates.update_derivatives', renderer='ticketing:templates/tickets/templates/update_derivatives.html')
     def update_derivatives(self):
-        template = Ticket.query.filter_by(id=self.request.matchdict['id']).one()
+        template = Ticket.query.filter_by(id=self.request.matchdict['id']).first()
+        if template is None:
+            raise HTTPNotFound("this is not found")
+
         tickets = Ticket.query.filter_by(original_ticket_id=self.request.matchdict['id'])
         return dict(h=helpers, tickets=tickets, template=template)
 
     @view_config(route_name='tickets.templates.update_derivatives', renderer='ticketing:templates/tickets/templates/update_derivatives.html', request_method='POST')
     def update_derivatives_post(self):
-        template = Ticket.query.filter_by(id=self.request.matchdict['id']).one()
+        template = Ticket.query.filter_by(id=self.request.matchdict['id']).first()
+        if template is None:
+            raise HTTPNotFound("this is not found")
+
         tickets = Ticket.query.filter_by(original_ticket_id=self.request.matchdict['id'])
         if self.request.POST.get('do_update'):
             for ticket in tickets:
@@ -403,20 +421,27 @@ class TicketTemplates(BaseView):
     @view_config(route_name='tickets.templates.show', renderer='ticketing:templates/tickets/templates/show.html')
     def show(self):
         qs = self.context.tickets_query().filter_by(id=self.request.matchdict['id'])
-        template = qs.filter_by(organization_id=self.context.user.organization_id).one()
+        template = qs.filter_by(organization_id=self.context.user.organization_id).first()
+        if template is None:
+            raise HTTPNotFound("this is not found")
+
         return dict(h=helpers, template=template, ticket_format_id=template.ticket_format_id)
 
     @view_config(route_name='tickets.templates.download')
     def download(self):
         qs = self.context.tickets_query().filter_by(id=self.request.matchdict['id'])
-        template = qs.filter_by(organization_id=self.context.user.organization_id).one()
+        template = qs.filter_by(organization_id=self.context.user.organization_id).first()
+        if template is None:
+            raise HTTPNotFound("this is not found")
         return FileLikeResponse(StringIO(template.drawing.encode("utf-8")),
                                 request=self.request)
 
     @view_config(route_name='tickets.templates.data', renderer='json')
     def data(self):
         qs = self.context.tickets_query().filter_by(id=self.request.matchdict['id'])
-        template = qs.filter_by(organization_id=self.context.user.organization_id).one()
+        template = qs.filter_by(organization_id=self.context.user.organization_id).first()
+        if template is None:
+            raise HTTPNotFound("this is not found")
         data = dict(template.ticket_format.data)
         data.update(dict(drawing=' '.join(to_opcodes(etree.ElementTree(etree.fromstring(template.drawing))))))
         return data

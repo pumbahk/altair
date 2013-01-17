@@ -639,11 +639,11 @@ class query_performance_namesTests(unittest.TestCase):
 
     def test_one(self):
         from datetime import datetime
-        from ..core.models import Event, SalesSegmentGroup, Performance, Venue, Product, ProductItem, Stock, Site, Organization
+        from ..core.models import Event, SalesSegment, Performance, Venue, Product, ProductItem, Stock, Site, Organization
         request = testing.DummyRequest()
         organization = Organization(code="TEST", short_name="testing")
         event = Event(organization=organization)
-        sales_segment = SalesSegmentGroup(event=event)        
+        sales_segment = SalesSegment(event=event)
         product = Product(sales_segment=sales_segment, price=100)
         performance = Performance(event=event, name=u"公演1", 
             open_on=datetime(2012, 8, 31, 10), start_on=datetime(2012, 8, 31, 10, 30),

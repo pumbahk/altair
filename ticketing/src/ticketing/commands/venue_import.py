@@ -12,7 +12,6 @@ from pyramid.paster import get_app, bootstrap
 
 from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 
-from ticketing.logicaldeleting import install as ld_install
 
 io_encoding = locale.getpreferredencoding()
 
@@ -374,7 +373,6 @@ def import_or_update_svg(env, update, organization_name, file, venue_id, dry_run
         raise
  
 def main():
-    ld_install()
     parser = argparse.ArgumentParser(description='import venue data')
     parser.add_argument('config_uri', metavar='config', type=str, nargs=1,
                         help='config file')

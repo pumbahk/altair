@@ -11,9 +11,6 @@ def includeme(config):
     pass
 
 def main(global_conf, **settings):
-    from ticketing.logicaldeleting import install as install_ld
-    install_ld()
-
     from sqlalchemy import engine_from_config
     from sqlalchemy.pool import NullPool
     import sqlahelper

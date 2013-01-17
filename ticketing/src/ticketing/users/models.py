@@ -231,7 +231,7 @@ class Membership(Base, BaseModel, LogicallyDeleted, WithTimestamp):
 MemberGroup_SalesSegment = Table('MemberGroup_SalesSegment', Base.metadata,
     Column('id', Identifier, primary_key=True),
     Column('membergroup_id', Identifier, ForeignKey('MemberGroup.id')),
-    Column('sales_segment_id', Identifier, ForeignKey('SalesSegment.id')),
+    Column('sales_segment_id', Identifier, ForeignKey('SalesSegmentGroup.id')),
     UniqueConstraint('membergroup_id', 'sales_segment_id'),
 )
 

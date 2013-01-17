@@ -88,7 +88,7 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     selection_type = sa.Column(sa.Integer) # LotSelectionEnum
 
-    sales_segment_id = sa.Column(Identifier, sa.ForeignKey('SalesSegment.id'))
+    sales_segment_id = sa.Column(Identifier, sa.ForeignKey('SalesSegmentGroup.id'))
     sales_segment = orm.relationship('SalesSegment', backref="lots")
 
     status = sa.Column(sa.Integer, default=int(LotStatusEnum.New))
@@ -125,7 +125,7 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     elected_at = sa.Column(sa.DateTime)
     rejected_at = sa.Column(sa.DateTime)
 
-    cart_id = sa.Column(Identifier, sa.ForeignKey('ticketing_carts.id'))
+    cart_id = sa.Column(Identifier, sa.ForeignKey(Cart.id))
     cart = orm.relationship("Cart", backref="lot_entries")
 
     order_id = sa.Column(Identifier, sa.ForeignKey('Order.id'))
