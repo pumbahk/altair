@@ -52,13 +52,13 @@ preview.ApplicationViewFactory = function(apis,
                                           $svg_droparea,
                                           $ticket_format_candidates, 
                                           $template_vars_table,
-                                          $paramater_settings_area,
+                                          $parameter_settings_area,
                                           $message_area){
     var models = {
         svg: new preview.SVGStore(),
         preview: new preview.PreviewImageStore(),
         vars: new preview.TemplateVarStore(), 
-        params: new preview.ParamaterStore()
+        params: new preview.ParameterStore()
     };
 
     var view_models = {
@@ -73,7 +73,7 @@ preview.ApplicationViewFactory = function(apis,
         dad_view:  new preview.DragAndDropSVGSupportView({el: $svg_droparea, vms: view_models, model: models.svg}), 
         preview_image_view:  new preview.PreviewImageView({el: $preview_block, vms: view_models, model: models.preview}), 
         template_fillvalues_view:  new preview.TemplateFillValuesView({el: $preview_block, vms: view_models, model: models.vars}), 
-        params_view: new preview.ParamaterManageView({el: $paramater_settings_area, vms: view_models, model: models.params}), 
+        params_view: new preview.ParameterManageView({el: $parameter_settings_area, vms: view_models, model: models.params}), 
         message_view: core.MessageViewFactory({el: $message_area, vms: view_models})
     };
 
