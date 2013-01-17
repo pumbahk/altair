@@ -17,7 +17,7 @@ describe("ticket preview ui",  function(){
                 svg: new preview.SVGStore(),
                 preview: new preview.PreviewImageStore(),
                 vars: new preview.TemplateVarStore(), 
-                params: new preview.ParamaterStore({ticket_format: {pk: 1}})
+                params: new preview.ParameterStore({ticket_format: {pk: 1}})
             };
 
             finished = {

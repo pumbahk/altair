@@ -62,7 +62,7 @@ class Authenticator(object):
             elif self.auth_type == "mac":
                 self._validate_mac(self.auth_value)
             self.valid = True
-        # Check for posted/paramaterized bearer token.
+        # Check for posted/parameterized bearer token.
         elif self.bearer_token is not None:
             self.attempted_validation = True
             self._validate_bearer(self.bearer_token)

@@ -1,7 +1,7 @@
 if (!window.preview)
     window.preview = {}
 
-preview.ParamaterManageView = Backbone.View.extend({
+preview.ParameterManageView = Backbone.View.extend({
     events: {
         'hover input[name="sx"]': "onChangeSx", 
         'hover input[name="sy"]': "onChangeSy", 

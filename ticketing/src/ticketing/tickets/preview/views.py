@@ -467,7 +467,7 @@ class ComboboxApiView(object):
 
 @view_defaults(route_name="tickets.preview.dialog", request_method="GET", renderer="ticketing:templates/tickets/_preview.html", 
                permission="event_editor")
-class PreviewWithDefaultParamaterDialogView(object):
+class PreviewWithDefaultParameterDialogView(object):
     def __init__(self, context, request): # as modal dialog
         self.context = context
         self.request = request

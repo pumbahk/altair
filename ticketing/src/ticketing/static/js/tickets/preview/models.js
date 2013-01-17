@@ -5,7 +5,7 @@ if (!window.preview)
     var NONE_CHANGED = 0;
     var REDRAW_IMAGE = 1;
     var RELOAD_SVG = 2;
-    preview.ParamaterStore = Backbone.Model.extend({
+    preview.ParameterStore = Backbone.Model.extend({
         defaults:{
             sx: 1.0, 
             sy: 1.0, 
