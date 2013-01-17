@@ -254,7 +254,7 @@ class Orders(BaseView):
             mail_magazines = MailMagazine.query \
                 .filter(MailMagazine.organization_id == order.organization_id) \
                 .filter(MailSubscription.email == order.shipping_address.email) \
-                .filter(or_(MailSubscription.status is None,
+                .filter(or_(MailSubscription.status == None,
                             MailSubscription.status == MailSubscriptionStatus.Subscribed.v)) \
                 .distinct().all()
             form_shipping_address = ClientOptionalForm(record_to_multidict(order.shipping_address))
