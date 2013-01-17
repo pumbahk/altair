@@ -89,7 +89,6 @@ def _build_ticket_format_dicts(ticket_format_qs):
                 "type": _type,
                 "transform": "translate(%s,%s)" % (pox, poy) if pox and poy else ""
                 }
-    print D
     return [dict(pk=k, **vs) for k, vs in D.iteritems()]
 
 def _build_ticket_format_dict(ticket_format):
