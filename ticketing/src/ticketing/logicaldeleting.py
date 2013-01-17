@@ -5,13 +5,20 @@ from sqlalchemy.orm.interfaces import MapperOption
 from zope.sqlalchemy import ZopeTransactionExtension as _ZTE
 
 logger = logging.getLogger(__name__)
-
+installed = False
 
 def install():
+    global installed
+    if installed:
+        msg = 'logical deleting is already installed!'
+        logger.warning(msg)
+        return
+
     logger.debug('install extension for logical deleting')
     sqlahelper._session = orm.scoped_session(
         orm.sessionmaker(class_=LogicalDeletableSession, 
             extension=_ZTE()))
+    installed = True
 
 class LogicalDeletableQuery(orm.Query):
     def filter(self, *args, **kwargs):
