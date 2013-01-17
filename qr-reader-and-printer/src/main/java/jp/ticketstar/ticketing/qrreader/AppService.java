@@ -89,6 +89,10 @@ public class AppService {
 		model.getTickets().remove(ticket);
 	}
 
+	public void removeTicketAll(){
+		model.getTickets().removeAll();
+	}
+
 	public List<TicketTemplate> getTicketTemplates() {
 		return Collections.unmodifiableList(model.getTicketTemplates());
 	}
