@@ -1,4 +1,16 @@
 describe("QRApp (order: add ticket => print ticket)",  function(){
+  it("call service.remoteTicketAll() if clear qrcode input button", function(){
+    var dataStore = new DataStore();
+    var inputView = new QRInputView({datastore: dataStore});
+    var service = {
+      removeTicketAll: jasmine.createSpy("")
+    };
+    var appletView = new AppletView({service: service,  datastore: dataStore, appviews: {messageView: {error: console.log}}});
+    expect(service.removeTicketAll.callCount).toEqual(0);
+    inputView.clearQRCodeInput();
+    expect(service.removeTicketAll.callCount).toEqual(1);
+  });
+
   describe("print unit have 2kind states.",  function(){
     var dataStore;
     beforeEach(function(){

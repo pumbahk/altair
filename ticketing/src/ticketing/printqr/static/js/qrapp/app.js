@@ -304,6 +304,7 @@ var QRInputView = AppPageViewBase.extend({
   }, 
   clearQRCodeInput: function(){
     this.$qrcode.val("");
+    this.datastore.trigger("*qr.clear.input");
   }, 
   readOnEnter: function(e){
     // if Enter key is typed then call `loadQRCodeInput'
@@ -522,6 +523,7 @@ var AppletView = Backbone.View.extend({
     this.service = opts.service;
     this.router = opts.router;
     this.apiResource = opts.apiResource;
+    this.datastore.bind("*qr.clear.input", this.clearQRInput, this);
     this.datastore.bind("*qr.not.printed", this.createTicket, this);
 
     this.datastore.bind("change:printer_name", this.setPrinter, this);
@@ -529,6 +531,9 @@ var AppletView = Backbone.View.extend({
     this.datastore.bind("change:page_format_id", this.setPageFormat, this);
 
     this.datastore.bind("*qr.print.signal", this.sendPrintSignalIfNeed, this);
+  }, 
+  clearQRInput: function(){
+    this.service.removeTicketAll();
   }, 
   start: function(){
     this.fetchPinterCandidates();
