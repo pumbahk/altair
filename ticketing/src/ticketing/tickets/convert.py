@@ -992,7 +992,6 @@ def to_opcodes(doc, global_transform=None):
     return result
 
 def convert_svg(doc, global_transform=None):
-    logger.info("global_transform is %s" % global_transform)
     retval = E.TICKET(
         E.b(u' '.join(to_opcodes(doc, global_transform))), 
         E.FIXTAG01(),

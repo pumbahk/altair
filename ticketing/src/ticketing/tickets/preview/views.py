@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 from ticketing.fanstatic import with_bootstrap
 from ticketing.core import models as c_models
-from ticketing.tickets.utils import as_user_unit
+from ticketing.tickets.utils import transform_matrix_from_ticket_format
 from ticketing.tickets.utils import build_dict_from_product
 from ticketing.tickets.utils import build_dict_from_venue
 from ticketing.tickets.utils import build_dict_from_event
@@ -87,14 +87,6 @@ def _build_ticket_format_dict(ticket_format):
     has_sej = any(dm.delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID for dm in ticket_format.delivery_methods)
     ticket_format_type =  ":sej" if has_sej else ""
     return {"pk": ticket_format.id, "name": ticket_format.name, "type": ticket_format_type}
-
-def _transform_matrix_from_ticket_format(ticketformat):
-    po = ticketformat.data.get("print_offset")
-    if po:
-        return parse_transform("translate(%s, %s)" % (as_user_unit(po.get("x", "0")), as_user_unit(po.get("y", "0"))))
-    else:
-        return None
-        
 
 @view_config(route_name="tickets.preview", request_method="GET", renderer="ticketing:templates/tickets/preview.html", 
              decorator=with_bootstrap, permission="event_editor")
@@ -239,7 +231,7 @@ class PreviewApiView(object):
                 logger.warn("ticket format %s is not found" % ticket_format_id)
                 global_transform = None
             else:
-                global_transform = _transform_matrix_from_ticket_format(ticket_format)
+                global_transform = transform_matrix_from_ticket_format(ticket_format)
 
             transformer = SEJTemplateTransformer(svgio=StringIO(self.request.POST["svg"]), global_transform=global_transform)
             ptct = transformer.transform()
@@ -288,7 +280,7 @@ class PreviewApiView(object):
                 logger.warn("ticket format %s is not found" % ticket_format_id)
                 global_transform = None
             else:
-                global_transform = _transform_matrix_from_ticket_format(ticket_format)
+                global_transform = transform_matrix_from_ticket_format(ticket_format)
 
             svg = FillvaluesTransformer(svg, self.request.POST).transform()
             transformer = SEJTemplateTransformer(svgio=StringIO(svg), global_transform=global_transform)

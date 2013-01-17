@@ -1041,3 +1041,9 @@ def tokenize_path_data(path):
 def parse_poly_data(poly):
     return ((float(g.group(1)), float(g.group(2))) for g in re.finditer(NUM_REGEX + ur'(?:\s+(?:,\s*)?|,\s*)' + NUM_REGEX, poly))
 
+def transform_matrix_from_ticket_format(ticket_format):
+    po = ticket_format.data.get("print_offset")
+    if po:
+        return translate(-as_user_unit(po.get('x', '0')), -as_user_unit(po.get('y', '0')))
+    else:
+        return None
