@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 from ticketing.fanstatic import with_bootstrap
 from ticketing.core import models as c_models
+from ticketing.tickets.utils import as_user_unit
 from ticketing.tickets.utils import build_dict_from_product
 from ticketing.tickets.utils import build_dict_from_venue
 from ticketing.tickets.utils import build_dict_from_event
@@ -76,25 +77,24 @@ def _build_ticket_format_dicts(ticket_format_qs):
         c_models.DeliveryMethod.delivery_plugin_id==SEJ_DELIVERY_PLUGIN_ID)
 
     D = {}
-    for _type, _iter in [('', ticket_format_qs), ('sej', sej_qs)]:
-        for t in _iter:
-            po = t.data.get(u'print_offset')
-            if po is not None:
-                pox = po.get(u'x')
-                poy = po.get(u'y')
-            else:
-                pox = poy = None
-            D[t.id] = {
-                "name": t.name,
-                "type": _type,
-                "transform": "translate(%s,%s)" % (pox, poy) if pox and poy else ""
-                }
+    for t in ticket_format_qs:
+        D[t.id] = {"name": t.name, "type": ""}
+    for t in sej_qs:
+        D[t.id] = {"name": t.name, "type": ":sej"}
     return [dict(pk=k, **vs) for k, vs in D.iteritems()]
 
 def _build_ticket_format_dict(ticket_format):
     has_sej = any(dm.delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID for dm in ticket_format.delivery_methods)
     ticket_format_type =  ":sej" if has_sej else ""
     return {"pk": ticket_format.id, "name": ticket_format.name, "type": ticket_format_type}
+
+def _transform_matrix_from_ticket_format(ticketformat):
+    po = ticketformat.data.get("print_offset")
+    if po:
+        return parse_transform("translate(%s, %s)" % (as_user_unit(po.get("x", "0")), as_user_unit(po.get("y", "0"))))
+    else:
+        return None
+        
 
 @view_config(route_name="tickets.preview", request_method="GET", renderer="ticketing:templates/tickets/preview.html", 
              decorator=with_bootstrap, permission="event_editor")
@@ -232,7 +232,16 @@ class PreviewApiView(object):
     def preview_ticket_post64_sej(self):
         try:
             preview = SEJPreviewCommunication.get_instance(self.request)
-            transformer = SEJTemplateTransformer(svgio=StringIO(self.request.POST["svg"]))
+
+            ticket_format_id = self.request.POST["ticket_format"]
+            ticket_format = c_models.TicketFormat.query.filter_by(id=ticket_format_id).first()
+            if ticket_format is None:
+                logger.warn("ticket format %s is not found" % ticket_format_id)
+                global_transform = None
+            else:
+                global_transform = _transform_matrix_from_ticket_format(ticket_format)
+
+            transformer = SEJTemplateTransformer(svgio=StringIO(self.request.POST["svg"]), global_transform=global_transform)
             ptct = transformer.transform()
             imgdata = preview.communicate(self.request, ptct)
             return {"status": True, "data":base64.b64encode(imgdata), 
@@ -271,9 +280,18 @@ class PreviewApiView(object):
     def preview_ticket_post64_with_models_sej(self):
         preview = SEJPreviewCommunication.get_instance(self.request)
         svg = self.request.POST["svg"]
+
         try:
+            ticket_format_id = self.request.POST["ticket_format"]
+            ticket_format = c_models.TicketFormat.query.filter_by(id=ticket_format_id).first()
+            if ticket_format is None:
+                logger.warn("ticket format %s is not found" % ticket_format_id)
+                global_transform = None
+            else:
+                global_transform = _transform_matrix_from_ticket_format(ticket_format)
+
             svg = FillvaluesTransformer(svg, self.request.POST).transform()
-            transformer = SEJTemplateTransformer(svgio=StringIO(svg))
+            transformer = SEJTemplateTransformer(svgio=StringIO(svg), global_transform=global_transform)
             ptct = transformer.transform()
             imgdata = preview.communicate(self.request, ptct)
             return {"status": True, "data":base64.b64encode(imgdata), 
