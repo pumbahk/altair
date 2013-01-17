@@ -233,22 +233,7 @@ def _eliminated_dump_to_downstream(sm, downstream):
                     downstream.characters(x.val)
                 prev = x
 
-def _attach_header(inp, outp):
-    while True:
-        pos = inp.tell()
-        line = inp.readline()
-        if line.startswith(("<?xml", "<!--")):
-            comment_end_tag = "-->"
-            if not comment_end_tag in line:
-                outp.write(line)
-            else:
-                inp.seek(pos+line.index(comment_end_tag)+len(comment_end_tag))
-        else:
-            inp.seek(pos)
-            break
-
 def normalize(inp, outp=sys.stdout, encoding="UTF-8", header="", eliminate=True):
-    _attach_header(inp, outp)
     return _normalize(inp, outp, encoding, eliminate=eliminate)
 
 def _normalize(inp, outp=sys.stdout, encoding="UTF-8", eliminate=False):
