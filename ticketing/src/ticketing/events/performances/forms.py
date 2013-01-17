@@ -135,12 +135,14 @@ class PerformancePublicForm(Form):
             for product_item in performance.product_items:
                 if not product_item.ticket_bundle:
                     p = product_item.product
-                    no_ticket_bundles += u'<div>販売区分: %s、商品名: %s</div>' % (p.sales_segment.name, p.name)
+                    if p.sales_segment is not None:
+                        no_ticket_bundles += u'<div>販売区分: %s、商品名: %s</div>' % (p.sales_segment.name, p.name)
                 elif has_sej:
                     producer = ApplicableTicketsProducer.from_bundle(product_item.ticket_bundle)
                     if not producer.any_exist(producer.sej_only_tickets()):
                         p = product_item.product
-                        no_ticket_bundles += u'<div>販売区分: %s、商品名: %s(SEJ券面なし)</div>' % (p.sales_segment.name, p.name)
+                        if p.sales_segment is not None:
+                            no_ticket_bundles += u'<div>販売区分: %s、商品名: %s(SEJ券面なし)</div>' % (p.sales_segment.name, p.name)
                     
             if no_ticket_bundles:
                 raise ValidationError(u'券種が設定されていない商品設定がある為、公開できません %s' % no_ticket_bundles)
