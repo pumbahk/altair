@@ -94,7 +94,8 @@ def get_sales_summary(form, organization, group='Event'):
         ).group_by(Event.id)
 
     for id, price_amount, product_quantity in query.all():
-        reports[id].update(dict(price_amount=price_amount or 0, product_quantity=product_quantity or 0))
+        if id in reports:
+            reports[id].update(dict(price_amount=price_amount or 0, product_quantity=product_quantity or 0))
 
     return reports.values()
 
