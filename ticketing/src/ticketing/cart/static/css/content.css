@@ -2332,7 +2332,7 @@
 	font-weight: bold;
 }
 
-/* お支払い、配送方法 */
+/* お支払い、引取方法 */
 #confirmCard,
 #confirmDelivery {
 	width: 910px;

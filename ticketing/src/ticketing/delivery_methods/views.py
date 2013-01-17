@@ -46,7 +46,7 @@ class DeliveryMethods(BaseView):
             delivery_method.organization_id = self.context.user.organization_id
             delivery_method.save()
 
-            self.request.session.flash(u'決済方法を保存しました')
+            self.request.session.flash(u'引取方法を保存しました')
             return render_to_response('ticketing:templates/refresh.html', {}, request=self.request)
         else:
             return {
@@ -66,7 +66,7 @@ class DeliveryMethods(BaseView):
             delivery_method.organization_id = self.context.user.organization_id
             delivery_method.save()
 
-            self.request.session.flash(u'配送方法を保存しました')
+            self.request.session.flash(u'引取方法を保存しました')
             return render_to_response('ticketing:templates/refresh.html', {}, request=self.request)
         else:
             return {
@@ -83,7 +83,7 @@ class DeliveryMethods(BaseView):
         location = route_path('delivery_methods.index', self.request)
         try:
             delivery_method.delete()
-            self.request.session.flash(u'配送方法を削除しました')
+            self.request.session.flash(u'引取方法を削除しました')
         except Exception, e:
             self.request.session.flash(e.message)
             raise HTTPFound(location=location)

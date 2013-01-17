@@ -615,6 +615,14 @@ def as_user_unit(size, rel_unit=None):
             raise Exception('Relative size specified where no unit size is given in the applied context')
         return rel_unit * degree / 100.
 
+def translate(x, y):
+    return numpy.matrix(
+        [
+            [1., 0., float(x)],
+            [0., 1., float(y)],
+            [0., 0., 1.]
+            ],
+        dtype=numpy.float64)
 
 def parse_transform(transform_str):
     for g in re.finditer(ur'\s*([A-Za-z_-][0-9A-Za-z_-]*)\s*\(\s*((?:[^\s,]+(?:\s*,\s*|\s+))*[^\s,]+)\s*\)\s*', transform_str):
@@ -633,13 +641,7 @@ def parse_transform(transform_str):
         elif f == u'translate':
             if len(args) != 2:
                 raise Exception('invalid number of arguments for translate()')
-            return numpy.matrix(
-                [
-                    [1., 0., float(args[0])],
-                    [0., 1., float(args[1])],
-                    [0., 0., 1.]
-                    ],
-                dtype=numpy.float64)
+            return translate(args[0], args[1])
         elif f == u'scale':
             if len(args) != 2:
                 raise Exception('invalid number of arguments for scale()')
@@ -1039,3 +1041,9 @@ def tokenize_path_data(path):
 def parse_poly_data(poly):
     return ((float(g.group(1)), float(g.group(2))) for g in re.finditer(NUM_REGEX + ur'(?:\s+(?:,\s*)?|,\s*)' + NUM_REGEX, poly))
 
+def transform_matrix_from_ticket_format(ticket_format):
+    po = ticket_format.data.get("print_offset")
+    if po:
+        return translate(-as_user_unit(po.get('x', '0')), -as_user_unit(po.get('y', '0')))
+    else:
+        return None

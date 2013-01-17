@@ -254,7 +254,7 @@ class Orders(BaseView):
             mail_magazines = MailMagazine.query \
                 .filter(MailMagazine.organization_id == order.organization_id) \
                 .filter(MailSubscription.email == order.shipping_address.email) \
-                .filter(or_(MailSubscription.status is None,
+                .filter(or_(MailSubscription.status == None,
                             MailSubscription.status == MailSubscriptionStatus.Subscribed.v)) \
                 .distinct().all()
             form_shipping_address = ClientOptionalForm(record_to_multidict(order.shipping_address))
@@ -402,7 +402,8 @@ class Orders(BaseView):
 
         return {
             'seats':seats,
-            'form':form_reserve
+            'form':form_reserve, 
+            "performance": performance, 
         }
 
     @view_config(route_name='orders.reserve.confirm', request_method='POST',
@@ -463,6 +464,7 @@ class Orders(BaseView):
             return {
                 'form':f,
                 'cart':cart,
+                "performance": performance, 
             }
         except ValidationError, e:
             raise HTTPBadRequest(body=json.dumps({'message':e.message}))

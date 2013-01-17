@@ -1,13 +1,18 @@
+# -*- coding:utf-8 -*-
+
 ## svg transformation
 import logging
 logger = logging.getLogger(__name__)
 import re
 import ast
 from lxml import etree
-from ticketing.tickets.utils import build_dict_from_product_item
+from ticketing.tickets.utils import build_dict_from_product_item, as_user_unit
 from ticketing.tickets.preview.materialize import svg_with_ticketformat
 from ticketing.tickets.preview.fillvalues import template_fillvalues
 from ticketing.tickets.preview.validators import parse, SVGTransformValidator, FillValuesFromModelsValidator
+
+from ticketing.tickets.preview.fillvalues import TicketPreviewFillValuesException
+from . import TicketPreviewTransformException
 
 def wrap_element(parent, tag, attrs):
     """
@@ -52,10 +57,14 @@ class SVGTransformer(object):
         self.height = None
 
     def transform(self):
-        if self.data is None:
-            return self.svg
-        xmltree = etree.fromstring(self.svg)
-        return self.as_string(self.scale_image(self.put_pageformat(xmltree)))
+        try:
+            if self.data is None:
+                return self.svg
+            xmltree = etree.fromstring(self.svg)
+            return self.as_string(self.scale_image(self.put_pageformat(xmltree)))
+        except Exception, e:
+            logger.exception(e)
+            raise TicketPreviewTransformException(u"svgの変換に失敗しました。%s" % str(e))
 
     def put_pageformat(self, xmltree):
         svg = _find_svg(xmltree)
@@ -109,20 +118,26 @@ class FillvaluesTransformer(object):
             return None
 
     def transform(self):
-        if self.data is None:
-            return self.svg
+        try:
+            if self.data is None:
+                return self.svg
 
-        params = self.params_from_model()
-        return template_fillvalues(self.svg, params)
+            params = self.params_from_model()
+            return template_fillvalues(self.svg, params)
+        except TicketPreviewFillValuesException, e:
+            raise TicketPreviewTransformException(e.message)
+        except Exception, e:
+            logger.exception(e)
+            raise TicketPreviewTransformException(u"Templateへの埋込みに失敗しました。%s" % str(e))
 
 
 from ticketing.tickets.cleaner import cleanup_svg
 from ticketing.tickets.convert import convert_svg
-from ticketing.tickets.utils import parse_transform
 
 class SEJTemplateTransformer(object):
-    def __init__(self, svgio=None, encoding="Shift_JIS"):
+    def __init__(self, svgio=None, global_transform=None, encoding="Shift_JIS"):
         self.svgio = svgio
+        self.global_transform = global_transform
         self.encoding = encoding
 
         self.height = None #uggg
@@ -138,16 +153,19 @@ class SEJTemplateTransformer(object):
             self.height = attrib["height"]
 
     def transform(self): #todo: parse_transform
-        xmltree = etree.parse(self.svgio)
-        self._detect_size(xmltree.getroot())
+        try:
+            xmltree = etree.parse(self.svgio)
+            self._detect_size(xmltree.getroot())
 
-        cleanup_svg(xmltree)
-        global_transform = None #parse_transform(sys.argv[1]
-        converted = convert_svg(xmltree, global_transform)
+            cleanup_svg(xmltree)
+            converted = convert_svg(xmltree, self.global_transform)
 
-        pat = r'''encoding=(["'])Windows-31J\1'''
-        rep = 'encoding="%s"'% self.encoding
-        return re.sub(pat, rep, etree.tostring(converted, encoding='Windows-31J'))
+            pat = r'''encoding=(["'])Windows-31J\1'''
+            rep = 'encoding="%s"'% self.encoding
+            return re.sub(pat, rep, etree.tostring(converted, encoding='Windows-31J'))
+        except Exception, e:
+            logger.exception(e)
+            raise TicketPreviewTransformException(u"SEJのリクエストへの変換に失敗しました。%s" % str(e))
 
 
 if __name__ == "__main__":

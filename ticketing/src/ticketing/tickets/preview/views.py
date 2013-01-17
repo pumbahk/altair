@@ -1,6 +1,5 @@
 # -*- coding:utf-8 -*-
 
-## svg preview
 from decimal import Decimal
 import sqlalchemy.orm as orm
 import json
@@ -16,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 from ticketing.fanstatic import with_bootstrap
 from ticketing.core import models as c_models
+from ticketing.tickets.utils import transform_matrix_from_ticket_format
 from ticketing.tickets.utils import build_dict_from_product
 from ticketing.tickets.utils import build_dict_from_venue
 from ticketing.tickets.utils import build_dict_from_event
@@ -35,8 +35,12 @@ from .fetchsvg import fetch_svg_from_postdata
 from ..cleaner.api import get_validated_svg_cleaner
 from ..response import FileLikeResponse
 # todo: refactoring
-from ..utils import build_dict_from_product_item
+from ..utils import build_dict_from_product_item, parse_transform
 
+from . import TicketPreviewAPIException
+from . import TicketPreviewTransformException
+from . import TicketPreviewFillValuesException
+from ..cleaner.api import TicketCleanerValidationError
 
 ## todo move it
 def decimal_converter(target, converter=float):
@@ -122,11 +126,13 @@ def preview_ticket_post_sej(context, request):
     preview = SEJPreviewCommunication.get_instance(request)
 
     svgio = request.POST["svgfile"].file
+    transform_str = request.POST.get("transform")
+    transform = parse_transform(transform_str) if transform_str else None
     cleaner = get_validated_svg_cleaner(svgio, exc_class=HTTPBadRequest)
     svgio = cleaner.get_cleaned_svgio()
     svgio.seek(0)
 
-    ptct = SEJTemplateTransformer(svgio=svgio).transform()
+    ptct = SEJTemplateTransformer(svgio=svgio, transform=transform).transform()
     imgdata = preview.communicate(request, ptct)
     return as_filelike_response(request, imgdata)
 
@@ -175,7 +181,10 @@ class PreviewApiView(object):
                 return {"status": False, "data": svg, "message": "svg is not found"}
             svg = FillvaluesTransformer(svg, data.get("for_fillvalues", {})).transform()
             return {"status": True, "data": svg}
+        except TicketPreviewAPIException, e:
+            return {"status": False, "message": "%s" % e.message}
         except Exception, e:
+            logger.exception(e)
             return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
 
     @view_config(match_param="action=normalize", request_param="svg")
@@ -185,7 +194,10 @@ class PreviewApiView(object):
             cleaner = get_validated_svg_cleaner(svgio, exc_class=Exception)
             svgio = cleaner.get_cleaned_svgio()
             return {"status": True, "data": svgio.getvalue()}
+        except TicketCleanerValidationError, e:
+            return {"status": False, "message": e.message}
         except Exception, e:
+            logger.exception(e)
             return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
 
 
@@ -199,18 +211,42 @@ class PreviewApiView(object):
             imgdata_base64 = preview.communicate(self.request, svg)
             return {"status": True, "data":imgdata_base64, 
                     "width": transformer.width, "height": transformer.height} #original size
-        except jsonrpc.ProtocolError, e:
+        except TicketPreviewTransformException, e:
+            return {"status": False, "message": "%s" % e.message}            
+        except TicketPreviewAPIException, e:
+            return {"status": False, "message": "%s" % e.message}
+        except Exception, e:
+            logger.exception(e)
             return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
 
 
     @view_config(match_param="action=preview.base64", request_param="type=sej") #svg
     def preview_ticket_post64_sej(self):
-        preview = SEJPreviewCommunication.get_instance(self.request)
-        transformer = SEJTemplateTransformer(svgio=StringIO(self.request.POST["svg"]))
-        ptct = transformer.transform()
-        imgdata = preview.communicate(self.request, ptct)
-        return {"status": True, "data":base64.b64encode(imgdata), 
-                "width": transformer.width, "height": transformer.height} #original size
+        try:
+            preview = SEJPreviewCommunication.get_instance(self.request)
+
+            ticket_format_id = self.request.POST["ticket_format"]
+            ticket_format = c_models.TicketFormat.query.filter_by(id=ticket_format_id).first()
+            if ticket_format is None:
+                logger.warn("ticket format %s is not found" % ticket_format_id)
+                global_transform = None
+            else:
+                global_transform = transform_matrix_from_ticket_format(ticket_format)
+
+            transformer = SEJTemplateTransformer(svgio=StringIO(self.request.POST["svg"]), global_transform=global_transform)
+            ptct = transformer.transform()
+            imgdata = preview.communicate(self.request, ptct)
+            return {"status": True, "data":base64.b64encode(imgdata), 
+                    "width": transformer.width, "height": transformer.height} #original size
+        except TicketPreviewFillValuesException, e:
+            return {"status": False, "message": "%s" % e.message}
+        except TicketPreviewTransformException, e:
+            return {"status": False, "message": "%s" % e.message}            
+        except TicketPreviewAPIException, e:
+            return {"status": False, "message": "%s" % e.message}
+        except Exception, e:
+            logger.exception(e)
+            return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
 
     @view_config(match_param="action=preview.base64.withmodels")
     def preview_ticket_post64_with_models(self):
@@ -223,7 +259,12 @@ class PreviewApiView(object):
             imgdata_base64 = preview.communicate(self.request, svg)
             return {"status": True, "data":imgdata_base64, 
                     "width": transformer.width, "height": transformer.height} #original size
-        except jsonrpc.ProtocolError, e:
+        except TicketPreviewTransformException, e:
+            return {"status": False, "message": "%s" % e.message}            
+        except TicketPreviewAPIException, e:
+            return {"status": False, "message": "%s" % e.message}
+        except Exception, e:
+            logger.exception(e)
             return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
 
 
@@ -231,14 +272,28 @@ class PreviewApiView(object):
     def preview_ticket_post64_with_models_sej(self):
         preview = SEJPreviewCommunication.get_instance(self.request)
         svg = self.request.POST["svg"]
+
         try:
+            ticket_format_id = self.request.POST["ticket_format"]
+            ticket_format = c_models.TicketFormat.query.filter_by(id=ticket_format_id).first()
+            if ticket_format is None:
+                logger.warn("ticket format %s is not found" % ticket_format_id)
+                global_transform = None
+            else:
+                global_transform = transform_matrix_from_ticket_format(ticket_format)
+
             svg = FillvaluesTransformer(svg, self.request.POST).transform()
-            transformer = SEJTemplateTransformer(svgio=StringIO(svg))
+            transformer = SEJTemplateTransformer(svgio=StringIO(svg), global_transform=global_transform)
             ptct = transformer.transform()
             imgdata = preview.communicate(self.request, ptct)
             return {"status": True, "data":base64.b64encode(imgdata), 
                     "width": transformer.width, "height": transformer.height} #original size}
+        except TicketPreviewTransformException, e:
+            return {"status": False, "message": "%s" % e.message}            
+        except TicketPreviewAPIException, e:
+            return {"status": False, "message": "%s" % e.message}
         except Exception, e:
+            logger.exception(e)
             return {"status": False,  "message": "%s: %s" % (e.__class__.__name__,  str(e))}
 
 
@@ -247,7 +302,10 @@ class PreviewApiView(object):
         svg = self.request.POST["svg"]
         try:
             return {"status": True, "data": list(sorted(template_collect_vars(svg)))}
+        except TicketPreviewFillValuesException, e:
+            return {"status": False, "message": "%s" % e.message}
         except Exception, e:
+            logger.exception(e)
             return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
 
 
@@ -263,7 +321,10 @@ class PreviewApiView(object):
             for k in dels:
                 del params[k]
             return {"status": True, "data": template_fillvalues(svg, params)}
+        except TicketPreviewFillValuesException, e:
+            return {"status": False, "message": "%s" % e.message}
         except Exception, e:
+            logger.exception(e)
             return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
 
 
@@ -296,9 +357,8 @@ class PreviewApiView(object):
             else:
                 return {"status": True, "data": decimal_converter(v, converter=float)}
         except Exception, e:
-            import sys
-            logger.warning(str(e),exc_info=sys.exc_info())
-            return {"status": True, "data": decimal_converter(v, converter=float), "message": e.message}
+            logger.exception(e)
+            return {"status": False, "message": u"補助ダイアログの通信に失敗しました"}
 
 
 @view_defaults(route_name="tickets.preview.loadsvg.api", request_method="GET", renderer="json")
@@ -314,27 +374,41 @@ class LoadSVGFromModelApiView(object):
 
     @view_config(match_param="model=ProductItem", request_param="data")
     def svg_from_product_item(self):
-        data = json.loads(self.request.GET["data"])
-        ticket_format_id = data["svg_resource"]["model"]
-        product_item_id = data["fillvalues_resource"]["model"]
+        try:
+            data = json.loads(self.request.GET["data"])
+            ticket_format_id = data["svg_resource"]["model"]
+            product_item_id = data["fillvalues_resource"]["model"]
 
-        product_item = c_models.ProductItem.query.filter_by(id=product_item_id).first()
-        ticket = c_models.Ticket.query.filter(c_models.TicketBundle.id==product_item.ticket_bundle_id, 
-                                              c_models.Ticket_TicketBundle.ticket_bundle_id==c_models.TicketBundle.id, 
-                                              c_models.Ticket.id==c_models.Ticket_TicketBundle.ticket_id, 
-                                              c_models.Ticket.ticket_format_id==ticket_format_id).first()
-        if ticket is None:
-            return {"status": False, "message": "matched ticket is not found"}
-        svg = template_fillvalues(ticket.drawing, build_dict_from_product_item(product_item))
-        return {"status": True, "data": svg}
+            product_item = c_models.ProductItem.query.filter_by(id=product_item_id).first()
+            ticket = c_models.Ticket.query.filter(c_models.TicketBundle.id==product_item.ticket_bundle_id, 
+                                                  c_models.Ticket_TicketBundle.ticket_bundle_id==c_models.TicketBundle.id, 
+                                                  c_models.Ticket.id==c_models.Ticket_TicketBundle.ticket_id, 
+                                                  c_models.Ticket.ticket_format_id==ticket_format_id).first()
+            if ticket is None:
+                return {"status": False, "message": "matched ticket is not found"}
+            try:
+                svg = template_fillvalues(ticket.drawing, build_dict_from_product_item(product_item))
+                return {"status": True, "data": svg}
+            except TicketPreviewFillValuesException, e:
+                return {"status": False, "message": "%s" % e.message}
+        except Exception, e:
+            logger.exception(e)
+            return {"status": False, "message": str(e)}
 
     @view_config(match_param="model=Ticket", request_param="data")
     def svg_from_ticket(self):
-        data = json.loads(self.request.GET["data"])
-        ticket_id = data["fillvalues_resource"]["model"]
-        ticket = c_models.Ticket.query.filter_by(id=ticket_id).first()
-        ticket_formats = [_build_ticket_format_dict(ticket.ticket_format)]
-        return {"status": True, "data": ticket.drawing, "ticket_formats": ticket_formats}
+        try:
+            data = json.loads(self.request.GET["data"])
+            ticket_id = data["fillvalues_resource"]["model"]
+            ticket = c_models.Ticket.query.filter_by(id=ticket_id).first()
+            ticket_formats = [_build_ticket_format_dict(ticket.ticket_format)]
+            return {"status": True, "data": ticket.drawing, "ticket_formats": ticket_formats}
+        except KeyError, e:
+            logger.exception(e)
+            return {"status": False, "message": str(e)+u"の要素が取得できませんでした".encode("utf-8")}
+        except Exception, e:
+            logger.exception(e)
+            return {"status": False, "message": str(e)}
 
 @view_defaults(route_name="tickets.preview.combobox.api", request_method="GET", renderer="json")
 class ComboboxApiView(object):
@@ -385,7 +459,7 @@ class ComboboxApiView(object):
 
 @view_defaults(route_name="tickets.preview.dialog", request_method="GET", renderer="ticketing:templates/tickets/_preview.html", 
                permission="event_editor")
-class PreviewWithDefaultParamaterDialogView(object):
+class PreviewWithDefaultParameterDialogView(object):
     def __init__(self, context, request): # as modal dialog
         self.context = context
         self.request = request
@@ -412,27 +486,34 @@ class PreviewWithDefaultParamaterDialogView(object):
 
     @view_config(match_param="model=ProductItem")
     def svg_dialog_via_product_item(self):
-        combobox_params = self._combobox_defaults()
-        apis = self._apis_defaults()
-        apis["loadsvg"]  =  self.request.route_path("tickets.preview.loadsvg.api", model="ProductItem"), 
-        apis["combobox"] =  self.request.route_path("tickets.preview.combobox", _query=combobox_params)
+        try:
+            combobox_params = self._combobox_defaults()
+            apis = self._apis_defaults()
+            apis["loadsvg"]  =  self.request.route_path("tickets.preview.loadsvg.api", model="ProductItem"), 
+            apis["combobox"] =  self.request.route_path("tickets.preview.combobox", _query=combobox_params)
 
-        ticket_formats = c_models.TicketFormat.query.filter_by(organization_id=self.context.user.organization_id)
-        ticket_formats = _build_ticket_format_dicts(ticket_formats)
-        return {"apis": apis, "ticket_formats": ticket_formats}
-
+            ticket_formats = c_models.TicketFormat.query.filter_by(organization_id=self.context.user.organization_id)
+            ticket_formats = _build_ticket_format_dicts(ticket_formats)
+            return {"apis": apis, "ticket_formats": ticket_formats}
+        except Exception, e:
+            logger.exception(e)
+            raise
 
     @view_config(match_param="model=Ticket")
     def svg_dialog_via_ticket(self):
-        combobox_params = self._combobox_defaults()
-        apis = self._apis_defaults()
-        apis["loadsvg"]  =  self.request.route_path("tickets.preview.loadsvg.api", model="Ticket"), 
-        apis["combobox"] =  self.request.route_path("tickets.preview.combobox", _query=combobox_params)
+        try:
+            combobox_params = self._combobox_defaults()
+            apis = self._apis_defaults()
+            apis["loadsvg"]  =  self.request.route_path("tickets.preview.loadsvg.api", model="Ticket"), 
+            apis["combobox"] =  self.request.route_path("tickets.preview.combobox", _query=combobox_params)
 
-        ticket_formats = c_models.TicketFormat.query.filter_by(organization_id=self.context.user.organization_id)
+            ticket_formats = c_models.TicketFormat.query.filter_by(organization_id=self.context.user.organization_id)
 
-        if self.request.GET.get("ticket_id"):
-            ticket_formats = ticket_formats.filter(c_models.TicketFormat.id==c_models.Ticket.ticket_format_id,
-                                                   c_models.Ticket.id==self.request.GET.get("ticket_id"))
-        ticket_formats = _build_ticket_format_dicts(ticket_formats)
-        return {"apis": apis, "ticket_formats": ticket_formats}
+            if self.request.GET.get("ticket_id"):
+                ticket_formats = ticket_formats.filter(c_models.TicketFormat.id==c_models.Ticket.ticket_format_id,
+                                                       c_models.Ticket.id==self.request.GET.get("ticket_id"))
+            ticket_formats = _build_ticket_format_dicts(ticket_formats)
+            return {"apis": apis, "ticket_formats": ticket_formats}
+        except Exception, e:
+            logger.exception(e)
+            raise

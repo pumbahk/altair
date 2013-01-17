@@ -75,7 +75,7 @@ class SalesSegmentForm(OurForm):
         widget=CheckboxInput(),
     )
     copy_payment_delivery_method_pairs = IntegerField(
-        label=u'決済配送方法をコピーする',
+        label=u'決済・引取方法をコピーする',
         default=0,
         widget=CheckboxInput(),
     )

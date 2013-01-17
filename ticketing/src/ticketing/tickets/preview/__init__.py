@@ -1,5 +1,15 @@
 # -*- coding:utf-8 -*-
 
+class TicketPreviewException(Exception):
+    pass
+
+class TicketPreviewFillValuesException(TicketPreviewException):
+    pass
+class TicketPreviewTransformException(TicketPreviewException):
+    pass
+class TicketPreviewAPIException(TicketPreviewException):
+    pass
+
 def include_views(config):
     config.add_route('tickets.preview', '/preview')
     config.add_route('tickets.preview.dialog', '/preview/dialog/{model}')
@@ -15,17 +25,14 @@ def include_utilities(config):
     ## svg preview serverとの通信
     from .api import SVGPreviewCommunication
     svg_preview_communication = SVGPreviewCommunication(
-        settings["altair.preview.svg.post_url"], 
+        settings["altair.preview.svg.post_url"]
         )
     svg_preview_communication.bind_instance(config)
 
     ## sej preview serverとの通信
     from .api import SEJPreviewCommunication
-    args = settings["altair.preview.sej.request_create"].split(":")
-    create_api_request = config.maybe_dotted(args.pop(0))(*args)
     sej_preview_communication = SEJPreviewCommunication(
-        settings["altair.preview.sej.post_url"], 
-        create_api_request
+        settings["altair.preview.sej.post_url"]
         )
     sej_preview_communication.bind_instance(config)
 

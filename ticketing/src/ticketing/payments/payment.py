@@ -60,7 +60,7 @@ class Payment(object):
         """
 
     def select_payment(self, payment_delivery_pair, shipping_address):
-        """ 決済配送方法選択 via PaymentView
+        """ 決済・引取方法選択 via PaymentView
         """
 
         cart.payment_delivery_pair = payment_delivery_pair

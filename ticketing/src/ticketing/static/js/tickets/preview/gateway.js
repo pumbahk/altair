@@ -26,6 +26,7 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
         this.vars.on("*vars.commit.vars", this.commitVarsValues, this);
 
         this.preview.on("*preview.redraw",  this.previewReDraw, this);
+        this.params.on("*params.preview.redraw", this.previewReDraw, this);
 
         this.params.on("*params.change.holder", this.changeHolderLoadSVG, this);
     }, 

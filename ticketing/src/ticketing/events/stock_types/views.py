@@ -22,8 +22,8 @@ class StockTypes(BaseView):
         event = Event.get(event_id)
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
-
-        sort = self.request.GET.get('sort', 'StockType.id')
+        
+        sort = self.request.GET.get('sort', 'StockType.display_order')
         direction = self.request.GET.get('direction', 'asc')
         if direction not in ['asc', 'desc']:
             direction = 'asc'

@@ -1,7 +1,13 @@
+# -*- coding:utf-8 -*-
+
+import logging
+logger = logging.getLogger(__name__)
+
 import pystache
 from pystache.context import ContextStack
 from pystache.renderengine import RenderEngine
 from collections import namedtuple
+from . import TicketPreviewFillValuesException
 
 class IndexedVariation(object):
     """ with colored and indexed string. like 10.{{fooo}}"""
@@ -48,8 +54,12 @@ def template_collect_vars(template, variation=IdentityVariation()):
     >>> template_collect_vars(template)
     set("hello", "item", "hee")
     """
-    tokens = CollectVarsRenderEngine().parse(template)
-    return {x.name for x in tokens if isinstance(x, RenderingVar)}
+    try:
+        tokens = CollectVarsRenderEngine().parse(template)
+        return {x.name for x in tokens if isinstance(x, RenderingVar)}
+    except Exception, e:
+        logger.exception(e)
+        raise TicketPreviewFillValuesException(u"Templateからプレースホルダーを抽出する作業に失敗しました")
 
 def template_fillvalues(template, params, variation=IdentityVariation()):
     """
@@ -60,7 +70,11 @@ def template_fillvalues(template, params, variation=IdentityVariation()):
     >>> template_fillvalues(template, {"hello": "good-bye, "})
     u"good-bye,  this is a {{item}} {{heee}}"    
     """
-    return FillValuesRenderer(variation).render(template, convert_to_nested_dict(params))
+    try:
+        return FillValuesRenderer(variation).render(template, convert_to_nested_dict(params))
+    except Exception, e:
+        logger.exception(e)
+        raise TicketPreviewFillValuesException(u"Templateへの文字列埋込みに失敗しました")
 
 def convert_to_nested_dict(D, delim="."):
     r = D.copy()

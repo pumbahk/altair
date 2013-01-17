@@ -90,6 +90,14 @@ class OrganizationForm(Form):
         label=u'FAX番号',
         validators=[Phone()]
     )
+    short_name = TextField(
+        label = u'短縮名',
+        validators=[
+            Required(),
+            Regexp(u'^[a-zA-Z0-9_-]*$', message=u'英数字のみ入力できます'),
+            Length(max=32, message=u'32文字以内で入力してください'),
+        ]
+    )
 
     '''
     company_name = TextField(
