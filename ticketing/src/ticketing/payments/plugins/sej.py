@@ -28,7 +28,7 @@ from ticketing.tickets.utils import (
     as_user_unit,
     build_dicts_from_ordered_product_item,
     build_dicts_from_carted_product_item,
-    translate,
+    transform_matrix_from_ticket_format
     )
 from ticketing.core.utils import ApplicableTicketsProducer
 
@@ -92,7 +92,7 @@ def get_tickets(order):
             for seat, dict_ in dicts:
                 for ticket in applicable_tickets_iter(bundle):
                     ticket_format = ticket.ticket_format
-                    transform = translate(-as_user_unit(ticket_format.data['print_offset']['x']), -as_user_unit(ticket_format.data['print_offset']['y']))
+                    transform = transform_matrix_from_ticket_format(ticket_format)
                     svg = etree.tostring(convert_svg(etree.ElementTree(etree.fromstring(pystache.render(ticket.data['drawing'], dict_))), transform), encoding=unicode)
                     ticket = get_sej_ticket_data(order.order_no, ordered_product_item.product_item, svg)
                     tickets.append(ticket)
@@ -107,7 +107,7 @@ def get_tickets_from_cart(cart):
             for (seat, dict_) in dicts:
                 for ticket in applicable_tickets_iter(bundle):
                     ticket_format = ticket.ticket_format
-                    transform = translate(-as_user_unit(ticket_format.data['print_offset']['x']), -as_user_unit(ticket_format.data['print_offset']['y']))
+                    transform = transform_matrix_from_ticket_format(ticket_format)
                     svg = etree.tostring(convert_svg(etree.ElementTree(etree.fromstring(pystache.render(ticket.data['drawing'], dict_))), transform), encoding=unicode)
                     ticket = get_sej_ticket_data(cart.order_no, carted_product_item.product_item, svg)
                     tickets.append(ticket)
