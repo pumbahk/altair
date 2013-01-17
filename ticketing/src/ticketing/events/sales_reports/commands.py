@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from ticketing.logicaldeleting import install as install_ld
-install_ld()
-
 import logging
 import os
 import sys
@@ -11,14 +8,16 @@ from datetime import datetime, timedelta
 from paste.util.multidict import MultiDict
 from pyramid.paster import bootstrap
 
-from ticketing.core.models import ReportSetting, Mailer, Event, Organization, ReportFrequencyEnum
-from ticketing.operators.models import Operator
-from ticketing.events.sales_reports.forms import SalesReportForm
-from ticketing.events.sales_reports.sendmail import sendmail, get_performance_sales_summary
-
 logger = logging.getLogger(__name__)
 
 def main(argv=sys.argv):
+    from ticketing.logicaldeleting import install as install_ld
+    install_ld()
+
+    from ticketing.core.models import ReportSetting, Mailer, Event, Organization, ReportFrequencyEnum
+    from ticketing.operators.models import Operator
+    from ticketing.events.sales_reports.forms import SalesReportForm
+    from ticketing.events.sales_reports.sendmail import sendmail, get_performance_sales_summary
 
     if len(sys.argv) < 4:
         print 'ERROR: invalid args %s' % sys.argv
