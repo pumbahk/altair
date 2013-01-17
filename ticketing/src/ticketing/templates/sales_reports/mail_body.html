@@ -164,7 +164,6 @@
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_report['paid_quantity'] + performance_report['unpaid_quantity']) or ''}</td>
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_report['unpaid_quantity']) or ''}</td>
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_report['paid_quantity']) or ''}</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format((performance_report['paid_quantity'] + performance_report['unpaid_quantity']
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format((performance_report['paid_quantity'] + performance_report['unpaid_quantity']) * performance_report['product_price'])}円</td>
         </tr>
         % endfor
