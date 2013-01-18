@@ -404,7 +404,7 @@ class LoadSVGFromModelApiView(object):
                                                   c_models.Ticket.id==c_models.Ticket_TicketBundle.ticket_id, 
                                                   c_models.Ticket.ticket_format_id==ticket_format_id).first()
             if ticket is None:
-                return {"status": False, "message": "matched ticket is not found"}
+                return {"status": False, "message": u"チケット券面が見つかりません。チケット様式を変更してpreviewを試すか。指定したチケット様式と結びつくチケット券面を作成してください"}
             try:
                 svg = template_fillvalues(ticket.drawing, build_dict_from_product_item(product_item))
                 return {"status": True, "data": svg}

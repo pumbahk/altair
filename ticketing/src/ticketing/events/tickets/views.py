@@ -136,7 +136,8 @@ class BundleView(BaseView):
     @view_config(route_name="events.tickets.bundles.show",
                  renderer="ticketing:templates/tickets/events/bundles/show.html")
     def show(self):
-        product_item_dict = {} # {<performance_id>: {<name>: "",  <products>: {}, <product_items> : {}}}
+        # {<performance_id>: {<name>: "",  <products>: {}, <product_items> : {}}}
+        product_item_dict = {} 
         for product_item in self.context.bundle.product_items:
             performance = product_item_dict.get(product_item.performance_id)
             if performance is None:
@@ -159,10 +160,14 @@ class BundleView(BaseView):
                 }
 
         ## for ticket-preview
+        ## [{name: <performance.name>, pk: <performance.id>,  candidates: [{name: <item.name>, pk: <item.id>}, ...]}, ...]
         preview_item_candidates = []
-        for performance in product_item_dict.itervalues():
-            for pk, item_dict in performance["product_items"].iteritems():
-                preview_item_candidates.append({"pk": pk, "name": u"%s: %s" % (performance["name"] , item_dict["name"])})
+        for perf_k, performance_d in product_item_dict.iteritems():
+            candidates = []
+            p = {"name": performance_d["name"], "pk": perf_k, "candidates": candidates}
+            for item_k, item_d in performance["product_items"].iteritems():
+                candidates.append({"name": item_d["name"], "pk": item_k})
+            preview_item_candidates.append(p)
 
         return dict(bundle=self.context.bundle, 
                     event=self.context.event,
