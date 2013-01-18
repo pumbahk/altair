@@ -103,8 +103,8 @@ class TicketSVGValidator(object):
         io = self.io_create()
         xmltree.write(io, encoding="UTF-8") #doc declaration?
         io.seek(0)
-        self._validate_on_normalize_phase(svgio)
-        svgio.seek(0)
+        self._validate_on_normalize_phase(io)
+        io.seek(0)
         self._validate_on_converting_to_opcode(xmltree)
         return self.out
 
