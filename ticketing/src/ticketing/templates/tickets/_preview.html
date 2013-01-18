@@ -130,7 +130,7 @@
       form.find('input[name="svg"]').val(v);
       form.submit();
     } else {
-      apps["preview"].views.message_view.alert("券面テンプレートがされてません。downloadできるsvgがありません");
+      apps["preview"].views.message_view.alert("券面テンプレートが設定されていません。downloadできるsvgがありません");
     }
   });
   // enqueue svg
@@ -145,7 +145,7 @@
         }
       });
     } else {
-      previewApp.views.message_view.alert("券面テンプレートがされてません。enqueueできるsvgがありません");
+      previewApp.views.message_view.alert("券面テンプレートが設定されていません。enqueueできるsvgがありません");
     }
   });
 
