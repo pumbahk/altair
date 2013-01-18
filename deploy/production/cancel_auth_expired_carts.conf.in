@@ -24,7 +24,7 @@ level = INFO
 formatter = generic
 
 [handler_spool]
-class = ticketing.log.handlers.SpoolingHandler
+class = altair.log.handlers.SpoolingHandler
 args = (5000, WARNING)
 level = INFO
 target = stderr
