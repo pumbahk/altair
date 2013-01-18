@@ -51,3 +51,6 @@ ${h.render_payment_finished_viewlet(request, order)}
 <div>
 ${h.render_delivery_finished_viewlet(request, order)}
 </div>
+
+<a href="${request.context.host_base_url}">チケットTOP</a>
+<a href="${request.route_url("cart.index", event_id=order.performance.event.id)}">他のチケットを購入</a>
