@@ -63,7 +63,7 @@ class OrderInfoDefault(object):
     for_seat = OrderInfo(name=u"for_seat", label=u"ご購入いただいた座席", getval=get_seat_no)
     system_fee = OrderInfo(name=u"system_fee", label=u"システム利用料", getval=lambda order: ch.format_currency(order.system_fee))
     transaction_fee = OrderInfo(name=u"transaction_fee", label=u"決済手数料", getval=lambda order: ch.format_currency(order.transaction_fee))
-    delivery_fee = OrderInfo(name=u"delivery_fee", label=u"発券／配送手数料", getval=lambda order: ch.format_currency(order.delivery_fee))
+    delivery_fee = OrderInfo(name=u"delivery_fee", label=u"発券／引取手数料", getval=lambda order: ch.format_currency(order.delivery_fee))
     total_amount = OrderInfo(name=u"total_amount", label=u"合計金額", getval=lambda order: ch.format_currency(order.total_amount))
 
     @classmethod

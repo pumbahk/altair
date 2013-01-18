@@ -33,7 +33,7 @@ ${ordered_product.product.name} ${h.format_currency(ordered_product.product.pric
 システム利用料： ${h.format_currency(system_fee)}
 セブン-イレブン決済手数料：${h.format_currency(transaction_fee)} 円
 %if delivery_fee:
-配送手数料：${h.format_currency(delivery_fee)}
+引取手数料：${h.format_currency(delivery_fee)}
 %endif
 
 ■合計金額

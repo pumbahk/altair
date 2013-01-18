@@ -42,7 +42,7 @@ class OrderForm(Form):
         validators=[Required()],
     )
     delivery_fee = DecimalField(
-        label=u'配送手数料',
+        label=u'引取手数料',
         places=2,
         default=0,
         validators=[Required()],
