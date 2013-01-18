@@ -79,6 +79,15 @@ requires = [
     "poster"
     ]
 
+tests_require = [
+    "nose", 
+    "coverage"
+]
+
+extras_require = {
+    "testing": tests_require
+}
+
 setup(name='ticketing',
       version='0.0',
       description='ticketing',
@@ -107,7 +116,8 @@ setup(name='ticketing',
         'https://github.com/moriyoshi/beaker_extensions/tarball/0.2.0dev-moriyoshi2#egg=beaker-extensions-0.2.0dev-moriyoshi2',
         'https://github.com/moriyoshi/fluent-logger-python/tarball/0.3.3moriyoshi#egg=fluent-logger-0.3.3moriyoshi',
       ],
-      tests_require=requires,
+      tests_require=tests_require,
+      extras_require=extras_require, 
       test_suite="ticketing",
       entry_points = """\
       [paste.app_factory]
