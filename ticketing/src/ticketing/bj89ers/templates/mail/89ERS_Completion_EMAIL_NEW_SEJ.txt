@@ -11,7 +11,7 @@ ${tel_no if tel_no else ''}
 ■電話番号（自宅）
 ${tel2_no if tel2_no else ''}
 ■メールアドレス
-${email}
+${email_1}
 
 -----
 ■受付番号

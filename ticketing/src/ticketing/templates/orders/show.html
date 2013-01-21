@@ -179,10 +179,18 @@ ${h.breadcrumbs(
               </td>
             </tr>
             <tr>
-              <th>メールアドレス</th>
+              <th>メールアドレス (PC)</th>
               <td>
                 % if user and user.user_profile:
-                  ${user.user_profile.email}
+                  ${user.user_profile.email_pc or u''}
+                % endif
+              </td>
+            </tr>
+            <tr>
+              <th>メールアドレス (携帯)</th>
+              <td>
+                % if user and user.user_profile:
+                  ${user.user_profile.email_mobile or u''}
                 % endif
               </td>
             </tr>
@@ -206,7 +214,7 @@ ${h.breadcrumbs(
             <h3>配送情報</h3>
           </div>
 
-          <% sa = order.shipping_address %>
+          <% shipping_address = order.shipping_address %>
           <table class="table table-striped table-bordered">
             <tr>
               <th class="span2">引取方法</th>
@@ -215,10 +223,10 @@ ${h.breadcrumbs(
             <tr>
               <th>氏名</th>
               <td>
-                % if sa:
-                  ${sa.last_name} ${sa.first_name}
-                  % if sa.last_name_kana or sa.first_name_kana:
-                    (${sa.last_name_kana} ${sa.first_name_kana})
+                % if shipping_address:
+                  ${shipping_address.last_name} ${shipping_address.first_name}
+                  % if shipping_address.last_name_kana or shipping_address.first_name_kana:
+                    (${shipping_address.last_name_kana} ${shipping_address.first_name_kana})
                   % endif
                 % endif
               </td>
@@ -226,24 +234,32 @@ ${h.breadcrumbs(
             <tr>
               <th>住所</th>
               <td>
-                % if sa:
-                  ${sa.zip} ${sa.country or ''} ${sa.prefecture} ${sa.city} ${sa.address_1} ${sa.address_2}
+                % if shipping_address:
+                  ${shipping_address.zip} ${shipping_address.country or ''} ${shipping_address.prefecture} ${shipping_address.city} ${shipping_address.address_1} ${shipping_address.address_2}
                 % endif
               </td>
             </tr>
             <tr>
               <th>Tel</th>
               <td>
-                % if sa:
-                  ${sa.tel_1}
+                % if shipping_address:
+                  ${shipping_address.tel_1}
                 % endif
               </td>
             </tr>
             <tr>
-              <th>メールアドレス</th>
+              <th>メールアドレス (PC)</th>
               <td>
-                % if sa:
-                  ${sa.email or ''}
+                % if shipping_address:
+                  ${shipping_address.email_pc or ''}
+                % endif
+              </td>
+            </tr>
+            <tr>
+              <th>メールアドレス (携帯)</th>
+              <td>
+                % if shipping_address:
+                  ${shipping_address.email_mobile or ''}
                 % endif
               </td>
             </tr>

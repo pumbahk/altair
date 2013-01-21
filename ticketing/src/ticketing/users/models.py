@@ -1,10 +1,15 @@
 # -*- coding:utf-8 -*-
-from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL, Index, UniqueConstraint
+from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Unicode, Date, DateTime, ForeignKey, DECIMAL, Index, UniqueConstraint
+from sqlalchemy.sql.expression import case, null
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import join, backref, column_property
 
 from standardenum import StandardEnum
 from ticketing.models import relationship
 from ticketing.master.models import *
+from ticketing.mobile.interfaces import IMobileCarrierDetector
+from ticketing.mobile.api import _detect_from_email_address
+from pyramid.threadlocal import get_current_registry
 import sqlahelper
 
 session = sqlahelper.get_session()
@@ -56,7 +61,8 @@ class UserProfile(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     user_id = Column(Identifier, ForeignKey('User.id'))
     user = relationship('User', backref=backref("user_profile", uselist=False))
 
-    email = Column(String(255))
+    email_1 = Column(Unicode(255))
+    email_2 = Column(Unicode(255))
     nick_name = Column(String(255))
     first_name = Column(String(255))
     last_name = Column(String(255))
@@ -75,11 +81,53 @@ class UserProfile(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     fax = Column(String(32))
     status = Column(Integer)
 
-    @property
+    @hybrid_property
     def full_name_kana(self):
-        return u"%s %s" % (self.last_name_kana,  self.first_name_kana)
+        return self.last_name_kana + u' ' + self.first_name_kana
+
+    @hybrid_property
     def full_name(self):
-        return u"%s %s" % (self.last_name, self.firstname)
+        return self.last_name + u' ' + self.first_name
+
+    @hybrid_property
+    def email(self):
+        return self.email_1 or self.email_2
+
+    @email.expression
+    def email_expr(self):
+        return case([
+            (self.email_1 != None, self.email_1),
+            (self.email_2 != None, self.email_2)
+            ],
+            else_=null())
+
+    @property
+    def emails(self):
+        retval = []
+        if self.email_1:
+            retval.append(self.email_1)
+        if self.email_2:
+            retval.append(self.email_2)
+        return retval
+
+    @property
+    def email_pc(self):
+        detector = get_current_registry().queryUtility(IMobileCarrierDetector)
+        if self.email_1 is not None and _detect_from_email_address(detector, self.email_1).is_nonmobile:
+            return self.email_1
+        if self.email_2 is not None and _detect_from_email_address(detector, self.email_2).is_nonmobile:
+            return self.email_2
+        return None
+
+    @property
+    def email_mobile(self):
+        detector = get_current_registry().queryUtility(IMobileCarrierDetector)
+        if self.email_1 is not None and not _detect_from_email_address(detector, self.email_1).is_nonmobile:
+            return self.email_1
+        if self.email_2 is not None and not _detect_from_email_address(detector, self.email_2).is_nonmobile:
+            return self.email_2
+        return None
+
 
 class UserCredential(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     __tablename__ = 'UserCredential'

@@ -68,7 +68,7 @@ class ClientForm(Form):
             Length(max=255, message=u'255文字以内で入力してください'),
         ]
     )
-    tel = fields.TextField(
+    tel_1 = fields.TextField(
         label=u"TEL",
         filters=[ignore_space_hyphen], 
         validators=[
@@ -127,7 +127,7 @@ class ClientForm(Form):
             Length(max=255, message=u'255文字以内で入力してください'),
         ]
     )
-    mail_address = fields.TextField(
+    email_1 = fields.TextField(
         label=u"メールアドレス",
         filters=[strip_spaces],
         validators=[
@@ -135,7 +135,7 @@ class ClientForm(Form):
             SejCompliantEmail(),
         ]
     )
-    mail_address2 = fields.TextField(
+    email_1_confirm = fields.TextField(
         label=u"確認用メールアドレス",
         filters=[strip_spaces],
         validators=[
@@ -148,7 +148,7 @@ class ClientForm(Form):
         status = super(ClientForm, self).validate()
 
         data = self.data
-        if data["mail_address"] != data["mail_address2"]:
-            getattr(self, "mail_address").errors.append(u"メールアドレスと確認メールアドレスが一致していません。")
+        if data["email_1"] != data["email_1_confirm"]:
+            getattr(self, "email_1").errors.append(u"メールアドレスと確認メールアドレスが一致していません。")
             status = False
         return status

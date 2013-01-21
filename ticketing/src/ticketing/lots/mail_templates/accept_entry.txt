@@ -13,7 +13,7 @@ ${shipping_address.last_name_kana} ${shipping_address.first_name_kana}
 ■電話番号
 ${shipping_address.tel_1}
 ■メールアドレス
-${shipping_address.email}
+${shipping_address.email_1}
 -----
 ■受付番号
 ${lot_entry.entry_no}

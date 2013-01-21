@@ -76,7 +76,8 @@ requires = [
     'altair.findable_label', 
     'altair.log',
     "jsonrpclib", 
-    "poster"
+    "poster",
+    "radix",
     ]
 
 tests_require = [
@@ -115,6 +116,7 @@ setup(name='ticketing',
         "https://github.com/numpy/numpy/tarball/v1.6.2#egg=numpy-1.6.2",
         'https://github.com/moriyoshi/beaker_extensions/tarball/0.2.0dev-moriyoshi2#egg=beaker-extensions-0.2.0dev-moriyoshi2',
         'https://github.com/moriyoshi/fluent-logger-python/tarball/0.3.3moriyoshi#egg=fluent-logger-0.3.3moriyoshi',
+        'http://py-radix.googlecode.com/archive/tip.zip#egg=radix',
       ],
       tests_require=tests_require,
       extras_require=extras_require, 

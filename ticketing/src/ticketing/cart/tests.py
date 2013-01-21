@@ -858,7 +858,7 @@ class PaymentViewTests(unittest.TestCase):
                 city=u"渋谷区",
                 address_1=u"住所",
                 address_2=u"",
-                email='mail-address@example.com',
+                email_1='mail-address@example.com',
             ),
         )
         self._register_starndard_payment_methods()

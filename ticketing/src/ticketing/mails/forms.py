@@ -53,7 +53,7 @@ class OrderInfoDefault(object):
 
     name_kana = OrderInfo(name="name_kana", label=u"お名前カナ", getval=get_name_kana)
     tel = OrderInfo(name="tel", label=u"電話番号", getval=lambda order : order.shipping_address.tel_1 or "")
-    mail = OrderInfo(name="mail", label=u"メールアドレス", getval=lambda order : order.shipping_address.email)
+    mail = OrderInfo(name="mail", label=u"メールアドレス", getval=lambda order : order.shipping_address.email_1)
     order_no = OrderInfo(name="order_no", label=u"受付番号", getval=lambda order : order.order_no)
     order_datetime = OrderInfo(name="order_datetime", label=u"受付日", getval=lambda order: ch.mail_date(order.created_at))
     event_name = OrderInfo(name="event_name", label=u"公演タイトル", getval=get_event_title)

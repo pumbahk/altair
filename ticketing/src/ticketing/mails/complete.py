@@ -63,7 +63,7 @@ class CompleteMail(object):
         mail_body = self.build_mail_body(order)
         return Message(
             subject=subject,
-            recipients=[order.shipping_address.email],
+            recipients=[order.shipping_address.email_1],
             bcc=bcc,
             body=mail_body,
             sender=mail_from)

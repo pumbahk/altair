@@ -45,23 +45,23 @@
 </div>
 
 <div>
-<font color="#960020">■</font>${form['mail_address'].label}
+<font color="#960020">■</font>${form['email_1'].label}
 </div>
 <p>※ 予約受付完了メール等をメールでご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</p>
 <div>
-  ${form['mail_address']}
+  ${form['email_1']}
   <div style="color:#ff0000">
-    ${h.error_list(request, form, 'mail_address')}
+    ${h.error_list(request, form, 'email_1')}
   </div>
 </div>
 
 <div>
-<font color="#960020">■</font>${form['mail_address2'].label}
+<font color="#960020">■</font>${form['email_1_confirm'].label}
 </div>
 <div>
-  ${form['mail_address2']}
+  ${form['email_1_confirm']}
   <div style="color:#ff0000">
-    ${h.error_list(request, form, 'mail_address2')}
+    ${h.error_list(request, form, 'email_1_confirm')}
   </div>
 </div>
 <div>
@@ -101,10 +101,10 @@
 <font color="#960020">■</font>電話番号
 </div>
 <div>
-  ${form['tel'].label}<br/>
-  ${form['tel']}
+  ${form['tel_1'].label}<br/>
+  ${form['tel_1']}
   <div style="color:#ff0000">
-    ${h.error_list(request, form, 'tel')}
+    ${h.error_list(request, form, 'tel_1')}
   </div>
 </div>
 <!--
@@ -154,6 +154,6 @@
 </div>
 %endfor
 <hr />
-<input type="submit" name="back" value="戻る" class="submit" />
-<input type="submit" value="次に進む" class="submit" />
+<div style="text-align:center" align="center"><input type="submit" value="次に進む" /></div>
+<div style="text-align:center" align="center"><input type="submit" name="back" value="戻る" /></div>
 </form>

@@ -22,8 +22,7 @@ from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, 
 from sqlalchemy.orm import join, backref, column_property, joinedload, deferred, relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.sql import exists
-from sqlalchemy.sql.expression import asc, desc, exists, select, table, column
+from sqlalchemy.sql.expression import asc, desc, exists, select, table, column, case, null
 from sqlalchemy.ext.associationproxy import association_proxy
 from pyramid.threadlocal import get_current_registry
 
@@ -40,6 +39,8 @@ from ticketing.sej.models import SejOrder
 from ticketing.sej.exceptions import SejServerError
 from ticketing.sej.payment import request_cancel_order
 from ticketing.assets import IAssetResolver
+from ticketing.mobile.interfaces import IMobileCarrierDetector
+from ticketing.mobile.api import _detect_from_email_address
 from ticketing.utils import myurljoin
 
 logger = logging.getLogger(__name__)
@@ -1665,7 +1666,8 @@ class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = Column(Identifier, primary_key=True)
     user_id = Column(Identifier, ForeignKey("User.id"))
     user = relationship('User', backref='shipping_addresses')
-    email = Column(String(255))
+    email_1 = Column(Unicode(255))
+    email_2 = Column(Unicode(255))
     nick_name = Column(String(255))
     first_name = Column(String(255))
     last_name = Column(String(255))
@@ -1690,6 +1692,45 @@ class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def full_name(self):
         return self.last_name + u' ' + self.first_name
 
+    @hybrid_property
+    def email(self):
+        return self.email_1 or self.email_2
+
+    @email.expression
+    def email_expr(self):
+        return case([
+            (self.email_1 != None, self.email_1),
+            (self.email_2 != None, self.email_2)
+            ],
+            else_=null())
+
+
+    @property
+    def emails(self):
+        retval = []
+        if self.email_1:
+            retval.append(self.email_1)
+        if self.email_2:
+            retval.append(self.email_2)
+        return retval
+
+    @property
+    def email_pc(self):
+        detector = get_current_registry().queryUtility(IMobileCarrierDetector)
+        if self.email_1 is not None and _detect_from_email_address(detector, self.email_1).is_nonmobile:
+            return self.email_1
+        if self.email_2 is not None and _detect_from_email_address(detector, self.email_2).is_nonmobile:
+            return self.email_2
+        return None
+
+    @property
+    def email_mobile(self):
+        detector = get_current_registry().queryUtility(IMobileCarrierDetector)
+        if self.email_1 is not None and not _detect_from_email_address(detector, self.email_1).is_nonmobile:
+            return self.email_1
+        if self.email_2 is not None and not _detect_from_email_address(detector, self.email_2).is_nonmobile:
+            return self.email_2
+        return None
 
 class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Order'
@@ -2058,7 +2099,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             # 完全一致です
             query = query \
                 .join(Order.shipping_address) \
-                .filter(ShippingAddress.email == condition)
+                .filter(or_(ShippingAddress.email_1 == condition,
+                            ShippingAddress.email_2 == condition))
         condition = form.member_id.data
         if condition:
             query = query.join(Order.user).join(User.user_credential).filter(UserCredential.auth_identifier==condition)

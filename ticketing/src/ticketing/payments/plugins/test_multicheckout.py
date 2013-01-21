@@ -57,7 +57,7 @@ class MultiCheckoutViewTests(unittest.TestCase):
             'exp_month': '07',
             'client_name': u'楽天太郎',
             'card_holder_name': u'RAKUTEN TAROU',
-            'mail_address': u'ticketstar@example.com',
+            'email_1': u'ticketstar@example.com',
             }
 
         cart_id = 500
@@ -121,7 +121,7 @@ class MultiCheckoutViewTests(unittest.TestCase):
             'exp_month': '07',
             'client_name': u'楽天太郎',
             'card_holder_name': u'RAKUTEN TAROU',
-            'mail_address': u'ticketstar@example.com',
+            'email_1': u'ticketstar@example.com',
         }
 
         cart_id = 500
@@ -180,7 +180,7 @@ class MultiCheckoutViewTests(unittest.TestCase):
             'exp_month': '07',
             'client_name': u'楽天太郎',
             'card_holder_name': u'RAKUTEN TAROU',
-            'mail_address': u'ticketstar@example.com',
+            'email_1': u'ticketstar@example.com',
         }
 
         cart_id = 500
@@ -253,7 +253,7 @@ class MultiCheckoutViewTests(unittest.TestCase):
 
         session_order = {
             'client_name': u'楽天太郎',
-            'mail_address': u'ticketstar@example.com',
+            'email_1': u'ticketstar@example.com',
             'card_number': u'XXXXXXXXXXXXXXXX',
             'exp_year': '12',
             'exp_month': '06',
@@ -312,7 +312,7 @@ class MultiCheckoutViewTests(unittest.TestCase):
 
         session_order = {
             'client_name': u'楽天太郎',
-            'mail_address': u'ticketstar@example.com',
+            'email_1': u'ticketstar@example.com',
             'card_number': u'XXXXXXXXXXXXXXXX',
             'exp_year': '12',
             'exp_month': '06',
@@ -393,7 +393,7 @@ class MultiCheckoutPluginTests(unittest.TestCase):
 
         session_order = {
             'client_name': u'楽天太郎',
-            'mail_address': u'ticketstar@example.com',
+            'email_1': u'ticketstar@example.com',
             'card_number': u'XXXXXXXXXXXXXXXX',
             'exp_year': '12',
             'exp_month': '06',
@@ -464,7 +464,7 @@ class MultiCheckoutPluginTests(unittest.TestCase):
 
         session_order = {
             'client_name': u'楽天太郎',
-            'mail_address': u'ticketstar@example.com',
+            'email_1': u'ticketstar@example.com',
             'card_number': u'XXXXXXXXXXXXXXXX',
             'exp_year': '12',
             'exp_month': '06',
@@ -533,7 +533,7 @@ class MultiCheckoutPluginTests(unittest.TestCase):
 
         session_order = {
             'client_name': u'楽天太郎',
-            'mail_address': u'ticketstar@example.com',
+            'email_1': u'ticketstar@example.com',
             'card_number': u'XXXXXXXXXXXXXXXX',
             'exp_year': '12',
             'exp_month': '06',
@@ -602,7 +602,7 @@ class MultiCheckoutPluginTests(unittest.TestCase):
 
         session_order = {
             'client_name': u'楽天太郎',
-            'mail_address': u'ticketstar@example.com',
+            'email_1': u'ticketstar@example.com',
             'card_number': u'XXXXXXXXXXXXXXXX',
             'exp_year': '12',
             'exp_month': '06',

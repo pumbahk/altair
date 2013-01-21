@@ -67,7 +67,8 @@ class OrderCSV(object):
         'tel_1',
         'tel_2',
         'fax',
-        'email',
+        'email_1',
+        'email_2',
         ]
     other_header = [
         'payment',

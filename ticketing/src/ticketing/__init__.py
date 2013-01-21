@@ -63,6 +63,7 @@ def main(global_config, **local_config):
 
     config.add_route("index", "/")
 
+    config.include('ticketing.mobile')
     config.include('ticketing.core')
     config.include('ticketing.multicheckout')
     config.include('ticketing.checkout')

@@ -34,6 +34,8 @@ class DictBuilder(object):
             data['userProfile'] = {}
             return data
         data["userProfile"] = {
+            u"email_1": user_profile.email_1,
+            u"email_2": user_profile.email_2,
             u"email": user_profile.email,
             u"nick_name": user_profile.nick_name,
             u"first_name": user_profile.first_name,
@@ -60,6 +62,8 @@ class DictBuilder(object):
             data['shippingAddress'] = {}
             return data
         data[u'shippingAddress'] = {
+            u"email_1": shipping_address.email_1,
+            u"email_2": shipping_address.email_2,
             u"email": shipping_address.email,
             u"nick_name": shipping_address.nick_name,
             u"first_name": shipping_address.first_name,

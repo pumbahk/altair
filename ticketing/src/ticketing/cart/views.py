@@ -746,14 +746,14 @@ class PaymentView(object):
                 last_name_kana=user_profile.last_name_kana,
                 first_name=user_profile.first_name,
                 first_name_kana=user_profile.first_name_kana,
-                tel=user_profile.tel_1,
+                tel_1=user_profile.tel_1,
                 fax=getattr(user_profile, "fax", None), 
                 zip=user_profile.zip,
                 prefecture=user_profile.prefecture,
                 city=user_profile.city,
                 address_1=user_profile.address_1,
                 address_2=user_profile.address_2,
-                mail_address=user_profile.email
+                email_1=user_profile.email_1
                 )
         else:
             formdata = None
@@ -779,8 +779,8 @@ class PaymentView(object):
                 address_1=form.data['address_1'],
                 address_2=form.data['address_2'],
                 country=u"日本国",
-                email=form.data['mail_address'],
-                tel_1=form.data['tel'],
+                email_1=form.data['email_1'],
+                tel_1=form.data['tel_1'],
                 tel_2=None,
                 fax=form.data['fax']
                 )
@@ -840,29 +840,8 @@ class PaymentView(object):
             self.request,
             client_name=client_name,
             payment_delivery_method_pair_id=payment_delivery_method_pair_id,
-            mail_address=shipping_address.email,
+            email_1=shipping_address.email_1,
         )
-        #order = dict(
-        #    client_name=client_name,
-        #    payment_delivery_method_pair_id=payment_delivery_method_pair_id,
-        #    mail_address=shipping_address.email,
-        #)
-        #self.request.session['order'] = order
-
-        # == begin Payment.prepare ==
-        # payment_delivery_plugin = api.get_payment_delivery_plugin(self.request, 
-        #     payment_delivery_pair.payment_method.payment_plugin_id,
-        #     payment_delivery_pair.delivery_method.delivery_plugin_id,)
-        # if payment_delivery_plugin is not None:
-        #     res = payment_delivery_plugin.prepare(self.request, cart)
-        #     if res is not None and callable(res):
-        #         return res
-        # else:
-        #     payment_plugin = api.get_payment_plugin(self.request, payment_delivery_pair.payment_method.payment_plugin_id)
-        #     res = payment_plugin.prepare(self.request, cart)
-        #     if res is not None and callable(res):
-        #         return res
-        # == end Payment.prepare ==
         payment_confirm_url = self.request.route_url('payment.confirm')
         self.request.session['payment_confirm_url'] = payment_confirm_url
 
@@ -888,7 +867,7 @@ class PaymentView(object):
             address_1=data['address_1'],
             address_2=data['address_2'],
             country=data['country'],
-            email=data['email'],
+            email_1=data['email_1'],
             tel_1=data['tel_1'],
             tel_2=data['tel_2'],
             fax=data['fax'],
@@ -1009,7 +988,7 @@ class CompleteView(object):
         del self.request._cart
         cart = api.get_cart(self.request)
         order_id = order.id
-        mail_address = cart.shipping_address.email
+        email_1 = cart.shipping_address.email_1
         plain_user = self.context.get_or_create_user()
         user_id = None
         if plain_user is not None:
@@ -1021,24 +1000,24 @@ class CompleteView(object):
         order = DBSession.query(order.__class__).get(order_id)
  
         # メール購読
-        self.save_subscription(user, mail_address)
+        self.save_subscription(user, email_1)
         # == end MailMagazineRegistration ==
         api.remove_cart(self.request)
 
         api.logout(self.request)
         return dict(order=order)
 
-    def save_subscription(self, user, mail_address):
+    def save_subscription(self, user, email_1):
         magazines = mailmag_models.MailMagazine.query.all()
 
         # 購読
         magazine_ids = self.request.params.getall('mailmagazine')
         logger.debug("magazines: %s" % magazine_ids)
         for subscription in mailmag_models.MailMagazine.query.filter(mailmag_models.MailMagazine.id.in_(magazine_ids)).all():
-            if subscription.subscribe(user, mail_address):
-                logger.debug("User %s starts subscribing %s for <%s>" % (user, subscription.name, mail_address))
+            if subscription.subscribe(user, email_1):
+                logger.debug("User %s starts subscribing %s for <%s>" % (user, subscription.name, email_1))
             else:
-                logger.debug("User %s is already subscribing %s for <%s>" % (user, subscription.name, mail_address))
+                logger.debug("User %s is already subscribing %s for <%s>" % (user, subscription.name, email_1))
 
 
 @view_defaults(decorator=with_jquery.not_when(mobile_request))
