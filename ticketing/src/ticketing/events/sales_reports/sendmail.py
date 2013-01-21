@@ -22,13 +22,15 @@ def get_sales_summary(form, organization, group='Event'):
     query = Event.query.filter(Event.organization_id==organization.id)\
         .outerjoin(Performance).filter(Performance.deleted_at==None)\
         .outerjoin(Stock).filter(Stock.deleted_at==None, Stock.stock_holder_id.in_(stock_holder_ids))\
-        .outerjoin(StockStatus).filter(StockStatus.deleted_at==None)
+        .outerjoin(StockStatus).filter(StockStatus.deleted_at==None)\
+        .outerjoin(SalesSegment).filter(SalesSegment.event_id==Event.id)
+
     if form.performance_id.data:
         query = query.filter(Performance.id==form.performance_id.data)
     if form.event_id.data:
         query = query.filter(Event.id==form.event_id.data)
-    event_start_day = func.min(Performance.start_on.label('performance_start_on'))
-    event_end_day = func.max(Performance.end_on.label('performance_end_on'))
+    sales_start_day = func.min(SalesSegment.start_at.label('sales_start_at'))
+    sales_end_day = func.max(SalesSegment.end_at.label('sales_end_at'))
 
     if group == 'Performance':
         query = query.with_entities(
@@ -37,8 +39,8 @@ def get_sales_summary(form, organization, group='Event'):
             Performance.start_on,
             func.sum(Stock.quantity),
             func.sum(StockStatus.quantity),
-            event_start_day,
-            event_end_day,
+            sales_start_day,
+            sales_end_day,
         ).group_by(Performance.id)
     else:
         query = query.with_entities(
@@ -47,8 +49,8 @@ def get_sales_summary(form, organization, group='Event'):
             Event.id, # dummy
             func.sum(Stock.quantity),
             func.sum(StockStatus.quantity),
-            event_start_day,
-            event_end_day,
+            sales_start_day,
+            sales_end_day,
         ).group_by(Event.id)
 
     for id, title, start_on, total_quantity, vacant_quantity, event_start_day, event_end_day in query.all():
