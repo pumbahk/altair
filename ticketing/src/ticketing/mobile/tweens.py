@@ -1,7 +1,7 @@
 import uamobile
 import logging
 from zope.interface import directlyProvides
-from ticketing.cart.interfaces import IMobileRequest
+from ticketing.mobile.interfaces import IMobileRequest
 from pyramid.threadlocal import manager
 from pyramid.response import Response
 logger = logging.getLogger(__name__)

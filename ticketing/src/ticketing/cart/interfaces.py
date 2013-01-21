@@ -26,10 +26,6 @@ class ICartPayment(Interface):
     cart = Attribute(u"カート")
 
 
-
-class IMobileRequest(Interface):
-    """ mobile request interface"""
-
 class IStocker(Interface):
     def take_stock(performance_id, product_requires):
         """ 在庫取得

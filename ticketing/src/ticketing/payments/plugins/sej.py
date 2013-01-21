@@ -284,7 +284,7 @@ class SejPaymentDeliveryPlugin(object):
 
 
 @view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer='ticketing.payments.plugins:templates/sej_delivery_complete.html')
-@view_config(context=IOrderDelivery, request_type='ticketing.cart.interfaces.IMobileRequest',
+@view_config(context=IOrderDelivery, request_type='ticketing.mobile.interfaces.IMobileRequest',
              name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer='ticketing.payments.plugins:templates/sej_delivery_complete_mobile.html')
 def sej_delivery_viewlet(context, request):
     order = context.order
@@ -304,7 +304,7 @@ def sej_delivery_confirm_viewlet(context, request):
 
 @view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, 
              renderer='ticketing.payments.plugins:templates/sej_payment_complete.html')
-@view_config(context=IOrderPayment, request_type='ticketing.cart.interfaces.IMobileRequest',
+@view_config(context=IOrderPayment, request_type='ticketing.mobile.interfaces.IMobileRequest',
              name="payment-%d" % PAYMENT_PLUGIN_ID, renderer='ticketing.payments.plugins:templates/sej_payment_complete_mobile.html')
 def sej_payment_viewlet(context, request):
     order = context.order
