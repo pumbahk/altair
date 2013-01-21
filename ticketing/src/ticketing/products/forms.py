@@ -12,6 +12,21 @@ from ticketing.formhelpers import Translations, Required, BugFreeSelectField, Ou
 from ticketing.core.models import SalesSegment, Product, ProductItem, StockHolder, StockType, Stock, Performance, TicketBundle
 
 class ProductForm(OurForm):
+    @classmethod
+    def from_model(cls, product):
+        form = cls(
+            id = product.id, 
+            event_id = product.event_id, 
+            name = product.name, 
+            price = product.price, 
+            display_order = product.display_order, 
+            seat_stock_type_id = product.seat_stock_type_id, 
+            sales_segment_id = product.sales_segment_id, 
+            public = 1 if product.public else 0, # why integer?
+            description = product.description
+            )
+        return form
+
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
