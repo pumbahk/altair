@@ -50,6 +50,12 @@ cart.order_messages = {
     'adjacency': {
         title: '連席で座席を確保できません',
         message: '座席を選んで購入してください'
+    }, 
+    'upper_limit': {
+        title: '上限枚数を超えて購入しようとしています', 
+        message: function(order_form_presenter){
+            return order_form_presenter.showOverUpperLimitMessage();
+        }
     }
 };
 
@@ -660,28 +666,32 @@ cart.OrderFormPresenter.prototype = {
     onSelectSeatPressed: function () {
         this.calculateQuantityToSelect();
         if (this.quantity_to_select == 0) {
-            cart.showErrorDialog(null, '商品を1つ以上選択してください', 'btn-close');
-            return;
+            return this.showNoSelectProductMessage();
         }
         if (this.upper_limit < this.quantity_to_select) {
-            cart.showErrorDialog(null, '枚数は合計' + this.upper_limit + '枚以内で選択してください', 'btn-close');
-            return;
+            return this.showOverUpperLimitMessage()
         }
         this.venuePresenter.setStockType(this.stock_type);
     },
     onEntrustPressed: function () {
         this.calculateQuantityToSelect();
         if (this.quantity_to_select == 0) {
-            cart.showErrorDialog(null, '商品を1つ以上選択してください', 'btn-close');
-            return;
+            return this.showNoSelectProductMessage();
         }
         if (this.upper_limit < this.quantity_to_select) {
-            cart.showErrorDialog(null, '枚数は合計' + this.upper_limit + '枚以内で選択してください', 'btn-close');
-            return;
+            return this.showOverUpperLimitMessage()
         }
         this.setSeats([]);
         this.doOrder();
     },
+    showNoSelectProductMessage: function(){
+        cart.showErrorDialog(null, '商品を1つ以上選択してください', 'btn-close');
+        return;
+    }, 
+    showOverUpperLimitMessage: function(){
+        cart.showErrorDialog(null, '枚数は合計' + this.upper_limit + '枚以内で選択してください', 'btn-close');
+        return;
+    }, 
     onBuyPressed: function () {
         this.setSeats([]);
         this.doOrder();
@@ -694,6 +704,7 @@ cart.OrderFormPresenter.prototype = {
         });
     },
     doOrder: function () {
+        var self = this;
         var performance = cart.app.performance;
         var values = this.orderForm.serialize();
         $.ajax({
@@ -707,7 +718,14 @@ cart.OrderFormPresenter.prototype = {
                     cart.proceedToCheckout(performance, data);
                 } else {
                     var japanized_message = cart.order_messages[data.reason];
-                    cart.showErrorDialog(japanized_message.title, japanized_message.message, 'btn-redo');
+                    if(!japanized_message){
+                        alert(data.reason);
+                    }
+                    else if (typeof japanized_message.message == "function"){
+                        japanized_message.message(self, data);
+                    } else {
+                        cart.showErrorDialog(japanized_message.title, japanized_message.message, 'btn-redo');
+                    }
                 }
             }
         });
