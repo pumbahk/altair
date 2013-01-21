@@ -116,21 +116,21 @@ class SalesReports(BaseView):
         event_product = get_performance_sales_summary(form, self.context.organization)
 
         performances_reports = {}
+        today = datetime.datetime.now()
         for performance in event.performances:
-            report_by_sales_segment = {}
-            for sales_segment in event.sales_segments:
-                sales_report_form = SalesReportForm(self.request.params, performance_id=performance.id, sales_segment_id=sales_segment.id)
-                report_by_sales_segment[sales_segment.name] = get_performance_sales_summary(sales_report_form, self.context.organization)
-            performances_reports[performance.id] = dict(
-                performance=performance,
-                report_by_sales_segment=report_by_sales_segment
-            )
-        today = datetime.datetime.today()
+            if performance.start_on > today:
+                report_by_sales_segment = {}
+                for sales_segment in event.sales_segments:
+                    sales_report_form = SalesReportForm(self.request.params, performance_id=performance.id, sales_segment_id=sales_segment.id)
+                    report_by_sales_segment[sales_segment.name] = get_performance_sales_summary(sales_report_form, self.context.organization)
+                performances_reports[performance.id] = dict(
+                    performance=performance,
+                    report_by_sales_segment=report_by_sales_segment
+                )
         return {
             'event_product':event_product,
             'form':form,
             'performances_reports':performances_reports,
-            'today':today,
         }
 
     @view_config(route_name='sales_reports.send_mail', renderer='ticketing:templates/sales_reports/preview.html')
