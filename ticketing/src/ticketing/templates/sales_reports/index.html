@@ -63,7 +63,11 @@
   % for event_report, event_total_report in zip(event_reports, event_total_reports):
   <tr>
     <td><a href='javascript:event_link("${request.route_path("sales_reports.event", event_id=event_report["id"])}");'>${event_report['title']}</a></td>
+    % if event_report['event_start_day'] == event_report['event_end_day']:
+    <td class="span3">${h.safe_strftime(event_report['event_start_day'])}</td>
+    % else:
     <td class="span3">${h.safe_strftime(event_report['event_start_day'])}〜${h.safe_strftime(event_report['event_end_day'])}</td>
+    % endif
     <td class="span1 numeric">${h.price_format(event_report['total_quantity'])}</td>
     <td class="span1 numeric">${h.price_format(event_report['vacant_quantity'])}</td>
     <td class="span1 numeric">${h.price_format(event_total_report['product_quantity'])}</td>
