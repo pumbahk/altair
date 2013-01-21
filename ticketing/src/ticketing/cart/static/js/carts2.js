@@ -825,7 +825,7 @@ cart.OrderFormView = Backbone.View.extend({
         }
         var descriptionText = product.get('description');
         var description = descriptionText ?
-            $('<div class="productListItem-description"></div>').text(product.get('description')):
+            $('<div class="productListItem-description"></div>').html(product.get('description')): //xxx.
             $();
         cart.util.render_template_into(quantity, product.get("unit_template"), { num: pullDown });
         return $('<li class="productListItem"></li>')
