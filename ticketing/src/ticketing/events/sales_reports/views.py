@@ -3,6 +3,9 @@
 import logging
 
 import webhelpers.paginate as paginate
+import datetime 
+import locale  
+
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.renderers import render_to_response
@@ -122,11 +125,12 @@ class SalesReports(BaseView):
                 performance=performance,
                 report_by_sales_segment=report_by_sales_segment
             )
-
+        today = datetime.datetime.today()
         return {
             'event_product':event_product,
             'form':form,
             'performances_reports':performances_reports,
+            'today':today,
         }
 
     @view_config(route_name='sales_reports.send_mail', renderer='ticketing:templates/sales_reports/preview.html')

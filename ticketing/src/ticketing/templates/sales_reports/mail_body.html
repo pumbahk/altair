@@ -103,19 +103,25 @@
         <%
           performance = value['performance']
           report_by_sales_segment = value['report_by_sales_segment']
+          print today
+          print performance.start_on
         %>
-        % for sale_segment_name, performance_reports in report_by_sales_segment.items():
+        
+        % if performance.start_on < today:
+            
+        % else: 
+            % for sale_segment_name, performance_reports in report_by_sales_segment.items():
       <h4 style="margin-top: 20px;">開催日:${h.safe_strftime(performance.start_on)}　${performance.name}</h4>
       <h4>${sale_segment_name}</h4>
       <table style="width: 95%; border: 1px #DCDCDC solid; background-color: #C0FFFF;">
         <tr>
           <th style="border: 1px #DCDCDC solid;" colspan="6"></th>
           <th style="border: 1px #DCDCDC solid;" colspan="4">
-          % if form.limited_from.data or form.limited_to.data:
-            ${h.safe_strftime(form.limited_from.data)} 〜 ${h.safe_strftime(form.limited_to.data)}
-          % else:
+                % if form.limited_from.data or form.limited_to.data:
+                ${h.safe_strftime(form.limited_from.data)} 〜 ${h.safe_strftime(form.limited_to.data)}
+                % else:
             累計
-          % endif
+                % endif
           </th>
         </tr>
         <tr>
@@ -141,7 +147,7 @@
             'price_total':0,
           }
         %>
-        % for performance_report in sorted(performance_reports, key=lambda x:(x['stock_type_id'], x['stock_holder_id'], x['product_id'])):
+          % for performance_report in sorted(performance_reports, key=lambda x:(x['stock_type_id'], x['stock_holder_id'], x['product_id'])):
           <%
             performance_total['total_quantity'] += performance_report['total_quantity']
             performance_total['vacant_quantity'] += performance_report['vacant_quantity']
@@ -150,12 +156,12 @@
             performance_total['price_total'] += (performance_report['paid_quantity'] + performance_report['unpaid_quantity']) * performance_report['product_price']
         %>
         <tr>
-          % if stock_type_id == performance_report['stock_type_id']:
+            % if stock_type_id == performance_report['stock_type_id']:
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;"></td>
-          % else:
+            % else:
           <% stock_type_id = performance_report['stock_type_id'] %>
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${performance_report['stock_type_name']}</td>
-          % endif
+            % endif
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${performance_report['stock_holder_name']}</td>
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${performance_report['product_name']}</td>
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_report['product_price'])}円</td>
@@ -177,7 +183,8 @@
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_total['price_total']) or ''}円</td>
         </tr>
       </table>
-        % endfor
+          % endfor
+        % endif
       % endfor
     </div>
   </body>
