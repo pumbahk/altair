@@ -6,7 +6,7 @@ from ticketing.views import BaseView
 
 from ticketing.fanstatic import with_bootstrap
 import webhelpers.paginate as paginate
-from ..models import MailMagazine, MailSubscription, MailSubscriptionStatus
+from .models import MailMagazine, MailSubscription, MailSubscriptionStatus
 
 from .forms import MailMagazineForm
 import helpers

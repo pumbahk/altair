@@ -19,6 +19,7 @@ from zope.deprecation import deprecate
 from ..models import DBSession
 from ..core import models as c_models
 from ..users import models as u_models
+from ..mailmags import models as mailmag_models
 from ticketing.views import mobile_request
 from ticketing.fanstatic import with_jquery, with_jquery_tools
 from .models import Cart
@@ -908,8 +909,8 @@ class ConfirmView(object):
         cart = api.get_cart_safe(self.request)
 
         # == MailMagazinに移動 ==
-        magazines = u_models.MailMagazine.query.outerjoin(u_models.MailSubscription) \
-            .filter(u_models.MailMagazine.organization==cart.performance.event.organization) \
+        magazines = mailmag_models.MailMagazine.query.outerjoin(mailmag_models.MailSubscription) \
+            .filter(mailmag_models.MailMagazine.organization==cart.performance.event.organization) \
             .all()
 
         user = self.context.get_or_create_user()
@@ -1027,12 +1028,12 @@ class CompleteView(object):
         return dict(order=order)
 
     def save_subscription(self, user, mail_address):
-        magazines = u_models.MailMagazine.query.all()
+        magazines = mailmag_models.MailMagazine.query.all()
 
         # 購読
         magazine_ids = self.request.params.getall('mailmagazine')
         logger.debug("magazines: %s" % magazine_ids)
-        for subscription in u_models.MailMagazine.query.filter(u_models.MailMagazine.id.in_(magazine_ids)).all():
+        for subscription in mailmag_models.MailMagazine.query.filter(mailmag_models.MailMagazine.id.in_(magazine_ids)).all():
             if subscription.subscribe(user, mail_address):
                 logger.debug("User %s starts subscribing %s for <%s>" % (user, subscription.name, mail_address))
             else:

@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 from ticketing.cart.selectable_renderer import selectable_renderer
 from ticketing.core.api import get_organization
-from ticketing.users import models as u_models
+from ticketing.mailmags import models as mailmag_models
 
 def includeme(config):
     config.add_route("dummy.cart.payment", "/dummy/payment")
@@ -60,8 +60,8 @@ def _dummy_cart():
 
 
 def _get_mailmagazines_from_organization(organization):
-    return u_models.MailMagazine.query.outerjoin(u_models.MailSubscription) \
-            .filter(u_models.MailMagazine.organization==organization)
+    return mailmag_models.MailMagazine.query.outerjoin(mailmag_models.MailSubscription) \
+            .filter(mailmag_models.MailMagazine.organization==organization)
            
 
 def confirm_view(request):

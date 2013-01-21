@@ -28,7 +28,7 @@ from ticketing.core.models import (Order, Performance, PaymentDeliveryMethodPair
                                    DeliveryMethod, TicketFormat_DeliveryMethod, 
                                    Stock, StockStatus, Seat, SeatStatus, SeatStatusEnum)
 
-from ticketing.users.models import MailSubscription, MailMagazine, MailSubscriptionStatus
+from ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
 from ticketing.orders.export import OrderCSV
 from ticketing.orders.forms import (OrderForm, OrderSearchForm, SejOrderForm, SejTicketForm,
                                     SejRefundEventForm,SejRefundOrderForm, SendingMailForm,
