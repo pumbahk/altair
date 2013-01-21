@@ -44,6 +44,7 @@
     <li><a href="">週報／日報設定</a></li>
     <li><a href="">ポイント付与履歴</a></li>
     <li class="nav-header">マーケティング</li>
+    <li><a href="${request.route_path('mailmags.index')}">メールマガジン管理</a></li>
     <li><a href="">メール配信</a></li>
     <li class="nav-header">ブックマーク</li>
     % for bookmark in Bookmark.find_by_organization_id(1):
