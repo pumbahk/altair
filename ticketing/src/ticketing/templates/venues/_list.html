@@ -24,7 +24,11 @@
     <td><span class="id">${item.venue.site.id}</span></td>
     <td><span class="id">${item.venue.id}</span></td>
     <!--<td><span class="id">${item.venue.original_venue_id}</span></td>-->
-    <td><a href="${request.route_path('venues.show', venue_id=item.venue.id)}"><span class="name">${item.venue.name}</span></a></td>
+    <td><a href="${request.route_path('venues.show', venue_id=item.venue.id)}"><span class="name">${item.venue.name}</span></a>
+	% if item.venue.sub_name != None:
+		<div class="sub_name">${item.venue.sub_name}</div>
+	% endif
+	</td>
 	<td>${item.count}</td>
 	<td>
 	% if item.venue.performance:
