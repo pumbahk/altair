@@ -29,7 +29,7 @@ class ProductForm(OurForm):
 
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
-        Form.__init__(self, formdata, obj, prefix, **kwargs)
+        super(ProductForm, self).__init__(formdata, obj, prefix, **kwargs)
         if 'event_id' in kwargs:
             conditions ={
                 'event_id':kwargs['event_id'],
