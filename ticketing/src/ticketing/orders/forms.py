@@ -285,6 +285,10 @@ class ClientOptionalForm(ClientForm):
                     break;
             field.validators.append(Optional())
 
+    def _validate_email_addresses(self, *args, **kwargs):
+        # メールアドレスの validation をしない (ClientForm._validate_email_addresses をオーバライド)
+        return True
+
 class SejTicketForm(Form):
     ticket_type = SelectField(
         label=u'チケット区分',

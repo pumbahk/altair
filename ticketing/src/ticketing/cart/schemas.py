@@ -6,7 +6,7 @@ from wtforms import fields
 from wtforms.form import Form
 from wtforms.ext.csrf.session import SessionSecureForm
 from wtforms.validators import Regexp, Length, NumberRange, EqualTo, Optional, ValidationError
-from ticketing.validators import Email
+from ticketing.formhelpers import OurForm
 from ticketing.core import models as c_models
 
 from ticketing.formhelpers import (
@@ -18,6 +18,7 @@ from ticketing.formhelpers import (
     Zenkaku,
     Katakana,
     SejCompliantEmail,
+    Liaison,
     strip,
     strip_spaces,
     capitalize,
@@ -28,7 +29,7 @@ from ticketing.formhelpers import (
 class CSRFSecureForm(SessionSecureForm):
     SECRET_KEY = 'EPj00jpfj8Gx1SjnyLxwBBSQfnQ9DJYe0Ym'
 
-class ClientForm(Form):
+class ClientForm(OurForm):
     def _get_translations(self):
         return Translations()
 
@@ -143,12 +144,42 @@ class ClientForm(Form):
             SejCompliantEmail(),
         ]
     )
+    # XXX: 黒魔術的。email_2 に値が入っていて email_1 に値が入っていなかったら、email_1 に値を移すという動作をする
+    email_2 = Liaison(
+        email_1,
+        fields.TextField(
+            label=u"メールアドレス",
+            filters=[strip_spaces],
+            validators=[
+                SejCompliantEmail(),
+                ]
+            )
+        )
+    # XXX: 黒魔術的。email_2_confirm に値が入っていて email_1_confirm に値が入っていなかったら、email_1 に値を移すという動作をする
+    email_2_confirm = Liaison(
+        email_1_confirm,
+        fields.TextField(
+            label=u"確認用メールアドレス",
+            filters=[strip_spaces],
+            validators=[
+                SejCompliantEmail(),
+                ]
+            )
+        )
 
-    def validate(self):
-        status = super(ClientForm, self).validate()
-
+    def _validate_email_addresses(self, *args, **kwargs):
+        status = True
         data = self.data
         if data["email_1"] != data["email_1_confirm"]:
             getattr(self, "email_1").errors.append(u"メールアドレスと確認メールアドレスが一致していません。")
             status = False
+        if data["email_2"] != data["email_2_confirm"]:
+            getattr(self, "email_2").errors.append(u"メールアドレスと確認メールアドレスが一致していません。")
+            status = False
+        return status
+
+    def validate(self):
+        # このように and 演算子を展開しないとすべてが一度に評価されない
+        status = super(ClientForm, self).validate()
+        status = self._validate_email_addresses() and status
         return status

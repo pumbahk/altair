@@ -753,7 +753,8 @@ class PaymentView(object):
                 city=user_profile.city,
                 address_1=user_profile.address_1,
                 address_2=user_profile.address_2,
-                email_1=user_profile.email_1
+                email_1=user_profile.email_1,
+                email_2=user_profile.email_2
                 )
         else:
             formdata = None
@@ -780,6 +781,7 @@ class PaymentView(object):
                 address_2=form.data['address_2'],
                 country=u"日本国",
                 email_1=form.data['email_1'],
+                email_2=form.data['email_2'],
                 tel_1=form.data['tel_1'],
                 tel_2=None,
                 fax=form.data['fax']
@@ -868,6 +870,7 @@ class PaymentView(object):
             address_2=data['address_2'],
             country=data['country'],
             email_1=data['email_1'],
+            email_2=data['email_2'],
             tel_1=data['tel_1'],
             tel_2=data['tel_2'],
             fax=data['fax'],

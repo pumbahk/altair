@@ -586,7 +586,6 @@ class Orders(BaseView):
 
         f = ClientOptionalForm(self.request.POST)
         # ここでは確認用メールアドレスはチェック対象外
-        f.email_1_confirm.data = self.request.POST.get('email_1')
 
         if f.validate():
             shipping_address = merge_session_with_post(order.shipping_address or ShippingAddress(), f.data)
