@@ -151,32 +151,32 @@ a:hover img {
 }
 
 .historybtn {
-	-moz-box-shadow:inset 0px 1px 0px 0px #fce2c1;
-	-webkit-box-shadow:inset 0px 1px 0px 0px #fce2c1;
-	box-shadow:inset 0px 1px 0px 0px #fce2c1;
-	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ffc145), color-stop(1, #c79354) );
-	background:-moz-linear-gradient( center top, #ffc145 5%, #c79354 100% );
-	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffc145', endColorstr='#c79354');
-	background-color:#ffc145;
+	-moz-box-shadow:inset 0px 1px 0px 0px #faeec0;
+	-webkit-box-shadow:inset 0px 1px 0px 0px #faeec0;
+	box-shadow:inset 0px 1px 0px 0px #faeec0;
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ffd147), color-stop(1, #ba862c) );
+	background:-moz-linear-gradient( center top, #ffd147 5%, #ba862c 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffd147', endColorstr='#ba862c');
+	background-color:#ffd147;
 	-moz-border-radius:6px;
 	-webkit-border-radius:6px;
 	border-radius:6px;
-	border:1px solid #edaf51;
+	border:1px solid #eeb44f;
 	display:inline-block;
 	color:#ffffff;
 	font-family:arial;
 	font-size:15px;
 	font-weight:bold;
-	padding:6px 80px;
+	padding:6px 63px;
 	text-decoration:none;
 	text-shadow:1px 1px 0px #946315;
 	margin-bottom: 8px;
 }
 .historybtn:hover {
-	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #c79354), color-stop(1, #ffc145) );
-	background:-moz-linear-gradient( center top, #c79354 5%, #ffc145 100% );
-	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#c79354', endColorstr='#ffc145');
-	background-color:#c79354;
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ba862c), color-stop(1, #ffd147) );
+	background:-moz-linear-gradient( center top, #ba862c 5%, #ffd147 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ba862c', endColorstr='#ffd147');
+	background-color:#ba862c;
 	color:#ffffff;
 }
 .historybtn:active {
@@ -191,7 +191,7 @@ a:hover img {
 }
 .gnavi{
 	font-size: 12px;
-	width: 500px;
+	width: 250px;
 	margin: 0px auto 0 auto;
 	padding: 14px 0 0 0;
 	text-align: right;	
@@ -253,6 +253,13 @@ a:hover img {
 	text-decoration: none;
 }
 
+img.partnerlogo{
+	position: relative;
+	top:-10px;
+	left:24px;
+}
+
+
 .functions-inner table{
 	margin: 2px auto 0 auto;
 }
@@ -300,12 +307,12 @@ a:hover img {
 
 
 .redBG{
-	background: #900027;
+	background: #9b0020;
 	color: #fff;
 }
 
 a{
-	color:#900027;
+	color:#9b0020;
 }
 
 a:hover{
@@ -458,7 +465,7 @@ h4{
 
 
 h4 span.order{
-	background: #900027;
+	background: #9b0020;
 	color: #fff;
 	font-size: 14px;
 	font-weight: bold;
@@ -775,9 +782,9 @@ dl.faq{
 
 dl.faq dt{
 	font-size: 14px;
-	color: #900027;
+	color: #9b0020;
 	font-weight: bold;
-	border-left: #900027 3px solid;
+	border-left: #9b0020 3px solid;
 	padding-left: 10px;
 	margin-bottom: 5px;
 }
@@ -794,7 +801,7 @@ dl.faq dd{
 	font-weight: bold;
 	margin: 5px;
 	font-size: 10px;
-	border-left: 3px #900027 double;
+	border-left: 3px #9b0020 double;
 }
 
 .function{
@@ -819,7 +826,7 @@ dl.faq dd{
 
 
 table.ticketAmount {
-	border-top: 3px #900027 solid;
+	border-top: 3px #9b0020 solid;
 	border-left: 1px #ccc solid;
 	border-right: 1px #ccc solid;
 	border-bottom: 1px #ccc solid;
@@ -939,12 +946,12 @@ div#performance-calendar table {
 
 div#performance-calendar table td,
 div#performance-calendar table th {
-  border: 1px solid #900027;
+  border: 1px solid #9b0020;
   background: #fff;
   }
 
 div#performance-calendar table thead th {
-  border-top: 2px solid #900027;
+  border-top: 2px solid #9b0020;
   text-align: center;
   font-weight: bold;
   height: 20px;
@@ -953,17 +960,17 @@ div#performance-calendar table thead th {
 
 div#performance-calendar table tr.last th,
 div#performance-calendar table tr.last td {
-  border-bottom: 2px solid #900027;
+  border-bottom: 2px solid #9b0020;
 }
 
 div#performance-calendar table th.first,
 div#performance-calendar table td.first {
-  border-left: 2px solid #900027;
+  border-left: 2px solid #9b0020;
 }
 
 div#performance-calendar table th.last,
 div#performance-calendar table td.last {
-  border-right: 2px solid #900027;
+  border-right: 2px solid #9b0020;
 }
 
 div#performance-calendar table td.empty {
@@ -1070,7 +1077,7 @@ table.phone th{
 
 div#performance-calendar .month-tab span{
 	margin: 2px 10px;
-	background-color: #900027;
+	background-color: #9b0020;
 	padding: 10px 20px 5px 20px;
 	color: #fff;
 	border-radius: 5px 5px 0px 0px;
@@ -1142,7 +1149,7 @@ div#performance-calendar .month-tab span a{
 }
 
 .footer .footernav ul li {
-    border-left: 1px solid #900027;
+    border-left: 1px solid #9b0020;
     display: inline;
     padding: 0 6px;
     #fff-space: nowrap;
@@ -1180,7 +1187,7 @@ table.login{
 
 
 table.login thead th{
-	background: #900027;
+	background: #9b0020;
 	color: #fff;
 	font-weight: bold;
 	padding: 5px 10px;
