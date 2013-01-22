@@ -2,6 +2,9 @@
 from standardenum import StandardEnum
 from urlparse import uses_relative, uses_netloc, urlparse
 from decimal import Decimal
+from pyramid.threadlocal import get_current_registry
+from ticketing.mobile.interfaces import IMobileCarrierDetector
+from ticketing.mobile.api import _detect_from_email_address
 
 class DigitCodec(object):
     def __init__(self, digits):
@@ -143,3 +146,10 @@ def json_safe_coerce(value, encoding='utf-8'):
         if i is not None:
             return list(json_safe_coerce(v) for v in i)
     return unicode(value)
+
+def is_nonmobile_email_address(mail_address):
+    detector = get_current_registry().queryUtility(IMobileCarrierDetector)
+    try:
+        return _detect_from_email_address(detector, mail_address).is_nonmobile
+    except ValueError:
+        return True

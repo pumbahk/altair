@@ -7,9 +7,7 @@ from sqlalchemy.orm import join, backref, column_property
 from standardenum import StandardEnum
 from ticketing.models import relationship
 from ticketing.master.models import *
-from ticketing.mobile.interfaces import IMobileCarrierDetector
-from ticketing.mobile.api import _detect_from_email_address
-from pyramid.threadlocal import get_current_registry
+from ticketing.utils import is_nonmobile_email_address
 import sqlahelper
 
 session = sqlahelper.get_session()
@@ -112,19 +110,17 @@ class UserProfile(Base, BaseModel, LogicallyDeleted, WithTimestamp):
 
     @property
     def email_pc(self):
-        detector = get_current_registry().queryUtility(IMobileCarrierDetector)
-        if self.email_1 is not None and _detect_from_email_address(detector, self.email_1).is_nonmobile:
+        if self.email_1 and is_nonmobile_email_address(self.email_1):
             return self.email_1
-        if self.email_2 is not None and _detect_from_email_address(detector, self.email_2).is_nonmobile:
+        if self.email_2 and is_nonmobile_email_address(self.email_2):
             return self.email_2
         return None
 
     @property
     def email_mobile(self):
-        detector = get_current_registry().queryUtility(IMobileCarrierDetector)
-        if self.email_1 is not None and not _detect_from_email_address(detector, self.email_1).is_nonmobile:
+        if self.email_1 and not is_nonmobile_email_address(self.email_1):
             return self.email_1
-        if self.email_2 is not None and not _detect_from_email_address(detector, self.email_2).is_nonmobile:
+        if self.email_2 and not is_nonmobile_email_address(self.email_2):
             return self.email_2
         return None
 

@@ -24,7 +24,6 @@ from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql.expression import asc, desc, exists, select, table, column, case, null
 from sqlalchemy.ext.associationproxy import association_proxy
-from pyramid.threadlocal import get_current_registry
 
 from .exceptions import InvalidStockStateError
 from ticketing.models import (
@@ -33,14 +32,13 @@ from ticketing.models import (
     LogicallyDeleted, Identifier, DomainConstraintError, 
     WithTimestamp, BaseModel
 )
-from ticketing.utils import StandardEnum
+from standardenum import StandardEnum
+from ticketing.utils import is_nonmobile_email_address
 from ticketing.users.models import User, UserCredential
 from ticketing.sej.models import SejOrder
 from ticketing.sej.exceptions import SejServerError
 from ticketing.sej.payment import request_cancel_order
 from ticketing.assets import IAssetResolver
-from ticketing.mobile.interfaces import IMobileCarrierDetector
-from ticketing.mobile.api import _detect_from_email_address
 from ticketing.utils import myurljoin
 
 logger = logging.getLogger(__name__)
@@ -1716,19 +1714,17 @@ class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def email_pc(self):
-        detector = get_current_registry().queryUtility(IMobileCarrierDetector)
-        if self.email_1 is not None and _detect_from_email_address(detector, self.email_1).is_nonmobile:
+        if self.email_1 and is_nonmobile_email_address(self.email_1):
             return self.email_1
-        if self.email_2 is not None and _detect_from_email_address(detector, self.email_2).is_nonmobile:
+        if self.email_2 and is_nonmobile_email_address(self.email_2):
             return self.email_2
         return None
 
     @property
     def email_mobile(self):
-        detector = get_current_registry().queryUtility(IMobileCarrierDetector)
-        if self.email_1 is not None and not _detect_from_email_address(detector, self.email_1).is_nonmobile:
+        if self.email_1 and not is_nonmobile_email_address(self.email_1):
             return self.email_1
-        if self.email_2 is not None and not _detect_from_email_address(detector, self.email_2).is_nonmobile:
+        if self.email_2 and not is_nonmobile_email_address(self.email_2):
             return self.email_2
         return None
 
