@@ -8,7 +8,7 @@
 <html lang="jp">
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-    <link rel="stylesheet" type="text/css" href="${request.static_url("altaircms:static/vissel/css/style.css")}" media="all" />
+    <link rel="stylesheet" type="text/css" href="/static/vissel/css/style.css" media="all" />
     <title>${page.title}</title>
   <meta name="description" content="${page.description}">
   <meta name="keywords" content="${page.keywords}">
@@ -21,7 +21,7 @@
 <body>
     <div class="header">
         <div class="header-inner">
-            <img src="${request.static_url("altaircms:static/vissel/images/logo.gif")}" alt="VISSEL TICKET" />
+            <img src="/static/vissel/images/logo.gif" alt="VISSEL TICKET" />
             <div class="gnavi">
 %for c in myhelper._get_categories(request, "header_large_button"):
     ${h.link.get_link_tag_from_category(request,c)}
@@ -44,7 +44,7 @@
 %endif
                 </ul>　　
             </div>
-			      <img src="${request.static_url("altaircms:static/vissel/images/partnerlogo.gif")}" alt="OFFICIAL TICKET SITE PARTNER TICKETSTAR" class="partnerlogo" />
+			      <img src="/static/vissel/images/partnerlogo.gif" alt="OFFICIAL TICKET SITE PARTNER TICKETSTAR" class="partnerlogo" />
         </div>
     </div>
 
@@ -82,7 +82,7 @@
 
 <div class="footer">
     <div class="footer-inner">
-        <img src="${request.static_url("altaircms:static/vissel/images/tomoni.gif")}" alt="" />
+        <img src="/static/vissel/images/tomoni.gif" alt="" />
             <div class="footernav">
               <ul>
                  <% xs = myhelper._get_categories(request, "footer_menu").all()%>
