@@ -135,7 +135,7 @@ class MultiCheckoutPlugin(object):
 
         checkout_sales_result = multicheckout_api.checkout_sales_secure3d(
             request, get_order_no(request, cart),
-            item_name, cart.total_amount, 0, order['client_name'], order.get('mail_address', ''),
+            item_name, cart.total_amount, 0, order['client_name'], order.get('email_1', ''),
             order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
             mvn=tran['mvn'], xid=tran['xid'], ts=tran['ts'],
             eci=tran['eci'], cavv=tran['cavv'], cavv_algorithm=tran['cavv_algorithm'],
@@ -170,7 +170,7 @@ class MultiCheckoutPlugin(object):
 
         checkout_sales_result = multicheckout_api.checkout_sales_secure_code(
             request, get_order_no(request, cart),
-            item_name, cart.total_amount, 0, order['client_name'], order.get('mail_address', ''),
+            item_name, cart.total_amount, 0, order['client_name'], order.get('email_1', ''),
             order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
             order['secure_code'],
         )
@@ -242,14 +242,14 @@ class MultiCheckoutView(object):
         self.request = request
 
     @view_config(route_name='payment.secure3d', request_method="GET", renderer=selectable_renderer('carts/%(membership)s/card_form.html'))
-    @view_config(route_name='payment.secure3d', request_type='ticketing.cart.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer('carts_mobile/%(membership)s/card_form.html'))
+    @view_config(route_name='payment.secure3d', request_type='ticketing.mobile.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer('carts_mobile/%(membership)s/card_form.html'))
     def card_info_secure3d_form(self):
         """ カード情報入力"""
         form = CardForm(formdata=self.request.params, csrf_context=self.request.session)
         return dict(form=form)
 
     @view_config(route_name='payment.secure_code', request_method="POST", renderer=selectable_renderer('carts/%(membership)s/card_form.html'))
-    @view_config(route_name='payment.secure_code', request_type='ticketing.cart.interfaces.IMobileRequest', request_method="POST", renderer=selectable_renderer('carts_mobile/%(membership)s/card_form.html'))
+    @view_config(route_name='payment.secure_code', request_type='ticketing.mobile.interfaces.IMobileRequest', request_method="POST", renderer=selectable_renderer('carts_mobile/%(membership)s/card_form.html'))
     def card_info_secure_code(self):
         """ カード決済処理(セキュアコード)"""
         form = CardForm(formdata=self.request.params, csrf_context=self.request.session)
@@ -266,7 +266,7 @@ class MultiCheckoutView(object):
         return self._secure_code(order['order_no'], order['card_number'], order['exp_year'], order['exp_month'], order['secure_code'])
 
     @view_config(route_name='payment.secure3d', request_method="POST", renderer=selectable_renderer('carts/%(membership)s/card_form.html'))
-    @view_config(route_name='payment.secure3d', request_type='ticketing.cart.interfaces.IMobileRequest', request_method="POST", renderer=selectable_renderer('carts_mobile/%(membership)s/card_form.html'))
+    @view_config(route_name='payment.secure3d', request_type='ticketing.mobile.interfaces.IMobileRequest', request_method="POST", renderer=selectable_renderer('carts_mobile/%(membership)s/card_form.html'))
     def card_info_secure3d(self):
         """ カード決済処理(3Dセキュア)
         """
@@ -322,7 +322,7 @@ class MultiCheckoutView(object):
 
         checkout_auth_result = multicheckout_api.checkout_auth_secure_code(
             self.request, get_order_no(self.request, cart),
-            item_name, cart.total_amount, 0, order['client_name'], order['mail_address'],
+            item_name, cart.total_amount, 0, order['client_name'], order['email_1'],
             order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
             order['secure_code'],
         )
@@ -399,7 +399,7 @@ class MultiCheckoutView(object):
         logger.debug('call checkout auth')
         checkout_auth_result = multicheckout_api.checkout_auth_secure3d(
             self.request, get_order_no(self.request, cart),
-            item_name, cart.total_amount, 0, order['client_name'], order['mail_address'],
+            item_name, cart.total_amount, 0, order['client_name'], order['email_1'],
             order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
             mvn=auth_result.Mvn, xid=auth_result.Xid, ts=auth_result.Ts,
             eci=auth_result.Eci, cavv=auth_result.Cavv, cavv_algorithm=auth_result.Cavva,

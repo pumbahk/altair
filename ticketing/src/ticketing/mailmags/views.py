@@ -6,7 +6,7 @@ from ticketing.views import BaseView
 
 from ticketing.fanstatic import with_bootstrap
 import webhelpers.paginate as paginate
-from ..models import MailMagazine, MailSubscription, MailSubscriptionStatus
+from .models import MailMagazine, MailSubscription, MailSubscriptionStatus
 
 from .forms import MailMagazineForm
 import helpers
@@ -56,8 +56,12 @@ class MailMagazinesView(BaseView):
     def show(self):
         mailmag_id = self.request.matchdict.get('id')
         mailmag = MailMagazine.query.filter_by(id=mailmag_id, organization=self.request.context.organization).one()
+        search_text = self.request.params.get('search_text')
+        mail_subscriptions_query = MailSubscription.query.filter_by(segment=mailmag)
+        if search_text:
+            mail_subscriptions_query = mail_subscriptions_query.filter(MailSubscription.email.like(search_text + '%'))
         mail_subscriptions = paginate.Page(
-            MailSubscription.query.filter_by(segment=mailmag),
+            mail_subscriptions_query,
             page=int(self.request.params.get('page', 0)),
             items_per_page=25,
             url=paginate.PageURL_WebOb(self.request)
@@ -65,6 +69,7 @@ class MailMagazinesView(BaseView):
         return dict(
             mailmag=mailmag,
             mail_subscriptions=mail_subscriptions,
+            search_text=search_text or u'',
             h=helpers
             )
 
@@ -74,6 +79,7 @@ class MailSubscriptionsView(BaseView):
     def edit(self):
         mailmag_id = self.request.matchdict.get('id', self.request.params.get('id'))
         mailmag = MailMagazine.query.filter_by(id=mailmag_id, organization=self.request.context.organization).one()
+        search_text = self.request.params.get('search_text')
         mail_subscription_ids = self.request.params.getall('mail_subscription_id')
         action = self.request.params.get('action')
         for k, v in self.request.params.items():
@@ -84,4 +90,13 @@ class MailSubscriptionsView(BaseView):
             MailSubscription.query \
                 .filter(MailSubscription.id.in_(mail_subscription_ids)) \
                 .update(values=dict(status=status), synchronize_session=False)
-        return HTTPFound(location=self.request.route_path('mailmags.show', id=mailmag_id, _query=dict(page=self.request.params.get('page'))))
+        elif action == 'clear':
+            search_text = None
+        return HTTPFound(location=self.request.route_path(
+            'mailmags.show',
+            id=mailmag_id,
+            _query=dict(
+                page=self.request.params.get('page'),
+                search_text=search_text or u''
+                )
+            ))

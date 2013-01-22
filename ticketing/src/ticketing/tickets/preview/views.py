@@ -144,6 +144,26 @@ def preview_ticket_download(context, request):
     return FileLikeResponse(io, request=request, filename="preview.svg")
 
 
+@view_config(route_name="tickets.preview.enqueue", request_method="POST", 
+             request_param="svg", renderer="json")
+def ticket_preview_enqueue(context, request):
+    svg = request.POST["svg"]
+    ticket_format_id = request.POST["ticket_format_id"]
+    ticket = c_models.Ticket.query.filter(c_models.Ticket.ticket_format_id==ticket_format_id, 
+                                          c_models.Ticket.event==None).first()
+    try:
+        c_models.TicketPrintQueueEntry.enqueue(
+            context.user,  
+            ticket, 
+            data=dict(drawing=svg),                                                   
+            summary=u'券面テンプレート (preview)',
+            ) #todo seat
+        return {"status": True, "data": "ok"}
+    except Exception, e:
+        logger.exception(e)
+        return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
+
+
 @view_config(route_name="tickets.preview.combobox", request_method="GET", renderer="ticketing:templates/tickets/combobox.html", 
              decorator=with_bootstrap, permission="event_editor")
 @view_config(route_name="tickets.preview.combobox", request_method="GET", renderer="ticketing:templates/tickets/_combobox.html", 
@@ -296,7 +316,6 @@ class PreviewApiView(object):
             logger.exception(e)
             return {"status": False,  "message": "%s: %s" % (e.__class__.__name__,  str(e))}
 
-
     @view_config(match_param="action=collectvars", request_param="svg")
     def preview_collectvars(self):
         svg = self.request.POST["svg"]
@@ -385,7 +404,7 @@ class LoadSVGFromModelApiView(object):
                                                   c_models.Ticket.id==c_models.Ticket_TicketBundle.ticket_id, 
                                                   c_models.Ticket.ticket_format_id==ticket_format_id).first()
             if ticket is None:
-                return {"status": False, "message": "matched ticket is not found"}
+                return {"status": False, "message": u"チケット券面が見つかりません。チケット様式を変更してpreviewを試すか。指定したチケット様式と結びつくチケット券面を作成してください"}
             try:
                 svg = template_fillvalues(ticket.drawing, build_dict_from_product_item(product_item))
                 return {"status": True, "data": svg}

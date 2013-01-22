@@ -96,17 +96,34 @@ class TicketSVGValidator(object):
     def __init__(self, exc_class=TicketCleanerValidationError, io_create=StringIO):
         self.exc_class = exc_class
         self.io_create = io_create
-        self.out = None
 
     def validate(self, svgio, xmltree):
-        self._validate_on_cleanup_phase(xmltree)
-        io = self.io_create()
-        xmltree.write(io, encoding="UTF-8") #doc declaration?
+        io = self._validated_io_on_cleanup_phase(xmltree)
+        io = self._validated_io_on_normalize_phase(io)
+        self._validate_on_converting_to_opcode(etree.parse(io))
         io.seek(0)
-        self._validate_on_normalize_phase(io)
-        io.seek(0)
-        self._validate_on_converting_to_opcode(xmltree)
-        return self.out
+        return io
+
+    def _validated_io_on_cleanup_phase(self, xmltree):
+        try:
+            cleanup_svg(xmltree)
+            out = self.io_create()
+            xmltree.write(out, encoding="UTF-8")
+            out.seek(0)
+            return out
+        except Exception, e:
+            logger.exception(e)
+            raise self.exc_class("cleanup: "+str(e))
+
+    def _validated_io_on_normalize_phase(self, svgio):
+        try:
+            out = self.io_create()
+            normalize(svgio, out, encoding="UTF-8")
+            out.seek(0)
+            return out
+        except Exception, e:
+            logger.exception(e)
+            raise self.exc_class("normalize: "+str(e))
 
     def _validate_on_converting_to_opcode(self, xmltree):
         try:
@@ -114,18 +131,3 @@ class TicketSVGValidator(object):
         except Exception, e:
             logger.exception(e)
             raise self.exc_class("opcode:" + str(e))
-
-    def _validate_on_cleanup_phase(self, xmltree):
-        try:
-            cleanup_svg(xmltree)
-        except Exception, e:
-            logger.exception(e)
-            raise self.exc_class("cleanup: "+str(e))
-
-    def _validate_on_normalize_phase(self, svgio):
-        try:
-            self.out = self.io_create()
-            normalize(svgio, self.out, encoding="UTF-8")
-        except Exception, e:
-            logger.exception(e)
-            raise self.exc_class("normalize: "+str(e))

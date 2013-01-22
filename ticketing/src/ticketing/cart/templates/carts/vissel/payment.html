@@ -97,23 +97,44 @@ ${h.get_nickname(request)}
           </td>
         </tr>
         <tr>
-          <th scope="row">${form['mail_address'].label}(半角英数)</th>
+          <th scope="row">メールアドレス (半角英数)</th>
           <td>
             <ul>
               <li>
-                ${form['mail_address'].label}
-                ${form['mail_address']}
+                ${form['email_1'].label}
+                ${form['email_1']}
                 (例：mail@example.ne.jp)
-                ${h.error_list(request, form, 'mail_address')}
+                ${h.error_list(request, form, 'email_1')}
               </li>
               <li>
-                ${form['mail_address2'].label}
-                ${form['mail_address2']}
+                ${form['email_1_confirm'].label}
+                ${form['email_1_confirm']}
                 (例：mail@example.ne.jp)
-                ${h.error_list(request, form, 'mail_address2')}
+                ${h.error_list(request, form, 'email_1_confirm')}
               </li>
             </ul>
-            <p style="margin-left:10px; font-size:90%; color:#333;">予約受付完了メール等をメールでご案内します。「ticketstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</p>
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">携帯メールアドレス (半角英数)</th>
+          <td>
+            <p>携帯電話のメールアドレスをお持ちの方はお書きください。</p>
+            <p>(上の欄に携帯メールアドレスを入力された方は結構です)</p>
+            <ul>
+              <li>
+                ${form['email_2'].label}
+                ${form['email_2']}
+                (例：mail@example.ne.jp)
+                ${h.error_list(request, form, 'email_2')}
+              </li>
+              <li>
+                ${form['email_2_confirm'].label}
+                ${form['email_2_confirm']}
+                (例：mail@example.ne.jp)
+                ${h.error_list(request, form, 'email_2_confirm')}
+              </li>
+            </ul>
+            <p style="margin-left:10px; font-size:90%; color:#333;">予約受付完了メール等をメールでご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</p>
           </td>
         </tr>
         <tr>
@@ -150,10 +171,10 @@ ${h.get_nickname(request)}
           <th scope="row">電話番号(半角数字)</th>
           <td>
             <ul>
-              <li>${form['tel'].label}
-                ${form['tel']}
+              <li>${form['tel_1'].label}
+                ${form['tel_1']}
                 (例: 080xxxxyyyy)
-                ${h.error_list(request, form, 'tel')}
+                ${h.error_list(request, form, 'tel_1')}
               </li>
               <!-- <li>${form['fax'].label}
                    !--   ${form['fax']}

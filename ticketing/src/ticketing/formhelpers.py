@@ -5,8 +5,10 @@ from datetime import datetime
 from exceptions import ValueError
 import unicodedata
 
-from wtforms import Form
 from wtforms import validators, fields
+from wtforms.form import Form, WebobInputWrapper
+from wtforms.fields.core import UnboundField
+from wtforms.compat import iteritems
 import logging
 
 logger = logging.getLogger(__name__)
@@ -111,7 +113,8 @@ class SejCompliantEmail(validators.Regexp):
     def __call__(self, form, field):
         if self.message is None:
             self.message = field.gettext('Invalid email address.')
-
+        if not field.data:
+            return
         super(SejCompliantEmail, self).__call__(form, field)
 
 def capitalize(unistr):
@@ -129,7 +132,33 @@ ignore_space_hyphen = ignore_regexp(re.compile(u"[ \-ー　]"))
 class OurForm(Form):
     def __init__(self, *args, **kwargs):
         self.new_form = kwargs.pop('new_form', False)
+        self._liaisons = fields and [name for name, unbound_field in self._unbound_fields if unbound_field.field_class == Liaison]
         super(OurForm, self).__init__(*args, **kwargs)
+
+    def process(self, formdata=None, obj=None, **kwargs):
+        if not self._liaisons:
+            return super(OurForm, self).process(formdata, obj, **kwargs)
+
+        if formdata is not None and not hasattr(formdata, 'getlist'):
+            if hasattr(formdata, 'getall'): 
+                formdata = WebobInputWrapper(formdata)
+            else:
+                raise TypeError("formdata should be a multidict-type wrapper that supports the 'getlist' method: ")
+
+        for name, field in iteritems(self._fields):
+            if obj is not None and hasattr(obj, name):
+                field.process(formdata, getattr(obj, name))
+            elif name in kwargs:
+                field.process(formdata, kwargs[name])
+            else:
+                field.process(formdata)
+
+        for name in self._liaisons:
+            liaison = self._fields[name]
+            counterpart = self._fields[liaison._counterpart]
+            if not counterpart.data:
+                counterpart.data = liaison.data
+                liaison.data = None
 
 def _gen_field_init(klass):
     def __init__(self, _form=None, hide_on_new=False, *args, **kwargs):
@@ -196,3 +225,115 @@ class NullableTextField(OurTextField):
         super(NullableTextField, self).process_formdata(valuelist)
         if self.data == '':
             self.data = None
+
+class Liaison(fields.Field):
+    @property
+    def errors(self):
+        return self._wrapped.errors
+
+    @property
+    def process_errors(self):
+        return self._wrapped.process_errors
+
+    @property
+    def raw_data(self):
+        return self._wrapped.raw_data
+
+    @property
+    def validators(self):
+        return self._wrapped.validators
+
+    @property
+    def widget(self):
+        return self._wrapped.widget
+
+    @property
+    def _translations(self):
+        return self._wrapped._translations
+
+    @property
+    def do_not_call_in_templates(self):
+        return self._wrapped.do_not_call_in_templates
+
+    @property
+    def data(self):
+        return self._wrapped.data
+
+    @property
+    def form(self):
+        return self._form
+
+    @property
+    def data(self):
+        return self._data
+
+    def gettext(self, string):
+        return self._wrapped.gettext(string)
+
+    def ngettext(self, singular, plural, n):
+        return self._wrapped.ngettext(singular, plural, n)
+
+    def validate(self, *args, **kwargs):
+        return self._wrapped.validate(*args, **kwargs)
+
+    def pre_validate(self, form):
+        return self._wrapped.pre_validate(self, form)
+
+    def post_validate(self, form, validation_stopped):
+        return self._wrapped.post_validate(form, validation_stopped)
+
+    def process(self, formdata=None, data=fields._unset_value):
+        return self._wrapped.process(formdata, data)
+
+    def validate(self, form, extra_validators=()):
+        return self._wrapped.validate(form, extra_validators)
+
+    def populate_obj(self, obj, name):
+        return self._wrapped.populate_obj(obj, name)
+
+    def append_entry(self, data=fields._unset_value):
+        return self._wrapped.append_entry(data)
+
+    def pop_entry(self):
+        return self._wrapped.pop_entry()
+
+    def __iter__(self):
+        return self._wrapped.__iter__()
+
+    def __len__(self):
+        return self._wrapped.__len__()
+
+    def __unicode__(self):
+        return self._wrapped.__unicode__()
+
+    def __str__(self):
+        return self._wrapped.__str__()
+
+    def __html__(self):
+        return self._wrapped.__html__()
+
+    def __call__(self, **kwargs):
+        return self._wrapped(**kwargs)
+
+    def __getitem__(self, index):
+        return self._wrapped.__getitem__(index)
+
+    def __getattr__(self, key):
+        return getattr(self._wrapped, key)
+
+    def __setattr__(self, key, value):
+        if not key.startswith('_'):
+            setattr(self._wrapped, key, value)
+        else:
+            object.__setattr__(self, key, value)
+
+    def __init__(self, counterpart, wrapped, _form=None, _name=None, _prefix=None, _translations=None, **kwargs):
+        if counterpart.__class__ == UnboundField:
+            # resolve the field name from the unbound field object.
+            for name, unbound_field in _form._unbound_fields:
+                if unbound_field == counterpart:
+                    counterpart = name
+        self._counterpart = counterpart
+        self._form = _form
+        self._name = _name
+        self._wrapped = wrapped.bind(_form, _name, _prefix, _translations, **kwargs)

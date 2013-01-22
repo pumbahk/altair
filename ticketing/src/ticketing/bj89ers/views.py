@@ -129,7 +129,7 @@ class PaymentView(_PaymentView):
             city=address_data['city'],
             address_1=address_data['address1'],
             address_2=address_data['address2'],
-            email=address_data['email'],
+            email_1=address_data['email_1'],
             country=u"日本国",
             tel_1=address_data['tel_1'],
             tel_2=address_data['tel_2'],
@@ -142,7 +142,7 @@ class PaymentView(_PaymentView):
 
     def get_mail_address(self):
         user_profile = load_user_profile(self.request)
-        return user_profile['email']
+        return user_profile['email_1']
 
     @back
     def post(self):
@@ -177,7 +177,7 @@ class CompleteView(_CompleteView):
         # これ本当にいるの??
         order.user = User(
             user_profile=UserProfile(
-                email=profile['email'],
+                email_1=profile['email_1'],
                 first_name=profile['first_name'], 
                 last_name=profile['last_name'],
                 first_name_kana=profile['first_name_kana'],

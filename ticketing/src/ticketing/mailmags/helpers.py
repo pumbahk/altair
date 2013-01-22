@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-from ..models import MailSubscriptionStatus
+from .models import MailSubscriptionStatus
 
 SUBSCRIPTION_STATE_STRINGS = {
     MailSubscriptionStatus.Unsubscribed.v: u'購読解除',

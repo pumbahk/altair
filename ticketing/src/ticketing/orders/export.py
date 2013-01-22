@@ -2,7 +2,7 @@
 from ticketing.cart.helpers import format_number as _format_number
 from ticketing.core.models import no_filter
 from ticketing.models import record_to_multidict
-from ticketing.users.models import MailSubscription, MailMagazine, MailSubscriptionStatus
+from ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
 from sqlalchemy.sql.expression import or_
 from collections import defaultdict
 
@@ -67,7 +67,8 @@ class OrderCSV(object):
         'tel_1',
         'tel_2',
         'fax',
-        'email',
+        'email_1',
+        'email_2',
         ]
     other_header = [
         'payment',

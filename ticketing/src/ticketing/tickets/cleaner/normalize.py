@@ -58,7 +58,7 @@ def after_first_lbrace(helper, tokens):
             helper.heads[-1].append(token)
             return on_external(helper, tokens)
         else:
-            helper.heads[-1].append(token)
+            helper.content[-1].append(token)
     return after_first_lbrace
 
 def after_second_lbrace(helper, tokens):
@@ -123,12 +123,20 @@ class StateHandleHelper(object):
         self.tails.append([])
 
     def merge_stack(self):
-        c = self.content.pop()
-        self.content[-1].extend(c)
+        # self.display()
         h = self.heads.pop()
         self.heads[-1].extend(h)
+        c = self.content.pop()
+        self.heads[-1].extend(c)
         t = self.tails.pop()
         self.tails[-1].extend(t)
+        # self.display()
+
+    def display(self):
+        print "heads:%s" % self.heads
+        print "content:%s" % self.content
+        print "tails:%s" % self.tails
+        print "----------------------------------------"
 
 font_family_rx = re.compile("font-family ?: *?([^;]+;?)")
 class ConvertXmlForTicketTemplateAttrsHook(object):
@@ -208,6 +216,8 @@ class ConvertXmlForTicketTemplateRenderingFilter(XMLFilterBase):
             return _simple_dump_to_downstream(sm, downstream)
 
 def _simple_dump_to_downstream(sm, downstream):
+    # print "**end**"
+    # sm.display()
     for i in xrange(len(sm.heads)):
         for xs in (sm.heads[i], sm.content[i], sm.tails[i]):
             for x in xs:

@@ -218,6 +218,7 @@ for($i=0;$i<=9;$i++){
 		foreach ($genre_tree as $g) {
 			$genre_link .= urlencode($g).'/';
 			$parent_link[$z]=$g;
+            echo $parent_link[$z];
 			$z++;
 		}
 		$links_array[$num]=htmlspecialchars($genre['genre']);

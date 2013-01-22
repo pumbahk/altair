@@ -35,7 +35,7 @@ def send_accepted_mail(request, lot_entry):
     """ 申し込み完了メール
     """
 
-    recipients = [lot_entry.shipping_address.email]
+    recipients = [lot_entry.shipping_address.email_1]
     subject = get_accepted_mail_subject(request)
     sender = get_accepted_mail_sender(request)
     vars = dict(lot_entry=lot_entry, lot=lot_entry.lot, 
@@ -54,7 +54,7 @@ def send_elected_mail(request, elected_entry):
     """ 当選通知メール
     """
     lot_entry = elected_entry.lot_entry
-    recipients = [lot_entry.shipping_address.email]
+    recipients = [lot_entry.shipping_address.email_1]
     subject = get_subject(request)
     sender = get_sender(request)
     vars = dict(lot_entry=lot_entry, lot=lot_entry.lot, shipping_address=lot_entry.shipping_address)
@@ -72,7 +72,7 @@ def send_rejected_mail(request, rejected_entry):
     """
     
     lot_entry = rejected_entry.lot_entry
-    recipients = [lot_entry.shipping_address.email]
+    recipients = [lot_entry.shipping_address.email_1]
     subject = get_subject(request)
     sender = get_sender(request)
     vars = dict(lot_entry=lot_entry, lot=lot_entry.lot)

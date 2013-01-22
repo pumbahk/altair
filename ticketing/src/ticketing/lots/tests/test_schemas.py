@@ -32,8 +32,8 @@ class ClientFormTests(unittest.TestCase):
             address_1=u"代々木１丁目",
             address_2=u"森京ビル",
             sex=u"1",
-            mail_address=u"test@example.com",
-            mail_address2=u"test@example.com",
+            email_1=u"test@example.com",
+            email_1_confirm=u"test@example.com",
         )
         target = self._makeOne(formdata=data)
         self.assertTrue(target.validate())

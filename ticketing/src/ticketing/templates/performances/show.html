@@ -57,7 +57,12 @@ Altair Backend -- ${performance.event.title}[${performance.name}]
           <th>開演</th>
           <td>${h.safe_strftime(performance.start_on)}</td>
           <th>会場</th>
-          <td>${performance.venue.name}</td>
+          <td>
+            ${performance.venue.name}
+            %if performance.venue.name != None:
+              <div class="sub_name">${performance.venue.sub_name}</div>
+            %endif
+          </td>
         </tr>
         <tr>
           <th>リダイレクト先URL (PC)</th>

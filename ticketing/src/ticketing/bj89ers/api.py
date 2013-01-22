@@ -47,7 +47,7 @@ attr_names = [
     u'address2',
     u'tel_1',
     u'tel_2',
-    u'email',
+    u'email_1',
     u'mail_permission',
     ]
 
@@ -69,7 +69,8 @@ def set_user_profile_for_order(request, order, bj89er_user_profile):
     ).first()
 
     for attr_name in attr_names:
-        c_models.OrderedProductAttribute(ordered_product_item=ordered_product_item,
+        c_models.OrderedProductAttribute(
+            ordered_product_item=ordered_product_item,
             name=attr_name,
             value=bj89er_user_profile.get(attr_name))
 

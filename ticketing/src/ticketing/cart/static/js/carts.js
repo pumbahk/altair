@@ -1,12 +1,8 @@
-/**
- * Created with PyCharm.
- * User: odagiriatsushi
- * Date: 12/05/11
- * Time: 10:55
- * To change this template use File | Settings | File Templates.
- */
+// new cart flow
 
-var util = {
+var cart = {};
+
+cart.util = {
     datestring_japanize: function(datestring){
         // year, month, day, rest
         var dates = datestring.split(/[ -]/);
@@ -35,628 +31,1125 @@ var util = {
             else if (g[2])
                 jq.append(g[2]);
         }
+    },
+
+    format_currency: function (value) {
+        return "￥" + value;
     }
 };
 
-var carts = {};
-carts.init = function(venues_selection, selected, upper_limit, cart_release_url, callbacks) {
-    var model = new carts.Model(venues_selection);
-    var presenter = new carts.Presenter(model, upper_limit, callbacks);
-    carts.appView = new carts.AppView();
-    carts.appView.init(presenter);
-    $('#date-select').val(selected[1]);
-    $('#date-select').change();
-    carts.cart_release_url = cart_release_url;
-    // initial setup
-};
-
-
-carts.Model = function(perDateVenuesSelection) {
-    this.perDateVenuesSelection = perDateVenuesSelection;
-    this.seatTypesMap = {};
-    this.productsCache = {};
-    this.perDateProductsCache = {}
-};
-
-carts.Model.prototype.fetch_venues = function() {
-};
-
-carts.Model.prototype.fetch_seat_types = function(get_url, callback) {
-    var self = this;
-    var data = this.seatTypesMap[get_url];
-    if (data) {
-        callback(data);
-        return;
+cart.order_messages = {
+    'stock': {
+        title: '在庫がありません',
+        message: 'ご希望の座席を確保できませんでした'
+    },
+    'invalid seats': {
+        title: 'ご希望の座席が確保できませんでした。',
+        message: '画面を最新の情報に更新した上で再度席の選択をしてください。座席を再度選択してください'
+    },
+    'adjacency': {
+        title: '連席で座席を確保できません',
+        message: '座席を選んで購入してください'
+    }, 
+    'upper_limit': {
+        title: '上限枚数を超えて購入しようとしています', 
+        message: function(order_form_presenter){
+            return order_form_presenter.showOverUpperLimitMessage();
+        }
     }
-    $.ajax({
-        url:get_url,
-        dataType: 'json',
-        success: function (data) {
-            self.seatTypesMap[get_url] = data;
-            callback(data);
-        }
-    });
 };
 
-carts.Model.prototype.fetch_products = function(get_url, callback) {
-    var self = this;
-    var data = this.productsCache[get_url];
-    if (data) {
-        callback(data);
-        return;
+cart.Dialog = function () {
+    this.initialize.apply(this, arguments);
+};
+
+cart.Dialog.prototype = {
+    initialize: function (n, callbacks) {
+        this.n = n.clone();
+        this.callbacks = callbacks;
+        n.parent().append(this.n);
+        this.n.overlay({
+            mask: {
+                color: "#999",
+                opacity: 0.5
+            },
+            closeOnClick: false
+        });
+        var self = this;
+        this.n.on('click', '.cancel-button', function() {
+            callbacks.cancel.call(self);
+        });
+        this.n.on('click', '.ok-button', function() {
+            callbacks.ok.call(self);
+        });
+    },
+
+    close: function () {
+        this.n.overlay().close();
+        this.callbacks.close && this.callbacks.close();
+        this.n.remove();
+    },
+
+    load: function () {
+        this.n.overlay().load();
+    },
+
+    header: function (n) {
+        var h = this.n.find('.modal-header');
+        if (n === void(0))
+            return h;
+        if (n == null) {
+            h.remove();
+        } else {
+            h.empty();
+            h.append(n);
+        }
+    },
+
+    footer: function (n) {
+        var f = this.n.find('.modal-footer');
+        if (f === void(0))
+            return f;
+        f.empty();
+        f.append(n);
+    },
+
+    body: function (n) {
+        var b = this.n.find('.modal-body');
+        if (n === void(0))
+            return b;
+        b.empty();
+        b.append(n);
     }
-    $.ajax({
-        url: get_url,
-        dataType: 'json',
-        success: function (data) {
-            self.productsCache[get_url] = data;
-            callback(data);
-        }
-    });
 };
 
-carts.Model.prototype.fetch_products_from_date = function(get_url, callback){
-    var self = this;
-    var data = this.perDateProductsCache[get_url];
-    if (data) {
-        callback(data);
-        return;
+cart.events = {
+    ON_PERFORMANCE_RESOLVED: "onPerformanceResolved",
+    ON_STOCK_TYPE_SELECTED: "onStockTypeSelected",
+    ON_CART_CANCELED: "onCartCanceled",
+    ON_CART_ORDERED: "onCartOredered",
+    ON_VENUE_DATASOURCE_UPDATED: "onVenueDataSourceUpdated"
+};
+cart.init = function(venues_selection, selected, upper_limit, cart_release_url) {
+    // venues_selection = $.extend({}, venues_selection); // clone
+    // $.each(venues_selection, function (k, v) {
+    //     for (var i = 0; i < v.length; i++) {
+    //         v[i].date = k;
+    //     }
+    // });
+    this.app = new cart.ApplicationController();
+    this.app.init(venues_selection, selected, upper_limit, cart_release_url);
+};
+
+cart.createContentOfShoppingElement = function(product) {
+	var comma = function(s, f) {
+		var to = String(s);
+		var tmp = "";
+		while(to != (tmp = to.replace(/^([+-]?\d+)(\d\d\d)/,"$1,$2"))) {
+			to = tmp;
+		}
+		return to;
+	};
+    var item = $('<tr/>');
+    var name = $('<td/>').text(product.name);;
+    var price = $('<td/>').text("￥ "+comma(product.price));
+    var quantity = $('<td/>').text(product.quantity + " 枚");
+    // TODO: 予約席をProductごとに追加
+    var seats_container = $('<td/>');
+    var seats = $('<ul/>');
+    var selected_seats = product.seats;
+    for (var i = 0; i < selected_seats.length; i++) {
+        var seat_item = $('<li/>');
+        seat_item.text(selected_seats[i].name);
+        seats.append(seat_item);
     }
-    $.ajax({
-        url: get_url,
-        dateType: "json",
-        success: function (data) {
-            self.perDateProductsCache[get_url] = data;
-            callback(data);
-        }
-    });
+    seats_container.append(seats);
+    item.append(name);
+    item.append(price);
+    item.append(quantity);
+    item.append(seats_container);
+    return item;
 };
 
-carts.AppView = function() {
-    this.left_box = null;
-    this.right_box = null;
-    this.innerPane = null;
-    this.dateSelector = null;
-    this.venueSelector = null;
-    this.orderButton = null;
-    this.orderQuantityOnlyButton = null;
-    this.selectedOrderButton = null;
-    this.orderForm = null;
-    this.hallName = null;
-    this.inCartProductList = null;
-    this.totalAmount = null;
-    this.reservationDialog = null;
-    this.errorDialog = null;
-    this.seatTypeList = null;
-    this.seatTypeName = null;
-    this.productChoices = null;
-};
-
-carts.AppView.prototype.show_popup_title = function(event_name, performance_name, performance_start, venu_name) {
-    $('#performance-name').text(event_name + " " + performance_name);
-    $('#performance-name-sub').text(performance_start + " " + venu_name);
-};
-
-carts.AppView.prototype.focusLeftBox = function(){
-    var self = this;
-
-    if (this.left_box.hasClass('focused'))
-        return;
-
-    if (self.animating)
-        return false;
-
-    self.animating = true;
-
-    self.right_box.addClass("blur");
-    self.right_box.removeClass("focused");
-
-    this.innerPane.animate({
-        scrollLeft: 0,
-    }, {
-        duration: 300,
-        easing: 'swing',
-        complete: function () {
-            self.left_box.addClass("focused");
-            self.left_box.removeClass("blur");
-            self.animating = false;
-        }
-    });
-
-    this.right_box.find("dl").animate({
-        opacity: 0
-    }, {
-        duration: 300,
-        easing: 'linear',
-        complete: function () {
-            self.right_box.find("#payment-seat-products").empty();
-            self.right_box.find("#payment-seat-type").empty();
-        }
-    });
-};
-
-carts.AppView.prototype.focusRightBox = function() {
-    var self = this;
-
-    if (this.right_box.hasClass('focused'))
-        return;
-
-    if (self.animating)
-        return false;
-
-    self.animating = true;
-
-    self.left_box.removeClass("focused");
-    self.left_box.addClass("blur");
-
-    this.innerPane.animate({
-        scrollLeft: 360,
-    }, {
-        duration: 300,
-        easing: 'swing',
-        complete: function () {
-            self.right_box.addClass("focused");
-            self.right_box.removeClass("blur");
-            self.animating = false;
-        }
-    });
-
-    this.right_box.find("dl").animate({
-        opacity: 1.
-    }, {
-        duration: 300,
-        easing: 'linear'
-    });
-};
-
-carts.AppView.prototype.init = function(presenter) {
-    var self = this;
-    this.left_box = $("#selectSeatType");
-    this.right_box = $("#selectSeat");
-    this.innerPane = $("#settlementOperation .settlementOperationPaneInner");
-    this.dateSelector = $('#date-select');
-    this.venueSelector = $("#venue-select");
-    this.orderButton = $('#btn-order');
-    this.orderQuantityOnlyButton = $('#btn-order-quantity-only');
-    this.selectedOrderButton = $('#btn-selected-order');
-    this.orderForm = $("#order-form");
-    this.hallName = $("#hallName");
-    this.inCartProductList = $('#contentsOfShopping');
-    this.totalAmount = $('#cart-total-amount');
-    this.reservationDialog = $('#order-reserved');
-    this.errorDialog = $('#order-error-template');
-    this.seatTypeList = $('#seatTypeList');
-    this.seatTypeName = this.right_box.find('#payment-seat-type');
-    this.productChoices = this.right_box.find("#payment-seat-products").empty();
-
-
-    this.left_box.click(function () {
-        if (self.left_box.hasClass('focused'))
-            return true;
-        self.focusLeftBox();
-    });
-
-    this.dateSelector.change(
-        function() {
-            presenter.on_date_selected($(this).val());
-            self.focusLeftBox();
-        }
-    );
-    this.venueSelector.change(
-        function(){
-            presenter.on_venue_select($(this).text());
-            self.focusLeftBox();
-        }
-    );
-    var create_content_of_shopping_element = function(product){
-        var item = $('<tr/>');
-        var name = $('<td/>').text(product.name);;
-        var price = $('<td/>').text("￥ "+product.price);
-        var quantity = $('<td/>').text(product.quantity + " 枚");
-        // TODO: 予約席をProductごとに追加
-        var seats_container = $('<td/>');
-        var seats = $('<ul/>');
-        var selected_seats = product.seats;
-        for (var i = 0; i < selected_seats.length; i++) {
-            var seat_item = $('<li/>');
-            seat_item.text(selected_seats[i].name);
-            seats.append(seat_item);
-        }
-        seats_container.append(seats);
-        item.append(name);
-        item.append(price);
-        item.append(quantity);
-        item.append(seats_container);
-        return item;
-    };
-
-    (function () {
-        var reservationData = null;
-
-        self.reservationDialog.find('.cancel-button').click(function() {
+cart.proceedToCheckout = function proceedToCheckout(performance, reservationData) {
+    var dialog = new cart.Dialog($('#order-reserved'), {
+        ok: function () {
+            window.location.href = reservationData.payment_url;
+        },
+        cancel: function () {
             $.ajax({
-                url: carts.cart_release_url,
+                url: cart_release_url, // global
                 dataType: 'json',
                 type: 'POST',  
-                success: function() {
-                    self.reservationDialog.overlay().close();
-                }
+                success: function() {}
             });
-            $("#selectSeat .venueViewer").venueviewer("refresh");
-            self.reservationDialog.overlay().close();
-            $("#selectSeatType").click();
-        });
-        self.reservationDialog.find('.confirm-button').click(function() {
-            window.location.href = reservationData.payment_url;
-        });
-
-        self.errorDialog.find('.close-button').click(function() {
-            self.errorDialog.overlay().close();
-        });
-
-        function proceedToCheckout(data) {
-            reservationData = data;
-            var root = self.hallName;
-            var performance_venue = root.find("#performanceVenue").text();
-            var products = data.cart.products;
-
-            // insert product items in cart
-            self.inCartProductList.empty();
-            for (var i = 0; i < products.length; i++) {
-                var product = products[i];
-                var item = create_content_of_shopping_element(product);//
-                self.inCartProductList.append(item);
-            }
-            self.inCartProductList.find("tr").last().addClass(".last-child");
-
-            self.totalAmount.text("￥ " + data.cart.total_amount);
-
-            self.reservationDialog.overlay({
-                mask: {
-                    color: "#999",
-                    opacity: 0.5
-                },
-                closeOnClick: false
-            });
-            self.reservationDialog.overlay().load();
+            this.close();
         }
-
-        function error() {
-            self.errorDialog.overlay({
-                mask: {
-                    color: "#999",
-                    opacity: 0.5
-                },
-                closeOnClick: false
-            });
-            self.errorDialog.overlay().load();
-        }
-
-        self.orderButton.click(function (event) {
-            $('#selected-seats').empty();
-            var values = self.orderForm.serialize();
-            $.ajax({
-                url: order_url, //this is global variable
-                dataType: 'json',
-                data: values,
-                type: 'POST',
-                success: function(data, textStatus, jqXHR) {
-                    if (data.result == 'OK') {
-                        proceedToCheckout(data);
-                    } else {
-                        error();
-                    }
-                }
-            });
-            event.stopPropagation(); /* XXX: is this really necessary? */
-            return false;
-        });
-
-        self.orderQuantityOnlyButton.click(function (event) {
-            $('#selected-seats').empty();
-            var values = self.orderForm.serialize();
-            $.ajax({
-                url: order_url, //this is global variable
-                dataType: 'json',
-                data: values,
-                type: 'POST',
-                success: function(data, textStatus, jqXHR) {
-                    if (data.result == 'OK') {
-                        proceedToCheckout(data);
-                    } else {
-                        error();
-                    }
-                }
-            });
-            event.stopPropagation(); /* XXX: is this really necessary? */
-            return false;
-        });
-
-        self.selectedOrderButton.click(function (event) {
-            var currentViewer = $('#selectSeat .venueViewer');
-            var selection = currentViewer.venueviewer('selection');
-            var seat_ids = [];
-            for (var l0_id in selection) {
-              seat_ids.push(l0_id);
-            }
-            if (seat_ids.length < get_current_quantity()) {
-                alert('席をあと' + (get_current_quantity()-seat_ids.length) + '選択してください');
-            } else if (seat_ids.length > get_current_quantity()) {
-                currentViewer.venueviewer('refresh')
-                alert('購入枚数と選択した席の数が一致していません。');
-            } else {
-                $('#selected-seats').empty();
-                for (var i = 0; i < seat_ids.length; i++) {
-                    var seat = $('<input type="hidden" name="selected_seat" value="' + seat_ids[i] + '" />');
-                    $('#selected-seats').append(seat);
-                    
-                }
-                var values = self.orderForm.serialize();
-                $.ajax({
-                    url: order_url, //this is global variable
-                    dataType: 'json',
-                    data: values,
-                    type: 'POST',
-                    success: function(data, textStatus, jqXHR) {
-                        if (data.result == 'OK') {
-                            proceedToCheckout(data);
-                        } else {
-                            error();
-                        }
-                    }
-                });
-                event.stopPropagation(); /* XXX: is this really necessary? */
-                return false;
-            }
-        });
-    })();
-    this.presenter = presenter;
-    this.presenter.init(this);
-};
-
-carts.AppView.prototype.set_performance_id = function(performance_id) {
-    $('#current-performance-id').val(performance_id);
-};
-
-carts.AppView.prototype.update_venues_selectfield = function(venues, selected_date){
-    $('#venue-select').empty();
-    
-    // update select field
-    $.each(venues, function(index, value) {
-        var o = $('<option/>');
-        o.text(value['name']);
-        o.attr('value', value['seat_types_url']);
-        $('#venue-select').append(o);
     });
+    var products = reservationData.cart.products;
+    var inCartProductList = dialog.body().find('.contentsOfShopping');
+    var totalAmount = dialog.body().find('.cart-total-amount');
 
-    // after field upate then update performance header
-    var selected_venue = $("#venue-select").text();
-    this.update_performance_header_venue(selected_venue);
-};
-
-carts.AppView.prototype.update_performance_header_date = function(selected_date){
-    $("#hallName #performanceDate").text(util.datestring_japanize(selected_date));
-}
-carts.AppView.prototype.update_performance_header_venue = function(selected_venue){
-    $("#hallName #performanceVenue").text(selected_venue);
-}
-
-carts.AppView.prototype.update_settlement_detail = function(venues, selected_date){
-    // update settleElementBox
-    var new_td_venues = [];
-    $.each(venues, function(index, value){
-        new_td_venues.push(value["name"]);
-    })
-    var root = $("#settlementEventDetail");
-    root.find("#venue").text(new_td_venues.join(", "));
-    root.find("#performance_date").text(util.datestring_japanize(selected_date));
-};
-
-carts.AppView.prototype.update_settlement_pricelist = function(products){
-    var arr = [], 
-        indices = [], 
-        grouped = {};
-
-    // refine product order
-    for(var i=0, j=products.length; i<j; i++){
+    // insert product items in cart
+    inCartProductList.empty();
+    for (var i = 0; i < products.length; i++) {
         var product = products[i];
-        var prefix = product.name.charAt(0);
-        if(!grouped[prefix]){
-            indices.push(prefix);
-            grouped[prefix] = [];
-        }
-        grouped[prefix].push(product);
+        var item = cart.createContentOfShoppingElement(product);
+        inCartProductList.append(item);
     }
+    inCartProductList.find("tr").last().addClass("last-child");
+    totalAmount.text(cart.util.format_currency(reservationData.cart.total_amount));
 
-    // listing via grouped order.
-    for(var i=0, j=indices.length; i<j; i++){
-        var prefix = indices[i];
-        var grouped_products = grouped[prefix]
-        for(var k=0, l=grouped_products.length; k<l; k++){
-            var value = grouped_products[k];
-            arr.push(value.name + ": " + value.price + "円");
+    dialog.header(
+        $('<h2>')
+            .append(
+                $('<span id="performance-date"></span>')
+                .text(performance.get('performance_start')))
+            .append(' ')
+            .append(
+                $('<span id="performance-name"></span>')
+                .text(performance.get('performance_name'))));
+    dialog.load();
+}
+
+cart.showErrorDialog = function showErrorDialog(title, message, footer_button_class) {
+    var errorDialog = new this.Dialog($('#order-error-template'), {
+        ok: function () {
+            this.close();
         }
-        arr.push("");
-    }
-
-    $("#settlementEventDetail #pricelist").html(arr.join("<br/>"));
-};
-
-carts.AppView.prototype.show_seat_types = function(seat_types) {
-    var self = this;
-    self.seatTypeList.empty();
-    $.each(seat_types, function(key, value) {
-        var item = $('<li></li>')
-          .append(
-            $('<input type="radio" name="seat_type" />')
-            .attr('value', value.id)
-            .change(function() {
-                if (!self.left_box.hasClass('focused')) {
-                    return false;
-                }
-                self.presenter.on_seat_type_selected(this.value);
-                return true;
-            }))
-          .append(
-            $('<span class="seatColor"></span>')
-            .css('background-color', value.style.fill.color))
-          .append(
-            $('<span class="seatName"></span>')
-            .text(value.name))
-          .append(
-            $('<span class="seatStatus"></span>'))
-          .appendTo(self.seatTypeList);
     });
-    self.seatTypeList.find("li:even").addClass("seatEven");
-    self.seatTypeList.find("li:odd").addClass("seatOdd");
+    errorDialog.header(title ? $('<h2></h2>').text(title): null);
+    errorDialog.body($('<div style="text-align:center"></div>').text(message));
+    errorDialog.footer($('<a class="ok-button">閉じる</a>').addClass(footer_button_class));
+    errorDialog.load();
+};
+
+cart.ApplicationController = function() {
+};
+
+cart.ApplicationController.prototype.init = function(venues_selection, selected, upper_limit, cart_release_url) {
+    this.performanceSearch = new cart.PerformanceSearch({
+        venuesSelection: venues_selection,
+        performance: selected[1],
+        venue: null
+    });
+    this.performance = new cart.Performance({
+    });
+    this.venue = new cart.Venue({
+            data_source: null
+    });
+    // 絞込み
+    this.performanceSearchPresenter = new cart.PerformanceSearchPresenter({
+        viewType: cart.PerformanceSearchView,
+        performanceSearch: this.performanceSearch,
+        performance: this.performance,
+        firstSelection: selected
+    });
+    // 席種
+    this.stockTypeListPresenter = new cart.StockTypeListPresenter({
+        viewType: cart.StockTypeListView,
+        performance: this.performance
+    });
+    // 会場図
+    this.venuePresenter = new cart.VenuePresenter({
+        viewType: cart.VenueView,
+        performance: this.performance,
+        stockTypeListPresenter: this.stockTypeListPresenter
+    });
+    // フォーム
+    this.orderFormPresenter = new cart.OrderFormPresenter({
+        viewType: cart.OrderFormView,
+        venuePresenter: this.venuePresenter,
+        upper_limit: upper_limit
+    });
+
+    this.performanceSearchPresenter.stockTypeListPresenter = this.stockTypeListPresenter;
+    this.stockTypeListPresenter.venuePresenter = this.venuePresenter;
+    this.stockTypeListPresenter.orderFormPresenter = this.orderFormPresenter;
+    this.venuePresenter.orderFormPresenter = this.orderFormPresenter;
+
+    this.performanceSearchPresenter.initialize();
+    this.stockTypeListPresenter.initialize();
+    this.venuePresenter.initialize();
+    this.orderFormPresenter.initialize();
+};
+
+cart.PerformanceSearchPresenter = function(params) {
+    for (var k in params) {
+        this[k] = params[k];
+    }
 };
 
 
-carts.AppView.prototype.show_payments = function(seat_type_name, products, upper_limit) {
-    var self = this;
-    this.seatTypeName.text(seat_type_name);
-    this.productChoices.empty();
-    $.each(products, function(key, value) {
+cart.PerformanceSearchPresenter.prototype = {
+    initialize: function() {
+        var self = this;
+        this.view = new this.viewType({
+            presenter: this,
+            el: $("#form1")
+        });
+        this.view.on(cart.events.ON_PERFORMANCE_RESOLVED,
+            function(performance) {self.onPerformanceResolved(performance);});
+        this.view.model = this.performanceSearch;
+        this.view.renderDateSelection();
+        this.view.setInitialValue(this.firstSelection[0], this.firstSelection[1]);
+    },
+    onPerformanceResolved: function(performance_id) {
+        var performance = this.performanceSearch.getPerformance(performance_id);
+        this.performance.url = performance.seat_types_url;
+        this.performance.fetch({
+            success: function (req, data) {
+                $('#performanceDate').text(data.performance_name);
+                $('#descPerformanceDate').text(data.performance_start);
+                $('#performanceVenue').text(performance.name);
+                $(".performanceNameSpace").text(data["performance_name"]);
+            }
+        });
+    }
+};
+_.extend(cart.PerformanceSearchPresenter.prototype, Backbone.Event);
+
+cart.StockTypeListPresenter = function(params) {
+    for (var k in params) {
+        this[k] = params[k];
+    }
+};
+
+cart.StockTypeListPresenter.prototype = {
+    initialize: function() {
+        var self = this;
+        this.view = new this.viewType({ });
+        this.performance.on("change",
+            function() {self.onPerformanceChanged();});
+        this.view.on(cart.events.ON_STOCK_TYPE_SELECTED,
+            function(products_url, stock_type) {self.onStockTypeSelected(products_url, stock_type);});
+        this.setActivePane('stockTypeList');
+    },
+    setActivePane: function (active) {
+        this.active = active;
+        switch (this.active) {
+        case 'stockTypeList':
+            this.view.active = true;
+            this.view.updateUIState();
+            if (this.venuePresenter.view) {
+                this.venuePresenter.view.readOnly = true;
+                this.venuePresenter.view.updateUIState();
+            }
+            break;
+        case 'venue':
+            this.view.active = false;
+            this.view.updateUIState();
+            if (this.venuePresenter.view) {
+                this.venuePresenter.view.readOnly = false;
+                this.venuePresenter.view.updateUIState();
+            }
+            break;
+        }
+    },
+    onPerformanceChanged: function() {
+        $("#current-performance-id").val(this.performance.get('performance_id'));
+        var stockTypes = this.performance.get("seat_types");
+        // collectionを作ってViewにpush
+        var stockTypeCollection = new Backbone.Collection();
+        for (var i=0; i < stockTypes.length; i++) {
+            var stockType = new cart.StockType(stockTypes[i]);
+            stockTypeCollection.push(stockType);
+        }
+        this.view.collection = stockTypeCollection;
+        this.view.render();
+    },
+    onStockTypeSelected: function(products_url, stock_type) {
+        var self = this;
+        $.getJSON(
+            products_url,
+            function(data) {
+                var products = data.products;
+                var productCollection = new cart.ProductQuantityCollection();
+                for (var i=0; i < products.length; i++) {
+                    var product = products[i];
+                    var p = new cart.ProductQuantity(product);
+                    productCollection.push(p);
+                }
+                var selected = self.view.selected;
+                self.orderFormPresenter.showOrderForm(selected, stock_type, productCollection);
+                var sales_segment = data.sales_segment;
+                $('#descSalesTerm').text(
+                  cart.util.datestring_japanize(sales_segment.start_at) + '〜' +
+                  cart.util.datestring_japanize(sales_segment.end_at)
+                );
+            }
+        );
+    }
+};
+
+_.extend(cart.StockTypeListPresenter.prototype, Backbone.Event);
+
+
+cart.VenuePresenter = function(params) {
+    for (var k in params) {
+        this[k] = params[k];
+    }
+};
+
+cart.VenuePresenter.prototype = {
+    defaults: {
+        viewType: null
+    },
+    initialize: function() {
+        var self = this;
+        this.callbacks = {
+            selectable: function () { return self.selectable.apply(self, arguments); },
+            click: function () { self.click.apply(self, arguments); },
+            error: function (err) {
+                alert(err);
+            }
+        };
+        this.view = new this.viewType({
+            presenter: this
+        });
+        this.performance.on("change",
+            function() {self.onPerformanceChanged();});
+        this.selectedStockType = null;
+    },
+    onPerformanceChanged: function() {
+        var dataSource = this.performance.createDataSource();
+        this.view.updateVenueViewer(dataSource, this.callbacks);
+    },
+    onCancelPressed: function () {
+        this.setStockType(null);
+        this.view.reset();
+    },
+    onSelectPressed: function () {
+        var selection = this.view.getChoices();
+        var quantity_to_select = this.orderFormPresenter.quantity_to_select;
+        if (selection.length < quantity_to_select) {
+            cart.showErrorDialog(null, "あと " + (quantity_to_select - selection.length) + " 席選んでください", "btn-close");
+            return;
+        } else if (selection.length != quantity_to_select) {
+            cart.showErrorDialog("エラー", "購入枚数と選択した席の数が一致していません。", "btn-close");
+            return;
+        }
+        this.orderFormPresenter.setSeats(selection);
+        this.orderFormPresenter.doOrder();
+    },
+    setStockType: function (stock_type) {
+        this.selectedStockType = stock_type;
+        this.stockTypeListPresenter.setActivePane(this.selectedStockType ? 'venue': 'stockTypeList');
+        this.view.render();
+    },
+    selectable: function (viewer, seat) {
+        if (!this.selectedStockType) {
+            return true;
+        }
+        var isValidStockType = (seat.meta.stock_type_id == this.selectedStockType.id);
+        var isVacant = (seat.meta.status == 1);
+        return isValidStockType && isVacant && seat.meta.is_hold;
+    },
+
+    click: function (viewer, seat, highlighted) {
+        // クリック位置から、座席選択をする
+        var self = this;
+        $.each(highlighted, function (id, seat) {
+            if (seat.selected()) {
+                seat.selected(false);
+            } else {
+                var selectable = viewer.selectionCount < self.orderFormPresenter.quantity_to_select;
+                seat.selected(selectable);
+            }
+        });
+    }
+};
+_.extend(cart.VenuePresenter.prototype, Backbone.Event);
+
+
+cart.PerformanceSearchView = Backbone.View.extend({
+    initialize: function() {
+        var self = this;
+        this.selection = this.$el.find("#date-select");
+        this.selection.on("change",
+            function() {self.onDateSelectionChanged(this.value)});
+        this.venueSelection = this.$el.find("#venue-select");
+        this.venueSelection.on("change",
+            function() {self.onVenueSelectionChanged()});
+    },
+    renderDateSelection: function () {
+        // 公演名
+        this.selection.empty();
+        var self = this;
+        var dates = this.model.getDates();
+        $.each(dates, function (_, v) {
+            self.selection.append($('<option></option>').attr('value', v).text(v));
+        });
+    },
+    render: function() {
+        // 絞り込み条件を設定する
+        var selected = this.model.get("performance");
+        this.renderPerformanceSelection(selected, null);
+    },
+    renderPerformanceSelection: function(selected, selected_performance_id) {
+        var venues = this.model.getVenues(selected);
+        var venueSelection = this.$el.find("#venue-select");
+        venueSelection.empty();
+        // 公演会場選択
+        for (var i=0; i < venues.length; i++) {
+            var venue = venues[i];
+            var opt = $('<option/>');
+            $(opt).attr('value', venue.id);
+            $(opt).text(venue.name);
+            $(venueSelection).append(opt);
+        }
+        $(venueSelection).val(selected_performance_id);
+        $(venueSelection).change();
+    },
+    onDateSelectionChanged: function(performanceDate) {
+        this.model.set("performance", performanceDate);
+        this.render();
+    },
+    onVenueSelectionChanged: function() {
+        this.trigger(cart.events.ON_PERFORMANCE_RESOLVED,
+            $(this.venueSelection).val());
+    },
+    setInitialValue: function(performance_name, performance_id) {
+        this.selection.val(performance_name);
+        this.model.set("performance", performance_name);
+        this.renderPerformanceSelection(performance_name, performance_id);
+    }
+});
+
+cart.PerformanceSearch = Backbone.Model.extend({
+    defaults: {
+        venuesSelection: null,
+        performance: null
+    },
+    getDates: function() {
+        var retval = [];
+        // for (var k in this.get('venuesSelection'))
+        //     retval.push(k);
+        var selections = this.get('venuesSelection');
+        for (var i=0; i < selections.length; i++) {
+            retval.push(selections[i][0]);
+        }
+        return retval;
+    },
+    getVenues: function(selected) {
+        var venuesSelection = this.get('venuesSelection');
+        var selections = this.get('venuesSelection');
+        for (var i=0; i < selections.length; i++) {
+            if (selections[i][0] == selected) {
+                return selections[i][1];
+            }
+        }
+        return []    
+    },
+    getPerformance: function(id) {
+        var venues = this.getVenues(this.get("performance"));
+        for (var i=0; i < venues.length; i++) {
+            var venue = venues[i];
+            if (venue.id == id) {
+                return venue;
+            }
+        }
+    }
+});
+
+cart.Performance = Backbone.Model.extend({
+    createDataSource: function() {
+        return createDataSource(this.attributes);
+    }
+});
+
+cart.StockType = Backbone.Model.extend({
+});
+
+
+cart.StockTypeListView = Backbone.View.extend({
+    defaults: {
+        arrow: null,
+        selected: null,
+        active: false,
+        el: $('#selectSeatType')
+    },
+
+    render: function() {
+        var self = this;
+        var ul = $('#seatTypeList');
+        ul.empty();
+        var i = 0;
+        this.collection.each(function(stockType) {
+            $('<li></li>')
+                .append($('<div class="seatListItemInner"></div>')
+                   .append(
+                     $('<input type="radio" name="seat_type" />')
+                     .attr('value', stockType.get("products_url"))
+                     .data('stockType', stockType))
+                   .append(
+                     $('<span class="seatColor"></span>')
+                     .css('background-color', stockType.get("style").fill.color))
+                   .append(
+                     $('<span class="seatName"></span>')
+                     .text(stockType.get("name")))
+                   .append(
+                     $('<span class="seatState"></span>')
+                     .text(stockType.get("availability_text"))))
+                .append($('<div class="seatListItemAux"></div>'))
+                .addClass(["seatEven", "seatOdd"][i & 1])
+                .appendTo(ul)
+            i++;
+        });
+        var self = this;
+        $(ul.closest('form')).find(':radio').change(function () {
+            var radio = $(this);
+            self.selected = radio.closest('li');
+            self.trigger(cart.events.ON_STOCK_TYPE_SELECTED, 
+                radio.val(), radio.data('stockType'));
+        });
+        this.updateUIState();
+    },
+
+    initialize: function() {
+        this.selected = null;
+    },
+
+    reset: function() {
+    },
+
+    updateUIState: function () {
+        if (this.active) {
+            $('#selectSeatType').removeClass('blur');
+            $('#selectSeatType').addClass('focused');
+        } else {
+            $('#selectSeatType').removeClass('focused');
+            $('#selectSeatType').addClass('blur');
+        }
+    }
+});
+
+cart.OrderFormPresenter = function(params) {
+    for (var k in params) {
+        this[k] = params[k];
+    }
+};
+
+cart.OrderFormPresenter.prototype = {
+    initialize: function() {
+        this.view = new this.viewType({
+            el: $('#selectProductTemplate'),
+            updateHandler: $('#seatTypeList').data('updateArrowpos'),
+            presenter: this
+        });
+        this.stock_type = null;
+        this.products = null;
+        this.quantity_to_select = null;
+        this.orderForm = $('#selectSeatType form');
+    },
+    hideOrderForm: function() {
+        this.view.hideForm(function () {
+            this.view.selected_stock_type_el = null;
+            this.view.collection = null;
+        });
+    },
+    showOrderForm: function(selected_stock_type_el, stock_type, products) {
+        this.stock_type = stock_type;
+        this.products = products;
+        this.view.showForm(selected_stock_type_el, stock_type, products);
+    },
+    calculateQuantityToSelect: function () {
+        var quantity_to_select = 0;
+        var selection = this.view.getChoices();
+        for (var product_id in selection) {
+            var multiple = selection[product_id];
+            var product = this.products.get(product_id);
+            quantity_to_select += product.get('quantity_power') * multiple;
+        }
+        this.quantity_to_select = quantity_to_select; 
+    },
+    onSelectSeatPressed: function () {
+        this.calculateQuantityToSelect();
+        if (this.quantity_to_select == 0) {
+            return this.showNoSelectProductMessage();
+        }
+        if (this.upper_limit < this.quantity_to_select) {
+            return this.showOverUpperLimitMessage()
+        }
+        this.venuePresenter.setStockType(this.stock_type);
+    },
+    onEntrustPressed: function () {
+        this.calculateQuantityToSelect();
+        if (this.quantity_to_select == 0) {
+            return this.showNoSelectProductMessage();
+        }
+        if (this.upper_limit < this.quantity_to_select) {
+            return this.showOverUpperLimitMessage()
+        }
+        this.setSeats([]);
+        this.doOrder();
+    },
+    showNoSelectProductMessage: function(){
+        cart.showErrorDialog(null, '商品を1つ以上選択してください', 'btn-close');
+        return;
+    }, 
+    showOverUpperLimitMessage: function(){
+        cart.showErrorDialog(null, '枚数は合計' + this.upper_limit + '枚以内で選択してください', 'btn-close');
+        return;
+    }, 
+    onBuyPressed: function () {
+        this.setSeats([]);
+        this.doOrder();
+    },
+    setSeats: function (seats) {
+        var orderForm = this.orderForm;
+        orderForm.find("input[name='selected_seat']").remove();
+        $.each(seats, function (_, v) {
+            orderForm.append($('<input type="hidden" name="selected_seat" />').val(v.id));
+        });
+    },
+    doOrder: function () {
+        var self = this;
+        var performance = cart.app.performance;
+        var values = this.orderForm.serialize();
+        $.ajax({
+            //url: order_url, //this is global variable
+            url: performance.get('order_url'),
+            dataType: 'json',
+            data: values,
+            type: 'POST',
+            success: function(data, textStatus, jqXHR) {
+                if (data.result == 'OK') {
+                    cart.proceedToCheckout(performance, data);
+                } else {
+                    var japanized_message = cart.order_messages[data.reason];
+                    if(!japanized_message){
+                        alert(data.reason);
+                    }
+                    else if (typeof japanized_message.message == "function"){
+                        japanized_message.message(self, data);
+                    } else {
+                        cart.showErrorDialog(japanized_message.title, japanized_message.message, 'btn-redo');
+                    }
+                }
+            }
+        });
+    }
+};
+
+_.extend(cart.OrderFormPresenter.prototype, Backbone.Event);
+
+cart.OrderFormView = Backbone.View.extend({
+    defaults: {
+        el: $('#selectProductTemplate'),
+        selected_stock_type_el: null
+    },
+    initialize: function() {
+        this.presenter = this.options.presenter;
+        this.updateHandler = this.options.updateHandler;
+    },
+    getChoices: function () {
+        var retval = {};
+        this.selected_stock_type_el.find('.seatListItemAux select').each(function (_, n) {
+            var g = /^product-(\d+)/.exec(n.name);
+            if (g)
+                retval[g[1]] = parseInt(n.value);
+        });
+        return retval;
+    },
+    hideForm: function(done) {
+        if (!this.selected_stock_type_el) {
+            done && done();
+            return;
+        }
+        var self = this;
+        var aux = this.selected_stock_type_el.find('.seatListItemAux');
+        aux.animate(
+            { 'height': 0 },
+            {
+                queue: false,
+                duration: 300,
+                complete: function () {
+                    aux.empty();
+                    done && done();
+                },
+                step: this.updateHandler
+            }
+        );
+    },
+    showForm: function(selected_stock_type_el, stock_type, products, done) {
+        if (!stock_type.get('availability'))
+            return false;
+        if (this.selected_stock_type_el && selected_stock_type_el[0] == this.selected_stock_type_el[0]) {
+            return false;
+        }
+        this.hideForm();
+        var orderForm = this.render(selected_stock_type_el, stock_type, products);
+        var aux = selected_stock_type_el.find('.seatListItemAux');
+        orderForm.appendTo(aux);
+        this.selected_stock_type_el = selected_stock_type_el;
+        this.collection = products;
+        var height = orderForm.height();
+        aux.animate(
+            { 'height': height },
+            {
+                queue: false,
+                duration: 300,
+                complete: function () {
+                    done && done();
+                },
+                step: this.updateHandler
+            }
+        );
+        return true;
+    },
+    render: function(selected_stock_type_el, stock_type, products) {
+        var self = this;
+        var orderForm = this.$el.clone().css("display", "block");
+        var selected_seats = orderForm.find('.selected-seats');
+        var payment_seat_products = orderForm.find('.payment-seat-products');
+        products.each(function(product) {
+            payment_seat_products.append(self.buildProduct(product));
+        });
+        var description = orderForm.find('.selectProduct-description');
+        var descriptionText = stock_type.get('description');
+        if (!descriptionText)
+            description.remove();
+        else
+            description.html(descriptionText);
+        var btn_select_seat = orderForm.find('.btn-select-buy');
+        var btn_entrust = orderForm.find('.btn-entrust-buy');
+        var btn_buy = orderForm.find('.btn-buy');
+
+        if (stock_type.get("quantity_only")) {
+            btn_select_seat.parent().css('display', 'none');
+            btn_entrust.parent().css('display', 'none');
+            btn_buy.parent().css('display', null);
+        } else {
+            btn_select_seat.parent().css('display', null);
+            btn_entrust.parent().css('display', null);
+            btn_buy.parent().css('display', 'none');
+        }
+        btn_select_seat.click(function () { self.presenter.onSelectSeatPressed(); return false; });
+        btn_entrust.click(function () { self.presenter.onEntrustPressed(); return false; });
+        btn_buy.click(function () { self.presenter.onBuyPressed(); return false; });
+
+        return orderForm;
+    },
+    buildProduct: function(product) {
         var name = $('<span class="productName"></span>');
-        name.text(value.name);
+        name.text(product.get("name"));
         var payment = $('<span class="productPrice"></span>');
-        payment.text('￥' + value.price);
-        var quantity = $('<span class="productQuantity">');
-        var pullDown = $('<select />').attr('name', "product-" + value.id);
+        payment.text('￥' + product.get("price"));
+        var quantity = $('<span class="productQuantity"></span>');
+        var pullDown = $('<select />').attr('name', 'product-' + product.id);
         for (var i = 0; i < upper_limit+1; i++) {
             $('<option></option>').text(i).val(i).appendTo(pullDown);
         }
-        util.render_template_into(quantity, value.unit_template, { num: pullDown });
-        // payment.append(amount);
-        // payment.append('<span>枚</span>');
-        $('<li class="productListItem"></li>')
-            .append(name)
-            .append(payment)
+        var descriptionText = product.get('description');
+        var description = descriptionText ?
+            $('<div class="productListItem-description"></div>').html(product.get('description')): //xxx.
+            $();
+        cart.util.render_template_into(quantity, product.get("unit_template"), { num: pullDown });
+        return $('<li class="productListItem"></li>')
             .append(quantity)
-            .appendTo(self.productChoices);
-    });
-};
-
-carts.AppView.prototype.select_seat_type = function (seat_type_id) {
-    this.seatTypeList.find('li :radio').each(function () {
-        if (this.value == seat_type_id)
-            $(this).parent().click();
-    });
-};
-
-carts.Presenter = function(model, upper_limit, callbacks) {
-    this.model = model;
-    this.upper_limit = upper_limit;
-    this.currentEventName = null;
-    this.currentPerformanceId = null;
-    this.currentSeatTypes = null;
-    this.currentSeatTypeMap = null;
-    this.callbacks = $.extend({
-        seat_types_loaded: null,
-        products_loaded: null,
-        seat_type_selected: null
-    }, callbacks || {});
-};
-
-
-carts.Presenter.prototype.init = function(view) {
-    this.view = view;
-};
-
-carts.Presenter.prototype.show_seat_types = function(get_url) {
-    var self = this;
-    this.model.fetch_seat_types(get_url, function(data) {
-        var perIdSeatTypeMap = {};
-        for (var i = data.seat_types.length; --i >= 0; ) {
-            perIdSeatTypeMap[data.seat_types[i].id] = data.seat_types[i];
-        }
-        self.currentEventName = data.eventName;
-        self.currentPerformanceId = data.performance_id;
-        self.currentSeatTypes = data.seat_types;
-        self.currentSeatTypeMap = perIdSeatTypeMap;
-        self.view.show_seat_types(data.seat_types);
-        self.view.set_performance_id(data.performance_id);
-        self.view.show_popup_title(data.event_name, data.performance_name, data.performance_start, data.venue_name);
-        self.callbacks.seat_types_loaded && self.callbacks.seat_types_loaded(data);
-    });
-};
-
-carts.Presenter.prototype.on_seat_type_selected = function(seat_type_id) {
-    var seat_type = this.currentSeatTypeMap[seat_type_id];
-    this.show_products(seat_type);
-    this.change_buy_buttons(seat_type);
-    this.view.focusRightBox();
-    this.callbacks.seat_type_selected && this.callbacks.seat_type_selected(seat_type);
-};
-
-carts.Presenter.prototype.change_buy_buttons = function(seat_type) {
-    if (seat_type.quantity_only) {
-        // 数受け
-        $('#btn-buy-container').show();
-        $('#btn-select-buy-container').hide();
-        $('#btn-entrust-buy-container').hide();
-        $('#btn-selected-order-container').hide();
-    } else {
-        // 席指定
-        $('#btn-buy-container').hide();
-        $('#btn-select-buy-container').show();
-        $('#btn-entrust-buy-container').show();
-        $('#btn-selected-order-container').show();
+            .append(payment)
+            .append(name)
+            .append(description);
     }
-};
+});
 
-carts.Presenter.prototype.on_date_selected = function(selected_date){
-    var view = this.view;
-    var venues = this.model.perDateVenuesSelection[selected_date];
 
-    view.update_performance_header_date(selected_date);
-    view.update_venues_selectfield(venues, selected_date);
-    view.update_settlement_detail(venues, selected_date);
-
-    this.model.fetch_products_from_date(
-        products_from_selected_date_url+"?selected_date="+selected_date,  // this is global variable
-        function(data){
-            view.update_settlement_pricelist(data.products);
-        }
-    );
-    
-    if (venues.length > 0) {
-        this.show_seat_types(venues[0]['seat_types_url']);
-    } else {
-        // 多分いろいろクリアしないといけない
+cart.Product = Backbone.Model.extend({
+    defaults: {
+        quantity_power: 1,
+        id: null,
+        name: null,
+        price: '0', // 表示用
+        unit_template: null
+    },
+    initialize: function() {
+        
     }
-};
+});
 
-carts.Presenter.prototype.on_venue_selected = function(selected_venue){
-    var view = this.view;
-    view.update_performance_header_venue(selected_venue);
-};
+cart.ProductQuantity = Backbone.Model.extend({
 
-carts.Presenter.prototype.show_products = function(seat_type) {
-    var self = this;
-    this.model.fetch_products(seat_type.products_url, function(data) {
-        var seat_type_name = data.seat_type.name;
-        var products = data.products;
-        self.view.show_payments(seat_type_name, products, self.upper_limit);
-        self.callbacks.products_loaded && self.callbacks.products_loaded(data);
-    });
-};
+});
 
-carts.Future = function carts_Future() {
-  this.data = null;
-  this.next = null
-  this.error = null;
-};
+cart.ProductQuantityCollection = Backbone.Collection.extend({
+    defaults: {
+        stockType: null
+    },
+    model: cart.ProductQuantity,
+    initialize: function() {
+    },
 
-carts.Future.prototype.continuation = function carts_Future_continuation(next, error) {
-  this.next = next;
-  this.error = error;
-  if (this.data)
-    this.next(data);
-};
+    setStockType: function(stockType) {
+        this.url = stockType.productsUrl;
+        this.fetch({success: function() {this.change();}});
+    }
+});
 
-carts.Future.prototype.data = function carts_Future_data(next, error) {
-  this.data = data;
-  if (this.next)
-    this.next(data);
-};
+cart.VenueView = Backbone.View.extend({
+    initialize: function() {
+        // VenueViewer作成
+        this.currentViewer = $('.venueViewer');
+        this.presenter = this.options.presenter;
+        this.readOnly = true;
+        this.zoomRatioMin = 1;
+        this.zoomRatioMax = 2.5;
+        this.updateQueue = [];
+
+        var self = this;
+        $('#selectSeat .btn-select-seat').click(function () {
+            if (self.readOnly)
+                return false;
+            self.presenter.onSelectPressed();
+            return false;
+        });
+        $('#selectSeat .btn-cancel').click(function () {
+            if (self.readOnly)
+                return false;
+            self.presenter.onCancelPressed();
+            return false;
+        });
+        var verticalSlider = $('<div></div>').smihica_vertical_slider({
+            'height': 100,
+            onchange: function (pos) {
+                var level = pos * pos;
+                var zoomRatio = self.zoomRatioMin + ((self.zoomRatioMax - self.zoomRatioMin) * level);
+                try {
+                    self.currentViewer.venueviewer("zoom", zoomRatio);
+                } catch (e) {}
+            }
+        }).css({
+            'position': 'absolute',
+            'left': '20px',
+            'top': '20px'
+        });
+        verticalSlider.appendTo(this.currentViewer.parent());
+        this.verticalSlider = verticalSlider;
+        this.tooltip = $('<div class="tooltip"></div>')
+            .css({
+                'position': 'absolute'
+            })
+            .appendTo(document.body);
+    },
+    getChoices: function () {
+        var selection = this.currentViewer.venueviewer('selection');
+        var retval = [];
+        for (var seat_id in selection) {
+            retval.push(selection[seat_id]);
+        }
+        return retval;
+    },
+    updateVenueViewer: function (dataSource, callbacks) {
+        this.updateQueue.push({ dataSource: dataSource, callbacks: callbacks });
+        if (!this.loading)
+            this._handleQueue();
+    },
+    _handleQueue: function () {
+        var self = this;
+
+        if (this.updateQueue.length == 0)
+            return;
+
+        var updateReq = this.updateQueue.shift();
+        var dataSource = updateReq.dataSource;
+        var callbacks = updateReq.callbacks;
+
+        this.currentViewer.venueviewer("remove");
+        var _callbacks = $.extend($.extend({}, callbacks), {
+            zoomRatioChanging: function (zoomRatio) {
+                return Math.min(Math.max(zoomRatio, self.zoomRatioMin), self.zoomRatioMax);
+            },
+            zoomRatioChange: function (zoomRatio) {
+                var pos = Math.sqrt((zoomRatio - self.zoomRatioMin) / (self.zoomRatioMax - self.zoomRatioMin));
+                self.verticalSlider.smihica_vertical_slider('position', pos);
+            },
+            load: function (viewer) {
+                self.zoomRatioMin = viewer.zoomRatioMin;
+                viewer.zoom(viewer.zoomRatioMin);
+                self.updateUIState();
+                callbacks.load && callbacks.load.apply(this, arguments);
+                self._handleQueue();
+            },
+            messageBoard: (function() {
+                self.tooltip.hide();
+                $(document.body).mousemove(function(e){
+                    if (self.tooltip) {
+                        self.tooltip.css({
+                            left: (e.pageX + 10) + 'px', 
+                            top:  (e.pageY + 10) + 'px'
+                        });
+                    }
+                });
+
+                return {
+                    up: function(msg) {
+                        if (self.tooltop && msg)
+                            self.tooltip.show().stop().text(msg).fadeIn(100);
+                    },
+                    down: function() {
+                        if (self.tooltip)
+                            self.tooltip.stop().fadeOut(100);
+                    }
+                }
+            })()
+        });
+
+        this.currentViewer.venueviewer({
+            dataSource: dataSource,
+            callbacks: _callbacks,
+            viewportSize: { x: 490, y: 430 }
+        })
+        this.currentViewer.venueviewer("load");
+    },
+    updateUIState: function () {
+        if (this.readOnly) {
+            this.currentViewer.venueviewer("uimode", "move");
+            $('#selectSeat').removeClass('focused');
+            $('#selectSeat').addClass('blur');
+        } else {
+            this.currentViewer.venueviewer("uimode", "select1");
+            $('#selectSeat').removeClass('blur');
+            $('#selectSeat').addClass('focused');
+        }
+    },
+    render: function() {
+        this.updateUIState();
+        this.currentViewer.venueviewer("refresh");
+    },
+    reset: function () {
+        this.currentViewer.venueviewer("unselectAll");
+        this.currentViewer.venueviewer("navigate", this.currentViewer.venueviewer("root"));
+    }
+});
+
+
+cart.Venue = Backbone.Model.extend({
+    updateDataSource: function(params) {
+        var factory = newMetadataLoaderFactory(params.data_source.seats);
+        var dataSource = {
+          drawing: function (next, error) {
+            $.ajax({
+              url: params.data_source.venue_drawing,
+              dataType: 'xml',
+              success: function (data) { next(data); },
+              error: function (xhr, text) {
+                error("Failed to load drawing data (" + text + ")");
+              }
+            });
+          },
+          stockTypes: function (next, error) {
+            var stock_types = {};
+            for (var i = params.seat_types.length; --i >= 0;)
+              stock_types[params.seat_types[i].id] = params.seat_types[i];
+            next(stock_types);
+          },
+          info: factory(function (data) { return data['info']; }),
+          seats: factory(function (data) { return data['seats']; }),
+          areas: factory(function (data) { return data['areas']; }),
+          seatAdjacencies: function (next, error, length) {
+            var _params = $.extend(params, { length_or_range: length });
+            $.ajax({
+              url: util.build_route_path(params.data_source.seat_adjacencies._params),
+              dataType: 'json',
+              success: function (data) { next(data); },
+              error: function (xhr, text) {
+                error("Failed to load adjacency data (" + text + ")");
+              }
+            });
+          },
+          stockTypes: function (next, error) {
+            continuations.stock_types_loaded.continuation(next, error);
+          }
+        };
+        this.set('dataSource', dataSource);
+        this.trigger(cart.events.ON_VENUE_DATASOURCE_UPDATED);
+    },
+    defaults: {
+    },
+    initialize: function() {
+    }
+});
+
+
+function newMetadataLoaderFactory(url) {
+  var conts = [], allData = null, first = true;
+  return function createMetadataLoader(fetch) {
+    return function metadataLoader(next, error) {
+      conts.push({ fetch: fetch, next: next, error: error });
+      if (first) {
+        $.ajax({
+          url: url,
+          dataType: 'json',
+          success: function(data) {
+            allData = data;
+            var _conts = conts;
+            conts = [];
+            for (var i = 0; i < _conts.length; i++)
+              _conts[i].next(_conts[i].fetch(data));
+          },
+          error: function(xhr, text) {
+            var message = "Failed to load " + url + " (reason: " + text + ")";
+            var _conts = conts;
+            conts = [];
+            for (var i = 0; i < _conts.length; i++)
+              _conts[i].error && _conts[i].error(message);
+          }
+        });
+        first = false;
+        return;
+      } else {
+        if (allData)
+          next(fetch(allData));
+      }
+    };
+  };
+}
+
+function createDataSource(params) {
+  var factory = newMetadataLoaderFactory(params['data_source']['seats']);
+  var drawingCache = {};
+  return {
+    drawing: function (page) {
+      return function (next, error) {
+        var data = drawingCache[page];
+        if (data) {
+          next(data);
+          return;
+        }
+        $.ajax({
+          url: params['data_source']['venue_drawing'].replace('__part__', page),
+          dataType: 'xml',
+          success: function (data) {
+            drawingCache[page] = data;
+            next(data);
+          },
+          error: function (xhr, text) {
+            error("Failed to load drawing data (" + text + ")");
+          }
+        });
+      }
+    },
+    stockTypes: function (next, error) {
+      var stock_types = {};
+      for (var i = params.seat_types.length; --i >= 0;)
+        stock_types[params.seat_types[i].id] = params.seat_types[i];
+      next(stock_types);
+    },
+    info: factory(function (data) { return data['info']; }),
+    seats: factory(function (data) { return data['seats']; }),
+    areas: factory(function (data) { return data['areas']; }),
+    seatAdjacencies: function (next, error, length) {
+      var _params = $.extend(params, { length_or_range: length });
+      $.ajax({
+        url: util.build_route_path(params.data_source.seat_adjacencies._params),
+        dataType: 'json',
+        success: function (data) { next(data); },
+        error: function (xhr, text) {
+          error("Failed to load adjacency data (" + text + ")");
+        }
+      });
+    },
+    pages: factory(function (data) { return data['pages']; })
+  };
+}
+

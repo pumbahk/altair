@@ -13,7 +13,7 @@ ${shipping_address.last_name_kana} ${shipping_address.first_name_kana}
 ■電話番号
 ${shipping_address.tel_1}
 ■メールアドレス
-${shipping_address.email}
+${shipping_address.email_1}
 -----
 ■受付番号
 ${lot_entry.entry_no}
@@ -51,7 +51,7 @@ ${lot_entry.created_at}
 
 ■お受取
 お受取方法： 配送
-※配送手数料：ｘｘ円/件をチケット代金とは別に頂戴いたします。
+※引取手数料：ｘｘ円/件をチケット代金とは別に頂戴いたします。
 
 お申込内容は、「お申込確認ページ」（ https://xxxxxxx/orderreview  ）からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。
 ---------------

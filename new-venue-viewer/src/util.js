@@ -36,8 +36,10 @@ exports.convertToFashionStyle = function Util_convertToFashionStyle(style, gradi
             [0, new Fashion.Color("#fff")],
             [1, new Fashion.Color(fill.color || "#fff")]
           ], .125);
-      } else {
+      } else if(fill.color) {
         return new Fashion.FloodFill(new Fashion.Color(fill.color));
+      } else {
+        return null;
       }
     case 'linear':
       return new Fashion.LinearGradientFill(_map(fill.colors, function (c) { return new Fashion.Color(c); }), fill.angle);

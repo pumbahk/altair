@@ -19,6 +19,7 @@ from zope.deprecation import deprecate
 from ..models import DBSession
 from ..core import models as c_models
 from ..users import models as u_models
+from ..mailmags import models as mailmag_models
 from ticketing.views import mobile_request
 from ticketing.fanstatic import with_jquery, with_jquery_tools
 from .models import Cart
@@ -43,7 +44,7 @@ from webob.multidict import MultiDict
 from . import api
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from .stocker import NotEnoughStockException
-from .interfaces import IMobileRequest
+from ticketing.mobile.interfaces import IMobileRequest
 import transaction
 from ticketing.cart.selectable_renderer import selectable_renderer
 logger = logging.getLogger(__name__)
@@ -153,6 +154,7 @@ class IndexView(IndexViewMixin):
         # normal_sales_segment で良い
         performances = api.performance_names(self.request, self.context.event, self.context.normal_sales_segment)
         if not performances:
+            logger.error('NoPerformance Error: event_id="%s" sales_segment_id="%s"' % (self.context.event.id, self.context.normal_sales_segment.id))
             raise NoPerformanceError(event_id=self.context.event.id, sales_segment_id=self.context.normal_sales_segment.id) # NoPerformanceを作る
 
         from collections import OrderedDict
@@ -551,7 +553,7 @@ class ReserveView(object):
                               total_amount=h.format_number(cart.tickets_amount),
                     ))
 
-    @view_config(route_name='cart.order', request_method="GET", renderer=selectable_renderer('carts_mobile/%(membership)s/reserve.html'), request_type=".interfaces.IMobileRequest")
+    @view_config(route_name='cart.order', request_method="GET", renderer=selectable_renderer('carts_mobile/%(membership)s/reserve.html'), request_type='ticketing.mobile.interfaces.IMobileRequest')
     def reserve_mobile(self):
         cart = api.get_cart_safe(self.request)
 
@@ -585,7 +587,7 @@ class ReserveView(object):
             ))
         return data
 
-    @view_config(route_name='cart.products', renderer=selectable_renderer('carts_mobile/%(membership)s/products.html'), xhr=False, request_type=".interfaces.IMobileRequest", request_method="POST")
+    @view_config(route_name='cart.products', renderer=selectable_renderer('carts_mobile/%(membership)s/products.html'), xhr=False, request_type='ticketing.mobile.interfaces.IMobileRequest', request_method="POST")
     def products_form(self):
         """商品の値検証とおまかせ座席確保とカート作成
         """
@@ -721,7 +723,7 @@ class PaymentView(object):
         self.context = request.context
 
     @view_config(route_name='cart.payment', request_method="GET", renderer=selectable_renderer("carts/%(membership)s/payment.html"))
-    @view_config(route_name='cart.payment', request_type='.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer("carts_mobile/%(membership)s/payment.html"))
+    @view_config(route_name='cart.payment', request_type='ticketing.mobile.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer("carts_mobile/%(membership)s/payment.html"))
     def __call__(self):
         """ 支払い方法、引き取り方法選択
         """
@@ -744,14 +746,15 @@ class PaymentView(object):
                 last_name_kana=user_profile.last_name_kana,
                 first_name=user_profile.first_name,
                 first_name_kana=user_profile.first_name_kana,
-                tel=user_profile.tel_1,
+                tel_1=user_profile.tel_1,
                 fax=getattr(user_profile, "fax", None), 
                 zip=user_profile.zip,
                 prefecture=user_profile.prefecture,
                 city=user_profile.city,
                 address_1=user_profile.address_1,
                 address_2=user_profile.address_2,
-                mail_address=user_profile.email
+                email_1=user_profile.email_1,
+                email_2=user_profile.email_2
                 )
         else:
             formdata = None
@@ -777,8 +780,9 @@ class PaymentView(object):
                 address_1=form.data['address_1'],
                 address_2=form.data['address_2'],
                 country=u"日本国",
-                email=form.data['mail_address'],
-                tel_1=form.data['tel'],
+                email_1=form.data['email_1'],
+                email_2=form.data['email_2'],
+                tel_1=form.data['tel_1'],
                 tel_2=None,
                 fax=form.data['fax']
                 )
@@ -800,7 +804,7 @@ class PaymentView(object):
 
     @back(back_to_top, back_to_product_list_for_mobile)
     @view_config(route_name='cart.payment', request_method="POST", renderer=selectable_renderer("carts/%(membership)s/payment.html"))
-    @view_config(route_name='cart.payment', request_type='.interfaces.IMobileRequest', request_method="POST", renderer=selectable_renderer("carts_mobile/%(membership)s/payment.html"))
+    @view_config(route_name='cart.payment', request_type='ticketing.mobile.interfaces.IMobileRequest', request_method="POST", renderer=selectable_renderer("carts_mobile/%(membership)s/payment.html"))
     def post(self):
         """ 支払い方法、引き取り方法選択
         """
@@ -838,29 +842,8 @@ class PaymentView(object):
             self.request,
             client_name=client_name,
             payment_delivery_method_pair_id=payment_delivery_method_pair_id,
-            mail_address=shipping_address.email,
+            email_1=shipping_address.email_1,
         )
-        #order = dict(
-        #    client_name=client_name,
-        #    payment_delivery_method_pair_id=payment_delivery_method_pair_id,
-        #    mail_address=shipping_address.email,
-        #)
-        #self.request.session['order'] = order
-
-        # == begin Payment.prepare ==
-        # payment_delivery_plugin = api.get_payment_delivery_plugin(self.request, 
-        #     payment_delivery_pair.payment_method.payment_plugin_id,
-        #     payment_delivery_pair.delivery_method.delivery_plugin_id,)
-        # if payment_delivery_plugin is not None:
-        #     res = payment_delivery_plugin.prepare(self.request, cart)
-        #     if res is not None and callable(res):
-        #         return res
-        # else:
-        #     payment_plugin = api.get_payment_plugin(self.request, payment_delivery_pair.payment_method.payment_plugin_id)
-        #     res = payment_plugin.prepare(self.request, cart)
-        #     if res is not None and callable(res):
-        #         return res
-        # == end Payment.prepare ==
         payment_confirm_url = self.request.route_url('payment.confirm')
         self.request.session['payment_confirm_url'] = payment_confirm_url
 
@@ -886,7 +869,8 @@ class PaymentView(object):
             address_1=data['address_1'],
             address_2=data['address_2'],
             country=data['country'],
-            email=data['email'],
+            email_1=data['email_1'],
+            email_2=data['email_2'],
             tel_1=data['tel_1'],
             tel_2=data['tel_2'],
             fax=data['fax'],
@@ -901,15 +885,15 @@ class ConfirmView(object):
         self.context = request.context
 
     @view_config(route_name='payment.confirm', request_method="GET", renderer=selectable_renderer("carts/%(membership)s/confirm.html"))
-    @view_config(route_name='payment.confirm', request_type='.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer("carts_mobile/%(membership)s/confirm.html"))
+    @view_config(route_name='payment.confirm', request_type='ticketing.mobile.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer("carts_mobile/%(membership)s/confirm.html"))
     def get(self):
         api.check_sales_segment_term(self.request)
         form = schemas.CSRFSecureForm(csrf_context=self.request.session)
         cart = api.get_cart_safe(self.request)
 
         # == MailMagazinに移動 ==
-        magazines = u_models.MailMagazine.query.outerjoin(u_models.MailSubscription) \
-            .filter(u_models.MailMagazine.organization==cart.performance.event.organization) \
+        magazines = mailmag_models.MailMagazine.query.outerjoin(mailmag_models.MailSubscription) \
+            .filter(mailmag_models.MailMagazine.organization==cart.performance.event.organization) \
             .all()
 
         user = self.context.get_or_create_user()
@@ -929,7 +913,7 @@ class CompleteView(object):
 
     @back(back_to_top, back_to_product_list_for_mobile)
     @view_config(route_name='payment.finish', renderer=selectable_renderer("carts/%(membership)s/completion.html"), request_method="POST")
-    @view_config(route_name='payment.finish', request_type='.interfaces.IMobileRequest', renderer=selectable_renderer("carts_mobile/%(membership)s/completion.html"), request_method="POST")
+    @view_config(route_name='payment.finish', request_type='ticketing.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("carts_mobile/%(membership)s/completion.html"), request_method="POST")
     def __call__(self):
         api.check_sales_segment_term(self.request)
         form = schemas.CSRFSecureForm(formdata=self.request.params, csrf_context=self.request.session)
@@ -1007,7 +991,7 @@ class CompleteView(object):
         del self.request._cart
         cart = api.get_cart(self.request)
         order_id = order.id
-        mail_address = cart.shipping_address.email
+        emails = cart.shipping_address.emails
         plain_user = self.context.get_or_create_user()
         user_id = None
         if plain_user is not None:
@@ -1019,24 +1003,25 @@ class CompleteView(object):
         order = DBSession.query(order.__class__).get(order_id)
  
         # メール購読
-        self.save_subscription(user, mail_address)
+        self.save_subscription(user, emails)
         # == end MailMagazineRegistration ==
         api.remove_cart(self.request)
 
         api.logout(self.request)
         return dict(order=order)
 
-    def save_subscription(self, user, mail_address):
-        magazines = u_models.MailMagazine.query.all()
+    def save_subscription(self, user, emails):
+        magazines = mailmag_models.MailMagazine.query.all()
 
         # 購読
         magazine_ids = self.request.params.getall('mailmagazine')
         logger.debug("magazines: %s" % magazine_ids)
-        for subscription in u_models.MailMagazine.query.filter(u_models.MailMagazine.id.in_(magazine_ids)).all():
-            if subscription.subscribe(user, mail_address):
-                logger.debug("User %s starts subscribing %s for <%s>" % (user, subscription.name, mail_address))
-            else:
-                logger.debug("User %s is already subscribing %s for <%s>" % (user, subscription.name, mail_address))
+        for subscription in mailmag_models.MailMagazine.query.filter(mailmag_models.MailMagazine.id.in_(magazine_ids)).all():
+            for email in emails:
+                if subscription.subscribe(user, email):
+                    logger.debug("User %s starts subscribing %s for <%s>" % (user, subscription.name, email))
+                else:
+                    logger.debug("User %s is already subscribing %s for <%s>" % (user, subscription.name, email))
 
 
 @view_defaults(decorator=with_jquery.not_when(mobile_request))
@@ -1061,7 +1046,7 @@ class MobileIndexView(IndexViewMixin):
         super(MobileIndexView, self).__init__(request)
         self.prepare()
 
-    @view_config(route_name='cart.index', renderer=selectable_renderer('carts_mobile/%(membership)s/index.html'), xhr=False, permission="buy", request_type=".interfaces.IMobileRequest")
+    @view_config(route_name='cart.index', renderer=selectable_renderer('carts_mobile/%(membership)s/index.html'), xhr=False, permission="buy", request_type='ticketing.mobile.interfaces.IMobileRequest')
     def __call__(self):
         self.check_redirect(mobile=True)
         venue_name = self.request.params.get('v')
@@ -1113,7 +1098,7 @@ class MobileSelectProductView(object):
         self.request = request
         self.context = request.context
 
-    @view_config(route_name='cart.seat_types', renderer=selectable_renderer('carts_mobile/%(membership)s/seat_types.html'), xhr=False, request_type=".interfaces.IMobileRequest")
+    @view_config(route_name='cart.seat_types', renderer=selectable_renderer('carts_mobile/%(membership)s/seat_types.html'), xhr=False, request_type='ticketing.mobile.interfaces.IMobileRequest')
     def __call__(self):
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.matchdict['performance_id']
@@ -1167,7 +1152,7 @@ class MobileSelectProductView(object):
             )
         return data
 
-    @view_config(route_name='cart.products', renderer=selectable_renderer('carts_mobile/%(membership)s/products.html'), xhr=False, request_type=".interfaces.IMobileRequest")
+    @view_config(route_name='cart.products', renderer=selectable_renderer('carts_mobile/%(membership)s/products.html'), xhr=False, request_type='ticketing.mobile.interfaces.IMobileRequest')
     def products(self):
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.matchdict['performance_id']
@@ -1260,7 +1245,7 @@ class OutTermSalesView(object):
                     sales_segment=self.context.sales_segment)
 
     @view_config(context='.exceptions.OutTermSalesException', renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/out_term_sales.html'), 
-        request_type=".interfaces.IMobileRequest")
+        request_type='ticketing.mobile.interfaces.IMobileRequest')
     def mobile(self):
         api.logout(self.request)
         return dict(event=self.context.event, 

@@ -9,7 +9,7 @@ from ticketing.users.models import SexEnum
 
 class ClientForm(_ClientForm):
     sex = fields.RadioField(u'性別', choices=[(str(SexEnum.Male), u'男性'), (str(SexEnum.Female), u'女性')])
-    mobile_tel = fields.TextField(u'電話番号(携帯)')
+    tel_2 = fields.TextField(u'電話番号(携帯)')
 
     def get_validated_address_data(self):
         if self.validate():
@@ -24,9 +24,9 @@ class ClientForm(_ClientForm):
                 address_1=self.data['address_1'],
                 address_2=self.data['address_2'],
                 country=u"日本国",
-                email=self.data['mail_address'],
-                tel_1=self.data['tel'],
-                tel_2=self.data['mobile_tel'],
+                email_1=self.data['email_1'],
+                tel_1=self.data['tel_1'],
+                tel_2=self.data['tel_2'],
                 fax=self.data['fax'],
                 sex=self.data['sex']
                 )

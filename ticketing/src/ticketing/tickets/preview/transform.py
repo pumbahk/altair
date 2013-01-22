@@ -61,10 +61,19 @@ class SVGTransformer(object):
             if self.data is None:
                 return self.svg
             xmltree = etree.fromstring(self.svg)
-            return self.as_string(self.scale_image(self.put_pageformat(xmltree)))
+            return self.as_string(self.scale_image(self.put_pageformat(self.translate_image(xmltree))))
         except Exception, e:
             logger.exception(e)
             raise TicketPreviewTransformException(u"svgの変換に失敗しました。%s" % str(e))
+
+    def translate_image(self, xmltree):
+        svg = _find_svg(xmltree)
+        ticket_format = self.data["ticket_format"]
+        po = ticket_format.data.get("print_offset")
+        if po:
+            attrs = {"transform": "translate(%s, %s)" % (as_user_unit(po.get('x', '0')), as_user_unit(po.get('y', '0')))}
+            wrap_element(svg, "g", attrs)
+        return xmltree
 
     def put_pageformat(self, xmltree):
         svg = _find_svg(xmltree)

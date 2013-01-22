@@ -22,8 +22,7 @@ from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, 
 from sqlalchemy.orm import join, backref, column_property, joinedload, deferred, relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.sql import exists
-from sqlalchemy.sql.expression import asc, desc, exists, select, table, column
+from sqlalchemy.sql.expression import asc, desc, exists, select, table, column, case, null
 from sqlalchemy.ext.associationproxy import association_proxy
 from pyramid.threadlocal import get_current_registry
 
@@ -34,7 +33,8 @@ from ticketing.models import (
     LogicallyDeleted, Identifier, DomainConstraintError, 
     WithTimestamp, BaseModel
 )
-from ticketing.utils import StandardEnum
+from standardenum import StandardEnum
+from ticketing.utils import is_nonmobile_email_address
 from ticketing.users.models import User, UserCredential
 from ticketing.sej.models import SejOrder
 from ticketing.sej.exceptions import SejServerError
@@ -1665,7 +1665,8 @@ class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = Column(Identifier, primary_key=True)
     user_id = Column(Identifier, ForeignKey("User.id"))
     user = relationship('User', backref='shipping_addresses')
-    email = Column(String(255))
+    email_1 = Column(Unicode(255))
+    email_2 = Column(Unicode(255))
     nick_name = Column(String(255))
     first_name = Column(String(255))
     last_name = Column(String(255))
@@ -1690,13 +1691,50 @@ class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def full_name(self):
         return self.last_name + u' ' + self.first_name
 
+    @hybrid_property
+    def email(self):
+        return self.email_1 or self.email_2
+
+    @email.expression
+    def email_expr(self):
+        return case([
+            (self.email_1 != None, self.email_1),
+            (self.email_2 != None, self.email_2)
+            ],
+            else_=null())
+
+
+    @property
+    def emails(self):
+        retval = []
+        if self.email_1:
+            retval.append(self.email_1)
+        if self.email_2:
+            retval.append(self.email_2)
+        return retval
+
+    @property
+    def email_pc(self):
+        if self.email_1 and is_nonmobile_email_address(self.email_1):
+            return self.email_1
+        if self.email_2 and is_nonmobile_email_address(self.email_2):
+            return self.email_2
+        return None
+
+    @property
+    def email_mobile(self):
+        if self.email_1 and not is_nonmobile_email_address(self.email_1):
+            return self.email_1
+        if self.email_2 and not is_nonmobile_email_address(self.email_2):
+            return self.email_2
+        return None
 
 class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Order'
     __table_args__= (
         UniqueConstraint('order_no', 'branch_no', name="ix_Order_order_no_branch_no"),
         )
-    __clone_excluded__ = ['carts', 'ordered_from', 'payment_delivery_pair', 'performance', 'user', '_attributes']
+    __clone_excluded__ = ['cart', 'ordered_from', 'payment_delivery_pair', 'performance', 'user', '_attributes']
 
     id = Column(Identifier, primary_key=True)
     user_id = Column(Identifier, ForeignKey("User.id"))
@@ -2058,7 +2096,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             # 完全一致です
             query = query \
                 .join(Order.shipping_address) \
-                .filter(ShippingAddress.email == condition)
+                .filter(or_(ShippingAddress.email_1 == condition,
+                            ShippingAddress.email_2 == condition))
         condition = form.member_id.data
         if condition:
             query = query.join(Order.user).join(User.user_credential).filter(UserCredential.auth_identifier==condition)
@@ -2312,7 +2351,13 @@ class TicketPrintQueueEntry(Base, BaseModel):
 
     @classmethod
     def enqueue(self, operator, ticket, data, summary, ordered_product_item=None, seat=None):
-        DBSession.add(TicketPrintQueueEntry(operator=operator, ticket_id=ticket.id, data=data, summary=summary, ordered_product_item_id=ordered_product_item.id))
+        entry = TicketPrintQueueEntry(operator=operator, 
+                                      ticket=ticket, 
+                                      data=data, 
+                                      summary=summary, 
+                                      ordered_product_item=ordered_product_item, 
+                                      seat=seat)
+        DBSession.add(entry)
 
     @classmethod
     def peek(self, operator, ticket_format_id, order_id=None):
@@ -2463,6 +2508,7 @@ class Host(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
     organization = relationship('Organization', backref="hosts")
     base_url = Column(Unicode(255))
+    mobile_base_url = Column(Unicode(255))
 
 class OrderNoSequence(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderNoSequence'

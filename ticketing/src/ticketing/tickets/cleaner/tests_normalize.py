@@ -133,6 +133,16 @@ class SVGNormalizeUnitTests(unittest.TestCase):
         self._callFUT(io, result)
         self.assertEquals("<doc><a><b> xxx </b> {{yyy}}</a></doc>", result.getvalue())
 
+    def test_cleaned_xml10(self):
+        """<a><b> xxx </b> {{y</a>yy}}"""
+        from StringIO import StringIO
+        io = StringIO("<doc><a><b> x{x}x </b> {{y</a>yy}}</doc>")
+        
+        result = StringIO()
+        self._callFUT(io, result)
+        self.assertEquals("<doc><a><b> x{x}x </b> {{yyy}}</a></doc>", result.getvalue())
+
+        
 class EliminatedTagNormalizeUnitTests(unittest.TestCase):
     def _callFUT(self, *args, **kwargs):
         from ticketing.tickets.cleaner.normalize import _normalize
