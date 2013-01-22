@@ -196,8 +196,8 @@ class PromotionFilterForm(Form):
             qs = qs.filter(Promotion.kinds.any(Kind.name==kind.name))
         return qs
 
-_hierarchy_choices = [(x, x) for x in [u"大", u"中", u"小", "top_couter", "top_inner", "header_menu", "footer_menu", "masked", "side_banner", "side_menu"]]
-_link_choices =  [(x, x) for x in ["header_menu", "footer_menu", "masked", "side_banner", "side_menu", "top_inner", ]]
+_hierarchy_choices = [(x, x) for x in [u"大", u"中", u"小", "top_couter", "top_inner", "header_menu", "footer_menu", "masked", "side_banner", "side_menu", u"header_large_button"]]
+_link_choices =  [(x, x) for x in ["header_menu", "footer_menu", "masked", "side_banner", "side_menu", "top_inner", "top_large_button"]]
 class CategoryForm(Form):
     name = fields.TextField(label=u"カテゴリ名")
     origin = fields.TextField(label=u"分類")

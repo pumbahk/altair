@@ -23,7 +23,10 @@
         <div class="header-inner">
             <img src="${request.static_url("altaircms:static/vissel/images/logo.gif")}" alt="VISSEL TICKET" />
             <div class="gnavi">
-                <a href="" class="historybtn">購入履歴の確認</a><br />
+%for c in myhelper._get_categories(request, "header_large_button"):
+    ${h.link.get_link_tag_from_category(request,c)}
+     <br />
+%endfor
                 <ul>
 %for c in myhelper._get_categories(request, "header_menu"):
     <li>${h.link.get_link_tag_from_category(request,c)}</li>
