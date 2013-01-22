@@ -53,7 +53,7 @@ def get_sales_summary(form, organization, group='Event'):
             sales_end_day,
         ).group_by(Event.id)
 
-    for id, title, start_on, total_quantity, vacant_quantity, event_start_day, event_end_day in query.all():
+    for id, title, start_on, total_quantity, vacant_quantity, sales_start_day, sales_end_day in query.all():
         reports[id] = dict(
             id=id,
             title=title,
@@ -64,8 +64,8 @@ def get_sales_summary(form, organization, group='Event'):
             fee_amount=0,
             price_amount=0,
             product_quantity=0,
-            event_start_day=event_start_day,
-            event_end_day=event_end_day,
+            sales_start_day=sales_start_day,
+            sales_end_day=sales_end_day,
         )
 
     # 販売金額、販売枚数
