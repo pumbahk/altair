@@ -24,6 +24,7 @@ from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql.expression import asc, desc, exists, select, table, column, case, null
 from sqlalchemy.ext.associationproxy import association_proxy
+from pyramid.threadlocal import get_current_registry
 
 from .exceptions import InvalidStockStateError
 from ticketing.models import (
