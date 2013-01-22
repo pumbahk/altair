@@ -44,7 +44,7 @@
          </%block>
             </div>
         <div class="copyright">
-            Copyright &copy; 2010-2011 TicketStar Inc. All Rights Reserved. 
+            Copyright &copy; 2010-2013 TicketStar Inc. All Rights Reserved. 
         </div>
     </div>
 </div>
