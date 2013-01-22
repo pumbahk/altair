@@ -103,6 +103,8 @@
 
   function parseCSSAsSvgStyle(str, defs) {
     var styles = parseCSSStyleText(str);
+    var textAnchor = null;
+    var textAnchorString = styles['text-anchor'];
     var fill = null;
     var fillString = styles['fill'];
     var fillOpacity = null;
@@ -113,6 +115,9 @@
     var strokeWidthString = styles['stroke-width'];
     var strokeOpacity = null;
     var strokeOpacityString = styles['stroke-opacity'];
+    if (textAnchorString) {
+        textAnchor = textAnchorString[0];
+    }
     if (fillString) {
       if (fillString[0] == 'none') {
         fill = false;
@@ -143,6 +148,7 @@
       strokeOpacity = parseFloat(strokeOpacityString[0]);
     }
     return {
+      textAnchor: textAnchor,
       fill: fill,
       fillOpacity: fillOpacity,
       stroke: stroke,
@@ -153,6 +159,7 @@
 
   function mergeSvgStyle(origStyle, newStyle) {
     return {
+      textAnchor: newStyle.textAnchor !== null ? newStyle.textAnchor: origStyle.textAnchor,
       fill: newStyle.fill !== null ? newStyle.fill: origStyle.fill,
       fillOpacity: newStyle.fillOpacity !== null ? newStyle.fillOpacity: origStyle.fillOpacity,
       stroke: newStyle.stroke !== null ? newStyle.stroke: origStyle.stroke,
@@ -310,13 +317,13 @@
           var attrs = util.allAttributes(n);
 
           var currentSvgStyle = svgStyle;
-          if (attrs.style)
-            currentSvgStyle = mergeSvgStyle(currentSvgStyle, parseCSSAsSvgStyle(attrs.style, defs));
           if (attrs['class']) {
             var style = styleClasses[attrs['class']];
             if (style)
               currentSvgStyle = mergeSvgStyle(currentSvgStyle, style);
           }
+          if (attrs.style)
+            currentSvgStyle = mergeSvgStyle(currentSvgStyle, parseCSSAsSvgStyle(attrs.style, defs));
 
           switch (n.nodeName) {
             case 'defs':
@@ -334,13 +341,20 @@
               break;
 
             case 'text':
-              if (n.firstChild) {
+            case 'tspan':
+              if (n.childNodes.length==1 && n.firstChild.nodeType == Node.TEXT_NODE) {
                 shape = new Fashion.Text({
                   fontSize: 10,
                   text: n.firstChild.nodeValue,
                   zIndex: 99
                 });
                 shape.style(CONF.DEFAULT.TEXT_STYLE);
+                if(currentSvgStyle.textAnchor) {
+				  shape.anchor(currentSvgStyle.textAnchor);
+                }
+              } else if (n.nodeName == 'text') {
+				  arguments.callee.call(self, currentSvgStyle, defs, n.childNodes);
+                  continue outer;
               }
               break;
 

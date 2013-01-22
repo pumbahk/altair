@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['sAUT3BRIR_GP0TK0'] = (function (exports) { (function () { 
+__LIBS__['IYAS6QY4LSVKO9R2'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -73,33 +73,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['DFQG4JYG94714AL2'] = (function (exports) { (function () { 
-
-/************** translations.js **************/
-
-
-/************** en.js **************/
-exports.en = {
-  altair: {
-    venue_editor: {
-      unassigned: "Unassigned",
-      quantity_cannot_be_negative: "Quantity cannot be negative"
-    }
-  } 
-};
-
-
-/************** ja.js **************/
-exports.ja = {
-  altair: {
-    venue_editor: {
-      unassigned: "未割当",
-      quantity_cannot_be_negative: "在庫数は0より大きい数にしてください"
-    }
-  } 
-};
- })(); return exports; })({});
-__LIBS__['O0N69H25W135I3JZ'] = (function (exports) { (function () { 
+__LIBS__['PLMK4O6PEBF34_JP'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -197,8 +171,23 @@ exports.mergeStyle = function mergeStyle(a, b) {
     stroke: (b.stroke ? b.stroke: a.stroke) || null
   };
 };
+
+timer = function(msg) {
+    this.start = (new Date()).getTime();
+	if(msg) {
+		console.log(msg);
+	}
+};
+timer.prototype.lap = function(msg) {
+	var lap = (new Date()).getTime()-this.start;
+    this.start = (new Date()).getTime();
+	if(msg) {
+		console.log(msg+": "+lap+"msec");
+	}
+    return lap;
+};
  })(); return exports; })({});
-__LIBS__['g85V4YGS7AU794VZ'] = (function (exports) { (function () { 
+__LIBS__['z_15L_04KRVJENLW'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -247,12 +236,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['OGKP52K4DW5DHQ77'] = (function (exports) { (function () { 
+__LIBS__['RGLFRO99UVNQH2LQ'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['O0N69H25W135I3JZ'];
-var CONF = __LIBS__['sAUT3BRIR_GP0TK0'];
-var IdentifiableSet = __LIBS__['g85V4YGS7AU794VZ'].IdentifiableSet;
+var util = __LIBS__['PLMK4O6PEBF34_JP'];
+var CONF = __LIBS__['IYAS6QY4LSVKO9R2'];
+var IdentifiableSet = __LIBS__['z_15L_04KRVJENLW'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -728,12 +717,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['X5NQQWAQKKX3X7DE'] = (function (exports) { (function () { 
+__LIBS__['GPYAC_M_0U101M_H'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['O0N69H25W135I3JZ'];
-var CONF = __LIBS__['sAUT3BRIR_GP0TK0'];
-var models = __LIBS__['OGKP52K4DW5DHQ77'];
+var util = __LIBS__['PLMK4O6PEBF34_JP'];
+var CONF = __LIBS__['IYAS6QY4LSVKO9R2'];
+var models = __LIBS__['RGLFRO99UVNQH2LQ'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -924,18 +913,44 @@ var Seat = exports.Seat = Backbone.Model.extend({
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
+__LIBS__['gHGGPH3GA_7E31NI'] = (function (exports) { (function () { 
+
+/************** translations.js **************/
+
+
+/************** en.js **************/
+exports.en = {
+  altair: {
+    venue_editor: {
+      unassigned: "Unassigned",
+      quantity_cannot_be_negative: "Quantity cannot be negative"
+    }
+  } 
+};
+
+
+/************** ja.js **************/
+exports.ja = {
+  altair: {
+    venue_editor: {
+      unassigned: "未割当",
+      quantity_cannot_be_negative: "在庫数は0より大きい数にしてください"
+    }
+  } 
+};
+ })(); return exports; })({});
 
 
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['sAUT3BRIR_GP0TK0'];
-  var models = __LIBS__['OGKP52K4DW5DHQ77'];
-  var util = __LIBS__['O0N69H25W135I3JZ'];
-  var viewobjects = __LIBS__['X5NQQWAQKKX3X7DE'];
-  var IdentifiableSet = __LIBS__['g85V4YGS7AU794VZ'].IdentifiableSet;
+  var CONF = __LIBS__['IYAS6QY4LSVKO9R2'];
+  var models = __LIBS__['RGLFRO99UVNQH2LQ'];
+  var util = __LIBS__['PLMK4O6PEBF34_JP'];
+  var viewobjects = __LIBS__['GPYAC_M_0U101M_H'];
+  var IdentifiableSet = __LIBS__['z_15L_04KRVJENLW'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['DFQG4JYG94714AL2'];
+    I18n.translations = __LIBS__['gHGGPH3GA_7E31NI'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -1032,6 +1047,8 @@ var Seat = exports.Seat = Backbone.Model.extend({
 
   function parseCSSAsSvgStyle(str, defs) {
     var styles = parseCSSStyleText(str);
+    var textAnchor = null;
+    var textAnchorString = styles['text-anchor'];
     var fill = null;
     var fillString = styles['fill'];
     var fillOpacity = null;
@@ -1042,6 +1059,9 @@ var Seat = exports.Seat = Backbone.Model.extend({
     var strokeWidthString = styles['stroke-width'];
     var strokeOpacity = null;
     var strokeOpacityString = styles['stroke-opacity'];
+    if (textAnchorString) {
+        textAnchor = textAnchorString[0];
+    }
     if (fillString) {
       if (fillString[0] == 'none') {
         fill = false;
@@ -1072,6 +1092,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
       strokeOpacity = parseFloat(strokeOpacityString[0]);
     }
     return {
+      textAnchor: textAnchor,
       fill: fill,
       fillOpacity: fillOpacity,
       stroke: stroke,
@@ -1082,6 +1103,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
 
   function mergeSvgStyle(origStyle, newStyle) {
     return {
+      textAnchor: newStyle.textAnchor !== null ? newStyle.textAnchor: origStyle.textAnchor,
       fill: newStyle.fill !== null ? newStyle.fill: origStyle.fill,
       fillOpacity: newStyle.fillOpacity !== null ? newStyle.fillOpacity: origStyle.fillOpacity,
       stroke: newStyle.stroke !== null ? newStyle.stroke: origStyle.stroke,
@@ -1239,13 +1261,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
           var attrs = util.allAttributes(n);
 
           var currentSvgStyle = svgStyle;
-          if (attrs.style)
-            currentSvgStyle = mergeSvgStyle(currentSvgStyle, parseCSSAsSvgStyle(attrs.style, defs));
           if (attrs['class']) {
             var style = styleClasses[attrs['class']];
             if (style)
               currentSvgStyle = mergeSvgStyle(currentSvgStyle, style);
           }
+          if (attrs.style)
+            currentSvgStyle = mergeSvgStyle(currentSvgStyle, parseCSSAsSvgStyle(attrs.style, defs));
 
           switch (n.nodeName) {
             case 'defs':
@@ -1263,13 +1285,20 @@ var Seat = exports.Seat = Backbone.Model.extend({
               break;
 
             case 'text':
-              if (n.firstChild) {
+            case 'tspan':
+              if (n.childNodes.length==1 && n.firstChild.nodeType == Node.TEXT_NODE) {
                 shape = new Fashion.Text({
                   fontSize: 10,
                   text: n.firstChild.nodeValue,
                   zIndex: 99
                 });
                 shape.style(CONF.DEFAULT.TEXT_STYLE);
+                if(currentSvgStyle.textAnchor) {
+				  shape.anchor(currentSvgStyle.textAnchor);
+                }
+              } else if (n.nodeName == 'text') {
+				  arguments.callee.call(self, currentSvgStyle, defs, n.childNodes);
+                  continue outer;
               }
               break;
 
