@@ -151,32 +151,32 @@ a:hover img {
 }
 
 .historybtn {
-	-moz-box-shadow:inset 0px 1px 0px 0px #fce2c1;
-	-webkit-box-shadow:inset 0px 1px 0px 0px #fce2c1;
-	box-shadow:inset 0px 1px 0px 0px #fce2c1;
-	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ffc145), color-stop(1, #c79354) );
-	background:-moz-linear-gradient( center top, #ffc145 5%, #c79354 100% );
-	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffc145', endColorstr='#c79354');
-	background-color:#ffc145;
+	-moz-box-shadow:inset 0px 1px 0px 0px #faeec0;
+	-webkit-box-shadow:inset 0px 1px 0px 0px #faeec0;
+	box-shadow:inset 0px 1px 0px 0px #faeec0;
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ffd147), color-stop(1, #ba862c) );
+	background:-moz-linear-gradient( center top, #ffd147 5%, #ba862c 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffd147', endColorstr='#ba862c');
+	background-color:#ffd147;
 	-moz-border-radius:6px;
 	-webkit-border-radius:6px;
 	border-radius:6px;
-	border:1px solid #edaf51;
+	border:1px solid #eeb44f;
 	display:inline-block;
 	color:#ffffff;
 	font-family:arial;
 	font-size:15px;
 	font-weight:bold;
-	padding:6px 80px;
+	padding:6px 63px;
 	text-decoration:none;
 	text-shadow:1px 1px 0px #946315;
 	margin-bottom: 8px;
 }
 .historybtn:hover {
-	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #c79354), color-stop(1, #ffc145) );
-	background:-moz-linear-gradient( center top, #c79354 5%, #ffc145 100% );
-	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#c79354', endColorstr='#ffc145');
-	background-color:#c79354;
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ba862c), color-stop(1, #ffd147) );
+	background:-moz-linear-gradient( center top, #ba862c 5%, #ffd147 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ba862c', endColorstr='#ffd147');
+	background-color:#ba862c;
 	color:#ffffff;
 }
 .historybtn:active {
@@ -191,7 +191,7 @@ a:hover img {
 }
 .gnavi{
 	font-size: 12px;
-	width: 500px;
+	width: 250px;
 	margin: 0px auto 0 auto;
 	padding: 14px 0 0 0;
 	text-align: right;	
@@ -252,6 +252,13 @@ a:hover img {
 	color: #fc0;
 	text-decoration: none;
 }
+
+img.partnerlogo{
+	position: relative;
+	top:-10px;
+	left:24px;
+}
+
 
 .functions-inner table{
 	margin: 2px auto 0 auto;

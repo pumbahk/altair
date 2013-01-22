@@ -30,6 +30,7 @@
 %endfor
                 </ul>　　
             </div>
+			      <img src="${request.static_url("altaircms:static/vissel/images/partnerlogo.gif")}" alt="OFFICIAL TICKET SITE PARTNER TICKETSTAR" class="partnerlogo" />
         </div>
     </div>
 

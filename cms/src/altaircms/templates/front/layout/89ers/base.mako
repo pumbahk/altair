@@ -30,6 +30,7 @@
 %endfor
                 </ul>　　
             </div>
+			      <img src="${request.static_url("altaircms:static/vissel/images/partnerlogo.gif")}" alt="OFFICIAL TICKET SITE PARTNER TICKETSTAR" class="partnerlogo" />
         </div>
     </div>
 
@@ -40,14 +41,13 @@
       </%block>
 
       <div class="kadomaru">
+        <div class="maincol">
         <%block name="kadomaru">
           ${widgets("kadomaru")}
         </%block>
-      <!-- kadomaru終わり -->
-
+        </div>
       <!-- サイドバー -->
         <div class="sidebar">
-          <a href="http://www.vissel-kobe.co.jp/" class="sidebtnA">オフィシャルサイト</a>
           %for c in  myhelper._get_categories(request, "side_menu"):
             ${h.link.get_link_tag_from_category(request,c)}
           %endfor 
