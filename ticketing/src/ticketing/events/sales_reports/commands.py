@@ -56,6 +56,9 @@ def main(argv=sys.argv):
             limited_to=limited_to
         )
         form = SalesReportForm(MultiDict(params), event_id=event_id)
+        if event.sales_end_on < form.limited_from.data or form.limited_to.data < event.sales_start_on:
+            continue
+
         sendmail(event, form)
 
     logger.info('end send_sales_report batch (sent=%s)' % len(report_settings))

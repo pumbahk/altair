@@ -1,10 +1,13 @@
 # -*- coding:utf-8 -*-
-from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Date, DateTime, ForeignKey, DECIMAL, Index, UniqueConstraint
+from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Unicode, Date, DateTime, ForeignKey, DECIMAL, Index, UniqueConstraint
+from sqlalchemy.sql.expression import case, null
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import join, backref, column_property
 
 from standardenum import StandardEnum
 from ticketing.models import relationship
 from ticketing.master.models import *
+from ticketing.utils import is_nonmobile_email_address
 import sqlahelper
 
 session = sqlahelper.get_session()
@@ -56,7 +59,8 @@ class UserProfile(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     user_id = Column(Identifier, ForeignKey('User.id'))
     user = relationship('User', backref=backref("user_profile", uselist=False))
 
-    email = Column(String(255))
+    email_1 = Column(Unicode(255))
+    email_2 = Column(Unicode(255))
     nick_name = Column(String(255))
     first_name = Column(String(255))
     last_name = Column(String(255))
@@ -75,11 +79,51 @@ class UserProfile(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     fax = Column(String(32))
     status = Column(Integer)
 
-    @property
+    @hybrid_property
     def full_name_kana(self):
-        return u"%s %s" % (self.last_name_kana,  self.first_name_kana)
+        return self.last_name_kana + u' ' + self.first_name_kana
+
+    @hybrid_property
     def full_name(self):
-        return u"%s %s" % (self.last_name, self.firstname)
+        return self.last_name + u' ' + self.first_name
+
+    @hybrid_property
+    def email(self):
+        return self.email_1 or self.email_2
+
+    @email.expression
+    def email_expr(self):
+        return case([
+            (self.email_1 != None, self.email_1),
+            (self.email_2 != None, self.email_2)
+            ],
+            else_=null())
+
+    @property
+    def emails(self):
+        retval = []
+        if self.email_1:
+            retval.append(self.email_1)
+        if self.email_2:
+            retval.append(self.email_2)
+        return retval
+
+    @property
+    def email_pc(self):
+        if self.email_1 and is_nonmobile_email_address(self.email_1):
+            return self.email_1
+        if self.email_2 and is_nonmobile_email_address(self.email_2):
+            return self.email_2
+        return None
+
+    @property
+    def email_mobile(self):
+        if self.email_1 and not is_nonmobile_email_address(self.email_1):
+            return self.email_1
+        if self.email_2 and not is_nonmobile_email_address(self.email_2):
+            return self.email_2
+        return None
+
 
 class UserCredential(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     __tablename__ = 'UserCredential'
@@ -155,62 +199,6 @@ class UserPointHistory(Base, WithTimestamp):
     user = relationship('User', uselist=False)
     point = Column(Integer)
     rate = Column(Integer)
-    status = Column(Integer)
-
-class MailMagazine(Base, BaseModel, WithTimestamp):
-    __tablename__ = 'MailMagazine'
-    query = session.query_property()
-    id = Column(Identifier, primary_key=True)
-    name = Column(String(255))
-    description = Column(String(1024))
-    organization_id = Column(Identifier, ForeignKey("Organization.id"), nullable=True)
-    organization = relationship('Organization', uselist=False, backref='mail_magazines')
-    status = Column(Integer)
-
-    def subscribe(self, user, mail_address):
-        subscription = MailSubscription.query.filter(
-            #MailSubscription.user==user,
-            MailSubscription.email==mail_address
-        ).filter(
-            MailSubscription.segment==self
-        ).first()
-
-        # Do nothing if the user is subscribing the magazine
-        # with the same e-mail address.
-        if subscription:
-            return None
-        subscription = MailSubscription(email=mail_address, user=user, segment=self)
-        session.add(subscription)
-        return subscription
-
-    def unsubscribe(self, user, mail_address):
-        subscription = MailSubscription.query.filter(
-            MailSubscription.user==user,
-            MailSubscription.email==mail_address
-        ).filter(
-            MailSubscription.segment==mailmagazine
-        ).first()
-        if subscription:
-            session.delete(subscription)
-
-class MailSubscriptionStatus(StandardEnum):
-    Unsubscribed = 0
-    Subscribed = 1
-    Reserved = 2
-
-class MailSubscription(Base, BaseModel, LogicallyDeleted, WithTimestamp):
-    __tablename__ = 'MailSubscription'
-    __table_args__ = (
-        Index('email_segment_idx', 'email', 'segment_id', unique=True),
-        )
-    query = session.query_property()
-    id = Column(Identifier, primary_key=True)
-    email = Column(String(255))
-    user_id = Column(Identifier, ForeignKey("User.id"), nullable=True)
-    user = relationship('User', uselist=False, backref='mail_subscription')
-    segment_id = Column(Identifier, ForeignKey("MailMagazine.id"), nullable=True)
-    segment = relationship('MailMagazine', uselist=False, backref='subscriptions')
-
     status = Column(Integer)
 
 class Membership(Base, BaseModel, LogicallyDeleted, WithTimestamp):

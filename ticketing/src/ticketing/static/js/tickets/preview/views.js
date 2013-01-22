@@ -61,7 +61,7 @@ preview.SVGFromModelView = Backbone.View.extend({
         this.model.changeHolder({pk: pk, name: this.modelname}); //params
     }, 
     render: function(label, candidates){
-        var $select = $('<select class="inline input-medium">').attr("id", this.idname);
+        var $select = $('<select class="inline input">').attr("id", this.idname);
         this.$select = $select;
 
         _(candidates).each(function(c){
@@ -72,6 +72,56 @@ preview.SVGFromModelView = Backbone.View.extend({
         root.append($('<li style="margin-left:20px;">').text(label).append($select));
     }
 });
+
+preview.ComboboxSVGFromModelView = Backbone.View.extend({
+    // id, model_name -> svg
+    events: {"change #left_candidates": "onChangeLeft", 
+             "change #right_candidates": "onChangeRight", 
+            }, 
+    initialize: function(opts){
+        this.modelname = opts.modelname;
+        if(!this.modelname) throw "modelname is not found";
+        this.leftIdname = opts.leftIdname
+        if(!this.leftIdname) {this.leftIdname = "left_candidates";}
+        this.rightIdname = opts.rightIdname
+        if(!this.rightIdname) {this.rightIdname = "right_candidates";}
+        this.vms = opts.vms;
+        this.subCandidates = {}
+    }, 
+    onChangeRight: function(){
+        var pk = this.$rightSelect.val();
+        this.model.changeHolder({pk: pk, name: this.modelname}); //params
+    }, 
+    onChangeLeft: function(){
+        var rightName = this.$leftSelect.val();
+        var candidates = this.subCandidates[rightName];
+        var $right = this.$rightSelect;
+        $right.empty();
+        _(candidates).each(function(c){
+            $right.append($("<option>").text(c.name).attr("value", c.pk));
+        });
+    }, 
+    render: function(label, candidates){
+        var subCandidates = this.subCandidates = {};
+       // [{name: "foo", pk: 1,  candidates:[{name: "bar", pk: 1}, {name: "boo", pk: 2}, ...]}, ...]
+        var $leftSelect = this.$leftSelect = $('<select class="inline input-medium">').attr("id", this.leftIdname);
+        var $rightSelect = this.$rightSelect = $('<select class="inline input-medium">').attr("id", this.rightIdname);
+
+        _(candidates).each(function(c){
+            subCandidates[c.pk] = c.candidates;
+            $leftSelect.append($("<option>").text(c.name).attr("value", c.pk));
+        });
+        _(candidates[0].candidates).each(function(c){
+            $rightSelect.append($("<option>").text(c.name).attr("value", c.pk));
+        });
+        this.$el.find(".brand").hide();
+        var root = this.$el.find("#subnav .nav");
+        root.append($('<li style="margin-left:20px;">').text(label).append($leftSelect));
+        root.append($('<li>').append($rightSelect));
+    }
+});
+
+
 
 preview.DragAndDropSVGSupportView = Backbone.View.extend({
   initialize: function(opts){

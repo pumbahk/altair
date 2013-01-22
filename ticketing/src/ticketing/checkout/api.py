@@ -138,10 +138,10 @@ class Checkout(object):
             itemFee=str(int(cart.transaction_fee))
         ))
 
-        # 商品:配送手数料
+        # 商品:引取手数料
         self._create_checkout_item_xml(itemsInfo, **dict(
             itemId='delivery_fee',
-            itemName=u'配送手数料',
+            itemName=u'引取手数料',
             itemNumbers='1',
             itemFee=str(int(cart.delivery_fee))
         ))

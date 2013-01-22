@@ -44,6 +44,16 @@ ${breadcrumbs(
           <td>
 			${u' / '.join(dm.name for dm in format.delivery_methods)}
 		  </td>
+      <tr>
+          <th>オフセット</th>
+          <td>
+          %if format.data.get("print_offset"):
+             横: ${format.data["print_offset"].get("x")}, 縦: ${format.data["print_offset"].get("y")}
+          %else:
+             -
+          %endif
+          </td>
+      </tr>
         </tr>
         <tr>
           <th>ミシン目</th>

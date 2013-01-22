@@ -32,7 +32,7 @@ class send_accepted_mailTests(unittest.TestCase):
         entry = lots_models.LotEntry(
             entry_no='TEST-LOT-ENTRY-NO',
             shipping_address=core_models.ShippingAddress(
-                email=u"testing@example.com",
+                email_1=u"testing@example.com",
                 first_name=u"",
                 last_name=u"",
                 first_name_kana=u"",

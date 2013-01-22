@@ -173,7 +173,7 @@
         header: "チケット券面のpreview",
         callback: function(modalview){
          // append select
-          apps["loadsvg"] = new preview.SVGFromModelView({el: modalview.$modalArea, model: apps["preview"].models["params"], modelname: modelname});
+          apps["loadsvg"] = new preview.ComboboxSVGFromModelView({el: modalview.$modalArea, model: apps["preview"].models["params"], modelname: modelname});
           apps["loadsvg"].render("商品選択:", candidates);
           apps["loadsvg"].model.changeHolder({pk: pk, name: modelname})
         }

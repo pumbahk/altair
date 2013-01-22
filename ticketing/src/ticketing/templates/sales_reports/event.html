@@ -64,7 +64,7 @@
   </tr>
   <tr>
     <td>${event_report['title']}</td>
-    <td class="span3">${h.safe_strftime(event_report['event_start_day'])}〜${h.safe_strftime(event_report['event_end_day'])}</td>
+    <td class="span3">${h.safe_strftime(event_report['sales_start_day'])}〜${h.safe_strftime(event_report['sales_end_day'])}</td>
     <td class="span1 numeric">${h.price_format(event_report['total_quantity'])}</td>
     <td class="span1 numeric">${h.price_format(event_report['vacant_quantity'])}</td>
     <td class="span1 numeric">${h.price_format(event_total_report['product_quantity'])}</td>

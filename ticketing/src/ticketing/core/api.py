@@ -10,13 +10,17 @@ def get_organization(request, override_host=None):
     except NoResultFound as e:
         raise Exception("Host that named %s is not Found" % host_name)
 
+def is_mobile_request(request):
+    return getattr(request, "is_mobile", False)
+
 def get_host_base_url(request):
     host_name = request.host
     try:
         host = Host.query.filter(Host.host_name==host_name).one()
-        base_url = host.base_url
-        if base_url is None:
-            return "/"
+        if is_mobile_request(request):
+            base_url = host.mobile_base_url or "/"
+        else:
+            base_url = host.base_url or "/"
         return base_url
     except NoResultFound as e:
         raise Exception("Host that named %s is not Found" % host_name)

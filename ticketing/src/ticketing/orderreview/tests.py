@@ -78,7 +78,7 @@ class set_user_profile_for_orderTests(unittest.TestCase):
             u'tel2_1': u"123",
             u'tel2_2': u"123",
             u'tel2_3': u"123",
-            u'email': u"ticketstar@example.com",
+            u'email_1': u"ticketstar@example.com",
         }
         request = testing.DummyRequest(session=dict(bj89er_user_profile=bj89er_user_profile))
         order = self._add_order(product_id=10)
@@ -109,7 +109,7 @@ class set_user_profile_for_orderTests(unittest.TestCase):
                 (u'tel2_1', u"123"),
                 (u'tel2_2', u"123"),
                 (u'tel2_3', u"123"),
-                (u'email', u"ticketstar@example.com"),
+                (u'email_1', u"ticketstar@example.com"),
             ]))
 
 class Bj89erCartResourceTests(unittest.TestCase):

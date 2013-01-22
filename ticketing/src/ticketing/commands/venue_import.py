@@ -7,6 +7,7 @@ import transaction
 import re
 import argparse
 import locale
+import time
 
 from pyramid.paster import get_app, bootstrap
 
@@ -17,6 +18,8 @@ io_encoding = locale.getpreferredencoding()
 
 SVG_NAMESPACE = 'http://www.w3.org/2000/svg'
 SITE_INFO_NAMESPACE = 'http://xmlns.ticketstar.jp/2012/site-info'
+
+verbose = False
 
 class FormatError(Exception):
     pass
@@ -251,12 +254,14 @@ def import_tree(update, organization, tree, file, venue_id=None):
         seats = dict()
 
     for block_obj in tree['children']:
+        t_start = time.time()
+        num_seats_in_block = 0
         for venue_area in venue_areas:
             if venue_area.name == block_obj['properties']['name']:
                 block = venue_area
                 break
         else:
-            print u'[ADD] VenueArea(name="%s")' % block_obj['properties']['name']
+            print u'[ADD] VenueArea(name="%s",id="%s")' % (block_obj['properties']['name'], block_obj['_node'].get('id'))
             block = VenueArea(name=block_obj['properties']['name'])
             new_blocks.append(block)
 
@@ -272,9 +277,12 @@ def import_tree(update, organization, tree, file, venue_id=None):
 
         for row_obj in block_obj['children']:
             row_l0_id = row_obj['_node'].get('id')
+            if verbose:
+                print "  - row: %s" % row_l0_id
             row_name = row_obj['properties'].get('name')
             seat_objs = row_obj['children']
             num_seats_in_row = len(seat_objs)
+            num_seats_in_block += num_seats_in_row
             seats_in_row = []
             for seat_obj in seat_objs:
                 seat_l0_id = seat_obj['_node'].get('id')
@@ -325,6 +333,8 @@ def import_tree(update, organization, tree, file, venue_id=None):
                     SeatAdjacency(seats=seats_in_row[i:i + seat_count])
                     for i in range(0, num_seats_in_row - seat_count + 1))
         DBSession.add(block)
+
+        print "  This block contains %u seats, takes %.2f sec." % (num_seats_in_block, time.time()-t_start)
 
     seats_to_be_deleted = set(seats) - seats_given
     for seat_l0_id in seats_to_be_deleted:
@@ -384,11 +394,17 @@ def main():
                         help='update existing data')
     parser.add_argument('-n', '--dry-run', action='store_true',
                         help='show what would have been done')
+    parser.add_argument('-v', '--verbose', action='store_true',
+                        help='verbose mode')
     parser.add_argument('--venue', metavar='venue-id',
                         help='specify venue id (use with -u)')
     parsed_args = parser.parse_args()
 
     env = bootstrap(parsed_args.config_uri[0])
+
+    if parsed_args.verbose:
+        global verbose
+        verbose = True
 
     for svg_file in parsed_args.svg_files:
         import_or_update_svg(

@@ -422,7 +422,8 @@ class FixtureBuilder(object):
             user_profile=one_to_many(
                 [self.Datum(
                     'UserProfile',
-                    email=lambda self: "dev+test%03d@ticketstar.jp" % self._id[0],
+                    email_1=lambda self: "dev+test%03d@ticketstar.jp" % self._id[0],
+                    email_2=lambda self: "dev+mobile-test%03d@ticketstar.jp" % self._id[0],
                     nick_name=lambda self: "dev+test%03d@ticketstar.jp" % self._id[0],
                     first_name=lambda self: u"太郎%d" % self._id[0],
                     last_name=u"楽天",
@@ -912,7 +913,8 @@ class FixtureBuilder(object):
         return self.Datum(
             'ShippingAddress',
             user=many_to_one(user, 'user_id'),
-            email=lambda self: "dev+test%03d@ticketstar.jp" % self._id[0],
+            email_1=lambda self: "dev+test%03d@ticketstar.jp" % self._id[0],
+            email_2=lambda self: "dev+mobile-test%03d@ticketstar.jp" % self._id[0],
             first_name=lambda self: u"太郎%d" % self._id[0],
             last_name=u"楽天",
             first_name_kana=u"タロウ",

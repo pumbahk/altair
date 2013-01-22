@@ -137,86 +137,86 @@ n/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
 			<div id = "search_buttons">
 			    <ul>
 			        <div id ="search_block">
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=ア,あ">ア</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=イ,い">イ</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=ウ,う">ウ</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=エ,え">エ</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=オ,お">オ</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=カ,か">カ</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=キ,き">キ</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=ク,く">ク</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=ケ,け">ケ</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=コ,こ">コ</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=サ,さ">サ</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=シ,し">シ</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=ス,す">ス</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=セ,せ">セ</a></li>
-	        			<li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=ソ,そ">ソ</a></li>
-	        			<li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=タ,た">タ</a></li>
-	        			<li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=チ,ち">チ</a></li>
-	        			<li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=ツ,つ">ツ</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=テ,て">テ</a></li>
-			        	<li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=ト,と">ト</a></li>
-			        	<li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=ナ,な">ナ</a></li>
-			        	<li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=ニ,に">二</a></li>
-			        	<li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=ヌ,ぬ">ヌ</a></li>
-			        	<li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=ネ,ね">ネ</a></li>
-			        	<li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=ノ,の">ノ</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=ア,あ">ア</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=イ,い">イ</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=ウ,う">ウ</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=エ,え">エ</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=オ,お">オ</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=カ,か">カ</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=キ,き">キ</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=ク,く">ク</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=ケ,け">ケ</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=コ,こ">コ</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=サ,さ">サ</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=シ,し">シ</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=ス,す">ス</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=セ,せ">セ</a></li>
+	        			<li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=ソ,そ">ソ</a></li>
+	        			<li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=タ,た">タ</a></li>
+	        			<li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=チ,ち">チ</a></li>
+	        			<li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=ツ,つ">ツ</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=テ,て">テ</a></li>
+			        	<li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=ト,と">ト</a></li>
+			        	<li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=ナ,な">ナ</a></li>
+			        	<li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=ニ,に">二</a></li>
+			        	<li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=ヌ,ぬ">ヌ</a></li>
+			        	<li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=ネ,ね">ネ</a></li>
+			        	<li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=ノ,の">ノ</a></li>
 			        </div>
 			       	<div id ="search_block">
-		        		<li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=ハ,は">ハ</a></li>
-		        		<li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=ヒ,ひ">ヒ</a></li>
-		        		<li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=フ,ふ">フ</a></li>
-		        		<li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=ヘ,へ">ヘ</a></li>
-		        		<li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=ホ,ほ">ホ</a></li>
-		        		<li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=マ,ま">マ</a></li>
-		        		<li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=ミ,み">ミ</a></li>
-		        		<li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=ム,む">ム</a></li>
-		        		<li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=メ,め">メ</a></li>
-		        		<li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=モ,も">モ</a></li>
-		        		<li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=ヤ,や">ヤ</a></li>
+		        		<li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=ハ,は">ハ</a></li>
+		        		<li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=ヒ,ひ">ヒ</a></li>
+		        		<li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=フ,ふ">フ</a></li>
+		        		<li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=ヘ,へ">ヘ</a></li>
+		        		<li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=ホ,ほ">ホ</a></li>
+		        		<li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=マ,ま">マ</a></li>
+		        		<li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=ミ,み">ミ</a></li>
+		        		<li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=ム,む">ム</a></li>
+		        		<li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=メ,め">メ</a></li>
+		        		<li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=モ,も">モ</a></li>
+		        		<li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=ヤ,や">ヤ</a></li>
 		        		<li class="space"><a href=""></a></li>
-		        		<li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=ユ,ゆ">ユ</a></li>
+		        		<li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=ユ,ゆ">ユ</a></li>
 		        		<li class="space"><a href=""></a></li>
-		        		<li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=ヨ,よ">ヨ</a></li>
-		        		<li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=ラ,ら">ラ</a></li>
-		        		<li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=リ,り">リ</a></li>
-		        		<li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=ル,る">ル</a></li>
-		        		<li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=レ,れ">レ</a></li>
-		        		<li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=ロ,ろ">ロ</a></li>
-		        		<li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=ワ,わ">ワ</a></li>
+		        		<li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=ヨ,よ">ヨ</a></li>
+		        		<li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=ラ,ら">ラ</a></li>
+		        		<li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=リ,り">リ</a></li>
+		        		<li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=ル,る">ル</a></li>
+		        		<li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=レ,れ">レ</a></li>
+		        		<li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=ロ,ろ">ロ</a></li>
+		        		<li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=ワ,わ">ワ</a></li>
 		        		<li class="space"><a href=""></a></li>
-		        		<li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=ヲ,を">ヲ</a></li>
+		        		<li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=ヲ,を">ヲ</a></li>
 		        		<li class="space"><a href=""></a></li>
-		        		<li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=ン,ん">ン</a></li>
+		        		<li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=ン,ん">ン</a></li>
 		       	</ul>
 		       	<ul>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=A">A</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=B">B</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=C">C</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=D">D</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=E">E</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=F">F</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=G">G</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=H">H</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=I">I</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=J">J</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=K">K</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=L">L</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=M">M</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=N">N</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=O">O</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=P">P</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=Q">Q</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=R">R</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=S">S</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=T">T</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=U">U</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=V">V</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=W">W</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=X">X</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=Y">Y</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?figure=Z">Z</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=A">A</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=B">B</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=C">C</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=D">D</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=E">E</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=F">F</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=G">G</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=H">H</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=I">I</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=J">J</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=K">K</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=L">L</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=M">M</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=N">N</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=O">O</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=P">P</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=Q">Q</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=R">R</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=S">S</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=T">T</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=U">U</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=V">V</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=W">W</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=X">X</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=Y">Y</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?figure=Z">Z</a></li>
 			    </ul>
 			　　　　　</div>
 			<?
@@ -227,90 +227,90 @@ n/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
 		            <div id = "search_buttons">
 			    <ul>
 				    <div id ="search_block">
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=ア,あ">あ</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=イ,い">い</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=ウ,う">う</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=エ,え">え</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=オ,お">お</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=カ,か">か</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=キ,き">き</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=ク,く">く</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=ケ,け">け</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=コ,こ">こ</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=サ,さ">さ</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=シ,し">し</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=ス,す">す</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=セ,せ">せ</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=ソ,そ">そ</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=タ,た">た</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=チ,ち">ち</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=ツ,つ">つ</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=テ,て">て</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=ト,と">と</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=ナ,な">な</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=ニ,に">に</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=ヌ,ぬ">ぬ</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=ネ,ね">ね</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=ノ,の">の</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=ア,あ">あ</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=イ,い">い</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=ウ,う">う</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=エ,え">え</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=オ,お">お</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=カ,か">か</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=キ,き">き</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=ク,く">く</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=ケ,け">け</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=コ,こ">こ</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=サ,さ">さ</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=シ,し">し</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=ス,す">す</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=セ,せ">せ</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=ソ,そ">そ</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=タ,た">た</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=チ,ち">ち</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=ツ,つ">つ</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=テ,て">て</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=ト,と">と</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=ナ,な">な</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=ニ,に">に</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=ヌ,ぬ">ぬ</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=ネ,ね">ね</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=ノ,の">の</a></li>
 				    </div>
 				    <div id="search_block">
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=ハ,は">は</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=ヒ,ひ">ひ</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=フ,ふ">ふ</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=ヘ,へ">へ</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=ホ,ほ">ほ</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=マ,ま">ま</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=ミ,み">み</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=ム,む">む</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=メ,め">め</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=モ,も">も</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=ヤ,や">や</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=ハ,は">は</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=ヒ,ひ">ひ</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=フ,ふ">ふ</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=ヘ,へ">へ</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=ホ,ほ">ほ</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=マ,ま">ま</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=ミ,み">み</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=ム,む">む</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=メ,め">め</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=モ,も">も</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=ヤ,や">や</a></li>
 				        <li class="space"><a href=""></a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=ユ,ゆ">ゆ</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=ユ,ゆ">ゆ</a></li>
 				        <li class="space"><a href=""></a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=ヨ,よ">よ</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=ラ,ら">ら</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=リ,り">り</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=ル,る">る</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=レ,れ">れ</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=ロ,ろ">ろ</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=ワ,わ">わ</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=ヨ,よ">よ</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=ラ,ら">ら</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=リ,り">り</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=ル,る">る</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=レ,れ">れ</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=ロ,ろ">ろ</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=ワ,わ">わ</a></li>
 				        <li class="space"><a href=""></a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=ヲ,を">を</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=ヲ,を">を</a></li>
 				        <li class="space"><a href=""></a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=ン,ん">ん</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=ン,ん">ん</a></li>
 				    </div>
 			    </ul>	
 			    <ul>
 				    <div id ="search_block">
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=A">A</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=B">B</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=C">C</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=D">D</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=E">E</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=F">F</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=G">G</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=H">H</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=I">I</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=J">J</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=K">K</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=L">L</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=M">M</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=N">N</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=O">O</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=P">P</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=Q">Q</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=R">R</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=S">S</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=T">T</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=U">U</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=V">V</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=W">W</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=X">X</a></li>
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=Y">Y</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=A">A</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=B">B</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=C">C</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=D">D</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=E">E</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=F">F</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=G">G</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=H">H</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=I">I</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=J">J</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=K">K</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=L">L</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=M">M</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=N">N</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=O">O</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=P">P</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=Q">Q</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=R">R</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=S">S</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=T">T</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=U">U</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=V">V</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=W">W</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=X">X</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=Y">Y</a></li>
 				    </div>
 				    <div id ="search_block_z">
-				        <li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?moji=Z">Z</a></li>
+				        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?moji=Z">Z</a></li>
 				    </div>
 			    </ul>
 			</div>
@@ -394,7 +394,7 @@ n/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
 			        $artist_of_page = array_splice($page_artist_array,($pager['page']-1)*$unit,$unit);
 			     	foreach($artist_of_page as $a){?>
 				<div id="page_artist_array">
-					<a href ="/~katosaori/artist-page/web-contents/pages/artist_detail.php?artist=<?=$a['name']?>"title="<img src = '../img/music/dummy_event.jpg'>"><?=$a['name'] ?></a><br />
+					<a href ="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/artist_detail.php?artist=<?=$a['name']?>"title="<img src = '../img/music/dummy_event.jpg'>"><?=$a['name'] ?></a><br />
 				</div>
 				    <?}?>
 		    </div>
@@ -419,9 +419,9 @@ n/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
 gif" alt="検索" />			  
 	</form></li>
 
-		<li> <a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?&page_moji=ア,あ&page_domestic=1&count_artist=356">邦楽50音順検索</a></li>
+		<li> <a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?&page_moji=ア,あ&page_domestic=1&count_artist=356">邦楽50音順検索</a></li>
 
-		<li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?&page_figure=A&page_overseas=1&count_artist=1490">洋楽ABC検索</a></li>
+		<li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?&page_figure=A&page_overseas=1&count_artist=1490">洋楽ABC検索</a></li>
 	</ul>
 	</div>
 	<div class="sideCategoryGenre">

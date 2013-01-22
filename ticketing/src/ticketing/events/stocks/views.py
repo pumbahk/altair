@@ -73,7 +73,6 @@ class Stocks(BaseView):
                 stock_type.save()
 
         except ValidationError, e:
-            logger.exception('validation error (%s)' % e.message)
             raise HTTPBadRequest(body=json.dumps({
                 'message':e.message,
             }))

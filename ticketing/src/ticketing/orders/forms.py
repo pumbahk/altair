@@ -42,7 +42,7 @@ class OrderForm(Form):
         validators=[Required()],
     )
     delivery_fee = DecimalField(
-        label=u'配送手数料',
+        label=u'引取手数料',
         places=2,
         default=0,
         validators=[Required()],
@@ -284,6 +284,10 @@ class ClientOptionalForm(ClientForm):
                     del field.validators[i]
                     break;
             field.validators.append(Optional())
+
+    def _validate_email_addresses(self, *args, **kwargs):
+        # メールアドレスの validation をしない (ClientForm._validate_email_addresses をオーバライド)
+        return True
 
 class SejTicketForm(Form):
     ticket_type = SelectField(

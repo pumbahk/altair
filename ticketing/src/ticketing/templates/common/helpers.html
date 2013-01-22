@@ -63,7 +63,7 @@
   % endif
 </%def>
 
-<%def name="form_item(item, help='', **options)">
+<%def name="form_item(item, help=None, label=None, **options)">
   <% hide_on_new = getattr(item, 'hide_on_new', False) %>
   % if not getattr(getattr(item, 'form', None), 'new_form', False) or not hide_on_new:
   <% if hide_on_new: options['data-hide-on-new'] = 'hide-on-new' %>
@@ -73,7 +73,7 @@
         % if item.flags.required:
         <span style="color: #BA0000;padding-left: 5px; padding-right: 5px; font-size: 150%">*</span>
         % endif
-        ${help|n} ${item.label.text}
+        ${(help or u'')|n} ${label or item.label.text}
       </label>
     % endif
     <div class="controls">

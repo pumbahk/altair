@@ -74,44 +74,44 @@ class OverQuantityLimitErrorView(object):
         self.request = request
         self.context = context
 
-    @view_config(context=OverQuantityLimitError, renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/error.html'), request_type="..interfaces.IMobileRequest")
+    @view_config(context=OverQuantityLimitError, renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/error.html'), request_type='ticketing.mobile.interfaces.IMobileRequest')
     def __call__(self):
         upper_limit = self.context.upper_limit
         return dict(message=u"枚数は合計%d枚以内で選択してください" % upper_limit)
 
-@view_config(context=ZeroQuantityError, renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/error.html'), request_type="..interfaces.IMobileRequest")
+@view_config(context=ZeroQuantityError, renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/error.html'), request_type='ticketing.mobile.interfaces.IMobileRequest')
 def zero_quantity_error(request):
     return dict(message=u"枚数は1枚以上で選択してください")
 
-@view_config(context=NotEnoughStockException, renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/error.html'), request_type="..interfaces.IMobileRequest")
+@view_config(context=NotEnoughStockException, renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/error.html'), request_type='ticketing.mobile.interfaces.IMobileRequest')
 def not_enough_stock_exception(request):
     return dict(message=u"在庫がありません。\nご希望の座席を確保できませんでした。")
 
-@view_config(context=InvalidSeatSelectionException, renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/error.html'), request_type="..interfaces.IMobileRequest")
+@view_config(context=InvalidSeatSelectionException, renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/error.html'), request_type='ticketing.mobile.interfaces.IMobileRequest')
 def invalid_seat_selection_exception(request):
     return dict(message=u"座席選択に誤りがあります。\n座席を再度選択してください。")
 
-@view_config(context=NotEnoughAdjacencyException, renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/error.html'), request_type="..interfaces.IMobileRequest")
+@view_config(context=NotEnoughAdjacencyException, renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/error.html'), request_type='ticketing.mobile.interfaces.IMobileRequest')
 def not_enough_ajacency_exception(request):
     return dict(message=u"連席で座席を確保できません。個別に購入してください。")
 
-@view_config(context=CartCreationExceptoion, renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/error.html'), request_type="..interfaces.IMobileRequest")
+@view_config(context=CartCreationExceptoion, renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/error.html'), request_type='ticketing.mobile.interfaces.IMobileRequest')
 def cart_creation_exception(request):
     return dict(message=u"カートを作成できませんでした。しばらく時間を置いてから再度お試しください。")
 
-@view_config(context=InvalidCSRFTokenException, renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/error.html'), request_type="..interfaces.IMobileRequest")
+@view_config(context=InvalidCSRFTokenException, renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/error.html'), request_type='ticketing.mobile.interfaces.IMobileRequest')
 def cart_creation_exception(request):
     return dict(message=u"ウェブブラウザの戻るボタンは使用できません。画面上の戻るボタンから操作して下さい。")
 
 @view_config(context=DeliveryFailedException, renderer=selectable_renderer('ticketing.cart:templates/carts/%(membership)s/message.html'))
-@view_config(context=DeliveryFailedException, renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/error.html'), request_type="..interfaces.IMobileRequest")
+@view_config(context=DeliveryFailedException, renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/error.html'), request_type='ticketing.mobile.interfaces.IMobileRequest')
 def cart_creation_exception(context, request):
     event_id = context.event_id
     location = request.route_url('cart.index', event_id=event_id)
     return dict(message=Markup(u'決済中にエラーが発生しました。しばらく時間を置いてから<a href="%s">再度お試しください。</a>' % location))
 
 @view_config(context=PaymentPluginException, renderer=selectable_renderer('ticketing.cart:templates/carts/%(membership)s/message.html'))
-@view_config(context=PaymentPluginException, renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/error.html'), request_type="..interfaces.IMobileRequest")
+@view_config(context=PaymentPluginException, renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/error.html'), request_type='ticketing.mobile.interfaces.IMobileRequest')
 def cart_creation_exception(context, request):
     if context.back_url is not None:
         # カートの救済可能な場合

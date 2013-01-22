@@ -1,6 +1,19 @@
 <?php
 include 'config.php';
 include 'genre_function.php';
+include 'pager.php';
+
+$artists = artist_get_by_genre($dbh,$genre_name);
+$unit = 30;
+$base = '';
+$pager = build_pager(array(
+	'unit' => $unit,
+	'self' => preg_replace('{([^/]*/)*}','',$base),
+	'query' => $_GET,
+	'qname' => 'p',
+	'item' => $artists,
+	'limit' => 10,
+));
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transition//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja"><!- InstanceBegin template="/Template/template.dwt" codeOutsideHTMLslocked="false" --><head>
@@ -15,32 +28,24 @@ include 'genre_function.php';
 <link rel="shortcut icon" href="../design/img/common/favicon.ico" />
 <link rel="stylesheet" href="../design/html/css/import.css" type="text/css" media="all" />
 <link rel="stylesheet" href="./css/import.css" type="text/css" media="all" />
-<link rel="stylesheet" href="./css/genre.css" type="text/css" media="all" />
 <script type="text/javascript" src="http://www.google.com/jsapi"></script>
 <script type="text/javascript">google.load("jquery", "1.6.1");</script>
 <script type="text/javascript" src="./js/jquery.mousewheel.min.js"></script>
 <script type="text/javascript" src="./js/jquery.em.js"></script>
 <script type="text/javascript" src="./js/jScrollPane.js"></script>
 <link rel="stylesheet" type="text/css" media="all" href="./css/jScrollPane.css" />
+<link rel="stylesheet" href="./css/genre.css" type="text/css" media="all" />
 <script type ="text/javascript">
 $(function(){
      $("tr:odd").addClass("odd");
 });
-
-
-
-
 </script>
-
 <!-- InstanceParam name="id" type="text" value="theater" -->
 </head>
 <body id="theater">
-
 <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="../img/common/skip.gif" alt="本文へジャンプ" wi
 dth="1" height="1" /></a></p>
-
 <div id="container">
-
 	<!-- ========== header ========== -->
 	<div id="grpheader">
 		<p id="tagLine">チケット販売・イベント予約</p>
@@ -117,86 +122,120 @@ dth="1" height="1" /></a></p>
 
 	<!-- ========== main ========== -->
 	<div id ="main">
-		<ul>
-		<?$genre = genre_get_by_name($dbh, $genre_name);
-		$child_genre_list = genre_get_child_by_id($dbh, $genre['id']);
-		$links_array = array();
-		$genre_tree = explode('/', $genre['genre']);
-		$genre_link = "";
-		foreach ($genre_tree as $g) {
-			$genre_link .= urlencode($g).'/';
-		}
-		?>
+        <ul>
+<?
+$genrename = $_GET['genre'];
+$genre = genre_get_by_name($dbh, $genre_name);
+$child_genre_list = genre_get_child_by_id($dbh, $genre['id']);
+$child_genre_list = genre_get_child_by_id($dbh, $genre['id']);
+$num = 0;
+$links_array = array();
+foreach ($child_genre_list as $genre) {
+	$genre_tree = explode('/', $genre['genre']);
+	$genre_link = "";
+	$parent_link = array();
+	$z=0;
+	foreach ($genre_tree as $g) {
+		$genre_link .= urlencode($g).'/';
+		$parent_link[$z]=$g;
+		$z++;
+	}
+	$links_array[$num]=htmlspecialchars($genre['genre']);
+	$num++;
+}
+?>
 		</ul>
 		<div id ="genre">	
-	        <div id ="genrename" style="border:solid 1px transparent;"><p><?=$genre_name ?></p></div>	
-		<!--<?
-		$link ="";
-		for($i=0;$i<=$z-2;$i++){
-			$link .= $parent_link[$i].'/';?>
-			<a href="/~katosaori/web-contents/pages/genre.php?genre=<?= $link ?>&alternate=<?= $alternate ?>"><?= htmlspecialchars($parent_link[$i])?></a>
-			<? echo "/"; }?>-->
-		    <div id = "genre_appear_links">
+	        <div id ="genrename" style="border:solid 1px transparent;">
+               <div class ="genrenamea">	
+                <a href="/~katosaori/web-contents/pages/genre.php?genre=<?= $link ?>&alternate=<?= $alternate ?>"><?= htmlspecialchars($genrename)?></a>
+               </div>
+            </div>
+		    <div id = "genre_links">
 		        <ul>
-		    <?foreach ($child_genre_list as $genre) {
-			    $genre_tree = explode('/', $genre['genre']);
-			    $genre_link = "";
-			    foreach ($genre_tree as $g) {
-			        $genre_link .= urlencode($g)."/";
-				    $appear_link = $g;
-			    }?>
-	         	    <li><a href="/~katosaori/artist-page/web-contents/pages/genre.php?genre=<?=$genre_link?>&alternate=<?= $alternate ?>"><?= $appear_link?></a></li>
-		    <?}?>
-			    </ul>
-			
-		    <?if(empty($child_genre_list)){
-			    $artists = artist_get_by_genre($dbh,$genre_name);
-			    $count_artists = count($artists);
-			    $genre_names = explode("/",$genre_name);
-			    $count_genre_names= count($genre_names);
-			    $link = "";
-			    for($u=0;$u<=$count_genre_names;$u++){
-				    if(isset($genre_names[$u])){
-				        $link .= $genre_names[$u].'/';
-				    } 
-			    }?>
-		    <div id = "artist_links">
-			    <?for($e=0;$e <= $count_artists; $e++){
-				    $artist_link = urlencode($artists[$e]['name']);?>
-			    	<li><a href="/~katosaori/artist-page/web-contents/pages/artist_detail.php?artist=<?=$artist_link?>"><?= htmlspecialchars($artists[$e]['name'])?></a></li><?
-			}?>
-			</div><?
-			}?>
+    <?
+     $artists = artist_get_by_genre($dbh,$genre_name);
+     if ((count($child_genre_list)) > 0){
+        foreach ($child_genre_list as $childs) {
+	        $genre_tree = explode('/', $childs['genre']);
+	        $genre_link = "";
+	        foreach ($genre_tree as $g) {
+			    $genre_link .= urlencode($g)."/";
+		        $child_link = $g;
+        	}?>
+	         	        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/genre.php?genre=<?=$genre_link?>&alternate=<?= $alternate ?>"><?= $child_link?></a></li>
+        <?}?>
+                </ul>
+     <?}
+     elseif (isset($artists)){
+         if(isset($artists)){
+             $count_artists = count($artists);?>
+                    <div id ="paging">
+                        <div id ="pages_link">
+             <?foreach($pager['navi'][0]['pages'] as $p){
+		         if(isset($p['text'])) {
+			         print $p['text'];
+			     }
+                 elseif($p['current']) {
+			         printf('<b style="background-color: #ED6502; color: #ffffff; border: 1px solid transparent; padding: 1px 5px 1px 5px;"}>%s</b>',$p['n']);
+		         }
+                 else{
+			         if(isset($pager['navi'][0]['goto_page']) && isset($p['n'])){
+			             printf('<a href="%s">%s</a>',$pager['navi'][0]['goto_page'].$p['n'],$p['n']);
+			         }
+		         }
+		     }?>
+				        </div>
+                    </div>
+     		        <div class ="page_artist_border"><img src="../img/common/side_nav_line.gif" width="480" height="2"></div>	
+             <?$artist_of_page = array_splice($artists,($pager['page']-1)*$unit,$unit);
+	         foreach($artist_of_page as $a){?>
+		         <a href ="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/artist_detail.php?artist=<?=$a['name']?>"title="<img src = '../img/music/dummy_event.jpg'>"><?=$a['name'] ?></a><br />
+             <?}
+          }
+     }?>   
 		    </div>
 	    </div>
 	    <div id = "main_right" style="margin-top:0px;">
-			<div id = "rank_border">
-				<div class="sideCategoryGenre_rank">
-					<div class="rank_title" style="width:235px;"><p> 邦楽CDシングルランキング</p></div>
+	        <div id = "rank_border">
+		        <div class="sideCategoryGenre_rank">
+				    <div class="rank_title" style="width:235px;"><p> 邦楽CDシングルランキング</p></div>
 					<div class="rank_date" style="width:235px;"><p>2012.04.28発表</p></div>	
 					<table id="ranking">
-					 <? for($k = 1; $k<=10; $k++): ?>
-					 <tr><td>
-					<?if($k==1){?><img src ="../img/artistpage/artist_genre.png"><?}?>
-					<?if($k==2){?><img src ="../img/artistpage/artist_genre_r1_c1.png"><?}?>
-					<?if($k==3){?><img src ="../img/artistpage/artist_genre_r3_c1.png"><?}?>
-					<?if($k==4){?><img src ="../img/artistpage/four.gif"><?}?>
-					<?if($k==5){?><img src="../img/artistpage/five.gif"><?}?>
-					<?if($k==6){?><img src="../img/artistpage/six.gif"><?}?>
-					<?if($k==7){?><img src="../img/artistpage/seven.gif"><?}?>
-					<?if($k==8){?><img src="../img/artistpage/eight.gif"><?}?>
-					<?if($k==9){?><img src="../img/artistpage/nine.gif"><?}?>
-					<?if($k==10){?><img src="../img/artistpage/ten.gif"><?}?>
-					<?= $new_rank_updown_imgs[$k-1] ?><a href='./artist_detail.php?artist=<?=urlencode($artist_jap[$k][0])?>'><?=	$k.$rank_set_jap[$k]; ?></a></td></tr>
-
-					 <? endfor ?>
-					</table>
-
-	       
-				</div>
-			</div>
-		</div>
-</div>
+            <?for($k = 1; $k<=10; $k++):?>
+					    <tr><td>
+                <?if($k==1){?>
+				                 <img src ="../img/artistpage/artist_genre.png"><?}?>
+			    <?if($k==2){?>
+			                        <img src ="../img/artistpage/artist_genre_r1_c1.png"><?}?>
+				<?if($k==3){?> 
+				                    <img src ="../img/artistpage/artist_genre_r3_c1.png"><?}?>
+				<?if($k==4){?>   
+				                    <img src ="../img/artistpage/four.gif"><?}?>
+				<?if($k==5){?>    
+				                    <img src="../img/artistpage/five.gif"><?}?>
+				<?if($k==6){?>
+				                    <img src="../img/artistpage/six.gif"><?}?>
+				<?if($k==7){?> 
+					                <img src="../img/artistpage/seven.gif"><?}?>
+				<?if($k==8){?>     
+				                    <img src="../img/artistpage/eight.gif"><?}?>
+				<?if($k==9){?>      
+				                    <img src="../img/artistpage/nine.gif"><?}?>
+				<?if($k==10){?>
+				                    <img src="../img/artistpage/ten.gif"><?}?>
+					
+				                    <?= $new_rank_updown_imgs[$k-1] ?>
+				                    <a href='./artist_detail.php?artist=<?=urlencode($artist_jap[$k][0])?>'><?=	$k.$rank_set_jap[$k]; ?></a>
+				            </td></tr>
+		    <?
+		    endfor 
+		    ?>
+					    </table>
+				    </div>
+			    </div>
+		    </div>
+        </div>
 <!-- ========== /main ========== -->
 
 <hr />
@@ -215,8 +254,8 @@ dth="1" height="1" /></a></p>
 gif" alt="検索" />
 </form></li>
 
-	<li> <a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?&page_moji=ア,あ&page_domestic=1&count_artist=356">邦楽50音順検索</a></li>
-	<li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?&page_figure=A&page_overseas=1&count_artist=1490">洋楽ABC検索</a></li>
+	<li> <a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?&page_moji=ア,あ&page_domestic=1&count_artist=356">邦楽50音順検索</a></li>
+	<li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?&page_figure=A&page_overseas=1&count_artist=1490">洋楽ABC検索</a></li>
 
 </ul>
 </div>

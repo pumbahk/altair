@@ -72,6 +72,19 @@ class Products(BaseView):
                 'form':f,
             }
 
+    @view_config(route_name="products.edit", request_method="GET", renderer='ticketing:templates/products/__edit_form.html')
+    def edit_dialog(self):
+        try:
+            product_id = int(self.request.matchdict.get('product_id', 0))
+            product = Product.get(product_id)
+            if product is None:
+                raise HTTPNotFound('product id %d is not found' % product_id)
+            form = ProductForm.from_model(product)
+            return {"form": form}
+        except Exception, e:
+            logger.exception(str(e))
+            raise e
+
     @view_config(route_name='products.edit', request_method='POST', renderer='ticketing:templates/products/_form.html')
     def edit_post(self):
         product_id = int(self.request.matchdict.get('product_id', 0))

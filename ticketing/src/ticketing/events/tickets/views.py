@@ -136,7 +136,8 @@ class BundleView(BaseView):
     @view_config(route_name="events.tickets.bundles.show",
                  renderer="ticketing:templates/tickets/events/bundles/show.html")
     def show(self):
-        product_item_dict = {} # {<performance_id>: {<name>: "",  <products>: {}, <product_items> : {}}}
+        # {<performance_id>: {<name>: "",  <products>: {}, <product_items> : {}}}
+        product_item_dict = {} 
         for product_item in self.context.bundle.product_items:
             performance = product_item_dict.get(product_item.performance_id)
             if performance is None:
@@ -159,10 +160,14 @@ class BundleView(BaseView):
                 }
 
         ## for ticket-preview
+        ## [{name: <performance.name>, pk: <performance.id>,  candidates: [{name: <item.name>, pk: <item.id>}, ...]}, ...]
         preview_item_candidates = []
-        for performance in product_item_dict.itervalues():
-            for pk, item_dict in performance["product_items"].iteritems():
-                preview_item_candidates.append({"pk": pk, "name": u"%s: %s" % (performance["name"] , item_dict["name"])})
+        for perf_k, performance_d in product_item_dict.iteritems():
+            candidates = []
+            p = {"name": performance_d["name"], "pk": perf_k, "candidates": candidates}
+            for item_k, item_d in performance["product_items"].iteritems():
+                candidates.append({"name": item_d["name"], "pk": item_k})
+            preview_item_candidates.append(p)
 
         return dict(bundle=self.context.bundle, 
                     event=self.context.event,
@@ -246,42 +251,3 @@ class BundleAttributeView(BaseView):
         self.request.session.flash(u'"属性(TicketBundleAttribute)を削除しました')
         return HTTPFound(self.request.route_path("events.tickets.bundles.show",
                                                  event_id=event_id, bundle_id=bundle_id))
-
-@view_config(route_name="events.tickets.bundles.items.enqueue", 
-             request_method="POST", permission="event_editor")
-def ticket_preview_enqueue_item(context, request):
-    item = context.product_item
-    renderer = pystache.Renderer()
-    operator = context.user
-    mdict = request.matchdict
-    ticket = DBSession.query(Ticket).filter_by(id=request.matchdict['ticket_id']).one()
-
-    svg = renderer.render(ticket.drawing, build_dict_from_product_item(item))
-    queue = TicketPrintQueueEntry(operator_id=operator.id, 
-                                  ticket=ticket,
-                                  summary=u'券面テンプレート (%s)' % ticket.name,
-                                  data=dict(drawing=svg))
-    queue.save()
-
-    request.session.flash(u'印刷キューにデータを投入しました')
-    return HTTPFound(request.route_path("events.tickets.bundles.show", 
-                              event_id=mdict["event_id"], 
-                              bundle_id=mdict["bundle_id"]))
-
-
-@view_config(route_name="events.tickets.bundles.items.download",
-             request_method="POST", permission="event_editor")
-def ticket_preview_download_item(context, request):
-    item = context.product_item
-    renderer = pystache.Renderer()
-    ticket = DBSession.query(Ticket).filter_by(id=request.matchdict['ticket_id']).one()
-
-    svg = renderer.render(ticket.drawing, build_dict_from_product_item(item))
-
-    return FileLikeResponse(
-        StringIO(svg.encode('utf-8')),
-        filename='%s.svg' % ticket.id,
-        request=request,
-        content_type='text/xml',
-        content_encoding='utf-8'
-        )

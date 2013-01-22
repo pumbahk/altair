@@ -449,15 +449,22 @@
   <script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/modal/api.js")}"></script>
   <script type="text/javascript">
     $(function(){
-      var candidates = [];
       var modalView = false;
       var modelname = "ProductItem";
 
       // collect candidates info
-      $(".preview-link").each(function(_,e){
+      var candidates = [];
+      $(".tab-pane.active .preview-link").each(function(_,e){
         var $e = $(e); 
         candidates.push({pk: $e.attr("data-pk"), name: $e.attr("data-name")}); 
 　    });
+      $(".nav-tabs a").on("click", function(){
+        candidates = [];
+        $(".tab-pane.active .preview-link").each(function(_,e){
+          var $e = $(e); 
+          candidates.push({pk: $e.attr("data-pk"), name: $e.attr("data-name")}); 
+  　    });
+      });
 
       // preview component
       $("a.preview-link").on("click", function(){

@@ -172,7 +172,7 @@ class Cart(Base):
 
     @property 
     def delivery_fee(self):
-        """ 配送手数料 """
+        """ 引取手数料 """
         delivery_fee = self.payment_delivery_pair.delivery_fee
         delivery_method = self.payment_delivery_pair.delivery_method
         if delivery_method.fee_type == c_models.FeeTypeEnum.Once.v[0]:

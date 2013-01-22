@@ -213,8 +213,8 @@ $(function(){
 gif" alt="検索" />
 	</form></li>
 
-		<li> <a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?&page_moji=ア,あ&page_domestic=1&count_artist=356">邦楽50音順検索</a></li>
-		<li><a href="/~katosaori/artist-page/web-contents/pages/gojyuon.php?&page_figure=A&page_overseas=1&count_artist=1490">洋楽ABC検索</a></li>
+		<li> <a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?&page_moji=ア,あ&page_domestic=1&count_artist=356">邦楽50音順検索</a></li>
+		<li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?&page_figure=A&page_overseas=1&count_artist=1490">洋楽ABC検索</a></li>
 
 	</ul>
 	</div>

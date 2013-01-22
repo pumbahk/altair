@@ -237,3 +237,10 @@ def show(request):
         'items': items,
         'adjs': adjs,
     }
+
+@view_config(route_name='venues.checker', permission='event_editor', renderer='ticketing:templates/venues/checker.html')
+def show_checker(request):
+    venue_id = int(request.matchdict.get('venue_id', 0))
+    return {
+        'venue_id': venue_id
+    }

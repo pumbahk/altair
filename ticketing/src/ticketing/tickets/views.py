@@ -4,6 +4,7 @@ from StringIO import StringIO
 import json
 import webhelpers.paginate as paginate
 import sqlalchemy as sa
+from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
 from datetime import datetime
 from lxml import etree
@@ -453,7 +454,8 @@ class TicketPrintQueueEntries(BaseView):
         queue_entries_sort_by, queue_entries_direction = helpers.sortparams('queue_entry', self.request, ('TicketPrintQueueEntry.created_at', 'desc'))
 
         queue_entries_qs = DBSession.query(TicketPrintQueueEntry) \
-            .filter_by(operator=self.context.user, processed_at=None)
+            .filter_by(operator=self.context.user, processed_at=None)\
+            .options(joinedload(TicketPrintQueueEntry.seat))
 
         if queue_entries_sort_by == "Order.order_no":
             # queue_entries_qs = queue_entries_qs\

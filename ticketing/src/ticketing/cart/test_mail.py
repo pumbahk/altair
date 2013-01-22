@@ -38,7 +38,7 @@ def _build_order(*args, **kwargs):
         last_name=kwargs.get("shipping_address__last_name", u"last-name"), 
         first_name_kana=kwargs.get("shipping_address__first_name_kana", u"first-name_kana"), 
         last_name_kana=kwargs.get("shipping_address__last_name_kana", u"last-name_kana"), 
-        email=kwargs.get("shipping_address__email"), 
+        email_1=kwargs.get("shipping_address__email_1"),
         tel_1=kwargs.get("shipping_address__tel1"), 
         tel_2=kwargs.get("shipping_address__tel2"), 
         zip=kwargs.get("shipping_address__zip"),
@@ -181,7 +181,7 @@ class SendCompleteMailTest(unittest.TestCase):
         request = testing.DummyRequest()
 
         order = _build_order(
-            shipping_address__email="purchase@user.ne.jp", 
+            shipping_address__email_1="purchase@user.ne.jp", 
             ordered_from__name = u"ordered-from-name",
             ordered_from__contact_email="from@organization.ne.jp"
             )
@@ -215,7 +215,7 @@ class SendCompleteMailTest(unittest.TestCase):
             shipping_address__last_name=u"family-name", 
             shipping_address__first_name_kana=u"名前", 
             shipping_address__last_name_kana=u"苗字", 
-            shipping_address__email="purchase@user.ne.jp", 
+            shipping_address__email_1="purchase@user.ne.jp", 
             shipping_address__tel1="0120-1234", 
             shipping_address__tel2="08012341234", 
             order__order_no="xxx-xxxx-xxxx", 
@@ -373,7 +373,7 @@ class SendCompleteMailTest(unittest.TestCase):
             shipping_address__last_name=u"family-name", 
             shipping_address__first_name_kana=u"名前", 
             shipping_address__last_name_kana=u"苗字", 
-            shipping_address__email="purchase@user.ne.jp", 
+            shipping_address__email_1="purchase@user.ne.jp", 
             shipping_address__zip=u"100-0001", 
             shipping_address__prefecture=u"東京都", 
             shipping_address__city=u"千代田区", 

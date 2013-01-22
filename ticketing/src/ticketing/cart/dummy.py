@@ -1,20 +1,20 @@
 # -*- coding:utf-8 -*-
 from ticketing.cart.selectable_renderer import selectable_renderer
 from ticketing.core.api import get_organization
-from ticketing.users import models as u_models
+from ticketing.mailmags import models as mailmag_models
 
 def includeme(config):
     config.add_route("dummy.cart.payment", "/dummy/payment")
     config.add_view(payment_view, route_name='dummy.cart.payment', request_method="GET", renderer=selectable_renderer("carts/%(membership)s/payment.html"))
-    config.add_view(payment_view, route_name='dummy.cart.payment', request_type='.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer("carts_mobile/%(membership)s/payment.html"))
+    config.add_view(payment_view, route_name='dummy.cart.payment', request_type='ticketing.mobile.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer("carts_mobile/%(membership)s/payment.html"))
 
     config.add_route("dummy.payment.confirm", "/dummy/confirm")
     config.add_view(confirm_view, route_name='dummy.payment.confirm', request_method="GET", renderer=selectable_renderer("carts/%(membership)s/confirm.html"))
-    config.add_view(confirm_view, route_name='dummy.payment.confirm', request_type='.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer("carts_mobile/%(membership)s/confirm.html"))
+    config.add_view(confirm_view, route_name='dummy.payment.confirm', request_type='ticketing.mobile.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer("carts_mobile/%(membership)s/confirm.html"))
 
     config.add_route("dummy.payment.complete", "/dummy/complete")
-    config.add_view(complete_view, route_name='dummy.payment.complete', request_method="GET", renderer=selectable_renderer("carts/%(membership)s/complete.html"))
-    config.add_view(complete_view, route_name='dummy.payment.complete', request_type='.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer("carts_mobile/%(membership)s/complete.html"))
+    config.add_view(complete_view, route_name='dummy.payment.complete', request_method="GET", renderer=selectable_renderer("carts/%(membership)s/completion.html"))
+    config.add_view(complete_view, route_name='dummy.payment.complete', request_type='ticketing.mobile.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer("carts_mobile/%(membership)s/completion.html"))
 
     config.add_route("dummy.timeout", "/dummy/timeout")
     config.add_view(timeout_view, route_name="dummy.timeout", renderer="carts/timeout.html")
@@ -60,8 +60,8 @@ def _dummy_cart():
 
 
 def _get_mailmagazines_from_organization(organization):
-    return u_models.MailMagazine.query.outerjoin(u_models.MailSubscription) \
-            .filter(u_models.MailMagazine.organization==organization)
+    return mailmag_models.MailMagazine.query.outerjoin(mailmag_models.MailSubscription) \
+            .filter(mailmag_models.MailMagazine.organization==organization)
            
 
 def confirm_view(request):

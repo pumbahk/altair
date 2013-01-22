@@ -68,7 +68,12 @@ nowdate = datetime.now()
               %endif
 					  </a>
 					</td>			
-          <td>${performance.venue.name if performance.venue else u'(なし)'}</td>
+          <td>
+            ${performance.venue.name if performance.venue else u'(なし)'}
+			% if performance.venue.sub_name != None:
+				<div class="sub_name">${performance.venue.sub_name}</div>
+			% endif
+		  </td>
           <td style="white-space: nowrap; font-size: 10px; line-height: 12px">
             <div>
               <span>${form.open_on.label.text}</span>

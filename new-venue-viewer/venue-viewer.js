@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['ZNR36HGGA6XT3E4V'] = (function (exports) { (function () { 
+__LIBS__['j37Q3CGGU1J4ZHZ_'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -41,8 +41,10 @@ exports.convertToFashionStyle = function Util_convertToFashionStyle(style, gradi
             [0, new Fashion.Color("#fff")],
             [1, new Fashion.Color(fill.color || "#fff")]
           ], .125);
-      } else {
+      } else if(fill.color) {
         return new Fashion.FloodFill(new Fashion.Color(fill.color));
+      } else {
+        return null;
       }
     case 'linear':
       return new Fashion.LinearGradientFill(_map(fill.colors, function (c) { return new Fashion.Color(c); }), fill.angle);
@@ -125,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['BCWTV6PUVQIQS5VQ'] = (function (exports) { (function () { 
+__LIBS__['R9URR5XLKVZA9I4J'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -180,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['vWU_59LV8JUTO4A3'] = (function (exports) { (function () { 
+__LIBS__['fC8JZLHY6_KM4WCD'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['ZNR36HGGA6XT3E4V'];
-var CONF = __LIBS__['BCWTV6PUVQIQS5VQ'];
+var util = __LIBS__['j37Q3CGGU1J4ZHZ_'];
+var CONF = __LIBS__['R9URR5XLKVZA9I4J'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -1016,9 +1018,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['BCWTV6PUVQIQS5VQ'];
-  var seat = __LIBS__['vWU_59LV8JUTO4A3'];
-  var util = __LIBS__['ZNR36HGGA6XT3E4V'];
+  var CONF = __LIBS__['R9URR5XLKVZA9I4J'];
+  var seat = __LIBS__['fC8JZLHY6_KM4WCD'];
+  var util = __LIBS__['j37Q3CGGU1J4ZHZ_'];
 
   var StoreObject = _class("StoreObject", {
     props: {

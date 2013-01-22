@@ -63,6 +63,7 @@ def main(global_config, **local_config):
 
     config.add_route("index", "/")
 
+    config.include('ticketing.mobile')
     config.include('ticketing.core')
     config.include('ticketing.multicheckout')
     config.include('ticketing.checkout')
@@ -76,7 +77,7 @@ def main(global_config, **local_config):
     config.include('ticketing.master' , route_prefix='/master')
     config.include('ticketing.tickets' , route_prefix='/tickets')
     config.include('ticketing.products' , route_prefix='/products')
-    config.include('ticketing.users.mailmags' , route_prefix='/mailmags')
+    config.include('ticketing.mailmags' , route_prefix='/mailmags')
     config.include('ticketing.venues' , route_prefix='/venues')
     config.include('ticketing.dashboard' , route_prefix='/dashboard')
     config.include('ticketing.bookmark' , route_prefix='/bookmark')

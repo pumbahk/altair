@@ -93,3 +93,18 @@ exports.mergeStyle = function mergeStyle(a, b) {
     stroke: (b.stroke ? b.stroke: a.stroke) || null
   };
 };
+
+timer = function(msg) {
+    this.start = (new Date()).getTime();
+	if(msg) {
+		console.log(msg);
+	}
+};
+timer.prototype.lap = function(msg) {
+	var lap = (new Date()).getTime()-this.start;
+    this.start = (new Date()).getTime();
+	if(msg) {
+		console.log(msg+": "+lap+"msec");
+	}
+    return lap;
+};

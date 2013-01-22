@@ -16,7 +16,8 @@ from ..api.impl import get_communication_api
 from ..api.impl import CMSCommunicationApi
 from .interfaces import IPaymentMethodManager
 #from .interfaces import IPaymentPlugin, IDeliveryPlugin, IPaymentDeliveryPlugin
-from .interfaces import IMobileRequest, IStocker, IReserving, ICartFactory
+from ticketing.mobile.interfaces import IMobileRequest
+from .interfaces import IStocker, IReserving, ICartFactory
 from .models import Cart, PaymentMethodManager, DBSession, CartedProductItem, CartedProduct
 from ..users.models import User, UserCredential, Membership, MemberGroup, MemberGroup_SalesSegment
 from ..core.models import Event, Performance, Stock, StockHolder, Seat, Product, ProductItem, SalesSegment, Venue

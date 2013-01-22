@@ -62,7 +62,7 @@ def delivery_notice(request, order):
     return notice
     
 def create_cancel_message(request, order):
-    if not order.shipping_address or not order.shipping_address.email:
+    if not order.shipping_address or not order.shipping_address.email_1:
         logger.info('order has not shipping_address or email id=%s' % order.id)
         return
 
@@ -115,7 +115,7 @@ def create_cancel_message(request, order):
 
     message = Message(
         subject=subject,
-        recipients=[order.shipping_address.email],
+        recipients=[order.shipping_address.email_1],
         bcc=[from_], 
         body=mail_body,
         sender=from_)
