@@ -27,10 +27,21 @@
     ${h.link.get_link_tag_from_category(request,c)}
      <br />
 %endfor
+
                 <ul>
-%for c in myhelper._get_categories(request, "header_menu"):
-    <li>${h.link.get_link_tag_from_category(request,c)}</li>
-%endfor
+##todo: helper
+<% cs = list(myhelper._get_categories(request, "header_menu")) %>
+%if len(cs) >= 2:
+    <li class="first">${h.link.get_link_tag_from_category(request,cs[0])}</li>
+    %for c in cs[1:-1]:
+        <li>${h.link.get_link_tag_from_category(request,c)}</li>
+    %endfor
+    <li class="last">${h.link.get_link_tag_from_category(request,cs[-1])}</li>
+%else:
+    %for c in cs:
+        <li class="first last">${h.link.get_link_tag_from_category(request,c)}</li>
+    %endfor
+%endif
                 </ul>　　
             </div>
 			      <img src="${request.static_url("altaircms:static/vissel/images/partnerlogo.gif")}" alt="OFFICIAL TICKET SITE PARTNER TICKETSTAR" class="partnerlogo" />
