@@ -18,7 +18,7 @@ class PerformanceForm(Form):
                 'original_venue_id':None
             }
             self.venue_id.choices = [
-                (venue.id, venue.name) for venue in Venue.filter_by(**conditions).all()
+                (venue.id, venue.name+(' ('+venue.sub_name+')' if venue.sub_name!=None else '')) for venue in Venue.filter_by(**conditions).all()
             ]
             if 'venue_id' in kwargs:
                 venue = Venue.get(kwargs['venue_id'])
