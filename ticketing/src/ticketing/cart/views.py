@@ -991,7 +991,7 @@ class CompleteView(object):
         del self.request._cart
         cart = api.get_cart(self.request)
         order_id = order.id
-        email_1 = cart.shipping_address.email_1
+        emails = cart.shipping_address.emails
         plain_user = self.context.get_or_create_user()
         user_id = None
         if plain_user is not None:
@@ -1003,24 +1003,25 @@ class CompleteView(object):
         order = DBSession.query(order.__class__).get(order_id)
  
         # メール購読
-        self.save_subscription(user, email_1)
+        self.save_subscription(user, emails)
         # == end MailMagazineRegistration ==
         api.remove_cart(self.request)
 
         api.logout(self.request)
         return dict(order=order)
 
-    def save_subscription(self, user, email_1):
+    def save_subscription(self, user, emails):
         magazines = mailmag_models.MailMagazine.query.all()
 
         # 購読
         magazine_ids = self.request.params.getall('mailmagazine')
         logger.debug("magazines: %s" % magazine_ids)
         for subscription in mailmag_models.MailMagazine.query.filter(mailmag_models.MailMagazine.id.in_(magazine_ids)).all():
-            if subscription.subscribe(user, email_1):
-                logger.debug("User %s starts subscribing %s for <%s>" % (user, subscription.name, email_1))
-            else:
-                logger.debug("User %s is already subscribing %s for <%s>" % (user, subscription.name, email_1))
+            for email in emails:
+                if subscription.subscribe(user, email):
+                    logger.debug("User %s starts subscribing %s for <%s>" % (user, subscription.name, email))
+                else:
+                    logger.debug("User %s is already subscribing %s for <%s>" % (user, subscription.name, email))
 
 
 @view_defaults(decorator=with_jquery.not_when(mobile_request))
