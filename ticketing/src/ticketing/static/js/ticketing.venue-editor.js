@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['IYAS6QY4LSVKO9R2'] = (function (exports) { (function () { 
+__LIBS__['qRUHFHO7UZ2DNSUR'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -73,7 +73,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['PLMK4O6PEBF34_JP'] = (function (exports) { (function () { 
+__LIBS__['qWEBAXA9CQSK4JTA'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -187,7 +187,7 @@ timer.prototype.lap = function(msg) {
     return lap;
 };
  })(); return exports; })({});
-__LIBS__['z_15L_04KRVJENLW'] = (function (exports) { (function () { 
+__LIBS__['L5VVC3DZKL5CLXDD'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -236,12 +236,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['RGLFRO99UVNQH2LQ'] = (function (exports) { (function () { 
+__LIBS__['sLN4FMOPTQEKPAIA'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['PLMK4O6PEBF34_JP'];
-var CONF = __LIBS__['IYAS6QY4LSVKO9R2'];
-var IdentifiableSet = __LIBS__['z_15L_04KRVJENLW'].IdentifiableSet;
+var util = __LIBS__['qWEBAXA9CQSK4JTA'];
+var CONF = __LIBS__['qRUHFHO7UZ2DNSUR'];
+var IdentifiableSet = __LIBS__['L5VVC3DZKL5CLXDD'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -717,12 +717,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['GPYAC_M_0U101M_H'] = (function (exports) { (function () { 
+__LIBS__['BC7_3OHGZ4_3XTI2'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['PLMK4O6PEBF34_JP'];
-var CONF = __LIBS__['IYAS6QY4LSVKO9R2'];
-var models = __LIBS__['RGLFRO99UVNQH2LQ'];
+var util = __LIBS__['qWEBAXA9CQSK4JTA'];
+var CONF = __LIBS__['qRUHFHO7UZ2DNSUR'];
+var models = __LIBS__['sLN4FMOPTQEKPAIA'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -878,12 +878,12 @@ var Seat = exports.Seat = Backbone.Model.extend({
       this.label = shape.drawable.draw(
         new Fashion.Text({
           position: {
-            x: p.x + (s.x * 0.10),
+			x: p.x + (s.x * (0.05 + (styleText.length==1 ? 0.2 : 0.0))),
             y: p.y + (s.y * 0.75)
           },
-          fontSize: (s.y * 0.5),
+          fontSize: style.text ? s.y * 0.5 : (s.x*1.2/Math.max(2, styleText.length)),
           text: styleText,
-          style: { fill: new Fashion.FloodFill(new Fashion.Color(style.text_color)) }
+          style: { fill: new Fashion.FloodFill(new Fashion.Color(style.text_color)), cursor: 'default' }
         })
       );
       this.label.addEvent(this.get('events'));
@@ -913,7 +913,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['gHGGPH3GA_7E31NI'] = (function (exports) { (function () { 
+__LIBS__['HJZH994QJM1BKQUV'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -944,13 +944,13 @@ exports.ja = {
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['IYAS6QY4LSVKO9R2'];
-  var models = __LIBS__['RGLFRO99UVNQH2LQ'];
-  var util = __LIBS__['PLMK4O6PEBF34_JP'];
-  var viewobjects = __LIBS__['GPYAC_M_0U101M_H'];
-  var IdentifiableSet = __LIBS__['z_15L_04KRVJENLW'].IdentifiableSet;
+  var CONF = __LIBS__['qRUHFHO7UZ2DNSUR'];
+  var models = __LIBS__['sLN4FMOPTQEKPAIA'];
+  var util = __LIBS__['qWEBAXA9CQSK4JTA'];
+  var viewobjects = __LIBS__['BC7_3OHGZ4_3XTI2'];
+  var IdentifiableSet = __LIBS__['L5VVC3DZKL5CLXDD'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['gHGGPH3GA_7E31NI'];
+    I18n.translations = __LIBS__['HJZH994QJM1BKQUV'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;

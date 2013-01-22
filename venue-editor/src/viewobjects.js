@@ -156,12 +156,12 @@ var Seat = exports.Seat = Backbone.Model.extend({
       this.label = shape.drawable.draw(
         new Fashion.Text({
           position: {
-            x: p.x + (s.x * 0.10),
+			x: p.x + (s.x * (0.05 + (styleText.length==1 ? 0.2 : 0.0))),
             y: p.y + (s.y * 0.75)
           },
-          fontSize: (s.y * 0.5),
+          fontSize: style.text ? s.y * 0.5 : (s.x*1.2/Math.max(2, styleText.length)),
           text: styleText,
-          style: { fill: new Fashion.FloodFill(new Fashion.Color(style.text_color)) }
+          style: { fill: new Fashion.FloodFill(new Fashion.Color(style.text_color)), cursor: 'default' }
         })
       );
       this.label.addEvent(this.get('events'));
