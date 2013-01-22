@@ -1,0 +1,156 @@
+<?xml version='1.0'?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<script type="text/javascript" src="/static/js/jquery-1.6.2.min.js"></script>
+    <script type="text/javascript" src="/static/js/jquery.mousewheel.js"></script>
+<script type="text/javascript">
+//<![CDATA[
+var load = function(url, next) {
+	$.ajax({
+		url: url,
+		dataType: 'text',
+		success: function(r) {
+			$('#stage').get(0).innerHTML = r.replace(/<(\/?)svg:/g, '<$1');
+			
+			$('#venue').text($('#stage > svg > title').text());
+			
+			var svgfind = function(p, element, attr, value) {
+				var len = p.size();
+				for(var i=0 ; i<len ; i++) {
+					if(p.get(i).tagName == element) {
+						if(!attr || p.eq(i).attr(attr) == value) {
+							return p.get(i);
+						}
+					}
+				}
+			};
+			$('#stage g g rect').hover(function() {
+				// jQuery DOES NOT SUPPORT SVG Elements traversal
+				var b = $('metadata', $(this).parents('g').eq(1)).eq(0);
+				var r = $('metadata', $(this).parents('g').eq(0)).eq(0);
+				var block = svgfind($('*', b), 'si:property', 'name', 'name');
+				$('#block').text(block ? block.childNodes.item(0).data : '?');
+				var row = svgfind($('*', r), 'si:property', 'name', 'name');
+				$('#row').text(row ? (0 < row.childNodes.length ? row.childNodes.item(0).data : '') : '?');
+				$('#row_id').text($(this).parents('g').eq(0).attr('id'));
+				$('#seat').text($('title', this).text());
+				$('#seat_id').text($(this).attr('id'));
+				var obj = svgfind($('metadata *', this), 'si:object');
+				$('#seat_proto').text(obj.getAttribute('prototype'));
+				$(this).attr('fill-opacity', '0.2');
+			}, function() {
+				var e = $(this).get(0);
+				$('#block').text(' ');
+				$('#row').text(' ');
+				$('#row_id').text(' ');
+				$('#seat').text(' ');
+				$('#seat_id').text(' ');
+				$('#seat_proto').text(' ');
+				$(this).attr('fill-opacity', '');
+			});
+			if(next) {
+				next();
+			}
+		}
+	});
+};
+var next = function() {
+	var afterZoom = function() {
+		$('#stage svg').css({ width: $('#stage svg').attr('width') });
+		$('#stage svg').css({ height: $('#stage svg').attr('height') });
+/*
+		$('#stage svg g g rect').each(function() {
+			trans.setup(this);
+			return false;
+		});
+*/
+	};
+	
+	var rect = $('#stage svg').get(0).viewBox;
+	if(rect.animVal.width) {
+		var defaultZoom = 1000 / rect.animVal.width;
+		$('#stage svg').attr('width', rect.animVal.width * defaultZoom);
+		$('#stage svg').attr('height', rect.animVal.height * defaultZoom);
+	}
+	
+	var zoomRatio = 1.2;
+	$('form input.zoomup').click(function() {
+		$('#stage svg').attr('width', $('#stage svg').attr('width') * zoomRatio);
+		$('#stage svg').attr('height', $('#stage svg').attr('height') * zoomRatio);
+		afterZoom();
+	});
+	$('form input.zoomdown').click(function() {
+		$('#stage svg').attr('width', $('#stage svg').attr('width') / zoomRatio);
+		$('#stage svg').attr('height', $('#stage svg').attr('height') / zoomRatio);
+		afterZoom();
+	});
+	$('#stage').mousewheel(function(e, delta) {
+		if(e.ctrlKey) {
+			if(0 < delta) {
+				$('form input.zoomdown').click();
+			} else if(delta < 0) {
+				$('form input.zoomup').click();
+			}
+		}
+	});
+};
+$(function() {
+	$('#stage').css({ cursor: 'url(/static/pointer.png)' });
+	$('form').submit(function() {
+		load($('#url').val(), next);
+		return false;
+	});
+	$('form').submit();
+});
+//]]>
+</script>
+<style type="text/css">
+* { font-size: 8px; }
+#status span { display: inline-block; width: 120px; overflow: hidden; }
+body { margin: 0; }
+#panel { position: fixed; background-color: #cccccc; width: 100%; }
+#panel form,
+#panel div { padding-left: 10px; padding-right: 10px; }
+#panel-space { height: 80px; }
+
+.block { fill: rgb(255, 255, 192); stroke: rgb(0, 0, 0); stroke-width: 1px; vector-effect: non-scaling-stroke; }
+g .seat { fill: rgb(255, 255, 255); stroke: rgb(0, 0, 0); stroke-width: 1px; vector-effect: non-scaling-stroke; }
+g g .seat { fill: rgb(160, 160, 160); stroke: rgb(0, 0, 0); stroke-width: 1px; vector-effect: non-scaling-stroke; }
+.label { z-index: 2; fill: rgb(0, 0, 255); }
+.background { z-index: 1; stroke: rgb(220, 220, 220); fill: transparent; }
+</style>
+</head>
+<body>
+<div id="panel">
+	<form style="padding-top: 8px; padding-left: 80px;">
+	<u>Seat Check Tool</u>
+	Location: <input type="text" id="url" value="${request.route_path('api.get_drawing', venue_id=venue_id)}" style="width: 70%" readonly="readonly" />
+	<input type="submit" value="Load" style="display: none;" />
+	<input type="button" value="-" class="zoomdown" />
+	<input type="button" value="+" class="zoomup" />
+	</form>
+	<div style="height: 20px; padding-left: 80px; white-space: nowrap;" id="status">
+		Venue: <span id="venue"></span>
+		Block: <span id="block"></span>
+		&nbsp;&nbsp;&nbsp;
+		Row: <span id="row"></span>
+		&nbsp;&nbsp;&nbsp;
+		Row_ID: <span id="row_id"></span>
+		&nbsp;&nbsp;&nbsp;
+		Seat: <span id="seat"></span>
+		&nbsp;&nbsp;&nbsp;
+		Seat_ID: <span id="seat_id"></span>
+		&nbsp;&nbsp;&nbsp;
+		Seat_Prototype: <span id="seat_proto"></span>
+	</div>
+</div>
+
+<div id="panel-space"></div>
+
+<div id="stage"></div>
+
+</body>
+</html>
+
