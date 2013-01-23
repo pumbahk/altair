@@ -114,6 +114,21 @@ ${h.breadcrumbs(
               <td>${h.safe_strftime(order.canceled_at)}</td>
             </tr>
             % endif
+            <tr>
+              <th>販売チャネル</th>
+              <td>
+                <% from ticketing.core.api import get_channel %>
+                ${get_channel(order.channel).k}
+              </td>
+            </tr>
+            <tr>
+              <th>オペレーター</th>
+              <td>
+                % if order.operator:
+                  ${order.operator.name}
+                % endif
+              </td>
+            </tr>
           </table>
           % if i == 0:
           <div class="pull-right">
@@ -292,15 +307,15 @@ ${h.breadcrumbs(
             % endif
             % if order.cart and order.cart.checkout:
             <tr>
-              <th>楽天あんしん決済注文番号</th>
+              <th>楽天あんしん支払いサービス 注文番号</th>
               <td>${order.cart.checkout.orderId}</td>
             </tr>
             <tr>
-              <th>楽天あんしん決済注文管理番号</th>
+              <th>楽天あんしん支払いサービス 注文管理番号</th>
               <td>${order.cart.checkout.orderControlId}</td>
             </tr>
             <tr>
-              <th>楽天あんしん決済利用ポイント数</th>
+              <th>楽天あんしん支払いサービス 利用ポイント数</th>
               <td>${h.price_format(int(order.cart.checkout.usedPoint or 0))}</td>
             </tr>
             % endif

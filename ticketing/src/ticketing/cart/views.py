@@ -897,10 +897,15 @@ class ConfirmView(object):
             .all()
 
         user = self.context.get_or_create_user()
-        return dict(cart=cart, mailmagazines=magazines, 
-            #user=user, 
+        payment = Payment(cart, self.request)
+        delegator = payment.call_delegator()
+        logger.error(delegator)
+        return dict(
+            cart=cart,
+            mailmagazines=magazines,
             form=form,
-            )
+            delegator=delegator,
+        )
 
 
 @view_defaults(decorator=with_jquery.not_when(mobile_request))
@@ -1011,8 +1016,6 @@ class CompleteView(object):
         return dict(order=order)
 
     def save_subscription(self, user, emails):
-        magazines = mailmag_models.MailMagazine.query.all()
-
         # 購読
         magazine_ids = self.request.params.getall('mailmagazine')
         logger.debug("magazines: %s" % magazine_ids)

@@ -54,7 +54,6 @@ class Payment(object):
         self.cart = cart
         self.sales_segment = cart.sales_segment
 
-
     def get_payment_delivery_methods(self):
         """ via PaymentView
         """
@@ -73,7 +72,6 @@ class Payment(object):
         )
         self.request.session['order'] = order
 
-
     def call_prepare(self):
         """ 決済方法前呼び出し
         """
@@ -83,6 +81,13 @@ class Payment(object):
         res = preparer.prepare(self.request, self.cart)
         return res
 
+    def call_delegator(self):
+        preparer = get_preparer(self.request, self.cart.payment_delivery_pair)
+        if preparer is None:
+            raise Exception
+        if hasattr(preparer, 'delegator'):
+            return preparer.delegator(self.request, self.cart)
+        return None
 
     def _bind_order(self, order, user):
         order.user = user
@@ -142,7 +147,6 @@ class Payment(object):
         # デタッチされてしまうので再度取得
         order = DBSession.query(Order).filter(Order.order_no==order_no).one()
         return order
-
 
 
 def on_delivery_error(e, request, order):
