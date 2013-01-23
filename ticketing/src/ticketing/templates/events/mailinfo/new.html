@@ -15,19 +15,8 @@
       )}
 </div>
 
-<%
-from ticketing.core.models import MailTypeEnum
-from ticketing.core.models import MailTypeChoices
-if str(MailTypeEnum.CompleteMail) == mailtype:
-    ja_mailtype = u"購入完了メール付加情報"
-elif str(MailTypeEnum.PurchaseCancelMail) == mailtype:
-    ja_mailtype = u"購入キャンセルメール付加情報"
-else:
-    ja_mailtype = u"?????"
-%>
-
 <div class="page-header">
-  <h2>${ja_mailtype} ${event.title}</h2>
+  <h2>${mutil.get_mailtype_description()}付加情報 ${event.title}</h2>
   <span class="label">取引先</span> &gt
   <span class="label label-warning">イベント</span> &gt
   <span class="label">パフォーマンス</span>
@@ -47,7 +36,7 @@ else:
 <a href="#PreviewModal" data-toggle="modal">preview</a>
 
 <div class="btn-group" style="margin-bottom:20px;">
-  %for i, label in MailTypeChoices:
+  %for i, label in choices:
     <a class="btn btn-inverse"
 	   href="${request.current_route_path(organization_id=organization.id, mailtype=i)}">${label}</a>
   %endfor

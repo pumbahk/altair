@@ -5,6 +5,7 @@ from .interfaces import IMailUtility
 
 def register_mailutilty(config, util, name):
     util = config.maybe_dotted(util)
+    assert util.get_mailtype_description
     assert util.create_or_update_mailinfo
     assert util.get_order_info_default
     assert util.get_traverser

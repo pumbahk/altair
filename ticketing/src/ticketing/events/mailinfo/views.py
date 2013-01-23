@@ -39,7 +39,8 @@ class MailInfoNewView(BaseView):
         return {"event": event, 
                 "form": form, 
                 "organization": event.organization, 
-                "mailtype": self.request.matchdict["mailtype"], 
+                "mailtype": mailtype, 
+                "mutil": mutil, 
                 "choices": MailTypeChoices, 
                 "choice_form": choice_form}
 
@@ -68,5 +69,6 @@ class MailInfoNewView(BaseView):
                 "form": form, 
                 "choice_form": choice_form, 
                 "organization": event.organization, 
+                "mutil": mutil, 
                 "mailtype": self.request.matchdict["mailtype"], 
                 "choices": MailTypeChoices}

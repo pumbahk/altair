@@ -14,8 +14,7 @@ from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
 from ..core.models import Organization
 from ticketing.organizations.forms import OrganizationForm, SejTenantForm
-from ticketing.core.models import Event, Account
-
+from ticketing.core.models import Event, Account, MailTypeChoices
 from ticketing.sej.models import SejTenant
 from ticketing.mails.forms import MailInfoTemplate
 from ticketing.models import DBSession
@@ -213,7 +212,8 @@ class MailInfoNewView(BaseView):
         formclass = template.as_formclass()
         mailtype = self.request.matchdict["mailtype"]
         form = formclass(**(organization.extra_mailinfo.data.get(mailtype, {}) if organization.extra_mailinfo else {}))
-        return {"organization": organization, "form": form, "mailtype": mailtype, "choice_form": choice_form}
+        return {"organization": organization, "form": form, "mailtype": mailtype, "choice_form": choice_form, 
+                "mutil": mutil, "choices": MailTypeChoices}
 
     @view_config(request_method="POST")
     def mailinfo_new_post(self):
@@ -234,4 +234,5 @@ class MailInfoNewView(BaseView):
             logger.debug("mailinfo.data: %s" % mailinfo.data)
             DBSession.add(mailinfo)
             self.request.session.flash(u"メールの付加情報を登録しました")
-        return {"organization": organization, "form": form, "mailtype": mailtype, "choice_form": choice_form}
+        return {"organization": organization, "form": form, "mailtype": mailtype, "choice_form": choice_form, 
+                "mutil": mutil, "choices": MailTypeChoices}

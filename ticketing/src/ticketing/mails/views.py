@@ -2,19 +2,8 @@
 from pyramid.view import view_config
 from ticketing.fanstatic import with_bootstrap
 from ticketing.mails.api import get_mail_utility
-from ..core.models import Organization, Event, Performance, MailTypeEnum
+from ..core.models import Organization, Event, Performance
 from . import forms
-
-## move
-def jmailtype(mailtype):
-    if str(MailTypeEnum.CompleteMail) == mailtype:
-        return u"購入完了メール付加情報"
-    elif str(MailTypeEnum.PurchaseCancelMail) == mailtype:
-        return u"購入キャンセルメール付加情報"
-    else:
-        return  u"?????"
-
-
 
 @view_config(route_name="mails.preview.organization", 
              decorator=with_bootstrap, permission="authenticated", 
@@ -32,7 +21,7 @@ def mail_preview_preorder_with_organization(context, request):
         delivery_methods=delivery_id, 
         )
     return {"preview_text": mutil.preview_text(request, fake_order), 
-            "form": form, "ja_mailtype": jmailtype(request.matchdict["mailtype"])}
+            "mutil": mutil, "form": form}
 
 @view_config(route_name="mails.preview.event", 
              decorator=with_bootstrap, permission="authenticated", 
@@ -52,7 +41,7 @@ def mail_preview_preorder_with_event(context, request):
         delivery_methods=delivery_id, 
         )
     return {"preview_text": mutil.preview_text(request, fake_order), 
-            "form": form, "ja_mailtype": jmailtype(request.matchdict["mailtype"])}
+            "mutil": mutil, "form": form}
 
 @view_config(route_name="mails.preview.performance", 
              decorator=with_bootstrap, permission="authenticated", 
@@ -71,4 +60,4 @@ def mail_preview_preorder_with_performance(context, request):
         delivery_methods=delivery_id, 
         )
     return {"preview_text": mutil.preview_text(request, fake_order), 
-            "form": form, "ja_mailtype": jmailtype(request.matchdict["mailtype"])}
+            "mutil": mutil, "form": form}

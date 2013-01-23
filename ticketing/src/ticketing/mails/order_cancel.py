@@ -63,6 +63,9 @@ ${address_1} ${address_2}""" % params
 def get_order_info_default():
     return OrderCancelInfoDefault()
 
+def get_mailtype_description():
+    return u"購入キャンセルメール"
+
 get_traverser = functools.partial(get_mailinfo_traverser, access=access_data, default=u"")
 get_cancel_mail = functools.partial(get_purchaseinfo_mail, name=PURCHASE_MAILS["cancel"])
 

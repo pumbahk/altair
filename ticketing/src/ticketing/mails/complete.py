@@ -28,6 +28,9 @@ class OrderCompleteInfoDefault(OrderInfoDefault):
     tel = OrderInfo(name="tel", label=u"電話番号", getval=lambda order : order.shipping_address.tel_1 or "")
     mail = OrderInfo(name="mail", label=u"メールアドレス", getval=lambda order : order.shipping_address.email_1)
 
+def get_mailtype_description():
+    return u"購入完了メール"
+
 def get_order_info_default():
     return OrderCompleteInfoDefault
 

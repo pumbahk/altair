@@ -281,6 +281,7 @@ class MailInfoNewView(BaseView):
                 "organization": performance.event.organization, 
                 "mailtype": self.request.matchdict["mailtype"], 
                 "choices": MailTypeChoices, 
+                "mutil": mutil, 
                 "choice_form": choice_form}
 
     @view_config(request_method="POST")
@@ -309,6 +310,7 @@ class MailInfoNewView(BaseView):
                 "form": form, 
                 "organization": performance.event.organization, 
                 "mailtype": self.request.matchdict["mailtype"], 
+                "mutil": mutil, 
                 "choices": MailTypeChoices, 
                 "choice_form": choice_form}
 
