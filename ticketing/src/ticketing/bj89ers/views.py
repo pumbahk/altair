@@ -130,6 +130,7 @@ class PaymentView(_PaymentView):
             address_1=address_data['address1'],
             address_2=address_data['address2'],
             email_1=address_data['email_1'],
+            email_2=None,
             country=u"日本国",
             tel_1=address_data['tel_1'],
             tel_2=address_data['tel_2'],
