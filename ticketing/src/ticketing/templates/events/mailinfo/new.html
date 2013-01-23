@@ -67,7 +67,7 @@
     <h3>メールpreview</h3>
   </div>
 
-  <form class="inline" action="${request.route_path("mails.preview.event", event_id=event.id, mailtype=mailtype)}" method="GET">
+  <form class="inline" action="${request.route_path("mails.preview.event", event_id=event.id, mailtype=mailtype)}" method="GET" target="_blank">
   <div class="modal-body">
 	${choice_form["payment_methods"].label} ${choice_form["payment_methods"]}
 	${choice_form["delivery_methods"].label} ${choice_form["delivery_methods"]}
