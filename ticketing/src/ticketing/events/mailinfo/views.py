@@ -30,10 +30,11 @@ class MailInfoNewView(BaseView):
         if event is None:
             raise HTTPNotFound('event id %s is not found' % self.request.matchdict["event_id"])
 
-        template = MailInfoTemplate(self.request, event.organization)
+        mailtype = self.request.matchdict["mailtype"]
+        mutil = get_mail_utility(self.request, mailtype)
+        template = MailInfoTemplate(self.request, event.organization, mutil=mutil)
         choice_form = template.as_choice_formclass()()
         formclass = template.as_formclass()
-        mailtype = self.request.matchdict["mailtype"]
         form = formclass(**(event.extra_mailinfo.data.get(mailtype, {}) if event.extra_mailinfo else {}))
         return {"event": event, 
                 "form": form, 
@@ -51,7 +52,7 @@ class MailInfoNewView(BaseView):
                                 id=self.request.matchdict["event_id"]).first()
         if event is None:
             raise HTTPNotFound('event id %s is not found' % self.request.matchdict["event_id"])
-        template = MailInfoTemplate(self.request, event.organization)
+        template = MailInfoTemplate(self.request, event.organization, mutil=mutil)
         choice_form = template.as_choice_formclass()()
         form = template.as_formclass()(self.request.POST)
         if not form.validate():

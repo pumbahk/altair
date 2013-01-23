@@ -27,7 +27,7 @@ def mail_preview_preorder_with_organization(context, request):
     organization_id = int(request.matchdict.get("organization_id", 0))
     organization = Organization.get(organization_id)
     fake_order = mutil.create_fake_order(request, organization, payment_id, delivery_id)
-    form = forms.MailInfoTemplate(request, organization).as_choice_formclass()(
+    form = forms.MailInfoTemplate(request, organization, mutil=mutil).as_choice_formclass()(
         payment_methods=payment_id, 
         delivery_methods=delivery_id, 
         )
@@ -47,7 +47,7 @@ def mail_preview_preorder_with_event(context, request):
     fake_order = mutil.create_fake_order(request, event.organization, 
                                          payment_id, delivery_id, event=event)
 
-    form = forms.MailInfoTemplate(request, event.organization).as_choice_formclass()(
+    form = forms.MailInfoTemplate(request, event.organization, mutil=mutil).as_choice_formclass()(
         payment_methods=payment_id, 
         delivery_methods=delivery_id, 
         )
@@ -66,7 +66,7 @@ def mail_preview_preorder_with_performance(context, request):
     performance = Performance.get(performance_id)
     fake_order = mutil.create_fake_order(request, performance.event.organization,
                                          payment_id, delivery_id, performance=performance)
-    form = forms.MailInfoTemplate(request, performance.event.organization).as_choice_formclass()(
+    form = forms.MailInfoTemplate(request, performance.event.organization, mutil=mutil).as_choice_formclass()(
         payment_methods=payment_id, 
         delivery_methods=delivery_id, 
         )

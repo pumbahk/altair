@@ -10,10 +10,8 @@ class IMailUtility(Interface):
         
     def preview_text(request, order):
         """ orderから送信されるメールのpreviewを作成"""
-    
-class ICompleteMail(Interface):
-    """完了メールを送る
-    """
+
+class IPurchaseInfoMail(Interface):
     request = Attribute("request")
 
     def validate():
@@ -26,6 +24,14 @@ class ICompleteMail(Interface):
 
     def build_message(order):
         pass
+
+class ICompleteMail(IPurchaseInfoMail):
+    """完了メールを送る
+    """
+
+class ICancelMail(IPurchaseInfoMail):
+    """ 購入キャンセルメールを送る
+    """
 
 class ICompleteMailPayment(Interface):
     """ 完了メールの配送ビューレットのコンテキスト"""

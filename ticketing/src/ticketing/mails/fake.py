@@ -49,3 +49,6 @@ class FakeObject(unicode):
     def __call__(self, *args, **kwargs):
         logger.debug("warn call() return self")
         return self
+
+    def __nonzero__(self):
+        return False

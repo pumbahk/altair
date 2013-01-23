@@ -1,4 +1,6 @@
 # -*- coding:utf-8 -*-
+import logging
+logger = logging.getLogger(__name__)
 
 import itertools
 from wtforms import Form
@@ -20,10 +22,18 @@ def MethodChoicesFormFactory(template):
     return type("MethodChoiceForm", (Form, ), attrs)
 
 OrderInfo = namedtuple("OrderInfo", "name label getval")
+OrderInfoWithValue = namedtuple("OrderInfoWithValue", "name label getval value")
 RenderVal = namedtuple("RenderVal", "status label, body")
+
 class OrderInfoForm(Form):
     use = fields.BooleanField(u"表示する")
     kana = fields.TextField(u"ラベル名", validators=[validators.Required()])
+
+class OrderInfoWithValueForm(Form):
+    use = fields.BooleanField(u"表示する")
+    kana = fields.TextField(u"ラベル名", validators=[validators.Required()])
+    value = fields.TextField(label=u"文言", widget=widgets.TextArea(), 
+                             validators=[validators.Optional()])
 
 class OrderInfoDefault(object):
     """ 
@@ -68,32 +78,43 @@ class OrderInfoDefault(object):
 
     @classmethod
     def get_form_field_candidates(cls):
-        return ((k,v) for k,v in cls.__dict__.iteritems() if isinstance(v, OrderInfo))
-
+        return ((k,v) for k,v in cls.__dict__.iteritems() if isinstance(v, (OrderInfo, OrderInfoWithValue)))
+    
 class OrderInfoRenderer(object):
-    default = OrderInfoDefault
-    def __init__(self, order, data):
+    def __init__(self, order, data, default_impl=OrderInfoDefault):
         self.order = order
         self.data = data
+        self.default = default_impl
 
     def get(self, k):
         if not hasattr(self, k):
             val = self.data[k]
             if not (val and val["use"]):
-                setattr(self, k, RenderVal(label="", status=False, body=""))
+                setattr(self, k, RenderVal(label="", status=False, body=getattr(val, "body", u"")))
             else:
                 setattr(self, k, RenderVal(label=val["kana"],
                                            status=True, 
-                                           body=getattr(self.default, k).getval(self.order)))
+                                           body=val.get("value") or getattr(self.default, k).getval(self.order)))
         return getattr(self, k)
 
-def MailInfoFormFactory(template):
+def MailInfoFormFactory(template, mutil=None):
     attrs = OrderedDict()
     attrs["subject"] = fields.TextField(label=u"メール件名")
     attrs["sender"] = fields.TextField(label=u"メールsender")
 
-    for k, v in OrderInfoDefault.get_form_field_candidates():
-        attrs[k] = fields.FormField(OrderInfoForm, label=v.label, default=dict(use=True, kana=v.label, doc=v)) ##xxx:
+    try:
+        default = mutil.get_order_info_default()
+    except:
+        logger.warn("mutil is not found. default is OrderInfoDefault")
+        default = OrderInfoDefault
+
+    for k, v in default.get_form_field_candidates():
+        if hasattr(v, "value"):
+            attrs[k] = fields.FormField(OrderInfoWithValueForm, label=v.label, 
+                                        default=dict(use=True, kana=v.label, doc=v, value=v.value)) ##xxx:
+        else:
+            attrs[k] = fields.FormField(OrderInfoForm, label=v.label, 
+                                        default=dict(use=True, kana=v.label, doc=v)) ##xxx:
 
     for e in template.template_keys():
         attrs[e.name] = fields.TextField(label=e.label, widget=widgets.TextArea(), description=e.method, 
@@ -137,7 +158,7 @@ class MailInfoTemplate(object):
         return MethodChoicesFormFactory(self)
 
     def as_formclass(self):
-        return MailInfoFormFactory(self)
+        return MailInfoFormFactory(self, mutil=self.mutil)
 
     payment_choices = [#("header", u"ヘッダ"), 
                        ("notice", u"決済：注意事項"), 
@@ -153,9 +174,10 @@ class MailInfoTemplate(object):
         PluginInfo("", "footer", u"メールフッター"),
         ]
 
-    def __init__(self, request, organization):
+    def __init__(self, request, organization, mutil=None):
         self.request = request
         self.organization = organization
+        self.mutil = mutil 
 
     payment_key_fmt = "P%s%s"
     delivery_key_fmt = "D%s%s"

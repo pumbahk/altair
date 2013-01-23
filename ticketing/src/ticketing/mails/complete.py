@@ -1,14 +1,14 @@
 # -*- coding:utf-8 -*-
 from pyramid_mailer import get_mailer
-from .api import get_complete_mail, preview_text_from_message, message_settings_override
+from . import PURCHASE_MAILS
+from .api import get_purchaseinfo_mail, preview_text_from_message, message_settings_override
 from .api import get_mailinfo_traverser
 from .api import create_or_update_mailinfo,  create_fake_order
-from .forms import OrderInfoRenderer
+from .forms import OrderInfoRenderer, OrderInfoDefault
 from ticketing.cart import helpers as ch ##
 import logging
 logger = logging.getLogger(__name__)
 
-import itertools
 from pyramid import renderers
 from pyramid_mailer.message import Message
 from .interfaces import ICompleteMail
@@ -16,14 +16,20 @@ from zope.interface import implementer
 from ticketing.core.models import MailTypeEnum
 import functools
 
-get_traverser = functools.partial(
-    get_mailinfo_traverser, 
-    ## xxx: uggg
-    access=lambda d, k, default="" : d.get(str(MailTypeEnum.CompleteMail), {}).get(k, default), 
-    default=u"", 
-)
-
 __all__ = ["build_message", "send_mail", "preview_text", "create_or_update_mailinfo", "create_fake_order"]
+
+def access_data(data, k, default=""):
+    try:
+        return data[str(MailTypeEnum.CompleteMail)][k]
+    except KeyError:
+        return default
+
+def get_order_info_default():
+    return OrderInfoDefault
+
+get_traverser = functools.partial(get_mailinfo_traverser, access=access_data, default=u"")
+get_complete_mail = functools.partial(get_purchaseinfo_mail, name=PURCHASE_MAILS["complete"])
+
 def build_message(request, order):
     complete_mail = get_complete_mail(request)
     message = complete_mail.build_message(order)
@@ -48,13 +54,13 @@ class CompleteMail(object):
 
     def get_mail_subject(self, organization, traverser):
         return (traverser.data["subject"] or 
-                u"チケット予約受付完了のお知らせ 【{organization.name}】".format(organization=organization))
+                u"チケット予約受付完了のお知らせ 【{organization}】".format(organization=organization.name))
 
     def get_mail_sender(self, organization, traverser):
         return (traverser.data["sender"] or organization.contact_email)
 
     def build_message(self, order):
-        organization = order.ordered_from
+        organization = order.ordered_from or self.request.organization
         traverser = get_traverser(self.request, order)
         subject = self.get_mail_subject(organization, traverser)
         mail_from = self.get_mail_sender(organization, traverser)
@@ -72,7 +78,7 @@ class CompleteMail(object):
         sa = order.shipping_address 
         pair = order.payment_delivery_pair
         traverser = get_traverser(self.request, order)
-        info_renderder = OrderInfoRenderer(order, traverser.data)
+        info_renderder = OrderInfoRenderer(order, traverser.data, default_impl=get_order_info_default())
         value = dict(h=ch, 
                      order=order,
                      get=info_renderder.get, 

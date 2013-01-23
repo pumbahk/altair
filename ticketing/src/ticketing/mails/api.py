@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 from .interfaces import (
-    ICompleteMail, 
+    IPurchaseInfoMail, 
     IMailUtility
 )
 from datetime import datetime
@@ -52,8 +52,9 @@ def create_or_update_mailinfo(request, data, organization=None, event=None, perf
     else:
         return update_mailinfo(target, data, kind)
 
-def get_complete_mail(request):
-    cls = request.registry.adapters.lookup([IRequest], ICompleteMail, "")
+
+def get_purchaseinfo_mail(request, name):
+    cls = request.registry.adapters.lookup([IRequest], IPurchaseInfoMail, name)
     return cls(request)
 
 def preview_text_from_message(message):

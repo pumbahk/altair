@@ -207,7 +207,8 @@ class MailInfoNewView(BaseView):
         if unicode(organization_id) != unicode(self.request.context.user.organization_id):
             raise HTTPForbidden
         organization = Organization.get(organization_id)
-        template = MailInfoTemplate(self.request, organization)
+        mutil = get_mail_utility(self.request, self.request.matchdict["mailtype"])
+        template = MailInfoTemplate(self.request, organization, mutil=mutil)
         choice_form = template.as_choice_formclass()()
         formclass = template.as_formclass()
         mailtype = self.request.matchdict["mailtype"]
@@ -222,7 +223,7 @@ class MailInfoNewView(BaseView):
         organization_id = int(self.request.matchdict.get("organization_id", 0))
         organization = Organization.get(organization_id)
         mailtype = self.request.matchdict["mailtype"]
-        template = MailInfoTemplate(self.request, organization)
+        template = MailInfoTemplate(self.request, organization, mutil=mutil)
         choice_form = template.as_choice_formclass()()
         formclass = template.as_formclass()
         form = formclass(self.request.POST)

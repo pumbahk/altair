@@ -19,14 +19,21 @@ def tearDownModule():
     from ticketing.testing import _teardown_db
     _teardown_db()
 
+def create_initial_settings():
+    from pyramid.path import AssetResolver
+    sej_template_file = AssetResolver("ticketing").resolve("../../misc/sej/template.html").abspath()
+    return {"altair.mailer": "pyramid_mailer.testing", 
+            'altair_sej.template_file': sej_template_file}    
+
+
 class CompletMailSettingsTest(unittest.TestCase):
     def setUp(self):
-        self.config = testing.setUp(settings={"altair.mailer": "pyramid_mailer.testing"})
+        self.config = testing.setUp(settings=create_initial_settings())
         self.config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
         self.config.include("ticketing.cart.import_mail_module")
         ## TBA
         self.config.add_route("qr.make", "__________")
-
+        
         self.config.include("ticketing.payments")
         self.config.include("ticketing.payments.plugins")
         self.config.add_subscriber('ticketing.cart.subscribers.add_helpers', 'pyramid.events.BeforeRender')
@@ -87,7 +94,7 @@ class CompletMailSettingsTest(unittest.TestCase):
 
 class CreateMailFromFakeOrderTests(unittest.TestCase):
     def setUp(self):
-        self.config = testing.setUp(settings={"altair.mailer": "pyramid_mailer.testing"})
+        self.config = testing.setUp(settings=create_initial_settings())
         self.config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
         self.config.include("ticketing.cart.import_mail_module")
 

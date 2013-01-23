@@ -1,53 +1,81 @@
 ${header}
-${sa.last_name} ${sa.first_name} 様
+${name}　様
 
 「${title}」のご注文キャンセル手続きが
 完了しましたのでご連絡させていただきます。
 
 このキャンセル処理は、下記のような理由によりおこなっております。
 
-(キャンセル理由の例)
-　・お客様からキャンセルのご連絡があったため
-　・期限内のご入金がなくキャンセル扱いとしたため
-　・二重注文により、ひとつをキャンセル処理したため
+%if get("cancel_reason").status:
+${get("cancel_reason").label}
+${get("cancel_reason").body}
+%endif
 
 ご不明な点がございましたら、${order.ordered_from.name}までお問い合わせください。
 
 =====================================================================
-■ 販売会社： ${order.ordered_from.name}
+%if get("ordered_from").status:
+■${get("ordered_from").label}
+${get("ordered_from").body}
+%endif
 =====================================================================
-[受付番号]  ${order.order_no}
-[受付日時]  ${order.created_at}
-[注文者]    ${sa.last_name} ${sa.first_name} 様
-[支払方法]  ${order.payment_delivery_pair.payment_method.name}
-[引取方法]  ${order.payment_delivery_pair.delivery_method.name}
-==========
-[送付先]    ${sa.last_name} ${sa.first_name} 様
-〒 ${sa.zip}
-${sa.prefecture} ${sa.city}
-${sa.address_1} ${sa.address_2}
-(TEL) ${sa.tel_1}
-[商品]
-${title}
-${venue}
-${products}
-システム利用料 ${system_fee}（円）
-決済手数料　　 ${transaction_fee}（円）
-発券/引取手数料　　 ${delivery_fee}（円）
-********************************************************************
-合計　　　　　 ${total_amount}（円）
+%if get("order_no").status:
+${get("order_no").label} ${get("order_no").body}
+%endif
+%if get("order_datetime").status:
+${get("order_datetime").label} ${get("order_datetime").body}
+%endif
+%if get("name_kana").status:
+${get("name_kana").label} ${get("name_kana").body} 様
+%endif
+%if get("payment_method").status:
+${get("payment_method").label} ${get("payment_method").body} 
+%endif
+%if get("delivery_method").status:
+${get("delivery_method").label} ${get("delivery_method").body}
+%endif
 
-${notice}
+==========
+%if get("address").status:
+${get("address").body}
+%endif
+${title}
+%if get("event_name").status:
+${get("event_name").body}
+%endif
+%if get("pdate").status:
+${get("pdate").label}: ${get("pdate").body}(予定)
+%endif
+%if get("venue").status:
+${get("venue").label}: ${get("venue").body}
+%endif
+%if get("for_seat").status:
+■${get("for_seat").label}
+${get("for_seat").body}
+%endif
+%if get("for_product").status:
+■${get("for_product").label}
+${get("for_product").body}
+%endif
+
+%if get("system_fee").status:
+${get("system_fee").label} ${get("system_fee").body}
+%endif
+%if get("transaction_fee").status:
+${get("transaction_fee").label} ${get("transaction_fee").body}
+%endif
+%if get("delivery_fee").status:
+${get("delivery_fee").label} ${get("delivery_fee").body}
+%endif
+%if get("total_amount").status:
+********************************************************************
+${get("total_amount").label} ${get("total_amount").body} （円）
+%endif
 
 お支払方法： ${payment_method_name}
 ${h.render_payment_cancel_mail_viewlet(request,order)}
 お受取方法： ${delivery_method_name}
 ${h.render_delivery_cancel_mail_viewlet(request,order)}
 
-
-─────────────問い合わせ─────────────────
-${order.ordered_from.name}
-商品、決済・発送に関するお問い合わせ ${contact_email}
-───────────────────────────────────
-
+${notice}
 ${footer}

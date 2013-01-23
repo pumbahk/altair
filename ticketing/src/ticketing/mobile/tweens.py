@@ -53,6 +53,6 @@ def mobile_encoding_convert_factory(handler, registry):
                 return Response(status=400, body=str(e))
         else:
             request.is_mobile = False
-            logger.debug("**this is pc access**")
+            # logger.debug("**this is pc access**")
             return handler(request)
     return tween

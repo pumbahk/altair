@@ -96,6 +96,7 @@ def main(global_config, **local_config):
     #config.include('ticketing.cart' , route_prefix='/cart')
 
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
+    config.add_renderer('.txt' , 'pyramid.mako_templating.renderer_factory')
     config.add_renderer('json'  , 'ticketing.renderers.json_renderer_factory')
     config.add_renderer('csv'   , 'ticketing.renderers.csv_renderer_factory')
     config.add_renderer('lxml'  , 'ticketing.renderers.lxml_renderer_factory')
