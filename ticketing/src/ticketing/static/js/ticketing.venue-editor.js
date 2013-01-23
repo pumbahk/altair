@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['E_5HADVS27M9DNX2'] = (function (exports) { (function () { 
+__LIBS__['qXII36VHWCH8XK2C'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -73,7 +73,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['EGYRLSD9DBVKRO5M'] = (function (exports) { (function () { 
+__LIBS__['JK0COOZVPFGKBJ06'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -187,7 +187,7 @@ timer.prototype.lap = function(msg) {
     return lap;
 };
  })(); return exports; })({});
-__LIBS__['zO8NJX9V7N014_NQ'] = (function (exports) { (function () { 
+__LIBS__['n62EJNYBIEZ5PSO8'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -236,12 +236,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['k8OMW7LKJKO0XA5X'] = (function (exports) { (function () { 
+__LIBS__['bBTI10VMVRPFMROR'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['EGYRLSD9DBVKRO5M'];
-var CONF = __LIBS__['E_5HADVS27M9DNX2'];
-var IdentifiableSet = __LIBS__['zO8NJX9V7N014_NQ'].IdentifiableSet;
+var util = __LIBS__['JK0COOZVPFGKBJ06'];
+var CONF = __LIBS__['qXII36VHWCH8XK2C'];
+var IdentifiableSet = __LIBS__['n62EJNYBIEZ5PSO8'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -717,12 +717,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['OMT9KRCT2NZGRR14'] = (function (exports) { (function () { 
+__LIBS__['HP7FCIHQWUBV9TU8'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['EGYRLSD9DBVKRO5M'];
-var CONF = __LIBS__['E_5HADVS27M9DNX2'];
-var models = __LIBS__['k8OMW7LKJKO0XA5X'];
+var util = __LIBS__['JK0COOZVPFGKBJ06'];
+var CONF = __LIBS__['qXII36VHWCH8XK2C'];
+var models = __LIBS__['bBTI10VMVRPFMROR'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -913,7 +913,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['C_RMAX7Y20MUQR2F'] = (function (exports) { (function () { 
+__LIBS__['RKJVVZ9V7Y3LTUS4'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -944,13 +944,13 @@ exports.ja = {
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['E_5HADVS27M9DNX2'];
-  var models = __LIBS__['k8OMW7LKJKO0XA5X'];
-  var util = __LIBS__['EGYRLSD9DBVKRO5M'];
-  var viewobjects = __LIBS__['OMT9KRCT2NZGRR14'];
-  var IdentifiableSet = __LIBS__['zO8NJX9V7N014_NQ'].IdentifiableSet;
+  var CONF = __LIBS__['qXII36VHWCH8XK2C'];
+  var models = __LIBS__['bBTI10VMVRPFMROR'];
+  var util = __LIBS__['JK0COOZVPFGKBJ06'];
+  var viewobjects = __LIBS__['HP7FCIHQWUBV9TU8'];
+  var IdentifiableSet = __LIBS__['n62EJNYBIEZ5PSO8'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['C_RMAX7Y20MUQR2F'];
+    I18n.translations = __LIBS__['RKJVVZ9V7Y3LTUS4'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -1262,7 +1262,7 @@ exports.ja = {
           var shape = null;
           var attrs = util.allAttributes(n);
 
-          var currentSvgStyle = svgStyle;
+          var currentSvgStyle = _.clone(svgStyle);
           if (attrs['class']) {
             var style = styleClasses[attrs['class']];
             if (style)
@@ -1271,7 +1271,21 @@ exports.ja = {
           if (attrs.style)
             currentSvgStyle = mergeSvgStyle(currentSvgStyle, parseCSSAsSvgStyle(attrs.style, defs));
           if (attrs['transform']) {
-            currentSvgStyle._transform = attrs['transform'];
+            var trans = attrs['transform'];
+            while (trans.match(/^\s*matrix\(([^\)]+)\)/)) {
+              var param = RegExp.$1.split(/,\s*/);
+              var a = param[0], c = param[1], e = param[2],
+                  b = param[3], d = param[4], f = param[5]
+              var matrix = new Fashion.Matrix(a, c, e, b, d, f);
+              // TODO: support transform chain
+              trans = trans.substr(RegExp.$1.length);
+              break;
+            }
+            if (currentSvgStyle._transform) {
+              currentSvgStyle._transform = currentSvgStyle._transform.multiply(matrix);
+			} else {
+              currentSvgStyle._transform = matrix;
+            }
           }
 
           switch (n.nodeName) {
@@ -1331,17 +1345,7 @@ exports.ja = {
           }
           if (shape !== null) {
             if (currentSvgStyle._transform) {
-              var trans = currentSvgStyle._transform;
-              while (trans.match(/^\s*matrix\(([^\)]+)\)/)) {
-                var matrix = RegExp.$1;
-                var param = matrix.split(/,\s*/);
-                var a = param[0], c = param[1], e = param[2],
-                    b = param[3], d = param[4], f = param[5]
-                shape.transform(new Fashion.Matrix(a, c, e, b, d, f));
-                trans = trans.substr(RegExp.$1.length);
-
-                break;    // 現時点ではchain非対応
-              }
+              shape.transform(currentSvgStyle._transform);
             }
             var x = parseFloat(attrs.x),
                 y = parseFloat(attrs.y);

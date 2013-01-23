@@ -318,7 +318,7 @@
           var shape = null;
           var attrs = util.allAttributes(n);
 
-          var currentSvgStyle = svgStyle;
+          var currentSvgStyle = _.clone(svgStyle);
           if (attrs['class']) {
             var style = styleClasses[attrs['class']];
             if (style)
@@ -327,7 +327,21 @@
           if (attrs.style)
             currentSvgStyle = mergeSvgStyle(currentSvgStyle, parseCSSAsSvgStyle(attrs.style, defs));
           if (attrs['transform']) {
-            currentSvgStyle._transform = attrs['transform'];
+            var trans = attrs['transform'];
+            while (trans.match(/^\s*matrix\(([^\)]+)\)/)) {
+              var param = RegExp.$1.split(/,\s*/);
+              var a = param[0], c = param[1], e = param[2],
+                  b = param[3], d = param[4], f = param[5]
+              var matrix = new Fashion.Matrix(a, c, e, b, d, f);
+              // TODO: support transform chain
+              trans = trans.substr(RegExp.$1.length);
+              break;
+            }
+            if (currentSvgStyle._transform) {
+              currentSvgStyle._transform = currentSvgStyle._transform.multiply(matrix);
+			} else {
+              currentSvgStyle._transform = matrix;
+            }
           }
 
           switch (n.nodeName) {
@@ -387,17 +401,7 @@
           }
           if (shape !== null) {
             if (currentSvgStyle._transform) {
-              var trans = currentSvgStyle._transform;
-              while (trans.match(/^\s*matrix\(([^\)]+)\)/)) {
-                var matrix = RegExp.$1;
-                var param = matrix.split(/,\s*/);
-                var a = param[0], c = param[1], e = param[2],
-                    b = param[3], d = param[4], f = param[5]
-                shape.transform(new Fashion.Matrix(a, c, e, b, d, f));
-                trans = trans.substr(RegExp.$1.length);
-
-                break;    // 現時点ではchain非対応
-              }
+              shape.transform(currentSvgStyle._transform);
             }
             var x = parseFloat(attrs.x),
                 y = parseFloat(attrs.y);
