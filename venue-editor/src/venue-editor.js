@@ -328,19 +328,27 @@
             currentSvgStyle = mergeSvgStyle(currentSvgStyle, parseCSSAsSvgStyle(attrs.style, defs));
           if (attrs['transform']) {
             var trans = attrs['transform'];
-            while (trans.match(/^\s*matrix\(([^\)]+)\)/)) {
-              var param = RegExp.$1.split(/,\s*/);
-              var a = param[0], c = param[1], e = param[2],
-                  b = param[3], d = param[4], f = param[5]
-              var matrix = new Fashion.Matrix(a, c, e, b, d, f);
+            var matrix;
+            while (trans.match(/^(\s*(matrix|translate)\(([^\)]+)\))/)) {
+              var type = RegExp.$2;
+              var param = RegExp.$3.split(/,\s*/);
+              if (type == 'matrix' && param.length==6) {
+                var a = param[0], c = param[1], e = param[2],
+                    b = param[3], d = param[4], f = param[5]
+                matrix = new Fashion.Matrix(a, c, e, b, d, f);
+              } else if(type == 'translate' && param.length==2) {
+                matrix = Fashion.Matrix.translate({ x: param[0], y: param[1] });
+              }
               // TODO: support transform chain
               trans = trans.substr(RegExp.$1.length);
               break;
             }
-            if (currentSvgStyle._transform) {
-              currentSvgStyle._transform = currentSvgStyle._transform.multiply(matrix);
-			} else {
-              currentSvgStyle._transform = matrix;
+            if (matrix) {
+              if (currentSvgStyle._transform) {
+                currentSvgStyle._transform = currentSvgStyle._transform.multiply(matrix);
+	  		} else {
+                currentSvgStyle._transform = matrix;
+              }
             }
           }
 
