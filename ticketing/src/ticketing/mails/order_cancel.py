@@ -12,6 +12,7 @@ from .api import get_mail_utility
 from ticketing.cart import helpers as h
 from ticketing.core.models import MailTypeEnum
 import logging
+from .forms import OrderInfoRenderer
 from . import forms
 
 
@@ -88,9 +89,10 @@ def create_cancel_message(request, order):
     if performance.venue.id != 1:  # ダミー会場でないなら
         venue_info = u'{venue} ({start_on}開演)'.format(venue=performance.venue.name, start_on=performance.start_on)
     pair = order.payment_delivery_pair
-
+    info_renderder = OrderInfoRenderer(order, traverser.data)
     value = dict(
         h=h, 
+        get=info_renderder.get, 
         order=order,
         sa=order.shipping_address,
         products=products,
@@ -110,7 +112,6 @@ def create_cancel_message(request, order):
         header = traverser.data["header"],
     )
     mail_body = renderers.render(mail_renderer_names[plugin_id], value, request=request)
-    mail_body = unicode(mail_body, 'utf-8')
     from_ = order.ordered_from.contact_email
 
     message = Message(

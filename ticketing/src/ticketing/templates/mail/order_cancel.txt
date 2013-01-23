@@ -44,10 +44,10 @@ ${h.render_payment_cancel_mail_viewlet(request,order)}
 お受取方法： ${delivery_method_name}
 ${h.render_delivery_cancel_mail_viewlet(request,order)}
 
-
-─────────────問い合わせ─────────────────
-${order.ordered_from.name}
-商品、決済・発送に関するお問い合わせ ${contact_email}
+%if get("contact").status:
+─────────────${get("contact").label}─────────────────
+${get("contact").body}
 ───────────────────────────────────
+%endif
 
 ${footer}
