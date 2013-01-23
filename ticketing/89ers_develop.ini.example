@@ -11,11 +11,11 @@ session.lock_dir = %(here)s/tmp/beaker/89ers/lock
 session.key = 89ers
 session.secret = mysecret
 session.cookie_on_exception = true
+altair_sej.template_file = %(here)s/misc/sej/template.html
 
 [filter:prefix]
 use = egg:PasteDeploy#prefix
 prefix = /89ers/booster
-altair_sej.template_file = %(here)s/misc/sej/template.html
 
 [pipeline:main]
 pipeline =
