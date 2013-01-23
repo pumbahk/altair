@@ -59,7 +59,7 @@ Altair Backend -- ${performance.event.title}[${performance.name}]
           <th>会場</th>
           <td>
             ${performance.venue.name}
-            %if performance.venue.name != None:
+            %if performance.venue.sub_name != None:
               <div class="sub_name">${performance.venue.sub_name}</div>
             %endif
           </td>
