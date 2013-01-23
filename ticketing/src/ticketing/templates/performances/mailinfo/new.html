@@ -22,13 +22,9 @@
 
 <div class="page-header">
   <h2>${mutil.get_mailtype_description()}付加情報 ${performance.name}</h2>
-  <span class="label">取引先</span> &gt
-  <span class="label">イベント</span> &gt
+  <span class="label">取引先<a href="${request.route_path("organizations.mails.new", organization_id=performance.event.organization.id, mailtype=mailtype)}">に移動</a></span> &gt
+  <span class="label">イベント<a href="${request.route_path("events.mailinfo.edit", event_id=performance.event.id, mailtype=mailtype)}">に移動</a></span> &gt
   <span class="label label-warning">パフォーマンス</span>
-  <br/>
-  <a style="margin-left:30px;" href="${request.route_path("events.mailinfo.edit", event_id=performance.event.id, mailtype=mailtype)}">
-	${performance.name}が所属するイベントの設定に移動
-  </a>
 </div>
 
 <pre>
@@ -38,12 +34,15 @@
   3. 購入されたチケットの公演が所属しているイベントが所属している取引先に紐づく設定を取得。
 </pre>
 
-<a href="#PreviewModal" data-toggle="modal">preview</a>
-
 <div class="btn-group" style="margin-bottom:20px;">
-  %for i, label in MailTypeChoices:
-    <a class="btn btn-inverse"
-	   href="${request.current_route_path(organization_id=organization.id, mailtype=i)}">${label}</a>
+  <a class="btn btn-info" href="#PreviewModal" data-toggle="modal"><i class="icon-eye-open"></i> preview</a>
+  %for i, label in choices:
+    %if unicode(mailtype) == unicode(i):
+      <a class="btn btn-inverse">${label}(現在)</a>
+    %else:
+      <a class="btn"
+       href="${request.current_route_path(organization_id=organization.id, mailtype=i)}">${label}</a>
+    %endif
   %endfor
 </div>
 
