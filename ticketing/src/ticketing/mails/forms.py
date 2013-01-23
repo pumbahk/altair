@@ -70,7 +70,7 @@ class OrderInfoDefault(object):
     transaction_fee = OrderInfo(name=u"transaction_fee", label=u"決済手数料", getval=lambda order: ch.format_currency(order.transaction_fee))
     delivery_fee = OrderInfo(name=u"delivery_fee", label=u"発券／引取手数料", getval=lambda order: ch.format_currency(order.delivery_fee))
     total_amount = OrderInfo(name=u"total_amount", label=u"合計金額", getval=lambda order: ch.format_currency(order.total_amount))
-    contact = OrderInfo(name=u"contact", label=u"お知らせ", getval=get_contact)
+    contact = OrderInfo(name=u"contact", label=u"お問い合わせ", getval=get_contact)
     
     @classmethod
     def get_form_field_candidates(cls):
@@ -128,7 +128,7 @@ def MailInfoFormFactory(template):
 
     return type("MailInfoForm", (Form, ), attrs)
 
-PluginInfo = namedtuple("PluginInfo", "method name label") #P0, P0notice, 注意事項(コンビに決済)    
+PluginInfo = namedtuple("PluginInfo", "method name label") #P0, P0notice, 注意事項(コンビニ決済)
 class MailInfoTemplate(object):
     """
     data = {
