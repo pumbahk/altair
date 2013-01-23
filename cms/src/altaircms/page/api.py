@@ -1,4 +1,6 @@
 # -*- encoding:utf-8 -*-
+import logging
+logget = logging.getLogger(__name__)
 
 import os
 import sqlalchemy as sa
@@ -123,11 +125,22 @@ def doc_from_page(page):
 def ftsearch_register_from_page(request, page, ftsearch=None):
     ftsearch = ftsearch or solr.get_fulltext_search(request)
     doc = doc_from_page(page)
-    ftsearch.register(doc, commit=True)
+    try:
+        ftsearch.register(doc, commit=True)
+    except Exception, e:
+        logger.error("solr register failed")
+        logger.exception(str(e))
+        
+        
 
 def ftsearch_delete_register_from_page(request, page, ftsearch=None):
     ftsearch = ftsearch or solr.get_fulltext_search(request)
     doc = solr.create_doc_from_dict({"page_id": page.id})
-    ftsearch.delete(doc, commit=True)
+    try:
+        ftsearch.delete(doc, commit=True)
+    except Exception, e:
+        logger.error("solr delete failed")
+        logger.exception(str(e))
+    
     
 
