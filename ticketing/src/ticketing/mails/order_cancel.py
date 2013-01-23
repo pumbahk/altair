@@ -79,7 +79,7 @@ def send_mail(request, order, override=None):
     message = build_message(request, order)
     message_settings_override(message, override)
     mailer.send(message)
-    logger.info("send complete mail to %s" % message.recipients)
+    logger.info("send cancel mail to %s" % message.recipients)
 
 def preview_text(request, order):
     message = build_message(request, order)
