@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['FB31HNOXT0QCTWJ0'] = (function (exports) { (function () { 
+__LIBS__['C71SCWPDI2FUKPTT'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -73,7 +73,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['hN43Z5V1O0ML2V5A'] = (function (exports) { (function () { 
+__LIBS__['K5X4TRWFJZBJFK4B'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -187,7 +187,7 @@ timer.prototype.lap = function(msg) {
     return lap;
 };
  })(); return exports; })({});
-__LIBS__['PRH3KKOFM58_GZLK'] = (function (exports) { (function () { 
+__LIBS__['FA2D0CJ7EAR44I49'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -236,12 +236,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['OC8ZOUL9320ZJ7CB'] = (function (exports) { (function () { 
+__LIBS__['YU33SKBQ4BEBUXA5'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['hN43Z5V1O0ML2V5A'];
-var CONF = __LIBS__['FB31HNOXT0QCTWJ0'];
-var IdentifiableSet = __LIBS__['PRH3KKOFM58_GZLK'].IdentifiableSet;
+var util = __LIBS__['K5X4TRWFJZBJFK4B'];
+var CONF = __LIBS__['C71SCWPDI2FUKPTT'];
+var IdentifiableSet = __LIBS__['FA2D0CJ7EAR44I49'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -717,12 +717,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['F__7D1C5HCZG27_W'] = (function (exports) { (function () { 
+__LIBS__['Z7PAEDLB423DSHQF'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['hN43Z5V1O0ML2V5A'];
-var CONF = __LIBS__['FB31HNOXT0QCTWJ0'];
-var models = __LIBS__['OC8ZOUL9320ZJ7CB'];
+var util = __LIBS__['K5X4TRWFJZBJFK4B'];
+var CONF = __LIBS__['C71SCWPDI2FUKPTT'];
+var models = __LIBS__['YU33SKBQ4BEBUXA5'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -874,9 +874,9 @@ var Seat = exports.Seat = Backbone.Model.extend({
     }
     if (!this.label) {
       var p = shape.position(),
+          t = shape.transform(),
           s = shape.size();
-      this.label = shape.drawable.draw(
-        new Fashion.Text({
+      var text = new Fashion.Text({
           position: {
 			x: p.x + (s.x * (0.05 + (styleText.length==1 ? 0.2 : 0.0))),
             y: p.y + (s.y * 0.75)
@@ -884,8 +884,11 @@ var Seat = exports.Seat = Backbone.Model.extend({
           fontSize: style.text ? s.y * 0.5 : (s.x*1.2/Math.max(2, styleText.length)),
           text: styleText,
           style: { fill: new Fashion.FloodFill(new Fashion.Color(style.text_color)), cursor: 'default' }
-        })
-      );
+      });
+      if (t) {
+        text.transform(t);
+      }
+      this.label = shape.drawable.draw(text);
       this.label.addEvent(this.get('events'));
     } else {
       this.label.text(styleText);
@@ -913,7 +916,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['V7HZ79D00NS8CF3N'] = (function (exports) { (function () { 
+__LIBS__['oXG03S0CYHJM5V72'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -944,13 +947,13 @@ exports.ja = {
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['FB31HNOXT0QCTWJ0'];
-  var models = __LIBS__['OC8ZOUL9320ZJ7CB'];
-  var util = __LIBS__['hN43Z5V1O0ML2V5A'];
-  var viewobjects = __LIBS__['F__7D1C5HCZG27_W'];
-  var IdentifiableSet = __LIBS__['PRH3KKOFM58_GZLK'].IdentifiableSet;
+  var CONF = __LIBS__['C71SCWPDI2FUKPTT'];
+  var models = __LIBS__['YU33SKBQ4BEBUXA5'];
+  var util = __LIBS__['K5X4TRWFJZBJFK4B'];
+  var viewobjects = __LIBS__['Z7PAEDLB423DSHQF'];
+  var IdentifiableSet = __LIBS__['FA2D0CJ7EAR44I49'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['V7HZ79D00NS8CF3N'];
+    I18n.translations = __LIBS__['oXG03S0CYHJM5V72'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
