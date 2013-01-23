@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['qRUHFHO7UZ2DNSUR'] = (function (exports) { (function () { 
+__LIBS__['C71SCWPDI2FUKPTT'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -73,7 +73,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['qWEBAXA9CQSK4JTA'] = (function (exports) { (function () { 
+__LIBS__['K5X4TRWFJZBJFK4B'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -187,7 +187,7 @@ timer.prototype.lap = function(msg) {
     return lap;
 };
  })(); return exports; })({});
-__LIBS__['L5VVC3DZKL5CLXDD'] = (function (exports) { (function () { 
+__LIBS__['FA2D0CJ7EAR44I49'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -236,12 +236,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['sLN4FMOPTQEKPAIA'] = (function (exports) { (function () { 
+__LIBS__['YU33SKBQ4BEBUXA5'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['qWEBAXA9CQSK4JTA'];
-var CONF = __LIBS__['qRUHFHO7UZ2DNSUR'];
-var IdentifiableSet = __LIBS__['L5VVC3DZKL5CLXDD'].IdentifiableSet;
+var util = __LIBS__['K5X4TRWFJZBJFK4B'];
+var CONF = __LIBS__['C71SCWPDI2FUKPTT'];
+var IdentifiableSet = __LIBS__['FA2D0CJ7EAR44I49'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -717,12 +717,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['BC7_3OHGZ4_3XTI2'] = (function (exports) { (function () { 
+__LIBS__['Z7PAEDLB423DSHQF'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['qWEBAXA9CQSK4JTA'];
-var CONF = __LIBS__['qRUHFHO7UZ2DNSUR'];
-var models = __LIBS__['sLN4FMOPTQEKPAIA'];
+var util = __LIBS__['K5X4TRWFJZBJFK4B'];
+var CONF = __LIBS__['C71SCWPDI2FUKPTT'];
+var models = __LIBS__['YU33SKBQ4BEBUXA5'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -874,9 +874,9 @@ var Seat = exports.Seat = Backbone.Model.extend({
     }
     if (!this.label) {
       var p = shape.position(),
+          t = shape.transform(),
           s = shape.size();
-      this.label = shape.drawable.draw(
-        new Fashion.Text({
+      var text = new Fashion.Text({
           position: {
 			x: p.x + (s.x * (0.05 + (styleText.length==1 ? 0.2 : 0.0))),
             y: p.y + (s.y * 0.75)
@@ -884,8 +884,11 @@ var Seat = exports.Seat = Backbone.Model.extend({
           fontSize: style.text ? s.y * 0.5 : (s.x*1.2/Math.max(2, styleText.length)),
           text: styleText,
           style: { fill: new Fashion.FloodFill(new Fashion.Color(style.text_color)), cursor: 'default' }
-        })
-      );
+      });
+      if (t) {
+        text.transform(t);
+      }
+      this.label = shape.drawable.draw(text);
       this.label.addEvent(this.get('events'));
     } else {
       this.label.text(styleText);
@@ -913,7 +916,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['HJZH994QJM1BKQUV'] = (function (exports) { (function () { 
+__LIBS__['oXG03S0CYHJM5V72'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -944,13 +947,13 @@ exports.ja = {
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['qRUHFHO7UZ2DNSUR'];
-  var models = __LIBS__['sLN4FMOPTQEKPAIA'];
-  var util = __LIBS__['qWEBAXA9CQSK4JTA'];
-  var viewobjects = __LIBS__['BC7_3OHGZ4_3XTI2'];
-  var IdentifiableSet = __LIBS__['L5VVC3DZKL5CLXDD'].IdentifiableSet;
+  var CONF = __LIBS__['C71SCWPDI2FUKPTT'];
+  var models = __LIBS__['YU33SKBQ4BEBUXA5'];
+  var util = __LIBS__['K5X4TRWFJZBJFK4B'];
+  var viewobjects = __LIBS__['Z7PAEDLB423DSHQF'];
+  var IdentifiableSet = __LIBS__['FA2D0CJ7EAR44I49'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['HJZH994QJM1BKQUV'];
+    I18n.translations = __LIBS__['oXG03S0CYHJM5V72'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -1102,14 +1105,16 @@ exports.ja = {
   }
 
   function mergeSvgStyle(origStyle, newStyle) {
-    return {
-      textAnchor: newStyle.textAnchor !== null ? newStyle.textAnchor: origStyle.textAnchor,
-      fill: newStyle.fill !== null ? newStyle.fill: origStyle.fill,
-      fillOpacity: newStyle.fillOpacity !== null ? newStyle.fillOpacity: origStyle.fillOpacity,
-      stroke: newStyle.stroke !== null ? newStyle.stroke: origStyle.stroke,
-      strokeWidth: newStyle.strokeWidth !== null ? newStyle.strokeWidth: origStyle.strokeWidth,
-      strokeOpacity: newStyle.strokeOpacity !== null ? newStyle.strokeOpacity: origStyle.strokeOpacity
-    };
+    var copied = { };
+    for (var k in origStyle) {
+      copied[k] = origStyle[k];
+    }
+    for (var k in newStyle) {
+      if (newStyle[k] !== null) {
+        copied[k] = newStyle[k];
+      }
+    }
+    return copied;
   }
 
   function buildStyleFromSvgStyle(svgStyle) {
@@ -1260,7 +1265,7 @@ exports.ja = {
           var shape = null;
           var attrs = util.allAttributes(n);
 
-          var currentSvgStyle = svgStyle;
+          var currentSvgStyle = _.clone(svgStyle);
           if (attrs['class']) {
             var style = styleClasses[attrs['class']];
             if (style)
@@ -1268,6 +1273,31 @@ exports.ja = {
           }
           if (attrs.style)
             currentSvgStyle = mergeSvgStyle(currentSvgStyle, parseCSSAsSvgStyle(attrs.style, defs));
+          if (attrs['transform']) {
+            var trans = attrs['transform'];
+            var matrix;
+            while (trans.match(/^(\s*(matrix|translate)\(([^\)]+)\))/)) {
+              var type = RegExp.$2;
+              var param = RegExp.$3.split(/,\s*/);
+              if (type == 'matrix' && param.length==6) {
+                var a = param[0], c = param[1], e = param[2],
+                    b = param[3], d = param[4], f = param[5]
+                matrix = new Fashion.Matrix(a, c, e, b, d, f);
+              } else if(type == 'translate' && param.length==2) {
+                matrix = Fashion.Matrix.translate({ x: param[0], y: param[1] });
+              }
+              // TODO: support transform chain
+              trans = trans.substr(RegExp.$1.length);
+              break;
+            }
+            if (matrix) {
+              if (currentSvgStyle._transform) {
+                currentSvgStyle._transform = currentSvgStyle._transform.multiply(matrix);
+	  		} else {
+                currentSvgStyle._transform = matrix;
+              }
+            }
+          }
 
           switch (n.nodeName) {
             case 'defs':
@@ -1293,12 +1323,12 @@ exports.ja = {
                   zIndex: 99
                 });
                 shape.style(CONF.DEFAULT.TEXT_STYLE);
-                if(currentSvgStyle.textAnchor) {
-				  shape.anchor(currentSvgStyle.textAnchor);
+                if (currentSvgStyle.textAnchor) {
+                  shape.anchor(currentSvgStyle.textAnchor);
                 }
               } else if (n.nodeName == 'text') {
-				  arguments.callee.call(self, currentSvgStyle, defs, n.childNodes);
-                  continue outer;
+                arguments.callee.call(self, currentSvgStyle, defs, n.childNodes);
+                continue outer;
               }
               break;
 
@@ -1325,6 +1355,9 @@ exports.ja = {
 
           }
           if (shape !== null) {
+            if (currentSvgStyle._transform) {
+              shape.transform(currentSvgStyle._transform);
+            }
             var x = parseFloat(attrs.x),
                 y = parseFloat(attrs.y);
             if (!isNaN(x) && !isNaN(y))
@@ -1335,7 +1368,7 @@ exports.ja = {
           shapes[attrs.id] = shape;
         }
     }).call(self,
-      { fill: false, fillOpacity: false,
+      { _transform: false, fill: false, fillOpacity: false,
         stroke: false, strokeOpacity: false },
       {},
       drawing.documentElement.childNodes);

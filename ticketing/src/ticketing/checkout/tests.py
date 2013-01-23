@@ -174,7 +174,7 @@ class CheckoutTests(unittest.TestCase):
             '<itemId>delivery_fee</itemId>'
             '<itemNumbers>1</itemNumbers>'
             '<itemFee>60</itemFee>'
-            '<itemName>&#37197;&#36865;&#25163;&#25968;&#26009;</itemName>'
+            '<itemName>&#24341;&#21462;&#25163;&#25968;&#26009;</itemName>'
             '</item>'
             '</itemsInfo>'
             '</orderItemsInfo>')
@@ -238,7 +238,7 @@ class CheckoutTests(unittest.TestCase):
             '<itemId>delivery_fee</itemId>'
             '<itemNumbers>1</itemNumbers>'
             '<itemFee>60</itemFee>'
-            '<itemName>&#37197;&#36865;&#25163;&#25968;&#26009;</itemName>'
+            '<itemName>&#24341;&#21462;&#25163;&#25968;&#26009;</itemName>'
             '</item>'
             '</itemsInfo>'
             '</orderItemsInfo>')
@@ -311,7 +311,7 @@ class CheckoutTests(unittest.TestCase):
             '<itemId>delivery_fee</itemId>'
             '<itemNumbers>1</itemNumbers>'
             '<itemFee>60</itemFee>'
-            '<itemName>&#37197;&#36865;&#25163;&#25968;&#26009;</itemName>'
+            '<itemName>&#24341;&#21462;&#25163;&#25968;&#26009;</itemName>'
             '</item>'
             '</itemsInfo>'
             '</orderItemsInfo>')

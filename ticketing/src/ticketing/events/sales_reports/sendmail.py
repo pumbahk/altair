@@ -227,7 +227,6 @@ def get_performance_sales_summary(form, organization):
 def get_performance_sales_detail(form, event):
     performances_reports = {}
     for performance in event.performances:
-        print performance.end_on, form.limited_from.data
         if form.limited_from.data and performance.end_on < form.limited_from.data:
             continue
         report_by_sales_segment = {}
