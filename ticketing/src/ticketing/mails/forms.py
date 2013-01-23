@@ -78,7 +78,12 @@ class OrderInfoDefault(object):
 
     @classmethod
     def get_form_field_candidates(cls):
-        return ((k,v) for k,v in cls.__dict__.iteritems() if isinstance(v, (OrderInfo, OrderInfoWithValue)))
+        hist = {}
+        for c in cls.__mro__:
+            for k, v in c.__dict__.iteritems():
+                if isinstance(v, (OrderInfo, OrderInfoWithValue)) and not k in hist:
+                    hist[k] = 1
+                    yield (k, v)
     
 class OrderInfoRenderer(object):
     def __init__(self, order, data, default_impl=OrderInfoDefault):
