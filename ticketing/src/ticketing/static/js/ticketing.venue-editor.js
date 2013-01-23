@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['qRUHFHO7UZ2DNSUR'] = (function (exports) { (function () { 
+__LIBS__['E_5HADVS27M9DNX2'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -73,7 +73,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['qWEBAXA9CQSK4JTA'] = (function (exports) { (function () { 
+__LIBS__['EGYRLSD9DBVKRO5M'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -187,7 +187,7 @@ timer.prototype.lap = function(msg) {
     return lap;
 };
  })(); return exports; })({});
-__LIBS__['L5VVC3DZKL5CLXDD'] = (function (exports) { (function () { 
+__LIBS__['zO8NJX9V7N014_NQ'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -236,12 +236,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['sLN4FMOPTQEKPAIA'] = (function (exports) { (function () { 
+__LIBS__['k8OMW7LKJKO0XA5X'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['qWEBAXA9CQSK4JTA'];
-var CONF = __LIBS__['qRUHFHO7UZ2DNSUR'];
-var IdentifiableSet = __LIBS__['L5VVC3DZKL5CLXDD'].IdentifiableSet;
+var util = __LIBS__['EGYRLSD9DBVKRO5M'];
+var CONF = __LIBS__['E_5HADVS27M9DNX2'];
+var IdentifiableSet = __LIBS__['zO8NJX9V7N014_NQ'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -717,12 +717,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['BC7_3OHGZ4_3XTI2'] = (function (exports) { (function () { 
+__LIBS__['OMT9KRCT2NZGRR14'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['qWEBAXA9CQSK4JTA'];
-var CONF = __LIBS__['qRUHFHO7UZ2DNSUR'];
-var models = __LIBS__['sLN4FMOPTQEKPAIA'];
+var util = __LIBS__['EGYRLSD9DBVKRO5M'];
+var CONF = __LIBS__['E_5HADVS27M9DNX2'];
+var models = __LIBS__['k8OMW7LKJKO0XA5X'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -913,7 +913,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['HJZH994QJM1BKQUV'] = (function (exports) { (function () { 
+__LIBS__['C_RMAX7Y20MUQR2F'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -944,13 +944,13 @@ exports.ja = {
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['qRUHFHO7UZ2DNSUR'];
-  var models = __LIBS__['sLN4FMOPTQEKPAIA'];
-  var util = __LIBS__['qWEBAXA9CQSK4JTA'];
-  var viewobjects = __LIBS__['BC7_3OHGZ4_3XTI2'];
-  var IdentifiableSet = __LIBS__['L5VVC3DZKL5CLXDD'].IdentifiableSet;
+  var CONF = __LIBS__['E_5HADVS27M9DNX2'];
+  var models = __LIBS__['k8OMW7LKJKO0XA5X'];
+  var util = __LIBS__['EGYRLSD9DBVKRO5M'];
+  var viewobjects = __LIBS__['OMT9KRCT2NZGRR14'];
+  var IdentifiableSet = __LIBS__['zO8NJX9V7N014_NQ'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['HJZH994QJM1BKQUV'];
+    I18n.translations = __LIBS__['C_RMAX7Y20MUQR2F'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -1102,14 +1102,16 @@ exports.ja = {
   }
 
   function mergeSvgStyle(origStyle, newStyle) {
-    return {
-      textAnchor: newStyle.textAnchor !== null ? newStyle.textAnchor: origStyle.textAnchor,
-      fill: newStyle.fill !== null ? newStyle.fill: origStyle.fill,
-      fillOpacity: newStyle.fillOpacity !== null ? newStyle.fillOpacity: origStyle.fillOpacity,
-      stroke: newStyle.stroke !== null ? newStyle.stroke: origStyle.stroke,
-      strokeWidth: newStyle.strokeWidth !== null ? newStyle.strokeWidth: origStyle.strokeWidth,
-      strokeOpacity: newStyle.strokeOpacity !== null ? newStyle.strokeOpacity: origStyle.strokeOpacity
-    };
+    var copied = { };
+    for (var k in origStyle) {
+      copied[k] = origStyle[k];
+    }
+    for (var k in newStyle) {
+      if (newStyle[k] !== null) {
+        copied[k] = newStyle[k];
+      }
+    }
+    return copied;
   }
 
   function buildStyleFromSvgStyle(svgStyle) {
@@ -1268,6 +1270,9 @@ exports.ja = {
           }
           if (attrs.style)
             currentSvgStyle = mergeSvgStyle(currentSvgStyle, parseCSSAsSvgStyle(attrs.style, defs));
+          if (attrs['transform']) {
+            currentSvgStyle._transform = attrs['transform'];
+          }
 
           switch (n.nodeName) {
             case 'defs':
@@ -1293,12 +1298,12 @@ exports.ja = {
                   zIndex: 99
                 });
                 shape.style(CONF.DEFAULT.TEXT_STYLE);
-                if(currentSvgStyle.textAnchor) {
-				  shape.anchor(currentSvgStyle.textAnchor);
+                if (currentSvgStyle.textAnchor) {
+                  shape.anchor(currentSvgStyle.textAnchor);
                 }
               } else if (n.nodeName == 'text') {
-				  arguments.callee.call(self, currentSvgStyle, defs, n.childNodes);
-                  continue outer;
+                arguments.callee.call(self, currentSvgStyle, defs, n.childNodes);
+                continue outer;
               }
               break;
 
@@ -1325,6 +1330,19 @@ exports.ja = {
 
           }
           if (shape !== null) {
+            if (currentSvgStyle._transform) {
+              var trans = currentSvgStyle._transform;
+              while (trans.match(/^\s*matrix\(([^\)]+)\)/)) {
+                var matrix = RegExp.$1;
+                var param = matrix.split(/,\s*/);
+                var a = param[0], c = param[1], e = param[2],
+                    b = param[3], d = param[4], f = param[5]
+                shape.transform(new Fashion.Matrix(a, c, e, b, d, f));
+                trans = trans.substr(RegExp.$1.length);
+
+                break;    // 現時点ではchain非対応
+              }
+            }
             var x = parseFloat(attrs.x),
                 y = parseFloat(attrs.y);
             if (!isNaN(x) && !isNaN(y))
@@ -1335,7 +1353,7 @@ exports.ja = {
           shapes[attrs.id] = shape;
         }
     }).call(self,
-      { fill: false, fillOpacity: false,
+      { _transform: false, fill: false, fillOpacity: false,
         stroke: false, strokeOpacity: false },
       {},
       drawing.documentElement.childNodes);

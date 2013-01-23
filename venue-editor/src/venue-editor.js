@@ -158,14 +158,16 @@
   }
 
   function mergeSvgStyle(origStyle, newStyle) {
-    return {
-      textAnchor: newStyle.textAnchor !== null ? newStyle.textAnchor: origStyle.textAnchor,
-      fill: newStyle.fill !== null ? newStyle.fill: origStyle.fill,
-      fillOpacity: newStyle.fillOpacity !== null ? newStyle.fillOpacity: origStyle.fillOpacity,
-      stroke: newStyle.stroke !== null ? newStyle.stroke: origStyle.stroke,
-      strokeWidth: newStyle.strokeWidth !== null ? newStyle.strokeWidth: origStyle.strokeWidth,
-      strokeOpacity: newStyle.strokeOpacity !== null ? newStyle.strokeOpacity: origStyle.strokeOpacity
-    };
+    var copied = { };
+    for (var k in origStyle) {
+      copied[k] = origStyle[k];
+    }
+    for (var k in newStyle) {
+      if (newStyle[k] !== null) {
+        copied[k] = newStyle[k];
+      }
+    }
+    return copied;
   }
 
   function buildStyleFromSvgStyle(svgStyle) {
@@ -324,6 +326,9 @@
           }
           if (attrs.style)
             currentSvgStyle = mergeSvgStyle(currentSvgStyle, parseCSSAsSvgStyle(attrs.style, defs));
+          if (attrs['transform']) {
+            currentSvgStyle._transform = attrs['transform'];
+          }
 
           switch (n.nodeName) {
             case 'defs':
@@ -349,12 +354,12 @@
                   zIndex: 99
                 });
                 shape.style(CONF.DEFAULT.TEXT_STYLE);
-                if(currentSvgStyle.textAnchor) {
-				  shape.anchor(currentSvgStyle.textAnchor);
+                if (currentSvgStyle.textAnchor) {
+                  shape.anchor(currentSvgStyle.textAnchor);
                 }
               } else if (n.nodeName == 'text') {
-				  arguments.callee.call(self, currentSvgStyle, defs, n.childNodes);
-                  continue outer;
+                arguments.callee.call(self, currentSvgStyle, defs, n.childNodes);
+                continue outer;
               }
               break;
 
@@ -381,6 +386,19 @@
 
           }
           if (shape !== null) {
+            if (currentSvgStyle._transform) {
+              var trans = currentSvgStyle._transform;
+              while (trans.match(/^\s*matrix\(([^\)]+)\)/)) {
+                var matrix = RegExp.$1;
+                var param = matrix.split(/,\s*/);
+                var a = param[0], c = param[1], e = param[2],
+                    b = param[3], d = param[4], f = param[5]
+                shape.transform(new Fashion.Matrix(a, c, e, b, d, f));
+                trans = trans.substr(RegExp.$1.length);
+
+                break;    // 現時点ではchain非対応
+              }
+            }
             var x = parseFloat(attrs.x),
                 y = parseFloat(attrs.y);
             if (!isNaN(x) && !isNaN(y))
@@ -391,7 +409,7 @@
           shapes[attrs.id] = shape;
         }
     }).call(self,
-      { fill: false, fillOpacity: false,
+      { _transform: false, fill: false, fillOpacity: false,
         stroke: false, strokeOpacity: false },
       {},
       drawing.documentElement.childNodes);
