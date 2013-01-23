@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['qXII36VHWCH8XK2C'] = (function (exports) { (function () { 
+__LIBS__['FB31HNOXT0QCTWJ0'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -73,7 +73,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['JK0COOZVPFGKBJ06'] = (function (exports) { (function () { 
+__LIBS__['hN43Z5V1O0ML2V5A'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -187,7 +187,7 @@ timer.prototype.lap = function(msg) {
     return lap;
 };
  })(); return exports; })({});
-__LIBS__['n62EJNYBIEZ5PSO8'] = (function (exports) { (function () { 
+__LIBS__['PRH3KKOFM58_GZLK'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -236,12 +236,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['bBTI10VMVRPFMROR'] = (function (exports) { (function () { 
+__LIBS__['OC8ZOUL9320ZJ7CB'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['JK0COOZVPFGKBJ06'];
-var CONF = __LIBS__['qXII36VHWCH8XK2C'];
-var IdentifiableSet = __LIBS__['n62EJNYBIEZ5PSO8'].IdentifiableSet;
+var util = __LIBS__['hN43Z5V1O0ML2V5A'];
+var CONF = __LIBS__['FB31HNOXT0QCTWJ0'];
+var IdentifiableSet = __LIBS__['PRH3KKOFM58_GZLK'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -717,12 +717,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['HP7FCIHQWUBV9TU8'] = (function (exports) { (function () { 
+__LIBS__['F__7D1C5HCZG27_W'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['JK0COOZVPFGKBJ06'];
-var CONF = __LIBS__['qXII36VHWCH8XK2C'];
-var models = __LIBS__['bBTI10VMVRPFMROR'];
+var util = __LIBS__['hN43Z5V1O0ML2V5A'];
+var CONF = __LIBS__['FB31HNOXT0QCTWJ0'];
+var models = __LIBS__['OC8ZOUL9320ZJ7CB'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -913,7 +913,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['RKJVVZ9V7Y3LTUS4'] = (function (exports) { (function () { 
+__LIBS__['V7HZ79D00NS8CF3N'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -944,13 +944,13 @@ exports.ja = {
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['qXII36VHWCH8XK2C'];
-  var models = __LIBS__['bBTI10VMVRPFMROR'];
-  var util = __LIBS__['JK0COOZVPFGKBJ06'];
-  var viewobjects = __LIBS__['HP7FCIHQWUBV9TU8'];
-  var IdentifiableSet = __LIBS__['n62EJNYBIEZ5PSO8'].IdentifiableSet;
+  var CONF = __LIBS__['FB31HNOXT0QCTWJ0'];
+  var models = __LIBS__['OC8ZOUL9320ZJ7CB'];
+  var util = __LIBS__['hN43Z5V1O0ML2V5A'];
+  var viewobjects = __LIBS__['F__7D1C5HCZG27_W'];
+  var IdentifiableSet = __LIBS__['PRH3KKOFM58_GZLK'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['RKJVVZ9V7Y3LTUS4'];
+    I18n.translations = __LIBS__['V7HZ79D00NS8CF3N'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -1272,19 +1272,27 @@ exports.ja = {
             currentSvgStyle = mergeSvgStyle(currentSvgStyle, parseCSSAsSvgStyle(attrs.style, defs));
           if (attrs['transform']) {
             var trans = attrs['transform'];
-            while (trans.match(/^\s*matrix\(([^\)]+)\)/)) {
-              var param = RegExp.$1.split(/,\s*/);
-              var a = param[0], c = param[1], e = param[2],
-                  b = param[3], d = param[4], f = param[5]
-              var matrix = new Fashion.Matrix(a, c, e, b, d, f);
+            var matrix;
+            while (trans.match(/^(\s*(matrix|translate)\(([^\)]+)\))/)) {
+              var type = RegExp.$2;
+              var param = RegExp.$3.split(/,\s*/);
+              if (type == 'matrix' && param.length==6) {
+                var a = param[0], c = param[1], e = param[2],
+                    b = param[3], d = param[4], f = param[5]
+                matrix = new Fashion.Matrix(a, c, e, b, d, f);
+              } else if(type == 'translate' && param.length==2) {
+                matrix = Fashion.Matrix.translate({ x: param[0], y: param[1] });
+              }
               // TODO: support transform chain
               trans = trans.substr(RegExp.$1.length);
               break;
             }
-            if (currentSvgStyle._transform) {
-              currentSvgStyle._transform = currentSvgStyle._transform.multiply(matrix);
-			} else {
-              currentSvgStyle._transform = matrix;
+            if (matrix) {
+              if (currentSvgStyle._transform) {
+                currentSvgStyle._transform = currentSvgStyle._transform.multiply(matrix);
+	  		} else {
+                currentSvgStyle._transform = matrix;
+              }
             }
           }
 
