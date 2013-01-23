@@ -61,11 +61,8 @@ class OrderInfoDefault(object):
         sa = order.shipping_address
         return u"{0} {1}".format(sa.last_name_kana, sa.first_name_kana)
 
-    name_kana = OrderInfo(name="name_kana", label=u"お名前カナ", getval=get_name_kana)
-    tel = OrderInfo(name="tel", label=u"電話番号", getval=lambda order : order.shipping_address.tel_1 or "")
-    mail = OrderInfo(name="mail", label=u"メールアドレス", getval=lambda order : order.shipping_address.email_1)
     order_no = OrderInfo(name="order_no", label=u"受付番号", getval=lambda order : order.order_no)
-    order_datetime = OrderInfo(name="order_datetime", label=u"受付日", getval=lambda order: ch.mail_date(order.created_at))
+    name_kana = OrderInfo(name="name_kana", label=u"お名前カナ", getval=get_name_kana)
     event_name = OrderInfo(name="event_name", label=u"公演タイトル", getval=get_event_title)
     pdate = OrderInfo(name="pdate", label=u"公演日時", getval=get_performance_date)
     venue = OrderInfo(name="venue", label=u"会場", getval=lambda order: order.performance.venue.name)
@@ -75,6 +72,7 @@ class OrderInfoDefault(object):
     transaction_fee = OrderInfo(name=u"transaction_fee", label=u"決済手数料", getval=lambda order: ch.format_currency(order.transaction_fee))
     delivery_fee = OrderInfo(name=u"delivery_fee", label=u"発券／引取手数料", getval=lambda order: ch.format_currency(order.delivery_fee))
     total_amount = OrderInfo(name=u"total_amount", label=u"合計金額", getval=lambda order: ch.format_currency(order.total_amount))
+    order_datetime = OrderInfo(name="order_datetime", label=u"受付日", getval=lambda order: ch.mail_date(order.created_at))
 
     @classmethod
     def get_form_field_candidates(cls):

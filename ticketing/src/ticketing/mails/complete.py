@@ -4,7 +4,7 @@ from . import PURCHASE_MAILS
 from .api import get_purchaseinfo_mail, preview_text_from_message, message_settings_override
 from .api import get_mailinfo_traverser
 from .api import create_or_update_mailinfo,  create_fake_order
-from .forms import OrderInfoRenderer, OrderInfoDefault
+from .forms import OrderInfoRenderer, OrderInfoDefault, OrderInfo
 from ticketing.cart import helpers as ch ##
 import logging
 logger = logging.getLogger(__name__)
@@ -24,8 +24,12 @@ def access_data(data, k, default=""):
     except KeyError:
         return default
 
+class OrderCompleteInfoDefault(OrderInfoDefault):
+    tel = OrderInfo(name="tel", label=u"電話番号", getval=lambda order : order.shipping_address.tel_1 or "")
+    mail = OrderInfo(name="mail", label=u"メールアドレス", getval=lambda order : order.shipping_address.email_1)
+
 def get_order_info_default():
-    return OrderInfoDefault
+    return OrderCompleteInfoDefault
 
 get_traverser = functools.partial(get_mailinfo_traverser, access=access_data, default=u"")
 get_complete_mail = functools.partial(get_purchaseinfo_mail, name=PURCHASE_MAILS["complete"])

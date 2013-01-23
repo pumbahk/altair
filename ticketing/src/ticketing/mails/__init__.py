@@ -12,6 +12,7 @@ def register_mailutilty(config, util, name):
     assert util.send_mail
     config.registry.registerUtility(util, IMailUtility, name=name)
 
+
 PURCHASE_MAILS = {
     "complete": str(MailTypeEnum.CompleteMail), 
     "cancel": str(MailTypeEnum.PurchaseCancelMail)
@@ -20,16 +21,16 @@ PURCHASE_MAILS = {
 def install_mail_utility(config):
     from ticketing.mails.interfaces import IPurchaseInfoMail
 
-    register_mailutilty(config, ".complete", PURCHASE_MAILS["complete"])
     from ticketing.mails.complete import CompleteMail
+    register_mailutilty(config, ".complete", PURCHASE_MAILS["complete"])
     config.include(config.registry.settings["altair.mailer"])
-    complete_mail_factory = functools.partial(CompleteMail, "ticketing:templates/mail/complete.mako")
-    config.registry.adapters.register([IRequest], IPurchaseInfoMail, PURCHASE_MAILS["complete"], complete_mail_factory)
+    config.registry.adapters.register([IRequest], IPurchaseInfoMail, PURCHASE_MAILS["complete"], 
+                                      functools.partial(CompleteMail, "ticketing:templates/mail/complete.mako"))
 
     from ticketing.mails.order_cancel import CancelMail
     register_mailutilty(config, ".order_cancel", name=PURCHASE_MAILS["cancel"])
-    cancel_mail_factory = functools.partial(CancelMail, "ticketing:templates/mail/order_cancel.txt")
-    config.registry.adapters.register([IRequest], IPurchaseInfoMail, PURCHASE_MAILS["cancel"], cancel_mail_factory)
+    config.registry.adapters.register([IRequest], IPurchaseInfoMail, PURCHASE_MAILS["cancel"],
+                                      functools.partial(CancelMail, "ticketing:templates/mail/order_cancel.txt"))
 
 def includeme(config):
     config.include(install_mail_utility)
