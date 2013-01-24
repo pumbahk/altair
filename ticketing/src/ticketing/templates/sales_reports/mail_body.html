@@ -37,82 +37,162 @@
           <th style="width: 8%; border: 1px #DCDCDC solid;">入金済み</th>
           <th style="width: 8%; border: 1px #DCDCDC solid;">小計</th>
         </tr>
+
       <%
         import itertools
         event_product_keys = [(x['stock_type_id'], x['product_name'], x['product_price']) for x in event_product]
         event_product_keys = sorted(event_product_keys, key=lambda x:(x[0], x[1], x[2]))
         event_product_keys = [x[0] for x in itertools.groupby(event_product_keys, lambda x:(x[0], x[1], x[2]))]
         key_count = {}
-      %>
+
+        if form.limited_from.data or form.limited_to.data:
+             event_product_keys_all = [(x['stock_type_id'], x['product_name'], x['product_price']) for x in event_product_all]
+             event_product_keys_all = sorted(event_product_keys_all, key=lambda x:(x[0], x[1], x[2]))
+             event_product_keys_all = [x[0] for x in itertools.groupby(event_product_keys_all, lambda x:(x[0], x[1], x[2]))]
+             key_count_all = {}
+
+      %>         
+
       % for key in event_product_keys:
-        <%
-          if key[0] in key_count:
-            key_count[key[0]] += 1
-          else:
-            key_count[key[0]] = 1
-        %>
-      % endfor
       <%
-        stock_type_id = None
-        grouping_key = None
-        product_total = {
-          'total_quantity':0,
-          'vacant_quantity':0,
-          'unpaid_quantity':0,
-          'paid_quantity':0,
-          'price_total':0,
-        }
+        if key[0] in key_count:
+          key_count[key[0]] += 1
+        else:
+          key_count[key[0]] = 1
       %>
-      % for product in sorted(event_product, key=lambda x:(x['stock_type_id'], x['product_name'], x['product_price'])):
+      % endfor
+      % if form.limited_from.data or form.limited_to.data:
+          % for key in event_product_keys_all:
+      <%
+        if key[0] in key_count_all:
+          key_count_all[key[0]] += 1
+        else:
+          key_count_all[key[0]] = 1
+      %>
+         % endfor
+      % endif
+      % if form.limited_from.data or form.limited_to.data:
+          <% 
+            i = 0
+            product_name_all = {}
+            stock_name_all = {}
+	       %>
+          % for product_all in sorted(event_product_all, key=lambda x:(x['stock_type_id'], x['product_name'], x['product_price'])):
+          <% 
+            product_name_all[i] = product_all['product_name']
+            stock_name_all[i] = product_all['stock_type_name']
+            i += 1
+           %>
+          % endfor
+      % endif 
+
+      <%
+       stock_type_id = None
+       grouping_key = None
+       i = 0
+       product_total = {}
+       for product in event_product:
+         product_total[i] = {
+           'total_quantity':0,
+           'vacant_quantity':0,
+           'unpaid_quantity':0,
+           'paid_quantity':0,
+           'price_total':0,
+         }
+         i += 1
+       if form.limited_from.data or form.limited_to.data:
+          stock_type_id_all = None
+          grouping_key_all = None
+          i = 0
+          product_total_all = {}
+          for product_all in event_product_all:
+            product_total_all[i] = {
+              'total_quantity':0,
+              'vacant_quantity':0,
+              'unpaid_quantity':0,
+              'paid_quantity':0,
+              'price_total':0,
+            }
+            i += 1
+      %>
+
+        <% i = 0 %>
+           % for product in sorted(event_product, key=lambda x:(x['stock_type_id'], x['product_name'], x['product_price'])):
         <%
-          product_total['total_quantity'] += product['total_quantity']
-          product_total['vacant_quantity'] += product['vacant_quantity']
-          product_total['unpaid_quantity'] += product['unpaid_quantity']
-          product_total['paid_quantity'] += product['paid_quantity']
+          product_total[i]['total_quantity'] += product['total_quantity']
+          product_total[i]['vacant_quantity'] += product['vacant_quantity']
+          product_total[i]['unpaid_quantity'] += product['unpaid_quantity']
+          product_total[i]['paid_quantity'] += product['paid_quantity']
           if grouping_key == (product['product_name'], product['product_price']):
             continue
         %>
-        <tr>
-        % if stock_type_id != product['stock_type_id']:
-          <td rowspan="${key_count[product['stock_type_id']]}" style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${product['stock_type_name']}</td>
-        % endif
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${product['product_name']}</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product['product_price'])}円</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total['total_quantity'])}</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total['vacant_quantity'])}</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total['paid_quantity'] + product_total['unpaid_quantity']) or ''}</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total['unpaid_quantity'])}</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total['paid_quantity'])}</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product['product_price'] * product_total['paid_quantity'])}円</td>
-        </tr>
-        % if form.limited_from.data or form.limited_to.data:
+           ${product_total[i]['paid_quantity']}
+        <% i += 1 %>
+           % endfor
+           % if form.limited_from.data or form.limited_to.data:
+        <% i = 0 %>
+               % for product_all in sorted(event_product_all, key=lambda x:(x['stock_type_id'], x['product_name'], x['product_price'])):
+        <%
+          product_total_all[i]['total_quantity'] += product_all['total_quantity']
+          product_total_all[i]['vacant_quantity'] += product_all['vacant_quantity']
+          product_total_all[i]['unpaid_quantity'] += product_all['unpaid_quantity']
+          product_total_all[i]['paid_quantity'] += product_all['paid_quantity']
+          if grouping_key_all == (product_all['product_name'], product_all['product_price']):
+            continue
+        %>
+        <% i += 1 %>
+               % endfor
+           % endif
+
+        <% i = 0 %>
+         % if form.limited_from.data or form.limited_to.data:
+           % for product in sorted(event_product, key=lambda x:(x['stock_type_id'], x['product_name'], x['product_price'])):
         <tr>
             % if stock_type_id != product['stock_type_id']:
-          <td rowspan="${key_count[product['stock_type_id']]}" style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${product['stock_type_name']}(トータル)</td>
-            % endif
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${product['product_name']}</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product['product_price'])}円</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total['total_quantity'])}</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total['vacant_quantity'])}</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total['paid_quantity'] + product_total['unpaid_quantity']) or ''}</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total['unpaid_quantity'])}</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total['paid_quantity'])}</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product['product_price'] * product_total['paid_quantity'])}円</td>
+          <td rowspan="${key_count[product['stock_type_id']]}" style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${product['stock_type_name']}</td>
+					% endif
+		  <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${product['product_name']}</td>
+          <td rowspan=2 style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product['product_price'])}円</td>
+          <td rowspan=2 style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total[i]['total_quantity'])}</td>
+          <td rowspan=2 style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total[i]['vacant_quantity'])}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total[i]['paid_quantity'] + product_total[i]['unpaid_quantity']) or ''}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total[i]['unpaid_quantity'])}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total[i]['paid_quantity'])}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product['product_price'] * product_total[i]['paid_quantity'])}円</td>
         </tr>
-        % endif
+        <tr>
+          <td colspan=2 rowspan="${key_count[product_all['stock_type_id']]}" style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">トータル</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total_all[i]['paid_quantity'] + product_total[i]['unpaid_quantity']) or ''}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total_all[i]['unpaid_quantity'])}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total_all[i]['paid_quantity'])}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_all['product_price'] * product_total_all[i]['paid_quantity'])}円</td>
+        </tr>
 
-        <%
-          stock_type_id = product['stock_type_id']
-          grouping_key = (product['product_name'], product['product_price'])
-          product_total = {
-            'total_quantity':0,
-            'vacant_quantity':0,
-            'unpaid_quantity':0,
-            'paid_quantity':0,
-            'price_total':0,
-          }
-        %>
-% endfor
+           <% i += 1 %>
+           ${i}
+           % endfor
+         % else:
+           <% i = 0 %>
+           % for product in sorted(event_product, key=lambda x:(x['stock_type_id'], x['product_name'], x['product_price'])):
+           ${i}
+        <tr>
+            % if stock_type_id != product['stock_type_id']:
+          <td rowspan="${key_count[product['stock_type_id']]}" style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${product['stock_type_name']}</td>
+	        % endif
+		  <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${product['product_name']}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product['product_price'])}円</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total[i]['total_quantity'])}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total[i]['vacant_quantity'])}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total[i]['paid_quantity'] + product_total[i]['unpaid_quantity']) or ''}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total[i]['unpaid_quantity'])}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total[i]['paid_quantity'])}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product['product_price'] * product_total[i]['paid_quantity'])}円</td>
+        </tr>
+
+           <% i += 1 %>
+           % endfor
+
+         % endif
 </table>
       % for id, value in performances_reports.items():
         <%
@@ -137,7 +217,7 @@
           <th style="width: 17%; border: 1px #DCDCDC solid;">席種</th>
           <th style="width: 8%; border: 1px #DCDCDC solid;">配券先</th>
           <th style="width: 17%; border: 1px #DCDCDC solid;">商品</th>
-          <th style="width: 8%; border: 1px #DCDCDC solid;">価格</th>
+          <th style="width: 8%; bo
           <th style="width: 8%; border: 1px #DCDCDC solid;">配席数</th>
           <th style="width: 8%; border: 1px #DCDCDC solid;">残数</th>
           <th style="width: 8%; border: 1px #DCDCDC solid;">受付</th>
