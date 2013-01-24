@@ -1,25 +1,6 @@
 # coding:utf-8
-
-from altaircms.helpers.formhelpers import datetime_pick_patch
-datetime_pick_patch()
-
 import logging
 logger = logging.getLogger(__name__)
-
-from pyramid.config import Configurator
-from pyramid.session import UnencryptedCookieSessionFactoryConfig
-
-import sqlahelper
-from sqlalchemy import engine_from_config
-
-from altaircms.security import RootFactory
-
-try:
-    import pymysql_sa
-    pymysql_sa.make_default_mysql_dialect()
-    logger.info('Using PyMySQL')
-except:
-    pass
 
 def _get_policies(settings):
     from altaircms.security import rolefinder
@@ -56,6 +37,18 @@ def iterable_undefined_patch():
 def main(global_config, **local_config):
     """ apprications main
     """
+    from altaircms.helpers.formhelpers import datetime_pick_patch
+    datetime_pick_patch()
+
+    from pyramid.config import Configurator
+    from pyramid.session import UnencryptedCookieSessionFactoryConfig
+
+    import sqlahelper
+    from sqlalchemy import engine_from_config
+
+    from altaircms.security import RootFactory
+
+
     settings = dict(global_config)
     settings.update(local_config)
 
