@@ -20,7 +20,7 @@
       % if form.limited_from.data or form.limited_to.data:
         ${h.safe_strftime(form.limited_from.data)} 〜 ${h.safe_strftime(form.limited_to.data)}
       % else:
-        全期間
+       　〜本日
       % endif
       </p>
 
@@ -85,6 +85,22 @@
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total['paid_quantity'])}</td>
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product['product_price'] * product_total['paid_quantity'])}円</td>
         </tr>
+        % if form.limited_from.data or form.limited_to.data:
+        <tr>
+            % if stock_type_id != product['stock_type_id']:
+          <td rowspan="${key_count[product['stock_type_id']]}" style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${product['stock_type_name']}(トータル)</td>
+            % endif
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${product['product_name']}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product['product_price'])}円</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total['total_quantity'])}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total['vacant_quantity'])}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total['paid_quantity'] + product_total['unpaid_quantity']) or ''}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total['unpaid_quantity'])}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total['paid_quantity'])}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product['product_price'] * product_total['paid_quantity'])}円</td>
+        </tr>
+        % endif
+
         <%
           stock_type_id = product['stock_type_id']
           grouping_key = (product['product_name'], product['product_price'])
@@ -96,8 +112,8 @@
             'price_total':0,
           }
         %>
-      % endfor
-      </table>
+% endfor
+</table>
       % for id, value in performances_reports.items():
         <%
           performance = value['performance']
