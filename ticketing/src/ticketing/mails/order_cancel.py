@@ -73,7 +73,7 @@ def create_cancel_message(request, order):
         return
 
     traverser = get_traverser(request, order)
-    subject = (traverser.data["sender"] or u'ご注文キャンセルについて 【{organization.name}】'.format(organization=order.ordered_from))
+    subject = (traverser.data["subject"] or u'ご注文キャンセルについて 【{organization.name}】'.format(organization=order.ordered_from))
     from_ = (traverser.data["sender"] or order.ordered_from.contact_email)
     product_message_format = u'{product}　{price}（円）× {quantity}\r\n'
     products = ''
@@ -112,7 +112,6 @@ def create_cancel_message(request, order):
         header = traverser.data["header"],
     )
     mail_body = renderers.render(mail_renderer_names[plugin_id], value, request=request)
-    from_ = order.ordered_from.contact_email
 
     message = Message(
         subject=subject,
