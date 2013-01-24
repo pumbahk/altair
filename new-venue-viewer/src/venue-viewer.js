@@ -330,13 +330,26 @@
                 break;
 
               case 'text':
-                if (n.firstChild) {
+              case 'tspan':
+                if (n.childNodes.length==1 && n.firstChild.nodeType == Node.TEXT_NODE) {
                   shape = new Fashion.Text({
                     text: collectText(n),
                     anchor: currentSvgStyle.textAnchor,
                     transform: _transform
                   });
-                }
+                } else if (n.nodeName == 'text') {
+                arguments.callee.call(
+                  self,
+                  {
+                    svgStyle: currentSvgStyle,
+                    transform: transform,
+                    defs: context.defs,
+                    focused: focused,
+                    xlink: xlink
+                  },
+                  n.childNodes);
+                  continue outer;
+				}
                 break;
 
               case 'symbol':
