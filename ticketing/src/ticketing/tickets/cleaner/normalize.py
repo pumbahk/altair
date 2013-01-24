@@ -89,7 +89,7 @@ def after_first_rbrace(helper, tokens):
     while tokens:
         token = tokens.pop(0)
         if isinstance(token, LBrace):
-            raise Exception("Invalid input")
+            raise Exception("Invalid input %s" % token)
         helper.content[-1].append(token)
         if isinstance(token, RBrace):
             return after_second_rbrace(helper, tokens)
@@ -99,7 +99,7 @@ def after_second_rbrace(helper, tokens):
     while tokens:
         token = tokens.pop(0)
         if isinstance(token, RBrace):
-            raise Exception("Invalid input")
+            raise Exception("Invalid input %s" % token)
 
         if isinstance(token, LBrace):
             helper.make_stack()#xxx:
