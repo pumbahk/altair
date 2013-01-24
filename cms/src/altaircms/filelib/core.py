@@ -23,6 +23,9 @@ class FileSession(object):
             self.make_path = make_path
         self.pool = []
 
+    def abspath(self, part):
+        return os.path.join(self.make_path(), part)
+
     def add(self, uploadfile):
         if hasattr(uploadfile, "signature"):
             signatured_file = uploadfile
@@ -36,6 +39,7 @@ class FileSession(object):
             try:
                 realpath = os.path.join(self.make_path(), signatured_file.name)
                 os.rename(signatured_file.signature, realpath)
+                logger.debug("filesession. rename: %s -> %s" % (signatured_file.signature, realpath))
             except OSError, e:
                 logger.warn("%s is not renamed" % signatured_file)
                 logger.exception(str(e))

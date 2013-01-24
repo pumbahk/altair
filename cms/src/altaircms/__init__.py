@@ -37,15 +37,15 @@ def iterable_undefined_patch():
 def main(global_config, **local_config):
     """ apprications main
     """
-    from altaircms.helpers.formhelpers import datetime_pick_patch
-    datetime_pick_patch()
-
     from pyramid.config import Configurator
     from pyramid.session import UnencryptedCookieSessionFactoryConfig
 
     import sqlahelper
     from sqlalchemy import engine_from_config
 
+
+    from altaircms.helpers.formhelpers import datetime_pick_patch
+    datetime_pick_patch()
     from altaircms.security import RootFactory
 
 
@@ -72,6 +72,7 @@ def main(global_config, **local_config):
     config.set_request_property("altaircms.auth.helpers.get_authenticated_organization", "organization", reify=True)
 
     config.include("altaircms.lib.crud")    
+    config.include("altaircms.filelib")
 
     ## include
     config.include("altaircms.auth", route_prefix='/auth')

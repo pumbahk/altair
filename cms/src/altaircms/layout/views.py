@@ -1,4 +1,6 @@
 # coding: utf-8
+import os.path
+from altairsite.front import helpers as fh
 from pyramid.view import view_config
 
 from altaircms.layout.models import Layout
@@ -9,37 +11,37 @@ from altaircms.lib.crud.views import AfterInput
 from pyramid.view import view_defaults
 from pyramid.response import FileResponse
 from altaircms.slackoff import forms
-from . import subscribers 
-from . import api
+from pyramid.httpexceptions import HTTPFound
+from altaircms.helpers.viewhelpers import FlashMessage
+
+from .creation import LayoutCreator, get_layout_filesession
+from collections import defaultdict
+
 
 @view_config(route_name="layout_demo", renderer="altaircms:templates/layout/demo.mako")
 def demo(request):
     layout = get_or_404(request.allowable(Layout), Layout.id==request.GET["id"])
-    return dict(layout_image=LayoutRender(layout).blocks_image())
+    data = dict(layout_image=LayoutRender(layout).blocks_image())
+    return data
 
-from ..layout.api import get_layout_creator
-import os
-from collections import defaultdict
 
 @view_config(route_name="layout_preview", decorator="altaircms.lib.fanstatic_decorator.with_jquery", 
              renderer="dummy.mako")
 def preview(context, request):
-    layout_creator = get_layout_creator(request) ##
     layout = get_or_404(request.allowable(Layout), Layout.id==request.matchdict["layout_id"])
-    template = os.path.join(layout_creator.template_path_asset_spec, layout.prefixed_template_filename)
-    request.override_renderer = template
+    template_path = os.path.join(get_layout_filesession(request).assetspec, layout.prefixed_template_filename)
+    request.override_renderer = template_path
     blocks = defaultdict(list)
     class Page(object):
         title = layout.title
         keywords = layout.title
         description = "layout preview"
-    from altairsite.front import helpers as fh
     return {"display_blocks": blocks, "page": Page, "myhelper": fh}
 
 @view_config(route_name="layout_download")
 def download(request):
     layout = get_or_404(request.allowable(Layout), Layout.id==request.matchdict["layout_id"])
-    path = api.get_layout_creator(request).get_layout_filepath(layout)
+    path = LayoutCreator(request, layout.organization).get_layout_filepath(layout)
     response = FileResponse(path)
     response.content_disposition = 'attachment; filename="%s"' % layout.template_filename
     return response
@@ -63,26 +65,14 @@ class LayoutCreateView(object):
         return {"form": form, 
                 "display_fields": getattr(form, "__display_fields__")}
 
-    # @view_config(match_param="action=confirm", renderer="altaircms:templates/layout/create/confirm.mako")
-    # def confirm(self):
-    #     form = forms.LayoutCreateForm(self.request.POST)
-    #     if not form.validate():
-    #         self.request._form = form
-    #         raise AfterInput
-    #     else:
-    #         return {"form": form, 
-    #                 "display_fields": getattr(form, "__display_fields__")}
-
     @view_config(match_param="action=create")
     def create(self):
         form = forms.LayoutCreateForm(self.request.POST)
-        form = api.get_layout_creator(self.request).as_form_proxy(form)
         if not form.validate():
             self.request._form = form
             raise AfterInput
-        else:
-            subscribers.notify_layout_create(self.request, form.data)
-            from pyramid.httpexceptions import HTTPFound
-            return HTTPFound(self.request.route_url("layout_list")) ##
-        
 
+        layout_creator = LayoutCreator(self.request, self.request.organization)
+        layout = layout_creator.create(form.data)
+        FlashMessage.success("create layout %s" % layout.title, request=self.request)
+        return HTTPFound(self.request.route_url("layout_list")) ##
