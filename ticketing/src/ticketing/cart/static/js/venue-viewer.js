@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['j37Q3CGGU1J4ZHZ_'] = (function (exports) { (function () { 
+__LIBS__['B2QCKG6BQTNJTP8J'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['R9URR5XLKVZA9I4J'] = (function (exports) { (function () { 
+__LIBS__['E4WN5GJZ8A16EI0V'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['fC8JZLHY6_KM4WCD'] = (function (exports) { (function () { 
+__LIBS__['SWUHGP3KK1J72C_N'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['j37Q3CGGU1J4ZHZ_'];
-var CONF = __LIBS__['R9URR5XLKVZA9I4J'];
+var util = __LIBS__['B2QCKG6BQTNJTP8J'];
+var CONF = __LIBS__['E4WN5GJZ8A16EI0V'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -1018,9 +1018,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['R9URR5XLKVZA9I4J'];
-  var seat = __LIBS__['fC8JZLHY6_KM4WCD'];
-  var util = __LIBS__['j37Q3CGGU1J4ZHZ_'];
+  var CONF = __LIBS__['E4WN5GJZ8A16EI0V'];
+  var seat = __LIBS__['SWUHGP3KK1J72C_N'];
+  var util = __LIBS__['B2QCKG6BQTNJTP8J'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1345,13 +1345,26 @@ function parseTransform(transform_str) {
                 break;
 
               case 'text':
-                if (n.firstChild) {
+              case 'tspan':
+                if (n.childNodes.length==1 && n.firstChild.nodeType == Node.TEXT_NODE) {
                   shape = new Fashion.Text({
                     text: collectText(n),
                     anchor: currentSvgStyle.textAnchor,
                     transform: _transform
                   });
-                }
+                } else if (n.nodeName == 'text') {
+                arguments.callee.call(
+                  self,
+                  {
+                    svgStyle: currentSvgStyle,
+                    transform: transform,
+                    defs: context.defs,
+                    focused: focused,
+                    xlink: xlink
+                  },
+                  n.childNodes);
+                  continue outer;
+				}
                 break;
 
               case 'symbol':
