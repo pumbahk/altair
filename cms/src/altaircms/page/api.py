@@ -1,6 +1,6 @@
 # -*- encoding:utf-8 -*-
 import logging
-logget = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 import os
 import sqlalchemy as sa
@@ -141,6 +141,4 @@ def ftsearch_delete_register_from_page(request, page, ftsearch=None):
     except Exception, e:
         logger.error("solr delete failed")
         logger.exception(str(e))
-    
-    
-
+   
