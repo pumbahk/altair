@@ -22,4 +22,5 @@ def includeme(config):
     config.add_route("layout_preview", "/layout/{layout_id}/preview")
     config.add_route("layout_download", '/layout/{layout_id}/download')
     config.add_route("layout_create", "/layout/create/{action}")
+    config.add_route("layout_update", "/layout/{id}/update/{action}")
     config.scan(".views")

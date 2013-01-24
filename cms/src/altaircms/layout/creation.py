@@ -14,6 +14,9 @@ from ..filelib import get_filesession, File
 def get_layout_filesession(request):
     return get_filesession(request, name=SESSION_NAME)
 
+def is_file_field(field):
+    return hasattr(field, "file") and hasattr(field, "filename")
+
 class LayoutCreator(object):
     """
     params = {
@@ -38,23 +41,43 @@ class LayoutCreator(object):
         return os.path.basename(params["filepath"].filename)
 
     def create_model(self, params, blocks):
-        layout = Layout(template_filename=self.get_basename(params), 
+        basename = params.get("template_filename") or self.get_basename(params)
+        layout = Layout(template_filename=basename, 
                         title=params["title"], 
                         blocks=blocks)
+        DBSession.add(layout)
         return layout
 
-    def create(self, params):
+    def update_model(self, layout, params, blocks):
+        layout.title =params["title"]
+        layout.blocks = blocks
+        layout.template_filename = params.get("template_filename") or self.get_basename(params)
+        DBSession.add(layout)
+        return layout
+
+    def write_layout_file(self, params):
         filesession = get_layout_filesession(self.request)
-        prefixed_name = os.path.join(self.organization.short_name,self.get_basename(params))
+        basename = params.get("template_filename") or self.get_basename(params)
+        prefixed_name = os.path.join(self.organization.short_name, basename)
         filedata = File(name=prefixed_name, handler=params["filepath"].file)
         filesession.add(filedata)
 
-        blocks = self.get_blocks(params)
-        layout = self.create_model(params, blocks)
-        DBSession.add(layout)
-
         ## todo:moveit
         filesession.commit()
+        return 
 
+    def create(self, params):
+        self.write_layout_file(params)
+        blocks = self.get_blocks(params)
+        layout = self.create_model(params, blocks)
         notify_model_create(self.request, layout, params)
+        return layout
+
+    def update(self, layout, params):
+        if is_file_field(params["filepath"]):
+            self.write_layout_file(params)
+            blocks = self.get_blocks(params)
+        else:
+            blocks = params["blocks"]
+        layout = self.update_model(layout, params, blocks)
         return layout

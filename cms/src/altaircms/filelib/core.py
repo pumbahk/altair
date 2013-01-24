@@ -26,6 +26,10 @@ class FileSession(object):
     def abspath(self, part):
         return os.path.join(self.make_path(), part)
 
+    def is_overwrite(self, uploadfile):
+        realpath = os.path.join(self.make_path(), uploadfile.name)
+        return not os.path.exists(realpath)
+
     def add(self, uploadfile):
         if hasattr(uploadfile, "signature"):
             signatured_file = uploadfile
@@ -41,7 +45,7 @@ class FileSession(object):
                 os.rename(signatured_file.signature, realpath)
                 logger.debug("filesession. rename: %s -> %s" % (signatured_file.signature, realpath))
             except OSError, e:
-                logger.warn("%s is not renamed" % signatured_file)
+                logger.warn("%s is not renamed" % signatured_file.signature)
                 logger.exception(str(e))
             except Exception, e:
                 logger.exception(str(e))
