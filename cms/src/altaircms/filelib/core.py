@@ -21,7 +21,8 @@ class FileSession(object):
             self.make_path = lambda : os.path.abspath(prefix)
         else:
             self.make_path = make_path
-        self.pool = []
+        self.add_pool = []
+        self.delete_pool = []
 
     def abspath(self, part):
         return os.path.join(self.make_path(), part)
@@ -35,11 +36,32 @@ class FileSession(object):
             signatured_file = uploadfile
         else:
             signatured_file = self._write_to_tmppath(uploadfile)
-        self.pool.append(signatured_file)
+        self.add_pool.append(signatured_file)
         return signatured_file
 
+    def delete(self, uploadfile):
+        if isinstance(uploadfile, (str, unicode)):
+            uploadfile = File(name=uploadfile, handler=None)
+        filepath = self.abspath(uploadfile.name)
+        if uploadfile.handler:
+            raise Exception("Stream file can't delete %s" % uploadfile)
+        if not os.path.exists(filepath):
+            raise Exception("%s is not found" % filepath)
+        self.delete_pool.append(uploadfile)
+
     def commit(self):
-        for signatured_file in self.pool:
+        for deleted_file in self.delete_pool:
+            filepath = self.abspath(deleted_file.name)
+            logger.debug("filesession. delete: %s" % (filepath))
+            try:
+                os.remove(filepath)
+            except OSError, e:
+                logger.warn("%s is not deleted" % filepath)
+                logger.exception(str(e))
+            except Exception, e:
+                logger.exception(str(e))
+
+        for signatured_file in self.add_pool:
             try:
                 realpath = os.path.join(self.make_path(), signatured_file.name)
                 os.rename(signatured_file.signature, realpath)

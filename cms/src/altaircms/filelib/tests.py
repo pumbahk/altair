@@ -21,7 +21,7 @@ class FileSaveTests(unittest.TestCase):
         f = self._createFile(name="this-is-name", handler=content)
         result = target.add(f)
 
-        self.assertEqual(target.pool, [result])
+        self.assertEqual(target.add_pool, [result])
 
         self.assertEqual(result.name, f.name)
         self.assertEqual(result.handler, f.handler)
@@ -43,6 +43,38 @@ class FileSaveTests(unittest.TestCase):
         realpath = os.path.join(target.make_path(), f.name)
         self.assertTrue(os.path.exists(realpath))
         os.remove(realpath)
+
+    def test_delete(self):
+        import os.path
+        from tempfile import mktemp
+
+        outfilename = mktemp()
+        with open(outfilename, "w") as wf:
+            wf.write("heh")
+
+        target = self._makeOne(prefix="")
+        f = self._createFile(name=outfilename, handler=None)
+
+        self.assertTrue(os.path.exists(outfilename))
+        target.delete(f)
+        self.assertTrue(os.path.exists(outfilename))
+        target.commit()
+        self.assertFalse(os.path.exists(outfilename))
+
+    def test_delete_with_string(self):
+        import os.path
+        from tempfile import mktemp
+
+        outfilename = mktemp()
+        with open(outfilename, "w") as wf:
+            wf.write("heh")
+
+        target = self._makeOne(prefix="")
+        self.assertTrue(os.path.exists(outfilename))
+        target.delete(outfilename)
+        self.assertTrue(os.path.exists(outfilename))
+        target.commit()
+        self.assertFalse(os.path.exists(outfilename))
 
 if __name__ == "__main__":
     unittest.main()
