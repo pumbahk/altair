@@ -5,6 +5,8 @@ logger = logging.getLogger(__name__)
 
 import os.path
 from pyramid.response import Response
+import uuid
+from datetime import date
 
 from . import SESSION_NAME
 from . import models
@@ -13,16 +15,29 @@ from ..filelib import get_filesession
 from ..tag.api import tags_to_string, get_tagmanager, put_tags
 from ..tag.manager import QueryParser
 from ..subscribers import notify_model_create
-from . import helpers as h
-
 from .detect import ImageInfoDatector
-from datetime import date
+from .detect import MovieInfoDatector
+from .detect import FlashInfoDatector
 from ..filelib import File
-import uuid
 
 def get_asset_filesession(request):
     return get_filesession(request, name=SESSION_NAME)
 
+
+## tag
+def _extract_tags(params, k):
+    if k not in params:
+        return []
+    tags = [e.strip() for e in params.pop(k).split(",")] ##
+    return [k for k in tags if k]
+
+def divide_data(params):
+    tags = _extract_tags(params, "tags")
+    private_tags = _extract_tags(params, "private_tags")
+    return tags, private_tags, params
+
+
+## file name
 def get_uname(original_filename, gensym=lambda : uuid.uuid4().hex, gendate=date.today):
     today = gendate().strftime('%Y-%m-%d')
     ext = os.path.splitext(original_filename)[1]
@@ -33,6 +48,7 @@ def uname_file_from_filestorage(filesession, filestorage):
     return File(name=uname, handler=filestorage.file)
 
 
+## operator
 def add_operator_when_created(asset, request):
     user = request.user
     asset.created_by = user
@@ -43,6 +59,8 @@ def add_operator_when_updated(asset, request):
     asset.updated_by = request.user
     return asset
 
+
+## search
 def query_filter_by_users(qs, data):
     created_by = data.get("created_by")
     if created_by:
@@ -52,6 +70,7 @@ def query_filter_by_users(qs, data):
     if updated_by:
         qs = qs.filter(models.Asset.updated_by == updated_by)
     return qs
+
 
 class Deleter(object):
     def __init__(self, request):
@@ -114,7 +133,7 @@ class Creator(object):
 
 class ImageCreator(Creator):
     def commit_create(self, params, form=None):
-        tags, private_tags, params =  h.divide_data(params)
+        tags, private_tags, params =  divide_data(params)
 
         asset_data = {"title": params["title"]}
         extra_asset_data = ImageInfoDatector(self.request).detect(params["filepath"].file, params["filepath"].filename)
@@ -123,6 +142,7 @@ class ImageCreator(Creator):
         filesession = get_asset_filesession(self.request)
         mainimage_file = filesession.add(uname_file_from_filestorage(filesession, params["filepath"]))
         thumbnail_file = filesession.add(uname_file_from_filestorage(filesession, params["thumbnail_path"]))
+
         ## asset
         asset = models.ImageAsset()
         asset_data.update(extra_asset_data)
@@ -130,6 +150,7 @@ class ImageCreator(Creator):
             filepath=mainimage_file.name, 
             thumbnail_path=thumbnail_file.name, 
             **asset_data)
+
         put_tags(asset, "image_asset", tags, private_tags, self.request)
         add_operator_when_created(asset, self.request)
         notify_model_create(self.request, asset, asset_data)
@@ -141,13 +162,65 @@ class ImageCreator(Creator):
 
 class MovieCreator(Creator):
     def commit_create(self, params, form=None):
-        asset = self.context.create_movie_asset(form)
-        self.context.add(asset)
+        tags, private_tags, params =  divide_data(params)
+
+        asset_data = {"title": params["title"]}
+        extra_asset_data = MovieInfoDatector(self.request).detect(params["filepath"].file, params["filepath"].filename)
+
+        ## file
+        filesession = get_asset_filesession(self.request)
+        mainmovie_file = filesession.add(uname_file_from_filestorage(filesession, params["filepath"]))
+
+        ## asset
+        asset = models.MovieAsset()
+        asset_data.update(extra_asset_data)
+        asset = models.MovieAsset(
+            filepath=mainmovie_file.name, 
+            **asset_data)
+
+        if params["placeholder"]:
+            thumbnail_file = filesession.add(uname_file_from_filestorage(filesession, params["placeholder"]))
+            asset.thumbnail_path = thumbnail_file.name
+
+        put_tags(asset, "movie_asset", tags, private_tags, self.request)
+        add_operator_when_created(asset, self.request)
+        notify_model_create(self.request, asset, asset_data)
+
+        ## add
+        DBSession.add(asset)
+        filesession.commit()
+        return asset
 
 class FlashCreator(Creator):
     def commit_create(self, params, form=None):
-        asset = self.context.create_flash_asset(form)
-        self.context.add(asset)
+        tags, private_tags, params =  divide_data(params)
+
+        asset_data = {"title": params["title"]}
+        extra_asset_data = FlashInfoDatector(self.request).detect(params["filepath"].file, params["filepath"].filename)
+
+        ## file
+        filesession = get_asset_filesession(self.request)
+        mainflash_file = filesession.add(uname_file_from_filestorage(filesession, params["filepath"]))
+
+        ## asset
+        asset = models.FlashAsset()
+        asset_data.update(extra_asset_data)
+        asset = models.FlashAsset(
+            filepath=mainflash_file.name, 
+            **asset_data)
+
+        if params["placeholder"]:
+            thumbnail_file = filesession.add(uname_file_from_filestorage(filesession, params["placeholder"]))
+            asset.thumbnail_path = thumbnail_file.name
+
+        put_tags(asset, "flash_asset", tags, private_tags, self.request)
+        add_operator_when_created(asset, self.request)
+        notify_model_create(self.request, asset, asset_data)
+
+        ## add
+        DBSession.add(asset)
+        filesession.commit()
+        return asset
 
 class Committer(object):
     def __init__(self, fn):
@@ -182,7 +255,7 @@ def update_asset(asset, datalist):
 
 class ImageUpdater(Updater):
     def commit_update(self, asset, params, form=None):
-        tags, private_tags, params =  h.divide_data(params)
+        tags, private_tags, params =  divide_data(params)
         datalist = []
         filesession = get_asset_filesession(self.request)
         if params["filepath"]:
@@ -207,11 +280,53 @@ class ImageUpdater(Updater):
 
 class MovieUpdater(Updater):
     def commit_update(self, asset, params, form=None):
-        return self.request.context.update_movie_asset(asset, form)        
+        tags, private_tags, params =  divide_data(params)
+        datalist = []
+        filesession = get_asset_filesession(self.request)
+        if params["filepath"]:
+            extra_asset_data = MovieInfoDatector(self.request).detect(params["filepath"].file, params["filepath"].filename)
+            datalist.append(extra_asset_data)
+            mainmovie_file = filesession.add(File(name=asset.filepath, handler=params["filepath"].file))
+            datalist.append(dict(filepath=mainmovie_file.name))
+
+        if params["thumbnail_path"]:
+            thumbnail_file = filesession.add(File(name=asset.placeholder, handler=params["placeholder"].file))
+            datalist.append(dict(thumbnail_path=thumbnail_file.name))
+
+        datalist.append({k:v for k, v in params.iteritems() if v})
+        asset = update_asset(asset, datalist)
+        put_tags(asset, "movie_asset", tags, private_tags, self.request)
+        add_operator_when_updated(asset, self.request)
+
+        ## add
+        DBSession.add(asset)
+        filesession.commit()
+        return asset
 
 class FlashUpdater(Updater):
     def commit_update(self, asset, params, form=None):
-        return self.request.context.update_flash_asset(asset, form)        
+        tags, private_tags, params =  divide_data(params)
+        datalist = []
+        filesession = get_asset_filesession(self.request)
+        if params["filepath"]:
+            extra_asset_data = FlashInfoDatector(self.request).detect(params["filepath"].file, params["filepath"].filename)
+            datalist.append(extra_asset_data)
+            mainflash_file = filesession.add(File(name=asset.filepath, handler=params["filepath"].file))
+            datalist.append(dict(filepath=mainflash_file.name))
+
+        if params["thumbnail_path"]:
+            thumbnail_file = filesession.add(File(name=asset.thumbnail_path, handler=params["placeholder"].file))
+            datalist.append(dict(placeholder=thumbnail_file.name))
+
+        datalist.append({k:v for k, v in params.iteritems() if v})
+        asset = update_asset(asset, datalist)
+        put_tags(asset, "flash_asset", tags, private_tags, self.request)
+        add_operator_when_updated(asset, self.request)
+
+        ## add
+        DBSession.add(asset)
+        filesession.commit()
+        return asset
    
 class ImageSearcher(object):
     def __init__(self, request):

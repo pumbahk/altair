@@ -31,7 +31,7 @@ class AssetAddView(object):
     def add_image_asset_input(self):
         set_endpoint(self.request)
         private_tags = self.request.params.get("private_tags", "")
-        form = self.context.forms.ImageAssetForm(private_tags=private_tags)
+        form = forms.ImageAssetForm(private_tags=private_tags)
         return {"form": form}
 
 
@@ -70,7 +70,7 @@ class AssetListView(object):
     def image_asset_list(self):
         assets = self.request.allowable(models.ImageAsset).order_by(sa.desc(models.ImageAsset.id))
         form = forms.ImageAssetForm()
-        search_form = self.request.context.forms.AssetSearchForm()
+        search_form = forms.AssetSearchForm()
         return {"assets": assets, "form": form, "search_form": search_form}
 
     @view_config(route_name="asset_movie_list", renderer="altaircms:templates/asset/movie/list.mako", 
@@ -78,7 +78,7 @@ class AssetListView(object):
     def movie_asset_list(self):
         assets = self.request.allowable(models.MovieAsset).order_by(sa.desc(models.MovieAsset.id))
         form = forms.MovieAssetForm()
-        search_form = self.request.context.forms.AssetSearchForm()
+        search_form = forms.AssetSearchForm()
         return {"assets": assets, "form": form, "search_form": search_form}
 
     @view_config(route_name="asset_flash_list", renderer="altaircms:templates/asset/flash/list.mako", 
@@ -86,7 +86,7 @@ class AssetListView(object):
     def flash_asset_list(self):
         assets = self.request.allowable(models.FlashAsset).order_by(sa.desc(models.FlashAsset.id))
         form = forms.FlashAssetForm()
-        search_form = self.request.context.forms.AssetSearchForm()
+        search_form = forms.AssetSearchForm()
         return {"assets": assets, "form": form, "search_form": search_form}
 
 
@@ -213,7 +213,7 @@ class AssetCreateView(object):
         except Exception, e:
             logger.exception(str(e))
             assets = self.request.allowable(models.ImageAsset).order_by(sa.desc(models.ImageAsset.id))
-            search_form = self.request.context.forms.AssetSearchForm()
+            search_form = forms.AssetSearchForm()
             return {"assets": assets, "form": form, "search_form": search_form}
 
     @view_config(route_name="asset_movie_create", renderer="altaircms:templates/asset/movie/list.mako", 
@@ -229,7 +229,7 @@ class AssetCreateView(object):
         except Exception, e:
             logger.exception(str(e))
             assets = self.request.allowable(models.MovieAsset).order_by(sa.desc(models.MovieAsset.id))
-            search_form = self.request.context.forms.AssetSearchForm()
+            search_form = forms.AssetSearchForm()
             return {"assets": assets, "form": form, "search_form": search_form}
 
     @view_config(route_name="asset_flash_create", renderer="altaircms:templates/asset/flash/list.mako", 
@@ -245,7 +245,7 @@ class AssetCreateView(object):
         except Exception, e:
             logger.exception(str(e))
             assets = self.request.allowable(models.FlashAsset).order_by(sa.desc(models.FlashAsset.id))
-            search_form = self.request.context.forms.AssetSearchForm()
+            search_form = forms.AssetSearchForm()
             return {"assets": assets, "form": form, "search_form": search_form}
 
 
