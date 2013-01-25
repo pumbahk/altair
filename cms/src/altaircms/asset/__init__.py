@@ -1,7 +1,9 @@
 # -*- coding:utf-8 -*-
 import functools
 from pyramid.path import AssetResolver
+from wtforms.validators  import ValidationError
 
+__all__ = ["ValidationError", "SESSION_NAME", "includeme"]
 SESSION_NAME = "asset"
 
 def _make_asset_filesession(assetspec):
@@ -10,6 +12,7 @@ def _make_asset_filesession(assetspec):
     filesession = FileSession(make_path=lambda : savepath)
     filesession.assetspec = assetspec
     return filesession
+
 
 def includeme(config):
     """

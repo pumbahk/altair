@@ -59,7 +59,23 @@ class FileSaveTests(unittest.TestCase):
         self.assertTrue(os.path.exists(realpath))
         shutil.rmtree("./foo")
 
-        
+    def test_overwrite(self):
+        from StringIO import StringIO
+        import os
+        with open("./foo.txt", "w") as rf:
+            rf.write("first")
+
+        target = self._makeOne(prefix=".")
+        f = self._createFile(name="foo.txt", handler=StringIO("this-is-second"))
+
+        target.add(f)
+        self.assertEqual(open("./foo.txt").read(), "first")
+
+        target.commit()
+        self.assertEqual(open("./foo.txt").read(), "this-is-second")
+        target.delete("foo.txt")
+        target.commit()
+        self.assertTrue(not os.path.exists("./foo.txt"))
 
     def test_delete(self):
         import os.path

@@ -9,6 +9,7 @@ import uuid
 from datetime import date
 
 from . import SESSION_NAME
+from . import ValidationError
 from . import models
 from ..models import DBSession
 from ..filelib import get_filesession
@@ -125,7 +126,7 @@ class Creator(object):
 
     def create(self, params, form=None):
         if form and not form.validate():
-            raise Exception(str(form.errors))
+            raise ValidationError(str(form.errors))
 
         def commit():
             return self.commit_create(params, form=form)
@@ -236,10 +237,10 @@ class Updater(object):
 
     def update(self, asset, params, form=None):
         if asset.filepath and hasattr(params["filepath"], "filename") and os.path.splitext(params["filepath"].filename)[1] != os.path.splitext(asset.filepath)[1]:
-            raise Exception(u"file extention is not same")
+            raise ValidationError(u"ファイルの拡張子が異なっています。変更できません。")
 
         if form and not form.validate():
-            raise Exception(str(form.errors))
+            raise ValidationError(str(form.errors))
 
         def commit():
             return self.commit_update(asset, params, form=form)

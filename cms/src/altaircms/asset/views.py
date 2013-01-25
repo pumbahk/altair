@@ -19,6 +19,7 @@ from . import forms
 from altaircms.helpers.viewhelpers import get_endpoint, set_endpoint
 from altaircms.auth.api import get_or_404
 from . import creation
+from . import ValidationError
 
 @view_defaults(permission="asset_add", decorator=with_bootstrap, route_name="asset_add")
 class AssetAddView(object):
@@ -157,9 +158,12 @@ class AssetUpdateView(object):
             asset = updater.commit()
             FlashMessage.success("image asset updated", request=self.request)    
             return HTTPFound(self.request.route_path("asset_image_detail", asset_id=asset.id))
+        except ValidationError, e:
+            FlashMessage.error(e.message, request=self.request)    
+            return HTTPFound(self.request.route_path("asset_image_input", asset_id=asset.id))
         except Exception, e:
-            logger.exception(str(e))
-            FlashMessage.error(str(e), request=self.request)    
+            logger.exception(e.message.encode("utf-8"))
+            FlashMessage.error(e.message, request=self.request)    
             return HTTPFound(self.request.route_path("asset_image_input", asset_id=asset.id))
 
     @view_config(route_name="asset_movie_update", request_method="POST")
@@ -173,9 +177,12 @@ class AssetUpdateView(object):
             asset = updater.commit()
             FlashMessage.success("movie asset updated", request=self.request)    
             return HTTPFound(self.request.route_path("asset_movie_detail", asset_id=asset.id))
+        except ValidationError, e:
+            FlashMessage.error(e.message, request=self.request)    
+            return HTTPFound(self.request.route_path("asset_movie_input", asset_id=asset.id))
         except Exception, e:
-            logger.exception(str(e))
-            FlashMessage.error(str(e), request=self.request)    
+            logger.exception(e.message.encode("utf-8"))
+            FlashMessage.error(e.message, request=self.request)    
             return HTTPFound(self.request.route_path("asset_movie_input", asset_id=asset.id))
 
     @view_config(route_name="asset_flash_update", request_method="POST")
@@ -189,9 +196,12 @@ class AssetUpdateView(object):
             asset = updater.commit()
             FlashMessage.success("flash asset updated", request=self.request)    
             return HTTPFound(self.request.route_path("asset_flash_detail", asset_id=asset.id))
+        except ValidationError, e:
+            FlashMessage.error(e.message, request=self.request)    
+            return HTTPFound(self.request.route_path("asset_flash_input", asset_id=asset.id))
         except Exception, e:
-            logger.exception(str(e))
-            FlashMessage.error(str(e), request=self.request)    
+            logger.exception(e.message.encode("utf-8"))
+            FlashMessage.error(e.message, request=self.request)    
             return HTTPFound(self.request.route_path("asset_flash_input", asset_id=asset.id))
         
 @view_defaults(permission="asset_create", decorator=with_bootstrap)
@@ -210,8 +220,14 @@ class AssetCreateView(object):
             creator.commit()
             FlashMessage.success("image asset created", request=self.request)    
             return HTTPFound(get_endpoint(self.request) or  self.request.route_path("asset_image_list"))
+        except ValidationError, e:
+            FlashMessage.error(e.message, request=self.request)    
+            assets = self.request.allowable(models.ImageAsset).order_by(sa.desc(models.ImageAsset.id))
+            search_form = forms.AssetSearchForm()
+            return {"assets": assets, "form": form, "search_form": search_form}
         except Exception, e:
-            logger.exception(str(e))
+            logger.exception(e.message.encode("utf-8"))
+            FlashMessage.error(e.message, request=self.request)    
             assets = self.request.allowable(models.ImageAsset).order_by(sa.desc(models.ImageAsset.id))
             search_form = forms.AssetSearchForm()
             return {"assets": assets, "form": form, "search_form": search_form}
@@ -226,8 +242,14 @@ class AssetCreateView(object):
             creator.commit()
             FlashMessage.success("movie asset created", request=self.request)    
             return HTTPFound(get_endpoint(self.request) or  self.request.route_path("asset_movie_list"))
+        except ValidationError, e:
+            FlashMessage.error(e.message, request=self.request)    
+            assets = self.request.allowable(models.MovieAsset).order_by(sa.desc(models.MovieAsset.id))
+            search_form = forms.AssetSearchForm()
+            return {"assets": assets, "form": form, "search_form": search_form}
         except Exception, e:
-            logger.exception(str(e))
+            logger.exception(e.message.encode("utf-8"))
+            FlashMessage.error(e.message, request=self.request)    
             assets = self.request.allowable(models.MovieAsset).order_by(sa.desc(models.MovieAsset.id))
             search_form = forms.AssetSearchForm()
             return {"assets": assets, "form": form, "search_form": search_form}
@@ -242,8 +264,14 @@ class AssetCreateView(object):
             creator.commit()
             FlashMessage.success("flash asset created", request=self.request)    
             return HTTPFound(get_endpoint(self.request) or  self.request.route_path("asset_flash_list"))
+        except ValidationError, e:
+            FlashMessage.error(e.message, request=self.request)    
+            assets = self.request.allowable(models.FlashAsset).order_by(sa.desc(models.FlashAsset.id))
+            search_form = forms.AssetSearchForm()
+            return {"assets": assets, "form": form, "search_form": search_form}
         except Exception, e:
-            logger.exception(str(e))
+            logger.exception(e.message.encode("utf-8"))
+            FlashMessage.error(e.message, request=self.request)    
             assets = self.request.allowable(models.FlashAsset).order_by(sa.desc(models.FlashAsset.id))
             search_form = forms.AssetSearchForm()
             return {"assets": assets, "form": form, "search_form": search_form}
@@ -323,7 +351,7 @@ class AssetSearchView(object):
             search_result = creation.ImageSearcher(self.request).search(assets, search_form.data)
             return {"search_form": search_form, "search_result": search_result}
         except Exception, e:
-            logger.exception(str(e))
+            logger.exception(e.message.encode("utf-8"))
             HTTPFound(location=self.request.route_url("asset_image_list"))
 
     @view_config(route_name="asset_search_movie", renderer="altaircms:templates/asset/movie/search.mako")
@@ -333,7 +361,7 @@ class AssetSearchView(object):
             search_result = creation.MovieSearcher(self.request).search(search_form.data, form=search_form)
             return {"search_form": search_form, "search_result": search_result}
         except Exception, e:
-            logger.exception(str(e))
+            logger.exception(e.message.encode("utf-8"))
             HTTPFound(location=self.request.route_url("asset_movie_list"))
 
     @view_config(route_name="asset_search_flash", renderer="altaircms:templates/asset/flash/search.mako")
@@ -343,5 +371,5 @@ class AssetSearchView(object):
             search_result = creation.FlashSearcher(self.request).search(search_form.data, form=search_form)
             return {"search_form": search_form, "search_result": search_result}
         except Exception, e:
-            logger.exception(str(e))
+            logger.exception(e.message.encode("utf-8"))
             HTTPFound(location=self.request.route_url("asset_flash_list"))
