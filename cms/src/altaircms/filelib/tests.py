@@ -44,6 +44,24 @@ class FileSaveTests(unittest.TestCase):
         self.assertTrue(os.path.exists(realpath))
         os.remove(realpath)
 
+    def test_create_file_on_does_not_exist_directory(self):
+        from StringIO import StringIO
+        import os
+        import shutil
+        content = StringIO("this-is-file-content")
+
+        target = self._makeOne(prefix=".")
+        f = self._createFile(name="foo/bar/baz/this-is-name", handler=content)
+
+        target.add(f)
+        target.commit()
+
+        realpath = os.path.join(target.make_path(), f.name)
+        self.assertTrue(os.path.exists(realpath))
+        shutil.rmtree("./foo")
+
+        
+
     def test_delete(self):
         import os.path
         from tempfile import mktemp

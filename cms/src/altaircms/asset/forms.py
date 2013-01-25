@@ -38,6 +38,8 @@ class ImageAssetForm(form.Form):
     title = fields.TextField(label=u"タイトル", validators=[required_field()])
     filepath = fields.FileField(label=u'画像を投稿*', 
                                 validators=[only_image_file, validate_filepath])
+    thumbnail_path = fields.FileField(label=u'サムネイル画像を投稿*', 
+                                validators=[only_image_file, validate_filepath])
     tags = fields.TextField(label=u"タグ")
     private_tags = fields.TextField(label=u"非公開タグ")
 

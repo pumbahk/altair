@@ -22,16 +22,6 @@ def add_operator_when_updated(asset, request):
     asset.updated_by = request.user
     return asset
 
-def query_filter_by_users(qs, data):
-    created_by = data.get("created_by")
-    if created_by:
-        qs = qs.filter(models.Asset.created_by == created_by)
-
-    updated_by = data.get("updated_by")
-    if updated_by:
-        qs = qs.filter(models.Asset.updated_by == updated_by)
-    return qs
-
 class AssetResource(RootFactory):
     forms = forms
     def add(self, o, flush=False):
@@ -41,21 +31,6 @@ class AssetResource(RootFactory):
 
     def __init__(self, request):
         self.request = request
-
-    def search_image_asset_by_query(self, data,
-                                    _get_search_query=h.image_asset_query_from_search_params):
-        qs = self.request.allowable(models.ImageAsset, qs=_get_search_query(data))
-        return query_filter_by_users(qs, data)
-
-    def search_movie_asset_by_query(self, data,
-                                    _get_search_query=h.movie_asset_query_from_search_params):
-        qs = self.request.allowable(models.MovieAsset, qs=_get_search_query(data))
-        return query_filter_by_users(qs, data)
-
-    def search_flash_asset_by_query(self, data,
-                                    _get_search_query=h.flash_asset_query_from_search_params):
-        qs = self.request.allowable(models.FlashAsset, qs=_get_search_query(data))
-        return query_filter_by_users(qs, data)
 
     ## create
     def create_image_asset(self, form,

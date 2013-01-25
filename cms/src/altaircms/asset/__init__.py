@@ -19,10 +19,9 @@ def includeme(config):
     filesession = _make_asset_filesession(settings["altaircms.asset.storepath"])
     config.add_filesession(filesession, name=SESSION_NAME)
 
-    config.add_route("asset.movie", "/movie/{action}")
-    config.add_route("asset.flash", "/flash/{action}")
     add_route = functools.partial(config.add_route, factory=".resources.AssetResource")
 
+    add_route("asset_add", "/asset/{kind}")
     add_route('asset_list', '')
     add_route("asset_image_list", "/image")
     add_route('asset_movie_list', '/movie')

@@ -34,7 +34,7 @@
   </div>
 	<form action="${request.route_path("asset_image_create")}" method="POST" enctype="multipart/form-data">	
   <div class="modal-body">
-    ${fco.form_as_table_strict(image_asset_form, ["filepath","title","tags","private_tags"])}		
+    ${fco.form_as_table_strict(image_asset_form, ["filepath","thumbnail_path","title","tags","private_tags"])}		
   </div>
   <div class="modal-footer">
 	<a href="#" class="btn" data-dismiss="modal">Close</a>

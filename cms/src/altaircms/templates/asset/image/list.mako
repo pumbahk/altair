@@ -33,7 +33,7 @@
 
   <div class="span5">
 	<form action="${request.route_path("asset_image_create")}" method="POST" enctype="multipart/form-data">
-      ${fco.form_as_table_strict(form, ["filepath","title","tags","private_tags"])}
+      ${fco.form_as_table_strict(form, ["filepath", "thumbnail_path", "title","tags","private_tags"])}
 	  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> Create</button>
     </form>
   </div>

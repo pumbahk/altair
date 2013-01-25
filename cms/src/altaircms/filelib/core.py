@@ -13,6 +13,14 @@ from collections import namedtuple
 SignaturedFile = provider(IUploadFile)(namedtuple("File", "name signature handler"))
 File = provider(IUploadFile)(namedtuple("File", "name handler"))
 
+def rename_file(src, dst):
+    try:
+        os.rename(src, dst)
+    except OSError:
+        directory = os.path.dirname(dst)
+        logger.info("%s is not found. create it." % directory)
+        os.makedirs(directory)
+        os.rename(src, dst)
 
 @implementer(IFileSession)
 class FileSession(object):
@@ -34,13 +42,15 @@ class FileSession(object):
     def add(self, uploadfile):
         if hasattr(uploadfile, "signature"):
             signatured_file = uploadfile
+        elif hasattr(uploadfile, "file") and hasattr(uploadfile, "filename"): #for cgi.FieldStorage compability
+            signatured_file = File(name=uploadfile.filename, handler=uploadfile.file)
         else:
             signatured_file = self._write_to_tmppath(uploadfile)
         self.add_pool.append(signatured_file)
         return signatured_file
 
     def delete(self, uploadfile):
-        if isinstance(uploadfile, (str, unicode)):
+        if isinstance(uploadfile, (str, unicode)): # for passing filename directly.
             uploadfile = File(name=uploadfile, handler=None)
         filepath = self.abspath(uploadfile.name)
         if uploadfile.handler:
@@ -64,7 +74,7 @@ class FileSession(object):
         for signatured_file in self.add_pool:
             try:
                 realpath = os.path.join(self.make_path(), signatured_file.name)
-                os.rename(signatured_file.signature, realpath)
+                rename_file(signatured_file.signature, realpath)
                 logger.debug("filesession. rename: %s -> %s" % (signatured_file.signature, realpath))
             except OSError, e:
                 logger.warn("%s is not renamed" % signatured_file.signature)
@@ -79,7 +89,7 @@ class FileSession(object):
                                     handler=uploadfile.handler, 
                                     signature=path)
 
-    def write_to_path(self, path, handler, option="w"):
+    def write_to_path(self, path, handler, option="wb"):
         name = getattr(handler, "name", "<stream>")
         with open(path, option) as wf:
             logger.debug("FileSession: write file. %s -> %s" % (name, path))
