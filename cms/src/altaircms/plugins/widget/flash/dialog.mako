@@ -8,7 +8,7 @@
   <div>
      % for flash in g:
        <div class="item">
-         <img pk="${flash.id}" src="${h.asset.to_show_page(request,flash,filepath=flash.imagepath)}" alt="" class="${"managed" if widget.asset==flash else ""}"/>
+         <img pk="${flash.id}" src="${h.asset.to_show_page(request,flash,filepath=flash.thumbnail_path)}" alt="" class="${"managed" if widget.asset==flash else ""}"/>
          <p>title:${flash.title} width:${flash.width} height:${flash.height} </p>
        </div>
      % endfor          
