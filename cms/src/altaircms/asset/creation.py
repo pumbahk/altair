@@ -114,7 +114,7 @@ class Creator(object):
 
 class ImageCreator(Creator):
     def commit_create(self, params, form=None):
-        tags, private_tags, form_params =  h.divide_data(params)
+        tags, private_tags, params =  h.divide_data(params)
 
         asset_data = {"title": params["title"]}
         extra_asset_data = ImageInfoDatector(self.request).detect(params["filepath"].file, params["filepath"].filename)
@@ -123,8 +123,8 @@ class ImageCreator(Creator):
         filesession = get_asset_filesession(self.request)
         mainimage_file = filesession.add(uname_file_from_filestorage(filesession, params["filepath"]))
         thumbnail_file = filesession.add(uname_file_from_filestorage(filesession, params["thumbnail_path"]))
-
         ## asset
+        asset = models.ImageAsset()
         asset_data.update(extra_asset_data)
         asset = models.ImageAsset(
             filepath=mainimage_file.name, 
@@ -162,8 +162,8 @@ class Updater(object):
         self.request = request
 
     def update(self, asset, params, form=None):
-        if hasattr(params["filepath"], "filename") and os.path.splitext(params["filepath"].filename)[1] != os.path.splitext(asset.filepath)[1]:
-            raise Exception(u"ファイルの拡張子が異なっています。変更できません。")
+        if asset.filepath and hasattr(params["filepath"], "filename") and os.path.splitext(params["filepath"].filename)[1] != os.path.splitext(asset.filepath)[1]:
+            raise Exception(u"file extention is not same")
 
         if form and not form.validate():
             raise Exception(str(form.errors))
@@ -173,9 +173,37 @@ class Updater(object):
         return Committer(commit)
 
 
+def update_asset(asset, datalist):
+    for vs in datalist:
+        for k, v in vs.iteritems():
+            setattr(asset, k, v)
+    return asset
+
+
 class ImageUpdater(Updater):
     def commit_update(self, asset, params, form=None):
-        return self.request.context.update_image_asset(asset, form)        
+        tags, private_tags, params =  h.divide_data(params)
+        datalist = []
+        filesession = get_asset_filesession(self.request)
+        if params["filepath"]:
+            extra_asset_data = ImageInfoDatector(self.request).detect(params["filepath"].file, params["filepath"].filename)
+            datalist.append(extra_asset_data)
+            mainimage_file = filesession.add(File(name=asset.filepath, handler=params["filepath"].file))
+            datalist.append(dict(filepath=mainimage_file.name))
+
+        if params["thumbnail_path"]:
+            thumbnail_file = filesession.add(File(name=asset.thumbnail_path, handler=params["thumbnail_path"].file))
+            datalist.append(dict(thumbnail_path=thumbnail_file.name))
+
+        datalist.append({k:v for k, v in params.iteritems() if v})
+        asset = update_asset(asset, datalist)
+        put_tags(asset, "image_asset", tags, private_tags, self.request)
+        add_operator_when_updated(asset, self.request)
+
+        ## add
+        DBSession.add(asset)
+        filesession.commit()
+        return asset
 
 class MovieUpdater(Updater):
     def commit_update(self, asset, params, form=None):

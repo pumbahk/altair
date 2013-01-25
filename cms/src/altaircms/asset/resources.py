@@ -32,27 +32,6 @@ class AssetResource(RootFactory):
     def __init__(self, request):
         self.request = request
 
-    ## create
-    def create_image_asset(self, form,
-                           _write_buf=h.write_buf,
-                           _get_extra_status=h.get_image_status_extra, 
-                           _put_tags=put_tags, 
-                           _add_operator=add_operator_when_created):
-        
-        tags, private_tags, form_params =  h.divide_data(form.data)
-        
-        params = h.get_asset_params_from_form_data(form_params)
-        params.update(_get_extra_status(form_params, form_params["filepath"].file))
-        params["filepath"] = h.get_writename(form_params["filepath"].filename)
-
-        params["size"] = _write_buf(self.storepath, params["filepath"], params["buf"])
-
-        asset = models.ImageAsset.from_dict(params)
-        _put_tags(asset, "image_asset", tags, private_tags, self.request)
-        _add_operator(asset, self.request)
-        notify_model_create(self.request, asset, params)
-        return asset
-
     def create_movie_asset(self, form,
                            _write_buf=h.write_buf, 
                            _get_extra_status=h.get_movie_status_extra, 
@@ -92,28 +71,6 @@ class AssetResource(RootFactory):
         return asset
 
     ## update
-    def update_image_asset(self, asset, form,
-                           _write_buf=h.write_buf,
-                           _get_extra_status=h.get_image_status_extra, 
-                           _put_tags=put_tags, 
-                           _add_operator=add_operator_when_updated):
-        tags, private_tags, form_params =  h.divide_data(form.data)
-
-        if  form_params["filepath"] == u"":
-            params = form_params
-        else:
-            params = h.get_asset_params_from_form_data(form_params)
-            params.update(_get_extra_status(form_params, form_params["filepath"].file))
-            params["filepath"] = asset.filepath
-
-            params["size"] = _write_buf(self.storepath, params["filepath"], params["buf"])
-
-        _setattrs(asset, params)
-        _put_tags(asset, "image_asset", tags, private_tags, self.request)
-        _add_operator(asset, self.request)
-        return asset
-
-
     def update_movie_asset(self, asset, form,
                            _write_buf=h.write_buf,
                            _get_extra_status=h.get_movie_status_extra, 
