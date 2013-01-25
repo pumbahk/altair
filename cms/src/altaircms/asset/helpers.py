@@ -10,7 +10,6 @@ except  ImportError:
     import Image #PIL?
 
 
-import altaircms.tag.api as tag
 from .swfrect import swf_width_and_height
 
 from altaircms.tag.manager import QueryParser
@@ -43,10 +42,6 @@ def write_buf(prefix, writename,  buf, _open=open):
     size = buf.tell()
     buf.seek(0)
     return size
-
-def delete_file_if_exist(filepath):
-    if os.path.exists(filepath):
-        os.remove(filepath)
 
 def _extract_tags(params, k):
     if k not in params:

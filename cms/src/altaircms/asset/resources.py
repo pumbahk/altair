@@ -1,16 +1,10 @@
 # -*- coding:utf-8 -*-
-import os
-import sqlalchemy as sa
-
-
 from altaircms.models import DBSession
 from altaircms.security import RootFactory
 from . import models
 from . import helpers as h
 from altaircms.tag.api import put_tags
-from pyramid.decorator import reify
 from . import forms
-from altaircms.auth.api import get_or_404
 from altaircms.subscribers import notify_model_create
 
 def _setattrs(asset, params):
@@ -38,23 +32,12 @@ def query_filter_by_users(qs, data):
         qs = qs.filter(models.Asset.updated_by == updated_by)
     return qs
 
-## pyramid 
-def get_storepath(request):
-    return request.registry.settings['altaircms.asset.storepath']
-
 class AssetResource(RootFactory):
     forms = forms
     def add(self, o, flush=False):
         DBSession.add(o)
         if flush:
             DBSession.flush()
-
-    def delete(self, o):
-        DBSession.delete(o)
-
-    @reify
-    def storepath(self):
-        return get_storepath(self.request)
 
     def __init__(self, request):
         self.request = request
@@ -73,11 +56,6 @@ class AssetResource(RootFactory):
                                     _get_search_query=h.flash_asset_query_from_search_params):
         qs = self.request.allowable(models.FlashAsset, qs=_get_search_query(data))
         return query_filter_by_users(qs, data)
-    
-    ## delete
-    def delete_asset_file(self, assetfile, _delete_file=h.delete_file_if_exist):
-        path = os.path.join(self.storepath, assetfile)
-        _delete_file(path)
 
     ## create
     def create_image_asset(self, form,

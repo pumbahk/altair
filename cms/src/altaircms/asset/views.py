@@ -1,26 +1,29 @@
 # coding: utf-8
 import os
 import sqlalchemy as sa
+import logging
+logger = logging.getLogger(__name__)
 from altaircms.helpers.viewhelpers import FlashMessage
 from pyramid.httpexceptions import (
     HTTPFound
 )
-from pyramid.response import Response
+
 from pyramid.view import (
     view_config, 
     view_defaults
 )
 from altaircms.lib.fanstatic_decorator import with_bootstrap
-from . import helpers as h
+
 from . import models
 from altaircms.helpers.viewhelpers import get_endpoint, set_endpoint
 from altaircms.auth.api import get_or_404
+from . import creation
 
 @view_defaults(permission="asset_create", decorator=with_bootstrap, route_name="asset_add")
 class AssetAddView(object):
-    def __init__(self, request):
+    def __init__(self, context, request):
         self.request = request
-        self.context = request.context        
+        self.context = context        
 
     @view_config(match_param="kind=image", renderer="altaircms:templates/asset/image/add.mako", 
                  request_method="GET")
@@ -104,27 +107,21 @@ class AssetInputView(object):
     def image_asset_input(self):
         asset_id = self.request.matchdict["asset_id"]
         asset = get_or_404(self.request.allowable(models.ImageAsset), models.ImageAsset.id==asset_id)
-
-        params = h.get_form_params_from_asset(asset)
-        form = self.context.forms.ImageAssetUpdateForm(**params)
+        form = creation.Input(self.request).on_update(asset, self.context.forms.ImageAssetUpdateForm)
         return {"asset": asset, "form": form}
 
     @view_config(route_name="asset_movie_input", renderer="altaircms:templates/asset/movie/input.mako")
     def movie_asset_input(self):
         asset_id = self.request.matchdict["asset_id"]
         asset = get_or_404(self.request.allowable(models.MovieAsset), models.MovieAsset.id==asset_id)
-
-        params = h.get_form_params_from_asset(asset)
-        form = self.context.forms.MovieAssetUpdateForm(**params)
+        form = creation.Input(self.request).on_update(asset, self.context.forms.MovieAssetUpdateForm)
         return {"asset": asset, "form": form}
 
     @view_config(route_name="asset_flash_input", renderer="altaircms:templates/asset/flash/input.mako")
     def flash_asset_input(self):
         asset_id = self.request.matchdict["asset_id"]
         asset = get_or_404(self.request.allowable(models.FlashAsset), models.FlashAsset.id==asset_id)
-
-        params = h.get_form_params_from_asset(asset)
-        form = self.context.forms.FlashAssetUpdateForm(**params)
+        form = creation.Input(self.request).on_update(asset, self.context.forms.FlashAssetUpdateForm)
         return {"asset": asset, "form": form}
 
 @view_defaults(permission="asset_update", decorator=with_bootstrap)
@@ -138,18 +135,16 @@ class AssetUpdateView(object):
         form = self.context.forms.ImageAssetUpdateForm(self.request.POST)
         asset_id = self.request.matchdict["asset_id"]
         asset = get_or_404(self.request.allowable(models.ImageAsset), models.ImageAsset.id==asset_id)
-        if hasattr(form.data["filepath"], "filename") and os.path.splitext(form.data["filepath"].filename)[1] != os.path.splitext(asset.filepath)[1]:
-            FlashMessage.error(u"ファイルの拡張子が異なっています。変更できません。", request=self.request)    
-            return HTTPFound(self.request.route_path("asset_image_input", asset_id=asset.id))
-        elif not form.validate():
-            FlashMessage.error(str(form.errors), request=self.request)    
-            return HTTPFound(self.request.route_path("asset_image_input", asset_id=asset.id))
-        else:
-            updated_asset = self.context.update_image_asset(asset, form)
-            self.context.add(updated_asset)
 
+        try:
+            updater = creation.ImageUpdater(self.request).update(asset, form.data, form=form)
+            asset = updater.commit()
             FlashMessage.success("image asset updated", request=self.request)    
-            return HTTPFound(self.request.route_path("asset_image_detail", asset_id=updated_asset.id))
+            return HTTPFound(self.request.route_path("asset_image_detail", asset_id=asset.id))
+        except Exception, e:
+            logger.exception(str(e))
+            FlashMessage.error(str(e), request=self.request)    
+            return HTTPFound(self.request.route_path("asset_image_input", asset_id=asset.id))
 
     @view_config(route_name="asset_movie_update", request_method="POST")
     def update_movie_asset(self):
@@ -157,19 +152,15 @@ class AssetUpdateView(object):
         asset_id = self.request.matchdict["asset_id"]
         asset = get_or_404(self.request.allowable(models.MovieAsset), models.MovieAsset.id==asset_id)
 
-        if hasattr(form.data["filepath"], "filename") and os.path.splitext(form.data["filepath"].filename)[1] != os.path.splitext(asset.filepath)[1]:
-            FlashMessage.error(str(u"ファイルの拡張子が異なっています。変更できません。"), request=self.request)    
-            return HTTPFound(self.request.route_path("asset_movie_input", asset_id=asset.id))
-        elif not form.validate():
-            FlashMessage.error(str(form.errors), request=self.request)    
-            return HTTPFound(self.request.route_path("asset_movie_input", asset_id=asset.id))
-        else:
-
-            updated_asset = self.context.update_movie_asset(asset, form)
-            self.context.add(updated_asset)
-
+        try:
+            updater = creation.MovieUpdater(self.request).update(asset, form.data, form=form)
+            asset = updater.commit()
             FlashMessage.success("movie asset updated", request=self.request)    
-            return HTTPFound(self.request.route_path("asset_movie_detail", asset_id=updated_asset.id))
+            return HTTPFound(self.request.route_path("asset_movie_detail", asset_id=asset.id))
+        except Exception, e:
+            logger.exception(str(e))
+            FlashMessage.error(str(e), request=self.request)    
+            return HTTPFound(self.request.route_path("asset_movie_input", asset_id=asset.id))
 
     @view_config(route_name="asset_flash_update", request_method="POST")
     def update_flash_asset(self):
@@ -177,72 +168,70 @@ class AssetUpdateView(object):
         asset_id = self.request.matchdict["asset_id"]
         asset = get_or_404(self.request.allowable(models.FlashAsset), models.FlashAsset.id==asset_id)
 
-        if hasattr(form.data["filepath"], "filename") and os.path.splitext(form.data["filepath"].filename)[1] != os.path.splitext(asset.filepath)[1]:
-            FlashMessage.error(str(u"ファイルの拡張子が異なっています。変更できません。"), request=self.request)    
-            return HTTPFound(self.request.route_path("asset_flash_input", asset_id=asset.id))
-        elif not form.validate():
-            FlashMessage.error(str(form.errors), request=self.request)    
-            return HTTPFound(self.request.route_path("asset_flash_input", asset_id=asset.id))
-        else:
-            updated_asset = self.context.update_flash_asset(asset, form)
-            self.context.add(updated_asset)
-
+        try:
+            updater = creation.FlashUpdater(self.request).update(asset, form.data, form=form)
+            asset = updater.commit()
             FlashMessage.success("flash asset updated", request=self.request)    
-            return HTTPFound(self.request.route_path("asset_flash_detail", asset_id=updated_asset.id))
+            return HTTPFound(self.request.route_path("asset_flash_detail", asset_id=asset.id))
+        except Exception, e:
+            logger.exception(str(e))
+            FlashMessage.error(str(e), request=self.request)    
+            return HTTPFound(self.request.route_path("asset_flash_input", asset_id=asset.id))
         
 @view_defaults(permission="asset_create", decorator=with_bootstrap)
 class AssetCreateView(object):
-    def __init__(self, request):
+    def __init__(self, context, request):
         self.request = request
-        self.context = request.context        
+        self.context = context        
 
     @view_config(route_name="asset_image_create", renderer="altaircms:templates/asset/image/list.mako", 
                  request_method="POST")
     def create_image_asset(self):
         form = self.context.forms.ImageAssetForm(self.request.POST)
 
-        if not form.validate():
+        try:
+            creator = creation.ImageCreator(self.request).create(form.data, form=form)
+            creator.commit()
+            FlashMessage.success("image asset created", request=self.request)    
+            return HTTPFound(get_endpoint(self.request) or  self.request.route_path("asset_image_list"))
+        except Exception, e:
+            logger.exception(str(e))
             assets = self.request.allowable(models.ImageAsset).order_by(sa.desc(models.ImageAsset.id))
             search_form = self.request.context.forms.AssetSearchForm()
             return {"assets": assets, "form": form, "search_form": search_form}
-        else:
-            asset = self.context.create_image_asset(form)
-            self.context.add(asset)
-
-            FlashMessage.success("image asset created", request=self.request)    
-            return HTTPFound(get_endpoint(self.request) or  self.request.route_path("asset_image_list"))
 
     @view_config(route_name="asset_movie_create", renderer="altaircms:templates/asset/movie/list.mako", 
                  request_method="POST")
     def create_movie_asset(self):
         form = self.context.forms.MovieAssetForm(self.request.POST)
 
-        if not form.validate():
+        try:
+            creator = creation.MovieCreator(self.request).create(form.data, form=form)
+            creator.commit()
+            FlashMessage.success("movie asset created", request=self.request)    
+            return HTTPFound(get_endpoint(self.request) or  self.request.route_path("asset_movie_list"))
+        except Exception, e:
+            logger.exception(str(e))
             assets = self.request.allowable(models.MovieAsset).order_by(sa.desc(models.MovieAsset.id))
             search_form = self.request.context.forms.AssetSearchForm()
             return {"assets": assets, "form": form, "search_form": search_form}
-        else:
-            asset = self.context.create_movie_asset(form)
-            self.context.add(asset)
-
-            FlashMessage.success("movie asset created", request=self.request)    
-            return HTTPFound(get_endpoint(self.request) or  self.request.route_path("asset_movie_list"))
 
     @view_config(route_name="asset_flash_create", renderer="altaircms:templates/asset/flash/list.mako", 
                  request_method="POST")
     def create_flash_asset(self):
         form = self.context.forms.FlashAssetForm(self.request.POST)
 
-        if not form.validate():
+        try:
+            creator = creation.FlashCreator(self.request).create(form.data, form=form)
+            creator.commit()
+            FlashMessage.success("flash asset created", request=self.request)    
+            return HTTPFound(get_endpoint(self.request) or  self.request.route_path("asset_flash_list"))
+        except Exception, e:
+            logger.exception(str(e))
             assets = self.request.allowable(models.FlashAsset).order_by(sa.desc(models.FlashAsset.id))
             search_form = self.request.context.forms.AssetSearchForm()
             return {"assets": assets, "form": form, "search_form": search_form}
-        else:
-            asset = self.context.create_flash_asset(form)
-            self.context.add(asset)
 
-            FlashMessage.success("flash asset created", request=self.request)    
-            return HTTPFound(get_endpoint(self.request) or  self.request.route_path("asset_flash_list"))
 
 @view_defaults(route_name="asset_delete", permission="asset_delete",
                decorator=with_bootstrap)
@@ -261,10 +250,7 @@ class AssetDeleteView(object):
     def delete_image_asset(self):
         asset_id = self.request.matchdict["asset_id"]
         asset = get_or_404(self.request.allowable(models.ImageAsset), models.ImageAsset.id==asset_id)
-
-        self.context.delete_asset_file(asset.filepath)
-        self.context.delete(asset)
-
+        creation.Deleter(self.request).delete(asset)
         FlashMessage.success("asset deleted", request=self.request)
         return HTTPFound(self.request.route_path("asset_image_list"))
     
@@ -278,10 +264,7 @@ class AssetDeleteView(object):
     def delete_movie_asset(self):
         asset_id = self.request.matchdict["asset_id"]
         asset = get_or_404(self.request.allowable(models.MovieAsset), models.MovieAsset.id==asset_id)
-
-        self.context.delete_asset_file(asset.filepath)
-        self.context.delete(asset)
-
+        creation.Deleter(self.request).delete(asset)
         FlashMessage.success("asset deleted", request=self.request)
         return HTTPFound(self.request.route_path("asset_movie_list"))
 
@@ -295,10 +278,7 @@ class AssetDeleteView(object):
     def delete_flash_asset(self):
         asset_id = self.request.matchdict["asset_id"]
         asset = get_or_404(self.request.allowable(models.FlashAsset), models.FlashAsset.id==asset_id)
-
-        self.context.delete_asset_file(asset.filepath)
-        self.context.delete(asset)
-
+        creation.Deleter(self.request).delete(asset)
         FlashMessage.success("asset deleted", request=self.request)
         return HTTPFound(self.request.route_path("asset_flash_list"))
 
@@ -309,49 +289,42 @@ def asset_display(request):
     ## todo refactoring
     asset_id = request.matchdict["asset_id"]
     asset = get_or_404(request.allowable(models.Asset), models.Asset.id==asset_id)
-
-
-    storepath = request.context.storepath
-    filepath = os.path.join(storepath, asset.filepath)
-    content_type = asset.mimetype if asset.mimetype else 'application/octet-stream'
-    if os.path.exists(filepath):
-        data =  file(filepath).read()
-    else:
-        data =  "" ## not found imageを表示した方が良い？
-
-
-
-    return Response(data, content_type=content_type)
+    return creation.Display(request).as_response(asset)
 
 ### asset search
 @view_defaults(permission="asset_read", request_method="GET", 
                decorator=with_bootstrap)
 class AssetSearchView(object):
-    def __init__(self, request):
+    def __init__(self, context, request):
         self.request = request
-        self.context = request.context 
+        self.context = request
 
     @view_config(route_name="asset_search_image", renderer="altaircms:templates/asset/image/search.mako")
     def image_asset_search(self):
         search_form = self.context.forms.AssetSearchForm(self.request.GET)
-        if not search_form.validate():
-            return HTTPFound(location=self.request.route_url("asset_image_list"))
-        search_result = self.context.search_image_asset_by_query(search_form.data)
-        return {"search_form": search_form, "search_result": search_result}
+        try:
+            search_result = creation.ImageSearcher(self.request).search(search_form.data, form=search_form)
+            return {"search_form": search_form, "search_result": search_result}
+        except Exception, e:
+            logger.exception(str(e))
+            HTTPFound(location=self.request.route_url("asset_image_list"))
 
     @view_config(route_name="asset_search_movie", renderer="altaircms:templates/asset/movie/search.mako")
     def movie_asset_search(self):
         search_form = self.context.forms.AssetSearchForm(self.request.GET)
-        if not search_form.validate():
-            return HTTPFound(location=self.request.route_url("asset_movie_list"))
-        search_result = self.context.search_movie_asset_by_query(search_form.data)
-        return {"search_form": search_form, "search_result": search_result}
+        try:
+            search_result = creation.MovieSearcher(self.request).search(search_form.data, form=search_form)
+            return {"search_form": search_form, "search_result": search_result}
+        except Exception, e:
+            logger.exception(str(e))
+            HTTPFound(location=self.request.route_url("asset_movie_list"))
 
     @view_config(route_name="asset_search_flash", renderer="altaircms:templates/asset/flash/search.mako")
     def flash_asset_search(self):
         search_form = self.context.forms.AssetSearchForm(self.request.GET)
-        if not search_form.validate():
-            return HTTPFound(location=self.request.route_url("asset_flash_list"))
-        search_result = self.context.search_flash_asset_by_query(search_form.data)
-        return {"search_form": search_form, "search_result": search_result}
-
+        try:
+            search_result = creation.FlashSearcher(self.request).search(search_form.data, form=search_form)
+            return {"search_form": search_form, "search_result": search_result}
+        except Exception, e:
+            logger.exception(str(e))
+            HTTPFound(location=self.request.route_url("asset_flash_list"))
