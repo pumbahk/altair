@@ -21,7 +21,7 @@ class FileSaveTests(unittest.TestCase):
         f = self._createFile(name="this-is-name", handler=content)
         result = target.add(f)
 
-        self.assertEqual(target.add_pool, [result])
+        self.assertEqual(target.creator.pool, [result])
 
         self.assertEqual(result.name, f.name)
         self.assertEqual(result.handler, f.handler)
@@ -39,7 +39,6 @@ class FileSaveTests(unittest.TestCase):
 
         target.add(f)
         target.commit()
-
         realpath = os.path.join(target.make_path(), f.name)
         self.assertTrue(os.path.exists(realpath))
         os.remove(realpath)

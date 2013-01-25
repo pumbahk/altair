@@ -22,22 +22,10 @@ def rename_file(src, dst):
         os.makedirs(directory)
         os.rename(src, dst)
 
-@implementer(IFileSession)
-class FileSession(object):
-    def __init__(self, prefix="", make_path=None):
-        if make_path is None:
-            self.make_path = lambda : os.path.abspath(prefix)
-        else:
-            self.make_path = make_path
-        self.add_pool = []
-        self.delete_pool = []
-
-    def abspath(self, part):
-        return os.path.join(self.make_path(), part)
-
-    def is_overwrite(self, uploadfile):
-        realpath = os.path.join(self.make_path(), uploadfile.name)
-        return not os.path.exists(realpath)
+class FileCreator(object):
+    def __init__(self, root):
+        self.root = root
+        self.pool = []
 
     def add(self, uploadfile):
         if hasattr(uploadfile, "signature"):
@@ -46,34 +34,13 @@ class FileSession(object):
             signatured_file = File(name=uploadfile.filename, handler=uploadfile.file)
         else:
             signatured_file = self._write_to_tmppath(uploadfile)
-        self.add_pool.append(signatured_file)
+        self.pool.append(signatured_file)
         return signatured_file
 
-    def delete(self, uploadfile):
-        if isinstance(uploadfile, (str, unicode)): # for passing filename directly.
-            uploadfile = File(name=uploadfile, handler=None)
-        filepath = self.abspath(uploadfile.name)
-        if uploadfile.handler:
-            raise Exception("Stream file can't delete %s" % uploadfile)
-        if not os.path.exists(filepath):
-            raise Exception("%s is not found" % filepath)
-        self.delete_pool.append(uploadfile)
-
     def commit(self):
-        for deleted_file in self.delete_pool:
-            filepath = self.abspath(deleted_file.name)
-            logger.debug("filesession. delete: %s" % (filepath))
+        for signatured_file in self.pool:
             try:
-                os.remove(filepath)
-            except OSError, e:
-                logger.warn("%s is not deleted" % filepath)
-                logger.exception(str(e))
-            except Exception, e:
-                logger.exception(str(e))
-
-        for signatured_file in self.add_pool:
-            try:
-                realpath = os.path.join(self.make_path(), signatured_file.name)
+                realpath = os.path.join(self.root.make_path(), signatured_file.name)
                 rename_file(signatured_file.signature, realpath)
                 logger.debug("filesession. rename: %s -> %s" % (signatured_file.signature, realpath))
             except OSError, e:
@@ -81,6 +48,7 @@ class FileSession(object):
                 logger.exception(str(e))
             except Exception, e:
                 logger.exception(str(e))
+                raise
 
     def _write_to_tmppath(self, uploadfile):
         path = tempfile.mktemp() #suffix?
@@ -94,3 +62,58 @@ class FileSession(object):
         with open(path, option) as wf:
             logger.debug("FileSession: write file. %s -> %s" % (name, path))
             copyfileobj(handler, wf)
+    
+class FileDeleter(object):
+    def __init__(self, root):
+        self.root = root
+        self.pool = []
+
+    def delete(self, uploadfile):
+        if isinstance(uploadfile, (str, unicode)): # for passing filename directly.
+            uploadfile = File(name=uploadfile, handler=None)
+        filepath = self.root.abspath(uploadfile.name)
+        if uploadfile.handler:
+            raise Exception("Stream file can't delete %s" % uploadfile)
+        if not os.path.exists(filepath):
+            raise Exception("%s is not found" % filepath)
+        self.pool.append(uploadfile)
+        
+    def commit(self):
+        for deleted_file in self.pool:
+            filepath = self.root.abspath(deleted_file.name)
+            logger.debug("filesession. delete: %s" % (filepath))
+            try:
+                os.remove(filepath)
+            except OSError, e:
+                logger.warn("%s is not deleted" % filepath)
+                logger.exception(str(e))
+            except Exception, e:
+                logger.exception(str(e))
+                raise
+
+@implementer(IFileSession)
+class FileSession(object):
+    def __init__(self, prefix="", make_path=None):
+        if make_path is None:
+            self.make_path = lambda : os.path.abspath(prefix)
+        else:
+            self.make_path = make_path
+        self.deleter = FileDeleter(self)
+        self.creator = FileCreator(self)
+
+    def abspath(self, part):
+        return os.path.join(self.make_path(), part)
+
+    def is_overwrite(self, uploadfile):
+        realpath = os.path.join(self.make_path(), uploadfile.name)
+        return not os.path.exists(realpath)
+
+    def add(self, uploadfile):
+        return self.creator.add(uploadfile)
+
+    def delete(self, uploadfile):
+        return self.deleter.delete(uploadfile)
+
+    def commit(self):
+        self.deleter.commit()
+        self.creator.commit()
