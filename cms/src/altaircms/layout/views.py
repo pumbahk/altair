@@ -41,11 +41,11 @@ def preview(context, request):
 @view_config(route_name="layout_download")
 def download(request):
     layout = get_or_404(request.allowable(Layout), Layout.id==request.matchdict["layout_id"])
-    path = LayoutCreator(request, layout.organization).get_layout_filepath(layout)
+    filesession = get_layout_filesession(request)
+    path = filesession.abspath(layout.prefixed_template_filename)
     response = FileResponse(path)
     response.content_disposition = 'attachment; filename="%s"' % layout.template_filename
     return response
-
 
 
 @view_defaults(route_name="layout_create", 
