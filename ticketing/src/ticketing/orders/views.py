@@ -26,7 +26,7 @@ from ticketing.core.models import (Order, Performance, PaymentDeliveryMethodPair
                                    Product, ProductItem, OrderedProduct, OrderedProductItem, 
                                    Ticket, TicketBundle, TicketFormat, Ticket_TicketBundle,
                                    DeliveryMethod, TicketFormat_DeliveryMethod, 
-                                   Stock, StockStatus, Seat, SeatStatus, SeatStatusEnum)
+                                   Stock, StockStatus, Seat, SeatStatus, SeatStatusEnum, ChannelEnum)
 
 from ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
 from ticketing.orders.export import OrderCSV
@@ -457,6 +457,9 @@ class Orders(BaseView):
             pdmp = DBSession.query(PaymentDeliveryMethodPair).filter_by(id=post_data.get('payment_delivery_method_pair_id')).one()
             cart.payment_delivery_pair = pdmp
             cart.system_fee = pdmp.system_fee
+            cart.channel = ChannelEnum.INNER.v
+            cart.operator = self.context.user
+
             DBSession.add(cart)
             DBSession.flush()
             api.set_cart(self.request, cart)

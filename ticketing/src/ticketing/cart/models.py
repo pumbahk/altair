@@ -82,13 +82,15 @@ class Cart(Base):
 
     shipping_address_id = sa.Column(Identifier, sa.ForeignKey("ShippingAddress.id"))
     shipping_address = orm.relationship('ShippingAddress', backref='cart')
-
     payment_delivery_method_pair_id = sa.Column(Identifier, sa.ForeignKey("PaymentDeliveryMethodPair.id"))
     payment_delivery_pair = orm.relationship("PaymentDeliveryMethodPair")
 
     _order_no = sa.Column("order_no", sa.String(255))
     order_id = sa.Column(Identifier, sa.ForeignKey("Order.id"))
     order = orm.relationship('Order', backref=orm.backref('cart', uselist=False))
+    operator_id = sa.Column(Identifier, sa.ForeignKey("Operator.id"))
+    operator = orm.relationship('Operator', backref='orders')
+    channel = sa.Column(sa.Integer, nullable=True)
 
     sales_segment_id = sa.Column(Identifier, sa.ForeignKey('SalesSegmentGroup.id'))
     sales_segment = orm.relationship('SalesSegment', backref='carts')

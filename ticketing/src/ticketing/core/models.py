@@ -1743,6 +1743,9 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     shipping_address = relationship('ShippingAddress', backref='order')
     organization_id = Column(Identifier, ForeignKey("Organization.id"))
     ordered_from = relationship('Organization', backref='orders')
+    operator_id = Column(Identifier, ForeignKey("Operator.id"))
+    operator = relationship('Operator', uselist=False)
+    channel = Column(Integer, nullable=True)
 
     items = relationship('OrderedProduct')
     total_amount = Column(Numeric(precision=16, scale=2), nullable=False)
@@ -1902,16 +1905,17 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
                 self.multi_checkout_approval_no = multi_checkout_result.ApprovalNo
 
-        # 楽天あんしん決済
+        # 楽天あんしん支払いサービス
         elif ppid == 2:
             # 入金済みなら決済をキャンセル
             if self.status == 'paid':
                 # 売り上げキャンセル
                 from ticketing.checkout import api as checkout_api
-                checkout = checkout_api.get_checkout_service(request)
+                from ticketing.core import api as core_api
+                checkout = checkout_api.get_checkout_service(request, self.ordered_from, core_api.get_channel(self.channel))
                 result = checkout.request_cancel_order([self.cart.checkout.orderControlId])
                 if 'statusCode' in result and result['statusCode'] != '0':
-                    logger.info(u'あんしん決済をキャンセルできませんでした %s' % result)
+                    logger.info(u'楽天あんしん支払いサービスをキャンセルできませんでした %s' % result)
                     return False
 
         # コンビニ決済 (セブン-イレブン)
@@ -1995,6 +1999,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         order.transaction_fee = cart.transaction_fee
         order.delivery_fee = cart.delivery_fee
         order.performance = cart.performance
+        order.channel = cart.channel
+        order.operator = cart.operator
 
         for product in cart.products:
             ordered_product = OrderedProduct(
@@ -2553,3 +2559,7 @@ class Mailer(object):
         smtp.sendmail(from_addr, to_addr, self.message.as_string())
         smtp.close()
 
+class ChannelEnum(StandardEnum):
+    PC = 1
+    Mobile = 2
+    INNER = 3

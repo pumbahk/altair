@@ -156,7 +156,7 @@ class TicketTemplateForm(Form):
 
     def validate_drawing(form, field):
         svgio = field.data.file
-        form._cleaner = get_validated_svg_cleaner(svgio)
+        form._cleaner = get_validated_svg_cleaner(svgio, exc_class=ValidationError)
         return field.data
 
     def validate(self):

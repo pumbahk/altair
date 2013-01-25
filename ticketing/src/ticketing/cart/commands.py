@@ -7,6 +7,7 @@ from pyramid.paster import bootstrap
 
 import transaction
 from ticketing.core import models as o_m
+from ticketing.core.api import get_channel
 from ticketing.multicheckout import api as multicheckout_api
 from ticketing.checkout import api as checkout_api
 from . import api
@@ -139,7 +140,7 @@ def cancel_auth_expired_carts():
 
         elif api.is_checkout_payment(cart) and cart.checkout:
             logging.info("cancel auth for order_no=%s" % order_no)
-            checkout = checkout_api.get_checkout_service(request)
+            checkout = checkout_api.get_checkout_service(request, cart.performance.event.organization, get_channel(cart.channel))
             result = checkout.request_cancel_order([cart.checkout.orderControlId])
             if 'statusCode' in result and result['statusCode'] != '0':
                 error_code = result['apiErrorCode'] if 'apiErrorCode' in result else ''

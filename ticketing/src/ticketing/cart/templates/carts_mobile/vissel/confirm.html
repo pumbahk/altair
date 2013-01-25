@@ -4,7 +4,7 @@
 <%mobile:header>チケット購入</%mobile:header>
 注文内容をご確認ください
 <%mobile:header>申込内容確認</%mobile:header>
-<form id="form1" action="${request.route_url('payment.finish')}" method="post">
+<form id="form1" action="${delegator['url'] if delegator else request.route_url('payment.finish')}" method="post">
 ${form.csrf_token()}
 <div>
 ${cart.performance.event.title} ${cart.performance.name} ${h.performance_date(cart.performance)} ${cart.performance.venue.name}
@@ -81,5 +81,9 @@ ${mailmagazine.description|n}
 
 <hr />
 <input type="submit" name="back" value="戻る" />
+% if delegator:
+${delegator['submit']}
+% else:
 <input type="submit" value="申し込む" />
+% endif
 </form>

@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import logging
+from ticketing.core.api import get_channel
 from .models import Cart, CartedProduct, CartedProductItem, DBSession
 from .api import get_system_fee, is_quantity_only
 
@@ -15,7 +16,8 @@ class CartFactory(object):
         # Cart
         # ここでシステム手数料を確定させるのはおかしいので、後の処理で上書きする
         system_fee = get_system_fee(request)
-        cart = Cart.create(performance_id=performance_id, system_fee=system_fee)
+        channel = get_channel(request=request)
+        cart = Cart.create(performance_id=performance_id, system_fee=system_fee, channel=channel.v)
         for ordered_product, quantity in ordered_products:
             logger.debug("carted product for product_id=%s" % (ordered_product.id))
             # CartedProduct

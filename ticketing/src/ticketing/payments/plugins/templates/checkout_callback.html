@@ -11,6 +11,11 @@
   </script>
 </head>
 <body>
-  ${form}
+  <form id="checkout-form" action="${request.route_url('payment.finish')}" method="post">
+    <input id="csrf_token" name="csrf_token" type="hidden" value="${csrf_token}">
+    % for id in mailmagazine_ids:
+    <input type="hidden" name="mailmagazine" id="mailmagazine-${id}" value="${id}" />
+    % endfor
+  </form>
 </body>
 </html>

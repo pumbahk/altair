@@ -45,7 +45,7 @@ class PaymentMethodData(DataSet):
         updated_at  = datetime.now()
         created_at  = datetime.now()
     class rakuten_anshin:
-        name        = u'楽天あんしん決済'
+        name        = u'楽天あんしん支払いサービス'
         fee         = 100
         fee_type    = FeeTypeEnum.Once.v[0]
         organization   = OrganizationData.organization_0

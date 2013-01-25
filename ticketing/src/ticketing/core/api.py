@@ -1,5 +1,5 @@
 from sqlalchemy.orm.exc import NoResultFound
-from .models import Host, OrderNoSequence
+from .models import Host, OrderNoSequence, ChannelEnum
 
 def get_organization(request, override_host=None):
     reg = request.registry
@@ -27,3 +27,13 @@ def get_host_base_url(request):
 
 def get_next_order_no(name="order_no"):
     return OrderNoSequence.get_next_value(name)
+
+def get_channel(channel=None, request=None):
+    for c in ChannelEnum:
+        if c.v == channel:
+            return c
+
+    if request and hasattr(request, 'is_mobile') and request.is_mobile:
+        return ChannelEnum.Mobile
+    else:
+        return ChannelEnum.PC
