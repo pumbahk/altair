@@ -899,7 +899,6 @@ class ConfirmView(object):
         user = self.context.get_or_create_user()
         payment = Payment(cart, self.request)
         delegator = payment.call_delegator()
-        logger.error(delegator)
         return dict(
             cart=cart,
             mailmagazines=magazines,
