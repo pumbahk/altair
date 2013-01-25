@@ -58,7 +58,7 @@ class CheckoutPlugin(object):
     def delegator(self, request, cart):
         if request.is_mobile:
             submit = literal(
-                u'<input type="image" src="https://checkout.rakuten.co.jp/p/common/img/btn_check_07.gif?c9cc8c1b9ae94c18920540a80b95c16a" border="0" style="vertical-align:middle;">'
+                u'<input type="submit" value="楽天 お支払い" />'
                 u'<div style="font-size:x-small;">※楽天あんしん支払いサービスへ移動します。</div>'
             )
         else:
