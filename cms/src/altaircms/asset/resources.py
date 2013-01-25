@@ -56,32 +56,8 @@ class AssetResource(RootFactory):
     def storepath(self):
         return get_storepath(self.request)
 
-    def display_asset(self, filepath): ## not found imageを表示した方が良い？
-        if os.path.exists(filepath):
-            return file(filepath).read()
-        else:
-            return ""
-
     def __init__(self, request):
         self.request = request
-
-    def get_image_assets(self):
-        return self.request.allowable(models.ImageAsset).order_by(sa.desc(models.ImageAsset.id))
-    def get_movie_assets(self):
-        return self.request.allowable(models.MovieAsset).order_by(sa.desc(models.MovieAsset.id))
-    def get_flash_assets(self):
-        return self.request.allowable(models.FlashAsset).order_by(sa.desc(models.FlashAsset.id))
-    def get_assets_all(self):
-        return self.request.allowable(models.Asset).order_by(sa.desc(models.Asset.id))
-
-    def get_image_asset(self, id_):
-        return get_or_404(self.request.allowable(models.ImageAsset), models.ImageAsset.id==id_)
-    def get_movie_asset(self, id_):
-        return get_or_404(self.request.allowable(models.MovieAsset), models.MovieAsset.id==id_)
-    def get_flash_asset(self, id_):
-        return get_or_404(self.request.allowable(models.FlashAsset), models.FlashAsset.id==id_)
-    def get_asset(self, id_):
-        return get_or_404(self.request.allowable(models.Asset), models.Asset.id==id_)
 
     def search_image_asset_by_query(self, data,
                                     _get_search_query=h.image_asset_query_from_search_params):

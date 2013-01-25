@@ -1,6 +1,6 @@
 # coding: utf-8
 import os
-
+import sqlalchemy as sa
 from altaircms.helpers.viewhelpers import FlashMessage
 from pyramid.httpexceptions import (
     HTTPFound
@@ -12,7 +12,9 @@ from pyramid.view import (
 )
 from altaircms.lib.fanstatic_decorator import with_bootstrap
 from . import helpers as h
+from . import models
 from altaircms.helpers.viewhelpers import get_endpoint, set_endpoint
+from altaircms.auth.api import get_or_404
 
 @view_defaults(permission="asset_create", decorator=with_bootstrap, route_name="asset_add")
 class AssetAddView(object):
@@ -37,7 +39,7 @@ class AssetListView(object):
     @view_config(route_name="asset_list", renderer="altaircms:templates/asset/list.mako", 
                  decorator=with_bootstrap)
     def all_asset_list(self):
-        assets = self.request.context.get_assets_all()
+        assets = self.request.allowable(models.Asset).order_by(sa.desc(models.Asset.id))
         return {"assets": assets, 
                 "image_asset_form": self.context.forms.ImageAssetForm(), 
                 "movie_asset_form": self.context.forms.MovieAssetForm(), 
@@ -47,7 +49,7 @@ class AssetListView(object):
     @view_config(route_name="asset_image_list", renderer="altaircms:templates/asset/image/list.mako", 
                  decorator=with_bootstrap)
     def image_asset_list(self):
-        assets = self.request.context.get_image_assets()
+        assets = self.request.allowable(models.ImageAsset).order_by(sa.desc(models.ImageAsset.id))
         form = self.context.forms.ImageAssetForm()
         search_form = self.request.context.forms.AssetSearchForm()
         return {"assets": assets, "form": form, "search_form": search_form}
@@ -55,7 +57,7 @@ class AssetListView(object):
     @view_config(route_name="asset_movie_list", renderer="altaircms:templates/asset/movie/list.mako", 
                  decorator=with_bootstrap)
     def movie_asset_list(self):
-        assets = self.request.context.get_movie_assets()
+        assets = self.request.allowable(models.MovieAsset).order_by(sa.desc(models.MovieAsset.id))
         form = self.context.forms.MovieAssetForm()
         search_form = self.request.context.forms.AssetSearchForm()
         return {"assets": assets, "form": form, "search_form": search_form}
@@ -63,7 +65,7 @@ class AssetListView(object):
     @view_config(route_name="asset_flash_list", renderer="altaircms:templates/asset/flash/list.mako", 
                  decorator=with_bootstrap)
     def flash_asset_list(self):
-        assets = self.request.context.get_flash_assets()
+        assets = self.request.allowable(models.FlashAsset).order_by(sa.desc(models.FlashAsset.id))
         form = self.context.forms.FlashAssetForm()
         search_form = self.request.context.forms.AssetSearchForm()
         return {"assets": assets, "form": form, "search_form": search_form}
@@ -77,19 +79,19 @@ class AssetDetailView(object):
     @view_config(route_name="asset_image_detail", renderer="altaircms:templates/asset/image/detail.mako")
     def image_asset_detail(self):
         asset_id = self.request.matchdict["asset_id"]
-        asset = self.request.context.get_image_asset(asset_id)
+        asset = get_or_404(self.request.allowable(models.ImageAsset), models.ImageAsset.id==asset_id)
         return {"asset": asset}
 
     @view_config(route_name="asset_movie_detail", renderer="altaircms:templates/asset/movie/detail.mako")
     def movie_asset_detail(self):
         asset_id = self.request.matchdict["asset_id"]
-        asset = self.request.context.get_movie_asset(asset_id)
+        asset = get_or_404(self.request.allowable(models.MovieAsset), models.MovieAsset.id==asset_id)
         return {"asset": asset}
 
     @view_config(route_name="asset_flash_detail", renderer="altaircms:templates/asset/flash/detail.mako")
     def flash_asset_detail(self):
         asset_id = self.request.matchdict["asset_id"]
-        asset = self.request.context.get_flash_asset(asset_id)
+        asset = get_or_404(self.request.allowable(models.FlashAsset), models.FlashAsset.id==asset_id)
         return {"asset": asset}
 
 @view_defaults(permission="asset_update", decorator=with_bootstrap)
@@ -101,7 +103,7 @@ class AssetInputView(object):
     @view_config(route_name="asset_image_input", renderer="altaircms:templates/asset/image/input.mako")
     def image_asset_input(self):
         asset_id = self.request.matchdict["asset_id"]
-        asset = self.request.context.get_image_asset(asset_id)
+        asset = get_or_404(self.request.allowable(models.ImageAsset), models.ImageAsset.id==asset_id)
 
         params = h.get_form_params_from_asset(asset)
         form = self.context.forms.ImageAssetUpdateForm(**params)
@@ -110,7 +112,7 @@ class AssetInputView(object):
     @view_config(route_name="asset_movie_input", renderer="altaircms:templates/asset/movie/input.mako")
     def movie_asset_input(self):
         asset_id = self.request.matchdict["asset_id"]
-        asset = self.request.context.get_movie_asset(asset_id)
+        asset = get_or_404(self.request.allowable(models.MovieAsset), models.MovieAsset.id==asset_id)
 
         params = h.get_form_params_from_asset(asset)
         form = self.context.forms.MovieAssetUpdateForm(**params)
@@ -119,7 +121,7 @@ class AssetInputView(object):
     @view_config(route_name="asset_flash_input", renderer="altaircms:templates/asset/flash/input.mako")
     def flash_asset_input(self):
         asset_id = self.request.matchdict["asset_id"]
-        asset = self.request.context.get_flash_asset(asset_id)
+        asset = get_or_404(self.request.allowable(models.FlashAsset), models.FlashAsset.id==asset_id)
 
         params = h.get_form_params_from_asset(asset)
         form = self.context.forms.FlashAssetUpdateForm(**params)
@@ -135,7 +137,7 @@ class AssetUpdateView(object):
     def update_image_asset(self):
         form = self.context.forms.ImageAssetUpdateForm(self.request.POST)
         asset_id = self.request.matchdict["asset_id"]
-        asset = self.request.context.get_image_asset(asset_id)
+        asset = get_or_404(self.request.allowable(models.ImageAsset), models.ImageAsset.id==asset_id)
         if hasattr(form.data["filepath"], "filename") and os.path.splitext(form.data["filepath"].filename)[1] != os.path.splitext(asset.filepath)[1]:
             FlashMessage.error(u"ファイルの拡張子が異なっています。変更できません。", request=self.request)    
             return HTTPFound(self.request.route_path("asset_image_input", asset_id=asset.id))
@@ -153,7 +155,7 @@ class AssetUpdateView(object):
     def update_movie_asset(self):
         form = self.context.forms.MovieAssetUpdateForm(self.request.POST)
         asset_id = self.request.matchdict["asset_id"]
-        asset = self.request.context.get_movie_asset(asset_id)
+        asset = get_or_404(self.request.allowable(models.MovieAsset), models.MovieAsset.id==asset_id)
 
         if hasattr(form.data["filepath"], "filename") and os.path.splitext(form.data["filepath"].filename)[1] != os.path.splitext(asset.filepath)[1]:
             FlashMessage.error(str(u"ファイルの拡張子が異なっています。変更できません。"), request=self.request)    
@@ -173,7 +175,7 @@ class AssetUpdateView(object):
     def update_flash_asset(self):
         form = self.context.forms.FlashAssetUpdateForm(self.request.POST)
         asset_id = self.request.matchdict["asset_id"]
-        asset = self.request.context.get_flash_asset(asset_id)
+        asset = get_or_404(self.request.allowable(models.FlashAsset), models.FlashAsset.id==asset_id)
 
         if hasattr(form.data["filepath"], "filename") and os.path.splitext(form.data["filepath"].filename)[1] != os.path.splitext(asset.filepath)[1]:
             FlashMessage.error(str(u"ファイルの拡張子が異なっています。変更できません。"), request=self.request)    
@@ -200,7 +202,7 @@ class AssetCreateView(object):
         form = self.context.forms.ImageAssetForm(self.request.POST)
 
         if not form.validate():
-            assets = self.request.context.get_image_assets()
+            assets = self.request.allowable(models.ImageAsset).order_by(sa.desc(models.ImageAsset.id))
             search_form = self.request.context.forms.AssetSearchForm()
             return {"assets": assets, "form": form, "search_form": search_form}
         else:
@@ -216,7 +218,7 @@ class AssetCreateView(object):
         form = self.context.forms.MovieAssetForm(self.request.POST)
 
         if not form.validate():
-            assets = self.request.context.get_movie_assets()
+            assets = self.request.allowable(models.MovieAsset).order_by(sa.desc(models.MovieAsset.id))
             search_form = self.request.context.forms.AssetSearchForm()
             return {"assets": assets, "form": form, "search_form": search_form}
         else:
@@ -232,7 +234,7 @@ class AssetCreateView(object):
         form = self.context.forms.FlashAssetForm(self.request.POST)
 
         if not form.validate():
-            assets = self.request.context.get_flash_assets()
+            assets = self.request.allowable(models.FlashAsset).order_by(sa.desc(models.FlashAsset.id))
             search_form = self.request.context.forms.AssetSearchForm()
             return {"assets": assets, "form": form, "search_form": search_form}
         else:
@@ -251,12 +253,14 @@ class AssetDeleteView(object):
 
     @view_config(route_name="asset_image_delete", request_method="GET", renderer="altaircms:templates/asset/image/delete_confirm.mako")
     def image_delete_confirm(self):
-        asset = self.context.get_image_asset(self.request.matchdict["asset_id"])
+        asset_id = self.request.matchdict["asset_id"]
+        asset = get_or_404(self.request.allowable(models.ImageAsset), models.ImageAsset.id==asset_id)
         return {"asset": asset}
         
     @view_config(route_name="asset_image_delete", request_method="POST")
     def delete_image_asset(self):
-        asset = self.context.get_image_asset(self.request.matchdict["asset_id"])
+        asset_id = self.request.matchdict["asset_id"]
+        asset = get_or_404(self.request.allowable(models.ImageAsset), models.ImageAsset.id==asset_id)
 
         self.context.delete_asset_file(asset.filepath)
         self.context.delete(asset)
@@ -266,12 +270,14 @@ class AssetDeleteView(object):
     
     @view_config(route_name="asset_movie_delete", request_method="GET", renderer="altaircms:templates/asset/movie/delete_confirm.mako")
     def movie_delete_confirm(self):
-        asset = self.context.get_movie_asset(self.request.matchdict["asset_id"])
+        asset_id = self.request.matchdict["asset_id"]
+        asset = get_or_404(self.request.allowable(models.MovieAsset), models.MovieAsset.id==asset_id)
         return {"asset": asset}
 
     @view_config(route_name="asset_movie_delete", request_method="POST")
     def delete_movie_asset(self):
-        asset = self.context.get_movie_asset(self.request.matchdict["asset_id"])
+        asset_id = self.request.matchdict["asset_id"]
+        asset = get_or_404(self.request.allowable(models.MovieAsset), models.MovieAsset.id==asset_id)
 
         self.context.delete_asset_file(asset.filepath)
         self.context.delete(asset)
@@ -281,12 +287,14 @@ class AssetDeleteView(object):
 
     @view_config(route_name="asset_flash_delete", request_method="GET", renderer="altaircms:templates/asset/flash/delete_confirm.mako")
     def flash_delete_confirm(self):
-        asset = self.context.get_flash_asset(self.request.matchdict["asset_id"])
+        asset_id = self.request.matchdict["asset_id"]
+        asset = get_or_404(self.request.allowable(models.FlashAsset), models.FlashAsset.id==asset_id)
         return {"asset": asset}
 
     @view_config(route_name="asset_flash_delete", request_method="POST")
     def delete_flash_asset(self):
-        asset = self.context.get_flash_asset(self.request.matchdict["asset_id"])
+        asset_id = self.request.matchdict["asset_id"]
+        asset = get_or_404(self.request.allowable(models.FlashAsset), models.FlashAsset.id==asset_id)
 
         self.context.delete_asset_file(asset.filepath)
         self.context.delete(asset)
@@ -299,12 +307,21 @@ def asset_display(request):
     """ display asset as image(image, flash, movie)
     """
     ## todo refactoring
-    asset = request.context.get_asset(request.matchdict["asset_id"])
+    asset_id = request.matchdict["asset_id"]
+    asset = get_or_404(request.allowable(models.Asset), models.Asset.id==asset_id)
+
 
     storepath = request.context.storepath
     filepath = os.path.join(storepath, asset.filepath)
     content_type = asset.mimetype if asset.mimetype else 'application/octet-stream'
-    return Response(request.context.display_asset(filepath), content_type=content_type)
+    if os.path.exists(filepath):
+        data =  file(filepath).read()
+    else:
+        data =  "" ## not found imageを表示した方が良い？
+
+
+
+    return Response(data, content_type=content_type)
 
 ### asset search
 @view_defaults(permission="asset_read", request_method="GET", 
