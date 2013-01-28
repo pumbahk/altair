@@ -6,6 +6,7 @@ from paste.deploy.loadwsgi import loadapp
 import unittest
 import time
 
+
 """
 setup
 
@@ -16,6 +17,7 @@ _app = None
 _registry = None
 _config_spec = "config:testing.ini"
 _backend_app = None
+here = None
 
 def setUpModule():
     run_mock_backend_server({})
@@ -24,15 +26,18 @@ def setUpModule():
 def tearDownModule():
     import sqlahelper
     sqlahelper.get_base().metadata.drop_all()
+    import shutil
+    shutil.rmtree(os.path.join(here,"tmp/assets"))
 
 def build_app():
     global _app
     global _registry
+    global here
     import altaircms
     here = os.path.join(altaircms.__path__[0], "../../")
     _app = loadapp(_config_spec, None,  global_conf={}, relative_to=here)
     _registry = _app.values()[0].registry
-    _app = webtest.TestApp(_app)
+    _app = webtest.TestApp(_app, relative_to=os.path.join(here, "functional_tests"))
     return _app
 
 def get_app():
@@ -48,7 +53,6 @@ def get_backend_app():
 
 def get_registry():
     return _registry
-
 
 ## backend mock for login
 LOGIN_STATUS = {
@@ -77,11 +81,11 @@ def mock_backend_main(global_config, **settings):
                 u'organization_short_name': u'demo'}
 
     def logout_backend(request):
-        from pyramid.httpexceptions import HTTPRedirect
+        from pyramid.httpexceptions import HTTPFound
         backend = get_backend_app()
         backend.login_status = LOGIN_STATUS["LOGOUT"]
 
-        return HTTPRedirect(request.GET["return_to"])
+        return HTTPFound(request.GET["return_to"])
 
     config.add_route("auth.access_token", "/api/access_token")
     config.add_view(access_token, route_name="auth.access_token",  renderer="json")
@@ -98,14 +102,18 @@ def run_mock_backend_server(data, port=60654):
     _backend_app.login_status = "none"
 
     httpd = make_server('0.0.0.0', port, _backend_app)
-    httpd.log_message = lambda *args, **kwargs: None
-    th = threading.Thread(target=httpd.handle_request)
-    th.setDaemon(True)
+    def log_message(*args, **kwargs):
+        pass
+    httpd.log_message = log_message
+    th = threading.Thread(target=httpd.serve_forever)
+    th.daemon = True
     th.start()
 
 
-
 def login(app):
+    resp = app.get("/auth/login")
+    resp.click(linkid="login")
+
     login_resp = app.get("/auth/oauth_callback")
     
     login_ok = False
@@ -127,6 +135,7 @@ def logout_iff_login(app):
     
 def logout(app):
     app.post("/auth/logout")
+    app.reset()
     
 class AppFunctionalTests(unittest.TestCase):
     def _getTarget(self):
@@ -166,8 +175,6 @@ class LoginLogoutFunctionalTests(AppFunctionalTests):
     def test_after_backend_login_redirect(self):
         app = self._getTarget()
         with as_login(app):
-            login_iff_logout(app)
-
             ## login後、loginしたorganization名が右上に表示される
             after_login_resp = app.get("/")
             after_login_resp.mustcontain("Administrator-this-is-login-name")        
@@ -184,17 +191,62 @@ class LoginLogoutFunctionalTests(AppFunctionalTests):
             self.assertNotIn("demo-organization",  after_logout_resp)
 
             
+def find_form(forms,  action_part=""):
+    for form in forms.itervalues():
+        if action_part in form.action:
+            return form
+    
 class AssetFunctionalTests(AppFunctionalTests):
     def test_login_page_if_not_login(self):
         app = self._getTarget()
         with as_logout(app):
             app.get("/asset/").mustcontain(u"ログインしていません")
 
-    def test_view_index_page(self):
-        app = self._getTarget()
-        with as_login(app):
-            app.get("/asset/").mustcontain(u"アセット一覧")
+    def tearDown(self):
+        from altaircms.asset.models import ImageAsset, DBSession
+        for a in ImageAsset.query:
+            DBSession.delete(a)
+        import transaction
+        transaction.commit()
 
+    def _count_of_image_asset(self):
+        from altaircms.asset.models import ImageAsset
+        return ImageAsset.query.count()
+
+    def _get_image_asset_by_title(self, title):
+        from altaircms.asset.models import ImageAsset
+        return ImageAsset.query.filter_by(title=title).first()
+
+    def _get_static_asset_path(self, path):
+        return "/staticasset/"+path
+
+    def test_create_image_asset(self):
+        app = self._getTarget()
+        self.assertEqual(self._count_of_image_asset(), 0)
+
+        with as_login(app):
+            asset_title = u"this-is-uploaded-image-asset"
+
+            form = find_form(app.get("/asset/image").forms, action_part="create")
+            form.set("filepath",  ("pyramid.png", ))
+            form.set("thumbnail_path", ("pyramid-small.png", ))
+            form.set("title", asset_title)
+            form.set("tags", "tag0, tag1, tag2")
+            form.set("private_tags", "ptag")
+
+            form.submit()
+
+            ## assetが存在
+            self.assertEqual(self._count_of_image_asset(), 1)
+            uploaded_asset = self._get_image_asset_by_title(asset_title)
+
+            ## 画像が存在
+            mainimage = app.get(self._get_static_asset_path(uploaded_asset.filepath))
+            self.assertEqual(mainimage.status_int, 200)
+            thumbnail_image = app.get(self._get_static_asset_path(uploaded_asset.thumbnail_path))
+            self.assertEqual(thumbnail_image.status_int, 200)
+
+            
         
 if __name__ == "__main__":
     unittest.main()
