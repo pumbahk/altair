@@ -4,7 +4,7 @@
     <div class="footernav">
       <ul>
 		    <li class="first"><a href="http://www.ticketstar.jp/corporate">運営会社</a></li>
-        <li><a href="${request.route_url('contact')}">お問い合わせ</a></li>
+        <li><a href="mailto:vissel@tstar.jp">お問い合わせ</a></li>
         <li><a href="http://www.ticketstar.jp/privacy">個人情報保護方針</a></li>
         <li class="last"><a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a></li>
       </ul>
