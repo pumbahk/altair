@@ -268,19 +268,8 @@ a:hover img {
 
 }
 
-.kadomaru2{
-	width:720px;
-	margin: 20px auto;
-	background: #fff;
-	padding: 30px;
-	border-radius: 10px;
-	-webkit-border-radius: 10px;
-	-moz-border-radius: 10px;
-	clear: both;
-}
-
 .kadomaru{
-	width:650px;
+	width:924px;
 	margin: 20px auto;
 	background: #fff;
 	padding: 30px;
@@ -318,10 +307,15 @@ a{
 	color:#900027;
 }
 
-a:hover{
-	color:#480013;
+a:hover {
+	color: #480013;
 }
 
+
+table.layout {
+    width: 100%;
+    border-collapse:collapse;
+}
 
 
 img{
@@ -423,7 +417,7 @@ border: 0;
 }
 
 h1{
-	margin-left: 50px;
+	display: none;
 }
 
 h2{
@@ -482,11 +476,6 @@ h4 span.order{
 	padding: 10px 20px;
 }
 
-.purchased h2{
-	background: none;
-	padding: 0 30px;
-}
-
 
 .purchased h3{
 	border-left: 2px #c9c9c9 solid; 
@@ -509,7 +498,7 @@ h4 span.order{
 .purchased table.purchasedContents{
 	border: 2px #efefef solid;
 	border-collapse: collapse;
-	width: 620px;
+	width: 100%;
 }
 
 .purchased table.purchasedContents thead th{
@@ -1139,6 +1128,7 @@ div#performance-calendar .month-tab span a{
     margin: 10px auto;
     color: #fff;
     float: right;
+    white-space: nowrap;
 }
 
 .footer .footernav ul {
@@ -1163,7 +1153,7 @@ div#performance-calendar .month-tab span a{
     text-decoration: none;
 }
 
-.footer .footernav ul li a:hover{
+.footer .footernav ul li a:hover {
     color: #fc0;
 }
 
@@ -1255,7 +1245,7 @@ table.formvissel{
 	border-collapse: collapse;
 	margin: 0px auto 20px auto;
 	padding: 10px;
-	width: 700px;
+	width: 924px;
 	border: 5px solid #811527;
 }
 
