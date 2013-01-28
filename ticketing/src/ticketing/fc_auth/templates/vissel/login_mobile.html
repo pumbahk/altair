@@ -37,6 +37,9 @@ TICKET SITE<br/>
 <div>
   会員ID(8桁)<br/>
   <input type="text" name="username" size="22" maxlength="8" value="${username}">
+%if message:
+<br/><font color="red">会員IDが一致しません</font>
+%endif
 </div>
 <input type="submit" value="ログイン" />
 <p>

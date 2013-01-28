@@ -1216,7 +1216,7 @@ table.login table.inner td {
     height: none;
 }
 
-table.login td input{
+table.login td input.text {
 	padding: 5px;
 	border: 1px #ccc solid;
 }

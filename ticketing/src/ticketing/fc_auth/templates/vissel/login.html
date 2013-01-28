@@ -39,7 +39,7 @@
                   <tbody>
                     <tr>
                       <td style="text-align:center;"> 
-                        <button class="redBtn" style="margin-top: 30px;">チケット購入</button>
+                        <input type="submit" class="redBtn" style="margin-top: 30px;" value="チケット購入" />
                         %if guest_message:
                         <div class="small red">${guest_message}</div>
                         %endif
@@ -71,14 +71,14 @@
                                 <br><span class="small red">※ 半角英数</span>
                               </td>
                               <td>
-                                <input type="text" name="username" style="width:120px" maxlength="8" value="">
+                                <input type="text" class="text" name="username" style="width:120px" maxlength="8" value="">
                                 %if message:
-                                <br/><span class="small red">${message}</span>
+                                <br/><span class="small red">会員IDが一致しません</span>
                                 %endif
                               </td>
                             </tr>
                             <tr>
-                              <td colspan="2" class="textC"> <button class="redBtn" name="login">ログイン</button></td>
+                              <td colspan="2" class="textC"> <input type="submit" class="redBtn" name="login" value="ログイン"></td>
                             </tr>
                             <tr>
                               <td colspan="2" class="textC"><small>会員IDを忘れてしまった方は<br /><a href="mailto:vmfc@m.msgs.jp">こちら</a>からお問い合わせください。</small></td>
