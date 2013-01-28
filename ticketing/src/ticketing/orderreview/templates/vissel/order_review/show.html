@@ -59,7 +59,7 @@ shipping =order.shipping_address
 %>
             % if order.status in ['canceled', 'refunded']:
             <div class="kadomaru">
-              <h3><span class="red">この購入/予約はキャンセルされました</span></h3>
+              <h3><span class="red">この注文はキャンセルされました</span></h3>
               <p>
                 キャンセル処理は、下記のような理由によりおこなっております。<br />
                 ・お客様からキャンセルのご連絡があったため<br />
@@ -219,7 +219,7 @@ shipping =order.shipping_address
                     <td class="textR">${sej_order.billing_number}</td>
                   </tr>
                   <tr>
-                    <td>予約有効期限</td>
+                    <td>注文有効期限</td>
                     <td class="textR">${h.japanese_date(sej_order.payment_due_at)}${h.japanese_time(sej_order.payment_due_at)}</td>
                   </tr>
                   <tr>
@@ -227,7 +227,7 @@ shipping =order.shipping_address
                       注意事項
                       <ul>
                         <li>セブン-イレブン決済の際には払込番号が必要です。下記、「払込票印刷」ボタンをクリックし、払込票を印刷してお持ちになるか、上記の払込票番号をお控えいただき、レジでお伝え下さい。</li>
-                        <li>予約有効期限までに、払込票または払込票番号をセブン-イレブン店頭レジにてお申し出の上、代金をお支払いください。</li>
+                        <li>注文有効期限までに、払込票または払込票番号をセブン-イレブン店頭レジにてお申し出の上、代金をお支払いください。</li>
                         <li>支払期日までに入金されない場合は、申込が無効となりますのでご注意ください。</li>
                       </ul>
                     </td>

@@ -41,7 +41,7 @@ ${shipping.tel_1}<br />
 <%mobile:form_header>メールアドレス</%mobile:form_header>
 ${shipping.email_1}<br />
 % if order.status in ['canceled', 'refunded']:
-<%mobile:form_header>この購入/予約はキャンセルされました</%mobile:form_header>
+<%mobile:form_header>この購入/注文はキャンセルされました</%mobile:form_header>
 <font size="-2">
 キャンセル処理は、下記のような理由によりおこなっております。<br />
 ・お客様からキャンセルのご連絡があったため<br />
@@ -58,7 +58,7 @@ ${shipping.email_1}<br />
 <div>セブン-イレブン</div>
 <%mobile:form_header>払込票番号</%mobile:form_header>
 <div>${sej_order.billing_number}</div>
-<%mobile:form_header>予約有効期限</%mobile:form_header>
+<%mobile:form_header>注文有効期限</%mobile:form_header>
 <div>${h.japanese_date(sej_order.payment_due_at)}${h.japanese_time(sej_order.payment_due_at)}</div>
 <form action="${sej_order.exchange_sheet_url}" method="post" target="_blank">
   <input type="hidden" name="iraihyo_id_00" value="${sej_order.exchange_sheet_number}" />
@@ -109,7 +109,7 @@ ${h.render_delivery_finished_viewlet(request, order)}
 %endif
 %if order.payment_delivery_pair.payment_method.payment_plugin.id == 3:
 ・セブン-イレブン決済の際には払込番号が必要です。下記、「払込票印刷」ボタンをクリックし、払込票を印刷してお持ちになるか、上記の払込票番号をお控えいただき、レジでお伝え下さい。<br />
-・予約有効期限までに、払込票または払込票番号をセブン-イレブン店頭レジにてお申し出の上、代金をお支払いください。<br />
+・注文有効期限までに、払込票または払込票番号をセブン-イレブン店頭レジにてお申し出の上、代金をお支払いください。<br />
 ・支払期日までに入金されない場合は、申込が無効となりますのでご注意ください。<br />
 % endif
 ・お申込時にを記載した確認のメールが、ご登録いただいたメールアドレス宛に送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。<a href="mailto:vissel@tstar.jp">vissel@tstar.jp</a> までご連絡ください。<br /> 
