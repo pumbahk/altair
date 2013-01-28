@@ -8,8 +8,10 @@ SESSION_NAME = "asset"
 
 def _make_asset_filesession(assetspec):
     from ..filelib import FileSession
+    from ..filelib.core import on_file_exists_try_rename
     savepath = AssetResolver().resolve(assetspec).abspath()
-    filesession = FileSession(make_path=lambda : savepath)
+    filesession = FileSession(make_path=lambda : savepath, 
+                              on_file_exists=on_file_exists_try_rename)
     filesession.assetspec = assetspec
     return filesession
 

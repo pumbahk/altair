@@ -259,13 +259,13 @@ class ImageUpdater(Updater):
         tags, private_tags, params =  divide_data(params)
         datalist = []
         filesession = get_asset_filesession(self.request)
-        if params["filepath"]:
+        if params["filepath"]  != "":
             extra_asset_data = ImageInfoDatector(self.request).detect(params["filepath"].file, params["filepath"].filename)
             datalist.append(extra_asset_data)
             mainimage_file = filesession.add(File(name=asset.filepath, handler=params["filepath"].file))
             datalist.append(dict(filepath=mainimage_file.name))
 
-        if params["thumbnail_path"]:
+        if params["thumbnail_path"] != "":
             thumbnail_file = filesession.add(File(name=asset.thumbnail_path, handler=params["thumbnail_path"].file))
             datalist.append(dict(thumbnail_path=thumbnail_file.name))
 

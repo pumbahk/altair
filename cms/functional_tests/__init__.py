@@ -225,7 +225,7 @@ class AssetFunctionalTests(AppFunctionalTests):
         self.assertEqual(self._count_of_image_asset(), 0)
 
         with as_login(app):
-            asset_title = u"this-is-uploaded-image-asset"
+            asset_title = u"this-is-created-image-asset"
 
             form = find_form(app.get("/asset/image").forms, action_part="create")
             form.set("filepath",  ("pyramid.png", ))
@@ -238,14 +238,112 @@ class AssetFunctionalTests(AppFunctionalTests):
 
             ## assetが存在
             self.assertEqual(self._count_of_image_asset(), 1)
-            uploaded_asset = self._get_image_asset_by_title(asset_title)
+            created_asset = self._get_image_asset_by_title(asset_title)
 
             ## 画像が存在
-            mainimage = app.get(self._get_static_asset_path(uploaded_asset.filepath))
+            mainimage = app.get(self._get_static_asset_path(created_asset.filepath))
             self.assertEqual(mainimage.status_int, 200)
-            thumbnail_image = app.get(self._get_static_asset_path(uploaded_asset.thumbnail_path))
+            thumbnail_image = app.get(self._get_static_asset_path(created_asset.thumbnail_path))
             self.assertEqual(thumbnail_image.status_int, 200)
 
+    def test_delete_image_asset(self):
+        app = self._getTarget()
+        self.assertEqual(self._count_of_image_asset(), 0)
+
+        with as_login(app):
+            asset_title = u"this-is-created-image-asset"
+
+            form = find_form(app.get("/asset/image").forms, action_part="create")
+            form.set("filepath",  ("pyramid.png", ))
+            form.set("thumbnail_path", ("pyramid-small.png", ))
+            form.set("title", asset_title)
+            form.set("tags", "tag0, tag1, tag2")
+            form.set("private_tags", "ptag")
+
+            form.submit()
+
+            ## assetが存在
+            self.assertEqual(self._count_of_image_asset(), 1)
+            created_asset = self._get_image_asset_by_title(asset_title)
+
+            ### delete
+            form = find_form(app.get("/asset/image/%s/delete" % created_asset.id).forms, action_part="delete").submit()
+            
+            ## assetがなくなる
+            self.assertEqual(self._count_of_image_asset(), 0)
+
+            ## 画像が消える
+            with self.assertRaises(webtest.AppError):
+                app.get(self._get_static_asset_path(created_asset.filepath))
+                app.get(self._get_static_asset_path(created_asset.thumbnail_path))
+
+
+    def test_update_image_asset(self):
+        app = self._getTarget()
+        self.assertEqual(self._count_of_image_asset(), 0)
+
+        with as_login(app):
+            ## create
+            asset_title = u"this-is-created-image-asset"
+
+            form = find_form(app.get("/asset/image").forms, action_part="create")
+            form.set("filepath",  ("pyramid.png", ))
+            form.set("thumbnail_path", ("pyramid-small.png", ))
+            form.set("title", asset_title)
+            form.set("tags", "tag0, tag1, tag2")
+            form.set("private_tags", "ptag")
+
+            form.submit()
+
+            created_asset = self._get_image_asset_by_title(asset_title)
+            created_asset_size = created_asset.size
+            created_asset_filepath = created_asset.filepath
+
+
+            ### update title
+            asset_title = u"update-asset"
+
+            form = find_form(app.get("/asset/image/%s/input" % created_asset.id).forms, action_part="update")
+            form.set("filepath",  "")
+            form.set("thumbnail_path", "")
+            form.set("title", asset_title)
+            form.set("tags", "tag-is-updated")
+            form.set("private_tags", "ptag, ptag2")
+
+            form.submit()
+
+            ## タイトルは変わる
+            self.assertEqual(self._count_of_image_asset(), 1)
+            updated_asset = self._get_image_asset_by_title(asset_title)
+            self.assertEqual(updated_asset.title, asset_title)
+
+            ## 画像は変わらない
+            self.assertEqual(updated_asset.size,  created_asset.size)            
+            self.assertEqual(updated_asset.filepath, created_asset_filepath)
+
+
+            ### update image
+            created_asset = self._get_image_asset_by_title(asset_title)
+            asset_title = u"update-asset"
+
+            form = find_form(app.get("/asset/image/%s/input" % created_asset.id).forms, action_part="update")
+            form.set("filepath",  ("not_found.png", ))
+            form.set("thumbnail_path", "")
+            form.set("title", asset_title)
+            form.set("tags", "tag-is-updated")
+            form.set("private_tags", "ptag, ptag2")
+
+            form.submit()
+
+            self.assertEqual(self._count_of_image_asset(), 1)
+            updated_asset2 = self._get_image_asset_by_title(asset_title)
+            
+            ## 画像を変更しても保存先は変わらない
+            self.assertEqual(updated_asset2.filepath, created_asset.filepath)
+            self.assertEqual(updated_asset2.filepath, created_asset_filepath)
+
+            ## ただし保存されているファイルは変わる
+            self.assertNotEqual(updated_asset2.size, created_asset_size)
             
         
 if __name__ == "__main__":

@@ -18,14 +18,25 @@ def rename_file(src, dst):
         os.rename(src, dst)
     except OSError:
         directory = os.path.dirname(dst)
-        logger.info("%s is not found. create it." % directory)
-        os.makedirs(directory)
-        os.rename(src, dst)
+        if not os.path.exists(directory):
+            logger.info("%s is not found. create it." % directory)
+            os.makedirs(directory)
+            os.rename(src, dst)
+
+def on_file_exists_try_rename(target, realpath, retry):
+    old_one_destination = tempfile.mktemp()
+    logger.info("%s is exists. rename old one -> %s" % (realpath,  old_one_destination))
+    os.rename(realpath, old_one_destination)
+    return retry(target, realpath)
+
+def on_file_exists_overwrite(target, realpath, retry):
+    return rename_file(target.signature, realpath)
 
 class FileCreator(object):
-    def __init__(self, root):
+    def __init__(self, root, on_file_exists=on_file_exists_overwrite):
         self.root = root
         self.pool = []
+        self.on_file_exists = on_file_exists
 
     def add(self, uploadfile):
         if hasattr(uploadfile, "signature"):
@@ -37,18 +48,28 @@ class FileCreator(object):
         self.pool.append(signatured_file)
         return signatured_file
 
+    def _get_realpath(self, target):
+        return os.path.join(self.root.make_path(), target.name)
+
+    def _commit_one(self, target, realpath):
+        try:
+            if os.path.exists(realpath):
+                return self.on_file_exists(target, realpath, self._commit_one)
+            else:
+                rename_file(target.signature, realpath)
+                logger.debug("filesession. rename: %s -> %s" % (target.signature, realpath))
+        except OSError, e:
+            logger.warn("%s is not renamed" % target.signature)
+            logger.exception(str(e))
+        except Exception, e:
+            logger.exception(str(e))
+            raise
+        
     def commit(self):
-        for signatured_file in self.pool:
-            try:
-                realpath = os.path.join(self.root.make_path(), signatured_file.name)
-                rename_file(signatured_file.signature, realpath)
-                logger.debug("filesession. rename: %s -> %s" % (signatured_file.signature, realpath))
-            except OSError, e:
-                logger.warn("%s is not renamed" % signatured_file.signature)
-                logger.exception(str(e))
-            except Exception, e:
-                logger.exception(str(e))
-                raise
+        while self.pool:
+            signatured_file = self.pool.pop(0)
+            realpath = self._get_realpath(signatured_file)
+            self._commit_one(signatured_file, realpath)
 
     def _write_to_tmppath(self, uploadfile):
         path = tempfile.mktemp() #suffix?
@@ -79,7 +100,8 @@ class FileDeleter(object):
         self.pool.append(uploadfile)
         
     def commit(self):
-        for deleted_file in self.pool:
+        while self.pool:
+            deleted_file = self.pool.pop(0)
             filepath = self.root.abspath(deleted_file.name)
             logger.debug("filesession. delete: %s" % (filepath))
             try:
@@ -93,13 +115,14 @@ class FileDeleter(object):
 
 @implementer(IFileSession)
 class FileSession(object):
-    def __init__(self, prefix="", make_path=None):
+    def __init__(self, prefix="", make_path=None, on_file_exists=on_file_exists_overwrite):
         if make_path is None:
             self.make_path = lambda : os.path.abspath(prefix)
         else:
             self.make_path = make_path
         self.deleter = FileDeleter(self)
-        self.creator = FileCreator(self)
+        self.creator = FileCreator(self, on_file_exists=on_file_exists)
+            
 
     def abspath(self, part):
         return os.path.join(self.make_path(), part)
