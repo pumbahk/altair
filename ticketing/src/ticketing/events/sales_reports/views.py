@@ -110,7 +110,7 @@ class SalesReports(BaseView):
         if event is None:
             raise HTTPNotFound('event id %d is not found' % event_id)
         form = SalesReportForm(None,event_id=event_id)
-        event_product_all = get_performance_sales_summary(form, self.context.organization)
+        event_product_nf = get_performance_sales_summary(form, self.context.organization)
         form = SalesReportForm(self.request.params, event_id=event_id)
         event_product = get_performance_sales_summary(form, self.context.organization)
         performances_reports = {}
@@ -125,12 +125,28 @@ class SalesReports(BaseView):
                     performance=performance,
                     report_by_sales_segment=report_by_sales_segment
                 )
+        event_product_nf=sorted(event_product_nf, key=lambda x:(x['stock_type_id'], x['product_name'], x['product_price']))
+        import itertools
+        event_product_nf_keys = [(x['stock_type_id'], x['product_name'], x['product_price']) for x in event_product_nf]
+        event_product_nf_keys = sorted(event_product_nf_keys, key=lambda x:(x[0], x[1], x[2]))
+        event_product_nf_keys = [x[0] for x in itertools.groupby(event_product_nf_keys, lambda x:(x[0], x[1], x[2]))]
+        key_count_nf = {}
+     
+        for key in event_product_nf_keys:
+          if key[0] in key_count_nf:
+            key_count_nf[key[0]] += 1
+          else:
+            key_count_nf[key[0]] = 1
+ 
         return {
             'event_product':event_product,
-            'event_product_all':event_product_all,
+            'event_product_nf':event_product_nf,
+            'key_count_nf':key_count_nf,
             'form':form,
             'performances_reports':performances_reports,
         }
+
+
 
     @view_config(route_name='sales_reports.send_mail', renderer='ticketing:templates/sales_reports/preview.html')
     def send_mail(self):
