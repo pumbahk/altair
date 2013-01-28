@@ -1194,8 +1194,26 @@ table.login thead th{
 	
 }
 
-table.login td{
+table.login th  {
+    height: 2em;
+}
+
+table.login td {
 	padding: 5px 10px;
+    height: 100%;
+}
+
+table.login table.inner {
+    width: 100%;
+    margin: 0 0;
+    padding: 0 0;
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+
+table.login table.inner td {
+    padding: 5px 0px;
+    height: none;
 }
 
 table.login td input{
