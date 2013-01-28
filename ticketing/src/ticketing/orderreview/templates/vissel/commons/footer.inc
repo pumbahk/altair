@@ -1,6 +1,6 @@
 <div class="footer">
 	<div class="footer-inner">
-		<img src="/static/vissel/images/tomoni.gif" alt="" />	  
+		<img src="${request.static_url('ticketing.orderreview:static/images/vissel/tomoni.gif')}" alt="" />	  
     <div class="footernav">
       <ul>
 		    <li class="first"><a href="http://www.ticketstar.jp/corporate">運営会社</a></li>
