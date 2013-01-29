@@ -85,6 +85,22 @@ def Zenkaku(form, field):
 
 Katakana = validators.Regexp(ur'^[ァ-ヶ]+$', message=u'カタカナで入力してください')
 
+class JISX0208(object):
+    def __init__(self, message=None):
+        self.message = message or u'利用不可能な文字 (%(characters)s) が含まれています'
+
+    def __call__(self, form, field):
+        assert isinstance(field.data, unicode)
+        bad_chars = set()
+        for c in field.data:
+            try:
+                c.encode('Shift_JIS')
+            except UnicodeEncodeError:
+                bad_chars.add(c)
+        if bad_chars:
+            raise validators.ValidationError(field.gettext(self.message) % dict(characters=u'「' + u'」「'.join(bad_chars) + u'」'))
+
+
 def NFKC(unistr):
     return unistr and unicodedata.normalize('NFKC', unistr)
 
