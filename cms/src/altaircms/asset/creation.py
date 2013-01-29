@@ -48,6 +48,9 @@ def uname_file_from_filestorage(filesession, filestorage):
     uname = get_uname(filestorage.filename)
     return File(name=uname, handler=filestorage.file)
 
+## form
+def is_filled_filefield(filefield):
+    return filefield != u""
 
 ## operator
 def add_operator_when_created(asset, request):
@@ -179,7 +182,7 @@ class MovieCreator(Creator):
             filepath=mainmovie_file.name, 
             **asset_data)
 
-        if params["placeholder"]:
+        if is_filled_filefield(params["placeholder"]):
             thumbnail_file = filesession.add(uname_file_from_filestorage(filesession, params["placeholder"]))
             asset.thumbnail_path = thumbnail_file.name
 
@@ -210,7 +213,7 @@ class FlashCreator(Creator):
             filepath=mainflash_file.name, 
             **asset_data)
 
-        if params["placeholder"]:
+        if is_filled_filefield(params["placeholder"]):
             thumbnail_file = filesession.add(uname_file_from_filestorage(filesession, params["placeholder"]))
             asset.thumbnail_path = thumbnail_file.name
 
@@ -259,13 +262,13 @@ class ImageUpdater(Updater):
         tags, private_tags, params =  divide_data(params)
         datalist = []
         filesession = get_asset_filesession(self.request)
-        if params["filepath"]  != "":
+        if is_filled_filefield(params["filepath"]):
             extra_asset_data = ImageInfoDatector(self.request).detect(params["filepath"].file, params["filepath"].filename)
             datalist.append(extra_asset_data)
             mainimage_file = filesession.add(File(name=asset.filepath, handler=params["filepath"].file))
             datalist.append(dict(filepath=mainimage_file.name))
 
-        if params["thumbnail_path"] != "":
+        if is_filled_filefield(params["thumbnail_path"]):
             thumbnail_file = filesession.add(File(name=asset.thumbnail_path, handler=params["thumbnail_path"].file))
             datalist.append(dict(thumbnail_path=thumbnail_file.name))
 
@@ -284,14 +287,14 @@ class MovieUpdater(Updater):
         tags, private_tags, params =  divide_data(params)
         datalist = []
         filesession = get_asset_filesession(self.request)
-        if params["filepath"]:
+        if is_filled_filefield(params["filepath"]):
             extra_asset_data = MovieInfoDatector(self.request).detect(params["filepath"].file, params["filepath"].filename)
             datalist.append(extra_asset_data)
             mainmovie_file = filesession.add(File(name=asset.filepath, handler=params["filepath"].file))
             datalist.append(dict(filepath=mainmovie_file.name))
 
-        if params["thumbnail_path"]:
-            thumbnail_file = filesession.add(File(name=asset.placeholder, handler=params["placeholder"].file))
+        if is_filled_filefield(params["placeholder"]):
+            thumbnail_file = filesession.add(File(name=asset.thumbnail_path, handler=params["placeholder"].file))
             datalist.append(dict(thumbnail_path=thumbnail_file.name))
 
         datalist.append({k:v for k, v in params.iteritems() if v})
@@ -309,13 +312,13 @@ class FlashUpdater(Updater):
         tags, private_tags, params =  divide_data(params)
         datalist = []
         filesession = get_asset_filesession(self.request)
-        if params["filepath"]:
+        if is_filled_filefield(params["filepath"]):
             extra_asset_data = FlashInfoDatector(self.request).detect(params["filepath"].file, params["filepath"].filename)
             datalist.append(extra_asset_data)
             mainflash_file = filesession.add(File(name=asset.filepath, handler=params["filepath"].file))
             datalist.append(dict(filepath=mainflash_file.name))
 
-        if params["thumbnail_path"]:
+        if is_filled_filefield(params["placeholder"]):
             thumbnail_file = filesession.add(File(name=asset.thumbnail_path, handler=params["placeholder"].file))
             datalist.append(dict(placeholder=thumbnail_file.name))
 
