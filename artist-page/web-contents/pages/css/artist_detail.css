@@ -5,8 +5,6 @@
     margin-top:5px;
 }
 
-
-
 #main_right{
 	border:solid 1px transparent;
 	width:240px;
@@ -14,13 +12,11 @@
 	float:right;
 }
 
-
 #title_check{
 	background: url(../../img/music/title_check.gif) repeat-x 0 50%;
 	background-size:600px 40px;
 	width:600px;
 	height:40px;
-	border:solid 1px transparent;
 	clear:left;
 }
 
@@ -33,6 +29,7 @@
 	color:#FFFFFF;
 	font-size:1.4em;
 }
+
 #discography_title p{
 	margin-left:12px;
 	margin-top:10px;
@@ -43,12 +40,11 @@
 	background-size: 600px 130px;
 	width:600px;
 	height:130px;
-	border:solid 1px transparent;
 }
 
 #left_scroll {
     background: url(../../img/music/btn_check_prev.gif) repeat-x 0 50%;
-	width:15px;
+	width:20px;
 	height:100px;
 	margin-left:10px;
 	display: block;
@@ -116,9 +112,6 @@
 #photos img {
     border:1px solid transparent;
 	margin:4px;
-}
-
- #plof {
 }
 
 #salesdate {
