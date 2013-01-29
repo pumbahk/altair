@@ -6,6 +6,7 @@ from ticketing.models import DBSession
 from ticketing.cart.exceptions import DeliveryFailedException
 from ticketing.core.models import Order
 from .interfaces import IPaymentPreparerFactory, IPaymentPreparer, IPaymentDeliveryPlugin, IPaymentPlugin, IDeliveryPlugin
+from .exceptions import PaymentDeliveryMethodPairNotFound
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +29,8 @@ def get_payment_delivery_plugin(request, payment_plugin_id, delivery_plugin_id):
 
 # TODO: apiに移動
 def get_preparer(request, payment_delivery_pair):
-
+    if payment_delivery_pair is None:
+        raise PaymentDeliveryMethodPairNotFound
     payment_delivery_plugin = get_payment_delivery_plugin(request, 
         payment_delivery_pair.payment_method.payment_plugin_id,
         payment_delivery_pair.delivery_method.delivery_plugin_id,)

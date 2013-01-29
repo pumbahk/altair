@@ -49,6 +49,7 @@ import transaction
 from ticketing.cart.selectable_renderer import selectable_renderer
 logger = logging.getLogger(__name__)
 from ticketing.payments.payment import Payment
+from ..payments.exceptions import PaymentDeliveryMethodPairNotFound
 
 def back_to_product_list_for_mobile(request):
     cart = api.get_cart_safe(request)
@@ -898,7 +899,10 @@ class ConfirmView(object):
 
         user = self.context.get_or_create_user()
         payment = Payment(cart, self.request)
-        delegator = payment.call_delegator()
+        try:
+            delegator = payment.call_delegator()
+        except PaymentDeliveryMethodPairNotFound:
+            raise HTTPFound(self.request_route_path("cart.payment", salessegment_id=cart.sales_segment_id))
         return dict(
             cart=cart,
             mailmagazines=magazines,
