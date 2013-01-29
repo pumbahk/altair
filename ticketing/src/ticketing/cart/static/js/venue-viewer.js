@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['B2QCKG6BQTNJTP8J'] = (function (exports) { (function () { 
+__LIBS__['WKKV4ILZAZ8LVYDZ'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['E4WN5GJZ8A16EI0V'] = (function (exports) { (function () { 
+__LIBS__['KR7KW85KVM06PZYF'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['SWUHGP3KK1J72C_N'] = (function (exports) { (function () { 
+__LIBS__['L14GMN2D92BL7RKY'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['B2QCKG6BQTNJTP8J'];
-var CONF = __LIBS__['E4WN5GJZ8A16EI0V'];
+var util = __LIBS__['WKKV4ILZAZ8LVYDZ'];
+var CONF = __LIBS__['KR7KW85KVM06PZYF'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -913,15 +913,16 @@ function svgStylesFromMap(styles, defs) {
 }
 
 function mergeSvgStyle(origStyle, newStyle) {
-  return {
-    fill:          newStyle.fill !== null ? newStyle.fill: origStyle.fill,
-    fillOpacity:   newStyle.fillOpacity !== null ? newStyle.fillOpacity: origStyle.fillOpacity,
-    stroke:        newStyle.stroke !== null ? newStyle.stroke: origStyle.stroke,
-    strokeWidth:   newStyle.strokeWidth !== null ? newStyle.strokeWidth: origStyle.strokeWidth,
-    strokeOpacity: newStyle.strokeOpacity !== null ? newStyle.strokeOpacity: origStyle.strokeOpacity,
-    fontSize:      newStyle.fontSize !== null ? newStyle.fontSize: origStyle.fontSize,
-    textAnchor:    newStyle.textAnchor !== null ? newStyle.textAnchor: origStyle.textAnchor
-  };
+  var copied = { };
+  for (var k in origStyle) {
+    copied[k] = origStyle[k];
+  }
+  for (var k in newStyle) {
+    if (newStyle[k] !== null) {
+      copied[k] = newStyle[k];
+    }
+  }
+  return copied;
 }
 
 function buildStyleFromSvgStyle(svgStyle) {
@@ -1018,9 +1019,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['E4WN5GJZ8A16EI0V'];
-  var seat = __LIBS__['SWUHGP3KK1J72C_N'];
-  var util = __LIBS__['B2QCKG6BQTNJTP8J'];
+  var CONF = __LIBS__['KR7KW85KVM06PZYF'];
+  var seat = __LIBS__['L14GMN2D92BL7RKY'];
+  var util = __LIBS__['WKKV4ILZAZ8LVYDZ'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1299,6 +1300,9 @@ function parseTransform(transform_str) {
               var attrs = util.allAttributes(n);
               var xlink = context.xlink;
               var focused = context.focused || (attrs.id && isFocused(attrs.id));
+              var px = parseFloat(attrs.x),
+                  py = parseFloat(attrs.y);
+              var position = (!isNaN(px) && !isNaN(py)) ? { x: px, y: py } : context.position;
               var transform = attrs["transform"] ?
                 context.transform.multiply(parseTransform(attrs["transform"])):
                 context.transform;
@@ -1350,19 +1354,21 @@ function parseTransform(transform_str) {
                   shape = new Fashion.Text({
                     text: collectText(n),
                     anchor: currentSvgStyle.textAnchor,
-                    transform: _transform
+                    position: position || null,
+                    transform: transform || null
                   });
                 } else if (n.nodeName == 'text') {
-                arguments.callee.call(
-                  self,
-                  {
-                    svgStyle: currentSvgStyle,
-                    transform: transform,
-                    defs: context.defs,
-                    focused: focused,
-                    xlink: xlink
-                  },
-                  n.childNodes);
+                  arguments.callee.call(
+                    self,
+                    {
+                      svgStyle: currentSvgStyle,
+                      position: position,
+                      transform: transform,
+                      defs: context.defs,
+                      focused: focused,
+                      xlink: xlink
+                    },
+                    n.childNodes);
                   continue outer;
 				}
                 break;
@@ -1371,7 +1377,6 @@ function parseTransform(transform_str) {
                 break;
 
               case 'rect':
-                var _transform = attrs.transform || null;
                 shape = new Fashion.Rect({
                   size: {
                     x: parseFloat(attrs.width),
@@ -1381,7 +1386,7 @@ function parseTransform(transform_str) {
                     x: parseFloat(attrs.rx || 0),
                     y: parseFloat(attrs.ry || 0)
                   },
-                  transform: _transform,
+                  transform: attrs.transform || null,
                   zIndex: -10
                 });
                 for (var j=0,ll=n.childNodes.length; j<ll; j++) {
@@ -1436,8 +1441,9 @@ function parseTransform(transform_str) {
               svgStyle: {
                 fill: false, fillOpacity: false,
                 stroke: false, strokeOpacity: false,
-                fontSize: 10
+                fontSize: 10, textAnchor: false
               },
+	          position: null,
               transform: new Fashion.Matrix(),
               defs: {},
               focused: false,
