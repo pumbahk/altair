@@ -4,7 +4,8 @@ from altaircms.testing import teardown_db
 def setUpModule():
     setup_db(models=[
             "altaircms.models", 
-            "altaircms.topic.models"
+            "altaircms.topic.models", 
+            "altaircms.event.models"
             ])
 
 def tearDownModule():

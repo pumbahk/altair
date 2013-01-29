@@ -40,4 +40,4 @@ class PromotionDelete(object):
 ## need async
 ##
 def update_kind(self):
-    self.obj.update_kind(self.params["kind_content"])
+    self.obj.update_tag(self.params["tag_content"])

@@ -1,5 +1,5 @@
 # coding: utf-8
-import urllib
+from sqlalchemy.ext.declarative import declared_attr
 from datetime import datetime
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
@@ -378,3 +378,30 @@ class PageDefaultInfo(Base):
                               keywords=keywords or self.keywords, 
                               description=description or self.description)
 
+
+class PageTag2Page(Base):
+    __tablename__ = "pagetag2page"
+    id = sa.Column(sa.Integer, primary_key=True)
+    query = DBSession.query_property()
+    object_id = sa.Column(sa.Integer, sa.ForeignKey("page.id"))
+    tag_id = sa.Column(sa.Integer, sa.ForeignKey("pagetag.id"))
+
+
+class PageTag(WithOrganizationMixin, Base):
+    CLASSIFIER = "page"
+
+    __tablename__ = "pagetag"
+    query = DBSession.query_property()
+    id = sa.Column(sa.Integer, primary_key=True)
+    label = sa.Column(sa.Unicode(255), index=True)
+    pages = orm.relationship("Page", secondary="pagetag2page", backref="tags")
+    publicp = sa.Column(sa.Boolean, default=False)
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
+    @declared_attr
+    def __tableargs__(cls):
+        return  ((sa.schema.UniqueConstraint(cls.label,cls.organization_id)))        
+
+def delete_orphan_pagetag(mapper, connection, target):
+    PageTag.query.filter(~PageTag.pages.any()).delete(synchronize_session=False)
+sa.event.listen(Page, "after_delete", delete_orphan_pagetag)

@@ -17,7 +17,7 @@ from altaircms.models import Performance
 from ..models import Category, Sale
 from ..asset.models import ImageAsset
 from ..page.models import PageSet
-from ..topic.models import Topic, Topcontent, Kind, Promotion
+from ..topic.models import Topic, Topcontent, PromotionTag, Promotion
 from ..tag.models import PageTag
 from ..plugins.api import get_extra_resource
 
@@ -158,15 +158,11 @@ class TicketForm(Form):
     # __display_fields__ = [u"sale", u"name", u"seattype", u"price", u"display_order"]
 
 class PromotionForm(Form):
-    kind_content = fields.TextField(label=u"タグ的なもの(, 区切り)") #@todo rename
+    tag_content = fields.TextField(label=u"タグ的なもの(, 区切り)") #@todo rename
     main_image = dynamic_query_select_field_factory(
         ImageAsset, allow_blank=False, label=u"メイン画像",
         get_label=lambda obj: obj.title or u"名前なし")
     text = fields.TextField(validators=[required_field()], label=u"画像下のメッセージ")
-    thumbnail = dynamic_query_select_field_factory(
-        ImageAsset, allow_blank=False, label=u"サブ画像(60x60)",
-        get_label=lambda obj: obj.title or u"名前なし")
-
     linked_page = dynamic_query_select_field_factory(
         PageSet, allow_blank=True, label=u"リンク先ページ(CMSで作成したもの)",
         get_label=lambda obj: obj.name or u"--なし--")
@@ -186,21 +182,21 @@ class PromotionForm(Form):
         return not bool(self.errors)
 
     __display_fields__ = [
-        u"kind_content",
-        u"main_image", u"text", u"thumbnail", u"linked_page", u"link", 
+        u"tag_content",
+        u"main_image", u"text", u"linked_page", u"link", 
         u"publish_open_on", u"publish_close_on", u"display_order", u"is_vetoed"
         ]
 
 
 class PromotionFilterForm(Form):
     kind = dynamic_query_select_field_factory(
-        Kind, allow_blank=False, label=u"タグ的なもの",
+        PromotionTag, allow_blank=False, label=u"タグ的なもの",
         get_label=lambda obj: obj.name)
 
     def as_filter(self, qs):
         kind = self.data.get("kind")
         if kind and "__None" != kind:
-            qs = qs.filter(Promotion.kinds.any(Kind.name==kind.name))
+            qs = qs.filter(Promotion.kinds.any(PromotionTag.name==kind.name))
         return qs
 
 _hierarchy_choices = [(x, x) for x in [u"大", u"中", u"小", "top_couter", "top_inner", "header_menu", "footer_menu", "masked", "side_banner", "side_menu", "header_large_button"]]

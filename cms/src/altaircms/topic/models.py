@@ -1,14 +1,14 @@
 # -*- coding:utf-8 -*-
-
+import re
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
+from sqlalchemy.ext.declarative import declared_attr
 from datetime import datetime
 
 from altaircms.models import Base, BaseOriginalMixin
 from altaircms.models import DBSession, model_to_dict
 from altaircms.page.models import PageSet
 from altaircms.asset.models import ImageAsset
-from altaircms.event.models import Event
 from altaircms.models import WithOrganizationMixin
 import altaircms.helpers as h
 
@@ -79,11 +79,44 @@ class AboutPublishMixin(object):
 _where = object()
 
 
-topic2kind = sa.Table(
-    "topic2kind", Base.metadata, 
-    sa.Column("topic_id", sa.Integer, sa.ForeignKey("topic.id")), 
-    sa.Column("kind_id", sa.Integer, sa.ForeignKey("kind.id"))
-    )
+def update_object_tag(obj, tagclass, ks, split_rx=re.compile("[,、]")):
+    ## 面倒なのでO(N)
+    splitted = obj.SPLIT_RX.split(ks)
+    ks = set(k.strip() for k in splitted)
+    will_updates = []
+    for k in ks:
+        if k: 
+            tag = tagclass.query.filter_by(label=k, organization_id=obj.organization_id).first()
+            tag = tag or tagclass(label=k, organization_id=obj.organization_id)
+            will_updates.append(tag)
+    will_deletes = set(obj.tags).difference(will_updates)
+    for k in will_updates:
+        obj.tags.append(k)
+    for k in will_deletes:
+        obj.tags.remove(k)
+
+class TopicTag2Topic(Base):
+    __tablename__ = "topictag2topic"
+    id = sa.Column(sa.Integer, primary_key=True)
+    query = DBSession.query_property()
+    object_id = sa.Column(sa.Integer, sa.ForeignKey("topic.id"))
+    tag_id = sa.Column(sa.Integer, sa.ForeignKey("topictag.id"))
+topic2tag = TopicTag2Topic.__table__
+
+class TopicTag(WithOrganizationMixin, Base):
+    query = DBSession.query_property()
+    __tablename__ = "topictag"
+    id = sa.Column(sa.Integer, primary_key=True)
+    label = sa.Column(sa.Unicode(255), index=True)
+    publicp = sa.Column(sa.Boolean, default=False)
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
+    @declared_attr
+    def __tableargs__(cls):
+        return  ((sa.schema.UniqueConstraint(cls.label,cls.organization_id)))        
+
+    def __repr__(self):
+        return "<%r label: %r organization_id: %r>" % (self.__class__, self.label, self.organization_id)
 
 class Topic(AboutPublishMixin, 
             BaseOriginalMixin,
@@ -96,7 +129,7 @@ class Topic(AboutPublishMixin,
     id = sa.Column(sa.Integer, primary_key=True)
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
-    kinds = orm.relationship("Kind", secondary=topic2kind, backref=orm.backref("topics"))
+    tags = orm.relationship("TopicTag", secondary=topic2tag, backref=orm.backref("topics"))
 
     title = sa.Column(sa.Unicode(255))
     text = sa.Column(sa.UnicodeText)
@@ -109,50 +142,53 @@ class Topic(AboutPublishMixin,
     mobile_link = sa.Column(sa.Unicode(255), doc="external mobile_link", nullable=True)
 
     @property
-    def kind_content(self):
-        return u", ".join(k.name for k in self.kinds)
+    def tag_content(self):
+        return u", ".join(k.label for k in self.tags)
 
-    @kind_content.setter
-    def kind_content(self, v):
-        self._kind_content = v
-
-    import re
-    SPLIT_RX = re.compile("[,、]")
-    def update_kind(self, ks):
-        ## 面倒なのでO(N)
-        splitted = self.SPLIT_RX.split(ks)
-        ks = set(k.strip() for k in splitted)
-        will_updates = []
-        for k in ks:
-            if k: 
-                kind = Kind.query.filter_by(name=k, organization_id=self.organization_id).first()
-                kind = kind or Kind(name=k, organization_id=self.organization_id)
-                will_updates.append(kind)
-        will_deletes = set(self.kinds).difference(will_updates)
-        for k in will_updates:
-            self.kinds.append(k)
-        for k in will_deletes:
-            self.kinds.remove(k)
+    @tag_content.setter
+    def tag_content(self, v):
+        self._tag_content = v
 
     @classmethod
-    def matched_qs(cls, d=None, kind=None, qs=None):
+    def matched_qs(cls, d=None, tag=None, qs=None):
         qs = cls.publishing(d=d, qs=qs)
-        if kind:
-            qs = qs.filter(cls.kinds.any(Kind.name==kind))
+        if tag:
+            qs = qs.filter(cls.tags.any(TopicTag.label==tag))
 
         return qs
 
-def delete_topic_orphan_kind(mapper, connection, target):
-    Kind.query.filter(~Kind.topics.any()).delete(synchronize_session=False)
+    SPLIT_RX = re.compile("[,、]")
+    def update_tag(self, ks):
+        return update_object_tag(self, TopicTag, ks, self.SPLIT_RX)
 
-sa.event.listen(Topic, "after_delete", delete_topic_orphan_kind)
+def delete_topic_orphan_tag(mapper, connection, target):
+    TopicTag.query.filter(~TopicTag.topics.any()).delete(synchronize_session=False)
+
+sa.event.listen(Topic, "after_delete", delete_topic_orphan_tag)
 
 
-topcontent2kind = sa.Table(
-    "topcontent2kind", Base.metadata, 
-    sa.Column("topcontent_id", sa.Integer, sa.ForeignKey("topcontent.id")), 
-    sa.Column("kind_id", sa.Integer, sa.ForeignKey("kind.id"))
-    )
+class TopcontentTag2Topcontent(Base):
+    __tablename__ = "topcontenttag2topcontent"
+    id = sa.Column(sa.Integer, primary_key=True)
+    query = DBSession.query_property()
+    object_id = sa.Column(sa.Integer, sa.ForeignKey("topcontent.id"))
+    tag_id = sa.Column(sa.Integer, sa.ForeignKey("topcontenttag.id"))
+topcontent2tag = TopcontentTag2Topcontent.__table__
+
+class TopcontentTag(WithOrganizationMixin, Base):
+    query = DBSession.query_property()
+    __tablename__ = "topcontenttag"
+    id = sa.Column(sa.Integer, primary_key=True)
+    label = sa.Column(sa.Unicode(255), index=True)
+    publicp = sa.Column(sa.Boolean, default=False)
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
+    @declared_attr
+    def __tableargs__(cls):
+        return  ((sa.schema.UniqueConstraint(cls.label,cls.organization_id)))        
+
+    def __repr__(self):
+        return "<%r label: %r organization_id: %r>" % (self.__class__, self.label, self.organization_id)
 
 class Topcontent(AboutPublishMixin,
                  BaseOriginalMixin,
@@ -163,12 +199,12 @@ class Topcontent(AboutPublishMixin,
     """
     __tablename__ = "topcontent"
     query = DBSession.query_property()
-    COUNTDOWN_CANDIDATES = h.base.COUNTDOWN_KIND_MAPPING.items()
+    COUNTDOWN_CANDIDATES = h.base.COUNTDOWN_TAG_MAPPING.items()
 
     id = sa.Column(sa.Integer, primary_key=True)
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
-    kinds = orm.relationship("Kind", secondary=topcontent2kind, backref=orm.backref("topcontents"))
+    tags = orm.relationship("TopcontentTag", secondary=topcontent2tag, backref=orm.backref("topcontents"))
 
     title = sa.Column(sa.Unicode(255))
     text = sa.Column(sa.Unicode(255))
@@ -188,43 +224,57 @@ class Topcontent(AboutPublishMixin,
     countdown_type = sa.Column(sa.String(255)) #todo: fixme
 
     @property
+    def tag_content(self):
+        return u", ".join(k.label for k in self.tags)
+
+    @tag_content.setter
+    def tag_content(self, v):
+        self._tag_content = v
+
+    @property
     def countdown_type_ja(self):
-        return h.base.countdown_kind_ja(self.countdown_type)
+        return h.base.countdown_tag_ja(self.countdown_type)
 
     @property
     def countdown_limit(self):
         return getattr(self.linked_page.event, self.countdown_type)
 
     @classmethod
-    def matched_qs(cls, d=None, kind=None, qs=None):
+    def matched_qs(cls, d=None, tag=None, qs=None):
         qs = cls.publishing(d=d, qs=qs)
-        if kind:
-            qs = qs.filter(cls.kinds.any(Kind.name==kind))
+        if tag:
+            qs = qs.filter(cls.tags.any(TopcontentTag.label==tag))
 
         return qs
 
+    SPLIT_RX = re.compile("[,、]")
+    def update_tag(self, ks):
+        return update_object_tag(self, TopcontentTag, ks, self.SPLIT_RX)
+
 
 ### promotion
-promotion2kind = sa.Table(
-    "promotion2kind", Base.metadata, 
-    sa.Column("promotion_id", sa.Integer, sa.ForeignKey("promotion.id")), 
-    sa.Column("kind_id", sa.Integer, sa.ForeignKey("kind.id"))
-    )
-
-from sqlalchemy.ext.declarative import declared_attr
-
-class Kind(WithOrganizationMixin, Base):
-    query = DBSession.query_property()
-    __tablename__ = "kind"
+class PromotionTag2Promotion(Base):
+    __tablename__ = "promotiontag2promotion"
     id = sa.Column(sa.Integer, primary_key=True)
-    name = sa.Column(sa.Unicode(255), index=True)
+    query = DBSession.query_property()
+    object_id = sa.Column(sa.Integer, sa.ForeignKey("promotion.id"))
+    tag_id = sa.Column(sa.Integer, sa.ForeignKey("promotiontag.id"))
+promotion2tag = PromotionTag2Promotion.__table__
 
+class PromotionTag(WithOrganizationMixin, Base):
+    query = DBSession.query_property()
+    __tablename__ = "promotiontag"
+    id = sa.Column(sa.Integer, primary_key=True)
+    label = sa.Column(sa.Unicode(255), index=True)
+    publicp = sa.Column(sa.Boolean, default=False)
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
     @declared_attr
     def __tableargs__(cls):
-        return  ((sa.schema.UniqueConstraint(cls.name,cls.organization_id)))        
+        return  ((sa.schema.UniqueConstraint(cls.label,cls.organization_id)))        
 
     def __repr__(self):
-        return "<%r name: %r organization_id: %r>" % (self.__class__, self.name, self.organization_id)
+        return "<%r label: %r organization_id: %r>" % (self.__class__, self.label, self.organization_id)
 
 class Promotion(WithOrganizationMixin, 
                 AboutPublishMixin,
@@ -235,7 +285,7 @@ class Promotion(WithOrganizationMixin,
     __tablename__ = "promotion"
 
     id = sa.Column(sa.Integer, primary_key=True)
-    kinds = orm.relationship("Kind", secondary=promotion2kind, 
+    tags = orm.relationship("PromotionTag", secondary=promotion2tag, 
                              backref=orm.backref("promotions"))
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
@@ -254,44 +304,30 @@ class Promotion(WithOrganizationMixin,
 
     def to_dict(self):
         D = model_to_dict(self)
-        D["kind_content"] = self.kind_content
+        D["tag_content"] = self.tag_content
         return D
 
     @property
-    def kind_content(self):
-        return u", ".join(k.name for k in self.kinds)
+    def tag_content(self):
+        return u", ".join(k.label for k in self.tags)
 
-    @kind_content.setter
-    def kind_content(self, v):
-        self._kind_content = v
-    
-    import re
-    SPLIT_RX = re.compile("[,、]")
-    def update_kind(self, ks):
-        ## 面倒なのでO(N)
-        splitted = self.SPLIT_RX.split(ks)
-        ks = set(k.strip() for k in splitted)
-        will_updates = []
-        for k in ks:
-            if k: 
-                kind = Kind.query.filter_by(name=k, organization_id=self.organization_id).first()
-                kind = kind or Kind(name=k, organization_id=self.organization_id)
-                will_updates.append(kind)
-        will_deletes = set(self.kinds).difference(will_updates)
-        for k in will_updates:
-            self.kinds.append(k)
-        for k in will_deletes:
-            self.kinds.remove(k)
+    @tag_content.setter
+    def tag_content(self, v):
+        self._tag_content = v  
 
     @classmethod
-    def matched_qs(cls, d=None, kind=None, qs=None):
+    def matched_qs(cls, d=None, tag=None, qs=None):
         qs = cls.publishing(d=d, qs=qs)
-        if kind:
-            qs = qs.filter(cls.kinds.any(Kind.name==kind))
+        if tag:
+            qs = qs.filter(cls.tags.any(PromotionTag.label==tag))
 
         return qs
 
-def delete_orphan_kind(mapper, connection, target):
-    Kind.query.filter(~Kind.promotions.any()).delete(synchronize_session=False)
+    SPLIT_RX = re.compile("[,、]")
+    def update_tag(self, ks):
+        return update_object_tag(self, PromotionTag, ks, self.SPLIT_RX)
 
-sa.event.listen(Promotion, "after_delete", delete_orphan_kind)
+def delete_orphan_tag(mapper, connection, target):
+    PromotionTag.query.filter(~PromotionTag.promotions.any()).delete(synchronize_session=False)
+
+sa.event.listen(Promotion, "after_delete", delete_orphan_tag)

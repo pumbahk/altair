@@ -33,7 +33,7 @@ class WidgetTestSourceMixn(object):
         return request
 
 def make_promotion(id=1):
-    from .models import Promotion
+    from altaircms.topic.models import Promotion
     return Promotion(id=id)
 
 class PromotionWidgetViewTests(WidgetTestSourceMixn, 

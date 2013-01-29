@@ -38,9 +38,8 @@ def layout_mapper(request, obj):
 
 def promotion_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
-    objlike.kind_content = obj.kind_content
+    objlike.tag_content = obj.tag_content
     objlike.main_image = image_asset_layout(request, obj.main_image)
-    objlike.thumbnail = image_asset_layout(request, obj.thumbnail)
     objlike.linked_page = Markup(u'<a href="%s">%s</a>' % (h.link.preview_page_from_pageset(request, obj.linked_page), obj.linked_page.name)) if obj.linked_page else u"-"
     url = h.link.get_link_from_promotion(request, obj)
     objlike.link = Markup(u'<a href="%s">リンク先</a>' % url)
