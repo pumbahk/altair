@@ -516,6 +516,22 @@ var PrintConfirmView = AppPageViewBase.extend({
   }
 });
 
+var SelectForMultipleTicketsView = Backbone.View.extend({
+    events: {
+    }, 
+    initialize: function(opts){
+        this.callback = opts.callback;
+        this.tickets = [];
+    }, 
+    draw: function(){
+    }, 
+    collectValues: function(){
+    }, 
+    onCommit: function(){
+        this.callback(this.collectValues());
+    }
+})
+
 var AppletView = Backbone.View.extend({
   initialize: function(opts){
     this.appviews = opts.appviews;
