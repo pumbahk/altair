@@ -1,12 +1,14 @@
-
 /*artist.detail.php*/
 
-#main_center{
-	
+#side {
+    border:1px solide transparent;
+    margin-top:5px;
 }
 
+
+
 #main_right{
-	border:soli 1px transparent;
+	border:solid 1px transparent;
 	width:240px;
 	background-color:#ffffff;
 	float:right;
@@ -23,11 +25,11 @@
 }
 
 #discography_title{
-        background-size: 240px 50px;
+    background-size: 240px 50px;
 	background: url(../../img/artistpage/artistname.png) repeat-x 0 50%;
-        width:240px;
-        height:50px;
-        border:solid 1px transparent;
+    width:240px;
+    height:50px;
+    border:solid 1px transparent;
 	color:#FFFFFF;
 	font-size:1.4em;
 }
@@ -45,7 +47,7 @@
 }
 
 #left_scroll {
-        background: url(../../img/music/btn_check_prev.gif) repeat-x 0 50%;
+    background: url(../../img/music/btn_check_prev.gif) repeat-x 0 50%;
 	width:15px;
 	height:100px;
 	margin-left:10px;
@@ -61,7 +63,7 @@
 
 #plof_box{
 	background-color:#f0f0f0;
-        border:1px solid transparent;
+    border:1px solid transparent;
 	width:490px;
 	height:500px;
 	float:left;
@@ -72,10 +74,10 @@
 
 }
 #artistname {
-        background: url(../../img/artistpage/artistname.png) repeat-x 0 50%;
-        background-size: 495px 50px;
-        width:495px;
-        height:50px;
+    background: url(../../img/artistpage/artistname.png) repeat-x 0 50%;
+    background-size: 495px 50px;
+    width:495px;
+    height:50px;
 	border:solid 1px transparent;
 	font-size:1.3em;
 	color:#ffffff;
@@ -91,28 +93,28 @@
 }
 
 #main_bg h3 {
-        background: url(../../img/artistpage/genre_small_title.png) norepeat 0 50%;
-        background-size: 130px 23px;
-        width:200px;
-        height:23px;
-        border:1px solid transparent;
+    background: url(../../img/artistpage/genre_small_title.png) norepeat 0 50%;
+    background-size: 130px 23px;
+    width:200px;
+    height:23px;
+    border:1px solid transparent;
 	margin-left:5px;
 }
 
 #picture {
-        background-color:#ccc;
+    background-color:#ccc;
 	width:370px;
 	height:200px;
 }
 
 #photos {
 	border:1px solid transparent;
-        background: url(../../img/artistpage/genre_big_title.png) repeat-x 0 50%;
-        background-size: 470px 200px;
+    background: url(../../img/artistpage/genre_big_title.png) repeat-x 0 50%;
+    background-size: 470px 200px;
 }
 
 #photos img {
-        border:1px solid transparent;
+    border:1px solid transparent;
 	margin:4px;
 }
 
@@ -121,19 +123,19 @@
 
 #salesdate {
 	margin:10px;
-        background-color:#E0FFFF;
-        border-radius:5px;
-        -webkit-border-radius:5px;
-        -moz-border-radius:5px;
-        width:600px;
-        padding:10px;
+    background-color:#E0FFFF;
+    border-radius:5px;
+    -webkit-border-radius:5px;
+    -moz-border-radius:5px;
+    width:600px;
+    padding:10px;
 }
 
 #cd_slide {
-        border:1px solid black;
-        width:200px;
-        height:350px;
-        overflow:auto;
+    border:1px solid black;
+    width:200px;
+    height:350px;
+    overflow:auto;
 }
 		
 .jScrollPaneContainer {

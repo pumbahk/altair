@@ -188,6 +188,7 @@ a:hover img {
 .header .header-inner{
 	width: 975px;
 	margin: 0 auto;
+    position: relative;
 }
 .gnavi{
 	font-size: 12px;
@@ -195,8 +196,9 @@ a:hover img {
 	margin: 0px auto 0 auto;
 	padding: 14px 0 0 0;
 	text-align: right;	
-	position: relative;
-	float: right;
+	position: absolute;
+    top: 0px;
+    right: 0px;
 }
 
 .main-top{
@@ -1136,6 +1138,7 @@ div#performance-calendar .month-tab span a{
     margin: 10px auto;
     color: #fff;
     float: right;
+    white-space: nowrap;
 }
 
 .footer .footernav ul {
@@ -1194,11 +1197,29 @@ table.login thead th{
 	
 }
 
-table.login td{
-	padding: 5px 10px;
+table.login th  {
+    height: 2em;
 }
 
-table.login td input{
+table.login td {
+	padding: 5px 10px;
+    height: 100%;
+}
+
+table.login table.inner {
+    width: 100%;
+    margin: 0 0;
+    padding: 0 0;
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+
+table.login table.inner td {
+    padding: 5px 0px;
+    height: none;
+}
+
+table.login td input.text {
 	padding: 5px;
 	border: 1px #ccc solid;
 }

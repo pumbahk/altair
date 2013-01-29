@@ -284,6 +284,9 @@
               var attrs = util.allAttributes(n);
               var xlink = context.xlink;
               var focused = context.focused || (attrs.id && isFocused(attrs.id));
+              var px = parseFloat(attrs.x),
+                  py = parseFloat(attrs.y);
+              var position = (!isNaN(px) && !isNaN(py)) ? { x: px, y: py } : context.position;
               var transform = attrs["transform"] ?
                 context.transform.multiply(parseTransform(attrs["transform"])):
                 context.transform;
@@ -335,19 +338,21 @@
                   shape = new Fashion.Text({
                     text: collectText(n),
                     anchor: currentSvgStyle.textAnchor,
-                    transform: _transform
+                    position: position || null,
+                    transform: transform || null
                   });
                 } else if (n.nodeName == 'text') {
-                arguments.callee.call(
-                  self,
-                  {
-                    svgStyle: currentSvgStyle,
-                    transform: transform,
-                    defs: context.defs,
-                    focused: focused,
-                    xlink: xlink
-                  },
-                  n.childNodes);
+                  arguments.callee.call(
+                    self,
+                    {
+                      svgStyle: currentSvgStyle,
+                      position: position,
+                      transform: transform,
+                      defs: context.defs,
+                      focused: focused,
+                      xlink: xlink
+                    },
+                    n.childNodes);
                   continue outer;
 				}
                 break;
@@ -356,7 +361,6 @@
                 break;
 
               case 'rect':
-                var _transform = attrs.transform || null;
                 shape = new Fashion.Rect({
                   size: {
                     x: parseFloat(attrs.width),
@@ -366,7 +370,7 @@
                     x: parseFloat(attrs.rx || 0),
                     y: parseFloat(attrs.ry || 0)
                   },
-                  transform: _transform,
+                  transform: attrs.transform || null,
                   zIndex: -10
                 });
                 for (var j=0,ll=n.childNodes.length; j<ll; j++) {
@@ -421,8 +425,9 @@
               svgStyle: {
                 fill: false, fillOpacity: false,
                 stroke: false, strokeOpacity: false,
-                fontSize: 10
+                fontSize: 10, textAnchor: false
               },
+	          position: null,
               transform: new Fashion.Matrix(),
               defs: {},
               focused: false,

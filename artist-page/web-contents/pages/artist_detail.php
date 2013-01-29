@@ -104,7 +104,7 @@ extract($result);
 
 	<hr />
 
-	<!-- InstanceBeginEditable name="cat" --><a href ="./index.php">インデックスページへ</a>
+	<!-- InstanceBeginEditable name="cat" -->
 <!-- InstanceEndEditable -->
 
 	<!-- ========== main ========== -->

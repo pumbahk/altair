@@ -170,15 +170,16 @@ function svgStylesFromMap(styles, defs) {
 }
 
 function mergeSvgStyle(origStyle, newStyle) {
-  return {
-    fill:          newStyle.fill !== null ? newStyle.fill: origStyle.fill,
-    fillOpacity:   newStyle.fillOpacity !== null ? newStyle.fillOpacity: origStyle.fillOpacity,
-    stroke:        newStyle.stroke !== null ? newStyle.stroke: origStyle.stroke,
-    strokeWidth:   newStyle.strokeWidth !== null ? newStyle.strokeWidth: origStyle.strokeWidth,
-    strokeOpacity: newStyle.strokeOpacity !== null ? newStyle.strokeOpacity: origStyle.strokeOpacity,
-    fontSize:      newStyle.fontSize !== null ? newStyle.fontSize: origStyle.fontSize,
-    textAnchor:    newStyle.textAnchor !== null ? newStyle.textAnchor: origStyle.textAnchor
-  };
+  var copied = { };
+  for (var k in origStyle) {
+    copied[k] = origStyle[k];
+  }
+  for (var k in newStyle) {
+    if (newStyle[k] !== null) {
+      copied[k] = newStyle[k];
+    }
+  }
+  return copied;
 }
 
 function buildStyleFromSvgStyle(svgStyle) {

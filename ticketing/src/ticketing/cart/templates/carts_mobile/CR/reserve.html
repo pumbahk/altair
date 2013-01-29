@@ -13,10 +13,12 @@ ${event.title}
   <div>
   ${product['name']}(${product['price']}円)
   </div>
+  % if product['seats']:
   <font color="#580d9a">■</font>座席番号<br/>
   % for seat in product['seats']:
     ${seat['name']}<br/>
   % endfor
+  % endif
   <font color="#580d9a">■</font>数量<br/>
   ${product['quantity']}<br/>
 </div>

@@ -1,5 +1,10 @@
 <%inherit file="/layout_2cols.html"/>
 <%namespace file="/common/helpers.html" name="h" />
+<script type="text/javascript">
+  $(function(){
+    $('.datetimefield').datetimepicker({dateFormat:'yy-mm-dd',timeFormat:'hh:mm'});
+  });
+</script>
 
 <div class="breadcrumbs">
   ${h.breadcrumbs(
@@ -20,7 +25,17 @@
   ${h.flash_messages(request)}
 </div>
 
-<h3>開催日:${h.safe_strftime(performance.start_on)}　${performance.name}</h3>
+<h3>開催日:${h.safe_strftime(performance.start_on)}　${performance.name}</h3>  
+<form id="limitation" action="${request.route_path('sales_reports.performance', performance_id=performance_id)}" method="POST">
+  <div class="control-group">
+    <div class="controls">
+      <input class="datetimefield" style="width: 140px; vertical-align: middle; margin-bottom: 0px;" id="limited_from" name="limited_from" type="text" value="${h.safe_strftime(form.limited_from.data)}" placeholder="開始日時"> 〜
+      <input class="datetimefield" style="width: 140px; vertical-align: middle; margin-bottom: 0px;" id="limited_to" name="limited_to" type="text" value="${h.safe_strftime(form.limited_to.data)}" placeholder="終了日時">
+      <input type="submit" class="btn" value="集計期間を絞り込む" >
+    </div>
+  </div>
+</form>
+
 <br />
 % for sale_segment_name, performance_reports in report_by_sales_segment.items():
 <h3>${sale_segment_name}</h3>
