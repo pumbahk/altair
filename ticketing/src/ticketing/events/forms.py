@@ -4,7 +4,7 @@ from wtforms import Form
 from wtforms import TextField, IntegerField, HiddenField, SelectField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 
-from ticketing.formhelpers import DateTimeField, Translations, Required
+from ticketing.formhelpers import DateTimeField, Translations, Required, JISX0208
 from ticketing.core.models import Event, Account
 
 class EventForm(Form):
@@ -41,6 +41,7 @@ class EventForm(Form):
         label = u'タイトル',
         validators=[
             Required(),
+            JISX0208(), 
             Length(max=200, message=u'200文字以内で入力してください'),
         ]
     )
@@ -48,6 +49,7 @@ class EventForm(Form):
         label = u'タイトル略称',
         validators=[
             Required(),
+            JISX0208(), 
             Length(max=100, message=u'100文字以内で入力してください'),
         ]
     )
