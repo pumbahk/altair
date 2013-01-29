@@ -117,7 +117,9 @@ $(function(){
 	
 
 		 <div id = "notice">
-			<div id ="index_artist"><p>注目アーティスト</p></div>
+			<div id ="index_artist">
+              <p>注目アーティスト</p>
+            </div>
 			<div class ="featured_cd_imgs">
 			 <? for($k = 1; $k<=10; $k++): ?>
 				<? if($k==2 or $k==6 or $k==8){?>
