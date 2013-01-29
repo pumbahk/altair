@@ -48,6 +48,11 @@ def uname_file_from_filestorage(filesession, filestorage):
     uname = get_uname(filestorage.filename)
     return File(name=uname, handler=filestorage.file)
 
+def thumbnail_file_from_mainfile(mainfile, filestorage):
+    dirname, basename  = os.path.split(mainfile.name)
+    thumb_filename = os.path.join(dirname,"thumb."+basename)
+    return File(name=thumb_filename, handler=filestorage.file)
+
 ## form
 def is_filled_filefield(filefield):
     return filefield != u""
@@ -145,7 +150,7 @@ class ImageCreator(Creator):
         ## file
         filesession = get_asset_filesession(self.request)
         mainimage_file = filesession.add(uname_file_from_filestorage(filesession, params["filepath"]))
-        thumbnail_file = filesession.add(uname_file_from_filestorage(filesession, params["thumbnail_path"]))
+        thumbnail_file = filesession.add(thumbnail_file_from_mainfile(mainimage_file, params["thumbnail_path"]))
 
         ## asset
         asset = models.ImageAsset()
@@ -183,7 +188,7 @@ class MovieCreator(Creator):
             **asset_data)
 
         if is_filled_filefield(params["placeholder"]):
-            thumbnail_file = filesession.add(uname_file_from_filestorage(filesession, params["placeholder"]))
+            thumbnail_file = filesession.add(thumbnail_file_from_mainfile(mainmovie_file, params["placeholder"]))
             asset.thumbnail_path = thumbnail_file.name
 
         put_tags(asset, "movie_asset", tags, private_tags, self.request)
@@ -214,7 +219,7 @@ class FlashCreator(Creator):
             **asset_data)
 
         if is_filled_filefield(params["placeholder"]):
-            thumbnail_file = filesession.add(uname_file_from_filestorage(filesession, params["placeholder"]))
+            thumbnail_file = filesession.add(thumbnail_file_from_mainfile(mainflash_file, params["placeholder"]))
             asset.thumbnail_path = thumbnail_file.name
 
         put_tags(asset, "flash_asset", tags, private_tags, self.request)
