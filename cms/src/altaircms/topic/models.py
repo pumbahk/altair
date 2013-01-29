@@ -40,6 +40,26 @@ topicはtopicウィジェットで使われる。
 
 ## 
 
+def qs_has_permission(cls, qs):
+    """ 公開可能なもののみ
+    """
+    return qs.filter(cls.is_vetoed==False)
+
+
+def qs_in_term(cls,qs, d):
+    """ 掲載期間のもののみ
+    """
+    qs = qs.filter(cls.publish_open_on  <= d)
+    return qs.filter((d <= cls.publish_close_on) | (cls.publish_close_on == None))
+
+
+def qs_orderby_logic(cls, qs):
+    """ 表示順序で並べた後、公開期間で降順
+    """
+    return qs.order_by(sa.asc(cls.display_order),
+                       sa.desc(cls.publish_open_on), 
+                       )
+    
 class AboutPublishMixin(object):
     """ 表示順序を定義可能なmodelが持つ
     """
@@ -54,31 +74,7 @@ class AboutPublishMixin(object):
             d = datetime.now()
         if qs is None:
             qs = cls.query
-        return cls._has_permissions(cls._orderby_logic(cls._publishing(qs, d)))
-
-    @classmethod
-    def _has_permissions(cls, qs):
-        """ 公開可能なもののみ
-        """
-        return qs.filter(cls.is_vetoed==False)
-
-    @classmethod
-    def _publishing(cls, qs, d):
-        """ 掲載期間のもののみ
-        """
-        qs = qs.filter(cls.publish_open_on  <= d)
-        return qs.filter((d <= cls.publish_close_on) | (cls.publish_close_on == None))
-
-    @classmethod
-    def _orderby_logic(cls, qs):
-        """ 表示順序で並べた後、公開期間で降順
-        """
-        table = cls.__tablename__
-        return qs.order_by(sa.asc(table+".display_order"),
-                           sa.desc(table+".publish_open_on"), 
-                           )
-
-
+        return qs_has_permission(cls, qs_orderby_logic(cls, qs_in_term(cls, qs, d)))
 
 _where = object()
 
@@ -111,9 +107,6 @@ class Topic(AboutPublishMixin,
 
     link = sa.Column(sa.Unicode(255), doc="external link", nullable=True)
     mobile_link = sa.Column(sa.Unicode(255), doc="external mobile_link", nullable=True)
-
-    def __repr__(self):
-        return "topic: %s title=%s" % (self.kind, self.title)
 
     @property
     def kind_content(self):
@@ -175,14 +168,14 @@ class Topcontent(AboutPublishMixin,
     id = sa.Column(sa.Integer, primary_key=True)
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
-    kinds = orm.relationship("Kind", secondary=topic2kind, backref=orm.backref("topics"))
+    kinds = orm.relationship("Kind", secondary=topcontent2kind, backref=orm.backref("topcontents"))
 
     title = sa.Column(sa.Unicode(255))
     text = sa.Column(sa.Unicode(255))
 
     ## topcontent をlinkとして利用したときの飛び先
     linked_page_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id"), nullable=True)
-    linked_page = orm.relationship(PageSet, primaryjoin="Topcontent.linked_page_id==PageSet.id")
+    linked_page = orm.relationship(PageSet)
 
     link = sa.Column(sa.Unicode(255), doc="external link")
     mobile_link = sa.Column(sa.Unicode(255), doc="external mobile_link")
@@ -193,9 +186,6 @@ class Topcontent(AboutPublishMixin,
     mobile_image_asset_id = sa.Column(sa.Integer, sa.ForeignKey("image_asset.id"), nullable=True)
     mobile_image_asset = orm.relationship(ImageAsset, primaryjoin="Topcontent.mobile_image_asset_id==ImageAsset.id")
     countdown_type = sa.Column(sa.String(255)) #todo: fixme
-
-    def __repr__(self):
-        return "topcontent: %s title=%s" % (self.kind, self.title)
 
     @property
     def countdown_type_ja(self):

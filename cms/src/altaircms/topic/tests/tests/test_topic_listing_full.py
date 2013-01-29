@@ -1,26 +1,12 @@
 # -*- coding:utf-8 -*-
 from datetime import datetime
 import unittest
-import sqlalchemy as sa
-from altaircms.models import DBSession
-from altaircms.models import Base
-from altaircms.topic.models import Topic        
-
-def setUpModule():
-    engine = sa.create_engine("sqlite://")
-    Base.metadata.bind = engine
-    DBSession.bind = engine
-    Base.metadata.create_all()
-
-def tearDown():
-    Base.metadata.drop_all()
-    DBSession.remove()
-
 
 class TopicListingFull(unittest.TestCase):
     """ topicの表示のテスト
     """
     def _makeObj(self, cls, *args, **kwargs):
+        from altaircms.models import DBSession
         obj = cls(*args, **kwargs)
         DBSession.add(obj)
         return obj
@@ -52,30 +38,26 @@ class TopicListingFull(unittest.TestCase):
         --------------------------------------------
         5. ちょっとどうでも良い(begin 2011/5/1) 100
         """
+        from altaircms.topic.models import Topic
         self._makeObj(Topic, publish_open_on=datetime(2011, 1, 1),
                       publish_close_on=datetime(2013, 1, 1), 
                       title=u"1. オススメ!!! 最重要(begin 2011/1/1)  1", 
-                      is_global=True, 
                       display_order=1)
         self._makeObj(Topic, publish_open_on=datetime(2011, 5, 1),
                       publish_close_on=datetime(2013, 1, 1), 
                       title=u"2. 何とか(begin 2011/5/1)               50", 
-                      is_global=True, 
                       display_order=50)
         self._makeObj(Topic, publish_open_on=datetime(2011, 4, 1),
                       publish_close_on=datetime(2013, 1, 1), 
                       title=u"3. かんとか(begin 2011/4/1)             50", 
-                      is_global=True, 
                       display_order=50)
         self._makeObj(Topic, publish_open_on=datetime(2011, 3, 1),
                       publish_close_on=datetime(2013, 1, 1), 
                       title=u"4. ふつうな感じの告知(begin 2011/3/1)   50", 
-                      is_global=True, 
                       display_order=50)
         self._makeObj(Topic, publish_open_on=datetime(2011, 3, 1),
                       publish_close_on=datetime(2013, 1, 1), 
                       title=u"5. ちょっとどうでも良い(begin 2011/5/1) 100", 
-                      is_global=True, 
                       display_order=100)
 
         qs = Topic.matched_qs(datetime(2011, 7, 1)).all()
@@ -88,11 +70,6 @@ class TopicListingFull(unittest.TestCase):
 5. ちょっとどうでも良い(begin 2011/5/1) 100
 """)
 
-    def _makePageset(self, **kwargs):
-        from altaircms.page.models import Page, PageSet
-        pageset = PageSet()
-        page = self._makeObj(Page, pageset=pageset, **kwargs)
-        return pageset
 
     def test_multiple_items(self):
         """ 関連づいたtopicが取得できてるか調べる
@@ -101,6 +78,7 @@ class TopicListingFull(unittest.TestCase):
         3. pageに関連
         渡された page, eventに関連していないtopicは取得しない
         """
+        raise NotImplementedError("this test will be implemented after tag(kind) search")
         from altaircms.event.models import Event
         event0 = self._makeObj(Event)
         event1 = self._makeObj(Event)
@@ -141,5 +119,7 @@ class TopicListingFull(unittest.TestCase):
         self.assertEquals("global\npage0\n", self.getDump(qs))
 
 if __name__ == "__main__":
+    from altaircms.topic.tests import setUpModule as S
+    S()
     unittest.main()
 

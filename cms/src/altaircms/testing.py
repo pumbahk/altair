@@ -42,7 +42,7 @@ def dummy_form_factory(name="DummyForm", validate=False, errors=None):
 def setup_db(models=[], extra_tables=[]):
     sqlahelper.get_session().remove()
 
-    resolver = DottedNameResolver(package='altaircms')
+    resolver = DottedNameResolver()
     for m in models:
         resolver.maybe_resolve(m)
 
