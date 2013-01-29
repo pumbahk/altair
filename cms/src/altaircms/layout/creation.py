@@ -17,6 +17,13 @@ def get_layout_filesession(request):
 def is_file_field(field):
     return hasattr(field, "file") and hasattr(field, "filename")
 
+def get_filename(inputname, filename):
+    if inputname is None:
+        return filename
+    dirname, _ = os.path.splitext(inputname)
+    return dirname+os.path.splitext(filename)[1]
+        
+
 class LayoutCreator(object):
     """
     params = {
@@ -41,7 +48,7 @@ class LayoutCreator(object):
         return os.path.basename(params["filepath"].filename)
 
     def create_model(self, params, blocks):
-        basename = params.get("template_filename") or self.get_basename(params)
+        basename = get_filename(params.get("template_filename"), self.get_basename(params))
         layout = Layout(template_filename=basename, 
                         title=params["title"], 
                         blocks=blocks)
@@ -51,13 +58,13 @@ class LayoutCreator(object):
     def update_model(self, layout, params, blocks):
         layout.title =params["title"]
         layout.blocks = blocks
-        layout.template_filename = params.get("template_filename") or self.get_basename(params)
+        layout.template_filename = get_filename(params.get("template_filename"), self.get_basename(params))
         DBSession.add(layout)
         return layout
 
     def write_layout_file(self, params):
         filesession = get_layout_filesession(self.request)
-        basename = params.get("template_filename") or self.get_basename(params)
+        basename = get_filename(params.get("template_filename"), self.get_basename(params))
         prefixed_name = os.path.join(self.organization.short_name, basename)
         filedata = File(name=prefixed_name, handler=params["filepath"].file)
         filesession.add(filedata)
