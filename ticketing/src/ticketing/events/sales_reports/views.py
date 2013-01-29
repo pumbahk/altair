@@ -84,6 +84,8 @@ class SalesReports(BaseView):
             'form':SalesReportForm(self.request.params, event_id=performance.event_id),
             'performance':performance,
             'report_by_sales_segment':report_by_sales_segment,
+            'performance_id':performance_id,
+            'form':form,
         }
 
     @view_config(route_name='sales_reports.preview', renderer='ticketing:templates/sales_reports/preview.html')
