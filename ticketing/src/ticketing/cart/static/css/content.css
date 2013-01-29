@@ -2357,6 +2357,7 @@
 
 #confirmDelivery td label {
 	font-weight: bold;
+	display: inline-block;
 }
 
 /* メールマガジンの配信 */
