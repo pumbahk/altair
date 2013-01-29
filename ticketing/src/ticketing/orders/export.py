@@ -4,21 +4,23 @@ from ticketing.core.models import no_filter
 from ticketing.models import record_to_multidict
 from ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
 from sqlalchemy.sql.expression import or_
-from collections import defaultdict
 
 def format_number(value):
     return _format_number(float(value))
 
 def _create_mailsubscription_cache(organization_id):
-    D = defaultdict(str)
+    D = dict()
     query = MailSubscription.query \
         .filter(MailSubscription.segment_id == MailMagazine.id) \
         .filter(or_(MailSubscription.status == None, MailSubscription.status == MailSubscriptionStatus.Subscribed.v))
     if organization_id:
         query = query.filter(MailMagazine.organization_id == organization_id)
     for ms in query:
-        D[ms.email] = "1"
+        D[ms.email] = True
     return D
+
+def one_or_empty(b):
+    return '1' if b else ''
 
 class OrderCSV(object):
     order_value_filters = dict((k, format_number) for k in ['transaction_fee', 'delivery_fee', 'system_fee', 'total_amount'])
@@ -277,8 +279,9 @@ class OrderCSV(object):
                 + product_item_list
                 + seat_list
             )
-            if "shipping_email" in row and not row.get("mail_permission_0"):
-                row["mail_permission_0"] = self.mailsubscription_cache[row["shipping_email"]]
+            if "shipping_email_1" in row and not row.get("mail_permission_0"):
+                row["mail_permission_0"] = one_or_empty(self.mailsubscription_cache.get(row["shipping_email_1"]) or \
+                                                        self.mailsubscription_cache.get(row["shipping_email_2"]))
             return self.encode(row)
         else:
             rows = []
@@ -295,7 +298,8 @@ class OrderCSV(object):
                             + values['product_item'][j]
                             + [seat]
                         )
-                        if "shipping_email" in row and not row.get("mail_permission_0"):
-                            row["mail_permission_0"] = self.mailsubscription_cache[row["shipping_email"]]
+                        if "shipping_email_1" in row and not row.get("mail_permission_0"):
+                            row["mail_permission_0"] = one_or_empty(self.mailsubscription_cache.get(row["shipping_email_1"]) or \
+                                                                    self.mailsubscription_cache.get(row["shipping_email_2"]))
                         rows.append(self.encode(row))
             return rows

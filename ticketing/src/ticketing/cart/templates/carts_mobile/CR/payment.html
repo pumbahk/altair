@@ -47,7 +47,6 @@
 <div>
 <font color="#580d9a">■</font>${form['email_1'].label}
 </div>
-<p>※ 予約受付完了メール等をメールでご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</p>
 <div>
   ${form['email_1']}
   <div style="color:#ff0000">
@@ -64,6 +63,8 @@
     ${h.error_list(request, form, 'email_1_confirm')}
   </div>
 </div>
+<p>※ 予約受付完了メール等をメールでご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</p>
+
 <div>
 <font color="#580d9a">■</font>住所
 </div>
@@ -91,6 +92,7 @@
 <div>
   住所<br/>
   ${form['address_1']}<br/>
+  建物名等<br/>
   ${form['address_2']}
   <div style="color:#ff0000">
     ${h.error_list(request, form, 'address_1')}

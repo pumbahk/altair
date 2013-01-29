@@ -147,15 +147,17 @@ foreach ($child_genre_list as $genre) {
 		</ul>
 		<div id ="genre">	
 	        <div id ="genrename" style="border:solid 1px transparent;">
-               <div class ="genrenamea">	
+              <div class="genrenamea">
                 <a href="/~katosaori/web-contents/pages/genre.php?genre=<?= $link ?>&alternate=<?= $alternate ?>"><?= htmlspecialchars($genrename)?></a>
-               </div>
+              </div>
             </div>
 		    <div id = "genre_links">
-		        <ul>
     <?
      $artists = artist_get_by_genre($dbh,$genre_name);
-     if ((count($child_genre_list)) > 0){
+     if ((count($child_genre_list)) > 0){ ?>
+              <div class="links">
+                <ul> 
+         <?
         foreach ($child_genre_list as $childs) {
 	        $genre_tree = explode('/', $childs['genre']);
 	        $genre_link = "";
@@ -166,6 +168,7 @@ foreach ($child_genre_list as $genre) {
 	         	        <li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/genre.php?genre=<?=$genre_link?>&alternate=<?= $alternate ?>"><?= $child_link?></a></li>
         <?}?>
                 </ul>
+              </div>
      <?}
      elseif (isset($artists)){
          if(isset($artists)){
@@ -187,14 +190,16 @@ foreach ($child_genre_list as $genre) {
 		     }?>
 				        </div>
                     </div>
-     		        <div class ="page_artist_border"><img src="../img/common/side_nav_line.gif" width="480" height="2"></div>	
+     		        <div class="page_artist_border"><img src="../img/common/side_nav_line.gif" width="480" height="2"></div>
+                      <div class="links">	
              <?$artist_of_page = array_splice($artists,($pager['page']-1)*$unit,$unit);
 	         foreach($artist_of_page as $a){?>
 		         <a href ="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/artist_detail.php?artist=<?=$a['name']?>"title="<img src = '../img/music/dummy_event.jpg'>"><?=$a['name'] ?></a><br />
              <?}
-          }
-     }?>   
-		    </div>
+          }?>   
+                      </div>
+    <?}?>      
+		   </div>
 	    </div>
 	    <div id = "main_right" style="margin-top:0px;">
 	        <div id = "rank_border">

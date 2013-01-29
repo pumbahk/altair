@@ -1589,7 +1589,8 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if 'stock_type' in kwargs:
             product.seat_stock_type_id = kwargs['stock_type'][template.seat_stock_type_id]
         if 'sales_segment' in kwargs:
-            product.sales_segment_id = kwargs['sales_segment'][template.sales_segment_id]
+            # 販売区分なしの場合の product もありえる
+            product.sales_segment_id = template.sales_segment_id and kwargs['sales_segment'][template.sales_segment_id]
         product.save()
 
         if with_product_items:

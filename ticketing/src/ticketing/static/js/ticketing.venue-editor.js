@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['C71SCWPDI2FUKPTT'] = (function (exports) { (function () { 
+__LIBS__['A7EN9WQOHU_6ZE4E'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -73,7 +73,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['K5X4TRWFJZBJFK4B'] = (function (exports) { (function () { 
+__LIBS__['yR4APS1VZ8ERS5_R'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -187,7 +187,7 @@ timer.prototype.lap = function(msg) {
     return lap;
 };
  })(); return exports; })({});
-__LIBS__['FA2D0CJ7EAR44I49'] = (function (exports) { (function () { 
+__LIBS__['RGMYY5JQWXGDZQZG'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -236,12 +236,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['YU33SKBQ4BEBUXA5'] = (function (exports) { (function () { 
+__LIBS__['x2IPHL2AZ7DXKDY5'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['K5X4TRWFJZBJFK4B'];
-var CONF = __LIBS__['C71SCWPDI2FUKPTT'];
-var IdentifiableSet = __LIBS__['FA2D0CJ7EAR44I49'].IdentifiableSet;
+var util = __LIBS__['yR4APS1VZ8ERS5_R'];
+var CONF = __LIBS__['A7EN9WQOHU_6ZE4E'];
+var IdentifiableSet = __LIBS__['RGMYY5JQWXGDZQZG'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -717,12 +717,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['Z7PAEDLB423DSHQF'] = (function (exports) { (function () { 
+__LIBS__['ZTA9CQNHHURLB5ME'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['K5X4TRWFJZBJFK4B'];
-var CONF = __LIBS__['C71SCWPDI2FUKPTT'];
-var models = __LIBS__['YU33SKBQ4BEBUXA5'];
+var util = __LIBS__['yR4APS1VZ8ERS5_R'];
+var CONF = __LIBS__['A7EN9WQOHU_6ZE4E'];
+var models = __LIBS__['x2IPHL2AZ7DXKDY5'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -916,7 +916,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['oXG03S0CYHJM5V72'] = (function (exports) { (function () { 
+__LIBS__['AG72PKQ580WRX8GE'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -947,13 +947,13 @@ exports.ja = {
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['C71SCWPDI2FUKPTT'];
-  var models = __LIBS__['YU33SKBQ4BEBUXA5'];
-  var util = __LIBS__['K5X4TRWFJZBJFK4B'];
-  var viewobjects = __LIBS__['Z7PAEDLB423DSHQF'];
-  var IdentifiableSet = __LIBS__['FA2D0CJ7EAR44I49'].IdentifiableSet;
+  var CONF = __LIBS__['A7EN9WQOHU_6ZE4E'];
+  var models = __LIBS__['x2IPHL2AZ7DXKDY5'];
+  var util = __LIBS__['yR4APS1VZ8ERS5_R'];
+  var viewobjects = __LIBS__['ZTA9CQNHHURLB5ME'];
+  var IdentifiableSet = __LIBS__['RGMYY5JQWXGDZQZG'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['oXG03S0CYHJM5V72'];
+    I18n.translations = __LIBS__['AG72PKQ580WRX8GE'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -1050,8 +1050,6 @@ exports.ja = {
 
   function parseCSSAsSvgStyle(str, defs) {
     var styles = parseCSSStyleText(str);
-    var textAnchor = null;
-    var textAnchorString = styles['text-anchor'];
     var fill = null;
     var fillString = styles['fill'];
     var fillOpacity = null;
@@ -1062,9 +1060,10 @@ exports.ja = {
     var strokeWidthString = styles['stroke-width'];
     var strokeOpacity = null;
     var strokeOpacityString = styles['stroke-opacity'];
-    if (textAnchorString) {
-        textAnchor = textAnchorString[0];
-    }
+    var fontSize = null;
+    var fontSizeString = styles['font-size'];
+    var textAnchor = null;
+    var textAnchorString = styles['text-anchor'];
     if (fillString) {
       if (fillString[0] == 'none') {
         fill = false;
@@ -1094,13 +1093,24 @@ exports.ja = {
     if (strokeOpacityString) {
       strokeOpacity = parseFloat(strokeOpacityString[0]);
     }
+    if (fontSizeString) {
+      if (fontSizeString instanceof Array)
+        fontSizeString = fontSizeString[0];
+      fontSize = parseFloat(fontSizeString);
+    }
+    if (textAnchorString) {
+      if (textAnchorString instanceof Array)
+        textAnchorString = textAnchorString[0];
+      textAnchor = textAnchorString;
+    }
     return {
-      textAnchor: textAnchor,
       fill: fill,
       fillOpacity: fillOpacity,
       stroke: stroke,
       strokeWidth: strokeWidth,
-      strokeOpacity: strokeOpacity
+	  strokeOpacity: strokeOpacity,
+      fontSize: fontSize,
+      textAnchor: textAnchor
     };
   }
 
@@ -1140,6 +1150,47 @@ exports.ja = {
     };
   }
 
+  function parseTransform(transform_str) {
+      var g = /\s*([A-Za-z_-][0-9A-Za-z_-]*)\s*\(\s*((?:[^\s,]+(?:\s*,\s*|\s+))*[^\s,]+)\s*\)\s*/.exec(transform_str);
+
+      var f = g[1];
+      var args = g[2].replace(/(?:^\s+|\s+$)/, '').split(/\s*,\s*|\s+/);
+
+      switch (f) {
+      case 'matrix':
+          if (args.length != 6)
+              throw new Error("invalid number of arguments for matrix()")
+          return new Fashion.Matrix(
+              parseFloat(args[0]), parseFloat(args[1]),
+              parseFloat(args[2]), parseFloat(args[3]),
+              parseFloat(args[4]), parseFloat(args[5]));
+      case 'translate':
+          if (args.length != 2)
+              throw new Error("invalid number of arguments for translate()")
+          return Fashion.Matrix.translate({ x:parseFloat(args[0]), y:parseFloat(args[1]) });
+      case 'scale':
+          if (args.length != 2)
+              throw new Error("invalid number of arguments for scale()");
+          return new Fashion.Matrix(parseFloat(args[0]), 0, 0, parseFloat(args[1]), 0, 0);
+      case 'rotate':
+          if (args.length != 1)
+              throw new Error("invalid number of arguments for rotate()");
+          return Fashion.Matrix.rotate(parseFloat(args[0]) * Math.PI / 180);
+      case 'skewX':
+          if (args.length != 1)
+              throw new Error('invalid number of arguments for skewX()');
+          var t = parseFloat(args[0]) * Math.PI / 180;
+          var ta = Math.tan(t);
+          return new Fashion.Matrix(1, 0, ta, 1, 0, 0);
+      case 'skewY':
+          if (args.length != 1)
+              throw new Error('invalid number of arguments for skewX()');
+          var t = parseFloat(args[0]) * Math.PI / 180;
+          var ta = Math.tan(t);
+          return new Fashion.Matrix(1, ta, 0, 1, 0, 0);
+      }
+      throw new Error('invalid transform function: ' + f);
+  }
 
   var VenueEditor = function VenueEditor(canvas, options) {
     this.canvas = canvas;
@@ -1274,22 +1325,7 @@ exports.ja = {
           if (attrs.style)
             currentSvgStyle = mergeSvgStyle(currentSvgStyle, parseCSSAsSvgStyle(attrs.style, defs));
           if (attrs['transform']) {
-            var trans = attrs['transform'];
-            var matrix;
-            while (trans.match(/^(\s*(matrix|translate)\(([^\)]+)\))/)) {
-              var type = RegExp.$2;
-              var param = RegExp.$3.split(/,\s*/);
-              if (type == 'matrix' && param.length==6) {
-                var a = param[0], c = param[1], e = param[2],
-                    b = param[3], d = param[4], f = param[5]
-                matrix = new Fashion.Matrix(a, c, e, b, d, f);
-              } else if(type == 'translate' && param.length==2) {
-                matrix = Fashion.Matrix.translate({ x: param[0], y: param[1] });
-              }
-              // TODO: support transform chain
-              trans = trans.substr(RegExp.$1.length);
-              break;
-            }
+            var matrix = parseTransform(attrs['transform']);
             if (matrix) {
               if (currentSvgStyle._transform) {
                 currentSvgStyle._transform = currentSvgStyle._transform.multiply(matrix);
@@ -1316,17 +1352,24 @@ exports.ja = {
 
             case 'text':
             case 'tspan':
+              var px = parseFloat(attrs.x),
+                  py = parseFloat(attrs.y);
               if (n.childNodes.length==1 && n.firstChild.nodeType == Node.TEXT_NODE) {
                 shape = new Fashion.Text({
-                  fontSize: 10,
                   text: n.firstChild.nodeValue,
                   zIndex: 99
                 });
+                if (isNaN(px) || isNaN(py)) {
+                  shape.position(currentSvgStyle._position);
+                }
                 shape.style(CONF.DEFAULT.TEXT_STYLE);
                 if (currentSvgStyle.textAnchor) {
                   shape.anchor(currentSvgStyle.textAnchor);
                 }
               } else if (n.nodeName == 'text') {
+                if (!isNaN(px) && !isNaN(py)) {
+                  currentSvgStyle._position = { x: px, y: py };
+                }
                 arguments.callee.call(self, currentSvgStyle, defs, n.childNodes);
                 continue outer;
               }
@@ -1358,6 +1401,9 @@ exports.ja = {
             if (currentSvgStyle._transform) {
               shape.transform(currentSvgStyle._transform);
             }
+            if (shape instanceof Fashion.Text) {
+              shape.fontSize(currentSvgStyle.fontSize);
+            }
             var x = parseFloat(attrs.x),
                 y = parseFloat(attrs.y);
             if (!isNaN(x) && !isNaN(y))
@@ -1369,7 +1415,9 @@ exports.ja = {
         }
     }).call(self,
       { _transform: false, fill: false, fillOpacity: false,
-        stroke: false, strokeOpacity: false },
+        stroke: false, strokeOpacity: false,
+        fontSize: 10, textAnchor: false
+      },
       {},
       drawing.documentElement.childNodes);
 
