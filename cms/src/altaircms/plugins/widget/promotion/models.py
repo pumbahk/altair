@@ -1,4 +1,6 @@
 # -*- coding:utf-8 -*-
+import logging
+logger = logging.getLogger(__name__)
 from zope.interface import implements, implementer
 from altaircms.interfaces import IWidget
 from altaircms.plugins.interfaces import IWidgetUtility
@@ -51,6 +53,7 @@ def promotion_merge_settings(template_name, limit, widget, bname, bsettings):
             params = {"show_image": pm.show_image, "info": info}
             return render(template_name, params, request=request)
         else:
+            logger.warn("promotion_merge_settings. info is empty")
             return u''
 
     bsettings.add(bname, slideshow_render)
@@ -82,7 +85,7 @@ class PromotionSheet(object):
 
         selected = punits[idx]
         return PromotionInfo(
-            thumbnails=[h.asset.to_show_page(request, pu.thumbnail) for pu in punits], 
+            thumbnails=[h.asset.to_show_page(request, pu.main_image, filepath=pu.main_image.thumbnail_path) for pu in punits], 
             idx=idx, 
             message=selected.text, 
             main=h.asset.to_show_page(request, selected.main_image), 
@@ -109,7 +112,7 @@ class PromotionWidget(Widget):
     @property
     def promotion_sheet(self, d=None):
         from altaircms.topic.models import Promotion
-        qs = Promotion.matched_qs(d=d, tag=self.kind.name).options(orm.joinedload("thumbnail"), orm.joinedload("linked_page"))
+        qs = Promotion.matched_qs(d=d, tag=self.kind.label).options(orm.joinedload("main_image"), orm.joinedload("linked_page"))
         return PromotionSheet(qs.all()) ##
 
     def merge_settings(self, bname, bsettings):

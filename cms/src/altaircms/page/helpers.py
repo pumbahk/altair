@@ -1,4 +1,6 @@
 ## for viewlet
+import logging
+logger = logging.getLogger(__name__)
 from pyramid.view import render_view_to_response
 from markupsafe import Markup
 from ..viewlet import api as va
@@ -76,6 +78,8 @@ def asset_describe_viewlet(request, pageset):
 
 
 def topic_describe_viewlet(request, pageset):
+    logger.warn("this is bad")
+    return ""
     va.set_pageset(request, pageset)
     event = pageset.event
     va.set_event(request, event)
@@ -87,6 +91,8 @@ def topic_describe_viewlet(request, pageset):
     return Markup(response.text)
 
 def topcontent_describe_viewlet(request, pageset):
+    logger.warn("this is bad")
+    return ""
     va.set_pageset(request, pageset)
     topcontents = Topcontent.query.filter_by(bound_page=pageset).order_by("topcontent.kind", "topcontent.subkind", "topcontent.display_order")
     va.set_topcontents(request, topcontents)
