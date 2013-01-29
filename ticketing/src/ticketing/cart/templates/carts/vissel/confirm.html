@@ -26,8 +26,11 @@
   }
 </style>
 </%block>
-<div style="margin-left:10px; margin-bottom: 10px; font-size:150%;">注文内容をご確認ください</div>
+
+${self.widget.flow_widget(3)}
+
 <form id="form1" action="${delegator['url'] if delegator else request.route_url('payment.finish')}" method="post">
+  <div style="margin-left:10px; margin-bottom: 10px; font-size:150%;">注文内容をご確認ください</div>
   ${form.csrf_token()}
   <input type="hidden" name="event_id" value="${cart.performance.event.id}"/>
 

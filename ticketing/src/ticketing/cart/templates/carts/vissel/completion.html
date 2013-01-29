@@ -9,8 +9,10 @@
   }
 </style>
 </%block>
-
 ${h.get_nickname(request)} 
+
+${self.widget.flow_widget(4)}
+
 <p><img src="${request.static_url('ticketing.cart:static/img/settlement/completion.gif')}" alt="購入を完了いたしました。" width="201" height="50" /></p>
 
 <div class="confirmBox">

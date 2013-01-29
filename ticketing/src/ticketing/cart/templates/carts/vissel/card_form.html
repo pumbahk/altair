@@ -14,6 +14,8 @@ ${h.get_nickname(request)}
   %endfor
 %endif
 
+${self.widget.flow_widget(2)}
+
 <form id="form1" name="form1" method="post" action="${request.url}">
   ${form.csrf_token()}
   <div class="settlementBox">
