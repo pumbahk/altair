@@ -132,8 +132,10 @@ class ProxyFactory(http.HTTPFactory):
 
 if __name__ == '__main__':
     tmpdir = os.path.join(os.path.dirname(__file__), 'tmp')
+    port = 58080
     if not os.path.exists(tmpdir):
         os.mkdir(tmpdir)
+    sys.stderr.write("proxy port:%d\n" % port)
     log.startLogging(open(os.path.join(tmpdir, 'access.log'), 'w'))
-    reactor.listenTCP(58080, ProxyFactory())
+    reactor.listenTCP(port, ProxyFactory())
     reactor.run()
