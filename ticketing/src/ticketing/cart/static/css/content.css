@@ -2353,6 +2353,9 @@
 	width: 100%;
 	padding: 10px;
 	border-bottom: 1px solid #f2f2e5;
+}
+
+#confirmDelivery td label {
 	font-weight: bold;
 }
 

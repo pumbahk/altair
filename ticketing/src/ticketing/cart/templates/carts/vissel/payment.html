@@ -120,8 +120,10 @@ ${self.widget.flow_widget(2)}
         <tr>
           <th scope="row">携帯メールアドレス (半角英数)</th>
           <td>
-            <p>携帯電話のメールアドレスをお持ちの方はお書きください。</p>
-            <p>(上の欄に携帯メールアドレスを入力された方は結構です)</p>
+            <p>
+              携帯電話のメールアドレスをお持ちの方はお書きください。<br />
+              (上のメールアドレス欄に携帯メールアドレスを入力された方は不要)
+            </p>
             <ul>
               <li>
                 ${form['email_2'].label}
@@ -158,10 +160,12 @@ ${self.widget.flow_widget(2)}
                 (例: 品川区)
                 ${h.error_list(request, form, 'city')}
               </li>
-              <li>町名番地
+              <li>
+                <label for="address_1">町名番地</label>
                 ${form['address_1']}
                 (例: 東五反田x-xx-xx)
-                <br />建物名等
+                <br />
+                <label for="address_2">建物名等</label>
                 ${form['address_2']}
                 (例: yyビルz階)
                 ${h.error_list(request, form, 'address_1')}
