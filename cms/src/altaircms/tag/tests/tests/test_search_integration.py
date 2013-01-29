@@ -3,17 +3,10 @@ from pyramid import testing
 
 config  = None
 def setUpModule():
-    from altaircms.testing import setup_db
-    setup_db(["altaircms.page.models", 
-              "altaircms.tag.models", 
-              "altaircms.event.models", 
-              "altaircms.asset.models"])
-
     global config
     from altaircms import testing as mytesting
     config = mytesting.config()
     config.include("altaircms.tag")
-    mytesting.setup_db(["altaircms.page.models", "altaircms.tag.models", "altaircms.event.models", "altaircms.asset.models"])
     
 def tearDownModule():
     from altaircms.testing import teardown_db
@@ -75,4 +68,6 @@ class AnyKindAssetSearchTests(unittest.TestCase):
                           0)
 
 if __name__ == "__main__":
+    from altaircms.tag.tests import setUpModule as S
+    S()
     unittest.main()

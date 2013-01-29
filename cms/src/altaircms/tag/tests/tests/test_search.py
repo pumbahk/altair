@@ -1,16 +1,5 @@
 import unittest
 
-def setUpModule():
-    from altaircms.testing import setup_db
-    setup_db(["altaircms.page.models", 
-              "altaircms.tag.models", 
-              "altaircms.event.models", 
-              "altaircms.asset.models"])
-
-def tearDown():
-    from altaircms.testing import teardown_db
-    teardown_db()
-
 class PageSearchTest(unittest.TestCase):
     def tearDown(self):
         import transaction
@@ -230,3 +219,7 @@ class FlashAssetSearchTest(unittest.TestCase):
         self.assertEquals(target.public_search_by_tag_label(u"private").count(), 0)
         self.assertEquals(target.private_search_by_tag_label(u"private").count(), 1)
 
+if __name__ == "__main__":
+    from altaircms.tag.tests import setUpModule as S
+    S()
+    unittest.main()
