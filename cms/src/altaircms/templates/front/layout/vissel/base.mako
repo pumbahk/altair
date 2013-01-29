@@ -44,7 +44,7 @@
 %endif
                 </ul>　　
             </div>
-			      <img src="/static/vissel/images/partnerlogo.gif" alt="OFFICIAL TICKET SITE PARTNER TICKETSTAR" class="partnerlogo" />
+            <img src="/static/vissel/images/partnerlogo.gif" alt="OFFICIAL TICKET SITE PARTNER TICKETSTAR" class="partnerlogo" />
         </div>
     </div>
 

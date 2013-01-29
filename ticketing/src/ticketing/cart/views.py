@@ -903,7 +903,6 @@ class ConfirmView(object):
             delegator = payment.call_delegator()
         except PaymentDeliveryMethodPairNotFound:
             raise HTTPFound(self.request_route_path("cart.payment", salessegment_id=cart.sales_segment_id))
-        logger.error(delegator)
         return dict(
             cart=cart,
             mailmagazines=magazines,
