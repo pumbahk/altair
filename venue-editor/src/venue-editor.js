@@ -103,8 +103,6 @@
 
   function parseCSSAsSvgStyle(str, defs) {
     var styles = parseCSSStyleText(str);
-    var textAnchor = null;
-    var textAnchorString = styles['text-anchor'];
     var fill = null;
     var fillString = styles['fill'];
     var fillOpacity = null;
@@ -115,9 +113,10 @@
     var strokeWidthString = styles['stroke-width'];
     var strokeOpacity = null;
     var strokeOpacityString = styles['stroke-opacity'];
-    if (textAnchorString) {
-        textAnchor = textAnchorString[0];
-    }
+    var fontSize = null;
+    var fontSizeString = styles['font-size'];
+    var textAnchor = null;
+    var textAnchorString = styles['text-anchor'];
     if (fillString) {
       if (fillString[0] == 'none') {
         fill = false;
@@ -147,13 +146,24 @@
     if (strokeOpacityString) {
       strokeOpacity = parseFloat(strokeOpacityString[0]);
     }
+    if (fontSizeString) {
+      if (fontSizeString instanceof Array)
+        fontSizeString = fontSizeString[0];
+      fontSize = parseFloat(fontSizeString);
+    }
+    if (textAnchorString) {
+      if (textAnchorString instanceof Array)
+        textAnchorString = textAnchorString[0];
+      textAnchor = textAnchorString;
+    }
     return {
-      textAnchor: textAnchor,
       fill: fill,
       fillOpacity: fillOpacity,
       stroke: stroke,
       strokeWidth: strokeWidth,
-      strokeOpacity: strokeOpacity
+	  strokeOpacity: strokeOpacity,
+      fontSize: fontSize,
+      textAnchor: textAnchor
     };
   }
 
@@ -193,6 +203,47 @@
     };
   }
 
+  function parseTransform(transform_str) {
+      var g = /\s*([A-Za-z_-][0-9A-Za-z_-]*)\s*\(\s*((?:[^\s,]+(?:\s*,\s*|\s+))*[^\s,]+)\s*\)\s*/.exec(transform_str);
+
+      var f = g[1];
+      var args = g[2].replace(/(?:^\s+|\s+$)/, '').split(/\s*,\s*|\s+/);
+
+      switch (f) {
+      case 'matrix':
+          if (args.length != 6)
+              throw new Error("invalid number of arguments for matrix()")
+          return new Fashion.Matrix(
+              parseFloat(args[0]), parseFloat(args[1]),
+              parseFloat(args[2]), parseFloat(args[3]),
+              parseFloat(args[4]), parseFloat(args[5]));
+      case 'translate':
+          if (args.length != 2)
+              throw new Error("invalid number of arguments for translate()")
+          return Fashion.Matrix.translate({ x:parseFloat(args[0]), y:parseFloat(args[1]) });
+      case 'scale':
+          if (args.length != 2)
+              throw new Error("invalid number of arguments for scale()");
+          return new Fashion.Matrix(parseFloat(args[0]), 0, 0, parseFloat(args[1]), 0, 0);
+      case 'rotate':
+          if (args.length != 1)
+              throw new Error("invalid number of arguments for rotate()");
+          return Fashion.Matrix.rotate(parseFloat(args[0]) * Math.PI / 180);
+      case 'skewX':
+          if (args.length != 1)
+              throw new Error('invalid number of arguments for skewX()');
+          var t = parseFloat(args[0]) * Math.PI / 180;
+          var ta = Math.tan(t);
+          return new Fashion.Matrix(1, 0, ta, 1, 0, 0);
+      case 'skewY':
+          if (args.length != 1)
+              throw new Error('invalid number of arguments for skewX()');
+          var t = parseFloat(args[0]) * Math.PI / 180;
+          var ta = Math.tan(t);
+          return new Fashion.Matrix(1, ta, 0, 1, 0, 0);
+      }
+      throw new Error('invalid transform function: ' + f);
+  }
 
   var VenueEditor = function VenueEditor(canvas, options) {
     this.canvas = canvas;
@@ -327,22 +378,7 @@
           if (attrs.style)
             currentSvgStyle = mergeSvgStyle(currentSvgStyle, parseCSSAsSvgStyle(attrs.style, defs));
           if (attrs['transform']) {
-            var trans = attrs['transform'];
-            var matrix;
-            while (trans.match(/^(\s*(matrix|translate)\(([^\)]+)\))/)) {
-              var type = RegExp.$2;
-              var param = RegExp.$3.split(/,\s*/);
-              if (type == 'matrix' && param.length==6) {
-                var a = param[0], c = param[1], e = param[2],
-                    b = param[3], d = param[4], f = param[5]
-                matrix = new Fashion.Matrix(a, c, e, b, d, f);
-              } else if(type == 'translate' && param.length==2) {
-                matrix = Fashion.Matrix.translate({ x: param[0], y: param[1] });
-              }
-              // TODO: support transform chain
-              trans = trans.substr(RegExp.$1.length);
-              break;
-            }
+            var matrix = parseTransform(attrs['transform']);
             if (matrix) {
               if (currentSvgStyle._transform) {
                 currentSvgStyle._transform = currentSvgStyle._transform.multiply(matrix);
@@ -369,17 +405,24 @@
 
             case 'text':
             case 'tspan':
+              var px = parseFloat(attrs.x),
+                  py = parseFloat(attrs.y);
               if (n.childNodes.length==1 && n.firstChild.nodeType == Node.TEXT_NODE) {
                 shape = new Fashion.Text({
-                  fontSize: 10,
                   text: n.firstChild.nodeValue,
                   zIndex: 99
                 });
+                if (isNaN(px) || isNaN(py)) {
+                  shape.position(currentSvgStyle._position);
+                }
                 shape.style(CONF.DEFAULT.TEXT_STYLE);
                 if (currentSvgStyle.textAnchor) {
                   shape.anchor(currentSvgStyle.textAnchor);
                 }
               } else if (n.nodeName == 'text') {
+                if (!isNaN(px) && !isNaN(py)) {
+                  currentSvgStyle._position = { x: px, y: py };
+                }
                 arguments.callee.call(self, currentSvgStyle, defs, n.childNodes);
                 continue outer;
               }
@@ -411,6 +454,9 @@
             if (currentSvgStyle._transform) {
               shape.transform(currentSvgStyle._transform);
             }
+            if (shape instanceof Fashion.Text) {
+              shape.fontSize(currentSvgStyle.fontSize);
+            }
             var x = parseFloat(attrs.x),
                 y = parseFloat(attrs.y);
             if (!isNaN(x) && !isNaN(y))
@@ -422,7 +468,9 @@
         }
     }).call(self,
       { _transform: false, fill: false, fillOpacity: false,
-        stroke: false, strokeOpacity: false },
+        stroke: false, strokeOpacity: false,
+        fontSize: 10, textAnchor: false
+      },
       {},
       drawing.documentElement.childNodes);
 
