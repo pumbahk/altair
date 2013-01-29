@@ -148,10 +148,15 @@ td{	padding: 5px;
 
 .sideCategoryGenre_rank h2 {
 	width:238px;
-        height: 40px;
-        padding: 7px 10px 0;
-       background-size: 238px 40px;
-        color: #ffffff;
-        background: url(../img/search/side_title_orange.gif) no-repeat 0 0;
+    height: 40px;
+    padding: 7px 10px 0;
+    background-size: 238px 40px;
+    color: #ffffff;
+    background: url(../img/search/side_title_orange.gif) no-repeat 0 0;
 }
+#side {
+    border:1px solide transparent;
+    margin-top:5px;
+}
+
 
