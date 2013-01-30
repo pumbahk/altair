@@ -1,4 +1,6 @@
 tmp
+*.swp
+*.swo
 *.egg
 *.egg-info
 *.pyc
