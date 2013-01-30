@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['dHUNCU9R8LMEFBM0'] = (function (exports) { (function () { 
+__LIBS__['iYS0Z0A2QAG7I196'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['JOOTA7INSTXMXVDP'] = (function (exports) { (function () { 
+__LIBS__['u4LQMUEMFAFHN__V'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['vSBA9M30LLKVCMT5'] = (function (exports) { (function () { 
+__LIBS__['BDOWWJ39SZZEKU7P'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['dHUNCU9R8LMEFBM0'];
-var CONF = __LIBS__['JOOTA7INSTXMXVDP'];
+var util = __LIBS__['iYS0Z0A2QAG7I196'];
+var CONF = __LIBS__['u4LQMUEMFAFHN__V'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -1021,9 +1021,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['JOOTA7INSTXMXVDP'];
-  var seat = __LIBS__['vSBA9M30LLKVCMT5'];
-  var util = __LIBS__['dHUNCU9R8LMEFBM0'];
+  var CONF = __LIBS__['u4LQMUEMFAFHN__V'];
+  var seat = __LIBS__['BDOWWJ39SZZEKU7P'];
+  var util = __LIBS__['iYS0Z0A2QAG7I196'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1185,11 +1185,41 @@ function parseTransform(transform_str) {
 
       loadDrawing: function (page, next) {
         var self = this;
+
+        var loadingLayer = $('<div></div>');
+        loadingLayer
+        .append(
+          $('<div></div>')
+            .css({ position: 'absolute', width: '100%', height: '100%', backgroundColor: 'white', opacity: 0.5 })
+            .append(
+              $('<img />')
+                .attr('src', '/cart/static/img/settlement/loading.gif')
+                .css({ marginTop: $(self.canvas[0]).height()/2-16 })
+            )
+        )
+        .append(
+          $('<div></div>')
+            .css({ position: 'absolute', width: '100%', height: '100%' })
+            .append(
+              $('<div>Loading...</div>')
+                .css({ marginTop: $(self.canvas[0]).height()/2+16 })
+            )
+        ).css({ position: 'absolute', width: '100%', height: '100%', marginTop: -$(self.canvas[0]).height(), textAlign: 'center' })
+        ;
+        $(self.canvas[0]).after(loadingLayer);
+        var removeLoadingLayer = function() {
+          if (loadingLayer) {
+            loadingLayer.remove();
+            loadingLayer = undefined;
+          }
+        };
+
         this.callbacks.loadPartStart.call(this, this, 'drawing');
         this.initDrawable(page, function () {
           next();
           self.callbacks.pageChanging.call(self, page);
           self.callbacks.loadPartEnd.call(self, self, 'drawing');
+      removeLoadingLayer();
         });
       },
 
@@ -1341,7 +1371,7 @@ function parseTransform(transform_str) {
                   },
                   n.childNodes);
                 continue outer;
-              }
+                }
 
               case 'path':
                 if (!attrs.d) throw new Error("Pathdata is not provided for the path element");
@@ -1372,7 +1402,7 @@ function parseTransform(transform_str) {
                     },
                     n.childNodes);
                   continue outer;
-				}
+        }
                 break;
 
               case 'symbol':
@@ -1445,7 +1475,7 @@ function parseTransform(transform_str) {
                 stroke: false, strokeOpacity: false,
                 fontSize: 10, textAnchor: false
               },
-	          position: null,
+              position: null,
               transform: new Fashion.Matrix(),
               defs: {},
               focused: false,
@@ -1518,10 +1548,12 @@ function parseTransform(transform_str) {
                       }
                     }
                     self.callbacks.messageBoard.up.call(self, self.pages[link].name);
+                    $(self.canvas[0]).css({ cursor: 'pointer' });
                   }
                 },
                 mouseout: function(evt) {
                   if (self.pages && self.uiMode == 'select1') {
+                    $(self.canvas[0]).css({ cursor: 'default' });
                     for (var i = siblings.length; --i >= 0;) {
                       var shape = self.overlayShapes.restore(siblings[i].id);
                       if (shape)

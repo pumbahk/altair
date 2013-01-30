@@ -167,11 +167,41 @@
 
       loadDrawing: function (page, next) {
         var self = this;
+
+        var loadingLayer = $('<div></div>');
+        loadingLayer
+        .append(
+          $('<div></div>')
+            .css({ position: 'absolute', width: '100%', height: '100%', backgroundColor: 'white', opacity: 0.5 })
+            .append(
+              $('<img />')
+                .attr('src', '/cart/static/img/settlement/loading.gif')
+                .css({ marginTop: $(self.canvas[0]).height()/2-16 })
+            )
+        )
+        .append(
+          $('<div></div>')
+            .css({ position: 'absolute', width: '100%', height: '100%' })
+            .append(
+              $('<div>Loading...</div>')
+                .css({ marginTop: $(self.canvas[0]).height()/2+16 })
+            )
+        ).css({ position: 'absolute', width: '100%', height: '100%', marginTop: -$(self.canvas[0]).height(), textAlign: 'center' })
+        ;
+        $(self.canvas[0]).after(loadingLayer);
+        var removeLoadingLayer = function() {
+          if (loadingLayer) {
+            loadingLayer.remove();
+            loadingLayer = undefined;
+          }
+        };
+
         this.callbacks.loadPartStart.call(this, this, 'drawing');
         this.initDrawable(page, function () {
           next();
           self.callbacks.pageChanging.call(self, page);
           self.callbacks.loadPartEnd.call(self, self, 'drawing');
+      removeLoadingLayer();
         });
       },
 
@@ -323,7 +353,7 @@
                   },
                   n.childNodes);
                 continue outer;
-              }
+                }
 
               case 'path':
                 if (!attrs.d) throw new Error("Pathdata is not provided for the path element");
@@ -354,7 +384,7 @@
                     },
                     n.childNodes);
                   continue outer;
-				}
+        }
                 break;
 
               case 'symbol':
@@ -427,7 +457,7 @@
                 stroke: false, strokeOpacity: false,
                 fontSize: 10, textAnchor: false
               },
-	          position: null,
+              position: null,
               transform: new Fashion.Matrix(),
               defs: {},
               focused: false,
@@ -500,10 +530,12 @@
                       }
                     }
                     self.callbacks.messageBoard.up.call(self, self.pages[link].name);
+                    $(self.canvas[0]).css({ cursor: 'pointer' });
                   }
                 },
                 mouseout: function(evt) {
                   if (self.pages && self.uiMode == 'select1') {
+                    $(self.canvas[0]).css({ cursor: 'default' });
                     for (var i = siblings.length; --i >= 0;) {
                       var shape = self.overlayShapes.restore(siblings[i].id);
                       if (shape)
