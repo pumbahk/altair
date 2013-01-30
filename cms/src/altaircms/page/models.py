@@ -325,6 +325,11 @@ class PageType(WithOrganizationMixin, Base):
     id = sa.Column(sa.Integer, primary_key=True)
     name = sa.Column(sa.Unicode(255))
 
+    @declared_attr
+    def __table_args__(cls):
+        return (sa.schema.UniqueConstraint("name", "organization_id"), )
+
+
 ## master    
 class PageDefaultInfo(Base):
     query = DBSession.query_property()

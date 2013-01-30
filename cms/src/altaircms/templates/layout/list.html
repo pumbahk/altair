@@ -10,7 +10,7 @@
 </style>
 </%block>
 
-<h2>レイアウト</h2>
+<h2>レイアウト(${current_pagetype.name})</h2>
 
 <div class="row-fluid">
   <div class="span12">
@@ -23,7 +23,7 @@
 
 <div class="row-fluid">
     <h3 class="first">レイアウトの追加</h3>
-    <a href="${request.route_path("layout_create", action="input")}"  class="btn btn-success btn-large">新しいレイアウトを作成する</a>
+    <a href="${request.route_path("layout_create", pagetype_id=current_pagetype.id, action="input")}"  class="btn btn-success btn-large">新しいレイアウトを作成する</a>
 
     %if query_form:
       <h3>絞り込み検索</h3>
@@ -39,6 +39,18 @@
 
 <div class="row-fluid">
 <h3>レイアウト一覧</h3>
+
+
+<ul class="nav nav-tabs">
+  ## we need panel!
+   %for pagetype in pagetypes:
+     %if unicode(pagetype.id) == unicode(current_pagetype.id):
+        <li class="active"><a href="${request.route_path("layout_list_with_pagetype",pagetype_id=pagetype.id)}">${pagetype.name}</a></li>
+     %else:
+        <li ><a href="${request.route_path("layout_list_with_pagetype",pagetype_id=pagetype.id)}">${pagetype.name}</a></li>
+     %endif
+   %endfor
+</ul>
 
 <p>全${layouts.opts.get("item_count") or layouts.collection.count()}件</p>
 ${layouts.pager()}
@@ -67,7 +79,7 @@ ${layouts.pager()}
 				  </button>
 				  <ul class="dropdown-menu">
 					<li>
-					  <a href="${request.route_path("layout_update",action="input",id=x.id)}">
+					  <a href="${request.route_path("layout_update",pagetype_id=current_pagetype.id, action="input",id=x.id)}">
 						<i class="icon-cog"> </i> 編集
 					  </a>
 					</li>

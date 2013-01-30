@@ -24,7 +24,21 @@ def get_filename(inputname, filename):
     return dirname+os.path.splitext(filename)[1]
         
 
-class LayoutCreator(object):
+class LayoutWriter(object):
+    def __init__(self, request):
+        self.request = request
+
+    def write_layout_file(self, basename, organization,  params):
+        filesession = get_layout_filesession(self.request)
+        prefixed_name = os.path.join(organization.short_name, basename)
+        filedata = File(name=prefixed_name, handler=params["filepath"].file)
+        filesession.add(filedata)
+
+        ## todo:moveit
+        filesession.commit()
+        return 
+
+class LayoutInfoDetector(object):
     """
     params = {
       title: "fooo", 
@@ -32,10 +46,9 @@ class LayoutCreator(object):
       blocks: "" #auto detect
     }
     """
-    def __init__(self, request, organization):
+    def __init__(self, request):
         self.request = request
-        self.organization = organization
-        
+
     def get_blocks(self, params):
         buf = params["filepath"].file
         pos = buf.tell()
@@ -45,46 +58,54 @@ class LayoutCreator(object):
         return json.dumps([[name] for name in block_names])
 
     def get_basename(self, params):
-        return os.path.basename(params["filepath"].filename)
+        return get_filename(params.get("template_filename"),
+                            os.path.basename(params["filepath"].filename))
 
-    def create_model(self, params, blocks):
-        basename = get_filename(params.get("template_filename"), self.get_basename(params))
+
+class LayoutCreator(object):
+    def __init__(self, request, organization):
+        self.request = request
+        self.organization = organization
+        self.writer = LayoutWriter(request)
+        self.detector = LayoutInfoDetector(request)
+
+    def create_model(self, basename, params, blocks):
         layout = Layout(template_filename=basename, 
                         title=params["title"], 
                         blocks=blocks)
         DBSession.add(layout)
         return layout
 
-    def update_model(self, layout, params, blocks):
-        layout.title =params["title"]
-        layout.blocks = blocks
-        layout.template_filename = get_filename(params.get("template_filename"), self.get_basename(params))
-        DBSession.add(layout)
-        return layout
-
-    def write_layout_file(self, params):
-        filesession = get_layout_filesession(self.request)
-        basename = get_filename(params.get("template_filename"), self.get_basename(params))
-        prefixed_name = os.path.join(self.organization.short_name, basename)
-        filedata = File(name=prefixed_name, handler=params["filepath"].file)
-        filesession.add(filedata)
-
-        ## todo:moveit
-        filesession.commit()
-        return 
-
-    def create(self, params):
-        self.write_layout_file(params)
-        blocks = self.get_blocks(params)
-        layout = self.create_model(params, blocks)
+    def create(self, params, pagetype_id):
+        basename = self.detector.get_basename(params)
+        self.writer.write_layout_file(basename, self.organization, params)
+        blocks = self.detector.get_blocks(params)
+        layout = self.create_model(basename, params, blocks)
+        layout.pagetype_id = pagetype_id
         notify_model_create(self.request, layout, params)
         return layout
 
-    def update(self, layout, params):
+class LayoutUpdater(object):
+    def __init__(self, request, organization):
+        self.request = request
+        self.organization = organization
+        self.writer = LayoutWriter(request)
+        self.detector = LayoutInfoDetector(request)
+
+    def update_model(self, layout, basename, params, blocks):
+        layout.title =params["title"]
+        layout.blocks = blocks
+        layout.template_filename = basename
+        DBSession.add(layout)
+        return layout
+
+    def update(self, layout, pagetype_id, params):
+        basename = self.detector.get_basename(params)
         if is_file_field(params["filepath"]):
-            self.write_layout_file(params)
+            self.writer.write_layout_file(basename, self.organization, params)
             blocks = self.get_blocks(params)
         else:
             blocks = params["blocks"]
-        layout = self.update_model(layout, params, blocks)
+        layout = self.update_model(layout, basename, params, blocks)
+        layout.pagetype_id = pagetype_id
         return layout
