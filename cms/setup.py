@@ -96,7 +96,7 @@ setup(name='altair-cms',
       [pyramid.scaffold]
       cms_widget = scaffolds:WidgetPluginTemplate
       cms_asset_widget = scaffolds:AssetWidgetPluginTemplate
-
+      functional_tests = scaffolds:FunctionalTestTemplate
       [console_scripts]
       loadfromcsv = altaircms.scripts.loadfromcsv:main
       syncsolr = altaircms.scripts.syncsolr:main

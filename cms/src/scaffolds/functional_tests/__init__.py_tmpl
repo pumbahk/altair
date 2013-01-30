@@ -1,0 +1,16 @@
+# -*- coding:utf-8 -*-
+import unittest
+try:
+   from functional_tests import AppFunctionalTests, logout, login, get_registry
+   from functional_tests import delete_models, find_form
+except ImportError:
+   import sys
+   import os
+   sys.path.append(os.path.join(os.path.dirname(__name__), "../../"))
+   from functional_tests import AppFunctionalTests, logout, login, get_registry
+   from functional_tests import delete_models, find_form
+
+## here. {{project}}
+
+if __name__ == "__main__":
+   unittest.main()

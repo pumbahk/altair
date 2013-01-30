@@ -15,3 +15,13 @@ class AssetWidgetPluginTemplate(PyramidTemplate):
     def pre(self, command, output_dir, vars):
         vars["Package"] = vars['package'][0].upper() + vars["package"][1:]
         return PyramidTemplate.pre(self, command, output_dir, vars)
+
+class FunctionalTestTemplate(PyramidTemplate):
+    summary = "for functional test"
+    _template_dir = "functional_tests"
+
+    def pre(self, command, output_dir, vars):
+        vars["Package"] = vars['package'][0].upper() + vars["package"][1:]
+        return PyramidTemplate.pre(self, command, output_dir, vars)
+    
+
