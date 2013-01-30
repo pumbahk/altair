@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from wtforms import TextField, PasswordField, HiddenField
-from wtforms.validators import Email, Length, EqualTo, Optional, ValidationError
+from wtforms.validators import Regexp, Email, Length, EqualTo, Optional, ValidationError
 from wtforms import Form
 
 from ticketing.formhelpers import Translations, Required
@@ -13,7 +13,7 @@ class LoginForm(Form):
         return Translations()
 
     login_id = TextField(u'ユーザー名', validators=[Required()])
-    password = PasswordField(u'パスワード', validators=[Required()])
+    password = PasswordField(u'パスワード', validators=[Required(), Regexp("^[a-zA-Z0-9]+$", 0, message=u'英数字を入力してください。')])
 
 class ResetForm(Form):
 
