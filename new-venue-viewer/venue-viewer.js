@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['j37Q3CGGU1J4ZHZ_'] = (function (exports) { (function () { 
+__LIBS__['hYM2R8V7O4L62SNG'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['R9URR5XLKVZA9I4J'] = (function (exports) { (function () { 
+__LIBS__['iGUWOKE6JTZNJ8I7'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['fC8JZLHY6_KM4WCD'] = (function (exports) { (function () { 
+__LIBS__['W0JDU0DQ38YBS_8P'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['j37Q3CGGU1J4ZHZ_'];
-var CONF = __LIBS__['R9URR5XLKVZA9I4J'];
+var util = __LIBS__['hYM2R8V7O4L62SNG'];
+var CONF = __LIBS__['iGUWOKE6JTZNJ8I7'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -913,15 +913,16 @@ function svgStylesFromMap(styles, defs) {
 }
 
 function mergeSvgStyle(origStyle, newStyle) {
-  return {
-    fill:          newStyle.fill !== null ? newStyle.fill: origStyle.fill,
-    fillOpacity:   newStyle.fillOpacity !== null ? newStyle.fillOpacity: origStyle.fillOpacity,
-    stroke:        newStyle.stroke !== null ? newStyle.stroke: origStyle.stroke,
-    strokeWidth:   newStyle.strokeWidth !== null ? newStyle.strokeWidth: origStyle.strokeWidth,
-    strokeOpacity: newStyle.strokeOpacity !== null ? newStyle.strokeOpacity: origStyle.strokeOpacity,
-    fontSize:      newStyle.fontSize !== null ? newStyle.fontSize: origStyle.fontSize,
-    textAnchor:    newStyle.textAnchor !== null ? newStyle.textAnchor: origStyle.textAnchor
-  };
+  var copied = { };
+  for (var k in origStyle) {
+    copied[k] = origStyle[k];
+  }
+  for (var k in newStyle) {
+    if (newStyle[k] !== null) {
+      copied[k] = newStyle[k];
+    }
+  }
+  return copied;
 }
 
 function buildStyleFromSvgStyle(svgStyle) {
@@ -964,6 +965,8 @@ function collectText(node) {
 function copyShape(shape) {
   if (shape instanceof Fashion.Rect) {
     return new Fashion.Rect({ position: shape.position(), size: shape.size(), transform: shape.transform() });
+  } else if (shape instanceof Fashion.Path) {
+    return new Fashion.Path({ points: shape.points(),transform: shape.transform() });
   }
   return null;
 }
@@ -1018,9 +1021,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['R9URR5XLKVZA9I4J'];
-  var seat = __LIBS__['fC8JZLHY6_KM4WCD'];
-  var util = __LIBS__['j37Q3CGGU1J4ZHZ_'];
+  var CONF = __LIBS__['iGUWOKE6JTZNJ8I7'];
+  var seat = __LIBS__['W0JDU0DQ38YBS_8P'];
+  var util = __LIBS__['hYM2R8V7O4L62SNG'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1182,11 +1185,11 @@ function parseTransform(transform_str) {
 
       loadDrawing: function (page, next) {
         var self = this;
-        this.callbacks.loadPartStart.call(this, this, 'drawing');
+        this.callbacks.loadPartStart.call(this, 'drawing');
         this.initDrawable(page, function () {
           next();
           self.callbacks.pageChanging.call(self, page);
-          self.callbacks.loadPartEnd.call(self, self, 'drawing');
+          self.callbacks.loadPartEnd.call(self, 'drawing');
         });
       },
 
@@ -1299,6 +1302,9 @@ function parseTransform(transform_str) {
               var attrs = util.allAttributes(n);
               var xlink = context.xlink;
               var focused = context.focused || (attrs.id && isFocused(attrs.id));
+              var px = parseFloat(attrs.x),
+                  py = parseFloat(attrs.y);
+              var position = (!isNaN(px) && !isNaN(py)) ? { x: px, y: py } : context.position;
               var transform = attrs["transform"] ?
                 context.transform.multiply(parseTransform(attrs["transform"])):
                 context.transform;
@@ -1335,7 +1341,7 @@ function parseTransform(transform_str) {
                   },
                   n.childNodes);
                 continue outer;
-              }
+                }
 
               case 'path':
                 if (!attrs.d) throw new Error("Pathdata is not provided for the path element");
@@ -1345,20 +1351,34 @@ function parseTransform(transform_str) {
                 break;
 
               case 'text':
-                if (n.firstChild) {
+              case 'tspan':
+                if (n.childNodes.length==1 && n.firstChild.nodeType == Node.TEXT_NODE) {
                   shape = new Fashion.Text({
                     text: collectText(n),
                     anchor: currentSvgStyle.textAnchor,
-                    transform: _transform
+                    position: position || null,
+                    transform: transform || null
                   });
-                }
+                } else if (n.nodeName == 'text') {
+                  arguments.callee.call(
+                    self,
+                    {
+                      svgStyle: currentSvgStyle,
+                      position: position,
+                      transform: transform,
+                      defs: context.defs,
+                      focused: focused,
+                      xlink: xlink
+                    },
+                    n.childNodes);
+                  continue outer;
+        }
                 break;
 
               case 'symbol':
                 break;
 
               case 'rect':
-                var _transform = attrs.transform || null;
                 shape = new Fashion.Rect({
                   size: {
                     x: parseFloat(attrs.width),
@@ -1368,7 +1388,7 @@ function parseTransform(transform_str) {
                     x: parseFloat(attrs.rx || 0),
                     y: parseFloat(attrs.ry || 0)
                   },
-                  transform: _transform,
+                  transform: attrs.transform || null,
                   zIndex: -10
                 });
                 for (var j=0,ll=n.childNodes.length; j<ll; j++) {
@@ -1423,8 +1443,9 @@ function parseTransform(transform_str) {
               svgStyle: {
                 fill: false, fillOpacity: false,
                 stroke: false, strokeOpacity: false,
-                fontSize: 10
+                fontSize: 10, textAnchor: false
               },
+              position: null,
               transform: new Fashion.Matrix(),
               defs: {},
               focused: false,
@@ -1497,10 +1518,12 @@ function parseTransform(transform_str) {
                       }
                     }
                     self.callbacks.messageBoard.up.call(self, self.pages[link].name);
+                    $(self.canvas[0]).css({ cursor: 'pointer' });
                   }
                 },
                 mouseout: function(evt) {
                   if (self.pages && self.uiMode == 'select1') {
+                    $(self.canvas[0]).css({ cursor: 'default' });
                     for (var i = siblings.length; --i >= 0;) {
                       var shape = self.overlayShapes.restore(siblings[i].id);
                       if (shape)

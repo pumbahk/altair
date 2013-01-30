@@ -955,6 +955,8 @@ cart.VenueView = Backbone.View.extend({
         var callbacks = updateReq.callbacks;
 
         this.currentViewer.venueviewer("remove");
+
+        var loadingLayer = null;
         var _callbacks = $.extend($.extend({}, callbacks), {
             zoomRatioChanging: function (zoomRatio) {
                 return Math.min(Math.max(zoomRatio, self.zoomRatioMin), self.zoomRatioMax);
@@ -969,6 +971,46 @@ cart.VenueView = Backbone.View.extend({
                 self.updateUIState();
                 callbacks.load && callbacks.load.apply(this, arguments);
                 self._handleQueue();
+            },
+            loadPartStart: function (part) {
+                var self = this;
+                if (part == 'pages') {
+                    loadingLayer =
+                        $('<div></div>')
+                        .append(
+                            $('<div></div>')
+                            .css({ position: 'absolute', width: '100%', height: '100%', backgroundColor: 'white', opacity: 0.5 })
+                            .append(
+                                $('<img />')
+                                .attr('src', '/cart/static/img/settlement/loading.gif')
+                                .css({ marginTop: self.canvas.height() / 2 - 16 })
+                            )
+                        )
+                        .append(
+                            $('<div></div>')
+                            .css({ position: 'absolute', width: '100%', height: '100%' })
+                            .append(
+                                $('<div>読込中です</div>')
+                                .css({ marginTop: self.canvas.height() / 2 + 16 })
+                            )
+                        )
+                        .css({
+                            position: 'absolute',
+                            width: '100%',
+                            height: '100%',
+                            marginTop: -self.canvas.height(),
+                            textAlign: 'center'
+                        });
+                    self.canvas.after(loadingLayer);
+                }
+            },
+            loadPartEnd: function (part) {
+                if (part == 'drawing') {
+                    if (loadingLayer) {
+                        loadingLayer.remove();
+                        loadingLayer = null;
+                    }
+                }
             },
             messageBoard: (function() {
                 self.tooltip.hide();
