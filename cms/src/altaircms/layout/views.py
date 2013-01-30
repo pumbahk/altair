@@ -16,41 +16,19 @@ from altaircms.helpers.viewhelpers import FlashMessage
 
 from .creation import LayoutCreator, get_layout_filesession
 from collections import defaultdict
+import altaircms.helpers as h
+from ..slackoff.mappers import layout_mapper
 
-
-@view_config(route_name="layout_demo", renderer="altaircms:templates/layout/demo.html")
-def demo(request):
-    layout = get_or_404(request.allowable(Layout), Layout.id==request.GET["id"])
-    data = dict(layout_image=LayoutRender(layout).blocks_image())
-    return data
-
-
-@view_config(route_name="layout_preview", decorator="altaircms.lib.fanstatic_decorator.with_jquery", 
-             renderer="dummy.html")
-def preview(context, request):
-    layout = get_or_404(request.allowable(Layout), Layout.id==request.matchdict["layout_id"])
-    template_path = os.path.join(get_layout_filesession(request).assetspec, layout.prefixed_template_filename)
-    request.override_renderer = template_path
-    blocks = defaultdict(list)
-    class Page(object):
-        title = layout.title
-        keywords = layout.title
-        description = "layout preview"
-    return {"display_blocks": blocks, "page": Page, "myhelper": fh}
-
-@view_config(route_name="layout_download")
-def download(request):
-    layout = get_or_404(request.allowable(Layout), Layout.id==request.matchdict["layout_id"])
-    filesession = get_layout_filesession(request)
-    path = filesession.abspath(layout.prefixed_template_filename)
-    response = FileResponse(path)
-    response.content_disposition = 'attachment; filename="%s"' % layout.template_filename
-    return response
-
-
-@view_config(route_name="layout_list", renderer="altaircms:templates/layout/list.mako")
+@view_config(route_name="layout_list", renderer="altaircms:templates/layout/list.html", 
+             decorator="altaircms.lib.fanstatic_decorator.with_bootstrap")
 def layout_list(context, request):
-    return "ok"
+    qs = request.allowable(Layout)
+    layouts = h.paginate(request, qs, item_count=qs.count())
+    form = forms.LayoutCreateForm()
+    return {"layouts": layouts, 
+            "form": form, 
+            "mapper": layout_mapper, 
+            "display_fields": getattr(form, "__display_fields__", None) or form.data.keys()}
 
 
 @view_defaults(route_name="layout_create", 
@@ -118,3 +96,33 @@ class LayoutUpdateView(object):
         layout = layout_creator.update(layout, form.data)
         FlashMessage.success("update layout %s" % layout.title, request=self.request)
         return HTTPFound(self.request.route_url("layout_list")) ##
+
+
+@view_config(route_name="layout_demo", renderer="altaircms:templates/layout/demo.html")
+def demo(request):
+    layout = get_or_404(request.allowable(Layout), Layout.id==request.GET["id"])
+    data = dict(layout_image=LayoutRender(layout).blocks_image())
+    return data
+
+
+@view_config(route_name="layout_preview", decorator="altaircms.lib.fanstatic_decorator.with_jquery", 
+             renderer="dummy.html")
+def preview(context, request):
+    layout = get_or_404(request.allowable(Layout), Layout.id==request.matchdict["layout_id"])
+    template_path = os.path.join(get_layout_filesession(request).assetspec, layout.prefixed_template_filename)
+    request.override_renderer = template_path
+    blocks = defaultdict(list)
+    class Page(object):
+        title = layout.title
+        keywords = layout.title
+        description = "layout preview"
+    return {"display_blocks": blocks, "page": Page, "myhelper": fh}
+
+@view_config(route_name="layout_download")
+def download(request):
+    layout = get_or_404(request.allowable(Layout), Layout.id==request.matchdict["layout_id"])
+    filesession = get_layout_filesession(request)
+    path = filesession.abspath(layout.prefixed_template_filename)
+    response = FileResponse(path)
+    response.content_disposition = 'attachment; filename="%s"' % layout.template_filename
+    return response

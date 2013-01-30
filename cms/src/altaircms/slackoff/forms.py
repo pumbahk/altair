@@ -55,16 +55,6 @@ def validate_blocks(form, field):
     except ValueError:
         raise validators.ValidationError(u'正しいjson形式で入力してください(e.g. [["top"], ["left", "right"], ["bottom"]]) ')
 
-class LayoutForm(Form):
-    title = fields.TextField(u'タイトル', validators=[validators.Required()])
-    template_filename = fields.TextField(u'テンプレートファイル名', validators=[validators.Required()])
-    blocks = fields.TextField(u'ブロック', validators=[validators.Required(), validate_blocks])
-
-    __display_fields__ = [u"title", u"template_filename", u"blocks"]
-
-    def validate_template_filename(form, field):
-        pass
-
 class LayoutCreateForm(Form):
     title = fields.TextField(u'タイトル', validators=[validators.Required()])
     template_filename = fields.TextField(u'テンプレートファイル名', validators=[validators.Optional()])
