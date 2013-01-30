@@ -87,6 +87,9 @@ class PerformanceForm(Form):
     def validate_start_on(form, field):
         if field.data and form.open_on.data and field.data < form.open_on.data:
             raise ValidationError(u'開場日時より過去の日時は入力できません')
+ 
+        if field.data and Performance.query.filter(Performance.start_on==field.data).join(Venue).filter(Venue.id==form.venue_id.data).count():
+            raise ValidationError(u'指定日時と指定会場で既に登録があります')
 
     def validate_end_on(form, field):
         if field.data and form.start_on.data and field.data < form.start_on.data:
