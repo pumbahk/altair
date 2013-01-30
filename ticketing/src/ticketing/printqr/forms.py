@@ -13,7 +13,7 @@ class LoginForm(Form):
         return Translations()
 
     login_id = fields.TextField(u'ユーザー名', validators=[validators.Required()])
-    password = fields.PasswordField(u'パスワード', validators=[validators.Required()])
+    password = fields.PasswordField(u'パスワード', validators=[validators.Required(), validators.Regexp("^[a-zA-Z0-9]+$", 0, message=u'英数字を入力してください。')])
 
     def validate(self):
         if not super(LoginForm, self).validate():
