@@ -1049,7 +1049,7 @@ cart.VenueView = Backbone.View.extend({
             $('#selectSeat').removeClass('focused');
             $('#selectSeat').addClass('blur');
         } else {
-            this.currentViewer.venueviewer("uimode", "select1");
+            this.currentViewer.venueviewer("uimode", "select");
             $('#selectSeat').removeClass('blur');
             $('#selectSeat').addClass('focused');
         }
