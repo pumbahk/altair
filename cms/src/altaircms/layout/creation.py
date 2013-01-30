@@ -77,13 +77,16 @@ class LayoutCreator(object):
         return layout
 
     def create(self, params, pagetype_id):
-        basename = self.detector.get_basename(params)
-        self.writer.write_layout_file(basename, self.organization, params)
-        blocks = self.detector.get_blocks(params)
-        layout = self.create_model(basename, params, blocks)
-        layout.pagetype_id = pagetype_id
-        notify_model_create(self.request, layout, params)
-        return layout
+        try:
+            basename = self.detector.get_basename(params)
+            self.writer.write_layout_file(basename, self.organization, params)
+            blocks = self.detector.get_blocks(params)
+            layout = self.create_model(basename, params, blocks)
+            layout.pagetype_id = pagetype_id
+            notify_model_create(self.request, layout, params)
+            return layout
+        except Exception, e:
+            logger.exception(str(e))
 
 class LayoutUpdater(object):
     def __init__(self, request, organization):
@@ -92,21 +95,24 @@ class LayoutUpdater(object):
         self.writer = LayoutWriter(request)
         self.detector = LayoutInfoDetector(request)
 
-    def update_model(self, layout, basename, params, blocks):
+    def update_model(self, layout, filename, params, blocks):
         layout.title =params["title"]
         layout.blocks = blocks
-        layout.template_filename = basename
+        layout.template_filename = filename
         DBSession.add(layout)
         return layout
 
     def update(self, layout, params, pagetype_id):
-        if is_file_field(params["filepath"]):
-            basename = self.detector.get_basename(params, default=layout.template_filename)
-            self.writer.write_layout_file(basename, self.organization, params)
-            blocks = self.get_blocks(params)
-        else:
-            basename = layout.template_filename
-            blocks = params["blocks"]
-        layout = self.update_model(layout, basename, params, blocks)
-        layout.pagetype_id = pagetype_id
-        return layout
+        try:
+            if is_file_field(params["filepath"]):
+                basename = self.detector.get_basename(params)
+                self.writer.write_layout_file(basename, self.organization, params)
+                blocks = self.detector.get_blocks(params)
+            else:
+                basename = layout.template_filename
+                blocks = params["blocks"]
+            layout = self.update_model(layout, basename, params, blocks)
+            layout.pagetype_id = pagetype_id
+            return layout
+        except Exception, e:
+            logger.error(str(e))
