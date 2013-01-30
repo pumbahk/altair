@@ -33,7 +33,7 @@
         </tr>
      % endif
 
-     % if form.limited_to.data or form.limited_from.data:   
+     % if form.limited_to.data or form.limited_from.data and event_product_nf:   
         <tr>
           <th style="width: 20%; border: 1px #DCDCDC solid;">席種</th>
           <th style="width: 20%; border: 1px #DCDCDC solid;">商品</th>
@@ -99,7 +99,7 @@
             continue
         %>
         <tr>
-        % if form.limited_from.data or form.limited_to.data:
+        % if form.limited_from.data or form.limited_to.data and event_product_nf:
           % if stock_type_id != product['stock_type_id']:
           <td rowspan="${key_count[product['stock_type_id']]}" style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${product['stock_type_name']}</td>
           % endif
