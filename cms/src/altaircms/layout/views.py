@@ -14,7 +14,7 @@ from altaircms.slackoff import forms
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from altaircms.helpers.viewhelpers import FlashMessage
 
-from .creation import LayoutCreator, get_layout_filesession
+from .creation import LayoutCreator, LayoutUpdater, get_layout_filesession
 from collections import defaultdict
 import altaircms.helpers as h
 from ..slackoff.mappers import layout_mapper
@@ -37,13 +37,13 @@ def layout_list_with_pagetype(context, request):
     qs = request.allowable(Layout).filter_by(pagetype_id=pagetype_id)
     layouts = h.paginate(request, qs, item_count=qs.count())
 
-    form = forms.LayoutCreateForm()
+    form = forms.LayoutUpdateForm()
     return {"layouts": layouts, 
             "pagetypes": pagetypes, 
             "current_pagetype": current_pagetype, 
             "form": form, 
             "mapper": layout_mapper, 
-            "display_fields": ["title", "template_filename"]}
+            "display_fields": ["title", "template_filename", "blocks"]}
 
 
 @view_defaults(route_name="layout_create", 
@@ -118,8 +118,8 @@ class LayoutUpdateView(object):
             self.request._form = form
             raise AfterInput
 
-        layout_creator = LayoutCreator(self.request, self.request.organization)
-        layout = layout_creator.update(layout, form.data, pagetype_id)
+        layout_updater = LayoutUpdater(self.request, self.request.organization)
+        layout = layout_updater.update(layout, form.data, pagetype_id)
         FlashMessage.success("update layout %s" % layout.title, request=self.request)
         return HTTPFound(self.request.route_url("layout_list_with_pagetype", pagetype_id=pagetype_id)) ##
 

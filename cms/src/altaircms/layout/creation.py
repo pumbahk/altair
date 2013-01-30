@@ -60,7 +60,7 @@ class LayoutInfoDetector(object):
     def get_basename(self, params):
         return get_filename(params.get("template_filename"),
                             os.path.basename(params["filepath"].filename))
-
+    
 
 class LayoutCreator(object):
     def __init__(self, request, organization):
@@ -99,12 +99,13 @@ class LayoutUpdater(object):
         DBSession.add(layout)
         return layout
 
-    def update(self, layout, pagetype_id, params):
-        basename = self.detector.get_basename(params)
+    def update(self, layout, params, pagetype_id):
         if is_file_field(params["filepath"]):
+            basename = self.detector.get_basename(params, default=layout.template_filename)
             self.writer.write_layout_file(basename, self.organization, params)
             blocks = self.get_blocks(params)
         else:
+            basename = layout.template_filename
             blocks = params["blocks"]
         layout = self.update_model(layout, basename, params, blocks)
         layout.pagetype_id = pagetype_id

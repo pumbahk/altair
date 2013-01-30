@@ -190,26 +190,229 @@ class LoginLogoutFunctionalTests(AppFunctionalTests):
             self.assertNotIn("Admoutistrator-this-is-login-name", after_logout_resp.ubody)
             self.assertNotIn("demo-organization",  after_logout_resp)
 
+
+"""
+実際の登録などのview
+"""
+
+def delete_models(models):
+    from altaircms.models import DBSession
+    for cls in models:
+        for e in cls.query:
+            DBSession.delete(e)
+    import transaction
+    transaction.commit()
+
+class LayoutFunctionalTests(AppFunctionalTests):
+    def test_goto_login_page_if_not_login(self):
+        app = self._getTarget()
+        with logout(app):
+            app.get("/asset/").mustcontain(u"ログインしていません")
+
+    PAGETYPE_ID = 1
+    @classmethod
+    def setUpClass(cls):
+        """layoutの登録にpagetypeが必要なのです """
+        from altaircms.models import DBSession
+        from altaircms.page.models import PageType
+        from altaircms.auth.models import Organization
+
+        organization = Organization.query.first() # login時にorganizationは作成される
+        DBSession.add(PageType(id=cls.PAGETYPE_ID,  name=u"portal", organization_id=organization.id))
+        import transaction
+        transaction.commit()
+
+    @classmethod
+    def tearDownClass(cls):
+        """layoutの登録にpagetypeが必要なのです """
+        from altaircms.page.models import PageType
+        delete_models([PageType])
+
+    def tearDown(self):
+        from altaircms.layout.models import Layout
+        delete_models([Layout])
+
+    def _count_of_layout(self):
+        from altaircms.layout.models import Layout
+        return Layout.query.count()
+
+    def _get_layout_by_title(self, layout_title):
+        from altaircms.layout.models import Layout
+        return Layout.query.filter_by(title=layout_title).first()
+        
+    def test_create_layout(self):
+        app = self._getTarget()
+        with login(app):
+            ## pagetype毎にレイアウト作成ページがあります
+            create_page = app.get("/layout/pagetype/%d/create/input" % self.PAGETYPE_ID)
+            self.assertEqual(create_page.status_int, 200)
+
+            layout_title = u"this-is-created-layout-template"
+
+            form = find_form(create_page.forms, action_part="create")
+            form.set("title", layout_title)
+            form.set("template_filename", "saved-template-name.html")
+            form.set("filepath", ("layout-create-template.html", ))
             
+            form.submit()
+
+            ## layoutが存在
+            self.assertEqual(self._count_of_layout(), 1)
+            created_layout = self._get_layout_by_title(layout_title)
+            self.assertEqual(created_layout.template_filename, "saved-template-name.html")
+
+            ## 登録されたファイルの存在確認
+            layout_directory = get_registry().settings["altaircms.layout_directory"]
+            from altaircms.auth.models import Organization
+            organization = Organization.query.first() # login時にorganizationは作成される
+
+            ## 保存先は指定したディレクトリ/{Organization.short_name}/指定したファイル名
+            saved_template_filename = os.path.join(layout_directory, organization.short_name, "saved-template-name.html")
+            self.assertTrue(os.path.exists(saved_template_filename))
+
+    def test_crate_layout_without_extname(self): #move to unittest
+        app = self._getTarget()
+        with login(app):
+            create_page = app.get("/layout/pagetype/%d/create/input" % self.PAGETYPE_ID)
+            self.assertEqual(create_page.status_int, 200)
+
+            layout_title = u"this-is-created-layout-template"
+
+            form = find_form(create_page.forms, action_part="create")
+            form.set("title", layout_title)
+            form.set("template_filename", "saved-template-name") ## htmlがない
+            form.set("filepath", ("layout-create-template.html", ))
+            
+            form.submit()
+
+            ## layoutが存在
+            self.assertEqual(self._count_of_layout(), 1)
+            created_layout = self._get_layout_by_title(layout_title)
+            self.assertEqual(created_layout.template_filename, "saved-template-name.html") #htmlが補われる
+
+            ## 登録されたファイルの存在確認
+            layout_directory = get_registry().settings["altaircms.layout_directory"]
+            from altaircms.auth.models import Organization
+            organization = Organization.query.first() # login時にorganizationは作成される
+
+            ## 保存先は指定したディレクトリ/{Organization.short_name}/指定したファイル名
+            saved_template_filename = os.path.join(layout_directory, organization.short_name, "saved-template-name.html")
+            self.assertTrue(os.path.exists(saved_template_filename))
+        
+    def test_update_layout(self):
+        app = self._getTarget()
+        with login(app):
+            ## create
+            create_page = app.get("/layout/pagetype/%d/create/input" % self.PAGETYPE_ID)
+            self.assertEqual(create_page.status_int, 200)
+
+            layout_title = u"this-is-created-layout-template"
+
+            form = find_form(create_page.forms, action_part="create")
+            form.set("title", layout_title)
+            form.set("template_filename", "saved-template-name.html")
+            form.set("filepath", ("layout-create-template.html", ))
+            
+            form.submit()
+
+            created_layout = self._get_layout_by_title(layout_title)
+            created_layout_title = created_layout.title
+            created_layout_template_filename = created_layout.template_filename
+
+            ## update file not changed
+            update_page = app.get("/layout/%d/pagetype/%d/update/input" % (created_layout.id, self.PAGETYPE_ID))
+            self.assertEqual(update_page.status_int,200)
+            layout_title = u"this-is-*updated*-layout-template"
+
+            form = find_form(update_page.forms, action_part="update")
+            form.set("title", layout_title)
+            form.set("template_filename", "this-name-is-changed. but-filepath-is-empty. so-not-updated-this")
+            form.set("filepath", "")
+            
+            form.submit()
+
+            ## 更新されるので数は変わらない
+            self.assertEqual(self._count_of_layout(), 1)
+            
+            ## タイトルは変わっている
+            updated_layout = self._get_layout_by_title(u"this-is-*updated*-layout-template")
+            self.assertNotEqual(updated_layout.title, created_layout_title)            
+
+            ## 保存ファイル名は変更されない。変更用のファイルが渡されていないので
+            self.assertEqual(updated_layout.template_filename, created_layout_template_filename)            
+
+
+
+            ## update file changed
+            update_page = app.get("/layout/%d/pagetype/%d/update/input" % (created_layout.id, self.PAGETYPE_ID))
+            self.assertEqual(update_page.status_int,200)
+
+            form = find_form(update_page.forms, action_part="update")
+            form.set("template_filename", "updated")
+            form.set("filepath", ("layout-update-template.html", ))
+            form.submit()
+
+            ## 更新されるので数は変わらない
+            self.assertEqual(self._count_of_layout(), 1)
+
+            ## 保存ファイル名も変更される
+            updated_layout = self._get_layout_by_title(u"this-is-*updated*-layout-template")            
+            self.assertNotEqual(updated_layout.template_filename, created_layout_template_filename)            
+
+            ## 登録されたファイルの存在確認
+            layout_directory = get_registry().settings["altaircms.layout_directory"]
+            from altaircms.auth.models import Organization
+            organization = Organization.query.first() # login時にorganizationは作成される
+
+            ## 保存先は指定したディレクトリ/{Organization.short_name}/指定したファイル名
+            saved_template_filename = os.path.join(layout_directory, organization.short_name, "updated.html")
+            self.assertTrue(os.path.exists(saved_template_filename))
+
+    def test_delete_layout(self):
+        app = self._getTarget()
+        with login(app):
+            ## create
+            create_page = app.get("/layout/pagetype/%d/create/input" % self.PAGETYPE_ID)
+            self.assertEqual(create_page.status_int, 200)
+
+            layout_title = u"this-is-created-layout-template"
+
+            form = find_form(create_page.forms, action_part="create")
+            form.set("title", layout_title)
+            form.set("template_filename", "saved-template-name.html")
+            form.set("filepath", ("layout-create-template.html", ))
+            
+            form.submit()
+
+            created_layout = self._get_layout_by_title(layout_title)
+
+            ## delete
+            confirm_page = app.get("/layout/delete/%d/confirm" % (created_layout.id))
+            self.assertEqual(create_page.status_int,200)
+            
+            form = find_form(confirm_page.forms, action_part="delete")
+            response = form.submit()
+
+            self.assertEqual(response.status_int, 200)
+            self.assertEqual(self._count_of_layout(), 0)
+
+            
+        
 def find_form(forms,  action_part=""):
     for form in forms.itervalues():
         if action_part in form.action:
             return form
     
 class AssetFunctionalTests(AppFunctionalTests):
-    def test_login_page_if_not_login(self):
+    def test_goto_login_page_if_not_login(self):
         app = self._getTarget()
         with logout(app):
             app.get("/asset/").mustcontain(u"ログインしていません")
 
     def tearDown(self):
-        from altaircms.asset.models import DBSession
         from altaircms.asset.models import ImageAsset, MovieAsset, FlashAsset
-        for cls in [ImageAsset, MovieAsset, FlashAsset]:
-            for e in cls.query:
-                DBSession.delete(e)
-        import transaction
-        transaction.commit()
+        delete_models([ImageAsset, MovieAsset, FlashAsset])
+
 
     def _count_of_image_asset(self):
         from altaircms.asset.models import ImageAsset
@@ -230,8 +433,8 @@ class AssetFunctionalTests(AppFunctionalTests):
             asset_title = u"this-is-created-image-asset"
 
             form = find_form(app.get("/asset/image").forms, action_part="create")
-            form.set("filepath",  ("pyramid.png", ))
-            form.set("thumbnail_path", ("pyramid-small.png", ))
+            form.set("filepath",  ("imageasset-create-image.png", ))
+            form.set("thumbnail_path", ("imageasset-thumbnail-image.png", ))
             form.set("title", asset_title)
             form.set("tags", "tag0, tag1, tag2")
             form.set("private_tags", "ptag")
@@ -256,8 +459,8 @@ class AssetFunctionalTests(AppFunctionalTests):
             asset_title = u"this-is-created-image-asset"
 
             form = find_form(app.get("/asset/image").forms, action_part="create")
-            form.set("filepath",  ("pyramid.png", ))
-            form.set("thumbnail_path", ("pyramid-small.png", ))
+            form.set("filepath",  ("imageasset-create-image.png", ))
+            form.set("thumbnail_path", ("imageasset-thumbnail-image.png", ))
             form.set("title", asset_title)
             form.set("tags", "tag0, tag1, tag2")
             form.set("private_tags", "ptag")
@@ -289,8 +492,8 @@ class AssetFunctionalTests(AppFunctionalTests):
             asset_title = u"this-is-created-image-asset"
 
             form = find_form(app.get("/asset/image").forms, action_part="create")
-            form.set("filepath",  ("pyramid.png", ))
-            form.set("thumbnail_path", ("pyramid-small.png", ))
+            form.set("filepath",  ("imageasset-create-image.png", ))
+            form.set("thumbnail_path", ("imageasset-thumbnail-image.png", ))
             form.set("title", asset_title)
             form.set("tags", "tag0, tag1, tag2")
             form.set("private_tags", "ptag")
@@ -329,7 +532,7 @@ class AssetFunctionalTests(AppFunctionalTests):
             asset_title = u"update-asset"
 
             form = find_form(app.get("/asset/image/%s/input" % created_asset.id).forms, action_part="update")
-            form.set("filepath",  ("not_found.png", ))
+            form.set("filepath",  ("imageasset-update-image.png", ))
             form.set("thumbnail_path", "")
             form.set("title", asset_title)
             form.set("tags", "tag-is-updated")
@@ -365,8 +568,8 @@ class AssetFunctionalTests(AppFunctionalTests):
             asset_title = u"this-is-created-movie-asset"
 
             form = find_form(app.get("/asset/movie").forms, action_part="create")
-            form.set("filepath",  ("small.mp4", ))
-            form.set("placeholder", ("pyramid-small.png", ))
+            form.set("filepath",  ("movieasset-create-movie.mp4", ))
+            form.set("placeholder", ("imageasset-thumbnail-image.png", ))
             form.set("title", asset_title)
             form.set("tags", "tag0, tag1, tag2")
             form.set("private_tags", "ptag")
@@ -396,8 +599,8 @@ class AssetFunctionalTests(AppFunctionalTests):
             asset_title = u"this-is-created-movie-asset"
 
             form = find_form(app.get("/asset/movie").forms, action_part="create")
-            form.set("filepath",  ("small.mp4", ))
-            form.set("placeholder", ("pyramid-small.png", ))
+            form.set("filepath",  ("movieasset-create-movie.mp4", ))
+            form.set("placeholder", ("imageasset-thumbnail-image.png", ))
             form.set("title", asset_title)
             form.set("tags", "tag0, tag1, tag2")
             form.set("private_tags", "ptag")
@@ -439,7 +642,7 @@ class AssetFunctionalTests(AppFunctionalTests):
 
             form = find_form(app.get("/asset/movie/%s/input" % created_asset.id).forms, action_part="update")
             form.set("filepath",  "")
-            form.set("placeholder", ("not_found.png", ))
+            form.set("placeholder", ("imageasset-update-image.png", ))
             form.set("title", asset_title)
             form.set("tags", "tag-is-updated")
             form.set("private_tags", "ptag, ptag2")
@@ -466,8 +669,8 @@ class AssetFunctionalTests(AppFunctionalTests):
             asset_title = u"this-is-created-movie-asset"
 
             form = find_form(app.get("/asset/movie").forms, action_part="create")
-            form.set("filepath",  ("small.mp4", ))
-            form.set("placeholder", ("pyramid-small.png", ))
+            form.set("filepath",  ("movieasset-create-movie.mp4", ))
+            form.set("placeholder", ("imageasset-thumbnail-image.png", ))
             form.set("title", asset_title)
             form.set("tags", "tag0, tag1, tag2")
             form.set("private_tags", "ptag")
@@ -507,8 +710,8 @@ class AssetFunctionalTests(AppFunctionalTests):
             asset_title = u"this-is-created-flash-asset"
 
             form = find_form(app.get("/asset/flash").forms, action_part="create")
-            form.set("filepath",  ("blueman.swf", ))
-            form.set("placeholder", ("pyramid-small.png", ))
+            form.set("filepath",  ("flashasset-create-flash.swf", ))
+            form.set("placeholder", ("imageasset-thumbnail-image.png", ))
             form.set("title", asset_title)
             form.set("tags", "tag0, tag1, tag2")
             form.set("private_tags", "ptag")
@@ -538,8 +741,8 @@ class AssetFunctionalTests(AppFunctionalTests):
             asset_title = u"this-is-created-flash-asset"
 
             form = find_form(app.get("/asset/flash").forms, action_part="create")
-            form.set("filepath",  ("blueman.swf", ))
-            form.set("placeholder", ("pyramid-small.png", ))
+            form.set("filepath",  ("flashasset-create-flash.swf", ))
+            form.set("placeholder", ("imageasset-thumbnail-image.png", ))
             form.set("title", asset_title)
             form.set("tags", "tag0, tag1, tag2")
             form.set("private_tags", "ptag")
@@ -583,8 +786,8 @@ class AssetFunctionalTests(AppFunctionalTests):
             asset_title = u"update-asset"
 
             form = find_form(app.get("/asset/flash/%s/input" % created_asset.id).forms, action_part="update")
-            form.set("filepath",  ("expressInstall.swf", ))
-            form.set("placeholder", ("not_found.png", ))
+            form.set("filepath",  ("flashasset-update-flash.swf", ))
+            form.set("placeholder", ("imageasset-update-image.png", ))
             form.set("title", asset_title)
             form.set("tags", "tag-is-updated")
             form.set("private_tags", "ptag, ptag2")
@@ -615,8 +818,8 @@ class AssetFunctionalTests(AppFunctionalTests):
             asset_title = u"this-is-created-flash-asset"
 
             form = find_form(app.get("/asset/flash").forms, action_part="create")
-            form.set("filepath",  ("blueman.swf", ))
-            form.set("placeholder", ("pyramid-small.png", ))
+            form.set("filepath",  ("flashasset-create-flash.swf", ))
+            form.set("placeholder", ("imageasset-thumbnail-image.png", ))
             form.set("title", asset_title)
             form.set("tags", "tag0, tag1, tag2")
             form.set("private_tags", "ptag")
