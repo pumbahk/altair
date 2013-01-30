@@ -2,7 +2,7 @@
 
 from wtforms import Form, ValidationError
 from wtforms import TextField, HiddenField, DateField, PasswordField, SelectMultipleField
-from wtforms.validators import Length, Email, Optional
+from wtforms.validators import Length, Email, Optional, Regexp
 from pyramid.security import has_permission, ACLAllowed
 
 from ticketing.formhelpers import DateTimeField, Translations, Required
@@ -89,6 +89,7 @@ class OperatorForm(Form):
         label=u'パスワード',
         validators=[
             Length(4, 32, message=u'4文字以上32文字以内で入力してください'),
+            Regexp("^[a-zA-Z0-9]+$", 0, message=u'英数字を入力してください。'),
         ]
     )
 
