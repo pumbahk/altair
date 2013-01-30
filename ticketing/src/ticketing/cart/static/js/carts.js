@@ -974,7 +974,7 @@ cart.VenueView = Backbone.View.extend({
             },
             loadPartStart: function (part) {
                 var self = this;
-                if (part == 'pages') {
+                if (!loadingLayer) {
                     loadingLayer =
                         $('<div></div>')
                         .append(
