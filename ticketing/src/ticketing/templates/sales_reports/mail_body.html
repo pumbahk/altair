@@ -80,14 +80,13 @@
             'paid_quantity':0,
           }
           event_products = sorted(event_product, key=lambda x:(x['stock_type_id'], x['product_name'], x['product_price']))
-          if form.limited_from.data or form.limited_to.data:
-            product_total_sum = {
-              'total_quantity':0,
-              'vacant_quantity':0,
-              'unpaid_quantity':0,
-              'paid_quantity':0,
-            }
-            event_products_total = sorted(event_product_total, key=lambda x:(x['stock_type_id'], x['product_name'], x['product_price']))
+          product_total_sum = {
+            'total_quantity':0,
+            'vacant_quantity':0,
+            'unpaid_quantity':0,
+            'paid_quantity':0,
+          }
+          event_products_total = sorted(event_product_total, key=lambda x:(x['stock_type_id'], x['product_name'], x['product_price']))
         %>
         % for product, product_total in zip(event_products, event_products_total):
           <%
@@ -96,11 +95,10 @@
             product_sum['unpaid_quantity'] += product['unpaid_quantity']
             product_sum['paid_quantity'] += product['paid_quantity']
 
-            if form.limited_from.data or form.limited_to.data:
-              product_total_sum['total_quantity'] += product_total['total_quantity']
-              product_total_sum['vacant_quantity'] += product_total['vacant_quantity']
-              product_total_sum['unpaid_quantity'] += product_total['unpaid_quantity']
-              product_total_sum['paid_quantity'] += product_total['paid_quantity']
+            product_total_sum['total_quantity'] += product_total['total_quantity']
+            product_total_sum['vacant_quantity'] += product_total['vacant_quantity']
+            product_total_sum['unpaid_quantity'] += product_total['unpaid_quantity']
+            product_total_sum['paid_quantity'] += product_total['paid_quantity']
 
             if grouping_key == (product['product_name'], product['product_price']):
               continue
