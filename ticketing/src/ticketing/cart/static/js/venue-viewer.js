@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['WKKV4ILZAZ8LVYDZ'] = (function (exports) { (function () { 
+__LIBS__['dHUNCU9R8LMEFBM0'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['KR7KW85KVM06PZYF'] = (function (exports) { (function () { 
+__LIBS__['JOOTA7INSTXMXVDP'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['L14GMN2D92BL7RKY'] = (function (exports) { (function () { 
+__LIBS__['vSBA9M30LLKVCMT5'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['WKKV4ILZAZ8LVYDZ'];
-var CONF = __LIBS__['KR7KW85KVM06PZYF'];
+var util = __LIBS__['dHUNCU9R8LMEFBM0'];
+var CONF = __LIBS__['JOOTA7INSTXMXVDP'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -965,6 +965,8 @@ function collectText(node) {
 function copyShape(shape) {
   if (shape instanceof Fashion.Rect) {
     return new Fashion.Rect({ position: shape.position(), size: shape.size(), transform: shape.transform() });
+  } else if (shape instanceof Fashion.Path) {
+    return new Fashion.Path({ points: shape.points(),transform: shape.transform() });
   }
   return null;
 }
@@ -1019,9 +1021,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['KR7KW85KVM06PZYF'];
-  var seat = __LIBS__['L14GMN2D92BL7RKY'];
-  var util = __LIBS__['WKKV4ILZAZ8LVYDZ'];
+  var CONF = __LIBS__['JOOTA7INSTXMXVDP'];
+  var seat = __LIBS__['vSBA9M30LLKVCMT5'];
+  var util = __LIBS__['dHUNCU9R8LMEFBM0'];
 
   var StoreObject = _class("StoreObject", {
     props: {
