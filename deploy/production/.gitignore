@@ -3,6 +3,7 @@ var/*
 *.pid
 cancel_auth_expired_carts.conf
 update_seat_status.conf
+send_sales_reports.conf
 develop-eggs
 eggs
 parts

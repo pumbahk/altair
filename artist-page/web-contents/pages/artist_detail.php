@@ -137,7 +137,7 @@ extract($result);
 										<dt><img src="<?= $photo[$o]['photo'] ?>"></dt>
 										    <?if(isset($photo[$o]['salesDate'])){?>
 											    <dd><?= $photo[$o]['salesDate'] ?></dd>
-											    <dd><a href="/~katosaori/web-contents/pages/cd.php?photo=<?=urlencode($photo[$o]['photo']);?>"><?= $photo[$o]['cdname'] ?></a></dd>
+											    <dd><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/cd.php?photo=<?=urlencode($photo[$o]['photo']);?>"><?= $photo[$o]['cdname'] ?></a></dd>
                                             <?}?>
 									</dl>
 								<?php }?>
@@ -221,7 +221,7 @@ extract($result);
 	<div id ="main_all">
 		<div id ='title_check'></div>
 			<div id='carousel_container'>
-				<div id='left_scroll'><img src ="../img/music/btn_check_prev.gif" width="15" height="100"></div>
+				<div id='left_scroll'></div>
 					<div id='carousel_inner' style="height:100px;">
 						<ul id='carousel_ul'>
 						 <?php
@@ -230,7 +230,7 @@ extract($result);
 									$pattern = '/noimage/';
 									preg_match ($pattern,$photo[$o]['largeImage'],$matches);
 									if (empty($matches)){?>
-										<li onclick="ReWrite(<?= $dvd_img[$o] ?>)"><a href="/~katosaori/web-contents/pages/cd.php?photo=<?=urlencode($photo[$o]['photo']);?>"><img src='<?= $dvd_img[$o] ?>' /></a></li>
+										<li onclick="ReWrite(<?= $dvd_img[$o] ?>)"><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/cd.php?photo=<?=urlencode($photo[$o]['photo']);?>"><img src='<?= $dvd_img[$o] ?>' /></a></li>
 									<?php }
 								}
 							}	
@@ -239,7 +239,7 @@ extract($result);
 							}?>
 						</ul> 
 					</div> 
-					<div id='right_scroll'><img src="../img/music/btn_check_next.gif" width="15" height="100"></div>
+					<div id='right_scroll'></div>
 				</div>
 			</div>
 		</div>
@@ -263,8 +263,8 @@ extract($result);
 gif" alt="検索" />
 	</form></li>
 
-		<li> <a href="/~katosaori/web-contents/pages/gojyuon.php?page_moji=ア,あ&page_domestic=1&count_artist=356">邦楽50音順検索</a></li>
-		<li><a href="/~katosaori/web-contents/pages/gojyuon.php?page_figure=A&page_overseas=1&count_artist=1490">洋楽ABC検索</a></li>
+		<li> <a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?page_moji=ア,あ&page_domestic=1&count_artist=356">邦楽50音順検索</a></li>
+		<li><a href="/~katosaori/altair-devel/altair/artist-page/web-contents/pages/gojyuon.php?page_figure=A&page_overseas=1&count_artist=1490">洋楽ABC検索</a></li>
 
 	</ul>
 

@@ -102,13 +102,13 @@ ${h.get_nickname(request)}
           <td>
             <ul>
               <li>
-                ${form['email_1'].label}
+                ${form['email_1'].label(style=u'width:10em')}
                 ${form['email_1']}
                 (例：mail@example.ne.jp)
                 ${h.error_list(request, form, 'email_1')}
               </li>
               <li>
-                ${form['email_1_confirm'].label}
+                ${form['email_1_confirm'].label(style=u'width:10em')}
                 ${form['email_1_confirm']}
                 (例：mail@example.ne.jp)
                 ${h.error_list(request, form, 'email_1_confirm')}
@@ -136,10 +136,12 @@ ${h.get_nickname(request)}
                 (例: 品川区)
                 ${h.error_list(request, form, 'city')}
               </li>
-              <li>町名番地
+              <li>
+                <label for="address_1">町名番地</label>
                 ${form['address_1']}
                 (例: 東五反田x-xx-xx)
-                <br />建物名等
+                <br />
+                <label for="address_2">建物名等</label>
                 ${form['address_2']}
                 (例: yyビルz階)
                 ${h.error_list(request, form, 'address_1')}
