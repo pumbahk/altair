@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['zFF1WQYN056JOA5E'] = (function (exports) { (function () { 
+__LIBS__['ZA4NKXLVJ4UEJOKG'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -65,7 +65,7 @@ exports.convertToFashionStyle = function Util_convertToFashionStyle(style, gradi
 
   return {
     "fill": style.fill ? fill(style.fill): null,
-    "stroke": style.stroke ? stroke(style.stroke): null
+    "stroke": (style.stroke && style.stroke.color) ? stroke(style.stroke): null
   };
 };
 
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['u4JM0YUJG2K1VIDL'] = (function (exports) { (function () { 
+__LIBS__['L0TCYVM55TNYVGVS'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -139,7 +139,7 @@ exports.DEFAULT = {
     },
     seat: {
       fill: new Fashion.Color('#fff'),
-      stroke: new Fashion.Color('#000')
+      stroke: null
     },
     glayout: {
       fill: new Fashion.FloodFill(new Fashion.Color('#ccc')),
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['sAIIDV7X5SIBL3B7'] = (function (exports) { (function () { 
+__LIBS__['uLZXDRZT3DNR4O9D'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['zFF1WQYN056JOA5E'];
-var CONF = __LIBS__['u4JM0YUJG2K1VIDL'];
+var util = __LIBS__['ZA4NKXLVJ4UEJOKG'];
+var CONF = __LIBS__['L0TCYVM55TNYVGVS'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -1021,9 +1021,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['u4JM0YUJG2K1VIDL'];
-  var seat = __LIBS__['sAIIDV7X5SIBL3B7'];
-  var util = __LIBS__['zFF1WQYN056JOA5E'];
+  var CONF = __LIBS__['L0TCYVM55TNYVGVS'];
+  var seat = __LIBS__['uLZXDRZT3DNR4O9D'];
+  var util = __LIBS__['ZA4NKXLVJ4UEJOKG'];
 
   var StoreObject = _class("StoreObject", {
     props: {

@@ -7,7 +7,7 @@ exports.DEFAULT = {
     },
     seat: {
       fill: new Fashion.Color('#fff'),
-      stroke: new Fashion.Color('#000')
+      stroke: null
     },
     glayout: {
       fill: new Fashion.FloodFill(new Fashion.Color('#ccc')),

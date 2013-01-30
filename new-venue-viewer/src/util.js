@@ -60,7 +60,7 @@ exports.convertToFashionStyle = function Util_convertToFashionStyle(style, gradi
 
   return {
     "fill": style.fill ? fill(style.fill): null,
-    "stroke": style.stroke ? stroke(style.stroke): null
+    "stroke": (style.stroke && style.stroke.color) ? stroke(style.stroke): null
   };
 };
 
