@@ -89,7 +89,7 @@ class OperatorForm(Form):
         label=u'パスワード',
         validators=[
             Length(4, 32, message=u'4文字以上32文字以内で入力してください'),
-            Regexp("^[a-zA-Z0-9]+$", 0, message=u'英数字を入力してください。'),
+            Regexp("^[a-zA-Z0-9@!#$%&'()*+,-./_]+$", 0, message=u'英数記号を入力してください。'),
         ]
     )
 
