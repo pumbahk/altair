@@ -48,6 +48,11 @@ def download(request):
     return response
 
 
+@view_config(route_name="layout_list", renderer="altaircms:templates/layout/list.mako")
+def layout_list(context, request):
+    return "ok"
+
+
 @view_defaults(route_name="layout_create", 
                decorator="altaircms.lib.fanstatic_decorator.with_bootstrap")
 class LayoutCreateView(object):

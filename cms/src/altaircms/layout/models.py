@@ -27,7 +27,7 @@ class Layout(BaseOriginalMixin, WithOrganizationMixin, Base):
     blocks = Column(Text, default=DEFAULT_BLOCKS)
 
     pagetype_id = Column(sa.Integer, ForeignKey("pagetype.id"))
-    pagetype = orm.relationship("PageType", backref="pagesets", uselist=False)
+    pagetype = orm.relationship("PageType", backref="layouts", uselist=False)
 
     @property
     def organization(self):

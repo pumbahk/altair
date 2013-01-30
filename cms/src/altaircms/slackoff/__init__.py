@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 def includeme(config):
     config.add_crud("layout", title="layout", model="..layout.models.Layout",
-                    bind_actions=["delete", "list"], 
+                    bind_actions=["delete"], 
                     form=".forms.LayoutForm", mapper=".mappers.layout_mapper")
     config.add_crud("performance", title="performance", model="..models.Performance",
                     bind_actions=["create", "delete", "update"], 

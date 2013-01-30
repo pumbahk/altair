@@ -216,7 +216,7 @@ class Page(BaseOriginalMixin,
     pageset = relationship('PageSet', backref=orm.backref('pages', order_by=sa.asc("publish_begin")), uselist=False)
 
     pagetype_id = Column(sa.Integer, ForeignKey("pagetype.id"))
-    pagetype = orm.relationship("PageType", backref="pagesets", uselist=False)
+    pagetype = orm.relationship("PageType", backref="pages", uselist=False)
 
     publish_begin = Column(DateTime)
     publish_end = Column(DateTime)
