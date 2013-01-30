@@ -21,7 +21,7 @@ from sqlalchemy.sql import exists
 from sqlalchemy.sql.expression import or_
 from sqlalchemy.orm import joinedload
 
-from ticketing.models import merge_session_with_post, record_to_multidict
+from ticketing.models import DBSession, merge_session_with_post, record_to_multidict
 from ticketing.core.models import (Order, Performance, PaymentDeliveryMethodPair, ShippingAddress,
                                    Product, ProductItem, OrderedProduct, OrderedProductItem, 
                                    Ticket, TicketBundle, TicketFormat, Ticket_TicketBundle,
@@ -820,8 +820,6 @@ from ticketing.sej.exceptions import  SejServerError
 
 from sqlalchemy import or_, and_
 from pyramid.threadlocal import get_current_registry
-import sqlahelper
-DBSession = sqlahelper.get_session()
 
 @view_defaults(decorator=with_bootstrap, permission='administrator')
 class SejOrderView(object):
