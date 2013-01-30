@@ -83,6 +83,9 @@ class PageSet(Base,
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
 
+    pagetype_id = Column(sa.Integer, ForeignKey("pagetype.id"))
+    pagetype = orm.relationship("PageType", backref="pagesets", uselist=False)
+
     @declared_attr
     def __table_args__(cls):
         return (sa.schema.UniqueConstraint("url", "organization_id"), )
@@ -212,6 +215,9 @@ class Page(BaseOriginalMixin,
     pageset_id = Column(Integer, ForeignKey('pagesets.id'))
     pageset = relationship('PageSet', backref=orm.backref('pages', order_by=sa.asc("publish_begin")), uselist=False)
 
+    pagetype_id = Column(sa.Integer, ForeignKey("pagetype.id"))
+    pagetype = orm.relationship("PageType", backref="pagesets", uselist=False)
+
     publish_begin = Column(DateTime)
     publish_end = Column(DateTime)
     published = Column(sa.Boolean, default=False)
@@ -312,6 +318,12 @@ class Page(BaseOriginalMixin,
         else:
             return "other"
 
+
+class PageType(WithOrganizationMixin, Base):
+    query = DBSession.query_property()
+    __tablename__ = "pagetype"
+    id = sa.Column(sa.Integer, primary_key=True)
+    name = sa.Column(sa.Unicode(255))
 
 ## master    
 class PageDefaultInfo(Base):
