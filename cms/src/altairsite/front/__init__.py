@@ -18,15 +18,15 @@ def includeme(config):
     ## mobile
     config.add_view("altairsite.mobile.views.mobile_index",
                     route_name="front",
-                    renderer="altaircms:templates/mobile/index.mako", 
+                    renderer="altaircms:templates/mobile/index.html", 
                     context="altairsite.mobile.api.MobileGotoTop")
     config.add_view("altairsite.mobile.views.mobile_category",
                     route_name="front",
-                    renderer="altaircms:templates/mobile/category.mako", 
+                    renderer="altaircms:templates/mobile/category.html", 
                     context="altairsite.mobile.api.MobileGotoCategoryTop")
     config.add_view("altairsite.mobile.views.mobile_detail",
                     route_name="front",
-                    renderer="altaircms:templates/mobile/detail.mako", 
+                    renderer="altaircms:templates/mobile/detail.html", 
                     context="altairsite.mobile.api.MobileGotoEventDetail")
     config.add_view("altairsite.mobile.views.mobile_semi_static",
                     route_name="front",

@@ -22,7 +22,7 @@ class CountdownWidget(Widget):
     implements(IWidget)
     type = "countdown"
 
-    template_name = "altaircms.plugins.widget:countdown/render.mako"
+    template_name = "altaircms.plugins.widget:countdown/render.html"
     __tablename__ = "widget_countdown"
     __mapper_args__ = {"polymorphic_identity": type}
     query = DBSession.query_property()

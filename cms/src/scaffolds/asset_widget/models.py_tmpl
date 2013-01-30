@@ -17,7 +17,7 @@ class {{Package}}Widget(Widget):
     implements(IWidget)
     type = "{{package}}"
 
-    template_name = "altaircms.plugins.widget:{{package}}/render.mako"
+    template_name = "altaircms.plugins.widget:{{package}}/render.html"
     __tablename__ = "widget_{{package}}"
     __mapper_args__ = {"polymorphic_identity": type}
     query = DBSession.query_property()

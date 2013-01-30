@@ -47,7 +47,7 @@ widget.configure({
     };
 
     var collect_data = function(we, choiced_elt){
-        // read dialog.mako
+        // read dialog.html
         return {"items": JSON.stringify($("#app").data("appview").collectData())};
     };
 

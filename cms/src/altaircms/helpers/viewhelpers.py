@@ -43,7 +43,7 @@ def get_endpoint(request): #maybe
 
 class FlashMessage(object):
     """ flashmessageのqueueをmethodで呼び分ける
-    ここで追加されたメッセージは、altaircms:templates/parts/flashmessage.makoなどで使われる
+    ここで追加されたメッセージは、altaircms:templates/parts/flashmessage.htmlなどで使われる
     """
     @classmethod
     def _flash(cls, request, message, queue):

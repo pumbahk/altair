@@ -50,7 +50,7 @@ def _getLayout():
          'created_at': datetime(2012, 2, 16, 11, 26, 55, 755523),
          'id': 2,
          'organization_id': None,
-         'template_filename': u'layout.mako',
+         'template_filename': u'layout.html',
          'title': 'simple',
          'updated_at': datetime(2012, 2, 16, 11, 26, 55, 755641)}
     return Layout.from_dict(D)

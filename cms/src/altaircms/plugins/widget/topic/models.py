@@ -96,45 +96,45 @@ def topcontent_merge_settings(template_name, widget, bname, bsettings):
 MERGE_SETTINGS_DISPATH = {
     ("noimage", u"CR質問"): functools.partial(
         topics_merge_settings, 
-        "altaircms.plugins.widget:topic/CR_faq_render.mako"
+        "altaircms.plugins.widget:topic/CR_faq_render.html"
         ), 
     ("noimage", u"NH質問"): functools.partial(
         topics_merge_settings, 
-        "altaircms.plugins.widget:topic/NH_faq_render.mako"
+        "altaircms.plugins.widget:topic/NH_faq_render.html"
         ), 
     ("noimage", u"89ers質問"): functools.partial(
         topics_merge_settings, 
-        "altaircms.plugins.widget:topic/89ers_faq_render.mako"
+        "altaircms.plugins.widget:topic/89ers_faq_render.html"
         ), 
     ("noimage", u"vissel質問"): functools.partial(
         topics_merge_settings, 
-        "altaircms.plugins.widget:topic/vissel_faq_render.mako"
+        "altaircms.plugins.widget:topic/vissel_faq_render.html"
         ), 
     ("noimage", u"89ers取引方法詳細"): functools.partial(
         topics_merge_settings, 
-        "altaircms.plugins.widget:topic/89ers_info_render.mako"
+        "altaircms.plugins.widget:topic/89ers_info_render.html"
         ), 
     ("noimage", u"トピックス"): functools.partial(
         topics_merge_settings, 
-        "altaircms.plugins.widget:topic/topic_render.mako"), 
+        "altaircms.plugins.widget:topic/topic_render.html"), 
     ("noimage", u"特集"): functools.partial(
         topics_merge_settings, 
-        "altaircms.plugins.widget:topic/sidebar_feature_render.mako"), 
+        "altaircms.plugins.widget:topic/sidebar_feature_render.html"), 
     ("noimage", u"特集(サブカテゴリ)"): functools.partial(
         topics_merge_settings, 
-        "altaircms.plugins.widget:topic/sidebar_category_genre.mako"), 
+        "altaircms.plugins.widget:topic/sidebar_category_genre.html"), 
     ("noimage", u"公演中止情報"): functools.partial( ##
         topics_merge_settings, 
-        "altaircms.plugins.widget:topic/change_render.mako"), 
+        "altaircms.plugins.widget:topic/change_render.html"), 
     ("noimage", u"その他"): functools.partial( ##
         topics_merge_settings, 
-        "altaircms.plugins.widget:topic/topic_render.mako"), 
+        "altaircms.plugins.widget:topic/topic_render.html"), 
     ("noimage", u"ヘルプ"): functools.partial(
         topics_merge_settings, 
-        "altaircms.plugins.widget:topic/help_topic_render.mako"), 
+        "altaircms.plugins.widget:topic/help_topic_render.html"), 
     ("hasimage", u"注目のイベント"): functools.partial(
         topcontent_merge_settings, 
-        "altaircms.plugins.widget:topic/notable_event_render.mako")
+        "altaircms.plugins.widget:topic/notable_event_render.html")
     }
 
 class TopicWidgetResource(HandleSessionMixin,

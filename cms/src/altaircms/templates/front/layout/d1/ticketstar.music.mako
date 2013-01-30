@@ -13,8 +13,8 @@
       ${w|n}
   % endfor
 </%def>
-<%namespace file="../../ticketstar/components.mako" name="co"/>
-<%namespace file="altaircms:templates/front/ticketstar/gadgets.mako" name="gadgets"/>
+<%namespace file="../../ticketstar/components.html" name="co"/>
+<%namespace file="altaircms:templates/front/ticketstar/gadgets.html" name="gadgets"/>
 
 
 <?xml version="1.0" encoding="utf-8"?>

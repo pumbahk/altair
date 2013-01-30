@@ -40,7 +40,7 @@ class PromotionWidgetView(object):
         context.delete(widget, flush=True)
         return {"status": "ok"}
 
-    @view_config(route_name="promotion_widget_dialog", renderer="altaircms.plugins.widget:promotion/dialog.mako", request_method="GET")
+    @view_config(route_name="promotion_widget_dialog", renderer="altaircms.plugins.widget:promotion/dialog.html", request_method="GET")
     def dialog(self):
         context = self.request.context
         widget = context.get_widget(self.request.GET.get("pk"))
@@ -53,7 +53,7 @@ def promotion_main_image(context, request):
     pm = api.get_promotion_manager(request)
     return pm.main_image_info(request)
 
-# @view_config(route_name="promotion_slideshow", renderer="altaircms.plugins.widget:promotion/slideshow.mako", request_method="GET", 
+# @view_config(route_name="promotion_slideshow", renderer="altaircms.plugins.widget:promotion/slideshow.html", request_method="GET", 
 #              decorator="altaircms.lib.fanstatic_decorator.with_jquery")
 # def promotion_slideshow(context, request):
 #     pm = api.get_promotion_manager(request)

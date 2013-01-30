@@ -13,7 +13,7 @@ def enable_usersite_function(info, request):
     return request.organization.use_full_usersite if request.organization else False
 
 @view_config(custom_predicates=(enable_usersite_function, ), 
-             route_name="mobile_index", renderer="altaircms:templates/mobile/index.mako")
+             route_name="mobile_index", renderer="altaircms:templates/mobile/index.html")
 def mobile_index(request):
     today = datetime.now()
     pageset = PageSet.query.filter(Category.name=="index").filter(PageSet.id==Category.pageset_id).first()
@@ -25,7 +25,7 @@ def mobile_index(request):
 
 
 @view_config(custom_predicates=(enable_usersite_function, ), 
-             route_name="mobile_detail", renderer="altaircms:templates/mobile/detail.mako")
+             route_name="mobile_detail", renderer="altaircms:templates/mobile/detail.html")
 def mobile_detail(request):
     today = datetime.now()
     pageset = PageSet.query.filter_by(id=request.matchdict["pageset_id"]).first()
@@ -40,7 +40,7 @@ def enable_categories(info, request):
     return request.matchdict["category"] in ("music", "sports", "stage", "event")
 
 @view_config(route_name="mobile_category", custom_predicates=(enable_categories, enable_usersite_function), 
-             renderer="altaircms:templates/mobile/category.mako")
+             renderer="altaircms:templates/mobile/category.html")
 def mobile_category(request):
     today = datetime.now()
     category_name = request.matchdict["category"]
@@ -61,7 +61,7 @@ def mobile_category(request):
 
 @view_config(custom_predicates=(enable_usersite_function, ), 
              request_param="q", route_name="mobile_search", 
-             renderer="altaircms:templates/mobile/search.mako")
+             renderer="altaircms:templates/mobile/search.html")
 def search_by_freeword(context, request):
     """ フリーワード検索 + categoryごとの数
     """
@@ -90,7 +90,7 @@ def mobile_semi_static(request):
     ## normalize
     filename = request.matchdict["filename"]
     template_path = os.path.join("altaircms:templates/mobile/static/", filename)
-    if not template_path.endswith(".mako"):
-        template_path = os.path.splitext(template_path)[0]+".mako"
+    if not template_path.endswith(".html"):
+        template_path = os.path.splitext(template_path)[0]+".html"
 
     return render_to_response(template_path, {}, request)

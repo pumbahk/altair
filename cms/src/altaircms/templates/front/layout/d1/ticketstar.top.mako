@@ -1,4 +1,4 @@
-<%namespace file="./components/ticketstar/top/side.mako" name="side_co"/>
+<%namespace file="./components/ticketstar/top/side.html" name="side_co"/>
 
 <%def name="widgets(name)">
   % for w in display_blocks[name]:
@@ -14,8 +14,8 @@
 ## side{side_top,side_bottom}
 ##
 
-<%namespace file="../../ticketstar/components.mako" name="co"/>
-<%namespace file="altaircms:templates/front/ticketstar/gadgets.mako" name="gadgets"/>
+<%namespace file="../../ticketstar/components.html" name="co"/>
+<%namespace file="altaircms:templates/front/ticketstar/gadgets.html" name="gadgets"/>
 
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">

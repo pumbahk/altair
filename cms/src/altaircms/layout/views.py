@@ -18,7 +18,7 @@ from .creation import LayoutCreator, get_layout_filesession
 from collections import defaultdict
 
 
-@view_config(route_name="layout_demo", renderer="altaircms:templates/layout/demo.mako")
+@view_config(route_name="layout_demo", renderer="altaircms:templates/layout/demo.html")
 def demo(request):
     layout = get_or_404(request.allowable(Layout), Layout.id==request.GET["id"])
     data = dict(layout_image=LayoutRender(layout).blocks_image())
@@ -26,7 +26,7 @@ def demo(request):
 
 
 @view_config(route_name="layout_preview", decorator="altaircms.lib.fanstatic_decorator.with_jquery", 
-             renderer="dummy.mako")
+             renderer="dummy.html")
 def preview(context, request):
     layout = get_or_404(request.allowable(Layout), Layout.id==request.matchdict["layout_id"])
     template_path = os.path.join(get_layout_filesession(request).assetspec, layout.prefixed_template_filename)
@@ -61,7 +61,7 @@ class LayoutCreateView(object):
         self.request._form = forms.LayoutCreateForm()
         raise AfterInput
 
-    @view_config(context=AfterInput, renderer="altaircms:templates/layout/create/input.mako")
+    @view_config(context=AfterInput, renderer="altaircms:templates/layout/create/input.html")
     def _after_input(self):
         form = self.request._form
         return {"form": form, 
@@ -95,7 +95,7 @@ class LayoutUpdateView(object):
                                                     )
         raise AfterInput
 
-    @view_config(context=AfterInput, renderer="altaircms:templates/layout/update/input.mako")
+    @view_config(context=AfterInput, renderer="altaircms:templates/layout/update/input.html")
     def _after_input(self):
         form = self.request._form
         return {"form": form, 

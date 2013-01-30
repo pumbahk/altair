@@ -1,9 +1,9 @@
-<%inherit file='../layout_2col.mako'/>
-<%namespace name="nco" file="../navcomponents.mako"/>
-<%namespace name="fco" file="../formcomponents.mako"/>
-<%namespace name="mco" file="../modelcomponents.mako"/>
-<%namespace name="co" file="components.mako"/>
-<%namespace name="css" file="internal.css.mako"/>
+<%inherit file='../layout_2col.html'/>
+<%namespace name="nco" file="../navcomponents.html"/>
+<%namespace name="fco" file="../formcomponents.html"/>
+<%namespace name="mco" file="../modelcomponents.html"/>
+<%namespace name="co" file="components.html"/>
+<%namespace name="css" file="internal.css.html"/>
 
 <h2>page編集</h2>
 
@@ -19,7 +19,7 @@ ${nco.breadcrumbs(
     <link rel="stylesheet" type="text/css" href="/static/css/overlay-basic.css"/>
     <link rel="stylesheet" href="/static/css/page/edit.css" type="text/css" />
 
-	### widget追加する度に変更する必要(internal.css.mako)
+	### widget追加する度に変更する必要(internal.css.html)
 	${css.widget_css_scripts()}
 
     ${css.container_layout()}

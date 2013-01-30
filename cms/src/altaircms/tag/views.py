@@ -20,7 +20,7 @@ class TopView(object):
     def __init__(self, request):
         self.request = request
 
-    @view_config(request_method="GET", renderer="altaircms:templates/tag/top.mako")
+    @view_config(request_method="GET", renderer="altaircms:templates/tag/top.html")
     def toppage_view_default(self):
         form = forms.TagSearchForm()
         pages = get_tagmanager("page", self.request).recent_change_tags()
@@ -33,7 +33,7 @@ class TopView(object):
                 "new_tags_dict": new_tags_dict}
 
     @view_config(request_method="GET",custom_predicates=(has_query, ), 
-                 renderer="altaircms:templates/tag/search_result.mako")
+                 renderer="altaircms:templates/tag/search_result.html")
     def search(self):
         form = forms.TagSearchForm(**self.request.GET)
         classifier = self.request.GET["classifier"]
@@ -47,7 +47,7 @@ class TopView(object):
                 "classifier":classifier}
 
     @view_config(request_method="GET", custom_predicates=(in_support_classifier, ), 
-                 renderer="altaircms:templates/tag/subtop.mako")
+                 renderer="altaircms:templates/tag/subtop.html")
     def subtoppage_view(self):
         classifier = self.request.matchdict["classifier"]
         form = forms.TagSearchForm(classifier=classifier)

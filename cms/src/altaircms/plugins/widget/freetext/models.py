@@ -30,7 +30,7 @@ class FreetextWidget(Widget):
     implements(IWidget)
     type = "freetext"
 
-    template_name = "altaircms.plugins.widget:freetext/render.mako"    
+    template_name = "altaircms.plugins.widget:freetext/render.html"    
     __tablename__ = "widget_text"
     __mapper_args__ = {"polymorphic_identity": type}
     query = DBSession.query_property()

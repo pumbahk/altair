@@ -24,7 +24,7 @@ def config_proxy(config_file_name):
 class DummyFileField(object):
     def __init__(self, fname):
         self._original_filename = fname
-        self.filename = os.path.splitext(fname)[0]+".mako"
+        self.filename = os.path.splitext(fname)[0]+".html"
         self.file = open(fname)
 
 def main():

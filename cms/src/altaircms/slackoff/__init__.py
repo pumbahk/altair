@@ -10,7 +10,7 @@ def includeme(config):
     config.add_view(".views.performance_detail", match_param="action=detail", permission="performance_update", 
                     route_name="performance_update", 
                     decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", 
-                    renderer="altaircms:templates/performance/view.mako")
+                    renderer="altaircms:templates/performance/view.html")
 
     config.add_crud("sale", title="sale", model="..models.Sale", 
                     bind_actions=["create", "delete", "update"], 
@@ -35,7 +35,7 @@ def includeme(config):
     config.add_route("category_list", "/category")
     config.add_view(".views.category_list_view", route_name="category_list", permission="category_read", 
                     decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", 
-                    renderer="altaircms:templates/category/list.mako")
+                    renderer="altaircms:templates/category/list.html")
     config.add_crud("category.link", title="external link", model="..models.Category",
                     has_auto_generated_permission=False, 
                     bind_actions=["create", "update"], 

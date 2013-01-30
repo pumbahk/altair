@@ -35,7 +35,7 @@ class PurchaseWidgetView(object):
         context.delete(widget, flush=True)
         return {"status": "ok"}
 
-    @view_config(route_name="purchase_widget_dialog", renderer="altaircms.plugins.widget:purchase/dialog.mako", request_method="GET")
+    @view_config(route_name="purchase_widget_dialog", renderer="altaircms.plugins.widget:purchase/dialog.html", request_method="GET")
     def dialog(self):
         context = self.request.context
         widget = context.get_widget(self.request.GET.get("pk"))

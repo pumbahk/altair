@@ -62,6 +62,7 @@ def main(global_config, **local_config):
         authentication_policy=authn_policy,
         authorization_policy=authz_policy
     )
+    config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
 
     ## organization mapping
     OrganizationMapping = config.maybe_dotted(".auth.api.OrganizationMapping")

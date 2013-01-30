@@ -22,7 +22,7 @@ class TicketlistWidget(Widget):
     implements(IWidget)
     type = "ticketlist"
 
-    template_name = "altaircms.plugins.widget:ticketlist/render.mako"
+    template_name = "altaircms.plugins.widget:ticketlist/render.html"
     __tablename__ = "widget_ticketlist"
     __mapper_args__ = {"polymorphic_identity": type}
     query = DBSession.query_property()

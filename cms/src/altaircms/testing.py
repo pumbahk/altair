@@ -69,7 +69,7 @@ def config():
                   "altaircms.debug.strip_security": "true",
                   "altaircms.asset.storepath": "altaircms:../../data/assets", 
                   "sqlalchemy.url": "sqlite://", 
-                  "widget.template_path_format": "%s.mako", 
+                  "widget.template_path_format": "%s.html", 
 
                   "altair.oauth.client_id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
                   "altair.oauth.secret_key": "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",

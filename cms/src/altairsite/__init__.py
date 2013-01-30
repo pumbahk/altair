@@ -17,6 +17,7 @@ def main(global_config, **local_config):
     sqlahelper.add_engine(engine)
 
     config = Configurator(settings=settings)
+    config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
 
     ## organization mapping
     OrganizationMapping = config.maybe_dotted("altaircms.auth.api.OrganizationMapping")

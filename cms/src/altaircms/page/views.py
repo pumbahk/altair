@@ -64,7 +64,7 @@ class PageAddView(object):
         raise AfterInput
         
     @view_config(route_name="page_add", context=AfterInput, decorator=with_bootstrap.merge(with_jquery), 
-                 renderer="altaircms:templates/page/add.mako")
+                 renderer="altaircms:templates/page/add.html")
     def after_input_with_event(self):
         request = self.request
         return {"event": request._event, 
@@ -72,7 +72,7 @@ class PageAddView(object):
                 "setup_form": request._setup_form}
 
     @view_config(route_name="page_add_orphan", context=AfterInput, decorator=with_bootstrap.merge(with_jquery), 
-                 renderer="altaircms:templates/page/add_orphan.mako")
+                 renderer="altaircms:templates/page/add_orphan.html")
     def after_input(self):
         request = self.request
         return {"form": request._form, 
@@ -144,7 +144,7 @@ class PageCreateView(object):
         self.context = context
         self.request = request
 
-    # @view_config(route_name="page", renderer='altaircms:templates/page/list.mako', request_method="POST")
+    # @view_config(route_name="page", renderer='altaircms:templates/page/list.html', request_method="POST")
     # def create(self):
     #     form = forms.PageForm(self.request.POST)
     #     if form.validate():
@@ -161,7 +161,7 @@ class PageCreateView(object):
     #             setup_form = setup_form
     #             )
 
-    @view_config(route_name="page_duplicate", request_method="GET", renderer="altaircms:templates/page/duplicate_confirm.mako")
+    @view_config(route_name="page_duplicate", request_method="GET", renderer="altaircms:templates/page/duplicate_confirm.html")
     def duplicate_confirm(self):
         page = get_or_404(self.request.allowable(Page), Page.id==self.request.matchdict["id"])
         return {"page": page}
@@ -181,7 +181,7 @@ class PageDeleteView(object):
         self.context = context
         self.request = request
 
-    @view_config(renderer="altaircms:templates/page/delete_confirm.mako", request_method="GET")
+    @view_config(renderer="altaircms:templates/page/delete_confirm.html", request_method="GET")
     def delete_confirm(self):
         page = get_or_404(self.request.allowable(Page), Page.id==self.request.matchdict["id"])
         return {"page": page}
@@ -202,7 +202,7 @@ class PageSetDeleteView(object):
         self.context = context
         self.request = request
 
-    @view_config(renderer="altaircms:templates/pagesets/delete_confirm.mako", request_method="GET")
+    @view_config(renderer="altaircms:templates/pagesets/delete_confirm.html", request_method="GET")
     def delete_confirm(self):
         pageset = get_or_404(self.request.allowable(PageSet), PageSet.id==self.request.matchdict["pageset_id"])
         return {"pageset": pageset, "myhelpers": myhelpers}
@@ -224,7 +224,7 @@ class PageSetDeleteView(object):
 
 
 
-@view_config(route_name="page_update", context=AfterInput, renderer="altaircms:templates/page/input.mako", 
+@view_config(route_name="page_update", context=AfterInput, renderer="altaircms:templates/page/input.html", 
              decorator=with_bootstrap)
 def _input(request):
     page, form = request._store
@@ -251,7 +251,7 @@ class PageUpdateView(object):
         form = forms.PageUpdateForm(**params)
         return self._input_page(page, form)
 
-    @view_config(request_method="POST", renderer="altaircms:templates/page/update_confirm.mako",       
+    @view_config(request_method="POST", renderer="altaircms:templates/page/update_confirm.html",       
                     custom_predicates=[RegisterViewPredicate.confirm])
     def update_confirm(self):
         form = forms.PageUpdateForm(self.request.POST)
@@ -300,13 +300,13 @@ class PageListView(object):
         self.context = context
         self.request = request
 
-    @view_config(match_param="kind=static", renderer="altaircms:templates/page/static_page_list.mako")
+    @view_config(match_param="kind=static", renderer="altaircms:templates/page/static_page_list.html")
     def static_page_list(self):
         static_directory = get_static_page_utility(self.request)
         return {"static_directory": static_directory, 
                 "pages": static_directory.get_managemented_files(self.request)}
 
-    @view_config(match_param="kind=event", renderer="altaircms:templates/page/event_page_list.mako")
+    @view_config(match_param="kind=event", renderer="altaircms:templates/page/event_page_list.html")
     def event_bound_page_list(self):
         """ event詳細ページと結びついているpage """
         pages = self.request.allowable(PageSet).filter(PageSet.event != None)
@@ -322,7 +322,7 @@ class PageListView(object):
         pages = pages.order_by(sa.desc(PageSet.updated_at))
         return {"pages":pages, "search_form": search_form}
 
-    @view_config(match_param="kind=other", renderer="altaircms:templates/page/other_page_list.mako")
+    @view_config(match_param="kind=other", renderer="altaircms:templates/page/other_page_list.html")
     def other_page_list(self):
         """event詳細ページとは結びついていないページ(e.g. トップ、カテゴリトップ) """
         #kind = self.request.matchdict["kind"]
@@ -352,7 +352,7 @@ class PageSetDetailView(object):
     def static_page_detail(self):
         pass
 
-    @view_config(renderer="altaircms:templates/pagesets/event_page_detail.mako", 
+    @view_config(renderer="altaircms:templates/pagesets/event_page_detail.html", 
                  custom_predicates=(with_pageset_predicate("event"),))
     def event_bound_page_detail(self):
         """ event詳細ページと結びついているpage """
@@ -361,7 +361,7 @@ class PageSetDetailView(object):
                 "myhelpers": myhelpers}
 
 
-    @view_config(renderer="altaircms:templates/pagesets/other_page_detail.mako", 
+    @view_config(renderer="altaircms:templates/pagesets/other_page_detail.html", 
                  custom_predicates=(with_pageset_predicate("other"),))
     def other_page_detail(self):
         """event詳細ページとは結びついていないページ(e.g. トップ、カテゴリトップ) """
@@ -371,7 +371,7 @@ class PageSetDetailView(object):
 
 
 
-@view_config(route_name="page_detail", renderer='altaircms:templates/page/view.mako', permission='authenticated', 
+@view_config(route_name="page_detail", renderer='altaircms:templates/page/view.html', permission='authenticated', 
              decorator=with_fanstatic_jqueries.merge(with_bootstrap))
 def page_detail(request):
     """ page詳細ページ
@@ -380,9 +380,9 @@ def page_detail(request):
     return {"page": page, "myhelpers": myhelpers}
 
 ## todo: persmissionが正しいか確認
-@view_config(route_name='page_edit_', renderer='altaircms:templates/page/edit.mako', permission='authenticated', 
+@view_config(route_name='page_edit_', renderer='altaircms:templates/page/edit.html', permission='authenticated', 
              decorator=with_fanstatic_jqueries.merge(with_bootstrap))
-@view_config(route_name='page_edit', renderer='altaircms:templates/page/edit.mako', permission='authenticated', 
+@view_config(route_name='page_edit', renderer='altaircms:templates/page/edit.html', permission='authenticated', 
              decorator=with_fanstatic_jqueries.merge(with_bootstrap))
 def page_edit(request):
     """pageの中をwidgetを利用して変更する
@@ -435,7 +435,7 @@ def disposition_load(context, request):
     return HTTPFound(h.page.to_edit_page(request, loaded_page))
 
 
-@view_config(route_name="disposition_list", renderer="altaircms:templates/widget/disposition/list.mako", 
+@view_config(route_name="disposition_list", renderer="altaircms:templates/widget/disposition/list.html", 
              decorator=with_bootstrap, permission='authenticated') #permission
 def disposition_list(context, request):
     ds = WidgetDisposition.enable_only_query(request.user)
@@ -454,12 +454,12 @@ class PageSetView(object):
     def __init__(self, request):
         self.request = request
 
-    @view_config(route_name='pagesets', renderer="altaircms:templates/pagesets/list.mako", decorator=with_bootstrap)
+    @view_config(route_name='pagesets', renderer="altaircms:templates/pagesets/list.html", decorator=with_bootstrap)
     def pageset_list(self):
         pagesets = self.request.allowable(PageSet)
         return dict(pagesets=pagesets)
 
-    @view_config(route_name='pageset', renderer="altaircms:templates/pagesets/edit.mako", decorator=with_bootstrap, request_method="GET")
+    @view_config(route_name='pageset', renderer="altaircms:templates/pagesets/edit.html", decorator=with_bootstrap, request_method="GET")
     def pageset(self):
         pageset_id = self.request.matchdict['pageset_id']
         pageset = get_or_404(self.request.allowable(PageSet), PageSet.id==pageset_id)
@@ -467,7 +467,7 @@ class PageSetView(object):
         form = factory(pageset)
         return dict(ps=pageset, form=form, f=factory)
 
-    @view_config(route_name='pageset', renderer="altaircms:templates/pagesets/edit.mako", decorator=with_bootstrap, request_method="POST")
+    @view_config(route_name='pageset', renderer="altaircms:templates/pagesets/edit.html", decorator=with_bootstrap, request_method="POST")
     def update_times(self):
         logging.debug('post ')
         pageset_id = self.request.matchdict['pageset_id']
@@ -493,14 +493,14 @@ class StaticPageCreateView(object):
         self.context = context
         
     @view_config(match_param="action=input", decorator=with_bootstrap,
-                 renderer="altaircms:templates/page/static_page_add.mako")
+                 renderer="altaircms:templates/page/static_page_add.html")
     def input(self):
         form = forms.StaticPageCreateForm()
         return {"form": form}
 
     @view_config(match_param="action=create", request_method="POST", 
                  decorator=with_bootstrap,
-                 renderer="altaircms:templates/page/static_page_add.mako")
+                 renderer="altaircms:templates/page/static_page_add.html")
     def create(self):
         form = forms.StaticPageCreateForm(self.request.POST)
         if not form.validate(self.request):
@@ -523,7 +523,7 @@ class StaticPageView(object):
         self.request = request
         self.context = context
 
-    @view_config(match_param="action=detail", renderer="altaircms:templates/page/static_detail.mako", 
+    @view_config(match_param="action=detail", renderer="altaircms:templates/page/static_detail.html", 
                  decorator=with_bootstrap)
     def detail(self):
         pk = self.request.matchdict["static_page_id"]

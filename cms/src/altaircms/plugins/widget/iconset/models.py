@@ -22,7 +22,7 @@ def ticket_icon_merge_settings(widget, bname, bsettings):
     @not_support_if_keyerror("iconset widget: %(err)s")
     def ticket_icon_render():
         event = bsettings.extra["event"]
-        template_name = "altaircms.plugins.widget:iconset/ticket_icon_render.mako"
+        template_name = "altaircms.plugins.widget:iconset/ticket_icon_render.html"
 
         icon_classes = event.ticket_icon_list
         return render(template_name, {"icon_classes": icon_classes})

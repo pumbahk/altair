@@ -1,5 +1,5 @@
-<%namespace file="altaircms:templates/front/ticketstar/gadgets.mako" name="gadgets"/>
-<%namespace file="../../ticketstar/components.mako" name="co"/>
+<%namespace file="altaircms:templates/front/ticketstar/gadgets.html" name="gadgets"/>
+<%namespace file="../../ticketstar/components.html" name="co"/>
 
 <%def name="widgets(name)">
   % for w in display_blocks[name]:

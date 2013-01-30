@@ -1,4 +1,4 @@
-<%inherit file="altaircms:templates/front/simple/col2.mako"/>
+<%inherit file="altaircms:templates/front/simple/col2.html"/>
 <%def name="widgets(name)">
   % for w in display_blocks[name]:
       ${w|n}

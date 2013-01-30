@@ -40,9 +40,9 @@ def set_after_login_redirect(request):
     logger.debug(request.session)
     logger.debug("@@@@@@")
 
-@view_config(route_name='login', renderer='altaircms:templates/auth/login/login.mako', 
+@view_config(route_name='login', renderer='altaircms:templates/auth/login/login.html', 
              decorator=with_bootstrap)
-@view_config(context='pyramid.httpexceptions.HTTPForbidden', renderer='altaircms:templates/auth/login/login.mako',
+@view_config(context='pyramid.httpexceptions.HTTPForbidden', renderer='altaircms:templates/auth/login/login.html',
              decorator=with_bootstrap)
 def login(request):
     logging.info("request user is %s" % request.user)
@@ -61,12 +61,12 @@ class LoginSelfView(object):
         self.context = context
         self.request = request
 
-    @view_config(match_param="action=input", renderer="altaircms:templates/auth/login/login.self.mako")
+    @view_config(match_param="action=input", renderer="altaircms:templates/auth/login/login.self.html")
     def input(self):
         form = forms.SelfLoginForm().configure(Organization.query)
         return {"form": form}
 
-    @view_config(match_param="action=login", renderer="altaircms:templates/auth/login/login.self.mako")
+    @view_config(match_param="action=login", renderer="altaircms:templates/auth/login/login.self.html")
     def login(self):
         form = forms.SelfLoginForm(self.request.POST).configure(Organization.query)
         if not form.validate():
@@ -125,7 +125,7 @@ class OperatorView(object):
     def __init__(self, request):
         self.request = request
 
-    @view_config(route_name="operator_list", renderer='altaircms:templates/auth/operator/list.mako', permission="operator_read")
+    @view_config(route_name="operator_list", renderer='altaircms:templates/auth/operator/list.html', permission="operator_read")
     def list(self):
         operators = self.request.allowable(Operator).all()
 
@@ -133,7 +133,7 @@ class OperatorView(object):
             operators=operators
         )
 
-    @view_config(route_name="operator", renderer='altaircms:templates/auth/operator/view.mako', permission="operator_read")
+    @view_config(route_name="operator", renderer='altaircms:templates/auth/operator/view.html', permission="operator_read")
     def read(self):
         operator = get_or_404(self.request.allowable(Operator), Operator.id==self.request.matchdict['id'])
         return dict(operator=operator)
@@ -168,13 +168,13 @@ class RoleView(object):
         except NoResultFound:
             raise HTTPNotFound
 
-    @view_config(route_name="role_list", request_method="GET", renderer="altaircms:templates/auth/role/list.mako")
+    @view_config(route_name="role_list", request_method="GET", renderer="altaircms:templates/auth/role/list.html")
     def list(self):
         return dict(
             roles=Role.query.all(),
         )
 
-    @view_config(route_name="role", request_method="GET", renderer="altaircms:templates/auth/role/view.mako")
+    @view_config(route_name="role", request_method="GET", renderer="altaircms:templates/auth/role/view.html")
     def read(self):
         form = RoleForm()
         return dict(
@@ -182,7 +182,7 @@ class RoleView(object):
             role=self.get_role(),
         )
 
-    @view_config(route_name="role", request_method="POST", renderer="altaircms:templates/auth/role/view.mako")
+    @view_config(route_name="role", request_method="POST", renderer="altaircms:templates/auth/role/view.html")
     def update(self):
         form = RoleForm(self.request.POST)
         if form.validate():
@@ -206,7 +206,7 @@ class RoleView(object):
             raise
         return HTTPFound(self.request.route_path("role_list"))
 
-@view_config(route_name="operator_info", renderer='altaircms:templates/auth/operator/info.mako', 
+@view_config(route_name="operator_info", renderer='altaircms:templates/auth/operator/info.html', 
              permission="authenticated", decorator=with_bootstrap)
 def operator_info(request):
     operator = request.user

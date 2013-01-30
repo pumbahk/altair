@@ -37,7 +37,7 @@ class TopicWidgetView(object):
         context.delete(widget, flush=True)
         return {"status": "ok"}
 
-    @view_config(route_name="topic_widget_dialog", renderer="altaircms.plugins.widget:topic/dialog.mako", request_method="GET")
+    @view_config(route_name="topic_widget_dialog", renderer="altaircms.plugins.widget:topic/dialog.html", request_method="GET")
     def dialog(self):
         context = self.request.context
         widget = context.get_widget(self.request.GET.get("pk"))
@@ -46,7 +46,7 @@ class TopicWidgetView(object):
         # form.transform(widget.topic_type)
         return {"form": form}
 
-    # @view_config(route_name="topic_widget_dialog_form", renderer="altaircms.plugins.widget:topic/form.mako", request_method="GET")
+    # @view_config(route_name="topic_widget_dialog_form", renderer="altaircms.plugins.widget:topic/form.html", request_method="GET")
     # def dialog_form(self):
     #     form = forms.TopicChoiceForm(self.request.GET)
     #     form.transform(self.request.GET["topic_type"])

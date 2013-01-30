@@ -19,7 +19,7 @@ from ..page.subscribers import notify_page_update
 ##
 ## CMS view
 ##
-@view_defaults(route_name="event_takein_pageset", renderer="altaircms:templates/event/takein_pageset.mako", 
+@view_defaults(route_name="event_takein_pageset", renderer="altaircms:templates/event/takein_pageset.html", 
                permission="event_update", 
                decorator=with_bootstrap)
 class PageSetTakein(object):
@@ -49,7 +49,7 @@ class PageSetTakein(object):
 
 
 
-@view_config(route_name='event', renderer='altaircms:templates/event/view.mako', permission='event_read',
+@view_config(route_name='event', renderer='altaircms:templates/event/view.html', permission='event_read',
              decorator=with_bootstrap)
 def view(request):
     id_ = request.matchdict['id']
@@ -66,7 +66,7 @@ def view(request):
         myhelpers=h
     )
 
-@view_config(route_name='event_list', renderer='altaircms:templates/event/list.mako', permission='event_read', request_method="GET", 
+@view_config(route_name='event_list', renderer='altaircms:templates/event/list.html', permission='event_read', request_method="GET", 
              decorator=with_bootstrap)
 def event_list(request):
     events = request.allowable(Event)

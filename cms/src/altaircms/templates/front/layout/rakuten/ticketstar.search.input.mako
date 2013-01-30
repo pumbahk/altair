@@ -1,5 +1,5 @@
-<%inherit file="altaircms:templates/front/ticketstar/search/detail_search_input.mako"/>
-<%namespace file="altaircms:templates/front/ticketstar/gadgets.mako" name="gadgets"/>
+<%inherit file="altaircms:templates/front/ticketstar/search/detail_search_input.html"/>
+<%namespace file="altaircms:templates/front/ticketstar/gadgets.html" name="gadgets"/>
 
 <%block name="main">
 		<!-- InstanceBeginEditable name="main" -->
