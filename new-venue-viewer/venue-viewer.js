@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['hYM2R8V7O4L62SNG'] = (function (exports) { (function () { 
+__LIBS__['zFF1WQYN056JOA5E'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['iGUWOKE6JTZNJ8I7'] = (function (exports) { (function () { 
+__LIBS__['u4JM0YUJG2K1VIDL'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['W0JDU0DQ38YBS_8P'] = (function (exports) { (function () { 
+__LIBS__['sAIIDV7X5SIBL3B7'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['hYM2R8V7O4L62SNG'];
-var CONF = __LIBS__['iGUWOKE6JTZNJ8I7'];
+var util = __LIBS__['zFF1WQYN056JOA5E'];
+var CONF = __LIBS__['u4JM0YUJG2K1VIDL'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -1021,9 +1021,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['iGUWOKE6JTZNJ8I7'];
-  var seat = __LIBS__['W0JDU0DQ38YBS_8P'];
-  var util = __LIBS__['hYM2R8V7O4L62SNG'];
+  var CONF = __LIBS__['u4JM0YUJG2K1VIDL'];
+  var seat = __LIBS__['sAIIDV7X5SIBL3B7'];
+  var util = __LIBS__['zFF1WQYN056JOA5E'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1079,7 +1079,7 @@ function parseTransform(transform_str) {
       overlayShapes: new StoreObject(),
       shift: false,
       keyEvents: null,
-      uiMode: 'select1',
+      uiMode: 'select',
       shapes: null,
       link_pairs: null,
       seats: null,
@@ -1372,7 +1372,7 @@ function parseTransform(transform_str) {
                     },
                     n.childNodes);
                   continue outer;
-        }
+                }
                 break;
 
               case 'symbol':
@@ -1503,12 +1503,14 @@ function parseTransform(transform_str) {
             return rt;
           }
 
+          var drawableMouseDown = false;
+
           for (var i = 0; i < self.link_pairs.length; i++) {
             (function (shape, link) {
               var siblings = getSiblings(link);
               shape.addEvent({
                 mouseover: function(evt) {
-                  if (self.pages && self.uiMode == 'select1') {
+                  if (self.pages && self.uiMode == 'select') {
                     for (var i = siblings.length; --i >= 0;) {
                       var shape = copyShape(siblings[i]);
                       if (shape) {
@@ -1518,12 +1520,12 @@ function parseTransform(transform_str) {
                       }
                     }
                     self.callbacks.messageBoard.up.call(self, self.pages[link].name);
-                    $(self.canvas[0]).css({ cursor: 'pointer' });
+                    self.canvas.css({ cursor: 'pointer' });
                   }
                 },
                 mouseout: function(evt) {
-                  if (self.pages && self.uiMode == 'select1') {
-                    $(self.canvas[0]).css({ cursor: 'default' });
+                  if (self.pages && self.uiMode == 'select') {
+                    self.canvas.css({ cursor: 'default' });
                     for (var i = siblings.length; --i >= 0;) {
                       var shape = self.overlayShapes.restore(siblings[i].id);
                       if (shape)
@@ -1533,14 +1535,70 @@ function parseTransform(transform_str) {
                   }
                 },
                 mousedown: function(evt) {
-                  if (self.pages && self.uiMode == 'select1') {
+                  if (self.pages && self.uiMode == 'select') {
                     self.callbacks.messageBoard.down.call(self);
                     self.navigate(link);
+                    // drawableMouseDown = false;
                   }
                 }
               });
             }).apply(self, self.link_pairs[i]);
           }
+
+          (function () {
+            var scrollPos = null;
+            self.drawable.addEvent({
+              mousedown: function (evt) {
+                if (self.animating) return;
+                switch (self.uiMode) {
+                case 'zoomin': case 'zoomout':
+                  break;
+                default:
+                  drawableMouseDown = true;
+                  scrollPos = self.drawable.scrollPosition();
+                  self.startPos = evt.logicalPosition;
+                  break;
+                }
+              },
+
+              mouseup: function (evt) {
+                if (self.animating) return;
+                switch (self.uiMode) {
+                case 'zoomin':
+                  self.zoom(self.zoomRatio * 1.2, evt.logicalPosition);
+                  break;
+                case 'zoomout':
+                  self.zoom(self.zoomRatio / 1.2, evt.logicalPosition);
+                  break;
+                default:
+                  drawableMouseDown = false;
+                  if (self.dragging) {
+                    self.drawable.releaseMouse();
+                    self.dragging = false;
+                  }
+                  break;
+                }
+              },
+
+              mousemove: function (evt) {
+                if (self.animating) return;
+                if (!self.dragging) {
+                  if (drawableMouseDown) {
+                    self.dragging = true;
+                    self.drawable.captureMouse();
+                  } else {
+                    return;
+                  }
+                }
+                var newScrollPos = Fashion._lib.subtractPoint(
+                  scrollPos,
+                  Fashion._lib.subtractPoint(
+                    evt.logicalPosition,
+                    self.startPos));
+                scrollPos = self.drawable.scrollPosition(newScrollPos);
+              }
+            });
+          })();
 
           self.changeUIMode(self.uiMode);
           next.call(this);
@@ -1586,8 +1644,6 @@ function parseTransform(transform_str) {
           for (var id in seatMeta) {
             seats[id] = new seat.Seat(id, seatMeta[id], self, {
               mouseover: function(evt) {
-                if (self.uiMode == 'select')
-                  return;
                 self.callbacks.messageBoard.up(self.seatTitles[this.id]);
                 self.seatAdjacencies.getCandidates(this.id, self.adjacencyLength(), function (candidates) {
                   if (candidates.length == 0)
@@ -1615,8 +1671,6 @@ function parseTransform(transform_str) {
                 }, self.callbacks.message);
               },
               mouseout: function(evt) {
-                if (self.uiMode == 'select')
-                  return;
                 self.callbacks.messageBoard.down.call(self);
                 var highlighted = self.highlighted;
                 self.highlighted = {};
@@ -1660,127 +1714,10 @@ function parseTransform(transform_str) {
       changeUIMode: function VenueViewer_changeUIMode(type) {
         if (this.drawable) {
           var self = this;
-          this.drawable.removeEvent(["mousedown", "mouseup", "mousemove"]);
 
           switch(type) {
-          case 'move':
-            var mousedown = false, scrollPos = null;
-            this.drawable.addEvent({
-              mousedown: function (evt) {
-                if (self.animating) return;
-                mousedown = true;
-                scrollPos = self.drawable.scrollPosition();
-                self.startPos = evt.logicalPosition;
-              },
-
-              mouseup: function (evt) {
-                if (self.animating) return;
-                mousedown = false;
-                if (self.dragging) {
-                  self.drawable.releaseMouse();
-                  self.dragging = false;
-                }
-              },
-
-              mousemove: function (evt) {
-                if (self.animating) return;
-                if (!self.dragging) {
-                  if (mousedown) {
-                    self.dragging = true;
-                    self.drawable.captureMouse();
-                  } else {
-                    return;
-                  }
-                }
-                var newScrollPos = Fashion._lib.subtractPoint(
-                  scrollPos,
-                  Fashion._lib.subtractPoint(
-                    evt.logicalPosition,
-                    self.startPos));
-                scrollPos = self.drawable.scrollPosition(newScrollPos);
-              }
-            });
+          case 'select': case 'move': case 'zoomin': case 'zoomout':
             break;
-
-          case 'select1':
-            /* this.drawable.addEvent({
-              mousedown: {
-              }
-            });
-            */
-            break;
-
-          case 'select':
-            this.drawable.addEvent({
-              mousedown: function(evt) {
-                if (self.animating) return;
-                self.startPos = evt.logicalPosition;
-                self.rubberBand.position({x: self.startPos.x,
-                                          y: self.startPos.y});
-                self.rubberBand.size({x: 0, y: 0});
-                self.drawable.draw(self.rubberBand);
-                self.dragging = true;
-                self.drawable.captureMouse();
-              },
-
-              mouseup: function(evt) {
-                if (self.animating) return;
-                self.drawable.releaseMouse();
-                self.dragging = false;
-                var selection = [];
-                var hitTest = util.makeHitTester(self.rubberBand);
-                for (var id in self.seats) {
-                  var seat = self.seats[id];
-                  if (seat.shape && (hitTest(seat.shape) || (self.shift && seat.selected())) &&
-                      (!self.callbacks.selectable
-                       || self.callbacks.selectable(this, seat))) {
-                    selection.push(seat);
-                  }
-                }
-                self.unselectAll();
-                self.drawable.erase(self.rubberBand);
-                for (var i = 0; i < selection.length; i++)
-                  selection[i].selected(true);
-                self.callbacks.select(self, selection);
-              },
-
-              mousemove: function(evt) {
-                if (self.animating) return;
-                if (self.dragging) {
-                  var pos = evt.logicalPosition;
-                  var w = Math.abs(pos.x - self.startPos.x);
-                  var h = Math.abs(pos.y - self.startPos.y);
-
-                  var origin = {
-                    x: (pos.x < self.startPos.x) ? pos.x : self.startPos.x,
-                    y: (pos.y < self.startPos.y) ? pos.y : self.startPos.y
-                  };
-
-                  if (origin.x !== self.startPos.x || origin.y !== self.startPos.y)
-                    self.rubberBand.position(origin);
-
-                  self.rubberBand.size({x: w, y: h});
-                }
-              }
-            });
-            break;
-
-          case 'zoomin':
-            this.drawable.addEvent({
-              mouseup: function(evt) {
-                self.zoom(self.zoomRatio * 1.2, evt.logicalPosition);
-              }
-            });
-            break;
-
-          case 'zoomout':
-            this.drawable.addEvent({
-              mouseup: function(evt) {
-                self.zoom(self.zoomRatio / 1.2, evt.logicalPosition);
-              }
-            });
-            break;
-
           default:
             throw new Error("Invalid ui mode: " + type);
           }
