@@ -983,7 +983,7 @@ cart.VenueView = Backbone.View.extend({
 
                 return {
                     up: function(msg) {
-                        if (self.tooltop && msg)
+                        if (self.tooltip && msg)
                             self.tooltip.show().stop().text(msg).fadeIn(100);
                     },
                     down: function() {
