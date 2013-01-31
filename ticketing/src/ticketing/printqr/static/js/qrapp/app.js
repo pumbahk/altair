@@ -9,6 +9,15 @@ var TicketBuffer = function(){
       }
       this.buffers[k].push(ticket);
     }, 
+    removeTicket: function(ticket){
+      var k = ticket.ticket_template_id;
+      var arr = this.buffers[k];
+      _(arr).each(function(t, i){
+        if(t==ticket){
+          arr[i] = null;
+        }
+      });
+    }, 
     consumeAll: function(fn){
       if(!!fn[null]){
         var buf = this.buffers[null];
@@ -477,8 +486,7 @@ var PrintConfirmView = AppPageViewBase.extend({
   }, 
   initialize: function(opts){
     PrintConfirmView.__super__.initialize.call(this, opts);
-    this.datastore.bind("*qr.validate.preprint", this._clickPrintButton, this);
-    this.onPrintBefore = opts.onPrintBefore;
+    this.datastore.bind("*qr.validate.preprint", this.clickPrintButton, this);
   }, 
   _validationPrePrint: function(){
     if(this.datastore.get("ordered_product_item_token_id") == null){
@@ -503,7 +511,7 @@ var PrintConfirmView = AppPageViewBase.extend({
     }
     return true;
   }, 
-  _clickPrintButton: function(){
+  clickPrintButton: function(){
     this.messageView.info("チケット印刷中です...");
     if(!this._validationPrePrint()){
       return;
@@ -514,25 +522,35 @@ var PrintConfirmView = AppPageViewBase.extend({
       this.datastore.set("printed", true);
       this.datastore.trigger("*qr.print.signal");
     }
-  }, 
-  clickPrintButton: function(){
-    if(!!this.onPrintBefore){ // function check? 
-        this.onPrintBefore();
-    }
-    this._clickPrintButton();
   }
 });
 
 var PrintableTicketsSelectView = Backbone.View.extend({
+    events: {
+        'change #printable_tickets_box input[type="checkbox"]': "onToggleCheckBox"
+    }, 
     initialize: function(opts){
+        this.ticketBuffer = opts.ticketBuffer;
         this.callback = opts.callback;
-        this.tickets = opts.tickets;
         this.$checkboxArea = this.$el.find("#printable_tickets_box");
+        this.tickets = {};
+    }, 
+    onToggleCheckBox: function(e){
+        var $e = $(e);
+        if($e.attr("checked") == "checked"){
+            this.ticketBuffer.addTicket(this.tickets[$e.attr("name")]);
+        } else {
+            this.ticketBuffer.removeTicket(this.tickets[$e.attr("name")]);
+        }
     }, 
     show: function(){
         this.$el.show();
     }, 
-    draw: function(){
+    hide: function(){
+        this.$el.hide();
+    }, 
+    draw: function(tickets){
+        this.tickets = tickets;
         var root = this.$checkboxArea
         root.empty();
         var self = this;
@@ -561,18 +579,9 @@ var PrintableTicketsSelectView = Backbone.View.extend({
         if(t.printed_at){  //printed
             return this._createRowCheckboxPrinted(t, i);
         } else{
+            this.ticketBuffer.addTicket(t);
             return this._createRowCheckbox(t, i);
         }
-    }, 
-    collectValues: function(){
-        var tickets = this.tickets;
-        var checked_elements = this.$checkboxArea.find('input[type="checkbox"]:checked');
-        return _(checked_elements).map(function(e){
-            return tickets[$(e).attr("name")];
-        });
-    }, 
-    onCommit: function(){
-        this.callback(this.collectValues());
     }
 })
 
@@ -593,7 +602,8 @@ var AppletView = Backbone.View.extend({
     this.datastore.bind("*qr.print.signal", this.sendPrintSignalIfNeed, this);
   }, 
   clearQRInput: function(){
-    this.service.removeTicketAll();
+    this.datastore.get("ticket_buffers").clean();
+    this.datastore.set("print_num", 0);
   }, 
   start: function(){
     this.fetchPinterCandidates();
@@ -746,22 +756,11 @@ var AppletView = Backbone.View.extend({
         self.appviews.messageView.error(data['message']);
         return;
       }
-      self.appviews.messageView.success("券面データが保存されました");
-      var printing_tickets = []
-      self.appviews.messageView.info("券面印刷用データを追加中です...");
+      // 印刷するticketの情報を管理する
+      self.appviews.selectTicketView.draw(data["data"]);
 
-      _.each(data['data'], function (ticket) {
-        //alert(self.datastore.get("ordered_product_item_token_id"));
-        if(!ticket.printed_at){
-          printing_tickets.push(ticket.ticket_name);
-          self._addTicket(ticket);
-        }else {
-          printing_tickets.push(ticket.ticket_name + "--(印刷済み:{0})".replace("{0}", ticket.printed_at));
-        }
-      });
       var fmt = "まとめて注文した際には自動的に印刷しません。印刷するには、購入情報を確認した後、印刷ボタンを押してください<br/>";
       fmt = fmt + "(既に印刷された券面については印刷されません。)<br/";
-      fmt = fmt + "<ul><li>" + printing_tickets.join("</li>\n<li>") + "</li></ul>";
       self.router.navigate("two", true); //確認画面へfocus
       self.appviews.messageView.info(fmt, true);
     }).fail(function(s, msg){self.appviews.messageView.error(s.responseText)});
@@ -781,6 +780,9 @@ var AppletView = Backbone.View.extend({
         self.appviews.messageView.error(data['message']);
         return;
       }
+      // まとめて券面選択するelementを隠す
+      self.appviews.selectTicketView.hide();
+
       self.appviews.messageView.success("券面データが保存されました");
       _.each(data['data'], function (ticket) {
         if(!!(ticket.ticket_template_id)){

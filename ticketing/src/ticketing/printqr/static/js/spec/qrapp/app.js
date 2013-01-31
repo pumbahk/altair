@@ -5,13 +5,13 @@ describe("QRApp (order: add ticket => print ticket)",  function(){
   it("call service.remoteTicketAll() if clear qrcode input button", function(){
     var dataStore = new DataStore();
     var inputView = new QRInputView({datastore: dataStore});
-    var service = {
-      removeTicketAll: jasmine.createSpy("")
-    };
-      var appletView = new AppletView({service: service,  datastore: dataStore, appviews: {messageView: DummyMessageView}});
-    expect(service.removeTicketAll.callCount).toEqual(0);
+    dataStore.get("ticket_buffers").clean = jasmine.createSpy("");
+    var service = {}
+    var appletView = new AppletView({service: service,  datastore: dataStore, appviews: {messageView: DummyMessageView}});
+
+    expect(dataStore.get("ticket_buffers").clean.callCount).toEqual(0);
     inputView.clearQRCodeInput();
-    expect(service.removeTicketAll.callCount).toEqual(1);
+    expect(dataStore.get("ticket_buffers").clean.callCount).toEqual(1);
   });
 
   describe("print unit have 2kind states.",  function(){
@@ -242,22 +242,29 @@ describe("QRApp (order: add ticket => print ticket)",  function(){
       };
 
       it("draw printed ticket. this is checked", function(){
+          var ticketBuffer = {addTicket: jasmine.createSpy("")};
           var ticket = {
               printed_at: Date(), 
               ticket_name: "this-is-printed. not-checked"
           };
-          var result = makeOne({})._createRow(ticket, 0)
+          var result = makeOne({ticketBuffer: ticketBuffer})._createRow(ticket, 0)
+
           expect(result.find(":checked").length).toEqual(0);
+          expect(ticketBuffer.addTicket.callCount).toEqual(0);
       });
       it("draw unprinted ticket. this is not checked", function(){
+          var ticketBuffer = {addTicket: jasmine.createSpy("")};
           var ticket = {
               printed_at: null, 
               ticket_name: "this-is-unprinted-ticket"
           };
-          var result = makeOne({})._createRow(ticket, 0)
+          var result = makeOne({ticketBuffer: ticketBuffer})._createRow(ticket, 0)
+
           expect(result.find(":checked").length).toEqual(1);
+          expect(ticketBuffer.addTicket.callCount).toEqual(1);
       })
-      it("collect values. these are checked tickets", function(){
+      it("after draw checked ticket is added", function(){
+          var ticketBuffer = {addTicket: jasmine.createSpy("")};
           var tickets = [
               {
                   printed_at: Date(), 
@@ -273,12 +280,40 @@ describe("QRApp (order: add ticket => print ticket)",  function(){
               }
           ];
           var doc = $('<div>').append('<div id="printable_tickets_box">');
-          var target = makeOne({tickets: tickets, el: doc});
-          target.draw();
+          var target = makeOne({el: doc, ticketBuffer: ticketBuffer});
+          target.draw(tickets);         
 
-          var result = target.collectValues()
-          expect(result.length).toEqual(1);
-          expect(result[0].ticket_name).toEqual("unprinted");
+          expect(ticketBuffer.addTicket.callCount).toEqual(1);
+      });
+      it("after draw. and toggle checkbox, ticket is removed from buffer", function(){
+          var ticketBuffer = {addTicket: jasmine.createSpy(""), 
+                              removeTicket: jasmine.createSpy(""), 
+                             };
+          var tickets = [
+              {
+                  printed_at: Date(), 
+                  ticket_name: "printed1"
+              }, 
+              {
+                  printed_at: Date(), 
+                  ticket_name: "printed2"
+              }, 
+              {
+                  printed_at: null, 
+                  ticket_name: "unprinted"
+              }
+          ];
+          var doc = $('<div>').append('<div id="printable_tickets_box">');
+          var target = makeOne({el: doc, ticketBuffer: ticketBuffer});
+          target.draw(tickets);         
+
+          expect(ticketBuffer.removeTicket.callCount).toEqual(0);
+
+          var checked = target.$el.find('input[type="checkbox"]:checked').eq(0);
+          checked.attr("checked", false);
+          target.onToggleCheckBox(checked);
+
+          expect(ticketBuffer.removeTicket.callCount).toEqual(1);
       });
   });
 });
