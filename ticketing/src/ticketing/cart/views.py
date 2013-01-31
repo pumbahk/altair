@@ -494,8 +494,10 @@ class ReserveView(object):
 
         return [(products.get(int(c[0])), c[1]) for c in controls]
 
+
     @view_config(route_name='cart.order', request_method="POST", renderer='json')
     def reserve(self):
+        h.form_log("received order")
         order_items = self.ordered_items
         if not order_items:
             return dict(result='NG', reason="no products")
