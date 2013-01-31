@@ -28,6 +28,11 @@ class ResetForm(Form):
 
 class OperatorForm(Form):
 
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        Form.__init__(self, formdata, obj, prefix, **kwargs)
+        if 'request' in kwargs:
+            self.request = kwargs['request']
+            
     def _get_translations(self):
         return Translations()
 
@@ -37,3 +42,9 @@ class OperatorForm(Form):
     password  = PasswordField(u'パスワード', validators=[Optional(), Regexp("^[a-zA-Z0-9@!#$%&'()*+,\-./_]+$", 0, message=u'英数記号を入力してください。'), Length(4, 32, message=u'4文字以上32文字以内で入力してください')])
     password2 = PasswordField(u'パスワード確認', validators=[Optional(), EqualTo('password', message=u'パスワードと確認用パスワードが一致しません')])
     expire_at = HiddenField(u'パスワード有効期限', validators=[Optional()])
+    
+    def validate_login_id(form, field):
+        operator = Operator.get_by_login_id(field.data)
+        if operator is not None:
+            if operator.id != form.request.context.user.id:
+                raise ValidationError(u'ログインIDが重複しています。')

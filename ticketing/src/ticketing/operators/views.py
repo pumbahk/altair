@@ -64,7 +64,7 @@ class Operators(BaseView):
 
     @view_config(route_name='operators.new', request_method='POST', renderer='ticketing:templates/operators/edit.html')
     def new_post(self):
-        f = OperatorForm(self.request.POST)
+        f = OperatorForm(self.request.POST, request=self.request)
         if f.validate():
             #operator = merge_session_with_post(Operator(), f.data, filters={'roles':self._role_id_list_to_role_list()})
             operator = merge_session_with_post(Operator(), f.data)
