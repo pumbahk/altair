@@ -280,7 +280,7 @@ class AppletAPIView(object):
 
         ordered_product_item_token = qs.first()
         if ordered_product_item_token is None:
-            logger.debug("*api.applet.ticket data: token id=%s,  organization id=%s" \
+            logger.warn("*api.applet.ticket data: token id=%s,  organization id=%s" \
                              % (ordered_product_item_token_id, self.context.organization.id))
             return { u'status': u'error', u'message': u'券面データがみつかりません' }
         retval = utils.svg_data_from_token(ordered_product_item_token)
@@ -294,7 +294,6 @@ class AppletAPIView(object):
         order_no = self.request.json_body.get('order_no')
         if order_no is None:
             return { u'status': u'error', u'message': u'注文番号がみつかりません' }
-
         qs = get_matched_token_query_from_order_no(order_no)
         
         retval = []

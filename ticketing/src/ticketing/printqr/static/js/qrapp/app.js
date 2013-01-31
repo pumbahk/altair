@@ -382,7 +382,7 @@ var TicketInfoView = AppPageViewBase.extend({
     this.$seatno = this.$el.find("#seatno");
     this.$note = this.$el.find("#note");
   }, 
-  drawTicketInfo: function(data){
+ _drawTicketInfoTable: function(data){
     //console.dir(data);
     this.$user.text(data.user);
     this.$codeno.text(data.codeno);
@@ -391,6 +391,8 @@ var TicketInfoView = AppPageViewBase.extend({
     this.$performanceName.text(data.performance_name);
     this.$product_name.text(data.product_name);
     this.$seatno.text(data.seat_name);  
+  }, 
+  _drawTicketInfoNote: function(data){
     var $note = this.$note;
     $note.empty();
     if (data.note) {
@@ -405,6 +407,10 @@ var TicketInfoView = AppPageViewBase.extend({
     } else {
       this.$note.parent().hide();
     }
+  }, 
+  drawTicketInfo: function(data){
+    this._drawTicketInfoTable(data);
+    this._drawTicketInfoNote(data);
   }
 });
 
