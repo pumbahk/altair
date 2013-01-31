@@ -1,11 +1,14 @@
 describe("QRApp (order: add ticket => print ticket)",  function(){
+  var DummyMessageView = {error: console.log.bind(console), 
+                          info: console.log.bind(console)};
+
   it("call service.remoteTicketAll() if clear qrcode input button", function(){
     var dataStore = new DataStore();
     var inputView = new QRInputView({datastore: dataStore});
     var service = {
       removeTicketAll: jasmine.createSpy("")
     };
-    var appletView = new AppletView({service: service,  datastore: dataStore, appviews: {messageView: {error: console.log}}});
+      var appletView = new AppletView({service: service,  datastore: dataStore, appviews: {messageView: DummyMessageView}});
     expect(service.removeTicketAll.callCount).toEqual(0);
     inputView.clearQRCodeInput();
     expect(service.removeTicketAll.callCount).toEqual(1);
@@ -54,7 +57,7 @@ describe("QRApp (order: add ticket => print ticket)",  function(){
       it("datastore.print_unit is token then add ticket delegating applet method", function(){
         dataStore.setPrintStrategy("token");
         
-        var target = _makeOne({service: service,  datastore: dataStore, appviews: {messageView: {error: console.log}}});
+          var target = _makeOne({service: service,  datastore: dataStore, appviews: {messageView: {error: console.log, info:console.log}}});
         var ticket = {ticket_template_id: 1}
         target._addTicket(ticket);
 
@@ -70,7 +73,7 @@ describe("QRApp (order: add ticket => print ticket)",  function(){
 
         dataStore.setPrintStrategy("order");
 
-        var target = _makeOne({service: service,  datastore: dataStore, appviews: {messageView: {error: console.log}}});
+          var target = _makeOne({service: service,  datastore: dataStore, appviews: {messageView: {error: console.log, info:console.log}}});
         var ticket = {ticket_template_id: 1}
         target._addTicket(ticket);
 
@@ -85,7 +88,7 @@ describe("QRApp (order: add ticket => print ticket)",  function(){
 
         dataStore.setPrintStrategy("order");
 
-        var target = _makeOne({service: service,  datastore: dataStore, appviews: {messageView: {error: console.log}}});
+          var target = _makeOne({service: service,  datastore: dataStore, appviews: {messageView: {error: console.log, info:console.log}}});
 
         var ticket0 =  {ticket_template_id: 1};
         var ticket1 =  {ticket_template_id: 1};
@@ -144,7 +147,7 @@ describe("QRApp (order: add ticket => print ticket)",  function(){
     };
     it("if print unit is token, then,  call applet printAll, directly", function(){
       service.printAll = jasmine.createSpy("")
-      var target = _makeOne({service: service,  datastore: dataStore, appviews: {messageView: {error: console.log, info: console.log}}});
+      var target = _makeOne({service: service,  datastore: dataStore, appviews: {messageView: DummyMessageView}});
       dataStore.set("printed", true);
       dataStore.setPrintStrategy("token");
 
@@ -166,7 +169,7 @@ describe("QRApp (order: add ticket => print ticket)",  function(){
       });
 
       it("if print unit is order, then,  call printWithBuffer", function(){
-        var target = _makeOne({service: service,  datastore: dataStore, appviews: {messageView: {error: console.log, info: console.log}}});
+        var target = _makeOne({service: service,  datastore: dataStore, appviews: {messageView: DummyMessageView}});
         spyOn(target, "_printAllWithBuffer");
         spyOn(target, "_afterPrintAll");
 
@@ -190,7 +193,7 @@ describe("QRApp (order: add ticket => print ticket)",  function(){
           dataStore.get("ticket_buffers").addTicket(ticket);
           
 
-          var target = _makeOne({service: service,  datastore: dataStore, appviews: {messageView: {error: console.log, info: console.log}}});
+          var target = _makeOne({service: service,  datastore: dataStore, appviews: {messageView: DummyMessageView}});
           dataStore.unbind("change:ticket_template_id");
 
           expect(dataStore.get("ticket_template_id")).toBeNull();
@@ -203,7 +206,7 @@ describe("QRApp (order: add ticket => print ticket)",  function(){
           var ticket = {ticket_template_id: 1, ticket_template_name: "FooParty(自由)"};
           dataStore.get("ticket_buffers").addTicket(ticket);
 
-          var target = _makeOne({service: service,  datastore: dataStore, appviews: {messageView: {error: console.log, info: console.log}}});
+          var target = _makeOne({service: service,  datastore: dataStore, appviews: {messageView: DummyMessageView}});
           dataStore.unbind("change:ticket_template_id");
           
           expect(dataStore.get("print_num", 1));
@@ -222,7 +225,7 @@ describe("QRApp (order: add ticket => print ticket)",  function(){
           dataStore.get("ticket_buffers").addTicket(ticket2);
 
 
-          var target = _makeOne({service: service,  datastore: dataStore, appviews: {messageView: {error: console.log, info: console.log}}});
+          var target = _makeOne({service: service,  datastore: dataStore, appviews: {messageView: DummyMessageView}});
           dataStore.unbind("change:ticket_template_id");
           
           expect(dataStore.get("print_num", 3));

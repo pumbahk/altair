@@ -611,7 +611,6 @@ var AppletView = Backbone.View.extend({
   sendPrintSignalIfNeed: function(){
     if(this.datastore.get("printed")){
       try {
-        //alert("print!!");
         this.appviews.messageView.info("チケット印刷中です.....");
         if(this.datastore.isPrintUnitOrder()){
           this._printAllWithBuffer();
