@@ -541,6 +541,11 @@ class ReserveView(object):
             transaction.abort()
             logger.debug("not enough stock quantity :%s" % e)
             return dict(result='NG', reason="stock")
+        except CartCreationExceptoion as e:
+            transaction.abort()
+            logger.debug("cannot create cart :%s" % e)
+            return dict(result='NG', reason="unknown")
+
 
         DBSession.add(cart)
         DBSession.flush()
