@@ -477,7 +477,8 @@ var PrintConfirmView = AppPageViewBase.extend({
   }, 
   initialize: function(opts){
     PrintConfirmView.__super__.initialize.call(this, opts);
-    this.datastore.bind("*qr.validate.preprint", this.clickPrintButton, this);
+    this.datastore.bind("*qr.validate.preprint", this._clickPrintButton, this);
+    this.onPrintBefore = opts.onPrintBefore;
   }, 
   _validationPrePrint: function(){
     if(this.datastore.get("ordered_product_item_token_id") == null){
@@ -502,7 +503,7 @@ var PrintConfirmView = AppPageViewBase.extend({
     }
     return true;
   }, 
-  clickPrintButton: function(){
+  _clickPrintButton: function(){
     this.messageView.info("チケット印刷中です...");
     if(!this._validationPrePrint()){
       return;
@@ -513,19 +514,62 @@ var PrintConfirmView = AppPageViewBase.extend({
       this.datastore.set("printed", true);
       this.datastore.trigger("*qr.print.signal");
     }
+  }, 
+  clickPrintButton: function(){
+    if(!!this.onPrintBefore){ // function check? 
+        this.onPrintBefore();
+    }
+    this._clickPrintButton();
   }
 });
 
-var SelectForMultipleTicketsView = Backbone.View.extend({
-    events: {
-    }, 
+var PrintableTicketsSelectView = Backbone.View.extend({
     initialize: function(opts){
         this.callback = opts.callback;
-        this.tickets = [];
+        this.tickets = opts.tickets;
+        this.$checkboxArea = this.$el.find("#printable_tickets_box");
+    }, 
+    show: function(){
+        this.$el.show();
     }, 
     draw: function(){
+        var root = this.$checkboxArea
+        root.empty();
+        var self = this;
+        _(this.tickets).each(function(t, i){
+            root.append(self._createRow(t, i));
+        });
+        this.show();
+    }, 
+    _createRowCheckboxPrinted: function(t, i){
+        // <td><input type="checkbox" name="0"></input></td><td>コートエンド北(1階 コートエンド北 1列 42番) <span class="label">印刷済み</span></td>
+        var tr = $('<tr>');
+        var checkbox = $('<input type="checkbox">').attr('name', i)
+        tr.append($('<td>').append(checkbox));
+        tr.append($('<td>').text(t.ticket_name).append($('<span class="label">').text("印刷済み:"+t.printed_at)));
+        return tr
+    }, 
+    _createRowCheckbox: function(t, i){
+        // <td><input type="checkbox" name="0"  checked="checked"></input></td><td>コートエンド北(1階 コートエンド北 1列 42番)</td>
+        var tr = $('<tr>');
+        var checkbox = $('<input type="checkbox">').attr('name', i).attr('checked', 'checked');;
+        tr.append($('<td>').append(checkbox));
+        tr.append($('<td>').text(t.ticket_name));
+        return tr
+    }, 
+    _createRow: function(t, i){
+        if(t.printed_at){  //printed
+            return this._createRowCheckboxPrinted(t, i);
+        } else{
+            return this._createRowCheckbox(t, i);
+        }
     }, 
     collectValues: function(){
+        var tickets = this.tickets;
+        var checked_elements = this.$checkboxArea.find('input[type="checkbox"]:checked');
+        return _(checked_elements).map(function(e){
+            return tickets[$(e).attr("name")];
+        });
     }, 
     onCommit: function(){
         this.callback(this.collectValues());

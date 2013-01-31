@@ -236,4 +236,49 @@ describe("QRApp (order: add ticket => print ticket)",  function(){
       });
     });
   });
+  describe("select printing ticket (ui)",  function(){
+      var makeOne = function(opts){
+          return new PrintableTicketsSelectView(opts);
+      };
+
+      it("draw printed ticket. this is checked", function(){
+          var ticket = {
+              printed_at: Date(), 
+              ticket_name: "this-is-printed. not-checked"
+          };
+          var result = makeOne({})._createRow(ticket, 0)
+          expect(result.find(":checked").length).toEqual(0);
+      });
+      it("draw unprinted ticket. this is not checked", function(){
+          var ticket = {
+              printed_at: null, 
+              ticket_name: "this-is-unprinted-ticket"
+          };
+          var result = makeOne({})._createRow(ticket, 0)
+          expect(result.find(":checked").length).toEqual(1);
+      })
+      it("collect values. these are checked tickets", function(){
+          var tickets = [
+              {
+                  printed_at: Date(), 
+                  ticket_name: "printed1"
+              }, 
+              {
+                  printed_at: Date(), 
+                  ticket_name: "printed2"
+              }, 
+              {
+                  printed_at: null, 
+                  ticket_name: "unprinted"
+              }
+          ];
+          var doc = $('<div>').append('<div id="printable_tickets_box">');
+          var target = makeOne({tickets: tickets, el: doc});
+          target.draw();
+
+          var result = target.collectValues()
+          expect(result.length).toEqual(1);
+          expect(result[0].ticket_name).toEqual("unprinted");
+      });
+  });
 });
