@@ -236,84 +236,154 @@ describe("QRApp (order: add ticket => print ticket)",  function(){
       });
     });
   });
+  describe("TicketBuffer",  function(){
+    var makeOne = function(){return TicketBuffer();};
+
+    it("initial state", function(){
+      var target = makeOne();
+      var result = []
+      target.consumeAll(function(buf, tid, name){ result.push(buf)});
+
+      expect(result).toEqual(result, []);
+    });
+
+    it("add one", function(){
+      var target = makeOne();
+      var result = []
+
+      var ticket = {ticket_template_id: 1, ticket_template_name: "ticket"};
+      target.addTicket(ticket);
+      target.consumeAll(function(buf, tid, name){ result.push(buf)});
+
+      expect(result.length).toEqual(1);
+      expect(result).toEqual([[ticket]])
+    });
+    it("add remove add", function(){
+      var target = makeOne();
+      var result = []
+
+      var ticket = {ticket_template_id: 1, ticket_template_name: "ticket"};
+      target.addTicket(ticket);
+      target.removeTicket(ticket);
+      target.addTicket(ticket);
+      target.consumeAll(function(buf, tid, name){ result.push(buf)});
+
+      expect(result.length).toEqual(1);
+      expect(result).toEqual([[ticket]])
+    });
+    it("complex", function(){
+      var target = makeOne();
+      var result = []
+
+      var ticket0 = {ticket_template_id: 1, ticket_template_name: "ticket"};
+      target.addTicket(ticket0);
+      var ticket1 = {ticket_template_id: 1, ticket_template_name: "ticket"};
+      target.addTicket(ticket1);
+
+      target.removeTicket(ticket0);
+      target.consumeAll(function(buf, tid, name){ result.push(buf)});
+
+      expect(result.length).toEqual(1);
+      expect(result).toEqual([[ticket1]])
+    });
+  });
   describe("select printing ticket (ui)",  function(){
-      var makeOne = function(opts){
-          return new PrintableTicketsSelectView(opts);
+    var makeOne = function(opts){
+      return new PrintableTicketsSelectView(opts);
+    };
+
+    it("draw printed ticket. this is checked", function(){
+      var datastore = new DataStore();
+      datastore.get("ticket_buffers").addTicket = jasmine.createSpy("");
+
+      var ticket = {
+        printed_at: Date(), 
+        codeno: 1111, 
+        ticket_name: "this-is-printed. not-checked"
       };
+      var result = makeOne({datastore: datastore})._createRow(ticket, 0)
 
-      it("draw printed ticket. this is checked", function(){
-          var ticketBuffer = {addTicket: jasmine.createSpy("")};
-          var ticket = {
-              printed_at: Date(), 
-              ticket_name: "this-is-printed. not-checked"
-          };
-          var result = makeOne({ticketBuffer: ticketBuffer})._createRow(ticket, 0)
+      expect(result.find(":checked").length).toEqual(0);
+      var ticketBuffer = datastore.get("ticket_buffers");
+      expect(ticketBuffer.addTicket.callCount).toEqual(0);
+    });
+    it("draw unprinted ticket. this is not checked", function(){
+      var datastore = new DataStore();
+      datastore.get("ticket_buffers").addTicket = jasmine.createSpy("");
 
-          expect(result.find(":checked").length).toEqual(0);
-          expect(ticketBuffer.addTicket.callCount).toEqual(0);
-      });
-      it("draw unprinted ticket. this is not checked", function(){
-          var ticketBuffer = {addTicket: jasmine.createSpy("")};
-          var ticket = {
-              printed_at: null, 
-              ticket_name: "this-is-unprinted-ticket"
-          };
-          var result = makeOne({ticketBuffer: ticketBuffer})._createRow(ticket, 0)
+      var ticket = {
+        printed_at: null, 
+        codeno: 2111, 
+        ticket_name: "this-is-unprinted-ticket"
+      };
+      var result = makeOne({datastore: datastore})._createRow(ticket, 0)
 
-          expect(result.find(":checked").length).toEqual(1);
-          expect(ticketBuffer.addTicket.callCount).toEqual(1);
-      })
-      it("after draw checked ticket is added", function(){
-          var ticketBuffer = {addTicket: jasmine.createSpy("")};
-          var tickets = [
-              {
-                  printed_at: Date(), 
-                  ticket_name: "printed1"
-              }, 
-              {
-                  printed_at: Date(), 
-                  ticket_name: "printed2"
-              }, 
-              {
-                  printed_at: null, 
-                  ticket_name: "unprinted"
-              }
-          ];
-          var doc = $('<div>').append('<div id="printable_tickets_box">');
-          var target = makeOne({el: doc, ticketBuffer: ticketBuffer});
-          target.draw(tickets);         
+      expect(result.find(":checked").length).toEqual(1);
+      var ticketBuffer = datastore.get("ticket_buffers");
+      expect(ticketBuffer.addTicket.callCount).toEqual(1);
+    })
+    it("after draw checked ticket is added", function(){
+      var datastore = new DataStore();
+      datastore.get("ticket_buffers").addTicket = jasmine.createSpy("");
 
-          expect(ticketBuffer.addTicket.callCount).toEqual(1);
-      });
-      it("after draw. and toggle checkbox, ticket is removed from buffer", function(){
-          var ticketBuffer = {addTicket: jasmine.createSpy(""), 
-                              removeTicket: jasmine.createSpy(""), 
-                             };
-          var tickets = [
-              {
-                  printed_at: Date(), 
-                  ticket_name: "printed1"
-              }, 
-              {
-                  printed_at: Date(), 
-                  ticket_name: "printed2"
-              }, 
-              {
-                  printed_at: null, 
-                  ticket_name: "unprinted"
-              }
-          ];
-          var doc = $('<div>').append('<div id="printable_tickets_box">');
-          var target = makeOne({el: doc, ticketBuffer: ticketBuffer});
-          target.draw(tickets);         
+      var tickets = [
+        {
+          printed_at: Date(), 
+          codeno: 1111, 
+          ticket_name: "printed1"
+        }, 
+        {
+          printed_at: Date(), 
+          codeno: 1112, 
+          ticket_name: "printed2"
+        }, 
+        {
+          codeno: 2111, 
+          printed_at: null, 
+          ticket_name: "unprinted"
+        }
+      ];
+      var doc = $('<div>').append('<div id="printable_tickets_box">');
+      var target = makeOne({el: doc, datastore: datastore});
+      target.draw(tickets);     
 
-          expect(ticketBuffer.removeTicket.callCount).toEqual(0);
+      var ticketBuffer = datastore.get("ticket_buffers");
+      expect(ticketBuffer.addTicket.callCount).toEqual(1);
+    });
+    it("after draw. and toggle checkbox, ticket is removed from buffer", function(){
+      var datastore = new DataStore();
+      datastore.get("ticket_buffers").addTicket = jasmine.createSpy("");
+      datastore.get("ticket_buffers").removeTicket = jasmine.createSpy("");
 
-          var checked = target.$el.find('input[type="checkbox"]:checked').eq(0);
-          checked.attr("checked", false);
-          target.onToggleCheckBox(checked);
+      var tickets = [
+        {
+          printed_at: Date(), 
+          codeno: 1111, 
+          ticket_name: "printed1"
+        }, 
+        {
+          printed_at: Date(), 
+          codeno: 1112, 
+          ticket_name: "printed2"
+        }, 
+        {
+          printed_at: null, 
+          codeno: 2111, 
+          ticket_name: "unprinted"
+        }
+      ];
+      var doc = $('<div>').append('<div id="printable_tickets_box">');
+      var target = makeOne({el: doc, datastore: datastore});
+      target.draw(tickets);     
 
-          expect(ticketBuffer.removeTicket.callCount).toEqual(1);
-      });
+      var ticketBuffer = datastore.get("ticket_buffers");
+      expect(ticketBuffer.removeTicket.callCount).toEqual(0);
+
+      var checked = target.$el.find('input[type="checkbox"]:checked').eq(0);
+      checked.attr("checked", false);
+      target.onToggleCheckBox(checked);
+
+      expect(ticketBuffer.removeTicket.callCount).toEqual(1);
+    });
   });
 });

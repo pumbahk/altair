@@ -125,8 +125,8 @@ td.progress-shortcut{
 
   <div id="two" class="onepage well hide">
     <div class="row-fluid">
-      <div class="span6">
-        <h2 class="header" id="two:printable_tickets">印刷予定のチケット</h2>
+      <div class="span6" id="printable_tickets_area">
+        <h2 class="header">印刷予定のチケット</h2>
         <p>
           印刷予定のチケットは以下です。
         </p>
@@ -263,7 +263,7 @@ $(function(){
   var zero = new FormatChoiceView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#zero")});
   var one = new QRInputView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#one")});
   var two = new TicketInfoView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#two")});
-  var selectTicketView = new PrintableTicketsSelectView({el: $("#two"), ticketBuffer: datastore.get("ticket_buffers")});
+  var selectTicketView = new PrintableTicketsSelectView({el: $("#printable_tickets_area"), datastore: datastore});
   var print = new PrintConfirmView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#two")});
   // progress view
   var progressDatastore = new ProgressDataStore({performance: new Performance(), total_result: new TotalResult()});

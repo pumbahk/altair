@@ -46,12 +46,16 @@ def get_matched_token_from_token_id(order_no, token_id, none_exception=HTTPNotFo
         raise none_exception()
     return token
 
+def get_matched_history_from_token(order_no, token):
+    # tokenがあればorder_noを使わずとも検索できる
+    return TicketPrintHistory.filter(TicketPrintHistory.item_token_id==token.id).first()
+        # .filter(TicketPrintHistory.ordered_product_item_id==OrderedProductItem.id)\
+        # .filter(OrderedProductItem.ordered_product_id == OrderedProduct.id)\
+        # .filter(OrderedProduct.order_id == Order.id)\
+        # .filter(Order.order_no == order_no).first()
+    
 def get_or_create_matched_history_from_token(order_no, token):
-    history = TicketPrintHistory.filter(TicketPrintHistory.item_token_id==token.id)\
-        .filter(TicketPrintHistory.ordered_product_item_id==OrderedProductItem.id)\
-        .filter(OrderedProductItem.ordered_product_id == OrderedProduct.id)\
-        .filter(OrderedProduct.order_id == Order.id)\
-        .filter(Order.order_no == order_no).first()
+    history = get_matched_history_from_token(order_no, token)
     # ここでinsertする
     if history is None:
         history = TicketPrintHistory(

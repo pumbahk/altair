@@ -7,31 +7,27 @@ var TicketBuffer = function(){
       if(!this.buffers[k]){
         this.buffers[k] = [];
       }
+      // console.log("add:"+ticket);
       this.buffers[k].push(ticket);
     }, 
     removeTicket: function(ticket){
-      var k = ticket.ticket_template_id;
-      var arr = this.buffers[k];
-      _(arr).each(function(t, i){
-        if(t==ticket){
-          arr[i] = null;
-        }
-      });
+    var k = ticket.ticket_template_id;
+    var arr = this.buffers[k];
+    _(arr).each(function(t, i){
+      if(t==ticket){
+        // console.log("remove:"+ticket);
+        arr[i] = null;
+      }
+    });
     }, 
     consumeAll: function(fn){
-      if(!!fn[null]){
-        var buf = this.buffers[null];
-        var ticket = buf[0]
+      _(this.buffers).each(function(buf){
+      if(!!buf){
+        var buf = _.compact(buf);
+        var ticket = buf[0];
         fn(buf, ticket.ticket_template_id, ticket.ticket_template_name);
-        delete this.buffers[null];
       }
-      for(var k in this.buffers){
-        if(this.buffers.hasOwnProperty(k)){
-          var buf = this.buffers[k];
-          var ticket = buf[0]
-          fn(buf, ticket.ticket_template_id, ticket.ticket_template_name);
-        }
-      }
+    });
       this.clean();
     }, 
     clean: function(){
@@ -526,63 +522,69 @@ var PrintConfirmView = AppPageViewBase.extend({
 });
 
 var PrintableTicketsSelectView = Backbone.View.extend({
-    events: {
-        'change #printable_tickets_box input[type="checkbox"]': "onToggleCheckBox"
-    }, 
-    initialize: function(opts){
-        this.ticketBuffer = opts.ticketBuffer;
-        this.callback = opts.callback;
-        this.$checkboxArea = this.$el.find("#printable_tickets_box");
-        this.tickets = {};
-    }, 
-    onToggleCheckBox: function(e){
-        var $e = $(e);
-        if($e.attr("checked") == "checked"){
-            this.ticketBuffer.addTicket(this.tickets[$e.attr("name")]);
-        } else {
-            this.ticketBuffer.removeTicket(this.tickets[$e.attr("name")]);
-        }
-    }, 
-    show: function(){
-        this.$el.show();
-    }, 
-    hide: function(){
-        this.$el.hide();
-    }, 
-    draw: function(tickets){
-        this.tickets = tickets;
-        var root = this.$checkboxArea
-        root.empty();
-        var self = this;
-        _(this.tickets).each(function(t, i){
-            root.append(self._createRow(t, i));
-        });
-        this.show();
-    }, 
-    _createRowCheckboxPrinted: function(t, i){
-        // <td><input type="checkbox" name="0"></input></td><td>コートエンド北(1階 コートエンド北 1列 42番) <span class="label">印刷済み</span></td>
-        var tr = $('<tr>');
-        var checkbox = $('<input type="checkbox">').attr('name', i)
-        tr.append($('<td>').append(checkbox));
-        tr.append($('<td>').text(t.ticket_name).append($('<span class="label">').text("印刷済み:"+t.printed_at)));
-        return tr
-    }, 
-    _createRowCheckbox: function(t, i){
-        // <td><input type="checkbox" name="0"  checked="checked"></input></td><td>コートエンド北(1階 コートエンド北 1列 42番)</td>
-        var tr = $('<tr>');
-        var checkbox = $('<input type="checkbox">').attr('name', i).attr('checked', 'checked');;
-        tr.append($('<td>').append(checkbox));
-        tr.append($('<td>').text(t.ticket_name));
-        return tr
-    }, 
-    _createRow: function(t, i){
-        if(t.printed_at){  //printed
-            return this._createRowCheckboxPrinted(t, i);
-        } else{
-            this.ticketBuffer.addTicket(t);
-            return this._createRowCheckbox(t, i);
-        }
+  events: {
+    'change #printable_tickets_box input[type="checkbox"]': "onToggleCheckBox"
+  }, 
+  initialize: function(opts){
+    this.datastore = opts.datastore;
+    this.ticketBuffer = opts.datastore.get("ticket_buffers");
+    this.callback = opts.callback;
+    this.$checkboxArea = this.$el.find("#printable_tickets_box");
+    this.tickets = [];
+  }, 
+  onToggleCheckBox: function(e){
+    var $e = $(e.currentTarget);
+    if($e.attr("checked") == "checked"){
+      this.ticketBuffer.addTicket(this.tickets[$e.attr("name")]);
+      this.datastore.set("print_num",  this.datastore.get("print_num") + 1);
+    } else {
+      this.ticketBuffer.removeTicket(this.tickets[$e.attr("name")]);
+      this.datastore.set("print_num",  this.datastore.get("print_num") - 1);
     }
+  }, 
+  show: function(){
+    this.$el.show();
+  }, 
+  hide: function(){
+    this.$el.hide();
+  }, 
+  draw: function(tickets){
+    this.tickets = tickets;
+    var root = this.$checkboxArea
+    root.empty();
+    var self = this;
+    _(this.tickets).each(function(t, i){
+      root.append(self._createRow(t, i));
+    });
+    this.show();
+  }, 
+  _createRowCheckboxPrinted: function(t, i){
+    // <td><input type="checkbox" name="0"></input></td><td>コートエンド北(1階 コートエンド北 1列 42番) <span class="label">印刷済み</span></td>
+    var tr = $('<tr>');
+    var checkbox = $('<input type="checkbox">').attr('name', i)
+    tr.append($('<td>').append(checkbox));
+    tr.append($('<td>').text(t.codeno));
+    tr.append($('<td>').text(t.ticket_name).append($('<span class="label">').text("印刷済み:"+t.printed_at)));
+    return tr
+  }, 
+  _createRowCheckbox: function(t, i){
+    // <td><input type="checkbox" name="0"  checked="checked"></input></td><td>コートエンド北(1階 コートエンド北 1列 42番)</td>
+    var tr = $('<tr>');
+    var checkbox = $('<input type="checkbox">').attr('name', i).attr('checked', 'checked');
+    tr.append($('<td>').append(checkbox));
+    tr.append($('<td>').text(t.codeno));
+    tr.append($('<td>').text(t.ticket_name));
+    return tr
+  }, 
+  _createRow: function(t, i){
+    if(t.printed_at){  //printed
+      return this._createRowCheckboxPrinted(t, i);
+    } else{
+      this.ticketBuffer.addTicket(t);
+      this.datastore.set("print_num",  this.datastore.get("print_num") + 1);
+      return this._createRowCheckbox(t, i);
+    }
+  }
 })
 
 var AppletView = Backbone.View.extend({
@@ -617,7 +619,7 @@ var AppletView = Backbone.View.extend({
       }else {
         this.service.addTicket(this.service.createTicketFromJSObject(ticket));
       }           
-      this.datastore.set("print_num",  this.datastore.get("print_num") + 1);
+        this.datastore.set("print_num",  this.datastore.get("print_num") + 1);
     } catch (e) {
       this.appviews.messageView.error(e);
     }
@@ -650,16 +652,13 @@ var AppletView = Backbone.View.extend({
     this.appviews.messageView.info("チケット印刷中です.....");
     var self = this;
     this.datastore.get("ticket_buffers").consumeAll(function(buf, template_id, template_name){
-      var size = buf.length;
       self.datastore.set("ticket_template_id", template_id);
       self.datastore.set("ticket_template_name", template_name);
       //変更内容伝搬されるまで時間がかかる？信じるよ？
-      _.each(buf, function(ticket){
+      _(buf).each(function(ticket){
         self.service.addTicket(self.service.createTicketFromJSObject(ticket));
       });
       self.service.printAll();
-      // console.log("fire!");
-      self.datastore.set("print_num", self.datastore.get("print_num") - size);
     });
   }, 
   sendPrintSignalIfNeed: function(){

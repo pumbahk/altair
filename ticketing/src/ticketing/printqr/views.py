@@ -23,7 +23,7 @@ from ticketing.core.utils import PrintedAtBubblingSetter
 from datetime import datetime
 
 from ticketing.qr.utils import get_matched_token_query_from_order_no
-from ticketing.qr.utils import get_or_create_matched_history_from_token
+from ticketing.qr.utils import get_or_create_matched_history_from_token, get_matched_history_from_token
 from ticketing.qr.utils import make_data_for_qr
 
 ## login
@@ -298,12 +298,17 @@ class AppletAPIView(object):
         qs = get_matched_token_query_from_order_no(order_no)
         
         retval = []
-        for ordered_product_item_token in qs:
-            retval.extend(utils.svg_data_from_token_with_descinfo(ordered_product_item_token))
-        return {
-            u'status': u'success',
-            u'data': retval
-            }
+        try:
+            for ordered_product_item_token in qs:
+                history = get_matched_history_from_token(order_no, ordered_product_item_token)
+                retval.extend(utils.svg_data_from_token_with_descinfo(history, ordered_product_item_token))
+            return {
+                u'status': u'success',
+                u'data': retval
+                }
+        except Exception, e:
+            logger.error(str(e))
+            return { u'status': u'error', u'message': u'不正な注文番号のようです' }
 
     @view_config(route_name='api.applet.history', request_method='POST', renderer='json')
     def history(self):
