@@ -8,7 +8,7 @@ import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Collection;
+
 import javax.print.PrintService;
 
 import jp.ticketstar.ticketing.ApplicationException;
@@ -87,10 +87,6 @@ public class AppService {
 
 	public void removeTicket(Ticket ticket) {
 		model.getTickets().remove(ticket);
-	}
-
-	public void removeTicketAll(Collection<? extends Ticket> tickets){
-      model.getTickets().removeAll(tickets);
 	}
 
 	public List<TicketTemplate> getTicketTemplates() {
