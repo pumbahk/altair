@@ -310,6 +310,7 @@ var QRInputView = AppPageViewBase.extend({
   clearQRCodeInput: function(){
     this.$qrcode.val("");
     this.datastore.trigger("*qr.clear.input");
+    this.datastore.trigger("*refresh");
   }, 
   readOnEnter: function(e){
     // if Enter key is typed then call `loadQRCodeInput'
