@@ -11,7 +11,7 @@
 ## main{main,main_left,main_right,main_bottom }
 ## side
 
-<%namespace file="../../ticketstar/components.html" name="co"/>
+<%namespace file="altaircms:templates/front/ticketstar/components.html" name="co"/>
 <%namespace file="altaircms:templates/front/ticketstar/gadgets.html" name="gadgets"/>
 
 

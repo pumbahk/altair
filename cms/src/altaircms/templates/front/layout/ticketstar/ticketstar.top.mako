@@ -14,7 +14,7 @@
 ## side{side_top,side_bottom}
 ##
 
-<%namespace file="../../ticketstar/components.html" name="co"/>
+<%namespace file="altaircms:templates/front/ticketstar/components.html" name="co"/>
 <%namespace file="altaircms:templates/front/ticketstar/gadgets.html" name="gadgets"/>
 
 <?xml version="1.0" encoding="utf-8"?>
