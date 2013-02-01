@@ -1,0 +1,101 @@
+<%inherit file='altaircms:templates/layout_2col.html'/>
+<%namespace name="nco" file="altaircms:templates/navcomponents.html"/>
+
+<%block name="style">
+<style type="text/css">
+  .row-fluid h3 { margin-top:20px;  }
+  .row-fluid h3.first { margin-top:0px;  }
+  .row-fluid .headline { margin-top:20px; margin-bottom:5px;}
+</style>
+</%block>
+
+<h2>プロモーションリスト</h2>
+
+<div class="row-fluid">
+  <div class="span12">
+    ${nco.breadcrumbs(
+        names=["Top", u"プロモーション枠使用ページ一覧", u"詳細"], 
+        urls=[request.route_path("dashboard"), request.route_path("promotion_list")])
+    }
+  </div>
+</div>
+
+<ul class="nav nav-tabs">
+   %for widget in widgets:
+     %if unicode(widget.id) == unicode(current_widget.id):
+        <li class="active"><a href="${request.route_path("promotion_detail", page_id=page.id, _query=dict(widget_id=widget.id))}">${widget.id}</a></li>
+     %else:
+        <li><a href="${request.route_path("promotion_detail", page_id=page.id, _query=dict(widget_id=widget.id))}">${widget.id}</a></li>
+     %endif
+   %endfor
+</ul>
+
+<h4 class="headline">表示されるページの情報</h4>
+<table class="table table-bordered">
+  <tbody>
+    <tr>
+      <th rowspan="4">ページ情報</th>
+      <th>利用しているページ<th></td>${page.name}  (<a href="${request.route_path("page_edit_", page_id=page.id)}">ページの編集画面に飛ぶ</a> )</td>
+    </tr>
+    <tr>
+      <th>ページタイプ<th></td>${page.pagetype}</td>
+    </tr>
+    <tr>
+      <th>URL<th></td>${page.url}</td>
+    </tr>
+    <tr>
+      <th>公開期間<th></td>${h.term(page.publish_begin, page.publish_end)}</td>
+    </tr>
+    <tr>
+      <th rowspan="2">widget情報</th>
+      <th>widget id</th><td> ${widget.id}</td>
+    </tr>
+    <tr>
+      <th>表示場所</th><td> ${widget.kind.label}</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr/>
+
+<h4 class="headline"> 表示中のプロモーションの一覧</h4>
+
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>id</th>
+      <th>表示画像</th>
+      <th></th>
+    </tr>
+  </thead>
+    <tbody>
+      %for promotion in promotions:
+        <tr>
+          <td rowspan="3" width="5%">${promotion.id}</td>
+          <td rowspan="3" width="45%">${promotion_renderer.render_main_image(promotion)}</td>
+          <td>${promotion.text}</td>
+        </tr>
+##todo: どちらと結びついているか設定できる
+##todo: 編集できる
+        <tr>
+          <td>${promotion.linked_page}</td>
+        </tr>
+        <tr>
+          <td><a class="btn">編集</a><a class="btn">削除</a></td>
+        </tr>
+      %endfor
+    </tbody>
+</table>
+
+<%doc>
+<div class="row">
+  %for promotion in promotions:
+    <div class="span1">
+      <td>${promotion.id}</td>
+    </div
+    <div class="span5">
+      <td>${promotion_renderer.render_image(promotion)}</td>
+    </div>
+  %endfor
+</div>
+</%doc>

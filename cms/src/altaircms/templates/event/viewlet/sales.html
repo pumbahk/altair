@@ -23,7 +23,7 @@ tickets_size = len(tickets)
          </td>
          <td rowspan="${ tickets_size }">${ sale.name }</td>
          <td rowspan="${ tickets_size }">${sale.jkind}</td>
-         <td rowspan="${ tickets_size }">${ h.base.jterm(sale.start_on,sale.end_on) if sale.start_on and sale.end_on else u"~"}</td>
+         <td rowspan="${ tickets_size }">${ h.term(sale.start_on,sale.end_on) if sale.start_on and sale.end_on else u"~"}</td>
 %if len(tickets) <= 0:
        </tr>
 %else:

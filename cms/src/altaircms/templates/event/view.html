@@ -28,10 +28,10 @@
         <th class="span2">概要</th><td>${event.description}</td>
       </tr>
       <tr>
-        <th>開催期間</th><td>${h.base.jterm(event.event_open,event.event_close)}</td>
+        <th>開催期間</th><td>${h.term(event.event_open,event.event_close)}</td>
       </tr>
       <tr>
-        <th>販売期間</th><td>${h.base.jterm(event.deal_open,event.deal_close)}</td>
+        <th>販売期間</th><td>${h.term(event.deal_open,event.deal_close)}</td>
       </tr>
       <tr>
         <th class="span2">出演者</th><td>${event.performers}</td>

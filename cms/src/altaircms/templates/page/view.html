@@ -69,7 +69,7 @@ event = page.event or page.pageset.event
       </tr>
       <tr>
 		<th>掲載期間</th>
-		<td>${h.base.jterm(page.publish_begin, page.publish_end)}</td>
+		<td>${h.term(page.publish_begin, page.publish_end)}</td>
       </tr>
       <tr>
         <th class="span2">公開ステータス</th><td>${u"公開中" if page.published else u"非公開"}</td>

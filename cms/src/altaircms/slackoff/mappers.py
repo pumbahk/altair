@@ -11,6 +11,7 @@ def model_to_dict(obj):
 from altaircms.topic.models import Topcontent
 import altaircms.helpers as h
 from markupsafe import Markup
+from altaircms.asset.viewhelpers import image_asset_layout
 
 import pkg_resources
 def import_symbol(symbol):
@@ -19,14 +20,6 @@ def import_symbol(symbol):
 class ObjectLike(dict):
     __getattr__ = dict.get
     __setattr__ = dict.__setitem__
-
-def image_asset_layout(request, asset):
-    if asset is None:
-        u""
-    else:
-        return Markup(u"""
-<a href="%(href)s"><img src="%(href)s" width=50px height=50px alt="%(alt)s"/></a>
-""" % dict(href=h.asset.to_show_page(request, asset), alt=asset.title))
 
 
 def layout_mapper(request, obj):

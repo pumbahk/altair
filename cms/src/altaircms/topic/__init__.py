@@ -8,4 +8,6 @@ def includeme(config):
     config.add_route('api_topic_object', '/api/topic/{id}')
     config.add_route('api_topic', '/api/topic/')
 
-    # config.scan()
+    config.add_route("promotion_list", "/promotion/list")
+    config.add_route("promotion_detail", "/promotion/page/{page_id}/detail") #_query=dict(widget_id=widget_id)
+    config.scan(".views")

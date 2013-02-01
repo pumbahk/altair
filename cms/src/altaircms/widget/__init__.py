@@ -12,3 +12,5 @@ def includeme(config):
     config.add_route("structure_update", "/api/structure/update", factory=WidgetResource)
     config.add_route("structure_get", "/api/structure/get", factory=WidgetResource)
     config.scan(".")
+
+    config.add_directive("add_has_widget_pages_finder", ".api.add_has_widget_pages_finder")

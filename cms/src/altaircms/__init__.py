@@ -83,6 +83,7 @@ def main(global_config, **local_config):
     config.include("altaircms.event")
     config.include("altaircms.layout")
     config.include("altaircms.page")
+    config.include("altaircms.topic")
     config.include("altaircms.widget")
     config.include("altaircms.asset", route_prefix="/asset")
     config.include("altaircms.base")

@@ -42,7 +42,6 @@
 
 
 <ul class="nav nav-tabs">
-  ## we need panel!
    %for pagetype in pagetypes:
      %if unicode(pagetype.id) == unicode(current_pagetype.id):
         <li class="active"><a href="${request.route_path("layout_list_with_pagetype",pagetype_id=pagetype.id)}">${pagetype.name}</a></li>
