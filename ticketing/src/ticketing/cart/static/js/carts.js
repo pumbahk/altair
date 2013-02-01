@@ -1005,6 +1005,11 @@ cart.VenueView = Backbone.View.extend({
                 }
             },
             loadPartEnd: function (viewer, part) {
+				var page = viewer.currentPage;
+				if(page) {
+					self.verticalSlider.css({ visibility: viewer.pages[page].zoomable===false ? 'hidden' : 'visible' });
+				}
+
                 if (part == 'drawing') {
                     if (loadingLayer) {
                         loadingLayer.remove();
