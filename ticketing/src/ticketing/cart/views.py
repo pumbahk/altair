@@ -454,7 +454,11 @@ class IndexView(IndexViewMixin):
             raise HTTPNotFound()
         part = self.request.matchdict.get('part')
         venue = c_models.Venue.get(venue_id)
-        return Response(body=venue.site.get_drawing(part).stream().read(), content_type='text/xml; charset=utf-8')
+        drawing = venue.site.get_drawing(part)
+        content_encoding = None
+        if re.match('^.+\.(svgz|gz)$', drawing.path):
+            content_encoding = 'gzip'
+        return Response(body=drawing.stream().read(), content_type='text/xml; charset=utf-8', content_encoding=content_encoding)
 
 @view_defaults(decorator=with_jquery)
 class ReserveView(object):
