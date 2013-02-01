@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['zFF1WQYN056JOA5E'] = (function (exports) { (function () { 
+__LIBS__['FQ9377Z0O7SPIV1C'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['u4JM0YUJG2K1VIDL'] = (function (exports) { (function () { 
+__LIBS__['oMLOQY2I_TEJXUG7'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['sAIIDV7X5SIBL3B7'] = (function (exports) { (function () { 
+__LIBS__['DSFFO3VPQLQLZNP2'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['zFF1WQYN056JOA5E'];
-var CONF = __LIBS__['u4JM0YUJG2K1VIDL'];
+var util = __LIBS__['FQ9377Z0O7SPIV1C'];
+var CONF = __LIBS__['oMLOQY2I_TEJXUG7'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -1021,9 +1021,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['u4JM0YUJG2K1VIDL'];
-  var seat = __LIBS__['sAIIDV7X5SIBL3B7'];
-  var util = __LIBS__['zFF1WQYN056JOA5E'];
+  var CONF = __LIBS__['oMLOQY2I_TEJXUG7'];
+  var seat = __LIBS__['DSFFO3VPQLQLZNP2'];
+  var util = __LIBS__['FQ9377Z0O7SPIV1C'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1118,7 +1118,7 @@ function parseTransform(transform_str) {
         this.seatAdjacencies = null;
         var self = this;
 
-        self.callbacks.loadPartStart.call(self, 'pages');
+        self.callbacks.loadPartStart.call(self, self, 'pages');
         self.initBlocks(self.dataSource.pages, function() {
           self.loading = false;
           if (self.loadAborted) {
@@ -1127,10 +1127,10 @@ function parseTransform(transform_str) {
             self.callbacks.loadAbort && self.callbacks.loadAbort.call(self, self);
             return;
           }
-          self.callbacks.loadPartEnd.call(self, 'pages');
+          self.callbacks.loadPartEnd.call(self, self, 'pages');
           self.currentPage = self.rootPage;
           self.loading = true;
-          self.callbacks.loadPartStart.call(self, 'stockTypes');
+          self.callbacks.loadPartStart.call(self, self, 'stockTypes');
           self.dataSource.stockTypes(function (data) {
             self.loading = false;
             if (self.loadAborted) {
@@ -1140,9 +1140,9 @@ function parseTransform(transform_str) {
               return;
             }
             self.loading = true;
-            self.callbacks.loadPartEnd.call(self, 'stockTypes');
+            self.callbacks.loadPartEnd.call(self, self, 'stockTypes');
             self.stockTypes = data;
-            self.callbacks.loadPartStart.call(self, 'info');
+            self.callbacks.loadPartStart.call(self, self, 'info');
             self.dataSource.info(function (data) {
               self.loading = false;
               if (self.loadAborted) {
@@ -1152,24 +1152,24 @@ function parseTransform(transform_str) {
                 return;
               }
               self.loading = true;
-              self.callbacks.loadPartEnd.call(self, 'info');
+              self.callbacks.loadPartEnd.call(self, self, 'info');
               if (!'available_adjacencies' in data) {
                 self.callbacks.message.call(self, "Invalid data");
                 return;
               }
               self.availableAdjacencies = data.available_adjacencies;
               self.seatAdjacencies = new seat.SeatAdjacencies(self);
-              self.callbacks.loadPartStart.call(self, 'seats');
+              self.callbacks.loadPartStart.call(self, self, 'seats');
               self.initSeats(self.dataSource.seats, function () {
                 self.loading = false;
                 if (self.loadAborted) {
                   self.loadAborted = false;
-                  self.loadAbortionHandler && self.loadAbortionHandler.call(self);
+                  self.loadAbortionHandler && self.loadAbortionHandler.call(self, self);
                   self.callbacks.loadAbort && self.callbacks.loadAbort.call(self, self);
                   return;
                 }
                 self.loading = true;
-                self.callbacks.loadPartEnd.call(self, 'seats');
+                self.callbacks.loadPartEnd.call(self, self, 'seats');
                 if (self.currentPage) {
                   self.loadDrawing(self.currentPage, function () {
                     self.callbacks.load.call(self, self);
@@ -1185,11 +1185,11 @@ function parseTransform(transform_str) {
 
       loadDrawing: function (page, next) {
         var self = this;
-        this.callbacks.loadPartStart.call(this, 'drawing');
+        this.callbacks.loadPartStart.call(self, self, 'drawing');
         this.initDrawable(page, function () {
           next();
           self.callbacks.pageChanging.call(self, page);
-          self.callbacks.loadPartEnd.call(self, 'drawing');
+          self.callbacks.loadPartEnd.call(self, self, 'drawing');
         });
       },
 

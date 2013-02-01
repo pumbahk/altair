@@ -972,7 +972,7 @@ cart.VenueView = Backbone.View.extend({
                 callbacks.load && callbacks.load.apply(this, arguments);
                 self._handleQueue();
             },
-            loadPartStart: function (part) {
+            loadPartStart: function (viewer, part) {
                 var self = this;
                 if (!loadingLayer) {
                     loadingLayer =
@@ -1004,7 +1004,7 @@ cart.VenueView = Backbone.View.extend({
                     self.canvas.after(loadingLayer);
                 }
             },
-            loadPartEnd: function (part) {
+            loadPartEnd: function (viewer, part) {
                 if (part == 'drawing') {
                     if (loadingLayer) {
                         loadingLayer.remove();
