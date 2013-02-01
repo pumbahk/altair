@@ -458,7 +458,10 @@ class IndexView(IndexViewMixin):
         content_encoding = None
         if re.match('^.+\.(svgz|gz)$', drawing.path):
             content_encoding = 'gzip'
-        return Response(body=drawing.stream().read(), content_type='text/xml; charset=utf-8', content_encoding=content_encoding)
+        resp = Response(body=drawing.stream().read(), content_type='text/xml; charset=utf-8', content_encoding=content_encoding)
+        if resp.content_encoding != 'gzip':
+            resp.encode_content()
+        return resp
 
 @view_defaults(decorator=with_jquery)
 class ReserveView(object):
