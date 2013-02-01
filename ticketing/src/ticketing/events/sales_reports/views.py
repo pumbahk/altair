@@ -124,7 +124,7 @@ class SalesReports(BaseView):
         event_product_total = get_performance_sales_summary(SalesReportForm(event_id=event_id), self.context.organization)
         performances_reports = get_performance_sales_detail(form, event)
         performances_reports_total = get_performance_sales_detail(SalesReportForm(event_id=event_id), event)
-     
+
         return {
             'event_product':event_product,
             'event_product_total':event_product_total,

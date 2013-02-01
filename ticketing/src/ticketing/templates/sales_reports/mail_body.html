@@ -89,6 +89,16 @@
         %>
         % for product, product_total in zip(event_products, event_products_total):
           <%
+            product_sum['total_quantity'] += product['total_quantity']
+            product_sum['vacant_quantity'] += product['vacant_quantity']
+            product_sum['unpaid_quantity'] += product['unpaid_quantity']
+            product_sum['paid_quantity'] += product['paid_quantity']
+
+            product_total_sum['total_quantity'] += product_total['total_quantity']
+            product_total_sum['vacant_quantity'] += product_total['vacant_quantity']
+            product_total_sum['unpaid_quantity'] += product_total['unpaid_quantity']
+            product_total_sum['paid_quantity'] += product_total['paid_quantity']
+
             if grouping_key == (product['product_name'], product['product_price']):
               continue
           %>
@@ -197,7 +207,6 @@
             performance_total_sum['unpaid_quantity'] += performance_report_total['unpaid_quantity']
             performance_total_sum['paid_quantity'] += performance_report_total['paid_quantity']
             performance_total_sum['price_sum'] += (performance_report_total['paid_quantity'] + performance_report_total['unpaid_quantity']) * performance_report_total['product_price']
-
           %>
         <tr>
             % if stock_type_id == performance_report['stock_type_id']:
