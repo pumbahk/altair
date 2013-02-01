@@ -294,12 +294,15 @@
 
               { // stylize
                 var currentSvgStyle = context.svgStyle;
-                if (attrs.style)
-                  currentSvgStyle = mergeSvgStyle(currentSvgStyle, parseCSSAsSvgStyle(attrs.style, context.defs));
+				// 1st: find style by class attribute
                 if (attrs['class']) {
                   var style = styleClasses[attrs['class']];
                   if (style) currentSvgStyle = mergeSvgStyle(currentSvgStyle, style);
                 }
+				// 2nd: overwrite by style attribute (css like string)
+                if (attrs.style)
+                  currentSvgStyle = mergeSvgStyle(currentSvgStyle, parseCSSAsSvgStyle(attrs.style, context.defs));
+				// 3rd: overwrite by some kinds of attributes
                 currentSvgStyle = mergeSvgStyle(currentSvgStyle, svgStylesFromMap(attrs));
               }
 

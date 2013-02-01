@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['FQ9377Z0O7SPIV1C'] = (function (exports) { (function () { 
+__LIBS__['d2RJFU4FMER34P0S'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -65,7 +65,7 @@ exports.convertToFashionStyle = function Util_convertToFashionStyle(style, gradi
 
   return {
     "fill": style.fill ? fill(style.fill): null,
-    "stroke": (style.stroke && style.stroke.color) ? stroke(style.stroke): null
+    "stroke": style.stroke ? stroke(style.stroke): null
   };
 };
 
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['oMLOQY2I_TEJXUG7'] = (function (exports) { (function () { 
+__LIBS__['yIHR_3I4IOJGXMCG'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -139,7 +139,7 @@ exports.DEFAULT = {
     },
     seat: {
       fill: new Fashion.Color('#fff'),
-      stroke: null
+      stroke: new Fashion.Color('#000')
     },
     glayout: {
       fill: new Fashion.FloodFill(new Fashion.Color('#ccc')),
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['DSFFO3VPQLQLZNP2'] = (function (exports) { (function () { 
+__LIBS__['GGDDMINIE5MPPQSV'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['FQ9377Z0O7SPIV1C'];
-var CONF = __LIBS__['oMLOQY2I_TEJXUG7'];
+var util = __LIBS__['d2RJFU4FMER34P0S'];
+var CONF = __LIBS__['yIHR_3I4IOJGXMCG'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -1021,9 +1021,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['oMLOQY2I_TEJXUG7'];
-  var seat = __LIBS__['DSFFO3VPQLQLZNP2'];
-  var util = __LIBS__['FQ9377Z0O7SPIV1C'];
+  var CONF = __LIBS__['yIHR_3I4IOJGXMCG'];
+  var seat = __LIBS__['GGDDMINIE5MPPQSV'];
+  var util = __LIBS__['d2RJFU4FMER34P0S'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1312,12 +1312,15 @@ function parseTransform(transform_str) {
 
               { // stylize
                 var currentSvgStyle = context.svgStyle;
-                if (attrs.style)
-                  currentSvgStyle = mergeSvgStyle(currentSvgStyle, parseCSSAsSvgStyle(attrs.style, context.defs));
+				// 1st: find style by class attribute
                 if (attrs['class']) {
                   var style = styleClasses[attrs['class']];
                   if (style) currentSvgStyle = mergeSvgStyle(currentSvgStyle, style);
                 }
+				// 2nd: overwrite by style attribute (css like string)
+                if (attrs.style)
+                  currentSvgStyle = mergeSvgStyle(currentSvgStyle, parseCSSAsSvgStyle(attrs.style, context.defs));
+				// 3rd: overwrite by some kinds of attributes
                 currentSvgStyle = mergeSvgStyle(currentSvgStyle, svgStylesFromMap(attrs));
               }
 
