@@ -113,5 +113,3 @@ class TagDeleteView(object):
         qs = manager.Tag.query.filter_by(publicp=public_status).filter(manager.Tag.label_in(expect_deleted))
         qs.delete(synchronize_session=False)
         return {"status": True, "data": {"tags": labels}}
-            
-        

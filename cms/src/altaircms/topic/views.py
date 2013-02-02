@@ -20,9 +20,15 @@ from .searcher import PromotionPageDetailSearcher
              permission="promotion_read")
 def promotion_list(context, request):
     finder = get_has_widget_pages_finder(request, name="promotion")
-    searcher = PromotionPageListSearcher(request, finder)
 
+    searcher = PromotionPageListSearcher(request, finder, search_key="search")
     qs = searcher.get_objects_for_grid(request.allowable(Page, qs=finder(request)))
+
+    if ":all:" in request.GET:
+        qs = searcher.no_filter_without_tag(qs, request.GET)
+    else:
+        qs = searcher.filter_default(qs, request.GET)
+
     pages = h.paginate(request, qs, item_count=qs.count())
     grid = PromotionGrid.create(pages.paginated())
     return dict(grid=grid, pages=pages)
