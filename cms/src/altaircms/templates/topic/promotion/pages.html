@@ -29,8 +29,9 @@
         <input name="search" type="text" placeholder="表示位置による検索" class="search-query">
       </form>
       <div class="btn-group">
-        <a class="btn" href="${request.current_route_path(_query={})}"><i class="icon-search"></i>表示中のページのみ表示</a>
+        <a class="btn" href="${request.current_route_path(_query={"published":True})}"><i class="icon-search"></i>表示中のページのみ表示</a>
         <a class="btn" href="${request.current_route_path(_query={":all:": True})}"><i class="icon-search"></i>全てのページ表示</a>
+        <a class="btn" data-toggle="modal" href="#PromotionTagCreateModal"><i class="icon-plus"></i>表示位置の追加</a>
       </div>
     </div>
   </div><!-- /navbar-inner -->
@@ -68,3 +69,38 @@ ${pages.pager()}
 </table>
 ${pages.pager()}
 
+## modal
+<div class="modal hide" id="PromotionTagCreateModal">
+  <div class="modal-header">
+	  <button type="button" class="close" data-dismiss="modal">×</button>
+	  <h3>表示位置の追加</h3>
+  </div>
+  <form class="form" action="${request.route_path("api_promotion_addtag")}" method="POST">
+    <div class="modal-body">
+      <div class="control-group">
+        <label class="control-label">
+          表示位置(","で区切って複数登録できます):
+        </label>
+        <div class="controls">
+          <input name="tags" type="text"></input>
+          <input name="public_status" type="hidden" value="1"></input>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+	    <a href="#" class="btn" data-dismiss="modal">Close</a>
+	    <button type="submit" class="btn btn-info">追加する</button>
+    </div>
+  </form>
+</div>
+<script type="text/javascript">
+  $(function(){
+    $("#PromotionTagCreateModal form").on("submit", function(){
+      var form = $(this).parents("form");
+      $.post(form.attr("action"), {"tags": form.find('[name="tags"]').val(),
+                                   "public_status": true})
+        .done(function(){ location.reload();});
+      return false;
+    });
+  });
+</script>

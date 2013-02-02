@@ -10,4 +10,8 @@ def includeme(config):
 
     config.add_route("promotion_list", "/promotion/list")
     config.add_route("promotion_detail", "/promotion/page/{page_id}/detail") #_query=dict(widget_id=widget_id)
+    config.add_route("api_promotion_addtag", "/api/promotion/tag/add", 
+                     factory=".resources.PromotionTagContext")
+    config.add_view("..tag.views.PublicTagCreateView", route_name="api_promotion_addtag", 
+                    attr="create", request_method="POST", renderer="json")
     config.scan(".views")

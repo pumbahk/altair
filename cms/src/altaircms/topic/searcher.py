@@ -24,7 +24,7 @@ class PromotionPageListSearcher(object):
     def filter_default(self, qs, params):
         qs = self._filter_by_tag_label(qs, params)        
         qs = self._filter_by_page_term(qs, params)
-        # qs = self._filter_by_page_published(qs, params)
+        qs = self._filter_by_page_published(qs, params)
         return qs
 
     def no_filter_without_tag(self, qs, params):

@@ -37,7 +37,7 @@ class TagManager(object):
         self.Tag = Tag
 
     def get_or_create_tag_list(self, labels, public_status=True):
-        tags = self.Tag.query.filter(self.Tag.label.in_(labels), publicp=public_status)
+        tags = self.Tag.query.filter(self.Tag.label.in_(labels), self.Tag.publicp==public_status)
         cache = {tag.label:tag for tag in tags}
         result = []
         for label in labels:

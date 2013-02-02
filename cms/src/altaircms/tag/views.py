@@ -1,12 +1,14 @@
 from pyramid.view import view_config
 from pyramid.view import view_defaults
 from altaircms.lib.fanstatic_decorator import with_bootstrap
-from altaircms.tag.api import get_tagmanager, tags_from_string, notify_created_tags
+from .api import get_tagmanager, tags_from_string, notify_created_tags
 from .manager import QueryParser
 from . import SUPPORTED_CLASSIFIER
 from . import forms
 from .models import PageTag
 from .models import AssetTag
+from altaircms.models import DBSession
+
 
 def in_support_classifier(context, request):
     return request.matchdict.get("classifier") in SUPPORTED_CLASSIFIER
@@ -80,13 +82,15 @@ class BaseTagCreateView(object):
 
         labels = tags_from_string(form.data["tags"])        
         tags = manager.get_or_create_tag_list(labels, public_status=form.data["public_status"])
+        for tag in tags:
+            DBSession.add(tag)
         notify_created_tags(self.request, tags)
         return {"status": True, "data": {"tags": labels}}
 
 class PublicTagCreateView(BaseTagCreateView):
-    tag_form_classs = forms.PublicTagForm
+    tag_form_class = forms.PublicTagForm
 class PrivateTagCreateView(BaseTagCreateView):
-    tag_form_classs = forms.PrivateTagForm
+    tag_form_class = forms.PrivateTagForm
 
 class TagDeleteView(object):
     def __init__(self, context, request):
