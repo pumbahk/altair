@@ -18,7 +18,8 @@ from ..models import Category, Sale
 from ..asset.models import ImageAsset
 from ..page.models import PageSet
 from ..topic.models import Topic, Topcontent, PromotionTag, Promotion
-from ..tag.models import PageTag
+from ..topic.models import PromotionTag
+from ..page.models import PageTag
 from ..plugins.api import get_extra_resource
 
 import pkg_resources

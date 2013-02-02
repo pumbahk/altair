@@ -36,6 +36,17 @@ class TagManager(object):
         self.XRef = XRef
         self.Tag = Tag
 
+    def get_or_create_tag_list(self, labels, public_status=True):
+        tags = self.Tag.query.filter(self.Tag.label.in_(labels), publicp=public_status)
+        cache = {tag.label:tag for tag in tags}
+        result = []
+        for label in labels:
+            if not label in cache:
+                result.append(self.Tag(label=label, publicp=public_status))
+            else:
+                result.append(cache[label])
+        return result
+            
     def get_or_create_tag(self, label, public_status=True):
         tag = self.Tag.query.filter_by(label=label, publicp=public_status).first()
         if not tag:
@@ -86,7 +97,6 @@ class TagManager(object):
 
         for label in updates:
             obj.tags.append(self.get_or_create_tag(label, public_status))
-        
 
     def add_tags(self, obj, tag_label_list, public_status):
         tags = obj.tags

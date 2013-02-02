@@ -1,7 +1,7 @@
 from pyramid.view import view_config
 from pyramid.view import view_defaults
 from altaircms.lib.fanstatic_decorator import with_bootstrap
-from altaircms.tag.api import get_tagmanager
+from altaircms.tag.api import get_tagmanager, tags_from_string, notify_created_tags
 from .manager import QueryParser
 from . import SUPPORTED_CLASSIFIER
 from . import forms
@@ -59,3 +59,59 @@ class TopView(object):
                 "tags": tags, 
                 "form": form, 
                 "supported": SUPPORTED_CLASSIFIER}
+
+class BaseTagCreateView(object):
+    tag_form_classs = forms.TagForm
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    def input(self):
+        form = self.tag_form_class()
+        return {"form": form}
+
+    def create(self):
+        form = self.tag_form_class(self.request.POST)
+        if not form.validate():
+            return {"status": False}
+
+        classifier = self.context.classifier
+        manager = get_tagmanager(classifier, request=self.request)
+
+        labels = tags_from_string(form.data["tags"])        
+        tags = manager.get_or_create_tag_list(labels, public_status=form.data["public_status"])
+        notify_created_tags(self.request, tags)
+        return {"status": True, "data": {"tags": labels}}
+
+class PublicTagCreateView(BaseTagCreateView):
+    tag_form_classs = forms.PublicTagForm
+class PrivateTagCreateView(BaseTagCreateView):
+    tag_form_classs = forms.PrivateTagForm
+
+class TagDeleteView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+        
+    def delete(self):
+        form = self.tag_form_class(self.request.POST)
+        if not form.validate():
+            return {"status": False}
+
+        classifier = self.context.classifier
+        manager = get_tagmanager(classifier, request=self.request)
+
+        labels = tags_from_string(form.data["tags"])        
+        public_status = form.data["public_status"]
+        expect_deleted = []
+
+        for label in labels:
+            num_of_bound = manager.search_by_tag_label(label).filter(manager.Tag.publicp==public_status).count()
+            if num_of_bound <= 0:
+                expect_deleted.append(label)
+                
+        qs = manager.Tag.query.filter_by(publicp=public_status).filter(manager.Tag.label_in(expect_deleted))
+        qs.delete(synchronize_session=False)
+        return {"status": True, "data": {"tags": labels}}
+            
+        

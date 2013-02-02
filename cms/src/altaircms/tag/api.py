@@ -10,8 +10,16 @@ def put_tags(obj, classifier, tags, private_tags, request):
     manager = get_tagmanager(classifier, request=request)
     manager.replace_tags(obj, tags, True)
     manager.replace_tags(obj, private_tags, False)
-    for t in obj.tags:
+    notify_created_tags(request, obj.tags)
+
+def notify_created_tags(request, tags):
+    for t in tags:
         notify_model_create(request, t, {})
 
-def tags_to_string(tags):
-    return u', '.join(tag.label for tag in tags)
+## move to util?
+def tags_to_string(tags, separator=u", "):
+    return separator.join(tag.label for tag in tags)
+
+def tags_from_string(tagstring, separator=u","):
+    tags = [e.strip() for e in tagstring.split(separator)]
+    return [k for k in tags if k]

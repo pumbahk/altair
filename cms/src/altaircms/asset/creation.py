@@ -13,7 +13,7 @@ from . import ValidationError
 from . import models
 from ..models import DBSession
 from ..filelib import get_filesession
-from ..tag.api import tags_to_string, get_tagmanager, put_tags
+from ..tag.api import tags_to_string, get_tagmanager, put_tags, tags_from_string
 from ..tag.manager import QueryParser
 from ..subscribers import notify_model_create
 from .detect import ImageInfoDatector
@@ -29,8 +29,7 @@ def get_asset_filesession(request):
 def _extract_tags(params, k):
     if k not in params:
         return []
-    tags = [e.strip() for e in params.pop(k).split(",")] ##
-    return [k for k in tags if k]
+    return tags_from_string(params.pop(k))
 
 def divide_data(params):
     tags = _extract_tags(params, "tags")
