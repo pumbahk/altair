@@ -120,3 +120,21 @@ def term(beg, end):
     return u"%s(%s) 〜 %s(%s)" % (beg_str, WEEK[beg.weekday()], end_str, WEEK[end.weekday()])
 
 jterm = term
+
+def _merge_dict(base, other=None, dels=None):
+    r = {}
+    r.update(base)
+    if other:
+        r.update(other)
+    if dels:
+        for k in dels:
+            del r[k]
+    return r
+    
+def route_path_override(request, path, _query=None, _dels=None, **kwargs):
+    qdict = _merge_dict(request.GET, other=_query, dels=_dels)
+    return request.route_path(path, _query=qdict, **kwargs)
+
+def current_route_path_override(request, _query=None, _dels=None, **kwargs):
+    qdict = _merge_dict(request.GET, other=_query, dels=_dels)
+    return request.current_route_path(_query=qdict, **kwargs)

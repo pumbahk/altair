@@ -30,9 +30,9 @@
 <ul class="nav nav-tabs">
    %for widget in widgets:
      %if unicode(widget.id) == unicode(current_widget.id):
-        <li class="active"><a href="${request.route_path("promotion_detail", page_id=page.id, _query=dict(widget_id=widget.id))}">${widget.kind.label}</a></li>
+        <li class="active"><a href="${h.route_path_override(request, "promotion_detail", page_id=page.id, _query=dict(widget_id=widget.id))}">${widget.kind.label}</a></li>
      %else:
-        <li><a href="${request.route_path("promotion_detail", page_id=page.id, _query=dict(widget_id=widget.id))}">${widget.kind.label}</a></li>
+        <li><a href="${h.route_path_override(request, "promotion_detail", page_id=page.id, _query=dict(widget_id=widget.id))}">${widget.kind.label}</a></li>
      %endif
    %endfor
 </ul>
@@ -73,15 +73,19 @@
 ** pageと結びついている時のリンク先は、page詳細ページが良い
 * タブページ:all:のリンクを付けた時widget_idのパラメータが消えてしまう。 
 * 編集、追加、削除可能 - ok
+* memo
+** static urlにversionをつけるとcacheするようにしても大丈夫なのでは？ e.g. main.img?v=1
+** request.current_route_pathに現在のGETの値を引き継がせたい
+** どこかでcrudlibは綺麗にしないと
 </pre>
 <hr/>
 
 <h3 class="headline"> 「${current_widget.kind.label}」で表示中のプロモーションの一覧</h3>
 
 %if ":all:" in request.GET:
-  <a href="${request.current_route_path()}">表示されているプロモーションのみを表示</a>  
+  <a href="${h.current_route_path_override(request, _dels=[":all:"])}">表示されているプロモーションのみを表示</a>  
 %else:
-  <a href="${request.current_route_path(_query={":all:": True})}">全てのプロモーションを表示</a>
+  <a href="${h.current_route_path_override(request, _query={":all:": True})}">全てのプロモーションを表示</a>
 %endif
 
 <table class="table table-bordered">
