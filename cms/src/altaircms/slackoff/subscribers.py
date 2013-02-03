@@ -39,5 +39,7 @@ class PromotionDelete(object):
 
 ## need async
 ##
+from altaircms.tag.api import put_tags, tags_from_string
 def update_kind(self):
-    self.obj.update_tag(self.params["tag_content"])
+    tags = tags_from_string(self.params["tag_content"])
+    put_tags(self.obj, self.obj.__tablename__, tags, [], self.request)

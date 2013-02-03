@@ -149,7 +149,7 @@ class TicketForm(Form):
     # __display_fields__ = [u"sale", u"name", u"seattype", u"price", u"display_order"]
 
 class PromotionForm(Form):
-    tag_content = fields.TextField(label=u"タグ的なもの(, 区切り)") #@todo rename
+    tag_content = fields.TextField(label=u"表示場所(, 区切り)") #@todo rename
     main_image = dynamic_query_select_field_factory(
         ImageAsset, allow_blank=False, label=u"メイン画像",
         get_label=lambda obj: obj.title or u"名前なし")
@@ -181,7 +181,7 @@ class PromotionForm(Form):
 
 class PromotionFilterForm(Form):
     kind = dynamic_query_select_field_factory(
-        PromotionTag, allow_blank=False, label=u"タグ的なもの",
+        PromotionTag, allow_blank=False, label=u"表示場所",
         get_label=lambda obj: obj.name)
 
     def as_filter(self, qs):

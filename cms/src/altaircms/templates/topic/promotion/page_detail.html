@@ -23,9 +23,9 @@
 <ul class="nav nav-tabs">
    %for widget in widgets:
      %if unicode(widget.id) == unicode(current_widget.id):
-        <li class="active"><a href="${request.route_path("promotion_detail", page_id=page.id, _query=dict(widget_id=widget.id))}">${widget.id}</a></li>
+        <li class="active"><a href="${request.route_path("promotion_detail", page_id=page.id, _query=dict(widget_id=widget.id))}">${widget.kind.label}</a></li>
      %else:
-        <li><a href="${request.route_path("promotion_detail", page_id=page.id, _query=dict(widget_id=widget.id))}">${widget.id}</a></li>
+        <li><a href="${request.route_path("promotion_detail", page_id=page.id, _query=dict(widget_id=widget.id))}">${widget.kind.label}</a></li>
      %endif
    %endfor
 </ul>
@@ -48,18 +48,19 @@
     </tr>
     <tr>
       <th rowspan="2">widget情報</th>
-      <th>widget id</th><td> ${widget.id}</td>
+      <th>widget id</th><td> ${current_widget.id}</td>
     </tr>
     <tr>
-      <th>表示場所</th><td> ${widget.kind.label}</td>
+      <th>表示場所</th><td> ${current_widget.kind.label}</td>
     </tr>
   </tbody>
 </table>
 
 <hr/>
+<h4 class="headline">プロモーションの追加</h4>
+<a href="${request.route_path("promotion_old_create", action="input", _query=dict(tag_content=current_widget.kind.label))}"  class="btn btn-success btn-large">新しいプロモーションを作成する</a>
 
 <h4 class="headline"> 表示中のプロモーションの一覧</h4>
-
 <table class="table table-bordered">
   <thead>
     <tr>
@@ -76,12 +77,14 @@
           <td>${promotion.text}</td>
         </tr>
 ##todo: どちらと結びついているか設定できる
-##todo: 編集できる
         <tr>
           <td>${promotion.linked_page}</td>
         </tr>
         <tr>
-          <td><a class="btn">編集</a><a class="btn">削除</a></td>
+          <td>
+            <a href="${request.route_path("promotion_old_update", action="input",id=promotion.id)}" class="btn">編集</a>
+            <a href="${request.route_path("promotion_old_delete", action="confirm",id=promotion.id)}" class="btn">削除</a>
+          </td>
         </tr>
       %endfor
     </tbody>
