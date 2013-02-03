@@ -7,6 +7,7 @@ from altaircms.tag.api import get_tagmanager
 import altaircms.helpers as h
 from altaircms.auth.api import get_or_404
 from altaircms.page.models import Page
+from altaircms.topic.models import Promotion
 
 from .viewhelpers import PromotionGrid
 from .viewhelpers import PromotionHTMLRenderer
@@ -47,8 +48,13 @@ def promotion_detail(context, request):
     widgets = searcher.get_widgets(page_id)
     widget = searcher.get_current_widget(widgets, widget_id=widget_id)
 
-    tag_manager = get_tagmanager("promotion", request=request) #todo: sort
+    tag_manager = get_tagmanager("promotion", request=request)
     promotions = tag_manager.search_by_tag_label(widget.kind.label)
+
+    if ":all:" in request.GET:
+        promotions = Promotion.order_by_logic(promotions)
+    else:
+        promotions = Promotion.publishing(qs=promotions)
     return dict(promotions=promotions, page=page,
                 promotion_renderer=PromotionHTMLRenderer(request), 
                 current_widget=widget, widgets=widgets)

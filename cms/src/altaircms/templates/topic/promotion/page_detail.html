@@ -30,6 +30,14 @@
    %endfor
 </ul>
 
+
+
+%if ":all:" in request.GET:
+  <a href="${request.current_route_path()}">表示されているプロモーションのみを表示</a>  
+%else:
+  <a href="${request.current_route_path(_query={":all:": True})}">全てのプロモーションを表示</a>
+%endif
+
 <h4 class="headline">表示されるページの情報</h4>
 <table class="table table-bordered">
   <tbody>
@@ -56,6 +64,15 @@
   </tbody>
 </table>
 
+<pre>
+必要なもの
+* 表示順序 - ok
+** 全てのpromotion(公開期間終了後も含めて)表示 - ok
+* 公開期間を表示 - not yet
+* 表示順序を表示 - not yet
+* リンクを表示 - not yet
+* 編集、追加、削除可能 - ok
+</pre>
 <hr/>
 <h4 class="headline">プロモーションの追加</h4>
 <a href="${request.route_path("promotion_old_create", action="input", _query=dict(tag_content=current_widget.kind.label))}"  class="btn btn-success btn-large">新しいプロモーションを作成する</a>
@@ -76,7 +93,6 @@
           <td rowspan="3" width="45%">${promotion_renderer.render_main_image(promotion)}</td>
           <td>${promotion.text}</td>
         </tr>
-##todo: どちらと結びついているか設定できる
         <tr>
           <td>${promotion.linked_page}</td>
         </tr>

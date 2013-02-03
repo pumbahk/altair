@@ -67,7 +67,13 @@ class AboutPublishMixin(object):
     publish_close_on = sa.Column(sa.DateTime)
     display_order = sa.Column(sa.Integer, default=50)
     is_vetoed = sa.Column(sa.Boolean, default=False)
-    
+
+    @classmethod
+    def order_by_logic(cls, qs=None):
+        if qs is None:
+            qs = cls.query
+        return qs_orderby_logic(cls, qs)
+
     @classmethod
     def publishing(cls, d=None, qs=None):
         if d is None:
