@@ -102,6 +102,16 @@ def parse_likestring(model, key, params, attr):
     return getattr(model, attr).like(u"%%%s%%" % params[key])
 
 def parse_boolean(model, key, params, attr):
+    if key not in params:
+        return KeyNotFound(key, "%s. operator is not found" % key)
+
+    status = params[key]
+    if status.lower() in ("true", "ok", "success", "1"):
+        return getattr(model, attr) == True
+    else:
+        return getattr(model, attr) == False
+
+def parse_equal(model, key, params, attr):
     if key in params:
         return getattr(model, attr) == params[key]
     fkey = key + "_eq"
@@ -125,4 +135,4 @@ def parse_datetime(model, key, params, attr):
     fkey = key + "_gt"
     if fkey in params:
         return getattr(model, attr) > params[fkey]
-    return parse_boolean(model, key, params, attr)
+    return parse_equal(model, key, params, attr)

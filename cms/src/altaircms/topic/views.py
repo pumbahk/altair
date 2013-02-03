@@ -21,7 +21,7 @@ from .searcher import PromotionPageDetailSearcher
 def promotion_list(context, request):
     finder = get_has_widget_pages_finder(request, name="promotion")
 
-    searcher = PromotionPageListSearcher(request, finder, search_key="search")
+    searcher = PromotionPageListSearcher(request, finder)
     qs = searcher.get_objects_for_grid(request.allowable(Page, qs=finder(request)))
 
     if ":all:" in request.GET:

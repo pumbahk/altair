@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 
 def show_publish_status(page):
-    return u"公開中"
+    return u"公開中" if page.published else u"非公開"
 
 
 def to_edit_page(request, page):

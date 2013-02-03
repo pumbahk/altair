@@ -25,14 +25,16 @@
   <div class="navbar-inner">
     <div class="container">
       <a class="brand" href="#"><i class="icon-search icon-white"></i></a>
-      <form class="navbar-search" action="">
-        <input name="search" type="text" placeholder="表示位置による検索" class="search-query">
+      <form class="pull-left navbar-search" action="">
+        <input name="search" type="text" placeholder="表示場所による検索" class="search-query">
       </form>
-      <div class="btn-group">
-        <a class="btn" href="${request.current_route_path(_query={"published":True})}"><i class="icon-search"></i>表示中のページのみ表示</a>
-        <a class="btn" href="${request.current_route_path(_query={":all:": True})}"><i class="icon-search"></i>全てのページ表示</a>
-        <a class="btn" data-toggle="modal" href="#PromotionTagCreateModal"><i class="icon-plus"></i>表示位置の追加</a>
-      </div>
+      <ul class="nav">
+        <div class="btn-group">
+          <a class="btn" href="${request.current_route_path(_query={"published":True})}"><i class="icon-search"></i>表示中のページのみ表示</a>
+          <a class="btn" href="${request.current_route_path(_query={":all:": True})}"><i class="icon-search"></i>全てのページ表示</a>
+          <a class="btn" data-toggle="modal" href="#PromotionTagCreateModal"><i class="icon-plus"></i>表示場所の追加</a>
+        </div>
+      </ul>
     </div>
   </div><!-- /navbar-inner -->
   
@@ -70,16 +72,16 @@ ${pages.pager()}
 ${pages.pager()}
 
 ## modal
-<div class="modal hide" id="PromotionTagCreateModal">
+<div class="modal hide" id="PromotionTagCreateModal" style="z-index:-100;">
   <div class="modal-header">
 	  <button type="button" class="close" data-dismiss="modal">×</button>
-	  <h3>表示位置の追加</h3>
+	  <h3>表示場所の追加</h3>
   </div>
   <form class="form" action="${request.route_path("api_promotion_addtag")}" method="POST">
     <div class="modal-body">
       <div class="control-group">
         <label class="control-label">
-          表示位置(","で区切って複数登録できます):
+          表示場所(","で区切って複数登録できます):
         </label>
         <div class="controls">
           <input name="tags" type="text"></input>

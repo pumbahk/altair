@@ -44,7 +44,7 @@
       <th>URL<th></td>${page.url}</td>
     </tr>
     <tr>
-      <th>公開期間<th></td>${h.term(page.publish_begin, page.publish_end)}</td>
+      <th>公開ステータス(公開期間)<th></td>${h.page.show_publish_status(page)}(${h.term(page.publish_begin, page.publish_end)})</td>
     </tr>
     <tr>
       <th rowspan="2">widget情報</th>

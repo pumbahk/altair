@@ -9,6 +9,7 @@ class Article(Base):
     name = sa.Column(sa.Unicode(30))
     publish_begin = sa.Column(sa.DateTime)
     publish_end = sa.Column(sa.DateTime)
+    is_rejected = sa.Column(sa.Boolean, default=False)
 
 class SearchQueryParseTests(unittest.TestCase):
     def _getTarget(self):
@@ -51,6 +52,36 @@ class AssertExpressionMixin(object):
     def assertExpression(self, result, expected):
         # slack-off
         self.assertEqual(str(result), str(expected))
+
+class BooleanSearchQueryParseTests(AssertExpressionMixin, unittest.TestCase):
+    def _getTarget(self):
+        from altaircms.searchlib import BooleanSearchSchema
+        return BooleanSearchSchema
+
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
+    def test_it(self):
+        target = self._makeOne(Article, "is_rejected")
+        params = {"is_rejected": "True"}
+
+        result = target.parse(params)
+        self.assertExpression(result.result, Article.is_rejected == True)
+
+    def test_false(self):
+        target = self._makeOne(Article, "is_rejected")
+        params = {"is_rejected": "False"}
+
+        result = target.parse(params)
+        self.assertExpression(result.result, Article.is_rejected == False)
+
+    def test_query_key_is_not_found_then_return_none(self):
+        target = self._makeOne(Article, "is_rejected")
+        params = {}
+
+        result = target.parse(params)
+        self.assertFalse(result)
+        self.assertEqual(result.key, "is_rejected")
 
 class LikeSearchQueryParseTests(AssertExpressionMixin, unittest.TestCase):
     def _getTarget(self):
