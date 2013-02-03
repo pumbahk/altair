@@ -224,7 +224,7 @@ class CompoundSearchQueryParseTests(AssertExpressionMixin, unittest.TestCase):
         from altaircms.searchlib import LikeSearchSchema
         from altaircms.searchlib import DateTimeSearchSchema
         from altaircms.searchlib import DateTimeMaybeSearchSchema
-        schemas = [LikeSearchSchema(Article, "name"), 
+        schemas = [LikeSearchSchema(Article, "name", required=True), 
                    DateTimeSearchSchema(Article, "term_begin", "publish_begin"), 
                    DateTimeMaybeSearchSchema(Article, "term_end", "publish_end"), 
                    ]
@@ -241,7 +241,7 @@ class CompoundSearchQueryParseTests(AssertExpressionMixin, unittest.TestCase):
         from altaircms.searchlib import LikeSearchSchema
         from altaircms.searchlib import DateTimeSearchSchema
         from altaircms.searchlib import DateTimeMaybeSearchSchema
-        schemas = [LikeSearchSchema(Article, "name"), 
+        schemas = [LikeSearchSchema(Article, "name", required=True), 
                    DateTimeSearchSchema(Article, "term_begin", "publish_begin"), 
                    DateTimeMaybeSearchSchema(Article, "term_end", "publish_end"), 
                    ]
@@ -249,6 +249,17 @@ class CompoundSearchQueryParseTests(AssertExpressionMixin, unittest.TestCase):
 
         result = self._callFUT(schemas, params)
         self.assertExpression(result["name"][0], Article.name.like("%%part-of-article%%"))
+
+    def test_required_field_does_not_exists(self):
+        from altaircms.searchlib import LikeSearchSchema
+        from altaircms.searchlib import Invalid
+        schemas = [LikeSearchSchema(Article, "name", required=True), 
+                   ]
+        params = {}
+        with self.assertRaises(Invalid):
+            self._callFUT(schemas, params)
+
+
 
 if __name__ == "__main__":
     unittest.main()

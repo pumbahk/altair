@@ -22,11 +22,11 @@ class Result(object):
         self.result = result
 
 class SearchSchema(object):
-    def __init__(self, model, query_key, model_attribute=None):
+    def __init__(self, model, query_key, model_attribute=None, required=False):
         self.model = model
         self.query_key = query_key
         self.model_attribute = model_attribute or query_key
-
+        self.required = required
         assert hasattr(model, self.model_attribute)
 
     def exists(self, params, query_key=None):
@@ -85,12 +85,18 @@ def parse_params_using_schemas(schemas, params):
     result, invalid = defaultdict(list), defaultdict(list)
     for schema in schemas:
         r = schema.parse(params)
-        if isinstance(r, KeyNotFound): #xxx:
-            logger.debug(r.message)
-        elif isinstance(r, Result):
-            result[r.key].append(r.result)
-        else:
-            invalid[r.key].append(r.message)
+        try:
+            if isinstance(r, KeyNotFound): #xxx:
+                logger.debug(r.message)
+                if schema.required:
+                    invalid[r.key].append(r)
+            elif isinstance(r, Result):
+                result[r.key].append(r.result)
+            else:
+                invalid(schema.query_key).append(r) ##xxx:
+        except Exception, e:
+            logger.debug(str(e))
+            invalid[schema.query_key].append(e)
     if invalid:
         raise Invalid(invalid)
     return result
