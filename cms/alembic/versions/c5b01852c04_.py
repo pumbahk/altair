@@ -15,10 +15,9 @@ import sqlalchemy as sa
 
 
 def upgrade(): 
-    op.execute("ALTER TABLE pagesets DROP INDEX url;")
-    op.execute("ALTER TABLE pagesets add unique organization_id (organization_id, url);")
+    op.drop_index("url", "pagesets")
+    op.create_unique_constraint("organization_id", "pagesets", ["organization_id", "url"])
 
 def downgrade():
-    op.execute("ALTER TABLE pagesets DROP INDEX organization_id;")
-    ## don't support it.'
-    pass
+    op.drop_index("organization_id", "pagesets")
+    op.create_unique_constraint("url", "pagesets", ["url"])
