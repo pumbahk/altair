@@ -62,22 +62,6 @@
   </tbody>
 </table>
 
-<pre>
-必要なもの
-* 表示順序 - ok
-** 全てのpromotion(公開期間終了後も含めて)表示 - ok
-* 公開期間を表示 - ok
-* 表示順序を表示 - ok
-* リンクを表示 - not yet
-** http://がhttp%3Aに
-** pageと結びついている時のリンク先は、page詳細ページが良い
-* タブページ:all:のリンクを付けた時widget_idのパラメータが消えてしまう。 
-* 編集、追加、削除可能 - ok
-* memo
-** static urlにversionをつけるとcacheするようにしても大丈夫なのでは？ e.g. main.img?v=1
-** request.current_route_pathに現在のGETの値を引き継がせたい
-** どこかでcrudlibは綺麗にしないと
-</pre>
 <hr/>
 
 <h3 class="headline"> 「${current_widget.kind.label}」で表示中のプロモーションの一覧</h3>
@@ -92,9 +76,9 @@
   <thead>
   </thead>
     <tbody>
-      %for promotion in promotions:
+      %for i, promotion in enumerate(promotions):
         <tr>
-          <td rowspan="5"><p>id</p> ${promotion.id}</td>
+          <td rowspan="5">${i}</td>
           <td rowspan="4"><p>メイン画像</p> ${promotion_renderer.render_main_image(promotion)}</td>
           <td><p>表示順序</p>${promotion.display_order}</td>
         </tr>
@@ -122,8 +106,8 @@
         <tr>
           <td><p>表示メッセージ</p><div class="well">${promotion.text}</div></td>
           <td>
-            <a href="${request.route_path("promotion_old_update", action="input",id=promotion.id)}" class="btn">編集</a>
-            <a href="${request.route_path("promotion_old_delete", action="confirm",id=promotion.id)}" class="btn">削除</a>
+            <a href="${request.route_path("promotion_old_update", action="input",id=promotion.id)}" class="btn btn-primary"><i class="icon-cog"></i> 編集</a>
+            <a href="${request.route_path("promotion_old_delete", action="confirm",id=promotion.id)}" class="btn btn-danger"><i class="icon-trash"></i> 削除</a>
           </td>
         </tr>
       %endfor

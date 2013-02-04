@@ -26,8 +26,9 @@ import pkg_resources
 def import_symbol(symbol):
     return pkg_resources.EntryPoint.parse("x=%s" % symbol).load(False)
 
+
 def quote(x):
-    return urllib.quote(x) if x else None
+    return urllib.quote(x.encode("utf-8"), safe="%/:=&?~#+!$,;'@()*[]").decode("utf-8") if x else None
 
 """
 class ISlackOffForm(Interface):
