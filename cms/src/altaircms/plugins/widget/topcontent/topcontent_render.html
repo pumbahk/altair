@@ -1,0 +1,14 @@
+## topcontent widget output template
+## 
+
+## todo:画像を表示
+## todo:カウントダウン表示
+##
+<div class="-list">
+  %for  in s:
+  <div class="" title="<h2>${.title}(${h.base.jdate(.publish_open_on)})</h2><p>${.text or ""|n}</p>">
+    ${.title}(${h.base.jdate(.publish_open_on)})
+    <a href="${h.link.get_link_from_(request,)}"><img src="${h.asset.to_show_page(request,.image_asset)}"/>
+  </div>
+  %endfor
+</div>

@@ -14,7 +14,23 @@ from .viewhelpers import PromotionHTMLRenderer
 from .searcher import PromotionPageListSearcher
 from .searcher import PromotionPageDetailSearcher
 
-## todo: 現在表示中のpromotion, 全部表示の２種類
+# @view_config(route_name="topcontent_list", renderer="altaircms:templates/topic/topcontent/pages.html", 
+#              decorator="altaircms.lib.fanstatic_decorator.with_bootstrap",
+#              permission="topcontent_read")
+# def topcontent_list(context, request):
+#     finder = get_has_widget_pages_finder(request, name="topcontent")
+
+#     searcher = TopcontentPageListSearcher(request, finder)
+#     qs = searcher.get_objects_for_grid(request.allowable(Page, qs=finder(request)))
+
+#     if ":all:" in request.GET:
+#         qs = searcher.no_filter_without_tag(qs, request.GET)
+#     else:
+#         qs = searcher.filter_default(qs, request.GET)
+
+#     pages = h.paginate(request, qs, item_count=qs.count())
+#     grid = TopcontentGrid.create(pages.paginated())
+#     return dict(grid=grid, pages=pages)
 
 @view_config(route_name="promotion_list", renderer="altaircms:templates/topic/promotion/pages.html", 
              decorator="altaircms.lib.fanstatic_decorator.with_bootstrap",

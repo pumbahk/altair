@@ -1,0 +1,7 @@
+<div class="sideCategoryGenre">
+  <ul>
+	%for topcontent in topcontents:
+	  <li><a href="${h.link.get_link_from_topcontent(request,topcontent)}">${topcontent.title}</a></li>
+	%endfor
+  </ul>
+</div>
