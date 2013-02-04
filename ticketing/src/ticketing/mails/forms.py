@@ -123,7 +123,7 @@ def MailInfoFormFactory(template):
     attrs["validate"] = validate
 
     def as_mailinfo_data(self):
-        return {k:v for k, v in self.data.iteritems() if v}
+        return {k:v for k, v in self.data.iteritems()}
     attrs["as_mailinfo_data"] = as_mailinfo_data
 
     return type("MailInfoForm", (Form, ), attrs)
