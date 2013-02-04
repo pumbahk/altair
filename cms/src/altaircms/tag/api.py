@@ -17,8 +17,9 @@ def notify_created_tags(request, tags):
         notify_model_create(request, t, {})
 
 ## move to util?
-def tags_to_string(tags, separator=u", "):
+def string_from_tags(tags, separator=u", "):
     return separator.join(tag.label for tag in tags)
+tags_to_string = string_from_tags
 
 def tags_from_string(tagstring, separator=u","):
     tags = [e.strip() for e in tagstring.split(separator)]

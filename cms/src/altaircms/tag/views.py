@@ -1,7 +1,14 @@
+# -*- coding:utf-8 -*-
+
+import logging
+logger  = logging.getLogger(__name__)
+
 from pyramid.view import view_config
 from pyramid.view import view_defaults
+from altaircms.auth.models import Organization
+from altaircms.helpers.viewhelpers import FlashMessage
 from altaircms.lib.fanstatic_decorator import with_bootstrap
-from .api import get_tagmanager, tags_from_string, notify_created_tags
+from .api import get_tagmanager, tags_from_string, notify_created_tags, string_from_tags
 from .manager import QueryParser
 from . import SUPPORTED_CLASSIFIER
 from . import forms
@@ -73,19 +80,25 @@ class BaseTagCreateView(object):
         return {"form": form}
 
     def create(self):
-        form = self.tag_form_class(self.request.POST)
-        if not form.validate():
-            return {"status": False}
+        try:
+            form = self.tag_form_class(self.request.POST)
+            ## ajax requestの時login認証が行われない？
+            self.request.organization = Organization.query.filter_by(id=self.request.POST["organization_id"]).first()
+            if not form.validate():
+                return {"status": False}
 
-        classifier = self.context.classifier
-        manager = get_tagmanager(classifier, request=self.request)
+            classifier = self.context.classifier
+            manager = get_tagmanager(classifier, request=self.request)
 
-        labels = tags_from_string(form.data["tags"])        
-        tags = manager.get_or_create_tag_list(labels, public_status=form.data["public_status"])
-        for tag in tags:
-            DBSession.add(tag)
-        notify_created_tags(self.request, tags)
-        return {"status": True, "data": {"tags": labels}}
+            labels = tags_from_string(form.data["tags"])        
+            tags = manager.get_or_create_tag_list(labels, public_status=form.data["public_status"])
+            for tag in tags:
+                DBSession.add(tag)
+            notify_created_tags(self.request, tags)
+            # FlashMessage.success(u"「%s」が追加されました" % string_from_tags(tags), request=self.request)
+            return {"status": True, "data": {"tags": labels}, "message": u"「%s」が追加されました" % string_from_tags(tags)}
+        except Exception, e:
+            logger.exception(str(e))
 
 class PublicTagCreateView(BaseTagCreateView):
     tag_form_class = forms.PublicTagForm
@@ -98,22 +111,25 @@ class TagDeleteView(object):
         self.request = request
         
     def delete(self):
-        form = self.tag_form_class(self.request.POST)
-        if not form.validate():
-            return {"status": False}
+        try:
+            form = self.tag_form_class(self.request.POST)
+            if not form.validate():
+                return {"status": False}
 
-        classifier = self.context.classifier
-        manager = get_tagmanager(classifier, request=self.request)
+            classifier = self.context.classifier
+            manager = get_tagmanager(classifier, request=self.request)
 
-        labels = tags_from_string(form.data["tags"])        
-        public_status = form.data["public_status"]
-        expect_deleted = []
+            labels = tags_from_string(form.data["tags"])        
+            public_status = form.data["public_status"]
+            expect_deleted = []
 
-        for label in labels:
-            num_of_bound = manager.search_by_tag_label(label).filter(manager.Tag.publicp==public_status).count()
-            if num_of_bound <= 0:
-                expect_deleted.append(label)
-                
-        qs = manager.Tag.query.filter_by(publicp=public_status).filter(manager.Tag.label_in(expect_deleted))
-        qs.delete(synchronize_session=False)
-        return {"status": True, "data": {"tags": labels}}
+            for label in labels:
+                num_of_bound = manager.search_by_tag_label(label).filter(manager.Tag.publicp==public_status).count()
+                if num_of_bound <= 0:
+                    expect_deleted.append(label)
+
+            qs = manager.Tag.query.filter_by(publicp=public_status).filter(manager.Tag.label_in(expect_deleted))
+            qs.delete(synchronize_session=False)
+            return {"status": True, "data": {"tags": labels}}
+        except Exception, e:
+            logger.exception(str(e))

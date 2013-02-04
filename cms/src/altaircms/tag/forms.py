@@ -15,14 +15,17 @@ class TagSearchForm(Form):
     ## 公開/非公開？
 
 ## tag form
+def validate_public_status(form, data):
+    return bool(form.data)
+
 class TagForm(Form):
     tags = fields.TextField(label=u"タグ(区切り文字:\",\")")
-    public_status = fields.BooleanField(default=False)
+    public_status = fields.BooleanField(default=False, validators=[validate_public_status])
 
 class PublicTagForm(Form):
     tags = fields.TextField(label=u"公開タグ(区切り文字:\",\")")
-    public_status = fields.HiddenField(default=True)
+    public_status = fields.BooleanField(default=True, validators=[validate_public_status])
 
 class PrivateTagForm(Form):
     tags = fields.TextField(label=u"非公開タグ(区切り文字:\",\")")
-    public_status = fields.HiddenField(default=False)
+    public_status = fields.BooleanField(default=False, validators=[validate_public_status])
