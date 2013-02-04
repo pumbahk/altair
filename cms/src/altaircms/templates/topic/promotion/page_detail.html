@@ -22,7 +22,7 @@
 </div>
 
 <h3 class="headline">プロモーションの追加</h3>
-<a href="${request.route_path("promotion_unit_create", action="input", _query=dict(tag_content=current_widget.kind.label))}"  class="btn btn-success btn-large">新しいプロモーションを作成する</a>
+<a id="create_link" href="${request.route_path("promotion_unit_create", action="input", _query=dict(tag_content=current_widget.kind.label,endpoint=request.url))}"  class="btn btn-success btn-large">新しいプロモーションを作成する</a>
 <hr/>
 
 <h3 class="headline">表示されるページの情報</h3>
@@ -106,8 +106,8 @@
         <tr>
           <td><p>表示メッセージ</p><div class="well">${promotion.text}</div></td>
           <td>
-            <a href="${request.route_path("promotion_unit_update", action="input",id=promotion.id)}" class="btn btn-primary"><i class="icon-cog"></i> 編集</a>
-            <a href="${request.route_path("promotion_unit_delete", action="confirm",id=promotion.id)}" class="btn btn-danger"><i class="icon-trash"></i> 削除</a>
+            <a href="${request.route_path("promotion_unit_update", action="input",id=promotion.id,_query=dict(endpoint=request.url))}" class="btn btn-primary"><i class="icon-cog"></i> 編集</a>
+            <a href="${request.route_path("promotion_unit_delete", action="confirm",id=promotion.id,_query=dict(endpoint=request.url))}" class="btn btn-danger"><i class="icon-trash"></i> 削除</a>
           </td>
         </tr>
       %endfor

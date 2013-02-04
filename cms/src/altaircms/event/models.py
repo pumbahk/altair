@@ -7,7 +7,7 @@ from altaircms.models import WithOrganizationMixin
 from altaircms.models import DBSession
 from datetime import datetime
 from datetime import timedelta
-import hashlib
+
 
 class Event(BaseOriginalMixin, WithOrganizationMixin, Base):
     """

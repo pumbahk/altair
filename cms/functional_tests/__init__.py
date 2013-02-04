@@ -20,18 +20,22 @@ _backend_app = None
 here = None
 _lock = None
 
+def get_here():
+     return here
+
 def setUpModule():
      run_mock_backend_server({})
      build_app()
 
 def tearDownModule():
-    import sqlahelper
-    sqlahelper.get_base().metadata.drop_all()
+    from altaircms.models import Base
+    Base.metadata.drop_all()
     import shutil
-    if os.path.exists(os.path.join(here, "tmp/assets")):
-        shutil.rmtree(os.path.join(here,"tmp/assets"))
-    if os.path.exists(os.path.join(here, "tmp/layouts")):
-        shutil.rmtree(os.path.join(here,"tmp/layouts"))
+    if os.path.exists(os.path.join(get_here(), "tmp/layouts")):
+        shutil.rmtree(os.path.join(get_here(),"tmp/layouts"))
+    if os.path.exists(os.path.join(get_here(), "tmp/assets")):
+        shutil.rmtree(os.path.join(get_here(),"tmp/assets"))
+
 
 def build_app():
     global _app
@@ -124,7 +128,9 @@ def do_login(app):
     resp.click(linkid="login")
 
     login_resp = app.get("/auth/oauth_callback")
-    
+    import transaction
+    transaction.commit()
+
     login_ok = False
     for k, v in login_resp.headers.iteritems():
         if k == "Set-Cookie" and "cmstkt" in v and "!userid_type:int"in v:
@@ -169,7 +175,7 @@ def delete_models(models):
             DBSession.delete(e)
     import transaction
     transaction.commit()
-           
+
         
 def find_form(forms,  action_part=""):
     for form in forms.itervalues():

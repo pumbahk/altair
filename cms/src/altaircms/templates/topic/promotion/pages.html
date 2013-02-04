@@ -85,6 +85,7 @@ ${pages.pager()}
         </label>
         <div class="controls">
           <input name="tags" type="text"/>
+          <input name="organization_id" type="hidden" value="${request.organization.id}">
           <input name="public_status" type="hidden" value="1"/>
         </div>
       </div>
@@ -102,7 +103,7 @@ ${pages.pager()}
       var form =modal.find("form");
       $.post(form.attr("action"), {"tags": form.find('[name="tags"]').val(),
                                    "public_status": true,
-                                   "organization_id": "${request.organization.id}"})
+                                   "organization_id": form.find('[name="organization_id"]').val()})
         .done(function(data){
           // location.reload();
           var info = $("<div>").attr("class", "alert alert-success");

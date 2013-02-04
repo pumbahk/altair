@@ -1,13 +1,14 @@
 # -*- coding:utf-8 -*-
 import unittest
+import sys
+import os
+
 try:
-   from functional_tests import AppFunctionalTests, logout, login, get_registry
+   from functional_tests import AppFunctionalTests, logout, login, get_registry, get_here
    from functional_tests import delete_models, find_form
 except ImportError:
-   import sys
-   import os
    sys.path.append(os.path.join(os.path.dirname(__name__), "../../"))
-   from functional_tests import AppFunctionalTests, logout, login, get_registry
+   from functional_tests import AppFunctionalTests, logout, login, get_registry, get_here
    from functional_tests import delete_models, find_form
 
 import webtest

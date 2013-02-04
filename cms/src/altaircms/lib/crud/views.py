@@ -56,11 +56,11 @@ class CRUDResource(RootFactory): ## fixme
 
     ## endpoint
     def set_endpoint(self):
-        set_endpoint(self.request)
+        set_endpoint(self.request, endpoint=self.request.GET.get("endpoint"))
 
     def get_endpoint(self):
         endpoint = get_endpoint(self.request)
-        return endpoint or self.request.route_url(self.endpoint)
+        return endpoint or self.request.route_url(self.endpoint or "dashboard")
 
     ## search
     def query_form(self, params):

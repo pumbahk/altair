@@ -29,7 +29,7 @@ def set_endpoint(request, endpoint=None):
     logger.debug("matched route name")
     logger.debug(request.matched_route.name)
     logger.debug("session")
-    logger.debug("sentinel: %s, endpoint: %s, referer: %s" % (session.get(_CMS_ENDPOINT_SENTINEL), session.get(CMS_ENDPOINT), request.referrer))
+    logger.debug("sentinel: %s, endpoint: %s, referer: %s" % (session.get(_CMS_ENDPOINT_SENTINEL), session.get(CMS_ENDPOINT), endpoint or request.referrer))
     
 def get_endpoint(request): #maybe
     session = request.session
