@@ -1,3 +1,4 @@
 [submodule "bundle/Fashion"]
 	path = bundle/Fashion
 	url = git@github.com:smihica/Fashion
+	ignore = untracked
