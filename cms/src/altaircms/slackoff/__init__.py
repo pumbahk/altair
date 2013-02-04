@@ -19,7 +19,7 @@ def includeme(config):
                     bind_actions=["create", "delete", "update"], 
                     form=".forms.TicketForm", mapper=".mappers.ticket_mapper")
 
-    config.add_crud("promotion_old",  title="promotion",  model="..topic.models.Promotion",
+    config.add_crud("promotion_unit",  title="promotion",  model="..topic.models.Promotion",
                     has_auto_generated_permission=False, 
                     form=".forms.PromotionForm", mapper=".mappers.promotion_mapper", 
                     filter_form=".forms.PromotionFilterForm", 

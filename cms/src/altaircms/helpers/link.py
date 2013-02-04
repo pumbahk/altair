@@ -26,6 +26,14 @@ def get_link_from_category(request, category):
     else:
         return publish_page_from_pageset(request, category.pageset)
 
+def get_link_from_topic_in_cms(request, topic):
+    if topic.link:
+        return topic.link
+    elif topic.linked_page:
+        return detail_page_from_pageset(request, topic.linked_page)
+    else:
+        return ""
+
 def get_link_from_topic(request, topic):
     if topic.link:
         return topic.link
@@ -74,8 +82,9 @@ def preview_page_from_page(request, page):
     logger.debug('preview')
     return request.route_path("preview_page", page_id=page.id)
 
-def pageset_detail(request, pageset):
+def detail_page_from_pageset(request, pageset):
     if pageset.event_id is None:
         return request.route_path("pageset_detail", pageset_id=pageset.id, kind="other")
     else:
         return request.route_path("pageset_detail", pageset_id=pageset.id, kind="event")
+pageset_detail = detail_page_from_pageset

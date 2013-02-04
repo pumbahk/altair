@@ -2,6 +2,7 @@ from markupsafe import Markup
 from altaircms.asset.viewhelpers import image_asset_layout
 from ..rowspanlib import RowSpanGrid
 from altaircms.helpers.link import get_link_from_topic
+from altaircms.helpers.link import get_link_from_topic_in_cms
 
 ## grid
 PromotionGrid = RowSpanGrid()
@@ -44,3 +45,8 @@ class PromotionHTMLRenderer(object):
     def render_link(self, promotion):
         href = get_link_from_topic(self.request, promotion)
         return Markup(u'<a href="%s">%s</a>' % (href, href))
+
+    def render_cms_link(self, promotion):
+        href = get_link_from_topic_in_cms(self.request, promotion)
+        return Markup(u'<a href="%s">%s</a>' % (href, href))
+        
