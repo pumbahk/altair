@@ -1669,6 +1669,7 @@
 	margin: 0 0;
 	background: url(../img/settlement/btn_select_buy.small.gif) no-repeat 0 0;
 	border: none;
+	cursor: pointer;
 }
 
 #selectSeatType .selectProduct .btn-select-buy:hover {
@@ -1690,6 +1691,7 @@
 	margin: 0 0;
 	background: url(../img/settlement/btn_entrust_buy.small.gif) no-repeat 0 0;
 	border: none;
+	cursor: pointer;
 }
 
 #selectSeatType .selectProduct .btn-entrust-buy:hover {
@@ -1958,6 +1960,7 @@
 	margin: 0 0;
 	background: url(../img/settlement/btn_select.small.gif) no-repeat 0 0;
 	border: none;
+	cursor: pointer;
 }
 
 #selectSeat.focused .btn-select-seat:hover {
@@ -1988,6 +1991,7 @@
 	margin: 0 0;
 	background: url(../img/settlement/btn_cancel.small.gif) no-repeat 0 0;
 	border: none;
+	cursor: pointer;
 }
 
 #cancelSeat.focused .btn-cancel:hover {

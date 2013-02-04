@@ -30,6 +30,7 @@ p.cartNickname{
   height: 0px;
   font-size: 0px;
   line-height: -1px;
+  cursor: pointer;
 }
 
 .btn-buy {
