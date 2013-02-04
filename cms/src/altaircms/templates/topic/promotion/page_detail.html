@@ -7,6 +7,7 @@
   .row-fluid h3.first { margin-top:0px;  }
   .row-fluid .headline { margin-top:20px; margin-bottom:5px;}
   .thumbnail img {max-width:75px; max-height:75px;  }
+  .main-image img {max-width:600px; max-height:450px; }
 </style>
 </%block>
 
@@ -79,7 +80,7 @@
       %for i, promotion in enumerate(promotions):
         <tr>
           <td rowspan="5">${i}</td>
-          <td rowspan="4"><p>メイン画像</p> ${promotion_renderer.render_main_image(promotion)}</td>
+          <td rowspan="4" class="main-image"><p>メイン画像</p> ${promotion_renderer.render_main_image(promotion)}</td>
           <td><p>表示順序</p>${promotion.display_order}</td>
         </tr>
         <tr>
