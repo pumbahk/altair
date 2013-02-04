@@ -200,11 +200,10 @@ class LayoutFunctionalTests(AppFunctionalTests):
 
             ## delete
             confirm_page = app.get("/layout/delete/%d/confirm" % (created_layout.id))
-            self.assertEqual(create_page.status_int,200)
+            self.assertEqual(confirm_page.status_int,200)
             
             form = find_form(confirm_page.forms, action_part="delete")
-            response = form.submit()
-
+            response = form.submit().follow()
             self.assertEqual(response.status_int, 200)
             self.assertEqual(self._count_of_layout(), 0)
 

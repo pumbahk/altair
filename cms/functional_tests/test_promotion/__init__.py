@@ -95,7 +95,7 @@ class PromotionFunctionalTests(AppFunctionalTests):
 
       # page作成 そのpageはpromotion widgetを持つ
       page = Page(name=u"this-is-created-page", organization_id=organization.id)
-      widget = PromotionWidget(page=page, kind=created_tag)
+      widget = PromotionWidget(page=page, tag=created_tag)
       DBSession.add(page)
 
       ## promotionと紐づいたページができる。
@@ -127,7 +127,7 @@ class PromotionFunctionalTests(AppFunctionalTests):
       with login(app):
          ## promotion widgetの結びついたページの詳細ページが見れる
          detail_response = app.get("/promotion/page/%s/detail" % page.id)
-         detail_response.mustcontain(widget.kind.label)
+         detail_response.mustcontain(widget.tag.label)
 
 
          ### create
