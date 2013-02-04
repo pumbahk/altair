@@ -23,7 +23,7 @@
 </div>
 
 <h3 class="headline">プロモーションの追加</h3>
-<a id="create_link" href="${request.route_path("promotion_unit_create", action="input", _query=dict(tag_content=current_widget.kind.label,endpoint=request.url))}"  class="btn btn-success btn-large">新しいプロモーションを作成する</a>
+<a id="create_link" href="${request.route_path("promotion_unit_create", action="input", _query=dict(tag_content=current_widget.tag.label,endpoint=request.url))}"  class="btn btn-success btn-large">新しいプロモーションを作成する</a>
 <hr/>
 
 <h3 class="headline">表示されるページの情報</h3>
@@ -31,9 +31,9 @@
 <ul class="nav nav-tabs">
    %for widget in widgets:
      %if unicode(widget.id) == unicode(current_widget.id):
-        <li class="active"><a href="${h.route_path_override(request, "promotion_detail", page_id=page.id, _query=dict(widget_id=widget.id))}">${widget.kind.label}</a></li>
+        <li class="active"><a href="${h.route_path_override(request, "promotion_detail", page_id=page.id, _query=dict(widget_id=widget.id))}">${widget.tag.label}</a></li>
      %else:
-        <li><a href="${h.route_path_override(request, "promotion_detail", page_id=page.id, _query=dict(widget_id=widget.id))}">${widget.kind.label}</a></li>
+        <li><a href="${h.route_path_override(request, "promotion_detail", page_id=page.id, _query=dict(widget_id=widget.id))}">${widget.tag.label}</a></li>
      %endif
    %endfor
 </ul>
@@ -58,14 +58,14 @@
       <th>widget id</th><td> ${current_widget.id}</td>
     </tr>
     <tr>
-      <th>表示場所</th><td> ${current_widget.kind.label}</td>
+      <th>表示場所</th><td> ${current_widget.tag.label}</td>
     </tr>
   </tbody>
 </table>
 
 <hr/>
 
-<h3 class="headline"> 「${current_widget.kind.label}」で表示中のプロモーションの一覧</h3>
+<h3 class="headline"> 「${current_widget.tag.label}」で表示中のプロモーションの一覧</h3>
 
 %if ":all:" in request.GET:
   <a href="${h.current_route_path_override(request, _dels=[":all:"])}">表示されているプロモーションのみを表示</a>  

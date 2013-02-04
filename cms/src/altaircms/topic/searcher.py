@@ -42,7 +42,7 @@ class PromotionPageListSearcher(object):
         return qs
 
     def get_objects_for_grid(self, qs):
-        qs = qs.filter(PageSet.id==Page.pageset_id).filter(self.finder.widget.kind_id==PromotionTag.id)
+        qs = qs.filter(PageSet.id==Page.pageset_id).filter(self.finder.widget.tag_id==PromotionTag.id)
         qs = qs.with_entities(PageSet, Page, self.finder.widget, PromotionTag)
         qs = qs.options(orm.joinedload(Page.pageset)).order_by(sa.asc(PageSet.id), sa.asc(Page.id))
         return qs

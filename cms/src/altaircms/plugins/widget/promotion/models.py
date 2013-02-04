@@ -106,13 +106,13 @@ class PromotionWidget(Widget):
 
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
     display_type = sa.Column(sa.Unicode(length=255))
-    kind_id = sa.Column(sa.Integer, sa.ForeignKey("promotiontag.id"))
-    kind = orm.relationship("PromotionTag", uselist=False)
+    tag_id = sa.Column(sa.Integer, sa.ForeignKey("promotiontag.id"))
+    tag = orm.relationship("PromotionTag", uselist=False)
 
     @property
     def promotion_sheet(self, d=None):
         from altaircms.topic.models import Promotion
-        qs = Promotion.matched_qs(d=d, tag=self.kind.label).options(orm.joinedload("main_image"), orm.joinedload("linked_page"))
+        qs = Promotion.matched_qs(d=d, tag=self.tag.label).options(orm.joinedload("main_image"), orm.joinedload("linked_page"))
         return PromotionSheet(qs.all()) ##
 
     def merge_settings(self, bname, bsettings):
@@ -127,6 +127,6 @@ class PromotionWidgetResource(HandleSessionMixin,
                               ):
     Promotion = Promotion
     WidgetClass = PromotionWidget
-    Kind = PromotionTag
+    Tag = PromotionTag
     def get_widget(self, widget_id):
         return self._get_or_create(PromotionWidget, widget_id)

@@ -8,7 +8,7 @@ from . import models
 from altaircms.topic.models import PromotionTag
 
 class PromotionWidgetForm(form.Form):
-    kind = dynamic_query_select_field_factory(
+    tag = dynamic_query_select_field_factory(
         PromotionTag, allow_blank=False, label=u"タグ的なもの",
         get_label=lambda obj: obj.label)
     _choices = [(x, x)for x in  models.PROMOTION_DISPATH.keys()]

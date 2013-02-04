@@ -181,14 +181,14 @@ class PromotionForm(Form):
 
 
 class PromotionFilterForm(Form):
-    kind = dynamic_query_select_field_factory(
+    tag = dynamic_query_select_field_factory(
         PromotionTag, allow_blank=False, label=u"表示場所",
         get_label=lambda obj: obj.name)
 
     def as_filter(self, qs):
-        kind = self.data.get("kind")
-        if kind and "__None" != kind:
-            qs = qs.filter(Promotion.kinds.any(PromotionTag.name==kind.name))
+        tag = self.data.get("tag")
+        if tag and "__None" != tag:
+            qs = qs.filter(Promotion.tags.any(PromotionTag.name==tag.name))
         return qs
 
 _hierarchy_choices = [(x, x) for x in [u"大", u"中", u"小", "top_couter", "top_inner", "header_menu", "footer_menu", "masked", "side_banner", "side_menu", "header_large_button"]]

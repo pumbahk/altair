@@ -49,7 +49,7 @@ def promotion_detail(context, request):
     widget = searcher.get_current_widget(widgets, widget_id=widget_id)
 
     tag_manager = get_tagmanager("promotion", request=request)
-    promotions = tag_manager.search_by_tag_label(widget.kind.label)
+    promotions = tag_manager.search_by_tag_label(widget.tag.label)
 
     if ":all:" in request.GET:
         promotions = Promotion.order_by_logic(promotions)

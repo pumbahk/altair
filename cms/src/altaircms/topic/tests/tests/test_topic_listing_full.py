@@ -78,7 +78,7 @@ class TopicListingFull(unittest.TestCase):
         3. pageに関連
         渡された page, eventに関連していないtopicは取得しない
         """
-        raise NotImplementedError("this test will be implemented after tag(kind) search")
+        raise NotImplementedError("this test will be implemented after tag(tag) search")
         from altaircms.event.models import Event
         event0 = self._makeObj(Event)
         event1 = self._makeObj(Event)
