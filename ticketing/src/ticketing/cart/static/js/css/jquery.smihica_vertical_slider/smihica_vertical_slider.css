@@ -3,12 +3,13 @@
     width: 20px;
     height: 100px;
     z-index: 99;
+	margin-top: 20px;
 }
 
 .smihica-vertical-slider-plus {
     position: absolute;
     cursor: pointer;
-    top: 0px;
+    top: -20px;
     left: 0px;
     width: 20px;
     height: 20px;
