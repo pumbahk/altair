@@ -141,7 +141,6 @@ class Topic(BaseOriginalMixin, WithOrganizationMixin, TopicCore):
         qs = cls.publishing(d=d, qs=qs)
         if tag:
             qs = qs.filter(cls.tags.any(TopicTag.label==tag))
-
         return qs
 
 class Topcontent(BaseOriginalMixin, WithOrganizationMixin, TopicCore):

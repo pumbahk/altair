@@ -1,5 +1,7 @@
 from pyramid.view import view_config, view_defaults
 from altaircms.auth.api import require_login
+from altaircms.auth.api import get_or_404
+from altaircms.page.models import Page    
 from . import forms
 
 @view_defaults(custom_predicates=(require_login,))
@@ -9,8 +11,7 @@ class TopcontentWidgetView(object):
 
     def _create_or_update(self):
         data = self.request.json_body["data"]
-        if data.get("subkind") == "None": #fixme
-            data["subkind"] = None
+        data["tag"] = self.context.Tag.query.filter_by(id=data["tag"]).one()
         page_id = self.request.json_body["page_id"]
         context = self.request.context
         widget = context.get_widget(self.request.json_body.get("pk"))
@@ -41,13 +42,6 @@ class TopcontentWidgetView(object):
     def dialog(self):
         context = self.request.context
         widget = context.get_widget(self.request.GET.get("pk"))
-        form = forms.TopcontentChoiceForm(**widget.to_dict())
-        form.configure(self.request)
-        # form.transform(widget.topcontent_type)
+        page = get_or_404(self.request.allowable(Page), Page.id==self.request.GET["page"])
+        form = forms.TopcontentChoiceForm(**widget.to_dict()).configure(self.request, page)
         return {"form": form}
-
-    # @view_config(route_name="topcontent_widget_dialog_form", renderer="altaircms.plugins.widget:topcontent/form.html", request_method="GET")
-    # def dialog_form(self):
-    #     form = forms.TopcontentChoiceForm(self.request.GET)
-    #     form.transform(self.request.GET["topcontent_type"])
-    #     return {"form": form}

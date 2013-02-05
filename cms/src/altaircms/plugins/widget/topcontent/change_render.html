@@ -1,9 +1,0 @@
-<div class="topcontent-widget">
-  %for topcontent in topcontents:
-  <h3 class="changeTitle">${topcontent.title}</h3>
-  <div class="changeText">
-	${h.base.translate_longtext_to_simple_html(topcontent.text)|n}
-  </div>
-  %endfor
-</div>
-<div class="clear"></div>

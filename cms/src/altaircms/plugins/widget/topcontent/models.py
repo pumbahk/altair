@@ -1,9 +1,10 @@
 # -*- coding:utf-8 -*-
 
-from zope.interface import implements
 from altaircms.interfaces import IWidget
+from altaircms.plugins.interfaces import IWidgetUtility
 import logging
 logger = logging.getLogger(__file__)
+from zope.interface import implements, implementer
 import functools
 
 from pyramid.renderers import render
@@ -18,6 +19,25 @@ from altaircms.plugins.base.mixins import HandleWidgetMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
 from datetime import datetime
+from altaircms.tag.api import get_tagmanager
+from altaircms.plugins.api import list_from_setting_value
+
+@implementer(IWidgetUtility)
+class TopcontentWidgetUtilityDefault(object):
+    def __init__(self):
+        self.renderers = None
+        self.choices = None
+        self.status_impl = None
+
+    def parse_settings(self, config, configparser):
+        """以下のような形式のものを見る
+        values = 注目のイベント        
+        """
+        self.settings = dict(configparser.items(TopcontentWidget.type))
+        values = list_from_setting_value(self.settings["values"].decode("utf-8"))
+        self.choices = zip(values, values)
+        return self
+
         
 class TopcontentWidget(Widget):
     now_date_function = datetime.now
@@ -34,101 +54,40 @@ class TopcontentWidget(Widget):
     tag_id = sa.Column(sa.Integer, sa.ForeignKey("topiccoretag.id"))
     tag = orm.relationship("TopcontentTag", uselist=False)
 
-
     def merge_settings(self, bname, bsettings):
         try:
-            merge_settings_function = MERGE_SETTINGS_DISPATH[(self.topcontent_type, self.kind)]
+            merge_settings_function = MERGE_SETTINGS_DISPATH[self.display_type]
             merge_settings_function(self, bname, bsettings)
         except KeyError, e:
             logger.warn(e)
             bsettings.add(bname, u"topcontent widget: topcontent_type=%s kind=%s is not found" % (self.topcontent_type, self.kind))
 
-def _qs_refine(qs, model, widget):
-    if not widget.display_global:
-        qs = qs.filter(model.is_global == False)
+## todo: refactoring
+def _qs_search(request, widget, d=None):
+    tagmanager = get_tagmanager(widget.type, request=request)
+    qs = tagmanager.search_by_tag(widget.tag)
+    qs = Topcontent.matched_qs(d=d, qs=qs)
+    qs = request.allowable(Topcontent, qs=qs)
     if qs.count() > widget.display_count:
         qs = qs.limit(widget.display_count)
+    qs = qs.options(orm.joinedload("linked_page"),
+                    orm.joinedload("image_asset"))
     return qs
-
-## todo: refactoring
-def topcontents_merge_settings(template_name, widget, bname, bsettings):
-    bsettings.need_extra_in_scan("request")
-    bsettings.need_extra_in_scan("page")
-
-    @not_support_if_keyerror("topcontent widget: %(err)s")
-    def topcontents_render():
-        d = widget.now_date_function()
-        request = bsettings.extra["request"]
-        page = bsettings.extra["page"].pageset if widget.display_page else None
-        qs = Topcontent.matched_qs(page=page, d=d, kind=widget.kind, subkind=widget.subkind)
-        qs = request.allowable(Topcontent, qs=qs)
-        qs = _qs_refine(qs, Topcontent, widget).options(orm.joinedload("linked_page"))
-        return render(template_name, 
-                      {"widget": widget, "topcontents": qs}, 
-                      request)
-    bsettings.add(bname, topcontents_render)
 
 def _merge_settings(template_name, widget, bname, bsettings):
     bsettings.need_extra_in_scan("request")
     bsettings.need_extra_in_scan("page")
-
-    @not_support_if_keyerror(" widget: %(err)s")
+    @not_support_if_keyerror("topcontent widget: %(err)s")
     def _render():
         d = widget.now_date_function()
         request = bsettings.extra["request"]
-        page = bsettings.extra["page"] if widget.display_page else None
-        qs = Topcontent.matched_qs(page=page, d=d, kind=widget.kind, subkind=widget.subkind)
-        qs = request.allowable(Topcontent, qs=qs)
-        qs = _qs_refine(qs, Topcontent, widget)
-        qs = qs.options(orm.joinedload("linked_page"),
-                        orm.joinedload("linked_page.event"), 
-                        orm.joinedload("image_asset"))
-        return render(template_name, 
-                      {"widget": widget, "s": qs}, 
-                      request)
+        qs = _qs_search(request, widget, d=d)
+        return render(template_name, {"widget": widget, "qs": qs}, request)
     bsettings.add(bname, _render)
        
 
 MERGE_SETTINGS_DISPATH = {
-    ("noimage", u"CR質問"): functools.partial(
-        topcontents_merge_settings, 
-        "altaircms.plugins.widget:topcontent/CR_faq_render.html"
-        ), 
-    ("noimage", u"NH質問"): functools.partial(
-        topcontents_merge_settings, 
-        "altaircms.plugins.widget:topcontent/NH_faq_render.html"
-        ), 
-    ("noimage", u"89ers質問"): functools.partial(
-        topcontents_merge_settings, 
-        "altaircms.plugins.widget:topcontent/89ers_faq_render.html"
-        ), 
-    ("noimage", u"vissel質問"): functools.partial(
-        topcontents_merge_settings, 
-        "altaircms.plugins.widget:topcontent/vissel_faq_render.html"
-        ), 
-    ("noimage", u"89ers取引方法詳細"): functools.partial(
-        topcontents_merge_settings, 
-        "altaircms.plugins.widget:topcontent/89ers_info_render.html"
-        ), 
-    ("noimage", u"トピックス"): functools.partial(
-        topcontents_merge_settings, 
-        "altaircms.plugins.widget:topcontent/topcontent_render.html"), 
-    ("noimage", u"特集"): functools.partial(
-        topcontents_merge_settings, 
-        "altaircms.plugins.widget:topcontent/sidebar_feature_render.html"), 
-    ("noimage", u"特集(サブカテゴリ)"): functools.partial(
-        topcontents_merge_settings, 
-        "altaircms.plugins.widget:topcontent/sidebar_category_genre.html"), 
-    ("noimage", u"公演中止情報"): functools.partial( ##
-        topcontents_merge_settings, 
-        "altaircms.plugins.widget:topcontent/change_render.html"), 
-    ("noimage", u"その他"): functools.partial( ##
-        topcontents_merge_settings, 
-        "altaircms.plugins.widget:topcontent/topcontent_render.html"), 
-    ("noimage", u"ヘルプ"): functools.partial(
-        topcontents_merge_settings, 
-        "altaircms.plugins.widget:topcontent/help_topcontent_render.html"), 
-    ("hasimage", u"注目のイベント"): functools.partial(
+   u"注目のイベント": functools.partial(
         _merge_settings, 
         "altaircms.plugins.widget:topcontent/notable_event_render.html")
     }
@@ -139,6 +98,5 @@ class TopcontentWidgetResource(HandleSessionMixin,
                           RootFactory
                           ):
     WidgetClass = TopcontentWidget
-
     def get_widget(self, widget_id):
         return self._get_or_create(TopcontentWidget, widget_id)

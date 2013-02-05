@@ -36,8 +36,14 @@ class TagManager(object):
         self.XRef = XRef
         self.Tag = Tag
 
+    def get_tag_list(self, labels, public_status=None):
+        qs = self.Tag.query.filter(self.Tag.label.in_(labels))
+        if public_status is not None:
+            qs = qs.filter(self.Tag.publicp==public_status)
+        return qs.all()
+
     def get_or_create_tag_list(self, labels, public_status=True):
-        tags = self.Tag.query.filter(self.Tag.label.in_(labels), self.Tag.publicp==public_status)
+        tags = self.get_tag_list(labels, public_status=public_status)
         cache = {tag.label:tag for tag in tags}
         result = []
         for label in labels:
@@ -68,6 +74,9 @@ class TagManager(object):
 
     def search_by_tag_label(self, label):
         return self.joined_query([self.Object]).filter(self.Tag.label==label)
+
+    def search_by_tag(self, tag):
+        return self.joined_query([self.Object]).filter(self.Tag.id==tag.id)
 
     ## history
     def recent_change_tags(self):
