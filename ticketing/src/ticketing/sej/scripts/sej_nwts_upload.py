@@ -71,7 +71,7 @@ def main(argv=sys.argv):
     app = loadapp('config:%s' % config, 'main')
     settings = app.registry.settings
 
-    nwts_hostname           = settings['sej.nwts.hostname ']
+    nwts_hostname           = settings['sej.nwts.hostname']
     terminal_id             = settings['sej.terminal_id']
     password                = settings['sej.password']
 
