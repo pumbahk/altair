@@ -32,7 +32,7 @@ class TopicWidget(Widget):
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
     display_type = sa.Column(sa.Unicode(length=255))
     display_count = sa.Column(sa.Integer)
-    tag_id = sa.Column(sa.Integer, sa.ForeignKey("topictag.id"))
+    tag_id = sa.Column(sa.Integer, sa.ForeignKey("topiccoretag.id"))
     tag = orm.relationship("TopicTag", uselist=False)
 
 

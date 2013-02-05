@@ -106,7 +106,7 @@ class PromotionWidget(Widget):
 
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
     display_type = sa.Column(sa.Unicode(length=255))
-    tag_id = sa.Column(sa.Integer, sa.ForeignKey("promotiontag.id"))
+    tag_id = sa.Column(sa.Integer, sa.ForeignKey("topiccoretag.id"))
     tag = orm.relationship("PromotionTag", uselist=False)
 
     @property

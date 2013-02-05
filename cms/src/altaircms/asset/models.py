@@ -136,6 +136,9 @@ class AssetTag(WithOrganizationMixin, Base):
     discriminator = sa.Column("type", sa.String(32), nullable=False)
     __mapper_args__ = {"polymorphic_on": discriminator}
 
+    def __repr__(self):
+        return "<%r label: %r organization_id: %r>" % (self.__class__, self.label, self.organization_id)
+
 def delete_orphan_assettag(mapper, connection, target):
     AssetTag.query.filter(~AssetTag.assets.any()).delete(synchronize_session=False)
 sa.event.listen(Asset, "after_delete", delete_orphan_assettag)

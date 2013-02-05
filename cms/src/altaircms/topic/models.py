@@ -60,13 +60,21 @@ def qs_orderby_logic(cls, qs):
                        sa.desc(cls.publish_open_on), 
                        )
     
-class AboutPublishMixin(object):
-    """ 表示順序を定義可能なmodelが持つ
+class TopicCore(Base):
+    """ 表示順序を定義可能なmodel.(歴史的理由によりTopicCoreの特殊化したものがTopic, Topcontent, Promotion)
     """
+    __tablename__ = "topiccore"
+    query = DBSession.query_property()
+
+    id = sa.Column(sa.Integer, primary_key=True)
     publish_open_on = sa.Column(sa.DateTime)
     publish_close_on = sa.Column(sa.DateTime)
     display_order = sa.Column(sa.Integer, default=50)
     is_vetoed = sa.Column(sa.Boolean, default=False)
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
+    discriminator = sa.Column("type", sa.String(32), nullable=False)
+    __mapper_args__ = {"polymorphic_on": discriminator}
 
     @classmethod
     def order_by_logic(cls, qs=None):
@@ -101,42 +109,14 @@ def update_object_tag(obj, tagclass, ks, split_rx=re.compile("[,、]")):
     for k in will_deletes:
         obj.tags.remove(k)
 
-class TopicTag2Topic(Base):
-    __tablename__ = "topictag2topic"
-    id = sa.Column(sa.Integer, primary_key=True)
-    query = DBSession.query_property()
-    object_id = sa.Column(sa.Integer, sa.ForeignKey("topic.id"))
-    tag_id = sa.Column(sa.Integer, sa.ForeignKey("topictag.id"))
-topic2tag = TopicTag2Topic.__table__
 
-class TopicTag(WithOrganizationMixin, Base):
-    query = DBSession.query_property()
-    __tablename__ = "topictag"
-    id = sa.Column(sa.Integer, primary_key=True)
-    label = sa.Column(sa.Unicode(255), index=True)
-    publicp = sa.Column(sa.Boolean, default=False)
-    created_at = sa.Column(sa.DateTime, default=datetime.now)
-    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
-    @declared_attr
-    def __tableargs__(cls):
-        return  ((sa.schema.UniqueConstraint(cls.label,cls.organization_id)))        
-
-    def __repr__(self):
-        return "<%r label: %r organization_id: %r>" % (self.__class__, self.label, self.organization_id)
-
-class Topic(AboutPublishMixin, 
-            BaseOriginalMixin,
-            WithOrganizationMixin, 
-            Base):
-    query = DBSession.query_property()
-
+class Topic(BaseOriginalMixin, WithOrganizationMixin, TopicCore):
+    type = "topic"
+    
     __tablename__ = "topic"
+    __mapper_args__ = {"polymorphic_identity": type}
 
-    id = sa.Column(sa.Integer, primary_key=True)
-    created_at = sa.Column(sa.DateTime, default=datetime.now)
-    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
-    tags = orm.relationship("TopicTag", secondary=topic2tag, backref=orm.backref("topics"))
-
+    id = sa.Column(sa.Integer, sa.ForeignKey("topiccore.id"), primary_key=True)
     title = sa.Column(sa.Unicode(255))
     text = sa.Column(sa.UnicodeText)
     
@@ -146,6 +126,7 @@ class Topic(AboutPublishMixin,
 
     link = sa.Column(sa.Unicode(255), doc="external link", nullable=True)
     mobile_link = sa.Column(sa.Unicode(255), doc="external mobile_link", nullable=True)
+    tags = orm.relationship("TopicTag", secondary="topiccoretag2topiccore", backref=orm.backref("topics"))
 
     @property
     def tag_content(self):
@@ -163,54 +144,19 @@ class Topic(AboutPublishMixin,
 
         return qs
 
-    SPLIT_RX = re.compile("[,、]")
-    def update_tag(self, ks):
-        return update_object_tag(self, TopicTag, ks, self.SPLIT_RX)
-
-def delete_topic_orphan_tag(mapper, connection, target):
-    TopicTag.query.filter(~TopicTag.topics.any()).delete(synchronize_session=False)
-
-sa.event.listen(Topic, "after_delete", delete_topic_orphan_tag)
-
-
-class TopcontentTag2Topcontent(Base):
-    __tablename__ = "topcontenttag2topcontent"
-    id = sa.Column(sa.Integer, primary_key=True)
-    query = DBSession.query_property()
-    object_id = sa.Column(sa.Integer, sa.ForeignKey("topcontent.id"))
-    tag_id = sa.Column(sa.Integer, sa.ForeignKey("topcontenttag.id"))
-topcontent2tag = TopcontentTag2Topcontent.__table__
-
-class TopcontentTag(WithOrganizationMixin, Base):
-    query = DBSession.query_property()
-    __tablename__ = "topcontenttag"
-    id = sa.Column(sa.Integer, primary_key=True)
-    label = sa.Column(sa.Unicode(255), index=True)
-    publicp = sa.Column(sa.Boolean, default=False)
-    created_at = sa.Column(sa.DateTime, default=datetime.now)
-    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
-    @declared_attr
-    def __tableargs__(cls):
-        return  ((sa.schema.UniqueConstraint(cls.label,cls.organization_id)))        
-
-    def __repr__(self):
-        return "<%r label: %r organization_id: %r>" % (self.__class__, self.label, self.organization_id)
-
-class Topcontent(AboutPublishMixin,
-                 BaseOriginalMixin,
-                 WithOrganizationMixin, 
-                 Base):
+class Topcontent(BaseOriginalMixin, WithOrganizationMixin, TopicCore):
     """
     Topページの画像つきtopicのようなもの
     """
+    type = "topcontent"
+    
     __tablename__ = "topcontent"
-    query = DBSession.query_property()
+    __mapper_args__ = {"polymorphic_identity": type}
+
     COUNTDOWN_CANDIDATES = h.base.COUNTDOWN_TAG_MAPPING.items()
 
-    id = sa.Column(sa.Integer, primary_key=True)
-    created_at = sa.Column(sa.DateTime, default=datetime.now)
-    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
-    tags = orm.relationship("TopcontentTag", secondary=topcontent2tag, backref=orm.backref("topcontents"))
+    id = sa.Column(sa.Integer, sa.ForeignKey("topiccore.id"), primary_key=True)
+    tags = orm.relationship("TopcontentTag", secondary="topiccoretag2topiccore", backref=orm.backref("topcontents"))
 
     title = sa.Column(sa.Unicode(255))
     text = sa.Column(sa.Unicode(255))
@@ -257,44 +203,15 @@ class Topcontent(AboutPublishMixin,
     def update_tag(self, ks):
         return update_object_tag(self, TopcontentTag, ks, self.SPLIT_RX)
 
-
-### promotion
-class PromotionTag2Promotion(Base):
-    __tablename__ = "promotiontag2promotion"
-    id = sa.Column(sa.Integer, primary_key=True)
-    query = DBSession.query_property()
-    object_id = sa.Column(sa.Integer, sa.ForeignKey("promotion.id"))
-    tag_id = sa.Column(sa.Integer, sa.ForeignKey("promotiontag.id"))
-promotion2tag = PromotionTag2Promotion.__table__
-
-class PromotionTag(WithOrganizationMixin, Base):
-    query = DBSession.query_property()
-    __tablename__ = "promotiontag"
-    id = sa.Column(sa.Integer, primary_key=True)
-    label = sa.Column(sa.Unicode(255), index=True)
-    publicp = sa.Column(sa.Boolean, default=False)
-    created_at = sa.Column(sa.DateTime, default=datetime.now)
-    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
-    @declared_attr
-    def __tableargs__(cls):
-        return  ((sa.schema.UniqueConstraint(cls.label,cls.organization_id)))        
-
-    def __repr__(self):
-        return "<%r label: %r organization_id: %r>" % (self.__class__, self.label, self.organization_id)
-
-class Promotion(WithOrganizationMixin, 
-                AboutPublishMixin,
-                Base):
-    INTERVAL_TIME = 5000
-
-    query = DBSession.query_property()
+class Promotion(BaseOriginalMixin, WithOrganizationMixin, TopicCore):
+    type = "promotion"
+    
     __tablename__ = "promotion"
+    __mapper_args__ = {"polymorphic_identity": type}
 
-    id = sa.Column(sa.Integer, primary_key=True)
-    tags = orm.relationship("PromotionTag", secondary=promotion2tag, 
+    id = sa.Column(sa.Integer, sa.ForeignKey("topiccore.id"), primary_key=True)
+    tags = orm.relationship("PromotionTag", secondary="topiccoretag2topiccore", 
                              backref=orm.backref("promotions"))
-    created_at = sa.Column(sa.DateTime, default=datetime.now)
-    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
 
     main_image_id = sa.Column(sa.Integer, sa.ForeignKey("image_asset.id"))
     main_image = orm.relationship("ImageAsset", uselist=False, primaryjoin="Promotion.main_image_id==ImageAsset.id")
@@ -337,3 +254,61 @@ def delete_orphan_tag(mapper, connection, target):
     PromotionTag.query.filter(~PromotionTag.promotions.any()).delete(synchronize_session=False)
 
 sa.event.listen(Promotion, "after_delete", delete_orphan_tag)
+
+
+## tag
+
+class TopicCoreTag2TopicCore(Base):
+    __tablename__ = "topiccoretag2topiccore"
+    id = sa.Column(sa.Integer, primary_key=True)
+    object_id = sa.Column(sa.Integer, sa.ForeignKey("topiccore.id"))
+    tag_id = sa.Column(sa.Integer, sa.ForeignKey("topiccoretag.id"))
+    topic = orm.relationship("Topic", backref=orm.backref("topictag2topic", cascade="all, delete-orphan"))
+
+    __tableargs__ = (
+        sa.UniqueConstraint("object_id", "tag_id") #todo.delete id. and this unique constraint
+        )
+topiccoretag2topiccore = TopicCoreTag2TopicCore.__table__
+
+class TopicCoreTag(WithOrganizationMixin, Base):
+    CLASSIFIER = "topiccore"
+    
+    __tablename__ = "topiccoretag"
+    id = sa.Column(sa.Integer, primary_key=True)
+    query = DBSession.query_property()
+    label = sa.Column(sa.Unicode(255), index=True)
+    topiccores = orm.relationship("TopicCore", secondary="topiccoretag2topiccore", backref="tags")
+    publicp = sa.Column(sa.Boolean, default=False)
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
+
+    discriminator = sa.Column("type", sa.String(32), nullable=False)
+    __mapper_args__ = {"polymorphic_on": discriminator}
+
+    def __repr__(self):
+        return "<%r label: %r organization_id: %r>" % (self.__class__, self.label, self.organization_id)
+
+def delete_orphan_topiccoretag(mapper, connection, target):
+    TopicCoreTag.query.filter(~TopicCoreTag.topiccores.any()).delete(synchronize_session=False)
+sa.event.listen(TopicCore, "after_delete", delete_orphan_topiccoretag)
+
+class TopicTag(TopicCoreTag):
+    type = "topic"
+    __mapper_args__ = {"polymorphic_identity": type}
+    @declared_attr
+    def __tableargs__(cls):
+        return  ((sa.schema.UniqueConstraint(cls.label, cls.discriminator, cls.organization_id)))        
+
+class TopcontentTag(TopicCoreTag):
+    type = "topcontent"
+    __mapper_args__ = {"polymorphic_identity": type}
+    @declared_attr
+    def __tableargs__(cls):
+        return  ((sa.schema.UniqueConstraint(cls.label, cls.discriminator, cls.organization_id)))        
+
+class PromotionTag(TopicCoreTag):
+    type = "promotion"
+    __mapper_args__ = {"polymorphic_identity": type}
+    @declared_attr
+    def __tableargs__(cls):
+        return  ((sa.schema.UniqueConstraint(cls.label, cls.discriminator, cls.organization_id)))        

@@ -9,17 +9,17 @@ def includeme(config):
                          )
     config.add_tagmanager("topic",
                          model="altaircms.topic.models.Topic", 
-                         xref="altaircms.topic.models.TopicTag2Topic", 
+                         xref="altaircms.topic.models.TopicCoreTag2TopicCore", 
                          tag="altaircms.topic.models.TopicTag"
                          )
     config.add_tagmanager("topcontent",
                          model="altaircms.topic.models.Topcontent", 
-                         xref="altaircms.topic.models.TopcontentTag2Topcontent", 
+                         xref="altaircms.topic.models.TopicCoreTag2TopicCore", 
                          tag="altaircms.topic.models.TopcontentTag"
                          )
     config.add_tagmanager("promotion",
                          model="altaircms.topic.models.Promotion", 
-                         xref="altaircms.topic.models.PromotionTag2Promotion", 
+                         xref="altaircms.topic.models.TopicCoreTag2TopicCore", 
                          tag="altaircms.topic.models.PromotionTag"
                          )
     config.add_tagmanager("asset",
