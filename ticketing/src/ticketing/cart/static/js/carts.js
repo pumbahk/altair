@@ -972,7 +972,7 @@ cart.VenueView = Backbone.View.extend({
                 callbacks.load && callbacks.load.apply(this, arguments);
                 self._handleQueue();
             },
-            loadPartStart: function (part) {
+            loadPartStart: function (viewer, part) {
                 var self = this;
                 if (!loadingLayer) {
                     loadingLayer =
@@ -1004,7 +1004,12 @@ cart.VenueView = Backbone.View.extend({
                     self.canvas.after(loadingLayer);
                 }
             },
-            loadPartEnd: function (part) {
+            loadPartEnd: function (viewer, part) {
+				var page = viewer.currentPage;
+				if(page) {
+					self.verticalSlider.css({ visibility: viewer.pages[page].zoomable===false ? 'hidden' : 'visible' });
+				}
+
                 if (part == 'drawing') {
                     if (loadingLayer) {
                         loadingLayer.remove();

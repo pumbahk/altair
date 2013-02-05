@@ -13,8 +13,6 @@ from dateutil import parser as date_parser
 from os.path import abspath, dirname
 
 from ticketing.sej.nwts import nws_data_send
-sys.path.append(abspath(dirname(dirname(__file__))))
-
 from paste.deploy import loadapp
 
 import logging
@@ -42,13 +40,14 @@ def main(argv=sys.argv):
         help='select',
         metavar='FILE'
     )
-    options, args = parser.parse_args(argv[1:])
-
     parser.add_option('-c', '--config',
         dest='config',
         help='Path to configuration file (defaults to $CWD/development.ini)',
         metavar='FILE'
     )
+
+    options, args = parser.parse_args(argv[1:])
+
     type = options.type
 
     if type is None or (type != 'tpayback.asp' and type != 'ttemplate.asp'):
@@ -71,7 +70,7 @@ def main(argv=sys.argv):
     app = loadapp('config:%s' % config, 'main')
     settings = app.registry.settings
 
-    nwts_hostname           = settings['sej.nwts.hostname ']
+    nwts_hostname           = settings['sej.nwts.hostname']
     terminal_id             = settings['sej.terminal_id']
     password                = settings['sej.password']
 

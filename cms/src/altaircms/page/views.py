@@ -1,5 +1,6 @@
 # coding: utf-8
 import logging
+logger = logging.getLogger(__name__)
 import os
 import sqlalchemy as sa
 from pyramid.view import view_config
@@ -510,7 +511,7 @@ class StaticPageCreateView(object):
         filestorage = form.data["zipfile"]
 
         static_page = self.context.create_static_page(form.data)
-        src = os.path.join(static_directory.basedir, static_page.name)
+        src = os.path.join(static_directory.get_base_directory(), static_page.name)
         writefile.replace_directory_from_zipfile(src, filestorage.file)
 
         FlashMessage.success(u"%sが作成されました" % filestorage.filename, request=self.request)
@@ -539,15 +540,22 @@ class StaticPageView(object):
         static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==pk)
         static_directory = get_static_page_utility(self.request)
         name = static_page.name
-        
-        self.context.delete_static_page(static_page)
 
-        ## snapshot取っておく
-        src = os.path.join(static_directory.basedir, static_page.name)
-        writefile.create_directory_snapshot(src)
+        try:
+            self.context.delete_static_page(static_page)
 
-        FlashMessage.success(u"%sが削除されました" % name, request=self.request)
-        return {"redirect_to": self.request.route_url("pageset_list", kind="static")}
+            ## snapshot取っておく
+            src = os.path.join(static_directory.get_base_directory(), static_page.name)
+            writefile.create_directory_snapshot(src)
+
+            ## 直接のsrcは空で保存できるようになっているはず。
+            if os.path.exists(src):
+                raise Exception("%s exists. after delete" % src)
+            FlashMessage.success(u"%sが削除されました" % name, request=self.request)
+            return {"redirect_to": self.request.route_url("pageset_list", kind="static")}
+        except Exception, e:
+            logger.exception(str(e))
+            raise 
 
     @view_config(match_param="action=download")
     def download(self):
@@ -555,11 +563,13 @@ class StaticPageView(object):
         static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==pk)
         static_directory = get_static_page_utility(self.request)
 
-        dirname = os.path.join(static_directory.basedir, static_page.name)
+        dirname = os.path.join(static_directory.get_base_directory(), static_page.name)
         writename = os.path.join(static_directory.tmpdir, static_page.name+".zip")
         with writefile.current_directory(dirname):
             writefile.create_zipfile_from_directory(".", writename)
-        return FileResponse(path=writename, request=self.request)
+        response = FileResponse(path=writename, request=self.request)
+        response.content_disposition = 'attachment; filename="%s.zip"' % static_page.name
+        return response
 
     @view_config(match_param="action=upload", request_param="zipfile", request_method="POST")
     def upload(self):
@@ -568,13 +578,15 @@ class StaticPageView(object):
         static_directory = get_static_page_utility(self.request)
 
         filestorage = self.request.POST["zipfile"]
+        if filestorage == u"":
+            FlashMessage.error(u"投稿されたファイルは、zipファイルではありません", request=self.request)
+            raise HTTPFound(self.request.route_url("static_page", action="detail", static_page_id=static_page.id))
         uploaded = filestorage.file
-        
         if not writefile.is_zipfile(uploaded):
             FlashMessage.error(u"投稿されたファイル%sは、zipファイルではありません" % filestorage.filename, request=self.request)
             raise HTTPFound(self.request.route_url("static_page", action="detail", static_page_id=static_page.id))
 
-        src = os.path.join(static_directory.basedir, static_page.name)
+        src = os.path.join(static_directory.get_base_directory(), static_page.name)
         snapshot_path = writefile.create_directory_snapshot(src)
 
         try:

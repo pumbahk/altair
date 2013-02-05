@@ -245,6 +245,7 @@ def get_performance_sales_detail(form, event):
 def sendmail(event, form=None):
     render_param = {
         'event_product':get_performance_sales_summary(form, event.organization),
+        'event_product_total':get_performance_sales_summary(SalesReportForm(event_id=event.id), event.organization),
         'form':form,
         'performances_reports':get_performance_sales_detail(form, event)
     }

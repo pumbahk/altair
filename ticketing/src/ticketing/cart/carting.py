@@ -3,6 +3,7 @@ import logging
 from ticketing.core.api import get_channel
 from .models import Cart, CartedProduct, CartedProductItem, DBSession
 from .api import get_system_fee, is_quantity_only
+from .exceptions import CartCreationExceptoion
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +56,6 @@ class CartFactory(object):
         my_seats = [seat for seat in seats if seat.stock_id == product_item.stock_id][:quantity]
         if len(my_seats) != quantity:
             logger.error("stock %d, quantity error %d != %d" % (product_item.stock_id, len(my_seats), quantity))
-            raise Exception
+            raise CartCreationExceptoion
         map(seats.remove, my_seats)
         return my_seats
