@@ -23,7 +23,6 @@
         〜本日
       % endif
       </p>
-
       <h4>全商品名区分集計</h4>
       <table style="width: 95%; border: 1px #DCDCDC solid; background-color: #C0FFFF;"> 
         % if form.limited_from.data or form.limited_to.data:
@@ -109,51 +108,50 @@
           % endif
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${product['product_name']}</td>
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product['product_price'])}円</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_sum['total_quantity'])}</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_sum['vacant_quantity'])}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product['total_quantity'])}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product['vacant_quantity'])}</td>
           % if form.limited_from.data or form.limited_to.data:
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total_sum['paid_quantity'] + product_total_sum['unpaid_quantity']) or ''}</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total_sum['unpaid_quantity'])}</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total_sum['paid_quantity'])}</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total['product_price'] * product_total_sum['paid_quantity'])}円</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total['paid_quantity'] + product_total['unpaid_quantity']) or ''}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total['unpaid_quantity'])}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total['paid_quantity'])}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total['product_price'] * product_total['paid_quantity'])}円</td>
           % endif
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_sum['paid_quantity'] + product_sum['unpaid_quantity']) or ''}</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_sum['unpaid_quantity'])}</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_sum['paid_quantity'])}</td>
-          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product['product_price'] * product_sum['paid_quantity'])}円</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product['paid_quantity'] + product['unpaid_quantity']) or ''}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product['unpaid_quantity'])}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product['paid_quantity'])}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product['product_price'] * product['paid_quantity'])}円</td>
         </tr>
           <%
             stock_type_id = product['stock_type_id']
             grouping_key = (product['product_name'], product['product_price'])
-            product_sum = {
-              'total_quantity':0,
-              'vacant_quantity':0,
-              'unpaid_quantity':0,
-              'paid_quantity':0,
-            }
           %>
         % endfor
       </table>
 
-      % for id, value in performances_reports.items():
+      % for ((id, value), (id2, value_total)) in zip(performances_reports.items(), performances_reports_total.items()):
         <%
           performance = value['performance']
           report_by_sales_segment = value['report_by_sales_segment']
-        %>
-        % for sale_segment_name, performance_reports in report_by_sales_segment.items():
+          report_by_sales_segment_total = value_total['report_by_sales_segment']   
+        %> 
+        % for ((sale_segment_name, performance_reports), (sale_segment_name_total, performance_reports_total)) in zip(report_by_sales_segment.items(), report_by_sales_segment_total.items()):
       <h4 style="margin-top: 20px;">開催日:${h.safe_strftime(performance.start_on)}　${performance.name}</h4>
       <h4>${sale_segment_name}</h4>
       <table style="width: 95%; border: 1px #DCDCDC solid; background-color: #C0FFFF;">
+        % if form.limited_from.data or form.limited_to.data:
+        <tr>
+          <th colspan="6"></th>
+          <th colspan="4" style="color:#808080; border:1px #DCDCDC solid">累計</th>
+          <th colspan="4" style="color:#808080; border:1px #DCDCDC solid">${h.safe_strftime(form.limited_from.data)} 〜 ${h.safe_strftime(form.limited_to.data)}</th>
+        </tr>
+        % else:
         <tr>
           <th style="border: 1px #DCDCDC solid;" colspan="6"></th>
           <th style="border: 1px #DCDCDC solid;" colspan="4">
-          % if form.limited_from.data or form.limited_to.data:
-            ${h.safe_strftime(form.limited_from.data)} 〜 ${h.safe_strftime(form.limited_to.data)}
-          % else:
             累計
-          % endif
           </th>
         </tr>
+        % endif
         <tr>
           <th style="width: 17%; border: 1px #DCDCDC solid;">席種</th>
           <th style="width: 8%; border: 1px #DCDCDC solid;">配券先</th>
@@ -161,28 +159,54 @@
           <th style="width: 8%; border: 1px #DCDCDC solid;">価格</th>
           <th style="width: 8%; border: 1px #DCDCDC solid;">配席数</th>
           <th style="width: 8%; border: 1px #DCDCDC solid;">残数</th>
-          <th style="width: 8%; border: 1px #DCDCDC solid;">受付</th>
+          % if form.limited_from.data or form.limited_to.data:
+          <th style="width: 4%; border: 1px #DCDCDCsolid;">受付数</th>
+          <th style="width: 4%; border: 1px #DCDCDC solid;">未入金</th>
+          <th style="width: 4%; border: 1px #DCDCDC solid;">入金済み</th>
+          <th style="width: 4%; border: 1px #DCDCDC solid;">小計</th>
+          <th style="width: 4%; border: 1px #DCDCDC solid;">受付数</th>
+          <th style="width: 4%; border: 1px #DCDCDC solid;">未入金</th>
+          <th style="width: 4%; border: 1px #DCDCDC solid;">入金済み</th>
+          <th style="width: 4%; border: 1px #DCDCDC solid;">小計</th>
+          % else:
+          <th style="width: 8%; border: 1px #DCDCDC solid;">受付数</th>
           <th style="width: 8%; border: 1px #DCDCDC solid;">未入金</th>
           <th style="width: 8%; border: 1px #DCDCDC solid;">入金済み</th>
-          <th style="width: 10%; border: 1px #DCDCDC solid;">小計</th>
+          <th style="width: 12%; border: 1px #DCDCDC solid;">小計</th>
+          % endif
         </tr>
-          <%
-            stock_type_id = None
-            performance_sum = {
-              'total_quantity':0,
-              'vacant_quantity':0,
-              'unpaid_quantity':0,
-              'paid_quantity':0,
-              'price_sum':0,
-            }
-          %>
-          % for performance_report in sorted(performance_reports, key=lambda x:(x['stock_type_id'], x['stock_holder_id'], x['product_id'])):
+        <%
+          stock_type_id = None
+          performance_sum = {
+            'total_quantity':0,
+            'vacant_quantity':0,
+            'unpaid_quantity':0,
+            'paid_quantity':0,
+            'price_sum':0,
+          }
+          performance_total_sum = {
+            'total_quantity':0,
+            'vacant_quantity':0,
+            'unpaid_quantity':0,
+            'paid_quantity':0,
+            'price_sum':0,
+          }  
+          performance_reports = sorted(performance_reports, key=lambda x:(x['stock_type_id'],x['product_name'], x['product_price']))
+          performance_reports_total = sorted(performance_reports_total, key=lambda x:(x['stock_type_id'], x['product_name'], x['product_price']))
+        %> 
+          % for performance_report, performance_report_total in zip(performance_reports, performance_reports_total):
           <%
             performance_sum['total_quantity'] += performance_report['total_quantity']
             performance_sum['vacant_quantity'] += performance_report['vacant_quantity']
             performance_sum['unpaid_quantity'] += performance_report['unpaid_quantity']
             performance_sum['paid_quantity'] += performance_report['paid_quantity']
             performance_sum['price_sum'] += (performance_report['paid_quantity'] + performance_report['unpaid_quantity']) * performance_report['product_price']
+
+            performance_total_sum['total_quantity'] += performance_report_total['total_quantity']
+            performance_total_sum['vacant_quantity'] += performance_report_total['vacant_quantity']
+            performance_total_sum['unpaid_quantity'] += performance_report_total['unpaid_quantity']
+            performance_total_sum['paid_quantity'] += performance_report_total['paid_quantity']
+            performance_total_sum['price_sum'] += (performance_report_total['paid_quantity'] + performance_report_total['unpaid_quantity']) * performance_report_total['product_price']
           %>
         <tr>
             % if stock_type_id == performance_report['stock_type_id']:
@@ -196,6 +220,12 @@
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_report['product_price'])}円</td>
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_report['total_quantity']) or ''}</td>
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_report['vacant_quantity']) or ''}</td>
+            % if form.limited_from.data or form.limited_to.data:
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_report_total['paid_quantity'] + performance_report_total['unpaid_quantity']) or ''}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_report_total['unpaid_quantity'])}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_report_total['paid_quantity'])}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_report_total['product_price'] * performance_report_total['paid_quantity'])}円</td>
+            % endif
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_report['paid_quantity'] + performance_report['unpaid_quantity']) or ''}</td>
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_report['unpaid_quantity']) or ''}</td>
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_report['paid_quantity']) or ''}</td>
@@ -206,6 +236,12 @@
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;" colspan="4">合計</td>
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_sum['total_quantity']) or ''}</td>
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_sum['vacant_quantity']) or ''}</td>
+            % if form.limited_from.data or form.limited_to.data:
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_total_sum['paid_quantity'] + performance_total_sum['unpaid_quantity']) or ''}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_total_sum['unpaid_quantity']) or ''}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_total_sum['paid_quantity']) or ''}</td>
+          <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_total_sum['price_sum']) or ''}円</td>
+            % endif
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_sum['paid_quantity'] + performance_sum['unpaid_quantity']) or ''}</td>
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_sum['unpaid_quantity']) or ''}</td>
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(performance_sum['paid_quantity']) or ''}</td>

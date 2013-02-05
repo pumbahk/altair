@@ -126,7 +126,7 @@ def svg_data_from_token(ordered_product_item_token):
         retval_data[u'ticket_template_id'] = ticket_template.id
     return [retval_data]
 
-def svg_data_from_token_with_descinfo(ordered_product_item_token):
+def svg_data_from_token_with_descinfo(history, ordered_product_item_token):
     pair = build_dict_from_ordered_product_item_token(ordered_product_item_token)
     if pair is None:
         logger.info("*printqr avg_data_from_token_with_desc_info pair=None (token_id=%s)" % ordered_product_item_token.id)
@@ -136,6 +136,7 @@ def svg_data_from_token_with_descinfo(ordered_product_item_token):
     item = ordered_product_item_token.item
     ticket_name = "%s(%s)" % (item.ordered_product.product.name, seat.name if seat else u"自由席")
     retval_data = {
+            u'codeno': history.id, 
             u'ordered_product_item_token_id': ordered_product_item_token.id,
             u'ordered_product_item_id': ordered_product_item_token.item.id,
             u'order_id': ordered_product_item_token.item.ordered_product.order.id,

@@ -18,6 +18,19 @@ from .api import get_nickname
 
 logger = logging.getLogger(__name__)
 
+# これはcart以外でも使うのではないだろうか
+def form_log(request, message):
+    """ フォーム内容をログ書き出し
+    """
+    values = request.params.items()
+    from pprint import pprint
+    from StringIO import StringIO
+    buff = StringIO()
+    pprint(values, buff)
+    values = buff.getvalue()
+
+    logger.info("%s: \n%s" % (message, values))
+
 def cart_timeout(request):
     return request.registry.settings['altair_cart.expire_time']
 

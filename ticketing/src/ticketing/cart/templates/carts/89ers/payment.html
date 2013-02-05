@@ -133,13 +133,13 @@ ${h.get_nickname(request)}
               </li>
               <li>${form['city'].label}
                 ${form['city']}
-                (例: 品川区)
+                (例: 中央区)
                 ${h.error_list(request, form, 'city')}
               </li>
               <li>
                 <label for="address_1">町名番地</label>
                 ${form['address_1'](style=u'width:20em')}
-                (例: 東五反田x-xx-xx)
+                (例: 日本橋x-xx-xx)
                 <br />
                 <label for="address_2">建物名等</label>
                 ${form['address_2'](style=u'width:20em')}

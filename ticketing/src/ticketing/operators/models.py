@@ -67,6 +67,11 @@ class OperatorAuth(Base, BaseModel, WithTimestamp):
     access_token = Column(String(32), nullable=True)
     secret_key = Column(String(32), nullable=True)
 
+    @staticmethod
+    def get_by_login_id(user_id):
+        return  DBSession.query(OperatorAuth, include_deleted=True)\
+                                        .filter(OperatorAuth.login_id==user_id).first()
+
 class Operator(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Operator'
     id = Column(Identifier, primary_key=True)
@@ -83,7 +88,7 @@ class Operator(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @staticmethod
     def get_by_login_id(user_id):
         return Operator.filter().join(OperatorAuth)\
-                .filter(OperatorAuth.login_id==user_id).first()
+        .filter(OperatorAuth.login_id==user_id).first()
 
     @staticmethod
     def get_by_email(email):

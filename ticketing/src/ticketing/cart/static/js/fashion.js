@@ -1472,6 +1472,7 @@ var PathData = (function() {
 
   function PathDataBuilder(data) {
     this.data = data;
+    this.first = null;
     this.last = { x: 0., y: 0. };
   };
 
@@ -1488,16 +1489,20 @@ var PathData = (function() {
     case 'Z':
       if (l != 0)
         throw new ValueError("closePath takes no arguments, " + l + " given: " + arr.join(" "));
-      this.data.push(['Z']); 
+      this.data.push(['Z']);
+      this.last = this.first;
+      this.first = null;
       break;
 
     case 'H':
       if (l == 0)
         throw new ValueError("horizontalLineTo takes at least 1 argument" + arr.join(" "));
+      if (this.first == null)
+        this.first = this.last;
       var x = 0.;
       for (var j = 0; j < l; j++) {
         x = this.parseNumber(arr[i + j]);
-        this.data.push(['M', x, this.last.y]);
+        this.data.push(['L', x, this.last.y]);
       }
       this.last.x = x;
       break;
@@ -1505,10 +1510,12 @@ var PathData = (function() {
     case 'h':
       if (l == 0)
         throw new ValueError("horizontalLineToRel takes at least 1 argument:" + arr.join(" "));
+      if (this.first == null)
+        this.first = this.last;
       var x = this.last.x;
       for (var j = 0; j < l; j++) {
         x += this.parseNumber(arr[i + j]);
-        this.data.push(['M', x, this.last.y]);
+        this.data.push(['L', x, this.last.y]);
       }
       this.last.x = x;
       break;
@@ -1516,10 +1523,12 @@ var PathData = (function() {
     case 'V':
       if (l == 0)
         throw new ValueError("verticalLineTo takes at least 1 argument: " + arr.join(" "));
+      if (this.first == null)
+        this.first = this.last;
       var y = 0.;
       for (var j = 0; j < l; j++) {
         y = this.parseNumber(arr[i + j]);
-        this.data.push(['M', this.last.x, y]);
+        this.data.push(['L', this.last.x, y]);
       }
       this.last.y = y;
       break;
@@ -1527,10 +1536,12 @@ var PathData = (function() {
     case 'v':
       if (l == 0)
         throw new ValueError("verticalLineToRel takes at least 1 argument: " + arr.join(" "));
+      if (this.first == null)
+        this.first = this.last;
       var y = this.last.y;
       for (var j = 0; j < l; j++) {
         y += this.parseNumber(arr[i + j]);
-        this.data.push(['M', this.last.x, y]);
+        this.data.push(['L', this.last.x, y]);
       }
       this.last.y = y;
       break;
@@ -1539,6 +1550,8 @@ var PathData = (function() {
       if (l == 0 || l % 2 != 0)
         throw new ValueError("moveTo takes 2 * n arguments, " + l + " given: " + arr.join(" "));
       var x = this.parseNumber(arr[i]), y = this.parseNumber(arr[i + 1]);
+      if (this.first == null)
+        this.first = { x: x, y: y };
       this.data.push(['M', x, y]);
       for (var j = i + 2, n = i + l; j < n ; j += 2) {
         x = this.parseNumber(arr[j]), y = this.parseNumber(arr[j + 1]);
@@ -1551,6 +1564,8 @@ var PathData = (function() {
       if (l == 0 || l % 2 != 0)
         throw new ValueError("moveToRel takes 2 * n arguments, " + l + " given: " + arr.join(" "));
       var x = this.parseNumber(arr[i]) + this.last.x, y = this.parseNumber(arr[i + 1]) + this.last.y;
+      if (this.first == null)
+        this.first = { x: x, y: y };
       this.data.push(['M', x, y]);
       for (var j = i + 2, n = i + l; j < n ; j += 2) {
         x += this.parseNumber(arr[j]), y += this.parseNumber(arr[j + 1]);
@@ -1562,6 +1577,8 @@ var PathData = (function() {
     case 'L':
       if (l == 0 || l % 2 != 0)
         throw new ValueError("lineTo takes 2 * n arguments, " + l + " given: " + arr.join(" "));
+      if (this.first == null)
+        this.first = this.last;
       var x = 0., y = 0.;
       for (var j = i, n = i + l; j < n ; j += 2) {
         x = this.parseNumber(arr[j]), y = this.parseNumber(arr[j + 1]);
@@ -1573,6 +1590,8 @@ var PathData = (function() {
     case 'l':
       if (l == 0 || l % 2 != 0)
         throw new ValueError("lineTo takes 2 * n arguments, " + l + " given: " + arr.join(" "));
+      if (this.first == null)
+        this.first = this.last;
       var x = this.last.x, y = this.last.y;
       for (var j = i, n = i + l; j <n ; j += 2) {
         x += this.parseNumber(arr[j]), y += this.parseNumber(arr[j + 1]);
@@ -1584,6 +1603,8 @@ var PathData = (function() {
     case 'T':
       if (l == 0 || l % 2 != 0)
         throw new ValueError("curveToSmoothQB takes 2 * n arguments, " + l + " given:" + arr.join(" "));
+      if (this.first == null)
+        this.first = this.last;
       var x = 0., y = 0.;
       for (var j = i, n = i + l; j <n ; j += 2) {
         x = this.parseNumber(arr[j]), y = this.parseNumber(arr[j + 1]);
@@ -1595,6 +1616,8 @@ var PathData = (function() {
     case 't':
       if (l == 0 || l % 2 != 0)
         throw new ValueError("curveToSmoothQBRel takes 2 * n arguments, " + l + " given: " + arr.join(" "));
+      if (this.first == null)
+        this.first = this.last;
       var x = this.last.x, y = this.last.y;
       for (var j = i, n = i + l; j <n ; j += 2) {
         x += this.parseNumber(arr[j]), y += this.parseNumber(arr[j + 1]);
@@ -1606,6 +1629,8 @@ var PathData = (function() {
     case 'R':
       if (l == 0 || l % 2 != 0)
         throw new ValueError("curveToCR takes 2 * n arguments, " + l + " given:" + arr.join(" "));
+      if (this.first == null)
+        this.first = this.last;
       var x = 0., y = 0.;
       for (var j = i, n = i + l; j <n ; j += 2) {
         x = this.parseNumber(arr[j]), y = this.parseNumber(arr[j + 1]);
@@ -1617,6 +1642,8 @@ var PathData = (function() {
     case 'r':
       if (l == 0 || l % 2 != 0)
         throw new ValueError("curveToCRRel takes 2 * n arguments, " + l + " given: " + arr.join(" "));
+      if (this.first == null)
+        this.first = this.last;
       var x = this.last.x, y = this.last.y;
       for (var j = i, n = i + l; j <n ; j += 2) {
         x += this.parseNumber(arr[j]), y += this.parseNumber(arr[j + 1]);
@@ -1628,6 +1655,8 @@ var PathData = (function() {
     case 'S':
       if (l == 0 || l % 4 != 0)
         throw new ValueError("curveToSmooth takes 4 * n arguments, " + l + " given: " + arr.join(" "));
+      if (this.first == null)
+        this.first = this.last;
       var x = 0., y = 0.;
       for (var j = i, n = i + l; j <n ; j += 4) {
         var x2 = this.parseNumber(arr[j]), y2 = this.parseNumber(arr[j + 1]);
@@ -1640,6 +1669,8 @@ var PathData = (function() {
     case 's':
       if (l == 0 || l % 4 != 0)
         throw new ValueError("curveToSmooth takes 4 * n arguments, " + l + " given: " + arr.join(" "));
+      if (this.first == null)
+        this.first = this.last;
       var x = this.last.x, y = this.last.y;
       for (var j = i, n = i + l; j <n ; j += 4) {
         var x2 = x + this.parseNumber(arr[j]), y2 = y + this.parseNumber(arr[j + 1]);
@@ -1652,6 +1683,8 @@ var PathData = (function() {
     case 'Q':
       if (l == 0 || l % 4 != 0)
         throw new ValueError("curveToQB takes 4 * n arguments, " + l + " given: " + arr.join(" "));
+      if (this.first == null)
+        this.first = this.last;
       var x = 0., y = 0.;
       for (var j = i, n = i + l; j <n ; j += 4) {
         var x1 = this.parseNumber(arr[j]), y1 = this.parseNumber(arr[j + 1]);
@@ -1664,6 +1697,8 @@ var PathData = (function() {
     case 'q':
       if (l == 0 || l % 4 != 0)
         throw new ValueError("curveToQBRel takes 4 * n arguments, " + l + " given: " + arr.join(" "));
+      if (this.first == null)
+        this.first = this.last;
       var x = this.last.x, y = this.last.y;
       for (var j = i, n = i + l; j <n ; j += 4) {
         var x1 = x + this.parseNumber(arr[j]), y1 = y + this.parseNumber(arr[j + 1]);
@@ -1676,6 +1711,8 @@ var PathData = (function() {
     case 'C':
       if (l == 0 || l % 6 != 0)
         throw new ValueError("curveTo takes 6 * n arguments, " + l + " given: " + arr.join(" "));
+      if (this.first == null)
+        this.first = this.last;
       var x = 0., y = 0.;
       for (var j = i, n = i + l; j <n ; j += 6) {
         var x1 = this.parseNumber(arr[j]), y1 = this.parseNumber(arr[j + 1]);
@@ -1702,6 +1739,8 @@ var PathData = (function() {
     case 'A':
       if (l == 0 || l % 7 != 0)
         throw new ValueError("arc takes 7 * n arguments, " + l + " given: " + arr.join(" "));
+      if (this.first == null)
+        this.first = this.last;
       var x = 0., y = 0.;
       for (var j = i, n = i + l; j <n ; j += 7) {
         var rx = this.parseNumber(arr[j]), ry = this.parseNumber(arr[j + 1]);

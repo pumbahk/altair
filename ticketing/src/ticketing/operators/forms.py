@@ -100,6 +100,15 @@ class OperatorForm(Form):
         coerce=int,
     )
 
+    def validate_login_id(form, field):
+        operator_auth = OperatorAuth.get_by_login_id(field.data)
+
+        if operator_auth is not None:
+            if form.id.data == "": #新規追加
+                raise ValidationError(u'ログインIDが重複しています。')
+            if operator_auth.id != form.request.context.user.id:
+                raise ValidationError(u'ログインIDが重複しています。')
+
     def validate_id(form, field):
         # administratorロールのオペレータはadministratorロールがないと編集できない
         if field.data:

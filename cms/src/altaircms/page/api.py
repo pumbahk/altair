@@ -2,48 +2,55 @@
 import logging
 logger = logging.getLogger(__name__)
 
+import functools
 import os
 import sqlalchemy as sa
-from altaircms.solr import api as solr
-from ..interfaces import IDirectoryResource
 from pyramid.exceptions import ConfigurationError
 from pyramid.path import AssetResolver
-from .models import StaticPage
 from markupsafe import Markup
+from zope.interface import provider
+from altaircms.solr import api as solr
+from .models import StaticPage
+from ..interfaces import IDirectoryResource
+
 ### static page
 def get_static_page_utility(request):
-    return request.registry.getUtility(IDirectoryResource, "static_page")
+    return request.registry.getUtility(IDirectoryResource, "static_page")(request=request)
 
 def set_static_page_utility(config, basedir, tmpdir):
-    utility = StaticPageDirectory(basedir, tmpdir)
-    utility.validate()
+    utility = functools.partial(StaticPageDirectory, basedir, tmpdir=tmpdir)
+    directory_validate(basedir, tmpdir)
     return config.registry.registerUtility(utility, IDirectoryResource, "static_page")
 
+def directory_validate(basedir, tmpdir):
+    if not os.path.exists(basedir):
+        os.makedirs(basedir)
+    else:
+        if not os.path.isdir(basedir):
+            raise ConfigurationError("altaircms.page.static.directory: %s is not directory" % basedir)
+        if not os.access(basedir, os.W_OK):
+            raise ConfigurationError("altaircms.page.static.directory: %s is not writable" % tmpdir)
+
+    if not os.access(tmpdir, os.W_OK):
+        raise ConfigurationError("altaircms.page.tmp.directory: %s is not writable" % tmpdir)
+    return True
+
 class StaticPageDirectory(object):
-    def __init__(self, basedir, tmpdir="/tmp"):
+    def __init__(self, basedir, tmpdir="/tmp", request=None):
+        self.request = request
         self.assetresolver = AssetResolver()
         self.assetspec = basedir
         self.basedir = self.assetresolver.resolve(basedir).abspath()
         self.tmpdir = self.assetresolver.resolve(tmpdir).abspath()
 
-    def validate(self):
-        if not os.path.exists(self.basedir):
-            os.makedirs(self.basedir)
-        else:
-            if not os.path.isdir(self.basedir):
-                raise ConfigurationError("altaircms.page.static.directory: %s is not directory" % self.basedir)
-            if not os.access(self.basedir, os.W_OK):
-                raise ConfigurationError("altaircms.page.static.directory: %s is not writable" % self.tmpdir)
-
-        if not os.access(self.tmpdir, os.W_OK):
-            raise ConfigurationError("altaircms.page.tmp.directory: %s is not writable" % self.tmpdir)
-        return True
-
     def get_base_directory(self):
-        return self.basedir
+        return os.path.join(self.basedir, self.request.organization.short_name)
 
     def get_managemented_files(self, request):
         return request.allowable(StaticPage).order_by(sa.desc(StaticPage.updated_at))
+
+    def validate(self):
+        return directory_validate(self.basedir, self.tmpdir)
 
     # def get_static_page_children(self, static_page):
     #     path = os.path.join(self.basedir, static_page.name)
@@ -55,7 +62,7 @@ class StaticPageDirectory(object):
         return request.static_url(asset_path)
     
     def link_tree_from_static_page(self, request, static_page):
-        root = os.path.join(self.basedir, static_page.name)
+        root = os.path.join(self.get_base_directory(), static_page.name)
         return Markup(u"\n".join(self._link_tree_from_static_page(request, root, [])))
     
     def _link_tree_from_static_page(self, request,  path, r):

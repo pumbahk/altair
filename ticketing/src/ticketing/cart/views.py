@@ -454,7 +454,14 @@ class IndexView(IndexViewMixin):
             raise HTTPNotFound()
         part = self.request.matchdict.get('part')
         venue = c_models.Venue.get(venue_id)
-        return Response(body=venue.site.get_drawing(part).stream().read(), content_type='text/xml; charset=utf-8')
+        drawing = venue.site.get_drawing(part)
+        content_encoding = None
+        if re.match('^.+\.(svgz|gz)$', drawing.path):
+            content_encoding = 'gzip'
+        resp = Response(body=drawing.stream().read(), content_type='text/xml; charset=utf-8', content_encoding=content_encoding)
+        if resp.content_encoding is None:
+            resp.encode_content()
+        return resp
 
 @view_defaults(decorator=with_jquery)
 class ReserveView(object):
@@ -494,8 +501,10 @@ class ReserveView(object):
 
         return [(products.get(int(c[0])), c[1]) for c in controls]
 
+
     @view_config(route_name='cart.order', request_method="POST", renderer='json')
     def reserve(self):
+        h.form_log(self.request, "received order")
         order_items = self.ordered_items
         if not order_items:
             return dict(result='NG', reason="no products")
@@ -539,6 +548,11 @@ class ReserveView(object):
             transaction.abort()
             logger.debug("not enough stock quantity :%s" % e)
             return dict(result='NG', reason="stock")
+        except CartCreationExceptoion as e:
+            transaction.abort()
+            logger.debug("cannot create cart :%s" % e)
+            return dict(result='NG', reason="unknown")
+
 
         DBSession.add(cart)
         DBSession.flush()
