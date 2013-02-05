@@ -13,8 +13,6 @@ from dateutil import parser as date_parser
 from os.path import abspath, dirname
 
 from ticketing.sej.nwts import nws_data_send
-sys.path.append(abspath(dirname(dirname(__file__))))
-
 from paste.deploy import loadapp
 
 import logging
