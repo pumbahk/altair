@@ -40,13 +40,14 @@ def main(argv=sys.argv):
         help='select',
         metavar='FILE'
     )
-    options, args = parser.parse_args(argv[1:])
-
     parser.add_option('-c', '--config',
         dest='config',
         help='Path to configuration file (defaults to $CWD/development.ini)',
         metavar='FILE'
     )
+
+    options, args = parser.parse_args(argv[1:])
+
     type = options.type
 
     if type is None or (type != 'tpayback.asp' and type != 'ttemplate.asp'):
