@@ -101,8 +101,7 @@ class OperatorForm(Form):
     )
 
     def validate_login_id(form, field):
-        operator_auth = DBSession.query(OperatorAuth, include_deleted=True)\
-                            .filter(OperatorAuth.login_id==form.login_id.data).first()
+        operator_auth = OperatorAuth.get_by_login_id(field.data)
 
         if operator_auth is not None:
             if form.id.data == "": #新規追加

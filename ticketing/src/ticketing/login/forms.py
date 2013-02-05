@@ -5,7 +5,7 @@ from wtforms.validators import Regexp, Email, Length, EqualTo, Optional, Validat
 from wtforms import Form
 
 from ticketing.formhelpers import Translations, Required
-from ticketing.operators.models import Operator
+from ticketing.operators.models import Operator, OperatorAuth
 
 class LoginForm(Form):
 
@@ -44,7 +44,7 @@ class OperatorForm(Form):
     expire_at = HiddenField(u'パスワード有効期限', validators=[Optional()])
     
     def validate_login_id(form, field):
-        operator = Operator.get_by_login_id(field.data)
-        if operator is not None:
-            if operator.id != form.request.context.user.id:
+        operator_auth = OperatorAuth.get_by_login_id(field.data)
+        if operator_auth is not None:
+            if operator_auth.operator_id != form.request.context.user.id:
                 raise ValidationError(u'ログインIDが重複しています。')
