@@ -317,7 +317,7 @@ class StaticPageCreateForm(Form):
     def validate(self, request):
         status = super(type(self), self).validate()
         static_directory = get_static_page_utility(request)
-        path = os.path.join(static_directory.basedir, self.data["name"])
+        path = os.path.join(static_directory.get_base_directory(), self.data["name"])
         if os.path.exists(path):
             append_errors(self.errors, "name", u"%sは既に存在しています。他の名前で登録してください" % self.data["name"])
             status = False

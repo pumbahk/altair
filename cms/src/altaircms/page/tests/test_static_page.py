@@ -5,9 +5,16 @@ import os
 from pyramid import testing
 # from altaircms.testing import setup_db
 # from altaircms.testing import teardown_db
-from altaircms.testing import DummyRequest
+from altaircms.testing import DummyRequest as OriginalRequest
 from altaircms.testing import DummyFileStorage
 
+def DummyRequest(*args, **kwargs):
+    class organization:
+        short_name = "dummy"
+    request = OriginalRequest(*args, **kwargs)
+    request.organization = organization
+    return request
+        
 import mock
 
 # def setUpModule():
@@ -32,7 +39,7 @@ class StaticPageUtilityTests(unittest.TestCase):
             "altaircms.page.tests:.",
             os.path.abspath("."))
 
-        request = testing.DummyRequest()
+        request = DummyRequest()
         result = self._callFUT(request)
         self.assertTrue(result)
         
@@ -43,7 +50,7 @@ class StaticPageUtilityTests(unittest.TestCase):
             "altaircms.page.tests:.",
             os.path.abspath(os.path.dirname(__file__)))
 
-        request = testing.DummyRequest()
+        request = DummyRequest()
         result = self._callFUT(request)
 
         self.assertEquals(os.path.normpath(result.basedir),
@@ -117,7 +124,7 @@ class StaticPageCreateViewTests(unittest.TestCase):
             self.assertEquals(m.call_count, 1)
             args, _ = m.call_args
             self.assertEquals(os.path.normpath(args[0]), 
-                              os.path.join(os.path.abspath(os.path.dirname(__file__)), "this-is-static-page-name"))
+                              os.path.join(os.path.abspath(os.path.dirname(__file__)), "dummy/this-is-static-page-name"))
             self.assertEquals(args[1], postdata["zipfile"].file)
 
 
@@ -158,7 +165,7 @@ class StaticPageViewTests(unittest.TestCase):
 
                 self.assertEquals(mWriteFile.call_count, 1)
                 args, kwargs = mWriteFile.call_args
-                self.assertEquals(os.path.normpath(args[0]), os.path.join(os.path.abspath(os.path.dirname(__file__)), "foo"))
+                self.assertEquals(os.path.normpath(args[0]), os.path.join(os.path.abspath(os.path.dirname(__file__)), "dummy/foo"))
             
     def test_update_object(self):
         from altaircms.page.models import StaticPage
@@ -182,7 +189,7 @@ class StaticPageViewTests(unittest.TestCase):
                     args, kwargs = mResource().touch_static_page.call_args
                     self.assertEquals(args, (obj,))
 
-                saved_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".", "foo")
+                saved_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".", "dummy", "foo")
                 args, kwargs = mWriteFile.create_directory_snapshot.call_args
                 self.assertEquals(args, (saved_path,))
                 
