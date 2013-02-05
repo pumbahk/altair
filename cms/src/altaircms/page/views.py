@@ -567,7 +567,9 @@ class StaticPageView(object):
         writename = os.path.join(static_directory.tmpdir, static_page.name+".zip")
         with writefile.current_directory(dirname):
             writefile.create_zipfile_from_directory(".", writename)
-        return FileResponse(path=writename, request=self.request)
+        response = FileResponse(path=writename, request=self.request)
+        response.content_disposition = 'attachment; filename="%s.zip"' % static_page.name
+        return response
 
     @view_config(match_param="action=upload", request_param="zipfile", request_method="POST")
     def upload(self):
