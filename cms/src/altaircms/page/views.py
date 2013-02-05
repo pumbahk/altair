@@ -578,8 +578,10 @@ class StaticPageView(object):
         static_directory = get_static_page_utility(self.request)
 
         filestorage = self.request.POST["zipfile"]
+        if filestorage == u"":
+            FlashMessage.error(u"投稿されたファイルは、zipファイルではありません", request=self.request)
+            raise HTTPFound(self.request.route_url("static_page", action="detail", static_page_id=static_page.id))
         uploaded = filestorage.file
-        
         if not writefile.is_zipfile(uploaded):
             FlashMessage.error(u"投稿されたファイル%sは、zipファイルではありません" % filestorage.filename, request=self.request)
             raise HTTPFound(self.request.route_url("static_page", action="detail", static_page_id=static_page.id))
