@@ -21,6 +21,7 @@ from ticketing.core.api import get_channel
 from ticketing.core.models import Product, PaymentDeliveryMethodPair, Order
 from ticketing.core.models import MailTypeEnum
 from ticketing.cart.interfaces import ICartPayment
+from ticketing.cart.selectable_renderer import selectable_renderer
 from ticketing.cart.views import back, back_to_top, back_to_product_list_for_mobile
 from ticketing.checkout import api
 from ticketing.checkout import helpers
@@ -128,7 +129,7 @@ class CheckoutView(object):
 
     @back(back_to_top, back_to_product_list_for_mobile)
     @view_config(route_name='payment.checkout.login', renderer='ticketing.payments.plugins:templates/checkout_login.html', request_method='POST')
-    @view_config(route_name='payment.checkout.login', renderer='ticketing.payments.plugins:templates/checkout_login_mobile.html', request_method='GET', request_type='ticketing.mobile.interfaces.IMobileRequest')
+    @view_config(route_name='payment.checkout.login', renderer=selectable_renderer("carts_mobile/%(membership)s/checkout_login_mobile.html"), request_method='POST', request_type='ticketing.mobile.interfaces.IMobileRequest')
     def login(self):
         cart = a.get_cart(self.request)
         self.request.session['ticketing.cart.csrf_token'] = self.request.params.get('csrf_token')
