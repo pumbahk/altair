@@ -108,7 +108,6 @@ class IssuedPrintedSetterTests(unittest.TestCase):
         result = list(target.will_issued_by_own_tickets())
         self.assertEquals(len(result),  1)
 
-
     def test_will_issued_by_own2(self):
         """自社発券用の券面を取り出す。"""
         from ticketing.models import DBSession
@@ -128,6 +127,7 @@ class IssuedPrintedSetterTests(unittest.TestCase):
         target = self._makeOne(bundle=bundle)
         result = list(target.will_issued_by_own_tickets())
         self.assertEquals(len(result),  0)
+
 
 if __name__ == "__main__":
     unittest.main()

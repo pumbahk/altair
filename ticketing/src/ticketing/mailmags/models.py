@@ -33,7 +33,7 @@ class MailMagazine(Base, BaseModel, WithTimestamp):
             if subscription.status == MailSubscriptionStatus.Unsubscribed.v:
                 subscription.status = MailSubscriptionStatus.Subscribed.v
             else:
-                logger.warning("trying to let {0} subscribe MailMagazine (id={1.id}, name={1.name}) which is {2}".format(mail_address, self, "already subscribed" if subscription.status is None or subscription.status == MailSubscriptionStatus.Subscribed else "reserved"))
+                logger.warning(u"trying to let {0} subscribe MailMagazine (id={1.id}, name={1.name}) which is {2}".format(mail_address, self, "already subscribed" if subscription.status is None or subscription.status == MailSubscriptionStatus.Subscribed else "reserved").encode('utf-8'))
         else:
             subscription = MailSubscription(email=mail_address, user=user, segment=self, status=MailSubscriptionStatus.Subscribed.v)
             session.add(subscription)

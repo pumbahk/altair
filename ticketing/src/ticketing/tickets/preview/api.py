@@ -59,8 +59,13 @@ class SEJPreviewCommunication(BaseCommunicationApi):
         values = {'template': open(delivery_plugin.template, "rb"), 
                   'ptct': _make_named_io("ptct.xml", self._normalize(ptct))}
         data, headers = multipart_encode(values)
-        return urllib2.urlopen(urllib2ext.BasicAuthSensibleRequest(
-            self.post_url,
-            data=data,
-            headers=headers)
-            ).read()
+        try:
+            return urllib2.urlopen(urllib2ext.BasicAuthSensibleRequest(
+                self.post_url,
+                data=data,
+                headers=headers)
+                ).read()
+        except Exception, e:
+            logger.exception(str(e))
+            logger.warn("*sej.preview: data: %s" % values)
+            raise TicketPreviewAPIException(u"SEJサーバとの通信に失敗しました")
