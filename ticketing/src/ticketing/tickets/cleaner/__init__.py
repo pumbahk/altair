@@ -11,7 +11,6 @@ __all__ = (
     'cleanup_svg',
     )
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 ALIGNMENT_COMPAT_MAP = {
@@ -217,6 +216,7 @@ def cleanup_svg(svg):
     TransformApplier()(svg.getroot())
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
     import sys
     import locale
     encoding = locale.getpreferredencoding()
