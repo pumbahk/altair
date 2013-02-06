@@ -19,8 +19,12 @@ todo:
 カテゴリトップかイベント詳細ページかで表示方法を分ける必要がある
 カテゴリトップの場合には、サブジャンルを取得できる必要がある。
 """
+
+EXCLUDE_EXT_LIST = (".ico", ".js", ".css")
 @view_config(route_name="front", decorator=with_jquery)
 def rendering_page(context, request):
+    if request.url.endswith(EXCLUDE_EXT_LIST):
+        return HTTPNotFound()
     url = request.matchdict["page_name"]
     dt = context.get_preview_date()
 
