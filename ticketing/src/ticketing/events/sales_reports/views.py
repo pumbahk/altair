@@ -145,12 +145,14 @@ class SalesReports(BaseView):
             event_product = get_performance_sales_summary(form, self.context.organization)
             event_product_total = get_performance_sales_summary(SalesReportForm(event_id=event_id), self.context.organization)
             performances_reports = get_performance_sales_detail(form, event)
+            performances_reports_total = get_performance_sales_detail(SalesReportForm(event_id=event_id), event)
 
             render_param = {
                 'event_product':event_product,
                 'event_product_total':event_product_total,
                 'form':form,
-                'performances_reports':performances_reports
+                'performances_reports':performances_reports,
+                'performances_reports_total':performances_reports_total,
             }
 
             settings = self.request.registry.settings

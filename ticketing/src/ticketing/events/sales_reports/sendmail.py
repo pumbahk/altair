@@ -247,7 +247,8 @@ def sendmail(event, form=None):
         'event_product':get_performance_sales_summary(form, event.organization),
         'event_product_total':get_performance_sales_summary(SalesReportForm(event_id=event.id), event.organization),
         'form':form,
-        'performances_reports':get_performance_sales_detail(form, event)
+        'performances_reports':get_performance_sales_detail(form, event),
+        'performances_reports_total':get_performance_sales_detail(SalesReportForm(event_id=event.id), event)
     }
 
     registry = get_current_registry()
