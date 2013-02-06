@@ -146,16 +146,20 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
         this.preview.beforeRendering();
         var self = this;
         self.message.info("テンプレートを取得しています");
+        var holder = this.params.get("holder");
         var params = {
             fillvalues_resource: {
-                modelname: this.params.get("holder").name, 
-                model: this.params.get("holder").pk, 
+                modelname: holder.name, 
+                model: holder.pk, 
             }, 
             svg_resource: {
                 modelname: "TicketFormat", 
                 model: this.params.get("ticket_format").pk
             }
         };
+        if(!!holder.sub){
+            params["sub_resource"] = {"model": holder.sub.pk, "modelname": "Sub"};
+        }
         return this.apis.loadsvg({data: JSON.stringify(params)})
             .pipe(core.ApiService.rejectIfStatusFail(function(data){
                 self.params.refreshDefault();
