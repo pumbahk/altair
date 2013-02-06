@@ -164,7 +164,12 @@ preview.Combobox3SVGFromModelView = Backbone.View.extend({
     }, 
     onChangeMiddle: function(e,rightName){
         var rightName = rightName || this.$middleSelect.val();
-        var candidates = this.subsubCandidates[rightName];
+
+        var formatId = this.model.get("ticket_format").pk;
+        var candidates = _(this.subsubCandidates[rightName]).filter(function(c){
+            return !c.format_id || c.format_id == formatId;
+        });
+
         var $right = this.$rightSelect;
         $right.empty();
         _(candidates).each(function(c){
@@ -181,7 +186,7 @@ preview.Combobox3SVGFromModelView = Backbone.View.extend({
         var $leftSelect = this.$leftSelect = $('<select class="inline input-medium">').attr("id", this.leftIdname);
         var $middleSelect = this.$middleSelect = $('<select class="inline input-medium">').attr("id", this.middleIdname);
         var $rightSelect = this.$rightSelect = $('<select class="inline input-medium">').attr("id", this.rightIdname);
-
+        var formatId = this.model.get("ticket_format").pk;
 
         _(candidates).each(function(c){
             subCandidates[c.pk] = c.candidates;
@@ -194,13 +199,15 @@ preview.Combobox3SVGFromModelView = Backbone.View.extend({
             $middleSelect.append($("<option>").text(c.name).attr("value", c.pk));
         });
         _(candidates[0].candidates[0].candidates).each(function(c){
-            $rightSelect.append($("<option>").text(c.name).attr("value", c.pk));
+            if(!c.format_id || c.format_id == formatId){
+                $rightSelect.append($("<option>").text(c.name).attr("value", c.pk));
+            }
         });
         this.$el.find(".brand").hide();
         var root = this.$el.find("#subnav .nav");
         root.append($('<li style="margin-left:20px;">').text(label).append($leftSelect));
         root.append($('<li>').append($middleSelect));
-        root.append($('<li>').text("sub:").append($rightSelect));
+        root.append($('<li>').text("対象チケット").append($rightSelect));
         if(candidates.length == 1){
             this.onChangeLeft(null, candidates[0].pk);
         }

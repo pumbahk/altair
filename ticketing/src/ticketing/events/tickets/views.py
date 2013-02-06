@@ -161,7 +161,7 @@ class BundleView(BaseView):
                 }
         ## for ticket-preview
         ## [{name: <performance.name>, pk: <performance.id>,  candidates: [{name: <item.name>, pk: <item.id>}, ...]}, ...]
-        tickets_candidates = [{"name": t.name,  "pk": t.id} for t in bundle.tickets]
+        tickets_candidates = [{"name": t.name,  "pk": t.id, "format_id": t.ticket_format_id} for t in bundle.tickets]
         preview_item_candidates = []
         for perf_k, performance_d in product_item_dict.iteritems():
             candidates = []
