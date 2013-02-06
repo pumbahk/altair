@@ -965,10 +965,10 @@ cart.VenueView = Backbone.View.extend({
                 var pos = Math.sqrt((zoomRatio - self.zoomRatioMin) / (self.zoomRatioMax - self.zoomRatioMin));
                 self.verticalSlider.smihica_vertical_slider('position', pos);
 
-                if(1.2 < zoomRatio) {
-                    self.currentViewer.venueviewer('showSmallText');
+                if (1.2 < zoomRatio) {
+                    self.currentViewer.venueviewer('showSmallTexts');
                 } else {
-                    self.currentViewer.venueviewer('hideSmallText');
+                    self.currentViewer.venueviewer('hideSmallTexts');
                 }
 
             },
@@ -1025,7 +1025,8 @@ cart.VenueView = Backbone.View.extend({
                 }
             },
             messageBoard: (function() {
-                self.tooltip.hide();
+                if (self.tooltip)
+                    self.tooltip.hide();
                 $(document.body).mousemove(function(e){
                     if (self.tooltip) {
                         self.tooltip.css({

@@ -77,7 +77,8 @@
       optionalViewportSize: null,
       loading: false,
       loadAborted: false,
-      loadAbortionHandler: null
+      loadAbortionHandler: null,
+      _smallTextsShown: true
     },
 
     methods: {
@@ -375,7 +376,7 @@
                     x: parseFloat(attrs.rx || 0),
                     y: parseFloat(attrs.ry || 0)
                   },
-                  transform: attrs.transform || null,
+                  transform: transform || null,
                   zIndex: -10
                 });
                 for (var j=0,ll=n.childNodes.length; j<ll; j++) {
@@ -412,7 +413,9 @@
                 shape.transform(transform);
                 if (shape instanceof Fashion.Text) {
                   shape.fontSize(currentSvgStyle.fontSize);
-                  if(currentSvgStyle.fontSize <= 10) {
+                  if (currentSvgStyle.fontSize <= 10) {
+                    if (!self._smallTextsShown)
+                      shape.visibility(false);
                     small_texts.push(shape);
                   }
                 }
@@ -836,6 +839,22 @@
       back: function VenueViewer_back() {
         if (this._history.length > 0)
           this.navigate(this._history[this._history.length - 1]);
+      },
+
+      showSmallTexts: function VenueViewer_showSmallTexts() {
+        if (!this._smallTextsShown) {
+          for(var i = this.small_texts.length; --i >= 0;)
+            this.small_texts[i].visibility(true);
+          this._smallTextsShown = true
+        }
+      },
+
+      hideSmallTexts: function VenueViewer_hideSmallTexts() {
+        if (this._smallTextsShown) {
+          for(var i = this.small_texts.length; --i >= 0;)
+            this.small_texts[i].visibility(false);
+          this._smallTextsShown = false;
+        }
       }
     }
   });
@@ -964,20 +983,11 @@
           aux.navigate(arguments[1]);
           break;
 
-        case 'showSmallText':
-          for(var i=aux.small_texts.length-1 ; 0<=i ; i--) {
-            aux.small_texts[i].style(aux.small_texts[i].style());
-            aux.small_texts[i]._visibility = true;
-            aux.small_texts[i]._dirty |= Fashion.DIRTY_VISIBILITY;
-          }
+        case 'showSmallTexts':
+          aux.showSmallTexts();
           break;
-        case 'hideSmallText':
-          for(var i=aux.small_texts.length-1 ; 0<=i ; i--) {
-            aux.small_texts[i].style(aux.small_texts[i].style());
-            aux.small_texts[i]._visibility = false;
-            aux.small_texts[i]._dirty |= Fashion.DIRTY_VISIBILITY;
-            aux.small_texts[i]._refresh(true);
-          }
+        case 'hideSmallTexts':
+          aux.hideSmallTexts();
           break;
         }
       }
