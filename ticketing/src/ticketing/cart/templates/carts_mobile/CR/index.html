@@ -8,7 +8,7 @@ ${event.title}
 % if not venues:
   <hr size="1" color="#9b63c0" noshade="noshade" />
   <p><font color="#580d9a">■</font>対象試合をお選びください</p>
-  <form action="${request.url}" method="get">
+  <form action="${request.path}" method="get">
     <select name="performance_name">
   % for _performance_name in performances:
     <option value="${_performance_name}">${_performance_name}</option>
@@ -22,7 +22,8 @@ ${event.title}
 % else:
   <hr size="1" color="#9b63c0" noshade="noshade" />
   <p><font color="#580d9a">■</font>日時・会場をお選びください</p>
-  <form action="${request.url}" method="get">
+  <form action="${request.path}" method="get">
+    <input type="hidden" name="performance_name" value="${performance_name}" />
     <select name="pid">
   % for pid, _venue_name in venues:
     <option value="${pid}" ${_venue_name == venue_name and u'selected="selected"' or u''}>${_venue_name}</option>

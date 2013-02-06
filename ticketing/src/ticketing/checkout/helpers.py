@@ -8,8 +8,10 @@ from . import api
 def checkout_form(request, cart):
     if request.is_mobile:
         action = request.registry.settings.get('altair_checkout.mobile_checkin_url')
+        submit = u'<input type="submit" value="楽天 お支払い" />'
     else:
         action = request.registry.settings.get('altair_checkout.checkin_url')
+        submit = ''
 
     # checkoutをXMLに変換
     channel = get_channel(cart.channel)
@@ -23,10 +25,12 @@ def checkout_form(request, cart):
         '<form id="checkout-form" action="%(action)s" method="post" accept-charset="utf-8">'
         '<input type="hidden" name="checkout" value="%(checkout)s" />'
         '<input type="hidden" name="sig" value="%(sig)s" />'
+        '%(submit)s'
         '</form>' %
         dict(
             action=action,
             checkout=base64.b64encode(xml),
-            sig=sig
+            sig=sig,
+            submit=submit
         )
     )

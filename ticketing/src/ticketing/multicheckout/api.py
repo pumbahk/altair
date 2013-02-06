@@ -317,9 +317,8 @@ class Checkout3D(object):
         return self._parse_response_card_xml(res)
 
     def request_card_sales(self, order_no, card_auth):
-        message = self._create_request_card_xml(card_auth, check=True)
         url = self.card_sales_url(order_no)
-        res = self._request(url, message)
+        res = self._request(url)
         logger.debug("got response %s" % etree.tostring(res))
         return self._parse_response_card_xml(res)
 
