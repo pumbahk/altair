@@ -18,7 +18,7 @@ class MailMagazine(Base, BaseModel, WithTimestamp):
     name = Column(String(255))
     description = Column(String(1024))
     organization_id = Column(Identifier, ForeignKey("Organization.id"), nullable=True)
-    organization = relationship('Organization', uselist=False, backref='mail_magazines')
+    organization = relationship('Organization', uselist=False, backref=backref('mail_magazines', lazy='dynamic'))
     status = Column(Integer)
 
     def subscribe(self, user, mail_address):
@@ -48,6 +48,14 @@ class MailMagazine(Base, BaseModel, WithTimestamp):
         ).first()
         if subscription is not None:
             subscription.unsubscribe()
+
+    def subscribed_by(self, emails):
+        if isinstance(emails, basestring):
+            emails = [emails]
+        return MailSubscription.query.filter(
+            MailSubscription.segment == self & \
+            MailSubscription.email in emails).first() is not None
+
 
 class MailSubscriptionStatus(StandardEnum):
     Unsubscribed = 0

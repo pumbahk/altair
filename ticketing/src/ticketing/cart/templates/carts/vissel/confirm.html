@@ -122,6 +122,7 @@ ${self.widget.flow_widget(3)}
 	</div>
   </div>
 
+  % if mailmagazines_to_subscribe:
   <div class="settlementBox">
 	<div class="settlementBoxInner">
       <h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_magazine.gif')}" alt="メールマガジンの配信" width="177" height="30" /></h2>
@@ -133,7 +134,7 @@ ${self.widget.flow_widget(3)}
 			</dt>
             <dd>
               <ul>
-                %for mailmagazine in mailmagazines:
+                %for mailmagazine in mailmagazines_to_subscribe:
                 <li>
                   <div>
                     <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
@@ -151,6 +152,7 @@ ${self.widget.flow_widget(3)}
 	  </div>
 	</div>
   </div>
+  % endif
 
   <table style="margin-left: auto; margin-right: auto;">
     <tr>

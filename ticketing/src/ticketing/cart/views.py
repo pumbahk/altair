@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import re
 import sqlalchemy as sa
 from sqlalchemy.orm import joinedload
+from sqlalchemy import sql
 from sqlalchemy.sql.expression import or_
 from markupsafe import Markup
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
@@ -907,8 +908,21 @@ class ConfirmView(object):
         cart = api.get_cart_safe(self.request)
 
         # == MailMagazinに移動 ==
-        magazines = mailmag_models.MailMagazine.query.outerjoin(mailmag_models.MailSubscription) \
-            .filter(mailmag_models.MailMagazine.organization==cart.performance.event.organization) \
+        magazines_to_subscribe = cart.performance.event.organization.mail_magazines \
+            .filter(
+                ~mailmag_models.MailMagazine.id.in_(
+                    DBSession.query(mailmag_models.MailMagazine.id) \
+                        .join(mailmag_models.MailSubscription.segment) \
+                        .filter(
+                            mailmag_models.MailSubscription.email.in_(cart.shipping_address.emails) & \
+                            (mailmag_models.MailSubscription.status.in_([
+                                mailmag_models.MailSubscriptionStatus.Subscribed.v,
+                                mailmag_models.MailSubscriptionStatus.Reserved.v]) | \
+                             (mailmag_models.MailSubscription.status == None)) \
+                            ) \
+                        .distinct()
+                    )
+                ) \
             .all()
 
         user = self.context.get_or_create_user()
@@ -919,7 +933,7 @@ class ConfirmView(object):
             raise HTTPFound(self.request.route_path("cart.payment", sales_segment_id=cart.sales_segment_id))
         return dict(
             cart=cart,
-            mailmagazines=magazines,
+            mailmagazines_to_subscribe=magazines_to_subscribe,
             form=form,
             delegator=delegator,
         )
