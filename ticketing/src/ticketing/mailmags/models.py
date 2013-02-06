@@ -2,11 +2,14 @@ from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, Strin
 from sqlalchemy.orm import join, backref, column_property
 from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, relationship
 import sqlahelper
+import logging
 
 from ticketing.utils import StandardEnum
 
 session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
+
+logger = logging.getLogger(__name__)
 
 class MailMagazine(Base, BaseModel, WithTimestamp):
     __tablename__ = 'MailMagazine'
@@ -26,12 +29,14 @@ class MailMagazine(Base, BaseModel, WithTimestamp):
             MailSubscription.segment==self
         ).first()
 
-        # Do nothing if the user is subscribing the magazine
-        # with the same e-mail address.
         if subscription:
-            return None
-        subscription = MailSubscription(email=mail_address, user=user, segment=self)
-        session.add(subscription)
+            if subscription.status == MailSubscriptionStatus.Unsubscribed.v:
+                subscription.status = MailSubscriptionStatus.Subscribed.v
+            else:
+                logger.warning("trying to let {0} subscribe MailMagazine (id={1.id}, name={1.name}) which is {2}".format(mail_address, self, "already subscribed" if subscription.status is None or subscription.status == MailSubscriptionStatus.Subscribed else "reserved"))
+        else:
+            subscription = MailSubscription(email=mail_address, user=user, segment=self, status=MailSubscriptionStatus.Subscribed.v)
+            session.add(subscription)
         return subscription
 
     def unsubscribe(self, user, mail_address):
@@ -39,10 +44,10 @@ class MailMagazine(Base, BaseModel, WithTimestamp):
             MailSubscription.user==user,
             MailSubscription.email==mail_address
         ).filter(
-            MailSubscription.segment==mailmagazine
+            MailSubscription.segment==self
         ).first()
-        if subscription:
-            session.delete(subscription)
+        if subscription is not None:
+            subscription.unsubscribe()
 
 class MailSubscriptionStatus(StandardEnum):
     Unsubscribed = 0
@@ -64,4 +69,5 @@ class MailSubscription(Base, BaseModel, LogicallyDeleted, WithTimestamp):
 
     status = Column(Integer)
 
-
+    def unsubscribe(self):
+        self.status = MailSubscriptionStatus.Unsubscribed.v
