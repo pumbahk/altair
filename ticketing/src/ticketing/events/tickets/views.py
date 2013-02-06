@@ -138,7 +138,8 @@ class BundleView(BaseView):
     def show(self):
         # {<performance_id>: {<name>: "",  <products>: {}, <product_items> : {}}}
         product_item_dict = {} 
-        for product_item in self.context.bundle.product_items:
+        bundle = self.context.bundle
+        for product_item in bundle.product_items:
             performance = product_item_dict.get(product_item.performance_id)
             if performance is None:
                 performance = product_item_dict[product_item.performance_id] = {
@@ -158,17 +159,16 @@ class BundleView(BaseView):
                 'updated_at': product_item.updated_at,
                 'created_at': product_item.created_at
                 }
-
         ## for ticket-preview
         ## [{name: <performance.name>, pk: <performance.id>,  candidates: [{name: <item.name>, pk: <item.id>}, ...]}, ...]
+        tickets_candidates = [{"name": t.name,  "pk": t.id} for t in bundle.tickets]
         preview_item_candidates = []
         for perf_k, performance_d in product_item_dict.iteritems():
             candidates = []
             p = {"name": performance_d["name"], "pk": perf_k, "candidates": candidates}
-            for item_k, item_d in performance["product_items"].iteritems():
-                candidates.append({"name": item_d["name"], "pk": item_k})
+            for item_k, item_d in performance_d["product_items"].iteritems():
+                candidates.append({"name": item_d["name"], "pk": item_k, "candidates": tickets_candidates})
             preview_item_candidates.append(p)
-
         return dict(bundle=self.context.bundle, 
                     event=self.context.event,
                     product_item_dict=product_item_dict, 
