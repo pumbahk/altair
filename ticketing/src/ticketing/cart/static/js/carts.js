@@ -964,6 +964,13 @@ cart.VenueView = Backbone.View.extend({
             zoomRatioChange: function (zoomRatio) {
                 var pos = Math.sqrt((zoomRatio - self.zoomRatioMin) / (self.zoomRatioMax - self.zoomRatioMin));
                 self.verticalSlider.smihica_vertical_slider('position', pos);
+
+                if(1.2 < zoomRatio) {
+                    self.currentViewer.venueviewer('showSmallText');
+                } else {
+                    self.currentViewer.venueviewer('hideSmallText');
+                }
+
             },
             load: function (viewer) {
                 self.zoomRatioMin = viewer.zoomRatioMin;

@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['d2RJFU4FMER34P0S'] = (function (exports) { (function () { 
+__LIBS__['bKO6FF9UVSP5O3KH'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['yIHR_3I4IOJGXMCG'] = (function (exports) { (function () { 
+__LIBS__['iEAYZ7MX52_9IODI'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['GGDDMINIE5MPPQSV'] = (function (exports) { (function () { 
+__LIBS__['UN8F0L2XN2R4HK0N'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['d2RJFU4FMER34P0S'];
-var CONF = __LIBS__['yIHR_3I4IOJGXMCG'];
+var util = __LIBS__['bKO6FF9UVSP5O3KH'];
+var CONF = __LIBS__['iEAYZ7MX52_9IODI'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -1021,9 +1021,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['yIHR_3I4IOJGXMCG'];
-  var seat = __LIBS__['GGDDMINIE5MPPQSV'];
-  var util = __LIBS__['d2RJFU4FMER34P0S'];
+  var CONF = __LIBS__['iEAYZ7MX52_9IODI'];
+  var seat = __LIBS__['UN8F0L2XN2R4HK0N'];
+  var util = __LIBS__['bKO6FF9UVSP5O3KH'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1215,6 +1215,7 @@ function parseTransform(transform_str) {
           self.highlighted = null;
           self.availableAdjacencies = [1];
           self.shapes = null;
+          self.small_texts = [ ];
           self.link_pairs = null;
           self.selection = {};
           self.selectionCount = 0;
@@ -1289,6 +1290,7 @@ function parseTransform(transform_str) {
           });
 
           var shapes = {}, link_pairs = [];
+          var small_texts = [];
           var styleClasses = CONF.DEFAULT.STYLES;
 
           var leftTop = null, rightBottom = null;
@@ -1428,6 +1430,9 @@ function parseTransform(transform_str) {
                 shape.transform(transform);
                 if (shape instanceof Fashion.Text) {
                   shape.fontSize(currentSvgStyle.fontSize);
+                  if(currentSvgStyle.fontSize <= 10) {
+                    small_texts.push(shape);
+                  }
                 }
                 drawable.draw(shape);
               }
@@ -1458,6 +1463,7 @@ function parseTransform(transform_str) {
 
           self.drawable = drawable;
           self.shapes = shapes;
+          self.small_texts = small_texts;
           self.link_pairs = link_pairs;
 
           if (!leftTop)
@@ -1974,6 +1980,22 @@ function parseTransform(transform_str) {
 
         case 'navigate':
           aux.navigate(arguments[1]);
+          break;
+
+        case 'showSmallText':
+          for(var i=aux.small_texts.length-1 ; 0<=i ; i--) {
+            aux.small_texts[i].style(aux.small_texts[i].style());
+            aux.small_texts[i]._visibility = true;
+            aux.small_texts[i]._dirty |= Fashion.DIRTY_VISIBILITY;
+          }
+          break;
+        case 'hideSmallText':
+          for(var i=aux.small_texts.length-1 ; 0<=i ; i--) {
+            aux.small_texts[i].style(aux.small_texts[i].style());
+            aux.small_texts[i]._visibility = false;
+            aux.small_texts[i]._dirty |= Fashion.DIRTY_VISIBILITY;
+            aux.small_texts[i]._refresh(true);
+          }
           break;
         }
       }

@@ -197,6 +197,7 @@
           self.highlighted = null;
           self.availableAdjacencies = [1];
           self.shapes = null;
+          self.small_texts = [ ];
           self.link_pairs = null;
           self.selection = {};
           self.selectionCount = 0;
@@ -271,6 +272,7 @@
           });
 
           var shapes = {}, link_pairs = [];
+          var small_texts = [];
           var styleClasses = CONF.DEFAULT.STYLES;
 
           var leftTop = null, rightBottom = null;
@@ -410,6 +412,9 @@
                 shape.transform(transform);
                 if (shape instanceof Fashion.Text) {
                   shape.fontSize(currentSvgStyle.fontSize);
+                  if(currentSvgStyle.fontSize <= 10) {
+                    small_texts.push(shape);
+                  }
                 }
                 drawable.draw(shape);
               }
@@ -440,6 +445,7 @@
 
           self.drawable = drawable;
           self.shapes = shapes;
+          self.small_texts = small_texts;
           self.link_pairs = link_pairs;
 
           if (!leftTop)
@@ -956,6 +962,22 @@
 
         case 'navigate':
           aux.navigate(arguments[1]);
+          break;
+
+        case 'showSmallText':
+          for(var i=aux.small_texts.length-1 ; 0<=i ; i--) {
+            aux.small_texts[i].style(aux.small_texts[i].style());
+            aux.small_texts[i]._visibility = true;
+            aux.small_texts[i]._dirty |= Fashion.DIRTY_VISIBILITY;
+          }
+          break;
+        case 'hideSmallText':
+          for(var i=aux.small_texts.length-1 ; 0<=i ; i--) {
+            aux.small_texts[i].style(aux.small_texts[i].style());
+            aux.small_texts[i]._visibility = false;
+            aux.small_texts[i]._dirty |= Fashion.DIRTY_VISIBILITY;
+            aux.small_texts[i]._refresh(true);
+          }
           break;
         }
       }
