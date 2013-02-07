@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['HAC5UFCQLYEG3TQK'] = (function (exports) { (function () { 
+__LIBS__['YX3GM1HH8UZLM9UW'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['r_CEY1JRA3G2EG2P'] = (function (exports) { (function () { 
+__LIBS__['QFU1IX9I37DQMPMY'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['gVWGF_OT_H5JPNM0'] = (function (exports) { (function () { 
+__LIBS__['D8AZJC_RQDPU5G93'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['HAC5UFCQLYEG3TQK'];
-var CONF = __LIBS__['r_CEY1JRA3G2EG2P'];
+var util = __LIBS__['YX3GM1HH8UZLM9UW'];
+var CONF = __LIBS__['QFU1IX9I37DQMPMY'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -1021,9 +1021,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['r_CEY1JRA3G2EG2P'];
-  var seat = __LIBS__['gVWGF_OT_H5JPNM0'];
-  var util = __LIBS__['HAC5UFCQLYEG3TQK'];
+  var CONF = __LIBS__['QFU1IX9I37DQMPMY'];
+  var seat = __LIBS__['D8AZJC_RQDPU5G93'];
+  var util = __LIBS__['YX3GM1HH8UZLM9UW'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1548,6 +1548,7 @@ function parseTransform(transform_str) {
                 },
                 mousedown: function(evt) {
                   if (self.pages && self.uiMode == 'select') {
+                    self.canvas.css({ cursor: 'default' });
                     self.callbacks.messageBoard.down.call(self);
                     self.navigate(link);
                     // drawableMouseDown = false;

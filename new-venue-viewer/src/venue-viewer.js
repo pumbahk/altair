@@ -530,6 +530,7 @@
                 },
                 mousedown: function(evt) {
                   if (self.pages && self.uiMode == 'select') {
+                    self.canvas.css({ cursor: 'default' });
                     self.callbacks.messageBoard.down.call(self);
                     self.navigate(link);
                     // drawableMouseDown = false;
