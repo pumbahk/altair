@@ -98,5 +98,8 @@ class TopcontentWidgetResource(HandleSessionMixin,
                           RootFactory
                           ):
     WidgetClass = TopcontentWidget
+    @property
+    def Tag(self):
+        return get_tagmanager(self.WidgetClass.type, request=self.request).Tag
     def get_widget(self, widget_id):
         return self._get_or_create(TopcontentWidget, widget_id)

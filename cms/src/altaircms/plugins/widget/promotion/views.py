@@ -7,9 +7,9 @@ from altaircms.auth.api import get_or_404
 
 @view_defaults(custom_predicates=(require_login,))
 class PromotionWidgetView(object):
-    def __init__(self, request):
+    def __init__(self, context, request):
         self.request = request
-        self.context = request.context
+        self.context = context
 
     def _create_or_update(self):
         data = self.request.json_body["data"]
