@@ -61,11 +61,13 @@ def reflect_ticketing_and_payment(request, sej_order, order, notification):
         else:
             # 発券
             order.issued_at = order.printed_at = sej_order.processed_at
+            order.issued = True
     elif payment_type == 3:
         # 代済発券
         if order.paid_at is None:
             log.warning("Order #%s: ticketing notification received, but the corresponding order was not marked 'paid'" % (order.order_no))
         order.issued_at = order.printed_at = sej_order.processed_at
+        order.issued = True
     elif payment_type == 4:
         # 前払のみ
         order.paid_at = sej_order.processed_at
