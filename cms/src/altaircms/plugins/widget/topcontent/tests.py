@@ -60,7 +60,7 @@ class TopcontentWidgetViewTests(WidgetTestSourceMixn,
         session = self._getSession()
 
         self._with_session(session, self._makePage(id=1))
-        data = {"kind": u"その他", 
+        data = {"tag": u"その他", 
                 "topcontent_type": "topcontent", 
                 "display_count": 5, 
                 "display_global": True, 
@@ -78,7 +78,7 @@ class TopcontentWidgetViewTests(WidgetTestSourceMixn,
         created = TopcontentWidget.query.one()
         self.assertEquals(TopcontentWidget.query.count(), 1)
         self.assertEquals(created.page.id, 1)
-        self.assertEquals(created.kind, u"その他")
+        self.assertEquals(created.tag, u"その他")
         self.assertEquals(created.topcontent_type, u"topcontent")
         self.assertEquals(created.display_count, 5)
         self.assertEquals(created.display_event, True)
@@ -94,13 +94,13 @@ class TopcontentWidgetViewTests(WidgetTestSourceMixn,
 
     def test_update(self):
         session = self._getSession()
-        dummy = {"kind": u"その他", 
+        dummy = {"tag": u"その他", 
                  "display_count": 5, 
                  "display_global": True, 
                  "display_event": True, 
                  "display_page": True}
         pk = self._create_widget(session, page_id=1, data=dummy)
-        data = {"kind": u"その他", 
+        data = {"tag": u"その他", 
                  "display_count": 3, 
                  "display_global": False, 
                  "display_event": True, 

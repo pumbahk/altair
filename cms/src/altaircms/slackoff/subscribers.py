@@ -3,35 +3,35 @@
 from zope.interface import implementer
 from altaircms.interfaces import IModelEvent
 
-def notify_promotion_create(request, promotion, params=None):
+def notify_topic_create(request, topic, params=None):
     registry = request.registry
-    return registry.notify(PromotionCreate(request, promotion, params))
+    return registry.notify(TopicCreate(request, topic, params))
 
-def notify_promotion_update(request, promotion, params=None):
+def notify_topic_update(request, topic, params=None):
     registry = request.registry
-    return registry.notify(PromotionUpdate(request, promotion, params))
+    return registry.notify(TopicUpdate(request, topic, params))
 
-def notify_promotion_delete(request, promotion, params=None):
+def notify_topic_delete(request, topic, params=None):
     registry = request.registry
-    return registry.notify(PromotionDelete(request, promotion, params))
+    return registry.notify(TopicDelete(request, topic, params))
 
 
 @implementer(IModelEvent)
-class PromotionCreate(object):
+class TopicCreate(object):
     def __init__(self, request, obj, params=None):
         self.request = request
         self.obj = obj
         self.params = params
 
 @implementer(IModelEvent)
-class PromotionUpdate(object):
+class TopicUpdate(object):
     def __init__(self, request, obj, params=None):
         self.request = request
         self.obj = obj
         self.params = params
         
 @implementer(IModelEvent)
-class PromotionDelete(object):
+class TopicDelete(object):
     def __init__(self, request, obj, params=None):
         self.request = request
         self.obj = obj

@@ -60,7 +60,7 @@ class TopcontentWidget(Widget):
             merge_settings_function(self, bname, bsettings)
         except KeyError, e:
             logger.warn(e)
-            bsettings.add(bname, u"topcontent widget: topcontent_type=%s kind=%s is not found" % (self.topcontent_type, self.kind))
+            bsettings.add(bname, u"topcontent widget: topcontent_type=%s tag=%s is not found" % (self.topcontent_type, self.tag))
 
 ## todo: refactoring
 def _qs_search(request, widget, d=None):

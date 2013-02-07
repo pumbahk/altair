@@ -84,11 +84,11 @@ def mock_backend_main(global_config, **settings):
         ## 本当はaccess tokenが発行された時点でloginではないけれど
         backend = get_backend_app()
         backend.login_status = LOGIN_STATUS["LOGIN"]
-
+        from altaircms.auth.models import DEFAULT_ROLE
         return {u'organization_id': 1,
                 u'user_id': 1,
                 u'screen_name': u'Administrator-this-is-login-name',
-                u'roles': [u'administrator'],
+                u'roles': [DEFAULT_ROLE],
                 u'access_token': u'429432c429',
                 u'organization_name': u'demo-organization',
                 u'organization_short_name': u'demo'}

@@ -1,1 +1,119 @@
-heh
+<%inherit file='altaircms:templates/layout_2col.html'/>
+
+<%namespace name="fco" file="altaircms:templates/formcomponents.html"/>
+<%namespace name="nco" file="altaircms:templates/navcomponents.html"/>
+
+<%block name="style">
+<style type="text/css">
+  .row-fluid h3 { margin-top:20px;  }
+  .row-fluid h3.first { margin-top:0px;  }
+</style>
+</%block>
+
+<h2>トピック(画像)使用ページ一覧</h2>
+
+<div class="row-fluid">
+  <div class="span12">
+    ${nco.breadcrumbs(
+        names=["Top", u"トピック(画像)使用ページ一覧"], 
+        urls=[request.route_path("dashboard")])
+    }
+  </div>
+</div>
+
+<div class="navbar navbar-inverse">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="brand" href="#"><i class="icon-search icon-white"></i></a>
+      <form class="pull-left navbar-search" action="">
+        <input name="search" type="text" placeholder="分類による検索" class="search-query">
+      </form>
+      <ul class="nav">
+        <div class="btn-group">
+          <a class="btn" href="${request.current_route_path(_query={"published":True})}"><i class="icon-search"></i>表示中のページのみ表示</a>
+          <a class="btn" href="${request.current_route_path(_query={":all:": True})}"><i class="icon-search"></i>全てのページ表示</a>
+          <a class="btn" data-toggle="modal" data-backdrop="" href="#TopcontentTagCreateModal"><i class="icon-plus"></i>分類の追加</a>
+        </div>
+      </ul>
+    </div>
+  </div><!-- /navbar-inner -->
+  
+</div><!-- /navbar -->
+
+<p>分類「${request.params.get("search") or "-----"}」のページ 全${pages.opts.get("item_count") or pages.collection.count()}件</p>
+${pages.pager()}
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>ページセット</th>
+      <th>ページ</th>
+      <th>topcontent widget</th>
+    </tr>
+  </thead>
+    <tbody>
+        %for pageset,page,widget,tag in grid:
+          <tr>
+            %if pageset:
+              <td rowspan="${pageset.rowspan}">${pageset.values.name}</td>
+            %endif
+            %if page:
+              <% current_page_id = page.values.id %>
+              <td rowspan="${page.rowspan}">
+                <a href="${request.route_path("topcontent_detail", page_id=page.values.id)}">${page.values.name}</a>
+                (${h.term(page.values.publish_begin, page.values.publish_end)})</td>
+            %endif
+            <td><a href="${request.route_path("topcontent_detail", page_id=current_page_id, _query=(dict(widget_id=widget.values.id)))}">${widget.values.id}</a></td>
+            <td>分類:<a href="${request.current_route_path(_query=dict(search=tag.values.label))}">${tag.values.label}</a></td>
+          </tr>
+        %endfor
+    </tbody>
+</table>
+${pages.pager()}
+
+## modal
+<div class="modal hide" id="TopcontentTagCreateModal">
+  <div class="modal-header">
+	  <button type="button" class="close" data-dismiss="modal">×</button>
+	  <h3>分類の追加</h3>
+  </div>
+  <form class="form" action="${request.route_path("api_topcontent_addtag")}" method="POST">
+    <div class="modal-body">
+      <div class="control-group">
+        <label class="control-label">
+          分類(","で区切って複数登録できます):
+        </label>
+        <div class="controls">
+          <input name="tags" type="text"/>
+          <input name="organization_id" type="hidden" value="${request.organization.id}">
+          <input name="public_status" type="hidden" value="1"/>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+	    <a href="#" class="btn" data-dismiss="modal">Close</a>
+	    <button type="submit" class="btn btn-info">追加する</button>
+    </div>
+  </form>
+</div>
+<script type="text/javascript">
+  $(function(){
+    var modal = $("#TopcontentTagCreateModal");
+    modal.find("form").on("submit", function(e){
+      var form =modal.find("form");
+      $.post(form.attr("action"), {"tags": form.find('[name="tags"]').val(),
+                                   "public_status": true,
+                                   "organization_id": form.find('[name="organization_id"]').val()})
+        .done(function(data){
+          // location.reload();
+          var info = $("<div>").attr("class", "alert alert-success");
+          info.append($("<a>").attr("class", "close").attr("data-dismiss", "alert").text("×"));
+          info.append($("<p>").text(data.message));
+          $(".flashmessage").empty().append(info);
+      });
+      modal.data("modal").hide();
+      return false
+    });
+  });
+</script>
+

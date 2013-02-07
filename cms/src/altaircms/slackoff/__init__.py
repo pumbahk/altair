@@ -19,16 +19,23 @@ def includeme(config):
                     bind_actions=["create", "delete", "update"], 
                     form=".forms.TicketForm", mapper=".mappers.ticket_mapper")
 
-    config.add_crud("promotion_unit",  title="promotion",  model="..topic.models.Promotion",
-                    has_auto_generated_permission=False, 
-                    form=".forms.PromotionForm", mapper=".mappers.promotion_mapper", 
-                    filter_form=".forms.PromotionFilterForm", 
-                    events=dict(create_event=config.maybe_dotted(".subscribers.PromotionCreate"), 
-                                update_event=config.maybe_dotted(".subscribers.PromotionUpdate"), 
+
+    ## topic
+    config.add_crud("topcontent_unit", title="topcontent", model="..topic.models.Topcontent",
+                    has_auto_generated_permission=False,  #todo:remove-it
+                    form=".forms.TopcontentForm", mapper=".mappers.topcontent_mapper", 
+                    events=dict(create_event=config.maybe_dotted(".subscribers.TopicCreate"), 
+                                update_event=config.maybe_dotted(".subscribers.TopicUpdate"), 
                                 ))
-    ## bind_event
-    config.add_subscriber(".subscribers.update_kind", ".subscribers.PromotionCreate")
-    config.add_subscriber(".subscribers.update_kind", ".subscribers.PromotionUpdate")
+    config.add_crud("promotion_unit",  title="promotion",  model="..topic.models.Promotion",
+                    has_auto_generated_permission=False,  #todo:remove-it
+                    form=".forms.PromotionForm", mapper=".mappers.promotion_mapper", 
+                    events=dict(create_event=config.maybe_dotted(".subscribers.TopicCreate"), 
+                                update_event=config.maybe_dotted(".subscribers.TopicUpdate"), 
+                                ))
+    config.add_subscriber(".subscribers.update_kind", ".subscribers.TopicCreate")
+    config.add_subscriber(".subscribers.update_kind", ".subscribers.TopicUpdate")
+
     config.add_crud("category", title="category", model="..models.Category",
                     bind_actions=["delete", "update", "create"], 
                     form=".forms.CategoryForm", mapper=".mappers.category_mapper", 
@@ -50,8 +57,6 @@ def includeme(config):
     config.add_crud("topic", title="topic", model="..topic.models.Topic", 
                     form=".forms.TopicForm", mapper=".mappers.topic_mapper", 
                     filter_form=".forms.TopicFilterForm")
-    config.add_crud("topcontent", title="topcontent", model="..topic.models.Topcontent",
-                    form=".forms.TopcontentForm", mapper=".mappers.topcontent_mapper")
     config.add_crud("hotword", title="hotword", model="..tag.models.HotWord",
                     form=".forms.HotWordForm", mapper=".mappers.hotword_mapper")
     config.add_crud("pagedefaultinfo", title="pagedefaultinfo", model="..page.models.PageDefaultInfo",

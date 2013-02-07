@@ -149,6 +149,58 @@ class TicketForm(Form):
     __display_fields__ = [u"sale",u"name",  u"seattype", u"price"]
     # __display_fields__ = [u"sale", u"name", u"seattype", u"price", u"display_order"]
 
+class TermValidator(object):
+    def __init__(self, begin, end, message):
+        self.begin = begin
+        self.end = end
+        self.message = message
+
+    def __call__(self, data, errors):
+        if data[self.end] and data[self.begin] and data[self.begin] > data[self.end]:
+            append_errors(errors, self.begin, self.message)
+
+validate_publish_term = TermValidator("publish_open_on", "publish_close_on",  u"公開開始日よりも後に終了日が設定されています")
+
+class TopcontentForm(Form):
+    title = fields.TextField(label=u"タイトル", validators=[required_field()])
+    tag_content = fields.TextField(label=u"種別(, 区切り)") #@todo rename
+    countdown_type = fields.SelectField(label=u"カウントダウンの種別", choices=Topcontent.COUNTDOWN_CANDIDATES)    
+    text = fields.TextField(label=u"内容", validators=[required_field()], widget=widgets.TextArea())
+    image_asset = dynamic_query_select_field_factory(ImageAsset,label=u"画像", allow_blank=True, 
+                                                     get_label=lambda o: o.title)
+    mobile_image_asset = dynamic_query_select_field_factory(ImageAsset,label=u"mobile画像", allow_blank=True, 
+                                                            get_label=lambda o: o.title)
+
+    publish_open_on = fields.DateTimeField(label=u"公開開始日", validators=[required_field()])
+    publish_close_on = fields.DateTimeField(label=u"公開終了日", validators=[required_field()])
+
+
+    linked_page = dynamic_query_select_field_factory(PageSet, allow_blank=True,label=u"リンク先ページ(CMSで作成したもの)", 
+                                                     query_factory=lambda : PageSet.query.order_by("name"), 
+                                                     get_label=lambda obj: obj.name or u"--なし--")
+    link = fields.TextField(label=u"外部リンク(ページより優先)", filters=[quote])
+    mobile_link = fields.TextField(label=u"mobile外部リンク(ページより優先)", filters=[quote])
+
+    display_order = fields.IntegerField(label=u"表示順序(1〜100)", default=50)
+    is_vetoed = fields.BooleanField(label=u"公開禁止")
+
+    __display_fields__= [u"title", u"tag_content", 
+                         u"text", u"countdown_type", u"image_asset",u"mobile_image_asset",  
+                         u"publish_open_on", u"publish_close_on", 
+                         u"display_order", u"is_vetoed", 
+                         u"linked_page", u"link", u"mobile_link"]
+    
+    def validate(self, **kwargs):
+        if super(TopcontentForm, self).validate():
+            validate_publish_term(self.data, self.errors)
+        return not bool(self.errors)
+   
+    def configure(self, request):
+        ## todo: iniから取ってくる？
+        # extra_resource = get_extra_resource(request)
+        # self.kind.choices = [(x, x) for x in extra_resource["topcontent_kinds"]]
+        pass
+
 class PromotionForm(Form):
     tag_content = fields.TextField(label=u"表示場所(, 区切り)") #@todo rename
     main_image = dynamic_query_select_field_factory(
@@ -157,6 +209,7 @@ class PromotionForm(Form):
     text = fields.TextField(validators=[required_field()], label=u"画像下のメッセージ")
     linked_page = dynamic_query_select_field_factory(
         PageSet, allow_blank=True, label=u"リンク先ページ(CMSで作成したもの)",
+        query_factory=lambda : PageSet.query.order_by("name"), 
         get_label=lambda obj: obj.name or u"--なし--")
     link = fields.TextField(label=u"外部リンク(ページより優先)", filters=[quote])
 
@@ -168,9 +221,7 @@ class PromotionForm(Form):
 
     def validate(self, **kwargs):
         if super(PromotionForm, self).validate():
-            data = self.data
-            if data["publish_open_on"] > data["publish_close_on"]:
-                append_errors(self.errors, "publish_open_on", u"公開開始日よりも後に終了日が設定されています")
+            validate_publish_term(self.data, self.errors)
         return not bool(self.errors)
 
     __display_fields__ = [
@@ -335,58 +386,6 @@ class TopicFilterForm(Form):
     def configure(self, request):
         extra_resource = get_extra_resource(request)
         self.kind.choices = [("__None", "----------")]+[(x, x) for x in extra_resource["topic_kinds"]]
-
-class TopcontentForm(Form):
-    title = fields.TextField(label=u"タイトル", validators=[required_field()])
-    kind = fields.SelectField(label=u"種別", choices=[])
-    subkind = fields.TextField(label=u"サブ分類")
-    is_global = fields.BooleanField(label=u"全体に公開", default=True)
-
-    text = fields.TextField(label=u"内容", validators=[required_field()], widget=widgets.TextArea())
-    countdown_type = fields.SelectField(label=u"カウントダウンの種別", choices=Topcontent.COUNTDOWN_CANDIDATES)    
-    image_asset = dynamic_query_select_field_factory(ImageAsset,label=u"画像", allow_blank=True, 
-                                                     get_label=lambda o: o.title)
-    mobile_image_asset = dynamic_query_select_field_factory(ImageAsset,label=u"mobile画像", allow_blank=True, 
-                                                            get_label=lambda o: o.title)
-
-    publish_open_on = fields.DateTimeField(label=u"公開開始日", validators=[required_field()])
-    publish_close_on = fields.DateTimeField(label=u"公開終了日", validators=[required_field()])
-
-    
-    display_order = fields.IntegerField(label=u"表示順序(1〜100)", default=50)
-    is_vetoed = fields.BooleanField(label=u"公開禁止")
-
-    ##本当は、client.id, organization.idでfilteringする必要がある
-    bound_page = dynamic_query_select_field_factory(PageSet, 
-                                                    label=u"表示ページ",
-                                                    query_factory=lambda : PageSet.query.order_by("name").filter(PageSet.event_id==None), 
-                                                    allow_blank=True, 
-                                                    get_label=lambda obj: obj.name or u"名前なし")
-    linked_page = dynamic_query_select_field_factory(PageSet, 
-                                                     label=u"リンク先ページ",
-                                                     query_factory=lambda : PageSet.query.order_by("name"), 
-                                                     allow_blank=True, 
-                                                     get_label=lambda obj: obj.name or u"名前なし")
-    link = fields.TextField(label=u"外部リンク(ページより優先)", filters=[quote])
-    mobile_link = fields.TextField(label=u"外部リンク(mobile ページより優先)", filters=[quote])
-
-    __display_fields__= [u"title", u"kind", u"subkind", u"is_global", 
-                         u"text", u"countdown_type", u"image_asset",u"mobile_image_asset",  
-                         u"publish_open_on", u"publish_close_on", 
-                         u"display_order", u"is_vetoed", 
-                         u"bound_page", u"linked_page", u"link", u"mobile_link"]
-    
-    def validate(self, **kwargs):
-        if super(TopcontentForm, self).validate():
-            data = self.data
-            if data["publish_close_on"] and data["publish_open_on"] and data["publish_open_on"] > data["publish_close_on"]:
-                append_errors(self.errors, "publish_open_on", u"公開開始日よりも後に終了日が設定されています")
-        return not bool(self.errors)
-   
-    def configure(self, request):
-        extra_resource = get_extra_resource(request)
-        self.kind.choices = [(x, x) for x in extra_resource["topcontent_kinds"]]
-
 
 class HotWordForm(Form):
     name = fields.TextField(label=u"ホットワード名")
