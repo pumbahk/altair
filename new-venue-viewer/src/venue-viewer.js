@@ -78,7 +78,11 @@
       loading: false,
       loadAborted: false,
       loadAbortionHandler: null,
-      _smallTextsShown: true
+      _smallTextsShown: true,
+      nextSingleClickAction: null,
+      doubleClickTimeout: 400,
+      mouseUpHandler: null,
+      onMouseUp: null
     },
 
     methods: {
@@ -94,6 +98,13 @@
         this.rubberBand.style(CONF.DEFAULT.MASK_STYLE);
         canvas.empty();
         this.optionalViewportSize = options.viewportSize;
+        var self = this;
+        this.mouseUpHandler = function() {
+          if (self.onMouseUp) {
+            self.onMouseUp.call(self);
+          }
+        };
+        $(document.body).bind('mouseup', this.mouseUpHandler);
       },
 
       load: function VenueViewer_load() {
@@ -188,6 +199,7 @@
       dispose: function VenueViewer_dispose(next) {
         var self = this;
         this.cancelLoading(function () {
+          $(document.body).unbind('mouseup', self.mouseUpHandler);
           self.removeKeyEvent();
           if (self.drawable) {
             self.drawable.dispose();
@@ -297,15 +309,15 @@
 
               { // stylize
                 var currentSvgStyle = context.svgStyle;
-				// 1st: find style by class attribute
+                // 1st: find style by class attribute
                 if (attrs['class']) {
                   var style = styleClasses[attrs['class']];
                   if (style) currentSvgStyle = mergeSvgStyle(currentSvgStyle, style);
                 }
-				// 2nd: overwrite by style attribute (css like string)
+                // 2nd: overwrite by style attribute (css like string)
                 if (attrs.style)
                   currentSvgStyle = mergeSvgStyle(currentSvgStyle, parseCSSAsSvgStyle(attrs.style, context.defs));
-				// 3rd: overwrite by some kinds of attributes
+                // 3rd: overwrite by some kinds of attributes
                 currentSvgStyle = mergeSvgStyle(currentSvgStyle, svgStylesFromMap(attrs));
               }
 
@@ -498,6 +510,7 @@
           }
 
           var drawableMouseDown = false;
+          var clickTimer = 0;
 
           for (var i = 0; i < self.link_pairs.length; i++) {
             (function (shape, link) {
@@ -530,8 +543,10 @@
                 },
                 mousedown: function(evt) {
                   if (self.pages && self.uiMode == 'select') {
-                    self.callbacks.messageBoard.down.call(self);
-                    self.navigate(link);
+                    self.nextSingleClickAction = function() {
+                      self.callbacks.messageBoard.down.call(self);
+                      self.navigate(link);
+                    };
                   }
                 }
               });
@@ -540,6 +555,16 @@
 
           (function () {
             var scrollPos = null;
+
+            function drawableMouseUp() {
+              self.onMouseUp = null;
+              drawableMouseDown = false;
+              if (self.dragging) {
+                self.drawable.releaseMouse();
+                self.dragging = false;
+              }
+            }
+
             self.drawable.addEvent({
               mousedown: function (evt) {
                 if (self.animating) return;
@@ -548,13 +573,39 @@
                   break;
                 default:
                   drawableMouseDown = true;
-                  scrollPos = self.drawable.scrollPosition();
-                  self.startPos = evt.logicalPosition;
+                  self.onMouseUp = drawableMouseUp;
+                  if (!clickTimer) {
+                    scrollPos = self.drawable.scrollPosition();
+                    self.startPos = evt.logicalPosition;
+                    clickTimer = setTimeout(function() {
+                      var nextSingleClickAction = self.nextSingleClickAction;
+                      self.nextSingleClickAction = null;
+                      clickTimer = 0;
+                      if (nextSingleClickAction)
+                        nextSingleClickAction.call(self);
+                    }, self.doubleClickTimeout);
+                  } else {
+                    // double click
+                    clearTimeout(clickTimer);
+                    clickTimer = 0;
+                    self.drawableMouseDown = false;
+                    self.animating = true;
+                    var e = self.zoomRatio * 2;
+                    var t = setInterval(function () {
+                      var newZoomRatio = Math.min(e, self.zoomRatio * 1.2);
+                      self.zoom(newZoomRatio, evt.logicalPosition);
+                      if (e - self.zoomRatio < self.zoomRatio * 1e-5 || newZoomRatio - self.zoomRatio > self.zoomRatio * 1e-5) {
+                        self.animating = false;
+                        clearInterval(t);
+                      }
+                    }, 50);
+                  }
                   break;
                 }
               },
 
               mouseup: function (evt) {
+                drawableMouseUp();
                 if (self.animating) return;
                 switch (self.uiMode) {
                 case 'zoomin':
@@ -564,21 +615,15 @@
                   self.zoom(self.zoomRatio / 1.2, evt.logicalPosition);
                   break;
                 default:
-                  drawableMouseDown = false;
-                  if (self.dragging) {
-                    self.drawable.releaseMouse();
-                    self.dragging = false;
-                  }
                   break;
                 }
               },
 
               mouseout: function (evt) {
-                if (self.dragging) {
-                  self.drawable.releaseMouse();
-                  self.dragging = false;
+                if (clickTimer) {
+                  clearTimeout(clickTimer);
+                  clickTimer = 0;
                 }
-                drawableMouseDown = false;
               },
 
               mousemove: function (evt) {
@@ -681,7 +726,9 @@
                   highlighted[i].removeOverlay('highlighted');
               },
               mousedown: function(evt) {
-                self.callbacks.click(self, self, self.highlighted);
+                self.nextSingleClickAction = function () {
+                  self.callbacks.click(self, self, self.highlighted);
+                };
               }
             });
           }
@@ -729,7 +776,7 @@
         this.callbacks.uimodeselect(this, type);
       },
 
-      zoom: function(ratio, center) {
+      zoom: function(ratio, anchor) {
         if (isNaN(ratio))
           return;
         var previousRatio = this.zoomRatio;
@@ -746,24 +793,29 @@
           return;
         }
 
-        if (!center) {
-          var vs = this.drawable.viewportSize();
-          var logicalSize = {
-            x: vs.x / previousRatio,
-            y: vs.y / previousRatio
-          };
+        var vs = this.drawable.viewportSize();
+        var previousLogicalSize = {
+          x: vs.x / previousRatio,
+          y: vs.y / previousRatio
+        };
+
+        if (!anchor) {
           var scroll = this.drawable.scrollPosition();
-          center = {
-            x: scroll.x + (logicalSize.x / 2),
-            y: scroll.y + (logicalSize.y / 2)
+          anchor = {
+            x: scroll.x + (previousLogicalSize.x / 2),
+            y: scroll.y + (previousLogicalSize.y / 2)
           }
         }
 
+        var scrollPosition = this.drawable.scrollPosition();
         this.drawable.transform(Fashion.Matrix.scale(ratio)
                                 .translate({x: -this.contentOriginPosition.x,
                                             y: -this.contentOriginPosition.y}));
 
-        var vs = this.drawable.viewportSize();
+        var physicalOffset = {
+          x: (anchor.x - scrollPosition.x) * previousRatio,
+          y: (anchor.y - scrollPosition.y) * previousRatio 
+        };
 
         var logicalSize = {
           x: vs.x / ratio,
@@ -771,8 +823,8 @@
         };
 
         var logicalOrigin = {
-          x: center.x - (logicalSize.x / 2),
-          y: center.y - (logicalSize.y / 2)
+          x: anchor.x - (physicalOffset.x / ratio),
+          y: anchor.y - (physicalOffset.y / ratio)
         };
 
         this.drawable.scrollPosition(logicalOrigin);
