@@ -611,6 +611,7 @@
       navigate: function (page) {
         if (!(page in this.pages))
           return;
+        this.callbacks.messageBoard.down.call(this);
         var previousPage = this.currentPage;
         var self = this;
         this.loadDrawing(page, function () {
@@ -646,7 +647,7 @@
           for (var id in seatMeta) {
             seats[id] = new seat.Seat(id, seatMeta[id], self, {
               mouseover: function(evt) {
-                self.callbacks.messageBoard.up(self.seatTitles[this.id]);
+                self.callbacks.messageBoard.up.call(self, self.seatTitles[this.id]);
                 self.seatAdjacencies.getCandidates(this.id, self.adjacencyLength(), function (candidates) {
                   if (candidates.length == 0)
                     return;

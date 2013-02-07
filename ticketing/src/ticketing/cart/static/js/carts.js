@@ -1027,23 +1027,26 @@ cart.VenueView = Backbone.View.extend({
             messageBoard: (function() {
                 if (self.tooltip)
                     self.tooltip.hide();
+                var lastPosition = { x: 0, y: 0 };
                 $(document.body).mousemove(function(e){
+                    lastPosition = { x: e.pageX, y: e.pageY };
                     if (self.tooltip) {
                         self.tooltip.css({
-                            left: (e.pageX + 10) + 'px', 
-                            top:  (e.pageY + 10) + 'px'
+                            left: (lastPosition.x + 10) + 'px', 
+                            top:  (lastPosition.y + 10) + 'px'
                         });
                     }
                 });
-
                 return {
                     up: function(msg) {
-                        if (self.tooltip && msg)
-                            self.tooltip.show().stop().text(msg).fadeIn(100);
+                        if (self.tooltip) {
+                            if (msg)
+                                self.tooltip.stop(true, true).show().text(msg).fadeIn(200);
+                        }
                     },
                     down: function() {
                         if (self.tooltip)
-                            self.tooltip.stop().fadeOut(100);
+                            self.tooltip.stop(true, true).fadeOut(200);
                     }
                 }
             })()

@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['p2AB6UFMWVIIC7QM'] = (function (exports) { (function () { 
+__LIBS__['xWYN_F2BN470F_CQ'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['qUHYO3E0TVFX5NL1'] = (function (exports) { (function () { 
+__LIBS__['y3RXVZ74B62ZR2VL'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['XV8IKSDLBXMNNPT5'] = (function (exports) { (function () { 
+__LIBS__['rW_1RHKRSWMAH1_D'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['p2AB6UFMWVIIC7QM'];
-var CONF = __LIBS__['qUHYO3E0TVFX5NL1'];
+var util = __LIBS__['xWYN_F2BN470F_CQ'];
+var CONF = __LIBS__['y3RXVZ74B62ZR2VL'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -1021,9 +1021,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['qUHYO3E0TVFX5NL1'];
-  var seat = __LIBS__['XV8IKSDLBXMNNPT5'];
-  var util = __LIBS__['p2AB6UFMWVIIC7QM'];
+  var CONF = __LIBS__['y3RXVZ74B62ZR2VL'];
+  var seat = __LIBS__['rW_1RHKRSWMAH1_D'];
+  var util = __LIBS__['xWYN_F2BN470F_CQ'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1629,6 +1629,7 @@ function parseTransform(transform_str) {
       navigate: function (page) {
         if (!(page in this.pages))
           return;
+        this.callbacks.messageBoard.down.call(this);
         var previousPage = this.currentPage;
         var self = this;
         this.loadDrawing(page, function () {
@@ -1664,7 +1665,7 @@ function parseTransform(transform_str) {
           for (var id in seatMeta) {
             seats[id] = new seat.Seat(id, seatMeta[id], self, {
               mouseover: function(evt) {
-                self.callbacks.messageBoard.up(self.seatTitles[this.id]);
+                self.callbacks.messageBoard.up.call(self, self.seatTitles[this.id]);
                 self.seatAdjacencies.getCandidates(this.id, self.adjacencyLength(), function (candidates) {
                   if (candidates.length == 0)
                     return;
