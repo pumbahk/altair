@@ -1,25 +1,31 @@
 from pyramid.view import view_config, view_defaults
+import logging
+logger = logging.getLogger(__name__)
 from altaircms.auth.api import require_login
+from altaircms.auth.api import get_or_404
+from altaircms.page.models import Page    
 from . import forms
 
 @view_defaults(custom_predicates=(require_login,))
 class TopicWidgetView(object):
-    def __init__(self, request):
+    def __init__(self, context, request):
         self.request = request
+        self.context = context
 
     def _create_or_update(self):
-        data = self.request.json_body["data"]
-        if data.get("subkind") == "None": #fixme
-            data["subkind"] = None
-        page_id = self.request.json_body["page_id"]
-        context = self.request.context
-        widget = context.get_widget(self.request.json_body.get("pk"))
-        widget = context.update_data(widget,
-                                     page_id=page_id, 
-                                     **data)
-        context.add(widget, flush=True)
-        r = self.request.json_body.copy()
-        r.update(pk=widget.id)
+        try:
+            data = self.request.json_body["data"]
+            data["tag"] = self.context.Tag.query.filter_by(id=data["tag"]).one()
+            page_id = self.request.json_body["page_id"]
+            widget = self.context.get_widget(self.request.json_body.get("pk"))
+            widget = self.context.update_data(widget,
+                                         page_id=page_id, 
+                                         **data)
+            self.context.add(widget, flush=True)
+            r = self.request.json_body.copy()
+            r.update(pk=widget.id)
+        except Exception, e:
+            logger.exception(str(e))
         return r
 
     @view_config(route_name="topic_widget_create", renderer="json", request_method="POST")
@@ -41,13 +47,6 @@ class TopicWidgetView(object):
     def dialog(self):
         context = self.request.context
         widget = context.get_widget(self.request.GET.get("pk"))
-        form = forms.TopicChoiceForm(**widget.to_dict())
-        form.configure(self.request)
-        # form.transform(widget.topic_type)
+        page = get_or_404(self.request.allowable(Page), Page.id==self.request.GET["page"])
+        form = forms.TopicChoiceForm(**widget.to_dict()).configure(self.request, page)
         return {"form": form}
-
-    # @view_config(route_name="topic_widget_dialog_form", renderer="altaircms.plugins.widget:topic/form.html", request_method="GET")
-    # def dialog_form(self):
-    #     form = forms.TopicChoiceForm(self.request.GET)
-    #     form.transform(self.request.GET["topic_type"])
-    #     return {"form": form}

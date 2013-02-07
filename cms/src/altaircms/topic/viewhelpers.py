@@ -1,10 +1,12 @@
 from markupsafe import Markup
 from altaircms.asset.viewhelpers import image_asset_layout
 from ..rowspanlib import RowSpanGrid
-from altaircms.helpers.link import get_link_from_promotion
-from altaircms.helpers.link import get_link_from_promotion_in_cms
+from altaircms.helpers.link import get_link_from_topic
+from altaircms.helpers.link import get_link_from_topic_in_cms
 from altaircms.helpers.link import get_link_from_topcontent
 from altaircms.helpers.link import get_link_from_topcontent_in_cms
+from altaircms.helpers.link import get_link_from_promotion
+from altaircms.helpers.link import get_link_from_promotion_in_cms
 
 ## grid
 # data = (pageset, page, promotion widget)
@@ -20,6 +22,13 @@ def tag_for_grid(data, k, changed):
     return data[3]
 
 # (pageset, page, widget, tag)
+TopicGrid = RowSpanGrid()
+TopicGrid.register("pageset", mapping=pageset_for_grid, keyfn=lambda data : data[0].id)
+TopicGrid.register("page", mapping=page_for_grid, keyfn=lambda data : data[1].id)
+TopicGrid.register("widget", mapping=widget_for_grid, keyfn=lambda data : data[2].id)
+TopicGrid.register("tag", mapping=tag_for_grid, keyfn=lambda data : data[3].id)
+
+
 TopcontentGrid = RowSpanGrid()
 TopcontentGrid.register("pageset", mapping=pageset_for_grid, keyfn=lambda data : data[0].id)
 TopcontentGrid.register("page", mapping=page_for_grid, keyfn=lambda data : data[1].id)
@@ -77,3 +86,7 @@ class TopcontentHTMLRenderer(object):
     def render_cms_link(self, promotion):
         href = get_link_from_topcontent_in_cms(self.request, promotion)
         return Markup(u'<a href="%s">%s</a>' % (href, href))
+
+class TopicHTMLRenderer(object):
+    def __init__(self, request):
+        self.request = request

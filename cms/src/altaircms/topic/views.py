@@ -6,6 +6,9 @@ import altaircms.helpers as h
 from altaircms.auth.api import get_or_404
 from altaircms.page.models import Page
 
+@view_config(route_name="topic_list", renderer="altaircms:templates/topic/topic/pages.html", 
+             decorator="altaircms.lib.fanstatic_decorator.with_bootstrap",
+             permission="topic_read")
 @view_config(route_name="topcontent_list", renderer="altaircms:templates/topic/topcontent/pages.html", 
              decorator="altaircms.lib.fanstatic_decorator.with_bootstrap",
              permission="topcontent_read")
@@ -23,7 +26,9 @@ def list_view(context, request):
     grid = context.Grid.create(pages.paginated())
     return dict(grid=grid, pages=pages)
 
-
+@view_config(route_name="topic_detail", renderer="altaircms:templates/topic/topic/page_detail.html", 
+             decorator="altaircms.lib.fanstatic_decorator.with_bootstrap",
+             permission="topic_read")
 @view_config(route_name="topcontent_detail", renderer="altaircms:templates/topic/topcontent/page_detail.html", 
              decorator="altaircms.lib.fanstatic_decorator.with_bootstrap",
              permission="topcontent_read")

@@ -21,6 +21,13 @@ def includeme(config):
 
 
     ## topic
+    config.add_crud("topic_unit", title="topic", model="..topic.models.Topic",
+                    has_auto_generated_permission=False,  #todo:remove-it
+                    form=".forms.TopicForm", mapper=".mappers.topic_mapper", 
+                    events=dict(create_event=config.maybe_dotted(".subscribers.TopicCreate"), 
+                                update_event=config.maybe_dotted(".subscribers.TopicUpdate"), 
+                                ))
+
     config.add_crud("topcontent_unit", title="topcontent", model="..topic.models.Topcontent",
                     has_auto_generated_permission=False,  #todo:remove-it
                     form=".forms.TopcontentForm", mapper=".mappers.topcontent_mapper", 
@@ -54,9 +61,6 @@ def includeme(config):
                     bind_actions=["create", "update"], 
                     endpoint="category_list", 
                     form=".forms.ExternalBannerForm", mapper=".mappers.category_mapper")
-    config.add_crud("topic", title="topic", model="..topic.models.Topic", 
-                    form=".forms.TopicForm", mapper=".mappers.topic_mapper", 
-                    filter_form=".forms.TopicFilterForm")
     config.add_crud("hotword", title="hotword", model="..tag.models.HotWord",
                     form=".forms.HotWordForm", mapper=".mappers.hotword_mapper")
     config.add_crud("pagedefaultinfo", title="pagedefaultinfo", model="..page.models.PageDefaultInfo",
