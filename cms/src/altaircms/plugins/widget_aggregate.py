@@ -104,10 +104,13 @@ class WidgetAggregator(object):
 
         ## this is adhoc code.
         utilities = {}
+        logger.debug("loading...%s" % configparser._filename)
         for k in widgets:
             if configparser.has_option(k, "utility"):
                 utility_cls  = config.maybe_dotted(configparser.get(k, "utility"))
                 utility_instance = utility_cls().parse_settings(config, configparser)
+                if utility_instance is None:
+                    raise ConfigurationError("widget utility instance is None. widget.parse_settings() is return None?")
                 if not hasattr(utility_instance, "validation") or utility_instance.validation():
                     utilities[k] = utility_instance
         logger.debug("*widget aggregator* widgets:%s,  utilities:%s" % (widgets, utilities))

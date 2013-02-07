@@ -23,14 +23,6 @@ def countdown_days_from(limit_date, today_fn=datetime.datetime.now):
     else:
         return (limit_date-today).days
 
-COUNTDOWN_TAG_MAPPING = dict(event_open=u"公演開始", 
-                              event_close=u"公演終了", 
-                              deal_open=u"販売開始", 
-                              deal_close=u"販売終了")
-
-def countdown_kind_ja(kind):
-    return COUNTDOWN_TAG_MAPPING[kind]
-
 def list_to_attibutes(attr_list):
     """
     >>> attr_list = [("id", "foo"), ("class", "bar")]

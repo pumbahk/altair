@@ -1,8 +1,10 @@
 from markupsafe import Markup
 from altaircms.asset.viewhelpers import image_asset_layout
 from ..rowspanlib import RowSpanGrid
-from altaircms.helpers.link import get_link_from_topic
-from altaircms.helpers.link import get_link_from_topic_in_cms
+from altaircms.helpers.link import get_link_from_promotion
+from altaircms.helpers.link import get_link_from_promotion_in_cms
+from altaircms.helpers.link import get_link_from_topcontent
+from altaircms.helpers.link import get_link_from_topcontent_in_cms
 
 ## grid
 # data = (pageset, page, promotion widget)
@@ -49,14 +51,29 @@ class PromotionHTMLRenderer(object):
         return _render_image(self.request, promotion, asset, filepath=asset.thumbnail_path)
 
     def render_link(self, promotion):
-        href = get_link_from_topic(self.request, promotion)
+        href = get_link_from_promotion(self.request, promotion)
         return Markup(u'<a href="%s">%s</a>' % (href, href))
 
     def render_cms_link(self, promotion):
-        href = get_link_from_topic_in_cms(self.request, promotion)
+        href = get_link_from_promotion_in_cms(self.request, promotion)
         return Markup(u'<a href="%s">%s</a>' % (href, href))
         
 
 class TopcontentHTMLRenderer(object):
     def __init__(self, request):
         self.request = request
+
+    def render_countdown_type(self, topcontent): ## todo: if each organization has individual countdown type. set via .ini
+        return topcontent.COUNTDOWN_TYPE_MAPPING.get(topcontent.countdown_type, "????")
+
+    def render_pc_image(self, promotion):
+        asset = promotion.image_asset
+        return _render_image(self.request, promotion, asset)
+
+    def render_mobile_image(self, promotion):
+        asset = promotion.mobile_image_asset
+        return _render_image(self.request, promotion, asset)
+
+    def render_cms_link(self, promotion):
+        href = get_link_from_topcontent_in_cms(self.request, promotion)
+        return Markup(u'<a href="%s">%s</a>' % (href, href))

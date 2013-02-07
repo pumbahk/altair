@@ -34,6 +34,9 @@ def get_link_from_topic_in_cms(request, topic):
     else:
         return ""
 
+get_link_from_topcontent_in_cms = get_link_from_topic_in_cms
+get_link_from_promotion_in_cms = get_link_from_topic_in_cms
+
 def get_link_from_topic(request, topic):
     if topic.link:
         return topic.link

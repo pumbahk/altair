@@ -78,7 +78,45 @@
   </thead>
     <tbody>
       %for i, topcontent in enumerate(topcontents):
-      <tr><td>${i}</td></tr>
+        <tr>
+          <td rowspan="5">${topcontent.title}</td>
+          <td rowspan="4" class="main-image"><p>PC側画像</p> ${topcontent_renderer.render_pc_image(topcontent)}</td>
+          <td rowspan="4" class="main-image"><p>Mobile側画像</p> ${topcontent_renderer.render_mobile_image(topcontent)}</td>
+          <td><p>表示順序</p>${topcontent.display_order}</td>
+        </tr>
+        <tr>
+          <td><p>カウントダウンタイプ(??)</p>
+            ${topcontent_renderer.render_countdown_type(topcontent)}
+          </td>
+        </tr>
+        <tr>
+          <td><p>掲載期間</p>
+            ${h.term(topcontent.publish_open_on,topcontent.publish_close_on)}
+            %if topcontent.is_vetoed:
+              <span class="label label-warning">掲載強制停止中</span>
+            %endif
+          </td>
+        </tr>
+        <tr>
+          <td><p>pcリンク先</p>
+            ${topcontent_renderer.render_cms_link(topcontent)}
+          %if topcontent.link:
+            <span class="label label-info">外部リンク</span>
+          %else:
+            <span class="label">cmsリンク</span>
+          %endif
+          %if topcontent.mobile_link:
+            (mobile: <a href="${topcontent.mobile_link}">topcontent.mobile_link</a>)
+          %endif
+          </td>
+        </tr>
+        <tr>
+          <td colspan="2"><p>テキスト文言</p><div class="well">${topcontent.text}</div></td>
+          <td>
+            <a href="${request.route_path("topcontent_unit_update", action="input",id=topcontent.id,_query=dict(endpoint=request.url))}" class="btn btn-primary"><i class="icon-cog"></i> 編集</a>
+            <a href="${request.route_path("topcontent_unit_delete", action="confirm",id=topcontent.id,_query=dict(endpoint=request.url))}" class="btn btn-danger"><i class="icon-trash"></i> 削除</a>
+          </td>
+        </tr>
       %endfor
     </tbody>
 </table>

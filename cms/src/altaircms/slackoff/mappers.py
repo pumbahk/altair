@@ -37,6 +37,19 @@ def promotion_mapper(request, obj):
     url = h.link.get_link_from_promotion(request, obj)
     objlike.link = Markup(u'<a href="%s">リンク先</a>' % url)
     return objlike
+
+CDWN_DICT = dict(Topcontent.COUNTDOWN_CANDIDATES)    
+def topcontent_mapper(request, obj):
+    objlike = ObjectLike(**model_to_dict(obj))
+    objlike.tag_content = obj.tag_content
+    objlike.image_asset = image_asset_layout(request, obj.image_asset)
+    objlike.mobile_image_asset = image_asset_layout(request, obj.mobile_image_asset)
+    objlike.bound_page = show_cms_detail_page(request, obj.bound_page)
+    objlike.linked_page = show_cms_detail_page(request, obj.linked_page)
+    objlike.link = obj.link or u"-"
+    objlike.mobile_link = obj.mobile_link or u"-"
+    objlike.countdown_type = CDWN_DICT[obj.countdown_type]
+    return objlike
     
 PDICT = import_symbol("altaircms.seeds.prefecture:PrefectureMapping").name_to_label
 def performance_mapper(request, obj):
@@ -86,18 +99,6 @@ def topic_mapper(request, obj):
     objlike.linked_page = show_cms_detail_page(request, obj.linked_page)
     objlike.link = obj.link or u"-"
     objlike.mobile_link = obj.mobile_link or u"-"
-    return objlike
-
-CDWN_DICT = dict(Topcontent.COUNTDOWN_CANDIDATES)    
-def topcontent_mapper(request, obj):
-    objlike = ObjectLike(**model_to_dict(obj))
-    objlike.image_asset = image_asset_layout(request, obj.image_asset)
-    objlike.mobile_image_asset = image_asset_layout(request, obj.mobile_image_asset)
-    objlike.bound_page = show_cms_detail_page(request, obj.bound_page)
-    objlike.linked_page = show_cms_detail_page(request, obj.linked_page)
-    objlike.link = obj.link or u"-"
-    objlike.mobile_link = obj.mobile_link or u"-"
-    objlike.countdown_type = CDWN_DICT[obj.countdown_type]
     return objlike
 
 def hotword_mapper(request, obj):

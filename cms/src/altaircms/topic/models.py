@@ -5,7 +5,7 @@ import sqlalchemy.orm as orm
 from sqlalchemy.ext.declarative import declared_attr
 from datetime import datetime
 
-from altaircms.models import Base, BaseOriginalMixin
+from altaircms.models import Base
 from altaircms.models import DBSession, model_to_dict
 from altaircms.page.models import PageSet
 from altaircms.asset.models import ImageAsset
@@ -90,6 +90,19 @@ class TopicCore(Base):
             qs = cls.query
         return qs_has_permission(cls, qs_orderby_logic(cls, qs_in_term(cls, qs, d)))
 
+    def to_dict(self):
+        D = model_to_dict(self)
+        D["tag_content"] = self.tag_content
+        return D
+
+    @property
+    def tag_content(self):
+        return u", ".join(k.label for k in self.tags)
+
+    @tag_content.setter
+    def tag_content(self, v):
+        self._tag_content = v  
+
 _where = object()
 
 
@@ -110,7 +123,7 @@ def update_object_tag(obj, tagclass, ks, split_rx=re.compile("[,、]")):
         obj.tags.remove(k)
 
 
-class Topic(BaseOriginalMixin, WithOrganizationMixin, TopicCore):
+class Topic(WithOrganizationMixin, TopicCore):
     type = "topic"
     
     __tablename__ = "topic"
@@ -128,14 +141,6 @@ class Topic(BaseOriginalMixin, WithOrganizationMixin, TopicCore):
     mobile_link = sa.Column(sa.Unicode(255), doc="external mobile_link", nullable=True)
     tags = orm.relationship("TopicTag", secondary="topiccoretag2topiccore", backref=orm.backref("topics"))
 
-    @property
-    def tag_content(self):
-        return u", ".join(k.label for k in self.tags)
-
-    @tag_content.setter
-    def tag_content(self, v):
-        self._tag_content = v
-
     @classmethod
     def matched_qs(cls, d=None, tag=None, qs=None):
         qs = cls.publishing(d=d, qs=qs)
@@ -143,7 +148,13 @@ class Topic(BaseOriginalMixin, WithOrganizationMixin, TopicCore):
             qs = qs.filter(cls.tags.any(TopicTag.label==tag))
         return qs
 
-class Topcontent(BaseOriginalMixin, WithOrganizationMixin, TopicCore):
+_COUNTDOWN_TYPE_MAPPING = dict(
+    event_open=u"公演開始", 
+    event_close=u"公演終了", 
+    deal_open=u"販売開始", 
+    deal_close=u"販売終了")
+
+class Topcontent(WithOrganizationMixin, TopicCore):
     """
     Topページの画像つきtopicのようなもの
     """
@@ -151,8 +162,8 @@ class Topcontent(BaseOriginalMixin, WithOrganizationMixin, TopicCore):
     
     __tablename__ = "topcontent"
     __mapper_args__ = {"polymorphic_identity": type}
-
-    COUNTDOWN_CANDIDATES = h.base.COUNTDOWN_TAG_MAPPING.items()
+    COUNTDOWN_TYPE_MAPPING = _COUNTDOWN_TYPE_MAPPING
+    COUNTDOWN_CANDIDATES = COUNTDOWN_TYPE_MAPPING.items()
 
     id = sa.Column(sa.Integer, sa.ForeignKey("topiccore.id"), primary_key=True)
     tags = orm.relationship("TopcontentTag", secondary="topiccoretag2topiccore", backref=orm.backref("topcontents"))
@@ -175,18 +186,6 @@ class Topcontent(BaseOriginalMixin, WithOrganizationMixin, TopicCore):
     countdown_type = sa.Column(sa.String(255)) #todo: fixme
 
     @property
-    def tag_content(self):
-        return u", ".join(k.label for k in self.tags)
-
-    @tag_content.setter
-    def tag_content(self, v):
-        self._tag_content = v
-
-    @property
-    def countdown_type_ja(self):
-        return h.base.countdown_tag_ja(self.countdown_type)
-
-    @property
     def countdown_limit(self):
         return getattr(self.linked_page.event, self.countdown_type)
 
@@ -202,7 +201,7 @@ class Topcontent(BaseOriginalMixin, WithOrganizationMixin, TopicCore):
     def update_tag(self, ks):
         return update_object_tag(self, TopcontentTag, ks, self.SPLIT_RX)
 
-class Promotion(BaseOriginalMixin, WithOrganizationMixin, TopicCore):
+class Promotion(WithOrganizationMixin, TopicCore):
     type = "promotion"
     
     __tablename__ = "promotion"
@@ -223,19 +222,6 @@ class Promotion(BaseOriginalMixin, WithOrganizationMixin, TopicCore):
 
     def validate(self):
         return self.pageset or self.link
-
-    def to_dict(self):
-        D = model_to_dict(self)
-        D["tag_content"] = self.tag_content
-        return D
-
-    @property
-    def tag_content(self):
-        return u", ".join(k.label for k in self.tags)
-
-    @tag_content.setter
-    def tag_content(self, v):
-        self._tag_content = v  
 
     @classmethod
     def matched_qs(cls, d=None, tag=None, qs=None):

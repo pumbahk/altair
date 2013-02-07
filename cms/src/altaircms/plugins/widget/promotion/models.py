@@ -4,7 +4,6 @@ logger = logging.getLogger(__name__)
 from zope.interface import implements, implementer
 from altaircms.interfaces import IWidget
 from altaircms.plugins.interfaces import IWidgetUtility
-import functools
 from collections import namedtuple
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
@@ -20,6 +19,41 @@ from altaircms.security import RootFactory
 import altaircms.helpers as h
 from altaircms.topic.models import PromotionTag
 from altaircms.topic.models import Promotion
+from altaircms.plugins.api import get_widget_utility
+
+class PromotionWidget(Widget):
+    implements(IWidget)
+    type = "promotion"
+
+    __tablename__ = "widget_promotion"
+    __mapper_args__ = {"polymorphic_identity": type}
+    query = DBSession.query_property()
+
+    id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
+    display_type = sa.Column(sa.Unicode(length=255))
+    tag_id = sa.Column(sa.Integer, sa.ForeignKey("topiccoretag.id"))
+    tag = orm.relationship("PromotionTag", uselist=False)
+
+    @property
+    def promotion_sheet(self, d=None):
+        from altaircms.topic.models import Promotion
+        qs = Promotion.matched_qs(d=d, tag=self.tag.label).options(orm.joinedload("main_image"), orm.joinedload("linked_page"))
+        return PromotionSheet(qs.all()) ##
+
+    def merge_settings(self, bname, bsettings):
+        bsettings.need_extra_in_scan("request")
+        bsettings.need_extra_in_scan("page")
+        def closure():
+            try:
+                request = bsettings.extra["request"]
+                page = bsettings.extra["page"]
+                utility = get_widget_utility(request, page, self.type)
+                return utility.render_action(request, page, self, bsettings)
+            except Exception, e:
+                logger.exception(str(e))
+                logger.warn("promotion_merge_settings. info is empty")
+                return u''
+        bsettings.add(bname, closure)
 
 @implementer(IWidgetUtility)
 class PromotionWidgetUtilityDefault(object):
@@ -31,45 +65,50 @@ class PromotionWidgetUtilityDefault(object):
     def parse_settings(self, config, configparser):
         """以下のような形式のものを見る
         values = 
-          チケットスター:Topプロモーション枠
-          チケットスター:カテゴリTopプロモーション枠
         """
         self.settings = dict(configparser.items(PromotionWidget.type))
-        values = list_from_setting_value(self.settings["values"].decode("utf-8"))
-        self.choices = zip(values, values)
+        jnames = list_from_setting_value(self.settings["jnames"].decode("utf-8"))
+        names = list_from_setting_value(self.settings["names"].decode("utf-8"))
+        self.choices = zip(names, jnames)
+
+        self.name_to_jname = dict(self.choices)
+        self.jname_to_name = dict(zip(jnames, names))
         return self
 
-    
-## fixme: rename **info
-PromotionInfo = namedtuple("PromotionInfo", "idx thumbnails message main main_link links messages interval_time unit_candidates")
+    def validation(self):
+        for name, _ in self.choices:
+            getattr(self, "render_action_%s" % name)
+        return True
 
-def promotion_merge_settings(template_name, limit, widget, bname, bsettings):
-    def slideshow_render():
-        request = bsettings.extra["request"]
+    def render_action(self, request, page, widget, bsettings):
+        display_type = widget.display_type
+        k = self.name_to_jname.get(display_type, "default")
+        return getattr(self, "render_action_%s" % k)(request, widget)
+
+    def render_action_default(self, request, widget):
+        return self.render_action_tstar_top(request, widget)
+
+    def render_action_tstar_top(self, request, widget):
+        limit = 15
+        template_name = "altaircms.plugins.widget:promotion/render.html"
         from . import api
         pm = api.get_promotion_manager(request)
         info = pm.promotion_info(request, widget.promotion_sheet, limit=limit)
-        if info:
-            params = {"show_image": pm.show_image, "info": info}
-            return render(template_name, params, request=request)
-        else:
-            logger.warn("promotion_merge_settings. info is empty")
-            return u''
+        params = {"show_image": pm.show_image, "info": info}
+        return render(template_name, params, request=request)
 
-    bsettings.add(bname, slideshow_render)
+    def render_action_tstar_category_top(self, request, widget):
+        limit =  4
+        template_name = "altaircms.plugins.widget:promotion/category_render.html"
+        from . import api
+        pm = api.get_promotion_manager(request)
+        info = pm.promotion_info(request, widget.promotion_sheet, limit=limit)
+        params = {"show_image": pm.show_image, "info": info}
+        return render(template_name, params, request=request)
 
 
-PROMOTION_DISPATH = {
-    u"チケットスター:Topプロモーション枠": functools.partial(
-        promotion_merge_settings, 
-        "altaircms.plugins.widget:promotion/render.html", 15, 
-        ), 
-    u"チケットスター:カテゴリTopプロモーション枠":
-        functools.partial(
-        promotion_merge_settings, 
-        "altaircms.plugins.widget:promotion/category_render.html", 4, 
-        )
-    }
+## fixme: rename **info
+PromotionInfo = namedtuple("PromotionInfo", "idx thumbnails message main main_link links messages interval_time unit_candidates")
 
 class PromotionSheet(object):
     INTERVAL_TIME = 5000
@@ -95,30 +134,6 @@ class PromotionSheet(object):
             interval_time = self.INTERVAL_TIME, 
             unit_candidates = [int(pu.id) for pu in punits]
             )
-
-class PromotionWidget(Widget):
-    implements(IWidget)
-    type = "promotion"
-
-    __tablename__ = "widget_promotion"
-    __mapper_args__ = {"polymorphic_identity": type}
-    query = DBSession.query_property()
-
-    id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
-    display_type = sa.Column(sa.Unicode(length=255))
-    tag_id = sa.Column(sa.Integer, sa.ForeignKey("topiccoretag.id"))
-    tag = orm.relationship("PromotionTag", uselist=False)
-
-    @property
-    def promotion_sheet(self, d=None):
-        from altaircms.topic.models import Promotion
-        qs = Promotion.matched_qs(d=d, tag=self.tag.label).options(orm.joinedload("main_image"), orm.joinedload("linked_page"))
-        return PromotionSheet(qs.all()) ##
-
-    def merge_settings(self, bname, bsettings):
-        bsettings.need_extra_in_scan("request")
-        display_type = self.display_type or u"チケットスター:カテゴリTopプロモーション枠" #ugly
-        return PROMOTION_DISPATH[display_type](self, bname, bsettings) 
 
 class PromotionWidgetResource(HandleSessionMixin,
                               UpdateDataMixin,
