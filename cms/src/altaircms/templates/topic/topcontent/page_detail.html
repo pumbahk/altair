@@ -77,16 +77,16 @@
   <thead>
   </thead>
     <tbody>
-      %for i, topcontent in enumerate(topcontents):
+      %for i, topcontent in enumerate(topics):
         <tr>
           <td rowspan="5">${topcontent.title}</td>
-          <td rowspan="4" class="main-image"><p>PC側画像</p> ${topcontent_renderer.render_pc_image(topcontent)}</td>
-          <td rowspan="4" class="main-image"><p>Mobile側画像</p> ${topcontent_renderer.render_mobile_image(topcontent)}</td>
+          <td rowspan="4" class="main-image"><p>PC側画像</p> ${topic_renderer.render_pc_image(topcontent)}</td>
+          <td rowspan="4" class="main-image"><p>Mobile側画像</p> ${topic_renderer.render_mobile_image(topcontent)}</td>
           <td><p>表示順序</p>${topcontent.display_order}</td>
         </tr>
         <tr>
           <td><p>カウントダウンタイプ(??)</p>
-            ${topcontent_renderer.render_countdown_type(topcontent)}
+            ${topic_renderer.render_countdown_type(topcontent)}
           </td>
         </tr>
         <tr>
@@ -99,7 +99,7 @@
         </tr>
         <tr>
           <td><p>pcリンク先</p>
-            ${topcontent_renderer.render_cms_link(topcontent)}
+            ${topic_renderer.render_cms_link(topcontent)}
           %if topcontent.link:
             <span class="label label-info">外部リンク</span>
           %else:

@@ -2,14 +2,29 @@ from pyramid.decorator import reify
 
 from ..widget.api import get_has_widget_pages_finder
 from ..security import get_acl_candidates
+from ..tag.api import get_tagmanager
+
 from .searcher import TopcontentPageListSearcher
 from .searcher import PromotionPageListSearcher
+from .searcher import TopcontentPageDetailSearcher
+from .searcher import PromotionPageDetailSearcher
+from altaircms.topic.models import Topcontent
+from altaircms.topic.models import Promotion
+
+from .viewhelpers import TopcontentGrid
+from .viewhelpers import TopcontentHTMLRenderer
+from .viewhelpers import PromotionGrid
+from .viewhelpers import PromotionHTMLRenderer
 
 class TopcontentPageContext(object):
     def __init__(self, request):
         self.request = request
     widgettype = "topcontent"
 
+    Grid = TopcontentGrid
+    TargetTopic = Topcontent
+    TopicHTMLRenderer = TopcontentHTMLRenderer
+
     @property
     def __acl__(self):
         return get_acl_candidates()
@@ -19,14 +34,25 @@ class TopcontentPageContext(object):
         return get_has_widget_pages_finder(self.request, self.widgettype)
 
     @reify
-    def searcher(self):
+    def tag_manager(self):
+        return get_tagmanager(self.widgettype, request=self.request)
+    @reify
+    def list_searcher(self):
         return TopcontentPageListSearcher(self.request, self.finder)
+
+    @reify
+    def detail_searcher(self):
+        return TopcontentPageDetailSearcher(self.request, self.finder, self.tag_manager)
 
 class PromotionPageContext(object):
     def __init__(self, request):
         self.request = request
     widgettype = "promotion"
 
+    Grid = PromotionGrid
+    TargetTopic = Promotion
+    TopicHTMLRenderer = PromotionHTMLRenderer
+
     @property
     def __acl__(self):
         return get_acl_candidates()
@@ -36,13 +62,22 @@ class PromotionPageContext(object):
         return get_has_widget_pages_finder(self.request, self.widgettype)
 
     @reify
-    def searcher(self):
+    def tag_manager(self):
+        return get_tagmanager(self.widgettype, request=self.request)
+
+    @reify
+    def list_searcher(self):
         return PromotionPageListSearcher(self.request, self.finder)
+
+    @reify
+    def detail_searcher(self):
+        return PromotionPageDetailSearcher(self.request, self.finder, self.tag_manager)
 
 class TopcontentTagContext(object):
     classifier = "topcontent"
     def __init__(self, request):
         self.request = request
+
 class PromotionTagContext(object):
     classifier = "promotion"
     def __init__(self, request):

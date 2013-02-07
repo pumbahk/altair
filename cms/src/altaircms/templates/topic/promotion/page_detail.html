@@ -77,14 +77,14 @@
   <thead>
   </thead>
     <tbody>
-      %for i, promotion in enumerate(promotions):
+      %for i, promotion in enumerate(topics):
         <tr>
           <td rowspan="5">${i}</td>
-          <td rowspan="4" class="main-image"><p>メイン画像</p> ${promotion_renderer.render_main_image(promotion)}</td>
+          <td rowspan="4" class="main-image"><p>メイン画像</p> ${topic_renderer.render_main_image(promotion)}</td>
           <td><p>表示順序</p>${promotion.display_order}</td>
         </tr>
         <tr>
-          <td class="thumbnail"><p>サブ画像(最大サイズ(75px,75px))</p>${promotion_renderer.render_thumbnail_image(promotion)}</td>
+          <td class="thumbnail"><p>サブ画像(最大サイズ(75px,75px))</p>${topic_renderer.render_thumbnail_image(promotion)}</td>
         </tr>
         <tr>
           <td><p>掲載期間</p>
@@ -96,7 +96,7 @@
         </tr>
         <tr>
           <td><p>リンク先</p>
-            ${promotion_renderer.render_cms_link(promotion)}
+            ${topic_renderer.render_cms_link(promotion)}
           %if promotion.link:
             <span class="label label-info">外部リンク</span>
           %else:

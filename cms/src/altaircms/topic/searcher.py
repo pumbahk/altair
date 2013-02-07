@@ -96,9 +96,10 @@ class PromotionPageListSearcher(object):
         return qs
 
 class PromotionPageDetailSearcher(object):
-    def __init__(self, request, finder):
+    def __init__(self, request, finder, tag_manager):
         self.request = request 
         self.finder = finder
+        self.tag_manager = tag_manager
 
     def get_widgets(self, page_id):
         return self.finder.widget.query.filter_by(page_id=page_id)
@@ -107,3 +108,12 @@ class PromotionPageDetailSearcher(object):
         if widget_id:
             return widgets.filter(self.finder.widget.id==widget_id).first()
         return widgets.first()
+
+## companion
+
+class PromotionSearcher(object):
+    def list(self, request, finder, _now=datetime.now):
+        return PromotionPageListSearcher(request, finder, _now)
+
+    def detail(self, request, finder, tag_manager):
+        return PromotionPageDetailSearcher(request, finder, tag_manager)
