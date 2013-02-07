@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['L_L8_ZFPRKAA7BLJ'] = (function (exports) { (function () { 
+__LIBS__['HAC5UFCQLYEG3TQK'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['fD19_J_PQZ9G0IUR'] = (function (exports) { (function () { 
+__LIBS__['r_CEY1JRA3G2EG2P'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['rVY5IHZ6E4_QV4XM'] = (function (exports) { (function () { 
+__LIBS__['gVWGF_OT_H5JPNM0'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['L_L8_ZFPRKAA7BLJ'];
-var CONF = __LIBS__['fD19_J_PQZ9G0IUR'];
+var util = __LIBS__['HAC5UFCQLYEG3TQK'];
+var CONF = __LIBS__['r_CEY1JRA3G2EG2P'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -1021,9 +1021,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['fD19_J_PQZ9G0IUR'];
-  var seat = __LIBS__['rVY5IHZ6E4_QV4XM'];
-  var util = __LIBS__['L_L8_ZFPRKAA7BLJ'];
+  var CONF = __LIBS__['r_CEY1JRA3G2EG2P'];
+  var seat = __LIBS__['gVWGF_OT_H5JPNM0'];
+  var util = __LIBS__['HAC5UFCQLYEG3TQK'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1587,6 +1587,9 @@ function parseTransform(transform_str) {
                   if (self.dragging) {
                     self.drawable.releaseMouse();
                     self.dragging = false;
+                    $('body').unbind('selectstart');
+                    $('body').unbind('mousemove');
+                    $('body').unbind('mouseup');
                   }
                   break;
                 }
@@ -1598,6 +1601,29 @@ function parseTransform(transform_str) {
                   if (drawableMouseDown) {
                     self.dragging = true;
                     self.drawable.captureMouse();
+                    $('body').bind('selectstart', function() { return false; });
+                    $('body').bind('mousemove', function() {
+                      if (self.animating) return;
+                      if (self.dragging && drawableMouseDown) {
+                        var newScrollPos = Fashion._lib.subtractPoint(
+                          scrollPos,
+                          Fashion._lib.subtractPoint(
+                            evt.logicalPosition,
+                            self.startPos));
+                        scrollPos = self.drawable.scrollPosition(newScrollPos);
+                      }
+                      return false;
+                    });
+                    $('body').bind('mouseup', function() {
+                      drawableMouseDown = false;
+                      if (self.dragging) {
+                        self.drawable.releaseMouse();
+                        self.dragging = false;
+                        $('body').unbind('selectstart');
+                        $('body').unbind('mousemove');
+                        $('body').unbind('mouseup');
+                      }
+                    });
                   } else {
                     return;
                   }
