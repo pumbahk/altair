@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
-
+import logging 
+logger = logging.getLogger(__name__)
 ### widget dispatch api
 from ConfigParser import SafeConfigParser
 from pyramid.path import AssetResolver
@@ -78,6 +79,7 @@ def set_widget_aggregator_dispatcher(config, configparsers, validator=aggregate.
     dispatcher = aggregate.WidgetAggregatorDispatcher()
     for configparser in configparsers:
         waconfig = aggregate.WidgetAggregatorConfig(config, configparser)
+        logger.info("loading...%s" % configparser._filename)
         dispatcher.add_dispatch_cont(waconfig.get_keys,
                                      waconfig.dispatch_function, 
                                      waconfig.create_subdispatch_dict(config, validator=validator)

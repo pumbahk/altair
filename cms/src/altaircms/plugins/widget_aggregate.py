@@ -104,7 +104,6 @@ class WidgetAggregator(object):
 
         ## this is adhoc code.
         utilities = {}
-        logger.info("loading...%s" % configparser._filename)
         for k in widgets:
             if configparser.has_option(k, "utility"):
                 utility_cls  = config.maybe_dotted(configparser.get(k, "utility"))
