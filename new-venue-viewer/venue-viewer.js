@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['YX3GM1HH8UZLM9UW'] = (function (exports) { (function () { 
+__LIBS__['IYP0R02RUWCFFIVA'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['QFU1IX9I37DQMPMY'] = (function (exports) { (function () { 
+__LIBS__['qX3PGM0G74TMTGVI'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['D8AZJC_RQDPU5G93'] = (function (exports) { (function () { 
+__LIBS__['AKZ4F57OWSZ4VEZR'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['YX3GM1HH8UZLM9UW'];
-var CONF = __LIBS__['QFU1IX9I37DQMPMY'];
+var util = __LIBS__['IYP0R02RUWCFFIVA'];
+var CONF = __LIBS__['qX3PGM0G74TMTGVI'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -1021,9 +1021,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['QFU1IX9I37DQMPMY'];
-  var seat = __LIBS__['D8AZJC_RQDPU5G93'];
-  var util = __LIBS__['YX3GM1HH8UZLM9UW'];
+  var CONF = __LIBS__['qX3PGM0G74TMTGVI'];
+  var seat = __LIBS__['AKZ4F57OWSZ4VEZR'];
+  var util = __LIBS__['IYP0R02RUWCFFIVA'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1358,7 +1358,7 @@ function parseTransform(transform_str) {
 
               case 'text':
               case 'tspan':
-                if (n.childNodes.length==1 && n.firstChild.nodeType == Node.TEXT_NODE) {
+                if (n.childNodes.length==1 && n.firstChild.nodeType == /*Node.TEXT_NODE*/3) {
                   shape = new Fashion.Text({
                     text: collectText(n),
                     anchor: currentSvgStyle.textAnchor,

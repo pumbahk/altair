@@ -340,7 +340,7 @@
 
               case 'text':
               case 'tspan':
-                if (n.childNodes.length==1 && n.firstChild.nodeType == Node.TEXT_NODE) {
+                if (n.childNodes.length==1 && n.firstChild.nodeType == /*Node.TEXT_NODE*/3) {
                   shape = new Fashion.Text({
                     text: collectText(n),
                     anchor: currentSvgStyle.textAnchor,
