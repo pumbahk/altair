@@ -340,7 +340,7 @@
 
               case 'text':
               case 'tspan':
-                if (n.childNodes.length==1 && n.firstChild.nodeType == /*Node.TEXT_NODE*/3) {
+                if (n.childNodes.length==1 && n.firstChild.nodeType == Node.TEXT_NODE) {
                   shape = new Fashion.Text({
                     text: collectText(n),
                     anchor: currentSvgStyle.textAnchor,
@@ -530,10 +530,8 @@
                 },
                 mousedown: function(evt) {
                   if (self.pages && self.uiMode == 'select') {
-                    self.canvas.css({ cursor: 'default' });
                     self.callbacks.messageBoard.down.call(self);
                     self.navigate(link);
-                    // drawableMouseDown = false;
                   }
                 }
               });
@@ -570,12 +568,17 @@
                   if (self.dragging) {
                     self.drawable.releaseMouse();
                     self.dragging = false;
-                    $('body').unbind('selectstart');
-                    $('body').unbind('mousemove');
-                    $('body').unbind('mouseup');
                   }
                   break;
                 }
+              },
+
+              mouseout: function (evt) {
+                if (self.dragging) {
+                  self.drawable.releaseMouse();
+                  self.dragging = false;
+                }
+                drawableMouseDown = false;
               },
 
               mousemove: function (evt) {
@@ -584,29 +587,6 @@
                   if (drawableMouseDown) {
                     self.dragging = true;
                     self.drawable.captureMouse();
-                    $('body').bind('selectstart', function() { return false; });
-                    $('body').bind('mousemove', function() {
-                      if (self.animating) return;
-                      if (self.dragging && drawableMouseDown) {
-                        var newScrollPos = Fashion._lib.subtractPoint(
-                          scrollPos,
-                          Fashion._lib.subtractPoint(
-                            evt.logicalPosition,
-                            self.startPos));
-                        scrollPos = self.drawable.scrollPosition(newScrollPos);
-                      }
-                      return false;
-                    });
-                    $('body').bind('mouseup', function() {
-                      drawableMouseDown = false;
-                      if (self.dragging) {
-                        self.drawable.releaseMouse();
-                        self.dragging = false;
-                        $('body').unbind('selectstart');
-                        $('body').unbind('mousemove');
-                        $('body').unbind('mouseup');
-                      }
-                    });
                   } else {
                     return;
                   }
@@ -617,6 +597,7 @@
                     evt.logicalPosition,
                     self.startPos));
                 scrollPos = self.drawable.scrollPosition(newScrollPos);
+                return false;
               }
             });
           })();

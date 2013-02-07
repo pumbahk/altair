@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['IYP0R02RUWCFFIVA'] = (function (exports) { (function () { 
+__LIBS__['p2AB6UFMWVIIC7QM'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['qX3PGM0G74TMTGVI'] = (function (exports) { (function () { 
+__LIBS__['qUHYO3E0TVFX5NL1'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['AKZ4F57OWSZ4VEZR'] = (function (exports) { (function () { 
+__LIBS__['XV8IKSDLBXMNNPT5'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['IYP0R02RUWCFFIVA'];
-var CONF = __LIBS__['qX3PGM0G74TMTGVI'];
+var util = __LIBS__['p2AB6UFMWVIIC7QM'];
+var CONF = __LIBS__['qUHYO3E0TVFX5NL1'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -1021,9 +1021,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['qX3PGM0G74TMTGVI'];
-  var seat = __LIBS__['AKZ4F57OWSZ4VEZR'];
-  var util = __LIBS__['IYP0R02RUWCFFIVA'];
+  var CONF = __LIBS__['qUHYO3E0TVFX5NL1'];
+  var seat = __LIBS__['XV8IKSDLBXMNNPT5'];
+  var util = __LIBS__['p2AB6UFMWVIIC7QM'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1358,7 +1358,7 @@ function parseTransform(transform_str) {
 
               case 'text':
               case 'tspan':
-                if (n.childNodes.length==1 && n.firstChild.nodeType == /*Node.TEXT_NODE*/3) {
+                if (n.childNodes.length==1 && n.firstChild.nodeType == Node.TEXT_NODE) {
                   shape = new Fashion.Text({
                     text: collectText(n),
                     anchor: currentSvgStyle.textAnchor,
@@ -1548,10 +1548,8 @@ function parseTransform(transform_str) {
                 },
                 mousedown: function(evt) {
                   if (self.pages && self.uiMode == 'select') {
-                    self.canvas.css({ cursor: 'default' });
                     self.callbacks.messageBoard.down.call(self);
                     self.navigate(link);
-                    // drawableMouseDown = false;
                   }
                 }
               });
@@ -1588,12 +1586,17 @@ function parseTransform(transform_str) {
                   if (self.dragging) {
                     self.drawable.releaseMouse();
                     self.dragging = false;
-                    $('body').unbind('selectstart');
-                    $('body').unbind('mousemove');
-                    $('body').unbind('mouseup');
                   }
                   break;
                 }
+              },
+
+              mouseout: function (evt) {
+                if (self.dragging) {
+                  self.drawable.releaseMouse();
+                  self.dragging = false;
+                }
+                drawableMouseDown = false;
               },
 
               mousemove: function (evt) {
@@ -1602,29 +1605,6 @@ function parseTransform(transform_str) {
                   if (drawableMouseDown) {
                     self.dragging = true;
                     self.drawable.captureMouse();
-                    $('body').bind('selectstart', function() { return false; });
-                    $('body').bind('mousemove', function() {
-                      if (self.animating) return;
-                      if (self.dragging && drawableMouseDown) {
-                        var newScrollPos = Fashion._lib.subtractPoint(
-                          scrollPos,
-                          Fashion._lib.subtractPoint(
-                            evt.logicalPosition,
-                            self.startPos));
-                        scrollPos = self.drawable.scrollPosition(newScrollPos);
-                      }
-                      return false;
-                    });
-                    $('body').bind('mouseup', function() {
-                      drawableMouseDown = false;
-                      if (self.dragging) {
-                        self.drawable.releaseMouse();
-                        self.dragging = false;
-                        $('body').unbind('selectstart');
-                        $('body').unbind('mousemove');
-                        $('body').unbind('mouseup');
-                      }
-                    });
                   } else {
                     return;
                   }
@@ -1635,6 +1615,7 @@ function parseTransform(transform_str) {
                     evt.logicalPosition,
                     self.startPos));
                 scrollPos = self.drawable.scrollPosition(newScrollPos);
+                return false;
               }
             });
           })();
