@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['d2RJFU4FMER34P0S'] = (function (exports) { (function () { 
+__LIBS__['L_L8_ZFPRKAA7BLJ'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['yIHR_3I4IOJGXMCG'] = (function (exports) { (function () { 
+__LIBS__['fD19_J_PQZ9G0IUR'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['GGDDMINIE5MPPQSV'] = (function (exports) { (function () { 
+__LIBS__['rVY5IHZ6E4_QV4XM'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['d2RJFU4FMER34P0S'];
-var CONF = __LIBS__['yIHR_3I4IOJGXMCG'];
+var util = __LIBS__['L_L8_ZFPRKAA7BLJ'];
+var CONF = __LIBS__['fD19_J_PQZ9G0IUR'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -1021,9 +1021,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['yIHR_3I4IOJGXMCG'];
-  var seat = __LIBS__['GGDDMINIE5MPPQSV'];
-  var util = __LIBS__['d2RJFU4FMER34P0S'];
+  var CONF = __LIBS__['fD19_J_PQZ9G0IUR'];
+  var seat = __LIBS__['rVY5IHZ6E4_QV4XM'];
+  var util = __LIBS__['L_L8_ZFPRKAA7BLJ'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1095,7 +1095,8 @@ function parseTransform(transform_str) {
       optionalViewportSize: null,
       loading: false,
       loadAborted: false,
-      loadAbortionHandler: null
+      loadAbortionHandler: null,
+      _smallTextsShown: true
     },
 
     methods: {
@@ -1215,6 +1216,7 @@ function parseTransform(transform_str) {
           self.highlighted = null;
           self.availableAdjacencies = [1];
           self.shapes = null;
+          self.small_texts = [ ];
           self.link_pairs = null;
           self.selection = {};
           self.selectionCount = 0;
@@ -1289,6 +1291,7 @@ function parseTransform(transform_str) {
           });
 
           var shapes = {}, link_pairs = [];
+          var small_texts = [];
           var styleClasses = CONF.DEFAULT.STYLES;
 
           var leftTop = null, rightBottom = null;
@@ -1391,7 +1394,7 @@ function parseTransform(transform_str) {
                     x: parseFloat(attrs.rx || 0),
                     y: parseFloat(attrs.ry || 0)
                   },
-                  transform: attrs.transform || null,
+                  transform: transform || null,
                   zIndex: -10
                 });
                 for (var j=0,ll=n.childNodes.length; j<ll; j++) {
@@ -1428,6 +1431,11 @@ function parseTransform(transform_str) {
                 shape.transform(transform);
                 if (shape instanceof Fashion.Text) {
                   shape.fontSize(currentSvgStyle.fontSize);
+                  if (currentSvgStyle.fontSize <= 10) {
+                    if (!self._smallTextsShown)
+                      shape.visibility(false);
+                    small_texts.push(shape);
+                  }
                 }
                 drawable.draw(shape);
               }
@@ -1458,6 +1466,7 @@ function parseTransform(transform_str) {
 
           self.drawable = drawable;
           self.shapes = shapes;
+          self.small_texts = small_texts;
           self.link_pairs = link_pairs;
 
           if (!leftTop)
@@ -1848,6 +1857,22 @@ function parseTransform(transform_str) {
       back: function VenueViewer_back() {
         if (this._history.length > 0)
           this.navigate(this._history[this._history.length - 1]);
+      },
+
+      showSmallTexts: function VenueViewer_showSmallTexts() {
+        if (!this._smallTextsShown) {
+          for(var i = this.small_texts.length; --i >= 0;)
+            this.small_texts[i].visibility(true);
+          this._smallTextsShown = true
+        }
+      },
+
+      hideSmallTexts: function VenueViewer_hideSmallTexts() {
+        if (this._smallTextsShown) {
+          for(var i = this.small_texts.length; --i >= 0;)
+            this.small_texts[i].visibility(false);
+          this._smallTextsShown = false;
+        }
       }
     }
   });
@@ -1974,6 +1999,13 @@ function parseTransform(transform_str) {
 
         case 'navigate':
           aux.navigate(arguments[1]);
+          break;
+
+        case 'showSmallTexts':
+          aux.showSmallTexts();
+          break;
+        case 'hideSmallTexts':
+          aux.hideSmallTexts();
           break;
         }
       }

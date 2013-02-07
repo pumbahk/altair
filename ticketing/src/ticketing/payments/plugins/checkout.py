@@ -43,7 +43,6 @@ def includeme(config):
 def back_url(request):
     return request.route_url('payment.confirm')
 
-
 class CheckoutSettlementFailure(PaymentPluginException):
     def __init__(self, message, order_no, back_url, error_code=None, return_code=None):
         super(CheckoutSettlementFailure, self).__init__(message, order_no, back_url)
@@ -131,7 +130,7 @@ class CheckoutView(object):
     @view_config(route_name='payment.checkout.login', renderer='ticketing.payments.plugins:templates/checkout_login.html', request_method='POST')
     @view_config(route_name='payment.checkout.login', renderer=selectable_renderer("carts_mobile/%(membership)s/checkout_login_mobile.html"), request_method='POST', request_type='ticketing.mobile.interfaces.IMobileRequest')
     def login(self):
-        cart = a.get_cart(self.request)
+        cart = a.get_cart_safe(self.request)
         self.request.session['ticketing.cart.csrf_token'] = self.request.params.get('csrf_token')
         self.request.session['ticketing.cart.mailmagazine'] = self.request.params.getall('mailmagazine')
         return dict(
@@ -162,15 +161,17 @@ class CheckoutView(object):
         }
 
     @view_config(route_name='payment.checkout.callback.success', renderer='ticketing.payments.plugins:templates/checkout_callback.html', request_method='GET')
+    @view_config(route_name='payment.checkout.callback.success', renderer=selectable_renderer("carts_mobile/%(membership)s/checkout_callback_mobile.html"), request_method='GET', request_type='ticketing.mobile.interfaces.IMobileRequest')
     def callback_success(self):
+        cart = a.get_cart_safe(self.request)
         return {
-            'csrf_token':self.request.session['ticketing.cart.csrf_token'],
-            'mailmagazine_ids':self.request.session['ticketing.cart.mailmagazine']
+            'csrf_token':self.request.session.get('ticketing.cart.csrf_token'),
+            'mailmagazine_ids':self.request.session.get('ticketing.cart.mailmagazine')
         }
 
     @view_config(route_name='payment.checkout.callback.error', request_method='GET')
     def callback_error(self):
-        cart = a.get_cart(self.request)
+        cart = a.get_cart_safe(self.request)
         logger.info(u'CheckoutPlugin finish: 決済エラー order_no = %s' % (cart.order_no))
         self.request.session.flash(u'決済に失敗しました。しばらくしてから再度お試しください。')
         raise CheckoutSettlementFailure(

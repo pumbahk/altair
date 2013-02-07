@@ -231,6 +231,11 @@ function _subtractPoint(lhs, rhs) {
   return { x: lhs.x - rhs.x, y: lhs.y - rhs.y };
 }
 
+function _pointEquals(lhs, rhs) {
+  return (lhs == null && rhs == null)
+         || (lhs != null && rhs != null && lhs.x == rhs.x && lhs.y == rhs.y);
+}
+
 function _indexOf(array, elem, fromIndex) {
   if (array instanceof Array && 'indexOf' in Array.prototype) {
     return array.indexOf(elem, fromIndex);
@@ -251,6 +256,7 @@ _lib._clip                 = _clip;
 _lib.clipPoint             = _clipPoint;
 _lib.addPoint              = _addPoint;
 _lib.subtractPoint         = _subtractPoint;
+_lib.pointEquals           = _pointEquals
 _lib.escapeXMLSpecialChars = _escapeXMLSpecialChars;
 _lib._bindEvent            = _bindEvent;
 _lib._unbindEvent          = _unbindEvent;
@@ -572,6 +578,12 @@ var Matrix = (function() {
         } else if (arguments.length != 0) {
           throw new ArgumentError("0 or 6 arguments expected");
         }
+      },
+
+      equals: function (that) {
+        return that != null &&
+               this.a == that.a && this.b == that.b && this.c == that.c &&
+               this.d == that.d && this.e == that.e && this.f == that.f;
       },
 
       multiplyI: function (a2, b2, c2, d2, e2, f2) {
@@ -2066,40 +2078,49 @@ var Base = _class("Base", {
 
     position: function(value) {
       if (value) {
-        this._position = value;
-        this._dirty |= Fashion.DIRTY_POSITION;
-        if (this.drawable)
-          this.drawable._enqueueForUpdate(this);
+        if (!_lib.pointEquals(this._position, value)) {
+          this._position = value;
+          this._dirty |= Fashion.DIRTY_POSITION;
+          if (this.drawable)
+            this.drawable._enqueueForUpdate(this);
+        }
       }
       return this._position;
     },
 
     size: function(value) {
       if (value) {
-        this._size = value;
-        this._dirty |= Fashion.DIRTY_SIZE;
-        if (this.drawable)
-          this.drawable._enqueueForUpdate(this);
+        if (!_lib.pointEquals(this._size, value)) {
+          this._size = value;
+          this._dirty |= Fashion.DIRTY_SIZE;
+          if (this.drawable)
+            this.drawable._enqueueForUpdate(this);
+        }
       }
       return this._size;
     },
 
     zIndex: function(value) {
       if (value !== void(0)) {
-        this._zIndex = value;
-        this._dirty |= Fashion.DIRTY_ZINDEX;
-        if (this.drawable)
-          this.drawable._enqueueForUpdate(this);
+        if (this._zIndex != value) {
+          this._zIndex = value;
+          this._dirty |= Fashion.DIRTY_ZINDEX;
+          if (this.drawable)
+            this.drawable._enqueueForUpdate(this);
+        }
       }
       return this._zIndex;
     },
 
     transform: function(value) {
       if (value !== void(0)) {
-        this._transform = value;
-        this._dirty |= Fashion.DIRTY_TRANSFORM;
-        if (this.drawable)
-          this.drawable._enqueueForUpdate(this);
+        if ((this._transform == null && value != null)
+            || (this._transform != null && !this._transform.equals(value))) {
+          this._transform = value;
+          this._dirty |= Fashion.DIRTY_TRANSFORM;
+          if (this.drawable)
+            this.drawable._enqueueForUpdate(this);
+        }
       }
       return this._transform;
     },
@@ -2110,6 +2131,18 @@ var Base = _class("Base", {
         this._dirty |= Fashion.DIRTY_STYLE;
         if (this.drawable)
           this.drawable._enqueueForUpdate(this);
+      }
+      return this._style;
+    },
+
+    visibility: function(value) {
+      if (value !== void(0)) {
+        if (this._visibility != value) {
+          this._visibility = value;
+          this._dirty |= Fashion.DIRTY_VISIBILITY;
+          if (this.drawable)
+            this.drawable._enqueueForUpdate(this);
+        }
       }
       return this._style;
     },
