@@ -99,4 +99,3 @@ def get_widget_utility(request, page,_type):
         request._widget_utilities[(page.organization_id, _type)] = utility
     return utility
         
-

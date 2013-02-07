@@ -12,3 +12,9 @@ def add_has_widget_pages_finder(config, finder, name=""):
 
 def get_has_widget_pages_finder(request, name=""):
     return request.registry.getUtility(IHasWidgetPageFinder, name=name)
+
+
+## parse config
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
