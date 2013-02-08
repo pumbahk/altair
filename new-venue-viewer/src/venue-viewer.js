@@ -632,6 +632,10 @@
               },
 
               mousemove: function (evt) {
+                if (clickTimer) {
+                  clearTimeout(clickTimer);
+                  clickTimer = 0;
+                }
                 if (self.animating) return;
                 if (!self.dragging) {
                   if (drawableMouseDown) {
