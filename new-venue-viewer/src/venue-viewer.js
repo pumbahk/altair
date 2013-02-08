@@ -167,6 +167,7 @@
                 if (self.currentPage) {
                   self.loadDrawing(self.currentPage, function () {
                     self.callbacks.load.call(self, self);
+                    self.zoomAndPan(self.zoomRatioMin, { x: 0., y: 0., });
                   });
                 } else {
                   self.callbacks.load.call(self, self);
@@ -181,9 +182,9 @@
         var self = this;
         this.callbacks.loadPartStart.call(self, self, 'drawing');
         this.initDrawable(page, function () {
-          next();
           self.callbacks.pageChanging.call(self, page);
           self.callbacks.loadPartEnd.call(self, self, 'drawing');
+          next.call(self);
         });
       },
 
@@ -526,7 +527,11 @@
                         self.overlayShapes.save(siblings[i].id, shape);
                       }
                     }
-                    self.callbacks.messageBoard.up.call(self, self.pages[link].name);
+                    var pageAndAnchor = link.split('#');
+                    var page = pageAndAnchor[0];
+                    if (page == '')
+                      page = self.currentPage;
+                    self.callbacks.messageBoard.up.call(self, self.pages[page].name);
                     self.canvas.css({ cursor: 'pointer' });
                   }
                 },
@@ -653,19 +658,81 @@
         }, self.callbacks.message);
       },
 
-      navigate: function (page) {
-        if (!(page in this.pages))
+      zoomOnShape: function (shape) {
+        var position = shape.position();
+        var size = shape.size();
+        var vs = drawable.viewportSize();
+        var ratio = Math.min(vs.x / size.x, vs.y / size.y);
+        var scrollPos = {
+          x: Math.max(position.x - (vs.x * ratio - size.x) / 2, 0),
+          y: Math.max(position.y - (vx.y * ratio - size.y) / 2, 0)
+        };
+        this.zoomAndPan(ratio, scrollPos);
+      },
+
+      navigate: function (pageUrlOrPageInfo) {
+        var previousPageInfo = {
+          page: this.currentPage,
+          zoomRatio: this.zoomRatio,
+          scrollPosition: this.drawable.scrollPosition()
+        };
+        var self = this;
+        if (typeof pageUrlOrPageInfo == 'string' || pageUrlOrPageInfo instanceof String) {
+          // page can be
+          // - page.svg
+          // - page.svg#id
+          // - page.svg#__FIXED__
+          // - #id
+          var comps = pageUrlOrPageInfo.split('#');
+          var anchor = null;
+          page = comps[0];
+          if (comps.length > 1)
+            anchor = comps[1];
+          if (page == '')
+            page = this.currentPage;
+          var afterthings = function () {
+            self._history.push(previousPageInfo);
+            if (anchor == '__FIXED__') {
+              self.zoomAndPan(previousPageInfo.zoomRatio,
+                              previousPageInfo.scrollPosition);
+            } else {
+              var shape = self.shapes[anchor];
+              if (shape !== void(0)) {
+                self.zoomOnShape(shape);
+              } else {
+                self.zoomAndPan(self.zoomRatioMin, { x: 0., y: 0. });
+              }
+            }
+          }
+          this._loadPage({ page: page }, afterthings);
+        } else {
+          this._loadPage(pageUrlOrPageInfo, function () {
+            self._history.push(previousPageInfo);
+          });
+        }
+      },
+
+      _loadPage: function (pageInfo, next) {
+        var self = this;
+        var afterthings = function () {
+          if (pageInfo.zoomRatio && pageInfo.scrollPosition) {
+            self.zoomAndPan(pageInfo.zoomRatio,
+                            pageInfo.scrollPosition);
+          }
+          if (next)
+            next.call(self, pageInfo);
+        };
+        if (!(pageInfo.page in this.pages))
           return;
         this.callbacks.messageBoard.down.call(this);
-        var previousPage = this.currentPage;
-        var self = this;
-        this.loadDrawing(page, function () {
-          if (self._history.length > 0 && self._history[self._history.length - 1] == page)
-            self._history.pop();
-          else
-            self._history.push(previousPage);
-          self.callbacks.load.call(self, self);
-        });
+        if (this.curentPage != pageInfo.page) {
+          this.loadDrawing(pageInfo.page, function () {
+            self.callbacks.load.call(self, self);
+            afterthings();
+          });
+        } else {
+          afterthings();
+        }
       },
 
       history: function () {
@@ -777,6 +844,40 @@
       },
 
       zoom: function(ratio, anchor) {
+        var vs = this.drawable.viewportSize();
+        var scrollPos = this.drawable.scrollPosition();
+        var previousRatio = this.zoomRatio;
+
+        var previousLogicalSize = {
+          x: vs.x / previousRatio,
+          y: vs.y / previousRatio
+        };
+
+        if (!anchor) {
+          anchor = {
+            x: scrollPos.x + (previousLogicalSize.x / 2),
+            y: scrollPos.y + (previousLogicalSize.y / 2)
+          }
+        }
+
+        var physicalOffset = {
+          x: (anchor.x - scrollPos.x) * previousRatio,
+          y: (anchor.y - scrollPos.y) * previousRatio 
+        };
+        var logicalSize = {
+          x: vs.x / ratio,
+          y: vs.y / ratio
+        };
+
+        var logicalOrigin = {
+          x: anchor.x - (physicalOffset.x / ratio),
+          y: anchor.y - (physicalOffset.y / ratio)
+        };
+
+        this.zoomAndPan(ratio, logicalOrigin);
+      },
+
+      zoomAndPan: function(ratio, scrollPos) {
         if (isNaN(ratio))
           return;
         var previousRatio = this.zoomRatio;
@@ -792,42 +893,11 @@
           this.callbacks.zoomRatioChange && this.callbacks.zoomRatioChange(ratio);
           return;
         }
-
-        var vs = this.drawable.viewportSize();
-        var previousLogicalSize = {
-          x: vs.x / previousRatio,
-          y: vs.y / previousRatio
-        };
-
-        if (!anchor) {
-          var scroll = this.drawable.scrollPosition();
-          anchor = {
-            x: scroll.x + (previousLogicalSize.x / 2),
-            y: scroll.y + (previousLogicalSize.y / 2)
-          }
-        }
-
-        var scrollPosition = this.drawable.scrollPosition();
         this.drawable.transform(Fashion.Matrix.scale(ratio)
                                 .translate({x: -this.contentOriginPosition.x,
                                             y: -this.contentOriginPosition.y}));
 
-        var physicalOffset = {
-          x: (anchor.x - scrollPosition.x) * previousRatio,
-          y: (anchor.y - scrollPosition.y) * previousRatio 
-        };
-
-        var logicalSize = {
-          x: vs.x / ratio,
-          y: vs.y / ratio
-        };
-
-        var logicalOrigin = {
-          x: anchor.x - (physicalOffset.x / ratio),
-          y: anchor.y - (physicalOffset.y / ratio)
-        };
-
-        this.drawable.scrollPosition(logicalOrigin);
+        this.drawable.scrollPosition(scrollPos);
         this.zoomRatio = ratio;
         this.callbacks.zoomRatioChange && this.callbacks.zoomRatioChange(ratio);
       },
@@ -899,7 +969,7 @@
 
       back: function VenueViewer_back() {
         if (this._history.length > 0)
-          this.navigate(this._history[this._history.length - 1]);
+          this._loadPage(this._history.pop());
       },
 
       showSmallTexts: function VenueViewer_showSmallTexts() {

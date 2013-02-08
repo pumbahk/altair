@@ -157,7 +157,7 @@ function loadVenue() {
         var self = this;
         for (var i = 0, l = parentList.length; i < l; i++) {
           (function (parent) {
-            var pageData = self.pages[parent];
+            var pageData = self.pages[parent.page];
             holder.append($("<a href='javascript:void(0)'></a>").text(pageData.name).bind("click", function () {
               self.navigate(parent);
             }));
@@ -264,7 +264,6 @@ function loadVenue() {
       loadPartEnd: function (viewer, category) {
         if (category == 'drawing') {
           zoomRatioMin = viewer.zoomRatioMin;
-          viewer.zoom(viewer.zoomRatioMin);
         }
       }
     }
