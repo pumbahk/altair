@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['d5DUM367CJYYVG_8'] = (function (exports) { (function () { 
+__LIBS__['iV0YYQTIUOJUJOAX'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['XQSPS8A7OJ004UZ4'] = (function (exports) { (function () { 
+__LIBS__['HKZY4SP2MAHQFA5D'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['aZ652XDIJSWU3U7I'] = (function (exports) { (function () { 
+__LIBS__['SRROMF_IQ4KIW5IQ'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['d5DUM367CJYYVG_8'];
-var CONF = __LIBS__['XQSPS8A7OJ004UZ4'];
+var util = __LIBS__['iV0YYQTIUOJUJOAX'];
+var CONF = __LIBS__['HKZY4SP2MAHQFA5D'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -1021,9 +1021,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['XQSPS8A7OJ004UZ4'];
-  var seat = __LIBS__['aZ652XDIJSWU3U7I'];
-  var util = __LIBS__['d5DUM367CJYYVG_8'];
+  var CONF = __LIBS__['HKZY4SP2MAHQFA5D'];
+  var seat = __LIBS__['SRROMF_IQ4KIW5IQ'];
+  var util = __LIBS__['iV0YYQTIUOJUJOAX'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1588,6 +1588,15 @@ function parseTransform(transform_str) {
               }
             }
 
+            function singleClickFulfilled() {
+              clearTimeout(clickTimer);
+              clickTimer = 0;
+              var nextSingleClickAction = self.nextSingleClickAction;
+              self.nextSingleClickAction = null;
+              if (nextSingleClickAction)
+                nextSingleClickAction.call(self);
+            }
+
             self.drawable.addEvent({
               mousedown: function (evt) {
                 if (self.animating) return;
@@ -1600,13 +1609,8 @@ function parseTransform(transform_str) {
                   if (!clickTimer) {
                     scrollPos = self.drawable.scrollPosition();
                     self.startPos = evt.logicalPosition;
-                    clickTimer = setTimeout(function() {
-                      var nextSingleClickAction = self.nextSingleClickAction;
-                      self.nextSingleClickAction = null;
-                      clickTimer = 0;
-                      if (nextSingleClickAction)
-                        nextSingleClickAction.call(self);
-                    }, self.doubleClickTimeout);
+                    clickTimer = setTimeout(singleClickFulfilled,
+                                            self.doubleClickTimeout);
                   } else {
                     // double click
                     clearTimeout(clickTimer);
@@ -1644,15 +1648,13 @@ function parseTransform(transform_str) {
 
               mouseout: function (evt) {
                 if (clickTimer) {
-                  clearTimeout(clickTimer);
-                  clickTimer = 0;
+                  singleClickFulfilled();
                 }
               },
 
               mousemove: function (evt) {
                 if (clickTimer) {
-                  clearTimeout(clickTimer);
-                  clickTimer = 0;
+                  singleClickFulfilled();
                 }
                 if (self.animating) return;
                 if (!self.dragging) {

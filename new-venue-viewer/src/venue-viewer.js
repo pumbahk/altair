@@ -570,6 +570,15 @@
               }
             }
 
+            function singleClickFulfilled() {
+              clearTimeout(clickTimer);
+              clickTimer = 0;
+              var nextSingleClickAction = self.nextSingleClickAction;
+              self.nextSingleClickAction = null;
+              if (nextSingleClickAction)
+                nextSingleClickAction.call(self);
+            }
+
             self.drawable.addEvent({
               mousedown: function (evt) {
                 if (self.animating) return;
@@ -582,13 +591,8 @@
                   if (!clickTimer) {
                     scrollPos = self.drawable.scrollPosition();
                     self.startPos = evt.logicalPosition;
-                    clickTimer = setTimeout(function() {
-                      var nextSingleClickAction = self.nextSingleClickAction;
-                      self.nextSingleClickAction = null;
-                      clickTimer = 0;
-                      if (nextSingleClickAction)
-                        nextSingleClickAction.call(self);
-                    }, self.doubleClickTimeout);
+                    clickTimer = setTimeout(singleClickFulfilled,
+                                            self.doubleClickTimeout);
                   } else {
                     // double click
                     clearTimeout(clickTimer);
@@ -626,15 +630,13 @@
 
               mouseout: function (evt) {
                 if (clickTimer) {
-                  clearTimeout(clickTimer);
-                  clickTimer = 0;
+                  singleClickFulfilled();
                 }
               },
 
               mousemove: function (evt) {
                 if (clickTimer) {
-                  clearTimeout(clickTimer);
-                  clickTimer = 0;
+                  singleClickFulfilled();
                 }
                 if (self.animating) return;
                 if (!self.dragging) {
