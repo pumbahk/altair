@@ -41,6 +41,14 @@ ${nco.breadcrumbs(
     overflow:hidden;
   }
 </style>
+<script type="text/javascript">
+<%
+ from altaircms.plugins.widget_aggregate import WIDGET_LABEL_DICT
+ import json
+%>
+var NameToJName = ${json.dumps(WIDGET_LABEL_DICT)|n};
+</script>
+
 </%block>
 
 %if page and event:

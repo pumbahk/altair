@@ -74,25 +74,24 @@ def widget_conflict_validator(config, widgets):
 WIDGET_LABEL_DICT =  {
     "image": u"画像",
     "freetext": u"フリーテキスト",
-    "flash" : u"flash",
+    "flash" : u"フラッシュ",
     "movie" : u"動画",
-    "calendar" : u"カレンダー",
-    "ticketlist" : u"チケットリスト",
+    "calendar" : u"公演カレンダー",
+    "ticketlist" : u"価格表",
     "performancelist" : u"公演リスト",
-    "menu" : u"メニュー",
-    "summary" : u"サマリー",
-    "iconset" : u"アイコンセット",
+    "menu" : u"タブ",
+    "summary" : u"イベント詳細",
+    "iconset" : u"サービスアイコン",
     "topic" : u"トピック(テキスト)",
     "topcontent" : u"トピック(画像)",
     "breadcrumbs" : u"パンくずリスト",
     "countdown" : u"カウントダウン",
-    "linklist" : u"リンクリスト",
+    "linklist" : u"イベントリンクリスト",
     "heading" : u"見出し",
     "promotion" : u"プロモーション枠",
     "anchorlist" : u"ページ内リンク一覧",
     "purchase" : u"購入ボタン",
-    "twitter" : u"twitter",
-    "rawhtml" : u"rawhtml"
+    "twitter" : u"Twitter"
     }
 
 class WidgetAggregator(object):
