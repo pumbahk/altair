@@ -37,30 +37,62 @@
   <div class="modal-body">
     <form id="search" class="form-horizontal" action="/orders/" method="POST">
       <fieldset>
-        ${h.form_item(form.order_no, style='width: 200px;', maxlength=12)}
-        <div class="control-group ">
-          <label class="control-label">
-            ${form.ordered_from.label.text}
-          </label>
-          <div class="controls">
-            <div style="float: left;">
-              <input class="datetimefield" style="width: 140px;" id="ordered_from" name="ordered_from" type="text" value="${form.ordered_from._value()}"> 〜
-              <input class="datetimefield" style="width: 140px;" id="ordered_to" name="ordered_to" type="text" value="${form.ordered_to._value()}">
-            </div>
-          </div>
-        </div>
-        <div style="clear: both;"></div>
-        ${h.form_item(form.payment_method)}
-        ${h.form_item(form.delivery_method)}
-        ${h.form_item(form.status)}
-        ${h.form_item(form.name)}
-        ${h.form_item(form.member_id)}
-        ${h.form_item(form.tel)}
-        ${h.form_item(form.email)}
-        ${h.form_item(form.seat_number)}
+          <table>
+              <tbody>
+              <tr>
+                  <td>${h.form_item(form.event_id)}</td>
+                  <td>${h.form_item(form.performance_id)}</td>
+                  <td>
+                      <div class="control-group ">
+                          <label class="control-label">
+                              ${form.start_on_from.label.text}
+                          </label>
+                          <div class="controls">
+                              <div style="float: left;">
+                                  <input class="datefield" style="width: 140px;" id="start_on_from" name="start_on_from" type="text" value="${form.start_on_from._value()}"> 〜
+                                  <input class="datefield" style="width: 140px;" id="start_on_to" name="start_on_to" type="text" value="${form.start_on_to._value()}">
+                              </div>
+                          </div>
+                      </div>
+                  </td>
+              </tr>
+              <tr>
+                  <td>${h.form_item(form.order_no, style='width: 200px;', maxlength=12)}</td>
+                  <td>${h.form_item(form.seat_number)}</td>
+                  <td>
+                      <div class="control-group ">
+                          <label class="control-label">
+                              ${form.ordered_from.label.text}
+                          </label>
+                          <div class="controls">
+                              <div style="float: left;">
+                                  <input class="datetimefield" style="width: 140px;" id="ordered_from" name="ordered_from" type="text" value="${form.ordered_from._value()}"> 〜
+                                  <input class="datetimefield" style="width: 140px;" id="ordered_to" name="ordered_to" type="text" value="${form.ordered_to._value()}">
+                              </div>
+                          </div>
+                      </div>
+                  </td>
+              </tr>
+              <tr>
+                  <td>${h.form_item(form.name)}</td>
+                  <td>${h.form_item(form.member_id)}</td>
+              </tr>
+              <tr>
+                  <td>${h.form_item(form.tel)}</td>
+                  <td>${h.form_item(form.email)}</td>
+              </tr>
+              <tr>
+                  <td>${h.form_item(form.payment_method)}
+                  <td>${h.form_item(form.delivery_method)}</td>
+                  <td>${h.form_item(form.status)}</td>
+              </tr>
+              </tbody>
+          </table>
 
-        ${h.form_item(form.event_id)}
-        ${h.form_item(form.performance_id, class_='span4')}
+
+        <div style="clear: both;"></div>
+
+
         <script type="text/javascript">
           $(function(){
             var update_on_empty = function(){
@@ -96,17 +128,6 @@
             //update_performances.call($("#search select[name='event_id'] option:selected"));
           });
     		</script>
-        <div class="control-group ">
-          <label class="control-label">
-            ${form.start_on_from.label.text}
-          </label>
-          <div class="controls">
-            <div style="float: left;">
-              <input class="datefield" style="width: 140px;" id="start_on_from" name="start_on_from" type="text" value="${form.start_on_from._value()}"> 〜
-              <input class="datefield" style="width: 140px;" id="start_on_to" name="start_on_to" type="text" value="${form.start_on_to._value()}">
-            </div>
-          </div>
-        </div>
         ${h.form_item(form.sort)}
         ${h.form_item(form.direction)}
       </fieldset>
