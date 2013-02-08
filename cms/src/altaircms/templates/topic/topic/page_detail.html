@@ -111,6 +111,8 @@
           <td colspan="2">
             <div class="btn-group">
               <a href="${request.route_path("topic_unit_update", action="input",id=topic.id,_query=dict(endpoint=request.url))}" class="btn btn-primary"><i class="icon-cog"></i> 編集</a>
+              <a href="${request.route_path("topic_unit_create", action="copied_input",_query=dict(id=topic.id))}" class="btn btn-success"><i class="icon-plus"></i>コピーして新規作成</a>
+
               <a href="${request.route_path("topic_unit_delete", action="confirm",id=topic.id,_query=dict(endpoint=request.url))}" class="btn btn-danger"><i class="icon-trash"></i> 削除</a>
             </div>
           </td>
