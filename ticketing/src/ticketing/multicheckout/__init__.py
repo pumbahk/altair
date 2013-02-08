@@ -8,7 +8,12 @@ import logging
 logger = logging.getLogger(__name__)
 
 def includeme(config):
-    pass
+    from sqlalchemy import engine_from_config
+    from sqlalchemy.pool import NullPool
+    from .models import _session
+    engine = engine_from_config(config.registry.settings, poolclass=NullPool)
+    _session.remove()
+    _session.configure(bind=engine)
 
 def main(global_conf, **settings):
     from sqlalchemy import engine_from_config
