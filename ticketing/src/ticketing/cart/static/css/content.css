@@ -1499,7 +1499,7 @@
 .settlementBoxInner2 {
 	height: 1%;
 	overflow: hidden;
-	padding: 0 16px 10px 12px;
+	padding: 0 8px 10px 12px;
 	background: url(../img/settlement/bg_box_top_02.gif) no-repeat 0 0;
 }
 
@@ -1527,14 +1527,12 @@
 }
 
 #settlementOperation .settlementOperationPaneInner {
-  width: 906px;
 	height: 500px;
 	overflow: hidden;
 }
 
 #settlementOperation .settlementOperationPaneInner .settlementOperationPaneInnerContent {
 	position: relative;
-	width: 1298px;
 }
 
 #selectSeatType {
@@ -1831,7 +1829,7 @@
 	position: absolute;
 	top: 0px;
 	left: 392px;
-	width: 865px;
+	width: 513px;
 	height: 490px;
 	margin-bottom: 10px;
 	border: 1px solid #eee;
