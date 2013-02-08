@@ -75,16 +75,18 @@
 
 <table class="table table-bordered">
   <thead>
+    <tr>
+      <th>no.</th>
+      <th>表示順序</th>
+      <th>詳細</th>
+    </tr>
   </thead>
     <tbody>
       %for i, topcontent in enumerate(topics):
         <tr>
-          <td rowspan="5">${topcontent.title}</td>
-          <td rowspan="4" class="main-image"><p>PC側画像</p> ${topic_renderer.render_pc_image(topcontent)}</td>
-          <td rowspan="4" class="main-image"><p>Mobile側画像</p> ${topic_renderer.render_mobile_image(topcontent)}</td>
-          <td><p>表示順序</p>${topcontent.display_order}</td>
-        </tr>
-        <tr>
+          <td rowspan="5">${i}</td>
+          <td rowspan="5">${topcontent.display_order}</td>
+          <td><p>タイトル</p>${topcontent.title}</td>
           <td><p>カウントダウンタイプ(??)</p>
             ${topic_renderer.render_countdown_type(topcontent)}
           </td>
@@ -96,8 +98,6 @@
               <span class="label label-warning">掲載強制停止中</span>
             %endif
           </td>
-        </tr>
-        <tr>
           <td><p>pcリンク先</p>
             ${topic_renderer.render_cms_link(topcontent)}
           %if topcontent.link:
@@ -111,10 +111,18 @@
           </td>
         </tr>
         <tr>
+          <td class="main-image"><p>PC側画像</p> ${topic_renderer.render_pc_image(topcontent)}</td>
+          <td class="main-image"><p>Mobile側画像</p> ${topic_renderer.render_mobile_image(topcontent)}</td>
+        </tr>
+        <tr>
           <td colspan="2"><p>テキスト文言</p><div class="well">${topcontent.text}</div></td>
-          <td>
-            <a href="${request.route_path("topcontent_unit_update", action="input",id=topcontent.id,_query=dict(endpoint=request.url))}" class="btn btn-primary"><i class="icon-cog"></i> 編集</a>
-            <a href="${request.route_path("topcontent_unit_delete", action="confirm",id=topcontent.id,_query=dict(endpoint=request.url))}" class="btn btn-danger"><i class="icon-trash"></i> 削除</a>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <div class="btn-group">
+              <a href="${request.route_path("topcontent_unit_update", action="input",id=topcontent.id,_query=dict(endpoint=request.url))}" class="btn btn-primary"><i class="icon-cog"></i> 編集</a>
+              <a href="${request.route_path("topcontent_unit_delete", action="confirm",id=topcontent.id,_query=dict(endpoint=request.url))}" class="btn btn-danger"><i class="icon-trash"></i> 削除</a>
+            </div>
           </td>
         </tr>
       %endfor

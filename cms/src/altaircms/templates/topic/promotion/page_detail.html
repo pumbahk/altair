@@ -75,26 +75,23 @@
 
 <table class="table table-bordered">
   <thead>
+    <tr>
+      <th>no.</th>
+      <th>表示順序</th>
+      <th>詳細</th>
+    </tr>
   </thead>
     <tbody>
       %for i, promotion in enumerate(topics):
         <tr>
           <td rowspan="5">${i}</td>
-          <td rowspan="4" class="main-image"><p>メイン画像</p> ${topic_renderer.render_main_image(promotion)}</td>
-          <td><p>表示順序</p>${promotion.display_order}</td>
-        </tr>
-        <tr>
-          <td class="thumbnail"><p>サブ画像(最大サイズ(75px,75px))</p>${topic_renderer.render_thumbnail_image(promotion)}</td>
-        </tr>
-        <tr>
+          <td rowspan="4">${promotion.display_order}</td>
           <td><p>掲載期間</p>
             ${h.term(promotion.publish_open_on,promotion.publish_close_on)}
             %if promotion.is_vetoed:
               <span class="label label-warning">掲載強制停止中</span>
             %endif
           </td>
-        </tr>
-        <tr>
           <td><p>リンク先</p>
             ${topic_renderer.render_cms_link(promotion)}
           %if promotion.link:
@@ -105,8 +102,14 @@
           </td>
         </tr>
         <tr>
-          <td><p>表示メッセージ</p><div class="well">${promotion.text}</div></td>
-          <td>
+          <td class="main-image"><p>メイン画像</p> ${topic_renderer.render_main_image(promotion)}</td>
+          <td class="thumbnail"><p>サブ画像(最大サイズ(75px,75px))</p>${topic_renderer.render_thumbnail_image(promotion)}</td>
+        </tr>
+        <tr>
+          <td colspan="2"><p>表示メッセージ</p><div class="well">${promotion.text}</div></td>
+        </tr>
+        <tr>
+          <td colspan="2">
             <a href="${request.route_path("promotion_unit_update", action="input",id=promotion.id,_query=dict(endpoint=request.url))}" class="btn btn-primary"><i class="icon-cog"></i> 編集</a>
             <a href="${request.route_path("promotion_unit_delete", action="confirm",id=promotion.id,_query=dict(endpoint=request.url))}" class="btn btn-danger"><i class="icon-trash"></i> 削除</a>
           </td>

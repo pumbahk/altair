@@ -75,18 +75,22 @@ class TopcontentHTMLRenderer(object):
     def render_countdown_type(self, topcontent): ## todo: if each organization has individual countdown type. set via .ini
         return topcontent.COUNTDOWN_TYPE_MAPPING.get(topcontent.countdown_type, "????")
 
-    def render_pc_image(self, promotion):
-        asset = promotion.image_asset
-        return _render_image(self.request, promotion, asset)
+    def render_pc_image(self, topcontent):
+        asset = topcontent.image_asset
+        return _render_image(self.request, topcontent, asset)
 
-    def render_mobile_image(self, promotion):
-        asset = promotion.mobile_image_asset
-        return _render_image(self.request, promotion, asset)
+    def render_mobile_image(self, topcontent):
+        asset = topcontent.mobile_image_asset
+        return _render_image(self.request, topcontent, asset)
 
-    def render_cms_link(self, promotion):
-        href = get_link_from_topcontent_in_cms(self.request, promotion)
+    def render_cms_link(self, topcontent):
+        href = get_link_from_topcontent_in_cms(self.request, topcontent)
         return Markup(u'<a href="%s">%s</a>' % (href, href))
 
 class TopicHTMLRenderer(object):
     def __init__(self, request):
         self.request = request
+
+    def render_cms_link(self, topic):
+        href = get_link_from_topic_in_cms(self.request, topic)
+        return Markup(u'<a href="%s">%s</a>' % (href, href))
