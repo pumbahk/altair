@@ -151,7 +151,7 @@ ${locale.format("%d", price, grouping=True)}
   from webhelpers.util import html_escape
   from pyramid.threadlocal import get_current_registry
 %>
-<%def name="action_button(actions, order=None, vertical=True, options=None)">
+<%def name="action_button(actions, order=None, vertical=True, options=None, dropup=False)">
 <%
   registry = get_current_registry()
   route_permission = registry.route_permission if hasattr(registry, 'route_permission') else None
@@ -195,7 +195,11 @@ ${locale.format("%d", price, grouping=True)}
     <button class="btn dropdown-toggle" data-toggle="dropdown">
       <span class="caret"></span>
     </button>
-    <ul class="dropdown-menu">
+      % if dropup:
+        <ul class="dropdown-menu bottom-up">
+      % else:
+        <ul class="dropdown-menu">
+      % endif
     % endif
     % if vertical and count > 0:
       <li>
@@ -212,6 +216,7 @@ ${locale.format("%d", price, grouping=True)}
     </ul>
   % endif
 </div>
+
 </%def>
 
 <%!
