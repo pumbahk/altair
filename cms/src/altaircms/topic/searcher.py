@@ -21,7 +21,7 @@ PromotionPageListSearchSchemaList = [
     ]
 
 PromotionPageListTagOnly = [
-    sl.LikeSearchSchema(PromotionTag, "label"), 
+    sl.LikeSearchSchema(PromotionTag, "search", model_attribute="label"), 
     ]
 
 TopcontentPageListSearchSchemaList = [
@@ -32,7 +32,7 @@ TopcontentPageListSearchSchemaList = [
     ]
 
 TopcontentPageListTagOnly = [
-    sl.LikeSearchSchema(TopcontentTag, "label"), 
+    sl.LikeSearchSchema(TopcontentTag, "search", model_attribute="label"), 
     ]
 
 TopicPageListSearchSchemaList = [
@@ -43,7 +43,7 @@ TopicPageListSearchSchemaList = [
     ]
 
 TopicPageListTagOnly = [
-    sl.LikeSearchSchema(TopicTag, "label"), 
+    sl.LikeSearchSchema(TopicTag, "search", model_attribute="label"), 
     ]
 
 class TopicPageListSearcher(object):

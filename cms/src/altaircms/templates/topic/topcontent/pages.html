@@ -31,7 +31,7 @@
       <ul class="nav">
         <div class="btn-group">
           <a class="btn" href="${request.current_route_path(_query={"published":True})}"><i class="icon-search"></i>表示中のページのみ表示</a>
-          <a class="btn" href="${request.current_route_path(_query={":all:": True})}"><i class="icon-search"></i>全てのページ表示</a>
+          <a class="btn" href="${request.current_route_path(_query={":all:": True})}"><i class="icon-search"></i>終了ページも表示</a>
           <a class="btn" data-toggle="modal" data-backdrop="" href="#TopcontentTagCreateModal"><i class="icon-plus"></i>分類の追加</a>
         </div>
       </ul>
@@ -40,8 +40,26 @@
   
 </div><!-- /navbar -->
 
+## 分類や表示位置の直近に作成されたもの
+<ul class="nav nav-tabs">
+  %if "search" not in request.GET:
+    <li class="active"><a href="${h.current_route_path_override(request)}">すべて表示</a></li>
+  %else:
+    <li><a href="${h.current_route_path_override(request, _dels=["search"])}">すべて表示</a></li>
+    <li class="active"><a href="${h.current_route_path_override(request)}">${search_word}</a></li>
+  %endif
+  %for tag in recently_tags:
+    %if tag.label != search_word:
+      <li><a href="${h.current_route_path_override(request, _query=dict(search=tag.label))}">${tag.label}</a></li>
+    %endif
+  %endfor
+  <li><a href="${h.route_path_override(request, "topic_tag_list")}">...</a></li>
+</ul>
+
+
 <p>分類「${request.params.get("search") or "-----"}」のページ 全${pages.opts.get("item_count") or pages.collection.count()}件</p>
 ${pages.pager()}
+
 
 <table class="table table-striped">
   <thead>
