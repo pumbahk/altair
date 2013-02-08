@@ -1,61 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['PKMNPEYF2J1WTSWS'] = (function (exports) { (function () { 
-
-/************** CONF.js **************/
-exports.DEFAULT = {
-  ZOOM_RATIO: 0.8,
-  STYLES: {
-    label: {
-      fill: new Fashion.Color('#000'),
-      stroke: null
-    },
-    seat: {
-      fill: new Fashion.Color('#fff'),
-      stroke: new Fashion.Color('#000')
-    },
-    glayout: {
-      fill: new Fashion.FloodFill(new Fashion.Color('#ccc')),
-      stroke: new Fashion.Stroke(new Fashion.Color('#999'), 2)
-    }
-  },
-
-  MASK_STYLE: {
-    fill:   new Fashion.FloodFill(new Fashion.Color("#0064ff80")),
-    stroke: new Fashion.Stroke(new Fashion.Color("#0080FF"), 2)
-  },
-
-  SEAT_STYLE: {
-    text_color: "#000",
-    fill:   { color: "#fff" }
-  },
-
-  OVERLAYS: {
-    highlighted: {
-      fill: null,
-      stroke: { color: "#F63", width: 3, pattern: 'solid' }
-    },
-    highlighted_block: {
-      fill: null,
-      stroke: { color: "#F44", width: 5, pattern: 'solid' }
-    }
-  },
-
-  AUGMENTED_STYLE: {
-    selected: {
-      text_color: "#FFF",
-      fill:   { color: "#009BE1" },
-      stroke: { color: "#FFF", width: 3 }
-    },
-    unselectable: {
-      text_color: "#888",
-      fill:   { color: "#eee" },
-      stroke: { color: "#ccc" }
-    }
-  }
-};
- })(); return exports; })({});
-__LIBS__['DDMAPDKCN4P9XOTY'] = (function (exports) { (function () { 
+__LIBS__['KPWZN2C608C5A9UC'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -182,11 +127,66 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['bSKWKCK6PS2HPN41'] = (function (exports) { (function () { 
+__LIBS__['nSE84RO7P9XHS_PQ'] = (function (exports) { (function () { 
+
+/************** CONF.js **************/
+exports.DEFAULT = {
+  ZOOM_RATIO: 0.8,
+  STYLES: {
+    label: {
+      fill: new Fashion.Color('#000'),
+      stroke: null
+    },
+    seat: {
+      fill: new Fashion.Color('#fff'),
+      stroke: new Fashion.Color('#000')
+    },
+    glayout: {
+      fill: new Fashion.FloodFill(new Fashion.Color('#ccc')),
+      stroke: new Fashion.Stroke(new Fashion.Color('#999'), 2)
+    }
+  },
+
+  MASK_STYLE: {
+    fill:   new Fashion.FloodFill(new Fashion.Color("#0064ff80")),
+    stroke: new Fashion.Stroke(new Fashion.Color("#0080FF"), 2)
+  },
+
+  SEAT_STYLE: {
+    text_color: "#000",
+    fill:   { color: "#fff" }
+  },
+
+  OVERLAYS: {
+    highlighted: {
+      fill: null,
+      stroke: { color: "#F63", width: 3, pattern: 'solid' }
+    },
+    highlighted_block: {
+      fill: null,
+      stroke: { color: "#F44", width: 5, pattern: 'solid' }
+    }
+  },
+
+  AUGMENTED_STYLE: {
+    selected: {
+      text_color: "#FFF",
+      fill:   { color: "#009BE1" },
+      stroke: { color: "#FFF", width: 3 }
+    },
+    unselectable: {
+      text_color: "#888",
+      fill:   { color: "#eee" },
+      stroke: { color: "#ccc" }
+    }
+  }
+};
+ })(); return exports; })({});
+__LIBS__['TD6ER4APWFYNAZ1K'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['DDMAPDKCN4P9XOTY'];
-var CONF = __LIBS__['PKMNPEYF2J1WTSWS'];
+var util = __LIBS__['KPWZN2C608C5A9UC'];
+var CONF = __LIBS__['nSE84RO7P9XHS_PQ'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -1021,9 +1021,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['PKMNPEYF2J1WTSWS'];
-  var seat = __LIBS__['bSKWKCK6PS2HPN41'];
-  var util = __LIBS__['DDMAPDKCN4P9XOTY'];
+  var CONF = __LIBS__['nSE84RO7P9XHS_PQ'];
+  var seat = __LIBS__['TD6ER4APWFYNAZ1K'];
+  var util = __LIBS__['KPWZN2C608C5A9UC'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1752,6 +1752,7 @@ function parseTransform(transform_str) {
         };
         if (!(pageInfo.page in this.pages))
           return;
+        this.canvas.css({ cursor: 'default' });
         this.callbacks.messageBoard.down.call(this);
         if (this.curentPage != pageInfo.page) {
           this.loadDrawing(pageInfo.page, function () {
