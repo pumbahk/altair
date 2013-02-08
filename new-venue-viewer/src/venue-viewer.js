@@ -730,6 +730,7 @@
         };
         if (!(pageInfo.page in this.pages))
           return;
+        this.canvas.css({ cursor: 'default' });
         this.callbacks.messageBoard.down.call(this);
         if (this.curentPage != pageInfo.page) {
           this.loadDrawing(pageInfo.page, function () {
