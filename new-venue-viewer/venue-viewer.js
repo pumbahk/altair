@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['yN6HJ79S1HJ4SXLP'] = (function (exports) { (function () { 
+__LIBS__['KPWZN2C608C5A9UC'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['nVL7HVJ9XQARFK4H'] = (function (exports) { (function () { 
+__LIBS__['nSE84RO7P9XHS_PQ'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['z2MJDCB__HNV45PY'] = (function (exports) { (function () { 
+__LIBS__['TD6ER4APWFYNAZ1K'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['yN6HJ79S1HJ4SXLP'];
-var CONF = __LIBS__['nVL7HVJ9XQARFK4H'];
+var util = __LIBS__['KPWZN2C608C5A9UC'];
+var CONF = __LIBS__['nSE84RO7P9XHS_PQ'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -1021,9 +1021,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['nVL7HVJ9XQARFK4H'];
-  var seat = __LIBS__['z2MJDCB__HNV45PY'];
-  var util = __LIBS__['yN6HJ79S1HJ4SXLP'];
+  var CONF = __LIBS__['nSE84RO7P9XHS_PQ'];
+  var seat = __LIBS__['TD6ER4APWFYNAZ1K'];
+  var util = __LIBS__['KPWZN2C608C5A9UC'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1612,20 +1612,24 @@ function parseTransform(transform_str) {
                     clickTimer = setTimeout(singleClickFulfilled,
                                             self.doubleClickTimeout);
                   } else {
-                    // double click
-                    clearTimeout(clickTimer);
-                    clickTimer = 0;
-                    self.drawableMouseDown = false;
-                    self.animating = true;
-                    var e = self.zoomRatio * 2;
-                    var t = setInterval(function () {
-                      var newZoomRatio = Math.min(e, self.zoomRatio * 1.2);
-                      self.zoom(newZoomRatio, evt.logicalPosition);
-                      if (e - self.zoomRatio < self.zoomRatio * 1e-5 || newZoomRatio - self.zoomRatio > self.zoomRatio * 1e-5) {
-                        self.animating = false;
-                        clearInterval(t);
-                      }
-                    }, 50);
+                    if (!self.dragging) {
+                      // double click
+                      clearTimeout(clickTimer);
+                      clickTimer = 0;
+                      self.drawableMouseDown = false;
+                      var e = self.zoomRatio * 2;
+                      self.zoom(e, evt.logicalPosition);
+                      /*
+                      self.animating = true;
+                      var t = setInterval(function () {
+                        var newZoomRatio = Math.min(e, self.zoomRatio * 1.2);
+                        if (e - self.zoomRatio < self.zoomRatio * 1e-5 || newZoomRatio - self.zoomRatio > self.zoomRatio * 1e-5) {
+                          self.animating = false;
+                          clearInterval(t);
+                        }
+                      }, 50);
+                      */
+                    }
                   }
                   break;
                 }

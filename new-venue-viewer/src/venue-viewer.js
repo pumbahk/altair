@@ -594,20 +594,24 @@
                     clickTimer = setTimeout(singleClickFulfilled,
                                             self.doubleClickTimeout);
                   } else {
-                    // double click
-                    clearTimeout(clickTimer);
-                    clickTimer = 0;
-                    self.drawableMouseDown = false;
-                    self.animating = true;
-                    var e = self.zoomRatio * 2;
-                    var t = setInterval(function () {
-                      var newZoomRatio = Math.min(e, self.zoomRatio * 1.2);
-                      self.zoom(newZoomRatio, evt.logicalPosition);
-                      if (e - self.zoomRatio < self.zoomRatio * 1e-5 || newZoomRatio - self.zoomRatio > self.zoomRatio * 1e-5) {
-                        self.animating = false;
-                        clearInterval(t);
-                      }
-                    }, 50);
+                    if (!self.dragging) {
+                      // double click
+                      clearTimeout(clickTimer);
+                      clickTimer = 0;
+                      self.drawableMouseDown = false;
+                      var e = self.zoomRatio * 2;
+                      self.zoom(e, evt.logicalPosition);
+                      /*
+                      self.animating = true;
+                      var t = setInterval(function () {
+                        var newZoomRatio = Math.min(e, self.zoomRatio * 1.2);
+                        if (e - self.zoomRatio < self.zoomRatio * 1e-5 || newZoomRatio - self.zoomRatio > self.zoomRatio * 1e-5) {
+                          self.animating = false;
+                          clearInterval(t);
+                        }
+                      }, 50);
+                      */
+                    }
                   }
                   break;
                 }
