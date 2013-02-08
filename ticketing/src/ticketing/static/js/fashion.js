@@ -2582,6 +2582,16 @@ var Image = _class('Image', {
   this.Image    = Image;
   this.Drawable = Drawable;
 
+  this.FashionError          = _lib.FashionError;
+  this.NotImplemented        = _lib.NotImplemented;
+  this.ValueError            = _lib.ValueError;
+  this.PropertyError         = _lib.PropertyError;
+  this.NotSupported          = _lib.NotSupported;
+  this.ArgumentError         = _lib.ArgumentError;
+  this.NotAttached           = _lib.NotAttached;
+  this.NotFound              = _lib.NotFound;
+  this.AlreadyExists         = _lib.AlreadyExists;
+
 /** @file conf.js { */
 var DEBUG_MODE = true;
 
