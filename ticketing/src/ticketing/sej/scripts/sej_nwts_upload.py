@@ -6,25 +6,17 @@
 
 import optparse
 import sys
-import sqlahelper
 
 from datetime import datetime
 from dateutil import parser as date_parser
 from os.path import abspath, dirname
 
 from ticketing.sej.nwts import nws_data_send
-from paste.deploy import loadapp
+from pyramid.paster import bootstrap
 
-import logging
-
-logging.basicConfig()
-log = logging.getLogger(__file__)
+import logging.config
 
 def main(argv=sys.argv):
-
-    session = sqlahelper.get_session()
-    session.configure(autocommit=True, extension=[])
-
     parser = optparse.OptionParser(
         description=__doc__,
         usage='%prog [options]',
@@ -67,8 +59,10 @@ def main(argv=sys.argv):
 
     data = open(file).read()
 
-    app = loadapp('config:%s' % config, 'main')
-    settings = app.registry.settings
+    env = bootstrap(config)
+    logging.config.fileConfig(config)
+
+    settings = env['registry'].settings
 
     nwts_hostname           = settings['sej.nwts.hostname']
     terminal_id             = settings['sej.terminal_id']
