@@ -123,7 +123,7 @@ class SejHTTPHandler(AbstractHTTPHandler):
 modes = dict(
     SEIT020U = 1,
     SDMT010U = 2,
-    TEST010U = 3,
+    TEST010U = 1,
 )
 
 def build_opener():
