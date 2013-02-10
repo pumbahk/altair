@@ -71,9 +71,12 @@ def main(argv=sys.argv):
     nwts_url                = settings['sej.nwts.url']
     terminal_id             = settings['sej.terminal_id']
     password                = settings['sej.password']
+    ca_certs                = settings.get('sej.nwts.ca_certs', None)
+    cert_file               = settings.get('sej.nwts.cert_file', None)
+    key_file                = settings.get('sej.nwts.key_file', None)
 
     url = nwts_url + "/" + type
-    nws_data_send(url=url, data=data, file_id=options.file, terminal_id=terminal_id, password=password)
+    nws_data_send(url=url, data=data, file_id=options.file, terminal_id=terminal_id, password=password, ca_certs=ca_certs, cert_file=cert_file, key_file=key_file)
 
 if __name__ == u"__main__":
     main(sys.argv)
