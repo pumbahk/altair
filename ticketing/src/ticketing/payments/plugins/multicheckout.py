@@ -153,7 +153,7 @@ class MultiCheckoutPlugin(object):
                 error_code=checkout_sales_result.CmnErrorCd
                 )
 
-        DBSession.add(checkout_sales_result)
+        #DBSession.add(checkout_sales_result)
 
         order = c_models.Order.create_from_cart(cart)
         order.multicheckout_approval_no = checkout_sales_result.ApprovalNo
@@ -423,6 +423,6 @@ class MultiCheckoutView(object):
         order['tran'] = tran
         self.request.session['order'] = order
 
-        DBSession.add(checkout_auth_result)
+        #DBSession.add(checkout_auth_result)
 
         return HTTPFound(location=confirm_url(self.request))

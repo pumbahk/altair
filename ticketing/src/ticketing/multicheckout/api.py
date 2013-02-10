@@ -15,6 +15,15 @@ import ticketing.core.api as core_api
 
 DEFAULT_ITEM_CODE = "120" # 通販
 
+def save_api_response(request, res):
+    m._session.add(res)
+    if hasattr(res, 'OrderNo'):
+        m.MultiCheckoutOrderStatus.set_status(res.OrderNo, res.Storecd, res.Status, u"call by %s" % request.url)
+    m._session.commit()
+
+def get_multicheckout_settings(request):
+    return m.MulticheckoutSetting.query.all()
+
 def get_multicheckout_setting(request, override_name):
     reg = request.registry
     if override_name:
@@ -85,7 +94,9 @@ def secure3d_enrol(request, order_no, card_number, exp_year, exp_month, total_am
         Currency="392",
     )
 
-    return service.secure3d_enrol(order_no, enrol)
+    res = service.secure3d_enrol(order_no, enrol)
+    save_api_response(request, res)
+    return res
 
 def secure3d_auth(request, order_no, pares, md):
     auth = m.Secure3DAuthRequest(
@@ -94,7 +105,9 @@ def secure3d_auth(request, order_no, pares, md):
     )
 
     service = get_multicheckout_service(request)
-    return service.secure3d_auth(order_no, auth)
+    res = service.secure3d_auth(order_no, auth)
+    save_api_response(request, res)
+    return res
 
 def checkout_auth_secure3d(request,
                   order_no, item_name, amount, tax, client_name, mail_address,
@@ -126,7 +139,9 @@ def checkout_auth_secure3d(request,
         CavvAlgorithm=cavv_algorithm,
     )
     service = get_multicheckout_service(request)
-    return service.request_card_auth(order_no, params)
+    res = service.request_card_auth(order_no, params)
+    save_api_response(request, res)
+    return res
 
 def checkout_sales_secure3d(request,
                   order_no, item_name, amount, tax, client_name, mail_address,
@@ -158,11 +173,15 @@ def checkout_sales_secure3d(request,
         CavvAlgorithm=cavv_algorithm,
     )
     service = get_multicheckout_service(request)
-    return service.request_card_sales(order_no, params)
+    res = service.request_card_sales(order_no, params)
+    save_api_response(request, res)
+    return res
 
 def checkout_auth_cancel(request, order_no):
     service = get_multicheckout_service(request)
-    return service.request_card_cancel_auth(order_no)
+    res = service.request_card_cancel_auth(order_no)
+    save_api_response(request, res)
+    return res
 
 def checkout_sales_part_cancel(request, order_no, sales_amount_cancellation, tax_carriage_cancellation):
     params = m.MultiCheckoutRequestCardSalesPartCancel(
@@ -170,15 +189,21 @@ def checkout_sales_part_cancel(request, order_no, sales_amount_cancellation, tax
         TaxCarriageCancellation=int(tax_carriage_cancellation),
     )
     service = get_multicheckout_service(request)
-    return service.request_card_sales_part_cancel(order_no, params)
+    res = service.request_card_sales_part_cancel(order_no, params)
+    save_api_response(request, res)
+    return res
 
 def checkout_sales_cancel(request, order_no):
     service = get_multicheckout_service(request)
-    return service.request_card_cancel_sales(order_no)
+    res = service.request_card_cancel_sales(order_no)
+    save_api_response(request, res)
+    return res
 
 def checkout_inquiry(request, order_no):
     service = get_multicheckout_service(request)
-    return service.request_card_inquiry(order_no)
+    res = service.request_card_inquiry(order_no)
+    save_api_response(request, res)
+    return res
 
 def checkout_auth_secure_code(request, order_no, item_name, amount, tax, client_name, mail_address,
                      card_no, card_limit, card_holder_name,
