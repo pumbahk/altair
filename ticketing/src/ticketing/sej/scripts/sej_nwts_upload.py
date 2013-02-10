@@ -68,11 +68,11 @@ def main(argv=sys.argv):
 
     settings = env['registry'].settings
 
-    nwts_hostname           = settings['sej.nwts.hostname']
+    nwts_url                = settings['sej.nwts.url']
     terminal_id             = settings['sej.terminal_id']
     password                = settings['sej.password']
 
-    url = nwts_hostname + "/" + type
+    url = nwts_url + "/" + type
     nws_data_send(url=url, data=data, file_id=options.file, terminal_id=terminal_id, password=password)
 
 if __name__ == u"__main__":
