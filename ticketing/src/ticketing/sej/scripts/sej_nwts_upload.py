@@ -25,24 +25,24 @@ def main(argv=sys.argv):
     parser.add_option('-t', '--type',
         dest='type',
         help='tpayback.asp or ttemplate.asp',
-        metavar='FILE'
+        metavar='TYPE'
     )
     parser.add_option('-f', '--file',
         dest='file',
-        help='select',
-        metavar='FILE'
+        help='File ID (SDMT010U|SEIT020U|TEST010U)',
+        metavar='FILEID'
     )
     parser.add_option('-c', '--config',
         dest='config',
         help='Path to configuration file (defaults to $CWD/development.ini)',
-        metavar='FILE'
+        metavar='CONFIG'
     )
 
     options, args = parser.parse_args(argv[1:])
 
     type = options.type
 
-    if type is None or (type != 'tpayback.asp' and type != 'ttemplate.asp'):
+    if type is None or type not in ('tpayback.asp', 'ttemplate.asp'):
         print 'You must set type tpayback.asp or ttemplate.asp'
         return
 
@@ -57,7 +57,11 @@ def main(argv=sys.argv):
         print 'You must set filename'
         return
 
-    data = open(file).read()
+    if file not in ('SDMT010U', 'SEIT020U', 'TEST010U'):
+        print 'File ID must be SDMT010U (template upload), SEIT020U (refund) or TEST010U (test)'
+        return
+
+    data = open(args[0]).read()
 
     env = bootstrap(config)
     logging.config.fileConfig(config)
@@ -69,7 +73,7 @@ def main(argv=sys.argv):
     password                = settings['sej.password']
 
     url = nwts_hostname + "/" + type
-    nws_data_send(url=url, data=data, file_id='SDMT010U', terminal_id=terminal_id, password=password)
+    nws_data_send(url=url, data=data, file_id=options.file, terminal_id=terminal_id, password=password)
 
 if __name__ == u"__main__":
     main(sys.argv)

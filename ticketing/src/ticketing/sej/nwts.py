@@ -128,7 +128,8 @@ class SejHTTPSWithCertHandler(SejHTTPHandler):
 
 modes = dict(
     SEIT020U = 1,
-    SDMT010U = 2
+    SDMT010U = 2,
+    TEST010U = 3,
 )
 
 def nws_data_send(url, terminal_id, password, file_id, data):
