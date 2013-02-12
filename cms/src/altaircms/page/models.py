@@ -401,11 +401,12 @@ class PageDefaultInfo(Base):
 
 class PageTag2Page(Base):
     __tablename__ = "pagetag2page"
-    id = sa.Column(sa.Integer, primary_key=True)
     query = DBSession.query_property()
-    object_id = sa.Column(sa.Integer, sa.ForeignKey("page.id"))
-    tag_id = sa.Column(sa.Integer, sa.ForeignKey("pagetag.id"))
-
+    object_id = sa.Column(sa.Integer, sa.ForeignKey("page.id"), primary_key=True)
+    tag_id = sa.Column(sa.Integer, sa.ForeignKey("pagetag.id"), primary_key=True)
+    __tableargs__ = (
+        sa.UniqueConstraint("object_id", "tag_id") 
+        )
 
 class PageTag(WithOrganizationMixin, Base):
     CLASSIFIER = "page"

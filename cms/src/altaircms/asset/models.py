@@ -116,10 +116,12 @@ class MovieAsset(Asset):
 class AssetTag2Asset(Base):
     __tablename__ = "assettag2asset"
     query = DBSession.query_property()
-    id = sa.Column(sa.Integer, primary_key=True)
-    object_id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"))
-    tag_id = sa.Column(sa.Integer, sa.ForeignKey("assettag.id"))
+    object_id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"), primary_key=True)
+    tag_id = sa.Column(sa.Integer, sa.ForeignKey("assettag.id"), primary_key=True)
     asset = orm.relationship("Asset", backref=orm.backref("assettag2asset", cascade="all, delete-orphan"))
+    __tableargs__ = (
+        sa.UniqueConstraint("object_id", "tag_id") 
+        )
 
 class AssetTag(WithOrganizationMixin, Base):
     CLASSIFIER = "asset"

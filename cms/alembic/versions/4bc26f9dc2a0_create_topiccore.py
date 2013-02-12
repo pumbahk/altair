@@ -35,9 +35,7 @@ def upgrade():
                     sa.Column('updated_at', sa.DateTime(), nullable=True),
                     sa.Column('type', sa.String(length=32), nullable=False),
                     sa.PrimaryKeyConstraint('id'),
-                    sa.UniqueConstraint('label','type','organization_id'),
-                    sa.UniqueConstraint('label','type','organization_id'),
-                    sa.UniqueConstraint('label','type','organization_id')
+                    sa.UniqueConstraint('label','type','organization_id', 'publicp')
                     )
     op.create_table('topiccoretag2topiccore',
                     sa.Column('id', sa.Integer(), nullable=False),

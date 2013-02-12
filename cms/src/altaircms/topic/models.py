@@ -238,9 +238,8 @@ class Promotion(WithOrganizationMixin, TopicCore):
 
 class TopicCoreTag2TopicCore(Base):
     __tablename__ = "topiccoretag2topiccore"
-    id = sa.Column(sa.Integer, primary_key=True)
-    object_id = sa.Column(sa.Integer, sa.ForeignKey("topiccore.id"))
-    tag_id = sa.Column(sa.Integer, sa.ForeignKey("topiccoretag.id"))
+    object_id = sa.Column(sa.Integer, sa.ForeignKey("topiccore.id"), primary_key=True)
+    tag_id = sa.Column(sa.Integer, sa.ForeignKey("topiccoretag.id"), primary_key=True)
     topic = orm.relationship("Topic", backref=orm.backref("topictag2topic", cascade="all, delete-orphan"))
 
     __tableargs__ = (
@@ -275,7 +274,7 @@ class TopicTag(TopicCoreTag):
     __mapper_args__ = {"polymorphic_identity": type}
     @declared_attr
     def __tableargs__(cls):
-        return  ((sa.schema.UniqueConstraint(cls.label, cls.discriminator, cls.organization_id)))        
+        return  ((sa.schema.UniqueConstraint(cls.label, cls.discriminator, cls.organization_id, cls.publicp)))        
 def delete_orphan_tag(mapper, connection, target):
     TopicTag.query.filter(~TopicTag.topiccores.any()).delete(synchronize_session=False)
 sa.event.listen(Topic, "after_delete", delete_orphan_tag)
