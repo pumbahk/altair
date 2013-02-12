@@ -136,6 +136,7 @@ setup(name='ticketing',
       send_sales_reports=ticketing.events.sales_reports.commands:main
       cancel_auth=ticketing.multicheckout.scripts.cancelauth:main
       sej_nwts_upload=ticketing.sej.scripts.sej_nwts_upload:main
+      release_carts=ticketing.cart.scripts.release_carts:main
       """,
       paster_plugins=['pyramid'],
       )
