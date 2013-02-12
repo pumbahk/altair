@@ -171,7 +171,57 @@ class Ticket(BaseOriginalMixin, Base):
 
     name = sa.Column(sa.Unicode(255))
     seattype = sa.Column(sa.Unicode(255))
+
+
+class Genre(Base,  WithOrganizationMixin):
+    __tablename__ = "genre"
+    __tableargs__ = (
+        sa.UniqueConstraint("organizationi_id", "name")
+        )
+    query = DBSession.query_property()
+    id = sa.Column(sa.Integer, primary_key=True)
+    label = sa.Column(sa.Unicode(length=255))
+    name = sa.Column(sa.String(length=255))
     
+    @property
+    def query_ancestors(self):
+        qs = Genre.query.join(_GenrePath, Genre.id==_GenrePath.next_id).filter(_GenrePath.genre_id==self.id)
+        return qs.order_by(sa.asc(_GenrePath.hop))
+
+    @property
+    def ancestors(self):
+        return self.query_ancestors.all()
+
+    def add_relation(self, genre, hop):
+        path = _GenrePath.query.filter_by(genre=self, next_genre=genre).first()
+        if path is None:
+            self._parents.append(_GenrePath(genre=self, next_genre=genre, hop=hop))
+        return self
+
+    def update_relation(self, genre, hop):
+        assert self.id and genre.id
+        _GenrePath.query.filter_by(genre_id=self.id, next_id=genre.id).update({"hop": hop})
+        return self
+
+    def remove_relation(self, genre):
+        assert self.id and genre.id
+        _GenrePath.query.filter_by(genre_id=self.id, next_id=genre.id).delete()
+        return self
+
+class _GenrePath(Base):
+    query = DBSession.query_property()
+    __tablename__ = "genre_path"
+    __table_args__ = (sa.UniqueConstraint("genre_id", "next_id"), )
+    genre_id = sa.Column(sa.Integer, sa.ForeignKey("genre.id"), primary_key=True)
+    genre = orm.relationship("Genre", backref=orm.backref("_parents", remote_side=genre_id), primaryjoin="_GenrePath.genre_id==Genre.id")
+    next_genre = orm.relationship("Genre", primaryjoin="_GenrePath.next_id==Genre.id")
+    next_id = sa.Column(sa.Integer, sa.ForeignKey("genre.id"), primary_key=True)
+    hop = sa.Column(sa.Integer,  default=1)
+
+    def __repr__(self):
+        return "<%s -> %s (hop=%s)>" % (self.genre_id, self.next_id, self.hop)
+
+## deprecated:
 class Category(Base, WithOrganizationMixin): # todo: refactoring
     """
     サイト内カテゴリマスター

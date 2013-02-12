@@ -86,6 +86,9 @@ class PageSet(Base,
     pagetype_id = Column(sa.Integer, ForeignKey("pagetype.id"))
     pagetype = orm.relationship("PageType", backref="pagesets", uselist=False)
 
+    # genre_id = Column(sa.Integer, ForeignKey("genre.id"))
+    # genre = orm.relationship("Genre",  backref="pagesets",  uselist=False)
+
     @declared_attr
     def __table_args__(cls):
         return (sa.schema.UniqueConstraint("url", "organization_id"), )
