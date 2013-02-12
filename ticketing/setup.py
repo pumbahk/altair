@@ -91,6 +91,7 @@ extras_require = {
 
 setup(name='ticketing',
       version='0.0',
+      use_date_versioning=True,
       description='ticketing',
       long_description=README + '\n\n' +  CHANGES,
       classifiers=[
@@ -137,6 +138,8 @@ setup(name='ticketing',
       cancel_auth=ticketing.multicheckout.scripts.cancelauth:main
       sej_nwts_upload=ticketing.sej.scripts.sej_nwts_upload:main
       release_carts=ticketing.cart.scripts.release_carts:main
+      [distutils.setup_keywords]
+      use_date_versioning=ticketing.versiontools:calc_version
       """,
       paster_plugins=['pyramid'],
       )
