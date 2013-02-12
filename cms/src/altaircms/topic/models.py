@@ -234,13 +234,6 @@ class Promotion(WithOrganizationMixin, TopicCore):
     SPLIT_RX = re.compile("[,、]")
     def update_tag(self, ks):
         return update_object_tag(self, PromotionTag, ks, self.SPLIT_RX)
-
-def delete_orphan_tag(mapper, connection, target):
-    PromotionTag.query.filter(~PromotionTag.promotions.any()).delete(synchronize_session=False)
-
-sa.event.listen(Promotion, "after_delete", delete_orphan_tag)
-
-
 ## tag
 
 class TopicCoreTag2TopicCore(Base):
@@ -283,6 +276,9 @@ class TopicTag(TopicCoreTag):
     @declared_attr
     def __tableargs__(cls):
         return  ((sa.schema.UniqueConstraint(cls.label, cls.discriminator, cls.organization_id)))        
+def delete_orphan_tag(mapper, connection, target):
+    TopicTag.query.filter(~TopicTag.topiccores.any()).delete(synchronize_session=False)
+sa.event.listen(Topic, "after_delete", delete_orphan_tag)
 
 class TopcontentTag(TopicCoreTag):
     type = "topcontent"
@@ -290,6 +286,10 @@ class TopcontentTag(TopicCoreTag):
     @declared_attr
     def __tableargs__(cls):
         return  ((sa.schema.UniqueConstraint(cls.label, cls.discriminator, cls.organization_id)))        
+def delete_orphan_tag(mapper, connection, target):
+    TopcontentTag.query.filter(~TopcontentTag.topiccores.any()).delete(synchronize_session=False)
+sa.event.listen(Topcontent, "after_delete", delete_orphan_tag)
+
 
 class PromotionTag(TopicCoreTag):
     type = "promotion"
@@ -297,3 +297,7 @@ class PromotionTag(TopicCoreTag):
     @declared_attr
     def __tableargs__(cls):
         return  ((sa.schema.UniqueConstraint(cls.label, cls.discriminator, cls.organization_id)))        
+
+def delete_orphan_tag(mapper, connection, target):
+    PromotionTag.query.filter(~PromotionTag.topiccores.any()).delete(synchronize_session=False)
+sa.event.listen(Promotion, "after_delete", delete_orphan_tag)
