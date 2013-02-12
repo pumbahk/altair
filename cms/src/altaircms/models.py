@@ -182,28 +182,42 @@ class Genre(Base,  WithOrganizationMixin):
     id = sa.Column(sa.Integer, primary_key=True)
     label = sa.Column(sa.Unicode(length=255))
     name = sa.Column(sa.String(length=255))
-    
+
+    def __repr__(self):
+        return "<name=%s %s>" % (self.name, self.organization_id)
+
+    def query_descendant(self, hop=None):
+        qs = Genre.query.join(_GenrePath, Genre.id==_GenrePath.genre_id)
+        if hop:
+            qs = qs.filter(_GenrePath.hop<=hop)
+        return qs.filter(_GenrePath.next_id==self.id)
+        
+    def query_ancestors(self, hop=None):
+        qs = Genre.query.join(_GenrePath, Genre.id==_GenrePath.next_id)
+        if hop:
+            qs = qs.filter(_GenrePath.hop<=hop)
+        return qs.filter(_GenrePath.genre_id==self.id).order_by(sa.asc(_GenrePath.hop))
+
     @property
-    def query_ancestors(self):
-        qs = Genre.query.join(_GenrePath, Genre.id==_GenrePath.next_id).filter(_GenrePath.genre_id==self.id)
-        return qs.order_by(sa.asc(_GenrePath.hop))
+    def children(self):
+        return self.query_descendant(hop=1).all()
 
     @property
     def ancestors(self):
-        return self.query_ancestors.all()
+        return self.query_ancestors(hop=None).all()
 
-    def add_relation(self, genre, hop):
+    def add_parent(self, genre, hop):
         path = _GenrePath.query.filter_by(genre=self, next_genre=genre).first()
         if path is None:
             self._parents.append(_GenrePath(genre=self, next_genre=genre, hop=hop))
         return self
 
-    def update_relation(self, genre, hop):
+    def update_parent(self, genre, hop):
         assert self.id and genre.id
         _GenrePath.query.filter_by(genre_id=self.id, next_id=genre.id).update({"hop": hop})
         return self
 
-    def remove_relation(self, genre):
+    def remove_parent(self, genre):
         assert self.id and genre.id
         _GenrePath.query.filter_by(genre_id=self.id, next_id=genre.id).delete()
         return self

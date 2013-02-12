@@ -36,7 +36,7 @@ class AncestorsTests(unittest.TestCase):
 
         music = self._makeOne(name="music")
         jpop = self._makeOne(name="music.jpop")
-        jpop.add_parent(music, 1)
+        jpop.add_relation(music, 1)
 
         DBSession.add(jpop)
         DBSession.flush()
@@ -49,9 +49,9 @@ class AncestorsTests(unittest.TestCase):
         jpop = self._makeOne(name="music.jpop")
         major = self._makeOne(name="music.jpop.major")
 
-        jpop.add_parent(music, 1)
-        major.add_parent(jpop, 1)
-        major.add_parent(music, 2)
+        jpop.add_relation(music, 1)
+        major.add_relation(jpop, 1)
+        major.add_relation(music, 2)
 
         DBSession.add(major)
         DBSession.flush()
@@ -64,7 +64,7 @@ class AncestorsTests(unittest.TestCase):
         music = self._makeOne(name="music")
         jpop = self._makeOne(name="music.jpop")
 
-        jpop.add_parent(music, 1)
+        jpop.add_relation(music, 1)
         DBSession.add(jpop)
         DBSession.flush()
 
@@ -72,7 +72,7 @@ class AncestorsTests(unittest.TestCase):
 
         jpop = DBSession.merge(jpop)
         music = DBSession.merge(music)
-        jpop.add_parent(music, 1)
+        jpop.add_relation(music, 1)
         DBSession.flush()
         self.assertEqual(jpop.ancestors, [music])
 
@@ -83,7 +83,7 @@ class AncestorsTests(unittest.TestCase):
         jpop = self._makeOne(name="music.jpop")
 
         ## add
-        jpop.add_parent(music, 1)
+        jpop.add_relation(music, 1)
         DBSession.add(jpop)
         DBSession.flush()
         self.assertEqual(jpop.ancestors, [music])
@@ -91,12 +91,12 @@ class AncestorsTests(unittest.TestCase):
         ## remove
         jpop = DBSession.merge(jpop)
         music = DBSession.merge(music)
-        jpop.remove_parent(music)
+        jpop.remove_relation(music)
         DBSession.flush()
         self.assertEqual(jpop.ancestors, [])
 
         ## add
-        jpop.add_parent(music, 1)
+        jpop.add_relation(music, 1)
         DBSession.flush()
         self.assertEqual(jpop.ancestors, [music])
 
@@ -107,7 +107,7 @@ class AncestorsTests(unittest.TestCase):
         jpop = self._makeOne(name="music.jpop")
 
         ## add
-        jpop.add_parent(music, 1)
+        jpop.add_relation(music, 1)
         DBSession.add(jpop)
         DBSession.flush()
         self.assertEqual(jpop.ancestors, [music])
@@ -115,30 +115,27 @@ class AncestorsTests(unittest.TestCase):
         ## remove
         jpop = DBSession.merge(jpop)
         music = DBSession.merge(music)
-        jpop.update_parent(music, 10)
+        jpop.update_relation(music, 10)
         DBSession.flush()
         self.assertEqual(jpop.ancestors, [music])
 
     def test_query_children(self):
         from altaircms.models import DBSession
 
-        top = self._makeOne(name="top")
-        child = self._makeOne(name="top.child")
-        grand_child = self._makeOne(name="top.child.grand_child")
-        grand_child2 = self._makeOne(name="top.child.grand_child2")
+        t = self._makeOne(name="music")
+        jpop = self._makeOne(name="music.jpop")
+        major = self._makeOne(name="music.jpop.major")
 
-        child.add_parent(top, 1)
-        grand_child.add_parent(child, 1)
-        grand_child.add_parent(top, 2)
-        grand_child2.add_parent(child, 1)
-        grand_child2.add_parent(top, 2)
-        DBSession.add(grand_child)
-        DBSession.add(grand_child2)
+        jpop.add_relation(music, 1)
+        major.add_relation(jpop, 1)
+        major.add_relation(music, 2)
+
+        DBSession.add(major)
         DBSession.flush()
+        self.assertEqual(jpop.ancestors, [music])
+        self.assertEqual(major.ancestors, [jpop, music])
 
-        self.assertEqual(top.children, [child])
-        self.assertEqual(child.children, [grand_child, grand_child2])
-        self.assertEqual(top.query_descendant().all(), [child, grand_child, grand_child2])
+        self.assertEqual(music.query_children(hop=2).all(), [jpop, major])
 
 if __name__ == "__main__":
     unittest.main()
