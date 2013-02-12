@@ -206,10 +206,13 @@ class Genre(Base,  WithOrganizationMixin):
     def ancestors(self):
         return self.query_ancestors(hop=None).all()
 
+    def _add_parent(self, genre, hop):
+        self._parents.append(_GenrePath(genre=self, next_genre=genre, hop=hop))        
+
     def add_parent(self, genre, hop):
         path = _GenrePath.query.filter_by(genre=self, next_genre=genre).first()
         if path is None:
-            self._parents.append(_GenrePath(genre=self, next_genre=genre, hop=hop))
+            self._add_parent(genre, hop)
         return self
 
     def update_parent(self, genre, hop):
