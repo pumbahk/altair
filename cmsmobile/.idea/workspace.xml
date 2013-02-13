@@ -10,13 +10,17 @@
     <file path="/views.py" changelist="f5c86b28-5c00-4c3a-9e8d-fb5983bafedc" time="1360736945792" ignored="false" />
     <file path="/top.html" changelist="f5c86b28-5c00-4c3a-9e8d-fb5983bafedc" time="1360735654083" ignored="false" />
     <file path="/__init__.py" changelist="f5c86b28-5c00-4c3a-9e8d-fb5983bafedc" time="1360736480384" ignored="false" />
-    <file path="/top.mako" changelist="f5c86b28-5c00-4c3a-9e8d-fb5983bafedc" time="1360740306239" ignored="false" />
+    <file path="/top.mako" changelist="f5c86b28-5c00-4c3a-9e8d-fb5983bafedc" time="1360741461979" ignored="false" />
     <file path="/_search.mako" changelist="f5c86b28-5c00-4c3a-9e8d-fb5983bafedc" time="1360739133256" ignored="false" />
     <file path="/_header.mako" changelist="f5c86b28-5c00-4c3a-9e8d-fb5983bafedc" time="1360739010942" ignored="false" />
     <file path="$PROJECT_DIR$/../ticketing/src/ticketing/templates/layout.html" changelist="f5c86b28-5c00-4c3a-9e8d-fb5983bafedc" time="1360738646404" ignored="false" />
     <file path="/_pickup.mako" changelist="f5c86b28-5c00-4c3a-9e8d-fb5983bafedc" time="1360739604077" ignored="false" />
     <file path="/_genre.mako" changelist="f5c86b28-5c00-4c3a-9e8d-fb5983bafedc" time="1360739724275" ignored="false" />
     <file path="/attention.mako" changelist="f5c86b28-5c00-4c3a-9e8d-fb5983bafedc" time="1360740197215" ignored="false" />
+    <file path="/_area.mako" changelist="f5c86b28-5c00-4c3a-9e8d-fb5983bafedc" time="1360741107980" ignored="false" />
+    <file path="/_topics.mako" changelist="f5c86b28-5c00-4c3a-9e8d-fb5983bafedc" time="1360741221798" ignored="false" />
+    <file path="/_hotward.mako" changelist="f5c86b28-5c00-4c3a-9e8d-fb5983bafedc" time="1360741310198" ignored="false" />
+    <file path="/_footer.mako" changelist="f5c86b28-5c00-4c3a-9e8d-fb5983bafedc" time="1360742380274" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -36,7 +40,16 @@
       <file leaf-file-name="top.mako" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/cmsmobile/templates/top/top.mako">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="11" column="7" selection-start="267" selection-end="267" vertical-scroll-proportion="0.47142857">
+            <state line="17" column="0" selection-start="429" selection-end="429" vertical-scroll-proportion="0.46532845">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="_footer.mako" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/cmsmobile/templates/top/_footer.mako">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="4" column="4" selection-start="36" selection-end="36" vertical-scroll-proportion="-2.5">
               <folding />
             </state>
           </provider>
@@ -52,7 +65,6 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/cmsmobile/models.py" />
         <option value="$PROJECT_DIR$/cmsmobile/scripts/initializedb.py" />
         <option value="$PROJECT_DIR$/cmsmobile/tests.py" />
         <option value="$PROJECT_DIR$/cmsmobile/detail/__init__.py" />
@@ -64,6 +76,10 @@
         <option value="$PROJECT_DIR$/cmsmobile/templates/top/_pickup.mako" />
         <option value="$PROJECT_DIR$/cmsmobile/templates/top/_genre.mako" />
         <option value="$PROJECT_DIR$/cmsmobile/templates/top/attention.mako" />
+        <option value="$PROJECT_DIR$/cmsmobile/templates/top/_area.mako" />
+        <option value="$PROJECT_DIR$/cmsmobile/templates/top/_topics.mako" />
+        <option value="$PROJECT_DIR$/cmsmobile/templates/top/_hotward.mako" />
+        <option value="$PROJECT_DIR$/cmsmobile/templates/top/_footer.mako" />
         <option value="$PROJECT_DIR$/cmsmobile/templates/top/top.mako" />
       </list>
     </option>
@@ -313,7 +329,7 @@
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24594156" sideWeight="0.67" order="0" side_tool="false" content_ui="combo" />
@@ -386,49 +402,6 @@
     <breakpoint-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/cmsmobile/tests.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="10" column="20" selection-start="162" selection-end="162" vertical-scroll-proportion="0.26223776">
-          <folding>
-            <element signature="e#0#15#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="uml://AlchemyModelDependency/#cmsmobile">
-      <provider selected="true" editor-type-id="UmlEditorProvider">
-        <state>
-          <ID>AlchemyModelDependency</ID>
-          <OriginalElement>#cmsmobile</OriginalElement>
-          <nodes>
-            <node x="" y="">cmsmobile.models.Host</node>
-          </nodes>
-          <notes />
-          <edges />
-          <settings layout="Hierarchic Group" zoom="1.0" x="32.0" y="15.0" />
-          <SelectedNodes />
-          <Categories>
-            <Category>Fields</Category>
-          </Categories>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/cmsmobile/scripts/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/cmsmobile/scripts/initializedb.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="29" column="29" selection-start="514" selection-end="514" vertical-scroll-proportion="0.7604895">
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/cmsmobile/detail/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="1" column="0" selection-start="28" selection-end="28" vertical-scroll-proportion="0.026223777">
@@ -512,9 +485,37 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/cmsmobile/templates/top/_hotward.mako">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="6" column="0" selection-start="46" selection-end="46" vertical-scroll-proportion="-3.75">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/cmsmobile/templates/top/_topics.mako">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="2" column="12" selection-start="51" selection-end="51" vertical-scroll-proportion="-1.25">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/cmsmobile/templates/top/_area.mako">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="14" column="0" selection-start="69" selection-end="69" vertical-scroll-proportion="0.38321167">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/cmsmobile/templates/top/_footer.mako">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="4" column="4" selection-start="36" selection-end="36" vertical-scroll-proportion="-2.5">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/cmsmobile/templates/top/top.mako">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="11" column="7" selection-start="267" selection-end="267" vertical-scroll-proportion="0.47142857">
+        <state line="17" column="0" selection-start="429" selection-end="429" vertical-scroll-proportion="0.46532845">
           <folding />
         </state>
       </provider>
