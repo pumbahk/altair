@@ -16,6 +16,10 @@ class TopicWidgetView(object):
         try:
             data = self.request.json_body["data"]
             data["tag"] = self.context.Tag.query.filter_by(id=data["tag"]).one()
+            if data.get("system_tag") and data.get("system_tag") != "__None":
+                data["system_tag"] = self.context.Tag.query.filter_by(id=data["system_tag"]).one()
+            else:
+                data["system_tag"] = None
             page_id = self.request.json_body["page_id"]
             widget = self.context.get_widget(self.request.json_body.get("pk"))
             widget = self.context.update_data(widget,

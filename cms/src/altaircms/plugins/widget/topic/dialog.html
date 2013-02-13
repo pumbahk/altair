@@ -4,12 +4,13 @@
 <%namespace file="../components.html" name="co"/>
 
 <div class="title">
-  <h1>トピック(画像)</h1>
+  <h1>トピック(テキスト)</h1>
 </div>
 <table class="table">
   <tbody>
     ${co.formfield(form, "display_type")}
     ${co.formfield(form, "tag")}
+    ${co.formfield(form, "system_tag")}
     ${co.formfield(form, "display_count")}
   </tbody>
 </table>

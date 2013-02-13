@@ -28,7 +28,9 @@ class TopicWidget(Widget):
     display_type = sa.Column(sa.Unicode(length=255))
     display_count = sa.Column(sa.Integer)
     tag_id = sa.Column(sa.Integer, sa.ForeignKey("topiccoretag.id"))
-    tag = orm.relationship("TopicTag", uselist=False)
+    tag = orm.relationship("TopicTag", uselist=False, primaryjoin="TopicWidget.tag_id==TopicTag.id")
+    system_tag_id = sa.Column(sa.Integer, sa.ForeignKey("topiccoretag.id"))
+    system_tag = orm.relationship("TopicTag", uselist=False, primaryjoin="TopicWidget.system_tag_id==TopicTag.id")
 
     def merge_settings(self, bname, bsettings):
         ## lookup utilities.py

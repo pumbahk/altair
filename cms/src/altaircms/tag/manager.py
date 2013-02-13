@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 from altaircms.models import DBSession
+import sqlalchemy.orm as orm
 import sqlalchemy.sql.expression as saexp
 from zope.interface import implementer
 from .interfaces import ITagManager
@@ -74,9 +75,6 @@ class TagManagerBase(object):
         qs = self.joined_query([self.Object]).filter(self.Tag.label==label)
         return qs
 
-    def search_by_tag(self, tag):
-        return self.joined_query([self.Object]).filter(self.Tag.id==tag.id)
-
     ## history
     def recent_change_tags(self):
         return self.Tag.query.order_by(saexp.desc(self.Tag.updated_at), saexp.asc(self.Tag.id))
@@ -117,6 +115,9 @@ class TagManagerBase(object):
     def is_target_tag(self, tag):
         pass
 
+    def search_by_tag(self, tag):
+        return self.joined_query([self.Object]).filter(self.Tag.id==tag.id)
+
     def add_tags(self, obj, tag_label_list, public_status):
         tags = obj.tags
         result = []
@@ -136,6 +137,12 @@ class TagManager(TagManagerBase):
         qs = DBSession.query(*query_target).filter(self.Object.id==self.XRef.object_id)
         qs = qs.filter(self.Object.organization_id==self.Tag.organization_id)
         return qs.filter(self.Tag.id==self.XRef.tag_id)
+        
+    def more_filter_by_tag(self, qs, tag):
+        xref = orm.aliased(self.XRef)
+        qs = qs.filter(self.Object.id==xref.object_id, xref.tag_id==tag.id)
+        qs = qs.filter(self.Object.organization_id==tag.organization_id)
+        return qs
 
 @implementer(ISystemTagManager)
 class SystemTagManager(TagManagerBase):
@@ -146,3 +153,9 @@ class SystemTagManager(TagManagerBase):
         query_target = query_target or [self.Object]
         qs = DBSession.query(*query_target).filter(self.Object.id==self.XRef.object_id)
         return qs.filter(self.Tag.id==self.XRef.tag_id)
+
+    def more_filter_by_tag(self, qs, tag):
+        xref = orm.aliased(self.XRef)
+        return qs.filter(self.Object.id==xref.object_id, xref.tag_id==tag.id)
+
+
