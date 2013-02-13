@@ -11,6 +11,7 @@ from altaircms.page.models import PageSet
 from altaircms.asset.models import ImageAsset
 from altaircms.models import WithOrganizationMixin
 import altaircms.helpers as h
+from . import TOPIC_TAG_USECASE_LIST
 
 """
 topicはtopicウィジェットで使われる。
@@ -247,6 +248,10 @@ class TopicCoreTag2TopicCore(Base):
         )
 topiccoretag2topiccore = TopicCoreTag2TopicCore.__table__
 
+
+"""
+organization_id == NULLのデータはmasterデータ。
+"""
 class TopicCoreTag(WithOrganizationMixin, Base):
     CLASSIFIER = "topiccore"
     
@@ -258,7 +263,7 @@ class TopicCoreTag(WithOrganizationMixin, Base):
     publicp = sa.Column(sa.Boolean, default=False)
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
-
+    # usecase = sa.Column(sa.Enum(*TOPIC_TAG_USECASE_LIST), default="normal")
     discriminator = sa.Column("type", sa.String(32), nullable=False)
     __mapper_args__ = {"polymorphic_on": discriminator}
 

@@ -179,15 +179,18 @@ class Genre(Base,  WithOrganizationMixin):
         sa.UniqueConstraint("organizationi_id", "name")
         )
     query = DBSession.query_property()
+    is_root = sa.Column(sa.Boolean, default=True)
     id = sa.Column(sa.Integer, primary_key=True)
+    display_order = sa.Column(sa.Integer, default=50)
     label = sa.Column(sa.Unicode(length=255))
     name = sa.Column(sa.String(length=255))
 
     def __repr__(self):
         return "<name=%s %s>" % (self.name, self.organization_id)
 
+
     def query_descendant(self, hop=None):
-        qs = Genre.query.join(_GenrePath, Genre.id==_GenrePath.genre_id)
+        qs = self.query_join_path_from_self
         if hop:
             qs = qs.filter(_GenrePath.hop<=hop)
         return qs.filter(_GenrePath.next_id==self.id)
@@ -207,6 +210,7 @@ class Genre(Base,  WithOrganizationMixin):
         return self.query_ancestors(hop=None).all()
 
     def _add_parent(self, genre, hop):
+        self.is_root = False
         self._parents.append(_GenrePath(genre=self, next_genre=genre, hop=hop))        
 
     def add_parent(self, genre, hop):

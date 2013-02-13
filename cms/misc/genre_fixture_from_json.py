@@ -4,7 +4,7 @@ from collections import namedtuple
 import codecs
 
 sys.stdout = codecs.getwriter("utf-8")(sys.stdout)
-Genre = namedtuple("genre", "id name label organization_id")
+Genre = namedtuple("genre", "id name label organization_id is_root")
 GenrePath = namedtuple("genre_path", "genre_id next_id hop")
 
 class Counter(object):
@@ -29,13 +29,13 @@ class SQLObject(object):
 organization_id = 1
 Genre_id = Counter(0)
 
-def parse(params, ancestors, result):
-    target = Genre(id=Genre_id.inc(), name=params["name"], label=params["label"], organization_id=organization_id)
+def parse(params, ancestors, result, is_root=True):
+    target = Genre(id=Genre_id.inc(), name=params["name"], label=params["label"], organization_id=organization_id, is_root=is_root)
     result.append(target)
     if "children" in params:
         ancestors.insert(0, target)
         for sub_params in params["children"]:
-            child = parse(sub_params, ancestors, result)
+            child = parse(sub_params, ancestors, result, is_root=False)
             for i, p in enumerate(ancestors):
                 path = GenrePath(genre_id=child.id, next_id=p.id, hop=i+1)
                 result.append(path)

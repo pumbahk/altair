@@ -1,3 +1,5 @@
+TOPIC_TAG_USECASE_LIST = ["normal", "genre"]
+
 # coding: utf-8
 def includeme(config):
     config.add_route("promotion_list", "/promotion/list", factory=".resources.PromotionPageContext")

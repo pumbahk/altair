@@ -64,6 +64,7 @@ class TagManager(object):
     def joined_query(self, query_target=None):
         query_target = query_target or [self.Object]
         qs = DBSession.query(*query_target).filter(self.Object.id==self.XRef.object_id)
+        qs = qs.filter(self.Object.organization_id==self.Tag.organization_id)
         return qs.filter(self.Tag.id==self.XRef.tag_id)
 
     def public_search_by_tag_label(self, label):
