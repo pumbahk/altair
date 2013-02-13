@@ -1,5 +1,5 @@
 from .tagname import TagNameResolver
-from .interfaces import ITagManager
+from .interfaces import ITagManager, ISystemTagManager
 from altaircms.subscribers import notify_model_create
 from pyramid.threadlocal import get_current_registry
 
@@ -7,14 +7,24 @@ def get_tagmanager(classifier, request=None):
     registry = request.registry if request else get_current_registry()
     return registry.queryUtility(ITagManager, classifier)
 
+def get_system_tagmanager(classifier, request=None):
+    registry = request.registry if request else get_current_registry()
+    return registry.queryUtility(ISystemTagManager, classifier)
+
 def get_tagname_resolver(request):
     return TagNameResolver(request)
 
 def put_tags(obj, classifier, tags, private_tags, request):
     manager = get_tagmanager(classifier, request=request)
+    tags = manager.replace_tags(obj, tags, True)
+    private_tags = manager.replace_tags(obj, private_tags, False)
+    ## put organization id
+    notify_created_tags(request, tags)
+    notify_created_tags(request, private_tags)
+
+def put_system_tags(obj, classifier, tags, request):
+    manager = get_system_tagmanager(classifier, request=request)
     manager.replace_tags(obj, tags, True)
-    manager.replace_tags(obj, private_tags, False)
-    notify_created_tags(request, obj.tags)
 
 def notify_created_tags(request, tags):
     for t in tags:

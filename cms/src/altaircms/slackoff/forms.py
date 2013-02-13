@@ -13,7 +13,7 @@ from altaircms.helpers.formhelpers import required_field, append_errors
 
 
 from ..event.models import Event
-from altaircms.models import Performance
+from altaircms.models import Performance, Genre
 from ..models import Category, Sale
 from ..asset.models import ImageAsset
 from ..page.models import PageSet
@@ -163,6 +163,7 @@ validate_publish_term = TermValidator("publish_open_on", "publish_close_on",  u"
 class TopicForm(Form):
     title = fields.TextField(label=u"タイトル", validators=[required_field()])
     tag_content = fields.TextField(label=u"種別(, 区切り)") #@todo rename
+    genre = fields.SelectMultipleField(label=u"ジャンル(todo:fixme)", coerce=unicode)
     text = fields.TextField(label=u"内容", validators=[required_field()], widget=widgets.TextArea())
     publish_open_on = fields.DateTimeField(label=u"公開開始日", validators=[required_field()])
     publish_close_on = fields.DateTimeField(label=u"公開終了日", validators=[required_field()])
@@ -176,8 +177,7 @@ class TopicForm(Form):
 
     display_order = fields.IntegerField(label=u"表示順序(1〜100)", default=50)
     is_vetoed = fields.BooleanField(label=u"公開禁止")
-
-    __display_fields__= [u"title", u"tag_content", 
+    __display_fields__= [u"title", u"tag_content", u"genre", 
                          u"text",
                          u"publish_open_on", u"publish_close_on", 
                          u"display_order", u"is_vetoed", 
@@ -188,6 +188,8 @@ class TopicForm(Form):
             validate_publish_term(self.data, self.errors)
         return not bool(self.errors)
 
+    def configure(self, request):
+        self.genre.choices = [(unicode(g.id), g.label) for g in request.allowable(Genre)]
 
 class TopcontentForm(Form):
     title = fields.TextField(label=u"タイトル", validators=[required_field()])

@@ -5,6 +5,7 @@ from pyramid.view import view_config
 import altaircms.helpers as h
 from altaircms.auth.api import get_or_404
 from altaircms.page.models import Page
+from altaircms.models import Genre
 
 @view_config(route_name="topic_list", renderer="altaircms:templates/topic/topic/pages.html", 
              decorator="altaircms.lib.fanstatic_decorator.with_bootstrap",
@@ -28,7 +29,8 @@ def list_view(context, request):
     grid = context.Grid.create(pages.paginated())
 
     recently_tags = context.tag_manager.recent_change_tags().filter_by(publicp=True).limit(10)
-    return dict(grid=grid, pages=pages, recently_tags=recently_tags, search_word=search_word)
+    genre_list = Genre.query.order_by(Genre.display_order).all()
+    return dict(grid=grid, pages=pages, recently_tags=recently_tags, search_word=search_word, genre_list=genre_list)
 
 
 @view_config(route_name="topic_tag_list", renderer="altaircms:templates/tag/tags.html", 

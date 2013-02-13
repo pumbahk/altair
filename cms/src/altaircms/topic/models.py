@@ -96,13 +96,22 @@ class TopicCore(Base):
         D["tag_content"] = self.tag_content
         return D
 
+    ## theese are hack. so, sorry(in slackoff view)
     @property
     def tag_content(self):
-        return u", ".join(k.label for k in self.tags)
+        return u", ".join(k.label for k in self.tags if k.organization_id is not None)
 
     @tag_content.setter
     def tag_content(self, v):
         self._tag_content = v  
+
+    # @property
+    # def genre(self):
+    #     return u",  "
+
+    # @genre.setter
+    # def genre(self, vs):
+    #     self._genre = vs
 
 _where = object()
 

@@ -82,7 +82,7 @@ class BaseTagCreateView(object):
     def create(self):
         try:
             form = self.tag_form_class(self.request.POST)
-            ## ajax requestの時login認証が行われない？
+            ## ajax requestの時login認証が行われない？ #嘘.resourceの__acl__ないだけ
             self.request.organization = Organization.query.filter_by(id=self.request.POST["organization_id"]).first()
             if not form.validate():
                 return {"status": False}
