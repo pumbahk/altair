@@ -21,9 +21,9 @@ class SQLObject(object):
 
     def insert(self, o):
         name = o.__class__.__name__
-        fields = " ".join(o._fields)
-        values = u" ".join('"%s"' % v if isinstance(v, (str, unicode)) else str(v) for v in list(o))
-        self.out.write(u'INSERT INTO %s (%s) VALUES (%s)\n' % (name, fields, values))
+        fields = ", ".join(o._fields)
+        values = u",".join('"%s"' % v if isinstance(v, (str, unicode)) else str(v) for v in list(o))
+        self.out.write(u'INSERT INTO %s (%s) VALUES (%s);\n' % (name, fields, values))
         
 
 organization_id = 1
@@ -37,7 +37,7 @@ def parse(params, ancestors, result):
         for sub_params in params["children"]:
             child = parse(sub_params, ancestors, result)
             for i, p in enumerate(ancestors):
-                path = GenrePath(genre_id=child.id, next_id=target.id, hop=i+1)
+                path = GenrePath(genre_id=child.id, next_id=p.id, hop=i+1)
                 result.append(path)
         ancestors.pop(0)
     return target
