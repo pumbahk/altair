@@ -1906,7 +1906,6 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 else:
                     logger.info(u'売上一部取消APIで全額取消 %s' % self.order_no)
                     multi_checkout_result = multicheckout_api.checkout_sales_part_cancel(request, order_no, self.total_amount, 0)
-                DBSession.add(multi_checkout_result)
 
                 error_code = ''
                 if multi_checkout_result.CmnErrorCd and multi_checkout_result.CmnErrorCd != '000000':

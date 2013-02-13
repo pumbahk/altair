@@ -96,8 +96,8 @@ class CheckoutPlugin(object):
                 back_url=back_url(request),
                 error_code=result['apiErrorCode']
             )
-        checkout.sales_at = datetime.now()
-        checkout.save()
+        order.cart.checkout.sales_at = datetime.now()
+        order.cart.checkout.save()
         return
 
 

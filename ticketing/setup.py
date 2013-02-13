@@ -138,9 +138,9 @@ setup(name='ticketing',
       cancel_auth=ticketing.multicheckout.scripts.cancelauth:main
       sej_nwts_upload=ticketing.sej.scripts.sej_nwts_upload:main
       release_carts=ticketing.cart.scripts.release_carts:main
+      rakuten_checkout_sales=ticketing.checkout.commands:rakuten_checkout_sales
       [distutils.setup_keywords]
       use_date_versioning=ticketing.versiontools:calc_version
-      rakuten_checkout_sales=ticketing.checkout.commands:rakuten_checkout_sales
       """,
       paster_plugins=['pyramid'],
       )
