@@ -138,16 +138,6 @@ def cancel_auth_expired_carts():
             else:
                 logging.info("Order(order_no = %s) status = %s " % (order_no, inquiry.Status))
 
-        elif api.is_checkout_payment(cart) and cart.checkout:
-            logging.info("cancel auth for order_no=%s" % order_no)
-            checkout = checkout_api.get_checkout_service(request, cart.performance.event.organization, get_channel(cart.channel))
-            result = checkout.request_cancel_order([cart.checkout.orderControlId])
-            if 'statusCode' in result and result['statusCode'] != '0':
-                error_code = result['apiErrorCode'] if 'apiErrorCode' in result else ''
-                logging.warn('can not cancel auth for order_no=%s (error_code:%s)' % (order_no, error_code))
-                carts_to_skip.add(cart_id)
-                continue
-
         cart.finished_at = now
         logging.info("TRANSACTION IS BEING COMMITTED AGAIN...")
         transaction.commit()
