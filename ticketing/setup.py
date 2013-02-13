@@ -140,6 +140,7 @@ setup(name='ticketing',
       release_carts=ticketing.cart.scripts.release_carts:main
       [distutils.setup_keywords]
       use_date_versioning=ticketing.versiontools:calc_version
+      rakuten_checkout_sales=ticketing.checkout.commands:rakuten_checkout_sales
       """,
       paster_plugins=['pyramid'],
       )

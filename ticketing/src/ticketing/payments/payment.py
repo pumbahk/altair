@@ -45,7 +45,7 @@ def get_preparer(request, payment_delivery_pair):
             return payment_plugin
 
 directlyProvides(get_preparer, IPaymentPreparerFactory)
-        
+
 class Payment(object):
     """ 決済
     """
@@ -63,7 +63,6 @@ class Payment(object):
     def select_payment(self, payment_delivery_pair, shipping_address):
         """ 決済・引取方法選択 via PaymentView
         """
-
         cart.payment_delivery_pair = payment_delivery_pair
         cart.system_fee = payment_delivery_pair.system_fee
         cart.shipping_address = shipping_address
