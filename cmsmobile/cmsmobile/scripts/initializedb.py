@@ -11,7 +11,7 @@ from pyramid.paster import (
 
 from ..models import (
     DBSession,
-    Alembic_version,
+    Host,
     Base,
     )
 
@@ -33,5 +33,5 @@ def main(argv=sys.argv):
     DBSession.configure(bind=engine)
     Base.metadata.create_all(engine)
     with transaction.manager:
-        model = Alembic_version(name='one', value=1)
+        model = Host(name='one', value=1)
         DBSession.add(model)

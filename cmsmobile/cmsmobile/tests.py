@@ -7,18 +7,19 @@ from .models import DBSession
 
 
 class TestMyView(unittest.TestCase):
+    """
     def setUp(self):
         self.config = testing.setUp()
         from sqlalchemy import create_engine
         engine = create_engine('sqlite://')
         from .models import (
             Base,
-            Alembic_version,
+            Host,
             )
         DBSession.configure(bind=engine)
         Base.metadata.create_all(engine)
         with transaction.manager:
-            model = Alembic_version(55)
+            model = Host()
 
     def tearDown(self):
         DBSession.remove()
@@ -30,3 +31,4 @@ class TestMyView(unittest.TestCase):
         info = my_view(request)
         self.assertEqual(info['one'].name, 'one')
         self.assertEqual(info['project'], 'cmsmobile')
+"""

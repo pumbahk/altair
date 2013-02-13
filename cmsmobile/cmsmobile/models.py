@@ -1,8 +1,4 @@
-from sqlalchemy import (
-    Column,
-    Integer,
-    Text,
-    )
+import sqlalchemy as sa
 
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -17,9 +13,14 @@ DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 Base = declarative_base()
 
 
-class Alembic_version(Base):
-    __tablename__ = 'alembic_version'
-    version_num = Column(Integer, primary_key=True)
+class Host(Base):
+    __tablename__ = 'host'
+    organization_id = sa.Column(sa.Integer, primary_key=True)
+    id = sa.Column(sa.Integer)
+    host_name = sa.Column(sa.Unicode(255), primary_key=True)
 
-    def __init__(self, version):
-        self.version_num = version
+    def __init__(self, organization_id, id, host_name):
+        self.organization_id = organization_id
+        self.id = id
+        self.host_name = host_name
+
