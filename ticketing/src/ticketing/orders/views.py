@@ -812,7 +812,7 @@ class Orders(BaseView):
         self.request.session.flash(u'券面を印刷キューに追加しました')
         return HTTPFound(location=self.request.route_path('orders.show', order_id=order_id))
 
-from ticketing.sej.models import SejOrder, SejTicket, SejTicketTemplateFile, SejRefundEvent, SejRefundTicket
+from ticketing.sej.models import SejOrder, SejTicket, SejTicketTemplateFile, SejRefundEvent, SejRefundTicket, SejTenant
 from ticketing.sej.ticket import SejTicketDataXml
 from ticketing.sej.payment import request_update_order, request_cancel_order
 from ticketing.sej.resources import code_from_ticket_type, code_from_update_reason, code_from_payment_type
@@ -865,11 +865,11 @@ class SejOrderView(object):
 class SejOrderInfoView(object):
 
     def __init__(self, request):
-
         settings = get_current_registry().settings
-        self.sej_hostname = settings['sej.inticket_api_url']
-        self.shop_id = settings['sej.shop_id']
-        self.secret_key = settings['sej.api_key']
+        tenant = SejTenant.filter_by(organization_id=request.context.user.organization_id).first()
+        self.sej_hostname = (tenant and tenant.inticket_api_url) or settings.get('sej.inticket_api_url')
+        self.shop_id = (tenant and tenant.shop_id) or settings.get('sej.shop_id')
+        self.secret_key = (tenant and tenant.api_key) or settings.get('sej.api_key')
 
         self.request = request
 

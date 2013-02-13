@@ -36,7 +36,7 @@ from ticketing.models import (
 from standardenum import StandardEnum
 from ticketing.utils import is_nonmobile_email_address
 from ticketing.users.models import User, UserCredential
-from ticketing.sej.models import SejOrder
+from ticketing.sej.models import SejOrder, SejTenant
 from ticketing.sej.exceptions import SejServerError
 from ticketing.sej.payment import request_cancel_order
 from ticketing.assets import IAssetResolver
@@ -1906,7 +1906,6 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 else:
                     logger.info(u'売上一部取消APIで全額取消 %s' % self.order_no)
                     multi_checkout_result = multicheckout_api.checkout_sales_part_cancel(request, order_no, self.total_amount, 0)
-                DBSession.add(multi_checkout_result)
 
                 error_code = ''
                 if multi_checkout_result.CmnErrorCd and multi_checkout_result.CmnErrorCd != '000000':
@@ -1944,7 +1943,12 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 sej_order = SejOrder.query.filter_by(order_id=self.order_no).first()
                 if sej_order and not sej_order.cancel_at:
                     settings = get_current_registry().settings
-                    shop_id = settings.get('sej.shop_id', 0)
+                    tenant = SejTenant.filter_by(organization_id=self.organization_id).first()
+
+                    inticket_api_url = (tenant and tenant.inticket_api_url) or settings.get('sej.inticket_api_url')
+                    shop_id = (tenant and tenant.shop_id) or settings.get('sej.shop_id')
+                    api_key = (tenant and tenant.api_key) or settings.get('sej.api_key')
+
                     if sej_order.shop_id != shop_id:
                         logger.error(u'コンビニ決済(セブン-イレブン)のキャンセルに失敗しました Invalid shop_id : %s' % shop_id)
                         return False
@@ -1955,8 +1959,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                             billing_number=sej_order.billing_number,
                             exchange_number=sej_order.exchange_number,
                             shop_id=shop_id,
-                            secret_key=settings.get('sej.api_key'),
-                            hostname=settings.get('sej.inticket_api_url')
+                            secret_key=api_key,
+                            hostname=inticket_api_url
                         )
                     except SejServerError, e:
                         logger.error(u'コンビニ決済(セブン-イレブン)のキャンセルに失敗しました %s' % e)
