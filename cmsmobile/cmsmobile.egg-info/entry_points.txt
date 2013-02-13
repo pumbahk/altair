@@ -1,0 +1,5 @@
+      [paste.app_factory]
+      main = cmsmobile:main
+      [console_scripts]
+      initialize_cmsmobile_db = cmsmobile.scripts.initializedb:main
+      
