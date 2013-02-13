@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import sqlalchemy.orm as orm
+from functools import partial
 from datetime import datetime
 from pyramid.renderers import render
 from zope.interface import implementer
@@ -9,7 +10,7 @@ from altaircms.plugins.widget.api import DisplayTypeSelectRendering
 from altaircms.topic.api import get_topic_searcher
 
 from .models import TopicWidget
-from functools import partial
+
 
 def render_topics_with_template(template_name, request, widget):
     d = datetime.now()

@@ -6,6 +6,7 @@ from .models import TopicWidget
 from altaircms.plugins.api import get_widget_utility
 from altaircms.helpers.formhelpers import dynamic_query_select_field_factory
 from altaircms.topic.models import TopicTag
+from altaircms.topic.api import get_topic_searcher
 
 class TopicChoiceForm(form.Form):
     tag = dynamic_query_select_field_factory(
@@ -21,6 +22,7 @@ class TopicChoiceForm(form.Form):
     def configure(self, request, page):
         utility = get_widget_utility(request, page, TopicWidget.type)
         if page.pageset.genre_id:
-            self.system_tag.default = page.pageset.genre_id
+            searcher = get_topic_searcher(request, TopicWidget.type)
+            self.system_tag.default = searcher.get_tag_from_genre_label(page.pageset.genre.label).id
         self.display_type.choices = utility.choices
         return self

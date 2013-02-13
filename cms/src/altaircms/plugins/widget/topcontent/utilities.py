@@ -1,33 +1,30 @@
 # -*- coding:utf-8 -*-
 import sqlalchemy.orm as orm
+from functools import partial
 from datetime import datetime
 from pyramid.renderers import render
 from zope.interface import implementer
 
 from altaircms.plugins.interfaces import IWidgetUtility
 from altaircms.plugins.widget.api import DisplayTypeSelectRendering
-from altaircms.tag.api import get_tagmanager
-from altaircms.topic.models import Topcontent
-
+from altaircms.topic.api import get_topic_searcher
 from .models import TopcontentWidget
 
-def render_notable_event(request, widget):
+def render_topics_with_template(template_name, request, widget):
     d = datetime.now()
-    qs = _qs_search(request, widget, d=d)
-    template_name = "altaircms.plugins.widget:topcontent/notable_event_render.html"
-    return render(template_name, {"widget": widget, "qs": qs}, request)
+    searcher = get_topic_searcher(request, widget.type)
 
-## todo: refactoring
-def _qs_search(request, widget, d=None):
-    tagmanager = get_tagmanager(widget.type, request=request)
-    qs = tagmanager.search_by_tag(widget.tag)
-    qs = Topcontent.matched_qs(d=d, qs=qs)
-    qs = request.allowable(Topcontent, qs=qs)
-    if qs.count() > widget.display_count:
-        qs = qs.limit(widget.display_count)
-    qs = qs.options(orm.joinedload("linked_page"),
-                    orm.joinedload("image_asset"))
-    return qs
+    qs = searcher.query_publishing(d)
+    qs = searcher.filter_by_tag(qs, widget.tag)
+
+    if widget.system_tag_id:
+        qs = searcher.filter_by_system_tag(qs, widget.system_tag)
+
+    qs = qs.options(orm.joinedload("linked_page"), orm.joinedload("image_asset")).limit(widget.display_count)
+    result = render(template_name, {"widget": widget, "topics": qs}, request)
+    return result
+
+render_notable_event = partial(render_topics_with_template, "altaircms.plugins.widget:topcontent/notable_event_render.html")
 
 @implementer(IWidgetUtility)
 class TopcontentWidgetUtilityDefault(object):

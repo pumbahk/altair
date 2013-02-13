@@ -43,7 +43,7 @@ class RealPromotionManager(object):
 
 
 ## mock
-from .models import PromotionInfo
+from .utilities import PromotionInfo
 @provider(IPromotionManager)
 class MockPromotionManager(object):
     @classmethod

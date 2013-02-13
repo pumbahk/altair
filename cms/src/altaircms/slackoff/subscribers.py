@@ -53,9 +53,10 @@ def _tag_labels_from_genres(genres):
 
 def update_kind(self):
     tag_labels = tags_from_string(self.params["tag_content"])
-    genres = Genre.query.filter(Genre.id.in_(self.params["genre"])).all()
-    system_tag_labels = _tag_labels_from_genres(genres)
-
     obj_type = self.obj.__tablename__
     put_tags(self.obj, obj_type, tag_labels, [], self.request)
-    put_system_tags(self.obj, obj_type, system_tag_labels, self.request)
+
+    if self.params.get("genre"):
+        genres = Genre.query.filter(Genre.id.in_(self.params["genre"])).all()
+        system_tag_labels = _tag_labels_from_genres(genres)
+        put_system_tags(self.obj, obj_type, system_tag_labels, self.request)

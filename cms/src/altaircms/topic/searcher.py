@@ -193,8 +193,10 @@ class GlobalTopicSearcher(object):
     def filter_by_system_tag(self, qs, tag):
         return self.system_tagmanager.more_filter_by_tag(qs, tag)
 
-    def filter_by_genre(self, qs, genre):
-        system_tag = self.system_tagmanager.get_or_create_tag(genre.label, public_status=True)
+    def filter_by_genre_label(self, qs, genre_label):
+        system_tag = self.get_tag_from_genre_label(genre_label)
         return self.system_tagmanager.more_filter_by_tag(qs, system_tag)
 
+    def get_tag_from_genre_label(self, genre_label):
+        return self.system_tagmanager.get_or_create_tag(genre_label, public_status=True)
 

@@ -1,17 +1,63 @@
 # -*- coding:utf-8 -*-
+import sqlalchemy.orm as orm
+from datetime import datetime
+from collections import namedtuple
 from pyramid.renderers import render
 from zope.interface import implementer
 
+import altaircms.helpers as h
 from altaircms.plugins.interfaces import IWidgetUtility
 from altaircms.plugins.widget.api import DisplayTypeSelectRendering
 from .models import PromotionWidget
 from .api import get_promotion_manager
+from altaircms.topic.api import get_topic_searcher
+
+## fixme: rename **info
+PromotionInfo = namedtuple("PromotionInfo", "idx thumbnails message main main_link links messages interval_time unit_candidates")
+
+class PromotionSheet(object):
+    INTERVAL_TIME = 5000
+
+    def __init__(self, promotion_units):
+        self.promotion_units = promotion_units
+
+    def as_info(self, request, idx=0, limit=15):
+        ## todo optimize
+        punits = self.promotion_units[:limit] if len(self.promotion_units) > limit else self.promotion_units
+        if not punits:
+            return None
+
+        selected = punits[idx]
+        return PromotionInfo(
+            thumbnails=[h.asset.to_show_page(request, pu.main_image, filepath=pu.main_image.thumbnail_path) for pu in punits], 
+            idx=idx, 
+            message=selected.text, 
+            main=h.asset.to_show_page(request, selected.main_image), 
+            main_link=h.link.get_link_from_promotion(request, selected), 
+            links=[h.link.get_link_from_promotion(request, pu) for pu in punits], 
+            messages=[pu.text for pu in punits], 
+            interval_time = self.INTERVAL_TIME, 
+            unit_candidates = [int(pu.id) for pu in punits]
+            )
+
+def promotion_sheet(request, widget):
+    d = datetime.now()
+    searcher = get_topic_searcher(request, widget.type)
+
+    qs = searcher.query_publishing(d)
+    qs = searcher.filter_by_tag(qs, widget.tag)
+
+    if widget.system_tag_id:
+        qs = searcher.filter_by_system_tag(qs, widget.system_tag)
+
+    qs = qs.options(orm.joinedload("linked_page"), orm.joinedload("main_image"))
+    return PromotionSheet(qs.all()) ##
 
 def render_tstar_top(request, widget):
     limit = 15
     template_name = "altaircms.plugins.widget:promotion/render.html"
     pm = get_promotion_manager(request)
-    info = pm.promotion_info(request, widget.promotion_sheet, limit=limit)
+    info = pm.promotion_info(request, promotion_sheet(request, widget), limit=limit)
     params = {"show_image": pm.show_image, "info": info}
     return render(template_name, params, request=request)
 
@@ -19,7 +65,7 @@ def render_tstar_category_top(request, widget):
     limit =  4
     template_name = "altaircms.plugins.widget:promotion/category_render.html"
     pm = get_promotion_manager(request)
-    info = pm.promotion_info(request, widget.promotion_sheet, limit=limit)
+    info = pm.promotion_info(request, promotion_sheet(request, widget), limit=limit)
     params = {"show_image": pm.show_image, "info": info}
     return render(template_name, params, request=request)
 

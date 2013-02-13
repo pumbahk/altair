@@ -85,7 +85,7 @@ class PromotionFunctionalTests(AppFunctionalTests):
 
          list_response = app.get("/promotion/list")
          form = find_form(list_response.forms,  action_part="add")
-         form.set("tags", u"this-is-promotion-tag")
+         form.set("tags", u"this-is-promotion-tag, tag, tag0")
          form.set("organization_id", unicode(organization.id))
          form.submit().mustcontain("this-is-promotion-tag")
 
