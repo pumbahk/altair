@@ -318,6 +318,10 @@ ${h.breadcrumbs(
               <th>楽天あんしん支払いサービス 利用ポイント数</th>
               <td>${h.price_format(int(order.cart.checkout.usedPoint or 0))}</td>
             </tr>
+            <tr>
+              <th>楽天あんしん支払いサービス 売上日時</th>
+              <td>${h.safe_strftime(order.cart.checkout.sales_at)}</td>
+            </tr>
             % endif
           </table>
         </div>

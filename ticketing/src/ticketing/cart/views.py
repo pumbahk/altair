@@ -825,9 +825,7 @@ class PaymentView(object):
         """ 支払い方法、引き取り方法選択
         """
         api.check_sales_segment_term(self.request)
-
         cart = api.get_cart_safe(self.request)
-
         user = self.context.get_or_create_user()
 
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id', 0)
@@ -838,30 +836,21 @@ class PaymentView(object):
         if not self._validate_extras(cart, payment_delivery_pair, shipping_address_params):
             start_on = cart.performance.start_on
             payment_delivery_methods = self.context.get_payment_delivery_method_pair(start_on=start_on)
-            return dict(form=self.form,
-                payment_delivery_methods=payment_delivery_methods,
-                #user=user, user_profile=user.user_profile,
-                )
+            return dict(form=self.form, payment_delivery_methods=payment_delivery_methods)
 
         cart.payment_delivery_pair = payment_delivery_pair
         cart.system_fee = payment_delivery_pair.system_fee
-
-        shipping_address = self.create_shipping_address(user, shipping_address_params)
-
-        # DBSession.add(shipping_address) # いらない
-        cart.shipping_address = shipping_address
+        cart.shipping_address = self.create_shipping_address(user, shipping_address_params)
         DBSession.add(cart)
-
-        client_name = self.get_client_name()
 
         order = api.new_order_session(
             self.request,
-            client_name=client_name,
+            client_name=self.get_client_name(),
             payment_delivery_method_pair_id=payment_delivery_method_pair_id,
-            email_1=shipping_address.email_1,
+            email_1=cart.shipping_address.email_1,
         )
-        payment_confirm_url = self.request.route_url('payment.confirm')
-        self.request.session['payment_confirm_url'] = payment_confirm_url
+
+        self.request.session['payment_confirm_url'] = self.request.route_url('payment.confirm')
 
         payment = Payment(cart, self.request)
         result = payment.call_prepare()
@@ -907,7 +896,7 @@ class ConfirmView(object):
         form = schemas.CSRFSecureForm(csrf_context=self.request.session)
         cart = api.get_cart_safe(self.request)
 
-        # == MailMagazinに移動 ==
+        # == MailMagazineに移動 ==
         magazines_to_subscribe = cart.performance.event.organization.mail_magazines \
             .filter(
                 ~mailmag_models.MailMagazine.id.in_(
@@ -925,7 +914,6 @@ class ConfirmView(object):
                 ) \
             .all()
 
-        user = self.context.get_or_create_user()
         payment = Payment(cart, self.request)
         try:
             delegator = payment.call_delegator()
@@ -966,96 +954,28 @@ class CompleteView(object):
         if not cart.is_valid():
             raise NoCartError()
 
-        order_session = self.request.session['order']
-
-        # get_payment_delivery_pair
-        payment_delivery_method_pair_id = order_session['payment_delivery_method_pair_id']
-        payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter(
-            c_models.PaymentDeliveryMethodPair.id==payment_delivery_method_pair_id
-        ).one()
-
         payment = Payment(cart, self.request)
         order = payment.call_payment()
-        # == begin Payment.call_payment ==
-        # payment_delivery_plugin = api.get_payment_delivery_plugin(self.request, 
-        #     payment_delivery_pair.payment_method.payment_plugin_id,
-        #     payment_delivery_pair.delivery_method.delivery_plugin_id,)
-        # if payment_delivery_plugin is not None:
-        #     order = payment_delivery_plugin.finish(self.request, cart)
 
-        #     user = self.context.get_or_create_user()
-        #     order.user = user
-        #     order.organization_id = order.performance.event.organization_id
-        #     cart.order = order
-        # else:
-        #     payment_plugin = api.get_payment_plugin(self.request, payment_delivery_pair.payment_method.payment_plugin_id)
-        #     order = payment_plugin.finish(self.request, cart)
-
-        #     user = self.context.get_or_create_user()
-        #     order.user = user
-        #     order.organization_id = order.performance.event.organization_id
-        #     cart.order = order
-
-        #     DBSession.add(order)
-        #     try:
-        #         delivery_plugin = api.get_delivery_plugin(self.request, payment_delivery_pair.delivery_method.delivery_plugin_id)
-        #         delivery_plugin.finish(self.request, cart)
-        #     except Exception as e:
-        #         import sys
-        #         import traceback
-        #         import StringIO
-        #         exc_info = sys.exc_info()
-        #         out = StringIO.StringIO()
-        #         traceback.print_exception(*exc_info, file=out)
-        #         logger.error(out.getvalue())
-        #         order.cancel(self.request)
-        #         order.note = str(e)
-        #         order_no = order.order_no
-        #         event_id = cart.sales_segment.event_id
-        #         # 追跡用にエラー内容とともにキャンセル状態のorderをコミットする
-        #         transaction.commit()
-        #         raise DeliveryFailedException(order_no, event_id)
-
-        # == end Payment.callPayment ==
         notify_order_completed(self.request, order)
 
         # メール購読でエラーが出てロールバックされても困る
         transaction.commit()
 
-
-        # == begin MailMagazineRegistration ==
         del self.request._cart
         cart = api.get_cart(self.request)
-        order_id = order.id
-        emails = cart.shipping_address.emails
-        plain_user = self.context.get_or_create_user()
-        user_id = None
-        if plain_user is not None:
-            user_id = plain_user.id
-            user_cls = plain_user.__class__
-        user = None
-        if user_id is not None:
-            user = DBSession.query(user_cls).get(user_id)
-        order = DBSession.query(order.__class__).get(order_id)
- 
+        order = DBSession.query(order.__class__).get(order.id)
+
         # メール購読
-        self.save_subscription(user, emails)
-        # == end MailMagazineRegistration ==
-        api.remove_cart(self.request)
-
-        api.logout(self.request)
-        return dict(order=order)
-
-    def save_subscription(self, user, emails):
-        # 購読
+        user = self.context.get_or_create_user()
+        emails = cart.shipping_address.emails
         magazine_ids = self.request.params.getall('mailmagazine')
-        logger.debug("magazines: %s" % magazine_ids)
-        for subscription in mailmag_models.MailMagazine.query.filter(mailmag_models.MailMagazine.id.in_(magazine_ids)).all():
-            for email in emails:
-                if subscription.subscribe(user, email):
-                    logger.debug("User %s starts subscribing %s for <%s>" % (user, subscription.name, email))
-                else:
-                    logger.debug("User %s is already subscribing %s for <%s>" % (user, subscription.name, email))
+        mailmag_models.MailMagazine.multi_subscribe(user, emails, magazine_ids)
+
+        api.remove_cart(self.request)
+        api.logout(self.request)
+
+        return dict(order=order)
 
 
 @view_defaults(decorator=with_jquery.not_when(mobile_request))

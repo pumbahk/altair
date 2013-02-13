@@ -410,7 +410,7 @@
                     -
                   % endif
                 </td>
-                <td><input type="hidden" id="ticket_bundle_id-${item.id}" value="${item.ticket_bundle_id}" />${h.action_button(actions(product, item), order=['edit', 'preview', 'new', 'delete'], options='btn-small')}</td>
+                <td><input type="hidden" id="ticket_bundle_id-${item.id}" value="${item.ticket_bundle_id}" />${h.action_button(actions(product, item), order=['edit', 'preview', 'new', 'delete'], options='btn-small', dropup=True)}</td>
               </tr>
                   % endfor
                   % if count == 0:

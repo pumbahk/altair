@@ -43,6 +43,7 @@ class Checkout(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     orderDate = sa.Column(sa.DateTime)
     items = orm.relationship('CheckoutItem', backref="checkout")
     cart = orm.relationship('Cart', backref=orm.backref('checkout', uselist=False), uselist=False)
+    sales_at = sa.Column(sa.DateTime, nullable=True)
 
 
 class RakutenCheckoutSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):

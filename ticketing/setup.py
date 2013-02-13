@@ -91,6 +91,7 @@ extras_require = {
 
 setup(name='ticketing',
       version='0.0',
+      use_date_versioning=True,
       description='ticketing',
       long_description=README + '\n\n' +  CHANGES,
       classifiers=[
@@ -134,6 +135,12 @@ setup(name='ticketing',
       check_multicheckout_orders=ticketing.commands.check_multicheckout_orders:main
       populate_order_no=ticketing.commands.populate_order_no:main
       send_sales_reports=ticketing.events.sales_reports.commands:main
+      cancel_auth=ticketing.multicheckout.scripts.cancelauth:main
+      sej_nwts_upload=ticketing.sej.scripts.sej_nwts_upload:main
+      release_carts=ticketing.cart.scripts.release_carts:main
+      [distutils.setup_keywords]
+      use_date_versioning=ticketing.versiontools:calc_version
+      rakuten_checkout_sales=ticketing.checkout.commands:rakuten_checkout_sales
       """,
       paster_plugins=['pyramid'],
       )

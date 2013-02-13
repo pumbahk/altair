@@ -528,12 +528,26 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             venue.delete_cascade()
 
     def delete(self):
-        # 既に販売されている場合は削除できない
-        if self.event.sales_start_on and self.event.sales_start_on < datetime.now():
-            raise Exception(u'既に販売開始日時を経過している為、削除できません')
+
+        if self.public:
+            raise Exception(u'公開中の為、削除できません')
+
+        if len(self.orders) > 0:
+            raise Exception(u'購入されている為、削除できません')
+
+        if len(self.product_items) > 0:
+            raise Exception(u'商品詳細がある為、削除できません')
+
+        allocation = Stock.filter(Stock.performance_id==self.id) \
+            .filter(Stock.stock_holder_id != None) \
+            .with_entities(func.sum(Stock.quantity)).scalar()
+
+        if allocation > 0:
+            raise Exception(u'配席されている為、削除できません')
 
         # delete ProductItem
         for product_item in self.product_items:
+            print product_item
             product_item.delete()
 
         # delete Stock

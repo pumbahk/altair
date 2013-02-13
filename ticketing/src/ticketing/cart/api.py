@@ -64,7 +64,6 @@ def check_sales_segment_term(request):
     else:
         sales_segment = request.context.sales_segment
     if not sales_segment:
-        
         raise NoSalesSegment
 
     if not sales_segment.in_term(now):
