@@ -17,7 +17,7 @@ from altaircms.models import Performance, Genre
 from ..models import Category, Sale
 from ..asset.models import ImageAsset
 from ..page.models import PageSet
-from ..topic.models import Topic, Topcontent, PromotionTag, Promotion
+from ..topic.models import Topic, TopicTag, Topcontent,TopcontentTag, PromotionTag, Promotion
 from ..topic.models import PromotionTag
 from ..page.models import PageTag
 from ..plugins.api import get_extra_resource
@@ -107,7 +107,7 @@ class PerformanceForm(Form):
         if qs.count() >= 1:
             append_errors(self.errors, "backend_id", u"バックエンドIDが重複しています。(%s)" % data["backend_id"])
         return not bool(self.errors)
-
+    
     __display_fields__ = [u"title", u"backend_id", u"event",
                           u"prefecture", u"venue", 
                           u"open_on", u"start_on", u"end_on",
@@ -162,7 +162,7 @@ class TermValidator(object):
 validate_publish_term = TermValidator("publish_open_on", "publish_close_on",  u"公開開始日よりも後に終了日が設定されています")
 class TopicForm(Form):
     title = fields.TextField(label=u"タイトル", validators=[required_field()])
-    tag_content = fields.TextField(label=u"種別(, 区切り)") #@todo rename
+    tag_content = fields.SelectField(label=u"種別", choices=[]) #@todo rename
     genre = fields.SelectMultipleField(label=u"ジャンル(todo:fixme)", coerce=unicode)
     text = fields.TextField(label=u"内容", validators=[required_field()], widget=widgets.TextArea())
     publish_open_on = fields.DateTimeField(label=u"公開開始日", validators=[required_field()])
@@ -189,11 +189,13 @@ class TopicForm(Form):
         return not bool(self.errors)
 
     def configure(self, request):
+        self.tag_content.choices = [(t.label, t.label) for t in request.allowable(TopicTag).filter_by(publicp=True)]
         self.genre.choices = [(unicode(g.id), g.label) for g in request.allowable(Genre)]
 
 class TopcontentForm(Form):
     title = fields.TextField(label=u"タイトル", validators=[required_field()])
-    tag_content = fields.TextField(label=u"種別(, 区切り)") #@todo rename
+    # tag_content = fields.TextField(label=u"種別(, 区切り)") #@todo rename
+    tag_content = fields.SelectField(label=u"種別", choices=[]) #@todo rename
     genre = fields.SelectMultipleField(label=u"ジャンル(todo:fixme)", coerce=unicode)
     countdown_type = fields.SelectField(label=u"カウントダウンの種別", choices=Topcontent.COUNTDOWN_CANDIDATES)    
     text = fields.TextField(label=u"内容", validators=[required_field()], widget=widgets.TextArea())
@@ -227,10 +229,11 @@ class TopcontentForm(Form):
         return not bool(self.errors)
    
     def configure(self, request):
+        self.tag_content.choices = [(t.label, t.label) for t in request.allowable(TopcontentTag).filter_by(publicp=True)]
         self.genre.choices = [(unicode(g.id), g.label) for g in request.allowable(Genre)]
 
 class PromotionForm(Form):
-    tag_content = fields.TextField(label=u"表示場所(, 区切り)") #@todo rename
+    tag_content = fields.SelectField(label=u"表示場所", choices=[]) #@todo rename
     genre = fields.SelectMultipleField(label=u"ジャンル(todo:fixme)", coerce=unicode)
     main_image = dynamic_query_select_field_factory(
         ImageAsset, allow_blank=False, label=u"メイン画像",
@@ -260,6 +263,7 @@ class PromotionForm(Form):
         ]
 
     def configure(self, request):
+        self.tag_content.choices = [(t.label, t.label) for t in request.allowable(PromotionTag).filter_by(publicp=True)]
         self.genre.choices = [(unicode(g.id), g.label) for g in request.allowable(Genre)]
 
 class PromotionFilterForm(Form):

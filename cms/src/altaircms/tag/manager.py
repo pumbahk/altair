@@ -157,5 +157,3 @@ class SystemTagManager(TagManagerBase):
     def more_filter_by_tag(self, qs, tag):
         xref = orm.aliased(self.XRef)
         return qs.filter(self.Object.id==xref.object_id, xref.tag_id==tag.id)
-
-
