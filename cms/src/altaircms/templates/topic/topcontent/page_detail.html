@@ -54,11 +54,14 @@
       <th>公開ステータス(公開期間)<th></td>${h.page.show_publish_status(page)}(${h.term(page.publish_begin, page.publish_end)})</td>
     </tr>
     <tr>
-      <th rowspan="2">widget情報</th>
+      <th rowspan="3">widget情報</th>
       <th>widget id</th><td> ${current_widget.id}</td>
     </tr>
     <tr>
       <th>表示場所</th><td> ${current_widget.tag.label}</td>
+    </tr>
+    <tr>
+      <th>ジャンル</th><td> ${current_widget.system_tag.label if current_widget.system_tag_id else u"-"}</td>
     </tr>
   </tbody>
 </table>

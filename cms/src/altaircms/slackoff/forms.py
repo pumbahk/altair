@@ -194,6 +194,7 @@ class TopicForm(Form):
 class TopcontentForm(Form):
     title = fields.TextField(label=u"タイトル", validators=[required_field()])
     tag_content = fields.TextField(label=u"種別(, 区切り)") #@todo rename
+    genre = fields.SelectMultipleField(label=u"ジャンル(todo:fixme)", coerce=unicode)
     countdown_type = fields.SelectField(label=u"カウントダウンの種別", choices=Topcontent.COUNTDOWN_CANDIDATES)    
     text = fields.TextField(label=u"内容", validators=[required_field()], widget=widgets.TextArea())
     image_asset = dynamic_query_select_field_factory(ImageAsset,label=u"画像", allow_blank=True, 
@@ -214,7 +215,7 @@ class TopcontentForm(Form):
     display_order = fields.IntegerField(label=u"表示順序(1〜100)", default=50)
     is_vetoed = fields.BooleanField(label=u"公開禁止")
 
-    __display_fields__= [u"title", u"tag_content", 
+    __display_fields__= [u"title", u"tag_content", u"genre", 
                          u"text", u"countdown_type", u"image_asset",u"mobile_image_asset",  
                          u"publish_open_on", u"publish_close_on", 
                          u"display_order", u"is_vetoed", 
@@ -226,13 +227,11 @@ class TopcontentForm(Form):
         return not bool(self.errors)
    
     def configure(self, request):
-        ## todo: iniから取ってくる？
-        # extra_resource = get_extra_resource(request)
-        # self.kind.choices = [(x, x) for x in extra_resource["topcontent_kinds"]]
-        pass
+        self.genre.choices = [(unicode(g.id), g.label) for g in request.allowable(Genre)]
 
 class PromotionForm(Form):
     tag_content = fields.TextField(label=u"表示場所(, 区切り)") #@todo rename
+    genre = fields.SelectMultipleField(label=u"ジャンル(todo:fixme)", coerce=unicode)
     main_image = dynamic_query_select_field_factory(
         ImageAsset, allow_blank=False, label=u"メイン画像",
         get_label=lambda obj: obj.title or u"名前なし")
@@ -255,11 +254,13 @@ class PromotionForm(Form):
         return not bool(self.errors)
 
     __display_fields__ = [
-        u"tag_content",
+        u"tag_content", u"genre", 
         u"main_image", u"text", u"linked_page", u"link", 
         u"publish_open_on", u"publish_close_on", u"display_order", u"is_vetoed"
         ]
 
+    def configure(self, request):
+        self.genre.choices = [(unicode(g.id), g.label) for g in request.allowable(Genre)]
 
 class PromotionFilterForm(Form):
     tag = dynamic_query_select_field_factory(

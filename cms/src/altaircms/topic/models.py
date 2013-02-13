@@ -9,7 +9,8 @@ from altaircms.models import Base
 from altaircms.models import DBSession, model_to_dict
 from altaircms.page.models import PageSet
 from altaircms.asset.models import ImageAsset
-from altaircms.models import WithOrganizationMixin
+from altaircms.models import WithOrganizationMixin, Genre
+
 
 """
 topicはtopicウィジェットで使われる。
@@ -92,24 +93,36 @@ class TopicCore(Base):
     def to_dict(self):
         D = model_to_dict(self)
         D["tag_content"] = self.tag_content
+        D["genre"] = self.genre_id_list_from_topic()
         return D
 
     ## theese are hack. so, sorry(in slackoff view)
     @property
     def tag_content(self):
-        return u", ".join(k.label for k in self.tags if k.organization_id is not None)
+        organization_id = self.organization_id
+        return u", ".join(k.label for k in self.tags if k.organization_id == organization_id)
 
     @tag_content.setter
     def tag_content(self, v):
         self._tag_content = v  
-
-    # @property
-    # def genre(self):
-    #     return u",  "
-
-    # @genre.setter
-    # def genre(self, vs):
-    #     self._genre = vs
+    
+    def genre_id_list_from_topic(self):
+        labels = []
+        for t in self.tags:
+            if t.organization_id is None:
+                labels.append(t.label)
+        pks = Genre.query.filter_by(organization_id=self.organization_id)\
+            .filter(Genre.label.in_(labels)).with_entities(Genre.id).all()
+        return [pk for xs in pks for pk in xs]
+        
+        
+    @property
+    def genre(self):
+        return u",  ".join(k.label for k in self.tags if k.organization_id is None)
+    
+    @genre.setter
+    def genre(self, vs):
+        self._genre = vs
 
 _where = object()
 

@@ -1,6 +1,13 @@
 # -*- coding:utf-8 -*-
 
 from altaircms.models import model_to_dict as model_to_dict_original
+from altaircms.topic.models import Topcontent
+import altaircms.helpers as h
+from markupsafe import Markup
+from altaircms.asset.viewhelpers import image_asset_layout
+from altaircms.models import Genre
+
+import pkg_resources
 
 def model_to_dict(obj):
     if hasattr(obj, "to_dict"):
@@ -14,13 +21,9 @@ def show_cms_detail_page(request, page):
     url= request.route_path("page_detail", page_id=page.id)
     return Markup(u'<a href="%s">%s</a>' % (url, page.name))
 
+def label_from_genre(genre):
+    return u", ".join([g.label for g in Genre.query.filter(Genre.id.in_(genre))])
 
-from altaircms.topic.models import Topcontent
-import altaircms.helpers as h
-from markupsafe import Markup
-from altaircms.asset.viewhelpers import image_asset_layout
-
-import pkg_resources
 def import_symbol(symbol):
     return pkg_resources.EntryPoint.parse("x=%s" % symbol).load(False)
 
@@ -39,6 +42,7 @@ def layout_mapper(request, obj):
 def promotion_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
     objlike.tag_content = obj.tag_content
+    objlike.genre =  label_from_genre(obj.genre)
     objlike.main_image = image_asset_layout(request, obj.main_image)
     objlike.linked_page = show_cms_detail_page(request, obj.linked_page)
     objlike.link = obj.link or u"-"
@@ -47,6 +51,7 @@ def promotion_mapper(request, obj):
 def topic_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
     objlike.tag_content = obj.tag_content
+    objlike.genre =  label_from_genre(obj.genre)
     objlike.linked_page = show_cms_detail_page(request, obj.linked_page)
     objlike.link = obj.link or u"-"
     objlike.mobile_link = obj.mobile_link or u"-"
@@ -56,6 +61,7 @@ CDWN_DICT = dict(Topcontent.COUNTDOWN_CANDIDATES)
 def topcontent_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
     objlike.tag_content = obj.tag_content
+    objlike.genre =  label_from_genre(obj.genre)
     objlike.image_asset = image_asset_layout(request, obj.image_asset)
     objlike.mobile_image_asset = image_asset_layout(request, obj.mobile_image_asset)
     objlike.linked_page = show_cms_detail_page(request, obj.linked_page)

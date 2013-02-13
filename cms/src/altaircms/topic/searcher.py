@@ -74,6 +74,7 @@ class TopicPageListSearcher(object):
         qs = qs.options(orm.joinedload(self.finder.widget.system_tag)).order_by(sa.desc(PageSet.updated_at), sa.desc(Page.updated_at))
         return qs
 
+
 class TopicPageDetailSearcher(object):
     def __init__(self, request, finder):
         self.request = request 
@@ -183,7 +184,7 @@ class GlobalTopicSearcher(object):
         else:
             return self.TargetTopic.query
 
-    def query_publishing(self, dt, qs=None):
+    def query_publishing_no_filtered(self, dt, qs=None):
         qs = qs or self._start_query()
         return self.TargetTopic.publishing(d=dt, qs=qs)
 
@@ -199,4 +200,12 @@ class GlobalTopicSearcher(object):
 
     def get_tag_from_genre_label(self, genre_label):
         return self.system_tagmanager.get_or_create_tag(genre_label, public_status=True)
+
+    def query_publishing_topics(self, dt, tag, system_tag=None): #system_tag is genre tag
+        qs = self.query_publishing_no_filtered(dt)
+        qs = self.filter_by_tag(qs, tag)
+        
+        if system_tag:
+            qs = self.filter_by_system_tag(qs, system_tag)
+        return qs
 

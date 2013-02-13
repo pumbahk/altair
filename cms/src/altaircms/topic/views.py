@@ -1,11 +1,12 @@
 # -*- coding:utf-8 -*-
 #
 from pyramid.view import view_config
-
+from datetime import datetime
 import altaircms.helpers as h
 from altaircms.auth.api import get_or_404
 from altaircms.page.models import Page
-from altaircms.models import Genre
+from .api import get_topic_searcher
+
 @view_config(route_name="topic_list", renderer="altaircms:templates/topic/topic/pages.html", 
              decorator="altaircms.lib.fanstatic_decorator.with_bootstrap",
              permission="topic_read")
@@ -28,8 +29,7 @@ def list_view(context, request):
     grid = context.Grid.create(pages.paginated())
 
     recently_tags = context.tag_manager.recent_change_tags().filter_by(publicp=True).limit(10)
-    genre_list = Genre.query.order_by(Genre.display_order).all()
-    return dict(grid=grid, pages=pages, recently_tags=recently_tags, search_word=search_word, genre_list=genre_list)
+    return dict(grid=grid, pages=pages, recently_tags=recently_tags, search_word=search_word)
 
 
 @view_config(route_name="topic_tag_list", renderer="altaircms:templates/tag/tags.html", 
@@ -64,12 +64,17 @@ def detail_view(context, request):
     widgets = searcher.get_widgets(page_id)
     widget = searcher.get_current_widget(widgets, widget_id=widget_id)
 
-    topics = context.tag_manager.search_by_tag_label(widget.tag.label)
+    searcher = get_topic_searcher(request, context.widgettype)
 
     if ":all:" in request.GET:
+        topics = searcher._start_query()
+        topics = searcher.filter_by_tag(topics, widget.tag)
+        # if widget.system_tag_id:
+        #     topics = searcher.filter_by_system_tag(topics, widget.system_tag)
         topics = context.TargetTopic.order_by_logic(topics)
     else:
-        topics = context.TargetTopic.publishing(qs=topics)
+        d = datetime.now()
+        topics = searcher.query_publishing_topics(d, widget.tag, widget.system_tag)
     return dict(topics=topics, page=page,
                 topic_renderer=context.TopicHTMLRenderer(request), 
                 current_widget=widget, widgets=widgets)
