@@ -71,7 +71,7 @@ class TopicPageListSearcher(object):
     def get_objects_for_grid(self, qs):
         qs = qs.filter(PageSet.id==Page.pageset_id).filter(self.finder.widget.tag_id==TopicTag.id)
         qs = qs.with_entities(PageSet, Page, self.finder.widget, TopicTag)
-        qs = qs.options(orm.joinedload(Page.pageset)).order_by(sa.asc(PageSet.id), sa.asc(Page.id))
+        qs = qs.options(orm.joinedload(self.finder.widget.system_tag)).order_by(sa.desc(PageSet.updated_at), sa.desc(Page.updated_at))
         return qs
 
 class TopicPageDetailSearcher(object):
@@ -108,7 +108,7 @@ class TopcontentPageListSearcher(object):
     def get_objects_for_grid(self, qs):
         qs = qs.filter(PageSet.id==Page.pageset_id).filter(self.finder.widget.tag_id==TopcontentTag.id)
         qs = qs.with_entities(PageSet, Page, self.finder.widget, TopcontentTag)
-        qs = qs.options(orm.joinedload(Page.pageset)).order_by(sa.asc(PageSet.id), sa.asc(Page.id))
+        qs = qs.options(orm.joinedload(self.finder.widget.system_tag)).order_by(sa.desc(PageSet.updated_at), sa.desc(Page.updated_at))
         return qs
 
 class TopcontentPageDetailSearcher(object):
@@ -145,7 +145,7 @@ class PromotionPageListSearcher(object):
     def get_objects_for_grid(self, qs):
         qs = qs.filter(PageSet.id==Page.pageset_id).filter(self.finder.widget.tag_id==PromotionTag.id)
         qs = qs.with_entities(PageSet, Page, self.finder.widget, PromotionTag)
-        qs = qs.options(orm.joinedload(Page.pageset)).order_by(sa.asc(PageSet.id), sa.asc(Page.id))
+        qs = qs.options(orm.joinedload(self.finder.widget.system_tag)).order_by(sa.desc(PageSet.updated_at), sa.desc(Page.updated_at))
         return qs
 
 class PromotionPageDetailSearcher(object):
