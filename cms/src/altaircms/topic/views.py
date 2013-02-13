@@ -6,7 +6,6 @@ import altaircms.helpers as h
 from altaircms.auth.api import get_or_404
 from altaircms.page.models import Page
 from altaircms.models import Genre
-
 @view_config(route_name="topic_list", renderer="altaircms:templates/topic/topic/pages.html", 
              decorator="altaircms.lib.fanstatic_decorator.with_bootstrap",
              permission="topic_read")

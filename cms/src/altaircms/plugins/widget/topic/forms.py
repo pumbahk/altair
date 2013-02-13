@@ -20,5 +20,7 @@ class TopicChoiceForm(form.Form):
 
     def configure(self, request, page):
         utility = get_widget_utility(request, page, TopicWidget.type)
+        if page.pageset.genre_id:
+            self.system_tag.default = page.pageset.genre_id
         self.display_type.choices = utility.choices
         return self

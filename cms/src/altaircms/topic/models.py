@@ -10,8 +10,6 @@ from altaircms.models import DBSession, model_to_dict
 from altaircms.page.models import PageSet
 from altaircms.asset.models import ImageAsset
 from altaircms.models import WithOrganizationMixin
-import altaircms.helpers as h
-from . import TOPIC_TAG_USECASE_LIST
 
 """
 topicはtopicウィジェットで使われる。

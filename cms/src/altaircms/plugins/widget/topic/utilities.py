@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from datetime import datetime
 from pyramid.renderers import render
@@ -7,32 +6,26 @@ from zope.interface import implementer
 
 from altaircms.plugins.interfaces import IWidgetUtility
 from altaircms.plugins.widget.api import DisplayTypeSelectRendering
-from altaircms.tag.api import get_tagmanager
-from altaircms.tag.api import get_system_tagmanager
-from altaircms.topic.models import Topic
+from altaircms.topic.api import get_topic_searcher
 
 from .models import TopicWidget
 from functools import partial
 
 def render_topics_with_template(template_name, request, widget):
     d = datetime.now()
-    qs = _qs_search(request, widget, d=d)
+    searcher = get_topic_searcher(request, widget.type)
+
+    qs = searcher.query_publishing(d)
+    qs = searcher.filter_by_tag(qs, widget.tag)
+
+    if widget.system_tag_id:
+        qs = searcher.filter_by_system_tag(qs, widget.system_tag)
+
+    qs = qs.options(orm.joinedload("linked_page")).limit(widget.display_count)
     result = render(template_name, {"widget": widget, "topics": qs}, request)
     return result
 
 ## todo: refactoring
-
-def _qs_search(request, widget, d=None):
-    tagmanager = get_tagmanager(widget.type, request=request)
-    qs = tagmanager.search_by_tag(widget.tag)
-    qs = Topic.matched_qs(d=d, qs=qs)
-    qs = request.allowable(Topic, qs=qs)
-    qs = qs.options(orm.joinedload("linked_page"))
-    if widget.system_tag_id:
-        system_tag_manager = get_system_tagmanager(widget.type, request=request)
-        qs = system_tag_manager.more_filter_by_tag(qs, widget.system_tag)
-    qs = qs.limit(widget.display_count).options(orm.joinedload("linked_page"))
-    return qs
 
 render_cr_faq = partial(render_topics_with_template, "altaircms.plugins.widget:topic/CR_faq_render.html")
 render_nh_faq = partial(render_topics_with_template, "altaircms.plugins.widget:topic/NH_faq_render.html")

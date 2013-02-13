@@ -1,4 +1,5 @@
-TOPIC_TAG_USECASE_LIST = ["normal", "genre"]
+import functools
+from .interfaces import ITopicSearcher
 
 # coding: utf-8
 def includeme(config):
@@ -25,5 +26,17 @@ def includeme(config):
                     attr="create", request_method="POST", renderer="json")
     config.add_view("..tag.views.PublicTagCreateView", route_name="api_topic_addtag", 
                     attr="create", request_method="POST", renderer="json")
-
     config.scan(".views")
+    config.include(install_topic_searcher)
+
+def install_topic_searcher(config):
+    topic = config.maybe_dotted(".models.Topic")
+    from .searcher import GlobalTopicSearcher
+    config.registry.registerUtility(functools.partial(GlobalTopicSearcher, topic),
+                                    ITopicSearcher, name=topic.type)
+    topcontent = config.maybe_dotted(".models.Topcontent")
+    config.registry.registerUtility(functools.partial(GlobalTopicSearcher, topcontent),
+                                    ITopicSearcher, name=topcontent.type)
+    promotion = config.maybe_dotted(".models.Promotion")
+    config.registry.registerUtility(functools.partial(GlobalTopicSearcher, promotion),
+                                    ITopicSearcher, name=promotion.type)

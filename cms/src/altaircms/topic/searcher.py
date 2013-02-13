@@ -1,5 +1,7 @@
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
+from pyramid.decorator import reify
+
 from altaircms.page.models import Page, PageSet
 from .models import PromotionTag
 from .models import TopcontentTag
@@ -7,6 +9,8 @@ from .models import TopicTag
 from datetime import datetime
 
 import altaircms.searchlib as sl
+from altaircms.tag.api import get_tagmanager
+from altaircms.tag.api import get_system_tagmanager
 
 def qs_filter_using_conds_list(qs, conds_list):
     for conds in conds_list:
@@ -156,3 +160,41 @@ class PromotionPageDetailSearcher(object):
         if widget_id:
             return widgets.filter(self.finder.widget.id==widget_id).first()
         return widgets.first()
+
+## global
+class GlobalTopicSearcher(object):
+    def __init__(self, TargetTopic, request):
+        self.TargetTopic = TargetTopic
+        assert TargetTopic.type
+        self.type = TargetTopic.type
+        self.request = request
+
+    @reify
+    def tagmanager(self):
+        return get_tagmanager(self.type, request=self.request)
+
+    @reify
+    def system_tagmanager(self):
+        return get_system_tagmanager(self.type, request=self.request)
+
+    def _start_query(self):
+        if hasattr(self.request, "allowable"):
+            return self.request.allowable(self.TargetTopic)
+        else:
+            return self.TargetTopic.query
+
+    def query_publishing(self, dt, qs=None):
+        qs = qs or self._start_query()
+        return self.TargetTopic.publishing(d=dt, qs=qs)
+
+    def filter_by_tag(self, qs, tag):
+        return self.tagmanager.more_filter_by_tag(qs, tag)
+
+    def filter_by_system_tag(self, qs, tag):
+        return self.system_tagmanager.more_filter_by_tag(qs, tag)
+
+    def filter_by_genre(self, qs, genre):
+        system_tag = self.system_tagmanager.get_or_create_tag(genre.label, public_status=True)
+        return self.system_tagmanager.more_filter_by_tag(qs, system_tag)
+
+
