@@ -109,8 +109,10 @@ setup(name='ticketing',
       include_package_data=True,
       zip_safe=False,
       install_requires=requires,
+      setup_requires=["altair.versiontools"],
       dependency_links = [
         'file:../commons#egg=altair-commons-0.0',
+        'file:../altair_versiontools#egg=altair.versiontools-1.0',
         "file:../altair_findable_label#egg=altair.findable_label-0.0", 
         "file:../altair_log#egg=altair.log-0.0", 
         'https://github.com/moriyoshi/tableau/tarball/master#egg=tableau-0.0.4pre2',
@@ -139,8 +141,6 @@ setup(name='ticketing',
       sej_nwts_upload=ticketing.sej.scripts.sej_nwts_upload:main
       release_carts=ticketing.cart.scripts.release_carts:main
       rakuten_checkout_sales=ticketing.checkout.commands:rakuten_checkout_sales
-      [distutils.setup_keywords]
-      use_date_versioning=ticketing.versiontools:calc_version
       """,
       paster_plugins=['pyramid'],
       )
