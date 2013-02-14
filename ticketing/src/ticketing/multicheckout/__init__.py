@@ -7,6 +7,18 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+def multicheckout_dbsession_tween(handler, registry):
+    def tween(request):
+        try:
+            return handler(request)
+        finally:
+            from .models import _session
+            logger.debug('remove multicheckout dbsession')
+            _session.remove()
+    return tween
+            
+
+
 def includeme(config):
     from sqlalchemy import engine_from_config
     from sqlalchemy.pool import NullPool
@@ -14,6 +26,8 @@ def includeme(config):
     engine = engine_from_config(config.registry.settings, poolclass=NullPool)
     _session.remove()
     _session.configure(bind=engine)
+
+    config.add_tween(".multicheckout_dbsession_tween")
 
 def main(global_conf, **settings):
     from sqlalchemy import engine_from_config
