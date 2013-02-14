@@ -193,7 +193,9 @@ class Events(BaseView):
             return HTTPNotFound('event id %d is not found' % event_id)
 
         try:
+            organization = self.context.user.organization
             data = {
+                'organization': {'id': organization.id, 'short_name': organization.short_name}, 
                 'events':[event.get_cms_data()],
                 'created_at':isodate.datetime_isoformat(datetime.now()),
                 'updated_at':isodate.datetime_isoformat(datetime.now()),

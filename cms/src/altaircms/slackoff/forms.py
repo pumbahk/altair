@@ -14,7 +14,7 @@ from altaircms.helpers.formhelpers import required_field, append_errors
 
 from ..event.models import Event
 from altaircms.models import Performance, Genre
-from ..models import Category, Salessegment
+from ..models import Category, SalesSegment
 from ..asset.models import ImageAsset
 from ..page.models import PageSet
 from ..topic.models import Topic, TopicTag, Topcontent,TopcontentTag, PromotionTag, Promotion
@@ -115,7 +115,7 @@ class PerformanceForm(Form):
                           u"calendar_content"]
 
 
-class SalessegmentForm(Form):
+class SalesSegmentForm(Form):
     event = dynamic_query_select_field_factory(Event, allow_blank=False, label=u"イベント", get_label=lambda obj: obj.title) ## performance?
     kind = fields.SelectField(label=u"販売条件", choices=import_symbol("altaircms.seeds.saleskind:SALESKIND_CHOICES"))
     name = fields.TextField(label=u"名前", validators=[required_field()])
@@ -125,7 +125,7 @@ class SalessegmentForm(Form):
     __display_fields__ = [u"event", u"kind", u"name", u"start_on", u"end_on"]
 
     def validate(self, **kwargs):
-        if super(SalessegmentForm, self).validate():
+        if super(SalesSegmentForm, self).validate():
             data = self.data
             if not data["name"]:
                 data["name"] = data["event"].title
@@ -134,7 +134,7 @@ class SalessegmentForm(Form):
 
 class TicketForm(Form):
     # event = dynamic_query_select_field_factory(Event, allow_blank=False, label=u"イベント", get_label=lambda obj: obj.title) ## performance?
-    sale = dynamic_query_select_field_factory(Salessegment, 
+    sale = dynamic_query_select_field_factory(SalesSegment, 
                                               allow_blank=False,
                                               label=u"イベント販売条件", 
                                               get_label=lambda obj: obj.name) ## performance?

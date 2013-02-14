@@ -6,7 +6,7 @@ import wtforms.ext.sqlalchemy.fields as extfields
 
 import wtforms.validators as validators
 from altaircms.models import Performance
-from altaircms.models import Salessegment
+from altaircms.models import SalesSegment
 from altaircms.page.models import Page
 from altaircms.seeds.saleskind import SALESKIND_CHOICES
 
@@ -26,7 +26,7 @@ class TicketlistChoiceForm(form.Form):
         if page is None:
             return
         ## sales choice
-        qs = Salessegment.query.filter(Salessegment.event_id==page.event_id)
+        qs = SalesSegment.query.filter(SalesSegment.event_id==page.event_id)
         self.kind.choices = [(s.kind, s.jkind) for s in set(qs)]
 
         ## performance choice

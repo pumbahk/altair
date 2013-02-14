@@ -86,11 +86,6 @@ def initialize_sql(engine, dropall=False):
 このあたりevent/models.pyに移動した方が良い。
 """
 
-performance_ticket_table = sa.Table("performance_ticket", Base.metadata,
-    sa.Column("performance_id", sa.Integer, sa.ForeignKey("performance.id")),
-    sa.Column("ticket_id", sa.Integer, sa.ForeignKey("ticket.id")),
-)
-
 PDICT = import_symbol("altaircms.seeds.prefecture:PrefectureMapping")
 class Performance(BaseOriginalMixin, Base):
     """
@@ -118,15 +113,14 @@ class Performance(BaseOriginalMixin, Base):
     mobile_purchase_link = sa.Column(sa.UnicodeText)
     canceld = sa.Column(sa.Boolean, default=False)
     event = relationship("Event", backref=orm.backref("performances", order_by=start_on, cascade="all"))
-    tickets = relationship("Ticket", secondary=performance_ticket_table, backref="performances")
 
     @property
     def jprefecture(self):
         return PDICT.name_to_label.get(self.prefecture, u"--")
 
-class SalesSegmentType(BaseOriginalMixin, Base):
+class SalesSegmentGroup(BaseOriginalMixin, Base):
     """ 販売条件のためのマスターテーブル"""
-    __tablename__ = "salessegment_type"
+    __tablename__ = "salessegment_group"
     query = DBSession.query_property()    
 
     id = sa.Column(sa.Integer, primary_key=True)
@@ -135,7 +129,7 @@ class SalesSegmentType(BaseOriginalMixin, Base):
     name = sa.Column(sa.Unicode(length=255))
     kind = sa.Column(sa.Unicode(length=255))
 
-class Salessegment(BaseOriginalMixin, Base):
+class SalesSegment(BaseOriginalMixin, Base):
     """ 販売条件
     """
     __tablename__ = 'sale'
@@ -147,8 +141,8 @@ class Salessegment(BaseOriginalMixin, Base):
     performance_id = sa.Column(sa.Integer, sa.ForeignKey('performance.id'))
     performance  = relationship("Performance", backref=orm.backref("sales", cascade="all"))
 
-    type_id = sa.Column(sa.Integer, sa.ForeignKey("salessegment_type.id"))
-    type_ = orm.relationship("SalesSegmentType")
+    group_id = sa.Column(sa.Integer, sa.ForeignKey("salessegment_group.id"))
+    group = orm.relationship("SalesSegmentGroup")
 
     start_on = sa.Column(sa.DateTime)
     end_on = sa.Column(sa.DateTime)
@@ -161,7 +155,6 @@ class Salessegment(BaseOriginalMixin, Base):
     def jkind(self):
         return self.SALESKIND_DICT.get(self.type.kind, u"-")
 
-
 class Ticket(BaseOriginalMixin, Base):
     """
     券種
@@ -173,13 +166,12 @@ class Ticket(BaseOriginalMixin, Base):
     backend_id = sa.Column(sa.Integer)
 
     display_order = sa.Column(sa.Integer, default=50)
-    sale_id = sa.Column(sa.Integer, sa.ForeignKey("sale.id", ondelete='CASCADE'))
-
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now)
     price = sa.Column(sa.Integer, default=0)
 
-    sale = relationship("Salessegment", backref=orm.backref("tickets", order_by=price.desc(), cascade="all"))
+    sale_id = sa.Column(sa.Integer, sa.ForeignKey("sale.id"))
+    sale = relationship("SalesSegment", backref=orm.backref("tickets", order_by=price.desc(), cascade="all"), uselist=False)
 
     name = sa.Column(sa.Unicode(255))
     seattype = sa.Column(sa.Unicode(255))
