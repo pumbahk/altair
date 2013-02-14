@@ -3,7 +3,7 @@ from pyramid.view import view_config
 
 from sqlalchemy.exc import DBAPIError
 
-from .models import (
+from cmsmobile.core.models import (
     DBSession,
     Host,
     )

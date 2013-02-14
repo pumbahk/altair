@@ -9,7 +9,7 @@ from pyramid.paster import (
     setup_logging,
     )
 
-from ..models import (
+from cmsmobile.core.models import (
     DBSession,
     Host,
     Base,

@@ -1,9 +1,6 @@
 import unittest
-import transaction
 
-from pyramid import testing
-
-from .models import DBSession
+from cmsmobile.core.models import DBSession
 
 
 class TestMyView(unittest.TestCase):
