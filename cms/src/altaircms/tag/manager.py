@@ -77,7 +77,7 @@ class TagManagerBase(object):
 
     ## history
     def recent_change_tags(self):
-        return self.Tag.query.order_by(saexp.desc(self.Tag.updated_at), saexp.asc(self.Tag.id))
+        pass
 
     ## alter
     def delete_tags(self, obj, deletes, public_status=True):
@@ -144,6 +144,9 @@ class TagManager(TagManagerBase):
         qs = qs.filter(self.Object.organization_id==tag.organization_id)
         return qs
 
+    def recent_change_tags(self):
+        return self.Tag.query.filter(self.Tag.organization_id!=None).order_by(saexp.desc(self.Tag.updated_at), saexp.asc(self.Tag.id))
+
 @implementer(ISystemTagManager)
 class SystemTagManager(TagManagerBase):
     def is_target_tag(self, tag):
@@ -157,3 +160,6 @@ class SystemTagManager(TagManagerBase):
     def more_filter_by_tag(self, qs, tag):
         xref = orm.aliased(self.XRef)
         return qs.filter(self.Object.id==xref.object_id, xref.tag_id==tag.id)
+
+    def recent_change_tags(self):
+        return self.Tag.query.filter(self.Tag.organization_id==None).order_by(saexp.desc(self.Tag.updated_at), saexp.asc(self.Tag.id))

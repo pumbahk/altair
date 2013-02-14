@@ -41,6 +41,7 @@ class TopicPageContext(object):
     @reify
     def tag_manager(self):
         return get_tagmanager(self.widgettype, request=self.request)
+
     @reify
     def list_searcher(self):
         return TopicPageListSearcher(self.request, self.finder)
