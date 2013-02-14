@@ -7,9 +7,9 @@
     $('.datefield').datepicker({dateFormat:'yy-mm-dd'});
   });
 
-  function search_orders() {
-    detail = $('#detail_search');
-    detail.find('#search').attr('action', '${url}').submit();
+  function search_orders(url) {
+    modal = $('#modal-search');
+    modal.find('#search').attr('action', url).submit();
   }
 
   function sort_orders(sort, direction, url) {
@@ -35,7 +35,7 @@
   </div>
 
   <div class="modal-body">
-    <form id="search" class="form-horizontal" action="/orders/" method="POST">
+    <form id="search" class="form-horizontal" method="POST">
       <fieldset>
           <table>
               <tbody>
@@ -91,8 +91,18 @@
 
 
         <div style="clear: both;"></div>
+        ${h.form_item(form.payment_method)}
+        ${h.form_item(form.delivery_method)}
+        ${h.form_item(form.status)}
+        ${h.form_item(form.name)}
+        ${h.form_item(form.member_id)}
+        ${h.form_item(form.tel)}
+        ${h.form_item(form.email)}
+        ${h.form_item(form.seat_number)}
 
-
+        ${h.form_item(form.event_id)}
+        ${h.form_item(form.performance_id, class_='span4')}
+        ${h.form_item(form.sales_segment)}
         <script type="text/javascript">
           $(function(){
             var update_on_empty = function(){
@@ -125,7 +135,37 @@
               }
             };
             $("#search select[name='event_id']").change(update_performances);
-            //update_performances.call($("#search select[name='event_id'] option:selected"));
+
+            var update_sales_segments_on_empty = function(){
+              var $target = $(this).parents("form").find("select[name='sales_segment']").eq(0);
+              $target.empty();
+              return;
+            };
+            var update_sales_segments_on_hasvalue = function(v){
+              var self = this;
+              var params = {event_id: v, public:true};
+              $.getJSON("${request.route_url('orders.api.sales_segments')}", params).done(function(data){
+                if(data.status){
+                  var $target = $(self).parents("form").find("select[name='sales_segment']").eq(0);
+                  $target.empty();
+                  // optimize if slow.
+                  for(var i=0, j=data.result.length; i<j; i++){
+                    var e = data.result[i];
+                    $target.append($("<option>").attr("value", e.pk).text(e.name))
+                  }
+                }
+              });
+            };
+            var update_sales_segments = function(){
+              var self = this;
+              var v = $(this).val();
+              if(!v){
+                return update_sales_segments_on_empty.call(self);
+              } else {
+                return update_sales_segments_on_hasvalue.call(self, v);
+              }
+            };
+            $("#search select[name='event_id']").change(update_sales_segments);
           });
     		</script>
         ${h.form_item(form.sort)}
@@ -151,7 +191,7 @@
   <ul class="nav nav-pills">
     <li class="dropdown" id="top-search" style="margin-left: 10px;">
       <div class="btn-group">
-        <a href="javascript:search_orders();" class="btn">
+        <a href="javascript:search_orders('${request.route_path('orders.index')}');" class="btn">
           <i class="icon-search"></i> 検索
         </a>
       </div>
@@ -173,7 +213,7 @@
   </div>
 
   <div class="modal-body">
-    <form id="download" class="form-horizontal" action="/orders/download/" method="POST">
+    <form id="download" class="form-horizontal" action="${request.route_path('orders.download')}" method="POST">
       <p>購入情報(CSV)をダウンロードします。よろしいですか？<br>
         <div class="alert alert-error">
           <% conditions = form.get_conditions() %>

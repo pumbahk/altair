@@ -23,15 +23,7 @@ order = make_order_data(order_)
             %>
             <p style="display: block; width: 55px; height: 60px; background-image: url(${icon_url})">
                 <span style="display: block; margin: 20px 0 0 0; width: 55px; text-align: center">
-                    % if order.paid_at:
-                    %   if order.delivered_at:
-                    配送済み
-                    %   else:
-                    入金済み
-                    %   endif
-                    % else:
-                    未入金
-                    % endif
+                    ${h.order_status(order)}
                 </span>
          	</p>
             <dl>
