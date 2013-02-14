@@ -9,7 +9,7 @@ import sqlalchemy.orm as orm
 
 import itertools
 from altaircms.widget.models import Widget
-from altaircms.models import Sale, Ticket, Performance
+from altaircms.models import Salessegment, Ticket, Performance
 from altaircms.plugins.base import DBSession
 from altaircms.plugins.base.mixins import HandleSessionMixin
 from altaircms.plugins.base.mixins import HandleWidgetMixin
@@ -42,7 +42,7 @@ class TicketlistWidget(Widget):
             if self.target_performance is None:
                 raise KeyError("target performance is not found")
             tickets = Ticket.query.filter(Ticket.performances.any(id=self.target_performance.id))
-            tickets = tickets.filter(Sale.kind==self.kind).filter(Sale.id==Ticket.sale_id)
+            tickets = tickets.filter(Salessegment.kind==self.kind).filter(Salessegment.id==Ticket.sale_id)
             tickets = tickets.order_by(sa.asc("display_order"))
             # tickets = tickets.order_by(sa.desc("price"))
             

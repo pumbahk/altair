@@ -1,5 +1,6 @@
 # coding: utf-8
 import unittest
+import json
 from pyramid import testing
 from altaircms import testing as a_testing
 from .api import EventRepositry
@@ -61,14 +62,14 @@ class CascadeDeleteTests(unittest.TestCase):
 
     def test_delete_cascade_for_event_children(self):
         """
-        cascade chain: Event -> Performance -> Sale -> Ticket
+        cascade chain: Event -> Performance -> Salessegment -> Ticket
         """
         from altaircms.event.models import Event
-        from altaircms.models import Performance, Sale, Ticket
+        from altaircms.models import Performance, Salessegment, Ticket
 
         target = Event()
-        sale0 = Sale(name="a", kind=u"normal", event=target)
-        sale1 = Sale(name="b", kind=u"normal", event=target)
+        sale0 = Salessegment(name="a", kind=u"normal", event=target)
+        sale1 = Salessegment(name="b", kind=u"normal", event=target)
 
         self.session.add_all([Ticket(sale=sale0, price=i) for i in [100, 200, 300, 400, 500]])
         self.session.add_all([Ticket(sale=sale1, price=i) for i in [100, 200, 300, 400, 500]])
@@ -85,7 +86,7 @@ class CascadeDeleteTests(unittest.TestCase):
         ## after delete target event instance check
         self.assertTrue(target in self.session.deleted)
         self.assertTrue(all(p in self.session.deleted for p in Performance.query))
-        self.assertTrue(all(s in self.session.deleted for s in Sale.query))
+        self.assertTrue(all(s in self.session.deleted for s in Salessegment.query))
         self.assertTrue(all(t in self.session.deleted for t in Ticket.query))
         
         
@@ -215,18 +216,17 @@ class ParseAndSaveEventTests(unittest.TestCase):
     """
 
     def test_register_multiple(self):
-        import json
-        from ..models import Ticket, Performance, Sale
+        from ..models import Ticket, Performance, Salessegment
 
         request = testing.DummyRequest()
         result = self._callFUT(request, json.loads(self.data))
         fst_performance_count = Performance.query.count()
-        fst_sale_count = Sale.query.count()
+        fst_sale_count = Salessegment.query.count()
         fst_ticket_count = Ticket.query.count()
 
         result = self._callFUT(request, json.loads(self.data))
         self.assertEquals(fst_performance_count, Performance.query.count())
-        self.assertEquals(fst_sale_count, Sale.query.count())
+        self.assertEquals(fst_sale_count, Salessegment.query.count())
         self.assertEquals(fst_ticket_count, Ticket.query.count())
 
 

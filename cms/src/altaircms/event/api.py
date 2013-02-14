@@ -5,7 +5,7 @@ from sqlalchemy.orm.exc import NoResultFound
 
 from altaircms.event.models import Event
 from altaircms.auth.models import Organization
-from altaircms.models import DBSession, Performance, Sale, Ticket
+from altaircms.models import DBSession, Performance, Salessegment, Ticket
 from altaircms.auth.models import APIKey
 from altaircms.seeds.prefecture import PREFECTURE_CHOICES
 from . import subscribers
@@ -44,7 +44,7 @@ class Scanner(object):
             Ticket.query.filter_by(backend_id=ticket_record['id']).delete()
         else:
             try:
-                ticket.sale = Sale.query.filter_by(backend_id=ticket_record['sale_id']).first()
+                ticket.sale = Salessegment.query.filter_by(backend_id=ticket_record['sale_id']).first()
                 ticket.backend_id = ticket_record['id']
                 ticket.name = ticket_record['name']
                 ticket.seattype = ticket_record['seat_type']
@@ -55,11 +55,11 @@ class Scanner(object):
             self.session.add(ticket)
 
     def scan_sales_segment_record(self, sales_segment_record):
-        sale = Sale.query.filter_by(backend_id=sales_segment_record['id']).first() or Sale()
+        sale = Salessegment.query.filter_by(backend_id=sales_segment_record['id']).first() or Salessegment()
 
         deleted = sales_segment_record.get('deleted', False)
         if deleted:
-            Sale.query.filter_by(backend_id=sales_segment_record['id']).delete()
+            Salessegment.query.filter_by(backend_id=sales_segment_record['id']).delete()
         else:
             try:
                 sale.event = self.current_event

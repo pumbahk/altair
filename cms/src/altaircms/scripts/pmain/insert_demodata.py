@@ -32,7 +32,7 @@ from altaircms.topic.models import (
 from altaircms.models import(
     Organization, 
     Category, 
-    Sale
+    Salessegment
 )
 
 from altaircms.asset.helpers import create_asset
@@ -222,7 +222,7 @@ def detail_tickets(event):
     sales_choices = import_symbol("altaircms.seeds.saleskind:SALESKIND_CHOICES")
     sale_kind,sale_name = u"normal", u"一般発売"
     sale_name_gen = lambda event, sale_name : u"%s(%s)" % (event.title, sale_name)
-    sale = Sale(event=event, name=sale_name_gen(event, sale_name), kind=sale_kind)
+    sale = Salessegment(event=event, name=sale_name_gen(event, sale_name), kind=sale_kind)
     r = []
     r.extend([
         Ticket(
@@ -259,7 +259,7 @@ def detail_tickets(event):
     sales_choices = import_symbol("altaircms.seeds.saleskind:SALESKIND_CHOICES")
     sale_kind,sale_name = sales_choices[1]
     sale_name_gen = lambda event, sale_name : u"%s(%s)" % (event.title, sale_name)
-    sale = Sale(event=event, name=sale_name_gen(event, sale_name), kind=sale_kind)
+    sale = Salessegment(event=event, name=sale_name_gen(event, sale_name), kind=sale_kind)
 
     r.extend([
         Ticket(

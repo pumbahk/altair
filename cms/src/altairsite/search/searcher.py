@@ -5,7 +5,7 @@ import datetime
 import logging
 logger = logging.getLogger(__file__)
 from altaircms.models import (
-   Sale, 
+   Salessegment, 
    Category, 
    Performance
 )
@@ -291,7 +291,7 @@ def events_by_performance_term(qs, performance_open, performance_close):
 
 def events_by_deal_cond_flags(qs, flags):
    if flags:
-      return qs.filter(Event.id==Sale.event_id).filter(Sale.kind.in_(flags)).distinct()
+      return qs.filter(Event.id==Salessegment.event_id).filter(Salessegment.kind.in_(flags)).distinct()
    else:
       return qs
 

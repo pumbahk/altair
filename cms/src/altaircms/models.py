@@ -10,6 +10,7 @@ import sqlalchemy.orm as orm
 from sqlalchemy.orm import relationship
 
 from sqlalchemy.sql.operators import ColumnOperators
+from sqlalchemy.ext.declarative import declared_attr
 
 import pkg_resources
 def import_symbol(symbol):
@@ -123,7 +124,18 @@ class Performance(BaseOriginalMixin, Base):
     def jprefecture(self):
         return PDICT.name_to_label.get(self.prefecture, u"--")
 
-class Sale(BaseOriginalMixin, Base):
+class SalesSegmentType(BaseOriginalMixin, Base):
+    """ 販売条件のためのマスターテーブル"""
+    __tablename__ = "salessegment_type"
+    query = DBSession.query_property()    
+
+    id = sa.Column(sa.Integer, primary_key=True)
+    event_id = sa.Column(sa.Integer, sa.ForeignKey('event.id'))
+    event  = relationship("Event")
+    name = sa.Column(sa.Unicode(length=255))
+    kind = sa.Column(sa.Unicode(length=255))
+
+class Salessegment(BaseOriginalMixin, Base):
     """ 販売条件
     """
     __tablename__ = 'sale'
@@ -132,11 +144,11 @@ class Sale(BaseOriginalMixin, Base):
     id = sa.Column(sa.Integer, primary_key=True)
     backend_id = sa.Column(sa.Integer)
 
-    event_id = sa.Column(sa.Integer, sa.ForeignKey('event.id'))
-    event  = relationship("Event", backref=orm.backref("sales", cascade="all"))
+    performance_id = sa.Column(sa.Integer, sa.ForeignKey('performance.id'))
+    performance  = relationship("Performance", backref=orm.backref("sales", cascade="all"))
 
-    name = sa.Column(sa.Unicode(length=255))
-    kind = sa.Column(sa.Unicode(length=255), doc=u"saleskind. 販売条件(最速抽選, 先行抽選, 先行先着, 一般発売, 追加抽選.etc)", default=u"normal")
+    type_id = sa.Column(sa.Integer, sa.ForeignKey("salessegment_type.id"))
+    type_ = orm.relationship("SalesSegmentType")
 
     start_on = sa.Column(sa.DateTime)
     end_on = sa.Column(sa.DateTime)
@@ -147,7 +159,7 @@ class Sale(BaseOriginalMixin, Base):
     SALESKIND_DICT = dict(SALESKIND_CHOICES)
     @property
     def jkind(self):
-        return self.SALESKIND_DICT.get(self.kind, u"-")
+        return self.SALESKIND_DICT.get(self.type.kind, u"-")
 
 
 class Ticket(BaseOriginalMixin, Base):
@@ -167,7 +179,7 @@ class Ticket(BaseOriginalMixin, Base):
     updated_at = sa.Column(sa.DateTime, default=datetime.now)
     price = sa.Column(sa.Integer, default=0)
 
-    sale = relationship("Sale", backref=orm.backref("tickets", order_by=price.desc(), cascade="all"))
+    sale = relationship("Salessegment", backref=orm.backref("tickets", order_by=price.desc(), cascade="all"))
 
     name = sa.Column(sa.Unicode(255))
     seattype = sa.Column(sa.Unicode(255))
@@ -268,8 +280,8 @@ class Category(Base, WithOrganizationMixin): # todo: refactoring
     e.g. name=music,  label=音楽
     """
     __tablename__ = "category"
-    __tableargs__ = (
-        sa.UniqueConstraint("organization_id", "name")
+    __table_args__ = (
+        sa.UniqueConstraint("organization_id", "name"), 
         )
     query = DBSession.query_property()
     id = sa.Column(sa.Integer, primary_key=True)
