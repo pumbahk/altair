@@ -150,12 +150,9 @@ class PromotionFunctionalTests(AppFunctionalTests):
          self.assertEqual(promotion.text, u"this-is-text-message")
          self.assertEqual(promotion.link, u"http://www.example.com")
 
-
-
          ### update
          ## promotionの更新ができる。
          update_input_response = create_redirect_response.click(index=1, href="/promotion_unit/update/%s/input" % promotion.id)
-
          form = find_form(update_input_response.forms, action_part="update")
          form.set("text", u"this-is-text-message.updated.updated.updated")
          form.set("display_order", "30")

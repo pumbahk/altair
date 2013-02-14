@@ -42,10 +42,18 @@ PromotionGrid.register("widget", mapping=widget_for_grid, keyfn=lambda data : da
 PromotionGrid.register("tag", mapping=tag_for_grid, keyfn=lambda data : data[3].id)
 
 
-def _render_image(request, promotion, asset, filepath=None):
+def _render_image(request, asset, filepath=None):
     return image_asset_layout(request, asset, filepath=filepath, 
                               width="", height="")
 
+def _render_genre(topic):
+    return Markup(u' '.join(u'<span class="label">%s</span>' % k.label for k in topic.topic_genres))
+
+def _render_kind(topic):
+    return Markup(u' '.join(u'<span class="label">%s</span>' % k.label for k in topic.topic_kinds))
+
+def _render_link(href):
+    return Markup(u'<a href="%s">%s</a>' % (href, href))    
 
 class PromotionHTMLRenderer(object):
     def __init__(self, request):
@@ -53,20 +61,23 @@ class PromotionHTMLRenderer(object):
 
     def render_main_image(self, promotion):
         asset = promotion.main_image
-        return _render_image(self.request, promotion, asset)
+        return _render_image(self.request, asset)
 
     def render_thumbnail_image(self, promotion):
         asset = promotion.main_image
-        return _render_image(self.request, promotion, asset, filepath=asset.thumbnail_path)
+        return _render_image(self.request, asset, filepath=asset.thumbnail_path)
 
     def render_link(self, promotion):
-        href = get_link_from_promotion(self.request, promotion)
-        return Markup(u'<a href="%s">%s</a>' % (href, href))
+        return _render_link(get_link_from_promotion(self.request, promotion))
 
     def render_cms_link(self, promotion):
-        href = get_link_from_promotion_in_cms(self.request, promotion)
-        return Markup(u'<a href="%s">%s</a>' % (href, href))
+        return _render_link(get_link_from_promotion_in_cms(self.request, promotion))
         
+    def render_genre(self, topic):
+        return _render_genre(topic)
+
+    def render_kind(self, topic):
+        return _render_kind(topic)
 
 class TopcontentHTMLRenderer(object):
     def __init__(self, request):
@@ -77,20 +88,30 @@ class TopcontentHTMLRenderer(object):
 
     def render_pc_image(self, topcontent):
         asset = topcontent.image_asset
-        return _render_image(self.request, topcontent, asset)
+        return _render_image(self.request, asset)
 
     def render_mobile_image(self, topcontent):
         asset = topcontent.mobile_image_asset
-        return _render_image(self.request, topcontent, asset)
+        return _render_image(self.request, asset)
 
     def render_cms_link(self, topcontent):
-        href = get_link_from_topcontent_in_cms(self.request, topcontent)
-        return Markup(u'<a href="%s">%s</a>' % (href, href))
+        return _render_link(get_link_from_topcontent_in_cms(self.request, topcontent))
+
+    def render_genre(self, topic):
+        return _render_genre(topic)
+
+    def render_kind(self, topic):
+        return _render_kind(topic)
 
 class TopicHTMLRenderer(object):
     def __init__(self, request):
         self.request = request
 
     def render_cms_link(self, topic):
-        href = get_link_from_topic_in_cms(self.request, topic)
-        return Markup(u'<a href="%s">%s</a>' % (href, href))
+        return _render_link(get_link_from_topic_in_cms(self.request, topic))
+
+    def render_genre(self, topic):
+        return _render_genre(topic)
+
+    def render_kind(self, topic):
+        return _render_kind(topic)

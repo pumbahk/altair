@@ -87,8 +87,8 @@
     <tbody>
       %for i, promotion in enumerate(topics):
         <tr>
-          <td rowspan="5">${i}</td>
-          <td rowspan="4">${promotion.display_order}</td>
+          <td rowspan="6">${i}</td>
+          <td rowspan="5">${promotion.display_order}</td>
           <td><p>掲載期間</p>
             ${h.term(promotion.publish_open_on,promotion.publish_close_on)}
             %if promotion.is_vetoed:
@@ -102,6 +102,14 @@
           %else:
             <span class="label">cmsリンク</span>
           %endif
+          </td>
+        </tr>
+        <tr>
+          <td><p>分類</p>
+            ${topic_renderer.render_kind(promotion)}
+          </td>
+          <td><p>ジャンル</p>
+            ${topic_renderer.render_genre(promotion)}
           </td>
         </tr>
         <tr>

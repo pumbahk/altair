@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 #
+import sqlalchemy.orm as orm
 from pyramid.view import view_config
 from datetime import datetime
 import altaircms.helpers as h
@@ -75,6 +76,7 @@ def detail_view(context, request):
     else:
         d = datetime.now()
         topics = searcher.query_publishing_topics(d, widget.tag, widget.system_tag)
+        topics = topics.options(orm.joinedload(context.TargetTopic.tags))
     return dict(topics=topics, page=page,
                 topic_renderer=context.TopicHTMLRenderer(request), 
                 current_widget=widget, widgets=widgets)

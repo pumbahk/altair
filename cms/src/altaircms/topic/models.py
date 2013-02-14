@@ -96,11 +96,22 @@ class TopicCore(Base):
         D["genre"] = self.genre_id_list_from_topic()
         return D
 
+    @property
+    def topic_kinds(self):
+        """''注目のイベント''など種別で絞り込む"""
+        organization_id = self.organization_id
+        return (k for k in self.tags if k.publicp and k.organization_id == organization_id)
+
+    @property
+    def topic_genres(self):
+        """所属しているジャンル一覧"""
+        #今のところorganization_id=Noneのタグ(system tag)はジャンルに使われている
+        return (k for k in self.tags if k.organization_id is None)
+
     ## theese are hack. so, sorry(in slackoff view)
     @property
     def tag_content(self):
-        organization_id = self.organization_id
-        return u", ".join(k.label for k in self.tags if k.organization_id == organization_id)
+        return u", ".join(tag.label for tag in self.topic_kinds)
 
     @tag_content.setter
     def tag_content(self, v):
@@ -118,7 +129,7 @@ class TopicCore(Base):
         
     @property
     def genre(self):
-        return u",  ".join(k.label for k in self.tags if k.organization_id is None)
+        return u", ".join(k.label for k in self.topic_genres)
     
     @genre.setter
     def genre(self, vs):

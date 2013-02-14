@@ -87,7 +87,7 @@
     <tbody>
       %for i, topcontent in enumerate(topics):
         <tr>
-          <td rowspan="5">${i}</td>
+          <td rowspan="6">${i}</td>
           <td rowspan="5">${topcontent.display_order}</td>
           <td><p>タイトル</p>${topcontent.title}</td>
           <td><p>カウントダウンタイプ(??)</p>
@@ -111,6 +111,14 @@
           %if topcontent.mobile_link:
             (mobile: <a href="${topcontent.mobile_link}">topcontent.mobile_link</a>)
           %endif
+          </td>
+        </tr>
+        <tr>
+          <td><p>分類</p>
+            ${topic_renderer.render_kind(topcontent)}
+          </td>
+          <td><p>ジャンル</p>
+            ${topic_renderer.render_genre(topcontent)}
           </td>
         </tr>
         <tr>
