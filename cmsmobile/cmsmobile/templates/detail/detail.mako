@@ -23,7 +23,6 @@
     席種/価格<br/>
     お問合せ<br/>
         XX-XXXX-XXXX
-<hr/>
     <%include file="../common/_footer.mako" />
 </body>
 </html>

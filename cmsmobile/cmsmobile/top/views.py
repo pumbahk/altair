@@ -35,3 +35,19 @@ class Top(BaseView):
         event_id = self.request.params.get("event_id", None)
         return {
         }
+
+    @view_config(route_name='top.inquiry', renderer='cmsmobile:templates/inquiry/inquiry.mako')
+    def move_inquiry(self):
+        return {
+        }
+
+    @view_config(route_name='top.help', renderer='cmsmobile:templates/help/help.mako')
+    def move_help(self):
+        return {
+        }
+
+    @view_config(route_name='top.order', renderer='cmsmobile:templates/order/order.mako')
+    def move_order(self):
+        return {
+        }
+

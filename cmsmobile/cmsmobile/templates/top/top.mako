@@ -15,7 +15,7 @@
         <%include file="../common/_topics.mako" />
         <hr/>
         <%include file="../common/_hotward.mako" />
-        <hr/>
+
         <%include file="../common/_footer.mako" />
     </body>
 </html>
