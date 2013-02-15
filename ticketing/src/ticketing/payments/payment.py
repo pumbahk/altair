@@ -114,16 +114,13 @@ class Payment(object):
         delivery_plugin = get_delivery_plugin(self.request, payment_delivery_pair.delivery_method.delivery_plugin_id)
         return payment_delivery_plugin, payment_plugin, delivery_plugin
 
-    def get_or_create_user(self):
-        pass
-
     def call_payment(self):
         """ 決済処理
         """
 
         payment_delivery_plugin, payment_plugin, delivery_plugin = self.get_plugins(self.cart.payment_delivery_pair)
         event_id = self.cart.performance.event_id
-        user = self.get_or_create_user()
+        user = self.request.context.get_or_create_user()
 
         if payment_delivery_plugin is not None:
             order = self.call_payment_delivery(payment_delivery_plugin)
