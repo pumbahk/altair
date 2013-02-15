@@ -90,8 +90,7 @@ class Payment(object):
             return preparer.delegator(self.request, self.cart)
         return None
 
-    def _bind_order(self, order, user):
-        order.user = user
+    def _bind_order(self, order):
         order.organization_id = order.performance.event.organization_id
         self.cart.order = order
 
@@ -120,7 +119,6 @@ class Payment(object):
 
         payment_delivery_plugin, payment_plugin, delivery_plugin = self.get_plugins(self.cart.payment_delivery_pair)
         event_id = self.cart.performance.event_id
-        user = self.request.context.get_or_create_user()
 
         if payment_delivery_plugin is not None:
             order = self.call_payment_delivery(payment_delivery_plugin)
@@ -138,7 +136,7 @@ class Payment(object):
         else:
             raise Exception(u"対応する決済プラグインか配送プラグインが見つかりませんでした") # TODO 例外クラス作成
 
-        self._bind_order(order, user)
+        self._bind_order(order)
         order_no = order.order_no
         # 注文確定として、他の処理でロールバックされないようにコミット
         transaction.commit()

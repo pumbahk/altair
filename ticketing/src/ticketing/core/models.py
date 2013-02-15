@@ -2140,6 +2140,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         order.performance = cart.performance
         order.channel = cart.channel
         order.operator = cart.operator
+        if cart.shipping_address:
+            order.user = cart.shipping_address.user
 
         for product in cart.products:
             ordered_product = OrderedProduct(
