@@ -62,8 +62,7 @@ class CheckoutPlugin(object):
     def delegator(self, request, cart):
         if request.is_mobile:
             submit = literal(
-                u'<input type="submit" value="楽天 お支払い" />'
-                u'<div style="font-size:x-small;">※楽天あんしん支払いサービスへ移動します。</div>'
+                u'<input type="submit" value="次へ" />'
             )
         else:
             submit = literal(
@@ -198,7 +197,6 @@ class CheckoutCompleteView(object):
     def _failed(self, cart):
         cart.release()
         cart.finished_at = datetime.now()
-        cart.save()
 
 
 class CheckoutCallbackView(object):
