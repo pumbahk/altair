@@ -1,4 +1,4 @@
-<%include file="../common/_header.mako" args="title=u'トップページ'"/>
+<%include file="../common/_header.mako" args="title=u'ジャンル'"/>
 <body>
     <h2>
         <a href="/">トップ</a> >> ${genre}

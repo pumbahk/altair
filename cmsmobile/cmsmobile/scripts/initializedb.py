@@ -11,7 +11,6 @@ from pyramid.paster import (
 
 from cmsmobile.core.models import (
     DBSession,
-    Host,
     Base,
     )
 
@@ -32,6 +31,6 @@ def main(argv=sys.argv):
     engine = engine_from_config(settings, 'sqlalchemy.')
     DBSession.configure(bind=engine)
     Base.metadata.create_all(engine)
-    with transaction.manager:
-        model = Host(name='one', value=1)
-        DBSession.add(model)
+#    with transaction.manager:
+#        model = Host(name='one', value=1)
+ #       DBSession.add(model)

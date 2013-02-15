@@ -1,4 +1,4 @@
-<%include file="../common/_header.mako" args="title=u'イベント詳細ページ'"/>
+<%include file="../common/_header.mako" args="title=u'イベント詳細'"/>
 <body>
 <h1>
     丸美屋食品ミュージカル「アニー」</br>

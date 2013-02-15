@@ -1,19 +1,25 @@
-from pyramid.response import Response
+# coding:utf-8
 from pyramid.view import view_config
 
-from sqlalchemy.exc import DBAPIError
+from datetime import datetime
 
-from cmsmobile.core.models import (
-    DBSession,
-    Host,
-    )
-
+from altaircms.topic.api import get_topic_searcher
+from altaircms.models import Genre
+from altaircms.topic.models import TopcontentTag
 
 @view_config(route_name='home', renderer='cmsmobile:templates/top/top.mako')
 def main(request):
-    try:
-        one = DBSession.query(Host).first()
-    except DBAPIError:
-        return Response("DB error!", content_type='text/plain', status_int=500)
-    return {'one': one, 'project': 'cmsmobile'}
 
+    searcher = get_topic_searcher(request,  "topcontent")
+
+
+
+    genre = Genre.query.filter_by()
+    #genre = Performance.query.filter_by(label=u"音楽")
+    #tag = TopcontentTag.query.filter_by(label=u"注目のイベント")
+    #qs = searcher.query_publishing_topics(datetime.now(), tag=tag,  genre=genre)
+
+
+    #   print(qs)
+    return {
+        }
