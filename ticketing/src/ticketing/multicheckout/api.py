@@ -15,6 +15,16 @@ import ticketing.core.api as core_api
 
 DEFAULT_ITEM_CODE = "120" # 通販
 
+def maybe_unicode(u, encoding="utf-8"):
+    if u is None:
+        return None
+    elif isinstance(u, unicode):
+        return u
+    elif isinstance(u, (str, bytes)):
+        return u.decode(encoding=encoding)
+    else:
+        raise ValueError, "expect str or unicode, but got %s" % type(u).__name__
+
 def save_api_response(request, res):
     m._session.add(res)
     if hasattr(res, 'OrderNo'):
@@ -73,6 +83,7 @@ def get_multicheckout_service(request):
     return checkout3d
 
 def secure3d_enrol(request, order_no, card_number, exp_year, exp_month, total_amount):
+    order_no = maybe_unicode(order_no)
     service = get_multicheckout_service(request)
     enrol = m.Secure3DReqEnrolRequest(
         CardNumber=card_number,
@@ -87,6 +98,7 @@ def secure3d_enrol(request, order_no, card_number, exp_year, exp_month, total_am
     return res
 
 def secure3d_auth(request, order_no, pares, md):
+    order_no = maybe_unicode(order_no)
     auth = m.Secure3DAuthRequest(
         Md=md,
         PaRes=pares,
@@ -102,6 +114,7 @@ def checkout_auth_secure3d(request,
                   card_no, card_limit, card_holder_name,
                   mvn, xid, ts, eci, cavv, cavv_algorithm,
                   free_data=None, item_cod=DEFAULT_ITEM_CODE, date=date):
+    order_no = maybe_unicode(order_no)
     order_ymd = date.today().strftime('%Y%m%d')
     params = m.MultiCheckoutRequestCard(
         ItemCd=item_cod,
@@ -136,6 +149,7 @@ def checkout_sales_secure3d(request,
                   card_no, card_limit, card_holder_name,
                   mvn, xid, ts, eci, cavv, cavv_algorithm,
                   free_data=None, item_cod=DEFAULT_ITEM_CODE, date=date):
+    order_no = maybe_unicode(order_no)
     order_ymd = date.today().strftime('%Y%m%d')
     params = m.MultiCheckoutRequestCard(
         ItemCd=item_cod,
@@ -166,12 +180,14 @@ def checkout_sales_secure3d(request,
     return res
 
 def checkout_auth_cancel(request, order_no):
+    order_no = maybe_unicode(order_no)
     service = get_multicheckout_service(request)
     res = service.request_card_cancel_auth(order_no)
     save_api_response(request, res)
     return res
 
 def checkout_sales_part_cancel(request, order_no, sales_amount_cancellation, tax_carriage_cancellation):
+    order_no = maybe_unicode(order_no)
     params = m.MultiCheckoutRequestCardSalesPartCancel(
         SalesAmountCancellation=int(sales_amount_cancellation),
         TaxCarriageCancellation=int(tax_carriage_cancellation),
@@ -182,12 +198,14 @@ def checkout_sales_part_cancel(request, order_no, sales_amount_cancellation, tax
     return res
 
 def checkout_sales_cancel(request, order_no):
+    order_no = maybe_unicode(order_no)
     service = get_multicheckout_service(request)
     res = service.request_card_cancel_sales(order_no)
     save_api_response(request, res)
     return res
 
 def checkout_inquiry(request, order_no):
+    order_no = maybe_unicode(order_no)
     service = get_multicheckout_service(request)
     res = service.request_card_inquiry(order_no)
     save_api_response(request, res)
@@ -198,6 +216,7 @@ def checkout_auth_secure_code(request, order_no, item_name, amount, tax, client_
                      secure_code,
                      free_data=None, item_cd=DEFAULT_ITEM_CODE, date=date):
 
+    order_no = maybe_unicode(order_no)
     order_ymd = date.today().strftime('%Y%m%d')
     params = m.MultiCheckoutRequestCard(
         ItemCd=item_cd,
@@ -227,6 +246,7 @@ def checkout_sales_secure_code(request, order_no, item_name, amount, tax, client
                      card_no, card_limit, card_holder_name,
                      secure_code,
                      free_data=None, item_cd=DEFAULT_ITEM_CODE, date=date):
+    order_no = maybe_unicode(order_no)
 
     order_ymd = date.today().strftime('%Y%m%d')
     params = m.MultiCheckoutRequestCard(
