@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['KPWZN2C608C5A9UC'] = (function (exports) { (function () { 
+__LIBS__['pCA5P59CY732CI1Z'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['nSE84RO7P9XHS_PQ'] = (function (exports) { (function () { 
+__LIBS__['l_8M32R098SIR34Z'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['TD6ER4APWFYNAZ1K'] = (function (exports) { (function () { 
+__LIBS__['LJ384TY_DO0RDMEU'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['KPWZN2C608C5A9UC'];
-var CONF = __LIBS__['nSE84RO7P9XHS_PQ'];
+var util = __LIBS__['pCA5P59CY732CI1Z'];
+var CONF = __LIBS__['l_8M32R098SIR34Z'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -848,6 +848,8 @@ function svgStylesFromMap(styles, defs) {
   var strokeWidthString = styles['stroke-width'];
   var strokeOpacity = null;
   var strokeOpacityString = styles['stroke-opacity'];
+  var strokeDashArray = null;
+  var strokeDashArrayString = styles['stroke-dasharray'];
   var fontSize = null;
   var fontSizeString = styles['font-size'];
   var textAnchor = null;
@@ -891,6 +893,12 @@ function svgStylesFromMap(styles, defs) {
       strokeOpacityString = strokeOpacityString[0];
     strokeOpacity = parseFloat(strokeOpacityString);
   }
+  if (strokeDashArrayString) {
+    if (strokeDashArrayString instanceof Array)
+      strokeDashArrayString = strokeDashArrayString[0];
+    if (strokeDashArrayString.indexOf(',') != -1)
+      strokeDashArray = strokeDashArrayString.split(/,/);
+  }
   if (fontSizeString) {
     if (fontSizeString instanceof Array)
       fontSizeString = fontSizeString[0];
@@ -907,6 +915,7 @@ function svgStylesFromMap(styles, defs) {
     stroke: stroke,
     strokeWidth: strokeWidth,
     strokeOpacity: strokeOpacity,
+    strokeDashArray: strokeDashArray,
     fontSize: fontSize,
     textAnchor: textAnchor
   };
@@ -942,7 +951,7 @@ function buildStyleFromSvgStyle(svgStyle) {
         null, null, null,
         svgStyle.fillOpacity ? svgStyle.fillOpacity * 255: 255),
       svgStyle.strokeWidth ? svgStyle.strokeWidth: 1,
-      svgStyle.strokePattern ? svgStyle.strokePattern: null):
+      svgStyle.strokeDashArray ? svgStyle.strokeDashArray: (svgStyle.strokePattern ? svgStyle.strokePattern: null)):
     null,
     visibility: true
   };
@@ -1021,9 +1030,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['nSE84RO7P9XHS_PQ'];
-  var seat = __LIBS__['TD6ER4APWFYNAZ1K'];
-  var util = __LIBS__['KPWZN2C608C5A9UC'];
+  var CONF = __LIBS__['l_8M32R098SIR34Z'];
+  var seat = __LIBS__['LJ384TY_DO0RDMEU'];
+  var util = __LIBS__['pCA5P59CY732CI1Z'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1466,7 +1475,7 @@ function parseTransform(transform_str) {
             {
               svgStyle: {
                 fill: false, fillOpacity: false,
-                stroke: false, strokeOpacity: false,
+                stroke: false, strokeOpacity: false, strokeDashArray: false,
                 fontSize: 10, textAnchor: false
               },
               position: null,
