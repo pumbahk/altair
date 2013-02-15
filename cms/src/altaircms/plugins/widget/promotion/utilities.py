@@ -44,12 +44,7 @@ def promotion_sheet(request, widget):
     d = datetime.now()
     searcher = get_topic_searcher(request, widget.type)
 
-    qs = searcher.query_publishing(d)
-    qs = searcher.filter_by_tag(qs, widget.tag)
-
-    if widget.system_tag_id:
-        qs = searcher.filter_by_system_tag(qs, widget.system_tag)
-
+    qs = searcher.query_publishing_topics(d, widget.tag, widget.system_tag)
     qs = qs.options(orm.joinedload("linked_page"), orm.joinedload("main_image"))
     return PromotionSheet(qs.all()) ##
 
