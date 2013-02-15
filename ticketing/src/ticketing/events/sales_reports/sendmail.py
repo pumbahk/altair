@@ -6,6 +6,7 @@ import logging
 from paste.util.multidict import MultiDict
 from pyramid.threadlocal import get_current_registry
 from pyramid.renderers import render_to_response
+from sqlalchemy import distinct
 from sqlalchemy.sql import func
 
 from ticketing.operators.models import Operator
@@ -41,8 +42,8 @@ def get_sales_summary(form, organization, group='Event'):
             Performance.id,
             Performance.name,
             Performance.start_on,
-            func.sum(Stock.quantity),
-            func.sum(StockStatus.quantity),
+            func.sum(distinct(Stock.quantity)),
+            func.sum(distinct(StockStatus.quantity)),
             sales_start_day,
             sales_end_day,
         ).group_by(Performance.id)
@@ -51,8 +52,8 @@ def get_sales_summary(form, organization, group='Event'):
             Event.id,
             Event.title,
             Event.id, # dummy
-            func.sum(Stock.quantity),
-            func.sum(StockStatus.quantity),
+            func.sum(distinct(Stock.quantity)),
+            func.sum(distinct(StockStatus.quantity)),
             sales_start_day,
             sales_end_day,
         ).group_by(Event.id)
