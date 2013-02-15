@@ -12,10 +12,10 @@
         <% continue %>
       % elif k in ['ordered_from', 'ordered_to']:
         <%
-          ordered_from = conditions.pop('ordered_from', '')
+          ordered_from = conditions.pop('ordered_from', None)
+          ordered_to = conditions.pop('ordered_to', None)
           if ordered_from:
             (label, ordered_from) = ordered_from
-            ordered_to = conditions.pop('ordered_to', '')
           if ordered_to:
             (label, ordered_to) = ordered_to
             listed += ['ordered_from', 'ordered_to']

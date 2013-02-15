@@ -4,12 +4,11 @@ import locale
 from datetime import datetime
 
 from wtforms import Form, ValidationError
-from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, TextAreaField, DateField,
-                     BooleanField, RadioField, FieldList, FormField, DecimalField, IntegerField)
+from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, TextAreaField, BooleanField, RadioField, FieldList, FormField, DecimalField, IntegerField)
 from wtforms.validators import Optional, AnyOf, Length, Email
 from wtforms.widgets import CheckboxInput
 
-from ticketing.formhelpers import DateTimeField, Translations, Required
+from ticketing.formhelpers import DateTimeField, Translations, Required, DateField, Automatic, OurDateWidget
 from ticketing.core.models import (PaymentMethodPlugin, DeliveryMethodPlugin, PaymentMethod, DeliveryMethod,
                                    SalesSegment, Performance, Product, ProductItem, Event, OrderCancelReasonEnum)
 from ticketing.cart.schemas import ClientForm
@@ -84,11 +83,16 @@ class OrderSearchForm(Form):
         label=u'予約日時',
         validators=[Optional()],
         format='%Y-%m-%d %H:%M',
+        value_defaults=lambda:dict(year=datetime.now().year),
+        widget=OurDateWidget()
     )
     ordered_to = DateTimeField(
         label=u'予約日時',
         validators=[Optional()],
         format='%Y-%m-%d %H:%M',
+        value_defaults=lambda:dict(year=datetime.now().year),
+        missing_value_defaults=dict(month=u'12', day=u'31', hour=u'23', minute=u'59', second=u'59'),
+        widget=OurDateWidget()
     )
     payment_method = SelectMultipleField(
         label=u'決済方法',
@@ -159,11 +163,13 @@ class OrderSearchForm(Form):
         label=u'公演日',
         validators=[Optional()],
         format='%Y-%m-%d',
+        widget=OurDateWidget()
     )
     start_on_to = DateField(
         label=u'公演日',
         validators=[Optional()],
         format='%Y-%m-%d',
+        widget=OurDateWidget()
     )
     sort = HiddenField(
         validators=[Optional()],
