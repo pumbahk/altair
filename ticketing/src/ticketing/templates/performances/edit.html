@@ -16,9 +16,6 @@
 <script type="text/javascript">
   $(function() {
     $('form').disableOnSubmit();
-    $('#start_on').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
-    $('#end_on').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
-    $('#open_on').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
     $('#start_on').focusout(function(){
       var re = new RegExp("([0-9]{2})([0-9]{2})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2})", "i");
       if ($(this).val().match(re)) {

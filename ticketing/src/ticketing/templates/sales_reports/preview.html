@@ -2,10 +2,6 @@
 <%namespace file="/common/helpers.html" name="h" />
 
 <script type="text/javascript">
-  $(function(){
-    $('.datetimefield').datetimepicker({dateFormat:'yy-mm-dd',timeFormat:'hh:mm'});
-  });
-
   function send_report(){
     var params = $('#form').serialize();
     $(location).attr('href', '/events/sales_reports/send_mail/${form.event_id.data}?' + params);

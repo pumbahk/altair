@@ -2,10 +2,6 @@
 <%namespace file="/common/helpers.html" name="h" />
 
 <script type="text/javascript">
-  $(function(){
-    $('.datetimefield').datetimepicker({dateFormat:'yy-mm-dd',timeFormat:'hh:mm'});
-  });
-
   function preview(email){
     var params = $('#limitation').serialize();
     if (email) params += '&recipient=' + encodeURIComponent(email);

@@ -2,10 +2,6 @@
 <%namespace file="/common/helpers.html" name="h" />
 
 <script type="text/javascript">
-  $(function(){
-    $('.datetimefield').datetimepicker({dateFormat:'yy-mm-dd',timeFormat:'hh:mm'});
-  });
-
   function event_link(url){
     var params = $('#limitation').serialize();
     $(location).attr('href', url + '?' + params);

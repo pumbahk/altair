@@ -72,6 +72,8 @@ function load_modal_form(modal, url, data, callback) {
         }
         return false;
       });
+      if (window['attach_datepicker'])
+        window['attach_datepicker']($form.find('.datetimewidget-container'));
       if (callback)
         callback.call(this, $form);
       modal.modal('show');
