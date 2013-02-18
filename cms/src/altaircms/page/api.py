@@ -9,13 +9,15 @@ from pyramid.exceptions import ConfigurationError
 from pyramid.path import AssetResolver
 from markupsafe import Markup
 from pyramid.response import FileResponse
-from pyramid.httpexceptions import HTTPNotFound
 from zope.interface import provider
 from altaircms.solr import api as solr
 from .models import StaticPage
 from ..interfaces import IDirectoryResource
 
 ### static page
+class StaticPageNotFound(Exception):
+    pass
+
 def get_static_page_utility(request):
     return request.registry.getUtility(IDirectoryResource, "static_page")(request=request)
 
@@ -94,7 +96,7 @@ def as_static_page_response(request,  static_page, url):
     else:
         msg = "%s is not found" % fullpath
         logger.info(msg)
-        raise HTTPNotFound(msg)
+        raise StaticPageNotFound(msg)
 
 ### solr
 def doc_from_tags(doc, tags):
