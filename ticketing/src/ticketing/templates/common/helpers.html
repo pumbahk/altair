@@ -235,7 +235,7 @@ ${locale.format("%d", price, grouping=True)}
 %>
   % if order is None:
     <span></span>
-  % elif order.status == 'canceled' and order.cancel_reason == OrderCancelReasonEnum.CallOff.v[0]:
+  % elif order.status == 'canceled' and order.cancel_reason == str(OrderCancelReasonEnum.CallOff.v[0]):
     <span class="label label-important">キャンセル (中止)</span>
   % elif order.status == 'canceled':
     <span class="label label-important">キャンセル</span>
