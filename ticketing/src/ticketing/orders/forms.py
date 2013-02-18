@@ -83,14 +83,14 @@ class OrderSearchForm(Form):
         label=u'予約日時',
         validators=[Optional()],
         format='%Y-%m-%d %H:%M',
-        value_defaults=lambda:dict(year=datetime.now().year),
+        #value_defaults=lambda:dict(year=datetime.now().year),
         widget=OurDateWidget()
     )
     ordered_to = DateTimeField(
         label=u'予約日時',
         validators=[Optional()],
         format='%Y-%m-%d %H:%M',
-        value_defaults=lambda:dict(year=datetime.now().year),
+        #value_defaults=lambda:dict(year=datetime.now().year),
         missing_value_defaults=dict(month=u'12', day=u'31', hour=u'23', minute=u'59', second=u'59'),
         widget=OurDateWidget()
     )
