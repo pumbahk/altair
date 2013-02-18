@@ -76,7 +76,7 @@ def refund_order():
         try:
             logging.info('try to refund order (%s)' % order.id)
             if order.call_refund(request):
-                logging.info('refund success (status=%s, payment_status=%s, refunded_at=%s)' % (order.status, order.payment_status, order.refunded_at))
+                logging.info('refund success')
                 transaction.commit()
             else:
                 logging.error('failed to refund order (%s)' % order.order_no)

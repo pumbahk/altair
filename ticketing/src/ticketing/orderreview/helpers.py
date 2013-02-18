@@ -62,7 +62,7 @@ def order_status(order):
         return u"キャンセル"
     elif order.status == 'delivered':
         return u"配送済み"
-    elif order.payment_status == 'paid':
+    elif order.payment_status in ['paid', 'refunding']:
         return u"入金済み"
     elif order.payment_status == 'unpaid':
         return u"未入金"

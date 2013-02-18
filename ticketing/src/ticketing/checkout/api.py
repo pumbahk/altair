@@ -188,8 +188,6 @@ class Checkout(object):
         subelement('itemFee').text = str(int(kwargs.get('itemFee')))
         if 'itemName' in kwargs:
             subelement('itemName').text = kwargs.get('itemName')
-        if 'orderShippingFee' in kwargs:
-            subelement('orderShippingFee').text = kwargs.get('orderShippingFee')
 
     def create_order_complete_response_xml(self, result, complete_time):
         root = et.Element('orderCompleteResponse')
@@ -292,7 +290,7 @@ class Checkout(object):
             if with_items:
                 # 商品
                 items = et.SubElement(el, 'items')
-                order = Order.query.join(Order.cart).join(Cart.checkout).filter(m.Checkout.orderControlId==order_control_id).first()
+                order = Order.query.join(Cart, Order.order_no==Cart._order_no).join(Cart.checkout).filter(m.Checkout.orderControlId==order_control_id).first()
                 if not order:
                     raise Exception('order (order_control_id=%s) not found' % order_control_id)
                 for ordered_product in order.items:
@@ -300,32 +298,20 @@ class Checkout(object):
                         itemId=ordered_product.product.id,
                         itemNumbers=ordered_product.quantity,
                         itemFee=ordered_product.price,
-                        orderShippingFee='0'
                     ))
-
                 # 商品:システム手数料
                 self._create_checkout_item_xml(items, **dict(
                     itemId='system_fee',
                     itemNumbers='1',
                     itemFee=str(int(order.system_fee)),
-                    orderShippingFee='0'
                 ))
-
-                # 商品:決済手数料
-                self._create_checkout_item_xml(items, **dict(
-                    itemId='transaction_fee',
-                    itemNumbers='1',
-                    itemFee=str(int(order.transaction_fee)),
-                    orderShippingFee='0'
-                ))
-
                 # 商品:配送手数料
                 self._create_checkout_item_xml(items, **dict(
                     itemId='delivery_fee',
                     itemNumbers='1',
                     itemFee=str(int(order.delivery_fee)),
-                    orderShippingFee='0'
                 ))
+                id_el('orderShippingFee').text = '0'
 
         logger.debug(et.tostring(root))
         return et.tostring(root)
