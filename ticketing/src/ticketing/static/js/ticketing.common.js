@@ -112,6 +112,70 @@ function reset_form(form, exclude, new_form) {
   });
 }
 
+function attach_datepicker($containers) {
+  $containers.each(function (_, container) {
+    container = $(container);
+    if (!container.data('datepicker_enabled')) {
+      container.data('datepicker_enabled', true);
+      var button = $('<a href="#"><i class="icon-calendar"></i></a>');
+      button.click(function () {
+        var o = button.offset();
+        var now = new Date();
+        var dateStr = (parseInt(container.find('.datetimewidget-year[value]').val()) || (now.getYear() + 1900)) + '-' + 
+          (parseInt(container.find('.datetimewidget-month[value]').val()) || (now.getMonth() + 1)) + '-' + 
+          (parseInt(container.find('.datetimewidget-day[value]').val()) || now.getDate());
+        function destroy() {
+          button.datepicker("destroy");
+        }
+        button.datepicker("dialog",
+          dateStr,
+          function (date) {
+            date = date.split('-');
+            container.find('.datetimewidget-year[value]').val(date[0]);
+            container.find('.datetimewidget-month[value]').val(date[1]);
+            container.find('.datetimewidget-day[value]').val(date[2]);
+            destroy();
+          }, {
+            dateFormat: 'yy-m-d',
+            showMonthAfterYear: true,
+            yearSuffix: '年',
+            monthNames: [
+              '1月',
+              '2月',
+              '3月',
+              '4月',
+              '5月',
+              '6月',
+              '7月',
+              '8月',
+              '9月',
+              '10月',
+              '11月',
+              '12月'
+            ],
+            dayNamesMin: [
+              '日',
+              '月',
+              '火',
+              '水',
+              '木',
+              '金',
+              '土'
+            ],
+            onClose: function () {
+              destroy();
+            }
+          },
+          [o.left, o.top]
+        );
+        $.datepicker.dpDiv.css('zIndex', 9999); // XXX: hack
+        return false;
+      });
+      container.append(button);
+    }
+  });
+}
+
 !(function ($){
   $.fn.disableOnSubmit = function(disablelist){
     var list = disablelist || 'input[type=submit], input[type=button], input[type=reset],button';
