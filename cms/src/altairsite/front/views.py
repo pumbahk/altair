@@ -1,8 +1,9 @@
 # coding: utf-8
-
+from altaircms.page.models import StaticPage
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.view import view_config
 from altaircms.lib.fanstatic_decorator import with_jquery
+from altaircms.page.api import as_static_page_response
 from ..mobile import api as mobile_api
 from altairsite.mobile.custom_predicates import mobile_access_predicate
 import logging 
@@ -29,6 +30,11 @@ def rendering_page(context, request):
     dt = context.get_preview_date()
 
     control = context.pc_access_control()
+
+    static_page = control.fetch_static_page_from_params(url, dt)
+    if static_page:
+        return as_static_page_response(request, static_page, url)
+
     page = control.fetch_page_from_params(url, dt)
 
     if not control.can_access():

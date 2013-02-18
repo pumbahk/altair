@@ -8,6 +8,8 @@ import sqlalchemy as sa
 from pyramid.exceptions import ConfigurationError
 from pyramid.path import AssetResolver
 from markupsafe import Markup
+from pyramid.response import FileResponse
+from pyramid.httpexceptions import HTTPNotFound
 from zope.interface import provider
 from altaircms.solr import api as solr
 from .models import StaticPage
@@ -78,6 +80,21 @@ class StaticPageDirectory(object):
             r.append(u'<a href="%s">%s</a>' % (href, os.path.basename(path)))
             r.append(u"</li>")
         return r
+
+def as_static_page_response(request,  static_page, url):
+    static_page_utility = get_static_page_utility(request)
+    if url.startswith("/"):
+        url_parts = url[1:]
+    else:
+        url_parts = url
+
+    fullpath = os.path.join(static_page_utility.get_base_directory(), url_parts)
+    if os.path.exists(fullpath) and os.path.isfile(fullpath):
+        return FileResponse(fullpath, request=request)
+    else:
+        msg = "%s is not found" % fullpath
+        logger.info(msg)
+        raise HTTPNotFound(msg)
 
 ### solr
 def doc_from_tags(doc, tags):
