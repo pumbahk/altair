@@ -56,13 +56,13 @@ def sex_value(value):
         return 0
 
 def order_status(order):
-    if order.status == 'canceled' and order.cancel_reason == OrderCancelReasonEnum.CallOff.v[0]:
+    if order.status == 'canceled' and order.cancel_reason == str(OrderCancelReasonEnum.CallOff.v[0]):
         return u"キャンセル (中止)"
     elif order.status == 'canceled':
         return u"キャンセル"
     elif order.status == 'delivered':
         return u"配送済み"
-    elif order.payment_status == 'paid':
+    elif order.payment_status in ['paid', 'refunding']:
         return u"入金済み"
     elif order.payment_status == 'unpaid':
         return u"未入金"

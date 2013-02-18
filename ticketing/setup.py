@@ -141,6 +141,7 @@ setup(name='ticketing',
       sej_nwts_upload=ticketing.sej.scripts.sej_nwts_upload:main
       release_carts=ticketing.cart.scripts.release_carts:main
       rakuten_checkout_sales=ticketing.checkout.commands:rakuten_checkout_sales
+      refund_order=ticketing.orders.commands:refund_order
       """,
       paster_plugins=['pyramid'],
       )

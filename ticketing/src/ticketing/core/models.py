@@ -1941,13 +1941,19 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 # - 払戻期限を越えてもキャンセルできる為
                 # - 売上一部取消で減額したあと、キャンセルAPIをつかうことはできない為
                 # - ただし、売上一部取消APIを有効にする以前に予約があったものはキャンセルAPIをつかう
-                sales_part_cancel_enabled_from = '2012-12-03 08:00'
-                if self.created_at < datetime.strptime(sales_part_cancel_enabled_from, "%Y-%m-%d %H:%M"):
-                    logger.info(u'キャンセルAPIでキャンセル %s' % self.order_no)
-                    multi_checkout_result = multicheckout_api.checkout_sales_cancel(request, order_no)
+                if self.payment_status in ['refunding']:
+                    logger.info(u'売上一部取消APIで払戻 %s' % self.order_no)
+                    prev = self.prev
+                    total_amount = prev.refund.item(prev) + prev.refund.fee(prev)
+                    multi_checkout_result = multicheckout_api.checkout_sales_part_cancel(request, order_no, total_amount, 0)
                 else:
-                    logger.info(u'売上一部取消APIで全額取消 %s' % self.order_no)
-                    multi_checkout_result = multicheckout_api.checkout_sales_part_cancel(request, order_no, self.total_amount, 0)
+                    sales_part_cancel_enabled_from = '2012-12-03 08:00'
+                    if self.created_at < datetime.strptime(sales_part_cancel_enabled_from, "%Y-%m-%d %H:%M"):
+                        logger.info(u'キャンセルAPIでキャンセル %s' % self.order_no)
+                        multi_checkout_result = multicheckout_api.checkout_sales_cancel(request, order_no)
+                    else:
+                        logger.info(u'売上一部取消APIで全額取消 %s' % self.order_no)
+                        multi_checkout_result = multicheckout_api.checkout_sales_part_cancel(request, order_no, self.total_amount, 0)
 
                 error_code = ''
                 if multi_checkout_result.CmnErrorCd and multi_checkout_result.CmnErrorCd != '000000':
@@ -1967,20 +1973,27 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             if self.payment_status in ['paid', 'refunding']:
                 from ticketing.checkout import api as checkout_api
                 from ticketing.core import api as core_api
+                from ticketing.cart.models import Cart
                 checkout = checkout_api.get_checkout_service(request, self.ordered_from, core_api.get_channel(self.channel))
+                cart = Cart.query.filter(Cart._order_no==self.order_no).first()
                 if self.payment_status == 'refunding':
-                    # 払戻(注文金額変更)
-                    logger.debug(u'払戻(注文金額変更)')
-                    result = checkout.request_change_order([self.cart.checkout.orderControlId])
+                    # 払戻(合計100円以上なら注文金額変更API、0円なら注文キャンセルAPIを使う)
+                    if self.total_amount >= 100:
+                        result = checkout.request_change_order([cart.checkout.orderControlId])
+                    elif self.total_amount == 0:
+                        result = checkout.request_cancel_order([cart.checkout.orderControlId])
+                    else:
+                        logger.error(u'0円以上100円未満の注文は払戻できません (order_no=%s)' % self.order_no)
+                        return False
                     if 'statusCode' in result and result['statusCode'] != '0':
-                        logger.info(u'あんしん決済を払戻できませんでした %s' % result)
+                        logger.error(u'あんしん決済を払戻できませんでした %s' % result)
                         return False
                 else:
                     # 売り上げキャンセル
                     logger.debug(u'売り上げキャンセル')
-                    result = checkout.request_cancel_order([self.cart.checkout.orderControlId])
+                    result = checkout.request_cancel_order([cart.checkout.orderControlId])
                     if 'statusCode' in result and result['statusCode'] != '0':
-                        logger.info(u'あんしん決済をキャンセルできませんでした %s' % result)
+                        logger.error(u'あんしん決済をキャンセルできませんでした %s' % result)
                         return False
 
         # コンビニ決済 (セブン-イレブン)
@@ -2043,8 +2056,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 rt.event_code_02 = self.performance.start_on.strftime('%Y%m')
                 rt.order_id = sej_ticket.order_id
                 rt.ticket_barcode_number = sej_ticket.barcode_number
-                rt.refund_ticket_amount = sum(op.price * op.quantity for op in prev.items)
-                rt.refund_other_amount = (prev.system_fee + prev.delivery_fee)
+                rt.refund_ticket_amount = prev.refund.item(prev)
+                rt.refund_other_amount = prev.refund.fee(prev)
                 DBSession.merge(rt)
 
         # 窓口支払
@@ -2654,15 +2667,21 @@ MailTypeChoices = [(str(e) , label) for e, label in zip([MailTypeEnum.CompleteMa
 
 class Host(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Host'
-
+    __table_args__ = (
+        UniqueConstraint('host_name', 'path'),
+        )
     query = DBSession.query_property()
 
     id = Column(Identifier, primary_key=True)
-    host_name = Column(Unicode(255), unique=True)
+    host_name = Column(Unicode(255))
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
     organization = relationship('Organization', backref="hosts")
     base_url = Column(Unicode(255))
     mobile_base_url = Column(Unicode(255))
+    path = Column(Unicode(255))
+
+    def __repr__(self):
+        return u"{0.host_name} {0.path}".format(self).encode('utf-8')
 
 class OrderNoSequence(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderNoSequence'
@@ -2702,7 +2721,7 @@ class Mailer(object):
         msg['Date'] = formatdate()
         self.message = msg
 
-    def send(self,from_addr,to_addr):
+    def send(self, from_addr, to_addr):
         smtp = smtplib.SMTP(self.settings['mail.host'], self.settings['mail.port'])
         smtp.sendmail(from_addr, to_addr, self.message.as_string())
         smtp.close()
@@ -2723,3 +2742,8 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     cancel_reason = Column(String(255), nullable=True, default=None)
     orders = relationship('Order', backref=backref('refund', uselist=False))
 
+    def fee(self, order):
+        return (order.system_fee + order.transaction_fee + order.delivery_fee) if self.include_fee else 0
+
+    def item(self, order):
+        return sum(o.price * o.quantity for o in order.items) if self.include_item else 0
