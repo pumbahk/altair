@@ -394,13 +394,13 @@ class OrderRefundForm(Form):
     include_item = IntegerField(
         label=u'商品金額を払戻しする',
         validators=[Required()],
-        default=1,
+        default=0,
         widget=CheckboxInput(),
     )
     include_fee = IntegerField(
         label=u'手数料を払戻しする',
         validators=[Required()],
-        default=1,
+        default=0,
         widget=CheckboxInput(),
     )
     cancel_reason = SelectField(
@@ -420,6 +420,10 @@ class OrderRefundForm(Form):
             elif refund_pm.payment_plugin_id not in [plugins.SEJ_PAYMENT_PLUGIN_ID]:
                 # 決済と払戻が別でもよいのは、払戻方法が 銀行振込 コンビニ決済 のケースのみ
                 raise ValidationError(u'指定された払戻方法は、この決済方法では選択できません')
+
+    def validate_include_item(form, field):
+        if not field.data and not form.include_fee.data:
+            raise ValidationError(u'払戻対象を選択してください')
 
 class ClientOptionalForm(ClientForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
