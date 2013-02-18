@@ -26,7 +26,7 @@
 <div class="well">
   <script type="text/javascript">
     $(function() {
-      $('#modal-refund').find("input[type='checkbox']").change(function() {
+      $('form').find("input[type='checkbox']").change(function() {
         if ($(this).attr('checked')) {
           $(this).val(1);
         } else {
@@ -34,8 +34,8 @@
         }
       }).change();
       $('.draggable').draggable({scroll: true, handle:$('.draggable .modal-body')});
-      $('#modal-refund').disableOnSubmit();
-      $('#modal-refund').on('shown', function(){
+      $('form').disableOnSubmit();
+      $('form').on('shown', function(){
         $(this).css('max-height', '700px')
         .css('max-width', '600px')
         .css('margin-top', ($(this).outerHeight()/2)*-1)

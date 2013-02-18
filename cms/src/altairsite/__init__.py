@@ -17,7 +17,7 @@ def main(global_config, **local_config):
     sqlahelper.add_engine(engine)
 
     config = Configurator(settings=settings)
-
+    config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     ## organization mapping
     OrganizationMapping = config.maybe_dotted("altaircms.auth.api.OrganizationMapping")
     OrganizationMapping(settings["altaircms.organization.mapping.json"]).register(config)
@@ -34,9 +34,11 @@ def main(global_config, **local_config):
     config.include("altairsite.front")
     config.include("altairsite.errors")
     config.include("altairsite.search", route_prefix="search")
+
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
     config.add_static_view('plugins/static', 'altaircms:plugins/static', cache_max_age=3600)
     config.add_static_view("staticasset", settings["altaircms.asset.storepath"], cache_max_age=3600)
+
 
     ## organizationごとのseparate
     config.include(".separation")

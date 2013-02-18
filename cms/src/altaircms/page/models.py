@@ -165,9 +165,6 @@ class PageSet(Base,
 class StaticPage(BaseOriginalMixin, 
                      WithOrganizationMixin, 
                      Base):
-    """
-    static pageの情報. pageの表示の際のlookupには使わない。
-    """
     query = DBSession.query_property()
     __tablename__ = "static_pages"
 

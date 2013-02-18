@@ -81,7 +81,7 @@ class SeatCSV(object):
                 break
         if seat.ordered_product_items:
             for opi in seat.ordered_product_items:
-                if opi.ordered_product.order not in ('canceled'):
+                if opi.ordered_product.order.status not in ('canceled'):
                     seat_status_list.append(('order_no', opi.ordered_product.order.order_no))
                     break
 
