@@ -20,6 +20,7 @@ from ticketing.multicheckout import models as m
 
 logger = logging.getLogger(__name__)
 
+
 def sync_data(request, multicheckout_setting):
     """
     前処理（データ訂正）
@@ -47,6 +48,7 @@ def sync_data(request, multicheckout_setting):
                 u"by cancel auth batch")
         m._session.commit()
 
+
 def cancel_auth(request, multicheckout_setting):
     """
     本処理
@@ -54,7 +56,7 @@ def cancel_auth(request, multicheckout_setting):
         キャンセル条件にしたがってオーソリ依頼データを取得
     """
 
-    shop_id =  multicheckout_setting.shop_id
+    shop_id = multicheckout_setting.shop_id
     shop_name = multicheckout_setting.shop_name
     logger.debug('search authorization for %s:%s' % (shop_name, shop_id))
 
@@ -69,6 +71,7 @@ def cancel_auth(request, multicheckout_setting):
         logging.debug('call auth cancel api for %s' % order_no)
         api.checkout_auth_cancel(request, order_no)
         m._session.commit()
+
 
 def main():
     """

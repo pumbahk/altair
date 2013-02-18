@@ -13,7 +13,8 @@ from datetime import date
 from . import logger
 import ticketing.core.api as core_api
 
-DEFAULT_ITEM_CODE = "120" # 通販
+DEFAULT_ITEM_CODE = "120"  # 通販
+
 
 def maybe_unicode(u, encoding="utf-8"):
     if u is None:
@@ -25,14 +26,17 @@ def maybe_unicode(u, encoding="utf-8"):
     else:
         raise ValueError, "expect str or unicode, but got %s" % type(u).__name__
 
+
 def save_api_response(request, res):
     m._session.add(res)
     if hasattr(res, 'OrderNo'):
         m.MultiCheckoutOrderStatus.set_status(res.OrderNo, res.Storecd, res.Status, u"call by %s" % request.url)
     m._session.commit()
 
+
 def get_multicheckout_settings(request):
     return m.MulticheckoutSetting.query.all()
+
 
 def get_multicheckout_setting(request, override_name):
     reg = request.registry
@@ -43,20 +47,24 @@ def get_multicheckout_setting(request, override_name):
         organization = core_api.get_organization(request, override_host)
         return organization.multicheckout_settings[0]
 
+
 def is_enable_secure3d(request, card_number):
     """ セキュア3D対応のカード会社か判定する """
     # とりあえず
     return len(card_number) == 16
+
 
 def get_pares(request):
     """ get ``PARES`` value from request
     """
     return request.params['PaRes']
 
+
 def get_md(request):
     """ get ``Md`` value from request
     """
     return request.params['MD']
+
 
 def sanitize_card_number(xml_data):
     et = None
@@ -71,6 +79,7 @@ def sanitize_card_number(xml_data):
         logger.warn('credit card number sanitize error: %s' % e.message)
     return etree.tostring(et) if et is not None else xml_data
 
+
 def get_multicheckout_service(request):
     reg = request.registry
 
@@ -81,6 +90,7 @@ def get_multicheckout_service(request):
     base_url = reg.settings['altair_checkout3d.base_url']
     checkout3d = Checkout3D(setting.auth_id, setting.auth_password, shop_code=setting.shop_id, api_base_url=base_url)
     return checkout3d
+
 
 def secure3d_enrol(request, order_no, card_number, exp_year, exp_month, total_amount):
     order_no = maybe_unicode(order_no)
@@ -97,6 +107,7 @@ def secure3d_enrol(request, order_no, card_number, exp_year, exp_month, total_am
     save_api_response(request, res)
     return res
 
+
 def secure3d_auth(request, order_no, pares, md):
     order_no = maybe_unicode(order_no)
     auth = m.Secure3DAuthRequest(
@@ -108,6 +119,7 @@ def secure3d_auth(request, order_no, pares, md):
     res = service.secure3d_auth(order_no, auth)
     save_api_response(request, res)
     return res
+
 
 def checkout_auth_secure3d(request,
                   order_no, item_name, amount, tax, client_name, mail_address,
@@ -144,6 +156,7 @@ def checkout_auth_secure3d(request,
     save_api_response(request, res)
     return res
 
+
 def checkout_sales_secure3d(request,
                   order_no, item_name, amount, tax, client_name, mail_address,
                   card_no, card_limit, card_holder_name,
@@ -179,12 +192,14 @@ def checkout_sales_secure3d(request,
     save_api_response(request, res)
     return res
 
+
 def checkout_auth_cancel(request, order_no):
     order_no = maybe_unicode(order_no)
     service = get_multicheckout_service(request)
     res = service.request_card_cancel_auth(order_no)
     save_api_response(request, res)
     return res
+
 
 def checkout_sales_part_cancel(request, order_no, sales_amount_cancellation, tax_carriage_cancellation):
     order_no = maybe_unicode(order_no)
@@ -197,6 +212,7 @@ def checkout_sales_part_cancel(request, order_no, sales_amount_cancellation, tax
     save_api_response(request, res)
     return res
 
+
 def checkout_sales_cancel(request, order_no):
     order_no = maybe_unicode(order_no)
     service = get_multicheckout_service(request)
@@ -204,12 +220,14 @@ def checkout_sales_cancel(request, order_no):
     save_api_response(request, res)
     return res
 
+
 def checkout_inquiry(request, order_no):
     order_no = maybe_unicode(order_no)
     service = get_multicheckout_service(request)
     res = service.request_card_inquiry(order_no)
     save_api_response(request, res)
     return res
+
 
 def checkout_auth_secure_code(request, order_no, item_name, amount, tax, client_name, mail_address,
                      card_no, card_limit, card_holder_name,
@@ -272,8 +290,10 @@ def checkout_sales_secure_code(request, order_no, item_name, amount, tax, client
     service = get_multicheckout_service(request)
     return service.request_card_sales(order_no, params)
 
+
 class MultiCheckoutAPIError(Exception):
     pass
+
 
 class Checkout3D(object):
     _httplib = httplib
@@ -374,7 +394,6 @@ class Checkout3D(object):
         logger.debug("got response %s" % etree.tostring(res))
         return self._parse_inquiry_response_card_xml(res)
 
-
     def _request(self, url, message=None):
         content_type = "application/xhtml+xml;charset=UTF-8"
         #body = etree.tostring(message, encoding='utf-8') if message else ''
@@ -436,7 +455,6 @@ class Checkout3D(object):
         self._add_param(message, 'Currency', secure3d_enrol.Currency)
 
         return message
-
 
     def _create_secure3d_auth_xml(self, secure3d_auth):
         message = etree.Element("Message")
