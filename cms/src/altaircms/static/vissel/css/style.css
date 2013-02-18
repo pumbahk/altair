@@ -256,9 +256,10 @@ a:hover img {
 }
 
 img.partnerlogo{
-	position: relative;
-	top:-10px;
-	left:24px;
+	position: absolute;
+	top:10px;
+	left:476px;
+	display:block;
 }
 
 

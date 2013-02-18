@@ -14,6 +14,9 @@ from datetime import datetime
 from pyramid.threadlocal import get_current_request
 
 from ticketing.core import api as core_api
+from ticketing.cart.models import Cart
+from ticketing.core.models import Order
+from . import interfaces
 from . import models as m
 
 logger = logging.getLogger(__name__)
@@ -183,7 +186,10 @@ class Checkout(object):
         subelement('itemId').text = str(kwargs.get('itemId'))
         subelement('itemNumbers').text = str(kwargs.get('itemNumbers'))
         subelement('itemFee').text = str(int(kwargs.get('itemFee')))
-        subelement('itemName').text = kwargs.get('itemName')
+        if 'itemName' in kwargs:
+            subelement('itemName').text = kwargs.get('itemName')
+        if 'orderShippingFee' in kwargs:
+            subelement('orderShippingFee').text = kwargs.get('orderShippingFee')
 
     def create_order_complete_response_xml(self, result, complete_time):
         root = et.Element('orderCompleteResponse')
@@ -270,18 +276,58 @@ class Checkout(object):
         finally:
             res.close()
 
-    def _create_order_control_request_xml(self, order_control_ids, request_id=None):
+    def _create_order_control_request_xml(self, order_control_ids, request_id=None, with_items=False):
         request_id = request_id or generate_requestid()
         root = et.Element('root')
         et.SubElement(root, 'serviceId').text = self.service_id
         et.SubElement(root, 'accessKey').text = self.secret
         et.SubElement(root, 'requestId').text = request_id
         sub_element = et.SubElement(root, 'orders')
+
         for order_control_id in order_control_ids:
             el = et.SubElement(sub_element, 'order')
             id_el = functools.partial(et.SubElement, el)
             id_el('orderControlId').text = order_control_id
 
+            if with_items:
+                # 商品
+                items = et.SubElement(el, 'items')
+                order = Order.query.join(Order.cart).join(Cart.checkout).filter(m.Checkout.orderControlId==order_control_id).first()
+                if not order:
+                    raise Exception('order (order_control_id=%s) not found' % order_control_id)
+                for ordered_product in order.items:
+                    self._create_checkout_item_xml(items, **dict(
+                        itemId=ordered_product.product.id,
+                        itemNumbers=ordered_product.quantity,
+                        itemFee=ordered_product.price,
+                        orderShippingFee='0'
+                    ))
+
+                # 商品:システム手数料
+                self._create_checkout_item_xml(items, **dict(
+                    itemId='system_fee',
+                    itemNumbers='1',
+                    itemFee=str(int(order.system_fee)),
+                    orderShippingFee='0'
+                ))
+
+                # 商品:決済手数料
+                self._create_checkout_item_xml(items, **dict(
+                    itemId='transaction_fee',
+                    itemNumbers='1',
+                    itemFee=str(int(order.transaction_fee)),
+                    orderShippingFee='0'
+                ))
+
+                # 商品:配送手数料
+                self._create_checkout_item_xml(items, **dict(
+                    itemId='delivery_fee',
+                    itemNumbers='1',
+                    itemFee=str(int(order.delivery_fee)),
+                    orderShippingFee='0'
+                ))
+
+        logger.debug(et.tostring(root))
         return et.tostring(root)
 
     def _parse_order_control_response_xml(self, root):
@@ -330,4 +376,18 @@ class Checkout(object):
         if 'statusCode' in result and result['statusCode'] != '0':
             error_code = result['apiErrorCode'] if 'apiErrorCode' in result else ''
             logger.warn(u'楽天あんしん支払いサービスのキャンセルに失敗しました (%s:%s)' % (error_code, ERROR_CODES.get(error_code)))
+        return result
+
+    def request_change_order(self, order_control_ids):
+        url = self.api_url + '/odrctla/changepayment/1.0/'
+        message = self._create_order_control_request_xml(order_control_ids, with_items=True)
+        logger.info('checkout change request body = %s' % message)
+
+        res = self._request_order_control(url, 'rparam=%s' % urllib.quote(message.encode('base64')))
+        logger.info('got response %s' % et.tostring(res))
+        result = self._parse_order_control_response_xml(res)
+
+        if 'statusCode' in result and result['statusCode'] != '0':
+            error_code = result['apiErrorCode'] if 'apiErrorCode' in result else ''
+            logger.warn(u'あんしん決済の金額変更に失敗しました (%s:%s)' % (error_code, ERROR_CODES.get(error_code)))
         return result

@@ -19,9 +19,9 @@ function get_modal_form(modal, form, url) {
   });
 }
 
-function post_modal_form(modal, form, url) {
+function build_form_params(form) {
   var param = {}, counts = {};
-  $(modal).find(':input').each(function(i, v) {
+  $(form).find(':input').each(function(i, v) {
     var count = counts[v.name];
     if (count === void(0)) {
       param[v.name] = v.value;
@@ -33,10 +33,15 @@ function post_modal_form(modal, form, url) {
       param[v.name + '-' + (counts[v.name]++)] = v.value;
     }
   });
+  return param;
+}
+
+function post_modal_form(modal, form, url) {
+  var data = build_form_params(form);
   $.ajax({
     type: 'post',
     url: url,
-    data: param,
+    data: data,
     traditional: true,
     success: function(data) {
       $(modal).modal('hide');
@@ -50,6 +55,30 @@ function post_modal_form(modal, form, url) {
     },
     dataType: 'html'
   });
+}
+
+function load_modal_form(modal, url, data, callback) {
+  var submitted = false;
+  modal.find('> .modal-body').load(
+    url,
+    data,
+    function () {
+      var $form = $(this).find('form');
+      $form.submit(function () {
+        if (!submitted) {
+          submitted = true;
+          var data = build_form_params($form);
+          load_modal_form(modal, $form.attr('action'), data, callback);
+        }
+        return false;
+      });
+      if (window['attach_datepicker'])
+        window['attach_datepicker']($form.find('.datetimewidget-container'));
+      if (callback)
+        callback.call(this, $form);
+      modal.modal('show');
+    }
+  );
 }
 
 function reset_form(form, exclude, new_form) {

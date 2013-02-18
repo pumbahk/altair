@@ -448,7 +448,7 @@
             {
               svgStyle: {
                 fill: false, fillOpacity: false,
-                stroke: false, strokeOpacity: false,
+                stroke: false, strokeOpacity: false, strokeDashArray: false,
                 fontSize: 10, textAnchor: false
               },
               position: null,

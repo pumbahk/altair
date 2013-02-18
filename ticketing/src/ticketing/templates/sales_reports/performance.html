@@ -1,11 +1,5 @@
 <%inherit file="/layout_2cols.html"/>
 <%namespace file="/common/helpers.html" name="h" />
-<script type="text/javascript">
-  $(function(){
-    $('.datetimefield').datetimepicker({dateFormat:'yy-mm-dd',timeFormat:'hh:mm'});
-  });
-</script>
-
 <div class="breadcrumbs">
   ${h.breadcrumbs(
       names=[u'トップ', u'売上レポート', u'イベント', u'パフォーマンス'],

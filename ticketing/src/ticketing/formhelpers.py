@@ -1,15 +1,17 @@
 # -*- coding:utf-8 -*-
 
 import re
-from datetime import datetime
+from datetime import datetime, date
 from exceptions import ValueError
 import unicodedata
 
 from wtforms import validators, fields
 from wtforms.form import Form, WebobInputWrapper
-from wtforms.fields.core import UnboundField
+from wtforms.fields.core import UnboundField, _unset_value
 from wtforms.compat import iteritems
+from wtforms.widgets.core import HTMLString, Input, html_params
 import logging
+import warnings
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +33,16 @@ class Translations(object):
         'Field must be at least %(min)d characters long.' : u'%(min)d文字以上で入力してください。',
         'Field cannot be longer than %(max)d characters.' : u'%(max)d文字以内で入力してください。',
         'Field must be between %(min)d and %(max)d characters long.' : u'%(min)d文字から%(max)d文字の間で入力してください。',
-    }
+        'Not a valid datetime value': u'日付の形式を確認してください',
+        'Invalid value for %(field)s': u'%(field)sに不正な値が入力されています',
+        "Required field `%(field)s' is not supplied": u'「%(field)s」が空欄になっています',
+        'year': u'年',
+        'month': u'月',
+        'day': u'日',
+        'hour': u'時',
+        'minute': u'分',
+        'second': u'秒',
+        }
     def __init__(self, messages = None):
         if messages:
             self.messages = dict(self.messages, **messages)
@@ -207,34 +218,356 @@ class OurBooleanField(fields.BooleanField):
     pass
 _gen_field_init(OurBooleanField)
 
-class OurDateTimeField(fields.DateTimeField):
-    '''
-    Customized field definition datetime format of "%Y-%m-%d %H:%M"
-    '''
+Automatic = object()
 
-    def _value(self):
-        if self.raw_data:
+def merge_dict(*dicts):
+    retval = dict()
+    for dict_ in dicts:
+        retval.update(dict_)
+    return retval
+
+def build_date_input_japanese_japan(fields, common_attrs={}, id_prefix=u'', name_prefix=u'', class_prefix=u'', year_attrs={}, month_attrs={}, day_attrs={}, **kwargs):
+    return [
+        u'<span %s><input %s /><span %s>年</span></span>' % (
+            html_params(class_=class_prefix + u'year'),
+            html_params(class_=class_prefix + u'year',
+                        id=id_prefix + u'year',
+                        name=name_prefix + u'year',
+                        value=fields['year'],
+                        size="4",
+                        maxlength="4",
+                        style="width:5ex",
+                        **merge_dict(common_attrs, year_attrs)),
+            html_params(class_=class_prefix + u'label')
+            ),
+        u'<span %s><input %s /><span %s>月</span></span>' % (
+            html_params(class_=class_prefix + u'month'),
+            html_params(class_=class_prefix + u'month',
+                        id=id_prefix + u'month',
+                        name=name_prefix + u'month',
+                        value=fields['month'],
+                        size="2",
+                        maxlength="2",
+                        style="width:3ex",
+                        **merge_dict(common_attrs, month_attrs)),
+            html_params(class_=class_prefix + u'label')
+            ),
+        u'<span %s><input %s /><span %s>日</span></span>' % (
+            html_params(class_=class_prefix + u'day'),
+            html_params(class_=class_prefix + u'day',
+                        id=id_prefix + u'day',
+                        name=name_prefix + u'day',
+                        value=fields['day'],
+                        size="2",
+                        maxlength="2",
+                        style="width:3ex",
+                        **merge_dict(common_attrs, day_attrs)),
+            html_params(class_=class_prefix + u'label')
+            ),
+        ]
+
+def build_time_input_japanese_japan(fields, common_attrs={}, id_prefix=u'', name_prefix=u'', class_prefix=u'', omit_second=False, hour_attrs={}, minute_attrs={}, second_attrs={}, **kwargs):
+    html = [
+        u'<span %s><input %s /><span %s>時</span></span>' % (
+            html_params(class_=class_prefix + u'hour'),
+            html_params(class_=class_prefix + u'hour',
+                        id=id_prefix + u'hour',
+                        name=name_prefix + u'hour',
+                        value=fields['hour'],
+                        size="2",
+                        maxlength="2",
+                        style="width:3ex",
+                        **merge_dict(common_attrs, hour_attrs)),
+            html_params(class_=class_prefix + u'label')
+            ),
+        u'<span %s><input %s /><span %s>分</span></span>' % (
+            html_params(class_=class_prefix + u'minute'),
+            html_params(class_=class_prefix + u'minute',
+                        id=id_prefix + u'minute',
+                        name=name_prefix + u'minute',
+                        value=fields['minute'],
+                        size="2",
+                        maxlength="2",
+                        style="width:3ex",
+                        **merge_dict(common_attrs, minute_attrs)),
+            html_params(class_=class_prefix + u'label')
+            ),
+        ]
+    if not omit_second:
+        html.append( 
+            u'<span %s><input %s /><span %s>秒</span></span>' % (
+                html_params(class_=class_prefix + u'second'),
+                html_params(class_=class_prefix + u'second',
+                            id=id_prefix + u'second',
+                            name=name_prefix + u'second',
+                            value=fields['second'],
+                            size="2",
+                            maxlength="2",
+                            style="width:3ex",
+                            **merge_dict(common_attrs, second_attrs)),
+                html_params(class_=class_prefix + u'label')
+                )
+            )
+    return html
+
+def build_datetime_input_japanese_japan(fields, **kwargs):
+    html = build_date_input_japanese_japan(fields,  **kwargs)
+    html.extend(build_time_input_japanese_japan(fields, **kwargs))
+    return html
+
+class OurDateWidget(object):
+    _default_placeholders = dict(
+        year='YYYY',
+        month='MM',
+        day='DD',
+        )
+
+    def __init__(self, input_builder=build_date_input_japanese_japan, class_prefix=u'datetimewidget-', placeholders=None):
+        self.input_builder = input_builder
+        self.class_prefix = class_prefix
+        self.placeholders = placeholders
+
+    def __call__(self, field, **kwargs):
+        kwargs.pop('class_', None)
+        class_prefix = kwargs.pop('class_prefix', self.class_prefix)
+        placeholders = kwargs.pop('placeholders', self.placeholders)
+        if placeholders is Automatic:
+            placeholders = dict(self._default_placeholders)
+            placeholders.update(field.missing_value_defaults)
+        if placeholders is None:
+            placeholders = {}
+        return HTMLString(
+            u'<span %s>' % html_params(class_=class_prefix + 'container') + \
+            u''.join(self.input_builder(
+                fields=field._values,
+                id_prefix=field.id_prefix,
+                name_prefix=field.name_prefix,
+                class_prefix=class_prefix,
+                omit_second=kwargs.pop('omit_second', False),
+                year_attrs={'placeholder': placeholders.get('year', u'')},
+                month_attrs={'placeholder': placeholders.get('month', u'')},
+                day_attrs={'placeholder': placeholders.get('day', u'')},
+                common_attrs=kwargs
+                )) + \
+            u'</span>'
+            )
+
+class OurDateTimeWidget(object):
+    _default_placeholders = dict(
+        year='YYYY',
+        month='MM',
+        day='DD',
+        hour='HH',
+        minute='MM',
+        second='SS',
+        )
+
+    def __init__(self, input_builder=build_datetime_input_japanese_japan, class_prefix=u'datetimewidget-', placeholders=None):
+        self.input_builder = input_builder
+        self.class_prefix = class_prefix
+        self.placeholders = placeholders
+
+    def __call__(self, field, **kwargs):
+        kwargs.pop('class_', None)
+        class_prefix = kwargs.pop('class_prefix', self.class_prefix)
+        placeholders = kwargs.pop('placeholders', self.placeholders)
+        if placeholders is Automatic:
+            placeholders = dict(self._default_placeholders)
+            placeholders.update(field.missing_value_defaults)
+        if placeholders is None:
+            placeholders = {}
+        return HTMLString(
+            u'<span %s>' % html_params(class_=class_prefix + 'container') + \
+            u''.join(self.input_builder(
+                fields=field._values,
+                id_prefix=field.id_prefix,
+                name_prefix=field.name_prefix,
+                class_prefix=class_prefix,
+                omit_second=kwargs.pop('omit_second', False),
+                year_attrs={'placeholder': placeholders.get('year', u'')},
+                month_attrs={'placeholder': placeholders.get('month', u'')},
+                day_attrs={'placeholder': placeholders.get('day', u'')},
+                hour_attrs={'placeholder': placeholders.get('hour', u'')},
+                minute_attrs={'placeholder': placeholders.get('minute', u'')},
+                second_attrs={'placeholder': placeholders.get('second', u'')},
+                common_attrs=kwargs
+                )) + \
+            u'</span>'
+            )
+
+class OurDateTimeFieldBase(fields.Field):
+    _missing_value_defaults = dict(
+        year=u'',
+        month=u'1',
+        day=u'1',
+        hour='0',
+        minute='0',
+        second='0'
+        )
+
+    def __init__(self, _form=None, hide_on_new=False, label=None, validators=None, format='%Y-%m-%d %H:%M:%S', value_defaults=None, missing_value_defaults=None, **kwargs):
+        super(OurDateTimeFieldBase, self).__init__(label, validators, **kwargs)
+        self.form = _form
+        self.hide_on_new = hide_on_new
+        self.name_prefix = self.name + u'.'
+        self.id_prefix = self.id + u'.'
+        self.format = format
+        self.value_defaults = value_defaults
+        self.missing_value_defaults = missing_value_defaults or dict(self._missing_value_defaults)
+        self._values = dict((k, u'') for k in self._fields)
+
+    def process_data(self, data):
+        pass
+
+    def process(self, formdata, data=_unset_value):
+        self.process_errors = []
+        if data is _unset_value:
             try:
-                dt = datetime.strptime(self.raw_data[0], '%Y-%m-%d %H:%M:%S')
-                return dt.strftime(self.format)
-            except:
-                return u' '.join(self.raw_data)
-        else:
-            return self.data.strftime(self.format) if self.data else u''
+                data = self.default()
+            except TypeError:
+                data = self.default
 
-    def process_formdata(self, valuelist):
-        if valuelist:
-            date_str = u' '.join(valuelist)
-            if date_str:
+        self.object_data = data
+
+        try:
+            self.process_data(data)
+        except ValueError as e:
+            self.process_errors.append(e.args[0])
+
+        if formdata:
+            self.data = None
+            if self.name in formdata:
+                value = ' '.join(formdata.getlist(self.name))
                 try:
-                    self.data = datetime.strptime(date_str, self.format)
-                except ValueError:
+                    self.process_data(datetime.strptime(value, self.format))
+                except ValueError as e:
+                    # XXX: for now we accept the following format '%Y-%m-%d %H:%M:%s' in addition for compatibility
+                    warnings.warn(DeprecationWarning("OurDateTimeField's unwanted feature utilized"))
+                    try:
+                        self.process_data(datetime.strptime(value, '%Y-%m-%d %H:%M:%S'))
+                    except ValueError as e:
+                        self.process_errors.append(self.gettext('Not a valid datetime value'))
+            else:
+                missing_fields = []
+                for k in self._fields:
+                    v = u' '.join(formdata.getlist(self.name_prefix + k)).strip()
+                    if not v:
+                        missing_fields.append(k)
+                        self._values[k] = u''
+                    else:
+                        self._values[k] = v
+                        if missing_fields is not None:
+                            for _k in missing_fields:
+                                self.process_errors.append(self.gettext("Required field `%(field)s' is not supplied") % dict(field=self.gettext(_k)))
+                            missing_fields = []
+                if len(missing_fields) == len(self._fields):
                     self.data = None
-                    raise validators.ValidationError(u'日付の形式を確認してください')
+                else:
+                    self.process_datetime_formdata()
+        else:
+            try:
+                value_defaults = self.value_defaults()
+            except TypeError:
+                value_defaults = self.value_defaults
+            if value_defaults:
+                for k in self._fields:
+                    self._values[k] = value_defaults.get(k, u'')
 
-_gen_field_init(OurDateTimeField)
+        for filter in self.filters:
+            try:
+                self.data = filter(self.data)
+            except ValueError as e:
+                self.process_errors.append(e.args[0])
+
+
+class OurDateTimeField(OurDateTimeFieldBase):
+    widget = OurDateTimeWidget()
+    _fields = ['year', 'month', 'day', 'hour', 'minute', 'second']
+
+    def process_data(self, data):
+        if data is None:
+            for k in self._fields:
+                self._values[k] = u''
+        else:
+            if not isinstance(data, datetime):
+                raise TypeError()
+            self._values['year'] = data.year
+            self._values['month'] = data.month
+            self._values['day'] = data.day
+            self._values['hour'] = data.hour
+            self._values['minute'] = data.minute
+            self._values['second'] = data.second
+        self.data = data
+
+    def process_datetime_formdata(self):
+        values = dict()
+        for k, v in iteritems(self._values):
+            try:
+                values[k] = int(v if v else self.missing_value_defaults[k])
+            except ValueError:
+                values[k] = None
+                self.process_errors.append(self.gettext('Invalid value for %(field)s') % dict(field=self.gettext(k)))
+        try:
+            self.data = datetime(
+                year=values['year'],
+                month=values['month'],
+                day=values['day'],
+                hour=values['hour'],
+                minute=values['minute'],
+                second=values['second']
+                )
+        except (TypeError, ValueError):
+            self.process_errors.append(self.gettext('Not a valid datetime value'))
+
+    def __call__(self, widget=None, **kwargs):
+        if widget is None:
+            widget = self.widget
+        omit_second = self.format == '%Y-%m-%d %H:%M' # XXX
+        return widget(self, omit_second=omit_second, **kwargs)
 
 DateTimeField = OurDateTimeField # for compatibility
+
+class OurDateField(OurDateTimeFieldBase):
+    widget = OurDateWidget()
+    _fields = ['year', 'month', 'day']
+
+    def process_data(self, data):
+        if data is None:
+            for k in self._fields:
+                self._values[k] = u''
+        else:
+            if isinstance(data, datetime):
+                data = data.date()
+            elif not isinstance(data, date):
+                raise TypeError()
+            self._values['year'] = data.year
+            self._values['month'] = data.month
+            self._values['day'] = data.day
+        self.data = data
+
+    def process_datetime_formdata(self):
+        values = dict()
+        for k, v in iteritems(self._values):
+            try:
+                values[k] = int(v if v else self.missing_value_defaults[k])
+            except ValueError:
+                values[k] = None
+                self.process_errors.append(self.gettext('Invalid value for %(field)s') % dict(field=self.gettext(k)))
+        try:
+            self.data = date(
+                year=values['year'],
+                month=values['month'],
+                day=values['day']
+                )
+        except (TypeError, ValueError):
+            self.process_errors.append(self.gettext('Not a valid datetime value'))
+
+    def __call__(self, widget=None, **kwargs):
+        if widget is None:
+            widget = self.widget
+        return widget(self, **kwargs)
+
+DateField = OurDateField
 
 class NullableTextField(OurTextField):
     def process_formdata(self, valuelist):

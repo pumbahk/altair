@@ -1,8 +1,9 @@
 # encoding: utf-8
 
 from markupsafe import Markup
-from ticketing.cart.helpers import *
 from pyramid.threadlocal import get_current_request
+from ticketing.cart.helpers import *
+from ticketing.core.models import OrderCancelReasonEnum
 
 __all__ = ["error", "order_desc", "is_include_t_shirts", "sex_value"]
            
@@ -55,15 +56,15 @@ def sex_value(value):
         return 0
 
 def order_status(order):
-    if order.status == 'refunded':
-        return u"キャンセル (返金済)"
+    if order.status == 'canceled' and order.cancel_reason == OrderCancelReasonEnum.CallOff.v[0]:
+        return u"キャンセル (中止)"
     elif order.status == 'canceled':
         return u"キャンセル"
     elif order.status == 'delivered':
         return u"配送済み"
-    elif order.status == 'paid':
+    elif order.payment_status == 'paid':
         return u"入金済み"
-    else:
+    elif order.payment_status == 'unpaid':
         return u"未入金"
 
 def safe_strftime(s, format='%Y-%m-%d %H:%M'):

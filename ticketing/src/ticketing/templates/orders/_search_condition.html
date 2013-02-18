@@ -1,0 +1,30 @@
+<%page args="form_search" />
+<%namespace file="/common/helpers.html" name="h" />
+
+<% conditions = form_search.get_conditions() %>
+% if conditions:
+<div class="well">
+  <div style="margin-bottom: 5px;">現在の検索条件</div>
+  <ul>
+    <% listed = [] %>
+    % for k, v in conditions.items():
+      % if k in listed:
+        <% continue %>
+      % elif k in ['ordered_from', 'ordered_to']:
+        <%
+          ordered_from = conditions.pop('ordered_from', None)
+          ordered_to = conditions.pop('ordered_to', None)
+          if ordered_from:
+            (label, ordered_from) = ordered_from
+          if ordered_to:
+            (label, ordered_to) = ordered_to
+            listed += ['ordered_from', 'ordered_to']
+        %>
+        <li>${u'%s : %s 〜 %s' % (label, ordered_from, ordered_to)}</li>
+      % else:
+        <li>${'%s : %s' % v}</li>
+      % endif
+    % endfor
+  </ul>
+</div>
+% endif

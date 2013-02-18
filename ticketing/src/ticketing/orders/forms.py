@@ -4,13 +4,15 @@ import locale
 from datetime import datetime
 
 from wtforms import Form, ValidationError
-from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, TextAreaField, DateField,
-                     BooleanField, RadioField, FieldList, FormField, DecimalField, IntegerField)
+from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, TextAreaField, BooleanField, RadioField, FieldList, FormField, DecimalField, IntegerField)
 from wtforms.validators import Optional, AnyOf, Length, Email
-from ticketing.formhelpers import DateTimeField, Translations, Required
-from ticketing.core.models import (PaymentMethodPlugin, DeliveryMethodPlugin, PaymentMethod,
-                                   SalesSegment, Performance, Product, ProductItem, Event)
+from wtforms.widgets import CheckboxInput
+
+from ticketing.formhelpers import DateTimeField, Translations, Required, DateField, Automatic, OurDateWidget
+from ticketing.core.models import (PaymentMethodPlugin, DeliveryMethodPlugin, PaymentMethod, DeliveryMethod,
+                                   SalesSegment, Performance, Product, ProductItem, Event, OrderCancelReasonEnum)
 from ticketing.cart.schemas import ClientForm
+from ticketing.payments import plugins
 
 class OrderForm(Form):
 
@@ -57,15 +59,21 @@ class OrderSearchForm(Form):
             event = Event.get(kwargs['event_id'])
             self.event_id.choices = [(event.id, event.title)]
         elif 'organization_id' in kwargs:
-            events = Event.filter_by(organization_id=kwargs['organization_id'])
-            self.event_id.choices = [('', '')]+[(e.id, e.title) for e in events]
+            organization_id = kwargs['organization_id']
+            self.event_id.choices = [('', '')]+[(e.id, e.title) for e in Event.filter_by(organization_id=organization_id)]
+            self.payment_method.choices = [(pm.id, pm.name) for pm in PaymentMethod.filter_by_organization_id(organization_id)]
+            self.delivery_method.choices = [(dm.id, dm.name) for dm in DeliveryMethod.filter_by_organization_id(organization_id)]
 
         if 'performance_id' in kwargs:
             performance = Performance.get(kwargs['performance_id'])
             self.performance_id.choices = [(performance.id, performance.name)]
-        elif formdata and 'event_id' in formdata:
-            performances = Performance.filter_by(event_id=formdata['event_id'])
+        elif self.event_id.data:
+            performances = Performance.filter_by(event_id=self.event_id.data)
             self.performance_id.choices = [('', '')]+[(p.id, '%s (%s)' % (p.name, p.start_on.strftime('%Y-%m-%d %H:%M'))) for p in performances]
+
+        if self.sales_segment.data:
+            sales_segments = SalesSegment.query.filter(SalesSegment.id.in_(self.sales_segment.data))
+            self.sales_segment.choices = [(sales_segment.id, sales_segment.name) for sales_segment in sales_segments]
 
     order_no = TextField(
         label=u'予約番号',
@@ -75,28 +83,42 @@ class OrderSearchForm(Form):
         label=u'予約日時',
         validators=[Optional()],
         format='%Y-%m-%d %H:%M',
+        value_defaults=lambda:dict(year=datetime.now().year),
+        widget=OurDateWidget()
     )
     ordered_to = DateTimeField(
         label=u'予約日時',
         validators=[Optional()],
         format='%Y-%m-%d %H:%M',
+        value_defaults=lambda:dict(year=datetime.now().year),
+        missing_value_defaults=dict(month=u'12', day=u'31', hour=u'23', minute=u'59', second=u'59'),
+        widget=OurDateWidget()
     )
     payment_method = SelectMultipleField(
         label=u'決済方法',
         validators=[Optional()],
-        choices=[(pm.id, pm.name) for pm in PaymentMethodPlugin.all()],
+        choices=[],
         coerce=int,
     )
     delivery_method = SelectMultipleField(
         label=u'引取方法',
         validators=[Optional()],
-        choices=[(pm.id, pm.name) for pm in DeliveryMethodPlugin.all()],
+        choices=[],
         coerce=int,
     )
     status = SelectMultipleField(
         label=u'ステータス',
         validators=[Optional()],
-        choices=[('ordered', u'未入金'), ('paid', u'入金済み'), ('issued', u'発券済み'), ('unissued', u'未発券'), ('delivered', u'配送済み'), ('canceled', u'キャンセル'), ('refunded', u'キャンセル (返金済)')],
+        choices=[
+            ('ordered', u'受付済み'),
+            ('delivered', u'配送済み'),
+            ('canceled', u'キャンセル'),
+            ('issued', u'発券済み'),
+            ('unissued', u'未発券'),
+            ('paid', u'入金済み'),
+            ('refunding', u'払戻予約'),
+            ('refunded', u'払戻済み')
+        ],
         coerce=str,
     )
     name = TextField(
@@ -131,15 +153,23 @@ class OrderSearchForm(Form):
         choices=[],
         validators=[Optional()],
     )
+    sales_segment = SelectMultipleField(
+        label=u'販売区分',
+        coerce=lambda x : int(x) if x else u"",
+        choices=[],
+        validators=[Optional()],
+    )
     start_on_from = DateField(
         label=u'公演日',
         validators=[Optional()],
         format='%Y-%m-%d',
+        widget=OurDateWidget()
     )
     start_on_to = DateField(
         label=u'公演日',
         validators=[Optional()],
         format='%Y-%m-%d',
+        widget=OurDateWidget()
     )
     sort = HiddenField(
         validators=[Optional()],
@@ -172,16 +202,83 @@ class OrderSearchForm(Form):
             conditions[name] = (field.label.text, data)
         return conditions
 
-class PerformanceSearchForm(Form):
-    event_id =  HiddenField(
+class OrderRefundSearchForm(OrderSearchForm):
+
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        super(OrderRefundSearchForm, self).__init__(formdata, obj, prefix, **kwargs)
+
+        self.status.data = ['paid']
+        self.public.data = u'一般販売のみ'
+
+    def _get_translations(self):
+        return Translations()
+
+    ordered_from = DateTimeField(
+        label=u'予約日時',
         validators=[Optional()],
-    )        
+        format='%Y-%m-%d %H:%M',
+    )
+    ordered_to = DateTimeField(
+        label=u'予約日時',
+        validators=[Optional()],
+        format='%Y-%m-%d %H:%M',
+    )
+    payment_method = SelectField(
+        label=u'決済方法',
+        validators=[Required()],
+        choices=[],
+        coerce=int,
+    )
+    delivery_method = SelectMultipleField(
+        label=u'配送方法',
+        validators=[Required()],
+        choices=[],
+        coerce=int,
+    )
+    event_id = SelectField(
+        label=u"イベント",
+        coerce=lambda x : int(x) if x else u"",
+        choices=[],
+        validators=[Required()],
+    )
+    performance_id = SelectField(
+        label=u"公演",
+        coerce=lambda x : int(x) if x else u"",
+        choices=[],
+        validators=[Required()],
+    )
+    sales_segment = SelectMultipleField(
+        label=u'販売区分',
+        coerce=lambda x : int(x) if x else u"",
+        choices=[],
+        validators=[Required()],
+    )
+    status = SelectMultipleField(
+        label=u'ステータス',
+        validators=[Required()],
+        choices=[
+            ('paid', u'入金済み'),
+        ],
+        coerce=str,
+    )
+    public = TextField(
+        label=u'一般販売',
+        validators=[Optional()],
+    )
+
+class PerformanceSearchForm(Form):
+    event_id = HiddenField(
+        validators=[Optional()],
+    )
     sort = HiddenField(
         validators=[Optional()],
     )
     direction = HiddenField(
         validators=[Optional(), AnyOf(['asc', 'desc'], message='')],
         default='desc',
+    )
+    public = HiddenField(
+        validators=[Optional()],
     )
 
 class OrderReserveForm(Form):
@@ -271,6 +368,58 @@ class OrderReserveForm(Form):
             raise ValidationError(u'複数の席種を選択することはできません')
         if not form.products.choices:
             raise ValidationError(u'選択された座席に紐づく予約可能な商品がありません')
+
+class OrderRefundForm(Form):
+
+    def __init__(self, *args, **kwargs):
+        super(type(self), self).__init__(*args, **kwargs)
+
+        organization_id = kwargs.get('organization_id')
+        if organization_id:
+            self.payment_method_id.choices = [(int(pm.id), pm.name) for pm in PaymentMethod.filter_by_organization_id(organization_id)]
+
+        settlement_payment_method_id = kwargs.get('settlement_payment_method_id')
+        if settlement_payment_method_id:
+            self.settlement_payment_method_id = settlement_payment_method_id
+
+    def _get_translations(self):
+        return Translations()
+
+    payment_method_id = SelectField(
+        label=u'払戻方法',
+        validators=[Required()],
+        choices=[],
+        coerce=int,
+    )
+    include_item = IntegerField(
+        label=u'商品金額を払戻しする',
+        validators=[Required()],
+        default=1,
+        widget=CheckboxInput(),
+    )
+    include_fee = IntegerField(
+        label=u'手数料を払戻しする',
+        validators=[Required()],
+        default=1,
+        widget=CheckboxInput(),
+    )
+    cancel_reason = SelectField(
+        label=u'キャンセル理由',
+        validators=[Required()],
+        choices=[e.v for e in OrderCancelReasonEnum],
+        coerce=int
+    )
+
+    def validate_payment_method_id(form, field):
+        if field.data and hasattr(form, 'settlement_payment_method_id'):
+            refund_pm = PaymentMethod.get(field.data)
+            settlement_pm = PaymentMethod.get(form.settlement_payment_method_id)
+            if refund_pm.payment_plugin_id == settlement_pm.payment_plugin_id:
+                # 決済と払戻が同じ方法ならOK
+                pass
+            elif refund_pm.payment_plugin_id not in [plugins.SEJ_PAYMENT_PLUGIN_ID]:
+                # 決済と払戻が別でもよいのは、払戻方法が 銀行振込 コンビニ決済 のケースのみ
+                raise ValidationError(u'指定された払戻方法は、この決済方法では選択できません')
 
 class ClientOptionalForm(ClientForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):

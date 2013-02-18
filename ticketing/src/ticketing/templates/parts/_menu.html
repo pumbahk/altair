@@ -51,6 +51,7 @@
     <li class="nav-header">ユーザー管理</li>
     <li><a href="${request.route_path('orders.index')}">購入情報</a></li>
     % if h.has_permission('sales_editor'):
+    <li><a href="${request.route_path('orders.refund.index')}">払戻</a></li>
     <li class="nav-header">営業管理</li>
     <li><a href="${request.route_path('sales_reports.index')}">売上レポート</a></li>
     % endif
