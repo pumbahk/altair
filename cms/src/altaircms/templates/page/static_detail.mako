@@ -28,17 +28,24 @@ h3{
       <tr>
         <th>更新日時</th><td>${h.base.jdate(static_page.updated_at)}</td>
       </tr>
+      <tr>
+        <th>公開ステータス</th><td>${u"公開中" if static_page.published else u"非公開"}</td>
+      </tr>
     </table>
 
 <div class="btn-group">
-    <a class="btn do-post"
-	   href="${request.route_path("static_page",action="delete",static_page_id=static_page.id)}">
-      <i class="icon-trash"></i> 削除
-    </a>
+  <a href="${request.route_path("static_page",action="toggle_publish",static_page_id=static_page.id)}" class="btn">
+    <i class="icon-plus"></i> この静的ページを${u"非公開にする" if static_page.published else u"公開する"}</a>
     <button class="btn dropdown-toggle" data-toggle="dropdown">
-        <span class="caret"></span>
+      <span class="caret"></span>
     </button>
     <ul class="dropdown-menu">
+      <li>
+        <a class="do-post"
+	         href="${request.route_path("static_page",action="delete",static_page_id=static_page.id)}">
+          <i class="icon-trash"></i> 削除
+        </a>
+      </li>
     </ul>
 </div>
 <hr/>

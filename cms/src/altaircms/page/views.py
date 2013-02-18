@@ -524,6 +524,14 @@ class StaticPageView(object):
         self.request = request
         self.context = context
 
+    @view_config(match_param="action=toggle_publish")
+    def toggle_publish(self):
+        pk = self.request.matchdict["static_page_id"]
+        static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==pk)
+        static_page.published = not static_page.published
+        FlashMessage.success(u"このページを%sしました" % (u"公開" if static_page.published else u"非公開に"), request=self.request)
+        return HTTPFound(self.request.route_url("static_page", action="detail", static_page_id=static_page.id))
+
     @view_config(match_param="action=detail", renderer="altaircms:templates/page/static_detail.mako", 
                  decorator=with_bootstrap)
     def detail(self):

@@ -110,7 +110,7 @@ class AccessControlPC(object):
 
     def fetch_static_page_from_params(self, url,  dt):
         prefix = url.split("/", 1)[0]
-        static_page = self.request.allowable(StaticPage).filter(StaticPage.name==prefix).first()
+        static_page = self.request.allowable(StaticPage).filter(StaticPage.name==prefix, StaticPage.published==True).first()
         return static_page
 
     def fetch_page_from_params(self, url, dt):
