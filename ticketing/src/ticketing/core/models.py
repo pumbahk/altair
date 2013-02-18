@@ -1977,18 +1977,23 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 checkout = checkout_api.get_checkout_service(request, self.ordered_from, core_api.get_channel(self.channel))
                 cart = Cart.query.filter(Cart._order_no==self.order_no).first()
                 if self.payment_status == 'refunding':
-                    # 払戻(注文金額変更)
-                    logger.debug(u'払戻(注文金額変更)')
-                    result = checkout.request_change_order([cart.checkout.orderControlId])
+                    # 払戻(合計100円以上なら注文金額変更API、0円なら注文キャンセルAPIを使う)
+                    if self.total_amount >= 100:
+                        result = checkout.request_change_order([cart.checkout.orderControlId])
+                    elif self.total_amount == 0:
+                        result = checkout.request_cancel_order([cart.checkout.orderControlId])
+                    else:
+                        logger.error(u'0円以上100円未満の注文は払戻できません (order_no=%s)' % self.order_no)
+                        return False
                     if 'statusCode' in result and result['statusCode'] != '0':
-                        logger.info(u'あんしん決済を払戻できませんでした %s' % result)
+                        logger.error(u'あんしん決済を払戻できませんでした %s' % result)
                         return False
                 else:
                     # 売り上げキャンセル
                     logger.debug(u'売り上げキャンセル')
                     result = checkout.request_cancel_order([cart.checkout.orderControlId])
                     if 'statusCode' in result and result['statusCode'] != '0':
-                        logger.info(u'あんしん決済をキャンセルできませんでした %s' % result)
+                        logger.error(u'あんしん決済をキャンセルできませんでした %s' % result)
                         return False
 
         # コンビニ決済 (セブン-イレブン)
