@@ -447,7 +447,7 @@ class OrderDetailView(BaseView):
             form_shipping_address = ClientOptionalForm()
 
         if order.user and order.user.mail_subscription:
-            mail_magazines += [ms.segment.name for ms in order.user.mail_subscription if ms.segment.organization_id == order.organization_id]
+            mail_magazines += [ms.segment for ms in order.user.mail_subscription if ms.segment.organization_id == order.organization_id]
 
         form_order = OrderForm(record_to_multidict(order))
         form_order_reserve = OrderReserveForm(performance_id=order.performance_id)
