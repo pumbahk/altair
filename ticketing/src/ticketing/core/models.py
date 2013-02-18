@@ -1797,7 +1797,6 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     paid_at = Column(DateTime, nullable=True, default=None)
     delivered_at = Column(DateTime, nullable=True, default=None)
     canceled_at = Column(DateTime, nullable=True, default=None)
-    cancel_reason = Column(String(255), nullable=True, default=None)
     refund_id = Column(Identifier, ForeignKey('Refund.id'))
     refunded_at = Column(DateTime, nullable=True, default=None)
 
@@ -1891,6 +1890,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             return 'paid'
         else:
             return 'unpaid'
+
+    @property
+    def cancel_reason(self):
+        return self.refund.cancel_reason if self.refund else None
 
     @property
     def prev(self):
@@ -2053,7 +2056,6 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         self.canceled_at = datetime.now()
         if self.payment_status == 'refunding':
             self.refunded_at = datetime.now()
-        self.cancel_reason = cancel_reason
         self.save()
 
         return True
