@@ -19,10 +19,10 @@ def format(fields):
             yield u"'%s'" % escape(field.decode('utf-8'))
         elif isinstance(field, unicode):
             yield u"'%s'" % escape(field)
-        elif isinstance(field, datetime.date):
-            yield u"'%s'" % field.strftime("%Y-%m-%d")
         elif isinstance(field, datetime.datetime):
             yield u"'%s'" % field.strftime("%Y-%m-%d %H:%M:%S")
+        elif isinstance(field, datetime.date):
+            yield u"'%s'" % field.strftime("%Y-%m-%d")
         elif field is None:
             yield u"NULL"
         else:
