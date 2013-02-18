@@ -148,16 +148,6 @@ var get_datetime_for, set_datetime_for, attach_datepicker;
     $containers.each(function (_, container) {
       container = $(container);
       if (!container.data('datepicker_enabled')) {
-        container.data('datepicker_enabled', true);
-      
-        // dow checker
-        var dow = $('<span class="' + datetimewidget_prefix + 'dow"></span>');
-        var dowInner = $('<span class="' + datetimewidget_prefix + 'dow-text"></span>').appendTo(dow);
-        dowInner.before('(');
-        dowInner.after(')');
-        container.find('span.' + datetimewidget_prefix + 'day').append(dow);
-        bind_event_for(container, 'change', refresh_dow);
-
         function refresh_dow() {
           var value = get_datetime_for(container);
           if (value.year !== null && value.month !== null && value.day !== null) {
@@ -169,6 +159,16 @@ var get_datetime_for, set_datetime_for, attach_datepicker;
             dowInner.text('');
           }
         };
+
+        container.data('datepicker_enabled', true);
+      
+        // dow checker
+        var dow = $('<span class="' + datetimewidget_prefix + 'dow"></span>');
+        var dowInner = $('<span class="' + datetimewidget_prefix + 'dow-text"></span>').appendTo(dow);
+        dowInner.before('(');
+        dowInner.after(')');
+        container.find('span.' + datetimewidget_prefix + 'day').append(dow);
+        bind_event_for(container, 'change', refresh_dow);
 
         // button
         var button = $('<a href="#"><i class="icon-calendar"></i></a>');
