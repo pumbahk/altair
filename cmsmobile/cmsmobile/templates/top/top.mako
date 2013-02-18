@@ -2,6 +2,7 @@
 <html>
     <%include file="../common/_header.mako" args="title=u'トップページ'"/>
     <body>
+
         <%include file="../common/_search.mako" />
         <hr/>
         <%include file='_pickup.mako' />
@@ -12,7 +13,7 @@
         <hr/>
         <%include file="../common/_area.mako" />
         <hr/>
-        <%include file="../common/_topics.mako" />
+        <%include file="../common/_topics.mako" args="topics=topics, topic_renderer=topic_renderer"/>
         <hr/>
         <%include file="../common/_hotward.mako" />
 
