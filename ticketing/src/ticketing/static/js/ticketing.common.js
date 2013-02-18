@@ -112,6 +112,17 @@ function reset_form(form, exclude, new_form) {
   });
 }
 
+function get_datetime_for($container) {
+  function nullIfNan(val) {
+    return isNaN(val) ? null: val;
+  }
+  var retval = {};
+  $.each(['year', 'month', 'day', 'hour', 'minute', 'second'], function (_, k) {
+    retval[k] = nullIfNan(parseInt($container.find('.datetimewidget-' + k + '[value]').val()));
+  });
+  return retval;
+}
+
 function attach_datepicker($containers) {
   $containers.each(function (_, container) {
     container = $(container);
@@ -121,9 +132,11 @@ function attach_datepicker($containers) {
       button.click(function () {
         var o = button.offset();
         var now = new Date();
-        var dateStr = (parseInt(container.find('.datetimewidget-year[value]').val()) || (now.getYear() + 1900)) + '-' + 
-          (parseInt(container.find('.datetimewidget-month[value]').val()) || (now.getMonth() + 1)) + '-' + 
-          (parseInt(container.find('.datetimewidget-day[value]').val()) || now.getDate());
+        var value = get_datetime_for(container);
+        var dateStr =
+            (value.year || (now.getYear() + 1900)) + '-' + 
+            (value.month || (now.getMonth() + 1)) + '-' + 
+            (value.day || now.getDate());
         function destroy() {
           button.datepicker("destroy");
         }
