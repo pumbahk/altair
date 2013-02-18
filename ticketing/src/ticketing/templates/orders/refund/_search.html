@@ -51,9 +51,9 @@
             ${form.ordered_from.label.text}
           </label>
           <div class="controls">
-            <div style="float: left;">
-              <input class="datetimefield" style="width: 140px;" id="ordered_from" name="ordered_from" type="text" value="${form.ordered_from._value()}"> 〜
-              <input class="datetimefield" style="width: 140px;" id="ordered_to" name="ordered_to" type="text" value="${form.ordered_to._value()}">
+            <div>
+              ${form.ordered_from()} 〜<br>
+              ${form.ordered_to()}
             </div>
           </div>
         </div>

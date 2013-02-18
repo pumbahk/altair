@@ -995,7 +995,7 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def set_search_condition(query, form):
         sort = form.sort.data or 'id'
         direction = form.direction.data or 'desc'
-        query = query.order_by('SalesSegment.' + sort + ' ' + direction)
+        query = query.order_by(SalesSegment.__tablename__ + '.' + sort + ' ' + direction)
 
         condition = form.event_id.data
         if condition:

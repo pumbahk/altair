@@ -9,3 +9,29 @@
 .table td.numeric {
   text-align: right;
 }
+
+.datetimewidget-container {
+}
+
+.datetimewidget-label {
+}
+
+.datetimewidget-dow {
+  width: 2em;
+  display: inline-block;
+}
+
+.datetimewidget-dow-text {
+  width: 1em;
+  font-weight: bold;
+  display: inline-block;
+}
+
+.datetimewidget-sun .datetimewidget-dow-text {
+  color: #dd1100;
+}
+
+.datetimewidget-sat .datetimewidget-dow-text {
+  color: #0000dd;
+}
+
