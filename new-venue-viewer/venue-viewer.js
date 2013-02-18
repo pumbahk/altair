@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['pCA5P59CY732CI1Z'] = (function (exports) { (function () { 
+__LIBS__['P5N1J4QX4WFBMFQV'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['l_8M32R098SIR34Z'] = (function (exports) { (function () { 
+__LIBS__['_CHHPN35WN3349H1'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['LJ384TY_DO0RDMEU'] = (function (exports) { (function () { 
+__LIBS__['pUH8KRE3SRPP11_Y'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['pCA5P59CY732CI1Z'];
-var CONF = __LIBS__['l_8M32R098SIR34Z'];
+var util = __LIBS__['P5N1J4QX4WFBMFQV'];
+var CONF = __LIBS__['_CHHPN35WN3349H1'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -1030,9 +1030,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['l_8M32R098SIR34Z'];
-  var seat = __LIBS__['LJ384TY_DO0RDMEU'];
-  var util = __LIBS__['pCA5P59CY732CI1Z'];
+  var CONF = __LIBS__['_CHHPN35WN3349H1'];
+  var seat = __LIBS__['pUH8KRE3SRPP11_Y'];
+  var util = __LIBS__['P5N1J4QX4WFBMFQV'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1698,11 +1698,19 @@ function parseTransform(transform_str) {
       zoomOnShape: function (shape) {
         var position = shape.position();
         var size = shape.size();
-        var vs = drawable.viewportSize();
-        var ratio = Math.min(vs.x / size.x, vs.y / size.y);
+        var p0 = shape._transform.apply(position);
+        var p1 = shape._transform.apply({ x: position.x, y: position.y+size.y });
+        var p2 = shape._transform.apply({ x: position.x+size.x, y: position.y });
+        var p3 = shape._transform.apply({ x: position.x+size.x, y: position.y+size.y });
+        var rp = { x: Math.min(p0.x, p1.x, p2.x, p3.x), y: Math.min(p0.y, p1.y, p2.y, p3.y) };
+        var rs = { x: Math.max(p0.x, p1.x, p2.x, p3.x)-rp.x, y: Math.max(p0.y, p1.y, p2.y, p3.y)-rp.y };
+        var vs = this.drawable.viewportSize();
+        var margin = 0.10;
+        var ratio = Math.min(vs.x*(1-margin) / rs.x, vs.y*(1-margin) / rs.y);
+        // FIXME: ratioが上限を超えないようにしないと、対象オブジェクトがセンターにこない
         var scrollPos = {
-          x: Math.max(position.x - (vs.x * ratio - size.x) / 2, 0),
-          y: Math.max(position.y - (vx.y * ratio - size.y) / 2, 0)
+          x: Math.max(rp.x - (vs.x/ratio-rs.x)/2, 0),
+          y: Math.max(rp.y - (vs.y/ratio-rs.y)/2, 0)
         };
         this.zoomAndPan(ratio, scrollPos);
       },
@@ -1734,7 +1742,7 @@ function parseTransform(transform_str) {
                               previousPageInfo.scrollPosition);
             } else {
               var shape = self.shapes[anchor];
-              if (shape !== void(0)) {
+              if (shape !== void(0) && shape instanceof Fashion.Rect) {
                 self.zoomOnShape(shape);
               } else {
                 self.zoomAndPan(self.zoomRatioMin, { x: 0., y: 0. });
