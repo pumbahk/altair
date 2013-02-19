@@ -499,7 +499,9 @@ class OrderDetailView(BaseView):
             else:
                 self.request.session.flash(u'受注(%s)を払戻できません' % order.order_no)
 
-        return render_to_response('ticketing:templates/orders/refund/_form.html', {'form':f}, request=self.request)
+        response = render_to_response('ticketing:templates/orders/refund/_form.html', {'form':f}, request=self.request)
+        response.status_int = 400
+        return response
 
     @view_config(route_name='orders.delivered', permission='sales_editor')
     def delivered(self):

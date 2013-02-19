@@ -23,8 +23,6 @@ todo:
 EXCLUDE_EXT_LIST = (".ico", ".js", ".css")
 @view_config(route_name="front", decorator=with_jquery)
 def rendering_page(context, request):
-    if request.url.endswith(EXCLUDE_EXT_LIST):
-        return HTTPNotFound()
     url = request.matchdict["page_name"]
     dt = context.get_preview_date()
 
@@ -36,6 +34,9 @@ def rendering_page(context, request):
             return as_static_page_response(request, static_page, url)
     except StaticPageNotFound as e:
         logger.info(str(e))
+
+    if request.url.endswith(EXCLUDE_EXT_LIST):
+        return HTTPNotFound()
 
     page = control.fetch_page_from_params(url, dt)
 

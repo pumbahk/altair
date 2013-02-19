@@ -148,7 +148,7 @@ if 'cancel' in sort:
   if not order.can_cancel():
     sort.remove('cancel')
 if 'refund' in sort:
-  if not order.can_cancel():
+  if not order.can_refund():
     sort.remove('refund')
 if 'delivered' in sort:
   if not order.can_cancel():

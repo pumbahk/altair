@@ -42,6 +42,7 @@ from ticketing.sej.exceptions import SejServerError
 from ticketing.sej.payment import request_cancel_order
 from ticketing.assets import IAssetResolver
 from ticketing.utils import myurljoin
+from ticketing.payments import plugins
 
 logger = logging.getLogger(__name__)
 
@@ -1902,6 +1903,16 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def can_cancel(self):
         # 受付済のみキャンセル可能
         if self.status == 'ordered':
+            # コンビニ決済は未入金、払戻予約のみキャンセル可能
+            payment_plugin_id = self.payment_delivery_pair.payment_method.payment_plugin_id
+            if payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID and self.payment_status not in ['unpaid', 'refunding']:
+                return False
+            return True
+        return False
+
+    def can_refund(self):
+        # 入金済または払戻予約のみ払戻可能
+        if self.status == 'ordered' and self.payment_status in ['paid', 'refunding']:
             return True
         return False
 
