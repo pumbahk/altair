@@ -41,27 +41,27 @@ class TagManagerBase(object):
         self.XRef = XRef
         self.Tag = Tag
 
-    def get_tag_list(self, labels, public_status=None):
-        qs = self.Tag.query.filter(self.Tag.label.in_(labels))
+    def get_tag_list(self, labels, public_status=None, organization_id=None):
+        qs = self.Tag.query.filter(self.Tag.label.in_(labels), organization_id=organization_id)
         if public_status is not None:
             qs = qs.filter(self.Tag.publicp==public_status)
         return qs.all()
 
-    def get_or_create_tag_list(self, labels, public_status=True):
-        tags = self.get_tag_list(labels, public_status=public_status)
+    def get_or_create_tag_list(self, labels, public_status=True, organization_id=None):
+        tags = self.get_tag_list(labels, public_status=public_status, organization_id=organization_id)
         cache = {tag.label:tag for tag in tags}
         result = []
         for label in labels:
             if not label in cache:
-                result.append(self.Tag(label=label, publicp=public_status))
+                result.append(self.Tag(label=label, publicp=public_status, organization_id=organization_id))
             else:
                 result.append(cache[label])
         return result
             
-    def get_or_create_tag(self, label, public_status=True):
-        tag = self.Tag.query.filter_by(label=label, publicp=public_status).first()
+    def get_or_create_tag(self, label, public_status=True, organization_id=None):
+        tag = self.Tag.query.filter_by(label=label, publicp=public_status, organization_id=organization_id).first()
         if not tag:
-            return self.Tag(label=label, publicp=public_status)
+            return self.Tag(label=label, publicp=public_status, organization_id=organization_id)
         else:
             return tag
 
@@ -80,31 +80,31 @@ class TagManagerBase(object):
         pass
 
     ## alter
-    def delete_tags(self, obj, deletes, public_status=True):
+    def delete_tags(self, obj, deletes, public_status=True, organization_id=None):
         """ deletes: [unicode]
         """
         if deletes:
             tags = obj.tags
             qs = self.Tag.query.filter(self.XRef.object_id==obj.id).filter(self.Tag.publicp == public_status)
-            for tag in qs.filter(self.Tag.label.in_(deletes)):
+            for tag in qs.filter(self.Tag.label.in_(deletes), organization_id=organization_id):
                 tags.remove(tag)
         
-    def replace_tags(self, obj, tag_label_list, public_status=True):
+    def replace_tags(self, obj, tag_label_list, public_status=True, organization_id=None):
         if obj.tags:
-            return self.fullreplace_tags(obj, tag_label_list, public_status)
+            return self.fullreplace_tags(obj, tag_label_list, public_status, organization_id=organization_id)
         else:
-            return self.add_tags(obj, tag_label_list, public_status)
+            return self.add_tags(obj, tag_label_list, public_status, organization_id=organization_id)
 
 
-    def fullreplace_tags(self, obj, tag_label_list, public_status):
-        prev_name_set = set(x.label for x in obj.tags if x.publicp == public_status and self.is_target_tag(x))
+    def fullreplace_tags(self, obj, tag_label_list, public_status, organization_id=None):
+        prev_name_set = set(x.label for x in obj.tags if x.publicp == public_status and x.organization_id==organization_id)
         deletes = prev_name_set.difference(tag_label_list)
         self.delete_tags(obj, deletes)
         updates = set(tag_label_list).difference(prev_name_set)
 
         result = []
         for label in updates:
-            t = self.get_or_create_tag(label, public_status)
+            t = self.get_or_create_tag(label, public_status, organization_id=organization_id)
             result.append(t)
             obj.tags.append(t)
         return result
@@ -118,11 +118,11 @@ class TagManagerBase(object):
     def search_by_tag(self, tag):
         return self.joined_query([self.Object]).filter(self.Tag.id==tag.id)
 
-    def add_tags(self, obj, tag_label_list, public_status):
+    def add_tags(self, obj, tag_label_list, public_status, organization_id=None):
         tags = obj.tags
         result = []
         for label in tag_label_list:
-            t = self.get_or_create_tag(label, public_status)
+            t = self.get_or_create_tag(label, public_status, organization_id=organization_id)
             result.append(t)
             tags.append(t)
         return result
@@ -155,11 +155,12 @@ class SystemTagManager(TagManagerBase):
     def joined_query(self, query_target=None):
         query_target = query_target or [self.Object]
         qs = DBSession.query(*query_target).filter(self.Object.id==self.XRef.object_id)
+        qs = qs.filter(self.Tag.organization_id==None)
         return qs.filter(self.Tag.id==self.XRef.tag_id)
 
     def more_filter_by_tag(self, qs, tag):
         xref = orm.aliased(self.XRef)
-        return qs.filter(self.Object.id==xref.object_id, xref.tag_id==tag.id)
+        return qs.filter(self.Object.id==xref.object_id, xref.tag_id==tag.id).filter(self.Tag.organization_id==None)
 
     def recent_change_tags(self):
         return self.Tag.query.filter(self.Tag.organization_id==None).order_by(saexp.desc(self.Tag.updated_at), saexp.asc(self.Tag.id))

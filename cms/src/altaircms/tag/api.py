@@ -16,15 +16,15 @@ def get_tagname_resolver(request):
 
 def put_tags(obj, classifier, tags, private_tags, request):
     manager = get_tagmanager(classifier, request=request)
-    tags = manager.replace_tags(obj, tags, True)
-    private_tags = manager.replace_tags(obj, private_tags, False)
+    tags = manager.replace_tags(obj, tags, True, organization_id=request.organization.id)
+    private_tags = manager.replace_tags(obj, private_tags, False, organization_id=request.organization.id)
     ## put organization id
     notify_created_tags(request, tags)
     notify_created_tags(request, private_tags)
 
 def put_system_tags(obj, classifier, tags, request):
     manager = get_system_tagmanager(classifier, request=request)
-    manager.replace_tags(obj, tags, True)
+    manager.replace_tags(obj, tags, True, organization_id=None)
 
 def notify_created_tags(request, tags):
     for t in tags:
