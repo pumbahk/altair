@@ -11,7 +11,7 @@ from sqlalchemy import and_
 from sqlalchemy.sql.expression import not_
 import sqlahelper
 
-from ticketing.core.models import SeatStatus, SeatStatusEnum, Order
+from ticketing.core.models import DBSession, SeatStatus, SeatStatusEnum, Order
 
 def update_seat_status():
     _keep_to_vacant()
