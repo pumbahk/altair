@@ -201,7 +201,7 @@ class GlobalTopicSearcher(object):
     def get_tag_from_genre_label(self, genre_label):
         return self.system_tagmanager.get_or_create_tag(genre_label, public_status=True)
 
-    def query_publishing_topics(self, dt, tag, system_tag=None): #system_tag is genre tag
+    def query_publishing_topics(self, dt, tag, system_tag=None): #system_tag is tag
         qs = self.query_publishing_no_filtered(dt)
         qs = self.filter_by_tag(qs, tag)
         

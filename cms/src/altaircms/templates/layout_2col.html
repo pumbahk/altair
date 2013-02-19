@@ -1,4 +1,6 @@
-<%inherit file='layout.html'/>
+##<%inherit file='layout.html'/>
+<%inherit file="${context['main_template'].uri}"/>
+
 <%namespace name="nco" file="./navcomponents.html"/>
 <div class="row-fluid">
   <div class="span1.5"><%block name="contentleft">${nco.sidebar(request)}</%block></div>

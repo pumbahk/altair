@@ -1,0 +1,34 @@
+<h3>${performance.title}</h3>
+<table class="table table-bordered">
+  <tbody>
+    <tr>
+      <th rowspan="4">公演情報</th>
+      <th>講演名</th><td>${performance.title}
+        %if performance.canceld:
+          <span class="label label-warning">検索から外す</span>
+        %else:
+          <span class="label">検索に載せる</span>
+        %endif
+      </td>
+      <th>backend id</th><td>${performance.backend_id}</td>
+    </tr>
+    <tr>
+      <th>開催日</th>
+      <td>
+        <ul class="unstyled">
+          <li>開場時間:${h.base.jdate_with_hour(performance.open_on)}</li>
+          <li>開演時間:${h.base.jdate_with_hour(performance.open_on)}</li>
+          <li>閉演時間:${h.base.jdate_with_hour(performance.open_on)}</li>
+        </ul>
+      </td>
+      <th>開催県</th><td>${performance.jprefecture}</td>
+    </tr>
+    <tr>
+      <th>開催場所(会場)</th><td colspan="3">${performance.venue}</td>
+    </tr>
+    <tr>
+      <th>外部購入リンク</th><td>${performance.purchase_link}</td>
+      <th>外部購入リンク(mobile)</th><td>${performance.mobile_purchase_link}</td>
+    </tr>
+  </tbody>
+</table>

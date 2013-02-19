@@ -51,18 +51,16 @@ class PageSetTakein(object):
 
 @view_config(route_name='event', renderer='altaircms:templates/event/view.html', permission='event_read',
              decorator=with_bootstrap)
-def view(request):
+def detail_view(request):
     id_ = request.matchdict['id']
 
     event = request.allowable(Event).filter_by(id=id_).first()
     if event is None:
         raise HTTPNotFound() ##
     performances = event.performances
-    sales = event.sales
     return dict(
         event=event,
         performances=performances, 
-        sales=sales, 
         myhelpers=h
     )
 

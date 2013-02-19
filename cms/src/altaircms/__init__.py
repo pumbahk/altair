@@ -72,10 +72,18 @@ def main(global_config, **local_config):
     config.set_request_property("altaircms.auth.helpers.get_authenticated_user", "user", reify=True)
     config.set_request_property("altaircms.auth.helpers.get_authenticated_organization", "organization", reify=True)
 
+    config.include("pyramid_layout")
     config.include("altaircms.lib.crud")    
     config.include("altaircms.filelib")
 
-    ## include
+
+    ## include 
+    class MyLayout(object):
+        def __init__(self, context, request):
+            self.context = context
+            self.request = request
+    config.add_layout(MyLayout, 'altaircms:templates/layout.html') #this is pyramid-layout's layout
+
     config.include("altaircms.auth", route_prefix='/auth')
     config.include("altaircms.front", route_prefix="/front")
     config.include("altaircms.widget")
@@ -90,6 +98,7 @@ def main(global_config, **local_config):
     config.include("altaircms.tag")
 
     config.include("altaircms.viewlet")
+    config.include("altaircms.panels")
     ## slack-off
     config.include("altaircms.slackoff")
 

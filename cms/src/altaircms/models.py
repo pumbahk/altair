@@ -115,6 +115,10 @@ class Performance(BaseOriginalMixin, Base):
     event = relationship("Event", backref=orm.backref("performances", order_by=start_on, cascade="all"))
 
     @property
+    def salessegments(self):
+        return self.sales
+
+    @property
     def jprefecture(self):
         return PDICT.name_to_label.get(self.prefecture, u"--")
 
