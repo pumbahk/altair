@@ -1,0 +1,26 @@
+<h3>${ticket.name}</h3>
+<table class="table table-describe table-bordered">
+  <tbody>
+    <tr>
+      <th rowspan="3">商品情報</th>
+      <th>商品名</th><td>
+        <a href="#">${ticket.name}</a>
+      </td>
+      <th>backend id</th><td>${ticket.backend_id}</td>
+    </tr>
+    <tr>
+      <th>作成日時</th><td>${h.base.jdate(ticket.created_at)}</td>
+      <th>更新日時</th><td>${h.base.jdate(ticket.updated_at)}</td>
+    </tr>
+    <tr>
+      <th>名前</th><td colspan="3">${ticket.name}</td>
+    </tr>
+    <tr>
+      <th>名前</th><td>${ticket.seattype}</td>
+      <th>価格</th><td>${ticket.price}</td>
+    </tr>
+  </tbody>
+</table>
+
+##${panel("model_action_buttons", ticket, modelname="ticket", _query=dict(performance=ticket.performance.id, endpoint=request.url))}
+

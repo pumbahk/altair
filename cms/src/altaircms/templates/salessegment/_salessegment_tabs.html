@@ -10,3 +10,8 @@
 </ul>
 
 ${panel("describe_salessegment", current_salessegment)}
+
+%if current_salessegment.tickets:
+  ${panel("salessegment_ticket", salessegment)}
+%endif
+

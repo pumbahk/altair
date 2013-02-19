@@ -1,0 +1,21 @@
+<h3 id="salessegment">${page_title}</h3>
+
+<table class="table table-describe table-bordered">
+  <thead>
+    <tr>
+      <th>表示順序</th><th>席種</th><th>名前</th><th>価格</th><th>作成日時</th><th>更新日時</th>
+    </tr>
+  </thead>
+  <tbody>
+    %for ticket in tickets:
+      <tr>
+        <td>${ticket.display_order}</td>
+        <td>${ticket.seattype}</td>
+        <td>${ticket.name}</td>
+        <td>${ticket.price}</td>
+        <td>${h.base.jdate(ticket.created_at)}</td>
+        <td>${h.base.jdate(ticket.updated_at)}</td>
+      </tr>
+    %endfor
+  </tbody>
+</table>
