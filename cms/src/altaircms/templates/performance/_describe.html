@@ -14,8 +14,8 @@
       <th>backend id</th><td>${performance.backend_id}</td>
     </tr>
     <tr>
-      <th>作成日時</th><td>${h.base.jdate(performance.created_at)}</td>
-      <th>更新日時</th><td>${h.base.jdate(performance.updated_at)}</td>
+      <th>作成日時</th><td>${h.base.jdate_with_hour(performance.created_at)}</td>
+      <th>更新日時</th><td>${h.base.jdate_with_hour(performance.updated_at)}</td>
     </tr>
     <tr>
       <th>開催日</th>
@@ -40,4 +40,4 @@
   </tbody>
 </table>
 
-${panel("model_action_buttons", performance, modelname="performance", _query=dict(event=performance.event.id, endpoint=request.url))}
+${panel("model_action_buttons", performance, modeljname=u"パフォーマンス", modelname="performance", _query=dict(event=performance.event.id, endpoint=request.url))}

@@ -1,16 +1,23 @@
 <h3 id="performance">${page_title}</h3>
+<%
+from altaircms.helpers.event import performance_name
+%>
 <ul class="nav nav-tabs">
    %for performance in performances:
      %if unicode(performance.id) == unicode(current_performance.id):
-        <li class="active"><a href="${h.current_route_path_override(request,_query=dict(performance_id=performance.id))}#performance">${performance.title}</a></li>
+        <li class="active"><a href="${h.current_route_path_override(request,_query=dict(performance_id=performance.id))}#performance">${performance_name(performance)}</a></li>
      %else:
-        <li><a href="${h.current_route_path_override(request,_query=dict(performance_id=performance.id))}#performance">${performance.title}</a></li>
+        <li><a href="${h.current_route_path_override(request,_query=dict(performance_id=performance.id))}#performance">${performance_name(performance)}</a></li>
      %endif
    %endfor
 </ul>
 
 ${panel("describe_performance", current_performance)}
 
+<hr/>
+
 %if current_performance.salessegments:
   ${panel("performance_salessegment", current_performance)}
+%else:
+  ${panel("model_create_only_buttons", modeljname=u"販売区分", modelname="salessegment", _query=dict(performance_id=current_performance.id))}
 %endif

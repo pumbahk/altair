@@ -13,8 +13,8 @@
         <td>${ticket.seattype}</td>
         <td>${ticket.name}</td>
         <td>${ticket.price}</td>
-        <td>${h.base.jdate(ticket.created_at)}</td>
-        <td>${h.base.jdate(ticket.updated_at)}</td>
+        <td>${h.base.jdate_with_hour(ticket.created_at)}</td>
+        <td>${h.base.jdate_with_hour(ticket.updated_at)}</td>
       </tr>
     %endfor
   </tbody>

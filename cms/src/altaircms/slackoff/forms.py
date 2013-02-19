@@ -5,6 +5,7 @@ from wtforms.form import Form
 from wtforms import fields
 from wtforms import widgets
 from wtforms import validators
+import sqlalchemy.orm as orm
 import wtforms.ext.sqlalchemy.fields as extfields
 import urllib
 
@@ -14,13 +15,14 @@ from altaircms.helpers.formhelpers import required_field, append_errors
 
 from ..event.models import Event
 from altaircms.models import Performance, Genre
-from ..models import Category, SalesSegment
+from ..models import Category, SalesSegment, SalesSegmentGroup
 from ..asset.models import ImageAsset
 from ..page.models import PageSet
 from ..topic.models import Topic, TopicTag, Topcontent,TopcontentTag, PromotionTag, Promotion
 from ..topic.models import PromotionTag
 from ..page.models import PageTag
 from ..plugins.api import get_extra_resource
+from ..helpers.event import performance_name
 
 import pkg_resources
 def import_symbol(symbol):
@@ -116,28 +118,29 @@ class PerformanceForm(Form):
 
 
 class SalesSegmentForm(Form):
-    event = dynamic_query_select_field_factory(Event, allow_blank=False, label=u"イベント", get_label=lambda obj: obj.title) ## performance?
-    kind = fields.SelectField(label=u"販売条件", choices=import_symbol("altaircms.seeds.saleskind:SALESKIND_CHOICES"))
-    name = fields.TextField(label=u"名前", validators=[required_field()])
+    performance = dynamic_query_select_field_factory(Performance,
+                                                     dynamic_query=lambda model, request, query: query.filter_by(id=request.params["performance_id"]), 
+                                                     allow_blank=False, label=u"パフォーマンス", get_label=lambda obj: performance_name(obj))
+    group = dynamic_query_select_field_factory(SalesSegmentGroup, allow_blank=False, label=u"販売区分名", get_label=lambda obj: obj.name)
     start_on = fields.DateTimeField(label=u"開始時間（省略可)")
     end_on = fields.DateTimeField(label=u"終了時間(省略可)")
        
-    __display_fields__ = [u"event", u"kind", u"name", u"start_on", u"end_on"]
+    __display_fields__ = [u"performance", u"group", u"start_on", u"end_on"]
 
-    def validate(self, **kwargs):
-        if super(SalesSegmentForm, self).validate():
-            data = self.data
-            if not data["name"]:
-                data["name"] = data["event"].title
-        return not bool(self.errors)
+    # def validate(self, **kwargs):
+    #     if super(SalesSegmentForm, self).validate():
+    #         data = self.data
+    #         if not data["name"]:
+    #             data["name"] = data["event"].title
+    #     return not bool(self.errors)
 
 
 class TicketForm(Form):
-    # event = dynamic_query_select_field_factory(Event, allow_blank=False, label=u"イベント", get_label=lambda obj: obj.title) ## performance?
     sale = dynamic_query_select_field_factory(SalesSegment, 
                                               allow_blank=False,
-                                              label=u"イベント販売条件", 
-                                              get_label=lambda obj: obj.name) ## performance?
+                                              label=u"販売区分", 
+                                              dynamic_query=lambda model, request, query: query.filter_by(id=request.params["salessegment_id"]).options(orm.joinedload(SalesSegment.group)), 
+                                              get_label=lambda obj: obj.group.name if obj.group else u"---")
     name = fields.TextField(validators=[required_field()], label=u"券種")
     seattype = fields.TextField(validators=[], label=u"席種／グレード")
     price = fields.IntegerField(validators=[required_field()], label=u"料金")

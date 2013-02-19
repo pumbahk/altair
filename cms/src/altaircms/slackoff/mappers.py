@@ -81,15 +81,15 @@ def performance_mapper(request, obj):
 SALES_DICT = dict(import_symbol("altaircms.seeds.saleskind:SALESKIND_CHOICES"))
 def sale_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
-    objlike.event = Markup(u'<a href="%s">%s</a>' % (request.route_path("event", id=obj.event.id), obj.event.title)) if obj.event else u"-"
-    objlike.kind = SALES_DICT.get(obj.kind, u"-")
+    objlike.performance = obj.performance.title
+    objlike.group = obj.group.name
     return objlike
 
 
 def ticket_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
     # objlike.event = obj.event.title if obj.event else None
-    objlike.sale = Markup(u'<a href="%s">%s</a>' % (request.route_path("sale_update", id=obj.sale.id, action="input"), obj.sale.name)) if obj.sale else u"-"
+    # objlike.sale = obj.sale.group.name if obj.sale.group else u"-"
     return objlike
 
 def category_mapper(request, obj):

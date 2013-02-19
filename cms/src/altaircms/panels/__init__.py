@@ -22,4 +22,6 @@ def includeme(config):
 
     config.add_panel(".action.model_action_buttons_panel", "model_action_buttons", 
                      renderer="altaircms:templates/action/model_action_buttons.html")
+    config.add_panel(".action.create_only_action_buttons_panel", "model_create_only_buttons", 
+                     renderer="altaircms:templates/action/model_create_only_buttons.html")
 

@@ -12,10 +12,12 @@ def includeme(config):
                     decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", 
                     renderer="altaircms:templates/performance/view.html")
 
-    config.add_crud("sale", title="sale", model="..models.SalesSegment", 
+    config.add_crud("salessegment", title="salessegment", model="..models.SalesSegment", 
+                    has_auto_generated_permission=False,  #todo:remove-it
                     bind_actions=["create", "delete", "update"], 
                     form=".forms.SalesSegmentForm", mapper=".mappers.sale_mapper")
     config.add_crud("ticket", title="ticket", model="..models.Ticket", 
+                    has_auto_generated_permission=False,  #todo:remove-it
                     bind_actions=["create", "delete", "update"], 
                     form=".forms.TicketForm", mapper=".mappers.ticket_mapper")
 

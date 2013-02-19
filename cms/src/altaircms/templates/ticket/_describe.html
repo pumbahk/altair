@@ -9,8 +9,8 @@
       <th>backend id</th><td>${ticket.backend_id}</td>
     </tr>
     <tr>
-      <th>作成日時</th><td>${h.base.jdate(ticket.created_at)}</td>
-      <th>更新日時</th><td>${h.base.jdate(ticket.updated_at)}</td>
+      <th>作成日時</th><td>${h.base.jdate_with_hour(ticket.created_at)}</td>
+      <th>更新日時</th><td>${h.base.jdate_with_hour(ticket.updated_at)}</td>
     </tr>
     <tr>
       <th>名前</th><td colspan="3">${ticket.name}</td>
@@ -22,5 +22,5 @@
   </tbody>
 </table>
 
-##${panel("model_action_buttons", ticket, modelname="ticket", _query=dict(performance=ticket.performance.id, endpoint=request.url))}
+${panel("model_action_buttons", ticket, modelname="ticket", _query=dict(sale=ticket.salessegment.id, endpoint=request.url,salessegment_id=ticket.salessegment_id))}
 

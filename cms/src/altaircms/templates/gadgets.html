@@ -32,7 +32,7 @@
 		<tbody>
 		  %for p in  performances:
 		  <tr>
-			<td>${p.title}</td><td>${p.backend_id}</td><td>${h.base.jdate(p.start_on)}</td><td>${p.venue}</td>
+			<td>${p.title}</td><td>${p.backend_id}</td><td>${h.base.jdate_with_hour(p.start_on)}</td><td>${p.venue}</td>
 			<td>${"y" if p.purchase_link or p.mobile_purchase_link else "n"}</td>
 			<td><input name="p:${p.id}"></td>
 		  </tr>

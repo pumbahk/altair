@@ -17,8 +17,8 @@
     <th>サブタイトル</th><td colspan="3">${event.subtitle}</td>
   </tr>
   <tr>
-    <th>作成日時</th><td>${h.base.jdate(event.created_at)}</td>
-    <th>更新日時</th><td>${h.base.jdate(event.updated_at)}</td>
+    <th>作成日時</th><td>${h.base.jdate_with_hour(event.created_at)}</td>
+    <th>更新日時</th><td>${h.base.jdate_with_hour(event.updated_at)}</td>
   </tr>
   <tr>
     <th>販売期間</th><td colspan="3">${h.term(event.deal_open,event.deal_close)}</td>
