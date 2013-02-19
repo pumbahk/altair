@@ -1916,7 +1916,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             return True
         return False
 
-    def cancel(self, request, cancel_reason=None, payment_method=None):
+    def cancel(self, request, payment_method=None):
         if not self.can_refund() and not self.can_cancel():
             logger.info('order (%s) cannot cancel status (%s, %s)' % (self.id, self.status, self.payment_status))
             return False
@@ -2104,7 +2104,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         order.total_amount = sum(o.price * o.quantity for o in order.items) + order.system_fee + order.transaction_fee + order.delivery_fee
 
         try:
-            return order.cancel(request, self.refund.cancel_reason, self.refund.payment_method)
+            return order.cancel(request, self.refund.payment_method)
         except Exception, e:
             logger.error(u'払戻処理でエラーが発生しました (%s)' % e.message)
         return False
