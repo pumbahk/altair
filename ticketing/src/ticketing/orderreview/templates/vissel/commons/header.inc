@@ -1,5 +1,5 @@
 	<div class="header">
 		<div class="header-inner">
-			<img src="/static/vissel/images/logo.gif" alt="VISSEL TICKET" />
+			<img src="${request.static_url('ticketing.orderreview:static/images/vissel/logo.gif')}" alt="VISSEL TICKET" />
 		</div>
 	</div>

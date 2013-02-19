@@ -244,7 +244,7 @@ class TicketsUtilsTest(TestCase):
                     ]
                 )
             shipping_address = ShippingAddress(
-                email=u'email@example.com',
+                email_1=u'email@example.com',
                 nick_name=u'nickname',
                 first_name=u'姓',
                 last_name=u'名',

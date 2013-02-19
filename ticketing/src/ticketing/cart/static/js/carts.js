@@ -139,6 +139,7 @@ cart.init = function(venues_selection, selected, upper_limit, cart_release_url) 
     // });
     this.app = new cart.ApplicationController();
     this.app.init(venues_selection, selected, upper_limit, cart_release_url);
+    $('body').bind('selectstart', function() { return false; });
 };
 
 cart.createContentOfShoppingElement = function(product) {
@@ -955,6 +956,8 @@ cart.VenueView = Backbone.View.extend({
         var callbacks = updateReq.callbacks;
 
         this.currentViewer.venueviewer("remove");
+
+        var loadingLayer = null;
         var _callbacks = $.extend($.extend({}, callbacks), {
             zoomRatioChanging: function (zoomRatio) {
                 return Math.min(Math.max(zoomRatio, self.zoomRatioMin), self.zoomRatioMax);
@@ -962,6 +965,13 @@ cart.VenueView = Backbone.View.extend({
             zoomRatioChange: function (zoomRatio) {
                 var pos = Math.sqrt((zoomRatio - self.zoomRatioMin) / (self.zoomRatioMax - self.zoomRatioMin));
                 self.verticalSlider.smihica_vertical_slider('position', pos);
+
+                if (1.2 < zoomRatio) {
+                    self.currentViewer.venueviewer('showSmallTexts');
+                } else {
+                    self.currentViewer.venueviewer('hideSmallTexts');
+                }
+
             },
             load: function (viewer) {
                 self.zoomRatioMin = viewer.zoomRatioMin;
@@ -970,25 +980,74 @@ cart.VenueView = Backbone.View.extend({
                 callbacks.load && callbacks.load.apply(this, arguments);
                 self._handleQueue();
             },
+            loadPartStart: function (viewer, part) {
+                var self = this;
+                if (!loadingLayer) {
+                    loadingLayer =
+                        $('<div></div>')
+                        .append(
+                            $('<div></div>')
+                            .css({ position: 'absolute', width: '100%', height: '100%', backgroundColor: 'white', opacity: 0.5 })
+                            .append(
+                                $('<img />')
+                                .attr('src', '/cart/static/img/settlement/loading.gif')
+                                .css({ marginTop: self.canvas.height() / 2 - 16 })
+                            )
+                        )
+                        .append(
+                            $('<div></div>')
+                            .css({ position: 'absolute', width: '100%', height: '100%' })
+                            .append(
+                                $('<div>読込中です</div>')
+                                .css({ marginTop: self.canvas.height() / 2 + 16 })
+                            )
+                        )
+                        .css({
+                            position: 'absolute',
+                            width: '100%',
+                            height: '100%',
+                            marginTop: -self.canvas.height(),
+                            textAlign: 'center'
+                        });
+                    self.canvas.after(loadingLayer);
+                }
+            },
+            loadPartEnd: function (viewer, part) {
+				var page = viewer.currentPage;
+				if(page) {
+					self.verticalSlider.css({ visibility: viewer.pages[page].zoomable===false ? 'hidden' : 'visible' });
+				}
+
+                if (part == 'drawing') {
+                    if (loadingLayer) {
+                        loadingLayer.remove();
+                        loadingLayer = null;
+                    }
+                }
+            },
             messageBoard: (function() {
-                self.tooltip.hide();
+                if (self.tooltip)
+                    self.tooltip.hide();
+                var lastPosition = { x: 0, y: 0 };
                 $(document.body).mousemove(function(e){
+                    lastPosition = { x: e.pageX, y: e.pageY };
                     if (self.tooltip) {
                         self.tooltip.css({
-                            left: (e.pageX + 10) + 'px', 
-                            top:  (e.pageY + 10) + 'px'
+                            left: (lastPosition.x + 10) + 'px', 
+                            top:  (lastPosition.y + 10) + 'px'
                         });
                     }
                 });
-
                 return {
                     up: function(msg) {
-                        if (self.tooltop && msg)
-                            self.tooltip.show().stop().text(msg).fadeIn(100);
+                        if (self.tooltip) {
+                            if (msg)
+                                self.tooltip.stop(true, true).show().text(msg).fadeIn(200);
+                        }
                     },
                     down: function() {
                         if (self.tooltip)
-                            self.tooltip.stop().fadeOut(100);
+                            self.tooltip.stop(true, true).fadeOut(200);
                     }
                 }
             })()
@@ -1007,7 +1066,7 @@ cart.VenueView = Backbone.View.extend({
             $('#selectSeat').removeClass('focused');
             $('#selectSeat').addClass('blur');
         } else {
-            this.currentViewer.venueviewer("uimode", "select1");
+            this.currentViewer.venueviewer("uimode", "select");
             $('#selectSeat').removeClass('blur');
             $('#selectSeat').addClass('focused');
         }

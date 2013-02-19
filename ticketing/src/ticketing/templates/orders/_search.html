@@ -1,55 +1,192 @@
 <%page args="form, url='/orders/'" />
 <%namespace file="/common/helpers.html" name="h" />
+<%
+from ticketing.formhelpers import OurDateWidget
+%>
+
+<style type="text/css">
+  .form-horizontal .control-label {
+    width: 120px;
+  }
+  .form-horizontal .controls {
+    margin-left: 140px;
+  }
+</style>
 
 <script type="text/javascript">
-  $(function() {
-    $('.datetimefield').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
-    $('.datefield').datepicker({dateFormat:'yy-mm-dd'});
-  });
-
-  function search_orders() {
-    modal = $('#modal-search');
-    modal.find('#search').attr('action', '${url}').submit();
+  function search_orders(url) {
+    $('#search').attr('action', url).submit();
   }
 
   function sort_orders(sort, direction, url) {
     url = url || '${url}';
-    modal = $('#modal-search');
-    if (sort) modal.find('#sort').val(sort);
-    if (direction) modal.find('#direction').val(direction);
-    modal.find('#search').attr('action', url).submit();
+    detail = $('#detail_search');
+    if (sort) detail.find('#sort').val(sort);
+    if (direction) detail.find('#direction').val(direction);
+    detail.find('#search').attr('action', url).submit();
   }
 
   function download_orders() {
     var params = $('#modal-download_orders').find('form').serialize();
-    modal = $('#modal-search');
-    modal.find('#search').attr('action', '/orders/download/?' + params).submit();
+    detail = $('#detail_search');
+    detail.find('#search').attr('action', '/orders/download/?' + params).submit();
     $('#modal-download_orders').modal('hide');
   }
 </script>
 
+
+<div id="detail_search">
+  <div>
+    <h3>検索条件設定</h3>
+  </div>
+  <form id="search" class="form-horizontal" method="POST">
+    <fieldset>
+      <table>
+        <tbody>
+        <tr>
+          <td>${h.form_item(form.event_id)}</td>
+          <td>${h.form_item(form.performance_id)}</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>${h.form_item(form.order_no, maxlength=12)}</td>
+          <td>${h.form_item(form.seat_number)}</td>
+          <td>${h.form_item(form.tel)}</td>
+        </tr>
+        <tr>
+          <td>${h.form_item(form.name)}</td>
+          <td>${h.form_item(form.member_id)}</td>
+          <td>${h.form_item(form.email)}</td>
+        </tr>
+        <tr>
+          <td>${h.form_item(form.payment_method)}
+          <td>${h.form_item(form.delivery_method)}</td>
+          <td>${h.form_item(form.status)}</td>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <div class="control-group ">
+              <label class="control-label">
+                ${form.ordered_from.label.text}
+              </label>
+              <div class="controls">
+                <div>
+                  ${form.ordered_from()} 〜
+                  ${form.ordered_to()}
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <div class="control-group ">
+              <label class="control-label">
+                ${form.start_on_from.label.text}
+              </label>
+              <div class="controls">
+                <div>
+                  ${form.start_on_from()} 〜
+                  ${form.start_on_to()}
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+      <div style="clear: both;"></div>
+
+      <script type="text/javascript">
+        $(function(){
+          var update_on_empty = function(){
+            var $target = $(this).parents("form").find("select[name='performance_id']").eq(0);
+            $target.empty();
+            return;
+          };
+          var update_on_hasvalue = function(v){
+            var self = this;
+            var params = {event_id: v};
+            $.getJSON("${request.route_url('orders.api.performances')}", params).done(function(data){
+              if(data.status){
+                var $target = $(self).parents("form").find("select[name='performance_id']").eq(0);
+                $target.empty();
+                // optimize if slow.
+                for(var i=0, j=data.result.length; i<j; i++){
+                  var e = data.result[i];
+                  $target.append($("<option>").attr("value", e.pk).text(e.name))
+                }
+              }
+            });
+          };
+          var update_performances = function(){
+            var self = this;
+            var v = $(this).val();
+            if(!v){
+              return update_on_empty.call(self);
+            } else {
+              return update_on_hasvalue.call(self, v);
+            }
+          };
+          $("#search select[name='event_id']").change(update_performances);
+
+          var update_sales_segments_on_empty = function(){
+            var $target = $(this).parents("form").find("select[name='sales_segment']").eq(0);
+            $target.empty();
+            return;
+          };
+          var update_sales_segments_on_hasvalue = function(v){
+            var self = this;
+            var params = {event_id: v, public:true};
+            $.getJSON("${request.route_url('orders.api.sales_segments')}", params).done(function(data){
+              if(data.status){
+                var $target = $(self).parents("form").find("select[name='sales_segment']").eq(0);
+                $target.empty();
+                // optimize if slow.
+                for(var i=0, j=data.result.length; i<j; i++){
+                  var e = data.result[i];
+                  $target.append($("<option>").attr("value", e.pk).text(e.name))
+                }
+              }
+            });
+          };
+          var update_sales_segments = function(){
+            var self = this;
+            var v = $(this).val();
+            if(!v){
+              return update_sales_segments_on_empty.call(self);
+            } else {
+              return update_sales_segments_on_hasvalue.call(self, v);
+            }
+          };
+          $("#search select[name='event_id']").change(update_sales_segments);
+        });
+      </script>
+      ${h.form_item(form.sort)}
+      ${h.form_item(form.direction)}
+    </fieldset>
+  </form>
+</div>
+
 <div style="float: left;">
   <ul class="nav nav-pills">
-    <li class="dropdown" id="top-search-text">
-      <form id="search-order" action="${url}" method="POST">
-        <input name="order_no" type="text" class="search-query" placeholder="予約番号">
-      </form>
+    <li class="dropdown" style="margin-left: 10px;">
+      <div class="btn-group">
+        <a href="${url}" class="btn">
+			</i> リセット
+        </a>
+      </div>
     </li>
+  </ul>
+</div>
+
+<div style="float: left;">
+  <ul class="nav nav-pills">
     <li class="dropdown" id="top-search" style="margin-left: 10px;">
       <div class="btn-group">
-        <a href="javascript:void(0);" onclick="$('#search-order').submit();" class="btn">
+        <a href="javascript:search_orders('${request.route_path('orders.index')}');" class="btn">
           <i class="icon-search"></i> 検索
         </a>
-        <button class="btn dropdown-toggle" data-toggle="dropdown">
-          <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu">
-          <li>
-            <a data-toggle="modal" href="#modal-search">
-              <i class=""></i> 詳細検索
-            </a>
-          </li>
-        </ul>
       </div>
     </li>
   </ul>
@@ -62,99 +199,6 @@
 </div>
 <div style="clear: left;"></div>
 
-
-<div id="modal-search" class="modal hide fade">
-  <div class="modal-header">
-    <a class="close" data-dismiss="modal">×</a>
-    <h3>検索条件設定</h3>
-  </div>
-
-  <div class="modal-body">
-    <form id="search" class="form-horizontal" action="/orders/" method="POST">
-      <fieldset>
-        ${h.form_item(form.order_no, style='width: 200px;', maxlength=12)}
-        <div class="control-group ">
-          <label class="control-label">
-            ${form.ordered_from.label.text}
-          </label>
-          <div class="controls">
-            <div style="float: left;">
-              <input class="datetimefield" style="width: 140px;" id="ordered_from" name="ordered_from" type="text" value="${form.ordered_from._value()}"> 〜
-              <input class="datetimefield" style="width: 140px;" id="ordered_to" name="ordered_to" type="text" value="${form.ordered_to._value()}">
-            </div>
-          </div>
-        </div>
-        <div style="clear: both;"></div>
-        ${h.form_item(form.payment_method)}
-        ${h.form_item(form.delivery_method)}
-        ${h.form_item(form.status)}
-        ${h.form_item(form.name)}
-        ${h.form_item(form.member_id)}
-        ${h.form_item(form.tel)}
-        ${h.form_item(form.email)}
-        ${h.form_item(form.seat_number)}
-
-        ${h.form_item(form.event_id)}
-        ${h.form_item(form.performance_id, class_='span4')}
-        <script type="text/javascript">
-          $(function(){
-            var update_on_empty = function(){
-              var $target = $(this).parents("form").find("select[name='performance_id']").eq(0);
-              $target.empty();
-		          return;
-            };
-            var update_on_hasvalue = function(v){
-              var self = this;
-              var params = {event_id: v};
-              $.getJSON("${request.route_url('orders.api.performances')}", params).done(function(data){
-                if(data.status){
-                  var $target = $(self).parents("form").find("select[name='performance_id']").eq(0);
-                  $target.empty();
-                  // optimize if slow.
-                  for(var i=0, j=data.result.length; i<j; i++){ 
-                    var e = data.result[i];
-                    $target.append($("<option>").attr("value", e.pk).text(e.name))
-                  }
-                }
-              });
-            };
-            var update_performances = function(){
-              var self = this;
-              var v = $(this).val();
-              if(!v){
-                return update_on_empty.call(self);
-              } else {
-                return update_on_hasvalue.call(self, v);
-              }
-            };
-            $("#search select[name='event_id']").change(update_performances);
-            //update_performances.call($("#search select[name='event_id'] option:selected"));
-          });
-    		</script>
-        <div class="control-group ">
-          <label class="control-label">
-            ${form.start_on_from.label.text}
-          </label>
-          <div class="controls">
-            <div style="float: left;">
-              <input class="datefield" style="width: 140px;" id="start_on_from" name="start_on_from" type="text" value="${form.start_on_from._value()}"> 〜
-              <input class="datefield" style="width: 140px;" id="start_on_to" name="start_on_to" type="text" value="${form.start_on_to._value()}">
-            </div>
-          </div>
-        </div>
-        ${h.form_item(form.sort)}
-        ${h.form_item(form.direction)}
-      </fieldset>
-    </form>
-  </div>
-
-  <div class="modal-footer">
-    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
-    <a href="javascript:search_orders();" class="btn btn-primary">検索</a>
-  </div>
-</div>
-
-
 <div id="modal-download_orders" class="modal hide fade">
   <div class="modal-header">
     <a href="#" class="close">&times;</a>
@@ -162,7 +206,7 @@
   </div>
 
   <div class="modal-body">
-    <form id="download" class="form-horizontal" action="/orders/download/" method="POST">
+    <form id="download" class="form-horizontal" action="${request.route_path('orders.download')}" method="POST">
       <p>購入情報(CSV)をダウンロードします。よろしいですか？<br>
         <div class="alert alert-error">
           <% conditions = form.get_conditions() %>

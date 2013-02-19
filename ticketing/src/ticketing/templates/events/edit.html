@@ -16,9 +16,6 @@
 <script type="text/javascript">
   $(function() {
     $('form').disableOnSubmit();
-    $('#start_on').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
-    $('#end_on').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
-
     var code_buf = [];
     $('#title').keyup(function(e){
       if ($('#code').val() || code_buf.length >= 3) return;

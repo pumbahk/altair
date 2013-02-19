@@ -2,11 +2,13 @@
 
 """ TBA
 """
+from datetime import datetime
 import sqlahelper
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
+from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 
-from ..models import Identifier
+from ..models import Identifier, WithTimestamp
 from ..utils import StandardEnum
 
 # for schema dependencies
@@ -14,6 +16,9 @@ import ticketing.core.models
 
 Base = sqlahelper.get_base()
 DBSession = sqlahelper.get_session()
+
+# 内部トランザクション用
+_session = orm.scoped_session(orm.sessionmaker())
 
 class MulticheckoutSetting(Base):
     __tablename__ = 'MulticheckoutSetting'
@@ -226,3 +231,53 @@ class MultiCheckoutInquiryResponseCard(Base):
     SecureKind = sa.Column(sa.Unicode(1), doc=u"セキュリティ方式")
 
     #履歴情報 : MultiCheckoutInquiryResponseCardHistory
+
+    @hybrid_property
+    def is_authorized(self):
+        return self.Status == str(MultiCheckoutStatusEnum.Authorized)
+
+class MultiCheckoutOrderStatus(Base, WithTimestamp):
+    """ 取引照会レスポンス
+    """
+
+    __tablename__ = 'multicheckout_order_status'
+    id = sa.Column(Identifier, primary_key=True)
+    OrderNo = sa.Column(sa.Unicode(32), doc=u"受注番号")
+    Storecd = sa.Column(sa.Unicode(10), doc=u"店舗コード")
+    Status = sa.Column(sa.Unicode(3), doc=u"決済ステータス")
+    Summary = sa.Column(sa.UnicodeText, doc=u"機能追記メモ")
+
+    @classmethod
+    def by_storecd(cls, storecd):
+        return cls.Storecd==storecd
+
+    @hybrid_property
+    def is_authorized(self):
+        return self.Status == unicode(MultiCheckoutStatusEnum.Authorized)
+
+    @hybrid_method
+    def past(self, delta):
+        now = datetime.now()
+        target = now - delta
+        return self.updated_at < target
+
+
+    @classmethod
+    def get_or_create(cls, order_no, storecd):
+        s = _session.query(cls).filter(
+                cls.OrderNo==order_no
+            ).filter(
+                cls.Storecd==storecd
+            ).first()
+        if not s:
+            s = cls(OrderNo=order_no, Storecd=storecd, Summary=u"")
+            _session.add(s)
+        return s
+
+
+    @classmethod
+    def set_status(cls, order_no, storecd, status, summary):
+        s = cls.get_or_create(order_no, storecd)
+        if s.Status != status:
+            s.Status = status
+            s.Summary = (s.Summary or u"") + "\n" + summary

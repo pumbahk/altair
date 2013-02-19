@@ -1,0 +1,73 @@
+{
+  "info": {
+    "available_adjacencies": [ 1, 2, 3, 4 ]
+  },
+  "stock_types": {
+    "1": {
+      "style": {
+        "text": "",
+        "fill": {
+          "color": "#e0d060"
+        }
+      },
+      "name": "S\u5e2d"
+    },
+    "2": {
+      "style": {
+        "text": "",
+        "fill": {
+          "color": "#ffec9f"
+        }
+      },
+      "name": "A\u5e2d"
+    },
+    "3": {
+      "style": {
+        "text": "",
+        "fill": {
+          "color": "#99b3e6"
+        }
+      },
+      "name": "B\u5e2d"
+    },
+    "4": {
+      "style": {
+        "text": "",
+        "fill": {
+          "color": "#cc8080"
+        }
+      },
+      "name": "C\u5e2d"
+    }
+  },
+  "pages": {
+    "root_ew.svg": {
+      "name": "全体図",
+      "zoomable": false,
+      "root": true
+    },
+    "block_w.svg": {
+      "name": "楽天スタンド（メインスタンド）"
+    },
+    "block_wn.svg": {
+      "name": "楽天スタンド（メインスタンド）メイン指定ビジター"
+    },
+    "block_wv.svg": {
+      "name": "楽天スタンド（メインスタンド）ヴィッセルシート"
+    },
+    "block_ws.svg": {
+      "name": "楽天スタンド（メインスタンド）メイン指定ホーム"
+    },
+    "block_wx.svg": {
+      "_comment": "通常使う席は無い",
+      "name": "楽天スタンド（メインスタンド）上階"
+    },
+    "block_e.svg": {
+      "name": "バックスタンド"
+    },
+    "block_ex.svg": {
+      "_comment": "自由席のみ",
+      "name": "バックスタンド後列"
+    }
+  }
+}

@@ -64,7 +64,6 @@ def check_sales_segment_term(request):
     else:
         sales_segment = request.context.sales_segment
     if not sales_segment:
-        
         raise NoSalesSegment
 
     if not sales_segment.in_term(now):
@@ -141,7 +140,9 @@ def get_cart_safe(request):
 
 def recover_cart(request):
     cart = get_cart_safe(request)
-    set_cart(request, Cart.create_from(cart))
+    new_cart = Cart.create_from(cart)
+    DBSession.flush()
+    set_cart(request, new_cart)
     return cart
 
 def _maybe_encoded(s, encoding='utf-8'):

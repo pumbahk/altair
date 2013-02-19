@@ -89,6 +89,7 @@ def main(global_config, **local_config):
     config.include("ticketing.memberships", route_prefix="/memberships")
     config.include('ticketing.payments')
     config.include('ticketing.payments.plugins')
+    config.include('ticketing.pkginfo')
     ## TBA
     config.add_route("qr.make", "___________") ##xxx:
     config.include(config.maybe_dotted("ticketing.cart.import_mail_module"))

@@ -120,7 +120,7 @@ def event_info(request):
     event = Event.query.filter_by(backend_id=backend_id).first()
 
     if event is None:
-        logger.warn("*api* event info: event not found (backend event_id=%s)" % backend_id)
+        logger.info("*api* event info: event not found (backend event_id=%s)" % backend_id)
         return dict(event=[])
     try:
         return get_event_notify_info(event)

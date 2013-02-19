@@ -5,6 +5,7 @@ from datetime import datetime
 import sqlalchemy as sa
 from altaircms.page.models import Page
 from altaircms.page.models import PageSet
+from altaircms.page.models import StaticPage
 
 from . import api 
 
@@ -106,6 +107,11 @@ class AccessControlPC(object):
         qs = qs.filter(Page.in_term(dt))
         qs = qs.filter(Page.published==True)
         return qs.order_by(sa.desc("page.publish_begin"), "page.publish_end").first()
+
+    def fetch_static_page_from_params(self, url,  dt):
+        prefix = url.split("/", 1)[0]
+        static_page = self.request.allowable(StaticPage).filter(StaticPage.name==prefix, StaticPage.published==True).first()
+        return static_page
 
     def fetch_page_from_params(self, url, dt):
         page = self._fetch_page_from_params(url, dt)

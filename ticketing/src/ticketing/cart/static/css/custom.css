@@ -30,6 +30,7 @@ p.cartNickname{
   height: 0px;
   font-size: 0px;
   line-height: -1px;
+  cursor: pointer;
 }
 
 .btn-buy {
@@ -113,3 +114,20 @@ p.cartNickname{
   background: url(../img/settlement/bg_seat_bottom.gif) no-repeat left bottom;
 }
 
+.flow-widget {
+  width: 700px;
+  height: 45px;
+}
+
+.flow-widget img.flow-widget-body {
+  width: 100%;
+  height: 100%;
+  margin: 0 0;
+  padding: 0 0;
+  border: none;
+}
+
+#settlement .flow-widget {
+  margin: 0px auto 20px auto;
+  box-shadow: #888 2px 2px 4px -2px;
+}

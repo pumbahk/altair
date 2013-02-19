@@ -87,10 +87,7 @@
         link += '<a href="javascript:deleteRow(' + "'" + options.gid + "'," + options.rowId + ');"><i class="icon-trash"></i></a>';
       }
       if (rowObject.ticket_bundle && rowObject.ticket_bundle.id) {
-        link += '<a href="/events/tickets/event/' + ${performance.event.id}
-          + '/bundle/' + rowObject.ticket_bundle.id
-          + '/item/' + rowObject.product_item.id
-          + '/preview" target="_blank"><i class="icon-eye-open"></i></a>';
+        link += '<a href="javascript:preview_ticket(' + rowObject.product_item.id + ')"><i class="icon-eye-open"></i></a>';
       }
       return link;
     };
@@ -410,7 +407,7 @@
                     -
                   % endif
                 </td>
-                <td><input type="hidden" id="ticket_bundle_id-${item.id}" value="${item.ticket_bundle_id}" />${h.action_button(actions(product, item), order=['edit', 'preview', 'new', 'delete'], options='btn-small')}</td>
+                <td><input type="hidden" id="ticket_bundle_id-${item.id}" value="${item.ticket_bundle_id}" />${h.action_button(actions(product, item), order=['edit', 'preview', 'new', 'delete'], options='btn-small', dropup=True)}</td>
               </tr>
                   % endfor
                   % if count == 0:

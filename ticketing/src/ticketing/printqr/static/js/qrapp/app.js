@@ -7,22 +7,27 @@ var TicketBuffer = function(){
       if(!this.buffers[k]){
         this.buffers[k] = [];
       }
+      // console.log("add:"+ticket);
       this.buffers[k].push(ticket);
     }, 
+    removeTicket: function(ticket){
+    var k = ticket.ticket_template_id;
+    var arr = this.buffers[k];
+    _(arr).each(function(t, i){
+      if(t==ticket){
+        // console.log("remove:"+ticket);
+        arr[i] = null;
+      }
+    });
+    }, 
     consumeAll: function(fn){
-      if(!!fn[null]){
-        var buf = this.buffers[null];
-        var ticket = buf[0]
+      _(this.buffers).each(function(buf){
+      if(!!buf){
+        var buf = _.compact(buf);
+        var ticket = buf[0];
         fn(buf, ticket.ticket_template_id, ticket.ticket_template_name);
-        delete this.buffers[null];
       }
-      for(var k in this.buffers){
-        if(this.buffers.hasOwnProperty(k)){
-          var buf = this.buffers[k];
-          var ticket = buf[0]
-          fn(buf, ticket.ticket_template_id, ticket.ticket_template_name);
-        }
-      }
+    });
       this.clean();
     }, 
     clean: function(){
@@ -304,6 +309,8 @@ var QRInputView = AppPageViewBase.extend({
   }, 
   clearQRCodeInput: function(){
     this.$qrcode.val("");
+    this.datastore.trigger("*qr.clear.input");
+    this.datastore.trigger("*refresh");
   }, 
   readOnEnter: function(e){
     // if Enter key is typed then call `loadQRCodeInput'
@@ -376,7 +383,7 @@ var TicketInfoView = AppPageViewBase.extend({
     this.$seatno = this.$el.find("#seatno");
     this.$note = this.$el.find("#note");
   }, 
-  drawTicketInfo: function(data){
+ _drawTicketInfoTable: function(data){
     //console.dir(data);
     this.$user.text(data.user);
     this.$codeno.text(data.codeno);
@@ -385,6 +392,8 @@ var TicketInfoView = AppPageViewBase.extend({
     this.$performanceName.text(data.performance_name);
     this.$product_name.text(data.product_name);
     this.$seatno.text(data.seat_name);  
+  }, 
+  _drawTicketInfoNote: function(data){
     var $note = this.$note;
     $note.empty();
     if (data.note) {
@@ -399,6 +408,10 @@ var TicketInfoView = AppPageViewBase.extend({
     } else {
       this.$note.parent().hide();
     }
+  }, 
+  drawTicketInfo: function(data){
+    this._drawTicketInfoTable(data);
+    this._drawTicketInfoNote(data);
   }
 });
 
@@ -515,6 +528,72 @@ var PrintConfirmView = AppPageViewBase.extend({
   }
 });
 
+var PrintableTicketsSelectView = Backbone.View.extend({
+  events: {
+    'change #printable_tickets_box input[type="checkbox"]': "onToggleCheckBox"
+  }, 
+  initialize: function(opts){
+    this.datastore = opts.datastore;
+    this.ticketBuffer = opts.datastore.get("ticket_buffers");
+    this.callback = opts.callback;
+    this.$checkboxArea = this.$el.find("#printable_tickets_box");
+    this.tickets = [];
+  }, 
+  onToggleCheckBox: function(e){
+    var $e = $(e.currentTarget);
+    if($e.attr("checked") == "checked"){
+      this.ticketBuffer.addTicket(this.tickets[$e.attr("name")]);
+      this.datastore.set("print_num",  this.datastore.get("print_num") + 1);
+    } else {
+      this.ticketBuffer.removeTicket(this.tickets[$e.attr("name")]);
+      this.datastore.set("print_num",  this.datastore.get("print_num") - 1);
+    }
+  }, 
+  show: function(){
+    this.$el.show();
+  }, 
+  hide: function(){
+    this.$el.hide();
+  }, 
+  draw: function(tickets){
+    this.tickets = tickets;
+    var root = this.$checkboxArea
+    root.empty();
+    var self = this;
+    _(this.tickets).each(function(t, i){
+      root.append(self._createRow(t, i));
+    });
+    this.show();
+  }, 
+  _createRowCheckboxPrinted: function(t, i){
+    // <td><input type="checkbox" name="0"></input></td><td>コートエンド北(1階 コートエンド北 1列 42番) <span class="label">印刷済み</span></td>
+    var tr = $('<tr>');
+    var checkbox = $('<input type="checkbox">').attr('name', i)
+    tr.append($('<td>').append(checkbox));
+    tr.append($('<td>').text(t.codeno));
+    tr.append($('<td>').text(t.ticket_name).append($('<span class="label">').text("印刷済み:"+t.printed_at)));
+    return tr
+  }, 
+  _createRowCheckbox: function(t, i){
+    // <td><input type="checkbox" name="0"  checked="checked"></input></td><td>コートエンド北(1階 コートエンド北 1列 42番)</td>
+    var tr = $('<tr>');
+    var checkbox = $('<input type="checkbox">').attr('name', i).attr('checked', 'checked');
+    tr.append($('<td>').append(checkbox));
+    tr.append($('<td>').text(t.codeno));
+    tr.append($('<td>').text(t.ticket_name));
+    return tr
+  }, 
+  _createRow: function(t, i){
+    if(t.printed_at){  //printed
+      return this._createRowCheckboxPrinted(t, i);
+    } else{
+      this.ticketBuffer.addTicket(t);
+      this.datastore.set("print_num",  this.datastore.get("print_num") + 1);
+      return this._createRowCheckbox(t, i);
+    }
+  }
+})
+
 var AppletView = Backbone.View.extend({
   initialize: function(opts){
     this.appviews = opts.appviews;
@@ -522,6 +601,7 @@ var AppletView = Backbone.View.extend({
     this.service = opts.service;
     this.router = opts.router;
     this.apiResource = opts.apiResource;
+    this.datastore.bind("*qr.clear.input", this.clearQRInput, this);
     this.datastore.bind("*qr.not.printed", this.createTicket, this);
 
     this.datastore.bind("change:printer_name", this.setPrinter, this);
@@ -529,6 +609,10 @@ var AppletView = Backbone.View.extend({
     this.datastore.bind("change:page_format_id", this.setPageFormat, this);
 
     this.datastore.bind("*qr.print.signal", this.sendPrintSignalIfNeed, this);
+  }, 
+  clearQRInput: function(){
+    this.datastore.get("ticket_buffers").clean();
+    this.datastore.set("print_num", 0);
   }, 
   start: function(){
     this.fetchPinterCandidates();
@@ -542,7 +626,7 @@ var AppletView = Backbone.View.extend({
       }else {
         this.service.addTicket(this.service.createTicketFromJSObject(ticket));
       }           
-      this.datastore.set("print_num",  this.datastore.get("print_num") + 1);
+        this.datastore.set("print_num",  this.datastore.get("print_num") + 1);
     } catch (e) {
       this.appviews.messageView.error(e);
     }
@@ -575,22 +659,18 @@ var AppletView = Backbone.View.extend({
     this.appviews.messageView.info("チケット印刷中です.....");
     var self = this;
     this.datastore.get("ticket_buffers").consumeAll(function(buf, template_id, template_name){
-      var size = buf.length;
       self.datastore.set("ticket_template_id", template_id);
       self.datastore.set("ticket_template_name", template_name);
       //変更内容伝搬されるまで時間がかかる？信じるよ？
-      _.each(buf, function(ticket){
+      _(buf).each(function(ticket){
         self.service.addTicket(self.service.createTicketFromJSObject(ticket));
       });
       self.service.printAll();
-      // console.log("fire!");
-      self.datastore.set("print_num", self.datastore.get("print_num") - size);
     });
   }, 
   sendPrintSignalIfNeed: function(){
     if(this.datastore.get("printed")){
       try {
-        //alert("print!!");
         this.appviews.messageView.info("チケット印刷中です.....");
         if(this.datastore.isPrintUnitOrder()){
           this._printAllWithBuffer();
@@ -682,22 +762,11 @@ var AppletView = Backbone.View.extend({
         self.appviews.messageView.error(data['message']);
         return;
       }
-      self.appviews.messageView.success("券面データが保存されました");
-      var printing_tickets = []
-      self.appviews.messageView.info("券面印刷用データを追加中です...");
+      // 印刷するticketの情報を管理する
+      self.appviews.selectTicketView.draw(data["data"]);
 
-      _.each(data['data'], function (ticket) {
-        //alert(self.datastore.get("ordered_product_item_token_id"));
-        if(!ticket.printed_at){
-          printing_tickets.push(ticket.ticket_name);
-          self._addTicket(ticket);
-        }else {
-          printing_tickets.push(ticket.ticket_name + "--(印刷済み:{0})".replace("{0}", ticket.printed_at));
-        }
-      });
       var fmt = "まとめて注文した際には自動的に印刷しません。印刷するには、購入情報を確認した後、印刷ボタンを押してください<br/>";
       fmt = fmt + "(既に印刷された券面については印刷されません。)<br/";
-      fmt = fmt + "<ul><li>" + printing_tickets.join("</li>\n<li>") + "</li></ul>";
       self.router.navigate("two", true); //確認画面へfocus
       self.appviews.messageView.info(fmt, true);
     }).fail(function(s, msg){self.appviews.messageView.error(s.responseText)});
@@ -717,6 +786,9 @@ var AppletView = Backbone.View.extend({
         self.appviews.messageView.error(data['message']);
         return;
       }
+      // まとめて券面選択するelementを隠す
+      self.appviews.selectTicketView.hide();
+
       self.appviews.messageView.success("券面データが保存されました");
       _.each(data['data'], function (ticket) {
         if(!!(ticket.ticket_template_id)){

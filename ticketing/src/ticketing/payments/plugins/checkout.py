@@ -11,20 +11,25 @@ from pyramid.httpexceptions import HTTPFound
 from webhelpers.html.builder import literal
 
 from ticketing.models import DBSession
-from ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment
 from ticketing.mails.interfaces import ICompleteMailDelivery, ICompleteMailPayment
 from ticketing.mails.interfaces import IOrderCancelMailDelivery, IOrderCancelMailPayment
 from ticketing.cart import helpers as h
 from ticketing.cart import api as a
 from ticketing.cart.models import Cart, CartedProduct
 from ticketing.core.api import get_channel
+from ticketing.cart.exceptions import NoCartError
 from ticketing.core.models import Product, PaymentDeliveryMethodPair, Order
 from ticketing.core.models import MailTypeEnum
+from ticketing.cart.events import notify_order_completed
 from ticketing.cart.interfaces import ICartPayment
+from ticketing.cart.selectable_renderer import selectable_renderer
 from ticketing.cart.views import back, back_to_top, back_to_product_list_for_mobile
 from ticketing.checkout import api
 from ticketing.checkout import helpers
 from ticketing.payments.exceptions import PaymentPluginException
+from ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment
+from ticketing.payments.payment import Payment
+from ticketing.mailmags import models as mailmag_models
 
 from . import CHECKOUT_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 
@@ -42,7 +47,6 @@ def includeme(config):
 def back_url(request):
     return request.route_url('payment.confirm')
 
-
 class CheckoutSettlementFailure(PaymentPluginException):
     def __init__(self, message, order_no, back_url, error_code=None, return_code=None):
         super(CheckoutSettlementFailure, self).__init__(message, order_no, back_url)
@@ -58,8 +62,7 @@ class CheckoutPlugin(object):
     def delegator(self, request, cart):
         if request.is_mobile:
             submit = literal(
-                u'<input type="image" src="https://checkout.rakuten.co.jp/p/common/img/btn_check_07.gif?c9cc8c1b9ae94c18920540a80b95c16a" border="0" style="vertical-align:middle;">'
-                u'<div style="font-size:x-small;">※楽天あんしん支払いサービスへ移動します。</div>'
+                u'<input type="submit" value="次へ" />'
             )
         else:
             submit = literal(
@@ -73,27 +76,28 @@ class CheckoutPlugin(object):
         }
 
     def finish(self, request, cart):
-        """ 売り上げ確定 """
-        order_no = cart.order_no
+        order = Order.create_from_cart(cart)
+        order.paid_at = datetime.now()
+        cart.finish()
+        return order
 
-        checkout = api.get_checkout_service(request, cart.performance.event.organization, get_channel(cart.channel))
-        result = checkout.request_fixation_order([cart.checkout.orderControlId])
+    def sales(self, request, order):
+        """ 売り上げ確定 """
+        checkout = api.get_checkout_service(request, order.performance.event.organization, get_channel(order.channel))
+        result = checkout.request_fixation_order([order.cart.checkout.orderControlId])
         if 'statusCode' in result and result['statusCode'] != '0':
-            logger.info(u'CheckoutPlugin finish: 決済エラー order_no = %s, result = %s' % (order_no, result))
+            logger.info(u'CheckoutPlugin finish: 決済エラー order_no = %s, result = %s' % (order.order_no, result))
             request.session.flash(u'決済に失敗しました。再度お試しください。(%s)' % result['apiErrorCode'])
             transaction.commit()
             raise CheckoutSettlementFailure(
                 message='finish: generic failure',
-                order_no=order_no,
+                order_no=order.order_no,
                 back_url=back_url(request),
                 error_code=result['apiErrorCode']
             )
-
-        order = Order.create_from_cart(cart)
-        order.paid_at = datetime.now()
-        cart.finish()
-
-        return order
+        order.cart.checkout.sales_at = datetime.now()
+        order.cart.checkout.save()
+        return
 
 
 @view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
@@ -121,54 +125,110 @@ def cancel_mail_viewlet(context, request):
 
 
 class CheckoutView(object):
-    """ 楽天あんしん支払いサービス """
+    """ 楽天あんしん支払いサービスへ遷移する """
 
     def __init__(self, request):
         self.request = request
+        self.context = request.context
 
     @back(back_to_top, back_to_product_list_for_mobile)
     @view_config(route_name='payment.checkout.login', renderer='ticketing.payments.plugins:templates/checkout_login.html', request_method='POST')
-    @view_config(route_name='payment.checkout.login', renderer='ticketing.payments.plugins:templates/checkout_login_mobile.html', request_method='GET', request_type='ticketing.mobile.interfaces.IMobileRequest')
+    @view_config(route_name='payment.checkout.login', renderer=selectable_renderer("carts_mobile/%(membership)s/checkout_login_mobile.html"), request_method='POST', request_type='ticketing.mobile.interfaces.IMobileRequest')
     def login(self):
-        cart = a.get_cart(self.request)
-        self.request.session['ticketing.cart.csrf_token'] = self.request.params.get('csrf_token')
+        cart = a.get_cart_safe(self.request)
         self.request.session['ticketing.cart.mailmagazine'] = self.request.params.getall('mailmagazine')
+        logger.debug(u'mailmagazine = %s' % self.request.session['ticketing.cart.mailmagazine'])
         return dict(
             form=helpers.checkout_form(self.request, cart)
         )
 
+
+class CheckoutCompleteView(object):
+    """ 楽天あんしん支払いサービス(API)からの完了通知受取 """
+
+    def __init__(self, request):
+        self.request = request
+        self.context = request.context
+
     @view_config(route_name='payment.checkout.order_complete', renderer="ticketing.payments.plugins:templates/checkout_response.html")
     def order_complete(self):
         '''
-        注文完了通知を保存する
+        注文完了通知を保存し、予約確定する
+          - 楽天あんしん支払いサービスより注文完了通知が来たタイミングで、予約を確定させる
+          - ここでOKを返すとオーソリが完了する、なのでCheckoutの売上処理はこのタイミングではやらない
+          - NGの場合はオーソリもされないので、Cartも座席解放してfinished_atをセットする
+          - Checkoutの売上処理は、バッチで行う
         '''
         service = api.get_checkout_service(self.request)
         checkout = service.save_order_complete(self.request)
 
         cart = Cart.query.filter(Cart.id==checkout.cart.id).first()
-        if cart is None:
-            result = api.RESULT_FLG_FAILED
+        if self._validate(cart):
+            logger.debug(u'checkout order_complete success (cart_id=%s)' % cart.id)
+            result = api.RESULT_FLG_SUCCESS
+            self._success(cart)
         else:
-            minutes = max(int(self.request.registry.settings['altair_cart.expire_time']) - 1, 0)
-            expired = cart.is_expired(minutes) or cart.finished_at
-            if expired:
-                result = api.RESULT_FLG_FAILED
-            else:
-                result = api.RESULT_FLG_SUCCESS
+            logger.debug(u'checkout order_complete failed (cart_id=%s)' % cart.id)
+            result = api.RESULT_FLG_FAILED
+            self._failed(cart)
 
         return {
             'xml':service.create_order_complete_response_xml(result, datetime.now())
         }
 
-    @view_config(route_name='payment.checkout.callback.success', renderer='ticketing.payments.plugins:templates/checkout_callback.html', request_method='GET')
-    def callback_success(self):
-        return {
-            'csrf_token':self.request.session['ticketing.cart.csrf_token'],
-            'mailmagazine_ids':self.request.session['ticketing.cart.mailmagazine']
-        }
+    def _validate(self, cart):
+        if cart is None:
+            return False
+        if not cart.is_valid():
+            return False
+        if not cart.sales_segment.in_term(datetime.now()):
+            return False
+        if cart.is_expired(max(int(self.request.registry.settings['altair_cart.expire_time']) - 1, 0)):
+            return False
+        if cart.finished_at is not None:
+            return False
+        return True
+
+    def _success(self, cart):
+        payment = Payment(cart, self.request)
+        order = payment.call_payment()
+        notify_order_completed(self.request, order)
+
+    def _failed(self, cart):
+        cart.release()
+        cart.finished_at = datetime.now()
+
+
+class CheckoutCallbackView(object):
+    """ 楽天あんしん支払いサービスからの戻り先 """
+
+    def __init__(self, request):
+        self.request = request
+        self.context = request.context
+
+    @back(back_to_top, back_to_product_list_for_mobile)
+    @view_config(route_name='payment.checkout.callback.success', renderer=selectable_renderer("carts/%(membership)s/completion.html"), request_method='GET')
+    @view_config(route_name='payment.checkout.callback.success', request_type='ticketing.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("carts_mobile/%(membership)s/completion.html"), request_method='GET')
+    def success(self):
+        cart = a.get_cart(self.request)
+        if not cart:
+            raise NoCartError()
+
+        # メール購読
+        user = self.context.get_or_create_user()
+        emails = cart.shipping_address.emails
+        magazine_ids = self.request.session.get('ticketing.cart.mailmagazine')
+        mailmag_models.MailMagazine.multi_subscribe(user, emails, magazine_ids)
+        logger.debug(u'subscribe mags (magazine_ids=%s)' % magazine_ids)
+
+        del self.request.session['ticketing.cart.mailmagazine']
+        a.remove_cart(self.request)
+        a.logout(self.request)
+
+        return dict(order=cart.order)
 
     @view_config(route_name='payment.checkout.callback.error', request_method='GET')
-    def callback_error(self):
+    def error(self):
         cart = a.get_cart(self.request)
         logger.info(u'CheckoutPlugin finish: 決済エラー order_no = %s' % (cart.order_no))
         self.request.session.flash(u'決済に失敗しました。しばらくしてから再度お試しください。')
@@ -178,3 +238,4 @@ class CheckoutView(object):
             back_url=back_url(self.request),
             error_code=None
         )
+

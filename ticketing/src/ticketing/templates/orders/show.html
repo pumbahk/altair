@@ -36,19 +36,7 @@ ${h.breadcrumbs(
             </tr>
             <tr>
               <th>ステータス</th>
-              <td>
-                % if order.status == 'refunded':
-                <span class="label label-important">キャンセル (返金済)</span>
-                % elif order.status == 'canceled':
-                <span class="label label-important">キャンセル</span>
-                % elif order.status == 'delivered':
-                <span class="label label-success">配送済み</span>
-                % elif order.status == 'paid':
-                <span class="label label-warning">入金済み</span>
-                % else:
-                <span class="label label-inverse">未入金</span>
-                % endif
-              </td>
+              <td>${h.order_status(order)}</td>
             </tr>
             <tr>
               <th>予約日時</th>
@@ -59,9 +47,8 @@ ${h.breadcrumbs(
               <td>
                 % if order.paid_at:
                   ${h.safe_strftime(order.paid_at)}
-                % else:
-                  <span class="label label-inverse">未入金</span>
                 % endif
+                ${h.payment_status(order)}
               </td>
             </tr>
             <tr>
@@ -103,9 +90,8 @@ ${h.breadcrumbs(
               <td>
                 % if order.delivered_at:
                   ${h.safe_strftime(order.delivered_at)}
-                % else:
-                  <span class="label label-inverse">未配送</span>
                 % endif
+                ${h.delivery_status(order)}
               </td>
             </tr>
             % if order.status == 'canceled':
@@ -129,10 +115,19 @@ ${h.breadcrumbs(
                 % endif
               </td>
             </tr>
+            % if order.refund:
+            <tr>
+              <th>払戻方法</th>
+              <td>${order.refund.payment_method.name}</td>
+            </tr>
+            % endif
           </table>
           % if i == 0:
           <div class="pull-right">
-            <%include file="/orders/_action_button.html" args="order=order, sort=['mailinfo', 'delivered', 'cancel', 'print']" />
+            <%include file="/orders/_action_button.html" args="order=order, sort=['mailinfo', 'delivered', 'cancel', 'refund', 'print']" />
+          </div>
+          <div id="refund-form">
+            <%include file="/orders/refund/_form.html" args="form=form_refund" />
           </div>
           % endif
         </div>
@@ -317,6 +312,10 @@ ${h.breadcrumbs(
             <tr>
               <th>楽天あんしん支払いサービス 利用ポイント数</th>
               <td>${h.price_format(int(order.cart.checkout.usedPoint or 0))}</td>
+            </tr>
+            <tr>
+              <th>楽天あんしん支払いサービス 売上日時</th>
+              <td>${h.safe_strftime(order.cart.checkout.sales_at)}</td>
             </tr>
             % endif
           </table>

@@ -372,7 +372,7 @@ function saveStocks() {
     dataType: 'json',
     data: JSON.stringify(venue.toJSON()),
     success: function(result) {
-      $('.content').prepend('<div class="alert alert-success"><a class="close" data-dismiss="alert">&times;</a><h4 class="alert-heading">' + result.message + '</h4></div>');
+      $('.content').html('<div class="alert alert-success"><a class="close" data-dismiss="alert">&times;</a><h4 class="alert-heading">' + result.message + '</h4></div>');
       modal.modal('hide');
       venueEditorRoot.venueeditor('clearAll');
     },

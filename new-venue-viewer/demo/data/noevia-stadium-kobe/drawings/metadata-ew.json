@@ -1,0 +1,32 @@
+{
+    "pages": {
+        "root_ew.svg": {
+            "name": "全体図",
+			"zoomable": false,
+            "root": true
+        },
+        "block_w.svgz": {
+            "name": "楽天スタンド（メインスタンド）"
+        },
+        "block_wn.svgz": {
+            "name": "楽天スタンド（メインスタンド）メイン指定ビジター"
+        },
+        "block_wv.svgz": {
+            "name": "楽天スタンド（メインスタンド）ヴィッセルシート"
+        },
+        "block_ws.svgz": {
+            "name": "楽天スタンド（メインスタンド）メイン指定ホーム"
+        },
+        "block_wx.svgz": {
+            "_comment": "通常使う席は無い",
+            "name": "楽天スタンド（メインスタンド）上階"
+        },
+        "block_e.svgz": {
+            "name": "バックスタンド"
+        },
+        "block_ex.svgz": {
+            "_comment": "自由席のみ",
+            "name": "バックスタンド後列"
+        }
+    }
+}

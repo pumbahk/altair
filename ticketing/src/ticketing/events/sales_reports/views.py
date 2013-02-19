@@ -3,6 +3,7 @@
 import logging
 
 import webhelpers.paginate as paginate
+import datetime
 
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
@@ -79,10 +80,18 @@ class SalesReports(BaseView):
             form = SalesReportForm(self.request.params, performance_id=performance_id, sales_segment_id=sales_segment.id)
             report_by_sales_segment[sales_segment.name] = get_performance_sales_summary(form, self.context.organization)
 
+        report_by_sales_segment_total = {}
+        for sales_segment in performance.event.sales_segments:  
+            form_total = SalesReportForm(self.request.params, performance_id=performance_id, sales_segment_id=sales_segment.id)
+            form_total.limited_from.data = None
+            form_total.limited_to.data = None
+            report_by_sales_segment_total[sales_segment.name] = get_performance_sales_summary(form_total, self.context.organization)
+
         return {
             'form':SalesReportForm(self.request.params, event_id=performance.event_id),
             'performance':performance,
             'report_by_sales_segment':report_by_sales_segment,
+            'report_by_sales_segment_total':report_by_sales_segment_total,
         }
 
     @view_config(route_name='sales_reports.preview', renderer='ticketing:templates/sales_reports/preview.html')
@@ -112,12 +121,16 @@ class SalesReports(BaseView):
 
         form = SalesReportForm(self.request.params, event_id=event_id)
         event_product = get_performance_sales_summary(form, self.context.organization)
+        event_product_total = get_performance_sales_summary(SalesReportForm(event_id=event_id), self.context.organization)
         performances_reports = get_performance_sales_detail(form, event)
+        performances_reports_total = get_performance_sales_detail(SalesReportForm(event_id=event_id), event)
 
         return {
             'event_product':event_product,
+            'event_product_total':event_product_total,
             'form':form,
             'performances_reports':performances_reports,
+            'performances_reports_total':performances_reports_total,
         }
 
     @view_config(route_name='sales_reports.send_mail', renderer='ticketing:templates/sales_reports/preview.html')
@@ -126,16 +139,20 @@ class SalesReports(BaseView):
         event = Event.get(event_id, organization_id=self.context.user.organization_id)
         if event is None:
             raise HTTPNotFound('event id %d is not found' % event_id)
-
+     
         form = SalesReportForm(self.request.params, event_id=event_id)
         if form.validate():
             event_product = get_performance_sales_summary(form, self.context.organization)
+            event_product_total = get_performance_sales_summary(SalesReportForm(event_id=event_id), self.context.organization)
             performances_reports = get_performance_sales_detail(form, event)
+            performances_reports_total = get_performance_sales_detail(SalesReportForm(event_id=event_id), event)
 
             render_param = {
                 'event_product':event_product,
+                'event_product_total':event_product_total,
                 'form':form,
-                'performances_reports':performances_reports
+                'performances_reports':performances_reports,
+                'performances_reports_total':performances_reports_total,
             }
 
             settings = self.request.registry.settings

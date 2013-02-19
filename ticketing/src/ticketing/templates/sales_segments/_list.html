@@ -62,7 +62,13 @@
   </div>
 </div>
 % endif
-
 % if paging:
   ${h.pager(sales_segments)}
 % endif
+<script type="text/javascript">
+(function (form) {
+  get_selected_sales_segment_id = function get_selected_sales_segment_id() {
+    return form.find('input:radio[name="sales_segment_id"]:checked').val();
+  }
+})($('script:last').closest('form'));
+</script>

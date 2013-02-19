@@ -119,7 +119,7 @@ def cancel_auth_expired_carts():
             logging.info('well, then trying to cancel the authorization request associated with the order (order_no=%s)' % order_no)
             logging.info('check for order_no=%s' % order_no)
             try:
-                request.registry.settings['altair_checkout3d.override_shop_name'] =  cart.performance.event.organization.memberships[0].name
+                request.registry.settings['altair_checkout3d.override_shop_name'] =  cart.performance.event.organization.multicheckout_settings[0].shop_name
             except:
                 logging.info('can not detect shop_name for order_no = %s' % order_no)
                 carts_to_skip.add(cart_id)
@@ -137,16 +137,6 @@ def cancel_auth_expired_carts():
                 multicheckout_api.checkout_auth_cancel(request, order_no)
             else:
                 logging.info("Order(order_no = %s) status = %s " % (order_no, inquiry.Status))
-
-        elif api.is_checkout_payment(cart) and cart.checkout:
-            logging.info("cancel auth for order_no=%s" % order_no)
-            checkout = checkout_api.get_checkout_service(request, cart.performance.event.organization, get_channel(cart.channel))
-            result = checkout.request_cancel_order([cart.checkout.orderControlId])
-            if 'statusCode' in result and result['statusCode'] != '0':
-                error_code = result['apiErrorCode'] if 'apiErrorCode' in result else ''
-                logging.warn('can not cancel auth for order_no=%s (error_code:%s)' % (order_no, error_code))
-                carts_to_skip.add(cart_id)
-                continue
 
         cart.finished_at = now
         logging.info("TRANSACTION IS BEING COMMITTED AGAIN...")

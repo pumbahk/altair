@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['B2QCKG6BQTNJTP8J'] = (function (exports) { (function () { 
+__LIBS__['P5N1J4QX4WFBMFQV'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['E4WN5GJZ8A16EI0V'] = (function (exports) { (function () { 
+__LIBS__['_CHHPN35WN3349H1'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['SWUHGP3KK1J72C_N'] = (function (exports) { (function () { 
+__LIBS__['pUH8KRE3SRPP11_Y'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['B2QCKG6BQTNJTP8J'];
-var CONF = __LIBS__['E4WN5GJZ8A16EI0V'];
+var util = __LIBS__['P5N1J4QX4WFBMFQV'];
+var CONF = __LIBS__['_CHHPN35WN3349H1'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -848,6 +848,8 @@ function svgStylesFromMap(styles, defs) {
   var strokeWidthString = styles['stroke-width'];
   var strokeOpacity = null;
   var strokeOpacityString = styles['stroke-opacity'];
+  var strokeDashArray = null;
+  var strokeDashArrayString = styles['stroke-dasharray'];
   var fontSize = null;
   var fontSizeString = styles['font-size'];
   var textAnchor = null;
@@ -891,6 +893,12 @@ function svgStylesFromMap(styles, defs) {
       strokeOpacityString = strokeOpacityString[0];
     strokeOpacity = parseFloat(strokeOpacityString);
   }
+  if (strokeDashArrayString) {
+    if (strokeDashArrayString instanceof Array)
+      strokeDashArrayString = strokeDashArrayString[0];
+    if (strokeDashArrayString.indexOf(',') != -1)
+      strokeDashArray = strokeDashArrayString.split(/,/);
+  }
   if (fontSizeString) {
     if (fontSizeString instanceof Array)
       fontSizeString = fontSizeString[0];
@@ -907,21 +915,23 @@ function svgStylesFromMap(styles, defs) {
     stroke: stroke,
     strokeWidth: strokeWidth,
     strokeOpacity: strokeOpacity,
+    strokeDashArray: strokeDashArray,
     fontSize: fontSize,
     textAnchor: textAnchor
   };
 }
 
 function mergeSvgStyle(origStyle, newStyle) {
-  return {
-    fill:          newStyle.fill !== null ? newStyle.fill: origStyle.fill,
-    fillOpacity:   newStyle.fillOpacity !== null ? newStyle.fillOpacity: origStyle.fillOpacity,
-    stroke:        newStyle.stroke !== null ? newStyle.stroke: origStyle.stroke,
-    strokeWidth:   newStyle.strokeWidth !== null ? newStyle.strokeWidth: origStyle.strokeWidth,
-    strokeOpacity: newStyle.strokeOpacity !== null ? newStyle.strokeOpacity: origStyle.strokeOpacity,
-    fontSize:      newStyle.fontSize !== null ? newStyle.fontSize: origStyle.fontSize,
-    textAnchor:    newStyle.textAnchor !== null ? newStyle.textAnchor: origStyle.textAnchor
-  };
+  var copied = { };
+  for (var k in origStyle) {
+    copied[k] = origStyle[k];
+  }
+  for (var k in newStyle) {
+    if (newStyle[k] !== null) {
+      copied[k] = newStyle[k];
+    }
+  }
+  return copied;
 }
 
 function buildStyleFromSvgStyle(svgStyle) {
@@ -941,7 +951,7 @@ function buildStyleFromSvgStyle(svgStyle) {
         null, null, null,
         svgStyle.fillOpacity ? svgStyle.fillOpacity * 255: 255),
       svgStyle.strokeWidth ? svgStyle.strokeWidth: 1,
-      svgStyle.strokePattern ? svgStyle.strokePattern: null):
+      svgStyle.strokeDashArray ? svgStyle.strokeDashArray: (svgStyle.strokePattern ? svgStyle.strokePattern: null)):
     null,
     visibility: true
   };
@@ -964,6 +974,8 @@ function collectText(node) {
 function copyShape(shape) {
   if (shape instanceof Fashion.Rect) {
     return new Fashion.Rect({ position: shape.position(), size: shape.size(), transform: shape.transform() });
+  } else if (shape instanceof Fashion.Path) {
+    return new Fashion.Path({ points: shape.points(),transform: shape.transform() });
   }
   return null;
 }
@@ -1018,9 +1030,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['E4WN5GJZ8A16EI0V'];
-  var seat = __LIBS__['SWUHGP3KK1J72C_N'];
-  var util = __LIBS__['B2QCKG6BQTNJTP8J'];
+  var CONF = __LIBS__['_CHHPN35WN3349H1'];
+  var seat = __LIBS__['pUH8KRE3SRPP11_Y'];
+  var util = __LIBS__['P5N1J4QX4WFBMFQV'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1076,7 +1088,7 @@ function parseTransform(transform_str) {
       overlayShapes: new StoreObject(),
       shift: false,
       keyEvents: null,
-      uiMode: 'select1',
+      uiMode: 'select',
       shapes: null,
       link_pairs: null,
       seats: null,
@@ -1092,7 +1104,12 @@ function parseTransform(transform_str) {
       optionalViewportSize: null,
       loading: false,
       loadAborted: false,
-      loadAbortionHandler: null
+      loadAbortionHandler: null,
+      _smallTextsShown: true,
+      nextSingleClickAction: null,
+      doubleClickTimeout: 400,
+      mouseUpHandler: null,
+      onMouseUp: null
     },
 
     methods: {
@@ -1108,6 +1125,13 @@ function parseTransform(transform_str) {
         this.rubberBand.style(CONF.DEFAULT.MASK_STYLE);
         canvas.empty();
         this.optionalViewportSize = options.viewportSize;
+        var self = this;
+        this.mouseUpHandler = function() {
+          if (self.onMouseUp) {
+            self.onMouseUp.call(self);
+          }
+        };
+        $(document.body).bind('mouseup', this.mouseUpHandler);
       },
 
       load: function VenueViewer_load() {
@@ -1115,7 +1139,7 @@ function parseTransform(transform_str) {
         this.seatAdjacencies = null;
         var self = this;
 
-        self.callbacks.loadPartStart.call(self, 'pages');
+        self.callbacks.loadPartStart.call(self, self, 'pages');
         self.initBlocks(self.dataSource.pages, function() {
           self.loading = false;
           if (self.loadAborted) {
@@ -1124,10 +1148,10 @@ function parseTransform(transform_str) {
             self.callbacks.loadAbort && self.callbacks.loadAbort.call(self, self);
             return;
           }
-          self.callbacks.loadPartEnd.call(self, 'pages');
+          self.callbacks.loadPartEnd.call(self, self, 'pages');
           self.currentPage = self.rootPage;
           self.loading = true;
-          self.callbacks.loadPartStart.call(self, 'stockTypes');
+          self.callbacks.loadPartStart.call(self, self, 'stockTypes');
           self.dataSource.stockTypes(function (data) {
             self.loading = false;
             if (self.loadAborted) {
@@ -1137,9 +1161,9 @@ function parseTransform(transform_str) {
               return;
             }
             self.loading = true;
-            self.callbacks.loadPartEnd.call(self, 'stockTypes');
+            self.callbacks.loadPartEnd.call(self, self, 'stockTypes');
             self.stockTypes = data;
-            self.callbacks.loadPartStart.call(self, 'info');
+            self.callbacks.loadPartStart.call(self, self, 'info');
             self.dataSource.info(function (data) {
               self.loading = false;
               if (self.loadAborted) {
@@ -1149,27 +1173,28 @@ function parseTransform(transform_str) {
                 return;
               }
               self.loading = true;
-              self.callbacks.loadPartEnd.call(self, 'info');
+              self.callbacks.loadPartEnd.call(self, self, 'info');
               if (!'available_adjacencies' in data) {
                 self.callbacks.message.call(self, "Invalid data");
                 return;
               }
               self.availableAdjacencies = data.available_adjacencies;
               self.seatAdjacencies = new seat.SeatAdjacencies(self);
-              self.callbacks.loadPartStart.call(self, 'seats');
+              self.callbacks.loadPartStart.call(self, self, 'seats');
               self.initSeats(self.dataSource.seats, function () {
                 self.loading = false;
                 if (self.loadAborted) {
                   self.loadAborted = false;
-                  self.loadAbortionHandler && self.loadAbortionHandler.call(self);
+                  self.loadAbortionHandler && self.loadAbortionHandler.call(self, self);
                   self.callbacks.loadAbort && self.callbacks.loadAbort.call(self, self);
                   return;
                 }
                 self.loading = true;
-                self.callbacks.loadPartEnd.call(self, 'seats');
+                self.callbacks.loadPartEnd.call(self, self, 'seats');
                 if (self.currentPage) {
                   self.loadDrawing(self.currentPage, function () {
                     self.callbacks.load.call(self, self);
+                    self.zoomAndPan(self.zoomRatioMin, { x: 0., y: 0., });
                   });
                 } else {
                   self.callbacks.load.call(self, self);
@@ -1182,11 +1207,11 @@ function parseTransform(transform_str) {
 
       loadDrawing: function (page, next) {
         var self = this;
-        this.callbacks.loadPartStart.call(this, this, 'drawing');
+        this.callbacks.loadPartStart.call(self, self, 'drawing');
         this.initDrawable(page, function () {
-          next();
           self.callbacks.pageChanging.call(self, page);
           self.callbacks.loadPartEnd.call(self, self, 'drawing');
+          next.call(self);
         });
       },
 
@@ -1202,6 +1227,7 @@ function parseTransform(transform_str) {
       dispose: function VenueViewer_dispose(next) {
         var self = this;
         this.cancelLoading(function () {
+          $(document.body).unbind('mouseup', self.mouseUpHandler);
           self.removeKeyEvent();
           if (self.drawable) {
             self.drawable.dispose();
@@ -1212,6 +1238,7 @@ function parseTransform(transform_str) {
           self.highlighted = null;
           self.availableAdjacencies = [1];
           self.shapes = null;
+          self.small_texts = [ ];
           self.link_pairs = null;
           self.selection = {};
           self.selectionCount = 0;
@@ -1286,6 +1313,7 @@ function parseTransform(transform_str) {
           });
 
           var shapes = {}, link_pairs = [];
+          var small_texts = [];
           var styleClasses = CONF.DEFAULT.STYLES;
 
           var leftTop = null, rightBottom = null;
@@ -1299,6 +1327,9 @@ function parseTransform(transform_str) {
               var attrs = util.allAttributes(n);
               var xlink = context.xlink;
               var focused = context.focused || (attrs.id && isFocused(attrs.id));
+              var px = parseFloat(attrs.x),
+                  py = parseFloat(attrs.y);
+              var position = (!isNaN(px) && !isNaN(py)) ? { x: px, y: py } : context.position;
               var transform = attrs["transform"] ?
                 context.transform.multiply(parseTransform(attrs["transform"])):
                 context.transform;
@@ -1306,12 +1337,15 @@ function parseTransform(transform_str) {
 
               { // stylize
                 var currentSvgStyle = context.svgStyle;
-                if (attrs.style)
-                  currentSvgStyle = mergeSvgStyle(currentSvgStyle, parseCSSAsSvgStyle(attrs.style, context.defs));
+                // 1st: find style by class attribute
                 if (attrs['class']) {
                   var style = styleClasses[attrs['class']];
                   if (style) currentSvgStyle = mergeSvgStyle(currentSvgStyle, style);
                 }
+                // 2nd: overwrite by style attribute (css like string)
+                if (attrs.style)
+                  currentSvgStyle = mergeSvgStyle(currentSvgStyle, parseCSSAsSvgStyle(attrs.style, context.defs));
+                // 3rd: overwrite by some kinds of attributes
                 currentSvgStyle = mergeSvgStyle(currentSvgStyle, svgStylesFromMap(attrs));
               }
 
@@ -1335,7 +1369,7 @@ function parseTransform(transform_str) {
                   },
                   n.childNodes);
                 continue outer;
-              }
+                }
 
               case 'path':
                 if (!attrs.d) throw new Error("Pathdata is not provided for the path element");
@@ -1346,32 +1380,33 @@ function parseTransform(transform_str) {
 
               case 'text':
               case 'tspan':
-                if (n.childNodes.length==1 && n.firstChild.nodeType == Node.TEXT_NODE) {
+                if (n.childNodes.length==1 && n.firstChild.nodeType == /* Node.TEXT_NODE */ 3) {
                   shape = new Fashion.Text({
                     text: collectText(n),
                     anchor: currentSvgStyle.textAnchor,
-                    transform: _transform
+                    position: position || null,
+                    transform: transform || null
                   });
                 } else if (n.nodeName == 'text') {
-                arguments.callee.call(
-                  self,
-                  {
-                    svgStyle: currentSvgStyle,
-                    transform: transform,
-                    defs: context.defs,
-                    focused: focused,
-                    xlink: xlink
-                  },
-                  n.childNodes);
+                  arguments.callee.call(
+                    self,
+                    {
+                      svgStyle: currentSvgStyle,
+                      position: position,
+                      transform: transform,
+                      defs: context.defs,
+                      focused: focused,
+                      xlink: xlink
+                    },
+                    n.childNodes);
                   continue outer;
-				}
+                }
                 break;
 
               case 'symbol':
                 break;
 
               case 'rect':
-                var _transform = attrs.transform || null;
                 shape = new Fashion.Rect({
                   size: {
                     x: parseFloat(attrs.width),
@@ -1381,7 +1416,7 @@ function parseTransform(transform_str) {
                     x: parseFloat(attrs.rx || 0),
                     y: parseFloat(attrs.ry || 0)
                   },
-                  transform: _transform,
+                  transform: transform || null,
                   zIndex: -10
                 });
                 for (var j=0,ll=n.childNodes.length; j<ll; j++) {
@@ -1418,6 +1453,11 @@ function parseTransform(transform_str) {
                 shape.transform(transform);
                 if (shape instanceof Fashion.Text) {
                   shape.fontSize(currentSvgStyle.fontSize);
+                  if (currentSvgStyle.fontSize <= 10) {
+                    if (!self._smallTextsShown)
+                      shape.visibility(false);
+                    small_texts.push(shape);
+                  }
                 }
                 drawable.draw(shape);
               }
@@ -1435,9 +1475,10 @@ function parseTransform(transform_str) {
             {
               svgStyle: {
                 fill: false, fillOpacity: false,
-                stroke: false, strokeOpacity: false,
-                fontSize: 10
+                stroke: false, strokeOpacity: false, strokeDashArray: false,
+                fontSize: 10, textAnchor: false
               },
+              position: null,
               transform: new Fashion.Matrix(),
               defs: {},
               focused: false,
@@ -1447,6 +1488,7 @@ function parseTransform(transform_str) {
 
           self.drawable = drawable;
           self.shapes = shapes;
+          self.small_texts = small_texts;
           self.link_pairs = link_pairs;
 
           if (!leftTop)
@@ -1495,12 +1537,15 @@ function parseTransform(transform_str) {
             return rt;
           }
 
+          var drawableMouseDown = false;
+          var clickTimer = 0;
+
           for (var i = 0; i < self.link_pairs.length; i++) {
             (function (shape, link) {
               var siblings = getSiblings(link);
               shape.addEvent({
                 mouseover: function(evt) {
-                  if (self.pages && self.uiMode == 'select1') {
+                  if (self.pages && self.uiMode == 'select') {
                     for (var i = siblings.length; --i >= 0;) {
                       var shape = copyShape(siblings[i]);
                       if (shape) {
@@ -1509,11 +1554,17 @@ function parseTransform(transform_str) {
                         self.overlayShapes.save(siblings[i].id, shape);
                       }
                     }
-                    self.callbacks.messageBoard.up.call(self, self.pages[link].name);
+                    var pageAndAnchor = link.split('#');
+                    var page = pageAndAnchor[0];
+                    if (page == '')
+                      page = self.currentPage;
+                    self.callbacks.messageBoard.up.call(self, self.pages[page].name);
+                    self.canvas.css({ cursor: 'pointer' });
                   }
                 },
                 mouseout: function(evt) {
-                  if (self.pages && self.uiMode == 'select1') {
+                  if (self.pages && self.uiMode == 'select') {
+                    self.canvas.css({ cursor: 'default' });
                     for (var i = siblings.length; --i >= 0;) {
                       var shape = self.overlayShapes.restore(siblings[i].id);
                       if (shape)
@@ -1523,14 +1574,120 @@ function parseTransform(transform_str) {
                   }
                 },
                 mousedown: function(evt) {
-                  if (self.pages && self.uiMode == 'select1') {
-                    self.callbacks.messageBoard.down.call(self);
-                    self.navigate(link);
+                  if (self.pages && self.uiMode == 'select') {
+                    self.nextSingleClickAction = function() {
+                      self.callbacks.messageBoard.down.call(self);
+                      self.navigate(link);
+                    };
                   }
                 }
               });
             }).apply(self, self.link_pairs[i]);
           }
+
+          (function () {
+            var scrollPos = null;
+
+            function drawableMouseUp() {
+              self.onMouseUp = null;
+              drawableMouseDown = false;
+              if (self.dragging) {
+                self.drawable.releaseMouse();
+                self.dragging = false;
+              }
+            }
+
+            function singleClickFulfilled() {
+              clearTimeout(clickTimer);
+              clickTimer = 0;
+              var nextSingleClickAction = self.nextSingleClickAction;
+              self.nextSingleClickAction = null;
+              if (nextSingleClickAction)
+                nextSingleClickAction.call(self);
+            }
+
+            self.drawable.addEvent({
+              mousedown: function (evt) {
+                if (self.animating) return;
+                switch (self.uiMode) {
+                case 'zoomin': case 'zoomout':
+                  break;
+                default:
+                  drawableMouseDown = true;
+                  self.onMouseUp = drawableMouseUp;
+                  if (!clickTimer) {
+                    scrollPos = self.drawable.scrollPosition();
+                    self.startPos = evt.logicalPosition;
+                    clickTimer = setTimeout(singleClickFulfilled,
+                                            self.doubleClickTimeout);
+                  } else {
+                    if (!self.dragging) {
+                      // double click
+                      clearTimeout(clickTimer);
+                      clickTimer = 0;
+                      self.drawableMouseDown = false;
+                      var e = self.zoomRatio * 2;
+                      self.zoom(e, evt.logicalPosition);
+                      /*
+                      self.animating = true;
+                      var t = setInterval(function () {
+                        var newZoomRatio = Math.min(e, self.zoomRatio * 1.2);
+                        if (e - self.zoomRatio < self.zoomRatio * 1e-5 || newZoomRatio - self.zoomRatio > self.zoomRatio * 1e-5) {
+                          self.animating = false;
+                          clearInterval(t);
+                        }
+                      }, 50);
+                      */
+                    }
+                  }
+                  break;
+                }
+              },
+
+              mouseup: function (evt) {
+                drawableMouseUp();
+                if (self.animating) return;
+                switch (self.uiMode) {
+                case 'zoomin':
+                  self.zoom(self.zoomRatio * 1.2, evt.logicalPosition);
+                  break;
+                case 'zoomout':
+                  self.zoom(self.zoomRatio / 1.2, evt.logicalPosition);
+                  break;
+                default:
+                  break;
+                }
+              },
+
+              mouseout: function (evt) {
+                if (clickTimer) {
+                  singleClickFulfilled();
+                }
+              },
+
+              mousemove: function (evt) {
+                if (clickTimer) {
+                  singleClickFulfilled();
+                }
+                if (self.animating) return;
+                if (!self.dragging) {
+                  if (drawableMouseDown) {
+                    self.dragging = true;
+                    self.drawable.captureMouse();
+                  } else {
+                    return;
+                  }
+                }
+                var newScrollPos = Fashion._lib.subtractPoint(
+                  scrollPos,
+                  Fashion._lib.subtractPoint(
+                    evt.logicalPosition,
+                    self.startPos));
+                scrollPos = self.drawable.scrollPosition(newScrollPos);
+                return false;
+              }
+            });
+          })();
 
           self.changeUIMode(self.uiMode);
           next.call(this);
@@ -1538,18 +1695,90 @@ function parseTransform(transform_str) {
         }, self.callbacks.message);
       },
 
-      navigate: function (page) {
-        if (!(page in this.pages))
-          return;
-        var previousPage = this.currentPage;
+      zoomOnShape: function (shape) {
+        var position = shape.position();
+        var size = shape.size();
+        var p0 = shape._transform.apply(position);
+        var p1 = shape._transform.apply({ x: position.x, y: position.y+size.y });
+        var p2 = shape._transform.apply({ x: position.x+size.x, y: position.y });
+        var p3 = shape._transform.apply({ x: position.x+size.x, y: position.y+size.y });
+        var rp = { x: Math.min(p0.x, p1.x, p2.x, p3.x), y: Math.min(p0.y, p1.y, p2.y, p3.y) };
+        var rs = { x: Math.max(p0.x, p1.x, p2.x, p3.x)-rp.x, y: Math.max(p0.y, p1.y, p2.y, p3.y)-rp.y };
+        var vs = this.drawable.viewportSize();
+        var margin = 0.10;
+        var ratio = Math.min(vs.x*(1-margin) / rs.x, vs.y*(1-margin) / rs.y);
+        // FIXME: ratioが上限を超えないようにしないと、対象オブジェクトがセンターにこない
+        var scrollPos = {
+          x: Math.max(rp.x - (vs.x/ratio-rs.x)/2, 0),
+          y: Math.max(rp.y - (vs.y/ratio-rs.y)/2, 0)
+        };
+        this.zoomAndPan(ratio, scrollPos);
+      },
+
+      navigate: function (pageUrlOrPageInfo) {
+        var previousPageInfo = {
+          page: this.currentPage,
+          zoomRatio: this.zoomRatio,
+          scrollPosition: this.drawable.scrollPosition()
+        };
         var self = this;
-        this.loadDrawing(page, function () {
-          if (self._history.length > 0 && self._history[self._history.length - 1] == page)
-            self._history.pop();
-          else
-            self._history.push(previousPage);
-          self.callbacks.load.call(self, self);
-        });
+        if (typeof pageUrlOrPageInfo == 'string' || pageUrlOrPageInfo instanceof String) {
+          // page can be
+          // - page.svg
+          // - page.svg#id
+          // - page.svg#__FIXED__
+          // - #id
+          var comps = pageUrlOrPageInfo.split('#');
+          var anchor = null;
+          page = comps[0];
+          if (comps.length > 1)
+            anchor = comps[1];
+          if (page == '')
+            page = this.currentPage;
+          var afterthings = function () {
+            self._history.push(previousPageInfo);
+            if (anchor == '__FIXED__') {
+              self.zoomAndPan(previousPageInfo.zoomRatio,
+                              previousPageInfo.scrollPosition);
+            } else {
+              var shape = self.shapes[anchor];
+              if (shape !== void(0) && shape instanceof Fashion.Rect) {
+                self.zoomOnShape(shape);
+              } else {
+                self.zoomAndPan(self.zoomRatioMin, { x: 0., y: 0. });
+              }
+            }
+          }
+          this._loadPage({ page: page }, afterthings);
+        } else {
+          this._loadPage(pageUrlOrPageInfo, function () {
+            self._history.push(previousPageInfo);
+          });
+        }
+      },
+
+      _loadPage: function (pageInfo, next) {
+        var self = this;
+        var afterthings = function () {
+          if (pageInfo.zoomRatio && pageInfo.scrollPosition) {
+            self.zoomAndPan(pageInfo.zoomRatio,
+                            pageInfo.scrollPosition);
+          }
+          if (next)
+            next.call(self, pageInfo);
+        };
+        if (!(pageInfo.page in this.pages))
+          return;
+        this.canvas.css({ cursor: 'default' });
+        this.callbacks.messageBoard.down.call(this);
+        if (this.curentPage != pageInfo.page) {
+          this.loadDrawing(pageInfo.page, function () {
+            self.callbacks.load.call(self, self);
+            afterthings();
+          });
+        } else {
+          afterthings();
+        }
       },
 
       history: function () {
@@ -1576,9 +1805,7 @@ function parseTransform(transform_str) {
           for (var id in seatMeta) {
             seats[id] = new seat.Seat(id, seatMeta[id], self, {
               mouseover: function(evt) {
-                if (self.uiMode == 'select')
-                  return;
-                self.callbacks.messageBoard.up(self.seatTitles[this.id]);
+                self.callbacks.messageBoard.up.call(self, self.seatTitles[this.id]);
                 self.seatAdjacencies.getCandidates(this.id, self.adjacencyLength(), function (candidates) {
                   if (candidates.length == 0)
                     return;
@@ -1605,8 +1832,6 @@ function parseTransform(transform_str) {
                 }, self.callbacks.message);
               },
               mouseout: function(evt) {
-                if (self.uiMode == 'select')
-                  return;
                 self.callbacks.messageBoard.down.call(self);
                 var highlighted = self.highlighted;
                 self.highlighted = {};
@@ -1614,7 +1839,9 @@ function parseTransform(transform_str) {
                   highlighted[i].removeOverlay('highlighted');
               },
               mousedown: function(evt) {
-                self.callbacks.click(self, self, self.highlighted);
+                self.nextSingleClickAction = function () {
+                  self.callbacks.click(self, self, self.highlighted);
+                };
               }
             });
           }
@@ -1650,127 +1877,10 @@ function parseTransform(transform_str) {
       changeUIMode: function VenueViewer_changeUIMode(type) {
         if (this.drawable) {
           var self = this;
-          this.drawable.removeEvent(["mousedown", "mouseup", "mousemove"]);
 
           switch(type) {
-          case 'move':
-            var mousedown = false, scrollPos = null;
-            this.drawable.addEvent({
-              mousedown: function (evt) {
-                if (self.animating) return;
-                mousedown = true;
-                scrollPos = self.drawable.scrollPosition();
-                self.startPos = evt.logicalPosition;
-              },
-
-              mouseup: function (evt) {
-                if (self.animating) return;
-                mousedown = false;
-                if (self.dragging) {
-                  self.drawable.releaseMouse();
-                  self.dragging = false;
-                }
-              },
-
-              mousemove: function (evt) {
-                if (self.animating) return;
-                if (!self.dragging) {
-                  if (mousedown) {
-                    self.dragging = true;
-                    self.drawable.captureMouse();
-                  } else {
-                    return;
-                  }
-                }
-                var newScrollPos = Fashion._lib.subtractPoint(
-                  scrollPos,
-                  Fashion._lib.subtractPoint(
-                    evt.logicalPosition,
-                    self.startPos));
-                scrollPos = self.drawable.scrollPosition(newScrollPos);
-              }
-            });
+          case 'select': case 'move': case 'zoomin': case 'zoomout':
             break;
-
-          case 'select1':
-            /* this.drawable.addEvent({
-              mousedown: {
-              }
-            });
-            */
-            break;
-
-          case 'select':
-            this.drawable.addEvent({
-              mousedown: function(evt) {
-                if (self.animating) return;
-                self.startPos = evt.logicalPosition;
-                self.rubberBand.position({x: self.startPos.x,
-                                          y: self.startPos.y});
-                self.rubberBand.size({x: 0, y: 0});
-                self.drawable.draw(self.rubberBand);
-                self.dragging = true;
-                self.drawable.captureMouse();
-              },
-
-              mouseup: function(evt) {
-                if (self.animating) return;
-                self.drawable.releaseMouse();
-                self.dragging = false;
-                var selection = [];
-                var hitTest = util.makeHitTester(self.rubberBand);
-                for (var id in self.seats) {
-                  var seat = self.seats[id];
-                  if (seat.shape && (hitTest(seat.shape) || (self.shift && seat.selected())) &&
-                      (!self.callbacks.selectable
-                       || self.callbacks.selectable(this, seat))) {
-                    selection.push(seat);
-                  }
-                }
-                self.unselectAll();
-                self.drawable.erase(self.rubberBand);
-                for (var i = 0; i < selection.length; i++)
-                  selection[i].selected(true);
-                self.callbacks.select(self, selection);
-              },
-
-              mousemove: function(evt) {
-                if (self.animating) return;
-                if (self.dragging) {
-                  var pos = evt.logicalPosition;
-                  var w = Math.abs(pos.x - self.startPos.x);
-                  var h = Math.abs(pos.y - self.startPos.y);
-
-                  var origin = {
-                    x: (pos.x < self.startPos.x) ? pos.x : self.startPos.x,
-                    y: (pos.y < self.startPos.y) ? pos.y : self.startPos.y
-                  };
-
-                  if (origin.x !== self.startPos.x || origin.y !== self.startPos.y)
-                    self.rubberBand.position(origin);
-
-                  self.rubberBand.size({x: w, y: h});
-                }
-              }
-            });
-            break;
-
-          case 'zoomin':
-            this.drawable.addEvent({
-              mouseup: function(evt) {
-                self.zoom(self.zoomRatio * 1.2, evt.logicalPosition);
-              }
-            });
-            break;
-
-          case 'zoomout':
-            this.drawable.addEvent({
-              mouseup: function(evt) {
-                self.zoom(self.zoomRatio / 1.2, evt.logicalPosition);
-              }
-            });
-            break;
-
           default:
             throw new Error("Invalid ui mode: " + type);
           }
@@ -1779,7 +1889,41 @@ function parseTransform(transform_str) {
         this.callbacks.uimodeselect(this, type);
       },
 
-      zoom: function(ratio, center) {
+      zoom: function(ratio, anchor) {
+        var vs = this.drawable.viewportSize();
+        var scrollPos = this.drawable.scrollPosition();
+        var previousRatio = this.zoomRatio;
+
+        var previousLogicalSize = {
+          x: vs.x / previousRatio,
+          y: vs.y / previousRatio
+        };
+
+        if (!anchor) {
+          anchor = {
+            x: scrollPos.x + (previousLogicalSize.x / 2),
+            y: scrollPos.y + (previousLogicalSize.y / 2)
+          }
+        }
+
+        var physicalOffset = {
+          x: (anchor.x - scrollPos.x) * previousRatio,
+          y: (anchor.y - scrollPos.y) * previousRatio 
+        };
+        var logicalSize = {
+          x: vs.x / ratio,
+          y: vs.y / ratio
+        };
+
+        var logicalOrigin = {
+          x: anchor.x - (physicalOffset.x / ratio),
+          y: anchor.y - (physicalOffset.y / ratio)
+        };
+
+        this.zoomAndPan(ratio, logicalOrigin);
+      },
+
+      zoomAndPan: function(ratio, scrollPos) {
         if (isNaN(ratio))
           return;
         var previousRatio = this.zoomRatio;
@@ -1795,37 +1939,11 @@ function parseTransform(transform_str) {
           this.callbacks.zoomRatioChange && this.callbacks.zoomRatioChange(ratio);
           return;
         }
-
-        if (!center) {
-          var vs = this.drawable.viewportSize();
-          var logicalSize = {
-            x: vs.x / previousRatio,
-            y: vs.y / previousRatio
-          };
-          var scroll = this.drawable.scrollPosition();
-          center = {
-            x: scroll.x + (logicalSize.x / 2),
-            y: scroll.y + (logicalSize.y / 2)
-          }
-        }
-
         this.drawable.transform(Fashion.Matrix.scale(ratio)
                                 .translate({x: -this.contentOriginPosition.x,
                                             y: -this.contentOriginPosition.y}));
 
-        var vs = this.drawable.viewportSize();
-
-        var logicalSize = {
-          x: vs.x / ratio,
-          y: vs.y / ratio
-        };
-
-        var logicalOrigin = {
-          x: center.x - (logicalSize.x / 2),
-          y: center.y - (logicalSize.y / 2)
-        };
-
-        this.drawable.scrollPosition(logicalOrigin);
+        this.drawable.scrollPosition(scrollPos);
         this.zoomRatio = ratio;
         this.callbacks.zoomRatioChange && this.callbacks.zoomRatioChange(ratio);
       },
@@ -1897,7 +2015,23 @@ function parseTransform(transform_str) {
 
       back: function VenueViewer_back() {
         if (this._history.length > 0)
-          this.navigate(this._history[this._history.length - 1]);
+          this._loadPage(this._history.pop());
+      },
+
+      showSmallTexts: function VenueViewer_showSmallTexts() {
+        if (!this._smallTextsShown) {
+          for(var i = this.small_texts.length; --i >= 0;)
+            this.small_texts[i].visibility(true);
+          this._smallTextsShown = true
+        }
+      },
+
+      hideSmallTexts: function VenueViewer_hideSmallTexts() {
+        if (this._smallTextsShown) {
+          for(var i = this.small_texts.length; --i >= 0;)
+            this.small_texts[i].visibility(false);
+          this._smallTextsShown = false;
+        }
       }
     }
   });
@@ -2024,6 +2158,13 @@ function parseTransform(transform_str) {
 
         case 'navigate':
           aux.navigate(arguments[1]);
+          break;
+
+        case 'showSmallTexts':
+          aux.showSmallTexts();
+          break;
+        case 'hideSmallTexts':
+          aux.hideSmallTexts();
           break;
         }
       }

@@ -5,7 +5,8 @@ import json
 import logging
 import urllib2
 import contextlib
-from datetime import datetime
+from datetime import datetime, timedelta
+from dateutil.parser import parse as parsedate
 
 import webhelpers.paginate as paginate
 from sqlalchemy import or_
@@ -36,7 +37,7 @@ class Events(BaseView):
 
     @view_config(route_name='events.index', renderer='ticketing:templates/events/index.html', permission='event_viewer')
     def index(self):
-        sort = self.request.GET.get('sort', 'Event.id')
+        sort = self.request.params.get('sort', 'Event.id')
         direction = self.request.GET.get('direction', 'desc')
         if direction not in ['asc', 'desc']:
             direction = 'asc'
@@ -44,17 +45,24 @@ class Events(BaseView):
         query = Event.filter(Event.organization_id==int(self.context.user.organization_id))
         query = query.order_by(sort + ' ' + direction)
 
-        # search condition
-        if self.request.method == 'POST':
-            condition = self.request.POST.get('event')
-            if condition:
-                condition = '%' + condition + '%'
-                query = query.filter(or_(Event.code.like(condition), Event.title.like(condition)))
-            condition = self.request.POST.get('performance')
-            if condition:
-                condition = '%' + condition + '%'
+        condition = self.request.params.get('event')
+        if condition:
+            condition = '%' + condition + '%'
+            query = query.filter(or_(Event.code.like(condition), Event.title.like(condition)))
+        condition = self.request.params.get('performance')
+        if condition:
+            condition = '%' + condition + '%'
+            query = query.join(Event.performances)\
+                        .filter(or_(Performance.code.like(condition), Performance.name.like(condition)))
+        condition = self.request.params.get('date')
+        if condition:
+            try:
+                _condition = parsedate(condition)
                 query = query.join(Event.performances)\
-                            .filter(or_(Performance.code.like(condition), Performance.name.like(condition)))
+                        .filter(Performance.start_on >= _condition) \
+                        .filter(Performance.end_on < (_condition + timedelta(days=1)))
+            except:
+                pass
 
         events = paginate.Page(
             query,

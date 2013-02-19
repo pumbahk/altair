@@ -7,6 +7,8 @@
 %endif
 ${h.get_nickname(request)} 
 
+${self.widget.flow_widget(2)}
+
 <form id="form1" name="form1" method="post" action="${request.url}">
   <div class="settlementBox">
     <div class="settlementBoxInner">
@@ -46,7 +48,7 @@ ${h.get_nickname(request)}
         </div>
       </div>
       %endfor
-      <p>※ 予約受付完了メール等をメールでご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</p>
+      <p>※ 注文受付完了メール等をメールでご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</p>
     </div>
   </div>
   <div class="confirmBox">
@@ -101,14 +103,14 @@ ${h.get_nickname(request)}
           <td>
             <ul>
               <li>
-                ${form['email_1'].label}
-                ${form['email_1']}
+                ${form['email_1'].label(style=u'width:10em')}
+                ${form['email_1'](style=u'width:20em')}
                 (例：mail@example.ne.jp)
                 ${h.error_list(request, form, 'email_1')}
               </li>
               <li>
-                ${form['email_1_confirm'].label}
-                ${form['email_1_confirm']}
+                ${form['email_1_confirm'].label(style=u'width:10em')}
+                ${form['email_1_confirm'](style=u'width:20em')}
                 (例：mail@example.ne.jp)
                 ${h.error_list(request, form, 'email_1_confirm')}
               </li>
@@ -118,23 +120,25 @@ ${h.get_nickname(request)}
         <tr>
           <th scope="row">携帯メールアドレス (半角英数)</th>
           <td>
-            <p>携帯電話のメールアドレスをお持ちの方はお書きください。</p>
-            <p>(上の欄に携帯メールアドレスを入力された方は結構です)</p>
+            <p>
+              携帯電話のメールアドレスをお持ちの方はお書きください。<br />
+              (上のメールアドレス欄に携帯メールアドレスを入力された方は不要)
+            </p>
             <ul>
               <li>
-                ${form['email_2'].label}
-                ${form['email_2']}
+                ${form['email_2'].label(style=u'width:10em')}
+                ${form['email_2'](style=u'width:20em')}
                 (例：mail@example.ne.jp)
                 ${h.error_list(request, form, 'email_2')}
               </li>
               <li>
-                ${form['email_2_confirm'].label}
-                ${form['email_2_confirm']}
+                ${form['email_2_confirm'].label(style=u'width:10em')}
+                ${form['email_2_confirm'](style=u'width:20em')}
                 (例：mail@example.ne.jp)
                 ${h.error_list(request, form, 'email_2_confirm')}
               </li>
             </ul>
-            <p style="margin-left:10px; font-size:90%; color:#333;">予約受付完了メール等をメールでご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</p>
+            <p style="margin-left:10px; font-size:90%; color:#333;">注文受付完了メール等をメールでご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</p>
           </td>
         </tr>
         <tr>
@@ -153,14 +157,16 @@ ${h.get_nickname(request)}
               </li>
               <li>${form['city'].label}
                 ${form['city']}
-                (例: 品川区)
+                (例: 中央区)
                 ${h.error_list(request, form, 'city')}
               </li>
-              <li>町名番地
-                ${form['address_1']}
-                (例: 東五反田x-xx-xx)
-                <br />建物名等
-                ${form['address_2']}
+              <li>
+                <label for="address_1">町名番地</label>
+                ${form['address_1'](style=u'width:20em')}
+                (例: 日本橋x-xx-xx)
+                <br />
+                <label for="address_2">建物名等</label>
+                ${form['address_2'](style=u'width:20em')}
                 (例: yyビルz階)
                 ${h.error_list(request, form, 'address_1')}
               </li>

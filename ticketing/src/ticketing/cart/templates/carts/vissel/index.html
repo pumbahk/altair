@@ -72,6 +72,7 @@ $(function() {cart.init(venues_selection, selected, upper_limit, cart_release_ur
     </div>
   </div>
 </%block>
+    ${self.widget.flow_widget(1)}
     <h2 id="ticketName">${event['title']} (<span class="performanceNameSpace"></span>)</h2>
     <form id="form1" name="form1" method="post" action="">
       <div id="settlementSelectBox">
@@ -203,12 +204,6 @@ $(function() {cart.init(venues_selection, selected, upper_limit, cart_release_ur
             <tr>
               <th scope="row">イベント名</th>
               <td>${event["title"]} (<span class="performanceNameSpace"></span>)</td>
-            </tr>
-            <tr>
-              <th scope="row">販売期間</th>
-              <td id="descSalesTerm">
-                ${event['sales_start_on']} 〜 ${event['sales_end_on']}
-              </td>
             </tr>
             %for v in event_extra_info:
             <tr>

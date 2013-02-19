@@ -105,6 +105,8 @@ function svgStylesFromMap(styles, defs) {
   var strokeWidthString = styles['stroke-width'];
   var strokeOpacity = null;
   var strokeOpacityString = styles['stroke-opacity'];
+  var strokeDashArray = null;
+  var strokeDashArrayString = styles['stroke-dasharray'];
   var fontSize = null;
   var fontSizeString = styles['font-size'];
   var textAnchor = null;
@@ -148,6 +150,12 @@ function svgStylesFromMap(styles, defs) {
       strokeOpacityString = strokeOpacityString[0];
     strokeOpacity = parseFloat(strokeOpacityString);
   }
+  if (strokeDashArrayString) {
+    if (strokeDashArrayString instanceof Array)
+      strokeDashArrayString = strokeDashArrayString[0];
+    if (strokeDashArrayString.indexOf(',') != -1)
+      strokeDashArray = strokeDashArrayString.split(/,/);
+  }
   if (fontSizeString) {
     if (fontSizeString instanceof Array)
       fontSizeString = fontSizeString[0];
@@ -164,21 +172,23 @@ function svgStylesFromMap(styles, defs) {
     stroke: stroke,
     strokeWidth: strokeWidth,
     strokeOpacity: strokeOpacity,
+    strokeDashArray: strokeDashArray,
     fontSize: fontSize,
     textAnchor: textAnchor
   };
 }
 
 function mergeSvgStyle(origStyle, newStyle) {
-  return {
-    fill:          newStyle.fill !== null ? newStyle.fill: origStyle.fill,
-    fillOpacity:   newStyle.fillOpacity !== null ? newStyle.fillOpacity: origStyle.fillOpacity,
-    stroke:        newStyle.stroke !== null ? newStyle.stroke: origStyle.stroke,
-    strokeWidth:   newStyle.strokeWidth !== null ? newStyle.strokeWidth: origStyle.strokeWidth,
-    strokeOpacity: newStyle.strokeOpacity !== null ? newStyle.strokeOpacity: origStyle.strokeOpacity,
-    fontSize:      newStyle.fontSize !== null ? newStyle.fontSize: origStyle.fontSize,
-    textAnchor:    newStyle.textAnchor !== null ? newStyle.textAnchor: origStyle.textAnchor
-  };
+  var copied = { };
+  for (var k in origStyle) {
+    copied[k] = origStyle[k];
+  }
+  for (var k in newStyle) {
+    if (newStyle[k] !== null) {
+      copied[k] = newStyle[k];
+    }
+  }
+  return copied;
 }
 
 function buildStyleFromSvgStyle(svgStyle) {
@@ -198,7 +208,7 @@ function buildStyleFromSvgStyle(svgStyle) {
         null, null, null,
         svgStyle.fillOpacity ? svgStyle.fillOpacity * 255: 255),
       svgStyle.strokeWidth ? svgStyle.strokeWidth: 1,
-      svgStyle.strokePattern ? svgStyle.strokePattern: null):
+      svgStyle.strokeDashArray ? svgStyle.strokeDashArray: (svgStyle.strokePattern ? svgStyle.strokePattern: null)):
     null,
     visibility: true
   };
@@ -221,6 +231,8 @@ function collectText(node) {
 function copyShape(shape) {
   if (shape instanceof Fashion.Rect) {
     return new Fashion.Rect({ position: shape.position(), size: shape.size(), transform: shape.transform() });
+  } else if (shape instanceof Fashion.Path) {
+    return new Fashion.Path({ points: shape.points(),transform: shape.transform() });
   }
   return null;
 }

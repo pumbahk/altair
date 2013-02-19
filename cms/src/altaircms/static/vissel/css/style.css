@@ -146,7 +146,6 @@ a:hover img {
 }
 
 .header .history {
-	position: absolute;
 	margin: 65px 0 0 500px ;
 }
 
@@ -188,15 +187,18 @@ a:hover img {
 .header .header-inner{
 	width: 975px;
 	margin: 0 auto;
+    position: relative;
 }
+
 .gnavi{
 	font-size: 12px;
 	width: 250px;
 	margin: 0px auto 0 auto;
 	padding: 14px 0 0 0;
 	text-align: right;	
-	position: relative;
-	float: right;
+	position: absolute;
+    top: 0px;
+    right: 0px;
 }
 
 .main-top{
@@ -254,9 +256,10 @@ a:hover img {
 }
 
 img.partnerlogo{
-	position: relative;
-	top:-10px;
-	left:24px;
+	position: absolute;
+	top:10px;
+	left:476px;
+	display:block;
 }
 
 

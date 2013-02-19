@@ -23,9 +23,26 @@
     % if h.has_permission('master_viewer'):
     <li><a href="${request.route_path('accounts.index')}">取引先</a></li>
     % endif
+    % if h.has_permission('sales_editor'):
+    <li><a href="${request.route_path('orders.refund.index')}">払戻</a></li>
+    % endif
     <li class="divider"></li>
     % if h.has_permission('master_viewer'):
     <li class="nav-header">マスタ管理</li>
+    <li>
+      <a href="${request.route_path('operators.index')}">オペレーター管理</a>
+    </li>
+    % if testing:
+    <li>
+      <a href="${request.route_path('organizations.index')}">取引先マスタ管理</a>
+    </li>
+    % endif
+    <li>
+      <a href="${request.route_path('memberships',action="index",membership_id="*")}">membershipマスタ管理</a>
+    </li>
+    <li>
+      <a href="${request.route_path('members.empty')}">ユーザサイトログインユーザ管理</a>
+    </li>
     % if testing:
     <li><a href="${request.route_path('venues.index')}">会場</a></li>
     % endif
@@ -40,11 +57,11 @@
     <li class="nav-header">営業管理</li>
     <li><a href="${request.route_path('sales_reports.index')}">売上レポート</a></li>
     % endif
+    <li><a href="${request.route_path('mailmags.index')}">メールマガジン管理</a></li>
     % if testing:
     <li><a href="">週報／日報設定</a></li>
     <li><a href="">ポイント付与履歴</a></li>
     <li class="nav-header">マーケティング</li>
-    <li><a href="${request.route_path('mailmags.index')}">メールマガジン管理</a></li>
     <li><a href="">メール配信</a></li>
     <li class="nav-header">ブックマーク</li>
     % for bookmark in Bookmark.find_by_organization_id(1):

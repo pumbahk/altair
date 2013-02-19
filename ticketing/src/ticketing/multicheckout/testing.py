@@ -1,6 +1,7 @@
 from pyramid import testing
 from .api import Checkout3D
 
+
 class DummySecure3D(object):
     def __init__(self, AcsUrl, PaReq, Md, enable_auth_api=True,
                  mvn=None, xid=None, ts=None, eci=None, cavv=None, cavva=None,
@@ -53,6 +54,7 @@ class DummySecure3D(object):
         from ..multicheckout import models
         self.called.append(('request_card_auth', args, kwargs))
         return models.MultiCheckoutResponseCard(ApprovalNo=self.ApprovalNo)
+
 
 class DummyHTTPLib(object):
     def __init__(self, response_body, status=200, reason="OK"):

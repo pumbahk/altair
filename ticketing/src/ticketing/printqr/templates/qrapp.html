@@ -1,5 +1,7 @@
 <%inherit file="./base.html"/>
 
+<% is_enable_applet = True %>
+
 <%block name="extra_button">
 ## <a target="_blank" class="btn" href="${request.route_url("progress", event_id=request.matchdict["event_id"])}">進捗状況確認</a>
 </%block>
@@ -122,12 +124,27 @@ td.progress-shortcut{
   </div>
 
   <div id="two" class="onepage well hide">
-    <h2 class="header" id="two:header">チケット情報</h2>
-    <p>
-      購入されたチケット情報は以下のとおりです。
-    </p>
     <div class="row-fluid">
-      <div class="span8">
+      <div class="span6" id="printable_tickets_area">
+        <h2 class="header">印刷予定のチケット</h2>
+        <p>
+          印刷予定のチケットは以下です。
+        </p>
+        <table class="table">
+          <thead>
+            <tr>
+              <th width="40px">印刷予定</th><th>発券番号</th><th>商品名</th>
+            </tr>
+          </thead>
+          <tbody id="printable_tickets_box">
+          </tbody>
+        </table>
+      </div>
+      <div class="span6">
+        <h2 class="header" id="two:header">チケット情報</h2>
+        <p>
+          購入されたチケット情報は以下のとおりです。
+        </p>
         <table class="table">
           <tbody>
             <tr>
@@ -237,8 +254,8 @@ $(function(){
   var zero = new FormatChoiceView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#zero")});
   var one = new QRInputView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#one")});
   var two = new TicketInfoView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#two")});
+  var selectTicketView = new PrintableTicketsSelectView({el: $("#printable_tickets_area"), datastore: datastore});
   var print = new PrintConfirmView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#two")});
-
   // progress view
   var progressDatastore = new ProgressDataStore({performance: new Performance(), total_result: new TotalResult()});
   var apiService = new ApiService({apiResource: apiResource});
@@ -274,7 +291,8 @@ $(function(){
       one: one,
       two: two,
       messageView: messageView,
-      descriptionView: descriptionView
+      descriptionView: descriptionView,
+      selectTicketView: selectTicketView
     };
     var service = applet.getService();
     var createProxy = function () { return applet.createPropertyChangeListenerProxy.apply(applet, arguments); };
@@ -283,6 +301,7 @@ $(function(){
     appletViewConfigureAfterCreate(appletView);
   };
 
+%if is_enable_applet:
   writeAppletTag({
     version: '1.6.0.35',
     width: 1, height: 1,
@@ -299,6 +318,9 @@ $(function(){
 ##      ,cache_option: "no"
     }
   });
+%else:
+    $('#screen').hide(); //uggg.
+%endif
 
   // QRReaderの日本語／英語の対応
   document.onkeydown = function (e) {

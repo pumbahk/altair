@@ -101,7 +101,7 @@ class LoginUser(BaseView):
         if operator is None:
             return HTTPNotFound("Operator id %s is not found")
 
-        f = OperatorForm(self.request.POST)
+        f = OperatorForm(self.request.POST, request=self.request)
         if f.validate():
             if not f.data['password']:
                 password = operator.auth.password

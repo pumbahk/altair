@@ -2,6 +2,16 @@
 <%namespace file="./tags_mobile.html" name="mobile" />
 
 <%mobile:header>チケット購入</%mobile:header>
+
+% if request.session.peek_flash():
+<div>
+  % for message in request.session.pop_flash():
+  <font color="red">${message}</font><br />
+  % endfor
+</div>
+<br/>
+% endif
+
 注文内容をご確認ください
 <%mobile:header>申込内容確認</%mobile:header>
 <form id="form1" action="${delegator['url'] if delegator else request.route_url('payment.finish')}" method="post">
@@ -63,21 +73,23 @@ ${shipping.last_name_kana} ${shipping.first_name_kana}
 <div>
 ${shipping.tel_1}
 </div>
-<%mobile:form_header>配送先住所</%mobile:form_header>
+<%mobile:form_header>配送先住所 <font size="-1">※配送を選択した場合</font></%mobile:form_header>
 <div>
 ${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}
 </div>
 
+% if mailmagazines_to_subscribe:
 <%mobile:header>メールマガジンの配信</%mobile:header>
 <p>
 ご利用いただいた方には、ヴィッセル神戸からのメールマガジンをお送りします。不要な方はチェックをはずしてください。
 </p>
-% for mailmagazine in mailmagazines:
+% for mailmagazine in mailmagazines_to_subscribe:
 <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />${mailmagazine.name}<br/>
 <div style="font-size:x-small;">
 ${mailmagazine.description|n}
 </div>
 % endfor
+% endif
 
 <hr />
 <input type="submit" name="back" value="戻る" />

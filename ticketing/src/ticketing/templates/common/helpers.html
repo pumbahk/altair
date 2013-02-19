@@ -151,7 +151,7 @@ ${locale.format("%d", price, grouping=True)}
   from webhelpers.util import html_escape
   from pyramid.threadlocal import get_current_registry
 %>
-<%def name="action_button(actions, order=None, vertical=True, options=None)">
+<%def name="action_button(actions, order=None, vertical=True, options=None, dropup=False)">
 <%
   registry = get_current_registry()
   route_permission = registry.route_permission if hasattr(registry, 'route_permission') else None
@@ -195,7 +195,11 @@ ${locale.format("%d", price, grouping=True)}
     <button class="btn dropdown-toggle" data-toggle="dropdown">
       <span class="caret"></span>
     </button>
-    <ul class="dropdown-menu">
+      % if dropup:
+        <ul class="dropdown-menu bottom-up">
+      % else:
+        <ul class="dropdown-menu">
+      % endif
     % endif
     % if vertical and count > 0:
       <li>
@@ -212,6 +216,7 @@ ${locale.format("%d", price, grouping=True)}
     </ul>
   % endif
 </div>
+
 </%def>
 
 <%!
@@ -222,4 +227,45 @@ ${locale.format("%d", price, grouping=True)}
 <%
   return isinstance(security_has_permission(permission, request.context, request), ACLAllowed)
 %>
+</%def>
+
+<%def name="order_status(order)">
+<%
+  from ticketing.core.models import OrderCancelReasonEnum
+%>
+  % if order is None:
+    <span></span>
+  % elif order.status == 'canceled' and order.cancel_reason == str(OrderCancelReasonEnum.CallOff.v[0]):
+    <span class="label label-important">キャンセル (中止)</span>
+  % elif order.status == 'canceled':
+    <span class="label label-important">キャンセル</span>
+  % elif order.status == 'delivered':
+    <span class="label label-success">配送済み</span>
+  % elif order.status == 'ordered':
+    <span class="label label-warning">受付済み</span>
+  % endif
+</%def>
+
+<%def name="payment_status(order)">
+  % if order is None:
+    <span></span>
+  % elif order.payment_status == 'refunding':
+    <span class="label label-important">払戻予約</span>
+  % elif order.payment_status == 'refunded':
+    <span class="label label-info">払戻済み</span>
+  % elif order.payment_status == 'paid':
+    <span class="label label-success">入金済み</span>
+  % else:
+    <span class="label label-inverse">未入金</span>
+  % endif
+</%def>
+
+<%def name="delivery_status(order)">
+  % if order is None:
+    <span></span>
+  % elif order.delivered_at:
+    <span class="label label-success">配送済み</span>
+  % else:
+    <span class="label label-inverse">未配送</span>
+  % endif
 </%def>

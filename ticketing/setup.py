@@ -91,6 +91,7 @@ extras_require = {
 
 setup(name='ticketing',
       version='0.0',
+      use_date_versioning=True,
       description='ticketing',
       long_description=README + '\n\n' +  CHANGES,
       classifiers=[
@@ -108,8 +109,10 @@ setup(name='ticketing',
       include_package_data=True,
       zip_safe=False,
       install_requires=requires,
+      setup_requires=["altair.versiontools"],
       dependency_links = [
         'file:../commons#egg=altair-commons-0.0',
+        'file:../altair_versiontools#egg=altair.versiontools-1.0',
         "file:../altair_findable_label#egg=altair.findable_label-0.0", 
         "file:../altair_log#egg=altair.log-0.0", 
         'https://github.com/moriyoshi/tableau/tarball/master#egg=tableau-0.0.4pre2',
@@ -134,6 +137,11 @@ setup(name='ticketing',
       check_multicheckout_orders=ticketing.commands.check_multicheckout_orders:main
       populate_order_no=ticketing.commands.populate_order_no:main
       send_sales_reports=ticketing.events.sales_reports.commands:main
+      cancel_auth=ticketing.multicheckout.scripts.cancelauth:main
+      sej_nwts_upload=ticketing.sej.scripts.sej_nwts_upload:main
+      release_carts=ticketing.cart.scripts.release_carts:main
+      rakuten_checkout_sales=ticketing.checkout.commands:rakuten_checkout_sales
+      refund_order=ticketing.orders.commands:refund_order
       """,
       paster_plugins=['pyramid'],
       )

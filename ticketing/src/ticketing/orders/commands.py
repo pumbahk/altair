@@ -1,14 +1,17 @@
 # -*- coding:utf-8 -*-
+
 import os
 import sys
 from datetime import datetime, timedelta
 import logging
+import transaction
 
 from pyramid.paster import bootstrap
 from sqlalchemy import and_
+from sqlalchemy.sql.expression import not_
 import sqlahelper
 
-from ticketing.core.models import DBSession, SeatStatus, SeatStatusEnum
+from ticketing.core.models import SeatStatus, SeatStatusEnum, Order
 
 def update_seat_status():
     _keep_to_vacant()
@@ -47,3 +50,40 @@ def _keep_to_vacant():
         logging.info('success')
 
     logging.info('end update seat_status batch')
+
+def refund_order():
+    ''' 払戻処理
+    '''
+    config_file = sys.argv[1]
+    log_file = os.path.abspath(sys.argv[2])
+    logging.config.fileConfig(log_file)
+    app_env = bootstrap(config_file)
+    request = app_env['request']
+
+    logging.info('start refund_order batch')
+
+    orders_to_skip = set()
+    while True:
+        query = Order.query.filter(Order.refund_id!=None, Order.refunded_at==None)
+        if orders_to_skip:
+            query = query.filter(not_(Order.id.in_(orders_to_skip)))
+        order = query.first()
+
+        if not order:
+            logging.info('target order not found')
+            break
+
+        try:
+            logging.info('try to refund order (%s)' % order.id)
+            if order.call_refund(request):
+                logging.info('refund success')
+                transaction.commit()
+            else:
+                logging.error('failed to refund order (%s)' % order.order_no)
+                transaction.abort()
+                orders_to_skip.add(order.id)
+        except Exception as e:
+            logging.error('failed to refund orders (%s)' % e.message)
+            break
+
+    logging.info('end refund_order batch')

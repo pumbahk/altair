@@ -108,5 +108,26 @@ class IssuedPrintedSetterTests(unittest.TestCase):
         result = list(target.will_issued_by_own_tickets())
         self.assertEquals(len(result),  1)
 
+    def test_will_issued_by_own2(self):
+        """自社発券用の券面を取り出す。"""
+        from ticketing.models import DBSession
+        from ticketing.payments.plugins.sej import DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID_SEJ
+        from ticketing.core.models import TicketBundle, Ticket, TicketFormat, DeliveryMethod
+
+        sej_ticket_fmt1 = TicketFormat(name="", )
+        sej_ticket_fmt1.delivery_methods.append(DeliveryMethod(fee=0, delivery_plugin_id=DELIVERY_PLUGIN_ID_SEJ))
+        sej_ticket_fmt1.delivery_methods.append(DeliveryMethod(fee=0, delivery_plugin_id=-1))
+
+        bundle = TicketBundle()
+        bundle.tickets.append(Ticket(ticket_format=sej_ticket_fmt1))
+
+        DBSession.add(bundle)
+        DBSession.flush()
+
+        target = self._makeOne(bundle=bundle)
+        result = list(target.will_issued_by_own_tickets())
+        self.assertEquals(len(result),  0)
+
+
 if __name__ == "__main__":
     unittest.main()

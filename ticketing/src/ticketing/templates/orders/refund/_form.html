@@ -1,0 +1,44 @@
+<%page args="form" />
+<%namespace file="/common/helpers.html" name="h" />
+
+<script type="text/javascript">
+  $(function() {
+    $('#modal-refund').find("input[type='checkbox']").change(function() {
+      if ($(this).attr('checked')) {
+        $(this).val(1);
+      } else {
+        $(this).val(0);
+      }
+    }).change();
+    $('.draggable').draggable({scroll: true, handle:$('.draggable .modal-body')});
+    $('#modal-refund').disableOnSubmit();
+    $('#modal-refund').on('shown', function(){
+      $(this).css('max-height', '700px')
+             .css('max-width', '600px')
+             .css('margin-top', ($(this).outerHeight()/2)*-1)
+             .css('margin-left',($(this).outerWidth()/2)*-1);
+    });
+  });
+</script>
+
+<div id="modal-refund" class="modal fade draggable">
+  <div class="modal-header">
+    <h3>払戻する</h3>
+  </div>
+
+  <div class="modal-body">
+    ${h.flash_messages(request, type='alert-error')}
+    ${h.alert_message(form)}
+    <form action="javascript:refund_order();">
+      ${h.form_item(form.payment_method_id)}
+      ${h.form_item(form.include_item)}
+      ${h.form_item(form.include_fee)}
+      ${h.form_item(form.cancel_reason)}
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn secondary btn-close" data-dismiss="modal">戻る</button>
+    <button onclick="$('#modal-refund').find('form').submit(); return false;" class="btn danger">払戻</button>
+  </div>
+</div>

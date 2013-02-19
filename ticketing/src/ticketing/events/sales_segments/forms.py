@@ -50,6 +50,7 @@ class SalesSegmentForm(OurForm):
         label=u'販売終了日時',
         validators=[RequiredOnUpdate()],
         format='%Y-%m-%d %H:%M',
+        missing_value_defaults=dict(hour=u'23', minute=u'59', second='59'),
         hide_on_new=True
     )
     seat_choice = IntegerField(

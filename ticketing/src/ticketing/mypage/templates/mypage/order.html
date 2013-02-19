@@ -18,15 +18,7 @@
 			<p style="border: 1px solid #FFFFFF;margin: 0 0 0 0; display: block; width: 60px; height: 60px; background-image: url(${icon_url})">
                 % if order.payment_delivery_pair.payment_method.payment_plugin_id == 1:
                 <span style="display: block; margin: 20px 0 0 0; width: 60px; text-align: center">
-                    % if order.paid_at:
-                    %   if order.delivered_at:
-                    配送済み
-                    %   else:
-                    入金済み
-                    %   endif
-                    % else:
-                    未入金
-                    % endif
+                  ${h.order_status(order)}
                 </span>
                 % endif
 			</p>
@@ -58,7 +50,7 @@
                         % if order.paid_at:
                         入金済み
                         % else:
-                        未完了
+                        未入金
                         % endif
                         <span>（${order.payment_delivery_pair.payment_method.name}）</span></td>
 				</tr>
