@@ -1,15 +1,16 @@
 # coding:utf-8
 from pyramid.view import view_config
-import sqlalchemy.orm as orm
 
-from datetime import datetime
-
-from altaircms.topic.api import get_topic_searcher
 from altaircms.genre.api import GenreSearcher
 
 from altaircms.models import Genre
 from altaircms.topic.models import TopcontentTag
 from altaircms.tag.directives import add_tagmanager
+
+from datetime import datetime
+import sqlalchemy.orm as orm
+from altaircms.topic.api import get_topic_searcher
+
 
 @view_config(route_name='home', renderer='cmsmobile:templates/top/top.mako')
 def main(context, request):
@@ -28,11 +29,11 @@ def main(context, request):
     # Topic
     topic_searcher = get_topic_searcher(request, context.widgettype)
     topics = topic_searcher.query_publishing_no_filtered(datetime.now())
-    topics = topics.options(orm.joinedload(context.TargetTopic.tags))
+    topics = topics.options(orm.joinedload(context.TargetTopic.tags))[0:5]
 
     # Hotward
 
     return dict(
-             #genres=genres
-             topics=topics[0:5]
-        )
+        topics=topics
+    )
+

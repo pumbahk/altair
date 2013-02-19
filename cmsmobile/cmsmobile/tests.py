@@ -1,6 +1,6 @@
 import unittest
 
-from cmsmobile.core.models import DBSession
+#from cmsmobile.core.models import DBSession
 
 
 class TestMyView(unittest.TestCase):
