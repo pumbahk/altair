@@ -1901,11 +1901,11 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return DBSession.query(Order, include_deleted=True).filter_by(order_no=self.order_no).filter_by(branch_no=self.branch_no-1).one()
 
     def can_cancel(self):
-        # 受付済のみキャンセル可能
-        if self.status == 'ordered':
-            # コンビニ決済は未入金、払戻予約のみキャンセル可能
+        # 受付済のみキャンセル可能、払戻予約時はキャンセル不可
+        if self.status == 'ordered' and self.payment_status != 'refunding':
+            # コンビニ決済は未入金のみキャンセル可能
             payment_plugin_id = self.payment_delivery_pair.payment_method.payment_plugin_id
-            if payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID and self.payment_status not in ['unpaid', 'refunding']:
+            if payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID and self.payment_status != 'unpaid':
                 return False
             return True
         return False
@@ -1917,7 +1917,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return False
 
     def cancel(self, request, cancel_reason=None, payment_method=None):
-        if not self.can_cancel():
+        if not self.can_refund() and not self.can_cancel():
             logger.info('order (%s) cannot cancel status (%s, %s)' % (self.id, self.status, self.payment_status))
             return False
 
