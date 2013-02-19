@@ -1,7 +1,12 @@
 #
 def includeme(config):
+    config.add_panel(".salessegment.salessegment_describe_panel", "describe_salessegment", 
+                     renderer="altaircms:templates/salessegment/_describe.html")
+
     config.add_panel(".performance.performance_describe_panel", "describe_performance", 
                      renderer="altaircms:templates/performance/_describe.html")
+    config.add_panel(".performance.performance_salessegment_tabs_panel", "performance_salessegment", 
+                     renderer="altaircms:templates/salessegment/_salessegment_tabs.html")
 
     config.add_panel(".event.event_page_section_panel", "event_pageset", 
                      renderer="altaircms:templates/pagesets/_event_pageset_list.html")

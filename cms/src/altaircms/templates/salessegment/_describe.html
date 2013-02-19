@@ -1,0 +1,28 @@
+<h3>${salessegment.group.name}</h3>
+<table class="table table-describe table-bordered">
+  <tbody>
+    <tr>
+      <th rowspan="3">販売区分情報</th>
+      <th>販売区分名</th><td>
+        <a href="#">${salessegment.group.name}</a>
+      </td>
+      <th>backend id</th><td>${salessegment.backend_id}</td>
+    </tr>
+    <tr>
+      <th>作成日時</th><td>${h.base.jdate(salessegment.created_at)}</td>
+      <th>更新日時</th><td>${h.base.jdate(salessegment.updated_at)}</td>
+    </tr>
+    <tr>
+      <th>開催日</th>
+      <td>
+        <ul class="unstyled">
+          <li>販売開始日時:${h.base.jdate_with_hour(salessegment.start_on)}</li>
+          <li>販売終了日時:${h.base.jdate_with_hour(salessegment.end_on)}</li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+##${panel("model_action_buttons", salessegment, modelname="salessegment", _query=dict(performance=salessegment.performance.id, endpoint=request.url))}
+

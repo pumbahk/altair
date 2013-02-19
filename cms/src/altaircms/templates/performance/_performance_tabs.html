@@ -10,3 +10,7 @@
 </ul>
 
 ${panel("describe_performance", current_performance)}
+
+%if current_performance.salessegments:
+  ${panel("performance_salessegment", current_performance)}
+%endif

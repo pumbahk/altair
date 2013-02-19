@@ -39,3 +39,5 @@
     %endif
   </tbody>
 </table>
+
+${panel("model_action_buttons", performance, modelname="performance", _query=dict(event=performance.event.id, endpoint=request.url))}

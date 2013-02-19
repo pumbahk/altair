@@ -134,7 +134,7 @@ class SalesSegmentGroup(BaseOriginalMixin, Base):
     kind = sa.Column(sa.Unicode(length=255))
 
 class SalesSegment(BaseOriginalMixin, Base):
-    """ 販売条件
+    """ 販売区分
     """
     __tablename__ = 'sale'
     query = DBSession.query_property()
