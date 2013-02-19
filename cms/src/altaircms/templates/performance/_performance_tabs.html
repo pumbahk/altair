@@ -1,0 +1,12 @@
+<h3 id="performance">${page_title}</h3>
+<ul class="nav nav-tabs">
+   %for performance in performances:
+     %if unicode(performance.id) == unicode(current_performance.id):
+        <li class="active"><a href="${h.current_route_path_override(request,_query=dict(performance_id=performance.id))}#performance">${performance.title}</a></li>
+     %else:
+        <li><a href="${h.current_route_path_override(request,_query=dict(performance_id=performance.id))}#performance">${performance.title}</a></li>
+     %endif
+   %endfor
+</ul>
+
+${panel("describe_performance", current_performance)}

@@ -48,21 +48,26 @@ class PageSetTakein(object):
             return {"form": form, "event": event}
 
 
+def in_section(info, request):
+    return request.matchdict.get("section") in ("performance", "description", "pageset")
 
-@view_config(route_name='event', renderer='altaircms:templates/event/view.html', permission='event_read',
-             decorator=with_bootstrap)
-def detail_view(request):
-    id_ = request.matchdict['id']
+@view_config(route_name="event", 
+             renderer='altaircms:templates/event/view.html', permission='event_read',decorator=with_bootstrap)
+@view_config(route_name='event_detail', custom_predicates=(in_section,), 
+             renderer='altaircms:templates/event/view.html', permission='event_read',decorator=with_bootstrap)
+def event_detail(context, request):
+        section = request.matchdict.get("section", "pageset")
+        id_ = request.matchdict['id']
+        event = get_or_404(request.allowable(Event), Event.id==id_)
 
-    event = request.allowable(Event).filter_by(id=id_).first()
-    if event is None:
-        raise HTTPNotFound() ##
-    performances = event.performances
-    return dict(
-        event=event,
-        performances=performances, 
-        myhelpers=h
-    )
+        section_pairs = [("pageset", u"配下のページ"), ("performance", u"パフォーマンス"), ("description", u"文言情報")]
+        return dict(
+            panel_name = u"event_%s" % section,  #use layout?
+            section=section, 
+            section_pairs = section_pairs, 
+            event=event,
+            myhelpers=h
+        )
 
 @view_config(route_name='event_list', renderer='altaircms:templates/event/list.html', permission='event_read', request_method="GET", 
              decorator=with_bootstrap)

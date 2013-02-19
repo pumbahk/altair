@@ -1,0 +1,29 @@
+<%page args="event"/>
+<style type="text/css">
+</style>
+<h3>${event.title}</h3>
+<table class="table table-describe table-striped">
+  <tr>
+    <th rowspan="9">イベント情報</th>
+    <th>タイトル</th><td>
+      <a href="${request.route_path("event_update",action="input",id=event.id)}">${event.title}</a>
+      %if not event.is_searchable:
+        <span class="label label-warnings">検索対象から除外</span>
+      %endif
+    </td>   
+    <th>backend id</th><td>${event.backend_id}</td>
+  </tr>
+  <tr>
+    <th>サブタイトル</th><td colspan="3">${event.subtitle}</td>
+  </tr>
+  <tr>
+    <th>作成日時</th><td>${h.base.jdate(event.created_at)}</td>
+    <th>更新日時</th><td>${h.base.jdate(event.updated_at)}</td>
+  </tr>
+  <tr>
+    <th>販売期間</th><td colspan="3">${h.term(event.deal_open,event.deal_close)}</td>
+  </tr>
+  <tr>
+    <th>開催期間</th><td colspan="3">${h.term(event.event_open,event.event_close)}</td>
+  </tr>
+</table>
