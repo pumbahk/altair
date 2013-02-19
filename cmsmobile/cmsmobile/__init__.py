@@ -23,6 +23,7 @@ def main(global_config, **settings):
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_static_view('static', 'static', cache_max_age=3600)
 
+    config.set_request_property("altaircms.auth.api.get_allowable_query", "allowable", reify=True)
 
     config.include('cmsmobile.event')
     config.include('altaircms.tag')

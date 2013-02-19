@@ -13,7 +13,7 @@
         <hr/>
         <%include file="../common/_area.mako" />
         <hr/>
-        <%include file="../common/_topics.mako" args="topics=topics, topic_renderer=topic_renderer"/>
+        <%include file="../common/_topics.mako" args="topics=topics"/>
         <hr/>
         <%include file="../common/_hotward.mako" />
 

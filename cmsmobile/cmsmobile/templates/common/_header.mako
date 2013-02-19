@@ -10,5 +10,5 @@
 <a href="http://www.rakuten.co.jp/myrakuten/help/">会員登録</a>
 ｜<a href="/order">申し込み履歴確認</a>
 ｜<a href="/inquiry">公演中止情報</a>
-｜<a href="http://emagazine.rakuten.co.jp/">メルマガ登録</a>
+｜<a href="http://www.google.co.jp/gwt/x?client=firefox-a&gl=JP&wsc=tb&u=http://emagazine.rakuten.co.jp/&ei=bwAiUfbsJMWfkgXh9YHYCA">メルマガ登録</a>
 <p/>
