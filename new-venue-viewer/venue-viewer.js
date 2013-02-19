@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['KPWZN2C608C5A9UC'] = (function (exports) { (function () { 
+__LIBS__['P5N1J4QX4WFBMFQV'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['nSE84RO7P9XHS_PQ'] = (function (exports) { (function () { 
+__LIBS__['_CHHPN35WN3349H1'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['TD6ER4APWFYNAZ1K'] = (function (exports) { (function () { 
+__LIBS__['pUH8KRE3SRPP11_Y'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['KPWZN2C608C5A9UC'];
-var CONF = __LIBS__['nSE84RO7P9XHS_PQ'];
+var util = __LIBS__['P5N1J4QX4WFBMFQV'];
+var CONF = __LIBS__['_CHHPN35WN3349H1'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -848,6 +848,8 @@ function svgStylesFromMap(styles, defs) {
   var strokeWidthString = styles['stroke-width'];
   var strokeOpacity = null;
   var strokeOpacityString = styles['stroke-opacity'];
+  var strokeDashArray = null;
+  var strokeDashArrayString = styles['stroke-dasharray'];
   var fontSize = null;
   var fontSizeString = styles['font-size'];
   var textAnchor = null;
@@ -891,6 +893,12 @@ function svgStylesFromMap(styles, defs) {
       strokeOpacityString = strokeOpacityString[0];
     strokeOpacity = parseFloat(strokeOpacityString);
   }
+  if (strokeDashArrayString) {
+    if (strokeDashArrayString instanceof Array)
+      strokeDashArrayString = strokeDashArrayString[0];
+    if (strokeDashArrayString.indexOf(',') != -1)
+      strokeDashArray = strokeDashArrayString.split(/,/);
+  }
   if (fontSizeString) {
     if (fontSizeString instanceof Array)
       fontSizeString = fontSizeString[0];
@@ -907,6 +915,7 @@ function svgStylesFromMap(styles, defs) {
     stroke: stroke,
     strokeWidth: strokeWidth,
     strokeOpacity: strokeOpacity,
+    strokeDashArray: strokeDashArray,
     fontSize: fontSize,
     textAnchor: textAnchor
   };
@@ -942,7 +951,7 @@ function buildStyleFromSvgStyle(svgStyle) {
         null, null, null,
         svgStyle.fillOpacity ? svgStyle.fillOpacity * 255: 255),
       svgStyle.strokeWidth ? svgStyle.strokeWidth: 1,
-      svgStyle.strokePattern ? svgStyle.strokePattern: null):
+      svgStyle.strokeDashArray ? svgStyle.strokeDashArray: (svgStyle.strokePattern ? svgStyle.strokePattern: null)):
     null,
     visibility: true
   };
@@ -1021,9 +1030,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['nSE84RO7P9XHS_PQ'];
-  var seat = __LIBS__['TD6ER4APWFYNAZ1K'];
-  var util = __LIBS__['KPWZN2C608C5A9UC'];
+  var CONF = __LIBS__['_CHHPN35WN3349H1'];
+  var seat = __LIBS__['pUH8KRE3SRPP11_Y'];
+  var util = __LIBS__['P5N1J4QX4WFBMFQV'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1466,7 +1475,7 @@ function parseTransform(transform_str) {
             {
               svgStyle: {
                 fill: false, fillOpacity: false,
-                stroke: false, strokeOpacity: false,
+                stroke: false, strokeOpacity: false, strokeDashArray: false,
                 fontSize: 10, textAnchor: false
               },
               position: null,
@@ -1689,11 +1698,19 @@ function parseTransform(transform_str) {
       zoomOnShape: function (shape) {
         var position = shape.position();
         var size = shape.size();
-        var vs = drawable.viewportSize();
-        var ratio = Math.min(vs.x / size.x, vs.y / size.y);
+        var p0 = shape._transform.apply(position);
+        var p1 = shape._transform.apply({ x: position.x, y: position.y+size.y });
+        var p2 = shape._transform.apply({ x: position.x+size.x, y: position.y });
+        var p3 = shape._transform.apply({ x: position.x+size.x, y: position.y+size.y });
+        var rp = { x: Math.min(p0.x, p1.x, p2.x, p3.x), y: Math.min(p0.y, p1.y, p2.y, p3.y) };
+        var rs = { x: Math.max(p0.x, p1.x, p2.x, p3.x)-rp.x, y: Math.max(p0.y, p1.y, p2.y, p3.y)-rp.y };
+        var vs = this.drawable.viewportSize();
+        var margin = 0.10;
+        var ratio = Math.min(vs.x*(1-margin) / rs.x, vs.y*(1-margin) / rs.y);
+        // FIXME: ratioが上限を超えないようにしないと、対象オブジェクトがセンターにこない
         var scrollPos = {
-          x: Math.max(position.x - (vs.x * ratio - size.x) / 2, 0),
-          y: Math.max(position.y - (vx.y * ratio - size.y) / 2, 0)
+          x: Math.max(rp.x - (vs.x/ratio-rs.x)/2, 0),
+          y: Math.max(rp.y - (vs.y/ratio-rs.y)/2, 0)
         };
         this.zoomAndPan(ratio, scrollPos);
       },
@@ -1725,7 +1742,7 @@ function parseTransform(transform_str) {
                               previousPageInfo.scrollPosition);
             } else {
               var shape = self.shapes[anchor];
-              if (shape !== void(0)) {
+              if (shape !== void(0) && shape instanceof Fashion.Rect) {
                 self.zoomOnShape(shape);
               } else {
                 self.zoomAndPan(self.zoomRatioMin, { x: 0., y: 0. });

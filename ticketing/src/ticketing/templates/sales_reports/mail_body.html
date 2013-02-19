@@ -1,5 +1,6 @@
 <%namespace file="/common/helpers.html" name="h" />
-
+<% from ticketing.helpers import todatetime %>
+<% from datetime import timedelta %>
 <!DOCTYPE html>
 <html>
   <head>
@@ -18,7 +19,13 @@
       <br>
       <p>◆集計期間:
       % if form.limited_from.data or form.limited_to.data:
-        ${h.safe_strftime(form.limited_from.data)} 〜 ${h.safe_strftime(form.limited_to.data)}
+        % if form.limited_from.data:
+        ${h.safe_strftime(form.limited_from.data)}
+        % endif
+        〜
+        % if form.limited_to.data:
+        ${h.safe_strftime(todatetime(form.limited_to.data) + timedelta(days=1, seconds=-1))}</h5>
+        % endif
       % else:
         〜本日
       % endif

@@ -165,9 +165,6 @@ class PageSet(Base,
 class StaticPage(BaseOriginalMixin, 
                      WithOrganizationMixin, 
                      Base):
-    """
-    static pageの情報. pageの表示の際のlookupには使わない。
-    """
     query = DBSession.query_property()
     __tablename__ = "static_pages"
 
@@ -176,6 +173,7 @@ class StaticPage(BaseOriginalMixin,
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
     name = sa.Column(sa.String(255), doc="directory name(internal)")
+    published = Column(sa.Boolean, default=False)    
     
 
 class Page(BaseOriginalMixin,

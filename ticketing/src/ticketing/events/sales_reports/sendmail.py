@@ -14,6 +14,7 @@ from ticketing.core.models import Event, Organization, ReportSetting, Mailer
 from ticketing.core.models import StockType, StockHolder, StockStatus, Stock, Performance, Product, ProductItem, SalesSegment
 from ticketing.core.models import Order, OrderedProduct, OrderedProductItem
 from ticketing.events.sales_reports.forms import SalesReportForm
+from ticketing.helpers import todatetime
 
 logger = logging.getLogger(__name__)
 
@@ -79,9 +80,9 @@ def get_sales_summary(form, organization, group='Event'):
         .outerjoin(Order).filter(Order.canceled_at==None, Order.deleted_at==None)\
         .outerjoin(OrderedProduct).filter(OrderedProduct.deleted_at==None)
     if form.limited_from.data:
-        query = query.filter(Order.created_at > form.limited_from.data)
+        query = query.filter(Order.created_at >= form.limited_from.data)
     if form.limited_to.data:
-        query = query.filter(Order.created_at < form.limited_to.data)
+        query = query.filter(Order.created_at < (form.limited_to.data + datetime.timedelta(days=1)))
     if form.performance_id.data:
         query = query.filter(Performance.id==form.performance_id.data)
     if form.event_id.data:
@@ -180,9 +181,9 @@ def get_performance_sales_summary(form, organization):
     if form.sales_segment_id.data:
         query = query.outerjoin(SalesSegment).filter(SalesSegment.id==Product.sales_segment_id, SalesSegment.id==form.sales_segment_id.data)
     if form.limited_from.data:
-        query = query.filter(Order.created_at > form.limited_from.data)
+        query = query.filter(Order.created_at >= form.limited_from.data)
     if form.limited_to.data:
-        query = query.filter(Order.created_at < form.limited_to.data)
+        query = query.filter(Order.created_at < (form.limited_to.data + datetime.timedelta(days=1)))
     
     query = query.with_entities(
             OrderedProduct.product_id,
@@ -207,9 +208,9 @@ def get_performance_sales_summary(form, organization):
     if form.sales_segment_id.data:
         query = query.outerjoin(SalesSegment).filter(SalesSegment.id==Product.sales_segment_id, SalesSegment.id==form.sales_segment_id.data)
     if form.limited_from.data:
-        query = query.filter(Order.created_at > form.limited_from.data)
+        query = query.filter(Order.created_at >= form.limited_from.data)
     if form.limited_to.data:
-        query = query.filter(Order.created_at < form.limited_to.data)
+        query = query.filter(Order.created_at < (form.limited_to.data + datetime.timedelta(days=1)))
     
     query = query.with_entities(
             OrderedProduct.product_id,
@@ -228,11 +229,11 @@ def get_performance_sales_summary(form, organization):
 def get_performance_sales_detail(form, event):
     performances_reports = {}
     for performance in event.performances:
-        if form.limited_from.data and performance.end_on < form.limited_from.data:
+        if form.limited_from.data and performance.end_on < todatetime(form.limited_from.data):
             continue
         report_by_sales_segment = {}
         for sales_segment in event.sales_segments:
-            if (form.limited_from.data and sales_segment.end_at < form.limited_from.data) or (form.limited_to.data and form.limited_to.data < sales_segment.start_at):
+            if (form.limited_from.data and sales_segment.end_at < todatetime(form.limited_from.data)) or (form.limited_to.data and todatetime(form.limited_to.data) <= sales_segment.start_at):
                 continue
             form.performance_id.data = performance.id
             form.sales_segment_id.data = sales_segment.id

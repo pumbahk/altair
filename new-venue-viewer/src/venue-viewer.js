@@ -448,7 +448,7 @@
             {
               svgStyle: {
                 fill: false, fillOpacity: false,
-                stroke: false, strokeOpacity: false,
+                stroke: false, strokeOpacity: false, strokeDashArray: false,
                 fontSize: 10, textAnchor: false
               },
               position: null,
@@ -671,11 +671,19 @@
       zoomOnShape: function (shape) {
         var position = shape.position();
         var size = shape.size();
-        var vs = drawable.viewportSize();
-        var ratio = Math.min(vs.x / size.x, vs.y / size.y);
+        var p0 = shape._transform.apply(position);
+        var p1 = shape._transform.apply({ x: position.x, y: position.y+size.y });
+        var p2 = shape._transform.apply({ x: position.x+size.x, y: position.y });
+        var p3 = shape._transform.apply({ x: position.x+size.x, y: position.y+size.y });
+        var rp = { x: Math.min(p0.x, p1.x, p2.x, p3.x), y: Math.min(p0.y, p1.y, p2.y, p3.y) };
+        var rs = { x: Math.max(p0.x, p1.x, p2.x, p3.x)-rp.x, y: Math.max(p0.y, p1.y, p2.y, p3.y)-rp.y };
+        var vs = this.drawable.viewportSize();
+        var margin = 0.10;
+        var ratio = Math.min(vs.x*(1-margin) / rs.x, vs.y*(1-margin) / rs.y);
+        // FIXME: ratioが上限を超えないようにしないと、対象オブジェクトがセンターにこない
         var scrollPos = {
-          x: Math.max(position.x - (vs.x * ratio - size.x) / 2, 0),
-          y: Math.max(position.y - (vx.y * ratio - size.y) / 2, 0)
+          x: Math.max(rp.x - (vs.x/ratio-rs.x)/2, 0),
+          y: Math.max(rp.y - (vs.y/ratio-rs.y)/2, 0)
         };
         this.zoomAndPan(ratio, scrollPos);
       },
@@ -707,7 +715,7 @@
                               previousPageInfo.scrollPosition);
             } else {
               var shape = self.shapes[anchor];
-              if (shape !== void(0)) {
+              if (shape !== void(0) && shape instanceof Fashion.Rect) {
                 self.zoomOnShape(shape);
               } else {
                 self.zoomAndPan(self.zoomRatioMin, { x: 0., y: 0. });

@@ -23,6 +23,9 @@
     % if h.has_permission('master_viewer'):
     <li><a href="${request.route_path('accounts.index')}">取引先</a></li>
     % endif
+    % if h.has_permission('sales_editor'):
+    <li><a href="${request.route_path('orders.refund.index')}">払戻</a></li>
+    % endif
     <li class="divider"></li>
     % if h.has_permission('master_viewer'):
     <li class="nav-header">マスタ管理</li>

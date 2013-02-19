@@ -236,7 +236,8 @@ class BaseModel(object):
         if hasattr(self, 'id') and not self.id:
             del self.id
         if isinstance(self, WithTimestamp):
-            self.created_at = datetime.now()
+            if not self.created_at:
+                self.created_at = datetime.now()
             self.updated_at = datetime.now()
         DBSession.add(self)
         DBSession.flush()

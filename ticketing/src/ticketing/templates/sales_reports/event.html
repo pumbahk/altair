@@ -1,11 +1,9 @@
 <%inherit file="/layout_2cols.html"/>
+<% from ticketing.helpers import todatetime %>
+<% from datetime import timedelta %>
 <%namespace file="/common/helpers.html" name="h" />
 
 <script type="text/javascript">
-  $(function(){
-    $('.datetimefield').datetimepicker({dateFormat:'yy-mm-dd',timeFormat:'hh:mm'});
-  });
-
   function preview(email){
     var params = $('#limitation').serialize();
     if (email) params += '&recipient=' + encodeURIComponent(email);
@@ -33,8 +31,7 @@
 <form id="limitation" action="${request.route_path('sales_reports.event', event_id=form.event_id.data)}" method="POST">
   <div class="control-group">
     <div class="controls">
-      <input class="datetimefield" style="width: 140px; vertical-align: middle; margin-bottom: 0px;" id="limited_from" name="limited_from" type="text" value="${h.safe_strftime(form.limited_from.data)}" placeholder="開始日時"> 〜
-      <input class="datetimefield" style="width: 140px; vertical-align: middle; margin-bottom: 0px;" id="limited_to" name="limited_to" type="text" value="${h.safe_strftime(form.limited_to.data)}" placeholder="終了日時">
+      ${form.limited_from} 〜 ${form.limited_to}
       <input type="submit" class="btn" value="集計期間を絞り込む" >
     </div>
   </div>
@@ -46,7 +43,14 @@
     <th colspan="2">累計</th>
     <th colspan="2">
       % if form.limited_from.data or form.limited_to.data:
-      <h5>${h.safe_strftime(form.limited_from.data)} 〜 ${h.safe_strftime(form.limited_to.data)}</h5>
+      <h5>
+        % if form.limited_from.data:
+        ${h.safe_strftime(form.limited_from.data)}
+        % endif
+        〜
+        % if form.limited_to.data:
+        ${h.safe_strftime(todatetime(form.limited_to.data) + timedelta(days=1, seconds=-1))}</h5>
+        % endif
       % else:
       <h5>全期間</h5>
       % endif
@@ -81,7 +85,7 @@
   <div id="sales_reports_mail-form">
     <%include file="/sales_reports/_form.html" args="form=form_report_mail" />
   </div>
-  <a href="javascript:preview();" class="btn" style="margin-top:15px; margin-bottom:10px; margin-left:767px;">全送信先に送信 プレビュー</a>
+  <a href="javascript:preview();" class="btn" style="margin-top:15px; margin-bottom:10px;">全送信先に送信 プレビュー</a>
 
   % if report_settings:
   <table class="table table-striped table-bordered table-condensed">

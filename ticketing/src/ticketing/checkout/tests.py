@@ -127,6 +127,51 @@ class CheckoutTests(unittest.TestCase):
         testing.tearDown()
         _teardown_db()
 
+    def create_order_test_data(self):
+        from ticketing.core.models import Order, OrderedProduct, Product
+        product = Product(
+            id=22,
+            price=140,
+            public=1,
+            display_order=1,
+            created_at=datetime.now(),
+            updated_at=datetime.now()
+        )
+        self.session.add(product)
+        ordered_product = OrderedProduct(
+            id=11,
+            order_id=1,
+            product_id=22,
+            price=140,
+            quantity=1,
+            created_at=datetime.now(),
+            updated_at=datetime.now()
+        )
+        self.session.add(ordered_product)
+        order = Order(
+            id=1,
+            branch_no=1,
+            total_amount=200,
+            system_fee=10,
+            transaction_fee=20,
+            delivery_fee=30,
+            created_at=datetime.now(),
+            updated_at=datetime.now()
+        )
+        self.session.add(order)
+
+        from ticketing.cart.models import Cart
+        cart = Cart(
+            id=111,
+            order_id=1,
+        )
+        self.session.add(cart)
+
+        from ticketing.checkout.models import Checkout
+        checkout = Checkout(id=1111, orderCartId=111, orderControlId=u'dc-1234567890-110415-0000022222')
+        self.session.add(checkout)
+        self.session.flush()
+
     def _getTarget(self):
         return api.Checkout
 
@@ -161,6 +206,29 @@ class CheckoutTests(unittest.TestCase):
             '<itemNumbers>100</itemNumbers>'
             '<itemFee>2112</itemFee>'
             '<itemName>&#12394;&#12414;&#12360;</itemName>'
+            '</item>'
+            '</root>'
+        )
+
+    def test__create_checkout_item_xml_change_order(self):
+        import xml.etree.ElementTree as et
+        xml = et.XML('<root></root>')
+
+        target = self._makeOne()
+        params = dict(
+            itemId='this-is-itemId',
+            itemNumbers='100',
+            itemFee='2112',
+            orderShippingFee='0'
+        )
+        target._create_checkout_item_xml(xml, **params)
+        self.assertEqual(et.tostring(xml),
+            '<root>'
+            '<item>'
+            '<itemId>this-is-itemId</itemId>'
+            '<itemNumbers>100</itemNumbers>'
+            '<itemFee>2112</itemFee>'
+            '<orderShippingFee>0</orderShippingFee>'
             '</item>'
             '</root>'
         )
@@ -201,7 +269,7 @@ class CheckoutTests(unittest.TestCase):
             '</itemsInfo>'
             '</orderItemsInfo>')
 
-    def test_create_checkout_item_xml_with_items(self):
+    def test_create_checkout_request_xml_with_items(self):
         target = self._makeOne()
         cart = testing.DummyResource(
             id=10,
@@ -259,7 +327,7 @@ class CheckoutTests(unittest.TestCase):
             '</itemsInfo>'
             '</orderItemsInfo>')
 
-    def test_create_checkout_item_xml_without_tmode(self):
+    def test_create_checkout_request_xml_without_tmode(self):
         args = [
             'this-is-serviceId',
             '/completed',
@@ -484,6 +552,53 @@ class CheckoutTests(unittest.TestCase):
             '</root>' % dict(request_id=request_id)
         )
 
+    def test__create_order_control_request_xml_with_items(self):
+        self.create_order_test_data()
+        target = self._makeOne()
+        request_id = api.generate_requestid()
+        result = target._create_order_control_request_xml(['dc-1234567890-110415-0000022222'], request_id, with_items=True)
+
+        self.assertIsNotNone(result)
+        self.assertEqual(
+            result,
+            '<root>'
+            '<serviceId>this-is-serviceId</serviceId>'
+            '<accessKey>access_key</accessKey>'
+            '<requestId>%(request_id)s</requestId>'
+            '<orders>'
+            '<order>'
+            '<orderControlId>dc-1234567890-110415-0000022222</orderControlId>'
+            '<items>'
+            '<item>'
+            '<itemId>22</itemId>'
+            '<itemNumbers>1</itemNumbers>'
+            '<itemFee>140</itemFee>'
+            '<orderShippingFee>0</orderShippingFee>'
+            '</item>'
+            '<item>'
+            '<itemId>system_fee</itemId>'
+            '<itemNumbers>1</itemNumbers>'
+            '<itemFee>10</itemFee>'
+            '<orderShippingFee>0</orderShippingFee>'
+            '</item>'
+            '<item>'
+            '<itemId>transaction_fee</itemId>'
+            '<itemNumbers>1</itemNumbers>'
+            '<itemFee>20</itemFee>'
+            '<orderShippingFee>0</orderShippingFee>'
+            '</item>'
+            '<item>'
+            '<itemId>delivery_fee</itemId>'
+            '<itemNumbers>1</itemNumbers>'
+            '<itemFee>30</itemFee>'
+            '<orderShippingFee>0</orderShippingFee>'
+            '</item>'
+            '</items>'
+            '</order>'
+            '</orders>'
+            '</root>' % dict(request_id=request_id)
+        )
+
     def test__parse_order_control_response_xml(self):
         import xml.etree.ElementTree as et
         xml = et.XML(
@@ -626,6 +741,76 @@ class CheckoutTests(unittest.TestCase):
         result = target.request_fixation_order(order_control_id)
 
         self.assertEqual(target._httplib.path, '/api_url/odrctla/fixationorder/1.0/')
+        self.assertEqual(result['statusCode'], '1')
+        self.assertEqual(result['acceptNumber'], '1')
+        self.assertEqual(result['successNumber'], '0')
+        self.assertEqual(result['failedNumber'], '1')
+        self.assertEqual(result['apiErrorCode'], '100')
+        self.assertEqual(len(result['orders']), 1)
+        self.assertEqual(result['orders'][0]['orderControlId'], 'dc-1234567890-110415-0000022222')
+        self.assertEqual(result['orders'][0]['orderErrorCode'], '090')
+
+    def test_request_change_order_normal(self):
+        import xml.etree.ElementTree as et
+        from ticketing.multicheckout.testing import DummyHTTPLib
+
+        self.create_order_test_data()
+
+        res_data = et.XML(
+            '<root>'
+            '<statusCode>1</statusCode>'
+            '<acceptNumber>1</acceptNumber>'
+            '<successNumber>0</successNumber>'
+            '<failedNumber>1</failedNumber>'
+            '<orders>'
+            '<order>'
+            '<orderControlId>dc-1234567890-110415-0000022222</orderControlId>'
+            '</order>'
+            '</orders>'
+            '</root>'
+        )
+        target = self._makeOne()
+        target._httplib = DummyHTTPLib(et.tostring(res_data))
+
+        order_control_id = ['dc-1234567890-110415-0000022222']
+        result = target.request_change_order(order_control_id)
+
+        self.assertEqual(target._httplib.path, '/api_url/odrctla/changepayment/1.0/')
+        self.assertEqual(result['statusCode'], '1')
+        self.assertEqual(result['acceptNumber'], '1')
+        self.assertEqual(result['successNumber'], '0')
+        self.assertEqual(result['failedNumber'], '1')
+        self.assertEqual(len(result['orders']), 1)
+        self.assertEqual(result['orders'][0]['orderControlId'], 'dc-1234567890-110415-0000022222')
+
+    def test_request_change_order_with_error(self):
+        import xml.etree.ElementTree as et
+        from ticketing.multicheckout.testing import DummyHTTPLib
+
+        self.create_order_test_data()
+
+        res_data = et.XML(
+            '<root>'
+            '<statusCode>1</statusCode>'
+            '<acceptNumber>1</acceptNumber>'
+            '<successNumber>0</successNumber>'
+            '<failedNumber>1</failedNumber>'
+            '<orders>'
+            '<order>'
+            '<orderControlId>dc-1234567890-110415-0000022222</orderControlId>'
+            '<orderErrorCode>090</orderErrorCode>'
+            '</order>'
+            '</orders>'
+            '<apiErrorCode>100</apiErrorCode>'
+            '</root>'
+        )
+        target = self._makeOne()
+        target._httplib = DummyHTTPLib(et.tostring(res_data))
+
+        order_control_id = ['dc-1234567890-110415-0000022222']
+        result = target.request_change_order(order_control_id)
+
+        self.assertEqual(target._httplib.path, '/api_url/odrctla/changepayment/1.0/')
         self.assertEqual(result['statusCode'], '1')
         self.assertEqual(result['acceptNumber'], '1')
         self.assertEqual(result['successNumber'], '0')

@@ -2,10 +2,6 @@
 <%namespace file="/common/helpers.html" name="h" />
 
 <script type="text/javascript">
-  $(function(){
-    $('.datetimefield').datetimepicker({dateFormat:'yy-mm-dd',timeFormat:'hh:mm'});
-  });
-
   function send_report(){
     var params = $('#form').serialize();
     $(location).attr('href', '/events/sales_reports/send_mail/${form.event_id.data}?' + params);
@@ -44,8 +40,7 @@
       ${form.limited_from.label.text}
     </label>
     <div class="controls">
-      <input class="datetimefield" style="width: 140px; vertical-align: middle; margin-bottom: 0px;" id="limited_from" name="limited_from" type="text" value="${h.safe_strftime(form.limited_from.data)}" placeholder="開始日時"> 〜
-      <input class="datetimefield" style="width: 140px; vertical-align: middle; margin-bottom: 0px;" id="limited_to" name="limited_to" type="text" value="${h.safe_strftime(form.limited_to.data)}" placeholder="終了日時">
+      ${form.limited_from} 〜 ${form.limited_to}
       <input class="btn" type="button" value="プレビュー" onclick="javascript:preview();">
       <input class="btn" type="button" value="送信" onclick="javascript:send_report();">
     </div>

@@ -299,7 +299,7 @@ class AppletAPIView(object):
         retval = []
         try:
             for ordered_product_item_token in qs:
-                history = get_matched_history_from_token(order_no, ordered_product_item_token)
+                history = get_or_create_matched_history_from_token(order_no, ordered_product_item_token)
                 retval.extend(utils.svg_data_from_token_with_descinfo(history, ordered_product_item_token))
             return {
                 u'status': u'success',

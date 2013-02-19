@@ -148,10 +148,12 @@ $(function(){
     <div id="sales_segments">
       <h3>販売区分</h3>
       <div style="margin-top: 20px;">
+        <form>
         <%include file="/sales_segments/_list.html" args="form=form_sales_segment, sales_segments=event.sales_segments, limit=10" />
-        <%include file="/sales_segments/_action_button.html" args="form=form_sales_segment, event=event" />
+        <%include file="/sales_segments/_action_button.html" />
+        </form>
         <div id="sales_segments-form">
-          <%include file="/sales_segments/_form.html" args="form=form_sales_segment" />
+          <%include file="/sales_segments/_modal.html" args="modal_id='modal-sales-segment', event=event" />
         </div>
       </div>
     </div>
