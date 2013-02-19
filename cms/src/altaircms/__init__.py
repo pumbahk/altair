@@ -79,6 +79,13 @@ def main(global_config, **local_config):
 
     ## include 
     class MyLayout(object):
+        class color:
+            event = "#dfd"
+            page = "#ffd"
+            item = "#ddd"
+            asset = "#fdd"
+            master = "#ddf"
+
         def __init__(self, context, request):
             self.context = context
             self.request = request
