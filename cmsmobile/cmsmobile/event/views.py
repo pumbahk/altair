@@ -4,7 +4,7 @@ from pyramid.view import view_config, view_defaults
 
 from cmsmobile.core.views import BaseView
 from altaircms.models import Genre
-from altaircms.topic.models import TopicTag
+from altaircms.topic.models import TopicTag, PromotionTag
 
 import webhelpers.paginate as paginate
 from datetime import datetime
@@ -17,21 +17,39 @@ def move_genre(context, request):
     current_page = int(request.params.get("page", 0))
     page_url = paginate.PageURL_WebOb(request)
 
-    # Topic(Tag='トピック', system_tag='ジャンル')
-    topic_searcher = get_topic_searcher(request, "topic")
-    tag = TopicTag.query.filter_by(label=u"トピック").one()
+    # genre
     genre = request.params.get("genre", None)
     subgenre = request.params.get("subgenre", None)
-
     system_tag = TopicTag.query.filter_by(label=genre).one()
     if (subgenre is not None):
         system_tag = TopicTag.query.filter_by(label=subgenre).one()
-    topics = topic_searcher.query_publishing_topics(datetime.now(), tag, system_tag)[0:5]
+
+    # attention
+    topic_searcher = get_topic_searcher(request, "topic")
+    tag = TopicTag.query.filter_by(label=u"注目のイベント").first()
+    attentions = None
+    if tag is not None:
+        attentions = topic_searcher.query_publishing_topics(datetime.now(), tag, system_tag)
+
+    # pickup
+    promo_searcher = get_topic_searcher(request, "promotion")
+    tag = PromotionTag.query.filter_by().first()
+    promotions = None
+    if tag is not None:
+        promotions = promo_searcher.query_publishing_topics(datetime.now(), tag, system_tag)
+
+    # Topic(Tag='トピック', system_tag='ジャンル')
+    tag = TopicTag.query.filter_by(label=u"トピック").first()
+    topics = None
+    if tag is not None:
+        topics = topic_searcher.query_publishing_topics(datetime.now(), tag, system_tag)
 
     return dict(
          topics=topics
         ,genre=genre
         ,subgenre=subgenre
+        ,promotions=promotions
+        ,attentions=attentions
     )
 
 @view_config(route_name='search', renderer='cmsmobile:templates/search/search.mako')

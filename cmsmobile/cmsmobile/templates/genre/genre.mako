@@ -8,7 +8,7 @@
         % endif
     </h2>
 <hr/>
-    <%include file='../common/_attention.mako' />
+    <%include file='../common/_attention.mako' args="attentions=attentions" />
 <hr/>
     <%include file='_subgenre.mako' args="genre=genre" />
 <hr/>
