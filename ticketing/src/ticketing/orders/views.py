@@ -524,13 +524,12 @@ class OrderDetailView(BaseView):
             return HTTPNotFound('order id %d is not found' % order_id)
 
         f = ClientOptionalForm(self.request.POST)
-        # ここでは確認用メールアドレスはチェック対象外
-        f.mail_address2.data = self.request.POST.get('mail_address')
 
         if f.validate():
             shipping_address = merge_session_with_post(order.shipping_address or ShippingAddress(), f.data)
             shipping_address.tel_1 = f.tel.data
-            shipping_address.email = f.mail_address.data
+            shipping_address.email_1 = f.email_1.data
+            shipping_address.email_2 = f.email_2.data
             order.shipping_address = shipping_address
             order.save()
 
