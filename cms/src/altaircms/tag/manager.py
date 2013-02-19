@@ -42,7 +42,7 @@ class TagManagerBase(object):
         self.Tag = Tag
 
     def get_tag_list(self, labels, public_status=None, organization_id=None):
-        qs = self.Tag.query.filter(self.Tag.label.in_(labels), organization_id=organization_id)
+        qs = self.Tag.query.filter(self.Tag.label.in_(labels), self.Tag.organization_id==organization_id)
         if public_status is not None:
             qs = qs.filter(self.Tag.publicp==public_status)
         return qs.all()
@@ -86,7 +86,7 @@ class TagManagerBase(object):
         if deletes:
             tags = obj.tags
             qs = self.Tag.query.filter(self.XRef.object_id==obj.id).filter(self.Tag.publicp == public_status)
-            for tag in qs.filter(self.Tag.label.in_(deletes), organization_id=organization_id):
+            for tag in qs.filter(self.Tag.label.in_(deletes), self.Tag.organization_id==organization_id):
                 tags.remove(tag)
         
     def replace_tags(self, obj, tag_label_list, public_status=True, organization_id=None):
@@ -99,7 +99,7 @@ class TagManagerBase(object):
     def fullreplace_tags(self, obj, tag_label_list, public_status, organization_id=None):
         prev_name_set = set(x.label for x in obj.tags if x.publicp == public_status and x.organization_id==organization_id)
         deletes = prev_name_set.difference(tag_label_list)
-        self.delete_tags(obj, deletes)
+        self.delete_tags(obj, deletes, organization_id=organization_id)
         updates = set(tag_label_list).difference(prev_name_set)
 
         result = []
