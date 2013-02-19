@@ -442,6 +442,7 @@ class OrderDetailView(BaseView):
             form_shipping_address = ClientOptionalForm(record_to_multidict(order.shipping_address))
             form_shipping_address.tel_1.data = order.shipping_address.tel_1
             form_shipping_address.email_1.data = order.shipping_address.email_1
+            form_shipping_address.email_2.data = order.shipping_address.email_2
         else:
             mail_magazines = []
             form_shipping_address = ClientOptionalForm()
@@ -527,7 +528,7 @@ class OrderDetailView(BaseView):
 
         if f.validate():
             shipping_address = merge_session_with_post(order.shipping_address or ShippingAddress(), f.data)
-            shipping_address.tel_1 = f.tel.data
+            shipping_address.tel_1 = f.tel_1.data
             shipping_address.email_1 = f.email_1.data
             shipping_address.email_2 = f.email_2.data
             order.shipping_address = shipping_address
