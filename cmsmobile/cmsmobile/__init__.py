@@ -9,15 +9,10 @@ from sqlalchemy import engine_from_config
 
 
 def main(global_config, **settings):
-    """ This function returns a Pyramid WSGI application.
-    """
+
     engine = engine_from_config(settings, 'sqlalchemy.', pool_recycle=3600)
     sqlahelper.get_session().remove()
     sqlahelper.add_engine(engine)
-
-    #engine = engine_from_config(settings, 'sqlalchemy.')
-    #DBSession.configure(bind=engine)
-    #Base.metadata.bind = engine
 
     config = Configurator(settings=settings)
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')

@@ -17,12 +17,12 @@ def move_genre(context, request):
     current_page = int(request.params.get("page", 0))
     page_url = paginate.PageURL_WebOb(request)
 
-
     # Topic(Tag='トピック', system_tag='ジャンル')
     topic_searcher = get_topic_searcher(request, "topic")
     tag = TopicTag.query.filter_by(label=u"トピック").one()
     genre = request.params.get("genre", None)
     subgenre = request.params.get("subgenre", None)
+
     system_tag = TopicTag.query.filter_by(label=genre).one()
     if (subgenre is not None):
         system_tag = TopicTag.query.filter_by(label=subgenre).one()

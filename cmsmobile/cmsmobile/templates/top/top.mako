@@ -5,7 +5,7 @@
 
         <%include file="../common/_search.mako" />
         <hr/>
-        <%include file='_pickup.mako' />
+        <%include file='_pickup.mako' args="promotions=promotions"/>
         <hr/>
         <%include file='_genre.mako' />
         <hr/>
