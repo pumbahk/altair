@@ -97,7 +97,6 @@ def main(global_config, **local_config):
     #config.set_authentication_policy(WhoV2AuthenticationPolicy(who_config, 'auth_tkt', callback=auth_model_callback))
     config.include('ticketing.whotween')
     config.add_tween('.tweens.CacheControlTween')
-    config.add_tween('.tweens.OrganizationPathTween')
     config.include('ticketing.fc_auth')
     config.scan()
     config.include('..checkout')
