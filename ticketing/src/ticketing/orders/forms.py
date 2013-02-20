@@ -8,7 +8,7 @@ from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, T
 from wtforms.validators import Optional, AnyOf, Length, Email
 from wtforms.widgets import CheckboxInput
 
-from ticketing.formhelpers import DateTimeField, Translations, Required, DateField, Automatic, OurDateWidget
+from ticketing.formhelpers import DateTimeField, Translations, Required, DateField, Automatic, Max, Min, OurDateWidget
 from ticketing.core.models import (PaymentMethodPlugin, DeliveryMethodPlugin, PaymentMethod, DeliveryMethod,
                                    SalesSegment, Performance, Product, ProductItem, Event, OrderCancelReasonEnum)
 from ticketing.cart.schemas import ClientForm
@@ -83,15 +83,20 @@ class OrderSearchForm(Form):
         label=u'予約日時',
         validators=[Optional()],
         format='%Y-%m-%d %H:%M',
-        #value_defaults=lambda:dict(year=datetime.now().year),
         widget=OurDateWidget()
     )
     ordered_to = DateTimeField(
         label=u'予約日時',
         validators=[Optional()],
         format='%Y-%m-%d %H:%M',
-        #value_defaults=lambda:dict(year=datetime.now().year),
-        missing_value_defaults=dict(month=u'12', day=u'31', hour=u'23', minute=u'59', second=u'59'),
+        missing_value_defaults=dict(
+            year=u'',
+            month=Max,
+            day=Max,
+            hour=Max,
+            minute=Max,
+            second=Max
+            ),
         widget=OurDateWidget()
     )
     payment_method = SelectMultipleField(
@@ -169,6 +174,11 @@ class OrderSearchForm(Form):
         label=u'公演日',
         validators=[Optional()],
         format='%Y-%m-%d',
+        missing_value_defaults=dict(
+            year=u'',
+            month=Max,
+            day=Max
+            ),
         widget=OurDateWidget()
     )
     sort = HiddenField(

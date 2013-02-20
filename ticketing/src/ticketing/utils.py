@@ -5,6 +5,7 @@ from decimal import Decimal
 from pyramid.threadlocal import get_current_registry
 from ticketing.mobile.interfaces import IMobileCarrierDetector
 from ticketing.mobile.api import _detect_from_email_address
+from datetime import date, timedelta
 
 class DigitCodec(object):
     def __init__(self, digits):
@@ -153,3 +154,9 @@ def is_nonmobile_email_address(mail_address):
         return _detect_from_email_address(detector, mail_address).is_nonmobile
     except ValueError:
         return True
+
+def atom(name):
+    return type(name, (object,), dict(__str__=lambda self:name, __repr__=lambda self:'%s()' % name))
+
+def days_of_month(year, month):
+    return ((date(year, month, 1) + timedelta(31)).replace(day=1) - timedelta(1)).day
