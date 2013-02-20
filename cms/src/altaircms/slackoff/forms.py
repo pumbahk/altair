@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
-
+import logging 
+logger = logging.getLogger(__name__)
 import json
 from wtforms.form import Form
 from wtforms import fields
@@ -105,9 +106,15 @@ class PerformanceForm(Form):
                 elif data["start_on"] and data["open_on"] is None:
                     data["open_on"] = data["start_on"]
 
-                if not (data["open_on"] <= data["start_on"] <= data["end_on"]):
-                    append_errors(self.errors, "open_on", u"開場時間、開始時間、終了時間の順になっていません")
+                if data["end_on"]:
+                    if not (data["open_on"] <= data["start_on"] <= data["end_on"]):
+                        append_errors(self.errors, "open_on", u"開場時間、開始時間、終了時間の順になっていません")
+                else:
+                    if not (data["open_on"]):
+                        append_errors(self.errors, "open_on", u"開場時間、開始時間、終了時間の順になっていません")
+                    
             except Exception, e:
+                logger.warn(str(e))
                 append_errors(self.errors, "__all__", u"不正な文字列が入力されてます。")
         return not bool(self.errors)
 

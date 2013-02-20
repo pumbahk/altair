@@ -4,10 +4,13 @@ from altaircms.lib.itertools import find_or_first
 def event_page_section_panel(context, request, event):
     pagesets = event.pagesets
     return dict(pagesets=pagesets, 
-                page_title=u"配下のページ一覧")
+                page_title=u"配下のページ一覧", 
+                current_event=event)
 
 def event_performance_section_panel(context, request, event, id_key="performance_id"):
     performances = event.performances
+    if not performances:
+        return dict(performances=[], page_title=u"パフォーマンス", current_event=event)
     performance_id = unicode(request.GET.get(id_key))
     if performance_id:
         current_performance = find_or_first(performances, lambda p : unicode(p.id) == performance_id)

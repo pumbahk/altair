@@ -37,6 +37,11 @@
       <th>外部購入リンク(mobile)</th><td>${performance.mobile_purchase_link}</td>
     </tr>
     %endif
+    %if performance.calendar_content:
+    <tr>
+      <th>カレンダーに追加で表示する文字列</th><td colspan="3"><div class="well">${performance.calendar_content}</div></td>
+    </tr>
+    %endif
   </tbody>
 </table>
 
