@@ -1,5 +1,5 @@
 <div class="box">
-  <table class="table">
+  <table class="table table-describe">
     <thead>
       <tr>
 		<th></th>
@@ -33,7 +33,7 @@
       </tr>
         %else:
         <td>
-          <a href="${request.route_path('page_detail', page_id=pages[0].id)}">${pages[0].name}</a>
+          <a href="${request.route_path('page_detail', page_id=pages[0].id)}">${pages[0].name}(id=${pages[0].id})</a>
           <a class="action" target="_blank" href="${request.route_path("preview_page", page_id=pages[0].id)}">
             <i class="icon-eye-open"> </i></a>
           <a class="action" target="_blank" href="${request.route_path("page_edit_", page_id=pages[0].id)}">
@@ -61,7 +61,7 @@
         %for page in pageset.pages[1:]:
         <tr>
           <td>
-            <a href="${request.route_path('page_detail', page_id=page.id)}">${page.name}</a>
+            <a href="${request.route_path('page_detail', page_id=page.id)}">${page.name}(id=${page.id})</a>
             <a class="action" target="_blank" href="${request.route_path("preview_page", page_id=page.id)}">
               <i class="icon-eye-open"> </i></a>
             <a class="action" target="_blank" href="${request.route_path("page_edit_", page_id=page.id)}">
@@ -92,41 +92,48 @@
     </tbody>
   </table>
   <div class="btn-group">
-    <a class="btn action" target="_blank" href="${request.route_path("pageset", pageset_id="__id__")}">
-      <i class="icon-plus"> </i> ページセット期間変更</a>
+		<a class="btn" href="${request.route_path("page_add", action="input", event_id=current_event.id, _query=dict(endpoint=request.url))}"><i class="icon-plus"> </i> 新しいページセットの作成</a>
     <button class="btn dropdown-toggle" data-toggle="dropdown">
       <span class="caret"></span>
     </button>
     <ul class="dropdown-menu">
 	  <li>
-		<a class="action" target="_blank" href="${request.route_path("pageset", pageset_id="__id__")}">
-		  <i class="icon-plus"> </i> ページセット期間変更</a>
+		  <a class="action" href-fmt="${request.route_path("pageset", pageset_id="__id__")}"><i class="icon-plus"> </i> ページセット期間変更</a>
 	  </li>
-     <li>
-	   <a id="pageset_addpage" class="individual-action" href="${request.route_path("plugins_jsapi_addpage", pageset_id='__id__')}">
-		 <i class="icon-plus"> </i> 選択したページセットにページ追加</a>
-
+    <li>
+	    <a id="pageset_addpage" class="action" href-fmt="${request.route_path("plugins_jsapi_addpage", pageset_id='__id__')}"><i class="icon-plus"> </i> 選択したページセットにページ追加</a>
+     </li>
 <script type="text/javascript">
   $(function(){
+   $(".box .btn-group a.action").on("click", function(e){
+      var $this = $(e.currentTarget);
+      var  pk = $this.parents(".box").find("input[name='object_id']:checked").val();
+      if(!pk){ console.log("sorry"); return false; }
+      // initialize
+      $this.attr("href", $this.attr("href-fmt").replace("__id__", pk));
+      return true;;
+  });
+
   // swap status
-  $(".box .publish_status").click(function(e){
+  $(".box .publish_status").on("click",function(e){
     e.preventDefault();
-    if(window.confirm("ステータスを「"+$(this).text()+"」に変更しますがよろしいですか？")){
-      $.post($(this).attr("href")).done(function(){location.reload();});
+    $this = $(e.currentTarget);
+    if(window.confirm("ステータスを「"+$this.text()+"」に変更しますがよろしいですか？")){
+      $.post($this.attr("href")).done(function(){location.reload();});
     }
   });
 
   // add page
-    $(".box #pageset_addpage").click(function(e){
+    $(".box #pageset_addpage").on("click", function(e){
       e.preventDefault();
-      var  pk = $(this).parents(".box").find("input[name='object_id']:checked").val();
+      $this = $(e.currentTarget);
+      var  pk = $this.parents(".box").find("input[name='object_id']:checked").val();
       if(!pk){ console.log("sorry"); return false; }
       $.post(String($(this).attr("href")).replace("__id__", pk)).done(function(){location.reload()}); //slackoff
       return false;
     });
   });
 </script>
-     </li>
     </ul>
   </div>
 </div>

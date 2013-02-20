@@ -24,21 +24,3 @@
 
 ${panel(panel_name, event)}
 
-<script type="text/javascript">
-  $(function(){
-   $(".box .btn-group a.action").click(function(){
-      var  pk = $(this).parents(".box").find("input[name='object_id']:checked").val();
-      if(!pk){ console.log("sorry"); return false; }
-
-      // initialize
-      var $this = $(this);
-      if (!$this.data("href-fmt")){
-        $this.data("href-fmt", this.href);
-      }
-      this.href = $this.data("href-fmt").replace("__id__", pk);
-      return true;;
-    });
-  })
-</script>
-
-</div>

@@ -70,14 +70,12 @@ class PageInfoSetupForm(Form):
 @implementer(IForm)
 class PageForm(Form):
     name = fields.TextField(label=u"名前", validators=[validators.Required()])
-    url = fields.TextField(validators=[url_field_validator,  url_not_conflict],
-                           label=u"URLhttp://stg2.rt.ticketstar.jp/", 
-                           widget=widgets.TextArea())
+    url = fields.TextField(validators=[url_field_validator,  url_not_conflict],label=u"URL", )
 
     pageset = dynamic_query_select_field_factory(PageSet, allow_blank=True, label=u"ページセット",
                                                  get_label=lambda ps: ps.name)
 
-    title = fields.TextField(label=u"ページタイトル", validators=[validators.Required()], widget=widgets.TextArea())
+    title = fields.TextField(label=u"ページタイトル", validators=[validators.Required()])
 
     description = fields.TextField(label=u"概要", widget=widgets.TextArea())
     keywords = fields.TextField(widget=widgets.TextArea())
@@ -118,7 +116,7 @@ class PageForm(Form):
 class PageUpdateForm(Form):
     name = fields.TextField(label=u"名前", validators=[validators.Required()])
     url = fields.TextField(validators=[url_field_validator, url_not_conflict],
-                           label=u"URLhttp://stg2.rt.ticketstar.jp/", 
+                           label=u"URL", 
                            widget=widgets.TextArea())
 
     title = fields.TextField(label=u"ページタイトル", validators=[validators.Required()], widget=widgets.TextArea())
@@ -133,7 +131,6 @@ class PageUpdateForm(Form):
     pageset = dynamic_query_select_field_factory(PageSet, allow_blank=True, label=u"ページセット",
                                                  get_label=lambda ps: ps.name)
     parent = dynamic_query_select_field_factory(PageSet, 
-                                                query_factory= lambda : PageSet.query.filter(PageSet.category != None), 
                                                 allow_blank=True, label=u"親ページ", 
                                                 get_label=lambda obj:  u'%s' % obj.name)
 
