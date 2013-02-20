@@ -411,12 +411,12 @@ class OurDateTimeFieldBase(fields.Field):
 
     def _raise_undefined_minimum_error(field):
         def _(self, v):
-            raise ValueError(self.gettext('minimum value for %s is not defined' % field))
+            raise ValueError('minimum value for %s is not defined' % field)
         return _
 
     def _raise_undefined_maximum_error(field):
         def _(self, v):
-            raise ValueError(self.gettext('maximum value for %s is not defined' % field))
+            raise ValueError('maximum value for %s is not defined' % field)
         return _
 
     _min_max = {
