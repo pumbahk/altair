@@ -400,7 +400,7 @@ class PageDefaultInfo(Base):
 class PageTag2Page(Base):
     __tablename__ = "pagetag2page"
     query = DBSession.query_property()
-    object_id = sa.Column(sa.Integer, sa.ForeignKey("page.id"), primary_key=True)
+    object_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id"), primary_key=True)
     tag_id = sa.Column(sa.Integer, sa.ForeignKey("pagetag.id"), primary_key=True)
     __tableargs__ = (
         sa.UniqueConstraint("object_id", "tag_id") 
@@ -413,7 +413,7 @@ class PageTag(WithOrganizationMixin, Base):
     query = DBSession.query_property()
     id = sa.Column(sa.Integer, primary_key=True)
     label = sa.Column(sa.Unicode(255), index=True)
-    pages = orm.relationship("Page", secondary="pagetag2page", backref="tags")
+    pages = orm.relationship("PageSet", secondary="pagetag2page", backref="tags")
     publicp = sa.Column(sa.Boolean, default=False)
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
