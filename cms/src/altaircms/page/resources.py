@@ -65,8 +65,8 @@ class PageResource(security.RootFactory):
     def create_page(self, form):
         tags, private_tags, params =  h.divide_data(form.data)
         page = models.Page.from_dict(params)
-        put_tags(page, "page", tags, private_tags, self.request)
         pageset = models.PageSet.get_or_create(page)
+        put_tags(pageset, "page", tags, private_tags, self.request)
 
         if form.data["parent"]:
             pageset.parent = form.data["parent"]

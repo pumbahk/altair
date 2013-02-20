@@ -156,6 +156,14 @@ class PageSet(Base,
         self.event = event
         for p in self.pages:
             p.event = event
+
+    @property
+    def public_tags(self):
+        return [tag for tag in self.tags if tag.publicp == True]
+
+    @property
+    def private_tags(self):
+        return [tag for tag in self.tags if tag.publicp == False]
         
     # @property
     # def page_proxy(self):
@@ -236,14 +244,6 @@ class Page(BaseOriginalMixin,
     def in_term(self, dt):
         return sa.sql.and_(sa.sql.or_((self.publish_begin == None), (self.publish_begin <= dt)), 
                            sa.sql.or_((self.publish_end == None), (self.publish_end > dt)))
-
-    @property
-    def public_tags(self):
-        return [tag for tag in self.tags if tag.publicp == True]
-
-    @property
-    def private_tags(self):
-        return [tag for tag in self.tags if tag.publicp == False]
 
     def __repr__(self):
         return '<%s id=%s %s>' % (self.__class__.__name__, self.id, self.url)

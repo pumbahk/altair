@@ -16,7 +16,7 @@ from ..models import DBSession
 from . import helpers as h
 from .event_info import get_event_notify_info
 from ..page.subscribers import notify_page_update
-##
+from .receivedata import InvalidParamaterException
 ## CMS view
 ##
 @view_defaults(route_name="event_takein_pageset", renderer="altaircms:templates/event/takein_pageset.html", 
@@ -103,6 +103,9 @@ def event_register(request):
     try:
         h.parse_and_save_event(request, request.json_body)
         return HTTPCreated(body=json.dumps({u'status':u'success'}))
+    except InvalidParamaterException as e:
+        logger.warn("*event register api* invalid paramater received: reason: '%s.'\ndata = %s" % (str(e),request.json_body ))
+        return HTTPBadRequest(body=json.dumps({u'status':u'error', u'message':unicode(e), "apikey": apikey}))
     except ValueError as e:
         logger.exception(e)
         return HTTPBadRequest(body=json.dumps({u'status':u'error', u'message':unicode(e), "apikey": apikey}))

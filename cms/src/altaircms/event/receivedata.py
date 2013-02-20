@@ -18,6 +18,9 @@ def parse_datetime(dtstr):
 
 ORGANIZATION_SOURCE = "oauth" #todo backend api include this
 
+class InvalidParamaterException(Exception):
+    pass
+
 class ModelFetcher(object):
     def __init__(self, model):
         self.model = model
@@ -49,7 +52,7 @@ def strict_get(parsed, k, msg=None):
     v = parsed.get(k)
     if v is None:
         msg = msg or "'%s' property not present in the params"
-        raise ValueError(msg)
+        raise InvalidParamaterException(msg % k)
     return v
 
 class Scanner(object):
@@ -144,7 +147,7 @@ class Scanner(object):
                     subscribers.notify_event_update(self.request, event)
                 self.after_parsed_actions.append(notify_event_update)
             except KeyError as e:
-                raise Exception("missing property '%s' in the event record" % e.message)
+                raise InvalidParamaterException("missing property '%s' in the event record" % e.message)
         return r
             
     def fetch_performances(self, organization):
@@ -173,7 +176,7 @@ class Scanner(object):
                 performance.start_on = parse_datetime(record['start_on'])
                 performance.end_on = parse_datetime(record.get('end_on'))
             except KeyError as e:
-                raise Exception("missing property '%s' in the performance record" % e.message)
+                raise InvalidParamaterException("missing property '%s' in the performance record" % e.message)
         return r
         
     def fetch_salessegments(self, organization):
@@ -204,7 +207,7 @@ class Scanner(object):
                 salessegment.start_on = parse_datetime(record['start_on'])
                 salessegment.end_on = parse_datetime(record['end_on'])
             except KeyError as e:
-                raise Exception("missing property '%s' in the salessegment record" % e.message)
+                raise InvalidParamaterException("missing property '%s' in the salessegment record" % e.message)
         return r
         
     def fetch_tickets(self, organization):
@@ -230,7 +233,7 @@ class Scanner(object):
                 ticket.price = record['price']
                 ticket.seattype = record['seat_type']
             except KeyError as e:
-                raise Exception("missing property '%s' in the ticket record" % e.message)
+                raise InvalidParamaterException("missing property '%s' in the ticket record" % e.message)
         return r
 
 
