@@ -1,11 +1,15 @@
 <%page args="topics" />
 <h1>トピックス</h1>
 % if topics:
-    % for topic in topics:
-        % if topic.mobile_link:
-            <a href="${topic.mobile_link}">${topic.text}</a>
-        % else:
-            ${topic.text}
-        % endif
-    % endfor
+    <ul>
+        % for topic in topics:
+            <li>
+                % if topic.mobile_link:
+                    <a href="${topic.mobile_link}">${topic.text}</a>
+                % else:
+                    ${topic.text}
+                % endif
+            </li>
+        % endfor
+    </ul>
 % endif
