@@ -3,7 +3,7 @@
     <%include file="../common/_header.mako" args="title=u'トップページ'"/>
     <body>
 
-        <%include file="../common/_search.mako" />
+        <%include file="../common/_search.mako" args="form=form" />
         <hr/>
         <%include file='_pickup.mako' args="promotions=promotions"/>
         <hr/>

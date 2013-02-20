@@ -3,6 +3,7 @@ from pyramid.view import view_config
 from altaircms.topic.models import TopicTag, PromotionTag
 from datetime import datetime
 from altaircms.topic.api import get_topic_searcher
+from cmsmobile.event.forms import SearchForm
 
 @view_config(route_name='home', renderer='cmsmobile:templates/top/top.mako')
 def main(request):
@@ -38,4 +39,5 @@ def main(request):
          topics=topics
         ,promotions=promotions
         ,attentions=attentions
+        ,form=SearchForm()
     )

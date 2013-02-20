@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 
+from pyramid.url import route_path
+from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
 from altaircms.topic.models import TopicTag, PromotionTag
 from altaircms.models import Performance
 import webhelpers.paginate as paginate
 from datetime import datetime
 from altaircms.topic.api import get_topic_searcher
-
+from cmsmobile.event.forms import SearchForm
+from ticketing.models import merge_session_with_post
 
 @view_config(route_name='genre', renderer='cmsmobile:templates/genre/genre.mako')
 def move_genre(request):
@@ -40,24 +43,33 @@ def move_genre(request):
 
     return dict(
          topics=topics
+        ,form=SearchForm()
         ,genre=genre
         ,subgenre=subgenre
         ,promotions=promotions
         ,attentions=attentions
     )
 
-@view_config(route_name='search', renderer='cmsmobile:templates/search/search.mako')
+@view_config(route_name='search', request_method='POST', renderer='cmsmobile:templates/search/search.mako')
 def search(request):
 
+    num = 0
+    performances = None
+    form = SearchForm(request.POST)
+    if not form.validate():
+        return {
+            'num':num
+            ,'performances':performances
+            ,'form':form
+        }
+
     qs = None
-    word = request.params.get("word", None)
+    word = form.word.data
     if word:
         qs = Performance.query.filter_by()
         likeword = u"%%%s%%" % word
         qs = qs.filter((Performance.title.like(likeword)) | (Performance.venue.like(likeword))).all()
 
-    num = 0
-    performances = None
     if qs:
         performances = paginate.Page(
             qs,
@@ -67,11 +79,6 @@ def search(request):
             )
         num = len(qs)
 
-    if performances:
-        for perf in performances:
-            for sale in perf.sales:
-                print sale.id
-
     #area = int(request.params.get("area", 0))
     #if area:
     #    pass
@@ -79,6 +86,7 @@ def search(request):
     return {
          'num':num
         ,'performances':performances
+        ,'form':SearchForm()
     }
 
 @view_config(route_name='detail', renderer='cmsmobile:templates/detail/detail.mako')
