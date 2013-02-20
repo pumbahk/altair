@@ -9,44 +9,6 @@
  </ul>
 </%def>
 
-## sidebar
-<%def name="sidebar(request)">
-  <ul class="nav nav-list">
-    <li class="nav-header">イベント管理</li>
-    <!-- <li><a href="/client">edit client</a></li> -->
-    <li style="background-color:${layout.color.event}"><a href="${request.route_path("event_list")}">イベント</a></li>
-<%doc>
-    <li><a href="${request.route_path("performance_list")}">パフォーマンス</a></li>
-    <li><a href="${request.route_path("sale_list")}">イベント販売条件</a></li>
-    <li><a href="${request.route_path("ticket_list")}">チケット</a></li>
-</%doc>
-    <li class="nav-header">ページ管理</li>
-    <li style="background-color:${layout.color.page}"><a href="${request.route_path("pageset_list",kind="event")}">イベント詳細</a></li>
-    <li style="background-color:${layout.color.page}"><a href="${request.route_path("pageset_list",kind="other")}">露出枠(≒トップページ)</a></li>
-    <li style="background-color:${layout.color.page}"><a href="${request.route_path("pageset_list",kind="static")}">静的ページ</a></li>
-
-	<li class="nav-header">アイテム管理</li>
-    <li style="background-color:${layout.color.item}"><a href="${request.route_path("promotion_list")}">プロモーション枠</a></li>
-    <li style="background-color:${layout.color.item}"><a href="${request.route_path("topic_list")}">トピック(テキスト)</a></li>
-    <li style="background-color:${layout.color.item}"><a href="${request.route_path("topcontent_list")}">トピック(画像)</a></li>
-    <li style="background-color:${layout.color.item}"><a href="${request.route_path("hotword_list")}">ホットワード</a></li>
-
-    <li class="nav-header">アセット管理</li>
-    <li style="background-color:${layout.color.asset}"><a href="${request.route_path("asset_list")}">アセット</a></li>
-##    <li><a href="${request.route_path("tag", classifier="top")}">タグ</a></li>
-	<li class="nav-header">マスター</li>
-    <li style="background-color:${layout.color.master}"><a href="${request.route_path("layout_list")}">レイアウト</a></li>
-##    <li><a href="${request.route_path("pagedefaultinfo_list")}">ページのurlmapping</a></li>
-	
-    <li  style="background-color:${layout.color.master}"><a href="${request.route_path("category_list")}">カテゴリー</a></li>
-    <!-- <li><a href="#">メールマガジン</a></li> -->
-##    <li><a href="${request.route_path("operator_list")}">オペレータ</a></li>
-##    <li><a href="${request.route_path("apikey_list")}">APIKEY</a></li>
-##    <li><a href="${request.route_path("role_list")}">ロール</a></li>
-  </ul>
-</%def>
-
-
 ## flash message
 ##
 <%def name="alert(css_kls, messages)">

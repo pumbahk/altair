@@ -11,30 +11,30 @@
   body {
       padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
   }
-  .container {
+  .container-fluid {
       width:auto;
       margin-left: 10px;
       margin-right: 10px;
   }
 
-  .container form textarea {
+  .container-fluid form textarea {
       min-width: 400px;
       min-height: 180px;
   }
-  .container form input {
+  .container-fluid form input {
       min-width: 400px;
   }
-  .container form input[type=submit] {
+  .container-fluid form input[type=submit] {
       min-width: auto;
   }
-  .container form select {
+  .container-fluid form select {
       min-width: 400px;
   }
 
-  .container form .controls input{
+  .container-fluid form .controls input{
       min-width: auto;
   }
-  .container form .controls select{
+  .container-fluid form .controls select{
       min-width: auto;
   }
   table.table-describe {
@@ -71,7 +71,24 @@
     background-color: ${layout.color.master};
   }
 
-	// header css
+  /* nav-link */
+  .link-event:not(:hover){
+    background-color: ${layout.color.event};
+  }
+  .link-page:not(:hover){
+    background-color: ${layout.color.page};
+  }
+  .link-item:not(:hover){
+    background-color: ${layout.color.item};
+  }
+  .link-asset:not(:hover){
+    background-color: ${layout.color.asset};
+  }
+  .link-master:not(:hover){
+    background-color: ${layout.color.master};
+  }
+
+	/* header css */
   #navigation { height:25px; }
   #navigation ul{ list-style-type: none; padding-top:17px; font-size:11px; }
   #navigation ul li{ float:left; display:inline; margin-right:5px;}
@@ -92,6 +109,19 @@
 		 margin-left:-420px;
   }
 
+  .big-modal form textarea {
+      min-width: 200px;
+      min-height: 180px;
+  }
+  .big-modal form input {
+      min-width: 200px;
+  }
+  .big-modal form input[type=submit] {
+      min-width: auto;
+  }
+  .big-modal form select {
+      min-width: 200px;
+
  </style>
 	## for date picker
 	<link rel="stylesheet" type="text/css" href="/static/css/datepicker.css"/>
@@ -101,7 +131,7 @@
   </head>
   <body>
     <%block name="header">${nco.header()}</%block>
-    <div class="container">
+    <div class="container-fluid">
       <%block name="content"/>${next.body()}
       <%block name="footer">${nco.footer()}</%block>
     </div>
