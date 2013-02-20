@@ -6,6 +6,7 @@ def setUpModule():
     global config
     from altaircms import testing as mytesting
     config = mytesting.config()
+    config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.include("altaircms.tag")
     
 def tearDownModule():

@@ -3,7 +3,7 @@ SUPPORTED_CLASSIFIER = ("page", "asset")
 def includeme(config):
     config.add_directive("add_tagmanager", ".directives.add_tagmanager")
     config.add_tagmanager("page",
-                         model="altaircms.page.models.Page", 
+                         model="altaircms.page.models.PageSet", 
                          xref="altaircms.page.models.PageTag2Page", 
                          tag="altaircms.page.models.PageTag"
                          )

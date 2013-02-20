@@ -48,7 +48,7 @@ class TopView(object):
         classifier = self.request.GET["classifier"]
         query = self.request.GET["query"]
         manager = get_tagmanager(classifier, self.request)
-        query_result = QueryParser(query).and_search_by_manager(manager)
+        query_result = QueryParser(query).and_search_by_manager(manager, self.request.organization.id)
         query_result = self.request.allowable(manager.Object.__name__, qs=query_result)
         return {"supported": SUPPORTED_CLASSIFIER, 
                 "form": form, 

@@ -7,17 +7,17 @@ class PageSearchTest(unittest.TestCase):
 
     def _makeOne(self):
         from altaircms.tag.manager import TagManager
-        from altaircms.page.models import Page
+        from altaircms.page.models import PageSet
         from altaircms.tag import models as m
-        return TagManager(Object=Page, XRef=m.PageTag2Page, Tag=m.PageTag)
+        return TagManager(Object=PageSet, XRef=m.PageTag2Page, Tag=m.PageTag)
 
     def _getSession(self):
         from altaircms.models import DBSession
         return DBSession
 
     def _makeSearchedObj(self, **kwargs):
-        from altaircms.page.models import Page
-        return Page(**kwargs)
+        from altaircms.page.models import PageSet
+        return PageSet(**kwargs)
 
     def _makeTag(self, **kwargs):
         from altaircms.tag.models import PageTag
@@ -26,10 +26,11 @@ class PageSearchTest(unittest.TestCase):
     def test_empty(self):
         self.assertEquals(self._makeOne().search_by_tag_label(u"foo").count(), 0)
 
+
     def test_search_by_tag_label_by_label(self):
         session = self._getSession()
 
-        obj = self._makeSearchedObj(title=u"page")
+        obj = self._makeSearchedObj(name=u"page")
         obj.tags.append(self._makeTag(label=u"foo"))
         session.add(obj)
 
@@ -40,7 +41,7 @@ class PageSearchTest(unittest.TestCase):
     def test_search_by_tag_label_by_public_status(self):
         session = self._getSession()
 
-        obj = self._makeSearchedObj(title=u"page")
+        obj = self._makeSearchedObj(name=u"page")
         obj.tags.append(self._makeTag(label=u"public", publicp=True))
         obj.tags.append(self._makeTag(label=u"private", publicp=False))
         session.add(obj)
@@ -81,6 +82,7 @@ class ImageAssetSearchTest(unittest.TestCase):
     def test_empty(self):
         self.assertEquals(self._makeOne().search_by_tag_label(u"foo").count(), 0)
 
+
     def test_search_by_tag_label_by_label(self):
         session = self._getSession()
 
@@ -108,6 +110,7 @@ class ImageAssetSearchTest(unittest.TestCase):
         self.assertEquals(target.search_by_tag_label(u"private").count(), 1)
         self.assertEquals(target.public_search_by_tag_label(u"private").count(), 0)
         self.assertEquals(target.private_search_by_tag_label(u"private").count(), 1)
+
 
 class MovieAssetSearchTest(unittest.TestCase):
     def tearDown(self):

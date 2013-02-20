@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import sqlalchemy as sa
 from altaircms.models import DBSession
 import sqlalchemy.orm as orm
 import sqlalchemy.sql.expression as saexp
@@ -18,17 +19,20 @@ class QueryParser(object):
         words = re.split(u"[, 　\s]+", self.query.strip())
         return [x for x in words if x]
 
-    def and_search_by_manager(self, manager):
+    def and_search_by_manager(self, manager, organization_id=None):
         words = self.parse()
         word_count = len(words)
         if word_count <= 0:
             return manager.Object.query
         elif word_count <= 1:
-            return manager.search_by_tag_label(words[0])
+            qs =  manager.search_by_tag_label(words[0])
+            if organization_id:
+                qs = qs.filter_by(organization_id=organization_id)
+            return qs
         else:
-            where = manager.Object.tags.any(label=words[0])
+            where = manager.Object.tags.any(label=words[0], organization_id=organization_id)
             for w in words[1:]:
-                where = where & (manager.Object.tags.any(label=w))
+                where = where & (manager.Object.tags.any(label=w, organization_id=organization_id))
             return manager.joined_query().filter(where)
 
 """
@@ -135,14 +139,16 @@ class TagManager(TagManagerBase):
     def joined_query(self, query_target=None, qs=None):
         query_target = query_target or [self.Object]
         qs = qs or DBSession.query(*query_target)
-        qs = qs.filter(self.Object.id==self.XRef.object_id)
-        qs = qs.filter(self.Object.organization_id==self.Tag.organization_id)
-        return qs.filter(self.Tag.id==self.XRef.tag_id)
+        qs = qs.filter(self.Object.id==self.XRef.object_id, self.Tag.id==self.XRef.tag_id)
+        where = sa.or_(self.Object.organization_id==self.Tag.organization_id, sa.and_(self.Object.organization_id == None, self.Tag.organization_id == None))
+        qs = qs.filter(where)
+        return qs
         
     def more_filter_by_tag(self, qs, tag):
         xref = orm.aliased(self.XRef)
         qs = qs.filter(self.Object.id==xref.object_id, xref.tag_id==tag.id)
-        qs = qs.filter(self.Object.organization_id==tag.organization_id)
+        where = sa.or_(self.Object.organization_id==self.Tag.organization_id, sa.and_(self.Object.organization_id == None, self.Tag.organization_id == None))
+        qs = qs.filter(where)
         return qs
 
     def recent_change_tags(self):
@@ -156,9 +162,9 @@ class SystemTagManager(TagManagerBase):
     def joined_query(self, query_target=None, qs=None):
         query_target = query_target or [self.Object]
         qs = qs or DBSession.query(*query_target)
-        qs = qs.filter(self.Object.id==self.XRef.object_id)
+        qs = qs.filter(self.Object.id==self.XRef.object_id, self.Tag.id==self.XRef.tag_id)
         qs = qs.filter(self.Tag.organization_id==None)
-        return qs.filter(self.Tag.id==self.XRef.tag_id)
+        return
 
     def more_filter_by_tag(self, qs, tag):
         xref = orm.aliased(self.XRef)

@@ -11,8 +11,8 @@ class PageTagAlterTest(unittest.TestCase):
         return DBSession
 
     def _makePage(self, **kwargs):
-        from altaircms.page.models import Page
-        return Page(**kwargs)
+        from altaircms.page.models import PageSet
+        return PageSet(**kwargs)
 
     def _makeTag(self, **kwargs):
         from altaircms.tag.models import PageTag
@@ -24,9 +24,9 @@ class PageTagAlterTest(unittest.TestCase):
 
     def _makeOne(self):
         from altaircms.tag.manager import TagManager
-        from altaircms.page.models import Page
+        from altaircms.page.models import PageSet
         from altaircms.tag import models as m
-        return TagManager(Object=Page, XRef=m.PageTag2Page, Tag=m.PageTag)
+        return TagManager(Object=PageSet, XRef=m.PageTag2Page, Tag=m.PageTag)
 
 
     def test_tagged_when_create(self):

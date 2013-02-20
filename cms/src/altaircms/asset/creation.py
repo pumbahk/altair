@@ -346,7 +346,7 @@ class ImageSearcher(object):
             return qs
         
         manager = get_tagmanager("image_asset")
-        return QueryParser(data["tags"]).and_search_by_manager(manager)
+        return QueryParser(data["tags"]).and_search_by_manager(manager, organization_id=self.request.organization.id)
 
 class MovieSearcher(object):
     def __init__(self, request):
@@ -358,7 +358,7 @@ class MovieSearcher(object):
             return qs
         
         manager = get_tagmanager("movie_asset")
-        return QueryParser(data["tags"]).and_search_by_manager(manager)
+        return QueryParser(data["tags"]).and_search_by_manager(manager, organization_id=self.request.organization.id)
 
 class FlashSearcher(object):
     def __init__(self, request):
@@ -370,4 +370,4 @@ class FlashSearcher(object):
             return qs
         
         manager = get_tagmanager("flash_asset")
-        return QueryParser(data["tags"]).and_search_by_manager(manager)
+        return QueryParser(data["tags"]).and_search_by_manager(manager, organization_id=self.request.organization.id)
