@@ -32,6 +32,16 @@ def import_symbol(symbol):
 def quote(x):
     return urllib.quote(x.encode("utf-8"), safe="%/:=&?~#+!$,;'@()*[]").decode("utf-8") if x else None
 
+class TermValidator(object):
+    def __init__(self, begin, end, message):
+        self.begin = begin
+        self.end = end
+        self.message = message
+
+    def __call__(self, data, errors):
+        if data[self.end] and data[self.begin] and data[self.begin] > data[self.end]:
+            append_errors(errors, self.begin, self.message)
+
 """
 class ISlackOffForm(Interface):
     __display_fields__ = Attribute("display fields")
@@ -80,7 +90,7 @@ class PerformanceForm(Form):
     venue = fields.TextField(label=u"開催場所(詳細)")
     open_on = fields.DateTimeField(label=u"開場時間", validators=[required_field()])
     start_on = fields.DateTimeField(label=u"開始時間", validators=[required_field()])
-    end_on = fields.DateTimeField(label=u"終了時間", validators=[])
+    end_on = fields.DateTimeField(label=u"終了時間", validators=[validators.Optional()])
 
     purchase_link = fields.TextField(label=u"購入ページリンク", filters=[quote])
     mobile_purchase_link = fields.TextField(label=u"購入ページリンク(mobile)", filters=[quote])
@@ -116,23 +126,24 @@ class PerformanceForm(Form):
                           u"purchase_link", u"mobile_purchase_link", 
                           u"calendar_content"]
 
-
+validate_term = TermValidator("start_on", "end_on",  u"公開開始日よりも後に終了日が設定されています")
 class SalesSegmentForm(Form):
     performance = dynamic_query_select_field_factory(Performance,
                                                      dynamic_query=lambda model, request, query: query.filter_by(id=request.params["performance_id"]), 
                                                      allow_blank=False, label=u"パフォーマンス", get_label=lambda obj: performance_name(obj))
     group = dynamic_query_select_field_factory(SalesSegmentGroup, allow_blank=False, label=u"販売区分名", get_label=lambda obj: obj.name)
-    start_on = fields.DateTimeField(label=u"開始時間（省略可)")
-    end_on = fields.DateTimeField(label=u"終了時間(省略可)")
+    start_on = fields.DateTimeField(label=u"開始時間",validators=[])
+    end_on = fields.DateTimeField(label=u"終了時間(省略可)",validators=[validators.Optional()])
        
     __display_fields__ = [u"performance", u"group", u"start_on", u"end_on"]
 
-    # def validate(self, **kwargs):
-    #     if super(SalesSegmentForm, self).validate():
-    #         data = self.data
-    #         if not data["name"]:
-    #             data["name"] = data["event"].title
-    #     return not bool(self.errors)
+    def validate(self, **kwargs):
+        if super(SalesSegmentForm, self).validate():
+            validate_term(self.data, self.errors)
+            # data = self.data
+            # if not data["name"]:
+            #     data["name"] = data["event"].title
+        return not bool(self.errors)
 
 
 class TicketForm(Form):
@@ -152,16 +163,6 @@ class TicketForm(Form):
     __display_fields__ = [u"sale",u"name",  u"seattype", u"price"]
     # __display_fields__ = [u"sale", u"name", u"seattype", u"price", u"display_order"]
 
-class TermValidator(object):
-    def __init__(self, begin, end, message):
-        self.begin = begin
-        self.end = end
-        self.message = message
-
-    def __call__(self, data, errors):
-        if data[self.end] and data[self.begin] and data[self.begin] > data[self.end]:
-            append_errors(errors, self.begin, self.message)
-
 validate_publish_term = TermValidator("publish_open_on", "publish_close_on",  u"公開開始日よりも後に終了日が設定されています")
 class TopicForm(Form):
     title = fields.TextField(label=u"タイトル", validators=[required_field()])
@@ -169,7 +170,7 @@ class TopicForm(Form):
     genre = fields.SelectMultipleField(label=u"ジャンル(todo:fixme)", coerce=unicode)
     text = fields.TextField(label=u"内容", validators=[required_field()], widget=widgets.TextArea())
     publish_open_on = fields.DateTimeField(label=u"公開開始日", validators=[required_field()])
-    publish_close_on = fields.DateTimeField(label=u"公開終了日", validators=[required_field()])
+    publish_close_on = fields.DateTimeField(label=u"公開終了日", validators=[validators.Optional()])
 
 
     linked_page = dynamic_query_select_field_factory(PageSet, allow_blank=True,label=u"リンク先ページ(CMSで作成したもの)", 
