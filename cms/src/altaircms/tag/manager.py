@@ -154,6 +154,7 @@ class TagManager(TagManagerBase):
     def recent_change_tags(self):
         return self.Tag.query.filter(self.Tag.organization_id!=None).order_by(saexp.desc(self.Tag.updated_at), saexp.asc(self.Tag.id))
 
+## 現在SystemTagをジャンル関連のキーワードの格納に使っている。他のSystemTagが現れた場合には、tagの種類を分けるためのカラムを追加する必要がある
 @implementer(ISystemTagManager)
 class SystemTagManager(TagManagerBase):
     def is_target_tag(self, tag):
