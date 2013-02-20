@@ -100,6 +100,7 @@ def get_route_pattern(registry, name):
 
 def set_cart(request, cart):
     request.session['ticketing.cart_id'] = cart.id
+    request.session.persist()
     request._cart = cart
 
 def get_cart(request):
