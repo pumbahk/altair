@@ -11,6 +11,8 @@ from wtforms.fields.core import UnboundField, _unset_value
 from wtforms.compat import iteritems
 from wtforms.widgets.core import HTMLString, Input, html_params
 from ticketing.utils import atom, days_of_month
+from ticketing.helpers import todatetime
+from ticketing.formatter import Japanese_Japan_Formatter
 import logging
 import warnings
 
@@ -38,6 +40,8 @@ class Translations(object):
         'Not a valid date value': u'日付の形式を確認してください',
         'Invalid value for %(field)s': u'%(field)sに不正な値が入力されています',
         "Required field `%(field)s' is not supplied": u'「%(field)s」が空欄になっています',
+        u'Field must be a date/time after or equal to %(datetime)s': u'%(datetime)s 以降にしてください',
+        u'Field must be a date/time before %(datetime)s': u'%(datetime)s より前にしてください',
         'year': u'年',
         'month': u'月',
         'day': u'日',
@@ -48,6 +52,7 @@ class Translations(object):
     def __init__(self, messages = None):
         if messages:
             self.messages = dict(self.messages, **messages)
+        self.formatter = Japanese_Japan_Formatter()
 
     def gettext(self, string):
         return self.messages.get(string, string)
@@ -61,6 +66,14 @@ class Translations(object):
             logger.warn("localize message not found: '%s'", ural)
             return ural
 
+    def format_datetime(self, date):
+        if isinstance(date, datetime):
+            return self.formatter.format_datetime(date)
+        else:
+            return self.formatter.format_date(date)
+
+    def format_date(eslf, date):
+        return self.formatter.format_date(date)
 
 class Required(validators.Required):
     def __call__(self, form, field):
@@ -84,6 +97,32 @@ class Phone(validators.Regexp):
         if self.message is None:
             self.message = field.gettext(u'電話番号を確認してください')
         super(Phone, self).__call__(form, field)
+
+class DateTimeInRange(object):
+    def __init__(self, from_=None, to=None):
+        self.from_ = from_ and todatetime(from_)
+        self.to = to and todatetime(to)
+
+    def format_datetime(self, field, date, type_):
+        if hasattr(field._translations, 'format_datetime'):
+            if type_ == datetime:
+                return field._translations.format_datetime(date)
+            else:
+                return field._translations.format_date(date)
+        else:
+            if type_ == datetime:
+                return date.strftime("%Y-%m-%d %H:%M:%S")
+            else:
+                return date.strftime("%Y-%m-%d")
+
+    def __call__(self, form, field):
+        if field.data is None:
+            return
+        data = todatetime(field.data)
+        if self.from_ is not None and self.from_ > data:
+            raise ValueError(field.gettext(u'Field must be a date/time after or equal to %(datetime)s') % dict(field=field.label, datetime=self.format_datetime(field, self.from_, field.data.__class__)))
+        if self.to is not None and self.to <= data:
+            raise ValueError(field.gettext(u'Field must be a date/time before %(datetime)s') % dict(field=field.label, datetime=self.format_datetime(field, self.to, field.data.__class__)))
 
 def text_type_but_none_if_not_given(value):
     return unicode(value) if value is not None else None
@@ -157,6 +196,8 @@ def ignore_regexp(regexp):
     return replace
 
 ignore_space_hyphen = ignore_regexp(re.compile(u"[ \-ー　]"))
+
+after1900 = DateTimeInRange(from_=date(1900, 1, 1))
 
 class OurForm(Form):
     def __init__(self, *args, **kwargs):
@@ -522,8 +563,25 @@ class OurDateTimeFieldBase(fields.Field):
                             missing_fields = []
                 if len(missing_fields) == len(self._fields):
                     self.data = None
+                    self.raw_data = None
                 else:
                     self.process_datetime_formdata()
+                    # XXX: This is needed because "Optional" validator
+                    # depends on self.raw_data being set within this method.
+                    if self.data is not None:
+                        self.raw_data = [
+                            # strftime() cannot be used here because
+                            # the method doesn't deal with any datetime
+                            # before 1900/1/1
+                            "%(year)04d-%(month)02d-%(day)02d %(hour)02d:%(minute)02d:%(second)02d" % dict(
+                                year=self.data.year,
+                                month=self.data.month,
+                                day=self.data.day,
+                                hour=getattr(self.data, 'hour', 0),
+                                minute=getattr(self.data, 'minute', 0),
+                                second=getattr(self.data, 'second', 0)
+                                )
+                            ]
         else:
             try:
                 value_defaults = self.value_defaults()

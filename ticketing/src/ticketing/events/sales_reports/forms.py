@@ -4,7 +4,7 @@ from wtforms import Form
 from wtforms import TextField, SelectField, HiddenField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 
-from ticketing.formhelpers import DateTimeField, DateField, Translations, Required
+from ticketing.formhelpers import DateTimeField, DateField, Translations, Required, after1900
 from ticketing.core.models import Event, Organization, Operator, ReportSetting
 from ticketing.core.models import ReportFrequencyEnum
 
@@ -35,12 +35,12 @@ class SalesReportForm(Form):
     )
     limited_from = DateField(
         label=u'絞り込み期間',
-        validators=[Optional()],
+        validators=[Optional(), after1900],
         format='%Y-%m-%d',
     )
     limited_to = DateField(
         label=u'絞り込み期間',
-        validators=[Optional()],
+        validators=[Optional(), after1900],
         format='%Y-%m-%d',
     )
     recipient = TextField(
