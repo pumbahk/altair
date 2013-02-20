@@ -1932,7 +1932,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             return False
 
         # インナー予約の場合はAPI決済していないのでスキップ
-        if 'sales_counter_payment_method_id' in self.attributes:
+        if self.channel == ChannelEnum.INNER.v:
             logger.info(u'インナー予約のキャンセルなので決済払戻処理をスキップ %s' % self.order_no)
 
         # クレジットカード決済
