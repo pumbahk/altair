@@ -569,7 +569,7 @@ class get_valid_sales_urlTests(unittest.TestCase):
             ['membership:ms1', 'membergroup:mg1']
         )
         self.config.add_route('cart.index.sales',
-            '{event_id}/{sales_segment_id}')
+            '{event_id}/{sales_segment_group_id}')
         event, membergroup = self._create_data()
         request = testing.DummyRequest()
         result = self._callFUT(request, event)
@@ -582,7 +582,7 @@ class get_valid_sales_urlTests(unittest.TestCase):
             ['membership:ms1', 'membergroup:mg2']
         )
         self.config.add_route('cart.index.sales',
-            '{event_id}/{sales_segment_id}')
+            '{event_id}/{sales_segment_group_id}')
         event, membergroup = self._create_data()
         request = testing.DummyRequest()
         result = self._callFUT(request, event)

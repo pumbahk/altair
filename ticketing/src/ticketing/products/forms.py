@@ -9,7 +9,7 @@ from wtforms.widgets import CheckboxInput, TextArea
 from sqlalchemy.sql import func
 
 from ticketing.formhelpers import Translations, Required, BugFreeSelectField, OurTextField, OurSelectField, OurIntegerField, OurDecimalField, OurForm, NullableTextField
-from ticketing.core.models import SalesSegment, Product, ProductItem, StockHolder, StockType, Stock, Performance, TicketBundle
+from ticketing.core.models import SalesSegment, SalesSegmentGroup, Product, ProductItem, StockHolder, StockType, Stock, Performance, TicketBundle
 
 class ProductForm(OurForm):
     @classmethod
@@ -21,7 +21,7 @@ class ProductForm(OurForm):
             price = product.price, 
             display_order = product.display_order, 
             seat_stock_type_id = product.seat_stock_type_id, 
-            sales_segment_id = product.sales_segment_id, 
+            sales_segment_group_id = product.sales_segment_id, 
             public = 1 if product.public else 0, # why integer?
             description = product.description
             )
@@ -34,8 +34,8 @@ class ProductForm(OurForm):
             conditions ={
                 'event_id':kwargs['event_id'],
             }
-            self.sales_segment_id.choices = [
-                (sales_segment.id, sales_segment.name) for sales_segment in SalesSegment.filter_by(**conditions).all()
+            self.sales_segment_group_id.choices = [
+                (sales_segment.id, sales_segment.name) for sales_segment in SalesSegmentGroup.filter_by(**conditions).all()
             ]
             self.seat_stock_type_id.choices = [
                 (stock_type.id, stock_type.name) for stock_type in StockType.filter_by(**conditions).all()
@@ -74,8 +74,8 @@ class ProductForm(OurForm):
         choices=[],
         coerce=int
     )
-    sales_segment_id = OurSelectField(
-        label=u'販売区分',
+    sales_segment_group_id = OurSelectField(
+        label=u'販売区分グループ',
         validators=[Required(u'選択してください')],
         choices=[],
         coerce=int

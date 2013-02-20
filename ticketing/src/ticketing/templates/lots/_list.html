@@ -1,0 +1,62 @@
+<%page args="lots, limit=None" />
+%if not lots:
+<p>
+登録されている抽選はありません。
+<a href="${request.route_url('lots.new', event_id=event.id)}" class="btn"><i class="icon-plus"></i>新規</a>
+</p>
+%else:
+<form action="${request.url}" method="post">
+<div class="row-fluid">
+  <div class="span12">
+    <div class="btn-group">
+      <button class="btn"><i class="icon-plus"></i>新規</button>
+      <button class="btn"><i class="icon-minus"></i>削除</button>
+    </div>
+    <table class="table fullwidth checkboxed_table" style="margin-bottom: 10px;">
+      <thead>
+        <tr>
+          <th>
+              &nbsp;
+          </th>
+          <th>
+            抽選名
+          </th>
+          <th>
+            抽選期間 
+          </th>
+          <th>
+            申し込み上限数
+          </th>
+          <th>
+              抽選結果発表予定日
+          </th>
+          <th>
+            &nbsp;
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        %for lot in lots:
+        <tr>
+            <td><input type="checkbox" name="lot_id" value="${lot.id}"/></td>
+            <td><a href="${request.route_url('lots.show', lot_id=lot.id)}">${lot.name}</a></td>
+            <td>${lot.start_at} - ${lot.end_at}</td>
+            <td>${lot.limit_wishes}</td>
+            <td>${lot.lotting_announce_datetime}</td>
+            <td>
+                <div class="btn-group">
+                    <a href="${request.route_url('lots.edit', lot_id=lot.id)}" class="btn"><i class="icon-edit"></i>編集</a>
+                </div>
+            </td>
+        </tr>
+        %endfor
+      </tbody>
+    </table>
+    <div class="btn-group">
+        <a href="${request.route_url('lots.new', event_id=event.id)}" class="btn"><i class="icon-plus"></i>新規</a>
+      <button type="submit" name="action-delete" class="btn"><i class="icon-minus"></i>削除</button>
+    </div>
+  </div>
+</div>
+</form>
+%endif

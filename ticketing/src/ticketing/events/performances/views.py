@@ -14,7 +14,8 @@ from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.events.performances.forms import PerformanceForm, PerformancePublicForm
-from ticketing.core.models import Event, Performance, Order, Product, ProductItem, Stock
+from ticketing.events.sales_segments.forms import SalesSegmentForm
+from ticketing.core.models import Event, Performance, Order, Product, ProductItem, Stock, SalesSegment
 from ticketing.products.forms import ProductForm, ProductItemForm, ProductItemGridForm
 from ticketing.orders.forms import OrderForm, OrderSearchForm
 
@@ -89,6 +90,8 @@ class Performances(BaseView):
             )
             data['form_search'] = form_search
             data['form_order'] = OrderForm(event_id=performance.event_id)
+        elif tab == 'sales_segment':
+            data['form_sales_segment'] = SalesSegmentForm(sales_segment_groups=performance.event.sales_segment_groups, performances=[performance])
         elif tab == 'ticket-designer':
             pass
         elif tab == 'reservation':
@@ -310,4 +313,3 @@ class MailInfoNewView(BaseView):
                 "mailtype": self.request.matchdict["mailtype"], 
                 "choices": MailTypeChoices, 
                 "choice_form": choice_form}
-

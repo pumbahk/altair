@@ -1,4 +1,4 @@
-<%page args="order=None, modal_id='modal-sales_segment'" />
+<%page args="order=None" />
 <%namespace file="/common/helpers.html" name="h" />
 <%namespace file="/common/modal.html" import="delete_modal" />
 <script type="text/javascript">
@@ -11,14 +11,9 @@ var get_selected_sales_segment_id;
       url='javascript:new_sales_segment();',
       icon='icon-plus',
     ),
-    'copy':dict(
-      label=u'コピーして新規作成',
-      url='javascript:edit_sales_segment(get_selected_sales_segment_id(), true);',
-      icon='icon-plus',
-    ),
     'edit':dict(
       label=u'編集',
-      url='javascript:edit_sales_segment(get_selected_sales_segment_id(), false);',
+      url='javascript:edit_sales_segment(get_selected_sales_segment_id());',
       icon='icon-pencil',
     ),
     'delete':dict(
@@ -26,13 +21,8 @@ var get_selected_sales_segment_id;
       url='javascript:delete_sales_segment();',
       icon='icon-minus',
     ),
-    'show':dict(
-      label=u'詳細',
-      url='javascript:show_sales_segment(get_selected_sales_segment_id());',
-      icon='icon-th-list',
-    ),
   }
-  order = iter(order or ['new', 'copy', 'show', 'edit', 'delete'])
+  order = iter(order or ['new', 'edit', 'delete'])
 %>
 ${h.action_button(actions, order)}
 ${delete_modal()}

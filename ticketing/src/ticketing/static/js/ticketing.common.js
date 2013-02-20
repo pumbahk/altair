@@ -22,15 +22,22 @@ function get_modal_form(modal, form, url) {
 function build_form_params(form) {
   var param = {}, counts = {};
   $(form).find(':input').each(function(i, v) {
-    var count = counts[v.name];
-    if (count === void(0)) {
-      param[v.name] = v.value;
-      counts[v.name] = 1;
+    if (v.type == 'checkbox' || v.type == 'radio') {
+      value = v.checked ? v.value: null;
     } else {
-      var pv = param[v.name];
-      delete param[v.name];
-      param[v.name + '-0'] = pv;
-      param[v.name + '-' + (counts[v.name]++)] = v.value;
+      value = v.value;
+    }
+    if (value != null) {
+      var count = counts[v.name];
+      if (count === void(0)) {
+        param[v.name] = value;
+        counts[v.name] = 1;
+      } else {
+        var pv = param[v.name];
+        delete param[v.name];
+        param[v.name + '-0'] = pv;
+        param[v.name + '-' + (counts[v.name]++)] = value;
+      }
     }
   });
   return param;

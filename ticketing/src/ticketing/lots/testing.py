@@ -54,7 +54,7 @@ def _create_products(session, values):
     session.flush()
     return products
 
-def _add_lot(session, event_id, sales_segment_id, num_performances, num_stok_types, membergroups=[]):
+def _add_lot(session, event_id, sales_segment_group_id, num_performances, num_stok_types, membergroups=[]):
     from . import models as m
     from ticketing.core.models import (
         Event, Performance, SalesSegment, StockType,
@@ -76,7 +76,7 @@ def _add_lot(session, event_id, sales_segment_id, num_performances, num_stok_typ
         session.add(s)
         stock_types.append(s)
     # sales_segment
-    sales_segment = SalesSegment(id=sales_segment_id, event=event, membergroups=membergroups)
+    sales_segment = SalesSegment(id=sales_segment_group_id, event=event, membergroups=membergroups)
     # payment_delivery_method
     payment_method = PaymentMethod(fee=0)
     delivery_method = DeliveryMethod(fee=0)

@@ -92,7 +92,10 @@ class Cart(Base):
     operator = orm.relationship('Operator', backref='orders')
     channel = sa.Column(sa.Integer, nullable=True)
 
-    sales_segment_id = sa.Column(Identifier, sa.ForeignKey('SalesSegmentGroup.id'))
+    sales_segment_group_id = sa.Column(Identifier, sa.ForeignKey('SalesSegmentGroup.id'))
+    sales_segment_group = orm.relationship('SalesSegmentGroup', backref='carts')
+
+    sales_segment_id = sa.Column(Identifier, sa.ForeignKey('SalesSegment.id'))
     sales_segment = orm.relationship('SalesSegment', backref='carts')
 
     disposed = False

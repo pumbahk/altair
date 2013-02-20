@@ -125,8 +125,8 @@ class Products(BaseView):
     def api_get(self):
         logger.debug(self.request.params)
         performance_id = self.request.params.get('performance_id', 0)
-        sales_segment_id = self.request.params.get('sales_segment_id', 0)
-        products = Product.filter(Product.sales_segment_id==sales_segment_id).all()
+        sales_segment_group_id = self.request.params.get('sales_segment_id', 0)
+        products = Product.filter(Product.sales_segment_group_id==sales_segment_id).all()
         if not products:
             raise HTTPBadRequest(body=json.dumps({'message':u'データが見つかりません'}))
 

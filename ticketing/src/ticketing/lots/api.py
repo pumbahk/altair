@@ -22,6 +22,12 @@
 - 在庫処理
 - 注文受け
 
+以下の二種類の販売区分を区別して使う
+- 抽選の決済のための販売区分
+- 公演ごとの券種のための販売区分
+
+同じ販売区分グループだと楽
+
 """
 
 import transaction
@@ -74,10 +80,6 @@ def get_event(request):
     event_id = request.matchdict['event_id']
     return Event.query.filter(Event.id==event_id).one()
 
-def get_products(request, sales_segment, performances):
-    """ """
-    return sales_segment.get_products(performances)
-
 def get_member_group(request):
     user = authenticated_user(request)
     if user is None:
@@ -94,7 +96,7 @@ def get_sales_segment(request, event, membergroup):
         return SalesSegment.query.filter(
             SalesSegment.event_id==event.id
         ).filter(
-            MemberGroup_SalesSegment.c.sales_segment_id==SalesSegment.id
+            MemberGroup_SalesSegment.c.sales_segment_group_id==SalesSegment.id
         ).filter(
             MemberGroup_SalesSegment.c.membergroup_id==MemberGroup.id
         ).filter(
@@ -104,7 +106,7 @@ def get_sales_segment(request, event, membergroup):
         return SalesSegment.query.filter(
             SalesSegment.event_id==event.id
         ).filter(
-            MemberGroup_SalesSegment.c.sales_segment_id==SalesSegment.id
+            MemberGroup_SalesSegment.c.sales_segment_group_id==SalesSegment.id
         ).filter(
             MemberGroup_SalesSegment.c.membergroup_id==membergroup.id
         ).one()
@@ -114,14 +116,14 @@ def get_requested_lot(request):
     return Lot.query.filter(Lot.id==lot_id).one()
 
 
-def get_lot(request, event, sales_segment, lot_id):
+def get_lot(request, event, lot_id):
     """ 抽選取得
     :return: 抽選, 公演リスト, 席種リスト
     """
     lot = Lot.query.filter(
         Lot.event_id==event.id
-    ).filter(
-        Lot.sales_segment_id==sales_segment.id
+    # ).filter(
+    #     Lot.sales_segment_group_id==sales_segment.id
     ).filter(
         Lot.id==lot_id,
     ).one()

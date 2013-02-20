@@ -267,6 +267,16 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def is_hold(self, stock_holder):
         return self.stock.stock_holder == stock_holder
 
+    @classmethod
+    def query_sales_seats(cls, sales_segment):
+        return cls.query.filter(
+                cls.stock_id==ProductItem.stock_id
+            ).filter(
+                ProductItem.product_id==Product.id
+            ).filter(
+                Product.sales_segment_id==sales_segment.id
+            )
+
     @staticmethod
     def create_from_template(template, venue_id, default_stock_id, **kwargs):
         # create Seat
@@ -617,11 +627,12 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         qs = DBSession.query(DeliveryMethod)\
             .filter(DeliveryMethod.delivery_plugin_id==delivery_plugin_id)\
             .filter(DeliveryMethod.id==PaymentDeliveryMethodPair.delivery_method_id)\
-            .filter(PaymentDeliveryMethodPair.sales_segment_id == SalesSegment.id)\
-            .filter(SalesSegment.id==Product.sales_segment_id)\
+            .filter(PaymentDeliveryMethodPair.sales_segment_group_id == SalesSegment.id)\
+            .filter(SalesSegment.id==Product.sales_segment_group_id)\
             .filter(Product.id==ProductItem.product_id)\
             .filter(ProductItem.performance_id==self.id)
         return bool(qs.first())
+
 
 class ReportFrequencyEnum(StandardEnum):
     Daily = 1
@@ -654,7 +665,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     stock_types = relationship('StockType', backref='event', order_by='StockType.display_order')
     stock_holders = relationship('StockHolder', backref='event')
 
-    sales_segments = relationship('SalesSegment')
+    sales_segment_groups = relationship('SalesSegmentGroup')
 
     _first_performance = None
     _final_performance = None
@@ -799,7 +810,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             Eventのコピー時は以下のモデルをcloneする
               - StockType
               - StockHolder
-              - SalesSegment
+              - SalesSegmentGroup
                 - PaymentDeliveryMethodPair
               - Product
               - Performance
@@ -811,7 +822,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             convert_map = {
                 'stock_type':dict(),
                 'stock_holder':dict(),
-                'sales_segment':dict(),
+                'sales_segment_group':dict(),
                 'product':dict(),
             }
 
@@ -827,10 +838,10 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     StockHolder.create_from_template(template=template_stock_holder, event_id=self.id)
                 )
 
-            # create SalesSegment - PaymentDeliveryMethodPair
-            for template_sales_segment in template_event.sales_segments:
-                convert_map['sales_segment'].update(
-                    SalesSegment.create_from_template(template=template_sales_segment, with_payment_delivery_method_pairs=True, event_id=self.id)
+            # create SalesSegmentGroup - PaymentDeliveryMethodPair
+            for template_sales_segment_group in template_event.sales_segment_groups:
+                convert_map['sales_segment_group'].update(
+                    SalesSegmentGroup.create_from_template(template=template_sales_segment_group, with_payment_delivery_method_pairs=True, event_id=self.id)
                 )
 
             # create Product
@@ -900,9 +911,9 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         for performance in self.performances:
             performance.delete()
 
-        # delete SalesSegment
-        for sales_segment in self.sales_segments:
-            sales_segment.delete()
+        # delete SalesSegmentGroup
+        for sales_segment_group in self.sales_segment_groups:
+            sales_segment_group.delete()
 
         # delete StockType
         for stock_type in self.stock_types:
@@ -929,7 +940,7 @@ class SalesSegmentKindEnum(StandardEnum):
     sales_counter   = u'窓口販売'
     other           = u'その他'
 
-class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'SalesSegmentGroup'
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
@@ -943,9 +954,6 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     event_id = Column(Identifier, ForeignKey('Event.id'))
     event = relationship('Event')
 
-    # membergroup_id = Column(Identifier, ForeignKey('MemberGroup.id'))
-    # membergroup = relationship('MemberGroup', backref='salessegments')
-
     def in_term(self, dt):
         return self.start_at <= dt and dt <= self.end_at 
 
@@ -958,7 +966,7 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         for pdmp in self.payment_delivery_method_pairs:
             pdmp.delete()
 
-        super(SalesSegment, self).delete()
+        super(SalesSegmentGroup, self).delete()
 
     def get_cms_data(self):
         start_at = isodate.datetime_isoformat(self.start_at) if self.start_at else ''
@@ -977,16 +985,16 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @staticmethod
     def create_from_template(template, with_payment_delivery_method_pairs=False, **kwargs):
-        sales_segment = SalesSegment.clone(template)
+        sales_segment_group = SalesSegmentGroup.clone(template)
         if 'event_id' in kwargs:
-            sales_segment.event_id = kwargs['event_id']
-        sales_segment.save()
+            sales_segment_group.event_id = kwargs['event_id']
+        sales_segment_group.save()
 
         if with_payment_delivery_method_pairs:
             for template_pdmp in template.payment_delivery_method_pairs:
-                PaymentDeliveryMethodPair.create_from_template(template=template_pdmp, sales_segment_id=sales_segment.id)
+                PaymentDeliveryMethodPair.create_from_template(template=template_pdmp, sales_segment_group_id=sales_segment_group.id)
 
-        return {template.id:sales_segment.id}
+        return {template.id:sales_segment_group.id}
 
     def get_products(self, performances):
         """ この販売区分で購入可能な商品一覧 """
@@ -1007,9 +1015,18 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         return query
 
+
+SalesSegment_PaymentDeliveryMethodPair = Table(
+    "SalesSegment_PaymentDeliveryMethodPair",
+    Base.metadata,
+    Column('id', Identifier, primary_key=True),
+    Column('payment_delivery_method_pair_id', Identifier, ForeignKey('PaymentDeliveryMethodPair.id')),
+    Column('sales_segment_id', Identifier, ForeignKey('SalesSegment.id')),
+    )
+
 class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentDeliveryMethodPair'
-
+    query = DBSession.query_property()
     id = Column(Identifier, primary_key=True)
     system_fee = Column(Numeric(precision=16, scale=2), nullable=False)
     transaction_fee = Column(Numeric(precision=16, scale=2), nullable=False)
@@ -1028,8 +1045,8 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     # 一般公開するか
     public = Column(Boolean, nullable=False, default=True)
 
-    sales_segment_id = Column(Identifier, ForeignKey('SalesSegmentGroup.id'))
-    sales_segment = relationship('SalesSegment', backref='payment_delivery_method_pairs')
+    sales_segment_group_id = Column(Identifier, ForeignKey('SalesSegmentGroup.id'))
+    sales_segment_group = relationship('SalesSegmentGroup', backref='payment_delivery_method_pairs')
     payment_method_id = Column(Identifier, ForeignKey('PaymentMethod.id'))
     payment_method = relationship('PaymentMethod', backref='payment_delivery_method_pairs')
     delivery_method_id = Column(Identifier, ForeignKey('DeliveryMethod.id'))
@@ -1038,8 +1055,8 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     @staticmethod
     def create_from_template(template, **kwargs):
         pdmp = PaymentDeliveryMethodPair.clone(template)
-        if 'sales_segment_id' in kwargs:
-            pdmp.sales_segment_id = kwargs['sales_segment_id']
+        if 'sales_segment_group_id' in kwargs:
+            pdmp.sales_segment_group_id = kwargs['sales_segment_group_id']
         pdmp.save()
 
 class PaymentMethodPlugin(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -1501,8 +1518,11 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     price = Column(Numeric(precision=16, scale=2), nullable=False)
     display_order = Column(Integer, nullable=False, default=1)
 
-    sales_segment_id = Column(Identifier, ForeignKey('SalesSegmentGroup.id'), nullable=True)
-    sales_segment = relationship('SalesSegment', uselist=False, backref=backref('product', order_by='Product.display_order'))
+    sales_segment_group_id = Column(Identifier, ForeignKey('SalesSegmentGroup.id'), nullable=True)
+    sales_segment_group = relationship('SalesSegmentGroup', uselist=False, backref=backref('product', order_by='Product.display_order'))
+
+    sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'), nullable=True)
+    sales_segment = relationship('SalesSegment', backref=backref('products', order_by='Product.display_order'))
 
     seat_stock_type_id = Column(Identifier, ForeignKey('StockType.id'), nullable=True)
     seat_stock_type = relationship('StockType', uselist=False, backref=backref('product', order_by='Product.display_order'))
@@ -1519,15 +1539,18 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     description = Column(Unicode(2000), nullable=True, default=None)
 
+    performance_id = Column(Identifier, ForeignKey('Performance.id'))
+    performance = relationship('Performance', backref='products')
+
     @staticmethod
-    def find(performance_id=None, event_id=None, sales_segment_id=None, stock_id=None, include_deleted=False):
+    def find(performance_id=None, event_id=None, sales_segment_group_id=None, stock_id=None, include_deleted=False):
         query = DBSession.query(Product, include_deleted=include_deleted)
         if performance_id:
             query = query.join(Product.items).filter(ProductItem.performance_id==performance_id)
         if event_id:
             query = query.filter(Product.event_id==event_id)
-        if sales_segment_id:
-            query = query.filter(Product.sales_segment_id==sales_segment_id)
+        if sales_segment_group_id:
+            query = query.filter(Product.sales_segment_group_id==sales_segment_id)
         if stock_id:
             if not performance_id:
                 query = query.join(Product.items)
@@ -1601,7 +1624,7 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             'id':self.id,
             'name':self.name,
             'price':floor(self.price),
-            'sale_id':self.sales_segment_id,
+            'sale_id':self.sales_segment_group_id,
             'seat_type':self.seat_type(),
             'display_order':self.display_order,
         }
@@ -1622,6 +1645,7 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if 'sales_segment' in kwargs:
             # 販売区分なしの場合の product もありえる
             product.sales_segment_id = template.sales_segment_id and kwargs['sales_segment'][template.sales_segment_id]
+            #product.sales_segment_group_id = kwargs['sales_segment'][template.sales_segment_id]
         product.save()
 
         if with_product_items:
@@ -2758,3 +2782,50 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def item(self, order):
         return sum(o.price * o.quantity for o in order.items) if self.include_item else 0
+
+
+class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
+    __tablename__ = 'SalesSegment'
+    query = DBSession.query_property()
+    id = Column(Identifier, primary_key=True)
+    start_at = Column(DateTime)
+    end_at = Column(DateTime)
+    upper_limit = Column(Integer)
+    seat_choice = Column(Boolean, default=True)
+    public = Column(Boolean, default=True)
+    performance_id = Column(Identifier, ForeignKey('Performance.id'))
+    performance = relationship("Performance", backref="sales_segments")
+    sales_segment_group_id = Column(Identifier, ForeignKey("SalesSegmentGroup.id"))
+    sales_segment_group = relationship("SalesSegmentGroup", backref="sales_segments")
+
+    payment_delivery_method_pairs = relationship("PaymentDeliveryMethodPair",
+        secondary="SalesSegment_PaymentDeliveryMethodPair",
+        backref="sales_segments")
+
+    @hybrid_property
+    def name(self):
+        return self.sales_segment_group.name
+
+    @hybrid_property
+    def kind(self):
+        return self.sales_segment_group.kind
+
+    def in_term(self, dt):
+        return self.start_at <= dt and dt <= self.end_at 
+
+
+    @property
+    def stocks(self):
+        """ この販売区分で販売可能な在庫 
+        商品 -> 商品アイテム -> 在庫
+        """
+
+        return Stock.query.filter(
+                Stock.id==ProductItem.stock_id
+            ).filter(
+                ProductItem.product_id==Product.id
+            ).filter(
+                Product.sales_segment_id==self.id
+            ).distinct(Stock.id)
+
+        

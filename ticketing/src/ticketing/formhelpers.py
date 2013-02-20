@@ -26,6 +26,15 @@ class BugFreeSelectField(fields.SelectField):
         else:
             raise ValueError(self.gettext('Not a valid choice'))
 
+class BugFreeSelectMultipleField(fields.SelectMultipleField):
+    def pre_validate(self, form):
+        for d in self.data:
+            for v, _ in self.choices:
+                if d == self.coerce(v):
+                    break
+            else:
+                raise ValueError(self.gettext('Not a valid choice'))
+
 class Translations(object):
     messages={
         'Not a valid choice': u'不正な選択です',

@@ -43,7 +43,7 @@
 
     product.find('#sales_segment_id').change(function(){
       var choices = {
-        % for choice in form_product.sales_segment_id.choices:
+        % for choice in form_product.sales_segment_group_id.choices:
           '${choice[0]}':'${choice[1]}',
         % endfor
       }
@@ -78,11 +78,11 @@
               <td><span id="price">${h.price_format(form_product.price.data or 0)}</span></td>
             </tr>
             <tr>
-              <th>${form_product.sales_segment_id.label.text}</th>
+              <th>${form_product.sales_segment_group_id.label.text}</th>
               <td>
                 <span id="sales_segment_id">
-                % for choice in form_product.sales_segment_id.choices:
-                  % if choice[0] == form_product.sales_segment_id.data:
+                % for choice in form_product.sales_segment_group_id.choices:
+                  % if choice[0] == form_product.sales_segment_group_id.data:
                     ${choice[1]}
                   % endif
                 % endfor

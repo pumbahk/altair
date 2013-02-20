@@ -18,6 +18,7 @@ from ticketing.payments.payment import Payment
 from ticketing.cart.exceptions import NoCartError
 
 from .models import (
+    Lot,
     LotEntry,
     LotEntryWish,
     LotElectedEntry,
@@ -51,13 +52,14 @@ class EntryLotView(object):
     def _get_lot_info(self):
         event = api.get_event(self.request)
         member_group = api.get_member_group(self.request)
-        sales_segment = api.get_sales_segment(self.request, event, member_group)
+        #sales_segment = api.get_sales_segment(self.request, event, member_group)
         lot_id = self.request.matchdict.get('lot_id')
-        return api.get_lot(self.request, event, sales_segment, lot_id)
+        return api.get_lot(self.request, event, lot_id)
 
     def _create_product_performance_map(self, products):
         product_performance_map = {}
-        for product, performance in products:
+        for product in products:
+            performance = product.performance
             products = product_performance_map.get(performance.id, [])
             products.append(dict(id=product.id, name=product.name, display_order=product.display_order))
             product_performance_map[performance.id] = products
@@ -78,13 +80,11 @@ class EntryLotView(object):
         lot, performances, stocks = self._get_lot_info()
         event = lot.event
         sales_segment = lot.sales_segment
-        products = api.get_products(self.request, sales_segment, performances)
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
-        product_performance_map = self._create_product_performance_map(products)
+        product_performance_map = self._create_product_performance_map(sales_segment.products)
 
         return dict(form=form, event=event, sales_segment=sales_segment,
             payment_delivery_pairs=payment_delivery_pairs,
-            products=products,
             posted_values=json.dumps(dict(self.request.POST)),
             products_json=json.dumps(product_performance_map),
             payment_delivery_method_pair_id=self.request.params.get('payment_delivery_method_pair_id'),
@@ -180,7 +180,10 @@ class ConfirmLotEntryView(object):
         shipping_address = h.convert_shipping_address(shipping_address)
         wishes = entry['wishes']
 
-        lot, performances, stock_types = self.get_lot()
+        lot_id = self.request.matchdict['lot_id']
+        lot = Lot.query.filter(Lot.id==lot_id).one()
+        performances = lot.performances
+
         if not lot.validate_entry(self.request.params):
             return HTTPFound('lots.entry.index')
         payment_delivery_method_pair_id = entry['payment_delivery_method_pair_id']

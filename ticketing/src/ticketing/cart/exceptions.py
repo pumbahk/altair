@@ -10,8 +10,8 @@ class NoEventError(CartException):
     pass
 
 class NoPerformanceError(CartException):
-    def __init__(self, event_id=None, sales_segment_id=None):
-        CartException.__init__(self, event_id, sales_segment_id)
+    def __init__(self, event_id=None, sales_segment_group_id=None):
+        CartException.__init__(self, event_id, sales_segment_group_id)
 
 class NoSalesSegment(CartException):
     pass

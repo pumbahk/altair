@@ -326,7 +326,7 @@ class OrderReserveForm(Form):
                                   .filter(ProductItem.stock_id.in_(kwargs['stocks'])).all()
             #else:
             #    # 数受け
-            #    products = Product.filter(Product.sales_segment_id.in_([ss.id for ss in sales_segments]))\
+            #    products = Product.filter(Product.sales_segment_group_id.in_([ss.id for ss in sales_segments]))\
             #                      .join(Product.seat_stock_type)\
             #                      .filter(StockType.quantity_only==1).all()
             for p in products:

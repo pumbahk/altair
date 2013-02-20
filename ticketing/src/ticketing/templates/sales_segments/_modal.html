@@ -1,18 +1,15 @@
-<%page args="modal_id, event" />
+<%page args="modal_id, performance=None, sales_segment_group=None" />
 <%namespace file="/common/helpers.html" name="h" />
 <script type="text/javascript">
-  var show_sales_segment, new_sales_segment, edit_sales_segment, delete_sales_segment;
+  var new_sales_segment, edit_sales_segment, delete_sales_segment;
   $(function() {
     (function(modal_sales_segment) {
-      show_sales_segment = function show_sales_segment(id) {
-        location.href = '${request.route_path('sales_segments.show', sales_segment_id='{id}')}'.replace(encodeURIComponent('{id}'), id);
-      };
       new_sales_segment = function new_sales_segment() {
         // FIXME: formをsubmitしたらページ遷移が発生する挙動に頼っていて
         // onchangeイベントハンドラはずしてないの注意
         load_modal_form(
           modal_sales_segment,
-          '${request.route_path('sales_segments.new', event_id=event.id)}',
+          '${request.route_path('sales_segments.new', _query=dict(performance_id=performance.id if performance else u'', sales_segment_group_id=sales_segment_group.id if sales_segment_group else u''))|n}',
           null,
           function () {
             $(this).find('.copy-fields').css('display', 'none');
@@ -40,22 +37,19 @@
           }
         );
       };
-      edit_sales_segment = function edit_sales_segment(id, copy) {
+      edit_sales_segment = function edit_sales_segment(id) {
         load_modal_form(
           modal_sales_segment,
-          '${request.route_path('sales_segments.edit', sales_segment_id='{id}')}'.replace(encodeURIComponent('{id}'), id),
+          '${request.route_path('sales_segments.edit', sales_segment_id='{id}')|n}'.replace(encodeURIComponent('{id}'), id),
           null,
-          function () {
-            if (!copy)
-              $(this).find('.copy-fields').css('display', 'none');
-          }
+          null
         );
       };
       delete_sales_segment = function delete_sales_segment() {
         var id = $('input[name=sales_segment_id]:checked').val() || $('#sales_segments-form').find('#sales_segment_id').attr('value');
         if (!id) return;
         var modal = $('#modal-delete');
-        modal.find('#delete').attr('href', '/events/sales_segments/delete/' + id);
+        modal.find('#delete').attr('href', '${request.route_path('sales_segments.delete', sales_segment_id='{id}')}'.replace(encodeURIComponent('{id}'), id));
         modal.find('#message').text('選択した販売区分を削除します。よろしいですか？');
         modal.modal('toggle');
       };

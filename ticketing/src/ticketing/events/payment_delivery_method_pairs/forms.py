@@ -6,7 +6,7 @@ from wtforms.validators import NumberRange, Regexp, Length, Optional, Validation
 from wtforms.widgets import CheckboxInput
 
 from ticketing.formhelpers import Translations, Required
-from ticketing.core.models import PaymentMethod, DeliveryMethod, PaymentDeliveryMethodPair
+from ticketing.core.models import SalesSegment, PaymentMethod, DeliveryMethod, PaymentDeliveryMethodPair
 
 class PaymentDeliveryMethodPairForm(Form):
 
@@ -26,8 +26,8 @@ class PaymentDeliveryMethodPairForm(Form):
     id = HiddenField(
         validators=[]
     )
-    sales_segment_id = HiddenField(
-        validators=[]
+    sales_segment_group_id = HiddenField(
+        validators=[Optional()]
     )
     system_fee = DecimalField(
         label=u'システム利用料',
@@ -87,7 +87,7 @@ class PaymentDeliveryMethodPairForm(Form):
         if field.data is None or form.delivery_method_id.data is None or form.id is None:
             return
         kwargs = {
-            'sales_segment_id':form.sales_segment_id.data,
+            'sales_segment_group_id':form.sales_segment_group_id.data,
             'payment_method_id':field.data,
             'delivery_method_id':form.delivery_method_id.data,
         }
