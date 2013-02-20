@@ -3,7 +3,9 @@ from pyramid.decorator import reify
 from ..widget.api import get_has_widget_pages_finder
 from ..security import get_acl_candidates
 from ..tag.api import get_tagmanager
-
+from .searcher import TopicUnitListSearcher
+from .searcher import TopcontentUnitListSearcher
+from .searcher import PromotionUnitListSearcher
 from .searcher import TopicPageListSearcher
 from .searcher import TopcontentPageListSearcher
 from .searcher import PromotionPageListSearcher
@@ -43,6 +45,10 @@ class TopicPageContext(object):
         return get_tagmanager(self.widgettype, request=self.request)
 
     @reify
+    def unit_list_searcher(self):
+        return TopicUnitListSearcher(self.request)
+
+    @reify
     def list_searcher(self):
         return TopicPageListSearcher(self.request, self.finder)
 
@@ -70,6 +76,11 @@ class TopcontentPageContext(object):
     @reify
     def tag_manager(self):
         return get_tagmanager(self.widgettype, request=self.request)
+
+    @reify
+    def unit_list_searcher(self):
+        return TopcontentUnitListSearcher(self.request)
+
     @reify
     def list_searcher(self):
         return TopcontentPageListSearcher(self.request, self.finder)
@@ -102,6 +113,11 @@ class PromotionPageContext(object):
     @reify
     def list_searcher(self):
         return PromotionPageListSearcher(self.request, self.finder)
+
+    @reify
+    def unit_list_searcher(self):
+        return PromotionUnitListSearcher(self.request)
+
 
     @reify
     def detail_searcher(self):

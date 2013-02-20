@@ -27,7 +27,8 @@ class SearchSchema(object):
         self.query_key = query_key
         self.model_attribute = model_attribute or query_key
         self.required = required
-        assert hasattr(model, self.model_attribute)
+        if not hasattr(model, self.model_attribute):
+            raise Exception("%s.%s is not found" % (model, self.model_attribute))
 
     def exists(self, params, query_key=None):
         query_key = query_key or self.query_key
@@ -50,6 +51,11 @@ class BooleanSearchSchema(SearchSchema):
         query_key = query_key or self.query_key
         return as_result(query_key, 
                          parse_boolean(self.model, query_key, params, self.model_attribute))
+class ComplementSearchSchema(SearchSchema):
+    def parse(self, params, query_key=None):
+        query_key = query_key or self.query_key
+        return as_result(query_key, 
+                         parse_complement(self.model, query_key, params, self.model_attribute))
 
 class DateTimeSearchSchema(SearchSchema):
     def parse(self, params, query_key=None):
@@ -116,6 +122,16 @@ def parse_boolean(model, key, params, attr):
         return getattr(model, attr) == True
     else:
         return getattr(model, attr) == False
+
+def parse_complement(model, key, params, attr):
+    if key not in params:
+        return KeyNotFound(key, "%s. operator is not found" % key)
+
+    status = params[key]
+    if status.lower() in ("true", "ok", "success", "1"):
+        return getattr(model, attr) == False
+    else:
+        return getattr(model, attr) == True
 
 def parse_equal(model, key, params, attr):
     if key in params:

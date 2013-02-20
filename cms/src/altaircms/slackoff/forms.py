@@ -209,7 +209,7 @@ class TopcontentForm(Form):
                                                             get_label=lambda o: o.title)
 
     publish_open_on = fields.DateTimeField(label=u"公開開始日", validators=[required_field()])
-    publish_close_on = fields.DateTimeField(label=u"公開終了日", validators=[required_field()])
+    publish_close_on = fields.DateTimeField(label=u"公開終了日", validators=[validators.Optional()])
 
 
     linked_page = dynamic_query_select_field_factory(PageSet, allow_blank=True,label=u"リンク先ページ(CMSで作成したもの)", 

@@ -45,6 +45,10 @@ def nl_to_br(string, rawtext=True):
 def text(string):
     return string if string  else u"-"
 
+def truncated(string, n=142):
+    v = text(string)
+    return v if len(v) <= n else v + u".."
+
 WEEK =[u"月", u"火", u"水", u"木", u"金", u"土", u"日"]
 def jdate(d):
     """ dateオブジェクトを受け取り日本語の日付を返す

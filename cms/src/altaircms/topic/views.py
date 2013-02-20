@@ -8,6 +8,34 @@ from altaircms.auth.api import get_or_404
 from altaircms.page.models import Page
 from .api import get_topic_searcher
 
+"""
+topic_list = topic widget が結びついているページのリスト
+topic_unit_list = topic の一覧(ページと結びついていないtopicを探したい)
+"""
+@view_config(route_name="topic_unit_list", renderer="altaircms:templates/topic/topic/units.html", 
+             decorator="altaircms.lib.fanstatic_decorator.with_bootstrap",
+             permission="topic_read")
+@view_config(route_name="topcontent_unit_list", renderer="altaircms:templates/topic/topcontent/units.html", 
+             decorator="altaircms.lib.fanstatic_decorator.with_bootstrap",
+             permission="topcontent_read")
+@view_config(route_name="promotion_unit_list", renderer="altaircms:templates/topic/promotion/units.html", 
+             decorator="altaircms.lib.fanstatic_decorator.with_bootstrap",
+             permission="promotion_read")
+def unit_list_view(context, request):
+    search_word = request.GET.get("search", "")
+    searcher = context.unit_list_searcher
+    qs = searcher.query_objects_for_grid(request.allowable(context.TargetTopic))
+    if ":all:" in request.GET:
+        qs = searcher.no_filter_without_tag(qs, request.GET)
+    else:
+        qs = searcher.filter_default(qs, request.GET)
+
+    pages = h.paginate(request, qs, item_count=qs.count())
+    recently_tags = context.tag_manager.recent_change_tags().filter_by(publicp=True).limit(10)
+    return dict(pages=pages, recently_tags=recently_tags, search_word=search_word, 
+                html_renderer=context.HTMLRenderer(request))
+
+
 @view_config(route_name="topic_list", renderer="altaircms:templates/topic/topic/pages.html", 
              decorator="altaircms.lib.fanstatic_decorator.with_bootstrap",
              permission="topic_read")
@@ -20,12 +48,11 @@ from .api import get_topic_searcher
 def list_view(context, request):
     searcher = context.list_searcher
     search_word = request.GET.get("search", "")
-    qs = searcher.get_objects_for_grid(request.allowable(Page, qs=searcher.finder(request)))
+    qs = searcher.query_objects_for_grid(request.allowable(Page, qs=searcher.finder(request)))
     if ":all:" in request.GET:
         qs = searcher.no_filter_without_tag(qs, request.GET)
     else:
         qs = searcher.filter_default(qs, request.GET)
-
     pages = h.paginate(request, qs, item_count=qs.count())
     grid = context.Grid.create(pages.paginated())
 

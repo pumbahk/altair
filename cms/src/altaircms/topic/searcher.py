@@ -3,9 +3,8 @@ import sqlalchemy.orm as orm
 from pyramid.decorator import reify
 
 from altaircms.page.models import Page, PageSet
-from .models import PromotionTag
-from .models import TopcontentTag
-from .models import TopicTag
+from .models import PromotionTag, TopcontentTag, TopicTag
+from .models import Promotion, Topcontent, Topic
 from datetime import datetime
 
 import altaircms.searchlib as sl
@@ -17,6 +16,13 @@ def qs_filter_using_conds_list(qs, conds_list):
         qs = qs.filter(*conds)
     return qs
 
+PromotionUnitListSearchSchemaList = [
+    sl.LikeSearchSchema(PromotionTag, "search", model_attribute="label"), 
+    sl.DateTimeSearchSchema(Promotion, "term_begin", model_attribute="publish_open_on"), 
+    sl.DateTimeMaybeSearchSchema(Promotion, "term_end", model_attribute="publish_close_on"), 
+    sl.ComplementSearchSchema(Promotion, "is_vetoed")
+]
+
 PromotionPageListSearchSchemaList = [
     sl.LikeSearchSchema(PromotionTag, "search", model_attribute="label"), 
     sl.DateTimeSearchSchema(Page, "term_begin", model_attribute="publish_begin"), 
@@ -24,9 +30,15 @@ PromotionPageListSearchSchemaList = [
     sl.BooleanSearchSchema(Page, "published")
     ]
 
-PromotionPageListTagOnly = [
+PromotionListTagOnly = [
     sl.LikeSearchSchema(PromotionTag, "search", model_attribute="label"), 
     ]
+TopcontentUnitListSearchSchemaList = [
+    sl.LikeSearchSchema(TopcontentTag, "search", model_attribute="label"), 
+    sl.DateTimeSearchSchema(Topcontent, "term_begin", model_attribute="publish_open_on"), 
+    sl.DateTimeMaybeSearchSchema(Topcontent, "term_end", model_attribute="publish_close_on"), 
+    sl.ComplementSearchSchema(Topcontent, "is_vetoed")
+]
 
 TopcontentPageListSearchSchemaList = [
     sl.LikeSearchSchema(TopcontentTag, "search", model_attribute="label"), 
@@ -35,9 +47,16 @@ TopcontentPageListSearchSchemaList = [
     sl.BooleanSearchSchema(Page, "published")
     ]
 
-TopcontentPageListTagOnly = [
+TopcontentListTagOnly = [
     sl.LikeSearchSchema(TopcontentTag, "search", model_attribute="label"), 
     ]
+
+TopicUnitListSearchSchemaList = [
+    sl.LikeSearchSchema(TopicTag, "search", model_attribute="label"), 
+    sl.DateTimeSearchSchema(Topic, "term_begin", model_attribute="publish_open_on"), 
+    sl.DateTimeMaybeSearchSchema(Topic, "term_end", model_attribute="publish_close_on"), 
+    sl.ComplementSearchSchema(Topic, "is_vetoed")
+]
 
 TopicPageListSearchSchemaList = [
     sl.LikeSearchSchema(TopicTag, "search", model_attribute="label"), 
@@ -46,9 +65,30 @@ TopicPageListSearchSchemaList = [
     sl.BooleanSearchSchema(Page, "published")
     ]
 
-TopicPageListTagOnly = [
+TopicListTagOnly = [
     sl.LikeSearchSchema(TopicTag, "search", model_attribute="label"), 
     ]
+
+class TopicUnitListSearcher(object):
+    def __init__(self, request, _now=datetime.now):
+        self.request = request 
+        self._now = _now
+
+    def filter_default(self, qs, params):
+        params = params.copy()
+        now = self._now()
+        params["term_end__gte"] = params["term_begin__lte"] = now
+        cond_dict = sl.parse_params_using_schemas(TopicUnitListSearchSchemaList, params)
+        qs = qs_filter_using_conds_list(qs, cond_dict.itervalues())
+        return qs
+
+    def no_filter_without_tag(self, qs, params):
+        cond_dict = sl.parse_params_using_schemas(TopicListTagOnly, params)
+        qs = qs_filter_using_conds_list(qs, cond_dict.itervalues())
+        return qs
+
+    def query_objects_for_grid(self, qs):
+        return get_tagmanager(Topic.type, request=self.request).joined_query(qs=qs)
 
 class TopicPageListSearcher(object):
     def __init__(self, request, finder, 
@@ -64,16 +104,15 @@ class TopicPageListSearcher(object):
         return qs.filter(Page.in_term(now))
 
     def no_filter_without_tag(self, qs, params):
-        cond_dict = sl.parse_params_using_schemas(TopicPageListTagOnly, params)
+        cond_dict = sl.parse_params_using_schemas(TopicListTagOnly, params)
         qs = qs_filter_using_conds_list(qs, cond_dict.itervalues())
         return qs
 
-    def get_objects_for_grid(self, qs):
+    def query_objects_for_grid(self, qs):
         qs = qs.filter(PageSet.id==Page.pageset_id).filter(self.finder.widget.tag_id==TopicTag.id)
         qs = qs.with_entities(PageSet, Page, self.finder.widget, TopicTag)
         qs = qs.options(orm.joinedload(self.finder.widget.system_tag)).order_by(sa.desc(PageSet.updated_at), sa.desc(Page.updated_at))
         return qs
-
 
 class TopicPageDetailSearcher(object):
     def __init__(self, request, finder):
@@ -87,6 +126,29 @@ class TopicPageDetailSearcher(object):
         if widget_id:
             return widgets.filter(self.finder.widget.id==widget_id).first()
         return widgets.first()
+
+
+
+class TopcontentUnitListSearcher(object):
+    def __init__(self, request, _now=datetime.now):
+        self.request = request 
+        self._now = _now
+
+    def filter_default(self, qs, params):
+        params = params.copy()
+        now = self._now()
+        params["term_end__gte"] = params["term_begin__lte"] = now
+        cond_dict = sl.parse_params_using_schemas(TopcontentUnitListSearchSchemaList, params)
+        qs = qs_filter_using_conds_list(qs, cond_dict.itervalues())
+        return qs
+
+    def no_filter_without_tag(self, qs, params):
+        cond_dict = sl.parse_params_using_schemas(TopcontentListTagOnly, params)
+        qs = qs_filter_using_conds_list(qs, cond_dict.itervalues())
+        return qs
+
+    def query_objects_for_grid(self, qs):
+        return get_tagmanager(Topcontent.type, request=self.request).joined_query(qs=qs)
 
 class TopcontentPageListSearcher(object):
     def __init__(self, request, finder, 
@@ -102,11 +164,11 @@ class TopcontentPageListSearcher(object):
         return qs.filter(Page.in_term(now))
 
     def no_filter_without_tag(self, qs, params):
-        cond_dict = sl.parse_params_using_schemas(TopcontentPageListTagOnly, params)
+        cond_dict = sl.parse_params_using_schemas(TopcontentListTagOnly, params)
         qs = qs_filter_using_conds_list(qs, cond_dict.itervalues())
         return qs
 
-    def get_objects_for_grid(self, qs):
+    def query_objects_for_grid(self, qs):
         qs = qs.filter(PageSet.id==Page.pageset_id).filter(self.finder.widget.tag_id==TopcontentTag.id)
         qs = qs.with_entities(PageSet, Page, self.finder.widget, TopcontentTag)
         qs = qs.options(orm.joinedload(self.finder.widget.system_tag)).order_by(sa.desc(PageSet.updated_at), sa.desc(Page.updated_at))
@@ -125,6 +187,29 @@ class TopcontentPageDetailSearcher(object):
             return widgets.filter(self.finder.widget.id==widget_id).first()
         return widgets.first()
 
+
+class PromotionUnitListSearcher(object):
+    def __init__(self, request, _now=datetime.now):
+        self.request = request 
+        self._now = _now
+
+    def filter_default(self, qs, params):
+        params = params.copy()
+        now = self._now()
+        params["term_end__gte"] = params["term_begin__lte"] = now
+        cond_dict = sl.parse_params_using_schemas(PromotionUnitListSearchSchemaList, params)
+        qs = qs_filter_using_conds_list(qs, cond_dict.itervalues())
+        return qs
+
+    def no_filter_without_tag(self, qs, params):
+        cond_dict = sl.parse_params_using_schemas(PromotionListTagOnly, params)
+        qs = qs_filter_using_conds_list(qs, cond_dict.itervalues())
+        return qs
+
+    def query_objects_for_grid(self, qs):
+        return get_tagmanager(Promotion.type, request=self.request).joined_query(qs=qs)
+
+
 class PromotionPageListSearcher(object):
     def __init__(self, request, finder, 
                  _now=datetime.now):
@@ -139,11 +224,11 @@ class PromotionPageListSearcher(object):
         return qs.filter(Page.in_term(now))
 
     def no_filter_without_tag(self, qs, params):
-        cond_dict = sl.parse_params_using_schemas(PromotionPageListTagOnly, params)
+        cond_dict = sl.parse_params_using_schemas(PromotionListTagOnly, params)
         qs = qs_filter_using_conds_list(qs, cond_dict.itervalues())
         return qs
 
-    def get_objects_for_grid(self, qs):
+    def query_objects_for_grid(self, qs):
         qs = qs.filter(PageSet.id==Page.pageset_id).filter(self.finder.widget.tag_id==PromotionTag.id)
         qs = qs.with_entities(PageSet, Page, self.finder.widget, PromotionTag)
         qs = qs.options(orm.joinedload(self.finder.widget.system_tag)).order_by(sa.desc(PageSet.updated_at), sa.desc(Page.updated_at))

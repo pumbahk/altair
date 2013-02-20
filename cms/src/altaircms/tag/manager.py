@@ -132,9 +132,10 @@ class TagManager(TagManagerBase):
     def is_target_tag(self, tag):
         return tag.organization_id is not None        
 
-    def joined_query(self, query_target=None):
+    def joined_query(self, query_target=None, qs=None):
         query_target = query_target or [self.Object]
-        qs = DBSession.query(*query_target).filter(self.Object.id==self.XRef.object_id)
+        qs = qs or DBSession.query(*query_target)
+        qs = qs.filter(self.Object.id==self.XRef.object_id)
         qs = qs.filter(self.Object.organization_id==self.Tag.organization_id)
         return qs.filter(self.Tag.id==self.XRef.tag_id)
         
@@ -152,9 +153,10 @@ class SystemTagManager(TagManagerBase):
     def is_target_tag(self, tag):
         return tag.organization_id is None        
 
-    def joined_query(self, query_target=None):
+    def joined_query(self, query_target=None, qs=None):
         query_target = query_target or [self.Object]
-        qs = DBSession.query(*query_target).filter(self.Object.id==self.XRef.object_id)
+        qs = qs or DBSession.query(*query_target)
+        qs = qs.filter(self.Object.id==self.XRef.object_id)
         qs = qs.filter(self.Tag.organization_id==None)
         return qs.filter(self.Tag.id==self.XRef.tag_id)
 
