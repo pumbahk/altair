@@ -24,7 +24,7 @@ def main(global_config, **settings):
     config.include('altaircms.tag')
     config.include('altaircms.topic')
 
-    config.add_route("home", "/", factory="altaircms.topic.resources.TopcontentPageContext")
+    config.add_route("home", "/")
     config.scan()
 
     return config.make_wsgi_app()

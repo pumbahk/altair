@@ -2,9 +2,9 @@
 <body>
     <h2>
         % if subgenre is None:
-            <a href="/">トップ</a> >> ${genre}
+            <a href="/">トップ</a> >> <a href="/genre?genre=${genre}">${genre}</a>
         % else:
-            <a href="/">トップ</a> >> ${genre} >> ${subgenre}
+            <a href="/">トップ</a> >> <a href="/genre?genre=${genre}">${genre}</a> >> <a href="/genre?genre=${genre}&subgenre=${subgenre}">${subgenre}</a>
         % endif
     </h2>
 <hr/>

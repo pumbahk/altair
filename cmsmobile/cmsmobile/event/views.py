@@ -13,7 +13,7 @@ from altaircms.topic.api import get_topic_searcher
 
 
 @view_config(route_name='genre', renderer='cmsmobile:templates/genre/genre.mako')
-def move_genre(context, request):
+def move_genre(request):
     current_page = int(request.params.get("page", 0))
     page_url = paginate.PageURL_WebOb(request)
 
@@ -53,7 +53,7 @@ def move_genre(context, request):
     )
 
 @view_config(route_name='search', renderer='cmsmobile:templates/search/search.mako')
-def search(context, request):
+def search(request):
     current_page = int(request.params.get("page", 0))
 
     word = request.params.get("word", 0)
@@ -67,25 +67,24 @@ def search(context, request):
 
     }
 
-
 @view_config(route_name='detail', renderer='cmsmobile:templates/detail/detail.mako')
-def move_detail(context, request):
+def move_detail(request):
     event_id = request.params.get("event_id", None)
     return {
     }
 
 @view_config(route_name='inquiry', renderer='cmsmobile:templates/inquiry/inquiry.mako')
-def move_inquiry(context, request):
+def move_inquiry(request):
     return {
     }
 
 @view_config(route_name='help', renderer='cmsmobile:templates/help/help.mako')
-def move_help(context, request):
+def move_help(request):
     return {
     }
 
 @view_config(route_name='order', renderer='cmsmobile:templates/order/order.mako')
-def move_order(context, request):
+def move_order(request):
     return {
     }
 
