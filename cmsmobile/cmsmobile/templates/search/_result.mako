@@ -1,21 +1,22 @@
-3件見つかりませした。
+<%page args="performances, num" />
+% if num:
+    ${num}件見つかりました。
+% else:
+    見つかりませんでした。
+% endif
 
-<hr/>
-ミュージカル・アニー<br/>
-2013/04/20（土）〜 2014/06/06<br/>
-青山劇場<br/>
-先行販売：2013/01/5 〜 2013/02/28<br/>
-一般： 2013/03/01 〜 2013/05/31<br/>
-<hr/>
-ミュージカル・アニー<br/>
-2013/04/20（土）〜 2014/06/06<br/>
-青山劇場<br/>
-先行販売：2013/01/5 〜 2013/02/28<br/>
-一般： 2013/03/01 〜 2013/05/31<br/>
-<hr/>
-ミュージカル・アニー<br/>
-2013/04/20（土）〜 2014/06/06<br/>
-青山劇場<br/>
-先行販売：2013/01/5 〜 2013/02/28<br/>
-一般： 2013/03/01 〜 2013/05/31<br/>
+% if performances:
+    % for perf in performances:
+        <hr/>
+        ${perf.title}<br/>
+        会場：${perf.venue}<br/>
+        開場：${perf.open_on}<br/>
+        開始：${perf.start_on}<br/>
+        終了：${perf.end_on}<br/>
+        % for sale in perf.sales:
+            ${sale.start_on} 〜 ${sale.end_on}<br/>
+        % endfor
+    % endfor
+% endif
+<p/>
 <hr/>

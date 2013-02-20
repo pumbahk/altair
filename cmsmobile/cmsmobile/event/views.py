@@ -1,21 +1,15 @@
 # -*- coding: utf-8 -*-
 
-from pyramid.view import view_config, view_defaults
-
-from cmsmobile.core.views import BaseView
-from altaircms.models import Genre
+from pyramid.view import view_config
 from altaircms.topic.models import TopicTag, PromotionTag
-
+from altaircms.models import Performance
 import webhelpers.paginate as paginate
 from datetime import datetime
-import sqlalchemy.orm as orm
 from altaircms.topic.api import get_topic_searcher
 
 
 @view_config(route_name='genre', renderer='cmsmobile:templates/genre/genre.mako')
 def move_genre(request):
-    current_page = int(request.params.get("page", 0))
-    page_url = paginate.PageURL_WebOb(request)
 
     # genre
     genre = request.params.get("genre", None)
@@ -54,17 +48,37 @@ def move_genre(request):
 
 @view_config(route_name='search', renderer='cmsmobile:templates/search/search.mako')
 def search(request):
-    current_page = int(request.params.get("page", 0))
 
-    word = request.params.get("word", 0)
+    qs = None
+    word = request.params.get("word", None)
     if word:
-        pass
-    area = int(request.params.get("area", 0))
-    if area:
-        pass
+        qs = Performance.query.filter_by()
+        likeword = u"%%%s%%" % word
+        qs = qs.filter((Performance.title.like(likeword)) | (Performance.venue.like(likeword))).all()
+
+    num = 0
+    performances = None
+    if qs:
+        performances = paginate.Page(
+            qs,
+            page=int(request.params.get('page', 0)),
+            items_per_page=5,
+            url=paginate.PageURL_WebOb(request)
+            )
+        num = len(qs)
+
+    if performances:
+        for perf in performances:
+            for sale in perf.sales:
+                print sale.id
+
+    #area = int(request.params.get("area", 0))
+    #if area:
+    #    pass
 
     return {
-
+         'num':num
+        ,'performances':performances
     }
 
 @view_config(route_name='detail', renderer='cmsmobile:templates/detail/detail.mako')
