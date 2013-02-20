@@ -8,7 +8,7 @@ from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, T
 from wtforms.validators import Optional, AnyOf, Length, Email
 from wtforms.widgets import CheckboxInput
 
-from ticketing.formhelpers import DateTimeField, Translations, Required, DateField, Automatic, OurDateWidget
+from ticketing.formhelpers import DateTimeField, Translations, Required, DateField, Automatic, Max, Min, OurDateWidget, after1900
 from ticketing.core.models import (PaymentMethodPlugin, DeliveryMethodPlugin, PaymentMethod, DeliveryMethod,
                                    SalesSegment, Performance, Product, ProductItem, Event, OrderCancelReasonEnum)
 from ticketing.cart.schemas import ClientForm
@@ -81,17 +81,22 @@ class OrderSearchForm(Form):
     )
     ordered_from = DateTimeField(
         label=u'予約日時',
-        validators=[Optional()],
+        validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
-        #value_defaults=lambda:dict(year=datetime.now().year),
         widget=OurDateWidget()
     )
     ordered_to = DateTimeField(
         label=u'予約日時',
-        validators=[Optional()],
+        validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
-        #value_defaults=lambda:dict(year=datetime.now().year),
-        missing_value_defaults=dict(month=u'12', day=u'31', hour=u'23', minute=u'59', second=u'59'),
+        missing_value_defaults=dict(
+            year=u'',
+            month=Max,
+            day=Max,
+            hour=Max,
+            minute=Max,
+            second=Max
+            ),
         widget=OurDateWidget()
     )
     payment_method = SelectMultipleField(
@@ -161,14 +166,19 @@ class OrderSearchForm(Form):
     )
     start_on_from = DateField(
         label=u'公演日',
-        validators=[Optional()],
+        validators=[Optional(), after1900],
         format='%Y-%m-%d',
         widget=OurDateWidget()
     )
     start_on_to = DateField(
         label=u'公演日',
-        validators=[Optional()],
+        validators=[Optional(), after1900],
         format='%Y-%m-%d',
+        missing_value_defaults=dict(
+            year=u'',
+            month=Max,
+            day=Max
+            ),
         widget=OurDateWidget()
     )
     sort = HiddenField(
@@ -215,12 +225,12 @@ class OrderRefundSearchForm(OrderSearchForm):
 
     ordered_from = DateTimeField(
         label=u'予約日時',
-        validators=[Optional()],
+        validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
     )
     ordered_to = DateTimeField(
         label=u'予約日時',
-        validators=[Optional()],
+        validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
     )
     payment_method = SelectField(
@@ -458,7 +468,7 @@ class SejTicketForm(Form):
     )
     performance_datetime    = DateTimeField(
         label=u'発券期限',
-        validators=[Optional()],
+        validators=[Optional(), after1900],
     )
     ticket_template_id      = TextField(
         label=u'テンプレートID',
@@ -537,19 +547,19 @@ class SejOrderForm(Form):
 
     payment_due_at = DateTimeField(
         label=u'支払い期限',
-        validators=[Optional()],
+        validators=[Optional(), after1900],
     )
     ticketing_start_at = DateTimeField(
         label=u'発券開始',
-        validators=[Optional()],
+        validators=[Optional(), after1900],
     )
     ticketing_due_at = DateTimeField(
         label=u'発券期限',
-        validators=[Optional()],
+        validators=[Optional(), after1900],
     )
     regrant_number_due_at = DateTimeField(
         label=u'SVC再付番期限',
-        validators=[Required()],
+        validators=[Required(), after1900],
     )
 
     payment_type = SelectField(
@@ -597,23 +607,23 @@ class SejRefundEventForm(Form):
     )
     event_at = DateTimeField(
         label=u'公演日',
-        validators=[Required()],
+        validators=[Required(), after1900],
     )
     start_at = DateTimeField(
         label=u'レジ払戻受付開始日	',
-        validators=[Required()],
+        validators=[Required(), after1900],
     )
     end_at = DateTimeField(
         label=u'レジ払戻受付終了日	',
-        validators=[Required()],
+        validators=[Required(), after1900],
     )
     event_expire_at = DateTimeField(
         label=u'公演レコード有効期限	',
-        validators=[Required()],
+        validators=[Required(), after1900],
     )
     ticket_expire_at = DateTimeField(
         label=u'チケット持ち込み期限	',
-        validators=[Required()],
+        validators=[Required(), after1900],
     )
     refund_enabled = BooleanField(
         label=u'レジ払戻可能フラグ',

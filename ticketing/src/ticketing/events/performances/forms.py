@@ -4,7 +4,7 @@ from wtforms import Form
 from wtforms import TextField, SelectField, HiddenField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 
-from ticketing.formhelpers import DateTimeField, Translations, Required, NullableTextField, JISX0208
+from ticketing.formhelpers import DateTimeField, Translations, Required, NullableTextField, JISX0208, after1900
 from ticketing.core.models import Venue, Performance, Stock
 from ticketing.payments.plugins.sej import DELIVERY_PLUGIN_ID as SEJ_DELIVERY_PLUGIN_ID
 from ticketing.core.utils import ApplicableTicketsProducer
@@ -49,17 +49,17 @@ class PerformanceForm(Form):
     )
     open_on = DateTimeField(
         label=u'開場',
-        validators=[Optional()],
+        validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
     )
     start_on = DateTimeField(
         label=u'開演',
-        validators=[Required()],
+        validators=[Required(), after1900],
         format='%Y-%m-%d %H:%M',
     )
     end_on = DateTimeField(
         label=u'終演',
-        validators=[Optional()],
+        validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
     )
     venue_id = SelectField(

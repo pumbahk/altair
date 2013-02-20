@@ -10,6 +10,9 @@ from wtforms.form import Form, WebobInputWrapper
 from wtforms.fields.core import UnboundField, _unset_value
 from wtforms.compat import iteritems
 from wtforms.widgets.core import HTMLString, Input, html_params
+from ticketing.utils import atom, days_of_month
+from ticketing.helpers import todatetime
+from ticketing.formatter import Japanese_Japan_Formatter
 import logging
 import warnings
 
@@ -33,9 +36,12 @@ class Translations(object):
         'Field must be at least %(min)d characters long.' : u'%(min)d文字以上で入力してください。',
         'Field cannot be longer than %(max)d characters.' : u'%(max)d文字以内で入力してください。',
         'Field must be between %(min)d and %(max)d characters long.' : u'%(min)d文字から%(max)d文字の間で入力してください。',
-        'Not a valid datetime value': u'日付の形式を確認してください',
+        'Not a valid datetime value': u'日時の形式を確認してください',
+        'Not a valid date value': u'日付の形式を確認してください',
         'Invalid value for %(field)s': u'%(field)sに不正な値が入力されています',
         "Required field `%(field)s' is not supplied": u'「%(field)s」が空欄になっています',
+        u'Field must be a date/time after or equal to %(datetime)s': u'%(datetime)s 以降にしてください',
+        u'Field must be a date/time before %(datetime)s': u'%(datetime)s より前にしてください',
         'year': u'年',
         'month': u'月',
         'day': u'日',
@@ -46,6 +52,7 @@ class Translations(object):
     def __init__(self, messages = None):
         if messages:
             self.messages = dict(self.messages, **messages)
+        self.formatter = Japanese_Japan_Formatter()
 
     def gettext(self, string):
         return self.messages.get(string, string)
@@ -59,6 +66,14 @@ class Translations(object):
             logger.warn("localize message not found: '%s'", ural)
             return ural
 
+    def format_datetime(self, date):
+        if isinstance(date, datetime):
+            return self.formatter.format_datetime(date)
+        else:
+            return self.formatter.format_date(date)
+
+    def format_date(eslf, date):
+        return self.formatter.format_date(date)
 
 class Required(validators.Required):
     def __call__(self, form, field):
@@ -82,6 +97,32 @@ class Phone(validators.Regexp):
         if self.message is None:
             self.message = field.gettext(u'電話番号を確認してください')
         super(Phone, self).__call__(form, field)
+
+class DateTimeInRange(object):
+    def __init__(self, from_=None, to=None):
+        self.from_ = from_ and todatetime(from_)
+        self.to = to and todatetime(to)
+
+    def format_datetime(self, field, date, type_):
+        if hasattr(field._translations, 'format_datetime'):
+            if type_ == datetime:
+                return field._translations.format_datetime(date)
+            else:
+                return field._translations.format_date(date)
+        else:
+            if type_ == datetime:
+                return date.strftime("%Y-%m-%d %H:%M:%S")
+            else:
+                return date.strftime("%Y-%m-%d")
+
+    def __call__(self, form, field):
+        if field.data is None:
+            return
+        data = todatetime(field.data)
+        if self.from_ is not None and self.from_ > data:
+            raise ValueError(field.gettext(u'Field must be a date/time after or equal to %(datetime)s') % dict(field=field.label, datetime=self.format_datetime(field, self.from_, field.data.__class__)))
+        if self.to is not None and self.to <= data:
+            raise ValueError(field.gettext(u'Field must be a date/time before %(datetime)s') % dict(field=field.label, datetime=self.format_datetime(field, self.to, field.data.__class__)))
 
 def text_type_but_none_if_not_given(value):
     return unicode(value) if value is not None else None
@@ -156,6 +197,8 @@ def ignore_regexp(regexp):
 
 ignore_space_hyphen = ignore_regexp(re.compile(u"[ \-ー　]"))
 
+after1900 = DateTimeInRange(from_=date(1900, 1, 1))
+
 class OurForm(Form):
     def __init__(self, *args, **kwargs):
         self.new_form = kwargs.pop('new_form', False)
@@ -218,7 +261,9 @@ class OurBooleanField(fields.BooleanField):
     pass
 _gen_field_init(OurBooleanField)
 
-Automatic = object()
+Automatic = atom('Automatic')
+Max = atom('Max')
+Min = atom('Min')
 
 def merge_dict(*dicts):
     retval = dict()
@@ -400,12 +445,49 @@ class OurDateTimeFieldBase(fields.Field):
         year=u'',
         month=u'1',
         day=u'1',
-        hour='0',
-        minute='0',
-        second='0'
+        hour=u'0',
+        minute=u'0',
+        second=u'0'
         )
 
-    def __init__(self, _form=None, hide_on_new=False, label=None, validators=None, format='%Y-%m-%d %H:%M:%S', value_defaults=None, missing_value_defaults=None, **kwargs):
+    def _raise_undefined_minimum_error(field):
+        def _(self, v):
+            raise ValueError('minimum value for %s is not defined' % field)
+        return _
+
+    def _raise_undefined_maximum_error(field):
+        def _(self, v):
+            raise ValueError('maximum value for %s is not defined' % field)
+        return _
+
+    _min_max = {
+        'year': {
+            Min: _raise_undefined_minimum_error('year'),
+            Max: _raise_undefined_maximum_error('year')
+            },
+        'month': {
+            Min: lambda self, v: 1,
+            Max: lambda self, v: 12
+            },
+        'day': {
+            Min: lambda self, v: 1,
+            Max: lambda self, v: days_of_month(year=v['year'], month=v['month'])
+            },
+        'hour': {
+            Min: lambda self, v: 0,
+            Max: lambda self, v: 23
+            },
+        'minute': {
+            Min: lambda self, v: 0,
+            Max: lambda self, v: 59
+            },
+        'second': {
+            Min: lambda self, v: 0,
+            Max: lambda self, v: 59
+            }
+        }
+
+    def __init__(self, _form=None, hide_on_new=False, label=None, validators=None, format='%Y-%m-%d %H:%M:%S', value_defaults=None, missing_value_defaults=None, allow_two_digit_year=True, **kwargs):
         super(OurDateTimeFieldBase, self).__init__(label, validators, **kwargs)
         self.form = _form
         self.hide_on_new = hide_on_new
@@ -414,10 +496,29 @@ class OurDateTimeFieldBase(fields.Field):
         self.format = format
         self.value_defaults = value_defaults
         self.missing_value_defaults = missing_value_defaults or dict(self._missing_value_defaults)
+        self.allow_two_digit_year = allow_two_digit_year
         self._values = dict((k, u'') for k in self._fields)
 
     def process_data(self, data):
         pass
+
+    def process_datetime_formdata(self):
+        values = dict()
+        for k in self._fields:
+            try:
+                v = self._values[k] or self.missing_value_defaults[k]
+                if isinstance(v, basestring):
+                    if k == 'year' and self.allow_two_digit_year:
+                        if len(v) == 2:
+                            v = unicode(date.today().year // 100) + v
+                    _v = int(v)
+                else:
+                    _v = self._min_max[k][v](self, values)
+                values[k] = _v
+            except ValueError:
+                values[k] = None
+                self.process_errors.append(self.gettext('Invalid value for %(field)s') % dict(field=self.gettext(k)))
+        self.data = self._create_data(values)
 
     def process(self, formdata, data=_unset_value):
         self.process_errors = []
@@ -462,8 +563,25 @@ class OurDateTimeFieldBase(fields.Field):
                             missing_fields = []
                 if len(missing_fields) == len(self._fields):
                     self.data = None
+                    self.raw_data = None
                 else:
                     self.process_datetime_formdata()
+                    # XXX: This is needed because "Optional" validator
+                    # depends on self.raw_data being set within this method.
+                    if self.data is not None:
+                        self.raw_data = [
+                            # strftime() cannot be used here because
+                            # the method doesn't deal with any datetime
+                            # before 1900/1/1
+                            "%(year)04d-%(month)02d-%(day)02d %(hour)02d:%(minute)02d:%(second)02d" % dict(
+                                year=self.data.year,
+                                month=self.data.month,
+                                day=self.data.day,
+                                hour=getattr(self.data, 'hour', 0),
+                                minute=getattr(self.data, 'minute', 0),
+                                second=getattr(self.data, 'second', 0)
+                                )
+                            ]
         else:
             try:
                 value_defaults = self.value_defaults()
@@ -491,31 +609,13 @@ class OurDateTimeField(OurDateTimeFieldBase):
         else:
             if not isinstance(data, datetime):
                 raise TypeError()
-            self._values['year'] = data.year
-            self._values['month'] = data.month
-            self._values['day'] = data.day
-            self._values['hour'] = data.hour
-            self._values['minute'] = data.minute
-            self._values['second'] = data.second
+            for k in self._fields:
+                self._values[k] = getattr(data, k) 
         self.data = data
 
-    def process_datetime_formdata(self):
-        values = dict()
-        for k, v in iteritems(self._values):
-            try:
-                values[k] = int(v if v else self.missing_value_defaults[k])
-            except ValueError:
-                values[k] = None
-                self.process_errors.append(self.gettext('Invalid value for %(field)s') % dict(field=self.gettext(k)))
+    def _create_data(self, values):
         try:
-            self.data = datetime(
-                year=values['year'],
-                month=values['month'],
-                day=values['day'],
-                hour=values['hour'],
-                minute=values['minute'],
-                second=values['second']
-                )
+            return datetime(**values)
         except (TypeError, ValueError):
             self.process_errors.append(self.gettext('Not a valid datetime value'))
 
@@ -540,27 +640,15 @@ class OurDateField(OurDateTimeFieldBase):
                 data = data.date()
             elif not isinstance(data, date):
                 raise TypeError()
-            self._values['year'] = data.year
-            self._values['month'] = data.month
-            self._values['day'] = data.day
+            for k in self._fields:
+                self._values[k] = getattr(data, k) 
         self.data = data
 
-    def process_datetime_formdata(self):
-        values = dict()
-        for k, v in iteritems(self._values):
-            try:
-                values[k] = int(v if v else self.missing_value_defaults[k])
-            except ValueError:
-                values[k] = None
-                self.process_errors.append(self.gettext('Invalid value for %(field)s') % dict(field=self.gettext(k)))
+    def _create_data(self, values):
         try:
-            self.data = date(
-                year=values['year'],
-                month=values['month'],
-                day=values['day']
-                )
+            return date(**values)
         except (TypeError, ValueError):
-            self.process_errors.append(self.gettext('Not a valid datetime value'))
+            self.process_errors.append(self.gettext('Not a valid date value'))
 
     def __call__(self, widget=None, **kwargs):
         if widget is None:
