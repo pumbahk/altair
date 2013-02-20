@@ -1,14 +1,14 @@
 # -*- coding:utf-8 -*-
-import wtforms.form as form
+from altaircms.formhelpers import Form
 import wtforms.fields as fields
 import wtforms.validators as validators
 from .models import TopcontentWidget
 from altaircms.plugins.api import get_widget_utility
-from altaircms.helpers.formhelpers import dynamic_query_select_field_factory
+from altaircms.formhelpers import dynamic_query_select_field_factory
 from altaircms.topic.models import TopcontentTag
 from altaircms.topic.api import get_topic_searcher
 
-class TopcontentChoiceForm(form.Form):
+class TopcontentChoiceForm(Form):
     tag = dynamic_query_select_field_factory(
         TopcontentTag, allow_blank=False, label=u"分類",
         get_label=lambda obj: obj.label)

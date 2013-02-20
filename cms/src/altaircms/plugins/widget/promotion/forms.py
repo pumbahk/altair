@@ -1,12 +1,12 @@
 # -*- coding:utf-8 -*-
-import wtforms.form as form
+from altaircms.formhelpers import Form
 import wtforms.fields as fields
-from altaircms.helpers.formhelpers import dynamic_query_select_field_factory
+from altaircms.formhelpers import dynamic_query_select_field_factory
 from altaircms.plugins.api import get_widget_utility
 from . import models
 from altaircms.topic.models import PromotionTag
 
-class PromotionWidgetForm(form.Form):
+class PromotionWidgetForm(Form):
     tag = dynamic_query_select_field_factory(
         PromotionTag, allow_blank=False, label=u"表示場所",
         get_label=lambda obj: obj.label)

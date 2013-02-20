@@ -12,7 +12,8 @@ class MaybeSelectFieldTests(unittest.TestCase):
 
     def _makeForm(self, field, *args, **kwargs):
         from wtforms import form
-        class DummyForm(form.Form):
+from altaircms.formhelpers import Form
+        class DummyForm(Form):
             target = field
         return DummyForm(*args, **kwargs)
 
@@ -82,7 +83,8 @@ class CheckBoxFieldValueTest(unittest.TestCase):
 
     def _makeForm(self, field, *args, **kwargs):
         from wtforms import form
-        class DummyForm(form.Form):
+from altaircms.formhelpers import Form
+        class DummyForm(Form):
             target = field
         return DummyForm(*args, **kwargs)
 

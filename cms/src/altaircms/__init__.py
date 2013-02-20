@@ -44,7 +44,7 @@ def main(global_config, **local_config):
     from sqlalchemy import engine_from_config
 
 
-    from altaircms.helpers.formhelpers import datetime_pick_patch
+    from altaircms.formhelpers import datetime_pick_patch
     datetime_pick_patch()
     from altaircms.security import RootFactory
 

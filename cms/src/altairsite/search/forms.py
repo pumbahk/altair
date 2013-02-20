@@ -3,6 +3,7 @@ from datetime import datetime
 from datetime import timedelta
 from collections import namedtuple
 from wtforms import form
+from altaircms.formhelpers import Form
 from wtforms import fields
 from wtforms import widgets
 from wtforms import validators
@@ -73,7 +74,7 @@ def parse_date(y, m, d):
             return None
 
 ### toppage sidebar
-class TopPageSidebarSearchForm(form.Form):
+class TopPageSidebarSearchForm(Form):
     """ top page のsidebarのform"""
     start_year = MaybeSelectField(choices=years)
     start_month = MaybeSelectField(choices=months)
@@ -113,7 +114,7 @@ class TopPageSidebarSearchForm(form.Form):
 
 ## todo:フリーワード
 ## todo: make query
-class QueryPartForm(form.Form):
+class QueryPartForm(Form):
     query = fields.TextField(id="freeword_query", label=u"",)
     query_cond = fields.RadioField(choices=[("intersection", u"全てを含む"), ("union", u"少なくとも1つを含む")], 
                                    widget=PutOnlyWidget())
@@ -134,7 +135,7 @@ class QueryPartForm(form.Form):
 
 ## todo:ジャンル
 ## todo: make query
-class GenrePartForm(form.Form):
+class GenrePartForm(Form):
     music = fields.BooleanField(label=u"音楽", widget=CheckboxWithLabelInput())
     music_subgenre_choices = import_symbol("altaircms.seeds.categories.music:MUSIC_SUBCATEGORY_CHOICES")
     music_subgenre = CheckboxListField(choices=music_subgenre_choices)
@@ -194,11 +195,11 @@ class GenrePartForm(form.Form):
 """ % self
             
 # todo:開催地
-# class AreaPartForm(form.Form):
+# class AreaPartForm(Form):
 #     def __html__(self):
 #         return u"this-is-dummy"
 
-class AreaPartForm(form.Form):
+class AreaPartForm(Form):
     hokkaido = fields.BooleanField(label=u"北海道", widget=CheckboxWithLabelInput()) 
     tohoku = fields.BooleanField(label=u"東北", widget=CheckboxWithLabelInput()) 
     kitakanto = fields.BooleanField(label=u"北関東", widget=CheckboxWithLabelInput()) 
@@ -262,7 +263,7 @@ class AreaPartForm(form.Form):
 
 ## todo:公演日
 
-class PerformanceTermPartForm(form.Form):
+class PerformanceTermPartForm(Form):
     start_year = MaybeSelectField(choices=years)
     start_month = MaybeSelectField(choices=months)
     start_day = MaybeSelectField(choices=days)
@@ -291,7 +292,7 @@ class PerformanceTermPartForm(form.Form):
                 "performance_close": performance_close}
 
 ## todo:販売条件
-class DealCondPartForm(form.Form):
+class DealCondPartForm(Form):
     #deal_cond_choices=[("early", u"先行"), ("normal", u"一般")]
     deal_cond_choices=import_symbol("altaircms.seeds.saleskind:SALESKIND_CHOICES")
     DDICT = dict(deal_cond_choices)
@@ -307,7 +308,7 @@ class DealCondPartForm(form.Form):
         return self.data
 
 ## todo:付加サービス
-class AddedServicePartForm(form.Form):
+class AddedServicePartForm(Form):
     choices = [("select-seat", u"座席選択可能"), ("keep-adjust", u"お隣キープ"), ("2d-market", u"2次市場")]
     added_services = CheckboxListField(choices=choices)
 
@@ -321,7 +322,7 @@ class AddedServicePartForm(form.Form):
 
 
 ## todo:発売日,  rename
-class AboutDealPartForm(form.Form):
+class AboutDealPartForm(Form):
     before_deal_start = MaybeSelectField(choices=days)
     till_deal_end = MaybeSelectField(choices=days)
     

@@ -1,6 +1,12 @@
 # -*- coding:utf-8 -*-
+import wtforms
 from wtforms import validators
 from wtforms import fields
+from wtforms import widgets
+
+
+import logging
+logger = logging.getLogger(__name__)
 import wtforms.ext.sqlalchemy.fields as extfields
 ##
 from wtforms.widgets.core import HTMLString
@@ -129,3 +135,44 @@ class Required(object):
             if self.message is None:
                 self.message = field.gettext(u'This field is required.')
             raise validators.StopValidation(self.message)
+
+class Translations(object):
+    messages={
+        'Not a valid choice': u'不正な選択です',
+        'Not a valid decimal value': u'数字または小数で入力してください',
+        'Not a valid integer value': u'数字で入力してください',
+        'Invalid email address.':u'不正なメールアドレスです',
+        'This field is required.':u'入力してください',
+        'Field must be at least %(min)d characters long.' : u'%(min)d文字以上で入力してください。',
+        'Field cannot be longer than %(max)d characters.' : u'%(max)d文字以内で入力してください。',
+        'Field must be between %(min)d and %(max)d characters long.' : u'%(min)d文字から%(max)d文字の間で入力してください。',
+        'Not a valid datetime value': u'日付の形式を確認してください',
+        'Invalid value for %(field)s': u'%(field)sに不正な値が入力されています',
+        "Required field `%(field)s' is not supplied": u'「%(field)s」が空欄になっています',
+        'year': u'年',
+        'month': u'月',
+        'day': u'日',
+        'hour': u'時',
+        'minute': u'分',
+        'second': u'秒',
+        }
+    def __init__(self, messages = None):
+        if messages:
+            self.messages = dict(self.messages, **messages)
+
+    def gettext(self, string):
+        return self.messages.get(string, string)
+
+    def ngettext(self, singular, plural, n):
+        ural = singular if n == 1 else plural
+        message  = self.messages.get(ural)
+        if message:
+            return message
+        else:
+            logger.warn("localize message not found: '%s'", ural)
+            return ural
+
+class Form(wtforms.Form):
+    def _get_translations(self):
+        return Translations()
+    

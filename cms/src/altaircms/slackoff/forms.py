@@ -2,7 +2,7 @@
 import logging 
 logger = logging.getLogger(__name__)
 import json
-from wtforms.form import Form
+from altaircms.formhelpers import Form
 from wtforms import fields
 from wtforms import widgets
 from wtforms import validators
@@ -10,8 +10,8 @@ import sqlalchemy.orm as orm
 import wtforms.ext.sqlalchemy.fields as extfields
 import urllib
 
-from altaircms.helpers.formhelpers import dynamic_query_select_field_factory
-from altaircms.helpers.formhelpers import required_field, append_errors
+from altaircms.formhelpers import dynamic_query_select_field_factory
+from altaircms.formhelpers import required_field, append_errors
 
 
 from ..event.models import Event

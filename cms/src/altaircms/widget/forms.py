@@ -1,9 +1,9 @@
 # coding: utf-8
-import wtforms.form as form
+from altaircms.formhelpers import Form
 import wtforms.fields as fields
 import wtforms.validators as validators
 import wtforms.widgets as widgets
-from altaircms.helpers.formhelpers import dynamic_query_select_field_factory
+from altaircms.formhelpers import dynamic_query_select_field_factory
 from . import models
 
 
@@ -12,14 +12,14 @@ def disposition_query_filter(model, request, query):
         query = query.filter_by(organization_id=request.organization.id)
     return model.enable_only_query(request.user, qs=query)
 
-class WidgetDispositionSelectForm(form.Form):
+class WidgetDispositionSelectForm(Form):
     disposition = dynamic_query_select_field_factory(
         models.WidgetDisposition, 
         dynamic_query=disposition_query_filter, 
         get_label= lambda obj: u"%s (%s)" % (obj.title, obj.save_type), 
         allow_blank=False)
 
-class WidgetDispositionSaveForm(form.Form):
+class WidgetDispositionSaveForm(Form):
     page = fields.IntegerField(widget=widgets.HiddenInput(), validators=[validators.Required()])
     owner_id = fields.IntegerField(widget=widgets.HiddenInput())
     title = fields.TextField(label=u"保存時のwidget layout名", validators=[validators.Required()])

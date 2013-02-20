@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-import wtforms.form as form
+from altaircms.formhelpers import Form
 import wtforms.fields as fields
 import wtforms.widgets as widgets
 import wtforms.ext.sqlalchemy.fields as extfields
@@ -10,7 +10,7 @@ from altaircms.models import SalesSegment
 from altaircms.page.models import Page
 from altaircms.seeds.saleskind import SALESKIND_CHOICES
 
-class TicketlistChoiceForm(form.Form):
+class TicketlistChoiceForm(Form):
     ## todo fix
     kind = fields.SelectField(id="kind", label=u"表示するチケットの種別", choices=SALESKIND_CHOICES)
     target_performance = extfields.QuerySelectField(id="target", label=u"価格表を取得するパフォーマンス", 

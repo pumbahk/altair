@@ -1,14 +1,14 @@
 # -*- coding:utf-8 -*-
-import wtforms.form as form
+from altaircms.formhelpers import Form
 import wtforms.fields as fields
 import wtforms.validators as validators
 from .models import TopicWidget
 from altaircms.plugins.api import get_widget_utility
-from altaircms.helpers.formhelpers import dynamic_query_select_field_factory
+from altaircms.formhelpers import dynamic_query_select_field_factory
 from altaircms.topic.models import TopicTag
 from altaircms.topic.api import get_topic_searcher
 
-class TopicChoiceForm(form.Form):
+class TopicChoiceForm(Form):
     tag = dynamic_query_select_field_factory(
         TopicTag, allow_blank=False, label=u"分類",
         get_label=lambda obj: obj.label)

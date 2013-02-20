@@ -1,8 +1,8 @@
 # -*- coding:utf-8 -*-
 
-from wtforms.form import Form
+from altaircms.formhelpers import Form
 from wtforms import fields
-from altaircms.helpers.formhelpers import dynamic_query_select_field_factory
+from altaircms.formhelpers import dynamic_query_select_field_factory
 from altaircms.plugins.api import get_widget_utility
 from altaircms.models import SalesSegment
 from altaircms.page.models import Page
