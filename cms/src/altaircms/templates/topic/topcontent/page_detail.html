@@ -92,7 +92,7 @@
           <td rowspan="5">${topcontent.display_order}</td>
           <td><p>タイトル</p>${topcontent.title}</td>
           <td><p>カウントダウンタイプ(??)</p>
-            ${topic_renderer.render_countdown_type(topcontent)}
+            ${html_renderer.render_countdown_type(topcontent)}
           </td>
         </tr>
         <tr>
@@ -103,7 +103,7 @@
             %endif
           </td>
           <td><p>pcリンク先</p>
-            ${topic_renderer.render_cms_link(topcontent)}
+            ${html_renderer.render_cms_link(topcontent)}
           %if topcontent.link:
             <span class="label label-info">外部リンク</span>
           %else:
@@ -116,15 +116,15 @@
         </tr>
         <tr>
           <td><p>分類</p>
-            ${topic_renderer.render_kind(topcontent)}
+            ${html_renderer.render_kind(topcontent)}
           </td>
           <td><p>ジャンル</p>
-            ${topic_renderer.render_genre(topcontent)}
+            ${html_renderer.render_genre(topcontent)}
           </td>
         </tr>
         <tr>
-          <td class="main-image"><p>PC側画像</p> ${topic_renderer.render_pc_image(topcontent)}</td>
-          <td class="main-image"><p>Mobile側画像</p> ${topic_renderer.render_mobile_image(topcontent)}</td>
+          <td class="main-image"><p>PC側画像</p> ${html_renderer.render_pc_image(topcontent)}</td>
+          <td class="main-image"><p>Mobile側画像</p> ${html_renderer.render_mobile_image(topcontent)}</td>
         </tr>
         <tr>
           <td colspan="2"><p>テキスト文言</p><div class="well">${topcontent.text}</div></td>

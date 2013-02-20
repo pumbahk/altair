@@ -96,7 +96,7 @@
             %endif
           </td>
           <td><p>リンク先</p>
-            ${topic_renderer.render_cms_link(promotion)}
+            ${html_renderer.render_cms_link(promotion)}
           %if promotion.link:
             <span class="label label-info">外部リンク</span>
           %else:
@@ -106,15 +106,15 @@
         </tr>
         <tr>
           <td><p>分類</p>
-            ${topic_renderer.render_kind(promotion)}
+            ${html_renderer.render_kind(promotion)}
           </td>
           <td><p>ジャンル</p>
-            ${topic_renderer.render_genre(promotion)}
+            ${html_renderer.render_genre(promotion)}
           </td>
         </tr>
         <tr>
-          <td class="main-image"><p>メイン画像</p> ${topic_renderer.render_main_image(promotion)}</td>
-          <td class="thumbnail"><p>サブ画像(最大サイズ(75px,75px))</p>${topic_renderer.render_thumbnail_image(promotion)}</td>
+          <td class="main-image"><p>メイン画像</p> ${html_renderer.render_main_image(promotion)}</td>
+          <td class="thumbnail"><p>サブ画像(最大サイズ(75px,75px))</p>${html_renderer.render_thumbnail_image(promotion)}</td>
         </tr>
         <tr>
           <td colspan="2"><p>表示メッセージ</p><div class="well">${promotion.text}</div></td>

@@ -28,7 +28,7 @@ class TopicPageContext(object):
 
     Grid = TopicGrid
     TargetTopic = Topic
-    TopicHTMLRenderer = TopicHTMLRenderer
+    HTMLRenderer = TopicHTMLRenderer
 
     @property
     def __acl__(self):
@@ -57,7 +57,7 @@ class TopcontentPageContext(object):
 
     Grid = TopcontentGrid
     TargetTopic = Topcontent
-    TopicHTMLRenderer = TopcontentHTMLRenderer
+    HTMLRenderer = TopcontentHTMLRenderer
 
     @property
     def __acl__(self):
@@ -85,7 +85,7 @@ class PromotionPageContext(object):
 
     Grid = PromotionGrid
     TargetTopic = Promotion
-    TopicHTMLRenderer = PromotionHTMLRenderer
+    HTMLRenderer = PromotionHTMLRenderer
 
     @property
     def __acl__(self):
