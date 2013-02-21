@@ -23,6 +23,8 @@ from ticketing.lots.models import (
     Lot,
     LotEntry,
     LotEntryWish,
+    LotElectWork,
+    LotElectedEntry,
     )
 import ticketing.lots.api as lots_api
 from .helpers import Link
@@ -158,11 +160,11 @@ class LotEntries(BaseView):
         performances = correlate_objects(lot.performances, 'id')
 
         # 申し込み状況
-        entries = LotEntry.query.filter(LotEntry.lot_id==Lot.id).all()
+        entries = LotEntry.query.filter(LotEntry.lot_id==lot.id).all()
         #  総数
-        total_entries = LotEntry.query.filter(LotEntry.lot_id==Lot.id).count()
+        total_entries = LotEntry.query.filter(LotEntry.lot_id==lot.id).count()
         #  希望数
-        total_wishes = LotEntryWish.query.filter(LotEntry.lot_id==Lot.id).filter(LotEntryWish.lot_entry_id==LotEntry.id).count()
+        total_wishes = LotEntryWish.query.filter(LotEntry.lot_id==lot.id).filter(LotEntryWish.lot_entry_id==LotEntry.id).count()
 
         #  公演、希望順ごとの数
         sub_counts = [dict(performance=performances[r[1]],
@@ -174,7 +176,11 @@ class LotEntries(BaseView):
                                                   ).group_by(LotEntryWish.performance_id, LotEntryWish.wish_order
                                                              ).execute()]
         
+        #  当選予定数
+        electing_count = LotElectWork.query.filter(LotElectWork.lot_id==lot.id).count()
         #  当選数
+        elected_count = LotElectedEntry.query.filter(LotElectedEntry.lot_entry_id==LotEntry.id).filter(LotEntry.lot_id==lot_id).count()
+
         #  メール送信済み
         #  決済済み
         return dict(
@@ -184,6 +190,8 @@ class LotEntries(BaseView):
             total_wishes=total_wishes,
             sub_counts=sub_counts,
             performances=performances,
+            electing_count=electing_count,
+            elected_count=elected_count,
             )
 
 
@@ -246,4 +254,20 @@ class LotEntries(BaseView):
         self.request.session.flash(u"{0}件の当選データを取り込みました".format(len(entries)))
         lots_api.submit_lot_entries(lot.id, entries)
         
+        return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
+
+    @view_config(route_name='lots.entries.elect', 
+                 renderer="string",
+                 request_method="POST",
+                 permission='event_viewer')
+    def elect_entries(self):
+        """ 当選確定処理
+        """
+        lot_id = self.request.matchdict["lot_id"]
+        lot = Lot.query.filter(Lot.id==lot_id).one()
+
+        lots_api.elect_lot_entries(lot.id)
+
+        self.request.session.flash(u"当選確定処理を行いました")
+
         return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))

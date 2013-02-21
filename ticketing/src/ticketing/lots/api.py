@@ -74,6 +74,7 @@ from .models import (
     LotElectedEntry,
     LotRejectedEntry,
     LotElectWork,
+    LotStatusEnum,
 )
 
 from .events import LotEntriedEvent
@@ -260,9 +261,13 @@ def elect_lot_entries(lot_id):
     lot = DBSession.query(Lot).filter_by(id=lot_id).one()
 
     elected_wishes = DBSession.query(LotEntryWish).filter(
-        LotEntryWish.lot_id==lot_id
+        LotEntryWish.lot_entry_id==LotEntry.id
     ).filter(
-        LotEntryWish.id.in_([e.id for e in entries])
+        LotEntry.lot_id==lot_id
+    ).filter(
+        LotElectWork.lot_entry_no==LotEntry.entry_no
+    ).filter(
+        (LotElectWork.wish_order-1)==LotEntryWish.wish_order
     )
 
     for ew in elected_wishes:
@@ -282,11 +287,12 @@ def elect_lot_entries(lot_id):
         reject_entry(lot, entry)
 
     lot.status = int(LotStatusEnum.Elected)
+    LotElectWork.query.filter(LotElectWork.lot_id==lot.id).delete()
 
 def reject_entry(lot, entry):
     now = datetime.now()
     entry.rejected_at = now
-    rejected = LotRejectedEntry(lot_entry=elected_wish.lot_entry)
+    rejected = LotRejectedEntry(lot_entry=entry)
     DBSession.add(rejected)
     return rejected
 
