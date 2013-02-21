@@ -2,8 +2,11 @@
 <html>
     <%include file="../common/_header.mako" args="title=u'トップページ'"/>
     <body>
+        <h2>
+            <a href="/">トップ</a><p/>
+        </h2>
 
-        <%include file="../common/_search.mako" args="form=form" />
+        <%include file="../common/_search.mako" args="genre='', subgenre='', path='/search'" />
         <hr/>
         <%include file='_pickup.mako' args="promotions=promotions"/>
         <hr/>
@@ -11,7 +14,7 @@
         <hr/>
         <%include file="../common/_attention.mako" />
         <hr/>
-        <%include file="../common/_area.mako" args="genre=None"/>
+        <%include file="../common/_area.mako" args="genre=''"/>
         <hr/>
         <%include file="../common/_topics.mako" args="topics=topics"/>
         <hr/>

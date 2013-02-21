@@ -50,11 +50,8 @@ def move_genre(request):
         ,attentions=attentions
     )
 
-@view_config(route_name='search', request_method='POST', renderer='cmsmobile:templates/search/search.mako')
+@view_config(route_name='search', renderer='cmsmobile:templates/search/search.mako')
 def search(request):
-
-    genre = request.params.get("genre", None)
-    subgenre = request.params.get("subgenre", None)
 
     num = 0
     performances = None
@@ -88,6 +85,52 @@ def search(request):
 
     return {
          'num':num
+        ,'performances':performances
+        ,'form':SearchForm()
+    }
+
+@view_config(route_name='genresearch', renderer='cmsmobile:templates/genresearch/genresearch.mako')
+def genresearch(request):
+
+    genre = request.params.get("genre", None)
+    subgenre = request.params.get("subgenre", None)
+
+    num = 0
+    performances = None
+    form = SearchForm(request.POST)
+    if not form.validate():
+        return {
+             'genre':genre
+            ,'subgenre':subgenre
+            ,'num':num
+            ,'performances':performances
+            ,'form':form
+        }
+
+    qs = None
+    word = form.word.data
+    if word:
+        qs = Performance.query.filter_by()
+        likeword = u"%%%s%%" % word
+        qs = qs.filter((Performance.title.like(likeword)) | (Performance.venue.like(likeword))).all()
+
+    if qs:
+        performances = paginate.Page(
+            qs,
+            page=int(request.params.get('page', 0)),
+            items_per_page=5,
+            url=paginate.PageURL_WebOb(request)
+        )
+        num = len(qs)
+
+    #area = int(request.params.get("area", 0))
+    #if area:
+    #    pass
+
+    return {
+         'genre':genre
+        ,'subgenre':subgenre
+        ,'num':num
         ,'performances':performances
         ,'form':SearchForm()
     }
