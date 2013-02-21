@@ -34,6 +34,59 @@ def datetime_pick_patch(): #slack-off
     target.widget = DatePickerInput()
 
 
+## custom select field
+class SelectField(fields.SelectField):
+    def pre_validate(self, form):
+        for v, _ in self.choices:
+            if self.data == self.coerce(v):
+                break
+        else:
+            raise ValueError(self.gettext('Not a valid choice'))
+
+from wtforms.compat import text_type
+class MaybeSelectField(SelectField):
+    blank_text = u"--------"
+    blank_value = "_None"
+
+    def __init__(self, label=None, validators=None, coerce=text_type, choices=None, 
+                 blank_text=blank_text, blank_value=blank_value,
+                 **kwargs):
+        super(SelectField, self).__init__(label, validators, **kwargs)
+        self.coerce = coerce
+        self.choices = choices
+        self.blank_text = blank_text
+        self.blank_value = blank_value
+
+    def iter_choices(self):
+        yield (self.blank_value, self.blank_text, False)
+        ## i'm looking forward to py3.
+        for triple in super(MaybeSelectField, self).iter_choices():
+            yield triple
+
+    def process_data(self, value):
+        if value is None:
+            self.data = None
+        elif value == self.blank_value:
+            self.data = None
+        else:
+            super(MaybeSelectField, self).process_data(value)
+
+    def pre_validate(self, form):
+        if not self.choices:
+            return
+        if self.data is None or self.data == self.blank_value:
+            return
+        return super(MaybeSelectField, self).pre_validate(form)
+
+    def process_formdata(self, valuelist):
+        if not valuelist:
+            self.data = None
+        elif valuelist[0] == self.blank_value:
+            self.data = None
+        else:
+            return super(MaybeSelectField, self).process_formdata(valuelist)
+
+
 ##
 ## query_select filter
 ##

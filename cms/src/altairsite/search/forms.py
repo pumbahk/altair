@@ -10,7 +10,7 @@ from wtforms import validators
 from .formparts import CheckboxListField
 from .formparts import PutOnlyWidget
 from .formparts import CheckboxWithLabelInput
-from .formparts import MaybeSelectField
+from altaircms.formhelpers import MaybeSelectField
 
 import pkg_resources
 def import_symbol(symbol):
