@@ -8,7 +8,7 @@
 <img src="static/img/common/header_logo_02.gif"/><p/>
 <img src="static/img/common/header_nav_bg.gif"/><p/>
 <a href="http://www.rakuten.co.jp/myrakuten/help/">会員登録</a>
-｜<a href="/order">申し込み履歴確認</a>
-｜<a href="/inquiry">公演中止情報</a>
+｜<a href="/">申し込み履歴確認</a>
+｜<a href="/information">公演中止・変更情報</a>
 ｜<a href="http://www.google.co.jp/gwt/x?client=firefox-a&gl=JP&wsc=tb&u=http://emagazine.rakuten.co.jp/&ei=bwAiUfbsJMWfkgXh9YHYCA">メルマガ登録</a>
 <p/>

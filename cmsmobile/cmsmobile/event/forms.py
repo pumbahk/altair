@@ -3,7 +3,6 @@
 from wtforms import Form
 from wtforms import TextField
 from wtforms.validators import Length
-from ticketing.formhelpers import Required
 from wtforms.validators import ValidationError
 
 class SearchForm(Form):
