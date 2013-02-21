@@ -2116,7 +2116,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def delivered(self):
         # 入金済みのみ配送済みにステータス変更できる
-        if self.status == 'paid':
+        if self.payment_status == 'paid':
             self.delivered_at = datetime.now()
             self.save()
             return True
