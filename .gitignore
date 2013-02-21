@@ -19,3 +19,4 @@ cms/doc/source
 coverage.xml
 nosetests.xml
 *.orig
+.idea
