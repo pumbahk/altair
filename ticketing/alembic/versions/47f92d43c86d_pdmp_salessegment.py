@@ -22,8 +22,8 @@ def upgrade():
     op.create_table(
     "SalesSegment_PaymentDeliveryMethodPair",
     sa.Column('id', Identifier, primary_key=True),
-    sa.Column('payment_delivery_method_pair', Identifier, sa.ForeignKey('PaymentDeliveryMethodPair.id')),
-    sa.Column('sales_segment_id', Identifier, sa.ForeignKey('SalesSegment.id')),
+    sa.Column('payment_delivery_method_pair', Identifier, sa.ForeignKey('PaymentDeliveryMethodPair.id', name='SalesSegment_PaymentDeliveryMethodPair_ibfk_1')),
+    sa.Column('sales_segment_id', Identifier, sa.ForeignKey('SalesSegment.id', name='SalesSegment_PaymentDeliveryMethodPair_ibfk_2')),
     )
 
 def downgrade():
