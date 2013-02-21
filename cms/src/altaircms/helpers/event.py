@@ -16,8 +16,11 @@ def _to_term(p):
 def _to_where(p):
     return p.venue
 
+# def performance_name(performance):
+#     return u"%s (%s)" % (performance.title, _to_term(performance))
+
 def performance_name(performance):
-    return u"%s (%s)" % (performance.title, _to_term(performance))
+    return u"%s(日時:%s, 場所:%s)" % (performance.title, performance.start_on, performance.venue)
 
 def performance_describe(performance):
     """ performanceから公演場所や日時を表示する文字列を返す

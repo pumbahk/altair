@@ -2,7 +2,6 @@
 from datetime import datetime
 from datetime import timedelta
 from collections import namedtuple
-from wtforms import form
 from altaircms.formhelpers import Form
 from wtforms import fields
 from wtforms import widgets

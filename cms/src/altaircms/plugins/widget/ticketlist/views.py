@@ -1,5 +1,6 @@
 from pyramid.view import view_config, view_defaults
-from altaircms.auth.api import require_login
+from altaircms.auth.api import require_login, get_or_404
+from altaircms.page.models import Page
 from . import forms
 
 @view_defaults(custom_predicates=(require_login,))
@@ -39,6 +40,7 @@ class TicketlistWidgetView(object):
     def dialog(self):
         context = self.request.context
         widget = context.get_widget(self.request.GET.get("pk"))
+        page = get_or_404(self.request.allowable(Page), Page.id==self.request.GET["page_id"])
+        self.request.event_id = page.event_id
         form = forms.TicketlistChoiceForm(**widget.to_dict())
-        form.refine_choices(self.request, self.request.GET.get("page_id"))
         return {"widget": widget, "form": form}
