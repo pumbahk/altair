@@ -79,7 +79,7 @@ class Lots(BaseView):
 
     @view_config(route_name='lots.show', renderer='ticketing:templates/lots/show.html', permission='event_viewer')
     def show(self):
-        lot_id = int(self.request.matchdict.get("lot_id", 0))
+        lot_id = self.request.matchdict["lot_id"]
         lot = Lot.query.filter(Lot.id==lot_id).one()
         if "action-update-pdmp" in self.request.POST:
             for pdmp_id in self.request.POST.getall("pdmp_id"):
@@ -98,7 +98,7 @@ class Lots(BaseView):
 
     @view_config(route_name='lots.edit', renderer='ticketing:templates/lots/edit.html', permission='event_viewer')
     def edit(self):
-        lot_id = int(self.request.matchdict.get("lot_id", 0))
+        lot_id = self.request.matchdict["lot_id"]
         lot = Lot.query.filter(Lot.id==lot_id).one()
         event = lot.event
         sales_segment_groups = event.sales_segment_groups
@@ -124,7 +124,7 @@ class Lots(BaseView):
 
     @view_config(route_name='lots.product_new', renderer='ticketing:templates/lots/product_new.html', permission='event_viewer')
     def product_new(self):
-        lot_id = int(self.request.matchdict.get("lot_id", 0))
+        lot_id = self.request.matchdict["lot_id"]
         lot = Lot.query.filter(Lot.id==lot_id).one()
         event = lot.event
         stock_types = event.stock_types
@@ -153,7 +153,7 @@ class LotEntries(BaseView):
         """ 申し込み状況確認画面
         """
 
-        lot_id = int(self.request.matchdict.get("lot_id", 0))
+        lot_id = self.request.matchdict["lot_id"]
         lot = Lot.query.filter(Lot.id==lot_id).one()
         performances = correlate_objects(lot.performances, 'id')
 
@@ -199,7 +199,7 @@ class LotEntries(BaseView):
 
         # とりあえずすべて
 
-        lot_id = int(self.request.matchdict.get("lot_id", 0))
+        lot_id = self.request.matchdict["lot_id"]
         lot = Lot.query.filter(Lot.id==lot_id).one()
         entries = lots_api.get_lot_entries_iter(lot.id)
         filename='lot-{0.id}.csv'.format(lot)
@@ -212,3 +212,38 @@ class LotEntries(BaseView):
 
 
         
+    @view_config(route_name='lots.entries.import', 
+                 renderer="string",
+                 permission='event_viewer')
+    def import_accepted_entries(self):
+
+        lot_id = self.request.matchdict["lot_id"]
+        lot = Lot.query.filter(Lot.id==lot_id).one()
+        entries = lots_api.get_lot_entries_iter(lot.id)
+
+        f = self.request.params['entries'].file
+        header = 1
+        entries = []
+        for line in f:
+            if header:
+                header = 0
+                continue
+            if not line:
+                continue
+            if line.startswith('#'):
+                continue
+
+            parts = line.split(",")
+            if len(parts) < 3:
+                raise Exception, parts
+            entry_no = parts[2]
+            wish_order = parts[5]
+            entries.append((entry_no, wish_order))
+        if not entries:
+            self.request.session.flash(u"当選データがありませんでした")
+            return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
+
+        self.request.session.flash(u"{0}件の当選データを取り込みました".format(len(entries)))
+        lots_api.submit_lot_entries(lot.id, entries)
+        
+        return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))

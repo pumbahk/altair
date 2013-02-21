@@ -73,6 +73,7 @@ from .models import (
     Lot_StockType,
     LotElectedEntry,
     LotRejectedEntry,
+    LotElectWork,
 )
 
 from .events import LotEntriedEvent
@@ -236,8 +237,8 @@ def submit_lot_entries(lot_id, entries):
     entries : (entry_no, wish_order)のリスト
     """
 
-    lot = DBSession.query(Lot).filter(id==lot_id).one()
-    assert lot.status == int(LotStatusEnum.Electing)
+    lot = Lot.query.filter(Lot.id==lot_id).one()
+    #assert lot.status == int(LotStatusEnum.Electing)
 
     for entry_no, wish_order in entries:
         w = LotElectWork(lot_id=lot_id, lot_entry_no=entry_no, wish_order=wish_order,

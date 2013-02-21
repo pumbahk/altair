@@ -14,11 +14,12 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
 </%block>
 <div class="breadcrumbs">
   ${h.breadcrumbs(
-      names=[u'イベント', lot.event.title, u'抽選', lot.name],
+      names=[u'イベント', lot.event.title, u'抽選', lot.name, u'申し込み状況'],
       urls=[
         request.route_path('events.index'),
         request.route_path('events.show', event_id=lot.event.id),
         request.route_path('lots.index', event_id=lot.event.id),
+        request.route_path('lots.show', lot_id=lot.id),
       ]
   )}
 </div>
@@ -46,6 +47,15 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
 </dl>
 </div>
 
+<div>
+<h3>アクション</h3>
+<ul>
+<li><a href="${request.route_url('lots.entries.export', lot_id=lot.id)}" class="btn">エクスポート</a></li>
+<li><form enctype="multipart/form-data" method="POST" action="${request.route_url('lots.entries.import', lot_id=lot.id)}">
+    <input type="file" name="entries"/><br/>
+    <button type="submit" class="btn">当選データインポート</button>
+</form></li>
+</div>
 <div>
 <h3>公演ごと、希望ごと</h3>
 <table class="table">
