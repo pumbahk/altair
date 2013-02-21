@@ -1,6 +1,9 @@
 from .faker import ModelFaker
 from pyramid.decorator import reify
 
+
+## sales term
+
 class SalesTermSummalize(object):
     def __init__(self, request):
         self.request = request
@@ -14,8 +17,7 @@ class SalesTermSummalize(object):
     def summalize_salessegment(self, salessegment, virtual=False):
         return SalesSegmentSalesTerm(salessegment, virtual=virtual)
 
-
-class SalesTermBase(object):
+class BubblingBase(object):
     def __init__(self, o, virtual=False):
         self.virtual = virtual
         if virtual:
@@ -23,7 +25,7 @@ class SalesTermBase(object):
         else:
             self.o = o
 
-class EventSalesTerm(SalesTermBase):
+class EventSalesTerm(BubblingBase):
     @reify
     def children(self):
         return [SalesSegmentGroupSalesTerm(s, virtual=self.virtual) for s in self.o.salessegment_groups]
@@ -51,7 +53,7 @@ class EventSalesTerm(SalesTermBase):
             o.deal_close = end_on
         return o.deal_open, o.deal_close
 
-class SalesSegmentGroupSalesTerm(SalesTermBase):
+class SalesSegmentGroupSalesTerm(BubblingBase):
     @reify
     def children(self):
         return [SalesSegmentSalesTerm(s, virtual=self.virtual) for s in self.o.salessegments]
@@ -80,7 +82,7 @@ class SalesSegmentGroupSalesTerm(SalesTermBase):
         parent = EventSalesTerm(o.event)
         return parent.bubble(o.start_on, o.end_on)
 
-class SalesSegmentSalesTerm(SalesTermBase):
+class SalesSegmentSalesTerm(BubblingBase):
     children = []
     def term(self):
         return self.o.start_on, self.o.end_on
@@ -88,3 +90,65 @@ class SalesSegmentSalesTerm(SalesTermBase):
     def bubble(self, start_on=None, end_on=None):
         parent = SalesSegmentGroupSalesTerm(self.o.group)
         return parent.bubble(self.o.start_on, self.o.end_on)
+
+## updated_at
+
+class UpdatedAtSummalize(object):
+    def __init__(self, request):
+        self.request = request
+
+    def summalize_page(self, obj, virtual=False):
+        return PageUpdatedAt(obj, virtual=virtual)
+
+    def summalize_performance(self, obj, virtual=False):
+        return PerformanceUpdatedAt(obj, virtual=virtual)
+
+    def summalize_salessegment_group(self, obj, virtual=False):
+        return SalesSegmentGroupUpdatedAt(obj, virtual=virtual)
+
+    def summalize_salessegment(self, obj, virtual=False):
+        return SalesSegmentUpdatedAt(obj, virtual=virtual)
+
+    def summalize_ticket(self, obj, virtual=False):
+        return TicketUpdatedAt(obj, virtual=virtual)
+
+
+class EventUpdatedAt(BubblingBase):
+    def bubble(self, updated_at):
+        self.o.updated_at = updated_at
+    
+class PageSetUpdatedAt(BubblingBase):
+    def bubble(self, updated_at):
+        self.o.updated_at = updated_at
+        parent = EventUpdatedAt(self.o.event)
+        parent.bubble(updated_at)
+        
+class PageUpdatedAt(BubblingBase):
+    def bubble(self, updated_at):
+        self.o.updated_at = updated_at
+        parent = PageSetUpdatedAt(self.o.pageset)
+        return parent.bubble(self.o.updated_at)
+        
+class PerformanceUpdatedAt(BubblingBase):
+    def bubble(self, updated_at):
+        self.o.updated_at = updated_at
+        parent = EventUpdatedAt(self.o.event)
+        return parent.bubble(self.o.updated_at)
+
+class SalesSegmentGroupUpdatedAt(BubblingBase):
+    def bubble(self, updated_at):
+        self.o.updated_at = updated_at
+        parent = EventUpdatedAt(self.o.event)
+        return parent.bubble(self.o.updated_at)
+    
+class SalesSegmentUpdatedAt(BubblingBase):
+    def bubble(self, updated_at):
+        self.o.updated_at = updated_at
+        parent = SalesSegmentGroupUpdatedAt(self.o.group)
+        return parent.bubble(self.o.updated_at)
+    
+class TicketUpdatedAt(BubblingBase):
+    def bubble(self, updated_at):
+        self.o.updated_at = updated_at
+        parent = SalesSegmentGroupUpdatedAt(self.o.salessegment)
+        return parent.bubble(self.o.updated_at)

@@ -193,6 +193,7 @@ class Ticket(BaseOriginalMixin, Base):
     sale_id = sa.Column(sa.Integer, sa.ForeignKey("sale.id"))
     salessegment_id = AliasDescripter("sale_id")
     sale = relationship("SalesSegment", backref=orm.backref("tickets", order_by=price.desc(), cascade="all"), uselist=False)
+    salessegment = AliasDescripter("sale")
 
     name = sa.Column(sa.Unicode(255))
     seattype = sa.Column(sa.Unicode(255))
