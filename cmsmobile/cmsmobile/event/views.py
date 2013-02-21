@@ -53,6 +53,9 @@ def move_genre(request):
 @view_config(route_name='search', request_method='POST', renderer='cmsmobile:templates/search/search.mako')
 def search(request):
 
+    genre = request.params.get("genre", None)
+    subgenre = request.params.get("subgenre", None)
+
     num = 0
     performances = None
     form = SearchForm(request.POST)

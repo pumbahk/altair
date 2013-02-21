@@ -1,4 +1,9 @@
-<h1>地域から探す</h1>
+<%page args="genre" />
+% if genre:
+    <h1>地域から絞り込む</h1>
+% else:
+    <h1>地域から探す</h1>
+% endif
 <a href="/search?area=1">首都圏</a>｜
 <a href="/search?area=2">近畿</a>｜
 <a href="/search?area=3">東海</a>｜
