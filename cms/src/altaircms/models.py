@@ -159,6 +159,16 @@ class SalesSegment(BaseOriginalMixin, Base):
     def jkind(self):
         return self.SALESKIND_DICT.get(self.type.kind, u"-")
 
+class AliasDescripter(object):
+    def __init__(self, alias):
+        self.alias = alias
+
+    def __get__(self, wrapper, obj):
+        if obj:
+            return getattr(obj, self.alias)
+        else:
+            return getattr(wrapper, self.alias)            
+
 class Ticket(BaseOriginalMixin, Base):
     """
     券種
@@ -175,6 +185,7 @@ class Ticket(BaseOriginalMixin, Base):
     price = sa.Column(sa.Integer, default=0)
 
     sale_id = sa.Column(sa.Integer, sa.ForeignKey("sale.id"))
+    salessegment_id = AliasDescripter("sale_id")
     sale = relationship("SalesSegment", backref=orm.backref("tickets", order_by=price.desc(), cascade="all"), uselist=False)
 
     name = sa.Column(sa.Unicode(255))

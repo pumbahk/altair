@@ -1,28 +1,58 @@
 # -*- coding:utf-8 -*-
 import sqlalchemy.orm as orm
 from altaircms.formhelpers import Form
+from altaircms.formhelpers import MaybeSelectField
+from .models import TicketlistWidget
 import wtforms.fields as fields
 import wtforms.widgets as widgets
-from altaircms.formhelpers import dynamic_query_select_field_factory
+from altaircms.plugins.api import get_widget_utility
+# from altaircms.formhelpers import dynamic_query_select_field_factory
 import wtforms.validators as validators
 from altaircms.models import Performance
 from altaircms.models import SalesSegment
 from altaircms.helpers.event import performance_name
 
+_None = "_None"
 class TicketlistChoiceForm(Form):
-    display_type = fields.SelectField(id="display_type", label=u"価格表の表示方法", choices=[])
-    target_performance = dynamic_query_select_field_factory(
-        Performance, 
-        id="target_performance", 
+    display_type = fields.SelectField(id="display_type", label=u"価格表の表示方法", choices=[], coerce=unicode)
+    target_performance_id = MaybeSelectField(
+        id="target_performance_id", 
         label=u"価格表を取得するパフォーマンス", 
-        dynamic_query=lambda model, request, query: query.filter(Performance.event_id==request.event_id), 
-        get_label= performance_name)
-    target_salessegment = dynamic_query_select_field_factory(
-        SalesSegment, 
-        allow_blank=True, 
         blank_text=u"(指定なし)", 
-        id="target_salessegment", 
-        label=u"価格表を取得する販売区分", 
-        dynamic_query=lambda model, request, query: query.filter(model.performance_id==Performance.id, Performance.event_id==request.event_id).options(orm.joinedload(SalesSegment.group)), 
-        get_label= lambda obj: obj.group.name)
+        choices=[]
+        )
+    target_salessegment_id = MaybeSelectField(
+        id="target_salessegment_id", 
+        label=u"価格表を取得する商品", 
+        blank_text=u"(指定なし)", 
+        choices=[]
+        )
     caption = fields.TextField(id="caption", label=u"価格表の見出し", widget=widgets.TextArea())
+    def configure(self, request, page):
+        if page.event_id:
+            ps = Performance.query.filter(Performance.event_id==page.event_id).all()
+            if ps:
+                self.target_performance_id.choices = [(p.id, performance_name(p)) for p in ps]
+            
+                performance_id = self.data.get("target_performance_id")
+                if performance_id:
+                    ss = SalesSegment.query.filter(SalesSegment.performance_id==performance_id).options(orm.joinedload(SalesSegment.group)).all()
+                    if ss:
+                        self.target_salessegment_id.choices =  [(s.id, s.group.name) for s in ss]
+        utility = get_widget_utility(request, page, TicketlistWidget.type)
+        self.display_type.choices = utility.choices
+
+
+class TicketChoiceForm(Form):
+    display_type = fields.SelectField(id="display_type", label=u"価格表の表示方法", choices=[], coerce=unicode)
+    target_salessegment_id = MaybeSelectField(
+        id="target_salessegment_id", 
+        label=u"価格表を取得する商品", 
+        blank_text=u"(指定なし)", 
+        choices=[]
+        )
+    def configure(self, request):
+        performance_id = request.params.get("target_performance_id")
+        ss = SalesSegment.query.filter(SalesSegment.performance_id==performance_id).options(orm.joinedload(SalesSegment.group)).all()
+        self.target_salessegment_id.choices =  [(s.id, s.group.name) for s in ss]
+        

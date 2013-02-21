@@ -47,7 +47,6 @@ from wtforms.compat import text_type
 class MaybeSelectField(SelectField):
     blank_text = u"--------"
     blank_value = "_None"
-
     def __init__(self, label=None, validators=None, coerce=text_type, choices=None, 
                  blank_text=blank_text, blank_value=blank_value,
                  **kwargs):
@@ -72,8 +71,6 @@ class MaybeSelectField(SelectField):
             super(MaybeSelectField, self).process_data(value)
 
     def pre_validate(self, form):
-        if not self.choices:
-            return
         if self.data is None or self.data == self.blank_value:
             return
         return super(MaybeSelectField, self).pre_validate(form)

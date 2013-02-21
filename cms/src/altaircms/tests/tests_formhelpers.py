@@ -95,6 +95,17 @@ class MaybeSelectFieldTests(unittest.TestCase):
         self.assertFalse(target.validate())
         self.assertTrue(target.errors)
 
+    def test_choices_values_is_changed_dynamically(self):
+        from wtforms import Form
+        from webob.multidict import MultiDict
+        postdata = MultiDict({"vs": u"1"})
 
+        class MForm(Form):
+            vs = self._makeOne(label="values", choices=[])
+        target = MForm(postdata)
+        target.vs.choices = [(u"1", u"1")]
+        self.assertTrue(target.validate())
+        self.assertEqual(target.data["vs"], u"1")
+        
 if __name__ == "__main__":
     unittest.main()

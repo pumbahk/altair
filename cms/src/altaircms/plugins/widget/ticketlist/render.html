@@ -11,10 +11,9 @@
 	<table id="ticketPrice1" summary="チケット価格表">
 	  % for ticket in tickets:
 	    <tr>
-		  ##<th scope="row"><a href="#">${ticket.seattype }</a></th>
-		  <th scope="row">${ ticket.seattype }</th>
-		  <td>${ ticket.name }</td>
-          <td>${ h.event.price_format(ticket.price) }円</td>
+		    <th scope="row">${ ticket.seattype }</th>
+		    <td>${ ticket.name }</td>
+        <td>${ h.event.price_format(ticket.price) }円</td>
 		</tr>
 	  % endfor
 	</table>

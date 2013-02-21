@@ -3,6 +3,8 @@
 page rendering process: page => widget tree => block_dict(defaultdict(list)) => html
 """
 from collections import defaultdict
+import logging
+logger = logging.getLogger(__name__)
 
 __all__ = ["BlockSettingsException",
            "BlockSettings"]
@@ -92,13 +94,25 @@ class ScannableMixin(object):
         self.extra.update(kwargs)
         self._do_validate("before_scan")
         for k, vs in self.blocks.iteritems():
-            self.blocks[k] = [v() if callable(v) else v for v in vs]
+            correct_vals = []
+            for v in vs:
+                if callable(v):
+                    try:
+                        v = v()
+                    except Exception, e:
+                        logger.warn("bsettings %s has invalid rendering closure. error=%s, (extra_resource=%s)" % (k, repr(e), self.extra))
+                        v = str(e)
+                if v is None:
+                    logger.warn("bsettings %s is None. (extra_resource=%s)" % (k, self.extra))
+                else:
+                    correct_vals.append(v)
+            self.blocks[k] = correct_vals
         self._do_validate("after_scan")    
 
 class BlockSettings(StoreableMixin,
-                   UpdatableMixin,
-                   ScannableMixin, 
-                   UniqueByWidgetMixin):
+                    UpdatableMixin,
+                    ScannableMixin, 
+                    UniqueByWidgetMixin):
     """ ページをレンダリングするときに利用する設定。self.blocksが実際にレンダリングされる時に使われる予定。
         ブロック中の各widgetがhtmlを生成するとき、このクラスのインスタンスが設定として渡される。
         blocks, is_scanned, extra以外の名前のattributeを自由に定義して使って良い。

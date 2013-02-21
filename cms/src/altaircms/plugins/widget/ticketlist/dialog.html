@@ -17,13 +17,14 @@
   <h1>チケットリスト(価格表)</h1>
 </div>
 
-<table class="table">
-  <tbody>
-    ${formfield("display_type")}
-    ${formfield("target_performance")}
-    ${formfield("target_salessegment")}
-    ${formfield("caption")}
-  </tbody>
-</table>
-
-<button type="button" id="ticketlist_submit">登録</button>
+<div class="box">
+  <table class="table">
+    <tbody>
+      ${formfield("display_type")}
+      ${formfield("target_performance_id")}
+      ${formfield("target_salessegment_id")}
+      ${formfield("caption")}
+    </tbody>
+  </table>
+  <button type="button" id="ticketlist_submit">登録</button>
+</div>
