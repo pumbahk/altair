@@ -1,4 +1,4 @@
-<h3 id="performance">${page_title}</h3>
+<h3 id="performance">${page_title}(${event.title})</h3>
 %if not current_performance:
    ${panel("model_create_only_buttons", modeljname=u"パフォーマンス", modelname="performance", _query=dict(event_id=current_event.id,event=current_event.id))}
 %else:
@@ -20,6 +20,7 @@
   <hr/>
 
   %if current_performance.salessegments:
+
     ${panel("performance_salessegment", current_performance)}
   %else:
     ${panel("model_create_only_buttons", modeljname=u"販売区分", modelname="salessegment", _query=dict(performance=current_performance.id,performance_id=current_performance.id))}

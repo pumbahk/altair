@@ -15,6 +15,7 @@ def performance_salessegment_tabs_panel(context, request, performance, id_key="s
     else:
         current_salessegment = salessegments[0]
     return dict(current_salessegment=current_salessegment, 
+                performance=performance, 
                 salessegments=salessegments, 
                 page_title=u"販売区分")
 

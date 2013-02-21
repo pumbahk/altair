@@ -1,4 +1,6 @@
-<h3 id="salessegment">${page_title}</h3>
+<h3 id="salessegment">${page_title}(${performance.title})</h3>
+
+
 <ul class="nav nav-tabs">
    %for salessegment in salessegments:
      %if unicode(salessegment.id) == unicode(current_salessegment.id):

@@ -17,6 +17,7 @@ def event_performance_section_panel(context, request, event, id_key="performance
     else:
         current_performance = performances[0]
     return dict(current_performance=current_performance, 
+                event=event, 
                 performances=performances, 
                 page_title=u"パフォーマンス")
 
