@@ -58,6 +58,7 @@ from ticketing.core.models import (
 from ticketing.users.models import (
     MemberGroup_SalesSegment,
     MemberGroup,
+    SexEnum,
 )
 from ticketing.cart.models import (
     Cart,
@@ -191,33 +192,42 @@ def generate_entry_no(request, lot_entry):
 
 def get_lot_entries_iter(lot_id):
     q = DBSession.query(LotEntryWish
-    ).options(
-        joinedload(LotEntry.shipping_address)
     ).filter(
         LotEntry.lot_id==lot_id
     ).filter(
-        LotEntryWish.entry_id==LotEntry.id
-    ).orderby(
+        LotEntryWish.lot_entry_id==LotEntry.id
+    ).order_by(
         LotEntryWish.wish_order
     )
 
     for entry in q:
         yield _entry_info(entry)
 
+def format_sex(s):
+    if s is None:
+        return u""
+    v = int(s)
+    if v == int(SexEnum.Male):
+        return u"男性"
+    elif v == int(SexEnum.Female):
+        return u"女性"
+    else:
+        return u"未回答"
+
 def _entry_info(wish):
-    shipping_address = wish.shipping_address
+    shipping_address = wish.lot_entry.shipping_address
 
     return {
-        "entry_no": wish.lot_entry.entry_no,
-        "wish_order": wish.wish_order,
-        "created_at": wish.created_at,
-        "membergroup": wish.lot_entry.membergroup,
-        "stock_type": None, # 席種
-        "total_quantity": None, # 枚数(商品関係なし)
-        "products": None, # 商品うちわけ(参考情報)
-        "zip": shipping_address.zip,
-        "prefecture": shipping_address.prefecture,
-        "sex": shipping_address.sex,
+        u"申し込み番号": wish.lot_entry.entry_no,
+        u"希望順序": wish.wish_order + 1,
+        u"申し込み日": wish.created_at,
+        u"ユーザー種別": wish.lot_entry.membergroup,
+        u"席種": u",".join([",".join([i.stock_type.name for i in p.product.items]) for p in wish.products]), # 席種 この時点で席種までちゃんと決まる
+        u"枚数": wish.total_quantity, # 枚数(商品関係なし)
+        u"商品": u",".join([p.product.name for p in wish.products]), # 商品うちわけ(参考情報)
+        u"郵便番号": shipping_address.zip,
+        u"都道府県": shipping_address.prefecture,
+        u"性別": format_sex(shipping_address.sex),
     }
 
 def submit_lot_entries(lot_id, entries):

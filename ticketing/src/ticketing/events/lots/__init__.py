@@ -12,3 +12,5 @@ def includeme(config):
 
     # 抽選申し込み管理
     config.add_route('lots.entries.index', 'entries/{lot_id}')
+    config.add_route('lots.entries.export.html', 'entries/export/{lot_id}.html')
+    config.add_route('lots.entries.export', 'entries/export/{lot_id}')

@@ -220,6 +220,11 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     elected_at = sa.Column(sa.DateTime)
 
+
+    @property
+    def total_quantity(self):
+        return sum([p.quantity for p in self.products])
+
 class LotEntryProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     u""" 抽選申し込み商品 """
     __tablename__ = 'LotEntryProduct'

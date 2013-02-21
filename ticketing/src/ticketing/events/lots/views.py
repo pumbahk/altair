@@ -24,6 +24,7 @@ from ticketing.lots.models import (
     LotEntry,
     LotEntryWish,
     )
+import ticketing.lots.api as lots_api
 from .helpers import Link
 from . forms import ProductForm, LotForm
 
@@ -149,6 +150,9 @@ class Lots(BaseView):
 class LotEntries(BaseView):
     @view_config(route_name='lots.entries.index', renderer='ticketing:templates/lots/entries.html', permission='event_viewer')
     def index(self):
+        """ 申し込み状況確認画面
+        """
+
         lot_id = int(self.request.matchdict.get("lot_id", 0))
         lot = Lot.query.filter(Lot.id==lot_id).one()
         performances = correlate_objects(lot.performances, 'id')
@@ -183,3 +187,24 @@ class LotEntries(BaseView):
             )
 
 
+    @view_config(route_name='lots.entries.export', 
+                 renderer='csv', permission='event_viewer')
+    @view_config(route_name='lots.entries.export.html', 
+                 renderer='ticketing:templates/lots/export.html', permission='event_viewer')
+    def export_entries(self):
+        """ 申し込み内容エクスポート
+
+        - フィルター (すべて、未処理)
+        """
+
+        # とりあえずすべて
+
+        lot_id = int(self.request.matchdict.get("lot_id", 0))
+        lot = Lot.query.filter(Lot.id==lot_id).one()
+        entries = lots_api.get_lot_entries_iter(lot.id)
+        if self.request.matched_route.name == 'lots.entries.export':
+            self.request.response.content_type = 'text/plain;charset=Shift_JIS'
+        return dict(data=list(entries),
+                    filename='lot-{0.id}.csv'.format(lot))
+
+        
