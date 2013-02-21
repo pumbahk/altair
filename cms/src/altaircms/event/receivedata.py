@@ -7,6 +7,7 @@ from altaircms.auth.models import Organization
 from altaircms.models import Performance, SalesSegment, Ticket, SalesSegmentGroup
 from altaircms.seeds.prefecture import PREFECTURE_CHOICES
 from . import subscribers
+from ..modelmanager import SalesTermSummalize
 
 def parse_datetime(dtstr):
     if dtstr is None:
@@ -259,6 +260,10 @@ class Scanner(object):
         tickets = self.fetch_tickets(organization)
         self.session.add_all(tickets)
         self.session.flush()
+
+        summ = SalesTermSummalize(self.request)        
+        for event in events:
+            summ.summalize_event(event).term()
 
         for action in self.after_parsed_actions:
             action()

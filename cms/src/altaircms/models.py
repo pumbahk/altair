@@ -129,7 +129,7 @@ class SalesSegmentGroup(BaseOriginalMixin, Base):
 
     id = sa.Column(sa.Integer, primary_key=True)
     event_id = sa.Column(sa.Integer, sa.ForeignKey('event.id'))
-    event  = relationship("Event")
+    event  = relationship("Event", uselist=False, backref="salessegment_groups")
     name = sa.Column(sa.Unicode(length=255))
     kind = sa.Column(sa.Unicode(length=255))
 
@@ -152,7 +152,7 @@ class SalesSegment(BaseOriginalMixin, Base):
     performance  = relationship("Performance", backref=orm.backref("sales", cascade="all"))
 
     group_id = sa.Column(sa.Integer, sa.ForeignKey("salessegment_group.id"))
-    group = orm.relationship("SalesSegmentGroup")
+    group = orm.relationship("SalesSegmentGroup", backref="salessegments", uselist=False)
 
     start_on = sa.Column(sa.DateTime)
     end_on = sa.Column(sa.DateTime)
