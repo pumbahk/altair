@@ -202,9 +202,13 @@ class LotEntries(BaseView):
         lot_id = int(self.request.matchdict.get("lot_id", 0))
         lot = Lot.query.filter(Lot.id==lot_id).one()
         entries = lots_api.get_lot_entries_iter(lot.id)
+        filename='lot-{0.id}.csv'.format(lot)
         if self.request.matched_route.name == 'lots.entries.export':
             self.request.response.content_type = 'text/plain;charset=Shift_JIS'
+            self.request.response.content_disposition = 'attachment; filename=' + filename
         return dict(data=list(entries),
-                    filename='lot-{0.id}.csv'.format(lot))
+                    encoding='sjis',
+                    filename=filename)
+
 
         
