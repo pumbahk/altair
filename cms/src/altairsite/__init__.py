@@ -18,6 +18,8 @@ def main(global_config, **local_config):
 
     config = Configurator(settings=settings)
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
+    config.include("altaircms.topic:install_topic_searcher")
+    config.include("altaircms.widget:install_has_widget_page_finder")
 
     ## organization mapping
     OrganizationMapping = config.maybe_dotted("altaircms.auth.api.OrganizationMapping")

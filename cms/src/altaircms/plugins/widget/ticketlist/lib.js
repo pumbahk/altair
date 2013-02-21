@@ -44,7 +44,6 @@ widget.configure({
                               var target = root.find("#target_salessegment_id").parent();
                               var url = "/api/widget/ticketlist/api/combobox/salessegment?target_performance_id="+$(e.currentTarget).val();
                               $.get(url).done(function(data){
-                                  alert(data)
                                   target.html(data);
                               });
                           })
