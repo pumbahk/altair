@@ -5,6 +5,8 @@ logger = logging.getLogger(__name__)
 
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
+from sqlalchemy import sql
+from webhelpers.containers import correlate_objects
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.models import (
@@ -19,6 +21,8 @@ from ticketing.core.models import (
     )
 from ticketing.lots.models import (
     Lot,
+    LotEntry,
+    LotEntryWish,
     )
 from .helpers import Link
 from . forms import ProductForm, LotForm
@@ -140,3 +144,42 @@ class Lots(BaseView):
             product = form.create_product(lot)
             return HTTPFound(self.request.route_url('lots.show', lot_id=lot.id))
         return dict(form=form, lot=lot)
+
+@view_defaults(decorator=with_bootstrap, permission="event_editor")
+class LotEntries(BaseView):
+    @view_config(route_name='lots.entries.index', renderer='ticketing:templates/lots/entries.html', permission='event_viewer')
+    def index(self):
+        lot_id = int(self.request.matchdict.get("lot_id", 0))
+        lot = Lot.query.filter(Lot.id==lot_id).one()
+        performances = correlate_objects(lot.performances, 'id')
+
+        # 申し込み状況
+        entries = LotEntry.query.filter(LotEntry.lot_id==Lot.id).all()
+        #  総数
+        total_entries = LotEntry.query.filter(LotEntry.lot_id==Lot.id).count()
+        #  希望数
+        total_wishes = LotEntryWish.query.filter(LotEntry.lot_id==Lot.id).filter(LotEntryWish.lot_entry_id==LotEntry.id).count()
+
+        #  公演、希望順ごとの数
+        sub_counts = [dict(performance=performances[r[1]],
+                           wish_order=r[2] + 1,
+                           count=r[0])
+                      for r in sql.select([sql.func.count(LotEntryWish.id), LotEntryWish.performance_id, LotEntryWish.wish_order]
+                                          ).where(sql.and_(LotEntryWish.lot_entry_id==LotEntry.id,
+                                                           LotEntry.lot_id==lot.id)
+                                                  ).group_by(LotEntryWish.performance_id, LotEntryWish.wish_order
+                                                             ).execute()]
+        
+        #  当選数
+        #  メール送信済み
+        #  決済済み
+        return dict(
+            lot=lot,
+            entries=entries,
+            total_entries=total_entries,
+            total_wishes=total_wishes,
+            sub_counts=sub_counts,
+            performances=performances,
+            )
+
+
