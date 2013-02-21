@@ -579,7 +579,7 @@ class OrderDetailView(BaseView):
 
             total_amount = sum(nop.price * nop.quantity for nop in new_order.items)\
                            + new_order.system_fee + new_order.transaction_fee + new_order.delivery_fee
-            if new_order.status in ('paid', 'delivered'):
+            if new_order.payment_status != 'unpaid':
                 if total_amount != new_order.total_amount:
                     raise ValidationError(u'入金済みの為、合計金額は変更できません')
             new_order.total_amount = total_amount
