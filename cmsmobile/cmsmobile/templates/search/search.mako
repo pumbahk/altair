@@ -1,6 +1,8 @@
 <%include file='../common/_header.mako' args="title=u'検索結果'"/>
 <body>
-    <a href="/">トップ</a> >> 検索<p/>
+    <h2>
+        <a href="/">トップ</a> >> 検索<p/>
+    </h2>
 
     <%include file='_result.mako' args="performances=performances"/>
 

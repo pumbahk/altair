@@ -14,7 +14,7 @@
         <hr/>
         <%include file="../common/_attention.mako" />
         <hr/>
-        <%include file="../common/_area.mako" args="genre=''"/>
+        <%include file="../common/_area.mako" args="path='/search', genre='', subgenre=''"/>
         <hr/>
         <%include file="../common/_topics.mako" args="topics=topics"/>
         <hr/>
