@@ -5,38 +5,25 @@ import sys
 import os
 
 try:
-    from functional_tests import AppFunctionalTests, logout, login, get_registry, get_here
+    from functional_tests.utils import get_here, create_api_key, get_pushed_data_from_backend
+    from functional_tests import AppFunctionalTests, logout, login, get_registry
     from functional_tests import delete_models, find_form
 except ImportError:
     sys.path.append(os.path.join(os.path.dirname(__name__), "../../"))
+    from functional_tests.utils import get_here, create_api_key, get_pushed_data_from_backend
     from functional_tests import AppFunctionalTests, logout, login, get_registry, get_here
     from functional_tests import delete_models, find_form
 
 ## here. test_eventpage
 CORRECT_API_HEADER_NAME = 'X-Altair-Authorization'
 
-def _create_api_key():
-    from altaircms.models import DBSession
-    from altaircms.auth.models import APIKey
-    apikey = APIKey()
-    apikey.apikey = apikey.generate_apikey()
-    DBSession.add(apikey)
-    return apikey
-
-PUSHED_DATA_FROM_BACKEND = None
-def _get_pushed_data_from_backend():
-    global PUSHED_DATA_FROM_BACKEND 
-    if PUSHED_DATA_FROM_BACKEND:
-        return PUSHED_DATA_FROM_BACKEND[:]
-    PUSHED_DATA_FROM_BACKEND = open(os.path.join(get_here(), "functional_tests/event-page-pushed-data-from-backend.json")).read()
-    return PUSHED_DATA_FROM_BACKEND[:]
-
 class NotifiedEventInfoFromBackendTests(AppFunctionalTests):
     def tearDown(self):
         from altaircms.event.models import Event
         from altaircms.auth.models import APIKey
         from altaircms.models import Performance, SalesSegment, Ticket
-        delete_models([Performance, SalesSegment, Ticket, APIKey, Event])
+        from altaircms.layout.models import Layout
+        delete_models([Performance, SalesSegment, Ticket, APIKey, Event, Layout])
 
     def test_403_if_hasnot_apikey(self):
         app = self._getTarget()
@@ -52,7 +39,7 @@ class NotifiedEventInfoFromBackendTests(AppFunctionalTests):
         
     def test_400_if_access_with_correct_apikey_but_invalid_paramater(self):
         import json
-        apikey = _create_api_key()
+        apikey = create_api_key()
         correct_api_header = (CORRECT_API_HEADER_NAME, apikey.apikey)
         app = self._getTarget()
 
@@ -69,11 +56,11 @@ class NotifiedEventInfoFromBackendTests(AppFunctionalTests):
         from altaircms.event.models import Event
         from altaircms.auth.models import Organization
 
-        apikey = _create_api_key()
+        apikey = create_api_key()
         correct_api_header = (CORRECT_API_HEADER_NAME, apikey.apikey)
         app = self._getTarget()
 
-        params = json.loads(_get_pushed_data_from_backend())
+        params = json.loads(get_pushed_data_from_backend())
         response = app.post_json("/api/event/register", params, [correct_api_header])
         self.assertEqual(response.status_int, 201)
 
@@ -140,11 +127,11 @@ class EventDetailPageCreateTests(AppFunctionalTests):
 
         ## ついでにbackendからデータを通知しておきます
         import json
-        apikey = _create_api_key()
+        apikey = create_api_key()
         correct_api_header = (CORRECT_API_HEADER_NAME, apikey.apikey)
         app = cls._getTarget()
         
-        params = json.loads(_get_pushed_data_from_backend())
+        params = json.loads(get_pushed_data_from_backend())
         app.post_json("/api/event/register", params, [correct_api_header])
 
     @classmethod
@@ -152,7 +139,8 @@ class EventDetailPageCreateTests(AppFunctionalTests):
         from altaircms.event.models import Event
         from altaircms.auth.models import APIKey
         from altaircms.models import Performance, SalesSegment, Ticket
-        delete_models([Performance, SalesSegment, Ticket, APIKey, Event])
+        from altaircms.page.models import PageType, PageSet, Page
+        delete_models([Performance, SalesSegment, Ticket, APIKey, PageType, PageSet, Page, Event])
 
     @unittest.skip("skip")
     def test_traverse_event_data(self):
@@ -177,7 +165,7 @@ class EventDetailPageCreateTests(AppFunctionalTests):
             form.set("tags", u"event demo page tag public")
             form.set("private_tags", u"event demo page tag public")
             submit_response = form.submit()
-            self.assertEqual(submit_response.status_int, 302xo)
+            self.assertEqual(submit_response.status_int, 302)
 
             ## page is created!!,  to be continued ...
 

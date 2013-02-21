@@ -5,7 +5,7 @@ import os.path
 from paste.deploy.loadwsgi import loadapp
 import unittest
 import time
-
+from .utils import get_here, set_here
 
 """
 setup
@@ -17,11 +17,8 @@ _app = None
 _registry = None
 _config_spec = "config:testing.ini"
 _backend_app = None
-here = None
 _lock = None
 
-def get_here():
-     return here
 
 def setUpModule():
      run_mock_backend_server({})
@@ -40,9 +37,8 @@ def tearDownModule():
 def build_app():
     global _app
     global _registry
-    global here
     import altaircms
-    here = os.path.join(altaircms.__path__[0], "../../")
+    here = set_here(os.path.join(altaircms.__path__[0], "../../"))
     _app = loadapp(_config_spec, None,  global_conf={}, relative_to=here)
     _registry = _app.values()[0].registry
     _app = webtest.TestApp(_app, relative_to=os.path.join(here, "functional_tests"))
