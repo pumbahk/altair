@@ -133,6 +133,12 @@ class SalesSegmentGroup(BaseOriginalMixin, Base):
     name = sa.Column(sa.Unicode(length=255))
     kind = sa.Column(sa.Unicode(length=255))
 
+    start_on = sa.Column(sa.DateTime)
+    end_on = sa.Column(sa.DateTime)
+
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
+
 class SalesSegment(BaseOriginalMixin, Base):
     """ 販売区分
     """
