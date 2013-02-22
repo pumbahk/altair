@@ -11,7 +11,8 @@
 </style>
 </%block>
 
-<h2>page</h2>
+<div class="circle circle-page circle-top"></div>
+<h2>静的ページ一覧</h2>
 
 <div class="row-fluid">
   <div class="span12">
@@ -22,16 +23,12 @@
   </div>
 </div>
 
-<div class="row-fluid">
-  <h3 style="margin-top:0px;">ページ追加</h3>
-    <a href="${request.route_path("static_page_create", action="input")}" class="btn btn-success btn-large">新しい静的ページを追加する</a>
+<h3 style="margin-top:0px;">ページ追加</h3>
+<a href="${request.route_path("static_page_create", action="input")}" class="btn btn-success btn-large">新しい静的ページを追加する</a>
 
-  <h3>ページ一覧</h3>
-  <ul class="nav nav-tabs">
-    <li><a href="${request.route_path("pageset_list",kind="event")}">イベント詳細ページ</a></li>
-    <li><a href="${request.route_path("pageset_list",kind="other")}">トップ／カテゴリトップページ</a></li>
-    <li class="active"><a href="${request.route_path("pageset_list",kind="static")}">静的ページ</a></li>
-  </ul>
+<h3>ページ一覧</h3>
+
+${panel("nav_pageset", pagetype)}
 
 <%
 page_count = pages.count()

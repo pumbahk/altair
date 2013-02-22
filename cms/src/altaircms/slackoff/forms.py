@@ -418,4 +418,5 @@ class PageDefaultInfoForm(Form):
 
 class PageTypeForm(Form):
     name = fields.TextField(label=u"名前", validators=[required_field()])
-    __display_fields__ = ["name"]
+    label = fields.TextField(label=u"日本語表記", validators=[required_field()])
+    __display_fields__ = ["name", "label"]

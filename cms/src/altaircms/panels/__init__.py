@@ -1,6 +1,10 @@
+def install_pageset_panels(config):
+    config.add_panel(".pageset.nav_pageset_panel", "nav_pageset", 
+                     renderer="altaircms:templates/pagesets/_nav_pageset.html")
+
 def install_event_panels(config):
     config.add_panel(".event.event_page_section_panel", "event_pageset", 
-                     renderer="altaircms:templates/pagesets/_event_pageset_list.html")
+                     renderer="altaircms:templates/pagesets/_listing_event_pageset.html")
     config.add_panel(".event.event_performance_section_panel", "event_performance", 
                      renderer="altaircms:templates/performance/_performance_tabs.html")
     config.add_panel(".event.event_description_section_panel", "event_description", 
@@ -35,7 +39,7 @@ def includeme(config):
     config.include(install_performance_panels)
     config.include(install_salessegment_panels)
     config.include(install_product_panels)
-    
+    config.include(install_pageset_panels)
     ## action panels
     config.include(install_action_panels)
 

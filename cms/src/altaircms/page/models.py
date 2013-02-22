@@ -320,13 +320,18 @@ class PageType(WithOrganizationMixin, Base):
     query = DBSession.query_property()
     __tablename__ = "pagetype"
     id = sa.Column(sa.Integer, primary_key=True)
-    name = sa.Column(sa.Unicode(255))
+    name = sa.Column(sa.String(255))
+    label = sa.Column(sa.Unicode(255), doc=u"日本語表記")
 
     @declared_attr
     def __table_args__(cls):
         return (sa.schema.UniqueConstraint("name", "organization_id"), )
 
-    DEFAULTS = (u"portal", u"search", u"event_detail", u"special", u"error")
+    DEFAULTS = (u"portal",
+                u"search",
+                u"event_detail",
+                u"special",
+                u"error")
     @classmethod
     def get_or_create(cls, **kwargs):
         return cls.query.filter_by(**kwargs).first() or cls(**kwargs)
@@ -337,7 +342,7 @@ class PageType(WithOrganizationMixin, Base):
         cached = {o.name: o for o in qs}
         r = []
         for name in cls.DEFAULTS:
-            r.append(cached.get(name) or cls(name=name, organization_id=organization_id))
+            r.append(cached.get(name) or cls(name=name, label=name, organization_id=organization_id))
         return r
 
     @property

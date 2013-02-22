@@ -17,7 +17,7 @@ def upgrade():
     op.create_table('pagetype',
                     sa.Column('organization_id', sa.Integer(), nullable=True),
                     sa.Column('id', sa.Integer(), nullable=False),
-                    sa.Column('name', sa.Unicode(length=255), nullable=True),
+                    sa.Column('name', sa.String(length=255), nullable=True, index=True),
                     sa.PrimaryKeyConstraint('id')
                     )
     op.add_column('layout', sa.Column('pagetype_id', sa.Integer(), nullable=True))

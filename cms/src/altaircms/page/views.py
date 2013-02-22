@@ -13,6 +13,8 @@ from . import forms
 from . import searcher
 import altaircms.widget.forms as wf
 from ..models import DBSession
+
+from altaircms.page.models import PageType
 from altaircms.page.models import PageSet
 from altaircms.page.models import Page
 from altaircms.page.models import StaticPage
@@ -33,6 +35,7 @@ from .api import get_static_page_utility
 from . import helpers as myhelpers
 from pyramid.response import FileResponse
 from . import writefile 
+from zope.deprecation import deprecate
 
 class AfterInput(Exception):
     pass
@@ -294,6 +297,38 @@ class PagePartialUpdateAPIView(object):
         return {"status": True, "data": {"layout_id": layout_id}}
 
 
+@view_defaults(permission="page_read", route_name="pageset_list__new", decorator=with_bootstrap, request_method="GET")
+class ListView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+    
+    @view_config(match_param="pagetype=static", renderer="altaircms:templates/pagesets/static_pageset_list.html")
+    def static_page_list(self):
+        pagetype = get_or_404(self.request.allowable(PageType), (PageType.name==self.request.matchdict["pagetype"]))
+        static_directory = get_static_page_utility(self.request)
+        return {"static_directory": static_directory, 
+                "pages": static_directory.get_managemented_files(self.request), 
+                "pagetype": pagetype}
+
+    @view_config(match_param="pagetype=event_detail", renderer="altaircms:templates/pagesets/event_pageset_list.html")
+    def event_bound_page_list(self):
+        """ event詳細ページと結びついているpage """
+        pagetype = get_or_404(self.request.allowable(PageType), (PageType.name==self.request.matchdict["pagetype"]))
+        qs = self.request.allowable(PageSet).filter(PageSet.pagetype_id==pagetype.id, 
+                                                    PageSet.event_id!=None)
+        qs = qs.order_by(sa.desc(PageSet.updated_at))
+        pages = h.paginate(self.request, qs, item_count=qs.count(), items_per_page=50)
+        return {"pages": pages, "pagetype": pagetype}
+
+    @view_config(renderer="altaircms:templates/pagesets/other_pageset_list.html")
+    def other_page_list(self):
+        """event詳細ページとは結びついていないページ(e.g. トップ、カテゴリトップ) """
+        pagetype = get_or_404(self.request.allowable(PageType), (PageType.name==self.request.matchdict["pagetype"]))
+        qs = self.request.allowable(PageSet).filter(PageSet.pagetype_id==pagetype.id)
+        qs = qs.order_by(sa.desc(PageSet.updated_at))
+        pages = h.paginate(self.request, qs, item_count=qs.count(), items_per_page=50)
+        return {"pages": pages, "pagetype": pagetype}
 
 @view_defaults(permission="page_read", route_name="pageset_list", decorator=with_bootstrap, request_method="GET")
 class PageListView(object):
@@ -399,7 +434,10 @@ def page_edit(request):
     disposition_select = wf.WidgetDispositionSelectForm()
     user = request.user
     disposition_save = wf.WidgetDispositionSaveForm(page=page.id, owner_id=user.id if user else None)
-    layout_qs = request.allowable(Layout)
+
+    ## layoutの選択対象はnone or 同一pagetype?
+    layout_qs = request.allowable(Layout).filter(sa.or_(Layout.pagetype_id==page.pagetype_id, 
+                                                        Layout.pagetype_id==None))
     return {
             'event':page.event,
             'page':page,

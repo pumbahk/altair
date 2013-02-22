@@ -11,7 +11,7 @@
 </%block>
 
 <div class="circle circle-master circle-top"></div>
-<h2>レイアウト(${current_pagetype.name})</h2>
+<h2>レイアウト(${current_pagetype.label})</h2>
 
 <div class="row-fluid">
   <div class="span12">
@@ -45,9 +45,9 @@
 <ul class="nav nav-tabs">
    %for pagetype in pagetypes:
      %if unicode(pagetype.id) == unicode(current_pagetype.id):
-        <li class="active"><a href="${request.route_path("layout_list_with_pagetype",pagetype_id=pagetype.id)}">${pagetype.name}</a></li>
+        <li class="active"><a href="${request.route_path("layout_list_with_pagetype",pagetype_id=pagetype.id)}">${pagetype.label}</a></li>
      %else:
-        <li ><a href="${request.route_path("layout_list_with_pagetype",pagetype_id=pagetype.id)}">${pagetype.name}</a></li>
+        <li ><a href="${request.route_path("layout_list_with_pagetype",pagetype_id=pagetype.id)}">${pagetype.label}</a></li>
      %endif
    %endfor
 </ul>
