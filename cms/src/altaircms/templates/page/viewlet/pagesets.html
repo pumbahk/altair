@@ -25,7 +25,7 @@
         </td>
         <td rowspan="${pagesize}">
           <a href="${h.link.pageset_detail(request,pageset)}">${pageset.name}</a>
-          <a class="action" target="_blank" href="${request.route_path("preview_pageset", pageset_id=pageset.id)}">
+          <a class="action"  href="${request.route_path("preview_pageset", pageset_id=pageset.id)}">
             <i class="icon-eye-open"> </i></a>
          </a>
         </td>
@@ -35,9 +35,9 @@
         %else:
         <td>
           <a href="${request.route_path('page_detail', page_id=pages[0].id)}">${pages[0].name}</a>
-          <a class="action" target="_blank" href="${request.route_path("preview_page", page_id=pages[0].id)}">
+          <a class="action"  href="${request.route_path("preview_page", page_id=pages[0].id)}">
             <i class="icon-eye-open"> </i></a>
-          <a class="action" target="_blank" href="${request.route_path("page_edit_", page_id=pages[0].id)}">
+          <a class="action"  href="${request.route_path("page_edit_", page_id=pages[0].id)}">
             <i class="icon-edit"> </i></a>
           ${u'<span class="label">現在表示</span>' if pages[0]==current_page else u""|n}
         </td>
@@ -63,9 +63,9 @@
         <tr>
           <td>
             <a href="${request.route_path('page_detail', page_id=page.id)}">${page.name}</a>
-            <a class="action" target="_blank" href="${request.route_path("preview_page", page_id=page.id)}">
+            <a class="action"  href="${request.route_path("preview_page", page_id=page.id)}">
               <i class="icon-eye-open"> </i></a>
-            <a class="action" target="_blank" href="${request.route_path("page_edit_", page_id=page.id)}">
+            <a class="action"  href="${request.route_path("page_edit_", page_id=page.id)}">
               <i class="icon-edit"> </i></a>
 
             ${u'<span class="label">現在表示</span>' if page==current_page else u""|n}
@@ -93,14 +93,14 @@
     </tbody>
   </table>
   <div class="btn-group">
-    <a class="btn action" target="_blank" href="${request.route_path("pageset", pageset_id="__id__")}">
+    <a class="btn action"  href="${request.route_path("pageset", pageset_id="__id__")}">
       <i class="icon-plus"> </i> ページセット期間変更</a>
     <button class="btn dropdown-toggle" data-toggle="dropdown">
       <span class="caret"></span>
     </button>
     <ul class="dropdown-menu">
 	  <li>
-		<a class="action" target="_blank" href="${request.route_path("pageset", pageset_id="__id__")}">
+		<a class="action"  href="${request.route_path("pageset", pageset_id="__id__")}">
 		  <i class="icon-plus"> </i> ページセット期間変更</a>
 	  </li>
      <li>

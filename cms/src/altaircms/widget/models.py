@@ -177,10 +177,6 @@ class WidgetDisposition(WithOrganizationMixin, BaseOriginalMixin, Base): #todo: 
         return dispos
 
     @classmethod
-    def same_blocks_query(cls, page):
-        return cls.query.filter(cls.blocks==page.layout.blocks)
-
-    @classmethod
     def enable_only_query(cls, operator, qs=None):
         return (qs or cls.query).filter((cls.is_public==True)|(cls.owner==operator))
 

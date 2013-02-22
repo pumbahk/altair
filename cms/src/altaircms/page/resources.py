@@ -78,12 +78,11 @@ class PageResource(security.RootFactory):
         return page
 
     def update_page(self, page, form):
-        tags, private_tags, params =  h.divide_data(form.data)
+        params = form.data
         for k, v in params.iteritems():
             setattr(page, k, v)
         page.pageset.event = params["event"]
         page.pageset.url = params["url"]
-        put_tags(page, "page", tags, private_tags, self.request)
 
         if form.data["parent"]:
             page.pageset.parent = form.data["parent"]

@@ -10,8 +10,9 @@ from wtforms import fields
 from wtforms import widgets
 from wtforms import validators
 from altaircms.layout.models import Layout
-from altaircms.page.models import Page
-from altaircms.page.models import PageSet
+from .models import Page
+from .models import PageSet
+from .models import PageType
 from altaircms.event.models import Event
 from altaircms.interfaces import IForm
 from altaircms.interfaces import implementer
@@ -74,7 +75,8 @@ class PageForm(Form):
 
     pageset = dynamic_query_select_field_factory(PageSet, allow_blank=True, label=u"ページセット",
                                                  get_label=lambda ps: ps.name)
-
+    pagetype = dynamic_query_select_field_factory(PageType, allow_blank=False, label=u"ページタイプ", 
+                                                  get_label=lambda o: o.label)
     title = fields.TextField(label=u"ページタイトル", validators=[validators.Required()])
 
     description = fields.TextField(label=u"概要", widget=widgets.TextArea())
@@ -122,8 +124,6 @@ class PageUpdateForm(Form):
     title = fields.TextField(label=u"ページタイトル", validators=[validators.Required()], widget=widgets.TextArea())
     description = fields.TextField(label=u"概要", widget=widgets.TextArea())
     keywords = fields.TextField(widget=widgets.TextArea())
-    tags = fields.TextField(label=u"タグ(区切り文字:\",\")")
-    private_tags = fields.TextField(label=u"非公開タグ(区切り文字:\",\")")
     layout = dynamic_query_select_field_factory(Layout, allow_blank=False, 
                                                 get_label=lambda obj: u"%s" % obj.title)
     event = dynamic_query_select_field_factory(Event, allow_blank=True, label=u"イベント", 

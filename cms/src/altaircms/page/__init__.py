@@ -34,8 +34,8 @@ def includeme(config):
     config.add_route("disposition_alter", "/disposition/{id}/alter", factory="altaircms.page.resources.WDispositionResource")
 
     # PageSet
-    add_route('pageset_list', '/page/{kind}/list')
-    add_route("pageset_list__new", "/page/pagetype/{pagetype}/list")
+    # add_route('pageset_list', '/page/{kind}/list')
+    add_route("pageset_list", "/page/pagetype/{pagetype}/list")
     config.add_route('pagesets', '/pagesets')
     config.add_route('pageset', '/pagesets/{pageset_id}')
     add_route("pageset_detail", "/pagesets/{pageset_id}/detail/{kind}")

@@ -150,6 +150,7 @@ class PageSet(Base,
         created.description = base_page.description
         created.url = base_page.url
         created.layout = base_page.layout
+        created.pagetype = base_page.pagetype
         return created
 
     def take_in_event(self, event):
@@ -322,6 +323,8 @@ class PageType(WithOrganizationMixin, Base):
     id = sa.Column(sa.Integer, primary_key=True)
     name = sa.Column(sa.String(255))
     label = sa.Column(sa.Unicode(255), doc=u"日本語表記")
+    # layout_id = sa.Column(sa.Integer, sa.ForeignKey("layout.id"), null=True, doc=u"default layout") #default settings?
+    # widget disposition?
 
     @declared_attr
     def __table_args__(cls):

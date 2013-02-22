@@ -420,3 +420,7 @@ class PageTypeForm(Form):
     name = fields.TextField(label=u"名前", validators=[required_field()])
     label = fields.TextField(label=u"日本語表記", validators=[required_field()])
     __display_fields__ = ["name", "label"]
+
+class PageSetForm(Form):
+    tags = fields.TextField(label=u"タグ(区切り文字:\",\")")
+    private_tags = fields.TextField(label=u"非公開タグ(区切り文字:\",\")")

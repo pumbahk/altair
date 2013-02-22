@@ -41,7 +41,7 @@ event = page.event or page.pageset.event
         <th class="span2">ページ名</th>
 		<td>
 		  ${page.title}
- 		  <a target="_blank" href="${request.route_path("preview_page", page_id=page.id)}"><i class="icon-eye-open"> </i></a>
+ 		  <a href="${request.route_path("preview_page", page_id=page.id)}"><i class="icon-eye-open"> </i></a>
 		</td>
       </tr>
       <tr>
@@ -77,7 +77,7 @@ event = page.event or page.pageset.event
     </table>
 
   <div class="btn-group" style="float:left; margin-bottom:20px; margin-right:10px;">
-    <a target="_blank" href="${request.route_path("page_update",id=page.id)}" class="btn">
+    <a href="${request.route_path("page_update",id=page.id)}" class="btn">
       <i class="icon-pencil"></i> ページ基本情報編集
     </a>
     <a class="btn dropdown-toggle" data-toggle="dropdown">
@@ -85,25 +85,25 @@ event = page.event or page.pageset.event
     </a>
     <ul class="dropdown-menu">
 	  <li>
-		<a target="_blank" href="${request.route_path("page_update",id=page.id)}" class="">
+		<a href="${request.route_path("page_update",id=page.id)}" class="">
 		  <i class="icon-pencil"></i> ページ基本情報編集
 		</a>
 	  </li>
       <li>
-		<a target="_blank" href="${request.route_path("page_edit_", page_id=page.id)}"><i class="icon-minus"></i> ページのレイアウト編集</a>
+		<a href="${request.route_path("page_edit_", page_id=page.id)}"><i class="icon-minus"></i> ページのレイアウト編集</a>
       </li>
 	  <li>
 		<a href="${h.page.to_delete(request,page)}"><i class="icon-trash"></i> ページの削除</a>
 	  </li>
 	  <li class="divider"></li>
 	  <li>
-	   	<a target="_blank" href="${request.route_path("preview_page", page_id=page.id)}"><i class="icon-eye-open"></i>Preview</a>
+	   	<a href="${request.route_path("preview_page", page_id=page.id)}"><i class="icon-eye-open"></i>Preview</a>
 	  </li>
     </ul>
   </div>
 
   <div>
-  <a target="_blank" href="${request.route_path("page_edit_", page_id=page.id)}" class="btn">D&Dとwidgetでページレイアウト編集</a>
+  <a href="${request.route_path("page_edit_", page_id=page.id)}" class="btn">D&Dとwidgetでページレイアウト編集</a>
 
 	%if page.published:
 	<button 

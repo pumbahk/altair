@@ -23,7 +23,6 @@ from altaircms.widget.models import WidgetDisposition
 from altaircms.event.models import Event
 from altaircms.auth.api import get_or_404
 
-import altaircms.tag.api as tag
 from altaircms.helpers.viewhelpers import get_endpoint, set_endpoint
 
 from altaircms.lib.fanstatic_decorator import with_bootstrap
@@ -56,7 +55,9 @@ class PageAddView(object):
         event_id = self.request.matchdict["event_id"]
         event = self.request._event = get_or_404(self.request.allowable(Event), (Event.id==event_id))
             
-        self.request._form = forms.PageForm(event=event)
+        pagetype = PageType.get_or_create(name="event_detail", organization_id=self.request.organization.id)
+        self.request._form = forms.PageForm(event=event, pagetype=pagetype)
+        self.request._form.pagetype.choices = [(pagetype.label, pagetype.id)]
         self.request._setup_form = forms.PageInfoSetupForm(name=event.title)
         raise AfterInput
 
@@ -133,7 +134,7 @@ class PageAddView(object):
             ## flash messsage
             mes = u'page created <a href="%s">作成されたページを編集する</a>' % self.request.route_path("pageset_detail", pageset_id=page.pageset.id, kind="other")
             FlashMessage.success(mes, request=self.request)
-            return HTTPFound(get_endpoint(self.request) or self.request.route_path("pageset_list", kind="other"))
+            return HTTPFound(get_endpoint(self.request) or self.request.route_path("pageset_list", pagetype="_"))
         else:
             self.request._form = form
             self.request._setup_form = forms.PageInfoSetupForm(name=form.data["name"])
@@ -250,8 +251,6 @@ class PageUpdateView(object):
     def input(self):
         page = get_or_404(self.request.allowable(Page), Page.id==self.request.matchdict["id"])
         params = page.to_dict()
-        params["tags"] = tag.tags_to_string(page.public_tags)
-        params["private_tags"] = tag.tags_to_string(page.private_tags)
         form = forms.PageUpdateForm(**params)
         return self._input_page(page, form)
 
@@ -297,7 +296,7 @@ class PagePartialUpdateAPIView(object):
         return {"status": True, "data": {"layout_id": layout_id}}
 
 
-@view_defaults(permission="page_read", route_name="pageset_list__new", decorator=with_bootstrap, request_method="GET")
+@view_defaults(permission="page_read", route_name="pageset_list", decorator=with_bootstrap, request_method="GET")
 class ListView(object):
     def __init__(self, context, request):
         self.context = context
@@ -317,54 +316,39 @@ class ListView(object):
         pagetype = get_or_404(self.request.allowable(PageType), (PageType.name==self.request.matchdict["pagetype"]))
         qs = self.request.allowable(PageSet).filter(PageSet.pagetype_id==pagetype.id, 
                                                     PageSet.event_id!=None)
+        params = self.request.GET
+        if "page" in params:
+            params.pop("page") ## pagination
+        if params:
+            search_form = forms.PageSetSearchForm(self.request.GET)
+            if search_form.validate():
+                qs = searcher.make_pageset_search_query(self.request, search_form.data, qs=qs)
+        else:
+            search_form = forms.PageSetSearchForm()
+
         qs = qs.order_by(sa.desc(PageSet.updated_at))
         pages = h.paginate(self.request, qs, item_count=qs.count(), items_per_page=50)
-        return {"pages": pages, "pagetype": pagetype}
+        return {"pages": pages, "pagetype": pagetype, "search_form": search_form}
 
     @view_config(renderer="altaircms:templates/pagesets/other_pageset_list.html")
     def other_page_list(self):
         """event詳細ページとは結びついていないページ(e.g. トップ、カテゴリトップ) """
         pagetype = get_or_404(self.request.allowable(PageType), (PageType.name==self.request.matchdict["pagetype"]))
         qs = self.request.allowable(PageSet).filter(PageSet.pagetype_id==pagetype.id)
-        qs = qs.order_by(sa.desc(PageSet.updated_at))
-        pages = h.paginate(self.request, qs, item_count=qs.count(), items_per_page=50)
-        return {"pages": pages, "pagetype": pagetype}
-
-@view_defaults(permission="page_read", route_name="pageset_list", decorator=with_bootstrap, request_method="GET")
-class PageListView(object):
-    def __init__(self, context, request):
-        self.context = context
-        self.request = request
-
-    @view_config(match_param="kind=static", renderer="altaircms:templates/page/static_page_list.html")
-    def static_page_list(self):
-        static_directory = get_static_page_utility(self.request)
-        return {"static_directory": static_directory, 
-                "pages": static_directory.get_managemented_files(self.request)}
-
-    @view_config(match_param="kind=event", renderer="altaircms:templates/page/event_page_list.html")
-    def event_bound_page_list(self):
-        """ event詳細ページと結びついているpage """
-        pages = self.request.allowable(PageSet).filter(PageSet.event != None)
-        params = dict(self.request.GET)
+        params = self.request.GET
         if "page" in params:
             params.pop("page") ## pagination
         if params:
             search_form = forms.PageSetSearchForm(self.request.GET)
             if search_form.validate():
-                pages = searcher.make_pageset_search_query(self.request, search_form.data, qs=pages)
+                qs = searcher.make_pageset_search_query(self.request, search_form.data, qs=qs)
         else:
             search_form = forms.PageSetSearchForm()
-        pages = pages.order_by(sa.desc(PageSet.updated_at))
-        return {"pages":pages, "search_form": search_form}
 
-    @view_config(match_param="kind=other", renderer="altaircms:templates/page/other_page_list.html")
-    def other_page_list(self):
-        """event詳細ページとは結びついていないページ(e.g. トップ、カテゴリトップ) """
-        #kind = self.request.matchdict["kind"]
-        pages = self.request.allowable(PageSet).filter(PageSet.event == None)
-        pages = pages.order_by(sa.desc(PageSet.updated_at))
-        return {"pages":pages}
+        qs = qs.order_by(sa.desc(PageSet.updated_at))
+        pages = h.paginate(self.request, qs, item_count=qs.count(), items_per_page=50)
+        return {"pages": pages, "pagetype": pagetype, "search_form": search_form}
+
 
 def with_pageset_predicate(kind): #don't support static page
     def decorate(info, request):

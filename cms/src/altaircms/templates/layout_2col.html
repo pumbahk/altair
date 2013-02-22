@@ -12,7 +12,7 @@
       <li class="nav-header">ページ管理</li>
       <% from altaircms.page.models import PageType %>
       %for pagetype in PageType.query.filter_by(organization_id=request.organization.id):
-         <li><a class="link-page" href="${request.route_path("pageset_list__new", pagetype=pagetype.name)}">${pagetype.label}</a></li>
+         <li><a class="link-page" href="${request.route_path("pageset_list", pagetype=pagetype.name)}">${pagetype.label}</a></li>
       %endfor
 	    <li class="nav-header">アイテム管理</li>
       <li><a class="link-item" href="${request.route_path("promotion_list")}">プロモーション枠</a></li>

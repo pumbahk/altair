@@ -18,7 +18,7 @@
         names=["Top", "Page", "Event", pageset.name],
         urls=[request.route_path("dashboard"),
     request.route_path("event",id=pageset.event_id),
-	request.route_path("pageset_list", kind="event")]
+	request.route_path("pageset_list", pagetype=pageset.pagetype.name)]
     )}
 
 
