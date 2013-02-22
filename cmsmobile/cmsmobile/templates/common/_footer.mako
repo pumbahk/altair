@@ -1,7 +1,7 @@
 <hr size="1" color="#888888" noshade="noshade" />
 <div align="center">
     <div>
-        <a href="http://ticket.rakuten.co.jp/mobile/static/faq/faq.html">ヘルプ</a> |
+        <a href="/help">ヘルプ</a> |
         <a href="http://www.ticketstar.jp/corporate">運営会社</a> |
         <a href="https://ticket.rakuten.co.jp/mobile/contact/form">お問い合わせ</a> |
         <a href="http://www.ticketstar.jp/privacy">個人情報保護方針</a> |
