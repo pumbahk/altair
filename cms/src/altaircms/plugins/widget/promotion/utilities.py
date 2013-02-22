@@ -46,6 +46,7 @@ def promotion_sheet(request, widget):
 
     qs = searcher.query_publishing_topics(d, widget.tag, widget.system_tag)
     qs = qs.options(orm.joinedload("linked_page"), orm.joinedload("main_image"))
+    print qs
     return PromotionSheet(qs.all()) ##
 
 def render_tstar_top(request, widget):

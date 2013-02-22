@@ -45,7 +45,7 @@ class CalendarWidgetView(object):
         widget = context.get_widget(self.request.GET.get("pk"))
         page = get_or_404(self.request.allowable(Page), Page.id==self.request.GET["page"])
         params = widget.to_dict()
-        form = CalendarSelectForm(sale_choice=widget.salessegment, **params)
+        form = CalendarSelectForm(sale_choice=widget.salessegment, **params) #slaessegment group
         form.configure(self.request, page)
         return {"form": form}
 

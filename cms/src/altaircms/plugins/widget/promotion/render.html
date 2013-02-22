@@ -1,6 +1,6 @@
 ## promotion widget output template
 ## 
-
+%if info:
 <div class="promotion-widget">
   <div id="slideShow">
     <div id="slideShowLeft">
@@ -44,3 +44,6 @@
         }, interval_time);
     });
   </script>
+%else:
+空です
+%endif
