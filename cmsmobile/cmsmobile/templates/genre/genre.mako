@@ -1,12 +1,10 @@
 <%include file="../common/_header.mako" args="title=u'ジャンル'"/>
 <body>
-    <h2>
-        % if subgenre is None:
-            <a href="/">トップ</a> >> <a href="/genre?genre=${genre}">${genre}</a>
-        % else:
-            <a href="/">トップ</a> >> <a href="/genre?genre=${genre}">${genre}</a> >> <a href="/genre?genre=${genre}&subgenre=${subgenre}">${subgenre}</a>
-        % endif
-    </h2>
+    % if subgenre is None:
+        <a href="/">トップ</a> >> ${genre}
+    % else:
+        <a href="/">トップ</a> >> <a href="/genre?genre=${genre}">${genre}</a> >> ${subgenre}
+    % endif
 <hr/>
     <%include file='../common/_attention.mako' args="attentions=attentions" />
 <hr/>

@@ -2,9 +2,7 @@
 <html>
     <%include file="../common/_header.mako" args="title=u'トップページ'"/>
     <body>
-        <h2>
-            <a href="/">トップ</a><p/>
-        </h2>
+        トップ<p/>
 
         <%include file="../common/_search.mako" args="genre='', subgenre='', path='/search'" />
         <hr/>

@@ -8,6 +8,9 @@
     <p/>
 
     <%include file='../common/_search_result.mako' args="num=num, word=word, performances=performances" />
+    <hr/>
+
+    <%include file='../common/_search.mako' args="path='/search', genre='', subgenre=''"/>
 
     <hr/>
     <%include file='../common/_footer.mako' />
