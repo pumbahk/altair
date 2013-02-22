@@ -58,7 +58,8 @@ def search(request):
     form = SearchForm(request.POST)
     if not form.validate():
         return {
-            'num':num
+             'num':num
+            ,'word':""
             ,'performances':performances
             ,'form':form
         }
@@ -103,6 +104,7 @@ def genresearch(request):
         return {
              'genre':genre
             ,'subgenre':subgenre
+            ,'word':""
             ,'num':num
             ,'performances':performances
             ,'form':form
@@ -160,9 +162,12 @@ def move_information(request):
 def move_help(request):
     topic_searcher = get_topic_searcher(request, "topic")
     tag = TopicTag.query.filter_by(label=u"質問").first()
+
     helps = None
     if tag is not None:
         helps = topic_searcher.query_publishing_topics(datetime.now(), tag)
+
+    # request.organization.id
 
     return dict(
         helps=helps

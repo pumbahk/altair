@@ -5,6 +5,7 @@
     % else:
         <a href="/">トップ</a> >> <a href="/genre?genre=${genre}">${genre}</a> >> <a href="/genre?genre=${genre}&subgenre=${subgenre}">${subgenre}</a> >> 「${word}」を含む公演
     % endif
+    <p/>
 
     <%include file='../common/_search_result.mako' args="num=num, word=word, performances=performances" />
 

@@ -23,6 +23,7 @@ def main(global_config, **settings):
     config.include('cmsmobile.event')
     config.include('altaircms.tag')
     config.include('altaircms.topic')
+    config.include('altairsite.separation')
 
     config.add_route("home", "/")
     config.scan()
