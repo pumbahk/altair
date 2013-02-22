@@ -140,14 +140,14 @@ class TagManager(TagManagerBase):
         query_target = query_target or [self.Object]
         qs = qs or DBSession.query(*query_target)
         qs = qs.filter(self.Object.id==self.XRef.object_id, self.Tag.id==self.XRef.tag_id)
-        where = sa.or_(self.Object.organization_id==self.Tag.organization_id, sa.and_(self.Object.organization_id == None, self.Tag.organization_id == None))
+        where = self.Object.organization_id==self.Tag.organization_id
         qs = qs.filter(where)
         return qs
         
     def more_filter_by_tag(self, qs, tag):
         xref = orm.aliased(self.XRef)
         qs = qs.filter(self.Object.id==xref.object_id, xref.tag_id==tag.id)
-        where = sa.or_(self.Object.organization_id==self.Tag.organization_id, sa.and_(self.Object.organization_id == None, self.Tag.organization_id == None))
+        where = self.Object.organization_id==self.Tag.organization_id
         qs = qs.filter(where)
         return qs
 
@@ -165,11 +165,11 @@ class SystemTagManager(TagManagerBase):
         qs = qs or DBSession.query(*query_target)
         qs = qs.filter(self.Object.id==self.XRef.object_id, self.Tag.id==self.XRef.tag_id)
         qs = qs.filter(self.Tag.organization_id==None)
-        return
+        return qs
 
     def more_filter_by_tag(self, qs, tag):
         xref = orm.aliased(self.XRef)
-        return qs.filter(self.Object.id==xref.object_id, xref.tag_id==tag.id).filter(self.Tag.organization_id==None)
+        return qs.filter(self.Object.id==xref.object_id, xref.tag_id==tag.id)
 
     def recent_change_tags(self):
         return self.Tag.query.filter(self.Tag.organization_id==None).order_by(saexp.desc(self.Tag.updated_at), saexp.asc(self.Tag.id))
