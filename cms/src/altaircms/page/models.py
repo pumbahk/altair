@@ -314,11 +314,7 @@ class Page(BaseOriginalMixin,
 
     @property
     def kind(self):
-        if self.event_id:
-            return "event"
-        else:
-            return "other"
-
+        return self.pagetype.kind
 
 class PageType(WithOrganizationMixin, Base):
     query = DBSession.query_property()
@@ -343,6 +339,14 @@ class PageType(WithOrganizationMixin, Base):
         for name in cls.DEFAULTS:
             r.append(cached.get(name) or cls(name=name, organization_id=organization_id))
         return r
+
+    @property
+    def kind(self):
+        name = self.name
+        if name == "event_detail":
+            return "event"
+        else:
+            return "other"
 
 ## master    
 class PageDefaultInfo(Base):

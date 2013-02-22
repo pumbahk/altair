@@ -26,7 +26,6 @@ def includeme(config):
     add_route("page_duplicate", "/page/{id}/duplicate")
     add_route("page_partial_update", "/page/{id}/partial/{part}")
     add_route('page', '/page/')
-    add_route('pageset_list', '/page/{kind}/list')
 
     ## widget disposition
     config.add_route("disposition", "/page/{id}/disposition", factory="altaircms.page.resources.WDispositionResource")    
@@ -35,6 +34,8 @@ def includeme(config):
     config.add_route("disposition_alter", "/disposition/{id}/alter", factory="altaircms.page.resources.WDispositionResource")
 
     # PageSet
+    add_route('pageset_list', '/page/{kind}/list')
+    add_route("pageset_list__new", "/page/pagetype/{pagetype}/list")
     config.add_route('pagesets', '/pagesets')
     config.add_route('pageset', '/pagesets/{pageset_id}')
     add_route("pageset_detail", "/pagesets/{pageset_id}/detail/{kind}")
