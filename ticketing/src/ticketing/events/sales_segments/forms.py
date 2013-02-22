@@ -17,7 +17,6 @@ class SalesSegmentForm(OurForm):
               u'%s (%s)' % (p.name, p.start_on.strftime('%Y-%m-%d %H:%M'))) \
              for p in kwargs.get("performances", [])]
         sales_segment_groups = kwargs.get('sales_segment_groups')
-        print sales_segment_groups
 
         sales_segment_group = None
         if self.sales_segment_group_id.data:
@@ -44,8 +43,7 @@ class SalesSegmentForm(OurForm):
                 ]
         if obj and obj.payment_delivery_method_pairs is not None:
             self.payment_delivery_method_pairs.data = [int(pdmp.id) for pdmp in obj.payment_delivery_method_pairs]
-            print self.payment_delivery_method_pairs.data
-        elif sales_segment_group is not None:
+        elif sales_segment_group is not None and formdata is None:
             self.payment_delivery_method_pairs.data = [int(pdmp.id) for pdmp in sales_segment_group.payment_delivery_method_pairs]
 
     def _get_translations(self):
