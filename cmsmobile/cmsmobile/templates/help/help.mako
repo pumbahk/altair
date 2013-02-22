@@ -1,8 +1,8 @@
 <%include file="../common/_header.mako" args="title=u'ヘルプ'"/>
 <body>
-<h1>
-     ヘルプ</br>
-</h1>
+
+    <a href="/">トップ</a> >> ヘルプ<p/>
+
     % for help in helps:
         <hr/>
         <strong>Ｑ．${help.title}</strong><p/>
