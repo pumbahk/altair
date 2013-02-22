@@ -4,8 +4,16 @@
     <a href="/">トップ</a> >> ヘルプ<p/>
 
     % for help in helps:
+        <a href="#${help.id}">
+            <strong>Ｑ．${help.title}</strong><p/>
+        </a>
+    % endfor
+
+    % for help in helps:
         <hr/>
-        <strong>Ｑ．${help.title}</strong><p/>
+        <a name="${help.id}">
+            <strong>Ｑ．${help.title}</strong><p/>
+        </a>
         Ａ．${help.text}<p/>
     % endfor
 
