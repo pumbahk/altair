@@ -185,4 +185,15 @@ ${widget_aggregator.get_widget_jscode(request)|n}
 
 <script type="text/javascript" src="/static/js/page/backbone_patch.js"></script>
 <script type="text/javascript" src="/static/js/page/edit.js"></script>
+<script type="text/javascript">
+//$.event.add(window, "load", function(){
+var main = function main(){  
+   if(!!window.appView){
+     window.appView.$el.remove();
+   }
+   window.appView = new AppView();
+}
+$(window).load(main);
+$(window).bind("unload", main);
 
+</script>

@@ -521,6 +521,3 @@ var AppView = Backbone.View.extend({
 
 function info(){console.log(JSON.stringify(window.AppView.BlockSheetView.model));};
 
-$(function(){
-    window.AppView = new AppView()
-});
