@@ -26,20 +26,23 @@ def move_genre(request):
     tag = TopicTag.query.filter_by(label=u"注目のイベント").first()
     attentions = None
     if tag is not None:
-        attentions = topic_searcher.query_publishing_topics(datetime.now(), tag, system_tag)
+        attentions = topic_searcher.query_publishing_topics(datetime.now(), tag, system_tag) \
+            .filter(TopicTag.organization_id == request.organization.id)
 
     # pickup
     promo_searcher = get_topic_searcher(request, "promotion")
     tag = PromotionTag.query.filter_by().first()
     promotions = None
     if tag is not None:
-        promotions = promo_searcher.query_publishing_topics(datetime.now(), tag, system_tag)
+        promotions = promo_searcher.query_publishing_topics(datetime.now(), tag, system_tag) \
+            .filter(PromotionTag.organization_id == request.organization.id)
 
     # Topic(Tag='トピック', system_tag='ジャンル')
     tag = TopicTag.query.filter_by(label=u"トピック").first()
     topics = None
     if tag is not None:
-        topics = topic_searcher.query_publishing_topics(datetime.now(), tag, system_tag)
+        topics = topic_searcher.query_publishing_topics(datetime.now(), tag, system_tag) \
+            .filter(TopicTag.organization_id == request.organization.id)
 
     return dict(
          topics=topics
@@ -152,7 +155,8 @@ def move_information(request):
     tag = TopicTag.query.filter_by(label=u"公演中止情報").first()
     informations = None
     if tag is not None:
-        informations = topic_searcher.query_publishing_topics(datetime.now(), tag)
+        informations = topic_searcher.query_publishing_topics(datetime.now(), tag)\
+            .filter(TopicTag.organization_id == request.organization.id)
 
     return dict(
         informations=informations
@@ -165,9 +169,8 @@ def move_help(request):
 
     helps = None
     if tag is not None:
-        helps = topic_searcher.query_publishing_topics(datetime.now(), tag)
-
-    # request.organization.id
+        helps = topic_searcher.query_publishing_topics(datetime.now(), tag)\
+            .filter(TopicTag.organization_id == request.organization.id)
 
     return dict(
         helps=helps
