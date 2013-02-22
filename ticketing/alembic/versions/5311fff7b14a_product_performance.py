@@ -20,8 +20,9 @@ Identifier = sa.BigInteger
 
 def upgrade():
     op.add_column('Product', 
-        sa.Column('performance_id', Identifier, sa.ForeignKey('Performance.id')),
+        sa.Column('performance_id', Identifier, sa.ForeignKey('Performance.id', name='Product_ibfk_4')),
         )
 
 def downgrade():
+    op.drop_constraint('Product_ibfk_4', 'Product', type='foreignkey')
     op.drop_column('Product', 'performance_id')

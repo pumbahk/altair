@@ -19,9 +19,13 @@ Identifier = sa.BigInteger
 
 
 def upgrade():
+    # To cope with InnoDB bug
     op.execute("ALTER TABLE Cart DROP FOREIGN KEY Cart_ibfk_5")
-    op.execute("ALTER TABLE Cart ADD FOREIGN KEY Cart_ibfk_5 (sales_segment_id) REFERENCES SalesSegment (id)")
+    op.execute("ALTER TABLE Cart DROP INDEX Cart_ibfk_5")
+    op.execute("ALTER TABLE Cart ADD CONSTRAINT Cart_ibfk_5 FOREIGN KEY (sales_segment_id) REFERENCES SalesSegment (id)")
 
 def downgrade():
     op.execute("ALTER TABLE Cart DROP FOREIGN KEY Cart_ibfk_5")
-    op.execute("ALTER TABLE Cart ADD FOREIGN KEY Cart_ibfk_5 (sales_segment_id) REFERENCES SalesSegmentGroup (id)")
+    op.execute("ALTER TABLE Cart DROP INDEX Cart_ibfk_5")
+    op.execute("ALTER TABLE Cart ADD CONSTRAINT Cart_ibfk_5 FOREIGN KEY (sales_segment_id) REFERENCES SalesSegmentGroup (id)")
+
