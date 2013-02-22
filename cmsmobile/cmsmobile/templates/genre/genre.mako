@@ -10,7 +10,12 @@
 <hr/>
     <%include file='../common/_attention.mako' args="attentions=attentions" />
 <hr/>
-    <%include file='_subgenre.mako' args="genre=genre" />
+    <h2>サブジャンル/カテゴリで絞り込む</h2>
+    <a href="/genre?genre=${genre}&subgenre=Jポップ・ロック">Jポップ・ロック</a>｜
+    <a href="/genre?genre=${genre}&subgenre=Jポップ・ロック">Jポップ・ロック</a>｜
+    <a href="/genre?genre=${genre}&subgenre=Jポップ・ロック">Jポップ・ロック</a>｜
+    <a href="/genre?genre=${genre}&subgenre=Jポップ・ロック">Jポップ・ロック</a>｜
+    <a href="/genre?genre=${genre}&subgenre=Jポップ・ロック">Jポップ・ロック</a>｜
 <hr/>
     <%include file='../common/_topics.mako' />
 <hr/>

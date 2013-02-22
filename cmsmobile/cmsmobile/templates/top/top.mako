@@ -8,9 +8,20 @@
 
         <%include file="../common/_search.mako" args="genre='', subgenre='', path='/search'" />
         <hr/>
-        <%include file='_pickup.mako' args="promotions=promotions"/>
+        <h2>ピックアップ</h2>
+            % if promotions:
+                % for promo in promotions:
+                    <a href="${promo.link}">${promo.text}</a>
+                % endfor
+            % endif
+        <p/>
         <hr/>
-        <%include file='_genre.mako' />
+            <h2>ジャンルから探す</h2>
+                <a href="/genre?genre=音楽">音楽</a>｜
+                <a href="/genre?genre=スポーツ">スポーツ</a>｜
+                <a href="/genre?genre=演劇・ステージ・舞台">演劇・ステージ・舞台</a>｜
+                <a href="/genre?genre=その他イベント">その他イベント</a>
+            <p/>
         <hr/>
         <%include file="../common/_attention.mako" />
         <hr/>

@@ -1,5 +1,5 @@
 <%page args="attentions" />
-<h1>注目のイベント</h1>
+<h2>注目のイベント</h2>
 % if attentions:
     % for attention in attentions:
         % if attention.mobile_link:

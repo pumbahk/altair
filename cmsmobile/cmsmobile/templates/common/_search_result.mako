@@ -1,9 +1,14 @@
-<%page args="performances, num" />
+<%page args="num, word, performances" />
+
 % if num:
     ${num}件見つかりました。
 % else:
-    見つかりませんでした。
+    % if word:
+        <b>${word}</b>に一致する情報は見つかりませんでした。
+    % endif
 % endif
+
+<h2>検索結果</h2><p/>
 
 % if performances:
     % for perf in performances:
@@ -19,4 +24,3 @@
     % endfor
 % endif
 <p/>
-<hr/>

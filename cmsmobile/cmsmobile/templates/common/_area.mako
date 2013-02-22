@@ -1,8 +1,8 @@
 <%page args="path, genre=None, subgenre=None" />
 % if genre:
-    <h1>地域から絞り込む</h1>
+    <h2>地域から絞り込む</h2>
 % else:
-    <h1>地域から探す</h1>
+    <h2>地域から探す</h2>
 % endif
 <a href="${path}?genre=${genre}&subgenre=${subgenre}&area=1">首都圏</a>｜
 <a href="${path}?genre=${genre}&subgenre=${subgenre}&area=2">近畿</a>｜

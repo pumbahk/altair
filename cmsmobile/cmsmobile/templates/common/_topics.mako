@@ -1,5 +1,5 @@
 <%page args="topics" />
-<h1>トピックス</h1>
+<h2>トピックス</h2>
 % if topics:
     <ul>
         % for topic in topics:

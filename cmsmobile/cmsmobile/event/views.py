@@ -85,6 +85,7 @@ def search(request):
 
     return {
          'num':num
+        ,'word':word
         ,'performances':performances
         ,'form':SearchForm()
     }
@@ -131,6 +132,7 @@ def genresearch(request):
          'genre':genre
         ,'subgenre':subgenre
         ,'num':num
+        ,'word':word
         ,'performances':performances
         ,'form':SearchForm()
     }
