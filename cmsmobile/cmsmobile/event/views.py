@@ -56,10 +56,10 @@ def move_genre(request):
 @view_config(route_name='search', renderer='cmsmobile:templates/search/search.mako')
 def search(request):
 
-    form = SearchForm(request.POST)
+    form = SearchForm(request.GET)
 
     if not form.validate():
-        return check_search_word(request, form)
+        return fail_search_word(request, form)
 
     return search_word(request, form)
 
@@ -67,10 +67,10 @@ def search(request):
 @view_config(route_name='genresearch', renderer='cmsmobile:templates/genresearch/genresearch.mako')
 def genresearch(request):
 
-    form = SearchForm(request.POST)
+    form = SearchForm(request.GET)
 
     if not form.validate():
-        return check_search_word(request, form)
+        return fail_search_word(request, form)
 
     return search_word(request, form)
 
@@ -108,7 +108,7 @@ def move_help(request):
         helps=helps
     )
 
-def check_search_word(request, form):
+def fail_search_word(request, form):
     genre = request.params.get("genre", None)
     subgenre = request.params.get("subgenre", None)
 
@@ -127,26 +127,35 @@ def check_search_word(request, form):
 def search_word(request, form):
     qs = None
     word = form.word.data
+    num = 0
+    page = 1
+    page_num = 0
+
     if word:
         qs = Performance.query.filter_by()
         likeword = u"%%%s%%" % word
         qs = qs.filter((Performance.title.like(likeword)) | (Performance.venue.like(likeword))).all()
 
     if qs:
+        page=int(request.params.get('page', 1))
+        items_per_page = 5
         performances = paginate.Page(
             qs,
-            page=int(request.params.get('page', 0)),
-            items_per_page=5,
+            page,
+            items_per_page,
             url=paginate.PageURL_WebOb(request)
         )
         num = len(qs)
+        page_num = num / items_per_page + 1
 
     #area = int(request.params.get("area", 0))
     #if area:
     #    pass
 
     return {
-        'num':num
+        'num':num               #総取得件数
+        ,'page':page            #現在のページ
+        ,'page_num':page_num    #総ページ数
         ,'word':word
         ,'performances':performances
         ,'form':SearchForm()

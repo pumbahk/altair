@@ -1,4 +1,4 @@
-<%page args="num, word, performances" />
+<%page args="path, num, word, page, page_num, performances" />
 
 % if num:
     ${num}件見つかりました。
@@ -24,3 +24,27 @@
     % endfor
 % endif
 <p/>
+
+% if num:
+    <div align="center">
+        % if page <= 1:
+            前へ
+        % else:
+            <a href="${path}?word=${word}&page=${page - 1}">前へ</a>
+        % endif
+
+        % for count in range(page_num):
+            % if page == count + 1:
+                ${count+1}
+            % else:
+                <a href="${path}?word=${word}&page=${count+1}">${count+1}</a>
+            % endif
+        % endfor
+
+        % if page >= page_num:
+            次へ
+        % else:
+            <a href="${path}?word=${word}&page=${page + 1}">次へ</a>
+        % endif
+    </div>
+% endif
