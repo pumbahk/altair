@@ -101,23 +101,23 @@ class NotifiedEventInfoFromBackendTests(AppFunctionalTests):
         self.assertEqual(ticket.price, 20000)
 
 class EventDetailPageCreateTests(AppFunctionalTests):
-    PAGETYPE_ID = 1
     @classmethod
     def setUpClass(cls):
         """layoutの登録にpagetypeが必要なのです """
         from altaircms.models import DBSession
-        from altaircms.page.models import PageType
         from altaircms.auth.models import Organization
+        from altaircms.page.models import PageType
 
         app = cls._getTarget()
         with login(app):
-            organization = Organization.query.first() # login時にorganizationは作成される
-            DBSession.add(PageType(id=cls.PAGETYPE_ID,  name=u"portal", organization_id=organization.id))
-            import transaction
-            transaction.commit()
+            # login時にorganization, pagetypeは作成される
+            organization = Organization.query.first()
+            DBSession.flush()
+            pagetype = PageType.query.filter_by(organization_id=organization.id).first()
+            DBSession.flush()
 
             ## layoutも作ります
-            create_page = app.get("/layout/pagetype/%d/create/input" % cls.PAGETYPE_ID)
+            create_page = app.get("/layout/pagetype/%d/create/input" % pagetype.id)
             layout_title = u"this-is-created-layout-template"
             form = find_form(create_page.forms, action_part="create")
             form.set("title", layout_title)
@@ -139,8 +139,8 @@ class EventDetailPageCreateTests(AppFunctionalTests):
         from altaircms.event.models import Event
         from altaircms.auth.models import APIKey
         from altaircms.models import Performance, SalesSegment, Ticket
-        from altaircms.page.models import PageType, PageSet, Page
-        delete_models([Performance, SalesSegment, Ticket, APIKey, PageType, PageSet, Page, Event])
+        from altaircms.page.models import PageSet, Page
+        delete_models([Performance, SalesSegment, Ticket, APIKey, PageSet, Page, Event])
 
     @unittest.skip("skip")
     def test_traverse_event_data(self):

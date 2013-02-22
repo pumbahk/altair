@@ -20,7 +20,7 @@ class LayoutFunctionalTests(AppFunctionalTests):
         with logout(app):
             app.get("/asset/").mustcontain(u"ログインしていません")
 
-    PAGETYPE_ID = 1
+    PAGETYPE_ID = 1000000000000
     @classmethod
     def setUpClass(cls):
         """layoutの登録にpagetypeが必要なのです """
@@ -30,15 +30,19 @@ class LayoutFunctionalTests(AppFunctionalTests):
 
         with login(cls._getTarget()):
            organization = Organization.query.first() # login時にorganizationは作成される
-           DBSession.add(PageType(id=cls.PAGETYPE_ID,  name=u"portal", organization_id=organization.id))
+           DBSession.add(PageType(id=cls.PAGETYPE_ID,  name=u"portal_", organization_id=organization.id))
            import transaction
            transaction.commit()
 
     @classmethod
     def tearDownClass(cls):
         """layoutの登録にpagetypeが必要なのです """
+        from altaircms.models import DBSession
         from altaircms.page.models import PageType
-        delete_models([PageType])
+        DBSession.delete(PageType.query.filter_by(id=cls.PAGETYPE_ID).first())
+        import transaction
+        transaction.commit()
+
 
     def tearDown(self):
         from altaircms.layout.models import Layout

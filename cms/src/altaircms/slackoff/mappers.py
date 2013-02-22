@@ -113,3 +113,7 @@ def pagedefaultinfo_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
     objlike.pageset = Markup(u'<a href="%s">%s</a>' % (h.link.preview_page_from_pageset(request, obj.pageset), obj.pageset.name)) if obj.pageset else u"-"
     return objlike
+
+def pagetype_mapper(request, obj):
+    objlike = ObjectLike(**model_to_dict(obj))
+    return objlike

@@ -330,6 +330,19 @@ class PageType(WithOrganizationMixin, Base):
     def __table_args__(cls):
         return (sa.schema.UniqueConstraint("name", "organization_id"), )
 
+    DEFAULTS = (u"portal", u"search", u"event_detail", u"special", u"error")
+    @classmethod
+    def get_or_create(cls, **kwargs):
+        return cls.query.filter_by(**kwargs).first() or cls(**kwargs)
+
+    @classmethod
+    def create_default_pagetypes(cls, organization_id=None):
+        qs = cls.query.filter(cls.organization_id==organization_id, cls.name.in_(cls.DEFAULTS)).all()
+        cached = {o.name: o for o in qs}
+        r = []
+        for name in cls.DEFAULTS:
+            r.append(cached.get(name) or cls(name=name, organization_id=organization_id))
+        return r
 
 ## master    
 class PageDefaultInfo(Base):

@@ -415,3 +415,7 @@ class PageDefaultInfoForm(Form):
                                                      get_label=lambda obj: obj.name or u"名前なし")
 
     __display_fields__ = ["pageset", "title_fmt", "url_fmt", "keywords", "description"]
+
+class PageTypeForm(Form):
+    name = fields.TextField(label=u"名前", validators=[required_field()])
+    __display_fields__ = ["name"]

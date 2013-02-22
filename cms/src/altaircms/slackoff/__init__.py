@@ -71,6 +71,9 @@ def includeme(config):
     config.add_crud("pagedefaultinfo", title="pagedefaultinfo", model="..page.models.PageDefaultInfo",
                     bind_actions=["create", "delete", "update"], 
                     form=".forms.PageDefaultInfoForm", mapper=".mappers.pagedefaultinfo_mapper")
+    config.add_crud("pagetype", title="pagetype", model="..page.models.PageType",
+                    has_auto_generated_permission=False, 
+                    form=".forms.PageTypeForm", mapper=".mappers.pagetype_mapper")
 
 
 """

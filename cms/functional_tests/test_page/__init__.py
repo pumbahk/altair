@@ -18,7 +18,6 @@ except ImportError:
 CORRECT_API_HEADER_NAME = 'X-Altair-Authorization'
 
 class PageTests(AppFunctionalTests):
-    PAGETYPE_ID = 1
     @classmethod
     def setUpClass(cls):
         """layoutの登録にpagetypeが必要なのです """
@@ -28,13 +27,12 @@ class PageTests(AppFunctionalTests):
 
         app = cls._getTarget()
         with login(app):
-            organization = Organization.query.first() # login時にorganizationは作成される
-            DBSession.add(PageType(id=cls.PAGETYPE_ID,  name=u"portal", organization_id=organization.id))
-            import transaction
-            transaction.commit()
+            organization = Organization.query.first() # login時にorganization, pagetypeは作成される
+            pagetype = PageType.query.filter_by(organization_id=organization.id).first()
+            DBSession.flush()
 
             ## layoutも作ります
-            create_page = app.get("/layout/pagetype/%d/create/input" % cls.PAGETYPE_ID)
+            create_page = app.get("/layout/pagetype/%d/create/input" % pagetype.id)
             layout_title = u"this-is-created-layout-template"
             form = find_form(create_page.forms, action_part="create")
             form.set("title", layout_title)
@@ -45,9 +43,9 @@ class PageTests(AppFunctionalTests):
     @classmethod
     def tearDownClass(cls):
         from altaircms.auth.models import APIKey
-        from altaircms.page.models import PageType, PageSet, Page
+        from altaircms.page.models import PageSet, Page
         from altaircms.models import Performance, SalesSegment, Ticket
-        delete_models([Performance, SalesSegment, Ticket, APIKey, PageType, PageSet, Page])
+        delete_models([Performance, SalesSegment, Ticket, APIKey, PageSet, Page])
 
     # http://localhost:6543/page/other/list
     def test_goto_login_page_if_not_login(self):
