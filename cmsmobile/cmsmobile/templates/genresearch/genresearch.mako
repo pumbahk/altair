@@ -1,13 +1,14 @@
 <%include file='../common/_header.mako' args="title=u'検索結果'"/>
 <body>
-    % if subgenre is None or subgenre == "None":
-        <a href="/">トップ</a> >> <a href="/genre?genre=${genre}">${genre}</a> >> 「${word}」を含む公演
+    % if form.sub_genre.data is None or form.sub_genre.data == "None":
+        <a href="/">トップ</a> >> <a href="/genre?genre=${form.genre.data}">${form.genre.data}</a> >> 「${form.word.data}」を含む公演
     % else:
-        <a href="/">トップ</a> >> <a href="/genre?genre=${genre}">${genre}</a> >> <a href="/genre?genre=${genre}&subgenre=${subgenre}">${subgenre}</a> >> 「${word}」を含む公演
+        <a href="/">トップ</a> >> <a href="/genre?genre=${form.genre.data}">${form.genre.data}</a> >> <a href="/genre?genre=${form.genre.data}&subgenre=${form.sub_genre.data}">${form.sub_genre.data}</a> >> 「${form.word.data}」を含む公演
     % endif
     <p/>
 
-    <%include file='../common/_search_result.mako' args="path='/genresearch', num=num, word=word, page=page, page_num=page_num, performances=performances" />
+    <%include file='../common/_search_result.mako' args="form=form, performances=performances" />
+
     <hr/>
 
     <%include file='../common/_search.mako' args="path='/search', genre='', subgenre=''"/>

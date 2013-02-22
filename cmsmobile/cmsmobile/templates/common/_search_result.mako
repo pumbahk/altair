@@ -1,10 +1,10 @@
-<%page args="path, num, word, page, page_num, performances" />
+<%page args="form, performances" />
 
-% if num:
-    ${num}件見つかりました。
+% if int(form.num.data):
+    ${form.num.data}件見つかりました。
 % else:
-    % if word:
-        <b>${word}</b>に一致する情報は見つかりませんでした。
+    % if form.word.data:
+        <b>${form.word.data}</b>に一致する情報は見つかりませんでした。
     % endif
 % endif
 
@@ -25,26 +25,26 @@
 % endif
 <p/>
 
-% if num:
+% if int(form.num.data):
     <div align="center">
-        % if page <= 1:
+        % if int(form.page.data) <= 1:
             前へ
         % else:
-            <a href="${path}?word=${word}&page=${page - 1}">前へ</a>
+            <a href="${form.path.data}?genre=${form.genre.data}&sub_genre=${form.sub_genre.data}&word=${form.word.data}&page=${int(form.page.data) - 1}">前へ</a>
         % endif
 
-        % for count in range(page_num):
-            % if page == count + 1:
+        % for count in range(int (form.page_num.data)):
+            % if int(form.page.data) == count + 1:
                 ${count+1}
             % else:
-                <a href="${path}?word=${word}&page=${count+1}">${count+1}</a>
+                <a href="${form.path.data}?genre=${form.genre.data}&sub_genre=${form.sub_genre.data}&word=${form.word.data}&page=${count + 1}">${count + 1}</a>
             % endif
         % endfor
 
-        % if page >= page_num:
+        % if int(form.page.data) >= int(form.page_num.data):
             次へ
         % else:
-            <a href="${path}?word=${word}&page=${page + 1}">次へ</a>
+            <a href="${form.path.data}?genre=${form.genre.data}&sub_genre=${form.sub_genre.data}&word=${form.word.data}&page=${int(form.page.data) + 1}">次へ</a>
         % endif
     </div>
 % endif

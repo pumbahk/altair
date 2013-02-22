@@ -14,12 +14,17 @@ from ticketing.models import merge_session_with_post
 @view_config(route_name='genre', renderer='cmsmobile:templates/genre/genre.mako')
 def move_genre(request):
 
+    # init
+    form = SearchForm(request.GET)
+    form.path.data = "/genresearch"
+    form.num.data = "0"
+    form.page.data = "1"
+    form.page_num.data = "0"
+
     # genre
-    genre = request.params.get("genre", None)
-    subgenre = request.params.get("subgenre", None)
-    system_tag = TopicTag.query.filter_by(label=genre).one()
-    if (subgenre is not None):
-        system_tag = TopicTag.query.filter_by(label=subgenre).one()
+    system_tag = TopicTag.query.filter_by(label=form.genre.data).one()
+    if form.sub_genre.data != "":
+        system_tag = TopicTag.query.filter_by(label=form.sub_genre.data).one()
 
     # attention
     topic_searcher = get_topic_searcher(request, "topic")
@@ -45,10 +50,8 @@ def move_genre(request):
             .filter(TopicTag.organization_id == request.organization.id)
 
     return dict(
-         topics=topics
-        ,form=SearchForm()
-        ,genre=genre
-        ,subgenre=subgenre
+         form=form
+        ,topics=topics
         ,promotions=promotions
         ,attentions=attentions
     )
@@ -59,7 +62,7 @@ def search(request):
     form = SearchForm(request.GET)
 
     if not form.validate():
-        return fail_search_word(request, form)
+        return fail_search_word(form)
 
     return search_word(request, form)
 
@@ -70,7 +73,7 @@ def genresearch(request):
     form = SearchForm(request.GET)
 
     if not form.validate():
-        return fail_search_word(request, form)
+        return fail_search_word(form)
 
     return search_word(request, form)
 
@@ -108,55 +111,39 @@ def move_help(request):
         helps=helps
     )
 
-def fail_search_word(request, form):
-    genre = request.params.get("genre", None)
-    subgenre = request.params.get("subgenre", None)
+def fail_search_word(form):
 
-    num = 0
     performances = None
 
     return {
-        'genre':genre
-        ,'subgenre':subgenre
-        ,'word':""
-        ,'num':num
-        ,'performances':performances
+         'performances':performances
         ,'form':form
     }
 
 def search_word(request, form):
-    qs = None
-    word = form.word.data
-    num = 0
-    page = 1
-    page_num = 0
 
-    if word:
+    qs = None
+    if form.word.data:
         qs = Performance.query.filter_by()
-        likeword = u"%%%s%%" % word
+        likeword = u"%%%s%%" % form.word.data
         qs = qs.filter((Performance.title.like(likeword)) | (Performance.venue.like(likeword))).all()
 
     if qs:
-        page=int(request.params.get('page', 1))
         items_per_page = 5
         performances = paginate.Page(
             qs,
-            page,
+            form.page.data,
             items_per_page,
             url=paginate.PageURL_WebOb(request)
         )
-        num = len(qs)
-        page_num = num / items_per_page + 1
+        form.num.data = len(qs)
+        form.page_num.data = form.num.data / items_per_page + 1
 
     #area = int(request.params.get("area", 0))
     #if area:
     #    pass
 
     return {
-        'num':num               #総取得件数
-        ,'page':page            #現在のページ
-        ,'page_num':page_num    #総ページ数
-        ,'word':word
-        ,'performances':performances
-        ,'form':SearchForm()
+         'performances':performances
+        ,'form':form
     }
