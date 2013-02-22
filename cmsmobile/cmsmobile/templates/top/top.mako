@@ -4,7 +4,7 @@
     <body>
         トップ<p/>
 
-        <%include file="../common/_search.mako" args="genre='', subgenre='', path='/search'" />
+        <%include file="../common/_search.mako" args="form=form" />
         <hr/>
         <h2>ピックアップ</h2>
             % if promotions:
@@ -23,7 +23,7 @@
         <hr/>
         <%include file="../common/_attention.mako" />
         <hr/>
-        <%include file="../common/_area.mako" args="path='/search', genre='', subgenre=''"/>
+        <%include file="../common/_area.mako" args="form=form"/>
         <hr/>
         <%include file="../common/_topics.mako" args="topics=topics"/>
         <hr/>

@@ -61,6 +61,11 @@ def search(request):
 
     form = SearchForm(request.GET)
 
+    print "START!!!!!!!!!!!!!!!!!!!!!!!!!"
+    print form.num.data
+    print form.area.data
+    print form.word.data
+
     if not form.validate():
         return fail_search_word(form)
 

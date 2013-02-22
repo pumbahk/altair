@@ -22,6 +22,12 @@ class SearchForm(Form):
         default="",
         )
 
+    area = HiddenField(
+        label='',
+        validators=[Optional()],
+        default="",
+        )
+
     num = HiddenField(#総件数
         label='',
         validators=[Optional()],
