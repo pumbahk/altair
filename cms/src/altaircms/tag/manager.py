@@ -131,6 +131,11 @@ class TagManagerBase(object):
             tags.append(t)
         return result
 
+    def more_filter_by_tag(self, qs, tag):
+        xref = orm.aliased(self.XRef)
+        qs = qs.filter(self.Object.id==xref.object_id, xref.tag_id==tag.id)
+        return qs
+
 @implementer(ITagManager)
 class TagManager(TagManagerBase):
     def is_target_tag(self, tag):
@@ -144,13 +149,6 @@ class TagManager(TagManagerBase):
         qs = qs.filter(where)
         return qs
         
-    def more_filter_by_tag(self, qs, tag):
-        xref = orm.aliased(self.XRef)
-        qs = qs.filter(self.Object.id==xref.object_id, xref.tag_id==tag.id)
-        where = self.Object.organization_id==self.Tag.organization_id
-        qs = qs.filter(where)
-        return qs
-
     def recent_change_tags(self):
         return self.Tag.query.filter(self.Tag.organization_id!=None).order_by(saexp.desc(self.Tag.updated_at), saexp.asc(self.Tag.id))
 
@@ -166,10 +164,6 @@ class SystemTagManager(TagManagerBase):
         qs = qs.filter(self.Object.id==self.XRef.object_id, self.Tag.id==self.XRef.tag_id)
         qs = qs.filter(self.Tag.organization_id==None)
         return qs
-
-    def more_filter_by_tag(self, qs, tag):
-        xref = orm.aliased(self.XRef)
-        return qs.filter(self.Object.id==xref.object_id, xref.tag_id==tag.id)
 
     def recent_change_tags(self):
         return self.Tag.query.filter(self.Tag.organization_id==None).order_by(saexp.desc(self.Tag.updated_at), saexp.asc(self.Tag.id))

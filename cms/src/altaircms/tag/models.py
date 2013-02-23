@@ -6,11 +6,13 @@ from altaircms.models import Base
 from altaircms.models import DBSession
 
 from datetime import datetime
+## backward compability
 from altaircms.page.models import Page, PageTag, PageTag2Page
 from altaircms.asset.models import Asset, AssetTag, AssetTag2Asset
 from altaircms.asset.models import ImageAsset, ImageAssetTag
 from altaircms.asset.models import MovieAsset, MovieAssetTag
 from altaircms.asset.models import FlashAsset, FlashAssetTag
+from altaircms.topic.models import TopicTag, TopicCoreTag2TopicCore, TopicCoreTag, TopcontentTag, PromotionTag
 from altaircms.models import WithOrganizationMixin
 
 
