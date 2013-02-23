@@ -30,6 +30,9 @@ class TaggedSearchEnvMixin(object):
         AA       AB
       AAA AAB  ABA
       という階層関係で。各階層に{x, y, nil}というようなタグを付けたものが存在
+
+      ※加えて例外的にABAとAにABというタグも付けている
+
         """
         def o(**kwargs):
             v = cls._makeSearchedObj(organization_id=organization_id, **kwargs)

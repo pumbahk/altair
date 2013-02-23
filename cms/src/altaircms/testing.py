@@ -82,6 +82,7 @@ def config():
 def functionalTestSetUp(extra=None):
     setup_db(["altaircms.page.models", 
               "altaircms.tag.models", 
+              "altaircms.widget.models", 
               "altaircms.event.models", 
               "altaircms.asset.models"])
 
@@ -93,7 +94,7 @@ def functionalTestSetUp(extra=None):
                 "altaircms.debug.strip_security": 'true', 
                 "altaircms.plugin_static_directory": "altaircms:plugins/static", 
                 "altaircms.logout.action": "altaircms.auth.api.LogoutSelfOnly", 
-
+                'altaircms.organization.mapping.json': "altaircms:../../organization.json", 
                 "altair.oauth.client_id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
                 "altair.oauth.secret_key": "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
                 "altair.oauth.authorize_url": "http://localhost:7654/api/authorize",
