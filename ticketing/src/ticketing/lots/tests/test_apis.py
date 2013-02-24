@@ -12,19 +12,19 @@ dependency_modules = [
     'ticketing.lots.models',
 ]
 
-class get_productsTests(unittest.TestCase):
-    def _callFUT(self, *args, **kwargs):
-        from ..api import get_products
-        return get_products(*args, **kwargs)
+# class get_productsTests(unittest.TestCase):
+#     def _callFUT(self, *args, **kwargs):
+#         from ..api import get_products
+#         return get_products(*args, **kwargs)
 
-    def test_it(self):
-        request = testing.DummyRequest()
-        sales_segment = mock.Mock()
-        performances = [
-            testing.DummyModel()
-        ]
-        results = self._callFUT(request, sales_segment, performances)
-        sales_segment.get_products.assert_called_with(performances)
+#     def test_it(self):
+#         request = testing.DummyRequest()
+#         sales_segment = mock.Mock()
+#         performances = [
+#             testing.DummyModel()
+#         ]
+#         results = self._callFUT(request, sales_segment, performances)
+#         sales_segment.get_products.assert_called_with(performances)
         
 class create_cartTests(unittest.TestCase):
     @classmethod
@@ -279,14 +279,17 @@ class entry_infoTests(unittest.TestCase):
             lot_entry=testing.DummyModel(
                 entry_no="testENTRYNO",
                 membergroup=testing.DummyModel(),
+                shipping_address=testing.DummyModel(
+                    zip="1234567",
+                    prefecture=u"東京都",
+                    sex=1,
+                    ),
             ),
             wish_order=10,
             created_at=datetime(2013, 1, 1),
-            shipping_address=testing.DummyModel(
-                zip="1234567",
-                prefecture=u"東京都",
-                sex=1,
-            )
+            products=[
+                ],
+            total_quantity=0,
         )
         result = self._callFUT(wish)
 
