@@ -3,6 +3,31 @@
 import unittest
 from pyramid import testing
 
+class MailSenderTests(unittest.TestCase):
+    def _getTarget(self):
+        from ..sendmail import MailSender
+        return MailSender
+
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
+    def test_it(self):
+        subject = u"テスト"
+        sender = u"testing@example.com"
+        tmpl_name = 'ticketing.lots:test_mail.txt'
+
+        target = self._makeOne(subject=subject,
+                               sender=sender,
+                               tmpl_name=tmpl_name)
+
+        self.assertEqual(target.subject, subject)
+        self.assertEqual(target.sender, sender)
+        self.assertEqual(target.tmpl_name, tmpl_name)
+
+    def test_send(self):
+        pass
+
+
 class send_accepted_mailTests(unittest.TestCase):
 
     def setUp(self):
@@ -28,6 +53,7 @@ class send_accepted_mailTests(unittest.TestCase):
         request.registry.settings['lots.accepted_mail_subject'] = '抽選テスト'
         request.registry.settings['lots.accepted_mail_sender'] = 'testing@sender.example.com'
         request.registry.settings['lots.accepted_mail_template'] = 'ticketing.lots:mail_templates/accept_entry.txt'
+        self.config.include('ticketing.lots.sendmail')
 
         entry = lots_models.LotEntry(
             entry_no='TEST-LOT-ENTRY-NO',
