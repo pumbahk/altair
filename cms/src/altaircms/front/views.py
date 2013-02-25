@@ -39,7 +39,11 @@ def preview_page(context, request):
     response = renderer.render(template, page)
 
     ## ugly
-    return _append_preview_message(response, u"これはpreview画面です。", color="green", backgroundcolor="#afa")
+    now = datetime.now()
+    if not page.published or (page.publish_begin and now < page.publish_begin) or (page.publish_end and now > page.publish_end):
+        return _append_preview_message(response, u"これはpreview画面です (%s)" % page.publish_status(now), color="red", backgroundcolor="#faa")
+    else:
+        return _append_preview_message(response, u"これはpreview画面です (%s)" % page.publish_status(now), color="green", backgroundcolor="#afa")
 
 
 @view_config(route_name="preview_pageset", decorator=with_jquery)
@@ -62,7 +66,7 @@ def preview_pageset(context, request, published=True):
     response = renderer.render(template, page)
     ## ugly
     if published:
-        return _append_preview_message(response, u"<p>これはpreview画面です。</p>", color="green", backgroundcolor="#faf")
+        return _append_preview_message(response, u"<p>これはpreview画面です。</p>", color="green", backgroundcolor="#afa")
     else:
         now = datetime.now()
         messages = [u'<div>'

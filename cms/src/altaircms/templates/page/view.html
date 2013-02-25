@@ -72,7 +72,11 @@ event = page.event or page.pageset.event
 		<td>${h.term(page.publish_begin, page.publish_end)}</td>
       </tr>
       <tr>
-        <th class="span2">公開ステータス</th><td>${u"公開中" if page.published else u"非公開"}</td>
+        <%
+           from datetime import datetime
+           now = datetime.now()
+           %>
+        <th class="span2">公開ステータス</th><td>${page.publish_status(now)}</td>
       </tr>
     </table>
 

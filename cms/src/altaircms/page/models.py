@@ -350,10 +350,18 @@ class PageType(WithOrganizationMixin, Base):
         return (sa.schema.UniqueConstraint("name", "organization_id"), )
 
     DEFAULTS = (u"portal",
-                u"search",
                 u"event_detail",
-                u"special",
-                u"error")
+                u"search",
+                u"document", 
+                u"special", 
+                u"static")
+    DEFAULTS_LABELS = (u"ポータル", 
+                       u"イベント詳細", 
+                       u"検索利用", 
+                       u"ドキュメント", 
+                       u"特集", 
+                       u"静的ページ"
+                       )
     @classmethod
     def get_or_create(cls, **kwargs):
         return cls.query.filter_by(**kwargs).first() or cls(**kwargs)
@@ -363,8 +371,8 @@ class PageType(WithOrganizationMixin, Base):
         qs = cls.query.filter(cls.organization_id==organization_id, cls.name.in_(cls.DEFAULTS)).all()
         cached = {o.name: o for o in qs}
         r = []
-        for name in cls.DEFAULTS:
-            r.append(cached.get(name) or cls(name=name, label=name, organization_id=organization_id))
+        for name, label in zip(cls.DEFAULTS, cls.DEFAULTS_LABELS):
+            r.append(cached.get(name) or cls(name=name, label=label, organization_id=organization_id))
         return r
 
     @property
