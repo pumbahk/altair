@@ -16,10 +16,10 @@
 <div class="row-fluid">
     ${nco.breadcrumbs(
         names=["Top", "Page", pageset.name],
-        urls=[request.route_path("dashboard"), request.route_path("pageset_list", pagetype=pageset.pagetype.name)]
+        urls=[request.route_path("dashboard"), request.route_path("pageset_list", pagetype=pageset.pagetype)]
     )}
 
-
+<div class="circle circle-page circle-top"></div>
 <h2>${pageset.name}</h2>
 
 <table class="table table-striped">
@@ -97,4 +97,3 @@
 </script>
 
 </div>
-

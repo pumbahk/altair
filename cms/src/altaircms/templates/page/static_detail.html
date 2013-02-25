@@ -12,10 +12,10 @@ h3{
 <div class="row-fluid">
     ${nco.breadcrumbs(
         names=["Top", "Page", static_page.name],
-        urls=[request.route_path("dashboard"), request.route_path("pageset_list", pagetype="static")]
+        urls=[request.route_path("dashboard"), request.route_path("pageset_list", kind="static")]
     )}
 
-
+<div class="circle circle-page circle-top"></div>
 <h2>${static_page.name}</h2>
 
 <table class="table table-striped">
