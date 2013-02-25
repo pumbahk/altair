@@ -45,9 +45,7 @@
           null
         );
       };
-      delete_sales_segment = function delete_sales_segment() {
-        var id = $('input[name=sales_segment_id]:checked').val() || $('#sales_segments-form').find('#sales_segment_id').attr('value');
-        if (!id) return;
+      delete_sales_segment = function delete_sales_segment(id) {
         var modal = $('#modal-delete');
         modal.find('#delete').attr('href', '${request.route_path('sales_segments.delete', sales_segment_id='{id}')}'.replace(encodeURIComponent('{id}'), id));
         modal.find('#message').text('選択した販売区分を削除します。よろしいですか？');

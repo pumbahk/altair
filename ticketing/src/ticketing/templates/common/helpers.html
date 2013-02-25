@@ -132,18 +132,26 @@ ${locale.format("%d", price, grouping=True)}
   <li>${names[-1]}</li>
 </ul>
 </%def>
-
 <%def name="sortable(column, paging=True)">
+<%
+from wtforms.fields.core import UnboundField
+if isinstance(column, UnboundField):
+  column_name = column.kwargs.get('name', '')
+  column_label = column.kwargs.get('label', '')
+else:
+  column_name = column.name
+  column_label = column.label.text
+%>
 % if paging:
 <%
   sort_column = request.GET.get('sort')
   sort_direction = request.GET.get('direction')
-  direction = 'desc' if (column.name == sort_column and sort_direction == 'asc') else 'asc'
-  css_class = 'current ' + sort_direction if (column.name == sort_column) else ''
+  direction = 'desc' if (column_name == sort_column and sort_direction == 'asc') else 'asc'
+  css_class = 'current ' + sort_direction if (column_name == sort_column) else ''
 %>
-  <a href="?sort=${column.name}&direction=${direction}" class="${css_class}">${column.label.text}</a>
+  <a href="?sort=${column_name}&direction=${direction}" class="${css_class}">${column_label}</a>
 % else:
-  ${column.label.text}
+  ${column_label}
 % endif
 </%def>
 

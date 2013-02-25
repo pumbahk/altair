@@ -1,4 +1,5 @@
-<%page args="form, sales_segments" />
+<%page args="form" />
+<% from ticketing.events.sales_segments.forms import SalesSegmentForm %>
 <%namespace file="/common/helpers.html" name="h" />
 % if sales_segments:
 <div class="row-fluid">
@@ -7,13 +8,13 @@
       <thead>
       <tr>
         <th class="minwidth"></th>
-        <th class="minwidth">${h.sortable(form.id)}</th>
+        <th class="minwidth">${h.sortable(SalesSegmentForm.id)}</th>
         <th>名称</th>
-        <th>${h.sortable(form.start_at)}</a></th>
-        <th>${h.sortable(form.end_at)}</a></th>
-        <th>${h.sortable(form.upper_limit)}</a></th>
-        <th>${h.sortable(form.seat_choice)}</a></th>
-        <th>${h.sortable(form.public)}</a></th>
+        <th>${h.sortable(SalesSegmentForm.start_at)}</a></th>
+        <th>${h.sortable(SalesSegmentForm.end_at)}</a></th>
+        <th>${h.sortable(SalesSegmentForm.upper_limit)}</a></th>
+        <th>${h.sortable(SalesSegmentForm.seat_choice)}</a></th>
+        <th>${h.sortable(SalesSegmentForm.public)}</a></th>
         <th>決済方法</th>
         <th>引取方法</th>
       </tr>
@@ -51,7 +52,6 @@
     </table>
   </div>
 </div>
-% endif
 <script type="text/javascript">
 (function (form) {
   get_selected_sales_segment_id = function get_selected_sales_segment_id() {
@@ -59,3 +59,4 @@
   }
 })($('script:last').closest('form'));
 </script>
+% endif

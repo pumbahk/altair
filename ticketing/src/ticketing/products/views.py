@@ -24,19 +24,20 @@ class Products(BaseView):
 
     @view_config(route_name='products.index', renderer='ticketing:templates/products/index.html')
     def index(self):
-        event_id = int(self.request.matchdict.get('event_id', 0))
-        event = Event.get(event_id)
-        if event is None:
-            return HTTPNotFound('event id %d is not found' % event_id)
+        performance_id = int(self.request.matchdict.get('performance_id', 0))
+        performance = Performance.get(performance_id)
+        if performance is None:
+            return HTTPNotFound('performance id %d is not found' % performance_id)
 
+        # XXX: is this injection safe?
         sort = self.request.GET.get('sort', 'Product.id')
         direction = self.request.GET.get('direction', 'asc')
         if direction not in ['asc', 'desc']:
             direction = 'asc'
 
         conditions = {
-            'event_id':event.id
-        }
+            'performance_id': performance.id
+            }
         query = Product.filter_by(**conditions)
         query = query.order_by(sort + ' ' + direction)
 
@@ -45,22 +46,36 @@ class Products(BaseView):
             page=int(self.request.params.get('page', 0)),
             items_per_page=200,
             url=paginate.PageURL_WebOb(self.request)
-        )
+            )
 
         return {
-            'form':ProductForm(event_id=event.id),
-            'products':products,
-            'event':event,
+            'form': ProductForm(performance_id=performance.id),
+            'products': products,
+            'performance': performance
         }
 
-    @view_config(route_name='products.new', request_method='POST', renderer='ticketing:templates/products/_form.html')
-    def new_post(self):
-        event_id = int(self.request.POST.get('event_id', 0))
-        event = Event.get(event_id)
-        if event is None:
-            return HTTPNotFound('event id %d is not found' % event_id)
+    @view_config(route_name='products.new', request_method='GET', renderer='ticketing:templates/products/_form.html', xhr=True)
+    def new_xhr(self):
+        performance_id = int(self.request.matchdict.get('performance_id', 0))
+        performance = Performance.get(performance_id)
+        if performance is None:
+            return HTTPNotFound('performance id %d is not found' % performance_id)
 
-        f = ProductForm(self.request.POST, event_id=event.id)
+        f = ProductForm(self.request.POST, performance_id=performance.id)
+        return {
+            'form': f,
+            'action': self.request.path,
+            }
+
+
+    @view_config(route_name='products.new', request_method='POST', renderer='ticketing:templates/products/_form.html', xhr=True)
+    def new_post_xhr(self):
+        performance_id = int(self.request.matchdict.get('performance_id', 0))
+        performance = Performance.get(performance_id)
+        if performance is None:
+            return HTTPNotFound('performance id %d is not found' % performance_id)
+
+        f = ProductForm(self.request.POST, performance_id=performance.id)
         if f.validate():
             product = merge_session_with_post(Product(), f.data)
             product.save()
@@ -69,30 +84,30 @@ class Products(BaseView):
             return render_to_response('ticketing:templates/refresh.html', {}, request=self.request)
         else:
             return {
-                'form':f,
+                'form': f,
+                'action': self.request.path,
+                }
+
+    @view_config(route_name="products.edit", request_method="GET", renderer='ticketing:templates/products/_form.html', xhr=True)
+    def edit_xhr(self):
+        product_id = int(self.request.matchdict.get('product_id', 0))
+        product = Product.get(product_id)
+        if product is None:
+            raise HTTPNotFound('product id %d is not found' % product_id)
+        f = ProductForm.from_model(product)
+        return {
+            'form':f,
+            'action': self.request.path,
             }
 
-    @view_config(route_name="products.edit", request_method="GET", renderer='ticketing:templates/products/__edit_form.html')
-    def edit_dialog(self):
-        try:
-            product_id = int(self.request.matchdict.get('product_id', 0))
-            product = Product.get(product_id)
-            if product is None:
-                raise HTTPNotFound('product id %d is not found' % product_id)
-            form = ProductForm.from_model(product)
-            return {"form": form}
-        except Exception, e:
-            logger.exception(str(e))
-            raise e
-
-    @view_config(route_name='products.edit', request_method='POST', renderer='ticketing:templates/products/_form.html')
-    def edit_post(self):
+    @view_config(route_name='products.edit', request_method='POST', renderer='ticketing:templates/products/_form.html', xhr=True)
+    def edit_post_xhr(self):
         product_id = int(self.request.matchdict.get('product_id', 0))
         product = Product.get(product_id)
         if product is None:
             return HTTPNotFound('product id %d is not found' % product_id)
 
-        f = ProductForm(self.request.POST, event_id=product.event_id)
+        f = ProductForm(self.request.POST, performance_id=product.performance_id)
         if f.validate():
             product = merge_session_with_post(product, f.data)
             product.save()
@@ -102,7 +117,8 @@ class Products(BaseView):
         else:
             return {
                 'form':f,
-            }
+                'action': self.request.path,
+                }
 
     @view_config(route_name='products.delete', renderer='ticketing:templates/products/_form.html')
     def delete(self):
@@ -111,7 +127,7 @@ class Products(BaseView):
         if product is None:
             return HTTPNotFound('product id %d is not found' % product_id)
 
-        location = route_path('products.index', self.request, event_id=product.event_id)
+        location = route_path('products.index', self.request, performance_id=product.performance_id)
         try:
             product.delete()
             self.request.session.flash(u'商品を削除しました')
@@ -308,7 +324,7 @@ class ProductItems(BaseView):
         else:
             return {
                 'form':f,
-                'form_product':ProductForm(record_to_multidict(Product.get(product_id)), event_id=performance.event_id),
+                'form_product':ProductForm(record_to_multidict(Product.get(product_id)), performance_id=performance.id),
                 'performance':performance,
             }
 
@@ -334,7 +350,7 @@ class ProductItems(BaseView):
         else:
             return {
                 'form':f,
-                'form_product':ProductForm(record_to_multidict(Product.get(product_item.product_id)), event_id=performance.event_id),
+                'form_product':ProductForm(record_to_multidict(Product.get(product_item.product_id)), performance_id=performance.id),
                 'performance':performance,
             }
 
