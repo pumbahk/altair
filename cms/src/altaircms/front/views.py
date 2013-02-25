@@ -39,7 +39,7 @@ def preview_page(context, request):
     response = renderer.render(template, page)
 
     ## ugly
-    return _append_preview_message(response, u"これはpreview画面です。")
+    return _append_preview_message(response, u"これはpreview画面です。", color="green", backgroundcolor="#afa")
 
 
 @view_config(route_name="preview_pageset", decorator=with_jquery)
@@ -62,7 +62,7 @@ def preview_pageset(context, request, published=True):
     response = renderer.render(template, page)
     ## ugly
     if published:
-        return _append_preview_message(response, u"<p>これはpreview画面です。</p>", color="yellow", backgroundcolor="#ffa")
+        return _append_preview_message(response, u"<p>これはpreview画面です。</p>", color="green", backgroundcolor="#faf")
     else:
         now = datetime.now()
         messages = [u'<div>'
