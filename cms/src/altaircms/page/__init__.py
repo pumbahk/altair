@@ -28,7 +28,7 @@ def includeme(config):
     add_route('page', '/page/')
 
     ## widget disposition
-    config.add_route("disposition", "/page/{id}/disposition", factory="altaircms.page.resources.WDispositionResource")    
+    config.add_route("disposition", "/page/{id}/disposition/action/{action}", factory="altaircms.page.resources.WDispositionResource")    
     ## todo: move bellow
     config.add_route("disposition_list", "/disposition", factory="altaircms.page.resources.WDispositionResource")
     config.add_route("disposition_alter", "/disposition/{id}/alter", factory="altaircms.page.resources.WDispositionResource")

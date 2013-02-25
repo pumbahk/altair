@@ -75,8 +75,9 @@ class WidgetDisposition(WithOrganizationMixin, BaseOriginalMixin, Base): #todo: 
     title = sa.Column(sa.Unicode(255))
 
     structure = sa.Column(sa.Text, default=Page.DEFAULT_STRUCTURE) # same as: Page.structure
-    blocks = sa.Column(sa.String(255), default=Layout.DEFAULT_BLOCKS) # same as: Layout.blocks
-
+    blocks = sa.Column(sa.String(255), default=Layout.DEFAULT_BLOCKS) # same as: Layout.blocks #todo.remove
+    layout_id = sa.Column(sa.Integer, sa.ForeignKey("layout.id"))
+    layout = orm.relationship("Layout", uselist=False, primaryjoin="Layout.id==WidgetDisposition.layout_id")
     is_public = sa.Column(sa.Boolean, default=False)
     save_type = sa.Column(sa.String(16), index=True)
     owner_id = sa.Column(sa.Integer, sa.ForeignKey("operator.id"))
@@ -210,6 +211,7 @@ class WidgetDispositionAllocator(object):
                 new_structure[k].append({"name": v["name"]})
         instance.structure = json.dumps(new_structure)
         instance.save_type = StructureSaveType.shallow
+        instance.layout_id = page.layout_id
         return instance
 
 
@@ -225,6 +227,7 @@ class WidgetDispositionAllocator(object):
         for k, ws in new_wtree.blocks.iteritems():
             for w in ws:
                 w.disposition = instance
+        instance.layout_id = page.layout_id
         return instance
 
 

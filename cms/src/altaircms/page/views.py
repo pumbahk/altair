@@ -3,6 +3,7 @@ import logging
 logger = logging.getLogger(__name__)
 import os
 import sqlalchemy as sa
+import sqlalchemy.orm as orm
 from pyramid.view import view_config
 from pyramid.view import view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPBadRequest
@@ -35,6 +36,9 @@ from . import helpers as myhelpers
 from pyramid.response import FileResponse
 from . import writefile 
 from zope.deprecation import deprecate
+from altaircms.widget.forms import WidgetDispositionSaveDefaultForm
+from altaircms.widget.forms import WidgetDispositionSaveForm
+
 
 class AfterInput(Exception):
     pass
@@ -49,19 +53,16 @@ class PageAddView(object):
         self.context = context
         self.request = request
 
-    @view_config(route_name="page_add", request_method="GET", match_param="action=input", permission="page_create")
+    @view_config(route_name="page_add", request_method="GET", request_param="pagetype=event_detail", match_param="action=input", permission="page_create")
     def input_form_with_event(self):
         set_endpoint(self.request)
         event_id = self.request.matchdict["event_id"]
         event = self.request._event = get_or_404(self.request.allowable(Event), (Event.id==event_id))
-            
-        pagetype = PageType.get_or_create(name="event_detail", organization_id=self.request.organization.id)
-        self.request._form = forms.PageForm(event=event, pagetype=pagetype)
-        self.request._form.pagetype.choices = [(pagetype.label, pagetype.id)]
+        self.request._form = forms.PageForm(event=event)
         self.request._setup_form = forms.PageInfoSetupForm(name=event.title)
         raise AfterInput
 
-    @view_config(route_name="page_add_orphan", request_method="GET", match_param="action=input", permission="page_create")
+    @view_config(route_name="page_add_orphan", request_param="pagetype", request_method="GET", match_param="action=input", permission="page_create")
     def input_form(self):
         set_endpoint(self.request)
         self.request._form = forms.PageForm()
@@ -83,7 +84,8 @@ class PageAddView(object):
         return {"form": request._form, 
                 "setup_form": request._setup_form}
 
-    @view_config(route_name="page_add", permission="page_create", match_param="action=confirm", request_method="POST")
+    @view_config(route_name="page_add", permission="page_create", match_param="action=confirm", request_method="POST", 
+                 renderer="altaircms:templates/page/confirm.html")
     def confirm_with_event(self):
         self.request.POST
         form = forms.PageForm(self.request.POST)
@@ -96,7 +98,8 @@ class PageAddView(object):
             self.request._setup_form = forms.PageInfoSetupForm(name=form.data["name"])
             raise AfterInput
 
-    @view_config(route_name="page_add_orphan", permission="page_create", match_param="action=confirm", request_method="POST")
+    @view_config(route_name="page_add_orphan", permission="page_create", match_param="action=confirm", request_method="POST", 
+                 renderer="altaircms:templates/page/confirm.html")
     def confirm(self):
         self.request.POST
         form = forms.PageForm(self.request.POST)
@@ -134,7 +137,7 @@ class PageAddView(object):
             ## flash messsage
             mes = u'page created <a href="%s">作成されたページを編集する</a>' % self.request.route_path("pageset_detail", pageset_id=page.pageset.id, kind="other")
             FlashMessage.success(mes, request=self.request)
-            return HTTPFound(get_endpoint(self.request) or self.request.route_path("pageset_list", pagetype="_"))
+            return HTTPFound(get_endpoint(self.request) or self.request.route_path("pageset_list", pagetype=page.pagetype.name))
         else:
             self.request._form = form
             self.request._setup_form = forms.PageInfoSetupForm(name=form.data["name"])
@@ -144,7 +147,7 @@ class PageAddView(object):
  
 
 @view_defaults(permission="page_create", decorator=with_bootstrap)
-class PageCreateView(object):
+class PageDuplicateView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
@@ -418,24 +421,24 @@ def page_edit(request):
     disposition_select = wf.WidgetDispositionSelectForm()
     user = request.user
     disposition_save = wf.WidgetDispositionSaveForm(page=page.id, owner_id=user.id if user else None)
-
+    disposition_save_default = WidgetDispositionSaveDefaultForm(page=page.id, title=u"%sのデフォルト設定" % page.layout.title)
     ## layoutの選択対象はnone or 同一pagetype?
-    layout_qs = request.allowable(Layout).filter(sa.or_(Layout.pagetype_id==page.pagetype_id, 
-                                                        Layout.pagetype_id==None))
+    layout_qs = request.allowable(Layout).with_transformation(Layout.applicable(page.pagetype_id))
     return {
             'event':page.event,
             'page':page,
             "disposition_select": disposition_select, 
             "disposition_save": disposition_save, 
+            "disposition_save_default": disposition_save_default, 
             "layout_candidates": layout_qs, 
             "layout_render":layout_render, 
             "widget_aggregator": get_widget_aggregator_dispatcher(request).dispatch(request, page)
         }
 
 ## widgetの保存 場所移動？
-@view_config(route_name="disposition", request_method="POST", permission='authenticated')
+@view_config(match_param="action=save", route_name="disposition", request_method="POST", permission='authenticated')
 def disposition_save(context, request):
-    form = context.Form(request.POST)
+    form = WidgetDispositionSaveForm(request.POST)
     page = get_or_404(request.allowable(Page), Page.id==request.matchdict["id"])
 
     if form.validate():
@@ -447,7 +450,26 @@ def disposition_save(context, request):
         FlashMessage.error(u"タイトルを入力してください", request=request)
         return HTTPFound(h.page.to_edit_page(request, page))
 
-@view_config(route_name="disposition", request_method="GET", permission='authenticated')
+@view_config(match_param="action=save_default", route_name="disposition", request_method="POST", permission='authenticated')
+def disposition_save_default(context, request):
+    form = WidgetDispositionSaveDefaultForm(request.POST)
+    page = get_or_404(request.allowable(Page), Page.id==request.matchdict["id"])
+
+    if form.validate():
+        wdisposition = context.get_disposition_from_page(page, form.data)
+        wdisposition.is_public = True
+        wdisposition.owner_id = request.user.id
+        context.add(wdisposition)
+        DBSession.flush()
+        layout = get_or_404(request.allowable(Layout), Layout.id==page.layout_id)
+        layout.disposition_id = wdisposition.id
+        FlashMessage.success(u"現在のレイアウトのデフォルトの設定として保存されました", request=request)
+        return HTTPFound(h.page.to_edit_page(request, page))
+    else:
+        FlashMessage.error(u"タイトルを入力してください", request=request)
+        return HTTPFound(h.page.to_edit_page(request, page))
+
+@view_config(match_param="action=load", route_name="disposition", request_method="GET", permission='authenticated')
 def disposition_load(context, request):
     page = get_or_404(request.allowable(Page), Page.id==request.matchdict["id"])
     wdisposition = get_or_404(request.allowable(WidgetDisposition), WidgetDisposition.id==request.GET["disposition"])
@@ -461,7 +483,7 @@ def disposition_load(context, request):
 @view_config(route_name="disposition_list", renderer="altaircms:templates/widget/disposition/list.html", 
              decorator=with_bootstrap, permission='authenticated') #permission
 def disposition_list(context, request):
-    ds = WidgetDisposition.enable_only_query(request.user)
+    ds = WidgetDisposition.enable_only_query(request.user).options(orm.joinedload(WidgetDisposition.layout))
     return {"ds":ds}
 
 @view_config(route_name="disposition_alter", request_method="POST", permission='authenticated') #permission

@@ -27,3 +27,11 @@ class WidgetDispositionSaveForm(Form):
                (models.StructureSaveType.deep, u"widgetのデータの内容も保存")]
     save_type = fields.SelectField(label=u"保存方法", choices=choices)
     is_public = fields.BooleanField(label=u"他の人に公開する")
+
+class WidgetDispositionSaveDefaultForm(Form):
+    page = fields.IntegerField(widget=widgets.HiddenInput(), validators=[validators.Required()])
+    title = fields.TextField(label=u"保存時のwidget layout名", validators=[validators.Required()])
+    page = fields.IntegerField(widget=widgets.HiddenInput(), validators=[validators.Required()])
+    choices = [(models.StructureSaveType.shallow, u"widgetの位置のみ保存"),
+               (models.StructureSaveType.deep, u"widgetのデータの内容も保存")]
+    save_type = fields.SelectField(label=u"保存方法", choices=choices)

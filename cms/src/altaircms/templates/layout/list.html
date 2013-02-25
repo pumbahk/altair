@@ -54,13 +54,14 @@
 
 <p>全${layouts.opts.get("item_count") or layouts.collection.count()}件</p>
 ${layouts.pager()}
-<table class="table table-striped">
+<table class="table table-striped table-describe">
   <thead>
     <tr>
       %for k in display_fields:
       <th>${getattr(form,k).label}</th>
       %endfor
-	  <th>操作</th>
+      <th>デフォルト設定</th>
+	    <th>操作</th>
     </tr>
   </thead>
     <tbody>
@@ -73,23 +74,15 @@ ${layouts.pager()}
                 <td>${getattr(x,k, "-")}</td>
               %endfor
               <td>
-				<div class="btn-group">
-				  <button class="btn dropdown-toggle" data-toggle="dropdown">
-					<span class="caret"></span>
-				  </button>
-				  <ul class="dropdown-menu">
-					<li>
-					  <a href="${request.route_path("layout_update",pagetype_id=current_pagetype.id, action="input",id=x.id)}">
-						<i class="icon-cog"> </i> 編集
-					  </a>
-					</li>
-					<li>
-					  <a href="${request.route_path("layout_delete",action="confirm",id=x.id)}">
-						<i class="icon-trash"> </i> 削除
-					  </a>
-					</li>
-				  </ul>
-				</div>
+                %if x.disposition_id:
+                  <span class="label">${x.default_disposition.title}</span>
+                %endif
+              </td>
+              <td>
+          <div class="btn-group">
+            <a href="${request.route_path("layout_update",pagetype_id=current_pagetype.id, action="input",id=x.id)}" class="btn btn-primary"><i class="icon-cog"></i> 編集</a>
+            <a href="${request.route_path("layout_delete",action="confirm",id=x.id)}" class="btn btn-danger"><i class="icon-trash"></i> 削除</a>
+          </div>
               </td>
             </tr>
         %endfor

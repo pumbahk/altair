@@ -50,11 +50,11 @@
   <div class="span6">
 	${co.setup_info_form()}
 	<h2>form</h2>
-	<form id="submit_form" action="${request.current_route_path(action="create")}" method="POST">
-     ${fco.form_as_table_strict(form, ["parent", "name", "url", "title", "publish_begin", "publish_end","description","keywords","tags","private_tags","layout"])}
+	<form id="submit_form" action="${h.current_route_path_override(request, action="confirm")}" method="POST">
+     ${fco.form_as_table_strict(form, ["parent", "name", "pagetype", "url", "title", "publish_begin", "publish_end","description","keywords","tags","private_tags","layout"])}
 	  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> Create</button>
     </form>
   </div>
-  <div class="span5" id="layout_demo">
+  <div class="span6" id="layout_demo">
   </div>
 </div>

@@ -113,7 +113,7 @@ class EventDetailPageCreateTests(AppFunctionalTests):
             # login時にorganization, pagetypeは作成される
             organization = Organization.query.first()
             DBSession.flush()
-            pagetype = PageType.query.filter_by(organization_id=organization.id).first()
+            pagetype = PageType.query.filter_by(organization_id=organization.id, name="event_detail").first()
             DBSession.flush()
 
             ## layoutも作ります
@@ -164,10 +164,14 @@ class EventDetailPageCreateTests(AppFunctionalTests):
             form.set("description", u"ababababbaba-ababababbaba-ababababbaba-ababababbaba-ababababbaba")
             form.set("tags", u"event demo page tag public")
             form.set("private_tags", u"event demo page tag public")
+            confirm_response = form.submit()
+
+            form = find_form(confirm_response.forms, action_part="create")
             submit_response = form.submit()
+            
             self.assertEqual(submit_response.status_int, 302)
 
-            ## page is created!!,  to be continued ...
+            # page is created!!,  to be continued ...
 
         
 if __name__ == "__main__":

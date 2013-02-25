@@ -27,7 +27,6 @@ def delete_data(self, obj, flush=False):
 
 class WDispositionResource(security.RootFactory):
     Page = models.Page
-    Form = wf.WidgetDispositionSaveForm
     add = add_data
     delete = delete_data
 
@@ -73,6 +72,10 @@ class PageResource(security.RootFactory):
 
         self.add(page, flush=True)
         subscribers.notify_page_create(self.request, page, params)
+
+        if page.layout.disposition_id:
+            page.layout.default_disposition.bind_page(page, DBSession)
+
         notify_model_create(self.request, page, form.data)
         notify_model_create(self.request, pageset, form.data)
         return page

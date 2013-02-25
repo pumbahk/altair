@@ -81,6 +81,7 @@ var NameToJName = ${json.dumps(WIDGET_LABEL_DICT)|n};
                         <li class="divider"></li>
                         <li><a tabindex="-1" href="#load_widget_layout_modal" data-toggle="modal">widget layoutの読込</a></li>
                         <li><a tabindex="-1" href="#save_widget_layout_modal" data-toggle="modal">widget layoutの保存</a></li>
+                        <li><a tabindex="-1" href="#save_default_layout_modal" data-toggle="modal">defaultの設定として保存</a></li>
                       </ul>
                     </li>
                   </ul>
@@ -122,12 +123,31 @@ var NameToJName = ${json.dumps(WIDGET_LABEL_DICT)|n};
 	  <h3>現在のwidget layoutを保存</h3>
   </div>
   <div class="modal-body">
-	<form class="form" action="${h.page.to_widget_disposition(request,page)}" method="POST">
+	<form class="form" action="${request.route_path("disposition", action="save", id=page.id)}" method="POST">
 		${disposition_save.title.label} ${disposition_save.title}
+		${disposition_save.page.label} ${disposition_save.page}
     ${disposition_save.is_public.label} ${disposition_save.is_public()}
 		${disposition_save.save_type.label} ${disposition_save.save_type}
 		 ## submit button
 		${disposition_save.page}${disposition_save.owner_id}
+  </div>
+  <div class="modal-footer">
+    <button class="btn" type="button" data-dismiss="modal">キャンセル</button>
+    <button class="btn btn-primary" type="submit"><i class="icon-cog"></i>保存</button>
+  </div>
+	</form>
+</div>
+
+<div class="modal hide" id="save_default_layout_modal">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">×</button>
+	  <h3>defaultのwidget設定として保存</h3>
+  </div>
+  <div class="modal-body">
+	<form class="form" action="${request.route_path("disposition", action="save_default", id=page.id)}" method="POST">
+		${disposition_save_default.title.label} ${disposition_save_default.title}
+		${disposition_save_default.page.label} ${disposition_save_default.page}
+		${disposition_save_default.save_type.label} ${disposition_save_default.save_type}
   </div>
   <div class="modal-footer">
     <button class="btn" type="button" data-dismiss="modal">キャンセル</button>
@@ -142,7 +162,7 @@ var NameToJName = ${json.dumps(WIDGET_LABEL_DICT)|n};
 	  <h3>widget layoutの読み込み</h3>
   </div>
   <div class="modal-body">
-	  <form action="${h.page.to_widget_disposition(request,page)}" method="GET">
+	  <form action="${request.route_path("disposition", action="load", id=page.id)}" method="GET">
 		  ${disposition_select.disposition.label} ${disposition_select.disposition}
   </div>
   <div class="modal-footer">

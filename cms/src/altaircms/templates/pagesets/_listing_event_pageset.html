@@ -92,7 +92,7 @@
     </tbody>
   </table>
   <div class="btn-group">
-		<a class="btn" href="${request.route_path("page_add", action="input", event_id=current_event.id, _query=dict(endpoint=request.url))}"><i class="icon-plus"> </i> 新しいページセットの作成</a>
+		<a class="btn" href="${request.route_path("page_add", action="input", event_id=current_event.id, _query=dict(endpoint=request.url, pagetype="event_detail"))}"><i class="icon-plus"> </i> 新しいページセットの作成</a>
     <button class="btn dropdown-toggle" data-toggle="dropdown">
       <span class="caret"></span>
     </button>

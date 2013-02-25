@@ -1,4 +1,5 @@
 # coding: utf-8
+import sqlalchemy as sa
 import os.path
 from altairsite.front import helpers as fh
 from pyramid.view import view_config
@@ -33,8 +34,7 @@ def layout_list_with_pagetype(context, request):
     pagetype_id = request.matchdict["pagetype_id"]
     pagetypes = request.allowable(PageType)
     current_pagetype = get_or_404(request.allowable(PageType), PageType.id==pagetype_id)
-
-    qs = request.allowable(Layout).filter_by(pagetype_id=pagetype_id)
+    qs = request.allowable(Layout).with_transformation(Layout.applicable(pagetype_id))
     layouts = h.paginate(request, qs, item_count=qs.count())
 
     form = forms.LayoutUpdateForm()

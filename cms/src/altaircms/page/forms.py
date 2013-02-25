@@ -2,6 +2,7 @@
 import os
 import logging
 import re
+import sqlalchemy as sa
 from collections import defaultdict
 from datetime import datetime
 from webob.multidict import MultiDict
@@ -70,13 +71,19 @@ class PageInfoSetupForm(Form):
 
 @implementer(IForm)
 class PageForm(Form):
+    def pagetype_filter(model, request, query):
+        return query.filter_by(name=request.GET["pagetype"])
+    def layout_filter(model, request, query):
+        pagetype = PageType.get_or_create(name=request.GET["pagetype"], organization_id=request.organization.id)
+        return request.allowable(Layout).with_transformation(Layout.applicable(pagetype.id))
     name = fields.TextField(label=u"名前", validators=[validators.Required()])
     url = fields.TextField(validators=[url_field_validator,  url_not_conflict],label=u"URL", )
 
     pageset = dynamic_query_select_field_factory(PageSet, allow_blank=True, label=u"ページセット",
                                                  get_label=lambda ps: ps.name)
     pagetype = dynamic_query_select_field_factory(PageType, allow_blank=False, label=u"ページタイプ", 
-                                                  get_label=lambda o: o.label)
+                                                  get_label=lambda o: o.label, 
+                                                  dynamic_query=pagetype_filter)
     title = fields.TextField(label=u"ページタイトル", validators=[validators.Required()])
 
     description = fields.TextField(label=u"概要", widget=widgets.TextArea())
@@ -84,7 +91,9 @@ class PageForm(Form):
     tags = fields.TextField(label=u"タグ(区切り文字:\",\")")
     private_tags = fields.TextField(label=u"非公開タグ(区切り文字:\",\")")
     layout = dynamic_query_select_field_factory(Layout, allow_blank=False, 
-                                                get_label=lambda obj: u"%s(%s)" % (obj.title, obj.template_filename))
+                                                get_label=lambda obj: u"%s(%s)" % (obj.title, obj.template_filename), 
+                                                dynamic_query=layout_filter
+                                                )
     # event_id = fields.IntegerField(label=u"", widget=widgets.HiddenInput())
     event = dynamic_query_select_field_factory(Event, allow_blank=True, label=u"イベント", 
                                                get_label=lambda obj:  obj.title)
