@@ -174,7 +174,7 @@ validate_publish_term = TermValidator("publish_open_on", "publish_close_on",  u"
 class TopicForm(Form):
     title = fields.TextField(label=u"タイトル", validators=[required_field()])
     tag_content = fields.SelectField(label=u"種別", choices=[]) #@todo rename
-    genre = fields.SelectMultipleField(label=u"ジャンル(todo:fixme)", coerce=unicode)
+    genre = fields.SelectMultipleField(label=u"ジャンル", coerce=unicode)
     text = fields.TextField(label=u"内容", validators=[required_field()], widget=widgets.TextArea())
     publish_open_on = fields.DateTimeField(label=u"公開開始日", validators=[required_field()])
     publish_close_on = fields.DateTimeField(label=u"公開終了日", validators=[validators.Optional()])
@@ -207,7 +207,7 @@ class TopcontentForm(Form):
     title = fields.TextField(label=u"タイトル", validators=[required_field()])
     # tag_content = fields.TextField(label=u"種別(, 区切り)") #@todo rename
     tag_content = fields.SelectField(label=u"種別", choices=[]) #@todo rename
-    genre = fields.SelectMultipleField(label=u"ジャンル(todo:fixme)", coerce=unicode)
+    genre = fields.SelectMultipleField(label=u"ジャンル", coerce=unicode)
     countdown_type = fields.SelectField(label=u"カウントダウンの種別", choices=Topcontent.COUNTDOWN_CANDIDATES)    
     text = fields.TextField(label=u"内容", validators=[required_field()], widget=widgets.TextArea())
     image_asset = dynamic_query_select_field_factory(ImageAsset,label=u"画像", allow_blank=True, 
@@ -245,7 +245,7 @@ class TopcontentForm(Form):
 
 class PromotionForm(Form):
     tag_content = fields.SelectField(label=u"表示場所", choices=[]) #@todo rename
-    genre = fields.SelectMultipleField(label=u"ジャンル(todo:fixme)", coerce=unicode)
+    genre = fields.SelectMultipleField(label=u"ジャンル", coerce=unicode)
     main_image = dynamic_query_select_field_factory(
         ImageAsset, allow_blank=False, label=u"メイン画像",
         get_label=lambda obj: obj.title or u"名前なし")

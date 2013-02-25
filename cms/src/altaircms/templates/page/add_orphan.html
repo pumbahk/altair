@@ -54,9 +54,9 @@
 	<form id="submit_form" action="${h.current_route_path_override(request, action="confirm")}" method="POST">
     ## work-around. so-sorry.
     %if request.params.get("pagetype") == "event_detail":
-     ${fco.form_as_table_strict(form, ["parent", "name", "pagetype", "url", "title","event", "publish_begin", "publish_end","description","keywords","tags","private_tags","layout"])}
+     ${fco.form_as_table_strict(form, ["parent", "name", "pagetype", "genre", "url", "title","event", "publish_begin", "publish_end","description","keywords","tags","private_tags","layout"])}
     %else:
-     ${fco.form_as_table_strict(form, ["parent", "name", "pagetype", "url", "title", "publish_begin", "publish_end","description","keywords","tags","private_tags","layout"])}
+     ${fco.form_as_table_strict(form, ["parent", "name", "pagetype", "genre", "url", "title", "publish_begin", "publish_end","description","keywords","tags","private_tags","layout"])}
     %endif
 	  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> Create</button>
     </form>

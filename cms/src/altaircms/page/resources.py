@@ -69,6 +69,8 @@ class PageResource(security.RootFactory):
 
         if form.data["parent"]:
             pageset.parent = form.data["parent"]
+        if form.data["genre"]:
+            pageset.genre = form.data["genre"]
 
         self.add(page, flush=True)
         subscribers.notify_page_create(self.request, page, params)

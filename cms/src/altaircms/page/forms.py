@@ -23,7 +23,7 @@ from altaircms.formhelpers import MaybeDateTimeField
 from pyramid.threadlocal import get_current_request
 logger = logging.getLogger(__name__)
 
-from ..models import Category
+from ..models import Category, Genre
 from .api import get_static_page_utility
 from . import writefile
 
@@ -78,7 +78,8 @@ class PageForm(Form):
         return request.allowable(Layout).with_transformation(Layout.applicable(pagetype.id))
     name = fields.TextField(label=u"名前", validators=[validators.Required()])
     url = fields.TextField(validators=[url_field_validator,  url_not_conflict],label=u"URL", )
-
+    genre = dynamic_query_select_field_factory(Genre, allow_blank=True, label=u"ジャンル", 
+                                               get_label=lambda g: g.label)
     pageset = dynamic_query_select_field_factory(PageSet, allow_blank=True, label=u"ページセット",
                                                  get_label=lambda ps: ps.name)
     pagetype = dynamic_query_select_field_factory(PageType, allow_blank=False, label=u"ページタイプ", 
@@ -98,7 +99,6 @@ class PageForm(Form):
     event = dynamic_query_select_field_factory(Event, allow_blank=True, label=u"イベント", 
                                                get_label=lambda obj:  obj.title)
     parent = dynamic_query_select_field_factory(PageSet, 
-                                                query_factory= lambda : PageSet.query.filter(PageSet.category != None), 
                                                 allow_blank=True, label=u"親ページ", 
                                                 get_label=lambda obj:  u'%s' % obj.name)
 
