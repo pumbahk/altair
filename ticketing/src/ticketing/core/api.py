@@ -1,16 +1,7 @@
-import logging
 from sqlalchemy.orm.exc import NoResultFound
 from .models import Host, OrderNoSequence, ChannelEnum
 
-logger = logging.getLogger(__name__)
-
 def get_organization(request, override_host=None):
-    if hasattr(request, 'organization'):
-        organization_id = request.environ.get('ticketing.cart.organization_id')
-        organization_path = request.environ.get('ticketing.cart.organization_path')
-        logger.debug("organization_id = %s organization_path = %s" % (organization_id, organization_path))
-        return request.organization
-
     reg = request.registry
     host_name = override_host or request.host
     try:
