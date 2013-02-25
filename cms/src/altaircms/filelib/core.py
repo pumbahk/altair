@@ -17,7 +17,7 @@ File = provider(IUploadFile)(namedtuple("File", "name handler"))
 def rename_file(src, dst):
     try:
         shutil.move(src, dst) #for preventing invalid cross-device link.
-    except OSError, e:
+    except (OSError, IOError), e:
         directory = os.path.dirname(dst)
         logger.exception(str(e))
         if not os.path.exists(directory):
@@ -108,7 +108,7 @@ class FileDeleter(object):
             logger.debug("filesession. delete: %s" % (filepath))
             try:
                 os.remove(filepath)
-            except OSError, e:
+            except (OSError, IOError), e:
                 logger.warn("%s is not deleted" % filepath)
                 logger.exception(str(e))
             except Exception, e:
