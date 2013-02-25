@@ -16,8 +16,9 @@ File = provider(IUploadFile)(namedtuple("File", "name handler"))
 def rename_file(src, dst):
     try:
         os.rename(src, dst)
-    except OSError:
+    except OSError, e:
         directory = os.path.dirname(dst)
+        logger.exception(str(e))
         if not os.path.exists(directory):
             logger.info("%s is not found. create it." % directory)
             os.makedirs(directory)
