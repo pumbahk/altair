@@ -41,7 +41,7 @@ class SalesSegments(BaseView):
         else:
             _formdata = MultiDict() if formdata is None else formdata.copy()
             sales_segment_groups = None
-            if performance_id is not None:
+            if performance_id:
                 _formdata['performance_id'] = performance_id
                 sales_segment_groups = Performance.get(performance_id).event.sales_segment_groups
             if sales_segment_group_id:
