@@ -1,5 +1,8 @@
+<%
+from datetime import datetime
+now = datetime.now()
+%>
 <div class="box">
-
   <table class="table">
     <thead>
       <tr>
@@ -44,7 +47,7 @@
         <td>
               <div class="btn-group">
                 <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-                  ${u"公開中" if pages[0].published else u"非公開"}
+                  ${pages[0].publish_status(now)}
                   <span class="caret"></span>
                 </a>
                 <ul class="dropdown-menu">
@@ -73,7 +76,7 @@
           <td>
               <div class="btn-group">
                 <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-                  ${u"公開中" if page.published else u"非公開"}
+                  ${page.publish_status(now)}
                   <span class="caret"></span>
                 </a>
                 <ul class="dropdown-menu">

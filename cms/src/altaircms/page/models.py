@@ -2,6 +2,7 @@
 from sqlalchemy.ext.declarative import declared_attr
 from datetime import datetime
 import sqlalchemy as sa
+from altaircms import helpers as h
 import sqlalchemy.orm as orm
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy import (Column, 
@@ -270,6 +271,19 @@ class Page(BaseOriginalMixin,
             return page
         else:
             return cls(name=name)
+
+    def publish_status(self, dt):
+        if not self.published:
+            return u"非公開(期間:%s)" % h.term_datetime(self.publish_begin, self.publish_end)
+        
+        if self.publish_begin > dt:
+            return u"公開前(%sに公開)" % h.base.jdate_with_hour(self.publish_begin)
+        elif self.publish_end is None:
+            return u"公開中"
+        elif self.publish_end < dt:
+            return u"公開終了(%sに終了)"% h.base.jdate_with_hour(self.publish_end)
+        else:
+            return u"公開中(期間:%s)" % h.term_datetime(self.publish_begin, self.publish_end)
 
     ### page access
     def publish(self):

@@ -94,7 +94,7 @@ class AccessControl(object):
         self.access_ok = True
         return self._check_page_is_accessable(page, access_key)
 
-    def fetch_page_from_pagesetid(self, pageset_id):
+    def fetch_page_from_pagesetid(self, pageset_id, published=True):
         ## pagesetはクライアントから確認しない。allowableが正しい。
         pageset = self.request.allowable(PageSet).filter_by(id=pageset_id).first()
         self.access_ok = True
@@ -104,7 +104,7 @@ class AccessControl(object):
             self.access_ok = False
             return pageset
 
-        page = pageset.current()
+        page = pageset.current(published=published)
 
         if page is None:
             self.access_ok = False

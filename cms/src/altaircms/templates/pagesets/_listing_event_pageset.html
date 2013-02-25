@@ -1,8 +1,12 @@
+<%
+from datetime import datetime
+now = datetime.now()
+%>
 <div class="box">
   <table class="table table-describe">
     <thead>
       <tr>
-		<th></th>
+		<th width="10px"></th>
 		<th>ページセット</th>
 		<th>ページ</th>
 		<th>表示状況</th>
@@ -24,7 +28,7 @@
         </td>
         <td rowspan="${pagesize}">
           <a href="${h.link.pageset_detail(request,pageset)}">${pageset.name}</a>
-          <a class="action" target="_blank" href="${request.route_path("preview_pageset", pageset_id=pageset.id)}">
+          <a class="action"  href="${request.route_path("preview_pageset", pageset_id=pageset.id)}">
             <i class="icon-eye-open"> </i></a>
          </a>
         </td>
@@ -34,16 +38,16 @@
         %else:
         <td>
           <a href="${request.route_path('page_detail', page_id=pages[0].id)}">${pages[0].name}(id=${pages[0].id})</a>
-          <a class="action" target="_blank" href="${request.route_path("preview_page", page_id=pages[0].id)}">
+          <a class="action"  href="${request.route_path("preview_page", page_id=pages[0].id)}">
             <i class="icon-eye-open"> </i></a>
-          <a class="action" target="_blank" href="${request.route_path("page_edit_", page_id=pages[0].id)}">
+          <a class="action"  href="${request.route_path("page_edit_", page_id=pages[0].id)}">
             <i class="icon-edit"> </i></a>
           ${u'<span class="label">現在表示</span>' if pages[0]==current_page else u""|n}
         </td>
         <td>
               <div class="btn-group">
                 <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-                  ${u"公開中" if pages[0].published else u"非公開"}
+                  ${pages[0].publish_status(now)}
                   <span class="caret"></span>
                 </a>
                 <ul class="dropdown-menu">
@@ -62,9 +66,9 @@
         <tr>
           <td>
             <a href="${request.route_path('page_detail', page_id=page.id)}">${page.name}(id=${page.id})</a>
-            <a class="action" target="_blank" href="${request.route_path("preview_page", page_id=page.id)}">
+            <a class="action"  href="${request.route_path("preview_page", page_id=page.id)}">
               <i class="icon-eye-open"> </i></a>
-            <a class="action" target="_blank" href="${request.route_path("page_edit_", page_id=page.id)}">
+            <a class="action"  href="${request.route_path("page_edit_", page_id=page.id)}">
               <i class="icon-edit"> </i></a>
 
             ${u'<span class="label">現在表示</span>' if page==current_page else u""|n}
@@ -72,7 +76,7 @@
           <td>
               <div class="btn-group">
                 <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-                  ${u"公開中" if page.published else u"非公開"}
+                  ${page.publish_status(now)}
                   <span class="caret"></span>
                 </a>
                 <ul class="dropdown-menu">
