@@ -107,7 +107,8 @@ class OAuthLogin(object):
 
             data = json.loads(self._urllib2.urlopen(url).read())
             logger.info("*login* access token return: %s" % data)
-
+            if not data:
+                raise Exception("access token not returned")
             api.notify_after_oauth_login(self.request, data)
 
         except IOError, e:
