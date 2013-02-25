@@ -6,6 +6,7 @@ logger = logging.getLogger(__name__)
 from zope.interface import implementer, provider
 from altaircms.filelib.interfaces import IUploadFile, IFileSession
 
+import shutil
 from shutil import copyfileobj
 
 
@@ -15,14 +16,14 @@ File = provider(IUploadFile)(namedtuple("File", "name handler"))
 
 def rename_file(src, dst):
     try:
-        os.rename(src, dst)
+        shutil.move(src, dst) #for preventing invalid cross-device link.
     except OSError, e:
         directory = os.path.dirname(dst)
         logger.exception(str(e))
         if not os.path.exists(directory):
             logger.info("%s is not found. create it." % directory)
             os.makedirs(directory)
-            os.rename(src, dst)
+            shutil.move(src, dst)
 
 def on_file_exists_try_rename(target, realpath, retry):
     old_one_destination = tempfile.mktemp()
