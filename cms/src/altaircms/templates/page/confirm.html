@@ -32,7 +32,7 @@
     <tr><th>${getattr(form,"pagetype").label.text}</th><td>${form.data["pagetype"].name}</td></tr>
     <tr><th>${getattr(form,"layout").label.text}</th><td>${form.data["layout"].title} (${form.data["layout"].template_filename})</td></tr>
     %if form.data["parent"]:
-      <tr><th>${getattr(form,"parent").label.text}</th><td>${form.data["parent"].title}</td></tr>
+      <tr><th>${getattr(form,"parent").label.text}</th><td>${form.data["parent"].name}</td></tr>
     %endif
     %if form.data["event"]:
       <tr><th>${getattr(form,"event").label.text}</th><td>${form.data["event"].title}</td></tr>
