@@ -1,6 +1,6 @@
 <h3 id="performance">${page_title}(${event.title})</h3>
 %if not current_performance:
-   ${panel("model_create_only_buttons", modeljname=u"パフォーマンス", modelname="performance", _query=dict(event_id=current_event.id,event=current_event.id))}
+   ${panel("model_create_only_buttons", modeljname=u"パフォーマンス", modelname="performance", _query=dict(event_id=event.id,event=event.id))}
 %else:
   <%
   from altaircms.helpers.event import performance_name
