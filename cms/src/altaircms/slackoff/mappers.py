@@ -117,3 +117,10 @@ def pagedefaultinfo_mapper(request, obj):
 def pagetype_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
     return objlike
+
+def pageset_mapper(request, obj):
+    objlike = ObjectLike(**model_to_dict(obj))
+    objlike.genre_id =  label_from_genre(obj.genre_id)
+    objlike.tags_string = obj.tags_string
+    objlike.private_tags_string = obj.private_tags_string
+    return objlike

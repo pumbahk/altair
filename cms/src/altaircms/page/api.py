@@ -143,7 +143,6 @@ def doc_from_page(page):
     _doc_from_page(doc, page)
     return doc
 
-
 def ftsearch_register_from_page(request, page, ftsearch=None):
     ftsearch = ftsearch or solr.get_fulltext_search(request)
     doc = doc_from_page(page)

@@ -74,7 +74,12 @@ def includeme(config):
     config.add_crud("pagetype", title="pagetype", model="..page.models.PageType",
                     has_auto_generated_permission=False, 
                     form=".forms.PageTypeForm", mapper=".mappers.pagetype_mapper")
-
+    config.add_crud("pageset", title="pageset", model="..page.models.PageSet",
+                    bind_actions=["update"], 
+                    has_auto_generated_permission=False, 
+                    events=dict(update_event=config.maybe_dotted(".subscribers.PageSetUpdate")), 
+                    form=".forms.PageSetForm", mapper=".mappers.pageset_mapper")
+    config.add_subscriber(".subscribers.update_pageset", ".subscribers.PageSetUpdate")
 
 """
 memo:

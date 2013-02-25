@@ -40,7 +40,7 @@ def includeme(config):
     config.add_route('pageset', '/pagesets/{pageset_id}')
     add_route("pageset_detail", "/pagesets/{pageset_id}/detail/{kind}")
     add_route('pageset_delete', '/pagesets/{pageset_id}/delete')
-    config.add_route('pageset_update', '/pagesets/{pageset_id}/update')
+    config.add_route('pageset_update_term', '/pagesets/{pageset_id}/update_term')
 
     ## Static page
     config.add_route("static_page", "/page/static/{static_page_id}/{action}", 

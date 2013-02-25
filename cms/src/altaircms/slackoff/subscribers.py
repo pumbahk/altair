@@ -2,6 +2,7 @@
 
 from zope.interface import implementer
 from altaircms.interfaces import IModelEvent
+from altaircms.page.api import ftsearch_register_from_page
 
 def notify_topic_create(request, topic, params=None):
     registry = request.registry
@@ -37,6 +38,13 @@ class TopicDelete(object):
         self.obj = obj
         self.params = params
 
+@implementer(IModelEvent)
+class PageSetUpdate(object):
+    def __init__(self, request, obj, params=None):
+        self.request = request
+        self.obj = obj
+        self.params = params
+
 ## need async
 ##
 from altaircms.tag.api import put_tags, tags_from_string, put_system_tags
@@ -60,3 +68,15 @@ def update_kind(self):
         genres = Genre.query.filter(Genre.id.in_(self.params["genre"])).all()
         system_tag_labels = _tag_labels_from_genres(genres)
         put_system_tags(self.obj, obj_type, system_tag_labels, self.request)
+
+def update_pageset(self):
+    tags = tags_from_string(self.params["tags_string"])
+    private_tags = tags_from_string(self.params["private_tags_string"])
+    obj_type = "page"
+    put_tags(self.obj, obj_type, tags, private_tags, self.request)
+    ftsearch_register_from_page(self.request, self.obj.pages[0])
+    if self.params.get("genre_id"):
+        genres = Genre.query.filter(Genre.id == self.params["genre_id"]).all()
+        system_tag_labels = _tag_labels_from_genres(genres)
+        put_system_tags(self.obj, obj_type, system_tag_labels, self.request)
+    
