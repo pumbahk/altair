@@ -5,8 +5,9 @@ def includeme(config):
                     form=".forms.LayoutCreateForm", mapper=".mappers.layout_mapper")
     config.add_crud("performance", title="performance", model="..models.Performance",
                     bind_actions=["create", "delete", "update"], 
+                    events=dict(create_event=config.maybe_dotted(".subscribers.PerformanceCreate")), 
                     form=".forms.PerformanceForm", mapper=".mappers.performance_mapper")
-
+    config.add_subscriber(".subscribers.create_salessegment_group", ".subscribers.PerformanceCreate")    
     config.add_view(".views.performance_detail", match_param="action=detail", permission="performance_update", 
                     route_name="performance_update", 
                     decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", 

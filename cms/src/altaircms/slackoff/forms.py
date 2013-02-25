@@ -138,7 +138,9 @@ class SalesSegmentForm(Form):
     performance = dynamic_query_select_field_factory(Performance,
                                                      dynamic_query=lambda model, request, query: query.filter_by(id=request.params["performance_id"]), 
                                                      allow_blank=False, label=u"パフォーマンス", get_label=lambda obj: performance_name(obj))
-    group = dynamic_query_select_field_factory(SalesSegmentGroup, allow_blank=False, label=u"販売区分名", get_label=lambda obj: obj.name)
+    group = dynamic_query_select_field_factory(SalesSegmentGroup, 
+                                               dynamic_query=lambda model, request, query: query.filter(SalesSegmentGroup.event_id==Performance.event_id, Performance.id==request.params["performance_id"]), 
+                                               allow_blank=False, label=u"販売区分名", get_label=lambda obj: obj.name)
     start_on = fields.DateTimeField(label=u"開始時間",validators=[])
     end_on = fields.DateTimeField(label=u"終了時間(省略可)",validators=[validators.Optional()])
        

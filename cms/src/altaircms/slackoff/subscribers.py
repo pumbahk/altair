@@ -3,6 +3,7 @@
 from zope.interface import implementer
 from altaircms.interfaces import IModelEvent
 from altaircms.page.api import ftsearch_register_from_page
+from altaircms.models import SalesSegmentGroup, DBSession
 
 def notify_topic_create(request, topic, params=None):
     registry = request.registry
@@ -45,6 +46,13 @@ class PageSetUpdate(object):
         self.obj = obj
         self.params = params
 
+@implementer(IModelEvent)
+class PerformanceCreate(object):
+    def __init__(self, request, obj, params=None):
+        self.request = request
+        self.obj = obj
+        self.params = params
+
 ## need async
 ##
 from altaircms.tag.api import put_tags, tags_from_string, put_system_tags
@@ -79,4 +87,9 @@ def update_pageset(self):
         genres = Genre.query.filter(Genre.id == self.params["genre_id"]).all()
         system_tag_labels = _tag_labels_from_genres(genres)
         put_system_tags(self.obj, obj_type, system_tag_labels, self.request)
-    
+
+def create_salessegment_group(self)    :
+    event = self.params["event"]
+    if not event.salessegment_groups:
+        DBSession.add_all(SalesSegmentGroup.create_defaults_from_event(event))
+        

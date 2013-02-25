@@ -138,6 +138,16 @@ class SalesSegmentGroup(BaseOriginalMixin, Base):
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
 
+    @classmethod
+    def create_defaults_from_event(cls, event):
+        return [cls(event=event, 
+                    name=u"一般販売", 
+                    kind="一般販売"), 
+                cls(event=event, 
+                    name=u"一般先行", 
+                    kind="一般先行"), 
+                ]
+
 class SalesSegment(BaseOriginalMixin, Base):
     """ 販売区分
     """
