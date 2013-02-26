@@ -146,7 +146,7 @@ class IndexView(IndexViewMixin):
     def __call__(self):
         self.check_redirect(mobile=False)
         event = self.request.context.event
-        sales_segments = api.get_available_sales_segments(self.context.event, datetime.now())
+        sales_segments = api.get_available_sales_segments(self.request, self.context.event, datetime.now())
         if not sales_segments:
             # 次の販売区分があるなら
             next = self.context.get_next_sales_segment()
@@ -1004,7 +1004,7 @@ class MobileIndexView(IndexViewMixin):
     def __call__(self):
         self.check_redirect(mobile=True)
         venue_name = self.request.params.get('v')
-        sales_segments = api.get_available_sales_segments(self.context.event, datetime.now())
+        sales_segments = api.get_available_sales_segments(self.request, self.context.event, datetime.now())
         # パフォーマンスIDが確定しているなら商品選択へリダイレクト
         performance_id = self.request.params.get('pid') or self.request.params.get('performance')
         if performance_id:

@@ -370,8 +370,12 @@ def update_order_session(request, **kw):
     return request.session['order']
 
 
-def get_available_sales_segments(event, selected_date):
-    ss = SalesSegment.query.filter(
+def get_available_sales_segments(request, event, selected_date):
+    from ticketing.rakuten_auth.api import authenticated_user
+    user = authenticated_user(request)
+
+
+    q = SalesSegment.query.filter(
             SalesSegment.performance_id==Performance.id
         ).filter(
             Performance.event_id==event.id
@@ -381,7 +385,30 @@ def get_available_sales_segments(event, selected_date):
             SalesSegment.start_at<=selected_date
         ).filter(
             SalesSegment.end_at >= selected_date
-        ).all()
+        ).filter(
+            SalesSegmentGroup.id==SalesSegment.sales_segment_group_id
+        )
+
+    if user and user.get('is_guest'):
+        q = q.filter(
+            SalesSegmentGroup.id==MemberGroup_SalesSegment.c.sales_segment_group_id
+        ).filter(
+            MemberGroup_SalesSegment.c.membergroup_id==MemberGroup.id
+        ).filter(
+            MemberGroup.is_guest==True
+        )
+
+
+    elif user and 'membership' in user:
+        q = q.filter(
+            SalesSegmentGroup.id==MemberGroup_SalesSegment.c.sales_segment_group_id
+        ).filter(
+            MemberGroup_SalesSegment.c.membergroup_id==MemberGroup.id
+        ).filter(
+            MemberGroup.name==user['membergroup']
+        )
+
+    ss = q.all()
     ss = [s for s in ss 
           if s.available_payment_delivery_method_pairs]
 
