@@ -2106,10 +2106,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 re.title = self.performance.name
                 re.event_at = self.performance.start_on.strftime('%Y%m%d')
                 re.start_at = datetime.now().strftime('%Y%m%d')
-                end_at = self.performance.end_on + timedelta(days=+14)
+                end_at = (self.performance.end_on or self.performance.start_on) + timedelta(days=+14)
                 re.end_at = end_at.strftime('%Y%m%d')
                 re.event_expire_at = end_at.strftime('%Y%m%d')
-                ticket_expire_at = self.performance.end_on + timedelta(days=+30)
+                ticket_expire_at = (self.performance.end_on or self.performance.start_on) + timedelta(days=+30)
                 re.ticket_expire_at = ticket_expire_at.strftime('%Y%m%d')
                 re.refund_enabled = 1
                 re.need_stub = 1
