@@ -14,7 +14,7 @@ WHERE ssg.id NOT IN (SELECT id FROM SalesSegment);
 
 -- 販売区分の終了日時がパフォーマンスの終了日時よりも前である場合はそれを修正する
 UPDATE SalesSegment, Performance SET SalesSegment.end_at=Performance.end_on
-WHERE SalesSegment.performance_id=Performance.id AND Performance.end_on < SaleSegment.end_at;
+WHERE SalesSegment.performance_id=Performance.id AND Performance.end_on < SalesSegment.end_at;
 
 -- 当日券用の販売区分の日時を修正する (on-the-day 対応)
 UPDATE SalesSegment, Performance, SalesSegmentGroup SET SalesSegment.start_at=DATE(Performance.start_on), SalesSegment.end_at=IF(Performance.end_on IS NOT NULL, Performance.end_on, (DATE(Performance.start_on)+INTERVAL 1 DAY-INTERVAL 1 SECOND))
