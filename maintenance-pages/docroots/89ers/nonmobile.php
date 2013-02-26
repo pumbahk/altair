@@ -33,7 +33,7 @@
       </ul>
     </div>
     <div class="copyright">
-      Copyright © 2010-2012 TicketStar Inc. All Rights Reserved. 
+      Copyright © 2010-2013 TicketStar Inc. All Rights Reserved. 
     </div>
   </div>
 </body>
