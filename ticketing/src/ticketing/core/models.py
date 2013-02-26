@@ -1052,6 +1052,10 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     delivery_method_id = Column(Identifier, ForeignKey('DeliveryMethod.id'))
     delivery_method = relationship('DeliveryMethod', backref='payment_delivery_method_pairs')
 
+    def is_available_for(self, performance, on_day):
+        border = performance.start_on - timedelta(days=self.unavailable_period_days)
+        return self.public and (on_day <= border)
+
     @staticmethod
     def create_from_template(template, **kwargs):
         pdmp = PaymentDeliveryMethodPair.clone(template)
@@ -2848,6 +2852,15 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     payment_delivery_method_pairs = relationship("PaymentDeliveryMethodPair",
         secondary="SalesSegment_PaymentDeliveryMethodPair",
         backref="sales_segments")
+
+
+    @property
+    def available_payment_delivery_method_pairs(self):
+        now = datetime.now()
+        return [pdmp 
+                for pdmp 
+                in self.payment_delivery_method_pairs
+                if pdmp.is_available_for(self.performance, now)]
 
     @hybrid_property
     def name(self):
