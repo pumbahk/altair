@@ -14,7 +14,7 @@ from pyramid.security import Everyone, Authenticated
 from pyramid.security import Allow
 from pyramid.decorator import reify
 from sqlalchemy.orm.exc import NoResultFound
-
+from sqlalchemy.orm import joinedload
 from zope.interface import implementer
 from .interfaces import ICartPayment, ICartDelivery
 from ticketing.payments.interfaces import IOrderPayment, IOrderDelivery 
@@ -188,15 +188,18 @@ class TicketingCartResource(object):
 
         now = datetime.now()
         q = c_models.SalesSegment.query
+        q = q.options(joinedload('sales_segment_group'))  # need display sales_segment.name at out of transaction
         q = q.filter(c_models.SalesSegment.public==1)
-        q = q.filter(c_models.SalesSegmentGroup.event_id==self.event_id)
-        q = q.filter(c_models.SalesSegment.sales_segment_group_id==c_models.SalesSegmentGroup.id)
+        q = q.filter(c_models.Performance.event_id==self.event_id)
+        q = q.filter(c_models.Performance.id==c_models.SalesSegment.performance_id)
         q = q.filter(c_models.SalesSegment.start_at>=now)
 
         user = self.authenticated_user()
         if user and user.get('is_guest'):
             q = q.filter(
-                c_models.SalesSegment.id==u_models.MemberGroup_SalesSegment.c.sales_segment_group_id
+                c_models.SalesSegment.sales_segment_group_id==c_models.SalesSegmentGroup.id
+            ).filter(
+                c_models.SalesSegmentGroup.id==u_models.MemberGroup_SalesSegment.c.sales_segment_group_id
             ).filter(
                 u_models.MemberGroup_SalesSegment.c.membergroup_id==u_models.MemberGroup.id
             ).filter(
@@ -205,15 +208,17 @@ class TicketingCartResource(object):
 
         elif user and 'membership' in user:
             q = q.filter(
-                c_models.SalesSegment.id==u_models.MemberGroup_SalesSegment.c.sales_segment_group_id
+                c_models.SalesSegment.sales_segment_group_id==c_models.SalesSegmentGroup.id
+            ).filter(
+                c_models.SalesSegmentGroup.id==u_models.MemberGroup_SalesSegment.c.sales_segment_group_id
             ).filter(
                 u_models.MemberGroup_SalesSegment.c.membergroup_id==u_models.MemberGroup.id
             ).filter(
                 u_models.MemberGroup.name==user['membergroup']
             )
 
+        q = q.order_by('SalesSegment.start_at')
         sales_segment = q.first()
-
 
         return sales_segment
 
