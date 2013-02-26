@@ -139,9 +139,14 @@ class SalesSegmentGroups(BaseView):
             f.id.data = id_map[sales_segment_group_id]
             new_sales_segment_group = merge_session_with_post(SalesSegmentGroup.get(f.id.data), f.data)
             new_sales_segment_group.save()
-            if f.copy_products.data:
-                for product in sales_segment_group.product:
-                    Product.create_from_template(template=product, with_product_items=True, stock_holder_id=f.copy_to_stock_holder.data, sales_segment_group=id_map)
+            new_sales_segment_group.sales_segments = []
+            for ss in sales_segment_group.sales_segments:
+                new_ss = SalesSegment.clone(ss)
+                new_ss.save()
+                new_sales_segment_group.sales_segments.append(new_ss)
+                if bool(f.copy_products.data):
+                    for product in ss.products:
+                        Product.create_from_template(template=product, with_product_items=True, stock_holder_id=f.copy_to_stock_holder.data, sales_segment={ss.id:new_ss.id})
         else:
             sales_segment_group = merge_session_with_post(sales_segment_group, f.data)
             sales_segment_group.save()
