@@ -6,7 +6,8 @@ from wtforms.validators import Regexp, Length, Optional, ValidationError
 from wtforms.widgets import CheckboxInput
 
 from ticketing.formhelpers import OurDateTimeField, Translations, Required, RequiredOnUpdate, OurForm, OurIntegerField, OurBooleanField, BugFreeSelectField, BugFreeSelectMultipleField
-from ticketing.core.models import SalesSegmentGroup, SalesSegmentKindEnum, Event, StockHolder
+from ticketing.core.models import SalesSegmentGroup, SalesSegmentKindEnum, Event, StockHolder, SalesSegment
+from sqlalchemy.sql import or_, and_
 
 class SalesSegmentForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
@@ -103,3 +104,27 @@ class SalesSegmentForm(OurForm):
     def validate_end_at(form, field):
         if field.data is not None and field.data < form.start_at.data:
             raise ValidationError(u'開演日時より過去の日時は入力できません')
+
+    def validate(self):
+        if super(SalesSegmentForm, self).validate():
+
+            # 同一公演の期限かぶりをチェックする
+            start_at = self.start_at.data
+            end_at = self.end_at.data
+
+            q = SalesSegment.query.filter(
+                SalesSegment.performance_id==self.performance_id.data
+            ).filter(
+                or_(and_(start_at<=SalesSegment.start_at,
+                         SalesSegment.start_at<=end_at),
+                    and_(start_at<=SalesSegment.end_at,
+                         SalesSegment.end_at<=end_at))
+            )
+
+            dup = q.first()
+            if dup:
+                self.start_at.errors.append(u'同一公演について期間がかぶっています。')
+
+                return False
+
+            return True
