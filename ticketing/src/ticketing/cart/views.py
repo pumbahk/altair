@@ -1041,10 +1041,11 @@ class MobileIndexView(IndexViewMixin):
         #         if x.get('on_the_day') else u"{start:%Y-%m-%d %H:%M} {vname}".format(**x)) 
         #         for x in api.performance_venue_by_name(self.request, self.context.event, self.context.normal_sales_segment, performance_name)]
         if performance_name:
-            venues = [(ss.performance.id, 
-                       u"{start:%Y-%m-%d %H:%M} {vname}".format(start=ss.performance.start_on,
-                                                              vname=ss.performance.venue.name) )
-                      for ss in sales_segments]
+            performances = sorted(list(set([ss.performance for ss in sales_segments])),key=lambda p: p.start_on)
+            venues = [(performance.id, 
+                       u"{start:%Y-%m-%d %H:%M} {vname}".format(start=performance.start_on,
+                                                                vname=performance.venue.name) )
+                      for performance in performances]
 
         return dict(
             event=self.context.event,
