@@ -80,7 +80,7 @@
     urls=[
       request.route_path('events.index'),
       request.route_path('events.show', event_id=sales_segment_group.event.id),
-      request.route_path('sales_segment_groups.index', event_id=sales_segment_group.id),
+      request.route_path('sales_segment_groups.index', event_id=sales_segment_group.event.id),
     ]
   )}
 </div>
