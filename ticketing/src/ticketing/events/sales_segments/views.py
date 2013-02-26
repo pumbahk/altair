@@ -113,9 +113,7 @@ class SalesSegments(BaseView):
             if f.end_at.data is None:
                 f.end_at.data = datetime.now()
             sales_segment = merge_session_with_post(SalesSegment(), f.data)
-            pdmp_ids = self.request.params.getall('payment_delivery_method_pairs[]')
-
-            pdmps = PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id.in_(pdmp_ids)).filter(PaymentDeliveryMethodPair.sales_segment_group_id==sales_segment.sales_segment_group_id).all()
+            pdmps = PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id.in_(f.payment_delivery_method_pairs.data)).filter(PaymentDeliveryMethodPair.sales_segment_group_id==sales_segment.sales_segment_group_id).all()
             sales_segment.payment_delivery_method_pairs = pdmps
             sales_segment.save()
 

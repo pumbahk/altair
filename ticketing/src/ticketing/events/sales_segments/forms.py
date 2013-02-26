@@ -5,7 +5,7 @@ from wtforms import TextField, SelectField, HiddenField, IntegerField, BooleanFi
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 from wtforms.widgets import CheckboxInput
 
-from ticketing.formhelpers import OurDateTimeField, Translations, Required, RequiredOnUpdate, OurForm, OurIntegerField, OurBooleanField, BugFreeSelectField, BugFreeSelectMultipleField
+from ticketing.formhelpers import OurDateTimeField, Translations, Required, RequiredOnUpdate, OurForm, OurIntegerField, OurBooleanField, BugFreeSelectField, PHPCompatibleSelectMultipleField
 from ticketing.core.models import SalesSegmentGroup, SalesSegmentKindEnum, Event, StockHolder, SalesSegment
 from sqlalchemy.sql import or_, and_
 
@@ -75,9 +75,9 @@ class SalesSegmentForm(OurForm):
         default=True,
         widget=CheckboxInput()
     )
-    payment_delivery_method_pairs = BugFreeSelectMultipleField(
+    payment_delivery_method_pairs = PHPCompatibleSelectMultipleField(
         label=u'決済・引取方法',
-        validators=[Optional()],
+        validators=[Required()],
         choices=[],
         coerce=lambda x : int(x) if x else u'',
     )
