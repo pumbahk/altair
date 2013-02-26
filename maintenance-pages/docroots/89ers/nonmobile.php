@@ -13,7 +13,7 @@
     <div class="header">
       <img src="assets/head_title.png" alt="仙台89ERS" width="780" height="135">
     </div>
-    <h1 class="title">仙台89ERS ナイナーズチケット</h1>
+    <h1 class="title">仙台89ERS</h1>
     <table class="layout" style="width:760px">
       <tbody>
         <tr>

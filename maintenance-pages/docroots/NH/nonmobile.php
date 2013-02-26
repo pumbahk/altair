@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html lang="en"><head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <title>秋田ノーザンハピネッツ 購入確認ページ</title>
+  <title>秋田ノーザンハピネッツ -  ハピネッツチケット</title>
   <link rel="stylesheet" type="text/css" href="assets/style.css" media="all">
   <script language="JavaScript" src="assets/jquery.js"></script>
 </head>
@@ -10,7 +10,7 @@
     <div class="header">
       <img src="assets/head_title.png" alt="秋田ノーザンハピネッツ" height="190" width="780">
     </div>
-    <h1 class="title">秋田ノーザンハピネッツ 購入確認ページ</h1>
+    <h1 class="title">秋田ノーザンハピネッツ</h1>
 	<table class="layout" style="width:760px">
       <tbody>
         <tr>
