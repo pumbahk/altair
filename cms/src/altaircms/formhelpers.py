@@ -116,8 +116,13 @@ class IModelQueryFilter(Interface):
         pass
 
 @provider(IModelQueryFilter)
-def model_query_filter_default(model, request, query):
+def allowable_model_query(model, request, query):
     return request.allowable(model, qs=query)
+
+def compose_dynamic_query(g, f):
+    def wrapped(model, request, query):
+        return g(model, request, f(model, request, query))
+    return wrapped
 
 def dynamic_query_select_field_factory(model, dynamic_query=None, name=None, **kwargs):
     """
@@ -144,11 +149,9 @@ def dynamic_query_select_field_factory(model, dynamic_query=None, name=None, **k
             query = field.query_factory()
 
         if dynamic_query:
-            query_filter = dynamic_query
+            query_filter = compose_dynamic_query(dynamic_query, allowable_model_query)
         else:
-            query_filter = request.registry.queryUtility(IModelQueryFilter,
-                                                         name, 
-                                                     model_query_filter_default)
+            query_filter = allowable_model_query
         field.query = query_filter(model, request, query)
     field._dynamic_query = dynamic_query_filter
     return field
