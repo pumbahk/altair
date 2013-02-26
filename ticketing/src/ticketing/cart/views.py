@@ -123,14 +123,6 @@ class IndexViewMixin(object):
         self.event_extra_info = get_event_info_from_cms(self.request, self.context.event_id)
         logger.info(self.event_extra_info)
 
-        # if self.context.normal_sales_segment is None:
-        #     next_sales_segment = self.context.get_next_sales_segment()
-        #     if next_sales_segment:
-        #         raise OutTermSalesException(self.context.event, next_sales_segment)
-        #     else:
-        #         logger.debug("No matching sales_segment")
-        #         raise NoSalesSegment("No matching sales_segment")
-
     def check_redirect(self, mobile):
         performance_id = self.request.params.get('pid') or self.request.params.get('performance')
 
@@ -685,33 +677,33 @@ class ReserveView(object):
         )
         return HTTPFound(self.request.route_url('cart.order', sales_segment_group_id=sales_segment.id, _query=query))
 
-    def __call__(self):
-        """
-        TODO: 使われていない？
-        座席情報から座席グループを検索する
-        """
-        sales_segment = self.context.get_sales_segument()
+    # def __call__(self):
+    #     """
+    #     TODO: 使われていない？
+    #     座席情報から座席グループを検索する
+    #     """
+    #     sales_segment = self.context.get_sales_segument()
 
-        #seat_type_id = self.request.matchdict['seat_type_id']
-        cart = self.context.order_products(self.request.params['performance_id'], self.ordered_items)
-        if cart is None:
-            return dict(result='NG')
-        api.set_cart(self.request, cart)
-        #self.request.session['ticketing.cart_id'] = cart.id
-        #self.cart = cart
-        return dict(result='OK', 
-                    payment_url=self.request.route_url("cart.payment", sales_segment_id=sales_segment.id),
-                    cart=dict(products=[dict(name=p.product.name, 
-                                             quantity=p.quantity,
-                                             price=int(p.product.price),
-                                        ) 
-                                        for p in cart.products],
-                              total_amount=h.format_number(cart.tickets_amount),
-                    ))
+    #     #seat_type_id = self.request.matchdict['seat_type_id']
+    #     cart = self.context.order_products(self.request.params['performance_id'], self.ordered_items)
+    #     if cart is None:
+    #         return dict(result='NG')
+    #     api.set_cart(self.request, cart)
+    #     #self.request.session['ticketing.cart_id'] = cart.id
+    #     #self.cart = cart
+    #     return dict(result='OK', 
+    #                 payment_url=self.request.route_url("cart.payment", sales_segment_id=sales_segment.id),
+    #                 cart=dict(products=[dict(name=p.product.name, 
+    #                                          quantity=p.quantity,
+    #                                          price=int(p.product.price),
+    #                                     ) 
+    #                                     for p in cart.products],
+    #                           total_amount=h.format_number(cart.tickets_amount),
+    #                 ))
 
-    def on_error(self):
-        """ 座席確保できなかった場合
-        """
+    # def on_error(self):
+    #     """ 座席確保できなかった場合
+    #     """
 
 @view_defaults(decorator=with_jquery.not_when(mobile_request))
 class ReleaseCartView(object):
