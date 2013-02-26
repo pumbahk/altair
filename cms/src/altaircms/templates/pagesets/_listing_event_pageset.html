@@ -6,8 +6,9 @@ now = datetime.now()
   <table class="table table-describe">
     <thead>
       <tr>
-		<th width="10px"></th>
+		<th width="20px"></th>
 		<th>ページセット</th>
+		<th>URL</th>
 		<th>ページ</th>
 		<th>表示状況</th>
 		<th>公開開始</th>
@@ -32,6 +33,7 @@ now = datetime.now()
             <i class="icon-eye-open"> </i></a>
          </a>
         </td>
+      <td rowspan="${pagesize}">${pageset.url}</td>
 
         %if len(pages) < 1:
       </tr>

@@ -59,7 +59,7 @@ class PageAddView(object):
         event_id = self.request.matchdict["event_id"]
         event = self.request._event = get_or_404(self.request.allowable(Event), (Event.id==event_id))
         self.request._form = forms.PageForm(event=event)
-        self.request._setup_form = forms.PageInfoSetupForm(name=event.title)
+        self.request._setup_form = forms.PageInfoSetupWithEventForm(name=event.title, event=event)
         raise AfterInput
     @view_config(route_name="page_add_orphan", request_param="pagetype=event_detail", request_method="GET", match_param="action=input", permission="page_create")
     def input_form_orphan_with_event(self):
@@ -71,13 +71,12 @@ class PageAddView(object):
     @view_config(route_name="page_add_orphan", request_param="pagetype", request_method="GET", match_param="action=input", permission="page_create")
     def input_form(self):
         set_endpoint(self.request)
-        raise Exception
         self.request._form = forms.PageForm()
         self.request._setup_form = forms.PageInfoSetupForm()
         raise AfterInput
         
     @view_config(route_name="page_add", context=AfterInput, decorator=with_bootstrap.merge(with_jquery), 
-                 renderer="altaircms:templates/page/add.html")
+                 renderer="altaircms:templates/page/add_orphan.html")
     def after_input_with_event(self):
         request = self.request
         return {"event": request._event, 

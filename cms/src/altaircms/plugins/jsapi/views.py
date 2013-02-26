@@ -14,6 +14,7 @@ from altaircms.page.models import PageType
 from altaircms.page.models import PageDefaultInfo
 from altaircms.page.models import PageAccesskey
 from altaircms.page import subscribers as page_subscribers
+from altaircms.page.nameresolver import GetPageInfoException
 from altaircms.auth.api import require_login
 from altaircms.auth.api import get_or_404
 from altaircms.event.models import Event
@@ -124,25 +125,35 @@ def page_setup_info(request):
     try:
         params = request.params
         pagetype = PageType.query.filter_by(id=params["pagetype"]).one()
-        pdi = PageDefaultInfo.query.filter(PageDefaultInfo.pageset_id==params["pagetype"]).one()
-        genre = Genre.query.filter_by(id=params["genre"]).one()
-        if "event" in params:
-            event = Event.query.filter_by(id=params["event_id"])
-            info = pdi.get_page_info(pagetype, genre, event)
-        else:
-            info = pdi.get_page_info(pagetype, genre, None)
+        pdi = PageDefaultInfo.query.filter(PageDefaultInfo.pagetype_id==params["pagetype"]).first()
+        if pdi is None:
+            return {"error": u"ページの初期設定が登録されていません"}
+        genre = Genre.query.filter_by(id=params["genre"]).first()
+        try:
+            if "event" in params:
+                event = Event.query.filter_by(id=params["event"]).first()
+                info = pdi.get_page_info(pagetype, genre, event)
+            else:
+                event = None
+                info = pdi.get_page_info(pagetype, genre, None)
+        except GetPageInfoException, e:
+            logger.warn("*api page default info* invalid request: %s" % str(e))
+            return {"error": e.jmessage}
 
         name = params["name"]
         result = {
-            "name": info.name or name, 
+            "name": name or info.name, 
+            "caption": info.caption, 
             "title": info.title or name, 
-            "url": info.url, 
+            "event": event.id if event else None, 
+            "url": info.url.lstrip("/") if not info.url.startswith(("http://", "https://")) else info.url, 
+            "genre": params["genre"], 
             "keywords": info.keywords, 
             "description": info.description, 
             }
         return result
     except Exception, e:
-        logger.error(str(e))
+        logger.exception(str(e))
         return {"error": str(e)}
 
 from ...tag.api import put_tags

@@ -22,15 +22,15 @@
 
       <li class="nav-header">アセット管理</li>
       <li><a class="link-asset" href="${request.route_path("asset_list")}">アセット</a></li>
+
 	    <li class="nav-header">マスター</li>
       ##    <li><a href="${request.route_path("tag", classifier="top")}">タグ</a></li>
       <li><a class="link-master" href="${request.route_path("pagetype_list")}">ページタイプ</a></li>
+      <li><a class="link-master"href="${request.route_path("pagedefaultinfo_list")}">ページの初期設定</a></li>
       <li><a class="link-master" href="${request.route_path("layout_list")}">レイアウト</a></li>
-      ##    <li><a href="${request.route_path("pagedefaultinfo_list")}">ページのurlmapping</a></li>
-	    
       <li><a class="link-master" href="${request.route_path("category_list")}">カテゴリー</a></li>
-      <li><a class="link-master" href="${request.route_path("apikey_list")}">apikey</a></li>
-      ##    <li><a href="${request.route_path("operator_list")}">オペレータ</a></li>
+      ## <li><a class="link-master" href="${request.route_path("apikey_list")}">apikey</a></li>
+      ## <li><a href="${request.route_path("operator_list")}">オペレータ</a></li>
 
       ##    <li><a href="${request.route_path("role_list")}">ロール</a></li>
     </ul>

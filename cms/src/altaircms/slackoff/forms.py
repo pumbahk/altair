@@ -19,9 +19,8 @@ from altaircms.models import Performance, Genre
 from ..models import Category, SalesSegment, SalesSegmentGroup
 from ..asset.models import ImageAsset
 from ..page.models import PageSet
-from ..topic.models import Topic, TopicTag, Topcontent,TopcontentTag, PromotionTag, Promotion
-from ..topic.models import PromotionTag
-from ..page.models import PageTag
+from ..topic.models import TopicTag, Topcontent,TopcontentTag, PromotionTag, Promotion
+from ..page.models import PageTag, PageType
 from ..plugins.api import get_extra_resource
 from ..helpers.event import performance_name
 
@@ -406,17 +405,14 @@ class HotWordForm(Form):
         return not bool(self.errors)
 
 class PageDefaultInfoForm(Form):
-    url_fmt = fields.TextField(label=u"urlのフォーマット", validators=[required_field()], widget=widgets.TextArea())    
-    title_fmt = fields.TextField(label=u"titleのフォーマット", validators=[required_field()], widget=widgets.TextArea())    
+    url_prefix = fields.TextField(label=u"urlのフォーマット", validators=[])    
+    title_prefix = fields.TextField(label=u"titleのフォーマット", validators=[required_field()])    
     description = fields.TextField(label=u"descriptionのデフォルト値",  widget=widgets.TextArea())    
     keywords = fields.TextField(label=u"keywordsのデフォルト値",  widget=widgets.TextArea())    
-    pageset = dynamic_query_select_field_factory(PageSet, 
-                                                     label=u"親となるページセット",
-                                                     query_factory=lambda : PageSet.query.order_by("name"), 
-                                                     allow_blank=True, 
-                                                     get_label=lambda obj: obj.name or u"名前なし")
-
-    __display_fields__ = ["pageset", "title_fmt", "url_fmt", "keywords", "description"]
+    pagetype = dynamic_query_select_field_factory(PageType, 
+                                                  label=u"ページタイプ", 
+                                                  get_label=lambda obj: obj.label)
+    __display_fields__ = ["pagetype", "title_prefix", "url_prefix", "keywords", "description"]
 
 class PageTypeForm(Form):
     name = fields.TextField(label=u"名前", validators=[required_field()])

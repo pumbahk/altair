@@ -418,7 +418,7 @@ class PageDefaultInfo(WithOrganizationMixin, Base):
         elif genre:
             return self.resolver_genre.resolve(genre)
         else:
-            return self.resolver_other.resolve(pagetype)
+            return self.resolver_other.resolve()
 
 class PageTag2Page(Base):
     __tablename__ = "pagetag2page"

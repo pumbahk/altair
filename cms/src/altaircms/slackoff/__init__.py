@@ -73,7 +73,7 @@ def includeme(config):
     config.add_crud("hotword", title="hotword", model="..tag.models.HotWord",
                     form=".forms.HotWordForm", mapper=".mappers.hotword_mapper")
     config.add_crud("pagedefaultinfo", title="pagedefaultinfo", model="..page.models.PageDefaultInfo",
-                    bind_actions=["create", "delete", "update"], 
+                    has_auto_generated_permission=False, 
                     form=".forms.PageDefaultInfoForm", mapper=".mappers.pagedefaultinfo_mapper")
     config.add_crud("pagetype", title="pagetype", model="..page.models.PageType",
                     has_auto_generated_permission=False, 
@@ -83,8 +83,10 @@ def includeme(config):
                     has_auto_generated_permission=False, 
                     events=dict(update_event=config.maybe_dotted(".subscribers.PageSetUpdate")), 
                     form=".forms.PageSetForm", mapper=".mappers.pageset_mapper")
-    config.add_subscriber(".subscribers.update_pageset", ".subscribers.PageSetUpdate")
 
+
+    ## subscriber
+    config.add_subscriber(".subscribers.update_pageset", ".subscribers.PageSetUpdate")
     config.add_subscriber(".subscribers.event_term_bubbling_update", ".subscribers.PerformanceCreate")
     config.add_subscriber(".subscribers.event_term_bubbling_update", ".subscribers.PerformanceUpdate")
     config.add_subscriber(".subscribers.sales_term_bubbling_update", ".subscribers.SalesSegmentCreate")

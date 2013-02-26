@@ -1,14 +1,17 @@
 # -*- coding:utf-8 -*-
 from collections import namedtuple
-Info = namedtuple("Info", "name url title description keywords")
+Info = namedtuple("Info", "caption name url title description keywords")
+class GetPageInfoException(Exception):
+    pass
 
-class OtherInfoResolver(object):
+class OtherPageInfoResolver(object):
     def __init__(self, defaultinfo):
         self.defaultinfo = defaultinfo
 
     def resolve(self):
         return Info(url=self.resolve_url(), 
                     name=u"", 
+                    caption=u"設定された初期設定から", 
                     title=self.resolve_title(), 
                     keywords=self.resolve_keywords(), 
                     description=self.resolve_description())
@@ -31,10 +34,11 @@ class GenrePageInfoResolver(object):
     def resolve(self, genre):
         candidates = self.ordered_genres(genre)
         return Info(url=self.resolve_url(genre, candidates=candidates), 
+                    caption=u"「%s」のカテゴリトップページとして" % genre.label, 
                     name=genre.label, 
                     title=self.resolve_title(genre, candidates=candidates), 
                     keywords=self.resolve_keywords(genre, candidates=candidates), 
-                    description=self.resolve_description(genre, candidates=candidates))
+                    description=self.resolve_description(genre))
 
     def ordered_genres(self, genre):
         gs = list(genre.ancestors)
@@ -69,13 +73,18 @@ class EventPageInfoResolver(object):
     def resolve(self, genre, event):
         data = self.genrepage_resolver.resolve(genre)
         return Info(url=self._resolve_url(data.url, event), 
-                    name=event.name, 
+                    caption=u"「%s」のイベント詳細ページとして" % event.title, 
+                    name=event.title, 
                     keywords=self._resolve_keywords(data.keywords, event), 
                     title=self._resolve_title(data.title, event), 
                     description=self._resolve_description(data.description, event))
         
     ## cached
     def _resolve_url(self, result, event):
+        if not event.code:
+            exc = GetPageInfoException("event %s does not has event code." % event.id)
+            exc.jmessage = u"イベント:%sにイベントコードが登録されていません" % event.title
+            raise exc
         return u"%s/%s" % (result.rstrip("/"), event.code.lstrip("/"))
 
     def _resolve_title(self, result, event):
