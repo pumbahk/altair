@@ -1,7 +1,7 @@
 <html>
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
-  <title>仙台89ERS ナイナーズチケット 購入確認ページ</title>
+  <title>秋田ノーザンハピネッツ ハピチケ</title>
 </head>
 <body background="#FFB700">
   <img src="assets/head_title_mobile.jpg" alt="仙台89ERS" width="232" height="72" />
