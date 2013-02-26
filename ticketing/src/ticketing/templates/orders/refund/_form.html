@@ -32,7 +32,9 @@
     <form action="javascript:refund_order();">
       ${h.form_item(form.payment_method_id)}
       ${h.form_item(form.include_item)}
-      ${h.form_item(form.include_fee)}
+      ${h.form_item(form.include_system_fee)}
+      ${h.form_item(form.include_transaction_fee)}
+      ${h.form_item(form.include_delivery_fee)}
       ${h.form_item(form.cancel_reason)}
     </form>
   </div>

@@ -37,7 +37,7 @@ from standardenum import StandardEnum
 from ticketing.utils import is_nonmobile_email_address
 from ticketing.users.models import User, UserCredential
 from ticketing.utils import sensible_alnum_decode
-from ticketing.sej.models import SejOrder, SejTenant, SejTicket, SejRefundTicket
+from ticketing.sej.models import SejOrder, SejTenant, SejTicket, SejRefundTicket, SejRefundEvent
 from ticketing.sej.exceptions import SejServerError
 from ticketing.sej.payment import request_cancel_order
 from ticketing.assets import IAssetResolver
@@ -1924,9 +1924,15 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def prev(self):
         return DBSession.query(Order, include_deleted=True).filter_by(order_no=self.order_no).filter_by(branch_no=self.branch_no-1).one()
 
+    @property
+    def checkout(self):
+        from ticketing.cart.models import Cart
+        from ticketing.checkout.models import Checkout
+        return Cart.query.filter(Cart._order_no==self.order_no).join(Checkout).with_entities(Checkout).first()
+
     def can_cancel(self):
-        # 受付済のみキャンセル可能、払戻予約時はキャンセル不可
-        if self.status == 'ordered' and self.payment_status != 'refunding':
+        # 受付済のみキャンセル可能、払戻時はキャンセル不可
+        if self.status == 'ordered' and self.payment_status in ('unpaid', 'paid'):
             # コンビニ決済は未入金のみキャンセル可能
             payment_plugin_id = self.payment_delivery_pair.payment_method.payment_plugin_id
             if payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID and self.payment_status != 'unpaid':
@@ -2008,15 +2014,17 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             if self.payment_status in ['paid', 'refunding']:
                 from ticketing.checkout import api as checkout_api
                 from ticketing.core import api as core_api
-                from ticketing.cart.models import Cart
-                checkout = checkout_api.get_checkout_service(request, self.ordered_from, core_api.get_channel(self.channel))
-                cart = Cart.query.filter(Cart._order_no==self.order_no).first()
+                service = checkout_api.get_checkout_service(request, self.ordered_from, core_api.get_channel(self.channel))
+                checkout = self.checkout
                 if self.payment_status == 'refunding':
                     # 払戻(合計100円以上なら注文金額変更API、0円なら注文キャンセルAPIを使う)
                     if self.total_amount >= 100:
-                        result = checkout.request_change_order([cart.checkout.orderControlId])
+                        result = service.request_change_order([checkout.orderControlId])
+                        # オーソリ済みになるので売上バッチの処理対象になるようにsales_atをクリア
+                        checkout.sales_at = None
+                        checkout.save()
                     elif self.total_amount == 0:
-                        result = checkout.request_cancel_order([cart.checkout.orderControlId])
+                        result = service.request_cancel_order([checkout.orderControlId])
                     else:
                         logger.error(u'0円以上100円未満の注文は払戻できません (order_no=%s)' % self.order_no)
                         return False
@@ -2026,7 +2034,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 else:
                     # 売り上げキャンセル
                     logger.debug(u'売り上げキャンセル')
-                    result = checkout.request_cancel_order([cart.checkout.orderControlId])
+                    result = service.request_cancel_order([checkout.orderControlId])
                     if 'statusCode' in result and result['statusCode'] != '0':
                         logger.error(u'あんしん決済をキャンセルできませんでした %s' % result)
                         return False
@@ -2076,20 +2084,47 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     logger.error(u'コンビニ決済(セブン-イレブン)のキャンセルに失敗しました %s' % self.order_no)
                     return False
 
+                tenant = SejTenant.filter_by(organization_id=self.organization_id).first()
+                shop_id = (tenant and tenant.shop_id) or request.registry.settings.get('sej.shop_id')
+
+                # create SejRefundEvent
+                re = SejRefundEvent.filter(and_(
+                    SejRefundEvent.shop_id==shop_id,
+                    SejRefundEvent.event_code_01==self.performance.code
+                )).first()
+                if not re:
+                    re = SejRefundEvent()
+                    DBSession.add(re)
+
+                re.available = 1
+                re.shop_id = shop_id
+                re.event_code_01 = self.performance.code
+                re.title = self.performance.name
+                re.event_at = self.performance.start_on.strftime('%Y%m%d')
+                re.start_at = datetime.now().strftime('%Y%m%d')
+                end_at = self.performance.end_on + timedelta(days=+14)
+                re.end_at = end_at.strftime('%Y%m%d')
+                re.event_expire_at = end_at.strftime('%Y%m%d')
+                ticket_expire_at = self.performance.end_on + timedelta(days=+30)
+                re.ticket_expire_at = ticket_expire_at.strftime('%Y%m%d')
+                re.refund_enabled = 1
+                re.need_stub = 1
+                DBSession.merge(re)
+
+                # create SejRefundTicket
                 rt = SejRefundTicket.filter(and_(
                     SejRefundTicket.order_id==sej_order.order_id,
                     SejRefundTicket.ticket_barcode_number==sej_ticket.barcode_number
                 )).first()
-
                 if not rt:
                     rt = SejRefundTicket()
                     DBSession.add(rt)
 
                 prev = self.prev
                 rt.available = 1
+                rt.refund_event_id = re.id
                 rt.event_code_01 = self.performance.code
-                rt.event_code_02 = self.performance.start_on.strftime('%Y%m')
-                rt.order_id = sej_ticket.order_id
+                rt.order_id = sej_order.order_id
                 rt.ticket_barcode_number = sej_ticket.barcode_number
                 rt.refund_ticket_amount = prev.refund.item(prev)
                 rt.refund_other_amount = prev.refund.fee(prev)
@@ -2101,9 +2136,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         # 在庫を戻す
         self.release()
-        self.canceled_at = datetime.now()
-        if self.payment_status == 'refunding':
+        if self.payment_status in ['paid', 'refunding']:
             self.refunded_at = datetime.now()
+        if self.payment_status == 'paid':
+            self.canceled_at = datetime.now()
         self.save()
 
         return True
@@ -2116,9 +2152,11 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def call_refund(self, request):
         # 払戻対象の金額をクリア
         order = Order.clone(self, deep=True)
-        if self.refund.include_fee:
+        if self.refund.include_system_fee:
             order.system_fee = 0
+        if self.refund.include_transaction_fee:
             order.transaction_fee = 0
+        if self.refund.include_delivery_fee:
             order.delivery_fee = 0
         if self.refund.include_item:
             for ordered_product in order.items:
@@ -2263,7 +2301,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             if 'delivered' in condition:
                 status_cond.append(and_(Order.canceled_at==None, Order.delivered_at!=None))
             if 'canceled' in condition:
-                status_cond.append(and_(Order.paid_at==None, Order.canceled_at!=None))
+                status_cond.append(and_(Order.canceled_at!=None))
             if 'issued' in condition:
                 status_cond.append(Order.issued==True)
             if 'unissued' in condition:
@@ -2766,13 +2804,22 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = Column(Identifier, primary_key=True)
     payment_method_id = Column(Identifier, ForeignKey('PaymentMethod.id'))
     payment_method = relationship('PaymentMethod')
-    include_fee = Column(Boolean, nullable=False, default=False)
+    include_system_fee = Column(Boolean, nullable=False, default=False)
+    include_transaction_fee = Column(Boolean, nullable=False, default=False)
+    include_delivery_fee = Column(Boolean, nullable=False, default=False)
     include_item = Column(Boolean, nullable=False, default=False)
     cancel_reason = Column(String(255), nullable=True, default=None)
     orders = relationship('Order', backref=backref('refund', uselist=False))
 
     def fee(self, order):
-        return (order.system_fee + order.transaction_fee + order.delivery_fee) if self.include_fee else 0
+        total_fee = 0
+        if self.include_system_fee:
+            total_fee += order.system_fee
+        if self.include_transaction_fee:
+            total_fee += order.transaction_fee
+        if self.include_delivery_fee:
+            total_fee += order.delivery_fee
+        return total_fee
 
     def item(self, order):
         return sum(o.price * o.quantity for o in order.items) if self.include_item else 0

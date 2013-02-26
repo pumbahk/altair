@@ -238,13 +238,8 @@ else:
 </%def>
 
 <%def name="order_status(order)">
-<%
-  from ticketing.core.models import OrderCancelReasonEnum
-%>
   % if order is None:
     <span></span>
-  % elif order.status == 'canceled' and order.cancel_reason == str(OrderCancelReasonEnum.CallOff.v[0]):
-    <span class="label label-important">キャンセル (中止)</span>
   % elif order.status == 'canceled':
     <span class="label label-important">キャンセル</span>
   % elif order.status == 'delivered':
@@ -255,12 +250,19 @@ else:
 </%def>
 
 <%def name="payment_status(order)">
+<%
+  from ticketing.core.models import OrderCancelReasonEnum
+%>
   % if order is None:
     <span></span>
-  % elif order.payment_status == 'refunding':
-    <span class="label label-important">払戻予約</span>
+  % elif order.payment_status == 'refunded' and order.cancel_reason == str(OrderCancelReasonEnum.CallOff.v[0]):
+    <span class="label label-important">払戻済み(中止)</span>
   % elif order.payment_status == 'refunded':
-    <span class="label label-info">払戻済み</span>
+    <span class="label label-important">払戻済み</span>
+  % elif order.payment_status == 'refunding' and order.cancel_reason == str(OrderCancelReasonEnum.CallOff.v[0]):
+    <span class="label label-warning">払戻予約(中止)</span>
+  % elif order.payment_status == 'refunding':
+    <span class="label label-warning">払戻予約</span>
   % elif order.payment_status == 'paid':
     <span class="label label-success">入金済み</span>
   % else:
@@ -276,4 +278,16 @@ else:
   % else:
     <span class="label label-inverse">未配送</span>
   % endif
+</%def>
+
+<%def name="help(field, text)">
+  <%
+    return u'''
+      <span class="help-inline">
+        <a href="#" rel="popover" data-original-title="%s" data-content="%s" >
+          <i class="icon-question-sign"></i>
+        </a>
+      </span>
+    ''' % (field.label.text, text)
+  %>
 </%def>

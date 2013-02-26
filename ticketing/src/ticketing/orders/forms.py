@@ -407,8 +407,20 @@ class OrderRefundForm(Form):
         default=0,
         widget=CheckboxInput(),
     )
-    include_fee = IntegerField(
-        label=u'手数料を払戻しする',
+    include_system_fee = IntegerField(
+        label=u'システム手数料を払戻しする',
+        validators=[Required()],
+        default=0,
+        widget=CheckboxInput(),
+    )
+    include_transaction_fee = IntegerField(
+        label=u'決済手数料を払戻しする',
+        validators=[Required()],
+        default=0,
+        widget=CheckboxInput(),
+    )
+    include_delivery_fee = IntegerField(
+        label=u'配送手数料を払戻しする',
         validators=[Required()],
         default=0,
         widget=CheckboxInput(),
@@ -432,7 +444,7 @@ class OrderRefundForm(Form):
                 raise ValidationError(u'指定された払戻方法は、この決済方法では選択できません')
 
     def validate_include_item(form, field):
-        if not field.data and not form.include_fee.data:
+        if not field.data and not form.include_system_fee.data and not form.include_transaction_fee.data and not form.include_delivery_fee.data:
             raise ValidationError(u'払戻対象を選択してください')
 
 class ClientOptionalForm(ClientForm):
