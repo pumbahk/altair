@@ -121,6 +121,8 @@ class SalesSegmentForm(OurForm):
                         and_(start_at<=SalesSegment.end_at,
                              SalesSegment.end_at<=end_at))
                 )
+                if self.id.data is not None:
+                    q = q.filter(SalesSegment.id != self.id.data)
 
                 dup = q.first()
                 if dup:
