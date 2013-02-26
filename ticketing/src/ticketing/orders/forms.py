@@ -10,7 +10,7 @@ from wtforms.widgets import CheckboxInput
 
 from ticketing.formhelpers import DateTimeField, Translations, Required, DateField, Automatic, Max, Min, OurDateWidget, after1900
 from ticketing.core.models import (PaymentMethodPlugin, DeliveryMethodPlugin, PaymentMethod, DeliveryMethod,
-                                   SalesSegment, Performance, Product, ProductItem, Event, OrderCancelReasonEnum)
+                                   SalesSegmentGroup, SalesSegment, Performance, Product, ProductItem, Event, OrderCancelReasonEnum)
 from ticketing.cart.schemas import ClientForm
 from ticketing.payments import plugins
 
@@ -300,10 +300,10 @@ class OrderReserveForm(Form):
             self.performance_id.data = performance.id
 
             now = datetime.now()
-            sales_segments = SalesSegment.filter_by(kind='sales_counter')\
-                                         .filter_by(event_id=performance.event_id)\
+            sales_segments = SalesSegment.query.filter_by(performance_id=performance.id)\
                                          .filter(SalesSegment.start_at<=now)\
-                                         .filter(now<=SalesSegment.end_at).all()
+                                         .filter(now<=SalesSegment.end_at)\
+                                         .join(SalesSegmentGroup).filter(SalesSegmentGroup.kind=='sales_counter').all()
             self.payment_delivery_method_pair_id.choices = []
             for sales_segment in sales_segments:
                 for pdmp in sales_segment.payment_delivery_method_pairs:
