@@ -89,8 +89,6 @@ def includeme(config):
     config.add_subscriber(".subscribers.event_term_bubbling_update", ".subscribers.PerformanceUpdate")
     config.add_subscriber(".subscribers.sales_term_bubbling_update", ".subscribers.SalesSegmentCreate")
     config.add_subscriber(".subscribers.sales_term_bubbling_update", ".subscribers.SalesSegmentUpdate")
-    config.add_subscriber(".subscribers.sales_term_bubbling_update", ".subscribers.TicketCreate")
-    config.add_subscriber(".subscribers.sales_term_bubbling_update", ".subscribers.TicketUpdate")
 
 """
 memo:

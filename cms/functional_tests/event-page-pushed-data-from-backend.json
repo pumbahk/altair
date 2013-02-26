@@ -5,6 +5,7 @@
              "deal_open": "2012-10-25T10:00:00",
              "end_on": "2012-03-15T13:00:00",
              "id": 40020,
+             "code": "DM399", 
              "organization_id": 1, 
              "performances": [{"end_on": "2012-03-15T13:00:00",
                                "id": 40096,

@@ -144,6 +144,7 @@ class Scanner(object):
                 event.event_close = parse_datetime(record['end_on'])
                 event.deal_open = parse_datetime(record.get('deal_open'))
                 event.deal_close = parse_datetime(record.get('deal_close'))
+                event.code = record['code']
                 event.organization_id = organization.id
                 def notify_event_update():
                     subscribers.notify_event_update(self.request, event)

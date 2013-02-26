@@ -69,7 +69,7 @@ class NotifiedEventInfoFromBackendTests(AppFunctionalTests):
         self.assertEqual(event.title, u"マツイ・オン・アイス")
         self.assertEqual(event.backend_id, 40020) #backend id
         self.assertEqual(event.event_open, datetime(2012, 3, 15, 10))
-        self.assertEqual(event.event_close, datetime(2012, 3, 15, 13))
+        self.assertEqual(event.event_close, datetime(2012, 3, 26, 21))
         self.assertNotEqual(event.organization_id, 1000)
         self.assertEqual(event.organization_id, Organization.query.filter_by(backend_id=1).one().id)
         self.assertEqual(len(event.performances), 2)
