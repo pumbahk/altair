@@ -74,6 +74,14 @@ class OrderSearchForm(Form):
         if 'sales_segment_id' in kwargs:
             sales_segment_id = kwargs.pop('sales_segment_id')
             sales_segment = SalesSegment.get(sales_segment_id)
+            if performance is None:
+                performance = sales_segment.performance
+
+        if event is None and performance is not None:
+            event = performance.event
+
+        if organization is None and event is not None:
+            organization = event.organization
 
         if organization is not None:
             self.payment_method.choices = [(pm.id, pm.name) for pm in PaymentMethod.filter_by_organization_id(organization.id)]
@@ -93,7 +101,7 @@ class OrderSearchForm(Form):
                 performances = Performance.filter_by(event_id=event.id)
                 self.performance_id.choices = [('', u'(すべて)')]+[(p.id, '%s (%s)' % (p.name, p.start_on.strftime('%Y-%m-%d %H:%M'))) for p in performances]
             else:
-                self.performance_id.choices = [(p.id, '%s (%s)') % (performance.name, performance.start_on.strftime('%Y-%m-%d %H:%M'))]
+                self.performance_id.choices = [(performance.id, '%s (%s)' % (performance.name, performance.start_on.strftime('%Y-%m-%d %H:%M')))]
         else:
             if organization is not None:
                 performances = Performance.query.join(Event).filter(Event.organization_id == organization.id)
