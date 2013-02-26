@@ -101,6 +101,8 @@ class TicketingCartResource(object):
     @property
     def sales_counter_sales_segment(self):
         """ 当日用販売区分"""
+        # FIXME: kind を見る運用でいいのかしら?
+        # SalesSegmentGroup にフラグを持たせる方がよいかも?
         scs = [s for s in self.sales_segments if s.sales_segment_group.kind == 'sales_counter']
         if not scs:
             return None
