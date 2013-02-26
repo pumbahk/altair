@@ -71,9 +71,9 @@ class OrderSearchForm(Form):
             performances = Performance.filter_by(event_id=self.event_id.data)
             self.performance_id.choices = [('', '')]+[(p.id, '%s (%s)' % (p.name, p.start_on.strftime('%Y-%m-%d %H:%M'))) for p in performances]
 
-        if self.sales_segment.data:
-            sales_segments = SalesSegment.query.filter(SalesSegment.id.in_(self.sales_segment.data))
-            self.sales_segment.choices = [(sales_segment.id, sales_segment.name) for sales_segment in sales_segments]
+        if self.sales_segment_group.data:
+            sales_segment_groups = SalesSegmentGroup.query.filter(SalesSegmentGroup.id.in_(self.sales_segment_group.data))
+            self.sales_segment_group.choices = [(sales_segment_group.id, sales_segment_group.name) for sales_segment_group in sales_segment_groups]
 
     order_no = TextField(
         label=u'予約番号',
@@ -158,8 +158,8 @@ class OrderSearchForm(Form):
         choices=[],
         validators=[Optional()],
     )
-    sales_segment = SelectMultipleField(
-        label=u'販売区分',
+    sales_segment_group = SelectMultipleField(
+        label=u'販売区分グループ',
         coerce=lambda x : int(x) if x else u"",
         choices=[],
         validators=[Optional()],
@@ -257,8 +257,8 @@ class OrderRefundSearchForm(OrderSearchForm):
         choices=[],
         validators=[Required()],
     )
-    sales_segment = SelectMultipleField(
-        label=u'販売区分',
+    sales_segment_group = SelectMultipleField(
+        label=u'販売区分グループ',
         coerce=lambda x : int(x) if x else u"",
         choices=[],
         validators=[Required()],

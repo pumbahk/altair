@@ -1004,14 +1004,14 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def set_search_condition(query, form):
         sort = form.sort.data or 'id'
         direction = form.direction.data or 'desc'
-        query = query.order_by(SalesSegment.__tablename__ + '.' + sort + ' ' + direction)
+        query = query.order_by(SalesSegmentGroup.__tablename__ + '.' + sort + ' ' + direction)
 
         condition = form.event_id.data
         if condition:
-            query = query.filter(SalesSegment.event_id==condition)
+            query = query.filter(SalesSegmentGroup.event_id==condition)
         condition = form.public.data
         if condition:
-            query = query.filter(SalesSegment.public==True)
+            query = query.filter(SalesSegmentGroup.public==True)
 
         return query
 
