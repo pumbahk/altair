@@ -22,6 +22,6 @@ WHERE SalesSegment.performance_id=Performance.id AND SalesSegment.sales_segment_
 
 -- 一般販売と先行の販売区分の終了日時を前日の23:59:59までにする
 UPDATE SalesSegment, Performance, SalesSegmentGroup SET SalesSegment.end_at=DATE(Performance.start_on)-INTERVAL 1 SECOND
-WHERE SalesSegment.performance_id=Performance.id AND SalesSegment.sales_segment_group_id=SalesSegmentGroup.id AND SalesSegment.start_at <= DATE(Performance.start_on) AND SalesSegmentGroup.kind IN ('normal', 'early_firstcome', 'other');
+WHERE SalesSegment.performance_id=Performance.id AND SalesSegment.sales_segment_group_id=SalesSegmentGroup.id AND SalesSegment.end_at >= DATE(Performance.start_on) AND SalesSegmentGroup.kind IN ('normal', 'early_firstcome', 'other');
 
 UPDATE Cart SET sales_segment_id=sales_segment_group_id WHERE sales_segment_id IS NULL;
