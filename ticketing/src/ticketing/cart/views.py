@@ -1010,6 +1010,7 @@ class MobileIndexView(IndexViewMixin):
         performance_id = self.request.params.get('pid') or self.request.params.get('performance')
         if performance_id:
             performance = c_models.Performance.query.filter(c_models.Performance.id==performance_id).one()
+            # XXX: このコードはもういらないのでは?
             if performance.on_the_day:
                 sales_segment = self.context.sales_counter_sales_segment
             else:
