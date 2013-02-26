@@ -2740,15 +2740,21 @@ MailTypeChoices = [(str(e) , label) for e, label in zip([MailTypeEnum.CompleteMa
 
 class Host(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Host'
-
+    __table_args__ = (
+        UniqueConstraint('host_name', 'path'),
+        )
     query = DBSession.query_property()
 
     id = Column(Identifier, primary_key=True)
-    host_name = Column(Unicode(255), unique=True)
+    host_name = Column(Unicode(255))
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
     organization = relationship('Organization', backref="hosts")
     base_url = Column(Unicode(255))
     mobile_base_url = Column(Unicode(255))
+    path = Column(Unicode(255))
+
+    def __repr__(self):
+        return u"{0.host_name} {0.path}".format(self).encode('utf-8')
 
 class OrderNoSequence(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderNoSequence'
