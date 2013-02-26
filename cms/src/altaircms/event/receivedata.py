@@ -8,6 +8,7 @@ from altaircms.models import Performance, SalesSegment, Ticket, SalesSegmentGrou
 from altaircms.seeds.prefecture import PREFECTURE_CHOICES
 from . import subscribers
 from ..modelmanager import SalesTermSummalize
+from ..modelmanager import EventTermSummalize
 
 def parse_datetime(dtstr):
     if dtstr is None:
@@ -161,12 +162,13 @@ class Scanner(object):
         r = []
         for backend_id, (record, env) in self.performance_fetcher.data_iter:
             performance = fetcher.cache.get(backend_id)
-            if performance is None:
-                performance = fetcher.cache[backend_id] = Performance()
             try:
                 if record.get("deleted"):
-                    self.session.delete(performance) #need lazy?
+                    if performance:
+                        self.session.delete(performance) #need lazy?
                     continue
+                if performance is None:
+                    performance = fetcher.cache[backend_id] = Performance()
                 r.append(performance)
                 performance.backend_id = backend_id
                 performance.event = self.event_fetcher.cache[env["event"]["id"]]
@@ -194,12 +196,13 @@ class Scanner(object):
 
         for backend_id, (record, env) in self.salessegment_fetcher.data_iter:
             salessegment = fetcher.cache.get(backend_id)
-            if salessegment is None:
-                salessegment = fetcher.cache[backend_id] = SalesSegment()
             try:
                 if record.get("deleted"):
-                    self.session.delete(salessegment) #need lazy?
+                    if salessegment:
+                        self.session.delete(salessegment) #need lazy?
                     continue
+                if salessegment is None:
+                    salessegment = fetcher.cache[backend_id] = SalesSegment()
                 r.append(salessegment)
                 salessegment.backend_id = backend_id
                 salessegment.performance = self.performance_fetcher.cache[strict_get(env, "performance")["id"]]
@@ -221,12 +224,13 @@ class Scanner(object):
         r = []
         for backend_id, (record, env) in self.ticket_fetcher.data_iter:
             ticket = fetcher.cache.get(backend_id)
-            if ticket is None:
-                ticket = fetcher.cache[backend_id] = Ticket()
             try:
                 if record.get("deleted"):
-                    self.session.delete(ticket) #need lazy?
+                    if ticket:
+                        self.session.delete(ticket) #need lazy?
                     continue
+                if ticket is None:
+                    ticket = fetcher.cache[backend_id] = Ticket()
                 r.append(ticket)
                 ticket.backend_id = backend_id
                 ticket.sale = self.salessegment_fetcher.cache[env["sale"]["id"]]
@@ -261,9 +265,11 @@ class Scanner(object):
         self.session.add_all(tickets)
         self.session.flush()
 
-        summ = SalesTermSummalize(self.request)        
+        ssum = SalesTermSummalize(self.request)        
+        esum = EventTermSummalize(self.request)        
         for event in events:
-            summ.summalize(event).term()
+            ssum.summalize(event).term()
+            esum.summalize(event).term()
 
         for action in self.after_parsed_actions:
             action()

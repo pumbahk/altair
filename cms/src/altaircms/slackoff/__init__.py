@@ -5,24 +5,27 @@ def includeme(config):
                     form=".forms.LayoutCreateForm", mapper=".mappers.layout_mapper")
     config.add_crud("performance", title="performance", model="..models.Performance",
                     bind_actions=["create", "delete", "update"], 
-                    events=dict(create_event=config.maybe_dotted(".subscribers.PerformanceCreate")), 
+                    events=dict(create_event=config.maybe_dotted(".subscribers.PerformanceCreate"), 
+                                update_event=config.maybe_dotted(".subscribers.PerformanceUpdate"), 
+                                ), 
                     form=".forms.PerformanceForm", mapper=".mappers.performance_mapper")
     config.add_subscriber(".subscribers.create_salessegment_group", ".subscribers.PerformanceCreate")    
     config.add_view(".views.performance_detail", match_param="action=detail", permission="performance_update", 
                     route_name="performance_update", 
                     decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", 
                     renderer="altaircms:templates/performance/view.html")
-
     config.add_crud("salessegment", title="salessegment", model="..models.SalesSegment", 
                     has_auto_generated_permission=False,  #todo:remove-it
                     bind_actions=["create", "delete", "update"], 
+                    events=dict(create_event=config.maybe_dotted(".subscribers.SalesSegmentCreate"), 
+                                update_event=config.maybe_dotted(".subscribers.SalesSegmentUpdate")), 
                     form=".forms.SalesSegmentForm", mapper=".mappers.sale_mapper")
     config.add_crud("ticket", title="ticket", model="..models.Ticket", 
                     has_auto_generated_permission=False,  #todo:remove-it
                     bind_actions=["create", "delete", "update"], 
+                    events=dict(create_event=config.maybe_dotted(".subscribers.TicketCreate"), 
+                                update_event=config.maybe_dotted(".subscribers.TicketUpdate")), 
                     form=".forms.TicketForm", mapper=".mappers.ticket_mapper")
-
-
     ## topic
     config.add_crud("topic_unit", title="topic", model="..topic.models.Topic",
                     has_auto_generated_permission=False,  #todo:remove-it
@@ -81,6 +84,13 @@ def includeme(config):
                     events=dict(update_event=config.maybe_dotted(".subscribers.PageSetUpdate")), 
                     form=".forms.PageSetForm", mapper=".mappers.pageset_mapper")
     config.add_subscriber(".subscribers.update_pageset", ".subscribers.PageSetUpdate")
+
+    config.add_subscriber(".subscribers.event_term_bubbling_update", ".subscribers.PerformanceCreate")
+    config.add_subscriber(".subscribers.event_term_bubbling_update", ".subscribers.PerformanceUpdate")
+    config.add_subscriber(".subscribers.sales_term_bubbling_update", ".subscribers.SalesSegmentCreate")
+    config.add_subscriber(".subscribers.sales_term_bubbling_update", ".subscribers.SalesSegmentUpdate")
+    config.add_subscriber(".subscribers.sales_term_bubbling_update", ".subscribers.TicketCreate")
+    config.add_subscriber(".subscribers.sales_term_bubbling_update", ".subscribers.TicketUpdate")
 
 """
 memo:

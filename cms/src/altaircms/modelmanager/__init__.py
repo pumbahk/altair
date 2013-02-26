@@ -4,6 +4,18 @@ from pyramid.decorator import reify
 
 
 ## sales term
+class EventTermSummalize(object):
+    def __init__(self, request):
+        self.request = request
+
+    def summalize(self, obj, virtual=False):
+        return getattr(self, "summalize_%s" % obj.__class__.__name__)(obj, virtual=virtual)
+
+    def summalize_Event(self, event, virtual=False):
+        return EventEventTerm(event, virtual=virtual)
+
+    def summalize_Performance(self, event, virtual=False):
+        return PerformanceEventTerm(event, virtual=virtual)
 
 class SalesTermSummalize(object):
     def __init__(self, request):
@@ -29,6 +41,39 @@ class BubblingBase(object):
         else:
             self.o = o
 
+class EventEventTerm(BubblingBase):
+    @reify
+    def children(self):
+        return [PerformanceEventTerm(p, virtual=self.virtual) for p in self.o.performances]
+
+    def term(self):
+        children = self.children
+        if not children:
+            return self.o.deal_open, self.o.deal_close
+        first_start_date, final_end_date = children[0].term()
+        for c in children[1:]:
+            start_date, end_date = c.term()
+            if first_start_date > start_date:
+                first_start_date = start_date
+            if final_end_date < end_date:
+                final_end_date = end_date
+        self.o.event_open = first_start_date
+        self.o.event_close = final_end_date
+        return first_start_date, final_end_date
+
+    def bubble(self): #手抜き。全部調べる。
+        self.term()
+        return self.o.deal_open, self.o.deal_close
+    
+class PerformanceEventTerm(BubblingBase):
+    children = []
+    def term(self):
+        return self.o.start_on, self.o.end_on
+
+    def bubble(self, start_on=None, end_on=None):
+        parent = EventEventTerm(self.o.event)
+        return parent.bubble()
+
 class EventSalesTerm(BubblingBase):
     @reify
     def children(self):
@@ -39,7 +84,7 @@ class EventSalesTerm(BubblingBase):
         if not children:
             return self.o.deal_open, self.o.deal_close
         first_start_date, final_end_date = children[0].term()
-        for c in children:
+        for c in children[1:]:
             start_date, end_date = c.term()
             if first_start_date > start_date:
                 first_start_date = start_date
@@ -49,7 +94,7 @@ class EventSalesTerm(BubblingBase):
         self.o.deal_close = final_end_date
         return first_start_date, final_end_date
 
-    def bubble(self, start_on, end_on): #手抜き。全部調べる。
+    def bubble(self): #手抜き。全部調べる。
         self.term()
         return self.o.deal_open, self.o.deal_close
 
@@ -63,7 +108,7 @@ class SalesSegmentGroupSalesTerm(BubblingBase):
         if not children:
             return self.o.start_on, self.o.end_on
         first_start_date, final_end_date = children[0].term()
-        for c in children:
+        for c in children[1:]:
             start_date, end_date = c.term()
             if first_start_date > start_date:
                 first_start_date = start_date
@@ -73,9 +118,9 @@ class SalesSegmentGroupSalesTerm(BubblingBase):
         self.o.end_on = final_end_date
         return first_start_date, final_end_date
 
-    def bubble(self, start_on, end_on):
+    def bubble(self):
         parent = EventSalesTerm(self.o.event)
-        return parent.bubble(start_on, end_on)
+        return parent.bubble()
 
 class SalesSegmentSalesTerm(BubblingBase):
     children = []
@@ -84,7 +129,7 @@ class SalesSegmentSalesTerm(BubblingBase):
 
     def bubble(self, start_on=None, end_on=None):
         parent = SalesSegmentGroupSalesTerm(self.o.group)
-        return parent.bubble(self.o.start_on, self.o.end_on)
+        return parent.bubble()
 
 ## updated_at
 
