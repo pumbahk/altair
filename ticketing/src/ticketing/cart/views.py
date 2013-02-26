@@ -414,8 +414,7 @@ class IndexView(IndexViewMixin):
                         .filter_by(venue_id=venue.id)
                     ]
                 ),
-            #pages=venue.site._metadata and venue.site._metadata.get('pages')
-            pages=[],
+            pages=venue.site._metadata and venue.site._metadata.get('pages')
             )
 
     @view_config(route_name='cart.seat_adjacencies', renderer="json")
