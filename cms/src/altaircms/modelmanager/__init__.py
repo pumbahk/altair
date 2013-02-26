@@ -1,8 +1,7 @@
 # -*- coding:utf-8 -*-
 from .faker import ModelFaker
 from pyramid.decorator import reify
-
-
+from altaircms.models import Performance, SalesSegment, SalesSegmentGroup
 ## sales term
 class EventTermSummalize(object):
     def __init__(self, request):
@@ -44,7 +43,8 @@ class BubblingBase(object):
 class EventEventTerm(BubblingBase):
     @reify
     def children(self):
-        return [PerformanceEventTerm(p, virtual=self.virtual) for p in self.o.performances]
+#        return [PerformanceEventTerm(p, virtual=self.virtual) for p in self.o.performances]
+        return [PerformanceEventTerm(p, virtual=self.virtual) for p in Performance.query.filter(Performance.event_id==self.o.id)]
 
     def term(self):
         children = self.children
@@ -77,7 +77,8 @@ class PerformanceEventTerm(BubblingBase):
 class EventSalesTerm(BubblingBase):
     @reify
     def children(self):
-        return [SalesSegmentGroupSalesTerm(s, virtual=self.virtual) for s in self.o.salessegment_groups]
+        return [SalesSegmentGroupSalesTerm(s, virtual=self.virtual) for s in SalesSegmentGroup.query.filter(SalesSegmentGroup.event_id==self.o.id)]
+        # return [SalesSegmentGroupSalesTerm(s, virtual=self.virtual) for s in self.o.salessegment_groups]
 
     def term(self):
         children = self.children
@@ -101,7 +102,8 @@ class EventSalesTerm(BubblingBase):
 class SalesSegmentGroupSalesTerm(BubblingBase):
     @reify
     def children(self):
-        return [SalesSegmentSalesTerm(s, virtual=self.virtual) for s in self.o.salessegments]
+        return [SalesSegmentSalesTerm(s, virtual=self.virtual) for s in SalesSegment.query.filter(SalesSegment.group_id==self.o.id)]
+        # return [SalesSegmentSalesTerm(s, virtual=self.virtual) for s in self.o.salessegments]
 
     def term(self):
         children = self.children

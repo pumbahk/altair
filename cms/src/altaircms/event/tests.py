@@ -231,7 +231,7 @@ class ParseAndSaveEventTests(unittest.TestCase):
         self.assertEqual(event.title, u"マツイ・オン・アイス")
         self.assertEqual(event.backend_id, 20) #backend id
         self.assertEqual(event.event_open, datetime(2012, 3, 15, 10))
-        self.assertEqual(event.event_close, datetime(2012, 3, 15, 13))
+        self.assertEqual(event.event_close, datetime(2012, 3, 26, 21))
         self.assertNotEqual(event.organization_id, 1000)
         self.assertEqual(event.organization_id, Organization.query.filter_by(backend_id=1000).one().id)
         self.assertEqual(len(event.performances), 2)
@@ -266,7 +266,6 @@ class ParseAndSaveEventTests(unittest.TestCase):
         from datetime import datetime
         from altaircms.auth.models import Organization
         request = testing.DummyRequest()
-        from altaircms.models import DBSession
         ## create
         result = self._callFUT(request, json.loads(self.data))
         ## delete
@@ -276,10 +275,11 @@ class ParseAndSaveEventTests(unittest.TestCase):
         event = result[0]
         self.assertEqual(event.title, u"マツイ・オン・アイス")
         self.assertEqual(event.backend_id, 20) #backend id
-        self.assertEqual(event.event_open, datetime(2012, 3, 15, 10))
-        # self.assertEqual(event.event_close, datetime(2012, 3, 26, 21))
+        self.assertEqual(event.event_open, datetime(2012, 3, 26, 19))
+        self.assertEqual(event.event_close, datetime(2012, 3, 26, 21))
         self.assertNotEqual(event.organization_id, 1000)
         self.assertEqual(event.organization_id, Organization.query.filter_by(backend_id=1000).one().id)
+
         self.assertEqual(len(event.performances), 1)
 
         performance = event.performances[0]
@@ -307,6 +307,7 @@ class ParseAndSaveEventTests(unittest.TestCase):
         self.assertEqual(ticket.name, u"S席大人")
         self.assertEqual(ticket.seattype, u"S席")
         self.assertEqual(ticket.price, 10000)
+
 
     def test_register_multiple(self):
         from altaircms.models import Ticket, Performance, SalesSegment

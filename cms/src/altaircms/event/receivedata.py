@@ -256,7 +256,6 @@ class Scanner(object):
         performances = self.fetch_performances(organization)
         self.session.add_all(performances)
         self.session.flush()
-
         salessegments = self.fetch_salessegments(organization)
         self.session.add_all(salessegments)
         self.session.flush()
