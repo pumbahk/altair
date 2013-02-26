@@ -3,7 +3,7 @@
 from decimal import Decimal
 
 from wtforms import Form
-from wtforms import TextField, SelectField, IntegerField, DecimalField, SelectMultipleField, HiddenField
+from wtforms import TextField, SelectField, IntegerField, DecimalField, SelectMultipleField, HiddenField, BooleanField
 from wtforms.validators import Length, NumberRange, EqualTo, Optional, ValidationError
 from wtforms.widgets import CheckboxInput, TextArea
 from sqlalchemy.sql import func
@@ -80,10 +80,9 @@ class ProductForm(OurForm):
         choices=[],
         coerce=int
         )
-    public = OurIntegerField(
+    public = BooleanField(
         label=u'一般公開',
-        default=0,
-        hide_on_new=True,
+        #hide_on_new=True,
         widget=CheckboxInput(),
         )
     description = NullableTextField(
