@@ -41,9 +41,15 @@
         );
       };
       edit_sales_segment_group = function edit_sales_segment_group(id, copy) {
+        var url = '';
+        if (copy) {
+          url = '${request.route_path('sales_segment_groups.copy', sales_segment_group_id='{id}')}';
+        } else {
+          url = '${request.route_path('sales_segment_groups.edit', sales_segment_group_id='{id}')}';
+        }
         load_modal_form(
           modal_sales_segment_group,
-          '${request.route_path('sales_segment_groups.edit', sales_segment_group_id='{id}')}'.replace(encodeURIComponent('{id}'), id),
+          url.replace(encodeURIComponent('{id}'), id),
           null,
           function () {
             if (!copy)

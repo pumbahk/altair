@@ -111,6 +111,7 @@ class SalesSegmentGroups(BaseView):
                 'form':f,
             }
 
+    @view_config(route_name='sales_segment_groups.copy', request_method='GET', renderer='ticketing:templates/sales_segment_groups/_form.html', xhr=True)
     @view_config(route_name='sales_segment_groups.edit', request_method='GET', renderer='ticketing:templates/sales_segment_groups/_form.html', xhr=True)
     def edit_xhr(self):
         sales_segment_group_id = int(self.request.matchdict.get('sales_segment_group_id', 0))
