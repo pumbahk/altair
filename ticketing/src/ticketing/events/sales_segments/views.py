@@ -149,7 +149,7 @@ class SalesSegments(BaseView):
             return f
         pdmp_ids = self.request.params.getall('payment_delivery_method_pairs[]')
 
-        pdmps = PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id.in_(pdmp_ids)).filter(PaymentDeliveryMethodPair.sales_segment_group_id==sales_segment.sales_segment_group_id).all()
+        pdmps = set(PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id.in_(pdmp_ids)).filter(PaymentDeliveryMethodPair.sales_segment_group_id==sales_segment.sales_segment_group_id))
         
         if self.request.matched_route.name == 'sales_segments.copy':
             with_pdmp = bool(f.copy_payment_delivery_method_pairs.data)
@@ -162,7 +162,6 @@ class SalesSegments(BaseView):
                     Product.create_from_template(template=product, with_product_items=True, stock_holder_id=f.copy_to_stock_holder.data, sales_segment=id_map)
         else:
             sales_segment = merge_session_with_post(sales_segment, f.data)
-            # sales_segment.payment_delivery_method_pairs = [PaymentDeliveryMethodPair.get(i) for i in f.payment_delivery_method_pairs.data]
             sales_segment.payment_delivery_method_pairs = pdmps
             sales_segment.save()
 

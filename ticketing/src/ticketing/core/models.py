@@ -2859,7 +2859,9 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
 
     payment_delivery_method_pairs = relationship("PaymentDeliveryMethodPair",
         secondary="SalesSegment_PaymentDeliveryMethodPair",
-        backref="sales_segments")
+        backref="sales_segments",
+        cascade="all",
+        collection_class=set)
 
 
     @property
