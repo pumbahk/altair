@@ -85,5 +85,8 @@ WHERE sales_segment_id = sales_segment_group_id;
 -- データ移行作業完了後から15分以上経過後に実行
 UPDATE SalesSegment
 SET deleted_at = CURRENT_TIMESTAMP
-WHERE id = sales_segment_group_id;
+WHERE id = sales_segment_group_id
+AND id != 1
+;
+-- id = 1はbooster用に残す
 
