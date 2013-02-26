@@ -8,7 +8,7 @@ from wtforms.validators import Length, NumberRange, EqualTo, Optional, Validatio
 from wtforms.widgets import CheckboxInput, TextArea
 from sqlalchemy.sql import func
 
-from ticketing.formhelpers import Translations, Required, BugFreeSelectField, OurTextField, OurSelectField, OurIntegerField, OurDecimalField, OurForm, NullableTextField
+from ticketing.formhelpers import Translations, Required, BugFreeSelectField, OurTextField, OurSelectField, OurIntegerField, OurBooleanField, OurDecimalField, OurForm, NullableTextField
 from ticketing.core.models import SalesSegment, SalesSegmentGroup, Product, ProductItem, StockHolder, StockType, Stock, Performance, TicketBundle
 
 class ProductForm(OurForm):
@@ -80,9 +80,9 @@ class ProductForm(OurForm):
         choices=[],
         coerce=int
         )
-    public = BooleanField(
+    public = OurBooleanField(
         label=u'一般公開',
-        #hide_on_new=True,
+        hide_on_new=True,
         widget=CheckboxInput(),
         )
     description = NullableTextField(
