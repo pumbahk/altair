@@ -90,7 +90,7 @@ class PaymentDeliveryMethodPairs(BaseView):
         else:
             return {
                 'form':f,
-                'sales_segment_group':pdmp.sales_segment_group
+                'sales_segment_group':pdmp.sales_segment_group,
                 'payment_methods':[pdmp.payment_method],
                 'delivery_methods':[pdmp.delivery_method],
             }
