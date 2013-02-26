@@ -1,6 +1,27 @@
 <%page args="form, action='#'" />
 <% from wtforms.widgets import HiddenInput %>
 <%namespace file="/common/helpers.html" name="h" />
+
+<script>
+(function($) {
+var pdmp_map = ${pdmp_map|n};
+$(function() {
+$('#sales_segment_group_id').change(function() {
+var sales_segment_group_id = $(this).val();
+$('#payment_delivery_method_pairs').empty();
+var pdmps = pdmp_map[sales_segment_group_id];
+
+for (var i=0; i < pdmps.length; i++) {
+    var pdmp = pdmps[i];
+    $('#payment_delivery_method_pairs').append(
+      $('<option value="' + pdmp[0]+ '">' + pdmp[1] + '</option>')
+    );
+}
+});
+});
+
+})($);
+</script>
 <form action="${action}" method="POST">
   ${h.form_item(form.id)}
   % if not form.sales_segment_group_id.data:

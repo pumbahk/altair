@@ -41,7 +41,7 @@ class SalesSegments(BaseView):
         else:
             _formdata = MultiDict() if formdata is None else formdata.copy()
             sales_segment_groups = None
-            if performance_id is not None:
+            if performance_id:
                 _formdata['performance_id'] = performance_id
                 sales_segment_groups = Performance.get(performance_id).event.sales_segment_groups
             if sales_segment_group_id:
@@ -60,11 +60,47 @@ class SalesSegments(BaseView):
 
         return SalesSegmentForm(formdata=_formdata, **kwargs)
 
+    @property
+    def performance(self):
+        if 'performance_id' not in self.request.params:
+            return None
+
+        performance_id = self.request.params['performance_id']
+        return Performance.query.filter(Performance.id==performance_id).first()
+
+    @property
+    def sales_segment_group(self):
+        if 'sales_segment_group_id' not in self.request.params:
+            return None
+
+        performance_id = self.request.params['sales_segment_group_id']
+        return Performance.query.filter(Performance.id==performance_id).first()
+
+    def _pdmp_map(self, sales_segment_groups):
+        """ 販売区分グループごとのPDMP json
+        """
+
+        mapped = {}
+        for ssg in sales_segment_groups:
+            mapped[str(ssg.id)] = [(pdmp.id, pdmp.payment_method.name + "/" + pdmp.delivery_method.name) 
+                              for pdmp in ssg.payment_delivery_method_pairs]
+
+        return json.dumps(mapped)
+
+    @property
+    def sales_segment_groups(self):
+        performance = self.performance
+        if performance is None:
+            return []
+
+        return performance.event.sales_segment_groups
+
     @view_config(route_name='sales_segments.new', request_method='GET', renderer='ticketing:templates/sales_segments/_form.html', xhr=True)
     def new_xhr(self):
         return {
             'form': self._form(),
             'action': self.request.path,
+            'pdmp_map': self._pdmp_map(self.sales_segment_groups)
             }
 
     @view_config(route_name='sales_segments.new', request_method='POST', renderer='ticketing:templates/sales_segments/_form.html', xhr=True)
@@ -77,7 +113,9 @@ class SalesSegments(BaseView):
             if f.end_at.data is None:
                 f.end_at.data = datetime.now()
             sales_segment = merge_session_with_post(SalesSegment(), f.data)
-            pdmps = PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id.in_(f.payment_delivery_method_pairs.data)).all()
+            pdmp_ids = self.request.params.getall('payment_delivery_method_pairs[]')
+
+            pdmps = PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id.in_(pdmp_ids)).filter(PaymentDeliveryMethodPair.sales_segment_group_id==sales_segment.sales_segment_group_id).all()
             sales_segment.payment_delivery_method_pairs = pdmps
             sales_segment.save()
 
@@ -87,6 +125,7 @@ class SalesSegments(BaseView):
             return {
                 'form': f,
                 'action': self.request.path_url,
+                'pdmp_map': self._pdmp_map(self.sales_segment_groups)
                 }
 
     @view_config(route_name='sales_segments.edit', request_method='GET', renderer='ticketing:templates/sales_segments/_form.html', xhr=True)
@@ -94,6 +133,7 @@ class SalesSegments(BaseView):
         return {
             'form': self._form(),
             'action': self.request.path,
+            'pdmp_map': self._pdmp_map(self.sales_segment_groups)
             }
 
     def _edit_post(self):
@@ -107,6 +147,10 @@ class SalesSegments(BaseView):
         f = SalesSegmentForm(self.request.POST, performances=sales_segment.sales_segment_group.event.performances)
         if not f.validate():
             return f
+        pdmp_ids = self.request.params.getall('payment_delivery_method_pairs[]')
+
+        pdmps = PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id.in_(pdmp_ids)).filter(PaymentDeliveryMethodPair.sales_segment_group_id==sales_segment.sales_segment_group_id).all()
+        
         if self.request.matched_route.name == 'sales_segments.copy':
             with_pdmp = bool(f.copy_payment_delivery_method_pairs.data)
             id_map = SalesSegment.create_from_template(sales_segment, with_payment_delivery_method_pairs=with_pdmp)
@@ -118,7 +162,8 @@ class SalesSegments(BaseView):
                     Product.create_from_template(template=product, with_product_items=True, stock_holder_id=f.copy_to_stock_holder.data, sales_segment=id_map)
         else:
             sales_segment = merge_session_with_post(sales_segment, f.data)
-            sales_segment.payment_delivery_method_pairs = [PaymentDeliveryMethodPair.get(i) for i in f.payment_delivery_method_pairs.data]
+            # sales_segment.payment_delivery_method_pairs = [PaymentDeliveryMethodPair.get(i) for i in f.payment_delivery_method_pairs.data]
+            sales_segment.payment_delivery_method_pairs = pdmps
             sales_segment.save()
 
         self.request.session.flash(u'販売区分を保存しました')
@@ -133,6 +178,7 @@ class SalesSegments(BaseView):
             return {
                 'form':f,
                 'action': self.request.path_url,
+                'pdmp_map': self._pdmp_map(self.sales_segment_groups)
                 }
 
     @view_config(route_name='sales_segments.delete')

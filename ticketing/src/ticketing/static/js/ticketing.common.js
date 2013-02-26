@@ -19,11 +19,25 @@ function get_modal_form(modal, form, url) {
   });
 }
 
+function get_selected_options(select_multiple) {
+  var options = select_multiple.options;
+  var results = [];
+  for (var i = 0; i < options.length; i++) {
+    var opt = options.item(i);
+    if (opt.selected) {
+      results.push(opt.value);
+    }
+  }
+  return results;
+}
+
 function build_form_params(form) {
   var param = {}, counts = {};
   $(form).find(':input').each(function(i, v) {
     if (v.type == 'checkbox' || v.type == 'radio') {
       value = v.checked ? v.value: null;
+    } else if (v.type == 'select-multiple') {
+      value = get_selected_options(v);
     } else {
       value = v.value;
     }

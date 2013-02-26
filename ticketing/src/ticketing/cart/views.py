@@ -123,14 +123,6 @@ class IndexViewMixin(object):
         self.event_extra_info = get_event_info_from_cms(self.request, self.context.event_id)
         logger.info(self.event_extra_info)
 
-        # if self.context.normal_sales_segment is None:
-        #     next_sales_segment = self.context.get_next_sales_segment()
-        #     if next_sales_segment:
-        #         raise OutTermSalesException(self.context.event, next_sales_segment)
-        #     else:
-        #         logger.debug("No matching sales_segment")
-        #         raise NoSalesSegment("No matching sales_segment")
-
     def check_redirect(self, mobile):
         performance_id = self.request.params.get('pid') or self.request.params.get('performance')
 
@@ -153,7 +145,15 @@ class IndexView(IndexViewMixin):
     @view_config(decorator=with_jquery_tools, route_name='cart.index', renderer=selectable_renderer("carts/%(membership)s/index.html"), xhr=False, permission="buy")
     def __call__(self):
         self.check_redirect(mobile=False)
+        event = self.request.context.event
         sales_segments = api.get_available_sales_segments(self.context.event, datetime.now())
+        if not sales_segments:
+            # 次の販売区分があるなら
+            next = self.context.get_next_sales_segment()
+            if next:
+                raise OutTermSalesException(event, next)
+            else:
+                raise HTTPNotFound()
 
         performances = [ss.performance for ss in sales_segments]
 
@@ -162,7 +162,6 @@ class IndexView(IndexViewMixin):
         for p in performances:
             select_venues[p.name] = []
 
-        event = self.request.context.event
         for sales_segment in sales_segments:
             performance = sales_segment.performance
             pname = performance.name
@@ -685,33 +684,33 @@ class ReserveView(object):
         )
         return HTTPFound(self.request.route_url('cart.order', sales_segment_group_id=sales_segment.id, _query=query))
 
-    def __call__(self):
-        """
-        TODO: 使われていない？
-        座席情報から座席グループを検索する
-        """
-        sales_segment = self.context.get_sales_segument()
+    # def __call__(self):
+    #     """
+    #     TODO: 使われていない？
+    #     座席情報から座席グループを検索する
+    #     """
+    #     sales_segment = self.context.get_sales_segument()
 
-        #seat_type_id = self.request.matchdict['seat_type_id']
-        cart = self.context.order_products(self.request.params['performance_id'], self.ordered_items)
-        if cart is None:
-            return dict(result='NG')
-        api.set_cart(self.request, cart)
-        #self.request.session['ticketing.cart_id'] = cart.id
-        #self.cart = cart
-        return dict(result='OK', 
-                    payment_url=self.request.route_url("cart.payment", sales_segment_id=sales_segment.id),
-                    cart=dict(products=[dict(name=p.product.name, 
-                                             quantity=p.quantity,
-                                             price=int(p.product.price),
-                                        ) 
-                                        for p in cart.products],
-                              total_amount=h.format_number(cart.tickets_amount),
-                    ))
+    #     #seat_type_id = self.request.matchdict['seat_type_id']
+    #     cart = self.context.order_products(self.request.params['performance_id'], self.ordered_items)
+    #     if cart is None:
+    #         return dict(result='NG')
+    #     api.set_cart(self.request, cart)
+    #     #self.request.session['ticketing.cart_id'] = cart.id
+    #     #self.cart = cart
+    #     return dict(result='OK', 
+    #                 payment_url=self.request.route_url("cart.payment", sales_segment_id=sales_segment.id),
+    #                 cart=dict(products=[dict(name=p.product.name, 
+    #                                          quantity=p.quantity,
+    #                                          price=int(p.product.price),
+    #                                     ) 
+    #                                     for p in cart.products],
+    #                           total_amount=h.format_number(cart.tickets_amount),
+    #                 ))
 
-    def on_error(self):
-        """ 座席確保できなかった場合
-        """
+    # def on_error(self):
+    #     """ 座席確保できなかった場合
+    #     """
 
 @view_defaults(decorator=with_jquery.not_when(mobile_request))
 class ReleaseCartView(object):
@@ -1011,6 +1010,7 @@ class MobileIndexView(IndexViewMixin):
         performance_id = self.request.params.get('pid') or self.request.params.get('performance')
         if performance_id:
             performance = c_models.Performance.query.filter(c_models.Performance.id==performance_id).one()
+            # XXX: このコードはもういらないのでは?
             if performance.on_the_day:
                 sales_segment = self.context.sales_counter_sales_segment
             else:

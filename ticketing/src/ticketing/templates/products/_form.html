@@ -1,31 +1,13 @@
-<%page args="form" />
-
-<script type="text/javascript">
-  $(function() {
-    $("#modal-product input[type='checkbox']").on("change", function() {
-      if ($(this).attr('checked')) {
-        $(this).val(1);
-      } else {
-        $(this).val(0);
-      }
-    })
-  });
-</script>
-
-<div id="modal-product" class="modal fade">
-  <div class="modal-header">
-    <a class="close" data-dismiss="modal">×</a>
-    <h3>商品</h3>
-  </div>
-
-  <div class="modal-body">
-    <form action="javascript:save_product();" method="POST">
-      <%include file="/products/__edit_form.html" args="form=form" />
-    </form>
-  </div>
-
-  <div class="modal-footer">
-    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
-    <a href="javascript:void(0);" onclick="$('#modal-product').find('form').submit();" class="btn">保存</a>
-  </div>
-</div>
+<%page args="form, action='#'" />
+<%namespace file="/common/helpers.html" name="h" />
+<form action="${action}" method="POST">
+  ${h.form_item(form.id)}
+  ${h.form_item(form.performance_id)}
+  ${h.form_item(form.name, style='width: 300px;', maxlength=255)}
+  ${h.form_item(form.price, style='width: 150px;')}
+  ${h.form_item(form.display_order)}
+  ${h.form_item(form.seat_stock_type_id)}
+  ${h.form_item(form.sales_segment_id)}
+  ${h.form_item(form.public)}
+  ${h.form_item(form.description)}
+</form>

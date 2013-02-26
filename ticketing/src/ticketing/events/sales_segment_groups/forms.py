@@ -28,7 +28,7 @@ class SalesSegmentGroupForm(OurForm):
         validators=[Required()]
     )
     kind = SelectField(
-        label=u'販売区分グループ',
+        label=u'種別',
         validators=[Required()],
         choices=[(kind.k, kind.v) for kind in SalesSegmentKindEnum],
         coerce=str,

@@ -59,6 +59,7 @@ def main(argv=sys.argv):
         if event.sales_end_on < form.limited_from.data or form.limited_to.data < event.sales_start_on:
             continue
 
+        logger.info('report_setting_id: %sl, event_id: %s, operator_id: %s' % (report_setting.id, event_id, report_setting.operator.id))
         sendmail(event, form)
 
     logger.info('end send_sales_report batch (sent=%s)' % len(report_settings))

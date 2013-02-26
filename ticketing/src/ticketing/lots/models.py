@@ -116,7 +116,7 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def performances(self):
-        return set([p.performance for p in self.products])
+        return list(set([p.performance for p in self.products]))
 
 
     @property

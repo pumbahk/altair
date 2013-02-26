@@ -77,6 +77,7 @@ from .models import (
     LotStatusEnum,
 )
 
+from . import sendmail
 from .events import LotEntriedEvent
 
 def get_event(request):

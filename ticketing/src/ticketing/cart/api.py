@@ -371,7 +371,7 @@ def update_order_session(request, **kw):
 
 
 def get_available_sales_segments(event, selected_date):
-    return SalesSegment.query.filter(
+    ss = SalesSegment.query.filter(
             SalesSegment.performance_id==Performance.id
         ).filter(
             Performance.event_id==event.id
@@ -382,3 +382,7 @@ def get_available_sales_segments(event, selected_date):
         ).filter(
             SalesSegment.end_at >= selected_date
         ).all()
+    ss = [s for s in ss 
+          if s.available_payment_delivery_method_pairs]
+
+    return ss

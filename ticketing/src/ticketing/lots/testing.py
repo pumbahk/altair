@@ -54,20 +54,42 @@ def _create_products(session, values):
     session.flush()
     return products
 
-def _add_lot(session, event_id, sales_segment_group_id, num_performances, num_stok_types, membergroups=[]):
+def _add_lot(session, event_id, sales_segment_group_id, num_performances, num_stok_types, membergroups=[], num_products=3):
     from . import models as m
     from ticketing.core.models import (
         Event, Performance, SalesSegment, StockType,
         PaymentMethod, DeliveryMethod, PaymentDeliveryMethodPair,
+        Product,
     )
     # event
     event = Event(id=event_id)
+
+    # payment_delivery_method
+    payment_method = PaymentMethod(fee=0)
+    delivery_method = DeliveryMethod(fee=0)
+    payment_delivery_method_pair = PaymentDeliveryMethodPair( 
+        payment_method=payment_method, delivery_method=delivery_method,
+        system_fee=0, transaction_fee=0, delivery_fee=0, discount=0)
+
+
+    # sales_segment
+    sales_segment = SalesSegment(id=sales_segment_group_id, 
+                                 payment_delivery_method_pairs=[payment_delivery_method_pair],
+                                 membergroups=membergroups)
+
     # performances
     performances = []
+    products = []
     for i in range(num_performances):
         p = Performance(name=u"パフォーマンス {0}".format(i))
         session.add(p)
         performances.append(p)
+
+        for j in range(num_products):
+            product = Product(sales_segment=sales_segment,
+                              performance=p,
+                              price=i * 100 + j * 10)
+            products.append(product)
 
     # stock_types
     stock_types = []
@@ -75,16 +97,10 @@ def _add_lot(session, event_id, sales_segment_group_id, num_performances, num_st
         s = StockType(name=u"席 {0}".format(i))
         session.add(s)
         stock_types.append(s)
-    # sales_segment
-    sales_segment = SalesSegment(id=sales_segment_group_id, event=event, membergroups=membergroups)
-    # payment_delivery_method
-    payment_method = PaymentMethod(fee=0)
-    delivery_method = DeliveryMethod(fee=0)
-    payment_delivery_method_pair = PaymentDeliveryMethodPair(sales_segment=sales_segment, 
-        payment_method=payment_method, delivery_method=delivery_method,
-        system_fee=0, transaction_fee=0, delivery_fee=0, discount=0)
 
-    lot = m.Lot(event=event, sales_segment=sales_segment, performances=performances, stock_types=stock_types)
+    lot = m.Lot(event=event, sales_segment=sales_segment, 
+                stock_types=stock_types)
+
     session.add(lot)
     session.flush()
     return lot

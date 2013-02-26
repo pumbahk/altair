@@ -138,7 +138,7 @@ cart.init = function(venues_selection, selected, cart_release_url) {
     //     }
     // });
     this.app = new cart.ApplicationController();
-    this.app.init(venues_selection, selected, upper_limit, cart_release_url);
+    this.app.init(venues_selection, selected, cart_release_url);
     $('body').bind('selectstart', function() { return false; });
 };
 
