@@ -10,6 +10,8 @@ def setUpModule():
     from altaircms.testing import setup_db
     setup_db(["altaircms.page.models", 
               "altaircms.tag.models", 
+              "altaircms.layout.models", 
+              "altaircms.widget.models", 
               "altaircms.event.models", 
               "altaircms.asset.models"])
 

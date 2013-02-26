@@ -263,7 +263,7 @@ class Scanner(object):
 
         summ = SalesTermSummalize(self.request)        
         for event in events:
-            summ.summalize_event(event).term()
+            summ.summalize(event).term()
 
         for action in self.after_parsed_actions:
             action()

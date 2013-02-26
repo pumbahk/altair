@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 from .faker import ModelFaker
 from pyramid.decorator import reify
 
@@ -8,13 +9,16 @@ class SalesTermSummalize(object):
     def __init__(self, request):
         self.request = request
 
-    def summalize_event(self, event, virtual=False):
+    def summalize(self, obj, virtual=False):
+        return getattr(self, "summalize_%s" % obj.__class__.__name__)(obj, virtual=virtual)
+
+    def summalize_Event(self, event, virtual=False):
         return EventSalesTerm(event, virtual=virtual)
 
-    def summalize_salessegment_group(self, salessegment_group, virtual=False):
+    def summalize_SalesSegmentGroup(self, salessegment_group, virtual=False):
         return SalesSegmentGroupSalesTerm(salessegment_group, virtual=virtual)
 
-    def summalize_salessegment(self, salessegment, virtual=False):
+    def summalize_SalesSegment(self, salessegment, virtual=False):
         return SalesSegmentSalesTerm(salessegment, virtual=virtual)
 
 class BubblingBase(object):
@@ -45,13 +49,9 @@ class EventSalesTerm(BubblingBase):
         self.o.deal_close = final_end_date
         return first_start_date, final_end_date
 
-    def bubble(self, start_on, end_on):
-        o = self.o
-        if start_on < o.deal_open:
-            o.deal_open = start_on
-        if end_on > o.deal_close:
-            o.deal_close = end_on
-        return o.deal_open, o.deal_close
+    def bubble(self, start_on, end_on): #手抜き。全部調べる。
+        self.term()
+        return self.o.deal_open, self.o.deal_close
 
 class SalesSegmentGroupSalesTerm(BubblingBase):
     @reify
@@ -74,13 +74,8 @@ class SalesSegmentGroupSalesTerm(BubblingBase):
         return first_start_date, final_end_date
 
     def bubble(self, start_on, end_on):
-        o = self.o
-        if start_on < o.start_on:
-            o.start_on = start_on
-        if end_on > o.end_on:
-            o.end_on = end_on
-        parent = EventSalesTerm(o.event)
-        return parent.bubble(o.start_on, o.end_on)
+        parent = EventSalesTerm(self.o.event)
+        return parent.bubble(start_on, end_on)
 
 class SalesSegmentSalesTerm(BubblingBase):
     children = []
