@@ -29,12 +29,12 @@ from ticketing.core.models import (Order, Performance, PaymentDeliveryMethodPair
                                    Product, ProductItem, OrderedProduct, OrderedProductItem, 
                                    Ticket, TicketBundle, TicketFormat, Ticket_TicketBundle,
                                    DeliveryMethod, TicketFormat_DeliveryMethod, Venue,
-                                   SalesSegmentGroup, Stock, StockStatus, Seat, SeatStatus, SeatStatusEnum, ChannelEnum)
+                                   SalesSegmentGroup, SalesSegment, Stock, StockStatus, Seat, SeatStatus, SeatStatusEnum, ChannelEnum)
 from ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
 from ticketing.orders.export import OrderCSV
 from ticketing.orders.forms import (OrderForm, OrderSearchForm, OrderRefundSearchForm, SejOrderForm, SejTicketForm,
                                     SejRefundEventForm,SejRefundOrderForm, SendingMailForm,
-                                    PerformanceSearchForm, OrderReserveForm, OrderRefundForm, ClientOptionalForm,
+                                    PerformanceSearchForm, SalesSegmentSearchForm, OrderReserveForm, OrderRefundForm, ClientOptionalForm,
                                     PreviewTicketSelectForm, CheckedOrderTicketChoiceForm)
 from ticketing.tickets.convert import to_opcodes
 from ticketing.views import BaseView
@@ -82,21 +82,21 @@ class OrdersAPIView(BaseView):
         if not form_search.validate():
             return {"result": [],  "status": False}
 
-        query = Performance.query.filter(Performance.deleted_at == None)
+        query = Performance.query
         query = Performance.set_search_condition(query, form_search)
-        performances = [dict(pk='', name='')]+[dict(pk=p.id, name='%s (%s)' % (p.name, p.start_on.strftime('%Y-%m-%d %H:%M'))) for p in query]
+        performances = [dict(pk='', name=u'(すべて)')]+[dict(pk=p.id, name='%s (%s)' % (p.name, p.start_on.strftime('%Y-%m-%d %H:%M'))) for p in query]
         return {"result": performances, "status": True}
 
-    @view_config(renderer="json", route_name="orders.api.sales_segment_groups")
-    def get_sales_segment_groups(self):
-        form_search = PerformanceSearchForm(self.request.params)
+    @view_config(renderer="json", route_name="orders.api.sales_segments")
+    def get_sales_segments(self):
+        form_search = SalesSegmentSearchForm(self.request.params)
         if not form_search.validate():
             return {"result": [],  "status": False}
 
-        query = SalesSegmentGroup.query.filter(SalesSegmentGroup.deleted_at==None)
-        query = SalesSegmentGroup.set_search_condition(query, form_search)
-        sales_segment_groups = [dict(pk=p.id, name=p.name) for p in query]
-        return {"result": sales_segment_groups, "status": True}
+        query = SalesSegment.query
+        query = SalesSegment.set_search_condition(query, form_search)
+        sales_segments = [dict(pk='', name=u'(すべて)')] + [dict(pk=p.id, name=p.sales_segment_group.name) for p in query]
+        return {"result": sales_segments, "status": True}
 
     @view_config(renderer="json", route_name="orders.api.checkbox_status", request_method="POST", match_param="action=add")
     def add_checkbox_status(self):

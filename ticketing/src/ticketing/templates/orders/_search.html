@@ -46,7 +46,7 @@ from ticketing.formhelpers import OurDateWidget
         <tr>
           <td>${h.form_item(form.event_id)}</td>
           <td>${h.form_item(form.performance_id)}</td>
-          <td></td>
+          <td>${h.form_item(form.sales_segment_id)}</td>
         </tr>
         <tr>
           <td>${h.form_item(form.order_no, maxlength=12)}</td>
@@ -131,16 +131,16 @@ from ticketing.formhelpers import OurDateWidget
           $("#search select[name='event_id']").change(update_performances);
 
           var update_sales_segments_on_empty = function(){
-            var $target = $(this).parents("form").find("select[name='sales_segment']").eq(0);
+            var $target = $(this).parents("form").find("select[name='sales_segment_id']").eq(0);
             $target.empty();
             return;
           };
           var update_sales_segments_on_hasvalue = function(v){
             var self = this;
-            var params = {event_id: v, public:true};
+            var params = {performance_id: v};
             $.getJSON("${request.route_url('orders.api.sales_segments')}", params).done(function(data){
               if(data.status){
-                var $target = $(self).parents("form").find("select[name='sales_segment']").eq(0);
+                var $target = $(self).parents("form").find("select[name='sales_segment_id']").eq(0);
                 $target.empty();
                 // optimize if slow.
                 for(var i=0, j=data.result.length; i<j; i++){
@@ -159,7 +159,7 @@ from ticketing.formhelpers import OurDateWidget
               return update_sales_segments_on_hasvalue.call(self, v);
             }
           };
-          $("#search select[name='event_id']").change(update_sales_segments);
+          $("#search select[name='performance_id']").change(update_sales_segments);
         });
       </script>
       ${h.form_item(form.sort)}

@@ -613,9 +613,11 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @staticmethod
     def set_search_condition(query, form):
-        sort = form.sort.data or 'start_on'
-        direction = form.direction.data or 'asc'
-        query = query.order_by('Performance.' + sort + ' ' + direction)
+        """TODO: query を構築するクラスを別に作る等したい"""
+        if form.sort.data:
+            direction = form.direction.data or 'asc'
+            # XXX: injection safe?
+            query = query.order_by('Performance.' + form.sort.data + ' ' + direction)
 
         condition = form.event_id.data
         if condition:
@@ -1002,9 +1004,11 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @staticmethod
     def set_search_condition(query, form):
-        sort = form.sort.data or 'id'
-        direction = form.direction.data or 'desc'
-        query = query.order_by(SalesSegmentGroup.__tablename__ + '.' + sort + ' ' + direction)
+        """TODO: query を構築するクラスを別に作る等したい"""
+        if form.sort.data:
+            direction = form.direction.data or 'desc'
+            # XXX: injection safe?
+            query = query.order_by(SalesSegmentGroup.__tablename__ + '.' + form.sort.data + ' ' + direction)
 
         condition = form.event_id.data
         if condition:
@@ -2265,9 +2269,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @staticmethod
     def set_search_condition(query, form):
         """TODO: query を構築するクラスを別に作る等したい"""
-        sort = form.sort.data or 'id'
-        direction = form.direction.data or 'desc'
-        query = query.order_by('Order.' + sort + ' ' + direction)
+        if form.sort.data:
+            direction = form.direction.data or 'desc'
+            # XXX: injection safe?
+            query = query.order_by('Order.' + form.sort.data + ' ' + direction)
 
         condition = form.order_no.data
         if condition:
@@ -2278,6 +2283,9 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         condition = form.event_id.data
         if condition:
             query = query.join(Order.performance).filter(Performance.event_id==condition)
+        condition = form.sales_segment_id.data
+        if condition and '' not in condition:
+            query = query.join(Order.ordered_products).join(OrderedProduct.product).filter(Product.sales_segment_id.in_(condition))
         condition = form.ordered_from.data
         if condition:
             query = query.filter(Order.created_at>=condition)
@@ -2887,5 +2895,23 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
             ).filter(
                 Product.sales_segment_id==self.id
             ).distinct(Stock.id)
+
+    @staticmethod
+    def set_search_condition(query, form):
+        """TODO: query を構築するクラスを別に作る等したい"""
+        if form.sort.data:
+            direction = form.direction.data or 'desc'
+            # XXX: injection safe?
+            query = query.order_by(SalesSegment.__tablename__ + '.' + form.sort.data + ' ' + direction)
+
+        condition = form.performance_id.data
+        if condition:
+            query = query.filter(SalesSegment.performance_id==condition)
+        condition = form.public.data
+        if condition:
+            query = query.filter(SalesSegment.public==True)
+
+        return query
+
 
         
