@@ -134,7 +134,7 @@ class Cart(Base):
             cart_session_id=that.cart_session_id,
             system_fee=that.system_fee,
             shipping_address_id=that.shipping_address_id,
-            payment_delivery_method_pair_id=that.payment_delivery_method_pair_i
+            payment_delivery_method_pair_id=that.payment_delivery_method_pair_id,
             performance_id=that.performance_id,
             sales_segment_id=that.sales_segment_id,
             sales_segment_group_id=that.sales_segment_group_id
