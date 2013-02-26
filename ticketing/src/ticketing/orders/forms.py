@@ -320,8 +320,7 @@ class OrderReserveForm(Form):
             products = []
             if 'stocks' in kwargs and kwargs['stocks']:
                 # 座席選択あり
-                products = Product.filter(Product.event_id==performance.event_id)\
-                                  .join(Product.items)\
+                products = Product.query.join(Product.items)\
                                   .filter(ProductItem.performance_id==performance.id)\
                                   .filter(ProductItem.stock_id.in_(kwargs['stocks'])).all()
             #else:
