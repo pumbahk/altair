@@ -4,7 +4,7 @@
   <title>東京サンレーヴス サンレーヴスチケット</title>
 </head>
 <body background="#FFB700">
-  <img src="assets/head_title_mobile.jpg" alt="仙台89ERS" width="232" height="72" />
+  <img src="assets/head_title_mobile.jpg" alt="東京サンレーヴス" width="232" height="72" />
   <div align="center">ただいまメンテナンス中です</div>
   <?php include '../#common/maintenance_message.php'; ?>
   <hr />
