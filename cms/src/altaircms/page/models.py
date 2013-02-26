@@ -1,9 +1,13 @@
 # coding: utf-8
 from sqlalchemy.ext.declarative import declared_attr
 from datetime import datetime
+from pyramid.decorator import reify
 import sqlalchemy as sa
 from altaircms import helpers as h
 import sqlalchemy.orm as orm
+from .nameresolver import GenrePageInfoResolver
+from .nameresolver import EventPageInfoResolver
+from .nameresolver import OtherPageInfoResolver
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy import (Column, 
                         Integer, 
@@ -384,70 +388,37 @@ class PageType(WithOrganizationMixin, Base):
             return "other"
 
 ## master    
-class PageDefaultInfo(Base):
+class PageDefaultInfo(WithOrganizationMixin, Base):
     query = DBSession.query_property()
     __tablename__ = "page_default_info"
     id = sa.Column(sa.Integer, primary_key=True)
-    title_fmt = sa.Column(sa.Unicode(255))
-    url_fmt = sa.Column(sa.Unicode(255))
-
-    pageset_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id"))
-    pageset = orm.relationship("PageSet", uselist=False, backref="default_info")
+    title_prefix = sa.Column(sa.Unicode(255), default=u"")
+    url_prefix = sa.Column(sa.Unicode(255), default=u"")
 
     keywords = Column(Unicode(255), default=u"")
     description = Column(Unicode(255), default=u"")
+    pagetype_id = sa.Column(sa.Integer, sa.ForeignKey("pagetype.id"))
+    pagetype = orm.relationship("PageType", uselist=False, backref="default_info")
 
-    def _urlprefix_from_category(self, connector=u"/"):
-        category = self.category
-        r = []
-        while category:
-            r.append(category.label)
-            category = category.parent
-        return connector.join(reversed(r))
+    @reify
+    def resolver_genre(self):
+        return GenrePageInfoResolver(self)
 
-    def _url(self, part):
-        return self.url_fmt % {"url": part}
+    @reify
+    def resolver_event(self):
+        return EventPageInfoResolver(self)
 
-    def url(self, part):
-        """ pageを作成するときに使う"""
-        string = self._url(part)
-        return string
-        # if isinstance(string, unicode):
-        #     string = string.encode("utf-8")
-        # return urllib.quote(string)
+    @reify
+    def resolver_other(self):
+        return OtherPageInfoResolver(self)
 
-
-    def title(self, title):
-        return self.title_fmt % {"title": title,  "self": self}
-
-    def create_pageset(self, name, category=None, url=None):
-        url = self.url(url or name)
-        pageset = PageSet(parent=self.pageset, url=url, name=name)
-        if category:
-            category.pageset = pageset
-        return pageset
-
-        
-    def create_page(self, name, category=None, keywords=None, description=None, url=None, layout=None):
-        pageset = self.create_pageset(name, category=category, url=url)
-        title = self.title(name)
-        return Page(pageset=pageset, 
-                    url=pageset.url, 
-                    name=name, 
-                    title=title, 
-                    layout=layout, 
-                    keywords=keywords or self.keywords, 
-                    description=description or self.description)
-
-    
-    def clone_with_pageset(self, pageset, url_fmt=None, title_fmt=None, 
-                          keywords=None, description=None):
-        return self.__class__(pageset=pageset,
-                              url_fmt=url_fmt or self.url_fmt, 
-                              title_fmt=title_fmt or self.title_fmt, 
-                              keywords=keywords or self.keywords, 
-                              description=description or self.description)
-
+    def get_page_info(self, pagetype, genre=None, event=None):
+        if event:
+            return self.resolver_event.resolve(genre, event)
+        elif genre:
+            return self.resolver_genre.resolve(genre)
+        else:
+            return self.resolver_other.resolve(pagetype)
 
 class PageTag2Page(Base):
     __tablename__ = "pagetag2page"

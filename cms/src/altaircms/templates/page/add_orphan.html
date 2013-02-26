@@ -50,7 +50,11 @@
   </div>
     
   <div class="span7">
-	${co.setup_info_form()}
+  %if hasattr(form,"event"):
+	   ${co.setup_info_form_event(request.route_path("plugins_api_page_info_default"), form)}
+  %else:
+	   ${co.setup_info_form()}
+  %endif
 	<h2>form</h2>
 	<form id="submit_form" action="${h.current_route_path_override(request, action="confirm")}" method="POST">
     ## work-around. so-sorry.

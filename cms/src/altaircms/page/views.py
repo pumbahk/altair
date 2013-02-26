@@ -61,10 +61,17 @@ class PageAddView(object):
         self.request._form = forms.PageForm(event=event)
         self.request._setup_form = forms.PageInfoSetupForm(name=event.title)
         raise AfterInput
+    @view_config(route_name="page_add_orphan", request_param="pagetype=event_detail", request_method="GET", match_param="action=input", permission="page_create")
+    def input_form_orphan_with_event(self):
+        set_endpoint(self.request)
+        self.request._form = forms.PageForm()
+        self.request._setup_form = forms.PageInfoSetupWithEventForm()
+        raise AfterInput
 
     @view_config(route_name="page_add_orphan", request_param="pagetype", request_method="GET", match_param="action=input", permission="page_create")
     def input_form(self):
         set_endpoint(self.request)
+        raise Exception
         self.request._form = forms.PageForm()
         self.request._setup_form = forms.PageInfoSetupForm()
         raise AfterInput

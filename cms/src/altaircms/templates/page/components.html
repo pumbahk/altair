@@ -1,5 +1,45 @@
 <%namespace name="fco" file="../formcomponents.html"/>
 
+<%def name="setup_info_form_event(api, form)">
+	<script type="text/javascript">
+	  var propagate_data = function(data){
+      var root = $("form#submit_form");
+      root.find("input[name='name']").val(data.name);
+      root.find("textarea[name='url']").val(data.url);
+      root.find("textarea[name='title']").val(data.title);
+      root.find("textarea[name='keywords']").val(data.keywords);
+      root.find("textarea[name='description']").val(data.description);
+
+		var parent_field = root.find("select[name='parent']");
+		if(data.parent){
+	      parent_field.val(data.parent).removeAttr("disabled");
+		} else {
+	      parent_field.attr("disabled","disabled");
+	    }
+	  }
+	  
+	  var propagete_setup_info = function(){
+	    var root = $("form#setup_form");
+	    var params = {"event": root.find("input[name='event']").val(),
+	                  "genre": root.find("select[name='genre']").val(),
+	                  "pagetype": root.find("select[name='pagetype']").val()};
+    
+		$.getJSON("${api}",params).done(function(data,status,req){
+		  if (data.error){
+		     alert(data.error);
+		  } else {
+	        propagate_data(data);
+		  }
+		}).fail(function(data){alert(data)});
+	    return false; // kill propagation
+	  };
+	</script>
+	<form id="setup_form" onSubmit="return propagete_setup_info();">
+     ${fco.form_as_table_strict(setup_form, ["pagetype", "genre", "event"])}
+	 <input type="submit" value="初期値をフォームに反映">
+	</form>
+</%def>
+
 <%def name="setup_info_form()">
 	<script type="text/javascript">
 	  var propagate_data = function(data){

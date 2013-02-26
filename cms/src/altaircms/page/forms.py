@@ -57,22 +57,29 @@ def url_not_conflict(form, field):
     if qs.count() > 0:
         raise validators.ValidationError(u'URL "%s" は既に登録されてます' % field.data)
 
+def pagetype_filter(model, request, query):
+    return query.filter_by(name=request.GET["pagetype"])
 
 class PageInfoSetupForm(Form):
     """ このフォームを使って、PageFormへのデフォルト値を挿入する。
     """
-    name = fields.TextField(label=u"名前", validators=[validators.Required()])
-    parent = dynamic_query_select_field_factory(
-        PageSet, 
-        query_factory= lambda : PageSet.query.filter(PageSet.category != None).filter(PageSet.default_info != None), 
-        allow_blank=True, label=u"親ページ", 
-        get_label=lambda obj:  u'%s' % obj.name)
+    pagetype = dynamic_query_select_field_factory(PageType, allow_blank=False, label=u"ページタイプ", 
+                                                  get_label=lambda o: o.label, 
+                                                  dynamic_query=pagetype_filter)
+    genre = dynamic_query_select_field_factory(Genre, allow_blank=True, label=u"ジャンル", 
+                                               get_label=lambda g: g.label)
 
+class PageInfoSetupWithEventForm(Form):
+    event = dynamic_query_select_field_factory(Event, allow_blank=True, label=u"イベント", 
+                                               get_label=lambda obj:  obj.title)
+    pagetype = dynamic_query_select_field_factory(PageType, allow_blank=False, label=u"ページタイプ", 
+                                                  get_label=lambda o: o.label, 
+                                                  dynamic_query=pagetype_filter)
+    genre = dynamic_query_select_field_factory(Genre, allow_blank=True, label=u"ジャンル", 
+                                               get_label=lambda g: g.label)
 
 @implementer(IForm)
 class PageForm(Form):
-    def pagetype_filter(model, request, query):
-        return query.filter_by(name=request.GET["pagetype"])
     def layout_filter(model, request, query):
         pagetype = PageType.get_or_create(name=request.GET["pagetype"], organization_id=request.organization.id)
         return request.allowable(Layout).with_transformation(Layout.applicable(pagetype.id))

@@ -248,7 +248,7 @@ class Genre(Base,  WithOrganizationMixin):
         self.is_root = False
         self._parents.append(_GenrePath(genre=self, next_genre=genre, hop=hop))        
 
-    def add_parent(self, genre, hop):
+    def add_parent(self, genre, hop=1):
         path = _GenrePath.query.filter_by(genre=self, next_genre=genre).first()
         if path is None:
             self._add_parent(genre, hop)

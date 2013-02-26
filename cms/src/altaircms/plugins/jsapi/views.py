@@ -3,18 +3,21 @@ from datetime import datetime
 import sqlalchemy.orm as orm
 from pyramid.view import view_config
 from pyramid.view import view_defaults
-
+import logging
+logger = logging.getLogger(__file__)
 from altaircms.models import DBSession
 from altaircms.models import Performance
 
 from altaircms.page.models import PageSet
 from altaircms.page.models import Page
+from altaircms.page.models import PageType
 from altaircms.page.models import PageDefaultInfo
 from altaircms.page.models import PageAccesskey
 from altaircms.page import subscribers as page_subscribers
 from altaircms.auth.api import require_login
 from altaircms.auth.api import get_or_404
 from altaircms.event.models import Event
+from altaircms.models import Genre
 
 from altaircms.subscribers import notify_model_create
 
@@ -120,23 +123,26 @@ class PageUpdatePublishStatus(object):
 def page_setup_info(request):
     try:
         params = request.params
-        pdi = PageDefaultInfo.query.filter(PageDefaultInfo.pageset_id==params["parent"]).one()
+        pagetype = PageType.query.filter_by(id=params["pagetype"]).one()
+        pdi = PageDefaultInfo.query.filter(PageDefaultInfo.pageset_id==params["pagetype"]).one()
+        genre = Genre.query.filter_by(id=params["genre"]).one()
+        if "event" in params:
+            event = Event.query.filter_by(id=params["event_id"])
+            info = pdi.get_page_info(pagetype, genre, event)
+        else:
+            info = pdi.get_page_info(pagetype, genre, None)
+
         name = params["name"]
-        title = pdi.title(name)
-        jurl = pdi._url(name)
-        url = pdi.url(name)
-        parent = params["parent"]
         result = {
-            "name": name, 
-            "title": title, 
-            "jurl": jurl, 
-            "url": url, 
-            "keywords": pdi.keywords, 
-            "description": pdi.description, 
-            "parent": parent
+            "name": info.name or name, 
+            "title": info.title or name, 
+            "url": info.url, 
+            "keywords": info.keywords, 
+            "description": info.description, 
             }
         return result
     except Exception, e:
+        logger.error(str(e))
         return {"error": str(e)}
 
 from ...tag.api import put_tags
