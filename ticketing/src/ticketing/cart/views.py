@@ -569,10 +569,10 @@ class ReserveView(object):
 
         performance_id = self.request.params.get('performance_id')
         seat_type_id = self.request.params.get('seat_type_id')
-        sales_segment_group_id = self.request.matchdict["sales_segment_id"]
+        sales_segment_id = self.request.matchdict["sales_segment_id"]
 
         # セールスセグメント必須
-        sales_segment = c_models.SalesSegment.filter_by(id=sales_segment_group_id).first()
+        sales_segment = c_models.SalesSegment.filter_by(id=sales_segment_id).first()
 
         performance = c_models.Performance.query.filter(
             c_models.Performance.id==performance_id).first()
@@ -585,7 +585,7 @@ class ReserveView(object):
             event=event,
             performance=performance, 
             seat_type_id=seat_type_id,
-            sales_segment_group_id=sales_segment_id, 
+            sales_segment_id=sales_segment_id, 
             payment_url=self.request.route_url("cart.payment", sales_segment_id=sales_segment.id),
             cart=dict(products=[dict(name=p.product.name, 
                                      quantity=p.quantity,
@@ -681,7 +681,7 @@ class ReserveView(object):
             event_id=performance.event_id,
             seat_type_id=seat_type_id,
         )
-        return HTTPFound(self.request.route_url('cart.order', sales_segment_group_id=sales_segment.id, _query=query))
+        return HTTPFound(self.request.route_url('cart.order', sales_segment_id=sales_segment.id, _query=query))
 
     # def __call__(self):
     #     """
@@ -1004,37 +1004,47 @@ class MobileIndexView(IndexViewMixin):
     def __call__(self):
         self.check_redirect(mobile=True)
         venue_name = self.request.params.get('v')
-
+        sales_segments = api.get_available_sales_segments(self.context.event, datetime.now())
         # パフォーマンスIDが確定しているなら商品選択へリダイレクト
         performance_id = self.request.params.get('pid') or self.request.params.get('performance')
         if performance_id:
             performance = c_models.Performance.query.filter(c_models.Performance.id==performance_id).one()
             # XXX: このコードはもういらないのでは?
-            if performance.on_the_day:
-                sales_segment = self.context.sales_counter_sales_segment
-            else:
-                sales_segment = self.context.normal_sales_segment
-
-            return HTTPFound(self.request.route_url(
-                "cart.seat_types",
-                event_id=self.context.event.id,
-                performance_id=performance_id,
-                sales_segment_group_id=sales_segment.id))
+            #if performance.on_the_day:
+            #    sales_segment = self.context.sales_counter_sales_segment
+            #else:
+            #    sales_segment = self.context.normal_sales_segment
+            for ss in sales_segments:
+                if str(ss.performance_id) == performance_id:
+                    performance = ss.performance
+                    return HTTPFound(self.request.route_url(
+                            "cart.seat_types",
+                            event_id=self.context.event.id,
+                            performance_id=performance_id,
+                            sales_segment_id=ss.id))
 
         # 公演名リスト
         # ただ単にパフォーマンスのリストが欲しいだけなので
         # normal_sales_segment で良い
-        perms = api.performance_names(self.request, self.context.event, self.context.normal_sales_segment)
-        performances = [p[0] for p in perms]
+
+        perms = [ss.performance for ss in sales_segments]
+
+        #perms = api.performance_names(self.request, self.context.event, self.context.normal_sales_segment)
+        performances = list(set([p.name for p in perms]))
         logger.debug('performances %s' % performances)
 
         # 公演名が指定されている場合は、（日時、会場）のリスト
         performance_name = self.request.params.get('performance_name')
         venues = []
+        # if performance_name:
+        #     venues = [(x['pid'], u"start:%Y-%m-%d %H:%M} {vname} 当日券".format(**x) 
+        #         if x.get('on_the_day') else u"{start:%Y-%m-%d %H:%M} {vname}".format(**x)) 
+        #         for x in api.performance_venue_by_name(self.request, self.context.event, self.context.normal_sales_segment, performance_name)]
         if performance_name:
-            venues = [(x['pid'], u"{start:%Y-%m-%d %H:%M} {vname} 当日券".format(**x) 
-                if x.get('on_the_day') else u"{start:%Y-%m-%d %H:%M} {vname}".format(**x)) 
-                for x in api.performance_venue_by_name(self.request, self.context.event, self.context.normal_sales_segment, performance_name)]
+            venues = [(ss.performance.id, 
+                       u"{start:%Y-%m-%d %H:%M} {vname}".format(start=ss.performance.start_on,
+                                                              vname=ss.performance.venue.name) )
+                      for ss in sales_segments]
 
         return dict(
             event=self.context.event,
@@ -1057,7 +1067,7 @@ class MobileSelectProductView(object):
     def __call__(self):
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.matchdict['performance_id']
-        sales_segment_group_id = self.request.matchdict['sales_segment_id']
+        sales_segment_id = self.request.matchdict['sales_segment_id']
         seat_type_id = self.request.params.get('stid')
 
         if seat_type_id:
@@ -1065,11 +1075,11 @@ class MobileSelectProductView(object):
                 "cart.products",
                 event_id=event_id,
                 performance_id=performance_id,
-                sales_segment_group_id=sales_segment_id,
+                sales_segment_id=sales_segment_id,
                 seat_type_id=seat_type_id))
 
         # セールスセグメント必須
-        sales_segment = self.context.get_sales_segument()
+        sales_segment = c_models.SalesSegment.query.filter(c_models.SalesSegment.id==sales_segment_id).first()
         if sales_segment is None:
             raise NoEventError("No matching sales_segment")
 
@@ -1093,7 +1103,7 @@ class MobileSelectProductView(object):
                     description=s.description,
                     style=s.style,
                     products_url=self.request.route_url('cart.products',
-                                                        event_id=event_id, performance_id=performance_id, sales_segment_group_id=sales_segment.id, seat_type_id=s.id),
+                                                        event_id=event_id, performance_id=performance_id, sales_segment_id=sales_segment.id, seat_type_id=s.id),
                     availability=available > 0,
                     availability_text=h.get_availability_text(available),
                     quantity_only=s.quantity_only,
@@ -1112,7 +1122,7 @@ class MobileSelectProductView(object):
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.matchdict['performance_id']
         seat_type_id = self.request.matchdict['seat_type_id']
-        sales_segment_group_id = self.request.matchdict['sales_segment_id']
+        sales_segment_id = self.request.matchdict['sales_segment_id']
 
         # イベント
         event = c_models.Event.query.filter(c_models.Event.id==event_id).first()
@@ -1127,16 +1137,17 @@ class MobileSelectProductView(object):
             raise NoEventError("No such performance (%d)" % performance_id)
 
         sales_segment = c_models.SalesSegment.query.filter(
-            c_models.SalesSegment.id==sales_segment_group_id,
-            c_models.SalesSegment.event_id==event.id).first()
+            c_models.SalesSegment.id==sales_segment_id
+        ).first()
+
         if sales_segment is None:
-            raise NoEventError("No such sales segment (%s)" % sales_segment_group_id)
+            raise NoEventError("No such sales segment (%s)" % sales_segment_id)
         
 
         # 席種(イベントとパフォーマンスにひもづいてること)
         segment_stocks = DBSession.query(c_models.ProductItem.stock_id).filter(
             c_models.ProductItem.product_id==c_models.Product.id).filter(
-            c_models.Product.sales_segment_group_id==sales_segment.id).filter(
+            c_models.Product.sales_segment_id==sales_segment.id).filter(
             c_models.Product.public==True)
 
         seat_type = DBSession.query(c_models.StockType).filter(
