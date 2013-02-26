@@ -56,7 +56,7 @@ class PerformanceShowView(BaseView):
             )
 
     def _tab_order(self):
-        query = Order.filter_by(performance_id=performance_id)
+        query = Order.filter_by(performance_id=self.performance.id)
         form_search = OrderSearchForm(
             self.request.params,
             event_id=self.performance.event_id,
@@ -78,6 +78,9 @@ class PerformanceShowView(BaseView):
 
     def _tab_sales_segment(self):
         return dict(sales_segments=self.performance.sales_segments)
+
+    def _tab_reservation(self):
+        return {}
 
     def _extra_data(self):
         # プリンターAPI
