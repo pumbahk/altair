@@ -4,7 +4,7 @@
 <%
 from ticketing.core.models import StockHolder, Stock
 stock_types = performance.event.stock_types
-stock_holders = StockHolder.query.filter(Stock.performance_id == performance.id).all()
+stock_holders = StockHolder.query.join(Stock).filter(Stock.performance_id == performance.id).distinct().all()
 ticket_bundles = performance.event.ticket_bundles
 sales_segments = performance.sales_segments
 %>
