@@ -1,14 +1,14 @@
 """alter table SejRefundTicket add column sent_at
 
 Revision ID: 3ee99f3f1e61
-Revises: 4a85433c818a
+Revises: 5311fff7b14a
 Create Date: 2013-02-25 10:26:30.619231
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '3ee99f3f1e61'
-down_revision = '4a85433c818a'
+down_revision = '5311fff7b14a'
 
 from alembic import op
 import sqlalchemy as sa
