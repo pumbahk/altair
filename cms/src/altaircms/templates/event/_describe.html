@@ -28,4 +28,4 @@
   </tr>
 </table>
 
-${panel("model_action_buttons", event, modelname="event")}
+${panel("model_action_buttons", event, modelname="event", _query=dict(endpoint=request.url, delete_endpoint=request.route_path("event_list")))}

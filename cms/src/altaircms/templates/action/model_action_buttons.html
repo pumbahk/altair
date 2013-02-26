@@ -17,7 +17,12 @@
       </a>
     </li>
     <li>
-      <a href="${request.route_path(modelname+"_delete",action="confirm",id=obj.id, _query=_query)}">
+      <%
+        delete_params = _query.copy()
+        if "delete_endpoint" in _query:
+            delete_params["endpoint"] = _query["delete_endpoint"]
+         %>
+      <a href="${request.route_path(modelname+"_delete",action="confirm",id=obj.id, _query=delete_params)}">
         <i class="icon-minus"></i> ${modeljname}を削除
       </a>
     </li>

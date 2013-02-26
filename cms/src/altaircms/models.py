@@ -132,8 +132,8 @@ class SalesSegmentGroup(BaseOriginalMixin, Base):
     name = sa.Column(sa.Unicode(length=255))
     kind = sa.Column(sa.Unicode(length=255))
 
-    start_on = sa.Column(sa.DateTime)
-    end_on = sa.Column(sa.DateTime)
+    start_on = sa.Column(sa.DateTime, default=datetime.now)
+    end_on = sa.Column(sa.DateTime, default=datetime.now)
 
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
@@ -142,10 +142,10 @@ class SalesSegmentGroup(BaseOriginalMixin, Base):
     def create_defaults_from_event(cls, event):
         return [cls(event=event, 
                     name=u"一般販売", 
-                    kind="一般販売"), 
+                    kind="normal"), 
                 cls(event=event, 
                     name=u"一般先行", 
-                    kind="一般先行"), 
+                    kind="early"), 
                 ]
 
 class SalesSegment(BaseOriginalMixin, Base):
