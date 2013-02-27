@@ -1028,6 +1028,8 @@ class MobileIndexView(IndexViewMixin):
         # normal_sales_segment で良い
 
         perms = [ss.performance for ss in sales_segments]
+        if not perms:
+            raise HTTPNotFound()
 
         #perms = api.performance_names(self.request, self.context.event, self.context.normal_sales_segment)
         performances = list(set([p.name for p in perms]))
