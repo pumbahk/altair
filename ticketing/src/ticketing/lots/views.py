@@ -16,7 +16,6 @@ from pyramid.httpexceptions import HTTPNotFound
 from uuid import uuid4
 from ticketing.payments.payment import Payment
 from ticketing.cart.exceptions import NoCartError
-
 from .models import (
     Lot,
     LotEntry,
@@ -51,10 +50,16 @@ class EntryLotView(object):
 
     def _get_lot_info(self):
         event = api.get_event(self.request)
-        member_group = api.get_member_group(self.request)
-        #sales_segment = api.get_sales_segment(self.request, event, member_group)
         lot_id = self.request.matchdict.get('lot_id')
-        return api.get_lot(self.request, event, lot_id)
+        lot = Lot.query.filter(
+            Lot.event_id==event.id
+            ).filter(
+            Lot.id==lot_id,
+            ).one()
+        
+        member_group = api.get_member_group(self.request)
+        return lot, lot.performances, lot.stock_types
+
 
     def _create_product_performance_map(self, products):
         product_performance_map = {}
@@ -78,6 +83,16 @@ class EntryLotView(object):
             form = schemas.ClientForm()
 
         lot, performances, stocks = self._get_lot_info()
+        if not lot:
+            logger.debug('lot not not found')
+            raise HTTPNotFound()
+        if not performances:
+            logger.debug('lot performances not found')
+            raise HTTPNotFound()
+        # if not stocks:
+        #     logger.debug('lot stocks found')
+        #     raise HTTPNotFound()
+
         event = lot.event
         sales_segment = lot.sales_segment
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
@@ -163,9 +178,8 @@ class ConfirmLotEntryView(object):
     def get_lot(self):
         event = api.get_event(self.request)
         member_group = api.get_member_group(self.request)
-        sales_segment = api.get_sales_segment(self.request, event, member_group)
         lot_id = self.request.matchdict.get('lot_id')
-        return api.get_lot(self.request, event, sales_segment, lot_id)
+        return Lot.query.filter(Lot.id==lot_id).one()
 
     @view_config(request_method="POST")
     def post(self):

@@ -39,6 +39,7 @@ from ticketing.core.api import get_organization
 import ticketing.cart.api as cart_api
 from ticketing.utils import sensible_alnum_encode
 from ticketing.rakuten_auth.api import authenticated_user
+from zope.deprecation import deprecate
 
 from ticketing.core.models import (
     Organization,
@@ -119,24 +120,18 @@ def get_requested_lot(request):
     lot_id = request.matchdict.get('lot_id')
     return Lot.query.filter(Lot.id==lot_id).one()
 
-
-def get_lot(request, event, lot_id):
-    """ 抽選取得
-    :return: 抽選, 公演リスト, 席種リスト
-    """
-    lot = Lot.query.filter(
-        Lot.event_id==event.id
-    # ).filter(
-    #     Lot.sales_segment_group_id==sales_segment.id
-    ).filter(
-        Lot.id==lot_id,
-    ).one()
-
-    performances = Performance.query.filter(
-        Performance.id==Lot_Performance.c.performance_id
-    ).filter(
-        Lot_Performance.c.lot_id==lot.id
-    ).all()
+# @deprecate(u"直接Lotのプロパティつかえ")
+# def get_lot(request, event, lot_id):
+#     """ 抽選取得
+#     :return: 抽選, 公演リスト, 席種リスト
+#     """
+#     lot = Lot.query.filter(
+#         Lot.event_id==event.id
+#     ).filter(
+#         Lot.id==lot_id,
+#     ).one()
+# 
+    performances = lot.performances
 
     stock_types = StockType.query.filter(
         StockType.id==Lot_StockType.c.stock_type_id

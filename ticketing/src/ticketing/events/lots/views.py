@@ -40,8 +40,11 @@ class Lots(BaseView):
             for lot_id in self.request.params.getall('lot_id'):
                 lot = Lot.query.filter(Lot.id==lot_id).first()
                 if lot:
-                    lot.delete()
-                    self.request.session.flash(u"{0}を削除しました。".format(lot.name))
+                    if lot.entries:
+                        self.request.session.flash(u'{0}は抽選申し込みが存在します。'.format(lot.name))
+                    else:
+                        lot.delete()
+                        self.request.session.flash(u"{0}を削除しました。".format(lot.name))
 
         event_id = int(self.request.matchdict.get('event_id', 0))
         event = Event.get(event_id, organization_id=self.context.user.organization_id)
@@ -87,7 +90,7 @@ class Lots(BaseView):
             for pdmp_id in self.request.POST.getall("pdmp_id"):
                 pdmp = PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id==pdmp_id).first()
                 if pdmp and pdmp not in lot.sales_segment.payment_delivery_method_pairs:
-                    lot.sales_segment.payment_delivery_method_pairs.append(pdmp)
+                    lot.sales_segment.payment_delivery_method_pairs.add(pdmp)
         if "action-delete" in self.request.POST:
             for product_id in self.request.POST.getall("product_id"):
                 product = Product.query.filter(Product.id==product_id).first()
