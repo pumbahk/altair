@@ -117,6 +117,8 @@ class Performances(BaseView):
     def index(self):
         event_id = int(self.request.matchdict.get('event_id', 0))
         event = Event.get(event_id, organization_id=self.context.user.organization_id)
+        if event is None:
+            return HTTPNotFound('event id %d is not found' % event_id)
 
         sort = self.request.GET.get('sort', 'Performance.start_on')
         direction = self.request.GET.get('direction', 'asc')
