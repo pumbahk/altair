@@ -168,11 +168,11 @@ def create_refund_zip_file():
     refund_event_tsv.close()
 
     # create zip file
-    zip = zipfile.ZipFile(work_dir + zip_file_name, 'w', zipfile.ZIP_DEFLATED)
-    zip.write(work_dir + archive_file_name, archive_file_name)
-    zip.write(work_dir + refund_event_file_name, refund_event_file_name)
-    zip.write(work_dir + refund_ticket_file_name, refund_ticket_file_name)
-    zip.close()
+    zf = EnhZipFile(work_dir + zip_file_name, 'w', zipfile.ZIP_DEFLATED)
+    zf.append_file(work_dir + archive_file_name, archive_file_name)
+    zf.append_file(work_dir + refund_event_file_name, refund_event_file_name)
+    zf.append_file(work_dir + refund_ticket_file_name, refund_ticket_file_name)
+    zf.close()
 
     return
 
