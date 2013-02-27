@@ -6,6 +6,7 @@ import altaircms.helpers as h
 from markupsafe import Markup
 from altaircms.asset.viewhelpers import image_asset_layout
 from altaircms.models import Genre
+from altaircms.page.models import PageType
 
 import pkg_resources
 
@@ -114,8 +115,12 @@ def pagedefaultinfo_mapper(request, obj):
     objlike.pagetype = Markup(u'<a href="%s">%s</a>' % (request.route_path("pagetype_update", action="input", id=obj.pagetype.id, _query=dict(endpoint=request.url)), obj.pagetype.label)) if obj.pagetype else u"-"
     return objlike
 
+prole_dict = dict(PageType.page_role_candidates)
+prendering_type_dict = dict(PageType.page_rendering_type_candidates)
 def pagetype_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
+    objlike.page_role = prole_dict.get(obj.page_role, u"-")
+    objlike.page_rendering_type = prendering_type_dict.get(obj.page_rendering_type, u"-")
     return objlike
 
 def pageset_mapper(request, obj):

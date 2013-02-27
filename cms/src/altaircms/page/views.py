@@ -111,8 +111,10 @@ class PageAddView(object):
         self.request.POST
         form = forms.PageForm(self.request.POST)
         if form.validate():
-            if self.request.GET.get("pagetype") == "portal" and form.data["genre"]:
-                FlashMessage.info(u"%sのカテゴリトップページとして登録されます。(既にカテゴリトップページが存在している場合にはこれから作られるページが優先されます)" % form.data["genre"].label, request=self.request)
+            if self.request.GET.get("pagetype"):
+                pagetype = self.request.allowable(PageType, PageType.name==self.request.GET.get("pagetype")).first()
+                if pagetype.is_portal and form.data["genre"]:
+                    FlashMessage.info(u"%sのカテゴリトップページとして登録されます。(既にカテゴリトップページが存在している場合にはこれから作られるページが優先されます)" % form.data["genre"].label, request=self.request)
             return {"form": form}
         else:
             self.request._form = form
@@ -411,22 +413,23 @@ def page_detail(request):
     page = get_or_404(request.allowable(Page), Page.id==request.matchdict["page_id"])
     return {"page": page, "myhelpers": myhelpers}
 
+
 ## todo: persmissionが正しいか確認
 @view_config(route_name='page_edit_', renderer='altaircms:templates/page/edit.html', permission='authenticated', 
              decorator=with_fanstatic_jqueries.merge(with_bootstrap))
 @view_config(route_name='page_edit', renderer='altaircms:templates/page/edit.html', permission='authenticated', 
              decorator=with_fanstatic_jqueries.merge(with_bootstrap))
-def page_edit(request):
+def page_edit(context, request):
     """pageの中をwidgetを利用して変更する
     """
-    page = get_or_404(request.allowable(Page), Page.id==request.matchdict["page_id"])
+    page = request._page = getattr(request, "_page", None) or get_or_404(request.allowable(Page), Page.id==request.matchdict["page_id"])
     try:
         page.valid_layout()
     except ValueError, e:
         FlashMessage.error(str(e), request=request)
         raise HTTPFound(request.route_url("page_update", id=page.id))
 
-    layout_render = request.context.get_layout_render(page)
+    layout_render = context.get_layout_render(page)
     disposition_select = wf.WidgetDispositionSelectForm()
     user = request.user
     disposition_save = wf.WidgetDispositionSaveForm(page=page.id, owner_id=user.id if user else None)
@@ -443,6 +446,26 @@ def page_edit(request):
             "layout_render":layout_render, 
             "widget_aggregator": get_widget_aggregator_dispatcher(request).dispatch(request, page)
         }
+
+def dispatch_with_rendering_type(rendering_type):
+    def _dispatch_with_rendering_type(info, request):
+        request._page = getattr(request, "_page", None) or get_or_404(request.allowable(Page), Page.id==request.matchdict["page_id"])
+        request._pagetype = getattr(request, "_pagetype", None) or request._page.pagetype
+        return request._pagetype.page_rendering_type == rendering_type
+    return _dispatch_with_rendering_type
+
+@view_config(route_name="page_edit_", 
+             custom_predicates=(dispatch_with_rendering_type("search"),), 
+             renderer="altaircms:templates/page/edit_use_search.html", permission="authenticated", 
+             decorator=with_fanstatic_jqueries.merge(with_bootstrap))
+@view_config(route_name="page_edit", 
+             custom_predicates=(dispatch_with_rendering_type("search"),), 
+             renderer="altaircms:templates/page/edit_use_search.html", permission="authenticated", 
+             decorator=with_fanstatic_jqueries.merge(with_bootstrap))
+def page_using_search_edit(context, request):
+    page = request._page = getattr(request, "_page", None) or get_or_404(request.allowable(Page), Page.id==request.matchdict["page_id"])
+    return {"page": page}
+
 
 ## widgetの保存 場所移動？
 @view_config(match_param="action=save", route_name="disposition", request_method="POST", permission='authenticated')
