@@ -63,7 +63,6 @@ class PageTests(AppFunctionalTests):
             pagetype = PageType.query.filter_by(organization_id=organization.id).first()
             list_page_response = app.get("/page/pagetype/%s/list" % pagetype.name)
             pageset_create_input_response = list_page_response.click(href="/page/create/input")
-
             form = find_form(pageset_create_input_response.forms, action_part="create")
             form.set("name", u"demo-page")
             form.set("url", u"demo-url")
@@ -78,7 +77,6 @@ class PageTests(AppFunctionalTests):
             submit_response = form.submit()
             
             self.assertEqual(submit_response.status_int, 302)
-
             # page is created!!,  to be continued ...
 
         

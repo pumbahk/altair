@@ -1,13 +1,23 @@
 # coding: utf-8
 import re
-from wtforms import form
 from altaircms.formhelpers import Form, fields, validators
-from altaircms.formhelpers import Form
 from altaircms.interfaces import IForm
 from altaircms.interfaces import implementer
 from altaircms.formhelpers import required_field
 from altaircms.formhelpers import dynamic_query_select_field_factory
 from altaircms.auth.models import Operator
+import os.path
+import mimetypes
+
+def normalize_filename(filename):
+    prefix, _ = os.path.splitext(filename)
+    filetype, encoding = mimetypes.guess_type(filename)
+    if filetype is None:
+        return filename
+    newext = mimetypes.guess_extension(filetype)
+    if newext == ".jpe":
+        newext = ".jpg"
+    return prefix + newext
 
 class OnlyExtsFileGen(object):
     def __init__(self, exts, fmt=None):
@@ -18,8 +28,8 @@ class OnlyExtsFileGen(object):
     def __call__(self, form, field):
         if field.data == "":
             raise validators.ValidationError(u"%s ファイルがありません" % form.type)
-
-        fname = field.data.filename
+        
+        fname = field.data.filename = normalize_filename(field.data.filename)
         if not any(fname.endswith(ext) for ext in self.exts):
             raise validators.ValidationError(self.fmt % (fname, self.exts))
         
@@ -33,7 +43,7 @@ def validate_filepath(form, field):
     if field.data:
         field.data.filename = re.sub(r'[^a-z0-9_.-]', '_', field.data.filename)
 
-only_image_file = OnlyExtsFileGen((".jpg", ".jpeg", ".png", ".gif"))
+only_image_file = OnlyExtsFileGen((".jpg", ".png", ".gif"))
 @implementer(IForm)
 class ImageAssetForm(Form):
     type = "image"

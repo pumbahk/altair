@@ -44,7 +44,7 @@ class AssetFunctionalTests(AppFunctionalTests):
             asset_title = u"this-is-created-image-asset"
 
             form = find_form(app.get("/asset/image").forms, action_part="create")
-            form.set("filepath",  ("imageasset-create-image.png", ))
+            form.set("filepath",  ("imageasset-create-image.PNG", ))
             form.set("thumbnail_path", ("imageasset-thumbnail-image.png", ))
             form.set("title", asset_title)
             form.set("tags", "tag0, tag1, tag2")
@@ -70,7 +70,7 @@ class AssetFunctionalTests(AppFunctionalTests):
             asset_title = u"this-is-created-image-asset"
 
             form = find_form(app.get("/asset/image").forms, action_part="create")
-            form.set("filepath",  ("imageasset-create-image.png", ))
+            form.set("filepath",  ("imageasset-create-image.PNG", ))
             form.set("thumbnail_path", ("imageasset-thumbnail-image.png", ))
             form.set("title", asset_title)
             form.set("tags", "tag0, tag1, tag2")
@@ -103,7 +103,7 @@ class AssetFunctionalTests(AppFunctionalTests):
             asset_title = u"this-is-created-image-asset"
 
             form = find_form(app.get("/asset/image").forms, action_part="create")
-            form.set("filepath",  ("imageasset-create-image.png", ))
+            form.set("filepath",  ("imageasset-create-image.PNG", ))
             form.set("thumbnail_path", ("imageasset-thumbnail-image.png", ))
             form.set("title", asset_title)
             form.set("tags", "tag0, tag1, tag2")
