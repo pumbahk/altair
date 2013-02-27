@@ -9,8 +9,8 @@
 <div class="row-fluid">
   <div class="span12">
     <div class="btn-group">
-      <button class="btn"><i class="icon-plus"></i>新規</button>
-      <button class="btn"><i class="icon-minus"></i>削除</button>
+      <a href="${request.route_url('lots.new', event_id=event.id)}" class="btn"><i class="icon-plus"></i>新規</a>
+      <button type="submit" name="action-delete" class="btn"><i class="icon-minus"></i>削除</button>
     </div>
     <table class="table fullwidth checkboxed_table" style="margin-bottom: 10px;">
       <thead>
@@ -53,7 +53,7 @@
       </tbody>
     </table>
     <div class="btn-group">
-        <a href="${request.route_url('lots.new', event_id=event.id)}" class="btn"><i class="icon-plus"></i>新規</a>
+      <a href="${request.route_url('lots.new', event_id=event.id)}" class="btn"><i class="icon-plus"></i>新規</a>
       <button type="submit" name="action-delete" class="btn"><i class="icon-minus"></i>削除</button>
     </div>
   </div>
