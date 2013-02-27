@@ -711,15 +711,16 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return self._final_performance
 
     @staticmethod
-    def get_owner_event(user_id):
-        return Event.filter().join(Event.account).filter(Account.user_id==user_id).all()
+    def get_owner_event(account):
+        return Event.query.join(Event.account).filter(Account.id==account.id).all()
 
     @staticmethod
-    def get_client_event(user_id):
-        return Event.filter().join(Event.stock_holders)\
-                             .join(StockHolder.account)\
-                             .filter(Account.user_id==user_id)\
-                             .all()
+    def get_client_event(account):
+        return Event.query.filter(Event.organization_id==account.organization_id)\
+                          .join(Event.stock_holders)\
+                          .join(StockHolder.account)\
+                          .filter(Account.id==account.id)\
+                          .all()
 
     def get_accounts(self):
         return Account.filter().with_entities(Account.name).join(StockHolder)\
