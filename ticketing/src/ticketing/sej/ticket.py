@@ -174,7 +174,7 @@ def create_refund_zip_file():
     zf.append_file(work_dir + refund_ticket_file_name, refund_ticket_file_name)
     zf.close()
 
-    return
+    return work_dir + zip_file_name
 
 def encode_to_sjis(row):
     encoded = []
