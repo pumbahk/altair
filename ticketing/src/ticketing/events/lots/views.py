@@ -230,7 +230,6 @@ class LotEntries(BaseView):
 
         lot_id = self.request.matchdict["lot_id"]
         lot = Lot.query.filter(Lot.id==lot_id).one()
-        entries = lots_api.get_lot_entries_iter(lot.id)
 
         f = self.request.params['entries'].file
         header = 1
@@ -273,4 +272,26 @@ class LotEntries(BaseView):
 
         self.request.session.flash(u"当選確定処理を行いました")
 
+        return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
+
+    @view_config(route_name='lots.entries.elect_entry_no', 
+                 renderer="string",
+                 request_method="POST",
+                 permission='event_viewer')
+    def elect_entry(self):
+        """ 申し込み番号指定での当選処理
+        """
+
+
+        lot_id = self.request.matchdict["lot_id"]
+        lot = Lot.query.filter(Lot.id==lot_id).one()
+        entries = []
+
+        # TODO: form
+        entry_no = self.request.params['entry_no']
+        wish_order = self.request.params['wish_order']
+        entries.append((entry_no, wish_order))
+        lots_api.submit_lot_entries(lot.id, entries)
+
+        self.request.session.flash(u"当選確定処理を行いました {0}".format(entry_no))
         return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))

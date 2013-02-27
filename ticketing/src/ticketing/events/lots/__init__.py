@@ -15,4 +15,5 @@ def includeme(config):
     config.add_route('lots.entries.export.html', 'entries/export/{lot_id}.html')
     config.add_route('lots.entries.export', 'entries/export/{lot_id}')
     config.add_route('lots.entries.import', 'entries/import/{lot_id}')
+    config.add_route('lots.entries.elect_entry_no', 'entries/elect_entry_no/{lot_id}')
     config.add_route('lots.entries.elect', 'entries/elect/{lot_id}')
