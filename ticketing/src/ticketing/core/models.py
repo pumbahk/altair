@@ -2145,10 +2145,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         # 在庫を戻す
         self.release()
+        if self.payment_status != 'refunding':
+            self.canceled_at = datetime.now()
         if self.payment_status in ['paid', 'refunding']:
             self.refunded_at = datetime.now()
-        if self.payment_status == 'paid':
-            self.canceled_at = datetime.now()
         self.save()
 
         return True
