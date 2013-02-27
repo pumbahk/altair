@@ -3,9 +3,11 @@
 <div style="margin-bottom: 20px;">
   <%include file="/products/_action_button.html" args="event=performance.event, performance=performance" />
 </div>
-<%include file="/products/_list.html" args="form=form_product, form_product_item=form_product_item_grid, products=performance.event.products, performance=performance, sales_segments=sales_segments" />
+<form>
+<%include file="/products/_list.html" args="form=form_product, form_product_item=form_product_item_grid, products=products, performance=performance" />
+</form>
 <div id="products-form">
-  <%include file="/products/_form.html" args="form=form_product" />
+  <%include file="/products/_modal.html" args="modal_id='modal-product', performance_id=performance.id" />
 </div>
 
 <%include file="/product_items/_action_button.html" args="performance=performance" />

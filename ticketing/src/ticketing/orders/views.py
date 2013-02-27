@@ -28,13 +28,13 @@ from ticketing.models import DBSession, merge_session_with_post, record_to_multi
 from ticketing.core.models import (Order, Performance, PaymentDeliveryMethodPair, ShippingAddress,
                                    Product, ProductItem, OrderedProduct, OrderedProductItem, 
                                    Ticket, TicketBundle, TicketFormat, Ticket_TicketBundle,
-                                   DeliveryMethod, TicketFormat_DeliveryMethod, 
-                                   SalesSegment, Stock, StockStatus, Seat, SeatStatus, SeatStatusEnum, ChannelEnum)
+                                   DeliveryMethod, TicketFormat_DeliveryMethod, Venue,
+                                   SalesSegmentGroup, SalesSegment, Stock, StockStatus, Seat, SeatStatus, SeatStatusEnum, ChannelEnum)
 from ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
 from ticketing.orders.export import OrderCSV
 from ticketing.orders.forms import (OrderForm, OrderSearchForm, OrderRefundSearchForm, SejOrderForm, SejTicketForm,
                                     SejRefundEventForm,SejRefundOrderForm, SendingMailForm,
-                                    PerformanceSearchForm, OrderReserveForm, OrderRefundForm, ClientOptionalForm,
+                                    PerformanceSearchForm, SalesSegmentSearchForm, OrderReserveForm, OrderRefundForm, ClientOptionalForm,
                                     PreviewTicketSelectForm, CheckedOrderTicketChoiceForm)
 from ticketing.tickets.convert import to_opcodes
 from ticketing.views import BaseView
@@ -82,20 +82,20 @@ class OrdersAPIView(BaseView):
         if not form_search.validate():
             return {"result": [],  "status": False}
 
-        query = Performance.query.filter(Performance.deleted_at == None)
+        query = Performance.query
         query = Performance.set_search_condition(query, form_search)
-        performances = [dict(pk='', name='')]+[dict(pk=p.id, name='%s (%s)' % (p.name, p.start_on.strftime('%Y-%m-%d %H:%M'))) for p in query]
+        performances = [dict(pk='', name=u'(すべて)')]+[dict(pk=p.id, name='%s (%s)' % (p.name, p.start_on.strftime('%Y-%m-%d %H:%M'))) for p in query]
         return {"result": performances, "status": True}
 
     @view_config(renderer="json", route_name="orders.api.sales_segments")
     def get_sales_segments(self):
-        form_search = PerformanceSearchForm(self.request.params)
+        form_search = SalesSegmentSearchForm(self.request.params)
         if not form_search.validate():
             return {"result": [],  "status": False}
 
-        query = SalesSegment.query.filter(SalesSegment.deleted_at==None)
+        query = SalesSegment.query
         query = SalesSegment.set_search_condition(query, form_search)
-        sales_segments = [dict(pk=p.id, name=p.name) for p in query]
+        sales_segments = [dict(pk='', name=u'(すべて)')] + [dict(pk=p.id, name=p.sales_segment_group.name) for p in query]
         return {"result": sales_segments, "status": True}
 
     @view_config(renderer="json", route_name="orders.api.checkbox_status", request_method="POST", match_param="action=add")
@@ -442,6 +442,7 @@ class OrderDetailView(BaseView):
             form_shipping_address = ClientOptionalForm(record_to_multidict(order.shipping_address))
             form_shipping_address.tel_1.data = order.shipping_address.tel_1
             form_shipping_address.email_1.data = order.shipping_address.email_1
+            form_shipping_address.email_2.data = order.shipping_address.email_2
         else:
             mail_magazines = []
             form_shipping_address = ClientOptionalForm()
@@ -499,7 +500,9 @@ class OrderDetailView(BaseView):
             else:
                 self.request.session.flash(u'受注(%s)を払戻できません' % order.order_no)
 
-        return render_to_response('ticketing:templates/orders/refund/_form.html', {'form':f}, request=self.request)
+        response = render_to_response('ticketing:templates/orders/refund/_form.html', {'form':f}, request=self.request)
+        response.status_int = 400
+        return response
 
     @view_config(route_name='orders.delivered', permission='sales_editor')
     def delivered(self):
@@ -522,13 +525,12 @@ class OrderDetailView(BaseView):
             return HTTPNotFound('order id %d is not found' % order_id)
 
         f = ClientOptionalForm(self.request.POST)
-        # ここでは確認用メールアドレスはチェック対象外
-        f.mail_address2.data = self.request.POST.get('mail_address')
 
         if f.validate():
             shipping_address = merge_session_with_post(order.shipping_address or ShippingAddress(), f.data)
-            shipping_address.tel_1 = f.tel.data
-            shipping_address.email = f.mail_address.data
+            shipping_address.tel_1 = f.tel_1.data
+            shipping_address.email_1 = f.email_1.data
+            shipping_address.email_2 = f.email_2.data
             order.shipping_address = shipping_address
             order.save()
 
@@ -577,7 +579,7 @@ class OrderDetailView(BaseView):
 
             total_amount = sum(nop.price * nop.quantity for nop in new_order.items)\
                            + new_order.system_fee + new_order.transaction_fee + new_order.delivery_fee
-            if new_order.status in ('paid', 'delivered'):
+            if new_order.payment_status != 'unpaid':
                 if total_amount != new_order.total_amount:
                     raise ValidationError(u'入金済みの為、合計金額は変更できません')
             new_order.total_amount = total_amount
@@ -742,13 +744,13 @@ class OrderDetailView(BaseView):
 @view_defaults(decorator=with_bootstrap, permission='sales_counter')
 class OrdersReserveView(BaseView):
 
-    def release_seats(self, l0_ids):
+    def release_seats(self, venue, l0_ids):
         # 確保座席があるならステータスを戻す
         logger.info("release seats : %s" % l0_ids)
         if l0_ids:
             seat_statuses = SeatStatus.filter(SeatStatus.status.in_([int(SeatStatusEnum.Keep), int(SeatStatusEnum.InCart)]))\
                 .join(SeatStatus.seat)\
-                .filter(Seat.l0_id.in_(l0_ids))\
+                .filter(and_(Seat.l0_id.in_(l0_ids), Seat.venue_id==venue.id))\
                 .with_lockmode('update').all()
             for seat_status in seat_statuses:
                 logger.info("seat(%s) status InCart to Vacant" % seat_status.seat_id)
@@ -761,7 +763,8 @@ class OrdersReserveView(BaseView):
 
         if inner_cart_session:
             if inner_cart_session.get('seats'):
-                self.release_seats(inner_cart_session.get('seats'))
+                venue = Venue.get(inner_cart_session.get('venue_id'))
+                self.release_seats(venue, inner_cart_session.get('seats'))
             del self.request.session['ticketing.inner_cart']
 
     @view_config(route_name='orders.api.get', renderer='json')
@@ -836,6 +839,7 @@ class OrdersReserveView(BaseView):
 
         # セッションに保存
         self.request.session['ticketing.inner_cart'] = {
+            'venue_id':performance.venue.id,
             'stocks':post_data.get('stocks'),
             'seats':post_data.get('seats'),
         }
@@ -889,7 +893,7 @@ class OrdersReserveView(BaseView):
                 raise ValidationError(u'個数の合計を選択した座席数（%d席）にしてください' % len(seats))
 
             # 選択されたSeatのステータスをいったん戻してカートデータとして再確保する
-            self.release_seats(seats)
+            self.release_seats(performance.venue, seats)
 
             # create cart
             cart = api.order_products(self.request, performance_id, order_items, selected_seats=seats)

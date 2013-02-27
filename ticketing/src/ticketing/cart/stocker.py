@@ -7,6 +7,7 @@ import logging
 from datetime import datetime
 import itertools
 from ticketing.core.models import *
+from zope.deprecation import deprecate
 
 logger = logging.getLogger(__name__)
 
@@ -94,35 +95,4 @@ class Stocker(object):
         q = sorted(ordered_product_items, key=lambda x: x[0].stock_id)
         q = itertools.groupby(q, key=lambda x: x[0].stock_id)
         return [(stock_id, sum(quantity for _, quantity in ordered_items)) for stock_id, ordered_items in q]
-
-    def get_stock_holder(self, event_id):
-        """ イベントに対する主枠ホルダー """
-
-        now = datetime.now()
-
-        return StockHolder.query.filter(
-            Account.id==StockHolder.account_id
-        ).filter(
-            User.id==Account.user_id
-        ).filter(
-            Organization.user_id==User.id
-        ).filter(
-            StockHolder.event_id==event_id
-        ).filter(
-            Stock.stock_holder_id==StockHolder.id
-        ).filter(
-            ProductItem.stock_id==Stock.id
-        ).filter(
-            Product.id==ProductItem.product_id
-        ).filter(
-            Product.public==True
-        ).filter(
-            SalesSegment.id==Product.sales_segment_id
-        ).filter(
-            SalesSegment.start_at<=now
-        ).filter(
-            SalesSegment.end_at>=now
-        ).filter(
-            SalesSegment.public==True
-        ).distinct('*').one()
 

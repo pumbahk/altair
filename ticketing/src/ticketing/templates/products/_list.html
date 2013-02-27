@@ -1,7 +1,13 @@
-<%page args="form, form_product_item=None, sales_segments=None, products=None, performance=None, limit=None" />
+<%page args="form, products=None, event=None, performance=None, limit=None" />
 <%namespace file="/common/helpers.html" name="h" />
-
 % if performance:
+<%
+from ticketing.core.models import StockHolder, Stock
+stock_types = performance.event.stock_types
+stock_holders = StockHolder.query.join(Stock).filter(Stock.performance_id == performance.id).distinct().all()
+ticket_bundles = performance.event.ticket_bundles
+sales_segments = performance.sales_segments
+%>
 <script type="text/javascript">
   $(function() {
     $('#use-grid-editor').change(function() {
@@ -26,8 +32,7 @@
   });
 </script>
 <div id="use-grid-editor" class="label label-warning pull-right" style="width: 200px; margin-bottom: 5px; text-align: center;"></div>
-
-
+## 新商品登録フォーム
 <script type="text/javascript">
   (function($) {
     $.fn.setRetainChanges = function(cells) {
@@ -125,20 +130,7 @@
     grid.setRetainChanges([row]);
   }
 </script>
-
-<div id="modal-alert" class="modal hide fade">
-  <div class="modal-header">
-    <a href="#" class="close">&times;</a>
-    <h3></h3>
-  </div>
-  <div class="modal-body">
-    <p id="message"></p>
-  </div>
-  <div class="modal-footer">
-    <a href="javascript:void(0);" onclick="$('#modal-alert').modal('hide');" class="btn secondary">閉じる</a>
-  </div>
-</div>
-
+## 旧商品登録フォーム
 <div class="tabbable tabs-top grid-editor">
   <ul class="nav nav-tabs">
     % for i, sales_segment in enumerate(sales_segments):
@@ -152,11 +144,11 @@
     <div class="tab-pane ${'active' if i == 0 else ''}" id="sales-segment-tab-${sales_segment.id}">
       <script type="text/javascript">
         $(function() {
-          <% options = ["%s:%s" % sh for sh in form_product_item.stock_type_id.choices] %>
+          <% options = ["%s:%s" % (st.id, st.name) for st in stock_types] %>
           var stock_type_options = {value:"${';'.join(options)|n}"};
-          <% options = ["%s:%s" % sh for sh in form_product_item.stock_holder_id.choices] %>
+          <% options = ["%s:%s" % (sh.id, sh.name) for sh in stock_holders] %>
           var stock_holder_options = {value:"${';'.join(options)|n}"};
-          <% options = ["%s:%s" % tb for tb in form_product_item.ticket_bundle_id.choices] %>
+          <% options = ["%s:%s" % (tb.id, tb.name) for tb in ticket_bundles] %>
           var ticket_bundle_options = {value:"${';'.join(options)|n}"};
 
           <%
@@ -274,9 +266,7 @@
 </div>
 % endif
 
-
 <% paging = False if limit else True %>
-
 <%def name="actions(product, product_item=None)">
 <%
   action_dict = {}
@@ -333,7 +323,6 @@
         stock_types[stock_type_id] = {'name':product.seat_type(), 'products':[]}
       stock_types[stock_type_id]['products'].append(product)
 %>
-
 <div class="tabbable tabs-top product-table">
   <ul class="nav nav-tabs">
   % for i, sales_segment_id in enumerate(map):
@@ -439,8 +428,8 @@
   </div>
 </div>
 
-## preview link javascript
 % if performance:
+## パフォーマンス指定あり
   <script type="text/javascript" src="${request.static_url("ticketing:static/js/spin.js")}"></script>
   <script type="text/javascript" src="${request.static_url("ticketing:static/js/altair/spinner.js")}"></script>
   <script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/modal/api.js")}"></script>
@@ -494,10 +483,28 @@
       });
     });
   </script>
-  <div id="preview_ticket_modal">
+  <div id="preview_ticket_modal"></div>
 % endif
-
+<script type="text/javascript">
+(function (form) {
+  get_selected_product_id = function get_selected_product_id() {
+    return form.find('input:radio[name="product_id"]:checked').val();
+  }
+})($('script:last').closest('form'));
+</script>
 % if paging:
   ${h.pager(products)}
 % endif
-
+## アラートダイアログ
+<div id="modal-alert" class="modal hide fade">
+  <div class="modal-header">
+    <a href="#" class="close">&times;</a>
+    <h3></h3>
+  </div>
+  <div class="modal-body">
+    <p id="message"></p>
+  </div>
+  <div class="modal-footer">
+    <a href="javascript:void(0);" onclick="$('#modal-alert').modal('hide');" class="btn secondary">閉じる</a>
+  </div>
+</div>

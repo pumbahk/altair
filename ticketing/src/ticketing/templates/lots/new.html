@@ -1,0 +1,39 @@
+<%inherit file="../layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="h" />
+
+<div class="breadcrumbs">
+  ${h.breadcrumbs(
+      names=[u'イベント', event.title, u'抽選'],
+      urls=[request.route_path('events.index'), request.route_path('events.show', event_id=event.id)]
+  )}
+</div>
+<div class="page-header">
+  <h1>抽選</h1>
+</div>
+<div class="content">
+  ${h.flash_messages(request)}
+</div>
+<div class="well">
+  <form class="form-horizontal" action="${request.url}" method="POST">
+    <fieldset>
+        <legend>抽選情報</legend>
+      ${h.form_item(form.name, class_='span8', maxlength=255)}
+      ${h.form_item(form.limit_wishes)}
+      ${h.form_item(form.entry_limit)}
+      ${h.form_item(form.description)}
+      ${h.form_item(form.lotting_announce_datetime)}
+    </fieldset>
+    <fieldset>
+        <legend>販売区分情報</legend>
+        ${h.form_item(form.sales_segment_group_id, 
+                      help=str(manage_sales_segment_group_link))}
+      ${h.form_item(form.start_at)}
+      ${h.form_item(form.end_at)}
+      ${h.form_item(form.upper_limit)}
+      ${h.form_item(form.seat_choice)}
+    </fieldset>
+    <div class="form-actions">
+      <input class="btn btn-primary" type="submit" >
+    </div>
+  </form>
+</div>

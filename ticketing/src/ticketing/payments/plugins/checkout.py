@@ -83,8 +83,9 @@ class CheckoutPlugin(object):
 
     def sales(self, request, order):
         """ 売り上げ確定 """
-        checkout = api.get_checkout_service(request, order.performance.event.organization, get_channel(order.channel))
-        result = checkout.request_fixation_order([order.cart.checkout.orderControlId])
+        service = api.get_checkout_service(request, order.performance.event.organization, get_channel(order.channel))
+        checkout = order.checkout
+        result = service.request_fixation_order([checkout.orderControlId])
         if 'statusCode' in result and result['statusCode'] != '0':
             logger.info(u'CheckoutPlugin finish: 決済エラー order_no = %s, result = %s' % (order.order_no, result))
             request.session.flash(u'決済に失敗しました。再度お試しください。(%s)' % result['apiErrorCode'])
@@ -95,8 +96,8 @@ class CheckoutPlugin(object):
                 back_url=back_url(request),
                 error_code=result['apiErrorCode']
             )
-        order.cart.checkout.sales_at = datetime.now()
-        order.cart.checkout.save()
+        checkout.sales_at = datetime.now()
+        checkout.save()
         return
 
 

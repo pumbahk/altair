@@ -80,19 +80,22 @@ def merge_session_with_post(session, post, filters={}):
         for key,value in values:
             filter = filters.get(key)
 
-            if filter is not None:
-                value = filter(session, value)
-                setattr(session, key, value)
-            elif isinstance(value, str)\
-                or isinstance(value, unicode)\
-                or isinstance(value, int)\
-                or isinstance(value, Decimal)\
-                or isinstance(value, datetime)\
-                or isinstance(value, date)\
-                or value is None:
-                setattr(session, key, value)
-            else:
-                pass
+            try:
+                if filter is not None:
+                    value = filter(session, value)
+                    setattr(session, key, value)
+                elif isinstance(value, str)\
+                    or isinstance(value, unicode)\
+                    or isinstance(value, int)\
+                    or isinstance(value, Decimal)\
+                    or isinstance(value, datetime)\
+                    or isinstance(value, date)\
+                    or value is None:
+                    setattr(session, key, value)
+                else:
+                    pass
+            except AttributeError:
+                raise AttributeError("can't set attribute \"%s\"" % key)
 
     if type(post) is list:
         _set_attrs(session, post)

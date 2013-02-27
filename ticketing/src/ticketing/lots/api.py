@@ -22,6 +22,12 @@
 - 在庫処理
 - 注文受け
 
+以下の二種類の販売区分を区別して使う
+- 抽選の決済のための販売区分
+- 公演ごとの券種のための販売区分
+
+同じ販売区分グループだと楽
+
 """
 
 import transaction
@@ -33,6 +39,7 @@ from ticketing.core.api import get_organization
 import ticketing.cart.api as cart_api
 from ticketing.utils import sensible_alnum_encode
 from ticketing.rakuten_auth.api import authenticated_user
+from zope.deprecation import deprecate
 
 from ticketing.core.models import (
     Organization,
@@ -52,6 +59,7 @@ from ticketing.core.models import (
 from ticketing.users.models import (
     MemberGroup_SalesSegment,
     MemberGroup,
+    SexEnum,
 )
 from ticketing.cart.models import (
     Cart,
@@ -66,17 +74,16 @@ from .models import (
     Lot_StockType,
     LotElectedEntry,
     LotRejectedEntry,
+    LotElectWork,
+    LotStatusEnum,
 )
 
+from . import sendmail
 from .events import LotEntriedEvent
 
 def get_event(request):
     event_id = request.matchdict['event_id']
     return Event.query.filter(Event.id==event_id).one()
-
-def get_products(request, sales_segment, performances):
-    """ """
-    return sales_segment.get_products(performances)
 
 def get_member_group(request):
     user = authenticated_user(request)
@@ -94,7 +101,7 @@ def get_sales_segment(request, event, membergroup):
         return SalesSegment.query.filter(
             SalesSegment.event_id==event.id
         ).filter(
-            MemberGroup_SalesSegment.c.sales_segment_id==SalesSegment.id
+            MemberGroup_SalesSegment.c.sales_segment_group_id==SalesSegment.id
         ).filter(
             MemberGroup_SalesSegment.c.membergroup_id==MemberGroup.id
         ).filter(
@@ -104,7 +111,7 @@ def get_sales_segment(request, event, membergroup):
         return SalesSegment.query.filter(
             SalesSegment.event_id==event.id
         ).filter(
-            MemberGroup_SalesSegment.c.sales_segment_id==SalesSegment.id
+            MemberGroup_SalesSegment.c.sales_segment_group_id==SalesSegment.id
         ).filter(
             MemberGroup_SalesSegment.c.membergroup_id==membergroup.id
         ).one()
@@ -113,24 +120,18 @@ def get_requested_lot(request):
     lot_id = request.matchdict.get('lot_id')
     return Lot.query.filter(Lot.id==lot_id).one()
 
-
-def get_lot(request, event, sales_segment, lot_id):
-    """ 抽選取得
-    :return: 抽選, 公演リスト, 席種リスト
-    """
-    lot = Lot.query.filter(
-        Lot.event_id==event.id
-    ).filter(
-        Lot.sales_segment_id==sales_segment.id
-    ).filter(
-        Lot.id==lot_id,
-    ).one()
-
-    performances = Performance.query.filter(
-        Performance.id==Lot_Performance.c.performance_id
-    ).filter(
-        Lot_Performance.c.lot_id==lot.id
-    ).all()
+# @deprecate(u"直接Lotのプロパティつかえ")
+# def get_lot(request, event, lot_id):
+#     """ 抽選取得
+#     :return: 抽選, 公演リスト, 席種リスト
+#     """
+#     lot = Lot.query.filter(
+#         Lot.event_id==event.id
+#     ).filter(
+#         Lot.id==lot_id,
+#     ).one()
+# 
+    performances = lot.performances
 
     stock_types = StockType.query.filter(
         StockType.id==Lot_StockType.c.stock_type_id
@@ -189,33 +190,42 @@ def generate_entry_no(request, lot_entry):
 
 def get_lot_entries_iter(lot_id):
     q = DBSession.query(LotEntryWish
-    ).options(
-        joinedload(LotEntry.shipping_address)
     ).filter(
         LotEntry.lot_id==lot_id
     ).filter(
-        LotEntryWish.entry_id==LotEntry.id
-    ).orderby(
+        LotEntryWish.lot_entry_id==LotEntry.id
+    ).order_by(
         LotEntryWish.wish_order
     )
 
     for entry in q:
         yield _entry_info(entry)
 
+def format_sex(s):
+    if s is None:
+        return u""
+    v = int(s)
+    if v == int(SexEnum.Male):
+        return u"男性"
+    elif v == int(SexEnum.Female):
+        return u"女性"
+    else:
+        return u"未回答"
+
 def _entry_info(wish):
-    shipping_address = wish.shipping_address
+    shipping_address = wish.lot_entry.shipping_address
 
     return {
-        "entry_no": wish.lot_entry.entry_no,
-        "wish_order": wish.wish_order,
-        "created_at": wish.created_at,
-        "membergroup": wish.lot_entry.membergroup,
-        "stock_type": None, # 席種
-        "total_quantity": None, # 枚数(商品関係なし)
-        "products": None, # 商品うちわけ(参考情報)
-        "zip": shipping_address.zip,
-        "prefecture": shipping_address.prefecture,
-        "sex": shipping_address.sex,
+        u"申し込み番号": wish.lot_entry.entry_no,
+        u"希望順序": wish.wish_order + 1,
+        u"申し込み日": wish.created_at,
+        u"ユーザー種別": wish.lot_entry.membergroup,
+        u"席種": u",".join([",".join([i.stock_type.name for i in p.product.items]) for p in wish.products]), # 席種 この時点で席種までちゃんと決まる
+        u"枚数": wish.total_quantity, # 枚数(商品関係なし)
+        u"商品": u",".join([p.product.name for p in wish.products]), # 商品うちわけ(参考情報)
+        u"郵便番号": shipping_address.zip,
+        u"都道府県": shipping_address.prefecture,
+        u"性別": format_sex(shipping_address.sex),
     }
 
 def submit_lot_entries(lot_id, entries):
@@ -224,8 +234,8 @@ def submit_lot_entries(lot_id, entries):
     entries : (entry_no, wish_order)のリスト
     """
 
-    lot = DBSession.query(Lot).filter(id==lot_id).one()
-    assert lot.status == int(LotStatusEnum.Electing)
+    lot = Lot.query.filter(Lot.id==lot_id).one()
+    #assert lot.status == int(LotStatusEnum.Electing)
 
     for entry_no, wish_order in entries:
         w = LotElectWork(lot_id=lot_id, lot_entry_no=entry_no, wish_order=wish_order,
@@ -247,9 +257,13 @@ def elect_lot_entries(lot_id):
     lot = DBSession.query(Lot).filter_by(id=lot_id).one()
 
     elected_wishes = DBSession.query(LotEntryWish).filter(
-        LotEntryWish.lot_id==lot_id
+        LotEntryWish.lot_entry_id==LotEntry.id
     ).filter(
-        LotEntryWish.id.in_([e.id for e in entries])
+        LotEntry.lot_id==lot_id
+    ).filter(
+        LotElectWork.lot_entry_no==LotEntry.entry_no
+    ).filter(
+        (LotElectWork.wish_order-1)==LotEntryWish.wish_order
     )
 
     for ew in elected_wishes:
@@ -269,11 +283,12 @@ def elect_lot_entries(lot_id):
         reject_entry(lot, entry)
 
     lot.status = int(LotStatusEnum.Elected)
+    LotElectWork.query.filter(LotElectWork.lot_id==lot.id).delete()
 
 def reject_entry(lot, entry):
     now = datetime.now()
     entry.rejected_at = now
-    rejected = LotRejectedEntry(lot_entry=elected_wish.lot_entry)
+    rejected = LotRejectedEntry(lot_entry=entry)
     DBSession.add(rejected)
     return rejected
 

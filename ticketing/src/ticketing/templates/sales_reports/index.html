@@ -1,6 +1,4 @@
 <%inherit file="/layout_2cols.html"/>
-<% from ticketing.helpers import todatetime %>
-<% from datetime import timedelta %>
 <%namespace file="/common/helpers.html" name="h" />
 
 <script type="text/javascript">
@@ -29,7 +27,7 @@
   <div class="control-group">
     <div class="controls">
       ${form.limited_from} 〜 ${form.limited_to}
-      <input type="submit" class="btn" value="集計期間を絞り込む"  />
+      <input type="submit" class="btn" value="集計期間を絞り込む" />
     </div>
   </div>
 </form>
@@ -40,15 +38,7 @@
     <th colspan="2">累計</th>
     <th colspan="2">
       % if form.limited_from.data or form.limited_to.data:
-      <h5>
-        % if form.limited_from.data:
-        ${h.safe_strftime(form.limited_from.data)}
-        % endif
-        〜
-        % if form.limited_to.data:
-        ${h.safe_strftime(todatetime(form.limited_to.data) + timedelta(days=1, seconds=-1))}</h5>
-        % endif
-      </h5>
+      <h5>${h.safe_strftime(form.limited_from.data)} 〜 ${h.safe_strftime(form.limited_to.data)}</h5>
       % else:
       <h5>全期間</h5>
       % endif

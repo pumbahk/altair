@@ -92,7 +92,10 @@ class Cart(Base):
     operator = orm.relationship('Operator', backref='orders')
     channel = sa.Column(sa.Integer, nullable=True)
 
-    sales_segment_id = sa.Column(Identifier, sa.ForeignKey('SalesSegmentGroup.id'))
+    sales_segment_group_id = sa.Column(Identifier, sa.ForeignKey('SalesSegmentGroup.id'))
+    sales_segment_group = orm.relationship('SalesSegmentGroup', backref='carts')
+
+    sales_segment_id = sa.Column(Identifier, sa.ForeignKey('SalesSegment.id'))
     sales_segment = orm.relationship('SalesSegment', backref='carts')
 
     disposed = False
@@ -130,10 +133,11 @@ class Cart(Base):
         new_cart = cls.create(
             cart_session_id=that.cart_session_id,
             system_fee=that.system_fee,
-            shipping_address=that.shipping_address,
-            payment_delivery_pair=that.payment_delivery_pair,
-            performance=that.performance,
-            sales_segment=that.sales_segment
+            shipping_address_id=that.shipping_address_id,
+            payment_delivery_method_pair_id=that.payment_delivery_method_pair_id,
+            performance_id=that.performance_id,
+            sales_segment_id=that.sales_segment_id,
+            sales_segment_group_id=that.sales_segment_group_id
             )
         # translate all the products in the specified cart to the new cart
         for carted_product in that.products:

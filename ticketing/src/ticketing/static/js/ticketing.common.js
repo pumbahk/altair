@@ -19,18 +19,39 @@ function get_modal_form(modal, form, url) {
   });
 }
 
+function get_selected_options(select_multiple) {
+  var options = select_multiple.options;
+  var results = [];
+  for (var i = 0; i < options.length; i++) {
+    var opt = options.item(i);
+    if (opt.selected) {
+      results.push(opt.value);
+    }
+  }
+  return results;
+}
+
 function build_form_params(form) {
   var param = {}, counts = {};
   $(form).find(':input').each(function(i, v) {
-    var count = counts[v.name];
-    if (count === void(0)) {
-      param[v.name] = v.value;
-      counts[v.name] = 1;
+    if (v.type == 'checkbox' || v.type == 'radio') {
+      value = v.checked ? v.value: null;
+    } else if (v.type == 'select-multiple') {
+      value = get_selected_options(v);
     } else {
-      var pv = param[v.name];
-      delete param[v.name];
-      param[v.name + '-0'] = pv;
-      param[v.name + '-' + (counts[v.name]++)] = v.value;
+      value = v.value;
+    }
+    if (value != null) {
+      var count = counts[v.name];
+      if (count === void(0)) {
+        param[v.name] = value;
+        counts[v.name] = 1;
+      } else {
+        var pv = param[v.name];
+        delete param[v.name];
+        param[v.name + '-0'] = pv;
+        param[v.name + '-' + (counts[v.name]++)] = value;
+      }
     }
   });
   return param;

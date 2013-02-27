@@ -7,13 +7,13 @@
 </div>
 
 <div class="page-header">
-  <h3>対象となる販売区分</h3>
+  <h3>対象となる販売区分グループ</h3>
 </div>
-<%include file="/sales_segments/_detail.html", args="form=form_ss, sales_segment=sales_segment"/>
+<%include file="/sales_segment_groups/_detail.html", args="form=form_ss, sales_segment_group=sales_segment_group"/>
 
 <%
 route_name=u'編集'
-route_path=request.route_path("sales_segments.bind_membergroup", sales_segment_id=request.matchdict["sales_segment_id"])
+route_path=request.route_path("sales_segment_groups.bind_membergroup", sales_segment_group_id=request.matchdict["sales_segment_group_id"])
 %>
 
 <div class="page-header">

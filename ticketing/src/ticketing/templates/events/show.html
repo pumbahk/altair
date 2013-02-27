@@ -145,28 +145,15 @@ $(function(){
 
     <hr />
 
-    <div id="sales_segments">
-      <h3>販売区分</h3>
+    <div id="sales_segment_groups">
+      <h3>販売区分グループ</h3>
       <div style="margin-top: 20px;">
         <form>
-        <%include file="/sales_segments/_list.html" args="form=form_sales_segment, sales_segments=event.sales_segments, limit=10" />
-        <%include file="/sales_segments/_action_button.html" />
+        <%include file="/sales_segment_groups/_list.html" args="form=form_sales_segment_group, sales_segment_groups=event.sales_segment_groups, limit=10" />
+        <%include file="/sales_segment_groups/_action_button.html" />
         </form>
-        <div id="sales_segments-form">
-          <%include file="/sales_segments/_modal.html" args="modal_id='modal-sales-segment', event=event" />
-        </div>
-      </div>
-    </div>
-
-    <hr />
-
-    <div id="products">
-      <h3>商品</h3>
-      <div style="margin-top: 20px;">
-        <%include file="/products/_list.html" args="form=form_product, products=event.products, sales_segments=event.sales_segments, limit=10" />
-        <%include file="/products/_action_button.html" />
-        <div id="products-form">
-          <%include file="/products/_form.html" args="form=form_product" />
+        <div id="sales_segment_groups-form">
+          <%include file="/sales_segment_groups/_modal.html" args="modal_id='modal-sales_segment_group', event=event" />
         </div>
       </div>
     </div>

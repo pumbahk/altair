@@ -1,0 +1,38 @@
+<%namespace file="/common/helpers.html" name="h" />
+<%
+from ticketing.cart.helpers import format_currency
+%>
+<div>
+    <h2>対象商品</h2>
+    %if not lot.products:
+    対象商品は登録されていません。
+        <a href="${request.route_url('lots.product_new', lot_id=lot.id)}" class="btn"><i class="icon-plus"></i>新規</a>
+    %else:
+    <form action="${request.url}" method="post">
+    <table class="table table-bordered table-condensed">
+      <thead>
+        <tr>
+            <th>&nbsp;</th>
+            <th>公演</th>
+            <th>商品名</th>
+            <th>金額</th>
+        </tr>
+      </thead>
+      <tbody>
+        %for product in lot.products:
+        <tr>
+            <td><input type="checkbox" name="product_id" value="${product.id}"></td>
+            <td>${product.performance.name}${h.safe_strftime(product.performance.open_on)}</td>
+            <td>${product.name}</td>
+            <td style="text-align: right;">${format_currency(product.price)}</td>
+        </tr>
+        %endfor
+      </tbody>
+    </table>
+    <div class="btn-group">
+        <a href="${request.route_url('lots.product_new', lot_id=lot.id)}" class="btn"><i class="icon-plus"></i>新規</a>
+        <button type="submit" name="action-delete" class="btn"><i class="icon-minus"></i>削除</button>
+    </div>
+</form>
+    %endif
+</div>

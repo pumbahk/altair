@@ -29,7 +29,7 @@ class AccountForm(Form):
     )
     account_type = SelectField(
         label=u'取引先区分',
-        validators=[Required(u'選択してください')],
+        validators=[Required()],
         choices=[account_type.v for account_type in AccountTypeEnum],
         coerce=int
     )

@@ -22,13 +22,13 @@ class Bj89erCartResource(TicketingCartResource):
         self.end_at = parser.parse(request.registry.settings['89ers.end_at'])
 
     @property
-    def sales_segment_id(self):
+    def sales_segment_group_id(self):
         #### this is tooo bad. 
         logging.debug("bj89ers sales segment is must be 1")
         return 1
 
     def get_sales_segment(self):
-        return SalesSegment.filter_by(id=self.sales_segment_id).first()
+        return SalesSegment.filter_by(id=self.sales_segment_group_id).first()
 
     def get_or_create_user(self):
         from ticketing.cart import api

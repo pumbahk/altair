@@ -14,7 +14,8 @@ from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.events.performances.forms import PerformanceForm, PerformancePublicForm
-from ticketing.core.models import Event, Performance, Order, Product, ProductItem, Stock
+from ticketing.events.sales_segments.forms import SalesSegmentForm
+from ticketing.core.models import Event, Performance, Order, Product, ProductItem, Stock, SalesSegment
 from ticketing.products.forms import ProductForm, ProductItemForm, ProductItemGridForm
 from ticketing.orders.forms import OrderForm, OrderSearchForm
 
@@ -23,6 +24,91 @@ from ticketing.models import DBSession
 from ticketing.mails.api import get_mail_utility
 
 from ticketing.core.models import MailTypeChoices
+
+@view_defaults(decorator=with_bootstrap, permission="event_editor")
+class PerformanceShowView(BaseView):
+    def __init__(self, context, request):
+        super(PerformanceShowView, self).__init__(context, request)
+        # XXX: context でやったほうがいい?
+        performance_id = int(self.request.matchdict.get('performance_id', 0))
+        performance = Performance.query.filter(
+            (Performance.id == performance_id) & \
+            (Event.organization_id == self.context.user.organization_id)
+            ).one()
+        if performance is None:
+            return HTTPNotFound('performance id %d is not found' % performance_id)
+        self.performance = performance
+
+    def _tab_seat_allocation(self):
+        return {}
+
+    def _tab_product(self):
+        return dict(
+            form_product=ProductForm(
+                event_id=self.performance.event_id),
+            form_product_item=ProductItemForm(
+                user_id=self.context.user.id,
+                performance_id=self.performance.id),
+            form_product_item_grid=ProductItemGridForm(
+                user_id=self.context.user.id,
+                performance_id=self.performance.id),
+            products=self.performance.products
+            )
+
+    def _tab_order(self):
+        query = Order.filter_by(performance_id=self.performance.id)
+        form_search = OrderSearchForm(
+            self.request.params,
+            event_id=self.performance.event_id,
+            performance_id=self.performance.id)
+        if form_search.validate():
+            query = Order.set_search_condition(query, form_search)
+        else:
+            self.request.session.flash(u'検索条件が正しくありません')
+        return dict(
+            orders=paginate.Page(
+                query,
+                page=int(self.request.params.get('page', 0)),
+                items_per_page=20,
+                url=paginate.PageURL_WebOb(self.request)
+                ),
+            form_search=form_search,
+            form_order=OrderForm(event_id=self.performance.event_id)
+            )
+
+    def _tab_sales_segment(self):
+        return dict(sales_segments=self.performance.sales_segments)
+
+    def _tab_reservation(self):
+        return {}
+
+    def _extra_data(self):
+        # プリンターAPI
+        return dict(
+            endpoints=dict(
+                (key, self.request.route_path('tickets.printer.api.%s' % key))
+                for key in ['formats', 'peek', 'dequeue']
+                )
+            )
+
+    @view_config(route_name='performances.show', renderer='ticketing:templates/performances/show.html', permission='event_viewer')
+    @view_config(route_name='performances.show_tab', renderer='ticketing:templates/performances/show.html', permission='event_viewer')
+    def show(self):
+        tab = self.request.matchdict.get('tab', 'product')
+        if not isinstance(has_permission('event_editor', self.request.context, self.request), ACLAllowed):
+            if tab not in ['order', 'reservation']:
+                tab = 'reservation'
+
+        data = {
+            'performance': self.performance,
+            'tab': tab
+            }
+
+        data.update(getattr(self, '_tab_' + tab.replace('-', '_'))())
+        data.update(self._extra_data())
+
+        return data
+
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class Performances(BaseView):
@@ -53,56 +139,6 @@ class Performances(BaseView):
             'form':PerformanceForm(organization_id=self.context.user.organization_id),
         }
 
-    @view_config(route_name='performances.show', renderer='ticketing:templates/performances/show.html', permission='event_viewer')
-    @view_config(route_name='performances.show_tab', renderer='ticketing:templates/performances/show.html', permission='event_viewer')
-    def show(self):
-        performance_id = int(self.request.matchdict.get('performance_id', 0))
-        performance = Performance.get(performance_id, self.context.user.organization_id)
-        if performance is None:
-            return HTTPNotFound('performance id %d is not found' % performance_id)
-
-        data = {'performance':performance}
-
-        tab = self.request.matchdict.get('tab', 'product')
-        if not isinstance(has_permission('event_editor', self.request.context, self.request), ACLAllowed):
-            if tab not in ['order', 'reservation']:
-                tab = 'reservation'
-
-        if tab == 'seat-allocation':
-            pass
-        elif tab == 'product':
-            data['form_product'] = ProductForm(event_id=performance.event_id)
-            data['form_product_item'] = ProductItemForm(user_id=self.context.user.id, performance_id=performance_id)
-            data['form_product_item_grid'] = ProductItemGridForm(user_id=self.context.user.id, performance_id=performance_id)
-        elif tab == 'order':
-            query = Order.filter_by(performance_id=performance_id)
-            form_search = OrderSearchForm(self.request.params, event_id=performance.event_id, performance_id=performance_id)
-            if form_search.validate():
-                query = Order.set_search_condition(query, form_search)
-            else:
-                self.request.session.flash(u'検索条件が正しくありません')
-            data['orders'] = paginate.Page(
-                query,
-                page=int(self.request.params.get('page', 0)),
-                items_per_page=20,
-                url=paginate.PageURL_WebOb(self.request)
-            )
-            data['form_search'] = form_search
-            data['form_order'] = OrderForm(event_id=performance.event_id)
-        elif tab == 'ticket-designer':
-            pass
-        elif tab == 'reservation':
-            pass
-
-        data['tab'] = tab
-
-        # プリンターAPI
-        data['endpoints'] = dict(
-            (key, self.request.route_path('tickets.printer.api.%s' % key))
-            for key in ['formats', 'peek', 'dequeue']
-            )
-
-        return data
 
     @view_config(route_name='performances.new', request_method='GET', renderer='ticketing:templates/performances/edit.html')
     def new_get(self):
@@ -310,4 +346,3 @@ class MailInfoNewView(BaseView):
                 "mailtype": self.request.matchdict["mailtype"], 
                 "choices": MailTypeChoices, 
                 "choice_form": choice_form}
-

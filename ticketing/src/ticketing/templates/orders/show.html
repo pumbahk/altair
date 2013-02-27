@@ -300,22 +300,23 @@ ${h.breadcrumbs(
               <td>${order.multicheckout_approval_no}</td>
             </tr>
             % endif
-            % if order.cart and order.cart.checkout:
+            <% checkout = order.checkout %>
+            % if checkout:
             <tr>
               <th>楽天あんしん支払いサービス 注文番号</th>
-              <td>${order.cart.checkout.orderId}</td>
+              <td>${checkout.orderId}</td>
             </tr>
             <tr>
               <th>楽天あんしん支払いサービス 注文管理番号</th>
-              <td>${order.cart.checkout.orderControlId}</td>
+              <td>${checkout.orderControlId}</td>
             </tr>
             <tr>
               <th>楽天あんしん支払いサービス 利用ポイント数</th>
-              <td>${h.price_format(int(order.cart.checkout.usedPoint or 0))}</td>
+              <td>${h.price_format(int(checkout.usedPoint or 0))}</td>
             </tr>
             <tr>
               <th>楽天あんしん支払いサービス 売上日時</th>
-              <td>${h.safe_strftime(order.cart.checkout.sales_at)}</td>
+              <td>${h.safe_strftime(checkout.sales_at)}</td>
             </tr>
             % endif
           </table>

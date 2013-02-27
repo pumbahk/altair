@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import datetime
 import logging
 
 from paste.util.multidict import MultiDict
@@ -11,10 +10,9 @@ from sqlalchemy.sql import func
 
 from ticketing.operators.models import Operator
 from ticketing.core.models import Event, Organization, ReportSetting, Mailer
-from ticketing.core.models import StockType, StockHolder, StockStatus, Stock, Performance, Product, ProductItem, SalesSegment
+from ticketing.core.models import StockType, StockHolder, StockStatus, Stock, Performance, Product, ProductItem, SalesSegment, SalesSegmentGroup
 from ticketing.core.models import Order, OrderedProduct, OrderedProductItem
 from ticketing.events.sales_reports.forms import SalesReportForm
-from ticketing.helpers import todatetime
 
 logger = logging.getLogger(__name__)
 
@@ -29,14 +27,14 @@ def get_sales_summary(form, organization, group='Event'):
         .outerjoin(Performance).filter(Performance.deleted_at==None)\
         .outerjoin(Stock).filter(Stock.deleted_at==None, Stock.stock_holder_id.in_(stock_holder_ids))\
         .outerjoin(StockStatus).filter(StockStatus.deleted_at==None)\
-        .outerjoin(SalesSegment).filter(SalesSegment.event_id==Event.id)
+        .outerjoin(SalesSegmentGroup).filter(SalesSegmentGroup.event_id==Event.id)
 
     if form.performance_id.data:
         query = query.filter(Performance.id==form.performance_id.data)
     if form.event_id.data:
         query = query.filter(Event.id==form.event_id.data)
-    sales_start_day = func.min(SalesSegment.start_at.label('sales_start_at'))
-    sales_end_day = func.max(SalesSegment.end_at.label('sales_end_at'))
+    sales_start_day = func.min(SalesSegmentGroup.start_at.label('sales_start_at'))
+    sales_end_day = func.max(SalesSegmentGroup.end_at.label('sales_end_at'))
 
     if group == 'Performance':
         query = query.with_entities(
@@ -82,7 +80,7 @@ def get_sales_summary(form, organization, group='Event'):
     if form.limited_from.data:
         query = query.filter(Order.created_at >= form.limited_from.data)
     if form.limited_to.data:
-        query = query.filter(Order.created_at < (form.limited_to.data + datetime.timedelta(days=1)))
+        query = query.filter(Order.created_at < form.limited_to.data)
     if form.performance_id.data:
         query = query.filter(Performance.id==form.performance_id.data)
     if form.event_id.data:
@@ -183,7 +181,7 @@ def get_performance_sales_summary(form, organization):
     if form.limited_from.data:
         query = query.filter(Order.created_at >= form.limited_from.data)
     if form.limited_to.data:
-        query = query.filter(Order.created_at < (form.limited_to.data + datetime.timedelta(days=1)))
+        query = query.filter(Order.created_at < form.limited_to.data)
     
     query = query.with_entities(
             OrderedProduct.product_id,
@@ -206,11 +204,11 @@ def get_performance_sales_summary(form, organization):
     elif form.event_id.data:
         query = query.filter(Product.event_id==form.event_id.data)
     if form.sales_segment_id.data:
-        query = query.outerjoin(SalesSegment).filter(SalesSegment.id==Product.sales_segment_id, SalesSegment.id==form.sales_segment_id.data)
+        query = query.outerjoin(SalesSegment).filter(SalesSegment.sales_segment_id==Product.sales_segment_id, SalesSegment.id==form.sales_segment_id.data)
     if form.limited_from.data:
         query = query.filter(Order.created_at >= form.limited_from.data)
     if form.limited_to.data:
-        query = query.filter(Order.created_at < (form.limited_to.data + datetime.timedelta(days=1)))
+        query = query.filter(Order.created_at < form.limited_to.data)
     
     query = query.with_entities(
             OrderedProduct.product_id,
@@ -229,10 +227,10 @@ def get_performance_sales_summary(form, organization):
 def get_performance_sales_detail(form, event):
     performances_reports = {}
     for performance in event.performances:
-        if form.limited_from.data and performance.end_on < todatetime(form.limited_from.data):
+        if form.limited_from.data and performance.end_on < form.limited_from.data:
             continue
         report_by_sales_segment = {}
-        for sales_segment in event.sales_segments:
+        for sales_segment in performance.sales_segments:
             if (form.limited_from.data and sales_segment.end_at < todatetime(form.limited_from.data)) or (form.limited_to.data and todatetime(form.limited_to.data) <= sales_segment.start_at):
                 continue
             form.performance_id.data = performance.id

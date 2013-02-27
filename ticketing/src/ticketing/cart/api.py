@@ -20,7 +20,7 @@ from ticketing.mobile.interfaces import IMobileRequest
 from .interfaces import IStocker, IReserving, ICartFactory
 from .models import Cart, PaymentMethodManager, DBSession, CartedProductItem, CartedProduct
 from ..users.models import User, UserCredential, Membership, MemberGroup, MemberGroup_SalesSegment
-from ..core.models import Event, Performance, Stock, StockHolder, Seat, Product, ProductItem, SalesSegment, Venue
+from ..core.models import Event, Performance, Stock, StockHolder, Seat, Product, ProductItem, SalesSegment, SalesSegmentGroup, Venue
 from .exceptions import OutTermSalesException, NoSalesSegment, NoCartError
 
 def is_multicheckout_payment(cart):
@@ -50,9 +50,9 @@ def is_login_required(request, event):
     ).filter(
         MemberGroup.id==MemberGroup_SalesSegment.c.membergroup_id
     ).filter(
-        SalesSegment.id==MemberGroup_SalesSegment.c.sales_segment_id
+        SalesSegmentGroup.id==MemberGroup_SalesSegment.c.sales_segment_group_id
     ).filter(
-        SalesSegment.event_id==event.id
+        SalesSegmentGroup.event_id==event.id
     )
     return bool(q.count())
 
@@ -100,6 +100,7 @@ def get_route_pattern(registry, name):
 
 def set_cart(request, cart):
     request.session['ticketing.cart_id'] = cart.id
+    request.session.persist()
     request._cart = cart
 
 def get_cart(request):
@@ -278,20 +279,17 @@ def is_quantity_only(stock):
 def get_system_fee(request):
     return 380
 
-def get_stock_holder(request, event_id):
-    stocker = get_stocker(request)
-    return stocker.get_stock_holder(event_id)
 
 def get_valid_sales_url(request, event):
     principals = effective_principals(request)
     logger.debug(principals)
-    for salessegment in event.sales_segments:
-        membergroups = salessegment.membergroups
+    for sales_segment_group in event.sales_segment_groups:
+        membergroups = sales_segment_group.membergroups
         for membergroup in membergroups:
-            logger.debug("sales_segment:%s" % salessegment.name)
+            logger.debug("sales_segment:%s" % sales_segment_group.name)
             logger.debug("membergroup:%s" % membergroup.name)
             if "membergroup:%s" % membergroup.name in principals:
-                return request.route_url('cart.index.sales', event_id=event.id, sales_segment_id=salessegment.id)
+                return request.route_url('cart.index.sales', event_id=event.id, sales_segment_group_id=sales_segment_group.id)
 
 def logout(request, response=None):
     headers = forget(request)
@@ -312,7 +310,7 @@ def _query_performance_names(request, event, sales_segment):
     q = q.filter(Performance.event_id==event.id)
     q = q.filter(Venue.performance_id==Performance.id)
     q = q.filter(SalesSegment.id==sales_segment.id)
-    q = q.filter(Product.sales_segment_id==SalesSegment.id)
+    q = q.filter(Product.sales_segment_group_id==SalesSegment.id)
     q = q.filter(ProductItem.product_id==Product.id)
     q = q.filter(Stock.id==ProductItem.stock_id)
     q = q.filter(Stock.performance_id==Performance.id)
@@ -370,3 +368,48 @@ def new_order_session(request, **kw):
 def update_order_session(request, **kw):
     request.session['order'].update(kw)
     return request.session['order']
+
+
+def get_available_sales_segments(request, event, selected_date):
+    from ticketing.rakuten_auth.api import authenticated_user
+    user = authenticated_user(request)
+
+
+    q = SalesSegment.query.filter(
+            SalesSegment.performance_id==Performance.id
+        ).filter(
+            Performance.event_id==event.id
+        ).filter(
+            SalesSegment.public > 0
+        ).filter(
+            SalesSegment.start_at<=selected_date
+        ).filter(
+            SalesSegment.end_at >= selected_date
+        ).filter(
+            SalesSegmentGroup.id==SalesSegment.sales_segment_group_id
+        )
+
+    if user and user.get('is_guest'):
+        q = q.filter(
+            SalesSegmentGroup.id==MemberGroup_SalesSegment.c.sales_segment_group_id
+        ).filter(
+            MemberGroup_SalesSegment.c.membergroup_id==MemberGroup.id
+        ).filter(
+            MemberGroup.is_guest==True
+        )
+
+
+    elif user and 'membership' in user:
+        q = q.filter(
+            SalesSegmentGroup.id==MemberGroup_SalesSegment.c.sales_segment_group_id
+        ).filter(
+            MemberGroup_SalesSegment.c.membergroup_id==MemberGroup.id
+        ).filter(
+            MemberGroup.name==user['membergroup']
+        )
+
+    ss = q.all()
+    ss = [s for s in ss 
+          if s.available_payment_delivery_method_pairs]
+
+    return ss
