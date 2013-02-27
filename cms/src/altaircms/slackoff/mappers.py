@@ -21,8 +21,8 @@ def show_cms_detail_page(request, page):
     url= request.route_path("page_detail", page_id=page.id)
     return Markup(u'<a href="%s">%s</a>' % (url, page.name))
 
-def label_from_genre(genre):
-    return u", ".join([g.label for g in Genre.query.filter(Genre.id.in_(genre))])
+def label_from_genre(genre_id_list):
+    return u", ".join([g.label for g in Genre.query.filter(Genre.id.in_(genre_id_list))])
 
 def import_symbol(symbol):
     return pkg_resources.EntryPoint.parse("x=%s" % symbol).load(False)
@@ -120,7 +120,7 @@ def pagetype_mapper(request, obj):
 
 def pageset_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
-    objlike.genre_id =  label_from_genre(obj.genre_id)
+    objlike.genre_id =  label_from_genre([obj.genre_id])
     objlike.tags_string = obj.tags_string
     objlike.private_tags_string = obj.private_tags_string
     return objlike

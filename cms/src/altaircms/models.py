@@ -241,6 +241,12 @@ class Genre(Base,  WithOrganizationMixin):
         return self.query_descendant(hop=1).all()
 
     @property
+    def ancestors_include_self(self):
+        xs = list(self.ancestors)
+        xs.insert(0, self)
+        return xs
+
+    @property
     def ancestors(self):
         return self.query_ancestors(hop=None).all()
 

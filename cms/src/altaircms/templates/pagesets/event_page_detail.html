@@ -32,7 +32,7 @@
     <th>所属イベント名</th><td><a href="${request.route_path("event",id=pageset.event_id)}">${pageset.event.title}</a></td>
   </tr>
   <tr>
-    <th>所属ジャンル</th><td>${u", ".join(reversed([g.label for g in pageset.genre.ancestors])) if pageset.genre_id else u"-"}</td>
+    <th>所属ジャンル</th><td>${u", ".join(reversed([g.label for g in pageset.genre.ancestors_include_self])) if pageset.genre_id else u"-"}</td>
   </tr>
   <tr>
     <th>URL</th><td>${pageset.url}</td>
@@ -49,7 +49,7 @@
 </table>
 
   <div class="btn-group">
-    <a href="${request.route_path("pageset_update", id=pageset.id, action="input", _query=dict(endpoint=request.url))}" class="btn">
+    <a href="${request.route_path("pageset_update", id=pageset.id, action="input", _query=dict(genre=pageset.genre_id, endpoint=request.url))}" class="btn">
       <i class="icon-pencil"></i> ページセットの編集
     </a>
     <button class="btn dropdown-toggle" data-toggle="dropdown">
@@ -62,7 +62,7 @@
         </a>
       </li>
       <li>
-        <a href="#">
+        <a href="${request.route_path("pageset_update", id=pageset.id, action="input", _query=dict(genre=pageset.genre_id, endpoint=request.url))}">
           <i class="icon-minus"></i> ページセットの編集
         </a>
       </li>

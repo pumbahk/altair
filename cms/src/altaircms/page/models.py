@@ -175,7 +175,8 @@ class PageSet(Base,
         return dict(id=self.id, 
                     tags_string=u", ".join(t.label for t in self.tags if t.organization_id), 
                     private_tags_string=u", ".join(t.label for t in self.private_tags), 
-                    genre_id=self.genre_id)
+                    genre_id=self.genre_id, 
+                    )
     
         
     # @property

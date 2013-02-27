@@ -118,11 +118,12 @@ class CRUDResource(RootFactory): ## fixme
             return self.model.query
 
     ## update
-    def input_form_from_model(self, obj):
+    def input_form_from_model(self, obj, **kwargs):
         if hasattr(obj, "to_dict"):
             params = obj.to_dict()
         else:
             params = model_to_dict(obj)
+        params.update(kwargs)
         form = self.form(**params)
         if hasattr(form, "configure"):
             form.configure(self.request)
@@ -163,7 +164,7 @@ class CreateView(object):
         
     def input(self):
         self.context.set_endpoint()
-        form = self.context.input_form(self.request.GET)
+        form = self.context.input_form(**self.request.GET)
         raise self.context.AfterInput(form=form, context=self.context)
 
     def confirm(self):
@@ -198,7 +199,7 @@ class UpdateView(object):
         self.context.set_endpoint()
 
         obj = self.context.get_model_obj(self.request.matchdict["id"])
-        form = self.context.input_form_from_model(obj)
+        form = self.context.input_form_from_model(obj, **self.request.GET)
         raise self.context.AfterInput(form=form, context=self.context)
 
     def confirm(self):

@@ -86,7 +86,7 @@ def includeme(config):
 
 
     ## subscriber
-    config.add_subscriber(".subscribers.update_pageset", ".subscribers.PageSetUpdate")
+    config.add_subscriber(".subscribers.update_pageset_genretag", ".subscribers.PageSetUpdate")
     config.add_subscriber(".subscribers.event_term_bubbling_update", ".subscribers.PerformanceCreate")
     config.add_subscriber(".subscribers.event_term_bubbling_update", ".subscribers.PerformanceUpdate")
     config.add_subscriber(".subscribers.sales_term_bubbling_update", ".subscribers.SalesSegmentCreate")

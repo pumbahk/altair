@@ -62,10 +62,8 @@ class PageResource(security.RootFactory):
         return renderable.LayoutRender(layout)
 
     def create_page(self, form):
-        tags, private_tags, params =  h.divide_data(form.data)
-        page = models.Page.from_dict(params)
+        page = models.Page.from_dict(form.data)
         pageset = models.PageSet.get_or_create(page)
-        put_tags(pageset, "page", tags, private_tags, self.request)
 
         if form.data["parent"]:
             pageset.parent = form.data["parent"]
@@ -73,7 +71,7 @@ class PageResource(security.RootFactory):
             pageset.genre = form.data["genre"]
 
         self.add(page, flush=True)
-        subscribers.notify_page_create(self.request, page, params)
+        subscribers.notify_page_create(self.request, page, form.data)
 
         if page.layout.disposition_id:
             page.layout.default_disposition.bind_page(page, DBSession)

@@ -52,5 +52,5 @@ def includeme(config):
     config.add_subscriber(".subscribers.page_register_solr", ".subscribers.PageCreate")
     config.add_subscriber(".subscribers.page_register_solr", ".subscribers.PageUpdate")
     config.add_subscriber(".subscribers.page_delete_solr", ".subscribers.PageDelete") ## fixme
-
+    config.add_subscriber("..slackoff.subscribers.update_page_genretag", ".subscribers.PageCreate")
     config.scan('.views')
