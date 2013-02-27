@@ -140,10 +140,11 @@ class Scanner(object):
                 event.backend_id = backend_id
                 event.title = record['title']
                 event.subtitle = record.get('subtitle', '')
-                event.event_open = parse_datetime(record['start_on'])
-                event.event_close = parse_datetime(record['end_on'])
-                event.deal_open = parse_datetime(record.get('deal_open'))
-                event.deal_close = parse_datetime(record.get('deal_close'))
+                ## 自動で計算
+                # event.event_open = parse_datetime(record['start_on'])
+                # event.event_close = parse_datetime(record['end_on'])
+                # event.deal_open = parse_datetime(record.get('deal_open'))
+                # event.deal_close = parse_datetime(record.get('deal_close'))
                 event.code = record['code']
                 event.organization_id = organization.id
                 def notify_event_update():
@@ -193,7 +194,7 @@ class Scanner(object):
         r = []
 
         salessegment_groups = SalesSegmentGroup.query.filter(SalesSegmentGroup.event_id.in_(self.event_fetcher.cached_keys()))
-        group_dict = {(t.event_id, t.name, t.kind):t for t in salessegment_groups}
+        group_dict = {(t.event_id, t.name, t.kind, t.backend_id):t for t in salessegment_groups}
 
         for backend_id, (record, env) in self.salessegment_fetcher.data_iter:
             salessegment = fetcher.cache.get(backend_id)
@@ -208,7 +209,7 @@ class Scanner(object):
                 salessegment.backend_id = backend_id
                 salessegment.performance = self.performance_fetcher.cache[strict_get(env, "performance")["id"]]
                 event = self.event_fetcher.cache[env["event"]["id"]]
-                salessegment.group = group_dict.get((event.id, record["name"], record["kind"])) or SalesSegmentGroup(name=record["name"], kind=record["kind"], event_id=event.id)
+                salessegment.group = group_dict.get((event.id, record["name"], record["kind"], record.get("group_id"))) or SalesSegmentGroup(name=record["name"], kind=record["kind"], event_id=event.id, backend_id=record.get("group_id"))
                 salessegment.start_on = parse_datetime(record['start_on'])
                 salessegment.end_on = parse_datetime(record['end_on'])
             except KeyError as e:
@@ -237,6 +238,7 @@ class Scanner(object):
                 ticket.sale = self.salessegment_fetcher.cache[env["sale"]["id"]]
                 ticket.name = record['name']
                 ticket.price = record['price']
+                ticket.display_order = record.get("display_order") or 50
                 ticket.seattype = record['seat_type']
             except KeyError as e:
                 raise InvalidParamaterException("missing property '%s' in the ticket record" % e.message)

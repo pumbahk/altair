@@ -137,6 +137,7 @@ class SalesSegmentGroup(BaseOriginalMixin, Base):
 
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
+    backend_id = sa.Column(sa.Integer)
 
     @classmethod
     def create_defaults_from_event(cls, event):
@@ -145,7 +146,7 @@ class SalesSegmentGroup(BaseOriginalMixin, Base):
                     kind="normal"), 
                 cls(event=event, 
                     name=u"一般先行", 
-                    kind="early"), 
+                    kind="first_lottery"), 
                 ]
 
 class SalesSegment(BaseOriginalMixin, Base):

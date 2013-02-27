@@ -68,8 +68,8 @@ class NotifiedEventInfoFromBackendTests(AppFunctionalTests):
         event = Event.query.one()
         self.assertEqual(event.title, u"マツイ・オン・アイス")
         self.assertEqual(event.backend_id, 40020) #backend id
-        self.assertEqual(event.event_open, datetime(2012, 3, 15, 10))
-        self.assertEqual(event.event_close, datetime(2012, 3, 26, 21))
+        self.assertEqual(event.event_open, datetime(2013, 3, 15, 10))
+        self.assertEqual(event.event_close, datetime(2013, 3, 26, 21))
         self.assertNotEqual(event.organization_id, 1000)
         self.assertEqual(event.organization_id, Organization.query.filter_by(backend_id=1).one().id)
         self.assertEqual(len(event.performances), 2)
@@ -78,9 +78,9 @@ class NotifiedEventInfoFromBackendTests(AppFunctionalTests):
         self.assertEqual(performance.title, u"マツイ・オン・アイス(東京公演)")
         self.assertEqual(performance.backend_id, 40096)
         self.assertEqual(performance.venue, u"まついZEROホール")
-        self.assertEqual(performance.open_on, datetime(2012, 3, 15, 8))
-        self.assertEqual(performance.start_on, datetime(2012, 3, 15, 10))
-        self.assertEqual(performance.end_on, datetime(2012, 3, 15, 13))
+        self.assertEqual(performance.open_on, datetime(2013, 3, 15, 8))
+        self.assertEqual(performance.start_on, datetime(2013, 3, 15, 10))
+        self.assertEqual(performance.end_on, datetime(2013, 3, 15, 13))
 
         ## todo:change
         self.assertEqual(len(performance.sales), 1)
