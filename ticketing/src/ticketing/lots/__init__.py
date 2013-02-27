@@ -63,6 +63,8 @@ def main(global_config, **local_config):
 
     config.set_session_factory(session_factory)
     config.add_static_view('static', 'static', cache_max_age=3600)
+    config.add_static_view('c_static', 'ticketing.cart:static', cache_max_age=3600)
+
     config.include(".")
     config.include(".secure")
     config.include("ticketing.payments")
