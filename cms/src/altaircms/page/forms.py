@@ -224,7 +224,10 @@ def validate_page_publishings_connected(publishings):
     すべての終了日の次の日に対応する開始日があること
     """
     real_publishings = [p for p in publishings.values() if p["begin"] and p["published"]]
-    last_start = max(p["begin"] for p in real_publishings)
+    begins = [p["begin"] for p in real_publishings]
+    if begins == []:
+        return True
+    last_start = max(begins)
     for publishing in real_publishings:
         if publishing["published"]:
             page_id = publishing['page_id']

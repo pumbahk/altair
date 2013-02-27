@@ -1,11 +1,7 @@
 <%inherit file='../layout_2col.html'/>
+
 <h3>${ps.name}</h3>
 <form action="${request.url}" method="POST">
-%if form.errors:
-<div class="alert alert-info">
- ${form.errors}
-</div>
-%endif
 <table>
   <tr>
     <th>URL</th>
@@ -16,7 +12,7 @@
 <hr />
 
 <h4>ページ</h4>
-<table class="table">
+<table class="table pages">
   <tr>
     <td>#</td>
     <td>名前</td>
@@ -33,7 +29,22 @@
     </td>
     <td>${page.url}</td>
     <td>${page.created_at}</td>
-    <td>${f.publish_begin(form, page)} 〜 ${f.publish_end(form, page)}</td>
+    <td>${f.publish_begin(form, page)} 〜 ${f.publish_end(form, page)}
+      %if form.errors.get("beg_%s" % page.id):
+        <div class="alert alert-error">
+          %for error in form.errors.get("beg_%s" % page.id):
+            <p>${error}</p>
+          %endfor
+        </div>
+      %endif
+      %if form.errors.get("end_%s" % page.id):
+        <div class="alert alert-error">
+          %for error in form.errors.get("end_%s" % page.id):
+            <p>${error}</p>
+          %endfor
+        </div>
+      %endif
+    </td>
     <td>
 	    ${f.published(form, page)}
         <div class="btn-group">
