@@ -21,9 +21,13 @@ def main(global_config, **settings):
     config.set_request_property("altaircms.auth.api.get_allowable_query", "allowable", reify=True)
 
     config.include('cmsmobile.event')
+    config.include('altaircms.solr')
     config.include('altaircms.tag')
     config.include('altaircms.topic')
     config.include('altairsite.separation')
+    search_utility = settings.get("altaircms.solr.search.utility")
+    #search_utility = settings.get("altaircms.solr.search.utility", "altaircms.solr.api.DummySearch")
+    config.add_fulltext_search(search_utility)
 
     config.add_route("home", "/")
     config.scan()
