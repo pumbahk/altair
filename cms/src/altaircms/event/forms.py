@@ -26,6 +26,7 @@ class EventForm(Form):
     deal_open = fields.DateTimeField(label=u'販売開始日', validators=[required_field()])
     deal_close = fields.DateTimeField(label=u'販売終了日', validators=[required_field()])
     is_searchable = fields.BooleanField(label=u'検索対象に含める', default=True)
+    code = fields.TextField(label=u"event code(backend)")
     
     def validate(self, **kwargs):
         if super(EventForm, self).validate():
@@ -50,7 +51,7 @@ class EventForm(Form):
         return not bool(self.errors)
 
     __display_fields__ = [u"title", u"subtitle", 
-                          u"backend_id", 
+                          u"backend_id", u"code", 
                           u"description", u"performers", u"inquiry_for", "notice", "ticket_payment", "ticket_pickup", 
                           u"event_open", u"event_close", 
                           u"deal_open", u"deal_close", 

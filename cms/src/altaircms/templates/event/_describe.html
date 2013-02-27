@@ -26,6 +26,9 @@
   <tr>
     <th>開催期間</th><td colspan="3">${h.term(event.event_open,event.event_close)}</td>
   </tr>
+  <tr>
+    <th>event code(backend)</th><td>${event.code or u"-"}</td>
+  </tr>
 </table>
 
 ${panel("model_action_buttons", event, modelname="event", _query=dict(endpoint=request.url, delete_endpoint=request.route_path("event_list")))}
