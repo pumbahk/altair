@@ -220,9 +220,20 @@ class Genre(Base,  WithOrganizationMixin):
     label = sa.Column(sa.Unicode(length=255))
     name = sa.Column(sa.String(length=255))
 
+    category_top_pageset_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id", use_alter=True, name="fk_default_category_top_pageset"), doc=u"カテゴリトップページのid")
+    
+    def has_category_toppage(self):
+        return bool(self.category_top_pageset_id)
+
+    def save_as_category_toppage(self, pageset):
+        self.category_top_pageset_id = pageset.id
+
     def __repr__(self):
         return "<name=%s %s>" % (self.name, self.organization_id)
 
+    def __unicode__(self):
+        suffix = u" -- ページあり"if self.has_category_toppage() else u""
+        return u"%s%s" % (self.label, suffix)
 
     def query_descendant(self, hop=None):
         qs = self.query_join_path_from_self

@@ -92,7 +92,7 @@ class PageSet(Base,
     pagetype = orm.relationship("PageType", backref="pagesets", uselist=False)
 
     genre_id = Column(sa.Integer, ForeignKey("genre.id"))
-    genre = orm.relationship("Genre",  backref="pageset",  uselist=False)
+    genre = orm.relationship("Genre",  backref="pageset",  uselist=False, primaryjoin="PageSet.genre_id==Genre.id")
 
     @declared_attr
     def __table_args__(cls):
@@ -367,6 +367,15 @@ class PageType(WithOrganizationMixin, Base):
                        u"特集", 
                        u"静的ページ"
                        )
+
+    @property
+    def is_portal(self):
+        return self.name == "portal"
+
+    @property
+    def is_event_detail(self):
+        return self.name == "event_detail"
+    
     @classmethod
     def get_or_create(cls, **kwargs):
         return cls.query.filter_by(**kwargs).first() or cls(**kwargs)

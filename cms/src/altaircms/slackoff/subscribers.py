@@ -93,26 +93,39 @@ def update_kind(self):
 
 
 def update_pageset_genretag(self):
+    pageset = self.obj
+    page = self.obj.pages[0]
+
     tags = tags_from_string(self.params["tags_string"])
     private_tags = tags_from_string(self.params["private_tags_string"])
     obj_type = "page"
-    put_tags(self.obj, obj_type, tags, private_tags, self.request)
-    ftsearch_register_from_page(self.request, self.obj.pages[0])
+    put_tags(pageset, obj_type, tags, private_tags, self.request)
+    ftsearch_register_from_page(self.request, page)
     if self.params.get("genre_id"):
         genres = Genre.query.filter(Genre.id == self.params["genre_id"]).all()
         system_tag_labels = _tag_labels_from_genres(genres)
-        put_system_tags(self.obj, obj_type, system_tag_labels, self.request)
+        put_system_tags(pageset, obj_type, system_tag_labels, self.request)
+
+    if pageset.pagetype.is_portal and pageset.genre:
+        DBSession.flush()
+        pageset.genre.save_as_category_toppage(pageset)
 
 def update_page_genretag(self):
+    pageset = self.obj.pageset
+    page = self.obj
+
     tags = tags_from_string(self.params["tags"])
     private_tags = tags_from_string(self.params["private_tags"])
     obj_type = "page"
-    put_tags(self.obj.pageset, obj_type, tags, private_tags, self.request)
-    ftsearch_register_from_page(self.request, self.obj)
+    put_tags(pageset, obj_type, tags, private_tags, self.request)
+    ftsearch_register_from_page(self.request, page)
     if self.params.get("genre_id"):
         system_tag_labels = _tag_labels_from_genres([self.params["genre_id"]])
-        put_system_tags(self.obj.pageset, obj_type, system_tag_labels, self.request)
+        put_system_tags(pageset, obj_type, system_tag_labels, self.request)
 
+    if pageset.pagetype.is_portal and pageset.genre:
+        DBSession.flush()
+        pageset.genre.save_as_category_toppage(pageset)
 
 def create_salessegment_group(self):
     event = self.params["event"]

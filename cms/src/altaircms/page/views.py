@@ -110,6 +110,8 @@ class PageAddView(object):
         self.request.POST
         form = forms.PageForm(self.request.POST)
         if form.validate():
+            if self.request.GET.get("pagetype") == "portal" and form.data["genre"]:
+                FlashMessage.info(u"%sのカテゴリトップページとして登録されます。(既にカテゴリトップページが存在している場合にはこれから作られるページが優先されます)" % form.data["genre"].label, request=self.request)
             return {"form": form}
         else:
             self.request._form = form

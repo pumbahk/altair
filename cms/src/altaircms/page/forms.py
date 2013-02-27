@@ -67,7 +67,7 @@ class PageInfoSetupForm(Form):
                                                   get_label=lambda o: o.label, 
                                                   dynamic_query=pagetype_filter)
     genre = dynamic_query_select_field_factory(Genre, allow_blank=True, label=u"ジャンル", 
-                                               get_label=lambda g: g.label)
+                                               get_label=unicode)
     name = fields.TextField(label=u"名前", validators=[validators.Required()])
 
 class PageInfoSetupWithEventForm(Form):
@@ -77,7 +77,7 @@ class PageInfoSetupWithEventForm(Form):
                                                   get_label=lambda o: o.label, 
                                                   dynamic_query=pagetype_filter)
     genre = dynamic_query_select_field_factory(Genre, allow_blank=True, label=u"ジャンル", 
-                                               get_label=lambda g: g.label)
+                                               get_label=unicode)
     name = fields.TextField(label=u"名前", validators=[validators.Required()])
 
 @implementer(IForm)
