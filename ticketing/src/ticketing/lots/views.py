@@ -326,11 +326,23 @@ class PaymentView(object):
 
         if not lot_entry.is_elected:
             raise NotElectedException
+
+        lot = lot_entry.lot
         cart = api.create_cart(self.request, lot_entry)
         DBSession.add(cart)
         DBSession.flush()
         cart_api.set_cart(self.request, cart)
+        client_name = self.request.params['last_name'] + self.request.params['first_name']
 
+        order = cart_api.new_order_session(
+            self.request,
+            client_name=client_name,
+            payment_delivery_method_pair_id=cart.payment_delivery_pair.id,
+            email_1=cart.shipping_address.email_1,
+        )
+
+
+        self.request.session['payment_confirm_url'] = self.request.route_url('lots.payment.confirm', event_id=lot.event_id, lot_id=lot.id)
         payment = Payment(cart, self.request)
         result = payment.call_prepare()
         if callable(result):
