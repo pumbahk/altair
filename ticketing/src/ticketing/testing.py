@@ -2,6 +2,8 @@ from pyramid.path import DottedNameResolver
 from pyramid.testing import DummyRequest as _DummyRequest
 
 def _setup_db(modules=[], echo=False):
+    from .logicaldeleting import install
+    install()
     resolver = DottedNameResolver()
     from sqlalchemy import create_engine
     engine = create_engine("sqlite:///")
