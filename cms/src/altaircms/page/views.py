@@ -464,7 +464,8 @@ def dispatch_with_rendering_type(rendering_type):
              decorator=with_fanstatic_jqueries.merge(with_bootstrap))
 def page_using_search_edit(context, request):
     page = request._page = getattr(request, "_page", None) or get_or_404(request.allowable(Page), Page.id==request.matchdict["page_id"])
-    return {"page": page}
+    layout_qs = request.allowable(Layout).with_transformation(Layout.applicable(page.pagetype_id))
+    return {"page": page, "layout_candidates": layout_qs}
 
 
 ## widgetの保存 場所移動？

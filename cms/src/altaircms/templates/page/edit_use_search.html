@@ -71,5 +71,11 @@ ${nco.breadcrumbs(
 <a class="btn" href="${h.link.preview_page_from_page(request,page)}" ><i class="icon-eye-open"> </i> Preview</a>
 
 <div class="well" id="pagecontentform" style="margin-top:20px;">
-  sorry not implemented yet
+  %if page.pageset.genre.is_category_toppage(page.pageset):
+     <p>ジャンル: 「${page.pageset.genre.label}」に含まれたページが一覧で表示されます</p>
+  %else:
+     <div class="alert">
+       カテゴリトップページ用の機能以外未実装です。
+     </div>
+  %endif
 </div>

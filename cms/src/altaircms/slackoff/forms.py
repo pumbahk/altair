@@ -431,4 +431,4 @@ class PageSetForm(Form):
     genre_id = fields.SelectField(label=u"ジャンル", coerce=unicode)
 
     def configure(self, request):
-        self.genre_id.choices = [(unicode(g.id), g.label) for g in request.allowable(Genre)]
+        self.genre_id.choices = [(unicode(g.id), unicode(g)) for g in request.allowable(Genre)]
