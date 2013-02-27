@@ -349,14 +349,14 @@ class PageType(WithOrganizationMixin, Base):
     id = sa.Column(sa.Integer, primary_key=True)
     name = sa.Column(sa.String(255))
     label = sa.Column(sa.Unicode(255), doc=u"日本語表記")
-    page_role = sa.Column(sa.String(16), doc=u"pageの利用方法など")
-    ## 小カテゴリはportalではないが、カテゴリトップにしたいため
     page_default_role = "normal"
+    page_role = sa.Column(sa.String(16), doc=u"pageの利用方法など", default=page_default_role)
+    ## 小カテゴリはportalではないが、カテゴリトップにしたいため
     page_role_candidates = [("portal", u"カテゴリトップに利用"), 
                             ("event_detail", u"イベント詳細ページに利用"), 
                             ("static", u"静的ページに利用"), ]
 
-    page_rendering_type = sa.Column(sa.String(16), doc="pageのレンダリング方法")
+    page_rendering_type = sa.Column(sa.String(16), doc="pageのレンダリング方法", default="widget")
     page_rendering_type_candidates = [("widget", u"widget利用"), 
                                       ("search", u"検索利用")]
     @declared_attr
@@ -400,7 +400,10 @@ class PageType(WithOrganizationMixin, Base):
         r = []
         for name, label in zip(cls.DEFAULTS, cls.DEFAULTS_LABELS):
             if name in ("portal", "search"):
-                r.append(cached.get(name) or cls(name=name, label=label, organization_id=organization_id, page_role="portal"))
+                if name == "search":
+                    r.append(cached.get(name) or cls(name=name, label=label, organization_id=organization_id, page_role="portal", page_rendering_type="search"))
+                else:
+                    r.append(cached.get(name) or cls(name=name, label=label, organization_id=organization_id, page_role="portal"))
             elif name == "event_detail":
                 r.append(cached.get(name) or cls(name=name, label=label, organization_id=organization_id, page_role="event_detail"))                
             elif name == "static":

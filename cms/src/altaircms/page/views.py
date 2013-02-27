@@ -609,7 +609,7 @@ class StaticPageView(object):
         FlashMessage.success(u"このページを%sしました" % (u"公開" if static_page.published else u"非公開に"), request=self.request)
         return HTTPFound(self.request.route_url("static_page", action="detail", static_page_id=static_page.id))
 
-    @view_config(match_param="action=detail", renderer="altaircms:templates/page/static_detail.mako", 
+    @view_config(match_param="action=detail", renderer="altaircms:templates/page/static_detail.html", 
                  decorator=with_bootstrap)
     def detail(self):
         pk = self.request.matchdict["static_page_id"]

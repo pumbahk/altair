@@ -71,7 +71,7 @@ def validate_blocks(form, field):
 
 class LayoutCreateForm(Form):
     title = fields.TextField(u'タイトル', validators=[validators.Required()])
-    template_filename = fields.TextField(u'テンプレートファイル名', validators=[validators.Optional()])
+    template_filename = fields.TextField(u'テンプレートファイル名', validators=[validators.Required()])
     filepath = fields.FileField(label=u"テンプレートファイル")
     __display_fields__ = [u"title", "template_filename", "filepath"]
 
