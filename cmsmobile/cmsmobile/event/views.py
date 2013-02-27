@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from altaircms.solr import api as sapi
-from pyramid.url import route_path
-from pyramid.httpexceptions import HTTPFound
-from copy import deepcopy
+from cmsmobile.solr import helper
 from pyramid.view import view_config
 from altaircms.topic.models import TopicTag, PromotionTag
 from altaircms.models import Performance
@@ -16,6 +14,7 @@ from altairsite.front.api import get_navigation_categories
 from cmsmobile.event.forms import SearchForm
 from ticketing.models import merge_session_with_post
 from pyramid.httpexceptions import HTTPNotFound
+
 import logging
 
 logger = logging.getLogger(__file__)
@@ -65,14 +64,6 @@ def move_genre(request):
         ,attentions=attentions
     )
 
-def createQuery(search_word):
-    words = search_word.split(" ")
-    cop = u" AND "
-    query = sapi._create_query_from_word(dict(searchtext=words[0]))
-    for word in words[1:]:
-        query = query.compose(sapi._create_query_from_word(dict(searchtext=word)), cop)
-    return query
-
 @view_config(route_name='search', renderer='cmsmobile:templates/search/search.mako')
 def search(request):
 
@@ -82,32 +73,29 @@ def search(request):
         return fail_search_word(form)
 
     try:
-        ftsearch = solrapi.get_fulltext_search(request)
-        query = createQuery(form.word.data)
-        result = ftsearch.search(query, fields=["page_title"])
-
-        print result
-
-        #query_params = dict(query=request.GET.get("query", u""), query_cond="intersection")
-        #qp = deepcopy(query_params)
-        #ret = search_by_freeword(request, qp)
-
-        ## query_paramsをhtml化する
-        #html_query_params = context.get_query_params_as_html(query_params)
-        ### header page用のcategoryを集めてくる
-        #params = get_navigation_categories(request)
-        #params.update(result_seq=result_seq, query_params=html_query_params)
-
-
-        #print "START!!!!!!!!!!"
-        #print query_params
-        #print ret
-        #print "ENDDD!!!!!!!!!!"
-
+        events = helper.searchEvents(request, form.word.data)
     except Exception, e:
         logger.exception(e)
         raise HTTPNotFound
-    return search_word(request, form)
+
+    if events:
+        form.num.data = len(events)
+        items_per_page = 10
+        events = paginate.Page(
+            events,
+            form.page.data,
+            items_per_page,
+            url=paginate.PageURL_WebOb(request)
+        )
+        if form.num.data % items_per_page == 0:
+            form.page_num.data = form.num.data / items_per_page
+        else:
+            form.page_num.data = form.num.data / items_per_page + 1
+
+    return {
+         'events':events
+        ,'form':form
+        }
 
 @view_config(route_name='genresearch', renderer='cmsmobile:templates/genresearch/genresearch.mako')
 def genresearch(request):
@@ -117,7 +105,30 @@ def genresearch(request):
     if not form.validate():
         return fail_search_word(form)
 
-    return search_word(request, form)
+    try:
+        events = helper.searchEvents(request, form.word.data)
+    except Exception, e:
+        logger.exception(e)
+        raise HTTPNotFound
+
+    if events:
+        form.num.data = len(events)
+        items_per_page = 10
+        events = paginate.Page(
+            events,
+            form.page.data,
+            items_per_page,
+            url=paginate.PageURL_WebOb(request)
+        )
+        if form.num.data % items_per_page == 0:
+            form.page_num.data = form.num.data / items_per_page
+        else:
+            form.page_num.data = form.num.data / items_per_page + 1
+
+    return {
+        'events':events
+        ,'form':form
+    }
 
 @view_config(route_name='detail', renderer='cmsmobile:templates/detail/detail.mako')
 def move_detail(request):
@@ -162,6 +173,7 @@ def fail_search_word(form):
         ,'form':form
     }
 
+"""
 def search_word(request, form):
 
     qs = None
@@ -190,3 +202,4 @@ def search_word(request, form):
          'performances':performances
         ,'form':form
     }
+"""

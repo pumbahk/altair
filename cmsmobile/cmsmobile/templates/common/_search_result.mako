@@ -1,4 +1,4 @@
-<%page args="form, performances" />
+<%page args="form, events" />
 
 % if int(form.num.data):
     ${form.num.data}件見つかりました。
@@ -10,17 +10,11 @@
 
 <h2>検索結果</h2><p/>
 
-% if performances:
-    % for perf in performances:
+% if events:
+    % for event in events:
         <hr/>
-        ${perf.title}<br/>
-        会場：${perf.venue}<br/>
-        開場：${perf.open_on}<br/>
-        開始：${perf.start_on}<br/>
-        終了：${perf.end_on}<br/>
-        % for sale in perf.sales:
-            ${sale.start_on} 〜 ${sale.end_on}<br/>
-        % endfor
+        ${event.title}<br/>
+        販売：${event.deal_open}〜${event.deal_close}<br/>
     % endfor
 % endif
 <p/>

@@ -7,7 +7,7 @@
     % endif
     <p/>
 
-    <%include file='../common/_search_result.mako' args="form=form, performances=performances" />
+    <%include file='../common/_search_result.mako' args="form=form, events=events" />
 
     <hr/>
 
