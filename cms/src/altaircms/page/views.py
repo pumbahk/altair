@@ -489,7 +489,8 @@ def disposition_load(context, request):
 @view_config(route_name="disposition_list", renderer="altaircms:templates/widget/disposition/list.html", 
              decorator=with_bootstrap, permission='authenticated') #permission
 def disposition_list(context, request):
-    ds = WidgetDisposition.enable_only_query(request.user).options(orm.joinedload(WidgetDisposition.layout))
+    qs = WidgetDisposition.enable_only_query(request.user)
+    ds = request.allowable(WidgetDisposition, qs=qs).options(orm.joinedload(WidgetDisposition.layout))
     return {"ds":ds}
 
 @view_config(route_name="disposition_alter", request_method="POST", permission='authenticated') #permission
