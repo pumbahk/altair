@@ -8,7 +8,10 @@ import contextlib
 from datetime import datetime, date, timedelta
 from zope.deprecation import deprecate
 import sqlalchemy as sa
-
+from sqlalchemy.sql import (
+    or_,
+    and_,
+    )
 logger = logging.getLogger(__name__)
 from pyramid.interfaces import IRoutesMapper, IRequest
 from pyramid.security import effective_principals, forget
@@ -398,6 +401,7 @@ def get_available_sales_segments(request, event, selected_date):
             MemberGroup.is_guest==True
         )
 
+        ss = q.all()
 
     elif user and 'membership' in user:
         q = q.filter(
@@ -405,10 +409,33 @@ def get_available_sales_segments(request, event, selected_date):
         ).filter(
             MemberGroup_SalesSegment.c.membergroup_id==MemberGroup.id
         ).filter(
-            MemberGroup.name==user['membergroup']
+            or_(MemberGroup.name==user['membergroup'],
+                MemberGroup.is_guest==True)  # guestのものも買えるようにする
         )
+        ss = q.all()
+        # TODO: 同じ公演に対する販売区分がある場合は、会員のものを優先する
+        # 会員の公演を集める
+        membered_performances = []
+        for s in ss:
+            if [m for m in s.sales_segment_group.membergroups if m.name == user['membergroup']]:
+                membered_performances.append(s.performance)
 
-    ss = q.all()
+        # 会員の公演に入ってる公演の一般販売の販売区分をはずす
+        xss = []
+        for s in ss:
+            if not [m for m in s.sales_segment_group.membergroups if m.name == user['membergroup']]:
+                if s.performance in membered_performances:
+                    xss.append(s)
+        ss = [s for s in ss if s not in xss]
+
+        
+    else:
+        # 会員情報のないFC
+        ss = q.all()
+
+
+    
+
     ss = [s for s in ss 
           if s.available_payment_delivery_method_pairs]
 
