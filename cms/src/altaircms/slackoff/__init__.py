@@ -1,9 +1,11 @@
 # -*- coding:utf-8 -*-
 def includeme(config):
     config.add_crud("layout", title="layout", model="..layout.models.Layout",
+                    circle_type="circle-master", 
                     bind_actions=["delete"], 
                     form=".forms.LayoutCreateForm", mapper=".mappers.layout_mapper")
     config.add_crud("performance", title="performance", model="..models.Performance",
+                    circle_type="circle-event", 
                     bind_actions=["create", "delete", "update"], 
                     events=dict(create_event=config.maybe_dotted(".subscribers.PerformanceCreate"), 
                                 update_event=config.maybe_dotted(".subscribers.PerformanceUpdate"), 
@@ -16,12 +18,14 @@ def includeme(config):
                     renderer="altaircms:templates/performance/view.html")
     config.add_crud("salessegment", title="salessegment", model="..models.SalesSegment", 
                     has_auto_generated_permission=False,  #todo:remove-it
+                    circle_type="circle-event", 
                     bind_actions=["create", "delete", "update"], 
                     events=dict(create_event=config.maybe_dotted(".subscribers.SalesSegmentCreate"), 
                                 update_event=config.maybe_dotted(".subscribers.SalesSegmentUpdate")), 
                     form=".forms.SalesSegmentForm", mapper=".mappers.sale_mapper")
     config.add_crud("ticket", title="ticket", model="..models.Ticket", 
                     has_auto_generated_permission=False,  #todo:remove-it
+                    circle_type="circle-event", 
                     bind_actions=["create", "delete", "update"], 
                     events=dict(create_event=config.maybe_dotted(".subscribers.TicketCreate"), 
                                 update_event=config.maybe_dotted(".subscribers.TicketUpdate")), 
@@ -29,6 +33,7 @@ def includeme(config):
     ## topic
     config.add_crud("topic_unit", title="topic", model="..topic.models.Topic",
                     has_auto_generated_permission=False,  #todo:remove-it
+                    circle_type="circle-item", 
                     bind_actions=["create", "delete", "update"], 
                     form=".forms.TopicForm", mapper=".mappers.topic_mapper", 
                     events=dict(create_event=config.maybe_dotted(".subscribers.TopicCreate"), 
@@ -37,6 +42,7 @@ def includeme(config):
 
     config.add_crud("topcontent_unit", title="topcontent", model="..topic.models.Topcontent",
                     has_auto_generated_permission=False,  #todo:remove-it
+                    circle_type="circle-item", 
                     bind_actions=["create", "delete", "update"], 
                     form=".forms.TopcontentForm", mapper=".mappers.topcontent_mapper", 
                     events=dict(create_event=config.maybe_dotted(".subscribers.TopicCreate"), 
@@ -44,6 +50,7 @@ def includeme(config):
                                 ))
     config.add_crud("promotion_unit",  title="promotion",  model="..topic.models.Promotion",
                     has_auto_generated_permission=False,  #todo:remove-it
+                    circle_type="circle-item", 
                     bind_actions=["create", "delete", "update"], 
                     form=".forms.PromotionForm", mapper=".mappers.promotion_mapper", 
                     events=dict(create_event=config.maybe_dotted(".subscribers.TopicCreate"), 
@@ -53,6 +60,7 @@ def includeme(config):
     config.add_subscriber(".subscribers.update_kind", ".subscribers.TopicUpdate")
 
     config.add_crud("category", title="category", model="..models.Category",
+                    circle_type="circle-master", 
                     bind_actions=["delete", "update", "create"], 
                     form=".forms.CategoryForm", mapper=".mappers.category_mapper", 
                     filter_form=".forms.CategoryFilterForm")
@@ -61,24 +69,30 @@ def includeme(config):
                     decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", 
                     renderer="altaircms:templates/category/list.html")
     config.add_crud("category.link", title="external link", model="..models.Category",
+                    circle_type="circle-master", 
                     has_auto_generated_permission=False, 
                     bind_actions=["create", "update"], 
                     endpoint="category_list", 
                     form=".forms.ExternalLinkForm", mapper=".mappers.category_mapper")
     config.add_crud("category.banner", title="external banner", model="..models.Category",
+                    circle_type="circle-master", 
                     has_auto_generated_permission=False, 
                     bind_actions=["create", "update"], 
                     endpoint="category_list", 
                     form=".forms.ExternalBannerForm", mapper=".mappers.category_mapper")
     config.add_crud("hotword", title="hotword", model="..tag.models.HotWord",
+                    circle_type="circle-item", 
                     form=".forms.HotWordForm", mapper=".mappers.hotword_mapper")
     config.add_crud("pagedefaultinfo", title="pagedefaultinfo", model="..page.models.PageDefaultInfo",
+                    circle_type="circle-master", 
                     has_auto_generated_permission=False, 
                     form=".forms.PageDefaultInfoForm", mapper=".mappers.pagedefaultinfo_mapper")
     config.add_crud("pagetype", title="pagetype", model="..page.models.PageType",
+                    circle_type="circle-master", 
                     has_auto_generated_permission=False, 
                     form=".forms.PageTypeForm", mapper=".mappers.pagetype_mapper")
     config.add_crud("pageset", title="pageset", model="..page.models.PageSet",
+                    circle_type="circle-page", 
                     bind_actions=["update"], 
                     has_auto_generated_permission=False, 
                     events=dict(update_event=config.maybe_dotted(".subscribers.PageSetUpdate")), 
