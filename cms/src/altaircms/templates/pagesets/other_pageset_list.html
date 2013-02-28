@@ -57,7 +57,7 @@ ${pages.pager()}
     <tbody>
       %for page in pages.paginated():
       <tr>
-        <td><a href="${request.route_path("pageset_detail", pageset_id=page.id, kind="event")}">${page.name}</a></td>
+        <td><a href="${request.route_path("pageset_detail", pageset_id=page.id, kind="other")}">${page.name}</a></td>
         <td>${page.url}</td>
         <td>
           <a href="${h.link.preview_page_from_pageset(request, page)}" class="btn btn-small"><i class="icon-eye-open"> </i> Preview</a>
