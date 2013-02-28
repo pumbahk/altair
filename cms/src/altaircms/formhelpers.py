@@ -92,6 +92,17 @@ class myQuerySelectField(extfields.QuerySelectField):
     """ wtformsのfieldではdataのNoneの場合、常にblankが初期値として設定されてしまっていた。
     　　それへの対応
     """
+    def process_data(self, value):
+        if value is None:
+            self.data = value
+        elif hasattr(value, "__table__"):
+            self.data = value
+        elif isinstance(value, (int, unicode, str)):
+            qs = self.query or self.query_factory()
+            self.data = qs.filter_by(id=value).first() #too add-hoc
+        else:
+            raise ValueError("primary key or mapped object")
+
     def iter_choices(self):
         if self.allow_blank:
             yield (u'__None', self.blank_text, False)
