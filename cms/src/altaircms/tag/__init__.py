@@ -1,6 +1,6 @@
 SUPPORTED_CLASSIFIER = ("page", "asset")
 
-def includeme(config):
+def install_tagmanager(config):
     config.add_directive("add_tagmanager", ".directives.add_tagmanager")
     config.add_tagmanager("page",
                          model="altaircms.page.models.PageSet", 
@@ -43,6 +43,7 @@ def includeme(config):
                          tag="altaircms.asset.models.MovieAssetTag"
                          )
 
+def includeme(config):
     config.add_route("tag", "/tag/{classifier}")
-
+    config.include(install_tagmanager)
     config.scan()
