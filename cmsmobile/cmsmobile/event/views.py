@@ -141,3 +141,6 @@ def move_help(request):
         helps=helps
     )
 
+@view_config(route_name='company', renderer='cmsmobile:templates/company/company.mako')
+def move_company(request):
+    return {}
