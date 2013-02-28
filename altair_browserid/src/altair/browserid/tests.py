@@ -19,7 +19,7 @@ class BrowserIDMiddlewareTests(unittest.TestCase):
         return self._getTarget()(*args, **kwargs)
 
     def test_none(self):
-        target = self._makeOne(app)
+        target = self._makeOne(app, cookie_name='browserid', env_key='repoze.browserid')
 
         testapp = webtest.TestApp(target)
 
@@ -28,7 +28,8 @@ class BrowserIDMiddlewareTests(unittest.TestCase):
         self.assertEqual(result.body, 'browserid = None')
 
     def test_it(self):
-        target = self._makeOne(app)
+        target = self._makeOne(app, cookie_name='browserid', env_key='repoze.browserid')
+
 
         testapp = webtest.TestApp(target)
         testapp.cookies['browserid'] = 'this-is-browser-id'

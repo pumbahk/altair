@@ -10,6 +10,7 @@ requires = [
 tests_require = [
     "webtest",
     "nose",
+    "coverage",
     ]
 
 long_description = (
@@ -48,7 +49,9 @@ setup(name='altair.browserid',
       extras_require={
         "testing": tests_require,
         },
-      entry_points="""
-      # -*- Entry points: -*-
-      """,
+      entry_points={
+        "paste.filter_factory": [
+            "browserid=altair.browserid:browserid_filter_factory",
+            ],
+        },
       )
