@@ -454,7 +454,7 @@ class PageDefaultInfo(WithOrganizationMixin, Base):
             return self.resolver_other.resolve()
 
 class PageTag2Page(Base):
-    __tablename__ = "pagetag2page"
+    __tablename__ = "pagetag2pageset"
     query = DBSession.query_property()
     object_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id"), primary_key=True)
     tag_id = sa.Column(sa.Integer, sa.ForeignKey("pagetag.id"), primary_key=True)

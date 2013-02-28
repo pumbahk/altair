@@ -45,6 +45,11 @@ def upgrade():
                     sa.ForeignKeyConstraint(['tag_id'], ['topiccoretag.id'], ),
                     sa.PrimaryKeyConstraint('id')
                     )
+
+    ## data migration
+    op.execute('INSERT INTO topiccore (id, publish_open_on, publish_close_on, display_order, is_vetoed, created_at, updated_at, type) SELECT id, publish_open_on, publish_close_on, display_order, is_vetoed, created_at, updated_at, "topic" from topic;')
+    op.execute('INSERT INTO topiccoretag (organization_id, label, publicp, type) SELECT organization_id, subkind as label, 1 as publicp, "topic" FROM topic GROUP BY organization_id, subkind;')
+
 def downgrade():
     op.drop_table('topiccoretag2topiccore')
     op.drop_table('topiccoretag')

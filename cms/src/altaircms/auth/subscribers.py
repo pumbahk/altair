@@ -32,5 +32,6 @@ def touch_operator_after_login(self): ## self is AfterLogin
     DBSession.add(operator)
 
 def after_organization_modified(organization):
-    DBSession.add_all(PageType.create_default_pagetypes(organization_id=organization.id))
+    if PageType.query.filter_by(organization_id=organization.id).count() <= 0:
+        DBSession.add_all(PageType.create_default_pagetypes(organization_id=organization.id))
     

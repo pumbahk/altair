@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 """add label pagetype
 
 Revision ID: 34dea52c0dad
@@ -16,6 +17,9 @@ from sqlalchemy.dialects import mysql
 
 def upgrade():
     op.add_column('pagetype', sa.Column('label', sa.Unicode(length=255), nullable=True))
+    op.execute(u'update pagetype set label="イベント詳細" where name = "event_detail"')
+    op.execute(u'update pagetype set label="ポータル" where name = "portal"')
+    op.execute(u'update pagetype set label="静的ページ" where name = "static"')
 
 def downgrade():
     op.drop_column('pagetype', 'label')

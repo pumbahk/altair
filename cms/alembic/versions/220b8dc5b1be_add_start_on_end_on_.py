@@ -14,12 +14,14 @@ from alembic import op
 import sqlalchemy as sa
 
 def upgrade():
+    op.add_column('salessegment_group', sa.Column('backend_id', sa.Integer(), nullable=True))
     op.add_column('salessegment_group', sa.Column('created_at', sa.DateTime(), nullable=True))
     op.add_column('salessegment_group', sa.Column('end_on', sa.DateTime(), nullable=True))
     op.add_column('salessegment_group', sa.Column('start_on', sa.DateTime(), nullable=True))
     op.add_column('salessegment_group', sa.Column('updated_at', sa.DateTime(), nullable=True))
 
 def downgrade():
+    op.drop_column('salessegment_group', 'backend_id')
     op.drop_column('salessegment_group', 'updated_at')
     op.drop_column('salessegment_group', 'start_on')
     op.drop_column('salessegment_group', 'end_on')
