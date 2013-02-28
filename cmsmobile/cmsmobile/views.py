@@ -4,14 +4,10 @@ from altaircms.topic.models import TopicTag, PromotionTag
 from datetime import datetime
 from altaircms.topic.api import get_topic_searcher
 from cmsmobile.event.forms import SearchForm
+from altaircms.genre.searcher import GenreSearcher
 
 @view_config(route_name='home', renderer='cmsmobile:templates/top/top.mako')
 def main(request):
-
-    # Genre (Genreのリスト)
-    #genre_searcher = GenreSearcher(request)
-    #root = genre_searcher.query_genre_root()
-    #genres = root.get_children()
 
     # attention
     topic_searcher = get_topic_searcher(request, "topic")
@@ -37,6 +33,17 @@ def main(request):
             .filter(TopicTag.organization_id == request.organization.id)[0:5]
 
     # Hotward
+
+    # Genre (Genreのリスト)
+    #genre_searcher = GenreSearcher(request)
+    #root = genre_searcher.get_top_genre_list()
+
+    #for g in root:
+    #    print g
+    #genres = root.get_children()
+
+    #for genre in genres:
+    #    print genre
 
     return dict(
          topics=topics

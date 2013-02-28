@@ -58,7 +58,3 @@ class SearchForm(Form):
             Length(max=200, message=u'200文字以内で入力してください'),
         ]
     )
-
-    def validate_word(form, field):
-        if field.data == "":
-            raise ValidationError(u'検索文字列を入れてください。')

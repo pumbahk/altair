@@ -68,10 +68,34 @@ def search(request):
 
     form = SearchForm(request.GET)
 
-    if not form.validate():
-        return fail_search_word(form)
+    # freeword, genre, subgenre
+    events = _freeword_search(request, form)
 
-    return _search(request, form)
+    # area
+    if form.area.data:
+        #events = _area_search(request, form)
+        pass
+
+    # paging
+    if events:
+        form.num.data = len(events)
+        items_per_page = 10
+        events = paginate.Page(
+            events,
+            form.page.data,
+            items_per_page,
+            url=paginate.PageURL_WebOb(request)
+        )
+        if form.num.data % items_per_page == 0:
+            form.page_num.data = form.num.data / items_per_page
+        else:
+            form.page_num.data = form.num.data / items_per_page + 1
+
+    return {
+        'events':events
+        ,'form':form
+    }
+
 
 @view_config(route_name='detail', renderer='cmsmobile:templates/detail/detail.mako')
 def move_detail(request):
@@ -115,7 +139,44 @@ def move_help(request):
         helps=helps
     )
 
-def _search(request, form):
+def _area_search(request, form):
+    search_word = ""
+    if form.sub_genre.data != "" and form.sub_genre.data is not None:
+        search_word = form.word.data + " " + form.sub_genre.data
+    elif form.genre.data != "" and form.genre.data is not None:
+        search_word = form.word.data + " " + form.genre.data
+
+    # ジャンルが渡された場合は、全文検索を実行してから地域検索
+    events = []
+    if search_word != "":
+        try:
+            events = helper.searchEvents(request, search_word)
+        except Exception, e:
+            logger.exception(e)
+            raise HTTPNotFound
+    else:
+        #地域検索
+        if events:
+            form.num.data = len(events)
+            items_per_page = 10
+            events = paginate.Page(
+                events,
+                form.page.data,
+                items_per_page,
+                url=paginate.PageURL_WebOb(request)
+            )
+            if form.num.data % items_per_page == 0:
+                form.page_num.data = form.num.data / items_per_page
+            else:
+                form.page_num.data = form.num.data / items_per_page + 1
+
+    return {
+        'events':events
+        ,'form':form
+    }
+
+
+def _freeword_search(request, form):
 
     search_word = form.word.data
     if form.sub_genre.data != "" and form.sub_genre.data is not None:
@@ -123,67 +184,11 @@ def _search(request, form):
     elif form.genre.data != "" and form.genre.data is not None:
         search_word = form.word.data + " " + form.genre.data
 
-    try:
-        events = helper.searchEvents(request, search_word)
-    except Exception, e:
-        logger.exception(e)
-        raise HTTPNotFound
-
-    if events:
-        form.num.data = len(events)
-        items_per_page = 10
-        events = paginate.Page(
-            events,
-            form.page.data,
-            items_per_page,
-            url=paginate.PageURL_WebOb(request)
-        )
-        if form.num.data % items_per_page == 0:
-            form.page_num.data = form.num.data / items_per_page
-        else:
-            form.page_num.data = form.num.data / items_per_page + 1
-
-    return {
-        'events':events
-        ,'form':form
-    }
-
-def fail_search_word(form):
-
-    performances = None
-
-    return {
-         'performances':performances
-        ,'form':form
-    }
-
-"""
-def search_word(request, form):
-
-    qs = None
-    if form.word.data:
-        qs = Performance.query.filter_by()
-        likeword = u"%%%s%%" % form.word.data
-        qs = qs.filter((Performance.title.like(likeword)) | (Performance.venue.like(likeword))).all()
-
-    performances = None
-    if qs:
-        items_per_page = 5
-        performances = paginate.Page(
-            qs,
-            form.page.data,
-            items_per_page,
-            url=paginate.PageURL_WebOb(request)
-        )
-        form.num.data = len(qs)
-        form.page_num.data = form.num.data / items_per_page + 1
-
-    #area = int(request.params.get("area", 0))
-    #if area:
-    #    pass
-
-    return {
-         'performances':performances
-        ,'form':form
-    }
-"""
+    events = []
+    if search_word != "":
+        try:
+            events = helper.searchEvents(request, search_word)
+        except Exception, e:
+            logger.exception(e)
+            raise HTTPNotFound
+    return events
