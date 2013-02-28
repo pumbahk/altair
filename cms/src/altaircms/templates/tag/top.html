@@ -1,17 +1,27 @@
 <%inherit file='../layout_2col.html'/>
 <%namespace name="co" file="components.html"/>
 
+<%block name="style">
+<style type="text/css">
+  #search_form input {min-width: 200px;  }
+  #search_form select {min-width: 200px;  }
+  #search_form input[type="submit"] {min-width: auto; }
+</style>
+</%block>
+
 <h2>tag top</h2>
 
 ${co.menutab(supported)}
 
-<div class="row">
-  <div class="span5">
-	<form action="#" method="GET">
-      <table class="table">
+<div class="row-fluid">
+  <div class="span6">
+	<form action="#" method="GET" id="search_form">
+      <table class="table table-describe">
         <tbody>
-          ${co.formfield(form, "classifier")}
-          ${co.formfield(form, "query")}
+          <tr>
+            ${co.formfield(form, "classifier")}
+            ${co.formfield(form, "query")}
+          </tr>
         </tbody>
       </table>
 	  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> Search</button>

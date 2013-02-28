@@ -50,22 +50,20 @@
 	  <th>タイトル</th>
 	  <th>URL</th>
 	  <th>イベント</th>
-	  <th>概要</th>
 	  <th>更新日時</th>
 	</tr>
   </thead>
 	<tbody>
-	  % for page in query_result:
+	  % for pageset in query_result:
 		<tr>
-		  <td><a href="${request.route_path("page_edit_", page_id=page.id)}">${page.title}</a></td>
-		  <td><a href="${h.link.preview_page_from_page(request, page)}">${page.url}</a></td>
-          % if page.event is None:
+		  <td><a href="${request.route_path("pageset_detail", pageset_id=pageset.id, kind="other")}">${pageset.name}</a></td>
+		  <td><a href="${h.link.preview_page_from_pageset(request, pageset)}">${pageset.url}</a></td>
+          % if pageset.event is None:
             <td>-</td>
           % else:
-            <td><a href="${request.route_path("event", id=page.event.id)}">${page.event.title}</a></td>
+            <td><a href="${request.route_path("event", id=pageset.event.id)}">${pageset.event.title}</a></td>
           % endif
-		  <td>${page.description[:20]+"..." if len(page.description) > 20 else page.description}</td>
-		  <td>${page.updated_at}</td>
+		  <td>${pageset.updated_at}</td>
 		</tr>
 	  % endfor
 	</tbody>
