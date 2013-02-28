@@ -49,6 +49,7 @@ def upgrade():
     ## data migration
     op.execute('INSERT INTO topiccore (id, publish_open_on, publish_close_on, display_order, is_vetoed, created_at, updated_at, type) SELECT id, publish_open_on, publish_close_on, display_order, is_vetoed, created_at, updated_at, "topic" from topic;')
     op.execute('INSERT INTO topiccoretag (organization_id, label, publicp, type) SELECT organization_id, subkind as label, 1 as publicp, "topic" FROM topic GROUP BY organization_id, subkind;')
+    op.execute('INSERT INTO topiccoretag2topiccore (object_id, tag_id) SELECT tc.id as object_id, tag.id as tag_id from topiccore as tc join topic as t on tc.id = t.id join topiccoretag as tag on tag.label = t.subkind WHERE tag.organization_id = t.organization_id and tag.type = "topic";')
 
 def downgrade():
     op.drop_table('topiccoretag2topiccore')

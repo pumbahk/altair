@@ -28,9 +28,15 @@ def upgrade():
     op.create_foreign_key("fk_pagesets_pagetype_id_to_pagetype_id", "pagesets", "pagetype", ["pagetype_id"], ["id"])
 
     #data migration
+    op.execute('INSERT INTO pagetype (name, organization_id) SELECT "portal" as name, id as organization_id FROM organization;')
     op.execute('INSERT INTO pagetype (name, organization_id) SELECT "event_detail" as name, id as organization_id FROM organization;')
     op.execute('INSERT INTO pagetype (name, organization_id) SELECT "static" as name, id as organization_id FROM organization;')
-    op.execute('INSERT INTO pagetype (name, organization_id) SELECT "portal" as name, id as organization_id FROM organization;')
+
+    op.execute('update page as p join (select id, organization_id from pagetype where name = "portal") as pt on p.organization_id = pt.organization_id set p.pagetype_id = pt.id')
+    op.execute('update pagesets as p join (select id, organization_id from pagetype where name = "portal") as pt on p.organization_id = pt.organization_id set p.pagetype_id = pt.id')
+    op.execute('update layout as l join (select id, organization_id from pagetype where name = "portal") as pt on l.organization_id = pt.organization_id set l.pagetype_id = pt.id')
+
+
 
 def downgrade():
     op.drop_constraint("fk_pagesets_pagetype_id_to_pagetype_id", "pagesets", type="foreignkey")
