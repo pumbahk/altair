@@ -8,7 +8,6 @@ from altaircms.layout.models import Layout
 from .renderable import LayoutRender
 from altaircms.auth.api import get_or_404
 
-from altaircms.lib.crud.views import AfterInput
 from pyramid.view import view_defaults
 from pyramid.response import FileResponse
 from altaircms.slackoff import forms
@@ -20,6 +19,13 @@ from collections import defaultdict
 import altaircms.helpers as h
 from ..slackoff.mappers import layout_mapper
 from ..page.models import PageType
+
+
+class AfterInput(Exception):
+    def __init__(self, form=None, context=None):
+        self.form = form
+        self.context = context
+
 
 @view_config(route_name="layout_list")
 def layout_list(context, request):

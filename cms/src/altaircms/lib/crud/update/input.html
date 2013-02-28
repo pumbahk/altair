@@ -1,7 +1,7 @@
 <%inherit file='../../../templates/layout_2col.html'/>
 
 <%namespace name="fco" file="../../../templates/formcomponents.html"/>
-
+<div class="circle ${request.context.circle_type} circle-top"></div>
 <div class="row">
     <h3>${master_env.title}更新</h3>
     <form action="${h.current_route_path_override(request, action="confirm",id=request.matchdict["id"])}" method="POST">

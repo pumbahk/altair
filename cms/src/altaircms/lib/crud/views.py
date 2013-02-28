@@ -14,10 +14,14 @@ from altaircms.subscribers import notify_model_create ## too-bad
 
 from sqlalchemy.sql.operators import ColumnOperators
 
+"""
+todo: resourceを登録する形式に変更
+"""
 class AfterInput(Exception):
     def __init__(self, form=None, context=None):
         self.form = form
         self.context = context
+        self.circle_type = context.circle_type
 
 class ModelFaker(object):
     def __init__(self, obj):
@@ -36,7 +40,8 @@ class CRUDResource(RootFactory): ## fixme
     def __init__(self, prefix, title, model, form, mapper, endpoint, filter_form,
                  request,
                  after_input_context=None, 
-                 create_event=None, update_event=None, delete_event=None):
+                 create_event=None, update_event=None, delete_event=None, 
+                 circle_type="circle-master"):
         self.prefix = prefix
         self.title = title
         self.model = model
@@ -50,6 +55,7 @@ class CRUDResource(RootFactory): ## fixme
         self.update_event = update_event
         self.delete_event = delete_event
         self.AfterInput = after_input_context
+        self.circle_type = circle_type
 
     def join(self, ac):
         return "%s_%s" % (self.prefix, ac)
@@ -281,6 +287,7 @@ class SimpleCRUDFactory(object):
              has_auto_generated_permission=True, 
              after_input_context=AfterInput, 
              endpoint=None, 
+             circle_type="circle-master", 
              **default_kwargs):
 
         after_input_context = config.maybe_dotted(after_input_context)
@@ -288,7 +295,7 @@ class SimpleCRUDFactory(object):
         self.resource = resource = functools.partial(
             self.Resource, 
             self.prefix, self.title, self.model, self.form, self.mapper, endpoint, self.filter_form, 
-            after_input_context=after_input_context, 
+            after_input_context=after_input_context, circle_type=circle_type, 
             **(events or {})) #events. e.g create_event, update_event, delete_event
 
         ## individual add view function.

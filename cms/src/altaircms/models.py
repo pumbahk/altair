@@ -222,11 +222,16 @@ class Genre(Base,  WithOrganizationMixin):
     name = sa.Column(sa.String(length=255))
 
     category_top_pageset_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id", use_alter=True, name="fk_default_category_top_pageset"), doc=u"カテゴリトップページのid")
+
+    def is_category_toppage(self, pageset):
+        return self.category_top_pageset_id == pageset.id
     
     def has_category_toppage(self):
         return bool(self.category_top_pageset_id)
 
     def save_as_category_toppage(self, pageset):
+        Genre.query.filter(Genre.category_top_pageset_id==pageset.id, Genre.id!=self.id)\
+            .update({"category_top_pageset_id": None}, synchronize_session=False)
         self.category_top_pageset_id = pageset.id
 
     def __repr__(self):

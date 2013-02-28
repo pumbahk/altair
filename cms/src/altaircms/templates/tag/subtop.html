@@ -1,12 +1,20 @@
 <%inherit file='../layout_2col.html'/>
 <%namespace name="co" file="components.html"/>
 
+<%block name="style">
+<style type="text/css">
+  #search_form input {min-width: 200px;  }
+  #search_form select {min-width: 200px;  }
+  #search_form input[type="submit"] {min-width: auto; }
+</style>
+</%block>
+
 <h2>${classifier} tag</h2>
 ${co.menutab(supported, classifier)}
 
-<div class="row">
-  <div class="span5">
-	<form action="#" method="GET">
+<div class="row-fluid">
+  <div class="span6">
+	<form action="#" method="GET" id="search_form">
       <table class="table">
         <tbody>
           ${co.formfield(form, "classifier")}
@@ -23,13 +31,13 @@ ${co.menutab(supported, classifier)}
   </div>
 </div>
 
-<div class="row">
+<div class="row-fluid">
   <h3>タグ一覧</h3>
 <%
 seq = h.paginate(request, tags, item_count=tags.count())
 %>
 
-  <table class="table">
+  <table class="table table-describe">
 	<thread>
 	  <tr>
 		<th span=>名前</th>

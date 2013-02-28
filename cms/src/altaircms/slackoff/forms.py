@@ -2,7 +2,7 @@
 import logging 
 logger = logging.getLogger(__name__)
 import json
-from altaircms.formhelpers import Form
+from altaircms.formhelpers import Form, MaybeSelectField
 from wtforms import fields
 from wtforms import widgets
 from wtforms import validators
@@ -71,7 +71,7 @@ def validate_blocks(form, field):
 
 class LayoutCreateForm(Form):
     title = fields.TextField(u'タイトル', validators=[validators.Required()])
-    template_filename = fields.TextField(u'テンプレートファイル名', validators=[validators.Optional()])
+    template_filename = fields.TextField(u'テンプレートファイル名', validators=[validators.Required()])
     filepath = fields.FileField(label=u"テンプレートファイル")
     __display_fields__ = [u"title", "template_filename", "filepath"]
 
@@ -406,7 +406,7 @@ class HotWordForm(Form):
 
 class PageDefaultInfoForm(Form):
     url_prefix = fields.TextField(label=u"urlのフォーマット", validators=[])    
-    title_prefix = fields.TextField(label=u"titleのフォーマット", validators=[required_field()])    
+    title_prefix = fields.TextField(label=u"titleのフォーマット", validators=[])    
     description = fields.TextField(label=u"descriptionのデフォルト値",  widget=widgets.TextArea())    
     keywords = fields.TextField(label=u"keywordsのデフォルト値",  widget=widgets.TextArea())    
     pagetype = dynamic_query_select_field_factory(PageType, 
@@ -417,7 +417,13 @@ class PageDefaultInfoForm(Form):
 class PageTypeForm(Form):
     name = fields.TextField(label=u"名前", validators=[required_field()])
     label = fields.TextField(label=u"日本語表記", validators=[required_field()])
-    __display_fields__ = ["name", "label"]
+    page_role = MaybeSelectField(choices=PageType.page_role_candidates, label=u"ページの利用方法")
+    page_rendering_type = fields.SelectField(choices=PageType.page_rendering_type_candidates, label=u"ページのレンダリング方法")
+
+    def validate_page_role(field, data):
+        if data is None:
+            field.data = PageType.page_default_role
+    __display_fields__ = ["name", "label", "page_role", "page_rendering_type"]
 
 class PageSetForm(Form):
     tags_string = fields.TextField(label=u"タグ(区切り文字:\",\")")
@@ -425,4 +431,4 @@ class PageSetForm(Form):
     genre_id = fields.SelectField(label=u"ジャンル", coerce=unicode)
 
     def configure(self, request):
-        self.genre_id.choices = [(unicode(g.id), g.label) for g in request.allowable(Genre)]
+        self.genre_id.choices = [(unicode(g.id), unicode(g)) for g in request.allowable(Genre)]

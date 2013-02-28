@@ -349,32 +349,45 @@ class PageType(WithOrganizationMixin, Base):
     id = sa.Column(sa.Integer, primary_key=True)
     name = sa.Column(sa.String(255))
     label = sa.Column(sa.Unicode(255), doc=u"日本語表記")
+    page_default_role = "normal"
+    page_role = sa.Column(sa.String(16), doc=u"pageの利用方法など", default=page_default_role)
+    ## 小カテゴリはportalではないが、カテゴリトップにしたいため
+    page_role_candidates = [("portal", u"カテゴリトップに利用"), 
+                            ("event_detail", u"イベント詳細ページに利用"), 
+                            ("static", u"静的ページに利用"), ]
 
+    page_rendering_type = sa.Column(sa.String(16), doc="pageのレンダリング方法", default="widget")
+    page_rendering_type_candidates = [("widget", u"widget利用"), 
+                                      ("search", u"検索利用")]
     @declared_attr
     def __table_args__(cls):
         return (sa.schema.UniqueConstraint("name", "organization_id"), )
 
     DEFAULTS = (u"portal",
                 u"event_detail",
-                u"search",
                 u"document", 
                 u"special", 
-                u"static")
+                u"static", 
+                u"search")
+
     DEFAULTS_LABELS = (u"ポータル", 
                        u"イベント詳細", 
-                       u"検索利用", 
                        u"ドキュメント", 
                        u"特集", 
                        u"静的ページ"
+                       u"検索利用"
                        )
-
     @property
     def is_portal(self):
-        return self.name == "portal"
+        return self.page_role == "portal"
+
+    @property
+    def is_static_page(self):
+        return self.page_role == "static"
 
     @property
     def is_event_detail(self):
-        return self.name == "event_detail"
+        return self.name == "event_detail" or self.page_role == "event_detail"
     
     @classmethod
     def get_or_create(cls, **kwargs):
@@ -386,13 +399,23 @@ class PageType(WithOrganizationMixin, Base):
         cached = {o.name: o for o in qs}
         r = []
         for name, label in zip(cls.DEFAULTS, cls.DEFAULTS_LABELS):
-            r.append(cached.get(name) or cls(name=name, label=label, organization_id=organization_id))
+            if name in ("portal", "search"):
+                if name == "search":
+                    r.append(cached.get(name) or cls(name=name, label=label, organization_id=organization_id, page_role="portal", page_rendering_type="search"))
+                else:
+                    r.append(cached.get(name) or cls(name=name, label=label, organization_id=organization_id, page_role="portal"))
+            elif name == "event_detail":
+                r.append(cached.get(name) or cls(name=name, label=label, organization_id=organization_id, page_role="event_detail"))                
+            elif name == "static":
+                r.append(cached.get(name) or cls(name=name, label=label, organization_id=organization_id, page_role="static"))                
+            else:
+                r.append(cached.get(name) or cls(name=name, label=label, organization_id=organization_id, page_role="normal"))
         return r
 
+    ## backward compabirity. this is deprecated property
     @property
     def kind(self):
-        name = self.name
-        if name == "event_detail":
+        if self.is_event_detail:
             return "event"
         else:
             return "other"
