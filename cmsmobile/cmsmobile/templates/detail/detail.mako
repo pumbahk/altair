@@ -1,23 +1,24 @@
 <%include file="../common/_header.mako" args="title=u'イベント詳細'"/>
 <body>
-<h1>
-    丸美屋食品ミュージカル「アニー」</br>
-</h1>
-    公演期間：2013/04/20（土）〜2013/06/06<br/>
-    会場：青山劇場/△△ホール<br/>
+<%
+import datetime as d
+%>
+
+<h2>
+    ${event.title}<br/>
+</h2>
+    公演期間：${event.deal_open}〜${event.deal_close}<br/>
     公演一覧へ<br/>
         2013/04｜2013/05｜2013/06<br/>
-    公演詳細へ<br/>
+    <a href="#detail">公演詳細へ</a><br/>
 <hr/>
-<h2>公演一覧</h2>
+<h3>公演一覧</h3>
     2013/04<br/>
-    04/09 11：00開場/11：30開演<br/>
-    04/10 11：00開場/11：30開演<br/>
-    04/11 11：00開場/11：30開演<br/>
-    04/12 11：00開場/11：30開演<br/>
-    04/13 11：00開場/11：30開演<br/>
+    % for perf in event.performances:
+        開場：${perf.open_on} 開演：${perf.start_on} 会場：${perf.venue}<br/>
+    % endfor
 <hr/>
-<h2>公演詳細</h2>
+<h3><a name="detail">公演詳細</a></h3>
     販売キャンセル<br/>
     詳細/注意事項<br/>
     席種/価格<br/>

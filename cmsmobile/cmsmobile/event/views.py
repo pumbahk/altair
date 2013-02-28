@@ -14,10 +14,14 @@ from altairsite.front.api import get_navigation_categories
 from cmsmobile.event.forms import SearchForm
 from ticketing.models import merge_session_with_post
 from pyramid.httpexceptions import HTTPNotFound
+from altaircms.event.models import Event
 
 import logging
 
 logger = logging.getLogger(__file__)
+
+class ValidationFailure(Exception):
+    pass
 
 @view_config(route_name='genre', renderer='cmsmobile:templates/genre/genre.mako')
 def move_genre(request):
@@ -133,8 +137,16 @@ def genresearch(request):
 @view_config(route_name='detail', renderer='cmsmobile:templates/detail/detail.mako')
 def move_detail(request):
     event_id = request.params.get("event_id", None)
+    event = Event.query.filter(Event.id == event_id).first()
+    if not event:
+        raise ValidationFailure
     return {
+        'event':event
     }
+
+@view_config(route_name='detail', context=ValidationFailure, renderer='cmsmobile:templates/common/error.mako')
+def failed_validation(request):
+    return {}
 
 @view_config(route_name='information', renderer='cmsmobile:templates/information/information.mako')
 def move_information(request):

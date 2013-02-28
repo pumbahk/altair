@@ -13,7 +13,7 @@
 % if events:
     % for event in events:
         <hr/>
-        ${event.title}<br/>
+        <a href="/detail?event_id=${event.id}">${event.title}</a><br/>
         販売：${event.deal_open}〜${event.deal_close}<br/>
     % endfor
 % endif
