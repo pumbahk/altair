@@ -25,6 +25,19 @@ def _create_mailsubscription_cache(organization_id):
 def one_or_empty(b):
     return '1' if b else ''
 
+def encode_to_cp932(row):
+    encoded = {}
+    for key, value in row.items():
+        if value:
+            if not isinstance(value, unicode):
+                value = unicode(value)
+            value = value.encode('cp932')
+        else:
+            value = ''
+        encoded[key.encode('cp932')] = value
+    return encoded
+
+
 class OrderCSV(object):
     order_value_filters = dict((k, format_number) for k in ['transaction_fee', 'delivery_fee', 'system_fee', 'total_amount'])
 
@@ -92,16 +105,17 @@ class OrderCSV(object):
     performance_header = {
         'name':u'公演',
         'code':u'公演コード',
-        'venue':u'会場',
         'start_on':u'公演日',
         }
     venue_header = {
         'name':u'会場',
         }
-    product_header = {
-        'name':u'商品名',
+    ordered_product_header = {
         'price':u'商品単価',
         'quantity':u'商品個数',
+        }
+    product_header = {
+        'name':u'商品名',
         }
     sales_segment_header = {
         'name':u'販売区分',
@@ -153,18 +167,6 @@ class OrderCSV(object):
                 self.header.append("mail_permission_0")
             self._mailsubscription_cache = _create_mailsubscription_cache(self.organization_id)
         return self._mailsubscription_cache
-
-    def encode_to_cp932(self, row):
-        encoded = {}
-        for key, value in row.items():
-            if value:
-                if not isinstance(value, unicode):
-                    value = unicode(value)
-                value = value.encode('cp932')
-            else:
-                value = ''
-            encoded[key.encode('cp932')] = value
-        return encoded
 
     def get_row_data(self, header, data, filter=None):
         if not isinstance(data, MultiDict):
@@ -224,8 +226,8 @@ class OrderCSV(object):
     def get_booster_data(self, ordered_product_item, num2):
         result = []
         for column, label in self.attribute_header.items():
-            value = ordered_product_item.attributes.get(column)
-            if not value:
+            value = ordered_product_item.attributes.get(column, None)
+            if value is None:
                 continue
             label = self.add_header_column(label, num2)
 
@@ -256,6 +258,7 @@ class OrderCSV(object):
         return result
 
     def _convert_to_csv(self, order):
+        self.row_data = []
         order_dict = record_to_multidict(order)
         order_dict.add('created_at', str(order.created_at))
         order_dict.add('status', order.status)
@@ -282,6 +285,7 @@ class OrderCSV(object):
         product_item_data = {}
         for i, ordered_product in enumerate(order.ordered_products):
             self.add_row_data_with_header(self.product_header, ordered_product.product, i)
+            self.add_row_data_with_header(self.ordered_product_header, ordered_product, i)
             self.add_row_data_with_header(self.sales_segment_header, ordered_product.product.sales_segment, i)
 
             for j, ordered_product_item in enumerate(ordered_product.ordered_product_items):
@@ -310,8 +314,8 @@ class OrderCSV(object):
             row = dict(self.row_data)
             if u'メールアドレス1_1' in row and not row.get(u'メールマガジン受信可否_0'):
                 row[u'メールマガジン受信可否_0'] = one_or_empty(self.mailsubscription_cache.get(row[u'メールアドレス1_1']) or\
-                                                     self.mailsubscription_cache.get(row[u'メールアドレス1_2']))
-            return [self.encode_to_cp932(row)]
+                                                             self.mailsubscription_cache.get(row[u'メールアドレス1_2']))
+            return [encode_to_cp932(row)]
         else:
             rows = []
             for i, product in self.product_data.iteritems():
@@ -325,6 +329,6 @@ class OrderCSV(object):
                         )
                         if u'メールアドレス1_1' in row and not row.get(u'メールマガジン受信可否_0'):
                             row[u'メールマガジン受信可否_0'] = one_or_empty(self.mailsubscription_cache.get(row[u'メールアドレス1_1']) or\
-                                                                 self.mailsubscription_cache.get(row[u'メールアドレス1_2']))
-                        rows.append(self.encode_to_cp932(row))
+                                                                         self.mailsubscription_cache.get(row[u'メールアドレス1_2']))
+                        rows.append(encode_to_cp932(row))
             return rows
