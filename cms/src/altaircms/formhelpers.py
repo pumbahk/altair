@@ -99,7 +99,7 @@ class myQuerySelectField(extfields.QuerySelectField):
             self.data = value
         elif isinstance(value, (int, unicode, str)):
             qs = self.query or self.query_factory()
-            self.data = qs.filter_by(id=value).first()
+            self.data = qs.filter_by(id=value).first() #too add-hoc
         else:
             raise ValueError("primary key or mapped object")
 
