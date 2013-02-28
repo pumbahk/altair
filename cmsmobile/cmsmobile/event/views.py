@@ -1,18 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from cmsmobile.solr import helper
 from pyramid.view import view_config
 from altaircms.topic.models import TopicTag, PromotionTag
 import webhelpers.paginate as paginate
 from datetime import datetime
 from altaircms.topic.api import get_topic_searcher
 from cmsmobile.event.forms import SearchForm
-from pyramid.httpexceptions import HTTPNotFound
 from altaircms.event.models import Event
-
-import logging
-
-logger = logging.getLogger(__file__)
+from cmsmobile.core.searcher import EventSearcher
 
 class ValidationFailure(Exception):
     pass
@@ -66,15 +61,22 @@ def move_genre(request):
 @view_config(route_name='genresearch', renderer='cmsmobile:templates/genresearch/genresearch.mako')
 def search(request):
 
+    events = []
     form = SearchForm(request.GET)
+    searcher = EventSearcher()
 
     # freeword, genre, subgenre
-    events = _freeword_search(request, form)
+    events = searcher.get_events_from_freeword(request, form, events)
 
     # area
     if form.area.data:
-        #events = _area_search(request, form)
-        pass
+        if form.genre.data == "" and form.sub_genre.data == "":
+            # 地域検索
+            events = Event.query.filter(Event.organization_id == request.organization.id).all()
+            events = searcher.get_events_from_area(events, form.area.data)
+        else:
+            # 絞り込み
+            events = searcher.get_events_from_area(events, form.area.data)
 
     # paging
     if events:
@@ -139,56 +141,3 @@ def move_help(request):
         helps=helps
     )
 
-def _area_search(request, form):
-    search_word = ""
-    if form.sub_genre.data != "" and form.sub_genre.data is not None:
-        search_word = form.word.data + " " + form.sub_genre.data
-    elif form.genre.data != "" and form.genre.data is not None:
-        search_word = form.word.data + " " + form.genre.data
-
-    # ジャンルが渡された場合は、全文検索を実行してから地域検索
-    events = []
-    if search_word != "":
-        try:
-            events = helper.searchEvents(request, search_word)
-        except Exception, e:
-            logger.exception(e)
-            raise HTTPNotFound
-    else:
-        #地域検索
-        if events:
-            form.num.data = len(events)
-            items_per_page = 10
-            events = paginate.Page(
-                events,
-                form.page.data,
-                items_per_page,
-                url=paginate.PageURL_WebOb(request)
-            )
-            if form.num.data % items_per_page == 0:
-                form.page_num.data = form.num.data / items_per_page
-            else:
-                form.page_num.data = form.num.data / items_per_page + 1
-
-    return {
-        'events':events
-        ,'form':form
-    }
-
-
-def _freeword_search(request, form):
-
-    search_word = form.word.data
-    if form.sub_genre.data != "" and form.sub_genre.data is not None:
-        search_word = form.word.data + " " + form.sub_genre.data
-    elif form.genre.data != "" and form.genre.data is not None:
-        search_word = form.word.data + " " + form.genre.data
-
-    events = []
-    if search_word != "":
-        try:
-            events = helper.searchEvents(request, search_word)
-        except Exception, e:
-            logger.exception(e)
-            raise HTTPNotFound
-    return events

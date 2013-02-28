@@ -9,6 +9,7 @@
         <input type="hidden" name="page" value="${form.page.data}" />
         <input type="hidden" name="page_num" value="${form.page_num.data}" />
         <input type="hidden" name="path" value="${form.path.data}" />
+        <input type="hidden" name="area" value="${form.area.data}" />
         ${h.form_item(form.word)}
         <input type="submit" value="検索"/>
     </fieldset>
