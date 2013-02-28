@@ -5,11 +5,11 @@ from pyramid.threadlocal import get_current_registry
 
 def get_tagmanager(classifier, request=None):
     registry = request.registry if request else get_current_registry()
-    return registry.queryUtility(ITagManager, classifier)
+    return registry.getUtility(ITagManager, classifier)
 
 def get_system_tagmanager(classifier, request=None):
     registry = request.registry if request else get_current_registry()
-    return registry.queryUtility(ISystemTagManager, classifier)
+    return registry.getUtility(ISystemTagManager, classifier)
 
 def get_tagname_resolver(request):
     return TagNameResolver(request)

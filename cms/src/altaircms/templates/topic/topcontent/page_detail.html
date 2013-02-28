@@ -46,7 +46,7 @@
       <th>利用しているページ<th></td>${page.name}  (<a href="${request.route_path("page_edit_", page_id=page.id)}">ページの編集画面に飛ぶ</a> )</td>
     </tr>
     <tr>
-      <th>ページタイプ<th></td>${page.pagetype}</td>
+      <th>ページタイプ<th></td>${page.pagetype.label}</td>
     </tr>
     <tr>
       <th>URL<th></td>${page.url}</td>
