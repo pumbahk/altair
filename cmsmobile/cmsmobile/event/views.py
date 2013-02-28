@@ -1,18 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from altaircms.solr import api as sapi
 from cmsmobile.solr import helper
 from pyramid.view import view_config
 from altaircms.topic.models import TopicTag, PromotionTag
-from altaircms.models import Performance
 import webhelpers.paginate as paginate
 from datetime import datetime
 from altaircms.topic.api import get_topic_searcher
-from altaircms.solr import api as solrapi
-from altairsite.search.api import search_by_freeword
-from altairsite.front.api import get_navigation_categories
 from cmsmobile.event.forms import SearchForm
-from ticketing.models import merge_session_with_post
 from pyramid.httpexceptions import HTTPNotFound
 from altaircms.event.models import Event
 
@@ -69,6 +63,7 @@ def move_genre(request):
     )
 
 @view_config(route_name='search', renderer='cmsmobile:templates/search/search.mako')
+@view_config(route_name='genresearch', renderer='cmsmobile:templates/genresearch/genresearch.mako')
 def search(request):
 
     form = SearchForm(request.GET)
@@ -76,63 +71,7 @@ def search(request):
     if not form.validate():
         return fail_search_word(form)
 
-    try:
-        events = helper.searchEvents(request, form.word.data)
-    except Exception, e:
-        logger.exception(e)
-        raise HTTPNotFound
-
-    if events:
-        form.num.data = len(events)
-        items_per_page = 10
-        events = paginate.Page(
-            events,
-            form.page.data,
-            items_per_page,
-            url=paginate.PageURL_WebOb(request)
-        )
-        if form.num.data % items_per_page == 0:
-            form.page_num.data = form.num.data / items_per_page
-        else:
-            form.page_num.data = form.num.data / items_per_page + 1
-
-    return {
-         'events':events
-        ,'form':form
-        }
-
-@view_config(route_name='genresearch', renderer='cmsmobile:templates/genresearch/genresearch.mako')
-def genresearch(request):
-
-    form = SearchForm(request.GET)
-
-    if not form.validate():
-        return fail_search_word(form)
-
-    try:
-        events = helper.searchEvents(request, form.word.data)
-    except Exception, e:
-        logger.exception(e)
-        raise HTTPNotFound
-
-    if events:
-        form.num.data = len(events)
-        items_per_page = 10
-        events = paginate.Page(
-            events,
-            form.page.data,
-            items_per_page,
-            url=paginate.PageURL_WebOb(request)
-        )
-        if form.num.data % items_per_page == 0:
-            form.page_num.data = form.num.data / items_per_page
-        else:
-            form.page_num.data = form.num.data / items_per_page + 1
-
-    return {
-        'events':events
-        ,'form':form
-    }
+    return _search(request, form)
 
 @view_config(route_name='detail', renderer='cmsmobile:templates/detail/detail.mako')
 def move_detail(request):
@@ -175,6 +114,39 @@ def move_help(request):
     return dict(
         helps=helps
     )
+
+def _search(request, form):
+
+    search_word = form.word.data
+    if form.sub_genre.data != "" and form.sub_genre.data is not None:
+        search_word = form.sub_genre.data
+    elif form.genre.data != "" and form.genre.data is not None:
+        search_word = form.genre.data
+
+    try:
+        events = helper.searchEvents(request, search_word)
+    except Exception, e:
+        logger.exception(e)
+        raise HTTPNotFound
+
+    if events:
+        form.num.data = len(events)
+        items_per_page = 10
+        events = paginate.Page(
+            events,
+            form.page.data,
+            items_per_page,
+            url=paginate.PageURL_WebOb(request)
+        )
+        if form.num.data % items_per_page == 0:
+            form.page_num.data = form.num.data / items_per_page
+        else:
+            form.page_num.data = form.num.data / items_per_page + 1
+
+    return {
+        'events':events
+        ,'form':form
+    }
 
 def fail_search_word(form):
 
