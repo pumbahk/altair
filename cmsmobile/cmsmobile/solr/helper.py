@@ -16,6 +16,7 @@ def getResultEvets(response):
         page = Page.query.filter(Page.id == page_id).first()
         if page:
             event = Event.query.filter(Event.id == page.event_id).first()
-            if not event in events:
-                events.append(event)
+            if event:
+                if not event in events:
+                    events.append(event)
     return events

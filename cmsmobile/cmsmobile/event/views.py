@@ -119,9 +119,9 @@ def _search(request, form):
 
     search_word = form.word.data
     if form.sub_genre.data != "" and form.sub_genre.data is not None:
-        search_word = form.sub_genre.data
+        search_word = form.word.data + " " + form.sub_genre.data
     elif form.genre.data != "" and form.genre.data is not None:
-        search_word = form.genre.data
+        search_word = form.word.data + " " + form.genre.data
 
     try:
         events = helper.searchEvents(request, search_word)
