@@ -3,19 +3,21 @@
 
     <a href="/">トップ</a> >> ヘルプ<p/>
 
-    % for help in helps:
-        <a href="#${help.id}">
-            <strong>Ｑ．${help.title}</strong><p/>
-        </a>
-    % endfor
+    % if helps:
+        % for help in helps:
+            <a href="#${help.id}">
+                <strong>Ｑ．${help.title}</strong><p/>
+            </a>
+        % endfor
 
-    % for help in helps:
-        <hr/>
-        <a name="${help.id}">
-            <strong>Ｑ．${help.title}</strong><p/>
-        </a>
-        Ａ．${help.text}<p/>
-    % endfor
+        % for help in helps:
+            <hr/>
+            <a name="${help.id}">
+                <strong>Ｑ．${help.title}</strong><p/>
+            </a>
+            Ａ．${help.text}<p/>
+        % endfor
+    % endif:
 
     <%include file="../common/_footer.mako" />
 </body>
