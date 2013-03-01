@@ -335,6 +335,8 @@ class Page(BaseOriginalMixin,
     def valid_layout(self):
         if self.layout is None:
             raise ValueError("*layout validation* page(id=%s) has not rendering layout" % (self.id))
+        if self.layout.template_filename is None:
+            raise ValueError("*layout validation* page(id=%s) layout(id=%s) don't have template" % (self.id,  self.layout.id))
         if not self.layout.valid_block():
             raise ValueError("*layout validation* page(id=%s) layout(id=%s) layout is broken" % (self.id, self.layout.id))
         return True

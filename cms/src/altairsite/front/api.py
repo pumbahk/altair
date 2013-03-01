@@ -1,7 +1,6 @@
 # -*- coding:utf-8 -*-
 from datetime import datetime
 import sqlalchemy as sa
-from pyramid.path import AssetResolver
 from pyramid.renderers import render_to_response
 
 from altaircms.tag.models import HotWord
@@ -31,35 +30,13 @@ def get_current_hotwords(request, _nowday=datetime.now):
     qs = qs.filter_by(enablep=True).order_by(sa.asc("display_order"), sa.asc("term_end"))
     return qs
 
-def get_frontpage_render(request):
+def get_frontpage_renderer(request):
     """ rendererを取得
     """
     return FrontPageRenderer(request)
 
-def get_frontpage_template(request, filename):
-    """ layout.modelのfilenameからlayoutファイルのpathを探す
-    """
-    if filename is None:
-        return None
-    return request.registry.queryUtility(ILayoutTemplateLookUp)(filename)
-
-def template_exist(template):
-    try:
-        assetresolver = AssetResolver()
-        return assetresolver.resolve(template).exists()
-    except Exception, e:
-        logger.exception(str(e))
-        return False
-
-
-def is_renderable_template(template, page): ## todo 適切なexception
-    if template is None:
-        fmt = "*front pc access rendering* page(id=%s) layout(id=%s) don't have template"
-        raise Exception( fmt % (page.id, page.layout.id))
-    if not template_exist(template):
-        fmt = "*front pc access rendering* page(id=%s) layout(id=%s) template(name:%s) is not found"
-        raise Exception(fmt % (page.id, page.layout.id, template))
-    return True
+def get_frontpage_template_lookup(request):
+    return request.registry.getUtility(ILayoutTemplateLookUp)
 
 
 """

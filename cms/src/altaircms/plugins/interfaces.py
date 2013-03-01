@@ -24,7 +24,15 @@ class IExternalAPI(Interface):
     external_url = Attribute("external url")
 
 from pyramid.interfaces import IDict
+
+class IWidgetUtilitiesDefault(IDict):
+    """ default widgeet utilities
+    """
+
 class IExtraResource(IDict):
     """ settings object for each organization
+    """
+class IExtraResourceDefault(IDict):
+    """ settings object for default 
     """
     

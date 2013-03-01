@@ -8,7 +8,7 @@ from altaircms.plugins.helpers import get_installed_widgets, list_from_setting_v
 from altaircms.auth.api import get_organization_mapping
 from altaircms.auth.api import fetch_correct_organization
 from zope.interface import implementer
-from .interfaces import IConflictValidateFunction
+from .interfaces import IConflictValidateFunction, IWidgetUtilitiesDefault
 
 import logging
 logger = logging.getLogger(__file__)
@@ -157,6 +157,19 @@ class WidgetAggregatorDispatcher(object):
         organization = fetch_correct_organization(request)
         assert organization.id == page.organization_id
         k = (organization.short_name, organization.auth_source)
+
+        logger.debug("widget aggregator dispach:%s" % (k,))
+        try:
+            subdispatch = self.conts[k]
+            return subdispatch(request, page)
+        except KeyError:
+            return request.registry.getUtility(IWidgetUtilitiesDefault)(request, page)
+
+    def strict_dispatch(self, request, page):
+        ### !! request.`organizationかrequest.organization が取れること前提にしている　
+        organization = fetch_correct_organization(request)
+        assert organization.id == page.organization_id
+        k = (organization.backend_id, organization.auth_source)
 
         logger.debug("widget aggregator dispach:%s" % (k,))
         try:

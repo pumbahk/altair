@@ -30,14 +30,14 @@ def preview_page(context, request):
 
     if not control.can_access():
         return HTTPForbidden(control.error_message)
-    
-    template = context.frontpage_template(page)
-    if not control.can_rendering(template, page):
-        raise HTTPInternalServerError(control.error_message)
+  
+    template = control.frontpage_template(page)
+    if template is None:
+        msg = "front pc access template %s is not found"
+        raise HTTPInternalServerError(msg % (control.frontpage_template_abspath(page)))
 
-    renderer = context.frontpage_renderer()
+    renderer = control.frontpage_renderer()
     response = renderer.render(template, page)
-
     ## ugly
     now = datetime.now()
     if not page.published or (page.publish_begin and now < page.publish_begin) or (page.publish_end and now > page.publish_end):
@@ -62,7 +62,7 @@ def preview_pageset(context, request, published=True):
     if not control.can_rendering(template, page):
         raise HTTPInternalServerError(control.error_message)
 
-    renderer = context.frontpage_renderer()
+    renderer = control.frontpage_renderer()
     response = renderer.render(template, page)
     ## ugly
     if published:

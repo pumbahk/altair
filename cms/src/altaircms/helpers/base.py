@@ -23,6 +23,7 @@ def countdown_days_from(limit_date, today_fn=datetime.datetime.now):
     else:
         return (limit_date-today).days
 
+
 def list_to_attibutes(attr_list):
     """
     >>> attr_list = [("id", "foo"), ("class", "bar")]

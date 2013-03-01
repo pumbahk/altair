@@ -43,11 +43,12 @@ def rendering_page(context, request):
     if not control.can_access():
         raise HTTPNotFound(control.error_message)
 
-    template = context.frontpage_template(page)
-    if not control.can_rendering(template, page):
-        raise HTTPNotFound(control.error_message)
+    template = control.frontpage_template(page)
+    if template is None:
+        logger.warn("front pc access template is not found layout=%s template_file=%s" % (page.layout.id, page.layout.template_filename))
+        raise HTTPNotFound("template is not found")
 
-    renderer = context.frontpage_renderer()
+    renderer = control.frontpage_renderer()
     response = renderer.render(template, page)
     return response
 
