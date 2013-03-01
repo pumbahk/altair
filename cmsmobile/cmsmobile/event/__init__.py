@@ -9,3 +9,4 @@ def includeme(config):
     config.add_route('help', '/help')
     config.add_route('order', '/order')
     config.add_route('company', '/company')
+    config.add_route('hotword', '/hotword')

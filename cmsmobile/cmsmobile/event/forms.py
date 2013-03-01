@@ -58,3 +58,10 @@ class SearchForm(Form):
             Length(max=200, message=u'200文字以内で入力してください'),
         ]
     )
+
+class HotwordForm(Form):
+    id = HiddenField(
+        label='',
+        validators=[Optional()],
+        default="",
+        )

@@ -5,7 +5,7 @@ from altaircms.topic.models import TopicTag, PromotionTag
 import webhelpers.paginate as paginate
 from datetime import datetime
 from altaircms.topic.api import get_topic_searcher
-from cmsmobile.event.forms import SearchForm
+from cmsmobile.event.forms import SearchForm, HotwordForm
 from altaircms.event.models import Event
 from cmsmobile.core.searcher import EventSearcher
 from altaircms.tag.models import HotWord
@@ -119,6 +119,7 @@ def move_detail(request):
     }
 
 @view_config(route_name='detail', context=ValidationFailure, renderer='cmsmobile:templates/common/error.mako')
+@view_config(route_name='hotword', context=ValidationFailure, renderer='cmsmobile:templates/common/error.mako')
 def failed_validation(request):
     return {}
 
@@ -149,6 +150,31 @@ def move_help(request):
     return dict(
         helps=helps
     )
+
+@view_config(route_name='hotword', renderer='cmsmobile:templates/hotword/hotword.mako')
+def move_hotword(request):
+
+    form = HotwordForm(request.GET)
+
+    if form.id.data == "" or form.id.data is None:
+        raise ValidationFailure
+
+    hotword = HotWord.query.filter(HotWord.id == form.id.data).first()
+
+    if hotword is not None:
+        searcher = get_topic_searcher(request, "topic")
+        event = searcher.query_publishing_topics(datetime.now(), hotword.tag) \
+                     .filter(hotword.tag.organization_id == request.organization.id).first()
+
+    """
+    ココらへんは動かないのであとで修正する。
+    """
+    if not event:
+        raise ValidationFailure
+
+    return {
+        'events':[event]
+    }
 
 @view_config(route_name='company', renderer='cmsmobile:templates/company/company.mako')
 def move_company(request):
