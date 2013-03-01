@@ -5,6 +5,7 @@ from datetime import datetime
 from altaircms.topic.api import get_topic_searcher
 from cmsmobile.event.forms import SearchForm
 from altaircms.genre.searcher import GenreSearcher
+from altaircms.tag.models import HotWord
 
 @view_config(route_name='home', renderer='cmsmobile:templates/top/top.mako')
 def main(request):
@@ -33,6 +34,11 @@ def main(request):
             .filter(TopicTag.organization_id == request.organization.id)[0:5]
 
     # Hotward
+    hotwords = HotWord.query.filter(HotWord.organization_id == request.organization.id)\
+        .filter(HotWord.enablep == True)\
+        .filter(HotWord.term_begin < datetime.now())\
+        .filter(datetime.now() < HotWord.term_end)\
+        .order_by(HotWord.display_order)[0:5]
 
     # Genre (Genreのリスト)
     #genre_searcher = GenreSearcher(request)
@@ -49,5 +55,6 @@ def main(request):
          topics=topics
         ,promotions=promotions
         ,attentions=attentions
+        ,hotwords=hotwords
         ,form=SearchForm()
     )

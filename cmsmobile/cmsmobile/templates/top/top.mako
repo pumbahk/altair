@@ -27,7 +27,7 @@
         <hr/>
         <%include file="../common/_topics.mako" args="topics=topics"/>
         <hr/>
-        <%include file="../common/_hotward.mako" />
+        <%include file="../common/_hotward.mako" args="hotwords=hotwords" />
 
         <%include file="../common/_footer.mako" />
     </body>
