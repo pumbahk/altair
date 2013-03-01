@@ -41,6 +41,8 @@ class GenrePageInfoResolver(object):
                     description=self.resolve_description(genre))
 
     def ordered_genres(self, genre):
+        if genre is None:
+            return []
         gs = list(genre.ancestors)
         gs.insert(0, genre)
         return list(reversed(gs))
