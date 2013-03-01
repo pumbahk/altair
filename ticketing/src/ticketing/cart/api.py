@@ -24,6 +24,7 @@ from .interfaces import IStocker, IReserving, ICartFactory
 from .models import Cart, PaymentMethodManager, DBSession, CartedProductItem, CartedProduct
 from ..users.models import User, UserCredential, Membership, MemberGroup, MemberGroup_SalesSegment
 from ..core.models import Event, Performance, Stock, StockHolder, Seat, Product, ProductItem, SalesSegment, SalesSegmentGroup, Venue
+from ticketing.core import models as c_models
 from .exceptions import OutTermSalesException, NoSalesSegment, NoCartError
 
 def is_multicheckout_payment(cart):
@@ -440,3 +441,22 @@ def get_available_sales_segments(request, event, selected_date):
           if s.available_payment_delivery_method_pairs]
 
     return ss
+
+def get_seat_type_triplets(event_id, performance_id, sales_segment_id):
+    segment_stocks = DBSession.query(c_models.ProductItem.stock_id).filter(
+        c_models.ProductItem.product_id==c_models.Product.id).filter(
+        c_models.Product.sales_segment_id==sales_segment_id).filter(
+        c_models.Product.public==True)
+
+    seat_type_triplets = DBSession.query(c_models.StockType, c_models.Stock.quantity, c_models.StockStatus.quantity).filter(
+            c_models.Stock.id==c_models.StockStatus.stock_id).filter(
+            c_models.Performance.event_id==event_id).filter(
+            c_models.Performance.id==performance_id).filter(
+            c_models.Performance.event_id==c_models.StockHolder.event_id).filter(
+            c_models.StockHolder.id==c_models.Stock.stock_holder_id).filter(
+            c_models.Stock.stock_type_id==c_models.StockType.id).filter(
+            c_models.Stock.id.in_(segment_stocks)).filter(
+            c_models.ProductItem.stock_id==c_models.Stock.id).filter(
+            c_models.ProductItem.performance_id==performance_id).order_by(
+            c_models.StockType.display_order).all()
+    return seat_type_triplets

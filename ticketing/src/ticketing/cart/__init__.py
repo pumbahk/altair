@@ -94,22 +94,20 @@ def main(global_config, **local_config):
     who_config = settings['pyramid_who.config']
     from authorization import MembershipAuthorizationPolicy
     config.set_authorization_policy(MembershipAuthorizationPolicy())
-    #from .security import auth_model_callback
-    #config.set_authentication_policy(WhoV2AuthenticationPolicy(who_config, 'auth_tkt', callback=auth_model_callback))
     config.include('ticketing.whotween')
     config.add_tween('.tweens.CacheControlTween')
     config.add_tween('.tweens.OrganizationPathTween')
     config.include('ticketing.fc_auth')
-    config.scan()
-    config.include('..checkout')
-    config.include('..multicheckout')
-    config.include('..mobile')
+    config.include('ticketing.checkout')
+    config.include('ticketing.multicheckout')
+    config.include('ticketing.mobile')
     config.include("ticketing.payments")
     config.include('ticketing.payments.plugins')
-    config.include('.errors')
 
-    # if settings.get('altair.debug_mobile'):
-    #     config.add_tween('ticketing.mobile.tweens.mobile_request_factory')
+    config.include('.errors')
+    config.scan()
+
+
 
     ## cmsとの通信
     bind_communication_api(config, 
