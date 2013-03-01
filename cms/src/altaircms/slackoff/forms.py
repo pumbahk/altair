@@ -141,7 +141,7 @@ class SalesSegmentForm(Form):
                                                dynamic_query=lambda model, request, query: query.filter(SalesSegmentGroup.event_id==Performance.event_id, Performance.id==request.params["performance_id"]), 
                                                allow_blank=False, label=u"販売区分名", get_label=lambda obj: obj.name)
     start_on = fields.DateTimeField(label=u"開始時間",validators=[])
-    end_on = fields.DateTimeField(label=u"終了時間(省略可)",validators=[validators.Optional()])
+    end_on = fields.DateTimeField(label=u"終了時間",validators=[])
        
     __display_fields__ = [u"performance", u"group", u"start_on", u"end_on"]
 
