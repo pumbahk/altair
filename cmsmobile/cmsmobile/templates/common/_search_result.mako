@@ -24,24 +24,21 @@
         % if int(form.page.data) <= 1:
             前へ
         % else:
-            <a href="${form.path.data}?genre=${form.genre.data}&sub_genre=${form.sub_genre.data}
-            &word=${form.word.data}&area=${form.area.data}&page=${int(form.page.data) - 1}">前へ</a>
+            <a href="${form.path.data}?genre=${form.genre.data}&sub_genre=${form.sub_genre.data}&word=${form.word.data}&area=${form.area.data}&page=${int(form.page.data) - 1}">前へ</a>
         % endif
 
         % for count in range(int (form.page_num.data)):
             % if int(form.page.data) == count + 1:
                 ${count+1}
             % else:
-                <a href="${form.path.data}?genre=${form.genre.data}&sub_genre=${form.sub_genre.data}
-                &word=${form.word.data}&area=${form.area.data}&page=${count + 1}">${count + 1}</a>
+                <a href="${form.path.data}?genre=${form.genre.data}&sub_genre=${form.sub_genre.data}&word=${form.word.data}&area=${form.area.data}&page=${count + 1}">${count + 1}</a>
             % endif
         % endfor
 
         % if int(form.page.data) >= int(form.page_num.data):
             次へ
         % else:
-            <a href="${form.path.data}?genre=${form.genre.data}&sub_genre=${form.sub_genre.data}
-            &word=${form.word.data}&area=${form.area.data}&page=${int(form.page.data) + 1}">次へ</a>
+            <a href="${form.path.data}?genre=${form.genre.data}&sub_genre=${form.sub_genre.data}&word=${form.word.data}&area=${form.area.data}&page=${int(form.page.data) + 1}">次へ</a>
         % endif
     </div>
 % endif

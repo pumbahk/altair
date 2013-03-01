@@ -32,7 +32,8 @@ class EventSearcher(object):
             for perf in event.performances:
                 for prefecture in prefectures:
                     if perf.prefecture.find(prefecture) != -1:
-                        events_from_area.append(event)
+                        if not event in events_from_area:
+                            events_from_area.append(event)
         return events_from_area
 
 def _get_prefecture(area):
