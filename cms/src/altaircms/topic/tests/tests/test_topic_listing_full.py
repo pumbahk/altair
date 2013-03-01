@@ -73,10 +73,7 @@ class TopicListingFull(unittest.TestCase):
 
     def test_multiple_items(self):
         """ 関連づいたtopicが取得できてるか調べる
-        1. global
-        2. eventに関連
-        3. pageに関連
-        渡された page, eventに関連していないtopicは取得しない
+        tagに関連付けられたtopicを取り出す
         """
         raise NotImplementedError("this test will be implemented after tag(tag) search")
         from altaircms.event.models import Event

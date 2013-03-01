@@ -1,6 +1,6 @@
+from zope.deprecation import deprecate
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
-from pyramid.decorator import reify
 
 from altaircms.page.models import Page, PageSet
 from .models import PromotionTag, TopcontentTag, TopicTag
@@ -9,7 +9,8 @@ from datetime import datetime
 
 import altaircms.searchlib as sl
 from altaircms.tag.api import get_tagmanager
-from altaircms.tag.api import get_system_tagmanager
+from ..modelmanager.searcher import PublishingModelSearcher
+
 
 def qs_filter_using_conds_list(qs, conds_list):
     for conds in conds_list:
@@ -247,50 +248,14 @@ class PromotionPageDetailSearcher(object):
             return widgets.filter(self.finder.widget.id==widget_id).first()
         return widgets.first()
 
-## global
-class GlobalTopicSearcher(object):
-    def __init__(self, TargetTopic, request):
-        self.TargetTopic = TargetTopic
-        assert TargetTopic.type
-        self.type = TargetTopic.type
-        self.request = request
+class GlobalTopicSearcher(PublishingModelSearcher):
+    """ for backward compability"""
+    @deprecate("GlobalTopicSearcher is obsolute. please using PublishingModelSearcher")
+    @property
+    def TargetTopic(self):
+        return self.TargetModel
 
-    @reify
-    def tagmanager(self):
-        return get_tagmanager(self.type, request=self.request)
-
-    @reify
-    def system_tagmanager(self):
-        return get_system_tagmanager(self.type, request=self.request)
-
-    def _start_query(self):
-        if hasattr(self.request, "allowable"):
-            return self.request.allowable(self.TargetTopic)
-        else:
-            return self.TargetTopic.query
-
-    def query_publishing_no_filtered(self, dt, qs=None):
-        qs = qs or self._start_query()
-        return self.TargetTopic.publishing(d=dt, qs=qs)
-
-    def filter_by_tag(self, qs, tag):
-        return self.tagmanager.more_filter_by_tag(qs, tag)
-
-    def filter_by_system_tag(self, qs, tag):
-        return self.system_tagmanager.more_filter_by_tag(qs, tag)
-
-    def filter_by_genre_label(self, qs, genre_label):
-        system_tag = self.get_tag_from_genre_label(genre_label)
-        return self.system_tagmanager.more_filter_by_tag(qs, system_tag)
-
-    def get_tag_from_genre_label(self, genre_label):
-        return self.system_tagmanager.get_or_create_tag(genre_label, public_status=True)
-
+    @deprecate("rename query_publishing_topics -> query_publishing")
     def query_publishing_topics(self, dt, tag, system_tag=None): #system_tag is tag
-        qs = self.query_publishing_no_filtered(dt)
-        qs = self.filter_by_tag(qs, tag)
-        
-        if system_tag:
-            qs = self.filter_by_system_tag(qs, system_tag)
-        return qs
-
+        return self.query_publishing(dt, tag, system_tag=system_tag)
+    

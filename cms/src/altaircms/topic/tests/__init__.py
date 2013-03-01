@@ -5,7 +5,9 @@ def setUpModule():
     setup_db(models=[
             "altaircms.models", 
             "altaircms.topic.models", 
-            "altaircms.event.models"
+            "altaircms.event.models", 
+            "altaircms.widget.models", 
+            "altaircms.page.models", 
             ])
 
 def tearDownModule():

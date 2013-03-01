@@ -38,13 +38,10 @@ def install_promotion_page(config):
                     attr="create", request_method="POST", renderer="json")
 
 def install_topic_searcher(config):
-    topic = config.maybe_dotted(".models.Topic")
     from .searcher import GlobalTopicSearcher
-    config.registry.registerUtility(functools.partial(GlobalTopicSearcher, topic),
-                                    ITopicSearcher, name=topic.type)
+    topic = config.maybe_dotted(".models.Topic")
+    GlobalTopicSearcher.register(config, topic)
     topcontent = config.maybe_dotted(".models.Topcontent")
-    config.registry.registerUtility(functools.partial(GlobalTopicSearcher, topcontent),
-                                    ITopicSearcher, name=topcontent.type)
+    GlobalTopicSearcher.register(config, topcontent)
     promotion = config.maybe_dotted(".models.Promotion")
-    config.registry.registerUtility(functools.partial(GlobalTopicSearcher, promotion),
-                                    ITopicSearcher, name=promotion.type)
+    GlobalTopicSearcher.register(config, promotion)
