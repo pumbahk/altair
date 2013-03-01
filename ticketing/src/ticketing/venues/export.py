@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from collections import OrderedDict
+
 from ticketing.models import record_to_multidict
 from ticketing.core.models import SeatStatusEnum
 from ticketing.orders.export import encode_to_cp932
@@ -7,32 +9,32 @@ from ticketing.orders.export import encode_to_cp932
 class SeatCSV(object):
 
     # csv header
-    seat_header = {
-        'id':u'座席ID',
-        'seat_no':u'座席番号',
-        'name':u'座席名',
-        }
-    stock_attribute_header = {
-        'floor':u'フロア',
-        'gate':u'ゲート',
-        'row':u'列番号',
-        }
-    stock_type_header = {
-        'id':u'席種ID',
-        'name':u'席種名',
-        }
-    stock_holder_header = {
-        'id':u'枠ID',
-        'name':u'枠名',
-        }
-    account_header = {
-        'id':u'配券先ID',
-        'name':u'配券先名',
-        }
-    seat_status_header = {
-        'status':u'座席ステータス',
-        'order_no':u'予約番号',
-        }
+    seat_header = OrderedDict([
+        ('id', u'座席ID'),
+        ('seat_no', u'座席番号'),
+        ('name', u'座席名'),
+    ])
+    stock_attribute_header = OrderedDict([
+        ('floor', u'フロア'),
+        ('gate', u'ゲート'),
+        ('row', u'列番号'),
+    ])
+    stock_type_header = OrderedDict([
+        ('id', u'席種ID'),
+        ('name', u'席種名'),
+    ])
+    stock_holder_header = OrderedDict([
+        ('id', u'枠ID'),
+        ('name', u'枠名'),
+    ])
+    account_header = OrderedDict([
+        ('id', u'配券先ID'),
+        ('name', u'配券先名'),
+    ])
+    seat_status_header = OrderedDict([
+        ('status', u'座席ステータス'),
+        ('order_no', u'予約番号'),
+    ])
 
     def __init__(self, seats):
         self.header = self.seat_header.values()\
