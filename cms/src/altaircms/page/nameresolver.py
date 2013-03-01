@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
 from collections import namedtuple
 Info = namedtuple("Info", "caption name url title description keywords")
+import logging
+logger = logging.getLogger(__name__)
 class GetPageInfoException(Exception):
     pass
 
@@ -41,7 +43,8 @@ class GenrePageInfoResolver(object):
                     description=self.resolve_description(genre))
 
     def ordered_genres(self, genre):
-        if genre is None:
+        if genre is None or not hasattr(genre, "ancestors"):
+            logger.debug("%s does not have ancestors. return empty list" % genre)
             return []
         gs = list(genre.ancestors)
         gs.insert(0, genre)
