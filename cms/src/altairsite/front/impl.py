@@ -43,6 +43,13 @@ class LayoutTemplate(object):
         layout_filename = self.from_layout(request, layout)
         if self.exists(layout_filename):
             return self.as_layout_spec(layout_filename)
+        return None
+
+    def get_renderable_template_with_default(self, request, layout, verbose=False):
+        layout_filename = self.get_renderable_template(request, layout, verbose=verbose)
+        if layout_filename:
+            return layout_filename
+
         if verbose:
             logger.info("layout template file %s is not found. lookup in default template path" % self.abspath(layout_filename))
         layout_filename = self.from_layout_default(request, layout)
@@ -51,4 +58,3 @@ class LayoutTemplate(object):
         if self.exists(layout_filename):
             return self.as_layout_spec(layout_filename)
         return None
-
