@@ -11,6 +11,17 @@
         <input type="hidden" name="path" value="${form.path.data}" />
         <input type="hidden" name="area" value="${form.area.data}" />
         ${h.form_item(form.word)}
+        <table>
+            <tr>
+                <td>${h.form_item(form.week_sale)}</td>
+                <td>今週発売のチケット</td>
+            </tr>
+            <tr>
+                <td>${h.form_item(form.soon_sale)}</td>
+                <td>まもなく発表のイベント</td>
+            </tr>
+        </table>
+
         <input type="submit" value="検索"/>
     </fieldset>
 </form>
