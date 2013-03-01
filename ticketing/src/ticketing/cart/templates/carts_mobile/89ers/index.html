@@ -11,7 +11,7 @@ ${event.title}
   <ul>
   % for _performance_name in performances:
     <li>
-    <a href="${request.current_route_url(_query={'performance_name': _performance_name})}">${_performance_name}</a>
+    <a href="${request.current_route_url(_query={'performance_name': _performance_name.encode('sjis')})}">${_performance_name}</a>
     </li>
   % endfor
   </ul>
