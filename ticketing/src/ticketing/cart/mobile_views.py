@@ -20,6 +20,7 @@ from . import api
 from . import helpers as h
 from . import schemas
 from .api import get_seat_type_triplets
+from .view_support import IndexViewMixin
 from .exceptions import (
     CartException, 
     NoCartError, 
@@ -35,28 +36,6 @@ from .exceptions import (
 )
 
 logger = logging.getLogger(__name__)
-
-class IndexViewMixin(object):
-
-    def prepare(self):
-        if self.context.event is None:
-            raise NoEventError(self.context.event_id)
-
-        from .api import get_event_info_from_cms
-        self.event_extra_info = get_event_info_from_cms(self.request, self.context.event_id)
-        logger.info(self.event_extra_info)
-
-    def check_redirect(self, mobile):
-        performance_id = self.request.params.get('pid') or self.request.params.get('performance')
-
-        if performance_id:
-            specified = c_models.Performance.query.filter(c_models.Performance.id==performance_id).filter(c_models.Performance.public==True).first()
-            if mobile:
-                if specified is not None and specified.redirect_url_mobile:
-                    raise HTTPFound(specified.redirect_url_mobile)
-            else:
-                if specified is not None and specified.redirect_url_pc:
-                    raise HTTPFound(specified.redirect_url_pc)
 
 
 class MobileIndexView(IndexViewMixin):
@@ -78,11 +57,6 @@ class MobileIndexView(IndexViewMixin):
         performance_id = self.request.params.get('pid') or self.request.params.get('performance')
         if performance_id:
             performance = c_models.Performance.query.filter(c_models.Performance.id==performance_id).one()
-            # XXX: このコードはもういらないのでは?
-            #if performance.on_the_day:
-            #    sales_segment = self.context.sales_counter_sales_segment
-            #else:
-            #    sales_segment = self.context.normal_sales_segment
             for ss in sales_segments:
                 if str(ss.performance_id) == performance_id:
                     performance = ss.performance
@@ -92,25 +66,16 @@ class MobileIndexView(IndexViewMixin):
                             performance_id=performance_id,
                             sales_segment_id=ss.id))
 
-        # 公演名リスト
-        # ただ単にパフォーマンスのリストが欲しいだけなので
-        # normal_sales_segment で良い
-
         perms = [ss.performance for ss in sales_segments]
         if not perms:
             raise HTTPNotFound()
 
-        #perms = api.performance_names(self.request, self.context.event, self.context.normal_sales_segment)
         performances = list(set([p.name for p in perms]))
         logger.debug('performances %s' % performances)
 
         # 公演名が指定されている場合は、（日時、会場）のリスト
         performance_name = self.request.params.get('performance_name')
         venues = []
-        # if performance_name:
-        #     venues = [(x['pid'], u"start:%Y-%m-%d %H:%M} {vname} 当日券".format(**x) 
-        #         if x.get('on_the_day') else u"{start:%Y-%m-%d %H:%M} {vname}".format(**x)) 
-        #         for x in api.performance_venue_by_name(self.request, self.context.event, self.context.normal_sales_segment, performance_name)]
         if performance_name:
             performances = sorted(list(set([ss.performance for ss in sales_segments])),key=lambda p: p.start_on)
             venues = [(performance.id, 
