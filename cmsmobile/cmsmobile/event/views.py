@@ -8,6 +8,7 @@ from altaircms.topic.api import get_topic_searcher
 from cmsmobile.event.forms import SearchForm
 from altaircms.event.models import Event
 from cmsmobile.core.searcher import EventSearcher
+from altaircms.tag.models import HotWord
 
 class ValidationFailure(Exception):
     pass
@@ -50,11 +51,19 @@ def move_genre(request):
         topics = topic_searcher.query_publishing_topics(datetime.now(), tag, system_tag) \
             .filter(TopicTag.organization_id == request.organization.id)
 
+    # hotword
+    hotwords = HotWord.query.filter(HotWord.organization_id == request.organization.id) \
+                   .filter(HotWord.enablep == True) \
+                   .filter(HotWord.term_begin < datetime.now()) \
+                   .filter(datetime.now() < HotWord.term_end) \
+                   .order_by(HotWord.display_order)[0:5]
+
     return dict(
          form=form
         ,topics=topics
         ,promotions=promotions
         ,attentions=attentions
+        ,hotwords=hotwords
     )
 
 @view_config(route_name='search', renderer='cmsmobile:templates/search/search.mako')

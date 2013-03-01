@@ -23,6 +23,6 @@
 <hr/>
     <%include file='../common/_hotward.mako' />
 <hr/>
-    <%include file="../common/_footer.mako" />
+    <%include file="../common/_footer.mako" args="hotwords=hotwords"/>
 </body>
 </html>
