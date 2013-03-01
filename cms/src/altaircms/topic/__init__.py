@@ -1,8 +1,5 @@
 # coding: utf-8
 
-import functools
-from .interfaces import ITopicSearcher
-
 def includeme(config):
     config.include(install_topic_page)
     config.include(install_topcontent_page)
