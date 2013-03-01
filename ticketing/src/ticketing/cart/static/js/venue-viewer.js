@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['P5N1J4QX4WFBMFQV'] = (function (exports) { (function () { 
+__LIBS__['J4G227_EENX4JW9H'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['_CHHPN35WN3349H1'] = (function (exports) { (function () { 
+__LIBS__['QROA9DDHMWA58MQK'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['pUH8KRE3SRPP11_Y'] = (function (exports) { (function () { 
+__LIBS__['n1MT8D36HLZ_TROK'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['P5N1J4QX4WFBMFQV'];
-var CONF = __LIBS__['_CHHPN35WN3349H1'];
+var util = __LIBS__['J4G227_EENX4JW9H'];
+var CONF = __LIBS__['QROA9DDHMWA58MQK'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -1030,9 +1030,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['_CHHPN35WN3349H1'];
-  var seat = __LIBS__['pUH8KRE3SRPP11_Y'];
-  var util = __LIBS__['P5N1J4QX4WFBMFQV'];
+  var CONF = __LIBS__['QROA9DDHMWA58MQK'];
+  var seat = __LIBS__['n1MT8D36HLZ_TROK'];
+  var util = __LIBS__['J4G227_EENX4JW9H'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1696,6 +1696,8 @@ function parseTransform(transform_str) {
       },
 
       zoomOnShape: function (shape) {
+        if (!this.drawable)
+          return;
         var position = shape.position();
         var size = shape.size();
         var p0 = shape._transform.apply(position);
@@ -1890,6 +1892,8 @@ function parseTransform(transform_str) {
       },
 
       zoom: function(ratio, anchor) {
+        if (!this.drawable)
+          return;
         var vs = this.drawable.viewportSize();
         var scrollPos = this.drawable.scrollPosition();
         var previousRatio = this.zoomRatio;

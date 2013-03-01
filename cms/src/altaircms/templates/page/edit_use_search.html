@@ -1,0 +1,81 @@
+<%inherit file='../layout_2col.html'/>
+<%namespace name="nco" file="../navcomponents.html"/>
+<%namespace name="fco" file="../formcomponents.html"/>
+<%namespace name="mco" file="../modelcomponents.html"/>
+
+<div class="circle circle-page circle-top"></div>
+<h2>page編集(search)</h2>
+
+${nco.breadcrumbs(
+  names=["Top", "Page", u"Pageset詳細", u"詳細ページ", page.name], 
+  urls=[request.route_path("dashboard"),
+        h.page.to_list_page(request,page),
+        h.link.pageset_detail(request, page.pageset),
+        request.route_path("page_detail",page_id=page.id)]
+)}
+
+%if page and event:
+  <h4>イベント"${event.title}"の"${page.name}"の編集</h4>
+%elif page:
+  <h4>${page.name}ページの編集</h4>
+%endif
+
+<div style="margin-bottom: 9px">
+  <h2 class="span6"ページのタイトル - ${page.name} (ID: ${page.id})></h2>
+</div>
+
+<div class="navbar navbar-inverse">
+  <div class="navbar-inner">
+    <div class="container" style="width: auto;">
+      <a class="pull-left brand" href="#">編集中のページ</a>
+      <form class="pull-left navbar-search" action="">
+        <select class="search-query" style="min-width: 100px;" onchange="window.location = this.value">
+          %for p in page.pageset.pages:
+          <option value="${request.route_url('page_edit_', page_id=p.id)}" ${'selected="selected"' if p.id == page.id else ''}>${p.version} ${p.title}</option>
+          %endfor
+          </select>
+          </form>
+          <ul class="nav pull-right" role="navigation">
+            <li><a class="pull-right brand" href="#">現在のLayout</a></li>
+            <form id="layout_update_form" class="pull-right navbar-form">
+              <select id="layout" style="min-width: 100px;" >
+                %for layout in layout_candidates:
+                  %if layout.id == page.layout_id:
+                  <option selected="selected" value="${layout.id}">${layout.title}(${layout.template_filename})</option>
+                  %else:
+                  <option value="${layout.id}">${layout.title}(${layout.template_filename})</option>
+                  %endif
+                %endfor
+              </select>
+              <button type="submit" class="btn">layoutを変更</button>
+            </form>
+            <script type="text/javascript">
+              $(function(){
+                $("#layout_update_form > button").on("click", function(e){
+                  if(!window.confirm("ページのレイアウトを変更します。よろしいですか？(保存していないデータは失われます)")){
+                     return false;
+                   }
+                  var layout_id = $('#layout_update_form > #layout > :selected').val(),
+                      url       = '${request.route_path("page_partial_update", part="layout",id=page.id)}';
+                  $.post(url, {layout_id: layout_id}).done(function(data){ if(data.status){location.reload(); }});
+                  return false;
+                })
+              });
+            </script>
+          </ul>
+    </div>
+  </div><!-- /navbar-inner -->
+</div><!-- /navbar -->
+
+
+<a class="btn" href="${h.link.preview_page_from_page(request,page)}" ><i class="icon-eye-open"> </i> Preview</a>
+
+<div class="well" id="pagecontentform" style="margin-top:20px;">
+  %if page.pageset.genre.is_category_toppage(page.pageset):
+     <p>ジャンル: 「${page.pageset.genre.label}」に含まれたページが一覧で表示されます</p>
+  %else:
+     <div class="alert">
+       カテゴリトップページ用の機能以外未実装です。
+     </div>
+  %endif
+</div>

@@ -68,6 +68,12 @@ class LotStatusEnum(StandardEnum):
     Elected = 3 # 確定処理実行済
     Sent = 4
     
+Lot_SalesSegment = sa.Table(
+    "Lot_SalesSegment",
+    Base.metadata,
+    sa.Column("lot_id", Identifier, sa.ForeignKey("Lot.id")),
+    sa.Column("sales_segment_id", Identifier, sa.ForeignKey("SalesSegment.id")),
+)
 
 class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Lot'
@@ -80,15 +86,18 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     event_id = sa.Column(Identifier, sa.ForeignKey('Event.id'))
     event = orm.relationship('Event', backref='lots')
 
-    performances = orm.relationship('Performance', 
-        secondary=Lot_Performance)
+    # performances = orm.relationship('Performance', 
+    #     secondary=Lot_Performance)
 
+    # TODO: 席種が必要か確認（商品から辿れるはず）
     stock_types = orm.relationship('StockType',
         secondary=Lot_StockType)
 
     selection_type = sa.Column(sa.Integer) # LotSelectionEnum
 
-    sales_segment_id = sa.Column(Identifier, sa.ForeignKey('SalesSegmentGroup.id'))
+    # sales_segment_group_id = sa.Column(Identifier, sa.ForeignKey('SalesSegmentGroup.id'))
+    # sales_segment_group = orm.relationship('SalesSegmentGroup', backref="lots")
+    sales_segment_id = sa.Column(Identifier, sa.ForeignKey('SalesSegment.id'))
     sales_segment = orm.relationship('SalesSegment', backref="lots")
 
     status = sa.Column(sa.Integer, default=int(LotStatusEnum.New))
@@ -100,6 +109,52 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def validate_entry(self, entry):
         return True
+
+    @property
+    def products(self):
+        return self.sales_segment.products
+
+    @property
+    def performances(self):
+        return list(set([p.performance for p in self.products]))
+
+
+    @property
+    def start_at(self):
+        if self.sales_segment is None:
+            return None
+        return self.sales_segment.start_at
+
+    @property
+    def end_at(self):
+        if self.sales_segment is None:
+            return None
+        return self.sales_segment.end_at
+
+    @property
+    def sales_segment_group(self):
+        if self.sales_segment is None:
+            return None
+        return self.sales_segment.sales_segment_group
+
+    @property
+    def sales_segment_group_id(self):
+        if self.sales_segment is None:
+            return None
+        return self.sales_segment.sales_segment_group_id
+
+    @property
+    def upper_limit(self):
+        if self.sales_segment is None:
+            return None
+        return self.sales_segment.upper_limit
+
+    @property
+    def seat_choice(self):
+        if self.sales_segment is None:
+            return None
+        return self.sales_segment.seat_choice
+        
 
 class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     """ 抽選申し込み """
@@ -164,6 +219,11 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     lot_entry = orm.relationship('LotEntry', backref='wishes')
 
     elected_at = sa.Column(sa.DateTime)
+
+
+    @property
+    def total_quantity(self):
+        return sum([p.quantity for p in self.products])
 
 class LotEntryProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     u""" 抽選申し込み商品 """

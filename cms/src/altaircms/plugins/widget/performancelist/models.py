@@ -21,7 +21,7 @@ WEEK =[u"月", u"火", u"水", u"木", u"金", u"土", u"日"]
 def render_fullset(widget, bname, bsettings):
     """ rendering: title,  iconset,  performance list
     """
-    template_name = "altaircms.plugins.widget:performancelist/render.mako"
+    template_name = "altaircms.plugins.widget:performancelist/render.html"
     bsettings.need_extra_in_scan("performances")
     bsettings.need_extra_in_scan("event")
     bsettings.need_extra_in_scan("request")

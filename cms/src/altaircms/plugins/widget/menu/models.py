@@ -19,7 +19,7 @@ class MenuWidget(Widget):
     implements(IWidget)
     type = "menu"
 
-    template_name = "altaircms.plugins.widget:menu/render.mako"
+    template_name = "altaircms.plugins.widget:menu/render.html"
     __tablename__ = "widget_menu"
     __mapper_args__ = {"polymorphic_identity": type}
     query = DBSession.query_property()

@@ -54,7 +54,7 @@ def dummy_performances():
     return _dummy_performances
 
 def obi():
-    template = Template(filename=os.path.join(here, "rakuten.calendar.mako"), 
+    template = Template(filename=os.path.join(here, "rakuten.calendar.html"), 
                         input_encoding="utf-8")
     cal = CalendarOutput.from_performances(dummy_performances(), template=template)
     performances = dummy_performances()
@@ -69,7 +69,7 @@ def obi():
     
 def term():
     from forms import SelectTermForm
-    template = Template(filename=os.path.join(here, "rakuten.calendar.mako"), 
+    template = Template(filename=os.path.join(here, "rakuten.calendar.html"), 
                         input_encoding="utf-8")
     cal = CalendarOutput.from_performances(dummy_performances(), template=template)
     return {
@@ -96,7 +96,7 @@ def tab():
         perf(3, "event3", datetime(2012, 4, 20, 20), datetime(2012, 4, 20, 12)), 
         perf(1, "event1", datetime(2012, 5, 10, 10), datetime(2012, 5, 10, 12)), 
         ]
-    template = Template(filename=os.path.join(here, "rakuten.tab-calendar.mako"), 
+    template = Template(filename=os.path.join(here, "rakuten.tab-calendar.html"), 
                         input_encoding="utf-8")
     visibilities = itertools.chain([True], itertools.repeat(False))
     if len(set(p.start_on.year for p in performances)) == 1:

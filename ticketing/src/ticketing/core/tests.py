@@ -3,56 +3,7 @@
 # move it.
 import unittest
 from ticketing.testing import _setup_db, _teardown_db
-
-def get_organization(*args, **kwargs):
-    from ticketing.core.models import Organization
-    return Organization(*args, **kwargs)
-
-class EventCMSDataTests(unittest.TestCase):
-    def tearDown(self):
-        self.session.remove()
-        import transaction
-        transaction.abort()
-
-    @classmethod
-    def setUpClass(cls):
-        cls.session = _setup_db(["ticketing.core.models"])
-
-    @classmethod
-    def tearDownClass(cls):
-        _teardown_db()
-
-    def _getTarget(self):
-        from ticketing.core.models import Event
-        return Event
-
-    def _makeOne(self, *args, **kwargs):
-        return self._getTarget()(*args, **kwargs)
-
-    def test_data_include_organazation_id(self):
-        organization = get_organization(id=10000)
-        target = self._makeOne(organization=organization)
-        result = target._get_self_cms_data()
-        self.assertEqual(result["organization_id"], 10000)
-
-    def test_data_include_deleted_performance(self):
-        from ticketing.core.models import Performance
-        from datetime import datetime
-
-        organization = get_organization(id=10000, short_name="org")
-        
-        target = self._makeOne(organization=organization)
-        performance = Performance(event=target,  deleted_at=datetime(1900, 1, 1), start_on=datetime(1900, 1, 1))
-        self.session.add(target)
-        self.session.add(performance)
-
-        result = target.get_cms_data(validation=False)
-
-        self.assertEquals(len(result["performances"]), 1)
-        self.assertTrue(result["performances"][0]["deleted"])
-        
-
-
+   
 class ProductTests(unittest.TestCase):
     @classmethod
     def setUpClass(self):
@@ -158,7 +109,7 @@ class SeatTests(unittest.TestCase):
 
         self.assertFalse(result)
 
-@unittest.skip(u"heh")
+
 class TicketPrintHistoryTests(unittest.TestCase):
     @classmethod
     def setUpClass(self):

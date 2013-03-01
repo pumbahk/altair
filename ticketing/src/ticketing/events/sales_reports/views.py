@@ -76,7 +76,7 @@ class SalesReports(BaseView):
             raise HTTPNotFound('performance id %d is not found' % performance_id)
 
         report_by_sales_segment = {}
-        for sales_segment in performance.event.sales_segments:
+        for sales_segment in performance.sales_segments:
             form = SalesReportForm(self.request.params, performance_id=performance_id, sales_segment_id=sales_segment.id)
             report_by_sales_segment[sales_segment.name] = get_performance_sales_summary(form, self.context.organization)
 

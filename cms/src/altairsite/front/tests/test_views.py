@@ -36,8 +36,8 @@ def setUpModule():
                 "altaircms.backend.url": "localhost:7654", 
                 "altaircms.widget.each_organization.settings": "altaircms.plugins:ticketstar-widget-settings.ini", 
                 "altairsite.organization.mapping.name": "ticketstar", 
-                "altaircms.usrsite.notfound.template": "altaircms:templates/front/errors/ticketstar/notfound.mako",
-                "altaircms.usrsite.forbidden.template": "altaircms:templates/front/errors/ticketstar/forbidden.mako",
+                "altaircms.usrsite.notfound.template": "altaircms:templates/front/errors/ticketstar/notfound.html",
+                "altaircms.usrsite.forbidden.template": "altaircms:templates/front/errors/ticketstar/forbidden.html",
                 "altaircms.asset.storepath": "altaircms:../../data/assets", 
                 "altaircms.debug.strip_security": 'true', 
                 "altaircms.plugin_static_directory": "altaircms:plugins/static", 
@@ -149,7 +149,7 @@ class UsePageEtcMixin(object):
              'created_at': datetime.datetime(2012, 2, 16, 11, 26, 55, 755523),
              'id': 2,
              'site_id': None,
-             'template_filename': u'layout.mako',
+             'template_filename': u'layout.html',
              'title': u'simple',
              'updated_at': datetime.datetime(2012, 2, 16, 11, 26, 55, 755641)}
         return Layout.from_dict(D)

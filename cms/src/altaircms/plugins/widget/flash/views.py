@@ -44,7 +44,7 @@ class FlashWidgetView(object):
         context.delete(widget, flush=True)
         return {"status": "ok"}
 
-    @view_config(route_name="flash_widget_dialog", renderer="altaircms.plugins.widget:flash/dialog.mako", request_method="GET")
+    @view_config(route_name="flash_widget_dialog", renderer="altaircms.plugins.widget:flash/dialog.html", request_method="GET")
     def dialog(self):
         N = 5
         assets = group_by_n(self.request.context.get_asset_query(), N)

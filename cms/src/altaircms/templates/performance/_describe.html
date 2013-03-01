@@ -1,0 +1,48 @@
+<h3>${performance.title}</h3>
+<table class="table table-describe table-bordered">
+  <tbody>
+    <tr>
+      <th rowspan="5">公演情報</th>
+      <th>講演名</th><td>
+        <a href="${request.route_path("performance_update",action="input",id=performance.id)}">${performance.title}</a>
+        %if performance.canceld:
+          <span class="label label-warning">検索対象から除外</span>
+        %else:
+          <span class="label">検索に載せる</span>
+        %endif
+      </td>
+      <th>backend id</th><td>${performance.backend_id}</td>
+    </tr>
+    <tr>
+      <th>作成日時</th><td>${h.base.jdate_with_hour(performance.created_at)}</td>
+      <th>更新日時</th><td>${h.base.jdate_with_hour(performance.updated_at)}</td>
+    </tr>
+    <tr>
+      <th>開催日</th>
+      <td>
+        <ul class="unstyled">
+          <li>開場時間:${h.base.jdate_with_hour(performance.open_on)}</li>
+          <li>開演時間:${h.base.jdate_with_hour(performance.open_on)}</li>
+          <li>閉演時間:${h.base.jdate_with_hour(performance.open_on)}</li>
+        </ul>
+      </td>
+      <th>開催県</th><td>${performance.jprefecture}</td>
+    </tr>
+    <tr>
+      <th>開催場所(会場)</th><td colspan="3">${performance.venue}</td>
+    </tr>
+    %if performance.purchase_link or performance.mobile_purchase_link:
+    <tr>
+      <th>外部購入リンク</th><td>${performance.purchase_link}</td>
+      <th>外部購入リンク(mobile)</th><td>${performance.mobile_purchase_link}</td>
+    </tr>
+    %endif
+    %if performance.calendar_content:
+    <tr>
+      <th>カレンダーに追加で表示する文字列</th><td colspan="3"><div class="well">${performance.calendar_content}</div></td>
+    </tr>
+    %endif
+  </tbody>
+</table>
+
+${panel("model_action_buttons", performance, modeljname=u"パフォーマンス", modelname="performance", _query=dict(event=performance.event.id, endpoint=request.url))}

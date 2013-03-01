@@ -119,7 +119,7 @@ setup(name='ticketing',
         "https://github.com/numpy/numpy/tarball/v1.6.2#egg=numpy-1.6.2",
         'https://github.com/moriyoshi/beaker_extensions/tarball/0.2.0dev-moriyoshi2#egg=beaker-extensions-0.2.0dev-moriyoshi2',
         'https://github.com/moriyoshi/fluent-logger-python/tarball/0.3.3moriyoshi#egg=fluent-logger-0.3.3moriyoshi',
-        'http://py-radix.googlecode.com/archive/tip.zip#egg=radix-0.5',
+        'http://py-radix.googlecode.com/files/py-radix-0.5.tar.gz#egg=radix-0.5',
       ],
       tests_require=tests_require,
       extras_require=extras_require, 
@@ -142,6 +142,7 @@ setup(name='ticketing',
       release_carts=ticketing.cart.scripts.release_carts:main
       rakuten_checkout_sales=ticketing.checkout.commands:rakuten_checkout_sales
       refund_order=ticketing.orders.commands:refund_order
+      sej_send_refund_file=ticketing.sej.commands:send_refund_file
       """,
       paster_plugins=['pyramid'],
       )

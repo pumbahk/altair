@@ -13,7 +13,7 @@ class Description(object):
         self.ctx.update(widget=widget)
 
     def render(self):
-        template_name = os.path.join(here, "description.mako")
+        template_name = os.path.join(here, "description.html")
         return render(template_name, self.ctx, self.request)
 
 def description(widget, request, ctx=None):

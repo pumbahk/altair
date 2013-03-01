@@ -110,7 +110,7 @@ class TwitterWidgetViewTests(WidgetTestSourceMixn,
         self.assertNotEquals(Page.query.count(), 0)
 
     def test_getdialog(self):
-        """ add asset env,  then dialog.mako is rendered successfully or not
+        """ add asset env,  then dialog.html is rendered successfully or not
         (this test is not checking about html format)
         """
         session = self._getSession()

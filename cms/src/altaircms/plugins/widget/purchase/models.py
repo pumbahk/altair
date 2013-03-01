@@ -31,7 +31,7 @@ class PurchaseWidget(Widget):
     implements(IWidget)
     type = "purchase"
 
-    template_name = "altaircms.plugins.widget:purchase/render.mako"
+    template_name = "altaircms.plugins.widget:purchase/render.html"
     __tablename__ = "widget_purchase"
     __mapper_args__ = {"polymorphic_identity": type}
     query = DBSession.query_property()

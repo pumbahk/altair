@@ -42,7 +42,7 @@ def dummy_form_factory(name="DummyForm", validate=False, errors=None):
 def setup_db(models=[], extra_tables=[]):
     sqlahelper.get_session().remove()
 
-    resolver = DottedNameResolver(package='altaircms')
+    resolver = DottedNameResolver()
     for m in models:
         resolver.maybe_resolve(m)
 
@@ -69,7 +69,7 @@ def config():
                   "altaircms.debug.strip_security": "true",
                   "altaircms.asset.storepath": "altaircms:../../data/assets", 
                   "sqlalchemy.url": "sqlite://", 
-                  "widget.template_path_format": "%s.mako", 
+                  "widget.template_path_format": "%s.html", 
 
                   "altair.oauth.client_id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
                   "altair.oauth.secret_key": "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
@@ -82,6 +82,7 @@ def config():
 def functionalTestSetUp(extra=None):
     setup_db(["altaircms.page.models", 
               "altaircms.tag.models", 
+              "altaircms.widget.models", 
               "altaircms.event.models", 
               "altaircms.asset.models"])
 
@@ -93,7 +94,7 @@ def functionalTestSetUp(extra=None):
                 "altaircms.debug.strip_security": 'true', 
                 "altaircms.plugin_static_directory": "altaircms:plugins/static", 
                 "altaircms.logout.action": "altaircms.auth.api.LogoutSelfOnly", 
-
+                'altaircms.organization.mapping.json': "altaircms:../../organization.json", 
                 "altair.oauth.client_id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
                 "altair.oauth.secret_key": "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
                 "altair.oauth.authorize_url": "http://localhost:7654/api/authorize",

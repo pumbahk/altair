@@ -1,0 +1,24 @@
+<h3 id="salessegment">${page_title}(${salessegment.group.name})</h3>
+
+<table class="table table-describe table-bordered">
+  <thead>
+    <tr>
+      <th>席種</th><th>名前</th><th>価格</th><th>表示順序</th><th>作成日時</th><th>更新日時</th>
+    </tr>
+  </thead>
+  <tbody>
+    %for seattype, ticket_ in grid:
+      <% ticket = ticket_.values %>
+      <tr>
+        %if seattype:
+          <td rowspan="${seattype.rowspan}">${seattype.values}</td>
+        %endif
+        <td>${ticket.name}</td>
+        <td>${ticket.price}</td>
+        <td>${ticket.display_order}</td>
+        <td>${h.base.jdate_with_hour(ticket.created_at)}</td>
+        <td>${h.base.jdate_with_hour(ticket.updated_at)}</td>
+      </tr>
+    %endfor
+  </tbody>
+</table>

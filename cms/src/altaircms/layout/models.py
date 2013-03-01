@@ -26,6 +26,16 @@ class Layout(BaseOriginalMixin, WithOrganizationMixin, Base):
     DEFAULT_BLOCKS = "[]"
     blocks = Column(Text, default=DEFAULT_BLOCKS)
 
+    pagetype_id = Column(sa.Integer, ForeignKey("pagetype.id"))
+    pagetype = orm.relationship("PageType", backref="layouts", uselist=False)
+    disposition_id = sa.Column(sa.Integer, sa.ForeignKey("widgetdisposition.id", use_alter=True, name="fk_default_disposition"),doc=u"default settings")
+    default_disposition = orm.relationship("WidgetDisposition", uselist=False, primaryjoin="WidgetDisposition.id==Layout.disposition_id")
+
+    @classmethod
+    def applicable(cls, pagetype_id):
+        def transformation(qs):
+            return qs.filter(sa.or_(Layout.pagetype_id==pagetype_id, Layout.pagetype_id==None))
+        return transformation
 
     @property
     def organization(self):

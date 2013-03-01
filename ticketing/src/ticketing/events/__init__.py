@@ -10,6 +10,7 @@ def includeme(config):
     config.add_route('events.send', '/send/{event_id}')
 
     config.include('ticketing.events.performances', route_prefix='performances')
+    config.include('ticketing.events.sales_segment_groups', route_prefix='sales_segment_groups')
     config.include('ticketing.events.sales_segments', route_prefix='sales_segments')
     config.include('ticketing.events.payment_delivery_method_pairs', route_prefix='payment_delivery_method_pairs')
     config.include('ticketing.events.stock_holders', route_prefix='stock_holders')
@@ -19,4 +20,5 @@ def includeme(config):
     config.include("ticketing.events.mailinfo", route_prefix="mailinfo")
     config.include("ticketing.events.reports", route_prefix="reports")
     config.include('ticketing.events.sales_reports', route_prefix='sales_reports')
+    config.include('ticketing.events.lots', route_prefix='lots')
     config.scan(".")

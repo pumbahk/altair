@@ -1,14 +1,17 @@
 # coding: utf-8
 import unittest
+import json
 from pyramid import testing
 from altaircms import testing as a_testing
-from .api import EventRepositry
-from .interfaces import IAPIKeyValidator, IEventRepository
+from altaircms.event.api import EventRepositry
+from altaircms.event.interfaces import IAPIKeyValidator, IEventRepository
 
 def setUpModule():
     from altaircms.testing import setup_db
     setup_db(["altaircms.page.models", 
               "altaircms.tag.models", 
+              "altaircms.layout.models", 
+              "altaircms.widget.models", 
               "altaircms.event.models", 
               "altaircms.asset.models"])
 
@@ -59,16 +62,16 @@ class CascadeDeleteTests(unittest.TestCase):
         self.assertEquals(Performance.query.count(), 0)
         self.assertEquals(Event.query.count(), 1)
 
-    def test_delete_cascade_for_event_children(self):
+    def test_delete_cascade_for_performance_children(self):
         """
-        cascade chain: Event -> Performance -> Sale -> Ticket
+        cascade chain: Event -> Performance -> SalesSegment -> Ticket
         """
-        from altaircms.event.models import Event
-        from altaircms.models import Performance, Sale, Ticket
+        from altaircms.models import Performance, SalesSegment, Ticket
 
-        target = Event()
-        sale0 = Sale(name="a", kind=u"normal", event=target)
-        sale1 = Sale(name="b", kind=u"normal", event=target)
+        target = Performance()
+        
+        sale0 = SalesSegment(performance=target)
+        sale1 = SalesSegment(performance=target)
 
         self.session.add_all([Ticket(sale=sale0, price=i) for i in [100, 200, 300, 400, 500]])
         self.session.add_all([Ticket(sale=sale1, price=i) for i in [100, 200, 300, 400, 500]])
@@ -85,150 +88,377 @@ class CascadeDeleteTests(unittest.TestCase):
         ## after delete target event instance check
         self.assertTrue(target in self.session.deleted)
         self.assertTrue(all(p in self.session.deleted for p in Performance.query))
-        self.assertTrue(all(s in self.session.deleted for s in Sale.query))
+        self.assertTrue(all(s in self.session.deleted for s in SalesSegment.query))
         self.assertTrue(all(t in self.session.deleted for t in Ticket.query))
         
-        
+
 class ParseAndSaveEventTests(unittest.TestCase):
+    def _callFUT(self, *args, **kwargs):
+        from altaircms.event.api import parse_and_save_event
+        return parse_and_save_event(*args, **kwargs)
+
+
+    data = """
+{
+  "organization": {
+    "id": 1000, 
+    "short_name": "demo"
+  }, 
+  "created_at": "2012-06-20T10:33:34", 
+  "events": [
+    {
+      "organization_id": 1000, 
+      "code": "DM399", 
+      "subtitle": "なし", 
+      "title": "マツイ・オン・アイス", 
+      "performances": [
+        {
+          "end_on": "2013-03-15T13:00:00", 
+          "start_on": "2013-03-15T10:00:00", 
+          "name": "マツイ・オン・アイス(東京公演)", 
+          "open_on": "2013-03-15T08:00:00", 
+          "prefecture": "tokyo", 
+          "venue": "まついZEROホール", 
+          "id": 40096, 
+          "sales": [
+            {
+              "tickets": [
+                {
+                  "display_order": 3, 
+                  "price": 2000.0, 
+                  "seat_type": "B席", 
+                  "id": 400571, 
+                  "name": "B席右"
+                }, 
+                {
+                  "display_order": 4, 
+                  "price": 2000.0, 
+                  "seat_type": "B席", 
+                  "id": 400572, 
+                  "name": "B席左"
+                }, 
+                {
+                  "display_order": 1, 
+                  "price": 20000.0, 
+                  "seat_type": "S席", 
+                  "id": 400599, 
+                  "name": "S席大人"
+                }, 
+                {
+                  "display_order": 2, 
+                  "price": 8000.0, 
+                  "seat_type": "A席", 
+                  "id": 400600, 
+                  "name": "A席大人"
+                }
+              ], 
+              "kind": "first_lottery", 
+              "start_on": "2012-01-12T10:00:00", 
+              "name": "一般先行", 
+              "seat_choice": "false", 
+              "end_on": "2012-01-22T10:00:00", 
+              "group_id": 1, 
+              "id": 40039
+            }
+          ]
+        }, 
+        {
+          "end_on": "2013-03-26T21:00:00", 
+          "start_on": "2013-03-26T19:00:00", 
+          "name": "マツイ・オン・アイス(大阪公演)", 
+          "open_on": "2013-03-26T18:00:00", 
+          "prefecture": "osaka", 
+          "venue": "まつい市民会館", 
+          "id": 40097, 
+          "sales": [
+            {
+              "tickets": [
+                {
+                  "display_order": 3, 
+                  "price": 1000.0, 
+                  "seat_type": "B席", 
+                  "id": 401571, 
+                  "name": "B席右"
+                }, 
+                {
+                  "display_order": 4, 
+                  "price": 1000.0, 
+                  "seat_type": "B席", 
+                  "id": 401572, 
+                  "name": "B席左"
+                }, 
+                {
+                  "display_order": 1, 
+                  "price": 10000.0, 
+                  "seat_type": "S席", 
+                  "id": 401599, 
+                  "name": "S席大人"
+                }, 
+                {
+                  "display_order": 2, 
+                  "price": 4000.0, 
+                  "seat_type": "A席", 
+                  "id": 401600, 
+                  "name": "A席大人"
+                }
+              ], 
+              "kind": "normal", 
+              "start_on": "2012-01-23T10:00:00", 
+              "name": "一般販売", 
+              "seat_choice": "false", 
+              "end_on": "2012-03-12T00:00:00", 
+              "group_id": 2, 
+              "id": 40040
+            }
+          ]
+        }
+      ], 
+      "id": 40020
+    }
+  ], 
+  "updated_at": "2012-06-20T10:33:34"
+}
+    """
+
+    data_for_delete = """
+{
+  "organization": {
+    "id": 1000, 
+    "short_name": "demo"
+  }, 
+  "created_at": "2012-06-20T10:33:34", 
+  "events": [
+    {
+      "organization_id": 1000, 
+      "code": "DM399", 
+      "subtitle": "なし", 
+      "title": "マツイ・オン・アイス", 
+      "performances": [
+        {
+          "end_on": "2013-03-15T13:00:00", 
+          "start_on": "2013-03-15T10:00:00", 
+          "name": "マツイ・オン・アイス(東京公演)", 
+          "open_on": "2013-03-15T08:00:00", 
+          "deleted": "true", 
+          "prefecture": "tokyo", 
+          "venue": "まついZEROホール", 
+          "id": 40096, 
+          "sales": [
+            {
+              "tickets": [
+                {
+                  "name": "B席右", 
+                  "deleted": "true", 
+                  "display_order": 3, 
+                  "id": 400571, 
+                  "seat_type": "B席", 
+                  "price": 2000.0
+                }, 
+                {
+                  "name": "B席左", 
+                  "deleted": "true", 
+                  "display_order": 4, 
+                  "id": 400572, 
+                  "seat_type": "B席", 
+                  "price": 2000.0
+                }, 
+                {
+                  "name": "S席大人", 
+                  "deleted": "true", 
+                  "display_order": 1, 
+                  "id": 400599, 
+                  "seat_type": "S席", 
+                  "price": 20000.0
+                }, 
+                {
+                  "name": "A席大人", 
+                  "deleted": "true", 
+                  "display_order": 2, 
+                  "id": 400600, 
+                  "seat_type": "A席", 
+                  "price": 8000.0
+                }
+              ], 
+              "deleted": "true", 
+              "kind": "first_lottery", 
+              "start_on": "2012-01-12T10:00:00", 
+              "name": "一般先行", 
+              "seat_choice": "false", 
+              "end_on": "2012-01-22T10:00:00", 
+              "sale_id": 1, 
+              "id": 40039
+            }
+          ]
+        }, 
+        {
+          "end_on": "2013-03-26T21:00:00", 
+          "start_on": "2013-03-26T19:00:00", 
+          "name": "マツイ・オン・アイス(大阪公演)", 
+          "open_on": "2013-03-26T18:00:00", 
+          "prefecture": "osaka", 
+          "venue": "まつい市民会館", 
+          "id": 40097, 
+          "sales": [
+            {
+              "tickets": [
+                {
+                  "display_order": 3, 
+                  "price": 1000.0, 
+                  "seat_type": "B席", 
+                  "id": 401571, 
+                  "name": "B席右"
+                }, 
+                {
+                  "name": "B席左", 
+                  "deleted": "true", 
+                  "display_order": 4, 
+                  "id": 401572, 
+                  "seat_type": "B席", 
+                  "price": 1000.0
+                }, 
+                {
+                  "name": "S席大人", 
+                  "deleted": "true", 
+                  "display_order": 1, 
+                  "id": 401599, 
+                  "seat_type": "S席", 
+                  "price": 10000.0
+                }, 
+                {
+                  "display_order": 2, 
+                  "price": 4000.0, 
+                  "seat_type": "A席", 
+                  "id": 401600, 
+                  "name": "A席大人"
+                }
+              ], 
+              "kind": "normal", 
+              "start_on": "2012-01-23T10:00:00", 
+              "name": "一般販売", 
+              "seat_choice": "false", 
+              "end_on": "2012-03-12T00:00:00", 
+              "group_id": 2, 
+              "id": 40040
+            }
+          ]
+        }
+      ], 
+      "id": 40020
+    }
+  ], 
+  "updated_at": "2012-06-20T10:33:34"
+}
+    """
+
     def tearDown(self):
         import transaction
         transaction.abort()
 
-    def _callFUT(self, *args, **kwargs):
-        from .api import parse_and_save_event
-        return parse_and_save_event(*args, **kwargs)
-
     def test_it(self):
         from datetime import datetime
-        import json
         from altaircms.auth.models import Organization
+        from altaircms.models import Ticket
         request = testing.DummyRequest()
         result = self._callFUT(request, json.loads(self.data))
 
         self.assertEqual(len(result), 1)
         event = result[0]
         self.assertEqual(event.title, u"マツイ・オン・アイス")
-        self.assertEqual(event.backend_id, 20) #backend id
-        self.assertEqual(event.event_open, datetime(2012, 3, 15, 10))
-        self.assertEqual(event.event_close, datetime(2012, 3, 15, 13))
+        self.assertEqual(event.backend_id, 40020) #backend id
+        self.assertEqual(event.event_open, datetime(2013, 3, 15, 10))
+        self.assertEqual(event.event_close, datetime(2013, 3, 26, 21))
         self.assertNotEqual(event.organization_id, 1000)
         self.assertEqual(event.organization_id, Organization.query.filter_by(backend_id=1000).one().id)
         self.assertEqual(len(event.performances), 2)
 
         performance = event.performances[0]
         self.assertEqual(performance.title, u"マツイ・オン・アイス(東京公演)")
-        self.assertEqual(performance.backend_id, 96)
+        self.assertEqual(performance.backend_id, 40096)
         self.assertEqual(performance.venue, u"まついZEROホール")
-        self.assertEqual(performance.open_on, datetime(2012, 3, 15, 8))
-        self.assertEqual(performance.start_on, datetime(2012, 3, 15, 10))
-        self.assertEqual(performance.end_on, datetime(2012, 3, 15, 13))
+        self.assertEqual(performance.open_on, datetime(2013, 3, 15, 8))
+        self.assertEqual(performance.start_on, datetime(2013, 3, 15, 10))
+        self.assertEqual(performance.end_on, datetime(2013, 3, 15, 13))
 
         ## todo:change
-        self.assertEqual(len(event.sales), 2)
+        self.assertEqual(len(performance.sales), 1)
         
-        sale = event.sales[0]
-        self.assertEqual(sale.name, u"一般先行")
-        self.assertEqual(sale.backend_id, 39)
+        sale = performance.sales[0]
+        self.assertEqual(sale.group.name, u"一般先行")
+        self.assertEqual(sale.group.backend_id, 1)
+        self.assertEqual(sale.backend_id, 40039)
         self.assertEqual(sale.start_on, datetime(2012, 1, 12, 10))
         self.assertEqual(sale.end_on, datetime(2012, 1, 22, 10))
 
+        self.assertEqual(Ticket.query.count(), 8)
+        self.assertEqual(len(sale.tickets), 4)
 
-        self.assertEqual(len(performance.tickets), 4)
+        ticket = performance.sales[0].tickets[0]
+        self.assertEqual(ticket.backend_id, 400599)
+        self.assertEqual(ticket.name, u"S席大人")
+        self.assertEqual(ticket.seattype, u"S席")
+        self.assertEqual(ticket.display_order, 1)
+        self.assertEqual(ticket.price, 20000)
 
-        ticket = sale.tickets[0]
-        self.assertEqual(ticket.backend_id, 571)
-        self.assertEqual(ticket.name, u"B席右")
-        self.assertEqual(ticket.seattype, u"B席")
-        self.assertEqual(ticket.price, 1000)
+    def test_create_and_delete(self):
+        from datetime import datetime
+        from altaircms.auth.models import Organization
+        request = testing.DummyRequest()
+        ## create
+        result = self._callFUT(request, json.loads(self.data))
+        ## delete
+        result = self._callFUT(request, json.loads(self.data_for_delete))
 
-        ### check bound performance to ticket relation
-        self.assertEquals(len(performance.tickets), 4)
-        self.assertIn(ticket, performance.tickets)
+        self.assertEqual(len(result), 1)
+        event = result[0]
+        self.assertEqual(event.title, u"マツイ・オン・アイス")
+        self.assertEqual(event.backend_id, 40020) #backend id
+        self.assertEqual(event.event_open, datetime(2013, 3, 26, 19))
+        self.assertEqual(event.event_close, datetime(2013, 3, 26, 21))
+        self.assertNotEqual(event.organization_id, 1000)
+        self.assertEqual(event.organization_id, Organization.query.filter_by(backend_id=1000).one().id)
+
+        self.assertEqual(len(event.performances), 1)
+
+        performance = event.performances[0]
+        self.assertEqual(performance.title, u"マツイ・オン・アイス(大阪公演)")
+        self.assertEqual(performance.backend_id, 40097)
+        self.assertEqual(performance.venue, u"まつい市民会館")
+        self.assertEqual(performance.open_on, datetime(2013, 3, 26, 18))
+        self.assertEqual(performance.start_on, datetime(2013, 3, 26, 19))
+        self.assertEqual(performance.end_on, datetime(2013, 3, 26, 21))
+
+        ## todo:change
+        self.assertEqual(len(performance.sales), 1)
+        
+        sale = performance.sales[0]
+        self.assertEqual(sale.group.name, u"一般販売")
+        self.assertEqual(sale.backend_id, 40040)
+        self.assertEqual(sale.start_on, datetime(2012, 1, 23, 10))
+        self.assertEqual(sale.end_on, datetime(2012, 3, 12, 0))
 
 
+        self.assertEqual(len(sale.tickets), 2)
 
-    data = """
-{"created_at": "2012-06-20T10:33:34",
- "events": [{"deal_close": "2012-12-25T00:00:01",
-              "deal_open": "2012-10-25T10:00:00",
-              "end_on": "2012-03-15T13:00:00",
-              "id": 20,
-              "organization_id": 1000, 
-              "performances": [{"end_on": "2012-03-15T13:00:00",
-                                 "id": 96,
-                                 "name": "マツイ・オン・アイス(東京公演)",
-                                 "open_on": "2012-03-15T08:00:00",
-                                 "prefecture": "tokyo",
-                                 "start_on": "2012-03-15T10:00:00",
-                                 "tickets": [571,
-                                              572,
-                                              599,
-                                              600],
-                                 "venue": "まついZEROホール"},
-                                {"end_on": "2012-03-26T21:00:00",
-                                 "id": 97,
-                                 "name": "マツイ・オン・アイス(大阪公演)",
-                                 "open_on": "2012-03-26T18:00:00",
-                                 "prefecture": "osaka",
-                                 "start_on": "2012-03-26T19:00:00",
-                                 "tickets": [571,
-                                              572,
-                                              599,
-                                              600],
-                                 "venue": "マツイ市民会館"}],
-              "sales": [{"end_on": "2012-01-22T10:00:00",
-                          "id": 39,
-                          "kind": "first_lottery",
-                          "name": "一般先行",
-                          "seat_choice": false,
-                          "start_on": "2012-01-12T10:00:00"},
-                         {"end_on": "2012-03-12T00:00:00",
-                          "id": 40,
-                          "kind": "normal",
-                          "name": "一般販売",
-                          "seat_choice": true,
-                          "start_on": "2012-01-23T10:00:00"}],
-              "start_on": "2012-03-15T10:00:00",
-              "subtitle": "なし",
-              "tickets": [{"id": 571,
-                            "name": "B席右",
-                            "price": 1000,
-                            "sale_id": 39,
-                            "seat_type": "B席"},
-                           {"id": 572,
-                            "name": "B席左",
-                            "price": 1000.0,
-                            "sale_id": 39,
-                            "seat_type": "B席"},
-                           {"id": 599,
-                            "name": "S席大人",
-                            "price": 10000.0,
-                            "sale_id": 40,
-                            "seat_type": "S席"},
-                           {"id": 600,
-                            "name": "A席大人",
-                            "price": 4000.0,
-                            "sale_id": 40,
-                            "seat_type": "A席"}],
-              "title": "マツイ・オン・アイス"}],
- "updated_at": "2012-06-20T10:33:34"}
-    """
+        ticket = performance.sales[0].tickets[0]
+        self.assertEqual(ticket.backend_id, 401600)
+        self.assertEqual(ticket.name, u"A席大人")
+        self.assertEqual(ticket.seattype, u"A席")
+        self.assertEqual(ticket.price, 4000)
+
 
     def test_register_multiple(self):
-        import json
-        from ..models import Ticket, Performance, Sale
+        from altaircms.models import Ticket, Performance, SalesSegment
 
         request = testing.DummyRequest()
         result = self._callFUT(request, json.loads(self.data))
         fst_performance_count = Performance.query.count()
-        fst_sale_count = Sale.query.count()
+        fst_sale_count = SalesSegment.query.count()
         fst_ticket_count = Ticket.query.count()
 
         result = self._callFUT(request, json.loads(self.data))
         self.assertEquals(fst_performance_count, Performance.query.count())
-        self.assertEquals(fst_sale_count, Sale.query.count())
+        self.assertEquals(fst_sale_count, SalesSegment.query.count())
         self.assertEquals(fst_ticket_count, Ticket.query.count())
-
 
 
 class ValidateAPIKeyTests(unittest.TestCase):
@@ -242,7 +472,7 @@ class ValidateAPIKeyTests(unittest.TestCase):
         self.session.remove()
 
     def _callFUT(self, *args, **kwargs):
-        from .api import validate_apikey
+        from altaircms.event.api import validate_apikey
         return validate_apikey(*args, **kwargs)
 
     def test_ok(self):
@@ -288,7 +518,7 @@ class TestEventRegister(unittest.TestCase):
         testing.tearDown()
 
     def _callFUT(self, request):
-        from .views import event_register
+        from altaircms.event.views import event_register
         return event_register(request)
 
     def test_event_register_ok(self):
@@ -326,3 +556,5 @@ class TestEventRegister(unittest.TestCase):
 
         self.assertEqual(response.status_int, 400)
         
+if __name__ == "__main__":
+    unittest.main()

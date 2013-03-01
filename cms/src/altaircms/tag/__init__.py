@@ -1,33 +1,49 @@
 SUPPORTED_CLASSIFIER = ("page", "asset")
 
-def includeme(config):
+def install_tagmanager(config):
     config.add_directive("add_tagmanager", ".directives.add_tagmanager")
     config.add_tagmanager("page",
-                         model="altaircms.page.models.Page", 
-                         xref=".models.PageTag2Page", 
-                         tag=".models.PageTag"
+                         model="altaircms.page.models.PageSet", 
+                         xref="altaircms.page.models.PageTag2Page", 
+                         tag="altaircms.page.models.PageTag"
+                         )
+    config.add_tagmanager("topic",
+                         model="altaircms.topic.models.Topic", 
+                         xref="altaircms.topic.models.TopicCoreTag2TopicCore", 
+                         tag="altaircms.topic.models.TopicTag"
+                         )
+    config.add_tagmanager("topcontent",
+                         model="altaircms.topic.models.Topcontent", 
+                         xref="altaircms.topic.models.TopicCoreTag2TopicCore", 
+                         tag="altaircms.topic.models.TopcontentTag"
+                         )
+    config.add_tagmanager("promotion",
+                         model="altaircms.topic.models.Promotion", 
+                         xref="altaircms.topic.models.TopicCoreTag2TopicCore", 
+                         tag="altaircms.topic.models.PromotionTag"
                          )
     config.add_tagmanager("asset",
                          model="altaircms.asset.models.Asset", 
-                         xref=".models.AssetTag2Asset", 
-                         tag=".models.AssetTag"
+                         xref="altaircms.asset.models.AssetTag2Asset", 
+                         tag="altaircms.asset.models.AssetTag"
                          )
     config.add_tagmanager("image_asset",
                          model="altaircms.asset.models.ImageAsset", 
-                         xref=".models.AssetTag2Asset", 
-                         tag=".models.ImageAssetTag"
+                         xref="altaircms.asset.models.AssetTag2Asset", 
+                         tag="altaircms.asset.models.ImageAssetTag"
                          )
     config.add_tagmanager("flash_asset",
                          model="altaircms.asset.models.FlashAsset", 
-                         xref=".models.AssetTag2Asset", 
-                         tag=".models.FlashAssetTag"
+                         xref="altaircms.asset.models.AssetTag2Asset", 
+                         tag="altaircms.asset.models.FlashAssetTag"
                          )
     config.add_tagmanager("movie_asset",
                          model="altaircms.asset.models.MovieAsset", 
-                         xref=".models.AssetTag2Asset", 
-                         tag=".models.MovieAssetTag"
+                         xref="altaircms.asset.models.AssetTag2Asset", 
+                         tag="altaircms.asset.models.MovieAssetTag"
                          )
 
+def includeme(config):
     config.add_route("tag", "/tag/{classifier}")
-
+    config.include(install_tagmanager)
     config.scan()

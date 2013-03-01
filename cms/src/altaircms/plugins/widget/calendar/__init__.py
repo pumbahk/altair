@@ -6,9 +6,9 @@ DIR = os.path.dirname(os.path.abspath(__file__))
 ## fixme move to ini file
 @deprecation.deprecate("this is deprecated class. define by [calendar] section in your organization settings.]")
 class CalendarTemplatePathStore(object):
-    obi = "ticketstar.calendar.mako"
-    term = "rakuten.calendar.mako"
-    tab = "ticketstar.tab-calendar.mako"
+    obi = "ticketstar.calendar.html"
+    term = "rakuten.calendar.html"
+    tab = "ticketstar.tab-calendar.html"
     here = "altaircms.plugins.widget:calendar"
     @classmethod
     def path(cls, k):

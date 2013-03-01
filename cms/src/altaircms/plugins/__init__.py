@@ -1,3 +1,5 @@
+# -*- coding:utf-8 -*-
+
 def includeme(config):
     """
     e.g. 
@@ -17,6 +19,7 @@ def includeme(config):
     config.include(".widget.ticketlist", route_prefix="api")
     config.include(".widget.menu", route_prefix="api")
     config.include(".widget.topic", route_prefix="api")
+    config.include(".widget.topcontent", route_prefix="api")
     config.include(".widget.breadcrumbs", route_prefix="api")
     config.include(".widget.summary", route_prefix="api")
     config.include(".widget.countdown", route_prefix="api")
@@ -32,13 +35,26 @@ def includeme(config):
     config.include(".jsapi", route_prefix="api")
 
     ## settings
-    m = config.maybe_dotted
-    osettings = config.registry.settings["altaircms.widget.each_organization.settings"]
-    configparsers = m(".api.get_configparsers_from_inifiles")(config, m(".helpers.list_from_setting_value")(osettings))
+    from .api import get_configparsers_from_inifiles
+    from .api import get_configparser_from_inifile
+    from .api import set_widget_aggregator_dispatcher
+    from .api import set_widget_aggregator_default
+    from .api import set_extra_resource
+    from .api import set_extra_resource_default
+    from .helpers import list_from_setting_value
 
-    m(".api.set_widget_aggregator_dispatcher")(config, configparsers)
+    ## plugin 毎の設定ファイルの読み込み
+    osettings = config.registry.settings["altaircms.widget.each_organization.settings"]
+    inifiles = list_from_setting_value(osettings)
+    
+    inifile_for_default = config.registry.settings["altaircms.widget.organization.setting.default"]
+    configparser_for_default = get_configparser_from_inifile(config, inifile_for_default)
+
+    configparsers = get_configparsers_from_inifiles(config, inifiles)
+    set_widget_aggregator_dispatcher(config, configparsers)
+    set_widget_aggregator_default(config, configparser_for_default)
 
     for configparser in configparsers:
-        m(".api.set_extra_resource")(config, configparser)
-
+        set_extra_resource(config, configparser)
+    set_extra_resource_default(config,  configparser_for_default)
 

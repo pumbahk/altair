@@ -49,7 +49,7 @@ class SummaryWidget(Widget):
     implements(IWidget)
     type = "summary"
 
-    template_name = "altaircms.plugins.widget:summary/render.mako"
+    template_name = "altaircms.plugins.widget:summary/render.html"
     __tablename__ = "widget_summary"
     __mapper_args__ = {"polymorphic_identity": type}
     query = DBSession.query_property()

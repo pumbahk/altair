@@ -32,6 +32,7 @@ class OrderCSV(object):
     order_header = [
         'order_no',
         'status',
+        'payment_status',
         'created_at',
         'paid_at',
         'delivered_at',
@@ -139,6 +140,7 @@ class OrderCSV(object):
         order_dict = record_to_multidict(order)
         order_dict.add('created_at', str(order.created_at))
         order_dict.add('status', order.status)
+        order_dict.add('payment_status', order.payment_status)
         order_list = [(column, self.order_value_filters.get(column, no_filter)(order_dict.get(column))) for column in self.order_header]
 
         user_profile_list = []

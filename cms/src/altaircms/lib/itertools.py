@@ -20,6 +20,14 @@ def group_by_n(itr, n):
     if i > 0:
         yield r
 
+def find_or_first(xs, p):
+    for x in xs:
+        if p(x):
+            return x
+    else:
+        return xs[0]
+
+    
 if __name__ == "__main__":
     import doctest
     doctest.testmod()

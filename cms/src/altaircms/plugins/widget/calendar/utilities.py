@@ -27,7 +27,7 @@ class CalendarWidgetUtilityDefault(object):
         labels = 
           タブ形式の出力
         renderers =
-          altaircms.plugins.widget.calendar:BJ89ers.tab-calendar.mako
+          altaircms.plugins.widget.calendar:BJ89ers.tab-calendar.html
         rendering_functions = 
           altaircms.plugins.widget.calendar.rendererable.tab
         """

@@ -158,4 +158,3 @@ def nws_data_send(url, terminal_id, password, file_id, data, cert_file=None, key
         if e.code == 800:
             return True
         raise e
-

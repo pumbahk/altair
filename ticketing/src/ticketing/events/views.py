@@ -23,14 +23,14 @@ from ticketing.fanstatic import with_bootstrap
 from ticketing.core.models import Event, Performance, StockType, StockTypeEnum
 from ticketing.events.forms import EventForm
 from ticketing.events.performances.forms import PerformanceForm
-from ticketing.events.sales_segments.forms import SalesSegmentForm
+from ticketing.events.sales_segment_groups.forms import SalesSegmentGroupForm
 from ticketing.events.stock_types.forms import StockTypeForm
 from ticketing.events.stock_holders.forms import StockHolderForm
 from ticketing.products.forms import ProductForm
 
 from ..api.impl import get_communication_api
 from ..api.impl import CMSCommunicationApi
-
+from .api import get_cms_data
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class Events(BaseView):
@@ -95,7 +95,7 @@ class Events(BaseView):
             'form_performance':PerformanceForm(organization_id=self.context.user.organization_id),
             'form_stock_type':StockTypeForm(event_id=event_id),
             'form_stock_holder':StockHolderForm(organization_id=self.context.user.organization_id, event_id=event_id),
-            'form_sales_segment':SalesSegmentForm(event_id=event_id),
+            'form_sales_segment_group':SalesSegmentGroupForm(event_id=event_id),
             'form_product':ProductForm(event_id=event.id),
         }
 
@@ -201,11 +201,8 @@ class Events(BaseView):
             return HTTPNotFound('event id %d is not found' % event_id)
 
         try:
-            data = {
-                'events':[event.get_cms_data()],
-                'created_at':isodate.datetime_isoformat(datetime.now()),
-                'updated_at':isodate.datetime_isoformat(datetime.now()),
-            }
+            organization = self.context.user.organization
+            data = get_cms_data(self.request, organization, event)
         except Exception, e:
             logging.info("cms build data error: %s (event_id=%s)" % (e.message, event_id))
             self.request.session.flash(e.message)

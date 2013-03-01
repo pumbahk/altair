@@ -3,6 +3,7 @@ import logging
 logger = logging.getLogger(__name__)
 import os
 import sqlalchemy as sa
+import sqlalchemy.orm as orm
 from pyramid.view import view_config
 from pyramid.view import view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPBadRequest
@@ -13,6 +14,8 @@ from . import forms
 from . import searcher
 import altaircms.widget.forms as wf
 from ..models import DBSession
+
+from altaircms.page.models import PageType
 from altaircms.page.models import PageSet
 from altaircms.page.models import Page
 from altaircms.page.models import StaticPage
@@ -21,7 +24,6 @@ from altaircms.widget.models import WidgetDisposition
 from altaircms.event.models import Event
 from altaircms.auth.api import get_or_404
 
-import altaircms.tag.api as tag
 from altaircms.helpers.viewhelpers import get_endpoint, set_endpoint
 
 from altaircms.lib.fanstatic_decorator import with_bootstrap
@@ -33,6 +35,10 @@ from .api import get_static_page_utility
 from . import helpers as myhelpers
 from pyramid.response import FileResponse
 from . import writefile 
+from zope.deprecation import deprecate
+from altaircms.widget.forms import WidgetDispositionSaveDefaultForm
+from altaircms.widget.forms import WidgetDispositionSaveForm
+
 
 class AfterInput(Exception):
     pass
@@ -47,17 +53,23 @@ class PageAddView(object):
         self.context = context
         self.request = request
 
-    @view_config(route_name="page_add", request_method="GET", match_param="action=input", permission="page_create")
+    @view_config(route_name="page_add", request_method="GET", request_param="pagetype=event_detail", match_param="action=input", permission="page_create")
     def input_form_with_event(self):
         set_endpoint(self.request)
         event_id = self.request.matchdict["event_id"]
         event = self.request._event = get_or_404(self.request.allowable(Event), (Event.id==event_id))
-            
         self.request._form = forms.PageForm(event=event)
-        self.request._setup_form = forms.PageInfoSetupForm(name=event.title)
+        self.request._setup_form = forms.PageInfoSetupWithEventForm(name=event.title, event=event)
         raise AfterInput
 
-    @view_config(route_name="page_add_orphan", request_method="GET", match_param="action=input", permission="page_create")
+    @view_config(route_name="page_add_orphan", request_param="pagetype=event_detail", request_method="GET", match_param="action=input", permission="page_create")
+    def input_form_orphan_with_event(self):
+        set_endpoint(self.request)
+        self.request._form = forms.PageForm()
+        self.request._setup_form = forms.PageInfoSetupWithEventForm()
+        raise AfterInput
+
+    @view_config(route_name="page_add_orphan", request_param="pagetype", request_method="GET", match_param="action=input", permission="page_create")
     def input_form(self):
         set_endpoint(self.request)
         self.request._form = forms.PageForm()
@@ -65,7 +77,7 @@ class PageAddView(object):
         raise AfterInput
         
     @view_config(route_name="page_add", context=AfterInput, decorator=with_bootstrap.merge(with_jquery), 
-                 renderer="altaircms:templates/page/add.mako")
+                 renderer="altaircms:templates/page/add_orphan.html")
     def after_input_with_event(self):
         request = self.request
         return {"event": request._event, 
@@ -73,13 +85,14 @@ class PageAddView(object):
                 "setup_form": request._setup_form}
 
     @view_config(route_name="page_add_orphan", context=AfterInput, decorator=with_bootstrap.merge(with_jquery), 
-                 renderer="altaircms:templates/page/add_orphan.mako")
+                 renderer="altaircms:templates/page/add_orphan.html")
     def after_input(self):
         request = self.request
         return {"form": request._form, 
                 "setup_form": request._setup_form}
 
-    @view_config(route_name="page_add", permission="page_create", match_param="action=confirm", request_method="POST")
+    @view_config(route_name="page_add", permission="page_create", match_param="action=confirm", request_method="POST", 
+                 renderer="altaircms:templates/page/confirm.html")
     def confirm_with_event(self):
         self.request.POST
         form = forms.PageForm(self.request.POST)
@@ -92,11 +105,16 @@ class PageAddView(object):
             self.request._setup_form = forms.PageInfoSetupForm(name=form.data["name"])
             raise AfterInput
 
-    @view_config(route_name="page_add_orphan", permission="page_create", match_param="action=confirm", request_method="POST")
+    @view_config(route_name="page_add_orphan", permission="page_create", match_param="action=confirm", request_method="POST", 
+                 renderer="altaircms:templates/page/confirm.html")
     def confirm(self):
         self.request.POST
         form = forms.PageForm(self.request.POST)
         if form.validate():
+            if self.request.GET.get("pagetype"):
+                pagetype = self.request.allowable(PageType, PageType.name==self.request.GET.get("pagetype")).first()
+                if pagetype.is_portal and form.data["genre"]:
+                    FlashMessage.info(u"%sのカテゴリトップページとして登録されます。(既にカテゴリトップページが存在している場合にはこれから作られるページが優先されます)" % form.data["genre"].label, request=self.request)
             return {"form": form}
         else:
             self.request._form = form
@@ -130,7 +148,7 @@ class PageAddView(object):
             ## flash messsage
             mes = u'page created <a href="%s">作成されたページを編集する</a>' % self.request.route_path("pageset_detail", pageset_id=page.pageset.id, kind="other")
             FlashMessage.success(mes, request=self.request)
-            return HTTPFound(get_endpoint(self.request) or self.request.route_path("pageset_list", kind="other"))
+            return HTTPFound(get_endpoint(self.request) or self.request.route_path("pageset_list", pagetype=page.pagetype.name))
         else:
             self.request._form = form
             self.request._setup_form = forms.PageInfoSetupForm(name=form.data["name"])
@@ -140,12 +158,12 @@ class PageAddView(object):
  
 
 @view_defaults(permission="page_create", decorator=with_bootstrap)
-class PageCreateView(object):
+class PageDuplicateView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
 
-    # @view_config(route_name="page", renderer='altaircms:templates/page/list.mako', request_method="POST")
+    # @view_config(route_name="page", renderer='altaircms:templates/page/list.html', request_method="POST")
     # def create(self):
     #     form = forms.PageForm(self.request.POST)
     #     if form.validate():
@@ -162,7 +180,7 @@ class PageCreateView(object):
     #             setup_form = setup_form
     #             )
 
-    @view_config(route_name="page_duplicate", request_method="GET", renderer="altaircms:templates/page/duplicate_confirm.mako")
+    @view_config(route_name="page_duplicate", request_method="GET", renderer="altaircms:templates/page/duplicate_confirm.html")
     def duplicate_confirm(self):
         page = get_or_404(self.request.allowable(Page), Page.id==self.request.matchdict["id"])
         return {"page": page}
@@ -182,7 +200,7 @@ class PageDeleteView(object):
         self.context = context
         self.request = request
 
-    @view_config(renderer="altaircms:templates/page/delete_confirm.mako", request_method="GET")
+    @view_config(renderer="altaircms:templates/page/delete_confirm.html", request_method="GET")
     def delete_confirm(self):
         page = get_or_404(self.request.allowable(Page), Page.id==self.request.matchdict["id"])
         return {"page": page}
@@ -203,7 +221,7 @@ class PageSetDeleteView(object):
         self.context = context
         self.request = request
 
-    @view_config(renderer="altaircms:templates/pagesets/delete_confirm.mako", request_method="GET")
+    @view_config(renderer="altaircms:templates/pagesets/delete_confirm.html", request_method="GET")
     def delete_confirm(self):
         pageset = get_or_404(self.request.allowable(PageSet), PageSet.id==self.request.matchdict["pageset_id"])
         return {"pageset": pageset, "myhelpers": myhelpers}
@@ -225,7 +243,7 @@ class PageSetDeleteView(object):
 
 
 
-@view_config(route_name="page_update", context=AfterInput, renderer="altaircms:templates/page/input.mako", 
+@view_config(route_name="page_update", context=AfterInput, renderer="altaircms:templates/page/input.html", 
              decorator=with_bootstrap)
 def _input(request):
     page, form = request._store
@@ -247,12 +265,10 @@ class PageUpdateView(object):
     def input(self):
         page = get_or_404(self.request.allowable(Page), Page.id==self.request.matchdict["id"])
         params = page.to_dict()
-        params["tags"] = tag.tags_to_string(page.public_tags)
-        params["private_tags"] = tag.tags_to_string(page.private_tags)
         form = forms.PageUpdateForm(**params)
         return self._input_page(page, form)
 
-    @view_config(request_method="POST", renderer="altaircms:templates/page/update_confirm.mako",       
+    @view_config(request_method="POST", renderer="altaircms:templates/page/update_confirm.html",       
                     custom_predicates=[RegisterViewPredicate.confirm])
     def update_confirm(self):
         form = forms.PageUpdateForm(self.request.POST)
@@ -294,42 +310,59 @@ class PagePartialUpdateAPIView(object):
         return {"status": True, "data": {"layout_id": layout_id}}
 
 
-
 @view_defaults(permission="page_read", route_name="pageset_list", decorator=with_bootstrap, request_method="GET")
-class PageListView(object):
+class ListView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
-
-    @view_config(match_param="kind=static", renderer="altaircms:templates/page/static_page_list.mako")
+    
+    @view_config(match_param="pagetype=static", renderer="altaircms:templates/pagesets/static_pageset_list.html")
     def static_page_list(self):
+        pagetype = get_or_404(self.request.allowable(PageType), (PageType.name==self.request.matchdict["pagetype"]))
         static_directory = get_static_page_utility(self.request)
         return {"static_directory": static_directory, 
-                "pages": static_directory.get_managemented_files(self.request)}
+                "pages": static_directory.get_managemented_files(self.request), 
+                "pagetype": pagetype}
 
-    @view_config(match_param="kind=event", renderer="altaircms:templates/page/event_page_list.mako")
+    @view_config(match_param="pagetype=event_detail", renderer="altaircms:templates/pagesets/event_pageset_list.html")
     def event_bound_page_list(self):
         """ event詳細ページと結びついているpage """
-        pages = self.request.allowable(PageSet).filter(PageSet.event != None)
-        params = dict(self.request.GET)
+        pagetype = get_or_404(self.request.allowable(PageType), (PageType.name==self.request.matchdict["pagetype"]))
+        qs = self.request.allowable(PageSet).filter(PageSet.pagetype_id==pagetype.id, 
+                                                    PageSet.event_id!=None)
+        params = self.request.GET
         if "page" in params:
             params.pop("page") ## pagination
         if params:
             search_form = forms.PageSetSearchForm(self.request.GET)
             if search_form.validate():
-                pages = searcher.make_pageset_search_query(self.request, search_form.data, qs=pages)
+                qs = searcher.make_pageset_search_query(self.request, search_form.data, qs=qs)
         else:
             search_form = forms.PageSetSearchForm()
-        pages = pages.order_by(sa.desc(PageSet.updated_at))
-        return {"pages":pages, "search_form": search_form}
 
-    @view_config(match_param="kind=other", renderer="altaircms:templates/page/other_page_list.mako")
+        qs = qs.order_by(sa.desc(PageSet.updated_at))
+        pages = h.paginate(self.request, qs, item_count=qs.count(), items_per_page=50)
+        return {"pages": pages, "pagetype": pagetype, "search_form": search_form}
+
+    @view_config(renderer="altaircms:templates/pagesets/other_pageset_list.html")
     def other_page_list(self):
         """event詳細ページとは結びついていないページ(e.g. トップ、カテゴリトップ) """
-        #kind = self.request.matchdict["kind"]
-        pages = self.request.allowable(PageSet).filter(PageSet.event == None)
-        pages = pages.order_by(sa.desc(PageSet.updated_at))
-        return {"pages":pages}
+        pagetype = get_or_404(self.request.allowable(PageType), (PageType.name==self.request.matchdict["pagetype"]))
+        qs = self.request.allowable(PageSet).filter(PageSet.pagetype_id==pagetype.id)
+        params = self.request.GET
+        if "page" in params:
+            params.pop("page") ## pagination
+        if params:
+            search_form = forms.PageSetSearchForm(self.request.GET)
+            if search_form.validate():
+                qs = searcher.make_pageset_search_query(self.request, search_form.data, qs=qs)
+        else:
+            search_form = forms.PageSetSearchForm()
+
+        qs = qs.order_by(sa.desc(PageSet.updated_at))
+        pages = h.paginate(self.request, qs, item_count=qs.count(), items_per_page=50)
+        return {"pages": pages, "pagetype": pagetype, "search_form": search_form}
+
 
 def with_pageset_predicate(kind): #don't support static page
     def decorate(info, request):
@@ -353,7 +386,7 @@ class PageSetDetailView(object):
     def static_page_detail(self):
         pass
 
-    @view_config(renderer="altaircms:templates/pagesets/event_page_detail.mako", 
+    @view_config(renderer="altaircms:templates/pagesets/event_page_detail.html", 
                  custom_predicates=(with_pageset_predicate("event"),))
     def event_bound_page_detail(self):
         """ event詳細ページと結びついているpage """
@@ -362,7 +395,7 @@ class PageSetDetailView(object):
                 "myhelpers": myhelpers}
 
 
-    @view_config(renderer="altaircms:templates/pagesets/other_page_detail.mako", 
+    @view_config(renderer="altaircms:templates/pagesets/other_page_detail.html", 
                  custom_predicates=(with_pageset_predicate("other"),))
     def other_page_detail(self):
         """event詳細ページとは結びついていないページ(e.g. トップ、カテゴリトップ) """
@@ -372,7 +405,7 @@ class PageSetDetailView(object):
 
 
 
-@view_config(route_name="page_detail", renderer='altaircms:templates/page/view.mako', permission='authenticated', 
+@view_config(route_name="page_detail", renderer='altaircms:templates/page/view.html', permission='authenticated', 
              decorator=with_fanstatic_jqueries.merge(with_bootstrap))
 def page_detail(request):
     """ page詳細ページ
@@ -380,40 +413,65 @@ def page_detail(request):
     page = get_or_404(request.allowable(Page), Page.id==request.matchdict["page_id"])
     return {"page": page, "myhelpers": myhelpers}
 
+
 ## todo: persmissionが正しいか確認
-@view_config(route_name='page_edit_', renderer='altaircms:templates/page/edit.mako', permission='authenticated', 
+@view_config(route_name='page_edit_', renderer='altaircms:templates/page/edit.html', permission='authenticated', 
              decorator=with_fanstatic_jqueries.merge(with_bootstrap))
-@view_config(route_name='page_edit', renderer='altaircms:templates/page/edit.mako', permission='authenticated', 
+@view_config(route_name='page_edit', renderer='altaircms:templates/page/edit.html', permission='authenticated', 
              decorator=with_fanstatic_jqueries.merge(with_bootstrap))
-def page_edit(request):
+def page_edit(context, request):
     """pageの中をwidgetを利用して変更する
     """
-    page = get_or_404(request.allowable(Page), Page.id==request.matchdict["page_id"])
+    page = request._page = getattr(request, "_page", None) or get_or_404(request.allowable(Page), Page.id==request.matchdict["page_id"])
     try:
         page.valid_layout()
     except ValueError, e:
         FlashMessage.error(str(e), request=request)
         raise HTTPFound(request.route_url("page_update", id=page.id))
 
-    layout_render = request.context.get_layout_render(page)
+    layout_render = context.get_layout_render(page)
     disposition_select = wf.WidgetDispositionSelectForm()
     user = request.user
     disposition_save = wf.WidgetDispositionSaveForm(page=page.id, owner_id=user.id if user else None)
-    layout_qs = request.allowable(Layout)
+    disposition_save_default = WidgetDispositionSaveDefaultForm(page=page.id, title=u"%sのデフォルト設定" % page.layout.title)
+    ## layoutの選択対象はnone or 同一pagetype?
+    layout_qs = request.allowable(Layout).with_transformation(Layout.applicable(page.pagetype_id))
     return {
             'event':page.event,
             'page':page,
             "disposition_select": disposition_select, 
             "disposition_save": disposition_save, 
+            "disposition_save_default": disposition_save_default, 
             "layout_candidates": layout_qs, 
             "layout_render":layout_render, 
             "widget_aggregator": get_widget_aggregator_dispatcher(request).dispatch(request, page)
         }
 
+def dispatch_with_rendering_type(rendering_type):
+    def _dispatch_with_rendering_type(info, request):
+        request._page = getattr(request, "_page", None) or get_or_404(request.allowable(Page), Page.id==request.matchdict["page_id"])
+        request._pagetype = getattr(request, "_pagetype", None) or request._page.pagetype
+        return request._pagetype.page_rendering_type == rendering_type
+    return _dispatch_with_rendering_type
+
+@view_config(route_name="page_edit_", 
+             custom_predicates=(dispatch_with_rendering_type("search"),), 
+             renderer="altaircms:templates/page/edit_use_search.html", permission="authenticated", 
+             decorator=with_fanstatic_jqueries.merge(with_bootstrap))
+@view_config(route_name="page_edit", 
+             custom_predicates=(dispatch_with_rendering_type("search"),), 
+             renderer="altaircms:templates/page/edit_use_search.html", permission="authenticated", 
+             decorator=with_fanstatic_jqueries.merge(with_bootstrap))
+def page_using_search_edit(context, request):
+    page = request._page = getattr(request, "_page", None) or get_or_404(request.allowable(Page), Page.id==request.matchdict["page_id"])
+    layout_qs = request.allowable(Layout).with_transformation(Layout.applicable(page.pagetype_id))
+    return {"page": page, "layout_candidates": layout_qs}
+
+
 ## widgetの保存 場所移動？
-@view_config(route_name="disposition", request_method="POST", permission='authenticated')
+@view_config(match_param="action=save", route_name="disposition", request_method="POST", permission='authenticated')
 def disposition_save(context, request):
-    form = context.Form(request.POST)
+    form = WidgetDispositionSaveForm(request.POST)
     page = get_or_404(request.allowable(Page), Page.id==request.matchdict["id"])
 
     if form.validate():
@@ -425,7 +483,26 @@ def disposition_save(context, request):
         FlashMessage.error(u"タイトルを入力してください", request=request)
         return HTTPFound(h.page.to_edit_page(request, page))
 
-@view_config(route_name="disposition", request_method="GET", permission='authenticated')
+@view_config(match_param="action=save_default", route_name="disposition", request_method="POST", permission='authenticated')
+def disposition_save_default(context, request):
+    form = WidgetDispositionSaveDefaultForm(request.POST)
+    page = get_or_404(request.allowable(Page), Page.id==request.matchdict["id"])
+
+    if form.validate():
+        wdisposition = context.get_disposition_from_page(page, form.data)
+        wdisposition.is_public = True
+        wdisposition.owner_id = request.user.id
+        context.add(wdisposition)
+        DBSession.flush()
+        layout = get_or_404(request.allowable(Layout), Layout.id==page.layout_id)
+        layout.disposition_id = wdisposition.id
+        FlashMessage.success(u"現在のレイアウトのデフォルトの設定として保存されました", request=request)
+        return HTTPFound(h.page.to_edit_page(request, page))
+    else:
+        FlashMessage.error(u"タイトルを入力してください", request=request)
+        return HTTPFound(h.page.to_edit_page(request, page))
+
+@view_config(match_param="action=load", route_name="disposition", request_method="GET", permission='authenticated')
 def disposition_load(context, request):
     page = get_or_404(request.allowable(Page), Page.id==request.matchdict["id"])
     wdisposition = get_or_404(request.allowable(WidgetDisposition), WidgetDisposition.id==request.GET["disposition"])
@@ -436,10 +513,11 @@ def disposition_load(context, request):
     return HTTPFound(h.page.to_edit_page(request, loaded_page))
 
 
-@view_config(route_name="disposition_list", renderer="altaircms:templates/widget/disposition/list.mako", 
+@view_config(route_name="disposition_list", renderer="altaircms:templates/widget/disposition/list.html", 
              decorator=with_bootstrap, permission='authenticated') #permission
 def disposition_list(context, request):
-    ds = WidgetDisposition.enable_only_query(request.user)
+    qs = WidgetDisposition.enable_only_query(request.user)
+    ds = request.allowable(WidgetDisposition, qs=qs).options(orm.joinedload(WidgetDisposition.layout))
     return {"ds":ds}
 
 @view_config(route_name="disposition_alter", request_method="POST", permission='authenticated') #permission
@@ -455,12 +533,12 @@ class PageSetView(object):
     def __init__(self, request):
         self.request = request
 
-    @view_config(route_name='pagesets', renderer="altaircms:templates/pagesets/list.mako", decorator=with_bootstrap)
+    @view_config(route_name='pagesets', renderer="altaircms:templates/pagesets/list.html", decorator=with_bootstrap)
     def pageset_list(self):
         pagesets = self.request.allowable(PageSet)
         return dict(pagesets=pagesets)
 
-    @view_config(route_name='pageset', renderer="altaircms:templates/pagesets/edit.mako", decorator=with_bootstrap, request_method="GET")
+    @view_config(route_name='pageset', renderer="altaircms:templates/pagesets/edit.html", decorator=with_bootstrap, request_method="GET")
     def pageset(self):
         pageset_id = self.request.matchdict['pageset_id']
         pageset = get_or_404(self.request.allowable(PageSet), PageSet.id==pageset_id)
@@ -468,7 +546,7 @@ class PageSetView(object):
         form = factory(pageset)
         return dict(ps=pageset, form=form, f=factory)
 
-    @view_config(route_name='pageset', renderer="altaircms:templates/pagesets/edit.mako", decorator=with_bootstrap, request_method="POST")
+    @view_config(route_name='pageset', renderer="altaircms:templates/pagesets/edit.html", decorator=with_bootstrap, request_method="POST")
     def update_times(self):
         logging.debug('post ')
         pageset_id = self.request.matchdict['pageset_id']
@@ -494,14 +572,14 @@ class StaticPageCreateView(object):
         self.context = context
         
     @view_config(match_param="action=input", decorator=with_bootstrap,
-                 renderer="altaircms:templates/page/static_page_add.mako")
+                 renderer="altaircms:templates/page/static_page_add.html")
     def input(self):
         form = forms.StaticPageCreateForm()
         return {"form": form}
 
     @view_config(match_param="action=create", request_method="POST", 
                  decorator=with_bootstrap,
-                 renderer="altaircms:templates/page/static_page_add.mako")
+                 renderer="altaircms:templates/page/static_page_add.html")
     def create(self):
         form = forms.StaticPageCreateForm(self.request.POST)
         if not form.validate(self.request):
@@ -532,7 +610,7 @@ class StaticPageView(object):
         FlashMessage.success(u"このページを%sしました" % (u"公開" if static_page.published else u"非公開に"), request=self.request)
         return HTTPFound(self.request.route_url("static_page", action="detail", static_page_id=static_page.id))
 
-    @view_config(match_param="action=detail", renderer="altaircms:templates/page/static_detail.mako", 
+    @view_config(match_param="action=detail", renderer="altaircms:templates/page/static_detail.html", 
                  decorator=with_bootstrap)
     def detail(self):
         pk = self.request.matchdict["static_page_id"]

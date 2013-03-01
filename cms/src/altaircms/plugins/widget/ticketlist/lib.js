@@ -38,7 +38,16 @@ widget.configure({
     var on_dialog = function(we){
         we.bind_retry(we, 10, 1.43, 15, 
                       function(){return $("#ticketlist_submit")}, 
-                      function(elt){elt.click(function(){we.finish_dialog(this);});}
+                      function(elt){
+                          var root = elt.parents(".box");
+                          root.find("#target_performance_id").change(function(e){
+                              var target = root.find("#target_salessegment_id").parent();
+                              var url = "/api/widget/ticketlist/api/combobox/salessegment?target_performance_id="+$(e.currentTarget).val();
+                              $.get(url).done(function(data){
+                                  target.html(data);
+                              });
+                          })
+                          elt.click(function(){we.finish_dialog(this);});}
                      )();
     };
 
@@ -47,8 +56,9 @@ widget.configure({
 
     var collect_data = function(we, choiced_elt){
         var root = $(we.dialog)
-        return {"kind": root.find("#kind").val(), 
-                "target_performance_id": root.find("#target").val(), 
+        return {"display_type": root.find("#display_type").val(), 
+                "target_performance_id": root.find("#target_performance_id").val(), 
+                "target_salessegment_id": root.find("#target_salessegment_id").val(), 
                 "caption": root.find("#caption").val()}
     };
     return widget.include("ticketlist", {

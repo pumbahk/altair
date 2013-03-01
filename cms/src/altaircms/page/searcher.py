@@ -14,7 +14,6 @@ def make_pageset_search_query(request, data, qs=None, today=None):
     return qs
 
 def make_pageset_search_by_word(request, qs, data):
-    ## search by solr
     if data["freeword"]:
         word = data["freeword"]
         # pagesets = pageset_id_list_from_word(request, word)

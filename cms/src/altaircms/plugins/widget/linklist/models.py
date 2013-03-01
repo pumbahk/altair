@@ -41,7 +41,7 @@ class LinklistWidget(Widget):
     implements(IWidget)
     type = "linklist"
 
-    template_name = "altaircms.plugins.widget:linklist/render.mako"
+    template_name = "altaircms.plugins.widget:linklist/render.html"
     __tablename__ = "widget_linklist"
     __mapper_args__ = {"polymorphic_identity": type}
     query = DBSession.query_property()

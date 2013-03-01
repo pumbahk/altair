@@ -1,0 +1,133 @@
+<%inherit file='altaircms:templates/layout_2col.html'/>
+<%namespace name="nco" file="altaircms:templates/navcomponents.html"/>
+
+<%block name="style">
+<style type="text/css">
+  .row-fluid h3 { margin-top:20px;  }
+  .row-fluid h3.first { margin-top:0px;  }
+  .row-fluid .headline { margin-top:20px; margin-bottom:5px;}
+  .thumbnail img {max-width:75px; max-height:75px;  }
+  .main-image img {max-width:600px; max-height:450px; }
+</style>
+</%block>
+<div class="circle circle-item circle-top"></div>
+<h2>プロモーションリスト</h2>
+
+<div class="row-fluid">
+  <div class="span12">
+    ${nco.breadcrumbs(
+        names=["Top", u"プロモーション枠使用ページ一覧", u"詳細"], 
+        urls=[request.route_path("dashboard"), request.route_path("promotion_list")])
+    }
+  </div>
+</div>
+
+<h3 class="headline">プロモーションの追加</h3>
+<a id="create_link" href="${request.route_path("promotion_unit_create", action="input", _query=dict(tag_content=current_widget.tag.label,endpoint=request.url))}"  class="btn btn-success btn-large">新しいプロモーションを作成する</a>
+<hr/>
+
+<h3 class="headline">表示されるページの情報</h3>
+
+<ul class="nav nav-tabs">
+   %for widget in widgets:
+     %if unicode(widget.id) == unicode(current_widget.id):
+        <li class="active"><a href="${h.route_path_override(request, "promotion_detail", page_id=page.id, _query=dict(widget_id=widget.id))}">${widget.tag.label}</a></li>
+     %else:
+        <li><a href="${h.route_path_override(request, "promotion_detail", page_id=page.id, _query=dict(widget_id=widget.id))}">${widget.tag.label}</a></li>
+     %endif
+   %endfor
+</ul>
+
+<table class="table table-bordered">
+  <tbody>
+    <tr>
+      <th rowspan="4">ページ情報</th>
+      <th>利用しているページ<th></td>${page.name}  (<a href="${request.route_path("page_edit_", page_id=page.id)}">ページの編集画面に飛ぶ</a> )</td>
+    </tr>
+    <tr>
+      <th>ページタイプ<th></td>${page.pagetype.label}</td>
+    </tr>
+    <tr>
+      <th>URL<th></td>${page.url}</td>
+    </tr>
+    <tr>
+      <th>公開ステータス(公開期間)<th></td>${h.page.show_publish_status(page)}(${h.term(page.publish_begin, page.publish_end)})</td>
+    </tr>
+    <tr>
+      <th rowspan="3">widget情報</th>
+      <th>widget id</th><td> ${current_widget.id}</td>
+    </tr>
+    <tr>
+      <th>表示場所</th><td> ${current_widget.tag.label}</td>
+    </tr>
+    <tr>
+      <th>ジャンル</th><td> ${current_widget.system_tag.label if current_widget.system_tag_id else u"-"}</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr/>
+
+<h3 class="headline"> 「${current_widget.tag.label}」で表示中のプロモーションの一覧</h3>
+
+%if ":all:" in request.GET:
+  <a href="${h.current_route_path_override(request, _dels=[":all:"])}">表示されているプロモーションのみを表示</a>  
+%else:
+  <a href="${h.current_route_path_override(request, _query={":all:": True})}">全てのプロモーションを表示</a>
+%endif
+
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>no.</th>
+      <th>表示順序</th>
+      <th>詳細</th>
+    </tr>
+  </thead>
+    <tbody>
+      %for i, promotion in enumerate(topics):
+        <tr>
+          <td rowspan="5">${i}</td>
+          <td rowspan="5">${promotion.display_order}</td>
+          <td><p>掲載期間</p>
+            ${h.term(promotion.publish_open_on,promotion.publish_close_on)}
+            %if promotion.is_vetoed:
+              <span class="label label-warning">掲載強制停止中</span>
+            %endif
+          </td>
+          <td><p>リンク先</p>
+            ${html_renderer.render_cms_link(promotion)}
+          %if promotion.link:
+            <span class="label label-info">外部リンク</span>
+          %else:
+            <span class="label">cmsリンク</span>
+          %endif
+          </td>
+        </tr>
+        <tr>
+          <td><p>分類</p>
+            ${html_renderer.render_kind(promotion)}
+          </td>
+          <td><p>ジャンル</p>
+            ${html_renderer.render_genre(promotion)}
+          </td>
+        </tr>
+        <tr>
+          <td class="main-image"><p>メイン画像</p> ${html_renderer.render_main_image(promotion)}</td>
+          <td class="thumbnail"><p>サブ画像(最大サイズ(75px,75px))</p>${html_renderer.render_thumbnail_image(promotion)}</td>
+        </tr>
+        <tr>
+          <td colspan="2"><p>表示メッセージ</p><div class="well">${promotion.text}</div></td>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <div class="btn-group">
+            <a href="${request.route_path("promotion_unit_update", action="input",id=promotion.id,_query=dict(endpoint=request.url))}" class="btn btn-primary"><i class="icon-cog"></i> 編集</a>
+              <a href="${request.route_path("promotion_unit_create", action="copied_input",_query=dict(id=promotion.id))}" class="btn btn-success"><i class="icon-plus"></i>コピーして新規作成</a>
+            <a href="${request.route_path("promotion_unit_delete", action="confirm",id=promotion.id,_query=dict(endpoint=request.url))}" class="btn btn-danger"><i class="icon-trash"></i> 削除</a>
+            </div>
+          </td>
+        </tr>
+      %endfor
+    </tbody>
+</table>

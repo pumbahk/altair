@@ -14,9 +14,15 @@
   % for account in accounts.items:
   <tr id="account-${account.id}">
     <td><input name="account_id" type="radio" value=${account.id} /></td>
-    <td id="id">${account.id}</td>
+    <td><div name="id">${account.id}</div></td>
     <td>${account.account_type_label}</td>
-    <td><a href="${request.route_path('accounts.show', account_id=account.id)}" id="name">${account.name}</a></td>
+    <td>
+    % if account.user:
+      <a href="${request.route_path('accounts.show', account_id=account.id)}"><div name="name">${account.name}</div></a>
+    % else:
+      <div name="name">${account.name}</div>
+    % endif
+    </td>
   </tr>
   % endfor
   </tbody>

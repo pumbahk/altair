@@ -40,6 +40,7 @@ import altaircms.plugins.widget.freetext.models
 import altaircms.plugins.widget.promotion.models
 import altaircms.plugins.widget.ticketlist.models
 import altaircms.plugins.widget.topic.models
+import altaircms.plugins.widget.topcontent.models
 import altaircms.plugins.widget.purchase.models
 import altaircms.plugins.widget.linklist.models
 import altaircms.plugins.widget.iconset.models

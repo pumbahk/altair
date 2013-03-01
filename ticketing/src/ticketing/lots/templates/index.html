@@ -81,30 +81,12 @@
                 <table summary="チケット購入の絞り込み" id="wish-cell-table-${i}">
 						<tr>
 							<th><label>公演日・会場</label></th>
-                            <td><select name="performance-${i}" data-wishOrder="${i}" data-wishCellTableId="wish-cell-table-${i}"class="performance-select">
+                            <td colspan="2"><select name="performance-${i}" data-wishOrder="${i}" data-wishCellTableId="wish-cell-table-${i}"class="performance-select">
                               %for performance in lot.performances:
-                              <option value="${performance.id}">${h.japanese_datetime(performance.open_on)} ${performance.venue.name}</option>
+                              <option value="${performance.id}">${h.japanese_datetime(performance.open_on)} ${performance.name} ${performance.venue.name}</option>
                                 %endfor
 							</select></td>
 						</tr>
-                        %for j, product in enumerate(products):
-						<tr id="settlementSelectEnd" class="product-select-tr">
-							<th>
-                                %if j == 0:
-                                <label>席種券種</label>
-                                %else:
-                                &nbsp;
-                                %endif;
-                            </th>
-                            <td>
-                            　<select name="product-quantity-${i}-${j}" >
-                                <option></option>
-                                %for k in range(sales_segment.upper_limit):
-                                <option value="${k + 1}">${k + 1}</option>
-                                %endfor
-						  </select>　枚</td>
-						</tr>
-                        %endfor
 					</table>
 				</div>
 			</div>
@@ -187,12 +169,14 @@
                         ${self.error(form, 'tel_1')}
                     </td>
 						</tr>
+                        <%doc>
 						<tr>
 							<th><label>電話番号（携帯電話）</label></th>
 					  <td>
                         ${form['mobile_tel']}
                         ${self.error(form, 'mobile_tel')}
 						</tr>
+                        </%doc>
 						<tr>
 							<th><label>配送先住所</label></th>
 					  <td>

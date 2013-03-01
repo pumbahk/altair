@@ -8,7 +8,10 @@ import contextlib
 from datetime import datetime, date, timedelta
 from zope.deprecation import deprecate
 import sqlalchemy as sa
-
+from sqlalchemy.sql import (
+    or_,
+    and_,
+    )
 logger = logging.getLogger(__name__)
 from pyramid.interfaces import IRoutesMapper, IRequest
 from pyramid.security import effective_principals, forget
@@ -20,7 +23,8 @@ from ticketing.mobile.interfaces import IMobileRequest
 from .interfaces import IStocker, IReserving, ICartFactory
 from .models import Cart, PaymentMethodManager, DBSession, CartedProductItem, CartedProduct
 from ..users.models import User, UserCredential, Membership, MemberGroup, MemberGroup_SalesSegment
-from ..core.models import Event, Performance, Stock, StockHolder, Seat, Product, ProductItem, SalesSegment, Venue
+from ..core.models import Event, Performance, Stock, StockHolder, Seat, Product, ProductItem, SalesSegment, SalesSegmentGroup, Venue
+from ticketing.core import models as c_models
 from .exceptions import OutTermSalesException, NoSalesSegment, NoCartError
 
 def is_multicheckout_payment(cart):
@@ -50,9 +54,9 @@ def is_login_required(request, event):
     ).filter(
         MemberGroup.id==MemberGroup_SalesSegment.c.membergroup_id
     ).filter(
-        SalesSegment.id==MemberGroup_SalesSegment.c.sales_segment_id
+        SalesSegmentGroup.id==MemberGroup_SalesSegment.c.sales_segment_group_id
     ).filter(
-        SalesSegment.event_id==event.id
+        SalesSegmentGroup.event_id==event.id
     )
     return bool(q.count())
 
@@ -279,20 +283,17 @@ def is_quantity_only(stock):
 def get_system_fee(request):
     return 380
 
-def get_stock_holder(request, event_id):
-    stocker = get_stocker(request)
-    return stocker.get_stock_holder(event_id)
 
 def get_valid_sales_url(request, event):
     principals = effective_principals(request)
     logger.debug(principals)
-    for salessegment in event.sales_segments:
-        membergroups = salessegment.membergroups
+    for sales_segment_group in event.sales_segment_groups:
+        membergroups = sales_segment_group.membergroups
         for membergroup in membergroups:
-            logger.debug("sales_segment:%s" % salessegment.name)
+            logger.debug("sales_segment:%s" % sales_segment_group.name)
             logger.debug("membergroup:%s" % membergroup.name)
             if "membergroup:%s" % membergroup.name in principals:
-                return request.route_url('cart.index.sales', event_id=event.id, sales_segment_id=salessegment.id)
+                return request.route_url('cart.index.sales', event_id=event.id, sales_segment_group_id=sales_segment_group.id)
 
 def logout(request, response=None):
     headers = forget(request)
@@ -313,7 +314,7 @@ def _query_performance_names(request, event, sales_segment):
     q = q.filter(Performance.event_id==event.id)
     q = q.filter(Venue.performance_id==Performance.id)
     q = q.filter(SalesSegment.id==sales_segment.id)
-    q = q.filter(Product.sales_segment_id==SalesSegment.id)
+    q = q.filter(Product.sales_segment_group_id==SalesSegment.id)
     q = q.filter(ProductItem.product_id==Product.id)
     q = q.filter(Stock.id==ProductItem.stock_id)
     q = q.filter(Stock.performance_id==Performance.id)
@@ -371,3 +372,91 @@ def new_order_session(request, **kw):
 def update_order_session(request, **kw):
     request.session['order'].update(kw)
     return request.session['order']
+
+
+def get_available_sales_segments(request, event, selected_date):
+    from ticketing.rakuten_auth.api import authenticated_user
+    user = authenticated_user(request)
+
+
+    q = SalesSegment.query.filter(
+            SalesSegment.performance_id==Performance.id
+        ).filter(
+            Performance.event_id==event.id
+        ).filter(
+            SalesSegment.public > 0
+        ).filter(
+            SalesSegment.start_at<=selected_date
+        ).filter(
+            SalesSegment.end_at >= selected_date
+        ).filter(
+            SalesSegmentGroup.id==SalesSegment.sales_segment_group_id
+        )
+
+    if user and user.get('is_guest'):
+        q = q.filter(
+            SalesSegmentGroup.id==MemberGroup_SalesSegment.c.sales_segment_group_id
+        ).filter(
+            MemberGroup_SalesSegment.c.membergroup_id==MemberGroup.id
+        ).filter(
+            MemberGroup.is_guest==True
+        )
+
+        ss = q.all()
+
+    elif user and 'membership' in user:
+        q = q.filter(
+            SalesSegmentGroup.id==MemberGroup_SalesSegment.c.sales_segment_group_id
+        ).filter(
+            MemberGroup_SalesSegment.c.membergroup_id==MemberGroup.id
+        ).filter(
+            or_(MemberGroup.name==user['membergroup'],
+                MemberGroup.is_guest==True)  # guestのものも買えるようにする
+        )
+        ss = q.all()
+        # TODO: 同じ公演に対する販売区分がある場合は、会員のものを優先する
+        # 会員の公演を集める
+        membered_performances = []
+        for s in ss:
+            if [m for m in s.sales_segment_group.membergroups if m.name == user['membergroup']]:
+                membered_performances.append(s.performance)
+
+        # 会員の公演に入ってる公演の一般販売の販売区分をはずす
+        xss = []
+        for s in ss:
+            if not [m for m in s.sales_segment_group.membergroups if m.name == user['membergroup']]:
+                if s.performance in membered_performances:
+                    xss.append(s)
+        ss = [s for s in ss if s not in xss]
+
+        
+    else:
+        # 会員情報のないFC
+        ss = q.all()
+
+
+    
+
+    ss = [s for s in ss 
+          if s.available_payment_delivery_method_pairs]
+
+    return ss
+
+def get_seat_type_triplets(event_id, performance_id, sales_segment_id):
+    segment_stocks = DBSession.query(c_models.ProductItem.stock_id).filter(
+        c_models.ProductItem.product_id==c_models.Product.id).filter(
+        c_models.Product.sales_segment_id==sales_segment_id).filter(
+        c_models.Product.public==True)
+
+    seat_type_triplets = DBSession.query(c_models.StockType, c_models.Stock.quantity, c_models.StockStatus.quantity).filter(
+            c_models.Stock.id==c_models.StockStatus.stock_id).filter(
+            c_models.Performance.event_id==event_id).filter(
+            c_models.Performance.id==performance_id).filter(
+            c_models.Performance.event_id==c_models.StockHolder.event_id).filter(
+            c_models.StockHolder.id==c_models.Stock.stock_holder_id).filter(
+            c_models.Stock.stock_type_id==c_models.StockType.id).filter(
+            c_models.Stock.id.in_(segment_stocks)).filter(
+            c_models.ProductItem.stock_id==c_models.Stock.id).filter(
+            c_models.ProductItem.performance_id==performance_id).order_by(
+            c_models.StockType.display_order).all()
+    return seat_type_triplets

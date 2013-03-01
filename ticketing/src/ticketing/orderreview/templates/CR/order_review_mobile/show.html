@@ -14,7 +14,7 @@ ${order.performance.venue.name}<br />
 % for seat in product.seats:
 　${seat['name']}<br/>
 % endfor
-　￥${h.format_number(product.product.price * product.quantity)}<br />
+　￥${h.format_number(product.price * product.quantity)}<br />
 %endfor
 ・ステータス:${h.order_status(order)}<br/>
 ・システム利用料: ￥${h.format_number(order.system_fee)}<br />
@@ -40,7 +40,7 @@ ${shipping.address_2}
 ${shipping.tel_1}<br />
 <%mobile:form_header>メールアドレス</%mobile:form_header>
 ${shipping.email_1}<br />
-% if order.status in ['canceled', 'refunded']:
+% if order.status == 'canceled' or order.payment_status == 'refunded':
 <%mobile:form_header>この購入/予約はキャンセルされました</%mobile:form_header>
 <font size="-2">
 キャンセル処理は、下記のような理由によりおこなっております。<br />

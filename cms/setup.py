@@ -29,7 +29,8 @@ requires = [
     'uamobile', 
     'fluent-logger == 0.3.3moriyoshi',
     'pyramid_selectable_renderer',
-    'altair.findable_label'
+    'altair.findable_label', 
+    'pyramid_layout'
     ]
 
 solr_require = [
@@ -96,7 +97,7 @@ setup(name='altair-cms',
       [pyramid.scaffold]
       cms_widget = scaffolds:WidgetPluginTemplate
       cms_asset_widget = scaffolds:AssetWidgetPluginTemplate
-
+      functional_tests = scaffolds:FunctionalTestTemplate
       [console_scripts]
       loadfromcsv = altaircms.scripts.loadfromcsv:main
       syncsolr = altaircms.scripts.syncsolr:main

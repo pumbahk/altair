@@ -4,25 +4,34 @@ from . import api
 from . import forms
 from altaircms.page.models import Page    
 from altaircms.auth.api import get_or_404
+import logging
+logger = logging.getLogger(__name__)
 
 @view_defaults(custom_predicates=(require_login,))
 class PromotionWidgetView(object):
-    def __init__(self, request):
+    def __init__(self, context, request):
         self.request = request
-        self.context = request.context
+        self.context = context
 
     def _create_or_update(self):
-        data = self.request.json_body["data"]
-        data["kind"] = self.context.Kind.query.filter_by(id=data["kind"]).one()
-        page_id = self.request.json_body["page_id"]
-        context = self.request.context
-        widget = context.get_widget(self.request.json_body.get("pk"))
-        widget = context.update_data(widget,
-                                     page_id=page_id, 
-                                     **data)
-        context.add(widget, flush=True)
-        r = self.request.json_body.copy()
-        r.update(pk=widget.id)
+        try:
+            data = self.request.json_body["data"]
+            data["tag"] = self.context.Tag.query.filter_by(id=data["tag"]).one()
+            if data.get("system_tag") and data.get("system_tag") != "__None":
+                data["system_tag"] = self.context.Tag.query.filter_by(id=data["system_tag"]).one()
+            else:
+                data["system_tag"] = None
+            page_id = self.request.json_body["page_id"]
+            context = self.request.context
+            widget = context.get_widget(self.request.json_body.get("pk"))
+            widget = context.update_data(widget,
+                                         page_id=page_id, 
+                                         **data)
+            context.add(widget, flush=True)
+            r = self.request.json_body.copy()
+            r.update(pk=widget.id)
+        except Exception, e:
+            logger.exception(str(e))
         return r
 
     @view_config(route_name="promotion_widget_create", renderer="json", request_method="POST")
@@ -40,7 +49,7 @@ class PromotionWidgetView(object):
         context.delete(widget, flush=True)
         return {"status": "ok"}
 
-    @view_config(route_name="promotion_widget_dialog", renderer="altaircms.plugins.widget:promotion/dialog.mako", request_method="GET")
+    @view_config(route_name="promotion_widget_dialog", renderer="altaircms.plugins.widget:promotion/dialog.html", request_method="GET")
     def dialog(self):
         context = self.request.context
         widget = context.get_widget(self.request.GET.get("pk"))
@@ -53,7 +62,7 @@ def promotion_main_image(context, request):
     pm = api.get_promotion_manager(request)
     return pm.main_image_info(request)
 
-# @view_config(route_name="promotion_slideshow", renderer="altaircms.plugins.widget:promotion/slideshow.mako", request_method="GET", 
+# @view_config(route_name="promotion_slideshow", renderer="altaircms.plugins.widget:promotion/slideshow.html", request_method="GET", 
 #              decorator="altaircms.lib.fanstatic_decorator.with_jquery")
 # def promotion_slideshow(context, request):
 #     pm = api.get_promotion_manager(request)

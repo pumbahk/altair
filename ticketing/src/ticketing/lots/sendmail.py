@@ -1,86 +1,103 @@
 # -*- coding:utf-8 -*-
 
+import logging
 from pyramid.renderers import get_renderer
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
+from zope.interface import Interface, Attribute, implementer
 
-def get_accepted_mail_subject(request):
-    return unicode(request.registry.settings["lots.accepted_mail_subject"], 'utf-8')
+logger = logging.getLogger(__name__)
 
-def get_accepted_mail_sender(request):
-    return unicode(request.registry.settings["lots.accepted_mail_sender"], 'utf-8')
+class IMailSender(Interface):
+    subject = Attribute(u"subject of mail")
+    sender = Attribute(u"email address of mail sender")
+    tmpl_name = Attribute(u"name of template file for mail body")
 
-def get_elected_mail_subject(request):
-    return unicode(request.registry.settings["lots.elected_mail_subject"], 'utf-8')
+    def send(request, entry):
+        """ """
 
-def get_elected_mail_sender(request):
-    return unicode(request.registry.settings["lots.elected_mail_sender"], 'utf-8')
+@implementer(IMailSender)
+class MailSender(object):
+    def __init__(self, subject, sender, tmpl_name):
+        self.subject = subject
+        self.sender = sender
+        self.tmpl_name = tmpl_name
 
-def get_rejected_mail_subject(request):
-    return unicode(request.registry.settings["lots.elected_mail_subject"], 'utf-8')
+    def _create_mail_body(self, request, vars):
+        tmpl = get_renderer(self.tmpl_name).implementation()
+        return tmpl.render(**vars)
 
-def get_rejected_mail_sender(request):
-    return unicode(request.registry.settings["lots.elected_mail_sender"], 'utf-8')
+    def _body_tmpl_vars(self, request, lot_entry):
+        vars = dict(lot_entry=lot_entry, lot=lot_entry.lot, 
+            shipping_address=lot_entry.shipping_address,
+            entry_review_url=request.route_url('lots.review.index'))
+        return vars
 
-def create_mail_body(request, vars, tmpl_name_key):
-    tmpl_name = request.registry.settings[tmpl_name_key]
-    tmpl = get_renderer(tmpl_name).implementation()
-    return tmpl.render(**vars)
+    def send(self, request, lot_entry):
 
-def _send_mail(request, message):
-    mailer = get_mailer(request)    
-    mailer.send(message)
+        sender = self.sender
+        subject = self.subject
+        recipients = [lot_entry.shipping_address.email_1]
+
+        vars = self._body_tmpl_vars(request, lot_entry)
+        body = self._create_mail_body(request, vars)
+
+        return self._send(request, sender=sender,
+                          recipients=recipients,
+                          subject=subject,
+                          body=body)
+
+    def _send(self, request, 
+              sender, recipients,
+              subject,body):
+        message = Message(sender=sender,
+                          recipients=recipients,
+                          subject=subject,
+                          body=body)
+        mailer = get_mailer(request)
+        mailer.send(message)
+        return message
+
+def get_lotting_mailer(request, name):
+    reg = request.registry
+    return reg.getUtility(IMailSender, name=name)
+
+def includeme(config):
+    registry = config.registry
+    prefix = u"lots."
+
+    setup_keys = [("accepted", "accepted_mail_subject", "accepted_mail_sender", 'accepted_mail_template'),  # 申し込み受付メール
+                  ("elected", "elected_mail_subject", "elected_mail_sender", 'elected_mail_template'),  # 当選通知メール
+                  ("rejected", "rejected_mail_subject", "rejected_mail_sender", 'rejected_mail_template'),  # 落選通知メール
+                  ]
+
+    for name, subject, sender, tmpl_name_key in setup_keys:
+        tmpl_name = registry.settings.get(prefix + tmpl_name_key)
+        subject = unicode(config.registry.settings.get(prefix + subject) or '', 'utf-8')
+        sender = unicode(config.registry.settings.get(prefix + sender) or '', 'utf-8')
+        if tmpl_name is None or subject is None or sender is None:
+            logger.warning('cannot find setting for lotting mail %s' % name)
+            continue
+        mail_sender = MailSender(subject, sender, tmpl_name)
+
+        registry.utilities.register([], IMailSender, name, mail_sender)
+
+
 
 def send_accepted_mail(request, lot_entry):
     """ 申し込み完了メール
     """
-
-    recipients = [lot_entry.shipping_address.email_1]
-    subject = get_accepted_mail_subject(request)
-    sender = get_accepted_mail_sender(request)
-    vars = dict(lot_entry=lot_entry, lot=lot_entry.lot, 
-        shipping_address=lot_entry.shipping_address,
-        entry_review_url=request.route_url('lots.review.index'))
-    body = create_mail_body(request, vars, 'lots.accepted_mail_template')
-
-    message = Message(sender=sender,
-                      recipients=recipients,
-                      subject=subject,
-                      body=body)
-    _send_mail(request, message)
-    return message
+    mailer = get_lotting_mailer(request, name="accepted")
+    return mailer.send(request, lot_entry)
 
 def send_elected_mail(request, elected_entry):
     """ 当選通知メール
     """
-    lot_entry = elected_entry.lot_entry
-    recipients = [lot_entry.shipping_address.email_1]
-    subject = get_subject(request)
-    sender = get_sender(request)
-    vars = dict(lot_entry=lot_entry, lot=lot_entry.lot, shipping_address=lot_entry.shipping_address)
-    body = create_mail_body(request, vars, 'lots.elected_mail_template')
-
-    message = Message(sender=sender,
-                      recipients=recipients,
-                      subject=subject,
-                      body=body)
-    _send_mail(request, message)
-    return message
+    mailer = get_lotting_mailer(request, name="elected")
+    return mailer.send(elected_entry)
 
 def send_rejected_mail(request, rejected_entry):
     """ 落選通知メール
     """
-    
-    lot_entry = rejected_entry.lot_entry
-    recipients = [lot_entry.shipping_address.email_1]
-    subject = get_subject(request)
-    sender = get_sender(request)
-    vars = dict(lot_entry=lot_entry, lot=lot_entry.lot)
-    body = create_mail_body(request, vars, 'lots.rejected_mail_template')
-
-    message = Message(sender=sender,
-                      recipients=recipients,
-                      subject=subject,
-                      body=body)
-    _send_mail(request, message)
-    return message
+    mailer = get_lotting_mailer(request, name="rejected")
+    return mailer.send(rejected_entry)

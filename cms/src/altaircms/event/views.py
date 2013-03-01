@@ -16,10 +16,10 @@ from ..models import DBSession
 from . import helpers as h
 from .event_info import get_event_notify_info
 from ..page.subscribers import notify_page_update
-##
+from .receivedata import InvalidParamaterException
 ## CMS view
 ##
-@view_defaults(route_name="event_takein_pageset", renderer="altaircms:templates/event/takein_pageset.mako", 
+@view_defaults(route_name="event_takein_pageset", renderer="altaircms:templates/event/takein_pageset.html", 
                permission="event_update", 
                decorator=with_bootstrap)
 class PageSetTakein(object):
@@ -48,25 +48,28 @@ class PageSetTakein(object):
             return {"form": form, "event": event}
 
 
+def in_section(info, request):
+    return request.matchdict.get("section") in ("performance", "description", "pageset")
 
-@view_config(route_name='event', renderer='altaircms:templates/event/view.mako', permission='event_read',
-             decorator=with_bootstrap)
-def view(request):
-    id_ = request.matchdict['id']
+@view_config(route_name="event", 
+             renderer='altaircms:templates/event/view.html', permission='event_read',decorator=with_bootstrap)
+@view_config(route_name='event_detail', custom_predicates=(in_section,), 
+             renderer='altaircms:templates/event/view.html', permission='event_read',decorator=with_bootstrap)
+def event_detail(context, request):
+        section = request.matchdict.get("section", "pageset")
+        id_ = request.matchdict['id']
+        event = get_or_404(request.allowable(Event), Event.id==id_)
 
-    event = request.allowable(Event).filter_by(id=id_).first()
-    if event is None:
-        raise HTTPNotFound() ##
-    performances = event.performances
-    sales = event.sales
-    return dict(
-        event=event,
-        performances=performances, 
-        sales=sales, 
-        myhelpers=h
-    )
+        section_pairs = [("pageset", u"配下のページ"), ("performance", u"パフォーマンス"), ("description", u"文言情報")]
+        return dict(
+            panel_name = u"event_%s" % section,  #use layout?
+            section=section, 
+            section_pairs = section_pairs, 
+            event=event,
+            myhelpers=h
+        )
 
-@view_config(route_name='event_list', renderer='altaircms:templates/event/list.mako', permission='event_read', request_method="GET", 
+@view_config(route_name='event_list', renderer='altaircms:templates/event/list.html', permission='event_read', request_method="GET", 
              decorator=with_bootstrap)
 def event_list(request):
     events = request.allowable(Event)
@@ -94,12 +97,17 @@ def event_list(request):
 def event_register(request):
     apikey = request.headers.get('X-Altair-Authorization', None)
     if apikey is None:
+        logger.warn("*event register api* apikey is not found: params=%s",  request.POST)
         return HTTPForbidden("")
     if not h.validate_apikey(request, apikey):
+        logger.warn("*event register api* invalid api key: %s" % apikey)
         return HTTPForbidden(body=json.dumps({u'status':u'error', u'message':u'access denined'}))
     try:
         h.parse_and_save_event(request, request.json_body)
         return HTTPCreated(body=json.dumps({u'status':u'success'}))
+    except InvalidParamaterException as e:
+        logger.warn("*event register api* invalid paramater received: reason: '%s.'\ndata = %s" % (str(e),request.json_body ))
+        return HTTPBadRequest(body=json.dumps({u'status':u'error', u'message':unicode(e), "apikey": apikey}))
     except ValueError as e:
         logger.exception(e)
         return HTTPBadRequest(body=json.dumps({u'status':u'error', u'message':unicode(e), "apikey": apikey}))

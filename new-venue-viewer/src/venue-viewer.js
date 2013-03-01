@@ -669,6 +669,8 @@
       },
 
       zoomOnShape: function (shape) {
+        if (!this.drawable)
+          return;
         var position = shape.position();
         var size = shape.size();
         var p0 = shape._transform.apply(position);
@@ -863,6 +865,8 @@
       },
 
       zoom: function(ratio, anchor) {
+        if (!this.drawable)
+          return;
         var vs = this.drawable.viewportSize();
         var scrollPos = this.drawable.scrollPosition();
         var previousRatio = this.zoomRatio;

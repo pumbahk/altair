@@ -100,10 +100,10 @@ class OrganizationMapping(object):
 
     def get_keypair(self, k):
         v = self.data[k]
-        return (v["backend_id"], v["auth_source"])
+        return (v["short_name"], v["auth_source"])
 
     def get_keypair_from_organization(self, organization):
-        return int(organization.backend_id), organization.auth_source
+        return int(organization.short_name), organization.auth_source
 
     def register(self, config):
         set_organization_mapping(config, self)

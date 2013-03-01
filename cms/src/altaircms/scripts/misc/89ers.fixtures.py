@@ -62,13 +62,13 @@ class Bj89ersFixtureBuilder(FixtureBuilder):
         """
         super(Bj89ersFixtureBuilder, self).__init__(Datum)
         layout_triples = [
-            (u'89ersシンプル', '89ers.base.mako', '[["header"], ["kadomaru"]]'),
-            (u'89ersチケットトップ', '89ers.complex.mako', '[["above_kadomaru"],["kadomaru"],["below_kadomaru"]]'),
-            (u'89ers.introduction', '89ers.introduction.mako', '[["above_kadomaru"],["card_and_QR"],["card_and_seven"],["card_and_home"],["anshin_and_QR"],["anshin_and_seven"],["anshin_and_home"],["seven_and_seven"]]'),
-            (u'89ers:kadomaru2', '89ers.kadomaru2.mako', '[["above_kadomaru"],["kadomaru"],["kadomaru2"],["below_kadomaru"]]'),
-            (u'89ers:kadomaru3', '89ers.kadomaru3.mako', '[["above_kadomaru"],["kadomaru"],["kadomaru2"],["kadomaru3"],["below_kadomaru"]]'),
-            (u'89ers:kadomaru4', '89ers.kadomaru4.mako', '[["above_kadomaru"],["kadomaru"],["kadomaru2"],["kadomaru3"],["kadomaru4"],["below_kadomaru"]]'),
-            (u'89ers:kadomaru5', '89ers.kadomaru5.mako', '[["above_kadomaru"],["kadomaru"],["kadomaru2"],["kadomaru3"],["kadomaru4"],["kadomaru5"],["below_kadomaru"]]')
+            (u'89ersシンプル', '89ers.base.html', '[["header"], ["kadomaru"]]'),
+            (u'89ersチケットトップ', '89ers.complex.html', '[["above_kadomaru"],["kadomaru"],["below_kadomaru"]]'),
+            (u'89ers.introduction', '89ers.introduction.html', '[["above_kadomaru"],["card_and_QR"],["card_and_seven"],["card_and_home"],["anshin_and_QR"],["anshin_and_seven"],["anshin_and_home"],["seven_and_seven"]]'),
+            (u'89ers:kadomaru2', '89ers.kadomaru2.html', '[["above_kadomaru"],["kadomaru"],["kadomaru2"],["below_kadomaru"]]'),
+            (u'89ers:kadomaru3', '89ers.kadomaru3.html', '[["above_kadomaru"],["kadomaru"],["kadomaru2"],["kadomaru3"],["below_kadomaru"]]'),
+            (u'89ers:kadomaru4', '89ers.kadomaru4.html', '[["above_kadomaru"],["kadomaru"],["kadomaru2"],["kadomaru3"],["kadomaru4"],["below_kadomaru"]]'),
+            (u'89ers:kadomaru5', '89ers.kadomaru5.html', '[["above_kadomaru"],["kadomaru"],["kadomaru2"],["kadomaru3"],["kadomaru4"],["kadomaru5"],["below_kadomaru"]]')
             ]
         self.layout_triples = layout_triples
 

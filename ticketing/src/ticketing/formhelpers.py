@@ -26,6 +26,51 @@ class BugFreeSelectField(fields.SelectField):
         else:
             raise ValueError(self.gettext('Not a valid choice'))
 
+class BugFreeSelectMultipleField(fields.SelectMultipleField):
+    def pre_validate(self, form):
+        for d in self.data:
+            for v, _ in self.choices:
+                if d == self.coerce(v):
+                    break
+            else:
+                raise ValueError(self.gettext('Not a valid choice'))
+
+class PHPCompatibleSelectMultipleField(BugFreeSelectMultipleField):
+    def process(self, formdata, data=_unset_value):
+        self.process_errors = []
+        if data is _unset_value:
+            try:
+                data = self.default()
+            except TypeError:
+                data = self.default
+
+        self.object_data = data
+
+        try:
+            self.process_data(data)
+        except ValueError as e:
+            self.process_errors.append(e.args[0])
+
+        if formdata:
+            php_styled_collection_key = self.name + '[]'
+            try:
+                if self.name in formdata:
+                    self.raw_data = formdata.getlist(self.name)
+                elif php_styled_collection_key in formdata:
+                    self.raw_data = formdata.getlist(php_styled_collection_key)
+                else:
+                    self.raw_data = []
+                self.process_formdata(self.raw_data)
+            except ValueError as e:
+                self.process_errors.append(e.args[0])
+
+        for filter in self.filters:
+            try:
+                self.data = filter(self.data)
+            except ValueError as e:
+                self.process_errors.append(e.args[0])
+
+
 class Translations(object):
     messages={
         'Not a valid choice': u'不正な選択です',

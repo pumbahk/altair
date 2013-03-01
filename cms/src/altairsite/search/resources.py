@@ -235,7 +235,7 @@ class SearchResultRender(object):
     def deal_description(self):
         event = self.pageset.event
         label = u'<strong>チケット発売中</strong> ' if event.deal_open <= self.today and self.today <= event.deal_close else ''
-        return u'%s%s' % (label, h.base.term(event.deal_open, event.deal_close))
+        return u'%s%s' % (label, h.term(event.deal_open, event.deal_close))
 
 
     def purchase_link(self):

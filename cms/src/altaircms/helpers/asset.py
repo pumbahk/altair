@@ -22,7 +22,7 @@ def to_show_page(request, asset, filepath=None):
         try:
             if filepath is None:
                 return request.route_path("__staticasset/", subpath=asset.filepath)
-            elif filepath and hasattr(asset, filepath): # for movie, flash
+            elif filepath and hasattr(asset, "filepath"): # for movie, flash
                 return request.route_path("__staticasset/", subpath=filepath)
         except KeyError, e:
             logging.debug(e)

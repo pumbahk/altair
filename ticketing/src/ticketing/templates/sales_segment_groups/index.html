@@ -1,0 +1,27 @@
+<%inherit file="/layout_2cols.html"/>
+<%namespace file="/common/helpers.html" import="flash_messages" />
+<%namespace file="/common/helpers.html" import="safe_strftime" />
+<%namespace file="/common/helpers.html" import="breadcrumbs" />
+
+<div class="breadcrumbs">
+  ${breadcrumbs(
+      names=[u'イベント', event.title, u'販売区分グループ'],
+      urls=[request.route_path('events.index'), request.route_path('events.show', event_id=event.id)]
+  )}
+</div>
+
+<div class="page-header">
+  <h1>販売区分グループ</h1>
+</div>
+
+<div class="content">
+  ${flash_messages(request)}
+</div>
+
+<form>
+<%include file="/sales_segment_groups/_list.html" args="form=form_sales_segment_group, sales_segment_groups=sales_segment_groups" />
+<%include file="/sales_segment_groups/_action_button.html" />
+</form>
+<div id="sales_segment_groups-form">
+  <%include file="/sales_segment_groups/_modal.html" args="modal_id='modal-sales_segment_group',event=event" />
+</div>

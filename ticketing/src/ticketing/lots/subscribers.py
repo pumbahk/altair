@@ -6,7 +6,7 @@ from . import sendmail
 def send_lot_accepted_mail(event):
     entry = event.lot_entry
     request = event.request
-    sendmail.send_accepted_mail(request, entry)
+    #sendmail.send_accepted_mail(request, entry)
 
 @subscriber('ticketing.cart.events.OrderCompleted')
 def finish_elected_lot_entry(event):

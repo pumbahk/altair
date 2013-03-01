@@ -44,6 +44,7 @@ class UnicodeWriter:
     def writerows(self, rows):
         for row in rows:
             self.writerow(row)
+
 def reader(csvfile, dialect="excel", encoding="cp932", **kwargs):
     reader = csv.reader(csvfile, dialect=dialect, **kwargs)
     return EncodingTransrator(reader, encoding=encoding)

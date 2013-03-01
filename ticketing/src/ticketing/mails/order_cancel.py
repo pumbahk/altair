@@ -97,7 +97,7 @@ def create_cancel_message(request, order):
         sa=order.shipping_address,
         products=products,
         venue=venue_info,
-        title=order.ordered_products[0].product.event.title,
+        title=order.performance.event.title,
         system_fee=h.format_currency(order.system_fee),
         transaction_fee=h.format_currency(order.transaction_fee),
         delivery_fee=h.format_currency(order.delivery_fee),
