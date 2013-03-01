@@ -8,32 +8,23 @@ ${event.title}
 % if not venues:
   <hr size="1" color="#888888" noshade="noshade" />
   <p><font color="#F12997">■</font>対象試合をお選びください</p>
-  <form action="${request.path}" method="get">
-    <select name="performance_name">
+  <ul>
   % for _performance_name in performances:
-    <option value="${_performance_name}">${_performance_name}</option>
+    <li>
+    <a href="${request.current_route_url(_query={'performance_name': _performance_name.encode('sjis')})}">${_performance_name}</a>
+    </li>
   % endfor
-    </select>
-    <div style="text-align:center;">
-    <br/>
-    <input type="submit" value="次へ">
-    </div>
-  </form>
+  </ul>
 % else:
   <hr size="1" color="#888888" noshade="noshade" />
   <p><font color="#F12997">■</font>日時・会場をお選びください</p>
-  <form action="${request.path}" method="get">
-    <input type="hidden" name="performance_name" value="${performance_name}" />
-    <select name="pid">
+  <ul>
   % for pid, _venue_name in venues:
-    <option value="${pid}" ${_venue_name == venue_name and u'selected="selected"' or u''}>${_venue_name}</option>
+    <li>
+    <a href="${request.current_route_url(_query={'pid': pid})}">${_venue_name}</a>
+    </li>
   % endfor
-    </select>
-    <div style="text-align:center;">
-    <br/>
-    <input type="submit" value="次へ">
-    </div>
-  </form>
+  </ul>
   <form action="${request.route_url('cart.index', event_id=event.id)}" method="get">
     <div style="text-align:center;">
       <input type="submit" value="戻る">

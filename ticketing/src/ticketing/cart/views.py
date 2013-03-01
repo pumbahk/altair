@@ -1,32 +1,52 @@
 # -*- coding:utf-8 -*-
 import logging
+import re
 import json
+import transaction
 from collections import OrderedDict
 from datetime import datetime, timedelta
-import re
+from urllib2 import urlopen
+
 import sqlalchemy as sa
 from sqlalchemy.orm import joinedload
 from sqlalchemy import sql
 from sqlalchemy.sql.expression import or_, select
+
 from markupsafe import Markup
+
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.exceptions import NotFound
 from pyramid.response import Response
 from pyramid.view import view_config, view_defaults
 from pyramid.threadlocal import get_current_request
 from pyramid import security
-import js.jquery, js.jquery_tools
-from urllib2 import urlopen
 from zope.deprecation import deprecate
-from ..models import DBSession
-from ..core import models as c_models
-from ..users import models as u_models
-from ..mailmags import models as mailmag_models
+from webob.multidict import MultiDict
+
+import js.jquery, js.jquery_tools
+
+
+from ticketing.models import DBSession
+from ticketing.core import models as c_models
+from ticketing.users import models as u_models
+from ticketing.mailmags import models as mailmag_models
 from ticketing.views import mobile_request
 from ticketing.fanstatic import with_jquery, with_jquery_tools
-from .models import Cart
+from ticketing.rakuten_auth.api import authenticated_user
+from ticketing.payments.payment import Payment
+from ticketing.payments.exceptions import PaymentDeliveryMethodPairNotFound
+#from ticketing.mobile.interfaces import IMobileRequest
+
+from . import api
 from . import helpers as h
 from . import schemas
+from .models import Cart
+from .events import notify_order_completed
+from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
+from .stocker import NotEnoughStockException
+from .selectable_renderer import selectable_renderer
+from .api import get_seat_type_triplets
+from .view_support import IndexViewMixin
 from .exceptions import (
     CartException, 
     NoCartError, 
@@ -40,19 +60,8 @@ from .exceptions import (
     OutTermSalesException,
     DeliveryFailedException,
 )
-from ticketing.rakuten_auth.api import authenticated_user
-from .events import notify_order_completed
-from webob.multidict import MultiDict
-from . import api
-from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
-from .stocker import NotEnoughStockException
-#from ticketing.mobile.interfaces import IMobileRequest
-import transaction
-from ticketing.cart.selectable_renderer import selectable_renderer
+
 logger = logging.getLogger(__name__)
-from ticketing.payments.payment import Payment
-from ..payments.exceptions import PaymentDeliveryMethodPairNotFound
-from .api import get_seat_type_triplets
 
 def back_to_product_list_for_mobile(request):
     cart = api.get_cart_safe(request)
@@ -92,46 +101,7 @@ def back(pc=back_to_top, mobile=None):
         return retval
     return factory
 
-# def get_seat_type_triplets(event_id, performance_id, sales_segment_id):
-#     segment_stocks = DBSession.query(c_models.ProductItem.stock_id).filter(
-#         c_models.ProductItem.product_id==c_models.Product.id).filter(
-#         c_models.Product.sales_segment_id==sales_segment_id).filter(
-#         c_models.Product.public==True)
-# 
-#     seat_type_triplets = DBSession.query(c_models.StockType, c_models.Stock.quantity, c_models.StockStatus.quantity).filter(
-#             c_models.Stock.id==c_models.StockStatus.stock_id).filter(
-#             c_models.Performance.event_id==event_id).filter(
-#             c_models.Performance.id==performance_id).filter(
-#             c_models.Performance.event_id==c_models.StockHolder.event_id).filter(
-#             c_models.StockHolder.id==c_models.Stock.stock_holder_id).filter(
-#             c_models.Stock.stock_type_id==c_models.StockType.id).filter(
-#             c_models.Stock.id.in_(segment_stocks)).filter(
-#             c_models.ProductItem.stock_id==c_models.Stock.id).filter(
-#             c_models.ProductItem.performance_id==performance_id).order_by(
-#             c_models.StockType.display_order).all()
-#     return seat_type_triplets
 
-class IndexViewMixin(object):
-
-    def prepare(self):
-        if self.context.event is None:
-            raise NoEventError(self.context.event_id)
-
-        from .api import get_event_info_from_cms
-        self.event_extra_info = get_event_info_from_cms(self.request, self.context.event_id)
-        logger.info(self.event_extra_info)
-
-    def check_redirect(self, mobile):
-        performance_id = self.request.params.get('pid') or self.request.params.get('performance')
-
-        if performance_id:
-            specified = c_models.Performance.query.filter(c_models.Performance.id==performance_id).filter(c_models.Performance.public==True).first()
-            if mobile:
-                if specified is not None and specified.redirect_url_mobile:
-                    raise HTTPFound(specified.redirect_url_mobile)
-            else:
-                if specified is not None and specified.redirect_url_pc:
-                    raise HTTPFound(specified.redirect_url_pc)
 
 @view_defaults(decorator=with_jquery.not_when(mobile_request))
 class IndexView(IndexViewMixin):

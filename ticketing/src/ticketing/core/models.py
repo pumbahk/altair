@@ -1207,7 +1207,6 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     stocks = relationship('Stock', backref=backref('stock_type', order_by='StockType.display_order'))
 
     @property
-
     def is_seat(self):
         return self.type == StockTypeEnum.Seat.v
 

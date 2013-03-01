@@ -1,106 +1,86 @@
 # -*- coding: utf-8 -*-
+
+from collections import OrderedDict
+
 from ticketing.models import record_to_multidict
 from ticketing.core.models import SeatStatusEnum
+from ticketing.orders.export import encode_to_cp932
 
 class SeatCSV(object):
 
     # csv header
-    seat_header = [
-        'seat_id',
-        'seat_no',
-        'seat_name',
-        ]
-    stock_attribute_header = [
-        'floor',
-        'gate',
-        'row',
-        ]
-    stock_type_header = [
-        'stock_type_id',
-        'stock_type_name',
-        ]
-    stock_holder_header = [
-        'stock_holder_id',
-        'stock_holder_name',
-        ]
-    account_header = [
-        'account_id',
-        'account_name',
-        ]
-    seat_status_header = [
-        'seat_status',
-        'order_no',
-        ]
+    seat_header = OrderedDict([
+        ('id', u'座席ID'),
+        ('seat_no', u'座席番号'),
+        ('name', u'座席名'),
+    ])
+    stock_attribute_header = OrderedDict([
+        ('floor', u'フロア'),
+        ('gate', u'ゲート'),
+        ('row', u'列番号'),
+    ])
+    stock_type_header = OrderedDict([
+        ('id', u'席種ID'),
+        ('name', u'席種名'),
+    ])
+    stock_holder_header = OrderedDict([
+        ('id', u'枠ID'),
+        ('name', u'枠名'),
+    ])
+    account_header = OrderedDict([
+        ('id', u'配券先ID'),
+        ('name', u'配券先名'),
+    ])
+    seat_status_header = OrderedDict([
+        ('status', u'座席ステータス'),
+        ('order_no', u'予約番号'),
+    ])
 
     def __init__(self, seats):
-        self.header = self.seat_header\
-                    + self.stock_attribute_header\
-                    + self.stock_type_header\
-                    + self.stock_holder_header\
-                    + self.account_header\
-                    + self.seat_status_header
+        self.header = self.seat_header.values()\
+                    + self.stock_attribute_header.values()\
+                    + self.stock_type_header.values()\
+                    + self.stock_holder_header.values()\
+                    + self.account_header.values()\
+                    + self.seat_status_header.values()
+        self.header = [column.encode('cp932') for column in self.header]
         self.rows = [self._convert_to_csv(seat) for seat in seats]
 
-    def _convert_to_csv(self, seat):
-        seat_list = [
-            ('seat_id', seat.id),
-            ('seat_no', seat.seat_no),
-            ('seat_name', seat.name)
-        ]
+    def get_row_data(self, header, data):
+        data = record_to_multidict(data)
+        return [(label, data.get(column)) for column, label in header.items()]
 
-        stock_attribute_list = []
+    def add_row_data(self, header, data):
+        self.row_data += self.get_row_data(header, data)
+
+    def _convert_to_csv(self, seat):
+        self.row_data = []
+
+        self.add_row_data(self.seat_header, seat)
+        if seat.stock.stock_type:
+            self.add_row_data(self.stock_type_header, seat.stock.stock_type)
+        if seat.stock.stock_holder:
+            self.add_row_data(self.stock_holder_header, seat.stock.stock_holder)
+            if seat.stock.stock_holder.account:
+                self.add_row_data(self.account_header, seat.stock.stock_holder.account)
+
         for k, v in seat.attributes.items():
             if k in self.stock_attribute_header:
-                stock_attribute_list.append((k, v))
+                label = self.stock_attribute_header.get(k)
+                self.row_data.append((label, v))
 
-        stock_type_list = []
-        if seat.stock.stock_holder:
-            stock_type_list = [
-                ('stock_type_id', seat.stock.stock_type.id),
-                ('stock_type_name', seat.stock.stock_type.name)
-            ]
-
-        stock_holder_list = []
-        if seat.stock.stock_holder:
-            stock_holder_list = [
-                ('stock_holder_id', seat.stock.stock_holder.id),
-                ('stock_holder_name', seat.stock.stock_holder.name)
-            ]
-
-        account_list = []
-        if seat.stock.stock_holder:
-            account_list = [
-                ('account_id', seat.stock.stock_holder.account.id),
-                ('account_name', seat.stock.stock_holder.account.name)
-            ]
-
-        seat_status_list = []
         for status in SeatStatusEnum:
             if status.v == seat.status:
-                seat_status_list = [('seat_status', status.k)]
+                label = self.seat_status_header.get('status')
+                self.row_data.append((label, status.k))
                 break
         if seat.ordered_product_items:
             for opi in seat.ordered_product_items:
                 if opi.ordered_product.order.status not in ('canceled'):
-                    seat_status_list.append(('order_no', opi.ordered_product.order.order_no))
+                    label = self.seat_status_header.get('order_no')
+                    self.row_data.append((label, opi.ordered_product.order.order_no))
                     break
 
         # encoding
-        row = dict(
-            seat_list
-            + stock_attribute_list
-            + stock_type_list
-            + stock_holder_list
-            + account_list
-            + seat_status_list
-        )
-        for key, value in row.items():
-            if value:
-                if not isinstance(value, unicode):
-                    value = unicode(value)
-                value = value.encode('cp932')
-            else:
-                value = ''
-            row[key] = value
-
-        return row
+        row = dict(self.row_data)
+        return encode_to_cp932(row)
