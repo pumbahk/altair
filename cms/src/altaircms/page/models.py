@@ -281,7 +281,7 @@ class Page(BaseOriginalMixin,
         if not self.published:
             return u"非公開(期間:%s)" % h.term_datetime(self.publish_begin, self.publish_end)
         
-        if self.publish_begin > dt:
+        if self.publish_begin and self.publish_begin > dt:
             return u"公開前(%sに公開)" % h.base.jdate_with_hour(self.publish_begin)
         elif self.publish_end is None:
             return u"公開中"
