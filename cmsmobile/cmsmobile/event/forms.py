@@ -53,7 +53,7 @@ class SearchForm(Form):
     )
 
     word = TextField(
-        label = u'検索文字列',
+        label = '',
         validators=[
             Length(max=200, message=u'200文字以内で入力してください'),
             ]

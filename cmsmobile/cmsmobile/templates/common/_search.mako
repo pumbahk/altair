@@ -1,6 +1,6 @@
 <%page args="form" />
 <%namespace file="ticketing:templates/common/helpers.html" name="h" />
-チケット検索
+
 <form action="${form.path.data}">
     <fieldset>
         <input type="hidden" name="genre" value="${form.genre.data}" />
@@ -10,6 +10,7 @@
         <input type="hidden" name="page_num" value="${form.page_num.data}" />
         <input type="hidden" name="path" value="${form.path.data}" />
         <input type="hidden" name="area" value="${form.area.data}" />
+        チケット検索
         ${h.form_item(form.word)}
         <table>
             <tr>
