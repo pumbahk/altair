@@ -24,6 +24,7 @@
         </table>
 
         <input type="submit" value="検索"/>
+        <input type="button" value="詳細検索" onClick="window.location.href='/detailsearch'">
     </fieldset>
 </form>
 <p/>

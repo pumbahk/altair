@@ -77,3 +77,23 @@ class HotwordForm(Form):
         validators=[Optional()],
         default="",
     )
+
+class DetailSearchForm(Form):
+    word = TextField(
+        label = '',
+        validators=[
+            Length(max=200, message=u'200文字以内で入力してください'),
+            ]
+    )
+
+    week_sale = BooleanField(
+        label = '',
+        validators=[Optional()],
+        default=False
+    )
+
+    soon_sale = BooleanField(
+        label = '',
+        validators=[Optional()],
+        default=False
+    )

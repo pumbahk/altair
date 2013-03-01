@@ -5,7 +5,7 @@ from altaircms.topic.models import TopicTag, PromotionTag
 import webhelpers.paginate as paginate
 from datetime import datetime
 from altaircms.topic.api import get_topic_searcher
-from cmsmobile.event.forms import SearchForm, HotwordForm
+from cmsmobile.event.forms import SearchForm, HotwordForm, DetailSearchForm
 from altaircms.event.models import Event
 from cmsmobile.core.searcher import EventSearcher
 from altaircms.tag.models import HotWord
@@ -179,3 +179,12 @@ def move_hotword(request):
 @view_config(route_name='company', renderer='cmsmobile:templates/company/company.mako')
 def move_company(request):
     return {}
+
+@view_config(route_name='detailsearch', renderer='cmsmobile:templates/detailsearch/detailsearch.mako')
+def move_detailsearch(request):
+
+    form = DetailSearchForm()
+
+    return {
+        'form':form
+    }
