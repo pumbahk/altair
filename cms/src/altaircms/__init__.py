@@ -1,25 +1,6 @@
 # coding:utf-8
-
-from altaircms.helpers.formhelpers import datetime_pick_patch
-datetime_pick_patch()
-
 import logging
 logger = logging.getLogger(__name__)
-
-from pyramid.config import Configurator
-from pyramid.session import UnencryptedCookieSessionFactoryConfig
-
-import sqlahelper
-from sqlalchemy import engine_from_config
-
-from altaircms.security import RootFactory
-
-try:
-    import pymysql_sa
-    pymysql_sa.make_default_mysql_dialect()
-    logger.info('Using PyMySQL')
-except:
-    pass
 
 def _get_policies(settings):
     from altaircms.security import rolefinder
@@ -56,6 +37,18 @@ def iterable_undefined_patch():
 def main(global_config, **local_config):
     """ apprications main
     """
+    from pyramid.config import Configurator
+    from pyramid.session import UnencryptedCookieSessionFactoryConfig
+
+    import sqlahelper
+    from sqlalchemy import engine_from_config
+
+
+    from altaircms.formhelpers import datetime_pick_patch
+    datetime_pick_patch()
+    from altaircms.security import RootFactory
+
+
     settings = dict(global_config)
     settings.update(local_config)
 
@@ -69,6 +62,7 @@ def main(global_config, **local_config):
         authentication_policy=authn_policy,
         authorization_policy=authz_policy
     )
+    config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
 
     ## organization mapping
     OrganizationMapping = config.maybe_dotted(".auth.api.OrganizationMapping")
@@ -78,9 +72,25 @@ def main(global_config, **local_config):
     config.set_request_property("altaircms.auth.helpers.get_authenticated_user", "user", reify=True)
     config.set_request_property("altaircms.auth.helpers.get_authenticated_organization", "organization", reify=True)
 
+    config.include("pyramid_layout")
     config.include("altaircms.lib.crud")    
+    config.include("altaircms.filelib")
 
-    ## include
+
+    ## include 
+    class MyLayout(object):
+        class color:
+            event = "#dfd"
+            page = "#ffd"
+            item = "#ddd"
+            asset = "#fdd"
+            master = "#ddf"
+
+        def __init__(self, context, request):
+            self.context = context
+            self.request = request
+    config.add_layout(MyLayout, 'altaircms:templates/layout.html') #this is pyramid-layout's layout
+
     config.include("altaircms.auth", route_prefix='/auth')
     config.include("altaircms.front", route_prefix="/front")
     config.include("altaircms.widget")
@@ -88,12 +98,14 @@ def main(global_config, **local_config):
     config.include("altaircms.event")
     config.include("altaircms.layout")
     config.include("altaircms.page")
+    config.include("altaircms.topic")
     config.include("altaircms.widget")
     config.include("altaircms.asset", route_prefix="/asset")
     config.include("altaircms.base")
     config.include("altaircms.tag")
 
     config.include("altaircms.viewlet")
+    config.include("altaircms.panels")
     ## slack-off
     config.include("altaircms.slackoff")
 

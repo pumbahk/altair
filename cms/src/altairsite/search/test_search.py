@@ -297,11 +297,11 @@ todo: 作成
 
     def test_unmatched_param__notfound(self):
         from altaircms.event.models import Event
-        from altaircms.models import Sale
+        from altaircms.models import SalesSegment
         qs = Event.query
 
         event = Event()
-        sale = Sale(event=event, kind=u"normal")
+        sale = SalesSegment(event=event, kind=u"normal")
         self.session.add(sale)
 
         result = self._callFUT(qs, [u"sales-kind-unmatched"])
@@ -309,11 +309,11 @@ todo: 作成
 
     def test_matched_param__found(self):
         from altaircms.event.models import Event
-        from altaircms.models import Sale
+        from altaircms.models import SalesSegment
         qs = Event.query
 
         event = Event()
-        sale = Sale(event=event, kind=u"normal")
+        sale = SalesSegment(event=event, kind=u"normal")
         self.session.add(sale)
 
         result = self._callFUT(qs, [u"normal"])
@@ -321,11 +321,11 @@ todo: 作成
 
     def test_search_unionly(self):
         from altaircms.event.models import Event
-        from altaircms.models import Sale
+        from altaircms.models import SalesSegment
         qs = Event.query
 
         event = Event()
-        sale = Sale(event=event, kind=u"normal")
+        sale = SalesSegment(event=event, kind=u"normal")
         self.session.add(sale)
 
         result = self._callFUT(qs, [u"abc", u"efg", u"hij"])
@@ -593,7 +593,7 @@ class HotWordSearchTests(unittest.TestCase):
 
     def test_hotword_search_has_event(self):
         """
-        hotword - pagetag - pagetag2page - page - pageset
+        hotword - pagetag - pagetag2pageset - page - pageset
         """
         from altaircms.tag.models import HotWord
         from altaircms.tag.models import PageTag
@@ -614,8 +614,8 @@ class HotWordSearchTests(unittest.TestCase):
         self.session.add(pagetag)
         self.session.flush()
 
-        pagetag2page = PageTag2Page(object_id=page.id, tag_id=pagetag.id)
-        self.session.add(pagetag2page)
+        pagetag2pageset = PageTag2Page(object_id=page.id, tag_id=pagetag.id)
+        self.session.add(pagetag2pageset)
         ## proxyほしい
 
         hotword = HotWord(name=u"this-is-hotword-name", tag=pagetag, enablep=True, 
@@ -649,8 +649,8 @@ class HotWordSearchTests(unittest.TestCase):
         self.session.add(pagetag)
         self.session.flush()
 
-        pagetag2page = PageTag2Page(object_id=page.id, tag_id=pagetag.id)
-        self.session.add(pagetag2page)
+        pagetag2pageset = PageTag2Page(object_id=page.id, tag_id=pagetag.id)
+        self.session.add(pagetag2pageset)
         ## proxyほしい
 
         hotword = HotWord(name=u"this-is-hotword-name", tag=pagetag, enablep=True, 

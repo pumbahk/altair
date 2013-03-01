@@ -15,7 +15,7 @@ def enable_search_function(info, request):
     return request.organization.use_full_usersite if request.organization else False
 
 @view_config(custom_predicates=(enable_search_function, ), 
-             route_name="page_search_input", renderer="altaircms:templates/front/layout/ticketstar/ticketstar.search.input.mako")
+             route_name="page_search_input", renderer="altaircms:templates/front/layout/ticketstar/ticketstar.search.input.html")
 def page_search_input(request):
     """ 絞り込み検索フォーム画面
     """
@@ -24,7 +24,7 @@ def page_search_input(request):
     return params
 
 @view_config(custom_predicates=(enable_search_function, ), 
-             route_name="page_search_result", renderer="altaircms:templates/front/layout/ticketstar/ticketstar.search.mako")
+             route_name="page_search_result", renderer="altaircms:templates/front/layout/ticketstar/ticketstar.search.html")
 def page_search_result(request):
     """ 詳細検索 検索結果
     """
@@ -46,7 +46,7 @@ def page_search_result(request):
 
 @view_config(custom_predicates=(enable_search_function, ), 
              request_param="q", route_name="page_search_by_freeword", 
-             renderer="altaircms:templates/front/layout/ticketstar/ticketstar.search.mako")
+             renderer="altaircms:templates/front/layout/ticketstar/ticketstar.search.html")
 def search_by_freeword(context, request):
     """ フリーワード検索
     """
@@ -71,7 +71,7 @@ def search_by_freeword(context, request):
 
 @view_config(custom_predicates=(enable_search_function, ), 
              route_name="page_search_by_multi", 
-             renderer="altaircms:templates/front/layout/ticketstar/ticketstar.search.mako")
+             renderer="altaircms:templates/front/layout/ticketstar/ticketstar.search.html")
 def search_by_multi(request):
     """ topページの複数記入できるフォーム。
     """
@@ -93,7 +93,7 @@ def search_by_multi(request):
 
 
 @view_defaults(custom_predicates=(enable_search_function, ), 
-               route_name="page_search_by", renderer="altaircms:templates/front/layout/ticketstar/ticketstar.search.mako")
+               route_name="page_search_by", renderer="altaircms:templates/front/layout/ticketstar/ticketstar.search.html")
 class SearchByKindView(object):
     def __init__(self, context, request):
         self.request = request

@@ -19,7 +19,7 @@ class FlashWidget(Widget):
     implements(IWidget)
     type = "flash"
 
-    template_name = "altaircms.plugins.widget:flash/render.mako"
+    template_name = "altaircms.plugins.widget:flash/render.html"
     __tablename__ = "widget_flash"
     __mapper_args__ = {"polymorphic_identity": type}
     query = DBSession.query_property()

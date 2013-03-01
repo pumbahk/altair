@@ -27,7 +27,6 @@ def delete_data(self, obj, flush=False):
 
 class WDispositionResource(security.RootFactory):
     Page = models.Page
-    Form = wf.WidgetDispositionSaveForm
     add = add_data
     delete = delete_data
 
@@ -63,27 +62,30 @@ class PageResource(security.RootFactory):
         return renderable.LayoutRender(layout)
 
     def create_page(self, form):
-        tags, private_tags, params =  h.divide_data(form.data)
-        page = models.Page.from_dict(params)
-        put_tags(page, "page", tags, private_tags, self.request)
+        page = models.Page.from_dict(form.data)
         pageset = models.PageSet.get_or_create(page)
 
         if form.data["parent"]:
             pageset.parent = form.data["parent"]
+        if form.data["genre"]:
+            pageset.genre = form.data["genre"]
 
         self.add(page, flush=True)
-        subscribers.notify_page_create(self.request, page, params)
+        subscribers.notify_page_create(self.request, page, form.data)
+
+        if page.layout.disposition_id:
+            page.layout.default_disposition.bind_page(page, DBSession)
+
         notify_model_create(self.request, page, form.data)
         notify_model_create(self.request, pageset, form.data)
         return page
 
     def update_page(self, page, form):
-        tags, private_tags, params =  h.divide_data(form.data)
+        params = form.data
         for k, v in params.iteritems():
             setattr(page, k, v)
         page.pageset.event = params["event"]
         page.pageset.url = params["url"]
-        put_tags(page, "page", tags, private_tags, self.request)
 
         if form.data["parent"]:
             page.pageset.parent = form.data["parent"]

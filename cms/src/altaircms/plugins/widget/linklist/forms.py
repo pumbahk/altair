@@ -1,12 +1,12 @@
 # -*- coding:utf-8 -*-
-import wtforms.form as form
+from altaircms.formhelpers import Form
 import wtforms.fields as fields
 import wtforms.validators as validators
-from altaircms.helpers.formhelpers import dynamic_query_select_field_factory
+from altaircms.formhelpers import dynamic_query_select_field_factory
 from altaircms.models import Category
 from . import models
 
-class LinklistForm(form.Form):
+class LinklistForm(Form):
     _choices = models.FINDER_KINDS_DICT.items()
     finder_kind = fields.SelectField(id="finder_kind", label=u"集めるリンクの種類", choices=_choices)
     delimiter = fields.TextField(id="delimiter", label=u"区切り文字")

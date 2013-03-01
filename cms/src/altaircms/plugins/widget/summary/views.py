@@ -42,7 +42,7 @@ class SummaryWidgetView(object):
         context.delete(widget, flush=True)
         return {"status": "ok"}
 
-    @view_config(route_name="summary_widget_dialog", renderer="altaircms.plugins.widget:summary/dialog.mako", request_method="GET")
+    @view_config(route_name="summary_widget_dialog", renderer="altaircms.plugins.widget:summary/dialog.html", request_method="GET")
     def dialog(self):
         context = self.request.context
         widget = context.get_widget(self.request.GET.get("pk"))

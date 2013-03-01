@@ -19,7 +19,7 @@ class MovieWidget(Widget):
     implements(IWidget)
     type = "movie"
 
-    template_name = "altaircms.plugins.widget:movie/render.mako"
+    template_name = "altaircms.plugins.widget:movie/render.html"
     __tablename__ = "widget_movie"
     __mapper_args__ = {"polymorphic_identity": type}
     query = DBSession.query_property()

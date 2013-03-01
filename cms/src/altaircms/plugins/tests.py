@@ -139,8 +139,8 @@ widgets =
         from altaircms.auth.api import set_organization_mapping
         set_organization_mapping(config, dummy_mapping_utility(config))
 
-        from altaircms.plugins.api import _get_configparser_from_inifile
-        configparser = _get_configparser_from_inifile(self.inifile, _open=DummyOpen)
+        from altaircms.plugins.api import _configparser_from_inifile
+        configparser = _configparser_from_inifile(self.inifile, _open=DummyOpen)
         result = self._callFUT(config, [configparser], validator=None)
 
         self.assertEquals(result.conts.keys(), [(1, "oauth")])
@@ -160,15 +160,5 @@ widgets =
 
 
 if __name__ == "__main__":
-    ## todo delete it
-    # from altaircms.plugins.widget_aggregate import WidgetAggregator
-    # wa = WidgetAggregator(["image", "freetext"])
-
-    # request = testing.DummyRequest()
-    # print wa.get_widget_paletcode(request)
-    # print "--"
-    # print wa.get_widget_jscode(request)
-    # print "--"
-    # # print wa.get_widget_csscode(request)
     unittest.main()
 

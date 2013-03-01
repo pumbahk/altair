@@ -1,0 +1,16 @@
+## sizeがwidth,height固定はひどい
+
+<div id="notableEvents">
+  % for t in qs:
+  <div class="event">
+	<dl>
+	  <dt><a href="${h.link.get_link_from_topcontent(request, t)}">${t.title }</a></dt>
+	  <dd>${t.text}</dd>
+	</dl>
+	<p>
+	  <a href="${h.link.get_link_from_topcontent(request, t)}">
+		<img src="${h.asset.to_show_page(request, t.image_asset)}" alt="${t.title  }" width="80" height="80" />
+	  </a><br />
+  </div>
+  % endfor
+</div>

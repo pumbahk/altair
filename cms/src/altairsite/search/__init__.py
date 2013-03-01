@@ -12,7 +12,7 @@ def includeme(config):
     ## mobile
     config.add_view("altairsite.mobile.views.search_by_freeword", 
                     route_name="page_search_by_freeword", 
-                    renderer="altaircms:templates/mobile/search.mako", 
+                    renderer="altaircms:templates/mobile/search.html", 
                     custom_predicates=(mobile_access_predicate,))
 
     config.scan(".views")

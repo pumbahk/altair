@@ -4,131 +4,200 @@ import unittest
 
 """
 URL生成時のmappingのテスト(参考:120427_Title・URLルール.xlsx)
-urlはurlescapseした後のurlを取るべきなのかわからない。今はurlescapeしない状態で格納することにしている
 """
 
+from altaircms.testing import setup_db
+from altaircms.testing import teardown_db
+
 def setUpModule():
-    import sqlahelper
-    from sqlalchemy import create_engine
-    import altaircms.page.models
-    import altaircms.event.models
-    import altaircms.models
-
-    engine = create_engine("sqlite:///")
-    engine.echo = False
-    sqlahelper.get_session().remove()
-    sqlahelper.add_engine(engine)
-    sqlahelper.get_base().metadata.drop_all()
-    sqlahelper.get_base().metadata.create_all()
-
+    setup_db(models=[
+            "altaircms.models", 
+            "altaircms.topic.models", 
+            "altaircms.event.models", 
+            "altaircms.widget.models", 
+            "altaircms.layout.models", 
+            "altaircms.page.models"
+            ])
 
 def tearDownModule():
-    import transaction
-    transaction.abort()
-
-
-class PageDefaultInfoTests(unittest.TestCase):
+    teardown_db()
+    
+class GenrePageDefaultInfoTests(unittest.TestCase):
     def _getTarget(self):
-        from altaircms.page.models import PageDefaultInfo
-        return PageDefaultInfo
+        from altaircms.page.nameresolver import GenrePageInfoResolver
+        return GenrePageInfoResolver
 
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
 
-    ## url check
-    def test_url_toplevel(self):
-        target = self._makeOne(url_fmt=u"/s/%(url)s")
-        result = target.url("music")
+    @classmethod
+    def tearDownClass(cls):
+        import transaction
+        transaction.abort()
 
-        self.assertEquals(result, "/s/music")
+    @classmethod
+    def setUpClass(cls):
+        from altaircms.models import Genre, DBSession
+        jpop = Genre(name=u"jpop", label=u"jポップ")
+        music = Genre(name=u"music", label=u"音楽")
+        top = Genre(name=u"top", label=u"トップ")
+        jpop.add_parent(music)
+        music.add_parent(top)
+        jpop.add_parent(top, hop=2)
+        DBSession.add(jpop)
+        DBSession.flush()
+        cls.jpop = jpop
 
-    def test_url_middle_level(self):
-        target = self._makeOne(url_fmt=u"/s/音楽/%(url)s")
-        result = target.url(u"邦楽")
+    def test_url(self):
+        class defaultinfo:
+            url_prefix = None
 
-        # self.assertEquals(result, "/s/%E9%9F%B3%E6%A5%BD/%E9%82%A6%E6%A5%BD")
-        self.assertEquals(result, u"/s/音楽/邦楽")
+        target = self._makeOne(defaultinfo)
+        self.assertEqual(target.resolve_url(self.jpop), "/music/jpop")
 
-    def test_url_bottom_level(self):
-        target = self._makeOne(url_fmt=u"/s/音楽/邦楽/%(url)s")
-        result = target.url(u"ポップス・ロックス")
+    def test_url2(self):
+        class defaultinfo:
+            url_prefix = u"prefix-"
 
-        # self.assertEquals(result, "/s/%E9%9F%B3%E6%A5%BD/%E9%82%A6%E6%A5%BD/%E3%83%9D%E3%83%83%E3%83%97%E3%82%B9%E3%83%BB%E3%83%AD%E3%83%83%E3%82%AF%E3%82%B9")
-        self.assertEquals(result, u"/s/音楽/邦楽/ポップス・ロックス")
-
-    def test_url_music_detail(self):
-        target = self._makeOne(url_fmt=u"/s/音楽/クラシック/%(url)s/!SMFHS")
-        result = target.url(u"フジコ・ヘミング・ソロ")
-
-        # self.assertEquals(result, "/s/%E9%9F%B3%E6%A5%BD/%E3%82%AF%E3%83%A9%E3%82%B7%E3%83%83%E3%82%AF/%E3%83%95%E3%82%B8%E3%82%B3%E3%83%BB%E3%83%98%E3%83%9F%E3%83%B3%E3%82%B0%E3%83%BB%E3%82%BD%E3%83%AD/%21SMFHS")
-        # import urllib
-        # self.assertEquals(urllib.unquote(result).decode("utf-8"), u"/s/音楽/クラシック/フジコ・ヘミング・ソロ/!SMFHS")
-        self.assertEquals(result, u"/s/音楽/クラシック/フジコ・ヘミング・ソロ/!SMFHS")
-
-    ## title check
-    ### titleのformatは全て一緒
-    def test_title_toplevel(self):
-        target = self._makeOne(title_fmt=u"【楽天チケット】%(title)s｜公演・ライブのチケット予約・購入")
-        result = target.title(u"音楽")
-
-        self.assertEquals(u"【楽天チケット】音楽｜公演・ライブのチケット予約・購入", result)
-
-    ### pageset, pageの初期設定
-    def test_create_categorytop_pageset(self):
-        target = self._makeOne(url_fmt=u"/s/音楽/%(url)s", 
-                               title_fmt=u"【楽天チケット】%(title)s｜公演・ライブのチケット予約・購入")
-        result = target.create_pageset(u"邦楽")
-
-        # import urllib
-        # self.assertEquals(u"/s/音楽/邦楽", 
-        #                   urllib.unquote(result.url).decode("utf-8"))
-        self.assertEquals(u"/s/音楽/邦楽", result.url)
-
-        self.assertEquals(u"邦楽", result.name)
-
-    def test_create_categorytop_page(self):
-        target = self._makeOne(url_fmt=u"/s/音楽/%(url)s", 
-                               title_fmt=u"【楽天チケット】%(title)s｜公演・ライブのチケット予約・購入", 
-                               keywords=u"this-is-default-keywords", 
-                               description=u"this-is-default-description")
-        result = target.create_page(u"邦楽")
-
-        # import urllib
-        # self.assertEquals(u"/s/音楽/邦楽", 
-        #                   urllib.unquote(result.url).decode("utf-8"))
-        self.assertEquals(u"/s/音楽/邦楽", result.url)
-
-        self.assertEquals(u"【楽天チケット】邦楽｜公演・ライブのチケット予約・購入", result.title)
-
-        self.assertEquals(u"this-is-default-keywords", result.keywords)
-        self.assertEquals(u"this-is-default-description", result.description)
+        target = self._makeOne(defaultinfo)
+        self.assertEqual(target.resolve_url(self.jpop), "prefix-/music/jpop")
 
 
+    def test_title(self):
+        class defaultinfo:
+            title_prefix = u"タイトル:"
 
-    def test_create_detail_pageset_url(self):
-        target = self._makeOne(url_fmt=u"/s/スポーツ/野球/プロ野球/%(url)s/!SMFHS", 
-                               title_fmt=u"【楽天チケット】%(title)s｜公演・ライブのチケット予約・購入")
-        result = target.create_pageset(u"楽天ゴールデンイーグルス")
+        target = self._makeOne(defaultinfo)
+        self.assertEqual(target.resolve_title(self.jpop), u"タイトル:音楽/jポップ")
+        
 
-        # import urllib
-        # self.assertEquals(urllib.unquote(result.url).decode("utf-8"), 
-        #                   u"/s/スポーツ/野球/プロ野球/楽天ゴールデンイーグルス/!SMFHS")
-        self.assertEquals(result.url, 
-                          u"/s/スポーツ/野球/プロ野球/楽天ゴールデンイーグルス/!SMFHS")
-        self.assertEquals(u"楽天ゴールデンイーグルス", result.name)
+    def test_description(self):
+        class defaultinfo:
+            description = u"this-is-description"
 
-    def test_create_detail_page_url(self):
-        target = self._makeOne(url_fmt=u"/s/スポーツ/野球/プロ野球/%(url)s/!SMFHS", 
-                               title_fmt=u"【楽天チケット】%(title)s｜公演・ライブのチケット予約・購入")
-        result = target.create_page(u"楽天ゴールデンイーグルス")
+        target = self._makeOne(defaultinfo)
+        self.assertEqual(target.resolve_description(self.jpop), u"this-is-description")
 
-        # import urllib
-        # self.assertEquals(urllib.unquote(result.url).decode("utf-8"), 
-        #                   u"/s/スポーツ/野球/プロ野球/楽天ゴールデンイーグルス/!SMFHS")
-        self.assertEquals(result.url, 
-                          u"/s/スポーツ/野球/プロ野球/楽天ゴールデンイーグルス/!SMFHS")
-        self.assertEquals(u"【楽天チケット】楽天ゴールデンイーグルス｜公演・ライブのチケット予約・購入", result.title)
+    def test_keywords(self):
+        class defaultinfo:
+            keywords = u"k0, k1, k2"
 
+        target = self._makeOne(defaultinfo)
+        self.assertEqual(target.resolve_keywords(self.jpop), u"k0, k1, k2, 音楽, jポップ")
+
+
+class EventPageDefaultInfoTests(unittest.TestCase):
+    def _getTarget(self):
+        from altaircms.page.nameresolver import EventPageInfoResolver
+        return EventPageInfoResolver
+
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
+    @classmethod
+    def tearDownClass(cls):
+        import transaction
+        transaction.abort()
+
+    @classmethod
+    def setUpClass(cls):
+        from altaircms.models import Genre, DBSession
+        jpop = Genre(name=u"jpop", label=u"jポップ")
+        music = Genre(name=u"music", label=u"音楽")
+        top = Genre(name=u"top", label=u"トップ")
+        jpop.add_parent(music)
+        music.add_parent(top)
+        jpop.add_parent(top, hop=2)
+        DBSession.add(jpop)
+        DBSession.flush()
+        cls.jpop = jpop
+
+    def test_url(self):
+        class defaultinfo:
+            url_prefix = None
+        class event:
+            title=u"this-is-event-name", 
+            subtitle=u"this-is-event-subtitle", 
+            code=u"EV0010"
+        target = self._makeOne(defaultinfo)
+        self.assertEqual(target.resolve_url(self.jpop, event=event), "/music/jpop/EV0010")
+
+    def test_url2(self):
+        class defaultinfo:
+            url_prefix = u"prefix-"
+        class event:
+            title=u"this-is-event-name", 
+            subtitle=u"this-is-event-subtitle", 
+            code=u"EV0010"
+
+        target = self._makeOne(defaultinfo)
+        self.assertEqual(target.resolve_url(self.jpop, event=event), "prefix-/music/jpop/EV0010")
+
+
+    def test_title_only(self):
+        class defaultinfo:
+            title_prefix = u"タイトル:"
+        class event:
+            title=u"this-is-event-name"
+            subtitle = None
+            code=u"EV0010"
+
+        target = self._makeOne(defaultinfo)
+        self.assertEqual(target.resolve_title(self.jpop, event=event), u"this-is-event-name")
+
+    def test_title_has_subtitle(self):
+        class defaultinfo:
+            title_prefix = u"タイトル:"
+        class event:
+            title=u"this-is-event-name"
+            subtitle=u"this-is-event-subtitle"
+            code=u"EV0010"
+
+        target = self._makeOne(defaultinfo)
+        self.assertEqual(target.resolve_title(self.jpop, event=event), u"this-is-event-subtitle")
+        
+
+    def test_description(self):
+        class defaultinfo:
+            description = u"this-is-description"
+        class event:
+            title=u"this-is-event-name", 
+            description = "description"
+
+        target = self._makeOne(defaultinfo)
+        self.assertEqual(target.resolve_description(self.jpop, event=event), u"this-is-description description ")
+
+    def test_keywords(self):
+        class defaultinfo:
+            keywords = u"k0, k1, k2"
+        class event:
+            title = u"this-is-event-name"
+            class pageset:
+                public_tags = []
+            pagesets = [pageset]
+
+        target = self._makeOne(defaultinfo)
+        self.assertEqual(target.resolve_keywords(self.jpop, event=event), u"this-is-event-name, k0, k1, k2, 音楽, jポップ")
+
+    def test_keywords_with_pagetags(self):
+        class defaultinfo:
+            keywords = u"k0, k1, k2"
+        class event:
+            title = u"this-is-event-name"
+            organization_id = 1
+            class Pageset:
+                class Tag:
+                    organization_id = 1
+                    label=u"イベントのタグ"
+                class Tag2:
+                    organization_id = 2
+                    label=u"invalid-key"
+                public_tags = [Tag, Tag2]
+            pagesets = [Pageset]
+            
+        target = self._makeOne(defaultinfo)
+        self.assertEqual(target.resolve_keywords(self.jpop, event=event), u"this-is-event-name, イベントのタグ, k0, k1, k2, 音楽, jポップ")
+        
 if __name__ == "__main__":
     unittest.main()
 

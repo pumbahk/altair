@@ -30,7 +30,7 @@ from ticketing.products.forms import ProductForm
 
 from ..api.impl import get_communication_api
 from ..api.impl import CMSCommunicationApi
-
+from .api import get_cms_data
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class Events(BaseView):
@@ -201,11 +201,8 @@ class Events(BaseView):
             return HTTPNotFound('event id %d is not found' % event_id)
 
         try:
-            data = {
-                'events':[event.get_cms_data()],
-                'created_at':isodate.datetime_isoformat(datetime.now()),
-                'updated_at':isodate.datetime_isoformat(datetime.now()),
-            }
+            organization = self.context.user.organization
+            data = get_cms_data(self.request, organization, event)
         except Exception, e:
             logging.info("cms build data error: %s (event_id=%s)" % (e.message, event_id))
             self.request.session.flash(e.message)

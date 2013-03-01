@@ -51,7 +51,7 @@ class RenderingTest(unittest.TestCase):
         return request
 
     def _getTarget(self, **kwargs):
-        w = ReuseWidget(source_page=Page(layout=Layout(template_filename="layout.mako")))
+        w = ReuseWidget(source_page=Page(layout=Layout(template_filename="layout.html")))
         for k, v in kwargs.items():
             setattr(w, k, v)
         return w

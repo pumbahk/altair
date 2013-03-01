@@ -3,22 +3,17 @@ import unittest
 
 from pyramid import testing
 from altaircms.testing import DummyRequest
+from altaircms.testing import setup_db, teardown_db
 
+def setUpModule():
+    setup_db(["altaircms.page.models", 
+              "altaircms.event.models", 
+              "altaircms.layout.models", 
+              "altaircms.widget.models", 
+              "altaircms.auth.models"])
 
-def setup_module():
-    import sqlahelper
-    from sqlalchemy import create_engine
-    engine = create_engine("sqlite:///")
-    sqlahelper.get_session().remove()
-    sqlahelper.add_engine(engine)
-    from .. import models
-    sqlahelper.get_base().metadata.create_all()
-    from ..models import Base
-    assert Base == sqlahelper.get_base()
-
-def teardown_module():
-    import sqlahelper
-    sqlahelper.get_base().metadata.drop_all()
+def tearDownModule():
+    teardown_db()
 
 def dummy_request(*args, **kwargs):
     request = testing.DummyRequest(*args, **kwargs)
@@ -285,6 +280,7 @@ class OAuthLoginTests(unittest.TestCase):
             'user_id': '99999999',
             'organization_id': '10101010', 
             'organization_name': 'this-is-organization', 
+            "organization_short_name": "org", 
             'roles': [
                 'administrator',
                 'staff',
@@ -336,6 +332,7 @@ class OAuthLoginTests(unittest.TestCase):
         res_data = json.dumps({
             'user_id': '888888888',
             'organization_id': '10101010', 
+            "organization_short_name": "org", 
             'organization_name': 'this-is-organization', 
             'roles': [
                 'administrator',
@@ -359,6 +356,7 @@ class OAuthLoginTests(unittest.TestCase):
         self.assertIsNotNone(operator)
         self.assertEqual(operator.auth_source, 'oauth')
         self.assertEqual(operator.screen_name, u'管理者')
+        self.assertEqual(operator.organization.short_name, 'org')
         self.assertEqual(operator.oauth_token, 'this-is-token')
         self.assertEqual(len(operator.roles), 2)
         self.assertEqual(operator.roles[0].name, 'administrator')
@@ -377,3 +375,5 @@ class DummyURLLib2(object):
         self.called.append(url)
         from io import BytesIO
         return BytesIO(self.response_data)
+
+

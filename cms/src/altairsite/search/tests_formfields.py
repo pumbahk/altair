@@ -1,38 +1,6 @@
 # -*- coding:utf-8 -*-
 import unittest
 from pyramid.testing import DummyResource
-
-class MaybeSelectFieldTests(unittest.TestCase):
-    def _getTarget(self):
-        from altairsite.search.formparts import MaybeSelectField
-        return MaybeSelectField
-
-    def _makeOne(self, *args, **kwargs):
-        return self._getTarget()(*args, **kwargs)
-
-    def _makeForm(self, field, *args, **kwargs):
-        from wtforms import form
-        class DummyForm(form.Form):
-            target = field
-        return DummyForm(*args, **kwargs)
-
-    def test_rendering(self):
-        target_field = self._makeOne(null_label=u"not found", choices=[("a", "a")])
-        form = self._makeForm(target_field)
-        self.assertIn('<option value="">not found</option>', form.target.__html__())
-
-    def test_process_formdata(self):
-        from webob.multidict import MultiDict
-
-        target_field = self._makeOne(null_label=u"not found", choices=[("a", "a_label")])
-
-        params = MultiDict({"target": self._getTarget().NONE_VALUE})
-        form = self._makeForm(target_field, formdata=params)
-        self.assertEquals(None, form.data["target"])
-
-        params = MultiDict({"target":"a"})
-        form = self._makeForm(target_field, formdata=params)
-        self.assertEquals("a", form.data["target"])
         
         
 class CheckBoxWidgetRenderingTests(unittest.TestCase):
@@ -81,8 +49,8 @@ class CheckBoxFieldValueTest(unittest.TestCase):
         return self._getTarget()(*args, **kwargs)
 
     def _makeForm(self, field, *args, **kwargs):
-        from wtforms import form
-        class DummyForm(form.Form):
+        from altaircms.formhelpers import Form
+        class DummyForm(Form):
             target = field
         return DummyForm(*args, **kwargs)
 

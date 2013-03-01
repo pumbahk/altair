@@ -23,13 +23,6 @@ def countdown_days_from(limit_date, today_fn=datetime.datetime.now):
     else:
         return (limit_date-today).days
 
-COUNTDOWN_KIND_MAPPING = dict(event_open=u"公演開始", 
-                              event_close=u"公演終了", 
-                              deal_open=u"販売開始", 
-                              deal_close=u"販売終了")
-
-def countdown_kind_ja(kind):
-    return COUNTDOWN_KIND_MAPPING[kind]
 
 def list_to_attibutes(attr_list):
     """
@@ -50,6 +43,13 @@ def make_link(title, url):
 def nl_to_br(string, rawtext=True):
     return RawText(string.replace("\n", "<br/>"))
 
+def text(string):
+    return string if string  else u"-"
+
+def truncated(string, n=142):
+    v = text(string)
+    return v if len(v) <= n else v + u".."
+
 WEEK =[u"月", u"火", u"水", u"木", u"金", u"土", u"日"]
 def jdate(d):
     """ dateオブジェクトを受け取り日本語の日付を返す
@@ -65,32 +65,10 @@ def jdate(d):
 
 def jdate_with_hour(d):
     if d:
-        datestr = d.strftime(u"%Y年%-m月%-d日 %-H:%-M".encode("utf-8")).decode("utf-8")
+        datestr = d.strftime(u"%Y年%-m月%-d日 %2H:%2M".encode("utf-8")).decode("utf-8")
         return u"%s（%s）" % (datestr, unicode(WEEK[d.weekday()]))
     else:
         return u"-"
-
-def term(beg, end):
-    """ dateオブジェクトを受け取り期間を表す文字列を返す
-    e.g. 2012年3月3日(土)〜7月12日(木) 
-    """
-    if beg is None:
-        if end is None:
-            return u""
-        else:
-            return u"〜 %s(%s)" % (end.strftime(u"%-m月%-d日".encode("utf-8")).decode("utf-8"), WEEK[end.weekday()])
-
-    beg_str = beg.strftime(u"%Y年%-m月%-d日".encode("utf-8")).decode("utf-8")
-    if end is None:
-        return u"%s(%s) 〜" % (beg_str, WEEK[beg.weekday()])
-
-    if beg.year == end.year:
-        end_str = end.strftime(u"%-m月%-d日".encode("utf-8")).decode("utf-8")
-    else:
-        end_str = end.strftime(u"%Y年%-m月%-d日".encode("utf-8")).decode("utf-8")
-    return u"%s(%s) 〜 %s(%s)" % (beg_str, WEEK[beg.weekday()], end_str, WEEK[end.weekday()])
-
-jterm = term
 
 def translate_longtext_to_simple_html(string):
     """

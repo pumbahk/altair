@@ -576,6 +576,9 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         end_on = isodate.datetime_isoformat(self.end_on) if self.end_on else ''
         open_on = isodate.datetime_isoformat(self.open_on) if self.open_on else ''
 
+        # 削除されたデータも集める
+        sales_segments = DBSession.query(SalesSegment, include_deleted=True).filter_by(performance_id=self.id).all()
+
         # cmsでは日付は必須項目
         if not start_on and not self.deleted_at:
             raise Exception(u'パフォーマンスの日付を入力してください')
@@ -588,7 +591,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             'open_on':open_on,
             'start_on':start_on,
             'end_on':end_on,
-            'tickets':list(set([pi.product.id for pi in self.product_items])),
+            'sales':[s.get_cms_data() for s in sales_segments],
         }
         if self.deleted_at:
             data['deleted'] = 'true'
@@ -732,6 +735,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def _get_self_cms_data(self):
         return {'id':self.id,
                 'title':self.title,
+                'code': self.code, 
                 'subtitle':self.abbreviated_title,
                 "organization_id": self.organization.id, 
                 }
@@ -741,68 +745,17 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         CMSに連携するデータを生成する
         インターフェースのデータ構造は以下のとおり
         削除データには "deleted":"true" をいれる
-
-        data = {
-          "created_at": "2012-01-10T13:42:00+09:00",
-          "updated_at": "2012-01-11T15:32:00+09:00",
-          "organization_id": 1, 
-          "events":[
-            {
-              "id":1,
-              "title":"イベントタイトル",
-              "subtitle":"サブタイトル",
-              "start_on":"2012-03-15T19:00:00+09:00",,
-              "end_on":"2012-03-15T19:00:00+09:00",,
-              "performances":[
-                "id":1,
-                "title":"タイトル",
-                "venue":"代々木体育館",
-                "open_on":"2012-03-15T19:00:00+09:00",,
-                "start_on":"2012-03-15T19:00:00+09:00",,
-                "end_on":"2012-03-15T19:00:00+09:00",,
-                "tickets":[1,2],
-              ],
-              "tickets":[
-                {"id":1, "sale_id":1, "name":"A席大人", "seat_type":"A席", "price":5000, "display_order":1},
-                {"id":2, "sale_id":2, "name":"B席大人", "seat_type":"B席", "price":3000, "display_order":2},
-              ],
-              "sales":[
-                {"id":1, "name":"販売区分1", "start_on":~, "end_on":~, "seat_choice":true},
-                {"id":2, "name":"販売区分2", "start_on":~, "end_on":~, "seat_choice":true},
-              ],
-            },
-          ]
-        }
+        
+        see:ticketing.core.tests_event_notify_data.py
         '''
-        start_on = isodate.datetime_isoformat(self.first_start_on) if self.first_start_on else ''
-        end_on = isodate.datetime_isoformat(self.final_start_on) if self.final_start_on else ''
-        sales_start_on = isodate.datetime_isoformat(self.sales_start_on) if self.sales_start_on else ''
-        sales_end_on = isodate.datetime_isoformat(self.sales_end_on) if self.sales_end_on else ''
-
-        # cmsでは日付は必須項目
-        if validation:
-            if not (start_on and end_on) and not self.deleted_at:
-                raise Exception(u'パフォーマンスが登録されていないイベントは送信できません')
-            if not (sales_start_on and sales_end_on) and not self.deleted_at:
-                raise Exception(u'販売期間が登録されていないイベントは送信できません')
-
         # 論理削除レコードも含めて取得
         performances = DBSession.query(Performance, include_deleted=True).filter_by(event_id=self.id).all()
-        products = Product.find(event_id=self.id, include_deleted=True)
-        sales_segments = DBSession.query(SalesSegment, include_deleted=True).filter_by(event_id=self.id).all()
         data = self._get_self_cms_data()
         data.update({
-            'start_on':start_on,
-            'end_on':end_on,
-            'deal_open':sales_start_on,
-            'deal_close':sales_end_on,
             'performances':[p.get_cms_data() for p in performances],
-            'tickets':[p.get_cms_data() for p in products],
-            'sales':[s.get_cms_data() for s in sales_segments],
         })
         if self.deleted_at:
             data['deleted'] = 'true'
-
         return data
 
     def add(self):
@@ -970,21 +923,6 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             pdmp.delete()
 
         super(SalesSegmentGroup, self).delete()
-
-    def get_cms_data(self):
-        start_at = isodate.datetime_isoformat(self.start_at) if self.start_at else ''
-        end_at = isodate.datetime_isoformat(self.end_at) if self.end_at else ''
-        data = {
-            'id':self.id,
-            'name':self.name,
-            'kind':self.kind,
-            'start_on':start_at,
-            'end_on':end_at,
-            'seat_choice':'true' if self.seat_choice else 'false',
-        }
-        if self.deleted_at:
-            data['deleted'] = 'true'
-        return data
 
     @staticmethod
     def create_from_template(template, with_payment_delivery_method_pairs=False, **kwargs):
@@ -1633,7 +1571,6 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             'id':self.id,
             'name':self.name,
             'price':floor(self.price),
-            'sale_id':self.sales_segment_group_id,
             'seat_type':self.seat_type(),
             'display_order':self.display_order,
         }
@@ -2916,5 +2853,18 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
 
         return query
 
-
-        
+    def get_cms_data(self):
+        products = DBSession.query(Product, include_deleted=True).filter_by(sales_segment_id=self.id).all()
+        data = {
+            "id": self.id, 
+            "kind": self.kind, 
+            "name": self.name, 
+            "start_on" : isodate.datetime_isoformat(self.start_at) if self.start_at else '', 
+            "end_on" : isodate.datetime_isoformat(self.end_at) if self.end_at else '', 
+            'group_id':self.sales_segment_group_id,
+            'tickets':[p.get_cms_data() for p in products],
+            'seat_choice':'true' if self.seat_choice else 'false',
+            }
+        if self.deleted_at:
+            data['deleted'] = 'true'
+        return data

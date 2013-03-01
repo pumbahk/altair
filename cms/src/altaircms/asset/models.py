@@ -3,6 +3,7 @@
 
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
+from sqlalchemy.ext.declarative import declared_attr
 from altaircms.models import Base, BaseOriginalMixin
 from altaircms.models import DBSession
 
@@ -69,6 +70,7 @@ class ImageAsset(Asset):
     width = sa.Column(sa.Integer)
     height = sa.Column(sa.Integer)
     filepath = sa.Column(sa.String(255))
+    thumbnail_path = sa.Column(sa.String(255))
     mimetype = sa.Column(sa.String(255), default="")
 
 class FlashAsset(Asset):
@@ -88,7 +90,7 @@ class FlashAsset(Asset):
     height = sa.Column(sa.Integer)
     filepath = sa.Column(sa.String(255))
     mimetype = sa.Column(sa.String(255), default='application/x-shockwave-flash')
-    imagepath = sa.Column(sa.String(255), default=DEFAULT_IMAGE_PATH)
+    thumbnail_path = sa.Column(sa.String(255), default=DEFAULT_IMAGE_PATH)
 
 class MovieAsset(Asset):
     DEFAULT_IMAGE_PATH = os.path.join(DIR, "img/not_found.jpg")
@@ -106,7 +108,75 @@ class MovieAsset(Asset):
     height = sa.Column(sa.Integer)
     filepath = sa.Column(sa.String(255))
     mimetype = sa.Column(sa.String(255), default="")
-    imagepath = sa.Column(sa.String(255), default=DEFAULT_IMAGE_PATH)
+    thumbnail_path = sa.Column(sa.String(255), default=DEFAULT_IMAGE_PATH)
 
 # class CssAsset(Asset):
 #     pass
+
+class AssetTag2Asset(Base):
+    __tablename__ = "assettag2asset"
+    query = DBSession.query_property()
+    object_id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"), primary_key=True)
+    tag_id = sa.Column(sa.Integer, sa.ForeignKey("assettag.id"), primary_key=True)
+    asset = orm.relationship("Asset", backref=orm.backref("assettag2asset", cascade="all, delete-orphan"))
+    __tableargs__ = (
+        sa.UniqueConstraint("object_id", "tag_id") 
+        )
+
+class AssetTag(WithOrganizationMixin, Base):
+    CLASSIFIER = "asset"
+
+    __tablename__ = "assettag"
+    id = sa.Column(sa.Integer, primary_key=True)
+    query = DBSession.query_property()
+    label = sa.Column(sa.Unicode(255), index=True)
+    assets = orm.relationship("Asset", secondary="assettag2asset", backref="tags")
+    publicp = sa.Column(sa.Boolean, default=False)
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
+
+    discriminator = sa.Column("type", sa.String(32), nullable=False)
+    __mapper_args__ = {"polymorphic_on": discriminator}
+
+    def __repr__(self):
+        return "<%r label: %r organization_id: %r>" % (self.__class__, self.label, self.organization_id)
+
+def delete_orphan_assettag(mapper, connection, target):
+    AssetTag.query.filter(~AssetTag.assets.any()).delete(synchronize_session=False)
+sa.event.listen(Asset, "after_delete", delete_orphan_assettag)
+
+
+## sigle table inheritance or concreate table inheritance?
+class ImageAssetTag(AssetTag):
+    type = "image"
+    __mapper_args__ = {"polymorphic_identity": type}
+    @declared_attr
+    def __tableargs__(cls):
+        return  ((sa.schema.UniqueConstraint(cls.label, cls.discriminator, cls.organization_id)))        
+
+
+def delete_orphan_imageassettag(mapper, connection, target):
+    ImageAssetTag.query.filter(~ImageAssetTag.assets.any()).delete(synchronize_session=False)
+sa.event.listen(ImageAsset, "after_delete", delete_orphan_imageassettag)
+
+class MovieAssetTag(AssetTag):
+    type = "movie"
+    __mapper_args__ = {"polymorphic_identity": type}
+    @declared_attr
+    def __tableargs__(cls):
+        return  ((sa.schema.UniqueConstraint(cls.label, cls.discriminator, cls.organization_id)))        
+
+def delete_orphan_movieassettag(mapper, connection, target):
+    MovieAssetTag.query.filter(~MovieAssetTag.assets.any()).delete(synchronize_session=False)
+sa.event.listen(MovieAsset, "after_delete", delete_orphan_movieassettag)
+
+class FlashAssetTag(AssetTag):
+    type = "flash"
+    __mapper_args__ = {"polymorphic_identity": type}
+    @declared_attr
+    def __tableargs__(cls):
+        return  ((sa.schema.UniqueConstraint(cls.label, cls.discriminator, cls.organization_id)))        
+
+def delete_orphan_flashassettag(mapper, connection, target):
+    FlashAssetTag.query.filter(~FlashAssetTag.assets.any()).delete(synchronize_session=False)
+sa.event.listen(FlashAsset, "after_delete", delete_orphan_flashassettag)

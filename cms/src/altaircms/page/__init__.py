@@ -26,20 +26,21 @@ def includeme(config):
     add_route("page_duplicate", "/page/{id}/duplicate")
     add_route("page_partial_update", "/page/{id}/partial/{part}")
     add_route('page', '/page/')
-    add_route('pageset_list', '/page/{kind}/list')
 
     ## widget disposition
-    config.add_route("disposition", "/page/{id}/disposition", factory="altaircms.page.resources.WDispositionResource")    
+    config.add_route("disposition", "/page/{id}/disposition/action/{action}", factory="altaircms.page.resources.WDispositionResource")    
     ## todo: move bellow
     config.add_route("disposition_list", "/disposition", factory="altaircms.page.resources.WDispositionResource")
     config.add_route("disposition_alter", "/disposition/{id}/alter", factory="altaircms.page.resources.WDispositionResource")
 
     # PageSet
+    # add_route('pageset_list', '/page/{kind}/list')
+    add_route("pageset_list", "/page/pagetype/{pagetype}/list")
     config.add_route('pagesets', '/pagesets')
     config.add_route('pageset', '/pagesets/{pageset_id}')
     add_route("pageset_detail", "/pagesets/{pageset_id}/detail/{kind}")
     add_route('pageset_delete', '/pagesets/{pageset_id}/delete')
-    config.add_route('pageset_update', '/pagesets/{pageset_id}/update')
+    config.add_route('pageset_update_term', '/pagesets/{pageset_id}/update_term')
 
     ## Static page
     config.add_route("static_page", "/page/static/{static_page_id}/{action}", 
@@ -51,5 +52,5 @@ def includeme(config):
     config.add_subscriber(".subscribers.page_register_solr", ".subscribers.PageCreate")
     config.add_subscriber(".subscribers.page_register_solr", ".subscribers.PageUpdate")
     config.add_subscriber(".subscribers.page_delete_solr", ".subscribers.PageDelete") ## fixme
-
+    config.add_subscriber("..slackoff.subscribers.update_page_genretag", ".subscribers.PageCreate")
     config.scan('.views')

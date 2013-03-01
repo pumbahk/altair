@@ -27,8 +27,8 @@ class CalendarWidget(Widget):
     calendar_type = sa.Column(sa.String(255))
     from_date = sa.Column(sa.Date)
     to_date = sa.Column(sa.Date)
-    salessegment_id = sa.Column(sa.Integer, sa.ForeignKey("sale.id"))
-    salessegment = orm.relationship("Sale")
+    salessegment_id = sa.Column(sa.Integer, sa.ForeignKey("salessegment_group.id"))
+    salessegment = orm.relationship("SalesSegmentGroup")
 
     def display_all_bool(self):
         return self.salessegment_id is None

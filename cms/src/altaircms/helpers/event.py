@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-
+from webhelpers.number import format_number as _format_number
 from .base import jdate
 WEEK =[u"月", u"火", u"水", u"木", u"金", u"土", u"日"]
 
@@ -15,6 +15,12 @@ def _to_term(p):
 
 def _to_where(p):
     return p.venue
+
+# def performance_name(performance):
+#     return u"%s (%s)" % (performance.title, _to_term(performance))
+
+def performance_name(performance):
+    return u"%s(日時:%s, 場所:%s)" % (performance.title, performance.start_on, performance.venue)
 
 def performance_describe(performance):
     """ performanceから公演場所や日時を表示する文字列を返す
@@ -42,11 +48,12 @@ def performance_time(performance):
     timestr = d.strftime("%H:%M")
     return u"%s（%s）%s" % (datestr, unicode(WEEK[d.weekday()]),  timestr)
     
-def price_format(price):
-    """ priceから価格表を文字列で返す。
-    e.g. ¥10,000
-    """
-    return locale.format("%d", price, grouping=True)
+def format_number(num, thousands=","):
+    return _format_number(int(num), thousands)
+price_format = format_number #deprecated
+
+def format_currency(num, thousands=","):
+    return u"￥" + format_number(num, thousands)
 
 from zope.deprecation import deprecation
 @deprecation.deprecate("this is deprecation method. dont use it")

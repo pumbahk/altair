@@ -17,7 +17,7 @@ class RawhtmlWidget(Widget):
     implements(IWidget)
     type = "rawhtml"
 
-    template_name = "altaircms.plugins.widget:rawhtml/render.mako"
+    template_name = "altaircms.plugins.widget:rawhtml/render.html"
     __tablename__ = "widget_rawhtml"
     __mapper_args__ = {"polymorphic_identity": type}
     query = DBSession.query_property()

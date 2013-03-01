@@ -1,25 +1,17 @@
 # -*- coding:utf-8 -*-
 import unittest
+from altaircms.testing import setup_db, teardown_db
 
 def setUpModule():
-    import sqlahelper
-    from sqlalchemy import create_engine
-    import altaircms.page.models
-    import altaircms.event.models
-    import altaircms.auth.models
-
-    engine = create_engine("sqlite:///")
-    engine.echo = False
-    sqlahelper.get_session().remove()
-    sqlahelper.add_engine(engine)
-    sqlahelper.get_base().metadata.drop_all()
-    sqlahelper.get_base().metadata.create_all()
+    setup_db(["altaircms.page.models", 
+              "altaircms.event.models", 
+              "altaircms.layout.models", 
+              "altaircms.widget.models", 
+              "altaircms.auth.models"])
 
 def tearDownModule():
-    import sqlahelper
-    sqlahelper.get_session().remove()
-    import transaction
-    transaction.abort()
+    teardown_db()
+
 
 class FilteringByOrganizationTests(unittest.TestCase):
     def setUp(self):
@@ -38,7 +30,7 @@ class FilteringByOrganizationTests(unittest.TestCase):
     def test_without_filter(self):
         from altaircms.auth.models import Operator
         from altaircms.auth.models import Organization
-        org = self._withDB(Organization(id=1))
+        org = self._withDB(Organization(id=1, backend_id=11, short_name="this-is-test"))
         
         op0 = self._withDB(Operator(auth_source="this-is-operator-auth_source"))
         op1 = self._withDB(Operator(organization_id=org.id, auth_source="this-is-operator-auth_source"))
@@ -50,7 +42,7 @@ class FilteringByOrganizationTests(unittest.TestCase):
     def test_with_filter(self):
         from altaircms.auth.models import Operator
         from altaircms.auth.models import Organization
-        org = self._withDB(Organization(id=1))
+        org = self._withDB(Organization(id=1, backend_id=11, short_name="this-is-test"))
         
         op0 = self._withDB(Operator(auth_source="this-is-operator-auth_source"))
         op1 = self._withDB(Operator(organization_id=org.id, auth_source="this-is-operator-auth_source"))
@@ -82,7 +74,7 @@ class FiltererdQueryFromRequestTests(unittest.TestCase):
         from altaircms.auth.models import Operator
         from altaircms.auth.models import Organization
 
-        org = self._withDB(Organization(id=1))
+        org = self._withDB(Organization(id=1, backend_id=11, short_name="this-is-test"))
         op = self._withDB(Operator(organization=org, auth_source="this-is-operator-auth_source"))
 
         self.session.add(op)
@@ -96,11 +88,11 @@ class FiltererdQueryFromRequestTests(unittest.TestCase):
         from altaircms.auth.models import Operator
         from altaircms.auth.models import Organization
 
-        org = self._withDB(Organization(id=1))
+        org = self._withDB(Organization(id=1, backend_id=11, short_name="this-is-test"))
         op = self._withDB(Operator(organization=org, auth_source="this-is-operator-auth_source"))
 
         self.session.add(op)
-        another_org = self._withDB(Organization(id=2))
+        another_org = self._withDB(Organization(id=2, short_name="another", backend_id=22))
         class request(object):
             organization = another_org
 

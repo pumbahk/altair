@@ -14,8 +14,8 @@ def _items_from_page(page):
             ]
 
     return [ # todo: fixme
-        dict(label=u"公演期間", name='performance_period', content=h.base.term(event.event_open, event.event_close), notify=False),  
-        dict(label=u"販売期間", name="sales_period", content=h.base.term(event.deal_open,event.deal_close), notify=False),  
+        dict(label=u"公演期間", name='performance_period', content=h.term(event.event_open, event.event_close), notify=False),  
+        dict(label=u"販売期間", name="sales_period", content=h.term(event.deal_open,event.deal_close), notify=False),  
         dict(label=u"出演者", name="performer", content=event.performers, notify=True),  
         dict(label=u"説明／注意事項", name='notice', content=event.notice, notify=True),  
         dict(label=u"お支払い方法", name='ticket_payment', content=event.ticket_payment, notify=True),  

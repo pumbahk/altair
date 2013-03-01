@@ -29,12 +29,12 @@ def set_endpoint(request, endpoint=None):
     logger.debug("matched route name")
     logger.debug(request.matched_route.name)
     logger.debug("session")
-    logger.debug("sentinel: %s, endpoint: %s, referer: %s" % (session.get(_CMS_ENDPOINT_SENTINEL), session.get(CMS_ENDPOINT), request.referrer))
-
+    logger.debug("sentinel: %s, endpoint: %s, referer: %s" % (session.get(_CMS_ENDPOINT_SENTINEL), session.get(CMS_ENDPOINT), endpoint or request.referrer))
+    
 def get_endpoint(request): #maybe
     session = request.session
-    endpoint = session.get(CMS_ENDPOINT)
-    if endpoint:
+    endpoint = request.get("endpoint") or session.get(CMS_ENDPOINT)
+    if endpoint and CMS_ENDPOINT in session:
         del session[CMS_ENDPOINT]
     session[_CMS_ENDPOINT_SENTINEL] = None #sentinel?
     logger.debug("sentinel: %s, endpoint: %s, referer: %s" % (session.get(_CMS_ENDPOINT_SENTINEL), session.get(CMS_ENDPOINT), request.referrer))
@@ -43,7 +43,7 @@ def get_endpoint(request): #maybe
 
 class FlashMessage(object):
     """ flashmessageのqueueをmethodで呼び分ける
-    ここで追加されたメッセージは、altaircms:templates/parts/flashmessage.makoなどで使われる
+    ここで追加されたメッセージは、altaircms:templates/parts/flashmessage.htmlなどで使われる
     """
     @classmethod
     def _flash(cls, request, message, queue):

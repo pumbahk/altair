@@ -1,4 +1,4 @@
-from wtforms.form import Form
+from altaircms.formhelpers import Form
 # from altaircms.auth.helpers import user_context
 from . import helpers
 from interfaces import IAfterFormInitialize

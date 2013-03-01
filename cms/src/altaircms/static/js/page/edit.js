@@ -4,6 +4,8 @@
 // @require jquery-tools (overlay)
 // @require ./backbone_patch.js
 
+// todo: delete it
+
 var ApiUrlMapping = {
     BlockSheet: "/api/structure", 
     Widget: "/api/widget"
@@ -88,6 +90,7 @@ var DroppedWidget = Backbone.Model.extend({
         return {
             pk: null, //conflict?
             name: "dummy", 
+            jname: "ダミー", 
             page_id: get_page(), 
             data: {}
         }
@@ -241,7 +244,7 @@ var DroppedWidgetView = (function(){
             }
         }, 
         template: _.template([
-            '<%= name%>', 
+            '<%= jname%>', 
             '<a class="close"></a>', 
             '<a class="edit" rel="#overlay"></a>', 
         ].join("\n")), 
@@ -387,7 +390,8 @@ var BlockSheet = Backbone.Model.extend({
             if(blocks.hasOwnProperty(block_name)){
                 var widgets = blocks[block_name];
                 for(var i=0, j=widgets.length; i<j; i++){
-                    this.add(block_name, new DroppedWidget(widgets[i]), true)
+                    var params = _.extend({}, widgets[i], {jname: NameToJName[widgets[i].name]});
+                    this.add(block_name, new DroppedWidget(params), true);
                 }
             }
         }
@@ -496,7 +500,7 @@ var BlockSheetView = Backbone.View.extend({
     drop_from_palet: function(draggable, droppable){
         var block_name = InfoService.get_name(droppable);
         var widget_name = InfoService.get_name(draggable)
-        var dwmodel = new DroppedWidget({name: widget_name});
+        var dwmodel = new DroppedWidget({name: widget_name, jname: NameToJName[widget_name]});
         this.model.add(block_name, dwmodel);
     }, 
     drop_from_block: function(draggable, droppable){
@@ -517,6 +521,3 @@ var AppView = Backbone.View.extend({
 
 function info(){console.log(JSON.stringify(window.AppView.BlockSheetView.model));};
 
-$(function(){
-    window.AppView = new AppView()
-});

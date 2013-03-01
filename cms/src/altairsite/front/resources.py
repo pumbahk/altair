@@ -13,13 +13,6 @@ class PageRenderingResource(object):
     def __init__(self, request):
         self.request = request
 
-    def frontpage_renderer(self):
-        return api.FrontPageRenderer(self.request)
-
-    def frontpage_template(self, page):
-        filename = page.layout.prefixed_template_filename
-        return api.get_frontpage_template(self.request, filename)
-
     def pc_access_control(self):
         return AccessControlPC(self.request)
 
@@ -84,22 +77,19 @@ class AccessControlPC(object):
     def error_message(self):
         return u"\n".join(self._error_message)
 
+    def frontpage_template(self, page):
+        lookup = api.get_frontpage_template_lookup(self.request)
+        return lookup.get_renderable_template(self.request, page.layout, verbose=True)
+
+    def frontpage_renderer(self):
+        return api.get_frontpage_renderer(self.request)
+
     def can_access(self):
         if not self.access_ok:
             fmt = u"*front pc access* url is not found (%s). error=%s"
             mes = fmt % (self.request.referer, self.error_message)
             logger.warn(mes.encode("utf-8"))
         return self.access_ok
-
-    def can_rendering(self, template, page):
-        try:
-            return api.is_renderable_template(template, page)
-        except Exception, e:
-            self._error_message.append(str(e)) 
-            fmt = u"*front pc access* url is not found (%s). error=%s"
-            mes = fmt % (self.request.referer, str(e))
-            logger.warn(mes.encode("utf-8"))
-            return False
 
     def _fetch_page_from_params(self, url, dt):
         qs = self.request.allowable(Page).filter(PageSet.id==Page.pageset_id)

@@ -31,12 +31,12 @@ def includeme(config):
                     context=AfterInput, 
                     attr="_after_input", route_name=factory._join("create"), 
                     decorator="altaircms.lib.fanstatic_decorator.with_bootstrap",
-                    renderer="altaircms.plugins.widget.freetext:subtemplates/default_text_create_input.mako")
+                    renderer="altaircms.plugins.widget.freetext:subtemplates/default_text_create_input.html")
     config.add_view("altaircms.lib.crud.views.UpdateView", 
                     context=AfterInput, 
                     attr="_after_input", route_name=factory._join("update"), 
                     decorator="altaircms.lib.fanstatic_decorator.with_bootstrap",
-                    renderer="altaircms.plugins.widget.freetext:subtemplates/default_text_update_input.mako")
+                    renderer="altaircms.plugins.widget.freetext:subtemplates/default_text_update_input.html")
 
     config.add_route("api_get_default_text", "/widget/freetext/api/default_text")
 

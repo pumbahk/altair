@@ -8,7 +8,7 @@ from altaircms.plugins.helpers import get_installed_widgets, list_from_setting_v
 from altaircms.auth.api import get_organization_mapping
 from altaircms.auth.api import fetch_correct_organization
 from zope.interface import implementer
-from .interfaces import IConflictValidateFunction
+from .interfaces import IConflictValidateFunction, IWidgetUtilitiesDefault
 
 import logging
 logger = logging.getLogger(__file__)
@@ -74,24 +74,24 @@ def widget_conflict_validator(config, widgets):
 WIDGET_LABEL_DICT =  {
     "image": u"画像",
     "freetext": u"フリーテキスト",
-    "flash" : u"flash",
+    "flash" : u"フラッシュ",
     "movie" : u"動画",
-    "calendar" : u"カレンダー",
-    "ticketlist" : u"チケットリスト",
+    "calendar" : u"公演カレンダー",
+    "ticketlist" : u"価格表",
     "performancelist" : u"公演リスト",
-    "menu" : u"メニュー",
-    "summary" : u"サマリー",
-    "iconset" : u"アイコンセット",
-    "topic" : u"トピック",
+    "menu" : u"タブ",
+    "summary" : u"イベント詳細",
+    "iconset" : u"サービスアイコン",
+    "topic" : u"トピック(テキスト)",
+    "topcontent" : u"トピック(画像)",
     "breadcrumbs" : u"パンくずリスト",
     "countdown" : u"カウントダウン",
-    "linklist" : u"リンクリスト",
+    "linklist" : u"イベントリンクリスト",
     "heading" : u"見出し",
     "promotion" : u"プロモーション枠",
     "anchorlist" : u"ページ内リンク一覧",
     "purchase" : u"購入ボタン",
-    "twitter" : u"twitter",
-    "rawhtml" : u"rawhtml"
+    "twitter" : u"Twitter"
     }
 
 class WidgetAggregator(object):
@@ -107,6 +107,8 @@ class WidgetAggregator(object):
             if configparser.has_option(k, "utility"):
                 utility_cls  = config.maybe_dotted(configparser.get(k, "utility"))
                 utility_instance = utility_cls().parse_settings(config, configparser)
+                if utility_instance is None:
+                    raise ConfigurationError("widget utility instance is None. widget.parse_settings() is return None?")
                 if not hasattr(utility_instance, "validation") or utility_instance.validation():
                     utilities[k] = utility_instance
         logger.debug("*widget aggregator* widgets:%s,  utilities:%s" % (widgets, utilities))
@@ -154,6 +156,19 @@ class WidgetAggregatorDispatcher(object):
         ### !! request.`organizationかrequest.organization が取れること前提にしている　
         organization = fetch_correct_organization(request)
         assert organization.id == page.organization_id
+        k = (organization.short_name, organization.auth_source)
+
+        logger.debug("widget aggregator dispach:%s" % (k,))
+        try:
+            subdispatch = self.conts[k]
+            return subdispatch(request, page)
+        except KeyError:
+            return request.registry.getUtility(IWidgetUtilitiesDefault)(request, page)
+
+    def strict_dispatch(self, request, page):
+        ### !! request.`organizationかrequest.organization が取れること前提にしている　
+        organization = fetch_correct_organization(request)
+        assert organization.id == page.organization_id
         k = (organization.backend_id, organization.auth_source)
 
         logger.debug("widget aggregator dispach:%s" % (k,))
@@ -161,7 +176,7 @@ class WidgetAggregatorDispatcher(object):
             subdispatch = self.conts[k]
         except KeyError, e:
             fmt = """\
-Organization(id=%d, backend_id=%d, auth_source=%s) isn't bound to %s. please check the 'organization.json' file.
+Organization(id=%d, short_name=%s, auth_source=%s) isn't bound to %s. please check the 'organization.json' file.
 or 
 matched plugin config file is not found
  (candidates: 
@@ -172,7 +187,7 @@ plugin config file name is not found in altaircms.widget.each_organization.setti
 """
             logger.exception(str(e))
             candidates = u"\n".join((u"  * "+s for s in request.registry.settings["altaircms.widget.each_organization.settings"].split("\n")[1:]))
-            raise WidgetAggregateDispatcherException(fmt % (organization.id, organization.backend_id, organization.auth_source, k, candidates))
+            raise WidgetAggregateDispatcherException(fmt % (organization.id, organization.short_name, organization.auth_source, k, candidates))
         return subdispatch(request, page)
 
 

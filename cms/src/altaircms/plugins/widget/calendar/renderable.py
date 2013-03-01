@@ -115,9 +115,9 @@ def _next_month_date(d):
     else:
         return date(d.year, d.month+1, 1)
 
-def get_start_date_and_end_date(salessegment, performances):
-    if salessegment:
-        return salessegment.start_on, salessegment.end_on
+def get_start_date_and_end_date(salessegment_group, performances):
+    if salessegment_group:
+        return salessegment_group.start_on, salessegment_group.end_on
     else:
         return performances[0].start_on, performances[-1].start_on        
 

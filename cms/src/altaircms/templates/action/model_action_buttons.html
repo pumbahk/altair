@@ -1,0 +1,30 @@
+<div class="btn-group">
+  <a href="${request.route_path(modelname+"_create",action="input", _query=_query)}" class="btn">
+    <i class="icon-plus"></i> ${modeljname}を新規作成
+  </a>
+  <button class="btn dropdown-toggle" data-toggle="dropdown">
+    <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu">
+    <li>
+      <a href="${request.route_path(modelname+"_update",action="input",id=obj.id, _query=_query)}">
+        <i class="icon-minus"></i> ${modeljname}を編集
+      </a>
+    </li>
+    <li>
+      <a href="${request.route_path(modelname+"_create",action="copied_input", _query=_query)}">
+        <i class="icon-minus"></i> コピーして${modeljname}を新規作成
+      </a>
+    </li>
+    <li>
+      <%
+        delete_params = _query.copy()
+        if "delete_endpoint" in _query:
+            delete_params["endpoint"] = _query["delete_endpoint"]
+         %>
+      <a href="${request.route_path(modelname+"_delete",action="confirm",id=obj.id, _query=delete_params)}">
+        <i class="icon-minus"></i> ${modeljname}を削除
+      </a>
+    </li>
+  </ul>
+</div>

@@ -1,0 +1,28 @@
+<%inherit file='../layout_2col.html'/>
+<%namespace name="nco" file="../navcomponents.html"/>
+<div class="circle circle-event circle-top"></div>
+<div class="row-fluid">
+    ${nco.breadcrumbs(
+        names=["Top", "Event", event.title],
+        urls=[request.route_path("dashboard"), request.route_path("event_list")]
+    )}
+
+<%include file="./_describe.html" args="event=event"/>
+
+
+<hr/>
+
+
+<ul class="nav nav-tabs">
+   %for sec,jsection in section_pairs:
+      %if section == sec:
+        <li class="active"><a href="${h.route_path_override(request, "event_detail", id=event.id, section=sec)}">${jsection}</a></li>
+      %else:
+        <li><a href="${h.route_path_override(request, "event_detail", id=event.id, section=sec)}">${jsection}</a></li>
+      %endif
+   %endfor
+</ul>
+${panel(panel_name, event)}
+
+
+

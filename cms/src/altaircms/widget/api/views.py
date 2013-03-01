@@ -9,6 +9,8 @@ import json
 """
 DBアクセス減らすために、loginだけ確認して, organizationの確認をしていない。
 TODO:本当にこれで良いか考える。
+
+## todo: move it
 """
 
 @view_defaults(custom_predicates=(require_login,), xhr=True)

@@ -19,7 +19,7 @@ class TwitterWidget(Widget):
     implements(IWidget)
     type = "twitter"
 
-    template_name = "altaircms.plugins.widget:twitter/render.mako"
+    template_name = "altaircms.plugins.widget:twitter/render.html"
     __tablename__ = "widget_twitter"
     __mapper_args__ = {"polymorphic_identity": type}
     query = DBSession.query_property()

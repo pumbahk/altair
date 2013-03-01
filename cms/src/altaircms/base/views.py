@@ -12,7 +12,7 @@ from altaircms.auth.models import APIKey
 from altaircms.auth.forms import APIKeyForm
 
 
-@view_config(renderer='altaircms:templates/dashboard.mako', permission='authenticated',
+@view_config(renderer='altaircms:templates/dashboard.html', permission='authenticated',
              decorator=with_bootstrap, route_name="dashboard")
 def dashboard(request):
     """
@@ -38,8 +38,8 @@ class APIKeyView(object):
         #self.model_object = APIKeyAPI(self.request).read()
         self.model_object = DBSession.query(APIKey).filter_by(id=self.id).one() if self.id else None
 
-    @view_config(route_name="apikey_list", request_method="POST", renderer="altaircms:templates/auth/apikey/list.mako")
-    @view_config(route_name="apikey_list", request_method="GET", renderer="altaircms:templates/auth/apikey/list.mako")
+    @view_config(route_name="apikey_list", request_method="POST", renderer="altaircms:templates/auth/apikey/list.html")
+    @view_config(route_name="apikey_list", request_method="GET", renderer="altaircms:templates/auth/apikey/list.html")
     def read(self):
         if self.request.method == "POST":
             form = APIKeyForm(self.request.POST)

@@ -1,10 +1,32 @@
 # -*- coding:utf-8 -*-
-
 import functools
-def includeme(config):
-    add_route = functools.partial(config.add_route, factory=".resources.AssetResource")
-    add_route("asset_add", "/asset/{kind}")
+from pyramid.path import AssetResolver
+from wtforms.validators  import ValidationError
 
+__all__ = ["ValidationError", "SESSION_NAME", "includeme"]
+SESSION_NAME = "asset"
+
+def _make_asset_filesession(assetspec):
+    from ..filelib import FileSession
+    from ..filelib.core import on_file_exists_try_rename
+    savepath = AssetResolver().resolve(assetspec).abspath()
+    filesession = FileSession(make_path=lambda : savepath, 
+                              on_file_exists=on_file_exists_try_rename)
+    filesession.assetspec = assetspec
+    return filesession
+
+
+def includeme(config):
+    """
+    altaircms.asset.storepath = altaircms:../../data/assets
+    """
+    settings = config.registry.settings
+    filesession = _make_asset_filesession(settings["altaircms.asset.storepath"])
+    config.add_filesession(filesession, name=SESSION_NAME)
+
+    add_route = functools.partial(config.add_route, factory=".resources.AssetResource")
+
+    add_route("asset_add", "/asset/{kind}")
     add_route('asset_list', '')
     add_route("asset_image_list", "/image")
     add_route('asset_movie_list', '/movie')

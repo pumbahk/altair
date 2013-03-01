@@ -32,7 +32,7 @@ from altaircms.topic.models import (
 from altaircms.models import(
     Organization, 
     Category, 
-    Sale
+    SalesSegment
 )
 
 from altaircms.asset.helpers import create_asset
@@ -209,7 +209,7 @@ class Objlike(dict):
 def detail_layout():
     layout = Layout(
         title = u"ticketstar.detail",
-        template_filename = "ticketstar.detail.mako",
+        template_filename = "ticketstar.detail.html",
         # blocks = '[["header"], ["main", "side"],["userBox"]]',
         blocks = '[["topicPath"], ["main", "side"],["userBox"]]',
         organization_id = 1, ##
@@ -222,7 +222,7 @@ def detail_tickets(event):
     sales_choices = import_symbol("altaircms.seeds.saleskind:SALESKIND_CHOICES")
     sale_kind,sale_name = u"normal", u"一般発売"
     sale_name_gen = lambda event, sale_name : u"%s(%s)" % (event.title, sale_name)
-    sale = Sale(event=event, name=sale_name_gen(event, sale_name), kind=sale_kind)
+    sale = SalesSegment(event=event, name=sale_name_gen(event, sale_name), kind=sale_kind)
     r = []
     r.extend([
         Ticket(
@@ -259,7 +259,7 @@ def detail_tickets(event):
     sales_choices = import_symbol("altaircms.seeds.saleskind:SALESKIND_CHOICES")
     sale_kind,sale_name = sales_choices[1]
     sale_name_gen = lambda event, sale_name : u"%s(%s)" % (event.title, sale_name)
-    sale = Sale(event=event, name=sale_name_gen(event, sale_name), kind=sale_kind)
+    sale = SalesSegment(event=event, name=sale_name_gen(event, sale_name), kind=sale_kind)
 
     r.extend([
         Ticket(
@@ -482,7 +482,7 @@ def add_detail_page_settings():
 def help_layout():
     layout = Layout(
         title = u"ticketstar.help",
-        template_filename = "ticketstar.help.mako",
+        template_filename = "ticketstar.help.html",
         blocks = '[["main", "side"]]',
         organization_id = 1, ##
         client_id = 1 ##
@@ -774,7 +774,7 @@ def add_help_page_settings():
 def change_layout():
     layout = Layout(
         title = u"ticketstar.change",
-        template_filename = "ticketstar.change.mako",
+        template_filename = "ticketstar.change.html",
         blocks = '[["main", "side"]]',
         organization_id = 1, ##
         client_id = 1 ##
@@ -952,7 +952,7 @@ def add_change_page_settings():
 def first_layout():
     layout = Layout(
         title = u"ticketstar.first",
-        template_filename = "ticketstar.first.mako",
+        template_filename = "ticketstar.first.html",
         blocks = '[["main", "side"]]',
         organization_id = 1, ##
         client_id = 1 ##
@@ -1754,7 +1754,7 @@ def top_event_and_page_for_linklist_widget(layout):
 
 
 def add_top_page_settings():
-    layout = Layout.query.filter_by(template_filename="ticketstar.top.mako").one()
+    layout = Layout.query.filter_by(template_filename="ticketstar.top.html").one()
     materials = top_event_and_page_for_linklist_widget(layout)
     page = Page.query.filter_by(name="トップページ").one()
     topics = top_topics(page)
@@ -1798,7 +1798,7 @@ def add_materials_settings():
     ## simple layout
     layout_col2 = Layout(
         title = "col2", 
-        template_filename = "col2.mako", 
+        template_filename = "col2.html", 
         blocks = '[["header"],["left", "right"],["footer"]]', 
         organization = organization,  ##
         client = client,  ##
@@ -1806,7 +1806,7 @@ def add_materials_settings():
     
     layout_col3 = Layout(
         title = "col3",
-        template_filename = "col3.mako",
+        template_filename = "col3.html",
         blocks = '[["header"],["left1", "right1"],["left2", "center", "right2"], ["footer"]]',
         organization = organization,  ##
         client = client,  ##,

@@ -1,0 +1,23 @@
+<h3 id="salessegment">${page_title}(${performance.title})</h3>
+
+
+<ul class="nav nav-tabs">
+   %for salessegment in salessegments:
+     %if unicode(salessegment.id) == unicode(current_salessegment.id):
+        <li class="active"><a href="${h.current_route_path_override(request,_query=dict(salessegment_id=salessegment.id))}#salessegment">${salessegment.group.name}</a></li>
+     %else:
+        <li><a href="${h.current_route_path_override(request,_query=dict(salessegment_id=salessegment.id))}#salessegment">${salessegment.group.name}</a></li>
+     %endif
+   %endfor
+</ul>
+
+${panel("describe_salessegment", current_salessegment)}
+
+<hr/>
+
+%if current_salessegment.tickets:
+  ${panel("salessegment_ticket", current_salessegment)}
+%else:
+  ${panel("model_create_only_buttons", modeljname=u"商品", modelname="ticket", _query=dict(salessegment_id=current_salessegment.id))}
+%endif
+

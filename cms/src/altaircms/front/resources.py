@@ -21,13 +21,6 @@ class PageRenderingResource(object):
     def access_control(self):
         return AccessControl(self.request)
 
-    def frontpage_renderer(self):
-        return api.get_frontpage_render(self.request)
-
-    def frontpage_template(self, page):
-        filename = page.layout.prefixed_template_filename
-        return api.get_frontpage_template(self.request, filename)
-
 
 class AccessControl(object):
     def __init__(self, request):
@@ -39,18 +32,22 @@ class AccessControl(object):
     def error_message(self):
         return u"\n".join(self._error_message)
 
+    def frontpage_template(self, page):
+        lookup = api.get_frontpage_template_lookup(self.request)
+        return lookup.get_renderable_template(self.request, page.layout)
+
+    def frontpage_template_abspath(self, page):
+        lookup = api.get_frontpage_template_lookup(self.request)
+        return lookup.abspath(lookup.from_layout(self.request, page.layout))
+
+    def frontpage_renderer(self):
+        return api.get_frontpage_renderer(self.request)
+
     def can_access(self):
         if not self.access_ok:
             logger.info("*cms front preview* url is not found (%s)" % self.request.url)
             logger.warn("*cms front preview* error=%s" % self.error_message)
         return self.access_ok
-
-    def can_rendering(self, template, page):
-        try:
-            return api.is_renderable_template(template, page)
-        except Exception, e:
-            self._error_message.append(str(e))
-            return False
 
     def _check_page_is_accessable(self, page, access_key):
         if page is None:
@@ -94,7 +91,7 @@ class AccessControl(object):
         self.access_ok = True
         return self._check_page_is_accessable(page, access_key)
 
-    def fetch_page_from_pagesetid(self, pageset_id):
+    def fetch_page_from_pagesetid(self, pageset_id, published=True):
         ## pagesetはクライアントから確認しない。allowableが正しい。
         pageset = self.request.allowable(PageSet).filter_by(id=pageset_id).first()
         self.access_ok = True
@@ -104,7 +101,7 @@ class AccessControl(object):
             self.access_ok = False
             return pageset
 
-        page = pageset.current()
+        page = pageset.current(published=published)
 
         if page is None:
             self.access_ok = False

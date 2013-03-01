@@ -10,6 +10,7 @@ import sqlalchemy.orm as orm
 from sqlalchemy.orm import relationship
 
 from sqlalchemy.sql.operators import ColumnOperators
+from sqlalchemy.ext.declarative import declared_attr
 
 import pkg_resources
 def import_symbol(symbol):
@@ -46,7 +47,6 @@ def model_clone(obj):
     return cloned
             
 class BaseOriginalMixin(object):
-
     def to_dict(self):
         return model_to_dict(self)
 
@@ -85,11 +85,6 @@ def initialize_sql(engine, dropall=False):
 このあたりevent/models.pyに移動した方が良い。
 """
 
-performance_ticket_table = sa.Table("performance_ticket", Base.metadata,
-    sa.Column("performance_id", sa.Integer, sa.ForeignKey("performance.id")),
-    sa.Column("ticket_id", sa.Integer, sa.ForeignKey("ticket.id")),
-)
-
 PDICT = import_symbol("altaircms.seeds.prefecture:PrefectureMapping")
 class Performance(BaseOriginalMixin, Base):
     """
@@ -117,14 +112,45 @@ class Performance(BaseOriginalMixin, Base):
     mobile_purchase_link = sa.Column(sa.UnicodeText)
     canceld = sa.Column(sa.Boolean, default=False)
     event = relationship("Event", backref=orm.backref("performances", order_by=start_on, cascade="all"))
-    tickets = relationship("Ticket", secondary=performance_ticket_table, backref="performances")
+
+    @property
+    def salessegments(self):
+        return self.sales
 
     @property
     def jprefecture(self):
         return PDICT.name_to_label.get(self.prefecture, u"--")
 
-class Sale(BaseOriginalMixin, Base):
-    """ 販売条件
+class SalesSegmentGroup(BaseOriginalMixin, Base):
+    """ 販売条件のためのマスターテーブル"""
+    __tablename__ = "salessegment_group"
+    query = DBSession.query_property()    
+
+    id = sa.Column(sa.Integer, primary_key=True)
+    event_id = sa.Column(sa.Integer, sa.ForeignKey('event.id'))
+    event  = relationship("Event", uselist=False, backref="salessegment_groups")
+    name = sa.Column(sa.Unicode(length=255))
+    kind = sa.Column(sa.Unicode(length=255))
+
+    start_on = sa.Column(sa.DateTime, default=datetime.now)
+    end_on = sa.Column(sa.DateTime, default=datetime.now)
+
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
+    backend_id = sa.Column(sa.Integer)
+
+    @classmethod
+    def create_defaults_from_event(cls, event):
+        return [cls(event=event, 
+                    name=u"一般販売", 
+                    kind="normal"), 
+                cls(event=event, 
+                    name=u"一般先行", 
+                    kind="first_lottery"), 
+                ]
+
+class SalesSegment(BaseOriginalMixin, Base):
+    """ 販売区分
     """
     __tablename__ = 'sale'
     query = DBSession.query_property()
@@ -132,11 +158,11 @@ class Sale(BaseOriginalMixin, Base):
     id = sa.Column(sa.Integer, primary_key=True)
     backend_id = sa.Column(sa.Integer)
 
-    event_id = sa.Column(sa.Integer, sa.ForeignKey('event.id'))
-    event  = relationship("Event", backref=orm.backref("sales", cascade="all"))
+    performance_id = sa.Column(sa.Integer, sa.ForeignKey('performance.id'))
+    performance  = relationship("Performance", backref=orm.backref("sales", cascade="all"))
 
-    name = sa.Column(sa.Unicode(length=255))
-    kind = sa.Column(sa.Unicode(length=255), doc=u"saleskind. 販売条件(最速抽選, 先行抽選, 先行先着, 一般発売, 追加抽選.etc)", default=u"normal")
+    group_id = sa.Column(sa.Integer, sa.ForeignKey("salessegment_group.id"))
+    group = orm.relationship("SalesSegmentGroup", backref="salessegments", uselist=False)
 
     start_on = sa.Column(sa.DateTime)
     end_on = sa.Column(sa.DateTime)
@@ -147,8 +173,17 @@ class Sale(BaseOriginalMixin, Base):
     SALESKIND_DICT = dict(SALESKIND_CHOICES)
     @property
     def jkind(self):
-        return self.SALESKIND_DICT.get(self.kind, u"-")
+        return self.SALESKIND_DICT.get(self.type.kind, u"-")
 
+class AliasDescripter(object):
+    def __init__(self, alias):
+        self.alias = alias
+
+    def __get__(self, wrapper, obj):
+        if obj:
+            return getattr(obj, self.alias)
+        else:
+            return getattr(wrapper, self.alias)            
 
 class Ticket(BaseOriginalMixin, Base):
     """
@@ -161,17 +196,111 @@ class Ticket(BaseOriginalMixin, Base):
     backend_id = sa.Column(sa.Integer)
 
     display_order = sa.Column(sa.Integer, default=50)
-    sale_id = sa.Column(sa.Integer, sa.ForeignKey("sale.id", ondelete='CASCADE'))
-
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now)
     price = sa.Column(sa.Integer, default=0)
 
-    sale = relationship("Sale", backref=orm.backref("tickets", order_by=price.desc(), cascade="all"))
+    sale_id = sa.Column(sa.Integer, sa.ForeignKey("sale.id"))
+    salessegment_id = AliasDescripter("sale_id")
+    sale = relationship("SalesSegment", backref=orm.backref("tickets", order_by=price.desc(), cascade="all"), uselist=False)
+    salessegment = AliasDescripter("sale")
 
     name = sa.Column(sa.Unicode(255))
     seattype = sa.Column(sa.Unicode(255))
+
+
+class Genre(Base,  WithOrganizationMixin):
+    __tablename__ = "genre"
+    __tableargs__ = (
+        sa.UniqueConstraint("organizationi_id", "name")
+        )
+    query = DBSession.query_property()
+    is_root = sa.Column(sa.Boolean, default=True)
+    id = sa.Column(sa.Integer, primary_key=True)
+    display_order = sa.Column(sa.Integer, default=50)
+    label = sa.Column(sa.Unicode(length=255))
+    name = sa.Column(sa.String(length=255))
+
+    category_top_pageset_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id", use_alter=True, name="fk_default_category_top_pageset"), doc=u"カテゴリトップページのid")
+
+    def is_category_toppage(self, pageset):
+        return self.category_top_pageset_id == pageset.id
     
+    def has_category_toppage(self):
+        return bool(self.category_top_pageset_id)
+
+    def save_as_category_toppage(self, pageset):
+        Genre.query.filter(Genre.category_top_pageset_id==pageset.id, Genre.id!=self.id)\
+            .update({"category_top_pageset_id": None}, synchronize_session=False)
+        self.category_top_pageset_id = pageset.id
+
+    def __repr__(self):
+        return "<name=%s %s>" % (self.name, self.organization_id)
+
+    def __unicode__(self):
+        suffix = u" -- ページあり"if self.has_category_toppage() else u""
+        return u"%s%s" % (self.label, suffix)
+
+    def query_descendant(self, hop=None):
+        qs = self.query_join_path_from_self
+        if hop:
+            qs = qs.filter(_GenrePath.hop<=hop)
+        return qs.filter(_GenrePath.next_id==self.id)
+        
+    def query_ancestors(self, hop=None):
+        qs = Genre.query.join(_GenrePath, Genre.id==_GenrePath.next_id)
+        if hop:
+            qs = qs.filter(_GenrePath.hop<=hop)
+        return qs.filter(_GenrePath.genre_id==self.id).order_by(sa.asc(_GenrePath.hop))
+
+    @property
+    def children(self):
+        return self.query_descendant(hop=1).all()
+
+    @property
+    def ancestors_include_self(self):
+        xs = list(self.ancestors)
+        xs.insert(0, self)
+        return xs
+
+    @property
+    def ancestors(self):
+        return self.query_ancestors(hop=None).all()
+
+    def _add_parent(self, genre, hop):
+        self.is_root = False
+        self._parents.append(_GenrePath(genre=self, next_genre=genre, hop=hop))        
+
+    def add_parent(self, genre, hop=1):
+        path = _GenrePath.query.filter_by(genre=self, next_genre=genre).first()
+        if path is None:
+            self._add_parent(genre, hop)
+        return self
+
+    def update_parent(self, genre, hop):
+        assert self.id and genre.id
+        _GenrePath.query.filter_by(genre_id=self.id, next_id=genre.id).update({"hop": hop})
+        return self
+
+    def remove_parent(self, genre):
+        assert self.id and genre.id
+        _GenrePath.query.filter_by(genre_id=self.id, next_id=genre.id).delete()
+        return self
+
+class _GenrePath(Base):
+    query = DBSession.query_property()
+    __tablename__ = "genre_path"
+    __table_args__ = (sa.UniqueConstraint("genre_id", "next_id"), )
+    genre_id = sa.Column(sa.Integer, sa.ForeignKey("genre.id"), primary_key=True)
+    genre = orm.relationship("Genre", backref=orm.backref("_parents", remote_side=genre_id), primaryjoin="_GenrePath.genre_id==Genre.id")
+    next_genre = orm.relationship("Genre", primaryjoin="_GenrePath.next_id==Genre.id")
+    next_id = sa.Column(sa.Integer, sa.ForeignKey("genre.id"), primary_key=True)
+    hop = sa.Column(sa.Integer,  default=1)
+
+    def __repr__(self):
+        return "<%s -> %s (hop=%s)>" % (self.genre_id, self.next_id, self.hop)
+
+## deprecated:
 class Category(Base, WithOrganizationMixin): # todo: refactoring
     """
     サイト内カテゴリマスター
@@ -197,8 +326,8 @@ class Category(Base, WithOrganizationMixin): # todo: refactoring
     e.g. name=music,  label=音楽
     """
     __tablename__ = "category"
-    __tableargs__ = (
-        sa.UniqueConstraint("organization_id", "name")
+    __table_args__ = (
+        sa.UniqueConstraint("organization_id", "name"), 
         )
     query = DBSession.query_property()
     id = sa.Column(sa.Integer, primary_key=True)
