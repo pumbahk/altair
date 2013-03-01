@@ -100,7 +100,7 @@ def event_register(request):
         logger.warn("*event register api* apikey is not found: params=%s",  request.POST)
         return HTTPForbidden("")
     if not h.validate_apikey(request, apikey):
-        logger.warn("*event register api* invalid api key: %s" % apikey.apikey)
+        logger.warn("*event register api* invalid api key: %s" % apikey)
         return HTTPForbidden(body=json.dumps({u'status':u'error', u'message':u'access denined'}))
     try:
         h.parse_and_save_event(request, request.json_body)

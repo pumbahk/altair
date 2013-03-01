@@ -72,7 +72,7 @@ class PromotionFunctionalTests(AppFunctionalTests):
    def test_detail_page(self): #toooooooooooooooooooooooo long
       from altaircms.auth.models import Organization
       from altaircms.models import DBSession
-      from altaircms.page.models import Page
+      from altaircms.page.models import Page, PageType
       from altaircms.topic.models import PromotionTag
       from altaircms.asset.models import ImageAsset
       from altaircms.plugins.widget.promotion.models import PromotionWidget
@@ -94,7 +94,8 @@ class PromotionFunctionalTests(AppFunctionalTests):
 
 
       # page作成 そのpageはpromotion widgetを持つ
-      page = Page(name=u"this-is-created-page", organization_id=organization.id)
+      pagetype = PageType.query.filter_by(organization_id=organization.id).first()
+      page = Page(name=u"this-is-created-page", organization_id=organization.id, pagetype_id=pagetype.id)
       widget = PromotionWidget(page=page, tag=created_tag)
       DBSession.add(page)
 
