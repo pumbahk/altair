@@ -1,8 +1,13 @@
 # coding: utf-8
-import urllib
+from sqlalchemy.ext.declarative import declared_attr
 from datetime import datetime
+from pyramid.decorator import reify
 import sqlalchemy as sa
+from altaircms import helpers as h
 import sqlalchemy.orm as orm
+from .nameresolver import GenrePageInfoResolver
+from .nameresolver import EventPageInfoResolver
+from .nameresolver import OtherPageInfoResolver
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy import (Column, 
                         Integer, 
@@ -83,6 +88,12 @@ class PageSet(Base,
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
 
+    pagetype_id = Column(sa.Integer, ForeignKey("pagetype.id"))
+    pagetype = orm.relationship("PageType", backref="pagesets", uselist=False)
+
+    genre_id = Column(sa.Integer, ForeignKey("genre.id"))
+    genre = orm.relationship("Genre",  backref="pageset",  uselist=False, primaryjoin="PageSet.genre_id==Genre.id")
+
     @declared_attr
     def __table_args__(cls):
         return (sa.schema.UniqueConstraint("url", "organization_id"), )
@@ -112,7 +123,7 @@ class PageSet(Base,
             page.url = pageset.url
 
             assert pageset.event == page.event
-
+        pageset.pagetype = page.pagetype
         page.version = pageset.gen_version()
         return pageset
 
@@ -144,12 +155,29 @@ class PageSet(Base,
         created.description = base_page.description
         created.url = base_page.url
         created.layout = base_page.layout
+        created.pagetype = base_page.pagetype
         return created
 
     def take_in_event(self, event):
         self.event = event
         for p in self.pages:
             p.event = event
+
+    @property
+    def public_tags(self):
+        return [tag for tag in self.tags if tag.publicp == True]
+
+    @property
+    def private_tags(self):
+        return [tag for tag in self.tags if tag.publicp == False]
+
+    def to_dict(self): #for slackoff update view
+        return dict(id=self.id, 
+                    tags_string=u", ".join(t.label for t in self.tags if t.organization_id), 
+                    private_tags_string=u", ".join(t.label for t in self.private_tags), 
+                    genre_id=self.genre_id, 
+                    )
+    
         
     # @property
     # def page_proxy(self):
@@ -210,6 +238,9 @@ class Page(BaseOriginalMixin,
     pageset_id = Column(Integer, ForeignKey('pagesets.id'))
     pageset = relationship('PageSet', backref=orm.backref('pages', order_by=sa.asc("publish_begin")), uselist=False)
 
+    pagetype_id = Column(sa.Integer, ForeignKey("pagetype.id"))
+    pagetype = orm.relationship("PageType", backref="pages", uselist=False)
+
     publish_begin = Column(DateTime)
     publish_end = Column(DateTime)
     published = Column(sa.Boolean, default=False)
@@ -228,14 +259,6 @@ class Page(BaseOriginalMixin,
         return sa.sql.and_(sa.sql.or_((self.publish_begin == None), (self.publish_begin <= dt)), 
                            sa.sql.or_((self.publish_end == None), (self.publish_end > dt)))
 
-    @property
-    def public_tags(self):
-        return [tag for tag in self.tags if tag.publicp == True]
-
-    @property
-    def private_tags(self):
-        return [tag for tag in self.tags if tag.publicp == False]
-
     def __repr__(self):
         return '<%s id=%s %s>' % (self.__class__.__name__, self.id, self.url)
 
@@ -253,6 +276,19 @@ class Page(BaseOriginalMixin,
             return page
         else:
             return cls(name=name)
+
+    def publish_status(self, dt):
+        if not self.published:
+            return u"非公開(期間:%s)" % h.term_datetime(self.publish_begin, self.publish_end)
+        
+        if self.publish_begin and self.publish_begin > dt:
+            return u"公開前(%sに公開)" % h.base.jdate_with_hour(self.publish_begin)
+        elif self.publish_end is None:
+            return u"公開中"
+        elif self.publish_end < dt:
+            return u"公開終了(%sに終了)"% h.base.jdate_with_hour(self.publish_end)
+        else:
+            return u"公開中(期間:%s)" % h.term_datetime(self.publish_begin, self.publish_end)
 
     ### page access
     def publish(self):
@@ -299,80 +335,150 @@ class Page(BaseOriginalMixin,
     def valid_layout(self):
         if self.layout is None:
             raise ValueError("*layout validation* page(id=%s) has not rendering layout" % (self.id))
+        if self.layout.template_filename is None:
+            raise ValueError("*layout validation* page(id=%s) layout(id=%s) don't have template" % (self.id,  self.layout.id))
         if not self.layout.valid_block():
             raise ValueError("*layout validation* page(id=%s) layout(id=%s) layout is broken" % (self.id, self.layout.id))
         return True
 
     @property
     def kind(self):
-        if self.event_id:
+        return self.pagetype.kind
+
+class PageType(WithOrganizationMixin, Base):
+    query = DBSession.query_property()
+    __tablename__ = "pagetype"
+    id = sa.Column(sa.Integer, primary_key=True)
+    name = sa.Column(sa.String(255))
+    label = sa.Column(sa.Unicode(255), doc=u"日本語表記")
+    page_default_role = "normal"
+    page_role = sa.Column(sa.String(16), doc=u"pageの利用方法など", default=page_default_role)
+    ## 小カテゴリはportalではないが、カテゴリトップにしたいため
+    page_role_candidates = [("portal", u"カテゴリトップに利用"), 
+                            ("event_detail", u"イベント詳細ページに利用"), 
+                            ("static", u"静的ページに利用"), ]
+
+    page_rendering_type = sa.Column(sa.String(16), doc="pageのレンダリング方法", default="widget")
+    page_rendering_type_candidates = [("widget", u"widget利用"), 
+                                      ("search", u"検索利用")]
+    @declared_attr
+    def __table_args__(cls):
+        return (sa.schema.UniqueConstraint("name", "organization_id"), )
+
+    DEFAULTS = (u"portal",
+                u"event_detail",
+                u"document", 
+                u"special", 
+                u"static", 
+                u"search")
+
+    DEFAULTS_LABELS = (u"ポータル", 
+                       u"イベント詳細", 
+                       u"ドキュメント", 
+                       u"特集", 
+                       u"静的ページ"
+                       u"検索利用"
+                       )
+    @property
+    def is_portal(self):
+        return self.page_role == "portal"
+
+    @property
+    def is_static_page(self):
+        return self.page_role == "static"
+
+    @property
+    def is_event_detail(self):
+        return self.name == "event_detail" or self.page_role == "event_detail"
+    
+    @classmethod
+    def get_or_create(cls, **kwargs):
+        return cls.query.filter_by(**kwargs).first() or cls(**kwargs)
+
+    @classmethod
+    def create_default_pagetypes(cls, organization_id=None):
+        qs = cls.query.filter(cls.organization_id==organization_id, cls.name.in_(cls.DEFAULTS)).all()
+        cached = {o.name: o for o in qs}
+        r = []
+        for name, label in zip(cls.DEFAULTS, cls.DEFAULTS_LABELS):
+            if name in ("portal", "search"):
+                if name == "search":
+                    r.append(cached.get(name) or cls(name=name, label=label, organization_id=organization_id, page_role="portal", page_rendering_type="search"))
+                else:
+                    r.append(cached.get(name) or cls(name=name, label=label, organization_id=organization_id, page_role="portal"))
+            elif name == "event_detail":
+                r.append(cached.get(name) or cls(name=name, label=label, organization_id=organization_id, page_role="event_detail"))                
+            elif name == "static":
+                r.append(cached.get(name) or cls(name=name, label=label, organization_id=organization_id, page_role="static"))                
+            else:
+                r.append(cached.get(name) or cls(name=name, label=label, organization_id=organization_id, page_role="normal"))
+        return r
+
+    ## backward compabirity. this is deprecated property
+    @property
+    def kind(self):
+        if self.is_event_detail:
             return "event"
         else:
             return "other"
 
-
 ## master    
-class PageDefaultInfo(Base):
+class PageDefaultInfo(WithOrganizationMixin, Base):
     query = DBSession.query_property()
     __tablename__ = "page_default_info"
     id = sa.Column(sa.Integer, primary_key=True)
-    title_fmt = sa.Column(sa.Unicode(255))
-    url_fmt = sa.Column(sa.Unicode(255))
-
-    pageset_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id"))
-    pageset = orm.relationship("PageSet", uselist=False, backref="default_info")
+    title_prefix = sa.Column(sa.Unicode(255), default=u"")
+    url_prefix = sa.Column(sa.Unicode(255), default=u"")
 
     keywords = Column(Unicode(255), default=u"")
     description = Column(Unicode(255), default=u"")
+    pagetype_id = sa.Column(sa.Integer, sa.ForeignKey("pagetype.id"))
+    pagetype = orm.relationship("PageType", uselist=False, backref="default_info")
 
-    def _urlprefix_from_category(self, connector=u"/"):
-        category = self.category
-        r = []
-        while category:
-            r.append(category.label)
-            category = category.parent
-        return connector.join(reversed(r))
+    @reify
+    def resolver_genre(self):
+        return GenrePageInfoResolver(self)
 
-    def _url(self, part):
-        return self.url_fmt % {"url": part}
+    @reify
+    def resolver_event(self):
+        return EventPageInfoResolver(self)
 
-    def url(self, part):
-        """ pageを作成するときに使う"""
-        string = self._url(part)
-        return string
-        # if isinstance(string, unicode):
-        #     string = string.encode("utf-8")
-        # return urllib.quote(string)
+    @reify
+    def resolver_other(self):
+        return OtherPageInfoResolver(self)
 
+    def get_page_info(self, pagetype, genre=None, event=None):
+        if event:
+            return self.resolver_event.resolve(genre, event)
+        elif genre:
+            return self.resolver_genre.resolve(genre)
+        else:
+            return self.resolver_other.resolve()
 
-    def title(self, title):
-        return self.title_fmt % {"title": title,  "self": self}
+class PageTag2Page(Base):
+    __tablename__ = "pagetag2pageset"
+    query = DBSession.query_property()
+    object_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id"), primary_key=True)
+    tag_id = sa.Column(sa.Integer, sa.ForeignKey("pagetag.id"), primary_key=True)
+    __tableargs__ = (
+        sa.UniqueConstraint("object_id", "tag_id") 
+        )
 
-    def create_pageset(self, name, category=None, url=None):
-        url = self.url(url or name)
-        pageset = PageSet(parent=self.pageset, url=url, name=name)
-        if category:
-            category.pageset = pageset
-        return pageset
+class PageTag(WithOrganizationMixin, Base):
+    CLASSIFIER = "page"
 
-        
-    def create_page(self, name, category=None, keywords=None, description=None, url=None, layout=None):
-        pageset = self.create_pageset(name, category=category, url=url)
-        title = self.title(name)
-        return Page(pageset=pageset, 
-                    url=pageset.url, 
-                    name=name, 
-                    title=title, 
-                    layout=layout, 
-                    keywords=keywords or self.keywords, 
-                    description=description or self.description)
+    __tablename__ = "pagetag"
+    query = DBSession.query_property()
+    id = sa.Column(sa.Integer, primary_key=True)
+    label = sa.Column(sa.Unicode(255), index=True)
+    pages = orm.relationship("PageSet", secondary="pagetag2pageset", backref="tags")
+    publicp = sa.Column(sa.Boolean, default=False)
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
+    @declared_attr
+    def __tableargs__(cls):
+        return  ((sa.schema.UniqueConstraint(cls.label,cls.organization_id)))        
 
-    
-    def clone_with_pageset(self, pageset, url_fmt=None, title_fmt=None, 
-                          keywords=None, description=None):
-        return self.__class__(pageset=pageset,
-                              url_fmt=url_fmt or self.url_fmt, 
-                              title_fmt=title_fmt or self.title_fmt, 
-                              keywords=keywords or self.keywords, 
-                              description=description or self.description)
-
+def delete_orphan_pagetag(mapper, connection, target):
+    PageTag.query.filter(~PageTag.pages.any()).delete(synchronize_session=False)
+sa.event.listen(Page, "after_delete", delete_orphan_pagetag)

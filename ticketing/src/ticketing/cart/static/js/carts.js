@@ -130,7 +130,7 @@ cart.events = {
     ON_CART_ORDERED: "onCartOredered",
     ON_VENUE_DATASOURCE_UPDATED: "onVenueDataSourceUpdated"
 };
-cart.init = function(venues_selection, selected, upper_limit, cart_release_url) {
+cart.init = function(venues_selection, selected, cart_release_url) {
     // venues_selection = $.extend({}, venues_selection); // clone
     // $.each(venues_selection, function (k, v) {
     //     for (var i = 0; i < v.length; i++) {
@@ -138,7 +138,7 @@ cart.init = function(venues_selection, selected, upper_limit, cart_release_url) 
     //     }
     // });
     this.app = new cart.ApplicationController();
-    this.app.init(venues_selection, selected, upper_limit, cart_release_url);
+    this.app.init(venues_selection, selected, cart_release_url);
     $('body').bind('selectstart', function() { return false; });
 };
 
@@ -228,7 +228,7 @@ cart.showErrorDialog = function showErrorDialog(title, message, footer_button_cl
 cart.ApplicationController = function() {
 };
 
-cart.ApplicationController.prototype.init = function(venues_selection, selected, upper_limit, cart_release_url) {
+cart.ApplicationController.prototype.init = function(venues_selection, selected, cart_release_url) {
     this.performanceSearch = new cart.PerformanceSearch({
         venuesSelection: venues_selection,
         performance: selected[1],
@@ -261,7 +261,6 @@ cart.ApplicationController.prototype.init = function(venues_selection, selected,
     this.orderFormPresenter = new cart.OrderFormPresenter({
         viewType: cart.OrderFormView,
         venuePresenter: this.venuePresenter,
-        upper_limit: upper_limit
     });
 
     this.performanceSearchPresenter.stockTypeListPresenter = this.stockTypeListPresenter;
@@ -833,6 +832,7 @@ cart.OrderFormView = Backbone.View.extend({
         return orderForm;
     },
     buildProduct: function(product) {
+        var upper_limit = product.get('upper_limit');
         var name = $('<span class="productName"></span>');
         name.text(product.get("name"));
         var payment = $('<span class="productPrice"></span>');

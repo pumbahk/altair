@@ -19,7 +19,7 @@ class ImageWidget(Widget):
     implements(IWidget)
     type = "image"
 
-    template_name = "altaircms.plugins.widget:image/render.mako"
+    template_name = "altaircms.plugins.widget:image/render.html"
     __tablename__ = "widget_image"
     __mapper_args__ = {"polymorphic_identity": type}
     query = DBSession.query_property()

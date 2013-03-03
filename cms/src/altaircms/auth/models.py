@@ -1,7 +1,8 @@
 # coding: utf-8
 
 #raise Exception, __name__
-
+from uuid import uuid4
+import hashlib
 from datetime import datetime
 import sqlahelper
 from sqlalchemy.orm import relationship, backref
@@ -11,7 +12,7 @@ from sqlalchemy.types import String, DateTime, Integer, Unicode, Enum
 from sqlalchemy.ext.associationproxy import association_proxy
 from zope.deprecation import deprecation
 from altaircms.models import WithOrganizationMixin, BaseOriginalMixin, DBSession
-import hashlib
+
 
 Base = sqlahelper.get_base()
 _session = sqlahelper.get_session()
@@ -264,9 +265,6 @@ class APIKey(Base):
     query = _session.query_property()
 
     def generate_apikey(self):
-        from uuid import uuid4
-        import hashlib
-
         hash = hashlib.new('sha256', str(uuid4()))
         return hash.hexdigest()
 

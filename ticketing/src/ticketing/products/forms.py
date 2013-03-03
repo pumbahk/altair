@@ -3,43 +3,43 @@
 from decimal import Decimal
 
 from wtforms import Form
-from wtforms import TextField, SelectField, IntegerField, DecimalField, SelectMultipleField, HiddenField
+from wtforms import TextField, SelectField, IntegerField, DecimalField, SelectMultipleField, HiddenField, BooleanField
 from wtforms.validators import Length, NumberRange, EqualTo, Optional, ValidationError
 from wtforms.widgets import CheckboxInput, TextArea
 from sqlalchemy.sql import func
 
-from ticketing.formhelpers import Translations, Required, BugFreeSelectField, OurTextField, OurSelectField, OurIntegerField, OurDecimalField, OurForm, NullableTextField
-from ticketing.core.models import SalesSegment, Product, ProductItem, StockHolder, StockType, Stock, Performance, TicketBundle
+from ticketing.formhelpers import Translations, Required, BugFreeSelectField, OurTextField, OurSelectField, OurIntegerField, OurBooleanField, OurDecimalField, OurForm, NullableTextField
+from ticketing.core.models import SalesSegment, SalesSegmentGroup, Product, ProductItem, StockHolder, StockType, Stock, Performance, TicketBundle
 
 class ProductForm(OurForm):
     @classmethod
     def from_model(cls, product):
         form = cls(
-            id = product.id, 
-            event_id = product.event_id, 
-            name = product.name, 
-            price = product.price, 
-            display_order = product.display_order, 
-            seat_stock_type_id = product.seat_stock_type_id, 
-            sales_segment_id = product.sales_segment_id, 
-            public = 1 if product.public else 0, # why integer?
-            description = product.description
+            id=product.id, 
+            performance_id=product.performance_id, 
+            name=product.name, 
+            price=product.price, 
+            display_order=product.display_order, 
+            seat_stock_type_id=product.seat_stock_type_id, 
+            sales_segment_id=product.sales_segment_id, 
+            public=1 if product.public else 0, # why integer?
+            description=product.description
             )
         return form
 
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         super(ProductForm, self).__init__(formdata, obj, prefix, **kwargs)
-        if 'event_id' in kwargs:
-            conditions ={
-                'event_id':kwargs['event_id'],
-            }
+        if 'performance_id' in kwargs:
+            performance = Performance.query.filter_by(id=kwargs['performance_id']).one()
             self.sales_segment_id.choices = [
-                (sales_segment.id, sales_segment.name) for sales_segment in SalesSegment.filter_by(**conditions).all()
-            ]
+                (sales_segment.id, sales_segment.name) \
+                for sales_segment in SalesSegment.filter(SalesSegment.performance_id == performance.id).all()
+                ]
             self.seat_stock_type_id.choices = [
-                (stock_type.id, stock_type.name) for stock_type in StockType.filter_by(**conditions).all()
-            ]
+                (stock_type.id, stock_type.name) \
+                for stock_type in StockType.filter(StockType.event_id == performance.event_id).all()
+                ]
 
     def _get_translations(self):
         return Translations()
@@ -47,64 +47,61 @@ class ProductForm(OurForm):
     id = HiddenField(
         label=u'商品ID',
         validators=[Optional()],
-    )
-    event_id = HiddenField(
+        )
+    performance_id = HiddenField(
         validators=[Required()]
-    )
+        )
     name = OurTextField(
         label=u'商品名',
         validators=[
             Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
-        ]
-    )
+            ]
+        )
     price = OurDecimalField(
         label=u'価格',
         places=2,
         validators=[Required()]
-    )
+        )
     display_order = OurIntegerField(
         label=u'表示順',
         default=1,
         hide_on_new=True,
-    )
+        )
     seat_stock_type_id = OurSelectField(
         label=u'席種',
         validators=[Required(u'選択してください')],
         choices=[],
         coerce=int
-    )
+        )
     sales_segment_id = OurSelectField(
         label=u'販売区分',
         validators=[Required(u'選択してください')],
         choices=[],
         coerce=int
-    )
-    public = OurIntegerField(
+        )
+    public = OurBooleanField(
         label=u'一般公開',
-        default=0,
         hide_on_new=True,
         widget=CheckboxInput(),
-    )
+        )
     description = NullableTextField(
         label=u'説明',
         hide_on_new=True,
         widget=TextArea()
-    )
+        )
 
     def validate_price(form, field):
         if field.data and form.id.data:
-            product = Product.get(form.id.data)
-            for performance in product.event.performances:
-                conditions = {
-                    'performance_id':performance.id,
-                    'product_id':form.id.data,
-                }
-                sum_amount = ProductItem.filter_by(**conditions)\
-                                        .with_entities(func.sum(ProductItem.price))\
-                                        .scalar() or 0
-                if Decimal(field.data) < Decimal(sum_amount):
-                    raise ValidationError(u'既に登録された商品合計金額以上で入力してください')
+            sum_amount = ProductItem.query \
+                .filter(
+                    (ProductItem.performance_id == form.performance_id.data) & \
+                    (ProductItem.product_id == form.id.data)
+                    ) \
+                .with_entities(func.sum(ProductItem.price)) \
+                .scalar() or 0
+            if Decimal(field.data) < Decimal(sum_amount):
+                raise ValidationError(u'既に登録された商品合計金額以上で入力してください')
 
 class ProductItemForm(Form):
 

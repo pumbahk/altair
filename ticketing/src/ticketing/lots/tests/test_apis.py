@@ -12,19 +12,19 @@ dependency_modules = [
     'ticketing.lots.models',
 ]
 
-class get_productsTests(unittest.TestCase):
-    def _callFUT(self, *args, **kwargs):
-        from ..api import get_products
-        return get_products(*args, **kwargs)
+# class get_productsTests(unittest.TestCase):
+#     def _callFUT(self, *args, **kwargs):
+#         from ..api import get_products
+#         return get_products(*args, **kwargs)
 
-    def test_it(self):
-        request = testing.DummyRequest()
-        sales_segment = mock.Mock()
-        performances = [
-            testing.DummyModel()
-        ]
-        results = self._callFUT(request, sales_segment, performances)
-        sales_segment.get_products.assert_called_with(performances)
+#     def test_it(self):
+#         request = testing.DummyRequest()
+#         sales_segment = mock.Mock()
+#         performances = [
+#             testing.DummyModel()
+#         ]
+#         results = self._callFUT(request, sales_segment, performances)
+#         sales_segment.get_products.assert_called_with(performances)
         
 class create_cartTests(unittest.TestCase):
     @classmethod
@@ -109,44 +109,45 @@ class create_cartTests(unittest.TestCase):
         self.assertEqual(result.products[0].product, product)
 
 
-class get_lotTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.session = _setup_db(modules=dependency_modules)
-
-
-    @classmethod
-    def tearDownClass(self):
-        _teardown_db()
-
-    def setUp(self):
-        self.session.remove()
-
-    def tearDown(self):
-        import transaction
-        transaction.abort()
-
-    def _callFUT(self, *args, **kwargs):
-        from .. import api
-        return api.get_lot(*args, **kwargs)
-
-
-    def test_it(self):
-        from ..testing import _add_lot
-        request = testing.DummyRequest()
-        event = testing.DummyModel(id=1111)
-        sales_segment = testing.DummyModel(id=12345)
-        l = _add_lot(self.session, event.id, sales_segment.id, 5, 3)
-        lot_id = l.id
-        result = self._callFUT(request, event, sales_segment, lot_id)
-
-        self.assertEqual(result[0], l)
-        self.assertEqual(len(result[1]), 5)
-        self.assertEqual(result[1][0].name, u"パフォーマンス 0")
-        self.assertEqual(result[1][4].name, u"パフォーマンス 4")
-        self.assertEqual(len(result[2]), 3)
-        self.assertEqual(result[2][0].name, u"席 0")
-        self.assertEqual(result[2][2].name, u"席 2")
+# class get_lotTests(unittest.TestCase):
+#     @classmethod
+#     def setUpClass(cls):
+#         cls.session = _setup_db(modules=dependency_modules)
+# 
+# 
+#     @classmethod
+#     def tearDownClass(self):
+#         _teardown_db()
+# 
+#     def setUp(self):
+#         self.session.remove()
+# 
+#     def tearDown(self):
+#         import transaction
+#         transaction.abort()
+# 
+#     def _callFUT(self, *args, **kwargs):
+#         from .. import api
+#         return api.get_lot(*args, **kwargs)
+# 
+# 
+#     def test_it(self):
+#         from ..testing import _add_lot
+#         request = testing.DummyRequest()
+#         event = testing.DummyModel(id=1111)
+#         sales_segment = testing.DummyModel(id=12345)
+#         l = _add_lot(self.session, event.id, sales_segment.id, 5, 3)
+#         lot_id = l.id
+#         result = self._callFUT(request, event, sales_segment, lot_id)
+# 
+#         self.assertEqual(result[0], l)
+#         self.assertEqual(len(result[1]), 5)
+#         self.assertEqual(result[1][0].name, u"パフォーマンス 0")
+#         self.assertEqual(result[1][4].name, u"パフォーマンス 4")
+#         self.assertEqual(len(result[2]), 3)
+#         self.assertEqual(result[2][0].name, u"席 0")
+#         self.assertEqual(result[2][2].name, u"席 2")
+# 
 
 class entry_lotTests(unittest.TestCase):
     @classmethod
@@ -279,14 +280,17 @@ class entry_infoTests(unittest.TestCase):
             lot_entry=testing.DummyModel(
                 entry_no="testENTRYNO",
                 membergroup=testing.DummyModel(),
+                shipping_address=testing.DummyModel(
+                    zip="1234567",
+                    prefecture=u"東京都",
+                    sex=1,
+                    ),
             ),
             wish_order=10,
             created_at=datetime(2013, 1, 1),
-            shipping_address=testing.DummyModel(
-                zip="1234567",
-                prefecture=u"東京都",
-                sex=1,
-            )
+            products=[
+                ],
+            total_quantity=0,
         )
         result = self._callFUT(wish)
 

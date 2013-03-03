@@ -146,4 +146,4 @@ class PerformancePublicForm(Form):
                             no_ticket_bundles += u'<div>販売区分: %s、商品名: %s(SEJ券面なし)</div>' % (p.sales_segment.name, p.name)
                     
             if no_ticket_bundles:
-                raise ValidationError(u'券種が設定されていない商品設定がある為、公開できません %s' % no_ticket_bundles)
+                raise ValidationError(u'券面構成が設定されていない商品設定がある為、公開できません %s' % no_ticket_bundles)

@@ -18,8 +18,8 @@ class SalesReportForm(Form):
             self.event_id.data = kwargs['event_id']
         if 'performance_id' in kwargs:
             self.performance_id.data = kwargs['performance_id']
-        if 'sales_segment_id' in kwargs:
-            self.sales_segment_id.data = kwargs['sales_segment_id']
+        if 'sales_segment_group_id' in kwargs:
+            self.sales_segment_group_id.data = kwargs['sales_segment_id']
 
     def _get_translations(self):
         return Translations()
@@ -30,7 +30,7 @@ class SalesReportForm(Form):
     performance_id = HiddenField(
         validators=[Optional()],
     )
-    sales_segment_id = HiddenField(
+    sales_segment_group_id = HiddenField(
         validators=[Optional()],
     )
     limited_from = DateTimeField(

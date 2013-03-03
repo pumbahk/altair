@@ -1,0 +1,181 @@
+<%namespace name="nco" file="./navcomponents.html"/>
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%block name="fulltitle">Ticketstar CMS</%block></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="/static/favicon.ico">
+    <style>
+  body {
+      padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+  }
+  .container-fluid {
+      width:auto;
+      margin-left: 10px;
+      margin-right: 10px;
+  }
+
+
+  .container-fluid form textarea {
+      min-width: 400px;
+      min-height: 180px;
+  }
+  .container-fluid form input {
+      min-width: 400px;
+  }
+  .container-fluid form input[type=submit] {
+      min-width: auto;
+  }
+  .container-fluid form select {
+      min-width: 400px;
+  }
+
+  .container-fluid form .controls input{
+      min-width: auto;
+  }
+  .container-fluid form .controls select{
+      min-width: auto;
+  }
+  table.table-describe {
+    table-layout: fixed;
+    width: 95%;
+  }
+
+  .col2-fluid form textarea {
+      min-width: 200px;
+      min-height: 180px;
+  }
+  .col2-fluid form input {
+      min-width: 200px;
+  }
+  .col2-fluid form input[type=submit] {
+      min-width: auto;
+  }
+  .col2-fluid form select {
+      min-width: 200px;
+  }
+
+
+  /* circle */
+  .circle {
+    border-radius: 50%;
+    width: 150px;
+    height: 150px; 
+    background-color: #000;
+  }
+  .circle-top {
+    position: fixed;
+    top: 50px;
+    right: 50px;
+    z-index: -100;
+  }
+  .circle-event {
+    background-color: ${layout.color.event};
+  }
+  .circle-page { 
+    background-color: ${layout.color.page};
+  }
+  .circle-asset {
+    background-color: ${layout.color.asset};
+  }
+  .circle-item {
+    background-color: ${layout.color.item};
+  }
+  .circle-master {
+    background-color: ${layout.color.master};
+  }
+
+  /* nav-link */
+  .link-event:not(:hover){
+    background-color: ${layout.color.event};
+  }
+  .link-page:not(:hover){
+    background-color: ${layout.color.page};
+  }
+  .link-item:not(:hover){
+    background-color: ${layout.color.item};
+  }
+  .link-asset:not(:hover){
+    background-color: ${layout.color.asset};
+  }
+  .link-master:not(:hover){
+    background-color: ${layout.color.master};
+  }
+
+	/* header css */
+  #navigation { height:25px; }
+  #navigation ul{ list-style-type: none; padding-top:17px; font-size:11px; }
+  #navigation ul li{ float:left; display:inline; margin-right:5px;}
+  #navigation ul li a,
+  #navigation ul li a span { float:left; display:inline; height:25px; padding:0 0 0 8px; background:url(/static/img/nav.gif) no-repeat 0 0; }
+  #navigation ul li a span { padding:0 8px 0 0; background-position:right 0; }
+  #navigation ul li a { color:#ddadab; line-height:29px;}
+  #navigation ul li a.active { font-weight: bold;}
+
+  #navigation ul li a:hover,
+  #navigation ul li a.active { background-position:0 bottom; color:#887e42; }
+
+  #navigation ul li a:hover span,
+  #navigation ul li a.active span{ background-position:right bottom; }
+
+	.big-modal{
+		 width:840px;
+		 margin-left:-420px;
+  }
+
+  .big-modal form textarea {
+      min-width: 200px;
+      min-height: 180px;
+  }
+  .big-modal form input {
+      min-width: 200px;
+  }
+  .big-modal form input[type=submit] {
+      min-width: auto;
+  }
+  .big-modal form select {
+      min-width: 200px;
+  }
+
+  .indent{
+     margin-left:20px;
+  }
+ </style>
+	## for date picker
+	<link rel="stylesheet" type="text/css" href="/static/css/datepicker.css"/>
+	<script type="text/javascript" src="/static/js/bootstrap-datepicker.js"></script>
+    ## style
+    <%block name="style"/>
+  </head>
+  <body>
+    <%block name="header">${nco.header()}</%block>
+    <div class="container-fluid">
+      <%block name="content"/>${next.body()}
+      <%block name="footer">${nco.footer()}</%block>
+    </div>
+
+    ## javascript block
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+    <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    ## javascript block
+    <%block name="js"/>
+    <script type="text/javascript">
+      ## jQuery depended javascript code
+      $(document).ready(function() {
+            //$().dropdown();
+	        $(".datepicker").datepicker({
+	           weekStart: 1,
+	           format: "yyyy-mm-dd HH:MM:SS"
+	        }).on("changeDate", function(){
+              alert(ev.date);
+            });
+            <%block name="jquery"/>
+      });
+    </script>
+    <%block name="js_foot"/>
+  </body>
+</html>

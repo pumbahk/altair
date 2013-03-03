@@ -1,0 +1,98 @@
+<%inherit file='altaircms:templates/layout_2col.html'/>
+
+<%namespace name="fco" file="altaircms:templates/formcomponents.html"/>
+<%namespace name="nco" file="altaircms:templates/navcomponents.html"/>
+
+<%block name="style">
+<style type="text/css">
+  .row-fluid h3 { margin-top:20px;  }
+  .row-fluid h3.first { margin-top:0px;  }
+</style>
+</%block>
+
+<div class="circle circle-item circle-top"></div>
+<h2>プロモーション枠使用ページ一覧</h2>
+
+<div class="row-fluid">
+  <div class="span12">
+    ${nco.breadcrumbs(
+        names=["Top", u"プロモーション枠使用ページ一覧"], 
+        urls=[request.route_path("dashboard")])
+    }
+  </div>
+</div>
+
+<ul class="nav nav-tabs">
+  <li class="active"><a href="${h.route_path_override(request, "promotion_list")}">使用ページ一覧</a></li>
+  <li><a href="${h.route_path_override(request, "promotion_unit_list")}">アイテム一覧</a></li>
+</ul>
+
+
+<div class="navbar navbar-inverse">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="brand" href="#"><i class="icon-search icon-white"></i></a>
+      <form class="pull-left navbar-search" action="">
+        <input name="search" type="text" placeholder="表示場所による検索" class="search-query">
+      </form>
+      <ul class="nav">
+        <div class="btn-group">
+          <a class="btn" href="${request.current_route_path(_query={"published":True})}"><i class="icon-search"></i>表示中のページのみ表示</a>
+          <a class="btn" href="${request.current_route_path(_query={":all:": True})}"><i class="icon-search"></i>終了ページも表示</a>
+          <a class="btn" data-toggle="modal" data-backdrop="" href="#PromotionTagCreateModal"><i class="icon-plus"></i>表示場所の追加</a>
+        </div>
+      </ul>
+    </div>
+  </div><!-- /navbar-inner -->
+  
+</div><!-- /navbar -->
+
+## 分類や表示位置の直近に作成されたもの
+<ul class="nav nav-tabs">
+  %if "search" not in request.GET:
+    <li class="active"><a href="${h.current_route_path_override(request)}">すべて表示</a></li>
+  %else:
+    <li><a href="${h.current_route_path_override(request, _dels=["search"])}">すべて表示</a></li>
+    <li class="active"><a href="${h.current_route_path_override(request)}">${search_word}</a></li>
+  %endif
+  %for tag in recently_tags:
+    %if tag.label != search_word:
+      <li><a href="${h.current_route_path_override(request, _query=dict(search=tag.label))}">${tag.label}</a></li>
+    %endif
+  %endfor
+  <li><a href="${h.route_path_override(request, "topic_tag_list")}">...</a></li>
+</ul>
+
+<p>表示場所「${request.params.get("search") or "-----"}」のページ 全${pages.opts.get("item_count") or pages.collection.count()}件</p>
+${pages.pager()}
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>ページセット</th>
+      <th>ページ(公開期間)</th>
+      <th>promotion widget</th>
+    </tr>
+  </thead>
+    <tbody>
+        %for pageset,page,widget,tag in grid:
+          <tr>
+            %if pageset:
+              <td rowspan="${pageset.rowspan}">${pageset.values.name}</td>
+            %endif
+            %if page:
+              <% current_page_id = page.values.id %>
+              <td rowspan="${page.rowspan}">
+                <a href="${request.route_path("promotion_detail", page_id=page.values.id)}">${page.values.name}</a>
+                (${h.term(page.values.publish_begin, page.values.publish_end)})</td>
+            %endif
+            <td><a href="${request.route_path("promotion_detail", page_id=current_page_id, _query=(dict(widget_id=widget.values.id)))}">${widget.values.id}</a></td>
+            <td>表示場所:<a href="${request.current_route_path(_query=dict(search=tag.values.label))}">${tag.values.label}</a></td>
+          </tr>
+        %endfor
+    </tbody>
+</table>
+${pages.pager()}
+
+## modal
+<%include file="./_addtag_modal_form.html" />

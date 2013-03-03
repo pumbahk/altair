@@ -132,18 +132,26 @@ ${locale.format("%d", price, grouping=True)}
   <li>${names[-1]}</li>
 </ul>
 </%def>
-
 <%def name="sortable(column, paging=True)">
+<%
+from wtforms.fields.core import UnboundField
+if isinstance(column, UnboundField):
+  column_name = column.kwargs.get('name', '')
+  column_label = column.kwargs.get('label', '')
+else:
+  column_name = column.name
+  column_label = column.label.text
+%>
 % if paging:
 <%
   sort_column = request.GET.get('sort')
   sort_direction = request.GET.get('direction')
-  direction = 'desc' if (column.name == sort_column and sort_direction == 'asc') else 'asc'
-  css_class = 'current ' + sort_direction if (column.name == sort_column) else ''
+  direction = 'desc' if (column_name == sort_column and sort_direction == 'asc') else 'asc'
+  css_class = 'current ' + sort_direction if (column_name == sort_column) else ''
 %>
-  <a href="?sort=${column.name}&direction=${direction}" class="${css_class}">${column.label.text}</a>
+  <a href="?sort=${column_name}&direction=${direction}" class="${css_class}">${column_label}</a>
 % else:
-  ${column.label.text}
+  ${column_label}
 % endif
 </%def>
 
@@ -230,13 +238,8 @@ ${locale.format("%d", price, grouping=True)}
 </%def>
 
 <%def name="order_status(order)">
-<%
-  from ticketing.core.models import OrderCancelReasonEnum
-%>
   % if order is None:
     <span></span>
-  % elif order.status == 'canceled' and order.cancel_reason == str(OrderCancelReasonEnum.CallOff.v[0]):
-    <span class="label label-important">キャンセル (中止)</span>
   % elif order.status == 'canceled':
     <span class="label label-important">キャンセル</span>
   % elif order.status == 'delivered':
@@ -247,12 +250,19 @@ ${locale.format("%d", price, grouping=True)}
 </%def>
 
 <%def name="payment_status(order)">
+<%
+  from ticketing.core.models import OrderCancelReasonEnum
+%>
   % if order is None:
     <span></span>
-  % elif order.payment_status == 'refunding':
-    <span class="label label-important">払戻予約</span>
+  % elif order.payment_status == 'refunded' and order.cancel_reason == str(OrderCancelReasonEnum.CallOff.v[0]):
+    <span class="label label-important">払戻済み(中止)</span>
   % elif order.payment_status == 'refunded':
-    <span class="label label-info">払戻済み</span>
+    <span class="label label-important">払戻済み</span>
+  % elif order.payment_status == 'refunding' and order.cancel_reason == str(OrderCancelReasonEnum.CallOff.v[0]):
+    <span class="label label-warning">払戻予約(中止)</span>
+  % elif order.payment_status == 'refunding':
+    <span class="label label-warning">払戻予約</span>
   % elif order.payment_status == 'paid':
     <span class="label label-success">入金済み</span>
   % else:
@@ -268,4 +278,16 @@ ${locale.format("%d", price, grouping=True)}
   % else:
     <span class="label label-inverse">未配送</span>
   % endif
+</%def>
+
+<%def name="help(field, text)">
+  <%
+    return u'''
+      <span class="help-inline">
+        <a href="#" rel="popover" data-original-title="%s" data-content="%s" >
+          <i class="icon-question-sign"></i>
+        </a>
+      </span>
+    ''' % (field.label.text, text)
+  %>
 </%def>

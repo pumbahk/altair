@@ -3,7 +3,7 @@
 import json
 import re
 from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from ticketing.qr import get_qrdata_builder
 import logging
 from ticketing.printqr import utils 
@@ -23,7 +23,7 @@ from ticketing.core.utils import PrintedAtBubblingSetter
 from datetime import datetime
 
 from ticketing.qr.utils import get_matched_token_query_from_order_no
-from ticketing.qr.utils import get_or_create_matched_history_from_token, get_matched_history_from_token
+from ticketing.qr.utils import get_or_create_matched_history_from_token
 from ticketing.qr.utils import make_data_for_qr
 
 ## login
@@ -129,6 +129,8 @@ def choice_event_view(context, request):
 def qrapp_view(context, request):
     event_id = request.matchdict["event_id"]
     event = Event.query.filter_by(id=event_id).first()
+    if event is None:
+        raise HTTPNotFound
     return dict(json=json, 
                 event=event, 
                 form = forms.PerformanceSelectForm(event_id=event_id), 

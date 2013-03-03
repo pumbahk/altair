@@ -1,11 +1,23 @@
 # coding: utf-8
 import re
-from wtforms import form, fields, validators
+from altaircms.formhelpers import Form, fields, validators
 from altaircms.interfaces import IForm
 from altaircms.interfaces import implementer
-from altaircms.helpers.formhelpers import required_field
-from altaircms.helpers.formhelpers import dynamic_query_select_field_factory
+from altaircms.formhelpers import required_field
+from altaircms.formhelpers import dynamic_query_select_field_factory
 from altaircms.auth.models import Operator
+import os.path
+import mimetypes
+
+def normalize_filename(filename):
+    prefix, _ = os.path.splitext(filename)
+    filetype, encoding = mimetypes.guess_type(filename)
+    if filetype is None:
+        return filename
+    newext = mimetypes.guess_extension(filetype)
+    if newext == ".jpe":
+        newext = ".jpg"
+    return prefix + newext
 
 class OnlyExtsFileGen(object):
     def __init__(self, exts, fmt=None):
@@ -16,8 +28,8 @@ class OnlyExtsFileGen(object):
     def __call__(self, form, field):
         if field.data == "":
             raise validators.ValidationError(u"%s ファイルがありません" % form.type)
-
-        fname = field.data.filename
+        
+        fname = field.data.filename = normalize_filename(field.data.filename)
         if not any(fname.endswith(ext) for ext in self.exts):
             raise validators.ValidationError(self.fmt % (fname, self.exts))
         
@@ -31,22 +43,26 @@ def validate_filepath(form, field):
     if field.data:
         field.data.filename = re.sub(r'[^a-z0-9_.-]', '_', field.data.filename)
 
-only_image_file = OnlyExtsFileGen((".jpg", ".jpeg", ".png", ".gif"))
+only_image_file = OnlyExtsFileGen((".jpg", ".png", ".gif"))
 @implementer(IForm)
-class ImageAssetForm(form.Form):
+class ImageAssetForm(Form):
     type = "image"
     title = fields.TextField(label=u"タイトル", validators=[required_field()])
     filepath = fields.FileField(label=u'画像を投稿*', 
+                                validators=[only_image_file, validate_filepath])
+    thumbnail_path = fields.FileField(label=u'サムネイル画像を投稿*', 
                                 validators=[only_image_file, validate_filepath])
     tags = fields.TextField(label=u"タグ")
     private_tags = fields.TextField(label=u"非公開タグ")
 
 
 @implementer(IForm)
-class ImageAssetUpdateForm(form.Form):
+class ImageAssetUpdateForm(Form):
     type = "image"
     title = fields.TextField(label=u"タイトル", validators=[required_field()])
     filepath = fields.FileField(label=u'画像を投稿(空欄の場合には以前の画像がそのまま使われます)',
+                                validators=[only_image_file.none_is_ok, validate_filepath])
+    thumbnail_path = fields.FileField(label=u'サムネイル画像を投稿*', 
                                 validators=[only_image_file.none_is_ok, validate_filepath])
     tags = fields.TextField(label=u"タグ")
     private_tags = fields.TextField(label=u"非公開タグ")
@@ -54,7 +70,7 @@ class ImageAssetUpdateForm(form.Form):
 
 only_movie_file = OnlyExtsFileGen((".mov", ".mp4"))
 @implementer(IForm)
-class MovieAssetForm(form.Form):
+class MovieAssetForm(Form):
     type = "movie"
     title = fields.TextField(label=u"タイトル", validators=[required_field()])
     filepath = fields.FileField(label=u'動画を投稿*',
@@ -65,7 +81,7 @@ class MovieAssetForm(form.Form):
     private_tags = fields.TextField(label=u"非公開タグ")
 
 @implementer(IForm)
-class MovieAssetUpdateForm(form.Form):
+class MovieAssetUpdateForm(Form):
     type = "movie"
     title = fields.TextField(label=u"タイトル", validators=[required_field()])
     filepath = fields.FileField(label=u'動画を投稿(空欄の場合には以前の画像がそのまま使われます)',
@@ -78,7 +94,7 @@ class MovieAssetUpdateForm(form.Form):
 
 only_flash_file = OnlyExtsFileGen((".swf", ))
 @implementer(IForm)
-class FlashAssetForm(form.Form):
+class FlashAssetForm(Form):
     type = "flash"
     title = fields.TextField(label=u"タイトル", validators=[required_field()])
     filepath = fields.FileField(label=u'flashを投稿*',
@@ -90,7 +106,7 @@ class FlashAssetForm(form.Form):
 
 
 @implementer(IForm)
-class FlashAssetUpdateForm(form.Form):
+class FlashAssetUpdateForm(Form):
     type = "flash"
     title = fields.TextField(label=u"タイトル", validators=[required_field()])
     filepath = fields.FileField(label=u'flashを投稿(空欄の場合には以前の画像がそのまま使われます)',
@@ -100,7 +116,7 @@ class FlashAssetUpdateForm(form.Form):
     tags = fields.TextField(label=u"タグ")
     private_tags = fields.TextField(label=u"非公開タグ")
     
-class AssetSearchForm(form.Form):
+class AssetSearchForm(Form):
     created_by = dynamic_query_select_field_factory(
         Operator, allow_blank=True, 
         get_label=lambda user: user.screen_name

@@ -9,8 +9,7 @@ from wtforms.validators import Optional, AnyOf, Length, Email
 from wtforms.widgets import CheckboxInput
 
 from ticketing.formhelpers import DateTimeField, Translations, Required, DateField, Automatic, Max, Min, OurDateWidget, after1900
-from ticketing.core.models import (PaymentMethodPlugin, DeliveryMethodPlugin, PaymentMethod, DeliveryMethod,
-                                   SalesSegment, Performance, Product, ProductItem, Event, OrderCancelReasonEnum)
+from ticketing.core.models import (Organization, PaymentMethodPlugin, DeliveryMethodPlugin, PaymentMethod, DeliveryMethod, SalesSegmentGroup, SalesSegment, Performance, Product, ProductItem, Event, OrderCancelReasonEnum)
 from ticketing.cart.schemas import ClientForm
 from ticketing.payments import plugins
 
@@ -55,25 +54,72 @@ class OrderSearchForm(Form):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
 
+        organization = None
+        event = None
+        performance = None
+        sales_segment = None
+
+        if 'organization_id' in kwargs:
+            organization_id = kwargs.pop('organization_id')
+            organization = Organization.get(organization_id)
+
         if 'event_id' in kwargs:
-            event = Event.get(kwargs['event_id'])
-            self.event_id.choices = [(event.id, event.title)]
-        elif 'organization_id' in kwargs:
-            organization_id = kwargs['organization_id']
-            self.event_id.choices = [('', '')]+[(e.id, e.title) for e in Event.filter_by(organization_id=organization_id)]
-            self.payment_method.choices = [(pm.id, pm.name) for pm in PaymentMethod.filter_by_organization_id(organization_id)]
-            self.delivery_method.choices = [(dm.id, dm.name) for dm in DeliveryMethod.filter_by_organization_id(organization_id)]
+            event_id = kwargs.pop('event_id')
+            event = Event.get(event_id)
 
         if 'performance_id' in kwargs:
-            performance = Performance.get(kwargs['performance_id'])
-            self.performance_id.choices = [(performance.id, performance.name)]
-        elif self.event_id.data:
-            performances = Performance.filter_by(event_id=self.event_id.data)
-            self.performance_id.choices = [('', '')]+[(p.id, '%s (%s)' % (p.name, p.start_on.strftime('%Y-%m-%d %H:%M'))) for p in performances]
+            performance_id = kwargs.pop('performance_id')
+            performance = Performance.get(performance_id)
 
-        if self.sales_segment.data:
-            sales_segments = SalesSegment.query.filter(SalesSegment.id.in_(self.sales_segment.data))
-            self.sales_segment.choices = [(sales_segment.id, sales_segment.name) for sales_segment in sales_segments]
+        if 'sales_segment_id' in kwargs:
+            sales_segment_id = kwargs.pop('sales_segment_id')
+            sales_segment = SalesSegment.get(sales_segment_id)
+            if performance is None:
+                performance = sales_segment.performance
+
+        if event is None and performance is not None:
+            event = performance.event
+
+        if organization is None and event is not None:
+            organization = event.organization
+
+        if organization is not None:
+            self.payment_method.choices = [(pm.id, pm.name) for pm in PaymentMethod.filter_by_organization_id(organization.id)]
+            self.delivery_method.choices = [(dm.id, dm.name) for dm in DeliveryMethod.filter_by_organization_id(organization.id)]
+            if event is None:
+                events = Event.filter_by(organization_id=organization.id)
+                self.event_id.choices = [('', u'(すべて)')]+[(e.id, e.title) for e in events]
+            else:
+                self.event_id.choices = [(event.id, event.title)]
+
+        # Event が指定されていなかったらフォームから取得を試みる
+        if event is None and self.event_id.data:
+            event = Event.get(self.event_id.data)
+
+        if event is not None:
+            if performance is None:
+                performances = Performance.filter_by(event_id=event.id)
+                self.performance_id.choices = [('', u'(すべて)')]+[(p.id, '%s (%s)' % (p.name, p.start_on.strftime('%Y-%m-%d %H:%M'))) for p in performances]
+            else:
+                self.performance_id.choices = [(performance.id, '%s (%s)' % (performance.name, performance.start_on.strftime('%Y-%m-%d %H:%M')))]
+        else:
+            if organization is not None:
+                performances = Performance.query.join(Event).filter(Event.organization_id == organization.id)
+            else:
+                performances = Performance.query
+            self.performance_id.choices = [('', u'(すべて)')] + [(p.id, '%s (%s)' % (p.name, p.start_on.strftime('%Y-%m-%d %H:%M'))) for p in performances]
+            
+
+        # Performance が指定されていなかったらフォームから取得を試みる
+        if performance is None and self.performance_id.data:
+            performance = Performance.get(self.performance_id.data)
+
+        if performance is not None:
+            if sales_segment is None:
+                sales_segments = SalesSegment.query.filter(SalesSegment.performance_id == performance.id)
+                self.sales_segment_id.choices = [('', u'(すべて)')] + [(sales_segment.id, sales_segment.sales_segment_group.name) for sales_segment in sales_segments]
+            else:
+                seles.sales_segment_id.choices = [(sales_segment.id, sales_segment.sales_segment_group.name)]
 
     order_no = TextField(
         label=u'予約番号',
@@ -158,7 +204,7 @@ class OrderSearchForm(Form):
         choices=[],
         validators=[Optional()],
     )
-    sales_segment = SelectMultipleField(
+    sales_segment_id = SelectMultipleField(
         label=u'販売区分',
         coerce=lambda x : int(x) if x else u"",
         choices=[],
@@ -183,6 +229,7 @@ class OrderSearchForm(Form):
     )
     sort = HiddenField(
         validators=[Optional()],
+        default='order_no'
     )
     direction = HiddenField(
         validators=[Optional(), AnyOf(['asc', 'desc'], message='')],
@@ -257,8 +304,8 @@ class OrderRefundSearchForm(OrderSearchForm):
         choices=[],
         validators=[Required()],
     )
-    sales_segment = SelectMultipleField(
-        label=u'販売区分',
+    sales_segment_group = SelectMultipleField(
+        label=u'販売区分グループ',
         coerce=lambda x : int(x) if x else u"",
         choices=[],
         validators=[Required()],
@@ -282,6 +329,7 @@ class PerformanceSearchForm(Form):
     )
     sort = HiddenField(
         validators=[Optional()],
+        default='id'
     )
     direction = HiddenField(
         validators=[Optional(), AnyOf(['asc', 'desc'], message='')],
@@ -290,6 +338,23 @@ class PerformanceSearchForm(Form):
     public = HiddenField(
         validators=[Optional()],
     )
+
+class SalesSegmentSearchForm(Form):
+    performance_id = HiddenField(
+        validators=[Optional()],
+    )
+    sort = HiddenField(
+        validators=[Optional()],
+        default='id'
+    )
+    direction = HiddenField(
+        validators=[Optional(), AnyOf(['asc', 'desc'], message='')],
+        default='desc',
+    )
+    public = HiddenField(
+        validators=[Optional()],
+    )
+
 
 class OrderReserveForm(Form):
 
@@ -300,10 +365,10 @@ class OrderReserveForm(Form):
             self.performance_id.data = performance.id
 
             now = datetime.now()
-            sales_segments = SalesSegment.filter_by(kind='sales_counter')\
-                                         .filter_by(event_id=performance.event_id)\
+            sales_segments = SalesSegment.query.filter_by(performance_id=performance.id)\
                                          .filter(SalesSegment.start_at<=now)\
-                                         .filter(now<=SalesSegment.end_at).all()
+                                         .filter(now<=SalesSegment.end_at)\
+                                         .join(SalesSegmentGroup).filter(SalesSegmentGroup.kind=='sales_counter').all()
             self.payment_delivery_method_pair_id.choices = []
             for sales_segment in sales_segments:
                 for pdmp in sales_segment.payment_delivery_method_pairs:
@@ -320,13 +385,12 @@ class OrderReserveForm(Form):
             products = []
             if 'stocks' in kwargs and kwargs['stocks']:
                 # 座席選択あり
-                products = Product.filter(Product.event_id==performance.event_id)\
-                                  .join(Product.items)\
+                products = Product.query.join(Product.items)\
                                   .filter(ProductItem.performance_id==performance.id)\
                                   .filter(ProductItem.stock_id.in_(kwargs['stocks'])).all()
             #else:
             #    # 数受け
-            #    products = Product.filter(Product.sales_segment_id.in_([ss.id for ss in sales_segments]))\
+            #    products = Product.filter(Product.sales_segment_group_id.in_([ss.id for ss in sales_segments]))\
             #                      .join(Product.seat_stock_type)\
             #                      .filter(StockType.quantity_only==1).all()
             for p in products:
@@ -407,8 +471,20 @@ class OrderRefundForm(Form):
         default=0,
         widget=CheckboxInput(),
     )
-    include_fee = IntegerField(
-        label=u'手数料を払戻しする',
+    include_system_fee = IntegerField(
+        label=u'システム手数料を払戻しする',
+        validators=[Required()],
+        default=0,
+        widget=CheckboxInput(),
+    )
+    include_transaction_fee = IntegerField(
+        label=u'決済手数料を払戻しする',
+        validators=[Required()],
+        default=0,
+        widget=CheckboxInput(),
+    )
+    include_delivery_fee = IntegerField(
+        label=u'配送手数料を払戻しする',
         validators=[Required()],
         default=0,
         widget=CheckboxInput(),
@@ -432,7 +508,7 @@ class OrderRefundForm(Form):
                 raise ValidationError(u'指定された払戻方法は、この決済方法では選択できません')
 
     def validate_include_item(form, field):
-        if not field.data and not form.include_fee.data:
+        if not field.data and not form.include_system_fee.data and not form.include_transaction_fee.data and not form.include_delivery_fee.data:
             raise ValidationError(u'払戻対象を選択してください')
 
 class ClientOptionalForm(ClientForm):

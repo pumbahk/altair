@@ -139,23 +139,23 @@ def doc_from_page(page):
     if event:
         doc = doc_from_event(doc, event)
         doc = doc_from_performances(doc, event.performances)
-
-    tags = page.public_tags
-    if tags:
-        doc = doc_from_tags(doc, tags)
         
     _doc_from_page(doc, page)
     return doc
 
-
 def ftsearch_register_from_page(request, page, ftsearch=None):
     ftsearch = ftsearch or solr.get_fulltext_search(request)
     doc = doc_from_page(page)
+
+    if page.pageset:
+        tags = page.pageset.public_tags
+        if tags:
+            doc = doc_from_tags(doc, tags)
+
     try:
         ftsearch.register(doc, commit=True)
     except Exception, e:
-        logger.error("solr register failed")
-        logger.exception(str(e))
+        logger.warn(str(e))
         
         
 

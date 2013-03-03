@@ -5,8 +5,8 @@ from wtforms import TextField, SelectField, DecimalField, IntegerField, HiddenFi
 from wtforms.validators import NumberRange, Regexp, Length, Optional, ValidationError
 from wtforms.widgets import CheckboxInput
 
-from ticketing.formhelpers import Translations, Required
-from ticketing.core.models import PaymentMethod, DeliveryMethod, PaymentDeliveryMethodPair
+from ticketing.formhelpers import DateTimeField, Translations, Required, after1900
+from ticketing.core.models import SalesSegment, PaymentMethod, DeliveryMethod, PaymentDeliveryMethodPair
 
 class PaymentDeliveryMethodPairForm(Form):
 
@@ -26,8 +26,8 @@ class PaymentDeliveryMethodPairForm(Form):
     id = HiddenField(
         validators=[]
     )
-    sales_segment_id = HiddenField(
-        validators=[]
+    sales_segment_group_id = HiddenField(
+        validators=[Optional()]
     )
     system_fee = DecimalField(
         label=u'システム利用料',
@@ -82,12 +82,38 @@ class PaymentDeliveryMethodPairForm(Form):
         default=0,
         widget=CheckboxInput(),
     )
+    payment_period_days = IntegerField(
+        label=u'コンビニ窓口での支払期限日数',
+        validators=[
+            Required(),
+            NumberRange(min=1, message=u'有効な値を入力してください'),
+        ],
+        default=3,
+    )
+    issuing_interval_days = IntegerField(
+        label=u'コンビニ窓口での発券が可能となるまでの日数',
+        validators=[
+            Required(),
+            NumberRange(min=0, message=u'有効な値を入力してください'),
+        ],
+        default=1,
+    )
+    issuing_start_at = DateTimeField(
+        label=u'コンビニ発券開始日時',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+    )
+    issuing_end_at = DateTimeField(
+        label=u'コンビニ発券期限日時',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+    )
 
     def validate_payment_method_id(form, field):
         if field.data is None or form.delivery_method_id.data is None or form.id is None:
             return
         kwargs = {
-            'sales_segment_id':form.sales_segment_id.data,
+            'sales_segment_group_id':form.sales_segment_group_id.data,
             'payment_method_id':field.data,
             'delivery_method_id':form.delivery_method_id.data,
         }

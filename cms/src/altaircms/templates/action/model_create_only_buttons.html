@@ -1,0 +1,11 @@
+%if show_alert:
+<div class="alert alert-warn">
+  ${modeljname} がありません。作成してください。
+</div>
+%endif
+
+<div class="btn-group">
+  <a href="${request.route_path(modelname+"_create",action="input", _query=_query)}" class="btn">
+    <i class="icon-plus"></i> ${modeljname}を新規作成
+  </a>
+</div>

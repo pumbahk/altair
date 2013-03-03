@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 from . import base
 from . import asset
 from . import event
@@ -8,6 +9,7 @@ from . import link
 from . import mobilelink
 __all__ = ["base", "asset", "event", "page", "widget", "tag", "link", "mobilelink"]
 
+WEEK = base.WEEK
 ## pagination
 from webhelpers.paginate import Page
 import urlparse
@@ -95,3 +97,64 @@ class PagerAdapter(object):
         return self.pagination.pager(**opts)
 
 paginate = PagerAdapter
+
+## 
+def term_datetime(beg, end):
+    """ dateオブジェクトを受け取り期間を表す文字列を返す
+    e.g. 2012年3月3日(土)〜7月12日(木) 
+    """
+    if beg is None:
+        if end is None:
+            return u""
+        else:
+            return u"〜 %s(%s)" % (end.strftime(u"%-m月%-d日 %-H:%-M".encode("utf-8")).decode("utf-8"), WEEK[end.weekday()])
+
+    beg_str = beg.strftime(u"%Y年%-m月%-d日 %-H:%-M".encode("utf-8")).decode("utf-8")
+    if end is None:
+        return u"%s(%s) 〜" % (beg_str, WEEK[beg.weekday()])
+
+    if beg.year == end.year:
+        end_str = end.strftime(u"%-m月%-d日 %-H:%-M".encode("utf-8")).decode("utf-8")
+    else:
+        end_str = end.strftime(u"%Y年%-m月%-d日 %-H:%-M".encode("utf-8")).decode("utf-8")
+    return u"%s(%s) 〜 %s(%s)" % (beg_str, WEEK[beg.weekday()], end_str, WEEK[end.weekday()])
+
+def term(beg, end):
+    """ dateオブジェクトを受け取り期間を表す文字列を返す
+    e.g. 2012年3月3日(土)〜7月12日(木) 
+    """
+    if beg is None:
+        if end is None:
+            return u""
+        else:
+            return u"〜 %s(%s)" % (end.strftime(u"%-m月%-d日".encode("utf-8")).decode("utf-8"), WEEK[end.weekday()])
+
+    beg_str = beg.strftime(u"%Y年%-m月%-d日".encode("utf-8")).decode("utf-8")
+    if end is None:
+        return u"%s(%s) 〜" % (beg_str, WEEK[beg.weekday()])
+
+    if beg.year == end.year:
+        end_str = end.strftime(u"%-m月%-d日".encode("utf-8")).decode("utf-8")
+    else:
+        end_str = end.strftime(u"%Y年%-m月%-d日".encode("utf-8")).decode("utf-8")
+    return u"%s(%s) 〜 %s(%s)" % (beg_str, WEEK[beg.weekday()], end_str, WEEK[end.weekday()])
+
+jterm = term
+
+def _merge_dict(base, other=None, dels=None):
+    r = {}
+    r.update(base)
+    if other:
+        r.update(other)
+    if dels:
+        for k in dels:
+            del r[k]
+    return r
+    
+def route_path_override(request, path, _query=None, _dels=None, **kwargs):
+    qdict = _merge_dict(request.GET, other=_query, dels=_dels)
+    return request.route_path(path, _query=qdict, **kwargs)
+
+def current_route_path_override(request, _query=None, _dels=None, **kwargs):
+    qdict = _merge_dict(request.GET, other=_query, dels=_dels)
+    return request.current_route_path(_query=qdict, **kwargs)

@@ -17,7 +17,7 @@ class BreadcrumbsWidget(Widget):
     implements(IWidget)
     type = "breadcrumbs"
 
-    template_name = "altaircms.plugins.widget:breadcrumbs/render.mako"
+    template_name = "altaircms.plugins.widget:breadcrumbs/render.html"
     __tablename__ = "widget_breadcrumbs"
     __mapper_args__ = {"polymorphic_identity": type}
     query = DBSession.query_property()

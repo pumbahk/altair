@@ -1,0 +1,121 @@
+<%inherit file='../layout_2col.html'/>
+<%namespace name="nco" file="../navcomponents.html"/>
+<%namespace name="fco" file="../formcomponents.html"/>
+<%namespace name="co" file="./components.html"/>
+
+<%block name='style'>
+<style type="text/css">
+
+  .alert{ margin:1%  }
+  .size1{ width:84.5%;  }
+  .size2{ width:34.5%; }
+  .size3{ width:17.8%; }
+  .left{ float:left; }
+  .clear{ clear:both; }
+</style>
+</%block>
+
+<script type="text/javascript">
+  var render_demo = function(){
+    var layout_id = $(this).val();
+    $("#layout_demo").load("${request.route_path("layout_demo")}"+"?id="+layout_id);
+  };
+
+  $(function(){
+//render demo:
+    $("[name='layout']").live("change", render_demo);
+    render_demo.call($("[name='layout']"));
+
+//input helper:
+  });
+
+  var propagate_data = function propagate_data(data){
+      var root = $("form#submit_form");
+      root.find("input[name='name']").val(data.name);
+      root.find("input[name='url']").val(data.url);
+      root.find("input[name='title']").val(data.title);
+      root.find("textarea[name='keywords']").val(data.keywords);
+      root.find("textarea[name='description']").val(data.description);
+      root.find("select[name='genre']").val(data.genre);
+      if(!!data.event){
+        root.find("select[name='event']").val(data.event);
+      }
+        var parent_field = root.find("select[name='parent']");
+        if(data.parent){
+          parent_field.val(data.parent).removeAttr("disabled");
+        } else {
+          parent_field.attr("disabled","disabled");
+        }
+     $("#message").prepend($("<div class='alert alert-info'>").text(data.caption+" -- ページ設定の初期値が挿入されました"));
+  };
+
+  var propagete_setup_info = function propagate_setup_info(){
+    var root = $("form#setup_form");
+    var params = {"event": root.find("select[name='event']").val(),
+                  "name":  root.find("input[name='name']").val(),
+                  "genre": root.find("select[name='genre']").val(),
+                  "pagetype": root.find("select[name='pagetype']").val()};
+
+  $.getJSON("${request.route_path("plugins_api_page_info_default")}",params).done(function(data,status,req){
+    if (data.error){
+       alert(data.error);
+    } else {
+        propagate_data(data);
+    }
+  }).fail(function(data){alert(data)});
+    return false; // kill propagation
+  };
+</script>
+
+<div class="circle circle-page circle-top"></div>
+<h2>ページの追加</h2>
+
+<div class="row-fluid">
+  <div class="span12">
+    ${nco.breadcrumbs(
+        names=[u"Top", u"Page", u"新しいページの追加"],
+        urls=[request.route_path("dashboard"),
+              request.route_path("page")]
+    )}
+  </div>
+</div>
+<div id="message"></div>
+<div class="row">
+  <div class="col2-fluid">
+  <div class="span6">
+    <h2>ページの初期値設定フォーム</h2>
+  </div>
+  <div class="span5">
+    <h2>layout image</h2>
+  </div>
+    
+  <div class="span6">
+  %if hasattr(setup_form,"event"):
+    <form id="setup_form" onSubmit="return propagete_setup_info();">
+       ${fco.form_as_table_strict(setup_form, ["pagetype", "genre", "event", "name"])}
+     <input type="submit" value="初期値をフォームに反映">
+    </form>
+  %else:
+    <form id="setup_form" onSubmit="return propagete_setup_info();">
+       ${fco.form_as_table_strict(setup_form, ["pagetype", "genre", "name"])}
+     <input type="submit" value="初期値をフォームに反映">
+    </form>
+  %endif
+
+<hr/>
+
+    <h2>form</h2>
+    <form id="submit_form" action="${h.current_route_path_override(request, action="confirm")}" method="POST">
+    ## work-around. so-sorry.
+    %if request.params.get("pagetype") == "event_detail":
+     ${fco.form_as_table_strict(form, ["parent", "name", "pagetype", "genre", "url", "title","event", "publish_begin", "publish_end","description","keywords","tags","private_tags","layout"])}
+    %else:
+     ${fco.form_as_table_strict(form, ["parent", "name", "pagetype", "genre", "url", "title", "publish_begin", "publish_end","description","keywords","tags","private_tags","layout"])}
+    %endif
+      <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> Create</button>
+    </form>
+  </div>
+  <div class="span5" id="layout_demo">
+  </div>
+  </div>
+</div>

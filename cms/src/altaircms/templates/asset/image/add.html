@@ -1,0 +1,19 @@
+<%inherit file='../../layout_2col.html'/>
+<%namespace name="fco" file="../../formcomponents.html"/>
+<%namespace name="nco" file="../../navcomponents.html"/>
+<div class="circle circle-asset circle-top"></div>
+<h2>image asset</h2>
+
+<div class="row-fluid">
+  <div class="span12">
+    ${nco.breadcrumbs(
+	    names=["Top", "Asset"], 
+	    urls=[request.route_path("dashboard")]
+	)}
+  </div>
+</div>
+
+<form action="${request.route_path("asset_image_create")}" method="POST" enctype="multipart/form-data">
+  ${fco.form_as_table_strict(form, ["filepath","thumbnail_path","title","tags","private_tags"])}
+  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> Create</button>
+</form>

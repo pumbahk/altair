@@ -7,7 +7,7 @@ from altaircms.models import WithOrganizationMixin
 from altaircms.models import DBSession
 from datetime import datetime
 from datetime import timedelta
-import hashlib
+
 
 class Event(BaseOriginalMixin, WithOrganizationMixin, Base):
     """
@@ -27,10 +27,10 @@ class Event(BaseOriginalMixin, WithOrganizationMixin, Base):
     title = sa.Column(sa.Unicode(255))
     subtitle = sa.Column(sa.Unicode(255), default=u"")
     description = sa.Column(sa.Unicode(255), default=u"")
-    event_open = sa.Column(sa.DateTime)
-    event_close = sa.Column(sa.DateTime)
-    deal_open = sa.Column(sa.DateTime)
-    deal_close = sa.Column(sa.DateTime)
+    event_open = sa.Column(sa.DateTime, default=datetime.now)
+    event_close = sa.Column(sa.DateTime, default=datetime.now)
+    deal_open = sa.Column(sa.DateTime, default=datetime.now)
+    deal_close = sa.Column(sa.DateTime, default=datetime.now)
     is_searchable = sa.Column(sa.Boolean, default=True)
 
     performers = sa.Column(sa.UnicodeText, doc=u"講演者")
@@ -38,6 +38,7 @@ class Event(BaseOriginalMixin, WithOrganizationMixin, Base):
     notice = sa.Column(sa.UnicodeText, doc=u"注意事項")
     ticket_pickup = sa.Column(sa.UnicodeText, doc=u"チケット引き取り方法")
     ticket_payment = sa.Column(sa.UnicodeText, doc=u"支払い方法")
+    code = sa.Column(sa.String(12), doc=u"event code (backend)")
 
     @classmethod
     def near_the_deal_close_query(cls, today, N=7, qs=None):

@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 
-from wtforms.form import Form
+from altaircms.formhelpers import Form
 from wtforms import fields
 
 class DetailSelectForm(Form):

@@ -219,8 +219,9 @@ class Membership(Base, BaseModel, LogicallyDeleted, WithTimestamp):
 MemberGroup_SalesSegment = Table('MemberGroup_SalesSegment', Base.metadata,
     Column('id', Identifier, primary_key=True),
     Column('membergroup_id', Identifier, ForeignKey('MemberGroup.id')),
-    Column('sales_segment_id', Identifier, ForeignKey('SalesSegmentGroup.id')),
-    UniqueConstraint('membergroup_id', 'sales_segment_id'),
+    Column('sales_segment_group_id', Identifier, ForeignKey('SalesSegmentGroup.id')),
+    Column('sales_segment_id', Identifier, ForeignKey('SalesSegment.id')),
+    UniqueConstraint('membergroup_id', 'sales_segment_group_id'),
 )
 
 class MemberGroup(Base, BaseModel, LogicallyDeleted, WithTimestamp):
@@ -231,6 +232,10 @@ class MemberGroup(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     membership_id = Column(Identifier, ForeignKey('Membership.id'))
     membership = relationship('Membership', backref='membergroups')
     is_guest = Column(Boolean, default=False, server_default='0', nullable=False)
+
+    sales_segment_groups = relationship('SalesSegmentGroup',
+        secondary=MemberGroup_SalesSegment,
+        backref="membergroups")
 
     sales_segments = relationship('SalesSegment',
         secondary=MemberGroup_SalesSegment,
@@ -247,4 +252,4 @@ class MemberGroup(Base, BaseModel, LogicallyDeleted, WithTimestamp):
 #     __tablename__ = 'Membership_SalesSegment'
 #     query = session.query_property()
 #     membership_id = Column(Identifier, ForeignKey('Membership.id'), primary_key=True)
-#     sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'), primary_key=True)
+#     sales_segment_group_id = Column(Identifier, ForeignKey('SalesSegment.id'), primary_key=True)

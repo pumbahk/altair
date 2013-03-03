@@ -36,7 +36,7 @@
                                 ${seat['name']}<br/>
                             % endfor
                             </td>
-                            <td class="align1">￥${h.format_number(product.product.price * product.quantity)}</td>
+                            <td class="align1">￥${h.format_number(product.price * product.quantity)}</td>
                         </tr>
                         %endfor
                         <tr>
@@ -71,7 +71,7 @@
 <%
 shipping =order.shipping_address
 %>
-            % if order.status in ['canceled']:
+            % if order.status == 'canceled' or order.payment_status == 'refunded':
             <div class="kadomaru">
               <h3><span class="red">この購入/予約はキャンセルされました</span></h3>
               <p>

@@ -1,0 +1,59 @@
+<%inherit file='../layout_2col.html'/>
+
+<%namespace name="fco" file="../formcomponents.html"/>
+<%namespace name="nco" file="../navcomponents.html"/>
+
+<div class="circle circle-page circle-top"></div>
+<h2>確認画面</h2>
+
+<div class="row-fluid">
+  <div class="span10">
+    ${nco.breadcrumbs(
+        names=["Top", u"新規作成", u"確認画面"], 
+        urls=[request.route_path("dashboard"),
+              h.current_route_path_override(request, action="input"),
+	])
+    }
+  </div>
+</div>
+
+<div class="row-fluid">
+    <h3>ページ追加 確認画面</h3>
+
+	<div class="alert alert-info">
+	  以下の内容のページを作成します。良いですか？
+	</div>
+  %if form.data["layout"].disposition_id:
+	  <div class="alert alert-warning">
+      レイアウト:「${form.data["layout"].title}」にはデフォルトの設定が登録されています。
+      登録されているwidgetの設定が利用されます。
+    </div>
+  %endif
+  <table class="table table-describe">
+    <tr><th>${getattr(form,"pagetype").label.text}</th><td>${form.data["pagetype"].name}</td></tr>
+    <tr><th>${getattr(form,"layout").label.text}</th><td>${form.data["layout"].title} (${form.data["layout"].template_filename})</td></tr>
+    %if form.data["parent"]:
+      <tr><th>${getattr(form,"parent").label.text}</th><td>${form.data["parent"].name}</td></tr>
+    %endif
+    %if form.data["event"]:
+      <tr><th>${getattr(form,"event").label.text}</th><td>${form.data["event"].title}</td></tr>
+    %endif
+    <tr><th>${getattr(form,"name").label.text}</th><td>${form.data["name"]}</td></tr>
+    <tr><th>${getattr(form,"title").label.text}</th><td>${form.data["title"]}</td></tr>
+    <tr><th>${getattr(form,"url").label.text}</th><td>${form.data["url"]}</td></tr>
+    <tr><th>${getattr(form,"publish_begin").label.text}〜 ${getattr(form,"publish_end").label.text}</th><td>${h.term_datetime(form.data["publish_begin"],form.data["publish_end"])}</td></tr>
+    %if form.data["tags"]:
+      <tr><th>${getattr(form,"tags").label.text}</th><td>${form.data["tags"]}</td></tr>
+      <tr><th>${getattr(form,"private_tags").label.text}</th><td>${form.data["private_tags"]}</td></tr>
+    %endif
+    <tr><th>${getattr(form,"description").label.text}</th><td>${form.data["description"]}</td></tr>
+    <tr><th>${getattr(form,"keywords").label.text}</th><td>${form.data["keywords"]}</td></tr>
+  </table>
+    <form action="${request.current_route_path(action="create")}" method="POST">
+       ${fco.postdata_as_hidden_input(request.POST)}
+        <button class="btn" type="submit">保存</button>
+        <script type="text/javascript">
+          $(".btn[type='submit']").focus();
+        </script>
+    </form>
+</div>

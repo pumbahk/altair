@@ -1,5 +1,5 @@
 # coding: utf-8
-from wtforms.form import Form
+from altaircms.formhelpers import Form
 from wtforms import fields, widgets, validators
 from wtforms.ext.sqlalchemy import fields as sa_fields
 

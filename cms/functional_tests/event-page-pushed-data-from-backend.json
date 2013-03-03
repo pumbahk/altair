@@ -1,0 +1,119 @@
+{
+  "organization": {
+    "id": 1, 
+    "short_name": "demo"
+  }, 
+  "created_at": "2012-06-20T10:33:34", 
+  "events": [
+    {
+      "organization_id": 1000, 
+      "code": "DM399", 
+      "subtitle": "なし", 
+      "title": "マツイ・オン・アイス", 
+      "performances": [
+        {
+          "end_on": "2013-03-15T13:00:00", 
+          "start_on": "2013-03-15T10:00:00", 
+          "name": "マツイ・オン・アイス(東京公演)", 
+          "open_on": "2013-03-15T08:00:00", 
+          "prefecture": "tokyo", 
+          "venue": "まついZEROホール", 
+          "id": 40096, 
+          "sales": [
+            {
+              "tickets": [
+                {
+                  "display_order": 3, 
+                  "price": 2000.0, 
+                  "seat_type": "B席", 
+                  "id": 400571, 
+                  "name": "B席右"
+                }, 
+                {
+                  "display_order": 4, 
+                  "price": 2000.0, 
+                  "seat_type": "B席", 
+                  "id": 400572, 
+                  "name": "B席左"
+                }, 
+                {
+                  "display_order": 1, 
+                  "price": 20000.0, 
+                  "seat_type": "S席", 
+                  "id": 400599, 
+                  "name": "S席大人"
+                }, 
+                {
+                  "display_order": 2, 
+                  "price": 8000.0, 
+                  "seat_type": "A席", 
+                  "id": 400600, 
+                  "name": "A席大人"
+                }
+              ], 
+              "kind": "first_lottery", 
+              "group_id": 1, 
+              "start_on": "2012-01-12T10:00:00", 
+              "name": "一般先行", 
+              "seat_choice": "false", 
+              "end_on": "2012-01-22T10:00:00", 
+              "id": 40039
+            }
+          ]
+        }, 
+        {
+          "end_on": "2013-03-26T21:00:00", 
+          "start_on": "2013-03-26T19:00:00", 
+          "name": "マツイ・オン・アイス(大阪公演)", 
+          "open_on": "2013-03-26T18:00:00", 
+          "prefecture": "osaka", 
+          "venue": "まつい市民会館", 
+          "id": 40097, 
+          "sales": [
+            {
+              "tickets": [
+                {
+                  "display_order": 3, 
+                  "price": 1000.0, 
+                  "seat_type": "B席", 
+                  "id": 401571, 
+                  "name": "B席右"
+                }, 
+                {
+                  "display_order": 4, 
+                  "price": 1000.0, 
+                  "seat_type": "B席", 
+                  "id": 401572, 
+                  "name": "B席左"
+                }, 
+                {
+                  "display_order": 1, 
+                  "price": 10000.0, 
+                  "seat_type": "S席", 
+                  "id": 401599, 
+                  "name": "S席大人"
+                }, 
+                {
+                  "display_order": 2, 
+                  "price": 4000.0, 
+                  "seat_type": "A席", 
+                  "id": 401600, 
+                  "name": "A席大人"
+                }
+              ], 
+              "kind": "normal", 
+              "group_id": 2, 
+              "start_on": "2012-01-23T10:00:00", 
+              "name": "一般販売", 
+              "seat_choice": "false", 
+              "end_on": "2012-03-12T00:00:00", 
+              "id": 40040
+            }
+          ]
+        }
+      ], 
+      "id": 40020
+    }
+  ], 
+  "updated_at": "2012-06-20T10:33:34"
+}

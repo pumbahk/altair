@@ -47,7 +47,9 @@
   <form action="${request.route_path('orders.refund.confirm')}" method="POST">
     ${h.form_item(form_refund.payment_method_id)}
     ${h.form_item(form_refund.include_item)}
-    ${h.form_item(form_refund.include_fee)}
+    ${h.form_item(form_refund.include_system_fee)}
+    ${h.form_item(form_refund.include_transaction_fee)}
+    ${h.form_item(form_refund.include_delivery_fee)}
     ${h.form_item(form_refund.cancel_reason)}
     <a href="${request.route_path('orders.refund.checked')}" class="btn">戻る</a>
     <a class="btn btn-success" href="${request.route_path('orders.download', _query=dict(action='checked'))}">

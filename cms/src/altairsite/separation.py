@@ -54,7 +54,7 @@ def get_template_path_args(request):
     except:
         return dict(prefix="__default__")
 
-## use this. view_config(...,  renderer=selectable_renderer="%(prefix)/errors.mako")
+## use this. view_config(...,  renderer=selectable_renderer="%(prefix)/errors.html")
 selectable_renderer = SelectableRendererSetup(
     RecieveTemplatePathFormat,
     get_template_path_args, 

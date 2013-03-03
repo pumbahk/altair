@@ -6,17 +6,21 @@
 
 import optparse
 import sys
-
-from datetime import datetime
-from dateutil import parser as date_parser
-from os.path import abspath, dirname
-
-from ticketing.sej.nwts import nws_data_send
-from pyramid.paster import bootstrap
-
 import logging.config
+from dateutil import parser as date_parser
+from pyramid.paster import bootstrap
+from ticketing.sej.nwts import nws_data_send
+
 
 def main(argv=sys.argv):
+    '''
+    NWTS アップローダー
+      ex) 払戻ファイル転送
+        python sej_nwts_upload.py payback.zip -c ticketing.ini -t tpayback.asp -f SEIT020U
+      ex) テンプレートファイル転送
+        python sej_nwts_upload.py payback.zip -c ticketing.ini -t tpayback.asp -f SDMT010U
+    '''
+
     parser = optparse.OptionParser(
         description=__doc__,
         usage='%prog [options]',

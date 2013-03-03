@@ -27,4 +27,5 @@ def includeme(config):
     config.add_route("promotion_slideshow", "/promotion/slideshow")
     config.add_route("api_promotion_main_image", "/promotion/mainimage", factory=".models.PromotionWidgetResource")
 
+    config.add_has_widget_pages_finder(".api.get_promotion_widget_pages", name="promotion")
 

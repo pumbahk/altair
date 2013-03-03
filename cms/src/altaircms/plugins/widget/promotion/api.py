@@ -6,6 +6,15 @@ from .interfaces import IPromotionManager
 import logging
 logger = logging.getLogger(__file__)
 
+
+from altaircms.page.models import Page
+from altaircms.widget.models import Widget
+from .models import PromotionWidget
+
+def get_promotion_widget_pages(request):
+    return Page.query.filter(PromotionWidget.id==Widget.id,Widget.page_id==Page.id)
+get_promotion_widget_pages.widget = PromotionWidget
+
 def get_promotion_manager(request):
     return request.registry.getUtility(IPromotionManager)
 
@@ -34,7 +43,7 @@ class RealPromotionManager(object):
 
 
 ## mock
-from .models import PromotionInfo
+from .utilities import PromotionInfo
 @provider(IPromotionManager)
 class MockPromotionManager(object):
     @classmethod

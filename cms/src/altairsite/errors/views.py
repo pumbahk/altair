@@ -5,10 +5,10 @@ from ..separation import selectable_renderer, tstar_mobile_or_not_renderer
 
 @view_config(context="pyramid.exceptions.Forbidden", 
              request_type='altairsite.mobile.tweens.IMobileRequest', 
-             renderer=tstar_mobile_or_not_renderer({"ticketstar": "altaircms:templates/mobile/notfound.mako"}, 
-                                                   default = "altaircms:templates/mobile/default_notfound.mako"))
+             renderer=tstar_mobile_or_not_renderer({"ticketstar": "altaircms:templates/mobile/notfound.html"}, 
+                                                   default = "altaircms:templates/mobile/default_notfound.html"))
 @view_config(context="pyramid.exceptions.Forbidden", 
-             renderer=selectable_renderer("altaircms:templates/front/errors/%(prefix)s/forbidden.mako"),
+             renderer=selectable_renderer("altaircms:templates/front/errors/%(prefix)s/forbidden.html"),
              decorator="altaircms.lib.fanstatic_decorator.with_bootstrap")
 def forbidden(request):
     request.response.status = 401
@@ -16,10 +16,10 @@ def forbidden(request):
 
 @view_config(context="pyramid.exceptions.NotFound", 
              request_type='altairsite.mobile.tweens.IMobileRequest', 
-             renderer=tstar_mobile_or_not_renderer({"ticketstar": "altaircms:templates/mobile/notfound.mako"}, 
-                                                   default = "altaircms:templates/mobile/default_notfound.mako"))
+             renderer=tstar_mobile_or_not_renderer({"ticketstar": "altaircms:templates/mobile/notfound.html"}, 
+                                                   default = "altaircms:templates/mobile/default_notfound.html"))
 @view_config(context="pyramid.exceptions.NotFound", 
-             renderer=selectable_renderer("altaircms:templates/front/errors/%(prefix)s/notfound.mako"),
+             renderer=selectable_renderer("altaircms:templates/front/errors/%(prefix)s/notfound.html"),
              decorator="altaircms.lib.fanstatic_decorator.with_bootstrap")
 def notfound(request):
     request.response.status = 404 

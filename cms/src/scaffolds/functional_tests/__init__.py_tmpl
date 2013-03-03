@@ -1,0 +1,41 @@
+# -*- coding:utf-8 -*-
+import unittest
+import sys
+import os
+
+try:
+    from functional_tests.utils import get_here, create_api_key
+    from functional_tests import AppFunctionalTests, logout, login, get_registry
+    from functional_tests import delete_models, find_form
+except ImportError:
+    sys.path.append(os.path.join(os.path.dirname(__name__), "../../"))
+    from functional_tests.utils import get_here, create_api_key
+    from functional_tests import AppFunctionalTests, logout, login, get_registry
+    from functional_tests import delete_models, find_form
+
+## here. {{project}}
+class Tests(AppFunctionalTests):
+    @classmethod
+    def setUpClass(cls):
+        pass
+
+    @classmethod
+    def tearDownClass(cls):
+        pass
+
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    def test_it(self):
+        app = self._getTarget()
+        with login(app):
+            pass
+
+if __name__ == "__main__":
+    def setUpModule():
+        from functional_tests import get_app
+        get_app()
+    unittest.main()

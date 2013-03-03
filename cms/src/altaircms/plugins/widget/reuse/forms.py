@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
-import wtforms.form as form
+from altaircms.formhelpers import Form
 import wtforms.fields as fields
-from altaircms.helpers.formhelpers import dynamic_query_select_field_factory
+from altaircms.formhelpers import dynamic_query_select_field_factory
 import wtforms.validators as validators
 from altaircms.page.models import Page
 
@@ -9,7 +9,7 @@ def _pages_accessable():
     ## fixme:
     return Page.query.all()
 
-class ReuseChoiceForm(form.Form):
+class ReuseChoiceForm(Form):
     source_page_id = dynamic_query_select_field_factory(
         Page,
         id="source_page_input",

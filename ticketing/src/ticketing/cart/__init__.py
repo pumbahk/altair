@@ -20,9 +20,10 @@ def includeme(config):
     config.add_directive("add_payment_method", ".directives.add_payment_method")
     # 購入系
     config.add_route('cart.index', 'events/{event_id}')
-    config.add_route('cart.index.sales', 'events/{event_id}/sales/{sales_segment_id}')
+    config.add_route('cart.index.sales', 'events/{event_id}/sales/{sales_segment_group_id}')
     config.add_route('cart.seat_types', 'events/{event_id}/performances/{performance_id}/sales_segment/{sales_segment_id}/seat_types')
-    config.add_route('cart.seats', 'events/{event_id}/performances/{performance_id}/venues/{venue_id}/seats')
+    #config.add_route('cart.seats', 'events/{event_id}/performances/{performance_id}/venues/{venue_id}/seats')
+    config.add_route('cart.seats', 'events/{event_id}/performances/{performance_id}/sales_segment/{sales_segment_id}/seats')
     config.add_route('cart.seat_adjacencies', 'events/{event_id}/performances/{performance_id}/venues/{venue_id}/seat_adjacencies/{length_or_range}')
     config.add_route('cart.venue_drawing', 'events/{event_id}/performances/{performance_id}/venues/{venue_id}/drawing/{part}')
     config.add_route('cart.products', 'events/{event_id}/performances/{performance_id}/sales_segment/{sales_segment_id}/seat_types/{seat_type_id}/products')
@@ -93,21 +94,20 @@ def main(global_config, **local_config):
     who_config = settings['pyramid_who.config']
     from authorization import MembershipAuthorizationPolicy
     config.set_authorization_policy(MembershipAuthorizationPolicy())
-    #from .security import auth_model_callback
-    #config.set_authentication_policy(WhoV2AuthenticationPolicy(who_config, 'auth_tkt', callback=auth_model_callback))
     config.include('ticketing.whotween')
     config.add_tween('.tweens.CacheControlTween')
+    config.add_tween('.tweens.OrganizationPathTween')
     config.include('ticketing.fc_auth')
-    config.scan()
-    config.include('..checkout')
-    config.include('..multicheckout')
-    config.include('..mobile')
+    config.include('ticketing.checkout')
+    config.include('ticketing.multicheckout')
+    config.include('ticketing.mobile')
     config.include("ticketing.payments")
     config.include('ticketing.payments.plugins')
-    config.include('.errors')
 
-    # if settings.get('altair.debug_mobile'):
-    #     config.add_tween('ticketing.mobile.tweens.mobile_request_factory')
+    config.include('.errors')
+    config.scan()
+
+
 
     ## cmsとの通信
     bind_communication_api(config, 

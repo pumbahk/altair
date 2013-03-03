@@ -32,7 +32,7 @@ class PerformancelistWidgetView(object):
         context.delete(widget, flush=True)
         return {"status": "ok"}
 
-    @view_config(route_name="performancelist_widget_dialog", renderer="altaircms.plugins.widget:performancelist/dialog.mako", request_method="GET")
+    @view_config(route_name="performancelist_widget_dialog", renderer="altaircms.plugins.widget:performancelist/dialog.html", request_method="GET")
     def dialog(self):
         context = self.request.context
         widget = context.get_widget(self.request.GET.get("pk"))

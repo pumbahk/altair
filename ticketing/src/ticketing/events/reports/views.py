@@ -51,7 +51,6 @@ class Reports(BaseView):
         # copy from template.xls
         rb = xlrd.open_workbook('src/ticketing/templates/reports/sales_report_template.xls', formatting_info=True)
         wb = copy(rb)
-        print dir(wb)
 
         # find data as json format
 
@@ -61,7 +60,6 @@ class Reports(BaseView):
         #book.save('sample.xls')
 
         sheet = wb.get_sheet(0)
-        print dir(sheet)
 
         # Event
         sheet.write(0, 34, u"(現在日時)")

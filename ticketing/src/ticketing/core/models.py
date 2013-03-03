@@ -37,7 +37,7 @@ from standardenum import StandardEnum
 from ticketing.utils import is_nonmobile_email_address
 from ticketing.users.models import User, UserCredential
 from ticketing.utils import sensible_alnum_decode
-from ticketing.sej.models import SejOrder, SejTenant, SejTicket, SejRefundTicket
+from ticketing.sej.models import SejOrder, SejTenant, SejTicket, SejRefundTicket, SejRefundEvent
 from ticketing.sej.exceptions import SejServerError
 from ticketing.sej.payment import request_cancel_order
 from ticketing.assets import IAssetResolver
@@ -266,6 +266,16 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def is_hold(self, stock_holder):
         return self.stock.stock_holder == stock_holder
+
+    @classmethod
+    def query_sales_seats(cls, sales_segment):
+        return cls.query.filter(
+                cls.stock_id==ProductItem.stock_id
+            ).filter(
+                ProductItem.product_id==Product.id
+            ).filter(
+                Product.sales_segment_id==sales_segment.id
+            )
 
     @staticmethod
     def create_from_template(template, venue_id, default_stock_id, **kwargs):
@@ -566,6 +576,9 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         end_on = isodate.datetime_isoformat(self.end_on) if self.end_on else ''
         open_on = isodate.datetime_isoformat(self.open_on) if self.open_on else ''
 
+        # 削除されたデータも集める
+        sales_segments = DBSession.query(SalesSegment, include_deleted=True).filter_by(performance_id=self.id).all()
+
         # cmsでは日付は必須項目
         if not start_on and not self.deleted_at:
             raise Exception(u'パフォーマンスの日付を入力してください')
@@ -578,7 +591,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             'open_on':open_on,
             'start_on':start_on,
             'end_on':end_on,
-            'tickets':list(set([pi.product.id for pi in self.product_items])),
+            'sales':[s.get_cms_data() for s in sales_segments],
         }
         if self.deleted_at:
             data['deleted'] = 'true'
@@ -603,9 +616,11 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @staticmethod
     def set_search_condition(query, form):
-        sort = form.sort.data or 'start_on'
-        direction = form.direction.data or 'asc'
-        query = query.order_by('Performance.' + sort + ' ' + direction)
+        """TODO: query を構築するクラスを別に作る等したい"""
+        if form.sort.data:
+            direction = form.direction.data or 'asc'
+            # XXX: injection safe?
+            query = query.order_by('Performance.' + form.sort.data + ' ' + direction)
 
         condition = form.event_id.data
         if condition:
@@ -617,11 +632,12 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         qs = DBSession.query(DeliveryMethod)\
             .filter(DeliveryMethod.delivery_plugin_id==delivery_plugin_id)\
             .filter(DeliveryMethod.id==PaymentDeliveryMethodPair.delivery_method_id)\
-            .filter(PaymentDeliveryMethodPair.sales_segment_id == SalesSegment.id)\
-            .filter(SalesSegment.id==Product.sales_segment_id)\
+            .filter(PaymentDeliveryMethodPair.sales_segment_group_id == SalesSegment.id)\
+            .filter(SalesSegment.id==Product.sales_segment_group_id)\
             .filter(Product.id==ProductItem.product_id)\
             .filter(ProductItem.performance_id==self.id)
         return bool(qs.first())
+
 
 class ReportFrequencyEnum(StandardEnum):
     Daily = 1
@@ -654,7 +670,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     stock_types = relationship('StockType', backref='event', order_by='StockType.display_order')
     stock_holders = relationship('StockHolder', backref='event')
 
-    sales_segments = relationship('SalesSegment')
+    sales_segment_groups = relationship('SalesSegmentGroup')
 
     _first_performance = None
     _final_performance = None
@@ -698,15 +714,16 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return self._final_performance
 
     @staticmethod
-    def get_owner_event(user_id):
-        return Event.filter().join(Event.account).filter(Account.user_id==user_id).all()
+    def get_owner_event(account):
+        return Event.query.join(Event.account).filter(Account.id==account.id).all()
 
     @staticmethod
-    def get_client_event(user_id):
-        return Event.filter().join(Event.stock_holders)\
-                             .join(StockHolder.account)\
-                             .filter(Account.user_id==user_id)\
-                             .all()
+    def get_client_event(account):
+        return Event.query.filter(Event.organization_id==account.organization_id)\
+                          .join(Event.stock_holders)\
+                          .join(StockHolder.account)\
+                          .filter(Account.id==account.id)\
+                          .all()
 
     def get_accounts(self):
         return Account.filter().with_entities(Account.name).join(StockHolder)\
@@ -718,6 +735,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def _get_self_cms_data(self):
         return {'id':self.id,
                 'title':self.title,
+                'code': self.code, 
                 'subtitle':self.abbreviated_title,
                 "organization_id": self.organization.id, 
                 }
@@ -727,68 +745,17 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         CMSに連携するデータを生成する
         インターフェースのデータ構造は以下のとおり
         削除データには "deleted":"true" をいれる
-
-        data = {
-          "created_at": "2012-01-10T13:42:00+09:00",
-          "updated_at": "2012-01-11T15:32:00+09:00",
-          "organization_id": 1, 
-          "events":[
-            {
-              "id":1,
-              "title":"イベントタイトル",
-              "subtitle":"サブタイトル",
-              "start_on":"2012-03-15T19:00:00+09:00",,
-              "end_on":"2012-03-15T19:00:00+09:00",,
-              "performances":[
-                "id":1,
-                "title":"タイトル",
-                "venue":"代々木体育館",
-                "open_on":"2012-03-15T19:00:00+09:00",,
-                "start_on":"2012-03-15T19:00:00+09:00",,
-                "end_on":"2012-03-15T19:00:00+09:00",,
-                "tickets":[1,2],
-              ],
-              "tickets":[
-                {"id":1, "sale_id":1, "name":"A席大人", "seat_type":"A席", "price":5000, "display_order":1},
-                {"id":2, "sale_id":2, "name":"B席大人", "seat_type":"B席", "price":3000, "display_order":2},
-              ],
-              "sales":[
-                {"id":1, "name":"販売区分1", "start_on":~, "end_on":~, "seat_choice":true},
-                {"id":2, "name":"販売区分2", "start_on":~, "end_on":~, "seat_choice":true},
-              ],
-            },
-          ]
-        }
+        
+        see:ticketing.core.tests_event_notify_data.py
         '''
-        start_on = isodate.datetime_isoformat(self.first_start_on) if self.first_start_on else ''
-        end_on = isodate.datetime_isoformat(self.final_start_on) if self.final_start_on else ''
-        sales_start_on = isodate.datetime_isoformat(self.sales_start_on) if self.sales_start_on else ''
-        sales_end_on = isodate.datetime_isoformat(self.sales_end_on) if self.sales_end_on else ''
-
-        # cmsでは日付は必須項目
-        if validation:
-            if not (start_on and end_on) and not self.deleted_at:
-                raise Exception(u'パフォーマンスが登録されていないイベントは送信できません')
-            if not (sales_start_on and sales_end_on) and not self.deleted_at:
-                raise Exception(u'販売期間が登録されていないイベントは送信できません')
-
         # 論理削除レコードも含めて取得
         performances = DBSession.query(Performance, include_deleted=True).filter_by(event_id=self.id).all()
-        products = Product.find(event_id=self.id, include_deleted=True)
-        sales_segments = DBSession.query(SalesSegment, include_deleted=True).filter_by(event_id=self.id).all()
         data = self._get_self_cms_data()
         data.update({
-            'start_on':start_on,
-            'end_on':end_on,
-            'deal_open':sales_start_on,
-            'deal_close':sales_end_on,
             'performances':[p.get_cms_data() for p in performances],
-            'tickets':[p.get_cms_data() for p in products],
-            'sales':[s.get_cms_data() for s in sales_segments],
         })
         if self.deleted_at:
             data['deleted'] = 'true'
-
         return data
 
     def add(self):
@@ -799,7 +766,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             Eventのコピー時は以下のモデルをcloneする
               - StockType
               - StockHolder
-              - SalesSegment
+              - SalesSegmentGroup
                 - PaymentDeliveryMethodPair
               - Product
               - Performance
@@ -811,7 +778,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             convert_map = {
                 'stock_type':dict(),
                 'stock_holder':dict(),
-                'sales_segment':dict(),
+                'sales_segment_group':dict(),
                 'product':dict(),
             }
 
@@ -827,10 +794,10 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     StockHolder.create_from_template(template=template_stock_holder, event_id=self.id)
                 )
 
-            # create SalesSegment - PaymentDeliveryMethodPair
-            for template_sales_segment in template_event.sales_segments:
-                convert_map['sales_segment'].update(
-                    SalesSegment.create_from_template(template=template_sales_segment, with_payment_delivery_method_pairs=True, event_id=self.id)
+            # create SalesSegmentGroup - PaymentDeliveryMethodPair
+            for template_sales_segment_group in template_event.sales_segment_groups:
+                convert_map['sales_segment_group'].update(
+                    SalesSegmentGroup.create_from_template(template=template_sales_segment_group, with_payment_delivery_method_pairs=True, event_id=self.id)
                 )
 
             # create Product
@@ -900,9 +867,9 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         for performance in self.performances:
             performance.delete()
 
-        # delete SalesSegment
-        for sales_segment in self.sales_segments:
-            sales_segment.delete()
+        # delete SalesSegmentGroup
+        for sales_segment_group in self.sales_segment_groups:
+            sales_segment_group.delete()
 
         # delete StockType
         for stock_type in self.stock_types:
@@ -929,7 +896,7 @@ class SalesSegmentKindEnum(StandardEnum):
     sales_counter   = u'窓口販売'
     other           = u'その他'
 
-class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'SalesSegmentGroup'
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
@@ -943,9 +910,6 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     event_id = Column(Identifier, ForeignKey('Event.id'))
     event = relationship('Event')
 
-    # membergroup_id = Column(Identifier, ForeignKey('MemberGroup.id'))
-    # membergroup = relationship('MemberGroup', backref='salessegments')
-
     def in_term(self, dt):
         return self.start_at <= dt and dt <= self.end_at 
 
@@ -958,35 +922,20 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         for pdmp in self.payment_delivery_method_pairs:
             pdmp.delete()
 
-        super(SalesSegment, self).delete()
-
-    def get_cms_data(self):
-        start_at = isodate.datetime_isoformat(self.start_at) if self.start_at else ''
-        end_at = isodate.datetime_isoformat(self.end_at) if self.end_at else ''
-        data = {
-            'id':self.id,
-            'name':self.name,
-            'kind':self.kind,
-            'start_on':start_at,
-            'end_on':end_at,
-            'seat_choice':'true' if self.seat_choice else 'false',
-        }
-        if self.deleted_at:
-            data['deleted'] = 'true'
-        return data
+        super(SalesSegmentGroup, self).delete()
 
     @staticmethod
     def create_from_template(template, with_payment_delivery_method_pairs=False, **kwargs):
-        sales_segment = SalesSegment.clone(template)
+        sales_segment_group = SalesSegmentGroup.clone(template)
         if 'event_id' in kwargs:
-            sales_segment.event_id = kwargs['event_id']
-        sales_segment.save()
+            sales_segment_group.event_id = kwargs['event_id']
+        sales_segment_group.save()
 
         if with_payment_delivery_method_pairs:
             for template_pdmp in template.payment_delivery_method_pairs:
-                PaymentDeliveryMethodPair.create_from_template(template=template_pdmp, sales_segment_id=sales_segment.id)
+                PaymentDeliveryMethodPair.create_from_template(template=template_pdmp, sales_segment_group_id=sales_segment_group.id)
 
-        return {template.id:sales_segment.id}
+        return {template.id:sales_segment_group.id}
 
     def get_products(self, performances):
         """ この販売区分で購入可能な商品一覧 """
@@ -994,22 +943,33 @@ class SalesSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @staticmethod
     def set_search_condition(query, form):
-        sort = form.sort.data or 'id'
-        direction = form.direction.data or 'desc'
-        query = query.order_by(SalesSegment.__tablename__ + '.' + sort + ' ' + direction)
+        """TODO: query を構築するクラスを別に作る等したい"""
+        if form.sort.data:
+            direction = form.direction.data or 'desc'
+            # XXX: injection safe?
+            query = query.order_by(SalesSegmentGroup.__tablename__ + '.' + form.sort.data + ' ' + direction)
 
         condition = form.event_id.data
         if condition:
-            query = query.filter(SalesSegment.event_id==condition)
+            query = query.filter(SalesSegmentGroup.event_id==condition)
         condition = form.public.data
         if condition:
-            query = query.filter(SalesSegment.public==True)
+            query = query.filter(SalesSegmentGroup.public==True)
 
         return query
 
+
+SalesSegment_PaymentDeliveryMethodPair = Table(
+    "SalesSegment_PaymentDeliveryMethodPair",
+    Base.metadata,
+    Column('id', Identifier, primary_key=True),
+    Column('payment_delivery_method_pair_id', Identifier, ForeignKey('PaymentDeliveryMethodPair.id')),
+    Column('sales_segment_id', Identifier, ForeignKey('SalesSegment.id')),
+    )
+
 class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentDeliveryMethodPair'
-
+    query = DBSession.query_property()
     id = Column(Identifier, primary_key=True)
     system_fee = Column(Numeric(precision=16, scale=2), nullable=False)
     transaction_fee = Column(Numeric(precision=16, scale=2), nullable=False)
@@ -1028,18 +988,22 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     # 一般公開するか
     public = Column(Boolean, nullable=False, default=True)
 
-    sales_segment_id = Column(Identifier, ForeignKey('SalesSegmentGroup.id'))
-    sales_segment = relationship('SalesSegment', backref='payment_delivery_method_pairs')
+    sales_segment_group_id = Column(Identifier, ForeignKey('SalesSegmentGroup.id'))
+    sales_segment_group = relationship('SalesSegmentGroup', backref='payment_delivery_method_pairs')
     payment_method_id = Column(Identifier, ForeignKey('PaymentMethod.id'))
     payment_method = relationship('PaymentMethod', backref='payment_delivery_method_pairs')
     delivery_method_id = Column(Identifier, ForeignKey('DeliveryMethod.id'))
     delivery_method = relationship('DeliveryMethod', backref='payment_delivery_method_pairs')
 
+    def is_available_for(self, performance, on_day):
+        border = performance.start_on - timedelta(days=self.unavailable_period_days)
+        return self.public and (on_day <= border)
+
     @staticmethod
     def create_from_template(template, **kwargs):
         pdmp = PaymentDeliveryMethodPair.clone(template)
-        if 'sales_segment_id' in kwargs:
-            pdmp.sales_segment_id = kwargs['sales_segment_id']
+        if 'sales_segment_group_id' in kwargs:
+            pdmp.sales_segment_group_id = kwargs['sales_segment_group_id']
         pdmp.save()
 
 class PaymentMethodPlugin(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -1243,7 +1207,6 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     stocks = relationship('Stock', backref=backref('stock_type', order_by='StockType.display_order'))
 
     @property
-
     def is_seat(self):
         return self.type == StockTypeEnum.Seat.v
 
@@ -1501,8 +1464,11 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     price = Column(Numeric(precision=16, scale=2), nullable=False)
     display_order = Column(Integer, nullable=False, default=1)
 
-    sales_segment_id = Column(Identifier, ForeignKey('SalesSegmentGroup.id'), nullable=True)
-    sales_segment = relationship('SalesSegment', uselist=False, backref=backref('product', order_by='Product.display_order'))
+    sales_segment_group_id = Column(Identifier, ForeignKey('SalesSegmentGroup.id'), nullable=True)
+    sales_segment_group = relationship('SalesSegmentGroup', uselist=False, backref=backref('product', order_by='Product.display_order'))
+
+    sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'), nullable=True)
+    sales_segment = relationship('SalesSegment', backref=backref('products', order_by='Product.display_order'))
 
     seat_stock_type_id = Column(Identifier, ForeignKey('StockType.id'), nullable=True)
     seat_stock_type = relationship('StockType', uselist=False, backref=backref('product', order_by='Product.display_order'))
@@ -1519,15 +1485,18 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     description = Column(Unicode(2000), nullable=True, default=None)
 
+    performance_id = Column(Identifier, ForeignKey('Performance.id'))
+    performance = relationship('Performance', backref='products')
+
     @staticmethod
-    def find(performance_id=None, event_id=None, sales_segment_id=None, stock_id=None, include_deleted=False):
+    def find(performance_id=None, event_id=None, sales_segment_group_id=None, stock_id=None, include_deleted=False):
         query = DBSession.query(Product, include_deleted=include_deleted)
         if performance_id:
             query = query.join(Product.items).filter(ProductItem.performance_id==performance_id)
         if event_id:
             query = query.filter(Product.event_id==event_id)
-        if sales_segment_id:
-            query = query.filter(Product.sales_segment_id==sales_segment_id)
+        if sales_segment_group_id:
+            query = query.filter(Product.sales_segment_group_id==sales_segment_id)
         if stock_id:
             if not performance_id:
                 query = query.join(Product.items)
@@ -1601,7 +1570,6 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             'id':self.id,
             'name':self.name,
             'price':floor(self.price),
-            'sale_id':self.sales_segment_id,
             'seat_type':self.seat_type(),
             'display_order':self.display_order,
         }
@@ -1622,6 +1590,7 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if 'sales_segment' in kwargs:
             # 販売区分なしの場合の product もありえる
             product.sales_segment_id = template.sales_segment_id and kwargs['sales_segment'][template.sales_segment_id]
+            #product.sales_segment_group_id = kwargs['sales_segment'][template.sales_segment_id]
         product.save()
 
         if with_product_items:
@@ -1900,9 +1869,15 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def prev(self):
         return DBSession.query(Order, include_deleted=True).filter_by(order_no=self.order_no).filter_by(branch_no=self.branch_no-1).one()
 
+    @property
+    def checkout(self):
+        from ticketing.cart.models import Cart
+        from ticketing.checkout.models import Checkout
+        return Cart.query.filter(Cart._order_no==self.order_no).join(Checkout).with_entities(Checkout).first()
+
     def can_cancel(self):
-        # 受付済のみキャンセル可能、払戻予約時はキャンセル不可
-        if self.status == 'ordered' and self.payment_status != 'refunding':
+        # 受付済のみキャンセル可能、払戻時はキャンセル不可
+        if self.status == 'ordered' and self.payment_status in ('unpaid', 'paid'):
             # コンビニ決済は未入金のみキャンセル可能
             payment_plugin_id = self.payment_delivery_pair.payment_method.payment_plugin_id
             if payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID and self.payment_status != 'unpaid':
@@ -1984,15 +1959,17 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             if self.payment_status in ['paid', 'refunding']:
                 from ticketing.checkout import api as checkout_api
                 from ticketing.core import api as core_api
-                from ticketing.cart.models import Cart
-                checkout = checkout_api.get_checkout_service(request, self.ordered_from, core_api.get_channel(self.channel))
-                cart = Cart.query.filter(Cart._order_no==self.order_no).first()
+                service = checkout_api.get_checkout_service(request, self.ordered_from, core_api.get_channel(self.channel))
+                checkout = self.checkout
                 if self.payment_status == 'refunding':
                     # 払戻(合計100円以上なら注文金額変更API、0円なら注文キャンセルAPIを使う)
                     if self.total_amount >= 100:
-                        result = checkout.request_change_order([cart.checkout.orderControlId])
+                        result = service.request_change_order([checkout.orderControlId])
+                        # オーソリ済みになるので売上バッチの処理対象になるようにsales_atをクリア
+                        checkout.sales_at = None
+                        checkout.save()
                     elif self.total_amount == 0:
-                        result = checkout.request_cancel_order([cart.checkout.orderControlId])
+                        result = service.request_cancel_order([checkout.orderControlId])
                     else:
                         logger.error(u'0円以上100円未満の注文は払戻できません (order_no=%s)' % self.order_no)
                         return False
@@ -2002,7 +1979,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 else:
                     # 売り上げキャンセル
                     logger.debug(u'売り上げキャンセル')
-                    result = checkout.request_cancel_order([cart.checkout.orderControlId])
+                    result = service.request_cancel_order([checkout.orderControlId])
                     if 'statusCode' in result and result['statusCode'] != '0':
                         logger.error(u'あんしん決済をキャンセルできませんでした %s' % result)
                         return False
@@ -2052,20 +2029,47 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     logger.error(u'コンビニ決済(セブン-イレブン)のキャンセルに失敗しました %s' % self.order_no)
                     return False
 
+                tenant = SejTenant.filter_by(organization_id=self.organization_id).first()
+                shop_id = (tenant and tenant.shop_id) or request.registry.settings.get('sej.shop_id')
+
+                # create SejRefundEvent
+                re = SejRefundEvent.filter(and_(
+                    SejRefundEvent.shop_id==shop_id,
+                    SejRefundEvent.event_code_01==self.performance.code
+                )).first()
+                if not re:
+                    re = SejRefundEvent()
+                    DBSession.add(re)
+
+                re.available = 1
+                re.shop_id = shop_id
+                re.event_code_01 = self.performance.code
+                re.title = self.performance.name
+                re.event_at = self.performance.start_on.strftime('%Y%m%d')
+                re.start_at = datetime.now().strftime('%Y%m%d')
+                end_at = (self.performance.end_on or self.performance.start_on) + timedelta(days=+14)
+                re.end_at = end_at.strftime('%Y%m%d')
+                re.event_expire_at = end_at.strftime('%Y%m%d')
+                ticket_expire_at = (self.performance.end_on or self.performance.start_on) + timedelta(days=+30)
+                re.ticket_expire_at = ticket_expire_at.strftime('%Y%m%d')
+                re.refund_enabled = 1
+                re.need_stub = 1
+                DBSession.merge(re)
+
+                # create SejRefundTicket
                 rt = SejRefundTicket.filter(and_(
                     SejRefundTicket.order_id==sej_order.order_id,
                     SejRefundTicket.ticket_barcode_number==sej_ticket.barcode_number
                 )).first()
-
                 if not rt:
                     rt = SejRefundTicket()
                     DBSession.add(rt)
 
                 prev = self.prev
                 rt.available = 1
+                rt.refund_event_id = re.id
                 rt.event_code_01 = self.performance.code
-                rt.event_code_02 = self.performance.start_on.strftime('%Y%m')
-                rt.order_id = sej_ticket.order_id
+                rt.order_id = sej_order.order_id
                 rt.ticket_barcode_number = sej_ticket.barcode_number
                 rt.refund_ticket_amount = prev.refund.item(prev)
                 rt.refund_other_amount = prev.refund.fee(prev)
@@ -2077,8 +2081,9 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         # 在庫を戻す
         self.release()
-        self.canceled_at = datetime.now()
-        if self.payment_status == 'refunding':
+        if self.payment_status != 'refunding':
+            self.canceled_at = datetime.now()
+        if self.payment_status in ['paid', 'refunding']:
             self.refunded_at = datetime.now()
         self.save()
 
@@ -2092,9 +2097,11 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def call_refund(self, request):
         # 払戻対象の金額をクリア
         order = Order.clone(self, deep=True)
-        if self.refund.include_fee:
+        if self.refund.include_system_fee:
             order.system_fee = 0
+        if self.refund.include_transaction_fee:
             order.transaction_fee = 0
+        if self.refund.include_delivery_fee:
             order.delivery_fee = 0
         if self.refund.include_item:
             for ordered_product in order.items:
@@ -2199,9 +2206,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @staticmethod
     def set_search_condition(query, form):
         """TODO: query を構築するクラスを別に作る等したい"""
-        sort = form.sort.data or 'id'
-        direction = form.direction.data or 'desc'
-        query = query.order_by('Order.' + sort + ' ' + direction)
+        if form.sort.data:
+            direction = form.direction.data or 'desc'
+            # XXX: injection safe?
+            query = query.order_by('Order.' + form.sort.data + ' ' + direction)
 
         condition = form.order_no.data
         if condition:
@@ -2212,6 +2220,9 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         condition = form.event_id.data
         if condition:
             query = query.join(Order.performance).filter(Performance.event_id==condition)
+        condition = form.sales_segment_id.data
+        if condition and '' not in condition:
+            query = query.join(Order.ordered_products).join(OrderedProduct.product).filter(Product.sales_segment_id.in_(condition))
         condition = form.ordered_from.data
         if condition:
             query = query.filter(Order.created_at>=condition)
@@ -2239,7 +2250,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             if 'delivered' in condition:
                 status_cond.append(and_(Order.canceled_at==None, Order.delivered_at!=None))
             if 'canceled' in condition:
-                status_cond.append(and_(Order.paid_at==None, Order.canceled_at!=None))
+                status_cond.append(and_(Order.canceled_at!=None))
             if 'issued' in condition:
                 status_cond.append(Order.issued==True)
             if 'unissued' in condition:
@@ -2678,15 +2689,21 @@ MailTypeChoices = [(str(e) , label) for e, label in zip([MailTypeEnum.CompleteMa
 
 class Host(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Host'
-
+    __table_args__ = (
+        UniqueConstraint('host_name', 'path'),
+        )
     query = DBSession.query_property()
 
     id = Column(Identifier, primary_key=True)
-    host_name = Column(Unicode(255), unique=True)
+    host_name = Column(Unicode(255))
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
     organization = relationship('Organization', backref="hosts")
     base_url = Column(Unicode(255))
     mobile_base_url = Column(Unicode(255))
+    path = Column(Unicode(255))
+
+    def __repr__(self):
+        return u"{0.host_name} {0.path}".format(self).encode('utf-8')
 
 class OrderNoSequence(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderNoSequence'
@@ -2742,13 +2759,111 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = Column(Identifier, primary_key=True)
     payment_method_id = Column(Identifier, ForeignKey('PaymentMethod.id'))
     payment_method = relationship('PaymentMethod')
-    include_fee = Column(Boolean, nullable=False, default=False)
+    include_system_fee = Column(Boolean, nullable=False, default=False)
+    include_transaction_fee = Column(Boolean, nullable=False, default=False)
+    include_delivery_fee = Column(Boolean, nullable=False, default=False)
     include_item = Column(Boolean, nullable=False, default=False)
     cancel_reason = Column(String(255), nullable=True, default=None)
     orders = relationship('Order', backref=backref('refund', uselist=False))
 
     def fee(self, order):
-        return (order.system_fee + order.transaction_fee + order.delivery_fee) if self.include_fee else 0
+        total_fee = 0
+        if self.include_system_fee:
+            total_fee += order.system_fee
+        if self.include_transaction_fee:
+            total_fee += order.transaction_fee
+        if self.include_delivery_fee:
+            total_fee += order.delivery_fee
+        return total_fee
 
     def item(self, order):
         return sum(o.price * o.quantity for o in order.items) if self.include_item else 0
+
+
+class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
+    __tablename__ = 'SalesSegment'
+    query = DBSession.query_property()
+    id = Column(Identifier, primary_key=True)
+    start_at = Column(DateTime)
+    end_at = Column(DateTime)
+    upper_limit = Column(Integer)
+    seat_choice = Column(Boolean, default=True)
+    public = Column(Boolean, default=True)
+    performance_id = Column(Identifier, ForeignKey('Performance.id'))
+    performance = relationship("Performance", backref="sales_segments")
+    sales_segment_group_id = Column(Identifier, ForeignKey("SalesSegmentGroup.id"))
+    sales_segment_group = relationship("SalesSegmentGroup", backref="sales_segments")
+
+    payment_delivery_method_pairs = relationship("PaymentDeliveryMethodPair",
+        secondary="SalesSegment_PaymentDeliveryMethodPair",
+        backref="sales_segments",
+        cascade="all",
+        collection_class=set)
+
+
+    @property
+    def available_payment_delivery_method_pairs(self):
+        now = datetime.now()
+        return [pdmp 
+                for pdmp 
+                in self.payment_delivery_method_pairs
+                if pdmp.is_available_for(self.performance, now)]
+
+    @hybrid_property
+    def name(self):
+        return self.sales_segment_group.name
+
+    @hybrid_property
+    def kind(self):
+        return self.sales_segment_group.kind
+
+    def in_term(self, dt):
+        return self.start_at <= dt and dt <= self.end_at 
+
+
+    @property
+    def stocks(self):
+        """ この販売区分で販売可能な在庫 
+        商品 -> 商品アイテム -> 在庫
+        """
+
+        return Stock.query.filter(
+                Stock.id==ProductItem.stock_id
+            ).filter(
+                ProductItem.product_id==Product.id
+            ).filter(
+                Product.sales_segment_id==self.id
+            ).distinct(Stock.id)
+
+    @staticmethod
+    def set_search_condition(query, form):
+        """TODO: query を構築するクラスを別に作る等したい"""
+        if form.sort.data:
+            direction = form.direction.data or 'desc'
+            # XXX: injection safe?
+            query = query.order_by(SalesSegment.__tablename__ + '.' + form.sort.data + ' ' + direction)
+
+        condition = form.performance_id.data
+        if condition:
+            query = query.filter(SalesSegment.performance_id==condition)
+        condition = form.public.data
+        if condition:
+            query = query.filter(SalesSegment.public==True)
+
+        return query
+
+    def get_cms_data(self):
+        products = DBSession.query(Product, include_deleted=True).filter_by(sales_segment_id=self.id).all()
+        data = {
+            "id": self.id, 
+            "kind": self.kind, 
+            "name": self.name, 
+            "start_on" : isodate.datetime_isoformat(self.start_at) if self.start_at else '', 
+            "end_on" : isodate.datetime_isoformat(self.end_at) if self.end_at else '', 
+            'group_id':self.sales_segment_group_id,
+            'tickets':[p.get_cms_data() for p in products],
+            'seat_choice':'true' if self.seat_choice else 'false',
+            }
+        if self.deleted_at:
+            data['deleted'] = 'true'
+        return data
