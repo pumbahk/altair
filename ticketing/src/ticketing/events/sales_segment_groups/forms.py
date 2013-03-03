@@ -5,17 +5,26 @@ from wtforms import TextField, SelectField, HiddenField, IntegerField, BooleanFi
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 from wtforms.widgets import CheckboxInput
 
-from ticketing.formhelpers import OurDateTimeField, Translations, Required, RequiredOnUpdate, OurForm, OurIntegerField
+from ticketing.formhelpers import OurDateTimeField, Translations, Required, RequiredOnUpdate, OurForm, OurIntegerField, OurBooleanField
 from ticketing.core.models import SalesSegmentKindEnum, Event, StockHolder
+
+def fix_boolean(formdata, name):
+    if formdata:
+        if name in formdata:
+            if not formdata[name]:
+                del formdata[name]
 
 class SalesSegmentGroupForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        fix_boolean(formdata, 'seat_choice')
+        fix_boolean(formdata, 'public')
         super(SalesSegmentGroupForm, self).__init__(formdata, obj, prefix, **kwargs)
         if 'event_id' in kwargs:
             event = Event.get(kwargs['event_id'])
             self.copy_to_stock_holder.choices = [('', u'変更しない')] + [
                 (str(sh.id), sh.name) for sh in StockHolder.get_own_stock_holders(event)
             ]
+
 
     def _get_translations(self):
         return Translations()
@@ -52,9 +61,9 @@ class SalesSegmentGroupForm(OurForm):
         format='%Y-%m-%d %H:%M',
         hide_on_new=True
     )
-    seat_choice = IntegerField(
+    seat_choice = OurBooleanField(
         label=u'座席選択可',
-        default=1,
+        #default=True,
         widget=CheckboxInput(),
     )
     upper_limit = OurIntegerField(
@@ -63,10 +72,10 @@ class SalesSegmentGroupForm(OurForm):
         validators=[RequiredOnUpdate()],
         hide_on_new=True
     )
-    public = OurIntegerField(
+    public = OurBooleanField(
         label=u'一般公開',
-        default=1,
-        widget=CheckboxInput(),
+        #default=1,
+        #widget=CheckboxInput(),
         hide_on_new=True
     )
     copy = IntegerField(

@@ -1,6 +1,6 @@
 <%page args="modal_id, performance_id" />
 <script type="text/javascript">
-  var new_product, edit_product, delete_product;
+  var new_product, edit_product, delete_product, preview_ticket;
   $(function() {
     (function (modal_product) {
       new_product = function new_product() {
@@ -24,6 +24,9 @@
         modal.find('#delete').attr('href', '${request.route_path('products.delete', product_id='{id}')}'.replace(encodeURIComponent('{id}'), id));
         modal.find('#message').text('選択した商品を削除します。よろしいですか？');
         modal.modal('toggle');
+      };
+      preview_ticket = function preview_ticket(id) {
+        $("a#productItem"+id).click();
       };
     })($('#${modal_id}'));
   });
