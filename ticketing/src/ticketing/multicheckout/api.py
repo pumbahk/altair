@@ -620,7 +620,7 @@ class Checkout3D(object):
                             elif ssube.tag == "EventDate":
                                 history.EventDate = maybe_unicode(ssube.text)
                             elif ssube.tag == "SalesAmount":
-                                history.SalesAmount = maybe_unicode(int(ssube.text))
+                                history.SalesAmount = int(ssube.text)
 
         return inquiry_card_response
 
