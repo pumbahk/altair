@@ -2,7 +2,7 @@
 import logging
 import json
 import sqlalchemy as sa
-logger = logging.getLogger(__file__)
+logger = logging.getLogger(__name__)
 from pyramid.view import view_config
 from pyramid.view import view_defaults
 from pyramid.httpexceptions import HTTPCreated, HTTPForbidden, HTTPBadRequest, HTTPNotFound, HTTPFound
@@ -108,7 +108,7 @@ def event_register(request):
     except InvalidParamaterException as e:
         logger.warn("*event register api* invalid paramater received: reason: '%s.'\ndata = %s" % (str(e),request.json_body ))
         return HTTPBadRequest(body=json.dumps({u'status':u'error', u'message':unicode(e), "apikey": apikey}))
-    except ValueError as e:
+    except Exception as e:
         logger.exception(e)
         return HTTPBadRequest(body=json.dumps({u'status':u'error', u'message':unicode(e), "apikey": apikey}))
 

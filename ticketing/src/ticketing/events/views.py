@@ -3,6 +3,7 @@ import os
 import isodate
 import json
 import logging
+logger = logging.getLogger()
 import urllib2
 import contextlib
 from datetime import datetime, timedelta
@@ -204,7 +205,7 @@ class Events(BaseView):
             organization = self.context.user.organization
             data = get_cms_data(self.request, organization, event)
         except Exception, e:
-            logging.info("cms build data error: %s (event_id=%s)" % (e.message, event_id))
+            logger.info("cms build data error: %s (event_id=%s)" % (e.message, event_id))
             self.request.session.flash(e.message)
             return HTTPFound(location=route_path('events.show', self.request, event_id=event.id))
 
@@ -216,15 +217,16 @@ class Events(BaseView):
                 if res.getcode() == HTTPCreated.code:
                     self.request.session.flash(u'イベントをCMSへ送信しました')
                 else:
-                    raise urllib2.HTTPError(code=res.getcode())
+                    raise Exception("cms sync http response error: reponse is not 302 (code:%s),  url=%s" % (res.getcode(),  res.url))
+                    # raise Exception("cms sync http response error: reponse is not 302 (code:%s),  response=%s" % (res.getcode(), res.read()))
         except urllib2.HTTPError, e:
-            logging.warn("cms sync http error: response status url=(%s) %s" % (e.code, e))
+            logger.warn("cms sync http error: response status url=(%s) %s" % (e.code, e))
             self.request.session.flash(u'イベント送信に失敗しました (%s)' % e.code)
         except urllib2.URLError, e:
-            logging.warn("cms sync http error: response status url=(%s) %s" % (e.reason, e))
+            logger.warn("cms sync http error: response status url=(%s) %s" % (e.reason, e))
             self.request.session.flash(u'イベント送信に失敗しました (%s)' % e.reason)
         except Exception, e:
-            logging.error("cms sync error: %s" % (e.message))
+            logger.error("cms sync error: %s" % (e.message))
             self.request.session.flash(u'イベント送信に失敗しました')
 
         return HTTPFound(location=route_path('events.show', self.request, event_id=event.id))
