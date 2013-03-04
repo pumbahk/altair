@@ -66,8 +66,8 @@ def move_genre(request):
         ,hotwords=hotwords
     )
 
-@view_config(route_name='search', renderer='cmsmobile:templates/search/search.mako')
-@view_config(route_name='genresearch', renderer='cmsmobile:templates/genresearch/genresearch.mako')
+@view_config(route_name='search', renderer='cmsmobile:templates/searchResult/search.mako')
+@view_config(route_name='genresearch', renderer='cmsmobile:templates/searchResult/genresearch.mako')
 def search(request):
 
     events = []
