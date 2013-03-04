@@ -70,37 +70,33 @@ def move_genre(request):
 @view_config(route_name='genresearch', renderer='cmsmobile:templates/searchResult/genresearch.mako')
 def search(request):
 
-    events = []
     form = SearchForm(request.GET)
     searcher = EventSearcher()
 
     # freeword, genre, subgenre
-    events = searcher.get_events_from_freeword(request, form, events)
+    qs = searcher.get_events_from_freeword(request, form)
 
-    # area
-    if form.area.data:
-        if form.genre.data == "" and form.sub_genre.data == "":
-            # 地域検索
-            events = Event.query.filter(Event.organization_id == request.organization.id).all()
-            events = searcher.get_events_from_area(events, form.area.data)
-        else:
-            # 絞り込み
-            events = searcher.get_events_from_area(events, form.area.data)
+    # 地域検索
+    qs = searcher.get_events_from_area(form, qs)
 
     # paging
-    if events:
-        form.num.data = len(events)
-        items_per_page = 10
-        events = paginate.Page(
-            events,
-            form.page.data,
-            items_per_page,
-            url=paginate.PageURL_WebOb(request)
-        )
-        if form.num.data % items_per_page == 0:
-            form.page_num.data = form.num.data / items_per_page
-        else:
-            form.page_num.data = form.num.data / items_per_page + 1
+    events = None
+    if qs:
+        events = qs.all()
+
+        if events:
+            form.num.data = len(events)
+            items_per_page = 10
+            events = paginate.Page(
+                events,
+                form.page.data,
+                items_per_page,
+                url=paginate.PageURL_WebOb(request)
+            )
+            if form.num.data % items_per_page == 0:
+                form.page_num.data = form.num.data / items_per_page
+            else:
+                form.page_num.data = form.num.data / items_per_page + 1
 
     return {
         'events':events
