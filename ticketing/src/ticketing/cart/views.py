@@ -35,7 +35,7 @@ from ticketing.fanstatic import with_jquery, with_jquery_tools
 from ticketing.rakuten_auth.api import authenticated_user
 from ticketing.payments.payment import Payment
 from ticketing.payments.exceptions import PaymentDeliveryMethodPairNotFound
-#from ticketing.mobile.interfaces import IMobileRequest
+from ticketing.mobile.interfaces import IMobileRequest
 
 from . import api
 from . import helpers as h
