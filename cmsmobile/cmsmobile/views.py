@@ -3,7 +3,7 @@ from pyramid.view import view_config
 from altaircms.topic.models import TopicTag, PromotionTag
 from datetime import datetime
 from altaircms.topic.api import get_topic_searcher
-from cmsmobile.event.forms import SearchForm
+from cmsmobile.event.search.forms import SearchForm
 from altaircms.genre.searcher import GenreSearcher
 from altaircms.tag.models import HotWord
 

@@ -20,7 +20,15 @@ def main(global_config, **settings):
 
     config.set_request_property("altaircms.auth.api.get_allowable_query", "allowable", reify=True)
 
-    config.include('cmsmobile.event')
+    config.include('cmsmobile.event.company')
+    config.include('cmsmobile.event.detailsearch')
+    config.include('cmsmobile.event.eventdetail')
+    config.include('cmsmobile.event.genre')
+    config.include('cmsmobile.event.help')
+    config.include('cmsmobile.event.hotword')
+    config.include('cmsmobile.event.information')
+    config.include('cmsmobile.event.search')
+
     config.include('altaircms.solr')
     config.include('altaircms.tag')
     config.include('altaircms.topic')
@@ -30,6 +38,7 @@ def main(global_config, **settings):
     config.add_fulltext_search(search_utility)
 
     config.add_route("home", "/")
+
     config.scan()
 
     return config.make_wsgi_app()
