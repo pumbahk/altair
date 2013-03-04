@@ -75,23 +75,23 @@ class SalesReports(BaseView):
         if performance is None:
             raise HTTPNotFound('performance id %d is not found' % performance_id)
 
-        report_by_sales_segment = {}
+        report_by_sales_segment_group = {}
         for sales_segment in performance.sales_segments:
-            form = SalesReportForm(self.request.params, performance_id=performance_id, sales_segment_id=sales_segment.id)
-            report_by_sales_segment[sales_segment.name] = get_performance_sales_summary(form, self.context.organization)
+            form = SalesReportForm(self.request.params, performance_id=performance_id, sales_segment_group_id=sales_segment.sales_segment_group.id)
+            report_by_sales_segment_group[sales_segment.sales_segment_group.name] = get_performance_sales_summary(form, self.context.organization)
 
-        report_by_sales_segment_total = {}
-        for sales_segment in performance.event.sales_segments:  
-            form_total = SalesReportForm(self.request.params, performance_id=performance_id, sales_segment_id=sales_segment.id)
+        report_by_sales_segment_group_total = {}
+        for sales_segment in performance.sales_segments:
+            form_total = SalesReportForm(self.request.params, performance_id=performance_id, sales_segment_group_id=sales_segment.sales_segment_group.id)
             form_total.limited_from.data = None
             form_total.limited_to.data = None
-            report_by_sales_segment_total[sales_segment.name] = get_performance_sales_summary(form_total, self.context.organization)
+            report_by_sales_segment_group_total[sales_segment.sales_segment_group.name] = get_performance_sales_summary(form_total, self.context.organization)
 
         return {
             'form':SalesReportForm(self.request.params, event_id=performance.event_id),
             'performance':performance,
-            'report_by_sales_segment':report_by_sales_segment,
-            'report_by_sales_segment_total':report_by_sales_segment_total,
+            'report_by_sales_segment_group':report_by_sales_segment_group,
+            'report_by_sales_segment_group_total':report_by_sales_segment_group_total,
         }
 
     @view_config(route_name='sales_reports.preview', renderer='ticketing:templates/sales_reports/preview.html')
