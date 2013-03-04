@@ -119,14 +119,22 @@ class SalesSegmentForm(OurForm):
                     or_(and_(start_at<=SalesSegment.start_at,
                              SalesSegment.start_at<=end_at),
                         and_(start_at<=SalesSegment.end_at,
-                             SalesSegment.end_at<=end_at))
+                             SalesSegment.end_at<=end_at),
+                        and_(SalesSegment.start_at<=start_at,
+                             end_at<=SalesSegment.end_at),
+                        )
+                ).filter(
+                        SalesSegment.sales_segment_group_id==self.sales_segment_group_id.data
                 )
+
                 if self.id.data is not None:
                     q = q.filter(SalesSegment.id != self.id.data)
 
+
                 dup = q.first()
                 if dup:
-                    self.start_at.errors.append(u'同一公演について期間がかぶっています。')
+                    self.start_at.errors.append(u'同一公演について期間がかぶっています。{0}～{1}'.format(
+                            dup.start_at, dup.end_at))
 
                     return False
 

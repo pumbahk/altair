@@ -10,18 +10,13 @@ ${event.title}
 <p>
 <font color="#ffbf00">■</font>席種をお選びください
 </p>
-
-<form action="${request.url}" method="get">
-  <select name="stid">
+  <ul>
   % for seat_type in seat_types:
-    <option value="${seat_type['id']}">${seat_type['name']} ${seat_type["availability_text"]}</option>
+    <li>
+    <a href="${request.current_route_url(_query={'stid': seat_type['id']})}">${seat_type['name']} ${seat_type["availability_text"]}</a>
+    </li>
   % endfor
-  </select>
-  <div style="text-align:center;">
-  <br/>
-  <input type="submit" value="次へ">
-  </div>
-</form>
+  </ul>
 <form action="${request.route_url('cart.index', event_id=event.id)}" method="get">
   <div style="text-align:center;">
   <input type="hidden" name="performance_name" value="${performance.name}" />

@@ -28,7 +28,7 @@ def rename_file(src, dst):
 def on_file_exists_try_rename(target, realpath, retry):
     old_one_destination = tempfile.mktemp()
     logger.info("%s is exists. rename old one -> %s" % (realpath,  old_one_destination))
-    os.rename(realpath, old_one_destination)
+    shutil.move(realpath, old_one_destination)
     return retry(target, realpath)
 
 def on_file_exists_overwrite(target, realpath, retry):
