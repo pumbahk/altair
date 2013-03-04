@@ -18,13 +18,13 @@
                 <td>今週発売のチケット</td>
             </tr>
             <tr>
-                <td>${h.form_item(form.soon_sale)}</td>
-                <td>まもなく発表のイベント</td>
+                <td>${h.form_item(form.soon_act)}</td>
+                <td>まもなく開演のイベント</td>
             </tr>
         </table>
 
         <input type="submit" value="検索"/>
-        <input type="button" value="詳細検索" onClick="window.location.href='/detailsearch'">
+        <a href="/detailsearch">もっと詳しく</a>
     </fieldset>
 </form>
 <p/>
