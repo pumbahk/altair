@@ -197,6 +197,105 @@ class EventPageDefaultInfoTests(unittest.TestCase):
             
         target = self._makeOne(defaultinfo)
         self.assertEqual(target.resolve_keywords(self.jpop, event=event), u"this-is-event-name, イベントのタグ, k0, k1, k2, 音楽, jポップ")
+
+class NoGenreEventPageDefaultInfoTests(unittest.TestCase):
+    def _getTarget(self):
+        from altaircms.page.nameresolver import EventPageInfoResolver
+        return EventPageInfoResolver
+
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
+    @classmethod
+    def tearDownClass(cls):
+        import transaction
+        transaction.abort()
+
+    def test_url(self):
+        class defaultinfo:
+            url_prefix = None
+        class event:
+            title=u"this-is-event-name", 
+            subtitle=u"this-is-event-subtitle", 
+            code=u"EV0010"
+        target = self._makeOne(defaultinfo)
+        self.assertEqual(target.resolve_url(None, event=event), "/EV0010")
+
+    def test_url2(self):
+        class defaultinfo:
+            url_prefix = u"prefix-"
+        class event:
+            title=u"this-is-event-name", 
+            subtitle=u"this-is-event-subtitle", 
+            code=u"EV0010"
+
+        target = self._makeOne(defaultinfo)
+        self.assertEqual(target.resolve_url(None, event=event), "prefix-/EV0010")
+
+
+    def test_title_only(self):
+        class defaultinfo:
+            title_prefix = u"タイトル:"
+        class event:
+            title=u"this-is-event-name"
+            subtitle = None
+            code=u"EV0010"
+
+        target = self._makeOne(defaultinfo)
+        self.assertEqual(target.resolve_title(None, event=event), u"this-is-event-name")
+
+    def test_title_has_subtitle(self):
+        class defaultinfo:
+            title_prefix = u"タイトル:"
+        class event:
+            title=u"this-is-event-name"
+            subtitle=u"this-is-event-subtitle"
+            code=u"EV0010"
+
+        target = self._makeOne(defaultinfo)
+        self.assertEqual(target.resolve_title(None, event=event), u"this-is-event-subtitle")
+        
+
+    def test_description(self):
+        class defaultinfo:
+            description = u"this-is-description"
+        class event:
+            title=u"this-is-event-name", 
+            description = "description"
+
+        target = self._makeOne(defaultinfo)
+        self.assertEqual(target.resolve_description(None, event=event), u"this-is-description description ")
+
+    def test_keywords(self):
+        class defaultinfo:
+            keywords = u"k0, k1, k2"
+        class event:
+            title = u"this-is-event-name"
+            class pageset:
+                public_tags = []
+            pagesets = [pageset]
+
+        target = self._makeOne(defaultinfo)
+        self.assertEqual(target.resolve_keywords(None, event=event), u"this-is-event-name, k0, k1, k2")
+
+    def test_keywords_with_pagetags(self):
+        class defaultinfo:
+            keywords = u"k0, k1, k2"
+        class event:
+            title = u"this-is-event-name"
+            organization_id = 1
+            class Pageset:
+                class Tag:
+                    organization_id = 1
+                    label=u"イベントのタグ"
+                class Tag2:
+                    organization_id = 2
+                    label=u"invalid-key"
+                public_tags = [Tag, Tag2]
+            pagesets = [Pageset]
+            
+        target = self._makeOne(defaultinfo)
+        self.assertEqual(target.resolve_keywords(None, event=event), u"this-is-event-name, イベントのタグ, k0, k1, k2")
         
 if __name__ == "__main__":
     unittest.main()

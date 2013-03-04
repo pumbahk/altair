@@ -155,8 +155,7 @@ def ftsearch_register_from_page(request, page, ftsearch=None):
     try:
         ftsearch.register(doc, commit=True)
     except Exception, e:
-        logger.error("solr register failed")
-        logger.exception(str(e))
+        logger.warn(str(e))
         
         
 

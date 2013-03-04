@@ -119,6 +119,7 @@ class PageUpdatePublishStatus(object):
             return True
 
 
+
 @view_config(route_name="plugins_api_page_info_default", renderer="json", 
              custom_predicates=(require_login, ))
 def page_setup_info(request):

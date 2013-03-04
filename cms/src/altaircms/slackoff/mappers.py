@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 
-from altaircms.models import model_to_dict as model_to_dict_original
+from altaircms.models import model_to_dict as model_to_dict_original, SalesSegment
 from altaircms.topic.models import Topcontent
 import altaircms.helpers as h
 from markupsafe import Markup
@@ -89,8 +89,8 @@ def sale_mapper(request, obj):
 
 def ticket_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
-    # objlike.event = obj.event.title if obj.event else None
-    # objlike.sale = obj.sale.group.name if obj.sale.group else u"-"
+    salessegment = SalesSegment.query.filter_by(id=obj.sale.id).first()
+    objlike.sale = salessegment.group.name if salessegment.group_id else u"--"
     return objlike
 
 def category_mapper(request, obj):

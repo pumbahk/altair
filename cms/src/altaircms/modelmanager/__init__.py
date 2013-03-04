@@ -89,7 +89,7 @@ class EventSalesTerm(BubblingBase):
             start_date, end_date = c.term()
             if first_start_date > start_date:
                 first_start_date = start_date
-            if final_end_date < end_date:
+            if final_end_date and end_date and final_end_date < end_date:
                 final_end_date = end_date
         self.o.deal_open = first_start_date
         self.o.deal_close = final_end_date
@@ -114,7 +114,7 @@ class SalesSegmentGroupSalesTerm(BubblingBase):
             start_date, end_date = c.term()
             if first_start_date > start_date:
                 first_start_date = start_date
-            if final_end_date < end_date:
+            if final_end_date and end_date and final_end_date < end_date:
                 final_end_date = end_date
         self.o.start_on = first_start_date
         self.o.end_on = final_end_date

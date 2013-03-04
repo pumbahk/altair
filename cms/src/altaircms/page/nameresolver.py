@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
 from collections import namedtuple
 Info = namedtuple("Info", "caption name url title description keywords")
+import logging
+logger = logging.getLogger(__name__)
 class GetPageInfoException(Exception):
     pass
 
@@ -41,6 +43,9 @@ class GenrePageInfoResolver(object):
                     description=self.resolve_description(genre))
 
     def ordered_genres(self, genre):
+        if genre is None or not hasattr(genre, "ancestors"):
+            logger.debug("%s does not have ancestors. return empty list" % genre)
+            return []
         gs = list(genre.ancestors)
         gs.insert(0, genre)
         return list(reversed(gs))
@@ -69,9 +74,13 @@ class EventPageInfoResolver(object):
     def __init__(self, defaultinfo):
         self.defaultinfo = defaultinfo
         self.genrepage_resolver = GenrePageInfoResolver(defaultinfo)
+        self.other_resolver = OtherPageInfoResolver(defaultinfo)
 
     def resolve(self, genre, event):
-        data = self.genrepage_resolver.resolve(genre)
+        if genre:
+            data = self.genrepage_resolver.resolve(genre)
+        else:
+            data = self.other_resolver.resolve()
         return Info(url=self._resolve_url(data.url, event), 
                     caption=u"「%s」のイベント詳細ページとして" % event.title, 
                     name=event.title, 
