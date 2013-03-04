@@ -3,6 +3,8 @@ from cmsmobile.solr import helper
 from pyramid.httpexceptions import HTTPNotFound
 from altaircms.models import Performance
 from altaircms.event.models import Event
+from cmsmobile.core.enum import AreaEnum
+
 import logging
 
 logger = logging.getLogger(__file__)
@@ -16,6 +18,7 @@ class EventSearcher(object):
             search_word = form.word.data
 
         if form.sub_genre.data != "" and form.sub_genre.data is not None:
+            #search_word = search_word + " " + form.sub_genre.data
             search_word = search_word + " " + form.sub_genre.data
         elif form.genre.data != "" and form.genre.data is not None:
             search_word = search_word + " " + form.genre.data
@@ -34,8 +37,8 @@ class EventSearcher(object):
         return qs
 
 
-    def get_events_from_area(self, form, qs):
-        if form.area.data:
+    def get_events_from_area(self, form, qs=None):
+        if form.area.data > AreaEnum.NoSelect:
             prefectures = _get_prefecture(form.area.data)
             # 絞り込み
             if qs:
@@ -56,17 +59,17 @@ def _create_ids(events):
 
 def _get_prefecture(area):
     areas = {
-         u'北海道':['hokkaido']
-        ,u'北関東':['ibaraki','tochigi','gunma','saitama']
-        ,u'東海':['gifu','aichi','mie','shizuoka']
-        ,u'甲信越':['niigata','yamanashi','nagano']
-        ,u'北陸':['toyama','ishikawa','fukui']
-        ,u'東北':['aomori', 'iwate', 'akita', 'miyagi', 'yamagata', 'fukushima']
-        ,u'首都圏':['chiba','tokyo','kanagawa']
-        ,u'近畿':['shiga','kyoto','osaka','hyogo','nara','wakayama']
-        ,u'中国':['tottori','shimane','okayama','hiroshima','yamaguchi']
-        ,u'四国':['tokushima','kagawa','ehime','kouchi']
-        ,u'九州':['fukuoka','saga','nagasaki','kumamoto','oita','miyazaki','kagoshima']
-        ,u'沖縄':['okinawa']
+         '1':['chiba','tokyo','kanagawa']
+        ,'2':['shiga','kyoto','osaka','hyogo','nara','wakayama']
+        ,'3':['gifu','aichi','mie','shizuoka']
+        ,'4':['hokkaido']
+        ,'5':['aomori', 'iwate', 'akita', 'miyagi', 'yamagata', 'fukushima']
+        ,'6':['ibaraki','tochigi','gunma','saitama']
+        ,'7':['niigata','yamanashi','nagano']
+        ,'8':['toyama','ishikawa','fukui']
+        ,'9':['tottori','shimane','okayama','hiroshima','yamaguchi']
+        ,'10':['tokushima','kagawa','ehime','kouchi']
+        ,'11':['fukuoka','saga','nagasaki','kumamoto','oita','miyazaki','kagoshima']
+        ,'12':['okinawa']
     }
     return areas[area]
