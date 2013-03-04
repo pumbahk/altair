@@ -34,8 +34,8 @@ from ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscr
 from ticketing.orders.export import OrderCSV
 from ticketing.orders.forms import (OrderForm, OrderSearchForm, OrderRefundSearchForm, SejOrderForm, SejTicketForm,
                                     SejRefundEventForm,SejRefundOrderForm, SendingMailForm,
-                                    PerformanceSearchForm, SalesSegmentSearchForm, OrderReserveForm, OrderRefundForm, ClientOptionalForm,
-                                    PreviewTicketSelectForm, CheckedOrderTicketChoiceForm)
+                                    PerformanceSearchForm, OrderReserveForm, OrderRefundForm, ClientOptionalForm,
+                                    SalesSegmentGroupSearchForm, SalesSegmentSearchForm, PreviewTicketSelectForm)
 from ticketing.tickets.convert import to_opcodes
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
@@ -86,6 +86,17 @@ class OrdersAPIView(BaseView):
         query = Performance.set_search_condition(query, form_search)
         performances = [dict(pk='', name=u'(すべて)')]+[dict(pk=p.id, name='%s (%s)' % (p.name, p.start_on.strftime('%Y-%m-%d %H:%M'))) for p in query]
         return {"result": performances, "status": True}
+
+    @view_config(renderer="json", route_name="orders.api.sales_segment_groups")
+    def get_sales_segment_groups(self):
+        form_search = SalesSegmentGroupSearchForm(self.request.params)
+        if not form_search.validate():
+            return {"result": [],  "status": False}
+
+        query = SalesSegmentGroup.query
+        query = SalesSegmentGroup.set_search_condition(query, form_search)
+        sales_segment_groups = [dict(pk='', name=u'(すべて)')] + [dict(pk=p.id, name=p.name) for p in query]
+        return {"result": sales_segment_groups, "status": True}
 
     @view_config(renderer="json", route_name="orders.api.sales_segments")
     def get_sales_segments(self):

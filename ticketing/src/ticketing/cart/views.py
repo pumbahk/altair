@@ -35,7 +35,7 @@ from ticketing.fanstatic import with_jquery, with_jquery_tools
 from ticketing.rakuten_auth.api import authenticated_user
 from ticketing.payments.payment import Payment
 from ticketing.payments.exceptions import PaymentDeliveryMethodPairNotFound
-#from ticketing.mobile.interfaces import IMobileRequest
+from ticketing.mobile.interfaces import IMobileRequest
 
 from . import api
 from . import helpers as h
@@ -573,7 +573,7 @@ class PaymentView(object):
         start_on = cart.performance.start_on
         #payment_delivery_methods = self.context.get_payment_delivery_method_pair(start_on=start_on)
         sales_segment = self.sales_segment
-        payment_delivery_methods = sales_segment.payment_delivery_method_pairs
+        payment_delivery_methods = sales_segment.available_payment_delivery_method_pairs
         user = self.context.get_or_create_user()
         user_profile = None
         if user is not None:
@@ -659,7 +659,7 @@ class PaymentView(object):
         if not self._validate_extras(cart, payment_delivery_pair, shipping_address_params):
             start_on = cart.performance.start_on
             sales_segment = self.sales_segment
-            payment_delivery_methods = sales_segment.payment_delivery_method_pairs
+            payment_delivery_methods = sales_segment.available_payment_delivery_method_pairs
             return dict(form=self.form, payment_delivery_methods=payment_delivery_methods)
 
         cart.payment_delivery_pair = payment_delivery_pair

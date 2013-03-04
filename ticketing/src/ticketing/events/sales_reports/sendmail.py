@@ -10,7 +10,7 @@ from sqlalchemy.sql import func
 
 from ticketing.operators.models import Operator
 from ticketing.core.models import Event, Organization, ReportSetting, Mailer
-from ticketing.core.models import StockType, StockHolder, StockStatus, Stock, Performance, Product, ProductItem, SalesSegment, SalesSegmentGroup
+from ticketing.core.models import StockType, StockHolder, StockStatus, Stock, Performance, Product, ProductItem, SalesSegmentGroup
 from ticketing.core.models import Order, OrderedProduct, OrderedProductItem
 from ticketing.events.sales_reports.forms import SalesReportForm
 
@@ -118,6 +118,7 @@ def get_performance_sales_summary(form, organization):
         .outerjoin(StockStatus).filter(StockStatus.stock_id==Stock.id)\
         .outerjoin(Product).filter(Product.seat_stock_type_id==StockType.id)
     if form.performance_id.data:
+        query = query.filter(Product.performance_id==form.performance_id.data)
         query = query.outerjoin(ProductItem).filter(ProductItem.product_id==Product.id, ProductItem.performance_id==form.performance_id.data)
         total_quantity_entity = Stock.quantity.label('total_quantity')
         stock_quantity_entity = StockStatus.quantity.label('vacant_quantity')
@@ -126,11 +127,14 @@ def get_performance_sales_summary(form, organization):
         query = query.outerjoin(ProductItem).filter(ProductItem.product_id==Product.id)
         total_quantity_entity = func.sum(Stock.quantity).label('total_quantity')
         stock_quantity_entity = func.sum(StockStatus.quantity).label('vacant_quantity')
-    if form.sales_segment_id.data:
-        query = query.outerjoin(SalesSegment).filter(SalesSegment.id==Product.sales_segment_id, SalesSegment.id==form.sales_segment_id.data)
-        sales_segment_name_entity = SalesSegment.name.label('sales_segment_name')
+    if form.sales_segment_group_id.data:
+        query = query.outerjoin(SalesSegmentGroup).filter(
+            SalesSegmentGroup.id==Product.sales_segment_group_id,
+            SalesSegmentGroup.id==form.sales_segment_group_id.data,
+        )
+        sales_segment_group_name_entity = SalesSegmentGroup.name.label('sales_segment_group_name')
     else:
-        sales_segment_name_entity = 'NULL'
+        sales_segment_group_name_entity = 'NULL'
 
     query = query.with_entities(
             StockType.id.label('stock_type_id'),
@@ -142,7 +146,7 @@ def get_performance_sales_summary(form, organization):
             stock_quantity_entity,
             StockHolder.id.label('stock_holder_id'),
             StockHolder.name.label('stock_holder_name'),
-            sales_segment_name_entity,
+            sales_segment_group_name_entity,
             Stock.id.label('stock_id'),
         )
     if form.performance_id.data:
@@ -162,7 +166,7 @@ def get_performance_sales_summary(form, organization):
             vacant_quantity=row[6] or 0,
             stock_holder_id=row[7],
             stock_holder_name=row[8],
-            sales_segment_name=row[9],
+            sales_segment_group_name=row[9],
             order_quantity=0,
             paid_quantity=0,
             unpaid_quantity=0,
@@ -174,10 +178,14 @@ def get_performance_sales_summary(form, organization):
         .outerjoin(Product).filter(Product.id==OrderedProduct.product_id)
     if form.performance_id.data:
         query = query.filter(Order.performance_id==form.performance_id.data)
+        query = query.filter(Product.performance_id==form.performance_id.data)
     elif form.event_id.data:
         query = query.filter(Product.event_id==form.event_id.data)
-    if form.sales_segment_id.data:
-        query = query.outerjoin(SalesSegment).filter(SalesSegment.id==Product.sales_segment_id, SalesSegment.id==form.sales_segment_id.data)
+    if form.sales_segment_group_id.data:
+        query = query.outerjoin(SalesSegmentGroup).filter(
+            SalesSegmentGroup.id==Product.sales_segment_group_id,
+            SalesSegmentGroup.id==form.sales_segment_group_id.data
+        )
     if form.limited_from.data:
         query = query.filter(Order.created_at >= form.limited_from.data)
     if form.limited_to.data:
@@ -201,10 +209,14 @@ def get_performance_sales_summary(form, organization):
         .outerjoin(Product).filter(Product.id==OrderedProduct.product_id)
     if form.performance_id.data:
         query = query.filter(Order.performance_id==form.performance_id.data)
+        query = query.filter(Product.performance_id==form.performance_id.data)
     elif form.event_id.data:
         query = query.filter(Product.event_id==form.event_id.data)
-    if form.sales_segment_id.data:
-        query = query.outerjoin(SalesSegment).filter(SalesSegment.sales_segment_id==Product.sales_segment_id, SalesSegment.id==form.sales_segment_id.data)
+    if form.sales_segment_group_id.data:
+        query = query.outerjoin(SalesSegmentGroup).filter(
+            SalesSegmentGroup.id==Product.sales_segment_group_id,
+            SalesSegmentGroup.id==form.sales_segment_group_id.data
+        )
     if form.limited_from.data:
         query = query.filter(Order.created_at >= form.limited_from.data)
     if form.limited_to.data:
@@ -229,16 +241,16 @@ def get_performance_sales_detail(form, event):
     for performance in event.performances:
         if form.limited_from.data and performance.end_on < form.limited_from.data:
             continue
-        report_by_sales_segment = {}
+        report_by_sales_segment_group = {}
         for sales_segment in performance.sales_segments:
             if (form.limited_from.data and sales_segment.end_at < todatetime(form.limited_from.data)) or (form.limited_to.data and todatetime(form.limited_to.data) <= sales_segment.start_at):
                 continue
             form.performance_id.data = performance.id
-            form.sales_segment_id.data = sales_segment.id
-            report_by_sales_segment[sales_segment.name] = get_performance_sales_summary(form, event.organization)
+            form.sales_segment_group_id.data = sales_segment.sales_segment_group_id
+            report_by_sales_segment_group[sales_segment.sales_segment_group.name] = get_performance_sales_summary(form, event.organization)
         performances_reports[performance.id] = dict(
             performance=performance,
-            report_by_sales_segment=report_by_sales_segment
+            report_by_sales_segment_group=report_by_sales_segment_group
         )
     return performances_reports
 

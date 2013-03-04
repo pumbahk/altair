@@ -42,7 +42,7 @@ def upgrade():
     op.execute(""" ALTER TABLE MemberGroup_SalesSegment ADD COLUMN sales_segment_id BIGINT; """)
     op.execute(""" ALTER TABLE MemberGroup_SalesSegment ADD CONSTRAINT MemberGroup_SalesSegment_ibfk_3 FOREIGN KEY (sales_segment_id) REFERENCES SalesSegment (id); """)
     op.execute(""" ALTER TABLE Product DROP FOREIGN KEY Product_ibfk_1; """)
-    op.execute(""" ALTER TABLE Product DROP INDEX sales_segment_id; """)
+    op.execute(""" ALTER TABLE Product DROP INDEX Product_ibfk_1; """)
     op.execute(""" ALTER TABLE Product ADD COLUMN sales_segment_id BIGINT; """)
     op.execute(""" ALTER TABLE Product ADD CONSTRAINT Product_ibfk_1 FOREIGN KEY (sales_segment_group_id) REFERENCES SalesSegmentGroup (id); """)
     op.execute(""" ALTER TABLE Product ADD CONSTRAINT Product_ibfk_3 FOREIGN KEY (sales_segment_id) REFERENCES SalesSegment (id); """)
