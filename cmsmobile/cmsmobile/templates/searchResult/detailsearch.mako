@@ -5,7 +5,7 @@
 
 <p/>
 
-<%include file='./_form.mako' args="form=form" />
+<%include file='../detailsearch/_form.mako' args="form=form" />
 
 <hr/>
     <%include file='../common/_footer.mako' />

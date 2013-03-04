@@ -66,8 +66,8 @@ def move_genre(request):
         ,hotwords=hotwords
     )
 
-@view_config(route_name='search', renderer='cmsmobile:templates/searchResult/search.mako')
-@view_config(route_name='genresearch', renderer='cmsmobile:templates/searchResult/genresearch.mako')
+@view_config(route_name='search', renderer='cmsmobile:templates/searchresult/search.mako')
+@view_config(route_name='genresearch', renderer='cmsmobile:templates/searchresult/genresearch.mako')
 def search(request):
 
     form = SearchForm(request.GET)
@@ -104,7 +104,7 @@ def search(request):
     }
 
 
-@view_config(route_name='detail', renderer='cmsmobile:templates/detail/detail.mako')
+@view_config(route_name='eventdetail', renderer='cmsmobile:templates/detail/detail.mako')
 def move_detail(request):
     event_id = request.params.get("event_id", None)
     event = Event.query.filter(Event.id == event_id).first()
@@ -114,7 +114,7 @@ def move_detail(request):
         'event':event
     }
 
-@view_config(route_name='detail', context=ValidationFailure, renderer='cmsmobile:templates/common/error.mako')
+@view_config(route_name='eventdetail', context=ValidationFailure, renderer='cmsmobile:templates/common/error.mako')
 @view_config(route_name='hotword', context=ValidationFailure, renderer='cmsmobile:templates/common/error.mako')
 def failed_validation(request):
     return {}
@@ -176,8 +176,17 @@ def move_hotword(request):
 def move_company(request):
     return {}
 
-@view_config(route_name='detailsearch', renderer='cmsmobile:templates/detailsearch/detailsearch.mako')
+@view_config(route_name='detailsearch', request_method="GET", renderer='cmsmobile:templates/detailsearch/detailsearch.mako')
 def move_detailsearch(request):
+
+    form = DetailSearchForm()
+
+    return {
+        'form':form
+    }
+
+@view_config(route_name='detailsearch', request_method="POST", renderer='cmsmobile:templates/searchresult/detailsearch.mako')
+def move_detailsearch_post(request):
 
     form = DetailSearchForm()
 
