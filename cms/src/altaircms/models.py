@@ -242,7 +242,7 @@ class Genre(Base,  WithOrganizationMixin):
         return u"%s%s" % (self.label, suffix)
 
     def query_descendant(self, hop=None):
-        qs = self.query_join_path_from_self
+        qs = Genre.query.join(_GenrePath, Genre.id==_GenrePath.genre_id)
         if hop:
             qs = qs.filter(_GenrePath.hop<=hop)
         return qs.filter(_GenrePath.next_id==self.id)

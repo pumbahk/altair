@@ -432,3 +432,4 @@ class PageSetForm(Form):
 
     def configure(self, request):
         self.genre_id.choices = [(unicode(g.id), unicode(g)) for g in request.allowable(Genre)]
+
