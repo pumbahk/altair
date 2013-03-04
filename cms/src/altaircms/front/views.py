@@ -4,6 +4,8 @@ from altaircms.page.models import Page
 from pyramid.httpexceptions import HTTPInternalServerError
 from altaircms.lib.fanstatic_decorator import with_jquery
 from pyramid.view import view_config
+import logging 
+logger = logging.getLogger(__name__)
 
 
 
@@ -28,12 +30,14 @@ def preview_page(context, request):
     page = control.fetch_page_from_pageid(page_id, access_key=access_key)
 
     if not control.can_access():
+        logger.warn(control.error_message)
         return HTTPInternalServerError(control.error_message)
   
     template = control.frontpage_template(page)
     if template is None:
-        msg = "front pc access template %s is not found"
-        raise HTTPInternalServerError(msg % (control.frontpage_template_abspath(page)))
+        msg = "front pc access template %s is not found" % control.frontpage_template_abspath(page)
+        logger.warn(msg)
+        raise HTTPInternalServerError(msg)
 
     renderer = control.frontpage_renderer()
     response = renderer.render(template, page)
@@ -53,14 +57,16 @@ def preview_pageset(context, request, published=True):
 
     if not control.can_access():
         if not published:
+            logger.warn(control.error_message)
             raise HTTPInternalServerError(control.error_message)
         else:
             return preview_pageset(context, request, published=False)
 
     template = control.frontpage_template(page)
     if template is None:
-        msg = "front pc access template %s is not found"
-        raise HTTPInternalServerError(msg % (control.frontpage_template_abspath(page)))
+        msg = "front pc access template %s is not found" % control.frontpage_template_abspath(page)
+        logger.warn(msg)
+        raise HTTPInternalServerError(msg)
 
     renderer = control.frontpage_renderer()
     response = renderer.render(template, page)
