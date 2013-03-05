@@ -15,6 +15,7 @@ logger = logging.getLogger(__file__)
 
 class EventSearcher(object):
 
+    # フリーワード、ジャンル検索
     def get_events_from_freeword(self, request, form):
 
         search_word = ""
@@ -41,7 +42,7 @@ class EventSearcher(object):
                 raise HTTPNotFound
         return qs
 
-
+    # 地域検索
     def get_events_from_area(self, form, qs=None):
 
         if exist_value(form.area.data):
@@ -57,6 +58,7 @@ class EventSearcher(object):
                         .filter(Performance.prefecture.in_(prefectures))
         return qs
 
+    # 今週発売検索
     def get_events_week_sale(self, form, qs=None):
 
         if form.week_sale.data:
@@ -72,6 +74,21 @@ class EventSearcher(object):
                     .filter(Event.deal_open < datetime.now() + timedelta(days=7))
         return qs
 
+    # まもなく開演
+    def get_events_soon_act(self, form, qs=None):
+
+        if form.soon_act.data:
+            # 絞り込み
+            if qs:
+                qs = qs.filter(datetime.now() < Performance.open_on) \
+                    .filter(Performance.open_on < datetime.now() + timedelta(days=1))
+            # 新規検索
+            else:
+                qs = Event.query \
+                    .join(Performance).filter(Event.id == Performance.event_id) \
+                    .filter(datetime.now() < Performance.open_on) \
+                    .filter(Performance.open_on < datetime.now() + timedelta(days=1))
+        return qs
 
 def _create_ids(events):
     ids = []

@@ -27,8 +27,12 @@ def search(request):
     # week_sale
     qs = searcher.get_events_week_sale(form, qs)
 
+    # coming soon
+    qs = searcher.get_events_soon_act(form, qs)
+
     # paging
     events = None
+    form.num.data = 0
     if qs:
         events = qs.all()
 
