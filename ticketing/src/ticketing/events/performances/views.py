@@ -104,7 +104,11 @@ class PerformanceShowView(BaseView):
             'tab': tab
             }
 
-        data.update(getattr(self, '_tab_' + tab.replace('-', '_'))())
+        tab_method = '_tab_' + tab.replace('-', '_')
+        if not hasattr(self, tab_method):
+            logger.warning("AttributeError: 'PerformanceShowView' object has no attribute '{0}'".format(tab_method))
+            raise HTTPNotFound()
+        data.update(getattr(self, tab_method)())
         data.update(self._extra_data())
 
         return data
