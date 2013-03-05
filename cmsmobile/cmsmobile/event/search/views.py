@@ -24,6 +24,9 @@ def search(request):
     # 地域検索
     qs = searcher.get_events_from_area(form, qs)
 
+    # week_sale
+    qs = searcher.get_events_week_sale(form, qs)
+
     # paging
     events = None
     if qs:

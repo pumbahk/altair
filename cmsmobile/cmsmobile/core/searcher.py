@@ -6,6 +6,8 @@ from altaircms.event.models import Event
 from altaircms.models import Genre
 from cmsmobile.core.const import get_prefecture
 from cmsmobile.core.helper import exist_value
+from sqlalchemy import or_, and_
+from datetime import datetime, date, timedelta
 
 import logging
 
@@ -54,6 +56,22 @@ class EventSearcher(object):
                         .join(Performance).filter(Event.id == Performance.event_id) \
                         .filter(Performance.prefecture.in_(prefectures))
         return qs
+
+    def get_events_week_sale(self, form, qs=None):
+
+        if form.week_sale.data:
+            # 絞り込み
+            if qs:
+                qs = qs.filter(datetime.now() < Event.deal_open)\
+                    .filter(Event.deal_open < datetime.now() + timedelta(days=7))
+            # 新規検索
+            else:
+                qs = Event.query \
+                    .join(Performance).filter(Event.id == Performance.event_id) \
+                    .filter(datetime.now() < Event.deal_open) \
+                    .filter(Event.deal_open < datetime.now() + timedelta(days=7))
+        return qs
+
 
 def _create_ids(events):
     ids = []
