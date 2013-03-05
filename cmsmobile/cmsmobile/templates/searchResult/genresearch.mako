@@ -1,12 +1,12 @@
 <%include file='../common/_header.mako' args="title=u'検索結果'"/>
 <body>
     % if form.sub_genre.data is None or form.sub_genre.data == "":
-        <a href="/">トップ</a> >> <a href="/genre?genre=${form.genre.data}">${form.genre.data}</a>
+        <a href="/">トップ</a> >> <a href="/genre?genre=${dispgenre.id}">${dispgenre.label}</a>
             >> ${form.area.data + u"で" if form.area.data else ""}「${form.word.data}」を含む公演
     % else:
-        <a href="/">トップ</a> >> <a href="/genre?genre=${form.genre.data}">${form.genre.data}</a>
-            >> <a href="/genre?genre=${form.genre.data}&subgenre=${form.sub_genre.data}">
-            ${form.sub_genre.data}</a> >> ${form.area.data + u"で" if form.area.data else ""}「${form.word.data}」を含む公演
+        <a href="/">トップ</a> >> <a href="/genre?genre=${dispgenre.id}">${dispgenre.label}</a>
+            >> <a href="/genre?genre=${dispgenre.id}&sub_genre=${dispsubgenre.id}">
+            ${dispsubgenre.label}</a> >> ${form.area.data + u"で" if form.area.data else ""}「${form.word.data}」を含む公演
     % endif
     <p/>
 
