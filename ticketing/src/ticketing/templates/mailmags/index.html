@@ -34,7 +34,7 @@
           <a href="${request.route_path('mailmags.show', id=mailmag.id)}">${mailmag.name}</a>
         </td>
         <td>
-          ${mailmag.description|n}
+          ${(mailmag.description or u'')|n}
         </td>
       </tr>
   % endfor
