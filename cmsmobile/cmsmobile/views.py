@@ -40,7 +40,7 @@ def main(request):
         .filter(datetime.now() < HotWord.term_end)\
         .order_by(HotWord.display_order)[0:5]
 
-    # Genre (Genreのリスト)
+    # genretree
     genre_searcher = GenreSearcher(request)
     genres = genre_searcher.root.children
 

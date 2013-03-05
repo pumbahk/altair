@@ -6,6 +6,8 @@ from datetime import datetime
 from altaircms.topic.api import get_topic_searcher
 from cmsmobile.event.search.forms import SearchForm
 from altaircms.tag.models import HotWord
+from altaircms.genre.searcher import GenreSearcher
+from altaircms.models import Genre
 
 class ValidationFailure(Exception):
     pass
@@ -20,10 +22,20 @@ def move_genre(request):
     form.page.data = "1"
     form.page_num.data = "0"
 
+    # genretree
+    genre_searcher = GenreSearcher(request)
+    genre = request.allowable(Genre).filter(Genre.id==form.genre.data).first()
+    subgenres = genre_searcher.get_children(genre)
+
+    # subgenre
+    subgenre = None
+    if form.sub_genre.data:
+        subgenre = request.allowable(Genre).filter(Genre.id==form.sub_genre.data).first()
+
     # genre
-    system_tag = TopicTag.query.filter_by(label=form.genre.data).one()
+    system_tag = request.allowable(Genre).filter(Genre.id==form.genre.data).first()
     if form.sub_genre.data != "":
-        system_tag = TopicTag.query.filter_by(label=form.sub_genre.data).one()
+        system_tag = request.allowable(Genre).filter(Genre.id==form.sub_genre.data).first()
 
     # attention
     topic_searcher = get_topic_searcher(request, "topic")
@@ -57,6 +69,9 @@ def move_genre(request):
 
     return dict(
          form=form
+        ,dispgenre=genre
+        ,dispsubgenre=subgenre
+        ,subgenres=subgenres
         ,topics=topics
         ,promotions=promotions
         ,attentions=attentions
