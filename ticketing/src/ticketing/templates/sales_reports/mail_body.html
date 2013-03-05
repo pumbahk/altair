@@ -130,10 +130,10 @@
       % for ((id, value), (id2, value_total)) in zip(performances_reports.items(), performances_reports_total.items()):
         <%
           performance = value['performance']
-          report_by_sales_segment = value['report_by_sales_segment']
-          report_by_sales_segment_total = value_total['report_by_sales_segment']   
+          report_by_sales_segment_group = value['report_by_sales_segment_group']
+          report_by_sales_segment_group_total = value_total['report_by_sales_segment_group']
         %> 
-        % for ((sale_segment_name, performance_reports), (sale_segment_name_total, performance_reports_total)) in zip(report_by_sales_segment.items(), report_by_sales_segment_total.items()):
+        % for ((sale_segment_name, performance_reports), (sale_segment_name_total, performance_reports_total)) in zip(report_by_sales_segment_group.items(), report_by_sales_segment_group_total.items()):
       <h4 style="margin-top: 20px;">開催日:${h.safe_strftime(performance.start_on)}　${performance.name}</h4>
       <h4>${sale_segment_name}</h4>
       <table style="width: 95%; border: 1px #DCDCDC solid; background-color: #C0FFFF;">

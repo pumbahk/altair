@@ -19,7 +19,7 @@ class SalesReportForm(Form):
         if 'performance_id' in kwargs:
             self.performance_id.data = kwargs['performance_id']
         if 'sales_segment_group_id' in kwargs:
-            self.sales_segment_group_id.data = kwargs['sales_segment_id']
+            self.sales_segment_group_id.data = kwargs['sales_segment_group_id']
 
     def _get_translations(self):
         return Translations()

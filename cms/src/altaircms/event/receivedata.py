@@ -11,12 +11,13 @@ from ..modelmanager import SalesTermSummalize
 from ..modelmanager import EventTermSummalize
 
 def parse_datetime(dtstr):
-    if dtstr is None:
+    if dtstr is None or dtstr == "":
         return None
     try:
         return isodate.parse_datetime(dtstr)
-    except ValueError:
-        raise "Invalid ISO8601 datetime: %s" % dtstr
+    except ValueError, e:
+        logger.warn(str(e))
+        raise InvalidParamaterException("Invalid ISO8601 datetime: %s" % dtstr)
 
 ORGANIZATION_SOURCE = "oauth" #todo backend api include this
 

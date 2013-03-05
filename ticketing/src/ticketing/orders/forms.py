@@ -108,7 +108,6 @@ class OrderSearchForm(Form):
             else:
                 performances = Performance.query
             self.performance_id.choices = [('', u'(すべて)')] + [(p.id, '%s (%s)' % (p.name, p.start_on.strftime('%Y-%m-%d %H:%M'))) for p in performances]
-            
 
         # Performance が指定されていなかったらフォームから取得を試みる
         if performance is None and self.performance_id.data:
@@ -264,6 +263,10 @@ class OrderRefundSearchForm(OrderSearchForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         super(OrderRefundSearchForm, self).__init__(formdata, obj, prefix, **kwargs)
 
+        if self.sales_segment_group.data:
+            sales_segment_groups = SalesSegmentGroup.query.filter(SalesSegmentGroup.id.in_(self.sales_segment_group.data))
+            self.sales_segment_group.choices = [(sales_segment_group.id, sales_segment_group.name) for sales_segment_group in sales_segment_groups]
+
         self.status.data = ['paid']
         self.public.data = u'一般販売のみ'
 
@@ -338,6 +341,24 @@ class PerformanceSearchForm(Form):
     public = HiddenField(
         validators=[Optional()],
     )
+
+
+class SalesSegmentGroupSearchForm(Form):
+    event_id = HiddenField(
+        validators=[Optional()],
+    )
+    sort = HiddenField(
+        validators=[Optional()],
+        default='id'
+    )
+    direction = HiddenField(
+        validators=[Optional(), AnyOf(['asc', 'desc'], message='')],
+        default='desc',
+    )
+    public = HiddenField(
+        validators=[Optional()],
+    )
+
 
 class SalesSegmentSearchForm(Form):
     performance_id = HiddenField(
