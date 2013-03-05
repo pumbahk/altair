@@ -221,7 +221,6 @@ class OrderCSV(object):
         PlainTextRenderer(u'performance.code'),
         PlainTextRenderer(u'performance.start_on'),
         PlainTextRenderer(u'venue.name'),
-        PlainTextRenderer(u'mail_magazine.mail_permission'),
         ]
 
     per_order_columns = \
