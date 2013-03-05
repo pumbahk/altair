@@ -31,7 +31,7 @@ from ticketing.core.models import (Order, Performance, PaymentDeliveryMethodPair
                                    DeliveryMethod, TicketFormat_DeliveryMethod, Venue,
                                    SalesSegmentGroup, SalesSegment, Stock, StockStatus, Seat, SeatStatus, SeatStatusEnum, ChannelEnum)
 from ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
-from ticketing.orders.export import OrderCSV
+from ticketing.orders.export import OrderCSV, japanese_columns
 from ticketing.orders.forms import (OrderForm, OrderSearchForm, OrderRefundSearchForm, SejOrderForm, SejTicketForm,
                                     SejRefundEventForm,SejRefundOrderForm, SendingMailForm,
                                     PerformanceSearchForm, OrderReserveForm, OrderRefundForm, ClientOptionalForm,
@@ -257,13 +257,12 @@ class Orders(BaseView):
         ]
         response = Response(headers=headers)
 
-        export_type=self.request.params.get('export_type')
+        export_type = int(self.request.params.get('export_type', OrderCSV.EXPORT_TYPE_ORDER))
         kwargs = dict(export_type=export_type) if export_type else {}
-        order_csv = OrderCSV(orders, organization_id=self.context.user.organization_id, **kwargs)
+        order_csv = OrderCSV(organization_id=self.context.user.organization_id, localized_columns=japanese_columns, **kwargs)
 
-        writer = csv.DictWriter(response, order_csv.header, delimiter=',', quoting=csv.QUOTE_ALL)
-        writer.writeheader()
-        writer.writerows(order_csv.rows)
+        writer = csv.writer(response, delimiter=',', quoting=csv.QUOTE_ALL)
+        writer.writerows([column.encode('cp932') for column in columns] for columns in order_csv(orders))
 
         return response
 
