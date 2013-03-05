@@ -996,6 +996,8 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     delivery_method = relationship('DeliveryMethod', backref='payment_delivery_method_pairs')
 
     def is_available_for(self, performance, on_day):
+        if performance is None:
+            return True
         border = performance.start_on - timedelta(days=self.unavailable_period_days)
         return self.public and (on_day <= border)
 
