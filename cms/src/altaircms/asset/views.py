@@ -21,21 +21,6 @@ from altaircms.auth.api import get_or_404
 from . import creation
 from . import ValidationError
 
-@view_defaults(permission="asset_add", decorator=with_bootstrap, route_name="asset_add")
-class AssetAddView(object):
-    def __init__(self, request):
-        self.request = request
-        self.context = request.context        
-
-    @view_config(match_param="kind=image", renderer="altaircms:templates/asset/image/add.html", 
-                 request_method="GET")
-    def add_image_asset_input(self):
-        set_endpoint(self.request)
-        private_tags = self.request.params.get("private_tags", "")
-        form = forms.ImageAssetForm(private_tags=private_tags)
-        return {"form": form}
-
-
 @view_defaults(permission="asset_create", decorator=with_bootstrap, route_name="asset_add")
 class AssetAddView(object):
     def __init__(self, context, request):

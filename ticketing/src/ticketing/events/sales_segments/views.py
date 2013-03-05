@@ -82,7 +82,7 @@ class SalesSegments(BaseView):
 
         mapped = {}
         for ssg in sales_segment_groups:
-            mapped[str(ssg.id)] = [(pdmp.id, pdmp.payment_method.name + "/" + pdmp.delivery_method.name) 
+            mapped[str(ssg.id)] = [(pdmp.id, pdmp.payment_method.name + " - " + pdmp.delivery_method.name) 
                               for pdmp in ssg.payment_delivery_method_pairs]
 
         return json.dumps(mapped)

@@ -64,22 +64,38 @@
 </%def>
 
 <%def name="form_item(item, help=None, label=None, **options)">
+  <% from wtforms.widgets import CheckboxInput %>
+  <% from ticketing.formhelpers import CheckboxMultipleSelect %>
   <% hide_on_new = getattr(item, 'hide_on_new', False) %>
   % if not getattr(getattr(item, 'form', None), 'new_form', False) or not hide_on_new:
   <% if hide_on_new: options['data-hide-on-new'] = 'hide-on-new' %>
+  <% classes = [] %>
+  <% if item.flags.required: classes.append('required') %>
   <div class="control-group ${'error' if item.errors else ''}">
-    % if item.type != 'HiddenField':
-      <label class="control-label">
-        % if item.flags.required:
-        <span style="color: #BA0000;padding-left: 5px; padding-right: 5px; font-size: 150%">*</span>
-        % endif
-        ${(help or u'')|n} ${label or item.label.text}
-      </label>
+    % if isinstance(item.widget, CheckboxInput):
+      <div class="controls">
+        ${(help or u'')|n} 
+        ${item(**options)}
+        <label class="${u' '.join(classes + [u'inline'])}" for="${item.id}">${label or item.label.text}</label>
+        ${validate_errors(item)}
+      </div>
+    % elif isinstance(item.widget, CheckboxMultipleSelect):
+      ${(help or u'')|n} 
+      <label class="${u' '.join(classes + [u'control-label'])}" for="${item.id}">${label or item.label.text}</label>
+      <div class="controls">
+        ${item(**options)}
+        ${validate_errors(item)}
+      </div>
+    % else:
+      % if item.type != 'HiddenField':
+        ${(help or u'')|n} 
+        <label class="${u' '.join(classes + [u'control-label'])}" for="${item.id}">${label or item.label.text}</label>
+      % endif
+      <div class="controls">
+        ${item(**options)}
+        ${validate_errors(item)}
+      </div>
     % endif
-    <div class="controls">
-      ${item(**options)}
-      ${validate_errors(item)}
-    </div>
   </div>
   % endif
 </%def>

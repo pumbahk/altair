@@ -6,23 +6,41 @@ from paste.util.multidict import MultiDict
 from pyramid.threadlocal import get_current_registry
 from pyramid.renderers import render_to_response
 from sqlalchemy import distinct
-from sqlalchemy.sql import func
+from sqlalchemy.sql import func, and_
 
-from ticketing.operators.models import Operator
-from ticketing.core.models import Event, Organization, ReportSetting, Mailer
+from ticketing.core.models import Event, Mailer
 from ticketing.core.models import StockType, StockHolder, StockStatus, Stock, Performance, Product, ProductItem, SalesSegmentGroup
-from ticketing.core.models import Order, OrderedProduct, OrderedProductItem
+from ticketing.core.models import Order, OrderedProduct
 from ticketing.events.sales_reports.forms import SalesReportForm
+from ticketing.helpers import todatetime
 
 logger = logging.getLogger(__name__)
 
 def get_sales_summary(form, organization, group='Event'):
+    '''
+    イベント毎、または公演毎に集計したレポートを返す
+    :param form: SalesReportForm
+    :param organization: Organization
+    :param group: 集計単位  'Event' イベント毎の集計、'Performance' 公演毎の集計
+    :return:
+        [{'id': イベントID / 公演ID,
+          'title': イベント名称 / 公演名称,
+          'start_on': 公演開始日,
+          'total_quantity': 配席数,
+          'vacant_quantity': 残席数,
+          'product_quantity': 販売枚数合計,
+          'price_amount': 販売金額合計,
+          'sales_start_day': 販売開始日,
+          'sales_end_day': 販売終了日},
+          {...},
+        ]
+    '''
     reports = {}
 
     # 自社分のみが対象
     stock_holder_ids = [sh.id for sh in StockHolder.get_own_stock_holders(user_id=organization.user_id)]
 
-    # 配席数、在庫数
+    # 名称、期間
     query = Event.query.filter(Event.organization_id==organization.id)\
         .outerjoin(Performance).filter(Performance.deleted_at==None)\
         .outerjoin(Stock).filter(Stock.deleted_at==None, Stock.stock_holder_id.in_(stock_holder_ids))\
@@ -33,50 +51,76 @@ def get_sales_summary(form, organization, group='Event'):
         query = query.filter(Performance.id==form.performance_id.data)
     if form.event_id.data:
         query = query.filter(Event.id==form.event_id.data)
-    sales_start_day = func.min(SalesSegmentGroup.start_at.label('sales_start_at'))
-    sales_end_day = func.max(SalesSegmentGroup.end_at.label('sales_end_at'))
 
     if group == 'Performance':
-        query = query.with_entities(
-            Performance.id,
-            Performance.name,
-            Performance.start_on,
-            func.sum(distinct(Stock.quantity)),
-            func.sum(distinct(StockStatus.quantity)),
-            sales_start_day,
-            sales_end_day,
-        ).group_by(Performance.id)
+        group_key = Performance.id
+        name = Performance.name
+        start_on = Performance.start_on
     else:
-        query = query.with_entities(
-            Event.id,
-            Event.title,
-            Event.id, # dummy
-            func.sum(distinct(Stock.quantity)),
-            func.sum(distinct(StockStatus.quantity)),
-            sales_start_day,
-            sales_end_day,
-        ).group_by(Event.id)
+        group_key = Event.id
+        name = Event.title
+        start_on = Event.id  # dummy
+    query = query.with_entities(
+        group_key,
+        name,
+        start_on,
+        func.min(SalesSegmentGroup.start_at.label('sales_start_at')),
+        func.max(SalesSegmentGroup.end_at.label('sales_end_at')),
+    ).group_by(group_key)
 
-    for id, title, start_on, total_quantity, vacant_quantity, sales_start_day, sales_end_day in query.all():
+    for id, title, start_on, sales_start_day, sales_end_day in query.all():
         reports[id] = dict(
             id=id,
             title=title,
             start_on=start_on,
-            total_quantity=total_quantity or 0,
-            vacant_quantity=vacant_quantity or 0,
-            total_amount=0,
-            fee_amount=0,
+            total_quantity=0,
+            vacant_quantity=0,
             price_amount=0,
             product_quantity=0,
             sales_start_day=sales_start_day,
             sales_end_day=sales_end_day,
         )
 
+    # 配席数、残席数
+    query = Stock.query.filter(Stock.stock_holder_id.in_(stock_holder_ids))\
+        .join(StockStatus)\
+        .join(ProductItem)\
+        .join(Product).filter(Product.seat_stock_type_id==Stock.stock_type_id)\
+        .join(Performance).filter(Performance.id==Stock.performance_id)\
+        .join(Event).filter(Event.organization_id==organization.id)
+
+    if form.performance_id.data:
+        query = query.filter(Performance.id==form.performance_id.data)
+    if form.event_id.data:
+        query = query.filter(Event.id==form.event_id.data)
+    stock_ids = [s.id for s in query.with_entities(Stock.id).distinct()]
+
+    query = Stock.query.filter(Stock.id.in_(stock_ids))\
+        .join(StockStatus)\
+        .join(Performance).filter(Performance.id==Stock.performance_id)\
+        .join(Event).filter(Event.organization_id==organization.id)
+
+    if form.performance_id.data:
+        query = query.filter(Performance.id==form.performance_id.data)
+    if form.event_id.data:
+        query = query.filter(Event.id==form.event_id.data)
+
+    query = query.with_entities(
+        group_key,
+        func.sum(Stock.quantity),
+        func.sum(StockStatus.quantity)
+    ).group_by(group_key)
+
+    for id, total_quantity, vacant_quantity in query.all():
+        if id in reports:
+            reports[id].update(dict(total_quantity=total_quantity or 0, vacant_quantity=vacant_quantity or 0))
+
     # 販売金額、販売枚数
     query = Event.query.filter(Event.organization_id==organization.id)\
         .outerjoin(Performance).filter(Performance.deleted_at==None)\
         .outerjoin(Order).filter(Order.canceled_at==None, Order.deleted_at==None)\
         .outerjoin(OrderedProduct).filter(OrderedProduct.deleted_at==None)
+
     if form.limited_from.data:
         query = query.filter(Order.created_at >= form.limited_from.data)
     if form.limited_to.data:
@@ -86,18 +130,11 @@ def get_sales_summary(form, organization, group='Event'):
     if form.event_id.data:
         query = query.filter(Event.id==form.event_id.data)
 
-    if group == 'Performance':
-        query = query.with_entities(
-            Performance.id,
-            func.sum(OrderedProduct.price * OrderedProduct.quantity).label('price_amount'),
-            func.sum(OrderedProduct.quantity).label('product_quantity')
-        ).group_by(Performance.id)
-    else:
-        query = query.with_entities(
-            Event.id,
-            func.sum(OrderedProduct.price * OrderedProduct.quantity).label('price_amount'),
-            func.sum(OrderedProduct.quantity).label('product_quantity')
-        ).group_by(Event.id)
+    query = query.with_entities(
+        group_key,
+        func.sum(OrderedProduct.price * OrderedProduct.quantity).label('price_amount'),
+        func.sum(OrderedProduct.quantity).label('product_quantity')
+    ).group_by(group_key)
 
     for id, price_amount, product_quantity in query.all():
         if id in reports:
@@ -106,30 +143,54 @@ def get_sales_summary(form, organization, group='Event'):
     return reports.values()
 
 def get_performance_sales_summary(form, organization):
+    '''
+    公演の販売区分毎、席種毎、商品毎に集計したレポートを返す
+    :param form: SalesReportForm
+    :param organization: Organization
+    :return: unique keyは product_id
+        [{'stock_type_id': 席種ID,
+          'stock_type_name': 席種名,
+          'product_id': 商品ID,
+          'product_name': 商品名,
+          'product_price': 商品単価,
+          'stock_holder_id': 枠ID,
+          'stock_holder_name': 枠名,
+          'sales_segment_group_name': 販売区分名,
+          'stock_id': 在庫ID,
+          'total_quantity': 配席数,
+          'vacant_quantity': 残数,
+          'paid_quantity': 入金済み,
+          'unpaid_quantity': 未入金},
+          {...},
+        ]
+    '''
     performance_reports = {}
 
-    # in-house
-    stock_holder_ids = [sh.id for sh in StockHolder.get_own_stock_holders(user_id=organization.user_id)]
-
-    # about product, seats, stocks
-    query = StockType.query.filter(StockType.id==Stock.stock_type_id)\
-        .outerjoin(Stock).filter(Stock.id==ProductItem.stock_id, Stock.stock_holder_id.in_(stock_holder_ids))\
-        .outerjoin(StockHolder).filter(StockHolder.id==Stock.stock_holder_id)\
-        .outerjoin(StockStatus).filter(StockStatus.stock_id==Stock.id)\
-        .outerjoin(Product).filter(Product.seat_stock_type_id==StockType.id)
+    # 自社分のみが対象
     if form.performance_id.data:
-        query = query.filter(Product.performance_id==form.performance_id.data)
-        query = query.outerjoin(ProductItem).filter(ProductItem.product_id==Product.id, ProductItem.performance_id==form.performance_id.data)
-        total_quantity_entity = Stock.quantity.label('total_quantity')
-        stock_quantity_entity = StockStatus.quantity.label('vacant_quantity')
+        performance = Performance.get(form.performance_id.data)
+        event = performance.event
     elif form.event_id.data:
+        event = Event.get(form.event_id.data)
+    else:
+        logger.error('event_id not found')
+        return
+    stock_holder_ids = [sh.id for sh in StockHolder.get_own_stock_holders(event=event)]
+
+    # 名称、期間
+    query = StockType.query\
+        .outerjoin(Stock).filter(Stock.stock_holder_id.in_(stock_holder_ids))\
+        .outerjoin(StockHolder)\
+        .outerjoin(StockStatus)\
+        .outerjoin(ProductItem)\
+        .outerjoin(Product)
+
+    if form.performance_id.data:
+        query = query.filter(ProductItem.performance_id==form.performance_id.data)
+    if form.event_id.data:
         query = query.filter(Product.event_id==form.event_id.data)
-        query = query.outerjoin(ProductItem).filter(ProductItem.product_id==Product.id)
-        total_quantity_entity = func.sum(Stock.quantity).label('total_quantity')
-        stock_quantity_entity = func.sum(StockStatus.quantity).label('vacant_quantity')
     if form.sales_segment_group_id.data:
         query = query.outerjoin(SalesSegmentGroup).filter(
-            SalesSegmentGroup.id==Product.sales_segment_group_id,
             SalesSegmentGroup.id==form.sales_segment_group_id.data,
         )
         sales_segment_group_name_entity = SalesSegmentGroup.name.label('sales_segment_group_name')
@@ -137,48 +198,70 @@ def get_performance_sales_summary(form, organization):
         sales_segment_group_name_entity = 'NULL'
 
     query = query.with_entities(
-            StockType.id.label('stock_type_id'),
-            StockType.name.label('stock_type_name'),
-            Product.id.label('product_id'),
-            Product.name.label('product_name'),
-            Product.price.label('product_price'),
-            total_quantity_entity,
-            stock_quantity_entity,
-            StockHolder.id.label('stock_holder_id'),
-            StockHolder.name.label('stock_holder_name'),
-            sales_segment_group_name_entity,
-            Stock.id.label('stock_id'),
-        )
-    if form.performance_id.data:
-        pass
-    elif form.event_id.data:
-        query = query.group_by(Product.id)
+        StockType.id.label('stock_type_id'),
+        StockType.name.label('stock_type_name'),
+        Product.id.label('product_id'),
+        Product.name.label('product_name'),
+        Product.price.label('product_price'),
+        StockHolder.id.label('stock_holder_id'),
+        StockHolder.name.label('stock_holder_name'),
+        sales_segment_group_name_entity,
+        Stock.id.label('stock_id'),
+        Product.base_product_id.label('base_product_id'),
+    ).group_by(Product.base_product_id)
 
     for row in query.all():
-        performance_reports[row[2]] = dict(
-            stock_id=row[10],
+        product_id = row[9] or row[2]
+        performance_reports[product_id] = dict(
             stock_type_id=row[0],
             stock_type_name=row[1],
-            product_id=row[2],
+            product_id=product_id,
             product_name=row[3],
             product_price=row[4],
-            total_quantity=row[5] or 0,
-            vacant_quantity=row[6] or 0,
-            stock_holder_id=row[7],
-            stock_holder_name=row[8],
-            sales_segment_group_name=row[9],
-            order_quantity=0,
+            stock_holder_id=row[5],
+            stock_holder_name=row[6],
+            sales_segment_group_name=row[7],
+            stock_id=row[8],
+            total_quantity=0,
+            vacant_quantity=0,
             paid_quantity=0,
             unpaid_quantity=0,
         )
 
-    # paid
-    query = OrderedProduct.query.join(Order)\
-        .filter(Order.canceled_at==None, Order.paid_at!=None)\
-        .outerjoin(Product).filter(Product.id==OrderedProduct.product_id)
+    # 配席数、残席数
+    query = Stock.query.filter(Stock.stock_holder_id.in_(stock_holder_ids))\
+        .join(StockStatus).filter(StockStatus.deleted_at==None)\
+        .join(ProductItem).filter(ProductItem.deleted_at==None)\
+        .join(Product).filter(Product.seat_stock_type_id==Stock.stock_type_id)
+
+    if form.performance_id.data:
+        query = query.filter(Stock.performance_id==form.performance_id.data)
+    if form.event_id.data:
+        query = query.filter(Product.event_id==form.event_id.data)
+    if form.sales_segment_group_id.data:
+        query = query.join(SalesSegmentGroup).filter(
+            SalesSegmentGroup.id==form.sales_segment_group_id.data,
+        )
+    query = query.with_entities(
+        Product.id,
+        Product.base_product_id,
+        func.sum(Stock.quantity),
+        func.sum(StockStatus.quantity)
+    ).group_by(Product.base_product_id)
+
+    for id, base_product_id, total_quantity, vacant_quantity in query.all():
+        id = base_product_id or id
+        if id not in performance_reports:
+            logger.warn('invalid key (product_id:%s)' % id)
+            continue
+        performance_reports[id].update(dict(total_quantity=total_quantity or 0, vacant_quantity=vacant_quantity or 0))
+
+    # 購入件数クエリ
+    query = OrderedProduct.query\
+        .join(Order).filter(Order.canceled_at==None)\
+        .join(Product).filter(Product.id==OrderedProduct.product_id)
     if form.performance_id.data:
         query = query.filter(Order.performance_id==form.performance_id.data)
-        query = query.filter(Product.performance_id==form.performance_id.data)
     elif form.event_id.data:
         query = query.filter(Product.event_id==form.event_id.data)
     if form.sales_segment_group_id.data:
@@ -190,49 +273,36 @@ def get_performance_sales_summary(form, organization):
         query = query.filter(Order.created_at >= form.limited_from.data)
     if form.limited_to.data:
         query = query.filter(Order.created_at < form.limited_to.data)
-    
-    query = query.with_entities(
-            OrderedProduct.product_id,
-            func.sum(OrderedProduct.quantity).label('ordered_product_quantity')
-        )
-    query = query.group_by(OrderedProduct.product_id)
 
-    for id, paid_quantity in query.all():
+    # 入金済み
+    paid_query = query.filter(Order.paid_at!=None)
+    paid_query = paid_query.with_entities(
+        OrderedProduct.product_id,
+        Product.base_product_id,
+        func.sum(OrderedProduct.quantity).label('ordered_product_quantity')
+    ).group_by(Product.id)
+
+    for id, base_product_id, paid_quantity in paid_query.all():
+        id = base_product_id or id
         if id not in performance_reports:
             logger.warn('invalid key (product_id:%s)' % id)
             continue
-        performance_reports[id].update(dict(paid_quantity=paid_quantity or 0))
+        performance_reports[id]['paid_quantity'] += paid_quantity
 
-    # unpaid
-    query = OrderedProduct.query.join(Order)\
-        .filter(Order.canceled_at==None, Order.paid_at==None)\
-        .outerjoin(Product).filter(Product.id==OrderedProduct.product_id)
-    if form.performance_id.data:
-        query = query.filter(Order.performance_id==form.performance_id.data)
-        query = query.filter(Product.performance_id==form.performance_id.data)
-    elif form.event_id.data:
-        query = query.filter(Product.event_id==form.event_id.data)
-    if form.sales_segment_group_id.data:
-        query = query.outerjoin(SalesSegmentGroup).filter(
-            SalesSegmentGroup.id==Product.sales_segment_group_id,
-            SalesSegmentGroup.id==form.sales_segment_group_id.data
-        )
-    if form.limited_from.data:
-        query = query.filter(Order.created_at >= form.limited_from.data)
-    if form.limited_to.data:
-        query = query.filter(Order.created_at < form.limited_to.data)
-    
-    query = query.with_entities(
-            OrderedProduct.product_id,
-            func.sum(OrderedProduct.quantity).label('ordered_product_quantity')
-        )
-    query = query.group_by(OrderedProduct.product_id)
+    # 未入金
+    unpaid_query = query.filter(Order.paid_at==None)
+    unpaid_query = unpaid_query.with_entities(
+        OrderedProduct.product_id,
+        Product.base_product_id,
+        func.sum(OrderedProduct.quantity).label('ordered_product_quantity')
+    ).group_by(Product.id)
 
-    for id, unpaid_quantity in query.all():
+    for id, base_product_id, unpaid_quantity in unpaid_query.all():
+        id = base_product_id or id
         if id not in performance_reports:
             logger.warn('invalid key (product_id:%s)' % id)
             continue
-        performance_reports[id].update(dict(unpaid_quantity=unpaid_quantity or 0))
+        performance_reports[id]['unpaid_quantity'] += unpaid_quantity
 
     return performance_reports.values()
 

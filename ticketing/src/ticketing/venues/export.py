@@ -4,7 +4,18 @@ from collections import OrderedDict
 
 from ticketing.models import record_to_multidict
 from ticketing.core.models import SeatStatusEnum
-from ticketing.orders.export import encode_to_cp932
+
+def encode_to_cp932(row):
+    encoded = {}
+    for key, value in row.items():
+        if value:
+            if not isinstance(value, unicode):
+                value = unicode(value)
+            value = value.encode('cp932')
+        else:
+            value = ''
+        encoded[key.encode('cp932')] = value
+    return encoded
 
 class SeatCSV(object):
 

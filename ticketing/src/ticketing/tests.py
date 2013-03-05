@@ -126,3 +126,139 @@ class ModelUtilityTest(unittest.TestCase):
         self.assertEqual(2, len(deep_foo.bars))
         self.assertEqual(2, len(deep_foo.bazs))
 
+class CSVRendererTest(unittest.TestCase):
+    def testDereference(self):
+        from .utils import dereference
+        from datetime import date
+        self.assertEqual(123, dereference({u'a':123}, u'a'))
+        self.assertEqual(123, dereference({u'a':{u'b':123}}, u'a[b]'))
+        self.assertEqual(2000, dereference({u'a':date(2000, 1, 2)}, u'a.year'))
+        self.assertEqual(1, dereference({u'a':date(2000, 1, 2)}, u'a.month'))
+        self.assertEqual(2, dereference({u'a':date(2000, 1, 2)}, u'a.day'))
+
+    def testPlainTextRenderer(self):
+        from .csvutils import PlainTextRenderer, CSVRenderer
+        renderer = CSVRenderer([
+            PlainTextRenderer(u'a'),
+            PlainTextRenderer(u'b'),
+            ])
+        renderer.append({u'a':123, u'b':456})
+        self.assertEqual([[u'a', u'b'], [u'123', u'456']], list(renderer.render()))
+
+    def testCollectionRenderer(self):
+        from .csvutils import PlainTextRenderer, CollectionRenderer, CSVRenderer
+        renderer = CSVRenderer([
+            PlainTextRenderer(u'a'),
+            PlainTextRenderer(u'b'),
+            CollectionRenderer(
+                u'c',
+                u'c',
+                [
+                    PlainTextRenderer(u'c[a]'),
+                    PlainTextRenderer(u'c[b]')
+                    ]
+                )
+            ])
+        renderer.append({
+            u'a': 123,
+            u'b': 456,
+            u'c': [
+                {u'a': 789, u'b': 123},
+                {u'a': 456, u'b': 789}
+                ]
+            })
+        renderer.append({
+            u'a': 'aaa',
+            u'b': 'bbb',
+            u'c': [
+                {u'a': 123, u'b': 456},
+                ]
+            })
+        self.assertEqual([
+            [u'a', u'b', u'c[a][0]', u'c[b][0]', u'c[a][1]', u'c[b][1]'],
+            [u'123', u'456', u'789', u'123', u'456', u'789'],
+            [u'aaa', u'bbb', u'123', u'456', u'', u''],
+            ],
+            list(renderer.render())
+            )
+
+    def testLocalizedRendering(self):
+        from .csvutils import PlainTextRenderer, CollectionRenderer, CSVRenderer
+        renderer = CSVRenderer([
+            PlainTextRenderer(u'a'),
+            PlainTextRenderer(u'b'),
+            CollectionRenderer(
+                u'c',
+                u'c',
+                [
+                    PlainTextRenderer(u'c[a]'),
+                    PlainTextRenderer(u'c[b]')
+                    ]
+                )
+            ])
+        renderer.append({
+            u'a': 123,
+            u'b': 456,
+            u'c': [
+                {u'a': 789, u'b': 123},
+                {u'a': 456, u'b': 789}
+                ]
+            })
+        localized_columns = {
+            u'a': u'AAA',
+            u'b': u'BBB',
+            u'c[a]': u'CCC-a',
+            u'c[b]': u'CCC-b',
+            }
+        self.assertEqual([
+            [u'AAA', u'BBB', u'CCC-a[0]', u'CCC-b[0]', u'CCC-a[1]', u'CCC-b[1]'],
+            [u'123', u'456', u'789', u'123', u'456', u'789'],
+            ],
+            list(renderer.render(localized_columns))
+            )
+
+    def testComplicated(self):
+        from .csvutils import PlainTextRenderer, CollectionRenderer, AttributeRenderer, CSVRenderer
+        renderer = CSVRenderer([
+            PlainTextRenderer(u'a'),
+            PlainTextRenderer(u'b'),
+            CollectionRenderer(
+                u'c',
+                u'c',
+                [
+                    AttributeRenderer(u'c', 'c'),
+                    ]
+                ),
+            CollectionRenderer(
+                u'd',
+                u'd',
+                [
+                    CollectionRenderer(u'd', 'd', [
+                        PlainTextRenderer(u'd[a]'),
+                        ]),
+                    ]
+                )
+            ])
+        renderer.append({
+            u'a': 123,
+            u'b': 456,
+            u'c': [
+                {u'a': 789, u'b': 123},
+                {u'a': 456, u'b': 789}
+                ],
+            u'd': [
+                [
+                    { 'a': 123 }, 
+                    { 'a': 456 }, 
+                    { 'a': 789 }, 
+                    ]
+                ]
+            })
+        self.assertEqual([
+            [u'a', u'b', u'c[a][0]', u'c[b][0]', u'c[a][1]', u'c[b][1]', u'd[a][0][0]', u'd[a][0][1]', u'd[a][0][2]'],
+            [u'123', u'456', u'789', u'123', u'456', u'789', u'123', u'456', u'789'],
+            ],
+            list(renderer.render())
+            )
+
+
