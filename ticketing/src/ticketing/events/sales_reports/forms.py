@@ -23,7 +23,7 @@ class SalesReportForm(Form):
 
     def _get_translations(self):
         return Translations()
-   
+
     event_id = HiddenField(
         validators=[Optional()],
     )
