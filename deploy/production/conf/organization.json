@@ -36,5 +36,11 @@
             "backend_id": 4, 
             "short_name": "vissel"
         }
+
+        "rt": {
+            "auth_source": "oauth", 
+            "backend_id": 8, 
+            "short_name": "RT"
+        }, 
     }
 }
