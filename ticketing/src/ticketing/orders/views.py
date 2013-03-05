@@ -690,10 +690,11 @@ class OrderDetailView(BaseView):
                           .filter(Stock.quantity>0)\
                           .filter(exists().where(and_(ProductItem.performance_id==performance_id, ProductItem.stock_id==Stock.id))).all()
             for stock in stocks:
-                products = Product.find(performance_id=performance.id, stock_id=stock.id)
+                # products = Product.find(performance_id=performance.id, stock_id=stock.id)
+                products = performance.products
                 stock_data.append(dict(
                     stock=stock,
-                    products=[p for p in products if p.sales_segment.start_at <= now and p.sales_segment.end_at >= now],
+                    products=[p for p in products if p.sales_segment.start_at <= now and p.sales_segment.end_at >= now and stock in p.stocks],
                 ))
             sales_summary.append(dict(
                 stock_type=stock_type,

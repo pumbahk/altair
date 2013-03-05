@@ -1490,6 +1490,8 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     performance_id = Column(Identifier, ForeignKey('Performance.id'))
     performance = relationship('Performance', backref='products')
 
+    stocks = association_proxy('items', 'stock')
+
     @staticmethod
     def find(performance_id=None, event_id=None, sales_segment_group_id=None, stock_id=None, include_deleted=False):
         query = DBSession.query(Product, include_deleted=include_deleted)
