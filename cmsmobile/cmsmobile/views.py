@@ -41,20 +41,14 @@ def main(request):
         .order_by(HotWord.display_order)[0:5]
 
     # Genre (Genreのリスト)
-    #genre_searcher = GenreSearcher(request)
-    #root = genre_searcher.get_top_genre_list()
-
-    #for g in root:
-    #    print g
-    #genres = root.get_children()
-
-    #for genre in genres:
-    #    print genre
+    genre_searcher = GenreSearcher(request)
+    genres = genre_searcher.root.children
 
     return dict(
          topics=topics
         ,promotions=promotions
         ,attentions=attentions
         ,hotwords=hotwords
+        ,genres=genres
         ,form=SearchForm()
     )
