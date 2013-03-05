@@ -62,6 +62,29 @@ class AssetFunctionalTests(AppFunctionalTests):
             thumbnail_image = app.get(self._get_static_asset_path(created_asset.thumbnail_path))
             self.assertEqual(thumbnail_image.status_int, 200)
 
+    def test_create_image_asset_thumnaill_is_auto_create(self):
+        app = self._getTarget()
+        self.assertEqual(self._count_of_image_asset(), 0)
+
+        with login(app):
+            asset_title = u"this-is-created-image-asset--without-thumbnail"
+
+            form = find_form(app.get("/asset/image").forms, action_part="create")
+            form.set("filepath",  ("imageasset-update-image.png", ))
+            form.set("thumbnail_path", "")
+            form.set("title", asset_title)
+            form.submit()
+
+            ## assetが存在
+            self.assertEqual(self._count_of_image_asset(), 1)
+            created_asset = self._get_image_asset_by_title(asset_title)
+
+            ## 画像が存在
+            mainimage = app.get(self._get_static_asset_path(created_asset.filepath))
+            self.assertEqual(mainimage.status_int, 200)
+            thumbnail_image = app.get(self._get_static_asset_path(created_asset.thumbnail_path))
+            self.assertEqual(thumbnail_image.status_int, 200)
+
     def test_delete_image_asset(self):
         app = self._getTarget()
         self.assertEqual(self._count_of_image_asset(), 0)

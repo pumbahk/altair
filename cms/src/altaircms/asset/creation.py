@@ -24,6 +24,10 @@ from ..filelib import File
 def get_asset_filesession(request):
     return get_filesession(request, name=SESSION_NAME)
 
+try:
+    import Image #PIL?
+except  ImportError:
+    from PIL import Image
 
 ## tag
 def _extract_tags(params, k):
@@ -47,9 +51,15 @@ def uname_file_from_filestorage(filesession, filestorage):
     uname = get_uname(filestorage.filename)
     return File(name=uname, handler=filestorage.file)
 
-def thumbnail_file_from_mainfile(mainfile, filestorage):
+def thumbnail_filename_from_mainfile(mainfile, ext=None):
     dirname, basename  = os.path.split(mainfile.name)
-    thumb_filename = os.path.join(dirname,"thumb."+basename)
+    if ext:
+        noext = os.path.splitext(basename)[0]
+        basename = ".".join((noext.rstrip("."), ext.lstrip(".")))
+    return os.path.join(dirname,"thumb."+basename)
+
+def thumbnail_file_from_mainfile(mainfile, filestorage):
+    thumb_filename = thumbnail_filename_from_mainfile(mainfile)
     return File(name=thumb_filename, handler=filestorage.file)
 
 ## form
@@ -139,7 +149,16 @@ class Creator(object):
             return self.commit_create(params, form=form)
         return Committer(commit)
 
+def thumbnail_image_from_io(io, size):
+    io.seek(0)
+    im = Image.open(io)
+    im.thumbnail(size, Image.ANTIALIAS)
+    io.seek(0)
+    return im
+    
+
 class ImageCreator(Creator):
+    size = 128, 128
     def commit_create(self, params, form=None):
         tags, private_tags, params =  divide_data(params)
 
@@ -149,7 +168,14 @@ class ImageCreator(Creator):
         ## file
         filesession = get_asset_filesession(self.request)
         mainimage_file = filesession.add(uname_file_from_filestorage(filesession, params["filepath"]))
-        thumbnail_file = filesession.add(thumbnail_file_from_mainfile(mainimage_file, params["thumbnail_path"]))
+        if params["thumbnail_path"] == u"":
+            im = thumbnail_image_from_io(params["filepath"].file, self.size)
+            thumbnail_file = filesession.add(File(name=thumbnail_filename_from_mainfile(mainimage_file, ext=".png"), 
+                                                   handler=im,
+                                                   save=lambda path, handler: im.save(path, "PNG") #todo: image type
+                                                   )) #copy?
+        else:
+            thumbnail_file = filesession.add(thumbnail_file_from_mainfile(mainimage_file, params["thumbnail_path"]))
 
         ## asset
         asset = models.ImageAsset()
@@ -262,6 +288,7 @@ def update_asset(asset, datalist):
 
 
 class ImageUpdater(Updater):
+    size = 128, 128
     def commit_update(self, asset, params, form=None):
         tags, private_tags, params =  divide_data(params)
         datalist = []
@@ -271,6 +298,13 @@ class ImageUpdater(Updater):
             datalist.append(extra_asset_data)
             mainimage_file = filesession.add(File(name=asset.filepath, handler=params["filepath"].file))
             datalist.append(dict(filepath=mainimage_file.name))
+            if not is_filled_filefield(params["thumbnail_path"]):
+                im = thumbnail_image_from_io(params["filepath"].file, self.size)
+                thumbnail_file = filesession.add(File(name=thumbnail_filename_from_mainfile(mainimage_file, ext=".png"), 
+                                                      handler=im,
+                                                      save=lambda path, handler: im.save(path, "PNG") #todo: image type
+                                                      ))
+                datalist.append(dict(thumbnail_path=thumbnail_file.name))
 
         if is_filled_filefield(params["thumbnail_path"]):
             thumbnail_file = filesession.add(File(name=asset.thumbnail_path, handler=params["thumbnail_path"].file))

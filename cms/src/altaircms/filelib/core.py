@@ -11,19 +11,32 @@ from shutil import copyfileobj
 
 
 from collections import namedtuple
-SignaturedFile = provider(IUploadFile)(namedtuple("File", "name signature handler"))
-File = provider(IUploadFile)(namedtuple("File", "name handler"))
+SignaturedFile = provider(IUploadFile)(namedtuple("SignaturedFile", "name signature handler"))
+_File = namedtuple("File", "name handler save")
+
+
+def write_to_path(path, src):
+    name = getattr(src, "name", "<stream>")
+    with open(path, "wb") as wf:
+        logger.debug("filelib write file. %s -> %s" % (name, path))
+        copyfileobj(src, wf)
+
+@provider(IUploadFile)
+def File(name, handler, save=write_to_path):
+    return _File(name=name, handler=handler, save=save)
 
 def rename_file(src, dst):
     try:
         shutil.move(src, dst) #for preventing invalid cross-device link.
     except (OSError, IOError), e:
         directory = os.path.dirname(dst)
-        logger.exception(str(e))
         if not os.path.exists(directory):
             logger.info("%s is not found. create it." % directory)
             os.makedirs(directory)
             shutil.move(src, dst)
+        else:
+            logger.exception(str(e))
+
 
 def on_file_exists_try_rename(target, realpath, retry):
     old_one_destination = tempfile.mktemp()
@@ -44,7 +57,8 @@ class FileCreator(object):
         if hasattr(uploadfile, "signature"):
             signatured_file = uploadfile
         elif hasattr(uploadfile, "file") and hasattr(uploadfile, "filename"): #for cgi.FieldStorage compability
-            signatured_file = File(name=uploadfile.filename, handler=uploadfile.file)
+            uploadfile = File(name=uploadfile.filename, handler=uploadfile.file)
+            signatured_file = self._write_to_tmppath(uploadfile)
         else:
             signatured_file = self._write_to_tmppath(uploadfile)
         self.pool.append(signatured_file)
@@ -75,16 +89,10 @@ class FileCreator(object):
 
     def _write_to_tmppath(self, uploadfile):
         path = tempfile.mktemp() #suffix?
-        self.write_to_path(path, uploadfile.handler)
+        uploadfile.save(path, uploadfile.handler)
         return SignaturedFile(name=uploadfile.name, 
                                     handler=uploadfile.handler, 
                                     signature=path)
-
-    def write_to_path(self, path, handler, option="wb"):
-        name = getattr(handler, "name", "<stream>")
-        with open(path, option) as wf:
-            logger.debug("FileSession: write file. %s -> %s" % (name, path))
-            copyfileobj(handler, wf)
     
 class FileDeleter(object):
     def __init__(self, root):
