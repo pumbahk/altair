@@ -4,6 +4,7 @@ from pyramid.httpexceptions import HTTPNotFound
 from altaircms.models import Performance
 from altaircms.event.models import Event
 from altaircms.models import Genre
+from cmsmobile.core.const import get_prefecture
 
 import logging
 
@@ -40,7 +41,7 @@ class EventSearcher(object):
 
     def get_events_from_area(self, form, qs=None):
         if form.area.data:
-            prefectures = _get_prefecture(form.area.data)
+            prefectures = get_prefecture(form.area.data)
             # 絞り込み
             if qs:
                 qs.filter(Performance.prefecture.in_(prefectures))
@@ -57,20 +58,3 @@ def _create_ids(events):
     for event in events:
         ids.append(event.id)
     return ids
-
-def _get_prefecture(area):
-    areas = {
-         '1':['chiba','tokyo','kanagawa']
-        ,'2':['shiga','kyoto','osaka','hyogo','nara','wakayama']
-        ,'3':['gifu','aichi','mie','shizuoka']
-        ,'4':['hokkaido']
-        ,'5':['aomori', 'iwate', 'akita', 'miyagi', 'yamagata', 'fukushima']
-        ,'6':['ibaraki','tochigi','gunma','saitama']
-        ,'7':['niigata','yamanashi','nagano']
-        ,'8':['toyama','ishikawa','fukui']
-        ,'9':['tottori','shimane','okayama','hiroshima','yamaguchi']
-        ,'10':['tokushima','kagawa','ehime','kouchi']
-        ,'11':['fukuoka','saga','nagasaki','kumamoto','oita','miyazaki','kagoshima']
-        ,'12':['okinawa']
-    }
-    return areas[area]

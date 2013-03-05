@@ -4,6 +4,8 @@ from pyramid.view import view_config
 import webhelpers.paginate as paginate
 from cmsmobile.event.search.forms import SearchForm
 from cmsmobile.core.searcher import EventSearcher
+from cmsmobile.core.const import get_prefecture_name
+from altaircms.models import Genre
 
 class ValidationFailure(Exception):
     pass
@@ -40,7 +42,25 @@ def search(request):
             else:
                 form.page_num.data = form.num.data / items_per_page + 1
 
+    # genre
+    genre = None
+    if form.genre.data:
+        genre = request.allowable(Genre).filter(Genre.id==form.genre.data).first()
+
+    # subgenre
+    subgenre = None
+    if form.sub_genre.data:
+        subgenre = request.allowable(Genre).filter(Genre.id==form.sub_genre.data).first()
+
+    # areaname
+    areaname = None
+    if form.area.data:
+        areaname = get_prefecture_name(form.area.data)
+
     return {
-        'events':events
+         'dispgenre':genre
+        ,'dispsubgenre':subgenre
+        ,'disparea':areaname
+        ,'events':events
         ,'form':form
     }
