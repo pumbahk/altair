@@ -2,11 +2,6 @@ SUPPORTED_CLASSIFIER = ("page", "asset")
 
 def install_tagmanager(config):
     config.add_directive("add_tagmanager", ".directives.add_tagmanager")
-    config.add_tagmanager("page",
-                         model="altaircms.page.models.PageSet", 
-                         xref="altaircms.page.models.PageTag2Page", 
-                         tag="altaircms.page.models.PageTag"
-                         )
     config.add_tagmanager("topic",
                          model="altaircms.topic.models.Topic", 
                          xref="altaircms.topic.models.TopicCoreTag2TopicCore", 
@@ -41,6 +36,15 @@ def install_tagmanager(config):
                          model="altaircms.asset.models.MovieAsset", 
                          xref="altaircms.asset.models.AssetTag2Asset", 
                          tag="altaircms.asset.models.MovieAssetTag"
+                         )
+    config.include(install_page_tagmanager)
+
+def install_page_tagmanager(config):
+    config.add_directive("add_tagmanager", ".directives.add_tagmanager")
+    config.add_tagmanager("page",
+                         model="altaircms.page.models.PageSet", 
+                         xref="altaircms.page.models.PageTag2Page", 
+                         tag="altaircms.page.models.PageTag"
                          )
 
 def includeme(config):

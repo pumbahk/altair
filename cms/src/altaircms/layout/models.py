@@ -9,6 +9,7 @@ import sqlalchemy.orm as orm
 from altaircms.models import Base, BaseOriginalMixin
 from altaircms.models import WithOrganizationMixin
 from altaircms.auth.models import Organization
+from altaircms.widget.models import WidgetDisposition
 
 class Layout(BaseOriginalMixin, WithOrganizationMixin, Base):
     """
@@ -29,7 +30,7 @@ class Layout(BaseOriginalMixin, WithOrganizationMixin, Base):
     pagetype_id = Column(sa.Integer, ForeignKey("pagetype.id"))
     pagetype = orm.relationship("PageType", backref="layouts", uselist=False)
     disposition_id = sa.Column(sa.Integer, sa.ForeignKey("widgetdisposition.id", use_alter=True, name="fk_default_disposition"),doc=u"default settings")
-    default_disposition = orm.relationship("WidgetDisposition", uselist=False, primaryjoin="WidgetDisposition.id==Layout.disposition_id")
+    default_disposition = orm.relationship(WidgetDisposition, uselist=False, primaryjoin="WidgetDisposition.id==Layout.disposition_id")
 
     @classmethod
     def applicable(cls, pagetype_id):

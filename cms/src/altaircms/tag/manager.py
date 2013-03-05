@@ -136,6 +136,12 @@ class TagManagerBase(object):
         qs = qs.filter(self.Object.id==xref.object_id, xref.tag_id==tag.id)
         return qs
 
+    def more_filter_by_tag_many(self, qs, tags):
+        xref = orm.aliased(self.XRef)
+        qs = qs.filter(self.Object.id==xref.object_id, xref.tag_id.in_(tags))
+        return qs.distinct()
+
+
 @implementer(ITagManager)
 class TagManager(TagManagerBase):
     def is_target_tag(self, tag):

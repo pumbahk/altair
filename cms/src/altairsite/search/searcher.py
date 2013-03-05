@@ -22,6 +22,7 @@ from altaircms.tag.models import (
 )
 
 from . import api
+from altaircms.page.api import get_pageset_searcher
 ## todo: datetimeの呼び出し回数減らす
 
 ## for document
@@ -52,7 +53,6 @@ def _refine_pageset_only_published_term(qs, now=None):
       now = datetime.datetime.now()
    qs = qs.filter(PageSet.id==Page.pageset_id)
    return qs.filter(Page.in_term(now)).filter(Page.published==True)
-   
 
 def _refine_pageset_qs(qs):
     """optimize"""
@@ -95,7 +95,7 @@ def get_pageset_query_from_genre(request, query_params):
     qs = request.allowable(PageSet)
     qs = _refine_pageset_collect_future(qs)
     if query_params.get("top_categories") or query_params.get("sub_categories"):
-       qs = search_by_genre(query_params.get("top_categories"), query_params.get("sub_categories"), qs=qs)
+       qs = search_by_genre(request, qs, query_params.get("top_categories"), query_params.get("sub_categories"), qs=qs)
        return  _refine_pageset_qs(qs)
     else:
        return _refine_pageset_qs(qs.filter(PageSet.event_id!=None)) # empty set query is good for that?
@@ -194,7 +194,7 @@ def get_pageset_query_fullset(request, query_params):
     sub_qs = sub_qs.filter(Event.is_searchable==True)
 
     qs = request.allowable(PageSet)
-    qs = search_by_genre(query_params.get("top_categories"), query_params.get("sub_categories"), qs=qs)
+    qs = search_by_genre(request, qs, query_params.get("top_categories"), query_params.get("sub_categories"))
     qs = search_by_events(qs, sub_qs)
 
 
@@ -238,31 +238,19 @@ def search_by_events(qs, event_ids):
    else:
       return qs
 
-def search_by_genre(top_categories, sub_categories, qs=None):
-    """ジャンルからページセットを取り出す
+def search_by_genre(request, qs, *tag_id_list):
+    """ジャンル(と言う名のページタグ)からページセットを取り出す
     :params qs:
     :return: query set of PageSet
     """
-    qs = qs or PageSet.query
-
     ## どのチェックボックスもチェックされていない場合には絞り込みを行わない
-    if not (top_categories or sub_categories):
-        return qs
-
-    where = sa.null()    
-
-    if top_categories:
-        parent_category_ids = DBSession.query(Category.id).filter(Category.name.in_(top_categories))
-        where = Category.parent_id.in_(parent_category_ids)
-
-    if sub_categories:
-        where = where | Category.name.in_(sub_categories)
-
-    ## カテゴリ(ジャンル)に対応するカテゴリトップのページを取り出す
-    category_page_ids = DBSession.query(PageSet.id).join(Category, PageSet.id==Category.pageset_id).filter(where)
-
-    ## サブカテゴリトップのページと紐づいているページを取り出す
-    return qs.filter(PageSet.parent_id.in_(category_page_ids))
+    if not any(tag_id_list):
+       return qs
+    xs = []
+    for ids in tag_id_list:
+       xs.extend(ids)
+    searcher = get_pageset_searcher(request)
+    return searcher.filter_by_system_tag_many(qs, xs)
 
 def events_by_area(qs, prefectures):
     if not prefectures:

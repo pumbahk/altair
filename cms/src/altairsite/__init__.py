@@ -20,6 +20,7 @@ def main(global_config, **local_config):
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.include("altaircms.tag:install_tagmanager")
     config.include("altaircms.topic:install_topic_searcher")
+    config.include("altaircms.page:install_page_searcherr")
     config.include("altaircms.widget:install_has_widget_page_finder")
 
     ## organization mapping

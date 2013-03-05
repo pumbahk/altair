@@ -13,10 +13,13 @@ from zope.interface import provider
 from altaircms.solr import api as solr
 from .models import StaticPage
 from ..interfaces import IDirectoryResource
-
+from altaircms.modelmanager.searcher import IPublishingModelSearcher
 ### static page
 class StaticPageNotFound(Exception):
     pass
+
+def get_pageset_searcher(request):
+    return request.registry.queryUtility(IPublishingModelSearcher, name="page")(request)
 
 def get_static_page_utility(request):
     return request.registry.getUtility(IDirectoryResource, "static_page")(request=request)

@@ -133,7 +133,6 @@ class QueryPartForm(Form):
         return params
 
 ## todo:ジャンル
-## todo: make query
 class GenrePartForm(Form):
     music = fields.BooleanField(label=u"音楽", widget=CheckboxWithLabelInput())
     music_subgenre_choices = import_symbol("altaircms.seeds.categories.music:MUSIC_SUBCATEGORY_CHOICES")
