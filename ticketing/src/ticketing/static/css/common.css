@@ -49,6 +49,10 @@
   margin-left: 1em;
 }
 
+.checkbox-set-item {
+  display: block;
+}
+
 .checkbox-set-item label {
   display: inline-block;
 }
