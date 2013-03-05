@@ -111,8 +111,8 @@
           </tr>
           % endfor
           <tr>
-            <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${product_sum['stock_type_name']}(${product_sum['stock_type_id']})</td>
-            <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${product_sum['product_name']}(${product_sum['product_id']})</td>
+            <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${product_sum['stock_type_name']}</td>
+            <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${product_sum['product_name']}</td>
             <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_sum['product_price'])}円</td>
             <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_sum['total_quantity']) or ''}</td>
             <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_sum['vacant_quantity']) or ''}</td>

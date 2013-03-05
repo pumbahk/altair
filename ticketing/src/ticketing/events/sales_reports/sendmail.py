@@ -183,7 +183,7 @@ def get_performance_sales_summary(form, organization):
         .outerjoin(StockHolder)\
         .outerjoin(StockStatus)\
         .outerjoin(ProductItem)\
-        .outerjoin(Product)
+        .outerjoin(Product).filter(Product.seat_stock_type_id==Stock.stock_type_id)
 
     if form.performance_id.data:
         query = query.filter(ProductItem.performance_id==form.performance_id.data)

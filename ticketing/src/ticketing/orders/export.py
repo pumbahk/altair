@@ -6,8 +6,6 @@ from paste.util.multidict import MultiDict
 from sqlalchemy.sql.expression import or_
 
 from ticketing.cart.helpers import format_number as _format_number
-from ticketing.core.models import no_filter
-from ticketing.models import record_to_multidict
 from ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
 from ticketing.utils import dereference
 from ticketing.csvutils import CSVRenderer, PlainTextRenderer, CollectionRenderer, AttributeRenderer, SimpleRenderer
@@ -85,7 +83,7 @@ japanese_columns = {
     u'attribute[t_shirts_size]': u'Tシャツサイズ',
     u'attribute[mail_permission]': u'メールマガジン受信可否',
     u'attribute[publicity]': u'公開可否',
-    u'attribute[cont]': u'区分 (新規=yes)',
+    u'attribute[cont]': u'区分 (継続=yes)',
     u'attribute[old_id_number]': u'旧会員番号',
     u'seat.name': u'座席名',
     }
@@ -109,7 +107,7 @@ class QuantityRenderer(object):
             return [
                 (
                     (u"", self.column_name, u""),
-                    unicode(ordered_product_item.quantity)
+                    unicode(ordered_product_item.ordered_product.quantity)
                     )
                 ]
 
@@ -131,7 +129,7 @@ class PerSeatQuantityRenderer(object):
             return [
                 (
                     (u"", self.column_name, u""),
-                    unicode(ordered_product_item.quantity)
+                    unicode(ordered_product_item.ordered_product.quantity)
                     )
                 ]
 
@@ -223,7 +221,6 @@ class OrderCSV(object):
         PlainTextRenderer(u'performance.code'),
         PlainTextRenderer(u'performance.start_on'),
         PlainTextRenderer(u'venue.name'),
-        PlainTextRenderer(u'mail_magazine.mail_permission'),
         ]
 
     per_order_columns = \
