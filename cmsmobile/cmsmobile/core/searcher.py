@@ -41,11 +41,12 @@ class EventSearcher(object):
 
 
     def get_events_from_area(self, form, qs=None):
+
         if exist_value(form.area.data):
             prefectures = get_prefecture(form.area.data)
             # 絞り込み
             if qs:
-                qs.filter(Performance.prefecture.in_(prefectures))
+                qs = qs.filter(Performance.prefecture.in_(prefectures))
 
             # 新規検索
             else:
