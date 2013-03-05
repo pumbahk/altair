@@ -1,4 +1,6 @@
 from pyramid.config import Configurator
+import altaircms.layout.models
+import altaircms.widget.models
 import altaircms.page.models
 import altaircms.event.models
 import altaircms.asset.models
