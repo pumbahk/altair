@@ -29,12 +29,14 @@ class SearchQueryParseTests(unittest.TestCase):
 
     def test_exception_occur_when_invalid_attribute(self):
         assert Article.name
-        with self.assertRaises(AssertionError):
+        from altaircms.searchlib import Invalid
+        with self.assertRaises(Invalid):
             self._makeOne(Article, "this-is-invalid-name")
 
     def test_exception_occur_when_invalid_attribute2(self):
         assert Article.name
-        with self.assertRaises(AssertionError):
+        from altaircms.searchlib import Invalid
+        with self.assertRaises(Invalid):
             self._makeOne(Article, "name", "this-is-invalid-name")
 
     def test_exists(self):

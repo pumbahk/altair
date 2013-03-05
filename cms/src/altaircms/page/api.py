@@ -132,6 +132,9 @@ def _doc_from_page(doc, page):
     if page.pageset:
         doc.update(id=page.pageset.id, 
                    pageset_id=page.pageset.id)
+        tags = page.pageset.public_tags
+        if tags:
+            doc = doc_from_tags(doc, tags)
     return doc
     
 def doc_from_page(page):
@@ -149,12 +152,6 @@ def doc_from_page(page):
 def ftsearch_register_from_page(request, page, ftsearch=None):
     ftsearch = ftsearch or solr.get_fulltext_search(request)
     doc = doc_from_page(page)
-
-    if page.pageset:
-        tags = page.pageset.public_tags
-        if tags:
-            doc = doc_from_tags(doc, tags)
-
     try:
         ftsearch.register(doc, commit=True)
     except Exception, e:

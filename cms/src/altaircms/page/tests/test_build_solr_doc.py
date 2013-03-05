@@ -72,14 +72,13 @@ class BuildSolrDocTest(unittest.TestCase):
         page = Page(name=u"this-is-page-name", pageset=pageset, event=event, 
                     title=u"this-is-page-title", 
                     description=u"this-is-description-of-page")
-        page.tags.append(PageTag(label=u"this-is-page-tag-for-search", publicp=True))
+        pageset.tags.append(PageTag(label=u"this-is-page-tag-for-search", publicp=True))
         
 
         self.session.add(page)
         self.session.flush()
 
         result = self._callFUT(page).doc
-
         self.assertEquals(result["event_description"], "this-is-event-description")
         self.assertEquals(result["event_title"], "this-is-event-title")
         self.assertEquals(result["event_subtitle"], "~event is event~")

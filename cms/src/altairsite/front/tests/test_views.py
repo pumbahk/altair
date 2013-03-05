@@ -30,6 +30,10 @@ def setUpModule():
     import altaircms.models
     defaults = {"sqlalchemy.url": "sqlite://", 
                 "session.secret": "B7gzHVRUqErB1TFgSeLCHH3Ux6ShtI", 
+                "altaircms.backend.apikey": "", 
+                'altaircms.widget.organization.setting.default': "altaircms.plugins:ticketstar-widget-settings.ini", 
+                "altaircms.page.static.directory": "altaircms:static/tmp", 
+                "altaircms.page.tmp.directory": "altaircms:static/tmp", 
                 "mako.directories": os.path.join(DIR, "templates"), 
                 "pyramid_who.config": "usersite_who.ini",  ##
                 "altaircms.organization.mapping.json": "altaircms:../../organization.json", 
@@ -176,7 +180,8 @@ class FunctionalPageRenderingTest(UseAssetMixin,
         session = self._getSession()
         self._addData(session, u"{}")
         session.flush()
-        self.testapp.get("/sample_page", status=200)
+        self.testapp.get("/sample_page", status=404)
+        
 
 
         """ widgetありページのレンダリング

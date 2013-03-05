@@ -17,11 +17,11 @@ class PageSearchTest(unittest.TestCase):
 
     def _makeSearchedObj(self, **kwargs):
         from altaircms.page.models import PageSet
-        return PageSet(**kwargs)
+        return PageSet(organization_id=1, **kwargs)
 
     def _makeTag(self, **kwargs):
         from altaircms.tag.models import PageTag
-        return PageTag(**kwargs)
+        return PageTag(organization_id=1,**kwargs)
 
     def test_empty(self):
         self.assertEquals(self._makeOne().search_by_tag_label(u"foo").count(), 0)
@@ -66,12 +66,12 @@ class ImageAssetSearchTest(unittest.TestCase):
 
     def _makeSearchedObj(self, **kwargs):
         from altaircms.asset.models import ImageAsset
-        return ImageAsset(**kwargs)
+        return ImageAsset(organization_id=1,**kwargs)
 
 
     def _makeTag(self, **kwargs):
         from altaircms.tag.models import ImageAssetTag
-        return ImageAssetTag(**kwargs)
+        return ImageAssetTag(organization_id=1,**kwargs)
 
     def _makeOne(self):
         from altaircms.tag.manager import TagManager
@@ -123,12 +123,12 @@ class MovieAssetSearchTest(unittest.TestCase):
 
     def _makeSearchedObj(self, **kwargs):
         from altaircms.asset.models import MovieAsset
-        return MovieAsset(**kwargs)
+        return MovieAsset(organization_id=1,**kwargs)
 
 
     def _makeTag(self, **kwargs):
         from altaircms.tag.models import MovieAssetTag
-        return MovieAssetTag(**kwargs)
+        return MovieAssetTag(organization_id=1,**kwargs)
 
     def _makeOne(self):
         from altaircms.tag.manager import TagManager
@@ -178,12 +178,12 @@ class FlashAssetSearchTest(unittest.TestCase):
 
     def _makeSearchedObj(self, **kwargs):
         from altaircms.asset.models import FlashAsset
-        return FlashAsset(**kwargs)
+        return FlashAsset(organization_id=1,**kwargs)
 
 
     def _makeTag(self, **kwargs):
         from altaircms.tag.models import FlashAssetTag
-        return FlashAssetTag(**kwargs)
+        return FlashAssetTag(organization_id=1,**kwargs)
 
     def _makeOne(self):
         from altaircms.tag.manager import TagManager
