@@ -9,4 +9,7 @@ def exist_value(value):
     if value == "0":
         return False
 
+    if value == 0:
+        return False
+
     return True

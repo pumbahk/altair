@@ -57,5 +57,7 @@
         </table>
         <input type="submit" value="検索"><p/>
 
+        <input type="hidden" name="page" value="${form.page.data}" />
+
     </fieldset>
 </form>

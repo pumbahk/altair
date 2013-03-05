@@ -32,4 +32,4 @@ def get_prefecture(area):
         ,'11':['fukuoka','saga','nagasaki','kumamoto','oita','miyazaki','kagoshima']
         ,'12':['okinawa']
     }
-    return areas[area]
+    return areas[str(area)]

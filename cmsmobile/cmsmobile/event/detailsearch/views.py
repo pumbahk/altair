@@ -4,6 +4,7 @@ from pyramid.view import view_config
 from cmsmobile.event.detailsearch.forms import DetailSearchForm
 from cmsmobile.core.searcher import EventSearcher
 import webhelpers.paginate as paginate
+from cmsmobile.core.helper import exist_value
 
 @view_config(route_name='detailsearch', request_method="GET", renderer='cmsmobile:templates/detailsearch/detailsearch.mako')
 def move_detailsearch(request):
@@ -22,13 +23,14 @@ def move_detailsearch_post(request):
     form = DetailSearchForm(request.POST)
 
     # freeword, genre, subgenre
-    #qs = searcher.get_events_from_freeword(request, form)
+    qs = searcher.get_events_from_freeword(request, form)
 
     # 地域検索
-    qs = searcher.get_events_from_area(form,qs=None)
+    qs = searcher.get_events_from_area(form, qs)
 
     # paging
     events = None
+    form.num.data = 0
     if qs:
         events = qs.all()
 

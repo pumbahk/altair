@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from wtforms import Form
-from wtforms import TextField, SelectField, RadioField
+from wtforms import TextField, SelectField, RadioField, HiddenField
 from wtforms.validators import Length
 from wtforms.validators import Optional
 
@@ -79,4 +79,22 @@ class DetailSearchForm(Form):
     day = TextField(
         label = '',
         validators=[]
+    )
+
+    num = HiddenField(#総件数
+                      label='',
+                      validators=[Optional()],
+                      default="0"
+    )
+
+    page = HiddenField(#現在ページ
+                       label='',
+                       validators=[Optional()],
+                       default='1',
+                       )
+
+    page_num = HiddenField(#総ページ数
+                           label='',
+                           validators=[Optional()],
+                           default="0"
     )
