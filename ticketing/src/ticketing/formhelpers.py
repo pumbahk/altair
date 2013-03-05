@@ -842,9 +842,13 @@ class CheckboxMultipleSelect(object):
         html.append('<div %s>' % html_params(id=outer_box_id, class_='checkbox-set'))
         for i, (val, label, selected) in enumerate(field.iter_choices()):
             id = id_prefix + '.' + str(i)
+            if selected:
+                kwargs['checked'] = "checked"
+            else:
+                kwargs.pop('checked', None)
             html.extend([
                 '<span %s>' % html_params(class_='checkbox-set-item'),
-                '<input %s />' % html_params(id=id, type=input_type, name=name, checked=("checked" if selected else ""), value=val, **kwargs),
+                '<input %s />' % html_params(id=id, type=input_type, name=name,  value=val, **kwargs),
                 ' ',
                 '<label %s>%s</label>' % (
                     html_params(for_=id),
