@@ -3,7 +3,7 @@ from cmsmobile.solr import helper
 from pyramid.httpexceptions import HTTPNotFound
 from altaircms.models import Performance
 from altaircms.event.models import Event
-from cmsmobile.core.enum import AreaEnum
+from altaircms.models import Genre
 
 import logging
 
@@ -18,10 +18,11 @@ class EventSearcher(object):
             search_word = form.word.data
 
         if form.sub_genre.data != "" and form.sub_genre.data is not None:
-            #search_word = search_word + " " + form.sub_genre.data
-            search_word = search_word + " " + form.sub_genre.data
+            genre = request.allowable(Genre).filter(Genre.id==form.genre.data).first()
+            search_word = search_word + " " + genre.label
         elif form.genre.data != "" and form.genre.data is not None:
-            search_word = search_word + " " + form.genre.data
+            subgenre = request.allowable(Genre).filter(Genre.id==form.genre.data).first()
+            search_word = search_word + " " + subgenre.label
 
         qs = None
         if search_word != "":
@@ -38,7 +39,7 @@ class EventSearcher(object):
 
 
     def get_events_from_area(self, form, qs=None):
-        if form.area.data > AreaEnum.NoSelect:
+        if form.area.data:
             prefectures = _get_prefecture(form.area.data)
             # 絞り込み
             if qs:
