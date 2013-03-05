@@ -5,6 +5,7 @@ from altaircms.models import Performance
 from altaircms.event.models import Event
 from altaircms.models import Genre
 from cmsmobile.core.const import get_prefecture
+from cmsmobile.core.helper import exist_value
 
 import logging
 
@@ -15,13 +16,13 @@ class EventSearcher(object):
     def get_events_from_freeword(self, request, form):
 
         search_word = ""
-        if form.word.data != "" and form.word.data is not None:
+        if exist_value(form.word.data):
             search_word = form.word.data
 
-        if form.sub_genre.data != "" and form.sub_genre.data is not None:
+        if exist_value(form.sub_genre.data):
             genre = request.allowable(Genre).filter(Genre.id==form.genre.data).first()
             search_word = search_word + " " + genre.label
-        elif form.genre.data != "" and form.genre.data is not None:
+        elif exist_value(form.genre.data):
             subgenre = request.allowable(Genre).filter(Genre.id==form.genre.data).first()
             search_word = search_word + " " + subgenre.label
 
@@ -40,7 +41,7 @@ class EventSearcher(object):
 
 
     def get_events_from_area(self, form, qs=None):
-        if form.area.data:
+        if exist_value(form.area.data):
             prefectures = get_prefecture(form.area.data)
             # 絞り込み
             if qs:

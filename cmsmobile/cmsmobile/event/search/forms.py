@@ -13,19 +13,19 @@ class SearchForm(Form):
     genre = HiddenField(
         label='',
         validators=[Optional()],
-        default="",
+        default="0",
     )
 
     sub_genre = HiddenField(
         label='',
         validators=[Optional()],
-        default="",
+        default="0",
     )
 
     area = HiddenField(
         label='',
         validators=[Optional()],
-        default="",
+        default="0",
     )
 
     num = HiddenField(#総件数

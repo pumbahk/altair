@@ -8,6 +8,7 @@ from cmsmobile.event.search.forms import SearchForm
 from altaircms.tag.models import HotWord
 from altaircms.genre.searcher import GenreSearcher
 from altaircms.models import Genre
+from cmsmobile.core.helper import exist_value
 
 class ValidationFailure(Exception):
     pass
@@ -27,15 +28,12 @@ def move_genre(request):
     genre = request.allowable(Genre).filter(Genre.id==form.genre.data).first()
     subgenres = genre_searcher.get_children(genre)
 
-    # subgenre
-    subgenre = None
-    if form.sub_genre.data:
-        subgenre = request.allowable(Genre).filter(Genre.id==form.sub_genre.data).first()
-
     # genre
     system_tag = request.allowable(Genre).filter(Genre.id==form.genre.data).first()
-    if form.sub_genre.data != "":
+    subgenre = None
+    if exist_value(form.sub_genre.data):
         system_tag = request.allowable(Genre).filter(Genre.id==form.sub_genre.data).first()
+        subgenre = request.allowable(Genre).filter(Genre.id==form.sub_genre.data).first()
 
     # attention
     topic_searcher = get_topic_searcher(request, "topic")

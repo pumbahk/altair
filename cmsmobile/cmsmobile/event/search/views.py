@@ -6,6 +6,7 @@ from cmsmobile.event.search.forms import SearchForm
 from cmsmobile.core.searcher import EventSearcher
 from cmsmobile.core.const import get_prefecture_name
 from altaircms.models import Genre
+from cmsmobile.core.helper import exist_value
 
 class ValidationFailure(Exception):
     pass
@@ -44,17 +45,17 @@ def search(request):
 
     # genre
     genre = None
-    if form.genre.data:
+    if exist_value(form.genre.data):
         genre = request.allowable(Genre).filter(Genre.id==form.genre.data).first()
 
     # subgenre
     subgenre = None
-    if form.sub_genre.data:
+    if exist_value(form.sub_genre.data):
         subgenre = request.allowable(Genre).filter(Genre.id==form.sub_genre.data).first()
 
     # areaname
     areaname = None
-    if form.area.data:
+    if exist_value(form.area.data):
         areaname = get_prefecture_name(form.area.data)
 
     return {
