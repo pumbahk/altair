@@ -13,8 +13,20 @@ var pdmps = pdmp_map[sales_segment_group_id];
 
 for (var i=0; i < pdmps.length; i++) {
     var pdmp = pdmps[i];
+    var id = 'payment_delivery_method_pair_id.' + pdmp[0];
     $('#payment_delivery_method_pairs').append(
-      $('<option value="' + pdmp[0]+ '">' + pdmp[1] + '</option>')
+      $('<span class="checkbox-set-item"></span>')
+        .append(
+          $('<input />')
+          .attr('type', 'checkbox')
+          .attr('name', 'payment_delivery_method_pairs[]')
+          .attr('value', pdmp[0])
+          .attr('id', id))
+        .append(' ')
+        .append(
+          $('<label class="inline"></label>')
+          .text(pdmp[1])
+          .attr('for', id))
     );
 }
 });

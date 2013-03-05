@@ -5,6 +5,7 @@ from datetime import datetime, date
 from exceptions import ValueError
 import unicodedata
 
+from cgi import escape
 from wtforms import validators, fields
 from wtforms.form import Form, WebobInputWrapper
 from wtforms.fields.core import UnboundField, _unset_value
@@ -819,3 +820,37 @@ class Liaison(fields.Field):
         self._form = _form
         self._name = _name
         self._wrapped = wrapped.bind(_form, _name, _prefix, _translations, **kwargs)
+
+class CheckboxMultipleSelect(object):
+    def __init__(self, multiple=False):
+        self.multiple = multiple
+
+    def __call__(self, field, **kwargs):
+        html = []
+        if self.multiple:
+            input_type = 'checkbox'
+            if isinstance(field, PHPCompatibleSelectMultipleField):
+                name = field.name + '[]'
+            else:
+                name = field.name
+        else:
+            input_type = 'radio'
+            name = field.name
+
+        outer_box_id = kwargs.pop('id', field.id)
+        id_prefix = kwargs.pop('id_prefix', outer_box_id)
+        html.append('<div %s>' % html_params(id=outer_box_id, class_='checkbox-set'))
+        for i, (val, label, selected) in enumerate(field.iter_choices()):
+            id = id_prefix + '.' + str(i)
+            html.extend([
+                '<span %s>' % html_params(class_='checkbox-set-item'),
+                '<input %s />' % html_params(id=id, type=input_type, name=name, checked=("checked" if selected else ""), value=val, **kwargs),
+                ' ',
+                '<label %s>%s</label>' % (
+                    html_params(for_=id),
+                    escape(label)
+                    ),
+                '</span>',
+                ])
+        html.append('</div>')
+        return HTMLString(''.join(html))
