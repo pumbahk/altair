@@ -174,7 +174,6 @@ class SearchByGenreTests(unittest.TestCase):
         result = self._callFUT(self.config, PageSet.query, [10000])
         self.assertEquals([], list(result))
 
-@unittest.skip
 class EventsByAreaTests(unittest.TestCase):
     """
 3. エリアで選択
@@ -234,7 +233,7 @@ class EventsByAreaTests(unittest.TestCase):
 
         self.assertEquals([], list(result))
 
-@unittest.skip
+
 class EventsByPerformanceTermTests(unittest.TestCase):
     """
 4. 公演日で探す
@@ -304,7 +303,6 @@ class EventsByPerformanceTermTests(unittest.TestCase):
         self.assertEquals(2, result.count())
         self.assertEquals([ev0, ev1], list(result))
 
-@unittest.skip
 class EventsByDealCondFlagsTests(unittest.TestCase):
     """
 5. 販売条件の中のフラグがチェックされている
@@ -336,11 +334,11 @@ todo: 作成
 
     def test_unmatched_param__notfound(self):
         from altaircms.event.models import Event
-        from altaircms.models import SalesSegment
+        from altaircms.models import SalesSegmentGroup
         qs = Event.query
 
         event = Event()
-        sale = SalesSegment(event=event, kind=u"normal")
+        sale = SalesSegmentGroup(event=event, kind=u"normal")
         self.session.add(sale)
 
         result = self._callFUT(qs, [u"sales-kind-unmatched"])
@@ -348,11 +346,11 @@ todo: 作成
 
     def test_matched_param__found(self):
         from altaircms.event.models import Event
-        from altaircms.models import SalesSegment
+        from altaircms.models import SalesSegmentGroup
         qs = Event.query
 
         event = Event()
-        sale = SalesSegment(event=event, kind=u"normal")
+        sale = SalesSegmentGroup(event=event, kind=u"normal")
         self.session.add(sale)
 
         result = self._callFUT(qs, [u"normal"])
@@ -360,11 +358,11 @@ todo: 作成
 
     def test_search_unionly(self):
         from altaircms.event.models import Event
-        from altaircms.models import SalesSegment
+        from altaircms.models import SalesSegmentGroup
         qs = Event.query
 
         event = Event()
-        sale = SalesSegment(event=event, kind=u"normal")
+        sale = SalesSegmentGroup(event=event, kind=u"normal")
         self.session.add(sale)
 
         result = self._callFUT(qs, [u"abc", u"efg", u"hij"])
@@ -374,7 +372,7 @@ todo: 作成
         self.assertEquals([event], list(result))
 
     ## todo: saleのtodo:公開開始。終了見る
-
+        #これは別の場所で見ているのでok
 
 class EventsByAddedServiceFlagsTests(unittest.TestCase):
     """
@@ -391,7 +389,6 @@ todo: 作成
     def test_it(self):
         pass
 
-@unittest.skip
 class EventsByAboutDealPartTests(unittest.TestCase):
     """
 7. 発売日
@@ -487,7 +484,7 @@ class EventsByAboutDealPartTests(unittest.TestCase):
           result = self._callFUT(Event.query, None, None, None, True, _nowday=lambda : datetime(2012, 1, 1))
           self.assertEquals([ev0], list(result))
 
-@unittest.skip
+
 class SearchOnlyIsSearcheableEventTests(unittest.TestCase):
     """ 検索可能なもののみが取れるようになっているか調べる
     """
@@ -499,7 +496,7 @@ class SearchOnlyIsSearcheableEventTests(unittest.TestCase):
         self.assertIn("event.is_searchable = ? AND event.id = pagesets.event_id", result)
 
 
-@unittest.skip
+
 class SearchOrderTests(unittest.TestCase):
     """
     販売終了間近なものから順に表示される
@@ -547,7 +544,7 @@ class SearchOrderTests(unittest.TestCase):
         self.assertNotEquals(deal_closes, [p.event.deal_close for p in not_sorted_qs])
         self.assertEquals(deal_closes, [p.event.deal_close for p in result])
 
-@unittest.skip
+
 class PagePublishTermOnlySearchableTests(unittest.TestCase):
     """ ページが公開期間のもののみ検索に引っかかる
     """
@@ -611,7 +608,7 @@ class PagePublishTermOnlySearchableTests(unittest.TestCase):
 
         self.assertEquals([], list(result))
             
-@unittest.skip
+
 class HotWordSearchTests(unittest.TestCase):
     """ hotwordの検索のテスト
     """
@@ -621,12 +618,17 @@ class HotWordSearchTests(unittest.TestCase):
         transaction.abort()
         from altaircms.models import DBSession
         DBSession.remove()
+        from pyramid.testing import tearDown
+        tearDown()
 
     def setUp(self):
         import transaction
         import sqlahelper
         transaction.abort()
         self.session = sqlahelper.get_session()
+        from pyramid.testing import setUp
+        self.config = setUp()
+        self.config.include("altaircms.page.install_pageset_searcher")
 
     def _callFUT(self, *args, **kwargs):
         from altairsite.search.searcher import search_by_hotword
@@ -634,30 +636,28 @@ class HotWordSearchTests(unittest.TestCase):
 
     def test_hotword_search_has_event(self):
         """
-        hotword - pagetag - pagetag2pageset - page - pageset
+        hotword - pagetag - pagetag2pageset - pageset
         """
         from altaircms.tag.models import HotWord
-        from altaircms.tag.models import PageTag
-        from altaircms.tag.models import PageTag2Page
-        from altaircms.page.models import Page
+        from altaircms.tag.models import PageTag, PageTag2Page
         from altaircms.page.models import PageSet
         from altaircms.event.models import Event        
+        from altaircms.auth.models import Organization
+        organization = Organization(short_name="test")
+        self.session.add(organization)
+        self.session.flush()
+        self.config.organization = organization
 
-        event = Event(title=u"this-is-bound-event")
-        pageset = PageSet(event=event)
-        page = Page(pageset=pageset)
-        _other_page = Page(pageset=pageset) ## orfan
-        
-        pagetag = PageTag(label=u"tag-name-for-hotword", publicp=True)
-        self.session.add(page)
-        self.session.add(_other_page)
+        event = Event(title=u"this-is-bound-event", organization_id=organization.id)
+        pageset = PageSet(event=event, organization_id=organization.id)
+        pagetag = PageTag(label=u"tag-name-for-hotword", publicp=True, organization_id=organization.id)
         self.session.add(pageset)
         self.session.add(pagetag)
         self.session.flush()
 
-        pagetag2pageset = PageTag2Page(object_id=page.id, tag_id=pagetag.id)
+        pagetag2pageset = PageTag2Page(object_id=pageset.id, tag_id=pagetag.id)
         self.session.add(pagetag2pageset)
-        ## proxyほしい
+        self.session.flush()
 
         hotword = HotWord(name=u"this-is-hotword-name", tag=pagetag, enablep=True, 
                           display_order=1, 
@@ -665,9 +665,13 @@ class HotWordSearchTests(unittest.TestCase):
         self.session.add(hotword)
         
         self.session.flush()
-        result = self._callFUT(PageSet.query,  u"this-is-hotword-name")
-        
+
+        request = self.config
+        request.allowable = lambda m, qs=None : qs or m.query
+        result = self._callFUT(self.config, PageSet.query,  u"this-is-hotword-name")
+
         self.assertEquals([pageset],  list(result))
+
 
     def test_hotword_search_hasnt_event(self):
         """ search by hotword but this pageset hasn't event, so matched items is 0
@@ -676,21 +680,21 @@ class HotWordSearchTests(unittest.TestCase):
         from altaircms.tag.models import HotWord
         from altaircms.tag.models import PageTag
         from altaircms.tag.models import PageTag2Page
-        from altaircms.page.models import Page
         from altaircms.page.models import PageSet
-        
-        pageset = PageSet()
-        page = Page(pageset=pageset)
-        _other_page = Page(pageset=pageset) ## orfan
-        
+        from altaircms.auth.models import Organization
+        organization = Organization(short_name="test")
+        self.session.add(organization)
+        self.session.flush()
+        self.config.organization = organization
+
+        pageset = PageSet(organization_id=organization.id)
+        pagetag = PageTag(label=u"tag-name-for-hotword", publicp=True, organization_id=organization.id)
         pagetag = PageTag(label=u"tag-name-for-hotword", publicp=True)
-        self.session.add(page)
-        self.session.add(_other_page)
         self.session.add(pageset)
         self.session.add(pagetag)
         self.session.flush()
 
-        pagetag2pageset = PageTag2Page(object_id=page.id, tag_id=pagetag.id)
+        pagetag2pageset = PageTag2Page(object_id=pageset.id, tag_id=pagetag.id)
         self.session.add(pagetag2pageset)
         ## proxyほしい
 
@@ -700,7 +704,10 @@ class HotWordSearchTests(unittest.TestCase):
         self.session.add(hotword)
         
         self.session.flush()
-        result = self._callFUT(PageSet.query,  u"this-is-hotword-name")
+
+        request = self.config
+        request.allowable = lambda m, qs=None : qs or m.query
+        result = self._callFUT(request, PageSet.query,  u"this-is-hotword-name")
         
         ### not found item!!
         self.assertEquals([],  list(result))

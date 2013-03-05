@@ -6,6 +6,7 @@ import logging
 logger = logging.getLogger(__file__)
 from altaircms.models import (
    SalesSegment, 
+   SalesSegmentGroup, 
    Category, 
    Performance
 )
@@ -73,7 +74,7 @@ def get_pageset_query_from_hotword(request, query_params):
     if query_params.get("hotword"):
        qs = request.allowable(PageSet)
        hotword = query_params["hotword"]
-       return _refine_pageset_qs(search_by_hotword(qs, hotword))
+       return _refine_pageset_qs(search_by_hotword(request, qs, hotword))
     else:
        return _refine_pageset_qs(qs.filter(PageSet.event_id!=None)) # empty set query is good for that?
 
@@ -205,18 +206,14 @@ def get_pageset_query_fullset(request, query_params):
     return  _refine_pageset_qs(qs)
 
 
-def search_by_hotword(qs, hotword):
+def search_by_hotword(request, qs, word):
    """　hotwordの検索
    """
-   return qs.filter(
-        (HotWord.tag_id==PageTag.id) & (HotWord.enablep == True) & (PageTag.publicp==True) & (HotWord.name==hotword)
-      ).filter(
-        PageTag.id==PageTag2Page.tag_id
-      ).filter(
-         Page.id==PageTag2Page.object_id
-      ).filter(
-         (Page.pageset_id==PageSet.id) & (PageSet.event != None) #そもそもチケット用の検索なのでeventは必須
-      )
+   hotword = request.allowable(HotWord).filter(HotWord.name==word, HotWord.enablep == True).first()
+   if hotword is None:
+      return qs
+   searcher = get_pageset_searcher(request)
+   return searcher.filter_by_tag(qs, hotword.tag).filter(PageSet.event != None) #そもそもチケット用の検索なのでeventは必須)
 
 def search_by_freeword(qs, request, words, query_cond):
     pageset_ids = api.pageset_id_list_from_words(request, words, query_cond)
@@ -229,7 +226,6 @@ def _extract_tags(params, k):
     params = params.copy()
     tags = [e.strip() for e in params.pop(k).split(",")] ##
     return [k for k in tags if k]
-
 
 
 def search_by_events(qs, event_ids):
@@ -279,7 +275,7 @@ def events_by_performance_term(qs, performance_open, performance_close):
 
 def events_by_deal_cond_flags(qs, flags):
    if flags:
-      return qs.filter(Event.id==SalesSegment.event_id).filter(SalesSegment.kind.in_(flags)).distinct()
+      return qs.filter(Event.id==SalesSegmentGroup.event_id).filter(SalesSegmentGroup.kind.in_(flags)).distinct()
    else:
       return qs
 
