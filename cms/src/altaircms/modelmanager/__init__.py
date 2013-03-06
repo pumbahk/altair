@@ -68,7 +68,7 @@ class EventEventTerm(BubblingBase):
 class PerformanceEventTerm(BubblingBase):
     children = []
     def term(self):
-        return self.o.start_on, self.o.end_on
+        return self.o.start_on, self.o.end_on or self.o.start_on
 
     def bubble(self, start_on=None, end_on=None):
         parent = EventEventTerm(self.o.event)
