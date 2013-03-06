@@ -107,10 +107,22 @@ def event_register(request):
         return HTTPCreated(body=json.dumps({u'status':u'success'}))
     except InvalidParamaterException as e:
         logger.warn("*event register api* invalid paramater received: reason: '%s.'\ndata = %s" % (str(e),request.json_body ))
+        _tmp_save(request.json_body)
         return HTTPBadRequest(body=json.dumps({u'status':u'error', u'message':unicode(e), "apikey": apikey}))
     except Exception as e:
         logger.exception(e)
+        _tmp_save(request.json_body)
         return HTTPBadRequest(body=json.dumps({u'status':u'error', u'message':unicode(e), "apikey": apikey}))
+
+import tempfile
+def _tmp_save(data):
+    try:
+        filename = tempfile.mktemp()
+        logger.warn("temporary save: %s" % filename)
+        with open(filename, "w") as wf:
+            wf.write(json.dumps(data))
+    except Exception, e:
+        logger.exception(str(e))
 
 
 @view_config(route_name="api_event_info", request_method="GET", renderer="json")
