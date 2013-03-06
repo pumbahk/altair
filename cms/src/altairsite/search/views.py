@@ -23,11 +23,12 @@ def page_search_input(request):
     return {"forms": forms.get_search_forms()}
 
 @view_config(custom_predicates=(enable_search_function, ), 
-             route_name="page_search_result", renderer="altaircms:templates/front/layout/ticketstar/ticketstar.search.html")
+             route_name="page_search_result", renderer="altaircms:templates/usersite/search/result.html")
 def page_search_result(request):
     """ 詳細検索 検索結果
     """
     try:
+        request.body_id = "search"
         logger.debug("search GET params: %s" % request.GET)
         query_params = forms.get_search_forms(request.GET).make_query_params()
         result_seq = request.context.get_result_sequence_from_query_params(
@@ -35,22 +36,20 @@ def page_search_result(request):
             searchfn=searcher.get_pageset_query_fullset
             )
         html_query_params = request.context.get_query_params_as_html(query_params)
-
-        params = front_api.get_navigation_categories(request)
-        params.update(result_seq=result_seq, query_params=html_query_params)
-        return params
+        return dict(result_seq=result_seq, query_params=html_query_params)
     except Exception, e:
         logger.exception(e)
         raise HTTPNotFound
 
 @view_config(custom_predicates=(enable_search_function, ), 
              request_param="q", route_name="page_search_by_freeword", 
-             renderer="altaircms:templates/front/layout/ticketstar/ticketstar.search.html")
+             renderer="altaircms:templates/usersite/search/result.html")
 def search_by_freeword(context, request):
     """ フリーワード検索
     """
     try:
         ## 全文検索を使って検索。, で区切られた文字はandで結合
+        request.body_id = "search"
         query_params = dict(query=request.GET.get("q", u""), query_cond="intersection")
 
         result_seq = context.get_result_sequence_from_query_params(
@@ -59,10 +58,7 @@ def search_by_freeword(context, request):
             )
         ## query_paramsをhtml化する
         html_query_params = context.get_query_params_as_html(query_params)
-        ### header page用のcategoryを集めてくる
-        params = front_api.get_navigation_categories(request)
-        params.update(result_seq=result_seq, query_params=html_query_params)
-        return params
+        return dict(result_seq=result_seq, query_params=html_query_params)
     except Exception, e:
         logger.exception(e)
         raise HTTPNotFound
@@ -70,29 +66,28 @@ def search_by_freeword(context, request):
 
 @view_config(custom_predicates=(enable_search_function, ), 
              route_name="page_search_by_multi", 
-             renderer="altaircms:templates/front/layout/ticketstar/ticketstar.search.html")
+             renderer="altaircms:templates/usersite/search/result.html")
 def search_by_multi(request):
     """ topページの複数記入できるフォーム。
     """
     try:
         logger.debug("search GET params: %s" % request.GET)
+        request.body_id = "search"
         query_params = forms.TopPageSidebarSearchForm(request.GET).make_query_params()
         result_seq = request.context.get_result_sequence_from_query_params(
             query_params, 
             searchfn=searcher.get_pageset_query_from_multi
             )
         html_query_params = request.context.get_query_params_as_html(query_params)
+        return dict(result_seq=result_seq, query_params=html_query_params)
 
-        params = front_api.get_navigation_categories(request)
-        params.update(result_seq=result_seq, query_params=html_query_params)
-        return params
     except Exception, e:
         logger.exception(e)
         raise HTTPNotFound
 
 
 @view_defaults(custom_predicates=(enable_search_function, ), 
-               route_name="page_search_by", renderer="altaircms:templates/front/layout/ticketstar/ticketstar.search.html")
+               route_name="page_search_by", renderer="altaircms:templates/usersite/search/result.html")
 class SearchByKindView(object):
     def __init__(self, context, request):
         self.request = request
@@ -104,6 +99,7 @@ class SearchByKindView(object):
         """
         try:
             params = MultiDict({self.request.matchdict["value"]: "on"})
+            self.request.body_id = "search"
             query_params = forms.GenrePartForm(params).make_query_params()
 
             result_seq = self.context.get_result_sequence_from_query_params(
@@ -113,9 +109,7 @@ class SearchByKindView(object):
             ## query_paramsをhtml化する
             html_query_params = self.context.get_query_params_as_html(query_params)
             ### header page用のcategoryを集めてくる
-            params = front_api.get_navigation_categories(self.request)
-            params.update(result_seq=result_seq, query_params=html_query_params)
-            return params
+            return dict(result_seq=result_seq, query_params=html_query_params)
         except Exception, e:
             logger.exception(e)
             raise HTTPNotFound
@@ -126,6 +120,7 @@ class SearchByKindView(object):
         """
         try:
             params = MultiDict({self.request.matchdict["value"]: "on"})
+            self.request.body_id = "search"
             query_params = forms.AreaPartForm(params).make_query_params()
 
             result_seq = self.context.get_result_sequence_from_query_params(
@@ -135,9 +130,7 @@ class SearchByKindView(object):
             ## query_paramsをhtml化する
             html_query_params = self.context.get_query_params_as_html(query_params)
             ### header page用のcategoryを集めてくる
-            params = front_api.get_navigation_categories(self.request)
-            params.update(result_seq=result_seq, query_params=html_query_params)
-            return params
+            return dict(result_seq=result_seq, query_params=html_query_params)
         except Exception, e:
             logger.exception(e)
             raise HTTPNotFound
@@ -148,6 +141,7 @@ class SearchByKindView(object):
         """
         try:
             params = MultiDict({self.request.matchdict["value"]: True})
+            self.request.body_id = "search"
             query_params = forms.DealCondPartForm(params).make_query_params()
             result_seq = self.context.get_result_sequence_from_query_params(
                 query_params,
@@ -156,9 +150,7 @@ class SearchByKindView(object):
             ## query_paramsをhtml化する
             html_query_params = self.context.get_query_params_as_html(query_params)
             ### header page用のcategoryを集めてくる
-            params = front_api.get_navigation_categories(self.request)
-            params.update(result_seq=result_seq, query_params=html_query_params)
-            return params
+            return dict(result_seq=result_seq, query_params=html_query_params)
         except Exception, e:
             logger.exception(e)
             raise HTTPNotFound
@@ -170,6 +162,7 @@ class SearchByKindView(object):
         """
         try:
             n = int(self.request.matchdict["value"])
+            self.request.body_id = "search"
             query_params = {"ndays": n, 
                             "query_expr_message": u"%d日以内に公演" % n}
             result_seq = self.context.get_result_sequence_from_query_params(
@@ -180,9 +173,7 @@ class SearchByKindView(object):
             ## query_paramsをhtml化する
             html_query_params = self.context.get_query_params_as_html(query_params)
             ### header page用のcategoryを集めてくる
-            params = front_api.get_navigation_categories(self.request)
-            params.update(result_seq=result_seq, query_params=html_query_params)
-            return params
+            return dict(result_seq=result_seq, query_params=html_query_params)
         except Exception, e:
             logger.exception(e)
             raise HTTPNotFound
@@ -193,6 +184,7 @@ class SearchByKindView(object):
         """
         try:
             n = int(self.request.matchdict["value"])
+            self.request.body_id = "search"
             query_params = {"ndays": n, 
                             "query_expr_message": u"%d日以内に受付・発売開始" % n}
             result_seq = self.context.get_result_sequence_from_query_params(
@@ -203,9 +195,7 @@ class SearchByKindView(object):
 
             html_query_params = self.context.get_query_params_as_html(query_params)
             ### header page用のcategoryを集めてくる
-            params = front_api.get_navigation_categories(self.request)
-            params.update(result_seq=result_seq, query_params=html_query_params)
-            return params
+            return dict(result_seq=result_seq, query_params=html_query_params)
         except Exception, e:
             logger.exception(e)
             raise HTTPNotFound
@@ -216,6 +206,7 @@ class SearchByKindView(object):
         """
         try:
             hotword = self.request.matchdict["value"]
+            self.request.body_id = "search"
             query_params = {"hotword": hotword, 
                             "query_expr_message": u"ホットワード:%s" % hotword}
             result_seq = self.context.get_result_sequence_from_query_params(
@@ -226,9 +217,7 @@ class SearchByKindView(object):
 
             html_query_params = self.context.get_query_params_as_html(query_params)
             ### header page用のcategoryを集めてくる
-            params = front_api.get_navigation_categories(self.request)
-            params.update(result_seq=result_seq, query_params=html_query_params)
-            return params
+            return dict(result_seq=result_seq, query_params=html_query_params)
         except Exception, e:
             logger.exception(e)
             raise HTTPNotFound
@@ -242,10 +231,9 @@ class SearchByKindView(object):
             def __html__(cls):
                 return "mock-dummy"
         html_query_params = mock_query_parms
+        self.request.body_id = "search"
         result_seq = self.context.get_result_sequence_from_query_params(
             mock_query_parms, 
             )
         ### header page用のcategoryを集めてくる
-        params = front_api.get_navigation_categories(self.request)
-        params.update(result_seq=result_seq, query_params=html_query_params)
-        return params
+        return dict(result_seq=result_seq, query_params=html_query_params)

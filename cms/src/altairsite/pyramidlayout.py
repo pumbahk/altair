@@ -32,7 +32,8 @@ class MyLayout(object):
         return getattr(self.request, "body_id", None) or self._body_id
 
     header_images_dict = dict(
-        searchform=Markup(u'<img id="titleImage" src="/static/ticketstar/img/search/title_searchform.gif" alt="絞り込み検索"/>')
+        searchform=Markup(u'<img id="titleImage" src="/static/ticketstar/img/search/title_searchform.gif" alt="絞り込み検索"/>'), 
+        search=Markup(u'<img id="titleImage" src="/static/ticketstar/img/search/title_search.gif" alt="検索結果"/>')
         )
     @property
     def page_title_image(self):
