@@ -16,32 +16,34 @@ logger = logging.getLogger(__file__)
 
 class EventSearcher(object):
 
+    def __init__(self, request):
+        self.request = request
+
     # 検索文字列作成
-    def create_search_freeword(self, request, form):
+    def create_search_freeword(self, form):
         search_word = ""
         if exist_value(form.word.data):
             search_word = form.word.data
 
         if hasattr(form, "sub_genre"): # formが2種類入ってくるため
             if exist_value(form.sub_genre.data):
-                genre = request.allowable(Genre).filter(Genre.id==form.genre.data).first()
+                genre = self.request.allowable(Genre).filter(Genre.id==form.genre.data).first()
                 search_word = search_word + " " + genre.label
             elif exist_value(form.genre.data):
-                subgenre = request.allowable(Genre).filter(Genre.id==form.genre.data).first()
+                subgenre = self.request.allowable(Genre).filter(Genre.id==form.genre.data).first()
                 search_word = search_word + " " + subgenre.label
         elif exist_value(form.genre.data):
-            subgenre = request.allowable(Genre).filter(Genre.id==form.genre.data).first()
+            subgenre = self.request.allowable(Genre).filter(Genre.id==form.genre.data).first()
             search_word = search_word + " " + subgenre.label
         return search_word
 
     # フリーワード、ジャンル検索
-    def get_events_from_freeword(self, request, form):
-        search_word = self.create_search_freeword(request, form)
+    def get_events_from_freeword(self, form):
+        search_word = self.create_search_freeword(form)
         qs = None
         if search_word != "":
             try:
-                print search_word
-                events = helper.searchEvents(request, search_word)
+                events = helper.searchEvents(self.request, search_word)
                 ids = self._create_ids(events)
                 qs = self._create_common_qs(where=Event.id.in_(ids))
             except Exception, e:
@@ -113,9 +115,8 @@ class EventSearcher(object):
         if qs: # 絞り込み
             qs = qs.filter(where)
         else: # 新規検索
-            qs = Event.query \
-                .join(Performance).filter(Event.id == Performance.event_id) \
-                .filter(Event.is_searchable == True) \
-                .filter(where)
+            qs = self.request.allowable(Event) \
+                    .join(Performance).filter(Event.id == Performance.event_id) \
+                    .filter(Event.is_searchable == True) \
+                    .filter(where)
         return qs
-

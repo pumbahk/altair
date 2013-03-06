@@ -22,12 +22,12 @@ def move_detailsearch(request):
 @view_config(route_name='detailsearch', request_method="POST", renderer='cmsmobile:templates/searchresult/detailsearch.mako')
 def move_detailsearch_post(request):
 
-    searcher = EventSearcher()
+    searcher = EventSearcher(request)
 
     form = DetailSearchForm(request.POST)
 
     # freeword, genre, subgenre
-    qs = searcher.get_events_from_freeword(request, form)
+    qs = searcher.get_events_from_freeword(form)
 
     # 地域検索
     qs = searcher.get_events_from_area(form, qs)

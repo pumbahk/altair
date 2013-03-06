@@ -16,10 +16,10 @@ class ValidationFailure(Exception):
 def search(request):
 
     form = SearchForm(request.GET)
-    searcher = EventSearcher()
+    searcher = EventSearcher(request)
 
     # freeword, genre, subgenre
-    qs = searcher.get_events_from_freeword(request, form)
+    qs = searcher.get_events_from_freeword(form)
 
     # 地域検索
     qs = searcher.get_events_from_area(form, qs)
