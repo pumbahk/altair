@@ -39,7 +39,7 @@ def move_detailsearch_post(request):
     events = None
     form.num.data = 0
     if qs:
-
+        events = qs.all()
         if events:
             form.num.data = len(events)
             items_per_page = 10
