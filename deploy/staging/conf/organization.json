@@ -31,15 +31,15 @@
             "backend_id": 11, 
             "short_name": "ticketstar"
         }, 
+        "rt": {
+            "auth_source": "oauth", 
+            "backend_id": 11, 
+            "short_name": "rt"
+        }, 
         "vissel": {
             "auth_source": "oauth", 
             "backend_id": 4, 
             "short_name": "vissel"
-        },
-        "RT": {
-            "auth_source": "oauth", 
-            "backend_id": 8, 
-            "short_name": "RT"
         }
     }
 }
