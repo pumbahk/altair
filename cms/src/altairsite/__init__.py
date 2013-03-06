@@ -56,6 +56,6 @@ def main(global_config, **local_config):
 
     # layout
     config.include("pyramid_layout")
-    config.add_layout(".pyramidlayout.MyLayout", 'altaircms:templates/layout.html') #this is pyramid-layout's layout
+    config.add_layout(".pyramidlayout.MyLayout", 'altaircms:templates/usersite/base.html') #this is pyramid-layout's layout
     return config.make_wsgi_app()
 

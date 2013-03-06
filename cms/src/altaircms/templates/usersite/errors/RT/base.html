@@ -4,7 +4,7 @@
 ## define
 <%def name="search_form_on_header(placeholder, query_id)">
 	<form id="form1" name="form1" method="GET" action="${request.route_path("page_search_by_freeword")}">
-		<input name="q" type="text" id="${query_id}" size="40" placeholder="${placeholder}" />
+		<input name="q" type="text" id="${query_id}" size="30" placeholder="${placeholder}" />
 		<input name="imageField" type="image" id="imageField" src="/static/ticketstar/img/common/header_search_btn.gif" alt="検索" />
 		<a href="${request.route_path("page_search_input")}">詳細検索</a>
 	</form>
@@ -119,7 +119,7 @@ form = TopPageSidebarSearchForm()
         </div>
 
         <div id="headerSearch">
-##          ${search_form_on_header(u"アーティスト名、公演名、会場名など", "query_id")}
+          ${search_form_on_header(u"アーティスト名、公演名、会場名など", "query_id")}
           <dl>
             <dt><img src="/static/ticketstar/img/common/header_search_hot.gif" alt="ホットワード" width="50" height="45" /></dt>
             <dd>

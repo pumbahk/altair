@@ -5,8 +5,8 @@ from datetime import datetime
 from zope.deprecation import deprecate
 
 from altaircms.tag.models import HotWord
-from altaircms.models import Category
-
+from altaircms.models import Category, Genre
+from markupsafe import Markup
 
 
 class MyLayout(object):
@@ -14,11 +14,31 @@ class MyLayout(object):
         self.context = context
         self.request = request
 
+
     def navigation_link_list(self, hierarchy):
         return get_navigation_links(self.request, hierarchy)
 
     def hotword_list(self):
         return get_current_hotwords(self.request)
+
+    @property
+    def top_category_genres(self):
+        root = self.request.allowable(Genre).filter(Genre.is_root==True).first()
+        return [g for g in root.children if g.category_top_pageset_id]
+
+    _body_id = "index"
+    @property
+    def body_id(self):
+        return getattr(self.request, "body_id", None) or self._body_id
+
+    header_images_dict = dict(
+        searchform=Markup(u'<img id="titleImage" src="/static/ticketstar/img/search/title_searchform.gif" alt="絞り込み検索"/>')
+        )
+    @property
+    def page_title_image(self):
+        return self.header_images_dict.get(self.body_id, "")
+
+    
     
 
 def get_navigation_links(request, hierarchy):

@@ -8,7 +8,7 @@ from ..separation import selectable_renderer, tstar_mobile_or_not_renderer
              renderer=tstar_mobile_or_not_renderer({"ticketstar": "altaircms:templates/mobile/notfound.html"}, 
                                                    default = "altaircms:templates/mobile/default_notfound.html"))
 @view_config(context="pyramid.exceptions.Forbidden", 
-             renderer=selectable_renderer("altaircms:templates/front/errors/%(prefix)s/forbidden.html"))
+             renderer=selectable_renderer("altaircms:templates/usersite/errors/%(prefix)s/forbidden.html"))
 def forbidden(request):
     request.response.status = 401
     return {}
@@ -18,7 +18,7 @@ def forbidden(request):
              renderer=tstar_mobile_or_not_renderer({"ticketstar": "altaircms:templates/mobile/notfound.html"}, 
                                                    default = "altaircms:templates/mobile/default_notfound.html"))
 @view_config(context="pyramid.exceptions.NotFound", 
-             renderer=selectable_renderer("altaircms:templates/front/errors/%(prefix)s/notfound.html"))
+             renderer=selectable_renderer("altaircms:templates/usersite/errors/%(prefix)s/notfound.html"))
 def notfound(request):
     request.response.status = 404 
     return {}

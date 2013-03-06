@@ -15,13 +15,12 @@ def enable_search_function(info, request):
     return request.organization.use_full_usersite if request.organization else False
 
 @view_config(custom_predicates=(enable_search_function, ), 
-             route_name="page_search_input", renderer="altaircms:templates/front/layout/ticketstar/ticketstar.search.input.html")
+             route_name="page_search_input", renderer="altaircms:templates/usersite/search/input.html")
 def page_search_input(request):
     """ 絞り込み検索フォーム画面
     """
-    params = front_api.get_navigation_categories(request)
-    params.update(forms=forms.get_search_forms())
-    return params
+    request.body_id = "searchform"
+    return {"forms": forms.get_search_forms()}
 
 @view_config(custom_predicates=(enable_search_function, ), 
              route_name="page_search_result", renderer="altaircms:templates/front/layout/ticketstar/ticketstar.search.html")

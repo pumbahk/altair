@@ -222,7 +222,7 @@ class Genre(Base,  WithOrganizationMixin):
     name = sa.Column(sa.String(length=255))
 
     category_top_pageset_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id", use_alter=True, name="fk_default_category_top_pageset"), doc=u"カテゴリトップページのid")
-
+    category_top_pageset = orm.relationship("PageSet", uselist=False, primaryjoin="PageSet.id==Genre.category_top_pageset_id")
     def is_category_toppage(self, pageset):
         return self.category_top_pageset_id == pageset.id
     

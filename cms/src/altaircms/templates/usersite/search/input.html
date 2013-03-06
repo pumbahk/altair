@@ -1,7 +1,8 @@
-<%inherit file="altaircms:templates/front/ticketstar/search/detail_search_input.html"/>
-<%namespace file="altaircms:templates/front/ticketstar/gadgets.html" name="gadgets"/>
+## dont remove
+<% body_id = "search" %>
+<%inherit file="altaircms:templates/usersite/subbase.html"/>
 
-<%block name="main">
+<div id="main">
 		<!-- InstanceBeginEditable name="main" -->
 		<form action="${request.route_path("page_search_result")}" method="GET">
 		<div class="searchInput">
@@ -84,21 +85,4 @@
 		  </ul>
 		</div>
 	</form>
-</%block>
-
-<%block name="side">
-    ${gadgets.sidebar_category_listing(categories)}
-
-	<dl id="sideRefineSearch">
-		${gadgets.sidebar_area_listing(areas)}
-		${gadgets.sidebar_deal_cond_listing()}
-		${gadgets.sidebar_deal_open_listing()}
-		${gadgets.sidebar_event_open_listing()}
-	</dl>
-
-##	${gadgets.sidebar_maintenance()}
-	<!-- InstanceEndEditable -->
-##	${gadgets.sidebar_sideBtn()}
-</%block>
-
-
+</div>
