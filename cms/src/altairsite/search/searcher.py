@@ -85,7 +85,7 @@ def get_pageset_query_from_freeword(request, query_params):
     qs = _refine_pageset_collect_future(qs)
     words = _extract_tags(query_params, "query")
     if words and (len(words) > 1 or words[0] != u'""'):
-        qs = search_by_freeword(qs, request, words, query_params.get("query_cond"))
+        qs = search_by_freeword(request, qs, words, query_params.get("query_cond"))
         return  _refine_pageset_qs(qs)
     else:
        return _refine_pageset_qs(qs.filter(PageSet.event_id!=None)) # empty set query is good for that?
@@ -201,7 +201,7 @@ def get_pageset_query_fullset(request, query_params):
 
     if "query" in query_params:
         words = _extract_tags(query_params, "query")
-        qs = search_by_freeword(qs, request, words, query_params.get("query_cond"))
+        qs = search_by_freeword(request, qs, words, query_params.get("query_cond"))
 
     return  _refine_pageset_qs(qs)
 
@@ -215,7 +215,7 @@ def search_by_hotword(request, qs, word):
    searcher = get_pageset_searcher(request)
    return searcher.filter_by_tag(qs, hotword.tag).filter(PageSet.event != None) #そもそもチケット用の検索なのでeventは必須)
 
-def search_by_freeword(qs, request, words, query_cond):
+def search_by_freeword(request, qs, words, query_cond):
     pageset_ids = api.pageset_id_list_from_words(request, words, query_cond)
     logger.info("pageset_id: %s" % pageset_ids)
     return qs.filter(PageSet.id.in_(pageset_ids))
