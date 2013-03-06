@@ -681,13 +681,17 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def sales_start_on(self):
-        return SalesSegment.query.with_entities(func.min(SalesSegment.start_at))\
-                .join(SalesSegmentGroup).filter(SalesSegmentGroup.event_id==self.id).scalar()
+        return SalesSegmentGroup.query.filter(SalesSegmentGroup.event_id==self.id)\
+                .join(SalesSegment)\
+                .join(Product).filter(Product.sales_segment_id==SalesSegment.id)\
+                .with_entities(func.min(SalesSegment.start_at)).scalar()
 
     @property
     def sales_end_on(self):
-        return SalesSegment.query.with_entities(func.min(SalesSegment.end_at))\
-                .join(SalesSegmentGroup).filter(SalesSegmentGroup.event_id==self.id).scalar()
+        return SalesSegmentGroup.query.filter(SalesSegmentGroup.event_id==self.id)\
+                .join(SalesSegment)\
+                .join(Product).filter(Product.sales_segment_id==SalesSegment.id)\
+                .with_entities(func.max(SalesSegment.end_at)).scalar()
 
     @property
     def first_start_on(self):
