@@ -99,11 +99,23 @@
   <div class="modal-body">
     <p>CMSへイベントを送信します。よろしいですか？</p>
   </div>
-
   <div class="modal-footer">
     <a href="javascript:void(0);" onclick="$('#modal-send_event').modal('hide');" class="btn secondary">キャンセル</a>
     <a id="send_event" href="" class="btn danger">送信</a>
   </div>
+  <script type="text/javascript">
+    var is_sending_to_cms = false;
+    $("#send_event").click(function(){
+      if(is_sending_to_cms){ 
+        return false;
+      }
+      is_sending_to_cms = true;
+      $('#modal-send_event').modal('hide');
+      setTimeout(function(){
+        is_sending_to_cms = false
+      }, 20000);
+    })
+  </script>
 </div>
 
 ${delete_modal()}
