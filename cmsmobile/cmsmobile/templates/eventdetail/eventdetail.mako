@@ -1,12 +1,12 @@
 <%include file="../common/_header.mako" args="title=u'イベント詳細'"/>
 <body>
-<%
-import datetime as d
-%>
+
+<a href="/">トップ</a> >> イベント詳細<p/>
 
 <h2>
     ${event.title}<br/>
 </h2>
+
     公演期間：${event.deal_open}〜${event.deal_close}<br/>
     公演一覧へ<br/>
         2013/04｜2013/05｜2013/06<br/>
