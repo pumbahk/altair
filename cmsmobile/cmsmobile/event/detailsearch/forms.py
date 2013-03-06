@@ -3,8 +3,9 @@
 from wtforms import Form
 from wtforms import TextField, SelectField, RadioField, HiddenField
 from wtforms.validators import Length
-from wtforms.validators import Optional
+from wtforms.validators import Required, Optional
 from cmsmobile.core.const import SalesEnum
+from wtforms.validators import ValidationError
 
 class DetailSearchForm(Form):
     word = TextField(
@@ -42,38 +43,50 @@ class DetailSearchForm(Form):
     sales_segment = RadioField(
         label = '',
         validators=[Optional()],
-        choices=[(u'一般販売', u'一般販売'), (u'先行販売', u'先行販売') ],
-        default=u"一般販売"
+        choices=[(0, u'一般販売'), (1, u'先行販売') ],
+        default=0
     )
 
-    since_year = TextField(
-        label = '',
-        validators=[]
+    since_year = SelectField(
+        label='',
+        validators=[Optional()],
+        choices=[],
+        coerce=int,
     )
 
-    since_month = TextField(
-        label = '',
-        validators=[]
+    since_month = SelectField(
+        label='',
+        validators=[Optional()],
+        choices=[],
+        coerce=int,
     )
 
-    since_day = TextField(
-        label = '',
-        validators=[]
+    since_day = SelectField(
+        label='',
+        validators=[Optional()],
+        choices=[],
+        coerce=int,
     )
 
-    year = TextField(
-        label = '',
-        validators=[]
+    year = SelectField(
+        label='',
+        validators=[Optional()],
+        choices=[],
+        coerce=int,
     )
 
-    month = TextField(
-        label = '',
-        validators=[]
+    month = SelectField(
+        label='',
+        validators=[Optional()],
+        choices=[],
+        coerce=int,
     )
 
-    day = TextField(
-        label = '',
-        validators=[]
+    day = SelectField(
+        label='',
+        validators=[Optional()],
+        choices=[],
+        coerce=int,
     )
 
     num = HiddenField(#総件数

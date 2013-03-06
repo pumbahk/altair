@@ -6,6 +6,7 @@ from cmsmobile.core.searcher import EventSearcher
 import webhelpers.paginate as paginate
 from cmsmobile.core.helper import exist_value
 from altaircms.genre.searcher import GenreSearcher
+from datetime import date
 
 @view_config(route_name='detailsearch', request_method="GET", renderer='cmsmobile:templates/detailsearch/detailsearch.mako')
 def move_detailsearch(request):
@@ -13,7 +14,11 @@ def move_detailsearch(request):
     form = DetailSearchForm()
 
     # genre select box
-    create_genre_selectbox(request, form)
+    form = create_genre_selectbox(request, form)
+
+    # date select box
+    form = create_date_selectbox(form)
+    # form = select_date_selectbox(form)
 
     return {
         'form':form
@@ -34,6 +39,11 @@ def move_detailsearch_post(request):
 
     # 発売状況
     qs = searcher.get_events_from_sale(form, qs)
+
+    # 公演日期間
+    qs = searcher.get_events_start_on(form, qs)
+
+    print qs
 
     # paging
     events = None
@@ -72,4 +82,43 @@ def create_genre_selectbox(request, form):
         form.genre.choices.append([genre.id, genre.label])
         for sub_genre in genre.children:
             form.genre.choices.append([sub_genre.id, u"┗ " + sub_genre.label])
+    return form
+
+def create_date_selectbox(form):
+    del form.year.choices[:]
+    del form.since_year.choices[:]
+    del form.month.choices[:]
+    del form.since_month.choices[:]
+    del form.day.choices[:]
+    del form.since_day.choices[:]
+
+    form.since_year.choices.append([0, '-'])
+    form.year.choices.append([0, '-'])
+    form.since_month.choices.append([0, '-'])
+    form.month.choices.append([0, '-'])
+    form.since_day.choices.append([0, '-'])
+    form.day.choices.append([0, '-'])
+
+    for year in range(2013, 2100):
+        form.since_year.choices.append([year, year])
+        form.year.choices.append([year, year])
+
+    for month in range(1, 13):
+        form.since_month.choices.append([month, month])
+        form.month.choices.append([month, month])
+
+    for day in range(1, 32):
+        form.since_day.choices.append([day, day])
+        form.day.choices.append([day, day])
+    return form
+
+def select_date_selectbox(form):
+    today = date.today()
+    form.year.default = today.year
+    form.since_year.default = today.year
+    form.month.default = today.month
+    form.since_month.default = today.month
+    form.day.default = today.day
+    form.since_day.default = today.day
+    form.process()
     return form

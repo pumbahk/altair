@@ -35,19 +35,24 @@
         ■公演日で絞り込む<br/>
         <table>
             <tr>
-                <td>${h.form_item(form.since_year, style="width: 50px")}</td>
+                <td>${h.form_item(form.since_year, style="width: 60px")}</td>
                 <td>年</td>
-                <td>${h.form_item(form.since_month, style="width: 30px")}</td>
+                <td>${h.form_item(form.since_month, style="width: 45px")}</td>
                 <td>月</td>
-                <td>${h.form_item(form.since_day, style="width: 30px")}</td>
-                <td>日〜</td>
+                <td>${h.form_item(form.since_day, style="width: 45px")}</td>
+                <td>日</td>
             </tr>
             <tr>
-                <td>${h.form_item(form.year, style="width: 50px")}</td>
+                <td colspan="3">
+                    〜
+                </td>
+            </tr>
+            <tr>
+                <td>${h.form_item(form.year, style="width: 60px")}</td>
                 <td>年</td>
-                <td>${h.form_item(form.month, style="width: 30px")}</td>
+                <td>${h.form_item(form.month, style="width: 45px")}</td>
                 <td>月</td>
-                <td>${h.form_item(form.day, style="width: 30px")}</td>
+                <td>${h.form_item(form.day, style="width: 45px")}</td>
                 <td>日</td>
             </tr>
         </table>

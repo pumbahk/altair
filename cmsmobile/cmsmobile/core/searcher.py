@@ -19,6 +19,17 @@ class EventSearcher(object):
     def __init__(self, request):
         self.request = request
 
+    # 共通クエリ部分
+    def _create_common_qs(self, where, qs=None):
+        if qs: # 絞り込み
+            qs = qs.filter(where)
+        else: # 新規検索
+            qs = self.request.allowable(Event) \
+                .join(Performance).filter(Event.id == Performance.event_id) \
+                .filter(Event.is_searchable == True) \
+                .filter(where)
+        return qs
+
     # 検索文字列作成
     def create_search_freeword(self, form):
         search_word = ""
@@ -110,13 +121,13 @@ class EventSearcher(object):
         qs = self._create_common_qs(where=where, qs=qs)
         return qs
 
-    # 共通クエリ部分
-    def _create_common_qs(self, where, qs=None):
-        if qs: # 絞り込み
-            qs = qs.filter(where)
-        else: # 新規検索
-            qs = self.request.allowable(Event) \
-                    .join(Performance).filter(Event.id == Performance.event_id) \
-                    .filter(Event.is_searchable == True) \
-                    .filter(where)
+    # 公演日検索
+    def get_events_start_on(self, form, qs=None):
+        # validater入れる
+        #since_open = datetime(form.since_year.data, form.since_month.data, form.since_day.data)
+        #open = datetime(form.year.data, form.month.data, form.day.data)
+        since_open = datetime(2013, 3, 9)
+        open = datetime(2014, 3, 9)
+        where = (since_open <= Event.event_open) & (open >= Event.event_open)
+        qs = self._create_common_qs(where=where, qs=qs)
         return qs
