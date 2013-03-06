@@ -36,20 +36,25 @@ class EventSearcher(object):
 
     # フリーワード、ジャンル検索
     def get_events_from_freeword(self, request, form):
-
         search_word = self.create_search_freeword(request, form)
-
         qs = None
         if search_word != "":
             try:
                 print search_word
                 events = helper.searchEvents(request, search_word)
-                ids = _create_ids(events)
+                ids = self._create_ids(events)
                 qs = self._create_common_qs(where=Event.id.in_(ids))
             except Exception, e:
                 logger.exception(e)
                 raise HTTPNotFound
         return qs
+
+    # 取得イベントのIDリスト作成
+    def _create_ids(self, events):
+        ids = []
+        for event in events:
+            ids.append(event.id)
+        return ids
 
     # 地域検索
     def get_events_from_area(self, form, qs=None):
@@ -114,8 +119,3 @@ class EventSearcher(object):
                 .filter(where)
         return qs
 
-def _create_ids(events):
-    ids = []
-    for event in events:
-        ids.append(event.id)
-    return ids
