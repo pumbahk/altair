@@ -58,8 +58,8 @@ class EventSearcher(object):
 
     # まもなく開演
     def get_events_soon_act(self, form, qs=None):
-        where = (datetime.now() < Performance.open_on) & \
-                    (Performance.open_on < datetime.now() + timedelta(days=1))
+        where = (date.today() < Performance.open_on) & \
+                    (Performance.open_on < date.today() + timedelta(days=7))
         if form.soon_act.data:
             qs = self._create_common_qs(where=where, qs=qs)
         return qs
