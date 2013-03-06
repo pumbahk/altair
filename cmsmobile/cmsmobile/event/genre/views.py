@@ -40,23 +40,20 @@ def move_genre(request):
     tag = TopicTag.query.filter_by(label=u"注目のイベント").first()
     attentions = None
     if tag is not None:
-        attentions = topic_searcher.query_publishing_topics(datetime.now(), tag, system_tag) \
-            .filter(TopicTag.organization_id == request.organization.id)
+        attentions = topic_searcher.query_publishing_topics(datetime.now(), tag, system_tag)
 
     # pickup
     promo_searcher = get_topic_searcher(request, "promotion")
     tag = PromotionTag.query.filter_by().first()
     promotions = None
     if tag is not None:
-        promotions = promo_searcher.query_publishing_topics(datetime.now(), tag, system_tag) \
-            .filter(PromotionTag.organization_id == request.organization.id)
+        promotions = promo_searcher.query_publishing_topics(datetime.now(), tag, system_tag)
 
     # Topic(Tag='トピック', system_tag='ジャンル')
     tag = TopicTag.query.filter_by(label=u"トピック").first()
     topics = None
     if tag is not None:
-        topics = topic_searcher.query_publishing_topics(datetime.now(), tag, system_tag) \
-            .filter(TopicTag.organization_id == request.organization.id)
+        topics = topic_searcher.query_publishing_topics(datetime.now(), tag, system_tag)
 
     # hotword
     hotwords = HotWord.query.filter(HotWord.organization_id == request.organization.id) \

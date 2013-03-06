@@ -7,7 +7,7 @@ class ValidationFailure(Exception):
 @view_config(route_name='eventdetail', renderer='cmsmobile:templates/eventdetail/eventdetail.mako')
 def move_eventdetail(request):
     event_id = request.params.get("event_id", None)
-    event = Event.query.filter(Event.id == event_id).first()
+    event = request.allowable(Event).filter(Event.id == event_id).first()
     if not event:
         raise ValidationFailure
     return {

@@ -15,23 +15,20 @@ def main(request):
     tag = TopicTag.query.filter_by(label=u"注目のイベント").first()
     attentions = None
     if tag is not None:
-        attentions = topic_searcher.query_publishing_topics(datetime.now(), tag) \
-            .filter(TopicTag.organization_id == request.organization.id)[0:8]
+        attentions = topic_searcher.query_publishing_topics(datetime.now(), tag)[0:8]
 
     # pickup
     promo_searcher = get_topic_searcher(request, "promotion")
     tag = PromotionTag.query.filter_by().first()
     promotions = None
     if tag is not None:
-        promotions = promo_searcher.query_publishing_topics(datetime.now(), tag) \
-            .filter(PromotionTag.organization_id == request.organization.id)[0:5]
+        promotions = promo_searcher.query_publishing_topics(datetime.now(), tag)[0:5]
 
     # Topic(tag='トピック')
     tag = TopicTag.query.filter_by(label=u"トピック").first()
     topics = None
     if tag is not None:
-        topics = topic_searcher.query_publishing_topics(datetime.now(), tag) \
-            .filter(TopicTag.organization_id == request.organization.id)[0:5]
+        topics = topic_searcher.query_publishing_topics(datetime.now(), tag)[0:5]
 
     # Hotward
     hotwords = HotWord.query.filter(HotWord.organization_id == request.organization.id)\
