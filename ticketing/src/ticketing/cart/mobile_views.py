@@ -4,6 +4,7 @@
 
 import logging
 import re
+import transaction
 from datetime import datetime
 
 from pyramid.view import view_config, view_defaults
