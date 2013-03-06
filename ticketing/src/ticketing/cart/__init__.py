@@ -101,7 +101,6 @@ def main(global_config, **local_config):
     config.include('.')
     config.include("ticketing.qr")
     config.include('ticketing.rakuten_auth')
-    who_config = settings['pyramid_who.config']
     from authorization import MembershipAuthorizationPolicy
     config.set_authorization_policy(MembershipAuthorizationPolicy())
     #config.include('ticketing.whotween')
