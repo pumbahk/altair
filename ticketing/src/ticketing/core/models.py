@@ -1663,6 +1663,17 @@ class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     status = Column(Integer)
 
+    def get_setting(self, name):
+        for setting in self.settings:
+            if setting.name == name:
+                return setting
+        raise Exception, "organization; id={0} does'nt have {1} setting".format(self.id, name)
+
+    @property
+    def setting(self):
+        return self.get_setting(u'default')
+
+
 orders_seat_table = Table("orders_seat", Base.metadata,
     Column("seat_id", Identifier, ForeignKey("Seat.id")),
     Column("OrderedProductItem_id", Identifier, ForeignKey("OrderedProductItem.id")),
@@ -2876,3 +2887,14 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         if self.deleted_at:
             data['deleted'] = 'true'
         return data
+
+
+class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = "OrganizationSetting"
+    id = Column(Identifier, primary_key=True)
+    name = Column(Unicode(255), default=u"default")
+    organization_id = Column(Identifier, ForeignKey('Organization.id'))
+    organization = relationship('Organization',
+                                backref='settings')
+
+    auth_type = Column(Unicode(255))
