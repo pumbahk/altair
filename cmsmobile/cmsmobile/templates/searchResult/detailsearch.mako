@@ -5,9 +5,9 @@
 
 <p/>
 
-<%include file='../detailsearch/_form.mako' args="form=form" />
-
 <%include file='../common/_search_result.mako' args="form=form, events=events" />
+
+<%include file='../detailsearch/_form.mako' args="form=form" />
 
 <hr/>
     <%include file='../common/_footer.mako' />
