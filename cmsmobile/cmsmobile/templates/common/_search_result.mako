@@ -1,5 +1,9 @@
 <%page args="form, events" />
 
+<%
+    week = {0:u'月',1:u'火',2:u'水',3:u'木',4:u'金',5:u'土',6:u'日'}
+%>
+
 % if int(form.num.data):
     ${form.num.data}件見つかりました。
 % else:
@@ -14,7 +18,7 @@
     % for event in events:
         <hr/>
         <a href="/eventdetail?event_id=${event.id}">${event.title}</a><br/>
-        販売：${event.deal_open}〜${event.deal_close}<br/>
+        販売：${event.deal_open.year}/${event.deal_open.month}/${event.deal_open.day}(${week[event.deal_open.weekday()]})〜${event.deal_close.year}/${event.deal_close.month}/${event.deal_close.day}(${week[event.deal_close.weekday()]})<br/>
     % endfor
 % endif
 <p/>
