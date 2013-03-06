@@ -19,12 +19,8 @@
         ${h.form_item(form.area)}
         <p/>
 
-        ■大ジャンル<br/>
+        ■ジャンル<br/>
         ${h.form_item(form.genre)}
-        <p/>
-
-        ■中ジャンル<br/>
-        ${h.form_item(form.sub_genre)}
         <p/>
         <input type="submit" value="検索"><p/>
 

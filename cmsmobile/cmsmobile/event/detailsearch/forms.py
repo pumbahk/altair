@@ -30,13 +30,6 @@ class DetailSearchForm(Form):
         coerce=int,
     )
 
-    sub_genre = SelectField(
-        label='',
-        validators=[Optional()],
-        choices=[(0, u'選択なし')],
-        coerce=int,
-    )
-
     sale = RadioField(
         label = '',
         validators=[Optional()],

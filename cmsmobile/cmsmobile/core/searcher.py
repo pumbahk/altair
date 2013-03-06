@@ -22,9 +22,10 @@ class EventSearcher(object):
         if exist_value(form.word.data):
             search_word = form.word.data
 
-        if exist_value(form.sub_genre.data):
-            genre = request.allowable(Genre).filter(Genre.id==form.genre.data).first()
-            search_word = search_word + " " + genre.label
+        if hasattr(form, "sub_genre"):
+            if exist_value(form.sub_genre.data):
+                genre = request.allowable(Genre).filter(Genre.id==form.genre.data).first()
+                search_word = search_word + " " + genre.label
         elif exist_value(form.genre.data):
             subgenre = request.allowable(Genre).filter(Genre.id==form.genre.data).first()
             search_word = search_word + " " + subgenre.label
