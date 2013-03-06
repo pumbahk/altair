@@ -22,8 +22,8 @@ class WhoDecider(object):
         """ WHO API 選択
         """
         # とりあえず
-        #return "fc_auth"
-        return "rakuten"
+        return "fc_auth"
+        #return "rakuten"
 
 def includeme(config):
     # ディレクティブ
