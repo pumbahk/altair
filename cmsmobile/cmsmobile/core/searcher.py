@@ -16,9 +16,8 @@ logger = logging.getLogger(__file__)
 
 class EventSearcher(object):
 
-    # フリーワード、ジャンル検索
-    def get_events_from_freeword(self, request, form):
-
+    # 検索文字列作成
+    def create_search_freeword(self, request, form):
         search_word = ""
         if exist_value(form.word.data):
             search_word = form.word.data
@@ -27,13 +26,23 @@ class EventSearcher(object):
             if exist_value(form.sub_genre.data):
                 genre = request.allowable(Genre).filter(Genre.id==form.genre.data).first()
                 search_word = search_word + " " + genre.label
+            elif exist_value(form.genre.data):
+                subgenre = request.allowable(Genre).filter(Genre.id==form.genre.data).first()
+                search_word = search_word + " " + subgenre.label
         elif exist_value(form.genre.data):
             subgenre = request.allowable(Genre).filter(Genre.id==form.genre.data).first()
             search_word = search_word + " " + subgenre.label
+        return search_word
+
+    # フリーワード、ジャンル検索
+    def get_events_from_freeword(self, request, form):
+
+        search_word = self.create_search_freeword(request, form)
 
         qs = None
         if search_word != "":
             try:
+                print search_word
                 events = helper.searchEvents(request, search_word)
                 ids = _create_ids(events)
                 qs = self._create_common_qs(where=Event.id.in_(ids))
