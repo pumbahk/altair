@@ -4,7 +4,6 @@ import json
 from pyramid.config import Configurator
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
 import functools
-#from pyramid_who.whov2 import WhoV2AuthenticationPolicy
 from sqlalchemy import engine_from_config
 import sqlahelper
 from pyramid_beaker import session_factory_from_settings
@@ -14,6 +13,17 @@ import logging
 logger = logging.getLogger(__name__)
 
 from ..api.impl import bind_communication_api ## cmsとの通信
+
+class WhoDecider(object):
+    def __init__(self, request):
+        self.request = request
+
+    def decide(self):
+        """ WHO API 選択
+        """
+        # とりあえず
+        #return "fc_auth"
+        return "rakuten"
 
 def includeme(config):
     # ディレクティブ
@@ -94,7 +104,7 @@ def main(global_config, **local_config):
     who_config = settings['pyramid_who.config']
     from authorization import MembershipAuthorizationPolicy
     config.set_authorization_policy(MembershipAuthorizationPolicy())
-    config.include('ticketing.whotween')
+    #config.include('ticketing.whotween')
     config.add_tween('.tweens.CacheControlTween')
     config.add_tween('.tweens.OrganizationPathTween')
     config.include('ticketing.fc_auth')
