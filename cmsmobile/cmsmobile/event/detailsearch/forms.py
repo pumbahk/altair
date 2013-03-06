@@ -4,6 +4,7 @@ from wtforms import Form
 from wtforms import TextField, SelectField, RadioField, HiddenField
 from wtforms.validators import Length
 from wtforms.validators import Optional
+from cmsmobile.core.const import SalesEnum
 
 class DetailSearchForm(Form):
     word = TextField(
@@ -33,8 +34,9 @@ class DetailSearchForm(Form):
     sale = RadioField(
         label = '',
         validators=[Optional()],
-        choices=[(u'販売中', u'販売中'), (u'今週販売開始', u'今週販売開始'), (u'販売終了間近', u'販売終了間近')],
-        default=u"販売中"
+        choices=[(SalesEnum.ON_SALE, u'販売中'), (SalesEnum.WEEK_SALE, u'今週販売開始'),
+                 (SalesEnum.NEAR_SALE_END, u'販売終了間近')],
+        default=SalesEnum.ON_SALE
     )
 
     sales_segment = RadioField(

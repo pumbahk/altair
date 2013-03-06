@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+from standardenum import StandardEnum
+
+class SalesEnum(StandardEnum):
+    ON_SALE         = 0
+    WEEK_SALE       = 1
+    NEAR_SALE_END   = 2
 
 def get_prefecture_name(area):
     areas = {

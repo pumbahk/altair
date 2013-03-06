@@ -32,11 +32,13 @@ def move_detailsearch_post(request):
     # 地域検索
     qs = searcher.get_events_from_area(form, qs)
 
+    # 発売状況
+    qs = searcher.get_events_from_sale(form, qs)
+
     # paging
     events = None
     form.num.data = 0
     if qs:
-        events = qs.all()
 
         if events:
             form.num.data = len(events)
