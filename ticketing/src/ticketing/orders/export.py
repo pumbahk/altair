@@ -141,7 +141,7 @@ class MailMagazineSubscriptionStateRenderer(object):
 
     def __call__(self, record):
         assert self.outer is not None
-        emails = dereference(record, self.key)
+        emails = dereference(record, self.key, True) or []
         return [
             (
                 (u"", self.column_name, u""),
@@ -335,12 +335,13 @@ class OrderCSV(object):
         return self._mailsubscription_cache
 
     def iter_records(self, order):
-        user_credential = order.user.first_user_credential
+        user_credential = order.user.first_user_credential if order.user else None
+        member = order.user.member if order.user and order.user.member else None
         common_record = {
             u'order': order,
-            u'user_profile': order.user.user_profile,
+            u'user_profile': order.user.user_profile if order.user else None,
             u'membership': user_credential.membership if user_credential else None,
-            u'membergroup': order.user.member.membergroup if order.user.member else None,
+            u'membergroup': member.membergroup if member else None,
             u'user_credential': user_credential,
             u'shipping_address': order.shipping_address,
             u'payment_method': order.payment_delivery_pair.payment_method,
