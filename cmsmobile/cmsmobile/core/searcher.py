@@ -25,7 +25,7 @@ class EventSearcher(object):
             qs = qs.filter(where)
         else: # 新規検索
             qs = self.request.allowable(Event) \
-                .join(Performance).filter(Event.id == Performance.event_id) \
+                .join(Performance, Event.id == Performance.event_id) \
                 .filter(Event.is_searchable == True) \
                 .filter(where)
         return qs
