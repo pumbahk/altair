@@ -1,0 +1,55 @@
+# -*- coding:utf-8 -*-
+import sqlalchemy as sa
+import sqlalchemy.orm as orm
+from datetime import datetime
+from zope.deprecation import deprecate
+
+from altaircms.tag.models import HotWord
+from altaircms.models import Category
+
+
+
+class MyLayout(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    def navigation_link_list(self, hierarchy):
+        return get_navigation_links(self.request, hierarchy)
+
+    def hotword_list(self):
+        return get_current_hotwords(self.request)
+    
+
+def get_navigation_links(request, hierarchy):
+    qs =  Category.get_toplevel_categories(hierarchy=hierarchy, request=request)
+    return qs.order_by(sa.asc("display_order")).options(orm.joinedload("pageset"))
+_get_categories = get_navigation_links
+
+def get_current_hotwords(request, _nowday=datetime.now):
+    today = _nowday()
+    qs =  HotWord.query.filter(HotWord.term_begin <= today).filter(today <= HotWord.term_end)
+    qs = qs.filter_by(enablep=True).order_by(sa.asc("display_order"), sa.asc("term_end"))
+    return qs
+
+
+@deprecate("this is obsolete")
+def get_navigation_categories(request):
+    """ ページヘッダのナビゲーション用のcategoryを取得する。
+    """
+    top_outer_categories = _get_categories(request, hierarchy=u"top_outer")
+    top_inner_categories = _get_categories(request, hierarchy=u"top_inner")
+
+    categories = _get_categories(request, hierarchy=u"大")
+
+    return dict(categories=categories,
+                top_outer_categories=top_outer_categories,
+                top_inner_categories=top_inner_categories)
+
+@deprecate("this is obsolete")
+def get_subcategories_from_page(request, page):
+    """ カテゴリトップのサブカテゴリを取得する
+    """
+    qs = Category.query.filter(Category.pageset==page.pageset).filter(Category.pageset != None)
+    root_category = qs.first()
+    return root_category.children if root_category else []
