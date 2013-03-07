@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import webhelpers.paginate as paginate
 import logging
+from altaircms.helpers.link import get_purchase_page_from_performance
 
 logger = logging.getLogger(__file__)
 
@@ -54,3 +55,25 @@ def get_event_paging(request, form, qs):
                 form.page_num.data = form.num.data / items_per_page + 1
 
     return form
+
+def get_performances_month_unit(event):
+    keys = []
+    month_unit = {} # performances
+    for perf in event.performances:
+        key =  str(perf.start_on.year) + "/" + str(perf.start_on.month)
+
+        # 新規の月
+        if not key in keys:
+            keys.append(key)
+            month_unit.update({key:[]})
+
+        # 対象の月に追加
+        month_unit[key].append(perf)
+    return month_unit
+
+def get_purchase_links(request, event):
+    links = {}
+    for perf in event.performances:
+        link = get_purchase_page_from_performance(request=request, performance=perf)
+        links.update({perf.id:link})
+    return links
