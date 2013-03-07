@@ -115,13 +115,12 @@ class IndexView(IndexViewMixin):
     @view_config(decorator=with_jquery_tools, route_name='cart.index', renderer=selectable_renderer("carts/%(membership)s/index.html"), xhr=False, permission="buy")
     def __call__(self):
         self.check_redirect(mobile=False)
-        event = self.request.context.event
         sales_segments = api.get_available_sales_segments(self.request, self.context.event, datetime.now())
         if not sales_segments:
             # 次の販売区分があるなら
             next = self.context.get_next_sales_segment()
             if next:
-                raise OutTermSalesException(event, next)
+                raise OutTermSalesException(self.context.event, next)
             else:
                 raise HTTPNotFound()
 
@@ -143,7 +142,7 @@ class IndexView(IndexViewMixin):
                 seat_types_url=self.request.route_url('cart.seat_types',
                     performance_id=performance.id,
                     sales_segment_id=sales_segment.id,
-                    event_id=event.id)))
+                    event_id=self.context.event.id)))
             
         logger.debug("venues %s" % select_venues)
 
