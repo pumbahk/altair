@@ -5,7 +5,9 @@
 
 <p/>
 
-<%include file='../common/_search_result.mako' args="form=form, events=events" />
+<%include file='../common/_search_result.mako' args="events=form.events.data
+                    ,word=form.word.data, num=form.num.data, page=form.page.data
+                    ,page_num=form.page_num.data, path=form.path.data, week=form.week.data"/>
 
 <%include file='../detailsearch/_form.mako' args="form=form" />
 

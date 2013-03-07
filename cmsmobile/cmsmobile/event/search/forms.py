@@ -15,4 +15,3 @@ class SearchForm(CommonForm):
 
     # --- 表示項目
     events = HiddenField(validators=[Optional()])
-
