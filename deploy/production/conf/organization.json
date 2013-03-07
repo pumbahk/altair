@@ -37,7 +37,7 @@
             "short_name": "vissel"
         }
 
-        "rt": {
+        "RT": {
             "auth_source": "oauth", 
             "backend_id": 8, 
             "short_name": "RT"

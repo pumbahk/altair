@@ -134,7 +134,7 @@ class SejTenants(BaseView):
     @view_config(route_name='organizations.sej_tenant.new', request_method='GET',
                  renderer='ticketing:templates/organizations/sej_tenants/edit.html')
     def new(self):
-        organization_id = self.context.user.organization_id
+        organization_id = int(self.request.matchdict.get('organization_id', 0))
         sej_tenant = SejTenant.filter_by(organization_id=organization_id).first()
         if not sej_tenant:
             return dict(form=SejTenantForm(organization_id=organization_id))
@@ -145,7 +145,7 @@ class SejTenants(BaseView):
     @view_config(route_name='organizations.sej_tenant.new', request_method='POST',
                  renderer='ticketing:templates/organizations/sej_tenants/edit.html')
     def new_post(self):
-        organization_id = self.context.user.organization_id
+        organization_id = int(self.request.matchdict.get('organization_id', 0))
         form = SejTenantForm(self.request.POST, organization_id=organization_id)
         if form.validate():
             sej_tenant = merge_session_with_post(SejTenant(), form.data)
@@ -160,7 +160,7 @@ class SejTenants(BaseView):
     @view_config(route_name='organizations.sej_tenant.edit', request_method='GET',
                  renderer='ticketing:templates/organizations/sej_tenants/edit.html')
     def edit(self):
-        organization_id = self.context.user.organization_id
+        organization_id = int(self.request.matchdict.get('organization_id', 0))
         sej_tenant = SejTenant.filter_by(organization_id=organization_id).first()
         if not sej_tenant:
             raise HTTPNotFound("sej_tenant (%d) is not found" % organization_id)
@@ -170,7 +170,7 @@ class SejTenants(BaseView):
     @view_config(route_name='organizations.sej_tenant.edit', request_method='POST',
                  renderer='ticketing:templates/organizations/sej_tenants/edit.html')
     def edit_post(self):
-        organization_id = self.context.user.organization_id
+        organization_id = int(self.request.matchdict.get('organization_id', 0))
         sej_tenant = SejTenant.filter_by(organization_id=organization_id).first()
         if not sej_tenant:
             raise HTTPNotFound("sej_tenant (%d) is not found" % organization_id)
@@ -187,7 +187,7 @@ class SejTenants(BaseView):
 
     @view_config(route_name='organizations.sej_tenant.delete')
     def delete(self):
-        organization_id = self.context.user.organization_id
+        organization_id = int(self.request.matchdict.get('organization_id', 0))
         sej_tenant = SejTenant.filter_by(organization_id=organization_id).first()
         if not sej_tenant:
             raise HTTPNotFound("sej_tenant (%d) is not found" % organization_id)

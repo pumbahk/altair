@@ -10,14 +10,14 @@ ${event.title}
 <p>
 <font color="#580d9a">■</font>席種をお選びください
 </p>
-  <ul>
   % for seat_type in seat_types:
-    <li>
-    <a href="${request.current_route_url(_query={'stid': seat_type['id']})}">${seat_type['name']} ${seat_type["availability_text"]}</a>
-    </li>
+  % if seat_type["availability"]:
+    <a href="${request.current_route_url(_query={'stid': seat_type['id']})}">${seat_type['name']}</a>
+  % else:
+    ${seat_type['name']}
+  % endif
+  ${seat_type["availability_text"]}<br />
   % endfor
-  </ul>
-
 <form action="${request.route_url('cart.index', event_id=event.id)}" method="get">
   <div style="text-align:center;">
   <input type="hidden" name="performance_name" value="${performance.name}" />

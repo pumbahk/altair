@@ -411,6 +411,7 @@ class OrderReserveForm(Form):
                 #                   .filter(ProductItem.performance_id==performance.id)\
                 #                   .filter(ProductItem.stock_id.in_(kwargs['stocks'])).all()
                 products = Product.query.filter(Product.performance_id==performance.id)\
+                                  .filter(ProductItem.product_id==Product.id)\
                                   .filter(ProductItem.stock_id.in_(kwargs['stocks'])).all()
             #else:
             #    # 数受け

@@ -10,7 +10,7 @@
         $(this).val(0);
       }
     }).change();
-    $('.draggable').draggable({scroll: true, handle:$('.draggable .modal-body')});
+    $('.draggable').draggable({scroll: true, handle:$('.draggable .modal-header')});
     $('#modal-refund').disableOnSubmit();
     $('#modal-refund').on('shown', function(){
       $(this).css('max-height', '700px')

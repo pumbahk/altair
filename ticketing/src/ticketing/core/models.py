@@ -409,6 +409,11 @@ class SeatAdjacencySet(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         return convert_map
 
+    def delete(self):
+        query = SeatAdjacency.__table__.delete(SeatAdjacency.adjacency_set_id==self.id)
+        DBSession.execute(query)
+        super(type(self), self).delete()
+
 class AccountTypeEnum(StandardEnum):
     Promoter    = (1, u'プロモーター')
     Playguide   = (2, u'プレイガイド')
@@ -681,13 +686,17 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def sales_start_on(self):
-        return SalesSegment.query.with_entities(func.min(SalesSegment.start_at))\
-                .join(SalesSegmentGroup).filter(SalesSegmentGroup.event_id==self.id).scalar()
+        return SalesSegmentGroup.query.filter(SalesSegmentGroup.event_id==self.id)\
+                .join(SalesSegment)\
+                .join(Product).filter(Product.sales_segment_id==SalesSegment.id)\
+                .with_entities(func.min(SalesSegment.start_at)).scalar()
 
     @property
     def sales_end_on(self):
-        return SalesSegment.query.with_entities(func.min(SalesSegment.end_at))\
-                .join(SalesSegmentGroup).filter(SalesSegmentGroup.event_id==self.id).scalar()
+        return SalesSegmentGroup.query.filter(SalesSegmentGroup.event_id==self.id)\
+                .join(SalesSegment)\
+                .join(Product).filter(Product.sales_segment_id==SalesSegment.id)\
+                .with_entities(func.max(SalesSegment.end_at)).scalar()
 
     @property
     def first_start_on(self):
@@ -1658,6 +1667,17 @@ class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     prefecture = Column(String(64), nullable=False, default=u'')
 
     status = Column(Integer)
+
+    def get_setting(self, name):
+        for setting in self.settings:
+            if setting.name == name:
+                return setting
+        raise Exception, "organization; id={0} does'nt have {1} setting".format(self.id, name)
+
+    @property
+    def setting(self):
+        return self.get_setting(u'default')
+
 
 orders_seat_table = Table("orders_seat", Base.metadata,
     Column("seat_id", Identifier, ForeignKey("Seat.id")),
@@ -2872,3 +2892,14 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         if self.deleted_at:
             data['deleted'] = 'true'
         return data
+
+
+class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = "OrganizationSetting"
+    id = Column(Identifier, primary_key=True)
+    name = Column(Unicode(255), default=u"default")
+    organization_id = Column(Identifier, ForeignKey('Organization.id'))
+    organization = relationship('Organization',
+                                backref='settings')
+
+    auth_type = Column(Unicode(255))
