@@ -16,7 +16,6 @@ class EventDetailForm(Form):
     event = HiddenField(
         label='',
         validators=[Optional()],
-        default="0",
     )
 
     week = HiddenField(

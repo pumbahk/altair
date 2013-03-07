@@ -20,7 +20,7 @@
                 % endfor
             <p/>
         <hr/>
-        <%include file="../common/_attention.mako" />
+        <%include file="../common/_attention.mako" args="attentions=attensions"/>
         <hr/>
         <%include file="../common/_area.mako" args="form=form"/>
         <hr/>
@@ -28,6 +28,6 @@
         <hr/>
         <%include file="../common/_hotward.mako" args="hotwords=hotwords" />
 
-        <%include file="../common/_footer.mako" />
+        <%include file="../common/_footer.mako"/>
     </body>
 </html>

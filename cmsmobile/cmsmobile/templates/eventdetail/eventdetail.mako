@@ -21,7 +21,7 @@
     2013/04<br/>
     % for perf in event.performances:
         開場:${str(perf.open_on.year)[2:]}/${perf.open_on.month}/${perf.open_on.day}
-        開演:${str(perf.start_on.year)[2:]}/${perf.start_on.month}/${perf.start_on.day}
+        開演:${str(perf.start_on.year)[2:]}/${perf.start_on.month}/${perf.start_on.day}<br/>
         会場:${perf.venue}<br/>
     % endfor
 <hr/>
