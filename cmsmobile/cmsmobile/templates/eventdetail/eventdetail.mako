@@ -1,11 +1,13 @@
+<%
+    event = form.event.data
+    week = form.week.data
+%>
+
 <%include file="../common/_header.mako" args="title=u'イベント詳細'"/>
 <body>
 
 <a href="/">トップ</a> >> イベント詳細<p/>
 
-<%
-    week = {0:u'月',1:u'火',2:u'水',3:u'木',4:u'金',5:u'土',6:u'日'}
-%>
 <h2>
     ${event.title}<br/>
 </h2>

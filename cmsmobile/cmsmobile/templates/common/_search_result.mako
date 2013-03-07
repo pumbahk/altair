@@ -1,14 +1,16 @@
 <%page args="form, events" />
 
 <%
-    week = {0:u'月',1:u'火',2:u'水',3:u'木',4:u'金',5:u'土',6:u'日'}
+    num = form.num.data
+    week= form.week.data
+    word= form.word.data
 %>
 
-% if int(form.num.data):
-    ${form.num.data}件見つかりました。
+% if int(num):
+    ${num}件見つかりました。
 % else:
-    % if form.word.data:
-        <b>${form.word.data}</b>に一致する情報は見つかりませんでした。
+    % if word:
+        <b>${word}</b>に一致する情報は見つかりませんでした。
     % endif
 % endif
 
@@ -23,7 +25,7 @@
 % endif
 <p/>
 
-% if int(form.num.data):
+% if int(num):
     <div align="center">
         % if int(form.page.data) <= 1:
             前へ

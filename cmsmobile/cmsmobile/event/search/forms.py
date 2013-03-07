@@ -70,3 +70,13 @@ class SearchForm(Form):
         validators=[Optional()],
         default=False
     )
+
+    path = HiddenField(
+        label='',
+        validators=[Optional()],
+    )
+
+    week = HiddenField(
+        label='',
+        validators=[Optional()],
+    )

@@ -65,6 +65,8 @@ def search(request):
     if exist_value(form.area.data):
         areaname = get_prefecture_name(form.area.data)
 
+    form.week.data = {0:u'月',1:u'火',2:u'水',3:u'木',4:u'金',5:u'土',6:u'日'}
+
     return {
          'dispgenre':genre
         ,'dispsubgenre':subgenre
