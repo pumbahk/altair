@@ -134,7 +134,7 @@ class SalesSegmentKind(WithOrganizationMixin, Base):
     def __table_args__(cls):
         return (sa.UniqueConstraint("name", "organization_id"), )
 
-class SalesSegmentGroup(WithOrganizationMixin, BaseOriginalMixin, Base):
+class SalesSegmentGroup(BaseOriginalMixin, Base):
     """ イベント単位の販売条件"""
     __tablename__ = "salessegment_group"
     query = DBSession.query_property()    
@@ -156,13 +156,19 @@ class SalesSegmentGroup(WithOrganizationMixin, BaseOriginalMixin, Base):
 
     @classmethod
     def create_defaults_from_event(cls, event):
-        return [cls(event=event, 
+        normal = cls(event=event, 
                     name=u"一般販売", 
-                    kind="normal"), 
-                cls(event=event, 
+                    kind="normal")
+        first = cls(event=event, 
                     name=u"一般先行", 
-                    kind="first_lottery"), 
-                ]
+                    kind="eary_firstcome")
+        normal_kind = (SalesSegmentKind.query.filter_by(organization_id=event.organization_id, name=normal.kind).first() or 
+                       SalesSegmentKind(organization_id=event.organization_id, name=normal.kind, label=u"一般販売"))
+        first_kind = (SalesSegmentKind.query.filter_by(organization_id=event.organization_id, name=first.kind).first() or 
+                       SalesSegmentKind(organization_id=event.organization_id, name=first.kind, label=u"一般先行"))
+        normal.master = normal_kind
+        first.master = first_kind
+        return [normal, first]
 
 class SalesSegment(BaseOriginalMixin, Base):
     """ 販売区分

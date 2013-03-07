@@ -38,8 +38,8 @@ from altairsite.search.forms import DealCondPartForm
 <dt>販売状態で絞込み</dt>
 <dd>
   <ul>
-    % for en,ja in DealCondPartForm.deal_cond_choices:
-	  <li><a href="${h.link.get_searchpage(request, kind="deal_cond", value=en)}">${ja}</a></li>
+    % for k in layout.top_salessegment_kind_list:
+	  <li><a href="${h.link.get_searchpage(request, kind="deal_cond", value=k.name)}">${k.label}</a></li>
     % endfor
   </ul>
 </dd>

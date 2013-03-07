@@ -5,7 +5,7 @@ from datetime import datetime
 from zope.deprecation import deprecate
 
 from altaircms.tag.models import HotWord
-from altaircms.models import Category, Genre
+from altaircms.models import Category, Genre, SalesSegmentKind
 from markupsafe import Markup
 
 
@@ -18,8 +18,16 @@ class MyLayout(object):
     def navigation_link_list(self, hierarchy):
         return get_navigation_links(self.request, hierarchy)
 
+    ## ?
+    def salessegment_group_list(self):
+        return get_salessegment_groups(self.request)
+
     def hotword_list(self):
         return get_current_hotwords(self.request)
+
+    @property
+    def top_salessegment_kind_list(self):
+        return get_salessegment_kinds(self.request)
 
     @property
     def top_category_genres(self):
@@ -39,8 +47,12 @@ class MyLayout(object):
     def page_title_image(self):
         return self.header_images_dict.get(self.body_id, "")
 
+
+def get_salessegment_kinds(request):
+    return request.allowable(SalesSegmentKind).all()
     
-    
+def get_salessegment_groups(request):
+    request.allowable()
 
 def get_navigation_links(request, hierarchy):
     qs =  Category.get_toplevel_categories(hierarchy=hierarchy, request=request)
