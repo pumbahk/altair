@@ -198,7 +198,7 @@ class GenrePartForm(Form):
 # class AreaPartForm(Form):
 #     def __html__(self):
 #         return u"this-is-dummy"
-
+from altaircms.formhelpers import CheckboxListField as NewCheckboxListField
 class AreaPartForm(Form):
     hokkaido = fields.BooleanField(label=u"北海道", widget=CheckboxWithLabelInput()) 
     tohoku = fields.BooleanField(label=u"東北", widget=CheckboxWithLabelInput()) 
@@ -213,18 +213,18 @@ class AreaPartForm(Form):
     kyushu = fields.BooleanField(label=u"九州", widget=CheckboxWithLabelInput()) 
     okinawa = fields.BooleanField(label=u"沖縄", widget=CheckboxWithLabelInput()) 
 
-    pref_hokkaido = CheckboxListField(choices=PREF_DICT["hokkaido"])
-    pref_tohoku = CheckboxListField(choices=PREF_DICT["tohoku"])
-    pref_kitakanto = CheckboxListField(choices=PREF_DICT["kitakanto"])
-    pref_shutoken = CheckboxListField(choices=PREF_DICT["shutoken"])
-    pref_koshinetsu = CheckboxListField(choices=PREF_DICT["koshinetsu"])
-    pref_hokuriku = CheckboxListField(choices=PREF_DICT["hokuriku"])
-    pref_tokai = CheckboxListField(choices=PREF_DICT["tokai"])
-    pref_kinki = CheckboxListField(choices=PREF_DICT["kinki"])
-    pref_chugoku = CheckboxListField(choices=PREF_DICT["chugoku"])
-    pref_shikoku = CheckboxListField(choices=PREF_DICT["shikoku"])
-    pref_kyushu = CheckboxListField(choices=PREF_DICT["kyushu"])
-    pref_okinawa = CheckboxListField(choices=PREF_DICT["okinawa"])
+    pref_hokkaido = NewCheckboxListField(choices=PREF_DICT["hokkaido"])
+    pref_tohoku = NewCheckboxListField(choices=PREF_DICT["tohoku"])
+    pref_kitakanto = NewCheckboxListField(choices=PREF_DICT["kitakanto"])
+    pref_shutoken = NewCheckboxListField(choices=PREF_DICT["shutoken"])
+    pref_koshinetsu = NewCheckboxListField(choices=PREF_DICT["koshinetsu"])
+    pref_hokuriku = NewCheckboxListField(choices=PREF_DICT["hokuriku"])
+    pref_tokai = NewCheckboxListField(choices=PREF_DICT["tokai"])
+    pref_kinki = NewCheckboxListField(choices=PREF_DICT["kinki"])
+    pref_chugoku = NewCheckboxListField(choices=PREF_DICT["chugoku"])
+    pref_shikoku = NewCheckboxListField(choices=PREF_DICT["shikoku"])
+    pref_kyushu = NewCheckboxListField(choices=PREF_DICT["kyushu"])
+    pref_okinawa = NewCheckboxListField(choices=PREF_DICT["okinawa"])
 
     areas = ["hokkaido", "tohoku", "kitakanto", "shutoken", "koshinetsu", "hokuriku", "tokai", "kinki", "chugoku", "shikoku", "kyushu", "okinawa"]
 
@@ -292,7 +292,6 @@ class PerformanceTermPartForm(Form):
                 "performance_close": performance_close}
 
 ## todo:販売条件
-from altaircms.formhelpers import CheckboxListField as NewCheckboxListField
 class DealCondPartForm(Form):
     deal_cond = NewCheckboxListField(choices=[])
     def configure(self, request):
@@ -307,7 +306,8 @@ class DealCondPartForm(Form):
 ## todo:付加サービス
 class AddedServicePartForm(Form):
     choices = [("select-seat", u"座席選択可能"), ("keep-adjust", u"お隣キープ"), ("2d-market", u"2次市場")]
-    added_services = CheckboxListField(choices=choices)
+    choices = []
+    added_services = NewCheckboxListField(choices=choices)
 
     def __html__(self):
         return u"%(added_services)s" % self

@@ -106,7 +106,7 @@ class AreaPartFormQueryTest(unittest.TestCase):
                           sorted(result["prefectures"]))
 
     def test_prefectures(self):
-        params = MultiDict(tokyo="on")
+        params = MultiDict(pref_shutoken="tokyo")
         target = self._makeOne(params)
         
         result = self._callFUT(target)
@@ -116,14 +116,11 @@ class AreaPartFormQueryTest(unittest.TestCase):
 
 
     def test_with_junk_parameters(self):
-        params = MultiDict(doko_ka_shiranai_tokoro="on")
+        params = MultiDict(pref_shutoken="doko_ka_shiranai_tokoro")
         target = self._makeOne(params)
 
-        result = self._callFUT(target)
-
-        self.assertEquals([], result["areas"])
-        self.assertEquals([], result["prefectures"])
-
+        with self.assertRaises(AssertionError):
+            self._callFUT(target)
 
 if __name__ == "__main__":
     unittest.main()
