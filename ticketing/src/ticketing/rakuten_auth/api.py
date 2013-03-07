@@ -162,7 +162,8 @@ class RakutenOpenID(object):
         else:
             profile = user.user_profile
 
-        profile.email=user_info.get('emailAddress')
+        # profile.email=user_info.get('emailAddress')
+        profile.email_1=user_info.get('emailAddress')
         profile.nick_name=user_info.get('nickName')
         profile.first_name=user_info.get('firstName')
         profile.last_name=user_info.get('lastName')

@@ -101,11 +101,12 @@ span.editable {
       <div class="container-fluid">
         <div class="row-fluid">
           <%
-            data_source = {
-              'drawing': request.route_path('api.get_drawing', venue_id=performance.venue.id),
-              'metadata': request.route_path('api.get_seats', venue_id=performance.venue.id,
+            data_source = { }
+            if performance.venue.site.drawing_url:
+               data_source['drawing'] = request.route_path('api.get_drawing', venue_id=performance.venue.id)
+            endif
+            data_source['metadata'] = request.route_path('api.get_seats', venue_id=performance.venue.id,
                                              _query={u'n':u'seats|stock_types|stock_holders|stocks'})
-            }
           %>
           <%vv:venueeditor data_source="${data_source}">
             <%def name="toolbar_extra()">

@@ -27,7 +27,7 @@ class RootView(object):
         authenticated, headers = who_api.login(identity)
 
         if authenticated and return_url:
-            res = HTTPFound(location=return_to_url, headers=headers)
+            res = HTTPFound(location=return_url, headers=headers)
             return res
         else:
             # TODO: デフォルトURLをHostからひいてくる
