@@ -5,7 +5,7 @@ from wtforms import TextField, SelectField, HiddenField, IntegerField, BooleanFi
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 from wtforms.widgets import CheckboxInput
 
-from ticketing.formhelpers import OurDateTimeField, Translations, Required, RequiredOnUpdate, OurForm, OurIntegerField, OurBooleanField, BugFreeSelectField, PHPCompatibleSelectMultipleField
+from ticketing.formhelpers import OurDateTimeField, Translations, Required, RequiredOnUpdate, OurForm, OurIntegerField, OurBooleanField, BugFreeSelectField, PHPCompatibleSelectMultipleField, CheckboxMultipleSelect
 from ticketing.core.models import SalesSegmentGroup, SalesSegmentKindEnum, Event, StockHolder, SalesSegment
 from sqlalchemy.sql import or_, and_
 
@@ -80,6 +80,7 @@ class SalesSegmentForm(OurForm):
         validators=[Required()],
         choices=[],
         coerce=lambda x : int(x) if x else u'',
+        widget=CheckboxMultipleSelect(multiple=True)
     )
     start_at = OurDateTimeField(
         label=u'販売開始日時',

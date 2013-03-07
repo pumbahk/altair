@@ -64,4 +64,4 @@ class OrganizationPathTween(object):
                 request.environ['ticketing.cart.organization_path'] = host.path
                 return self.handler(request)
         return self.handler(request)
-        #raise Exception("%s %s" % (request.path_info, hosts))
+

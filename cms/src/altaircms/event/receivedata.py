@@ -221,7 +221,7 @@ class Scanner(object):
         fetcher = self.ticket_fetcher
         ks = fetcher.keys()
         if ks:
-            models = Ticket.query.filter(SalesSegment.id==Ticket.sale_id, SalesSegment.id.in_(self.performance_fetcher.cached_keys()), Ticket.backend_id.in_(ks)).all()
+            models = Ticket.query.filter(SalesSegment.id==Ticket.sale_id, SalesSegment.id.in_(self.salessegment_fetcher.cached_keys()), Ticket.backend_id.in_(ks)).all()
             fetcher.merge({m.backend_id: m for m in models})
         
         r = []

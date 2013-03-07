@@ -35,3 +35,37 @@
   color: #0000dd;
 }
 
+.modal.big {
+  width: 75%;
+  margin: -250px -37% -250px -37%;
+}
+
+.modal-body {
+  max-height: 366px;
+  overflow: auto;
+}
+
+.checkbox-set {
+  margin-left: 1em;
+}
+
+.checkbox-set-item {
+  display: block;
+}
+
+.checkbox-set-item label {
+  display: inline-block;
+}
+
+label.inline {
+  display: inline-block;
+}
+
+label.required:after {
+  color: #BA0000;
+  padding-left: 5px;
+  padding-right: 5px;
+  font-size: 150%;
+  vertical-align: top;
+  content: "*";
+}

@@ -8,23 +8,15 @@ ${event.title}
 % if not venues:
   <hr size="1" color="#888888" noshade="noshade" />
   <p><font color="#ffbf00">■</font>対象試合をお選びください</p>
-  <ul>
   % for _performance_name in performances:
-    <li>
-    <a href="${request.current_route_url(_query={'performance_name': _performance_name.encode('sjis')})}">${_performance_name}</a>
-    </li>
+  <a href="${request.current_route_url(_query={'performance_name': _performance_name.encode('sjis')})}">${_performance_name}</a><br/>
   % endfor
-  </ul>
 % else:
   <hr size="1" color="#888888" noshade="noshade" />
   <p><font color="#ffbf00">■</font>日時・会場をお選びください</p>
-  <ul>
   % for pid, _venue_name in venues:
-    <li>
-    <a href="${request.current_route_url(_query={'pid': pid})}">${_venue_name}</a>
-    </li>
+  <a href="${request.current_route_url(_query={'pid': pid})}">${_venue_name}</a><br />
   % endfor
-  </ul>
   <form action="${request.route_url('cart.index', event_id=event.id)}" method="get">
     <div style="text-align:center;">
       <input type="submit" value="戻る">

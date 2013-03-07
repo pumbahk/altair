@@ -42,15 +42,25 @@ function build_form_params(form) {
       value = v.value;
     }
     if (value != null) {
-      var count = counts[v.name];
-      if (count === void(0)) {
-        param[v.name] = value;
-        counts[v.name] = 1;
+      if (v.name.substr(-2) == '[]') {
+        var _v = param[v.name];
+        if (_v === void(0))
+          param[v.name] = value;
+        else if (_v instanceof Array)
+          _v.push(value);
+        else
+          param[v.name] = [_v, value];
       } else {
-        var pv = param[v.name];
-        delete param[v.name];
-        param[v.name + '-0'] = pv;
-        param[v.name + '-' + (counts[v.name]++)] = value;
+        var count = counts[v.name];
+        if (count === void(0)) {
+          param[v.name] = value;
+          counts[v.name] = 1;
+        } else {
+          var pv = param[v.name];
+          delete param[v.name];
+          param[v.name + '-0'] = pv;
+          param[v.name + '-' + (counts[v.name]++)] = value;
+        }
       }
     }
   });

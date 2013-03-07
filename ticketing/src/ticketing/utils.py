@@ -6,6 +6,7 @@ from pyramid.threadlocal import get_current_registry
 from ticketing.mobile.interfaces import IMobileCarrierDetector
 from ticketing.mobile.api import _detect_from_email_address
 from datetime import date, timedelta
+import re
 
 class DigitCodec(object):
     def __init__(self, digits):
@@ -155,8 +156,78 @@ def is_nonmobile_email_address(mail_address):
     except ValueError:
         return True
 
-def atom(name):
-    return type(name, (object,), dict(__str__=lambda self:name, __repr__=lambda self:'%s()' % name))
+def dereference(object, key, return_none_unless_feasible=False):
+    tokens = re.finditer(ur'([a-zA-Z_][a-zA-Z0-9_]*)|([0-9]+)|([[\].])', key)
 
-def days_of_month(year, month):
-    return ((date(year, month, 1) + timedelta(31)).replace(day=1) - timedelta(1)).day
+    try:
+        token = tokens.next()
+    except StopIteration:
+        raise ValueError('empty expression')
+
+    # state 0: expecting identifier or number
+    identifier_or_number = token and (token.group(1) or (token.group(2) and int(token.group(2))))
+    if identifier_or_number is None:
+        raise ValueError('identifier or number expected')
+
+    try:
+        object = object[identifier_or_number]
+    except KeyError:
+        if return_none_unless_feasible:
+            return None
+        else:
+            raise
+
+    while True:
+        try:
+            token = tokens.next()
+        except StopIteration:
+            break
+
+        # state 1: expecting dot or lbrace
+        delimiter = token.group(3)
+        if delimiter == u'.':
+            try:
+                token = tokens.next()
+            except StopIteration:
+                token = None
+            
+            identifier = token and token.group(1)
+            if identifier is None:
+                raise ValueError('identifier expected')
+
+            try:
+                object = getattr(object, identifier)
+            except AttributeError:
+                if return_none_unless_feasible:
+                    return None
+                else:
+                    raise
+        elif delimiter == u'[':
+            # state 2: expecting identifier or number
+            try:
+                token = tokens.next()
+            except StopIteration:
+                token = None
+
+            identifier_or_number = token and (token.group(1) or (token.group(2) and int(token.group(2))))
+            if identifier_or_number is None:
+                raise ValueError('identifier or number expected')
+
+            try:
+                token = tokens.next()
+            except StopIteration:
+                token = None
+            delimiter = token and token.group(3)
+            if delimiter != u']':
+                raise ValueError('] expected')
+            try:
+                object = object[identifier_or_number]
+            except KeyError:
+                if return_none_unless_feasible:
+                    return None
+                else:
+                    raise
+        else:
+            raise ValueError('. or [ expected')
+
+    return object

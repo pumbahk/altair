@@ -11,7 +11,7 @@ from repoze.who.interfaces import IIdentifier, IChallenger, IAuthenticator
 
 import traceback
 
-from ticketing.cart import logger
+logger = logging.getLogger(__name__)
 
 def make_plugin(endpoint, return_to, error_to, consumer_key, rememberer_name, oauth_secret, oauth_endpoint, extra_verify_urls=None):
     if extra_verify_urls is not None:
@@ -48,6 +48,7 @@ class RakutenOpenIDPlugin(object):
     def identify(self, environ):
         # return_to URLの場合にverifyする
         # それ以外の場合デシリアライズしてclamed_idを返す
+        logger.debug('identity')
         req = webob.Request(environ)
         if req.path_url == self.return_to:
             return self.impl.openid_params(req)
@@ -103,6 +104,7 @@ class RakutenOpenIDPlugin(object):
 
     # IIdentifier
     def forget(self, environ, identity):
+        logger.debug('forget identity')
         rememberer = self._get_rememberer(environ)
         return rememberer.forget(environ, identity)
 
@@ -117,8 +119,7 @@ class RakutenOpenIDPlugin(object):
 
     # IChallenger
     def challenge(self, environ, status, app_headers, forget_headers):
-        if not environ.get('ticketing.cart.rakuten_auth.required'):
-            return
+        logger.debug('challenge')
         session = environ['session.rakuten_openid']
         session['return_url'] = wsgiref.util.request_uri(environ)
         logger.debug('redirect from %s' % session['return_url'])

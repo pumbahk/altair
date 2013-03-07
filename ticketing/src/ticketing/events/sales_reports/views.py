@@ -3,8 +3,6 @@
 import logging
 
 import webhelpers.paginate as paginate
-import datetime
-
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.renderers import render_to_response
@@ -14,13 +12,13 @@ from sqlalchemy.sql import func
 from ticketing.models import merge_session_with_post
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
-from ticketing.core.models import Event, Organization, ReportSetting, Mailer
-from ticketing.core.models import StockType, StockHolder, StockStatus, Stock, Performance, Product, ProductItem, SalesSegment
-from ticketing.core.models import Order, OrderedProduct, OrderedProductItem
+from ticketing.core.models import Event, ReportSetting, Mailer
+from ticketing.core.models import Performance
 from ticketing.events.sales_reports.forms import SalesReportForm, SalesReportMailForm
 from ticketing.events.sales_reports.sendmail import get_sales_summary, get_performance_sales_summary, get_performance_sales_detail
 
 logger = logging.getLogger(__name__)
+
 
 @view_defaults(decorator=with_bootstrap, permission='sales_editor')
 class SalesReports(BaseView):
@@ -76,16 +74,14 @@ class SalesReports(BaseView):
             raise HTTPNotFound('performance id %d is not found' % performance_id)
 
         report_by_sales_segment_group = {}
+        report_by_sales_segment_group_total = {}
         for sales_segment in performance.sales_segments:
             form = SalesReportForm(self.request.params, performance_id=performance_id, sales_segment_group_id=sales_segment.sales_segment_group.id)
             report_by_sales_segment_group[sales_segment.sales_segment_group.name] = get_performance_sales_summary(form, self.context.organization)
 
-        report_by_sales_segment_group_total = {}
-        for sales_segment in performance.sales_segments:
-            form_total = SalesReportForm(self.request.params, performance_id=performance_id, sales_segment_group_id=sales_segment.sales_segment_group.id)
-            form_total.limited_from.data = None
-            form_total.limited_to.data = None
-            report_by_sales_segment_group_total[sales_segment.sales_segment_group.name] = get_performance_sales_summary(form_total, self.context.organization)
+            form.limited_from.data = None
+            form.limited_to.data = None
+            report_by_sales_segment_group_total[sales_segment.sales_segment_group.name] = get_performance_sales_summary(form, self.context.organization)
 
         return {
             'form':SalesReportForm(self.request.params, event_id=performance.event_id),
@@ -103,7 +99,7 @@ class SalesReports(BaseView):
 
         form = SalesReportForm(self.request.params, event_id=event_id)
         if not form.recipient.data:
-            report_settings = ReportSetting.filter_by(event_id=event_id).all()
+            report_settings = ReportSetting.query.filter_by(event_id=event_id).all()
             form.recipient.data = ','.join([rs.operator.email for rs in report_settings])
         if not form.subject.data:
             form.subject.data = u'[売上レポート] %s' % event.title

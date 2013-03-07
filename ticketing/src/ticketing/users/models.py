@@ -29,7 +29,7 @@ class User(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     @property
     def first_user_credential(self):
         ## 実態としては、user: user_credentialは1:1だけれど、すでに[0]で取得しているコードなどが存在するので
-        return self.user_credential[0]
+        return self.user_credential[0] if self.user_credential else None
 
 class Member(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     __tablename__ = 'Member'

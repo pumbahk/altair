@@ -72,7 +72,7 @@ def back_to_product_list_for_mobile(request):
             route_name='cart.products',
             event_id=cart.performance.event_id,
             performance_id=cart.performance_id,
-            sales_segment_group_id=cart.sales_segment_id,
+            sales_segment_id=cart.sales_segment_id,
             seat_type_id=cart.products[0].product.items[0].stock.stock_type_id))
 
 
