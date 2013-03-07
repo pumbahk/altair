@@ -31,7 +31,7 @@ def unit_list_view(context, request):
         qs = searcher.filter_default(qs, request.GET)
 
     pages = h.paginate(request, qs, item_count=qs.count())
-    recently_tags = context.tag_manager.recent_change_tags().filter_by(publicp=True).limit(10)
+    recently_tags = request.allowable(context.TargetTopic, context.tag_manager.recent_change_tags().filter_by(publicp=True)).limit(10)
     return dict(pages=pages, recently_tags=recently_tags, search_word=search_word, 
                 html_renderer=context.HTMLRenderer(request))
 
@@ -56,7 +56,7 @@ def list_view(context, request):
     pages = h.paginate(request, qs, item_count=qs.count())
     grid = context.Grid.create(pages.paginated())
 
-    recently_tags = context.tag_manager.recent_change_tags().filter_by(publicp=True).limit(10)
+    recently_tags = request.allowable(context.TargetTopic, context.tag_manager.recent_change_tags().filter_by(publicp=True)).limit(10)
     return dict(grid=grid, pages=pages, recently_tags=recently_tags, search_word=search_word)
 
 
@@ -70,7 +70,7 @@ def list_view(context, request):
              decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", 
              permission="promotion_read")
 def tag_list_view(context, request):
-    tags = context.tag_manager.recent_change_tags().filter_by(publicp=True)
+    tags = request.allowable(context.TargetTopic, context.tag_manager.recent_change_tags().filter_by(publicp=True)).limit(10)
     return dict(tags=tags)
 
 @view_config(route_name="topic_detail", renderer="altaircms:templates/topic/topic/page_detail.html", 
