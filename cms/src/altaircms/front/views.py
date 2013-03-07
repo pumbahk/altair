@@ -20,7 +20,7 @@ def _append_preview_message(response, message, color="red", backgroundcolor="#fa
     response.text = response.text.replace("</body>", preview_message)    
     return response
 
-@view_config(route_name="preview_page", decorator=with_jquery)
+@view_config(route_name="preview_page", decorator=with_jquery, permission="authenticated")
 def preview_page(context, request):
     control = context.access_control()
     access_key = request.params.get("access_key")
@@ -45,7 +45,7 @@ def preview_page(context, request):
         return _append_preview_message(response, u"これはpreview画面です (%s)" % page.publish_status(now), color="green", backgroundcolor="#afa")
 
 
-@view_config(route_name="preview_pageset", decorator=with_jquery)
+@view_config(route_name="preview_pageset", decorator=with_jquery, permission="authenticated")
 def preview_pageset(context, request, published=True):
     control = context.access_control()
     pageset_id = request.matchdict["pageset_id"]

@@ -156,12 +156,6 @@ def is_nonmobile_email_address(mail_address):
     except ValueError:
         return True
 
-def atom(name):
-    return type(name, (object,), dict(__str__=lambda self:name, __repr__=lambda self:'%s()' % name))
-
-def days_of_month(year, month):
-    return ((date(year, month, 1) + timedelta(31)).replace(day=1) - timedelta(1)).day
-
 def dereference(object, key, return_none_unless_feasible=False):
     tokens = re.finditer(ur'([a-zA-Z_][a-zA-Z0-9_]*)|([0-9]+)|([[\].])', key)
 

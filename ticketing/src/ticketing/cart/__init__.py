@@ -4,16 +4,27 @@ import json
 from pyramid.config import Configurator
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
 import functools
-#from pyramid_who.whov2 import WhoV2AuthenticationPolicy
 from sqlalchemy import engine_from_config
 import sqlahelper
 from pyramid_beaker import session_factory_from_settings
 from pyramid.interfaces import IDict
-
+from ticketing.core.api import get_organization
 import logging
 logger = logging.getLogger(__name__)
 
+
 from ..api.impl import bind_communication_api ## cmsとの通信
+
+class WhoDecider(object):
+    def __init__(self, request):
+        self.request = request
+
+    def decide(self):
+        """ WHO API 選択
+        """
+        #return self.request.organization.setting.auth_type
+        return get_organization(self.request).setting.auth_type
+
 
 def includeme(config):
     # ディレクティブ
@@ -91,12 +102,12 @@ def main(global_config, **local_config):
     config.include('.')
     config.include("ticketing.qr")
     config.include('ticketing.rakuten_auth')
-    who_config = settings['pyramid_who.config']
     from authorization import MembershipAuthorizationPolicy
     config.set_authorization_policy(MembershipAuthorizationPolicy())
-    config.include('ticketing.whotween')
+    #config.include('ticketing.whotween')
     config.add_tween('.tweens.CacheControlTween')
     config.add_tween('.tweens.OrganizationPathTween')
+    config.include('ticketing.organization_settings')
     config.include('ticketing.fc_auth')
     config.include('ticketing.checkout')
     config.include('ticketing.multicheckout')

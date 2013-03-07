@@ -341,6 +341,9 @@
   VenueEditor.prototype.initDrawable = function VenueEditor_initDrawable() {
     var self = this;
     var drawing = this.drawing;
+    if (!drawing) {
+      return;
+    }
     var attrs = util.allAttributes(drawing.documentElement);
     var w = parseFloat(attrs.width), h = parseFloat(attrs.height);
     var vb = null;
@@ -732,21 +735,28 @@
         switch (options) {
           case 'load':
             // Ajax Waiter
+            var waiting = [];
+            if (aux.dataSource.drawing) {
+              waiting.push('drawing');
+            }
+            waiting.push('metadata');
             var waiter = new util.AsyncDataWaiter({
-              identifiers: ['drawing', 'metadata'],
+              identifiers: waiting,
               after: function main(data) {
                 aux.loaded_at = Math.ceil((new Date).getTime() / 1000);
                 aux.manager.load(data);
               }
             });
             // Load drawing
-            $.ajax({
-              type: 'get',
-              url: aux.dataSource.drawing,
-              dataType: 'xml',
-              success: function(xml) { waiter.charge('drawing', xml); },
-              error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load drawing data (reason: " + text + ")"); }
-            });
+            if (aux.dataSource.drawing) {
+              $.ajax({
+                type: 'get',
+                url: aux.dataSource.drawing,
+                dataType: 'xml',
+                success: function(xml) { waiter.charge('drawing', xml); },
+                error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load drawing data (reason: " + text + ")"); }
+              });
+            }
 
             // Load metadata
             $.ajax({

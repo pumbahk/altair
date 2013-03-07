@@ -33,6 +33,7 @@
         % endif
         <tr>
           <th style="width: 20%; border: 1px #DCDCDC solid;">席種</th>
+          <th style="width: 10%; border: 1px #DCDCDC solid;">配券先</th>
           <th style="width: 20%; border: 1px #DCDCDC solid;">商品</th>
           <th style="width: 8%; border: 1px #DCDCDC solid;">価格</th>
           <th style="width: 8%; border: 1px #DCDCDC solid;">配席数</th>
@@ -54,80 +55,81 @@
           % endif
         </tr>
         <%
-          pre_key = None
-          stock_reports = {}
-          for report in event_product:
-            key = (report['stock_type_id'], report['product_name'], report['product_price'])
-            t = stock_reports[key] if key in stock_reports else []
-            t.append(report)
-            stock_reports[key] = t
-          stock_reports_total = {}
-          for report_total in event_product_total:
-            key = (report_total['stock_type_id'], report_total['product_name'], report_total['product_price'])
-            t = stock_reports_total[key] if key in stock_reports_total else []
-            t.append(report_total)
-            stock_reports_total[key] = t
-          event_products = sorted(event_product, key=lambda x:(x['stock_type_id'], x['product_name'], x['product_price']))
-          event_products_total = sorted(event_product_total, key=lambda x:(x['stock_type_id'], x['product_name'], x['product_price']))
-        %>
-        % for product, product_total in zip(event_products, event_products_total):
-          <%
-            key = (product['stock_type_id'], product['product_name'], product['product_price'])
-            if pre_key == key:
-              continue
+          product_reports = {}
+          for ep in event_product:
+            key = (ep['stock_type_id'], ep['stock_id'], ep['product_name'], ep['product_price'])
+            t = product_reports[key] if key in product_reports else []
+            t.append(ep)
+            product_reports[key] = t
 
-            product_sum = {
-              'total_quantity':0,
-              'vacant_quantity':0,
-              'unpaid_quantity':0,
-              'paid_quantity':0,
-            }
-            product_total_sum = {
-              'total_quantity':0,
-              'vacant_quantity':0,
-              'unpaid_quantity':0,
-              'paid_quantity':0,
-            }
-          %>
-          % for i, report in enumerate(zip(stock_reports[key], stock_reports_total[key])):
-          <tr>
+          product_reports_total = {}
+          for ep in event_product_total:
+            key = (ep['stock_type_id'], ep['stock_id'], ep['product_name'], ep['product_price'])
+            t = product_reports_total[key] if key in product_reports_total else []
+            t.append(ep)
+            product_reports_total[key] = t
+
+          keys = sorted(product_reports, key=lambda x:(x[0], x[1], x[2], x[3]))
+          import itertools
+          count_by_stock_id = dict([(k, len([i for i in g]))  for k, g in itertools.groupby(sorted([k[1] for k in keys]))])
+
+          product_sum = {}
+          product_total_sum = {}
+          pre_stock_id = None
+        %>
+        % for key in keys:
+          % for i, (report, report_total) in enumerate(zip(product_reports[key], product_reports_total[key])):
             % if i == 0:
               <%
-                product_sum['stock_type_name'] = report[0]['stock_type_name']
-                product_sum['stock_type_id'] = report[0]['stock_type_id']
-                product_sum['product_id'] = report[0]['product_id']
-                product_sum['product_name'] = report[0]['product_name']
-                product_sum['product_price'] = report[0]['product_price']
-                product_sum['total_quantity'] += report[0]['total_quantity']
-                product_sum['vacant_quantity'] += report[0]['vacant_quantity']
+                product_sum = dict(
+                  stock_type_name=report['stock_type_name'],
+                  stock_type_id=report['stock_type_id'],
+                  stock_holder_name=report['stock_holder_name'],
+                  product_id=report['product_id'],
+                  product_name=report['product_name'],
+                  product_price=report['product_price'],
+                  total_quantity=report['total_quantity'],
+                  vacant_quantity=report['vacant_quantity'],
+                  unpaid_quantity=0,
+                  paid_quantity=0,
+                )
+                product_total_sum = dict(
+                  unpaid_quantity=0,
+                  paid_quantity=0,
+                )
+                rowspan = 'rowspan="%s"' % count_by_stock_id[report['stock_id']]
               %>
             % endif
             <%
-              product_sum['unpaid_quantity'] += report[0]['unpaid_quantity']
-              product_sum['paid_quantity'] += report[0]['paid_quantity']
-              product_total_sum['unpaid_quantity'] += report[1]['unpaid_quantity']
-              product_total_sum['paid_quantity'] += report[1]['paid_quantity']
+              product_sum['unpaid_quantity'] += report['unpaid_quantity']
+              product_sum['paid_quantity'] += report['paid_quantity']
+              product_total_sum['unpaid_quantity'] += report_total['unpaid_quantity']
+              product_total_sum['paid_quantity'] += report_total['paid_quantity']
             %>
-          </tr>
           % endfor
           <tr>
-            <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${product_sum['stock_type_name']}</td>
-            <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${product_sum['product_name']}</td>
+            % if pre_stock_id != report['stock_id']:
+            <td ${rowspan|n} style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${product_sum['stock_type_name']}</td>
+            <td ${rowspan|n} style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${product_sum['stock_holder_name']}</td>
+            <td ${rowspan|n} style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;">${product_sum['product_name']}</td>
+            % endif
             <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_sum['product_price'])}円</td>
-            <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_sum['total_quantity']) or ''}</td>
-            <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_sum['vacant_quantity']) or ''}</td>
+            % if pre_stock_id != report['stock_id']:
+            <td ${rowspan|n} style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_sum['total_quantity']) or ''}</td>
+            <td ${rowspan|n} style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_sum['vacant_quantity']) or ''}</td>
+            % endif
             % if form.limited_from.data or form.limited_to.data:
             <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total_sum['paid_quantity'] + product_total_sum['unpaid_quantity']) or ''}</td>
             <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total_sum['unpaid_quantity']) or ''}</td>
             <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_total_sum['paid_quantity']) or ''}</td>
-            <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format((product_total_sum['paid_quantity'] + product_total_sum['unpaid_quantity']) * product_total_sum['product_price'])}円</td>
+            <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format((product_total_sum['paid_quantity'] + product_total_sum['unpaid_quantity']) * product_sum['product_price'])}円</td>
             % endif
             <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_sum['paid_quantity'] + product_sum['unpaid_quantity']) or ''}</td>
             <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_sum['unpaid_quantity']) or ''}</td>
             <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format(product_sum['paid_quantity']) or ''}</td>
             <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px; text-align: right;">${h.price_format((product_sum['paid_quantity'] + product_sum['unpaid_quantity']) * product_sum['product_price'])}円</td>
           </tr>
-          <% pre_key = key %>
+          <% pre_stock_id = report['stock_id'] %>
         % endfor
       </table>
 

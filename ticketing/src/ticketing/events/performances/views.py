@@ -31,12 +31,10 @@ class PerformanceShowView(BaseView):
         super(PerformanceShowView, self).__init__(context, request)
         # XXX: context でやったほうがいい?
         performance_id = int(self.request.matchdict.get('performance_id', 0))
-        performance = Performance.query.filter(
-            (Performance.id == performance_id) & \
-            (Event.organization_id == self.context.user.organization_id)
-            ).one()
+        performance = Performance.query.filter(Performance.id == performance_id)\
+                        .join(Event).filter(Event.organization_id == self.context.user.organization_id).first()
         if performance is None:
-            return HTTPNotFound('performance id %d is not found' % performance_id)
+            raise HTTPNotFound('performance id %d is not found' % performance_id)
         self.performance = performance
 
     def _tab_seat_allocation(self):

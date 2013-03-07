@@ -131,7 +131,9 @@
       </div>
       <script type="text/javascript">
 var dataSource = {
+%if 'drawing' in data_source:
   drawing: "${data_source['drawing']}",
+%endif
   metadata: "${data_source['metadata']}"
 };
 

@@ -5,14 +5,17 @@ from datetime import datetime
 from urllib2 import urlopen
 
 from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPNotFound
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.response import Response
+from pyramid.url import route_path
 from sqlalchemy import and_, distinct
 from sqlalchemy.sql import exists, join, func
 from sqlalchemy.orm import joinedload, noload, aliased
 
 from ticketing.models import DBSession
+from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.core.models import Site, Venue, VenueArea, Seat, SeatAttribute, SeatStatus, SeatAdjacencySet, SeatAdjacency, Seat_SeatAdjacency, Stock, StockStatus, StockHolder, StockType, ProductItem, Performance, Event
+from ticketing.venues.forms import SiteForm
 from ticketing.venues.export import SeatCSV
 from ticketing.fanstatic import with_bootstrap
 
@@ -244,3 +247,93 @@ def show_checker(request):
     return {
         'venue_id': venue_id
     }
+
+@view_config(route_name='venues.new', request_method='GET', renderer='ticketing:templates/venues/edit.html', decorator=with_bootstrap)
+def new_get(request):
+    f = SiteForm()
+    site = Site()
+
+    site_id = int(request.matchdict.get('site_id', 0))
+    if site_id:
+        site = Site.get(site_id, organization_id=request.context.user.organization_id)
+        if site is None:
+            return HTTPNotFound('site id %d is not found' % site_id)
+
+    site = record_to_multidict(site)
+    if 'id' in site: site.pop('id')
+    f.process(site)
+
+    return {
+        'form':f,
+    }
+
+@view_config(route_name='venues.new', request_method='POST', renderer='ticketing:templates/venues/edit.html', decorator=with_bootstrap)
+def new_post(request):
+    f = SiteForm(request.POST)
+
+    if f.validate():
+        site = merge_session_with_post(Site(), f.data)
+        site.save()
+
+        venue = merge_session_with_post(Venue(site_id=site.id, organization_id=request.context.user.organization_id), f.data)
+        venue.save()
+
+        request.session.flash(u'会場を登録しました')
+        return HTTPFound(location=route_path('venues.show', request, venue_id=venue.id))
+    else:
+        return {
+            'form':f,
+        }
+
+@view_config(route_name='venues.edit', request_method='GET', renderer='ticketing:templates/venues/edit.html', decorator=with_bootstrap)
+def edit_get(request):
+    venue_id = int(request.matchdict.get('venue_id', 0))
+    venue = Venue.get(venue_id, organization_id=request.context.user.organization_id)
+    if venue is None:
+        return HTTPNotFound('venue id %d is not found' % venue_id)
+
+    site = Site.get(venue.site_id)
+    if site is None:
+        return HTTPNotFound('site id %d is not found' % venue.site_id)
+
+    f = SiteForm()
+    f.process(record_to_multidict(site))
+    f.name.process_data(venue.name)
+    f.sub_name.process_data(venue.sub_name)
+
+    return {
+        'form':f,
+        'venue':venue,
+        'site':site,
+    }
+
+@view_config(route_name='venues.edit', request_method='POST', renderer='ticketing:templates/venues/edit.html',  decorator=with_bootstrap)
+def edit_post(request):
+    venue_id = int(request.matchdict.get('venue_id', 0))
+    print venue_id
+    venue = Venue.get(venue_id, organization_id=request.context.user.organization_id)
+    if venue is None:
+        return HTTPNotFound('venue id %d is not found' % venue_id)
+
+    site = Site.get(venue.site_id)
+
+    f = SiteForm(request.POST)
+    if f.validate():
+        print "**1"
+        venue = merge_session_with_post(venue, f.data)
+        print "**2"
+        venue.save()
+
+        print "**3"
+        site = merge_session_with_post(site, f.data)
+        print "**4"
+        site.save()
+
+        request.session.flash(u'会場を保存しました')
+        return HTTPFound(location=route_path('venues.show', request, venue_id=venue.id))
+    else:
+        return {
+            'form':f,
+            'venue':venue,
+            'site':site,
+        }

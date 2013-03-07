@@ -149,8 +149,8 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 SeatIndexType.create_from_template(template=template_seat_index_type, venue_id=venue.id)
             )
 
-        # Performanceのコピー時はstockのリレーションもコピーする
-        if original_performance_id:
+        # Performanceのコピー時に配席情報があるならstockのリレーションをコピー
+        if original_performance_id and venue.original_venue_id:
             # stock_idのマッピングテーブル
             convert_map['stock_id'] = dict()
             old_stocks = Stock.filter_by(performance_id=template.performance_id).all()
@@ -282,7 +282,7 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         # create Seat
         seat = Seat.clone(template)
         seat.venue_id = venue_id
-        if 'stock_id' in kwargs:
+        if 'stock_id' in kwargs and template.stock:
             seat.stock_id = kwargs['stock_id'][template.stock.id]
         else:
             seat.stock_id = default_stock_id
@@ -409,6 +409,11 @@ class SeatAdjacencySet(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         return convert_map
 
+    def delete(self):
+        query = SeatAdjacency.__table__.delete(SeatAdjacency.adjacency_set_id==self.id)
+        DBSession.execute(query)
+        super(type(self), self).delete()
+
 class AccountTypeEnum(StandardEnum):
     Promoter    = (1, u'プロモーター')
     Playguide   = (2, u'プレイガイド')
@@ -485,9 +490,13 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def add(self):
         BaseModel.add(self)
 
-        if hasattr(self, 'original_id') and self.original_id:
+        origin_venue = None
+        if hasattr(self, 'create_venue_id') and self.venue_id:
+            origin_venue = Venue.get(self.venue_id)
+
+        if hasattr(self, 'original_id') and self.original_id and origin_venue and origin_venue.original_venue_id:
             """
-            Performanceのコピー時は以下のモデルをcloneする
+            配席済みのVenueのコピー時は以下のモデルをcloneする
               - Stock
                 - ProductItem
             """
@@ -496,10 +505,9 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             # create Stock - ProductItem
             for template_stock in template_performance.stocks:
                 Stock.create_from_template(template=template_stock, performance_id=self.id)
-
         else:
             """
-            Performanceの作成時は以下のモデルを自動生成する
+            Venueの作成時は以下のモデルを自動生成する
               - Stock
                 - ProductItem
             """
@@ -681,13 +689,17 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def sales_start_on(self):
-        return SalesSegment.query.with_entities(func.min(SalesSegment.start_at))\
-                .join(SalesSegmentGroup).filter(SalesSegmentGroup.event_id==self.id).scalar()
+        return SalesSegmentGroup.query.filter(SalesSegmentGroup.event_id==self.id)\
+                .join(SalesSegment)\
+                .join(Product).filter(Product.sales_segment_id==SalesSegment.id)\
+                .with_entities(func.min(SalesSegment.start_at)).scalar()
 
     @property
     def sales_end_on(self):
-        return SalesSegment.query.with_entities(func.min(SalesSegment.end_at))\
-                .join(SalesSegmentGroup).filter(SalesSegmentGroup.event_id==self.id).scalar()
+        return SalesSegmentGroup.query.filter(SalesSegmentGroup.event_id==self.id)\
+                .join(SalesSegment)\
+                .join(Product).filter(Product.sales_segment_id==SalesSegment.id)\
+                .with_entities(func.max(SalesSegment.end_at)).scalar()
 
     @property
     def first_start_on(self):
@@ -1658,6 +1670,17 @@ class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     prefecture = Column(String(64), nullable=False, default=u'')
 
     status = Column(Integer)
+
+    def get_setting(self, name):
+        for setting in self.settings:
+            if setting.name == name:
+                return setting
+        raise Exception, "organization; id={0} does'nt have {1} setting".format(self.id, name)
+
+    @property
+    def setting(self):
+        return self.get_setting(u'default')
+
 
 orders_seat_table = Table("orders_seat", Base.metadata,
     Column("seat_id", Identifier, ForeignKey("Seat.id")),
@@ -2872,3 +2895,14 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         if self.deleted_at:
             data['deleted'] = 'true'
         return data
+
+
+class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = "OrganizationSetting"
+    id = Column(Identifier, primary_key=True)
+    name = Column(Unicode(255), default=u"default")
+    organization_id = Column(Identifier, ForeignKey('Organization.id'))
+    organization = relationship('Organization',
+                                backref='settings')
+
+    auth_type = Column(Unicode(255))
