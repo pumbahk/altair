@@ -149,8 +149,8 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 SeatIndexType.create_from_template(template=template_seat_index_type, venue_id=venue.id)
             )
 
-        # Performanceのコピー時はstockのリレーションもコピーする
-        if original_performance_id:
+        # Performanceのコピー時に配席情報があるならstockのリレーションをコピー
+        if original_performance_id and venue.original_venue_id:
             # stock_idのマッピングテーブル
             convert_map['stock_id'] = dict()
             old_stocks = Stock.filter_by(performance_id=template.performance_id).all()
@@ -282,7 +282,7 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         # create Seat
         seat = Seat.clone(template)
         seat.venue_id = venue_id
-        if 'stock_id' in kwargs:
+        if 'stock_id' in kwargs and template.stock:
             seat.stock_id = kwargs['stock_id'][template.stock.id]
         else:
             seat.stock_id = default_stock_id
@@ -490,9 +490,13 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def add(self):
         BaseModel.add(self)
 
-        if hasattr(self, 'original_id') and self.original_id:
+        origin_venue = None
+        if hasattr(self, 'create_venue_id') and self.venue_id:
+            origin_venue = Venue.get(self.venue_id)
+
+        if hasattr(self, 'original_id') and self.original_id and origin_venue and origin_venue.original_venue_id:
             """
-            Performanceのコピー時は以下のモデルをcloneする
+            配席済みのVenueのコピー時は以下のモデルをcloneする
               - Stock
                 - ProductItem
             """
@@ -501,10 +505,9 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             # create Stock - ProductItem
             for template_stock in template_performance.stocks:
                 Stock.create_from_template(template=template_stock, performance_id=self.id)
-
         else:
             """
-            Performanceの作成時は以下のモデルを自動生成する
+            Venueの作成時は以下のモデルを自動生成する
               - Stock
                 - ProductItem
             """
