@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['A7EN9WQOHU_6ZE4E'] = (function (exports) { (function () { 
+__LIBS__['CH50YKBG9DI837XD'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -73,7 +73,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['yR4APS1VZ8ERS5_R'] = (function (exports) { (function () { 
+__LIBS__['E_18CZ4LFQ27YO4P'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -187,7 +187,7 @@ timer.prototype.lap = function(msg) {
     return lap;
 };
  })(); return exports; })({});
-__LIBS__['RGMYY5JQWXGDZQZG'] = (function (exports) { (function () { 
+__LIBS__['BGWT5WCEI_9G2SJQ'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -236,12 +236,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['x2IPHL2AZ7DXKDY5'] = (function (exports) { (function () { 
+__LIBS__['nA7ZAGK2T8NADING'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['yR4APS1VZ8ERS5_R'];
-var CONF = __LIBS__['A7EN9WQOHU_6ZE4E'];
-var IdentifiableSet = __LIBS__['RGMYY5JQWXGDZQZG'].IdentifiableSet;
+var util = __LIBS__['E_18CZ4LFQ27YO4P'];
+var CONF = __LIBS__['CH50YKBG9DI837XD'];
+var IdentifiableSet = __LIBS__['BGWT5WCEI_9G2SJQ'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -717,12 +717,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['ZTA9CQNHHURLB5ME'] = (function (exports) { (function () { 
+__LIBS__['H3NPQSRFVWA6PZIQ'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['yR4APS1VZ8ERS5_R'];
-var CONF = __LIBS__['A7EN9WQOHU_6ZE4E'];
-var models = __LIBS__['x2IPHL2AZ7DXKDY5'];
+var util = __LIBS__['E_18CZ4LFQ27YO4P'];
+var CONF = __LIBS__['CH50YKBG9DI837XD'];
+var models = __LIBS__['nA7ZAGK2T8NADING'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -916,7 +916,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['AG72PKQ580WRX8GE'] = (function (exports) { (function () { 
+__LIBS__['PY44D93SF5YWW_WJ'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -947,13 +947,13 @@ exports.ja = {
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['A7EN9WQOHU_6ZE4E'];
-  var models = __LIBS__['x2IPHL2AZ7DXKDY5'];
-  var util = __LIBS__['yR4APS1VZ8ERS5_R'];
-  var viewobjects = __LIBS__['ZTA9CQNHHURLB5ME'];
-  var IdentifiableSet = __LIBS__['RGMYY5JQWXGDZQZG'].IdentifiableSet;
+  var CONF = __LIBS__['CH50YKBG9DI837XD'];
+  var models = __LIBS__['nA7ZAGK2T8NADING'];
+  var util = __LIBS__['E_18CZ4LFQ27YO4P'];
+  var viewobjects = __LIBS__['H3NPQSRFVWA6PZIQ'];
+  var IdentifiableSet = __LIBS__['BGWT5WCEI_9G2SJQ'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['AG72PKQ580WRX8GE'];
+    I18n.translations = __LIBS__['PY44D93SF5YWW_WJ'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -1288,6 +1288,9 @@ exports.ja = {
   VenueEditor.prototype.initDrawable = function VenueEditor_initDrawable() {
     var self = this;
     var drawing = this.drawing;
+    if (!drawing) {
+      return;
+    }
     var attrs = util.allAttributes(drawing.documentElement);
     var w = parseFloat(attrs.width), h = parseFloat(attrs.height);
     var vb = null;
@@ -1679,21 +1682,28 @@ exports.ja = {
         switch (options) {
           case 'load':
             // Ajax Waiter
+            var waiting = [];
+            if (aux.dataSource.drawing) {
+              waiting.push('drawing');
+            }
+            waiting.push('metadata');
             var waiter = new util.AsyncDataWaiter({
-              identifiers: ['drawing', 'metadata'],
+              identifiers: waiting,
               after: function main(data) {
                 aux.loaded_at = Math.ceil((new Date).getTime() / 1000);
                 aux.manager.load(data);
               }
             });
             // Load drawing
-            $.ajax({
-              type: 'get',
-              url: aux.dataSource.drawing,
-              dataType: 'xml',
-              success: function(xml) { waiter.charge('drawing', xml); },
-              error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load drawing data (reason: " + text + ")"); }
-            });
+            if (aux.dataSource.drawing) {
+              $.ajax({
+                type: 'get',
+                url: aux.dataSource.drawing,
+                dataType: 'xml',
+                success: function(xml) { waiter.charge('drawing', xml); },
+                error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load drawing data (reason: " + text + ")"); }
+              });
+            }
 
             // Load metadata
             $.ajax({
