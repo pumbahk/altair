@@ -13,7 +13,7 @@ from wtforms.validators import Regexp, Length
 
 from ticketing.multicheckout import helpers as m_h
 from ticketing.multicheckout import api as multicheckout_api
-from ticketing.multicheckout import detect_card_brand
+from ticketing.multicheckout import detect_card_brand, get_card_ahead_com_name
 from ticketing.core import models as c_models
 from ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment
 from ticketing.cart.interfaces import ICartPayment
@@ -154,11 +154,13 @@ class MultiCheckoutPlugin(object):
                 back_url=back_url(request),
                 error_code=checkout_sales_result.CmnErrorCd
                 )
-
+        ahead_com_code = checkout_sales_result.AheadComCd
         #DBSession.add(checkout_sales_result)
 
         order = c_models.Order.create_from_cart(cart)
         order.card_brand = card_brand
+        order.card_ahead_com_code = ahead_com_code
+        order.card_ahead_com_name = get_card_ahead_com_name(request, ahead_com_code)
         order.multicheckout_approval_no = checkout_sales_result.ApprovalNo
         order.paid_at = datetime.now()
         cart.finish()

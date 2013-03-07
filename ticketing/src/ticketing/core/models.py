@@ -1813,7 +1813,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     attributes = association_proxy('_attributes', 'value', creator=lambda k, v: OrderAttribute(name=k, value=v))
 
     card_brand = Column(Unicode(20))
-
+    card_ahead_com_code = Column(Unicode(20), doc=u"仕向け先企業コード")
+    card_ahead_com_name = Column(Unicode(20), doc=u"仕向け先企業名")
 
     def is_canceled(self):
         return bool(self.canceled_at)

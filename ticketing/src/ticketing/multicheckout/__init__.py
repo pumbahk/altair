@@ -7,7 +7,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 from .interfaces import ICardBrandDetecter
-
+from .util import ahead_coms
 
 def multicheckout_dbsession_tween(handler, registry):
     def tween(request):
@@ -22,6 +22,11 @@ def multicheckout_dbsession_tween(handler, registry):
 def detect_card_brand(request, card_number):
     detecter = request.registry.getUtility(ICardBrandDetecter)
     return detecter(card_number)
+
+def get_card_ahead_com_name(request, code):
+    if code in ahead_coms:
+        return ahead_coms[code]
+    return u"その他"
 
 def includeme(config):
     from sqlalchemy import engine_from_config
