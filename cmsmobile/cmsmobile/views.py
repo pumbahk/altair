@@ -35,4 +35,4 @@ def main(request):
     genre_searcher = GenreSearcher(request)
     form.genretree.data = genre_searcher.root.children
 
-    return dict(form=form)
+    return {'form':form}

@@ -1,77 +1,18 @@
 # -*- coding: utf-8 -*-
-
-from wtforms import Form
-from wtforms import TextField, HiddenField, BooleanField
-from wtforms.validators import Length
+from wtforms import HiddenField
 from wtforms.validators import Optional
+from cmsmobile.core.forms import CommonForm
 
-class SearchForm(Form):
+class SearchForm(CommonForm):
 
-    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
-        Form.__init__(self, formdata, obj, prefix, **kwargs)
+    # --- 曜日表示用
+    week = HiddenField(validators=[Optional()])
 
-    genre = HiddenField(
-        label='',
-        validators=[Optional()],
-        default="0",
-    )
+    # --- パンくずリスト表示用
+    navi_genre = HiddenField(validators=[Optional()])
+    navi_sub_genre = HiddenField(validators=[Optional()])
+    navi_area = HiddenField(validators=[Optional()])
 
-    sub_genre = HiddenField(
-        label='',
-        validators=[Optional()],
-        default="0",
-    )
+    # --- 表示項目
+    events = HiddenField(validators=[Optional()])
 
-    area = HiddenField(
-        label='',
-        validators=[Optional()],
-        default="0",
-    )
-
-    num = HiddenField(#総件数
-        label='',
-        validators=[Optional()],
-        default="0"
-    )
-
-    page = HiddenField(#現在ページ
-        label='',
-        validators=[Optional()],
-        default='1',
-    )
-
-    page_num = HiddenField(#総ページ数
-        label='',
-        validators=[Optional()],
-        default="0"
-    )
-
-    path = HiddenField(
-        label='',
-        validators=[Optional()],
-        default='/search'
-    )
-
-    word = TextField(
-        label = '',
-        validators=[
-            Length(max=200, message=u'200文字以内で入力してください'),
-            ]
-    )
-
-    week_sale = BooleanField(
-        label = '',
-        validators=[Optional()],
-        default=False
-    )
-
-    soon_act = BooleanField(
-        label = '',
-        validators=[Optional()],
-        default=False
-    )
-
-    week = HiddenField(
-        label='',
-        validators=[Optional()],
-    )

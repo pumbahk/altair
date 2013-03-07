@@ -1,16 +1,12 @@
 <%include file='../common/_header.mako' args="title=u'検索結果'"/>
 <body>
-    % if dispsubgenre is None:
-        <a href="/">トップ</a> >> <a href="/genre?genre=${dispgenre.id}">${dispgenre.label}</a>
-            >> ${disparea + u"で" if disparea is not None else ""}「${form.word.data}」を含む公演
-    % else:
-        <a href="/">トップ</a> >> <a href="/genre?genre=${dispgenre.id}">${dispgenre.label}</a>
-            >> <a href="/genre?genre=${dispgenre.id}&sub_genre=${dispsubgenre.id}">
-            ${dispsubgenre.label}</a> >> ${disparea + u"で" if disparea is not None else ""}「${form.word.data}」を含む公演
-    % endif
+    <%include file='_navigation.mako' args="word=form.word.data, genre=form.navi_genre.data,
+                                               sub_genre=form.navi_sub_genre.data, area=form.area.data" />
     <p/>
 
-    <%include file='../common/_search_result.mako' args="form=form, events=events" />
+    <%include file='../common/_search_result.mako' args="events=form.events.data
+                      ,word=form.word.data, num=form.num.data, page=form.page.data
+                      ,page_num=form.page_num.data, path=form.path.data, week=form.week.data"/>
 
     <hr/>
 

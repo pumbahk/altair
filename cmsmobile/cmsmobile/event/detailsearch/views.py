@@ -6,6 +6,7 @@ from cmsmobile.core.searcher import EventSearcher
 import webhelpers.paginate as paginate
 from cmsmobile.core.helper import exist_value
 from altaircms.genre.searcher import GenreSearcher
+from cmsmobile.core.helper import get_event_paging
 from datetime import date
 
 @view_config(route_name='detailsearch', request_method="GET", renderer='cmsmobile:templates/detailsearch/detailsearch.mako')
@@ -43,32 +44,12 @@ def move_detailsearch_post(request):
     # 公演日期間
     qs = searcher.get_events_start_on(form, qs)
 
-    print qs
-
-    # paging
-    events = None
-    form.num.data = 0
-    if qs:
-        events = qs.all()
-        if events:
-            form.num.data = len(events)
-            items_per_page = 10
-            events = paginate.Page(
-                events,
-                form.page.data,
-                items_per_page,
-                url=paginate.PageURL_WebOb(request)
-            )
-            if form.num.data % items_per_page == 0:
-                form.page_num.data = form.num.data / items_per_page
-            else:
-                form.page_num.data = form.num.data / items_per_page + 1
+    form = get_event_paging(request=request, form=form, qs=qs)
 
     # genre select box
     create_genre_selectbox(request, form)
 
     return {
-        'events':events,
         'form':form
     }
 
