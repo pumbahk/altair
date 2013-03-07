@@ -15,7 +15,8 @@
 <hr/>
     <%include file='../common/_topics.mako' args="topics=topics"/>
 <hr/>
-    <%include file='../common/_area.mako' args="form=form"/>
+    <%include file="../common/_area.mako" args="path=form.path.data, genre=form.genre.data
+                                               , sub_genre=form.sub_genre.data, num=form.num.data"/>
 <hr/>
     <%include file='../common/_search.mako' args="form=form"/>
 <hr/>
