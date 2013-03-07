@@ -121,8 +121,21 @@ class Performance(BaseOriginalMixin, Base):
     def jprefecture(self):
         return PDICT.name_to_label.get(self.prefecture, u"--")
 
-class SalesSegmentGroup(BaseOriginalMixin, Base):
+class SalesSegmentKind(WithOrganizationMixin, Base):
     """ 販売条件のためのマスターテーブル"""
+    __tablename__ = "salessegment_kind"
+    query = DBSession.query_property()    
+    id = sa.Column(sa.Integer, primary_key=True)
+    name = sa.Column(sa.String(length=255))
+    label = sa.Column(sa.Unicode(length=255), default=u"<不明>")
+    publicp = sa.Column(sa.Boolean, default=True)
+    
+    @declared_attr
+    def __table_args__(cls):
+        return (sa.UniqueConstraint("name", "organization_id"), )
+
+class SalesSegmentGroup(WithOrganizationMixin, BaseOriginalMixin, Base):
+    """ イベント単位の販売条件"""
     __tablename__ = "salessegment_group"
     query = DBSession.query_property()    
 
@@ -130,7 +143,9 @@ class SalesSegmentGroup(BaseOriginalMixin, Base):
     event_id = sa.Column(sa.Integer, sa.ForeignKey('event.id'))
     event  = relationship("Event", uselist=False, backref="salessegment_groups")
     name = sa.Column(sa.Unicode(length=255))
-    kind = sa.Column(sa.Unicode(length=255))
+    kind_id = sa.Column(sa.Integer, sa.ForeignKey("salessegment_kind.id"))
+    kind = sa.Column(sa.String(length=255)) #backward compability
+    master = orm.relationship(SalesSegmentKind, uselist=False)
 
     start_on = sa.Column(sa.DateTime, default=datetime.now)
     end_on = sa.Column(sa.DateTime, default=datetime.now)

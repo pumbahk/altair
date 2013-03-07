@@ -152,21 +152,22 @@ class ParseAndSaveEventTests(unittest.TestCase):
                   "name": "A席大人"
                 }
               ], 
-              "kind": "first_lottery", 
+              "group_id": 1, 
               "start_on": "2012-01-12T10:00:00", 
+              "kind_name": "first_lottery", 
               "name": "一般先行", 
               "seat_choice": "false", 
               "end_on": "2012-01-22T10:00:00", 
-              "group_id": 1, 
-              "id": 40039
+              "id": 40039, 
+              "kind_label": "最速抽選"
             }
           ]
         }, 
         {
-          "end_on": "2013-03-26T21:00:00", 
+          "end_on": "", 
           "start_on": "2013-03-26T19:00:00", 
           "name": "マツイ・オン・アイス(大阪公演)", 
-          "open_on": "2013-03-26T18:00:00", 
+          "open_on": "", 
           "prefecture": "osaka", 
           "venue": "まつい市民会館", 
           "id": 40097, 
@@ -202,13 +203,14 @@ class ParseAndSaveEventTests(unittest.TestCase):
                   "name": "A席大人"
                 }
               ], 
-              "kind": "normal", 
+              "group_id": 2, 
               "start_on": "2012-01-23T10:00:00", 
+              "kind_name": "normal", 
               "name": "一般販売", 
               "seat_choice": "false", 
-              "end_on": "2012-03-12T00:00:00", 
-              "group_id": 2, 
-              "id": 40040
+              "end_on": "", 
+              "id": 40040, 
+              "kind_label": "一般販売"
             }
           ]
         }
@@ -280,21 +282,22 @@ class ParseAndSaveEventTests(unittest.TestCase):
                 }
               ], 
               "deleted": "true", 
-              "kind": "first_lottery", 
+              "group_id": 1, 
               "start_on": "2012-01-12T10:00:00", 
+              "kind_name": "first_lottery", 
               "name": "一般先行", 
               "seat_choice": "false", 
               "end_on": "2012-01-22T10:00:00", 
-              "sale_id": 1, 
-              "id": 40039
+              "id": 40039, 
+              "kind_label": "最速抽選"
             }
           ]
         }, 
         {
-          "end_on": "2013-03-26T21:00:00", 
+          "end_on": "", 
           "start_on": "2013-03-26T19:00:00", 
           "name": "マツイ・オン・アイス(大阪公演)", 
-          "open_on": "2013-03-26T18:00:00", 
+          "open_on": "", 
           "prefecture": "osaka", 
           "venue": "まつい市民会館", 
           "id": 40097, 
@@ -332,13 +335,14 @@ class ParseAndSaveEventTests(unittest.TestCase):
                   "name": "A席大人"
                 }
               ], 
-              "kind": "normal", 
+              "group_id": 2, 
               "start_on": "2012-01-23T10:00:00", 
+              "kind_name": "normal", 
               "name": "一般販売", 
               "seat_choice": "false", 
-              "end_on": "2012-03-12T00:00:00", 
-              "group_id": 2, 
-              "id": 40040
+              "end_on": "", 
+              "id": 40040, 
+              "kind_label": "一般販売"
             }
           ]
         }
@@ -366,7 +370,7 @@ class ParseAndSaveEventTests(unittest.TestCase):
         self.assertEqual(event.title, u"マツイ・オン・アイス")
         self.assertEqual(event.backend_id, 40020) #backend id
         self.assertEqual(event.event_open, datetime(2013, 3, 15, 10))
-        self.assertEqual(event.event_close, datetime(2013, 3, 26, 21))
+        self.assertEqual(event.event_close, datetime(2013, 3, 26, 19))
         self.assertNotEqual(event.organization_id, 1000)
         self.assertEqual(event.organization_id, Organization.query.filter_by(backend_id=1000).one().id)
         self.assertEqual(len(event.performances), 2)
@@ -399,13 +403,19 @@ class ParseAndSaveEventTests(unittest.TestCase):
         self.assertEqual(ticket.display_order, 1)
         self.assertEqual(ticket.price, 20000)
 
+        ## todo: refactoring
+        from altaircms.models import SalesSegmentGroup, SalesSegmentKind
+        self.assertEqual(SalesSegmentGroup.query.count(), 2)
+        self.assertEqual(SalesSegmentKind.query.count(), 2)
+
+
     def test_create_and_delete(self):
         from datetime import datetime
         from altaircms.auth.models import Organization
         request = testing.DummyRequest()
         ## create
         result = self._callFUT(request, json.loads(self.data))
-        ## delete
+        ## delete indclude
         result = self._callFUT(request, json.loads(self.data_for_delete))
 
         self.assertEqual(len(result), 1)
@@ -413,7 +423,7 @@ class ParseAndSaveEventTests(unittest.TestCase):
         self.assertEqual(event.title, u"マツイ・オン・アイス")
         self.assertEqual(event.backend_id, 40020) #backend id
         self.assertEqual(event.event_open, datetime(2013, 3, 26, 19))
-        self.assertEqual(event.event_close, datetime(2013, 3, 26, 21))
+        self.assertEqual(event.event_close, datetime(2013, 3, 26, 19))
         self.assertNotEqual(event.organization_id, 1000)
         self.assertEqual(event.organization_id, Organization.query.filter_by(backend_id=1000).one().id)
 
@@ -423,9 +433,9 @@ class ParseAndSaveEventTests(unittest.TestCase):
         self.assertEqual(performance.title, u"マツイ・オン・アイス(大阪公演)")
         self.assertEqual(performance.backend_id, 40097)
         self.assertEqual(performance.venue, u"まつい市民会館")
-        self.assertEqual(performance.open_on, datetime(2013, 3, 26, 18))
+        self.assertEqual(performance.open_on, None)
         self.assertEqual(performance.start_on, datetime(2013, 3, 26, 19))
-        self.assertEqual(performance.end_on, datetime(2013, 3, 26, 21))
+        self.assertEqual(performance.end_on, None)
 
         ## todo:change
         self.assertEqual(len(performance.sales), 1)
@@ -434,8 +444,13 @@ class ParseAndSaveEventTests(unittest.TestCase):
         self.assertEqual(sale.group.name, u"一般販売")
         self.assertEqual(sale.backend_id, 40040)
         self.assertEqual(sale.start_on, datetime(2012, 1, 23, 10))
-        self.assertEqual(sale.end_on, datetime(2012, 3, 12, 0))
+        self.assertEqual(sale.end_on, None)
 
+
+        ## todo: refactoring
+        from altaircms.models import SalesSegmentGroup, SalesSegmentKind
+        self.assertEqual(SalesSegmentGroup.query.count(), 2)
+        self.assertEqual(SalesSegmentKind.query.count(), 2)
 
         self.assertEqual(len(sale.tickets), 2)
 
@@ -444,6 +459,7 @@ class ParseAndSaveEventTests(unittest.TestCase):
         self.assertEqual(ticket.name, u"A席大人")
         self.assertEqual(ticket.seattype, u"A席")
         self.assertEqual(ticket.price, 4000)
+
 
 
     def test_register_multiple(self):
@@ -460,6 +476,54 @@ class ParseAndSaveEventTests(unittest.TestCase):
         self.assertEquals(fst_sale_count, SalesSegment.query.count())
         self.assertEquals(fst_ticket_count, Ticket.query.count())
 
+    def test_first_deleted_include(self):
+        from datetime import datetime
+        from altaircms.auth.models import Organization
+        request = testing.DummyRequest()
+        ## delete indclude
+        result = self._callFUT(request, json.loads(self.data_for_delete))
+
+        self.assertEqual(len(result), 1)
+        event = result[0]
+        self.assertEqual(event.title, u"マツイ・オン・アイス")
+        self.assertEqual(event.backend_id, 40020) #backend id
+        self.assertEqual(event.event_open, datetime(2013, 3, 26, 19))
+        self.assertEqual(event.event_close, datetime(2013, 3, 26, 19))
+        self.assertNotEqual(event.organization_id, 1000)
+        self.assertEqual(event.organization_id, Organization.query.filter_by(backend_id=1000).one().id)
+
+        self.assertEqual(len(event.performances), 1)
+
+        performance = event.performances[0]
+        self.assertEqual(performance.title, u"マツイ・オン・アイス(大阪公演)")
+        self.assertEqual(performance.backend_id, 40097)
+        self.assertEqual(performance.venue, u"まつい市民会館")
+        self.assertEqual(performance.open_on, None)
+        self.assertEqual(performance.start_on, datetime(2013, 3, 26, 19))
+        self.assertEqual(performance.end_on, None)
+
+        ## todo:change
+        self.assertEqual(len(performance.sales), 1)
+        
+        sale = performance.sales[0]
+        self.assertEqual(sale.group.name, u"一般販売")
+        self.assertEqual(sale.backend_id, 40040)
+        self.assertEqual(sale.start_on, datetime(2012, 1, 23, 10))
+        self.assertEqual(sale.end_on, None)
+
+
+        ## todo: refactoring
+        from altaircms.models import SalesSegmentGroup, SalesSegmentKind
+        self.assertEqual(SalesSegmentGroup.query.count(), 1)
+        self.assertEqual(SalesSegmentKind.query.count(), 1)
+
+        self.assertEqual(len(sale.tickets), 2)
+
+        ticket = performance.sales[0].tickets[0]
+        self.assertEqual(ticket.backend_id, 401600)
+        self.assertEqual(ticket.name, u"A席大人")
+        self.assertEqual(ticket.seattype, u"A席")
+        self.assertEqual(ticket.price, 4000)
 
 class ValidateAPIKeyTests(unittest.TestCase):
     def setUp(self):

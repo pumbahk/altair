@@ -18,6 +18,11 @@ def get_organization(*args, **kwargs):
     from ticketing.core.models import Organization
     return Organization(*args, **kwargs)
 
+def request():
+    class Request:
+        session = {}
+    return Request
+
 class EventCMSDataTests(unittest.TestCase):
     def tearDown(self):
         import transaction
@@ -123,9 +128,9 @@ class GenDataTests(unittest.TestCase):
         site1 = Site(prefecture="osaka")
         venue1 = Venue(site=site1, name=u"まつい市民会館", organization=organization)
         performance1 = Performance(id=40097, 
-                                   open_on=datetime(2013, 3, 26, 18), 
+                                   open_on=None, 
                                    start_on=datetime(2013, 3, 26, 19), 
-                                   end_on=datetime(2013, 3, 26, 21), 
+                                   end_on=None, 
                                    name=u"マツイ・オン・アイス(大阪公演)", 
                                    event=event0, 
                                    venue=venue1)
@@ -135,7 +140,7 @@ class GenDataTests(unittest.TestCase):
                                      sales_segment_group=group1,
                                      seat_choice=False, 
                                      start_at=datetime(2012, 1, 23, 10), 
-                                     end_at=datetime(2012, 3, 12))
+                                     end_at=None)
         seat_stock_type3 = StockType(name=u"B席")
         seat_stock_type4 = StockType(name=u"S席")
         seat_stock_type5 = StockType(name=u"A席")
@@ -178,7 +183,7 @@ class GenDataTests(unittest.TestCase):
         event0 = self._build_event(organization)
         DBSession.add(event0)
         DBSession.flush()
-        result = self._callFUT(None, organization, event0, now=datetime(2012, 6, 20, 10, 33, 34))
+        result = self._callFUT(request(), organization, event0, now=datetime(2012, 6, 20, 10, 33, 34))
 
         import json
         outputdata = json.dumps(result, indent=2, ensure_ascii=False)
@@ -215,7 +220,7 @@ class GenDataTests(unittest.TestCase):
                 p.delete()
                 
 
-        result = self._callFUT(None, organization, event0, now=datetime(2012, 6, 20, 10, 33, 34))
+        result = self._callFUT(request(), organization, event0, now=datetime(2012, 6, 20, 10, 33, 34))
 
         import json
         outputdata = json.dumps(result, indent=2, ensure_ascii=False)

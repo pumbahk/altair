@@ -51,13 +51,14 @@
                   "name": "A席大人"
                 }
               ], 
-              "kind": "first_lottery", 
               "group_id": 1, 
               "start_on": "2012-01-12T10:00:00", 
+              "kind_name": "first_lottery", 
               "name": "一般先行", 
               "seat_choice": "false", 
               "end_on": "2012-01-22T10:00:00", 
-              "id": 40039
+              "id": 40039, 
+              "kind_label": "最速抽選"
             }
           ]
         }, 
@@ -65,7 +66,7 @@
           "end_on": "", 
           "start_on": "2013-03-26T19:00:00", 
           "name": "マツイ・オン・アイス(大阪公演)", 
-          "open_on": "2013-03-26T18:00:00", 
+          "open_on": "", 
           "prefecture": "osaka", 
           "venue": "まつい市民会館", 
           "id": 40097, 
@@ -101,13 +102,14 @@
                   "name": "A席大人"
                 }
               ], 
-              "kind": "normal", 
               "group_id": 2, 
               "start_on": "2012-01-23T10:00:00", 
+              "kind_name": "normal", 
               "name": "一般販売", 
               "seat_choice": "false", 
               "end_on": "", 
-              "id": 40040
+              "id": 40040, 
+              "kind_label": "一般販売"
             }
           ]
         }
