@@ -409,6 +409,11 @@ class SeatAdjacencySet(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         return convert_map
 
+    def delete(self):
+        query = SeatAdjacency.__table__.delete(SeatAdjacency.adjacency_set_id==self.id)
+        DBSession.execute(query)
+        super(type(self), self).delete()
+
 class AccountTypeEnum(StandardEnum):
     Promoter    = (1, u'プロモーター')
     Playguide   = (2, u'プレイガイド')
