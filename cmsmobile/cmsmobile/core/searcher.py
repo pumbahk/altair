@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 from cmsmobile.solr import helper
 from pyramid.httpexceptions import HTTPNotFound
 from altaircms.models import Performance
@@ -9,10 +10,7 @@ from cmsmobile.core.helper import exist_value
 from cmsmobile.core.const import SalesEnum
 from sqlalchemy import or_, and_, asc
 from datetime import datetime, date, timedelta
-
-import logging
-
-logger = logging.getLogger(__file__)
+from cmsmobile.core.helper import log_debug, log_info, log_warn
 
 class EventSearcher(object):
 
@@ -54,11 +52,11 @@ class EventSearcher(object):
         qs = None
         if search_word != "":
             try:
+                log_info("FREEWORD_SEARCH", "SEARCH_WORD=" + search_word)
                 events = helper.searchEvents(self.request, search_word)
                 ids = self._create_ids(events)
                 qs = self._create_common_qs(where=Event.id.in_(ids))
             except Exception, e:
-                logger.exception(e)
                 raise HTTPNotFound
         return qs
 

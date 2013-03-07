@@ -1,6 +1,19 @@
 # -*- coding: utf-8 -*-
 import webhelpers.paginate as paginate
+import logging
 
+logger = logging.getLogger(__file__)
+
+def log_debug(key, msg):
+    logger.debug("*" + key + "* : " + msg)
+
+def log_info(key, msg):
+    logger.info("*" + key + "* : " + msg)
+
+def log_warn(key, msg):
+    logger.warning("*" + key + "* : " + msg)
+
+# umm..
 def exist_value(value):
 
     if value is None:
@@ -21,7 +34,7 @@ def get_week_map():
     return {0:u'月',1:u'火',2:u'水',3:u'木',4:u'金',5:u'土',6:u'日'}
 
 def get_event_paging(request, form, qs):
-    events = None
+    form.events.data = None
     form.num.data = 0
     if qs:
         events = qs.all()
