@@ -13,6 +13,7 @@ from wtforms.validators import Regexp, Length
 
 from ticketing.multicheckout import helpers as m_h
 from ticketing.multicheckout import api as multicheckout_api
+from ticketing.multicheckout import detect_card_brand
 from ticketing.core import models as c_models
 from ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment
 from ticketing.cart.interfaces import ICartPayment
@@ -140,7 +141,8 @@ class MultiCheckoutPlugin(object):
             mvn=tran['mvn'], xid=tran['xid'], ts=tran['ts'],
             eci=tran['eci'], cavv=tran['cavv'], cavv_algorithm=tran['cavv_algorithm'],
         )
-
+        card_brand = detect_card_brand(request, order['card_number'])
+        
         if checkout_sales_result.CmnErrorCd != '000000':
             logger.info(u'finish_secure_3d: 決済エラー order_no = %s, error_code = %s' % (order_no, checkout_sales_result.CmnErrorCd))
             multicheckout_api.checkout_auth_cancel(request, get_order_no(request, cart))
@@ -156,6 +158,7 @@ class MultiCheckoutPlugin(object):
         #DBSession.add(checkout_sales_result)
 
         order = c_models.Order.create_from_cart(cart)
+        order.card_brand = card_brand
         order.multicheckout_approval_no = checkout_sales_result.ApprovalNo
         order.paid_at = datetime.now()
         cart.finish()

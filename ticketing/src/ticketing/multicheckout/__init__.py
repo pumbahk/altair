@@ -6,6 +6,8 @@
 import logging
 
 logger = logging.getLogger(__name__)
+from .interfaces import ICardBrandDetecter
+
 
 def multicheckout_dbsession_tween(handler, registry):
     def tween(request):
@@ -17,7 +19,9 @@ def multicheckout_dbsession_tween(handler, registry):
             _session.remove()
     return tween
             
-
+def detect_card_brand(request, card_number):
+    detecter = request.registry.getUtility(ICardBrandDetecter)
+    return detecter(card_number)
 
 def includeme(config):
     from sqlalchemy import engine_from_config
@@ -28,6 +32,10 @@ def includeme(config):
     _session.configure(bind=engine)
 
     config.add_tween(".multicheckout_dbsession_tween")
+
+    reg = config.registry
+    reg.registerUtility(config.maybe_dotted(".util.detect_card_brand"), 
+                        ICardBrandDetecter)
 
 def main(global_conf, **settings):
     from sqlalchemy import engine_from_config
