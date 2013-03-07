@@ -1,6 +1,45 @@
 import unittest
 from webob.multidict import MultiDict
 
+class DealCondPartFormQueryTest(unittest.TestCase):
+    def _getTarget(self):
+        from altairsite.search.forms import DealCondPartForm
+        return DealCondPartForm
+
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
+    def _callFUT(self, target, *args, **kwargs):
+        self.assertTrue(target.validate())
+        return target.make_query_params(*args, **kwargs)
+        
+    def test_dealcond_one(self):
+        params = MultiDict(deal_cond="1")
+        target = self._makeOne(params)
+        target.deal_cond.choices = [("1", "one")]
+        self.assertIn("deal_cond", target._fields.keys())
+        
+        result = self._callFUT(target)
+        self.assertEqual(result, {"deal_cond": [u"1"]})
+
+    def test_dealcond_multiple(self):
+        params = MultiDict([("deal_cond","1"), ("deal_cond","2")])
+        target = self._makeOne(params)
+        target.deal_cond.choices = [("1", "one"), ("2", "two")]
+        self.assertIn("deal_cond", target._fields.keys())
+        
+        result = self._callFUT(target)
+        self.assertEqual(result, {"deal_cond": [u"1", u"2"]})
+
+    def test_dealcond_with_invalid(self):
+        params = MultiDict([("deal_cond","1"), ("deal_cond","2"), ("deal_cond", "hehehheheh")])
+        target = self._makeOne(params)
+        target.deal_cond.choices = [("1", "one"), ("2", "two")]
+        self.assertIn("deal_cond", target._fields.keys())
+
+        self.assertFalse(target.validate())
+
+
 class GenrePartFormQueryTest(unittest.TestCase):
     def _getTarget(self):
         from altairsite.search.forms import GenrePartForm

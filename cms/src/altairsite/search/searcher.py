@@ -275,7 +275,7 @@ def events_by_performance_term(qs, performance_open, performance_close):
 
 def events_by_deal_cond_flags(qs, flags):
    if flags:
-      return qs.filter(Event.id==SalesSegmentGroup.event_id).filter(SalesSegmentGroup.kind.in_(flags)).distinct()
+      return qs.filter(Event.id==SalesSegmentGroup.event_id).filter(SalesSegmentGroup.kind_id.in_(flags)).distinct()
    else:
       return qs
 

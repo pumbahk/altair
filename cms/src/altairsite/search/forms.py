@@ -11,7 +11,9 @@ from .formparts import CheckboxListField
 from .formparts import PutOnlyWidget
 from .formparts import CheckboxWithLabelInput
 from altaircms.formhelpers import MaybeSelectField
-
+from ..pyramidlayout import get_salessegment_kinds
+import logging
+logger = logging.getLogger()
 import pkg_resources
 def import_symbol(symbol):
     return pkg_resources.EntryPoint.parse("x=%s" % symbol).load(False)
@@ -75,11 +77,11 @@ def parse_date(y, m, d):
 ### toppage sidebar
 class TopPageSidebarSearchForm(Form):
     """ top page のsidebarのform"""
-    start_year = MaybeSelectField(choices=years)
+    start_year = MaybeSelectField(blank_value="",choices=years)
     start_month = MaybeSelectField(choices=months)
     start_day = MaybeSelectField(choices=days)
 
-    end_year = MaybeSelectField(choices=years)
+    end_year = MaybeSelectField(blank_value="",choices=years)
     end_month = MaybeSelectField(choices=months)
     end_day = MaybeSelectField(choices=days)
     choices = import_symbol("altaircms.seeds.area:AREA_CHOICES")
@@ -262,11 +264,11 @@ class AreaPartForm(Form):
 ## todo:公演日
 
 class PerformanceTermPartForm(Form):
-    start_year = MaybeSelectField(choices=years)
+    start_year = MaybeSelectField(blank_value="",choices=years)
     start_month = MaybeSelectField(choices=months)
     start_day = MaybeSelectField(choices=days)
 
-    end_year = MaybeSelectField(choices=years)
+    end_year = MaybeSelectField(blank_value="",choices=years)
     end_month = MaybeSelectField(choices=months)
     end_day = MaybeSelectField(choices=days)
 
@@ -290,14 +292,11 @@ class PerformanceTermPartForm(Form):
                 "performance_close": performance_close}
 
 ## todo:販売条件
+from altaircms.formhelpers import CheckboxListField as NewCheckboxListField
 class DealCondPartForm(Form):
-    #deal_cond_choices=[("early", u"先行"), ("normal", u"一般")]
-    deal_cond_choices=import_symbol("altaircms.seeds.saleskind:SALESKIND_CHOICES")
-    DDICT = dict(deal_cond_choices)
-
-    deal_cond = CheckboxListField(choices=deal_cond_choices)
-    # deal_cond = fields.RadioField(choices=deal_cond_choices, 
-    #                                widget=PutOnlyWidget())
+    deal_cond = NewCheckboxListField(choices=[])
+    def configure(self, request):
+        self.deal_cond.choices = [(k.id, k.label) for k in get_salessegment_kinds(request)]
 
     def __html__(self):
         return u"%(deal_cond)s" % self
@@ -346,7 +345,8 @@ class AboutDealPartForm(Form):
         return self.data
 
 class DetailSearchQueryForm(object):
-    def __init__(self, formdata=None):
+    def __init__(self, request, formdata=None):
+        self.request = request
         self._forms = []
         self.query = self._append_with(QueryPartForm(formdata=formdata, prefix="q-"))
         self.genre = self._append_with(GenrePartForm(formdata=formdata, prefix="g-"))
@@ -358,6 +358,8 @@ class DetailSearchQueryForm(object):
 
     def _append_with(self, form):
         self._forms.append(form)
+        if hasattr(form, "configure"):
+            form.configure(self.request)
         return form
 
     def validate(self):
@@ -369,8 +371,9 @@ class DetailSearchQueryForm(object):
             params.update(form.make_query_params())
         return params
 
-def get_search_forms(formdata=None):
-    return DetailSearchQueryForm(formdata)
+def get_search_forms(request, formdata=None):
+    logger.warn(formdata)
+    return DetailSearchQueryForm(request, formdata)
     
 def form_as_filter(qs, form):
     return form.as_filter(qs)

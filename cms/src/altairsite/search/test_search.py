@@ -329,7 +329,7 @@ todo: 作成
         from altaircms.event.models import Event
         qs = Event.query
         
-        result = self._callFUT(qs, [u"normal"])
+        result = self._callFUT(qs, [u"1"])
         self.assertEquals([], list(result))
 
     def test_unmatched_param__notfound(self):
@@ -338,10 +338,10 @@ todo: 作成
         qs = Event.query
 
         event = Event()
-        sale = SalesSegmentGroup(event=event, kind=u"normal")
+        sale = SalesSegmentGroup(event=event, kind_id=1)
         self.session.add(sale)
 
-        result = self._callFUT(qs, [u"sales-kind-unmatched"])
+        result = self._callFUT(qs, [u"2"])
         self.assertEquals([], list(result))
 
     def test_matched_param__found(self):
@@ -350,10 +350,10 @@ todo: 作成
         qs = Event.query
 
         event = Event()
-        sale = SalesSegmentGroup(event=event, kind=u"normal")
+        sale = SalesSegmentGroup(event=event, kind_id=1)
         self.session.add(sale)
 
-        result = self._callFUT(qs, [u"normal"])
+        result = self._callFUT(qs, [u"1"])
         self.assertEquals([event], list(result))
 
     def test_search_unionly(self):
@@ -362,13 +362,13 @@ todo: 作成
         qs = Event.query
 
         event = Event()
-        sale = SalesSegmentGroup(event=event, kind=u"normal")
+        sale = SalesSegmentGroup(event=event, kind_id=u"1")
         self.session.add(sale)
 
-        result = self._callFUT(qs, [u"abc", u"efg", u"hij"])
+        result = self._callFUT(qs, [u"0", u"2", u"3"])
         self.assertEquals([], list(result))
 
-        result = self._callFUT(qs, [u"abc", u"efg", u"hij", u"normal"])
+        result = self._callFUT(qs, [u"0", u"1", u"2", u"3"])
         self.assertEquals([event], list(result))
 
     ## todo: saleのtodo:公開開始。終了見る

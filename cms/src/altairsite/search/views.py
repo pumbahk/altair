@@ -5,7 +5,6 @@ from webob.multidict import MultiDict
 from pyramid.httpexceptions import HTTPNotFound
 import logging
 
-from ..front import api as front_api
 from . import forms
 from . import searcher
 
@@ -20,22 +19,22 @@ def page_search_input(request):
     """ 絞り込み検索フォーム画面
     """
     request.body_id = "searchform"
-    return {"forms": forms.get_search_forms()}
+    return {"forms": forms.get_search_forms(request)}
 
 @view_config(custom_predicates=(enable_search_function, ), 
              route_name="page_search_result", renderer="altaircms:templates/usersite/search/result.html")
-def page_search_result(request):
+def page_search_result(context, request):
     """ 詳細検索 検索結果
     """
     try:
         request.body_id = "search"
         logger.debug("search GET params: %s" % request.GET)
-        query_params = forms.get_search_forms(request.GET).make_query_params()
-        result_seq = request.context.get_result_sequence_from_query_params(
+        query_params = forms.get_search_forms(request, request.GET).make_query_params()
+        result_seq = context.get_result_sequence_from_query_params(
             query_params, 
             searchfn=searcher.get_pageset_query_fullset
             )
-        html_query_params = request.context.get_query_params_as_html(query_params)
+        html_query_params = context.get_query_params_as_html(query_params)
         return dict(result_seq=result_seq, query_params=html_query_params)
     except Exception, e:
         logger.exception(e)
