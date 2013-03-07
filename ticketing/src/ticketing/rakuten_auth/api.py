@@ -102,27 +102,6 @@ class RakutenOpenID(object):
                 "&openid.ax.required=nickname"
                 ) % dict(return_to=self.return_to, consumer_key=self.consumer_key)
 
-    def openid_params(self, request):
-        request_get = request.GET
-        return dict(ns = request_get['openid.ns'],
-                    op_endpoint = request_get['openid.op_endpoint'],
-                    claimed_id = request_get['openid.claimed_id'],
-                    response_nonce = request_get['openid.response_nonce'],
-                    mode = 'check_authentication',
-                    identity = request_get['openid.identity'],
-                    return_to = request_get['openid.return_to'],
-                    assoc_handle = request_get['openid.assoc_handle'],
-                    signed = request_get['openid.signed'],
-                    sig = request_get['openid.sig'],
-                    ns_oauth = 'http://specs.openid.net/extenstions/oauth/1.0',
-                    oauth_request_token = request_get['openid.oauth.request_token'],
-                    oauth_scope = 'rakutenid_basicinfo,rakutenid_contactinfo,rakutenid_pointaccount',
-                    ns_ax = request_get['openid.ns.ax'],
-                    ax_mode = request_get['openid.ax.mode'],
-                    ax_type_nickname = request_get['openid.ax.type.nickname'],
-                    ax_value_nickname = request_get['openid.ax.value.nickname'],
-                    )
-
     def verify_authentication(self, request, identity):
 
         url = self.base_url + "?" + urllib.urlencode(
@@ -318,3 +297,24 @@ def create_oauth_sigunature(method, url, oauth_consumer_key, secret, oauth_token
     logger.debug("secret: %s" % secret)
     oauth_signature = hmac.new(secret, msg, hashlib.sha1).digest().encode('base64')
     return oauth_signature.strip()
+
+def openid_params(request):
+    request_get = request.GET
+    return dict(ns = request_get['openid.ns'],
+                op_endpoint = request_get['openid.op_endpoint'],
+                claimed_id = request_get['openid.claimed_id'],
+                response_nonce = request_get['openid.response_nonce'],
+                mode = 'check_authentication',
+                identity = request_get['openid.identity'],
+                return_to = request_get['openid.return_to'],
+                assoc_handle = request_get['openid.assoc_handle'],
+                signed = request_get['openid.signed'],
+                sig = request_get['openid.sig'],
+                ns_oauth = 'http://specs.openid.net/extenstions/oauth/1.0',
+                oauth_request_token = request_get['openid.oauth.request_token'],
+                oauth_scope = 'rakutenid_basicinfo,rakutenid_contactinfo,rakutenid_pointaccount',
+                ns_ax = request_get['openid.ns.ax'],
+                ax_mode = request_get['openid.ax.mode'],
+                ax_type_nickname = request_get['openid.ax.type.nickname'],
+                ax_value_nickname = request_get['openid.ax.value.nickname'],
+                )
