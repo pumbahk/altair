@@ -35,7 +35,7 @@ class SiteForm(Form):
         label = u'郵便番号',
         validators=[
             JISX0208(), 
-            Regexp(u'^[0-9]{3}-[0-9]{4}$', message=u'000-0000形式で入力してください'),
+            Regexp(u'^([0-9]{3}-[0-9]{4})?$', message=u'000-0000形式で入力してください'),
         ]
     )
     prefecture = TextField(
