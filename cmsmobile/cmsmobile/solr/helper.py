@@ -3,7 +3,7 @@ from altaircms.solr import api as solrapi
 from altaircms.event.models import Event
 from altaircms.page.models import Page
 
-def searchEvents(request, word, area=None):
+def searchEvents(request, word):
     searcher = solrapi.get_fulltext_search(request)
     response = searcher.solr.select(word)
     events = getResultEvets(request, response)
