@@ -1,5 +1,5 @@
 <%page args="form" />
-<%namespace file="ticketing:templates/common/helpers.html" name="h" />
+<%namespace file="cmsmobile:templates/common/helpers.html" name="h" />
 <form action="/detailsearch" method="POST">
     <fieldset>
         ■フリーワード検索<br/>
