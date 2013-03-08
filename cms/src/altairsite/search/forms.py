@@ -8,10 +8,14 @@ from wtforms import widgets
 from wtforms import validators
 
 from .formparts import CheckboxListField
+from altaircms.formhelpers import CheckboxListField as NewCheckboxListField
 from .formparts import PutOnlyWidget
 from .formparts import CheckboxWithLabelInput
 from altaircms.formhelpers import MaybeSelectField
 from ..pyramidlayout import get_salessegment_kinds
+from ..pyramidlayout import get_top_category_genres
+from ..pyramidlayout import get_system_tags_from_genres
+
 import logging
 logger = logging.getLogger()
 import pkg_resources
@@ -136,69 +140,47 @@ class QueryPartForm(Form):
 
 ## todo:ジャンル
 class GenrePartForm(Form):
-    music = fields.BooleanField(label=u"音楽", widget=CheckboxWithLabelInput())
-    music_subgenre_choices = import_symbol("altaircms.seeds.categories.music:MUSIC_SUBCATEGORY_CHOICES")
-    music_subgenre = CheckboxListField(choices=music_subgenre_choices)
+    top = NewCheckboxListField(choices=[])
+    sub = NewCheckboxListField(choices=[])
 
-    stage = fields.BooleanField(label=u"演劇", widget=CheckboxWithLabelInput())
-    stage_subgenre_choices = import_symbol("altaircms.seeds.categories.stage:STAGE_SUBCATEGORY_CHOICES")
-    stage_subgenre = CheckboxListField(choices=stage_subgenre_choices)
+    def configure(self, request):
+        genres = get_top_category_genres(request)
+        self.top.choices = [(unicode(g.id), g.label) for g in genres]
+        self.for_render_subs = [[(unicode(x.id), x.label) for x in g.children] for g in genres]
+        self.sub.choices = [x for xs in self.for_render_subs for x in xs]
 
-    sports = fields.BooleanField(label=u"スポーツ", widget=CheckboxWithLabelInput())
-    sports_subgenre_choices = import_symbol("altaircms.seeds.categories.sports:SPORTS_SUBCATEGORY_CHOICES")
-    sports_subgenre = CheckboxListField(choices=sports_subgenre_choices)
-
-    other = fields.BooleanField(label=u"イベント・その他", widget=CheckboxWithLabelInput())
-    other_subgenre_choices = import_symbol("altaircms.seeds.categories.other:OTHER_SUBCATEGORY_CHOICES")
-    other_subgenre = CheckboxListField(choices=other_subgenre_choices)
-
-    ## 日本語へ変換する辞書
-    en_to_ja = {}
-    en_to_ja.update(music_subgenre_choices)
-    en_to_ja.update(sports_subgenre_choices)
-    en_to_ja.update(stage_subgenre_choices)
-    en_to_ja.update(other_subgenre_choices)
-    en_to_ja.update(music=u"音楽", stage=u"演劇", sports=u"スポーツ", other=u"イベント・その他")
-    ##
+    def ids_from_choices(self, choices):
+        return [p[0] for p in choices]
 
     def make_query_params(self):
-        data = self.data
-        genres = ["music", "stage", "sports", "other"]
-        sub_genres = [data["music_subgenre"], data["stage_subgenre"], data["sports_subgenre"], data["other_subgenre"]]
-        top_categories = [k for k in genres if data[k]]
+        subs = self.data["sub"]
+        sub_genre_id_list = [[x for x in subs if x in self.ids_from_choices(cands)] for cands in self.for_render_subs]
 
-        return {"top_categories": top_categories, 
-                "sub_categories": list(set([x for xs in sub_genres if xs for x in xs])), 
-                "category_tree": MarkedTree(check_all_list=top_categories,
-                                            translator=self.en_to_ja, 
-                                            tree=zip(genres, sub_genres)) ## for rendering html
+        label_dict = dict(self.top.choices)
+        label_dict.update(self.sub.choices)
+
+        return {"top_categories": self.data["top"], 
+                "sub_categories": self.data["sub"], 
+                "category_tree": MarkedTree(check_all_list=self.data["top"],
+                                            translator=label_dict, 
+                                            tree=zip(self.ids_from_choices(self.top.choices), sub_genre_id_list)) ## for rendering html
                 }
 
     def __html__(self): ## todo refactoring
-        return u"""
-<tr>
-  <td class="mostleft">%(music)s</td>
-  <td>%(music_subgenre)s</td>
-</tr>
-<tr>
-  <td class="mostleft">%(stage)s</td>
-  <td>%(stage_subgenre)s</td>
-</tr>
-<tr>
-  <td class="mostleft">%(sports)s</td>
-  <td>%(sports_subgenre)s</td>
-</tr>
-<tr>
-  <td class="mostleft">%(other)s</td>
-  <td>%(other_subgenre)s</td>
-</tr>
-""" % self
+        """top と sub NewCheckboxListFieldと合わせて"""
+        html = []
+        prefix = self._prefix or ""
+        for (t_id, t_label), subs in zip(self.top.choices, self.for_render_subs):
+            html.append(u"<tr>")
+            html.append(u'<td class="mostleft"><input name="%stop" value="%s" type="checkbox"/>%s</td>' % (prefix, t_id, t_label))
+            html.append(u"<td>")
+            for s_id, s_label in subs:
+                html.append(u'<input name="%ssub" value="%s" type="checkbox"/>%s' % (prefix, s_id, s_label))
+            html.append(u"</td>")
+            html.append(u"</tr>")
+        return u"\n".join(html)
             
-# todo:開催地
-# class AreaPartForm(Form):
-#     def __html__(self):
-#         return u"this-is-dummy"
-from altaircms.formhelpers import CheckboxListField as NewCheckboxListField
+
 class AreaPartForm(Form):
     hokkaido = fields.BooleanField(label=u"北海道", widget=CheckboxWithLabelInput()) 
     tohoku = fields.BooleanField(label=u"東北", widget=CheckboxWithLabelInput()) 

@@ -5,6 +5,7 @@ from datetime import datetime
 from zope.deprecation import deprecate
 
 from altaircms.tag.models import HotWord
+from altaircms.page.models import PageTag
 from altaircms.models import Category, Genre, SalesSegmentKind
 from markupsafe import Markup
 
@@ -30,9 +31,8 @@ class MyLayout(object):
         return get_salessegment_kinds(self.request)
 
     @property
-    def top_category_genres(self):
-        root = self.request.allowable(Genre).filter(Genre.is_root==True).first()
-        return [g for g in root.children if g.category_top_pageset_id]
+    def top_category_genre_list(self):
+        return get_top_category_genres(self.request, strict=True)
 
     _body_id = "index"
     @property
@@ -47,6 +47,16 @@ class MyLayout(object):
     def page_title_image(self):
         return self.header_images_dict.get(self.body_id, "")
 
+def get_top_category_genres(request, strict=False):
+    root = request.allowable(Genre).filter(Genre.is_root==True).first()
+    if not strict:
+        return root.children
+    return [g for g in root.children if g.category_top_pageset_id]
+
+
+def get_system_tags_from_genres(request, genres):
+    genres = [g.label for g in genres]
+    return PageTag.query.filter(PageTag.organization_id==None, PageTag.label.in_([genres]))
 
 def get_salessegment_kinds(request):
     return request.allowable(SalesSegmentKind).all()

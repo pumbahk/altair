@@ -53,7 +53,6 @@ class SearchByGenreTests(unittest.TestCase):
     2. ジャンルで選択。
     2.a 大ジャンルが選択
       genre = "music"
-      Category.filter(Category.name==genre).filter
     2.b 中ジャンルが選択
 
     """
@@ -73,15 +72,18 @@ class SearchByGenreTests(unittest.TestCase):
 
         from pyramid.testing import setUp
         self.config = setUp()
+        class organization:
+            id = 1
+        self.config.organization = organization
         self.config.include("altaircms.page.install_pageset_searcher")
 
     def _callFUT(self, *args,**kwargs):
         from altairsite.search.searcher import  search_by_genre
         return search_by_genre(*args, **kwargs)
 
-    def _genre(self, *args, **kwargs):
+    def _genre(self, **kwargs):
         from altaircms.models import Genre
-        o = Genre(*args, **kwargs)
+        o = Genre(organization_id=self.config.organization.id, **kwargs)
         self.session.add(o)
         return o
 

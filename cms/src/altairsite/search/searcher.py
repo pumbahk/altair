@@ -5,10 +5,9 @@ import datetime
 import logging
 logger = logging.getLogger(__file__)
 from altaircms.models import (
-   SalesSegment, 
    SalesSegmentGroup, 
-   Category, 
-   Performance
+   Performance, 
+   Genre
 )
 from altaircms.models import DBSession
 from altaircms.page.models import (
@@ -19,7 +18,6 @@ from altaircms.event.models import Event
 from altaircms.tag.models import (
    HotWord, 
    PageTag, 
-   PageTag2Page
 )
 
 from . import api
@@ -45,7 +43,7 @@ def _refine_pageset_collect_future(qs, _nowday=None):
 def _refine_pageset_search_order(qs):
    """  検索結果nの表示順序を変更。最も販売終了が間近なものを先頭にする
    """
-   return qs.order_by(sa.asc("event.deal_close"))
+   return qs.order_by(sa.asc(Event.deal_close))
 
 def _refine_pageset_only_published_term(qs, now=None):
    """ 公開期間中のページのみを集める
@@ -234,19 +232,22 @@ def search_by_events(qs, event_ids):
    else:
       return qs
 
-def search_by_genre(request, qs, *tag_id_list):
-    """ジャンル(と言う名のページタグ)からページセットを取り出す
+def search_by_genre(request, qs, *genre_id_list):
+    """
     :params qs:
     :return: query set of PageSet
     """
     ## どのチェックボックスもチェックされていない場合には絞り込みを行わない
-    if not any(tag_id_list):
+    if not any(genre_id_list):
        return qs
     xs = []
-    for ids in tag_id_list:
+    for ids in genre_id_list:
        xs.extend(ids)
+    tags = PageTag.query.filter(PageTag.label==Genre.label, PageTag.organization_id==None, Genre.organization_id==request.organization.id)
+    tag_id_list = tags.filter(Genre.id.in_(xs)).with_entities(PageTag.id).all()
+    tag_id_list = [x for xs in tag_id_list for x in xs]
     searcher = get_pageset_searcher(request)
-    return searcher.filter_by_system_tag_many(qs, xs)
+    return searcher.filter_by_system_tag_many(qs, tag_id_list)
 
 def events_by_area(qs, prefectures):
     if not prefectures:

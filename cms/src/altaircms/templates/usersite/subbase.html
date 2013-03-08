@@ -11,7 +11,7 @@ ${next.body()}
     <h2>ジャンル一覧</h2>
 
 	  <ul>
-		  % for g in layout.top_category_genres:
+		  % for g in layout.top_category_genre_list:
 		    <li><a href="${h.link.get_link_from_genre(request, g)}">${g.label}</a></li>
 		  % endfor
 </ul>
