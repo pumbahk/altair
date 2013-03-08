@@ -25,7 +25,8 @@ def move_detailsearch_post(request):
     qs = searcher.get_events_from_freeword(form)
     qs = searcher.get_events_from_area(form, qs)
     qs = searcher.get_events_from_sale(form, qs)
-    qs = searcher.get_events_start_on(form, qs)
+    qs = searcher.get_events_from_start_on(form, qs)
+    qs = searcher.get_events_from_salessegment(form, qs)
 
     form = get_event_paging(request=request, form=form, qs=qs)
     form = create_genre_selectbox(request, form)

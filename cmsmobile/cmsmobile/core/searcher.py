@@ -2,7 +2,7 @@
 import logging
 from cmsmobile.solr import helper
 from pyramid.httpexceptions import HTTPNotFound
-from altaircms.models import Performance
+from altaircms.models import Performance, SalesSegmentGroup, SalesSegmentKind
 from altaircms.event.models import Event
 from altaircms.models import Genre
 from cmsmobile.core.const import get_prefecture
@@ -24,6 +24,8 @@ class EventSearcher(object):
         else: # 新規検索
             qs = self.request.allowable(Event) \
                 .join(Performance, Event.id == Performance.event_id) \
+                .join(SalesSegmentGroup, SalesSegmentGroup.event_id == Event.id) \
+                .join(SalesSegmentKind, SalesSegmentKind.id == SalesSegmentGroup.kind_id) \
                 .filter(Event.is_searchable == True) \
                 .filter(where)
         return qs
@@ -121,12 +123,21 @@ class EventSearcher(object):
         return qs
 
     # 公演日検索
-    def get_events_start_on(self, form, qs=None):
+    def get_events_from_start_on(self, form, qs=None):
         # validater入れる
         #since_open = datetime(form.since_year.data, form.since_month.data, form.since_day.data)
         #open = datetime(form.year.data, form.month.data, form.day.data)
         since_open = datetime(2013, 3, 9)
         open = datetime(2014, 3, 9)
         where = (since_open <= Event.event_open) & (open >= Event.event_open)
+        qs = self._create_common_qs(where=where, qs=qs)
+        return qs
+
+    # 販売区分別
+    def get_events_from_salessegment(self, form, qs=None):
+        label = "一般販売"
+        if form.sales_segment.data:
+            label = "一般先行"
+        where = SalesSegmentKind.label == label
         qs = self._create_common_qs(where=where, qs=qs)
         return qs
