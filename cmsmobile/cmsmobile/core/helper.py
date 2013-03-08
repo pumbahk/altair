@@ -83,3 +83,11 @@ def get_purchase_links(request, event):
         link = get_purchase_page_from_performance(request=request, performance=perf)
         links.update({perf.id:link})
     return links
+
+def get_tickets(event):
+    tickets = {}
+    for group in event.salessegment_groups:
+        for segment in group.salessegments:
+            for ticket in segment.tickets:
+                tickets.update({ticket.name:ticket.price})
+    return tickets

@@ -1,4 +1,4 @@
-<%page args="event, week, month_unit, month_unit_keys, purchase_links" />
+<%page args="event, week, month_unit, month_unit_keys, purchase_links, tickets" />
 
 公演期間：${event.deal_open.year}/${event.deal_open.month}/${event.deal_open.day}(${week[event.deal_open.weekday()]})-${event.deal_close.year}/${event.deal_close.month}/${event.deal_close.day}(${week[event.deal_close.weekday()]})<br/>
 <p/>
@@ -43,7 +43,12 @@
 % endif
 <p/>
 
-席種/価格<br/>
+% if tickets:
+    席種/価格<br/>
+    % for name in tickets.keys():
+        ${name}:${tickets[name]}<br/>
+    % endfor
+% endif
 <p/>
 
 % if event.inquiry_for:

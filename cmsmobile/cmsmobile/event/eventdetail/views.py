@@ -2,7 +2,7 @@
 from pyramid.view import view_config
 from altaircms.event.models import Event
 from cmsmobile.event.eventdetail.forms import EventDetailForm
-from cmsmobile.core.helper import get_week_map, get_performances_month_unit, get_purchase_links
+from cmsmobile.core.helper import get_week_map, get_performances_month_unit, get_purchase_links, get_tickets
 
 class ValidationFailure(Exception):
     pass
@@ -21,6 +21,7 @@ def move_eventdetail(request):
     keys = form.month_unit.data.keys()
     keys.sort()
     form.month_unit_keys.data = keys
+    form.tickets.data = get_tickets(form.event.data)
     return {'form':form}
 
 @view_config(route_name='eventdetail', context=ValidationFailure, renderer='cmsmobile:templates/common/error.mako')
