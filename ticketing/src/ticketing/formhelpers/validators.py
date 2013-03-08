@@ -3,7 +3,7 @@
 import re
 from wtforms import validators
 from ticketing.helpers import todatetime
-from datetime import date
+from datetime import date, datetime
 
 __all__ = (
     'Required',
