@@ -125,7 +125,7 @@ form = TopPageSidebarSearchForm()
             <dd>
               <ul>
                 %for w in layout.hotword_list():
-                <li><a href="${request.route_path("page_search_by", kind="hotword")}"></a></li>
+                <li><a href="${request.route_path("page_search_by", kind="hotword", value=w.id)}">${w.name}</a></li>
                 %endfor
               </ul>
             </dd>

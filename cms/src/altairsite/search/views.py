@@ -1,10 +1,11 @@
 # -*- coding:utf-8 -*-
 from pyramid.view import view_config
 from pyramid.view import view_defaults
+from altaircms.tag.models import HotWord
 from webob.multidict import MultiDict
 from pyramid.httpexceptions import HTTPNotFound
 import logging
-
+import sqlalchemy.orm as orm
 from . import forms
 from . import searcher
 
@@ -204,10 +205,14 @@ class SearchByKindView(object):
         """ ホットワードの飛び先
         """
         try:
-            hotword = self.request.matchdict["value"]
+            hotword_id = self.request.matchdict["value"]
+            hotword = self.request.allowable(HotWord).filter(HotWord.id==hotword_id, HotWord.enablep == True)
+            hotword = hotword.options(orm.joinedload("tag")).first()
+            if hotword is None:
+                logger.warn("hot word is not found" % hotword_id)
             self.request.body_id = "search"
             query_params = {"hotword": hotword, 
-                            "query_expr_message": u"ホットワード:%s" % hotword}
+                            "query_expr_message": u"ホットワード:%s" % hotword.name}
             result_seq = self.context.get_result_sequence_from_query_params(
                 query_params,
                 searchfn=searcher.get_pageset_query_from_hotword

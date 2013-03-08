@@ -10,6 +10,7 @@ from ..separation import selectable_renderer, tstar_mobile_or_not_renderer
 @view_config(context="pyramid.exceptions.Forbidden", 
              renderer=selectable_renderer("altaircms:templates/usersite/errors/%(prefix)s/forbidden.html"))
 def forbidden(request):
+    request.body_id = "error"
     request.response.status = 401
     return {}
 
@@ -20,5 +21,6 @@ def forbidden(request):
 @view_config(context="pyramid.exceptions.NotFound", 
              renderer=selectable_renderer("altaircms:templates/usersite/errors/%(prefix)s/notfound.html"))
 def notfound(request):
+    request.body_id = "error"
     request.response.status = 404 
     return {}

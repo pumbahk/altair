@@ -55,7 +55,7 @@ form = TopPageSidebarSearchForm()
 
     <!--************************************* webフォント使ったら怒られるかな？************************************hiromi****** -->
     <link href='http://fonts.googleapis.com/css?family=Changa+One' rel='stylesheet' type='text/css'>
-      <!--************************************* webフォント使ったら怒られるかな？************************************hiromi****** -->
+     <!--************************************* webフォント使ったら怒られるかな？************************************hiromi****** -->
       
       <link rel="shortcut icon" href="/static/ticketstar/img/common/favicon.ico" />
       <link rel="stylesheet" href="/static/ticketstar/css/import.css" type="text/css" media="all" />
@@ -121,7 +121,7 @@ form = TopPageSidebarSearchForm()
             <dd>
               <ul>
                 %for w in layout.hotword_list():
-                <li><a href="${request.route_path("page_search_by", kind="hotword")}"></a></li>
+                <li><a href="${request.route_path("page_search_by", kind="hotword", value=w.id)}">${w.name}</a></li>
                 %endfor
               </ul>
             </dd>

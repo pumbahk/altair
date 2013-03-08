@@ -204,10 +204,9 @@ def get_pageset_query_fullset(request, query_params):
     return  _refine_pageset_qs(qs)
 
 
-def search_by_hotword(request, qs, word):
+def search_by_hotword(request, qs, hotword):
    """　hotwordの検索
    """
-   hotword = request.allowable(HotWord).filter(HotWord.name==word, HotWord.enablep == True).first()
    if hotword is None:
       return qs
    searcher = get_pageset_searcher(request)
