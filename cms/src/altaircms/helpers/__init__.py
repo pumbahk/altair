@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import urllib
 from . import base
 from . import asset
 from . import event
@@ -158,3 +159,13 @@ def route_path_override(request, path, _query=None, _dels=None, **kwargs):
 def current_route_path_override(request, _query=None, _dels=None, **kwargs):
     qdict = _merge_dict(request.GET, other=_query, dels=_dels)
     return request.current_route_path(_query=qdict, **kwargs)
+
+def safe_url_quote(url):
+    try:
+        return urllib.quote(url)
+    except KeyError:
+        try:
+            urllib.quote(url.encode("utf-8"))
+        except:
+            return ""
+        
