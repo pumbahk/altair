@@ -7,14 +7,12 @@ from wtforms import fields
 from wtforms import widgets
 from wtforms import validators
 
-from .formparts import CheckboxListField
 from altaircms.formhelpers import CheckboxListField as NewCheckboxListField
 from .formparts import PutOnlyWidget
 from .formparts import CheckboxWithLabelInput
 from altaircms.formhelpers import MaybeSelectField
 from ..pyramidlayout import get_salessegment_kinds
 from ..pyramidlayout import get_top_category_genres
-from ..pyramidlayout import get_system_tags_from_genres
 
 import logging
 logger = logging.getLogger()
