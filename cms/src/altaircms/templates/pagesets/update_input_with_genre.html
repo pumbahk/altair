@@ -1,0 +1,37 @@
+<%inherit file='../layout_2col.html'/>
+
+<%namespace name="fco" file="../formcomponents.html"/>
+<div class="circle ${request.context.circle_type} circle-top"></div>
+<div class="row">
+    <h3>${master_env.title}更新</h3>
+    <p>ジャンルの設定とurlは連動しています</p>
+    <form action="${h.current_route_path_override(request, action="confirm",id=request.matchdict["id"])}" method="POST">
+       ${fco.form_as_table_strict(form, display_fields)}
+        <button class="btn" type="submit">保存</button>
+    </form>
+    <script type="text/javascript">
+      var propagate_data = function propagate_data(data){
+          var root = $("form");
+          root.find("input[name='url']").val(data.url);
+         $(".alert-info").remove();
+         $(".row").prepend($("<div class='alert alert-info'>").text(data.caption+" -- ページ設定の初期値が挿入されました --  変更前のurl:${master_env.obj.url}"));
+      };
+
+
+      $("#genre_id").on("change",function(e){
+%if master_env.obj.event_id:
+         var params = {"event": "${master_env.obj.event_id}", "pagetype": "${master_env.obj.pagetype_id}", "name": ""};
+%else:
+         var params = {"pagetype": "${master_env.obj.pagetype_id}","name": ""};
+%endif
+         params["genre"] = $(e.currentTarget).val();
+        $.getJSON("${request.route_path("plugins_api_page_info_default")}",params).done(function(data,status,req){
+            if (data.error){
+                 alert(data.error);
+            } else {
+                 propagate_data(data);
+            }
+        }).fail(function(data){alert(data)});
+      });
+    </script>
+</div>

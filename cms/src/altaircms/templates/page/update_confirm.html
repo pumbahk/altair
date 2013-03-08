@@ -5,9 +5,6 @@
 <h2>更新確認画面 ページのタイトル - ${page.title} (ID: ${page.id})</h2>
 
 <div class="row">
-  <div class="alert alert-info">
-  データ更新確認画面
-  </div>
     ${co.page_difference(page, dict(params))}
 
     <form action="${h.page.to_update(request,page)}" method="POST">
