@@ -12,6 +12,14 @@ from sqlalchemy import engine_from_config
 
 def main(global_config, **settings):
 
+    config = Configurator(settings=settings)
+
+    def altair_orderreview_url(request):
+        return config.registry.settings["altair.orderreview.url"]
+
+    def getti_orderreview_url(request):
+        return config.registry.settings["getti.orderreview.url"]
+
     engine = engine_from_config(settings, 'sqlalchemy.', pool_recycle=3600)
     sqlahelper.get_session().remove()
     sqlahelper.add_engine(engine)
@@ -20,6 +28,8 @@ def main(global_config, **settings):
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_static_view('static', 'static', cache_max_age=3600)
 
+    config.set_request_property(altair_orderreview_url, "altair_orderreview_url", reify=True)
+    config.set_request_property(getti_orderreview_url, "getti_orderreview_url", reify=True)
     config.set_request_property("altaircms.auth.api.get_allowable_query", "allowable", reify=True)
 
     config.include('cmsmobile.event.company')
@@ -30,6 +40,7 @@ def main(global_config, **settings):
     config.include('cmsmobile.event.hotword')
     config.include('cmsmobile.event.information')
     config.include('cmsmobile.event.search')
+    config.include('cmsmobile.event.orderreview')
 
     config.include('altaircms.solr')
     config.include('altaircms.tag')
