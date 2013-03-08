@@ -15,11 +15,17 @@
         <hr/>
         <a href="/eventdetail?event_id=${event.id}">${event.title}</a><br/>
         販売：${event.deal_open.year}/${event.deal_open.month}/${event.deal_open.day}(${week[event.deal_open.weekday()]})〜${event.deal_close.year}/${event.deal_close.month}/${event.deal_close.day}(${week[event.deal_close.weekday()]})<br/>
-        % if len(event.performances):
-            会場：
-            % for perf in event.performances:
-                ${perf.venue}<br/>
+        % if event.performances[0]:
+            会場：${event.performances[0].venue}<br/>
+
+            % for group in event.salessegment_groups:
+                % for segment in group.salessegments:
+                    % for ticket in segment.tickets:
+                        ${ticket.name}：${ticket.price}<br/>
+                    % endfor
+                % endfor
             % endfor
+            <p/>
         % endif
     % endfor
 % endif
