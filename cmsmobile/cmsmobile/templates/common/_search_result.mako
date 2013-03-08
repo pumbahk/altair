@@ -15,6 +15,12 @@
         <hr/>
         <a href="/eventdetail?event_id=${event.id}">${event.title}</a><br/>
         販売：${event.deal_open.year}/${event.deal_open.month}/${event.deal_open.day}(${week[event.deal_open.weekday()]})〜${event.deal_close.year}/${event.deal_close.month}/${event.deal_close.day}(${week[event.deal_close.weekday()]})<br/>
+        % if len(event.performances):
+            会場：
+            % for perf in event.performances:
+                ${perf.venue}<br/>
+            % endfor
+        % endif
     % endfor
 % endif
 <p/>
