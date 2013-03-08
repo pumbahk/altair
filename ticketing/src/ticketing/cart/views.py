@@ -196,9 +196,10 @@ class IndexView(IndexViewMixin):
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.matchdict['performance_id']
         sales_segment_id = self.request.matchdict['sales_segment_id']
+        #performance = c_models.Performance.query.filter_by(id=performance_id).one()
+        performance = self.request.context.performance
 
         seat_type_triplets = get_seat_type_triplets(event_id, performance_id, sales_segment_id)
-        performance = c_models.Performance.query.filter_by(id=performance_id).one()
         data = dict(
             seat_types=[
                 dict(

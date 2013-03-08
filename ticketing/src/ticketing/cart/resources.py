@@ -21,7 +21,10 @@ from ticketing.payments.interfaces import IOrderPayment, IOrderDelivery
 from ticketing.mails.interfaces import ICompleteMailPayment, ICompleteMailDelivery, IOrderCancelMailPayment, IOrderCancelMailDelivery
 from ticketing.mails.resources import CompleteMailPayment, CompleteMailDelivery, OrderCancelMailPayment, OrderCancelMailDelivery
 
-from .exceptions import OutTermSalesException
+from .exceptions import (
+    OutTermSalesException,
+    NoPerformanceError,
+)
 from ..core import models as c_models
 from ..core import api as core_api
 from ..users import models as u_models
@@ -84,6 +87,18 @@ class TicketingCartResource(object):
             except NoResultFound:
                 self._event = None
         return self._event
+
+
+    @property
+    def performance(self):
+        performance_id = self.request.matchdict['performance_id']
+        try:
+            return c_models.Performance.query.filter_by(id=performance_id).one()
+        except NoResultFound:
+            raise NoPerformanceError
+
+
+
 
     @property
     def membergroups(self):
