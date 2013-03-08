@@ -1,6 +1,6 @@
 <%page args="event, week, month_unit, month_unit_keys, purchase_links" />
 
-公演期間：${event.deal_open.year}/${event.deal_open.month}/${event.deal_open.day}(${week[event.deal_open.weekday()]})〜${event.deal_close.year}/${event.deal_close.month}/${event.deal_close.day}(${week[event.deal_close.weekday()]})<br/>
+公演期間：${event.deal_open.year}/${event.deal_open.month}/${event.deal_open.day}(${week[event.deal_open.weekday()]})-${event.deal_close.year}/${event.deal_close.month}/${event.deal_close.day}(${week[event.deal_close.weekday()]})<br/>
 <p/>
 
 公演一覧へ<br/>
@@ -29,6 +29,12 @@
 <hr/>
 <h3><a name="detail">公演詳細</a></h3>
 販売区分<br/>
+% if event.salessegment_groups:
+    % for segment in event.salessegment_groups:
+        ${segment.kind}:
+        ${segment.start_on.year}/${segment.start_on.month}/${segment.start_on.day}-${segment.end_on.year}/${segment.end_on.month}/${segment.end_on.day}
+    % endfor
+% endif
 <p/>
 
 % if event.description:
