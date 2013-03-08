@@ -216,6 +216,8 @@ def search_by_hotword(request, qs, word):
 def search_by_freeword(request, qs, words, query_cond):
     pageset_ids = api.pageset_id_list_from_words(request, words, query_cond)
     logger.info("pageset_id: %s" % pageset_ids)
+    if not pageset_ids:
+       return qs
     return qs.filter(PageSet.id.in_(pageset_ids))
 
 def _extract_tags(params, k):

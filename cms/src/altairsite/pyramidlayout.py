@@ -59,7 +59,7 @@ def get_system_tags_from_genres(request, genres):
     return PageTag.query.filter(PageTag.organization_id==None, PageTag.label.in_([genres]))
 
 def get_salessegment_kinds(request):
-    return request.allowable(SalesSegmentKind).all()
+    return request.allowable(SalesSegmentKind).filter_by(publicp=True).all()
     
 def get_salessegment_groups(request):
     request.allowable()
