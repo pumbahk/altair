@@ -18,19 +18,11 @@ def search(request):
 
     searcher = EventSearcher(request)
 
-    # freeword, genre, subgenre
     qs = searcher.get_events_from_freeword(form)
-
-    # 地域検索
     qs = searcher.get_events_from_area(form, qs)
-
-    # week_sale
     qs = searcher.get_events_week_sale(form, qs)
-
-    # coming soon
     qs = searcher.get_events_soon_act(form, qs)
 
-    # paging
     form = get_event_paging(request=request, form=form, qs=qs)
 
     # パンくずリスト用

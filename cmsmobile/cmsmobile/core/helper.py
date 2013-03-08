@@ -14,6 +14,12 @@ def log_info(key, msg):
 def log_warn(key, msg):
     logger.warning("*" + key + "* : " + msg)
 
+def log_exception(key, msg):
+    logger.exception("*" + key + "* : " + msg)
+
+def log_error(key, msg):
+    logger.error("*" + key + "* : " + msg)
+
 # umm..
 def exist_value(value):
 

@@ -10,7 +10,7 @@ from cmsmobile.core.helper import exist_value
 from cmsmobile.core.const import SalesEnum
 from sqlalchemy import or_, and_, asc
 from datetime import datetime, date, timedelta
-from cmsmobile.core.helper import log_debug, log_info, log_warn
+from cmsmobile.core.helper import log_debug, log_info, log_warn, log_exception, log_error
 
 class EventSearcher(object):
 
@@ -57,6 +57,7 @@ class EventSearcher(object):
                 ids = self._create_ids(events)
                 qs = self._create_common_qs(where=Event.id.in_(ids))
             except Exception, e:
+                log_error("solr", "solr instance is not lunched.")
                 raise HTTPNotFound
         return qs
 
