@@ -1,4 +1,6 @@
-<%include file='../common/_header.mako' args="title=u'ホットワード'"/>
+<!DOCTYPE html>
+<html>
+    <%include file='../common/_header.mako' args="title=u'ホットワード'"/>
 <body>
 <a href="/">トップ
 

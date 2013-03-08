@@ -1,4 +1,6 @@
-<%include file='../common/_header.mako' args="title=u'検索結果'"/>
+<!DOCTYPE html>
+<html>
+    <%include file='../common/_header.mako' args="title=u'検索結果'"/>
 <body>
 <a href="/">トップ</a> >> ${form.navi_area.data + u"で" if form.navi_area.data else ""}「${form.word.data}」を含む公演<p/>
 

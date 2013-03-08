@@ -1,4 +1,6 @@
-<%include file='../common/_header.mako' args="title=u'詳細検索'"/>
+<!DOCTYPE html>
+<html>
+    <%include file='../common/_header.mako' args="title=u'詳細検索'"/>
 
 <body>
 <a href="/">トップ</a> >> 詳細検索<p/>

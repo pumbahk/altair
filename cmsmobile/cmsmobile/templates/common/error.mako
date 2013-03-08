@@ -1,4 +1,6 @@
-<%include file='../common/_header.mako' args="title=u'エラーページ'"/>
+<!DOCTYPE html>
+<html>
+    <%include file='../common/_header.mako' args="title=u'エラーページ'"/>
 <body>
 <a href="/">トップ</a> >> エラーページ<p/>
 

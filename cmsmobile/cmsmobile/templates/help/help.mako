@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+<html>
 <%include file="../common/_header.mako" args="title=u'ヘルプ'"/>
 <body>
 
