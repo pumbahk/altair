@@ -309,15 +309,14 @@ def get_performance_sales_summary(form, organization):
 def get_performance_sales_detail(form, event):
     performances_reports = {}
     for performance in event.performances:
-        if form.limited_from.data and performance.end_on < form.limited_from.data:
-            continue
         report_by_sales_segment_group = {}
-        for sales_segment in performance.sales_segments:
-            if (form.limited_from.data and sales_segment.end_at < todatetime(form.limited_from.data)) or (form.limited_to.data and todatetime(form.limited_to.data) <= sales_segment.start_at):
-                continue
-            form.performance_id.data = performance.id
-            form.sales_segment_group_id.data = sales_segment.sales_segment_group_id
-            report_by_sales_segment_group[sales_segment.sales_segment_group.name] = get_performance_sales_summary(form, event.organization)
+        if form.limited_from.data is None or performance.end_on is None or form.limited_from.data < performance.end_on:
+            for sales_segment in performance.sales_segments:
+                if (form.limited_from.data is None or todatetime(form.limited_from.data) < sales_segment.end_at) or\
+                   (form.limited_to.data is None or sales_segment.start_at <= todatetime(form.limited_to.data)):
+                    form.performance_id.data = performance.id
+                    form.sales_segment_group_id.data = sales_segment.sales_segment_group_id
+                    report_by_sales_segment_group[sales_segment.sales_segment_group.name] = get_performance_sales_summary(form, event.organization)
         performances_reports[performance.id] = dict(
             performance=performance,
             report_by_sales_segment_group=report_by_sales_segment_group

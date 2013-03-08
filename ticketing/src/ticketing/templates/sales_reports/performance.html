@@ -108,9 +108,11 @@
       <%
         if stock_id == performance_report['stock_id']:
           continue
-        count = len(stock_reports[performance_report['stock_id']])
+        else:
+          stock_id = performance_report['stock_id']
+        count = len(stock_reports[stock_id])
       %>
-      % for i, report in enumerate(zip(stock_reports[performance_report_total['stock_id']], stock_reports_total[performance_report_total['stock_id']])):
+      % for i, report in enumerate(zip(stock_reports[stock_id], stock_reports_total[stock_id])):
   <tr>
         % if i == 0:
     <td rowspan="${count}">${report[0]['stock_type_name']}</td>
@@ -146,7 +148,6 @@
     %>
   </tr>
       % endfor
-      <% stock_id = performance_report['stock_id'] %>
     % endfor
   <tr>
     <td colspan="4">合計</td>
