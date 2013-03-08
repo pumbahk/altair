@@ -98,9 +98,9 @@ class SearchByKindView(object):
         """ ジャンルで検索
         """
         try:
-            params = MultiDict({self.request.matchdict["value"]: "on"})
+            params = MultiDict({"top": self.request.matchdict["value"], "sub": self.request.matchdict["value"]})
             self.request.body_id = "search"
-            query_params = forms.GenrePartForm(params).make_query_params()
+            query_params = forms.GenrePartForm(params).configure(self.request).make_query_params()
 
             result_seq = self.context.get_result_sequence_from_query_params(
                 query_params,
@@ -140,9 +140,9 @@ class SearchByKindView(object):
         """ 販売条件で検索した結果を表示
         """
         try:
-            params = MultiDict({self.request.matchdict["value"]: True})
+            params = MultiDict({"deal_cond": self.request.matchdict["value"]})
             self.request.body_id = "search"
-            query_params = forms.DealCondPartForm(params).make_query_params()
+            query_params = forms.DealCondPartForm(params).configure(self.request).make_query_params()
             result_seq = self.context.get_result_sequence_from_query_params(
                 query_params,
                 searchfn=searcher.get_pageset_query_from_deal_cond

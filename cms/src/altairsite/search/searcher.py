@@ -94,7 +94,7 @@ def get_pageset_query_from_genre(request, query_params):
     qs = request.allowable(PageSet)
     qs = _refine_pageset_collect_future(qs)
     if query_params.get("top_categories") or query_params.get("sub_categories"):
-       qs = search_by_genre(request, qs, query_params.get("top_categories"), query_params.get("sub_categories"), qs=qs)
+       qs = search_by_genre(request, qs, query_params.get("top_categories"), query_params.get("sub_categories"))
        return  _refine_pageset_qs(qs)
     else:
        return _refine_pageset_qs(qs.filter(PageSet.event_id!=None)) # empty set query is good for that?

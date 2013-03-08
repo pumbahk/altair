@@ -146,11 +146,13 @@ class GenrePartForm(Form):
         self.top.choices = [(unicode(g.id), g.label) for g in genres]
         self.for_render_subs = [[(unicode(x.id), x.label) for x in g.children] for g in genres]
         self.sub.choices = [x for xs in self.for_render_subs for x in xs]
+        return self
 
     def ids_from_choices(self, choices):
         return [p[0] for p in choices]
 
     def make_query_params(self):
+        self.validate()
         subs = self.data["sub"]
         sub_genre_id_list = [[x for x in subs if x in self.ids_from_choices(cands)] for cands in self.for_render_subs]
 
@@ -275,12 +277,14 @@ class PerformanceTermPartForm(Form):
 class DealCondPartForm(Form):
     deal_cond = NewCheckboxListField(choices=[])
     def configure(self, request):
-        self.deal_cond.choices = [(k.id, k.label) for k in get_salessegment_kinds(request)]
+        self.deal_cond.choices = [(unicode(k.id), k.label) for k in get_salessegment_kinds(request)]
+        return self
 
     def __html__(self):
         return u"%(deal_cond)s" % self
 
     def make_query_params(self):
+        self.validate()
         return self.data
 
 ## todo:付加サービス
