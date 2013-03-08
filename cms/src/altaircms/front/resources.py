@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 
-
+import sqlalchemy as sa
 import logging
 logger = logging.getLogger(__file__)
 
@@ -91,6 +91,11 @@ class AccessControl(object):
         self.access_ok = True
         return self._check_page_is_accessable(page, access_key)
 
+    def _retry_page(self, pageset, published):
+        if published:
+            return None
+        return self.request.allowable(Page).filter(Page.pageset_id==pageset.id).order_by(sa.desc(Page.updated_at)).first()
+
     def fetch_page_from_pagesetid(self, pageset_id, published=True):
         ## pagesetはクライアントから確認しない。allowableが正しい。
         pageset = self.request.allowable(PageSet).filter_by(id=pageset_id).first()
@@ -104,9 +109,11 @@ class AccessControl(object):
         page = pageset.current(published=published)
 
         if page is None:
-            self.access_ok = False
-            self._error_message.append("*fetch page* pageset(id=%s) has not accessable children" % pageset.id)
-            return page
+            page = self._retry_page(pageset, published)
+            if page is None:
+                self.access_ok = False
+                self._error_message.append("*fetch page* pageset(id=%s) has not accessable children" % pageset.id)
+                return None
 
         try:
             page.valid_layout()
