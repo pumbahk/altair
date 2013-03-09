@@ -29,6 +29,7 @@ var InfoService = {
     }
 };
 
+
 /*
 *** Model ***
 
@@ -118,17 +119,24 @@ var Block = MyModel.extend({
             widgets: []
         };
     }, 
-    pop: function(w){
+    pop: function(w, balancep){
         var widgets = this.get("widgets")
         var i = w.get_index();
         widgets[i] = null;
         // this.set("widgets", _(widgets).compact());
-        this.balance();
+        if(balancep){
+            this.balance();
+        }
     }, 
     append: function(w){
         this.get("widgets").push(w)
         w.parent = this;
         this.trigger("*block.append.widget", w);
+        this.balance();
+    }, 
+    insert: function(w){
+        this.get("widgets").push(w)
+        w.parent = this;
         this.balance();
     }, 
     balance: function(){
@@ -139,7 +147,7 @@ var Block = MyModel.extend({
         console.log("  order -- before: "+_(this.get("widgets")).map(function(w){return w.cid;}));
         var D = {}
         _(this.get("widgets")).each(function(w){D[w.cid] = w});
-        this.set("widgets", _(order_cid_list).map(function(cid){return D[cid];}))
+        this.set("widgets", _.chain(order_cid_list).compact().map(function(cid){return D[cid];}).value());
         console.log("  order -- after: "+_(this.get("widgets")).map(function(w){return w.cid;}));
     }
 });
@@ -165,7 +173,7 @@ var Widget = MyModel.extend({
         if(!!memo){
             return memo;
         } else {
-            return this.get("source").describe();
+            return this.get("source").describe()+": "+this.cid;
         }
     }, 
     get_index: function(){
@@ -173,8 +181,10 @@ var Widget = MyModel.extend({
         return _(this.widgets).find(function(w){return w.cid == cid});
     }, 
     move: function(dst){
-        this.parent.pop(this);
-        dst.append(this);
+        console.log(this.parent.get("name"), dst.get("name"));
+        this.parent.pop(this, this.parent != dst);
+        console.log(this.parent.get("name"), dst.get("name"));
+        dst.insert(this);
     }
 });
 
@@ -224,7 +234,14 @@ var PaletView = MyView.extend({
             var sourceView = self.sourceCreator.create(self, el);
         });
         $widgets.draggable({
-            revert: true,
+            connectToSortable: ".block", 
+            helper: function(el, ev){
+                var $el = $(this);
+                var helper = $el.clone().removeAttr("id").attr("id", "widgethelper");
+                helper.data("view", $el.data("view"));
+                return helper;
+            }, 
+            revert: 'invalid', 
             distance: 5, 
             start: LayoutService.highlight_disable, 
             stop: LayoutService.highlight_enable
@@ -238,7 +255,8 @@ var WidgetSourceView = MyView.extend({
         WidgetSourceView.__super__.initialize.call(this, opts);
         this.parent = opts.parent;
     }, 
-    onMoved: function(blockView){
+    onMoved: function(blockView, ui){
+        $(ui.item).remove();
         blockView.model.append(new Widget({source: this.model}));
     }, 
     createModel: function(Model){
@@ -261,15 +279,16 @@ var BlockSheetView = MyView.extend({
         _($blocks).each(function(el){
             var blockView = self.blockCreator.create(self, el);
         });
-        $blocks.droppable({
-            drop: function(ev, ui){
-                var el = ui.draggable; // a element of widget or widget source
+        $blocks.sortable({
+            connectWith: ".block", 
+            helper: "original", 
+            beforeStop: function(ev, ui){
+                var el = $(ui.helper);
                 if(!(el || !el.data)){return;}
                 var view = el.data("view");
                 if(!view || !view.onMoved){return;}
-                view.onMoved($(this).data("view"));
-            }
-        });
+                view.onMoved($(this).data("view"), ui);
+            }});
     }
 });
 
@@ -287,13 +306,12 @@ var BlockView = MyView.extend({
         return model
     }, 
     onAppendWidget: function(widget){
-        var view = new DroppedWidgetView({model: widget});
+        var view = new DroppedWidgetView({model: widget, parent:this});
         view.model.bind("destroy", this.onBalance, this);
-        this.len = this.findDropWidgetElements().length;
         this.$el.append(view.render().el);
     }, 
     findDropWidgetElements: function(){
-        return this.$el.find(".dropped-widget");
+        return this.$el.find(".dropped-widget:not(.ui-sortable-placeholder)");
     }, 
     onBalance: function(){
         return this._onBalance(10);
@@ -301,7 +319,7 @@ var BlockView = MyView.extend({
     _onBalance: function(n){
         var $widgets = this.findDropWidgetElements();
         var curLen = $widgets.length;
-        if (this.len == curLen){
+        if ((curLen > 0) && (this.$el.find(".dropped-widget.update-mark").length <= 0)){
             var self = this;
             if(n > 0){
                 return setTimeout(function(){return self._onBalance(n-1);}, 100);
@@ -309,13 +327,13 @@ var BlockView = MyView.extend({
                 alert("fail. rebalance.");
             }
         } else{
-            this.len = curLen;
             if(curLen <= 0){
                 this.$el.addClass("noitem");
             }else{
                 this.$el.removeClass("noitem");
             }
             this.model.reorder_by_cid(_($widgets).map(function(e){return $(e).attr("cid");}));
+            $widgets.removeClass("update-mark");
         }
     }
 });
@@ -329,19 +347,28 @@ var DroppedWidgetView = MyView.extend({
     ].join("\n")), 
     initialize: function(opts){
         DroppedWidgetView.__super__.initialize.call(this, opts);
+        this.parent = opts.parent;
         this.$el.data("view", this);
     }, 
     render: function(opts){
         var e = $(this.el).html(this.template({describe: this.model.describe()}));
-        e.attr("cid", this.model.cid).draggable({
-            revert: true,
-            cancel: "a", 
-            distance: 5, 
-            start: LayoutService.highlight_disable, 
-            stop: LayoutService.highlight_enable
-
-        });
+        e.addClass("update-mark").attr("cid", this.model.cid);
         return this;
+    }, 
+    _onMoved: function(blockView, n){
+        var $dst = this.$el.parents(".block");
+        if(!!$dst){
+            var dstView = $dst.data("view");
+            this.parent = dstView;
+            this.model.move(dstView.model);
+        }else if(n>0){
+            setTimeout(function(){this.onMoved(blockView, n-1)}.bind(this), 100);
+        }
+    }, 
+    onMoved: function(blockView){
+        this.parent.findDropWidgetElements().addClass("update-mark");
+        this.$el.addClass("update-mark");
+        this._onMoved(blockView, 10);
     }
 });
 
