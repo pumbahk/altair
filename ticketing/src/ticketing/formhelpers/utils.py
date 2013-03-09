@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 
 __all__ = (
     'days_of_month',
