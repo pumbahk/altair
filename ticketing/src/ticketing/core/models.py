@@ -803,8 +803,6 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
               - StockType
               - StockHolder
               - SalesSegmentGroup
-                - PaymentDeliveryMethodPair
-                - SalesSegment (performance_id is None)
               - Product (performance_id is None)
               - Performance
                 - (この階層以下はPerformance.add()を参照)
@@ -831,16 +829,10 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     StockHolder.create_from_template(template=template_stock_holder, event_id=self.id)
                 )
 
-            # create SalesSegmentGroup - PaymentDeliveryMethodPair
+            # create SalesSegmentGroup
             for template_sales_segment_group in template_event.sales_segment_groups:
                 convert_map['sales_segment_group'].update(
-                    SalesSegmentGroup.create_from_template(template=template_sales_segment_group, with_payment_delivery_method_pairs=True, event_id=self.id)
-                )
-
-            # create Product
-            for template_product in template_event.products:
-                convert_map['product'].update(
-                    Product.create_from_template(template=template_product, event_id=self.id, **convert_map)
+                    SalesSegmentGroup.create_from_template(template=template_sales_segment_group, event_id=self.id)
                 )
 
             # create Performance
@@ -864,11 +856,14 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                         .filter_by(performance_id=performance.id)\
                         .update({'stock_holder_id':new_id})
 
-                # 関連テーブルのproduct_idを書き換える
-                for old_id, new_id in convert_map['product'].iteritems():
-                    ProductItem.filter_by(product_id=old_id)\
-                        .filter_by(performance_id=performance.id)\
-                        .update({'product_id':new_id})
+                # 関連テーブルのsales_segment_group_idを書き換える
+                for old_id, new_id in convert_map['sales_segment_group'].iteritems():
+                    sales_segments = SalesSegment.filter_by(sales_segment_group_id=old_id)\
+                                        .filter_by(performance_id=performance.id).all()
+                    for sales_segment in sales_segments:
+                        sales_segment.sales_segment_group_id = new_id
+                        for pdmp in sales_segment.payment_delivery_method_pairs:
+                            pdmp.sales_segment_group_id = new_id
         else:
             """
             Eventの作成時は以下のモデルを自動生成する
@@ -961,16 +956,11 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         super(SalesSegmentGroup, self).delete()
 
     @staticmethod
-    def create_from_template(template, with_payment_delivery_method_pairs=False, **kwargs):
+    def create_from_template(template, **kwargs):
         sales_segment_group = SalesSegmentGroup.clone(template)
         if 'event_id' in kwargs:
             sales_segment_group.event_id = kwargs['event_id']
         sales_segment_group.save()
-
-        if with_payment_delivery_method_pairs:
-            for template_pdmp in template.payment_delivery_method_pairs:
-                PaymentDeliveryMethodPair.create_from_template(template=template_pdmp, sales_segment_group_id=sales_segment_group.id)
-
         return {template.id:sales_segment_group.id}
 
     def get_products(self, performances):
