@@ -77,7 +77,7 @@ def pageset_addpage(request):
     pageset_id = request.matchdict["pageset_id"]
     pageset = get_or_404(request.allowable(PageSet), PageSet.id==pageset_id)
     try:
-        created = pageset.create_page()
+        created = pageset.create_page(force=True)
 
         if created:
             DBSession.add(created)
@@ -88,7 +88,8 @@ def pageset_addpage(request):
             FlashMessage.success(u"新しいページが作成されました.")
             return "OK"
         else:
-            raise "NG"
+            logger.warn("base page is not found")
+            raise HTTPBadRequest("NG")
     except Exception, e:
         logger.exception(str(e))
 

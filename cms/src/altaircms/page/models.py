@@ -1,4 +1,6 @@
 # coding: utf-8
+import logging
+logger = logging.getLogger(__name__)
 from sqlalchemy.ext.declarative import declared_attr
 from datetime import datetime
 from pyramid.decorator import reify
@@ -152,10 +154,15 @@ class PageSet(Base,
         qs = Page.query.filter(Page.pageset==self).filter(where)
         return qs.order_by(sa.desc("page.publish_begin"), "page.publish_end").limit(1).first()
 
-    def create_page(self, published=None):
+    def create_page(self, published=None, force=False):
         base_page = self.current(published=published)
         if base_page is None:
-            return None
+            if force:
+                logger.info("pageset_id=%s,  base page is not found. but force=True, base page as latest updated page." % self.id)
+                base_page = Page.query.filter(Page.pageset_id==self.id).order_by(sa.desc(Page.updated_at)).first()
+            if base_page is None:
+                logger.warn("pageset_id=%s,  base page is not found." % self.id)
+                return None
         created = Page(pageset=self, version=self.gen_version())
         created.event = base_page.event
         created.name = base_page.name
