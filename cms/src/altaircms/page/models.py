@@ -171,6 +171,10 @@ class PageSet(Base,
         self.event = event
         for p in self.pages:
             p.event = event
+        if event is None:
+            self.pagetype = PageType.query.filter(PageType.organization_id==self.organization_id, PageType.page_role!="event_detail").first()
+        else:
+            self.pagetype = PageType.query.filter(PageType.organization_id==self.organization_id, PageType.page_role=="event_detail").first()
 
     @property
     def public_tags(self):
@@ -275,7 +279,11 @@ class Page(BaseOriginalMixin,
 
     def clone(self, session, request=None):
         from . import clone
-        return clone.page_clone(request, self, session)
+        cloned = clone.page_clone(request, self, session)
+        now = datetime.now()
+        cloned.created_at = now
+        cloned.updated_at = now
+        return cloned
 
     @classmethod
     def get_or_create_by_name(cls, name):

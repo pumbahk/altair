@@ -107,8 +107,20 @@ now = datetime.now()
 		  <a class="action" href-fmt="${request.route_path("pageset", pageset_id="__id__")}"><i class="icon-plus"> </i> ページセット期間変更</a>
 	  </li>
     <li>
-	    <a id="pageset_addpage" class="action" href-fmt="${request.route_path("plugins_jsapi_addpage", pageset_id='__id__')}"><i class="icon-plus"> </i> 選択したページセットにページ追加</a>
+	    <a id="pageset_addpage" class="action" href-fmt="${request.route_path("plugins_jsapi_addpage", pageset_id='__id__')}"
+         message="選択したページセットに新しいページを追加します。よろしいですか？"
+         ><i class="icon-plus"> </i> 選択したページセットにページ追加</a>
      </li>
+    <li>
+		  <a href="${request.route_path("event_takein_pageset",event_id=current_event.id)}">
+		    <i class="icon-plus">_</i> このイベントに配下のページとして別のページセットを取り込む</a>
+    </li>
+    <li>
+		  <a id="reset_event" class="action-submit" href-fmt="${request.route_path("plugins_jsapi_pageset_reset_event", pageset_id="__id__")}"
+         message="選択したページセットをイベントと結びつかないページセットにします。よろしいですか？">
+		    <i class="icon-plus"> </i> 選択したページセットをイベントと結びつかないページセットにする</a>
+	  </li>
+
 <script type="text/javascript">
   $(function(){
    $(".box .btn-group a.action").on("click", function(e){
@@ -128,7 +140,17 @@ now = datetime.now()
       $.post($this.attr("href")).done(function(){location.reload();});
     }
   });
-
+  $("a.action-submit").click(function(e){
+      e.preventDefault();
+      var $this = $(e.currentTarget);
+      var  pk = $this.parents(".box").find("input[name='object_id']:checked").val();
+      if(!pk){ console.log("sorry"); return false; }
+      // initialize
+      $this.attr("href", $this.attr("href-fmt").replace("__id__", pk));
+      if(window.confirm($this.attr("message"))){
+        $.post($(this).attr("href")).done(function(){location.reload()}).fail(function(e){console.log(e.responseText)});
+      }
+  });
   // add page
     $(".box #pageset_addpage").on("click", function(e){
       e.preventDefault();
