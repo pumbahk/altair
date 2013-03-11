@@ -22,15 +22,18 @@ def move_detailsearch_post(request):
     searcher = EventSearcher(request)
 
     form = DetailSearchForm(request.POST)
-    qs = searcher.get_events_from_freeword(form)
-    qs = searcher.get_events_from_area(form, qs)
-    qs = searcher.get_events_from_sale(form, qs)
-    qs = searcher.get_events_from_start_on(form, qs)
-    qs = searcher.get_events_from_salessegment(form, qs)
+    form.num.data = 0
 
-    form = get_event_paging(request=request, form=form, qs=qs)
-    form = create_genre_selectbox(request, form)
-    form.week.data = get_week_map()
+    if form.validate():
+        qs = searcher.get_events_from_freeword(form)
+        qs = searcher.get_events_from_area(form, qs)
+        qs = searcher.get_events_from_sale(form, qs)
+        qs = searcher.get_events_from_start_on(form, qs)
+        qs = searcher.get_events_from_salessegment(form, qs)
+
+        form = get_event_paging(request=request, form=form, qs=qs)
+        form = create_genre_selectbox(request, form)
+        form.week.data = get_week_map()
 
     return {'form':form}
 
