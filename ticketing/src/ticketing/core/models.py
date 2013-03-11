@@ -926,6 +926,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         q = q.filter(SalesSegmentGroup.normal_sales | SalesSegmentGroup.sales_counter) # XXX: 窓口販売が当日券用の区分に使われている。このようなケースでは、publicフラグがTrueであることを必ずチェックしなければならない
         q = q.filter(Performance.event_id==self.id)
         q = q.filter(Performance.id==SalesSegment.performance_id)
+        q = q.filter(Performance.public)
         q = q.filter(SalesSegment.start_at>=now)
 
         if user and user.get('is_guest'):
