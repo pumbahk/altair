@@ -19,10 +19,10 @@ from sqlalchemy import ForeignKeyConstraint, UniqueConstraint, PrimaryKeyConstra
 from sqlalchemy.util import warn_deprecated
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode, UnicodeText, TIMESTAMP
-from sqlalchemy.orm import join, backref, column_property, joinedload, deferred, relationship
+from sqlalchemy.orm import join, backref, column_property, joinedload, deferred, relationship, aliased
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.sql.expression import asc, desc, exists, select, table, column, case, null
+from sqlalchemy.sql.expression import asc, desc, exists, select, table, column, case, null, alias
 from sqlalchemy.ext.associationproxy import association_proxy
 from pyramid.threadlocal import get_current_registry
 
@@ -918,38 +918,66 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         super(Event, self).delete()
 
     def query_next_sales_segments(self, user=None, now=None):
+        q = self.query_sales_segments(user, now=now, type='from')
+        return q
+
+    def query_available_sales_segments(self, user=None, now=None):
+        return self.query_sales_segments(user=user, now=now, type='available')
+
+    def query_sales_segments(self, user=None, now=None, type='available'):
         now = now or datetime.now()
         q = SalesSegment.query
         q = q.options(joinedload('sales_segment_group'))  # need display sales_segment.name at out of transaction
-        q = q.filter(SalesSegment.public==1)
-        q = q.filter(SalesSegmentGroup.public==1)
+        q = q.filter(SalesSegment.public)
+        q = q.filter(SalesSegmentGroup.public)
         q = q.filter(SalesSegmentGroup.normal_sales | SalesSegmentGroup.sales_counter) # XXX: 窓口販売が当日券用の区分に使われている。このようなケースでは、publicフラグがTrueであることを必ずチェックしなければならない
         q = q.filter(Performance.event_id==self.id)
         q = q.filter(Performance.id==SalesSegment.performance_id)
         q = q.filter(Performance.public)
-        q = q.filter(SalesSegment.start_at>=now)
+        q = q.filter(SalesSegment.sales_segment_group_id==SalesSegmentGroup.id)
+
+        if type == 'available':
+            q = q.filter(and_(SalesSegment.start_at <= now, SalesSegment.end_at >= now))
+        elif type == 'from':
+            q = q.filter(SalesSegment.start_at >= now)
+        elif type == 'before':
+            q = q.filter(SalesSegment.end_at < now)
 
         if user and user.get('is_guest'):
-            q = q.filter(
-                SalesSegment.sales_segment_group_id==SalesSegmentGroup.id
-            ).filter(
-                SalesSegmentGroup.id==MemberGroup_SalesSegment.c.sales_segment_group_id
-            ).filter(
-                MemberGroup_SalesSegment.c.membergroup_id==MemberGroup.id
-            ).filter(
-                MemberGroup.is_guest==True
-            )
-
+            q = q.filter(SalesSegmentGroup.id==MemberGroup_SalesSegment.c.sales_segment_group_id) \
+            .filter(MemberGroup_SalesSegment.c.membergroup_id==MemberGroup.id) \
+            .filter(MemberGroup.is_guest == True)
         elif user and 'membership' in user:
-            q = q.filter(
-                SalesSegment.sales_segment_group_id==SalesSegmentGroup.id
-            ).filter(
-                SalesSegmentGroup.id==MemberGroup_SalesSegment.c.sales_segment_group_id
-            ).filter(
-                MemberGroup_SalesSegment.c.membergroup_id==MemberGroup.id
-            ).filter(
-                MemberGroup.name==user['membergroup']
-            )
+            SalesSegment_for_subquery = aliased(SalesSegment)
+            SalesSegmentGroup_for_subquery = aliased(SalesSegmentGroup)
+            MemberGroup_SalesSegment_for_subquery = alias(MemberGroup_SalesSegment)
+            MemberGroup_for_subquery = aliased(MemberGroup)
+            subquery = DBSession.query(SalesSegmentGroup_for_subquery.id) \
+                .filter(SalesSegmentGroup_for_subquery.id == MemberGroup_SalesSegment_for_subquery.c.sales_segment_group_id) \
+                .filter(MemberGroup_SalesSegment_for_subquery.c.membergroup_id == MemberGroup_for_subquery.id) \
+                .filter(MemberGroup_for_subquery.name == user['membergroup']) \
+                .filter(SalesSegmentGroup_for_subquery.id == SalesSegment_for_subquery.sales_segment_group_id) \
+                .filter(SalesSegmentGroup_for_subquery.public) \
+                .filter(SalesSegment_for_subquery.public) \
+                .filter(SalesSegment_for_subquery.performance_id == SalesSegment.performance_id)
+            if type == 'available':
+                subquery = subquery.filter(and_(SalesSegment_for_subquery.start_at <= now, SalesSegment_for_subquery.end_at >= now))
+            elif type == 'from':
+                subquery = subquery.filter(SalesSegment_for_subquery.start_at >= now)
+            elif type == 'before':
+                subquery = subquery.filter(SalesSegment_for_subquery.end_at < now)
+            q = q.filter(SalesSegmentGroup.id==MemberGroup_SalesSegment.c.sales_segment_group_id) \
+            .filter(MemberGroup_SalesSegment.c.membergroup_id==MemberGroup.id) \
+            .filter(
+                or_(
+                    # 与えられた会員の属する会員グループと紐づく
+                    # 販売区分グループが1個もなければ、
+                    # is_guest となっている販売区分を採用する
+                    # (サブクエリが最適化されることを祈りましょう...)
+                    MemberGroup.is_guest & ~exists(subquery.statement),
+                    MemberGroup.name == user['membergroup']
+                    )
+                )
         return q
 
     def get_next_sales_segment_period(self, user=None, now=None):

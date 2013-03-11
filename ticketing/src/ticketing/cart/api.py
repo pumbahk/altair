@@ -383,62 +383,7 @@ def update_order_session(request, **kw):
 
 def get_available_sales_segments(request, event, selected_date):
     from ticketing.rakuten_auth.api import authenticated_user
-    user = authenticated_user(request)
-
-
-    q = SalesSegment.query \
-        .filter(SalesSegment.performance_id==Performance.id) \
-        .filter(Performance.event_id==event.id) \
-        .filter(SalesSegment.public) \
-        .filter(SalesSegmentGroup.public) \
-        .filter(SalesSegment.start_at <= selected_date) \
-        .filter(SalesSegment.end_at >= selected_date) \
-        .filter(SalesSegmentGroup.id==SalesSegment.sales_segment_group_id)
-
-    if user and user.get('is_guest'):
-        q = q.filter(
-            SalesSegmentGroup.id==MemberGroup_SalesSegment.c.sales_segment_group_id
-        ).filter(
-            MemberGroup_SalesSegment.c.membergroup_id==MemberGroup.id
-        ).filter(
-            MemberGroup.is_guest==True
-        )
-
-        ss = q.all()
-
-    elif user and 'membership' in user:
-        q = q.filter(
-            SalesSegmentGroup.id==MemberGroup_SalesSegment.c.sales_segment_group_id
-        ).filter(
-            MemberGroup_SalesSegment.c.membergroup_id==MemberGroup.id
-        ).filter(
-            or_(MemberGroup.name==user['membergroup'],
-                MemberGroup.is_guest==True)  # guestのものも買えるようにする
-        )
-        ss = q.all()
-        # TODO: 同じ公演に対する販売区分がある場合は、会員のものを優先する
-        # 会員の公演を集める
-        membered_performances = []
-        for s in ss:
-            if [m for m in s.sales_segment_group.membergroups if m.name == user['membergroup']]:
-                membered_performances.append(s.performance)
-
-        # 会員の公演に入ってる公演の一般販売の販売区分をはずす
-        xss = []
-        for s in ss:
-            if not [m for m in s.sales_segment_group.membergroups if m.name == user['membergroup']]:
-                if s.performance in membered_performances:
-                    xss.append(s)
-        ss = [s for s in ss if s not in xss]
-
-        
-    else:
-        # 会員情報のないFC
-        ss = q.all()
-
-
-    
-
+    ss = event.query_available_sales_segments(user=authenticated_user(request), now=selected_date)
     ss = [s for s in ss 
           if s.available_payment_delivery_method_pairs]
 
