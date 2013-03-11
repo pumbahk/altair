@@ -22,6 +22,4 @@ def move_information(request):
         form.informations.data = topic_searcher.query_publishing_topics(datetime.now(), tag)\
             .filter(TopicTag.organization_id == request.organization.id)
 
-    return {
-        'form':form
-    }
+    return {'form':form}
