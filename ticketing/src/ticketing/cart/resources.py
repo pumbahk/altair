@@ -168,6 +168,7 @@ class TicketingCartResource(object):
         now = datetime.now()
         q = c_models.SalesSegment.query
         q = q.filter(c_models.SalesSegment.public==1)
+        q = q.filter(c_models.SalesSegmentGroup.public==1)
         q = q.filter(c_models.SalesSegmentGroup.event_id==self.event_id)
         q = q.filter(c_models.SalesSegment.sales_segment_group_id==c_models.SalesSegmentGroup.id)
         q = q.filter(
@@ -249,6 +250,7 @@ class TicketingCartResource(object):
 
         now = datetime.now()
         q = c_models.SalesSegment.query
+        q = q.filter(c_models.SalesSegmentGroup.public==1)
         q = q.filter(c_models.SalesSegment.public==1)
         if self.event_id:
             q = q.filter(c_models.SalesSegment.event_id==self.event_id)
