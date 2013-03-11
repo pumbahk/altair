@@ -22,6 +22,8 @@ def move_detailsearch_post(request):
     searcher = EventSearcher(request)
 
     form = DetailSearchForm(request.POST)
+    form = create_genre_selectbox(request, form)
+    form = create_date_selectbox(form)
     form.num.data = 0
 
     if form.validate():
@@ -58,22 +60,22 @@ def create_date_selectbox(form):
     del form.day.choices[:]
     del form.since_day.choices[:]
 
-    form.since_year.choices.append([0, '-'])
-    form.year.choices.append([0, '-'])
-    form.since_month.choices.append([0, '-'])
-    form.month.choices.append([0, '-'])
-    form.since_day.choices.append([0, '-'])
-    form.day.choices.append([0, '-'])
+    form.since_year.choices.append(['0', '-'])
+    form.year.choices.append(['0', '-'])
+    form.since_month.choices.append(['0', '-'])
+    form.month.choices.append(['0', '-'])
+    form.since_day.choices.append(['0', '-'])
+    form.day.choices.append(['0', '-'])
 
     for year in range(2013, 2100):
-        form.since_year.choices.append([year, year])
-        form.year.choices.append([year, year])
+        form.since_year.choices.append([str(year), str(year)])
+        form.year.choices.append([str(year), str(year)])
 
     for month in range(1, 13):
-        form.since_month.choices.append([month, month])
-        form.month.choices.append([month, month])
+        form.since_month.choices.append([str(month), str(month)])
+        form.month.choices.append([str(month), str(month)])
 
     for day in range(1, 32):
-        form.since_day.choices.append([day, day])
-        form.day.choices.append([day, day])
+        form.since_day.choices.append([str(day), str(day)])
+        form.day.choices.append([str(day), str(day)])
     return form

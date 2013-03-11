@@ -124,11 +124,10 @@ class EventSearcher(object):
 
     # 公演日検索
     def get_events_from_start_on(self, form, qs=None):
-        # validater入れる
-        #since_open = datetime(form.since_year.data, form.since_month.data, form.since_day.data)
-        #open = datetime(form.year.data, form.month.data, form.day.data)
-        since_open = datetime(2013, 3, 9)
-        open = datetime(2014, 3, 9)
+        since_open = datetime(
+            int(form.since_year.data), int(form.since_month.data), int(form.since_day.data))
+        open = datetime(
+            int(form.year.data), int(form.month.data), int(form.day.data))
         where = (since_open <= Event.event_open) & (open >= Event.event_open)
         qs = self._create_common_qs(where=where, qs=qs)
         return qs

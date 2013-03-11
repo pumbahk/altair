@@ -4,6 +4,7 @@ from wtforms import SelectField, RadioField
 from wtforms.validators import Optional
 from cmsmobile.core.const import SalesEnum
 from cmsmobile.event.search.forms import SearchForm
+from datetime import date
 
 class DetailSearchForm(SearchForm):
 
@@ -17,15 +18,42 @@ class DetailSearchForm(SearchForm):
         default=SalesEnum.ON_SALE, coerce=int)
     sales_segment = RadioField(label = '',validators=[Optional()]
         ,choices=[(0, u'一般販売'), (1, u'先行販売') ],default=0, coerce=int)
-    since_year = SelectField(label='', validators=[Optional()], choices=[], coerce=int)
-    since_month = SelectField(label='', validators=[Optional()], choices=[], coerce=int)
-    since_day = SelectField(label='', validators=[Optional()], choices=[], coerce=int)
-    year = SelectField(label='', validators=[Optional()], choices=[], coerce=int)
-    month = SelectField(label='', validators=[Optional()], choices=[], coerce=int)
-    day = SelectField(label='', validators=[Optional()], choices=[], coerce=int)
+    since_year = SelectField(label='', validators=[Optional()], choices=[])
+    since_month = SelectField(label='', validators=[Optional()], choices=[])
+    since_day = SelectField(label='', validators=[Optional()], choices=[])
+    year = SelectField(label='', validators=[Optional()], choices=[])
+    month = SelectField(label='', validators=[Optional()], choices=[])
+    day = SelectField(label='', validators=[Optional()], choices=[])
 
     def validate_word(form, field):
         # 詳細検索は、検索文字列無くても検索
         if len(field.data) > 200:
             raise ValueError(u'200文字以内で入力してください')
         return
+
+    def validate_since_year(form, field):
+        if not _check_date(form.since_year.data, form.since_month.data, form.since_day.data):
+            raise ValueError (u'日付が不正です')
+
+        if _check_date(form.year.data, form.month.data, form.day.data):
+            since_perf_date = date(
+                int(form.since_year.data), int(form.since_month.data), int(form.since_day.data))
+            perf_date = date(
+                int(form.year.data), int(form.month.data), int(form.day.data))
+            if (since_perf_date > perf_date):
+                raise ValueError(u'検索範囲が不正です')
+        return
+
+    def validate_year(form, field):
+        if not _check_date(form.year.data, form.month.data, form.day.data):
+            raise ValueError (u'日付が不正です')
+        return
+
+def _check_date(year, month, day):
+    try:
+        perf_date = date(int(year), int(month), int(day))
+    except ValueError:
+        return False
+    except TypeError:
+        return False
+    return True
