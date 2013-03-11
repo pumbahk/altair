@@ -276,7 +276,7 @@ class IndexView(IndexViewMixin):
         query = query.filter(c_models.Product.public==True)
         query = query.filter(c_models.Product.id.in_(q)).order_by(sa.desc("display_order, price"))
         ### filter by salessegment
-        salessegment = self.context.get_sales_segument()
+        salessegment = self.context.get_sales_segment()
         query = h.products_filter_by_salessegment(query, salessegment)
 
         products = [
@@ -489,7 +489,7 @@ class ReserveView(object):
         logger.debug('sum_quantity=%s' % sum_quantity)
 
         self.context.event_id = performance.event_id
-        #sales_segment = self.context.get_sales_segument()
+        #sales_segment = self.context.get_sales_segment()
         sales_segment = c_models.SalesSegment.query.filter(c_models.SalesSegment.id==self.request.matchdict['sales_segment_id']).one()
         if sales_segment.upper_limit < sum_quantity:
             logger.debug('upper_limit over')

@@ -132,7 +132,7 @@ class TicketingCartResource(object):
         return scs[0]
 
     def get_payment_delivery_method_pair(self, start_on=None):
-        segment = self.get_sales_segument()
+        segment = self.get_sales_segment()
         q = c_models.PaymentDeliveryMethodPair.query.filter(
             c_models.PaymentDeliveryMethodPair.sales_segment_group_id==segment.id
         ).filter(
