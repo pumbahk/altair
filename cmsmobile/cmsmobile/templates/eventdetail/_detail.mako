@@ -32,7 +32,12 @@
 % if event.salessegment_groups:
     % for segment in event.salessegment_groups:
         ${segment.kind}:
-        ${segment.start_on.year}/${segment.start_on.month}/${segment.start_on.day}-${segment.end_on.year}/${segment.end_on.month}/${segment.end_on.day}
+        % if segment.start_on:
+            ${segment.start_on.year}/${segment.start_on.month}/${segment.start_on.day}
+        % endif
+        % if segment.end_on:
+            -${segment.end_on.year}/${segment.end_on.month}/${segment.end_on.day}
+        % endif
     % endfor
 % endif
 <p/>
