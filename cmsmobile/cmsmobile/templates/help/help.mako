@@ -5,21 +5,21 @@
 
     <a href="/">トップ</a> >> ヘルプ<p/>
 
-    % if helps:
-        % for help in helps:
+    % if form.helps.data:
+        % for help in form.helps.data:
             <a href="#${help.id}">
                 <strong>Ｑ．${help.title}</strong><p/>
             </a>
         % endfor
 
-        % for help in helps:
+        % for help in form.helps.data:
             <hr/>
             <a name="${help.id}">
                 <strong>Ｑ．${help.title}</strong><p/>
             </a>
             Ａ．${help.text}<p/>
         % endfor
-    % endif:
+    % endif
 
     <%include file="../common/_footer.mako" />
 </body>
