@@ -6,6 +6,7 @@ from altaircms.topic.api import get_topic_searcher
 from altaircms.genre.searcher import GenreSearcher
 from altaircms.tag.models import HotWord
 from cmsmobile.forms import TopForm
+from sqlalchemy import asc
 
 @view_config(route_name='home', renderer='cmsmobile:templates/top/top.mako')
 def main(request):
@@ -26,11 +27,9 @@ def main(request):
     if tag:
         form.topics.data = topic_searcher.query_publishing_topics(datetime.now(), tag)[0:5]
 
-    form.hotwords.data = HotWord.query.filter(HotWord.organization_id == request.organization.id)\
-        .filter(HotWord.enablep == True)\
-        .filter(HotWord.term_begin < datetime.now())\
-        .filter(datetime.now() < HotWord.term_end)\
-        .order_by(HotWord.display_order)[0:5]
+    today = datetime.now()
+    form.hotwords.data = request.allowable(HotWord).filter(HotWord.term_begin <= today).filter(today <= HotWord.term_end) \
+            .filter_by(enablep=True).order_by(asc("display_order"), asc("term_end")).all()[0:5]
 
     genre_searcher = GenreSearcher(request)
     form.genretree.data = genre_searcher.root.children

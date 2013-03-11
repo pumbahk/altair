@@ -1,39 +1,53 @@
 # -*- coding: utf-8 -*-
-
 from pyramid.view import view_config
 from datetime import datetime
-from altaircms.topic.api import get_topic_searcher
 from cmsmobile.event.hotword.forms import HotwordForm
 from altaircms.tag.models import HotWord
+from altaircms.page.models import PageSet, PageTag2Page, PageTag
+from altaircms.event.models import Event
+from altaircms.models import Genre
+from cmsmobile.core.helper import exist_value
+from cmsmobile.core.helper import get_week_map, get_event_paging
 
 class ValidationFailure(Exception):
     pass
 
-@view_config(route_name='hotword', context=ValidationFailure, renderer='cmsmobile:templates/common/error.mako')
-def failed_validation(request):
-    return {}
-
-@view_config(route_name='hotword', renderer='cmsmobile:templates/hotword/hotword.mako')
+@view_config(route_name='hotword', renderer='cmsmobile:templates/searchresult/search.mako')
 def move_hotword(request):
 
     form = HotwordForm(request.GET)
+    form.week.data = get_week_map()
 
-    if form.id.data == "" or form.id.data is None:
+    if not exist_value(form.id.data):
         raise ValidationFailure
 
-    hotword = HotWord.query.filter(HotWord.id == form.id.data).first()
+    today = datetime.now()
+    hotword = request.allowable(HotWord).filter(HotWord.term_begin <= today) \
+        .filter(today <= HotWord.term_end) \
+        .filter_by(enablep=True).filter(HotWord.id == form.id.data) \
+        .filter(HotWord.tag_id).first()
 
-    if hotword is not None:
-        searcher = get_topic_searcher(request, "topic")
-        event = searcher.query_publishing_topics(datetime.now(), hotword.tag) \
-                     .filter(hotword.tag.organization_id == request.organization.id).first()
-
-    """
-    ココらへんは動かないのであとで修正する。
-    """
-    if not event:
+    if not hotword:
         raise ValidationFailure
 
-    return {
-        'events':[event]
-    }
+    qs = request.allowable(Event) \
+                .filter(Event.is_searchable == True) \
+                .join(PageSet, Event.id == PageSet.event_id) \
+                .join(PageTag2Page, PageSet.id == PageTag2Page.object_id) \
+                .join(PageTag, PageTag2Page.tag_id == PageTag.id) \
+                .filter(PageTag.id == hotword.tag_id)
+
+    form = get_event_paging(request=request, form=form, qs=qs)
+
+    # パンくずリスト用
+    if exist_value(form.genre.data):
+        form.navi_genre.data = request.allowable(Genre).filter(Genre.id==form.genre.data).first()
+
+    if exist_value(form.sub_genre.data):
+        form.navi_sub_genre.data = request.allowable(Genre).filter(Genre.id==form.sub_genre.data).first()
+
+    return {'form':form}
+
+@view_config(route_name='hotword', context=ValidationFailure, renderer='cmsmobile:templates/common/error.mako')
+def failed_validation(request):
+    return {}

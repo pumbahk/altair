@@ -9,6 +9,7 @@ from altaircms.tag.models import HotWord
 from altaircms.genre.searcher import GenreSearcher
 from altaircms.models import Genre
 from cmsmobile.core.helper import exist_value
+from sqlalchemy import asc
 
 class ValidationFailure(Exception):
     pass
@@ -55,11 +56,9 @@ def move_genre(request):
         form.topics.data = topic_searcher.query_publishing_topics(datetime.now(), tag, system_tag)
 
     # hotword
-    form.hotwords.data = HotWord.query.filter(HotWord.organization_id == request.organization.id) \
-                   .filter(HotWord.enablep == True) \
-                   .filter(HotWord.term_begin < datetime.now()) \
-                   .filter(datetime.now() < HotWord.term_end) \
-                   .order_by(HotWord.display_order)[0:5]
+    today = datetime.now()
+    form.hotwords.data = request.allowable(HotWord).filter(HotWord.term_begin <= today).filter(today <= HotWord.term_end) \
+             .filter_by(enablep=True).order_by(asc("display_order"), asc("term_end")).all()[0:5]
 
     return {'form':form}
 
