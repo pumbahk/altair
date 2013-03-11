@@ -23,16 +23,19 @@ def move_genre(request):
     form.page.data = "1"
     form.page_num.data = "0"
 
-    # genretree
-    genre_searcher = GenreSearcher(request)
-    form.dispgenre.data = request.allowable(Genre).filter(Genre.id==form.genre.data).first()
-    form.genretree.data = genre_searcher.get_children(form.dispgenre.data)
-
     # genre
     system_tag = request.allowable(Genre).filter(Genre.id==form.genre.data).first()
     if exist_value(form.sub_genre.data):
         system_tag = request.allowable(Genre).filter(Genre.id==form.sub_genre.data).first()
         form.dispsubgenre.data = request.allowable(Genre).filter(Genre.id==form.sub_genre.data).first()
+
+    if not system_tag:
+        raise ValidationFailure
+
+    # genretree
+    genre_searcher = GenreSearcher(request)
+    form.dispgenre.data = request.allowable(Genre).filter(Genre.id==form.genre.data).first()
+    form.genretree.data = genre_searcher.get_children(form.dispgenre.data)
 
     # attention
     topic_searcher = get_topic_searcher(request, "topic")
@@ -59,3 +62,8 @@ def move_genre(request):
                    .order_by(HotWord.display_order)[0:5]
 
     return {'form':form}
+
+@view_config(route_name='genre', context=ValidationFailure, renderer='cmsmobile:templates/common/error.mako')
+def failed_validation(request):
+    return {}
+
