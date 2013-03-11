@@ -520,6 +520,8 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         """
         Performanceの作成/更新時は以下のモデルを自動生成する
         またVenueの変更があったら関連モデルを削除する
+          - SalesSegment (performance_id is not None)
+            - Product (performance_id is not None)
           - Venue
             - VenueArea
               - VenueArea_group_l0_id
@@ -532,8 +534,31 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
               - SeatIndex
               - SeatAdjacency_Seat
         """
+        # create SalesSegment - Product
+        if hasattr(self, 'original_id') and self.original_id:
+            template_performance = Performance.get(self.original_id)
+            for template_sales_segment in template_performance.sales_segments:
+                convert_map = {
+                    'sales_segment':dict(),
+                    'product':dict(),
+                }
+                convert_map['sales_segment'].update(
+                    SalesSegment.create_from_template(template=template_sales_segment, with_payment_delivery_method_pairs=True, performance_id=self.id)
+                )
+                template_products = Product.query.filter_by(sales_segment_id=template_sales_segment.id)\
+                                                 .filter_by(performance_id=template_performance.id).all()
+                for template_product in template_products:
+                    convert_map['product'].update(
+                        Product.create_from_template(template=template_product, performance_id=self.id, **convert_map)
+                    )
+
+                # 関連テーブルのproduct_idを書き換える
+                for org_id, new_id in convert_map['product'].iteritems():
+                    ProductItem.filter_by(product_id=org_id)\
+                               .filter_by(performance_id=self.id)\
+                               .update({'product_id':new_id})
+
         # create Venue - VenueArea, Seat - SeatAttribute
-        original_performance_id = self.original_id if hasattr(self, 'original_id') else None
         if hasattr(self, 'create_venue_id') and self.venue_id:
             template_venue = Venue.get(self.venue_id)
             Venue.create_from_template(
@@ -567,7 +592,6 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         # delete ProductItem
         for product_item in self.product_items:
-            print product_item
             product_item.delete()
 
         # delete Stock
@@ -780,7 +804,8 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
               - StockHolder
               - SalesSegmentGroup
                 - PaymentDeliveryMethodPair
-              - Product
+                - SalesSegment (performance_id is None)
+              - Product (performance_id is None)
               - Performance
                 - (この階層以下はPerformance.add()を参照)
             """
@@ -844,7 +869,6 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     ProductItem.filter_by(product_id=old_id)\
                         .filter_by(performance_id=performance.id)\
                         .update({'product_id':new_id})
-
         else:
             """
             Eventの作成時は以下のモデルを自動生成する
@@ -1018,6 +1042,9 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
         pdmp = PaymentDeliveryMethodPair.clone(template)
         if 'sales_segment_group_id' in kwargs:
             pdmp.sales_segment_group_id = kwargs['sales_segment_group_id']
+        if 'sales_segment_id' in kwargs:
+            sales_segment = SalesSegment.get(kwargs['sales_segment_id'])
+            pdmp.sales_segments.append(sales_segment)
         pdmp.save()
 
 class PaymentMethodPlugin(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -1473,6 +1500,7 @@ class StockStatus(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Product'
+
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
     price = Column(Numeric(precision=16, scale=2), nullable=False)
@@ -1602,6 +1630,8 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         product = Product.clone(template)
         if 'event_id' in kwargs:
             product.event_id = kwargs['event_id']
+        if 'performance_id' in kwargs:
+            product.performance_id = kwargs['performance_id']
         if 'stock_type' in kwargs:
             product.seat_stock_type_id = kwargs['stock_type'][template.seat_stock_type_id]
         if 'sales_segment' in kwargs:
@@ -2832,7 +2862,6 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         cascade="all",
         collection_class=set)
 
-
     @property
     def available_payment_delivery_method_pairs(self):
         now = datetime.now()
@@ -2852,13 +2881,11 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     def in_term(self, dt):
         return self.start_at <= dt and dt <= self.end_at 
 
-
     @property
     def stocks(self):
         """ この販売区分で販売可能な在庫 
         商品 -> 商品アイテム -> 在庫
         """
-
         return Stock.query.filter(
                 Stock.id==ProductItem.stock_id
             ).filter(
@@ -2909,6 +2936,18 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
             data['deleted'] = 'true'
         return data
 
+    @staticmethod
+    def create_from_template(template, with_payment_delivery_method_pairs=False, **kwargs):
+        sales_segment = SalesSegment.clone(template)
+        if 'performance_id' in kwargs:
+            sales_segment.performance_id = kwargs['performance_id']
+        sales_segment.save()
+
+        if with_payment_delivery_method_pairs:
+            for template_pdmp in template.payment_delivery_method_pairs:
+                PaymentDeliveryMethodPair.create_from_template(template=template_pdmp, sales_segment_id=sales_segment.id)
+
+        return {template.id:sales_segment.id}
 
 class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "OrganizationSetting"
