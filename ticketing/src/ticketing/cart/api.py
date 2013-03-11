@@ -379,19 +379,14 @@ def get_available_sales_segments(request, event, selected_date):
     user = authenticated_user(request)
 
 
-    q = SalesSegment.query.filter(
-            SalesSegment.performance_id==Performance.id
-        ).filter(
-            Performance.event_id==event.id
-        ).filter(
-            SalesSegment.public > 0
-        ).filter(
-            SalesSegment.start_at<=selected_date
-        ).filter(
-            SalesSegment.end_at >= selected_date
-        ).filter(
-            SalesSegmentGroup.id==SalesSegment.sales_segment_group_id
-        )
+    q = SalesSegment.query \
+        .filter(SalesSegment.performance_id==Performance.id) \
+        .filter(Performance.event_id==event.id) \
+        .filter(SalesSegment.public) \
+        .filter(SalesSegmentGroup.public) \
+        .filter(SalesSegment.start_at <= selected_date) \
+        .filter(SalesSegment.end_at >= selected_date) \
+        .filter(SalesSegmentGroup.id==SalesSegment.sales_segment_group_id)
 
     if user and user.get('is_guest'):
         q = q.filter(
