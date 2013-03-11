@@ -22,3 +22,10 @@ class CommonForm(Form):
 
     # --- 検索遷移先
     path = HiddenField(validators=[Optional()], default='/search')
+
+    def validate_word(form, field):
+        if field.data == "":
+            raise ValueError(u'検索文字列を入力してください')
+        if len(field.data) > 200:
+            raise ValueError(u'200文字以内で入力してください')
+        return

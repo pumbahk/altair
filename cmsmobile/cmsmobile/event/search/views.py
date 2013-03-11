@@ -14,16 +14,20 @@ class ValidationFailure(Exception):
 def search(request):
 
     form = SearchForm(request.GET)
-    form.week.data = get_week_map()
+    form.num.data = 0
 
-    searcher = EventSearcher(request)
+    if form.validate():
 
-    qs = searcher.get_events_from_freeword(form)
-    qs = searcher.get_events_from_area(form, qs)
-    qs = searcher.get_events_week_sale(form, qs)
-    qs = searcher.get_events_soon_act(form, qs)
+        form.week.data = get_week_map()
 
-    form = get_event_paging(request=request, form=form, qs=qs)
+        searcher = EventSearcher(request)
+
+        qs = searcher.get_events_from_freeword(form)
+        qs = searcher.get_events_from_area(form, qs)
+        qs = searcher.get_events_week_sale(form, qs)
+        qs = searcher.get_events_soon_act(form, qs)
+
+        form = get_event_paging(request=request, form=form, qs=qs)
 
     # パンくずリスト用
     if exist_value(form.genre.data):
