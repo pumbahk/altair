@@ -980,7 +980,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 )
         return q
 
-    def get_last_and_next_sales_segment_period(self, user=None, now=None):
+    def get_next_and_last_sales_segment_period(self, user=None, now=None):
         now = now or datetime.now()
         per_performance_data = {}
 

@@ -197,14 +197,14 @@ class TicketingCartResource(object):
         sales_segments = q.all()
         return sales_segments
 
-    @deprecate('use get_last_and_next_sales_segment_period')
+    @deprecate('use get_next_and_last_sales_segment_period')
     def get_next_sales_segment(self):
         """ 該当イベントの次回SalesSegment取得
         """
         return self.event.query_next_sales_segments(user=self.authenticated_user()).order_by('SalesSegment.start_at').first()
 
-    def get_last_and_next_sales_segment_period(self):
-        return self.event.get_last_and_next_sales_segment_period(user=self.authenticated_user())
+    def get_next_and_last_sales_segment_period(self):
+        return self.event.get_next_and_last_sales_segment_period(user=self.authenticated_user())
 
     def get_sales_segment(self):
         """ 該当イベントのSalesSegment取得
