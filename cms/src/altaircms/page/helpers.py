@@ -55,25 +55,6 @@ def accesskey_describe_viewlet(request, page):
     return Markup(response.text)
 
 @deprecate("indivisual viewlet is deprecated use panel.")
-def pageset_describe_viewlet(request, pageset):
-    va.set_event(request, None)
-    va.set_pagesets(request, [pageset])
-    response = render_view_to_response(request.context, request, name="describe_pageset")
-    if response is None:
-        raise ValueError
-    return Markup(response.text)
-
-@deprecate("indivisual viewlet is deprecated use panel.")
-def event_pageset_describe_viewlet(request, pageset):
-    va.set_event(request, pageset.event)
-    va.set_pagesets(request, [pageset])
-    context = request.registry.getUtility(IRootFactory)(request)
-    response = render_view_to_response(context, request, name="describe_pageset")
-    if response is None:
-        raise ValueError
-    return Markup(response.text)
-
-@deprecate("indivisual viewlet is deprecated use panel.")
 def asset_describe_viewlet(request, pageset):
     tmanager = get_tagmanager("asset", request) ##
     assets = tmanager.search_by_tag_label(pageset.taglabel)
