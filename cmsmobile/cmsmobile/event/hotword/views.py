@@ -8,6 +8,7 @@ from altaircms.event.models import Event
 from altaircms.models import Genre
 from cmsmobile.core.helper import exist_value
 from cmsmobile.core.helper import get_week_map, get_event_paging
+from cmsmobile.core.helper import log_info
 
 class ValidationFailure(Exception):
     pass
@@ -15,10 +16,12 @@ class ValidationFailure(Exception):
 @view_config(route_name='hotword', renderer='cmsmobile:templates/searchresult/search.mako')
 def move_hotword(request):
 
+    log_info("move_hotword", "start")
     form = HotwordForm(request.GET)
     form.week.data = get_week_map()
 
     if not exist_value(form.id.data):
+        log_info("move_hotword", "hotword id not found")
         raise ValidationFailure
 
     today = datetime.now()
@@ -28,6 +31,7 @@ def move_hotword(request):
         .filter(HotWord.tag_id).first()
 
     if not hotword:
+        log_info("move_hotword", "hotword not found")
         raise ValidationFailure
 
     qs = request.allowable(Event) \
@@ -40,12 +44,15 @@ def move_hotword(request):
     form = get_event_paging(request=request, form=form, qs=qs)
 
     # パンくずリスト用
+    log_info("move_hotword", "breadcrumb create start")
     if exist_value(form.genre.data):
         form.navi_genre.data = request.allowable(Genre).filter(Genre.id==form.genre.data).first()
 
     if exist_value(form.sub_genre.data):
         form.navi_sub_genre.data = request.allowable(Genre).filter(Genre.id==form.sub_genre.data).first()
+    log_info("move_hotword", "breadcrumb create end")
 
+    log_info("move_hotword", "end")
     return {'form':form}
 
 @view_config(route_name='hotword', context=ValidationFailure, renderer='cmsmobile:templates/common/error.mako')

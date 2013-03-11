@@ -5,6 +5,7 @@ from altaircms.topic.models import TopicTag
 from datetime import datetime
 from altaircms.topic.api import get_topic_searcher
 from cmsmobile.event.help.forms import HelpForm
+from cmsmobile.core.helper import log_info
 
 class ValidationFailure(Exception):
     pass
@@ -12,6 +13,7 @@ class ValidationFailure(Exception):
 @view_config(route_name='help', renderer='cmsmobile:templates/help/help.mako')
 def move_help(request):
 
+    log_info("move_help", "start")
     form = HelpForm()
 
     topic_searcher = get_topic_searcher(request, "topic")
@@ -19,5 +21,7 @@ def move_help(request):
 
     if tag is not None:
         form.helps.data = topic_searcher.query_publishing_topics(datetime.now(), tag).all()
+        log_info("move_help", "helps get")
 
+    log_info("move_help", "start")
     return {'form':form}

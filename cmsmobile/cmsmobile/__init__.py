@@ -8,10 +8,11 @@ import altaircms.tag.models
 import altaircms.auth.models
 import sqlahelper
 from sqlalchemy import engine_from_config
-
+from core.helper import log_info
 
 def main(global_config, **settings):
 
+    log_info("main", "initialize start.")
     config = Configurator(settings=settings)
 
     def altair_orderreview_url(request):
@@ -53,4 +54,5 @@ def main(global_config, **settings):
 
     config.scan()
 
+    log_info("main", "initialize end.")
     return config.make_wsgi_app()

@@ -41,10 +41,12 @@ def get_week_map():
     return {0:u'月',1:u'火',2:u'水',3:u'木',4:u'金',5:u'土',6:u'日'}
 
 def get_event_paging(request, form, qs):
+    log_info("get_event_paging", "start")
     form.events.data = None
     form.num.data = 0
     if qs:
         events = qs.all()
+        log_info("get_event_paging", "data exist")
 
         if events:
             form.num.data = len(events)
@@ -60,9 +62,11 @@ def get_event_paging(request, form, qs):
             else:
                 form.page_num.data = form.num.data / items_per_page + 1
 
+    log_info("get_event_paging", "end")
     return form
 
 def get_performances_month_unit(event):
+    log_info("get_performances_month_unit", "start")
     keys = []
     month_unit = {} # performances
     for perf in event.performances:
@@ -75,19 +79,26 @@ def get_performances_month_unit(event):
 
         # 対象の月に追加
         month_unit[key].append(perf)
+
+    log_info("get_performances_month_unit", "end")
     return month_unit
 
 def get_purchase_links(request, event):
+    log_info("get_purchase_links", "start")
     links = {}
     for perf in event.performances:
         link = get_purchase_page_from_performance(request=request, performance=perf)
         links.update({perf.id:link})
+    log_info("get_purchase_links", "end")
     return links
 
 def get_tickets(event):
+    log_info("get_tickets", "start")
     tickets = {}
     for group in event.salessegment_groups:
         for segment in group.salessegments:
             for ticket in segment.tickets:
                 tickets.update({ticket.name:ticket.price})
+
+    log_info("get_tickets", "end")
     return tickets
