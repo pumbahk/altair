@@ -5,8 +5,8 @@
 
     <a href="/">トップ</a> >> 公演中止・変更情報<p/>
 
-    % if infomations:
-        % for info in informations:
+    % if form.informations.data:
+        % for info in form.informations.data:
             <hr/>
             公演：${info.title}<br/>
             詳細：${info.text}
