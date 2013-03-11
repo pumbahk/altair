@@ -17,9 +17,7 @@ def move_help(request):
     topic_searcher = get_topic_searcher(request, "topic")
     tag = TopicTag.query.filter_by(label=u"質問").first()
 
-    helps = None
     if tag is not None:
-        form.helps.data = topic_searcher.query_publishing_topics(datetime.now(), tag)\
-            .filter(TopicTag.organization_id == request.organization.id)
+        form.helps.data = topic_searcher.query_publishing_topics(datetime.now(), tag).all()
 
     return {'form':form}

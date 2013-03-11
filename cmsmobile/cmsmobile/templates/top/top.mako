@@ -2,7 +2,6 @@
 <html>
     <%include file="../common/_header.mako" args="title=u'トップページ'"/>
     <body>
-        トップ<p/>
 
         <%include file="../common/_search.mako" args="form=form" />
         <hr/>
