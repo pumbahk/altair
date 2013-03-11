@@ -46,7 +46,6 @@ class AfterInput(Exception):
 ##
 ## todo: CRUDのview整理する
 ##
-
 @view_defaults(decorator=with_bootstrap.merge(with_jquery))
 class PageAddView(object):
     def __init__(self, context, request):

@@ -2884,11 +2884,20 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
 
         return query
 
+    @property
+    def kind_label(self):
+        enum = getattr(SalesSegmentKindEnum, self.kind, None)
+        if enum is None:
+            return u"<不明>"
+        else:
+            return enum.v
+        
     def get_cms_data(self):
         products = DBSession.query(Product, include_deleted=True).filter_by(sales_segment_id=self.id).all()
         data = {
             "id": self.id, 
-            "kind": self.kind, 
+            "kind_name": self.kind, 
+            "kind_label": self.kind_label, 
             "name": self.name, 
             "start_on" : isodate.datetime_isoformat(self.start_at) if self.start_at else '', 
             "end_on" : isodate.datetime_isoformat(self.end_at) if self.end_at else '', 

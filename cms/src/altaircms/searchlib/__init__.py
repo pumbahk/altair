@@ -28,7 +28,7 @@ class SearchSchema(object):
         self.model_attribute = model_attribute or query_key
         self.required = required
         if not hasattr(model, self.model_attribute):
-            raise Exception("%s.%s is not found" % (model, self.model_attribute))
+            raise Invalid("%s.%s is not found" % (model, self.model_attribute))
 
     def exists(self, params, query_key=None):
         query_key = query_key or self.query_key

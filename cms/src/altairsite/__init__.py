@@ -20,6 +20,7 @@ def main(global_config, **local_config):
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.include("altaircms.tag:install_tagmanager")
     config.include("altaircms.topic:install_topic_searcher")
+    config.include("altaircms.page:install_pageset_searcher")
     config.include("altaircms.widget:install_has_widget_page_finder")
 
     ## organization mapping
@@ -52,5 +53,9 @@ def main(global_config, **local_config):
     
     config.add_subscriber(".subscribers.add_renderer_globals", 
                           "pyramid.events.BeforeRender")
+
+    # layout
+    config.include("pyramid_layout")
+    config.add_layout(".pyramidlayout.MyLayout", 'altaircms:templates/usersite/base.html') #this is pyramid-layout's layout
     return config.make_wsgi_app()
 

@@ -128,10 +128,15 @@ class SolrSearch(object):
 
     def search(self, query, **kwargs):
         logger.debug(u"fulltext search query: %s" % query)
-        return self.solr.select(query.query_string, **kwargs).results
+        result = self.solr.select(query.query_string, **kwargs)
+        logger.info("fulltext search result %s" % result.results)
+        return result.results
 
     def register(self, doc, commit=False):
         logger.debug(u"fulltext search register: %s" % doc)
+        if not "id" in doc.query_doc:
+            logger.warn("id is not found %s" % doc.query_doc)
+            return
         self.solr.add(doc.query_doc, commit=commit)
 
         # 5回に1回位はoptimizeした方が良いらしい。

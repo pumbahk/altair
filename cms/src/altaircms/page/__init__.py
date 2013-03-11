@@ -1,6 +1,13 @@
 # -*- coding:utf-8 -*-
 
 import functools
+
+def install_pageset_searcher(config):
+    config.include("altaircms.tag.install_page_tagmanager")
+    from ..modelmanager.searcher import PublishingModelSearcher
+    pageset = config.maybe_dotted(".models.PageSet")
+    PublishingModelSearcher.register(config, pageset)
+    
 def includeme(config):
     """ 
     altaircms.page.static.directory: static pageのデータが登録されるディレクトリ

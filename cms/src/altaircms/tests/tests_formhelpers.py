@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 import unittest
 
 class MaybeSelectFieldTests(unittest.TestCase):
@@ -106,6 +107,62 @@ class MaybeSelectFieldTests(unittest.TestCase):
         target.vs.choices = [(u"1", u"1")]
         self.assertTrue(target.validate())
         self.assertEqual(target.data["vs"], u"1")
-        
+
+
+class CheckboxListFieldTests(unittest.TestCase):
+    def _getTarget(self):
+        from altaircms.formhelpers import CheckboxListField
+        return CheckboxListField
+
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
+    def test_render_empty(self):
+        from wtforms import Form
+        class MForm(Form):
+            vs = self._makeOne(label="values", choices=[])
+        target = MForm()
+        self.assertEqual(u'<div id="vs"></div>', target.vs.__html__())
+
+    def test_render_list(self):
+        from wtforms import Form
+        class MForm(Form):
+            vs = self._makeOne(label="values", choices=[("1", "foo"), ("2", u"あ")])
+        target = MForm()
+        self.assertEqual(u'<div id="vs"><input type="checkbox" name=vs value="1"/>foo<input type="checkbox" name=vs value="2"/>あ</div>', target.vs.__html__())
+
+    def test_with_collect_value(self):
+        from wtforms import Form
+        from webob.multidict import MultiDict
+        postdata = MultiDict({"vs": u"1"})
+
+        class MForm(Form):
+            vs = self._makeOne(label="values", choices=[(("1", "one"))], coerce=unicode)
+        target = MForm(postdata)
+        self.assertTrue(target.validate())
+        self.assertEqual(target.data["vs"], [u"1"])
+
+    def test_with_collect_value_with_coerce(self):
+        from wtforms import Form
+        from webob.multidict import MultiDict
+        postdata = MultiDict({"vs": u"1"})
+
+        class MForm(Form):
+            vs = self._makeOne(label="values", choices=[((1, "one"))], coerce=int)
+        target = MForm(postdata)
+        self.assertTrue(target.validate())
+        self.assertEqual(target.data["vs"], [1])
+
+    def test_with_multiple_value(self):
+        from wtforms import Form
+        from webob.multidict import MultiDict
+        postdata = MultiDict([("vs", u"1"), ("vs", u"2")])
+
+        class MForm(Form):
+            vs = self._makeOne(label="values", choices=[("1", "one"), ("2", "tow")], coerce=unicode)
+        target = MForm(postdata)
+        self.assertTrue(target.validate())
+        self.assertEqual(target.data["vs"], [u"1", u"2"])
+
 if __name__ == "__main__":
     unittest.main()

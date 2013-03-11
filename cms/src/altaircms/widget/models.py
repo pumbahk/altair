@@ -12,12 +12,9 @@ from altaircms.models import WithOrganizationMixin
 
 from datetime import datetime
 from collections import defaultdict
-from altaircms.page.models import Page
-from altaircms.layout.models import Layout
 from zope.deprecation import deprecate
 from altaircms.widget.tree.proxy import WidgetTreeProxy
 import altaircms.widget.tree.clone as wclone
-
 
 __all__ = [
     'Widget',
@@ -74,8 +71,9 @@ class WidgetDisposition(WithOrganizationMixin, BaseOriginalMixin, Base): #todo: 
     id = sa.Column(sa.Integer, primary_key=True)
     title = sa.Column(sa.Unicode(255))
 
-    structure = sa.Column(sa.Text, default=Page.DEFAULT_STRUCTURE) # same as: Page.structure
-    blocks = sa.Column(sa.String(255), default=Layout.DEFAULT_BLOCKS) # same as: Layout.blocks #todo.remove
+    DEFAULT_STRUCTURE="{}"
+    structure = sa.Column(sa.Text, default=DEFAULT_STRUCTURE) # same as: Page.structure
+    blocks = sa.Column(sa.String(255), default="[]") # same as: Layout.blocks #todo.remove
     layout_id = sa.Column(sa.Integer, sa.ForeignKey("layout.id"))
     layout = orm.relationship("Layout", uselist=False, primaryjoin="Layout.id==WidgetDisposition.layout_id")
     is_public = sa.Column(sa.Boolean, default=False)
@@ -179,7 +177,7 @@ class WidgetDispositionAllocator(object):
         dispos =self.create_empty_from_page(page, title_fmt=self._snapshot_title()) ##
         dispos.structure = page.structure
         dispos.owner = owner
-        page.structure = Page.DEFAULT_STRUCTURE
+        page.structure = WidgetDisposition.DEFAULT_STRUCTURE
         self.session.add(page)
         self.session.add(dispos)
         Widget.query.filter(Widget.page==page).update(
