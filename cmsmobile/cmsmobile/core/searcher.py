@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import logging
 from cmsmobile.solr import helper
 from pyramid.httpexceptions import HTTPNotFound
 from altaircms.models import Performance, SalesSegmentGroup, SalesSegmentKind
@@ -59,7 +58,7 @@ class EventSearcher(object):
                 ids = self._create_ids(events)
                 qs = self._create_common_qs(where=Event.id.in_(ids))
             except Exception, e:
-                log_error("solr", "solr instance is not lunched.")
+                log_error("solr", e.message)
                 raise HTTPNotFound
         return qs
 
@@ -124,6 +123,10 @@ class EventSearcher(object):
 
     # 公演日検索
     def get_events_from_start_on(self, form, qs=None):
+        if form.year.data == "0":
+            # 全部ハイフンの場合
+            return
+
         since_open = datetime(
             int(form.since_year.data), int(form.since_month.data), int(form.since_day.data))
         open = datetime(

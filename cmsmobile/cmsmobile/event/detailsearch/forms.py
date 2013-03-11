@@ -32,6 +32,10 @@ class DetailSearchForm(SearchForm):
         return
 
     def validate_since_year(form, field):
+
+        if form.since_year.data=="0" and form.since_month.data == "0" and form.since_day.data == "0":
+            return
+
         if not _check_date(form.since_year.data, form.since_month.data, form.since_day.data):
             raise ValueError (u'日付が不正です')
 
@@ -45,6 +49,9 @@ class DetailSearchForm(SearchForm):
         return
 
     def validate_year(form, field):
+        if form.year.data=="0" and form.month.data == "0" and form.day.data == "0":
+            return
+
         if not _check_date(form.year.data, form.month.data, form.day.data):
             raise ValueError (u'日付が不正です')
         return
