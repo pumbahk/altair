@@ -197,46 +197,14 @@ class TicketingCartResource(object):
         sales_segments = q.all()
         return sales_segments
 
+    @deprecate('use get_next_sales_segment_period')
     def get_next_sales_segment(self):
         """ 該当イベントの次回SalesSegment取得
         """
+        return self.event.query_next_sales_segments(user=self.authenticated_user()).order_by('SalesSegment.start_at').first()
 
-
-        now = datetime.now()
-        q = c_models.SalesSegment.query
-        q = q.options(joinedload('sales_segment_group'))  # need display sales_segment.name at out of transaction
-        q = q.filter(c_models.SalesSegment.public==1)
-        q = q.filter(c_models.Performance.event_id==self.event_id)
-        q = q.filter(c_models.Performance.id==c_models.SalesSegment.performance_id)
-        q = q.filter(c_models.SalesSegment.start_at>=now)
-
-        user = self.authenticated_user()
-        if user and user.get('is_guest'):
-            q = q.filter(
-                c_models.SalesSegment.sales_segment_group_id==c_models.SalesSegmentGroup.id
-            ).filter(
-                c_models.SalesSegmentGroup.id==u_models.MemberGroup_SalesSegment.c.sales_segment_group_id
-            ).filter(
-                u_models.MemberGroup_SalesSegment.c.membergroup_id==u_models.MemberGroup.id
-            ).filter(
-                u_models.MemberGroup.is_guest==True
-            )
-
-        elif user and 'membership' in user:
-            q = q.filter(
-                c_models.SalesSegment.sales_segment_group_id==c_models.SalesSegmentGroup.id
-            ).filter(
-                c_models.SalesSegmentGroup.id==u_models.MemberGroup_SalesSegment.c.sales_segment_group_id
-            ).filter(
-                u_models.MemberGroup_SalesSegment.c.membergroup_id==u_models.MemberGroup.id
-            ).filter(
-                u_models.MemberGroup.name==user['membergroup']
-            )
-
-        q = q.order_by('SalesSegment.start_at')
-        sales_segment = q.first()
-
-        return sales_segment
+    def get_next_sales_segment_period(self):
+        return self.event.get_next_sales_segment_period(user=self.authenticated_user())
 
     def get_sales_segment(self):
         """ 該当イベントのSalesSegment取得
@@ -283,8 +251,13 @@ class TicketingCartResource(object):
             return None
 
         if sales_segment.start_at >= now or sales_segment.end_at <= now:
-            event = sales_segment.event
-            raise OutTermSalesException(event, sales_segment)
+            next = self.context.get_next_sales_segment_period()
+            if next:
+                raise OutTermSalesException(
+                    event=next['performance'].event,
+                    **next)
+            else:
+                raise HTTPNotFound()
 
         return sales_segment
 

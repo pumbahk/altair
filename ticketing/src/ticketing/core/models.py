@@ -31,11 +31,12 @@ from ticketing.models import (
     Base, DBSession, 
     MutationDict, JSONEncodedDict, 
     LogicallyDeleted, Identifier, DomainConstraintError, 
-    WithTimestamp, BaseModel
+    WithTimestamp, BaseModel,
+    is_any_of
 )
 from standardenum import StandardEnum
 from ticketing.utils import is_nonmobile_email_address
-from ticketing.users.models import User, UserCredential
+from ticketing.users.models import User, UserCredential, MemberGroup, MemberGroup_SalesSegment
 from ticketing.utils import sensible_alnum_decode
 from ticketing.sej.models import SejOrder, SejTenant, SejTicket, SejRefundTicket, SejRefundEvent
 from ticketing.sej.exceptions import SejServerError
@@ -916,6 +917,70 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         super(Event, self).delete()
 
+    def query_next_sales_segments(self, user=None, now=None):
+        now = now or datetime.now()
+        q = SalesSegment.query
+        q = q.options(joinedload('sales_segment_group'))  # need display sales_segment.name at out of transaction
+        q = q.filter(SalesSegment.public==1)
+        q = q.filter(SalesSegmentGroup.public==1)
+        q = q.filter(SalesSegmentGroup.normal_sales | SalesSegmentGroup.sales_counter) # XXX: 窓口販売が当日券用の区分に使われている。このようなケースでは、publicフラグがTrueであることを必ずチェックしなければならない
+        q = q.filter(Performance.event_id==self.id)
+        q = q.filter(Performance.id==SalesSegment.performance_id)
+        q = q.filter(SalesSegment.start_at>=now)
+
+        if user and user.get('is_guest'):
+            q = q.filter(
+                SalesSegment.sales_segment_group_id==SalesSegmentGroup.id
+            ).filter(
+                SalesSegmentGroup.id==MemberGroup_SalesSegment.c.sales_segment_group_id
+            ).filter(
+                MemberGroup_SalesSegment.c.membergroup_id==MemberGroup.id
+            ).filter(
+                MemberGroup.is_guest==True
+            )
+
+        elif user and 'membership' in user:
+            q = q.filter(
+                SalesSegment.sales_segment_group_id==SalesSegmentGroup.id
+            ).filter(
+                SalesSegmentGroup.id==MemberGroup_SalesSegment.c.sales_segment_group_id
+            ).filter(
+                MemberGroup_SalesSegment.c.membergroup_id==MemberGroup.id
+            ).filter(
+                MemberGroup.name==user['membergroup']
+            )
+        return q
+
+    def get_next_sales_segment_period(self, user=None, now=None):
+        sales_segments = []
+        start_at = None
+        end_at = None
+        earliest_sales_segment = None
+
+        q = self.query_next_sales_segments(user=user, now=now)
+        q = q.order_by('SalesSegment.start_at')
+        for sales_segment in q:
+            if earliest_sales_segment is None:
+                earliest_sales_segment = sales_segment
+                start_at = sales_segment.start_at
+                end_at = sales_segment.end_at
+            else:
+                if sales_segment.performance_id == earliest_sales_segment.performance_id:
+                    if start_at > sales_segment.start_at:
+                        start_at = sales_segment.start_at
+                    if end_at < sales_segment.end_at:
+                        end_at = sales_segment.end_at
+                    sales_segments.append(sales_segment)
+        if earliest_sales_segment is not None:
+            return dict(
+                performance=earliest_sales_segment.performance,
+                start_at=start_at,
+                end_at=end_at,
+                sales_segments=sales_segments
+                )
+        else:
+            return None
+
 class SalesSegmentKindEnum(StandardEnum):
     first_lottery   = u'最速抽選'
     early_lottery   = u'先行抽選'
@@ -984,6 +1049,29 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         return query
 
+    @hybrid_property
+    def lot(self):
+        return is_any_of(
+            self.kind,
+            (
+                SalesSegmentKindEnum.first_lottery.k,
+                SalesSegmentKindEnum.early_lottery.k,
+                SalesSegmentKindEnum.added_lottery.k)
+            )
+
+    @hybrid_property
+    def sales_counter(self):
+        return self.kind == SalesSegmentKindEnum.sales_counter.k
+
+    @hybrid_property
+    def normal_sales(self):
+        return is_any_of(
+            self.kind,
+            (
+                SalesSegmentKindEnum.early_firstcome.k,
+                SalesSegmentKindEnum.normal.k,
+                SalesSegmentKindEnum.added_sales.k)
+            )
 
 SalesSegment_PaymentDeliveryMethodPair = Table(
     "SalesSegment_PaymentDeliveryMethodPair",

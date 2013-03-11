@@ -118,9 +118,11 @@ class IndexView(IndexViewMixin):
         sales_segments = api.get_available_sales_segments(self.request, self.context.event, datetime.now())
         if not sales_segments:
             # 次の販売区分があるなら
-            next = self.context.get_next_sales_segment()
+            next = self.context.get_next_sales_segment_period()
             if next:
-                raise OutTermSalesException(self.context.event, next)
+                raise OutTermSalesException(
+                    event=next['performance'].event,
+                    **next)
             else:
                 raise HTTPNotFound()
 
@@ -827,15 +829,19 @@ class OutTermSalesView(object):
     @view_config(context='.exceptions.OutTermSalesException', renderer=selectable_renderer('ticketing.cart:templates/carts/%(membership)s/out_term_sales.html'))
     def pc(self):
         api.logout(self.request)
-        return dict(event=self.context.event, 
-                    sales_segment=self.context.sales_segment)
+        return dict(performance=self.context.performance,
+                    event=self.context.event,
+                    start_at=self.context.start_at,
+                    end_at=self.context.end_at)
 
     @view_config(context='.exceptions.OutTermSalesException', renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/out_term_sales.html'), 
         request_type='ticketing.mobile.interfaces.IMobileRequest')
     def mobile(self):
         api.logout(self.request)
-        return dict(event=self.context.event, 
-                    sales_segment=self.context.sales_segment)
+        return dict(performance=self.context.performance,
+                    event=self.context.event,
+                    start_at=self.context.start_at,
+                    end_at=self.context.end_at)
 
 @view_config(decorator=with_jquery.not_when(mobile_request), route_name='cart.logout')
 def logout(request):

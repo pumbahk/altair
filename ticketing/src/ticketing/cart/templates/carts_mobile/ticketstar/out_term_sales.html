@@ -2,12 +2,12 @@
 <%namespace file="./tags_mobile.html" name="mobile" />
 <%mobile:header>チケット購入</%mobile:header>
 <p>
-${event.title} ${sales_segment.name} の販売期間は
+${event.title} ${name} の販売期間は
 </p>
 <p>
-${h.japanese_datetime(sales_segment.start_at)}
-% if sales_segment.end_at:
-〜 ${h.japanese_datetime(sales_segment.end_at)} 
+${h.japanese_datetime(start_at)}
+% if end_at:
+〜 ${h.japanese_datetime(end_at)} 
 % endif
 </p>
 <p>となっております。</p>

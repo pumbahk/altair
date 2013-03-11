@@ -71,7 +71,14 @@ def check_sales_segment_term(request):
         raise NoSalesSegment
 
     if not sales_segment.in_term(now):
-        raise OutTermSalesException(sales_segment)
+        next = request.context.event.get_next_sales_segment_period(
+            now=now, user=request.context.authenticated_user())
+        if next:
+            raise OutTermSalesException(
+                event=next['performance'].event,
+                **next)
+        else:
+            raise HTTPNotFound()
 
 def get_event(request):
     event_id = request.matchdict.get('event_id')
