@@ -980,35 +980,40 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 )
         return q
 
-    def get_next_sales_segment_period(self, user=None, now=None):
-        sales_segments = []
-        start_at = None
-        end_at = None
-        earliest_sales_segment = None
+    def get_last_and_next_sales_segment_period(self, user=None, now=None):
+        now = now or datetime.now()
+        per_performance_data = {}
 
-        q = self.query_next_sales_segments(user=user, now=now)
+        q = self.query_sales_segments(user=user, now=now, type='all')
         q = q.order_by('SalesSegment.start_at')
+
         for sales_segment in q:
-            if earliest_sales_segment is None:
-                earliest_sales_segment = sales_segment
-                start_at = sales_segment.start_at
-                end_at = sales_segment.end_at
+            per_performance_datum = per_performance_data.get(sales_segment.performance_id)
+            if per_performance_datum is None:
+                per_performance_datum = per_performance_data[sales_segment.performance_id] = dict(
+                    performance=sales_segment.performance,
+                    sales_segments=[sales_segment],
+                    start_at=sales_segment.start_at,
+                    end_at=sales_segment.end_at
+                    )
             else:
-                if sales_segment.performance_id == earliest_sales_segment.performance_id:
-                    if start_at > sales_segment.start_at:
-                        start_at = sales_segment.start_at
-                    if end_at < sales_segment.end_at:
-                        end_at = sales_segment.end_at
-                    sales_segments.append(sales_segment)
-        if earliest_sales_segment is not None:
-            return dict(
-                performance=earliest_sales_segment.performance,
-                start_at=start_at,
-                end_at=end_at,
-                sales_segments=sales_segments
-                )
-        else:
-            return None
+                per_performance_datum['sales_segments'].append(sales_segment)
+                if per_performance_datum['start_at'] > sales_segment.start_at:
+                    per_performance_datum['start_at'] = sales_segment.start_at
+                if per_performance_datum['end_at'] < sales_segment.end_at:
+                    per_performance_datum['end_at'] = sales_segment.end_at
+
+        next = None
+        last = None
+        for per_performance_datum in per_performance_data.itervalues():
+            if per_performance_datum['start_at'] >= now:
+                if next is None or per_performance_datum['start_at'] < next['start_at']:
+                    next = per_performance_datum
+            elif per_performance_datum['end_at'] < now:
+                if last is None or per_performance_datum['end_at'] > last['end_at']:
+                    last = per_performance_datum
+
+        return next, last
 
 class SalesSegmentKindEnum(StandardEnum):
     first_lottery   = u'最速抽選'

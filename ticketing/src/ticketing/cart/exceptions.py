@@ -18,12 +18,10 @@ class NoSalesSegment(CartException):
 
 class OutTermSalesException(CartException):
     """ 期限外の販売区分に対するアクセス"""
-    def __init__(self, performance, event, start_at, end_at, **kwargs):
+    def __init__(self, next, last):
         Exception.__init__(self)
-        self.performance = performance
-        self.event = event
-        self.start_at = start_at
-        self.end_at = end_at
+        self.next = next
+        self.last = last
 
 class InvalidCSRFTokenException(Exception):
     pass

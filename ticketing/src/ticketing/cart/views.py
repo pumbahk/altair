@@ -118,11 +118,12 @@ class IndexView(IndexViewMixin):
         sales_segments = api.get_available_sales_segments(self.request, self.context.event, datetime.now())
         if not sales_segments:
             # 次の販売区分があるなら
-            next = self.context.get_next_sales_segment_period()
-            if next:
-                raise OutTermSalesException(
-                    event=next['performance'].event,
-                    **next)
+            data = self.context.get_last_and_next_sales_segment_period()
+            if any(data):
+                for datum in data:
+                    if datum is not None:
+                        datum['event'] = datum['performance'].event
+                raise OutTermSalesException(*data)
             else:
                 raise HTTPNotFound()
 
@@ -829,19 +830,25 @@ class OutTermSalesView(object):
     @view_config(context='.exceptions.OutTermSalesException', renderer=selectable_renderer('ticketing.cart:templates/carts/%(membership)s/out_term_sales.html'))
     def pc(self):
         api.logout(self.request)
-        return dict(performance=self.context.performance,
-                    event=self.context.event,
-                    start_at=self.context.start_at,
-                    end_at=self.context.end_at)
+        if self.context.next is None:
+            datum = self.context.last
+            which = 'last'
+        else:
+            datum = self.context.next
+            which = 'next'
+        return dict(which=which, **datum)
 
     @view_config(context='.exceptions.OutTermSalesException', renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/out_term_sales.html'), 
         request_type='ticketing.mobile.interfaces.IMobileRequest')
     def mobile(self):
         api.logout(self.request)
-        return dict(performance=self.context.performance,
-                    event=self.context.event,
-                    start_at=self.context.start_at,
-                    end_at=self.context.end_at)
+        if self.context.next is None:
+            datum = self.context.last
+            which = 'last'
+        else:
+            datum = self.context.next
+            which = 'next'
+        return dict(which=which, **datum)
 
 @view_config(decorator=with_jquery.not_when(mobile_request), route_name='cart.logout')
 def logout(request):

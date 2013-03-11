@@ -1,5 +1,6 @@
 <%inherit file="./base.html"/>
 ${h.get_nickname(request)} 
+% if which == 'next':
 <p>
 ${event.title} の販売期間は
 </p>
@@ -13,3 +14,10 @@ ${h.japanese_datetime(start_at)}
 <p>
   販売期間内にアクセスしていただきますようお願いいたします。
 </p>
+% else:
+<p>誠に申し訳ございませんが</p>
+<p>${event.title} (${performance.name}) の販売は</p>
+<p>${h.japanese_datetime(end_at)} まで</p>
+<p>とさせていただいております。</p>
+<p>他の試合のチケットは<a href="${request.context.host_base_url}">こちら</a>からお買い求めくださいますようお願いいたします。</p>
+% endif

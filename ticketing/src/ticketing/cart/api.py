@@ -71,12 +71,13 @@ def check_sales_segment_term(request):
         raise NoSalesSegment
 
     if not sales_segment.in_term(now):
-        next = request.context.event.get_next_sales_segment_period(
+        data = request.context.event.get_last_and_next_sales_segment_period(
             now=now, user=request.context.authenticated_user())
-        if next:
-            raise OutTermSalesException(
-                event=next['performance'].event,
-                **next)
+        if any(data):
+            for datum in data:
+                if datum is not None:
+                    datum['event'] = datum['performance'].event
+            raise OutTermSalesException(*data)
         else:
             raise HTTPNotFound()
 

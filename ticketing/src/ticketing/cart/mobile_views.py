@@ -68,11 +68,12 @@ class MobileIndexView(IndexViewMixin):
                             sales_segment_id=ss.id))
         if not sales_segments:
             # 次の販売区分があるなら
-            next = self.context.get_next_sales_segment_period()
-            if next:
-                raise OutTermSalesException(
-                    event=next['performance'].event,
-                    **next)
+            data = self.context.get_last_and_next_sales_segment_period()
+            if any(data):
+                for datum in data:
+                    if datum is not None:
+                        datum['event'] = datum['performance'].event
+                raise OutTermSalesException(*data)
             else:
                 raise HTTPNotFound()
 
