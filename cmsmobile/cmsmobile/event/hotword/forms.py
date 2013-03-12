@@ -7,3 +7,6 @@ class HotwordForm(SearchForm):
 
     # --- 取得用
     id = HiddenField(label='', validators=[Optional()], default="")
+
+    # --- パンくずリスト表示用
+    navi_hotword = HiddenField(validators=[Optional()])

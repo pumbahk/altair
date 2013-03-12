@@ -45,6 +45,7 @@ def move_hotword(request):
 
     # パンくずリスト用
     log_info("move_hotword", "breadcrumb create start")
+    form.navi_hotword.data = hotword
     if exist_value(form.genre.data):
         form.navi_genre.data = request.allowable(Genre).filter(Genre.id==form.genre.data).first()
 
