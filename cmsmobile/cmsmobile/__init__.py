@@ -21,6 +21,9 @@ def main(global_config, **settings):
     def getti_orderreview_url(request):
         return config.registry.settings["getti.orderreview.url"]
 
+    def sender_mailaddress(request):
+        return config.registry.settings["sender.mailaddress"]
+
     engine = engine_from_config(settings, 'sqlalchemy.', pool_recycle=3600)
     sqlahelper.get_session().remove()
     sqlahelper.add_engine(engine)
@@ -31,6 +34,7 @@ def main(global_config, **settings):
 
     config.set_request_property(altair_orderreview_url, "altair_orderreview_url", reify=True)
     config.set_request_property(getti_orderreview_url, "getti_orderreview_url", reify=True)
+    config.set_request_property(sender_mailaddress, "sender_mailaddress", reify=True)
     config.set_request_property("altaircms.auth.api.get_allowable_query", "allowable", reify=True)
 
     config.include('cmsmobile.event.company')

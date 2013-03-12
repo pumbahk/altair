@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 from pyramid.view import view_config
+from cmsmobile.core.const import get_category_name
 from cmsmobile.event.inquiry.forms import InquiryForm
-from cmsmobile.core.helper import log_info
+from cmsmobile.core.helper import log_info, log_error
+from pyramid_mailer.message import Message
+from pyramid_mailer import get_mailer
+from pyramid.httpexceptions import HTTPNotFound
 
 @view_config(route_name='inquiry', request_method="GET",
              renderer='cmsmobile:templates/inquiry/inquiry.mako')
@@ -19,8 +23,30 @@ def send_inquiry(request):
     form = InquiryForm(request.POST)
 
     if form.validate():
-        log_info("send_inquiry", "send mail")
         form.send.data = True
+        try:
+            log_info("send_inquiry", "send mail start")
+            mailer = get_mailer(request)
+            message = Message(subject=u'楽天チケット[MOB]　お問合せフォーム',
+                              sender=request.sender_mailaddress,
+                              recipients=["keiichi_okada@ticketstar.jp"],
+                              body=_create_mail_body(form))
+            mailer.send(message)
+            log_info("send_inquiry", "send mail end")
+        except Exception as e:
+            log_error("send_inquiry", str(e))
+            raise HTTPNotFound
 
     log_info("send_inquiry", "end")
     return {'form':form}
+
+def _create_mail_body(form):
+    body = form.name.data + u"さんからのお問合せです。\n"
+    body = body + u"メールアドレス：" + form.mail.data + u"\n"
+    body = body + u"予約受付番号：" + form.num.data + u"\n\n"
+    body = body + u"---------------------------------------\n"
+    body = body + u"カテゴリ：" + get_category_name(form.category.data) + u"\n"
+    body = body + u"件名：" + form.title.data + u"\n"
+    body = body + u"---------------------------------------\n"
+    body = body + u"内容：" + form.body.data
+    return body

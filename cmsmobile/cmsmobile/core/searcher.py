@@ -65,8 +65,8 @@ class EventSearcher(object):
                 events = helper.searchEvents(self.request, search_word)
                 ids = self._create_ids(events)
                 qs = self._create_common_qs(where=Event.id.in_(ids))
-            except Exception, e:
-                log_error("get_events_from_freeword", e.message.encode("utf-8"))
+            except Exception as e:
+                log_error("get_events_from_freeword", str(e))
                 raise HTTPNotFound
         log_info("get_events_from_freeword", "end")
         return qs

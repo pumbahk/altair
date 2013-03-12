@@ -6,6 +6,17 @@ class SalesEnum(StandardEnum):
     WEEK_SALE       = 1
     NEAR_SALE_END   = 2
 
+def get_category_name(category_no):
+    categories = {
+         1:u'チケットについて'
+        ,2:u'お支払い方法について'
+        ,3:u'座席について'
+        ,4:u'配送方法について'
+        ,5:u'ご意見/ご感想'
+        ,6:u'その他'
+    }
+    return categories[category_no]
+
 def get_prefecture_name(area):
     areas = {
          '1':u'首都圏'
