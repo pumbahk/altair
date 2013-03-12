@@ -44,6 +44,7 @@ def main(global_config, **settings):
     config.include('cmsmobile.event.orderreview')
     config.include('cmsmobile.event.inquiry')
     config.include('cmsmobile.event.privacy')
+    config.include('cmsmobile.event.legal')
 
     config.include('altaircms.solr')
     config.include('altaircms.tag')
