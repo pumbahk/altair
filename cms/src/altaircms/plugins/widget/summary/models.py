@@ -99,3 +99,4 @@ class SummaryWidgetResource(HandleSessionMixin,
     def get_items(self, page_id):
         page = self._get_page(page_id)
         return self._items_from_page(page) if page.event else "[]"
+

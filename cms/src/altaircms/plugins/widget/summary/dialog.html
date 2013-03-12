@@ -2,6 +2,12 @@
 ##  view function is views.SummaryWidgetView.dialog
 ##
 <!-- Summary App Interface -->
+<style type="text/css">
+#item-result tbody tr:hover td, #item-result tbody tr:hover th {
+    background-color: transparent;
+}
+</style>
+
 <div id="app">
   <div class="title">
     <h1>サマリー</h1>
@@ -13,15 +19,17 @@
   </div>
   <hr/>
   <div class="content" class="float">
-	<p>購入ページのイベント詳細として利用する<input id="use_notify" type="checkbox"/ ${"checked" if widget.bound_event_id else ""|n}></p>
+	  <p>購入ページのイベント詳細として利用する<input id="use_notify" type="checkbox"/ ${"checked" if widget.bound_event_id else ""|n}></p>
     <div id="create-content">
-   <table class="table">
-           <tr>
-                 <td><label>見出し<input id="label_input" placeholder="ここに見出しを追加" type="text" /></label></td>
-                   <td><label>内容<textarea width="300px" id="content_input" placeholder="ここに内容を追加" type="text" /></textarea></label></td>
-                   <td><label>購入ページに通知する<input id="notify_input"  type="checkbox" checked="checked"/></label></td>
-                 <td><button id="additem_button" type="button" class="btn">追加する</button></td>
-          </tr>
+      <table class="table table-describe" width="100%">
+        <tr>
+          <td><label>見出し<input id="label_input" placeholder="ここに見出しを追加" type="text" /></label></td>
+          <td><label>内容<textarea id="content_input" placeholder="ここに内容を追加" type="text" ></textarea></label></td>
+        </tr>
+        <tr>
+          <td width="15%"><label>購入ページに通知する<input id="notify_input"  type="checkbox" checked="checked"/></label></td>
+          <td width="15%"><button id="additem_button" type="button" class="btn btn-success"><i class="icon-plus icon-white"></i>追加する</button></td>
+        </tr>
       </table>
     </div>
     <span class="clear"/>
@@ -31,13 +39,13 @@
 
     <div id="contents">
       <button class="btn" type="button" id="reflesh_button">最初の状態に戻す</button>
-      <button class="btn" type="button" url="${request.route_path("api_summary_widget_data_from_db")}" id="load_from_api_button">登録されたデータから内容を取得</button>
-      <button id="removeall_button" type="button" class="btn">全部削除</button>
+      <button class="btn" type="button" url="${request.route_path("api_summary_widget_data_from_db")}" id="load_from_api_button">DBから内容を取得</button>
+      <button id="removeall_button" type="button" class="btn btn-danger">全部削除</button>
       <button id="summary_submit" type="button" class="btn btn-primary">登録</button>
 
-      <table id="item-result"width="100%">
+      <table id="item-result" class="table table-describe">
         <thead>
-          <tr><th>見出し</th><th>内容</th><th>通知</th><th>削除</th></tr>
+          <tr><th width="20%">見出し</th><th>内容</th><th width="10%">通知</th><th width="1%">削除</th></tr>
         </thead>
         <tbody id="contentlist">
         </tbody>
@@ -78,10 +86,10 @@
         tagName: "tr", 
         className: "item", 
         template: _.template([
-            '<td class="label"></td>', 
+            '<td><span  class="label"></span></td>', 
             '<td class="content"></td>', 
             '<td><input type="checkbox" class="notify"/></td>', 
-            '<td><a href="#" class="remove">remove</a></td>', 
+            '<td><a href="#" class="remove btn btn-mini btn-danger"><i class="icon-trash icon-white"></i></a></td>', 
         ].join("\n")), 
 
         events: {
@@ -124,9 +132,11 @@
         }, 
         transformEditView: function(){
             this.model.unbind("change", this.render);
-            $(this.el).css("display","none");
+            this.$el.css("display","none");
             var edit_view = new EditItemView({model: this.model, view: this});
-            $(this.el).after(edit_view.render().el);
+            var edit_elt = edit_view.render().el;
+            this.$el.after(edit_elt);
+            $(edit_elt).find("textarea").width(this.$el.parents(".table").find(".content").width());
         }, 
         remove: function() {
             $(this.el).remove();
@@ -137,8 +147,8 @@
         tagName: "tr", 
         className: "edit-item", 
         template: _.template(['<td><label>見出し<input class="label" type="text" value="<%= label %>"/></label></td>', 
-            '<td><label>内容<textarea class="content" type="text" max-width="100%" width="100%"><%= content %></textarea></label></td>',
-            '<td><button type="button" class="update_button btn">更新</button></td>'
+            '<td><label>内容<textarea class="content" type="text"><%= content %></textarea></label></td>',
+            '<td><button type="button" class="update_button btn btn-primary">更新</button></td>'
         ].join("\n")), 
         
         events: {
@@ -161,7 +171,7 @@
         }, 
 
         render: function(){
-            $(this.el).html(this.template(this.model.toJSON()));
+            this.$el.html(this.template(this.model.toJSON()));
             return this;
         }
     });
