@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-    <%include file="../common/_header.mako" args="title=u'公演中止情報'"/>
+    <%include file="../common/_header.mako" args="title=u'楽天チケット[公演中止・変更情報]'"/>
 <body>
 
     <a href="/">トップ</a> >> 公演中止・変更情報<p/>

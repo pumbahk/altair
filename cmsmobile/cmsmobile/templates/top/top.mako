@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-    <%include file="../common/_header.mako" args="title=u'トップページ'"/>
+    <%include file="../common/_header.mako" args="title=u'楽天チケット'"/>
     <body>
 
         <%include file="../common/_search.mako" args="form=form" />

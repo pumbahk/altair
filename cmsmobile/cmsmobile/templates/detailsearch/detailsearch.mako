@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-    <%include file='../common/_header.mako' args="title=u'詳細検索'"/>
+    <%include file='../common/_header.mako' args="title=u'楽天チケット[詳細検索]'"/>
 
 <body>
 <a href="/">トップ</a> >> 詳細検索<p/>

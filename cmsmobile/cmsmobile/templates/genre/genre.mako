@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-    <%include file="../common/_header.mako" args="title=u'ジャンル'"/>
+    <%include file="../common/_header.mako" args="title=u'楽天チケット'"/>
 <body>
     % if form.sub_genre.data == "":
         <a href="/">トップ</a> >> ${form.dispgenre.data.label}

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-    <%include file="../common/_header.mako" args="title=u'会社概要'"/>
+    <%include file="../common/_header.mako" args="title=u'楽天チケット[会社概要]'"/>
 <body>
 <div bgcolor="#26c" style="background-color:#26c;text-align:center" align="center">
     <font color="#ffffff">会社概要</font></div>
