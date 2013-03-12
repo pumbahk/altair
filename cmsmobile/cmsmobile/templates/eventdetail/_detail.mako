@@ -18,10 +18,16 @@
     <hr/>
     % for perf in event.performances:
         % if str(perf.start_on.year) + "/" + str(perf.start_on.month) == month:
-                <a href="${purchase_links[perf.id]}">
-            開場:${str(perf.open_on.year)[2:]}/${perf.open_on.month}/${perf.open_on.day}
-            開演:${str(perf.start_on.year)[2:]}/${perf.start_on.month}/${perf.start_on.day}<br/>
-            会場:${perf.venue}<br/>
+            <a href="${purchase_links[perf.id]}">
+            % if perf.open_on:
+                開場:${str(perf.open_on.year)[2:]}/${perf.open_on.month}/${perf.open_on.day}
+            % endif
+            % if perf.start_on:
+                開演:${str(perf.start_on.year)[2:]}/${perf.start_on.month}/${perf.start_on.day}<br/>
+            % endif
+            % if perf.venue:
+                会場:${perf.venue}<br/>
+            % endif
         % endif
     % endfor
 % endfor
@@ -32,12 +38,8 @@
 % if event.salessegment_groups:
     % for segment in event.salessegment_groups:
         ${segment.kind}:
-        % if segment.start_on:
-            ${segment.start_on.year}/${segment.start_on.month}/${segment.start_on.day}
-        % endif
-        % if segment.end_on:
-            -${segment.end_on.year}/${segment.end_on.month}/${segment.end_on.day}
-        % endif
+        ${segment.start_on.year}/${segment.start_on.month}/${segment.start_on.day}-${segment.end_on.year}/${segment.end_on.month}/${segment.end_on.day}
+        <br/>
     % endfor
 % endif
 <p/>
