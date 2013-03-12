@@ -3096,12 +3096,14 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         sales_segment = SalesSegment.clone(template)
         if 'performance_id' in kwargs:
             sales_segment.performance_id = kwargs['performance_id']
+        if 'sales_segment_group_id' in kwargs:
+            sales_segment.sales_segment_group_id = kwargs['sales_segment_group_id']
         sales_segment.membergroups = template.membergroups
         sales_segment.save()
 
         if with_payment_delivery_method_pairs:
             for template_pdmp in template.payment_delivery_method_pairs:
-                PaymentDeliveryMethodPair.create_from_template(template=template_pdmp, sales_segment_id=sales_segment.id)
+                PaymentDeliveryMethodPair.create_from_template(template=template_pdmp, sales_segment_id=sales_segment.id, **kwargs)
 
         return {template.id:sales_segment.id}
 
