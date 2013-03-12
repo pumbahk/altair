@@ -123,12 +123,12 @@ event = page.event or page.pageset.event
 <script type="text/javascript">
   $(function(){
       // swap status
-	$("#publish_status").click(function(e){
-	  e.preventDefault();
-	  if(window.confirm("「"+$(this).text()+"」しますがよろしいですか？\n\n(公開したページは、特別な権限を持たない限り変更できなくなります。)")){
-		$.post($(this).attr("href")).done(function(){location.reload();});
-	  }
-	});
+    $("#publish_status").click(function(e){
+      e.preventDefault();
+      if(window.confirm("「"+$(this).text()+"」しますがよろしいですか？\n\n(公開したページは、特別な権限を持たない限り変更できなくなります。)")){
+      $.post($(this).attr("href")).done(function(){location.reload();});
+      }
+    });
   });
 </script>
   <div style="clear:both;"></div>

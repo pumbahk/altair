@@ -9,23 +9,6 @@ from ..asset.api import get_taglabel
 def table_headers(headers):
     return Markup(u"<th>%s</th>" % u"</th></th>".join(headers)) 
 
-@view_config(name="describe_pageset", renderer="altaircms:templates/event/viewlet/pagesets.html")
-def describe_pageset(request):
-    event = api.get_event(request)
-    pagesets = api.get_pagesets(request)
-    return {
-        "event": event, 
-        "pagesets": pagesets
-        }
-
-@view_config(name="describe_pageset", renderer="altaircms:templates/page/viewlet/pagesets.html", 
-             context="altaircms.page.resources.PageResource")
-def describe_pageset_without_event(request):
-    pagesets = api.get_pagesets(request)
-    return {
-        "pagesets": pagesets
-        }
-
 @view_config(name="describe_performance", renderer="altaircms:templates/event/viewlet/performances.html")
 def describe_performance(request):
     performances = api.get_performances(request)

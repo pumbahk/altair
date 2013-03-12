@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 from pyramid.renderers import render_to_response
-
+import sqlalchemy.orm as orm
 from altaircms.widget.tree.proxy import WidgetTreeProxy
 from .bsettings import BlockSettings
 from .impl import ILayoutTemplateLookUp
@@ -10,6 +10,7 @@ logger = logging.getLogger(__file__)
 
 from ..pyramidlayout import get_subcategories_from_page #obsolete
 from .. import pyramidlayout
+from altaircms.models import Performance
 
 def get_frontpage_renderer(request):
     """ rendererを取得
@@ -40,7 +41,7 @@ class FrontPageRenderer(object):
         bsettings.blocks["title"] = [page.title]
 
         event = page.event
-        performances=event.performances if event else []
+        performances = Performance.query.filter(Performance.event_id==event.id).options(orm.joinedload("sales")).all()
         ## 本当はwidget側からpullしていくようにしたい
         bsettings.scan(self.request, page=page, performances=performances, event=event)
         return bsettings

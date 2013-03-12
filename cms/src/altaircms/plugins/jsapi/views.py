@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
+from pyramid.httpexceptions import HTTPBadRequest
 from datetime import datetime
 import sqlalchemy.orm as orm
+from altaircms.helpers.viewhelpers import FlashMessage
 from pyramid.view import view_config
 from pyramid.view import view_defaults
 import logging
@@ -74,17 +76,22 @@ def pageset_reset_event(request):
 def pageset_addpage(request):
     pageset_id = request.matchdict["pageset_id"]
     pageset = get_or_404(request.allowable(PageSet), PageSet.id==pageset_id)
-    created = pageset.create_page()
+    try:
+        created = pageset.create_page(force=True)
 
-    if created:
-        DBSession.add(created)
-        DBSession.flush()
-        page_subscribers.notify_page_create(request, created)
-        notify_model_create(request, created, {})
-        return "OK"
-    else:
-        return "FAIL"
-
+        if created:
+            DBSession.add(created)
+            DBSession.flush()
+            params = {"tags": "", "private_tags": ""}
+            page_subscribers.notify_page_create(request, created, params)
+            notify_model_create(request, created, params)
+            FlashMessage.success(u"新しいページが作成されました.")
+            return "OK"
+        else:
+            logger.warn("base page is not found")
+            raise HTTPBadRequest("NG")
+    except Exception, e:
+        logger.exception(str(e))
 
 @view_defaults(route_name="plugins_jsapi_page_publish_status", renderer="json", request_method="POST", 
                custom_predicates=(require_login,))
