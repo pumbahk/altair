@@ -2,7 +2,9 @@
 <html>
     <%include file="../common/_header.mako" args="title=u'楽天チケット[会社概要]'"/>
 <body>
+
 <a href="/">トップ</a> >> 会社概要<p/>
+
 ■社名<br />
 株式会社チケットスター <br/>
 (英名：TicketStar Inc. )<p />
