@@ -642,7 +642,9 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def create_from_template(template, **kwargs):
         performance = Performance.clone(template)
         if 'event_id' in kwargs:
-            performance.event_id = kwargs['event_id']
+            event = Event.get(kwargs['event_id'])
+            performance.event_id = event.id
+            performance.code = event.code + performance.code[5:]
         performance.original_id = template.id
         performance.venue_id = template.venue.id
         performance.create_venue_id = template.venue.id
