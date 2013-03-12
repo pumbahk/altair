@@ -523,6 +523,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         またVenueの変更があったら関連モデルを削除する
           - SalesSegment (performance_id is not None)
             - Product (performance_id is not None)
+            − MemberGroup_SalesSegment
           - Venue
             - VenueArea
               - VenueArea_group_l0_id
@@ -804,7 +805,11 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
               - StockType
               - StockHolder
               - SalesSegmentGroup
-              - Product (performance_id is None)
+                − MemberGroup_SalesSegment
+              - TicketBundle
+                - Ticket_TicketBundle
+                - TicketBundleAttribute
+                - Ticket
               - Performance
                 - (この階層以下はPerformance.add()を参照)
             """
@@ -816,6 +821,8 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 'stock_holder':dict(),
                 'sales_segment_group':dict(),
                 'product':dict(),
+                'ticket':dict(),
+                'ticket_bundle':dict(),
             }
 
             # create StockType
@@ -836,6 +843,18 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     SalesSegmentGroup.create_from_template(template=template_sales_segment_group, event_id=self.id)
                 )
 
+            # create Ticket
+            for template_ticket in template_event.tickets:
+                convert_map['ticket'].update(
+                    Ticket.create_from_template(template=template_ticket, event_id=self.id)
+                )
+
+            # create TicketBundle
+            for template_ticket_bundle in template_event.ticket_bundles:
+                convert_map['ticket_bundle'].update(
+                    TicketBundle.create_from_template(template=template_ticket_bundle, event_id=self.id, **convert_map)
+                )
+
             # create Performance
             for template_performance in template_event.performances:
                 Performance.create_from_template(template=template_performance, event_id=self.id)
@@ -847,24 +866,24 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             for performance in performances:
                 # 関連テーブルのstock_type_idを書き換える
                 for old_id, new_id in convert_map['stock_type'].iteritems():
-                    Stock.filter_by(stock_type_id=old_id)\
-                        .filter_by(performance_id=performance.id)\
-                        .update({'stock_type_id':new_id})
+                    Stock.query.filter(and_(Stock.stock_type_id==old_id, Stock.performance_id==performance.id)).update({'stock_type_id':new_id})
+                    Product.query.filter(and_(Product.seat_stock_type_id==old_id, Product.performance_id==performance.id)).update({'seat_stock_type_id':new_id})
 
                 # 関連テーブルのsales_holder_idを書き換える
                 for old_id, new_id in convert_map['stock_holder'].iteritems():
-                    Stock.filter_by(stock_holder_id=old_id)\
-                        .filter_by(performance_id=performance.id)\
-                        .update({'stock_holder_id':new_id})
+                    Stock.query.filter(and_(Stock.stock_holder_id==old_id, Stock.performance_id==performance.id)).update({'stock_holder_id':new_id})
 
                 # 関連テーブルのsales_segment_group_idを書き換える
                 for old_id, new_id in convert_map['sales_segment_group'].iteritems():
-                    sales_segments = SalesSegment.filter_by(sales_segment_group_id=old_id)\
-                                        .filter_by(performance_id=performance.id).all()
+                    sales_segments = SalesSegment.query.filter(and_(SalesSegment.sales_segment_group_id==old_id, SalesSegment.performance_id==performance.id)).all()
                     for sales_segment in sales_segments:
                         sales_segment.sales_segment_group_id = new_id
                         for pdmp in sales_segment.payment_delivery_method_pairs:
                             pdmp.sales_segment_group_id = new_id
+
+                # 関連テーブルのticket_bundle_idを書き換える
+                for old_id, new_id in convert_map['ticket_bundle'].iteritems():
+                    ProductItem.query.filter(and_(ProductItem.ticket_bundle_id==old_id, ProductItem.performance_id==performance.id)).update({'ticket_bundle_id':new_id})
         else:
             """
             Eventの作成時は以下のモデルを自動生成する
@@ -872,7 +891,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 - StockHolder (デフォルト枠)
             """
             account = Account.filter_by(organization_id=self.organization.id)\
-            .filter_by(user_id=self.organization.user_id).first()
+                             .filter_by(user_id=self.organization.user_id).first()
             if not account:
                 account = Account(
                     account_type=AccountTypeEnum.Playguide.v[0],
@@ -1059,6 +1078,7 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         sales_segment_group = SalesSegmentGroup.clone(template)
         if 'event_id' in kwargs:
             sales_segment_group.event_id = kwargs['event_id']
+        sales_segment_group.membergroups = template.membergroups
         sales_segment_group.save()
         return {template.id:sales_segment_group.id}
 
@@ -2676,6 +2696,15 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         new_object.original_ticket = self
         return new_object
 
+    @staticmethod
+    def create_from_template(template, **kwargs):
+        ticket = Ticket.clone(template)
+        if 'event_id' in kwargs:
+            ticket.event_id = kwargs['event_id']
+        ticket.original_ticket_id = template.id
+        ticket.save()
+        return {template.id:ticket.id}
+
 for event_kind in ['before_insert', 'before_update']:
     event.listen(Ticket, event_kind, lambda mapper, conn, target: target.before_insert_or_update())
 
@@ -2790,6 +2819,20 @@ class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def can_issue_by_that_delivery(self,  delivery_plugin_id):
         return any(True for _ in self.applicable_ticket_iter(delivery_plugin_id))
+
+    @staticmethod
+    def create_from_template(template, **kwargs):
+        ticket_bundle = TicketBundle.clone(template)
+        if 'event_id' in kwargs:
+            ticket_bundle.event_id = kwargs['event_id']
+
+        for template_ticket in template.tickets:
+            ticket = Ticket.get(kwargs['ticket'][template_ticket.id])
+            ticket_bundle.tickets.append(ticket)
+
+        ticket_bundle.attributes = template.attributes
+        ticket_bundle.save()
+        return {template.id:ticket_bundle.id}
 
 class TicketPrintHistory(Base, BaseModel, WithTimestamp):
     __tablename__ = "TicketPrintHistory"
@@ -3053,6 +3096,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         sales_segment = SalesSegment.clone(template)
         if 'performance_id' in kwargs:
             sales_segment.performance_id = kwargs['performance_id']
+        sales_segment.membergroups = template.membergroups
         sales_segment.save()
 
         if with_payment_delivery_method_pairs:
