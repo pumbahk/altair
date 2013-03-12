@@ -179,6 +179,7 @@ class MultiCheckoutPlugin(object):
             order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
             order['secure_code'],
         )
+        card_brand = detect_card_brand(request, order['card_number'])
 
         if checkout_sales_result.CmnErrorCd != '000000':
             logger.info(u'finish_secure_code: 決済エラー order_no = %s, error_code = %s' % (order_no, checkout_sales_result.CmnErrorCd))
@@ -192,9 +193,13 @@ class MultiCheckoutPlugin(object):
                 error_code=checkout_sales_result.CmnErrorCd
                 )
 
-        DBSession.add(checkout_sales_result)
+        #DBSession.add(checkout_sales_result)
+        ahead_com_code = checkout_sales_result.AheadComCd
 
         order = c_models.Order.create_from_cart(cart)
+        order.card_brand = card_brand
+        order.card_ahead_com_code = ahead_com_code
+        order.card_ahead_com_name = get_card_ahead_com_name(request, ahead_com_code)
         order.multicheckout_approval_no = checkout_sales_result.ApprovalNo
         order.paid_at = datetime.now()
         cart.finish()
