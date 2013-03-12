@@ -42,7 +42,7 @@ if(!widget){
                 root.navigator(".navi").eq(0).data("scrollable").focus();
                 var move = root.data("scrollable").move;
                 $(we.dialog).parent().mousewheel(function(e, delta){
-                    move(delta < 0 ? 1 : -1, 50); // 50 is speed
+                    move(delta < 0 ? 1 : -1, 40); // 50 is speed
                     return false;
                 });
                 // when page loads setup keyboard focus on the first horzontal scrollable
@@ -60,7 +60,8 @@ if(!widget){
                 href: root.find("#href").val() || "", 
                 width: root.find("#width").val() || "", 
                 height: root.find("#height").val() || "", 
-                alt: root.find("#alt").val() || ""
+                alt: root.find("#alt").val() || "", 
+                align: root.find("#align").val() || ""
                };
     };
 

@@ -2,8 +2,6 @@
 # -*- coding:utf-8 -*-
 
 import sqlalchemy as sa
-
-
 from datetime import datetime
 import sqlahelper
 import sqlalchemy.orm as orm
@@ -76,6 +74,8 @@ def initialize_sql(engine, dropall=False):
         Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
     return DBSession
+
+
 
 ###
 ### ここからCMS用モデル

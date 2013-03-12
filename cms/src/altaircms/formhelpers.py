@@ -256,3 +256,18 @@ class Form(wtforms.Form):
     def _get_translations(self):
         return Translations()
     
+class AlignChoiceField(SelectField):
+    choices = (("left", u"左寄せ"), ("center", u"中央寄せ"))
+    def __init__(self, label=None, validators=None, coerce=text_type, choices=choices, 
+                 **kwargs):
+        super(AlignChoiceField, self).__init__(label=label, validators=validators, coerce=coerce, choices=choices, 
+                 **kwargs)
+
+    def convert_as_style(self, value):
+        if value == "left":
+            return u""
+        elif value == "center":
+            return u'display: -webkit-box; display: -moz-box; display: -o-box; display: box; margin: 0px auto;'
+        else:
+            raise ValueError("%s is not found in candidates definition" % value)
+    
