@@ -5,7 +5,6 @@
 import logging
 import re
 import transaction
-from datetime import datetime
 
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
@@ -53,7 +52,7 @@ class MobileIndexView(IndexViewMixin):
         logger.debug('mobile index')
         self.check_redirect(mobile=True)
         venue_name = self.request.params.get('v')
-        sales_segments = api.get_available_sales_segments(self.request, self.context.event, datetime.now())
+        sales_segments = self.context.available_sales_segments
         # パフォーマンスIDが確定しているなら商品選択へリダイレクト
         performance_id = self.request.params.get('pid') or self.request.params.get('performance')
         if performance_id:
@@ -66,16 +65,6 @@ class MobileIndexView(IndexViewMixin):
                             event_id=self.context.event.id,
                             performance_id=performance_id,
                             sales_segment_id=ss.id))
-        if not sales_segments:
-            # 次の販売区分があるなら
-            data = self.context.get_next_and_last_sales_segment_period()
-            if any(data):
-                for datum in data:
-                    if datum is not None:
-                        datum['event'] = datum['performance'].event
-                raise OutTermSalesException(*data)
-            else:
-                raise HTTPNotFound()
 
         perms = [ss.performance for ss in sales_segments]
         if not perms:

@@ -13,6 +13,7 @@ from sqlalchemy import sql
 from pyramid.security import Everyone, Authenticated
 from pyramid.security import Allow
 from pyramid.decorator import reify
+from pyramid.httpexceptions import HTTPNotFound
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import joinedload
 from zope.interface import implementer
@@ -23,6 +24,7 @@ from ticketing.mails.resources import CompleteMailPayment, CompleteMailDelivery,
 
 from .exceptions import (
     OutTermSalesException,
+    NoSalesSegment,
     NoPerformanceError,
 )
 from ..core import models as c_models
@@ -41,6 +43,7 @@ class TicketingCartResource(object):
 
     def __init__(self, request):
         self.request = request
+        self.now = datetime.now()
         self._event_id = None
         self._event = None
         if request.matchdict:
@@ -70,13 +73,6 @@ class TicketingCartResource(object):
         logger.debug('memberships %s' % organization.memberships)
         return organization.memberships
 
-    # @property
-    # def membergroup(self):
-    #     sales_segment = self.sales_segment
-    #     if sales_segment is None:
-    #         return None
-    #     return sales_segment.membergroup
-
     @property
     def event(self):
         if self._event is None:
@@ -97,17 +93,12 @@ class TicketingCartResource(object):
         except NoResultFound:
             raise NoPerformanceError
 
-
-
-
-    @property
+    @reify
     def membergroups(self):
         sales_segment = self.sales_segment
         if sales_segment is None:
             return []
         return sales_segment.membergroups
-        
-
 
     def get_system_fee(self):
         # 暫定で0に設定
@@ -116,23 +107,21 @@ class TicketingCartResource(object):
     @property
     def sales_counter_sales_segment(self):
         """ 当日用販売区分"""
-        # FIXME: kind を見る運用でいいのかしら?
-        # SalesSegmentGroup にフラグを持たせる方がよいかも?
-        scs = [s for s in self.sales_segments if s.sales_segment_group.kind == 'sales_counter']
+        scs = [s for s in self.available_sales_segments if s.sales_segment_group.sales_counter]
         if not scs:
             return None
         return scs[0]
 
-    @property
+    @reify
     def normal_sales_segment(self):
         """ 当日以外販売区分"""
-        scs = [s for s in self.sales_segments if s.sales_segment_group.kind != 'sales_counter']
+        scs = [s for s in self.available_sales_segments if s.sales_segment_group.sales_counter]
         if not scs:
             return None
         return scs[0]
 
     def get_payment_delivery_method_pair(self, start_on=None):
-        segment = self.get_sales_segment()
+        segment = self.sales_segment
         q = c_models.PaymentDeliveryMethodPair.query.filter(
             c_models.PaymentDeliveryMethodPair.sales_segment_group_id==segment.id
         ).filter(
@@ -153,115 +142,84 @@ class TicketingCartResource(object):
         return pairs
 
     def authenticated_user(self):
+        """現在認証中のユーザ"""
         from ticketing.rakuten_auth.api import authenticated_user
         user = authenticated_user(self.request)
         return user
 
-
-    @deprecate("deprecated method")
-    def get_sales_segument(self):
-        return self.get_sales_segment()
-
-    @property
+    @reify
     def sales_segments(self):
-        """ イベントに関連する全販売区分 """
-        now = datetime.now()
-        q = c_models.SalesSegment.query
-        q = q.filter(c_models.SalesSegment.public==1)
-        q = q.filter(c_models.SalesSegmentGroup.public==1)
-        q = q.filter(c_models.SalesSegmentGroup.event_id==self.event_id)
-        q = q.filter(c_models.SalesSegment.sales_segment_group_id==c_models.SalesSegmentGroup.id)
-        q = q.filter(
-            c_models.SalesSegment.start_at <= now
-        ).filter(
-            c_models.SalesSegment.end_at >= now
-        )
-        user = self.authenticated_user()
-        if user and user.get('is_guest'):
-            q = q.filter(
-                c_models.SalesSegment.id==u_models.MemberGroup_SalesSegment.c.sales_segment_group_id
-            ).filter(
-                u_models.MemberGroup_SalesSegment.c.membergroup_id==u_models.MemberGroup.id
-            ).filter(
-                u_models.MemberGroup.is_guest==True
-            )
+        """現在認証済みのユーザとイベントに関連する全販売区分"""
+        return self.event.query_sales_segments(
+            user=self.authenticated_user(),
+            type='all').all()
 
-        elif user and 'membership' in user:
-            q = q.filter(
-                c_models.SalesSegment.id==u_models.MemberGroup_SalesSegment.c.sales_segment_group_id
-            ).filter(
-                u_models.MemberGroup_SalesSegment.c.membergroup_id==u_models.MemberGroup.id
-            ).filter(
-                u_models.MemberGroup.name==user['membergroup']
-            )
-        sales_segments = q.all()
-        return sales_segments
+    @reify
+    def available_sales_segments(self):
+        """現在認証済みのユーザが今買える全販売区分"""
+        per_performance_sales_segments_dict = {}
+        for sales_segment in self.sales_segments:
+            if sales_segment.available_payment_delivery_method_pairs and \
+               sales_segment.in_term(self.now):
+                per_performance_sales_segments = \
+                    per_performance_sales_segments_dict.get(sales_segment.performance_id)
+                if per_performance_sales_segments is None:
+                    per_performance_sales_segments = per_performance_sales_segments_dict[sales_segment.performance_id] = ([], [])
+                per_performance_sales_segments[sales_segment.sales_segment_group.has_guest and 1 or 0].append(sales_segment)
 
-    @deprecate('use get_next_and_last_sales_segment_period')
-    def get_next_sales_segment(self):
-        """ 該当イベントの次回SalesSegment取得
-        """
-        return self.event.query_next_sales_segments(user=self.authenticated_user()).order_by('SalesSegment.start_at').first()
+        # 何してるか意味不明だと思うんですけど
+        # per_performance_sales_segment_dict = {
+        #    1L: ([非guest用販売区分, ...], [guest用販売区分, ...]),
+        #    2L: ([非guest用販売区分, ...], [guest用販売区分, ...]),
+        #    ...
+        # }
+        # となっていて、(キーはパフォーマンスのid)
+        # 各パフォーマンスで非guest用の販売区分があればそれを優先し
+        # guest用の販売区分しかなければそれを使うということをする
+        # 
+        # itertools.chain([[非guest用販売区分, ...], [guest用販売区分, ...], [guest用販売区分...]])
+        #
+        # ということ。
+        # ここで performance の情報を捨ててしまうのがちょっともったいない。
 
-    def get_next_and_last_sales_segment_period(self):
-        return self.event.get_next_and_last_sales_segment_period(user=self.authenticated_user())
+        retval = list(itertools.chain(*((pair[0] or pair[1]) for pair in per_performance_sales_segments_dict.itervalues())))
+        if not retval:
+            # 次の販売区分があるなら
+            data = c_models.Event.find_next_and_last_sales_segment_period(
+                sales_segments=self.sales_segments,
+                now=self.now)
+            if any(data):
+                for datum in data:
+                    if datum is not None:
+                        datum['event'] = datum['performance'].event
+                raise OutTermSalesException(*data)
+            else:
+                raise HTTPNotFound()
+        return retval
 
-    def get_sales_segment(self):
+    @reify
+    def sales_segment(self):
         """ 該当イベントのSalesSegment取得
         """
 
         if not getattr(self.request, 'matchdict'):
-            return None
-        sales_segment_group_id = self.request.matchdict.get('sales_segment_id')
-        if sales_segment_group_id is None:
-            return None
+            raise NoSalesSegment()
 
-        now = datetime.now()
-        q = c_models.SalesSegment.query
-        q = q.filter(c_models.SalesSegmentGroup.public==1)
-        q = q.filter(c_models.SalesSegment.public==1)
-        if self.event_id:
-            q = q.filter(c_models.SalesSegment.event_id==self.event_id)
+        try:
+            sales_segment_id = long(self.request.matchdict.get('sales_segment_id'))
+        except (ValueError, TypeError):
+            # sales_segment_id が与えられてないとか、非整数な文字列
+            raise NoSalesSegment()
 
-        q = q.filter(
-            c_models.SalesSegment.id==sales_segment_group_id
-        )
+        # XXX: 件数少ないしリニアサーチでいいよね
+        for sales_segment in self.available_sales_segments:
+            if sales_segment.id == sales_segment_id:
+                return sales_segment
 
-        user = self.authenticated_user()
-        if user and user.get('is_guest'):
-            q = q.filter(
-                c_models.SalesSegment.id==u_models.MemberGroup_SalesSegment.c.sales_segment_group_id
-            ).filter(
-                u_models.MemberGroup_SalesSegment.c.membergroup_id==u_models.MemberGroup.id
-            ).filter(
-                u_models.MemberGroup.is_guest==True
-            )
+        raise NoSalesSegment()
 
-        elif user and 'membership' in user:
-            q = q.filter(
-                c_models.SalesSegment.id==u_models.MemberGroup_SalesSegment.c.sales_segment_group_id
-            ).filter(
-                u_models.MemberGroup_SalesSegment.c.membergroup_id==u_models.MemberGroup.id
-            ).filter(
-                u_models.MemberGroup.name==user['membergroup']
-            )
-
-        sales_segment = q.first()
-        if sales_segment is None:
-            return None
-
-        if sales_segment.start_at >= now or sales_segment.end_at <= now:
-            next = self.context.get_next_sales_segment_period()
-            if next:
-                raise OutTermSalesException(
-                    event=next['performance'].event,
-                    **next)
-            else:
-                raise HTTPNotFound()
-
-        return sales_segment
-
-    sales_segment = property(get_sales_segment)
+    def get_sales_segment(self):
+        return self.sales_segment
 
     @deprecate("deprecated method")
     def _convert_order_product_items(self, performance_id, ordered_products):

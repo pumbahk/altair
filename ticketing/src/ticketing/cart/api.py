@@ -5,6 +5,7 @@ import operator
 import urllib2
 import logging
 import contextlib
+from itertools import chain
 from datetime import datetime, date, timedelta
 from zope.deprecation import deprecate
 import sqlalchemy as sa
@@ -15,6 +16,7 @@ from sqlalchemy.sql import (
 logger = logging.getLogger(__name__)
 from pyramid.interfaces import IRoutesMapper, IRequest
 from pyramid.security import effective_principals, forget
+from pyramid.httpexceptions import HTTPNotFound
 from ..api.impl import get_communication_api
 from ..api.impl import CMSCommunicationApi
 from .interfaces import IPaymentMethodManager
@@ -380,15 +382,6 @@ def new_order_session(request, **kw):
 def update_order_session(request, **kw):
     request.session['order'].update(kw)
     return request.session['order']
-
-
-def get_available_sales_segments(request, event, selected_date):
-    from ticketing.rakuten_auth.api import authenticated_user
-    ss = event.query_available_sales_segments(user=authenticated_user(request), now=selected_date)
-    ss = [s for s in ss 
-          if s.available_payment_delivery_method_pairs]
-
-    return ss
 
 def get_seat_type_triplets(event_id, performance_id, sales_segment_id):
     segment_stocks = DBSession.query(c_models.ProductItem.stock_id).filter(
