@@ -57,3 +57,4 @@ class PurchaseWidgetView(object):
         params.update(widget.attributes or {})
         form = forms.PurchaseForm(**params)
         return {"widget": widget, "form": form}
+

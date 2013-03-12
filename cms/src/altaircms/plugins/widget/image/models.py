@@ -1,6 +1,7 @@
 from zope.interface import implements
 from altaircms.interfaces import IWidget
-
+from markupsafe import Markup
+from altaircms.formhelpers import AlignChoiceField
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from altaircms.plugins.widget.api import safe_execute
@@ -51,6 +52,12 @@ class ImageWidget(Widget):
         if self.attributes:
             attributes.update(self.attributes)
         return u" ".join([u'%s="%s"' % (k, v) for k, v in attributes.items()])
+
+    @property
+    def html_suffix(self):
+        if self.attributes:
+            return Markup(AlignChoiceField.convert_as_html_suffix(self.attributes.get("data-align")))
+        return ""
 
     def merge_settings(self, bname, bsettings):
         bsettings.need_extra_in_scan("request")

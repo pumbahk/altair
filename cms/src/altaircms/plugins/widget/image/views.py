@@ -63,7 +63,16 @@ class ImageWidgetView(object):
         if widget.height == 0:
             widget.height = ""
         params = widget.to_dict()
-        params.update(widget.attributes or {})
-        form = forms.ImageInfoForm(**params)
+        params.update(widget.attributes or {})      
+        form = forms.ImageInfoForm(**normalize_params(params))
 
         return {"assets": assets, "form": form, "widget": widget}
+
+def normalize_params(params):
+    D = {}
+    for k, v in params.iteritems():
+        if k.startswith("data-"):
+            D[k.replace("data-", "", 1)] = v
+        else:
+            D[k] = v
+    return D

@@ -20,7 +20,7 @@ def purchase_simple_render(request, widget, event):
         href = widget.external_link
     else:
         href = h.link.get_purchase_page_from_event(request, event)  
-    return u'<a href="%s"><img %s src="%s" alt="購入"></a>' % (href, widget.html_attributes, request.static_url("altaircms:static/ticketstar/img/settlement/btn_buy.gif"))
+    return u'<div %s><a class="purchaseButton" href="%s"></a></div>' % (widget.html_attributes, href)
 
 PURCHASE_DISPATCH = {
     "simple": purchase_simple_render, 
@@ -47,7 +47,6 @@ class PurchaseWidget(Widget):
         if self.attributes:
             attributes.update(self.attributes)
         return u" ".join([u'%s="%s"' % (k, v) for k, v in attributes.items()])
-
 
     def merge_settings(self, bname, bsettings):
         bsettings.need_extra_in_scan("event")

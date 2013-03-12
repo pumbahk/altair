@@ -263,11 +263,39 @@ class AlignChoiceField(SelectField):
         super(AlignChoiceField, self).__init__(label=label, validators=validators, coerce=coerce, choices=choices, 
                  **kwargs)
 
-    def convert_as_style(self, value):
-        if value == "left":
+    def convert_as_style(self, align):
+        if align == "left":
             return u""
-        elif value == "center":
+        elif align == "center":
             return u'display: -webkit-box; display: -moz-box; display: -o-box; display: box; margin: 0px auto;'
         else:
-            raise ValueError("%s is not found in candidates definition" % value)
+            raise ValueError("%s is not found in candidates definition" % align)
+
+    @classmethod
+    def convert_as_html_suffix(cls, align):
+        if align == "left" or align is None:
+            return u""
+        elif align == "center":
+            return u'''<script type="text/javascript">
+if(navigator.userAgent.toLowerCase().indexOf("firefox") <= -1){
+  $('img[data-align="center"]').attr("style", "display: -webkit-box; display: -moz-box; display: -o-box; display: box; margin: 0px auto;")
+} else {
+  $('img[data-align="center"]').each(function(i, e){
+    var $e = $(e);
+    var wrapper = $e;
+    for(var i=0;i<3;i++){
+      wrapper = wrapper.parent();
+      if(wrapper[0].nodeName != "A"){
+        break;
+      }
+    }
+    $(e).css("margin-left", 0.5*(wrapper.width() - $e.width()));
+  });
+}
+</script>
+'''
+        else:
+            raise ValueError("%s is not found in candidates definition" % align)
+        
+        
     

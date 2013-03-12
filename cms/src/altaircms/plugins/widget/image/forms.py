@@ -19,10 +19,7 @@ class ImageInfoForm(Form):
         if not super(ImageInfoForm, self).validate():
             return False
         ## align設定追加
-        style = []
-        style.append(self.align.convert_as_style(self.data["align"]))
-        style_attributes = u";".join(style)
-        self.attributes.data = dict([("style", style_attributes), ("align", self.data["align"])])
+        self.attributes.data = dict([("data-align", self.data["align"])])
         return True
 
 # if __name__ == "__main__":

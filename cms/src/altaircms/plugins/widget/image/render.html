@@ -9,6 +9,7 @@
   <img ${widget.html_attributes|n}
 	 src="${h.asset.to_show_page(request,widget.asset)}"/>
 %endif
+${widget.html_suffix}
 </%def>
 
 ${render(request, widget)}

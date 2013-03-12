@@ -536,3 +536,11 @@ salessegment icon
   white-space: nowrap;
 }
 
+.purchaseButton {
+  display:block;
+  background-repeat: no-repeat;
+  background-image: url(/static/ticketstar/img/settlement/btn_buy.gif);
+  width: 226px;
+  height: 46px;
+}
+

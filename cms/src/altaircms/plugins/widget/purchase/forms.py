@@ -18,8 +18,5 @@ class PurchaseForm(Form):
         if not super(PurchaseForm, self).validate():
             return False
         ## align設定追加
-        style = []
-        style.append(self.align.convert_as_style(self.data["align"]))
-        style_attributes = u";".join(style)
-        self.attributes.data = dict([("style", style_attributes), ("align", self.data["align"])])
+        self.attributes.data = dict([("align", self.data["align"])])
         return True
