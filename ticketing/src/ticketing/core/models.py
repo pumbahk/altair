@@ -1391,9 +1391,6 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         # create default Stock
         Stock.create_default(self.event, stock_type_id=self.id)
 
-        # create default Product
-        Product.create_default(stock_type=self)
-
     def delete(self):
         # delete Stock
         for stock in self.stocks:
