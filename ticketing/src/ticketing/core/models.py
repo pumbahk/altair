@@ -521,8 +521,8 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         """
         Performanceの作成/更新時は以下のモデルを自動生成する
         またVenueの変更があったら関連モデルを削除する
-          - SalesSegment (performance_id is not None)
-            - Product (performance_id is not None)
+          - SalesSegment
+            - Product
             − MemberGroup_SalesSegment
           - Venue
             - VenueArea
@@ -545,7 +545,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     'product':dict(),
                 }
                 convert_map['sales_segment'].update(
-                    SalesSegment.create_from_template(template=template_sales_segment, with_payment_delivery_method_pairs=True, performance_id=self.id)
+                    SalesSegment.create_from_template(template=template_sales_segment, performance_id=self.id)
                 )
                 template_products = Product.query.filter_by(sales_segment_id=template_sales_segment.id)\
                                                  .filter_by(performance_id=template_performance.id).all()
@@ -808,6 +808,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
               - StockHolder
               - SalesSegmentGroup
                 − MemberGroup_SalesSegment
+                - PaymentDeliveryMethodPair
               - TicketBundle
                 - Ticket_TicketBundle
                 - TicketBundleAttribute
@@ -842,7 +843,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             # create SalesSegmentGroup
             for template_sales_segment_group in template_event.sales_segment_groups:
                 convert_map['sales_segment_group'].update(
-                    SalesSegmentGroup.create_from_template(template=template_sales_segment_group, event_id=self.id)
+                    SalesSegmentGroup.create_from_template(template=template_sales_segment_group, with_payment_delivery_method_pairs=True, event_id=self.id)
                 )
 
             # create Ticket
@@ -860,6 +861,17 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             # create Performance
             for template_performance in template_event.performances:
                 Performance.create_from_template(template=template_performance, event_id=self.id)
+
+            convert_map['payment_delivery_method_pair'] = {}
+            for org_id, new_id in convert_map['sales_segment_group'].iteritems():
+                ssg = SalesSegmentGroup.get(org_id)
+                for org_pdmp in ssg.payment_delivery_method_pairs:
+                    new_pdmp = PaymentDeliveryMethodPair.query.filter(and_(
+                        PaymentDeliveryMethodPair.sales_segment_group_id==new_id,
+                        PaymentDeliveryMethodPair.payment_method_id==org_pdmp.payment_method_id,
+                        PaymentDeliveryMethodPair.delivery_method_id==org_pdmp.delivery_method_id
+                    )).first()
+                    convert_map['payment_delivery_method_pair'][org_pdmp.id] = new_pdmp.id
 
             '''
             Performance以下のコピーしたモデルにidを反映する
@@ -880,8 +892,13 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     sales_segments = SalesSegment.query.filter(and_(SalesSegment.sales_segment_group_id==old_id, SalesSegment.performance_id==performance.id)).all()
                     for sales_segment in sales_segments:
                         sales_segment.sales_segment_group_id = new_id
-                        for pdmp in sales_segment.payment_delivery_method_pairs:
-                            pdmp.sales_segment_group_id = new_id
+                        old_pdmps = sales_segment.payment_delivery_method_pairs
+                        for old_pdmp in old_pdmps:
+                            id = convert_map['payment_delivery_method_pair'][old_pdmp.id]
+                            sales_segment.payment_delivery_method_pairs.remove(old_pdmp)
+                            new_pdmp = PaymentDeliveryMethodPair.get(id)
+                            if new_pdmp:
+                                sales_segment.payment_delivery_method_pairs.add(new_pdmp)
 
                 # 関連テーブルのticket_bundle_idを書き換える
                 for old_id, new_id in convert_map['ticket_bundle'].iteritems():
@@ -1060,12 +1077,17 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         super(SalesSegmentGroup, self).delete()
 
     @staticmethod
-    def create_from_template(template, **kwargs):
+    def create_from_template(template, with_payment_delivery_method_pairs=False, **kwargs):
         sales_segment_group = SalesSegmentGroup.clone(template)
         if 'event_id' in kwargs:
             sales_segment_group.event_id = kwargs['event_id']
         sales_segment_group.membergroups = template.membergroups
         sales_segment_group.save()
+
+        if with_payment_delivery_method_pairs:
+            for template_pdmp in template.payment_delivery_method_pairs:
+                PaymentDeliveryMethodPair.create_from_template(template=template_pdmp, sales_segment_group_id=sales_segment_group.id, **kwargs)
+
         return {template.id:sales_segment_group.id}
 
     def get_products(self, performances):
@@ -1164,9 +1186,6 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
         pdmp = PaymentDeliveryMethodPair.clone(template)
         if 'sales_segment_group_id' in kwargs:
             pdmp.sales_segment_group_id = kwargs['sales_segment_group_id']
-        if 'sales_segment_id' in kwargs:
-            sales_segment = SalesSegment.get(kwargs['sales_segment_id'])
-            pdmp.sales_segments.append(sales_segment)
         pdmp.save()
 
 class PaymentMethodPlugin(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -3080,19 +3099,23 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         return data
 
     @staticmethod
-    def create_from_template(template, with_payment_delivery_method_pairs=False, **kwargs):
+    def create_from_template(template, **kwargs):
         sales_segment = SalesSegment.clone(template)
         if 'performance_id' in kwargs:
             sales_segment.performance_id = kwargs['performance_id']
         if 'sales_segment_group_id' in kwargs:
             sales_segment.sales_segment_group_id = kwargs['sales_segment_group_id']
-        sales_segment.membergroups = template.membergroups
+            for org_pdmp in template.payment_delivery_method_pairs:
+                new_pdmp = PaymentDeliveryMethodPair.query.filter(and_(
+                    PaymentDeliveryMethodPair.sales_segment_group_id==sales_segment.sales_segment_group_id,
+                    PaymentDeliveryMethodPair.payment_method_id==org_pdmp.payment_method_id,
+                    PaymentDeliveryMethodPair.delivery_method_id==org_pdmp.delivery_method_id
+                )).first()
+                if new_pdmp:
+                    sales_segment.payment_delivery_method_pairs.add(new_pdmp)
+        else:
+            sales_segment.payment_delivery_method_pairs = template.payment_delivery_method_pairs
         sales_segment.save()
-
-        if with_payment_delivery_method_pairs:
-            for template_pdmp in template.payment_delivery_method_pairs:
-                PaymentDeliveryMethodPair.create_from_template(template=template_pdmp, sales_segment_id=sales_segment.id, **kwargs)
-
         return {template.id:sales_segment.id}
 
 class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
