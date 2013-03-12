@@ -684,11 +684,11 @@
 	margin-bottom: 5px;
 }
 
-#settlementEventDetail .detailBoxInner {
+.describeBox .detailBoxInner {
 	padding: 0 0 10px;
 }
 
-#settlementEventDetail .detailBoxInner table {
+.describeBox .detailBoxInner table {
 	width: 670px !important;
 	margin: 0 auto;
 }
@@ -1818,37 +1818,36 @@
 }
 
 /* イベント詳細 */
-#settlementEventDetail .settlementBoxInner2 {
+.describeBox .settlementBoxInner2 {
 	padding: 0 0 10px;
 }
 
-#settlementEventDetail h2 {
+.describeBox h2 {
 	margin: 0 3px 5px 2px;
 	padding: 8px 0 10px 10px;
 	background: url(../img/settlement/bg_line.gif) repeat-x left bottom;
 }
 
-#settlementEventDetail table {
+.describeBox table {
 	width: 900px;
 	margin: 0 auto;
 }
 
-#settlementEventDetail th {
+.describeBox th {
 	vertical-align: top;
 	padding: 2px 20px 2px 2px;
 	border-bottom: 1px solid #e6e6e6;
 	font-weight: normal;
-	white-space: nowrap;
+	white-space: normal;
 }
 
-#settlementEventDetail td {
-	width: 100%;
+.describeBox td {
 	padding: 2px;
 	border-bottom: 1px solid #e6e6e6;
 }
 
-#settlementEventDetail tr:last-child th,
-#settlementEventDetail tr:last-child td {
+.describeBox tr:last-child th,
+.describeBox tr:last-child td {
 	border: none;
 }
 

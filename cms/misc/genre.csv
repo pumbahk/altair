@@ -41,7 +41,7 @@
 ,,ゴルフその他,golf-other
 ,テニス,,tennis
 ,,男子テニス,menstennis
-,,女子テニス,wemanstennis
+,,女子テニス,womenstennis
 ,,テニスその他,tennis-other
 ,相撲・格闘技,,fighting-sports
 ,,相撲,sumo
@@ -51,6 +51,14 @@
 ,,その他ウインタースポーツ,winter-sports-other
 ,水泳・マリンスポーツ,,swim
 ,その他スポーツ,,s_other
+,バスケットボール,,basketball
+,,bjリーグ,bj-league
+,,JBL,JBL
+,,バスケットボールその他,backetball-other
+,バレーボール,,volleyball
+,,Vリーグ（男子）,mensvolleyball
+,,Vリーグ（女子）,womensvolleyball
+,,バレーボールその他,volleyball-other
 演劇・ステージ・舞台,,,stage
 ,演劇・ステージ,,stage
 ,,演劇（国内）,stage-jpn

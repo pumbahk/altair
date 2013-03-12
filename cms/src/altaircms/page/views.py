@@ -188,10 +188,8 @@ class PageDuplicateView(object):
     def duplicate(self):
         page = get_or_404(self.request.allowable(Page), Page.id==self.request.matchdict["id"])
         self.context.clone_page(page)
-        ## flash messsage
-        FlashMessage.success("page duplicated", request=self.request)
-
-        return HTTPFound(self.request.route_path("page"))
+        FlashMessage.success(u"ページをコピーしました", request=self.request)
+        return HTTPFound(self.request.GET.get("endpoint") or "/")
 
 @view_defaults(route_name="page_delete", permission="page_delete", decorator=with_bootstrap)
 class PageDeleteView(object):

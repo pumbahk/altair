@@ -928,12 +928,12 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         now = now or datetime.now()
         q = SalesSegment.query
         q = q.options(joinedload('sales_segment_group'))  # need display sales_segment.name at out of transaction
-        q = q.filter(SalesSegment.public)
-        q = q.filter(SalesSegmentGroup.public)
+        q = q.filter(SalesSegment.public != False)
+        q = q.filter(SalesSegmentGroup.public != False)
         q = q.filter(SalesSegmentGroup.normal_sales | SalesSegmentGroup.sales_counter) # XXX: 窓口販売が当日券用の区分に使われている。このようなケースでは、publicフラグがTrueであることを必ずチェックしなければならない
         q = q.filter(Performance.event_id==self.id)
         q = q.filter(Performance.id==SalesSegment.performance_id)
-        q = q.filter(Performance.public)
+        q = q.filter(Performance.public != False)
         q = q.filter(SalesSegment.sales_segment_group_id==SalesSegmentGroup.id)
 
         if type == 'available':
@@ -957,8 +957,8 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 .filter(MemberGroup_SalesSegment_for_subquery.c.membergroup_id == MemberGroup_for_subquery.id) \
                 .filter(MemberGroup_for_subquery.name == user['membergroup']) \
                 .filter(SalesSegmentGroup_for_subquery.id == SalesSegment_for_subquery.sales_segment_group_id) \
-                .filter(SalesSegmentGroup_for_subquery.public) \
-                .filter(SalesSegment_for_subquery.public) \
+                .filter(SalesSegmentGroup_for_subquery.public != False) \
+                .filter(SalesSegment_for_subquery.public != False) \
                 .filter(SalesSegment_for_subquery.performance_id == SalesSegment.performance_id)
             if type == 'available':
                 subquery = subquery.filter(and_(SalesSegment_for_subquery.start_at <= now, SalesSegment_for_subquery.end_at >= now))
