@@ -83,6 +83,8 @@ def get_performances_month_unit(event):
         # 対象の月に追加
         month_unit[key].append(perf)
 
+    log_info("get_performances_month_unit", "key num=" + str(len(month_unit)))
+
     log_info("get_performances_month_unit", "end")
     return month_unit
 
@@ -102,6 +104,8 @@ def get_tickets(event):
         for segment in group.salessegments:
             for ticket in segment.tickets:
                 tickets.update({ticket.name:ticket.price})
+
+    log_info("get_tickets", "key num=" + str(len(tickets)))
 
     log_info("get_tickets", "end")
     return tickets
