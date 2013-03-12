@@ -44,6 +44,9 @@ def get_event_paging(request, form, qs):
     log_info("get_event_paging", "start")
     form.events.data = None
     form.num.data = 0
+    if form.page.data == None or form.page.data == "":
+        form.page.data = "1"
+
     if qs:
         events = qs.all()
         log_info("get_event_paging", "data exist")
