@@ -26,15 +26,15 @@
       <table style="width: 95%; border: 1px #DCDCDC solid; background-color: #C0FFFF;"> 
         % if form.limited_from.data or form.limited_to.data:
         <tr>
-          <th colspan="5"></th>
+          <th colspan="6"></th>
           <th colspan="4" style="color:#808080; border:1px #DCDCDC solid">累計</th>
           <th colspan="4" style="color:#808080; border:1px #DCDCDC solid">${h.safe_strftime(form.limited_from.data)} 〜 ${h.safe_strftime(form.limited_to.data)}</th>
         </tr>
         % endif
         <tr>
-          <th style="width: 20%; border: 1px #DCDCDC solid;">席種</th>
-          <th style="width: 10%; border: 1px #DCDCDC solid;">配券先</th>
-          <th style="width: 20%; border: 1px #DCDCDC solid;">商品</th>
+          <th style="width: 17%; border: 1px #DCDCDC solid;">席種</th>
+          <th style="width: 8%; border: 1px #DCDCDC solid;">配券先</th>
+          <th style="width: 17%; border: 1px #DCDCDC solid;">商品</th>
           <th style="width: 8%; border: 1px #DCDCDC solid;">価格</th>
           <th style="width: 8%; border: 1px #DCDCDC solid;">配席数</th>
           <th style="width: 8%; border: 1px #DCDCDC solid;">残数</th>
@@ -138,7 +138,7 @@
           performance = value['performance']
           report_by_sales_segment_group = value['report_by_sales_segment_group']
           report_by_sales_segment_group_total = value_total['report_by_sales_segment_group']
-        %> 
+        %>
         % for ((sale_segment_group_name, performance_reports), (sale_segment_group_name_total, performance_reports_total)) in zip(report_by_sales_segment_group.items(), report_by_sales_segment_group_total.items()):
       <h4 style="margin-top: 20px;">開催日:${h.safe_strftime(performance.start_on)}　${performance.name}</h4>
       <h4>${sale_segment_group_name}</h4>
@@ -195,7 +195,7 @@
             'unpaid_quantity':0,
             'paid_quantity':0,
             'price_total':0,
-          }  
+          }
           stock_reports = {}
           for report in performance_reports:
             t = stock_reports[report['stock_id']] if report['stock_id'] in stock_reports else []
@@ -213,9 +213,11 @@
             <%
               if stock_id == performance_report['stock_id']:
                 continue
-              count = len(stock_reports[performance_report['stock_id']])
+              else:
+                stock_id = performance_report['stock_id']
+              count = len(stock_reports[stock_id])
             %>
-            % for i, report in enumerate(zip(stock_reports[performance_report_total['stock_id']], stock_reports_total[performance_report_total['stock_id']])):
+            % for i, report in enumerate(zip(stock_reports[stock_id], stock_reports_total[stock_id])):
             <tr>
               % if i == 0:
               <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;" rowspan="${count}">${report[0]['stock_type_name']}</td>
@@ -251,7 +253,6 @@
               %>
             </tr>
             % endfor
-            <% stock_id = performance_report['stock_id'] %>
           % endfor
         <tr>
           <td style="border:1px #DCDCDC solid; background-color: #FFFFFF; padding: 5px;" colspan="4">合計</td>

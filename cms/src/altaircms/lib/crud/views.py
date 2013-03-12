@@ -40,8 +40,10 @@ class CRUDResource(RootFactory): ## fixme
     def __init__(self, prefix, title, model, form, mapper, endpoint, filter_form,
                  request,
                  after_input_context=None, 
+                 override_templates=None, 
                  create_event=None, update_event=None, delete_event=None, 
                  circle_type="circle-master"):
+        self.override_templates = override_templates or {}
         self.prefix = prefix
         self.title = title
         self.model = model
@@ -109,11 +111,14 @@ class CRUDResource(RootFactory): ## fixme
         return obj
 
     def get_model_obj(self, id):
+        if hasattr(self, "obj") and self.obj.id == id:
+            return self.obj
         pks = self.model.__mapper__.primary_key
         assert len(pks) == 1
         
         pk = pks[0].name
-        return self.model.query.filter_by(**{pk: id}).one()
+        self.obj = self.model.query.filter_by(**{pk: id}).one()
+        return self.obj
 
     ## listing
     def get_model_query(self):
@@ -157,7 +162,10 @@ class CreateView(object):
         
     def _after_input(self): ## context is AfterInput
         form = self.context.form
-        return {"master_env": self.context.context,
+        master_env = self.context.context
+        if "create" in getattr(master_env, "override_templates", None):
+            self.request.override_renderer = master_env.override_templates["create"]
+        return {"master_env": master_env,
                 "form": form, 
                 "display_fields": getattr(form,"__display_fields__", None) or form.data.keys()}
 
@@ -197,7 +205,10 @@ class UpdateView(object):
 
     def _after_input(self):
         form = self.context.form
-        return {"master_env": self.context.context,
+        master_env = self.context.context
+        if "update" in getattr(master_env, "override_templates", None):
+            self.request.override_renderer = master_env.override_templates["update"]
+        return {"master_env": master_env,
                 "form": form, 
                 "display_fields": getattr(form,"__display_fields__", None) or form.data.keys()}
 
@@ -288,6 +299,7 @@ class SimpleCRUDFactory(object):
              after_input_context=AfterInput, 
              endpoint=None, 
              circle_type="circle-master", 
+             override_templates=None, 
              **default_kwargs):
 
         after_input_context = config.maybe_dotted(after_input_context)
@@ -295,7 +307,7 @@ class SimpleCRUDFactory(object):
         self.resource = resource = functools.partial(
             self.Resource, 
             self.prefix, self.title, self.model, self.form, self.mapper, endpoint, self.filter_form, 
-            after_input_context=after_input_context, circle_type=circle_type, 
+            after_input_context=after_input_context, circle_type=circle_type, override_templates=override_templates, 
             **(events or {})) #events. e.g create_event, update_event, delete_event
 
         ## individual add view function.

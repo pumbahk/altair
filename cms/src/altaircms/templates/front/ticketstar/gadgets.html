@@ -106,7 +106,7 @@ from altairsite.search.forms import DealCondPartForm
 
 <%def name="hotword_itemize_header()">
 <%
-from altairsite.front.api import get_current_hotwords
+from altairsite.pyramidlayout import get_current_hotwords
 hotwords = get_current_hotwords(request)
 %>
 	<ul>
@@ -151,4 +151,4 @@ form = TopPageSidebarSearchForm()
 			</form>
 		</div>
 </%def>
-nn
+

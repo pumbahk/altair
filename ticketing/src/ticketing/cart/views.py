@@ -118,9 +118,12 @@ class IndexView(IndexViewMixin):
         sales_segments = api.get_available_sales_segments(self.request, self.context.event, datetime.now())
         if not sales_segments:
             # 次の販売区分があるなら
-            next = self.context.get_next_sales_segment()
-            if next:
-                raise OutTermSalesException(self.context.event, next)
+            data = self.context.get_next_and_last_sales_segment_period()
+            if any(data):
+                for datum in data:
+                    if datum is not None:
+                        datum['event'] = datum['performance'].event
+                raise OutTermSalesException(*data)
             else:
                 raise HTTPNotFound()
 
@@ -196,9 +199,10 @@ class IndexView(IndexViewMixin):
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.matchdict['performance_id']
         sales_segment_id = self.request.matchdict['sales_segment_id']
+        #performance = c_models.Performance.query.filter_by(id=performance_id).one()
+        performance = self.request.context.performance
 
         seat_type_triplets = get_seat_type_triplets(event_id, performance_id, sales_segment_id)
-        performance = c_models.Performance.query.filter_by(id=performance_id).one()
         data = dict(
             seat_types=[
                 dict(
@@ -275,7 +279,7 @@ class IndexView(IndexViewMixin):
         query = query.filter(c_models.Product.public==True)
         query = query.filter(c_models.Product.id.in_(q)).order_by(sa.desc("display_order, price"))
         ### filter by salessegment
-        salessegment = self.context.get_sales_segument()
+        salessegment = self.context.get_sales_segment()
         query = h.products_filter_by_salessegment(query, salessegment)
 
         products = [
@@ -488,7 +492,7 @@ class ReserveView(object):
         logger.debug('sum_quantity=%s' % sum_quantity)
 
         self.context.event_id = performance.event_id
-        #sales_segment = self.context.get_sales_segument()
+        #sales_segment = self.context.get_sales_segment()
         sales_segment = c_models.SalesSegment.query.filter(c_models.SalesSegment.id==self.request.matchdict['sales_segment_id']).one()
         if sales_segment.upper_limit < sum_quantity:
             logger.debug('upper_limit over')
@@ -826,15 +830,25 @@ class OutTermSalesView(object):
     @view_config(context='.exceptions.OutTermSalesException', renderer=selectable_renderer('ticketing.cart:templates/carts/%(membership)s/out_term_sales.html'))
     def pc(self):
         api.logout(self.request)
-        return dict(event=self.context.event, 
-                    sales_segment=self.context.sales_segment)
+        if self.context.next is None:
+            datum = self.context.last
+            which = 'last'
+        else:
+            datum = self.context.next
+            which = 'next'
+        return dict(which=which, **datum)
 
     @view_config(context='.exceptions.OutTermSalesException', renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/out_term_sales.html'), 
         request_type='ticketing.mobile.interfaces.IMobileRequest')
     def mobile(self):
         api.logout(self.request)
-        return dict(event=self.context.event, 
-                    sales_segment=self.context.sales_segment)
+        if self.context.next is None:
+            datum = self.context.last
+            which = 'last'
+        else:
+            datum = self.context.next
+            which = 'next'
+        return dict(which=which, **datum)
 
 @view_config(decorator=with_jquery.not_when(mobile_request), route_name='cart.logout')
 def logout(request):

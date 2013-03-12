@@ -1,6 +1,7 @@
 import sys
 import traceback
 import StringIO
+from pyramid.response import Response
 from pyramid.view import render_view_to_response
 from pyramid.tweens import INGRESS
 
@@ -20,7 +21,7 @@ class ExceptionWrapper(object):
 def tb_view(context, request):
     out = StringIO.StringIO()
     traceback.print_exception(context.exc_type, context.exc_value, context.exc_traceback, file=out)
-    return out.getvalue()
+    return Response(out.getvalue(), status=500, content_type='text/plain')
 
 def tbview_tween_factory(handler, registry):
     def tween(request):

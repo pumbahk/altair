@@ -65,7 +65,7 @@ class IndexView(object):
         return dict()
 
     def _create_form(self, params):
-        salessegment = self.context.get_sales_segument()
+        salessegment = self.context.get_sales_segment()
         query = c_models.Product.query
         query = query.filter(c_models.Product.event_id == self.context.event_id)
         query = query.order_by(sa.desc("price"))

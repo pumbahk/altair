@@ -6,7 +6,7 @@ from wtforms import fields
 from wtforms.form import Form
 from wtforms.ext.csrf.session import SessionSecureForm
 from wtforms.validators import Regexp, Length, NumberRange, EqualTo, Optional, ValidationError
-from ticketing.formhelpers import OurForm
+from ticketing.formhelpers import OurForm, CP932
 from ticketing.core import models as c_models
 
 from ticketing.formhelpers import (
@@ -38,7 +38,7 @@ class ClientForm(OurForm):
         filters=[strip_spaces],
         validators=[
             Required(),
-            Zenkaku, 
+            Zenkaku,
             Length(max=255, message=u'255文字以内で入力してください'),
         ],
     )
@@ -47,7 +47,7 @@ class ClientForm(OurForm):
         filters=[strip_spaces, NFKC],
         validators=[
             Required(),
-            Katakana, 
+            Katakana,
             Length(max=255, message=u'255文字以内で入力してください'),
         ]
     )
@@ -56,7 +56,7 @@ class ClientForm(OurForm):
         filters=[strip_spaces],
         validators=[
             Required(),
-            Zenkaku, 
+            Zenkaku,
             Length(max=255, message=u'255文字以内で入力してください'),
         ]
     )
@@ -65,7 +65,7 @@ class ClientForm(OurForm):
         filters=[strip_spaces, NFKC], 
         validators=[
             Required(),
-            Katakana, 
+            Katakana,
             Length(max=255, message=u'255文字以内で入力してください'),
         ]
     )
@@ -103,6 +103,7 @@ class ClientForm(OurForm):
         validators=[
             Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
+            CP932,
         ]
     )
     city = fields.TextField(
@@ -111,6 +112,7 @@ class ClientForm(OurForm):
         validators=[
             Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
+            CP932,
         ]
     )
     address_1 = fields.TextField(
@@ -119,6 +121,7 @@ class ClientForm(OurForm):
         validators=[
             Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
+            CP932,
         ]
     )
     address_2 = fields.TextField(
@@ -126,6 +129,7 @@ class ClientForm(OurForm):
         filters=[strip_spaces],
         validators=[
             Length(max=255, message=u'255文字以内で入力してください'),
+            CP932,
         ]
     )
     email_1 = fields.TextField(

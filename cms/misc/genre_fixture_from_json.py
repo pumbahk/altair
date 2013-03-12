@@ -19,10 +19,18 @@ class SQLObject(object):
     def __init__(self, out=sys.stdout):
         self.out = out
 
+    def convert(self, v):
+        if isinstance(v, bool):
+            return "1" if v else "0"
+        elif isinstance(v, (str, unicode)):
+            return '"%s"' % v
+        else:
+            return str(v)
+        
     def insert(self, o):
         name = o.__class__.__name__
         fields = ", ".join(o._fields)
-        values = u",".join('"%s"' % v if isinstance(v, (str, unicode)) else str(v) for v in list(o))
+        values = u",".join(self.convert(v) for v in list(o))
         self.out.write(u'INSERT INTO %s (%s) VALUES (%s);\n' % (name, fields, values))
         
 

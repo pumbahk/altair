@@ -205,7 +205,11 @@ var NameToJName = ${json.dumps(WIDGET_LABEL_DICT)|n};
 ${widget_aggregator.get_widget_jscode(request)|n} 
 
 <script type="text/javascript" src="/static/js/page/backbone_patch.js"></script>
-<script type="text/javascript" src="/static/js/page/edit.js"></script>
+%if request.GET.get("version") == "2":
+  <script type="text/javascript" src="/static/js/page/edit2.js"></script>
+%else:
+  <script type="text/javascript" src="/static/js/page/edit.js"></script>
+%endif
 <script type="text/javascript">
 //$.event.add(window, "load", function(){
 var main = function main(){  
@@ -216,5 +220,4 @@ var main = function main(){
 }
 $(window).load(main);
 $(window).bind("unload", main);
-
 </script>

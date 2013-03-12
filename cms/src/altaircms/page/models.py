@@ -74,6 +74,8 @@ class PageSet(Base,
               WithOrganizationMixin, 
               HasAncestorMixin):
     __tablename__ = 'pagesets'
+    type = "page"
+
     query = DBSession.query_property()
     id = Column(Integer, primary_key=True)
     name = Column(Unicode(255))
@@ -101,6 +103,13 @@ class PageSet(Base,
     @property
     def taglabel(self):
         return u"pageset:%s" % self.id
+
+    @classmethod
+    def publishing(cls, d=None, qs=None):
+        qs = qs or cls.query
+        qs = qs.filter(PageSet.id==Page.pageset_id)
+        return qs.filter(Page.in_term(d)).filter(Page.published==True)
+
     
     def gen_version(self):
         if self.version_counter is None:
@@ -213,7 +222,6 @@ class Page(BaseOriginalMixin,
 
     query = DBSession.query_property()
     __tablename__ = "page"
-
     id = Column(Integer, primary_key=True)
     
     created_at = Column(DateTime, default=datetime.now)

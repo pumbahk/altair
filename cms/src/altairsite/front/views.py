@@ -6,6 +6,7 @@ from altaircms.page.api import as_static_page_response, StaticPageNotFound
 from ..mobile import api as mobile_api
 from altairsite.mobile.custom_predicates import mobile_access_predicate
 import logging 
+import os.path
 logger = logging.getLogger(__name__)
 
 ## todo refactoring
@@ -35,12 +36,13 @@ def rendering_page(context, request):
     except StaticPageNotFound as e:
         logger.info(str(e))
 
-    if request.url.endswith(EXCLUDE_EXT_LIST):
+    if os.path.splitext(request.url)[1] != "":
         return HTTPNotFound()
 
     page = control.fetch_page_from_params(url, dt)
 
     if not control.can_access():
+        logger.warn(control.error_message)
         raise HTTPNotFound(control.error_message)
 
     template = control.frontpage_template(page)

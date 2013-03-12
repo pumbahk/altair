@@ -96,6 +96,7 @@ def includeme(config):
                     bind_actions=["update"], 
                     has_auto_generated_permission=False, 
                     events=dict(update_event=config.maybe_dotted(".subscribers.PageSetUpdate")), 
+                    override_templates=dict(update="altaircms:templates/pagesets/update_input_with_genre.html"), 
                     form=".forms.PageSetForm", mapper=".mappers.pageset_mapper")
 
 

@@ -139,7 +139,6 @@ class Products(BaseView):
 
     @view_config(route_name='products.api.get', renderer='json')
     def api_get(self):
-        logger.debug(self.request.params)
         performance_id = self.request.params.get('performance_id', 0)
         sales_segment_id = self.request.params.get('sales_segment_id', 0)
         products = Product.filter(Product.sales_segment_id==sales_segment_id).all()
@@ -223,8 +222,6 @@ class Products(BaseView):
 
     @view_config(route_name='products.api.set', renderer='json')
     def api_set(self):
-        logger.debug(self.request.params)
-        logger.debug(self.request.json_body)
         performance_id = int(self.request.params.get('performance_id', 0))
         performance = Performance.get(performance_id, self.context.user.organization_id)
         if performance is None:
