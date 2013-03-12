@@ -27,11 +27,11 @@
             Ａ．${help.text}<p/>
             ${count}
         % endfor
-    % endif
 
-    % if (len(form.helps.data) + 1 ) % 5 != 0:
-        <hr/>
-        <a href="/">楽天チケットトップへ</a>
+        % if (len(form.helps.data) + 1 ) % 5 != 0:
+            <hr/>
+            <a href="/">楽天チケットトップへ</a>
+        % endif
     % endif
 
     <%include file="../common/_footer.mako" />
