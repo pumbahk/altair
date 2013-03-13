@@ -1,22 +1,25 @@
 <!DOCTYPE html>
 <html>
     <%include file="../common/_header.mako" args="title=u'楽天チケット'"/>
-    <body>
 
         <%include file="../common/_search.mako" args="form=form" />
         <hr/>
-        <h2>ピックアップ</h2>
-            % if form.promotions.data:
-                % for promo in form.promotions.data:
-                    <a href="${promo.link}">${promo.text}</a>
-                % endfor
-            % endif
+        <div style="font-size: medium">ピックアップ</div>
+            <span style="font-size: x-small">
+                % if form.promotions.data:
+                    % for promo in form.promotions.data:
+                        <a href="${promo.link}">${promo.text}</a>
+                    % endfor
+                % endif
+            </span>
         <p/>
         <hr/>
-            <h2>ジャンルから探す</h2>
-                % for genre in form.genretree.data:
-                    <a href="/genre?genre=${genre.id}">${genre.label}</a>｜
-                % endfor
+            <div style="font-size: medium">ジャンルから探す</div>
+                <span style="font-size: x-small">
+                    % for genre in form.genretree.data:
+                        <a href="/genre?genre=${genre.id}">${genre.label}</a>｜
+                    % endfor
+                </span>
             <p/>
         <hr/>
         <%include file="../common/_attention.mako" args="attentions=form.attentions.data"/>

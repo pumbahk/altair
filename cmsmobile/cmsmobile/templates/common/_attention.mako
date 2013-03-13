@@ -1,5 +1,6 @@
 <%page args="attentions" />
-<h2>注目のイベント</h2>
+<div style="font-size: medium">注目のイベント</div>
+<span style="font-size: x-small">
 % if attentions:
     % for attention in attentions:
         % if attention.mobile_link:
@@ -10,3 +11,4 @@
         /
     % endfor
 % endif
+</span>

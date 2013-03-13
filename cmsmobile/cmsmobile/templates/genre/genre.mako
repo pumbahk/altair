@@ -2,17 +2,20 @@
 <html>
     <%include file="../common/_header.mako" args="title=u'楽天チケット'"/>
 <body>
-    % if form.sub_genre.data == "":
-        <a href="/">トップ</a> >> ${form.dispgenre.data.label}
-    % else:
-        <a href="/">トップ</a> >> <a href="/genre?genre=${form.dispgenre.data.id}">${form.dispgenre.data.label}</a> >> ${form.dispsubgenre.data.label}
-    % endif
+
+    <span style="font-size: x-small">
+        % if form.sub_genre.data == "":
+            <a href="/">トップ</a> >> ${form.dispgenre.data.label}
+        % else:
+            <a href="/">トップ</a> >> <a href="/genre?genre=${form.dispgenre.data.id}">${form.dispgenre.data.label}</a> >> ${form.dispsubgenre.data.label}
+        % endif
+    </span>
 <hr/>
     <%include file='../common/_attention.mako' args="attentions=form.attentions.data"/>
 <hr/>
-    <h2>サブジャンル/カテゴリで絞り込む</h2>
+    <div style="font-size: medium">サブジャンル/カテゴリで絞り込む</div>
     % for subgenre in form.genretree.data:
-        <a href="/genre?genre=${form.dispgenre.data.id}&sub_genre=${subgenre.id}">${subgenre.label}</a>｜
+        <a href="/genre?genre=${form.dispgenre.data.id}&sub_genre=${subgenre.id}"><span style="font-size: x-small">${subgenre.label}</span></a>｜
     % endfor
 <hr/>
     <%include file='../common/_topics.mako' args="topics=form.topics.data"/>

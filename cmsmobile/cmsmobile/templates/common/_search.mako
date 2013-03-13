@@ -8,21 +8,21 @@
         <input type="hidden" name="page" value="${form.page.data}" />
         <input type="hidden" name="path" value="${form.path.data}" />
         <input type="hidden" name="area" value="${form.area.data}" />
-        チケット検索
-        ${h.form_item(form.word)}
+        <span style="font-size: x-small">チケット検索</span>
+        ${h.form_item(form.word, style="font-size: x-small")}
         <table>
             <tr>
-                <td>${h.form_item(form.week_sale)}</td>
-                <td>今週発売のチケット</td>
+                <td>${h.form_item(form.week_sale, style="font-size: x-small")}</td>
+                <td><span style="font-size: x-small">今週発売のチケット</span></td>
             </tr>
             <tr>
-                <td>${h.form_item(form.soon_act)}</td>
-                <td>まもなく開演のイベント</td>
+                <td>${h.form_item(form.soon_act, style="font-size: x-small")}</td>
+                <td><span style="font-size: x-small">まもなく開演のイベント</span></td>
             </tr>
         </table>
 
-        <input type="submit" value="検索"/>
-        <a href="/detailsearch">もっと詳しく</a>
+        <input type="submit" value="検索" style="font-size: x-small"/>
+        <a href="/detailsearch"><span style="font-size: x-small">もっと詳しく</span></a>
     </fieldset>
 </form>
 <p/>

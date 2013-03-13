@@ -1,5 +1,6 @@
 <%page args="events, word, num, page, page_num, path, week"/>
 
+<span style="font-size: x-small">
 % if int(num):
     ${num}件見つかりました。
 % else:
@@ -7,21 +8,22 @@
         <b>${word}</b>に一致する情報は見つかりませんでした。
     % endif
 % endif
+</span>
 
-<h2>検索結果</h2><p/>
+<div style="font-size: medium">検索結果</div><p/>
 
 % if events:
     % for event in events:
         <hr/>
-        <a href="/eventdetail?event_id=${event.id}">${event.title}</a><br/>
-        販売：${event.deal_open.year}/${event.deal_open.month}/${event.deal_open.day}(${week[event.deal_open.weekday()]})〜${event.deal_close.year}/${event.deal_close.month}/${event.deal_close.day}(${week[event.deal_close.weekday()]})<br/>
+        <a href="/eventdetail?event_id=${event.id}"><span style="font-size: x-small">${event.title}</span></a><br/>
+        <div style="font-size: x-small">販売：${event.deal_open.year}/${event.deal_open.month}/${event.deal_open.day}(${week[event.deal_open.weekday()]})〜${event.deal_close.year}/${event.deal_close.month}/${event.deal_close.day}(${week[event.deal_close.weekday()]})</div>
         % if event.performances[0]:
-            会場：${event.performances[0].venue}<br/>
+            <div style="font-size: x-small">会場：${event.performances[0].venue}</div>
 
             % for group in event.salessegment_groups:
                 % for segment in group.salessegments:
                     % for ticket in segment.tickets:
-                        ${ticket.name}：${ticket.price}<br/>
+                        <div style="font-size: x-small">${ticket.name}：${ticket.price}</div>
                     % endfor
                 % endfor
             % endfor
@@ -32,7 +34,7 @@
 <p/>
 
 % if int(num):
-    <div align="center">
+    <div align="center" style="font-size: x-small">
         % if int(page) <= 1:
             前へ
         % else:

@@ -1,5 +1,6 @@
 <%page args="topics" />
-<h2>トピックス</h2>
+<div style="font-size: medium">トピックス</div>
+<span style="font-size: x-small">
 % if topics:
     % for topic in topics:
         % if topic.mobile_link:
@@ -10,3 +11,4 @@
         <br/>
     % endfor
 % endif
+</span>

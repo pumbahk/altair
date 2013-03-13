@@ -2,10 +2,9 @@
 <html>
     <%include file='../common/_header.mako' args="title=u'詳細検索'"/>
 
-<body>
-<a href="/">トップ</a> >> 詳細検索<p/>
-
-<p/>
+<div style="font-size: x-small">
+    <a href="/">トップ</a> >> 詳細検索
+</div>
 
 <%include file='../common/_search_result.mako' args="events=form.events.data
                     ,word=form.word.data, num=form.num.data, page=form.page.data
