@@ -10,9 +10,12 @@ from pyramid.decorator import reify
 import StringIO
 
 class DummyFileStorage(object):
-    def __init__(self, filename, _file):
+    def __init__(self, filename, _file="", file=None):
         self.filename = filename
-        self.file = StringIO.StringIO(_file)
+        if file:
+            self.file = open(file)
+        else:
+            self.file = StringIO.StringIO(_file)
 
 class DummyRequest(testing.DummyRequest):
     def __init__(self, *args, **kwargs):
@@ -29,6 +32,11 @@ class ExtDummyRequest(DummyRequest):
         super(ExtDummyRequest, self).__init__(*args, **kwargs)
         if "organization_id" in kwargs:
             self.organization_id = kwargs["organization_id"]
+        if "operator_id" in kwargs:
+            from altaircms.auth.models import Operator
+            self.user = Operator.query.filter_by(id=kwargs["operator_id"]).first()
+            assert unicode(self.user.organization_id) == unicode(self.organization_id)
+
         if "current_request" in kwargs and kwargs["current_request"]:
             from pyramid.threadlocal import manager
             from pyramid.registry import global_registry

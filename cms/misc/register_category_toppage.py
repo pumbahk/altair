@@ -73,7 +73,7 @@ def run(env, csvfile):
         try:
             view = PageAddView(context, request)
             view.create_page()
-            sys.sterr.write(".")
+            sys.stderr.write(".")
         except:
             logger.warn("error: genre %s layout %s organization %s" % (genre_id, layout_id, organization_id))
 
