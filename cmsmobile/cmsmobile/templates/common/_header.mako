@@ -1,6 +1,7 @@
 <%namespace file="helpers.html" name="h" />
 <%page args="title" />
 <head>
+    <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=Shift_JIS" />
     <title>${title}</title>
 </head>
 <link rel="shortcut icon" href="/static/img/common/favicon.ico" />
