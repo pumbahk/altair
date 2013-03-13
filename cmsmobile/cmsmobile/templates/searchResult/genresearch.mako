@@ -4,17 +4,13 @@
 <body>
     <%include file='_navigation.mako' args="word=form.word.data, navi_genre=form.navi_genre.data,
                                                navi_sub=form.navi_sub_genre.data, area=form.area.data" />
-    <p/>
 
     <%include file='../common/_search_result.mako' args="events=form.events.data
                       ,word=form.word.data, num=form.num.data, page=form.page.data
                       ,page_num=form.page_num.data, path=form.path.data, week=form.week.data"/>
 
-    <hr/>
-
     <%include file='../common/_search.mako' args="path='/search', genre='', subgenre=''"/>
 
-    <hr/>
     <%include file='../common/_footer.mako' />
 </body>
 </html>

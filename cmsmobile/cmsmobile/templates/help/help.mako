@@ -7,6 +7,13 @@
     <a href="/">トップ</a> >> ヘルプ
 </div>
 
+<div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
+
+<div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000;font-size: medium;
+                        color: #ffffff" bgcolor="#bf0000" background="../static/bg_bar.gif">ヘルプ</div>
+
+<div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
+
     % if form.helps.data:
         % for help in form.helps.data:
             <a href="#${help.id}">
@@ -14,7 +21,6 @@
             </a>
         % endfor
 
-        <p/>
         <div style="font-size: x-small"><a href="/">楽天チケットトップへ</a></div>
 
         % for count, help in enumerate(form.helps.data):
@@ -28,7 +34,7 @@
             <a name="${help.id}" id="${help.id}">
                 <div style="font-size: x-small">Ｑ．${help.title}</div>
             </a>
-            Ａ．${help.text}<p/>
+            Ａ．${help.text}<br/>
             ${count}
         % endfor
 

@@ -1,5 +1,7 @@
 <%page args="attentions" />
-<div style="font-size: medium">注目のイベント</div>
+<div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000;font-size: medium;
+                        color: #ffffff" bgcolor="#bf0000" background="../static/bg_bar.gif">注目のイベント</div>
+
 <span style="font-size: x-small">
 % if attentions:
     % for attention in attentions:

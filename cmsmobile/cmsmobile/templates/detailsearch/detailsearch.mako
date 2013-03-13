@@ -5,14 +5,11 @@
 <body>
 
 <div style="font-size: x-small">
-    <a href="/">トップ</a> >> 詳細検索<p/>
+    <a href="/">トップ</a> >> 詳細検索
 </div>
-
-<p/>
 
 <%include file='./_form.mako' args="form=form" />
 
-<hr/>
     <%include file='../common/_footer.mako' />
 </body>
 </html>

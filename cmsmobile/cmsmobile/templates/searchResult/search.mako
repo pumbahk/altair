@@ -5,10 +5,10 @@
     <span style="font-size: x-small">
         % if getattr(form, "navi_hotword", False):
             % if form.navi_hotword.data:
-                <a href="/">トップ</a> >> 「${form.navi_hotword.data.name}」を含む公演<p/>
+                <a href="/">トップ</a> >> 「${form.navi_hotword.data.name}」を含む公演
             % endif
         % else:
-            <a href="/">トップ</a> >> ${form.navi_area.data + u"で" if form.navi_area.data else ""}「${form.word.data}」を含む公演<p/>
+            <a href="/">トップ</a> >> ${form.navi_area.data + u"で" if form.navi_area.data else ""}「${form.word.data}」を含む公演
         % endif
     </span>
 
@@ -16,10 +16,8 @@
                 ,word=form.word.data, num=form.num.data, page=form.page.data
                 ,page_num=form.page_num.data, path=form.path.data, week=form.week.data"/>
 
-<hr/>
-
     <%include file='../common/_search.mako' args="form=form"/>
-<hr/>
+
     <%include file='../common/_footer.mako' />
 </body>
 </html>

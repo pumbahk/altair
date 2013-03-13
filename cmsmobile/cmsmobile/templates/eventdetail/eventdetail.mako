@@ -4,7 +4,7 @@
 <body>
 
 <span style="font-size: x-small">
-    <a href="/">トップ</a> >> イベント詳細<p/>
+    <a href="/">トップ</a> >> イベント詳細
 </span>
 
 <div style="font-size: medium">

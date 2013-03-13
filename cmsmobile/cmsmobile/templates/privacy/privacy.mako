@@ -7,6 +7,11 @@
     <a href="/">トップ</a> >> <a name="top" id="top">個人情報保護方針</a>
 </div>
 
+<div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
+
+<div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000;font-size: medium;
+                        color: #ffffff" bgcolor="#bf0000" background="../static/bg_bar.gif">個人情報保護方針</div>
+
 <a href="#1"><div style="font-size: x-small">1. 本方針について</div></a>
 <a href="#2"><div style="font-size: x-small">2. 用語の意味について</div></a>
 <a href="#3"><div style="font-size: x-small">3. 個人情報の収集について</div></a>
@@ -22,7 +27,7 @@
 <a name="1" id="1"><div style="font-size: medium">1. 本方針について</div></a>
 <div style="font-size: x-small">・	本方針は、お客様が楽天グループ（以下「当グループ」といい、[2.用語の意味について]で規定します）の運営するサービス（以下「サービス」といいます。なお、サービスの詳細は、<a href="#ex1">こちら※1</a>）をご利用されたことに伴い、当グループが取得したお客様の個人情報の取り扱い方針を定めるものです。</div>
 
-<p/><a href="#top"><div style="font-size: x-small">▲上へ</div></a>
+<a href="#top"><div style="font-size: x-small">▲上へ</div></a>
 <hr/>
 
 <a name="2" id="2"><div style="font-size: medium">2. 用語の意味について</div></a>
@@ -32,7 +37,7 @@
 
 <div style="font-size: x-small">・	本方針において、「サービス提供者」とは、ショップ、オークションの出品者、宿泊施設またはその代理店、提携ゴルフ場など、取引の対象となる商品または役務を提供する者をいいます。</div>
 
-<p/><a href="#top"><div style="font-size: x-small">▲上へ</div></a>
+<a href="#top"><div style="font-size: x-small">▲上へ</div></a>
 <hr/>
 
 <a name="3" id="3"><div style="font-size: medium">3. 個人情報の収集について</div></a>

@@ -1,8 +1,10 @@
 <%page args="path, genre, sub_genre, num" />
 % if genre:
-    <div style="font-size: medium">地域から絞り込む</div>
+    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000;font-size: medium;
+                        color: #ffffff" bgcolor="#bf0000" background="../static/bg_bar.gif">地域から絞り込む</div>
 % else:
-    <div style="font-size: medium">地域から探す</div>
+    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000;font-size: medium;
+                        color: #ffffff" bgcolor="#bf0000" background="../static/bg_bar.gif">地域から探す</div>
 % endif
 <span style="font-size: x-small">
     <a href="${path}?genre=${genre}&sub_genre=${sub_genre}&num=${num}&page=1&area=1">首都圏</a>｜

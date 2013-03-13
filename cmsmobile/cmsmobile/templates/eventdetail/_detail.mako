@@ -4,22 +4,32 @@
 公演期間：${event.deal_open.year}/${event.deal_open.month}/${event.deal_open.day}(${week[event.deal_open.weekday()]})-${event.deal_close.year}/${event.deal_close.month}/${event.deal_close.day}(${week[event.deal_close.weekday()]})
 </div>
 
+<div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
+
 <div style="font-size: x-small">公演一覧へ</div>
 
 
-% for month in month_unit_keys:
-    <a href="#${month}"><span style="font-size: x-small">${month}</span></a>｜
+% for count, month in enumerate(month_unit_keys):
+    <a href="#${month}"><span style="font-size: x-small">${month}</span></a>
+    % if count < len(month_unit_keys) - 1:
+    ｜
+    % endif
 % endfor
 
-<p/>
+<div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
+
 <a href="#detail"><span style="font-size: x-small">公演詳細へ</span></a><br/>
 
-<hr/>
-<span style="font-size: medium">公演一覧</span>
-% for month in month_unit_keys:
-    <hr/>
+<div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000;font-size: medium;
+                        color: #ffffff" bgcolor="#bf0000" background="../static/bg_bar.gif">公演一覧</div>
+
+% for count, month in enumerate(month_unit_keys):
+    % if count != 0:
+        <hr/>
+    % endif
     <a name="${month}" id="${month}"><span style="font-size: x-small">${month}</span></a><br/>
-    <hr/>
+    <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
+
     % for perf in event.performances:
         % if str(perf.start_on.year) + "/" + str(perf.start_on.month) == month:
             <a href="${purchase_links[perf.id]}">
@@ -39,8 +49,9 @@
     % endfor
 % endfor
 
-<hr/>
-<a name="detail" id="detail"><span style="font-size: medium">公演詳細</span></a>
+<div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000;font-size: medium;
+                        color: #ffffff" bgcolor="#bf0000" background="../static/bg_bar.gif">公演詳細</div>
+
 <div style="font-size: x-small">販売区分</div>
 % if event.salessegment_groups:
     % for segment in event.salessegment_groups:
@@ -50,13 +61,11 @@
         </div>
     % endfor
 % endif
-<p/>
 
 % if event.description:
     <div style="font-size: x-small">詳細/注意事項</div>
     <span style="font-size: x-small">${event.description}</span>
 % endif
-<p/>
 
 % if tickets:
     <div style="font-size: x-small">席種/価格</div>
@@ -66,7 +75,6 @@
         </span>
     % endfor
 % endif
-<p/>
 
 % if event.inquiry_for:
     <div style="font-size: x-small">お問合せ</div>

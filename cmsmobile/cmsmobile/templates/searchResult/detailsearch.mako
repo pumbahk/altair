@@ -12,7 +12,6 @@
 
 <%include file='../detailsearch/_form.mako' args="form=form" />
 
-<hr/>
     <%include file='../common/_footer.mako' />
 </body>
 </html>

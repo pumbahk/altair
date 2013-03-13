@@ -10,11 +10,13 @@
 % endif
 </span>
 
-<div style="font-size: medium">検索結果</div><p/>
+<div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
+
+<div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000;font-size: medium;
+                        color: #ffffff" bgcolor="#bf0000" background="../static/bg_bar.gif">検索結果</div>
 
 % if events:
-    % for event in events:
-        <hr/>
+    % for count, event in enumerate(events):
         <a href="/eventdetail?event_id=${event.id}"><span style="font-size: x-small">${event.title}</span></a><br/>
         <div style="font-size: x-small">販売：${event.deal_open.year}/${event.deal_open.month}/${event.deal_open.day}(${week[event.deal_open.weekday()]})〜${event.deal_close.year}/${event.deal_close.month}/${event.deal_close.day}(${week[event.deal_close.weekday()]})</div>
         % if event.performances[0]:
@@ -27,11 +29,13 @@
                     % endfor
                 % endfor
             % endfor
-            <p/>
+            % if count < len(events) - 1:
+                <hr/>
+            % endif
         % endif
     % endfor
 % endif
-<p/>
+<div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
 
 % if int(num):
     <div align="center" style="font-size: x-small">

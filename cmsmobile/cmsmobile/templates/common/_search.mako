@@ -25,4 +25,3 @@
         <a href="/detailsearch"><span style="font-size: x-small">もっと詳しく</span></a>
     </fieldset>
 </form>
-<p/>

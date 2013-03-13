@@ -4,6 +4,10 @@
 <body>
 
     <div style="font-size: x-small"><a href="/">トップ</a> >> 特定商取引法に基づく表示</div>
+    <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
+
+    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000;font-size: medium;
+                        color: #ffffff" bgcolor="#bf0000" background="../static/bg_bar.gif">特定商取引法に基づく表示</div>
 
     <div style="font-size: x-small"><a href="#1">１．販売業者名</a></div>
     <div style="font-size: x-small"><a href="#2">２．運営責任者</a></div>
@@ -14,10 +18,11 @@
     <div style="font-size: x-small"><a href="#7">７．返品及び返金</a></div>
     <div style="font-size: x-small"><a href="#8">８．払い戻し</a></div>
     <div style="font-size: x-small"><a href="#9">９．引渡し時期・方法</a></div>
+    <hr/>
 
     <a name="1" id="1"><div style="font-size: medium">１．販売業者名</div></a>
     <div style="font-size: x-small">株式会社チケットスター</div>
-    <div style="font-size: x-small">(英名：TicketStar Inc. )<p/></div>
+    <div style="font-size: x-small">(英名：TicketStar Inc. )</div>
 
     <div style="font-size: x-small">電話番号：050-5830-6868</div>
     <div style="font-size: x-small">FAX番号：03-5795-1877</div>
@@ -103,8 +108,6 @@
     <div style="font-size: x-small">詳しくは各イベントの購入画面をご覧ください。</div>
 
     <a href="#top"><div style="font-size: x-small">▲上へ</div></a>
-    <hr/>
-
 
         <%include file="../common/_footer.mako" />
 </body>
