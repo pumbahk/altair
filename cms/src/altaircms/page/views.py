@@ -140,18 +140,22 @@ class PageAddView(object):
 
     @view_config(route_name="page_add_orphan", permission="page_create", request_method="POST", match_param="action=create")
     def create_page(self):
-        logging.debug('create_page')
-        form = forms.PageForm(self.request.POST)
-        if form.validate():
-            page = self.context.create_page(form)
-            ## flash messsage
-            mes = u'page created <a href="%s">作成されたページを編集する</a>' % self.request.route_path("pageset_detail", pageset_id=page.pageset.id, kind="other")
-            FlashMessage.success(mes, request=self.request)
-            return HTTPFound(get_endpoint(self.request) or self.request.route_path("pageset_list", pagetype=page.pagetype.name))
-        else:
-            self.request._form = form
-            self.request._setup_form = forms.PageInfoSetupForm(name=form.data["name"])
-            raise AfterInput
+        try:
+            logging.debug('create_page')
+            form = forms.PageForm(self.request.POST)
+            if form.validate():
+                page = self.context.create_page(form)
+                ## flash messsage
+                mes = u'page created <a href="%s">作成されたページを編集する</a>' % self.request.route_path("pageset_detail", pageset_id=page.pageset.id, kind="other")
+                FlashMessage.success(mes, request=self.request)
+                return HTTPFound(get_endpoint(self.request) or self.request.route_path("pageset_list", pagetype=page.pagetype.name))
+            else:
+                self.request._form = form
+                self.request._setup_form = forms.PageInfoSetupForm(name=form.data["name"])
+                raise AfterInput
+        except Exception, e:
+            logger.exception(str(e))
+            raise
 
 
  

@@ -6,6 +6,7 @@ import sqlahelper
 from webob.multidict import MultiDict 
 from pyramid.path import DottedNameResolver
 from altaircms.models import Base
+from pyramid.decorator import reify
 import StringIO
 
 class DummyFileStorage(object):
@@ -16,13 +17,37 @@ class DummyFileStorage(object):
 class DummyRequest(testing.DummyRequest):
     def __init__(self, *args, **kwargs):
         super(DummyRequest, self).__init__(*args, **kwargs)
-
         for attr in ("POST", "GET", "params"):
             if hasattr(self, attr):
                 setattr(self, attr, MultiDict(getattr(self, attr)))
 
     def allowable(self, model, qs=None):
         return qs or model.query
+
+class ExtDummyRequest(DummyRequest):
+    def __init__(self, *args, **kwargs):
+        super(ExtDummyRequest, self).__init__(*args, **kwargs)
+        if "organization_id" in kwargs:
+            self.organization_id = kwargs["organization_id"]
+        if "current_request" in kwargs and kwargs["current_request"]:
+            from pyramid.threadlocal import manager
+            from pyramid.registry import global_registry
+            manager.push({"request": self, "registry": getattr(self, "registry", global_registry)})
+        if "referrer" in kwargs:
+            self.referrer = kwargs["referrer"]
+        else:
+            self.referrer = "/"
+
+    @reify
+    def organization(self):
+        from altaircms.auth.models import Organization
+        if self.organization_id is None:
+            return None
+        return Organization.query.filter_by(id=self.organization_id).first()
+
+    def allowable(self, model, qs=None):
+        from altaircms.auth.api import get_allowable_query
+        return get_allowable_query(self)(model, qs=qs)
 
 
 def dummy_form_factory(name="DummyForm", validate=False, errors=None):

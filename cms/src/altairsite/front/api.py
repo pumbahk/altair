@@ -41,7 +41,10 @@ class FrontPageRenderer(object):
         bsettings.blocks["title"] = [page.title]
 
         event = page.event
-        performances = Performance.query.filter(Performance.event_id==event.id).options(orm.joinedload("sales")).all()
+        if page.event:
+            performances = Performance.query.filter(Performance.event_id==event.id).options(orm.joinedload("sales")).all()
+        else:
+            performances = []
         ## 本当はwidget側からpullしていくようにしたい
         bsettings.scan(self.request, page=page, performances=performances, event=event)
         return bsettings
