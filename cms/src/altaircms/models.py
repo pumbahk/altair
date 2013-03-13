@@ -3,11 +3,14 @@
 
 import sqlalchemy as sa
 from datetime import datetime
-import sqlahelper
 import sqlalchemy.orm as orm
 from sqlalchemy.orm import relationship
+#dont remove
+from altaircms.modellib import model_to_dict, model_from_dict, model_column_items, model_column_iters
+from altaircms.modellib import model_clone, BaseOriginalMixin
+from altaircms.modellib import Base, DBSession
+# ---
 
-from sqlalchemy.sql.operators import ColumnOperators
 from sqlalchemy.ext.declarative import declared_attr
 
 import pkg_resources
@@ -15,55 +18,9 @@ def import_symbol(symbol):
     return pkg_resources.EntryPoint.parse("x=%s" % symbol).load(False)
 from altaircms.seeds.saleskind import SALESKIND_CHOICES
 
-def model_to_dict(obj):
-    return {k: getattr(obj, k) for k, v in obj.__class__.__dict__.iteritems() \
-                if isinstance(v, ColumnOperators)}
-
-def model_from_dict(modelclass, D):
-    instance = modelclass()
-    items_fn = D.iteritems if hasattr(D, "iteritems") else D.items
-    for k, v in items_fn():
-        setattr(instance, k, v)
-    return instance
-
-def model_column_items(obj):
-    return [(k, v) for k, v in obj.__class__.__dict__.items()\
-                if isinstance(v, ColumnOperators)]
-
-def model_column_iters(modelclass, D):
-    for k, v in modelclass.__dict__.items():
-        if isinstance(v, ColumnOperators):
-            yield k, D.get(k)
-
-def model_clone(obj):
-    cls = obj.__class__
-    cloned = cls()
-    pk_keys = set([c.key for c in orm.class_mapper(cls).primary_key])
-    for p in  orm.class_mapper(cls).iterate_properties:
-        if p.key not in  pk_keys:
-            setattr(cloned, p.key, getattr(obj, p.key, None))
-    return cloned
-            
-class BaseOriginalMixin(object):
-    def to_dict(self):
-        return model_to_dict(self)
-
-    def column_items(self):
-        return model_column_items(self)
-
-    @classmethod
-    def column_iters(cls, D):
-        return model_column_iters(cls, D)
-
-    @classmethod
-    def from_dict(cls, D):
-        return model_from_dict(cls, D)
 
 class WithOrganizationMixin(object):
     organization_id = sa.Column(sa.Integer, index=True) ## need FK?(organization.id)
-    
-Base = sqlahelper.get_base()
-DBSession = sqlahelper.get_session()
 
 
 def initialize_sql(engine, dropall=False):
@@ -244,6 +201,7 @@ class Genre(Base,  WithOrganizationMixin):
 
     category_top_pageset_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id", use_alter=True, name="fk_default_category_top_pageset"), doc=u"カテゴリトップページのid")
     category_top_pageset = orm.relationship("PageSet", uselist=False, primaryjoin="PageSet.id==Genre.category_top_pageset_id")
+
     def is_category_toppage(self, pageset):
         return self.category_top_pageset_id == pageset.id
     
