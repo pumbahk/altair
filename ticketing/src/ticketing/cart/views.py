@@ -115,18 +115,7 @@ class IndexView(IndexViewMixin):
     @view_config(decorator=with_jquery_tools, route_name='cart.index', renderer=selectable_renderer("carts/%(membership)s/index.html"), xhr=False, permission="buy")
     def __call__(self):
         self.check_redirect(mobile=False)
-        sales_segments = api.get_available_sales_segments(self.request, self.context.event, datetime.now())
-        if not sales_segments:
-            # 次の販売区分があるなら
-            data = self.context.get_next_and_last_sales_segment_period()
-            if any(data):
-                for datum in data:
-                    if datum is not None:
-                        datum['event'] = datum['performance'].event
-                raise OutTermSalesException(*data)
-            else:
-                raise HTTPNotFound()
-
+        sales_segments = self.context.available_sales_segments
         performances = [ss.performance for ss in sales_segments]
 
         select_venues = OrderedDict()
@@ -279,8 +268,7 @@ class IndexView(IndexViewMixin):
         query = query.filter(c_models.Product.public==True)
         query = query.filter(c_models.Product.id.in_(q)).order_by(sa.desc("display_order, price"))
         ### filter by salessegment
-        salessegment = self.context.get_sales_segment()
-        query = h.products_filter_by_salessegment(query, salessegment)
+        query = h.products_filter_by_salessegment(query, self.context.sales_segment)
 
         products = [
             dict(
@@ -492,15 +480,13 @@ class ReserveView(object):
         logger.debug('sum_quantity=%s' % sum_quantity)
 
         self.context.event_id = performance.event_id
-        #sales_segment = self.context.get_sales_segment()
-        sales_segment = c_models.SalesSegment.query.filter(c_models.SalesSegment.id==self.request.matchdict['sales_segment_id']).one()
-        if sales_segment.upper_limit < sum_quantity:
+        if self.context.sales_segment.upper_limit < sum_quantity:
             logger.debug('upper_limit over')
             return dict(result='NG', reason="upper_limit")
 
         try:
             cart = api.order_products(self.request, self.request.params['performance_id'], order_items, selected_seats=selected_seats)
-            cart.sales_segment = sales_segment
+            cart.sales_segment = self.context.sales_segment
             if cart is None:
                 transaction.abort()
                 return dict(result='NG')
@@ -526,7 +512,7 @@ class ReserveView(object):
         DBSession.flush()
         api.set_cart(self.request, cart)
         return dict(result='OK', 
-                    payment_url=self.request.route_url("cart.payment", sales_segment_id=sales_segment.id),
+                    payment_url=self.request.route_url("cart.payment", sales_segment_id=self.context.sales_segment.id),
                     cart=dict(products=[dict(name=p.product.name, 
                                              quantity=p.quantity,
                                              price=int(p.product.price),
@@ -558,8 +544,11 @@ class PaymentView(object):
     def __init__(self, request):
         self.request = request
         self.context = request.context
+
     @property
     def sales_segment(self):
+        # contextから取れることを期待できないので
+        # XXX: 会員区分からバリデーションしなくていいの?
         return c_models.SalesSegment.query.filter(c_models.SalesSegment.id==self.request.matchdict['sales_segment_id']).one()
 
     @view_config(route_name='cart.payment', request_method="GET", renderer=selectable_renderer("carts/%(membership)s/payment.html"))

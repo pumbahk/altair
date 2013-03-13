@@ -139,8 +139,9 @@ class SalesSegmentGroups(BaseView):
             f.id.data = id_map[sales_segment_group_id]
             new_sales_segment_group = merge_session_with_post(SalesSegmentGroup.get(f.id.data), f.data)
             new_sales_segment_group.save()
+
             for ss in sales_segment_group.sales_segments:
-                id_map = SalesSegment.create_from_template(ss, with_payment_delivery_method_pairs=True, sales_segment_group_id=new_sales_segment_group.id)
+                id_map = SalesSegment.create_from_template(ss, sales_segment_group_id=new_sales_segment_group.id)
                 if bool(f.copy_products.data):
                     for product in ss.products:
                         Product.create_from_template(template=product, with_product_items=True, stock_holder_id=f.copy_to_stock_holder.data, sales_segment=id_map)
