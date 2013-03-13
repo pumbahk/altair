@@ -1,7 +1,7 @@
 <%page args="form" />
 <%namespace file="cmsmobile:templates/common/helpers.html" name="h" />
 
-<form action="${form.path.data}">
+<form action="${form.path.data}" method="GET">
     <fieldset>
         <input type="hidden" name="genre" value="${form.genre.data}" />
         <input type="hidden" name="sub_genre" value="${form.sub_genre.data}" />
