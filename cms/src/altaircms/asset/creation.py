@@ -20,7 +20,7 @@ from .detect import ImageInfoDatector
 from .detect import MovieInfoDatector
 from .detect import FlashInfoDatector
 from ..filelib import File
-
+from .forms import normalize_filename
 def get_asset_filesession(request):
     return get_filesession(request, name=SESSION_NAME)
 
@@ -269,11 +269,12 @@ class Updater(object):
         self.request = request
 
     def update(self, asset, params, form=None):
-        if asset.filepath and hasattr(params["filepath"], "filename") and os.path.splitext(params["filepath"].filename)[1] != os.path.splitext(asset.filepath)[1]:
-            raise ValidationError(u"ファイルの拡張子が異なっています。変更できません。")
-
         if form and not form.validate():
             raise ValidationError(str(form.errors))
+        params = form.data
+        if asset.filepath and hasattr(params["filepath"], "filename") and os.path.splitext(normalize_filename(params["filepath"].filename))[1] != os.path.splitext(asset.filepath)[1]:
+            logger.warn("%s <-> %s" % (os.path.splitext(normalize_filename(params["filepath"].filename))[1] , os.path.splitext(asset.filepath)[1]))
+            raise ValidationError(u"ファイルの拡張子が異なっています。変更できません。")
 
         def commit():
             return self.commit_update(asset, params, form=form)
