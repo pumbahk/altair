@@ -172,11 +172,9 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 **convert_map
             )
 
-        if not original_performance_id:
-            # defaultのStockに席数をセット
-            stock = Stock.get_default(performance_id=performance_id)
-            stock.quantity = len(template.seats)
-            stock.save()
+        # defaultのStockに未割当の席数をセット
+        default_stock.quantity = Seat.query.filter_by(stock_id=default_stock.id).count()
+        default_stock.save()
 
     def delete_cascade(self):
         # delete Seat
