@@ -490,22 +490,30 @@ h2.sidebar-heading {
 salessegment icon
 */
 .icon-salessegment {
+    display: inline-block;
     background-repeat: no-repeat;
     height: 14px;
     width: 60px;
     background-image: url(/static/ticketstar/img/search/icon_release.gif);
 }
 
+.icon-salessegment.firstcome{
+    background-image: url(/static/ticketstar/img/search/icon_firstcome.gif);
+}
+.icon-salessegment.normal{
+    background-image: url(/static/ticketstar/img/search/icon_normal.gif);
+}
+.icon-salessegment.early_firstcome{
+    background-image: url(/static/ticketstar/img/search/icon_firstcome.gif);
+}
+/* old. bw */
 .icon-salessegment.first_lottery{
     background-image: url(/static/ticketstar/img/search/icon_first_lottery.gif);
 }
 .icon-salessegment.early_lottery{
     background-image: url(/static/ticketstar/img/search/icon_lottery.gif);
 }
-.icon-salessegment.early_firstcome{
-    background-image: url(/static/ticketstar/img/search/icon_early_firstcome.gif);
-}
-.icon-salessegment.normal{
+.icon-salessegment.release{
     background-image: url(/static/ticketstar/img/search/icon_release.gif);
 }
 .icon-salessegment.added_sales{
