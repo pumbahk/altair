@@ -21,7 +21,7 @@
                 <a href="/">楽天チケットトップへ</a>
             % endif
             <hr/>
-            <a name="${help.id}">
+            <a name="${help.id}" id="${help.id}">
                 <strong>Ｑ．${help.title}</strong><p/>
             </a>
             Ａ．${help.text}<p/>

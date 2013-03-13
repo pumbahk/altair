@@ -14,7 +14,7 @@
 <h3>公演一覧</h3>
 % for month in month_unit_keys:
     <hr/>
-    <a name="${month}">${month}</a><br/>
+    <a name="${month}" id="${month}">${month}</a><br/>
     <hr/>
     % for perf in event.performances:
         % if str(perf.start_on.year) + "/" + str(perf.start_on.month) == month:
@@ -33,7 +33,7 @@
 % endfor
 
 <hr/>
-<h3><a name="detail">公演詳細</a></h3>
+<h3><a name="detail" id="detail">公演詳細</a></h3>
 販売区分<br/>
 % if event.salessegment_groups:
     % for segment in event.salessegment_groups:
