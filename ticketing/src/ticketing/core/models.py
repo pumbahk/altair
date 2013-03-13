@@ -890,13 +890,15 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     sales_segments = SalesSegment.query.filter(and_(SalesSegment.sales_segment_group_id==old_id, SalesSegment.performance_id==performance.id)).all()
                     for sales_segment in sales_segments:
                         sales_segment.sales_segment_group_id = new_id
-                        old_pdmps = sales_segment.payment_delivery_method_pairs
-                        for old_pdmp in old_pdmps:
+                        new_pdmps = []
+                        for old_pdmp in sales_segment.payment_delivery_method_pairs:
                             id = convert_map['payment_delivery_method_pair'][old_pdmp.id]
-                            sales_segment.payment_delivery_method_pairs.remove(old_pdmp)
                             new_pdmp = PaymentDeliveryMethodPair.get(id)
                             if new_pdmp:
-                                sales_segment.payment_delivery_method_pairs.add(new_pdmp)
+                                new_pdmps.append(new_pdmp)
+                        sales_segment.payment_delivery_method_pairs.clear()
+                        for new_pdmp in new_pdmps:
+                            sales_segment.payment_delivery_method_pairs.add(new_pdmp)
 
                 # 関連テーブルのticket_bundle_idを書き換える
                 for old_id, new_id in convert_map['ticket_bundle'].iteritems():
@@ -3103,6 +3105,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
             sales_segment.performance_id = kwargs['performance_id']
         if 'sales_segment_group_id' in kwargs:
             sales_segment.sales_segment_group_id = kwargs['sales_segment_group_id']
+            new_pdmps = []
             for org_pdmp in template.payment_delivery_method_pairs:
                 new_pdmp = PaymentDeliveryMethodPair.query.filter(and_(
                     PaymentDeliveryMethodPair.sales_segment_group_id==sales_segment.sales_segment_group_id,
@@ -3110,7 +3113,10 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
                     PaymentDeliveryMethodPair.delivery_method_id==org_pdmp.delivery_method_id
                 )).first()
                 if new_pdmp:
-                    sales_segment.payment_delivery_method_pairs.add(new_pdmp)
+                    new_pdmps.append(new_pdmp)
+            sales_segment.payment_delivery_method_pairs.clear()
+            for new_pdmp in new_pdmps:
+                sales_segment.payment_delivery_method_pairs.add(new_pdmp)
         else:
             sales_segment.payment_delivery_method_pairs = template.payment_delivery_method_pairs
         sales_segment.save()
