@@ -3,7 +3,7 @@
 import re
 from wtforms import validators
 from ticketing.helpers import todatetime
-from datetime import date
+from datetime import date, datetime
 
 __all__ = (
     'Required',
@@ -12,6 +12,7 @@ __all__ = (
     'DateTimeInRange',
     'Katakana',
     'JISX0208',
+    'CP932',
     'SejCompliantEmail',
     'Zenkaku',
     'after1900',
@@ -68,8 +69,9 @@ class DateTimeInRange(object):
 
 Katakana = validators.Regexp(ur'^[ァ-ヶ]+$', message=u'カタカナで入力してください')
 
-class JISX0208(object):
-    def __init__(self, message=None):
+class Charset(object):
+    def __init__(self, encoding, message=None):
+        self.encoding = encoding
         self.message = message or u'利用不可能な文字 (%(characters)s) が含まれています'
 
     def __call__(self, form, field):
@@ -77,11 +79,14 @@ class JISX0208(object):
         bad_chars = set()
         for c in field.data:
             try:
-                c.encode('Shift_JIS')
+                c.encode(self.encoding)
             except UnicodeEncodeError:
                 bad_chars.add(c)
         if bad_chars:
             raise validators.ValidationError(field.gettext(self.message) % dict(characters=u'「' + u'」「'.join(bad_chars) + u'」'))
+
+JISX0208 = Charset('Shift_JIS')
+CP932 = Charset('CP932')
 
 class SejCompliantEmail(validators.Regexp):
     def __init__(self, message=None):

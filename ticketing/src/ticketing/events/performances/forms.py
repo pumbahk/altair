@@ -35,7 +35,7 @@ class PerformanceForm(Form):
         label=u'公演名',
         validators=[
             Required(),
-            JISX0208(), 
+            JISX0208, 
             Length(max=255, message=u'255文字以内で入力してください'),
         ],
     )

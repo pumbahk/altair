@@ -40,6 +40,9 @@ japanese_columns = {
     u'order.delivery_fee': u'配送手数料',
     u'order.system_fee': u'システム手数料',
     u'order.note': u'メモ',
+    u'order.card_brand': u'カードブランド',
+    u'order.card_ahead_com_code': u'仕向け先企業コード',
+    u'order.card_ahead_com_name': u'仕向け先企業名',
     u'user_profile.last_name': u'姓',
     u'user_profile.first_name': u'名',
     u'user_profile.last_name_kana': u'姓(カナ)',
@@ -186,6 +189,9 @@ class OrderCSV(object):
         CurrencyRenderer(u'order.delivery_fee'),
         CurrencyRenderer(u'order.system_fee'),
         PlainTextRenderer(u'order.note'),
+        PlainTextRenderer(u'order.card_brand'),
+        PlainTextRenderer(u'order.card_ahead_com_code'),
+        PlainTextRenderer(u'order.card_ahead_com_name'),
         MailMagazineSubscriptionStateRenderer(
             u'shipping_address.emails',
             u'mail_magazine.mail_permission'

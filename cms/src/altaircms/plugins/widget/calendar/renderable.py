@@ -116,10 +116,10 @@ def _next_month_date(d):
         return date(d.year, d.month+1, 1)
 
 def get_start_date_and_end_date(salessegment_group, performances):
-    if salessegment_group:
-        return salessegment_group.start_on, salessegment_group.end_on
-    else:
-        return performances[0].start_on, performances[-1].start_on        
+    # if salessegment_group:
+    #     return salessegment_group.start_on, salessegment_group.end_on
+    # else:
+    return performances[0].start_on, performances[-1].start_on        
 
 def obi(widget, calendar_status, performances, request, template_name=None): 
     """公演の開始から終了までを縦に表示するカレンダー

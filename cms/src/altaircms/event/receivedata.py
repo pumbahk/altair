@@ -4,7 +4,7 @@ logger = logging.getLogger(__name__)
 import isodate
 from altaircms.event.models import Event
 from altaircms.auth.models import Organization
-from altaircms.models import Performance, SalesSegment, Ticket, SalesSegmentGroup
+from altaircms.models import Performance, SalesSegment, Ticket, SalesSegmentGroup, SalesSegmentKind
 from altaircms.seeds.prefecture import PREFECTURE_CHOICES
 from . import subscribers
 from ..modelmanager import SalesTermSummalize
@@ -196,6 +196,8 @@ class Scanner(object):
 
         salessegment_groups = SalesSegmentGroup.query.filter(SalesSegmentGroup.event_id.in_(self.event_fetcher.cached_keys()))
         group_dict = {(t.event_id, t.name, t.kind, t.backend_id):t for t in salessegment_groups}
+        salessegmen_kinds = SalesSegmentKind.query.filter(SalesSegmentKind.organization_id == organization.id)
+        kind_dict = {k.name: k for k in salessegmen_kinds}
 
         for backend_id, (record, env) in self.salessegment_fetcher.data_iter:
             salessegment = fetcher.cache.get(backend_id)
@@ -209,10 +211,24 @@ class Scanner(object):
                 r.append(salessegment)
                 salessegment.backend_id = backend_id
                 salessegment.performance = self.performance_fetcher.cache[strict_get(env, "performance")["id"]]
-                event = self.event_fetcher.cache[env["event"]["id"]]
-                salessegment.group = group_dict.get((event.id, record["name"], record["kind"], record.get("group_id"))) or SalesSegmentGroup(name=record["name"], kind=record["kind"], event_id=event.id, backend_id=record.get("group_id"))
+                event = self.event_fetcher.cache[env["event"]["id"]]              
                 salessegment.start_on = parse_datetime(record['start_on'])
                 salessegment.end_on = parse_datetime(record['end_on'])
+
+                ## kind, group
+                kind_name = record.get("kind_name", "unknown")
+                salessegment.group = group_dict.get((event.id, record["name"], kind_name, record.get("group_id")))
+                if salessegment.group is None:
+                    salessegment.group = group_dict[(event.id, record["name"], kind_name, record.get("group_id"))] = SalesSegmentGroup(name=record["name"], kind=kind_name, event_id=event.id, backend_id=record.get("group_id"))
+                salessegment.kind = kind_name
+
+                kind = kind_dict.get(kind_name, None)
+                if kind is None:
+                    kind = kind_dict[kind_name] =  SalesSegmentKind(name=kind_name, organization_id=organization.id)
+                kind.label = record.get("kind_label", u"<不明>")
+                salessegment.group.master = kind
+                salessegment.group.kind = kind.name #todo:replace
+
             except KeyError as e:
                 raise InvalidParamaterException("missing property '%s' in the salessegment record" % e.message)
         return r

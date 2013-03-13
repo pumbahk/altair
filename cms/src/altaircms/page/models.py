@@ -1,4 +1,6 @@
 # coding: utf-8
+import logging
+logger = logging.getLogger(__name__)
 from sqlalchemy.ext.declarative import declared_attr
 from datetime import datetime
 from pyramid.decorator import reify
@@ -74,6 +76,8 @@ class PageSet(Base,
               WithOrganizationMixin, 
               HasAncestorMixin):
     __tablename__ = 'pagesets'
+    type = "page"
+
     query = DBSession.query_property()
     id = Column(Integer, primary_key=True)
     name = Column(Unicode(255))
@@ -101,6 +105,13 @@ class PageSet(Base,
     @property
     def taglabel(self):
         return u"pageset:%s" % self.id
+
+    @classmethod
+    def publishing(cls, d=None, qs=None):
+        qs = qs or cls.query
+        qs = qs.filter(PageSet.id==Page.pageset_id)
+        return qs.filter(Page.in_term(d)).filter(Page.published==True)
+
     
     def gen_version(self):
         if self.version_counter is None:
@@ -143,10 +154,15 @@ class PageSet(Base,
         qs = Page.query.filter(Page.pageset==self).filter(where)
         return qs.order_by(sa.desc("page.publish_begin"), "page.publish_end").limit(1).first()
 
-    def create_page(self, published=None):
+    def create_page(self, published=None, force=False):
         base_page = self.current(published=published)
         if base_page is None:
-            return None
+            if force:
+                logger.info("pageset_id=%s,  base page is not found. but force=True, base page as latest updated page." % self.id)
+                base_page = Page.query.filter(Page.pageset_id==self.id).order_by(sa.desc(Page.updated_at)).first()
+            if base_page is None:
+                logger.warn("pageset_id=%s,  base page is not found." % self.id)
+                return None
         created = Page(pageset=self, version=self.gen_version())
         created.event = base_page.event
         created.name = base_page.name
@@ -162,6 +178,10 @@ class PageSet(Base,
         self.event = event
         for p in self.pages:
             p.event = event
+        if event is None:
+            self.pagetype = PageType.query.filter(PageType.organization_id==self.organization_id, PageType.page_role!="event_detail").first()
+        else:
+            self.pagetype = PageType.query.filter(PageType.organization_id==self.organization_id, PageType.page_role=="event_detail").first()
 
     @property
     def public_tags(self):
@@ -213,7 +233,6 @@ class Page(BaseOriginalMixin,
 
     query = DBSession.query_property()
     __tablename__ = "page"
-
     id = Column(Integer, primary_key=True)
     
     created_at = Column(DateTime, default=datetime.now)
@@ -267,7 +286,11 @@ class Page(BaseOriginalMixin,
 
     def clone(self, session, request=None):
         from . import clone
-        return clone.page_clone(request, self, session)
+        cloned = clone.page_clone(request, self, session)
+        now = datetime.now()
+        cloned.created_at = now
+        cloned.updated_at = now
+        return cloned
 
     @classmethod
     def get_or_create_by_name(cls, name):

@@ -386,7 +386,7 @@ class TicketingCartResourceTests(unittest.TestCase):
 
         request = DummyRequest(matchdict={'event_id': event_id})
         target = self._makeOne(request)
-        result = target.get_sales_segument()
+        result = target.get_sales_segment()
 
         self.assertIsNotNone(result)
         self.assertEqual(result.id, ss1.id)

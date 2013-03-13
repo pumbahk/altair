@@ -61,4 +61,16 @@ class PublishingModelSearcher(object):
             qs = self.filter_by_system_tag(qs, system_tag)
         return qs
 
+    def filter_by_tag_many(self, qs, tags): #distinct
+        return self.tagmanager.more_filter_by_tag(qs, tags)
 
+    def filter_by_system_tag_many(self, qs, tags): #distinct
+        return self.system_tagmanager.more_filter_by_tag_many(qs, tags)
+
+    def query_publishing_many(self, dt, tags, system_tags=[]):
+        qs = self.query_publishing_no_filtered(dt)
+        qs = self.filter_by_tags(qs, tags)
+
+        if system_tags:
+            qs = self.filter_by_system_tags(qs, system_tags)
+        return qs

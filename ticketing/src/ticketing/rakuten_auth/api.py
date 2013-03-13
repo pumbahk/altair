@@ -300,7 +300,7 @@ def create_oauth_sigunature(method, url, oauth_consumer_key, secret, oauth_token
     return oauth_signature.strip()
 
 def openid_params(request):
-    request_get = request.GET
+    request_get = request.params
     return dict(ns = request_get['openid.ns'],
                 op_endpoint = request_get['openid.op_endpoint'],
                 claimed_id = request_get['openid.claimed_id'],

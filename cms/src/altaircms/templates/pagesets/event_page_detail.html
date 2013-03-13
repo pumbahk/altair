@@ -2,7 +2,6 @@
 <%namespace name="nco" file="../navcomponents.html"/>
 <%namespace name="fco" file="../formcomponents.html"/>
 <%namespace name="mco" file="../modelcomponents.html"/>
-<%namespace name="gadgets" file="../gadgets.html"/>
 
 <%block name="style">
 <style type="text/css">
@@ -48,33 +47,39 @@
   </tr>
 </table>
 
-  <div class="btn-group">
-    <a href="${request.route_path("pageset_update", id=pageset.id, action="input", _query=dict(genre=pageset.genre_id, endpoint=request.url))}" class="btn">
-      <i class="icon-pencil"></i> ページセットの編集
-    </a>
-    <button class="btn dropdown-toggle" data-toggle="dropdown">
-        <span class="caret"></span>
-    </button>
-    <ul class="dropdown-menu">
-      <li>
-        <a href="${request.route_path("pageset_delete", pageset_id=pageset.id)}">
-          <i class="icon-trash"></i> ページセットの削除
-        </a>
-      </li>
-      <li>
-        <a href="${request.route_path("pageset_update", id=pageset.id, action="input", _query=dict(genre=pageset.genre_id, endpoint=request.url))}">
-          <i class="icon-minus"></i> ページセットの編集
-        </a>
-      </li>
-    </ul>
-  </div>
+<hr/>
+<h3>操作</h3>
+<div class="btn-group">
+  <a class="btn btn-primary" href="${request.route_path("pageset_update", id=pageset.id, action="input", _query=dict(genre=pageset.genre_id, url=pageset.url, endpoint=request.url))}" class="btn">
+    <i class="icon-pencil"></i> ページセットの編集
+  </a>
+  <a class="btn"  href="${request.route_path("pageset", pageset_id=pageset.id)}">
+    <i class="icon-plus"> </i> ページセット期間変更
+  </a>
+	<a id="reset_event" class="btn submit" href="${request.route_path("plugins_jsapi_pageset_reset_event", pageset_id=pageset.id)}"
+       message="「${pageset.name}」をイベントと結びつかないページセットにします。よろしいですか？">
+		<i class="icon-plus"> </i> イベントと結びつかないページセットにする
+  </a>
+  <a class="btn btn-danger" href="${request.route_path("pageset_delete", pageset_id=pageset.id)}">
+    <i class="icon-trash"></i> ページセットの削除
+  </a>
+</div>
 
 <hr/>
 
 <h3>ページ一覧</h3>
   ## 一番下のjsに依存している
-<div id="pageset_items">
-  ${myhelpers.event_pageset_describe_viewlet(request, pageset)}
+<div class="box">
+  ${panel("pageset_page", pageset)}
+  <div class="btn-group">
+	  <a class="btn btn-success submit" id="pageset_addpage" href="${request.route_path("plugins_jsapi_addpage", pageset_id=pageset.id)}"
+       message="「${pageset.name}」に新しいページを追加します。よろしいですか？">
+		  <i class="icon-plus"> </i> 新しいページの追加
+    </a>
+	  <a class="btn btn-success action-submit" href-fmt="${request.route_path("page_duplicate", id="__id__", endpoint=request.url)}">
+		  <i class="icon-plus"> </i> 選択したページのコピーを追加
+    </a>
+  </div>
 </div>
 <hr/>
 
@@ -84,19 +89,31 @@
 
 <script type="text/javascript">
   $(function(){
-   $(".box .btn-group a.action").click(function(){
-      var  pk = $(this).parents(".box").find("input[name='object_id']:checked").val();
+   $(".box .btn-group a.action").on("click", function(e){
+      var $this = $(e.currentTarget);
+      var  pk = $this.parents(".box").find("input[name='object_id']:checked").val();
       if(!pk){ console.log("sorry"); return false; }
-
       // initialize
-      var $this = $(this);
-      if (!$this.data("href-fmt")){
-        $this.data("href-fmt", this.href);
-      }
-      this.href = $this.data("href-fmt").replace("__id__", pk);
+      $this.attr("href", $this.attr("href-fmt").replace("__id__", pk));
       return true;;
+  });
+  $("a.action-submit").click(function(e){
+      e.preventDefault();
+      var $this = $(e.currentTarget);
+      var  pk = $this.parents(".box").find("input[name='object_id']:checked").val();
+      if(!pk){ console.log("sorry"); return false; }
+      // initialize
+      $this.attr("href", $this.attr("href-fmt").replace("__id__", pk));
+      if(window.confirm("「${pageset.name}」に新しいページを追加します。よろしいですか？")){
+        $.post($(this).attr("href")).done(function(){location.reload()}).fail(function(e){console.log(e.responseText)});
+      }
+  });
+  $("a.submit").click(function(e){
+      e.preventDefault();
+      if(window.confirm($(this).attr("message"))){
+        $.post($(this).attr("href")).done(function(){location.reload()}).fail(function(e){console.log(e.responseText)});
+      }
     });
   })
 </script>
-
 </div>

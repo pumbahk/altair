@@ -121,8 +121,21 @@ class Performance(BaseOriginalMixin, Base):
     def jprefecture(self):
         return PDICT.name_to_label.get(self.prefecture, u"--")
 
-class SalesSegmentGroup(BaseOriginalMixin, Base):
+class SalesSegmentKind(WithOrganizationMixin, Base):
     """ 販売条件のためのマスターテーブル"""
+    __tablename__ = "salessegment_kind"
+    query = DBSession.query_property()    
+    id = sa.Column(sa.Integer, primary_key=True)
+    name = sa.Column(sa.String(length=255))
+    label = sa.Column(sa.Unicode(length=255), default=u"<不明>")
+    publicp = sa.Column(sa.Boolean, default=True)
+    
+    @declared_attr
+    def __table_args__(cls):
+        return (sa.UniqueConstraint("name", "organization_id"), )
+
+class SalesSegmentGroup(BaseOriginalMixin, Base):
+    """ イベント単位の販売条件"""
     __tablename__ = "salessegment_group"
     query = DBSession.query_property()    
 
@@ -130,7 +143,9 @@ class SalesSegmentGroup(BaseOriginalMixin, Base):
     event_id = sa.Column(sa.Integer, sa.ForeignKey('event.id'))
     event  = relationship("Event", uselist=False, backref="salessegment_groups")
     name = sa.Column(sa.Unicode(length=255))
-    kind = sa.Column(sa.Unicode(length=255))
+    kind_id = sa.Column(sa.Integer, sa.ForeignKey("salessegment_kind.id"))
+    kind = sa.Column(sa.String(length=255)) #backward compability
+    master = orm.relationship(SalesSegmentKind, uselist=False)
 
     start_on = sa.Column(sa.DateTime, default=datetime.now)
     end_on = sa.Column(sa.DateTime, default=datetime.now)
@@ -141,13 +156,19 @@ class SalesSegmentGroup(BaseOriginalMixin, Base):
 
     @classmethod
     def create_defaults_from_event(cls, event):
-        return [cls(event=event, 
+        normal = cls(event=event, 
                     name=u"一般販売", 
-                    kind="normal"), 
-                cls(event=event, 
+                    kind="normal")
+        first = cls(event=event, 
                     name=u"一般先行", 
-                    kind="first_lottery"), 
-                ]
+                    kind="eary_firstcome")
+        normal_kind = (SalesSegmentKind.query.filter_by(organization_id=event.organization_id, name=normal.kind).first() or 
+                       SalesSegmentKind(organization_id=event.organization_id, name=normal.kind, label=u"一般販売"))
+        first_kind = (SalesSegmentKind.query.filter_by(organization_id=event.organization_id, name=first.kind).first() or 
+                       SalesSegmentKind(organization_id=event.organization_id, name=first.kind, label=u"一般先行"))
+        normal.master = normal_kind
+        first.master = first_kind
+        return [normal, first]
 
 class SalesSegment(BaseOriginalMixin, Base):
     """ 販売区分
@@ -222,7 +243,7 @@ class Genre(Base,  WithOrganizationMixin):
     name = sa.Column(sa.String(length=255))
 
     category_top_pageset_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id", use_alter=True, name="fk_default_category_top_pageset"), doc=u"カテゴリトップページのid")
-
+    category_top_pageset = orm.relationship("PageSet", uselist=False, primaryjoin="PageSet.id==Genre.category_top_pageset_id")
     def is_category_toppage(self, pageset):
         return self.category_top_pageset_id == pageset.id
     
@@ -242,7 +263,7 @@ class Genre(Base,  WithOrganizationMixin):
         return u"%s%s" % (self.label, suffix)
 
     def query_descendant(self, hop=None):
-        qs = self.query_join_path_from_self
+        qs = Genre.query.join(_GenrePath, Genre.id==_GenrePath.genre_id)
         if hop:
             qs = qs.filter(_GenrePath.hop<=hop)
         return qs.filter(_GenrePath.next_id==self.id)

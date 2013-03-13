@@ -1,6 +1,8 @@
 def install_pageset_panels(config):
     config.add_panel(".pageset.nav_pageset_panel", "nav_pageset", 
                      renderer="altaircms:templates/pagesets/_nav_pageset.html")
+    config.add_panel(".pageset.pageset_page_listing_panel", "pageset_page", 
+                     renderer="altaircms:templates/page/_listing_pageset_page.html")
 
 def install_event_panels(config):
     config.add_panel(".event.event_page_section_panel", "event_pageset", 

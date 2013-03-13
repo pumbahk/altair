@@ -27,17 +27,17 @@ class AnyKindAssetSearchTests(unittest.TestCase):
 
     def _makeImageAsset(self, **kwargs):
         from altaircms.asset.models import ImageAsset
-        return ImageAsset(**kwargs)
+        return ImageAsset(organization_id=1,**kwargs)
     def _makeFlashAsset(self, **kwargs):
         from altaircms.asset.models import FlashAsset
-        return FlashAsset(**kwargs)
+        return FlashAsset(organization_id=1,**kwargs)
     def _makeMovieAsset(self, **kwargs):
         from altaircms.asset.models import MovieAsset
-        return MovieAsset(**kwargs)
+        return MovieAsset(organization_id=1,**kwargs)
 
     def _makeTag(self, **kwargs):
         from altaircms.tag.models import AssetTag
-        return AssetTag(**kwargs)
+        return AssetTag(organization_id=1,**kwargs)
 
     def _makeOne(self, classifier):
         from altaircms.tag.api import get_tagmanager
@@ -65,6 +65,26 @@ class AnyKindAssetSearchTests(unittest.TestCase):
                           1)
 
         target = self._makeOne("page")
+        self.assertEquals(target.search_by_tag_label(u"foo").count(), 
+                          0)
+
+    def test_any_kind__unmatch_organization(self):
+        """ search_by_tag_label image. flash, movie asset exist in session"""
+        session = self._getSession()
+        flash = self._makeFlashAsset(filepath=u"asset")
+        flash.organization_id = 2
+        flash.tags.append(self._makeTag(label=u"foo", discriminator="flash"))
+        session.add(flash)
+
+        movie = self._makeMovieAsset(filepath=u"asset")
+        movie.organization_id = 2
+        movie.tags.append(self._makeTag(label=u"foo", discriminator="movie"))
+        session.add(movie)
+
+        target = self._makeOne("movie_asset")
+        self.assertEquals(target.search_by_tag_label(u"foo").count(), 
+                          0)
+        target = self._makeOne("flash_asset")
         self.assertEquals(target.search_by_tag_label(u"foo").count(), 
                           0)
 

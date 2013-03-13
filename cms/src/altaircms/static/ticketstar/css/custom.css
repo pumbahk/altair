@@ -520,3 +520,16 @@ salessegment icon
 .icon-salessegment.other{
     background-image: url(../img/search/icon_other.gif);
 }
+
+.describeBox .serial{
+  background-color: #ffcccc;
+  color: #ee4488;
+  display: inline-block;
+  padding: 0px 2px;
+  margin: 1px 1px;
+  font-weight: bold;
+  text-align: center;
+  font-family: "Trebuchet MS";
+}}
+
+

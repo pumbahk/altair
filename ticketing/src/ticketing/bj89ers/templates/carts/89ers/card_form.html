@@ -10,6 +10,10 @@
 
   <h1 class="title">仙台89ERS 2012-2013 ブースタークラブ入会申込ページ</h1>
   <div align="center">
+    <div class="header">
+      <img src="${request.static_url('ticketing.bj89ers:static/images/head_title.png')}" alt="仙台89ers" width="780" height="135" />
+    </div>
+    <!-- これはdisplay none指定, なぜか... -->
 
     <form id="form1" name="form1" method="post" action="${request.url}">
     ${form.csrf_token()}

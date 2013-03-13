@@ -181,7 +181,7 @@
               "label": "男子テニス"
             }, 
             {
-              "name": "wemenstennis", 
+              "name": "womenstennis", 
               "label": "女子テニス"
             }, 
             {
@@ -227,6 +227,42 @@
         {
           "name": "s_other", 
           "label": "その他スポーツ"
+        }, 
+        {
+          "children": [
+            {
+              "name": "bj-league", 
+              "label": "bjリーグ"
+            }, 
+            {
+              "name": "JBL", 
+              "label": "JBL"
+            }, 
+            {
+              "name": "backetball-other", 
+              "label": "バスケットボールその他"
+            }
+          ], 
+          "name": "basketball", 
+          "label": "バスケットボール"
+        }, 
+        {
+          "children": [
+            {
+              "name": "mensvolleyball", 
+              "label": "Vリーグ（男子）"
+            }, 
+            {
+              "name": "womensvolleyball", 
+              "label": "Vリーグ（女子）"
+            }, 
+            {
+              "name": "volleyball-other", 
+              "label": "バレーボールその他"
+            }
+          ], 
+          "name": "volleyball", 
+          "label": "バレーボール"
         }
       ], 
       "name": "sports", 

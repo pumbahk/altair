@@ -26,6 +26,9 @@ def get_link_from_category(request, category):
     else:
         return publish_page_from_pageset(request, category.pageset)
 
+def get_link_from_genre(request, genre):
+    return publish_page_from_pageset(request, genre.category_top_pageset)
+
 def get_link_from_topic_in_cms(request, topic):
     if topic.link:
         return topic.link

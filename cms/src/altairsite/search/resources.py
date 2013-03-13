@@ -7,7 +7,7 @@ logger = logging.getLogger(__file__)
 
 import altaircms.helpers as h
 from . import forms
-
+from ..pyramidlayout import get_salessegment_kinds
 class SearchResult(dict):
     pass
 
@@ -65,7 +65,7 @@ class SearchPageResource(object):
         return [SearchResultRender(pageset, today, self.request) for pageset in query]
 
     def get_query_params_as_html(self, query_params):
-        return QueryParamsRender(query_params)
+        return QueryParamsRender(self.request, query_params)
 
     def get_result_sequence_from_query_params(self, query_params, searchfn=_get_mocked_pageset_query):
         logger.debug(query_params)
@@ -79,7 +79,8 @@ class SearchPageResource(object):
 class QueryParamsRender(object):
     """ 渡された検索式をhtmlとしてレンダリング
     """
-    def __init__(self, query_params):
+    def __init__(self, request, query_params):
+        self.request = request
         self.query_params = query_params
 
     def _listing_from_tree(self, marked_tree):
@@ -106,7 +107,8 @@ class QueryParamsRender(object):
 
     def describe_deal_cond(self, deal_cond_list):
         """最速抽選 or 先行抽選 or 一般発売"""
-        convertor = forms.DealCondPartForm.DDICT
+        kinds = get_salessegment_kinds(self.request)
+        convertor = {unicode(k.id): k.label for k in kinds}
         if len(deal_cond_list) <= 1:
             return convertor[deal_cond_list[0]]
         else:
