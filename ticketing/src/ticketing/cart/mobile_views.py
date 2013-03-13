@@ -22,17 +22,20 @@ from . import schemas
 from .api import get_seat_type_triplets
 from .view_support import IndexViewMixin
 from .exceptions import (
-    CartException, 
-    NoCartError, 
+    #CartException, 
+    #NoCartError, 
     NoEventError,
-    NoPerformanceError,
-    NoSalesSegment,
+    #NoPerformanceError,
+    #NoSalesSegment,
     InvalidCSRFTokenException, 
+    InvalidSeatSelectionException,
     OverQuantityLimitError, 
     ZeroQuantityError, 
     CartCreationExceptoion,
-    OutTermSalesException,
-    DeliveryFailedException,
+    #OutTermSalesException,
+    #DeliveryFailedException,
+    NotEnoughAdjacencyException,
+    NotEnoughStockException,
 )
 
 logger = logging.getLogger(__name__)
