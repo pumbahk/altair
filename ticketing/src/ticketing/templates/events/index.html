@@ -57,4 +57,19 @@
   </div>
   % endfor
   ${pager(events)}
+  <script type="text/javascript">
+    var is_sending = {};
+    $("#send_event").click(function(e){
+      var $e = $(e.currentTarget);
+      if(is_sending[$e.attr("href")]){ 
+        return false;
+      }
+      is_sending[$e.attr("href")] = true;
+      $('#modal-send_event').modal('hide');
+      setTimeout(function(){
+        is_sending[$e.attr("href")] = false;
+      }, 20000);
+      return true
+    })
+  </script>
 </div>
