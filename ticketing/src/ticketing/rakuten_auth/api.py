@@ -14,7 +14,7 @@ from datetime import datetime
 from pyramid import security
 from ticketing.cart import logger
 
-from .interfaces import IRakutenOpenID
+from .interfaces import IRakutenOpenID, ITokenizer
 from zope.interface import implementer
 import random
 from .. import helpers as cart_helpers
@@ -321,3 +321,9 @@ def openid_params(request):
                 # ax_type_nickname = request_get['openid.ax.type.nickname'],
                 # ax_value_nickname = request_get['openid.ax.value.nickname'],
                 )
+
+
+def tokenize(request, nonce, short_clamed_id):
+    reg = request.registry
+    tokenizer = reg.queryUtility(ITokenizer)
+    return tokenizer.tokenize(nonce, short_clamed_id)
