@@ -8,22 +8,23 @@ def searchEvents(request, word):
     log_info("searchEvents", "start")
     searcher = solrapi.get_fulltext_search(request)
     response = searcher.solr.select(word)
-    events = getResultEvets(request, response)
+    events = getResultEvents(request, response)
     log_info("searchEvents", "end")
     return events
 
-def getResultEvets(request, response):
-    log_info("getResultEvets", "start")
+def getResultEvents(request, response):
+    log_info("getResultEvents", "start")
     ids = [res['id'] for res in response]
     events = []
+    log_info("getResultEvents", "freeword result id = " + str(ids))
     for page_id in ids:
-        print page_id
         page = request.allowable(Page).filter(Page.id == page_id).first()
         if page:
             event = request.allowable(Event).filter(Event.id == page.event_id).first()
             if event:
                 if not event in events:
+                    log_info("getResultEvents", "event exist %d", event.id)
                     events.append(event)
-    log_info("getResultEvets", "end")
+    log_info("getResultEvents", "end")
     return events
 
