@@ -2,6 +2,7 @@ from pyramid.view import view_config, view_defaults
 from altaircms.auth.api import require_login
 from .helpers import _items_from_page
 import logging
+logger = logging.getLogger(__name__)
 from altaircms.page.models import Page
 
 @view_defaults(custom_predicates=(require_login,))
@@ -12,20 +13,25 @@ class SummaryWidgetView(object):
     def _create_or_update(self):
         """ argument data = [items, use_notify]
         """
-        page_id = self.request.json_body["page_id"]
-        items = self.request.json_body["data"]["items"]
-        if self.request.json_body["data"].get("use_notify"):
-            bound_event_id = self.request.allowable(Page).filter_by(id=page_id).with_entities("event_id").scalar()
-        else:
-            bound_event_id = None
-        context = self.request.context
-        widget = context.get_widget(self.request.json_body.get("pk"))
-        widget = context.update_data(widget, page_id=page_id, items=items, bound_event_id=bound_event_id)
-        context.add(widget, flush=True)
+        try:
+            page_id = self.request.json_body["page_id"]
+            items = self.request.json_body["data"]["items"]
+            if self.request.json_body["data"].get("use_notify"):
+                bound_event_id = self.request.allowable(Page).filter_by(id=page_id).with_entities("event_id").scalar()
+            else:
+                bound_event_id = None
+            context = self.request.context
+            widget = context.get_widget(self.request.json_body.get("pk"))
+            show_label = bool(self.request.json_body["data"].get("show_label"))
+            widget = context.update_data(widget, page_id=page_id, items=items, bound_event_id=bound_event_id, show_label=show_label)
+            context.add(widget, flush=True)
 
-        r = self.request.json_body.copy()
-        r.update(pk=widget.id)
-        return r
+            r = self.request.json_body.copy()
+            r.update(pk=widget.id)
+            return r
+        except Exception, e:
+            logger.exception(str(e))
+            return {}
 
     @view_config(route_name="summary_widget_create", renderer="json", request_method="POST")
     def create(self):
@@ -44,14 +50,18 @@ class SummaryWidgetView(object):
 
     @view_config(route_name="summary_widget_dialog", renderer="altaircms.plugins.widget:summary/dialog.html", request_method="GET")
     def dialog(self):
-        context = self.request.context
-        widget = context.get_widget(self.request.GET.get("pk"))
-        items = widget.items or "[]"
-        return {"widget": widget, "items": items}
+        try:
+            context = self.request.context
+            widget = context.get_widget(self.request.GET.get("pk"))
+            items = widget.items or "[]"
+            return {"widget": widget, "items": items}
+        except Exception, e:
+            logger.exception(str(e))
+            return {}
 
 
 @view_config(route_name="api_summary_widget_data_from_db", renderer="json", request_method="GET")
 def api_summary_widget_initial_data(context, request):
     page_id = request.GET["page"]
-    logging.debug("*api* summary widget items get from db (page_id=%s)" % page_id)
+    logger.debug("*api* summary widget items get from db (page_id=%s)" % page_id)
     return _items_from_page(context._get_page(page_id))

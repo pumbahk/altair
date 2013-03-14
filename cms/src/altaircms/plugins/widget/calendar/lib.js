@@ -84,8 +84,10 @@ widget.configure({
     };
 
     var collect_data = function(we, choiced_elt){
-        return {calendar_type: $("#calendar_type").val(), 
-                salessegment_id: $("#sale_choice").val()
+        var root = $(we.dialog);
+        return {calendar_type: root.find("#calendar_type").val(), 
+                salessegment_id: root.find("#sale_choice").val(), 
+                show_label: root.find("#show_label:checked").val() && "1"
 //                from_date: $("#from_date").val(), 
                 //to_date: $("#to_date").val()
                };

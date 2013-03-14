@@ -19,7 +19,8 @@
   </div>
   <hr/>
   <div class="content" class="float">
-	  <p>購入ページのイベント詳細として利用する<input id="use_notify" type="checkbox"/ ${"checked" if widget.bound_event_id else ""|n}></p>
+	  <p>購入ページのイベント詳細として利用する?<input id="use_notify" type="checkbox" ${"checked" if widget.bound_event_id else ""|n}></input>
+	   見出しを表示する?<input id="show_label" type="checkbox" ${"checked" if widget.show_label else ""|n}></input></p>
     <div id="create-content">
       <table class="table table-describe" width="100%">
         <tr>
