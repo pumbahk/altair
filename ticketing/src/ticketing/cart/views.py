@@ -115,16 +115,7 @@ class IndexView(IndexViewMixin):
     @view_config(decorator=with_jquery_tools, route_name='cart.index', renderer=selectable_renderer("carts/%(membership)s/index.html"), xhr=False, permission="buy")
     def __call__(self):
         self.check_redirect(mobile=False)
-        event = self.request.context.event
-        sales_segments = api.get_available_sales_segments(self.request, self.context.event, datetime.now())
-        if not sales_segments:
-            # 次の販売区分があるなら
-            next = self.context.get_next_sales_segment()
-            if next:
-                raise OutTermSalesException(event, next)
-            else:
-                raise HTTPNotFound()
-
+        sales_segments = self.context.available_sales_segments
         performances = [ss.performance for ss in sales_segments]
 
         select_venues = OrderedDict()
@@ -143,7 +134,7 @@ class IndexView(IndexViewMixin):
                 seat_types_url=self.request.route_url('cart.seat_types',
                     performance_id=performance.id,
                     sales_segment_id=sales_segment.id,
-                    event_id=event.id)))
+                    event_id=self.context.event.id)))
             
         logger.debug("venues %s" % select_venues)
 
@@ -197,9 +188,10 @@ class IndexView(IndexViewMixin):
         event_id = self.request.matchdict['event_id']
         performance_id = self.request.matchdict['performance_id']
         sales_segment_id = self.request.matchdict['sales_segment_id']
+        #performance = c_models.Performance.query.filter_by(id=performance_id).one()
+        performance = self.request.context.performance
 
         seat_type_triplets = get_seat_type_triplets(event_id, performance_id, sales_segment_id)
-        performance = c_models.Performance.query.filter_by(id=performance_id).one()
         data = dict(
             seat_types=[
                 dict(
@@ -276,8 +268,7 @@ class IndexView(IndexViewMixin):
         query = query.filter(c_models.Product.public==True)
         query = query.filter(c_models.Product.id.in_(q)).order_by(sa.desc("display_order, price"))
         ### filter by salessegment
-        salessegment = self.context.get_sales_segument()
-        query = h.products_filter_by_salessegment(query, salessegment)
+        query = h.products_filter_by_salessegment(query, self.context.sales_segment)
 
         products = [
             dict(
@@ -489,15 +480,13 @@ class ReserveView(object):
         logger.debug('sum_quantity=%s' % sum_quantity)
 
         self.context.event_id = performance.event_id
-        #sales_segment = self.context.get_sales_segument()
-        sales_segment = c_models.SalesSegment.query.filter(c_models.SalesSegment.id==self.request.matchdict['sales_segment_id']).one()
-        if sales_segment.upper_limit < sum_quantity:
+        if self.context.sales_segment.upper_limit < sum_quantity:
             logger.debug('upper_limit over')
             return dict(result='NG', reason="upper_limit")
 
         try:
             cart = api.order_products(self.request, self.request.params['performance_id'], order_items, selected_seats=selected_seats)
-            cart.sales_segment = sales_segment
+            cart.sales_segment = self.context.sales_segment
             if cart is None:
                 transaction.abort()
                 return dict(result='NG')
@@ -523,7 +512,7 @@ class ReserveView(object):
         DBSession.flush()
         api.set_cart(self.request, cart)
         return dict(result='OK', 
-                    payment_url=self.request.route_url("cart.payment", sales_segment_id=sales_segment.id),
+                    payment_url=self.request.route_url("cart.payment", sales_segment_id=self.context.sales_segment.id),
                     cart=dict(products=[dict(name=p.product.name, 
                                              quantity=p.quantity,
                                              price=int(p.product.price),
@@ -555,8 +544,11 @@ class PaymentView(object):
     def __init__(self, request):
         self.request = request
         self.context = request.context
+
     @property
     def sales_segment(self):
+        # contextから取れることを期待できないので
+        # XXX: 会員区分からバリデーションしなくていいの?
         return c_models.SalesSegment.query.filter(c_models.SalesSegment.id==self.request.matchdict['sales_segment_id']).one()
 
     @view_config(route_name='cart.payment', request_method="GET", renderer=selectable_renderer("carts/%(membership)s/payment.html"))
@@ -827,15 +819,25 @@ class OutTermSalesView(object):
     @view_config(context='.exceptions.OutTermSalesException', renderer=selectable_renderer('ticketing.cart:templates/carts/%(membership)s/out_term_sales.html'))
     def pc(self):
         api.logout(self.request)
-        return dict(event=self.context.event, 
-                    sales_segment=self.context.sales_segment)
+        if self.context.next is None:
+            datum = self.context.last
+            which = 'last'
+        else:
+            datum = self.context.next
+            which = 'next'
+        return dict(which=which, **datum)
 
     @view_config(context='.exceptions.OutTermSalesException', renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/out_term_sales.html'), 
         request_type='ticketing.mobile.interfaces.IMobileRequest')
     def mobile(self):
         api.logout(self.request)
-        return dict(event=self.context.event, 
-                    sales_segment=self.context.sales_segment)
+        if self.context.next is None:
+            datum = self.context.last
+            which = 'last'
+        else:
+            datum = self.context.next
+            which = 'next'
+        return dict(which=which, **datum)
 
 @view_config(decorator=with_jquery.not_when(mobile_request), route_name='cart.logout')
 def logout(request):

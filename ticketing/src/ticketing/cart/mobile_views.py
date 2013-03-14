@@ -5,7 +5,6 @@
 import logging
 import re
 import transaction
-from datetime import datetime
 
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
@@ -16,6 +15,8 @@ from ticketing.core import models as c_models
 from ticketing.mobile.interfaces import IMobileRequest
 from ticketing.cart.selectable_renderer import selectable_renderer
 from ticketing.models import DBSession
+from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
+from .stocker import NotEnoughStockException
 
 from . import api
 from . import helpers as h
@@ -23,17 +24,17 @@ from . import schemas
 from .api import get_seat_type_triplets
 from .view_support import IndexViewMixin
 from .exceptions import (
-    CartException, 
-    NoCartError, 
+    #CartException, 
+    #NoCartError, 
     NoEventError,
-    NoPerformanceError,
-    NoSalesSegment,
+    #NoPerformanceError,
+    #NoSalesSegment,
     InvalidCSRFTokenException, 
     OverQuantityLimitError, 
     ZeroQuantityError, 
     CartCreationExceptoion,
-    OutTermSalesException,
-    DeliveryFailedException,
+    #OutTermSalesException,
+    #DeliveryFailedException,
 )
 
 logger = logging.getLogger(__name__)
@@ -53,7 +54,7 @@ class MobileIndexView(IndexViewMixin):
         logger.debug('mobile index')
         self.check_redirect(mobile=True)
         venue_name = self.request.params.get('v')
-        sales_segments = api.get_available_sales_segments(self.request, self.context.event, datetime.now())
+        sales_segments = self.context.available_sales_segments
         # パフォーマンスIDが確定しているなら商品選択へリダイレクト
         performance_id = self.request.params.get('pid') or self.request.params.get('performance')
         if performance_id:

@@ -165,6 +165,21 @@ $(function(){
       <div style="margin-top: 20px;">
         <%include file="/performances/_list.html" args="form=form_performance, performances=event.performances, limit=10" />
         <%include file="/performances/_action_button.html"  args="event=event" />
+        <script type="text/javascript">
+          var is_sending = {};
+          $("#send_event").click(function(e){
+            var $e = $(e.currentTarget);
+            if(is_sending[$e.attr("href")]){ 
+              return false;
+            }
+            is_sending[$e.attr("href")] = true;
+            $('#modal-send_event').modal('hide');
+            setTimeout(function(){
+              is_sending[$e.attr("href")] = false;
+            }, 20000);
+            return true
+          })
+        </script>
       </div>
     </div>
 

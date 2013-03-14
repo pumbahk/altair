@@ -7,7 +7,7 @@ import json
 from sqlalchemy import Table, Column, ForeignKey, ForeignKeyConstraint, Index, func
 from sqlalchemy.types import TypeEngine, TypeDecorator, VARCHAR, BigInteger, Integer, String, TIMESTAMP
 from sqlalchemy.orm import column_property, scoped_session, deferred, relationship as _relationship
-from sqlalchemy.orm.attributes import manager_of_class
+from sqlalchemy.orm.attributes import manager_of_class, QueryableAttribute
 from sqlalchemy.orm.properties import ColumnProperty, RelationshipProperty
 from sqlalchemy.ext.mutable import Mutable
 from sqlalchemy.ext.declarative import declared_attr
@@ -328,3 +328,9 @@ relationship = _relationship
 
 class DomainConstraintError(Exception):
     pass
+
+def is_any_of(item, collection):
+    if isinstance(item, QueryableAttribute):
+        return item.in_(collection)
+    else:
+        return item in collection

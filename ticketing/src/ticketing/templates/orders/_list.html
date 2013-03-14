@@ -42,6 +42,8 @@
         <th>イベント</th>
         <th style="width: 70px;">開演日時</th>
         % endif
+        <th style="width: 70px;">カードブランド</th>
+        <th style="width: 70px;">仕向け先</th>
       </tr>
       </thead>
       <tbody>
@@ -67,6 +69,9 @@
         <td><a href="${request.route_path('events.show', event_id=performance.event.id)}">${performance.event.title}</a></td>
         <td><a href="${request.route_path('performances.show', performance_id=performance.id)}/reservation">${performance.start_on or ''}</a></td>
         % endif
+	<td>${order.card_brand if order.card_brand else ''}</td>
+	<td>${order.card_ahead_com_code if order.card_ahead_com_code else ''}<br/>
+	  ${order.card_ahead_com_name if order.card_ahead_com_name else ''}</td>
       </tr>
   % else:
       </tbody>

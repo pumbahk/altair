@@ -13,6 +13,7 @@ from wtforms.validators import Regexp, Length
 
 from ticketing.multicheckout import helpers as m_h
 from ticketing.multicheckout import api as multicheckout_api
+from ticketing.multicheckout import detect_card_brand, get_card_ahead_com_name
 from ticketing.core import models as c_models
 from ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment
 from ticketing.cart.interfaces import ICartPayment
@@ -140,7 +141,8 @@ class MultiCheckoutPlugin(object):
             mvn=tran['mvn'], xid=tran['xid'], ts=tran['ts'],
             eci=tran['eci'], cavv=tran['cavv'], cavv_algorithm=tran['cavv_algorithm'],
         )
-
+        card_brand = detect_card_brand(request, order['card_number'])
+        
         if checkout_sales_result.CmnErrorCd != '000000':
             logger.info(u'finish_secure_3d: 決済エラー order_no = %s, error_code = %s' % (order_no, checkout_sales_result.CmnErrorCd))
             multicheckout_api.checkout_auth_cancel(request, get_order_no(request, cart))
@@ -152,10 +154,13 @@ class MultiCheckoutPlugin(object):
                 back_url=back_url(request),
                 error_code=checkout_sales_result.CmnErrorCd
                 )
-
+        ahead_com_code = checkout_sales_result.AheadComCd
         #DBSession.add(checkout_sales_result)
 
         order = c_models.Order.create_from_cart(cart)
+        order.card_brand = card_brand
+        order.card_ahead_com_code = ahead_com_code
+        order.card_ahead_com_name = get_card_ahead_com_name(request, ahead_com_code)
         order.multicheckout_approval_no = checkout_sales_result.ApprovalNo
         order.paid_at = datetime.now()
         cart.finish()
@@ -174,6 +179,7 @@ class MultiCheckoutPlugin(object):
             order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
             order['secure_code'],
         )
+        card_brand = detect_card_brand(request, order['card_number'])
 
         if checkout_sales_result.CmnErrorCd != '000000':
             logger.info(u'finish_secure_code: 決済エラー order_no = %s, error_code = %s' % (order_no, checkout_sales_result.CmnErrorCd))
@@ -187,9 +193,13 @@ class MultiCheckoutPlugin(object):
                 error_code=checkout_sales_result.CmnErrorCd
                 )
 
-        DBSession.add(checkout_sales_result)
+        #DBSession.add(checkout_sales_result)
+        ahead_com_code = checkout_sales_result.AheadComCd
 
         order = c_models.Order.create_from_cart(cart)
+        order.card_brand = card_brand
+        order.card_ahead_com_code = ahead_com_code
+        order.card_ahead_com_name = get_card_ahead_com_name(request, ahead_com_code)
         order.multicheckout_approval_no = checkout_sales_result.ApprovalNo
         order.paid_at = datetime.now()
         cart.finish()
@@ -241,14 +251,14 @@ class MultiCheckoutView(object):
     def __init__(self, request):
         self.request = request
 
-    @view_config(route_name='payment.secure3d', request_method="GET", renderer=selectable_renderer('ticketing.cart:templates/carts/%(membership)s/card_form.html'))
+    @view_config(route_name='payment.secure3d', request_method="GET", renderer=selectable_renderer('carts/%(membership)s/card_form.html'))
     @view_config(route_name='payment.secure3d', request_type='ticketing.mobile.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer('carts_mobile/%(membership)s/card_form.html'))
     def card_info_secure3d_form(self):
         """ カード情報入力"""
         form = CardForm(formdata=self.request.params, csrf_context=self.request.session)
         return dict(form=form)
 
-    @view_config(route_name='payment.secure_code', request_method="POST", renderer=selectable_renderer('ticketing.cart:templates/carts/%(membership)s/card_form.html'))
+    @view_config(route_name='payment.secure_code', request_method="POST", renderer=selectable_renderer('carts/%(membership)s/card_form.html'))
     @view_config(route_name='payment.secure_code', request_type='ticketing.mobile.interfaces.IMobileRequest', request_method="POST", renderer=selectable_renderer('carts_mobile/%(membership)s/card_form.html'))
     def card_info_secure_code(self):
         """ カード決済処理(セキュアコード)"""
@@ -265,8 +275,8 @@ class MultiCheckoutView(object):
         self.request.session['secure_type'] = 'secure_code'
         return self._secure_code(order['order_no'], order['card_number'], order['exp_year'], order['exp_month'], order['secure_code'])
 
-    @view_config(route_name='payment.secure3d', request_method="POST", renderer=selectable_renderer('ticketing.cart:templates/carts/%(membership)s/card_form.html'))
-    @view_config(route_name='payment.secure3d', request_type='ticketing.mobile.interfaces.IMobileRequest', request_method="POST", renderer=selectable_renderer('ticketing.carts:templates/carts_mobile/%(membership)s/card_form.html'))
+    @view_config(route_name='payment.secure3d', request_method="POST", renderer=selectable_renderer('carts/%(membership)s/card_form.html'))
+    @view_config(route_name='payment.secure3d', request_type='ticketing.mobile.interfaces.IMobileRequest', request_method="POST", renderer=selectable_renderer('carts_mobile/%(membership)s/card_form.html'))
     def card_info_secure3d(self):
         """ カード決済処理(3Dセキュア)
         """
@@ -364,7 +374,7 @@ class MultiCheckoutView(object):
         form = CardForm(csrf_context=self.request.session)
         return dict(form=form)
 
-    @view_config(route_name='cart.secure3d_result', request_method="POST", renderer=selectable_renderer("ticketing.cart:templates/carts/%(membership)s/confirm.html"))
+    @view_config(route_name='cart.secure3d_result', request_method="POST", renderer=selectable_renderer("carts/%(membership)s/confirm.html"))
     def card_info_secure3d_callback(self):
         """ カード情報入力(3Dセキュア)コールバック
         3Dセキュア認証結果取得

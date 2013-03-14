@@ -22,7 +22,7 @@ class PerformanceForm(Form):
             ]
             if 'venue_id' in kwargs:
                 venue = Venue.get(kwargs['venue_id'])
-                self.venue_id.choices.insert(0, (venue.id, venue.name))
+                self.venue_id.choices.insert(0, (venue.id, u'%s (現在選択されている会場)' % venue.name))
 
     def _get_translations(self):
         return Translations()
@@ -35,7 +35,7 @@ class PerformanceForm(Form):
         label=u'公演名',
         validators=[
             Required(),
-            JISX0208(), 
+            JISX0208, 
             Length(max=255, message=u'255文字以内で入力してください'),
         ],
     )
