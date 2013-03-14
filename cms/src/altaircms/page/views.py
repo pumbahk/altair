@@ -331,7 +331,7 @@ class ListView(object):
         pagetype = get_or_404(self.request.allowable(PageType), (PageType.name==self.request.matchdict["pagetype"]))
         qs = self.request.allowable(PageSet).filter(PageSet.pagetype_id==pagetype.id, 
                                                     PageSet.event_id!=None)
-        params = self.request.GET
+        params = dict(self.request.GET)
         if "page" in params:
             params.pop("page") ## pagination
         if params:
@@ -350,7 +350,7 @@ class ListView(object):
         """event詳細ページとは結びついていないページ(e.g. トップ、カテゴリトップ) """
         pagetype = get_or_404(self.request.allowable(PageType), (PageType.name==self.request.matchdict["pagetype"]))
         qs = self.request.allowable(PageSet).filter(PageSet.pagetype_id==pagetype.id)
-        params = self.request.GET
+        params = dict(self.request.GET)
         if "page" in params:
             params.pop("page") ## pagination
         if params:
