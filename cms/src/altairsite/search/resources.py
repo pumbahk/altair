@@ -192,7 +192,7 @@ class SearchResultRender(object):
 
         
     def category_icons(self): ## fixme: too access DB.
-        v = Nullable(self.pageset).parent.category.origin.value
+        v = Nullable(self.pageset).genre.origin.value
         if v is None:
             return u'<div class="icon-category icon-category-other"></div>'
         else:

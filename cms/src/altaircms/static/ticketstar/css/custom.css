@@ -452,6 +452,9 @@
 .icon-category-other {
 	background-image: url(/static/ticketstar/img/search/icon_event.gif);    
 }
+.icon-category-event {
+	background-image: url(/static/ticketstar/img/search/icon_event.gif);    
+}
 
 /*
   purchase button 

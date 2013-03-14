@@ -198,7 +198,7 @@ class Genre(Base,  WithOrganizationMixin):
     display_order = sa.Column(sa.Integer, default=50)
     label = sa.Column(sa.Unicode(length=255))
     name = sa.Column(sa.String(length=255))
-
+    origin = sa.Column(sa.String(length=32), doc="music, sports, event, stage")
     category_top_pageset_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id", use_alter=True, name="fk_default_category_top_pageset"), doc=u"カテゴリトップページのid")
     category_top_pageset = orm.relationship("PageSet", uselist=False, primaryjoin="PageSet.id==Genre.category_top_pageset_id")
 
