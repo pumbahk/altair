@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from pyramid.view import view_config
-from altaircms.topic.models import TopicTag, PromotionTag
+from altaircms.topic.models import TopicTag
 from datetime import datetime
 from altaircms.topic.api import get_topic_searcher
 from cmsmobile.event.genre.forms import GenreForm
@@ -28,15 +28,18 @@ def move_genre(request):
     form.page_num.data = "0"
 
     # genre
-    system_tag = request.allowable(Genre).filter(Genre.id==form.genre.data).first()
+    topic_searcher = get_topic_searcher(request, "topic")
+    genre_tag = request.allowable(Genre).filter(Genre.id==form.genre.data).first()
     if exist_value(form.sub_genre.data):
-        system_tag = request.allowable(Genre).filter(Genre.id==form.sub_genre.data).first()
+        genre_tag = request.allowable(Genre).filter(Genre.id==form.sub_genre.data).first()
         form.dispsubgenre.data = request.allowable(Genre).filter(Genre.id==form.sub_genre.data).first()
         log_info("move_genre", "genre get")
 
-    if not system_tag:
+    if not genre_tag:
         log_info("move_genre", "genre not found")
         raise ValidationFailure
+
+    system_tag = topic_searcher.get_tag_from_genre_label(genre_tag.label)
 
     # genretree
     genre_searcher = GenreSearcher(request)
@@ -45,22 +48,15 @@ def move_genre(request):
     log_info("move_genre", "genretree create")
 
     # attention
-    topic_searcher = get_topic_searcher(request, "topic")
     tag = TopicTag.query.filter_by(label=u"注目のイベント").first()
-    if tag is not None:
+    if tag:
         form.attentions.data = topic_searcher.query_publishing_topics(datetime.now(), tag, system_tag)
+        print form.attentions.data
         log_info("move_genre", "attention get")
-
-    # pickup
-    promo_searcher = get_topic_searcher(request, "promotion")
-    tag = PromotionTag.query.filter_by().first()
-    if tag is not None:
-        form.promotions.data = promo_searcher.query_publishing_topics(datetime.now(), tag, system_tag)
-        log_info("move_genre", "pickup get")
 
     # Topic(Tag='トピック', system_tag='ジャンル')
     tag = TopicTag.query.filter_by(label=u"トピック").first()
-    if tag is not None:
+    if tag:
         form.topics.data = topic_searcher.query_publishing_topics(datetime.now(), tag, system_tag)
         log_info("move_genre", "topics get")
 
