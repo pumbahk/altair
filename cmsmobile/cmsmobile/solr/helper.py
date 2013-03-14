@@ -17,11 +17,10 @@ def getResultEvets(request, response):
     ids = [res['id'] for res in response]
     events = []
     for page_id in ids:
-        page = Page.query.filter(Page.id == page_id) \
-            .filter(Page.organization_id == request.organization.id).first()
+        print page_id
+        page = request.allowable(Page).filter(Page.id == page_id).first()
         if page:
-            event = Event.query.filter(Event.id == page.event_id) \
-                .filter(Event.organization_id == request.organization.id).first()
+            event = request.allowable(Event).filter(Event.id == page.event_id).first()
             if event:
                 if not event in events:
                     events.append(event)
