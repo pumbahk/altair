@@ -73,7 +73,7 @@ def get_performances_month_unit(event):
     keys = []
     month_unit = {} # performances
     for perf in event.performances:
-        key =  str(perf.start_on.year) + "/" + str(perf.start_on.month)
+        key =  str(perf.start_on.year) + "/" + str(perf.start_on.month).zfill(2)
 
         # 新規の月
         if not key in keys:
