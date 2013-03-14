@@ -47,9 +47,10 @@ class TicketingCartResource(object):
         self._event_id = None
         self._event = None
         if request.matchdict:
-            self.event_id = self.request.matchdict.get('event_id')
-        else:
-            self.event_id = None
+            try:
+                self._event_id = int(self.request.matchdict.get('event_id'))
+            except (ValueError, TypeError):
+                pass
 
     def _get_event_id(self):
         return self._event_id
@@ -150,6 +151,8 @@ class TicketingCartResource(object):
     @reify
     def sales_segments(self):
         """現在認証済みのユーザとイベントに関連する全販売区分"""
+        if self.event is None:
+            raise HTTPNotFound()
         return self.event.query_sales_segments(
             user=self.authenticated_user(),
             type='all').all()
