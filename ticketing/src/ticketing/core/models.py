@@ -917,14 +917,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     organization_id=self.organization.id,
                 )
                 account.save()
-
-            stock_holder = StockHolder(
-                name=u'自社',
-                event_id=self.id,
-                account_id=account.id,
-                style={"text": u"自", "text_color": "#a62020"},
-            )
-            stock_holder.save()
+            StockHolder.create_default(event_id=self.id, account_id=account.id)
 
     def delete(self):
         # 既に販売されている場合は削除できない
@@ -1486,6 +1479,17 @@ class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             user_id = event.organization.user_id
         query = query.filter(Account.user_id==user_id)
         return query.order_by('StockHolder.id').all()
+
+    @staticmethod
+    def create_default(event_id, account_id):
+        defaults = [
+            dict(name=u'自社', style={"text": u"自", "text_color": "#a62020"}),
+            dict(name=u'追券枠', style={"text": u"追", "text_color": "#a62020"}),
+            dict(name=u'返券枠', style={"text": u"返", "text_color": "#a62020"}),
+        ]
+        for sh in defaults:
+            stock_holder = StockHolder(name=sh['name'], event_id=event_id, account_id=account_id, style=sh['style'])
+            stock_holder.save()
 
     @staticmethod
     def create_from_template(template, **kwargs):
