@@ -38,26 +38,26 @@
     width: 167px;
     height: 60px;
 }
-#stage img#titleImage{
-    width: 60px;
-    height: 60px;
-}
 #search img#titleImage{
     width: 118px;
     height: 60px;
 }
-#music img#titleImage{
-    width: 59px;
-    height: 60px;
-}
-#event img#titleImage{
-    width: 198px;
-    height: 60px;
-}
-#change img#titleImage{
-    width: 287px;
-    height: 60px;
-}
+/* #stage img#titleImage{
+ *     width: 60px;
+ *     height: 60px;
+ * }
+ * #music img#titleImage{
+ *     width: 59px;
+ *     height: 60px;
+ * }
+ * #event img#titleImage{
+ *     width: 198px;
+ *     height: 60px;
+ * }
+ * #change img#titleImage{
+ *     width: 287px;
+ *     height: 60px;
+ * } */
 
 /* .category.index {
  *     background-repeat: no-repeat;
