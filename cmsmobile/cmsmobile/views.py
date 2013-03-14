@@ -23,7 +23,7 @@ def main(request):
         log_info("main", "attensions get")
 
     promo_searcher = get_topic_searcher(request, "promotion")
-    tag = PromotionTag.query.filter_by().first()
+    tag = PromotionTag.query.filter_by(label=u"プロモーション").first()
     if tag:
         form.promotions.data = promo_searcher.query_publishing_topics(datetime.now(), tag)[0:5]
         log_info("main", "promotions get")

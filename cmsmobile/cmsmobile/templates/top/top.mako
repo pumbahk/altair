@@ -10,7 +10,11 @@
             <span style="font-size: x-small">
                 % if form.promotions.data:
                     % for promo in form.promotions.data:
-                        <a href="${promo.link}">${promo.text}</a>
+                        % if promo.link:
+                            <a href="${promo.link}">${promo.text}</a>
+                        % else:
+                            ${promo.text}
+                        % endif
                     % endfor
                 % endif
             </span>
