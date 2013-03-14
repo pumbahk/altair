@@ -160,7 +160,7 @@ class TicketForm(Form):
                                               label=u"販売区分", 
                                               dynamic_query=lambda model, request, query: query.filter_by(id=request.params["salessegment_id"]).options(orm.joinedload(SalesSegment.group)), 
                                               get_label=lambda obj: obj.group.name if obj.group else u"---")
-    name = fields.TextField(validators=[required_field()], label=u"券種")
+    name = fields.TextField(validators=[required_field()], label=u"商品名")
     seattype = fields.TextField(validators=[], label=u"席種／グレード")
     price = fields.IntegerField(validators=[required_field()], label=u"料金")
     # display_order = fields.TextField(label=u"表示順序(default:50)")
@@ -168,7 +168,7 @@ class TicketForm(Form):
         if not field.data:
             field.data = "50"
 
-    __display_fields__ = [u"sale",u"name",  u"seattype", u"price"]
+    __display_fields__ = [u"sale", u"seattype", u"name", u"price"]
     # __display_fields__ = [u"sale", u"name", u"seattype", u"price", u"display_order"]
 
 validate_publish_term = TermValidator("publish_open_on", "publish_close_on",  u"公開開始日よりも後に終了日が設定されています")
