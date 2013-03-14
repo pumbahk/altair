@@ -22,7 +22,7 @@ def move_eventdetail(request):
 
         if exist_value(form.promotion_id.data): # ピックアップからの遷移
             log_info("move_eventdetail", "from pickup")
-            form.event.data = _get_event_from_promotion(request, form.promotion_id)
+            form.event.data = _get_event_from_promotion(request, form.promotion_id.data)
         elif exist_value(form.attention_id.data): # 注目のイベントからの遷移
             log_info("move_eventdetail", "from attention")
             form.event.data = _get_event_from_topic(request, form.attention_id.data)
