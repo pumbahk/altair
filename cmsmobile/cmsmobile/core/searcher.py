@@ -73,9 +73,12 @@ class EventSearcher(object):
 
     # 取得イベントのIDリスト作成
     def _create_ids(self, events):
+        log_info("_create_ids", "start")
         ids = []
         for event in events:
             ids.append(event.id)
+        log_info("_create_ids", "%s" % str(ids))
+        log_info("_create_ids", "end")
         return ids
 
     # 地域検索
@@ -86,7 +89,7 @@ class EventSearcher(object):
             prefectures = get_prefecture(form.area.data)
             where = Performance.prefecture.in_(prefectures)
             qs = self._create_common_qs(where=where, qs=qs)
-        log_info("get_events_from_area", "start")
+        log_info("get_events_from_area", "end")
         return qs
 
     # 今週発売検索
