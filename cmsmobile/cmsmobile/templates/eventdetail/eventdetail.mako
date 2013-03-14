@@ -7,6 +7,8 @@
     <a href="/">トップ</a> >> イベント詳細
 </span>
 
+<div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
+
 <div style="font-size: medium">
     ${form.event.data.title}<br/>
 </div>
