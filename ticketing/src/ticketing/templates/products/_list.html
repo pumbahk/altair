@@ -148,7 +148,7 @@ sales_segments = performance.sales_segments
           var stock_type_options = {value:"${';'.join(options)|n}"};
           <% options = ["%s:%s" % (sh.id, sh.name) for sh in stock_holders] %>
           var stock_holder_options = {value:"${';'.join(options)|n}"};
-          <% options = ["%s:%s" % (tb.id, tb.name) for tb in ticket_bundles] %>
+          <% options = [u":(なし)"] + ["%s:%s" % (tb.id, tb.name) for tb in ticket_bundles] %>
           var ticket_bundle_options = {value:"${';'.join(options)|n}"};
 
           <%
