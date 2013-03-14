@@ -29,7 +29,7 @@ def send_inquiry(request):
             mailer = get_mailer(request)
             message = Message(subject=u'楽天チケット[MOB]　お問合せフォーム',
                               sender=request.sender_mailaddress,
-                              recipients=["keiichi_okada@ticketstar.jp"],
+                              recipients=[request.inquiry_mailaddress],
                               body=_create_mail_body(form))
             mailer.send(message)
             log_info("send_inquiry", "send mail end")
