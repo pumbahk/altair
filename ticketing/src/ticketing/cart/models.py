@@ -36,7 +36,6 @@ from ticketing.utils import sensible_alnum_encode, sensible_alnum_decode
 from ticketing.models import Identifier
 from ..core import models as c_models
 from ..core import api as c_api
-from ..models import Identifier
 from . import logger
 from .exceptions import NoCartError, UnassignedOrderNumberError
 

@@ -15,6 +15,8 @@ from ticketing.core import models as c_models
 from ticketing.mobile.interfaces import IMobileRequest
 from ticketing.cart.selectable_renderer import selectable_renderer
 from ticketing.models import DBSession
+from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
+from .stocker import NotEnoughStockException
 
 from . import api
 from . import helpers as h
@@ -28,14 +30,11 @@ from .exceptions import (
     #NoPerformanceError,
     #NoSalesSegment,
     InvalidCSRFTokenException, 
-    InvalidSeatSelectionException,
     OverQuantityLimitError, 
     ZeroQuantityError, 
     CartCreationExceptoion,
     #OutTermSalesException,
     #DeliveryFailedException,
-    NotEnoughAdjacencyException,
-    NotEnoughStockException,
 )
 
 logger = logging.getLogger(__name__)
