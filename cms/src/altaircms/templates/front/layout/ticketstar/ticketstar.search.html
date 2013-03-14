@@ -78,7 +78,7 @@ form = TopPageSidebarSearchForm()
       <link rel="stylesheet" href="/static/ticketstar/css/import.css" type="text/css" media="all" />
       <script type="text/javascript" src="/static/ticketstar/js/jquery.js"></script>
     </head>
-    <body id="change">
+    <body id="search">
       <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="/static/ticketstar/img/common/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
       <div id="container">
 
@@ -146,10 +146,13 @@ form = TopPageSidebarSearchForm()
 
         <!-- ========== /header ========== -->
         
-        <hr />
-	<!-- InstanceBeginEditable name="cat" --><h1><img id="titleImage" src="/static/ticketstar/img/change/title_change.gif" alt="公演の中止・変更情報"/></h1><!-- InstanceEndEditable -->
+	      <!-- InstanceBeginEditable name="cat" --><h1><img id="titleImage" src="/static/ticketstar/img/search/title_search.gif" alt="検索結果"/></h1><!-- InstanceEndEditable -->
 
         <!-- ========== main ========== -->
+<%block name="main_top">
+  ${widgets("main_top")}
+</%block>
+
 <div id="main">
 <%block name="main">
    ${widgets("main")}
@@ -162,6 +165,64 @@ form = TopPageSidebarSearchForm()
         <!-- ========== side ========== -->
         <div id="side">
  	        ${widgets("side")}
+  <div class="sideCategoryGenre">
+    <h2>ジャンル一覧</h2>
+
+	  <ul>
+		  % for g in layout.top_category_genre_list:
+		    <li><a href="${h.link.get_link_from_genre(request, g)}">${g.label}</a></li>
+		  % endfor
+    </ul>
+    </div>
+
+    ## area
+    <%
+       from altaircms.seeds.area import AREA_CHOICES
+       %>
+    <dl id="sideRefineSearch">
+      <dt>エリアを選択</dt>
+      <dd>
+        <ul>
+          % for en,ja in AREA_CHOICES:
+          <li><a href="${h.link.get_searchpage(request, kind="area", value=en)}">${ja}</a></li>
+          % endfor
+        </ul>
+      </dd>
+
+    ## deal_cond
+    <%
+    from altairsite.search.forms import DealCondPartForm
+    %>
+    <dt>販売状態で絞込み</dt>
+    <dd>
+      <ul>
+        % for k in layout.top_salessegment_kind_list:
+        <li><a href="${h.link.get_searchpage(request, kind="deal_cond", value=k.id)}">${k.label}</a></li>
+        % endfor
+      </ul>
+    </dd>
+
+    ## deal_open
+      <dt>発売日・受付日で絞込み</dt>
+      <dd>
+        <ul>
+          <li><a href="${h.link.get_searchpage(request, kind="deal_open", value=7) }">7日以内に受付・発売開始</a></li>
+          <li><a href="${h.link.get_searchpage(request, kind="deal_open", value=14) }">14日以内に受付・発売開始</a></li>
+          <li><a href="${h.link.get_searchpage(request, kind="deal_open", value=30) }">30日以内に受付・発売開始</a></li>
+        </ul>
+      </dd>
+
+    ## event open
+      <dt>公演日で絞込み</dt>
+      <dd>
+        <ul>
+          <li><a href="${h.link.get_searchpage(request, kind="event_open", value=7) }">7日以内に公演</a></li>
+          <li><a href="${h.link.get_searchpage(request, kind="event_open", value=14) }">14日以内に公演</a></li>
+          <li><a href="${h.link.get_searchpage(request, kind="event_open", value=30) }">30日以内に公演</a></li>
+        </ul>
+      </dd>
+    </dl>
+
         </div>
         <!-- ========== /side ========== -->
         
