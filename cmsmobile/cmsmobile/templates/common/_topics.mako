@@ -6,11 +6,7 @@
 <span style="font-size: x-small">
 % if topics:
     % for topic in topics:
-        % if topic.mobile_link:
-            <a href="${topic.mobile_link}">${topic.text}</a>
-        % else:
-            ${topic.text}
-        % endif
+        <a href="/eventdetail?topic_id=${topic.id}">${topic.text}</a>
         <br/>
     % endfor
 % endif
