@@ -78,7 +78,7 @@ form = TopPageSidebarSearchForm()
       <link rel="stylesheet" href="/static/ticketstar/css/import.css" type="text/css" media="all" />
       <script type="text/javascript" src="/static/ticketstar/js/jquery.js"></script>
     </head>
-    <body id="event">
+    <body id="help">
       <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="/static/ticketstar/img/common/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
       <div id="container">
 
@@ -147,7 +147,7 @@ form = TopPageSidebarSearchForm()
         <!-- ========== /header ========== -->
         
         <hr />
-	<!-- InstanceBeginEditable name="cat" --><h1><img id="titleImage" src="/static/ticketstar/img/help/title_help.gif" alt="ヘルプ"/></h1><!-- InstanceEndEditable -->
+	<!-- InstanceBeginEditable name="cat" --><h1><img width="91" height="60" id="titleImage" src="/static/ticketstar/img/help/title_help.gif" alt="ヘルプ"/></h1><!-- InstanceEndEditable -->
         <!-- ========== main ========== -->
 <div id="main">
 <%block name="main">
@@ -160,7 +160,9 @@ form = TopPageSidebarSearchForm()
         
         <!-- ========== side ========== -->
         <div id="side">
+<%block name="side">
  	        ${widgets("side")}
+</%block>
         </div>
         <!-- ========== /side ========== -->
         
