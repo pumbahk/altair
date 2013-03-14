@@ -3,7 +3,7 @@ from zope.interface import implementer
 from .interfaces import ITokenizer
 
 def includeme(config):
-    settings = config.settings
+    settings = config.registry.settings
     secret = settings['altair.rakuten_auth.token_secret']
     tokenizer = Tokenizer(secret)
     config.registry.registerUtility(tokenizer)
@@ -14,4 +14,4 @@ class Tokenizer(object):
         self.secret = secret
 
     def tokenize(self, nonce, short_clamed_id):
-        return hmac.new(key=self.secret, msg=short_clamed_id + nonce).hexdigext()
+        return hmac.new(key=self.secret, msg=short_clamed_id + nonce).hexdigest()

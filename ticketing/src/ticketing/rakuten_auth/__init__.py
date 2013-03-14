@@ -34,6 +34,7 @@ def signout(request):
 def includeme(config):
     # openid設定
     settings = config.registry.settings
+    config.include(".tokenizer")
 
     config.add_view('.views.RootView', attr="login", route_name="rakuten_auth.login")
     config.add_view('.views.RootView', attr="verify", route_name="rakuten_auth.verify")
@@ -57,6 +58,5 @@ def main(global_conf, **settings):
     config.add_route('rakuten_auth.error', '/error')
 
     config.include(".")
-    config.include(".tokenizer")
 
     return config.make_wsgi_app()
