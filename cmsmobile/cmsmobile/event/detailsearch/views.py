@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 from pyramid.view import view_config
+from altaircms.genre.searcher import GenreSearcher
 from cmsmobile.event.detailsearch.forms import DetailSearchForm
 from cmsmobile.core.searcher import EventSearcher
-from altaircms.genre.searcher import GenreSearcher
 from cmsmobile.core.helper import get_event_paging, get_week_map
 from cmsmobile.core.helper import log_info
+from datetime import date
 
 @view_config(route_name='detailsearch', request_method="GET",
              renderer='cmsmobile:templates/detailsearch/detailsearch.mako')
@@ -81,7 +82,9 @@ def create_date_selectbox(form):
     form.since_day.choices.append(['0', '-'])
     form.day.choices.append(['0', '-'])
 
-    for year in range(2013, 2100):
+    today = date.today()
+
+    for year in range(today.year, today.year + 3):
         form.since_year.choices.append([str(year), str(year)])
         form.year.choices.append([str(year), str(year)])
 
