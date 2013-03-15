@@ -18,7 +18,7 @@
 % if events:
     % for count, event in enumerate(events):
         <a href="/eventdetail?event_id=${event.id}"><span style="font-size: x-small">${event.title}</span></a><br/>
-        <div style="font-size: x-small">販売：${event.deal_open.year}/${event.deal_open.month}/${event.deal_open.day}(${week[event.deal_open.weekday()]})〜${event.deal_close.year}/${event.deal_close.month}/${event.deal_close.day}(${week[event.deal_close.weekday()]})</div>
+        <div style="font-size: x-small">販売期間：${event.deal_open.year}/${event.deal_open.month}/${event.deal_open.day}(${week[event.deal_open.weekday()]})〜${event.deal_close.year}/${event.deal_close.month}/${event.deal_close.day}(${week[event.deal_close.weekday()]})</div>
         % if event.performances[0]:
             <div style="font-size: x-small">会場：${event.performances[0].venue}</div>
 
