@@ -256,7 +256,7 @@ class Products(BaseView):
                         'rows':{'rowid':row_data.get('id'), 'errors':[e.message]}
                     }))
             else:
-                f = ProductItemForm(row_data, user_id=self.context.user.id, performance_id=performance_id)
+                f = ProductItemForm(row_data, performance_id=performance_id)
                 if not f.validate():
                     logger.info('validation error:%s' % f.errors)
                     raise HTTPBadRequest(body=json.dumps({
@@ -279,19 +279,34 @@ class Products(BaseView):
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class ProductItems(BaseView):
 
-    @view_config(route_name='product_items.new', request_method='POST', renderer='ticketing:templates/product_items/_form.html')
-    def new_post(self):
-        product_id = int(self.request.POST.get('product_id', 0))
+    @view_config(route_name='product_items.new', request_method='GET', renderer='ticketing:templates/product_items/_form.html', xhr=True)
+    def new_xhr(self):
+        product_id = int(self.request.matchdict.get('product_id', 0))
         product = Product.get(product_id)
         if product is None:
             return HTTPNotFound('product id %d is not found' % product_id)
 
-        performance_id = int(self.request.POST.get('performance_id', 0))
-        performance = Performance.get(performance_id)
-        if performance is None:
-            return HTTPNotFound('performance id %d is not found' % performance_id)
+        default = MultiDict(
+            stock_type_id=product.seat_stock_type_id,
+            product_item_name=product.name,
+            product_item_price=int(product.price),
+            product_item_quantity=1
+        )
+        f = ProductItemForm(default, product_id=product_id)
+        return {
+            'form':f,
+            'form_product':ProductForm(record_to_multidict(Product.get(product_id)), performance_id=product.performance_id),
+            'action':self.request.path,
+            }
 
-        f = ProductItemForm(self.request.POST, user_id=self.context.user.id, performance_id=performance_id)
+    @view_config(route_name='product_items.new', request_method='POST', renderer='ticketing:templates/product_items/_form.html', xhr=True)
+    def new_post_xhr(self):
+        product_id = int(self.request.matchdict.get('product_id', 0))
+        product = Product.get(product_id)
+        if product is None:
+            return HTTPNotFound('product id %d is not found' % product_id)
+
+        f = ProductItemForm(self.request.POST, product_id=product_id)
         if f.validate():
             product_item = ProductItem(
                 performance_id=f.performance_id.data,
@@ -309,23 +324,41 @@ class ProductItems(BaseView):
         else:
             return {
                 'form':f,
-                'form_product':ProductForm(record_to_multidict(Product.get(product_id)), performance_id=performance.id),
-                'performance':performance,
+                'form_product':ProductForm(record_to_multidict(Product.get(product_id)), performance_id=product.performance_id),
+                'action':self.request.path,
             }
 
-    @view_config(route_name='product_items.edit', request_method='POST', renderer='ticketing:templates/product_items/_form.html')
-    def edit_post(self):
+    @view_config(route_name='product_items.edit', request_method='GET', renderer='ticketing:templates/product_items/_form.html', xhr=True)
+    def edit_xhr(self):
         product_item_id = int(self.request.matchdict.get('product_item_id', 0))
         product_item = ProductItem.get(product_item_id)
         if product_item is None:
             return HTTPNotFound('product_item id %d is not found' % product_item_id)
 
-        performance_id = int(self.request.POST.get('performance_id', 0))
-        performance = Performance.get(performance_id)
-        if performance is None:
-            return HTTPNotFound('performance id %d is not found' % performance_id)
+        params = MultiDict(
+            product_item_id=product_item.id,
+            product_item_name=product_item.name,
+            product_item_price=int(product_item.price),
+            product_item_quantity=product_item.quantity,
+            stock_id=product_item.stock_id,
+            stock_type_id=product_item.stock.stock_type_id,
+            stock_holder_id=product_item.stock.stock_holder_id
+        )
+        f = ProductItemForm(params, product_id=product_item.product_id)
+        return {
+            'form': f,
+            'form_product':ProductForm(record_to_multidict(Product.get(product_item.product_id)), performance_id=product_item.performance_id),
+            'action': self.request.path,
+        }
 
-        f = ProductItemForm(self.request.POST, user_id=self.context.user.id, performance_id=performance_id)
+    @view_config(route_name='product_items.edit', request_method='POST', renderer='ticketing:templates/product_items/_form.html', xhr=True)
+    def edit_post_xhr(self):
+        product_item_id = int(self.request.matchdict.get('product_item_id', 0))
+        product_item = ProductItem.get(product_item_id)
+        if product_item is None:
+            return HTTPNotFound('product_item id %d is not found' % product_item_id)
+
+        f = ProductItemForm(self.request.POST, product_id=product_item.product_id)
         if f.validate():
             product_item = merge_session_with_post(product_item, dict(
                 product_id=f.product_id.data,
@@ -342,8 +375,8 @@ class ProductItems(BaseView):
         else:
             return {
                 'form':f,
-                'form_product':ProductForm(record_to_multidict(Product.get(product_item.product_id)), performance_id=performance.id),
-                'performance':performance,
+                'form_product':ProductForm(record_to_multidict(Product.get(product_item.product_id)), performance_id=product_item.performance.id),
+                'action':self.request.path,
             }
 
     @view_config(route_name='product_items.delete', renderer='ticketing:templates/product_items/_form.html')

@@ -1,0 +1,54 @@
+<%page args="modal_id, performance_id" />
+<script type="text/javascript">
+  var new_product_item, edit_product_item, delete_product_item;
+  $(function() {
+    (function (modal_product_item) {
+      new_product_item = function new_product_item(id) {
+        load_modal_form(
+          modal_product_item,
+          '${request.route_path('product_items.new', product_id='{id}')|n}'.replace(encodeURIComponent('{id}'), id),
+          null,
+          null
+        );
+      };
+      edit_product_item = function edit_product_item(id) {
+        load_modal_form(
+          modal_product_item,
+          '${request.route_path('product_items.edit', product_item_id='{id}')|n}'.replace(encodeURIComponent('{id}'), id),
+          null,
+          null
+        );
+      };
+      delete_product_item = function delete_product_item(id) {
+        var modal = $('#modal-delete');
+        modal.find('#delete').attr('href', '${request.route_path('product_items.delete', product_item_id='{id}')}'.replace(encodeURIComponent('{id}'), id));
+        modal.find('#message').text('選択した商品を削除します。よろしいですか？');
+        modal.modal('toggle');
+      };
+    })($('#${modal_id}'));
+  });
+</script>
+
+<script type="text/javascript">
+  $(function() {
+    var modal = $('#${modal_id}');
+    modal.on('shown', function(){
+      $(this).css('max-height', '750px')
+        .css('margin-top', ($(this).outerHeight()/2)*-1)
+        .css('margin-left',($(this).outerWidth()/2)*-1);
+    });
+  })
+</script>
+<div id="${modal_id}" class="modal hide">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">×</a>
+    <h3>商品</h3>
+  </div>
+
+  <div class="modal-body"></div>
+
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+    <a href="javascript:void(0);" onclick="$('#${modal_id}').find('form').submit();" class="btn">保存</a>
+  </div>
+</div>

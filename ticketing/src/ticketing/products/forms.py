@@ -107,18 +107,21 @@ class ProductItemForm(Form):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
+        product_id = kwargs.get('product_id')
         performance_id = kwargs.get('performance_id')
-        event_id = kwargs.get('event_id')
 
+        if product_id is not None:
+            self.product_id.data = product_id
+            product = Product.get(product_id)
+            performance_id = product.performance_id
         if performance_id is not None:
             self.performance_id.data = performance_id
             performance = Performance.get(performance_id)
             event_id = performance.event_id
             stock_holders = StockHolder.get_own_stock_holders(event=performance.event)
             self.stock_holder_id.choices = [(sh.id, sh.name) for sh in stock_holders]
-        if event_id is not None:
             stock_types = StockType.query.filter_by(event_id=event_id).all()
-            self.stock_type_id.choices = [(u'', u'')] + [(st.id, st.name) for st in stock_types]
+            self.stock_type_id.choices = [(st.id, st.name) for st in stock_types]
             ticket_bundles = TicketBundle.filter_by(event_id=event_id)
             self.ticket_bundle_id.choices = [(u'', u'(なし)')] + [(tb.id, tb.name) for tb in ticket_bundles]
         if self.stock_holder_id.data:
@@ -136,7 +139,8 @@ class ProductItemForm(Form):
                 'stock_type_id':self.stock_type_id.data
             }
             stock = Stock.query.filter_by(**conditions).first()
-            self.stock_id.data = stock.id
+            if stock:
+                self.stock_id.data = stock.id
 
     def _get_translations(self):
         return Translations()
@@ -169,7 +173,7 @@ class ProductItemForm(Form):
         label=u'席種',
         validators=[Required()],
         choices=[],
-        coerce=lambda v: None if not v else int(v)
+        coerce=int
     )
     stock_holder_id = SelectField(
         label=u'配券先',
@@ -188,7 +192,7 @@ class ProductItemForm(Form):
     )
 
     def validate_stock_id(form, field):
-        if field.data is None:
+        if not field.data:
             raise ValidationError(u'席種および配券先を選択してください')
         elif form.product_id.data and not form.product_item_id.data:
             conditions = {

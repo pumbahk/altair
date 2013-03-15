@@ -42,7 +42,6 @@ class PerformanceShowView(BaseView):
     def _tab_product(self):
         return dict(
             form_product=ProductForm(performance_id=self.performance.id),
-            form_product_item=ProductItemForm(user_id=self.context.user.id, performance_id=self.performance.id),
             products=self.performance.products
             )
 
