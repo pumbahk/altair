@@ -1,33 +1,31 @@
 # -*- coding: utf-8 -*-
 
+from datetime import datetime
 import json
 import operator
 import urllib2
 import logging
 import contextlib
-from itertools import chain
-from datetime import datetime, date, timedelta
-from zope.deprecation import deprecate
 import sqlalchemy as sa
-from sqlalchemy.sql import (
-    or_,
-    and_,
-    )
-logger = logging.getLogger(__name__)
+from zope.deprecation import deprecate
+
 from pyramid.interfaces import IRoutesMapper, IRequest
 from pyramid.security import effective_principals, forget
 from pyramid.httpexceptions import HTTPNotFound
-from ..api.impl import get_communication_api
-from ..api.impl import CMSCommunicationApi
-from .interfaces import IPaymentMethodManager
-#from .interfaces import IPaymentPlugin, IDeliveryPlugin, IPaymentDeliveryPlugin
+
 from ticketing.mobile.interfaces import IMobileRequest
-from .interfaces import IStocker, IReserving, ICartFactory
-from .models import Cart, PaymentMethodManager, DBSession, CartedProductItem, CartedProduct
-from ..users.models import User, UserCredential, Membership, MemberGroup, MemberGroup_SalesSegment
-from ..core.models import Event, Performance, Stock, StockHolder, Seat, Product, ProductItem, SalesSegment, SalesSegmentGroup, Venue
+from ticketing.api.impl import get_communication_api
+from ticketing.api.impl import CMSCommunicationApi
+from ticketing.core.models import Event, Performance, Stock, Product, ProductItem, SalesSegment, SalesSegmentGroup, Venue
 from ticketing.core import models as c_models
+from ticketing.users.models import User, UserCredential, Membership, MemberGroup, MemberGroup_SalesSegment
+
+from .interfaces import IPaymentMethodManager
+from .interfaces import IStocker, IReserving, ICartFactory
+from .models import Cart, PaymentMethodManager, DBSession
 from .exceptions import OutTermSalesException, NoSalesSegment, NoCartError
+
+logger = logging.getLogger(__name__)
 
 def is_multicheckout_payment(cart):
     if cart is None:
@@ -230,22 +228,6 @@ def get_salessegment(request, event_id, salessegment_id, selected_date):
     else:
         return None
 
-# @deprecation("ticketing.payments.paymentに移動")
-# def get_payment_plugin(request, plugin_id):
-#     logger.debug("get_payment_plugin: %s" % plugin_id)
-#     registry = request.registry
-#     return registry.utilities.lookup([], IPaymentPlugin, name="payment-%s" % plugin_id)
-# 
-# @deprecation("ticketing.payments.paymentに移動")
-# def get_delivery_plugin(request, plugin_id):
-#     registry = request.registry
-#     return registry.utilities.lookup([], IDeliveryPlugin, name="delivery-%s" % plugin_id)
-# 
-# @deprecation("ticketing.payments.paymentに移動")
-# def get_payment_delivery_plugin(request, payment_plugin_id, delivery_plugin_id):
-#     registry = request.registry
-#     return registry.utilities.lookup([], IPaymentDeliveryPlugin, 
-#         "payment-%s:delivery-%s" % (payment_plugin_id, delivery_plugin_id))
 
 def get_stocker(request):
     reg = request.registry

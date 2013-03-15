@@ -32,7 +32,7 @@ from .exceptions import (
     InvalidCSRFTokenException, 
     OverQuantityLimitError, 
     ZeroQuantityError, 
-    CartCreationExceptoion,
+    CartCreationException,
     #OutTermSalesException,
     #DeliveryFailedException,
 )
@@ -367,7 +367,7 @@ class MobileReserveView(object):
             if cart is None:
                 transaction.abort()
                 logger.debug("cart is None. aborted.")
-                raise CartCreationExceptoion
+                raise CartCreationException
         except NotEnoughAdjacencyException as e:
             transaction.abort()
             logger.debug("not enough adjacency")

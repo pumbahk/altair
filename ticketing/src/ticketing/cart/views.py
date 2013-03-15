@@ -4,35 +4,35 @@ import re
 import json
 import transaction
 from collections import OrderedDict
-from datetime import datetime, timedelta
-from urllib2 import urlopen
+#from datetime import datetime, timedelta
+#from urllib2 import urlopen
 
 import sqlalchemy as sa
 from sqlalchemy.orm import joinedload
-from sqlalchemy import sql
-from sqlalchemy.sql.expression import or_, select
+#from sqlalchemy import sql
+#from sqlalchemy.sql.expression import or_, select
 
 from markupsafe import Markup
 
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
-from pyramid.exceptions import NotFound
+#from pyramid.exceptions import NotFound
 from pyramid.response import Response
 from pyramid.view import view_config, view_defaults
 from pyramid.threadlocal import get_current_request
 from pyramid import security
-from zope.deprecation import deprecate
+#from zope.deprecation import deprecate
 from webob.multidict import MultiDict
 
-import js.jquery, js.jquery_tools
+#import js.jquery, js.jquery_tools
 
 
 from ticketing.models import DBSession
 from ticketing.core import models as c_models
-from ticketing.users import models as u_models
+#from ticketing.users import models as u_models
 from ticketing.mailmags import models as mailmag_models
 from ticketing.views import mobile_request
 from ticketing.fanstatic import with_jquery, with_jquery_tools
-from ticketing.rakuten_auth.api import authenticated_user
+#from ticketing.rakuten_auth.api import authenticated_user
 from ticketing.payments.payment import Payment
 from ticketing.payments.exceptions import PaymentDeliveryMethodPairNotFound
 from ticketing.mobile.interfaces import IMobileRequest
@@ -40,7 +40,7 @@ from ticketing.mobile.interfaces import IMobileRequest
 from . import api
 from . import helpers as h
 from . import schemas
-from .models import Cart
+#from .models import Cart
 from .events import notify_order_completed
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from .stocker import NotEnoughStockException
@@ -48,17 +48,17 @@ from .selectable_renderer import selectable_renderer
 from .api import get_seat_type_triplets
 from .view_support import IndexViewMixin
 from .exceptions import (
-    CartException, 
     NoCartError, 
-    NoEventError,
     NoPerformanceError,
-    NoSalesSegment,
     InvalidCSRFTokenException, 
-    OverQuantityLimitError, 
-    ZeroQuantityError, 
-    CartCreationExceptoion,
-    OutTermSalesException,
-    DeliveryFailedException,
+    #CartException, 
+    #NoEventError,
+    #NoSalesSegment,
+    #OverQuantityLimitError, 
+    #ZeroQuantityError, 
+    CartCreationException,
+    #OutTermSalesException,
+    #DeliveryFailedException,
 )
 
 logger = logging.getLogger(__name__)
@@ -502,7 +502,7 @@ class ReserveView(object):
             transaction.abort()
             logger.debug("not enough stock quantity :%s" % e)
             return dict(result='NG', reason="stock")
-        except CartCreationExceptoion as e:
+        except CartCreationException as e:
             transaction.abort()
             logger.debug("cannot create cart :%s" % e)
             return dict(result='NG', reason="unknown")

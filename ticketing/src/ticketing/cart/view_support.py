@@ -14,7 +14,7 @@ from .exceptions import (
     InvalidCSRFTokenException, 
     OverQuantityLimitError, 
     ZeroQuantityError, 
-    CartCreationExceptoion,
+    CartCreationException,
     OutTermSalesException,
     DeliveryFailedException,
 )

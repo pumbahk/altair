@@ -15,12 +15,12 @@ from pyramid.security import Allow
 from pyramid.decorator import reify
 from pyramid.httpexceptions import HTTPNotFound
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.orm import joinedload
+#from sqlalchemy.orm import joinedload
 from zope.interface import implementer
 from .interfaces import ICartPayment, ICartDelivery
 from ticketing.payments.interfaces import IOrderPayment, IOrderDelivery 
-from ticketing.mails.interfaces import ICompleteMailPayment, ICompleteMailDelivery, IOrderCancelMailPayment, IOrderCancelMailDelivery
-from ticketing.mails.resources import CompleteMailPayment, CompleteMailDelivery, OrderCancelMailPayment, OrderCancelMailDelivery
+#from ticketing.mails.interfaces import ICompleteMailPayment, ICompleteMailDelivery, IOrderCancelMailPayment, IOrderCancelMailDelivery
+#from ticketing.mails.resources import CompleteMailPayment, CompleteMailDelivery, OrderCancelMailPayment, OrderCancelMailDelivery
 
 from .exceptions import (
     OutTermSalesException,
@@ -29,9 +29,8 @@ from .exceptions import (
 )
 from ..core import models as c_models
 from ..core import api as core_api
-from ..users import models as u_models
+#from ..users import models as u_models
 from . import models as m
-from . import logger
 from zope.deprecation import deprecate
 
 logger = logging.getLogger(__name__)
