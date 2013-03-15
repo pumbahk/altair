@@ -342,7 +342,8 @@ class ProductItems(BaseView):
             product_item_quantity=product_item.quantity,
             stock_id=product_item.stock_id,
             stock_type_id=product_item.stock.stock_type_id,
-            stock_holder_id=product_item.stock.stock_holder_id
+            stock_holder_id=product_item.stock.stock_holder_id,
+            ticket_bundle_id=product_item.ticket_bundle_id
         )
         f = ProductItemForm(params, product_id=product_item.product_id)
         return {
