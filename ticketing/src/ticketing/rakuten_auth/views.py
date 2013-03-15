@@ -29,6 +29,7 @@ class RootView(object):
         authenticated, headers = who_api.login(identity)
 
         if authenticated:
+            authenticated = authenticated['repoze.who.userid']
             now = datetime.now()
             nonce = now.strftime('%Y%m%d:%H%M')
             token = tokenize(self.request, nonce, authenticated)
@@ -52,7 +53,7 @@ class RootView(object):
 
         if remote_token == token:
 
-            headers = security.remember(authenticated)
+            headers = security.remember(self.request, authenticated)
             return_url = get_return_url(self.request)
             res = HTTPFound(location=return_url, headers=headers)
             return res
