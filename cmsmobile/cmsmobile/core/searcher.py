@@ -177,8 +177,10 @@ class EventSearcher(object):
     def get_events_from_salessegment(self, form, qs=None):
         log_info("get_events_from_salessegment", "start")
         label = "一般販売"
-        if form.sales_segment.data:
+        if form.sales_segment.data == 1:
             label = "一般先行"
+        elif form.sales_segment.data == 2:
+            label = "先行抽選"
         where = SalesSegmentKind.label == label
         qs = self._create_common_qs(where=where, qs=qs)
         log_info("get_events_from_salessegment", "end")

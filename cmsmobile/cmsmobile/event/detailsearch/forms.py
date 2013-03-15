@@ -17,7 +17,7 @@ class DetailSearchForm(SearchForm):
         choices=[(0, u'販売中'), (1, u'今週販売開始'), (2, u'販売終了間近')],
         default=SalesEnum.ON_SALE, coerce=int)
     sales_segment = RadioField(label = '',validators=[Optional()]
-        ,choices=[(0, u'一般販売'), (1, u'先行販売') ],default=0, coerce=int)
+        ,choices=[(0, u'一般販売'), (1, u'先行販売'), (2, u'先行抽選') ],default=0, coerce=int)
     since_year = SelectField(label='', validators=[Optional()], choices=[])
     since_month = SelectField(label='', validators=[Optional()], choices=[])
     since_day = SelectField(label='', validators=[Optional()], choices=[])
