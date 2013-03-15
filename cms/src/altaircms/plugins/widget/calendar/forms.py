@@ -27,6 +27,8 @@ class CalendarSelectForm(Form):
                                                      label=u"イベント販売条件", 
                                                      dynamic_query=selected_sale, 
                                                      get_label=lambda obj: u"%s (%s〜%s)" % (obj.name, obj.start_on, obj.end_on))
+    show_label = fields.BooleanField(id="show_label", label=u"見出しを表示する？", default=True)
+
     def configure(self, request, page):
         utility = get_widget_utility(request, page, CalendarWidget.type)
         self.calendar_type.choices = utility.choices

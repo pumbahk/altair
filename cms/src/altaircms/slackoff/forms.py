@@ -160,7 +160,7 @@ class TicketForm(Form):
                                               label=u"販売区分", 
                                               dynamic_query=lambda model, request, query: query.filter_by(id=request.params["salessegment_id"]).options(orm.joinedload(SalesSegment.group)), 
                                               get_label=lambda obj: obj.group.name if obj.group else u"---")
-    name = fields.TextField(validators=[required_field()], label=u"券種")
+    name = fields.TextField(validators=[required_field()], label=u"商品名")
     seattype = fields.TextField(validators=[], label=u"席種／グレード")
     price = fields.IntegerField(validators=[required_field()], label=u"料金")
     # display_order = fields.TextField(label=u"表示順序(default:50)")
@@ -168,7 +168,7 @@ class TicketForm(Form):
         if not field.data:
             field.data = "50"
 
-    __display_fields__ = [u"sale",u"name",  u"seattype", u"price"]
+    __display_fields__ = [u"sale", u"seattype", u"name", u"price"]
     # __display_fields__ = [u"sale", u"name", u"seattype", u"price", u"display_order"]
 
 validate_publish_term = TermValidator("publish_open_on", "publish_close_on",  u"公開開始日よりも後に終了日が設定されています")
@@ -289,8 +289,6 @@ class PromotionFilterForm(Form):
             qs = qs.filter(Promotion.tags.any(PromotionTag.name==tag.name))
         return qs
 
-_hierarchy_choices = [(x, x) for x in [u"大", u"中", u"小", u"top_couter", u"top_inner", u"header_menu", u"footer_menu", u"masked", u"side_banner", u"side_menu", u"header_large_button"]]
-_link_choices =  [(x, x) for x in ["header_menu", "footer_menu", "masked", "side_banner", "side_menu", "top_inner", "header_large_button"]]
 class CategoryForm(Form):
     name = fields.TextField(label=u"カテゴリ名")
     origin = fields.TextField(label=u"分類")
@@ -303,7 +301,7 @@ class CategoryForm(Form):
     pageset = dynamic_query_select_field_factory(
         PageSet, allow_blank=True, blank_text=u"--------", label=u"リンク先ページ(CMSで作成したもの)",
         get_label=lambda obj: obj.name or u"--なし--")
-    hierarchy = fields.SelectField(label=u"階層", choices=_hierarchy_choices)
+    hierarchy = fields.SelectField(label=u"表示場所", choices=[])
     # hierarchy = fields.SelectField(label=u"階層")
     imgsrc = fields.TextField(label=u"imgsrc(e.g. /static/ticketstar/img/common/header_nav_top.gif)")
     url = fields.TextField(label=u"リンク(外部ページのURL)")
@@ -313,7 +311,10 @@ class CategoryForm(Form):
                           u"parent", u"hierarchy", 
                           u"imgsrc", u"url", u"pageset", 
                           u"display_order"]
-
+    def configure(self, request):
+        extra_resource = get_extra_resource(request)
+        self.hierarchy.choices = [(x, x) for x in extra_resource["category_kinds"]]
+        
     # def configure(self, request):
     #     qs = DBSession.query(Category.hierarchy)
     #     if hasattr(request, "organization"):
@@ -341,9 +342,13 @@ class ExternalLinkForm(Form):
     pageset = dynamic_query_select_field_factory(
         PageSet, allow_blank=True, blank_text=u"--------", label=u"リンク(CMSで作成したもの)",
         get_label=lambda obj: obj.name or u"--なし--")
-    hierarchy = fields.SelectField(label=u"リンクの種類", choices=_link_choices)
+    hierarchy = fields.SelectField(label=u"表示場所", choices=[])
     url = fields.TextField(label=u"リンク(外部ページのURL)")
     display_order = fields.IntegerField(label=u"表示順序")
+
+    def configure(self, request):
+        extra_resource = get_extra_resource(request)
+        self.hierarchy.choices = [(x, x) for x in extra_resource["category_kinds"]]
 
     __display_fields__ = [u"hierarchy", 
                           u"label",u"attributes", 
@@ -356,22 +361,19 @@ class ExternalBannerForm(Form):
     pageset = dynamic_query_select_field_factory(
         PageSet, allow_blank=True, blank_text=u"--------", label=u"リンク(CMSで作成したもの)",
         get_label=lambda obj: obj.name or u"--なし--")
-    hierarchy = fields.SelectField(label=u"階層", choices=_link_choices)
+    hierarchy = fields.SelectField(label=u"階層", choices=[])
     imgsrc = fields.TextField(label=u"imgsrc(e.g. /static/ticketstar/img/common/header_nav_top.gif)")
     url = fields.TextField(label=u"リンク(外部ページのURL)")
     display_order = fields.IntegerField(label=u"表示順序")
+
+    def configure(self, request):
+        extra_resource = get_extra_resource(request)
+        self.hierarchy.choices = [(x, x) for x in extra_resource["category_kinds"]]
+
     __display_fields__ = [u"hierarchy", 
                           u"label", u"attributes", u"imgsrc", 
                           u"url", u"pageset", 
                           u"display_order"]
-
-class CategoryFilterForm(Form):
-    hierarchy = fields.SelectField(label=u"階層", choices=[("__None", "----------")]+_hierarchy_choices)
-    parent = dynamic_query_select_field_factory(
-        Category, allow_blank=True, blank_text=u"----------", label=u"親カテゴリ",
-        get_label=lambda obj: obj.label or u"---名前なし---")
-
-    as_filter = as_filter(["hierarchy", "parent"])
 
 class TopicFilterForm(Form):
     kind = fields.SelectField(label=u"トピックの種類", choices=[])

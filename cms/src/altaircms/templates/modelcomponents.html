@@ -14,7 +14,8 @@
     <tr>
         <th>イベント名</th>
         <th>公演数</th>
-        <th>公開日</th>
+        <th>販売期間期間</th>
+        <th>開催期間</th>
         <th>検索対象に含める</th>
         <th>更新日時</th>
     </tr>
@@ -24,6 +25,7 @@
       <tr>
         <td><a href="${request.route_path("event", id=event.id)}">${event.title}</a></td>
         <td>${len(event.performances)}</td>
+        <td>${event.deal_open} - ${event.deal_close}</td>
         <td>${event.event_open} - ${event.event_close}</td>
 		<td>${event.is_searchable}</td>
         <td>${event.updated_at}</td>

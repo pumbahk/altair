@@ -1,24 +1,38 @@
 from pyramid.view import view_config, view_defaults
 from altaircms.auth.api import require_login
 from . import forms
+import logging
+from webob.multidict import MultiDict
+logger = logging.getLogger(__name__)
 
 @view_defaults(custom_predicates=(require_login,))
 class PurchaseWidgetView(object):
-    def __init__(self, request):
+    def __init__(self, context, request):
+        self.context = context
         self.request = request
 
     def _create_or_update(self):
-        data = self.request.json_body["data"]
-        page_id = self.request.json_body["page_id"]
-        context = self.request.context
-        widget = context.get_widget(self.request.json_body.get("pk"))
-        widget = context.update_data(widget,
-                                     page_id=page_id, 
-                                     **data)
-        context.add(widget, flush=True)
-        r = self.request.json_body.copy()
-        r.update(pk=widget.id)
+        try:
+            form = forms.PurchaseForm(MultiDict(self.request.json_body["data"], page_id=self.request.json_body["page_id"]))
+            if not form.validate():
+                logger.warn(str(form.errors))
+                r = self.request.json_body.copy()
+                r.update(pk=None)
+                return r
+            params = form.data
+            widget = self.context.get_widget(self.request.json_body.get("pk"))
+            widget = self.context.update_data(widget, **params)
+            self.context.add(widget, flush=True)
+
+            r = self.request.json_body.copy()
+            r.update(pk=widget.id)
+        except Exception, e:
+            logger.exception(str(e))
+            r = self.request.json_body.copy()
+            r.update(pk=None)
+            return r
         return r
+
 
     @view_config(route_name="purchase_widget_create", renderer="json", request_method="POST")
     def create(self):
@@ -39,5 +53,8 @@ class PurchaseWidgetView(object):
     def dialog(self):
         context = self.request.context
         widget = context.get_widget(self.request.GET.get("pk"))
-        form = forms.PurchaseForm(**widget.to_dict())
+        params = widget.to_dict()
+        params.update(widget.attributes or {})
+        form = forms.PurchaseForm(**params)
         return {"widget": widget, "form": form}
+

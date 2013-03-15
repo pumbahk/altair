@@ -60,7 +60,7 @@ def _refine_pageset_qs(qs):
 
     qs = _refine_pageset_search_order(qs)
     qs = _refine_pageset_only_published_term(qs)
-    return qs.options(orm.joinedload("event")).options(orm.joinedload("event.performances"))
+    return qs.options(orm.joinedload("event"), orm.joinedload("event.performances"), orm.joinedload("genre"))
 
 
 ## todo:test

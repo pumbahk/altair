@@ -119,8 +119,9 @@ def update_page_genretag(self):
     obj_type = "page"
     put_tags(pageset, obj_type, tags, private_tags, self.request)
     ftsearch_register_from_page(self.request, page)
-    if self.params.get("genre_id"):
-        system_tag_labels = _tag_labels_from_genres([self.params["genre_id"]])
+    if self.params.get("genre"):
+        genres = [self.params["genre"]]
+        system_tag_labels = _tag_labels_from_genres(genres)
         put_system_tags(pageset, obj_type, system_tag_labels, self.request)
 
     if pageset.pagetype.is_portal and pageset.genre:

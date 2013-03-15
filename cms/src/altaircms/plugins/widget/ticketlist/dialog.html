@@ -1,17 +1,7 @@
 ## ticketlist widget dialog
 ##  view function is views.TicketlistWidgetView.dialog
 ##
-
-<%def name="formfield(k)">
-	<tr><th>${getattr(form,k).label}</th><td>${getattr(form,k)}
-	%if k in form.errors:
-	  <br/>
-	  %for error in form.errors[k]:
-		<span class="btn btn-danger">${error}</span>
-	  %endfor
-	%endif
-	</td></tr>
-</%def>
+<%namespace file="../components.html" name="co"/>
 
 <div class="title">
   <h1>チケットリスト(価格表)</h1>
@@ -20,10 +10,11 @@
 <div class="box">
   <table class="table">
     <tbody>
-      ${formfield("display_type")}
-      ${formfield("target_performance_id")}
-      ${formfield("target_salessegment_id")}
-      ${formfield("caption")}
+      ${co.formfield(form, "show_label")}
+      ${co.formfield(form, "display_type")}
+      ${co.formfield(form, "target_perco.formance_id")}
+      ${co.formfield(form, "target_salessegment_id")}
+      ${co.formfield(form, "caption")}
     </tbody>
   </table>
   <button type="button" id="ticketlist_submit">登録</button>

@@ -132,7 +132,7 @@ def obi(widget, calendar_status, performances, request, template_name=None):
     if performances:
         cal = CalendarOutput.from_performances(performances)
         rows = cal.each_rows(*get_start_date_and_end_date(widget.salessegment, performances))
-        return render(template_name, {"cal":rows, "i":cal.i, "calendar_status": calendar_status}, request)
+        return render(template_name, {"cal":rows, "i":cal.i, "calendar_status": calendar_status, "widget":widget}, request)
     else:
         return u"performance is not found"
 
@@ -144,7 +144,7 @@ def term(widget, calendar_status, performances, request, template_name=None):
 
     cal = CalendarOutput.from_performances(performances)
     rows = cal.each_rows(widget.from_date, widget.to_date)
-    return render(template_name, {"cal":rows, "i":cal.i, "calendar_status":calendar_status}, request)
+    return render(template_name, {"cal":rows, "i":cal.i, "calendar_status":calendar_status, "widget":widget}, request)
 
 def tab(widget, calendar_status, performances, request, template_name=None):
     """月毎のタブが存在するカレンダーを表示
@@ -163,6 +163,7 @@ def tab(widget, calendar_status, performances, request, template_name=None):
         cals = (CalendarOutput.from_performances(perfs).each_rows(date(y, m, 1), (_next_month_date(date(y, m, 1)) - timedelta(days=1)), this_month=m)\
                     for (y, m), perfs in monthly_performances)
         return render(template_name, {"cals":cals,
+                                      "widget":widget, 
                                       "months":months,
                                       "visibilities": visibilities,
                                       "calendar_status":calendar_status})
@@ -174,6 +175,7 @@ def tab(widget, calendar_status, performances, request, template_name=None):
         visibilities = [True]
         cals = [CalendarOutput().each_rows(start_date, end_date, this_month=today.month)]
         return render(template_name, {"cals":cals,
+                                      "widget":widget, 
                                       "months":months,
                                       "visibilities": visibilities,
                                       "calendar_status":calendar_status})

@@ -23,12 +23,13 @@ class TicketlistWidget(Widget):
     query = DBSession.query_property()
 
     display_type = sa.Column(sa.Unicode(255))
-    caption = sa.Column(sa.UnicodeText, doc=u"見出し")
+    caption = sa.Column(sa.UnicodeText, doc=u"表に対する説明")
     target_performance_id = sa.Column(sa.Integer, sa.ForeignKey("performance.id"))
     target_performance = orm.relationship("Performance")
     target_salessegment_id = sa.Column(sa.Integer, sa.ForeignKey("sale.id"))
     target_salessegment = orm.relationship("SalesSegment")
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
+    show_label = sa.Column(sa.Boolean, doc=u"見出しを表示するか否かのフラグ", default=True, nullable=False)
 
     def merge_settings(self, bname, bsettings):
         bsettings.need_extra_in_scan("event")

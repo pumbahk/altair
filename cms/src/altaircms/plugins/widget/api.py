@@ -19,6 +19,18 @@ def get_rendering_function_via_page(widget, bname, bsettings, type_=None):
             return u"%s widget: %s" % (_type, str(e))
     return closure
 
+def safe_execute(name):
+    def _safe_execute(fn):
+        def wrapped(*args, **kwargs):
+            try:
+                return fn(*args, **kwargs)
+            except Exception, e:
+                logger.exception(str(e))
+                return u"%s widget: %s" % (name, str(e))
+        return wrapped
+    return _safe_execute
+
+
 
 class DisplayTypeSelectRendering(object):
     def __init__(self, params, configparser):
