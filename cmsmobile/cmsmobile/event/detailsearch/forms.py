@@ -14,7 +14,7 @@ class DetailSearchForm(SearchForm):
                  (6, u'北関東'),(7, u'甲信越'),(8, u'北陸'),(9, u'中国'),(10, u'四国'),(11, u'九州'),(12, u'沖縄')],)
     genre = SelectField(label='', validators=[Optional()],choices=[(0, u'選択なし')], coerce=int)
     sale = RadioField(label = '', validators=[Optional()],
-        choices=[(0, u'販売中'), (1, u'今週販売開始'), (2, u'販売終了間近')],
+        choices=[(0, u'販売中'), (1, u'今週販売開始'), (2, u'販売終了間近'), (3, u'その他')],
         default=SalesEnum.ON_SALE, coerce=int)
     sales_segment = RadioField(label = '',validators=[Optional()]
         ,choices=[(0, u'一般販売'), (1, u'先行販売'), (2, u'先行抽選') ],default=0, coerce=int)

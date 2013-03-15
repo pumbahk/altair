@@ -24,17 +24,14 @@
     % endif
 
     <form action="/inquiry" method="POST">
-        <div style="font-size: x-small">
-            ${h.form_item(form.name, style="font-size: x-small")}<br/>
-            ${h.form_item(form.mail, style="font-size: x-small")}<br/>
-            ${h.form_item(form.num, style="font-size: x-small")}
-            <div style="font-size: x-small">予約受付番号をお持ちの場合入力してください。</div>
-            ${h.form_item(form.category, style="font-size: x-small")}<br/>
-            ${h.form_item(form.title, style="font-size: x-small")}<br/>
-            ${h.form_item(form.body, style="font-size: x-small")}<br/>
-        </div>
-        <div style="font-size: x-small">※は必ず入力してください。</div>
-        <input type="submit" value="送信" style="font-size: x-small"/>
+        ${form.name.label}<br/>${form.name}<br/>
+        ${form.mail.label}<br/>${form.mail}<br/>
+        ${form.num.label}<br/>${form.num}<br/>
+        ${form.category.label}<br/>${form.category}<br/>
+        ${form.title.label}<br/>${form.title}<br/>
+        ${form.body.label}<br/>${form.body}<br/>
+        ※は必ず入力してください。
+        <input type="submit" value="送信"/>
     </form>
 
     <%include file="../common/_footer.mako" />
