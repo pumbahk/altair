@@ -103,7 +103,7 @@ class OrganizationMapping(object):
         return (v["short_name"], v["auth_source"])
 
     def get_keypair_from_organization(self, organization):
-        return int(organization.short_name), organization.auth_source
+        return organization.short_name, organization.auth_source
 
     def register(self, config):
         set_organization_mapping(config, self)

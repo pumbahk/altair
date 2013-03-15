@@ -62,8 +62,7 @@ def includeme(config):
     config.add_crud("category", title="category", model="..models.Category",
                     circle_type="circle-master", 
                     bind_actions=["delete", "update", "create"], 
-                    form=".forms.CategoryForm", mapper=".mappers.category_mapper", 
-                    filter_form=".forms.CategoryFilterForm")
+                    form=".forms.CategoryForm", mapper=".mappers.category_mapper")
     config.add_route("category_list", "/category")
     config.add_view(".views.category_list_view", route_name="category_list", permission="category_read", 
                     decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", 
