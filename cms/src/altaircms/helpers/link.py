@@ -9,8 +9,12 @@ def get_purchase_page_from_event(request, event):
     return u"/cart/events/%s" % event.backend_id
 
 def get_purchase_page_from_performance(request, performance):
-    if performance.purchase_link:
-        return performance.purchase_link
+    if hasattr(request, "is_mobile") and request.is_mobile:
+        if performance.mobile_purchase_link:
+            return performance.mobile_purchase_link
+    else:
+        if performance.purchase_link:
+            return performance.purchase_link
 
     if performance.backend_id is None:
         logger.warn("event id=%d performance id=%d: performancr backend_id is not found" % (performance.event.id, performance.id))
