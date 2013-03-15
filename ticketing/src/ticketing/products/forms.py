@@ -195,25 +195,26 @@ class ProductItemForm(Form):
     def validate_stock_id(form, field):
         if not field.data:
             raise ValidationError(u'席種および配券先を選択してください')
-        elif form.product_id.data and not form.product_item_id.data:
+        elif form.product_id.data:
             conditions = {
                 'stock_id':field.data,
                 'product_id':form.product_id.data,
                 }
-            if ProductItem.filter_by(**conditions).first():
-                raise ValidationError(u'既に登録済みの在庫です')
+            product_item = ProductItem.filter_by(**conditions).first()
+            if product_item:
+                if not form.product_item_id.data or product_item.id != int(form.product_item_id.data):
+                    raise ValidationError(u'既に登録済みの在庫です')
 
             stock = Stock.get(field.data)
             if stock.stock_type.is_seat:
-                # 同一Product内に登録できる席種は1つのみ
-                product = Product.get(form.product_id.data)
-                for product_item in product.items_by_performance_id(form.performance_id.data):
-                    if product_item.stock_type.is_seat:
-                        raise ValidationError(u'1つの商品に席種を複数登録することはできません')
-
                 # 商品の席種と在庫の席種は同一であること
+                product = Product.get(form.product_id.data)
                 if stock.stock_type.id != product.seat_stock_type_id:
                     raise ValidationError(u'商品の席種と異なる在庫を登録することはできません')
+                # 同一Product内に登録できる席種は1つのみ
+                for product_item in product.items_by_performance_id(form.performance_id.data):
+                    if product_item.id != int(form.product_item_id.data) and product_item.stock_type.is_seat:
+                        raise ValidationError(u'1つの商品に席種を複数登録することはできません')
 
     def validate_product_item_price(form, field):
         if field.data and form.product_id.data:

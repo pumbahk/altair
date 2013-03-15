@@ -477,7 +477,7 @@ callbacks.select = function (viewer, selection) {
 
 <div id="modal-transfer" class="modal hide">
   <div class="modal-header">
-    <a href="javascript:void(0);" class="close btn-close" data-dismiss="modal">&times;</a>
+    <a href="javascript:void(0);" onclick="$('#modal-transfer').hide();" class="close btn-close">&times;</a>
     <h3>枠移動</h3>
   </div>
 
@@ -486,8 +486,8 @@ callbacks.select = function (viewer, selection) {
   </div>
 
   <div class="modal-footer">
-    <a href="javascript:void(0);" onclick="$('#modal-transfer').modal('hide');" class="btn secondary btn-close">閉じる</a>
-    <a href="javascript:transferStocks();" onclick="$('#modal-transfer').modal('hide');" class="btn danger">まとめて移動する</a>
+    <a href="javascript:void(0);" onclick="$('#modal-transfer').hide();" class="btn secondary btn-close">閉じる</a>
+    <a href="javascript:transferStocks();" class="btn danger">まとめて移動する</a>
   </div>
 </div>
 
