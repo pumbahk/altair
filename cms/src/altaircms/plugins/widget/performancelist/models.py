@@ -35,6 +35,7 @@ def render_fullset(widget, bname, bsettings):
         return render(template_name, 
                       {"performances": performances, 
                        "event": event, 
+                       "widget": widget, 
                        "icon_classes": icon_classes, 
                        "WEEK": WEEK}, 
                       request)
@@ -44,19 +45,21 @@ MERGE_SETTINGS_DISPATH = {
     "fullset": render_fullset
     }
 
+PERFORMANCELIST_KIND_CHOICES = [("fullset", u"デフォルト")]
 
 class PerformancelistWidget(Widget):
     implements(IWidget)
     type = "performancelist"
-
     __tablename__ = "widget_performancelist"
     __mapper_args__ = {"polymorphic_identity": type}
     query = DBSession.query_property()
 
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
+    kind = sa.Column(sa.Unicode(32))
+    mask_performance_date = sa.Column(sa.Boolean, default=False, nullable=False)
 
     def merge_settings(self, bname, bsettings):
-        merge_settings_function = MERGE_SETTINGS_DISPATH["fullset"] #onlyone
+        merge_settings_function = MERGE_SETTINGS_DISPATH.get(self.kind) or MERGE_SETTINGS_DISPATH["fullset"]
         merge_settings_function(self, bname, bsettings)
 
 class PerformancelistWidgetResource(HandleSessionMixin,
