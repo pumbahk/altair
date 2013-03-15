@@ -412,6 +412,11 @@ cart.VenuePresenter.prototype = {
         this.selectedStockType = null;
     },
     onPerformanceChanged: function() {
+        if (!this.view.readOnly) {
+          this.setStockType(null);
+          this.view.reset();
+        }
+
         var dataSource = this.performance.createDataSource();
         this.view.updateVenueViewer(dataSource, this.callbacks);
     },
@@ -921,6 +926,7 @@ cart.VenueView = Backbone.View.extend({
                 } catch (e) {}
             }
         }).css({
+            'visibility': 'hidden',
             'position': 'absolute',
             'left': '20px',
             'top': '20px'
@@ -942,6 +948,8 @@ cart.VenueView = Backbone.View.extend({
         return retval;
     },
     updateVenueViewer: function (dataSource, callbacks) {
+		this.verticalSlider.css({ visibility: 'hidden' });
+
         this.updateQueue.push({ dataSource: dataSource, callbacks: callbacks });
         if (!this.loading)
             this._handleQueue();
