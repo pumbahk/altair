@@ -35,10 +35,12 @@
             <a href="${purchase_links[perf.id]}">
                 <span style="font-size: x-small">
                 % if perf.open_on:
-                    開場:${str(perf.open_on.year)[2:]}/${perf.open_on.month}/${perf.open_on.day}
+                    開場:${str(perf.open_on.year)[2:]}/${str(perf.open_on.month).zfill(2)}/${str(perf.open_on.day).zfill(2)}
+                    ${str(perf.open_on.hour).zfill(2)}:${str(perf.open_on.minute).zfill(2)}
                 % endif
                 % if perf.start_on:
-                    開演:${str(perf.start_on.year)[2:]}/${perf.start_on.month}/${perf.start_on.day}<br/>
+                    開演:${str(perf.start_on.year)[2:]}/${str(perf.start_on.month).zfill(2)}/${str(perf.start_on.day).zfill(2)}
+                    ${str(perf.start_on.hour).zfill(2)}:${str(perf.start_on.minute).zfill(2)}<br/>
                 % endif
                 % if perf.venue:
                     会場:${perf.venue}<br/>
