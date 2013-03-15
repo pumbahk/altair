@@ -10,6 +10,7 @@ from sqlalchemy.sql import func
 
 from ticketing.formhelpers import Translations, Required, BugFreeSelectField, OurTextField, OurSelectField, OurIntegerField, OurBooleanField, OurDecimalField, OurForm, NullableTextField
 from ticketing.core.models import SalesSegment, SalesSegmentGroup, Product, ProductItem, StockHolder, StockType, Stock, Performance, TicketBundle
+from ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
 
 class ProductForm(OurForm):
     @classmethod
@@ -228,3 +229,12 @@ class ProductItemForm(Form):
             sum_amount = Decimal(field.data) + Decimal(sum_amount)
             if product and product.price < sum_amount:
                 raise ValidationError(u'商品合計金額以内で入力してください')
+
+    def validate_ticket_bundle_id(form, field):
+        # 引取方法にコンビニ発券が含まれていたら必須
+        if not field.data and form.product_id.data:
+            product = Product.get(form.product_id.data)
+            if product:
+                for pdmp in product.sales_segment.payment_delivery_method_pairs:
+                    if pdmp.delivery_method.delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID:
+                        raise ValidationError(u'券面構成を選択してください')
