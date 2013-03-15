@@ -1,11 +1,14 @@
 <%page args="events, word, num, page, page_num, path, week"/>
 
 <span style="font-size: x-small">
+
 % if int(num):
     ${num}件見つかりました。
 % else:
     % if word:
-        <b>${word}</b>に一致する情報は見つかりませんでした。
+        ${word}に一致する情報は見つかりませんでした。
+    % else:
+        条件に一致する情報は見つかりませんでした。
     % endif
 % endif
 </span>

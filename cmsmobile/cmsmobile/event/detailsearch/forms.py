@@ -56,6 +56,14 @@ class DetailSearchForm(SearchForm):
             raise ValueError (u'日付が不正です')
         return
 
+    def validate_word(form, field):
+        print field.data
+        if field.data == "":
+            raise ValueError(u'検索文字列を入力してください')
+        if len(field.data) > 200:
+            raise ValueError(u'200文字以内で入力してください')
+        return
+
 def _check_date(year, month, day):
     try:
         perf_date = date(int(year), int(month), int(day))

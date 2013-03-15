@@ -23,6 +23,11 @@ def move_detailsearch(request):
              renderer='cmsmobile:templates/searchresult/detailsearch.mako')
 def move_detailsearch_post(request):
 
+    """
+
+:param request:
+:return:
+"""
     log_info("move_detailsearch_post", "start")
     searcher = EventSearcher(request)
 
@@ -34,10 +39,15 @@ def move_detailsearch_post(request):
     if form.validate():
         log_info("move_detailsearch_post", "detail search start")
         qs = searcher.get_events_from_freeword(form)
-        qs = searcher.get_events_from_area(form, qs)
-        qs = searcher.get_events_from_sale(form, qs)
-        qs = searcher.get_events_from_start_on(form, qs)
-        qs = searcher.get_events_from_salessegment(form, qs)
+        if not qs:
+            log_info("move_detailsearch_post", "free word not result")
+        else:
+            print qs
+            qs = searcher.get_events_from_area(form, qs)
+            qs = searcher.get_events_from_sale(form, qs)
+            qs = searcher.get_events_from_start_on(form, qs)
+            qs = searcher.get_events_from_salessegment(form, qs)
+
         log_info("move_detailsearch_post", "detail search end")
 
         form = get_event_paging(request=request, form=form, qs=qs)
@@ -65,7 +75,7 @@ def create_genre_selectbox(request, form):
 def create_date_selectbox(form):
     log_info("create_date_selectbox", "start")
 
-    log_info("create_date_selectbox", "selectbox deelte start")
+    log_info("create_date_selectbox", "selectbox delete start")
     del form.year.choices[:]
     del form.since_year.choices[:]
     del form.month.choices[:]
