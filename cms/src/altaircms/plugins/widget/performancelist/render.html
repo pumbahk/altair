@@ -14,7 +14,8 @@ logger = logging.getLogger(__name__)
 
 <div class="detailBox describeBox">
   <div class="detailBoxInner">
-	<h2>公演/試合一覧</h2>
+	  ##<h2>公演/試合一覧</h2>
+    <h2><img src="/static/ticketstar/img/detail/title_performance_items.gif" alt="公演/試合一覧" height="30"/></h2>
 	<!--
     <form>
       <div class="fields">
@@ -35,7 +36,7 @@ logger = logging.getLogger(__name__)
       <% performance = p.values %>
       <tr>
         <th scope="row"><span class="serial">${i+1}</span> ${performance.title}</th>
-          <td>${myhelpers.performance_describe_date(performance)} ${myhelpers.performance_describe_time(performance)}</td>
+          <td width="27%">${myhelpers.performance_describe_date(performance)} <br/> ${myhelpers.performance_describe_time(performance)}</td>
           %if venue:
           <td rowspan="${venue.rowspan}" width="25%">${venue.values}</td>
           %endif
