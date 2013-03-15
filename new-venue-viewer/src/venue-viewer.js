@@ -171,6 +171,8 @@
                   });
                 } else {
                   self.callbacks.load.call(self, self);
+                  // 「読込中です」を消すために以下が必要
+                  self.callbacks.loadPartEnd.call(self, self, 'drawing');
                 }
               });
             }, self.callbacks.message);
@@ -694,7 +696,7 @@
         var previousPageInfo = {
           page: this.currentPage,
           zoomRatio: this.zoomRatio,
-          scrollPosition: this.drawable.scrollPosition()
+          scrollPosition: this.drawable ? this.drawable.scrollPosition() : null
         };
         var self = this;
         if (typeof pageUrlOrPageInfo == 'string' || pageUrlOrPageInfo instanceof String) {
@@ -742,6 +744,8 @@
           if (next)
             next.call(self, pageInfo);
         };
+        if (!pageInfo)
+          return;
         if (!(pageInfo.page in this.pages))
           return;
         this.canvas.css({ cursor: 'default' });

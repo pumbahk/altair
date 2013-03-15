@@ -87,6 +87,7 @@ def merge_session_with_post(session, post, filters={}):
                 elif isinstance(value, str)\
                     or isinstance(value, unicode)\
                     or isinstance(value, int)\
+                    or isinstance(value, long)\
                     or isinstance(value, Decimal)\
                     or isinstance(value, datetime)\
                     or isinstance(value, date)\

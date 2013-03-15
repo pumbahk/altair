@@ -1,9 +1,19 @@
 # coding: utf-8
 from markupsafe import Markup
 from pyramid.view import view_config
-from pyramid.exceptions import NotFound, Forbidden
+from pyramid.exceptions import NotFound
 from pyramid.httpexceptions import HTTPFound
-from ..exceptions import *
+from ..exceptions import (
+    NoCartError,
+    NoEventError,
+    NoSalesSegment,
+    NoPerformanceError,
+    InvalidCSRFTokenException,
+    OverQuantityLimitError,
+    ZeroQuantityError,
+    CartCreationException,
+    DeliveryFailedException,
+)
 from ..reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from ..stocker import NotEnoughStockException
 from .. import api
@@ -16,12 +26,6 @@ import transaction
 logger = logging.getLogger(__name__)
 
 
-
-#@mobile_view_config(context=Forbidden, renderer=selectable_renderer('ticketing.cart:templates/errors_mobile/%(membership)s/forbidden.html'))
-#@view_config(context=Forbidden, renderer=selectable_renderer('ticketing.cart:templates/errors/%(membership)s/forbidden.html'))
-#def forbidden(request):
-#    request.response.status = 401
-#    return {}
 
 @mobile_view_config(context=NotFound, renderer=selectable_renderer('ticketing.cart:templates/errors_mobile/%(membership)s/notfound.html'))
 @view_config(context=NotFound, renderer=selectable_renderer('ticketing.cart:templates/errors/%(membership)s/notfound.html'))
@@ -95,24 +99,24 @@ def invalid_seat_selection_exception(request):
 def not_enough_ajacency_exception(request):
     return dict(message=u"連席で座席を確保できません。個別に購入してください。")
 
-@view_config(context=CartCreationExceptoion, renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/error.html'), request_type='ticketing.mobile.interfaces.IMobileRequest')
+@view_config(context=CartCreationException, renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/error.html'), request_type='ticketing.mobile.interfaces.IMobileRequest')
 def cart_creation_exception(request):
     return dict(message=u"カートを作成できませんでした。しばらく時間を置いてから再度お試しください。")
 
 @view_config(context=InvalidCSRFTokenException, renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/error.html'), request_type='ticketing.mobile.interfaces.IMobileRequest')
-def cart_creation_exception(request):
+def invalid_csrf_token_exception(request):
     return dict(message=u"ウェブブラウザの戻るボタンは使用できません。画面上の戻るボタンから操作して下さい。")
 
 @view_config(context=DeliveryFailedException, renderer=selectable_renderer('ticketing.cart:templates/carts/%(membership)s/message.html'))
 @view_config(context=DeliveryFailedException, renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/error.html'), request_type='ticketing.mobile.interfaces.IMobileRequest')
-def cart_creation_exception(context, request):
+def delivery_failed_exception(context, request):
     event_id = context.event_id
     location = request.route_url('cart.index', event_id=event_id)
     return dict(message=Markup(u'決済中にエラーが発生しました。しばらく時間を置いてから<a href="%s">再度お試しください。</a>' % location))
 
 @view_config(context=PaymentPluginException, renderer=selectable_renderer('ticketing.cart:templates/carts/%(membership)s/message.html'))
 @view_config(context=PaymentPluginException, renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/error.html'), request_type='ticketing.mobile.interfaces.IMobileRequest')
-def cart_creation_exception(context, request):
+def payment_plugin_exception(context, request):
     if context.back_url is not None:
         # カートの救済可能な場合
         api.recover_cart(request) 
@@ -120,9 +124,10 @@ def cart_creation_exception(context, request):
         return HTTPFound(location=context.back_url)
     else:
         # カートの救済不可能
-        if cart is not None:
-            location = request.route_url('cart.index', event_id=cart.performance.event_id)
-        else:
-            location = request.context.host_base_url
+        # if cart is not None:
+        #     location = request.route_url('cart.index', event_id=cart.performance.event_id)
+        # else:
+        #    location = request.context.host_base_url
+        location = request.context.host_base_url
     return dict(message=Markup(u'決済中にエラーが発生しました。しばらく時間を置いてから<a href="%s">再度お試しください。</a>' % location))
 

@@ -4,7 +4,7 @@ from altaircms.interfaces import IWidget
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from pyramid.renderers import render
-
+from altaircms.modelmanager.ancestors import GetWithGenrePagesetAncestor
 from altaircms.widget.models import Widget
 from altaircms.plugins.base import DBSession
 from altaircms.plugins.base.mixins import HandleSessionMixin
@@ -21,8 +21,11 @@ class BreadcrumbsWidget(Widget):
     __tablename__ = "widget_breadcrumbs"
     __mapper_args__ = {"polymorphic_identity": type}
     query = DBSession.query_property()
-
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
+
+    def get_ancestor_pages(self, page):
+        root = page.pageset
+        return GetWithGenrePagesetAncestor(root).get_ancestors()
 
     @not_support_if_keyerror("breadcrumbs widget: %(err)s")
     def merge_settings(self, bname, bsettings):
@@ -31,7 +34,7 @@ class BreadcrumbsWidget(Widget):
         def breadcrumbs_render():
             request = bsettings.extra["request"]
             page = bsettings.extra["page"]
-            return render(self.template_name, {"request":request, "page":page}, request)
+            return render(self.template_name, {"request":request, "page":page, "widget":self}, request)
         bsettings.add(bname, breadcrumbs_render)
 
 class BreadcrumbsWidgetResource(HandleSessionMixin,

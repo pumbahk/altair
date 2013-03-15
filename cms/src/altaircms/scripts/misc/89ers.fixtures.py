@@ -82,7 +82,6 @@ class Bj89ersFixtureBuilder(FixtureBuilder):
             (u'89ers:残席情報', "unocurppied", u"89ersチケットトップ", '{"above_kadomaru": [{"pk": null, "name": "heading"}], "kadomaru": [{"pk": null, "name": "heading"}, {"pk": null, "name": "freetext"}, {"pk": null, "name": "freetext"}], "below_kadomaru": []}'), 
             (u'89ers:チケット取り扱い数量', "playguide", u"89ersシンプル", '{}'), 
             (u'89ers:チケット購入', "purchase", u"89ers:kadomaru4", '{"above_kadomaru": [{"pk": null, "name": "heading"}], "kadomaru4": [{"pk": null, "name": "heading"}, {"pk": null, "name": "freetext"}], "kadomaru3": [{"pk": null, "name": "heading"}, {"pk": null, "name": "image"}, {"pk": null, "name": "freetext"}, {"pk": null, "name": "freetext"}, {"pk": null, "name": "freetext"}], "kadomaru2": [{"pk": null, "name": "heading"}, {"pk": null, "name": "freetext"}], "kadomaru": [{"pk": null, "name": "freetext"}, {"pk": null, "name": "heading"}, {"pk": null, "name": "freetext"}, {"pk": null, "name": "heading"}, {"pk": null, "name": "freetext"}], "below_kadomaru": []}')]
-            ]
         self.page_triples = page_triples
 
         topic_items = [

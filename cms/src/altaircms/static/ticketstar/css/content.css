@@ -796,33 +796,42 @@
 	color: #666666;
 }
 
-#ticketPrice1 {
+.ticketPrice0 {
+	float: left;
+	width: 485px;
+}
+
+.ticketPrice1 {
 	float: left;
 	width: 325px;
 }
 
-#ticketPrice2 {
+.ticketPrice2 {
 	float: right;
 	width: 327px;
 }
 
-#ticketPrice1 th,
-#ticketPrice2 th {
+.ticketPrice0 th,
+.ticketPrice1 th,
+.ticketPrice2 th {
 	padding: 5px 10px;
 	border-bottom: 1px solid #e6e6e6;
 }
 
-#ticketPrice1 td,
-#ticketPrice2 td {
+.ticketPrice0 td,
+.ticketPrice1 td,
+.ticketPrice2 td {
 	padding: 5px 10px;
 	border-bottom: 1px solid #e6e6e6;
-	text-align: right;
+	text-align: left;
 }
 
-#ticketPrice1 tr:last-child th,
-#ticketPrice1 tr:last-child td,
-#ticketPrice2 tr:last-child th,
-#ticketPrice2 tr:last-child td {
+.ticketPrice0 tr:last-child th,
+.ticketPrice0 tr:last-child td,
+.ticketPrice1 tr:last-child th,
+.ticketPrice1 tr:last-child td,
+.ticketPrice2 tr:last-child th,
+.ticketPrice2 tr:last-child td {
 	border: none;
 }
 

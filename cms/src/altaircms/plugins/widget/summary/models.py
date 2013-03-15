@@ -58,6 +58,7 @@ class SummaryWidget(Widget):
     bound_event_id = sa.Column(sa.Integer, sa.ForeignKey("event.id"))
     bound_event = orm.relationship("Event")
     items = sa.Column(sa.UnicodeText) #json string
+    show_label = sa.Column(sa.Boolean, doc=u"見出しを表示するか否かのフラグ", default=True, nullable=False)
     """
     items attribute structure::
 
@@ -99,3 +100,4 @@ class SummaryWidgetResource(HandleSessionMixin,
     def get_items(self, page_id):
         page = self._get_page(page_id)
         return self._items_from_page(page) if page.event else "[]"
+

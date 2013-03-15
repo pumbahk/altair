@@ -48,6 +48,7 @@ widget.configure({
 
     var collect_data = function(we, choiced_elt){
         return {"items": JSON.stringify($("#app").data("appview").collectData()), 
+                "show_label": !!($(we.dialog).find("#show_label").attr("checked")), 
                 "use_notify": !!($(we.dialog).find("#use_notify").attr("checked"))};
     };
     return widget.include("summary", {

@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['J4G227_EENX4JW9H'] = (function (exports) { (function () { 
+__LIBS__['w4OGFDTPRTPELNQR'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['QROA9DDHMWA58MQK'] = (function (exports) { (function () { 
+__LIBS__['oOXECVDWG7B1KH9W'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['n1MT8D36HLZ_TROK'] = (function (exports) { (function () { 
+__LIBS__['JVXI5461PUY0981P'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['J4G227_EENX4JW9H'];
-var CONF = __LIBS__['QROA9DDHMWA58MQK'];
+var util = __LIBS__['w4OGFDTPRTPELNQR'];
+var CONF = __LIBS__['oOXECVDWG7B1KH9W'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -1030,9 +1030,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['QROA9DDHMWA58MQK'];
-  var seat = __LIBS__['n1MT8D36HLZ_TROK'];
-  var util = __LIBS__['J4G227_EENX4JW9H'];
+  var CONF = __LIBS__['oOXECVDWG7B1KH9W'];
+  var seat = __LIBS__['JVXI5461PUY0981P'];
+  var util = __LIBS__['w4OGFDTPRTPELNQR'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1198,6 +1198,8 @@ function parseTransform(transform_str) {
                   });
                 } else {
                   self.callbacks.load.call(self, self);
+                  // 「読込中です」を消すために以下が必要
+                  self.callbacks.loadPartEnd.call(self, self, 'drawing');
                 }
               });
             }, self.callbacks.message);
@@ -1721,7 +1723,7 @@ function parseTransform(transform_str) {
         var previousPageInfo = {
           page: this.currentPage,
           zoomRatio: this.zoomRatio,
-          scrollPosition: this.drawable.scrollPosition()
+          scrollPosition: this.drawable ? this.drawable.scrollPosition() : null
         };
         var self = this;
         if (typeof pageUrlOrPageInfo == 'string' || pageUrlOrPageInfo instanceof String) {
@@ -1769,6 +1771,8 @@ function parseTransform(transform_str) {
           if (next)
             next.call(self, pageInfo);
         };
+        if (!pageInfo)
+          return;
         if (!(pageInfo.page in this.pages))
           return;
         this.canvas.css({ cursor: 'default' });

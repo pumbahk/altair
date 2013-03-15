@@ -10,7 +10,7 @@ def get_cms_data(request, organization, event, now=None):
     hashed_value = hashlib.sha1(json.dumps(data)).hexdigest()
     if request.session.get("cms_send_data"):
         if request.session.get("cms_send_data") == hashed_value:
-            raise Exception("same data is already send.")
+            raise Exception("same data is already sent.")
 
     request.session["cms_send_data"] = hashed_value
     return {

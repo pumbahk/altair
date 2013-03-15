@@ -1,5 +1,7 @@
-<%page args="form, products=None, event=None, performance=None, limit=None" />
+<%page args="form, products=None, performance=None, limit=None" />
 <%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/product_items/_action_button.html" name="b" />
+
 % if performance:
 <%
 from ticketing.core.models import StockHolder, Stock
@@ -8,6 +10,8 @@ stock_holders = StockHolder.query.join(Stock).filter(Stock.performance_id == per
 ticket_bundles = performance.event.ticket_bundles
 sales_segments = performance.sales_segments
 %>
+<%include file="/product_items/_modal.html" args="modal_id='modal-product_item', performance_id=performance.id" />
+
 <script type="text/javascript">
   $(function() {
     $('#use-grid-editor').change(function() {
@@ -148,7 +152,7 @@ sales_segments = performance.sales_segments
           var stock_type_options = {value:"${';'.join(options)|n}"};
           <% options = ["%s:%s" % (sh.id, sh.name) for sh in stock_holders] %>
           var stock_holder_options = {value:"${';'.join(options)|n}"};
-          <% options = ["%s:%s" % (tb.id, tb.name) for tb in ticket_bundles] %>
+          <% options = [u":(なし)"] + ["%s:%s" % (tb.id, tb.name) for tb in ticket_bundles] %>
           var ticket_bundle_options = {value:"${';'.join(options)|n}"};
 
           <%
@@ -266,39 +270,6 @@ sales_segments = performance.sales_segments
 </div>
 % endif
 
-<% paging = False if limit else True %>
-<%def name="actions(product, product_item=None)">
-<%
-  action_dict = {}
-  if product_item:
-    action_dict.update({
-      'edit':dict(
-        label=u'編集',
-        url='javascript:edit_product_item(%s, %s);' % (product.id, product_item.id),
-        icon='icon-pencil',
-      ),
-      'delete':dict(
-        label=u'削除',
-        url='javascript:delete_product_item(%s);' % product_item.id,
-        icon='icon-minus',
-      ),
-      'preview':dict(
-        label=u'券面プレビュー',
-        url='javascript:preview_ticket(%s);' % product_item.id,
-        icon='icon-print'
-      ),
-    })
-  action_dict.update({
-    'new':dict(
-      label=u'追加',
-      url='javascript:new_product_item(%s);' % product.id,
-      icon='icon-plus',
-    ),
-  })
-  return action_dict
-%>
-</%def>
-
 <%
   label_classes = [
     'label-important',
@@ -367,29 +338,25 @@ sales_segments = performance.sales_segments
               <% if limit and row_count >= limit: break %>
               <% count = len(product.items_by_performance_id(performance.id)) if performance else 1 %>
               <% rowspan = 'rowspan=%s' % (count)  if count else '' %>
-              <tr id="product-${product.id}">
-                <td ${rowspan}>
-                  <input type="radio" name="product_id" value="${product.id}" />
-                  <input type="hidden" name="sales_segment_id" value="${sales_segment_id}" />
-                  <input type="hidden" id="seat_stock_type_id" value="${stock_type_id}" />
-                </td>
-                <td ${rowspan}><span>${product.seat_type()}</span></td>
-                <td ${rowspan}><a href="javascript:edit_product('${product.id}');"><span id="name">${product.name}</span></a></td>
-                <td ${rowspan}><span id="price" value="${product.price}">${h.price_format(product.price)}</span>円</td>
-                <td ${rowspan}><span id="display_order">${product.display_order}</span></td>
-                <td ${rowspan}><span id="public" value="${product.public}">${u'○' if product.public else u'×'}</span></td>
+              <tr>
+                <td ${rowspan}><input type="radio" name="product_id" value="${product.id}" /></td>
+                <td ${rowspan}>${product.seat_type()}</td>
+                <td ${rowspan}><a href="javascript:edit_product('${product.id}');">${product.name}</a></td>
+                <td ${rowspan}>${h.price_format(product.price)}円</td>
+                <td ${rowspan}>${product.display_order}</td>
+                <td ${rowspan}>${u'○' if product.public else u'×'}</td>
                 % if performance:
                   % for j, item in enumerate(product.items_by_performance_id(performance.id)):
                     % if j != 0:
-              <tr id="product-${product.id}">
+              <tr>
                     % endif
-                <td id="stock_holder-${item.id}" value="${item.stock.stock_holder.id}" style="border-left: 1px solid #ddd;">${item.stock.stock_holder.name}</td>
-                <td id="item_name-${item.id}" value="${item.name}">${item.name}</td>
-                <td id="item_price-${item.id}" value="${item.price}">${h.price_format(item.price)}円</td>
-                <td id="quantity-${item.id}">${item.quantity}</td>
+                <td style="border-left: 1px solid #ddd;">${item.stock.stock_holder.name}</td>
+                <td>${item.name}</td>
+                <td>${h.price_format(item.price)}円</td>
+                <td>${item.quantity}</td>
                 <td>${item.stock.stock_status.quantity} / ${item.stock.quantity}席</td>
-                <td id="stock-${item.id}" value="${item.stock.id}">${item.stock.id}</td>
-                <td id="ticket_bundle_id-{$item.id}" value="${item.ticket_bundle_id}">
+                <td>${item.stock.id}</td>
+                <td>
                   % if performance and item.ticket_bundle_id:
                     <a id="productItem${item.id}" class="preview-link" data-pk="${item.id}" data-name="${item.name}">${item.ticket_bundle.name}<i class="icon-eye-open"></i></a>
                   % else:
@@ -397,15 +364,15 @@ sales_segments = performance.sales_segments
                   % endif
                 </td>
                   % if row_count == 0:
-                      <td><input type="hidden" id="ticket_bundle_id-${item.id}" value="${item.ticket_bundle_id}" />${h.action_button(actions(product, item), order=['edit', 'preview', 'new', 'delete'], options='btn-small')}</td>
+                <td><input type="hidden" id="ticket_bundle_id-${item.id}" value="${item.ticket_bundle_id}" />${h.action_button(b.actions(product, item), order=['edit', 'preview', 'new', 'delete'], options='btn-small')}</td>
                   % else:
-                      <td><input type="hidden" id="ticket_bundle_id-${item.id}" value="${item.ticket_bundle_id}" />${h.action_button(actions(product, item), order=['edit', 'preview', 'new', 'delete'], options='btn-small', dropup=True)}</td>
+                <td><input type="hidden" id="ticket_bundle_id-${item.id}" value="${item.ticket_bundle_id}" />${h.action_button(b.actions(product, item), order=['edit', 'preview', 'new', 'delete'], options='btn-small', dropup=True)}</td>
                   % endif
               </tr>
                   % endfor
                   % if count == 0:
                 <td colspan="7"></td>
-                <td>${h.action_button(actions(product), options='btn-small')}</td>
+                <td>${h.action_button(b.actions(product), options='btn-small')}</td>
               </tr>
                   % endif
                 % endif
@@ -423,7 +390,7 @@ sales_segments = performance.sales_segments
         % if limit and count_by_sales_segment > limit:
         <div class="pull-right">
           ${count_by_sales_segment}件中${limit}件を表示
-          <a href="${request.route_path('products.index', event_id=event.id)}">もっと見る</a>
+          <a href="${request.route_path('products.index', event_id=performance.event_id)}">もっと見る</a>
         </div>
         % endif
       </div>

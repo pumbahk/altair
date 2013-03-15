@@ -1,16 +1,7 @@
-<%page args="performance, sales_segments, form_product, form_product_item=None, form_product_item_grid=None" />
+<%page args="performance, sales_segments, form_product" />
 
 <div style="margin-bottom: 20px;">
   <%include file="/products/_action_button.html" args="event=performance.event, performance=performance" />
 </div>
-<form>
-<%include file="/products/_list.html" args="form=form_product, form_product_item=form_product_item_grid, products=products, performance=performance" />
-</form>
-<div id="products-form">
-  <%include file="/products/_modal.html" args="modal_id='modal-product', performance_id=performance.id" />
-</div>
-
-<%include file="/product_items/_action_button.html" args="performance=performance" />
-<div id="product_items-form">
-  <%include file="/product_items/_form.html" args="form=form_product_item, form_product=form_product, performance=performance" />
-</div>
+<%include file="/products/_list.html" args="form=form_product, products=products, performance=performance" />
+<%include file="/products/_modal.html" args="modal_id='modal-product', performance_id=performance.id" />

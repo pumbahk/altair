@@ -14,7 +14,7 @@ from datetime import datetime
 from pyramid import security
 from ticketing.cart import logger
 
-from .interfaces import IRakutenOpenID
+from .interfaces import IRakutenOpenID, ITokenizer
 from zope.interface import implementer
 import random
 from .. import helpers as cart_helpers
@@ -88,19 +88,20 @@ class RakutenOpenID(object):
 
 
     def get_redirect_url(self):
-        return (self.base_url + "?openid.ns=http://specs.openid.net/auth/2.0"
-                "&openid.return_to=%(return_to)s"
-                "&openid.claimed_id=http://specs.openid.net/auth/2.0/identifier_select"
-                "&openid.identity=http://specs.openid.net/auth/2.0/identifier_select"
-                "&openid.mode=checkid_setup"
-                "&openid.ns.oauth=http://specs.openid.net/extenstions/oauth/1.0"
-                "&openid.oauth.consumer=%(consumer_key)s"
-                "&openid.oauth.scope=rakutenid_basicinfo,rakutenid_contactinfo,rakutenid_pointaccount"
-                "&openid.ns.ax=http://openid.net/srv/ax/1.0"
-                "&openid.ax.mode=fetch_request"
-                "&openid.ax.type.nickname=http://schema.openid.net/namePerson/friendly"
-                "&openid.ax.required=nickname"
-                ) % dict(return_to=self.return_to, consumer_key=self.consumer_key)
+        return self.base_url + "?" + urllib.urlencode([
+            ('openid.ns', 'http://specs.openid.net/auth/2.0'),
+            ('openid.return_to', self.return_to),
+            ('openid.claimed_id', 'http://specs.openid.net/auth/2.0/identifier_select'),
+            ('openid.identity', 'http://specs.openid.net/auth/2.0/identifier_select'),
+            ('openid.mode', 'checkid_setup'),
+            ('openid.ns.oauth', 'http://specs.openid.net/extenstions/oauth/1.0'),
+            ('openid.oauth.consumer', self.consumer_key),
+            ('openid.oauth.scope', 'rakutenid_basicinfo,rakutenid_contactinfo,rakutenid_pointaccount'),
+            # ('openid.ns.ax', 'http://openid.net/srv/ax/1.0'),
+            # ('openid.ax.mode', 'fetch_request'),
+            # ('openid.ax.type.nickname', 'http://schema.openid.net/namePerson/friendly'),
+            # ('openid.ax.required', 'nickname'),
+        ])
 
     def verify_authentication(self, request, identity):
 
@@ -118,10 +119,10 @@ class RakutenOpenID(object):
             ('openid.ns.oauth', identity['ns_oauth']),
             ('openid.oauth.request_token', identity['oauth_request_token']),
             ('openid.oauth.scope', identity['oauth_scope']),
-            ('openid.ns.ax', identity['ns_ax']),
-            ('openid.ax.mode', identity['ax_mode']),
-            ('openid.ax.type.nickname', identity['ax_type_nickname']),
-            ('openid.ax.value.nickname', identity['ax_value_nickname'].encode('utf-8')),
+            # ('openid.ns.ax', identity['ns_ax']),
+            # ('openid.ax.mode', identity['ax_mode']),
+            # ('openid.ax.type.nickname', identity['ax_type_nickname']),
+            # ('openid.ax.value.nickname', identity['ax_value_nickname'].encode('utf-8')),
         ])
 
         f = urllib2.urlopen(url)
@@ -180,6 +181,8 @@ class RakutenOpenID(object):
         profile.city=contact_info.get('city')
         profile.street=contact_info.get('street')
         profile.tel_1=contact_info.get('tel')
+
+        profile.rakuten_point_account = point_account.get('pointAccount')
         
         DBSession.add(user)
         import transaction
@@ -190,7 +193,7 @@ class RakutenOpenID(object):
 
         if is_valid == "true":
             logger.debug("authentication OK")
-            return {'clamed_id': identity['claimed_id'], "nickname": identity['ax_value_nickname']}
+            return {'clamed_id': identity['claimed_id'], "nickname": user_info.get('nickName')}
         else:
             logger.debug("authentication NG")
             return None
@@ -277,7 +280,7 @@ def parse_rakutenid_basicinfo(response):
     return dict([line.split(":", 1) for line in response.split("\n")])
 
 def parse_rakutenid_pointaccount(response):
-    return response
+    return dict([line.split(":", 1) for line in response.split("\n")])
 
 def create_signature_base(method, url, oauth_consumer_key, secret, oauth_token, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_version, form_params):
     params = sorted(form_params + [
@@ -300,6 +303,7 @@ def create_oauth_sigunature(method, url, oauth_consumer_key, secret, oauth_token
     return oauth_signature.strip()
 
 def openid_params(request):
+    logger.debug('openid verify GET: {0}\nPOST{1}'.format(request.GET.items(), request.POST.items()))
     request_get = request.params
     return dict(ns = request_get['openid.ns'],
                 op_endpoint = request_get['openid.op_endpoint'],
@@ -314,8 +318,14 @@ def openid_params(request):
                 ns_oauth = 'http://specs.openid.net/extenstions/oauth/1.0',
                 oauth_request_token = request_get['openid.oauth.request_token'],
                 oauth_scope = 'rakutenid_basicinfo,rakutenid_contactinfo,rakutenid_pointaccount',
-                ns_ax = request_get['openid.ns.ax'],
-                ax_mode = request_get['openid.ax.mode'],
-                ax_type_nickname = request_get['openid.ax.type.nickname'],
-                ax_value_nickname = request_get['openid.ax.value.nickname'],
+                # ns_ax = request_get['openid.ns.ax'],
+                # ax_mode = request_get['openid.ax.mode'],
+                # ax_type_nickname = request_get['openid.ax.type.nickname'],
+                # ax_value_nickname = request_get['openid.ax.value.nickname'],
                 )
+
+
+def tokenize(request, nonce, short_clamed_id):
+    reg = request.registry
+    tokenizer = reg.queryUtility(ITokenizer)
+    return tokenizer.tokenize(nonce, short_clamed_id)

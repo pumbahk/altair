@@ -332,8 +332,9 @@ function buildStockHolderTypeTables(venue) {
     var style = stockHolder.get('style');
     var swatch = $('<span class="swatch"></span>').css('text-color', style.text_color).text(style.text||'　');
     var head = $('<h4 class="ui-header" style="float: left;"></h4>').text(' ' + stockHolder.get('name'));
-    var button = $('<a class="reporting btn btn-mini btn-inverse" data-toggle="modal" href="#modal-report">配券明細</a>');
-    button.attr('onclick', "$('.modal-report-submit').attr('href', '/events/reports/${performance.event_id}/seat_stock_to_stockholder/" + stockHolder.get('id') + "');");
+    var transfer_button = $('<a class="reporting btn btn-mini btn-inverse" href="javascript:buildTransferModal(' + stockHolder.id + ');">枠移動</a>');
+    var report_button = $('<a class="reporting btn btn-mini btn-inverse" data-toggle="modal" href="#modal-report">配券明細</a>');
+    report_button.attr('onclick', "$('.modal-report-submit').attr('href', '/events/reports/${performance.event_id}/seat_stock_to_stockholder/" + stockHolder.get('id') + "');");
     var div = $('<div></div>').css('display', 'none');
     var table = $('<table class="table table-bordered"></table>');
     var tbody = $('<tbody></tbody>').appendTo(table);
@@ -354,12 +355,63 @@ function buildStockHolderTypeTables(venue) {
     table.appendTo(div);
 
     retval.append(head);
+    retval.append(transfer_button);
     if (stockHolder.get('id'))
-      retval.append(button);
+      retval.append(report_button);
     retval.append('<div style="clear: both;"></div>');
     retval.append(div);
   });
   return retval;
+}
+
+function buildTransferModal(id) {
+  var id = id || "";
+  var modal = $('#modal-transfer');
+  var body = modal.find('.modal-body');
+  var venue = venueEditorRoot.venueeditor('model');
+  var current = $('<p>選択した枠：' +  + '</p>');
+  var select = $('<p>移動先の枠：</p><select name="to"></select>');
+  venue.stockHolders.each(function (stockHolder) {
+    if (stockHolder.get('id') == id) {
+      current = $('<p>選択した枠：' + stockHolder.get('name') + '</p><input name="from" type="hidden" value="' + stockHolder.get('id') + '" />');
+    } else {
+      select.append($("<option>").text(stockHolder.get('name')).attr("value", stockHolder.get('id')));
+    }
+  });
+  body.empty().append(current).append(select);
+  modal.show();
+}
+
+function transferStocks() {
+  var modal = $('#modal-transfer');
+  var body = modal.find('.modal-body');
+  var venue = venueEditorRoot.venueeditor('model');
+  var from_stock_holder = body.find('input[name="from"]').val();
+  var to_stock_holder = body.find('select[name="to"] option:selected').val();
+
+  for (var i in venue.perStockHolderStockMap[from_stock_holder]) {
+    var from_stock = venue.perStockHolderStockMap[from_stock_holder][i];
+    var to_stock = null;
+
+    var stock_type_id = from_stock.get('stockType').get('id');
+    for (var j in venue.perStockTypeStockMap[stock_type_id]) {
+      to_stock = venue.perStockTypeStockMap[stock_type_id][j];
+      if (to_stock_holder == to_stock.get('stockHolder').get('id')) {
+        break;
+      }
+    }
+
+    if (!to_stock || to_stock.id == from_stock.id) continue;
+    if (venue.perStockSeatSet[from_stock.id]) {
+      venue.perStockSeatSet[from_stock.id].each(function(seat){
+        seat.set('stock', to_stock);
+      })
+    } else {
+      to_stock.set('assigned', parseInt(to_stock.get('assigned')) + parseInt(from_stock.get('assigned')));
+      from_stock.set('assigned', 0);
+    }
+  }
+  modal.hide();
 }
 
 function saveStocks() {
@@ -421,6 +473,22 @@ callbacks.select = function (viewer, selection) {
   <a class="btn btn-mini btn-inverse" data-toggle="modal" href="#modal-download_seats">
     <i class="icon-download icon-white"></i> すべての座席をCSV出力
   </a>
+</div>
+
+<div id="modal-transfer" class="modal hide">
+  <div class="modal-header">
+    <a href="javascript:void(0);" onclick="$('#modal-transfer').hide();" class="close btn-close">&times;</a>
+    <h3>枠移動</h3>
+  </div>
+
+  <div class="modal-body">
+    <p>選択した枠の座席をまとめて他の枠へ移動します。</p>
+  </div>
+
+  <div class="modal-footer">
+    <a href="javascript:void(0);" onclick="$('#modal-transfer').hide();" class="btn secondary btn-close">閉じる</a>
+    <a href="javascript:transferStocks();" class="btn danger">まとめて移動する</a>
+  </div>
 </div>
 
 <div id="modal-report" class="modal hide">

@@ -23,6 +23,7 @@ def includeme(config):
 
     config.add_route('rakuten_auth.login', '/login')
     config.add_route('rakuten_auth.verify', '/verify')
+    config.add_route('rakuten_auth.verify2', '/verify2')
     config.add_route('rakuten_auth.error', '/error')
 
 def main(global_config, **local_config):

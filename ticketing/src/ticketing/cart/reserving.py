@@ -5,7 +5,20 @@
 """
 
 import logging
-from ticketing.core.models import *
+from ticketing.core.models import (
+    DBSession,
+    Performance,
+    Venue,
+    Stock,
+    Seat,
+    SeatStatus,
+    SeatStatusEnum,
+    SeatIndex,
+    SeatIndexType,
+    SeatAdjacency,
+    SeatAdjacencySet,
+    Seat_SeatAdjacency,
+)
 from sqlalchemy.sql import not_
 
 logger = logging.getLogger(__name__)
