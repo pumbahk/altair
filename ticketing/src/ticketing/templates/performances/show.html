@@ -94,7 +94,7 @@ Altair Backend -- ${performance.event.title}[${performance.name}]
   <div class="tab-content" id="tabbable-tab-content">
     % if tab == 'product' and h.has_permission('event_editor'):
     <div class="tab-pane" id="product">
-      <%include file="./_product.html" args="performance=performance, sales_segments=performance.sales_segments, form_product=form_product, form_product_item=form_product_item, form_product_item_grid=form_product_item_grid" />
+      <%include file="./_product.html" args="performance=performance, sales_segments=performance.sales_segments, form_product=form_product, form_product_item=form_product_item" />
     </div>
     % elif tab == 'order':
     <div class="tab-pane" id="order">

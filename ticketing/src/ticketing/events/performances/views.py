@@ -14,9 +14,8 @@ from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.events.performances.forms import PerformanceForm, PerformancePublicForm
-from ticketing.events.sales_segments.forms import SalesSegmentForm
-from ticketing.core.models import Event, Performance, Order, Product, ProductItem, Stock, SalesSegment
-from ticketing.products.forms import ProductForm, ProductItemForm, ProductItemGridForm
+from ticketing.core.models import Event, Performance, Order
+from ticketing.products.forms import ProductForm, ProductItemForm
 from ticketing.orders.forms import OrderForm, OrderSearchForm
 
 from ticketing.mails.forms import MailInfoTemplate
@@ -42,14 +41,8 @@ class PerformanceShowView(BaseView):
 
     def _tab_product(self):
         return dict(
-            form_product=ProductForm(
-                event_id=self.performance.event_id),
-            form_product_item=ProductItemForm(
-                user_id=self.context.user.id,
-                performance_id=self.performance.id),
-            form_product_item_grid=ProductItemGridForm(
-                user_id=self.context.user.id,
-                performance_id=self.performance.id),
+            form_product=ProductForm(performance_id=self.performance.id),
+            form_product_item=ProductItemForm(user_id=self.context.user.id, performance_id=self.performance.id),
             products=self.performance.products
             )
 
