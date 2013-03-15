@@ -1,7 +1,9 @@
-<%page args="event, week, month_unit, month_unit_keys, purchase_links, tickets" />
+<%page args="event, week, month_unit, month_unit_keys, purchase_links, tickets, sales_start, sales_end" />
 
 <div style="font-size: x-small">
-公演期間：${event.deal_open.year}/${event.deal_open.month}/${event.deal_open.day}(${week[event.deal_open.weekday()]})-${event.deal_close.year}/${event.deal_close.month}/${event.deal_close.day}(${week[event.deal_close.weekday()]})
+公演期間：${event.deal_open.year}/${str(event.deal_open.month).zfill(2)}/${str(event.deal_open.day).zfill(2)}(${week[event.deal_open.weekday()]})-${event.deal_close.year}/${str(event.deal_close.month).zfill(2)}/${str(event.deal_close.day).zfill(2)}(${week[event.deal_close.weekday()]})
+<br/>
+販売期間：${sales_start.year}/${str(sales_start.month).zfill(2)}/${str(sales_start.day).zfill(2)}(${week[sales_start.weekday()]})-${sales_end.year}/${str(sales_end.month).zfill(2)}/${str(sales_end.day).zfill(2)}(${week[sales_end.weekday()]})
 </div>
 
 <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>

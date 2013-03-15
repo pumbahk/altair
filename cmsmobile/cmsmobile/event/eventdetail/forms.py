@@ -18,3 +18,5 @@ class EventDetailForm(Form):
     purchase_links = HiddenField(label='', validators=[Optional()]) # performanceのidがキー
     week = HiddenField(label='', validators=[Optional()])
     tickets = HiddenField(label='', validators=[Optional()])
+    sales_start = HiddenField(label='', validators=[Optional()])
+    sales_end = HiddenField(label='', validators=[Optional()])

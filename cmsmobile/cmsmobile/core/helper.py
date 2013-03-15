@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
-import webhelpers.paginate as paginate
 import logging
+import webhelpers.paginate as paginate
 from altaircms.helpers.link import get_purchase_page_from_performance
+from altaircms.models import SalesSegmentGroup
+from altaircms.event.models import Event
 
 logger = logging.getLogger(__file__)
 
@@ -109,3 +111,25 @@ def get_tickets(event):
 
     log_info("get_tickets", "end")
     return tickets
+
+def get_sales_date(request, event):
+    qs = request.allowable(SalesSegmentGroup).filter(SalesSegmentGroup.event_id == event.id).all()
+
+    sales_start = None
+    sales_end = None
+    for segment in qs:
+        # 初回
+        if sales_start is None:
+            sales_start = segment.start_on
+        if sales_end is None:
+            sales_end = segment.end_on
+
+        # start
+        if sales_start > segment.start_on:
+            sales_start = segment.start_on
+
+        # end
+        if sales_end < segment.end_on:
+            sales_end = segment.end_on
+
+    return sales_start, sales_end

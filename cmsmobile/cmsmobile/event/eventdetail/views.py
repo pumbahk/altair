@@ -3,7 +3,8 @@ from pyramid.view import view_config
 from altaircms.event.models import Event
 from altaircms.topic.models import Promotion, Topic
 from cmsmobile.event.eventdetail.forms import EventDetailForm
-from cmsmobile.core.helper import get_week_map, get_performances_month_unit, get_purchase_links, get_tickets, exist_value
+from cmsmobile.core.helper import get_week_map, get_performances_month_unit, get_purchase_links\
+    , get_tickets, exist_value, get_sales_date
 from cmsmobile.core.helper import log_info
 from altaircms.page.models import PageSet
 
@@ -41,6 +42,7 @@ def move_eventdetail(request):
     keys.sort()
     form.month_unit_keys.data = keys
     form.tickets.data = get_tickets(form.event.data)
+    form.sales_start.data, form.sales_end.data = get_sales_date(request=request, event=form.event.data)
     log_info("move_eventdetail", "detail infomation get end")
 
     log_info("move_eventdetail", "end")
