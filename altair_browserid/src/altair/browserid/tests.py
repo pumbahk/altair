@@ -2,9 +2,11 @@ import unittest
 import webtest
 
 def app(environ, start_response):
+    from . import browser
     start_response('200 OK',
                    [('Content-type', 'text/plain')])
-    body = u"browserid = %s" % environ['repoze.browserid']
+    body = u"environ browserid = %s" % environ['repoze.browserid']
+    body += u" local browserid = %s" % browser.id
     body = body.encode('utf-8')
     return [body]
 
@@ -24,8 +26,8 @@ class BrowserIDMiddlewareTests(unittest.TestCase):
         testapp = webtest.TestApp(target)
 
         result = testapp.get('/')
-
-        self.assertEqual(result.body, 'browserid = None')
+        
+        self.assertEqual(result.body, 'environ browserid = None local browserid = None')
 
     def test_it(self):
         target = self._makeOne(app, cookie_name='browserid', env_key='repoze.browserid')
@@ -36,4 +38,4 @@ class BrowserIDMiddlewareTests(unittest.TestCase):
 
         result = testapp.get('/')
 
-        self.assertEqual(result.body, 'browserid = this-is-browser-id')
+        self.assertEqual(result.body, 'environ browserid = this-is-browser-id local browserid = this-is-browser-id')
