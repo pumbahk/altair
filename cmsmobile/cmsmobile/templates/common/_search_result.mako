@@ -21,14 +21,6 @@
         <div style="font-size: x-small">販売期間：${event.deal_open.year}/${str(event.deal_open.month).zfill(2)}/${str(event.deal_open.day).zfill(2)}(${week[event.deal_open.weekday()]})〜${event.deal_close.year}/${str(event.deal_close.month).zfill(2)}/${str(event.deal_close.day).zfill(2)}(${week[event.deal_close.weekday()]})</div>
         % if event.performances[0]:
             <div style="font-size: x-small">会場：${event.performances[0].venue}</div>
-
-            % for group in event.salessegment_groups:
-                % for segment in group.salessegments:
-                    % for ticket in segment.tickets:
-                        <div style="font-size: x-small">${ticket.name}：${ticket.price}</div>
-                    % endfor
-                % endfor
-            % endfor
             % if count < len(events) - 1:
                 <hr/>
             % endif
