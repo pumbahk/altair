@@ -64,9 +64,9 @@
     % endfor
 % endif
 
-% if event.description:
+% if event.notice:
     <div style="font-size: x-small">詳細/注意事項</div>
-    <span style="font-size: x-small">${event.description}</span>
+    <span style="font-size: x-small">${event.notice}</span>
 % endif
 
 % if tickets:
