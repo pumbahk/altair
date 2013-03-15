@@ -113,7 +113,7 @@ class PerformanceForm(Form):
                         append_errors(self.errors, "open_on", u"開場時間、開始時間、終了時間の順になっていません")
                     
             except Exception, e:
-                logger.warn(str(e))
+                logger.debug(str(e))
                 append_errors(self.errors, "__all__", u"不正な文字列が入力されてます。")
         return not bool(self.errors)
 
