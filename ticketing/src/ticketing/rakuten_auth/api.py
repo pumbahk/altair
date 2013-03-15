@@ -181,6 +181,8 @@ class RakutenOpenID(object):
         profile.city=contact_info.get('city')
         profile.street=contact_info.get('street')
         profile.tel_1=contact_info.get('tel')
+
+        profile.rakuten_point_account = point_account.get('pointAccount')
         
         DBSession.add(user)
         import transaction
@@ -278,7 +280,7 @@ def parse_rakutenid_basicinfo(response):
     return dict([line.split(":", 1) for line in response.split("\n")])
 
 def parse_rakutenid_pointaccount(response):
-    return response
+    return dict([line.split(":", 1) for line in response.split("\n")])
 
 def create_signature_base(method, url, oauth_consumer_key, secret, oauth_token, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_version, form_params):
     params = sorted(form_params + [
