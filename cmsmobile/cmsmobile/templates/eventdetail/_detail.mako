@@ -31,7 +31,7 @@
     <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
 
     % for perf in event.performances:
-        % if str(perf.start_on.year) + "/" + str(perf.start_on.month) == month:
+        % if str(perf.start_on.year) + "/" + str(perf.start_on.month).zfill(2) == month:
             <a href="${purchase_links[perf.id]}">
                 <span style="font-size: x-small">
                 % if perf.open_on:
