@@ -174,8 +174,7 @@ class SearchResultRender(object):
       </dl>
       <ul>
           <li class="searchRemaining">%(deal_limit)s</li>
-          <li>%(deal_info_icons)s</li>
-          <li class="searchDate">%(deal_description)s</li>
+          %(deal_description)s
       </ul>
       <p>%(purchase_link)s</p>
   </div>
@@ -187,14 +186,13 @@ class SearchResultRender(object):
             category_icons = self.category_icons(), 
             page_description = self.page_description(),
             deal_limit = self.deal_limit(),
-            deal_info_icons = self.deal_info_icons(),
             deal_description = self.deal_description(),
             purchase_link = self.purchase_link()
             )
 
         
     def category_icons(self): ## fixme: too access DB.
-        v = Nullable(self.pageset).parent.category.origin.value
+        v = Nullable(self.pageset).genre.origin.value
         if v is None:
             return u'<div class="icon-category icon-category-other"></div>'
         else:
@@ -204,16 +202,17 @@ class SearchResultRender(object):
         
     def page_description(self):
         fmt =  u"""\
-<p><a href="%s">%s</a></p>
+<p><a href="%s">%s</a> 公演/試合数: %s</p>
 <p class="align1">%s</p>
 <p class="align1">%s</p>
 """
         link = h.link.publish_page_from_pageset(self.request, self.pageset)
         link_label = u"%s %s" % (self.pageset.event.title, self.pageset.name)
-        description = self.pageset.event.description
-        ## todo. ticketから開催場所の情報を取り出す
-        performances = u"</p><p class='align1'>".join([u"%s %s(%s)" % (p.start_on, p.venue, p.jprefecture) for p in self.pageset.event.performances[:5]])
-        return fmt % (link, link_label, description, performances)
+        event = self.pageset.event
+        performances = [p for p in event.performances if p.start_on >= self.today]
+        performances = performances if len(performances) < 3 else performances[:3]
+        performances = u"</p><p class='align1'>".join([u"%s %s(%s)" % (p.start_on, p.venue, p.jprefecture) for p in performances])
+        return fmt % (link, link_label, len(event.performances), event.description, performances)
 
     def deal_limit(self):
         N = (self.pageset.event.deal_open - self.today).days
@@ -228,16 +227,20 @@ class SearchResultRender(object):
         else:
             return u"販売終了"
 
-    def deal_info_icons(self):
-        event = self.pageset.event
-        kinds = set(s.kind for s in event.sales) 
-        return u"".join(u'<div class="icon-salessegment %s"></div>'% k for k in kinds)
+    # def deal_info_icons(self):
+    #     event = self.pageset.event
+    #     kinds = set(g.kind for g in event.salessegment_groups) 
+    #     return u"".join(u'<div class="icon-salessegment %s"></div>'% k for k in kinds)
 
 
     def deal_description(self):
         event = self.pageset.event
-        label = u'<strong>チケット発売中</strong> ' if event.deal_open <= self.today and self.today <= event.deal_close else ''
-        return u'%s%s' % (label, h.term(event.deal_open, event.deal_close))
+        r = []
+        for g in sorted(event.salessegment_groups, key=lambda g: g.start_on):
+            # label = u'<strong>%s</strong> ' % g.name
+            label = u'<div class="icon-salessegment %s"></div>'% g.kind
+            r.append(u'<li class="searchDate">%s%s</li>' % (label, h.term(g.start_on, g.end_on)))
+        return u"\n".join(r)
 
 
     def purchase_link(self):

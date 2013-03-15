@@ -15,12 +15,12 @@ from pyramid.security import Allow
 from pyramid.decorator import reify
 from pyramid.httpexceptions import HTTPNotFound
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.orm import joinedload
+#from sqlalchemy.orm import joinedload
 from zope.interface import implementer
 from .interfaces import ICartPayment, ICartDelivery
 from ticketing.payments.interfaces import IOrderPayment, IOrderDelivery 
-from ticketing.mails.interfaces import ICompleteMailPayment, ICompleteMailDelivery, IOrderCancelMailPayment, IOrderCancelMailDelivery
-from ticketing.mails.resources import CompleteMailPayment, CompleteMailDelivery, OrderCancelMailPayment, OrderCancelMailDelivery
+#from ticketing.mails.interfaces import ICompleteMailPayment, ICompleteMailDelivery, IOrderCancelMailPayment, IOrderCancelMailDelivery
+#from ticketing.mails.resources import CompleteMailPayment, CompleteMailDelivery, OrderCancelMailPayment, OrderCancelMailDelivery
 
 from .exceptions import (
     OutTermSalesException,
@@ -29,9 +29,8 @@ from .exceptions import (
 )
 from ..core import models as c_models
 from ..core import api as core_api
-from ..users import models as u_models
+#from ..users import models as u_models
 from . import models as m
-from . import logger
 from zope.deprecation import deprecate
 
 logger = logging.getLogger(__name__)
@@ -47,9 +46,10 @@ class TicketingCartResource(object):
         self._event_id = None
         self._event = None
         if request.matchdict:
-            self.event_id = self.request.matchdict.get('event_id')
-        else:
-            self.event_id = None
+            try:
+                self._event_id = int(self.request.matchdict.get('event_id'))
+            except (ValueError, TypeError):
+                pass
 
     def _get_event_id(self):
         return self._event_id
@@ -150,6 +150,8 @@ class TicketingCartResource(object):
     @reify
     def sales_segments(self):
         """現在認証済みのユーザとイベントに関連する全販売区分"""
+        if self.event is None:
+            raise HTTPNotFound()
         return self.event.query_sales_segments(
             user=self.authenticated_user(),
             type='all').all()

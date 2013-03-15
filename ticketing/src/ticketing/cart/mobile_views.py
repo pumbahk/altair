@@ -15,6 +15,8 @@ from ticketing.core import models as c_models
 from ticketing.mobile.interfaces import IMobileRequest
 from ticketing.cart.selectable_renderer import selectable_renderer
 from ticketing.models import DBSession
+from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
+from .stocker import NotEnoughStockException
 
 from . import api
 from . import helpers as h
@@ -22,17 +24,17 @@ from . import schemas
 from .api import get_seat_type_triplets
 from .view_support import IndexViewMixin
 from .exceptions import (
-    CartException, 
-    NoCartError, 
+    #CartException, 
+    #NoCartError, 
     NoEventError,
-    NoPerformanceError,
-    NoSalesSegment,
+    #NoPerformanceError,
+    #NoSalesSegment,
     InvalidCSRFTokenException, 
     OverQuantityLimitError, 
     ZeroQuantityError, 
-    CartCreationExceptoion,
-    OutTermSalesException,
-    DeliveryFailedException,
+    CartCreationException,
+    #OutTermSalesException,
+    #DeliveryFailedException,
 )
 
 logger = logging.getLogger(__name__)
@@ -365,7 +367,7 @@ class MobileReserveView(object):
             if cart is None:
                 transaction.abort()
                 logger.debug("cart is None. aborted.")
-                raise CartCreationExceptoion
+                raise CartCreationException
         except NotEnoughAdjacencyException as e:
             transaction.abort()
             logger.debug("not enough adjacency")

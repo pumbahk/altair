@@ -29,6 +29,7 @@ class CalendarWidget(Widget):
     to_date = sa.Column(sa.Date)
     salessegment_id = sa.Column(sa.Integer, sa.ForeignKey("salessegment_group.id"))
     salessegment = orm.relationship("SalesSegmentGroup")
+    show_label = sa.Column(sa.Boolean, doc=u"見出しを表示するか否かのフラグ", default=True, nullable=False)
 
     def display_all_bool(self):
         return self.salessegment_id is None

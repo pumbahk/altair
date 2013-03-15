@@ -1,5 +1,8 @@
 from zope.interface import Interface
 
+class ITokenizer(Interface):
+    def tokenize(nonce, short_clamed_id):
+        pass
 
 class IRakutenOpenID(Interface):
 

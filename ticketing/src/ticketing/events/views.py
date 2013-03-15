@@ -27,7 +27,6 @@ from ticketing.events.performances.forms import PerformanceForm
 from ticketing.events.sales_segment_groups.forms import SalesSegmentGroupForm
 from ticketing.events.stock_types.forms import StockTypeForm
 from ticketing.events.stock_holders.forms import StockHolderForm
-from ticketing.products.forms import ProductForm
 
 from ..api.impl import get_communication_api
 from ..api.impl import CMSCommunicationApi
@@ -97,7 +96,6 @@ class Events(BaseView):
             'form_stock_type':StockTypeForm(event_id=event_id),
             'form_stock_holder':StockHolderForm(organization_id=self.context.user.organization_id, event_id=event_id),
             'form_sales_segment_group':SalesSegmentGroupForm(event_id=event_id),
-            'form_product':ProductForm(event_id=event.id),
         }
 
     @view_config(route_name='events.new', request_method='GET', renderer='ticketing:templates/events/edit.html')

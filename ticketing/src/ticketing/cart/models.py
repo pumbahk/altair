@@ -32,13 +32,13 @@ from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm.exc import NoResultFound
 from zope.deprecation import deprecate
 
-from ticketing.utils import sensible_alnum_encode, sensible_alnum_decode
+from ticketing.utils import sensible_alnum_encode
+#from ticketing.utils import sensible_alnum_decode
 from ticketing.models import Identifier
-from ..core import models as c_models
-from ..core import api as c_api
-from ..models import Identifier
+from ticketing.core import models as c_models
+from ticketing.core import api as c_api
 from . import logger
-from .exceptions import NoCartError, UnassignedOrderNumberError
+from .exceptions import NoCartError, UnassignedOrderNumberError, CartCreationException
 
 class PaymentMethodManager(object):
     def __init__(self):

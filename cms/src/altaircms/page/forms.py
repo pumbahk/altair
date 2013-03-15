@@ -119,7 +119,8 @@ class PageForm(Form):
 
     def validate(self, **kwargs):
         """ override to form validation"""
-        super(PageForm, self).validate()
+        if not super(PageForm, self).validate():
+            return False
         data = self.data
         if data["publish_end"] and data["publish_begin"]:
             if data["publish_begin"] > data["publish_end"]:

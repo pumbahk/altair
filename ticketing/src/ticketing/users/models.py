@@ -79,6 +79,8 @@ class UserProfile(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     fax = Column(String(32))
     status = Column(Integer)
 
+    rakuten_point_account = Column(String(20))
+
     @hybrid_property
     def full_name_kana(self):
         return self.last_name_kana + u' ' + self.first_name_kana

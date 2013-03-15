@@ -2,6 +2,7 @@
 import logging
 logger = logging.getLogger(__name__)
 from sqlalchemy.ext.declarative import declared_attr
+from altaircms.modelmanager.ancestors import HasAncestorMixin
 from datetime import datetime
 from pyramid.decorator import reify
 import sqlalchemy as sa
@@ -52,25 +53,6 @@ class PageAccesskey(Base, WithOrganizationMixin):
             self.hashkey = key
         else:
             self.hashkey = (genkey or self.default_gen_key)()
-
-class HasAncestorMixin(object):
-    ## require self.parent
-    @property
-    def ancestors(self, includeme=False): ## fixme rename `includeme' keyword
-        """ return ancestors (order: parent, grand parent, ...)
-        """
-        r = []
-        me = self
-        while me.parent:
-            r.append(me)
-            me = me.parent
-        r.append(me)
-        
-        ## not include self iff includeme is false
-        if not includeme:
-            r.pop(0)
-        return r
-
     
 class PageSet(Base, 
               WithOrganizationMixin, 

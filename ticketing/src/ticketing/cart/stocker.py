@@ -4,10 +4,14 @@
 在庫数管理
 """
 import logging
-from datetime import datetime
+#from datetime import datetime
 import itertools
-from ticketing.core.models import *
-from zope.deprecation import deprecate
+from ticketing.core.models import (
+    DBSession,
+    StockStatus,
+    ProductItem,
+)
+
 
 logger = logging.getLogger(__name__)
 

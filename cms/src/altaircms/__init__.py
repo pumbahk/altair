@@ -78,7 +78,8 @@ def main(global_config, **local_config):
 
 
     ## include 
-    class MyLayout(object):
+    from altairsite.pyramidlayout import MyLayout as LayoutBase
+    class MyLayout(LayoutBase):
         class color:
             event = "#dfd"
             page = "#ffd"

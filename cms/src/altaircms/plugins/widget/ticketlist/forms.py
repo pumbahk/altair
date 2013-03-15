@@ -27,7 +27,9 @@ class TicketlistChoiceForm(Form):
         blank_text=u"(指定なし)", 
         choices=[]
         )
-    caption = fields.TextField(id="caption", label=u"価格表の見出し", widget=widgets.TextArea())
+    caption = fields.TextField(id="caption", label=u"価格表の説明", widget=widgets.TextArea())
+    show_label = fields.BooleanField(id="show_label", label=u"見出しを表示する？", default=True)
+
     def configure(self, request, page):
         if page.event_id:
             ps = Performance.query.filter(Performance.event_id==page.event_id).all()

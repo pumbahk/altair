@@ -58,6 +58,7 @@ def includeme(config):
     # 楽天認証URL
     config.add_route('rakuten_auth.login', '/login')
     config.add_route('rakuten_auth.verify', '/verify')
+    config.add_route('rakuten_auth.verify2', '/verify2')
     config.add_route('rakuten_auth.error', '/error')
     config.add_route('cart.logout', '/logout')
 

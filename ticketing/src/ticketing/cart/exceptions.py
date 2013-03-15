@@ -34,7 +34,7 @@ class OverQuantityLimitError(CartException):
 class ZeroQuantityError(CartException):
     pass
 
-class CartCreationExceptoion(CartException):
+class CartCreationException(CartException):
     pass
 
 class DeliveryFailedException(Exception):
