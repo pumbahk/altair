@@ -6,8 +6,7 @@
 </head>
 
 <link rel="shortcut icon" href="/static/img/common/favicon.ico" />
-<img src="static/img/common/header_logo_01.gif"/>
-<img src="static/img/common/header_logo_02.gif"/>
+<div style="text-align:center"><img src="static/logo.jpg" width="80%" height="70%" /></div>
 <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000;font-size: medium;
             color: #ffffff" bgcolor="#bf0000" background="../static/bg_bar.gif"></div>
 <span style="font-size:x-small">
