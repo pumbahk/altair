@@ -1033,6 +1033,33 @@ cart.VenueView = Backbone.View.extend({
                         loadingLayer = null;
                     }
                 }
+
+				$('.pageSwitchPanel').remove();
+				var ul = $('<ul></ul>');
+				ul
+					.addClass('pageSwitchPanel')
+					.css({ position: 'absolute', top: 10, right : 10 });
+				for(var k in viewer.pages) {
+					if(viewer.pages[k].hidden) {
+						continue;
+					}
+					$('<li></li>')
+						.css({ display: 'inline-block', height: 20, verticalAlign: 'middle', border: '1px solid gray', paddingLeft: 10, paddingRight: 10, marginLeft: 4, cursor: 'pointer', backgroundColor: 'ffffff' })
+						.attr('filename', k)
+						.click(function() {
+							viewer.navigate($(this).attr('filename'));
+						})
+						.text(viewer.pages[k].name).appendTo(ul);
+				}
+				if(2 <= $('li', ul).size()) {
+					$('.venueViewerWrapper').append(ul);
+				}
+
+				$('.venueViewerWrapper li').each(function() {
+					var filename = $(this).attr('filename');
+					$(this).css({ backgroundColor: (filename == page) ? '#cccccc' : '#ffffff' });
+				});
+
             },
             messageBoard: (function() {
                 if (self.tooltip)
