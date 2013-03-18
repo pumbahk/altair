@@ -17,21 +17,25 @@ def search(request):
     log_info("search", "start")
     form = SearchForm(request.GET)
     form.num.data = 0
+    form.week.data = get_week_map()
+    searcher = EventSearcher(request)
 
-    if form.validate():
-
-        form.week.data = get_week_map()
-
-        searcher = EventSearcher(request)
-
-        log_info("search", "search event start")
-        qs = searcher.get_events_from_freeword(form)
-        qs = searcher.get_events_from_area(form, qs)
+    if (form.area.data and form.area.data > 0) and (form.word.data is None or form.word.data == ""): # 地域検索
+        log_info("search", "search event start(area)")
+        qs = searcher.get_events_from_area(form)
         qs = searcher.get_events_week_sale(form, qs)
         qs = searcher.get_events_soon_act(form, qs)
-        log_info("search", "search event end")
-
+        log_info("search", "search event end(area)")
         form = get_event_paging(request=request, form=form, qs=qs)
+    else: # 検索文字列あり
+        if form.validate():
+            log_info("search", "search event start")
+            qs = searcher.get_events_from_freeword(form)
+            qs = searcher.get_events_from_area(form, qs)
+            qs = searcher.get_events_week_sale(form, qs)
+            qs = searcher.get_events_soon_act(form, qs)
+            log_info("search", "search event end")
+            form = get_event_paging(request=request, form=form, qs=qs)
 
     # パンくずリスト用
     log_info("search", "breadcrumb create start")

@@ -4,6 +4,10 @@
 <form action="/detailsearch" method="POST">
     ■フリーワード検索<br/>
     ${form.word}
+    % for error in form.word.errors:
+        <br/>
+        <font color="red">${error}</font>
+    % endfor
     <input type="submit" value="検索">
     <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
 

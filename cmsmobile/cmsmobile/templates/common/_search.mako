@@ -8,6 +8,9 @@
     ${form.area}
     チケット検索
     ${form.word}<br/>
+    % for error in form.word.errors:
+        <font color="red">${error}</font>
+    % endfor
     ${form.week_sale}今週発売のチケット<br/>
     ${form.soon_act}まもなく開演のイベント<br/>
     <input type="submit" value="検索"/><br/>

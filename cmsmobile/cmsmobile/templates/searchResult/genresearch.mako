@@ -9,6 +9,7 @@
                       ,word=form.word.data, num=form.num.data, page=form.page.data
                       ,page_num=form.page_num.data, path=form.path.data, week=form.week.data"/>
 
+    <hr/>
     <%include file='../common/_search.mako' args="path='/search', genre='', subgenre=''"/>
 
     <%include file='../common/_footer.mako' />
