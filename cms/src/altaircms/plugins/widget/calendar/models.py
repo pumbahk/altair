@@ -23,6 +23,11 @@ class CalendarWidget(Widget):
     __mapper_args__ = {"polymorphic_identity": type}
     query = DBSession.query_property()
 
+    def __init__(self, *args, **kwargs):
+        super(CalendarWidget, self).__init__(*args, **kwargs)
+        if "show_label" not in kwargs:
+            self.show_label = True
+
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
     calendar_type = sa.Column(sa.String(255))
     from_date = sa.Column(sa.Date)

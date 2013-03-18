@@ -49,6 +49,11 @@ class SummaryWidget(Widget):
     implements(IWidget)
     type = "summary"
 
+    def __init__(self, *args, **kwargs):
+        super(SummaryWidget, self).__init__(*args, **kwargs)
+        if "show_label" not in kwargs:
+            self.show_label = True
+
     template_name = "altaircms.plugins.widget:summary/render.html"
     __tablename__ = "widget_summary"
     __mapper_args__ = {"polymorphic_identity": type}
