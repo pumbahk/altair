@@ -1038,28 +1038,35 @@ cart.VenueView = Backbone.View.extend({
 				var ul = $('<ul></ul>');
 				ul
 					.addClass('pageSwitchPanel')
-					.css({ position: 'absolute', top: 20, right : 20 });
+					.css({ position: 'absolute', top: 10, right : 20, left: 40, textAlign: 'right' });
+				var pages = [ ];
 				for(var k in viewer.pages) {
-					if(viewer.pages[k].hidden) {
-						continue;
+					if(!viewer.pages[k].hidden) {
+						viewer.pages[k]._filename = k;
+						pages.push(viewer.pages[k]);
 					}
+				}
+				pages = pages.sort(function(a, b) { return a.order == b.order ? 0 : a.order < b.order ? -1 : +1; });
+				for(var idx in pages) {
 					$('<li></li>')
-						.css({ display: 'inline-block', height: 20, verticalAlign: 'middle', border: '1px solid gray', paddingLeft: 10, paddingRight: 10, marginLeft: 4, cursor: 'pointer', backgroundColor: 'ffffff' })
-						.attr('filename', k)
+						.css({ display: 'inline-block', height: 20, verticalAlign: 'middle', border: '1px solid gray', paddingLeft: 4, paddingRight: 4, marginBottom: 4, marginLeft: 4, cursor: 'pointer', backgroundColor: 'ffffff' })
+						.attr('filename', pages[idx]._filename)
 						.click(function() {
 							viewer.navigate($(this).attr('filename'));
 						})
-						.text(viewer.pages[k].name).appendTo(ul);
+						.text(pages[idx].short_name || pages[idx].name).appendTo(ul);
 				}
-				if(2 <= $('li', ul).size()) {
+				if(page && viewer.pages[page] && viewer.pages[page].zoomable===false) {
+					;
+				} else if($('li', ul).size() == 1 && $('li', ul).eq(0).attr('filename') == page) {
+					;
+				} else if(1 <= $('li', ul).size()) {
+					$('li', ul).each(function() {
+						var filename = $(this).attr('filename');
+						$(this).css({ backgroundColor: (filename == page) ? '#cccccc' : '#ffffff' });
+					});
 					$('.venueViewerWrapper').append(ul);
 				}
-
-				$('.venueViewerWrapper li').each(function() {
-					var filename = $(this).attr('filename');
-					$(this).css({ backgroundColor: (filename == page) ? '#cccccc' : '#ffffff' });
-				});
-
             },
             messageBoard: (function() {
                 if (self.tooltip)
