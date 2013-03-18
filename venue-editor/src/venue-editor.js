@@ -630,7 +630,7 @@
             }
             self.drawable.erase(self.rubberBand);
             for (var i = 0; i < selection.length; i++) {
-              if (selection[i].get('selected')) {
+              if (selection[i].get('selected') && selection.length == 1) {
                 selection[i].set('selected', false);
               } else {
                 selection[i].set('selected', true);

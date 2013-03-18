@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['i1ZCXBGCC_ZOXU_1'] = (function (exports) { (function () { 
+__LIBS__['QW6IZBHKI56ZFI3_'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -26,7 +26,7 @@ exports.ja = {
   } 
 };
  })(); return exports; })({});
-__LIBS__['gBUHEJSSROQ0UYQ5'] = (function (exports) { (function () { 
+__LIBS__['w39ECZ3F8CAMXJZV'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -99,7 +99,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['WPW05MW4YY_67KBI'] = (function (exports) { (function () { 
+__LIBS__['XVELGOM7FUONDGI4'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -213,7 +213,7 @@ timer.prototype.lap = function(msg) {
     return lap;
 };
  })(); return exports; })({});
-__LIBS__['O4WMO1AGV_LSY2R8'] = (function (exports) { (function () { 
+__LIBS__['ANWLG_9TH6WT5U77'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -262,12 +262,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['zAHDM6T8IT_28S9I'] = (function (exports) { (function () { 
+__LIBS__['QPSD_4U83B0NUOPQ'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['WPW05MW4YY_67KBI'];
-var CONF = __LIBS__['gBUHEJSSROQ0UYQ5'];
-var IdentifiableSet = __LIBS__['O4WMO1AGV_LSY2R8'].IdentifiableSet;
+var util = __LIBS__['XVELGOM7FUONDGI4'];
+var CONF = __LIBS__['w39ECZ3F8CAMXJZV'];
+var IdentifiableSet = __LIBS__['ANWLG_9TH6WT5U77'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -745,12 +745,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['yVR357J33NKTIRL1'] = (function (exports) { (function () { 
+__LIBS__['VKMMK9L2YM3XSZCS'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['WPW05MW4YY_67KBI'];
-var CONF = __LIBS__['gBUHEJSSROQ0UYQ5'];
-var models = __LIBS__['zAHDM6T8IT_28S9I'];
+var util = __LIBS__['XVELGOM7FUONDGI4'];
+var CONF = __LIBS__['w39ECZ3F8CAMXJZV'];
+var models = __LIBS__['QPSD_4U83B0NUOPQ'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -949,13 +949,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['gBUHEJSSROQ0UYQ5'];
-  var models = __LIBS__['zAHDM6T8IT_28S9I'];
-  var util = __LIBS__['WPW05MW4YY_67KBI'];
-  var viewobjects = __LIBS__['yVR357J33NKTIRL1'];
-  var IdentifiableSet = __LIBS__['O4WMO1AGV_LSY2R8'].IdentifiableSet;
+  var CONF = __LIBS__['w39ECZ3F8CAMXJZV'];
+  var models = __LIBS__['QPSD_4U83B0NUOPQ'];
+  var util = __LIBS__['XVELGOM7FUONDGI4'];
+  var viewobjects = __LIBS__['VKMMK9L2YM3XSZCS'];
+  var IdentifiableSet = __LIBS__['ANWLG_9TH6WT5U77'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['i1ZCXBGCC_ZOXU_1'];
+    I18n.translations = __LIBS__['QW6IZBHKI56ZFI3_'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -1579,7 +1579,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
             }
             self.drawable.erase(self.rubberBand);
             for (var i = 0; i < selection.length; i++) {
-              if (selection[i].get('selected')) {
+              if (selection[i].get('selected') && selection.length == 1) {
                 selection[i].set('selected', false);
               } else {
                 selection[i].set('selected', true);
