@@ -18,7 +18,8 @@ class CartFactory(object):
         # ここでシステム手数料を確定させるのはおかしいので、後の処理で上書きする
         system_fee = get_system_fee(request)
         channel = get_channel(request=request)
-        cart = Cart.create(performance_id=performance_id, system_fee=system_fee, channel=channel.v)
+        cart = Cart.create(performance_id=performance_id, system_fee=system_fee, channel=channel.v,
+                           browserid=request.browserid)
         for ordered_product, quantity in ordered_products:
             logger.debug("carted product for product_id=%s" % (ordered_product.id))
             # CartedProduct

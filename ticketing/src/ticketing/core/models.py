@@ -1989,6 +1989,9 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     card_ahead_com_code = Column(Unicode(20), doc=u"仕向け先企業コード")
     card_ahead_com_name = Column(Unicode(20), doc=u"仕向け先企業名")
 
+    browserid = Column(String(40))
+
+
     def is_canceled(self):
         return bool(self.canceled_at)
 
