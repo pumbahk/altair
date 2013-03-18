@@ -6,6 +6,9 @@
     <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000;font-size: medium;
                         color: #ffffff" bgcolor="#bf0000" background="../static/bg_bar.gif">地域から探す</div>
 % endif
+
+<div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
+
 <span style="font-size: x-small">
     <a href="${path}?genre=${genre}&sub_genre=${sub_genre}&num=${num}&page=1&area=1">首都圏</a>｜
     <a href="${path}?genre=${genre}&sub_genre=${sub_genre}&num=${num}&page=1&area=2">近畿</a>｜

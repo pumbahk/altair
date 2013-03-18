@@ -15,6 +15,9 @@
 
     <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000;font-size: medium;
                         color: #ffffff" bgcolor="#bf0000" background="../static/bg_bar.gif">サブジャンルで絞り込む</div>
+
+    <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
+
     % for subgenre in form.genretree.data:
         <a href="/genre?genre=${form.dispgenre.data.id}&sub_genre=${subgenre.id}"><span style="font-size: x-small">${subgenre.label}</span></a>｜
     % endfor

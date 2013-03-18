@@ -7,6 +7,8 @@
         <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000;font-size: medium;
             color: #ffffff" bgcolor="#bf0000" background="../static/bg_bar.gif">ピックアップ</div>
 
+        <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
+
             <span style="font-size: x-small">
                 % if form.promotions.data:
                     % for promo in form.promotions.data:
@@ -17,6 +19,8 @@
 
             <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000;font-size: medium;
                         color: #ffffff" bgcolor="#bf0000" background="../static/bg_bar.gif">ジャンルから探す</div>
+
+            <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
                 <span style="font-size: x-small">
                     % for genre in form.genretree.data:
                         <a href="/genre?genre=${genre.id}">${genre.label}</a>｜
