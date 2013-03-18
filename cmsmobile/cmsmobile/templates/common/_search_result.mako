@@ -1,7 +1,5 @@
 <%page args="events, word, num, page, page_num, path, week"/>
 
-<span style="font-size: x-small">
-
 % if int(num):
     ${num}件見つかりました。
 % else:
@@ -11,20 +9,19 @@
         条件に一致する情報は見つかりませんでした。
     % endif
 % endif
-</span>
 
 <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
 
-<div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000;font-size: medium;
+<div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000;
                         color: #ffffff" bgcolor="#bf0000" background="../static/bg_bar.gif">検索結果</div>
 
 % if events:
     % for count, event in enumerate(events):
         <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
-        <a href="/eventdetail?event_id=${event.id}"><span style="font-size: x-small">${event.title}</span></a><br/>
-        <div style="font-size: x-small">販売期間：${event.deal_open.year}/${str(event.deal_open.month).zfill(2)}/${str(event.deal_open.day).zfill(2)}(${week[event.deal_open.weekday()]})〜${event.deal_close.year}/${str(event.deal_close.month).zfill(2)}/${str(event.deal_close.day).zfill(2)}(${week[event.deal_close.weekday()]})</div>
+        <a href="/eventdetail?event_id=${event.id}">${event.title}</a><br/>
+        販売期間：${event.deal_open.year}/${str(event.deal_open.month).zfill(2)}/${str(event.deal_open.day).zfill(2)}(${week[event.deal_open.weekday()]})〜${event.deal_close.year}/${str(event.deal_close.month).zfill(2)}/${str(event.deal_close.day).zfill(2)}(${week[event.deal_close.weekday()]})
         % if event.performances[0]:
-            <div style="font-size: x-small">会場：${event.performances[0].venue}</div>
+            会場：${event.performances[0].venue}
             % if count < len(events) - 1:
                 <hr/>
             % endif
@@ -34,7 +31,7 @@
 <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
 
 % if int(num):
-    <div align="center" style="font-size: x-small">
+    <div align="center">
         % if int(page) <= 1:
             前へ
         % else:

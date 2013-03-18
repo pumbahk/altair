@@ -1,5 +1,5 @@
 <hr size="1" color="#888888" noshade="noshade" />
-<div align="center" style="font-size: x-small">
+<div align="center">
     <div>
         <a href="/help">ヘルプ</a> |
         <a href="/company">運営会社</a> |

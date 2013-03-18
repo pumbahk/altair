@@ -3,12 +3,11 @@
     <%include file="../common/_header.mako" args="title=u'公演中止情報'"/>
 <body>
 
-    <div style="font-size: x-small">
         <a href="/">トップ</a> >> 公演中止・変更情報
-    </div>
+
     <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
 
-    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000;font-size: medium;
+    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000;
                         color: #ffffff" bgcolor="#bf0000" background="../static/bg_bar.gif">公演中止・変更情報</div>
 
     <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
@@ -16,16 +15,16 @@
         % if form.informations.data:
         % for info in form.informations.data[0:10]:
             <hr/>
-            <div style="font-size: x-small">公演：${info.title}</div>
-            <span style="font-size: x-small">詳細：${info.text}</span>
+            公演：${info.title}<br/>
+            詳細：${info.text}<br/>
         % endfor
 
         % if len(form.informations.data) > 10:
             <hr/>
-            <a href="/infodetail"><span style="font-size: x-small">すべてを見る</span></a>
+            <a href="/infodetail">すべてを見る</a>
         % endif
     % else:
-        <span style="font-size: x-small">公演中止情報はありません。</span>
+        公演中止・変更情報はありません。
     % endif
     <%include file="../common/_footer.mako" />
 </body>

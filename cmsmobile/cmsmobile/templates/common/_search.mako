@@ -1,5 +1,4 @@
 <%page args="form" />
-<%namespace file="cmsmobile:templates/common/helpers.html" name="h" />
 
 <form action="${form.path.data}" method="GET">
     ${form.genre}

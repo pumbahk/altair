@@ -4,9 +4,8 @@
 
 <body>
 
-<div style="font-size: x-small">
     <a href="/">トップ</a> >> 詳細検索
-</div>
+
 
 <%include file='./_form.mako' args="form=form" />
 
