@@ -10,12 +10,13 @@ class BugFreeSelectField(fields.SelectField):
 
 class BugFreeSelectMultipleField(fields.SelectMultipleField):
     def pre_validate(self, form):
-        for d in self.data:
-            for v, _ in self.choices:
-                if d == self.coerce(v):
-                    break
-            else:
-                raise ValueError(self.gettext('Not a valid choice'))
+        if self.data is not None:
+            for d in self.data:
+                for v, _ in self.choices:
+                    if d == self.coerce(v):
+                        break
+                else:
+                    raise ValueError(self.gettext('Not a valid choice'))
 
 class PHPCompatibleSelectMultipleField(BugFreeSelectMultipleField):
     def process(self, formdata, data=fields._unset_value):

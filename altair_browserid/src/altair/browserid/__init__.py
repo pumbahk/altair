@@ -1,6 +1,8 @@
 import logging
+import threading
 from webob.dec import wsgify
 
+browser = threading.local()
 logger = logging.getLogger(__name__)
 
 class BrowserIDMiddleware(object):
@@ -16,10 +18,14 @@ class BrowserIDMiddleware(object):
     def __call__(self, request):
         cookies = request.cookies
 
-        browser_id = cookies.get(self.cookie_name)
+        browser.id = browser_id = cookies.get(self.cookie_name)
+        browser.url = request.url
         request.environ[self.env_key] = browser_id
-
-        return request.get_response(self.app)
+        try:
+            return request.get_response(self.app)
+        finally:
+            browser.id = None
+            browser.url = None
 
 def browserid_filter_factory(global_conf,
                              cookie_name='browserid',
