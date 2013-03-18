@@ -54,11 +54,12 @@
 <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000;
                         color: #ffffff" bgcolor="#bf0000" background="../static/bg_bar.gif">公演詳細</div>
 
-販売区分
 % if event.salessegment_groups:
+    販売区分<br/>
     % for segment in event.salessegment_groups:
-            ${segment.kind}:
-            ${segment.start_on.year}/${segment.start_on.month}/${segment.start_on.day}-${segment.end_on.year}/${segment.end_on.month}/${segment.end_on.day}
+        ${segment.name}:
+        ${segment.start_on.year}/${segment.start_on.month}/${segment.start_on.day}-${segment.end_on.year}/${segment.end_on.month}/${segment.end_on.day}
+        <br/>
     % endfor
 % endif
 
