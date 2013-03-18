@@ -1,14 +1,14 @@
 """alter table Event add column cms_send_at
 
 Revision ID: 9b32b7c8d35
-Revises: 17d62e30cb0d
+Revises: 56f5028103b1
 Create Date: 2013-03-15 15:12:52.217227
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '9b32b7c8d35'
-down_revision = '17d62e30cb0d'
+down_revision = '56f5028103b1'
 
 from alembic import op
 import sqlalchemy as sa

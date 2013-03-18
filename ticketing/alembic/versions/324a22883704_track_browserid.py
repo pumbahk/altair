@@ -2,14 +2,14 @@
 
 
 Revision ID: 324a22883704
-Revises: 56f5028103b1
+Revises: 9b32b7c8d35
 Create Date: 2013-03-18 15:19:28.523181
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '324a22883704'
-down_revision = '56f5028103b1'
+down_revision = '9b32b7c8d35'
 
 from alembic import op
 import sqlalchemy as sa
