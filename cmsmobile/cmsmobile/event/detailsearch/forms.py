@@ -25,12 +25,6 @@ class DetailSearchForm(SearchForm):
     month = SelectField(label='', validators=[Optional()], choices=[])
     day = SelectField(label='', validators=[Optional()], choices=[])
 
-    def validate_word(form, field):
-        # 詳細検索は、検索文字列無くても検索
-        if len(field.data) > 200:
-            raise ValueError(u'200文字以内で入力してください')
-        return
-
     def validate_since_year(form, field):
 
         if form.since_year.data=="0" and form.since_month.data == "0" and form.since_day.data == "0":
