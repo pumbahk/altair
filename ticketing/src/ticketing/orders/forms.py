@@ -8,7 +8,7 @@ from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, T
 from wtforms.validators import Optional, AnyOf, Length, Email
 from wtforms.widgets import CheckboxInput
 
-from ticketing.formhelpers import DateTimeField, Translations, Required, DateField, Automatic, Max, Min, OurDateWidget, after1900
+from ticketing.formhelpers import DateTimeField, Translations, Required, DateField, Automatic, Max, Min, OurDateWidget, after1900, CheckboxMultipleSelect, BugFreeSelectMultipleField
 from ticketing.core.models import (Organization, PaymentMethodPlugin, DeliveryMethodPlugin, PaymentMethod, DeliveryMethod, SalesSegmentGroup, SalesSegment, Performance, Product, ProductItem, Event, OrderCancelReasonEnum)
 from ticketing.cart.schemas import ClientForm
 from ticketing.payments import plugins
@@ -156,8 +156,9 @@ class OrderSearchForm(Form):
         choices=[],
         coerce=int,
     )
-    status = SelectMultipleField(
+    status = BugFreeSelectMultipleField(
         label=u'ステータス',
+        widget=CheckboxMultipleSelect(multiple=True),
         validators=[Optional()],
         choices=[
             ('ordered', u'受付済み'),

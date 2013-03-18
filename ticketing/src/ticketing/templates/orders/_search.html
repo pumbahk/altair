@@ -5,14 +5,40 @@ from ticketing.formhelpers import OurDateWidget
 %>
 
 <style type="text/css">
-  .form-horizontal .control-label {
-    width: 120px;
-  }
-  .form-horizontal .controls {
-    margin-left: 140px;
-  }
+.form-horizontal .control-label {
+  width: 120px;
+}
+.form-horizontal .controls {
+  margin-left: 140px;
+}
+#search table {
+  border-collapse: separate;
+  width: 100%;
+  border-spacing: 4px;
+  margin-left: -4px;
+  margin-bottom: -4px;
+}
+#search table tbody td,
+#search table tbody th {
+  padding: 4px 4px;
+}
+#search table tbody th {
+  width: 7em;
+  text-align: left;
+  vertical-align: middle;
+  background-color: #eee;
+  border-radius: 4px;
+  text-align: nowrap;
+}
+#search .packed-checkboxes .checkbox-set {
+  overflow: hidden;
+  width: 40em;
+}
+#search .packed-checkboxes .checkbox-set .checkbox-set-item {
+  float: left;
+  width: 10em;
+}
 </style>
-
 <script type="text/javascript">
   function search_orders(url) {
     $('#search').attr('action', url).submit();
@@ -33,138 +59,146 @@ from ticketing.formhelpers import OurDateWidget
     $('#modal-download_orders').modal('hide');
   }
 </script>
-
-
 <div id="detail_search">
   <div>
     <h3>検索条件設定</h3>
   </div>
   <form id="search" class="form-horizontal" method="POST">
-    <fieldset>
-      <table>
-        <tbody>
+    <table>
+      <tbody>
         <tr>
-          <td>${h.form_item(form.event_id)}</td>
-          <td>${h.form_item(form.performance_id)}</td>
-          <td>${h.form_item(form.sales_segment_id)}</td>
+          <th><label for="order_no">${form.order_no.label.text}</label></th>
+          <td>${form.order_no(maxlength=12)}</td>
+          <th><label for="seat_number">${form.seat_number.label.text}</label></th>
+          <td>${form.seat_number()}</td>
+          <th><label for="tel">${form.tel.label.text}</label></th>
+          <td>${form.tel()}</td>
         </tr>
         <tr>
-          <td>${h.form_item(form.order_no, maxlength=12)}</td>
-          <td>${h.form_item(form.seat_number)}</td>
-          <td>${h.form_item(form.tel)}</td>
+          <th><label for="name">${form.name.label.text}</label></th>
+          <td>${form.name()}</td>
+          <th><label for="member_id">${form.member_id.label.text}</label></th>
+          <td>${form.member_id()}</td>
+          <th><label for="email">${form.email.label.text}</label></th>
+          <td>${form.email()}</td>
         </tr>
         <tr>
-          <td>${h.form_item(form.name)}</td>
-          <td>${h.form_item(form.member_id)}</td>
-          <td>${h.form_item(form.email)}</td>
-        </tr>
-        <tr>
-          <td>${h.form_item(form.payment_method)}
-          <td>${h.form_item(form.delivery_method)}</td>
-          <td>${h.form_item(form.status)}</td>
-        </tr>
-        <tr>
-          <td colspan="2">
-            <div class="control-group ">
-              <label class="control-label">
-                ${form.ordered_from.label.text}
-              </label>
-              <div class="controls">
-                <div>
-                  ${form.ordered_from()} 〜
-                  ${form.ordered_to()}
-                </div>
-              </div>
-            </div>
+          <th><label>${form.ordered_from.label.text}</label></th>
+          <td colspan="5">
+            ${form.ordered_from()} 〜
+            ${form.ordered_to()}
           </td>
         </tr>
+      </tbody>
+    </table>
+    <table>
+      <tbody>
         <tr>
-          <td colspan="2">
-            <div class="control-group ">
-              <label class="control-label">
-                ${form.start_on_from.label.text}
-              </label>
-              <div class="controls">
-                <div>
-                  ${form.start_on_from()} 〜
-                  ${form.start_on_to()}
-                </div>
-              </div>
-            </div>
+          <th><label for="payment_method">${form.payment_method.label.text}</label></th>
+          <td>${form.payment_method(style="width:100%", size=4)}
+          <th><label for="delivery_method">${form.delivery_method.label.text}</label></th>
+          <td>${form.delivery_method(style="width:100%", size=4)}</td>
+        </tr>
+      </tbody>
+    </table>
+    <table>
+      <tbody>
+        <tr>
+          <th><label for="event_id">${form.event_id.label.text}</label></th>
+          <td>${form.event_id(size=4)}</td>
+          <th><label for="performance_id">${form.performance_id.label.text}</label></th>
+          <td>${form.performance_id(size=4)}</td>
+          <th><label for="sales_segment_id">${form.sales_segment_id.label.text}</label></th>
+          <td>${form.sales_segment_id(size=4)}</td>
+        </tr>
+        <tr>
+          <th><label>${form.start_on_from.label.text}</label></th>
+          <td colspan="5">
+            ${form.start_on_from()} 〜
+            ${form.start_on_to()}
           </td>
         </tr>
-        </tbody>
-      </table>
-      <div style="clear: both;"></div>
-
-      <script type="text/javascript">
-        $(function(){
-          var update_on_empty = function(){
-            var $target = $(this).parents("form").find("select[name='performance_id']").eq(0);
-            $target.empty();
-            return;
-          };
-          var update_on_hasvalue = function(v){
-            var self = this;
-            var params = {event_id: v};
-            $.getJSON("${request.route_url('orders.api.performances')}", params).done(function(data){
-              if(data.status){
-                var $target = $(self).parents("form").find("select[name='performance_id']").eq(0);
-                $target.empty();
-                // optimize if slow.
-                for(var i=0, j=data.result.length; i<j; i++){
-                  var e = data.result[i];
-                  $target.append($("<option>").attr("value", e.pk).text(e.name))
-                }
+      </tbody>
+    </table>
+    <table class="packed-checkboxes">
+      <tbody>
+        <tr>
+          <th>
+            <label for="status">${form.status.label.text}</label>
+          </th>
+          <td>
+            ${form.status()}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <script type="text/javascript">
+      $(function(){
+        var update_on_empty = function(){
+          var $target = $(this).parents("form").find("select[name='performance_id']").eq(0);
+          $target.empty();
+          return;
+        };
+        var update_on_hasvalue = function(v){
+          var self = this;
+          var params = {event_id: v};
+          $.getJSON("${request.route_url('orders.api.performances')}", params).done(function(data){
+            if(data.status){
+              var $target = $(self).parents("form").find("select[name='performance_id']").eq(0);
+              $target.empty();
+              // optimize if slow.
+              for(var i=0, j=data.result.length; i<j; i++){
+                var e = data.result[i];
+                $target.append($("<option>").attr("value", e.pk).text(e.name))
               }
-            });
-          };
-          var update_performances = function(){
-            var self = this;
-            var v = $(this).val();
-            if(!v){
-              return update_on_empty.call(self);
-            } else {
-              return update_on_hasvalue.call(self, v);
             }
-          };
-          $("#search select[name='event_id']").change(update_performances);
+          });
+        };
+        var update_performances = function(){
+          var self = this;
+          var v = $(this).val();
+          if(!v){
+            return update_on_empty.call(self);
+          } else {
+            return update_on_hasvalue.call(self, v);
+          }
+        };
+        $("#search select[name='event_id']").change(update_performances);
 
-          var update_sales_segments_on_empty = function(){
-            var $target = $(this).parents("form").find("select[name='sales_segment_id']").eq(0);
-            $target.empty();
-            return;
-          };
-          var update_sales_segments_on_hasvalue = function(v){
-            var self = this;
-            var params = {performance_id: v};
-            $.getJSON("${request.route_url('orders.api.sales_segments')}", params).done(function(data){
-              if(data.status){
-                var $target = $(self).parents("form").find("select[name='sales_segment_id']").eq(0);
-                $target.empty();
-                // optimize if slow.
-                for(var i=0, j=data.result.length; i<j; i++){
-                  var e = data.result[i];
-                  $target.append($("<option>").attr("value", e.pk).text(e.name))
-                }
+        var update_sales_segments_on_empty = function(){
+          var $target = $(this).parents("form").find("select[name='sales_segment_id']").eq(0);
+          $target.empty();
+          return;
+        };
+        var update_sales_segments_on_hasvalue = function(v){
+          var self = this;
+          var params = {performance_id: v};
+          $.getJSON("${request.route_url('orders.api.sales_segments')}", params).done(function(data){
+            if(data.status){
+              var $target = $(self).parents("form").find("select[name='sales_segment_id']").eq(0);
+              $target.empty();
+              // optimize if slow.
+              for(var i=0, j=data.result.length; i<j; i++){
+                var e = data.result[i];
+                $target.append($("<option>").attr("value", e.pk).text(e.name))
               }
-            });
-          };
-          var update_sales_segments = function(){
-            var self = this;
-            var v = $(this).val();
-            if(!v){
-              return update_sales_segments_on_empty.call(self);
-            } else {
-              return update_sales_segments_on_hasvalue.call(self, v);
             }
-          };
-          $("#search select[name='performance_id']").change(update_sales_segments);
-        });
-      </script>
-      ${h.form_item(form.sort)}
-      ${h.form_item(form.direction)}
-    </fieldset>
+          });
+        };
+        var update_sales_segments = function(){
+          var self = this;
+          var v = $(this).val();
+          if(!v){
+            return update_sales_segments_on_empty.call(self);
+          } else {
+            return update_sales_segments_on_hasvalue.call(self, v);
+          }
+        };
+        $("#search select[name='performance_id']").change(update_sales_segments);
+      });
+    </script>
+    ${h.form_item(form.sort)}
+    ${h.form_item(form.direction)}
   </form>
 </div>
 

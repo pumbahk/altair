@@ -23,7 +23,12 @@ from .viewhelpers import TopcontentHTMLRenderer
 from .viewhelpers import PromotionGrid
 from .viewhelpers import PromotionHTMLRenderer
 
-class TopicPageContext(object):
+class HasACLMixin(object):
+    @property
+    def __acl__(self):
+        return get_acl_candidates()
+
+class TopicPageContext(HasACLMixin):
     def __init__(self, request):
         self.request = request
     widgettype = "topic"
@@ -31,10 +36,6 @@ class TopicPageContext(object):
     Grid = TopicGrid
     TargetTopic = Topic
     HTMLRenderer = TopicHTMLRenderer
-
-    @property
-    def __acl__(self):
-        return get_acl_candidates()
 
     @reify
     def finder(self):
@@ -56,7 +57,7 @@ class TopicPageContext(object):
     def detail_searcher(self):
         return TopicPageDetailSearcher(self.request, self.finder)
 
-class TopcontentPageContext(object):
+class TopcontentPageContext(HasACLMixin):
     def __init__(self, request):
         self.request = request
     widgettype = "topcontent"
@@ -64,10 +65,6 @@ class TopcontentPageContext(object):
     Grid = TopcontentGrid
     TargetTopic = Topcontent
     HTMLRenderer = TopcontentHTMLRenderer
-
-    @property
-    def __acl__(self):
-        return get_acl_candidates()
 
     @reify
     def finder(self):
@@ -89,7 +86,7 @@ class TopcontentPageContext(object):
     def detail_searcher(self):
         return TopcontentPageDetailSearcher(self.request, self.finder)
 
-class PromotionPageContext(object):
+class PromotionPageContext(HasACLMixin):
     def __init__(self, request):
         self.request = request
     widgettype = "promotion"
@@ -97,10 +94,6 @@ class PromotionPageContext(object):
     Grid = PromotionGrid
     TargetTopic = Promotion
     HTMLRenderer = PromotionHTMLRenderer
-
-    @property
-    def __acl__(self):
-        return get_acl_candidates()
 
     @reify
     def finder(self):
@@ -123,17 +116,17 @@ class PromotionPageContext(object):
     def detail_searcher(self):
         return PromotionPageDetailSearcher(self.request, self.finder)
 
-class TopicTagContext(object):
+class TopicTagContext(HasACLMixin):
     classifier = "topic"
     def __init__(self, request):
         self.request = request
 
-class TopcontentTagContext(object):
+class TopcontentTagContext(HasACLMixin):
     classifier = "topcontent"
     def __init__(self, request):
         self.request = request
 
-class PromotionTagContext(object):
+class PromotionTagContext(HasACLMixin):
     classifier = "promotion"
     def __init__(self, request):
         self.request = request

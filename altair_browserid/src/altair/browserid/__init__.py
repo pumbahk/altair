@@ -1,7 +1,19 @@
 import logging
+import threading
 from webob.dec import wsgify
 
+browser = threading.local()
 logger = logging.getLogger(__name__)
+
+def get_browserid(request):
+    key = request.environ.get('altair.browserid.env_key')
+    if key:
+        return request.environ.get(key)
+
+
+def includeme(config):
+    config.set_request_property(get_browserid, 'browserid')
+
 
 class BrowserIDMiddleware(object):
     def __init__(self, app,
@@ -16,10 +28,16 @@ class BrowserIDMiddleware(object):
     def __call__(self, request):
         cookies = request.cookies
 
-        browser_id = cookies.get(self.cookie_name)
+        browser.id = browser_id = cookies.get(self.cookie_name)
+        browser.url = request.url
         request.environ[self.env_key] = browser_id
+        request.environ['altair.browserid.env_key'] = self.env_key
 
-        return request.get_response(self.app)
+        try:
+            return request.get_response(self.app)
+        finally:
+            browser.id = None
+            browser.url = None
 
 def browserid_filter_factory(global_conf,
                              cookie_name='browserid',

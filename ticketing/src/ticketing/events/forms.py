@@ -34,7 +34,6 @@ class EventForm(Form):
         validators=[
             Required(),
             Regexp(u'^[A-Z0-9]*$', message=u'英数字大文字のみ入力できます'),
-            Length(min=5, max=5, message=u'5文字で入力してください'),
         ]
     )
     title = TextField(
@@ -58,7 +57,15 @@ class EventForm(Form):
     )
 
     def validate_code(form, field):
-        if form.id and form.id.data:
-            return
-        if field.data and Event.filter_by(code=field.data).count():
-            raise ValidationError(u'既に使用されています')
+        if field.data:
+            expect_len = 7
+            query = Event.filter(Event.code==field.data)
+            if form.id and form.id.data:
+                event = Event.get(form.id.data)
+                # 古いコード体系(5桁)と新しいコード体系(7桁)のどちらも許容する
+                expect_len = len(event.code)
+                query = query.filter(Event.id!=form.id.data)
+            if len(field.data) not in [expect_len, 7]:
+                raise ValidationError(u'7文字入力してください')
+            if query.count():
+                raise ValidationError(u'既に使用されています')

@@ -82,7 +82,8 @@
       nextSingleClickAction: null,
       doubleClickTimeout: 400,
       mouseUpHandler: null,
-      onMouseUp: null
+      onMouseUp: null,
+      onMouseMove: null
     },
 
     methods: {
@@ -105,6 +106,21 @@
           }
         };
         $(document.body).bind('mouseup', this.mouseUpHandler);
+        this.mouseMoveHandler = function(evt) {
+          if (self.onMouseMove) {
+            var fasevt = new Fashion.MouseEvt();
+            var physicalPagePosition = { x: evt.pageX, y: evt.pageY };
+            var screenPosition = Fashion._lib.subtractPoint(physicalPagePosition, self.drawable.impl.getViewportOffset());
+            var physicalPosition = Fashion._lib.addPoint(self.drawable.impl.convertToPhysicalPoint(self.drawable.impl.scrollPosition()), screenPosition);
+            fasevt.logicalPosition = self.drawable.impl.convertToLogicalPoint(physicalPosition);
+            self.onMouseMove.call(self, fasevt);
+            evt.stopImmediatePropagation();
+            evt.stopPropagation();
+            evt.preventDefault();
+            return false;
+          }
+        };
+        $(document.body).bind('mousemove', this.mouseMoveHandler);
       },
 
       load: function VenueViewer_load() {
@@ -520,7 +536,7 @@
               var siblings = getSiblings(link);
               shape.addEvent({
                 mouseover: function(evt) {
-                  if (self.pages && self.uiMode == 'select') {
+                  if (self.pages) {
                     for (var i = siblings.length; --i >= 0;) {
                       var shape = copyShape(siblings[i]);
                       if (shape) {
@@ -538,7 +554,7 @@
                   }
                 },
                 mouseout: function(evt) {
-                  if (self.pages && self.uiMode == 'select') {
+                  if (self.pages) {
                     self.canvas.css({ cursor: 'default' });
                     for (var i = siblings.length; --i >= 0;) {
                       var shape = self.overlayShapes.restore(siblings[i].id);
@@ -549,11 +565,18 @@
                   }
                 },
                 mousedown: function(evt) {
-                  if (self.pages && self.uiMode == 'select') {
+/*
+                  if (self.pages) {
                     self.nextSingleClickAction = function() {
                       self.callbacks.messageBoard.down.call(self);
                       self.navigate(link);
                     };
+                  }
+*/
+                },
+                mouseup: function(evt) {
+                  if (self.pages) {
+                    self.navigate(link);
                   }
                 }
               });
@@ -565,11 +588,38 @@
 
             function drawableMouseUp() {
               self.onMouseUp = null;
+              self.onMouseMove = null;
+              $(self.canvas[0]).find('div').css({ overflow: 'scroll' });
               drawableMouseDown = false;
               if (self.dragging) {
                 self.drawable.releaseMouse();
                 self.dragging = false;
               }
+            }
+
+            function drawableMouseMove(evt) {
+                if (clickTimer) {
+                  singleClickFulfilled();
+                }
+                if (self.animating) return;
+                if (!self.dragging) {
+                  if (drawableMouseDown) {
+                    self.dragging = true;
+                    self.drawable.captureMouse();
+                    $(self.canvas[0]).find('div').css({ overflow: 'hidden' });
+                    self.callbacks.messageBoard.down.call(self);
+                  } else {
+                    return;
+                  }
+                }
+                var newScrollPos = Fashion._lib.subtractPoint(
+                  scrollPos,
+                  Fashion._lib.subtractPoint(
+                    evt.logicalPosition,
+                    self.startPos));
+                self.drawable.scrollPosition(newScrollPos);
+				scrollPos = newScrollPos;
+                return false;
             }
 
             function singleClickFulfilled() {
@@ -590,6 +640,7 @@
                 default:
                   drawableMouseDown = true;
                   self.onMouseUp = drawableMouseUp;
+                  self.onMouseMove = drawableMouseMove;
                   if (!clickTimer) {
                     scrollPos = self.drawable.scrollPosition();
                     self.startPos = evt.logicalPosition;
@@ -620,7 +671,7 @@
               },
 
               mouseup: function (evt) {
-                drawableMouseUp();
+                drawableMouseUp(evt);
                 if (self.animating) return;
                 switch (self.uiMode) {
                 case 'zoomin':
@@ -635,31 +686,17 @@
               },
 
               mouseout: function (evt) {
+/*
                 if (clickTimer) {
                   singleClickFulfilled();
                 }
+*/
+                self.canvas.css({ cursor: 'default' });
+                self.callbacks.messageBoard.down.call(self);
               },
 
               mousemove: function (evt) {
-                if (clickTimer) {
-                  singleClickFulfilled();
-                }
-                if (self.animating) return;
-                if (!self.dragging) {
-                  if (drawableMouseDown) {
-                    self.dragging = true;
-                    self.drawable.captureMouse();
-                  } else {
-                    return;
-                  }
-                }
-                var newScrollPos = Fashion._lib.subtractPoint(
-                  scrollPos,
-                  Fashion._lib.subtractPoint(
-                    evt.logicalPosition,
-                    self.startPos));
-                scrollPos = self.drawable.scrollPosition(newScrollPos);
-                return false;
+                drawableMouseMove(evt);
               }
             });
           })();
@@ -811,7 +848,6 @@
                 }, self.callbacks.message);
               },
               mouseout: function(evt) {
-                self.callbacks.messageBoard.down.call(self);
                 var highlighted = self.highlighted;
                 self.highlighted = {};
                 for (var i in highlighted)

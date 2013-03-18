@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TECImageWriterGateway", "TECImageWriterGateway\TECImageWriterGateway.csproj", "{B581C502-B2C7-465E-84F7-26D4264B68D9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIMER", "MIMER\MIMER.csproj", "{45E121CB-8758-416E-B204-C867920A128A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B581C502-B2C7-465E-84F7-26D4264B68D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B581C502-B2C7-465E-84F7-26D4264B68D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B581C502-B2C7-465E-84F7-26D4264B68D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B581C502-B2C7-465E-84F7-26D4264B68D9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{45E121CB-8758-416E-B204-C867920A128A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{45E121CB-8758-416E-B204-C867920A128A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{45E121CB-8758-416E-B204-C867920A128A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{45E121CB-8758-416E-B204-C867920A128A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

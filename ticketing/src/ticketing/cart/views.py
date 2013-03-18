@@ -410,6 +410,8 @@ class IndexView(IndexViewMixin):
         part = self.request.matchdict.get('part')
         venue = c_models.Venue.get(venue_id)
         drawing = venue.site.get_drawing(part)
+        if not drawing:
+            raise HTTPNotFound()
         content_encoding = None
         if re.match('^.+\.(svgz|gz)$', drawing.path):
             content_encoding = 'gzip'

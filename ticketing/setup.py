@@ -41,6 +41,7 @@ requires = [
     'js.tinymce',
     'js.backbone',
     'js.bootstrap==2.1.1',
+    'js.bootstrap-ts',
     'js.jquery_timepicker_addon',
     'js.jquery_colorpicker',
     'js.i18n',
@@ -79,6 +80,7 @@ requires = [
     "poster",
     "radix",
     "altair.auth",
+    "altair.exclog",
     ]
 
 tests_require = [
@@ -117,6 +119,8 @@ setup(name='ticketing',
         "file:../altair_findable_label#egg=altair.findable_label-0.0", 
         "file:../altair_log#egg=altair.log-0.0", 
         "file:../altair_auth#egg=altair.auth-1.0", 
+        "file:../altair_exclog#egg=altair.exclog-0.0", 
+        'file:../bundle/js.bootstrap_ts-2.3.2.dev0-py2.7.egg#egg=js.bootstrap-js=2.3.2.dev0',
         'https://github.com/moriyoshi/tableau/tarball/master#egg=tableau-0.0.4pre2',
         "https://github.com/numpy/numpy/tarball/v1.6.2#egg=numpy-1.6.2",
         'https://github.com/moriyoshi/beaker_extensions/tarball/0.2.0dev-moriyoshi2#egg=beaker-extensions-0.2.0dev-moriyoshi2',

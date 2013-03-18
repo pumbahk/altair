@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
+
 import os
 import isodate
 import json
-import logging
-logger = logging.getLogger()
+import re
 import urllib2
 import contextlib
 from datetime import datetime, timedelta
 from dateutil.parser import parse as parsedate
+import logging
 
 import webhelpers.paginate as paginate
 from sqlalchemy import or_
@@ -17,8 +18,9 @@ from pyramid.threadlocal import get_current_registry
 from pyramid.url import route_path
 from pyramid.response import Response
 from pyramid.path import AssetResolver
+from paste.util.multidict import MultiDict
 
-from ticketing.models import merge_session_with_post, record_to_multidict
+from ticketing.models import merge_session_with_post, record_to_multidict, merge_and_flush
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.core.models import Event, Performance, StockType, StockTypeEnum
@@ -31,6 +33,8 @@ from ticketing.events.stock_holders.forms import StockHolderForm
 from ..api.impl import get_communication_api
 from ..api.impl import CMSCommunicationApi
 from .api import get_cms_data
+
+logger = logging.getLogger()
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class Events(BaseView):
@@ -100,19 +104,7 @@ class Events(BaseView):
 
     @view_config(route_name='events.new', request_method='GET', renderer='ticketing:templates/events/edit.html')
     def new_get(self):
-        f = EventForm(organization_id=self.context.user.organization.id)
-        event = Event(organization_id=self.context.user.organization_id)
-
-        event_id = int(self.request.matchdict.get('event_id', 0))
-        if event_id:
-            event = Event.get(event_id, organization_id=self.context.user.organization_id)
-            if event is None:
-                return HTTPNotFound('event id %d is not found' % event_id)
-
-        event = record_to_multidict(event)
-        if 'id' in event: event.pop('id')
-        f.process(event)
-
+        f = EventForm(MultiDict(code=self.context.user.organization.code), organization_id=self.context.user.organization.id)
         return {
             'form':f,
         }
@@ -214,14 +206,16 @@ class Events(BaseView):
             with contextlib.closing(urllib2.urlopen(req)) as res:
                 if res.getcode() == HTTPCreated.code:
                     self.request.session.flash(u'イベントをCMSへ送信しました')
+                    event.cms_send_at = datetime.now()
+                    merge_and_flush(event)
                 else:
                     raise Exception("cms sync http response error: reponse is not 302 (code:%s),  url=%s" % (res.getcode(),  res.url))
                     # raise Exception("cms sync http response error: reponse is not 302 (code:%s),  response=%s" % (res.getcode(), res.read()))
         except urllib2.HTTPError, e:
-            logger.warn("cms sync http error: response status url=(%s) %s" % (e.code, e))
+            logger.warn("cms sync http error: response code=(%s) event_id=%s url=%s method=%s %s" % (e.code, event_id, req.get_full_url(), req.get_method(), e))
             self.request.session.flash(u'イベント送信に失敗しました (%s)' % e.code)
         except urllib2.URLError, e:
-            logger.warn("cms sync http error: response status url=(%s) %s" % (e.reason, e))
+            logger.warn("cms sync url error: response status=(%s) event_id=%s url=%s method=%s %s" % (str(e.reason), event_id, req.get_full_url(), req.get_method(),  e))
             self.request.session.flash(u'イベント送信に失敗しました (%s)' % e.reason)
         except Exception, e:
             logger.error("cms sync error: %s" % (e.message))

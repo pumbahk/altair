@@ -705,6 +705,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     stock_holders = relationship('StockHolder', backref='event')
 
     sales_segment_groups = relationship('SalesSegmentGroup')
+    cms_send_at = Column(DateTime, nullable=True, default=None)
 
     _first_performance = None
     _final_performance = None
@@ -1987,6 +1988,9 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     card_brand = Column(Unicode(20))
     card_ahead_com_code = Column(Unicode(20), doc=u"仕向け先企業コード")
     card_ahead_com_name = Column(Unicode(20), doc=u"仕向け先企業名")
+
+    browserid = Column(String(40))
+
 
     def is_canceled(self):
         return bool(self.canceled_at)

@@ -46,7 +46,10 @@ widget.configure({
     };
 
     var collect_data = function(we, choiced_elt){
-        return {}
+        var root = $(we.dialog);
+        return {"kind": root.find("#kind").val(), 
+                "mask_performance_date": root.find("#mask_performance_date:checked").val() && "1", 
+               };
     };
     return widget.include("performancelist", {
         load_page: load_page, 

@@ -92,6 +92,7 @@ class Payment(object):
 
     def _bind_order(self, order):
         order.organization_id = order.performance.event.organization_id
+        order.browserid = self.request.browserid
         self.cart.order = order
 
     def call_payment_delivery(self, payment_delivery_plugin):

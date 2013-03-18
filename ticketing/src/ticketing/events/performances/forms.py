@@ -44,7 +44,7 @@ class PerformanceForm(Form):
         validators=[
             Required(),
             Regexp(u'^[a-zA-Z0-9]*$', message=u'英数字のみ入力できます'),
-            Length(min=12, max=12, message=u'12文字で入力してください'),
+            Length(min=12, max=12, message=u'12文字入力してください'),
         ],
     )
     open_on = DateTimeField(
@@ -93,10 +93,12 @@ class PerformanceForm(Form):
             raise ValidationError(u'開演日時より過去の日時は入力できません')
 
     def validate_code(form, field):
-        if form.id and form.id.data:
-            return
-        if field.data and Performance.filter_by(code=field.data).count():
-            raise ValidationError(u'既に使用されています')
+        if field.data:
+            query = Performance.filter(Performance.code==field.data)
+            if form.id and form.id.data:
+                query = query.filter(Performance.id!=form.id.data)
+            if query.count():
+                raise ValidationError(u'既に使用されています')
 
     def validate_venue_id(form, field):
         if form.id.data:

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import re
 import logging
 logger = logging.getLogger(__name__)
 
@@ -9,6 +10,7 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
 from pyramid.renderers import render_to_response
 from pyramid.security import has_permission, ACLAllowed
+from paste.util.multidict import MultiDict
 
 from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
@@ -143,7 +145,7 @@ class Performances(BaseView):
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
 
-        f = PerformanceForm(organization_id=self.context.user.organization_id)
+        f = PerformanceForm(MultiDict(code=event.code), organization_id=self.context.user.organization_id)
         return {
             'form':f,
             'event':event,
@@ -186,7 +188,6 @@ class Performances(BaseView):
 
         f = PerformanceForm(**kwargs)
         f.process(record_to_multidict(performance))
-
         if is_copy:
             f.original_id.data = f.id.data
             f.id.data = None

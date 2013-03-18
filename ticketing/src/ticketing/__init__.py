@@ -63,6 +63,8 @@ def main(global_config, **local_config):
 
     config.add_route("index", "/")
 
+    config.include('altair.browserid')
+    config.include('altair.exclog')
     config.include('ticketing.mobile')
     config.include('ticketing.core')
     config.include('ticketing.multicheckout')

@@ -17,6 +17,11 @@ class TicketlistWidget(Widget):
     implements(IWidget)
     type = "ticketlist"
 
+    def __init__(self, *args, **kwargs):
+        super(TicketlistWidget, self).__init__(*args, **kwargs)
+        if "show_label" not in kwargs:
+            self.show_label = True
+
     template_name = "altaircms.plugins.widget:ticketlist/render.html"
     __tablename__ = "widget_ticketlist"
     __mapper_args__ = {"polymorphic_identity": type}
