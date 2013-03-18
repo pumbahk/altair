@@ -5,7 +5,7 @@
     % if form.word.data:
         <a href="/">トップ</a> >> 検索 ${form.navi_area.data + u"で" if form.navi_area.data else ""}「${form.word.data}」を含む公演
     % else:
-        <a href="/">トップ</a> >> 検索 「${form.navi_area.data if form.navi_area.data else ""}」
+        <a href="/">トップ</a> >> 検索 ${u"「" + form.navi_area.data + u"」" if form.navi_area.data else ""}
     % endif
     <br/><br/>
 
