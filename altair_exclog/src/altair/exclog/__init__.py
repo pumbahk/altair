@@ -59,14 +59,10 @@ class ExcLogTween(object):
                 %(env)s
                 
                 
-                PARAMETERS
-                
-                %(params)s
-                
                 
                 """ % dict(url=request.url,
-                           env=pformat(request.environ),
-                           params=pformat(request.params)))
+                           env=pformat(request.environ)))
+
             else:
                 message = request.url
             logger.exception(message)

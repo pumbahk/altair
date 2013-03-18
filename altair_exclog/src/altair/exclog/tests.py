@@ -75,9 +75,8 @@ class ExcLogTweenTests(unittest.TestCase):
         self.assertEqual(result.text, u'')
         mock_logger.exception.assert_called_with('\n\nhttp://example.com\n\n'
                                                  'ENVIRONMENT\n\n'
-                                                 '{\'testing\': \'testing\'}\n\n\n'
-                                                 'PARAMETERS\n\n'
-                                                 '{\'testing_param\': "it\'s testing"}\n\n\n')
+                                                 '{\'testing\': \'testing\'}\n\n'
+                                                 '\n\n')
 
     def test_call_with_handler(self):
         registry = self.config.registry
@@ -139,8 +138,9 @@ class ExcLogTweenTests(unittest.TestCase):
 
         self.assertEqual(result.status_int, 500)
         mock_logger.exception.assert_called_with('http://example.com')
-        self.assertTrue(result.text.startswith("Traceback (most recent call last):"))
-        self.assertTrue(result.text.endswith("DummyException\n"), result.text)
+        self.assertEqual(result.text.split()[0], "http://example.com")
+        self.assertIn('Traceback (most recent call last):', result.text)
+        self.assertTrue(result.text.split()[-1], "DummyException")
 
 
 class convert_settingsTests(unittest.TestCase):
