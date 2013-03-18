@@ -17,11 +17,11 @@
   $(function() {
     $('form').disableOnSubmit();
     $('input[name^="start_on"]').change(function(){
-      if ($('#id').val() || $('#code').val().length == 5) return;
+      if ($('#id').val() || $('#code').val().length == 12) return;
       var month = $('input[name="start_on.month"]').val();
       var day = $('input[name="start_on.day"]').val();
       if (month && day) {
-        $('#code').val(("0" + month).slice(-2) + ("0" + day).slice(-2) + 'Z');
+        $('#code').val("${event.code}" + ("0" + month).slice(-2) + ("0" + day).slice(-2) + 'Z');
       }
     });
   });
@@ -56,7 +56,7 @@
       ${h.form_item(form.open_on)}
       ${h.form_item(form.start_on)}
       ${h.form_item(form.end_on)}
-      ${h.form_item(form.code, class_='span3', maxlength=5, add_on=event.code)}
+      ${h.form_item(form.code, class_='span3', maxlength=12)}
       ${h.form_item(form.redirect_url_pc)}
       ${h.form_item(form.redirect_url_mobile)}
       ${h.form_item(form.venue_id, class_='span6')}

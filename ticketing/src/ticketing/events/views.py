@@ -18,6 +18,7 @@ from pyramid.threadlocal import get_current_registry
 from pyramid.url import route_path
 from pyramid.response import Response
 from pyramid.path import AssetResolver
+from paste.util.multidict import MultiDict
 
 from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
@@ -103,19 +104,7 @@ class Events(BaseView):
 
     @view_config(route_name='events.new', request_method='GET', renderer='ticketing:templates/events/edit.html')
     def new_get(self):
-        f = EventForm(organization_id=self.context.user.organization.id)
-        event = Event(organization_id=self.context.user.organization_id)
-
-        event_id = int(self.request.matchdict.get('event_id', 0))
-        if event_id:
-            event = Event.get(event_id, organization_id=self.context.user.organization_id)
-            if event is None:
-                return HTTPNotFound('event id %d is not found' % event_id)
-
-        event = record_to_multidict(event)
-        if 'id' in event: event.pop('id')
-        f.process(event)
-
+        f = EventForm(MultiDict(code=self.context.user.organization.code), organization_id=self.context.user.organization.id)
         return {
             'form':f,
         }
@@ -126,7 +115,6 @@ class Events(BaseView):
 
         if f.validate():
             event = merge_session_with_post(Event(organization_id=self.context.user.organization_id), f.data)
-            event.code = self.context.user.organization.code + event.code
             event.save()
 
             self.request.session.flash(u'イベントを登録しました')
@@ -146,7 +134,6 @@ class Events(BaseView):
 
         f = EventForm(organization_id=self.context.user.organization.id)
         f.process(record_to_multidict(event))
-        f.code.data = re.sub('^' + event.organization.code, '', f.code.data)
 
         if self.request.matched_route.name == 'events.copy':
             f.original_id.data = f.id.data
@@ -171,7 +158,6 @@ class Events(BaseView):
                 event = merge_session_with_post(Event(organization_id=self.context.user.organization_id), f.data)
             else:
                 event = merge_session_with_post(event, f.data)
-            event.code = self.context.user.organization.code + event.code
             event.save()
 
             self.request.session.flash(u'イベントを保存しました')
