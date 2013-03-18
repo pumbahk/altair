@@ -75,9 +75,9 @@
 
 % if tickets:
     <div style="font-size: x-small">席種/価格</div>
-    % for name in tickets.keys():
+    % for ticket in tickets:
         <span style="font-size: x-small">
-            ${name}:${tickets[name]}<br/>
+            ${ticket.name}:${ticket.price}<br/>
         </span>
     % endfor
 % endif

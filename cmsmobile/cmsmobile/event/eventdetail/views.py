@@ -41,7 +41,7 @@ def move_eventdetail(request):
     keys = form.month_unit.data.keys()
     keys.sort()
     form.month_unit_keys.data = keys
-    form.tickets.data = get_tickets(form.event.data)
+    form.tickets.data = get_tickets(request=request, event=form.event.data)
     form.sales_start.data, form.sales_end.data = get_sales_date(request=request, event=form.event.data)
     log_info("move_eventdetail", "detail infomation get end")
 

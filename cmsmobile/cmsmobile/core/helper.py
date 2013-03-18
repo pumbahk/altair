@@ -2,8 +2,9 @@
 import logging
 import webhelpers.paginate as paginate
 from altaircms.helpers.link import get_purchase_page_from_performance
-from altaircms.models import SalesSegmentGroup
+from altaircms.models import SalesSegmentGroup, SalesSegment
 from altaircms.event.models import Event
+from altaircms.models import Ticket
 
 logger = logging.getLogger(__file__)
 
@@ -99,13 +100,12 @@ def get_purchase_links(request, event):
     log_info("get_purchase_links", "end")
     return links
 
-def get_tickets(event):
+def get_tickets(request, event):
     log_info("get_tickets", "start")
-    tickets = {}
-    for group in event.salessegment_groups:
-        for segment in group.salessegments:
-            for ticket in segment.tickets:
-                tickets.update({ticket.name:ticket.price})
+    tickets = request.allowable(Ticket).join(SalesSegment, SalesSegment.id == Ticket.sale_id) \
+                .join(SalesSegmentGroup, SalesSegmentGroup.id == SalesSegment.group_id) \
+                .filter(SalesSegmentGroup.event_id == event.id) \
+                .order_by(Ticket.display_order).all()
 
     log_info("get_tickets", "key num=" + str(len(tickets)))
 
