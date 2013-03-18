@@ -41,7 +41,8 @@
 
 .modal.big {
   width: 75%;
-  margin: -250px -37% -250px -37%;
+  margin-left: -37%;
+  margin-right: -37%;
 }
 
 .modal-body {
