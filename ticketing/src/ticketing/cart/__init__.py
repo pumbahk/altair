@@ -94,6 +94,8 @@ def main(global_config, **local_config):
     config.add_renderer('json'  , 'ticketing.renderers.json_renderer_factory')
     config.add_renderer('csv'   , 'ticketing.renderers.csv_renderer_factory')
     config.add_static_view('static', 'ticketing.cart:static', cache_max_age=3600)
+    ### includes altair.*
+    config.include('altair.exclog')
 
     ### selectable renderer
     config.include(".selectable_renderer")
