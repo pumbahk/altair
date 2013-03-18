@@ -275,7 +275,7 @@
 }
 
 /* for topic widget */
-.topic-widget {
+#side .topic-widget {
     float: left;
 }
 
