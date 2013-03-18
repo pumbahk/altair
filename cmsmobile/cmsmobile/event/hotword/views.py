@@ -13,7 +13,7 @@ from cmsmobile.core.helper import log_info
 class ValidationFailure(Exception):
     pass
 
-@view_config(route_name='hotword', renderer='cmsmobile:templates/searchresult/search.mako')
+@view_config(route_name='hotword', renderer='cmsmobile:templates/searchresult/hotword_result.mako')
 def move_hotword(request):
 
     log_info("move_hotword", "start")

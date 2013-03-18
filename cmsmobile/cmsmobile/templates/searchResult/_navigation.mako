@@ -7,3 +7,4 @@
     <a href="/">トップ</a> >> <a href="/genre?genre=${navi_genre.id}">${navi_genre.label}</a>
     >> ${form.navi_area.data + u"で" if form.navi_area.data else ""}「${word}」を含む公演
 % endif
+<br/><br/>
