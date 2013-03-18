@@ -1038,7 +1038,7 @@ cart.VenueView = Backbone.View.extend({
 				var ul = $('<ul></ul>');
 				ul
 					.addClass('pageSwitchPanel')
-					.css({ position: 'absolute', top: 10, right : 10 });
+					.css({ position: 'absolute', top: 20, right : 20 });
 				for(var k in viewer.pages) {
 					if(viewer.pages[k].hidden) {
 						continue;
