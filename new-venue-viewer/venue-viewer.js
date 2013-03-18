@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['c_S5T1AYTYNERF1A'] = (function (exports) { (function () { 
+__LIBS__['LLMUJ20KF8HE2_LT'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['uA63I1C097ZMGV_1'] = (function (exports) { (function () { 
+__LIBS__['LS15ESZ95B6FM2TB'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['WSDOOXRVTX9QA1S3'] = (function (exports) { (function () { 
+__LIBS__['A_H76M3H95VYO9XO'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['c_S5T1AYTYNERF1A'];
-var CONF = __LIBS__['uA63I1C097ZMGV_1'];
+var util = __LIBS__['LLMUJ20KF8HE2_LT'];
+var CONF = __LIBS__['LS15ESZ95B6FM2TB'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -1030,9 +1030,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['uA63I1C097ZMGV_1'];
-  var seat = __LIBS__['WSDOOXRVTX9QA1S3'];
-  var util = __LIBS__['c_S5T1AYTYNERF1A'];
+  var CONF = __LIBS__['LS15ESZ95B6FM2TB'];
+  var seat = __LIBS__['A_H76M3H95VYO9XO'];
+  var util = __LIBS__['LLMUJ20KF8HE2_LT'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1563,7 +1563,7 @@ function parseTransform(transform_str) {
               var siblings = getSiblings(link);
               shape.addEvent({
                 mouseover: function(evt) {
-                  if (self.pages && self.uiMode == 'select') {
+                  if (self.pages) {
                     for (var i = siblings.length; --i >= 0;) {
                       var shape = copyShape(siblings[i]);
                       if (shape) {
@@ -1578,10 +1578,11 @@ function parseTransform(transform_str) {
                       page = self.currentPage;
                     self.callbacks.messageBoard.up.call(self, self.pages[page].name);
                     self.canvas.css({ cursor: 'pointer' });
+console.log("over");
                   }
                 },
                 mouseout: function(evt) {
-                  if (self.pages && self.uiMode == 'select') {
+                  if (self.pages) {
                     self.canvas.css({ cursor: 'default' });
                     for (var i = siblings.length; --i >= 0;) {
                       var shape = self.overlayShapes.restore(siblings[i].id);
@@ -1592,11 +1593,18 @@ function parseTransform(transform_str) {
                   }
                 },
                 mousedown: function(evt) {
-                  if (self.pages && self.uiMode == 'select') {
+/*
+                  if (self.pages) {
                     self.nextSingleClickAction = function() {
                       self.callbacks.messageBoard.down.call(self);
                       self.navigate(link);
                     };
+                  }
+*/
+                },
+                mouseup: function(evt) {
+                  if (self.pages) {
+                    self.navigate(link);
                   }
                 }
               });
@@ -1609,7 +1617,7 @@ function parseTransform(transform_str) {
             function drawableMouseUp() {
               self.onMouseUp = null;
               self.onMouseMove = null;
-              $(self.canvas[0]).find('div').css({ 'overflow': 'scroll' });
+              $(self.canvas[0]).find('div').css({ overflow: 'scroll' });
               drawableMouseDown = false;
               if (self.dragging) {
                 self.drawable.releaseMouse();
@@ -1626,6 +1634,8 @@ function parseTransform(transform_str) {
                   if (drawableMouseDown) {
                     self.dragging = true;
                     self.drawable.captureMouse();
+                    $(self.canvas[0]).find('div').css({ overflow: 'hidden' });
+                    self.callbacks.messageBoard.down.call(self);
                   } else {
                     return;
                   }
@@ -1658,7 +1668,6 @@ function parseTransform(transform_str) {
                 default:
                   drawableMouseDown = true;
                   self.onMouseUp = drawableMouseUp;
-                  $(self.canvas[0]).find('div').css({ 'overflow': 'hidden' });
                   self.onMouseMove = drawableMouseMove;
                   if (!clickTimer) {
                     scrollPos = self.drawable.scrollPosition();
@@ -1704,13 +1713,15 @@ function parseTransform(transform_str) {
                 }
               },
 
-/*
               mouseout: function (evt) {
+/*
                 if (clickTimer) {
                   singleClickFulfilled();
                 }
-              },
 */
+                self.canvas.css({ cursor: 'default' });
+                self.callbacks.messageBoard.down.call(self);
+              },
 
               mousemove: function (evt) {
                 drawableMouseMove(evt);
@@ -1865,7 +1876,7 @@ function parseTransform(transform_str) {
                 }, self.callbacks.message);
               },
               mouseout: function(evt) {
-                self.callbacks.messageBoard.down.call(self);
+console.log("shape out");
                 var highlighted = self.highlighted;
                 self.highlighted = {};
                 for (var i in highlighted)

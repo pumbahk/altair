@@ -536,7 +536,7 @@
               var siblings = getSiblings(link);
               shape.addEvent({
                 mouseover: function(evt) {
-                  if (self.pages && self.uiMode == 'select') {
+                  if (self.pages) {
                     for (var i = siblings.length; --i >= 0;) {
                       var shape = copyShape(siblings[i]);
                       if (shape) {
@@ -554,7 +554,7 @@
                   }
                 },
                 mouseout: function(evt) {
-                  if (self.pages && self.uiMode == 'select') {
+                  if (self.pages) {
                     self.canvas.css({ cursor: 'default' });
                     for (var i = siblings.length; --i >= 0;) {
                       var shape = self.overlayShapes.restore(siblings[i].id);
@@ -565,11 +565,18 @@
                   }
                 },
                 mousedown: function(evt) {
-                  if (self.pages && self.uiMode == 'select') {
+/*
+                  if (self.pages) {
                     self.nextSingleClickAction = function() {
                       self.callbacks.messageBoard.down.call(self);
                       self.navigate(link);
                     };
+                  }
+*/
+                },
+                mouseup: function(evt) {
+                  if (self.pages) {
+                    self.navigate(link);
                   }
                 }
               });
@@ -582,7 +589,7 @@
             function drawableMouseUp() {
               self.onMouseUp = null;
               self.onMouseMove = null;
-              $(self.canvas[0]).find('div').css({ 'overflow': 'scroll' });
+              $(self.canvas[0]).find('div').css({ overflow: 'scroll' });
               drawableMouseDown = false;
               if (self.dragging) {
                 self.drawable.releaseMouse();
@@ -599,6 +606,8 @@
                   if (drawableMouseDown) {
                     self.dragging = true;
                     self.drawable.captureMouse();
+                    $(self.canvas[0]).find('div').css({ overflow: 'hidden' });
+                    self.callbacks.messageBoard.down.call(self);
                   } else {
                     return;
                   }
@@ -631,7 +640,6 @@
                 default:
                   drawableMouseDown = true;
                   self.onMouseUp = drawableMouseUp;
-                  $(self.canvas[0]).find('div').css({ 'overflow': 'hidden' });
                   self.onMouseMove = drawableMouseMove;
                   if (!clickTimer) {
                     scrollPos = self.drawable.scrollPosition();
@@ -677,13 +685,15 @@
                 }
               },
 
-/*
               mouseout: function (evt) {
+/*
                 if (clickTimer) {
                   singleClickFulfilled();
                 }
-              },
 */
+                self.canvas.css({ cursor: 'default' });
+                self.callbacks.messageBoard.down.call(self);
+              },
 
               mousemove: function (evt) {
                 drawableMouseMove(evt);
@@ -838,7 +848,6 @@
                 }, self.callbacks.message);
               },
               mouseout: function(evt) {
-                self.callbacks.messageBoard.down.call(self);
                 var highlighted = self.highlighted;
                 self.highlighted = {};
                 for (var i in highlighted)
