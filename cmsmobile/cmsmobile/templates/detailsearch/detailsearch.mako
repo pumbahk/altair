@@ -3,8 +3,15 @@
     <%include file='../common/_header.mako' args="title=u'楽天チケット[詳細検索]'"/>
 
 <body>
+    % if form.genre.data:
+        <a href="/genre?genre=${form.genre.data}&sub_genre=${form.sub_genre.data}" accesskey="0">[0]戻る</a>
+    % else:
+        <a href="/" accesskey="0">[0]戻る</a>
+    % endif
+    <a href="/" accesskey="9">[9]トップへ</a>
+    <br/><br/>
 
-    <a href="/">トップ</a> >> 詳細検索
+    <a href="/">トップ</a> >> 詳細検索<br/><br/>
 
 
 <%include file='./_form.mako' args="form=form" />

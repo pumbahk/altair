@@ -2,6 +2,14 @@
 <html>
     <%include file='../common/_header.mako' args="title=u'詳細検索'"/>
 
+    % if form.genre.data:
+        <a href="/genre?genre=${form.genre.data}&sub_genre=${form.sub_genre.data}" accesskey="0">[0]戻る</a>
+    % else:
+        <a href="/" accesskey="0">[0]戻る</a>
+    % endif
+    <a href="/" accesskey="9">[9]トップへ</a>
+    <br/><br/>
+
     <a href="/">トップ</a> >> 詳細検索
 
 <%include file='../common/_search_result.mako' args="events=form.events.data

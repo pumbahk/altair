@@ -12,7 +12,7 @@ from datetime import date
 def move_detailsearch(request):
 
     log_info("move_detailsearch", "start")
-    form = DetailSearchForm()
+    form = DetailSearchForm(request.GET)
     form = create_genre_selectbox(request, form)
     form = create_date_selectbox(form)
     log_info("move_detailsearch", "end")

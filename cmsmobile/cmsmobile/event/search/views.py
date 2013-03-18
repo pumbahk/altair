@@ -20,7 +20,7 @@ def search(request):
     form.week.data = get_week_map()
     searcher = EventSearcher(request)
 
-    if (form.area.data and form.area.data > 0) and (form.word.data is None or form.word.data == ""): # 地域検索
+    if (form.area.data and int(form.area.data) > 0) and (form.word.data is None or form.word.data == ""): # 地域検索
         log_info("search", "search event start(area)")
         qs = searcher.get_events_from_area(form)
         qs = searcher.get_events_week_sale(form, qs)

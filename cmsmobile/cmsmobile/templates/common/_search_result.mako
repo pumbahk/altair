@@ -1,4 +1,4 @@
-<%page args="events, word, num, page, page_num, path, week"/>
+<%page args="events, word, num, page, page_num, path, week, genre, sub_genre"/>
 
 % if int(num):
     ${num}件見つかりました。
@@ -16,7 +16,7 @@
 % if events:
     % for count, event in enumerate(events):
         <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
-        <a href="/eventdetail?event_id=${event.id}">${event.title}</a><br/>
+        <a href="/eventdetail?event_id=${event.id}&genre=${genre}&sub_genre=${sub_genre}">${event.title}</a><br/>
         販売期間：${event.deal_open.year}/${str(event.deal_open.month).zfill(2)}/${str(event.deal_open.day).zfill(2)}(${week[event.deal_open.weekday()]})〜${event.deal_close.year}/${str(event.deal_close.month).zfill(2)}/${str(event.deal_close.day).zfill(2)}(${week[event.deal_close.weekday()]})<br/>
         % if event.performances[0]:
             会場：${event.performances[0].venue}

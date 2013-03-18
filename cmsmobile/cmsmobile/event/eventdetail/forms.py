@@ -20,3 +20,7 @@ class EventDetailForm(Form):
     tickets = HiddenField(label='', validators=[Optional()])
     sales_start = HiddenField(label='', validators=[Optional()])
     sales_end = HiddenField(label='', validators=[Optional()])
+
+    # --- 遷移先確認用
+    genre = HiddenField(label='', validators=[Optional()])
+    sub_genre= HiddenField(label='', validators=[Optional()])
