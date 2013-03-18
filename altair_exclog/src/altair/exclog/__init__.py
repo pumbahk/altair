@@ -13,7 +13,6 @@ from pyramid.settings import asbool
 from pyramid.util import DottedNameResolver
 from pyramid.httpexceptions import HTTPInternalServerError, WSGIHTTPException
 from pyramid.response import Response
-from pyramid.view import render_view_to_response
 
 
 resolver = DottedNameResolver(None)
@@ -75,6 +74,7 @@ class ExcLogTween(object):
             if self.show_traceback:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 out = StringIO.StringIO()
+                out.write(message + "\n")
                 traceback.print_exception(exc_type, exc_value, exc_traceback, file=out)
                 return Response(out.getvalue(), status=500, content_type='text/plain')
             return HTTPInternalServerError()
