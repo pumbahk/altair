@@ -210,10 +210,10 @@ class Events(BaseView):
                     raise Exception("cms sync http response error: reponse is not 302 (code:%s),  url=%s" % (res.getcode(),  res.url))
                     # raise Exception("cms sync http response error: reponse is not 302 (code:%s),  response=%s" % (res.getcode(), res.read()))
         except urllib2.HTTPError, e:
-            logger.warn("cms sync http error: response status url=(%s) %s" % (e.code, e))
+            logger.warn("cms sync http error: response code=(%s) event_id=%s url=%s method=%s %s" % (e.code, event_id, req.get_full_url(), req.get_method(), e))
             self.request.session.flash(u'イベント送信に失敗しました (%s)' % e.code)
         except urllib2.URLError, e:
-            logger.warn("cms sync http error: response status url=(%s) %s" % (e.reason, e))
+            logger.warn("cms sync url error: response status=(%s) event_id=%s url=%s method=%s %s" % (str(e.reason), event_id, req.get_full_url(), req.get_method(),  e))
             self.request.session.flash(u'イベント送信に失敗しました (%s)' % e.reason)
         except Exception, e:
             logger.error("cms sync error: %s" % (e.message))
