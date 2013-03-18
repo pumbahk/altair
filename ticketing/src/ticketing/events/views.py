@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
+
 import os
 import isodate
 import json
-import logging
-logger = logging.getLogger()
+import re
 import urllib2
 import contextlib
 from datetime import datetime, timedelta
 from dateutil.parser import parse as parsedate
+import logging
 
 import webhelpers.paginate as paginate
 from sqlalchemy import or_
@@ -31,6 +32,8 @@ from ticketing.events.stock_holders.forms import StockHolderForm
 from ..api.impl import get_communication_api
 from ..api.impl import CMSCommunicationApi
 from .api import get_cms_data
+
+logger = logging.getLogger()
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class Events(BaseView):
@@ -123,6 +126,7 @@ class Events(BaseView):
 
         if f.validate():
             event = merge_session_with_post(Event(organization_id=self.context.user.organization_id), f.data)
+            event.code = self.context.user.organization.code + event.code
             event.save()
 
             self.request.session.flash(u'イベントを登録しました')
@@ -142,6 +146,7 @@ class Events(BaseView):
 
         f = EventForm(organization_id=self.context.user.organization.id)
         f.process(record_to_multidict(event))
+        f.code.data = re.sub('^' + event.organization.code, '', f.code.data)
 
         if self.request.matched_route.name == 'events.copy':
             f.original_id.data = f.id.data
@@ -166,6 +171,7 @@ class Events(BaseView):
                 event = merge_session_with_post(Event(organization_id=self.context.user.organization_id), f.data)
             else:
                 event = merge_session_with_post(event, f.data)
+            event.code = self.context.user.organization.code + event.code
             event.save()
 
             self.request.session.flash(u'イベントを保存しました')

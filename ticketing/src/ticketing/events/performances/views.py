@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import re
 import logging
 logger = logging.getLogger(__name__)
 
@@ -161,6 +162,7 @@ class Performances(BaseView):
             performance = merge_session_with_post(Performance(), f.data)
             performance.event_id = event_id
             performance.create_venue_id = f.data['venue_id']
+            performance.code = event.code + performance.code
             performance.save()
 
             self.request.session.flash(u'パフォーマンスを保存しました')
@@ -186,6 +188,7 @@ class Performances(BaseView):
 
         f = PerformanceForm(**kwargs)
         f.process(record_to_multidict(performance))
+        f.code.data = re.sub('^' + performance.event.code, '', f.code.data)
 
         if is_copy:
             f.original_id.data = f.id.data
@@ -223,6 +226,7 @@ class Performances(BaseView):
                     performance.delete_venue_id = performance.venue.id
                     performance.create_venue_id = f.data['venue_id']
 
+            performance.code = performance.event.code + performance.code
             performance.save()
             self.request.session.flash(u'パフォーマンスを保存しました')
             return HTTPFound(location=route_path('performances.show', self.request, performance_id=performance.id))

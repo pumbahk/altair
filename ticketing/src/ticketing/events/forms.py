@@ -34,7 +34,7 @@ class EventForm(Form):
         validators=[
             Required(),
             Regexp(u'^[A-Z0-9]*$', message=u'英数字大文字のみ入力できます'),
-            Length(min=5, max=5, message=u'5文字で入力してください'),
+            Length(min=5, max=5, message=u'5文字入力してください'),
         ]
     )
     title = TextField(

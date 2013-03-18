@@ -44,7 +44,7 @@ class PerformanceForm(Form):
         validators=[
             Required(),
             Regexp(u'^[a-zA-Z0-9]*$', message=u'英数字のみ入力できます'),
-            Length(min=12, max=12, message=u'12文字で入力してください'),
+            Length(min=5, max=5, message=u'5文字入力してください'),
         ],
     )
     open_on = DateTimeField(

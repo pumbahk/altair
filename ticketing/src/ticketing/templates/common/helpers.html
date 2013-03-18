@@ -88,10 +88,14 @@
       </div>
     % else:
       % if item.type != 'HiddenField':
-        ${(help or u'')|n} 
+        ${(help or u'')|n}
         <label class="${u' '.join(classes + [u'control-label'])}" for="${item.id}">${label or item.label.text}</label>
       % endif
-      <div class="controls">
+      <% add_on = options.pop('add_on', None) %>
+      <div class="controls ${'input-prepend' if add_on else ''}">
+        % if add_on:
+        <span class="add-on">${add_on}</span>
+        % endif
         ${item(**options)}
         ${validate_errors(item)}
       </div>
