@@ -73,6 +73,7 @@
     <span style="font-size: x-small">${event.notice}</span>
 % endif
 
+<!--
 % if tickets:
     <div style="font-size: x-small">席種/価格</div>
     % for ticket in tickets:
@@ -81,6 +82,7 @@
         </span>
     % endfor
 % endif
+-->
 
 % if event.inquiry_for:
     <div style="font-size: x-small">お問合せ</div>
