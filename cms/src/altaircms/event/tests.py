@@ -525,6 +525,69 @@ class ParseAndSaveEventTests(unittest.TestCase):
         self.assertEqual(ticket.seattype, u"A席")
         self.assertEqual(ticket.price, 4000)
 
+    def test_parent_is_deleted_children_are_also_deleted(self):
+        backend_data = u"""
+{
+    "created_at": "2013-03-15T18:46:37", 
+    "events": [
+        {
+            "code": "89BZ9", 
+            "id": 152, 
+            "organization_id": 1, 
+            "performances": [
+                {
+                    "end_on": "2012-01-10T22:00:00", 
+                    "id": 547, 
+                    "name": "test", 
+                    "open_on": "2012-01-10T18:10:00", 
+                    "prefecture": null, 
+                    "sales": [
+                        {
+                            "deleted": "true", 
+                            "end_on": "2012-12-24T00:00:00", 
+                            "group_id": 551, 
+                            "id": 1722, 
+                            "kind_label": "\u5148\u884c\u5148\u7740", 
+                            "kind_name": "early_firstcome", 
+                            "name": "\u30b4\u30fc\u30eb\u30c9\u30fb\u30d7\u30e9\u30c1\u30ca\u30fb\u6cd5\u4eba\u5148\u884c\u767a\u58f2\uff08\u65e9\u5272\uff09", 
+                            "seat_choice": "true", 
+                            "start_on": "2012-12-21T10:00:00", 
+                            "tickets": [
+                                {
+                                    "display_order": 1, 
+                                    "id": 25346, 
+                                    "name": "\u30d7\u30ec\u30df\u30a2\u30e0", 
+                                    "price": 999999.0, 
+                                    "seat_type": "\u30d7\u30ec\u30df\u30a2\u30e0"
+                                }
+                            ]
+                        }
+                    ], 
+                    "start_on": "2012-01-10T19:10:00", 
+                    "venue": "\u4ed9\u53f0\u5e02\u9752\u8449\u4f53\u80b2\u9928"
+                }
+            ], 
+            "subtitle": "\u524a\u9664\u4f7f\u7528\u4e0d\u53ef", 
+            "title": "\u524a\u9664\u4f7f\u7528\u4e0d\u53ef"
+        }
+    ], 
+    "organization": {
+        "id": 1, 
+        "short_name": "89ers"
+    }, 
+    "updated_at": "2013-03-15T18:46:37"
+}
+"""
+        request = testing.DummyRequest()
+        self._callFUT(request, json.loads(backend_data))
+        from altaircms.event.models import Event
+        from altaircms.models import Performance, SalesSegment, Ticket
+
+        self.assertEquals(Event.query.count(), 1)
+        self.assertEquals(Performance.query.count(), 1)
+        self.assertEquals(SalesSegment.query.count(), 0)
+        self.assertEquals(Ticket.query.count(), 0)
+
 class ValidateAPIKeyTests(unittest.TestCase):
     def setUp(self):
         import sqlahelper

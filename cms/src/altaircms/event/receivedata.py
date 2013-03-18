@@ -174,7 +174,14 @@ class Scanner(object):
                     performance = fetcher.cache[backend_id] = Performance()
                 r.append(performance)
                 performance.backend_id = backend_id
-                performance.event = self.event_fetcher.cache[env["event"]["id"]]
+                try:
+                    performance.event = self.event_fetcher.cache[env["event"]["id"]]
+                except KeyError:
+                    if self.performance.id:
+                        self.session.delete(performance)
+                    logger.info("parent element is deleted. so,  this object also deleted(backend_id=%s)" % (backend_id))
+                    r.pop()
+                    continue
                 performance.title = record['name']
                 performance.venue = record['venue']
                 performance.prefecture = PREFECTURES.get(record['prefecture'])
@@ -210,7 +217,14 @@ class Scanner(object):
                     salessegment = fetcher.cache[backend_id] = SalesSegment()
                 r.append(salessegment)
                 salessegment.backend_id = backend_id
-                salessegment.performance = self.performance_fetcher.cache[strict_get(env, "performance")["id"]]
+                try:
+                    salessegment.performance = self.performance_fetcher.cache[strict_get(env, "performance")["id"]]
+                except KeyError:
+                    if salessegment.id:
+                        self.session.delete(salessegment)
+                    logger.info("parent element is deleted. so,  this object also deleted(backend_id=%s)" % (backend_id))
+                    r.pop()
+                    continue
                 event = self.event_fetcher.cache[env["event"]["id"]]              
                 salessegment.start_on = parse_datetime(record['start_on'])
                 salessegment.end_on = parse_datetime(record['end_on'])
@@ -252,7 +266,14 @@ class Scanner(object):
                     ticket = fetcher.cache[backend_id] = Ticket()
                 r.append(ticket)
                 ticket.backend_id = backend_id
-                ticket.sale = self.salessegment_fetcher.cache[env["sale"]["id"]]
+                try:
+                    ticket.sale = self.salessegment_fetcher.cache[env["sale"]["id"]]
+                except KeyError:
+                    if ticket.id:
+                        self.session.delete(ticket)
+                    logger.info("parent element is deleted. so,  this object also deleted(backend_id=%s)" % (backend_id))
+                    r.pop()
+                    continue
                 ticket.name = record['name']
                 ticket.price = record['price']
                 ticket.display_order = record.get("display_order") or 50
