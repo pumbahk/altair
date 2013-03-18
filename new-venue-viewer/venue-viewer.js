@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['w4OGFDTPRTPELNQR'] = (function (exports) { (function () { 
+__LIBS__['c_S5T1AYTYNERF1A'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['oOXECVDWG7B1KH9W'] = (function (exports) { (function () { 
+__LIBS__['uA63I1C097ZMGV_1'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['JVXI5461PUY0981P'] = (function (exports) { (function () { 
+__LIBS__['WSDOOXRVTX9QA1S3'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['w4OGFDTPRTPELNQR'];
-var CONF = __LIBS__['oOXECVDWG7B1KH9W'];
+var util = __LIBS__['c_S5T1AYTYNERF1A'];
+var CONF = __LIBS__['uA63I1C097ZMGV_1'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -1030,9 +1030,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['oOXECVDWG7B1KH9W'];
-  var seat = __LIBS__['JVXI5461PUY0981P'];
-  var util = __LIBS__['w4OGFDTPRTPELNQR'];
+  var CONF = __LIBS__['uA63I1C097ZMGV_1'];
+  var seat = __LIBS__['WSDOOXRVTX9QA1S3'];
+  var util = __LIBS__['c_S5T1AYTYNERF1A'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1109,7 +1109,8 @@ function parseTransform(transform_str) {
       nextSingleClickAction: null,
       doubleClickTimeout: 400,
       mouseUpHandler: null,
-      onMouseUp: null
+      onMouseUp: null,
+      onMouseMove: null
     },
 
     methods: {
@@ -1132,6 +1133,21 @@ function parseTransform(transform_str) {
           }
         };
         $(document.body).bind('mouseup', this.mouseUpHandler);
+        this.mouseMoveHandler = function(evt) {
+          if (self.onMouseMove) {
+            var fasevt = new Fashion.MouseEvt();
+            var physicalPagePosition = { x: evt.pageX, y: evt.pageY };
+            var screenPosition = Fashion._lib.subtractPoint(physicalPagePosition, self.drawable.impl.getViewportOffset());
+            var physicalPosition = Fashion._lib.addPoint(self.drawable.impl.convertToPhysicalPoint(self.drawable.impl.scrollPosition()), screenPosition);
+            fasevt.logicalPosition = self.drawable.impl.convertToLogicalPoint(physicalPosition);
+            self.onMouseMove.call(self, fasevt);
+            evt.stopImmediatePropagation();
+            evt.stopPropagation();
+            evt.preventDefault();
+            return false;
+          }
+        };
+        $(document.body).bind('mousemove', this.mouseMoveHandler);
       },
 
       load: function VenueViewer_load() {
@@ -1592,11 +1608,36 @@ function parseTransform(transform_str) {
 
             function drawableMouseUp() {
               self.onMouseUp = null;
+              self.onMouseMove = null;
+              $(self.canvas[0]).find('div').css({ 'overflow': 'scroll' });
               drawableMouseDown = false;
               if (self.dragging) {
                 self.drawable.releaseMouse();
                 self.dragging = false;
               }
+            }
+
+            function drawableMouseMove(evt) {
+                if (clickTimer) {
+                  singleClickFulfilled();
+                }
+                if (self.animating) return;
+                if (!self.dragging) {
+                  if (drawableMouseDown) {
+                    self.dragging = true;
+                    self.drawable.captureMouse();
+                  } else {
+                    return;
+                  }
+                }
+                var newScrollPos = Fashion._lib.subtractPoint(
+                  scrollPos,
+                  Fashion._lib.subtractPoint(
+                    evt.logicalPosition,
+                    self.startPos));
+                self.drawable.scrollPosition(newScrollPos);
+				scrollPos = newScrollPos;
+                return false;
             }
 
             function singleClickFulfilled() {
@@ -1617,6 +1658,8 @@ function parseTransform(transform_str) {
                 default:
                   drawableMouseDown = true;
                   self.onMouseUp = drawableMouseUp;
+                  $(self.canvas[0]).find('div').css({ 'overflow': 'hidden' });
+                  self.onMouseMove = drawableMouseMove;
                   if (!clickTimer) {
                     scrollPos = self.drawable.scrollPosition();
                     self.startPos = evt.logicalPosition;
@@ -1647,7 +1690,7 @@ function parseTransform(transform_str) {
               },
 
               mouseup: function (evt) {
-                drawableMouseUp();
+                drawableMouseUp(evt);
                 if (self.animating) return;
                 switch (self.uiMode) {
                 case 'zoomin':
@@ -1661,32 +1704,16 @@ function parseTransform(transform_str) {
                 }
               },
 
+/*
               mouseout: function (evt) {
                 if (clickTimer) {
                   singleClickFulfilled();
                 }
               },
+*/
 
               mousemove: function (evt) {
-                if (clickTimer) {
-                  singleClickFulfilled();
-                }
-                if (self.animating) return;
-                if (!self.dragging) {
-                  if (drawableMouseDown) {
-                    self.dragging = true;
-                    self.drawable.captureMouse();
-                  } else {
-                    return;
-                  }
-                }
-                var newScrollPos = Fashion._lib.subtractPoint(
-                  scrollPos,
-                  Fashion._lib.subtractPoint(
-                    evt.logicalPosition,
-                    self.startPos));
-                scrollPos = self.drawable.scrollPosition(newScrollPos);
-                return false;
+                drawableMouseMove(evt);
               }
             });
           })();
