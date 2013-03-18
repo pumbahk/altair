@@ -705,6 +705,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     stock_holders = relationship('StockHolder', backref='event')
 
     sales_segment_groups = relationship('SalesSegmentGroup')
+    cms_send_at = Column(DateTime, nullable=True, default=None)
 
     _first_performance = None
     _final_performance = None

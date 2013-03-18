@@ -20,7 +20,7 @@ from pyramid.response import Response
 from pyramid.path import AssetResolver
 from paste.util.multidict import MultiDict
 
-from ticketing.models import merge_session_with_post, record_to_multidict
+from ticketing.models import merge_session_with_post, record_to_multidict, merge_and_flush
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.core.models import Event, Performance, StockType, StockTypeEnum
@@ -206,6 +206,8 @@ class Events(BaseView):
             with contextlib.closing(urllib2.urlopen(req)) as res:
                 if res.getcode() == HTTPCreated.code:
                     self.request.session.flash(u'イベントをCMSへ送信しました')
+                    event.cms_send_at = datetime.now()
+                    merge_and_flush(event)
                 else:
                     raise Exception("cms sync http response error: reponse is not 302 (code:%s),  url=%s" % (res.getcode(),  res.url))
                     # raise Exception("cms sync http response error: reponse is not 302 (code:%s),  response=%s" % (res.getcode(), res.read()))
