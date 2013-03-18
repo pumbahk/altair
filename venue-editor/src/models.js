@@ -166,6 +166,7 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
             perStockSeatSet[prev.id].remove(this);
             if (prev.has('assigned')) {
               prev.set('edited', true);
+              if (this.get('selectable')) prev.set('available', prev.get('available') - 1);
               prev.set('assigned', perStockSeatSet[prev.id].length);
             }
           }
@@ -176,6 +177,7 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
             set.add(this);
             if (new_.has('assigned')) {
               new_.set('edited', true);
+              if (this.get('selectable')) new_.set('available', new_.get('available') + 1);
               new_.set('assigned', perStockSeatSet[new_.id].length);
             }
           }

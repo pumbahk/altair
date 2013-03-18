@@ -76,9 +76,14 @@ span.editable {
   text-align: center;
 }
 
-.reporting {
+.transfer {
   float: right;
   margin: 8px 18px 8px 5px;
+}
+
+.rest {
+  float: right;
+  margin: 8px 0px 8px 0px;
 }
 
 #venue-editor .venue-editor-main .venue-editor-main-root {
@@ -332,9 +337,13 @@ function buildStockHolderTypeTables(venue) {
     var style = stockHolder.get('style');
     var swatch = $('<span class="swatch"></span>').css('text-color', style.text_color).text(style.text||'　');
     var head = $('<h4 class="ui-header" style="float: left;"></h4>').text(' ' + stockHolder.get('name'));
-    var transfer_button = $('<a class="reporting btn btn-mini btn-inverse" href="javascript:buildTransferModal(' + stockHolder.id + ');">枠移動</a>');
-    var report_button = $('<a class="reporting btn btn-mini btn-inverse" data-toggle="modal" href="#modal-report">配券明細</a>');
-    report_button.attr('onclick', "$('.modal-report-submit').attr('href', '/events/reports/${performance.event_id}/seat_stock_to_stockholder/" + stockHolder.get('id') + "');");
+    var transfer = $('<a class="transfer btn btn-mini btn-inverse" href="javascript:buildTransferModal(' + stockHolder.id + ');">枠移動</a>');
+    var rest = $('<span class="rest label hide"></span>');
+    stockHolder.on('change:available', function () {
+      rest.removeClass('hide');
+      rest.text('残席: ' + stockHolder.get('available') + '席');
+    });
+    stockHolder.recalculateQuantity();
     var div = $('<div></div>').css('display', 'none');
     var table = $('<table class="table table-bordered"></table>');
     var tbody = $('<tbody></tbody>').appendTo(table);
@@ -355,9 +364,8 @@ function buildStockHolderTypeTables(venue) {
     table.appendTo(div);
 
     retval.append(head);
-    retval.append(transfer_button);
-    if (stockHolder.get('id'))
-      retval.append(report_button);
+    retval.append(transfer);
+    retval.append(rest);
     retval.append('<div style="clear: both;"></div>');
     retval.append(div);
   });

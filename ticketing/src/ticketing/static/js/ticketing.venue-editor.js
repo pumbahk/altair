@@ -1,6 +1,32 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['CH50YKBG9DI837XD'] = (function (exports) { (function () { 
+__LIBS__['i1ZCXBGCC_ZOXU_1'] = (function (exports) { (function () { 
+
+/************** translations.js **************/
+
+
+/************** en.js **************/
+exports.en = {
+  altair: {
+    venue_editor: {
+      unassigned: "Unassigned",
+      quantity_cannot_be_negative: "Quantity cannot be negative"
+    }
+  } 
+};
+
+
+/************** ja.js **************/
+exports.ja = {
+  altair: {
+    venue_editor: {
+      unassigned: "未割当",
+      quantity_cannot_be_negative: "在庫数は0より大きい数にしてください"
+    }
+  } 
+};
+ })(); return exports; })({});
+__LIBS__['gBUHEJSSROQ0UYQ5'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -73,7 +99,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['E_18CZ4LFQ27YO4P'] = (function (exports) { (function () { 
+__LIBS__['WPW05MW4YY_67KBI'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -187,7 +213,7 @@ timer.prototype.lap = function(msg) {
     return lap;
 };
  })(); return exports; })({});
-__LIBS__['BGWT5WCEI_9G2SJQ'] = (function (exports) { (function () { 
+__LIBS__['O4WMO1AGV_LSY2R8'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -236,12 +262,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['nA7ZAGK2T8NADING'] = (function (exports) { (function () { 
+__LIBS__['zAHDM6T8IT_28S9I'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['E_18CZ4LFQ27YO4P'];
-var CONF = __LIBS__['CH50YKBG9DI837XD'];
-var IdentifiableSet = __LIBS__['BGWT5WCEI_9G2SJQ'].IdentifiableSet;
+var util = __LIBS__['WPW05MW4YY_67KBI'];
+var CONF = __LIBS__['gBUHEJSSROQ0UYQ5'];
+var IdentifiableSet = __LIBS__['O4WMO1AGV_LSY2R8'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -407,6 +433,7 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
             perStockSeatSet[prev.id].remove(this);
             if (prev.has('assigned')) {
               prev.set('edited', true);
+              if (this.get('selectable')) prev.set('available', prev.get('available') - 1);
               prev.set('assigned', perStockSeatSet[prev.id].length);
             }
           }
@@ -417,6 +444,7 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
             set.add(this);
             if (new_.has('assigned')) {
               new_.set('edited', true);
+              if (this.get('selectable')) new_.set('available', new_.get('available') + 1);
               new_.set('assigned', perStockSeatSet[new_.id].length);
             }
           }
@@ -717,12 +745,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['H3NPQSRFVWA6PZIQ'] = (function (exports) { (function () { 
+__LIBS__['yVR357J33NKTIRL1'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['E_18CZ4LFQ27YO4P'];
-var CONF = __LIBS__['CH50YKBG9DI837XD'];
-var models = __LIBS__['nA7ZAGK2T8NADING'];
+var util = __LIBS__['WPW05MW4YY_67KBI'];
+var CONF = __LIBS__['gBUHEJSSROQ0UYQ5'];
+var models = __LIBS__['zAHDM6T8IT_28S9I'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -916,44 +944,18 @@ var Seat = exports.Seat = Backbone.Model.extend({
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['PY44D93SF5YWW_WJ'] = (function (exports) { (function () { 
-
-/************** translations.js **************/
-
-
-/************** en.js **************/
-exports.en = {
-  altair: {
-    venue_editor: {
-      unassigned: "Unassigned",
-      quantity_cannot_be_negative: "Quantity cannot be negative"
-    }
-  } 
-};
-
-
-/************** ja.js **************/
-exports.ja = {
-  altair: {
-    venue_editor: {
-      unassigned: "未割当",
-      quantity_cannot_be_negative: "在庫数は0より大きい数にしてください"
-    }
-  } 
-};
- })(); return exports; })({});
 
 
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['CH50YKBG9DI837XD'];
-  var models = __LIBS__['nA7ZAGK2T8NADING'];
-  var util = __LIBS__['E_18CZ4LFQ27YO4P'];
-  var viewobjects = __LIBS__['H3NPQSRFVWA6PZIQ'];
-  var IdentifiableSet = __LIBS__['BGWT5WCEI_9G2SJQ'].IdentifiableSet;
+  var CONF = __LIBS__['gBUHEJSSROQ0UYQ5'];
+  var models = __LIBS__['zAHDM6T8IT_28S9I'];
+  var util = __LIBS__['WPW05MW4YY_67KBI'];
+  var viewobjects = __LIBS__['yVR357J33NKTIRL1'];
+  var IdentifiableSet = __LIBS__['O4WMO1AGV_LSY2R8'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['PY44D93SF5YWW_WJ'];
+    I18n.translations = __LIBS__['i1ZCXBGCC_ZOXU_1'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
