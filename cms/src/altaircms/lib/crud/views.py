@@ -318,6 +318,8 @@ class SimpleCRUDFactory(object):
             if has_auto_generated_permission:
                 permission = self.prefix+"_read"
                 kwargs["permission"] = permission
+            else:
+                kwargs["permission"] = "authenticated"
             config.add_view(view_fn, **kwargs)
 
 

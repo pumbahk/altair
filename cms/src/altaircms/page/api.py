@@ -74,7 +74,7 @@ class StaticPageDirectory(object):
             r.append(u"</ul>")
         else:
             r.append(u"<li>")
-            preview_url = request.route_path("static_page_display",  path=path.replace(basedir, ""))
+            preview_url = request.route_path("static_page_display",  path=path.replace(basedir, "")).replace("%2F", "/")
             # href = request.static_url(path.replace(self.basedir, self.assetspec))
             # r.append(u'<a href="%s">%s</a>(<a href="%s">original</a>)' % (preview_url, os.path.basename(path), href))
             r.append(u'<a href="%s">%s</a>' % (preview_url, os.path.basename(path)))
@@ -102,14 +102,15 @@ def has_renderer(request, path):
     ext = os.path.splitext(path)[1]
     return bool(request.registry.queryUtility(IRendererFactory, name=ext))
 
+CACHE_MAX_AGE=60
 def as_wrapped_resource_response(request, static_page, fullpath, body_var_name="inner_body"):
     if not (static_page.layout_id and has_renderer(request, fullpath)):
-        return FileResponse(fullpath, request=request)
+        return FileResponse(fullpath, request=request, cache_max_age=CACHE_MAX_AGE)
 
     lookup = get_frontpage_template_lookup(request)
     template = lookup.get_renderable_template(request, static_page.layout, verbose=True)
     if template is None:
-        return FileResponse(fullpath, request=request)
+        return FileResponse(fullpath, request=request, cache_max_age=CACHE_MAX_AGE)
     try:
         params = {body_var_name: open(fullpath).read().decode("utf-8")} #ok?
     except Exception, e:

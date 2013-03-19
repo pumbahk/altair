@@ -129,3 +129,8 @@ def pageset_mapper(request, obj):
     objlike.tags_string = obj.tags_string
     objlike.private_tags_string = obj.private_tags_string
     return objlike
+
+def staticpage_mapper(request, obj):
+    objlike = ObjectLike(**model_to_dict(obj))
+    objlike.layout = u"%s(%s)" % (obj.layout.title, obj.layout.template_filename)
+    return objlike
