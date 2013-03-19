@@ -21,12 +21,6 @@
     % endif
     $('.draggable').draggable({scroll: true, handle:$('.draggable .modal-header')});
     $('#modal-reserve').disableOnSubmit();
-    $('#modal-reserve').on('shown', function(){
-      $(this).css('max-height', '700px')
-             .css('max-width', '600px')
-             .css('margin-top', ($(this).outerHeight()/2)*-1)
-             .css('margin-left',($(this).outerWidth()/2)*-1);
-    });
   });
 </script>
 
