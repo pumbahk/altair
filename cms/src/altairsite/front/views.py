@@ -53,17 +53,15 @@ def rendering_page(context, request):
     return response
 
 ## for mobile
+from pyramid.interfaces import IRequestFactory, IRouter
+from altairsite.mobile.tweens import IMobileRequest
+from pyramid.request import Request
+from zope.interface import directlyProvides
 
-# @view_config(route_name="front", custom_predicates=(mobile_access_predicate,))
-# def dispatch_view(context, request):
-#     url = request.matchdict["page_name"]
-#     dt = context.get_preview_date()
-
-#     control = context.mobile_access_control()
-#     pageset = control.fetch_pageset_from_params(url, dt)
-
-#     if control.can_access():
-#         raise mobile_api.dispatch_context(request, pageset)
-#     else:
-#         logging.info(control.error_message)
-#         raise HTTPNotFound(control.error_message)
+@view_config(route_name="front", request_type="altairsite.mobile.tweens.IMobileRequest")
+def dispatch_view(context, request):
+    if "return_twice" in request.environ:
+        raise HTTPNotFound()
+    request.environ["PATH_INFO"] = "/mobile/"+request.environ["PATH_INFO"].lstrip("/")
+    request.environ["return_twice"] = True
+    return request.registry.getUtility(IRouter).handle_request(request)

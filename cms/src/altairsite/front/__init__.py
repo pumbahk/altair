@@ -21,6 +21,3 @@ def includeme(config):
     config.add_route('front', '{page_name:.*}', factory=".resources.PageRenderingResource")
     config.include(install_static_page)
     config.scan('.views')
-
-def install_mobile_app(config):
-    

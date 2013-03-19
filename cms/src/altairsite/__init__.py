@@ -33,7 +33,7 @@ def main(global_config, **local_config):
     search_utility = settings.get("altaircms.solr.search.utility", "altaircms.solr.api.DummySearch")
     config.add_fulltext_search(search_utility)
 
-    config.include("altairsite.mobile")
+    config.include("altairsite.mobile", route_prefix="/mobile")
 
 
     config.include("altairsite.front")
@@ -57,5 +57,8 @@ def main(global_config, **local_config):
     # layout
     config.include("pyramid_layout")
     config.add_layout(".pyramidlayout.MyLayout", 'altaircms:templates/usersite/base.html') #this is pyramid-layout's layout
-    return config.make_wsgi_app()
+    app = config.make_wsgi_app()
+    from pyramid.interfaces import IRouter
+    config.registry.registerUtility(app, IRouter)
+    return app
 
