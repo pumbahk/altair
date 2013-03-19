@@ -17,7 +17,6 @@ import urlparse
 import cgi 
 import itertools
 
-
 def url_create_with(url, **kwargs):
     """
     # identity
@@ -56,7 +55,7 @@ def url_generate_default(request, **kwargs):
     parse_result = urlparse.urlparse(curpath)
 
     def replacement(page, **kwargs):
-        return url_create_with_parse_result(parse_result, page=page)
+        return safe_url_quote(url_create_with_parse_result(parse_result, page=page))
     return replacement
 
 class PagerAdapter(object):
@@ -161,10 +160,10 @@ def current_route_path_override(request, _query=None, _dels=None, **kwargs):
 
 def safe_url_quote(url):
     try:
-        return urllib.quote(url)
+        return urllib.quote(url, safe="%/:=&?~#+!$,;'@()*[]").decode("utf-8") if url else ""
     except KeyError:
         try:
-            urllib.quote(url.encode("utf-8"))
+            return urllib.quote(url.encode("utf-8"), safe="%/:=&?~#+!$,;'@()*[]").decode("utf-8") if url else ""
         except:
             return ""
         
