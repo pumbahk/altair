@@ -10,7 +10,6 @@
 
 公演一覧へ<br/>
 
-
 % for count, month in enumerate(month_unit_keys):
     <a href="#${month}">${month}</a>
     % if count < len(month_unit_keys) - 1:
@@ -27,9 +26,6 @@
 <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
 
 % for count, month in enumerate(month_unit_keys):
-    % if count != 0:
-        <hr/>
-    % endif
     <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffff00">■</font><a name="${month}" id="${month}">${month}</a></font></div>
     <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
 
