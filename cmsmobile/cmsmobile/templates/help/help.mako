@@ -24,28 +24,22 @@
         % for help in form.helps.data:
             <a href="#${help.id}">
                 Ｑ．${help.title}
-            </a>
+            </a><br/><br/>
         % endfor
 
-        <a href="/">楽天チケットトップへ</a>
+        <a href="/">トップへ</a>
 
         % for count, help in enumerate(form.helps.data):
-            % if count % 5 == 0 and count != 0:
-                <hr/>
-                    <a href="/">楽天チケットトップへ</a>
-            % endif
             <hr/>
             <a name="${help.id}" id="${help.id}">
-                Ｑ．${help.title}
+                Ｑ．${help.title}<br/>
             </a>
             Ａ．${help.text}<br/>
-            ${count}
+            % if (count + 1) % 5 == 0 or len(form.helps.data) == count + 1:
+                <hr/>
+                <a href="/">トップへ</a>
+            % endif
         % endfor
-
-        % if (len(form.helps.data) + 1 ) % 5 != 0:
-            <hr/>
-            <a href="/">楽天チケットトップへ</a>
-        % endif
     % endif
 
     <%include file="../common/_footer.mako" />
