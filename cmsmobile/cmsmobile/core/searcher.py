@@ -88,6 +88,7 @@ class EventSearcher(object):
         if exist_value(form.area.data):
             log_info("get_events_from_area", "search start")
             prefectures = get_prefecture(form.area.data)
+            log_info("get_events_from_area", "prefecture = " + str(prefectures))
             where = Performance.prefecture.in_(prefectures)
             qs = self._create_common_qs(where=where, qs=qs)
         log_info("get_events_from_area", "end")
@@ -116,13 +117,13 @@ class EventSearcher(object):
     # 発売状況
     def get_events_from_sale(self, form, qs=None):
         log_info("get_events_from_sale", "start")
-        if form.sale.data == str(SalesEnum.ON_SALE):
+        if form.sale.data == int(SalesEnum.ON_SALE):
             log_info("get_events_from_sale", "search start ON_SALE")
             qs = self._get_events_on_sale(form, qs)
-        elif form.sale.data == str(SalesEnum.WEEK_SALE):
+        elif form.sale.data == int(SalesEnum.WEEK_SALE):
             log_info("get_events_from_sale", "search start WEEK_SALE")
             qs = self._get_events_week_sale(date.today(), None, qs)
-        elif form.sale.data == str(SalesEnum.NEAR_SALE_END):
+        elif form.sale.data == int(SalesEnum.NEAR_SALE_END):
             log_info("get_events_from_sale", "search start NEAR_SALE_END")
             qs = self._get_events_near_sale_end(date.today(), 7, qs)
         log_info("get_events_from_sale", "end")
@@ -149,7 +150,7 @@ class EventSearcher(object):
     def _get_events_near_sale_end(self, today, N=7, qs=None):
         log_info("_get_events_near_sale_end", "start")
         limit_day = today + timedelta(days=N)
-        where = (Event.deal_open <= today) & (today <= Event.deal_close) & (Event.deal_close <= limit_day)
+        where = (today <= Event.deal_close) & (Event.deal_close <= limit_day)
         qs = self._create_common_qs(where=where, qs=qs)
         log_info("_get_events_near_sale_end", "end")
         return qs
@@ -182,6 +183,7 @@ class EventSearcher(object):
             label = "一般先行"
         elif form.sales_segment.data == 2:
             label = "先行抽選"
+        log_info("get_events_from_salessegment", "sales_segment = " + label)
         where = SalesSegmentKind.label == label
         qs = self._create_common_qs(where=where, qs=qs)
         log_info("get_events_from_salessegment", "end")
