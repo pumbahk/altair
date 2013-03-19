@@ -1,7 +1,7 @@
 <%page args="form" />
 <%namespace file="cmsmobile:templates/common/helpers.html" name="h" />
 
-<form action="/detailsearch" method="POST">
+<form action="/detailsearch" method="GET">
     ■フリーワード検索<br/>
     ${form.word}
     % for error in form.word.errors:

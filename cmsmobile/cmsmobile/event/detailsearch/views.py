@@ -7,8 +7,7 @@ from cmsmobile.core.helper import get_event_paging, get_week_map
 from cmsmobile.core.helper import log_info
 from datetime import date
 
-@view_config(route_name='detailsearch', request_method="GET",
-             renderer='cmsmobile:templates/detailsearch/detailsearch.mako')
+@view_config(route_name='detailsearchinit', renderer='cmsmobile:templates/detailsearch/detailsearch.mako')
 def move_detailsearch(request):
 
     log_info("move_detailsearch", "start")
@@ -19,19 +18,13 @@ def move_detailsearch(request):
 
     return {'form':form}
 
-@view_config(route_name='detailsearch', request_method="POST",
-             renderer='cmsmobile:templates/searchresult/detailsearch.mako')
+@view_config(route_name='detailsearch', renderer='cmsmobile:templates/searchresult/detailsearch.mako')
 def move_detailsearch_post(request):
 
-    """
-
-:param request:
-:return:
-"""
     log_info("move_detailsearch_post", "start")
     searcher = EventSearcher(request)
 
-    form = DetailSearchForm(request.POST)
+    form = DetailSearchForm(request.GET)
     form = create_genre_selectbox(request, form)
     form = create_date_selectbox(form)
     form.num.data = 0

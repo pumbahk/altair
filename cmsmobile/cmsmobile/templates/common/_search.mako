@@ -18,8 +18,8 @@
     ${form.soon_act}まもなく開演のイベント<br/>
     <input type="submit" value="検索"/><br/>
     % if genre:
-        <a href="/detailsearch?genre=${genre}&sub_genre=${sub_genre}">もっと詳しく</a>
+        <a href="/detailsearchinit?genre=${genre}&sub_genre=${sub_genre}">もっと詳しく</a>
     % else:
-        <a href="/detailsearch">もっと詳しく</a>
+        <a href="/detailsearchinit">もっと詳しく</a>
     % endif
 </form>

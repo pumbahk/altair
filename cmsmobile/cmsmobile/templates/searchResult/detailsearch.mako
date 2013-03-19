@@ -16,10 +16,13 @@
 
     <a href="/">トップ</a> >> 詳細検索
 
-    <%include file='../common/_search_result.mako' args="events=form.events.data
+    <%include file='../searchResult/_search_result_detail.mako' args="events=form.events.data
                     ,word=form.word.data, num=form.num.data, page=form.page.data
                     ,page_num=form.page_num.data, path=form.path.data, week=form.week.data
-                    ,genre=form.genre.data, sub_genre=form.sub_genre.data, area=form.area.data"/>
+                    ,genre=form.genre.data, sub_genre=form.sub_genre.data, area=form.area.data
+                    ,sale=form.sale.data, sales_segment=form.sales_segment.data, since_year=form.since_year.data
+                    ,since_month=form.since_month.data, since_day=form.since_day.data
+                    ,year=form.year.data, month=form.month.data, day=form.day.data"/>
 
     <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
 

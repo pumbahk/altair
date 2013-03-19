@@ -23,6 +23,8 @@
                 ,page_num=form.page_num.data, path=form.path.data, week=form.week.data
                 ,genre=0, sub_genre=0, area=form.area.data"/>
 
+    <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
+
     <%include file='../common/_search.mako' args="form=form, genre=0, sub_genre=0"/>
 
     <%include file='../common/_footer.mako' />
