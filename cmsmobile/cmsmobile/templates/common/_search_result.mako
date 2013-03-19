@@ -5,10 +5,14 @@
 % else:
     % if word:
         ${word}に一致する情報は見つかりませんでした。
+    % elif area:
+        % if int(area) > 0:
+            検索条件に一致する情報は見つかりませんでした。
+        % endif
     % endif
 % endif
 
-<div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
+
 
 <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>公演一覧</font></div>
 
