@@ -24,18 +24,28 @@ def search(request):
 
     if (form.area.data and int(form.area.data) > 0) and (form.word.data is None or form.word.data == ""): # 地域検索
         log_info("search", "search event start(area)")
-        qs = searcher.get_events_from_area(form)
-        qs = searcher.get_events_week_sale(form, qs)
-        qs = searcher.get_events_soon_act(form, qs)
+        if exist_value(form.genre.data): # ジャンル画面からの地域検索
+            qs = searcher.get_events_from_freeword(form)
+            if qs:
+                qs = searcher.get_events_from_area(form, qs)
+                qs = searcher.get_events_week_sale(form, qs)
+                qs = searcher.get_events_soon_act(form, qs)
+        else: # トップ画面からの地域検索
+            qs = searcher.get_events_from_area(form)
+            qs = searcher.get_events_from_area(form, qs)
+            qs = searcher.get_events_week_sale(form, qs)
+            qs = searcher.get_events_soon_act(form, qs)
+
         log_info("search", "search event end(area)")
         form = get_event_paging(request=request, form=form, qs=qs)
     else: # 検索文字列あり
         if form.validate():
             log_info("search", "search event start")
             qs = searcher.get_events_from_freeword(form)
-            qs = searcher.get_events_from_area(form, qs)
-            qs = searcher.get_events_week_sale(form, qs)
-            qs = searcher.get_events_soon_act(form, qs)
+            if qs:
+                qs = searcher.get_events_from_area(form, qs)
+                qs = searcher.get_events_week_sale(form, qs)
+                qs = searcher.get_events_soon_act(form, qs)
             log_info("search", "search event end")
             form = get_event_paging(request=request, form=form, qs=qs)
 
