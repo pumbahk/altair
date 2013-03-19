@@ -160,7 +160,7 @@ class EventSearcher(object):
         if form.year.data == "0":
             # 全部ハイフンの場合
             log_info("get_events_from_start_on", "all hyphen")
-            return
+            return qs
 
         log_info("get_events_from_start_on", "search start")
         since_open = datetime(

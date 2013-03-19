@@ -16,7 +16,7 @@ def getResultEvents(request, response):
     log_info("getResultEvents", "start")
     ids = [res['id'] for res in response]
     events = []
-    log_info("getResultEvents", "freeword result id = " + str(ids))
+    log_info("getResultEvents", "freeword result pageset_ids = " + str(ids))
     for pageset_id in ids:
         pageset = request.allowable(PageSet).filter(PageSet.id == pageset_id).first()
         if pageset:
