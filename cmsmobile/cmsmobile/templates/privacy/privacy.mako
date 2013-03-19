@@ -158,7 +158,7 @@
 [窓口]〒140-0002　東京都品川区東品川4-12-3　品川シーサイド楽天タワー<br/><br/>
 楽天株式会社 個人情報お問い合わせ担当窓口<br/><br/>
 
-<a href="http://ichiba.faq.rakuten.co.jp/app/answers/list/c/4333,6527,4274">お問い合わせはこちら</a><br/>
+<a href="http://ichiba.faq.rakuten.co.jp/app/answers/list/c/4333,6527,4274">お問い合わせはこちら</a><br/><br/>
 <a href="#top">▲上へ</a>
 <hr/>
 
