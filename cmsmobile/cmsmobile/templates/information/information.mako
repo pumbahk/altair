@@ -20,8 +20,10 @@
     <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
 
     % if form.informations.data:
-        % for info in form.informations.data[0:10]:
-            <hr/>
+        % for count, info in enumerate(form.informations.data[0:10]):
+            % if count > 0:
+                <hr/>
+            % endif
             公演：${info.title}<br/>
             詳細：${info.text}<br/>
         % endfor

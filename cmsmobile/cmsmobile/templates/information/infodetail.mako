@@ -22,19 +22,18 @@
     % if form.informations.data:
         % for count, info in enumerate(form.informations.data):
 
-            % if count % 10 == 0:
+            % if count % 10 == 0 and count > 0:
+                <a href="/">トップへ</a>
                 <hr/>
-                <a href="/">楽天チケットトップへ</a>
             % endif
 
-            <hr/>
             公演：${info.title}<br/>
             詳細：${info.text}<br/>
+            <hr/>
         % endfor
 
         % if (len(form.informations.data) + 1 ) % 10 != 0:
-            <hr/>
-            <a href="/">楽天チケットトップへ</a>
+            <a href="/">トップへ</a>
         % endif
     % else:
         公演中止情報はありません。
