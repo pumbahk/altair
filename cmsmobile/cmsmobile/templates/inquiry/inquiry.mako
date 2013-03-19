@@ -25,11 +25,11 @@
     <br/>
 
     個人情報保護方針は<a href="/privacy">こちら</a>をご確認ください。 フォームでお問い合わせ頂いたお客様には、基本的には返信メールにて回答させて頂いております。<br/>
-    <br/>
 
     % if form.send.data:
         <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
         <div style="color:#FF0000;">以下の内容で送信しました。</div>
+        <br/>
     % endif
 
     <form action="/inquiry" method="POST">
