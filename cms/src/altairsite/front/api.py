@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import sqlalchemy as sa
 from pyramid.renderers import render_to_response
 import sqlalchemy.orm as orm
 from altaircms.widget.tree.proxy import WidgetTreeProxy
@@ -44,7 +45,7 @@ class FrontPageRenderer(object):
         if event is None:
             performances = []
         else:
-            performances = Performance.query.filter(Performance.event_id==event.id).options(orm.joinedload("sales")).all()
+            performances = Performance.query.filter(Performance.event_id==event.id).order_by(sa.asc(Performance.start_on)).options(orm.joinedload("sales")).all()
         ## 本当はwidget側からpullしていくようにしたい
         bsettings.scan(self.request, page=page, performances=performances, event=event)
         return bsettings
