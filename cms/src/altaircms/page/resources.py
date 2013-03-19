@@ -111,7 +111,7 @@ class PageResource(security.RootFactory):
 
 class StaticPageResource(security.RootFactory):
     def create_static_page(self, data):
-        static_page = models.StaticPage(name=data["name"])
+        static_page = models.StaticPage(name=data["name"], layout=data["layout"], publish_begin=data["publish_begin"], publish_end=data["publish_end"])
         DBSession.add(static_page)
         notify_model_create(self.request, static_page, data)
         DBSession.flush()

@@ -23,6 +23,18 @@ h3{
         <th class="span2">タイトル</th><td>${static_page.name}</td>
       </tr>
       <tr>
+        <th>掲載期間</th><td>${h.jterm(static_page.publish_begin, static_page.publish_end)}</td>
+      </tr>
+      <tr>
+        <th>レイアウト</th><td>
+          %if static_page.layout_id:
+            ${static_page.layout.title}(<a href="${request.route_path("layout_preview", layout_id=static_page.layout.id)}"><i class="icon-eye-open"></i></a>)
+          %else:
+            -
+          %endif
+        </td>
+      </tr>
+      <tr>
         <th>作成日時</th><td>${h.base.jdate_with_hour(static_page.created_at)}</td>
       </tr>
       <tr>

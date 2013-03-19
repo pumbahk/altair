@@ -201,8 +201,8 @@ class PageSet(Base,
     #     return Page.filter(Page.version==self.version_counter).one()
 
 class StaticPage(BaseOriginalMixin, 
-                     WithOrganizationMixin, 
-                     Base):
+                 WithOrganizationMixin, 
+                 Base):
     query = DBSession.query_property()
     __tablename__ = "static_pages"
 
@@ -211,8 +211,11 @@ class StaticPage(BaseOriginalMixin,
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
     name = sa.Column(sa.String(255), doc="directory name(internal)")
+    publish_begin = Column(DateTime)
+    publish_end = Column(DateTime)
     published = Column(sa.Boolean, default=False)    
-    
+    layout_id = Column(Integer, ForeignKey("layout.id"))    
+    layout = relationship(Layout, backref='static_pages', uselist=False)
 
 class Page(BaseOriginalMixin,
            WithOrganizationMixin, 

@@ -7,19 +7,12 @@ def install_pageset_searcher(config):
     from ..modelmanager.searcher import PublishingModelSearcher
     pageset = config.maybe_dotted(".models.PageSet")
     PublishingModelSearcher.register(config, pageset)
-    
+
 def includeme(config):
     """ 
     altaircms.page.static.directory: static pageのデータが登録されるディレクトリ
     altaircms.page.tmp.directory: zip fileなどtemporaryなファイルが置かれるディレクトリ
     """
-    settings = config.registry.settings
-    config.maybe_dotted(".api.set_static_page_utility")(
-        config, 
-        settings["altaircms.page.static.directory"], 
-        settings["altaircms.page.tmp.directory"]
-        )
-
     add_route = functools.partial(config.add_route, factory="altaircms.page.resources.PageResource")
     add_route('page_edit_', '/page/{page_id}/edit')
     add_route("page_detail", "/page/{page_id}")
@@ -36,7 +29,6 @@ def includeme(config):
 
     ## widget disposition
     config.add_route("disposition", "/page/{id}/disposition/action/{action}", factory="altaircms.page.resources.WDispositionResource")    
-    ## todo: move bellow
     config.add_route("disposition_list", "/disposition", factory="altaircms.page.resources.WDispositionResource")
     config.add_route("disposition_alter", "/disposition/{id}/alter", factory="altaircms.page.resources.WDispositionResource")
 
@@ -49,12 +41,6 @@ def includeme(config):
     add_route('pageset_delete', '/pagesets/{pageset_id}/delete')
     config.add_route('pageset_update_term', '/pagesets/{pageset_id}/update_term')
 
-    ## Static page
-    config.add_route("static_page", "/page/static/{static_page_id}/{action}", 
-                     factory=".resources.StaticPageResource")
-    config.add_route("static_page_create", "/page/static/{action}", 
-                     factory=".resources.StaticPageResource")
-
     ## bind event
     config.add_subscriber(".subscribers.page_register_solr", ".subscribers.PageCreate")
     config.add_subscriber(".subscribers.page_register_solr", ".subscribers.PageUpdate")
@@ -62,4 +48,16 @@ def includeme(config):
     config.add_subscriber("..slackoff.subscribers.update_page_genretag", ".subscribers.PageCreate")
 
     config.include(install_pageset_searcher)
+
+    from .api import set_static_page_utility
+    config.add_route("static_page", "/page/static/{static_page_id}/{action}",factory=".resources.StaticPageResource") 
+    config.add_route("static_page_create", "/page/static/{action}",factory=".resources.StaticPageResource") 
+    config.add_route("static_page_display", "/page/static/display/{path:.*}",factory=".resources.StaticPageResource")
+    settings = config.registry.settings
+    set_static_page_utility(
+        config, 
+        settings["altaircms.page.static.directory"], 
+        settings["altaircms.page.tmp.directory"]
+        )
+
     config.scan('.views')
