@@ -23,7 +23,6 @@ def getResultEvents(request, response):
             event = request.allowable(Event).filter(Event.id == page.event_id).first()
             if event:
                 if not event in events:
-                    log_info("getResultEvents", "event exist %d", event.id)
                     events.append(event)
     log_info("getResultEvents", "end")
     return events

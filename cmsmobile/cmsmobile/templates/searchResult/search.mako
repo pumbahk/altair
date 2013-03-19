@@ -21,7 +21,7 @@
     <%include file='../common/_search_result.mako' args="events=form.events.data
                 ,word=form.word.data, num=form.num.data, page=form.page.data
                 ,page_num=form.page_num.data, path=form.path.data, week=form.week.data
-                ,genre=0, sub_genre=0"/>
+                ,genre=0, sub_genre=0, area=form.area.data"/>
 
     <%include file='../common/_search.mako' args="form=form, genre=0, sub_genre=0"/>
 

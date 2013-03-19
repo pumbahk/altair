@@ -17,7 +17,7 @@
     <%include file='../common/_search_result.mako' args="events=form.events.data
                       ,word=form.word.data, num=form.num.data, page=form.page.data
                       ,page_num=form.page_num.data, path=form.path.data, week=form.week.data
-                      ,genre=form.genre.data, sub_genre=form.sub_genre.data"/>
+                      ,genre=form.genre.data, sub_genre=form.sub_genre.data, area=form.area.data"/>
 
     <%include file='../common/_search.mako' args="path='/search', genre=form.genre.data, sub_genre=form.sub_genre.data"/>
 

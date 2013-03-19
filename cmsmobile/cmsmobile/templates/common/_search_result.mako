@@ -1,4 +1,4 @@
-<%page args="events, word, num, page, page_num, path, week, genre, sub_genre"/>
+<%page args="events, word, num, page, page_num, path, week, genre, sub_genre, area"/>
 
 % if int(num):
     ${num}件見つかりました。
@@ -46,7 +46,7 @@
         % if int(page) >= int(page_num):
             次へ
         % else:
-            <a href="${path}?genre=${genre}&sub_genre=${sub_genre}&word=${word.data}&area=${area.data}&page=${int(page) + 1}">次へ</a>
+            <a href="${path}?genre=${genre}&sub_genre=${sub_genre}&word=${word}&area=${area}&page=${int(page) + 1}">次へ</a>
         % endif
     </div>
 % endif
