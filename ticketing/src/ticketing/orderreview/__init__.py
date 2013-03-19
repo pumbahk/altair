@@ -3,7 +3,7 @@ import json
 from pyramid.config import Configurator
 from pyramid_beaker import session_factory_from_settings
 from pyramid.httpexceptions import HTTPNotFound
-
+from pyramid.exceptions import PredicateMismatch
 # from ticketing.cart.interfaces import IPaymentPlugin, ICartPayment, IOrderPayment
 # from ticketing.cart.interfaces import IDeliveryPlugin, ICartDelivery, IOrderDelivery
 
@@ -25,6 +25,10 @@ def main(global_config, **local_config):
     config.add_static_view('static', 'ticketing.orderreview:static', cache_max_age=3600)
     config.add_static_view('static_', 'ticketing.cart:static', cache_max_age=3600)
     config.add_static_view('img', 'ticketing.cart:static', cache_max_age=3600)
+
+    ### include altair.*
+    config.include('altair.exclog')
+    config.include('altair.browserid')
 
     config.include('ticketing.checkout')
     config.include('ticketing.multicheckout')
