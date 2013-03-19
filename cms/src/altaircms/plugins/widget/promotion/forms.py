@@ -11,7 +11,7 @@ class PromotionWidgetForm(Form):
         PromotionTag, allow_blank=False, label=u"表示場所",
         get_label=lambda obj: obj.label)
     system_tag = dynamic_query_select_field_factory(
-        PromotionTag, allow_blank=True, label=u"ジャンル",
+        PromotionTag, allow_blank=True, label=u"ジャンル", break_separate=True, 
         dynamic_query=lambda model, request, query: query.filter_by(organization_id=None), 
         get_label=lambda obj: obj.label)
     display_type = fields.SelectField(label=u"プロモーション表示の種類", id="display_type", choices=[])

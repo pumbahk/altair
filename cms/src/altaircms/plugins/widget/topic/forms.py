@@ -2,7 +2,8 @@
 from altaircms.formhelpers import Form
 import wtforms.fields as fields
 import wtforms.validators as validators
-from .models import TopicWidget
+# from .models import TopicWidget
+from altaircms.plugins.widget.topic.models import TopicWidget
 from altaircms.plugins.api import get_widget_utility
 from altaircms.formhelpers import dynamic_query_select_field_factory
 from altaircms.topic.models import TopicTag
@@ -13,7 +14,7 @@ class TopicChoiceForm(Form):
         TopicTag, allow_blank=False, label=u"分類",
         get_label=lambda obj: obj.label)
     system_tag = dynamic_query_select_field_factory(
-        TopicTag, allow_blank=True, label=u"ジャンル",
+        TopicTag, allow_blank=True, label=u"ジャンル", break_separate=True, 
         dynamic_query=lambda model, request, query: query.filter_by(organization_id=None), 
         get_label=lambda obj: obj.label)
     display_type = fields.SelectField(id="display_type", label=u"トピックの表示方法", choices=[])

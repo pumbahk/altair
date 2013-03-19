@@ -13,7 +13,7 @@ class TopcontentChoiceForm(Form):
         TopcontentTag, allow_blank=False, label=u"分類",
         get_label=lambda obj: obj.label)
     system_tag = dynamic_query_select_field_factory(
-        TopcontentTag, allow_blank=True, label=u"ジャンル",
+        TopcontentTag, allow_blank=True, label=u"ジャンル", break_separate=True, 
         dynamic_query=lambda model, request, query: query.filter_by(organization_id=None), 
         get_label=lambda obj: obj.label)
     display_type = fields.SelectField(id="display_type", label=u"トピックの表示方法", choices=[])
