@@ -2,17 +2,17 @@
 from pyramid.view import view_config
 from altaircms.event.models import Event
 from altaircms.topic.models import Promotion, Topic
-from cmsmobile.event.eventdetail.forms import EventDetailForm
-from cmsmobile.core.helper import get_week_map, get_performances_month_unit, get_purchase_links\
+from altairsite.mobile.event.eventdetail.forms import EventDetailForm
+from altairsite.mobile.core.helper import get_week_map, get_performances_month_unit, get_purchase_links\
     , get_tickets, exist_value, get_sales_date
-from cmsmobile.core.helper import log_info
+from altairsite.mobile.core.helper import log_info
 from altaircms.page.models import PageSet
 
 class ValidationFailure(Exception):
     pass
 
 @view_config(route_name='eventdetail', request_type="altairsite.mobile.tweens.IMobileRequest"
-    , renderer='cmsmobile:templates/eventdetail/eventdetail.mako')
+    , renderer='altairsite.mobile:templates/eventdetail/eventdetail.mako')
 def move_eventdetail(request):
 
     log_info("move_eventdetail", "start")
@@ -50,7 +50,7 @@ def move_eventdetail(request):
     return {'form':form}
 
 @view_config(route_name='eventdetail', context=ValidationFailure
-    , request_type="altairsite.mobile.tweens.IMobileRequest", renderer='cmsmobile:templates/common/error.mako')
+    , request_type="altairsite.mobile.tweens.IMobileRequest", renderer='altairsite.mobile:templates/common/error.mako')
 def failed_validation(request):
     return {}
 

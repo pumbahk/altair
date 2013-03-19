@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 from pyramid.view import view_config
-from cmsmobile.event.orderreview.forms import OrderReviewForm
-from cmsmobile.core.helper import log_info
+from altairsite.mobile.event.orderreview.forms import OrderReviewForm
+from altairsite.mobile.core.helper import log_info
 
 class ValidationFailure(Exception):
     pass
 
 @view_config(route_name='order', request_type="altairsite.mobile.tweens.IMobileRequest"
-    , renderer='cmsmobile:templates/orderreview/orderreview.mako')
+    , renderer='altairsite.mobile:templates/orderreview/orderreview.mako')
 def move_order(request):
     log_info("move_order", "start")
     form = OrderReviewForm()

@@ -10,11 +10,13 @@ import sqlahelper
 from sqlalchemy import engine_from_config
 from core.helper import log_info
 
-def main(global_config, **settings):
 
-    log_info("main", "initialize start.")
-    config = Configurator(settings=settings)
+def install_as_mobile_app(config):
+    config._add_tween("altairsite.mobile.tweens.mobile_encoding_convert_factory")
+    config.include(install_app)
 
+def install_app(config):
+    settings = config.registry.settings
     def altair_orderreview_url(request):
         return config.registry.settings["altair.orderreview.url"]
 
@@ -31,7 +33,6 @@ def main(global_config, **settings):
     sqlahelper.get_session().remove()
     sqlahelper.add_engine(engine)
 
-    config._add_tween("altairsite.mobile.tweens.mobile_encoding_convert_factory")
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_static_view('static', 'static', cache_max_age=3600)
 
@@ -39,31 +40,33 @@ def main(global_config, **settings):
     config.set_request_property(getti_orderreview_url, "getti_orderreview_url", reify=True)
     config.set_request_property(sender_mailaddress, "sender_mailaddress", reify=True)
     config.set_request_property(inquiry_mailaddress, "inquiry_mailaddress", reify=True)
-    config.set_request_property("altaircms.auth.api.get_allowable_query", "allowable", reify=True)
 
-    config.include('cmsmobile.event.company')
-    config.include('cmsmobile.event.detailsearch')
-    config.include('cmsmobile.event.eventdetail')
-    config.include('cmsmobile.event.genre')
-    config.include('cmsmobile.event.help')
-    config.include('cmsmobile.event.hotword')
-    config.include('cmsmobile.event.information')
-    config.include('cmsmobile.event.search')
-    config.include('cmsmobile.event.orderreview')
-    config.include('cmsmobile.event.inquiry')
-    config.include('cmsmobile.event.privacy')
-    config.include('cmsmobile.event.legal')
+    config.include('altairsite.mobile.event.company')
+    config.include('altairsite.mobile.event.detailsearch')
+    config.include('altairsite.mobile.event.eventdetail')
+    config.include('altairsite.mobile.event.genre')
+    config.include('altairsite.mobile.event.help')
+    config.include('altairsite.mobile.event.hotword')
+    config.include('altairsite.mobile.event.information')
+    config.include('altairsite.mobile.event.search')
+    config.include('altairsite.mobile.event.orderreview')
+    config.include('altairsite.mobile.event.inquiry')
+    config.include('altairsite.mobile.event.privacy')
+    config.include('altairsite.mobile.event.legal')
+    config.add_route("home", "/")
+    config.scan(".")
 
-    config.include('altaircms.solr')
-    config.include('altaircms.tag')
-    config.include('altaircms.topic')
+def main(global_config, **settings):
+    log_info("main", "initialize start.")
+    config = Configurator(settings=settings)
     config.include('altairsite.separation')
+    config.include('altaircms.solr')
+    config.include('altaircms.tag.install_tagmanager')
+    config.include('altaircms.topic.install_topic_searcher')
+    config.set_request_property("altaircms.auth.api.get_allowable_query", "allowable", reify=True)
     search_utility = settings.get("altaircms.solr.search.utility")
     config.add_fulltext_search(search_utility)
-
-    config.add_route("home", "/")
-
-    config.scan()
-
+    config._add_tween("altairsite.mobile.tweens.mobile_request_factory")
+    config.include(install_app)
     log_info("main", "initialize end.")
     return config.make_wsgi_app()

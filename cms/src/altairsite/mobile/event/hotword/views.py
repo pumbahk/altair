@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
 from pyramid.view import view_config
 from datetime import datetime
-from cmsmobile.event.hotword.forms import HotwordForm
+from altairsite.mobile.event.hotword.forms import HotwordForm
 from altaircms.tag.models import HotWord
 from altaircms.page.models import PageSet, PageTag2Page, PageTag
 from altaircms.event.models import Event
 from altaircms.models import Genre
-from cmsmobile.core.helper import exist_value
-from cmsmobile.core.helper import get_week_map, get_event_paging
-from cmsmobile.core.helper import log_info
+from altairsite.mobile.core.helper import exist_value
+from altairsite.mobile.core.helper import get_week_map, get_event_paging
+from altairsite.mobile.core.helper import log_info
 
 class ValidationFailure(Exception):
     pass
 
 @view_config(route_name='hotword', request_type="altairsite.mobile.tweens.IMobileRequest"
-    , renderer='cmsmobile:templates/searchresult/hotword_result.mako')
+    , renderer='altairsite.mobile:templates/searchresult/hotword_result.mako')
 def move_hotword(request):
 
     log_info("move_hotword", "start")
@@ -58,6 +58,6 @@ def move_hotword(request):
     return {'form':form}
 
 @view_config(route_name='hotword', context=ValidationFailure
-    , request_type="altairsite.mobile.tweens.IMobileRequest", renderer='cmsmobile:templates/common/error.mako')
+    , request_type="altairsite.mobile.tweens.IMobileRequest", renderer='altairsite.mobile:templates/common/error.mako')
 def failed_validation(request):
     return {}

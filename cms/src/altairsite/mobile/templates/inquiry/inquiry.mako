@@ -1,4 +1,4 @@
-<%namespace file="cmsmobile:templates/common/helpers.html" name="h" />
+<%namespace file="altairsite.mobile:templates/common/helpers.html" name="h" />
 
 <!DOCTYPE html>
 <html>

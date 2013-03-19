@@ -1,5 +1,5 @@
 <%page args="form" />
-<%namespace file="cmsmobile:templates/common/helpers.html" name="h" />
+<%namespace file="altairsite.mobile:templates/common/helpers.html" name="h" />
 
 <form action="/detailsearch" method="GET">
     ■フリーワード検索<br/>

@@ -2,7 +2,7 @@
 from altaircms.solr import api as solrapi
 from altaircms.event.models import Event
 from altaircms.page.models import PageSet
-from cmsmobile.core.helper import log_info
+from altairsite.mobile.core.helper import log_info
 
 def searchEvents(request, word):
     log_info("searchEvents", "start")

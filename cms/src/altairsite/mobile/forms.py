@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from wtforms import HiddenField
 from wtforms.validators import Optional
-from cmsmobile.core.forms import CommonForm
+from altairsite.mobile.core.forms import CommonForm
 
 class TopForm(CommonForm):
 

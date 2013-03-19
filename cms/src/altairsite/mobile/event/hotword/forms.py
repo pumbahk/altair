@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from wtforms import HiddenField
 from wtforms.validators import Optional
-from cmsmobile.event.search.forms import SearchForm
+from altairsite.mobile.event.search.forms import SearchForm
 
 class HotwordForm(SearchForm):
 

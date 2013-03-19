@@ -2,8 +2,8 @@
 
 from wtforms import HiddenField
 from wtforms.validators import Optional
-from cmsmobile.event.search.forms import SearchForm
-from cmsmobile.forms import TopForm
+from altairsite.mobile.event.search.forms import SearchForm
+from altairsite.mobile.forms import TopForm
 
 class GenreForm(SearchForm, TopForm):
 

@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
-from cmsmobile.solr import helper
+from altairsite.mobile.solr import helper
 from pyramid.httpexceptions import HTTPNotFound
 from altaircms.models import Performance, SalesSegmentGroup, SalesSegmentKind
 from altaircms.event.models import Event
 from altaircms.models import Genre
-from cmsmobile.core.const import get_prefecture
-from cmsmobile.core.helper import exist_value
-from cmsmobile.core.const import SalesEnum
+from altairsite.mobile.core.const import get_prefecture
+from altairsite.mobile.core.helper import exist_value
+from altairsite.mobile.core.const import SalesEnum
 from sqlalchemy import or_, and_, asc
 from datetime import datetime, date, timedelta
-from cmsmobile.core.helper import log_debug, log_info, log_warn, log_exception, log_error
+from altairsite.mobile.core.helper import log_debug, log_info, log_warn, log_exception, log_error
 
 class EventSearcher(object):
 

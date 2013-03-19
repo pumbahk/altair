@@ -1,6 +1,6 @@
 import unittest
 
-#from cmsmobile.core.models import DBSession
+#from altairsite.mobile.core.models import DBSession
 
 
 class TestMyView(unittest.TestCase):
@@ -27,5 +27,5 @@ class TestMyView(unittest.TestCase):
         request = testing.DummyRequest()
         info = my_view(request)
         self.assertEqual(info['one'].name, 'one')
-        self.assertEqual(info['project'], 'cmsmobile')
+        self.assertEqual(info['project'], 'altairsite.mobile')
 """

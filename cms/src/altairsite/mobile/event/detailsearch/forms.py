@@ -2,10 +2,10 @@
 
 from wtforms import SelectField, RadioField
 from wtforms.validators import Optional
-from cmsmobile.core.const import SalesEnum
-from cmsmobile.event.search.forms import SearchForm
+from altairsite.mobile.core.const import SalesEnum
+from altairsite.mobile.event.search.forms import SearchForm
 from datetime import date
-from cmsmobile.core.helper import log_info
+from altairsite.mobile.core.helper import log_info
 
 class DetailSearchForm(SearchForm):
 

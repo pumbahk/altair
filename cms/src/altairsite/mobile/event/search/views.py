@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 from pyramid.view import view_config
 from altaircms.models import Genre
-from cmsmobile.event.search.forms import SearchForm
-from cmsmobile.core.searcher import EventSearcher
-from cmsmobile.core.const import get_prefecture_name
-from cmsmobile.core.helper import exist_value, get_week_map, get_event_paging
-from cmsmobile.core.helper import log_info
+from altairsite.mobile.event.search.forms import SearchForm
+from altairsite.mobile.core.searcher import EventSearcher
+from altairsite.mobile.core.const import get_prefecture_name
+from altairsite.mobile.core.helper import exist_value, get_week_map, get_event_paging
+from altairsite.mobile.core.helper import log_info
 
 class ValidationFailure(Exception):
     pass
 
 @view_config(route_name='search', request_type="altairsite.mobile.tweens.IMobileRequest"
-    , renderer='cmsmobile:templates/searchresult/search.mako')
+    , renderer='altairsite.mobile:templates/searchresult/search.mako')
 @view_config(route_name='genresearch', request_type="altairsite.mobile.tweens.IMobileRequest"
-    , renderer='cmsmobile:templates/searchresult/genresearch.mako')
+    , renderer='altairsite.mobile:templates/searchresult/genresearch.mako')
 def search(request):
 
     log_info("search", "start")

@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 from pyramid.view import view_config
-from cmsmobile.core.const import get_category_name
-from cmsmobile.event.inquiry.forms import InquiryForm
-from cmsmobile.core.helper import log_info, log_error
+from altairsite.mobile.core.const import get_category_name
+from altairsite.mobile.event.inquiry.forms import InquiryForm
+from altairsite.mobile.core.helper import log_info, log_error
 from pyramid_mailer.message import Message
 from pyramid_mailer import get_mailer
 from pyramid.httpexceptions import HTTPNotFound
 
 @view_config(route_name='inquiry', request_method="GET", request_type="altairsite.mobile.tweens.IMobileRequest",
-             renderer='cmsmobile:templates/inquiry/inquiry.mako')
+             renderer='altairsite.mobile:templates/inquiry/inquiry.mako')
 def move_inquiry(request):
     log_info("move_inquiry", "start")
     form = InquiryForm()
@@ -16,7 +16,7 @@ def move_inquiry(request):
     return {'form':form}
 
 @view_config(route_name='inquiry', request_method="POST", request_type="altairsite.mobile.tweens.IMobileRequest",
-             renderer='cmsmobile:templates/inquiry/inquiry.mako')
+             renderer='altairsite.mobile:templates/inquiry/inquiry.mako')
 def send_inquiry(request):
     log_info("send_inquiry", "start")
 

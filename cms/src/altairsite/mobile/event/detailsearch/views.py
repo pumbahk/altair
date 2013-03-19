@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 from pyramid.view import view_config
 from altaircms.genre.searcher import GenreSearcher
-from cmsmobile.event.detailsearch.forms import DetailSearchForm
-from cmsmobile.core.searcher import EventSearcher
-from cmsmobile.core.helper import get_event_paging, get_week_map
-from cmsmobile.core.helper import log_info
+from altairsite.mobile.event.detailsearch.forms import DetailSearchForm
+from altairsite.mobile.core.searcher import EventSearcher
+from altairsite.mobile.core.helper import get_event_paging, get_week_map
+from altairsite.mobile.core.helper import log_info
 from datetime import date
 
 @view_config(route_name='detailsearchinit', request_type="altairsite.mobile.tweens.IMobileRequest"
-    , renderer='cmsmobile:templates/detailsearch/detailsearch.mako')
+    , renderer='altairsite.mobile:templates/detailsearch/detailsearch.mako')
 def move_detailsearch(request):
 
     log_info("move_detailsearch", "start")
@@ -20,7 +20,7 @@ def move_detailsearch(request):
     return {'form':form}
 
 @view_config(route_name='detailsearch', request_type="altairsite.mobile.tweens.IMobileRequest"
-    , renderer='cmsmobile:templates/searchresult/detailsearch.mako')
+    , renderer='altairsite.mobile:templates/searchresult/detailsearch.mako')
 def move_detailsearch_post(request):
 
     log_info("move_detailsearch_post", "start")

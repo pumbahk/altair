@@ -5,12 +5,12 @@ from altaircms.topic.models import TopicTag, PromotionTag
 from altaircms.topic.api import get_topic_searcher
 from altaircms.genre.searcher import GenreSearcher
 from altaircms.tag.models import HotWord
-from cmsmobile.forms import TopForm
+from altairsite.mobile.forms import TopForm
 from sqlalchemy import asc
 from core.helper import log_info
 
 @view_config(route_name='home', request_type="altairsite.mobile.tweens.IMobileRequest"
-             , renderer='cmsmobile:templates/top/top.mako')
+             , renderer='altairsite.mobile:templates/top/top.mako')
 def main(request):
 
     log_info("main", "start")
