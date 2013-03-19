@@ -105,8 +105,8 @@ class EventSearcher(object):
     # まもなく開演
     def get_events_soon_act(self, form, qs=None):
         log_info("get_events_soon_act", "start")
-        where = (date.today() < Performance.open_on) & \
-                    (Performance.open_on < date.today() + timedelta(days=7))
+        where = (date.today() < Performance.start_on) & \
+                    (Performance.start_on < date.today() + timedelta(days=7))
         if form.soon_act.data:
             log_info("get_events_soon_act", "search start")
             qs = self._create_common_qs(where=where, qs=qs)
