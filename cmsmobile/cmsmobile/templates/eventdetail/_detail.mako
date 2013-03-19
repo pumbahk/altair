@@ -30,7 +30,7 @@
     % if count != 0:
         <hr/>
     % endif
-    <a name="${month}" id="${month}">${month}</a><br/>
+    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffff00">■</font><a name="${month}" id="${month}">${month}</a></font></div>
     <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
 
     % for perf in event.performances:
