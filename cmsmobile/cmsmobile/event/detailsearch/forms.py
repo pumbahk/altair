@@ -51,7 +51,6 @@ class DetailSearchForm(SearchForm):
         return
 
     def validate_word(form, field):
-        print field.data
         if field.data == "":
             raise ValueError(u'検索文字列を入力してください')
         if len(field.data) > 200:

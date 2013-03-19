@@ -37,7 +37,6 @@ def move_detailsearch_post(request):
         if not qs:
             log_info("move_detailsearch_post", "free word not result")
         else:
-            print qs
             qs = searcher.get_events_from_area(form, qs)
             qs = searcher.get_events_from_sale(form, qs)
             qs = searcher.get_events_from_start_on(form, qs)

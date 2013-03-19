@@ -52,7 +52,6 @@ def move_genre(request):
     tag = TopicTag.query.filter_by(label=u"注目のイベント").first()
     if tag:
         form.attentions.data = topic_searcher.query_publishing_topics(datetime.now(), tag, system_tag).all()
-        print form.attentions.data
         log_info("move_genre", "attention get")
 
     # Topic(Tag='トピック', system_tag='ジャンル')
