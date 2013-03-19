@@ -23,7 +23,6 @@
                 ,page_num=form.page_num.data, path=form.path.data, week=form.week.data
                 ,genre=0, sub_genre=0"/>
 
-    <hr/>
     <%include file='../common/_search.mako' args="form=form, genre=0, sub_genre=0"/>
 
     <%include file='../common/_footer.mako' />
