@@ -34,7 +34,7 @@ def main(global_config, **local_config):
     config.add_fulltext_search(search_utility)
 
     config.include("altairsite.mobile")
-    config.add_tween("altairsite.mobile.tweens.mobile_encoding_convert_factory")
+
 
     config.include("altairsite.front")
     config.include("altairsite.errors")

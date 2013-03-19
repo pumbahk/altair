@@ -10,13 +10,14 @@ import sqlahelper
 from sqlalchemy import engine_from_config
 from core.helper import log_info
 
+def includeme(config):
+    config.include(install_as_mobile_app)
 
 def install_as_mobile_app(config):
     config._add_tween("altairsite.mobile.tweens.mobile_encoding_convert_factory")
     config.include(install_app)
 
 def install_app(config):
-    settings = config.registry.settings
     def altair_orderreview_url(request):
         return config.registry.settings["altair.orderreview.url"]
 
@@ -29,12 +30,6 @@ def install_app(config):
     def inquiry_mailaddress(request):
         return config.registry.settings["inquiry.mailaddress"]
 
-    engine = engine_from_config(settings, 'sqlalchemy.', pool_recycle=3600)
-    sqlahelper.get_session().remove()
-    sqlahelper.add_engine(engine)
-
-    config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
-    config.add_static_view('static', 'static', cache_max_age=3600)
 
     config.set_request_property(altair_orderreview_url, "altair_orderreview_url", reify=True)
     config.set_request_property(getti_orderreview_url, "getti_orderreview_url", reify=True)
@@ -57,8 +52,16 @@ def install_app(config):
     config.scan(".")
 
 def main(global_config, **settings):
+
+    engine = engine_from_config(settings, 'sqlalchemy.', pool_recycle=3600)
+    sqlahelper.get_session().remove()
+    sqlahelper.add_engine(engine)
+
     log_info("main", "initialize start.")
     config = Configurator(settings=settings)
+    config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
+    config.add_static_view('static', 'static', cache_max_age=3600)
+
     config.include('altairsite.separation')
     config.include('altaircms.solr')
     config.include('altaircms.tag.install_tagmanager')
