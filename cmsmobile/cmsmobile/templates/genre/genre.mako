@@ -25,8 +25,7 @@
     <%include file='../common/_attention.mako' args="attentions=form.attentions.data
                                           , genre=form.genre.data, sub_genre=form.sub_genre.data"/>
 
-    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000;
-                        color: #ffffff" bgcolor="#bf0000" background="../static/bg_bar.gif">サブジャンルで絞り込む</div>
+    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>サブジャンルで絞り込む</font></div>
 
     <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
 
