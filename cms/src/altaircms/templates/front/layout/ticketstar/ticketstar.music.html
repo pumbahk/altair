@@ -186,7 +186,9 @@ form = TopPageSidebarSearchForm()
 
 	  <ul>
 		  % for g in layout.get_subgenre_list_from_page(page):
-		    <li><a href="${h.link.get_link_from_genre(request, g)}">${g.label}</a></li>
+         %if g.category_top_pageset_id:
+		       <li><a href="${h.link.get_link_from_genre(request, g)}">${g.label}</a></li>
+         %endif
 		  % endfor
 </ul>
 </div>
