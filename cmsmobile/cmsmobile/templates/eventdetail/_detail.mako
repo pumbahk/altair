@@ -58,7 +58,8 @@
 <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
 
 % if event.salessegment_groups:
-    販売区分<br/>
+    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffff00">■</font>販売区分</font></div>
+    <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
     % for segment in event.salessegment_groups:
         ${segment.name}:
         ${segment.start_on.year}/${segment.start_on.month}/${segment.start_on.day}-${segment.end_on.year}/${segment.end_on.month}/${segment.end_on.day}
@@ -67,7 +68,8 @@
 % endif
 
 % if event.notice:
-    詳細/注意事項
+    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffff00">■</font>詳細/注意事項</font></div>
+    <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
     ${event.notice}
 % endif
 
@@ -81,7 +83,8 @@
 -->
 
 % if event.inquiry_for:
-    お問合せ
-        ${event.inquiry_for}
+    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffff00">■</font>お問い合わせ</font></div>
+    <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
+    ${event.inquiry_for}
 % endif
 <%include file="../common/_footer.mako" />
