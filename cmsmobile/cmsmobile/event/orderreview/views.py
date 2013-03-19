@@ -6,7 +6,8 @@ from cmsmobile.core.helper import log_info
 class ValidationFailure(Exception):
     pass
 
-@view_config(route_name='order', renderer='cmsmobile:templates/orderreview/orderreview.mako')
+@view_config(route_name='order', request_type="altairsite.mobile.tweens.IMobileRequest"
+    , renderer='cmsmobile:templates/orderreview/orderreview.mako')
 def move_order(request):
     log_info("move_order", "start")
     form = OrderReviewForm()

@@ -10,7 +10,8 @@ from cmsmobile.core.helper import log_info
 class ValidationFailure(Exception):
     pass
 
-@view_config(route_name='help', renderer='cmsmobile:templates/help/help.mako')
+@view_config(route_name='help', request_type="altairsite.mobile.tweens.IMobileRequest"
+    , renderer='cmsmobile:templates/help/help.mako')
 def move_help(request):
 
     log_info("move_help", "start")

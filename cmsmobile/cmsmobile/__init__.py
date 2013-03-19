@@ -31,7 +31,7 @@ def main(global_config, **settings):
     sqlahelper.get_session().remove()
     sqlahelper.add_engine(engine)
 
-    config = Configurator(settings=settings)
+    config._add_tween("altairsite.mobile.tweens.mobile_encoding_convert_factory")
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_static_view('static', 'static', cache_max_age=3600)
 

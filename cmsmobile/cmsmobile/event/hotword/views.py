@@ -13,7 +13,8 @@ from cmsmobile.core.helper import log_info
 class ValidationFailure(Exception):
     pass
 
-@view_config(route_name='hotword', renderer='cmsmobile:templates/searchresult/hotword_result.mako')
+@view_config(route_name='hotword', request_type="altairsite.mobile.tweens.IMobileRequest"
+    , renderer='cmsmobile:templates/searchresult/hotword_result.mako')
 def move_hotword(request):
 
     log_info("move_hotword", "start")
@@ -56,6 +57,7 @@ def move_hotword(request):
     log_info("move_hotword", "end")
     return {'form':form}
 
-@view_config(route_name='hotword', context=ValidationFailure, renderer='cmsmobile:templates/common/error.mako')
+@view_config(route_name='hotword', context=ValidationFailure
+    , request_type="altairsite.mobile.tweens.IMobileRequest", renderer='cmsmobile:templates/common/error.mako')
 def failed_validation(request):
     return {}

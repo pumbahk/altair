@@ -7,7 +7,7 @@ from pyramid_mailer.message import Message
 from pyramid_mailer import get_mailer
 from pyramid.httpexceptions import HTTPNotFound
 
-@view_config(route_name='inquiry', request_method="GET",
+@view_config(route_name='inquiry', request_method="GET", request_type="altairsite.mobile.tweens.IMobileRequest",
              renderer='cmsmobile:templates/inquiry/inquiry.mako')
 def move_inquiry(request):
     log_info("move_inquiry", "start")
@@ -15,7 +15,7 @@ def move_inquiry(request):
     log_info("move_inquiry", "end")
     return {'form':form}
 
-@view_config(route_name='inquiry', request_method="POST",
+@view_config(route_name='inquiry', request_method="POST", request_type="altairsite.mobile.tweens.IMobileRequest",
              renderer='cmsmobile:templates/inquiry/inquiry.mako')
 def send_inquiry(request):
     log_info("send_inquiry", "start")

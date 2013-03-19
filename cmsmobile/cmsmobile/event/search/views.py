@@ -10,8 +10,10 @@ from cmsmobile.core.helper import log_info
 class ValidationFailure(Exception):
     pass
 
-@view_config(route_name='search', renderer='cmsmobile:templates/searchresult/search.mako')
-@view_config(route_name='genresearch', renderer='cmsmobile:templates/searchresult/genresearch.mako')
+@view_config(route_name='search', request_type="altairsite.mobile.tweens.IMobileRequest"
+    , renderer='cmsmobile:templates/searchresult/search.mako')
+@view_config(route_name='genresearch', request_type="altairsite.mobile.tweens.IMobileRequest"
+    , renderer='cmsmobile:templates/searchresult/genresearch.mako')
 def search(request):
 
     log_info("search", "start")

@@ -11,7 +11,8 @@ from altaircms.page.models import PageSet
 class ValidationFailure(Exception):
     pass
 
-@view_config(route_name='eventdetail', renderer='cmsmobile:templates/eventdetail/eventdetail.mako')
+@view_config(route_name='eventdetail', request_type="altairsite.mobile.tweens.IMobileRequest"
+    , renderer='cmsmobile:templates/eventdetail/eventdetail.mako')
 def move_eventdetail(request):
 
     log_info("move_eventdetail", "start")
@@ -48,7 +49,8 @@ def move_eventdetail(request):
     log_info("move_eventdetail", "end")
     return {'form':form}
 
-@view_config(route_name='eventdetail', context=ValidationFailure, renderer='cmsmobile:templates/common/error.mako')
+@view_config(route_name='eventdetail', context=ValidationFailure
+    , request_type="altairsite.mobile.tweens.IMobileRequest", renderer='cmsmobile:templates/common/error.mako')
 def failed_validation(request):
     return {}
 

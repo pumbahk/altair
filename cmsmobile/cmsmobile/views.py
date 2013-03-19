@@ -9,7 +9,8 @@ from cmsmobile.forms import TopForm
 from sqlalchemy import asc
 from core.helper import log_info
 
-@view_config(route_name='home', renderer='cmsmobile:templates/top/top.mako')
+@view_config(route_name='home', request_type="altairsite.mobile.tweens.IMobileRequest"
+             , renderer='cmsmobile:templates/top/top.mako')
 def main(request):
 
     log_info("main", "start")

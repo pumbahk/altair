@@ -15,7 +15,8 @@ from cmsmobile.core.helper import log_info
 class ValidationFailure(Exception):
     pass
 
-@view_config(route_name='genre', renderer='cmsmobile:templates/genre/genre.mako')
+@view_config(route_name='genre', request_type="altairsite.mobile.tweens.IMobileRequest"
+    , renderer='cmsmobile:templates/genre/genre.mako')
 def move_genre(request):
 
     log_info("move_genre", "start")
@@ -69,7 +70,8 @@ def move_genre(request):
     log_info("move_genre", "end")
     return {'form':form}
 
-@view_config(route_name='genre', context=ValidationFailure, renderer='cmsmobile:templates/common/error.mako')
+@view_config(route_name='genre', context=ValidationFailure
+    , request_type="altairsite.mobile.tweens.IMobileRequest", renderer='cmsmobile:templates/common/error.mako')
 def failed_validation(request):
     return {}
 

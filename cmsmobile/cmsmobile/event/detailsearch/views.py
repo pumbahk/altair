@@ -7,7 +7,8 @@ from cmsmobile.core.helper import get_event_paging, get_week_map
 from cmsmobile.core.helper import log_info
 from datetime import date
 
-@view_config(route_name='detailsearchinit', renderer='cmsmobile:templates/detailsearch/detailsearch.mako')
+@view_config(route_name='detailsearchinit', request_type="altairsite.mobile.tweens.IMobileRequest"
+    , renderer='cmsmobile:templates/detailsearch/detailsearch.mako')
 def move_detailsearch(request):
 
     log_info("move_detailsearch", "start")
@@ -18,7 +19,8 @@ def move_detailsearch(request):
 
     return {'form':form}
 
-@view_config(route_name='detailsearch', renderer='cmsmobile:templates/searchresult/detailsearch.mako')
+@view_config(route_name='detailsearch', request_type="altairsite.mobile.tweens.IMobileRequest"
+    , renderer='cmsmobile:templates/searchresult/detailsearch.mako')
 def move_detailsearch_post(request):
 
     log_info("move_detailsearch_post", "start")

@@ -10,8 +10,10 @@ from cmsmobile.core.helper import log_info
 class ValidationFailure(Exception):
     pass
 
-@view_config(route_name='information', renderer='cmsmobile:templates/information/information.mako')
-@view_config(route_name='infodetail', renderer='cmsmobile:templates/information/infodetail.mako')
+@view_config(route_name='information', request_type="altairsite.mobile.tweens.IMobileRequest"
+    , renderer='cmsmobile:templates/information/information.mako')
+@view_config(route_name='infodetail', request_type="altairsite.mobile.tweens.IMobileRequest"
+    , renderer='cmsmobile:templates/information/infodetail.mako')
 def move_information(request):
 
     log_info("move_information", "start")
