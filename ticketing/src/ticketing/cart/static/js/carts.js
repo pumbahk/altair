@@ -1210,6 +1210,7 @@ function newMetadataLoaderFactory(url) {
 function createDataSource(params) {
   var factory = newMetadataLoaderFactory(params['data_source']['seats']);
   var drawingCache = {};
+  function error(msg) { console.log(msg); } // XXX
   return {
     drawing: function (page) {
       return function (next, error) {
