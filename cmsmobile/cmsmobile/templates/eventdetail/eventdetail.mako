@@ -7,11 +7,7 @@
 
     <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
 
-    % if form.genre.data:
-        <a href="/genre?genre=${form.genre.data}&sub_genre=${form.sub_genre.data}" accesskey="0">[0]戻る</a>
-    % else:
-        <a href="/" accesskey="0">[0]戻る</a>
-    % endif
+    <a href="/" accesskey="0">[0]戻る</a>
     <a href="/" accesskey="9">[9]トップへ</a>
     <br/><br/>
 
