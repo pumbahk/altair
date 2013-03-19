@@ -8,7 +8,7 @@
 
 <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
 
-公演一覧へ
+公演一覧へ<br/>
 
 
 % for count, month in enumerate(month_unit_keys):
@@ -22,8 +22,9 @@
 
 <a href="#detail">公演詳細へ</a><br/>
 
-<div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000;
-                        color: #ffffff" bgcolor="#bf0000" background="../static/bg_bar.gif">公演一覧</div>
+<div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>公演一覧</font></div>
+
+<div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
 
 % for count, month in enumerate(month_unit_keys):
     % if count != 0:
@@ -47,12 +48,14 @@
                     会場:${perf.venue}<br/>
                 % endif
             </a>
+            <br/>
         % endif
     % endfor
 % endfor
 
-<div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000;
-                        color: #ffffff" bgcolor="#bf0000" background="../static/bg_bar.gif">公演詳細</div>
+<div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>公演詳細</font></div>
+
+<div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
 
 % if event.salessegment_groups:
     販売区分<br/>

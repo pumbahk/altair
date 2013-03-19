@@ -3,12 +3,18 @@
     <%include file="../common/_header.mako" args="title=u'楽天チケット[会社概要]'"/>
 <body>
 
-    <a href="/">トップ</a> >> 会社概要
+    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffc0cb">■</font>会社概要</font></div>
 
-<div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
+    <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
 
-<div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000;
-                        color: #ffffff" bgcolor="#bf0000" background="../static/bg_bar.gif">会社概要</div>
+    <a href="/" accesskey="0">[0]戻る</a>
+    <a href="/" accesskey="9">[9]トップへ</a>
+
+    <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
+
+    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>会社概要</font></div>
+
+    <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
 
 ■社名<br/>
 株式会社チケットスター <br/>

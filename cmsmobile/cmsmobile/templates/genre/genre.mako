@@ -3,6 +3,14 @@
     <%include file="../common/_header.mako" args="title=u'楽天チケット'"/>
 <body>
 
+    % if form.dispsubgenre.data:
+        <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffc0cb">■</font>${form.dispsubgenre.data.label}</font></div>
+    % else:
+        <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffc0cb">■</font>${form.dispgenre.data.label}</font></div>
+    % endif
+
+    <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
+
     <a href="/" accesskey="0">[0]戻る</a>
     <a href="/" accesskey="9">[9]トップへ</a>
     <br/><br/>

@@ -5,12 +5,21 @@
 <%include file="../common/_header.mako" args="title=u'楽天チケット[お問合せ]'"/>
 <body>
 
+    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffc0cb">■</font>お問い合わせ</font></div>
+
+    <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
+
+    <a href="/" accesskey="0">[0]戻る</a>
+    <a href="/" accesskey="9">[9]トップへ</a>
+    <br/><br/>
+
     <a href="/">トップ</a> >> お問合せ
 
     <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
 
-    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000;
-                        color: #ffffff" bgcolor="#bf0000" background="../static/bg_bar.gif">お問合せ</div>
+    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>お問い合わせ</font></div>
+
+    <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
 
     お預かりするお客様の個人情報は、『個人情報保護方針』に基いて厳重に管理し、お客様の同意がない限りお問い合わせ・ご相談への対応以外には使用いたしません。<br/>
     <br/>

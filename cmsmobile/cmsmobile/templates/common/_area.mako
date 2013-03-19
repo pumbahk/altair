@@ -1,10 +1,8 @@
 <%page args="path, genre, sub_genre, num" />
 % if genre:
-    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000;
-                        color: #ffffff" bgcolor="#bf0000" background="../static/bg_bar.gif">地域から絞り込む</div>
+    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>地域から絞り込む</font></div>
 % else:
-    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000;
-                        color: #ffffff" bgcolor="#bf0000" background="../static/bg_bar.gif">地域から探す</div>
+    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>地域から探す</font></div>
 % endif
 
 <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>

@@ -3,11 +3,21 @@
 <%include file="../common/_header.mako" args="title=u'楽天チケット[特定商取引法に基づく表示]'"/>
 <body>
 
-    <a href="/">トップ</a> >> 特定商取引法に基づく表示
+    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffc0cb">■</font>特定商取引法に基づく表示</font></div>
+
     <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
 
-    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000;
-                        color: #ffffff" bgcolor="#bf0000" background="../static/bg_bar.gif">特定商取引法に基づく表示</div>
+    <a href="/" accesskey="0">[0]戻る</a>
+    <a href="/" accesskey="9">[9]トップへ</a>
+    <br/><br/>
+
+    <a href="/">トップ</a> >> 特定商取引法に基づく表示
+
+    <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
+
+    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>特定商取引法に基づく表示</font></div>
+
+    <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
 
     <a href="#1">１．販売業者名</a><br/>
     <a href="#2">２．運営責任者</a><br/>

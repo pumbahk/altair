@@ -2,10 +2,13 @@
 <html>
     <%include file="../common/_header.mako" args="title=u'楽天チケット'"/>
 
+    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffc0cb">■</font>楽天チケット</font></div>
+
+    <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
+
     <%include file='../common/_search.mako' args="form=form, genre=form.genre.data, sub_genre=form.sub_genre.data"/>
 
-        <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000;
-            color: #ffffff" bgcolor="#bf0000" background="../static/bg_bar.gif">ピックアップ</div>
+        <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>ピックアップ</font></div>
 
         <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
 
@@ -15,8 +18,7 @@
             % endfor
         % endif
 
-        <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000;
-                    color: #ffffff" bgcolor="#bf0000" background="../static/bg_bar.gif">ジャンルから探す</div>
+        <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>ジャンルから探す</font></div>
 
         <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
         % for genre in form.genretree.data:
