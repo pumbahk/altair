@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from altaircms.solr import api as solrapi
 from altaircms.event.models import Event
-from altaircms.page.models import Page
+from altaircms.page.models import PageSet
 from cmsmobile.core.helper import log_info
 
 def searchEvents(request, word):
@@ -17,10 +17,11 @@ def getResultEvents(request, response):
     ids = [res['id'] for res in response]
     events = []
     log_info("getResultEvents", "freeword result id = " + str(ids))
-    for page_id in ids:
-        page = request.allowable(Page).filter(Page.id == page_id).first()
-        if page:
-            event = request.allowable(Event).filter(Event.id == page.event_id).first()
+    for pageset_id in ids:
+        pageset = request.allowable(PageSet).filter(PageSet.id == pageset_id).first()
+        if pageset:
+            log_info("getResultEvents", "pageset_id = " + str(pageset_id) + " exist")
+            event = request.allowable(Event).filter(Event.id == pageset.event_id).first()
             if event:
                 if not event in events:
                     events.append(event)
