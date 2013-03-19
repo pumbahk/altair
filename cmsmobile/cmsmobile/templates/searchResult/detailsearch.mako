@@ -22,7 +22,7 @@
                     ,genre=form.genre.data, sub_genre=form.sub_genre.data, area=form.area.data
                     ,sale=form.sale.data, sales_segment=form.sales_segment.data, since_year=form.since_year.data
                     ,since_month=form.since_month.data, since_day=form.since_day.data
-                    ,year=form.year.data, month=form.month.data, day=form.day.data"/>
+                    ,year=form.year.data, month=form.month.data, day=form.day.data, errors=form.errors"/>
 
     <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
 

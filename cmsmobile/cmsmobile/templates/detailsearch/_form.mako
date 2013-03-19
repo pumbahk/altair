@@ -45,6 +45,13 @@
 
     ■公演日で絞り込む<br/>
     ${form.since_year}年${form.since_month}月${form.since_day}日〜<br/>${form.year}年${form.month}月${form.day}日
+    <br/>
+    % for error in form.since_year.errors:
+        <font color=#FF00000>${error}</font><br/>
+    % endfor
+    % for error in form.year.errors:
+        <font color=#FF00000>${error}</font><br/>
+    % endfor
     <input type="submit" value="検索">
 
     ${form.page}

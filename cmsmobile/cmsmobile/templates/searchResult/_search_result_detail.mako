@@ -1,11 +1,13 @@
 <%page args="events, word, num, page, page_num, path, week, genre, sub_genre, area
-                , sale, sales_segment, since_year, since_month, since_day, year, month, day"/>
+                , sale, sales_segment, since_year, since_month, since_day, year, month, day, errors"/>
 
 % if int(num):
     ${num}件見つかりました。
 % else:
-    % if word:
-        「${word}」に一致する情報は見つかりませんでした。
+    % if not errors:
+        % if word:
+            「${word}」に一致する情報は見つかりませんでした。
+        % endif
     % endif
 % endif
 

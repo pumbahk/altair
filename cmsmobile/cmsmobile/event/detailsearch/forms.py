@@ -5,6 +5,7 @@ from wtforms.validators import Optional
 from cmsmobile.core.const import SalesEnum
 from cmsmobile.event.search.forms import SearchForm
 from datetime import date
+from cmsmobile.core.helper import log_info
 
 class DetailSearchForm(SearchForm):
 
@@ -58,10 +59,13 @@ class DetailSearchForm(SearchForm):
         return
 
 def _check_date(year, month, day):
+    log_info("_check_date", "start")
     try:
         perf_date = date(int(year), int(month), int(day))
+        log_info("_check_date", str(perf_date))
     except ValueError:
         return False
     except TypeError:
         return False
+    log_info("_check_date", "end")
     return True
