@@ -431,15 +431,6 @@ SeatAdjacencies.prototype.convertToTable = function SeatAdjacencies_convertToTab
 };
 
 /*
-// test code
-// ad == ad2
-
-var ad = new SeatAdjacencies({"3": [["A1", "A2", "A3"], ["A2", "A3", "A4"], ["A3", "A4", "A5"], ["A4", "A5", "A6"]]});
-var ad2 = new SeatAdjacencies({"3": [["A1", "A3", "A2"], ["A2", "A3", "A4"], ["A4", "A3", "A5"], ["A6", "A5", "A4"]]});
-console.log(ad);
-console.log(ad2);
-*/
-/*
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
@@ -1578,7 +1569,6 @@ function parseTransform(transform_str) {
                       page = self.currentPage;
                     self.callbacks.messageBoard.up.call(self, self.pages[page].name);
                     self.canvas.css({ cursor: 'pointer' });
-console.log("over");
                   }
                 },
                 mouseout: function(evt) {
@@ -1876,7 +1866,6 @@ console.log("over");
                 }, self.callbacks.message);
               },
               mouseout: function(evt) {
-console.log("shape out");
                 var highlighted = self.highlighted;
                 self.highlighted = {};
                 for (var i in highlighted)

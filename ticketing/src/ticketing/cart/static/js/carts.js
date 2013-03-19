@@ -1033,6 +1033,40 @@ cart.VenueView = Backbone.View.extend({
                         loadingLayer = null;
                     }
                 }
+
+				$('.pageSwitchPanel').remove();
+				var ul = $('<ul></ul>');
+				ul
+					.addClass('pageSwitchPanel')
+					.css({ position: 'absolute', top: 10, right : 20, left: 40, textAlign: 'right' });
+				var pages = [ ];
+				for(var k in viewer.pages) {
+					if(!viewer.pages[k].hidden) {
+						viewer.pages[k]._filename = k;
+						pages.push(viewer.pages[k]);
+					}
+				}
+				pages = pages.sort(function(a, b) { return a.order == b.order ? 0 : a.order < b.order ? -1 : +1; });
+				for(var idx in pages) {
+					$('<li></li>')
+						.css({ display: 'inline-block', height: 20, verticalAlign: 'middle', border: '1px solid gray', paddingLeft: 4, paddingRight: 4, marginBottom: 4, marginLeft: 4, cursor: 'pointer', backgroundColor: 'ffffff' })
+						.attr('filename', pages[idx]._filename)
+						.click(function() {
+							viewer.navigate($(this).attr('filename'));
+						})
+						.text(pages[idx].short_name || pages[idx].name).appendTo(ul);
+				}
+				if(page && viewer.pages[page] && viewer.pages[page].zoomable===false) {
+					;
+				} else if($('li', ul).size() == 1 && $('li', ul).eq(0).attr('filename') == page) {
+					;
+				} else if(1 <= $('li', ul).size()) {
+					$('li', ul).each(function() {
+						var filename = $(this).attr('filename');
+						$(this).css({ backgroundColor: (filename == page) ? '#cccccc' : '#ffffff' });
+					});
+					$('.venueViewerWrapper').append(ul);
+				}
             },
             messageBoard: (function() {
                 if (self.tooltip)
@@ -1176,6 +1210,7 @@ function newMetadataLoaderFactory(url) {
 function createDataSource(params) {
   var factory = newMetadataLoaderFactory(params['data_source']['seats']);
   var drawingCache = {};
+  function error(msg) { console.log(msg); } // XXX
   return {
     drawing: function (page) {
       return function (next, error) {

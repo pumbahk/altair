@@ -1,16 +1,5 @@
 <%page args="form" />
 <%namespace file="/common/helpers.html" name="h" />
-
-<script type="text/javascript">
-  $(function() {
-    $('#modal-sales_reports_mail').on('shown', function(){
-      $(this).css('max-height', '750px')
-          .css('margin-top', ($(this).outerHeight()/2)*-1)
-          .css('margin-left',($(this).outerWidth()/2)*-1);
-    });
-  });
-</script>
-
 <div id="modal-sales_reports_mail" class="modal hide">
   <div class="modal-header">
     <a class="close" data-dismiss="modal">&times;</a>

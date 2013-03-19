@@ -151,7 +151,7 @@ def compose_dynamic_query(g, f):
         return g(model, request, f(model, request, query))
     return wrapped
 
-def dynamic_query_select_field_factory(model, dynamic_query=None, name=None, **kwargs):
+def dynamic_query_select_field_factory(model, dynamic_query=None, name=None, break_separate=False, **kwargs):
     """
     dynamic_query_factory: lambda model, request, query : ...
 
@@ -167,19 +167,25 @@ def dynamic_query_select_field_factory(model, dynamic_query=None, name=None, **k
 
     name = name or model.__name__
     def dynamic_query_filter(field, form=None, rendering_val=None, request=None):
-        field._object_list = None
-        #hack . this is almost wrong.(if calling memoize function field.get_object_list() using this field as cache store))
+        try:
+            field._object_list = None
+            #hack . this is almost wrong.(if calling memoize function field.get_object_list() using this field as cache store))
 
-        if getattr(field, "query", None):
-            query = field.query
-        else:
-            query = field.query_factory()
+            if getattr(field, "query", None):
+                query = field.query
+            else:
+                query = field.query_factory()
 
-        if dynamic_query:
-            query_filter = compose_dynamic_query(dynamic_query, allowable_model_query)
-        else:
-            query_filter = allowable_model_query
-        field.query = query_filter(model, request, query)
+            if dynamic_query:
+                if not break_separate:
+                    query_filter = compose_dynamic_query(dynamic_query, allowable_model_query)
+                else:
+                    query_filter = dynamic_query
+            else:
+                query_filter = allowable_model_query
+            field.query = query_filter(model, request, query)
+        except Exception, e:
+            logger.exception(str(e))
     field._dynamic_query = dynamic_query_filter
     return field
 
