@@ -162,6 +162,16 @@ $('#menu-toggle').click(function() {
     readjustMap();
   }, 100);
 });
+$('.venue-editor-main-side-toggle').click(function() {
+  if (venueEditorSide.width() > 0) {
+    venueEditorSide.css('width', '0%');
+    venueEditorRoot.css('width', '100%');
+  } else {
+    venueEditorSide.css('width', '35%');
+    venueEditorRoot.css('width', '65%');
+  }
+  readjustMap();
+});
 
 venueEditor.find(".ui-button").each(function (i, n) {
   n = $(n);
