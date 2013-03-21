@@ -80,6 +80,14 @@ class PageSet(Base,
     genre_id = Column(sa.Integer, ForeignKey("genre.id"))
     genre = orm.relationship("Genre",  backref="pageset",  uselist=False, primaryjoin="PageSet.genre_id==Genre.id")
 
+    def delete(self):
+        ##全部消す
+        for t in list(self.tags):
+            self.tags.remove(t)
+        for page in self.pages:
+            for w in page.widgets:
+                w.delete()
+
     @declared_attr
     def __table_args__(cls):
         return (sa.schema.UniqueConstraint("url", "organization_id"), )

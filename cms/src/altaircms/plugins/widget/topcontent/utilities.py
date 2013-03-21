@@ -16,7 +16,7 @@ def render_topics_with_template(template_name, request, widget):
 
     qs = searcher.query_publishing_topics(d, widget.tag, widget.system_tag)
     qs = qs.options(orm.joinedload("linked_page"), orm.joinedload("image_asset")).limit(widget.display_count)
-    result = render(template_name, {"widget": widget, "topics": qs}, request)
+    result = render(template_name, {"widget": widget, "qs": qs}, request)
     return result
 
 render_notable_event = partial(render_topics_with_template, "altaircms.plugins.widget:topcontent/notable_event_render.html")

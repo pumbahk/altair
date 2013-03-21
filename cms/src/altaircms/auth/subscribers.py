@@ -20,7 +20,11 @@ def touch_operator_after_login(self): ## self is AfterLogin
     roles = h.get_roles_from_role_names(role_names)
 
     auth_source = "oauth" ## これ本当はResponseでもらわないといけない
-    organization = h.get_or_create_organization(auth_source, data["organization_id"], data["organization_name"],  data["organization_short_name"])
+    organization = h.get_or_create_organization(auth_source, 
+                                                data["organization_id"],
+                                                data["organization_name"], 
+                                                data["organization_short_name"], 
+                                                data["organization_code"])
     DBSession.add(organization)
     if DBSession.is_modified(organization):
         DBSession.flush()

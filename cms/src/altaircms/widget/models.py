@@ -54,6 +54,9 @@ class Widget(BaseOriginalMixin, Base):
         session.add(ins)
         return ins
 
+    def delete(self):
+        DBSession.delete(self)
+
 class StructureSaveType(object):
     shallow = "shallow"
     deep = "deep"
