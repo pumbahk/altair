@@ -88,7 +88,7 @@ class PerformanceForm(Form):
     event = dynamic_query_select_field_factory(Event, allow_blank=False, label=u"イベント", get_label=lambda obj: obj.title)
     prefecture = fields.SelectField(label=u"開催県", choices=import_symbol("altaircms.seeds.prefecture:PREFECTURE_CHOICES"))
     venue = fields.TextField(label=u"開催場所(詳細)")
-    open_on = fields.DateTimeField(label=u"開場時間", validators=[required_field()])
+    open_on = fields.DateTimeField(label=u"開場時間", validators=[validators.Optional()])
     start_on = fields.DateTimeField(label=u"開始時間", validators=[required_field()])
     end_on = fields.DateTimeField(label=u"終了時間", validators=[validators.Optional()])
 
@@ -102,14 +102,9 @@ class PerformanceForm(Form):
             try:
                 if data["open_on"] and data["start_on"] is None:
                     data["start_on"] = data["open_on"]
-                elif data["start_on"] and data["open_on"] is None:
-                    data["open_on"] = data["start_on"]
 
-                if data["end_on"]:
+                if data["end_on"] and data["start_on"]:
                     if not (data["open_on"] <= data["start_on"] <= data["end_on"]):
-                        append_errors(self.errors, "open_on", u"開場時間、開始時間、終了時間の順になっていません")
-                else:
-                    if not (data["open_on"]):
                         append_errors(self.errors, "open_on", u"開場時間、開始時間、終了時間の順になっていません")
                     
             except Exception, e:
