@@ -101,24 +101,29 @@ class IndexView(IndexViewMixin):
         sales_segments = self.context.available_sales_segments
         performances = [ss.performance for ss in sales_segments]
 
-        select_venues = OrderedDict()
-
-        for p in performances:
-            select_venues[p.name] = []
-
         ############################################################################
-        for sales_segment in sales_segments:
-            performance = sales_segment.performance
-            pname = performance.name
-            select_venues[pname].append(dict(
-                id=performance.id,
-                name=u'{start:%Y-%m-%d %H:%M}開始 {vname} {name}'.format(name=sales_segment.name, start=performance.start_on, vname=performance.venue.name),
-                order_url=self.request.route_url("cart.order", sales_segment_id=sales_segment.id),
-                upper_limit=sales_segment.upper_limit,
-                seat_types_url=self.request.route_url('cart.seat_types',
-                    performance_id=performance.id,
-                    sales_segment_id=sales_segment.id,
-                    event_id=self.context.event.id)))
+        from pyramid.interfaces import IRequest
+        from .interfaces import IPerformanceSelector
+        performance_selector = self.request.registry.adapters.lookup([IRequest], IPerformanceSelector, "")(self.request)
+        select_venues = performance_selector()
+        ############################################################################
+        # select_venues = OrderedDict()
+
+        # for p in performances:
+        #     select_venues[p.name] = []
+
+        # for sales_segment in sales_segments:
+        #     performance = sales_segment.performance
+        #     pname = performance.name
+        #     select_venues[pname].append(dict(
+        #         id=performance.id,
+        #         name=u'{start:%Y-%m-%d %H:%M}開始 {vname} {name}'.format(name=sales_segment.name, start=performance.start_on, vname=performance.venue.name),
+        #         order_url=self.request.route_url("cart.order", sales_segment_id=sales_segment.id),
+        #         upper_limit=sales_segment.upper_limit,
+        #         seat_types_url=self.request.route_url('cart.seat_types',
+        #             performance_id=performance.id,
+        #             sales_segment_id=sales_segment.id,
+        #             event_id=self.context.event.id)))
         ################################################################################
         logger.debug("venues %s" % select_venues)
 
