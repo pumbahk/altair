@@ -101,7 +101,7 @@ class IndexView(IndexViewMixin):
         sales_segments = self.context.available_sales_segments
         performances = [ss.performance for ss in sales_segments]
 
-        performance_selector = api.get_performance_selector(self.request)
+        performance_selector = api.get_performance_selector(self.request, "matchup")
         select_venues = performance_selector()
         logger.debug("venues %s" % select_venues)
 

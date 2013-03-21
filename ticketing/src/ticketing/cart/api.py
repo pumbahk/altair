@@ -387,7 +387,7 @@ def get_seat_type_triplets(event_id, performance_id, sales_segment_id):
     return seat_type_triplets
 
 
-def get_performance_selector(request, name=""):
+def get_performance_selector(request, name):
     reg = request.registry
     performance_selector = reg.adapters.lookup([IRequest], IPerformanceSelector, name)(request)
     return performance_selector
