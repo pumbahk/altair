@@ -22,6 +22,8 @@ from ticketing.users.models import User, UserCredential, Membership, MemberGroup
 
 from .interfaces import IPaymentMethodManager
 from .interfaces import IStocker, IReserving, ICartFactory
+from .interfaces import IPerformanceSelector
+
 from .models import Cart, PaymentMethodManager, DBSession
 from .exceptions import OutTermSalesException, NoSalesSegment, NoCartError
 
@@ -383,3 +385,9 @@ def get_seat_type_triplets(event_id, performance_id, sales_segment_id):
             c_models.ProductItem.performance_id==performance_id).order_by(
             c_models.StockType.display_order).all()
     return seat_type_triplets
+
+
+def get_performance_selector(request, name=""):
+    reg = request.registry
+    performance_selector = reg.adapters.lookup([IRequest], IPerformanceSelector, name)(request)
+    return performance_selector
