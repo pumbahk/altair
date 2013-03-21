@@ -66,8 +66,8 @@ span.editable {
 
 .swatch {
   display: inline-block;
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
   border-radius: 3px;
@@ -96,12 +96,12 @@ span.editable {
 </style>
 
 <script type="text/javascript">
-  $(".collapse").collapse()
+  $(".collapse").collapse();
 </script>
 
 <div id="tooltip"></div>
-<div class="tabbable tabs-below tabs-above" id="seat-allocation-tab">
-  <div class="tab-content"  id="seat-allocation-tab-content">
+<div class="tabbable" id="seat-allocation-tab">
+  <div class="tab-content" id="seat-allocation-tab-content">
     <div class="tab-pane active" id="map">
       <div class="container-fluid">
         <div class="row-fluid">
@@ -122,7 +122,6 @@ span.editable {
             <%def name="post()">
 
 <script type="text/javascript">
-var outer = venueEditorSide.children();
 
 function deepClone(o) {
   if (o !== null && typeof o == 'object' && o.constructor == Object) {
@@ -372,6 +371,20 @@ function buildStockHolderTypeTables(venue) {
   return retval;
 }
 
+function buildSeatDetailTable(selection) {
+  var table = $('<table class="table table-bordered"></table>');
+  var tbody = $('<tbody></tbody>').appendTo(table);
+  selection.each(function (seat) {
+    var tr = $('<tr></tr>');
+    var seat_id = $('<td></td>').text(seat.get('id'));
+    var name = $('<td></td>').text(seat.get('name'));
+    tr.append(seat_id);
+    tr.append(name);
+    tbody.append(tr);
+  });
+  return table;
+}
+
 function buildTransferModal(id) {
   var id = id || "";
   var modal = $('#modal-transfer');
@@ -457,9 +470,13 @@ function saveStocks() {
   });
 }
 
+var tab1 = venueEditorSide.find("#venue-editor-main-side-tab1");
+var tab2 = venueEditorSide.find("#venue-editor-main-side-tab2");
+
 callbacks.load = function (viewer) {
-  outer.empty();
-  outer.append(buildStockHolderTypeTables(viewer.venue));
+  tab1.empty();
+  tab2.empty();
+  tab1.append(buildStockHolderTypeTables(viewer.venue));
 };
 
 callbacks.select = function (viewer, selection) {
@@ -467,6 +484,9 @@ callbacks.select = function (viewer, selection) {
     $(".assignable").addClass("enabled");
   else
     $(".assignable").removeClass("enabled");
+  var selection_all = venueEditorRoot.venueeditor('selection');
+  tab2.empty();
+  tab2.append(buildSeatDetailTable(selection_all));
 };
 </script>
             </%def>
