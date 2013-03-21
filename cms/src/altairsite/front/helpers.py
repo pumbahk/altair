@@ -1,0 +1,2 @@
+from altairsite.pyramidlayout import get_navigation_links
+_get_categories = get_navigation_links
