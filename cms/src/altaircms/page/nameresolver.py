@@ -94,7 +94,10 @@ class EventPageInfoResolver(object):
             exc = GetPageInfoException("event %s does not has event code." % event.id)
             exc.jmessage = u"イベント:%sにイベントコードが登録されていません" % event.title
             raise exc
-        return u"%s/%s" % (result.rstrip("/"), event.code.lstrip("/"))
+        event_code = event.code.lstrip("/")
+        if event.organization_id:
+            event_code = event_code.replace(event.organization.code, "", 1)
+        return u"%s/%s" % (result.rstrip("/"), event_code)
 
     def _resolve_title(self, result, event):
         return event.subtitle or event.title

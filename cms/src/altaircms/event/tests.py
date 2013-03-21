@@ -102,6 +102,7 @@ class ParseAndSaveEventTests(unittest.TestCase):
 {
   "organization": {
     "id": 1000, 
+    "code": "RT", 
     "short_name": "demo"
   }, 
   "created_at": "2012-06-20T10:33:34", 
@@ -226,6 +227,7 @@ class ParseAndSaveEventTests(unittest.TestCase):
 {
   "organization": {
     "id": 1000, 
+    "code": "RT", 
     "short_name": "demo"
   }, 
   "created_at": "2012-06-20T10:33:34", 
@@ -365,6 +367,9 @@ class ParseAndSaveEventTests(unittest.TestCase):
         request = testing.DummyRequest()
         result = self._callFUT(request, json.loads(self.data))
 
+        organization = Organization.query.filter_by(backend_id=1000).one()
+        self.assertEqual(organization.short_name, "demo")
+        self.assertEqual(organization.code, "RT")
         self.assertEqual(len(result), 1)
         event = result[0]
         self.assertEqual(event.title, u"マツイ・オン・アイス")
@@ -372,7 +377,7 @@ class ParseAndSaveEventTests(unittest.TestCase):
         self.assertEqual(event.event_open, datetime(2013, 3, 15, 10))
         self.assertEqual(event.event_close, datetime(2013, 3, 26, 19))
         self.assertNotEqual(event.organization_id, 1000)
-        self.assertEqual(event.organization_id, Organization.query.filter_by(backend_id=1000).one().id)
+        self.assertEqual(event.organization_id, organization.id)
         self.assertEqual(len(event.performances), 2)
 
         performance = event.performances[0]

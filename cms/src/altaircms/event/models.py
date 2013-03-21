@@ -1,10 +1,12 @@
 # coding: utf-8
 
 import sqlalchemy as sa
+from pyramid.decorator import reify
 import sqlalchemy.orm as orm
 from altaircms.models import Base, BaseOriginalMixin
 from altaircms.models import WithOrganizationMixin
 from altaircms.models import DBSession
+from altaircms.auth.models import Organization
 from datetime import datetime
 from datetime import timedelta
 
@@ -39,6 +41,10 @@ class Event(BaseOriginalMixin, WithOrganizationMixin, Base):
     ticket_pickup = sa.Column(sa.UnicodeText, doc=u"チケット引き取り方法")
     ticket_payment = sa.Column(sa.UnicodeText, doc=u"支払い方法")
     code = sa.Column(sa.String(12), doc=u"event code (backend)")
+
+    @reify
+    def organization(self):
+        return Organization.query.filter_by(id=self.organization_id).one()
 
     @classmethod
     def near_the_deal_close_query(cls, today, N=7, qs=None):

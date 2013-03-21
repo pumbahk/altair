@@ -14,7 +14,9 @@ def get_cms_data(request, organization, event, now=None):
 
     request.session["cms_send_data"] = hashed_value
     return {
-        'organization': {'id': organization.id, 'short_name': organization.short_name}, 
+        'organization': {'id': organization.id,
+                         'short_name': organization.short_name, 
+                         "code": organization.code}, 
         'events':[data],
         'created_at':isodate.datetime_isoformat(now),
         'updated_at':isodate.datetime_isoformat(now),

@@ -263,7 +263,7 @@ class Form(wtforms.Form):
         return Translations()
     
 class AlignChoiceField(SelectField):
-    choices = (("left", u"左寄せ"), ("center", u"中央寄せ"))
+    choices = (("left", u"左寄せ"), ("center", u"中央寄せ"), ("right", u"右寄せ"))
     def __init__(self, label=None, validators=None, coerce=text_type, choices=choices, 
                  **kwargs):
         super(AlignChoiceField, self).__init__(label=label, validators=validators, coerce=coerce, choices=choices, 
@@ -274,6 +274,8 @@ class AlignChoiceField(SelectField):
             return u""
         elif align == "center":
             return u'display: -webkit-box; display: -moz-box; display: -o-box; display: box; margin: 0px auto;'
+        elif align == "right":
+            return u"display: -webkit-box; display: -moz-box; display: -o-box; display: box; box-align: end;'"
         else:
             raise ValueError("%s is not found in candidates definition" % align)
 
@@ -281,12 +283,17 @@ class AlignChoiceField(SelectField):
     def convert_as_html_suffix(cls, align):
         if align == "left" or align is None:
             return u""
+        elif align == "right":
+            return u'''<script type="text/javascript">
+  $('img[data-align="right"]:not(.align-done)').attr("style", "float:right").addClass("clearfix").addClass("align-done");
+</script>
+'''
         elif align == "center":
             return u'''<script type="text/javascript">
 if(navigator.userAgent.toLowerCase().indexOf("firefox") <= -1){
-  $('img[data-align="center"]').attr("style", "display: -webkit-box; display: -moz-box; display: -o-box; display: box; margin: 0px auto;")
+  $('img[data-align="center"]:not(.align-done)').attr("style", "display: -webkit-box; display: -moz-box; display: -o-box; display: box; margin: 0px auto;").addClass("align-done");
 } else {
-  $('img[data-align="center"]').each(function(i, e){
+  $('img[data-align="center"]:not(.align-done)').each(function(i, e){
     var $e = $(e);
     var wrapper = $e;
     for(var i=0;i<3;i++){
@@ -295,7 +302,7 @@ if(navigator.userAgent.toLowerCase().indexOf("firefox") <= -1){
         break;
       }
     }
-    $(e).css("margin-left", 0.5*(wrapper.width() - $e.width()));
+    $(e).css("margin-left", 0.5*(wrapper.width() - $e.width())).addClass("align-done");
   });
 }
 </script>
