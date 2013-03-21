@@ -106,6 +106,7 @@ class IndexView(IndexViewMixin):
         for p in performances:
             select_venues[p.name] = []
 
+        ############################################################################
         for sales_segment in sales_segments:
             performance = sales_segment.performance
             pname = performance.name
@@ -118,7 +119,7 @@ class IndexView(IndexViewMixin):
                     performance_id=performance.id,
                     sales_segment_id=sales_segment.id,
                     event_id=self.context.event.id)))
-            
+        ################################################################################
         logger.debug("venues %s" % select_venues)
 
         # 会場
