@@ -8,7 +8,8 @@ import sqlalchemy as sa
 import sqlalchemy.orm as orm
 
 from altaircms.page.models import PageSet
-from altaircms.models import Category
+from altaircms.page.models import PageTag2Page
+from altaircms.page.models import PageTag
 from altaircms.widget.models import Widget
 from altaircms.plugins.base import DBSession
 from altaircms.plugins.base.mixins import HandleSessionMixin
@@ -20,12 +21,13 @@ from .api import get_linklist_candidates_finder
 
 def linklist_render(widget, finder, request=None):
     qs = finder(request, widget.limit_span or widget.N, widget._today_function())
-    if widget.genre:
-        qs = qs.filter(PageSet.id==Category.pageset_id).filter(Category.origin==widget.genre)
+    if widget.system_tag_id:
+        qs = qs.filter(PageTag2Page.filter_object_id==PageSet.id, PageTag2Page.tag_id==widget.system_tag_id)
     if widget.max_items:
         qs = qs.limit(widget.max_items)
-    qs = qs.with_entities(PageSet.name, PageSet.url)
-
+    qs = qs.with_entities(PageSet.name, PageSet.url).all()
+    if not qs:
+        return u""
     candidates = [u'<a href="%s">%s</a>' % (h.link.publish_page_from_pageset(request, p), p.name) for p in qs]
     content = widget.delimiter.join(candidates)
     element = u'<p>%s</p>' % content if content else ''
@@ -46,26 +48,31 @@ class LinklistWidget(Widget):
     __mapper_args__ = {"polymorphic_identity": type}
     query = DBSession.query_property()
 
+    def __init__(self, *args, **kwargs):
+        super(LinklistWidget).__init__(*args, **kwargs)
+        if not "limit_span"  in kwargs:
+            self.limit_span = 7
+        if not "max_items"  in kwargs:
+            self.max_items = 20
+
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
 
     delimiter = sa.Column(sa.Unicode(255), default=u"/")
     finder_kind = sa.Column(sa.Unicode(32))
 
     ## fixme
+    N = 7 ## default
     max_items = sa.Column(sa.Integer, default=20)
     limit_span = sa.Column(sa.Integer, default=7)
-    genre = sa.Column(sa.Unicode(255))
-    # category_id = sa.Column(sa.Integer, sa.ForeignKey("category.id"))
-    # category = orm.relationship("Category")
+    system_tag_id = sa.Column(sa.Integer, sa.ForeignKey("pagetag.id"))
+    system_tag = orm.relationship(PageTag, uselist=False, primaryjoin="LinklistWidget.system_tag_id==PageTag.id")
 
-    N = 7 ## default
     
     def merge_settings(self, bname, bsettings):
         bsettings.need_extra_in_scan("request")
         def render():
             request = bsettings.extra["request"]
             finder = get_linklist_candidates_finder(request, self.finder_kind)
-
             logger.debug(u"linklist: " + self.finder_kind)
             return linklist_render(self, finder, request=request)
         bsettings.add(bname, render)
@@ -76,6 +83,6 @@ class LinklistWidgetResource(HandleSessionMixin,
                                 RootFactory
                           ):
     WidgetClass = LinklistWidget
-
+    Tag = PageTag
     def get_widget(self, widget_id):
         return self._get_or_create(LinklistWidget, widget_id)
