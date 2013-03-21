@@ -335,7 +335,7 @@ function buildStockHolderTypeTables(venue) {
     var keyedStocks = stockHolder.keyedStocks();
     var style = stockHolder.get('style');
     var swatch = $('<span class="swatch"></span>').css('text-color', style.text_color).text(style.text||'　');
-    var head = $('<h4 class="ui-header" style="float: left;"></h4>').text(' ' + stockHolder.get('name'));
+    var head = $('<h5 class="ui-header" style="float: left;"></h5>').text(' ' + stockHolder.get('name'));
     var transfer = $('<a class="transfer btn btn-mini btn-inverse" href="javascript:buildTransferModal(' + stockHolder.id + ');">枠移動</a>');
     var rest = $('<span class="rest label hide"></span>');
     stockHolder.on('change:available', function () {
@@ -371,16 +371,34 @@ function buildStockHolderTypeTables(venue) {
   return retval;
 }
 
+function buildSeatDetailRow(seat) {
+  var tr = $('<tr></tr>');
+  var checkbox = $('<input type="checkbox" checked="checked" />').attr('name', seat.get('id')).click(function () {
+    if (this.checked)
+      seat.set('selected', true);
+    else
+      seat.set('selected', false);
+  });
+  var checkbox_td = $('<td></td>').append(checkbox);
+  var seat_id = $('<td></td>').text(seat.get('id'));
+  var name = $('<td></td>').text(seat.get('name'));
+  var stock_type = $('<td></td>').text(seat.get('stock').get('stockType').get('name'));
+  var stock_holder = $('<td></td>').text(seat.get('stock').get('stockHolder').get('name'));
+  tr.append(checkbox_td);
+  tr.append(seat_id);
+  tr.append(name);
+  tr.append(stock_type);
+  tr.append(stock_holder);
+  return tr;
+}
+
 function buildSeatDetailTable(selection) {
   var table = $('<table class="table table-bordered"></table>');
   var tbody = $('<tbody></tbody>').appendTo(table);
+  var header = $('<td></td><td>ID</td><td>座席</td><td>席種</td><td>配券先</td>');
+  tbody.append(header);
   selection.each(function (seat) {
-    var tr = $('<tr></tr>');
-    var seat_id = $('<td></td>').text(seat.get('id'));
-    var name = $('<td></td>').text(seat.get('name'));
-    tr.append(seat_id);
-    tr.append(name);
-    tbody.append(tr);
+    tbody.append(buildSeatDetailRow(seat));
   });
   return table;
 }
@@ -475,8 +493,9 @@ var tab2 = venueEditorSide.find("#venue-editor-main-side-tab2");
 
 callbacks.load = function (viewer) {
   tab1.empty();
-  tab2.empty();
   tab1.append(buildStockHolderTypeTables(viewer.venue));
+  tab2.empty();
+  tab2.append(buildSeatDetailTable(venueEditorRoot.venueeditor('selection')));
 };
 
 callbacks.select = function (viewer, selection) {
@@ -484,9 +503,24 @@ callbacks.select = function (viewer, selection) {
     $(".assignable").addClass("enabled");
   else
     $(".assignable").removeClass("enabled");
-  var selection_all = venueEditorRoot.venueeditor('selection');
-  tab2.empty();
-  tab2.append(buildSeatDetailTable(selection_all));
+
+  if (selection.length == 1) {
+    var tbody = $('#venue-editor-main-side-tab2').find('table tbody');
+    // 単一選択なら選択状態を反映
+    var tr = tbody.find('tr input[name="' + selection[0].get('id') + '"]');
+    if (tr.length > 0) {
+      if (selection[0].get('selected'))
+        tr.attr('checked', 'checked');
+      else
+        tr.removeAttr('checked');
+    } else {
+      tbody.append(buildSeatDetailRow(selection[0]));
+    }
+  } else {
+    // 複数選択ならテーブル再生成
+    tab2.empty();
+    tab2.append(buildSeatDetailTable(venueEditorRoot.venueeditor('selection')));
+  }
 };
 </script>
             </%def>
