@@ -116,6 +116,7 @@ class Scanner(object):
         ## organization
         record = strict_get(parsed, "organization")
         organization = Organization.get_or_create(record["id"], ORGANIZATION_SOURCE)
+        organization.code = record.get("code")
         organization.short_name = record.get("short_name")
         self.session.add(organization)
         self.session.flush()

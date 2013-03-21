@@ -119,6 +119,7 @@ class EventPageDefaultInfoTests(unittest.TestCase):
             title=u"this-is-event-name", 
             subtitle=u"this-is-event-subtitle", 
             code=u"EV0010"
+            organization_id = None
         target = self._makeOne(defaultinfo)
         self.assertEqual(target.resolve_url(self.jpop, event=event), "/music/jpop/EV0010")
 
@@ -129,7 +130,20 @@ class EventPageDefaultInfoTests(unittest.TestCase):
             title=u"this-is-event-name", 
             subtitle=u"this-is-event-subtitle", 
             code=u"EV0010"
+            organization_id = None
+        target = self._makeOne(defaultinfo)
+        self.assertEqual(target.resolve_url(self.jpop, event=event), "prefix-/music/jpop/EV0010")
 
+    def test_url_with_organization(self):
+        class defaultinfo:
+            url_prefix = u"prefix-"
+        class event:
+            title=u"this-is-event-name", 
+            subtitle=u"this-is-event-subtitle", 
+            code=u"RTEV0010"
+            organization_id = 1
+            class organization:
+                code = "RT"
         target = self._makeOne(defaultinfo)
         self.assertEqual(target.resolve_url(self.jpop, event=event), "prefix-/music/jpop/EV0010")
 
@@ -141,7 +155,7 @@ class EventPageDefaultInfoTests(unittest.TestCase):
             title=u"this-is-event-name"
             subtitle = None
             code=u"EV0010"
-
+            organization_id = None
         target = self._makeOne(defaultinfo)
         self.assertEqual(target.resolve_title(self.jpop, event=event), u"this-is-event-name")
 
@@ -152,7 +166,7 @@ class EventPageDefaultInfoTests(unittest.TestCase):
             title=u"this-is-event-name"
             subtitle=u"this-is-event-subtitle"
             code=u"EV0010"
-
+            organization_id = None
         target = self._makeOne(defaultinfo)
         self.assertEqual(target.resolve_title(self.jpop, event=event), u"this-is-event-subtitle")
         
@@ -163,7 +177,7 @@ class EventPageDefaultInfoTests(unittest.TestCase):
         class event:
             title=u"this-is-event-name", 
             description = "description"
-
+            organization_id = None
         target = self._makeOne(defaultinfo)
         self.assertEqual(target.resolve_description(self.jpop, event=event), u"this-is-description description ")
 
@@ -175,7 +189,7 @@ class EventPageDefaultInfoTests(unittest.TestCase):
             class pageset:
                 public_tags = []
             pagesets = [pageset]
-
+            organization_id = None
         target = self._makeOne(defaultinfo)
         self.assertEqual(target.resolve_keywords(self.jpop, event=event), u"this-is-event-name, k0, k1, k2, 音楽, jポップ")
 
@@ -218,6 +232,7 @@ class NoGenreEventPageDefaultInfoTests(unittest.TestCase):
             title=u"this-is-event-name", 
             subtitle=u"this-is-event-subtitle", 
             code=u"EV0010"
+            organization_id = None
         target = self._makeOne(defaultinfo)
         self.assertEqual(target.resolve_url(None, event=event), "/EV0010")
 
@@ -228,7 +243,7 @@ class NoGenreEventPageDefaultInfoTests(unittest.TestCase):
             title=u"this-is-event-name", 
             subtitle=u"this-is-event-subtitle", 
             code=u"EV0010"
-
+            organization_id = None
         target = self._makeOne(defaultinfo)
         self.assertEqual(target.resolve_url(None, event=event), "prefix-/EV0010")
 
