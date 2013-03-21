@@ -3139,3 +3139,4 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                                 backref='settings')
 
     auth_type = Column(Unicode(255))
+    performance_selector = Column(Unicode(255), doc=u"カートでの公演絞り込み方法")

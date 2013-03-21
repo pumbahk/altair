@@ -21,6 +21,7 @@ from webob.multidict import MultiDict
 
 from ticketing.models import DBSession
 from ticketing.core import models as c_models
+from ticketing.core import api as c_api
 from ticketing.mailmags import models as mailmag_models
 from ticketing.views import mobile_request
 from ticketing.fanstatic import with_jquery, with_jquery_tools
@@ -100,8 +101,9 @@ class IndexView(IndexViewMixin):
         self.check_redirect(mobile=False)
         sales_segments = self.context.available_sales_segments
         performances = [ss.performance for ss in sales_segments]
+        selector_name = c_api.get_organization(self.request).setting.performance_selector
 
-        performance_selector = api.get_performance_selector(self.request, "matchup")
+        performance_selector = api.get_performance_selector(self.request, selector_name)
         select_venues = performance_selector()
         logger.debug("venues %s" % select_venues)
 
