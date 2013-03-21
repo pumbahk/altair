@@ -5,7 +5,7 @@ from markupsafe import Markup
 import functools
 import logging
 logger = logging.getLogger(__name__)
-
+from altaircms.helpers import url_create_with
 from pyramid.exceptions import ConfigurationError
 from pyramid.path import AssetResolver
 from pyramid.interfaces import IRendererFactory
@@ -42,8 +42,14 @@ class StaticPageDirectory(object):
         self.basedir = self.assetresolver.resolve(basedir).abspath()
         self.tmpdir = self.assetresolver.resolve(tmpdir).abspath()
 
+
     def get_base_directory(self):
         return os.path.join(self.basedir, self.request.organization.short_name)
+
+    def rename(self, src, dst):
+        logger.info("rename static pages: %s -> %s" % (src, dst))
+        return os.rename(os.path.join(self.get_base_directory(), src), 
+                         os.path.join(self.get_base_directory(), dst))
 
     def get_managemented_files(self, request):
         return request.allowable(StaticPage).order_by(sa.desc(StaticPage.updated_at))
@@ -77,12 +83,15 @@ class StaticPageDirectory(object):
             preview_url = request.route_path("static_page_display",  path=path.replace(basedir, "")).replace("%2F", "/")
             # href = request.static_url(path.replace(self.basedir, self.assetspec))
             # r.append(u'<a href="%s">%s</a>(<a href="%s">original</a>)' % (preview_url, os.path.basename(path), href))
-            r.append(u'<a href="%s">%s</a>' % (preview_url, os.path.basename(path)))
+            if request.GET:
+                r.append(u'<a href="%s">%s</a>' % (url_create_with(preview_url, **request.GET), os.path.basename(path)))
+            else:
+                r.append(u'<a href="%s">%s</a>' % (preview_url, os.path.basename(path)))
             r.append(u"</li>")
         return r
 
 
-def as_static_page_response(request, static_page, url):
+def as_static_page_response(request, static_page, url, force_original=False):
     static_page_utility = get_static_page_utility(request)
     if url.startswith("/"):
         url_parts = url[1:]
@@ -91,7 +100,10 @@ def as_static_page_response(request, static_page, url):
 
     fullpath = os.path.join(static_page_utility.get_base_directory(), url_parts)
     if os.path.exists(fullpath) and os.path.isfile(fullpath):
-        return as_wrapped_resource_response(request, static_page, fullpath)
+        if force_original:
+            return FileResponse(fullpath, request=request, cache_max_age=CACHE_MAX_AGE)
+        else:
+            return as_wrapped_resource_response(request, static_page, fullpath)
     else:
         msg = "%s is not found" % fullpath
         logger.info(msg)

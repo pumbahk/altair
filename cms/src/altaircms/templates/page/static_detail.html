@@ -60,6 +60,15 @@ h3{
 <hr/>
 
 <h3>登録されているファイル</h3>
+<ul class="nav nav-tabs">
+  %if "force_original" in request.GET:
+    <li><a href="${h.current_route_path_override(request,_dels=["force_original"])}">レイアウト適用した後</a></li>
+    <li class="active"><a href="#">レイアウト適用する前</a></li>
+  %else:
+    <li class="active"><a href="#">レイアウト適用した後</a></li>
+    <li><a href="${h.current_route_path_override(request,_query=dict(force_original=True))}">レイアウト適用する前</a></li>
+  %endif
+</ul>
 <div class="well">
   ${static_directory.link_tree_from_static_page(request,static_page)}
 </div>

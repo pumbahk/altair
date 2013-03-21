@@ -3,6 +3,7 @@
 from zope.interface import implementer
 from altaircms.interfaces import IModelEvent
 from altaircms.page.api import ftsearch_register_from_page
+from altaircms.page.api import get_static_page_utility
 from altaircms.models import SalesSegmentGroup, DBSession
 from altaircms.modelmanager import SalesTermSummalize
 from altaircms.modelmanager import EventTermSummalize
@@ -64,6 +65,10 @@ class TicketCreate(ModelEventBase):
 
 @implementer(IModelEvent)
 class TicketUpdate(ModelEventBase):
+    pass
+
+@implementer(IModelEvent)
+class StaticPageUpdate(ModelEventBase):
     pass
 
 
@@ -138,3 +143,10 @@ def sales_term_bubbling_update(self):
 
 def event_term_bubbling_update(self):
     EventTermSummalize(self.request).summalize(self.obj).bubble()
+
+def update_after_static_page(self):
+    if not self.obj.name and hasattr(self.request, "_static_page_name"):
+        self.obj.name = self.request._static_page_name
+
+    if self.obj.name != self.request._static_page_name:
+        get_static_page_utility(self.request).rename(self.request._static_page_name, self.obj.name)

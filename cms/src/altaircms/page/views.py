@@ -639,7 +639,7 @@ class StaticPageView(object):
             if os.path.exists(src):
                 raise Exception("%s exists. after delete" % src)
             FlashMessage.success(u"%sが削除されました" % name, request=self.request)
-            return {"redirect_to": self.request.route_url("pageset_list", kind="static")}
+            return {"redirect_to": self.request.route_url("pageset_list", pagetype="static")}
         except Exception, e:
             logger.exception(str(e))
             raise 
@@ -689,4 +689,6 @@ class StaticPageView(object):
 def static_page_display_view(context, request):
     prefix = request.matchdict["path"].split("/", 1)[0]
     static_page = get_or_404(request.allowable(StaticPage), StaticPage.name==prefix)
+    if request.GET.get("force_original"):
+        return as_static_page_response(request, static_page, request.matchdict["path"], force_original=True)
     return as_static_page_response(request, static_page, request.matchdict["path"])

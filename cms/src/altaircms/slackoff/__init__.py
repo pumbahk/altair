@@ -101,10 +101,12 @@ def includeme(config):
                     circle_type="circle-page", 
                     bind_actions=["update"], 
                     has_auto_generated_permission=False, 
-                    form="..page.forms.StaticPageForm", mapper=".mappers.staticpage_mapper"
+                    form="..page.forms.StaticPageForm", mapper=".mappers.staticpage_mapper", 
+                    events=dict(update_event=config.maybe_dotted(".subscribers.StaticPageUpdate")), 
                     )
 
     ## subscriber
+    config.add_subscriber(".subscribers.update_after_static_page", ".subscribers.StaticPageUpdate")
     config.add_subscriber(".subscribers.update_pageset_genretag", ".subscribers.PageSetUpdate")
     config.add_subscriber(".subscribers.event_term_bubbling_update", ".subscribers.PerformanceCreate")
     config.add_subscriber(".subscribers.event_term_bubbling_update", ".subscribers.PerformanceUpdate")

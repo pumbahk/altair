@@ -36,6 +36,12 @@ def main(global_config, **local_config):
     config.include("altairsite.mobile", route_prefix="/mobile")
 
 
+    from altairsite.mobile.config import MobileConfigWrapper
+    mobile_config = MobileConfigWrapper(config)
+    # mobile_config.include("cmsmobile.install_cms_mobile_app")
+    from cmsmobile import install_cms_mobile_app
+    install_cms_mobile_app(mobile_config)
+
     config.include("altairsite.front")
     config.include("altairsite.errors")
     config.include("altairsite.search", route_prefix="search")
