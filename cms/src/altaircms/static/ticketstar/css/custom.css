@@ -555,7 +555,6 @@ salessegment icon
   height: 46px;
 }
 
-
 /* sub category top sidebar also using */
 #side #sideFeature {
 	width: 200px;
@@ -600,4 +599,10 @@ salessegment icon
 }
 #event #main {
   margin-top:-50px;
-}
+
+.clearfix:after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
