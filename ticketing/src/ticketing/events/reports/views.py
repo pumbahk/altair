@@ -118,7 +118,7 @@ class Reports(BaseView):
         if stock_holders is None:
             raise HTTPNotFound("StockHolder is not found event_id=%s" % event_id)
 
-        exporter = reporting.export_for_stock_holder(event, stock_holders[0])
+        exporter = reporting.export_for_stock_holder(event, stock_holders[0], u'仕入明細')
 
         # 出力ファイル名
         filename = "assign_%(code)s_%(datetime)s.xls" % dict(
@@ -148,7 +148,7 @@ class Reports(BaseView):
         if stock_holder is None:
             raise HTTPNotFound("StockHolder is not found id=%s" % stock_holder_id)
 
-        exporter = reporting.export_for_stock_holder(event, stock_holder)
+        exporter = reporting.export_for_stock_holder(event, stock_holder, u'配券明細')
 
         # 出力ファイル名
         filename = "assign_%(code)s_%(datetime)s.xls" % dict(
@@ -177,7 +177,7 @@ class Reports(BaseView):
         if stock_holders is None:
             raise HTTPNotFound("StockHolder is not found event_id=%s" % event_id)
 
-        exporter = reporting.export_for_stock_holder_unsold(event, stock_holders[0])
+        exporter = reporting.export_for_stock_holder_unsold(event, stock_holders[0], u'残席明細')
 
         # 出力ファイル名
         filename = "unsold_%(code)s_%(datetime)s.xls" % dict(

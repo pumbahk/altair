@@ -450,7 +450,7 @@ class SeatAssignExporter(BaseExporter):
         self._seat_footer_rows = self.get_seat_footer_rows()
         self._record_row = self.get_record_row()
         self.current_pos = {}
-        self.current_pos[self.workbook.get_sheet(0)] = 11
+        self.current_pos[self.workbook.get_sheet(0)] = 13
         # 文字列テーブルの参照カウントを増やしておく
         for k, v in self.workbook._Workbook__sst._str_indexes.items():
             self.workbook._Workbook__sst.add_str(k)
@@ -460,7 +460,7 @@ class SeatAssignExporter(BaseExporter):
         """
         result = []
         sheet = self.workbook.get_sheet(0)
-        for i in [11, 12, 13]:
+        for i in [13, 14, 15]:
             result.append(self.get_row_data(sheet, i))
         return result
 
@@ -469,7 +469,7 @@ class SeatAssignExporter(BaseExporter):
         """
         result = []
         sheet = self.workbook.get_sheet(0)
-        for i in [15, 16, 17, 18]:
+        for i in [16, 17, 18]:
             result.append(self.get_row_data(sheet, i))
         return result
 
@@ -477,13 +477,13 @@ class SeatAssignExporter(BaseExporter):
         """レコード追加用の行
         """
         sheet = self.workbook.get_sheet(0)
-        return self.get_row_data(sheet, 14)
+        return self.get_row_data(sheet, 16)
 
     def write_seat_header(self, sheet):
         """席種のヘッダを書き込む
         """
         num_header = len(self._seat_header_rows)
-        pos = self.current_pos.get(sheet, 11)
+        pos = self.current_pos.get(sheet, 13)
         for i, row_data in zip(range(pos, pos + num_header), self._seat_header_rows):
             self.write_row_data(
                 sheet,
@@ -498,7 +498,7 @@ class SeatAssignExporter(BaseExporter):
         """席種のヘッダを書き込む
         """
         num_footer = len(self._seat_footer_rows)
-        pos = self.current_pos.get(sheet, 11)
+        pos = self.current_pos.get(sheet, 13)
         for i, row_data in zip(range(pos, pos + num_footer), self._seat_footer_rows):
             self.write_row_data(
                 sheet,
@@ -514,7 +514,7 @@ class SeatAssignExporter(BaseExporter):
         """
         row_data = self._record_row
         cells = list(self._record_row['cells'])
-        pos = self.current_pos.get(sheet, 11)
+        pos = self.current_pos.get(sheet, 13)
         # ブロック
         if record.get('block'):
             cells[0] = StrCell(
@@ -562,45 +562,50 @@ class SeatAssignExporter(BaseExporter):
         """
         self.update_cell_text(sheet, 0, 13, value)
 
-    def set_stock_holder_name(self, sheet, value):
-        """取引先名の入力
+    def set_report_type(self, sheet, value):
+        """明細タイプ
         """
-        self.update_cell_text(sheet, 2, 0, value)
+        self.update_cell_text(sheet, 1, 7, value)
 
     def set_datetime(self, sheet, value):
         """日時
         """
-        self.update_cell_text(sheet, 1, 11, value)
+        self.update_cell_text(sheet, 2, 14, value)
+
+    def set_stock_holder_name(self, sheet, value):
+        """取引先名の入力
+        """
+        self.update_cell_text(sheet, 4, 0, value)
 
     def set_event_name(self, sheet, value):
         """イベント名
         """
-        self.update_cell_text(sheet, 4, 0, u'イベント名：%s' % value)
+        self.update_cell_text(sheet, 6, 0, u'イベント名：%s' % value)
 
     def set_performance_name(self, sheet, value):
         """パフォーマンス名
         """
-        self.update_cell_text(sheet, 5, 0, u'公演名：%s' % value)
+        self.update_cell_text(sheet, 7, 0, u'公演名：%s' % value)
 
     def set_performance_datetime(self, sheet, value):
         """パフォーマンス日時
         """
-        self.update_cell_text(sheet, 6, 0, u'公演日：%s' % value)
+        self.update_cell_text(sheet, 8, 0, u'公演日：%s' % value)
 
     def set_performance_open_at(self, sheet, value):
         """開場時間
         """
-        self.update_cell_text(sheet, 7, 0, u'開場：%s' % value)
+        self.update_cell_text(sheet, 9, 0, u'開場：%s' % value)
 
     def set_performance_start_at(self, sheet, value):
         """開演時間
         """
-        self.update_cell_text(sheet, 8, 0, u'開演：%s' % value)
+        self.update_cell_text(sheet, 10, 0, u'開演：%s' % value)
 
     def set_performance_venue(self, sheet, value):
         """会場
         """
-        self.update_cell_text(sheet, 9, 0, u'会場：%s' % value)
+        self.update_cell_text(sheet, 11, 0, u'会場：%s' % value)
 
     def add_records(self, sheet, data):
         """シートに席種ごとのデータを追加する

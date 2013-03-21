@@ -10,7 +10,7 @@ from . import xls_export
 from . import sheet as report_sheet
 
 
-def export_for_stock_holder(event, stock_holder):
+def export_for_stock_holder(event, stock_holder, report_type):
     """指定したEvent,StockHolderのレポートをExporterで返す
     """
     assetresolver = AssetResolver()
@@ -50,11 +50,11 @@ def export_for_stock_holder(event, stock_holder):
                 for seat_record in seat_records:
                     stock_record.records.append(seat_record)
             stock_records.append(stock_record)
-        report_sheet.process_sheet(exporter, sheet, event, performance, stock_holder, stock_records)
+        report_sheet.process_sheet(exporter, sheet, report_type, event, performance, stock_holder, stock_records)
     return exporter
 
 
-def export_for_stock_holder_unsold(event, stock_holder):
+def export_for_stock_holder_unsold(event, stock_holder, report_type):
     """指定したEvent,StockHolderの残席明細をExporterで返す
     """
     assetresolver = AssetResolver()
@@ -98,5 +98,5 @@ def export_for_stock_holder_unsold(event, stock_holder):
                 for seat_record in seat_records:
                     stock_record.records.append(seat_record)
             stock_records.append(stock_record)
-        report_sheet.process_sheet(exporter, sheet, event, performance, stock_holder, stock_records)
+        report_sheet.process_sheet(exporter, sheet, report_type, event, performance, stock_holder, stock_records)
     return exporter
