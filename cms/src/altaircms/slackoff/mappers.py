@@ -132,7 +132,7 @@ def pageset_mapper(request, obj):
 
 def staticpage_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
-    if obj.layout_id:
+    if obj.layout:
         objlike.layout = u"%s(%s)" % (obj.layout.title, obj.layout.template_filename)
     else:
         objlike.layout = None
