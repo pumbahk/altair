@@ -55,3 +55,5 @@ class IPerformanceSelector(Interface):
     def select_value(performance):
         """ 絞り込みキーの値取得
         """
+
+    selection = Attribute(u"最初の絞り込み")

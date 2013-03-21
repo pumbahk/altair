@@ -20,12 +20,15 @@ class MatchUpPerformanceSelector(object):
     def select_value(self, performance):
         return performance.name
 
-    def __call__(self):
+    @property
+    def selection(self):
         performances = [ss.performance for ss in self.sales_segments]
+        return [self.select_value(p) for p in performances]
+
+    def __call__(self):
 
         select_venues = OrderedDict()
-        for p in performances:
-            v = self.select_value(p)
+        for v in self.selection:
             select_venues[v] = []
 
         for sales_segment in self.sales_segments:
@@ -56,13 +59,16 @@ class DatePerformanceSelector(object):
     def select_value(self, performance):
         return performance.start_on.strftime("%Y-%m-%d")
 
-    def __call__(self):
+    @property
+    def selection(self):
         performances = [ss.performance for ss in self.sales_segments]
+        return [self.select_value(p) for p in performances]
+
+    def __call__(self):
 
         select_venues = OrderedDict()
-        for p in performances:
-            d = self.select_value(p)
-            select_venues[d] = []
+        for v in self.selection:
+            select_venues[v] = []
 
         for sales_segment in self.sales_segments:
             performance = sales_segment.performance
