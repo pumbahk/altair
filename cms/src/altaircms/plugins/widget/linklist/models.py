@@ -49,7 +49,7 @@ class LinklistWidget(Widget):
     query = DBSession.query_property()
 
     def __init__(self, *args, **kwargs):
-        super(LinklistWidget).__init__(*args, **kwargs)
+        super(LinklistWidget, self).__init__(*args, **kwargs)
         if not "limit_span"  in kwargs:
             self.limit_span = 7
         if not "max_items"  in kwargs:
