@@ -430,6 +430,7 @@ def page_edit(context, request):
         FlashMessage.error(str(e), request=request)
         raise HTTPFound(request.route_url("page_update", id=page.id))
 
+    request.page = page
     layout_render = context.get_layout_render(page)
     disposition_select = wf.WidgetDispositionSelectForm()
     user = request.user

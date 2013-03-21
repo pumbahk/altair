@@ -4,12 +4,15 @@ import wtforms.fields as fields
 import wtforms.validators as validators
 import wtforms.widgets as widgets
 from altaircms.formhelpers import dynamic_query_select_field_factory
+from ..layout.models import Layout
 from . import models
 
 
 def disposition_query_filter(model, request, query):
     if getattr(request, "organization", None):
         query = query.filter_by(organization_id=request.organization.id)
+        if getattr(request, "page", None):
+            query = query.join(Layout, models.WidgetDisposition.layout_id==Layout.id).filter(Layout.pagetype_id==request.page.pageset.pagetype_id)
     return model.enable_only_query(request.user, qs=query)
 
 class WidgetDispositionSelectForm(Form):

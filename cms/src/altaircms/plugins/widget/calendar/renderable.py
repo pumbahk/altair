@@ -155,7 +155,6 @@ def tab(widget, calendar_status, performances, request, template_name=None):
     """
     template_name = template_name or CalendarTemplatePathStore.path("tab")
     logger.debug("calendar template: "+template_name)
-
     performances = list(performances)
     if performances:
         start_date, end_date = get_start_date_and_end_date(widget.salessegment, performances)
