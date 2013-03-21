@@ -46,3 +46,8 @@ class ICartFactory(Interface):
         """
         カート作成
         """
+
+class IPerformanceSelector(Interface):
+    def __call__():
+        """ 絞り込みキーと販売区分のOrderedDict
+        """

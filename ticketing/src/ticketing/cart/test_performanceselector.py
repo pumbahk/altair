@@ -19,6 +19,17 @@ class MatchUpPerformanceSelectorTests(unittest.TestCase):
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
 
+    def test_iface(self):
+        from zope.interface.verify import verifyObject
+        from .interfaces import IPerformanceSelector
+        request = testing.DummyRequest()
+        request.context = testing.DummyResource(request=request,
+                                                available_sales_segments=[])
+        target = self._makeOne(request)
+        
+        verifyObject(IPerformanceSelector, target)
+        self.assertEqual(target.request, request)
+        self.assertEqual(target.context, request.context)
 
     def test_zero(self):
         request = testing.DummyRequest()

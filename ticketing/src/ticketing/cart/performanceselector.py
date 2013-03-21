@@ -5,7 +5,10 @@
 """
 
 from collections import OrderedDict
+from zope.interface import implementer
+from .interfaces import IPerformanceSelector
 
+@implementer(IPerformanceSelector)
 class MatchUpPerformanceSelector(object):
     """ 対戦カード -> 会場 """
 
