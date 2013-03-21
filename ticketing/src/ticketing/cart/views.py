@@ -4,7 +4,7 @@ import datetime
 import re
 import json
 import transaction
-from collections import OrderedDict
+#from collections import OrderedDict
 
 import sqlalchemy as sa
 from sqlalchemy.orm import joinedload
@@ -143,7 +143,7 @@ class IndexView(IndexViewMixin):
             cart_release_url=self.request.route_url('cart.release'),
             selected=Markup(
                 json.dumps([
-                    selected_performance.name,
+                    performance_selector.select_value(selected_performance),
                     selected_performance.id])),
             venues_selection=Markup(json.dumps(select_venues.items())),
             products_from_selected_date_url=self.request.route_url(

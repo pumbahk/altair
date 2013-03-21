@@ -67,12 +67,13 @@ def includeme(config):
     from .stocker import Stocker
     from .reserving import Reserving
     from .carting import CartFactory
-    from .performanceselector import MatchUpPerformanceSelector
+    from .performanceselector import MatchUpPerformanceSelector, DatePerformanceSelector
     reg = config.registry
     reg.adapters.register([IRequest], IStocker, "", Stocker)
     reg.adapters.register([IRequest], IReserving, "", Reserving)
     reg.adapters.register([IRequest], ICartFactory, "", CartFactory)
     reg.adapters.register([IRequest], IPerformanceSelector, "matchup", MatchUpPerformanceSelector)
+    reg.adapters.register([IRequest], IPerformanceSelector, "date", DatePerformanceSelector)
 
 def import_mail_module(config):
     config.include("ticketing.mails")

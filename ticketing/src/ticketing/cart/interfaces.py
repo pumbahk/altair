@@ -51,3 +51,7 @@ class IPerformanceSelector(Interface):
     def __call__():
         """ 絞り込みキーと販売区分のOrderedDict
         """
+
+    def select_value(performance):
+        """ 絞り込みキーの値取得
+        """
