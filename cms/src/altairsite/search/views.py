@@ -2,6 +2,7 @@
 from pyramid.view import view_config
 from pyramid.view import view_defaults
 from altaircms.tag.models import HotWord
+from altaircms.models import SalesSegmentKind
 from webob.multidict import MultiDict
 from pyramid.httpexceptions import HTTPNotFound
 import logging
@@ -140,7 +141,10 @@ class SearchByKindView(object):
         """ 販売条件で検索した結果を表示
         """
         try:
-            params = MultiDict({"deal_cond": self.request.matchdict["value"]})
+            kind = self.request.allowable(SalesSegmentKind).filter_by(name=self.request.matchdict["value"]).first()
+            if kind is None:
+                raise HTTPNotFound("not found")
+            params = MultiDict({"deal_cond": kind})
             self.request.body_id = "search"
             query_params = forms.DealCondPartForm(params).configure(self.request).make_query_params()
             result_seq = self.context.get_result_sequence_from_query_params(
