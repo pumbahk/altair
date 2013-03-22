@@ -49,6 +49,9 @@ def is_checkout_payment(cart):
 
 # こいつは users.apiあたりに移動すべきか
 def is_login_required(request, event):
+    if event.organization.setting.auth_type == "rakuten":
+        return True
+
     """ 指定イベントがログイン画面を必要とするか """
     # 終了分もあわせて、このeventからひもづく sales_segment -> membergroupに1つでもguestがあれば True 
     q = MemberGroup.query.filter(
