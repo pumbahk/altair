@@ -110,9 +110,9 @@ class QueryParamsRender(object):
         kinds = get_salessegment_kinds(self.request)
         convertor = {unicode(k.id): k.label for k in kinds}
         if len(deal_cond_list) <= 1:
-            return convertor[deal_cond_list[0]]
+            return convertor.get(deal_cond_list[0], "")
         else:
-            return u" or ".join(convertor[k] for k in deal_cond_list)
+            return u" or ".join(convertor.get(k, "") for k in deal_cond_list)
 
     def __unicode__(self):
         u"""\
