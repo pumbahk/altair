@@ -57,13 +57,15 @@ class DatePerformanceSelector(object):
     label = u"公演日"
     second_label = u"会場"
 
+    date_format = u"%Y年%m月%d日"
+
     def __init__(self, request):
         self.request = request
         self.context = request.context
         self.sales_segments = self.context.available_sales_segments
 
     def select_value(self, performance):
-        return performance.start_on.strftime("%Y-%m-%d")
+        return performance.start_on.strftime(self.date_format)
 
     @property
     def selection(self):
@@ -78,7 +80,7 @@ class DatePerformanceSelector(object):
 
         for sales_segment in self.sales_segments:
             performance = sales_segment.performance
-            d = performance.start_on.strftime("%Y-%m-%d")
+            d = performance.start_on.strftime(self.date_format)
 
             select_venues[d].append(dict(
                 id=performance.id,
