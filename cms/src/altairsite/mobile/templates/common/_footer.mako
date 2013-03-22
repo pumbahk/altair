@@ -7,5 +7,5 @@
         <a href="/privacy">個人情報保護方針</a> |
         <a href="/legal">特定商取引法に基づく表示</a>
     </div>
-    <div><font color="#888888">Copyright © 1997-2013 Rakuten, Inc. All Rights Reserved.</font></div>
+    <div><font color="#888888">Copyright 1997-2013 Rakuten, Inc. All Rights Reserved.</font></div>
 </div>
