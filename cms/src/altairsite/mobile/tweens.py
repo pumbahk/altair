@@ -51,6 +51,8 @@ def mobile_request_factory(handler, registry):
     
 def mobile_encoding_convert_factory(handler, registry):
     def tween(request):
+        if not hasattr(request, "_ua"):
+            request._ua = uamobile.detect(request.environ)
         if IMobileRequest.providedBy(request):
             return as_mobile_response(request, handler)
         if not request._ua.is_nonmobile():
