@@ -2,6 +2,7 @@
 import logging
 logger = logging.getLogger(__file__)
 from markupsafe import Markup
+from altaircms.interfaces import ICMSRequest
 
 def get_purchase_page_from_event(request, event):
     if event.backend_id is None:
@@ -78,6 +79,8 @@ def publish_page_from_pageset(request, pageset):
     url = pageset.url
     if url.startswith("http://") or url.startswith("https://"):
         return url
+    elif ICMSRequest.providedBy(request):
+        return preview_page_from_pageset(request, pageset)
     else:
         return unquote_path_segment(request.route_path("front", page_name=url))
 

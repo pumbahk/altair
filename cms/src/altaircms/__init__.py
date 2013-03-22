@@ -135,6 +135,6 @@ def main(global_config, **local_config):
     engine = engine_from_config(settings, 'sqlalchemy.', pool_recycle=3600)
     sqlahelper.get_session().remove()
     sqlahelper.add_engine(engine)
-
+    config.add_tween("altaircms.tweens.cms_request_factory")
     return config.make_wsgi_app()
 
