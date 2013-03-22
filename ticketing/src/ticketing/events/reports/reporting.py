@@ -1,14 +1,32 @@
 # -*- coding: utf-8 -*-
 
+from datetime import date
+
 from pyramid.path import AssetResolver
 
-from ticketing.core.models import Event, Performance, StockHolder, StockType, Stock
-from ticketing.core.models import SeatAttribute, Seat
+from ticketing.core.models import Stock
+from ticketing.core.models import Seat
 from ticketing.helpers.base import jdatetime
 
 from . import xls_export
 from . import sheet as report_sheet
 
+def get_kind(report_type):
+    # 追券か返券かを明細タイプから判別して返す
+    if report_type in ('return', 'final_return'):
+        return 'returns'
+    return 'stocks'
+
+def get_report_title(report_type):
+    report_types = {
+        'stock':u'仕入明細',
+        'unsold':u'残席明細',
+        'assign':u'配券明細',
+        'add':u'追券明細',
+        'return':u'返券明細',
+        'final_return':u'最終返券明細'
+    }
+    return report_types[report_type] if report_type in report_types else ''
 
 def export_for_stock_holder(event, stock_holder, report_type):
     """指定したEvent,StockHolderのレポートをExporterで返す
@@ -17,6 +35,9 @@ def export_for_stock_holder(event, stock_holder, report_type):
     template_path = assetresolver.resolve(
         "ticketing:/templates/reports/assign_template.xls").abspath()
     exporter = xls_export.SeatAssignExporter(template=template_path)
+    kind = get_kind(report_type)
+    report_title = get_report_title(report_type)
+    today = date.today()
     for i, performance in enumerate(event.performances):
         sheet_num = i + 1
         sheet_name = u"%s%d" % (jdatetime(performance.start_on), sheet_num)
@@ -40,19 +61,21 @@ def export_for_stock_holder(event, stock_holder, report_type):
             if stock_type.quantity_only:
                 seat_record = report_sheet.SeatRecord(
                     block=stock_type.name,
-                    quantity=stock.quantity)
+                    quantity=stock.quantity,
+                    date=today,
+                    kind=kind
+                )
                 stock_record.records.append(seat_record)
             else:
                 # Seat
                 seats = Seat.filter_by(stock_id=stock.id).order_by(Seat.name).all()
                 seat_sources = map(report_sheet.seat_source_from_seat, seats)
-                seat_records = report_sheet.seat_records_from_seat_sources(seat_sources)
+                seat_records = report_sheet.seat_records_from_seat_sources(seat_sources, kind=kind)
                 for seat_record in seat_records:
                     stock_record.records.append(seat_record)
             stock_records.append(stock_record)
-        report_sheet.process_sheet(exporter, sheet, report_type, event, performance, stock_holder, stock_records)
+        report_sheet.process_sheet(exporter, sheet, report_title, event, performance, stock_holder, stock_records)
     return exporter
-
 
 def export_for_stock_holder_unsold(event, stock_holder, report_type):
     """指定したEvent,StockHolderの残席明細をExporterで返す
@@ -61,6 +84,9 @@ def export_for_stock_holder_unsold(event, stock_holder, report_type):
     template_path = assetresolver.resolve(
         "ticketing:/templates/reports/assign_template.xls").abspath()
     exporter = xls_export.SeatAssignExporter(template=template_path)
+    kind = get_kind(report_type)
+    report_title = get_report_title(report_type)
+    today = date.today()
     # Performance
     for i, performance in enumerate(event.performances):
         sheet_num = i + 1
@@ -88,15 +114,18 @@ def export_for_stock_holder_unsold(event, stock_holder, report_type):
             if stock_type.quantity_only:
                 seat_record = report_sheet.SeatRecord(
                     block=stock_type.name,
-                    quantity=stock.quantity)
+                    quantity=stock.quantity,
+                    date=today,
+                    kind=kind
+                )
                 stock_record.records.append(seat_record)
             else:
                 # Seat
                 seats = Seat.filter(Seat.stock_id==stock.id).order_by(Seat.name).all()
                 seat_sources = map(report_sheet.seat_source_from_seat, seats)
-                seat_records = report_sheet.seat_records_from_seat_sources(seat_sources, unsold=True)
+                seat_records = report_sheet.seat_records_from_seat_sources(seat_sources, kind=kind, unsold=True)
                 for seat_record in seat_records:
                     stock_record.records.append(seat_record)
             stock_records.append(stock_record)
-        report_sheet.process_sheet(exporter, sheet, report_type, event, performance, stock_holder, stock_records)
+        report_sheet.process_sheet(exporter, sheet, report_title, event, performance, stock_holder, stock_records)
     return exporter

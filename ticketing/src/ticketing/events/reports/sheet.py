@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import re
-from datetime import datetime
+from datetime import datetime, date
 from itertools import groupby
 
 from ticketing.models import DBSession
@@ -42,20 +42,20 @@ class SeatRecord(object):
     """帳票の一行分のレコード
     """
     def __init__(self, block=None, line=None, start=None, end=None,
-            date=None, quantity=0, stock_type="stocks"):
+            date=None, quantity=0, kind="stocks"):
         self.block = block
         self.line = line
         self.start = start
         self.end = end
         self.date = date
         self.quantity = quantity
-        self.stock_type = stock_type
+        self.kind = kind
 
     def is_stocks(self):
-        return self.stock_type == "stocks"
+        return self.kind == "stocks"
 
     def is_returns(self):
-        return self.stock_type == "returns"
+        return self.kind == "returns"
 
     def get_record(self):
         """Exporterが扱える形の一行分のレコードを返す
@@ -76,7 +76,7 @@ class SeatRecord(object):
                 self.start or "",
                 u"〜",
                 self.end or "",
-                str(self.date),
+                self.date.strftime('%m/%d'),
                 str(self.quantity),
             ]
         return record
@@ -199,11 +199,12 @@ def is_series_seat(seatsource1, seatsource2):
     return False
 
 
-def seat_records_from_seat_sources(seat_sources, unsold=False):
+def seat_records_from_seat_sources(seat_sources, kind, unsold=False):
     """SeatSourceのリストからSeatRecordのリストを返す
     サマリー作成
     """
     result = []
+    today = date.today()
     # block,floor,line,seatの優先順でソートする
     sorted_seat_sources = sorted(
         seat_sources,
@@ -219,7 +220,9 @@ def seat_records_from_seat_sources(seat_sources, unsold=False):
                     line=lst_values[0].line,
                     start=lst_values[0].seat,
                     end=lst_values[-1].seat,
+                    date=today,
                     quantity=len(lst_values),
+                    kind=kind
                 )
             result.append(seat_record)
             del lst_values[:]
