@@ -337,6 +337,7 @@ class StaticPageForm(Form):
                                                 )
     publish_begin = fields.DateTimeField(label=u"掲載開始", validators=[validators.Optional()])
     publish_end = MaybeDateTimeField(label=u"掲載終了", validators=[validators.Optional()])
+    interceptive = fields.BooleanField(label=u"同一urlのページセットを横取りする", default=True)
 
     def configure(self, request):
         self.request = request
@@ -364,7 +365,7 @@ class StaticPageForm(Form):
                 append_errors(self.errors, "publish_begin", u"開始日よりも後に終了日が設定されています")
         return status
 
-    __display_fields__ = ["name", "layout", "publish_begin", "publish_end"]
+    __display_fields__ = ["name", "layout", "publish_begin", "publish_end", "interceptive"]
 
 class StaticPageCreateForm(Form):
     name = fields.TextField(label=u"name", validators=[validators.Required()])
@@ -375,6 +376,7 @@ class StaticPageCreateForm(Form):
                                                 )
     publish_begin = fields.DateTimeField(label=u"掲載開始", validators=[validators.Optional()])
     publish_end = MaybeDateTimeField(label=u"掲載終了", validators=[validators.Optional()])
+    interceptive = fields.BooleanField(label=u"同一urlのページセットを横取りする", default=True)
 
 
     def validate(self, request):

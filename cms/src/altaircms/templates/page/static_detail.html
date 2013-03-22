@@ -43,6 +43,9 @@ h3{
       <tr>
         <th>公開ステータス</th><td>${u"公開中" if static_page.published else u"非公開"}</td>
       </tr>
+      <tr>
+        <th>同一urlのページセットを横取りする</th><td>${u"はい" if static_page.interceptive else u"いいえ(特集ページはいいえです)"}</td>
+      </tr>
     </table>
 
 <div class="btn-group">

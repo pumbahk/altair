@@ -216,6 +216,7 @@ class StaticPage(BaseOriginalMixin,
     published = Column(sa.Boolean, default=False)    
     layout_id = Column(Integer, ForeignKey("layout.id"))    
     layout = relationship(Layout, backref='static_pages', uselist=False)
+    interceptive = Column(sa.Boolean, default=True)
 
 class Page(BaseOriginalMixin,
            WithOrganizationMixin, 
