@@ -3,7 +3,7 @@
 	%for topic in topics:
 	  <li>
       <% link  = h.link.get_link_from_topic(request,topic) %>
-      %if topic:
+      %if link:
         <a href="${link}">${topic.title}</a>
       %else:
         ${topic.title}      
