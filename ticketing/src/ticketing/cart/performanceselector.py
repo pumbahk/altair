@@ -8,8 +8,18 @@ from collections import OrderedDict
 from zope.interface import implementer
 from .interfaces import IPerformanceSelector
 
+
+class _PerformanceSelector(object):
+
+    @property
+    def selection(self):
+        performances = sorted(list(set([ss.performance for ss in self.sales_segments])), 
+                              key=lambda p: p.start_on)
+        return [self.select_value(p) for p in performances]
+
+
 @implementer(IPerformanceSelector)
-class MatchUpPerformanceSelector(object):
+class MatchUpPerformanceSelector(_PerformanceSelector):
     """ 対戦カード -> 会場 """
 
     label = u"対象試合"
@@ -22,11 +32,6 @@ class MatchUpPerformanceSelector(object):
 
     def select_value(self, performance):
         return performance.name
-
-    @property
-    def selection(self):
-        performances = [ss.performance for ss in self.sales_segments]
-        return [self.select_value(p) for p in performances]
 
     def __call__(self):
 
@@ -51,13 +56,13 @@ class MatchUpPerformanceSelector(object):
 
 
 @implementer(IPerformanceSelector)
-class DatePerformanceSelector(object):
+class DatePerformanceSelector(_PerformanceSelector):
     """ 日付け -> 会場 """
 
-    label = u"公演日"
+    label = u"開催日"
     second_label = u"会場"
 
-    date_format = u"{0.year}年{0.month}月{0.day}日"
+    date_format = u"{0.year:04}年{0.month:02}月{0.day:02}日"
 
     def __init__(self, request):
         self.request = request
