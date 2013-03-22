@@ -2,9 +2,9 @@
   <ul id="topics">
 	%for topic in topics:
 	  <li>
-      <% link  = get_link_from_topic(request,topi) %>
+      <% link  = get_link_from_topic(request,topic) %>
       %if topic:
-        <a href="${get_link_from_topic(request,topic)}">${topic.title}</a>
+        <a href="${link}">${topic.title}</a>
       %else:
         ${topic.title}      
       %endif
