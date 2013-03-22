@@ -87,6 +87,7 @@ def mock_backend_main(global_config, **settings):
                 u'roles': [DEFAULT_ROLE],
                 u'access_token': u'429432c429',
                 u'organization_name': u'demo-organization',
+                u'organization_code': u'DM',
                 u'organization_short_name': u'demo'}
 
     def logout_backend(request):

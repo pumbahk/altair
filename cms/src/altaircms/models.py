@@ -65,6 +65,7 @@ class Performance(BaseOriginalMixin, Base):
     end_on = sa.Column(sa.DateTime)  # 終了
 
     calendar_content = sa.Column(sa.UnicodeText, default=u"")
+    code = sa.Column(sa.String(12))  # Organization.code(2桁) + Event.code(3桁) + 7桁(デフォルトはstart.onのYYMMDD+ランダム1桁)
     purchase_link = sa.Column(sa.UnicodeText)
     mobile_purchase_link = sa.Column(sa.UnicodeText)
     canceld = sa.Column(sa.Boolean, default=False)
@@ -110,6 +111,7 @@ class SalesSegmentGroup(BaseOriginalMixin, Base):
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
     backend_id = sa.Column(sa.Integer)
+
 
     @classmethod
     def create_defaults_from_event(cls, event):

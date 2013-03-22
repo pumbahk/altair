@@ -624,6 +624,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             'open_on':open_on,
             'start_on':start_on,
             'end_on':end_on,
+            "code": self.code or "", 
             'sales':[s.get_cms_data() for s in sales_segments],
         }
         if self.deleted_at:
