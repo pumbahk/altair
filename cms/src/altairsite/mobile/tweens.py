@@ -21,7 +21,7 @@ def _convert_response_sjis(response):
         response.charset = encoding
     return response
 
-def as_mobile_response(request, handler):
+def create_mobile_request_from_request(request):
     session = getattr(request, 'session', None)
     decoded = request.decode("cp932")
     request.environ.update(decoded.environ)
@@ -34,7 +34,10 @@ def as_mobile_response(request, handler):
     decoded.registry = request.registry
     decoded._ua = request._ua
     logger.debug("**this is mobile access**")
-    response = handler(decoded)
+    return decoded
+
+def as_mobile_response(request, handler):
+    response = handler(request)
     response = _convert_response_sjis(response)
     if request._ua.is_docomo():
         response = _convert_response_for_docomo(response)
@@ -43,16 +46,17 @@ def as_mobile_response(request, handler):
 def mobile_request_factory(handler, registry):
     def tween(request):
         request._ua = uamobile.detect(request.environ)
-        return as_mobile_response(request, handler)
+        return as_mobile_response(create_mobile_request_from_request(request), handler)
     return tween
     
 def mobile_encoding_convert_factory(handler, registry):
     def tween(request):
-        request._ua = uamobile.detect(request.environ)
+        if IMobileRequest.providedBy(request):
+            return as_mobile_response(request, handler)
         if not request._ua.is_nonmobile():
             ## DeprecationWarning: Use req = req.decode('cp932')
             try:
-                return as_mobile_response(request, handler)
+                return as_mobile_response(create_mobile_request_from_request(request), handler)
             except UnicodeDecodeError as e:
                 logger.warning(str(e))
                 return Response(status=400, body=str(e))
