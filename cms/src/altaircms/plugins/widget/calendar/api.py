@@ -22,11 +22,13 @@ class CalendarStatus(object):
     circle = {"class": "circle", "string":u"○"}
     triangle = {"class": "triangle", "string":u"△"}
     cross = {"class": "cross", "string":u"×"}
+    unknown = {"class": "unknown", "string": u""}
 
 class MaruBatsuSankaku(object):
     circle = {"class": "maru", "string":u"○"}
     triangle = {"class": "sankaku", "string":u"△"}
     cross = {"class": "batsu", "string":u"×"}
+    unknown = {"class": "hatena", "string": u""}
 
 dummy_data = {"stocks": []}
 def get_performance_status(request, widget, event, status_impl):
@@ -94,6 +96,8 @@ class CalcResult(object): #すごい決め打ち
             self.has_soldout[k] = True
 
     def get_status(self, performance):
+        if performance.purchase_link:
+            return self.status_impl.unknown
         k = performance.backend_id
         try:
             if self.scores[k] <= 0:

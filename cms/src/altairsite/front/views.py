@@ -40,12 +40,12 @@ def rendering_page(context, request):
     page = control.fetch_page_from_params(url, dt)
 
     if not control.can_access():
-        logger.warn(control.error_message)
+        logger.info(control.error_message)
         raise HTTPNotFound(control.error_message)
 
     template = control.frontpage_template(page)
     if template is None:
-        logger.warn("front pc access template is not found layout=%s template_file=%s" % (page.layout.id, page.layout.template_filename))
+        logger.info("front pc access template is not found layout=%s template_file=%s" % (page.layout.id, page.layout.template_filename))
         raise HTTPNotFound("template is not found")
 
     renderer = control.frontpage_renderer()
