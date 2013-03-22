@@ -3,6 +3,8 @@
 
 <script type="text/javascript">
   $(function() {
+    $("#btn-report-event-sales").click(function() {
+    });
     $("#btn-report-event-stocks").click(function() {
       modal = $('#modal-report');
       modal.find('form select[name="report_type"]').val('stock');
@@ -39,7 +41,7 @@
 
 <div class="well">
   <p>
-    <button id="btn-report-event-sales" class="btn btn-success" disabled='disabled'>
+    <button id="btn-report-event-sales" class="btn btn-success">
       <i class="icon-file icon-white"></i> 販売日程管理表
     </button>
     <span style="margin-left: 10px;">販売日程管理表をダウンロードします。</span>

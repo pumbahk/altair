@@ -21,22 +21,6 @@ class SeatSource(object):
         self.seat = seat       # ex: 10
         self.status = status
 
-    def get_block_display(self):
-        # 席番号から生成する
-        if self.source and self.source.name:
-            name = re.sub(u' [0-9]+番', '', self.source.name)
-            name = re.sub(u' [0-9]+列', '', name)
-            return name
-        return ""
-
-    def get_row_display(self):
-        # 席番号から生成する
-        if self.source and self.source.name:
-            match = re.match(u'^.+ ([0-9]+)列 .+$', self.source.name)
-            if match:
-                return match.group(1)
-        return ""
-
 
 class SeatRecord(object):
     """帳票の一行分のレコード
@@ -149,15 +133,10 @@ def seat_source_from_seat(seat):
     """
     attributes = seat.attributes or {}
     seat_source = SeatSource(source=seat)
-    
+
     # フロアは、SeatAttributeのを使う
     if 'floor' in attributes:
         seat_source.floor = attributes.get('floor')
-
-    # ブロック名は、SeatAttributeには無い
-#   if attributes:
-#       if 'block' in attributes:
-#           seat_source.block = attributes.get('block')
 
     # ブロック名は、VenueAreaを検索して使う
     # まれにgroup_l0_idがNULLな席とかがあってVenueArea.nameが拾えない場合があるので
@@ -168,16 +147,10 @@ def seat_source_from_seat(seat):
     if area is not None:
         seat_source.block = area.name
     
-    # ブロック名は、席番号から切りだして使う（いまいち）
-#   seat_source.block = seat_source.get_block_display()
-    
     # 列番号は、SeatAttributeのを使う
     if 'row' in attributes:
        seat_source.line = attributes.get('row')
 
-    # 列番号は、席番号から切りだして使う（いまいち）
-#   seat_source.line = seat_source.get_row_display()
-    
     seat_source.seat = seat.seat_no
     seat_source.status = seat.status
     return seat_source
@@ -187,7 +160,7 @@ def is_series_seat(seatsource1, seatsource2):
     """seatsource1とseatsource2が別の列、もしくは通路などを
     挟んで連続していない場合にTrueを返す
     """
-    
+
     # いずれかのseatがNULLの時は違う列扱い
     if seatsource1.seat == None or seatsource2.seat == None:
         return False
@@ -195,16 +168,15 @@ def is_series_seat(seatsource1, seatsource2):
     # 列IDが同じで、席番号の差が1の場合、連続
     if (seatsource1.source.row_l0_id == seatsource2.source.row_l0_id) and abs(int(seatsource1.seat)-int(seatsource2.seat)) == 1:
         return True
-    
+
     return False
 
 
-def seat_records_from_seat_sources(seat_sources, kind, unsold=False):
+def seat_records_from_seat_sources(seat_sources, report_type, kind, date):
     """SeatSourceのリストからSeatRecordのリストを返す
     サマリー作成
     """
     result = []
-    today = date.today()
     # block,floor,line,seatの優先順でソートする
     sorted_seat_sources = sorted(
         seat_sources,
@@ -220,7 +192,7 @@ def seat_records_from_seat_sources(seat_sources, kind, unsold=False):
                     line=lst_values[0].line,
                     start=lst_values[0].seat,
                     end=lst_values[-1].seat,
-                    date=today,
+                    date=date,
                     quantity=len(lst_values),
                     kind=kind
                 )
@@ -228,12 +200,11 @@ def seat_records_from_seat_sources(seat_sources, kind, unsold=False):
             del lst_values[:]
 
         for value in values:
-        #   print "b:%s r:%s s:%s" % (value.block, value.line, value.seat)
             # 1つ前の座席と連続していなければ結果に追加してlst_valuesをリセット
             if lst_values and not is_series_seat(lst_values[-1], value):
                 flush()
             # 残席のみ
-            if not unsold or value.status == SeatStatusEnum.Vacant.v:
+            if report_type != 'unsold' or value.status == SeatStatusEnum.Vacant.v:
                 lst_values.append(value)
         # 残り
         if lst_values:

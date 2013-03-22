@@ -48,7 +48,7 @@ class Reports(BaseView):
             return HTTPNotFound('event id %d is not found' % event_id)
 
         # copy from template.xls
-        rb = xlrd.open_workbook('src/ticketing/templates/reports/sales_report_template.xls', formatting_info=True)
+        rb = xlrd.open_workbook('src/ticketing/templates/reports/sales_schedule_report_template.xls', formatting_info=True)
         wb = copy(rb)
 
         # find data as json format
