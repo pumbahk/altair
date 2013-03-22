@@ -207,7 +207,7 @@ class SearchResultRender(object):
 <p class="align1">%s</p>
 """
         link = h.link.publish_page_from_pageset(self.request, self.pageset)
-        link_label = u"%s %s" % (self.pageset.event.title, self.pageset.name)
+        link_label = self.pageset.name
         event = self.pageset.event
         performances = [p for p in event.performances if p.start_on >= self.today]
         performances = performances if len(performances) < 3 else performances[:3]
