@@ -1,7 +1,7 @@
 # coding:utf-8
 from datetime import datetime
 from pyramid.view import view_config
-from altaircms.topic.models import TopicTag, PromotionTag
+from altaircms.topic.models import TopicTag, PromotionTag, TopcontentTag
 from altaircms.topic.api import get_topic_searcher
 from altaircms.genre.searcher import GenreSearcher
 from altaircms.tag.models import HotWord
@@ -18,7 +18,7 @@ def main(request):
     form = TopForm()
 
     topic_searcher = get_topic_searcher(request, "topic")
-    tag = TopicTag.query.filter_by(label=u"注目のイベント").first()
+    tag = TopcontentTag.query.filter_by(label=u"注目のイベント").first()
     if tag:
         form.attentions.data = topic_searcher.query_publishing_topics(datetime.now(), tag)[0:8]
         log_info("main", "attensions get")
@@ -29,7 +29,7 @@ def main(request):
         form.promotions.data = promo_searcher.query_publishing_topics(datetime.now(), tag)[0:5]
         log_info("main", "promotions get")
 
-    tag = TopicTag.query.filter_by(label=u"トピック").first()
+    tag = TopicTag.query.filter_by(label=u"トピックス").first()
     if tag:
         form.topics.data = topic_searcher.query_publishing_topics(datetime.now(), tag)[0:5]
         log_info("main", "topics get")

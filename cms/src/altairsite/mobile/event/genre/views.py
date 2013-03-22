@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from pyramid.view import view_config
-from altaircms.topic.models import TopicTag
+from altaircms.topic.models import TopicTag, TopcontentTag
 from datetime import datetime
 from altaircms.topic.api import get_topic_searcher
 from altairsite.mobile.event.genre.forms import GenreForm
@@ -49,13 +49,13 @@ def move_genre(request):
     log_info("move_genre", "genretree create")
 
     # attention
-    tag = TopicTag.query.filter_by(label=u"注目のイベント").first()
+    tag = TopcontentTag.query.filter_by(label=u"注目のイベント").first()
     if tag:
         form.attentions.data = topic_searcher.query_publishing_topics(datetime.now(), tag, system_tag).all()
         log_info("move_genre", "attention get")
 
     # Topic(Tag='トピック', system_tag='ジャンル')
-    tag = TopicTag.query.filter_by(label=u"トピック").first()
+    tag = TopicTag.query.filter_by(label=u"トピックス").first()
     if tag:
         form.topics.data = topic_searcher.query_publishing_topics(datetime.now(), tag, system_tag)
         log_info("move_genre", "topics get")
