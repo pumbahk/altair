@@ -370,7 +370,7 @@ class SalesScheduleReportExporter(BaseExporter):
                 row_data['merged_ranges'],
             )
         # 価格名
-        self.update_cell_text(sheet, pos + 1, 0, price_name)
+        self.update_cell_text(sheet, pos + 1, 0, u'■%s' % price_name)
         self.current_pos[sheet] = pos + 1 + len(self._parts_prices_header)
 
     def write_price_record(self, sheet, record, use_footer=False):

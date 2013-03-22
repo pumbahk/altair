@@ -3,8 +3,6 @@
 
 <script type="text/javascript">
   $(function() {
-    $("#btn-report-event-sales").click(function() {
-    });
     $("#btn-report-event-stocks").click(function() {
       modal = $('#modal-report');
       modal.find('form select[name="report_type"]').val('stock');
@@ -17,6 +15,10 @@
     });
     $("#btn-report-event-stocks-by-stockholder").click(function() {
       modal = $('#modal-report-stockholder');
+      modal.modal('show');
+    });
+    $("#btn-report-event-sales").click(function() {
+      modal = $('#modal-report-sales');
       modal.modal('show');
     });
   });
@@ -98,5 +100,21 @@
   <div class="modal-footer">
     <button class="btn btn-secondary" data-dismiss="modal">戻る</button>
     <button class="btn btn-inverse" onclick="$('#modal-report-stockholder').find('form').submit();$('#modal-report-stockholder').modal('hide');">ダウンロード</button>
+  </div>
+</div>
+
+<div id="modal-report-sales" class="modal hide">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">&times;</a>
+    <h3>ダウンロード</h3>
+  </div>
+  <div class="modal-body">
+    <p>販売日程管理表をダウンロードします。</p>
+    <form class="form-horizontal" action="${request.route_path('reports.sales', event_id=event.id)}" method="POST">
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-secondary" data-dismiss="modal">戻る</button>
+    <button class="btn btn-inverse" onclick="$('#modal-report-sales').find('form').submit();$('#modal-report-sales').modal('hide');">ダウンロード</button>
   </div>
 </div>

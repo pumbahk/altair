@@ -146,10 +146,10 @@ def seat_source_from_seat(seat):
         .filter_by(group_l0_id=seat.group_l0_id).first()
     if area is not None:
         seat_source.block = area.name
-    
+
     # 列番号は、SeatAttributeのを使う
     if 'row' in attributes:
-       seat_source.line = attributes.get('row')
+        seat_source.line = attributes.get('row')
 
     seat_source.seat = seat.seat_no
     seat_source.status = seat.status
@@ -231,7 +231,7 @@ class SalesScheduleRecord(object):
             sales=[
                 sales_record.get_record() for sales_record in self.sales
             ],
-            performance=[
+            performances=[
                 performance_record.get_record() for performance_record in self.performances
             ],
             prices=[
@@ -269,14 +269,20 @@ class SalesSchedulePerformanceRecord(object):
         self.start = start
         self.price_name = price_name
         self.sales_end = sales_end
+        self.submit_order = submit_order
+        self.submit_pay = submit_pay
+        self.pay_datetime = pay_datetime
 
     def get_record(self):
         record = dict(
-            datetime=self.datetime_ or "",
+            datetime=self.datetime or "",
             open=self.open_ or "",
             start=self.start or "",
             price_name=self.price_name or "",
             sales_end = self.sales_end or "",
+            submit_order = self.submit_order or "",
+            submit_pay = self.submit_pay or "",
+            pay_datetime = self.pay_datetime or "",
         )
         return record
 
@@ -311,6 +317,6 @@ class SalesSchedulePriceRecordRecord(object):
         record = dict(
             seat_type=self.seat_type or "",
             ticket_type=self.ticket_type or "",
-            price=self.price is None and "" or self.price,
+            price=self.price if self.price is not None else "",
         )
         return record

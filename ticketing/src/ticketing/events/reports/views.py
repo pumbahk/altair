@@ -12,11 +12,9 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
 from pyramid.response import Response
 
-from ticketing.models import record_to_multidict
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.core.models import Event, StockHolder
-from ticketing.events.forms import EventForm
 from ticketing.events.reports import reporting
 from ticketing.events.reports.forms import ReportStockForm, ReportByStockHolderForm
 
@@ -38,7 +36,7 @@ class Reports(BaseView):
             'event':event,
         }
 
-    @view_config(route_name='reports.sales', request_method='POST', renderer='ticketing:templates/events/report.html')
+    @view_config(route_name='reports.sales', request_method='POST')
     def download_sales(self):
         """販売日程管理表ダウンロード
         """
@@ -47,60 +45,20 @@ class Reports(BaseView):
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
 
-        # copy from template.xls
-        rb = xlrd.open_workbook('src/ticketing/templates/reports/sales_schedule_report_template.xls', formatting_info=True)
-        wb = copy(rb)
+        # CSVファイル生成
+        exporter = reporting.export_for_sales(event)
 
-        # find data as json format
+        # 出力ファイル名
+        filename = "sales_report_%(code)s_%(datetime)s.xls" % dict(
+            code=event.code,
+            datetime=strftime('%Y%m%d%H%M%S')
+        )
 
-        # add data to xls sheet
-        #book = xlwt.Workbook()
-        #book.add_sheet("NewSheet_1")
-        #book.save('sample.xls')
-
-        sheet = wb.get_sheet(0)
-
-        # Event
-        sheet.write(0, 34, u"(現在日時)")
-        sheet.write(5, 0, u"(イベント名)")
-        sheet.write(11, 0, u"(販売区分名)")
-        sheet.write(11, 12, u"(販売開始日時)")
-        sheet.write(11, 18, u"(販売終了日時)")
-        sheet.write(11, 30, u"(販売手数料)")
-        sheet.write(12, 30, u"(払戻手数料)")
-        sheet.write(13, 30, u"(印刷代金)")
-        sheet.write(14, 30, u"(登録手数料)")
-        sheet.write(16, 0, u"(会場名)")
-
-        # Performance
-
-        #
-
-        '''
-        sheet_row_1 = sheet.row(1)
-        sheet_row_1.write(0, "A2")
-        sheet_row_1.write(1, "B2")
-        sheet_row_1.write(2, "C2")
-        sheet_row_1.write(3, "D2")
-        sheet_row_1.write(4, "E2")
-        '''
-
-        # download
-        wb.save('sales_report_%s_%s.xls' % (event_id, strftime('%Y%m%d%H%M%S')))
-
-        # temporary redirect
-        return HTTPFound(location=route_path('events.report', self.request, event_id=event.id))
-
-        #fname = os.path.join(Newsletter.subscriber_dir(), newsletter.subscriber_file())
-        #f = open(fname)
-        #headers = [
-        #    ('Content-Type', 'application/octet-stream'),
-        #    ('Content-Disposition', 'attachment; filename=%s' % os.path.basename(fname))
-        #]
-        #response = Response(f.read(), headers=headers)
-        #f.close()
-
-        #return response
+        headers = [
+            ('Content-Type', 'application/octet-stream; charset=utf-8'),
+            ('Content-Disposition', 'attachment; filename=%s' % str(filename))
+        ]
+        return Response(exporter.as_string(), headers=headers)
 
     @view_config(route_name='reports.stocks', request_method='POST', renderer='ticketing:templates/events/report.html')
     def download_stocks(self):

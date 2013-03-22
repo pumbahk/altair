@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from datetime import date
+from datetime import datetime, date
 from pyramid.path import AssetResolver
+from sqlalchemy import and_
 
-from ticketing.core.models import Stock
-from ticketing.core.models import Seat
-from ticketing.helpers.base import jdatetime
+from ticketing.core.models import Stock, Seat, Site, Performance, Venue, SalesSegment, SalesSegmentGroup
+from ticketing.helpers.base import jdatetime, jdate, jtime
 
 from . import xls_export
 from . import sheet as report_sheet
@@ -80,4 +80,88 @@ def export_for_stock_holder(event, stock_holder, report_type):
                     stock_record.records.append(seat_record)
             stock_records.append(stock_record)
         report_sheet.process_sheet(exporter, sheet, report_title, event, performance, stock_holder, stock_records)
+    return exporter
+
+def export_for_sales(event):
+    """販売日程管理表をExporterで返す
+    """
+    assetresolver = AssetResolver()
+    template_path = assetresolver.resolve("ticketing:/templates/reports/sales_schedule_report_template.xls").abspath()
+    exporter = xls_export.SalesScheduleReportExporter(template=template_path)
+
+    # 会場ごとにシートを生成
+    site_query = Site.query.join(Venue).filter(Venue.deleted_at==None)
+    site_query = site_query.join(Performance).filter(Performance.event_id==event.id).distinct()
+    for site in site_query:
+        sheet = exporter.add_sheet(site.name)
+        price_tables = dict()
+
+        # Event
+        data = report_sheet.SalesScheduleRecord(
+            event_title=event.title,
+            output_datetime=jdatetime(datetime.now()),
+            venue_name=site.name
+        )
+
+        # SalesSegment
+        query = SalesSegmentGroup.query.filter(and_(SalesSegmentGroup.event_id==event.id, SalesSegmentGroup.public==True))
+        query = query.join(SalesSegment).filter(SalesSegment.deleted_at==None)
+        query = query.join(Performance).filter(Performance.deleted_at==None)
+        query = query.join(Venue).filter(Venue.deleted_at==None)
+        query = query.join(Site).filter(Site.id==site.id).distinct()
+        for ssg in query:
+            record = report_sheet.SalesScheduleSalesRecord(
+                sales_seg=ssg.name,
+                sales_start=jdatetime(ssg.start_at),
+                sales_end=jdatetime(ssg.end_at)
+            )
+            data.sales.append(record)
+
+        # Performance
+        query = Performance.query.filter(Performance.event_id==event.id)
+        query = query.join(Venue).filter(Venue.deleted_at==None)
+        query = query.join(Site).filter(Site.id==site.id)
+        for p in query:
+            ss = SalesSegment.query.filter(and_(SalesSegment.performance_id==p.id, SalesSegment.public==True)).first()
+
+            # Price
+            price_table = report_sheet.SalesSchedulePriceRecord()
+            for product in ss.products:
+                record = report_sheet.SalesSchedulePriceRecordRecord(
+                    seat_type=product.seat_stock_type.name,
+                    ticket_type=product.items[0].ticket_bundle.name if product.items and product.items[0].ticket_bundle else None,
+                    price=unicode(int(product.price))
+                )
+                price_table.records.append(record)
+
+            label = None
+            for k, v in price_tables.items():
+                if v.get_record() == price_table.get_record():
+                    label = k
+                    break
+            if label is None:
+                label = u'%s%s' % (u'価格表', len(price_tables) + 1)
+                price_tables[label] = price_table
+
+            record = report_sheet.SalesSchedulePerformanceRecord(
+                datetime_=jdate(p.open_on),
+                open_=jtime(p.open_on),
+                start=jtime(p.start_on),
+                price_name=label,
+                sales_end=jdate(ss.end_at),
+                submit_order=None,
+                submit_pay=None,
+                pay_datetime=None
+            )
+            data.performances.append(record)
+
+        # Price
+        for label in sorted(price_tables.keys()):
+            price_table = price_tables[label]
+            price_table.name = label
+            data.prices.append(price_table)
+
+        exporter.write_data(sheet, data.get_record())
+
+    exporter.remove_templates()
     return exporter
