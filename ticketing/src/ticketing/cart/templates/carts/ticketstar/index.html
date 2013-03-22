@@ -75,13 +75,13 @@ $(function() {cart.init(venues_selection, selected, cart_release_url);});
         <div id="settlementSelectBoxInner">
           <table summary="チケット購入の絞り込み">
             <tr>
-              <th>対象試合</th>
+              <th>${selection_label}</th>
               <td>
                 <select name="select" id="date-select"></select>
               </td>
             </tr>
             <tr id="settlementSelectEnd">
-              <th>日付・会場</th>
+              <th>${second_selection_label}</th>
               <td>  
                 <select name="select2" id="venue-select"></select>
               </td>

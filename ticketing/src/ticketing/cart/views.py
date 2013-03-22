@@ -149,7 +149,9 @@ class IndexView(IndexViewMixin):
             products_from_selected_date_url=self.request.route_url(
                 "cart.date.products",
                 event_id=self.context.event_id), 
-            event_extra_info=self.event_extra_info.get("event") or []
+            event_extra_info=self.event_extra_info.get("event") or [],
+            selection_label=performance_selector.label,
+            second_selection_label=performance_selector.second_label,
             )
 
     @view_config(route_name='cart.seat_types', renderer="json")

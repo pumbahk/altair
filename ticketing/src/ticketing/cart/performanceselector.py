@@ -12,6 +12,9 @@ from .interfaces import IPerformanceSelector
 class MatchUpPerformanceSelector(object):
     """ 対戦カード -> 会場 """
 
+    label = u"対象試合"
+    second_label = u"日付・会場"
+
     def __init__(self, request):
         self.request = request
         self.context = request.context
@@ -50,6 +53,9 @@ class MatchUpPerformanceSelector(object):
 @implementer(IPerformanceSelector)
 class DatePerformanceSelector(object):
     """ 日付け -> 会場 """
+
+    label = u"公演日"
+    second_label = u"会場"
 
     def __init__(self, request):
         self.request = request
