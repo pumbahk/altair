@@ -9,7 +9,7 @@
 	</dl>
 	<p>
 	  <a href="${h.link.get_link_from_topcontent(request, t)}">
-		<img src="${h.asset.to_show_page(request, t.image_asset)}" alt="${t.title  }" width="80" height="80" />
+		<img src="${h.asset.to_show_page(request, t.image_asset,filepath=getattr(t.image_asset, widget.rendering_image_attribute))}" alt="${t.title  }" width="80" height="80" />
 	  </a><br />
   </div>
   % endfor
