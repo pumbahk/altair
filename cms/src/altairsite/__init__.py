@@ -6,6 +6,14 @@ import sqlahelper
 
 from altaircms.models import Base
 
+def install_static_page(config):
+    settings = config.registry.settings
+    config.maybe_dotted("altaircms.page.api.set_static_page_utility")(
+        config, 
+        settings["altaircms.page.static.directory"], 
+        settings["altaircms.page.tmp.directory"]
+        )
+
 def main(global_config, **local_config):
     """ This function returns a Pyramid WSGI application.
     """
@@ -18,6 +26,7 @@ def main(global_config, **local_config):
 
     config = Configurator(settings=settings)
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
+    config.include(install_static_page)
     config.include("altaircms.tag:install_tagmanager")
     config.include("altaircms.topic:install_topic_searcher")
     config.include("altaircms.page:install_pageset_searcher")
@@ -27,7 +36,6 @@ def main(global_config, **local_config):
     OrganizationMapping = config.maybe_dotted("altaircms.auth.api.OrganizationMapping")
     OrganizationMapping(settings["altaircms.organization.mapping.json"]).register(config)
     config.include("altaircms.lib.crud")    
-
     config.include("altaircms.plugins")
     config.include("altaircms.solr") ## for fulltext search
     search_utility = settings.get("altaircms.solr.search.utility", "altaircms.solr.api.DummySearch")
@@ -35,8 +43,9 @@ def main(global_config, **local_config):
 
     config.include("altairsite.mobile", route_prefix="/mobile")
     config.include("altairsite.front")
+    config.include("altairsite.feature")
     config.include("altairsite.errors")
-    config.include("altairsite.search", route_prefix="search")
+    config.include("altairsite.search", route_prefix="/search")
 
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
     config.add_static_view('plugins/static', 'altaircms:plugins/static', cache_max_age=3600)
