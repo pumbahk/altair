@@ -103,6 +103,9 @@ class MobileSelectProductView(object):
         sales_segment_id = self.request.matchdict['sales_segment_id']
         seat_type_id = self.request.params.get('stid')
 
+        selector_name = c_api.get_organization(self.request).setting.performance_selector
+        performance_selector = api.get_performance_selector(self.request, selector_name)
+
         if seat_type_id:
             return HTTPFound(self.request.route_url(
                 "cart.products",
@@ -146,7 +149,8 @@ class MobileSelectProductView(object):
             event=event,
             performance=performance,
             venue=performance.venue,
-            sales_segment=sales_segment
+            sales_segment=sales_segment,
+            return_value=performance_selector.select_value(performance),
             )
         return data
 
