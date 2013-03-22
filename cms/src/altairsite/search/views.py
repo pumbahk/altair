@@ -144,7 +144,7 @@ class SearchByKindView(object):
             kind = self.request.allowable(SalesSegmentKind).filter_by(name=self.request.matchdict["value"]).first()
             if kind is None:
                 raise HTTPNotFound("not found")
-            params = MultiDict({"deal_cond": kind})
+            params = MultiDict({"deal_cond": unicode(kind.id)})
             self.request.body_id = "search"
             query_params = forms.DealCondPartForm(params).configure(self.request).make_query_params()
             result_seq = self.context.get_result_sequence_from_query_params(
