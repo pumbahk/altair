@@ -6,7 +6,7 @@
     if (window.ticketPrinterService) {
       $('#reserve-button').text('予約して発券する');
     }
-    $('.draggable').draggable({scroll: true, handle:$('.draggable .modal-body')});
+    $('.draggable').draggable({scroll: true, handle:$('.draggable .modal-header')});
     $('#modal-reserve').disableOnSubmit();
     $('#modal-reserve').on('shown', function(){
       $('#reserve-button').attr('disabled', null); 
