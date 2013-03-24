@@ -85,7 +85,9 @@ class MobileIndexView(IndexViewMixin):
             venues=venues,
             venue_name=venue_name,
             performances=performances,
-            performance_name=performance_name
+            performance_name=performance_name,
+            selector_label_1=performance_selector.label,
+            selector_label_2=performance_selector.second_label
             )
 
 
