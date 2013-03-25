@@ -2,13 +2,13 @@
 if (page and hasattr(page, "pageset") and page.pageset.genre_id):
     from altairsite.search.resources import SearchPageResource
     from webob.multidict import MultiDict
-    from altairsite.search.forms import GenrePartForm
     from altairsite.search.searcher import get_pageset_query_from_genre
 
     search_context = SearchPageResource(request)
-    params = MultiDict({"top": page.pageset.genre_id,"sub": page.pageset.genre_id})
-    query_params = GenrePartForm(params).configure(request).make_query_params()
-
+    gs = page.pageset.genre.ancestors_include_self
+    gs.pop()
+    query_params = {"sub_categories": [unicode(page.pageset.genre_id)],
+                    "category_label": u">".join([g.label for g in reversed(gs)])}
     result_seq = search_context.get_result_sequence_from_query_params(
        query_params,
        searchfn=get_pageset_query_from_genre

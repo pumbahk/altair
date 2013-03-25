@@ -247,7 +247,8 @@ def search_by_genre(request, qs, *genre_id_list):
        return qs
     xs = []
     for ids in genre_id_list:
-       xs.extend([e for e in ids if e])
+       if ids:
+          xs.extend(ids)
     tags = PageTag.query.filter(PageTag.label==Genre.label, PageTag.organization_id==None, Genre.organization_id==request.organization.id)
     tag_id_list = tags.filter(Genre.id.in_(xs)).with_entities(PageTag.id).all()
     tag_id_list = [x for xs in tag_id_list for x in xs]

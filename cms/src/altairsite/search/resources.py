@@ -132,7 +132,9 @@ class QueryParamsRender(object):
         qp = self.query_params
         if "query" in qp:
             r.append(u"フリーワード: %s" % qp["query"])
-        if qp.get("category_tree") and qp.get("top_categories") or qp.get("sub_categories"):
+        if qp.get("category_label"):
+            r.append(u"ジャンル: %s" % qp.get("category_label"))
+        elif qp.get("category_tree") and qp.get("top_categories") or qp.get("sub_categories"):
             r.append(u"ジャンル: %s " % self.describe_from_tree(qp["category_tree"]))
         if qp.get("area_tree") and qp.get("prefectures"):
             r.append(u"開催地: %s" % self.describe_from_tree(qp["area_tree"]))
@@ -207,7 +209,7 @@ class SearchResultRender(object):
 <p class="align1">%s</p>
 """
         link = h.link.publish_page_from_pageset(self.request, self.pageset)
-        link_label = self.pageset.name
+        link_label = self.pageset.event.title #xx?
         event = self.pageset.event
         performances = [p for p in event.performances if p.start_on >= self.today]
         performances = performances if len(performances) < 3 else performances[:3]
