@@ -15,7 +15,9 @@ class _PerformanceSelector(object):
     def selection(self):
         performances = sorted(list(set([ss.performance for ss in self.sales_segments])), 
                               key=lambda p: p.start_on)
-        return [self.select_value(p) for p in performances]
+        selection = sorted(list(set([self.select_value(p) for p in performances])))
+
+        return selection
 
 
 @implementer(IPerformanceSelector)
@@ -72,11 +74,6 @@ class DatePerformanceSelector(_PerformanceSelector):
     def select_value(self, performance):
         #return performance.start_on.strftime(self.date_format)
         return self.date_format.format(performance.start_on)
-
-    @property
-    def selection(self):
-        performances = [ss.performance for ss in self.sales_segments]
-        return [self.select_value(p) for p in performances]
 
     def __call__(self):
 
