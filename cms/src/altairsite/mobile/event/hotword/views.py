@@ -28,8 +28,7 @@ def move_hotword(request):
     today = datetime.now()
     hotword = request.allowable(HotWord).filter(HotWord.term_begin <= today) \
         .filter(today <= HotWord.term_end) \
-        .filter_by(enablep=True).filter(HotWord.id == form.id.data) \
-        .filter(HotWord.tag_id).first()
+        .filter_by(enablep=True).filter(HotWord.id == form.id.data).first()
 
     if not hotword:
         log_info("move_hotword", "hotword not found")
