@@ -13,11 +13,14 @@
             % endif
         % endfor
     % else:
-        % for hotword in hotwords:
+        % for count, hotword in enumerate(hotwords):
             % if helper.get_events_from_hotword(request, hotword):
                 <a href="/hotword?id=${hotword.id}">${hotword.name}</a>
             % else:
                 ${hotword.name}
+            % endif
+            % if count < len(hotwords) - 1:
+                 / 
             % endif
         % endfor
     % endif
