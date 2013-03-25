@@ -41,8 +41,6 @@ def move_genre(request):
         log_info("move_genre", "genre not found")
         raise ValidationFailure
 
-    system_tag = topic_searcher.get_tag_from_genre_label(genre_tag.label)
-
     # genretree
     genre_searcher = GenreSearcher(request)
     form.dispgenre.data = request.allowable(Genre).filter(Genre.id==form.genre.data).first()
@@ -51,13 +49,15 @@ def move_genre(request):
 
     # attention
     topcontent_searcher = get_topic_searcher(request, "topcontent")
-    tag = TopcontentTag.query.filter_by(label=u"注目のイベント").first()
+    system_tag = topcontent_searcher.get_tag_from_genre_label(genre_tag.label)
+    tag = request.allowable(TopcontentTag).filter_by(label=u"注目のイベント").first()
     if tag:
         form.attentions.data = topcontent_searcher.query_publishing_topics(datetime.now(), tag, system_tag).all()
         log_info("move_genre", "attention get")
 
     # Topic(Tag='トピック', system_tag='ジャンル')
-    tag = TopicTag.query.filter_by(label=u"トピックス").first()
+    system_tag = topic_searcher.get_tag_from_genre_label(genre_tag.label)
+    tag = request.allowable(TopicTag).filter_by(label=u"トピックス").first()
     if tag:
         form.topics.data = topic_searcher.query_publishing_topics(datetime.now(), tag, system_tag)
         log_info("move_genre", "topics get")
