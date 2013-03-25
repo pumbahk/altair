@@ -51,11 +51,9 @@ def includeme(config):
     config.scan(__name__)
 
 def get_payment_due_at(current_date, cart):
-    if cart.payment_delivery_pair.payment_period_days:
-        payment_due_at = current_date + timedelta(days=cart.payment_delivery_pair.payment_period_days)
-    else:
-        payment_due_at = current_date + timedelta(days=3)
-        payment_due_at = payment_due_at.replace(hour=23, minute=59, second=59)
+    payment_period_days = cart.payment_delivery_pair.payment_period_days or 3
+    payment_due_at = current_date + timedelta(days=payment_period_days)
+    payment_due_at = payment_due_at.replace(hour=23, minute=59, second=59)
     return payment_due_at
 
 def get_ticketing_start_at(current_date, cart):

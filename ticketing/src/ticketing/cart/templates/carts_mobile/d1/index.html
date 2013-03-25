@@ -7,13 +7,13 @@ ${event.title}
 
 % if not venues:
   <hr size="1" color="#888888" noshade="noshade" />
-  <p><font color="#ffbf00">■</font>対象試合をお選びください</p>
+  <p><font color="#ffbf00">■</font>${selector_label_1}をお選びください</p>
   % for _performance_name in performances:
   <a href="${request.current_route_url(_query={'performance_name': _performance_name.encode('sjis')})}">${_performance_name}</a><br />
   % endfor
 % else:
   <hr size="1" color="#888888" noshade="noshade" />
-  <p><font color="#ffbf00">■</font>日時・会場をお選びください</p>
+  <p><font color="#ffbf00">■</font>${selector_label_2}をお選びください</p>
   % for pid, _venue_name in venues:
   <a href="${request.current_route_url(_query={'pid': pid})}">${_venue_name}</a><br />
   % endfor

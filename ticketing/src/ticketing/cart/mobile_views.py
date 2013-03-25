@@ -6,13 +6,14 @@ import logging
 import re
 import transaction
 
-from pyramid.view import view_config, view_defaults
+from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 
 import sqlalchemy as sa
 
 from ticketing.core import models as c_models
-from ticketing.mobile.interfaces import IMobileRequest
+from ticketing.core import api as c_api
+#from ticketing.mobile.interfaces import IMobileRequest
 from ticketing.cart.selectable_renderer import selectable_renderer
 from ticketing.models import DBSession
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
@@ -24,17 +25,11 @@ from . import schemas
 from .api import get_seat_type_triplets
 from .view_support import IndexViewMixin
 from .exceptions import (
-    #CartException, 
-    #NoCartError, 
     NoEventError,
-    #NoPerformanceError,
-    #NoSalesSegment,
     InvalidCSRFTokenException, 
     OverQuantityLimitError, 
     ZeroQuantityError, 
     CartCreationException,
-    #OutTermSalesException,
-    #DeliveryFailedException,
 )
 
 logger = logging.getLogger(__name__)
@@ -58,10 +53,10 @@ class MobileIndexView(IndexViewMixin):
         # パフォーマンスIDが確定しているなら商品選択へリダイレクト
         performance_id = self.request.params.get('pid') or self.request.params.get('performance')
         if performance_id:
-            performance = c_models.Performance.query.filter(c_models.Performance.id==performance_id).one()
+            #performance = c_models.Performance.query.filter(c_models.Performance.id==performance_id).one()
             for ss in sales_segments:
                 if str(ss.performance_id) == performance_id:
-                    performance = ss.performance
+                    #performance = ss.performance
                     return HTTPFound(self.request.route_url(
                             "cart.seat_types",
                             event_id=self.context.event.id,
@@ -72,18 +67,17 @@ class MobileIndexView(IndexViewMixin):
         if not perms:
             raise HTTPNotFound()
 
-        performances = list(set([p.name for p in perms]))
+        selector_name = c_api.get_organization(self.request).setting.performance_selector
+        performance_selector = api.get_performance_selector(self.request, selector_name)
+        performances = performance_selector.selection
         logger.debug('performances %s' % performances)
 
         # 公演名が指定されている場合は、（日時、会場）のリスト
         performance_name = self.request.params.get('performance_name')
         venues = []
         if performance_name:
-            performances = sorted(list(set([ss.performance for ss in sales_segments])),key=lambda p: p.start_on)
-            venues = [(performance.id, 
-                       u"{start:%Y-%m-%d %H:%M} {vname}".format(start=performance.start_on,
-                                                                vname=performance.venue.name) )
-                      for performance in performances]
+            venues = performance_selector()
+            venues = [(v['id'], v['name']) for v in venues[performance_name]]
 
         return dict(
             event=self.context.event,
@@ -91,7 +85,9 @@ class MobileIndexView(IndexViewMixin):
             venues=venues,
             venue_name=venue_name,
             performances=performances,
-            performance_name=performance_name
+            performance_name=performance_name,
+            selector_label_1=performance_selector.label,
+            selector_label_2=performance_selector.second_label
             )
 
 
@@ -108,6 +104,9 @@ class MobileSelectProductView(object):
         performance_id = self.request.matchdict['performance_id']
         sales_segment_id = self.request.matchdict['sales_segment_id']
         seat_type_id = self.request.params.get('stid')
+
+        selector_name = c_api.get_organization(self.request).setting.performance_selector
+        performance_selector = api.get_performance_selector(self.request, selector_name)
 
         if seat_type_id:
             return HTTPFound(self.request.route_url(
@@ -152,7 +151,8 @@ class MobileSelectProductView(object):
             event=event,
             performance=performance,
             venue=performance.venue,
-            sales_segment=sales_segment
+            sales_segment=sales_segment,
+            return_value=performance_selector.select_value(performance),
             )
         return data
 
@@ -379,7 +379,7 @@ class MobileReserveView(object):
             raise e
         except NotEnoughStockException as e:
             transaction.abort()
-            logger.debug("not enough stock quantity :%s" % e)
+            logger.debug("not enough stock quantity.")
             raise e
 
         DBSession.add(cart)

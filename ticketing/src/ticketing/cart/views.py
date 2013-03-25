@@ -1,38 +1,30 @@
 # -*- coding:utf-8 -*-
 import logging
+import datetime
 import re
 import json
 import transaction
-from collections import OrderedDict
-#from datetime import datetime, timedelta
-#from urllib2 import urlopen
+#from collections import OrderedDict
 
 import sqlalchemy as sa
 from sqlalchemy.orm import joinedload
-#from sqlalchemy import sql
-#from sqlalchemy.sql.expression import or_, select
 
 from markupsafe import Markup
 
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
-#from pyramid.exceptions import NotFound
 from pyramid.response import Response
 from pyramid.view import view_config, view_defaults
 from pyramid.threadlocal import get_current_request
 from pyramid import security
-#from zope.deprecation import deprecate
 from webob.multidict import MultiDict
-
-#import js.jquery, js.jquery_tools
 
 
 from ticketing.models import DBSession
 from ticketing.core import models as c_models
-#from ticketing.users import models as u_models
+from ticketing.core import api as c_api
 from ticketing.mailmags import models as mailmag_models
 from ticketing.views import mobile_request
 from ticketing.fanstatic import with_jquery, with_jquery_tools
-#from ticketing.rakuten_auth.api import authenticated_user
 from ticketing.payments.payment import Payment
 from ticketing.payments.exceptions import PaymentDeliveryMethodPairNotFound
 from ticketing.mobile.interfaces import IMobileRequest
@@ -40,7 +32,6 @@ from ticketing.mobile.interfaces import IMobileRequest
 from . import api
 from . import helpers as h
 from . import schemas
-#from .models import Cart
 from .events import notify_order_completed
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from .stocker import NotEnoughStockException
@@ -51,14 +42,7 @@ from .exceptions import (
     NoCartError, 
     NoPerformanceError,
     InvalidCSRFTokenException, 
-    #CartException, 
-    #NoEventError,
-    #NoSalesSegment,
-    #OverQuantityLimitError, 
-    #ZeroQuantityError, 
     CartCreationException,
-    #OutTermSalesException,
-    #DeliveryFailedException,
 )
 
 logger = logging.getLogger(__name__)
@@ -117,25 +101,10 @@ class IndexView(IndexViewMixin):
         self.check_redirect(mobile=False)
         sales_segments = self.context.available_sales_segments
         performances = [ss.performance for ss in sales_segments]
+        selector_name = c_api.get_organization(self.request).setting.performance_selector
 
-        select_venues = OrderedDict()
-
-        for p in performances:
-            select_venues[p.name] = []
-
-        for sales_segment in sales_segments:
-            performance = sales_segment.performance
-            pname = performance.name
-            select_venues[pname].append(dict(
-                id=performance.id,
-                name=u'{start:%Y-%m-%d %H:%M}開始 {vname} {name}'.format(name=sales_segment.name, start=performance.start_on, vname=performance.venue.name),
-                order_url=self.request.route_url("cart.order", sales_segment_id=sales_segment.id),
-                upper_limit=sales_segment.upper_limit,
-                seat_types_url=self.request.route_url('cart.seat_types',
-                    performance_id=performance.id,
-                    sales_segment_id=sales_segment.id,
-                    event_id=self.context.event.id)))
-            
+        performance_selector = api.get_performance_selector(self.request, selector_name)
+        select_venues = performance_selector()
         logger.debug("venues %s" % select_venues)
 
         # 会場
@@ -174,13 +143,15 @@ class IndexView(IndexViewMixin):
             cart_release_url=self.request.route_url('cart.release'),
             selected=Markup(
                 json.dumps([
-                    selected_performance.name,
+                    performance_selector.select_value(selected_performance),
                     selected_performance.id])),
             venues_selection=Markup(json.dumps(select_venues.items())),
             products_from_selected_date_url=self.request.route_url(
                 "cart.date.products",
                 event_id=self.context.event_id), 
-            event_extra_info=self.event_extra_info.get("event") or []
+            event_extra_info=self.event_extra_info.get("event") or [],
+            selection_label=performance_selector.label,
+            second_selection_label=performance_selector.second_label,
             )
 
     @view_config(route_name='cart.seat_types', renderer="json")
@@ -500,13 +471,13 @@ class ReserveView(object):
             transaction.abort()
             logger.debug("seat selection is invalid.")
             return dict(result='NG', reason="invalid seats")
-        except NotEnoughStockException as e:
+        except NotEnoughStockException:
             transaction.abort()
-            logger.debug("not enough stock quantity :%s" % e)
+            logger.debug("not enough stock quantity.")
             return dict(result='NG', reason="stock")
-        except CartCreationException as e:
+        except CartCreationException:
             transaction.abort()
-            logger.debug("cannot create cart :%s" % e)
+            logger.debug("cannot create cart.")
             return dict(result='NG', reason="unknown")
 
 
