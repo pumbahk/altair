@@ -27,8 +27,8 @@
                 <hr/>
             % endif
 
-            公演：${info.title}<br/>
-            詳細：${info.text}<br/>
+            公演：${helper.nl2br(info.title)|n}<br/>
+            詳細：${helper.nl2br(info.text)|n}<br/>
             <hr/>
         % endfor
 

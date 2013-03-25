@@ -134,9 +134,3 @@ def get_sales_date(request, event):
             sales_end = segment.end_on
 
     return sales_start, sales_end
-
-def nl2br(value):
-    return value.replace("\n", "<br />")
-
-def markup(value):
-    return Markup(value)

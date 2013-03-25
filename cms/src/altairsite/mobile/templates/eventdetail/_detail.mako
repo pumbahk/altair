@@ -1,4 +1,4 @@
-<%page args="event, week, month_unit, month_unit_keys, purchase_links, tickets, sales_start, sales_end" />
+<%page args="event, week, month_unit, month_unit_keys, purchase_links, tickets, sales_start, sales_end, helper" />
 
 公演期間：${event.deal_open.year}/${str(event.deal_open.month).zfill(2)}/${str(event.deal_open.day).zfill(2)}(${week[event.deal_open.weekday()]})-${event.deal_close.year}/${str(event.deal_close.month).zfill(2)}/${str(event.deal_close.day).zfill(2)}(${week[event.deal_close.weekday()]})
 <br/>
@@ -66,7 +66,7 @@
 % if event.notice:
     <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffff00">■</font>詳細/注意事項</font></div>
     <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
-    ${event.notice}
+    ${helper.nl2br(event.notice)|n}
 % endif
 
 <!--
@@ -78,9 +78,10 @@
 % endif
 -->
 
+
 % if event.inquiry_for:
     <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffff00">■</font>お問い合わせ</font></div>
     <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
-    ${event.inquiry_for}
+    ${helper.nl2br(event.inquiry_for)|n}
 % endif
 <%include file="../common/_footer.mako" />

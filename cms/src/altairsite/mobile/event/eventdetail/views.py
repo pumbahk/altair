@@ -5,6 +5,7 @@ from altairsite.mobile.event.eventdetail.forms import EventDetailForm
 from altairsite.mobile.core.helper import get_week_map, get_performances_month_unit, get_purchase_links\
     , get_tickets, exist_value, get_sales_date
 from altairsite.mobile.core.helper import log_info, Markup
+from altairsite.mobile.core.disphelper import DispHelper
 
 class ValidationFailure(Exception):
     pass
@@ -32,14 +33,11 @@ def move_eventdetail(request):
     form.sales_start.data, form.sales_end.data = get_sales_date(request=request, event=form.event.data)
     log_info("move_eventdetail", "detail infomation get end")
 
-    # HTMLタグ解釈
-    if form.event.data.notice:
-        form.event.data.notice = Markup(form.event.data.notice)
-    if form.event.data.inquiry_for:
-        form.event.data.inquiry_for = Markup(form.event.data.inquiry_for)
-
     log_info("move_eventdetail", "end")
-    return {'form':form}
+    return {
+          'form':form
+        , 'helper':DispHelper()
+    }
 
 @view_config(route_name='eventdetail', context=ValidationFailure
     , request_type="altairsite.mobile.tweens.IMobileRequest", renderer='altairsite.mobile:templates/common/error.mako')

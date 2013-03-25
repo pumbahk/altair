@@ -6,6 +6,7 @@ from datetime import datetime
 from altaircms.topic.api import get_topic_searcher
 from altairsite.mobile.event.information.forms import InformationForm
 from altairsite.mobile.core.helper import log_info, Markup
+from altairsite.mobile.core.disphelper import DispHelper
 
 class ValidationFailure(Exception):
     pass
@@ -26,8 +27,8 @@ def move_information(request):
         form.informations.data = topic_searcher.query_publishing_topics(datetime.now(), tag).all()
         log_info("move_information", "information get")
 
-    for info in form.informations.data:
-        info.text = Markup(info.text)
-
     log_info("move_information", "end")
-    return {'form':form}
+    return {
+          'form':form
+        , 'helper':DispHelper()
+    }

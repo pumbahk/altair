@@ -23,7 +23,8 @@
 
 <%include file="_detail.mako" args="event=form.event.data, week=form.week.data, month_unit=form.month_unit.data,
                 month_unit_keys=form.month_unit_keys.data, purchase_links=form.purchase_links.data,
-                tickets=form.tickets.data, sales_start=form.sales_start.data, sales_end=form.sales_end.data" />
+                tickets=form.tickets.data, sales_start=form.sales_start.data, sales_end=form.sales_end.data,
+                helper=helper" />
 
 </body>
 </html>
