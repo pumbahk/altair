@@ -35,7 +35,6 @@ public class AppAppletModel implements AppModel {
 		{
 			final GenericComboBoxModel<PrintService> printServices = new GenericComboBoxModel<PrintService>();
 			try {
-				System.getSecurityManager().checkPrintJobAccess();
 				AccessController.doPrivileged(new PrivilegedAction<Object>() {
 					public Object run() {
 						for (PrintService service: PrinterJob.lookupPrintServices())
