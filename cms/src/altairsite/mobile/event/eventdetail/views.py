@@ -4,7 +4,7 @@ from altaircms.event.models import Event
 from altairsite.mobile.event.eventdetail.forms import EventDetailForm
 from altairsite.mobile.core.helper import get_week_map, get_performances_month_unit, get_purchase_links\
     , get_tickets, exist_value, get_sales_date
-from altairsite.mobile.core.helper import log_info
+from altairsite.mobile.core.helper import log_info, Markup, nl2br
 
 class ValidationFailure(Exception):
     pass
@@ -31,6 +31,10 @@ def move_eventdetail(request):
     form.tickets.data = get_tickets(request=request, event=form.event.data)
     form.sales_start.data, form.sales_end.data = get_sales_date(request=request, event=form.event.data)
     log_info("move_eventdetail", "detail infomation get end")
+
+    # HTMLタグ解釈
+    form.event.data.notice = Markup(nl2br(form.event.data.notice))
+    form.event.data.inquiry_for = Markup(nl2br(form.event.data.inquiry_for))
 
     log_info("move_eventdetail", "end")
     return {'form':form}

@@ -5,6 +5,7 @@ from altaircms.helpers.link import get_purchase_page_from_performance
 from altaircms.models import SalesSegmentGroup, SalesSegment
 from altaircms.event.models import Event
 from altaircms.models import Ticket
+from markupsafe import Markup
 
 logger = logging.getLogger(__file__)
 
@@ -133,3 +134,9 @@ def get_sales_date(request, event):
             sales_end = segment.end_on
 
     return sales_start, sales_end
+
+def nl2br(value):
+    return value.replace("\n", "<br />")
+
+def markup(value):
+    return Markup(value)
