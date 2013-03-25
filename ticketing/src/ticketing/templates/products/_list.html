@@ -134,7 +134,7 @@ sales_segments = performance.sales_segments
     grid.setRetainChanges([row]);
   }
 </script>
-## 旧商品登録フォーム
+
 <div class="tabbable tabs-top grid-editor">
   <ul class="nav nav-tabs">
     % for i, sales_segment in enumerate(sales_segments):
@@ -280,35 +280,35 @@ sales_segments = performance.sales_segments
     'label-inverse'
   ]
 
-  map = {}
+  ss_to_st = {}
   if products:
     for product in products:
       sales_segment_id = product.sales_segment.id if product.sales_segment else 0
-      if not sales_segment_id in map:
+      if sales_segment_id not in ss_to_st:
         name = product.sales_segment.name if product.sales_segment else u'販売区分なし'
-        map[sales_segment_id] = {'name':name, 'stock_types':{}}
-      stock_types = map[sales_segment_id]['stock_types']
+        ss_to_st[sales_segment_id] = {}
+      st_to_prod = ss_to_st[sales_segment_id]
 
       stock_type_id = product.seat_stock_type_id
-      if not stock_type_id in stock_types:
-        stock_types[stock_type_id] = {'name':product.seat_type(), 'products':[]}
-      stock_types[stock_type_id]['products'].append(product)
+      if stock_type_id not in st_to_prod:
+        st_to_prod[stock_type_id] = []
+      st_to_prod[stock_type_id].append(product)
 %>
+## 旧商品登録フォーム
 <form>
   <div class="tabbable tabs-top product-table">
     <ul class="nav nav-tabs">
-    % for i, sales_segment_id in enumerate(map):
-      <% sales_segment = map[sales_segment_id] %>
-      <li class="${'active' if i == 0 else ''}"><a href="#sales-segment-${sales_segment_id}" data-toggle="tab">${sales_segment['name']}</a></li>
+    % for i, sales_segment in enumerate(sales_segments):
+      <li class="${'active' if i == 0 else ''}"><a href="#sales-segment-${sales_segment.id}" data-toggle="tab">${sales_segment.name}</a></li>
     % endfor
     </ul>
-
     <div class="tab-content" id="tabbable-tab-content">
       <p>※このアイコン<i class="icon-eye-open"></i>をクリックすると券面のプレビューができます</p>
-    % for i, sales_segment_id in enumerate(map):
-      <% sales_segment = map[sales_segment_id] %>
-      <div class="tab-pane ${'active' if i == 0 else ''}" id="sales-segment-${sales_segment_id}">
+    % for i, sales_segment in enumerate(sales_segments):
+      <div class="tab-pane ${'active' if i == 0 else ''}" id="sales-segment-${sales_segment.id}">
+        % if sales_segment.id in ss_to_st:
         <div style="margin: 10px 0 50px 30px;">
+          <% st_to_prod = ss_to_st[sales_segment.id] %>
           <table class="table table-striped table-bordered table-condensed" style="margin-bottom: 10px;">
             <thead>
               <tr>
@@ -333,9 +333,8 @@ sales_segments = performance.sales_segments
 
             <tbody>
             <% row_count = 0 %>
-            % for stock_type_id in sales_segment['stock_types']:
-              <% stock_type = sales_segment['stock_types'][stock_type_id] %>
-              % for product in stock_type['products']:
+            % for stock_type_id in st_to_prod:
+              % for product in st_to_prod[stock_type_id]:
                 <% if limit and row_count >= limit: break %>
                 <% count = len(product.items_by_performance_id(performance.id)) if performance else 1 %>
                 <% rowspan = 'rowspan=%s' % (count)  if count else '' %>
@@ -385,8 +384,8 @@ sales_segments = performance.sales_segments
           </table>
           <%
             count_by_sales_segment = 0
-            for stock_type_id in sales_segment['stock_types']:
-              count_by_sales_segment += len(sales_segment['stock_types'][stock_type_id]['products'])
+            for stock_type_id in st_to_prod:
+              count_by_sales_segment += len(st_to_prod[stock_type_id])
           %>
           % if limit and count_by_sales_segment > limit:
           <div class="pull-right">
@@ -395,6 +394,7 @@ sales_segments = performance.sales_segments
           </div>
           % endif
         </div>
+        % endif
       </div>
     % endfor
     </div>
