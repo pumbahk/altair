@@ -90,8 +90,8 @@ import functools
 class TransactionWrapper(object):
     def __init__(self, o):
         self.o = o
-    def __getattr__(self, o, k):
-        return getattr(o, k)
+    def __getattr__(self, k):
+        return getattr(self.o, k)
 
     def get_tag_from_genre_label(self, name):
         stag = self.o.get_tag_from_genre_label(name)
@@ -132,9 +132,8 @@ class CategoryPageBlocksBuilder(object):
         r = []
         add = self._create_add_widget_function(page, genre, r)
         allowable = lambda m: m.query.filter_by(organization_id=page.organization_id)
-
         add("topic", {"tag": allowable(TopicTag).filter_by(label=u"特集").one().id, 
-                      "system_tag": "__None", 
+                      "system_tag": "__None" if genre.origin is None else self.topic_searcher.system_tagmanager.get_or_create_tag(genre.origin_genre.label, public_status=True).id, 
                       "display_type": "topic", 
                       "display_count": 2})
         add("promotion", {"tag": allowable(PromotionTag).filter_by(label=u"プロモーション枠").one().id, 
