@@ -35,7 +35,7 @@ def get_performance_status(request, widget, event, status_impl):
     """
     call api
     """
-    data = None
+    data = dummy_data
     try:
         data = get_calendar_data_api(request).fetch_stock_status(request, event, widget.salessegment)
         data = json.loads(data)
