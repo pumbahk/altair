@@ -23,7 +23,7 @@ def send_inquiry(request):
     form = InquiryForm(request.POST)
 
     if form.validate():
-        form.send.data = True
+        form.send.data = "Success"
         try:
             log_info("send_inquiry", "send mail start")
             mailer = get_mailer(request)
@@ -35,7 +35,7 @@ def send_inquiry(request):
             log_info("send_inquiry", "send mail end")
         except Exception as e:
             log_error("send_inquiry", str(e))
-            raise HTTPNotFound
+            form.send.data = "Failed"
 
     log_info("send_inquiry", "end")
     return {'form':form}
