@@ -14,7 +14,11 @@
 
         % if form.promotions.data:
             % for promo in form.promotions.data:
-                <a href="/eventdetail?promotion_id=${promo.id}">${promo.text}</a>
+                % if helper.get_event_from_promotion(request, promo):
+                    <a href="/eventdetail?promotion_id=${promo.id}">${promo.text}</a>
+                % else:
+                    ${promo.text}
+                % endif
             % endfor
         % endif
 
@@ -26,15 +30,16 @@
         % endfor
 
         <%include file="../common/_attention.mako" args="attentions=form.attentions.data
-                                                        , genre=0, sub_genre=0"/>
+                                                        , genre=0, sub_genre=0, helper=helper"/>
 
         <%include file="../common/_area.mako" args="path=form.path.data, genre=form.genre.data
                             , sub_genre=form.sub_genre.data, num=form.num.data"/>
 
         <%include file="../common/_topics.mako" args="topics=form.topics.data
-                                                         , genre=0, sub_genre=0"/>
+                                                         , genre=0, sub_genre=0, helper=helper"/>
 
-        <%include file="../common/_hotward.mako" args="hotwords=form.hotwords.data, genre=0, sub_genre=0" />
+        <%include file="../common/_hotward.mako" args="hotwords=form.hotwords.data, genre=0, sub_genre=0
+                                                          , helper=helper" />
 
         <%include file="../common/_footer.mako"/>
     </body>

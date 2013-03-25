@@ -11,6 +11,7 @@ from altaircms.models import Genre
 from altairsite.mobile.core.helper import exist_value
 from sqlalchemy import asc
 from altairsite.mobile.core.helper import log_info
+from altairsite.mobile.core.eventhelper import EventHelper
 
 class ValidationFailure(Exception):
     pass
@@ -67,7 +68,11 @@ def move_genre(request):
     log_info("move_genre", "hotwords get")
 
     log_info("move_genre", "end")
-    return {'form':form}
+
+    return {
+          'form':form
+        , 'helper':EventHelper()
+    }
 
 @view_config(route_name='genre', context=ValidationFailure
     , request_type="altairsite.mobile.tweens.IMobileRequest", renderer='altairsite.mobile:templates/common/error.mako')

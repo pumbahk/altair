@@ -8,6 +8,7 @@ from altaircms.tag.models import HotWord
 from altairsite.mobile.forms import TopForm
 from sqlalchemy import asc
 from core.helper import log_info
+from altairsite.mobile.core.eventhelper import EventHelper
 
 @view_config(route_name='home', request_type="altairsite.mobile.tweens.IMobileRequest"
              , renderer='altairsite.mobile:templates/top/top.mako')
@@ -24,7 +25,7 @@ def main(request):
         log_info("main", "attensions get")
 
     promo_searcher = get_topic_searcher(request, "promotion")
-    tag = PromotionTag.query.filter_by(label=u"プロモーション").first()
+    tag = PromotionTag.query.filter_by(label=u"プロモーション枠").first()
     if tag:
         form.promotions.data = promo_searcher.query_publishing_topics(datetime.now(), tag)[0:5]
         log_info("main", "promotions get")
@@ -44,4 +45,8 @@ def main(request):
     log_info("main", "genretree get")
 
     log_info("main", "end")
-    return {'form':form}
+
+    return {
+         'form':form
+        ,'helper':EventHelper()
+    }

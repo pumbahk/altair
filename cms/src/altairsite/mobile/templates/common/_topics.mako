@@ -1,4 +1,4 @@
-<%page args="topics, genre, sub_genre" />
+<%page args="topics, genre, sub_genre, helper" />
 
 <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>トピックス</font></div>
 
@@ -7,9 +7,17 @@
 % if topics:
     % for topic in topics:
         % if genre:
-            <a href="/eventdetail?topic_id=${topic.id}&genre=${genre}&sub_genre=${sub_genre}">${topic.text}</a>
+            % if helper.get_event_from_topic(request, topic):
+                <a href="/eventdetail?topic_id=${topic.id}&genre=${genre}&sub_genre=${sub_genre}">${topic.text}</a>
+            % else:
+                ${topic.text}
+            % endif
         % else:
-            <a href="/eventdetail?topic_id=${topic.id}">${topic.text}</a>
+            % if helper.get_event_from_topic(request, topic):
+                <a href="/eventdetail?topic_id=${topic.id}">${topic.text}</a>
+            % else:
+                ${topic.text}
+            % endif
         % endif
         <br/>
     % endfor

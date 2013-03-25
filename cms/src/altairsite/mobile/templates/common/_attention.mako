@@ -1,4 +1,4 @@
-<%page args="attentions, genre, sub_genre" />
+<%page args="attentions, genre, sub_genre, helper" />
 
 <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>注目のイベント</font></div>
 
@@ -7,9 +7,17 @@
 % if attentions:
     % for count, attention in enumerate(attentions):
         % if genre:
-            <a href="/eventdetail?attention_id=${attention.id}&genre=${genre}&sub_genre=${sub_genre}">${attention.text}</a>
+            % if helper.get_event_from_topic(request, attention):
+                <a href="/eventdetail?attention_id=${attention.id}&genre=${genre}&sub_genre=${sub_genre}">${attention.text}</a>
+            % else:
+                ${attention.text}
+            % endif
         % else:
-            <a href="/eventdetail?attention_id=${attention.id}">${attention.text}</a>
+            % if helper.get_event_from_topic(request, attention):
+                <a href="/eventdetail?attention_id=${attention.id}">${attention.text}</a>
+            % else:
+                ${attention.text}
+            % endif
         % endif
         % if count < len(attentions) - 1:
         /
