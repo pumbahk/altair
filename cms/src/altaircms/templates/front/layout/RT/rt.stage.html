@@ -216,7 +216,7 @@ from altairsite.search.forms import DealCondPartForm
 <dd>
   <ul>
     % for k in layout.top_salessegment_kind_list:
-	  <li><a href="${h.link.get_searchpage(request, kind="deal_cond", value=k.id)}">${k.label}</a></li>
+	  <li><a href="${h.link.get_searchpage(request, kind="deal_cond", value=k.name)}">${k.label}</a></li>
     % endfor
   </ul>
 </dd>
