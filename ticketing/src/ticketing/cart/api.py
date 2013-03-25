@@ -146,11 +146,12 @@ def has_cart(request):
         return False
 
 def get_cart_safe(request):
+    now = datetime.now() # XXX
     minutes = max(int(request.registry.settings['altair_cart.expire_time']) - 1, 0)
     cart = get_cart(request)
     if cart is None:
         raise NoCartError('Cart is not associated to the request')
-    expired = cart.is_expired(minutes) or cart.finished_at
+    expired = cart.is_expired(minutes, now) or cart.finished_at
     if expired:
         remove_cart(request)
         raise NoCartError('Cart is expired')

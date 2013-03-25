@@ -202,10 +202,11 @@ class Cart(Base):
         return cls.query.filter_by(cart_session_id=cart_session_id).count()
 
     @hybrid_method
-    def is_expired(self, expire_span_minutes):
+    def is_expired(self, expire_span_minutes, now):
         """ 決済完了までの時間制限
         """
-        return self.created_at < datetime.now() - timedelta(minutes=expire_span_minutes)
+        assert isinstance(now, datetime)
+        return self.created_at < now - timedelta(minutes=expire_span_minutes)
 
     @deprecate("deprecated method")
     def add_seat(self, seats, ordered_products):
@@ -233,7 +234,7 @@ class Cart(Base):
         """
         for product in self.products:
             product.finish()
-        self.finished_at = datetime.now()
+        self.finished_at = datetime.now() # SAFE TO USE datetime.now() HERE
 
     def release(self):
         """ カート開放
@@ -300,13 +301,15 @@ class CartedProduct(Base):
     def get_reserved_amount(cls, product_item):
         return DBSession.query(sql.func.sum(cls.amount)).filter(cls.product_item==product_item).filter(cls.state=="reserved").first()[0] or 0
 
+    def _mark_finished(self):
+        self.finished_at = datetime.now() # SAFE TO USE datetime.now() HERE
 
     def finish(self):
         """ 決済処理
         """
         for item in self.items:
             item.finish()
-        self.finished_at = datetime.now()
+        self._mark_finished()
 
     def release(self):
         """ 開放
@@ -317,8 +320,10 @@ class CartedProduct(Base):
                 if not item.release():
                     logger.info('returing False to abort. NO FURTHER SQL EXECUTION IS SUPPOSED!')
                     return False
-            self.finished_at = datetime.now()
+            self._mark_finished()
             logger.info('CartedProduct (id=%d) successfully released' % self.id)
+        else:
+            logger.info('CartedProduct (id=%d) is already marked finished' % self.id)
         return True
 
     def is_valid(self):
@@ -387,6 +392,9 @@ class CartedProductItem(Base):
         else:
             return []
 
+    def _mark_finished(self):
+        self.finished_at = datetime.now() # SAFE TO USE datetime.now() HERE
+
     def finish(self):
         """ 決済処理
         """
@@ -394,7 +402,7 @@ class CartedProductItem(Base):
             if seat_status.status != int(c_models.SeatStatusEnum.InCart):
                 raise NoCartError()
             seat_status.status = int(c_models.SeatStatusEnum.Ordered)
-        self.finished_at = datetime.now()
+        self._mark_finished()
 
     def release(self):
         logger.info('trying to release CartedProductItem (id=%d)' % self.id)
@@ -418,9 +426,10 @@ class CartedProductItem(Base):
             logger.info('restoring the quantity of stock (id=%s, quantity=%d) by +%d' % (stock_status.stock_id, stock_status.quantity, release_quantity))
             stock_status.quantity += release_quantity
             stock_status.save()
+            self._mark_finished()
             logger.info('done for CartedProductItem (id=%d)' % self.id)
-
-            self.finished_at = datetime.now()
+        else:
+            logger.info('CartedProductItem (id=%d) is already marked finished' % self.id)
         return True
 
     def is_valid(self):
