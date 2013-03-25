@@ -16,7 +16,7 @@
 
     <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
 
-    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>ヘルプ</font></div>
+    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffbf00">■</font><a name="top">ヘルプ</a></font></div>
 
     <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
 
@@ -27,7 +27,7 @@
             </a><br/><br/>
         % endfor
 
-        <a href="/">トップへ</a>
+        <a href="#top">トップへ</a>
 
         % for count, help in enumerate(form.helps.data):
             <hr/>
@@ -37,7 +37,7 @@
             Ａ．${help.text}<br/>
             % if (count + 1) % 5 == 0 or len(form.helps.data) == count + 1:
                 <hr/>
-                <a href="/">トップへ</a>
+                <a href="#top">トップへ</a>
             % endif
         % endfor
     % endif
