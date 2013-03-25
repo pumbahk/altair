@@ -26,7 +26,9 @@
 <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
 
 % for count, month in enumerate(month_unit_keys):
-    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffff00">■</font><a name="${month}" id="${month}">${month}</a></font></div>
+
+    <font color="#ff00ff">■</font><a name="${month}" id="${month}"><font size="5">${month}</font></a>
+
     <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
 
     % for perf in event.performances:
@@ -54,33 +56,25 @@
 <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
 
 % if event.salessegment_groups:
-    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffff00">■</font>販売区分</font></div>
+    <font color="#ff00ff">■</font><font size="5">販売期間</font>
     <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
     % for segment in event.salessegment_groups:
         ${segment.name}:
         ${segment.start_on.year}/${segment.start_on.month}/${segment.start_on.day}-${segment.end_on.year}/${segment.end_on.month}/${segment.end_on.day}
         <br/>
     % endfor
+    <br/>
 % endif
 
 % if event.notice:
-    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffff00">■</font>詳細/注意事項</font></div>
+    <font color="#ff00ff">■</font><font size="5">詳細/注意事項</font>
     <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
     ${helper.nl2br(event.notice)|n}
+    <br/><br/>
 % endif
-
-<!--
-% if tickets:
-    席種/価格
-    % for ticket in tickets:
-        ${ticket.name}:${ticket.price}<br/>
-    % endfor
-% endif
--->
-
 
 % if event.inquiry_for:
-    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffff00">■</font>お問い合わせ</font></div>
+    <font color="#ff00ff">■</font><font size="5">お問い合わせ</font>
     <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
     ${helper.nl2br(event.inquiry_for)|n}
 % endif
