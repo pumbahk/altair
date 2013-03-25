@@ -43,6 +43,7 @@ from ticketing.sej.exceptions import SejServerError
 from ticketing.sej.payment import request_cancel_order
 from ticketing.assets import IAssetResolver
 from ticketing.utils import myurljoin
+from ticketing.helpers import todate
 from ticketing.payments import plugins
 
 logger = logging.getLogger(__name__)
@@ -897,9 +898,9 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                             new_pdmp = PaymentDeliveryMethodPair.get(id)
                             if new_pdmp:
                                 new_pdmps.append(new_pdmp)
-                        sales_segment.payment_delivery_method_pairs.clear()
+                        sales_segment.payment_delivery_method_pairs = list()
                         for new_pdmp in new_pdmps:
-                            sales_segment.payment_delivery_method_pairs.add(new_pdmp)
+                            sales_segment.payment_delivery_method_pairs.append(new_pdmp)
 
                 # 関連テーブルのticket_bundle_idを書き換える
                 for old_id, new_id in convert_map['ticket_bundle'].iteritems():
@@ -1170,10 +1171,10 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     delivery_method = relationship('DeliveryMethod', backref='payment_delivery_method_pairs')
 
     def is_available_for(self, performance, on_day):
-        if performance is None:
+        if performance is None or performance.start_on is None:
             return True
-        border = performance.start_on - timedelta(days=self.unavailable_period_days)
-        return self.public and (on_day <= border)
+        border = performance.start_on.date() - timedelta(days=self.unavailable_period_days)
+        return self.public and (todate(on_day) <= border)
 
     @staticmethod
     def create_from_template(template, **kwargs):
@@ -3028,8 +3029,9 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     payment_delivery_method_pairs = relationship("PaymentDeliveryMethodPair",
         secondary="SalesSegment_PaymentDeliveryMethodPair",
         backref="sales_segments",
+        order_by="PaymentDeliveryMethodPair.id",
         cascade="all",
-        collection_class=set)
+        collection_class=list)
 
     @property
     def available_payment_delivery_method_pairs(self):
@@ -3122,9 +3124,9 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
                 )).first()
                 if new_pdmp:
                     new_pdmps.append(new_pdmp)
-            sales_segment.payment_delivery_method_pairs.clear()
+            sales_segment.payment_delivery_method_pairs = list()
             for new_pdmp in new_pdmps:
-                sales_segment.payment_delivery_method_pairs.add(new_pdmp)
+                sales_segment.payment_delivery_method_pairs.append(new_pdmp)
         else:
             sales_segment.payment_delivery_method_pairs = template.payment_delivery_method_pairs
         sales_segment.save()
@@ -3139,3 +3141,4 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                                 backref='settings')
 
     auth_type = Column(Unicode(255))
+    performance_selector = Column(Unicode(255), doc=u"カートでの公演絞り込み方法")

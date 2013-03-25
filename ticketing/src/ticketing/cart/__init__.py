@@ -1,11 +1,11 @@
 # -*- coding:utf-8 -*-
 import json
-import functools
+#import functools
 import logging
 import sqlahelper
 
 from pyramid.config import Configurator
-from pyramid.session import UnencryptedCookieSessionFactoryConfig
+#from pyramid.session import UnencryptedCookieSessionFactoryConfig
 from pyramid.interfaces import IDict
 from pyramid.tweens import EXCVIEW
 from pyramid_beaker import session_factory_from_settings
@@ -63,15 +63,17 @@ def includeme(config):
     config.add_route('cart.logout', '/logout')
 
     from pyramid.interfaces import IRequest
-    from .interfaces import IStocker, IReserving, ICartFactory
+    from .interfaces import IStocker, IReserving, ICartFactory, IPerformanceSelector
     from .stocker import Stocker
     from .reserving import Reserving
     from .carting import CartFactory
+    from .performanceselector import MatchUpPerformanceSelector, DatePerformanceSelector
     reg = config.registry
     reg.adapters.register([IRequest], IStocker, "", Stocker)
     reg.adapters.register([IRequest], IReserving, "", Reserving)
     reg.adapters.register([IRequest], ICartFactory, "", CartFactory)
-
+    reg.adapters.register([IRequest], IPerformanceSelector, "matchup", MatchUpPerformanceSelector)
+    reg.adapters.register([IRequest], IPerformanceSelector, "date", DatePerformanceSelector)
 
 def import_mail_module(config):
     config.include("ticketing.mails")

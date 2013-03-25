@@ -114,7 +114,7 @@ class SalesSegments(BaseView):
                 f.end_at.data = datetime.now()
             sales_segment = merge_session_with_post(SalesSegment(), f.data)
             pdmps = PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id.in_(f.payment_delivery_method_pairs.data)).filter(PaymentDeliveryMethodPair.sales_segment_group_id==sales_segment.sales_segment_group_id).all()
-            sales_segment.payment_delivery_method_pairs = set(pdmps)
+            sales_segment.payment_delivery_method_pairs = pdmps
             sales_segment.save()
 
             self.request.session.flash(u'販売区分を作成しました')
@@ -147,7 +147,7 @@ class SalesSegments(BaseView):
             return f
         pdmp_ids = self.request.params.getall('payment_delivery_method_pairs[]')
 
-        pdmps = set(PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id.in_(pdmp_ids)).filter(PaymentDeliveryMethodPair.sales_segment_group_id==sales_segment.sales_segment_group_id))
+        pdmps = list(PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id.in_(pdmp_ids)).filter(PaymentDeliveryMethodPair.sales_segment_group_id==sales_segment.sales_segment_group_id))
         
         if self.request.matched_route.name == 'sales_segments.copy':
             with_pdmp = bool(f.copy_payment_delivery_method_pairs.data)

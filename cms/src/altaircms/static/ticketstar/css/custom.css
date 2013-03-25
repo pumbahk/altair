@@ -555,6 +555,10 @@ salessegment icon
   height: 46px;
 }
 
+<<<<<<< HEAD
+
+=======
+>>>>>>> master
 /* sub category top sidebar also using */
 #side #sideFeature {
 	width: 200px;
@@ -606,3 +610,4 @@ salessegment icon
     height: 0;
     clear: both;
     visibility: hidden;
+}

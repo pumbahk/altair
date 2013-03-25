@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 import json
 import re
-from datetime import datetime
+from datetime import datetime, date
 from itertools import groupby
 
 from ticketing.models import DBSession
 from ticketing.core.models import SeatStatusEnum, VenueArea
-from ticketing.helpers.base import jdate, jtime
+from ticketing.helpers.base import jdate, jtime, jdatetime
 
 import logging
 
@@ -21,41 +21,25 @@ class SeatSource(object):
         self.seat = seat       # ex: 10
         self.status = status
 
-    def get_block_display(self):
-        # 席番号から生成する
-        if self.source and self.source.name:
-            name = re.sub(u' [0-9]+番', '', self.source.name)
-            name = re.sub(u' [0-9]+列', '', name)
-            return name
-        return ""
-
-    def get_row_display(self):
-        # 席番号から生成する
-        if self.source and self.source.name:
-            match = re.match(u'^.+ ([0-9]+)列 .+$', self.source.name)
-            if match:
-                return match.group(1)
-        return ""
-
 
 class SeatRecord(object):
     """帳票の一行分のレコード
     """
     def __init__(self, block=None, line=None, start=None, end=None,
-            date=None, quantity=0, stock_type="stocks"):
+            date=None, quantity=0, kind="stocks"):
         self.block = block
         self.line = line
         self.start = start
         self.end = end
         self.date = date
         self.quantity = quantity
-        self.stock_type = stock_type
+        self.kind = kind
 
     def is_stocks(self):
-        return self.stock_type == "stocks"
+        return self.kind == "stocks"
 
     def is_returns(self):
-        return self.stock_type == "returns"
+        return self.kind == "returns"
 
     def get_record(self):
         """Exporterが扱える形の一行分のレコードを返す
@@ -76,7 +60,7 @@ class SeatRecord(object):
                 self.start or "",
                 u"〜",
                 self.end or "",
-                str(self.date),
+                self.date.strftime('%m/%d'),
                 str(self.quantity),
             ]
         return record
@@ -126,12 +110,13 @@ class StockRecord(object):
         return data
 
 
-def process_sheet(exporter, sheet, event, performance, stock_holder, stock_records, now=None):
+def process_sheet(exporter, sheet, report_type, event, performance, stock_holder, stock_records, now=None):
     """シートの内容を埋める
     """
-    today_stamp = jdate(now or datetime.now())
+    today_stamp = jdatetime(now or datetime.now())
     exporter.set_id(sheet, performance.code or "")
-    exporter.set_stock_holder_name(sheet, stock_holder.name or "")
+    exporter.set_report_type(sheet, report_type)
+    exporter.set_stock_holder_name(sheet, stock_holder.account.name or "")
     exporter.set_datetime(sheet, today_stamp)
     exporter.set_event_name(sheet, event.title or "")
     exporter.set_performance_name(sheet, performance.name or "")
@@ -148,15 +133,10 @@ def seat_source_from_seat(seat):
     """
     attributes = seat.attributes or {}
     seat_source = SeatSource(source=seat)
-    
+
     # フロアは、SeatAttributeのを使う
     if 'floor' in attributes:
         seat_source.floor = attributes.get('floor')
-
-    # ブロック名は、SeatAttributeには無い
-#   if attributes:
-#       if 'block' in attributes:
-#           seat_source.block = attributes.get('block')
 
     # ブロック名は、VenueAreaを検索して使う
     # まれにgroup_l0_idがNULLな席とかがあってVenueArea.nameが拾えない場合があるので
@@ -166,17 +146,11 @@ def seat_source_from_seat(seat):
         .filter_by(group_l0_id=seat.group_l0_id).first()
     if area is not None:
         seat_source.block = area.name
-    
-    # ブロック名は、席番号から切りだして使う（いまいち）
-#   seat_source.block = seat_source.get_block_display()
-    
+
     # 列番号は、SeatAttributeのを使う
     if 'row' in attributes:
-       seat_source.line = attributes.get('row')
+        seat_source.line = attributes.get('row')
 
-    # 列番号は、席番号から切りだして使う（いまいち）
-#   seat_source.line = seat_source.get_row_display()
-    
     seat_source.seat = seat.seat_no
     seat_source.status = seat.status
     return seat_source
@@ -186,7 +160,7 @@ def is_series_seat(seatsource1, seatsource2):
     """seatsource1とseatsource2が別の列、もしくは通路などを
     挟んで連続していない場合にTrueを返す
     """
-    
+
     # いずれかのseatがNULLの時は違う列扱い
     if seatsource1.seat == None or seatsource2.seat == None:
         return False
@@ -194,11 +168,11 @@ def is_series_seat(seatsource1, seatsource2):
     # 列IDが同じで、席番号の差が1の場合、連続
     if (seatsource1.source.row_l0_id == seatsource2.source.row_l0_id) and abs(int(seatsource1.seat)-int(seatsource2.seat)) == 1:
         return True
-    
+
     return False
 
 
-def seat_records_from_seat_sources(seat_sources, unsold=False):
+def seat_records_from_seat_sources(seat_sources, report_type, kind, date):
     """SeatSourceのリストからSeatRecordのリストを返す
     サマリー作成
     """
@@ -218,18 +192,19 @@ def seat_records_from_seat_sources(seat_sources, unsold=False):
                     line=lst_values[0].line,
                     start=lst_values[0].seat,
                     end=lst_values[-1].seat,
+                    date=date,
                     quantity=len(lst_values),
+                    kind=kind
                 )
             result.append(seat_record)
             del lst_values[:]
 
         for value in values:
-        #   print "b:%s r:%s s:%s" % (value.block, value.line, value.seat)
             # 1つ前の座席と連続していなければ結果に追加してlst_valuesをリセット
             if lst_values and not is_series_seat(lst_values[-1], value):
                 flush()
             # 残席のみ
-            if not unsold or value.status == SeatStatusEnum.Vacant.v:
+            if report_type != 'unsold' or value.status == SeatStatusEnum.Vacant.v:
                 lst_values.append(value)
         # 残り
         if lst_values:
@@ -256,7 +231,7 @@ class SalesScheduleRecord(object):
             sales=[
                 sales_record.get_record() for sales_record in self.sales
             ],
-            performance=[
+            performances=[
                 performance_record.get_record() for performance_record in self.performances
             ],
             prices=[
@@ -294,14 +269,20 @@ class SalesSchedulePerformanceRecord(object):
         self.start = start
         self.price_name = price_name
         self.sales_end = sales_end
+        self.submit_order = submit_order
+        self.submit_pay = submit_pay
+        self.pay_datetime = pay_datetime
 
     def get_record(self):
         record = dict(
-            datetime=self.datetime_ or "",
+            datetime=self.datetime or "",
             open=self.open_ or "",
             start=self.start or "",
             price_name=self.price_name or "",
             sales_end = self.sales_end or "",
+            submit_order = self.submit_order or "",
+            submit_pay = self.submit_pay or "",
+            pay_datetime = self.pay_datetime or "",
         )
         return record
 
@@ -327,15 +308,17 @@ class SalesSchedulePriceRecordRecord(object):
     """販売日程管理票のpricesのrecordsの中身
     sheet_record['prices'][0]['records'][0]
     """
-    def __init__(self, seat_type=None, ticket_type=None, price=None):
+    def __init__(self, sales_segment=None, seat_type=None, ticket_type=None, price=None):
+        self.sales_segment = sales_segment
         self.seat_type = seat_type
         self.ticket_type = ticket_type
         self.price = price
 
     def get_record(self):
         record = dict(
+            sales_segment=self.sales_segment or [],
             seat_type=self.seat_type or "",
             ticket_type=self.ticket_type or "",
-            price=self.price is None and "" or self.price,
+            price=self.price if self.price is not None else "",
         )
         return record

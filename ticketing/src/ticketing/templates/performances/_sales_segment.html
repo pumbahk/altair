@@ -1,11 +1,11 @@
-<%page args="form, performance=None" />
+<%page args="form, sales_segments=None" />
 
 <div style="margin-bottom: 20px;">
   <%include file="/sales_segments/_action_button.html" />
 </div>
 
 <form>
-<%include file="/sales_segments/_list.html" args="form=form_sales_segment, sales_segments=performance.sales_segments" />
+<%include file="/sales_segments/_list.html" args="form=form_sales_segment, sales_segments=sales_segments" />
 </form>
 <div id="sales_segments-form">
   <%include file="/sales_segments/_modal.html" args="modal_id='modal-sales_segment'" />

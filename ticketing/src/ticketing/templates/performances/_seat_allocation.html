@@ -66,8 +66,8 @@ span.editable {
 
 .swatch {
   display: inline-block;
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
   border-radius: 3px;
@@ -96,12 +96,12 @@ span.editable {
 </style>
 
 <script type="text/javascript">
-  $(".collapse").collapse()
+  $(".collapse").collapse();
 </script>
 
 <div id="tooltip"></div>
-<div class="tabbable tabs-below tabs-above" id="seat-allocation-tab">
-  <div class="tab-content"  id="seat-allocation-tab-content">
+<div class="tabbable" id="seat-allocation-tab">
+  <div class="tab-content" id="seat-allocation-tab-content">
     <div class="tab-pane active" id="map">
       <div class="container-fluid">
         <div class="row-fluid">
@@ -116,13 +116,13 @@ span.editable {
           <%vv:venueeditor data_source="${data_source}">
             <%def name="toolbar_extra()">
               <div style="float:right">
+                <input type="button" class="btn venue-editor-main-side-toggle" value="配席テーブル表示" />
                 <a name="save" href="javascript:saveStocks();" class="btn btn-primary">保存する</a>
               </div>
             </%def>
             <%def name="post()">
 
 <script type="text/javascript">
-var outer = venueEditorSide.children();
 
 function deepClone(o) {
   if (o !== null && typeof o == 'object' && o.constructor == Object) {
@@ -336,7 +336,7 @@ function buildStockHolderTypeTables(venue) {
     var keyedStocks = stockHolder.keyedStocks();
     var style = stockHolder.get('style');
     var swatch = $('<span class="swatch"></span>').css('text-color', style.text_color).text(style.text||'　');
-    var head = $('<h4 class="ui-header" style="float: left;"></h4>').text(' ' + stockHolder.get('name'));
+    var head = $('<h5 class="ui-header" style="float: left;"></h5>').text(' ' + stockHolder.get('name'));
     var transfer = $('<a class="transfer btn btn-mini btn-inverse" href="javascript:buildTransferModal(' + stockHolder.id + ');">枠移動</a>');
     var rest = $('<span class="rest label hide"></span>');
     stockHolder.on('change:available', function () {
@@ -370,6 +370,38 @@ function buildStockHolderTypeTables(venue) {
     retval.append(div);
   });
   return retval;
+}
+
+function buildSeatDetailRow(seat) {
+  var tr = $('<tr></tr>');
+  var checkbox = $('<input type="checkbox" checked="checked" />').attr('name', seat.get('id')).click(function () {
+    if (this.checked)
+      seat.set('selected', true);
+    else
+      seat.set('selected', false);
+  });
+  var checkbox_td = $('<td></td>').append(checkbox);
+  var seat_id = $('<td></td>').text(seat.get('id'));
+  var name = $('<td></td>').text(seat.get('name'));
+  var stock_type = $('<td></td>').text(seat.get('stock').get('stockType').get('name'));
+  var stock_holder = $('<td></td>').text(seat.get('stock').get('stockHolder').get('name'));
+  tr.append(checkbox_td);
+  tr.append(seat_id);
+  tr.append(name);
+  tr.append(stock_type);
+  tr.append(stock_holder);
+  return tr;
+}
+
+function buildSeatDetailTable(selection) {
+  var table = $('<table class="table table-bordered"></table>');
+  var tbody = $('<tbody></tbody>').appendTo(table);
+  var header = $('<td></td><td>ID</td><td>座席</td><td>席種</td><td>配券先</td>');
+  tbody.append(header);
+  selection.each(function (seat) {
+    tbody.append(buildSeatDetailRow(seat));
+  });
+  return table;
 }
 
 function buildTransferModal(id) {
@@ -457,9 +489,14 @@ function saveStocks() {
   });
 }
 
+var tab1 = venueEditorSide.find("#venue-editor-main-side-tab1");
+var tab2 = venueEditorSide.find("#venue-editor-main-side-tab2");
+
 callbacks.load = function (viewer) {
-  outer.empty();
-  outer.append(buildStockHolderTypeTables(viewer.venue));
+  tab1.empty();
+  tab1.append(buildStockHolderTypeTables(viewer.venue));
+  tab2.empty();
+  tab2.append(buildSeatDetailTable(venueEditorRoot.venueeditor('selection')));
 };
 
 callbacks.select = function (viewer, selection) {
@@ -467,6 +504,24 @@ callbacks.select = function (viewer, selection) {
     $(".assignable").addClass("enabled");
   else
     $(".assignable").removeClass("enabled");
+
+  if (selection.length == 1) {
+    var tbody = $('#venue-editor-main-side-tab2').find('table tbody');
+    // 単一選択なら選択状態を反映
+    var tr = tbody.find('tr input[name="' + selection[0].get('id') + '"]');
+    if (tr.length > 0) {
+      if (selection[0].get('selected'))
+        tr.attr('checked', 'checked');
+      else
+        tr.removeAttr('checked');
+    } else {
+      tbody.append(buildSeatDetailRow(selection[0]));
+    }
+  } else {
+    // 複数選択ならテーブル再生成
+    tab2.empty();
+    tab2.append(buildSeatDetailTable(venueEditorRoot.venueeditor('selection')));
+  }
 };
 </script>
             </%def>

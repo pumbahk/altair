@@ -36,8 +36,10 @@
           info.append($("<a>").attr("class", "close").attr("data-dismiss", "alert").text("×"));
           info.append($("<p>").text(data.message));
           $(".flashmessage").empty().append(info);
+      }).done(function(){
+        modal.data("modal").hide();
+        location.reload();
       });
-      modal.data("modal").hide();
       return false
     });
   });

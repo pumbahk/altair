@@ -22,6 +22,8 @@ from ticketing.users.models import User, UserCredential, Membership, MemberGroup
 
 from .interfaces import IPaymentMethodManager
 from .interfaces import IStocker, IReserving, ICartFactory
+from .interfaces import IPerformanceSelector
+
 from .models import Cart, PaymentMethodManager, DBSession
 from .exceptions import OutTermSalesException, NoSalesSegment, NoCartError
 
@@ -47,6 +49,9 @@ def is_checkout_payment(cart):
 
 # こいつは users.apiあたりに移動すべきか
 def is_login_required(request, event):
+    if event.organization.setting.auth_type == "rakuten":
+        return True
+
     """ 指定イベントがログイン画面を必要とするか """
     # 終了分もあわせて、このeventからひもづく sales_segment -> membergroupに1つでもguestがあれば True 
     q = MemberGroup.query.filter(
@@ -141,11 +146,12 @@ def has_cart(request):
         return False
 
 def get_cart_safe(request):
+    now = datetime.now() # XXX
     minutes = max(int(request.registry.settings['altair_cart.expire_time']) - 1, 0)
     cart = get_cart(request)
     if cart is None:
         raise NoCartError('Cart is not associated to the request')
-    expired = cart.is_expired(minutes) or cart.finished_at
+    expired = cart.is_expired(minutes, now) or cart.finished_at
     if expired:
         remove_cart(request)
         raise NoCartError('Cart is expired')
@@ -383,3 +389,9 @@ def get_seat_type_triplets(event_id, performance_id, sales_segment_id):
             c_models.ProductItem.performance_id==performance_id).order_by(
             c_models.StockType.display_order).all()
     return seat_type_triplets
+
+
+def get_performance_selector(request, name):
+    reg = request.registry
+    performance_selector = reg.adapters.lookup([IRequest], IPerformanceSelector, name)(request)
+    return performance_selector

@@ -46,3 +46,16 @@ class ICartFactory(Interface):
         """
         カート作成
         """
+
+class IPerformanceSelector(Interface):
+    def __call__():
+        """ 絞り込みキーと販売区分のOrderedDict
+        """
+
+    def select_value(performance):
+        """ 絞り込みキーの値取得
+        """
+
+    selection = Attribute(u"最初の絞り込み")
+    label = Attribute(u"絞り込みの項目名")
+    second_label = Attribute(u"公演決定の項目名")
