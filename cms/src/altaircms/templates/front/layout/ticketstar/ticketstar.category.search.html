@@ -6,7 +6,7 @@ if (page and hasattr(page, "pageset") and page.pageset.genre_id):
     from altairsite.search.searcher import get_pageset_query_from_genre
 
     search_context = SearchPageResource(request)
-    params = MultiDict({"top": page.pageset.genre_id,"sub": page.pageset.genre_id})
+    params = MultiDict({"sub": page.pageset.genre_id})
     query_params = GenrePartForm(params).configure(request).make_query_params()
 
     result_seq = search_context.get_result_sequence_from_query_params(
