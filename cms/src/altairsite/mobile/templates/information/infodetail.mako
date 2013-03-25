@@ -3,7 +3,7 @@
     <%include file="../common/_header.mako" args="title=u'楽天チケット[公演中止・変更情報]'"/>
 <body>
 
-    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffc0cb">■</font>公演中止・変更情報</font></div>
+    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffc0cb">■</font><a name="top">公演中止・変更情報</a></font></div>
 
     <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
 
@@ -22,8 +22,8 @@
     % if form.informations.data:
         % for count, info in enumerate(form.informations.data):
 
-            % if count % 10 == 0 and count > 0:
-                <a href="/">トップへ</a>
+            % if count % 5 == 0 and count > 0:
+                <a href="#top">トップへ</a>
                 <hr/>
             % endif
 
@@ -32,8 +32,8 @@
             <hr/>
         % endfor
 
-        % if (len(form.informations.data) + 1 ) % 10 != 0:
-            <a href="/">トップへ</a>
+        % if (len(form.informations.data) + 1 ) % 5 != 0:
+            <a href="#top">トップへ</a>
         % endif
     % else:
         公演中止情報はありません。

@@ -20,7 +20,7 @@
     <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
 
     % if form.informations.data:
-        % for count, info in enumerate(form.informations.data[0:10]):
+        % for count, info in enumerate(form.informations.data[0:5]):
             % if count > 0:
                 <hr/>
             % endif
@@ -28,7 +28,7 @@
             詳細：${helper.nl2br(info.text)|n}<br/>
         % endfor
 
-        % if len(form.informations.data) > 10:
+        % if len(form.informations.data) > 5:
             <hr/>
             <a href="/infodetail">すべてを見る</a>
         % endif
