@@ -90,7 +90,7 @@ class Lots(BaseView):
             for pdmp_id in self.request.POST.getall("pdmp_id"):
                 pdmp = PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id==pdmp_id).first()
                 if pdmp and pdmp not in lot.sales_segment.payment_delivery_method_pairs:
-                    lot.sales_segment.payment_delivery_method_pairs.add(pdmp)
+                    lot.sales_segment.payment_delivery_method_pairs.append(pdmp)
         if "action-delete" in self.request.POST:
             for product_id in self.request.POST.getall("product_id"):
                 product = Product.query.filter(Product.id==product_id).first()

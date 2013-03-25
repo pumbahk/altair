@@ -898,9 +898,9 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                             new_pdmp = PaymentDeliveryMethodPair.get(id)
                             if new_pdmp:
                                 new_pdmps.append(new_pdmp)
-                        sales_segment.payment_delivery_method_pairs.clear()
+                        sales_segment.payment_delivery_method_pairs = list()
                         for new_pdmp in new_pdmps:
-                            sales_segment.payment_delivery_method_pairs.add(new_pdmp)
+                            sales_segment.payment_delivery_method_pairs.append(new_pdmp)
 
                 # 関連テーブルのticket_bundle_idを書き換える
                 for old_id, new_id in convert_map['ticket_bundle'].iteritems():
@@ -3029,8 +3029,9 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     payment_delivery_method_pairs = relationship("PaymentDeliveryMethodPair",
         secondary="SalesSegment_PaymentDeliveryMethodPair",
         backref="sales_segments",
+        order_by="PaymentDeliveryMethodPair.id",
         cascade="all",
-        collection_class=set)
+        collection_class=list)
 
     @property
     def available_payment_delivery_method_pairs(self):
@@ -3123,9 +3124,9 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
                 )).first()
                 if new_pdmp:
                     new_pdmps.append(new_pdmp)
-            sales_segment.payment_delivery_method_pairs.clear()
+            sales_segment.payment_delivery_method_pairs = list()
             for new_pdmp in new_pdmps:
-                sales_segment.payment_delivery_method_pairs.add(new_pdmp)
+                sales_segment.payment_delivery_method_pairs.append(new_pdmp)
         else:
             sales_segment.payment_delivery_method_pairs = template.payment_delivery_method_pairs
         sales_segment.save()
