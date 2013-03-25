@@ -43,6 +43,7 @@ from ticketing.sej.exceptions import SejServerError
 from ticketing.sej.payment import request_cancel_order
 from ticketing.assets import IAssetResolver
 from ticketing.utils import myurljoin
+from ticketing.helpers import todate
 from ticketing.payments import plugins
 
 logger = logging.getLogger(__name__)
@@ -1173,9 +1174,7 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
         if performance is None or performance.start_on is None:
             return True
         border = performance.start_on.date() - timedelta(days=self.unavailable_period_days)
-        if isinstance(on_day, datetime):
-            on_day = on_day.date()
-        return self.public and (on_day <= border)
+        return self.public and (todate(on_day) <= border)
 
     @staticmethod
     def create_from_template(template, **kwargs):
