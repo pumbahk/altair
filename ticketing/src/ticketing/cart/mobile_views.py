@@ -379,7 +379,7 @@ class MobileReserveView(object):
             raise e
         except NotEnoughStockException as e:
             transaction.abort()
-            logger.debug("not enough stock quantity :%s" % e)
+            logger.debug("not enough stock quantity.")
             raise e
 
         DBSession.add(cart)
