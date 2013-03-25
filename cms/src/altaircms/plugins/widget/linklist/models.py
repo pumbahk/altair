@@ -22,7 +22,7 @@ from .api import get_linklist_candidates_finder
 def linklist_render(widget, finder, request=None):
     qs = finder(request, widget.limit_span or widget.N, widget._today_function())
     if widget.system_tag_id:
-        qs = qs.filter(PageTag2Page.filter_object_id==PageSet.id, PageTag2Page.tag_id==widget.system_tag_id)
+        qs = qs.filter(PageTag2Page.object_id==PageSet.id, PageTag2Page.tag_id==widget.system_tag_id)
     if widget.max_items:
         qs = qs.limit(widget.max_items)
     qs = qs.with_entities(PageSet.name, PageSet.url).all()
