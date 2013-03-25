@@ -13,11 +13,14 @@
         <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
 
         % if form.promotions.data:
-            % for promo in form.promotions.data:
+            % for count, promo in enumerate(form.promotions.data):
                 % if helper.get_event_from_promotion(request, promo):
                     <a href="/eventdetail?event_id=${helper.get_event_from_promotion(request, promo).id}">${promo.text}</a>
                 % else:
                     ${promo.text}
+                % endif
+                % if count < len(form.promotions.data) - 1:
+                    /
                 % endif
             % endfor
         % endif
