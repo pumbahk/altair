@@ -25,7 +25,7 @@ def linklist_render(widget, finder, request=None):
         qs = qs.filter(PageTag2Page.object_id==PageSet.id, PageTag2Page.tag_id==widget.system_tag_id)
     if widget.max_items:
         qs = qs.limit(widget.max_items)
-    qs = qs.with_entities(PageSet.name, PageSet.url).all()
+    qs = qs.all()
     if not qs:
         return u'<div style="margin-top:-5px;" id="%s"><p>現在、対象となる公演情報はありません</p></div>' % widget.finder_kind
     candidates = [u'<a href="%s">%s</a>' % (h.link.publish_page_from_pageset(request, p), p.name) for p in qs]
