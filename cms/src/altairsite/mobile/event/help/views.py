@@ -6,6 +6,7 @@ from datetime import datetime
 from altaircms.topic.api import get_topic_searcher
 from altairsite.mobile.event.help.forms import HelpForm
 from altairsite.mobile.core.helper import log_info
+from altairsite.mobile.core.disphelper import DispHelper
 
 class ValidationFailure(Exception):
     pass
@@ -25,4 +26,7 @@ def move_help(request):
         log_info("move_help", "helps get")
 
     log_info("move_help", "start")
-    return {'form':form}
+    return {
+          'form':form
+        , 'helper':DispHelper()
+    }
