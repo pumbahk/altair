@@ -60,6 +60,7 @@ class ExcLogTweenTests(unittest.TestCase):
     @mock.patch('altair.exclog.logger')
     def test_call_with_exception(self, mock_logger):
         registry = self.config.registry
+        registry.settings['altair.exclog.includes'] = 'testing'
         handler = mock.Mock()
         handler.side_effect = Exception()
 
