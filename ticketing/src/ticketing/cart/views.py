@@ -471,13 +471,13 @@ class ReserveView(object):
             transaction.abort()
             logger.debug("seat selection is invalid.")
             return dict(result='NG', reason="invalid seats")
-        except NotEnoughStockException as e:
+        except NotEnoughStockException:
             transaction.abort()
-            logger.debug("not enough stock quantity :%s" % e)
+            logger.debug("not enough stock quantity.")
             return dict(result='NG', reason="stock")
-        except CartCreationException as e:
+        except CartCreationException:
             transaction.abort()
-            logger.debug("cannot create cart :%s" % e)
+            logger.debug("cannot create cart.")
             return dict(result='NG', reason="unknown")
 
 
