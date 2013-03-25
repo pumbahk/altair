@@ -136,5 +136,7 @@ def main(global_config, **local_config):
     sqlahelper.get_session().remove()
     sqlahelper.add_engine(engine)
     config.add_tween("altaircms.tweens.cms_request_factory")
-    return config.make_wsgi_app()
-
+    app = config.make_wsgi_app()
+    from pyramid.interfaces import IRouter
+    config.registry.registerUtility(app, IRouter)
+    return app

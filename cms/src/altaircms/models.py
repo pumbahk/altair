@@ -5,6 +5,7 @@ import sqlalchemy as sa
 from datetime import datetime
 import sqlalchemy.orm as orm
 from sqlalchemy.orm import relationship
+from pyramid.decorator import reify
 #dont remove
 from altaircms.modellib import model_to_dict, model_from_dict, model_column_items, model_column_iters
 from altaircms.modellib import model_clone, BaseOriginalMixin
@@ -203,6 +204,10 @@ class Genre(Base,  WithOrganizationMixin):
     origin = sa.Column(sa.String(length=32), doc="music, sports, event, stage")
     category_top_pageset_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id", use_alter=True, name="fk_default_category_top_pageset"), doc=u"カテゴリトップページのid")
     category_top_pageset = orm.relationship("PageSet", uselist=False, primaryjoin="PageSet.id==Genre.category_top_pageset_id")
+
+    @reify
+    def origin_genre(self):
+        return self.query_ancestors().filter(Genre.name==self.origin).one()
 
     def is_category_toppage(self, pageset):
         return self.category_top_pageset_id == pageset.id

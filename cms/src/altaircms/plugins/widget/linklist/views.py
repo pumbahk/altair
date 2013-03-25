@@ -14,7 +14,7 @@ class LinklistWidgetView(object):
 
     def _create_or_update(self):
         try:
-            data = self.request.json_body["data"]
+            data = self.request.json_body["data"].copy()
             if data.get("system_tag") and data.get("system_tag") != "__None":
                 data["system_tag"] = self.context.Tag.query.filter_by(id=data["system_tag"]).one()
             else:
@@ -27,9 +27,10 @@ class LinklistWidgetView(object):
             self.context.add(widget, flush=True)
             r = self.request.json_body.copy()
             r.update(pk=widget.id)
+            return r
         except Exception, e:
             logger.exception(str(e))
-        return r
+            return self.request.json_body.copy()
 
     @view_config(route_name="linklist_widget_create", renderer="json", request_method="POST")
     def create(self):
