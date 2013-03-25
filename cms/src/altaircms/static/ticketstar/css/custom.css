@@ -478,6 +478,13 @@
  * } */
 
 h2.sidebar-heading {
+	height: 24px;
+	padding: 7px 10px 0;
+	color: #ffffff;
+	background: url(../img/search/side_title.gif) no-repeat 0 0;
+}
+
+#main h2.sidebar-heading {
     background-repeat: no-repeat;
     color: #fff;
     margin:0;
@@ -555,43 +562,7 @@ salessegment icon
   height: 46px;
 }
 
-<<<<<<< HEAD
-
-=======
->>>>>>> master
 /* sub category top sidebar also using */
-#side #sideFeature {
-	width: 200px;
-	margin-bottom: 10px;
-}
-
-#side #sideFeature h2 {
-	height: 24px;
-	padding: 7px 10px 0;
-	color: #ffffff;
-	background: url(../img/search/side_title.gif) no-repeat 0 0;
-}
-
-#side #sideFeature h2 {
-	height: 31px;
-}
-
-#side #sideFeature ul {
-	padding: 0 1px 5px;
-	background: url(../img/search/side_bg.gif) no-repeat left bottom;
-}
-
-#side #sideFeature li {
-	background: #f7f7ea url(../img/common/side_nav_line.gif) repeat-x left bottom;
-}
-
-#side #sideFeature a {
-	display: block;
-	height: 1%;
-	padding: 3px 10px 5px 18px;
-	background: url(../img/search/side_icon.gif) no-repeat 10px 9px;
-}
-
 #music #main {
   margin-top:-50px;
 }
