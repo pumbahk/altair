@@ -21,6 +21,7 @@ public class AppWindowModel implements AppModel {
 	PropertyChangeSupport propertyChangeSupport = new SwingPropertyChangeSupport(this, true);
 	PageSetModel pageSetModel = null;
 	PrintService printService = null;
+	Boolean printingStatus = false;
 	GenericComboBoxModel<PrintService> printServices;
 	OurPageFormat pageFormat = null;
 	GenericComboBoxModel<OurPageFormat> pageFormats;
@@ -89,6 +90,7 @@ public class AppWindowModel implements AppModel {
 		propertyChangeSupport.firePropertyChange("printService", null, printService);
 		propertyChangeSupport.firePropertyChange("pageFormats", null, pageFormats);
 		propertyChangeSupport.firePropertyChange("pageFormat", null, pageFormat);
+		propertyChangeSupport.firePropertyChange("printingStatus", true, false);
 	}
 
 	/* (non-Javadoc)
@@ -161,6 +163,22 @@ public class AppWindowModel implements AppModel {
 	public void removePropertyChangeListener(String arg0,
 			PropertyChangeListener arg1) {
 		propertyChangeSupport.removePropertyChangeListener(arg0, arg1);
+	}
+
+	/* (non-Javadoc)
+	 * @see jp.ticketstar.ticketing.printing.gui.IAppWindowModel#getPrintingStatus()
+	 */
+	public Boolean getPrintingStatus(){
+		return printingStatus;
+	}
+
+	/* (non-Javadoc)
+	 * @see jp.ticketstar.ticketing.printing.gui.IAppWindowModel#setPrintingStatus()
+	 */
+	public void setPrintingStatus(Boolean status){
+		final Boolean prevValue = this.printingStatus;
+		this.printingStatus = status;
+		propertyChangeSupport.firePropertyChange("printingStatus", prevValue, printingStatus);
 	}
 
 	/* (non-Javadoc)
