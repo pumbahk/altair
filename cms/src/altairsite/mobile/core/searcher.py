@@ -42,12 +42,12 @@ class EventSearcher(object):
 
         if hasattr(form, "sub_genre"): # formが2種類入ってくるため
             if exist_value(form.sub_genre.data):
-                genre = self.request.allowable(Genre).filter(Genre.id==form.sub_genre.data).first()
-                search_word = search_word + " " + genre.label
+                subgenre = self.request.allowable(Genre).filter(Genre.id==form.sub_genre.data).first()
+                search_word = search_word + " " + subgenre.label
             elif exist_value(form.genre.data):
                 log_info("create_search_freeword", "sub_genre exist")
-                subgenre = self.request.allowable(Genre).filter(Genre.id==form.genre.data).first()
-                search_word = search_word + " " + subgenre.label
+                genre = self.request.allowable(Genre).filter(Genre.id==form.genre.data).first()
+                search_word = search_word + " " + genre.label
         elif exist_value(form.genre.data):
             subgenre = self.request.allowable(Genre).filter(Genre.id==form.genre.data).first()
             search_word = search_word + " " + subgenre.label
