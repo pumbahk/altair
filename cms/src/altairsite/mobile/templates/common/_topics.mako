@@ -8,13 +8,13 @@
     % for topic in topics:
         % if genre:
             % if helper.get_event_from_topic(request, topic):
-                <a href="/eventdetail?topic_id=${topic.id}&genre=${genre}&sub_genre=${sub_genre}">${topic.text}</a>
+                <a href="/eventdetail?event_id=${helper.get_event_from_topic(request, topic).id}&genre=${genre}&sub_genre=${sub_genre}">${topic.text}</a>
             % else:
                 ${topic.text}
             % endif
         % else:
             % if helper.get_event_from_topic(request, topic):
-                <a href="/eventdetail?topic_id=${topic.id}">${topic.text}</a>
+                <a href="/eventdetail?event_id=${helper.get_event_from_topic(request, topic).id}">${topic.text}</a>
             % else:
                 ${topic.text}
             % endif

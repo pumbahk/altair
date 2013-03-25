@@ -50,9 +50,10 @@ def move_genre(request):
     log_info("move_genre", "genretree create")
 
     # attention
+    topcontent_searcher = get_topic_searcher(request, "topcontent")
     tag = TopcontentTag.query.filter_by(label=u"注目のイベント").first()
     if tag:
-        form.attentions.data = topic_searcher.query_publishing_topics(datetime.now(), tag, system_tag).all()
+        form.attentions.data = topcontent_searcher.query_publishing_topics(datetime.now(), tag, system_tag).all()
         log_info("move_genre", "attention get")
 
     # Topic(Tag='トピック', system_tag='ジャンル')

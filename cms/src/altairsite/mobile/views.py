@@ -18,10 +18,10 @@ def main(request):
 
     form = TopForm()
 
-    topic_searcher = get_topic_searcher(request, "topic")
+    topcontent_searcher = get_topic_searcher(request, "topcontent")
     tag = TopcontentTag.query.filter_by(label=u"注目のイベント").first()
     if tag:
-        form.attentions.data = topic_searcher.query_publishing_topics(datetime.now(), tag)[0:8]
+        form.attentions.data = topcontent_searcher.query_publishing_topics(datetime.now(), tag)[0:8]
         log_info("main", "attensions get")
 
     promo_searcher = get_topic_searcher(request, "promotion")
@@ -30,6 +30,7 @@ def main(request):
         form.promotions.data = promo_searcher.query_publishing_topics(datetime.now(), tag)[0:5]
         log_info("main", "promotions get")
 
+    topic_searcher = get_topic_searcher(request, "topic")
     tag = TopicTag.query.filter_by(label=u"トピックス").first()
     if tag:
         form.topics.data = topic_searcher.query_publishing_topics(datetime.now(), tag)[0:5]

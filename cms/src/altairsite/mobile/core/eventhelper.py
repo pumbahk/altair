@@ -25,6 +25,17 @@ class EventHelper(object):
         return event
 
     @classmethod
+    def get_event_from_topcontent(cls, request, topcontent):
+        log_info("get_event_from_topcontent", "start")
+        event = request.allowable(Event) \
+            .filter(Event.is_searchable == True) \
+            .join(PageSet, Event.id == PageSet.event_id) \
+            .filter(PageSet.id == topcontent.linked_page_id).first()
+        print event
+        log_info("get_event_from_topcontent", "end")
+        return event
+
+    @classmethod
     def get_events_from_hotword(cls, request, hotword):
         log_info("get_event_from_hotword", "start")
         events = request.allowable(Event) \

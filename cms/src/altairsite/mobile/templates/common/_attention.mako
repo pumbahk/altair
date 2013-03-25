@@ -7,14 +7,14 @@
 % if attentions:
     % for count, attention in enumerate(attentions):
         % if genre:
-            % if helper.get_event_from_topic(request, attention):
-                <a href="/eventdetail?attention_id=${attention.id}&genre=${genre}&sub_genre=${sub_genre}">${attention.text}</a>
+            % if helper.get_event_from_topcontent(request, attention):
+                <a href="/eventdetail?event_id=${helper.get_event_from_topcontent(request, attention).id}&genre=${genre}&sub_genre=${sub_genre}">${attention.text}</a>
             % else:
                 ${attention.text}
             % endif
         % else:
-            % if helper.get_event_from_topic(request, attention):
-                <a href="/eventdetail?attention_id=${attention.id}">${attention.text}</a>
+            % if helper.get_event_from_topcontent(request, attention):
+                <a href="/eventdetail?event_id=${helper.get_event_from_topcontent(request, attention).id}">${attention.text}</a>
             % else:
                 ${attention.text}
             % endif

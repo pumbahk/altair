@@ -15,7 +15,7 @@
         % if form.promotions.data:
             % for promo in form.promotions.data:
                 % if helper.get_event_from_promotion(request, promo):
-                    <a href="/eventdetail?promotion_id=${promo.id}">${promo.text}</a>
+                    <a href="/eventdetail?event_id=${helper.get_event_from_promotion(request, promo).id}">${promo.text}</a>
                 % else:
                     ${promo.text}
                 % endif
