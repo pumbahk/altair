@@ -55,6 +55,15 @@ def add_merged_range_to_sheet(sheet, merged_range):
     sheet._Worksheet__merged_ranges.append(merged_range)
 
 
+def update_merged_range_to_sheet(sheet, merged_range):
+    """マージ情報を更新する
+    """
+    for i, tpl in enumerate(sheet.merged_ranges):
+        if merged_range[0] <= tpl[0] and tpl[1] <= merged_range[1] and\
+           merged_range[2] <= tpl[2] and tpl[3] <= merged_range[3]:
+            del sheet.merged_ranges[i]
+    add_merged_range_to_sheet(sheet, merged_range)
+
 def xl_copy(wb):
     """
     xlutils.copy.copy関数でWriterを返すようにしたもの
@@ -190,7 +199,6 @@ class BaseExporter(object):
         for i, cell, style in zip(range(len(cells)), cells, styles):
             copied_cell = copy.copy(cell)
             if cell != None:
-                copied_style = copy.copy(style)
                 xf_index = self.workbook.add_style(style)
                 copied_cell.rowx = row_index
                 copied_cell.xf_idx = xf_index
@@ -389,10 +397,12 @@ class SalesScheduleReportExporter(BaseExporter):
             parts['merged_ranges'],
         )
         # データ埋める
-        self.update_cell_text(sheet, pos, 0, record['seat_type'])
-        self.update_cell_text(sheet, pos, 3, record['ticket_type'])
-        self.update_cell_text(sheet, pos, 6, record['price'])
+        self.update_cell_text(sheet, pos, 0, '\n'.join(record['sales_segment']))
+        self.update_cell_text(sheet, pos, 4, record['seat_type'])
+        self.update_cell_text(sheet, pos, 7, record['ticket_type'])
+        self.update_cell_text(sheet, pos, 10, record['price'])
         self.current_pos[sheet] = pos + 1
+        row = sheet.row(pos)
 
     def write_data(self, sheet, data):
         """シートにデータを流し込む
@@ -433,13 +443,28 @@ class SalesScheduleReportExporter(BaseExporter):
             for i, price_dict in enumerate(prices):
                 # ヘッダ
                 self.write_prices_header(sheet, price_dict['name'])
+                start_pos = self.current_pos.get(sheet)
+                last_index = len(price_dict['records']) - 1
                 for j, record in enumerate(price_dict['records']):
                     # 最後の行は閉じる
-                    if j == len(price_dict['records']) - 1:
+                    row_index = self.current_pos.get(sheet)
+                    if j == last_index:
                         self.write_price_record(sheet, record, use_footer=True)
                     else:
                         self.write_price_record(sheet, record)
-
+                    # 同じ販売期間はセル結合
+                    if j == last_index or record['sales_segment'] != price_dict['records'][j+1]['sales_segment']:
+                        merged_range = get_merged_range_for_cell(row_index, 0, sheet)
+                        merged_range = [start_pos, row_index, merged_range[2], merged_range[3]]
+                        update_merged_range_to_sheet(sheet, merged_range)
+                        # 結合行数が販売期間行数未満なら行の高さを変更
+                        row_height = 384
+                        if len(record['sales_segment']) > row_index + 1 - start_pos:
+                            row_height = row_height * len(record['sales_segment'])
+                        row = sheet.row(row_index)
+                        row.height = row_height
+                        row.height_mismatch = 1
+                        start_pos = row_index + 1
 
 class SeatAssignExporter(BaseExporter):
     """座席管理票の帳票出力

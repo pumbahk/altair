@@ -308,13 +308,15 @@ class SalesSchedulePriceRecordRecord(object):
     """販売日程管理票のpricesのrecordsの中身
     sheet_record['prices'][0]['records'][0]
     """
-    def __init__(self, seat_type=None, ticket_type=None, price=None):
+    def __init__(self, sales_segment=None, seat_type=None, ticket_type=None, price=None):
+        self.sales_segment = sales_segment
         self.seat_type = seat_type
         self.ticket_type = ticket_type
         self.price = price
 
     def get_record(self):
         record = dict(
+            sales_segment=self.sales_segment or [],
             seat_type=self.seat_type or "",
             ticket_type=self.ticket_type or "",
             price=self.price if self.price is not None else "",

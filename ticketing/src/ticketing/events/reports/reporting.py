@@ -2,7 +2,7 @@
 
 from datetime import datetime, date
 from pyramid.path import AssetResolver
-from sqlalchemy import and_
+from sqlalchemy.sql import func, and_
 
 from ticketing.core.models import Stock, Seat, Site, Performance, Venue, SalesSegment, SalesSegmentGroup
 from ticketing.helpers.base import jdatetime, jdate, jtime
@@ -122,15 +122,26 @@ def export_for_sales(event):
         query = query.join(Venue).filter(Venue.deleted_at==None)
         query = query.join(Site).filter(Site.id==site.id)
         for p in query:
-            ss = SalesSegment.query.filter(and_(SalesSegment.performance_id==p.id, SalesSegment.public==True)).first()
-
             # Price
+            sales_segments = SalesSegment.query.filter(and_(SalesSegment.performance_id==p.id, SalesSegment.public==True)).all()
+            price_records = dict()  # (StockType.name, TicketBundle.name, Product.price) = [SalesSegmentGroup.name,]
+            for sales_segment in sales_segments:
+                for product in sales_segment.products:
+                    ticket_type = None
+                    if product.items and product.items[0].ticket_bundle:
+                        ticket_type = product.items[0].ticket_bundle.name
+                    key = (product.seat_stock_type.name, ticket_type, unicode(int(product.price)))
+                    if key not in price_records:
+                        price_records[key] = []
+                    price_records[key].append(sales_segment.sales_segment_group.name)
+
             price_table = report_sheet.SalesSchedulePriceRecord()
-            for product in ss.products:
+            for key, value in sorted(price_records.items(), key=lambda x:(x[1], x[0])):
                 record = report_sheet.SalesSchedulePriceRecordRecord(
-                    seat_type=product.seat_stock_type.name,
-                    ticket_type=product.items[0].ticket_bundle.name if product.items and product.items[0].ticket_bundle else None,
-                    price=unicode(int(product.price))
+                    sales_segment=value,
+                    seat_type=key[0],
+                    ticket_type=key[1],
+                    price=key[2]
                 )
                 price_table.records.append(record)
 
@@ -143,12 +154,14 @@ def export_for_sales(event):
                 label = u'%s%s' % (u'価格表', len(price_tables) + 1)
                 price_tables[label] = price_table
 
+            end_at = SalesSegment.query.filter(and_(SalesSegment.performance_id==p.id, SalesSegment.public==True))\
+                                       .with_entities(func.max(SalesSegment.end_at)).scalar()
             record = report_sheet.SalesSchedulePerformanceRecord(
                 datetime_=jdate(p.open_on),
                 open_=jtime(p.open_on),
                 start=jtime(p.start_on),
                 price_name=label,
-                sales_end=jdate(ss.end_at),
+                sales_end=jdate(end_at),
                 submit_order=None,
                 submit_pay=None,
                 pay_datetime=None
