@@ -23,7 +23,7 @@
     % if form.helps.data:
         % for help in form.helps.data:
             <a href="#${help.id}">
-                Ｑ．${helper.nl2br(help.title)|n}
+                ${helper.nl2br(help.title)|n}
             </a><br/><br/>
         % endfor
 
@@ -32,9 +32,9 @@
         % for count, help in enumerate(form.helps.data):
             <hr/>
             <a name="${help.id}" id="${help.id}">
-                Ｑ．${helper.nl2br(help.title)|n}<br/>
+                ${helper.nl2br(help.title)|n}<br/><br/>
             </a>
-            Ａ．${helper.nl2br(help.text)|n}<br/>
+            ${helper.nl2br(help.text)|n}<br/>
             % if (count + 1) % 5 == 0 or len(form.helps.data) == count + 1:
                 <hr/>
                 <a href="#top">トップへ</a>
