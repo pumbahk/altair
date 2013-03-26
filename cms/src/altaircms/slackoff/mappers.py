@@ -42,7 +42,7 @@ def layout_mapper(request, obj):
 
 def promotion_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
-    objlike.tag_content = obj.tag_content
+    objlike.tag_content = u", ".join(obj.tag_content)
     objlike.genre =  label_from_genre(obj.genre)
     objlike.main_image = image_asset_layout(request, obj.main_image)
     objlike.linked_page = show_cms_detail_page(request, obj.linked_page)
@@ -51,7 +51,7 @@ def promotion_mapper(request, obj):
 
 def topic_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
-    objlike.tag_content = obj.tag_content
+    objlike.tag_content = u", ".join(obj.tag_content)
     objlike.genre =  label_from_genre(obj.genre)
     objlike.linked_page = show_cms_detail_page(request, obj.linked_page)
     objlike.link = obj.link or u"-"
@@ -61,7 +61,7 @@ def topic_mapper(request, obj):
 CDWN_DICT = dict(Topcontent.COUNTDOWN_CANDIDATES)    
 def topcontent_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
-    objlike.tag_content = obj.tag_content
+    objlike.tag_content = u", ".join(obj.tag_content)
     objlike.genre =  label_from_genre(obj.genre)
     objlike.image_asset = image_asset_layout(request, obj.image_asset)
     objlike.mobile_image_asset = image_asset_layout(request, obj.mobile_image_asset)

@@ -77,6 +77,12 @@ class StaticPageUpdate(ModelEventBase):
 from altaircms.tag.api import put_tags, tags_from_string, put_system_tags
 from altaircms.models import Genre
 
+def tags_from_value(v):
+    if isinstance(v, (list, tuple)):
+        return tags_from_string(u",".join(v), separator=u",")
+    else:
+        return tags_from_string(v, separator=u",")
+
 def _tag_labels_from_genres(genres):
     S = set()
     for g in genres:
@@ -87,7 +93,7 @@ def _tag_labels_from_genres(genres):
     
 
 def update_kind(self):
-    tag_labels = tags_from_string(self.params["tag_content"])
+    tag_labels = tags_from_value(self.params["tag_content"])
     obj_type = self.obj.__tablename__
     put_tags(self.obj, obj_type, tag_labels, [], self.request)
 
@@ -101,8 +107,8 @@ def update_pageset_genretag(self):
     pageset = self.obj
     page = self.obj.pages[0]
 
-    tags = tags_from_string(self.params["tags_string"])
-    private_tags = tags_from_string(self.params["private_tags_string"])
+    tags = tags_from_value(self.params["tags_string"])
+    private_tags = tags_from_value(self.params["private_tags_string"])
     obj_type = "page"
     put_tags(pageset, obj_type, tags, private_tags, self.request)
     ftsearch_register_from_page(self.request, page)
@@ -119,8 +125,8 @@ def update_page_genretag(self):
     pageset = self.obj.pageset
     page = self.obj
 
-    tags = tags_from_string(self.params["tags"])
-    private_tags = tags_from_string(self.params["private_tags"])
+    tags = tags_from_value(self.params["tags"])
+    private_tags = tags_from_value(self.params["private_tags"])
     obj_type = "page"
     put_tags(pageset, obj_type, tags, private_tags, self.request)
     ftsearch_register_from_page(self.request, page)
