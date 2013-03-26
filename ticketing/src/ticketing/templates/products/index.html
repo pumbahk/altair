@@ -20,10 +20,6 @@
   ${h.flash_messages(request)}
 </div>
 
-<form>
-<%include file="/products/_list.html" args="form=form, products=products, sales_segments=performance.sales_segments" />
-</form>
-<%include file="/products/_action_button.html" args="performance=performance,event=event" />
-<div id="products-form">
-  <%include file="/products/_modal.html" args="modal_id='modal-product', performance_id=performance.id" />
-</div>
+<%include file="/products/_list.html" args="form=form, products=products, performance=performance" />
+<%include file="/products/_action_button.html" />
+<%include file="/products/_modal.html" args="modal_id='modal-product', performance_id=performance.id" />
