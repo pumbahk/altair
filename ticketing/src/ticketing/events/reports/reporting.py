@@ -113,7 +113,11 @@ def export_for_sales(event):
             record = report_sheet.SalesScheduleSalesRecord(
                 sales_seg=ssg.name,
                 sales_start=jdatetime(ssg.start_at),
-                sales_end=jdatetime(ssg.end_at)
+                sales_end=jdatetime(ssg.end_at),
+                margin_ratio=unicode(ssg.margin_ratio),
+                refund_ratio=unicode(ssg.refund_ratio),
+                printing_fee=unicode(int(ssg.printing_fee)),
+                registration_fee=unicode(int(ssg.registration_fee))
             )
             data.sales.append(record)
 

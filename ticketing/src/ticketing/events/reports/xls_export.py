@@ -244,7 +244,7 @@ class SalesScheduleReportExporter(BaseExporter):
 
     def add_sheet(self, sheetname):
         result = super(SalesScheduleReportExporter, self).add_sheet(sheetname)
-        self.current_pos[result] = 14
+        self.current_pos[result] = 8
         return result
 
     def get_parts_sheet(self):
@@ -256,42 +256,42 @@ class SalesScheduleReportExporter(BaseExporter):
     def get_parts_sales_info_body(self):
         """販売期間/販売日時/販売終了日時の行
         """
-        return self.get_rows(self.parts_sheet, [14])
+        return self.get_rows(self.parts_sheet, [8])
 
     def get_parts_sales_info_footer(self):
         """販売期間/販売日時/販売終了日時のフッタ
         """
-        return self.get_rows(self.parts_sheet, [15])
+        return self.get_rows(self.parts_sheet, [9])
 
     def get_parts_performances_header(self):
         """パフォーマンス情報のヘッダ
         """
-        return self.get_rows(self.parts_sheet, [17, 18, 19, 20])
+        return self.get_rows(self.parts_sheet, [11, 12, 13, 14])
 
     def get_parts_performances_body(self):
         """パフォーマンス情報の行
         """
-        return self.get_rows(self.parts_sheet, [21])
+        return self.get_rows(self.parts_sheet, [15])
 
     def get_parts_performances_footer(self):
         """パフォーマンス情報のフッタ
         """
-        return self.get_rows(self.parts_sheet, [22])
+        return self.get_rows(self.parts_sheet, [16])
 
     def get_parts_prices_header(self):
         """価格表のヘッダ
         """
-        return self.get_rows(self.parts_sheet, [24, 25])
+        return self.get_rows(self.parts_sheet, [18, 19])
 
     def get_parts_prices_body(self):
         """価格表の行
         """
-        return self.get_rows(self.parts_sheet, [26])
+        return self.get_rows(self.parts_sheet, [20])
 
     def get_parts_prices_footer(self):
         """価格表のフッタ
         """
-        return self.get_rows(self.parts_sheet, [27])
+        return self.get_rows(self.parts_sheet, [21])
 
     def remove_templates(self):
         "先頭から2つのテンプレート用のシートを削除"
@@ -299,7 +299,7 @@ class SalesScheduleReportExporter(BaseExporter):
         self.remove_sheet(0)
 
     def write_output_datetime(self, sheet, value):
-        self.update_cell_text(sheet, 0, 12, value)
+        self.update_cell_text(sheet, 0, 11, value)
 
     def write_event_title(self, sheet, value):
         self.update_cell_text(sheet, 4, 0, value)
@@ -322,6 +322,10 @@ class SalesScheduleReportExporter(BaseExporter):
         self.update_cell_text(sheet, pos, 0, row_data['sales_seg'])
         self.update_cell_text(sheet, pos, 4, row_data['sales_start'])
         self.update_cell_text(sheet, pos, 7, row_data['sales_end'])
+        self.update_cell_text(sheet, pos, 10, row_data['margin_ratio'])
+        self.update_cell_text(sheet, pos, 11, row_data['refund_ratio'])
+        self.update_cell_text(sheet, pos, 12, row_data['printing_fee'])
+        self.update_cell_text(sheet, pos, 13, row_data['registration_fee'])
         self.current_pos[sheet] = pos + 1
 
     def write_performance_header(self, sheet, venue_name):
