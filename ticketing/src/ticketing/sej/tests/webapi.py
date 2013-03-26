@@ -25,8 +25,8 @@ class DummyServer(object):
         self.th.start()
 
     def _run(self):
-        httpd = make_server(self.host, self.port, self.handler)
-        httpd.handle_request()
+        self.httpd = make_server(self.host, self.port, self.handler)
+        self.httpd.handle_request()
 
     def assert_called(self):
         assert self.called

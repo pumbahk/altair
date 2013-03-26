@@ -2,41 +2,30 @@
 import unittest
 import datetime
 from pyramid import testing
-
-def _setup_db():
-    import sqlahelper
-    from sqlalchemy import create_engine
-
-    #from . import models
-    from ticketing.sej.models import SejOrder
-    from ticketing.sej.payment import SejOrderUpdateReason, SejPaymentType
-    from ticketing.sej.api import callback_notification
-
-    engine = create_engine("sqlite:///")
-    sqlahelper.get_session().remove()
-    sqlahelper.add_engine(engine)
-    sqlahelper.get_base().metadata.drop_all()
-    sqlahelper.get_base().metadata.create_all()
-    return sqlahelper.get_session()
-
-def _teardown_db():
-    import transaction
-    transaction.abort()
-
+from ticketing.testing import _setup_db, _teardown_db
 
 class SejTest(unittest.TestCase):
 
     def _getTarget(self):
-        import webapi
+        from . import webapi
         return webapi.DummyServer
 
-    def _makeOne(self, *args, **kwargs):
-        return self._getTarget()(*args, **kwargs)
+    def _makeServer(self, *args, **kwargs):
+        if self.server is None:
+            self.server = self._getTarget()(*args, **kwargs)
+        return self.server
 
     def setUp(self):
-        self.session = _setup_db()
+        self.session = _setup_db([
+            'ticketing.core.models',
+            'ticketing.sej.models'
+            ])
+        self.server = None
 
     def tearDown(self):
+        if self.server is not None:
+            self.server.httpd.socket.close()
+            self.server.th.join()
         testing.tearDown()
         _teardown_db()
 
@@ -212,7 +201,7 @@ class SejTest(unittest.TestCase):
         import webob.util
         webob.util.status_reasons[800] = 'OK'
 
-        target = self._makeOne(lambda environ: '<SENBDATA>DATA=END</SENBDATA>', host='127.0.0.1', port=38002, status=800)
+        target = self._makeServer(lambda environ: '<SENBDATA>DATA=END</SENBDATA>', host='127.0.0.1', port=38002, status=800)
         target.start()
 
         sej_order = SejOrder()
@@ -279,7 +268,7 @@ class SejTest(unittest.TestCase):
             )
 
         webob.util.status_reasons[800] = 'OK'
-        target = self._makeOne(sej_dummy_response, host='127.0.0.1', port=38001, status=800)
+        target = self._makeServer(sej_dummy_response, host='127.0.0.1', port=38001, status=800)
         target.start()
 
         request_order(
@@ -383,7 +372,7 @@ class SejTest(unittest.TestCase):
         assert order.tickets[0].barcode_number == '00001'
 
         assert order.tickets[0].ticket_idx           == 1
-        assert order.tickets[0].ticket_type          == str(SejTicketType.TicketWithBarcode.v)
+        assert order.tickets[0].ticket_type          == SejTicketType.TicketWithBarcode.v
         assert order.tickets[0].event_name           == u'イベント名1'
         assert order.tickets[0].performance_name     == u'パフォーマンス名'
         assert order.tickets[0].performance_datetime == datetime.datetime(2012,8,31,18,00)
@@ -429,7 +418,7 @@ class SejTest(unittest.TestCase):
             )
 
         webob.util.status_reasons[800] = 'OK'
-        target = self._makeOne(sej_dummy_response, host='127.0.0.1', port=38001, status=800)
+        target = self._makeServer(sej_dummy_response, host='127.0.0.1', port=38001, status=800)
         target.start()
 
         sejTicketOrder = request_order(
@@ -556,7 +545,7 @@ class SejTest(unittest.TestCase):
         from ticketing.sej.payment import SejOrderUpdateReason, request_cancel_order
         webob.util.status_reasons[800] = 'OK'
 
-        target = self._makeOne(lambda environ: '<SENBDATA>DATA=END</SENBDATA>', host='127.0.0.1', port=38002, status=800)
+        target = self._makeServer(lambda environ: '<SENBDATA>DATA=END</SENBDATA>', host='127.0.0.1', port=38002, status=800)
         target.start()
 
         sej_order = SejOrder()
