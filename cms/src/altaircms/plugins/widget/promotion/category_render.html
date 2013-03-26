@@ -42,6 +42,69 @@
       return this[i];
     }
 
+    // X,Y = size of bounding area
+    var scaled = function(x,X,y,Y){
+      var ax = X/x, ay = Y/y;
+      if(ax < ay){
+        return [X, ax*y];
+      } else {
+        return [ay*x,Y];
+      }  
+    }
+
+    var normalize_factory = function(X,Y, force){
+      if(!!force || navigator.userAgent.toLowerCase().indexOf("firefox") > -1){
+        return function normalize_size(e,x,y){
+           var $e = $(e).eq(0);
+           var x = x || $e.width();
+           var y = y || $e.height();
+           if(!x || !y){
+             setTimeout(function(){ return normalize_size(e,x,y)}, 100);
+           }
+
+           scaled_size = scaled(x,X,y,Y);
+           var scaledX = scaled_size[0];
+           var scaledY = scaled_size[1];
+
+           var styles = {};
+           if(scaledX == X){
+              styles["margin-top"] = 0.5*(Y-scaledY);
+              styles["margin-left"] = 0;
+           }else if (scaledY == Y){
+              styles["margin-left"] = 0.5*(X-scaledX);
+              styles["margin-top"] = 0;
+           }
+           styles["width"] = scaledX;
+           styles["height"] = scaledY;
+           $e.css(styles);
+           if(!!$e.data("promotion-taint-reset")){
+              $e.data("promotion-taint-reset")();
+              $e.data("promotion-taint-reset", null);
+           }
+        };
+      } else{
+        return function normalize_size(e){
+           var $e = $(e).eq(0);
+           var x = $e.width();
+           var y = $e.height();
+
+           scaled_size = scaled(x,X,y,Y);
+           var scaledX = scaled_size[0];
+           var scaledY = scaled_size[1];
+
+           var styles = {};
+           styles["width"] = scaledX;
+           styles["height"] = scaledY;
+           styles["display"] = "box";
+           $e.css(styles);
+           $e.data("promotion-taint-reset", function(){$e.parent().attr("style","");});
+           $e.parent().attr("style"," display: -webkit-box; display: -moz-box; display: box; -moz-box-pack: center; -moz-box-align: center; -webkit-box-pack: center; -webkit-box-align: center; box-pack: center; box-align: center; ");
+        };
+      }
+    }
+
+    var mainImageNormalize = normalize_factory(515,300,true);
+
     $(function(){
       setInterval(function(){
         var params = {promotion_unit_id: pu_candidates.next_id()};
@@ -49,11 +112,18 @@
           function(data){
             var img = $(".mainImage img");
             img.attr("src", data.src);
-            img.parent("a").attr("href", data.link)
+            img.parent("a").attr("href", data.link);
+            mainImageNormalize(img, data.width, data.height);
             $(".mainImageMessage").text(data.message);
           });
         }, interval_time);
     });
+
+    // some magic numbers;
+    var normalize = normalize_factory(65,65);
+    $(".subkindThumbnail img").each(function(i,e){normalize(e);});
+    $(".slideBoxRight").each(function(i,e){var $e = $(e); if($e.text().length > 40){$e.text($e.text().substr(0,40)+"...");} });
+    normalize_factory(515,300)($(".mainImage img"), ${info.width}, ${info.height});
   </script>
 %else:
   空です
