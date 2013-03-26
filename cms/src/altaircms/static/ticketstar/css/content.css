@@ -481,6 +481,7 @@
 
 * html .event dl {
 	width: 255px;
+  height: 125px;
 }
 
 .event dt {

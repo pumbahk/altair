@@ -32,7 +32,7 @@ class TopcontentWidget(Widget):
             self.display_count = 6 
 
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
-    display_type = sa.Column(sa.Unicode(length=255))
+    display_type = sa.Column(sa.Unicode(length=260))
     display_count = sa.Column(sa.Integer)
     tag_id = sa.Column(sa.Integer, sa.ForeignKey("topiccoretag.id"))
     tag = orm.relationship("TopcontentTag", uselist=False, primaryjoin="TopcontentWidget.tag_id==TopcontentTag.id")

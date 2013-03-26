@@ -4,8 +4,8 @@
   % for t in qs:
   <div class="event">
 	<dl>
-	  <dt><a href="${h.link.get_link_from_topcontent(request, t)}">${t.title }</a></dt>
-	  <dd>${t.text}</dd>
+	  <dt><a href="${h.link.get_link_from_topcontent(request, t)}">${h.truncate(t.title, 35) }</a></dt>
+	  <dd>${h.truncate(t.text, 60)}</dd>
 	</dl>
 	<p>
 	  <a href="${h.link.get_link_from_topcontent(request, t)}">
