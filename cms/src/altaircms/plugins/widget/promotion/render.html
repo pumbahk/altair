@@ -86,7 +86,7 @@
             mainImageNormalize(img, data.width, data.height);
             
             var message = data.message;
-            if(message.length > 55){message = message.substr(0,55)+"...";}
+            if(message.length > 50){message = message.substr(0,50)+"...";}
             $(".mainImageMessage").text(message);
           });
         }, interval_time);
