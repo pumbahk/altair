@@ -45,7 +45,8 @@ class SejTest(unittest.TestCase):
         import sqlahelper
         from webob.multidict import MultiDict
         from ticketing.sej.models import SejOrder
-        from ticketing.sej.payment import SejOrderUpdateReason, SejPaymentType, callback_notification
+        from ticketing.sej.payment import SejOrderUpdateReason, SejPaymentType
+        from ticketing.sej.api import callback_notification
 
         sejOrder = SejOrder()
 
@@ -112,7 +113,8 @@ class SejTest(unittest.TestCase):
         import sqlahelper
         from webob.multidict import MultiDict
         from ticketing.sej.models import SejOrder
-        from ticketing.sej.payment import SejOrderUpdateReason, SejPaymentType, callback_notification
+        from ticketing.sej.payment import SejOrderUpdateReason, SejPaymentType
+        from ticketing.sej.api import callback_notification
 
         m_dict = MultiDict()
         m_dict.add(u'X_shori_id', u'000000036605')
@@ -153,7 +155,8 @@ class SejTest(unittest.TestCase):
         import sqlahelper
         from webob.multidict import MultiDict
         from ticketing.sej.models import SejOrder
-        from ticketing.sej.payment import SejOrderUpdateReason, SejPaymentType, callback_notification
+        from ticketing.sej.payment import SejOrderUpdateReason, SejPaymentType
+        from ticketing.sej.api import callback_notification
 
         m_dict = MultiDict()
         # X_shori_id=000000036665&
@@ -586,183 +589,183 @@ class SejTest(unittest.TestCase):
         sej_order = SejOrder.query.filter_by(order_id = u'orderid00001', billing_number=u'00000001').one()
         assert sej_order.cancel_at is not None
 
-    def test_refund_file(self):
+    # def test_refund_file(self):
 
-        from ticketing.sej.models import SejOrder, SejCancelTicket, SejCancelEvent
-        from ticketing.sej.payment import SejOrderUpdateReason, SejPaymentType, request_cancel_event
+    #     from ticketing.sej.models import SejOrder, SejCancelTicket, SejCancelEvent
+    #     from ticketing.sej.payment import SejOrderUpdateReason, SejPaymentType, request_cancel_event
 
-        import sqlahelper
-        DBSession = sqlahelper.get_session()
+    #     import sqlahelper
+    #     DBSession = sqlahelper.get_session()
 
-        event = SejCancelEvent()
-        event.available = 1
-        event.shop_id = u'30520'
-        event.event_code_01  = u'EPZED'
-        event.event_code_02  = u'0709A'
-        event.title = u'入金、払戻用興行'
-        event.sub_title = u'入金、払戻用公演'
-        event.event_at = datetime.datetime(2012,8,31,18,00)
-        event.start_at = datetime.datetime(2012,6,7,18,30)
-        event.end_at = datetime.datetime(2012,6,10,18,30)
-        event.expire_at = datetime.datetime(2012,6,10,18,30)
-        event.event_expire_at = datetime.datetime(2012,6,10,18,30)
-        event.ticket_expire_at = datetime.datetime(2012,7,10,18,30)
-        event.disapproval_reason = u''
-        event.need_stub = 1
-        event.remarks = u'備考'
-        event.un_use_01 = u''
-        event.un_use_02 = u''
-        event.un_use_03 = u''
-        event.un_use_04 = u''
-        event.un_use_05 = u''
+    #     event = SejCancelEvent()
+    #     event.available = 1
+    #     event.shop_id = u'30520'
+    #     event.event_code_01  = u'EPZED'
+    #     event.event_code_02  = u'0709A'
+    #     event.title = u'入金、払戻用興行'
+    #     event.sub_title = u'入金、払戻用公演'
+    #     event.event_at = datetime.datetime(2012,8,31,18,00)
+    #     event.start_at = datetime.datetime(2012,6,7,18,30)
+    #     event.end_at = datetime.datetime(2012,6,10,18,30)
+    #     event.expire_at = datetime.datetime(2012,6,10,18,30)
+    #     event.event_expire_at = datetime.datetime(2012,6,10,18,30)
+    #     event.ticket_expire_at = datetime.datetime(2012,7,10,18,30)
+    #     event.disapproval_reason = u''
+    #     event.need_stub = 1
+    #     event.remarks = u'備考'
+    #     event.un_use_01 = u''
+    #     event.un_use_02 = u''
+    #     event.un_use_03 = u''
+    #     event.un_use_04 = u''
+    #     event.un_use_05 = u''
 
-        event.tickets = list()
+    #     event.tickets = list()
 
-        DBSession.add(event)
+    #     DBSession.add(event)
 
-        ticket = SejCancelTicket()
-        ticket.available = 1
-        ticket.shop_id = u'30520'
-        ticket.event_code_01  = u'EPZED'
-        ticket.event_code_02  = u'0709A'
-        ticket.order_id  = u'120605112150'
-        ticket.ticket_barcode_number = u'2222222222222'
-        ticket.refund_ticket_amount = 13000
-        ticket.refund_amount = 2000
-        DBSession.add(ticket)
-        event.tickets.append(ticket)
-
-
-        DBSession.flush()
+    #     ticket = SejCancelTicket()
+    #     ticket.available = 1
+    #     ticket.shop_id = u'30520'
+    #     ticket.event_code_01  = u'EPZED'
+    #     ticket.event_code_02  = u'0709A'
+    #     ticket.order_id  = u'120605112150'
+    #     ticket.ticket_barcode_number = u'2222222222222'
+    #     ticket.refund_ticket_amount = 13000
+    #     ticket.refund_amount = 2000
+    #     DBSession.add(ticket)
+    #     event.tickets.append(ticket)
 
 
-        request_cancel_event(event)
+    #     DBSession.flush()
 
-    def test_refund_file(self):
 
-        from ticketing.sej.models import SejOrder, SejCancelTicket, SejCancelEvent
-        from ticketing.sej.payment import SejOrderUpdateReason, SejPaymentType, request_cancel_event
+    #     request_cancel_event(event)
 
-        import sqlahelper
-        DBSession = sqlahelper.get_session()
+    # def test_refund_file(self):
 
-        event1 = SejCancelEvent()
-        event1.available = 1
-        event1.shop_id = u'30520'
-        event1.event_code_01  = u'EPZED'
-        event1.event_code_02  = u'0709A'
-        event1.title = u'入金、払戻用興行'
-        event1.sub_title = u'入金、払戻用公演'
-        event1.event_at = datetime.datetime(2012,8,31,18,00)
-        event1.start_at = datetime.datetime(2012,6,7,18,30)
-        event1.end_at = datetime.datetime(2012,6,10,18,30)
-        event1.event_expire_at = datetime.datetime(2012,6,10,18,30)
-        event1.ticket_expire_at = datetime.datetime(2012,7,10,18,30)
-        event1.refund_enabled = 1
-        event1.disapproval_reason = None
-        event1.need_stub = 1
-        event1.remarks = u'備考'
-        event1.un_use_01 = u''
-        event1.un_use_02 = u''
-        event1.un_use_03 = u''
-        event1.un_use_04 = u''
-        event1.un_use_05 = u''
+    #     from ticketing.sej.models import SejOrder, SejCancelTicket, SejCancelEvent
+    #     from ticketing.sej.payment import SejOrderUpdateReason, SejPaymentType, request_cancel_event
 
-        event1.tickets = list()
+    #     import sqlahelper
+    #     DBSession = sqlahelper.get_session()
 
-        DBSession.add(event1)
+    #     event1 = SejCancelEvent()
+    #     event1.available = 1
+    #     event1.shop_id = u'30520'
+    #     event1.event_code_01  = u'EPZED'
+    #     event1.event_code_02  = u'0709A'
+    #     event1.title = u'入金、払戻用興行'
+    #     event1.sub_title = u'入金、払戻用公演'
+    #     event1.event_at = datetime.datetime(2012,8,31,18,00)
+    #     event1.start_at = datetime.datetime(2012,6,7,18,30)
+    #     event1.end_at = datetime.datetime(2012,6,10,18,30)
+    #     event1.event_expire_at = datetime.datetime(2012,6,10,18,30)
+    #     event1.ticket_expire_at = datetime.datetime(2012,7,10,18,30)
+    #     event1.refund_enabled = 1
+    #     event1.disapproval_reason = None
+    #     event1.need_stub = 1
+    #     event1.remarks = u'備考'
+    #     event1.un_use_01 = u''
+    #     event1.un_use_02 = u''
+    #     event1.un_use_03 = u''
+    #     event1.un_use_04 = u''
+    #     event1.un_use_05 = u''
 
-        event2 = SejCancelEvent()
-        event2.available = 1
-        event2.shop_id = u'30520'
-        event2.event_code_01  = u'EPZED'
-        event2.event_code_02  = u'0709B'
-        event2.title = u'入金、払戻用興行'
-        event2.sub_title = u'入金、払戻用公演'
-        event2.event_at = datetime.datetime(2012,8,31,18,00)
-        event2.start_at = datetime.datetime(2012,6,7,18,30)
-        event2.end_at = datetime.datetime(2012,6,10,18,30)
-        event2.event_expire_at = datetime.datetime(2012,6,10,18,30)
-        event2.ticket_expire_at = datetime.datetime(2012,7,10,18,30)
-        event2.refund_enabled = 1
-        event2.disapproval_reason = None
-        event2.need_stub = 1
-        event2.remarks = u'備考'
-        event2.un_use_01 = u''
-        event2.un_use_02 = u''
-        event2.un_use_03 = u''
-        event2.un_use_04 = u''
-        event2.un_use_05 = u''
+    #     event1.tickets = list()
 
-        event2.tickets = list()
+    #     DBSession.add(event1)
 
-        DBSession.add(event2)
+    #     event2 = SejCancelEvent()
+    #     event2.available = 1
+    #     event2.shop_id = u'30520'
+    #     event2.event_code_01  = u'EPZED'
+    #     event2.event_code_02  = u'0709B'
+    #     event2.title = u'入金、払戻用興行'
+    #     event2.sub_title = u'入金、払戻用公演'
+    #     event2.event_at = datetime.datetime(2012,8,31,18,00)
+    #     event2.start_at = datetime.datetime(2012,6,7,18,30)
+    #     event2.end_at = datetime.datetime(2012,6,10,18,30)
+    #     event2.event_expire_at = datetime.datetime(2012,6,10,18,30)
+    #     event2.ticket_expire_at = datetime.datetime(2012,7,10,18,30)
+    #     event2.refund_enabled = 1
+    #     event2.disapproval_reason = None
+    #     event2.need_stub = 1
+    #     event2.remarks = u'備考'
+    #     event2.un_use_01 = u''
+    #     event2.un_use_02 = u''
+    #     event2.un_use_03 = u''
+    #     event2.un_use_04 = u''
+    #     event2.un_use_05 = u''
 
-        event3 = SejCancelEvent()
-        event3.available = 1
-        event3.shop_id = u'30520'
-        event3.event_code_01  = u'EPZED'
-        event3.event_code_02  = u'0709C'
-        event3.title = u'入金、払戻用興行'
-        event3.sub_title = u'入金、払戻用公演'
-        event3.event_at = datetime.datetime(2012,8,31,18,00)
-        event3.start_at = datetime.datetime(2012,6,7,18,30)
-        event3.end_at = datetime.datetime(2012,6,10,18,30)
-        event3.event_expire_at = datetime.datetime(2012,6,10,18,30)
-        event3.ticket_expire_at = datetime.datetime(2012,7,10,18,30)
-        event3.refund_enabled = 1
-        event3.disapproval_reason = None
-        event3.need_stub = 1
-        event3.remarks = u'備考'
-        event3.un_use_01 = u''
-        event3.un_use_02 = u''
-        event3.un_use_03 = u''
-        event3.un_use_04 = u''
-        event3.un_use_05 = u''
+    #     event2.tickets = list()
 
-        event3.tickets = list()
+    #     DBSession.add(event2)
 
-        DBSession.add(event2)
+    #     event3 = SejCancelEvent()
+    #     event3.available = 1
+    #     event3.shop_id = u'30520'
+    #     event3.event_code_01  = u'EPZED'
+    #     event3.event_code_02  = u'0709C'
+    #     event3.title = u'入金、払戻用興行'
+    #     event3.sub_title = u'入金、払戻用公演'
+    #     event3.event_at = datetime.datetime(2012,8,31,18,00)
+    #     event3.start_at = datetime.datetime(2012,6,7,18,30)
+    #     event3.end_at = datetime.datetime(2012,6,10,18,30)
+    #     event3.event_expire_at = datetime.datetime(2012,6,10,18,30)
+    #     event3.ticket_expire_at = datetime.datetime(2012,7,10,18,30)
+    #     event3.refund_enabled = 1
+    #     event3.disapproval_reason = None
+    #     event3.need_stub = 1
+    #     event3.remarks = u'備考'
+    #     event3.un_use_01 = u''
+    #     event3.un_use_02 = u''
+    #     event3.un_use_03 = u''
+    #     event3.un_use_04 = u''
+    #     event3.un_use_05 = u''
 
-        ticket = SejCancelTicket()
-        ticket.available = 1
-        ticket.shop_id = u'30520'
-        ticket.event_code_01  = u'EPZED'
-        ticket.event_code_02  = u'0709A'
-        ticket.order_id  = u'120607195249'
-        ticket.ticket_barcode_number = u'6200004507473'
-        ticket.refund_ticket_amount = 13000
-        ticket.refund_amount = 1000
-        DBSession.add(ticket)
-        event1.tickets.append(ticket)
+    #     event3.tickets = list()
 
-        ticket = SejCancelTicket()
-        ticket.available = 1
-        ticket.shop_id = u'30520'
-        ticket.event_code_01  = u'EPZED'
-        ticket.event_code_02  = u'0709B'
-        ticket.order_id  = u'120607195250'
-        ticket.ticket_barcode_number = u'6200004507480'
-        ticket.refund_ticket_amount = 13000
-        ticket.refund_amount = 1000
-        DBSession.add(ticket)
-        event2.tickets.append(ticket)
+    #     DBSession.add(event2)
 
-        ticket = SejCancelTicket()
-        ticket.available = 1
-        ticket.shop_id = u'30520'
-        ticket.event_code_01  = u'EPZED'
-        ticket.event_code_02  = u'0709A'
-        ticket.order_id  = u'120607200334'
-        ticket.ticket_barcode_number = u'6200004507497'
-        ticket.refund_ticket_amount = 13000
-        ticket.refund_amount = 1000
-        DBSession.add(ticket)
-        event3.tickets.append(ticket)
+    #     ticket = SejCancelTicket()
+    #     ticket.available = 1
+    #     ticket.shop_id = u'30520'
+    #     ticket.event_code_01  = u'EPZED'
+    #     ticket.event_code_02  = u'0709A'
+    #     ticket.order_id  = u'120607195249'
+    #     ticket.ticket_barcode_number = u'6200004507473'
+    #     ticket.refund_ticket_amount = 13000
+    #     ticket.refund_amount = 1000
+    #     DBSession.add(ticket)
+    #     event1.tickets.append(ticket)
 
-        DBSession.flush()
+    #     ticket = SejCancelTicket()
+    #     ticket.available = 1
+    #     ticket.shop_id = u'30520'
+    #     ticket.event_code_01  = u'EPZED'
+    #     ticket.event_code_02  = u'0709B'
+    #     ticket.order_id  = u'120607195250'
+    #     ticket.ticket_barcode_number = u'6200004507480'
+    #     ticket.refund_ticket_amount = 13000
+    #     ticket.refund_amount = 1000
+    #     DBSession.add(ticket)
+    #     event2.tickets.append(ticket)
 
-        request_cancel_event([event1, event2, event3])
+    #     ticket = SejCancelTicket()
+    #     ticket.available = 1
+    #     ticket.shop_id = u'30520'
+    #     ticket.event_code_01  = u'EPZED'
+    #     ticket.event_code_02  = u'0709A'
+    #     ticket.order_id  = u'120607200334'
+    #     ticket.ticket_barcode_number = u'6200004507497'
+    #     ticket.refund_ticket_amount = 13000
+    #     ticket.refund_amount = 1000
+    #     DBSession.add(ticket)
+    #     event3.tickets.append(ticket)
+
+    #     DBSession.flush()
+
+    #     request_cancel_event([event1, event2, event3])
 
 
     def test_create_ticket_template(self):
