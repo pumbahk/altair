@@ -51,7 +51,7 @@ def get_channel(channel=None, request=None):
 
 def delete_event(self, event):
     # 既に販売されている場合は削除できない
-    if self.sales_start_on and self.sales_start_on < datetime.now():
+    if event.sales_start_on and event.sales_start_on < datetime.now():
         raise Exception(u'既に販売開始日時を経過している為、削除できません')
     event.delete()
 
