@@ -32,6 +32,12 @@ def import_symbol(symbol):
 def quote(x):
     return urllib.quote(x.encode("utf-8"), safe="%/:=&?~#+!$,;'@()*[]").decode("utf-8") if x else None
 
+def pageset_label(pageset):
+    if pageset is None:
+        u"-----"
+    else:
+        return u"{0} (ページ名:{1})".format(pageset.url, pageset.name)
+
 class TermValidator(object):
     def __init__(self, begin, end, message):
         self.begin = begin
@@ -178,7 +184,7 @@ class TopicForm(Form):
 
     linked_page = dynamic_query_select_field_factory(PageSet, allow_blank=True,label=u"リンク先ページ(CMSで作成したもの)", 
                                                      query_factory=lambda : PageSet.query.order_by("name"), 
-                                                     get_label=lambda obj: obj.name or u"--なし--")
+                                                     get_label=pageset_label)
     link = fields.TextField(label=u"外部リンク(ページより優先)", filters=[quote])
     mobile_link = fields.TextField(label=u"mobile外部リンク(ページより優先)", filters=[quote])
 
@@ -217,7 +223,7 @@ class TopcontentForm(Form):
 
     linked_page = dynamic_query_select_field_factory(PageSet, allow_blank=True,label=u"リンク先ページ(CMSで作成したもの)", 
                                                      query_factory=lambda : PageSet.query.order_by("name"), 
-                                                     get_label=lambda obj: obj.name or u"--なし--")
+                                                     get_label=pageset_label)
     link = fields.TextField(label=u"外部リンク(ページより優先)", filters=[quote])
     mobile_link = fields.TextField(label=u"mobile外部リンク(ページより優先)", filters=[quote])
 
@@ -249,7 +255,7 @@ class PromotionForm(Form):
     linked_page = dynamic_query_select_field_factory(
         PageSet, allow_blank=True, label=u"リンク先ページ(CMSで作成したもの)",
         query_factory=lambda : PageSet.query.order_by("name"), 
-        get_label=lambda obj: obj.name or u"--なし--")
+        get_label=pageset_label)
     link = fields.TextField(label=u"外部リンク(ページより優先)", filters=[quote])
 
     publish_open_on = fields.DateTimeField(label=u"公開開始日", validators=[required_field()])
@@ -295,7 +301,7 @@ class CategoryForm(Form):
 
     pageset = dynamic_query_select_field_factory(
         PageSet, allow_blank=True, blank_text=u"--------", label=u"リンク先ページ(CMSで作成したもの)",
-        get_label=lambda obj: obj.name or u"--なし--")
+        get_label=pageset_label)
     hierarchy = fields.SelectField(label=u"表示場所", choices=[])
     # hierarchy = fields.SelectField(label=u"階層")
     imgsrc = fields.TextField(label=u"imgsrc(e.g. /static/ticketstar/img/common/header_nav_top.gif)")
@@ -336,7 +342,7 @@ class ExternalLinkForm(Form):
     attributes = fields.TextField(label=u"attributes")
     pageset = dynamic_query_select_field_factory(
         PageSet, allow_blank=True, blank_text=u"--------", label=u"リンク(CMSで作成したもの)",
-        get_label=lambda obj: obj.name or u"--なし--")
+        get_label=pageset_label)
     hierarchy = fields.SelectField(label=u"表示場所", choices=[])
     url = fields.TextField(label=u"リンク(外部ページのURL)")
     display_order = fields.IntegerField(label=u"表示順序")
@@ -355,7 +361,7 @@ class ExternalBannerForm(Form):
     attributes = fields.TextField(label=u"attributes")
     pageset = dynamic_query_select_field_factory(
         PageSet, allow_blank=True, blank_text=u"--------", label=u"リンク(CMSで作成したもの)",
-        get_label=lambda obj: obj.name or u"--なし--")
+        get_label=pageset_label)
     hierarchy = fields.SelectField(label=u"階層", choices=[])
     imgsrc = fields.TextField(label=u"imgsrc(e.g. /static/ticketstar/img/common/header_nav_top.gif)")
     url = fields.TextField(label=u"リンク(外部ページのURL)")
