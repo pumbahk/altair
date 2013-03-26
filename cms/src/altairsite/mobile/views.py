@@ -1,4 +1,4 @@
-# coding:utf-8
+# -*- coding:utf-8 -*-
 from datetime import datetime
 from pyramid.view import view_config
 from altaircms.topic.models import TopicTag, PromotionTag, TopcontentTag
