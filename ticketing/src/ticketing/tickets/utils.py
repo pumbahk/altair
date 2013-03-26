@@ -528,8 +528,8 @@ class SvgPageSetBuilder(object):
             right=as_user_unit(page_format[u'ticket_margin'][u'right'])
             )
 
-        if printable_area.width < ticket_size.width - ticket_margin.left or \
-            printable_area.height < ticket_size.height - ticket_margin.top:
+        if printable_area.width < ticket_size.width + ticket_margin.left or \
+            printable_area.height < ticket_size.height + ticket_margin.top:
             raise ValueError('printable area too small')
 
         self.page_format = page_format
