@@ -29,7 +29,7 @@ def sync_data_to_solr(server_url):
 def main():
     parser = argparse.ArgumentParser(description="sync page data to solr ")
     parser.add_argument("--dburl", help="db url. e.g. mysql+pymysql://foo:foo@localhost/foo (default: %(default)s)", default="sqlite://")
-    parser.add_argument("--solrurl", help="solr url. e.g. http://localhost:8080/solr")
+    parser.add_argument("--solrurl", help="solr url. e.g. http://localhost:8082/solr")
     args = parser.parse_args()
     _main(args)
 

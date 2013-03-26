@@ -62,7 +62,7 @@ buildout::
 development.ini,usersite.development.ini::
 
    ## solr
-   altaircms.solr.server.url = http://localhost:8080/solr
+   altaircms.solr.server.url = http://localhost:8082/solr
    altaircms.solr.search.utility = altaircms.solr.api.SolrSearch
    # altaircms.solr.search.utility = altaircms.solr.api.DummySearch
 
@@ -110,7 +110,7 @@ CI
 Jenkinsを使用して、ポーリング、テスト、デプロイを実施。
 dev.ticketstar.jpにあるが、socks経由じゃないとアクセスできない。
 
-* http://10.160.41.149:8080/
+* http://10.160.41.149:8082/
 
 
 ファイル共有
