@@ -24,6 +24,22 @@
     <td id="current_end_at">${h.safe_strftime(sales_segment_group.end_at)}</td>
   </tr>
   <tr>
+    <th>${form.margin_ratio.label.text}</th>
+    <td id="margin_ratio">${sales_segment_group.margin_ratio}%</td>
+  </tr>
+  <tr>
+    <th>${form.refund_ratio.label.text}</th>
+    <td id="refund_ratio">${sales_segment_group.refund_ratio}%</td>
+  </tr>
+  <tr>
+    <th>${form.printing_fee.label.text}</th>
+    <td id="printing_fee">${h.price_format(sales_segment_group.printing_fee)}円</td>
+  </tr>
+  <tr>
+    <th>${form.registration_fee.label.text}</th>
+    <td id="registration_fee">${h.price_format(sales_segment_group.registration_fee)}円</td>
+  </tr>
+  <tr>
     <th>${form.upper_limit.label.text}</th>
     <td id="upper_limit">${sales_segment_group.upper_limit or u''}</td>
   </tr>

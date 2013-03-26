@@ -4,7 +4,7 @@ from wtforms import Form
 from wtforms import TextField, IntegerField, HiddenField, SelectField, BooleanField
 from wtforms.validators import Length, Regexp, Email, Optional
 
-from ticketing.formhelpers import DateTimeField, Translations, Required, Phone
+from ticketing.formhelpers import Translations, Required, Phone, OurDecimalField
 from ticketing.master.models import Prefecture
 
 class OrganizationForm(Form):
@@ -97,6 +97,34 @@ class OrganizationForm(Form):
             Regexp(u'^[a-zA-Z0-9_-]*$', message=u'英数字のみ入力できます'),
             Length(max=32, message=u'32文字以内で入力してください'),
         ]
+    )
+    margin_ratio = OurDecimalField(
+        label=u'販売手数料率(%)',
+        places=2,
+        default=0,
+        validators=[Required()],
+        hide_on_new=True
+    )
+    refund_ratio = OurDecimalField(
+        label=u'払戻手数料率(%)',
+        places=2,
+        default=0,
+        validators=[Required()],
+        hide_on_new=True
+    )
+    printing_fee = OurDecimalField(
+        label=u'印刷代金(円/枚)',
+        places=2,
+        default=0,
+        validators=[Required()],
+        hide_on_new=True
+    )
+    registration_fee = OurDecimalField(
+        label=u'登録手数料(円/公演)',
+        places=2,
+        default=0,
+        validators=[Required()],
+        hide_on_new=True
     )
 
     '''

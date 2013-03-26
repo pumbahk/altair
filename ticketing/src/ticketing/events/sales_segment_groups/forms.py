@@ -5,7 +5,7 @@ from wtforms import TextField, SelectField, HiddenField, IntegerField, BooleanFi
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 from wtforms.widgets import CheckboxInput
 
-from ticketing.formhelpers import OurDateTimeField, Translations, Required, RequiredOnUpdate, OurForm, OurIntegerField, OurBooleanField
+from ticketing.formhelpers import OurDateTimeField, Translations, Required, RequiredOnUpdate, OurForm, OurIntegerField, OurBooleanField, OurDecimalField
 from ticketing.core.models import SalesSegmentKindEnum, Event, StockHolder
 
 def fix_boolean(formdata, name):
@@ -24,7 +24,10 @@ class SalesSegmentGroupForm(OurForm):
             self.copy_to_stock_holder.choices = [('', u'変更しない')] + [
                 (str(sh.id), sh.name) for sh in StockHolder.get_own_stock_holders(event)
             ]
-
+            for field_name in ('margin_ratio', 'refund_ratio', 'printing_fee', 'registration_fee'):
+                field = getattr(self, field_name)
+                field.default = getattr(event.organization, field_name)
+            self.process(formdata, obj, **kwargs)
 
     def _get_translations(self):
         return Translations()
@@ -63,7 +66,6 @@ class SalesSegmentGroupForm(OurForm):
     )
     seat_choice = OurBooleanField(
         label=u'座席選択可',
-        #default=True,
         widget=CheckboxInput(),
     )
     upper_limit = OurIntegerField(
@@ -74,8 +76,34 @@ class SalesSegmentGroupForm(OurForm):
     )
     public = OurBooleanField(
         label=u'一般公開',
-        #default=1,
-        #widget=CheckboxInput(),
+        hide_on_new=True
+    )
+    margin_ratio = OurDecimalField(
+        label=u'販売手数料率(%)',
+        places=2,
+        default=0,
+        validators=[Required()],
+        hide_on_new=True
+    )
+    refund_ratio = OurDecimalField(
+        label=u'払戻手数料率(%)',
+        places=2,
+        default=0,
+        validators=[Required()],
+        hide_on_new=True
+    )
+    printing_fee = OurDecimalField(
+        label=u'印刷代金(円/枚)',
+        places=2,
+        default=0,
+        validators=[Required()],
+        hide_on_new=True
+    )
+    registration_fee = OurDecimalField(
+        label=u'登録手数料(円/公演)',
+        places=2,
+        default=0,
+        validators=[Required()],
         hide_on_new=True
     )
     copy = IntegerField(

@@ -1054,6 +1054,11 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     seat_choice = Column(Boolean, default=True)
     public = Column(Boolean, default=True)
 
+    margin_ratio = Column(Numeric(precision=16, scale=2), nullable=False)
+    refund_ratio = Column(Numeric(precision=16, scale=2), nullable=False)
+    printing_fee = Column(Numeric(precision=16, scale=2), nullable=False)
+    registration_fee = Column(Numeric(precision=16, scale=2), nullable=False)
+
     event_id = Column(Identifier, ForeignKey('Event.id'))
     event = relationship('Event')
 
@@ -1832,6 +1837,7 @@ class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     short_name = Column(String(32), nullable=False, index=True, doc=u"templateの出し分けなどに使う e.g. %(short_name)s/index.html")
     client_type = Column(Integer)
     contact_email = Column(String(255))
+    prefecture = Column(String(64), nullable=False, default=u'')
     city = Column(String(255))
     street = Column(String(255))
     address = Column(String(255))
@@ -1839,12 +1845,14 @@ class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     tel_1 = Column(String(32))
     tel_2 = Column(String(32))
     fax = Column(String(32))
+    status = Column(Integer)
+    margin_ratio = Column(Numeric(precision=16, scale=2), nullable=False)
+    refund_ratio = Column(Numeric(precision=16, scale=2), nullable=False)
+    printing_fee = Column(Numeric(precision=16, scale=2), nullable=False)
+    registration_fee = Column(Numeric(precision=16, scale=2), nullable=False)
 
     user_id = Column(Identifier, ForeignKey("User.id"), nullable=True)
     user = relationship("User", uselist=False, backref=backref('organization', uselist=False))
-    prefecture = Column(String(64), nullable=False, default=u'')
-
-    status = Column(Integer)
 
     def get_setting(self, name):
         for setting in self.settings:
@@ -3138,8 +3146,7 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = Column(Identifier, primary_key=True)
     name = Column(Unicode(255), default=u"default")
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
-    organization = relationship('Organization',
-                                backref='settings')
+    organization = relationship('Organization', backref='settings')
 
     auth_type = Column(Unicode(255))
     performance_selector = Column(Unicode(255), doc=u"カートでの公演絞り込み方法")
