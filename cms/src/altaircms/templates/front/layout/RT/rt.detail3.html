@@ -158,6 +158,7 @@ form = TopPageSidebarSearchForm()
 
         <!-- ========== main ========== -->
 <div id="main" style="margin-top: 20px; width: 100%">
+    <div id="submain" style="width: 690px; margin: 0 auto">
 <%block name="topicPath">
   ${social_buttons(request)}
   ${widgets("topicPath")}
@@ -166,6 +167,7 @@ form = TopPageSidebarSearchForm()
 <%block name="main">
    ${widgets("main")}
 </%block>
+    </div>
 </div>
         <!-- ========== /main ========== -->
         
