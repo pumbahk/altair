@@ -50,6 +50,8 @@
          if(!x || !y){
            setTimeout(function(){ return normalize_size(e,x,y)}, 100);
          }
+         if(x==0){x=X;}
+         if(y==0){y=Y;}
          scaled_size = scaled(x,X,y,Y);
          var scaledX = scaled_size[0];
          var scaledY = scaled_size[1];
