@@ -17,7 +17,7 @@
 
     <a href="/">トップ</a> >> 「${form.navi_hotword.data.name}」に関連する公演<br/><br/>
 
-    <%include file='../searchResult/_search_result_hotword.mako' args="events=form.events.data
+    <%include file='_search_result_hotword.mako' args="events=form.events.data
                 ,word=form.word.data, num=form.num.data, page=form.page.data,id=form.id.data
                 ,page_num=form.page_num.data, path=form.path.data, week=form.week.data
                 ,genre=form.genre.data, sub_genre=form.sub_genre.data, area=form.area.data"/>
