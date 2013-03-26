@@ -9,7 +9,7 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.response import Response
 from pyramid.url import route_path
 from sqlalchemy import and_, distinct
-from sqlalchemy.sql import exists, join, func
+from sqlalchemy.sql import exists, join, func, or_
 from sqlalchemy.orm import joinedload, noload, aliased
 
 from ticketing.models import DBSession
@@ -71,7 +71,7 @@ def get_seats(request):
         if u'sale_only' in filter_params:
             query = query.filter(exists().where(and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Seat.stock_id)))
         if loaded_at:
-            query = query.join(SeatStatus).filter(SeatStatus.updated_at>loaded_at)
+            query = query.join(SeatStatus).filter(or_(Seat.updated_at>loaded_at, SeatStatus.updated_at>loaded_at))
         for seat in query:
             seat_datum = {
                 'id': seat.l0_id,

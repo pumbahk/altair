@@ -317,8 +317,13 @@
     if (this.drawable !== null)
       this.drawable.dispose();
     for (var key in data.metadata) {
-      for (var id in data.metadata[key]) {
-        this.metadata[key][id] = data.metadata[key][id];
+      for (var i in data.metadata[key]) {
+        for (var j in this.metadata[key]) {
+          if (this.metadata[key][j].id == data.metadata[key][i].id) {
+            this.metadata[key][j] = data.metadata[key][i];
+            break;
+          }
+        }
       }
     }
     this.initDrawable();
