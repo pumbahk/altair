@@ -45,6 +45,7 @@ from ticketing.assets import IAssetResolver
 from ticketing.utils import myurljoin
 from ticketing.helpers import todate
 from ticketing.payments import plugins
+from .utils import ApplicableTicketsProducer
 
 logger = logging.getLogger(__name__)
 
@@ -925,10 +926,6 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             StockHolder.create_default(event_id=self.id, account_id=account.id)
 
     def delete(self):
-        # 既に販売されている場合は削除できない
-        if self.sales_start_on and self.sales_start_on < datetime.now():
-            raise Exception(u'既に販売開始日時を経過している為、削除できません')
-
         # delete Performance
         for performance in self.performances:
             performance.delete()
@@ -2109,7 +2106,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             return True
         return False
 
-    def cancel(self, request, payment_method=None):
+    def cancel(self, request, payment_method=None, now=None):
+        now = now or datetime.now()
         if not self.can_refund() and not self.can_cancel():
             logger.info('order (%s) cannot cancel status (%s, %s)' % (self.id, self.status, self.payment_status))
             return False
@@ -2264,7 +2262,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 re.event_code_01 = self.performance.code
                 re.title = self.performance.name
                 re.event_at = self.performance.start_on.strftime('%Y%m%d')
-                re.start_at = datetime.now().strftime('%Y%m%d')
+                re.start_at = now.strftime('%Y%m%d')
                 end_at = (self.performance.end_on or self.performance.start_on) + timedelta(days=+14)
                 re.end_at = end_at.strftime('%Y%m%d')
                 re.event_expire_at = end_at.strftime('%Y%m%d')
@@ -2300,12 +2298,52 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         # 在庫を戻す
         self.release()
         if self.payment_status != 'refunding':
-            self.canceled_at = datetime.now()
+            self.mark_canceled()
         if self.payment_status in ['paid', 'refunding']:
-            self.refunded_at = datetime.now()
+            self.mark_refunded()
         self.save()
 
         return True
+
+    def mark_canceled(self, now=None):
+        self.canceled_at = now or datetime.now() # SAFE TO USE datetime.now() HERE
+
+    def mark_refunded(self, now=None):
+        self.refunded_at = now or datetime.now() # SAFE TO USE datetime.now() HERE
+
+    def mark_delivered(self, now=None):
+        self.delivered_at = now or datetime.now() # SAFE TO USE datetime.now() HERE
+
+    def mark_paid(self, now=None):
+        self.paid_at = now or datetime.now()
+
+    def mark_issued_or_printed(self, issued=False, printed=False, now=None):
+        if not issued and not printed:
+            raise ValueError('either issued or printed must be True')
+
+        if printed:
+            if not (issued or order.issued):
+                raise Exception('trying to mark an order as printed that has not been issued')
+
+        now = now or datetime.now()
+        delivery_plugin_id = self.payment_delivery_pair.delivery_method.delivery_plugin_id
+
+        for ordered_product in self.items:
+            for item in ordered_product.ordered_product_items:
+                reissueable = item.product_item.ticket_bundle.reissueable(delivery_plugin_id)
+                if issued:
+                    if self.issued:
+                        if not reissueable:
+                            logger.warning("Trying to reissue a ticket for Order (id=%d) that contains OrderedProductItem (id=%d) associated with a ticket which is not marked reissueable" % (self.id, item.id))
+                    item.issued = True
+                    item.issued_at = now
+                if printed:
+                    item.printed_at = now
+        if issued:
+            self.issued = True
+            self.issued_at = now
+        if printed:
+            self.printed_at = now
 
     @staticmethod
     def reserve_refund(kwargs):
@@ -2342,7 +2380,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def delivered(self):
         # 入金済みのみ配送済みにステータス変更できる
         if self.payment_status == 'paid':
-            self.delivered_at = datetime.now()
+            self.mark_delivered()
             self.save()
             return True
         else:
@@ -2789,7 +2827,8 @@ class TicketPrintQueueEntry(Base, BaseModel):
         return q.all()
 
     @classmethod
-    def dequeue(self, ids):
+    def dequeue(self, ids, now=None):
+        now = now or datetime.now() # SAFE TO USE datetime.now() HERE
         entries = DBSession.query(TicketPrintQueueEntry) \
             .with_lockmode("update") \
             .outerjoin(TicketPrintQueueEntry.ordered_product_item) \
@@ -2800,18 +2839,27 @@ class TicketPrintQueueEntry(Base, BaseModel):
             .all()
         if len(entries) == 0:
             return []
-        now = datetime.now()
+        relevant_orders = {}
         for entry in entries:
             entry.processed_at = now
-            order = entry.ordered_product_item.ordered_product.order if entry.ordered_product_item is not None and entry.ordered_product_item.ordered_product is not None else None
-            if order is not None:
-                if not (entry.ticket.flags & Ticket.FLAG_ALWAYS_REISSUABLE):
-                    entry.ordered_product_item.ordered_product.order.issued = True
-                    entry.ordered_product_item.issued_at = entry.ordered_product_item.printed_at = now
-                order.issued_at = order.printed_at = now
-                order.issued = True
+            if entry.ordered_product_item is not None and entry.ordered_product_item.ordered_product is not None:
+                order = entry.ordered_product_item.ordered_product.order
+                entries = relevant_orders.get(order)
+                if entries is None:
+                    entries = relevant_orders[order] = []
+                else:
+                    if len(entries) > 1:
+                        logger.info("More than one entry exist for the same order (%d)" % order.id)
+                entries.append(entry)
             else:
                 logger.info("TicketPrintQueueEntry #%d is not associated with the order" % entry.id)
+
+        for order, entries in relevant_orders.items():
+            for entry in entries:
+                # XXX: this won't work right if multiple entries exist for the
+                # same order.
+                order.mark_issued_or_printed(issued=True, printed=True, now=now)
+
         return entries
 
 from ..operators.models import Operator
@@ -2841,9 +2889,6 @@ class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         for product_item in news:
             self.product_items.append(product_item)
 
-    def can_issue_by_that_delivery(self,  delivery_plugin_id):
-        return any(True for _ in self.applicable_ticket_iter(delivery_plugin_id))
-
     @staticmethod
     def create_from_template(template, **kwargs):
         ticket_bundle = TicketBundle.clone(template)
@@ -2857,6 +2902,20 @@ class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         ticket_bundle.attributes = template.attributes
         ticket_bundle.save()
         return {template.id:ticket_bundle.id}
+
+    def reissueable(self, delivery_plugin_id):
+        # XXX: このロジックははっきり言ってよろしくないので再実装する
+        # (TicketBundleにフラグを持たせるべきか?)
+        relevant_tickets = ApplicableTicketsProducer(self).include_delivery_id_ticket_iter(delivery_plugin_id)
+        reissueable = False
+        for ticket in relevant_tickets:
+            _reissueable = (ticket.flags & Ticket.FLAG_ALWAYS_REISSUABLE != 0)
+            if reissueable:
+                if not _reissueable:
+                    logger.warning("TicketBundle (id=%d) contains tickets whose reissueable flag are inconsistent" % self.id)
+            else:
+                reissueable = _reissueable
+        return reissueable
 
 class TicketPrintHistory(Base, BaseModel, WithTimestamp):
     __tablename__ = "TicketPrintHistory"
@@ -3042,9 +3101,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         cascade="all",
         collection_class=list)
 
-    @property
-    def available_payment_delivery_method_pairs(self):
-        now = datetime.now()
+    def available_payment_delivery_method_pairs(self, now):
         return [pdmp 
                 for pdmp 
                 in self.payment_delivery_method_pairs

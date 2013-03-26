@@ -24,6 +24,7 @@ from ticketing.models import merge_session_with_post, record_to_multidict, merge
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.core.models import Event, Performance, StockType, StockTypeEnum
+from ticketing.core import api as core_api
 from ticketing.events.forms import EventForm
 from ticketing.events.performances.forms import PerformanceForm
 from ticketing.events.sales_segment_groups.forms import SalesSegmentGroupForm
@@ -176,7 +177,7 @@ class Events(BaseView):
             return HTTPNotFound('event id %d is not found' % event_id)
 
         try:
-            event.delete()
+            core_api.delete_event(event)
             self.request.session.flash(u'イベントを削除しました')
         except Exception, e:
             self.request.session.flash(e.message)

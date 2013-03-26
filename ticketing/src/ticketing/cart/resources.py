@@ -161,7 +161,7 @@ class TicketingCartResource(object):
         """現在認証済みのユーザが今買える全販売区分"""
         per_performance_sales_segments_dict = {}
         for sales_segment in self.sales_segments:
-            if sales_segment.available_payment_delivery_method_pairs and \
+            if sales_segment.available_payment_delivery_method_pairs(self.now) and \
                sales_segment.in_term(self.now):
                 per_performance_sales_segments = \
                     per_performance_sales_segments_dict.get(sales_segment.performance_id)
