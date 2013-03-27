@@ -1,6 +1,13 @@
-<%namespace file="altairsite.mobile:templates/common/helpers.html" name="h" />
-
 <!DOCTYPE html>
+<%namespace file="altairsite.mobile:templates/common/helpers.html" name="h" />
+<%def name="disp_error(errors)">
+    % if errors:
+        % for error in errors:
+            <div style="color:#FF0000;">${error}</div>
+        % endfor
+    % endif
+</%def>
+
 <html>
 <%include file="../common/_header.mako" args="title=u'楽天チケット[お問合せ]'"/>
 <body>
@@ -38,11 +45,16 @@
 
     <form action="/inquiry" method="POST">
         ${form.name.label}<br/>${form.name}<br/>
+        ${disp_error(form.name.errors)}
         ${form.mail.label}<br/>${form.mail}<br/>
+        ${disp_error(form.mail.errors)}
         ${form.num.label}<br/>${form.num}<br/>
         ${form.category.label}<br/>${form.category}<br/>
+        ${disp_error(form.category.errors)}
         ${form.title.label}<br/>${form.title}<br/>
+        ${disp_error(form.title.errors)}
         ${form.body.label}<br/>${form.body}<br/>
+        ${disp_error(form.body.errors)}
         ※は必ず入力してください。
         <input type="submit" value="送信"/>
     </form>
