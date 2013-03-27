@@ -752,13 +752,6 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                           .filter(Account.id==account.id)\
                           .all()
 
-    def get_accounts(self):
-        return Account.filter().with_entities(Account.name).join(StockHolder)\
-                .filter(Account.organization_id==self.organization_id)\
-                .filter(Account.id==StockHolder.account_id)\
-                .filter(StockHolder.event_id==self.id)\
-                .distinct()
-
     def _get_self_cms_data(self):
         return {'id':self.id,
                 'title':self.title,
