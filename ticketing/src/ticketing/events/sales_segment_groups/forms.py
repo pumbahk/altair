@@ -26,7 +26,7 @@ class SalesSegmentGroupForm(OurForm):
             ]
             for field_name in ('margin_ratio', 'refund_ratio', 'printing_fee', 'registration_fee'):
                 field = getattr(self, field_name)
-                field.default = getattr(event.organization, field_name)
+                field.default = getattr(event.organization.setting, field_name)
             self.process(formdata, obj, **kwargs)
 
     def _get_translations(self):

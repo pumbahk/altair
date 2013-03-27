@@ -22,22 +22,6 @@
     <th class="span3">${form.client_type.label.text}</th>
     <td>${organization.client_type or ''}</td>
   </tr>
-  <tr>
-    <th>${form.margin_ratio.label.text}</th>
-    <td>${organization.margin_ratio}%</td>
-  </tr>
-  <tr>
-    <th>${form.refund_ratio.label.text}</th>
-    <td>${organization.refund_ratio}%</td>
-  </tr>
-  <tr>
-    <th>${form.printing_fee.label.text}</th>
-    <td>${h.price_format(organization.printing_fee)}円</td>
-  </tr>
-  <tr>
-    <th>${form.registration_fee.label.text}</th>
-    <td>${h.price_format(organization.registration_fee)}円</td>
-  </tr>
   </tbody>
 </table>
 

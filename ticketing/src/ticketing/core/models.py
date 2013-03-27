@@ -1847,10 +1847,6 @@ class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     tel_2 = Column(String(32))
     fax = Column(String(32))
     status = Column(Integer)
-    margin_ratio = Column(Numeric(precision=16, scale=2), nullable=False)
-    refund_ratio = Column(Numeric(precision=16, scale=2), nullable=False)
-    printing_fee = Column(Numeric(precision=16, scale=2), nullable=False)
-    registration_fee = Column(Numeric(precision=16, scale=2), nullable=False)
 
     user_id = Column(Identifier, ForeignKey("User.id"), nullable=True)
     user = relationship("User", uselist=False, backref=backref('organization', uselist=False))
@@ -3217,3 +3213,7 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     auth_type = Column(Unicode(255))
     performance_selector = Column(Unicode(255), doc=u"カートでの公演絞り込み方法")
+    margin_ratio = Column(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0')
+    refund_ratio = Column(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0')
+    printing_fee = Column(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0')
+    registration_fee = Column(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0')
