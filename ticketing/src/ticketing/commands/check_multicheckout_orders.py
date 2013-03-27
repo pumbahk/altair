@@ -63,7 +63,7 @@ def check(env, start, end):
     for resp, order in q.all():
         logger.debug('Checking order %s...' % resp.OrderNo)
         if order is None:
-            organization_id = mc_models.MulticheckoutSetting.query.filter_by(shop_id=resp.Storecd).first().organization_id
+            organization_id = c_models.OrganizationSetting.query.filter_by(multicheckout_shop_id=resp.Storecd).first().organization_id
             request.host = c_models.Host.query.filter_by(organization_id=organization_id).first().host_name
             result = checkout_inquiry(request, resp.OrderNo)
             if result.Status == mc_models.MultiCheckoutStatusEnum.Settled.v:

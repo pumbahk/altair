@@ -244,16 +244,25 @@ class SalesScheduleRecord(object):
 class SalesScheduleSalesRecord(object):
     """販売日程管理票のSalesSegment部分
     """
-    def __init__(self, sales_seg=None, sales_start=None, sales_end=None):
+    def __init__(self, sales_seg=None, sales_start=None, sales_end=None,
+                 margin_ratio=None, refund_ratio=None, printing_fee=None, registration_fee=None):
         self.sales_seg = sales_seg
         self.sales_start = sales_start
         self.sales_end = sales_end
+        self.margin_ratio = margin_ratio
+        self.refund_ratio = refund_ratio
+        self.printing_fee = printing_fee
+        self.registration_fee = registration_fee
 
     def get_record(self):
         record = dict(
             sales_seg=self.sales_seg or "",
             sales_start=self.sales_start or "",
             sales_end=self.sales_end or "",
+            margin_ratio=self.margin_ratio or "",
+            refund_ratio=self.refund_ratio or "",
+            printing_fee=self.printing_fee or "",
+            registration_fee=self.registration_fee or "",
         )
         return record
 

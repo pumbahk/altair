@@ -13,7 +13,6 @@ def add_widgetname(config, widgetname, value=None):
         raise ConfigurationError("`%s` is conflicted as widget names. (%s)" % (widgetname, settings[WIDGETKEY]))
     settings[WIDGETKEY][widgetname] = value or widgetname
 
-
 SPLIT_RX = re.compile("\s+")
 
 def list_from_setting_value(value, rx=SPLIT_RX):

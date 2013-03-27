@@ -1,7 +1,7 @@
 # coding: utf-8
 from datetime import datetime
 from altaircms.page.models import Page
-from pyramid.httpexceptions import HTTPInternalServerError
+from pyramid.httpexceptions import HTTPInternalServerError, HTTPNotFound
 from altaircms.lib.fanstatic_decorator import with_jquery
 from pyramid.view import view_config
 import logging 
@@ -89,4 +89,6 @@ def preview_pageset(context, request, published=True):
              decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", 
              renderer="altaircms:templates/front/rendering_error.html")
 def invalid_page_view(context, request):
+    if not getattr(request, "organization", None):
+        raise HTTPNotFound()
     return {"message": context.message}

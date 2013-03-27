@@ -433,22 +433,27 @@ function transferStocks() {
     var from_stock = venue.perStockHolderStockMap[from_stock_holder][i];
     var to_stock = null;
 
-    var stock_type_id = from_stock.get('stockType').get('id');
-    for (var j in venue.perStockTypeStockMap[stock_type_id]) {
-      to_stock = venue.perStockTypeStockMap[stock_type_id][j];
+    var stock_type = from_stock.get('stockType');
+    for (var j in venue.perStockTypeStockMap[stock_type.get('id')]) {
+      to_stock = venue.perStockTypeStockMap[stock_type.get('id')][j];
       if (to_stock_holder == to_stock.get('stockHolder').get('id')) {
         break;
       }
     }
 
     if (!to_stock || to_stock.id == from_stock.id) continue;
-    if (venue.perStockSeatSet[from_stock.id]) {
-      venue.perStockSeatSet[from_stock.id].each(function(seat){
-        seat.set('stock', to_stock);
-      })
+    if (stock_type.get('isSeat') && !stock_type.get('quantityOnly')) {
+      if (venue.perStockSeatSet[from_stock.id]) {
+        venue.perStockSeatSet[from_stock.id].each(function(seat){
+          if (seat.get('selectable')) seat.set('stock', to_stock);
+        })
+      }
     } else {
-      to_stock.set('assigned', parseInt(to_stock.get('assigned')) + parseInt(from_stock.get('assigned')));
-      from_stock.set('assigned', 0);
+      var unavailable = parseInt(from_stock.get('assigned')) - parseInt(from_stock.get('available'));
+      to_stock.set('available', parseInt(to_stock.get('available')) + parseInt(from_stock.get('available')));
+      to_stock.set('assigned', parseInt(to_stock.get('assigned')) + parseInt(from_stock.get('available')));
+      from_stock.set('available', 0);
+      from_stock.set('assigned', unavailable);
     }
   }
   modal.hide();

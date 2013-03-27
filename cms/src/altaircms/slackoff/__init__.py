@@ -97,9 +97,16 @@ def includeme(config):
                     events=dict(update_event=config.maybe_dotted(".subscribers.PageSetUpdate")), 
                     override_templates=dict(update="altaircms:templates/pagesets/update_input_with_genre.html"), 
                     form=".forms.PageSetForm", mapper=".mappers.pageset_mapper")
-
+    config.add_crud("static_page", title="static_page", model="..page.models.StaticPage", 
+                    circle_type="circle-page", 
+                    bind_actions=["update"], 
+                    has_auto_generated_permission=False, 
+                    form="..page.forms.StaticPageForm", mapper=".mappers.staticpage_mapper", 
+                    events=dict(update_event=config.maybe_dotted(".subscribers.StaticPageUpdate")), 
+                    )
 
     ## subscriber
+    config.add_subscriber(".subscribers.update_after_static_page", ".subscribers.StaticPageUpdate")
     config.add_subscriber(".subscribers.update_pageset_genretag", ".subscribers.PageSetUpdate")
     config.add_subscriber(".subscribers.event_term_bubbling_update", ".subscribers.PerformanceCreate")
     config.add_subscriber(".subscribers.event_term_bubbling_update", ".subscribers.PerformanceUpdate")

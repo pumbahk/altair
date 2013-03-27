@@ -9,7 +9,7 @@ from sqlalchemy import distinct
 from sqlalchemy.sql import func, and_
 
 from ticketing.core.models import Event, Mailer
-from ticketing.core.models import StockType, StockHolder, StockStatus, Stock, Performance, Product, ProductItem, SalesSegmentGroup
+from ticketing.core.models import StockType, StockHolder, StockStatus, Stock, Performance, Product, ProductItem, SalesSegmentGroup, SalesSegment
 from ticketing.core.models import Order, OrderedProduct
 from ticketing.events.sales_reports.forms import SalesReportForm
 from ticketing.helpers import todatetime
@@ -190,6 +190,7 @@ def get_performance_sales_summary(form, organization):
     if form.event_id.data:
         query = query.filter(Product.event_id==form.event_id.data)
     if form.sales_segment_group_id.data:
+        query = query.outerjoin(SalesSegment)
         query = query.outerjoin(SalesSegmentGroup).filter(
             SalesSegmentGroup.id==form.sales_segment_group_id.data,
         )
@@ -239,6 +240,7 @@ def get_performance_sales_summary(form, organization):
     if form.event_id.data:
         query = query.filter(Product.event_id==form.event_id.data)
     if form.sales_segment_group_id.data:
+        query = query.join(SalesSegment)
         query = query.join(SalesSegmentGroup).filter(
             SalesSegmentGroup.id==form.sales_segment_group_id.data,
         )
@@ -265,8 +267,8 @@ def get_performance_sales_summary(form, organization):
     elif form.event_id.data:
         query = query.filter(Product.event_id==form.event_id.data)
     if form.sales_segment_group_id.data:
+        query = query.outerjoin(SalesSegment)
         query = query.outerjoin(SalesSegmentGroup).filter(
-            SalesSegmentGroup.id==Product.sales_segment_group_id,
             SalesSegmentGroup.id==form.sales_segment_group_id.data
         )
     if form.limited_from.data:

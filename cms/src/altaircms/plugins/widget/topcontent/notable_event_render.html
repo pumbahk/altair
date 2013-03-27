@@ -4,12 +4,12 @@
   % for t in qs:
   <div class="event">
 	<dl>
-	  <dt><a href="${h.link.get_link_from_topcontent(request, t)}">${t.title }</a></dt>
-	  <dd>${t.text}</dd>
+	  <dt><a href="${h.link.get_link_from_topcontent(request, t)}">${h.truncate(t.title, 35) }</a></dt>
+	  <dd>${h.truncate(t.text, 57)}</dd>
 	</dl>
 	<p>
 	  <a href="${h.link.get_link_from_topcontent(request, t)}">
-		<img src="${h.asset.to_show_page(request, t.image_asset)}" alt="${t.title  }" width="80" height="80" />
+		<img src="${h.asset.to_show_page(request, t.image_asset,filepath=getattr(t.image_asset, widget.rendering_image_attribute))}" alt="${t.title}" width="80" height="80" />
 	  </a><br />
   </div>
   % endfor

@@ -15,8 +15,8 @@
 </div>
 
 
-<form action="${request.route_path("static_page_create", action="create")}" 
+<form action="${h.current_route_path_override(request, action="create")}" 
 	  method="POST" enctype="multipart/form-data">
-  ${fco.form_as_table_strict(form,["name", "zipfile"])}
+  ${fco.form_as_table_strict(form,["name", "zipfile","publish_begin", "publish_end", "layout", "interceptive"])}
   <button type="submit" class="btn">zipでupload</button>  
 </form>

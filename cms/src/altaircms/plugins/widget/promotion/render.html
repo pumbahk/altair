@@ -13,7 +13,8 @@
     </div>
     <div id="slideShowRight">
       <div class="thumbnail">
-       ${u"".join(show_image(thumb,link) for thumb,link in zip(info.thumbnails, info.links))|n}
+        <div style="display:inline-block; width:60px; height:60px;">
+          ${u'</div><div style="display:inline-block; width:60px; height:60px;">'.join(show_image(thumb,link) for thumb,link in zip(info.thumbnails, info.links))|n}        </div>
       </div>
     </div>
   </div>
@@ -31,6 +32,51 @@
       return this[i];
     }
 
+    // X,Y = size of bounding area
+    var scaled = function(x,X,y,Y){
+      var ax = X/x, ay = Y/y;
+      if(ax < ay){
+        return [X, ax*y];
+      } else {
+        return [ay*x,Y];
+      }  
+    }
+
+    var normalize_factory = function(X,Y, force){
+      return function normalize_size(e,x,y){
+         var $e = $(e).eq(0);
+         var x = x || $e.width();
+         var y = y || $e.height();
+         if(!x || !y){
+           setTimeout(function(){ return normalize_size(e,x,y)}, 100);
+         }
+         if(x==0){x=X;}
+         if(y==0){y=Y;}
+         scaled_size = scaled(x,X,y,Y);
+         var scaledX = scaled_size[0];
+         var scaledY = scaled_size[1];
+
+         var styles = {};
+         if(scaledX == X){
+            styles["margin-top"] = 0.5*(Y-scaledY);
+            styles["margin-left"] = 0;
+         }else if (scaledY == Y){
+            styles["margin-left"] = 0.5*(X-scaledX);
+            styles["margin-top"] = 0;
+         }
+
+         styles["width"] = scaledX;
+         styles["height"] = scaledY;
+         $e.css(styles);
+         if(!!$e.data("promotion-taint-reset")){
+            $e.data("promotion-taint-reset")();
+            $e.data("promotion-taint-reset", null);
+         }
+      };
+    }
+
+    var mainImageNormalize = normalize_factory(515,300,true);
+
     $(function(){
       setInterval(function(){
         var params = {promotion_unit_id: pu_candidates.next_id()};
@@ -38,10 +84,18 @@
           function(data){
             var img = $(".mainImage img");
             img.attr("src", data.src);
-            img.parent("a").attr("href", data.link)
-            $(".mainImageMessage").text(data.message);
+            img.parent("a").attr("href", data.link);
+            mainImageNormalize(img, data.width, data.height);
+            
+            var message = data.message;
+            if(message.length > 50){message = message.substr(0,50)+"...";}
+            $(".mainImageMessage").text(message);
           });
         }, interval_time);
+    // some magic numbers;
+    var normalize = normalize_factory(60,60,true);
+    normalize_factory(515,300,true)($(".mainImage img"), ${info.width}, ${info.height});
+    $("#slideShow #slideShowRight .thumbnail img").each(function(i,e){normalize(e);});
     });
   </script>
 %else:

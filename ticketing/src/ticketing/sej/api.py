@@ -228,25 +228,27 @@ def create_payment_or_cancel_request_from_record(n):
         'X_shop_order_id':      n.order_id,
         'X_haraikomi_no':       n.billing_number or '',
         'X_hikikae_no':         n.exchange_number or '',
-        'X_goukei_kingaku':     n.total_price,
-        'X_ticket_cnt':         n.total_ticket_count,
-        'X_ticket_hon_cnt':     n.ticket_count,
-        'X_kaishu_cnt':         n.return_ticket_count,
+        'X_goukei_kingaku':     str(n.total_price),
+        'X_ticket_cnt':         str(n.total_ticket_count),
+        'X_ticket_hon_cnt':     str(n.ticket_count),
         'X_pay_mise_no':        n.pay_store_number,
         'pay_mise_name':        n.pay_store_name,
         'X_hakken_mise_no':     n.ticketing_store_number,
         'hakken_mise_name':     n.ticketing_store_name,
-        'X_torikeshi_riyu':     n.cancel_reason,
         'X_shori_time':         build_sej_datetime(n.processed_at),
         }
 
 def create_payment_complete_request_from_record(n):
     params = create_payment_or_cancel_request_from_record(n)
     params['X_tuchi_type'] = str(SejNotificationType.PaymentComplete.v)
+    return params
 
 def create_cancel_request_from_record(n):
     params = create_payment_or_cancel_request_from_record(n)
+    params['X_torikeshi_riyu'] = n.cancel_reason
     params['X_tuchi_type'] = str(SejNotificationType.CancelFromSVC.v)
+    params['X_kaishu_cnt'] = str(n.return_ticket_count)
+    return params
 
 def create_re_grant_request_from_record(n):
     params = {
@@ -295,6 +297,6 @@ def create_sej_notification_data_from_record(n, secret_key):
         SejNotificationType.TicketingExpire.v:
             create_expire_request_from_record,
         }
-    params = processor[n.notification_type](n)
+    params = processor[int(n.notification_type)](n)
     params['xcode'] = create_hash_from_x_start_params(params, secret_key)
     return params

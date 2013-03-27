@@ -10,6 +10,7 @@ from .models import Event
 from ..page.models import PageSet
 from ..models import Category
 from altaircms.formhelpers import dynamic_query_select_field_factory
+from datetime import datetime
 
 class EventForm(Form):
     title = fields.TextField(label=u'タイトル', validators=[required_field()])
@@ -27,17 +28,20 @@ class EventForm(Form):
     deal_close = fields.DateTimeField(label=u'販売終了日', validators=[required_field()])
     is_searchable = fields.BooleanField(label=u'検索対象に含める', default=True)
     code = fields.TextField(label=u"event code(backend)")
-    
+
     def validate(self, **kwargs):
         if super(EventForm, self).validate():
             data = self.data
+
             if data["event_open"] > data["event_close"]:
                 append_errors(self.errors, "event_open", u"イベント終了日よりも後に設定されてます")
             if data["deal_open"] > data["deal_close"]:
                 append_errors(self.errors, "deal_open", u"販売終了日よりも後に設定されてます")
             if data["deal_open"] > data["event_open"]:
                 append_errors(self.errors, "deal_open", u"販売前にイベントが始まっています")
-            if data["deal_close"] > data["event_close"]:
+            deal_close = datetime(data["deal_close"].year, data["deal_close"].month, data["deal_close"].day)
+            event_close = datetime(data["event_close"].year, data["event_close"].month, data["event_close"].day)
+            if deal_close > event_close:
                 append_errors(self.errors, "deal_close",  u"イベント終了後も販売期間中です")
         return not bool(self.errors)
 

@@ -409,8 +409,7 @@ ${h.breadcrumbs(
                     %endif
                   </td>
                   <td style="text-align: right;">${h.price_format(ordered_product_item.price)}円</td>
-                  <% quantity = len(ordered_product_item.seats) if ordered_product_item.seats else ordered_product.quantity %>
-                  <td>${quantity}</td>
+                  <td>${ordered_product_item.quantity}</td>
                   <td></td>
                 </tr>
             % endfor

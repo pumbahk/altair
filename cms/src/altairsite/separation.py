@@ -32,6 +32,8 @@ class AllowableQueryFilterByOrganization(object):
         if organization is None:
             logger.warn("*separation host=%s organization is not found",  self.request.host)
             raise self.ExceptionClass("organization is not found")
+        if not hasattr(model, "organization_id"):
+            return query
         return query.with_transformation(organization.inthere("organization_id"))
 
     def allowable_query_with_fetch(self, model, qs=None):

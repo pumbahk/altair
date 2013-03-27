@@ -38,7 +38,7 @@ from . import writefile
 from zope.deprecation import deprecate
 from altaircms.widget.forms import WidgetDispositionSaveDefaultForm
 from altaircms.widget.forms import WidgetDispositionSaveForm
-
+from .api import as_static_page_response
 
 class AfterInput(Exception):
     pass
@@ -322,7 +322,7 @@ class ListView(object):
         pagetype = get_or_404(self.request.allowable(PageType), (PageType.name==self.request.matchdict["pagetype"]))
         static_directory = get_static_page_utility(self.request)
         return {"static_directory": static_directory, 
-                "pages": static_directory.get_managemented_files(self.request), 
+                "pages": static_directory.get_managemented_files(self.request).order_by(sa.desc(StaticPage.updated_at)), 
                 "pagetype": pagetype}
 
     @view_config(match_param="pagetype=event_detail", renderer="altaircms:templates/pagesets/event_pageset_list.html")
@@ -589,7 +589,6 @@ class StaticPageCreateView(object):
 
         static_directory = get_static_page_utility(self.request)
         filestorage = form.data["zipfile"]
-
         static_page = self.context.create_static_page(form.data)
         src = os.path.join(static_directory.get_base_directory(), static_page.name)
         writefile.replace_directory_from_zipfile(src, filestorage.file)
@@ -640,7 +639,7 @@ class StaticPageView(object):
             if os.path.exists(src):
                 raise Exception("%s exists. after delete" % src)
             FlashMessage.success(u"%sが削除されました" % name, request=self.request)
-            return {"redirect_to": self.request.route_url("pageset_list", kind="static")}
+            return {"redirect_to": self.request.route_url("pageset_list", pagetype="static")}
         except Exception, e:
             logger.exception(str(e))
             raise 
@@ -686,5 +685,10 @@ class StaticPageView(object):
         FlashMessage.success(u"%sが更新されました" % filestorage.filename, request=self.request)
         return HTTPFound(self.request.route_url("static_page", action="detail", static_page_id=static_page.id))
 
-
-        
+@view_config(route_name="static_page_display")
+def static_page_display_view(context, request):
+    prefix = request.matchdict["path"].split("/", 1)[0]
+    static_page = get_or_404(request.allowable(StaticPage), StaticPage.name==prefix)
+    if request.GET.get("force_original"):
+        return as_static_page_response(request, static_page, request.matchdict["path"], force_original=True)
+    return as_static_page_response(request, static_page, request.matchdict["path"])

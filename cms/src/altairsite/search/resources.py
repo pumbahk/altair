@@ -6,7 +6,8 @@ import logging
 logger = logging.getLogger(__file__)
 
 import altaircms.helpers as h
-from . import forms
+from . import searcher
+from altaircms.models import Genre
 from ..pyramidlayout import get_salessegment_kinds
 class SearchResult(dict):
     pass
@@ -67,6 +68,25 @@ class SearchPageResource(object):
     def get_query_params_as_html(self, query_params):
         return QueryParamsRender(self.request, query_params)
 
+    def get_result_sequence_from_query_params_ext(self, query_params, searchfn=_get_mocked_pageset_query):
+        """ ## side effect. update query_params
+        """
+        if not "genre" in self.request.GET:
+            return self.get_result_sequence_from_query_params(query_params, searchfn=searchfn)
+
+        genre_id = self.request.GET["genre"]
+        genre = Genre.query.filter_by(id=genre_id).first()
+        if genre is None:
+            return self.get_result_sequence_from_query_params(query_params, searchfn=searchfn)                
+
+        gs = genre.ancestors_include_self
+        gs.pop()
+        query_params.update(sub_categories=genre_id, 
+                            category_label=u">".join([g.label for g in reversed(gs)]))
+        def with_filter_by_genre(request, query_params):
+            return searcher.search_by_genre(self.request, searchfn(self.request, query_params), [self.request.GET["genre"]])
+        return self.get_result_sequence_from_query_params(query_params, searchfn=with_filter_by_genre)
+
     def get_result_sequence_from_query_params(self, query_params, searchfn=_get_mocked_pageset_query):
         logger.debug(query_params)
         qp = deepcopy(query_params)
@@ -110,9 +130,9 @@ class QueryParamsRender(object):
         kinds = get_salessegment_kinds(self.request)
         convertor = {unicode(k.id): k.label for k in kinds}
         if len(deal_cond_list) <= 1:
-            return convertor[deal_cond_list[0]]
+            return convertor.get(deal_cond_list[0], "")
         else:
-            return u" or ".join(convertor[k] for k in deal_cond_list)
+            return u" or ".join(convertor.get(k, "") for k in deal_cond_list)
 
     def __unicode__(self):
         u"""\
@@ -132,7 +152,9 @@ class QueryParamsRender(object):
         qp = self.query_params
         if "query" in qp:
             r.append(u"フリーワード: %s" % qp["query"])
-        if qp.get("category_tree") and qp.get("top_categories") or qp.get("sub_categories"):
+        if qp.get("category_label"):
+            r.append(u"ジャンル: %s" % qp.get("category_label"))
+        elif qp.get("category_tree") and qp.get("top_categories") or qp.get("sub_categories"):
             r.append(u"ジャンル: %s " % self.describe_from_tree(qp["category_tree"]))
         if qp.get("area_tree") and qp.get("prefectures"):
             r.append(u"開催地: %s" % self.describe_from_tree(qp["area_tree"]))
@@ -207,11 +229,12 @@ class SearchResultRender(object):
 <p class="align1">%s</p>
 """
         link = h.link.publish_page_from_pageset(self.request, self.pageset)
-        link_label = u"%s %s" % (self.pageset.event.title, self.pageset.name)
+        link_label = self.pageset.event.title #xx?
         event = self.pageset.event
         performances = [p for p in event.performances if p.start_on >= self.today]
         performances = performances if len(performances) < 3 else performances[:3]
-        performances = u"</p><p class='align1'>".join([u"%s %s(%s)" % (p.start_on, p.venue, p.jprefecture) for p in performances])
+        performances = u"</p><p class='align1'>".join([u"%s %s(%s)" %
+            (p.start_on.strftime("%Y-%m-%d %H:%M"), p.venue, p.jprefecture) for p in performances])
         return fmt % (link, link_label, len(event.performances), event.description, performances)
 
     def deal_limit(self):

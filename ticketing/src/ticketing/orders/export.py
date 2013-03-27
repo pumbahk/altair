@@ -39,6 +39,7 @@ japanese_columns = {
     u'order.transaction_fee': u'決済手数料',
     u'order.delivery_fee': u'配送手数料',
     u'order.system_fee': u'システム手数料',
+    u'order.margin': u'内手数料金額',
     u'order.note': u'メモ',
     u'order.card_brand': u'カードブランド',
     u'order.card_ahead_com_code': u'仕向け先企業コード',
@@ -78,6 +79,7 @@ japanese_columns = {
     u'ordered_product.quantity': u'商品個数',
     u'ordered_product.product.name': u'商品名',
     u'ordered_product.product.sales_segment_group.name': u'販売区分',
+    u'ordered_product.product.sales_segment_group.margin_ratio': u'販売手数料率',
     u'ordered_product_item.product_item.name': u'商品明細名',
     u'ordered_product_item.price': u'商品明細単価',
     u'ordered_product_item.quantity': u'商品明細個数',
@@ -92,27 +94,19 @@ japanese_columns = {
     }
 
 
-class QuantityRenderer(object):
+class MarginRenderer(object):
     def __init__(self, key, column_name):
         self.key = key
         self.column_name = column_name
 
     def __call__(self, record):
-        ordered_product_item = dereference(record, self.key)
-        # Moriyoshi Koizumi: この部分なんですけど、確かにもとのコードでも ordered_product.quantity を取ってましたが、これの意味するところって OrderedProduct の quantity ってことですか?
-        # Moriyoshi Koizumi: 最初 product_item の quantity だと思ってたんでそうしたんですけど
-        # masahiro matsui: データをみたらordered_product.quantityが1で、ordered_product_item.quantityが0になってて
-        # masahiro matsui: 数受けのケースだとこうなってるようだったので、既存のコードを踏襲して修正しました
-        if ordered_product_item.seats:
-            rendered_value = unicode(len(ordered_product_item.seats))
-        else:
-            rendered_value = unicode(ordered_product_item.ordered_product.quantity)
+        order = dereference(record, self.key)
+        rendered_value = 0
+        for ordered_product in order.ordered_products:
+            rendered_value += (ordered_product.price * ordered_product.quantity) * (ordered_product.product.sales_segment_group.margin_ratio / 100)
         return [
-            (
-                (u"", self.column_name, u""),
-                rendered_value
-                )
-            ]
+            ((u"", self.column_name, u""), unicode(rendered_value))
+        ]
 
 class PerSeatQuantityRenderer(object):
     def __init__(self, key, column_name):
@@ -121,14 +115,10 @@ class PerSeatQuantityRenderer(object):
 
     def __call__(self, record):
         ordered_product_item = dereference(record, self.key)
-        # Moriyoshi Koizumi: この部分なんですけど、確かにもとのコードでも ordered_product.quantity を取ってましたが、これの意味するところって OrderedProduct の quantity ってことですか?
-        # Moriyoshi Koizumi: 最初 product_item の quantity だと思ってたんでそうしたんですけど
-        # masahiro matsui: データをみたらordered_product.quantityが1で、ordered_product_item.quantityが0になってて
-        # masahiro matsui: 数受けのケースだとこうなってるようだったので、既存のコードを踏襲して修正しました
         if ordered_product_item.seats:
             rendered_value = u"1"
         else:
-            rendered_value = unicode(ordered_product_item.ordered_product.quantity)
+            rendered_value = unicode(ordered_product_item.quantity)
         return [
             (
                 (u"", self.column_name, u""),
@@ -188,6 +178,7 @@ class OrderCSV(object):
         CurrencyRenderer(u'order.transaction_fee'),
         CurrencyRenderer(u'order.delivery_fee'),
         CurrencyRenderer(u'order.system_fee'),
+        MarginRenderer(u'order', u'order.margin'),
         PlainTextRenderer(u'order.note'),
         PlainTextRenderer(u'order.card_brand'),
         PlainTextRenderer(u'order.card_ahead_com_code'),
@@ -240,6 +231,7 @@ class OrderCSV(object):
                     PlainTextRenderer(u'ordered_product.quantity'),
                     PlainTextRenderer(u'ordered_product.product.name'),
                     PlainTextRenderer(u'ordered_product.product.sales_segment_group.name'),
+                    PlainTextRenderer(u'ordered_product.product.sales_segment_group.margin_ratio'),
                     ]
                 ),
             CollectionRenderer(
@@ -252,7 +244,7 @@ class OrderCSV(object):
                         [
                             PlainTextRenderer(u'ordered_product_item.product_item.name'),
                             CurrencyRenderer(u'ordered_product_item.price'),
-                            QuantityRenderer(u'ordered_product_item', u'ordered_product_item.quantity'),
+                            PlainTextRenderer(u'ordered_product_item.quantity'),
                             PrintHistoryRenderer(u'ordered_product_item', u'ordered_product_item.print_histories'),
                             ]
                         ),
@@ -270,7 +262,7 @@ class OrderCSV(object):
                                 u'ordered_product_item.seats',
                                 u'seat',
                                 [
-                                    PlainTextRenderer('seat.name'),
+                                    PlainTextRenderer(u'seat.name'),
                                     ]
                                 ),
                             ]

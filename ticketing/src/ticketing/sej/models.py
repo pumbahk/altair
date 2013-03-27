@@ -3,8 +3,8 @@
 from ticketing.models import BaseModel, LogicallyDeleted, WithTimestamp, MutationDict, JSONEncodedDict, relationship, Identifier
 from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, Date, ForeignKey, Enum, DECIMAL, Binary
 from sqlalchemy.orm import relationship, join, column_property, mapper, backref
-
 import sqlahelper
+from datetime import datetime
 
 session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
@@ -188,6 +188,14 @@ class SejOrder(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     # キャンセル日時
     cancel_at               = Column(DateTime, nullable=True)
 
+    def mark_canceled(self, now=None):
+        self.cancel_at = now or datetime.now() # SAFE TO USE datetime.now() HERE
+
+    def mark_issued(self, now=None):
+        self.issue_at = now or datetime.now() # SAFE TO USE datetime.now() HERE
+
+    def mark_paid(self, now=None):
+        self.pay_at = now or datetime.now() # SAFE TO USE datetime.now() HERE
 
 class SejTicket(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     __tablename__           = 'SejTicket'

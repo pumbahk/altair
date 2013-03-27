@@ -17,6 +17,11 @@ import urlparse
 import cgi 
 import itertools
 
+def truncate(s, size):
+    if len(s) > size:
+        return s[:size] + u"..."
+    return s
+
 def url_create_with(url, **kwargs):
     """
     # identity

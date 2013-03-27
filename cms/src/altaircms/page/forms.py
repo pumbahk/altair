@@ -14,6 +14,7 @@ from altaircms.layout.models import Layout
 from .models import Page
 from .models import PageSet
 from .models import PageType
+from .models import StaticPage
 from altaircms.event.models import Event
 from altaircms.interfaces import IForm
 from altaircms.interfaces import implementer
@@ -26,6 +27,10 @@ logger = logging.getLogger(__name__)
 from ..models import Category, Genre
 from .api import get_static_page_utility
 from . import writefile
+
+def layout_filter(model, request, query):
+    pagetype = PageType.get_or_create(name=request.GET["pagetype"], organization_id=request.organization.id)
+    return request.allowable(Layout).with_transformation(Layout.applicable(pagetype.id))
 
 class PageSetSearchForm(Form):
     """
@@ -82,9 +87,6 @@ class PageInfoSetupWithEventForm(Form):
 
 @implementer(IForm)
 class PageForm(Form):
-    def layout_filter(model, request, query):
-        pagetype = PageType.get_or_create(name=request.GET["pagetype"], organization_id=request.organization.id)
-        return request.allowable(Layout).with_transformation(Layout.applicable(pagetype.id))
     name = fields.TextField(label=u"名前", validators=[validators.Required()])
     url = fields.TextField(validators=[url_field_validator,  url_not_conflict],label=u"URL", )
     genre = dynamic_query_select_field_factory(Genre, allow_blank=True, label=u"ジャンル", 
@@ -327,12 +329,66 @@ class PageSetFormFactory(object):
 
 
 ## static page
+class StaticPageForm(Form):
+    name = fields.TextField(label=u"name", validators=[validators.Optional()])
+    layout = dynamic_query_select_field_factory(Layout, allow_blank=True, 
+                                                get_label=lambda obj: u"%s(%s)" % (obj.title, obj.template_filename), 
+                                                dynamic_query=layout_filter
+                                                )
+    publish_begin = fields.DateTimeField(label=u"掲載開始", validators=[validators.Optional()])
+    publish_end = MaybeDateTimeField(label=u"掲載終了", validators=[validators.Optional()])
+    interceptive = fields.BooleanField(label=u"同一urlのページセットを横取りする", default=True)
+
+    def configure(self, request):
+        self.request = request
+        self.static_directory = get_static_page_utility(request)
+
+    def object_validate(self, obj):
+        self.request._static_page_name = obj.name #too add-hoc        
+        return True
+
+    def validate(self):
+        status = super(type(self), self).validate()
+        if not status:
+            return False
+
+        data = self.data
+        if data.get("name") and hasattr(self, "static_directory"):
+            path = os.path.join(self.static_directory.get_base_directory(), self.data["name"])
+            if os.path.exists(path):
+                if self.request.allowable(StaticPage).filter(StaticPage.name==self.data["name"], StaticPage.id!=self.request.matchdict["id"]).count() > 0:
+                    append_errors(self.errors, "name", u"%sは既に存在しています。他の名前で登録してください" % self.data["name"])
+                    status = False
+
+        if data.get("publish_end") and data.get("publish_begin"):
+            if data["publish_begin"] > data["publish_end"]:
+                append_errors(self.errors, "publish_begin", u"開始日よりも後に終了日が設定されています")
+        return status
+
+    __display_fields__ = ["name", "layout", "publish_begin", "publish_end", "interceptive"]
+
 class StaticPageCreateForm(Form):
     name = fields.TextField(label=u"name", validators=[validators.Required()])
     zipfile = fields.FileField(label=u"zipファイルを投稿")
+    layout = dynamic_query_select_field_factory(Layout, allow_blank=True, 
+                                                get_label=lambda obj: u"%s(%s)" % (obj.title, obj.template_filename), 
+                                                dynamic_query=layout_filter
+                                                )
+    publish_begin = fields.DateTimeField(label=u"掲載開始", validators=[validators.Optional()])
+    publish_end = MaybeDateTimeField(label=u"掲載終了", validators=[validators.Optional()])
+    interceptive = fields.BooleanField(label=u"同一urlのページセットを横取りする", default=True)
+
 
     def validate(self, request):
         status = super(type(self), self).validate()
+        if not status:
+            return False
+
+        data = self.data
+        if data.get("publish_end") and data.get("publish_begin"):
+            if data["publish_begin"] > data["publish_end"]:
+                append_errors(self.errors, "publish_begin", u"開始日よりも後に終了日が設定されています")
+
         static_directory = get_static_page_utility(request)
         path = os.path.join(static_directory.get_base_directory(), self.data["name"])
         if os.path.exists(path):

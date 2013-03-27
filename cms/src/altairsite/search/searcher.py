@@ -32,6 +32,10 @@ class ISearchFn(Interface):
            :param query_params:  form.pyのmake_query_paramsで作られた辞書
            :return: query set of pageset
        """
+
+def as_empty_query(qs):
+   return qs.filter(sa.sql.false())
+
 ##
 def _refine_pageset_collect_future(qs, _nowday=None):
    if _nowday is None:
@@ -62,7 +66,6 @@ def _refine_pageset_qs(qs):
     qs = _refine_pageset_only_published_term(qs)
     return qs.options(orm.joinedload("event"), orm.joinedload("event.performances"), orm.joinedload("genre"))
 
-
 ## todo:test
 @provider(ISearchFn)
 def get_pageset_query_from_hotword(request, query_params):
@@ -74,7 +77,7 @@ def get_pageset_query_from_hotword(request, query_params):
        hotword = query_params["hotword"]
        return _refine_pageset_qs(search_by_hotword(request, qs, hotword))
     else:
-       return _refine_pageset_qs(qs.filter(PageSet.event_id!=None)) # empty set query is good for that?
+       return as_empty_query(qs)
 
 @provider(ISearchFn)
 def get_pageset_query_from_freeword(request, query_params):
@@ -86,7 +89,7 @@ def get_pageset_query_from_freeword(request, query_params):
         qs = search_by_freeword(request, qs, words, query_params.get("query_cond"))
         return  _refine_pageset_qs(qs)
     else:
-       return _refine_pageset_qs(qs.filter(PageSet.event_id!=None)) # empty set query is good for that?
+       return as_empty_query(qs)
 
 @provider(ISearchFn)
 def get_pageset_query_from_genre(request, query_params):
@@ -97,7 +100,7 @@ def get_pageset_query_from_genre(request, query_params):
        qs = search_by_genre(request, qs, query_params.get("top_categories"), query_params.get("sub_categories"))
        return  _refine_pageset_qs(qs)
     else:
-       return _refine_pageset_qs(qs.filter(PageSet.event_id!=None)) # empty set query is good for that?
+       return as_empty_query(qs)
 
 @provider(ISearchFn)
 def get_pageset_query_from_area(request, query_params):
@@ -111,7 +114,7 @@ def get_pageset_query_from_area(request, query_params):
        qs = search_by_events(qs, sub_qs)
        return  _refine_pageset_qs(qs)
     else:
-       return _refine_pageset_qs(qs.filter(PageSet.event_id!=None)) # empty set query is good for that?
+       return as_empty_query(qs)
 
 @provider(ISearchFn)
 def get_pageset_query_from_deal_cond(request, query_params):
@@ -125,7 +128,7 @@ def get_pageset_query_from_deal_cond(request, query_params):
        qs = search_by_events(qs, sub_qs)
        return  _refine_pageset_qs(qs)
     else:
-       return _refine_pageset_qs(qs.filter(PageSet.event_id!=None)) # empty set query is good for that?
+       return as_empty_query(qs)
 
 @provider(ISearchFn)
 def get_pageset_query_from_deal_open_within(request, query_params):
@@ -139,7 +142,7 @@ def get_pageset_query_from_deal_open_within(request, query_params):
        qs = search_by_events(qs, sub_qs)
        return  _refine_pageset_qs(qs)
     else:
-       return _refine_pageset_qs(qs.filter(PageSet.event_id!=None)) # empty set query is good for that?
+       return as_empty_query(qs)
 
 @provider(ISearchFn)
 def get_pageset_query_from_event_open_within(request, query_params):
@@ -156,7 +159,7 @@ def get_pageset_query_from_event_open_within(request, query_params):
        qs = search_by_events(qs, sub_qs)
        return  _refine_pageset_qs(qs)
     else:
-       return _refine_pageset_qs(qs.filter(PageSet.event_id!=None)) # empty set query is good for that?
+       return as_empty_query(qs)
 
 
 @provider(ISearchFn)
@@ -216,7 +219,7 @@ def search_by_freeword(request, qs, words, query_cond):
     pageset_ids = api.pageset_id_list_from_words(request, words, query_cond)
     logger.info("pageset_id: %s" % pageset_ids)
     if not pageset_ids:
-       return qs
+       return as_empty_query(qs)
     return qs.filter(PageSet.id.in_(pageset_ids))
 
 def _extract_tags(params, k):
@@ -231,7 +234,7 @@ def search_by_events(qs, event_ids):
    if event_ids:
       return qs.filter(PageSet.event_id.in_(event_ids))
    else:
-      return qs
+      return as_empty_query(qs)
 
 def search_by_genre(request, qs, *genre_id_list):
     """
@@ -243,10 +246,13 @@ def search_by_genre(request, qs, *genre_id_list):
        return qs
     xs = []
     for ids in genre_id_list:
-       xs.extend(ids)
+       if ids:
+          xs.extend(ids)
     tags = PageTag.query.filter(PageTag.label==Genre.label, PageTag.organization_id==None, Genre.organization_id==request.organization.id)
     tag_id_list = tags.filter(Genre.id.in_(xs)).with_entities(PageTag.id).all()
     tag_id_list = [x for xs in tag_id_list for x in xs]
+    if not tag_id_list:
+       return as_empty_query(qs)
     searcher = get_pageset_searcher(request)
     return searcher.filter_by_system_tag_many(qs, tag_id_list)
 
@@ -261,7 +267,7 @@ def events_by_area(qs, prefectures):
 ##日以内に開始系の関数
 def events_by_within_n_days_of(qs, start_from, n, _nowday=datetime.datetime.now):
    today = _nowday()
-   qs = qs.filter(today+datetime.timedelta(days=-1) <= start_from).filter(start_from <= (today+datetime.timedelta(days=n)))
+   qs = qs.filter(today+datetime.timedelta(days=-1-n) <= start_from).filter(start_from <= (today+datetime.timedelta(days=n)))
    return qs
    
 

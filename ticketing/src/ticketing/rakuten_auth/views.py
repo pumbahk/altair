@@ -38,6 +38,7 @@ class RootView(object):
         else:
             # TODO: デフォルトURLをHostからひいてくる
             res = HTTPFound(location="/")
+            return res
 
     def error(self):
         return Response(body="auth error")

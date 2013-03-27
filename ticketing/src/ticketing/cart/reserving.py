@@ -20,6 +20,7 @@ from ticketing.core.models import (
     Seat_SeatAdjacency,
 )
 from sqlalchemy.sql import not_
+from sqlalchemy.orm import joinedload, aliased
 
 logger = logging.getLogger(__name__)
 
@@ -121,22 +122,29 @@ class Reserving(object):
             return self._get_single_seat(stock_id, seat_index_type_id)
 
         # すでに確保済みのSeatを持つ連席
-        reserved_adjacencies = DBSession.query(SeatAdjacency.id).filter(
+        _SeatAdjacency = aliased(SeatAdjacency)
+        _SeatAdjacencySet = aliased(SeatAdjacencySet)
+        _Seat = aliased(Seat)
+        _SeatStatus = aliased(SeatStatus)
+        _Seat_SeatAdjacency = aliased(Seat_SeatAdjacency)
+        reserved_adjacencies = DBSession.query(_SeatAdjacency.id).filter(
             # すでに確保済み
-            SeatStatus.status != int(SeatStatusEnum.Vacant)
+            _SeatStatus.status != int(SeatStatusEnum.Vacant)
         ).filter(
-            Seat_SeatAdjacency.seat_adjacency_id == SeatAdjacency.id
+            _Seat_SeatAdjacency.seat_adjacency_id == _SeatAdjacency.id
         ).filter(
-            Seat_SeatAdjacency.seat_id == Seat.id
+            _Seat_SeatAdjacency.seat_id == _Seat.id
         ).filter(
-            SeatAdjacencySet.seat_count==quantity,
+            _SeatAdjacencySet.seat_count==quantity,
         ).filter(
-            Seat.stock_id==stock_id
+            _Seat.stock_id==stock_id
         ).filter(
-            SeatStatus.seat_id==Seat.id
+            _SeatStatus.seat_id==_Seat.id
         )
 
-        adjacencies = SeatAdjacency.query.filter(
+        adjacencies = SeatAdjacency.query.options(
+            joinedload(SeatAdjacency.seats, Seat.status_)
+        ).filter(
             SeatAdjacencySet.seat_count==quantity,
         ).filter(
             SeatAdjacencySet.id==SeatAdjacency.adjacency_set_id,
@@ -166,4 +174,5 @@ class Reserving(object):
         if adjacency is None:
             raise NotEnoughAdjacencyException
         assert len(adjacency.seats) == quantity
+        assert all(seat.status == SeatStatusEnum.Vacant.v for seat in adjacency.seats)
         return adjacency.seats

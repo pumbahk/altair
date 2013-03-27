@@ -6,7 +6,7 @@ from pyramid import testing
 
 from ticketing.testing import _setup_db as _setup_db_, _teardown_db
 from .testing import DummyHTTPLib
-from . import api, models, interfaces
+from . import api, models
 
 def _setup_db(echo=False):
     return _setup_db_(
@@ -33,7 +33,7 @@ class secure3d_acs_form_Tests(unittest.TestCase):
         return helpers.secure3d_acs_form(*args, **kwargs)
 
     def test_it(self):
-        from markupsafe import Markup
+
         resource = testing.DummyResource(
             AcsUrl='http://www.example.com/acs',
             Md="this-is-md",
@@ -83,11 +83,12 @@ class get_multicheckout_service_Tests(unittest.TestCase):
         return api.get_multicheckout_service(request)
 
     def test_it(self):
-        multicheckout_setting = models.MulticheckoutSetting(
-            shop_name=u'SHOP',
-            shop_id=1,
-            auth_id=u'AUTHID',
-            auth_password=u'AUTHPASS',
+        from ticketing.core.models import OrganizationSetting
+        multicheckout_setting = OrganizationSetting(
+            multicheckout_shop_name=u'SHOP',
+            multicheckout_shop_id=1,
+            multicheckout_auth_id=u'AUTHID',
+            multicheckout_auth_password=u'AUTHPASS',
             organization_id=1
         )
         self.session.add(multicheckout_setting)
@@ -678,12 +679,12 @@ class Checkout3DTests(unittest.TestCase):
         self.assertEqual(h1.__class__, models.MultiCheckoutInquiryResponseCardHistory)
         self.assertEqual(h1.BizClassCd, "AA")
         self.assertEqual(h1.EventDate, "20120530")
-        self.assertEqual(h1.SalesAmount, 9999999)
+        self.assertEqual(h1.SalesAmount, '9999999')
         h2 = result.histories[1]
         self.assertEqual(h2.__class__, models.MultiCheckoutInquiryResponseCardHistory)
         self.assertEqual(h2.BizClassCd, "AA")
         self.assertEqual(h2.EventDate, "20120529")
-        self.assertEqual(h2.SalesAmount, 8888888)
+        self.assertEqual(h2.SalesAmount, '8888888')
 
     def test_request(self):
         target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
@@ -1190,11 +1191,11 @@ class Checkout3DTests(unittest.TestCase):
         h1 = result.histories[0]
         self.assertEqual(h1.BizClassCd, "AA")
         self.assertEqual(h1.EventDate, "20120530")
-        self.assertEqual(h1.SalesAmount, 9999999)
+        self.assertEqual(h1.SalesAmount, '9999999')
         h2 = result.histories[1]
         self.assertEqual(h2.BizClassCd, "AA")
         self.assertEqual(h2.EventDate, "20120529")
-        self.assertEqual(h2.SalesAmount, 8888888)
+        self.assertEqual(h2.SalesAmount, '8888888')
 
     def test_parse_secure3d_enrol_response(self):
         data = """<?xml version="1.0"?>

@@ -50,7 +50,9 @@ def _default_change_name(path, _now=datetime.now):
 
 def create_directory_snapshot(path, change_name=_default_change_name):
     if not os.path.isdir(path):
-        raise Exception("%s is not directory" % path)
+        if os.path.exists(path):
+            raise Exception("%s is not directory" % path)
+        os.makedirs(path)
     src = os.path.abspath(path)
     dst = change_name(path)
     os.rename(src, dst)

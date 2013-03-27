@@ -14,7 +14,7 @@
 <div class="twitter-widget">
   <script charset="utf-8" src="http://widgets.twimg.com/j/2/widget.js"></script>
   <script>
-  new TWTR.Widget({
+  window.onload = new TWTR.Widget({
 	version: 2,
 	type: 'search',
 	search: '${widget.search_query}',

@@ -58,6 +58,7 @@ widget.configure({
         var root = $(we.dialog);
         return {"display_type": root.find("#display_type").val(), 
                 "display_count": root.find("#display_count").val(), 
+                "rendering_image_attribute": root.find("#rendering_image_attribute").val(), 
                 "tag": root.find("#tag").val(), 
                 "system_tag": root.find("#system_tag").val()};};
     return widget.include("topcontent", {
