@@ -473,21 +473,6 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     redirect_url_pc = Column(String(1024))
     redirect_url_mobile = Column(String(1024))
 
-    @hybrid_property
-    def on_the_day(self):
-        today = date.today()
-        today = datetime(today.year, today.month, today.day)
-        tomorrow = today + timedelta(days=1)
-        return (today <= self.start_on) and (self.start_on < tomorrow)
-
-    @on_the_day.expression
-    def on_the_day_expr(self):
-        from sqlalchemy import sql
-        today = date.today()
-        today = datetime(today.year, today.month, today.day)
-        tomorrow = today + timedelta(days=1)
-        return sql.and_(today <= self.start_on, self.start_on < tomorrow)
-
     def add(self):
         BaseModel.add(self)
 
