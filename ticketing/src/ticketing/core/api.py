@@ -14,7 +14,6 @@ def get_organization(request, override_host=None):
         logger.debug("organization_id = %s organization_path = %s" % (organization_id, organization_path))
         return request.organization
 
-    reg = request.registry
     host_name = override_host or request.host
     try:
         host = Host.query.filter(Host.host_name==unicode(host_name)).one()

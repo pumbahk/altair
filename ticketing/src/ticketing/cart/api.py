@@ -18,6 +18,7 @@ from ticketing.api.impl import get_communication_api
 from ticketing.api.impl import CMSCommunicationApi
 from ticketing.core.models import Event, Performance, Stock, Product, ProductItem, SalesSegment, SalesSegmentGroup, Venue
 from ticketing.core import models as c_models
+from ticketing.core import api as c_api
 from ticketing.users.models import User, UserCredential, Membership, MemberGroup, MemberGroup_SalesSegment
 
 from .interfaces import IPaymentMethodManager
@@ -170,7 +171,9 @@ def _maybe_encoded(s, encoding='utf-8'):
     return s.decode(encoding)
 
 def get_item_name(request, performance):
-    base_item_name = request.registry.settings['cart.item_name']
+    #base_item_name = request.registry.settings['cart.item_name']
+    organization = c_api.get_organization(request)
+    base_item_name = organization.setting.cart_item_name
     return _maybe_encoded(base_item_name) + " " + str(performance.id)
 
 def get_nickname(request, suffix=u'さん'):

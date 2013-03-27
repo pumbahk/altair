@@ -3222,3 +3222,5 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     multicheckout_shop_id = Column(Unicode(255))
     multicheckout_auth_id = Column(Unicode(255))
     multicheckout_auth_password = Column(Unicode(255))
+
+    cart_item_name = Column(Unicode(255))

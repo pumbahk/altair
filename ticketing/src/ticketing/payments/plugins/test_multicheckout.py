@@ -1,20 +1,35 @@
-# -*- coding:utf8 -*-
+# -*- coding:utf-8 -*-
 
 import unittest
 from pyramid import testing
 from pyramid.testing import DummySession
-from ...testing import DummyRequest
-from ...multicheckout.testing import DummySecure3D
-from ...multicheckout.api import Checkout3D
+from ticketing.testing import _setup_db, _teardown_db
+from ticketing.testing import DummyRequest
+#from ...multicheckout.testing import DummySecure3D
+from ticketing.multicheckout.api import Checkout3D
 import mock
+
+def _setup_test_db():
+    session = _setup_db(['ticketing.core.models'])
+    from ticketing.core.models import Host, Organization, OrganizationSetting
+    org = Organization(short_name='TEST')
+    host = Host(host_name='example.com:80')
+    settings = OrganizationSetting(cart_item_name=u'テストテスト')
+    host.organization = org
+    settings.organization = org
+    session.add(org)
+    return session
+
 
 class MultiCheckoutViewTests(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp()
         self._register_dummy_card_brand_detector()
+        self.session = _setup_test_db()
 
     def tearDown(self):
         testing.tearDown()
+        _teardown_db()
 
     def _getTarget(self):
         from . import multicheckout
@@ -112,7 +127,7 @@ class MultiCheckoutViewTests(unittest.TestCase):
             CmnErrorCd='000000')
         validate.return_value = True
         self.config.registry.settings['altair_cart.expire_time'] = 15
-        self.config.registry.settings['cart.item_name'] = '楽天チケット' # configはバイト読み取り
+        #self.config.registry.settings['cart.item_name'] = '楽天チケット' # configはバイト読み取り
         self.config.add_route('cart.secure3d_result', '/this-is-secure3d-callback')
         params = {
             'card_number': 'XXXXXXXXXXXXXXXX',
@@ -171,7 +186,7 @@ class MultiCheckoutViewTests(unittest.TestCase):
             CmnErrorCd='000001')
         validate.return_value = True
         self.config.registry.settings['altair_cart.expire_time'] = 15
-        self.config.registry.settings['cart.item_name'] = '楽天チケット' # configはバイト読み取り
+        # self.config.registry.settings['cart.item_name'] = '楽天チケット' # configはバイト読み取り
         self.config.add_route('payment.secure3d', 'secure3d')
         self.config.add_route('cart.secure3d_result', '/this-is-secure3d-callback')
         params = {
@@ -348,11 +363,15 @@ class MultiCheckoutPluginTests(unittest.TestCase):
         self.config = testing.setUp()
         self.config.add_route('payment.secure3d', '/payment.secure3d')
         self._register_dummy_card_brand_detector()
+        self.session = _setup_test_db()
+
 
     def tearDown(self):
+        testing.tearDown()
+        _teardown_db()
         import transaction
         transaction.abort()
-        testing.tearDown()
+
 
     def _getTarget(self):
         from . import multicheckout
