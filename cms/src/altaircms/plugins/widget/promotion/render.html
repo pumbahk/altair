@@ -1,11 +1,15 @@
 ## promotion widget output template
 ## 
 %if info:
+<%
+import random
+prefix = str(random.random())[2:]
+%>
 <div class="promotion-widget">
   <div id="slideShow">
     <div id="slideShowLeft">
       <div class="mainImage">
-        ${show_image(info.main,info.main_link)|n}
+        ${show_image(prefix,info.main,info.main_link)|n}
       </div>
       <div class="mainImageMessage">
         ${info.message}
@@ -13,8 +17,7 @@
     </div>
     <div id="slideShowRight">
       <div class="thumbnail">
-        <div style="display:inline-block; width:60px; height:60px;">
-          ${u'</div><div style="display:inline-block; width:60px; height:60px;">'.join(show_image(thumb,link) for thumb,link in zip(info.thumbnails, info.links))|n}        </div>
+        <div class="thumbnailBox">${u'</div><div class="thumbnailBox">'.join(show_image(i,thumb,link) for i, thumb,link in zip(info.unit_candidates,info.thumbnails, info.links))|n}</div><div class="thumbnailBox">${u'</div><div class="thumbnailBox">'.join(" "*(15-len(info.unit_candidates)))|n}</div>
       </div>
     </div>
   </div>
@@ -47,11 +50,9 @@
          var $e = $(e).eq(0);
          var x = x || $e.width();
          var y = y || $e.height();
-         if(!x || !y){
-           setTimeout(function(){ return normalize_size(e,x,y)}, 100);
+         if(!x || !y || x==0 || y==0){
+            e.onload = function(){return normalize_size($(e),x,y)};
          }
-         if(x==0){x=X;}
-         if(y==0){y=Y;}
          scaled_size = scaled(x,X,y,Y);
          var scaledX = scaled_size[0];
          var scaledY = scaled_size[1];
@@ -68,10 +69,6 @@
          styles["width"] = scaledX;
          styles["height"] = scaledY;
          $e.css(styles);
-         if(!!$e.data("promotion-taint-reset")){
-            $e.data("promotion-taint-reset")();
-            $e.data("promotion-taint-reset", null);
-         }
       };
     }
 
@@ -93,7 +90,7 @@
           });
         }, interval_time);
     // some magic numbers;
-    var normalize = normalize_factory(60,60,true);
+    var normalize = normalize_factory(58,58,true);
     normalize_factory(515,300,true)($(".mainImage img"), ${info.width}, ${info.height});
     $("#slideShow #slideShowRight .thumbnail img").each(function(i,e){normalize(e);});
     });
