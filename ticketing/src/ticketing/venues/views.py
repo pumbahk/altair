@@ -25,6 +25,10 @@ def get_drawing(request):
     venue = Venue.get(venue_id)
     if venue is None:
         return HTTPNotFound("Venue id #%d not found" % venue_id)
+    if venue.site is None:
+        return HTTPNotFound("Venue id #%d has no sites" % venue_id)
+    if venue.site.drawing_url is None:
+        return HTTPNotFound("Venue id #%d site has no drawing_url" % venue_id)
 
     return Response(app_iter=urlopen(venue.site.drawing_url), content_type='text/xml; charset=utf-8')
 
