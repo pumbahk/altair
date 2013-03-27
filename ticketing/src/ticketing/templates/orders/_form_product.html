@@ -86,9 +86,9 @@
             </td>
             <td>
               % if ordered_product.product.seat_stock_type.quantity_only:
-              <span name="product_quantity-${ordered_product.id}">${ordered_product.quantity}</span>
+              <span name="product_quantity-${ordered_product.id}">${ordered_product_item.quantity}</span>
               % else:
-              ${len(ordered_product_item.seats)}
+              ${ordered_product_item.quantity}
               % endif
             </td>
           </tr>

@@ -99,14 +99,7 @@ class QuantityRenderer(object):
 
     def __call__(self, record):
         ordered_product_item = dereference(record, self.key)
-        # Moriyoshi Koizumi: この部分なんですけど、確かにもとのコードでも ordered_product.quantity を取ってましたが、これの意味するところって OrderedProduct の quantity ってことですか?
-        # Moriyoshi Koizumi: 最初 product_item の quantity だと思ってたんでそうしたんですけど
-        # masahiro matsui: データをみたらordered_product.quantityが1で、ordered_product_item.quantityが0になってて
-        # masahiro matsui: 数受けのケースだとこうなってるようだったので、既存のコードを踏襲して修正しました
-        if ordered_product_item.seats:
-            rendered_value = unicode(len(ordered_product_item.seats))
-        else:
-            rendered_value = unicode(ordered_product_item.ordered_product.quantity)
+        rendered_value = unicode(ordered_product_item.quantity)
         return [
             (
                 (u"", self.column_name, u""),
@@ -121,14 +114,10 @@ class PerSeatQuantityRenderer(object):
 
     def __call__(self, record):
         ordered_product_item = dereference(record, self.key)
-        # Moriyoshi Koizumi: この部分なんですけど、確かにもとのコードでも ordered_product.quantity を取ってましたが、これの意味するところって OrderedProduct の quantity ってことですか?
-        # Moriyoshi Koizumi: 最初 product_item の quantity だと思ってたんでそうしたんですけど
-        # masahiro matsui: データをみたらordered_product.quantityが1で、ordered_product_item.quantityが0になってて
-        # masahiro matsui: 数受けのケースだとこうなってるようだったので、既存のコードを踏襲して修正しました
         if ordered_product_item.seats:
             rendered_value = u"1"
         else:
-            rendered_value = unicode(ordered_product_item.ordered_product.quantity)
+            rendered_value = unicode(ordered_product_item.quantity)
         return [
             (
                 (u"", self.column_name, u""),
