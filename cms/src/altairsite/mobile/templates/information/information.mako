@@ -26,13 +26,14 @@
             % endif
             公演：${helper.nl2br(info.title)|n}<br/>
             詳細：${helper.nl2br(info.text)|n}<br/>
+            <br/>
+            <a href="#top">▲上へ</a>
         % endfor
 
         % if len(form.informations.data) > 5:
             <hr/>
             <a href="/infodetail">すべてを見る</a>
         % endif
-        <a href="#top">▲上へ</a>
     % else:
         公演中止・変更情報はありません。
     % endif

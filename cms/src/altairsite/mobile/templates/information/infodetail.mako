@@ -21,18 +21,14 @@
 
     % if form.informations.data:
         % for count, info in enumerate(form.informations.data):
-
-            % if count % 5 == 0 and count > 0:
-                <a href="#top">トップへ</a>
+            公演：${helper.nl2br(info.title)|n}<br/>
+            詳細：${helper.nl2br(info.text)|n}<br/><br/>
+            <a href="#top">▲上へ</a>
+            % if count < len(form.informations.data) - 1:
                 <hr/>
             % endif
-
-            公演：${helper.nl2br(info.title)|n}<br/>
-            詳細：${helper.nl2br(info.text)|n}<br/>
-            <hr/>
         % endfor
 
-        <a href="#top">▲上へ</a>
     % else:
         公演中止情報はありません。
     % endif
