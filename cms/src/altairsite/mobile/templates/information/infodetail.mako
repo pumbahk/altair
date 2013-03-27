@@ -32,9 +32,7 @@
             <hr/>
         % endfor
 
-        % if (len(form.informations.data) + 1 ) % 5 != 0:
-            <a href="#top">トップへ</a>
-        % endif
+        <a href="#top">▲上へ</a>
     % else:
         公演中止情報はありません。
     % endif

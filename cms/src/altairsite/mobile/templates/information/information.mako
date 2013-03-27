@@ -32,6 +32,7 @@
             <hr/>
             <a href="/infodetail">すべてを見る</a>
         % endif
+        <a href="#top">▲上へ</a>
     % else:
         公演中止・変更情報はありません。
     % endif
