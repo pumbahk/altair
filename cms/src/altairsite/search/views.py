@@ -123,8 +123,8 @@ class SearchByKindView(object):
             params = MultiDict({self.request.matchdict["value"]: "on"})
             self.request.body_id = "search"
             query_params = forms.AreaPartForm(params).make_query_params()
-
-            result_seq = self.context.get_result_sequence_from_query_params(
+            
+            result_seq = self.context.get_result_sequence_from_query_params_ext(
                 query_params,
                 searchfn=searcher.get_pageset_query_from_area
                 )
@@ -147,7 +147,7 @@ class SearchByKindView(object):
             params = MultiDict({"deal_cond": unicode(kind.id)})
             self.request.body_id = "search"
             query_params = forms.DealCondPartForm(params).configure(self.request).make_query_params()
-            result_seq = self.context.get_result_sequence_from_query_params(
+            result_seq = self.context.get_result_sequence_from_query_params_ext(
                 query_params,
                 searchfn=searcher.get_pageset_query_from_deal_cond
                 )
@@ -169,7 +169,7 @@ class SearchByKindView(object):
             self.request.body_id = "search"
             query_params = {"ndays": n, 
                             "query_expr_message": u"%d日以内に公演" % n}
-            result_seq = self.context.get_result_sequence_from_query_params(
+            result_seq = self.context.get_result_sequence_from_query_params_ext(
                 query_params,
                 searchfn=searcher.get_pageset_query_from_event_open_within
                 )
@@ -191,7 +191,7 @@ class SearchByKindView(object):
             self.request.body_id = "search"
             query_params = {"ndays": n, 
                             "query_expr_message": u"%d日以内に受付・発売開始" % n}
-            result_seq = self.context.get_result_sequence_from_query_params(
+            result_seq = self.context.get_result_sequence_from_query_params_ext(
                 query_params,
                 searchfn=searcher.get_pageset_query_from_deal_open_within
                 )

@@ -6,7 +6,8 @@ import logging
 logger = logging.getLogger(__file__)
 
 import altaircms.helpers as h
-from . import forms
+from . import searcher
+from altaircms.models import Genre
 from ..pyramidlayout import get_salessegment_kinds
 class SearchResult(dict):
     pass
@@ -66,6 +67,25 @@ class SearchPageResource(object):
 
     def get_query_params_as_html(self, query_params):
         return QueryParamsRender(self.request, query_params)
+
+    def get_result_sequence_from_query_params_ext(self, query_params, searchfn=_get_mocked_pageset_query):
+        """ ## side effect. update query_params
+        """
+        if not "genre" in self.request.GET:
+            return self.get_result_sequence_from_query_params(query_params, searchfn=searchfn)
+
+        genre_id = self.request.GET["genre"]
+        genre = Genre.query.filter_by(id=genre_id).first()
+        if genre is None:
+            return self.get_result_sequence_from_query_params(query_params, searchfn=searchfn)                
+
+        gs = genre.ancestors_include_self
+        gs.pop()
+        query_params.update(sub_categories=genre_id, 
+                            category_label=u">".join([g.label for g in reversed(gs)]))
+        def with_filter_by_genre(request, query_params):
+            return searcher.search_by_genre(self.request, searchfn(self.request, query_params), [self.request.GET["genre"]])
+        return self.get_result_sequence_from_query_params(query_params, searchfn=with_filter_by_genre)
 
     def get_result_sequence_from_query_params(self, query_params, searchfn=_get_mocked_pageset_query):
         logger.debug(query_params)

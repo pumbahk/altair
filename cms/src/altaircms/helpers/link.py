@@ -22,8 +22,11 @@ def get_purchase_page_from_performance(request, performance):
     return u"/cart/events/%s?performance=%s" % (performance.event.backend_id, performance.backend_id)
 
 
-def get_searchpage(request, kind=None, value=None):
-    return request.route_path("page_search_by", kind=kind, value=value)
+def get_searchpage(request, kind=None, value=None, page=None):
+    if page is None or not hasattr(page, "pageset"):
+        return request.route_path("page_search_by", kind=kind, value=value)
+    else:
+        return request.route_path("page_search_by", kind=kind, value=value, _query=dict(genre=page.pageset.genre_id))
 
 def get_link_from_category(request, category):
     if category.pageset is None:
