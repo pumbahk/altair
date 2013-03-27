@@ -120,4 +120,5 @@ class AccessControl(object):
         except ValueError, e:
             self._error_message.append(str(e))
             self.access_ok = False
+        self._check_page_is_accessable(page, None)
         return page
