@@ -87,12 +87,15 @@ prefix = str(random.random())[2:]
             var message = data.message;
             if(message.length > 50){message = message.substr(0,50)+"...";}
             $(".mainImageMessage").text(message);
+           $(".thumbnail").append($(".thumbnailBox").eq(0));
           });
         }, interval_time);
     // some magic numbers;
     var normalize = normalize_factory(58,58,true);
     normalize_factory(515,300,true)($(".mainImage img"), ${info.width}, ${info.height});
     $("#slideShow #slideShowRight .thumbnail img").each(function(i,e){normalize(e);});
+    $(".thumbnail").append($(".thumbnailBox").eq(0).clone());
+    $(".thumbnailBox").eq(0).remove();
     });
   </script>
 %else:

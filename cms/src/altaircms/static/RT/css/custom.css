@@ -193,6 +193,9 @@
 }
 
 #slideShow #slideShowRight .thumbnailBox{
+    float:left;
+    position:relative;
+    top:0;
     display:inline-block;
     width:58px;
     height:58px;
