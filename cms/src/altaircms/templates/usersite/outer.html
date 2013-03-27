@@ -98,26 +98,27 @@ form = TopPageSidebarSearchForm()
               </ul>
             </dd>
           </dl>
-          
         </div>
-        
+
+        <div class="clear"></div>
+
         <div id="globalNav">
           <ul id="globalNav1">
             %for c in layout.navigation_link_list("globalNav1"):
             <li><a href="${h.link.get_link_from_category(request,c)}"><img src="${c.imgsrc}" alt="${c.label}" ${(c.attributes or "")|n} /></a></li>
             %endfor
-          </ul>
-          <ul id="globalNav2">
             %for c in layout.navigation_link_list("globalNav2"):
-            <li><a href="${h.link.get_link_from_category(request,c)}">${c.label}</a></li>
+            <li class="right"><a href="${h.link.get_link_from_category(request,c)}">${c.label}</a></li>
             %endfor
           </ul>
+          <ul id="globalNav2">
+          </ul>
         </div>
-
+        <div class="clear"></div>
         <div id="headerSearch">
           ${gadgets.search_form_on_header(u"アーティスト名、公演名、会場名など", "query_id")}
           <dl>
-            <dt><img src="/static/ticketstar/img/common/header_search_hot.gif" alt="ホットワード" width="50" height="45" /></dt>
+		        <dt><img src="/static/ticketstar/img/renewal/header_search_hot.jpg" alt="ホットワード" width="53" height="45" class="headerSearch_hotword"></dt>
             <dd>
               <ul>
                 %for w in layout.hotword_list():
@@ -126,8 +127,9 @@ form = TopPageSidebarSearchForm()
               </ul>
             </dd>
           </dl>
-        </div>
-
+            ${gadgets.fukidashi(request)}
+          </div>
+        <div class="clear"></div>        
         <br/>
         ${layout.page_title_image}
         <br/>

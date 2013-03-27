@@ -4,6 +4,11 @@
   for global navigation 
 */
 
+#headerSearch a{
+	color: #fff;
+	text-decoration: underline;
+}
+
 #globalNav1 li {
     line-height: 39px;
 }
@@ -16,6 +21,30 @@
 #globalNav1 .category a{
     text-decoration:none;
     color: #fff;
+}
+
+/* fukidashi*/
+.fukidashi_region{
+  background: url(../img/renewal/fukidashi.gif) 0 0 no-repeat transparent;
+  width: 130px;
+  height: 100px;
+  padding: 10px 15px 10px 15px;
+  position: relative;
+  text-align: left;
+  top: 41px;
+  left: 20px;
+  color: #000;
+  z-index: 100;
+}
+
+.fukidashi_region p{
+  display: block;
+  position: relative;
+  bottom:20px;
+}
+
+.fukidashi_region p a{
+  color: #444 !important;
 }
 
 /*
@@ -594,7 +623,7 @@ salessegment icon
 }
 #event #main {
   margin-top:-50px;
-
+}
 .clearfix:after {
     content: ".";
     display: block;
@@ -602,3 +631,5 @@ salessegment icon
     clear: both;
     visibility: hidden;
 }
+
+

@@ -263,19 +263,25 @@ dl#topicPath dd {
 }
 
 /* グローバルナビゲーション */
-#globalNav {
-	clear: both;
-	height: 40px;
-	font-size: 120%;
-	background: url(../img/common/header_nav_bg.gif) no-repeat 0 0;
+
+.clear{
+  clear: both;
 }
 
-#globalNav1 {
-	float: left;
+#globalNav1{
+  width: 950px;
+  margin: 20px 0 0 0;
 }
 
-#globalNav1 li {
-	float: left;
+ul#globalNav1 li{
+  display: inline;
+  margin: 0;
+  padding: 0;
+  float: left;
+}
+
+ul#globalNav1 li.right{
+  float: right;
 }
 
 #globalNav2 {
@@ -294,10 +300,16 @@ dl#topicPath dd {
 }
 
 /* ヘッダ検索 */
+headerSearch a{
+	color: #fff;
+}
+
 #headerSearch {
-	height: 45px;
-	font-size: 120%;
-	background: url(../img/common/header_search_bg.gif) no-repeat 0 0;
+		height: 48px;
+		font-size: 120%;
+		background: #c01920;
+		width:950px;
+		margin: 0 auto;
 }
 
 #index #headerSearch {
@@ -307,7 +319,16 @@ dl#topicPath dd {
 #headerSearch form {
 	float: left;
 	width: 465px;
-	padding: 6px 0 0 15px;
+	padding: 0 0 0 10px;
+}
+
+.headerSearch_border{
+  padding: 2px 0 0 0;
+  margin: 0 5px;
+}
+
+.headerSearch_hotword{
+  padding: 2px 0 0 0;
 }
 
 #headerSearch form input {
@@ -319,25 +340,41 @@ dl#topicPath dd {
 	background: url(../img/common/header_search_icon.gif) no-repeat 0 50%;
 }
 
+#headerSearch form input[type="text"]{
+  width: 200px;
+  height: 16px;
+  margin: 0 0 7px 0;	
+}
+
+#headerSearch form input[type="image"]{
+  margin: 0 10px 3px 0;	
+}
+
+#headerSearch form a {
+  padding: 3px 0 3px 17px;
+  background: url(../img/renewal/header_search_icon.jpg) no-repeat 0 50%;
+
+}
+	
 #headerSearch dl {
-	float: right;
-	width: 470px;
+  float: right;
+  width: 470px;
 }
 
 #headerSearch dt {
-	float: left;
-	margin-right: 10px;
+  float: left;
+  margin-right: 10px;
 }
 
 #headerSearch dd {
-	line-height: 1.5;
-	padding-top: 5px;
+  line-height: 1.5;
+  padding-top: 5px;
 }
 
 #headerSearch dd li {
-	float:left;
-	margin-right: 15px;
-	white-space: nowrap;
+  float:left;
+  margin-right: 15px;
+  white-space: nowrap;
 }
 
 
