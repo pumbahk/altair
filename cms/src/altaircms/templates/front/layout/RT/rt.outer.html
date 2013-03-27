@@ -10,6 +10,8 @@ page_keywords = u""
 ## define
 <%def name="search_form_on_header(placeholder, query_id)">
 	<form id="form1" name="form1" method="GET" action="${request.route_path("page_search_by_freeword")}">
+    <a href="#" class="region fukidashi-btn">開催地</a>
+    <img src="/static/ticketstar/img/renewal/header_search_hr.jpg" alt="区切り線" width="4" height="45" class="headerSearch_border" />
 		<input name="q" type="text" id="${query_id}" size="30" placeholder="${placeholder}" />
 		<input name="imageField" type="image" id="imageField" src="/static/ticketstar/img/common/header_search_btn.gif" alt="検索" />
 		<a href="${request.route_path("page_search_input")}">詳細検索</a>
@@ -126,18 +128,19 @@ form = TopPageSidebarSearchForm()
             %for c in layout.navigation_link_list("globalNav1"):
             <li><a href="${h.link.get_link_from_category(request,c)}"><img src="${c.imgsrc}" alt="${c.label}" ${(c.attributes or "")|n} /></a></li>
             %endfor
-          </ul>
-          <ul id="globalNav2">
             %for c in layout.navigation_link_list("globalNav2"):
             <li><a href="${h.link.get_link_from_category(request,c)}">${c.label}</a></li>
             %endfor
           </ul>
+          <ul id="globalNav2">
+          </ul>
         </div>
 
+        <div class="clear">
         <div id="headerSearch">
           ${search_form_on_header(u"アーティスト名、公演名、会場名など", "query_id")}
           <dl>
-            <dt><img src="/static/ticketstar/img/common/header_search_hot.gif" alt="ホットワード" width="50" height="45" /></dt>
+            <dt><img src="/static/ticketstar/img/renewal/header_search_hot.jpg" alt="ホットワード" width="50" height="45" /></dt>
             <dd>
               <ul>
                 %for w in layout.hotword_list():
@@ -146,8 +149,9 @@ form = TopPageSidebarSearchForm()
               </ul>
             </dd>
           </dl>
+        ${fukidashi(request)}
         </div>
-
+        <div class="clear"></div>
         <!-- ========== /header ========== -->
         
         <hr />

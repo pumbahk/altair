@@ -1,3 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
+
 <%def name="widgets(name)">
   % for w in display_blocks[name]:
       ${w|n}
@@ -7,6 +11,8 @@
 ## define
 <%def name="search_form_on_header(placeholder, query_id)">
 	<form id="form1" name="form1" method="GET" action="${request.route_path("page_search_by_freeword")}">
+    <a href="#" class="region fukidashi-btn">開催地</a>
+    <img src="/static/ticketstar/img/renewal/header_search_hr.jpg" alt="区切り線" width="4" height="45" class="headerSearch_border" />
 		<input name="q" type="text" id="${query_id}" size="30" placeholder="${placeholder}" />
 		<input name="imageField" type="image" id="imageField" src="/static/ticketstar/img/common/header_search_btn.gif" alt="検索" />
 		<a href="${request.route_path("page_search_input")}">詳細検索</a>
@@ -48,10 +54,32 @@ form = TopPageSidebarSearchForm()
 		</div>
 </%def>
 
+<%def name="fukidashi(request)">
+<%
+   from altaircms.seeds.area import AREA_CHOICES
+   i = 0
+   %>
+  <div class="fukidashi_region">
+ 		<p>
+	    %for en,ja in AREA_CHOICES:
+	      <a href="${request.route_path("page_search_by", _query=({"genre": request.GET["genre"]} if "genre" in request.GET else []), kind="area", value=en)}">${ja}</a>
+        <% i+= 1%>
+        %if i >= 3:
+          <br/>
+          <% i = 0 %>
+        %endif
+	    %endfor
+ 		</p>
+ 	</div>
+  <script type="text/javascript">
+    $(function(){
+      $(".fukidashi_region").hide();
+      $(".fukidashi-btn").click(function(e){e.preventDefault(); $(".fukidashi_region").toggle();});
+    });
+  </script>
+</%def>
+
 ## end of python code
-<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
   <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
 
@@ -109,7 +137,7 @@ form = TopPageSidebarSearchForm()
             <dd class="siteUtility">
               <ul>
                 %for c in layout.navigation_link_list("siteUtility"):
-                <li><a href="${h.link.get_link_from_category(request,c)}">${c.label}</a></li>
+                <li class="right"><a href="${h.link.get_link_from_category(request,c)}">${c.label}</a></li>
                 %endfor
               </ul>
             </dd>
@@ -117,23 +145,24 @@ form = TopPageSidebarSearchForm()
           
         </div>
         
-        <div id="globalNav">
+        <div class="clear"></div><div id="globalNav">
           <ul id="globalNav1">
             %for c in layout.navigation_link_list("globalNav1"):
             <li><a href="${h.link.get_link_from_category(request,c)}"><img src="${c.imgsrc}" alt="${c.label}" ${(c.attributes or "")|n} /></a></li>
             %endfor
+            %for c in layout.navigation_link_list("globalNav2"):
+            <li class="right"><a href="${h.link.get_link_from_category(request,c)}">${c.label}</a></li>
+            %endfor
           </ul>
           <ul id="globalNav2">
-            %for c in layout.navigation_link_list("globalNav2"):
-            <li><a href="${h.link.get_link_from_category(request,c)}">${c.label}</a></li>
-            %endfor
           </ul>
         </div>
 
+        <div class="clear">
         <div id="headerSearch">
           ${search_form_on_header(u"アーティスト名、公演名、会場名など", "query_id")}
           <dl>
-            <dt><img src="/static/ticketstar/img/common/header_search_hot.gif" alt="ホットワード" width="50" height="45" /></dt>
+            <dt><img src="/static/ticketstar/img/renewal/header_search_hot.jpg" alt="ホットワード" width="53" height="45" class="headerSearch_hotword" /></dt>
             <dd>
               <ul>
                 %for w in layout.hotword_list():
@@ -142,7 +171,10 @@ form = TopPageSidebarSearchForm()
               </ul>
             </dd>
           </dl>
+        ${fukidashi(request)}
         </div>
+
+        <div class="clear"></div>
 
         <!-- ========== /header ========== -->
         
