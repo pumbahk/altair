@@ -1064,6 +1064,10 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return (self.start_at <= dt) & (dt <= self.end_at)
 
     def delete(self):
+        # delete SalesSegment
+        for sales_segment in self.sales_segments:
+            sales_segment.delete()
+
         # delete Product
         for product in self.product:
             product.delete()
@@ -1072,7 +1076,7 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         for pdmp in self.payment_delivery_method_pairs:
             pdmp.delete()
 
-        super(SalesSegmentGroup, self).delete()
+        super(type(self), self).delete()
 
     @staticmethod
     def create_from_template(template, with_payment_delivery_method_pairs=False, **kwargs):
@@ -3197,6 +3201,12 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
             sales_segment.payment_delivery_method_pairs = template.payment_delivery_method_pairs
         sales_segment.save()
         return {template.id:sales_segment.id}
+
+    def delete(self):
+        # delete Product
+        for product in self.products:
+            product.delete()
+        super(type(self), self).delete()
 
 class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "OrganizationSetting"
