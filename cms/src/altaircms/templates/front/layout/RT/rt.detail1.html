@@ -19,6 +19,14 @@
 	</form>
 </%def>
 
+## いいねボタンなど
+<%def name="social_buttons(request)">
+  <div id="social"  style="float: right; padding-top: 10px">
+     <a href="http://twitter.com/share" class="twitter-share-button" data-count="none" data-via="RakutenTicket" data-lang="ja">ツイート</a><script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script>
+    <iframe src="http://www.facebook.com/plugins/like.php?app_id=233610706676154&amp;href=${h.safe_url_quote(request.url)}&amp;show_faces=false&amp;action=like&amp;colorscheme=light&amp;font&amp;height=20" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:100px; height:20px;" allowTransparency="true"></iframe>
+  </div>
+</%def>
+
 <%def name="top_side_searchform()">
 <%
 from altairsite.search.forms import TopPageSidebarSearchForm
@@ -78,6 +86,7 @@ form = TopPageSidebarSearchForm()
     });
   </script>
 </%def>
+
 ## end of python code
   <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
@@ -105,8 +114,7 @@ form = TopPageSidebarSearchForm()
       <link rel="stylesheet" href="/static/RT/css/import.css" type="text/css" media="all" />
       <script type="text/javascript" src="/static/RT/js/jquery.js"></script>
     </head>
-
-    <body id="index">
+    <body id="detail">
       <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="/static/RT/img/common/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
       <div id="container">
 
@@ -115,7 +123,7 @@ form = TopPageSidebarSearchForm()
           
           <p id="tagLine">チケット販売・イベント予約</p>
           <p id="siteID">
-            <a href="http://ticket.rakuten.co.jp/"><img src="/static/RT/img/renewal/logo.gif" alt="楽天チケット"/></a>
+            <a href="http://ticket.rakuten.co.jp/"><img src="/static/RT/img/renewal/logo.gif" alt="楽天チケット"/>
           </p>
           <dl id="remoteNav">
             <dt>楽天グループ関連</dt>
@@ -170,49 +178,43 @@ form = TopPageSidebarSearchForm()
               </ul>
             </dd>
           </dl>
-          ${fukidashi(request)}
+        ${fukidashi(request)}
         </div>
+
         <div class="clear"></div>
         <!-- ========== /header ========== -->
         
         <hr />
 
         <!-- ========== main ========== -->
-<div id="main">
+<div id="main" style="margin-top: 20px;">
+<%block name="topicPath">
+  ${social_buttons(request)}
+  ${widgets("topicPath")}
+</%block>
+
 <%block name="main">
    ${widgets("main")}
 </%block>
-	  <div id="mainLeft">
-<%block name="main_left">
-   ${widgets("main_left")}
-</%block>
-	  </div>
-	  <div id="mainRight">
-<%block name="main_right">
-   ${widgets("main_right")}
-</%block>
-	  </div>
-<%block name="main_bottom">
-   ${widgets("main_bottom")}
-</%block>
-	</div>
+</div>
         <!-- ========== /main ========== -->
         
         <hr />
         
         <!-- ========== side ========== -->
-        <div id="side">
-<%block name="side_top">
-   ${widgets("side_top")}
+	<div id="side" style="margin-top: 20px;">
+<%block name="side">
+    ${widgets("side")}
 </%block>
-          ${top_side_searchform()}
-<%block name="side_bottom">
-   ${widgets("side_bottom")}
-</%block>
-        </div>
+	</div>
         <!-- ========== /side ========== -->
-        
-        <hr />
+
+	<div id="userBox">
+<%block name="userBox">
+    ${widgets("userBox")}
+</%block>
+	</div>  
+	<hr />
         
         <!-- ========== footer ========== -->
         

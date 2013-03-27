@@ -78,6 +78,7 @@ form = TopPageSidebarSearchForm()
     });
   </script>
 </%def>
+
 ## end of python code
   <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
@@ -105,8 +106,7 @@ form = TopPageSidebarSearchForm()
       <link rel="stylesheet" href="/static/RT/css/import.css" type="text/css" media="all" />
       <script type="text/javascript" src="/static/RT/js/jquery.js"></script>
     </head>
-
-    <body id="index">
+    <body id="first">
       <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="/static/RT/img/common/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
       <div id="container">
 
@@ -115,7 +115,7 @@ form = TopPageSidebarSearchForm()
           
           <p id="tagLine">チケット販売・イベント予約</p>
           <p id="siteID">
-            <a href="http://ticket.rakuten.co.jp/"><img src="/static/RT/img/renewal/logo.gif" alt="楽天チケット"/></a>
+            <a href="http://ticket.rakuten.co.jp/"><img src="/static/RT/img/renewal/logo.gif" alt="楽天チケット"/>
           </p>
           <dl id="remoteNav">
             <dt>楽天グループ関連</dt>
@@ -170,44 +170,28 @@ form = TopPageSidebarSearchForm()
               </ul>
             </dd>
           </dl>
-          ${fukidashi(request)}
+        ${fukidashi(request)}
         </div>
+
         <div class="clear"></div>
         <!-- ========== /header ========== -->
         
         <hr />
-
+	<!-- InstanceBeginEditable name="cat" --><h1><img width="91" height="60" id="titleImage" src="/static/RT/img/first/title_help.gif" alt="はじめに"/></h1><!-- InstanceEndEditable -->
         <!-- ========== main ========== -->
 <div id="main">
 <%block name="main">
    ${widgets("main")}
 </%block>
-	  <div id="mainLeft">
-<%block name="main_left">
-   ${widgets("main_left")}
-</%block>
-	  </div>
-	  <div id="mainRight">
-<%block name="main_right">
-   ${widgets("main_right")}
-</%block>
-	  </div>
-<%block name="main_bottom">
-   ${widgets("main_bottom")}
-</%block>
-	</div>
+</div>
         <!-- ========== /main ========== -->
         
         <hr />
         
         <!-- ========== side ========== -->
         <div id="side">
-<%block name="side_top">
-   ${widgets("side_top")}
-</%block>
-          ${top_side_searchform()}
-<%block name="side_bottom">
-   ${widgets("side_bottom")}
+<%block name="side">
+ 	        ${widgets("side")}
 </%block>
         </div>
         <!-- ========== /side ========== -->
