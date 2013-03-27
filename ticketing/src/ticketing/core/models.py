@@ -3217,3 +3217,8 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     refund_ratio = Column(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0')
     printing_fee = Column(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0')
     registration_fee = Column(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0')
+
+    multicheckout_shop_name = Column(Unicode(255), unique=True)
+    multicheckout_shop_id = Column(Unicode(255))
+    multicheckout_auth_id = Column(Unicode(255))
+    multicheckout_auth_password = Column(Unicode(255))
