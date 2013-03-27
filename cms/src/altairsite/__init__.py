@@ -46,6 +46,7 @@ def main(global_config, **local_config):
     config.include("altairsite.feature")
     config.include("altairsite.errors")
     config.include("altairsite.search", route_prefix="/search")
+    config.include("altairsite.inquiry")
 
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
     config.add_static_view('plugins/static', 'altaircms:plugins/static', cache_max_age=3600)
