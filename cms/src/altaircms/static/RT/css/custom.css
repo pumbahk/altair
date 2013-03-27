@@ -61,23 +61,23 @@
 
 /* .category.index {
  *     background-repeat: no-repeat;
- *     background-image:url(/static/ticketstar/img/common/header_nav_top.gif);
+ *     background-image:url(/static/RT/img/common/header_nav_top.gif);
  * }
  * .category.music {
  *     background-repeat: no-repeat;
- *     background-image:url(/static/ticketstar/img/common/header_nav_music.gif);
+ *     background-image:url(/static/RT/img/common/header_nav_music.gif);
  * }
  * .category.stage {
  *     background-repeat: no-repeat;
- *     background-image:url(/static/ticketstar/img/common/header_nav_stage.gif);
+ *     background-image:url(/static/RT/img/common/header_nav_stage.gif);
  * }
  * .category.sports {
  *     background-repeat: no-repeat;
- *     background-image:url(/static/ticketstar/img/common/header_nav_sports.gif);
+ *     background-image:url(/static/RT/img/common/header_nav_sports.gif);
  * }
  * .category.event {
  *     background-repeat: no-repeat;
- *     background-image:url(/static/ticketstar/img/common/header_nav_event.gif);
+ *     background-image:url(/static/RT/img/common/header_nav_event.gif);
  * } */
 
 /*
@@ -253,25 +253,25 @@
 }
 
 .index.heading {
-    background-image:url(/static/ticketstar/img/index/bg_heading.gif);
+    background-image:url(/static/RT/img/index/bg_heading.gif);
 }
 .sports.heading {
-    background-image:url(/static/ticketstar/img/sports/bg_heading.gif);
+    background-image:url(/static/RT/img/sports/bg_heading.gif);
 }
 .music.heading {
-    background-image:url(/static/ticketstar/img/music/bg_heading.gif);
+    background-image:url(/static/RT/img/music/bg_heading.gif);
 }
 .other.heading {
-    background-image:url(/static/ticketstar/img/event/bg_heading.gif);
+    background-image:url(/static/RT/img/event/bg_heading.gif);
 }
 .stage.heading {
-    background-image:url(/static/ticketstar/img/stage/bg_heading.gif);
+    background-image:url(/static/RT/img/stage/bg_heading.gif);
 }
 .help.heading {
-    background-image:url(/static/ticketstar/img/help/bg_heading.gif);
+    background-image:url(/static/RT/img/help/bg_heading.gif);
 }
 .change.heading {
-    background-image:url(/static/ticketstar/img/change/bg_heading.gif);
+    background-image:url(/static/RT/img/change/bg_heading.gif);
 }
 
 /* for topic widget */
@@ -281,7 +281,7 @@
 
 /* detail */
 .detail.heading {
-    background-image:url(/static/ticketstar/img/detail/bg_heading.gif);
+    background-image:url(/static/RT/img/detail/bg_heading.gif);
     color: #000;
 }
 .detail.heading h2{
@@ -302,19 +302,19 @@
 	height: 30px;
 }
 #ticketIcon li.icon-select {
-	background-image: url(/static/ticketstar/img/detail/icon_select.gif);
+	background-image: url(/static/RT/img/detail/icon_select.gif);
 }
 #ticketIcon li.icon-keep {
-	background-image: url(/static/ticketstar/img/detail/icon_keep.gif);
+	background-image: url(/static/RT/img/detail/icon_keep.gif);
 }
 #ticketIcon li.icon-official {
-	background-image: url(/static/ticketstar/img/detail/icon_official.gif);
+	background-image: url(/static/RT/img/detail/icon_official.gif);
 }
 #ticketIcon li.icon-goods {
-	background-image: url(/static/ticketstar/img/detail/icon_goods.gif);
+	background-image: url(/static/RT/img/detail/icon_goods.gif);
 }
 #ticketIcon li.icon-event {
-	background-image: url(/static/ticketstar/img/detail/icon_event.gif);
+	background-image: url(/static/RT/img/detail/icon_event.gif);
 }
 
 /*
@@ -327,10 +327,10 @@
 	height: 20px;
 }
 #serviceIcon li.icon-fanclub {
-	background-image: url(/static/ticketstar/img/detail/icon_fanclub.gif);
+	background-image: url(/static/RT/img/detail/icon_fanclub.gif);
 }
 #serviceIcon li.icon-crecache {
-	background-image: url(/static/ticketstar/img/detail/icon_creche.gif);
+	background-image: url(/static/RT/img/detail/icon_creche.gif);
 }
 
 /* help */
@@ -355,7 +355,7 @@
 
 
 #searchform { /* fixme */
-	background: url(/static/ticketstar/img/first/bg_body.gif) no-repeat 50% 130px;
+	background: url(/static/RT/img/first/bg_body.gif) no-repeat 50% 130px;
 }
 
 .searchInput {
@@ -441,19 +441,19 @@
 	background-repeat: no-repeat;
 }
 .icon-category-music {
-	background-image: url(/static/ticketstar/img/search/icon_music.gif);    
+	background-image: url(/static/RT/img/search/icon_music.gif);    
 }
 .icon-category-stage {
-	background-image: url(/static/ticketstar/img/search/icon_stage.gif);    
+	background-image: url(/static/RT/img/search/icon_stage.gif);    
 }
 .icon-category-sports {
-	background-image: url(/static/ticketstar/img/search/icon_sports.gif);    
+	background-image: url(/static/RT/img/search/icon_sports.gif);    
 }
 .icon-category-other {
-	background-image: url(/static/ticketstar/img/search/icon_event.gif);    
+	background-image: url(/static/RT/img/search/icon_event.gif);    
 }
 .icon-category-event {
-	background-image: url(/static/ticketstar/img/search/icon_event.gif);    
+	background-image: url(/static/RT/img/search/icon_event.gif);    
 }
 
 /*
@@ -464,7 +464,7 @@
     width: 226px;
     height: 46px;
 	background-repeat: no-repeat;
-    background-image: url(/static/ticketstar/img/settlement/btn_buy.gif);
+    background-image: url(/static/RT/img/settlement/btn_buy.gif);
 }
 
 /*
@@ -474,7 +474,7 @@
  *     height: 24px;
  * 	padding: 7px 10px 0;
  * 	color: #ffffff;
- * 	background: url(/static/ticketstar/img/search/side_title.gif) no-repeat 0 0;
+ * 	background: url(/static/RT/img/search/side_title.gif) no-repeat 0 0;
  * } */
 
 h2.sidebar-heading {
@@ -486,7 +486,7 @@ h2.sidebar-heading {
     height: 24px;
 	padding: 7px 10px 0;
 	color: #ffffff;
-	background: url(/static/ticketstar/img/search/side_title_long.gif) no-repeat;
+	background: url(/static/RT/img/search/side_title_long.gif) no-repeat;
 }
 
 /*
@@ -497,39 +497,39 @@ salessegment icon
     background-repeat: no-repeat;
     height: 14px;
     width: 60px;
-    background-image: url(/static/ticketstar/img/search/icon_release.gif);
+    background-image: url(/static/RT/img/search/icon_release.gif);
 }
 
 .icon-salessegment.firstcome{
-    background-image: url(/static/ticketstar/img/search/icon_firstcome.gif);
+    background-image: url(/static/RT/img/search/icon_firstcome.gif);
 }
 .icon-salessegment.normal{
-    background-image: url(/static/ticketstar/img/search/icon_normal.gif);
+    background-image: url(/static/RT/img/search/icon_normal.gif);
 }
 .icon-salessegment.early_firstcome{
-    background-image: url(/static/ticketstar/img/search/icon_firstcome.gif);
+    background-image: url(/static/RT/img/search/icon_firstcome.gif);
 }
 /* old. bw */
 .icon-salessegment.first_lottery{
-    background-image: url(/static/ticketstar/img/search/icon_first_lottery.gif);
+    background-image: url(/static/RT/img/search/icon_first_lottery.gif);
 }
 .icon-salessegment.early_lottery{
-    background-image: url(/static/ticketstar/img/search/icon_lottery.gif);
+    background-image: url(/static/RT/img/search/icon_lottery.gif);
 }
 .icon-salessegment.release{
-    background-image: url(/static/ticketstar/img/search/icon_release.gif);
+    background-image: url(/static/RT/img/search/icon_release.gif);
 }
 .icon-salessegment.added_sales{
-    background-image: url(/static/ticketstar/img/search/icon_added_sales.gif);
+    background-image: url(/static/RT/img/search/icon_added_sales.gif);
 }
 .icon-salessegment.added_lottery{
-    background-image: url(/static/ticketstar/img/search/icon_added_lottery.gif);
+    background-image: url(/static/RT/img/search/icon_added_lottery.gif);
 }
 .icon-salessegment.vip{
-    background-image: url(/static/ticketstar/img/search/icon_vip.gif);
+    background-image: url(/static/RT/img/search/icon_vip.gif);
 }
 .icon-salessegment.other{
-    background-image: url(/static/ticketstar/img/search/icon_other.gif);
+    background-image: url(/static/RT/img/search/icon_other.gif);
 }
 
 .describeBox .serial{
@@ -550,15 +550,11 @@ salessegment icon
 .purchaseButton {
   display:block;
   background-repeat: no-repeat;
-  background-image: url(/static/ticketstar/img/settlement/btn_buy.gif);
+  background-image: url(/static/RT/img/settlement/btn_buy.gif);
   width: 226px;
   height: 46px;
 }
 
-<<<<<<< HEAD
-
-=======
->>>>>>> master
 /* sub category top sidebar also using */
 #side #sideFeature {
 	width: 200px;
