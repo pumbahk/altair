@@ -2902,6 +2902,12 @@ class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 reissueable = _reissueable
         return reissueable
 
+    def delete(self):
+        # 既に使用されている場合は削除できない
+        if self.product_items:
+            raise Exception(u'関連づけされたイベントがある為、削除できません')
+        super(type(self), self).delete()
+
 class TicketPrintHistory(Base, BaseModel, WithTimestamp):
     __tablename__ = "TicketPrintHistory"
     __clone_excluded__ = ['operator', 'seat', 'ticket']

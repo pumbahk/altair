@@ -128,10 +128,15 @@ class BundleView(BaseView):
     def delete_post(self):
         event_id = self.request.matchdict["event_id"]
         ## todo: check dangling object
-        self.context.bundle.delete()
-        self.request.session.flash(u'チケット券面構成(TicketBundle)を削除しました')
-        return HTTPFound(self.request.route_path("events.tickets.index", event_id=event_id))
 
+        location = self.request.route_path("events.tickets.index", event_id=event_id)
+        try:
+            self.context.bundle.delete()
+            self.request.session.flash(u'チケット券面構成(TicketBundle)を削除しました')
+        except Exception, e:
+            self.request.session.flash(e.message)
+
+        return HTTPFound(location=location)
 
     @view_config(route_name="events.tickets.bundles.show",
                  renderer="ticketing:templates/tickets/events/bundles/show.html")
