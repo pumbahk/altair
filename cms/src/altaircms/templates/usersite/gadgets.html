@@ -34,6 +34,14 @@
 	</form>
 </%def>
 
+<%def name="search_form_prev(placeholder, query_id)">
+	<form id="form1" name="form1" method="GET" action="${request.route_path("page_search_by_freeword")}">
+		<input name="q" type="text" id="${query_id}" size="30" placeholder="${placeholder}" />
+		<input name="imageField" type="image" id="imageField" src="/static/ticketstar/img/common/header_search_btn.gif" alt="検索" />
+		<a href="${request.route_path("page_search_input")}">詳細検索</a>
+	</form>
+</%def>
+
 ## いいねボタンなど
 <%def name="social_buttons(request)">
   <div id="social"  style="float: right; padding-top: 10px">
