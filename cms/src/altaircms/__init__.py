@@ -109,6 +109,7 @@ def main(global_config, **local_config):
     config.include("altaircms.panels")
     ## slack-off
     config.include("altaircms.slackoff")
+    config.include("altairsite.feature") #for sitemap
 
     ## fulltext search
     config.include("altaircms.solr")

@@ -1,0 +1,242 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<%
+import sqlalchemy.orm as orm
+from altaircms.page.models import StaticPage
+from altaircms.seeds.area import AREA_CHOICES
+from datetime import datetime
+from altaircms.page.models import PageSet
+from altaircms.event.models import Event
+from altairsite.search.searcher import get_refined_pageset_qs
+
+def get_specials_pageset(request, now):
+    qs = request.allowable(StaticPage).filter(StaticPage.published==True,StaticPage.interceptive==False)
+    return qs.filter(StaticPage.in_term(now))
+
+def get_recently_pageset(request):
+    return get_refined_pageset_qs(request,request.allowable(PageSet)).options(orm.joinedload(PageSet.event,Event.performances))
+
+recently_pages = list(get_recently_pageset(request).limit(10))
+now = datetime.now()
+%>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>【楽天チケット】チケット予約・購入</title>
+    <meta name="description" content="チケットの販売、イベントの予約は楽天チケットで！プロ野球、Jリーグ、なでしこ、テニス、フィギュアなどのスポーツ、K-POP、クラシック、オペラなどの音楽、ライブ、コンサート、その他イベントなどのチケットのオンラインチケット予約サイトです。">
+    <meta name="keywords" content="チケット,ゴルフ,フィギュア,クラシック,オペラ,コンサート,野球,サッカー">
+    <meta http-equiv="Content-Style-Type" content="text/css">
+    <meta http-equiv="Content-Script-Type" content="text/javascript">
+    <style type="text/css">
+            	body{
+        	    	background: #fff;
+            	}
+            	h3.genre{
+            		 border-bottom:1px #ccc solid;
+            		 font-weight:bold;
+            		 font-size:14px;
+            		 padding:14px 0 0 20px;
+            		 height: 30px;
+            		 margin: 0;
+        			background: #949a8e; /* Old browsers */
+        			background: -moz-linear-gradient(top, #949a8e 49%, #7e8478 50%); /* FF3.6+ */
+        			background: -webkit-gradient(linear, left top, left bottom, color-stop(49%,#949a8e), color-stop(50%,#7e8478)); /* Chrome,Safari4+ */
+        			background: -webkit-linear-gradient(top, #949a8e 49%,#7e8478 50%); /* Chrome10+,Safari5.1+ */
+        			background: -o-linear-gradient(top, #949a8e 49%,#7e8478 50%); /* Opera 11.10+ */
+        			background: -ms-linear-gradient(top, #949a8e 49%,#7e8478 50%); /* IE10+ */
+        			background: linear-gradient(to bottom, #949a8e 49%,#7e8478 50%); /* W3C */
+        			filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#949a8e', endColorstr='#7e8478',GradientType=0 ); /* IE6-9 */
+        			color: #fff;
+        			font-weight: 900;
+        			border-left: #BF0000 5px solid;
+        			text-shadow: 0 0 5px #000;
+            	}
+        		
+        		table.sitemap{
+        			 width:750px;
+        			 font-size:12px;
+        		}
+        
+        		table.sitemap td{
+        			vertical-align: top;
+        			width: 300px;
+        			border:1px #ccc solid;
+        		}
+        
+        		table.sitemap2{
+        			 width:750px;
+        			 font-size:12px;
+        		}
+        
+        		table.sitemap2 td{
+        			vertical-align: top;
+        			width: 221px;
+        			border:1px #ccc solid;
+        		}
+        		
+            	h3.genre a{
+        			color: #fff;
+            	}
+        		
+        		ul.sitemapLists{
+        			padding: 0;
+        		}    	
+        
+        		ul.sitemapLists li{
+        			list-style: none;
+        			padding: 0 0 3px 10px;
+        			margin: 0 0 0 25px;
+        			background: url(/static/RT/img/renewal/sitemapArrow.gif) 0 4px no-repeat;
+        		}    	
+        
+        		ul.sitemapLists li.list1{
+        			list-style: none;
+        			padding: 0 0 3px 10px;
+        			margin: 0 0 0 45px;
+        			background: url(/static/RT/img/renewal/sitemapArrow2.gif) 0 4px no-repeat;
+        		}    	
+        
+        		ul.sitemapLists li.list2{
+        			list-style: none;
+        			padding: 0 0 3px 10px;
+        			margin: 0 0 0 65px;
+        			background: url(/static/RT/img/renewal/sitemapArrow3.gif) 0 4px no-repeat;
+        		}    	
+            </style>
+  </head>
+  <body>
+    <div style="width:750px;font-size:12px;color:#888;line-height:150%;margin-left:50px;margin-bottom:30px;">
+      <h2>サイトマップ</h2>
+      <hr style="border:5px solid #d6cec3; margin-top:20px;" />
+      <h3 style="padding-left:20px;">チケットをさがす</h3>
+      <table class="sitemap" cellpadding="0px" cellspacing="20px" align="center">
+      <tr>
+      <td colspan="2">
+      <h3 class="genre">新着順</h3>
+      <ul class="sitemapLists">
+        %for p in recently_pages:
+          <li><a href="${h.link.publish_page_from_pageset(request, p)}" target="_blank" >${p.event.title}</a></li>                   
+        %endfor
+      </ul>
+      </td>
+      </tr>
+      <tr>
+      <td colspan="2">
+      <h3 class="genre">
+        <a href="http://ticket.rakuten.co.jp/sp/" target="_blank">特集コンテンツ </a>
+      </h3>
+      <ul class="sitemapLists">
+        %for sp in get_specials_pageset(request, now):
+          <li><a href="${request.route_path("features", path=sp.name)}" target="_blank">${sp.description}</a></li>
+        %endfor
+      </ul>
+      </td>
+      </tr>
+      %for i, g in enumerate(layout.top_category_genre_list):
+      %if i % 2 == 0:
+      <tr>
+      %endif
+      <td>
+      <h3 class="genre">
+        <a href="${h.link.get_link_from_genre(request, g)}" target="_blank">${g.label}</a>
+      </h3>
+      <ul class="sitemapLists">
+        %for sg in layout.get_subgenre_list_from_genre(g):
+          <li><a target="_blank" href="${h.link.get_link_from_genre(request, sg)}">${sg.label}</a></li>
+          %for ssg in layout.get_subgenre_list_from_genre(sg):
+            <li class="list1"><a target="_blank" href="${h.link.get_link_from_genre(request, ssg)}">${ssg.label}</a></li>
+          %endfor
+        %endfor
+      </ul>
+      </td>
+      %if i % 2 == 1:
+        </tr>
+      %endif
+      %endfor
+      <tr>
+      <td>
+      <h3 class="genre">
+        <a href="#" target="_blank">公演エリア </a>
+      </h3>
+      <ul class="sitemapLists">
+        % for en,ja in AREA_CHOICES:
+          <li><a href="${h.link.get_searchpage(request, kind="area", value=en)}">${ja}</a></li>
+        % endfor
+      </ul>
+      </td>
+      <td>
+      <h3 class="genre">
+        <a href="/venue/" target="_blank">会場 </a>
+      </h3>
+      <ul class="sitemapLists">
+        %for p in recently_pages:
+          %for perf in p.event.performances:
+            %if perf.start_on > now:
+             <li><a target="_blank" href="${request.route_path("page_search_by_freeword",_query=dict(q=perf.venue))}">${perf.venue}</a></li>
+             <% break %>
+            %endif
+          %endfor
+        %endfor
+      </ul>
+      </td>
+      </tr>
+      </table>
+      </td>
+      </tr>
+      </table>
+      <hr style="border:5px solid #d6cec3; margin-top:20px;" />
+      <h3 style="padding-left:20px;">ご利用ガイド・その他</h3>
+      <table class="sitemap2" cellpadding="0px" cellspacing="20px" align="center">
+      <tr>
+      <td>
+      <h3 class="genre">初めての方へ</h3>
+      <ul class="sitemapLists">
+        <li>
+          <a href="/first" target="_blank">初めての方へ</a>
+        </li>
+        <li>
+          <a href="/help" target="_blank">ヘルプ</a>
+        </li>
+      </ul>
+      </td>
+      <td>
+      <h3 class="genre">各種サービス・お知らせ</h3>
+      <ul class="sitemapLists">
+        <li>
+          <a href="/change" target="_blank">公演中止・変更情報</a>
+        </li>
+        <li>
+          <a href="/orderreview" target="_blank">予約チケットの確認 </a>
+        </li>
+<!--
+        <li>
+          <a href="/mag/" target="_blank">メルマガ購読をする </a>
+        </li>
+-->
+      </ul>
+      </td>
+      <td>
+      <h3 class="genre">会社情報</h3>
+      <ul class="sitemapLists">
+        <li>
+          <a href="http://privacy.rakuten.co.jp/" target="_blank">個人情報保護方針 </a>
+        </li>
+        <li>
+          <a href="/legal/" target="_blank">特定商取引法に基づく表示 </a>
+        </li>
+        <li>
+          <a href="https://ticket.rakuten.co.jp/inquiry/" target="_blank">お問い合わせ </a>
+        </li>
+        <li>
+          <a href="http://www.ticketstar.jp/" target="_blank">運営会社について </a>
+        </li>
+      </ul>
+      </td>
+      </tr>
+      </table>
+    </div>
+    <br />
+  </body>
+</html>
+<!--
+- vim: sts=2 sw=2 ts=2 noet
+-->

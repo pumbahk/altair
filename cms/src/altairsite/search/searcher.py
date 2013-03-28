@@ -66,6 +66,9 @@ def _refine_pageset_qs(qs):
     qs = _refine_pageset_only_published_term(qs)
     return qs.options(orm.joinedload("event"), orm.joinedload("event.performances"), orm.joinedload("genre"))
 
+def get_refined_pageset_qs(request, qs):
+   return _refine_pageset_qs(_refine_pageset_collect_future(qs))
+
 ## todo:test
 @provider(ISearchFn)
 def get_pageset_query_from_hotword(request, query_params):
