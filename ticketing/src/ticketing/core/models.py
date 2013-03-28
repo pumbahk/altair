@@ -3079,6 +3079,10 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     performance = relationship("Performance", backref="sales_segments")
     sales_segment_group_id = Column(Identifier, ForeignKey("SalesSegmentGroup.id"))
     sales_segment_group = relationship("SalesSegmentGroup", backref="sales_segments")
+    margin_ratio = Column(Numeric(precision=16, scale=2), nullable=False)
+    refund_ratio = Column(Numeric(precision=16, scale=2), nullable=False)
+    printing_fee = Column(Numeric(precision=16, scale=2), nullable=False)
+    registration_fee = Column(Numeric(precision=16, scale=2), nullable=False)
     account_id = Column(Identifier, ForeignKey('Account.id'))
     account = relationship('Account', backref='sales_segments')
 

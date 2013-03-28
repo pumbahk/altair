@@ -85,7 +85,7 @@ function get_selected_sales_segment_group_id() {
             <td>${sales_segment.id}</td>
             <td>
               % if sales_segment.performance:
-                <a href="${request.route_path('performances.show', performance_id=sales_segment.performance_id)}">${sales_segment.performance.name}</a>
+                <a href="${request.route_path('performances.show_tab', performance_id=sales_segment.performance_id, tab='sales_segment')}">${sales_segment.performance.name}</a>
               % else:
                 -
               % endif

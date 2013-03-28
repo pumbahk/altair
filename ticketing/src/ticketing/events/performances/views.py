@@ -17,14 +17,12 @@ from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.events.performances.forms import PerformanceForm, PerformancePublicForm
 from ticketing.core.models import Event, Performance, Order
-from ticketing.products.forms import ProductForm, ProductItemForm
+from ticketing.products.forms import ProductForm
 from ticketing.orders.forms import OrderForm, OrderSearchForm
-from ticketing.events.sales_segments.forms import SalesSegmentForm
 
 from ticketing.mails.forms import MailInfoTemplate
 from ticketing.models import DBSession
 from ticketing.mails.api import get_mail_utility
-
 from ticketing.core.models import MailTypeChoices
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")

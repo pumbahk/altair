@@ -83,6 +83,13 @@ class SalesSegmentGroupForm(OurForm):
         label=u'一般公開',
         hide_on_new=True
     )
+    account_id = OurSelectField(
+        label=u'配券元',
+        validators=[Required(u'選択してください')],
+        choices=[],
+        coerce=int,
+        hide_on_new=True
+    )
     margin_ratio = OurDecimalField(
         label=u'販売手数料率(%)',
         places=2,
@@ -109,13 +116,6 @@ class SalesSegmentGroupForm(OurForm):
         places=2,
         default=0,
         validators=[Required()],
-        hide_on_new=True
-    )
-    account_id = OurSelectField(
-        label=u'配券元',
-        validators=[Required(u'選択してください')],
-        choices=[],
-        coerce=int,
         hide_on_new=True
     )
     copy = IntegerField(
