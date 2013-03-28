@@ -79,12 +79,18 @@ class SalesSegments(BaseView):
     def _pdmp_map(self, sales_segment_groups):
         """ 販売区分グループごとのPDMP json
         """
-
         mapped = {}
         for ssg in sales_segment_groups:
             mapped[str(ssg.id)] = [(pdmp.id, pdmp.payment_method.name + " - " + pdmp.delivery_method.name) 
                               for pdmp in ssg.payment_delivery_method_pairs]
+        return json.dumps(mapped)
 
+    def _account_map(self, sales_segment_groups):
+        """ 販売区分グループごとのAccount json
+        """
+        mapped = {}
+        for ssg in sales_segment_groups:
+            mapped[str(ssg.id)] = ssg.account_id
         return json.dumps(mapped)
 
     @property
@@ -100,7 +106,8 @@ class SalesSegments(BaseView):
         return {
             'form': self._form(),
             'action': self.request.path,
-            'pdmp_map': self._pdmp_map(self.sales_segment_groups)
+            'pdmp_map': self._pdmp_map(self.sales_segment_groups),
+            'account_map':self._account_map(self.sales_segment_groups)
             }
 
     @view_config(route_name='sales_segments.new', request_method='POST', renderer='ticketing:templates/sales_segments/_form.html', xhr=True)
@@ -123,7 +130,8 @@ class SalesSegments(BaseView):
             return {
                 'form': f,
                 'action': self.request.path_url,
-                'pdmp_map': self._pdmp_map(self.sales_segment_groups)
+                'pdmp_map': self._pdmp_map(self.sales_segment_groups),
+                'account_map':self._account_map(self.sales_segment_groups)
                 }
 
     @view_config(route_name='sales_segments.edit', request_method='GET', renderer='ticketing:templates/sales_segments/_form.html', xhr=True)
@@ -131,7 +139,8 @@ class SalesSegments(BaseView):
         return {
             'form': self._form(),
             'action': self.request.path,
-            'pdmp_map': self._pdmp_map(self.sales_segment_groups)
+            'pdmp_map': self._pdmp_map(self.sales_segment_groups),
+            'account_map':self._account_map(self.sales_segment_groups)
             }
 
     def _edit_post(self):
@@ -175,7 +184,8 @@ class SalesSegments(BaseView):
             return {
                 'form':f,
                 'action': self.request.path_url,
-                'pdmp_map': self._pdmp_map(self.sales_segment_groups)
+                'pdmp_map': self._pdmp_map(self.sales_segment_groups),
+                'account_map':self._account_map(self.sales_segment_groups)
                 }
 
     @view_config(route_name='sales_segments.delete')

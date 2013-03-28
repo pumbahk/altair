@@ -19,6 +19,7 @@ from ticketing.events.performances.forms import PerformanceForm, PerformancePubl
 from ticketing.core.models import Event, Performance, Order
 from ticketing.products.forms import ProductForm, ProductItemForm
 from ticketing.orders.forms import OrderForm, OrderSearchForm
+from ticketing.events.sales_segments.forms import SalesSegmentForm
 
 from ticketing.mails.forms import MailInfoTemplate
 from ticketing.models import DBSession
@@ -69,7 +70,9 @@ class PerformanceShowView(BaseView):
             )
 
     def _tab_sales_segment(self):
-        return dict(sales_segments=self.performance.sales_segments)
+        return dict(
+            sales_segments=self.performance.sales_segments
+            )
 
     def _tab_reservation(self):
         return {}

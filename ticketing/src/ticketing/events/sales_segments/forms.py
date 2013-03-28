@@ -5,18 +5,22 @@ from wtforms import TextField, SelectField, HiddenField, IntegerField, BooleanFi
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 from wtforms.widgets import CheckboxInput
 
-from ticketing.formhelpers import OurDateTimeField, Translations, Required, RequiredOnUpdate, OurForm, OurIntegerField, OurBooleanField, BugFreeSelectField, PHPCompatibleSelectMultipleField, CheckboxMultipleSelect
-from ticketing.core.models import SalesSegmentGroup, SalesSegmentKindEnum, Event, StockHolder, SalesSegment
+from ticketing.formhelpers import (Translations, Required, RequiredOnUpdate,
+                                   OurForm, OurDateTimeField, OurIntegerField, OurBooleanField, OurSelectField,
+                                   BugFreeSelectField, PHPCompatibleSelectMultipleField, CheckboxMultipleSelect)
+from ticketing.core.models import SalesSegmentGroup, SalesSegment, Account
 from sqlalchemy.sql import or_, and_
 
 class SalesSegmentForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         super(SalesSegmentForm, self).__init__(formdata, obj, prefix, **kwargs)
+
+        performances = kwargs.get("performances", [])
         self.performance_id.choices = \
             [(u'', u'(なし)')] + \
             [(unicode(p.id),
               u'%s (%s)' % (p.name, p.start_on.strftime('%Y-%m-%d %H:%M'))) \
-             for p in kwargs.get("performances", [])]
+             for p in performances]
         sales_segment_groups = kwargs.get('sales_segment_groups')
 
         sales_segment_group = None
@@ -42,6 +46,15 @@ class SalesSegmentForm(OurForm):
                   u'%s - %s' % (pdmp.payment_method.name, pdmp.delivery_method.name))
                  for pdmp in sales_segment_group.payment_delivery_method_pairs
                 ]
+            self.account_id.choices = [
+                (a.id, a.name) for a in Account.query.filter_by(organization_id=sales_segment_group.event.organization_id)
+            ]
+            if not self.account_id.data:
+                self.account_id.data = sales_segment_group.account_id
+        elif performances:
+            self.account_id.choices = [
+                (a.id, a.name) for a in Account.query.filter_by(organization_id=performances[0].event.organization_id)
+            ]
         if obj and obj.payment_delivery_method_pairs is not None:
             self.payment_delivery_method_pairs.data = [int(pdmp.id) for pdmp in obj.payment_delivery_method_pairs]
         elif sales_segment_group is not None and formdata is None:
@@ -64,6 +77,13 @@ class SalesSegmentForm(OurForm):
         label=u'公演',
         choices=[],
         coerce=lambda x: int(x) if x else None
+    )
+    account_id = OurSelectField(
+        label=u'配券元',
+        validators=[Required(u'選択してください')],
+        choices=[],
+        coerce=int,
+        hide_on_new=True
     )
     seat_choice = OurBooleanField(
         label=u'座席選択可',

@@ -1033,6 +1033,8 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     refund_ratio = Column(Numeric(precision=16, scale=2), nullable=False)
     printing_fee = Column(Numeric(precision=16, scale=2), nullable=False)
     registration_fee = Column(Numeric(precision=16, scale=2), nullable=False)
+    account_id = Column(Identifier, ForeignKey('Account.id'))
+    account = relationship('Account', backref='sales_segment_groups')
 
     event_id = Column(Identifier, ForeignKey('Event.id'))
     event = relationship('Event')
@@ -2898,7 +2900,7 @@ class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def delete(self):
         # 既に使用されている場合は削除できない
         if self.product_items:
-            raise Exception(u'関連づけされたイベントがある為、削除できません')
+            raise Exception(u'関連づけされた商品がある為、削除できません')
         super(type(self), self).delete()
 
 class TicketPrintHistory(Base, BaseModel, WithTimestamp):
@@ -3077,6 +3079,8 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     performance = relationship("Performance", backref="sales_segments")
     sales_segment_group_id = Column(Identifier, ForeignKey("SalesSegmentGroup.id"))
     sales_segment_group = relationship("SalesSegmentGroup", backref="sales_segments")
+    account_id = Column(Identifier, ForeignKey('Account.id'))
+    account = relationship('Account', backref='sales_segments')
 
     payment_delivery_method_pairs = relationship("PaymentDeliveryMethodPair",
         secondary="SalesSegment_PaymentDeliveryMethodPair",
