@@ -1,4 +1,6 @@
 <%inherit file="../commons/layout.html" />
+<h2><img src="${request.static_url('ticketing.orderreview:static/images/RT/title_order.gif')}" alt="予約チケットの確認" width="702" height="43" /></h2>
+
 <div class="purchased">
 % if order.performance.event.id != 0:
   <h2>受付履歴確認 検索結果</h2>
