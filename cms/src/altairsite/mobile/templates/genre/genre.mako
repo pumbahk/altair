@@ -4,12 +4,12 @@
 <body>
 
     % if form.dispsubgenre.data:
-        <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffc0cb">■</font>${form.dispsubgenre.data.label}</font></div>
+        <div style="background-image:url(/static/mobile/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffc0cb">■</font>${form.dispsubgenre.data.label}</font></div>
     % else:
-        <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffc0cb">■</font>${form.dispgenre.data.label}</font></div>
+        <div style="background-image:url(/static/mobile/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffc0cb">■</font>${form.dispgenre.data.label}</font></div>
     % endif
 
-    <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
+    <div class="line" style="background:#FFFFFF"><img src="/static/mobile/clear.gif" alt="" width="1" height="1" /></div>
 
     <a href="/" accesskey="0">[0]戻る</a>
     <a href="/" accesskey="9">[9]トップへ</a>
@@ -25,9 +25,9 @@
     <%include file='../common/_attention.mako' args="attentions=form.attentions.data, genre=form.genre.data
                                                         , sub_genre=form.sub_genre.data, helper=helper"/>
 
-    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>サブジャンルで絞り込む</font></div>
+    <div style="background-image:url(/static/mobile/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>サブジャンルで絞り込む</font></div>
 
-    <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
+    <div class="line" style="background:#FFFFFF"><img src="/static/mobile/clear.gif" alt="" width="1" height="1" /></div>
 
     % for subgenre in form.genretree.data:
         <a href="/genre?genre=${form.dispgenre.data.id}&sub_genre=${subgenre.id}">${subgenre.label}</a>｜

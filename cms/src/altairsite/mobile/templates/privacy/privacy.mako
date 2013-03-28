@@ -3,9 +3,9 @@
     <%include file='../common/_header.mako' args="title=u'楽天チケット[個人情報保護方針]'"/>
 <body>
 
-    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffc0cb">■</font>個人情報保護方針</font></div>
+    <div style="background-image:url(/static/mobile/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffc0cb">■</font>個人情報保護方針</font></div>
 
-    <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
+    <div class="line" style="background:#FFFFFF"><img src="/static/mobile/clear.gif" alt="" width="1" height="1" /></div>
 
     <a href="/" accesskey="0">[0]戻る</a>
     <a href="/" accesskey="9">[9]トップへ</a>
@@ -14,11 +14,11 @@
     <a href="/">トップ</a> >> <a name="top" id="top">個人情報保護方針</a>
     <br/>
 
-    <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
+    <div class="line" style="background:#FFFFFF"><img src="/static/mobile/clear.gif" alt="" width="1" height="1" /></div>
 
-    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>個人情報保護方針</font></div>
+    <div style="background-image:url(/static/mobile/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>個人情報保護方針</font></div>
 
-    <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
+    <div class="line" style="background:#FFFFFF"><img src="/static/mobile/clear.gif" alt="" width="1" height="1" /></div>
 
 <a href="#1">1. 本方針について</a><br/>
 <a href="#2">2. 用語の意味について</a><br/>

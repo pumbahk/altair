@@ -1,11 +1,11 @@
 <%page args="path, genre, sub_genre, num" />
 % if genre:
-    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>地域から絞り込む</font></div>
+    <div style="background-image:url(/static/mobile/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>地域から絞り込む</font></div>
 % else:
-    <div style="background-image:url(../static/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>地域から探す</font></div>
+    <div style="background-image:url(/static/mobile/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>地域から探す</font></div>
 % endif
 
-<div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
+<div class="line" style="background:#FFFFFF"><img src="/static/mobile/clear.gif" alt="" width="1" height="1" /></div>
 
     <a href="${path}?genre=${genre}&sub_genre=${sub_genre}&num=${num}&page=1&area=1">首都圏</a>｜
     <a href="${path}?genre=${genre}&sub_genre=${sub_genre}&num=${num}&page=1&area=2">近畿</a>｜
