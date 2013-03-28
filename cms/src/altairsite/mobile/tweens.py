@@ -54,7 +54,7 @@ def mobile_encoding_convert_factory(handler, registry):
         if not hasattr(request, "_ua"):
             request._ua = uamobile.detect(request.environ)
         if IMobileRequest.providedBy(request):
-            return as_mobile_response(request, handler)
+            return handler(request)
         if not request._ua.is_nonmobile():
             ## DeprecationWarning: Use req = req.decode('cp932')
             try:
