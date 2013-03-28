@@ -115,46 +115,48 @@
 
 #index #mainLeft {
 	width: 342px;
-    float: left;
+  float: left;
+  margin-right: 8px;
 }
 #index #mainRight {
 	width: 342px;
-    float: left;
+  float: left;
+  margin-left: 8px;
 }
 
 #sports #mainLeft {
 	width: 362px;
-    float: left;
+  float: left;
 }
 #sports #mainRight {
 	width: 362px;
-    float: right;
+  float: right;
 }
 
 #stage #mainLeft {
 	width: 362px;
-    float: left;
+  float: left;
 }
 #stage #mainRight {
 	width: 362px;
-    float: right;
+  float: right;
 }
 
 #music #mainLeft {
 	width: 362px;
-    float: left;
+  float: left;
 }
 #music #mainRight {
 	width: 362px;
-    float: right;
+  float: right;
 }
 #event #mainLeft {
 	width: 362px;
-    float: left;
+  float: left;
 }
 #event #mainRight {
 	width: 362px;
-    float: right;
+  float: right;
 }
 
 
