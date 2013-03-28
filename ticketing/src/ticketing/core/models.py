@@ -752,13 +752,6 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                           .filter(Account.id==account.id)\
                           .all()
 
-    def get_accounts(self):
-        return Account.filter().with_entities(Account.name).join(StockHolder)\
-                .filter(Account.organization_id==self.organization_id)\
-                .filter(Account.id==StockHolder.account_id)\
-                .filter(StockHolder.event_id==self.id)\
-                .distinct()
-
     def _get_self_cms_data(self):
         return {'id':self.id,
                 'title':self.title,
@@ -2901,6 +2894,12 @@ class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             else:
                 reissueable = _reissueable
         return reissueable
+
+    def delete(self):
+        # 既に使用されている場合は削除できない
+        if self.product_items:
+            raise Exception(u'関連づけされたイベントがある為、削除できません')
+        super(type(self), self).delete()
 
 class TicketPrintHistory(Base, BaseModel, WithTimestamp):
     __tablename__ = "TicketPrintHistory"

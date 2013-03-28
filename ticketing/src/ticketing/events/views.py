@@ -89,11 +89,8 @@ class Events(BaseView):
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
 
-        accounts = event.get_accounts()
-
         return {
             'event':event,
-            'accounts':accounts,
             'seat_stock_types':StockType.filter_by(event_id=event_id, type=StockTypeEnum.Seat.v).order_by(StockType.display_order).all(),
             'non_seat_stock_types':StockType.filter_by(event_id=event_id, type=StockTypeEnum.Other.v).order_by(StockType.display_order).all(),
             'form':EventForm(),

@@ -182,14 +182,25 @@
 #slideShow #slideShowRight{
     float:left;
     width: 182px;
-	margin-bottom: 20px;
+	  margin-bottom: 20px;
 }
 
 #slideShow #slideShowRight .thumbnail img{
-    max-width: 60px;
-    max-height: 60px;
+    max-width: 58px;
+    max-height: 58px;
     background-color: #000;
     display: inline-block;
+}
+
+#slideShow #slideShowRight .thumbnailBox{
+    float:left;
+    position:relative;
+    top:0;
+    display:inline-block;
+    width:58px;
+    height:58px;
+    background-color: #555;
+    border:#e6e6da 1px solid;
 }
 
 #slideShow .mainImage {

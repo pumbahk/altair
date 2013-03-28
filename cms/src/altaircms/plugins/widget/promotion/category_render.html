@@ -2,11 +2,16 @@
 ## 
 
 %if info:
+<%
+import random
+prefix = str(random.random())[2:]
+%>
+
 <div class="promotion-widget">
   <div id="subkindSlideShow">
     <div id="slideShowLeft">
       <div class="mainImage">
-        ${show_image(info.main,info.main_link)|n}
+        ${show_image(prefix,info.main,info.main_link)|n}
       </div>
       <div class="mainImageMessage">
         ${info.message}
@@ -14,10 +19,10 @@
     </div>
     <div id="slideShowRight">
       <div class="subkindThumbnail">
-      %for thumb, link, message in zip(info.thumbnails, info.links, info.messages):
+      %for i, thumb, link, message in zip(info.unit_candidates, info.thumbnails, info.links, info.messages):
 		<div class="slideBox">
 		  <div class="slideBoxLeft">
-            ${show_image(thumb, link)|n}
+            ${show_image(i, thumb, link)|n}
 		  </div>
 		  <div class="slideBoxRight">
 			${message}
@@ -53,13 +58,13 @@
     }
 
     var normalize_factory = function(X,Y, force){
-      if(!!force || navigator.userAgent.toLowerCase().indexOf("firefox") > -1){
+      if(!!force || navigator.userAgent.toLowerCase().indexOf("firefox") > -1 || navigator.userAgent.toLowerCase().indexOf("msie") > -1){
         return function normalize_size(e,x,y){
            var $e = $(e).eq(0);
            var x = x || $e.width();
            var y = y || $e.height();
-           if(!x || !y){
-             setTimeout(function(){ return normalize_size(e,x,y)}, 100);
+           if(!x || !y || x==0 || y==0){
+              e.onload = function(){return normalize_size($(e),x,y)};
            }
 
            scaled_size = scaled(x,X,y,Y);
