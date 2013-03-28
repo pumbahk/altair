@@ -17,7 +17,11 @@
     </div>
   </span>
   <h3>${venue.name} (venue id=${venue.id})</h3>
-  <span>${venue.sub_name}</span>
+  <span>
+	% if venue.sub_name != None:
+		${venue.sub_name}
+	% endif
+  </span>
 </div>
 
 <div class="content">

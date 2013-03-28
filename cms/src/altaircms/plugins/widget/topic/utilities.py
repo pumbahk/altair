@@ -30,6 +30,7 @@ render_89ers_info_render = partial(render_topics_with_template, "altaircms.plugi
 render_vissel_faq = partial(render_topics_with_template, "altaircms.plugins.widget:topic/vissel_faq_render.html")
 
 render_tstar_topics_faq = partial(render_topics_with_template, "altaircms.plugins.widget:topic/topic_render.html")
+render_tstar_information_faq = partial(render_topics_with_template, "altaircms.plugins.widget:topic/information_render.html")
 render_tstar_feature_faq = partial(render_topics_with_template, "altaircms.plugins.widget:topic/sidebar_feature_render.html")
 render_tstar_genre_faq = partial(render_topics_with_template, "altaircms.plugins.widget:topic/sidebar_category_genre_render.html")
 render_tstar_change_faq = partial(render_topics_with_template, "altaircms.plugins.widget:topic/change_render.html")
@@ -57,6 +58,7 @@ jnames = 注目のイベント
         self.rendering.register("89ers_info", render_89ers_info_render)
         self.rendering.register("vissel_faq", render_vissel_faq)
         self.rendering.register("topic", render_tstar_topics_faq)
+        self.rendering.register("information", render_tstar_information_faq)
         self.rendering.register("feature", render_tstar_feature_faq)
         self.rendering.register("genre", render_tstar_genre_faq)
         self.rendering.register("change", render_tstar_change_faq)

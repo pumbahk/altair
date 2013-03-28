@@ -72,14 +72,14 @@ class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def metadata_url(self):
-        return self._metadata_url and myurljoin(get_current_registry().settings.get('altair.site_data.base_url', ''), self._metadata_url)
+        return myurljoin(get_current_registry().settings.get('altair.site_data.base_url', ''), self._metadata_url if self._metadata_url else 'dummy/metadata.json')
 
     @property
     def _metadata(self):
         __metadata = getattr(self, '__metadata', None)
         if not __metadata:
             resolver = get_current_registry().queryUtility(IAssetResolver)
-            self.__metadata = self.metadata_url and json.load(resolver.resolve(self.metadata_url).stream())
+            self.__metadata = json.load(resolver.resolve(self.metadata_url).stream())
         return self.__metadata
 
     def get_drawing(self, name):
