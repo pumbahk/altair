@@ -144,7 +144,7 @@ form = TopPageSidebarSearchForm()
             <dd class="siteUtility">
               <ul>
                 %for c in layout.navigation_link_list("siteUtility"):
-                <li class="right"><a href="${h.link.get_link_from_category(request,c)}">${c.label}</a></li>
+                <li class="right"><a href="${h.link.get_link_from_category(request,c)}"><img src="${c.imgsrc}" alt="${c.label}" ${(c.attributes or "")|n} /></a></li>
                 %endfor
               </ul>
             </dd>
@@ -158,7 +158,7 @@ form = TopPageSidebarSearchForm()
             <li><a href="${h.link.get_link_from_category(request,c)}"><img src="${c.imgsrc}" alt="${c.label}" ${(c.attributes or "")|n} /></a></li>
             %endfor
             %for c in layout.navigation_link_list("globalNav2"):
-            <li class="right"><a href="${h.link.get_link_from_category(request,c)}">${c.label}</a></li>
+            <li class="right"><a href="${h.link.get_link_from_category(request,c)}"><img src="${c.imgsrc}" alt="${c.label}" ${(c.attributes or "")|n} /></a></li>
             %endfor
           </ul>
           <ul id="globalNav2">
