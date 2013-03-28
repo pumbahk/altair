@@ -136,7 +136,7 @@ form = TopPageSidebarSearchForm()
             <dd class="siteUtility">
               <ul>
                 %for c in layout.navigation_link_list("siteUtility"):
-                <li class="right"><a href="${h.link.get_link_from_category(request,c)}">${c.label}</a></li>
+                <li class="right"><a href="${h.link.get_link_from_category(request,c)}"><img src="${c.imgsrc}" alt="${c.label}" ${(c.attributes or "")|n} /></a></li>
                 %endfor
               </ul>
             </dd>
@@ -144,13 +144,20 @@ form = TopPageSidebarSearchForm()
           
         </div>
         
-        <div class="clear"></div><div id="globalNav">
+        
+        <!--- social buttons --->
+        <div id="social"  style="float: right; padding-top: 10px">
+            <iframe allowtransparency="true" frameborder="0" scrolling="no" src="http://platform.twitter.com/widgets/tweet_button.html?url=${h.safe_url_quote(request.url)}&amp;via=RakutenTicket&amp;count=none&amp;lang=ja&amp;" style="height: 20px; width: 70px;"></iframe>
+            <iframe src="http://www.facebook.com/plugins/like.php?app_id=233610706676154&amp;href=${h.safe_url_quote(request.url)}&amp;send=false&amp;layout=button_count&amp;width=100&amp;show_faces=false&amp;action=like&amp;colorscheme=light&amp;font&amp;height=20" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:100px; height:20px;" allowTransparency="true"></iframe>
+        </div>
+
+         <div class="clear"></div><div id="globalNav">
           <ul id="globalNav1">
             %for c in layout.navigation_link_list("globalNav1"):
             <li><a href="${h.link.get_link_from_category(request,c)}"><img src="${c.imgsrc}" alt="${c.label}" ${(c.attributes or "")|n} /></a></li>
             %endfor
             %for c in layout.navigation_link_list("globalNav2"):
-            <li class="right"><a href="${h.link.get_link_from_category(request,c)}">${c.label}</a></li>
+            <li class="right"><a href="${h.link.get_link_from_category(request,c)}"><img src="${c.imgsrc}" alt="${c.label}" ${(c.attributes or "")|n} /></a></li>
             %endfor
           </ul>
           <ul id="globalNav2">
@@ -413,12 +420,12 @@ from altairsite.search.forms import DealCondPartForm
             </div><!-- /div#groupServiceFooter -->
             <div id="companyFooter">
               <ul>
-                <li><a href="http://corp.rakuten.co.jp/" rel="nofollow">会社概要</a></li>
-                <li><a href="http://privacy.rakuten.co.jp/" rel="nofollow">個人情報保護方針</a></li>
-                <li><a href="http://corp.rakuten.co.jp/csr/">社会的責任[CSR]</a></li>
-                <li class="grpLast"><a href="http://www.rakuten.co.jp/recruit/">採用情報</a></li>
+                <li><a href="http://www.ticketstar.jp/">運営会社</a></li>
+                <li><a href="https://ticket.rakuten.co.jp/inquiry">お問い合わせ</a></li>
+                <li><a href="http://privacy.rakuten.co.jp/">個人情報保護方針</a></li>
+                <li class="grpLast"><a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a></li>
               </ul>
-              <p id="copyright">Copyright &copy; 1997-2011 Rakuten, Inc. All Rights Reserved.</p>
+              <p id="copyright">Copyright &copy; 2010-2013 TicketStar Inc. All Rights Reserved. </p>
             </div><!-- /div#companyFooter -->
           </div><!-- /div#grpFooter -->
         </div><!-- /div#grpRakutenLinkArea -->

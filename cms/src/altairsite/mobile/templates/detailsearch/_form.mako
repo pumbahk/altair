@@ -9,7 +9,7 @@
         <font color="red">${error}</font>
     % endfor
     <input type="submit" value="検索">
-    <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
+    <div class="line" style="background:#FFFFFF"><img src="/static/mobile/clear.gif" alt="" width="1" height="1" /></div>
 
     ■エリア<br/>
     ${form.area}<br/><br/>
@@ -19,7 +19,7 @@
 
     <input type="submit" value="検索"/>
 
-    <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
+    <div class="line" style="background:#FFFFFF"><img src="/static/mobile/clear.gif" alt="" width="1" height="1" /></div>
 
     ■販売状況<br/>
     % for count, sale in enumerate(form.sale.choices):
@@ -41,7 +41,7 @@
     % endfor
 
     <input type="submit" value="検索">
-    <div class="line" style="background:#FFFFFF"><img src="../static/clear.gif" alt="" width="1" height="1" /></div>
+    <div class="line" style="background:#FFFFFF"><img src="/static/mobile/clear.gif" alt="" width="1" height="1" /></div>
 
     ■公演日で絞り込む<br/>
     ${form.since_year}年${form.since_month}月${form.since_day}日〜<br/>${form.year}年${form.month}月${form.day}日

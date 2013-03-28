@@ -46,7 +46,7 @@ class AccessControl(object):
     def can_access(self):
         if not self.access_ok:
             logger.info("*cms front preview* url is not found (%s)" % self.request.url)
-            logger.warn("*cms front preview* error=%s" % self.error_message)
+            logger.info("*cms front preview* error=%s" % self.error_message)
         return self.access_ok
 
     def _check_page_is_accessable(self, page, access_key):
