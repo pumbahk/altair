@@ -69,7 +69,6 @@ def main(global_config, **settings):
     config.set_request_property("altaircms.auth.api.get_allowable_query", "allowable", reify=True)
     search_utility = settings.get("altaircms.solr.search.utility")
     config.add_fulltext_search(search_utility)
-    config._add_tween("altairsite.mobile.tweens.mobile_request_factory")
     config.include(install_app)
     log_info("main", "initialize end.")
     return config.make_wsgi_app()
