@@ -3,15 +3,20 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
   <title>楽天チケット 購入確認ページ</title>
-  <link rel="stylesheet" type="text/css" href="${request.static_url('ticketing.orderreview:static/css/RT/style.css')}" media="all" />
+  <link rel="stylesheet" type="text/css" href="${request.static_url('ticketing.orderreview:static/css/RT/import.css')}" media="all" />
 </head>
 <body>
-<h1 class="title">楽天チケット 購入確認ページ</h1>
-<div align="center">
-	<a href="http://ticket.rakuten.co.jp/">
-	  <img src="${request.static_url('ticketing.orderreview:static/images/RT/header_logo_01.gif')}" alt="楽天チケット" class="serviceLogo" width="97" height="35" /></a>
-	<a href="http://ticket.rakuten.co.jp/">
-	  <img src="${request.static_url('ticketing.orderreview:static/images/RT/header_logo_02.gif')}" alt="チケット" class="serviceTitle" width="88" height="23" /></a>
+<div id="container">
+  <div id="grpheader">
+    <h1 id="siteID">
+      <a href="http://ticket.rakuten.co.jp/">
+	<img src="${request.static_url('ticketing.orderreview:static/images/RT/header_logo_01.gif')}" alt="楽天チケット" class="serviceLogo" width="97" height="35" /></a>
+      <a href="http://ticket.rakuten.co.jp/">
+	<img src="${request.static_url('ticketing.orderreview:static/images/RT/header_logo_02.gif')}" alt="チケット" class="serviceTitle" width="88" height="23" /></a>
+    </h1>
+  </div>
+<hr />
+
   <table class="layout" style="width:760px" class="wrapper">
     <tbody>
       <tr>
