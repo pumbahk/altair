@@ -24,12 +24,20 @@ class TopcontentWidget(Widget):
     __mapper_args__ = {"polymorphic_identity": type}
     query = DBSession.query_property()
 
+    def __init__(self, *args, **kwargs):
+        super(TopcontentWidget, self).__init__(*args, **kwargs)
+        if not "rendering_image_attribute":
+            self.rendering_image_attribute = "thumbnail_path" #xxx:
+        if not "display_count":
+            self.display_count = 6 
+
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
-    display_type = sa.Column(sa.Unicode(length=255))
+    display_type = sa.Column(sa.Unicode(length=260))
     display_count = sa.Column(sa.Integer)
     tag_id = sa.Column(sa.Integer, sa.ForeignKey("topiccoretag.id"))
     tag = orm.relationship("TopcontentTag", uselist=False, primaryjoin="TopcontentWidget.tag_id==TopcontentTag.id")
     system_tag_id = sa.Column(sa.Integer, sa.ForeignKey("topiccoretag.id"))
+    rendering_image_attribute = sa.Column(sa.String(length=16), nullable=False, default="thumbnail_path")
     system_tag = orm.relationship("TopcontentTag", uselist=False, primaryjoin="TopcontentWidget.system_tag_id==TopcontentTag.id")
 
     def merge_settings(self, bname, bsettings):

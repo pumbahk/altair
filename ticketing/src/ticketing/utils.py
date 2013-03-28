@@ -6,7 +6,27 @@ from pyramid.threadlocal import get_current_registry
 from ticketing.mobile.interfaces import IMobileCarrierDetector
 from ticketing.mobile.api import _detect_from_email_address
 from datetime import date, timedelta
+import urllib
 import re
+import sys
+
+__all__ = [
+    'DigitCodec',
+    'encoder',
+    'sensible_alnum_encode',
+    'sensible_alnum_decode',
+    'URLHandler',
+    'urlhandler',
+    'myurljoin',
+    'myurlunparse',
+    'myurlunsplit',
+    'json_safe_coerce',
+    'is_nonmobile_email_address',
+    'dereference',
+    'iterpairs',
+    'is_sequence',
+    'uniurlencode',
+    ]
 
 class DigitCodec(object):
     def __init__(self, digits):
@@ -231,3 +251,83 @@ def dereference(object, key, return_none_unless_feasible=False):
             raise ValueError('. or [ expected')
 
     return object
+
+def iterpairs(dictlike):
+    if hasattr(dictlike, 'iteritems'):
+        return dictlike.iteritems()
+    elif hasattr(dictlike, 'items'):
+        return dictlike.items()
+    else:
+        return iter(dictlike)
+
+def is_sequence(obj):
+    try:
+        return len(obj)
+    except TypeError:
+        return False
+
+def uniurlencode(dictlike, method='plus', encoding=None):
+    if callable(method):
+        quote = method
+    elif method == 'raw':
+        quote = urllib.quote
+    elif method == 'plus':
+        quote = urllib.quote_plus
+    encoding = encoding or sys.getdefaultencoding()
+    chunks = []
+    first = True
+    for pair in iterpairs(dictlike):
+        try:
+            if len(pair) != 2:
+                raise TypeError
+        except:
+            raise TypeError('not a valid pairs or mapping object')
+        if isinstance(pair[1], basestring):
+            if not first:
+                chunks.append('&')
+            chunks.append(quote(pair[0].encode(encoding)))
+            chunks.append('=')
+            chunks.append(quote(pair[1].encode(encoding)))
+            first = False
+        else:
+            if is_sequence(pair[1]):
+                for v in pair[1]:
+                    if not first:
+                        chunks.append('&')
+                    chunks.append(quote(pair[0].encode(encoding)))
+                    if v is not None:
+                        chunks.append('=')
+                        chunks.append(quote(v.encode(encoding)))
+                    first = False
+            else:
+                if not first:
+                    chunks.append('&')
+                chunks.append(quote(pair[0].encode(encoding)))
+                if pair[1] is not None:
+                    chunks.append('=')
+                    chunks.append(quote(unicode(pair[1]).encode(encoding)))
+                first = False
+    return ''.join(chunks)
+
+def uniurldecode(buf, method='plus', encoding=None):
+    if callable(method):
+        unquote = method
+    elif method == 'raw':
+        unquote = urllib.unquote
+    elif method == 'plus':
+        unquote = urllib.unquote_plus
+    encoding = encoding or sys.getdefaultencoding()
+    retval = []
+    for _pair in buf.split('&'):
+        pair = _pair.split('=', 2)
+        if len(pair) == 2:
+            retval.append((
+                unquote(pair[0]).decode(encoding),
+                unquote(pair[1]).decode(encoding)
+                ))
+        else:
+            retval.append((
+                unquote(pair[0]).decode(encoding),
+                None
+                ))
+    return retval

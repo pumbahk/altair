@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import webhelpers.paginate as paginate
+import json
+from datetime import datetime
 
+import webhelpers.paginate as paginate
 from pyramid.view import view_config, view_defaults
-from pyramid.httpexceptions import HTTPFound, HTTPNotFound
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from pyramid.renderers import render_to_response
 from pyramid.url import route_path
 
@@ -16,8 +18,6 @@ from ticketing.events.sales_segment_groups.forms import SalesSegmentGroupForm, M
 from ticketing.events.sales_segments.forms import SalesSegmentForm
 from ticketing.memberships.forms import MemberGroupForm
 from ticketing.users.models import MemberGroup, Membership
-
-from datetime import datetime
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class SalesSegmentGroups(BaseView):
@@ -91,7 +91,8 @@ class SalesSegmentGroups(BaseView):
     @view_config(route_name='sales_segment_groups.new', request_method='POST', renderer='ticketing:templates/sales_segment_groups/_form.html', xhr=True)
     def new_post(self):
         event_id = int(self.request.POST.get('event_id', 0))
-        if not event_id:
+        event = Event.get(event_id)
+        if not event:
             return HTTPNotFound('event id %d is not found' % event_id)
 
         f = SalesSegmentGroupForm(self.request.POST, event_id=event_id, new_form=True)
@@ -99,9 +100,8 @@ class SalesSegmentGroups(BaseView):
             if f.start_at.data is None:
                 f.start_at.data = datetime.now() 
             if f.end_at.data is None:
-                f.end_at.data = datetime.now() 
+                f.end_at.data = datetime.now()
             sales_segment_group = merge_session_with_post(SalesSegmentGroup(), f.data)
-            sales_segment_group.event_id = event_id
             sales_segment_group.save()
 
             self.request.session.flash(u'販売区分グループを保存しました')

@@ -7,7 +7,7 @@ import sqlahelper
 from pyramid.config import Configurator
 #from pyramid.session import UnencryptedCookieSessionFactoryConfig
 from pyramid.interfaces import IDict
-from pyramid.tweens import EXCVIEW
+from pyramid.tweens import INGRESS
 from pyramid_beaker import session_factory_from_settings
 
 
@@ -128,7 +128,7 @@ def main(global_config, **local_config):
     config.include('ticketing.payments.plugins')
 
     config.include('.errors')
-    config.add_tween('ticketing.tweens.session_cleaner_factory', over=EXCVIEW)
+    config.add_tween('ticketing.tweens.session_cleaner_factory', under=INGRESS)
     config.scan()
 
 

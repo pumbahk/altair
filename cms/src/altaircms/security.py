@@ -42,3 +42,10 @@ class RootFactory(object):
     def __acl__(self):
         return get_acl_candidates()
 
+class OverrideAuthenticationPolicy(object):
+    """don't use in app"""
+    def __init__(self, i):
+        self.i = i
+
+    def unauthenticated_userid(self, request):
+        return self.i

@@ -1,4 +1,4 @@
-# coding:utf-8
+# -*- coding:utf-8 -*-
 import logging
 logger = logging.getLogger(__name__)
 
@@ -135,6 +135,8 @@ def main(global_config, **local_config):
     engine = engine_from_config(settings, 'sqlalchemy.', pool_recycle=3600)
     sqlahelper.get_session().remove()
     sqlahelper.add_engine(engine)
-
-    return config.make_wsgi_app()
-
+    config.add_tween("altaircms.tweens.cms_request_factory")
+    app = config.make_wsgi_app()
+    from pyramid.interfaces import IRouter
+    config.registry.registerUtility(app, IRouter)
+    return app

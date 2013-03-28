@@ -13,7 +13,7 @@ from .api import get_promotion_manager
 from altaircms.topic.api import get_topic_searcher
 
 ## fixme: rename **info
-PromotionInfo = namedtuple("PromotionInfo", "idx thumbnails message main main_link links messages interval_time unit_candidates")
+PromotionInfo = namedtuple("PromotionInfo", "idx thumbnails message main width height main_link links messages interval_time unit_candidates")
 
 class PromotionSheet(object):
     INTERVAL_TIME = 5000
@@ -33,6 +33,8 @@ class PromotionSheet(object):
             idx=idx, 
             message=selected.text, 
             main=h.asset.to_show_page(request, selected.main_image), 
+            width= selected.main_image.width, 
+            height= selected.main_image.height, 
             main_link=h.link.get_link_from_promotion(request, selected), 
             links=[h.link.get_link_from_promotion(request, pu) for pu in punits], 
             messages=[pu.text for pu in punits], 

@@ -22,23 +22,28 @@ class CalendarStatus(object):
     circle = {"class": "circle", "string":u"○"}
     triangle = {"class": "triangle", "string":u"△"}
     cross = {"class": "cross", "string":u"×"}
+    unknown = {"class": "unknown", "string": u""}
 
 class MaruBatsuSankaku(object):
     circle = {"class": "maru", "string":u"○"}
     triangle = {"class": "sankaku", "string":u"△"}
     cross = {"class": "batsu", "string":u"×"}
+    unknown = {"class": "hatena", "string": u""}
 
 dummy_data = {"stocks": []}
 def get_performance_status(request, widget, event, status_impl):
     """
     call api
     """
+    data = dummy_data
     try:
         data = get_calendar_data_api(request).fetch_stock_status(request, event, widget.salessegment)
         data = json.loads(data)
+    except urllib2.HTTPError, e:
+        logger.warn("*calendar widget* api call is failed. url=%s" % e.url)
     except Exception, e:
         logger.warn("*calendar widget* api call is failed")
-        # logger.exception(str(e))
+        logger.exception(str(e))
         data =  dummy_data
     return _get_performance_status(request, CalcResult(rawdata=data, status_impl=status_impl))
 
@@ -53,13 +58,15 @@ def _get_performance_status(request, data):
 @implementer(IExternalAPI)
 class CalendarDataAPI(object):
     def __init__(self, url, apikey):
-        self.external_url = url
+        self.external_url = url.rstrip("/")
         self.apikey = apikey
 
-    def fetch_stock_status(self, request, event, salessegment=None):
-        fmt = self.external_url.rstrip("/")+"/api/events/%(event_id)s/stock_statuses"
-        url = fmt % dict(event_id=event.backend_id)
+    def get_fetch_stock_status_api_url(self, event, salessegment_group):
+        fmt = u"%(base)s/api/events/%(event_id)s/stock_statuses"
+        return fmt % dict(base=self.external_url, event_id=event.backend_id)
 
+    def fetch_stock_status(self, request, event, salessegment_group=None):
+        url = self.get_fetch_stock_status_api_url(event, salessegment_group)
         req = urllib2.Request(url)
         req.add_header('X-Altair-Authorization', self.apikey)
 
@@ -89,6 +96,8 @@ class CalcResult(object): #すごい決め打ち
             self.has_soldout[k] = True
 
     def get_status(self, performance):
+        if performance.purchase_link:
+            return self.status_impl.unknown
         k = performance.backend_id
         try:
             if self.scores[k] <= 0:

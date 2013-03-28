@@ -3,8 +3,6 @@ from pyramid.httpexceptions import HTTPNotFound
 from pyramid.view import view_config
 from altaircms.lib.fanstatic_decorator import with_jquery
 from altaircms.page.api import as_static_page_response, StaticPageNotFound
-from ..mobile import api as mobile_api
-from altairsite.mobile.custom_predicates import mobile_access_predicate
 import logging 
 import os.path
 logger = logging.getLogger(__name__)
@@ -42,30 +40,15 @@ def rendering_page(context, request):
     page = control.fetch_page_from_params(url, dt)
 
     if not control.can_access():
-        logger.warn(control.error_message)
+        logger.info(control.error_message)
         raise HTTPNotFound(control.error_message)
 
     template = control.frontpage_template(page)
     if template is None:
-        logger.warn("front pc access template is not found layout=%s template_file=%s" % (page.layout.id, page.layout.template_filename))
+        logger.info("front pc access template is not found layout=%s template_file=%s" % (page.layout.id, page.layout.template_filename))
         raise HTTPNotFound("template is not found")
 
     renderer = control.frontpage_renderer()
     response = renderer.render(template, page)
     return response
 
-## for mobile
-
-@view_config(route_name="front", custom_predicates=(mobile_access_predicate,))
-def dispatch_view(context, request):
-    url = request.matchdict["page_name"]
-    dt = context.get_preview_date()
-
-    control = context.mobile_access_control()
-    pageset = control.fetch_pageset_from_params(url, dt)
-
-    if control.can_access():
-        raise mobile_api.dispatch_context(request, pageset)
-    else:
-        logging.info(control.error_message)
-        raise HTTPNotFound(control.error_message)

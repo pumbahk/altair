@@ -19,7 +19,7 @@ class CartFactory(object):
         system_fee = get_system_fee(request)
         channel = get_channel(request=request)
         cart = Cart.create(performance_id=performance_id, system_fee=system_fee, channel=channel.v,
-                           browserid=request.browserid)
+                           browserid=getattr(request, 'browserid', None))
         for ordered_product, quantity in ordered_products:
             logger.debug("carted product for product_id=%s" % (ordered_product.id))
             # CartedProduct

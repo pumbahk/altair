@@ -9,7 +9,7 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.response import Response
 from pyramid.url import route_path
 from sqlalchemy import and_, distinct
-from sqlalchemy.sql import exists, join, func
+from sqlalchemy.sql import exists, join, func, or_
 from sqlalchemy.orm import joinedload, noload, aliased
 
 from ticketing.models import DBSession
@@ -25,6 +25,10 @@ def get_drawing(request):
     venue = Venue.get(venue_id)
     if venue is None:
         return HTTPNotFound("Venue id #%d not found" % venue_id)
+    if venue.site is None:
+        return HTTPNotFound("Venue id #%d has no sites" % venue_id)
+    if venue.site.drawing_url is None:
+        return HTTPNotFound("Venue id #%d site has no drawing_url" % venue_id)
 
     return Response(app_iter=urlopen(venue.site.drawing_url), content_type='text/xml; charset=utf-8')
 
@@ -71,7 +75,7 @@ def get_seats(request):
         if u'sale_only' in filter_params:
             query = query.filter(exists().where(and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Seat.stock_id)))
         if loaded_at:
-            query = query.join(SeatStatus).filter(SeatStatus.updated_at>loaded_at)
+            query = query.join(SeatStatus).filter(or_(Seat.updated_at>loaded_at, SeatStatus.updated_at>loaded_at))
         for seat in query:
             seat_datum = {
                 'id': seat.l0_id,
@@ -159,22 +163,24 @@ def index(request):
     if direction not in ['asc', 'desc']:
         direction = 'asc'
 
-    query = DBSession.query(Venue, func.count(Seat.id))
+    query = DBSession.query(Venue, Site, func.count(Seat.id))
     query = query.filter_by(organization_id=request.context.user.organization_id)
+    query = query.join((Site, and_(Site.id==Venue.site_id, Site.deleted_at==None)))
     query = query.outerjoin((Performance, and_(Performance.id==Venue.performance_id, Performance.deleted_at==None)))
     query = query.outerjoin((Event, and_(Event.id==Performance.event_id, Event.deleted_at==None)))
     query = query.outerjoin(Seat)
     query = query.group_by(Venue.id)
     query = query.order_by('Venue.site_id ASC, -Venue.performance_id ASC')
 
-    class VenueCount:
-        def __init__(self, venue, count):
+    class VenueSiteCount:
+        def __init__(self, venue, site, count):
             self.venue = venue
+            self.site = site
             self.count = count
 
     items = []
-    for venue, count in query:
-        items.append(VenueCount(venue, count))
+    for venue, site, count in query:
+        items.append(VenueSiteCount(venue, site, count))
 
     return {
         'items': items

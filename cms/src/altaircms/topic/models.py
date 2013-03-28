@@ -111,7 +111,7 @@ class TopicCore(Base):
     ## theese are hack. so, sorry(in slackoff view)
     @property
     def tag_content(self):
-        return u", ".join(tag.label for tag in self.topic_kinds)
+        return [tag.label for tag in self.topic_kinds]
 
     @tag_content.setter
     def tag_content(self, v):

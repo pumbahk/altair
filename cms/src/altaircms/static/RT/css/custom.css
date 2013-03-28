@@ -4,6 +4,11 @@
   for global navigation 
 */
 
+#headerSearch a{
+	color: #fff;
+	text-decoration: underline;
+}
+
 #globalNav1 li {
     line-height: 39px;
 }
@@ -16,6 +21,30 @@
 #globalNav1 .category a{
     text-decoration:none;
     color: #fff;
+}
+
+/* fukidashi*/
+.fukidashi_region{
+  background: url(../img/renewal/fukidashi.gif) 0 0 no-repeat transparent;
+  width: 130px;
+  height: 100px;
+  padding: 10px 15px 10px 15px;
+  position: relative;
+  text-align: left;
+  top: 41px;
+  left: 20px;
+  color: #000;
+  z-index: 100;
+}
+
+.fukidashi_region p{
+  display: block;
+  position: relative;
+  bottom:20px;
+}
+
+.fukidashi_region p a{
+  color: #444 !important;
 }
 
 /*
@@ -86,46 +115,48 @@
 
 #index #mainLeft {
 	width: 342px;
-    float: left;
+  float: left;
+  margin-right: 8px;
 }
 #index #mainRight {
 	width: 342px;
-    float: left;
+  float: left;
+  margin-left: 8px;
 }
 
 #sports #mainLeft {
 	width: 362px;
-    float: left;
+  float: left;
 }
 #sports #mainRight {
 	width: 362px;
-    float: right;
+  float: right;
 }
 
 #stage #mainLeft {
 	width: 362px;
-    float: left;
+  float: left;
 }
 #stage #mainRight {
 	width: 362px;
-    float: right;
+  float: right;
 }
 
 #music #mainLeft {
 	width: 362px;
-    float: left;
+  float: left;
 }
 #music #mainRight {
 	width: 362px;
-    float: right;
+  float: right;
 }
 #event #mainLeft {
 	width: 362px;
-    float: left;
+  float: left;
 }
 #event #mainRight {
 	width: 362px;
-    float: right;
+  float: right;
 }
 
 
@@ -143,24 +174,49 @@
     width: 517px;
 	margin-bottom: 20px;
 }
-#slideShow #slideShowLeft .mainImage img {
-    width: 516px;
-    height: 300px;
-}
+
+/* ** scale by js ** */
+/* #slideShow #slideShowLeft .mainImage img {
+ *     width: 516px;
+ *     height: 300px;
+ * } */
+
 #slideShow #slideShowRight{
     float:left;
     width: 182px;
-	margin-bottom: 20px;
+	  margin-bottom: 20px;
 }
+
 #slideShow #slideShowRight .thumbnail img{
-    width: 60px;
-    height: 60px;
+    max-width: 58px;
+    max-height: 58px;
+    background-color: #000;
+    display: inline-block;
 }
+
+#slideShow #slideShowRight .thumbnailBox{
+    float:left;
+    position:relative;
+    top:0;
+    display:inline-block;
+    width:58px;
+    height:58px;
+    background-color: #555;
+    border:#e6e6da 1px solid;
+}
+
+#slideShow .mainImage {
+	background-color: #000;
+	color: #fff;
+  width: 516px;
+  height: 300px;
+}
+
 #slideShow .mainImageMessage {
     padding-left: 10px;
     padding-right: 10px;
-	background-color: #000;
-	color: #fff;
+  	background-color: #000;
+  	color: #fff;
     font-weight: bold;
 }
 
@@ -177,14 +233,20 @@
     margin-bottom: 20px;
 }
 
-#subkindSlideShow #slideShowLeft .mainImage img {
+#subkindSlideShow #slideShowLeft .mainImage{
     width: 516px;
     height: 300px;
+    background-color: #222;
 }
+
+/* ** scale by js ** */
+/* #subkindSlideShow #slideShowLeft .mainImage img {
+ *     width: 516px;
+ *     height: 300px;
+ * } */
 
 #subkindSlideShow #slideShowLeft .mainImageMessage {
     padding-left: 10px;
-    padding-right: 10px;
     background-color: #000;
     color: #fff;
     font-weight: bold;
@@ -478,6 +540,13 @@
  * } */
 
 h2.sidebar-heading {
+	height: 24px;
+	padding: 7px 10px 0;
+	color: #ffffff;
+	background: url(../img/search/side_title.gif) no-repeat 0 0;
+}
+
+#main h2.sidebar-heading {
     background-repeat: no-repeat;
     color: #fff;
     margin:0;
@@ -556,38 +625,6 @@ salessegment icon
 }
 
 /* sub category top sidebar also using */
-#side #sideFeature {
-	width: 200px;
-	margin-bottom: 10px;
-}
-
-#side #sideFeature h2 {
-	height: 24px;
-	padding: 7px 10px 0;
-	color: #ffffff;
-	background: url(../img/search/side_title.gif) no-repeat 0 0;
-}
-
-#side #sideFeature h2 {
-	height: 31px;
-}
-
-#side #sideFeature ul {
-	padding: 0 1px 5px;
-	background: url(../img/search/side_bg.gif) no-repeat left bottom;
-}
-
-#side #sideFeature li {
-	background: #f7f7ea url(../img/common/side_nav_line.gif) repeat-x left bottom;
-}
-
-#side #sideFeature a {
-	display: block;
-	height: 1%;
-	padding: 3px 10px 5px 18px;
-	background: url(../img/search/side_icon.gif) no-repeat 10px 9px;
-}
-
 #music #main {
   margin-top:-50px;
 }
@@ -599,7 +636,7 @@ salessegment icon
 }
 #event #main {
   margin-top:-50px;
-
+}
 .clearfix:after {
     content: ".";
     display: block;
@@ -607,3 +644,5 @@ salessegment icon
     clear: both;
     visibility: hidden;
 }
+
+

@@ -1,35 +1,14 @@
 import unittest
+from ticketing.core.testing import CoreTestMixin
 from ticketing.testing import _setup_db, _teardown_db
 
-class CartTestMixin(object):
+class CartTestMixin(CoreTestMixin):
     def setUp(self):
         self.session = _setup_db(['ticketing.core.models', 'ticketing.cart.models'])
-        from . import models
-        from ticketing.core.models import Organization, Event, Performance, Site, Venue
-        self.organization = Organization(short_name=u'')
-        self.event = Event(organization=self.organization)
-        self.performance = Performance(event=self.event, venue=Venue(organization=self.organization, site=Site()))
+        CoreTestMixin.setUp(self)
 
     def tearDown(self):
         _teardown_db()
-
-    def _create_stock_types(self, num):
-        from ticketing.core.models import StockType
-        return [StockType(name=name) for name in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[0:num]]
-
-    def _create_stocks(self, stock_types):
-        from ticketing.core.models import Stock, StockStatus, Performance, Venue, Site
-        quantity = 4
-        return [Stock(performance=self.performance, stock_type=stock_type, quantity=quantity, stock_status=StockStatus(quantity=quantity)) for stock_type in stock_types]
-
-    def _create_seats(self, stocks):
-        from ticketing.core.models import Seat, SeatStatus, SeatStatusEnum
-        return [Seat(name=u"Seat %s-%d" % (stock.stock_type.name, i),
-                     l0_id="seat-%s-%d" % (stock.stock_type.name, i),
-                     stock=stock,
-                     venue=stock.performance and stock.performance.venue,
-                     status_=SeatStatus(status=SeatStatusEnum.InCart.v)) \
-                for stock in stocks for i in range(stock.quantity)]
 
 class CartedProductItemTests(unittest.TestCase, CartTestMixin):
     def setUp(self):

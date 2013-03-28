@@ -1,8 +1,11 @@
+from zope.interface import implementer
 from zope.interface import Interface
 from zope.interface import Attribute
-from zope.interface import implementer
-
+from pyramid.interfaces import IRequest
 ## 
+class ICMSRequest(IRequest):
+    pass
+
 class IDirectoryResource(Interface):
     def get_base_directory():
         """ base directory.

@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['QW6IZBHKI56ZFI3_'] = (function (exports) { (function () { 
+__LIBS__['d1SY5Y_3NF0VPV93'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -26,7 +26,7 @@ exports.ja = {
   } 
 };
  })(); return exports; })({});
-__LIBS__['w39ECZ3F8CAMXJZV'] = (function (exports) { (function () { 
+__LIBS__['I1Y55G5G2A12KPOB'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -99,7 +99,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['XVELGOM7FUONDGI4'] = (function (exports) { (function () { 
+__LIBS__['iYHUH95JHTCQV9BT'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -213,7 +213,7 @@ timer.prototype.lap = function(msg) {
     return lap;
 };
  })(); return exports; })({});
-__LIBS__['ANWLG_9TH6WT5U77'] = (function (exports) { (function () { 
+__LIBS__['OZPUCZ4ROQFK9XG6'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -262,12 +262,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['QPSD_4U83B0NUOPQ'] = (function (exports) { (function () { 
+__LIBS__['CD5Y7SQAW2PFOFHH'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['XVELGOM7FUONDGI4'];
-var CONF = __LIBS__['w39ECZ3F8CAMXJZV'];
-var IdentifiableSet = __LIBS__['ANWLG_9TH6WT5U77'].IdentifiableSet;
+var util = __LIBS__['iYHUH95JHTCQV9BT'];
+var CONF = __LIBS__['I1Y55G5G2A12KPOB'];
+var IdentifiableSet = __LIBS__['OZPUCZ4ROQFK9XG6'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -745,12 +745,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['VKMMK9L2YM3XSZCS'] = (function (exports) { (function () { 
+__LIBS__['dPIBL3AHEF2DF7MQ'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['XVELGOM7FUONDGI4'];
-var CONF = __LIBS__['w39ECZ3F8CAMXJZV'];
-var models = __LIBS__['QPSD_4U83B0NUOPQ'];
+var util = __LIBS__['iYHUH95JHTCQV9BT'];
+var CONF = __LIBS__['I1Y55G5G2A12KPOB'];
+var models = __LIBS__['CD5Y7SQAW2PFOFHH'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -949,13 +949,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['w39ECZ3F8CAMXJZV'];
-  var models = __LIBS__['QPSD_4U83B0NUOPQ'];
-  var util = __LIBS__['XVELGOM7FUONDGI4'];
-  var viewobjects = __LIBS__['VKMMK9L2YM3XSZCS'];
-  var IdentifiableSet = __LIBS__['ANWLG_9TH6WT5U77'].IdentifiableSet;
+  var CONF = __LIBS__['I1Y55G5G2A12KPOB'];
+  var models = __LIBS__['CD5Y7SQAW2PFOFHH'];
+  var util = __LIBS__['iYHUH95JHTCQV9BT'];
+  var viewobjects = __LIBS__['dPIBL3AHEF2DF7MQ'];
+  var IdentifiableSet = __LIBS__['OZPUCZ4ROQFK9XG6'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['QW6IZBHKI56ZFI3_'];
+    I18n.translations = __LIBS__['d1SY5Y_3NF0VPV93'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -1266,8 +1266,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
     if (this.drawable !== null)
       this.drawable.dispose();
     for (var key in data.metadata) {
-      for (var id in data.metadata[key]) {
-        this.metadata[key][id] = data.metadata[key][id];
+      for (var i in data.metadata[key]) {
+        for (var j in this.metadata[key]) {
+          if (this.metadata[key][j].id == data.metadata[key][i].id) {
+            this.metadata[key][j] = data.metadata[key][i];
+            break;
+          }
+        }
       }
     }
     this.initDrawable();

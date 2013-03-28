@@ -1,3 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
+
 <%def name="widgets(name)">
   % for w in display_blocks[name]:
       ${w|n}
@@ -7,8 +11,10 @@
 ## define
 <%def name="search_form_on_header(placeholder, query_id)">
 	<form id="form1" name="form1" method="GET" action="${request.route_path("page_search_by_freeword")}">
+    <a href="#" class="region fukidashi-btn">開催地</a>
+    <img src="/static/ticketstar/img/renewal/header_search_hr.jpg" alt="区切り線" width="4" height="45" class="headerSearch_border" />
 		<input name="q" type="text" id="${query_id}" size="30" placeholder="${placeholder}" />
-		<input name="imageField" type="image" id="imageField" src="/static/ticketstar/img/common/header_search_btn.gif" alt="検索" />
+		<input name="imageField" type="image" id="imageField" src="/static/ticketstar/img/renewal/header_search_btn.gif" alt="検索" />
 		<a href="${request.route_path("page_search_input")}">詳細検索</a>
 	</form>
 </%def>
@@ -21,9 +27,9 @@ form = TopPageSidebarSearchForm()
 		<div id="sideSearch">
 			<h2><img src="/static/ticketstar/img/index/title_search.gif" alt="チケットを探す" width="246" height="36" /></h2>
 			<ul>
-				<li><a href="${h.link.get_searchpage(request, kind="deal_cond", value="early_firstcome")}"><img src="/static/ticketstar/img/index/btn_presale.gif" alt="先行抽選" width="222" height="28" /></a></li>
-				<li><a href="${h.link.get_searchpage(request, kind="deal_cond", value="normal")}"><img src="/static/ticketstar/img/index/btn_release.gif" alt="一般発売" width="222" height="28" /></a></li>
-				<li><a href="${h.link.get_searchpage(request, kind="deal_open", value=7)}"><img src="/static/ticketstar/img/index/btn_now.gif" alt="すぐ見たい" width="222" height="28" /></a></li>
+				<li><a href="${h.link.get_searchpage(request, page=page, kind="deal_cond", value="early_firstcome")}"><img src="/static/ticketstar/img/index/btn_presale.gif" alt="先行抽選" width="222" height="28" /></a></li>
+				<li><a href="${h.link.get_searchpage(request, page=page, kind="deal_cond", value="normal")}"><img src="/static/ticketstar/img/index/btn_release.gif" alt="一般発売" width="222" height="28" /></a></li>
+				<li><a href="${h.link.get_searchpage(request, page=page, kind="deal_open", value=7)}"><img src="/static/ticketstar/img/index/btn_now.gif" alt="すぐ見たい" width="222" height="28" /></a></li>
 				<li><a href="${request.route_path("page_search_by_freeword",_query=dict(q=u"お買い得"))}"><img src="/static/ticketstar/img/index/btn_best.gif" alt="お買い得チケット" width="222" height="28" /></a></li>
 			</ul>
 			<form id="form2" name="form2" method="GET" action="${request.route_path("page_search_by_multi")}">
@@ -48,10 +54,32 @@ form = TopPageSidebarSearchForm()
 		</div>
 </%def>
 
+<%def name="fukidashi(request)">
+<%
+   from altaircms.seeds.area import AREA_CHOICES
+   i = 0
+   %>
+  <div class="fukidashi_region">
+ 		<p>
+	    %for en,ja in AREA_CHOICES:
+	      <a href="${request.route_path("page_search_by", _query=({"genre": request.GET["genre"]} if "genre" in request.GET else []), kind="area", value=en)}">${ja}</a>
+        <% i+= 1%>
+        %if i >= 3:
+          <br/>
+          <% i = 0 %>
+        %endif
+	    %endfor
+ 		</p>
+ 	</div>
+  <script type="text/javascript">
+    $(function(){
+      $(".fukidashi_region").hide();
+      $(".fukidashi-btn").click(function(e){e.preventDefault(); $(".fukidashi_region").toggle();});
+    });
+  </script>
+</%def>
+
 ## end of python code
-<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
   <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
 
@@ -87,8 +115,7 @@ form = TopPageSidebarSearchForm()
           
           <p id="tagLine">チケット販売・イベント予約</p>
           <p id="siteID">
-            <a href="/"><img src="/static/ticketstar/img/common/header_logo_01.gif" alt="楽天チケット" class="serviceLogo" width="97" height="35" /></a>
-            <a href="http://ticket.rakuten.co.jp/"><img src="/static/ticketstar/img/common/header_logo_02.gif" alt="チケット" class="serviceTitle" width="88" height="23" /></a>
+            <a href="http://ticket.rakuten.co.jp/"><img src="/static/ticketstar/img/renewal/logo.gif" alt="楽天チケット"/></a>
           </p>
           <dl id="remoteNav">
             <dt>楽天グループ関連</dt>
@@ -109,7 +136,7 @@ form = TopPageSidebarSearchForm()
             <dd class="siteUtility">
               <ul>
                 %for c in layout.navigation_link_list("siteUtility"):
-                <li><a href="${h.link.get_link_from_category(request,c)}">${c.label}</a></li>
+                <li class="right"><a href="${h.link.get_link_from_category(request,c)}">${c.label}</a></li>
                 %endfor
               </ul>
             </dd>
@@ -117,23 +144,31 @@ form = TopPageSidebarSearchForm()
           
         </div>
         
-        <div id="globalNav">
+        
+        <!--- social buttons --->
+        <div id="social"  style="float: right; padding-top: 10px">
+            <iframe allowtransparency="true" frameborder="0" scrolling="no" src="http://platform.twitter.com/widgets/tweet_button.html?url=${h.safe_url_quote(request.url)}&amp;via=RakutenTicket&amp;count=none&amp;lang=ja&amp;" style="height: 20px; width: 70px;"></iframe>
+            <iframe src="http://www.facebook.com/plugins/like.php?app_id=233610706676154&amp;href=${h.safe_url_quote(request.url)}&amp;send=false&amp;layout=button_count&amp;width=100&amp;show_faces=false&amp;action=like&amp;colorscheme=light&amp;font&amp;height=20" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:100px; height:20px;" allowTransparency="true"></iframe>
+        </div>
+
+         <div class="clear"></div><div id="globalNav">
           <ul id="globalNav1">
             %for c in layout.navigation_link_list("globalNav1"):
             <li><a href="${h.link.get_link_from_category(request,c)}"><img src="${c.imgsrc}" alt="${c.label}" ${(c.attributes or "")|n} /></a></li>
             %endfor
+            %for c in layout.navigation_link_list("globalNav2"):
+            <li class="right"><a href="${h.link.get_link_from_category(request,c)}">${c.label}</a></li>
+            %endfor
           </ul>
           <ul id="globalNav2">
-            %for c in layout.navigation_link_list("globalNav2"):
-            <li><a href="${h.link.get_link_from_category(request,c)}">${c.label}</a></li>
-            %endfor
           </ul>
         </div>
 
+        <div class="clear">
         <div id="headerSearch">
           ${search_form_on_header(u"アーティスト名、公演名、会場名など", "query_id")}
           <dl>
-            <dt><img src="/static/ticketstar/img/common/header_search_hot.gif" alt="ホットワード" width="50" height="45" /></dt>
+            <dt><img src="/static/ticketstar/img/renewal/header_search_hot.jpg" alt="ホットワード" width="53" height="45" class="headerSearch_hotword" /></dt>
             <dd>
               <ul>
                 %for w in layout.hotword_list():
@@ -142,8 +177,9 @@ form = TopPageSidebarSearchForm()
               </ul>
             </dd>
           </dl>
+        ${fukidashi(request)}
         </div>
-
+        <div class="clear"></div>
         <!-- ========== /header ========== -->
         
         <hr />
@@ -202,7 +238,7 @@ form = TopPageSidebarSearchForm()
   <dd>
 	  <ul>
 	    % for en,ja in AREA_CHOICES:
-	    <li><a href="${h.link.get_searchpage(request, kind="area", value=en)}">${ja}</a></li>
+	    <li><a href="${h.link.get_searchpage(request, page=page, kind="area", value=en)}">${ja}</a></li>
 	    % endfor
 	  </ul>
   </dd>
@@ -215,7 +251,7 @@ from altairsite.search.forms import DealCondPartForm
 <dd>
   <ul>
     % for k in layout.top_salessegment_kind_list:
-	  <li><a href="${h.link.get_searchpage(request, kind="deal_cond", value=k.id)}">${k.label}</a></li>
+	  <li><a href="${h.link.get_searchpage(request, page=page, kind="deal_cond", value=k.name)}">${k.label}</a></li>
     % endfor
   </ul>
 </dd>
@@ -224,9 +260,9 @@ from altairsite.search.forms import DealCondPartForm
 	<dt>発売日・受付日で絞込み</dt>
 	<dd>
 		<ul>
-			<li><a href="${h.link.get_searchpage(request, kind="deal_open", value=7) }">7日以内に受付・発売開始</a></li>
-			<li><a href="${h.link.get_searchpage(request, kind="deal_open", value=14) }">14日以内に受付・発売開始</a></li>
-			<li><a href="${h.link.get_searchpage(request, kind="deal_open", value=30) }">30日以内に受付・発売開始</a></li>
+			<li><a href="${h.link.get_searchpage(request, page=page, kind="deal_open", value=7) }">7日以内に受付・発売開始</a></li>
+			<li><a href="${h.link.get_searchpage(request, page=page, kind="deal_open", value=14) }">14日以内に受付・発売開始</a></li>
+			<li><a href="${h.link.get_searchpage(request, page=page, kind="deal_open", value=30) }">30日以内に受付・発売開始</a></li>
 		</ul>
 	</dd>
 
@@ -234,9 +270,9 @@ from altairsite.search.forms import DealCondPartForm
 	<dt>公演日で絞込み</dt>
 	<dd>
 		<ul>
-			<li><a href="${h.link.get_searchpage(request, kind="event_open", value=7) }">7日以内に公演</a></li>
-			<li><a href="${h.link.get_searchpage(request, kind="event_open", value=14) }">14日以内に公演</a></li>
-			<li><a href="${h.link.get_searchpage(request, kind="event_open", value=30) }">30日以内に公演</a></li>
+			<li><a href="${h.link.get_searchpage(request, page=page, kind="event_open", value=7) }">7日以内に公演</a></li>
+			<li><a href="${h.link.get_searchpage(request, page=page, kind="event_open", value=14) }">14日以内に公演</a></li>
+			<li><a href="${h.link.get_searchpage(request, page=page, kind="event_open", value=30) }">30日以内に公演</a></li>
 		</ul>
 	</dd>
 </dl>
@@ -383,12 +419,12 @@ from altairsite.search.forms import DealCondPartForm
             </div><!-- /div#groupServiceFooter -->
             <div id="companyFooter">
               <ul>
-                <li><a href="http://corp.rakuten.co.jp/" rel="nofollow">会社概要</a></li>
-                <li><a href="http://privacy.rakuten.co.jp/" rel="nofollow">個人情報保護方針</a></li>
-                <li><a href="http://corp.rakuten.co.jp/csr/">社会的責任[CSR]</a></li>
-                <li class="grpLast"><a href="http://www.rakuten.co.jp/recruit/">採用情報</a></li>
+                <li><a href="http://www.ticketstar.jp/">運営会社</a></li>
+                <li><a href="https://ticket.rakuten.co.jp/inquiry">お問い合わせ</a></li>
+                <li><a href="http://privacy.rakuten.co.jp/">個人情報保護方針</a></li>
+                <li class="grpLast"><a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a></li>
               </ul>
-              <p id="copyright">Copyright &copy; 1997-2011 Rakuten, Inc. All Rights Reserved.</p>
+              <p id="copyright">Copyright &copy; 2010-2013 TicketStar Inc. All Rights Reserved. </p>
             </div><!-- /div#companyFooter -->
           </div><!-- /div#grpFooter -->
         </div><!-- /div#grpRakutenLinkArea -->

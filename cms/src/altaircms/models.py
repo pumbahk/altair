@@ -5,6 +5,7 @@ import sqlalchemy as sa
 from datetime import datetime
 import sqlalchemy.orm as orm
 from sqlalchemy.orm import relationship
+from pyramid.decorator import reify
 #dont remove
 from altaircms.modellib import model_to_dict, model_from_dict, model_column_items, model_column_iters
 from altaircms.modellib import model_clone, BaseOriginalMixin
@@ -65,6 +66,7 @@ class Performance(BaseOriginalMixin, Base):
     end_on = sa.Column(sa.DateTime)  # 終了
 
     calendar_content = sa.Column(sa.UnicodeText, default=u"")
+    code = sa.Column(sa.String(12))  # Organization.code(2桁) + Event.code(3桁) + 7桁(デフォルトはstart.onのYYMMDD+ランダム1桁)
     purchase_link = sa.Column(sa.UnicodeText)
     mobile_purchase_link = sa.Column(sa.UnicodeText)
     canceld = sa.Column(sa.Boolean, default=False)
@@ -110,6 +112,7 @@ class SalesSegmentGroup(BaseOriginalMixin, Base):
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
     backend_id = sa.Column(sa.Integer)
+
 
     @classmethod
     def create_defaults_from_event(cls, event):
@@ -201,6 +204,10 @@ class Genre(Base,  WithOrganizationMixin):
     origin = sa.Column(sa.String(length=32), doc="music, sports, event, stage")
     category_top_pageset_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id", use_alter=True, name="fk_default_category_top_pageset"), doc=u"カテゴリトップページのid")
     category_top_pageset = orm.relationship("PageSet", uselist=False, primaryjoin="PageSet.id==Genre.category_top_pageset_id")
+
+    @reify
+    def origin_genre(self):
+        return self.query_ancestors().filter(Genre.name==self.origin).one()
 
     def is_category_toppage(self, pageset):
         return self.category_top_pageset_id == pageset.id

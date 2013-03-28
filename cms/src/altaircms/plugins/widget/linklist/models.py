@@ -22,16 +22,16 @@ from .api import get_linklist_candidates_finder
 def linklist_render(widget, finder, request=None):
     qs = finder(request, widget.limit_span or widget.N, widget._today_function())
     if widget.system_tag_id:
-        qs = qs.filter(PageTag2Page.filter_object_id==PageSet.id, PageTag2Page.tag_id==widget.system_tag_id)
+        qs = qs.filter(PageTag2Page.object_id==PageSet.id, PageTag2Page.tag_id==widget.system_tag_id)
     if widget.max_items:
         qs = qs.limit(widget.max_items)
-    qs = qs.with_entities(PageSet.name, PageSet.url).all()
+    qs = qs.all()
     if not qs:
-        return u""
+        return u'<div style="margin-top:-5px;" id="%s"><p>現在、対象となる公演情報はありません</p></div>' % widget.finder_kind
     candidates = [u'<a href="%s">%s</a>' % (h.link.publish_page_from_pageset(request, p), p.name) for p in qs]
     content = widget.delimiter.join(candidates)
     element = u'<p>%s</p>' % content if content else ''
-    return u'<div id="%s">%s</div>' % (widget.finder_kind, element)
+    return u'<div style="margin-top:-5px;" id="%s">%s</div>' % (widget.finder_kind, element)
 
 
 FINDER_KINDS_DICT= {"nearTheEnd": u"販売終了間近" , 

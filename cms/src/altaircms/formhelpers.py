@@ -290,7 +290,8 @@ class AlignChoiceField(SelectField):
 '''
         elif align == "center":
             return u'''<script type="text/javascript">
-if(navigator.userAgent.toLowerCase().indexOf("firefox") <= -1){
+var ua = navigator.userAgent.toLowerCase();
+if(ua.indexOf("firefox") <= -1 && ua.indexOf("msie") <= -1){
   $('img[data-align="center"]:not(.align-done)').attr("style", "display: -webkit-box; display: -moz-box; display: -o-box; display: box; margin: 0px auto;").addClass("align-done");
 } else {
   $('img[data-align="center"]:not(.align-done)').each(function(i, e){

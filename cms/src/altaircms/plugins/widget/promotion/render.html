@@ -1,11 +1,15 @@
 ## promotion widget output template
 ## 
 %if info:
+<%
+import random
+prefix = str(random.random())[2:]
+%>
 <div class="promotion-widget">
   <div id="slideShow">
     <div id="slideShowLeft">
       <div class="mainImage">
-        ${show_image(info.main,info.main_link)|n}
+        ${show_image(prefix,info.main,info.main_link)|n}
       </div>
       <div class="mainImageMessage">
         ${info.message}
@@ -13,7 +17,7 @@
     </div>
     <div id="slideShowRight">
       <div class="thumbnail">
-       ${u"".join(show_image(thumb,link) for thumb,link in zip(info.thumbnails, info.links))|n}
+        <div class="thumbnailBox">${u'</div><div class="thumbnailBox">'.join(show_image(i,thumb,link) for i, thumb,link in zip(info.unit_candidates,info.thumbnails, info.links))|n}</div><div class="thumbnailBox">${u'</div><div class="thumbnailBox">'.join(" "*(15-len(info.unit_candidates)))|n}</div>
       </div>
     </div>
   </div>
@@ -31,6 +35,45 @@
       return this[i];
     }
 
+    // X,Y = size of bounding area
+    var scaled = function(x,X,y,Y){
+      var ax = X/x, ay = Y/y;
+      if(ax < ay){
+        return [X, ax*y];
+      } else {
+        return [ay*x,Y];
+      }  
+    }
+
+    var normalize_factory = function(X,Y, force){
+      return function normalize_size(e,x,y){
+         var $e = $(e).eq(0);
+         var x = x || $e.width();
+         var y = y || $e.height();
+         if(!x || !y || x==0 || y==0){
+            e.onload = function(){return normalize_size($(e),x,y)};
+         }
+         scaled_size = scaled(x,X,y,Y);
+         var scaledX = scaled_size[0];
+         var scaledY = scaled_size[1];
+
+         var styles = {};
+         if(scaledX == X){
+            styles["margin-top"] = 0.5*(Y-scaledY);
+            styles["margin-left"] = 0;
+         }else if (scaledY == Y){
+            styles["margin-left"] = 0.5*(X-scaledX);
+            styles["margin-top"] = 0;
+         }
+
+         styles["width"] = scaledX;
+         styles["height"] = scaledY;
+         $e.css(styles);
+      };
+    }
+
+    var mainImageNormalize = normalize_factory(515,300,true);
+
     $(function(){
       setInterval(function(){
         var params = {promotion_unit_id: pu_candidates.next_id()};
@@ -38,10 +81,21 @@
           function(data){
             var img = $(".mainImage img");
             img.attr("src", data.src);
-            img.parent("a").attr("href", data.link)
-            $(".mainImageMessage").text(data.message);
+            img.parent("a").attr("href", data.link);
+            mainImageNormalize(img, data.width, data.height);
+            
+            var message = data.message;
+            if(message.length > 50){message = message.substr(0,50)+"...";}
+            $(".mainImageMessage").text(message);
+           $(".thumbnail").append($(".thumbnailBox").eq(0));
           });
         }, interval_time);
+    // some magic numbers;
+    var normalize = normalize_factory(58,58,true);
+    normalize_factory(515,300,true)($(".mainImage img"), ${info.width}, ${info.height});
+    $("#slideShow #slideShowRight .thumbnail img").each(function(i,e){normalize(e);});
+    $(".thumbnail").append($(".thumbnailBox").eq(0).clone());
+    $(".thumbnailBox").eq(0).remove();
     });
   </script>
 %else:

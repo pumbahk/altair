@@ -15,7 +15,7 @@ else:
 
 from pyramid import testing
 config = testing.setUp(
-    settings={"altaircms.solr.server.url": "http://localhost:8080/solr"})
+    settings={"altaircms.solr.server.url": "http://localhost:8082/solr"})
 request = testing.DummyRequest(
     registry=config.registry)
 

@@ -18,6 +18,7 @@ from ticketing.api.impl import get_communication_api
 from ticketing.api.impl import CMSCommunicationApi
 from ticketing.core.models import Event, Performance, Stock, Product, ProductItem, SalesSegment, SalesSegmentGroup, Venue
 from ticketing.core import models as c_models
+from ticketing.core import api as c_api
 from ticketing.users.models import User, UserCredential, Membership, MemberGroup, MemberGroup_SalesSegment
 
 from .interfaces import IPaymentMethodManager
@@ -170,7 +171,9 @@ def _maybe_encoded(s, encoding='utf-8'):
     return s.decode(encoding)
 
 def get_item_name(request, performance):
-    base_item_name = request.registry.settings['cart.item_name']
+    #base_item_name = request.registry.settings['cart.item_name']
+    organization = c_api.get_organization(request)
+    base_item_name = organization.setting.cart_item_name
     return _maybe_encoded(base_item_name) + " " + str(performance.id)
 
 def get_nickname(request, suffix=u'さん'):
@@ -298,60 +301,6 @@ def logout(request, response=None):
     if response is None:
         response = request.response
     response.headerlist.extend(headers)
-
-def _query_performance_names(request, event, sales_segment):
-
-    now = datetime.now()
-    q = DBSession.query(
-        Performance.id,
-        Performance.name,
-        Performance.start_on,
-        Performance.open_on,
-        Venue.name,
-        Performance.on_the_day)
-    q = q.filter(Performance.event_id==event.id)
-    q = q.filter(Venue.performance_id==Performance.id)
-    q = q.filter(SalesSegment.id==sales_segment.id)
-    q = q.filter(Product.sales_segment_group_id==SalesSegment.id)
-    q = q.filter(ProductItem.product_id==Product.id)
-    q = q.filter(Stock.id==ProductItem.stock_id)
-    q = q.filter(Stock.performance_id==Performance.id)
-    q = q.filter(sa.or_(Performance.end_on>=now, Performance.end_on==None))
-    q = q.filter(Performance.public==True)
-
-    return q
-
-def performance_names(request, event, sales_segment):
-    """
-    公演絞り込み用データ
-    assoc list
-    キー：公演名
-    バリュー：会場、開催日時、のリスト
-
-    キー辞書順でソート
-    バリューリストは開催日順でリスト
-    """
-
-    q = _query_performance_names(request, event, sales_segment)
-    values = q.distinct().all()
-
-    results = dict()
-    for pid, name, start, open, vname, on_the_day in values:
-        results[name] = results.get(name, [])
-        results[name].append(dict(pid=pid, start=start, open=open, vname=vname, on_the_day=on_the_day))
-
-    return [(s[0], s[1]) for s in sorted([(k, sorted(v, key=operator.itemgetter('start')), min([x['start'] for x in v])) 
-                                          for k, v in results.items()], 
-                                         key=operator.itemgetter(2))]
-
-def performance_venue_by_name(request, event, sales_segment, performance_name):
-    q = _query_performance_names(request, event, sales_segment)
-    q = q.filter(Performance.name==performance_name)
-    values = q.distinct().all()
-
-    return sorted([dict(pid=pid, name=name, start=start, open=open, vname=vname, on_the_day=on_the_day) 
-                    for pid, name, start, open, vname, on_the_day in values],
-            key=operator.itemgetter('start'))
 
 class JSONEncoder(json.JSONEncoder):
     def __init__(self, datetime_format, *args, **kwargs):

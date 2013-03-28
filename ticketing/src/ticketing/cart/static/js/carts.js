@@ -39,6 +39,10 @@ cart.util = {
 };
 
 cart.order_messages = {
+    'no products': {
+        title: '購入する枚数を選択してください',
+        message: '購入する枚数を選択してください'
+    },
     'stock': {
         title: '在庫がありません',
         message: 'ご希望の座席を確保できませんでした'

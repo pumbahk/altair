@@ -32,14 +32,16 @@ class RealPromotionManager(object):
             return {"id": p.id, 
                     "link": h.link.get_link_from_promotion(request, p), 
                     "src": h.asset.to_show_page(request, p.main_image), 
+                    "width": p.main_image.width, 
+                    "height": p.main_image.height, 
                     "message": p.text}
         except Exception, e:
             logger.exception(e)
             return {}
 
     @classmethod
-    def show_image(cls, image_path, href):
-        return '<a href="%s"><img src="%s"/></a>' % (href, image_path)
+    def show_image(cls, i, image_path, href):
+        return '<a href="%s"><img id="promotion%s" src="%s"/></a>' % (href, i, image_path)
 
 
 ## mock
@@ -68,6 +70,8 @@ class MockPromotionManager(object):
         return {"id": 1, 
                 "link": "http://google.co.jp", 
                 "src": "/static/mock/img/%s.jpg" % i, 
+                "width": 300, 
+                "height": 300, 
                 "message": u"this message from api %f" % random.random()}
 
     @classmethod

@@ -6,6 +6,8 @@ import json
 from pyramid.config import Configurator
 from pyramid.interfaces import IRequest, IDict
 from pyramid_beaker import session_factory_from_settings
+from pyramid.authorization import ACLAuthorizationPolicy
+from pyramid.tweens import EXCVIEW
 import sqlalchemy as sa
 import sqlahelper
 
@@ -69,5 +71,7 @@ def main(global_config, **local_config):
     config.include(".secure")
     config.include("ticketing.payments")
     config.include("ticketing.payments.plugins")
+    config.add_tween('ticketing.tweens.session_cleaner_factory', over=EXCVIEW)
 
+    config.set_authorization_policy(ACLAuthorizationPolicy())
     return config.make_wsgi_app()

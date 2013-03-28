@@ -1,5 +1,4 @@
 import functools
-from ..mobile.custom_predicates import mobile_access_predicate
 
 def includeme(config):
     add_route = functools.partial(config.add_route, factory=".resources.SearchPageResource")
@@ -10,11 +9,14 @@ def includeme(config):
     add_route("page_search_by", "/result/{kind}/{value}")
 
     ## mobile
-    config.add_view("altairsite.mobile.views.search_by_freeword", 
-                    route_name="page_search_by_freeword", 
-                    renderer="altaircms:templates/mobile/search.html", 
-                    custom_predicates=(mobile_access_predicate,))
-
+    for route_name in ["page_search_input", 
+                       "page_search_result", 
+                       "page_search_by_freeword", 
+                       "page_search_by_multi", 
+                       "page_search_by"]:
+        config.add_view("altairsite.mobile.dispatch.views.dispatch_view", 
+                        route_name=route_name, 
+                        request_type="altairsite.mobile.tweens.IMobileRequest")
     config.scan(".views")
     
 

@@ -84,6 +84,7 @@ class GenDataTests(unittest.TestCase):
                                    start_on=datetime(2013, 3, 15, 10), 
                                    end_on=datetime(2013, 3, 15, 13), 
                                    name=u"マツイ・オン・アイス(東京公演)", 
+                                   code="hehehhe", 
                                    event=event0, 
                                    venue=venue0)
         group0 = SalesSegmentGroup(name=u"一般先行", kind="first_lottery")

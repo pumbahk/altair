@@ -82,7 +82,13 @@ _gen_field_init(OurIntegerField)
 
 class OurBooleanField(fields.BooleanField):
     pass
+
 _gen_field_init(OurBooleanField)
+
+class OurDecimalField(fields.DecimalField):
+    pass
+
+_gen_field_init(OurDecimalField)
 
 class NullableTextField(OurTextField):
     def process_formdata(self, valuelist):

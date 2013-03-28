@@ -23,6 +23,18 @@ h3{
         <th class="span2">タイトル</th><td>${static_page.name}</td>
       </tr>
       <tr>
+        <th>掲載期間</th><td>${h.jterm(static_page.publish_begin, static_page.publish_end)}</td>
+      </tr>
+      <tr>
+        <th>レイアウト</th><td>
+          %if static_page.layout_id:
+            ${static_page.layout.title}(<a href="${request.route_path("layout_preview", layout_id=static_page.layout.id)}"><i class="icon-eye-open"></i></a>)
+          %else:
+            -
+          %endif
+        </td>
+      </tr>
+      <tr>
         <th>作成日時</th><td>${h.base.jdate_with_hour(static_page.created_at)}</td>
       </tr>
       <tr>
@@ -31,26 +43,35 @@ h3{
       <tr>
         <th>公開ステータス</th><td>${u"公開中" if static_page.published else u"非公開"}</td>
       </tr>
+      <tr>
+        <th>同一urlのページセットを横取りする</th><td>${u"はい" if static_page.interceptive else u"いいえ(特集ページはいいえです)"}</td>
+      </tr>
     </table>
 
 <div class="btn-group">
-  <a href="${request.route_path("static_page",action="toggle_publish",static_page_id=static_page.id)}" class="btn">
-    <i class="icon-plus"></i> この静的ページを${u"非公開にする" if static_page.published else u"公開する"}</a>
-    <button class="btn dropdown-toggle" data-toggle="dropdown">
-      <span class="caret"></span>
-    </button>
-    <ul class="dropdown-menu">
-      <li>
-        <a class="do-post"
-	         href="${request.route_path("static_page",action="delete",static_page_id=static_page.id)}">
-          <i class="icon-trash"></i> 削除
-        </a>
-      </li>
-    </ul>
+  <a href="${request.route_path("static_page",action="toggle_publish",static_page_id=static_page.id)}" class="btn btn-inverse">
+    <i class="icon-plus icon-white"></i> この静的ページを${u"非公開にする" if static_page.published else u"公開する"}</a>
+  <a class="btn btn-primary"
+	   href="${request.route_path("static_page_update",action="input",id=static_page.id, _query=dict(endpoint=request.url,pagetype="static"))}">
+    <i class="icon-cog"></i> 変更
+  </a>
+  <a class="do-post btn btn-danger"
+	   href="${request.route_path("static_page",action="delete",static_page_id=static_page.id)}">
+    <i class="icon-trash"></i> 削除
+  </a>
 </div>
 <hr/>
 
 <h3>登録されているファイル</h3>
+<ul class="nav nav-tabs">
+  %if "force_original" in request.GET:
+    <li><a href="${h.current_route_path_override(request,_dels=["force_original"])}">レイアウト適用した後</a></li>
+    <li class="active"><a href="#">レイアウト適用する前</a></li>
+  %else:
+    <li class="active"><a href="#">レイアウト適用した後</a></li>
+    <li><a href="${h.current_route_path_override(request,_query=dict(force_original=True))}">レイアウト適用する前</a></li>
+  %endif
+</ul>
 <div class="well">
   ${static_directory.link_tree_from_static_page(request,static_page)}
 </div>
