@@ -6,13 +6,16 @@
   <thead>
   <tr>
     <th class="span1"></th>
-    <th class="span1">site ID</th>
-    <th class="span1">venue ID</th>
     <!--<th class="span1">元venue ID</th>-->
+    <th class="span1">site</th>
+    <th>都道府県</th>
     <th>名称</th>
+    <th>FRONT</th>
+    <th class="span1">venue</th>
     <th>席数</th>
+    <th>詳細</th>
     <th>パフォーマンス</th>
-    <th>パフォーマンス作成日時</th>
+    <th>作成日時</th>
   </tr>
   </thead>
   <tbody>
@@ -21,15 +24,30 @@
     <td>
       <!--<input name="venue_id" type="radio" value=${item.venue.id} />-->
     </td>
-    <td><span class="id">${item.venue.site.id}</span></td>
-    <td><span class="id">${item.venue.id}</span></td>
     <!--<td><span class="id">${item.venue.original_venue_id}</span></td>-->
-    <td><a href="${request.route_path('venues.show', venue_id=item.venue.id)}"><span class="name">${item.venue.name}</span></a>
+	% if item.venue.performance:
+	<td colspan="4"></td>
+	% else:
+    <td><span class="id">${item.venue.site.id}</span></td>
+	<td>
+	% if item.site.prefecture != None:
+		${item.site.prefecture}
+	% endif
+	</td>
+    <td><span class="name">${item.site.name}</span>
 	% if item.venue.sub_name != None:
 		<div class="sub_name">${item.venue.sub_name}</div>
 	% endif
 	</td>
+	<td style="text-align: center;">
+		% if item.site.metadata_url != None:
+			◯
+		% endif
+	</td>
+	% endif
+    <td><span class="id">${item.venue.id}</span></td>
 	<td>${item.count}</td>
+    <td><a href="${request.route_path('venues.show', venue_id=item.venue.id)}">詳細</a>
 	<td>
 	% if item.venue.performance:
 		<a href="${request.route_path('performances.show', performance_id=item.venue.performance.id)}">
@@ -45,7 +63,7 @@
 	% if item.venue.performance:
 		${item.venue.performance.created_at}
 	% else:
-		-
+		${item.site.created_at}
 	% endif
 	</td>
   </tr>

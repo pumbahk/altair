@@ -163,22 +163,24 @@ def index(request):
     if direction not in ['asc', 'desc']:
         direction = 'asc'
 
-    query = DBSession.query(Venue, func.count(Seat.id))
+    query = DBSession.query(Venue, Site, func.count(Seat.id))
     query = query.filter_by(organization_id=request.context.user.organization_id)
+    query = query.join((Site, and_(Site.id==Venue.site_id, Site.deleted_at==None)))
     query = query.outerjoin((Performance, and_(Performance.id==Venue.performance_id, Performance.deleted_at==None)))
     query = query.outerjoin((Event, and_(Event.id==Performance.event_id, Event.deleted_at==None)))
     query = query.outerjoin(Seat)
     query = query.group_by(Venue.id)
     query = query.order_by('Venue.site_id ASC, -Venue.performance_id ASC')
 
-    class VenueCount:
-        def __init__(self, venue, count):
+    class VenueSiteCount:
+        def __init__(self, venue, site, count):
             self.venue = venue
+            self.site = site
             self.count = count
 
     items = []
-    for venue, count in query:
-        items.append(VenueCount(venue, count))
+    for venue, site, count in query:
+        items.append(VenueSiteCount(venue, site, count))
 
     return {
         'items': items
