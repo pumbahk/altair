@@ -17,7 +17,7 @@ def _convert_response_for_docomo(response):
 def _convert_response_sjis(response):
     encoding = 'Shift_JIS'
     if response.content_type is not None and response.content_type.startswith("text"):
-        response.body = response.unicode_body.encode("cp932", "replace")
+        response.body = response.text.encode("cp932", "replace")
         response.charset = encoding
     return response
 
@@ -65,5 +65,5 @@ def mobile_encoding_convert_factory(handler, registry):
         else:
             request.is_mobile = False
             logger.debug("**this is pc access**")
-            return handler(request)
+            return as_mobile_response(request, handler)
     return tween
