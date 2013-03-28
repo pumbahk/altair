@@ -462,6 +462,24 @@
 	text-decoration: underline;
 }
 
+#sideInfo {
+    position: relative;
+    left: -1px;
+    width: 244px;
+    margin-bottom: 10px;
+    font-size: 91.7%;
+    background: url(../img/index/bg_info.gif) no-repeat left bottom;
+}
+
+#sideInfo dt {
+    padding: 0;
+    background: none;
+}
+
+#sideInfo ul {
+    padding-bottom: 3px;
+}
+
 .event {
 	float: left;
 	width: 350px;

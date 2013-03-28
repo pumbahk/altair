@@ -1,0 +1,20 @@
+<div class="topic-widget">
+    <dl id="sideInfo">
+        <dt><img src="/static/RT/img/index/title_info.gif" alt="お知らせ" width="244" height="26" /></dt>
+        <dd>
+            <ul>
+                %for topic in topics:
+                <li>
+                    <% link  = h.link.get_link_from_topic(request,topic) %>
+                    %if link:
+                    <a href="${link}">${topic.title}</a>
+                    %else:
+                    ${topic.title}
+                    %endif
+                </li>
+                %endfor
+            </ul>
+        </dd>
+    </dl>
+</div>
+<div class="clear"></div>
