@@ -153,6 +153,8 @@ class CRUDResource(RootFactory): ## fixme
     def delete_model(self, obj):
         if self.delete_event:
             self.request.registry.notify(self.delete_event(self.request, obj, {}))
+        if hasattr(obj, "delete"):
+            obj.delete(session=DBSession)
         DBSession.delete(obj)
 
 class CreateView(object):
