@@ -13,8 +13,9 @@ def features_view(context, request):
     path = request.matchdict["path"]
     prefix = path.split("/", 1)[0]
     logger.debug("prefix: %s" % prefix)
-    if prefix == path.rstrip("/"):
-        return HTTPFound(request.route_path("features", path=os.path.join(path.rstrip("/"), "index.html").replace("%2F", "/")))
+
+    if os.path.splitext(path)[1] == "":
+        return HTTPFound(request.route_path("features", path=os.path.join(path.rstrip("/"), "index.html")).replace("%2F", "/"))
     try:
         if prefix:
             static_page = request.allowable(StaticPage).filter(StaticPage.name==prefix, StaticPage.published==True, StaticPage.interceptive==False).first()
