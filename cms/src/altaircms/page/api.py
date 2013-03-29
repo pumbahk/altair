@@ -125,7 +125,7 @@ def as_wrapped_resource_response(request, static_page, fullpath, body_var_name="
         return FileResponse(fullpath, request=request, cache_max_age=CACHE_MAX_AGE)
     try:
         params = {body_var_name: open(fullpath).read().decode("utf-8"), 
-                  static_page: static_page} #ok?
+                  "static_page": static_page} #ok?
     except Exception, e:
         logger.exception(str(e))
         params = {body_var_name: ""}
