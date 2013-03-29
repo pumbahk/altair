@@ -7,6 +7,10 @@ var create_select_helper = function($bound_element){
             var $e = $(cands[i]);
             if($e.text().indexOf(qword) >= 0){
                 $bound_element.val($e.val());
+                var _dummy = $("<option>");
+                $bound_element.append(_dummy);
+                _dummy.remove();
+                break;
             }
         }
     });
