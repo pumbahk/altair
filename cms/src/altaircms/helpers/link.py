@@ -7,7 +7,7 @@ from altaircms.interfaces import ICMSRequest
 def get_purchase_page_from_event(request, event):
     if event.backend_id is None:
         logger.warn("event id=%d: evnt backend_id is not found" % event.id)
-    return u"/cart/events/%s" % event.backend_id
+    return u"%s/cart/events/%s" % (request.cart_domain, event.backend_id)
 
 def get_purchase_page_from_performance(request, performance):
     if hasattr(request, "is_mobile") and request.is_mobile:
@@ -18,8 +18,8 @@ def get_purchase_page_from_performance(request, performance):
             return performance.purchase_link
 
     if performance.backend_id is None:
-        logger.warn("event id=%d performance id=%d: performancr backend_id is not found" % (performance.event.id, performance.id))
-    return u"/cart/events/%s?performance=%s" % (performance.event.backend_id, performance.backend_id)
+        logger.warn("event id=%d performance id=%d: performance backend_id is not found" % (performance.event.id, performance.id))
+    return u"%s/cart/events/%s?performance=%s" % (request.cart_domain, performance.event.backend_id, performance.backend_id)
 
 
 def get_searchpage(request, kind=None, value=None, page=None):

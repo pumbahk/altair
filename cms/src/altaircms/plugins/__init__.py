@@ -57,4 +57,5 @@ def includeme(config):
     for configparser in configparsers:
         set_extra_resource(config, configparser)
     set_extra_resource_default(config,  configparser_for_default)
+    config.set_request_property(".api.get_cart_domain", "cart_domain", reify=True)
 
