@@ -185,8 +185,10 @@ form = TopPageSidebarSearchForm()
         <hr />
         <!-- ========== main ========== -->
         <div id="main" style="width: 100%">
-            <%block name="main">
-            ${widgets("main")}
+            <div id="sub" style="width: 742px; margin: 0 auto">
+                <%block name="main">
+                ${widgets("main")}
+            </div>
         </%block>
     </div>
     <!-- ========== /main ========== -->
