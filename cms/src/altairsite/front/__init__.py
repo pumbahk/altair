@@ -10,9 +10,4 @@ def includeme(config):
     layout_lookup = layout_lookup_class(settings["altaircms.layout_directory"])
     config.registry.registerUtility(layout_lookup, config.maybe_dotted(".impl.ILayoutTemplateLookUp"))
     config.add_route('front', '{page_name:.*}', factory=".resources.PageRenderingResource")
-
-    #mobile
-    config.add_view("altairsite.mobile.dispatch.views.dispatch_view", 
-                    route_name="front", 
-                    request_type="altairsite.mobile.tweens.IMobileRequest")
     config.scan('.views')
