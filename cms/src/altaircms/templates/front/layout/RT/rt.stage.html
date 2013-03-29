@@ -58,7 +58,7 @@ form = TopPageSidebarSearchForm()
    from altaircms.seeds.area import AREA_CHOICES
    i = 0
    %>
-x  <div class="fukidashi_region">
+   <div class="fukidashi_region">
  		<p>
 	    %for en,ja in AREA_CHOICES:
 	      <a href="${request.route_path("page_search_by", _query=({"genre": request.GET["genre"]} if "genre" in request.GET else []), kind="area", value=en)}">${ja}</a>
