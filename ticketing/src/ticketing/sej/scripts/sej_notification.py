@@ -10,12 +10,10 @@ def main(argv=sys.argv):
         print "usage: python sej_notification.py development.ini"
         sys.exit()
 
-    from ticketing.logicaldeleting import install as install_logical_deleting
-    install_logical_deleting()
-
     ini_file = sys.argv[1]
     env = bootstrap(ini_file)
     logging.config.fileConfig(ini_file)
+
     request = env['request']
     registry = env['registry']
     settings = registry.settings
