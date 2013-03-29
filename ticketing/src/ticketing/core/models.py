@@ -2117,7 +2117,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 if request.registry.settings.get('multicheckout.testing', False):
                     order_no = self.order_no + "00"
                 organization = Organization.get(self.organization_id)
-                request.registry.settings['altair_checkout3d.override_shop_name'] = organization.multicheckout_settings[0].shop_name
+                # request.registry.settings['altair_checkout3d.override_shop_name'] = organization.multicheckout_settings[0].shop_name
+                request.registry.settings['altair_checkout3d.override_shop_name'] = organization.setting.multicheckout_shop_name
 
                 # キャンセルAPIでなく売上一部取消APIを使う
                 # - 払戻期限を越えてもキャンセルできる為
