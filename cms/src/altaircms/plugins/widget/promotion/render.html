@@ -17,7 +17,7 @@ prefix = str(random.random())[2:]
     </div>
     <div id="slideShowRight">
       <div class="thumbnail">
-        <div class="thumbnailBox">${u'</div><div class="thumbnailBox">'.join(show_image(i,thumb,link) for i, thumb,link in zip(info.unit_candidates,info.thumbnails, info.links))|n}${u'<div class="thumbnailBox"></div>'*(15-len(info.unit_candidates))|n}
+        <div class="thumbnailBox">${u'</div><div class="thumbnailBox">'.join(show_image(i,thumb,link) for i, thumb,link in zip(info.unit_candidates,info.thumbnails, info.links))|n}</div>${u'<div class="thumbnailBox"></div>'*(15-len(info.unit_candidates))|n}
       </div>
     </div>
   </div>

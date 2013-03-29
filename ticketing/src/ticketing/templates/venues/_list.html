@@ -40,8 +40,10 @@
 	% endif
 	</td>
 	<td style="text-align: center;">
-		% if item.site.metadata_url != None:
+		% if item.site._metadata_url != None:
 			◯
+		% else:
+			×
 		% endif
 	</td>
 	% endif
