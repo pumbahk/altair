@@ -61,7 +61,7 @@ form = TopPageSidebarSearchForm()
   </div>
 </%def>
 
-<%def name="fukidashi(request)">
+<%def name="fukidashi(request, bind_to)">
 <%
    from altaircms.seeds.area import AREA_CHOICES
    i = 0
@@ -77,13 +77,13 @@ form = TopPageSidebarSearchForm()
         %endif
 	    %endfor
  		</p>
+    <script type="text/javascript">
+      (function($fukidashi_region, $bind_to) {
+        $fukidashi_region.hide();
+        $bind_to.click(function(e){$fukidashi_region.toggle();return false;});
+      })($("script:last").parent(), ${bind_to|n});
+    </script>
  	</div>
-  <script type="text/javascript">
-    $(function(){
-      $(".fukidashi_region").hide();
-      $(".fukidashi-btn").click(function(e){e.preventDefault(); $(".fukidashi_region").toggle();});
-    });
-  </script>
 </%def>
 
 ## end of python code
@@ -193,7 +193,7 @@ form = TopPageSidebarSearchForm()
               </ul>
             </dd>
           </dl>
-        ${fukidashi(request)}
+        ${fukidashi(request, '$(".fukidashi-btn")')}
         </div>
         <div class="clear"></div>
         <!-- ========== /header ========== -->
