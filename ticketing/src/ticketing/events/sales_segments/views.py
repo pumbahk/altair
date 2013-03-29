@@ -43,7 +43,7 @@ class SalesSegments(BaseView):
             sales_segment_groups = None
             if performance_id:
                 _formdata['performance_id'] = performance_id
-                sales_segment_groups = Performance.get(performance_id).event.sales_segment_groups
+                sales_segment_groups = Performance.get(performance_id, self.context.user.organization_id).event.sales_segment_groups
             if sales_segment_group_id:
                 sales_segment_group = SalesSegmentGroup.get(sales_segment_group_id)
                 _formdata['sales_segment_group_id'] = sales_segment_group_id

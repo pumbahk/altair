@@ -11,13 +11,9 @@ from pyramid.url import route_path
 from sqlalchemy.sql import func
 
 from ticketing.views import BaseView
-from ticketing.models import merge_session_with_post, record_to_multidict
+from ticketing.models import merge_session_with_post
 from ticketing.fanstatic import with_bootstrap
 from ticketing.core.models import PaymentMethod
-from ticketing.core.models import StockType
-from ticketing.core.models import Stock
-from ticketing.core.models import Performance
-from ticketing.core.models import Event, Product, ProductItem, StockStatus, Order, OrderedProduct, OrderedProductItem
 from ticketing.payment_methods.forms import PaymentMethodForm
 
 @view_defaults(decorator=with_bootstrap, permission='master_editor')
@@ -25,7 +21,6 @@ class PaymentMethods(BaseView):
 
     @view_config(route_name='payment_methods.index', renderer='ticketing:templates/payment_methods/index.html')
     def index(self):
-        #logger.info(self.request.GET, '******************************************')
         sort = self.request.GET.get('sort', 'PaymentMethod.id')
         direction = self.request.GET.get('direction', 'asc')
         if direction not in ['asc', 'desc']:
@@ -33,9 +28,6 @@ class PaymentMethods(BaseView):
 
         query = PaymentMethod.filter_by(organization_id=self.context.user.organization_id)
         query = query.order_by(sort + ' ' + direction)
-        performance_id = int(self.request.matchdict.get('performance_id',1))
-        performance=Performance.get(performance_id)
-        stock_types = StockType.query.join(Stock).join(Performance).filter(StockType.event_id==Performance.event_id).filter(Performance.id==performance.id).all()
         payment_methods = paginate.Page(
             query,
             page=int(self.request.params.get('page', 0)),
@@ -44,7 +36,6 @@ class PaymentMethods(BaseView):
         )
 
         return {
-            'stock_types':stock_types,
             'form':PaymentMethodForm(),
             'payment_methods':payment_methods,
         }
