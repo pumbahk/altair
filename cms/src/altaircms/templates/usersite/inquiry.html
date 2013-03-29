@@ -26,7 +26,7 @@
     % endif
 
     <div id="inquiry" class="inquiry">
-        <form action="/inquirypage" method="POST">
+        <form action="${request.route_path("usersite.inquiry")}" method="POST">
             <fieldset style="border: none">
                 ${form.username.label}<br/>${form.username}<br/>
                 ${disp_error(form.username.errors)}
