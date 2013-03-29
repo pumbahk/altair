@@ -300,59 +300,67 @@ ul#globalNav1 li.right{
 }
 
 /* ヘッダ検索 */
-headerSearch a{
+#headerSearch a {
 	color: #fff;
 }
 
 #headerSearch {
-		height: 48px;
-		font-size: 120%;
-		background: #c01920;
-		width:950px;
-		margin: 0 auto;
+	height: 48px;
+	font-size: 120%;
+	background: #c01920;
+	width:950px;
+	margin: 0 auto;
 }
 
-#index #headerSearch {
+#headerSearch {
+	overflow: hidden;
 	margin-bottom: 10px;
-  overflow: hidden;
+	padding: 0 0;
+	height: 47px;
 }
 
 #headerSearch form {
 	float: left;
 	width: 465px;
 	padding: 0 0 0 10px;
+	margin: 0 0;
+	height: 47px;
 }
 
-.headerSearch_border{
-  padding: 2px 0 0 0;
-  margin: 0 5px;
+#headerSearch .headerSearch_border {
+	padding: 2px 0 0 0;
+	margin: 0 5px;
 }
 
-.headerSearch_hotword{
-  padding: 2px 0 0 0;
+#headerSearch .headerSearch_hotword {
+	padding: 2px 0 0 0;
 }
 
 #headerSearch form img,
 #headerSearch form input,
 #headerSearch form a {
-  float: left;
-  display: block;
+	float: left;
+	display: block;
 }
 
 #headerSearch form img {
-  margin: 0 4px 0 4px;
+	margin: 0 4px 0 4px;
 }
 
 #headerSearch form input {
-  margin-top: 12px;
+	margin-top: 12px;
 }
 
 #headerSearch form input#imageField {
-  margin-top: 8px;
+	margin-top: 8px;
+}
+
+#headerSearch a {
+	text-decoration: underline;
 }
 
 #headerSearch form a {
-  margin-top: 12px;
+	margin-top: 12px;
 }
 
 #headerSearch form a {
@@ -360,14 +368,16 @@ headerSearch a{
 	background: url(../img/common/header_search_icon.gif) no-repeat 0 50%;
 }
 
-#headerSearch form input[type="text"]{
-  width: 200px;
-  height: 16px;
+#headerSearch form input.text {
+    margin-top: 10px;
+	width: 300px;
+	height: 19px;
+    font-size: 16px;
 }
 
 #headerSearch form a {
-  padding: 3px 0 3px 17px;
-  background: url(../img/renewal/header_search_icon.jpg) no-repeat 0 50%;
+	padding: 3px 0 3px 17px;
+	background: url(../img/renewal/header_search_icon.jpg) no-repeat 0 50%;
 
 }
 	
