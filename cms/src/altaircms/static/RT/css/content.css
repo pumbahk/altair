@@ -803,53 +803,61 @@
 }
 
 #detailSchedule td {
-	position: relative;
-	padding: 1.2em 1px 0;
 	border: 2px solid #e5e5f2;
+	padding: 2px 2px;
+	vertical-align: top;
+	position: relative;
 }
 
 #detailSchedule .day {
-	position: absolute;
-	top: 2px;
-	left: 2px;
 	color: #666666;
+	position: absolute;
 	font-weight: bold;
+	line-height: 1em;
+	text-shadow: 0px 0px 2px #fff;
 }
 
 #detailSchedule .lastMonth {
 	color: #cccccc;
 }
 
-#detailSchedule td p {
-	margin: 0 0 1px;
+#detailSchedule td .performances {
+}
+
+#detailSchedule td .performance {
 	padding: 0 3px;
+	margin: 0 0 1px 0;
 	border-radius: 3px;
 	text-align: right;
 }
 
-#detailSchedule td p.circle {
+#detailSchedule td .performances .circle {
 	background-color: #ffe5f2;
 }
 
-#detailSchedule td p.circle strong {
+#detailSchedule td .performances .circle strong {
 	color: #ff3399;
 }
 
-#detailSchedule td p.triangle {
+#detailSchedule td .performances .triangle {
 	background-color: #e5ffe5;
 }
 
-#detailSchedule td p.triangle strong {
+#detailSchedule td .performances .triangle strong {
 	color: #66cc66;
 }
 
-#detailSchedule td p.cross {
+#detailSchedule td .performances .cross {
 	color: #666666;
 	background-color: #f2f2f2;
 }
 
-#detailSchedule td p.cross strong {
+#detailSchedule td .performances .cross strong {
 	color: #666666;
+}
+
+#detailSchedule td .performances .performance p {
+	margin: 0 0;
 }
 
 .ticketPrice0 {
