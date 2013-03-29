@@ -79,7 +79,7 @@ japanese_columns = {
     u'ordered_product.quantity': u'商品個数',
     u'ordered_product.product.name': u'商品名',
     u'ordered_product.product.sales_segment_group.name': u'販売区分',
-    u'ordered_product.product.sales_segment_group.margin_ratio': u'販売手数料率',
+    u'ordered_product.product.sales_segment.margin_ratio': u'販売手数料率',
     u'ordered_product_item.product_item.name': u'商品明細名',
     u'ordered_product_item.price': u'商品明細単価',
     u'ordered_product_item.quantity': u'商品明細個数',
@@ -103,7 +103,7 @@ class MarginRenderer(object):
         order = dereference(record, self.key)
         rendered_value = 0
         for ordered_product in order.ordered_products:
-            rendered_value += (ordered_product.price * ordered_product.quantity) * (ordered_product.product.sales_segment_group.margin_ratio / 100)
+            rendered_value += (ordered_product.price * ordered_product.quantity) * (ordered_product.product.sales_segment.margin_ratio / 100)
         return [
             ((u"", self.column_name, u""), unicode(rendered_value))
         ]
@@ -231,7 +231,7 @@ class OrderCSV(object):
                     PlainTextRenderer(u'ordered_product.quantity'),
                     PlainTextRenderer(u'ordered_product.product.name'),
                     PlainTextRenderer(u'ordered_product.product.sales_segment_group.name'),
-                    PlainTextRenderer(u'ordered_product.product.sales_segment_group.margin_ratio'),
+                    PlainTextRenderer(u'ordered_product.product.sales_segment.margin_ratio'),
                     ]
                 ),
             CollectionRenderer(

@@ -72,6 +72,7 @@ function get_selected_sales_segment_group_id() {
             <th>パフォーマンス</th>
             <th>販売開始日時</th>
             <th>販売終了日時</th>
+            <th>配券元</th>
             <th>上限枚数</th>
             <th>座席選択可</th>
             <th>公開</th>
@@ -79,21 +80,22 @@ function get_selected_sales_segment_group_id() {
         </thead>
         <tbody>
         % for i, sales_segment in enumerate(sales_segment_group.sales_segments):
-          <tr id="sales_segment-${sales_segment.id}">
+          <tr>
             <td><input type="radio" name="sales_segment_id" value="${sales_segment.id}" /></td>
-            <td class="id">${sales_segment.id}</td>
-            <td class="performance">
+            <td>${sales_segment.id}</td>
+            <td>
               % if sales_segment.performance:
-                <a href="${request.route_path('performances.show', performance_id=sales_segment.performance_id)}">${sales_segment.performance.name}</a>
+                <a href="${request.route_path('performances.show_tab', performance_id=sales_segment.performance_id, tab='sales_segment')}">${sales_segment.performance.name}</a>
               % else:
                 -
               % endif
             </td>
-            <td class="current_start_at">${h.safe_strftime(sales_segment.start_at)}</td>
-            <td class="current_end_at">${h.safe_strftime(sales_segment.end_at)}</td>
-            <td class="upper_limit">${sales_segment.upper_limit or u''}</td>
-            <td class="seat_choice" value="${sales_segment.seat_choice}">${u'○' if sales_segment.seat_choice else u'×'}</td>
-            <td class="public" value="${sales_segment.public}">${u'○' if sales_segment.public else u'×'}</td>
+            <td>${h.safe_strftime(sales_segment.start_at)}</td>
+            <td>${h.safe_strftime(sales_segment.end_at)}</td>
+            <td>${sales_segment.account.name}</td>
+            <td>${sales_segment.upper_limit or u''}</td>
+            <td>${u'○' if sales_segment.seat_choice else u'×'}</td>
+            <td>${u'○' if sales_segment.public else u'×'}</td>
           </tr>
         % endfor
         </tbody>

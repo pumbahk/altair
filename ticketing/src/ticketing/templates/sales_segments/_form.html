@@ -4,34 +4,34 @@
 
 <script>
 (function($) {
-var pdmp_map = ${pdmp_map|n};
-$(function() {
-$('#sales_segment_group_id').change(function() {
-var sales_segment_group_id = $(this).val();
-$('#payment_delivery_method_pairs').empty();
-var pdmps = pdmp_map[sales_segment_group_id];
-
-for (var i=0; i < pdmps.length; i++) {
-    var pdmp = pdmps[i];
-    var id = 'payment_delivery_method_pair_id.' + pdmp[0];
-    $('#payment_delivery_method_pairs').append(
-      $('<span class="checkbox-set-item"></span>')
-        .append(
-          $('<input />')
-          .attr('type', 'checkbox')
-          .attr('name', 'payment_delivery_method_pairs[]')
-          .attr('value', pdmp[0])
-          .attr('id', id))
-        .append(' ')
-        .append(
-          $('<label class="inline"></label>')
-          .text(pdmp[1])
-          .attr('for', id))
-    );
-}
-});
-});
-
+  var pdmp_map = ${pdmp_map|n};
+  var account_map = ${account_map|n};
+  $(function() {
+    $('#sales_segment_group_id').change(function() {
+      var sales_segment_group_id = $(this).val();
+      $('#payment_delivery_method_pairs').empty();
+      var pdmps = pdmp_map[sales_segment_group_id];
+      for (var i=0; i < pdmps.length; i++) {
+        var pdmp = pdmps[i];
+        var id = 'payment_delivery_method_pair_id.' + pdmp[0];
+        $('#payment_delivery_method_pairs').append(
+          $('<span class="checkbox-set-item"></span>')
+            .append(
+              $('<input />')
+              .attr('type', 'checkbox')
+              .attr('name', 'payment_delivery_method_pairs[]')
+              .attr('value', pdmp[0])
+              .attr('id', id))
+            .append(' ')
+            .append(
+              $('<label class="inline"></label>')
+              .text(pdmp[1])
+              .attr('for', id))
+        );
+      }
+      $('#account_id').val(account_map[sales_segment_group_id]);
+    });
+  });
 })($);
 </script>
 <form action="${action}" method="POST">
@@ -49,6 +49,11 @@ for (var i=0; i < pdmps.length; i++) {
   ${h.form_item(form.payment_delivery_method_pairs)}
   ${h.form_item(form.start_at, class_="datefield")}
   ${h.form_item(form.end_at, class_="datefield")}
+  ${h.form_item(form.account_id)}
+  ${h.form_item(form.margin_ratio)}
+  ${h.form_item(form.refund_ratio)}
+  ${h.form_item(form.printing_fee)}
+  ${h.form_item(form.registration_fee)}
   ${h.form_item(form.upper_limit)}
   ${h.form_item(form.seat_choice)}
   ${h.form_item(form.public)}

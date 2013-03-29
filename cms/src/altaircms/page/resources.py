@@ -113,6 +113,7 @@ class StaticPageResource(security.RootFactory):
     def create_static_page(self, data):
         static_page = models.StaticPage(name=data["name"],
                                         layout=data["layout"],
+                                        label=data["label"],
                                         publish_begin=data["publish_begin"],
                                         publish_end=data["publish_end"],
                                         interceptive=data["interceptive"]

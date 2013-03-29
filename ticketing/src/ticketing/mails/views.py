@@ -63,7 +63,7 @@ def mail_preview_preorder_with_performance(context, request):
     delivery_id = request.params["delivery_methods"]
 
     performance_id = int(request.matchdict.get("performance_id", 0))
-    performance = Performance.get(performance_id)
+    performance = Performance.get(performance_id, context.user.organization_id)
     fake_order = mutil.create_fake_order(request, performance.event.organization,
                                          payment_id, delivery_id, performance=performance)
     form = forms.MailInfoTemplate(request, performance.event.organization).as_choice_formclass()(

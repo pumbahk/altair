@@ -18,18 +18,21 @@ def install_as_mobile_app(config):
     config.include(install_app)
 
 def install_app(config):
+    assert config.registry.settings["altair.orderreview.url"]
     def altair_orderreview_url(request):
         return config.registry.settings["altair.orderreview.url"]
 
+    assert config.registry.settings["getti.orderreview.url"]
     def getti_orderreview_url(request):
         return config.registry.settings["getti.orderreview.url"]
 
+    assert config.registry.settings["sender.mailaddress"]
     def sender_mailaddress(request):
         return config.registry.settings["sender.mailaddress"]
 
+    assert config.registry.settings["inquiry.mailaddress"]
     def inquiry_mailaddress(request):
         return config.registry.settings["inquiry.mailaddress"]
-
 
     config.set_request_property(altair_orderreview_url, "altair_orderreview_url", reify=True)
     config.set_request_property(getti_orderreview_url, "getti_orderreview_url", reify=True)

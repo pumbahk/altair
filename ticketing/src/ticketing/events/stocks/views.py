@@ -25,7 +25,7 @@ class Stocks(BaseView):
     @view_config(route_name='stocks.allocate', request_method='POST', renderer='json')
     def allocate(self):
         performance_id = int(self.request.matchdict.get('performance_id', 0))
-        performance = Performance.get(performance_id)
+        performance = Performance.get(performance_id, self.context.user.organization_id)
         if performance is None:
             logger.error('performance id %d is not found' % performance_id)
             raise HTTPBadRequest(body=json.dumps({

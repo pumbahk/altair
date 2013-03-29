@@ -106,7 +106,7 @@ Altair Backend -- ${performance.event.title}[${performance.name}]
     </div>
     % elif tab == 'sales_segment':
     <div class="tab-pane" id="sales_segment">
-      <%include file="./_sales_segment.html" args="form=form_sales_segment, performance=performance" />
+      <%include file="./_sales_segment.html" args="sales_segments=sales_segments" />
     </div>
     % elif h.has_permission('event_editor'):
     <div class="tab-pane" id="seat-allocation">

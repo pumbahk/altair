@@ -20,7 +20,10 @@ h3{
 
 <table class="table table-striped">
       <tr>
-        <th class="span2">タイトル</th><td>${static_page.name}</td>
+        <th class="span2">name(urlの一部)</th><td>${static_page.name}</td>
+      </tr>
+      <tr>
+        <th class="span2">タイトル</th><td>${static_page.label}</td>
       </tr>
       <tr>
         <th>掲載期間</th><td>${h.jterm(static_page.publish_begin, static_page.publish_end)}</td>

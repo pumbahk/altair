@@ -676,7 +676,7 @@ class OrderDetailView(BaseView):
     @view_config(route_name='orders.sales_summary', renderer='ticketing:templates/orders/_sales_summary.html', permission='sales_counter')
     def sales_summary(self):
         performance_id = int(self.request.params.get('performance_id', 0))
-        performance = Performance.get(performance_id)
+        performance = Performance.get(performance_id, self.context.user.organization_id)
         if performance is None:
             return HTTPNotFound('performance id %d is not found' % performance_id)
 

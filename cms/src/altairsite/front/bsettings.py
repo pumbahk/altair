@@ -100,8 +100,12 @@ class ScannableMixin(object):
                     try:
                         v = v()
                     except Exception, e:
-                        logger.warn("bsettings %s has invalid rendering closure. error=%s, (extra_resource=%s)" % (k, repr(e), self.extra))
-                        v = str(e)
+                        try:
+                            logger.warn("bsettings %s has invalid rendering closure. error=%s, (extra_resource=%s)" % (k, repr(e), self.extra))
+                            v = str(e)
+                        except UnicodeError:
+                            logger.warn("bsettings %s. unicode error" % k)
+                            v = "bsettings %s. unicode error" % k
                 if v is None:
                     logger.warn("bsettings %s is None. (extra_resource=%s)" % (k, self.extra))
                 else:

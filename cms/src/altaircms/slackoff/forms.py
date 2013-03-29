@@ -36,7 +36,7 @@ def pageset_label(pageset):
     if pageset is None:
         u"-----"
     else:
-        return u"{0} (ページ名:{1})".format(pageset.url, pageset.name)
+        return u"{1} (url:{0})".format(pageset.url, pageset.name)
 
 class TermValidator(object):
     def __init__(self, begin, end, message):

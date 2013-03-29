@@ -290,7 +290,7 @@ class TopicCoreTag(WithOrganizationMixin, Base):
     id = sa.Column(sa.Integer, primary_key=True)
     query = DBSession.query_property()
     label = sa.Column(sa.Unicode(255), index=True)
-    topiccores = orm.relationship("TopicCore", secondary="topiccoretag2topiccore", backref="tags")
+    topiccores = orm.relationship("TopicCore", secondary="topiccoretag2topiccore")
     publicp = sa.Column(sa.Boolean, default=False)
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)

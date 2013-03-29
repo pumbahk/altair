@@ -52,3 +52,20 @@ def rendering_page(context, request):
     response = renderer.render(template, page)
     return response
 
+from altairsite.mobile.dispatch.views import dispatch_view as mobile_dispatch_view
+from pyramid.httpexceptions import HTTPFound
+
+@view_config(route_name="front", request_type="altairsite.mobile.tweens.IMobileRequest")
+def mobile_rendering_page(context, request):
+    url = request.matchdict["page_name"]
+    dt = context.get_preview_date()
+
+    control = context.pc_access_control()
+    page = control.fetch_page_from_params(url, dt)
+
+    if not control.can_access() or page.event_id is None:
+        logger.info(control.error_message)
+        return mobile_dispatch_view(context, request)
+    return HTTPFound(request.route_path("eventdetail", _query=dict(event_id=page.event_id or page.pageset.event_id)))
+    
+    

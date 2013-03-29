@@ -25,7 +25,7 @@ class Products(BaseView):
     @view_config(route_name='products.index', renderer='ticketing:templates/products/index.html')
     def index(self):
         performance_id = int(self.request.matchdict.get('performance_id', 0))
-        performance = Performance.get(performance_id)
+        performance = Performance.get(performance_id, self.context.user.organization_id)
         if performance is None:
             return HTTPNotFound('performance id %d is not found' % performance_id)
 
@@ -57,7 +57,7 @@ class Products(BaseView):
     @view_config(route_name='products.new', request_method='GET', renderer='ticketing:templates/products/_form.html', xhr=True)
     def new_xhr(self):
         performance_id = int(self.request.matchdict.get('performance_id', 0))
-        performance = Performance.get(performance_id)
+        performance = Performance.get(performance_id, self.context.user.organization_id)
         if performance is None:
             return HTTPNotFound('performance id %d is not found' % performance_id)
 
@@ -71,7 +71,7 @@ class Products(BaseView):
     @view_config(route_name='products.new', request_method='POST', renderer='ticketing:templates/products/_form.html', xhr=True)
     def new_post_xhr(self):
         performance_id = int(self.request.matchdict.get('performance_id', 0))
-        performance = Performance.get(performance_id)
+        performance = Performance.get(performance_id, self.context.user.organization_id)
         if performance is None:
             return HTTPNotFound('performance id %d is not found' % performance_id)
 

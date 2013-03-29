@@ -1,12 +1,7 @@
 def includeme(config):
-    #config.include(create_route)
-    config.add_route("inquirypage", "/inquirypage")
+    config.add_route("usersite.inquiry", "/inquiry")
+    #mobile
+    config.add_view("altairsite.mobile.dispatch.views.dispatch_view", 
+                    route_name="usersite.inquiry", 
+                    request_type="altairsite.mobile.tweens.IMobileRequest")
     config.scan()
-
-_created = False
-def create_route(config):
-    global _created
-    if _created:
-        return
-    _created = True
-    config.add_route("inquiry", "/inquiry")

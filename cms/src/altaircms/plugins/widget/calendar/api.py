@@ -41,10 +41,11 @@ def get_performance_status(request, widget, event, status_impl):
         data = json.loads(data)
     except urllib2.HTTPError, e:
         logger.warn("*calendar widget* api call is failed. url=%s" % e.url)
+    except urllib2.URLError, e:
+        logger.warn("*calendar widget* api call is failed (URLError)")
     except Exception, e:
         logger.warn("*calendar widget* api call is failed")
         logger.exception(str(e))
-        data =  dummy_data
     return _get_performance_status(request, CalcResult(rawdata=data, status_impl=status_impl))
 
 def _get_performance_status(request, data):
@@ -69,7 +70,6 @@ class CalendarDataAPI(object):
         url = self.get_fetch_stock_status_api_url(event, salessegment_group)
         req = urllib2.Request(url)
         req.add_header('X-Altair-Authorization', self.apikey)
-
         with contextlib.closing(urllib2.urlopen(req)) as res:
             data = res.read()
             logger.debug("*calendar widget api* returned value: %s" % data)
