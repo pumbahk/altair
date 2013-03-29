@@ -374,11 +374,13 @@ function buildStockHolderTypeTables(venue) {
 
 function buildSeatDetailRow(seat) {
   var tr = $('<tr></tr>');
+  var count = $('span.selection-count');
   var checkbox = $('<input type="checkbox" checked="checked" />').attr('name', seat.get('id')).click(function () {
     if (this.checked)
       seat.set('selected', true);
     else
       seat.set('selected', false);
+    count.text(parseInt(count.text())+(this.checked ? 1 : -1));
   });
   var checkbox_td = $('<td></td>').append(checkbox);
   var seat_id = $('<td></td>').text(seat.get('id'));
@@ -394,13 +396,15 @@ function buildSeatDetailRow(seat) {
 }
 
 function buildSeatDetailTable(selection) {
-  var table = $('<table class="table table-bordered"></table>');
+  var table = $('<table class="table table-condensed"></table>');
   var tbody = $('<tbody></tbody>').appendTo(table);
-  var header = $('<td></td><td>ID</td><td>座席</td><td>席種</td><td>配券先</td>');
-  tbody.append(header);
-  selection.each(function (seat) {
-    tbody.append(buildSeatDetailRow(seat));
-  });
+  if (selection.length) {
+    var header = $('<th width="8%"></th width="15%"><th>ID</th><th width="30%">座席</th><th width="27%">席種</th><th width="20%">配券先</th>');
+    tbody.append(header);
+    selection.each(function (seat) {
+      tbody.append(buildSeatDetailRow(seat));
+    });
+  }
   return table;
 }
 
@@ -510,6 +514,7 @@ callbacks.select = function (viewer, selection) {
   else
     $(".assignable").removeClass("enabled");
 
+  var selection_set = venueEditorRoot.venueeditor('selection');
   if (selection.length == 1) {
     var tbody = $('#venue-editor-main-side-tab2').find('table tbody');
     // 単一選択なら選択状態を反映
@@ -525,8 +530,9 @@ callbacks.select = function (viewer, selection) {
   } else {
     // 複数選択ならテーブル再生成
     tab2.empty();
-    tab2.append(buildSeatDetailTable(venueEditorRoot.venueeditor('selection')));
+    tab2.append(buildSeatDetailTable(selection_set));
   }
+  $('span.selection-count').text(selection_set.length);
 };
 </script>
             </%def>

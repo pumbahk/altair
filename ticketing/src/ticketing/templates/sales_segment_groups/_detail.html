@@ -24,6 +24,10 @@
     <td id="current_end_at">${h.safe_strftime(sales_segment_group.end_at)}</td>
   </tr>
   <tr>
+    <th>${form.account_id.label.text}</th>
+    <td>${sales_segment_group.account.name}</td>
+  </tr>
+  <tr>
     <th>${form.margin_ratio.label.text}</th>
     <td id="margin_ratio">${sales_segment_group.margin_ratio}%</td>
   </tr>

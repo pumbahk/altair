@@ -577,6 +577,10 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if allocation > 0:
             raise Exception(u'配席されている為、削除できません')
 
+        # delete SalesSegment
+        for sales_segment in self.sales_segments:
+            sales_segment.delete()
+
         # delete ProductItem
         for product_item in self.product_items:
             product_item.delete()
@@ -1029,10 +1033,12 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     seat_choice = Column(Boolean, default=True)
     public = Column(Boolean, default=True)
 
-    margin_ratio = Column(Numeric(precision=16, scale=2), nullable=False)
-    refund_ratio = Column(Numeric(precision=16, scale=2), nullable=False)
-    printing_fee = Column(Numeric(precision=16, scale=2), nullable=False)
-    registration_fee = Column(Numeric(precision=16, scale=2), nullable=False)
+    margin_ratio = Column(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0')
+    refund_ratio = Column(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0')
+    printing_fee = Column(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0')
+    registration_fee = Column(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0')
+    account_id = Column(Identifier, ForeignKey('Account.id'))
+    account = relationship('Account', backref='sales_segment_groups')
 
     event_id = Column(Identifier, ForeignKey('Event.id'))
     event = relationship('Event')
@@ -2899,7 +2905,7 @@ class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def delete(self):
         # 既に使用されている場合は削除できない
         if self.product_items:
-            raise Exception(u'関連づけされたイベントがある為、削除できません')
+            raise Exception(u'関連づけされた商品がある為、削除できません')
         super(type(self), self).delete()
 
 class TicketPrintHistory(Base, BaseModel, WithTimestamp):
@@ -3078,6 +3084,12 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     performance = relationship("Performance", backref="sales_segments")
     sales_segment_group_id = Column(Identifier, ForeignKey("SalesSegmentGroup.id"))
     sales_segment_group = relationship("SalesSegmentGroup", backref="sales_segments")
+    margin_ratio = Column(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0')
+    refund_ratio = Column(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0')
+    printing_fee = Column(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0')
+    registration_fee = Column(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0')
+    account_id = Column(Identifier, ForeignKey('Account.id'))
+    account = relationship('Account', backref='sales_segments')
 
     payment_delivery_method_pairs = relationship("PaymentDeliveryMethodPair",
         secondary="SalesSegment_PaymentDeliveryMethodPair",

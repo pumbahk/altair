@@ -5,8 +5,9 @@ from wtforms import TextField, SelectField, HiddenField, IntegerField, BooleanFi
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 from wtforms.widgets import CheckboxInput
 
-from ticketing.formhelpers import OurDateTimeField, Translations, Required, RequiredOnUpdate, OurForm, OurIntegerField, OurBooleanField, OurDecimalField
-from ticketing.core.models import SalesSegmentKindEnum, Event, StockHolder
+from ticketing.formhelpers import (OurDateTimeField, Translations, Required, RequiredOnUpdate,
+                                   OurForm, OurIntegerField, OurBooleanField, OurDecimalField, OurSelectField)
+from ticketing.core.models import SalesSegmentKindEnum, Event, StockHolder, Account
 
 def fix_boolean(formdata, name):
     if formdata:
@@ -24,6 +25,10 @@ class SalesSegmentGroupForm(OurForm):
             self.copy_to_stock_holder.choices = [('', u'変更しない')] + [
                 (str(sh.id), sh.name) for sh in StockHolder.get_own_stock_holders(event)
             ]
+            self.account_id.choices = [
+                (a.id, a.name) for a in Account.query.filter_by(organization_id=event.organization_id)
+            ]
+            self.account_id.default = event.account_id
             for field_name in ('margin_ratio', 'refund_ratio', 'printing_fee', 'registration_fee'):
                 field = getattr(self, field_name)
                 field.default = getattr(event.organization.setting, field_name)
@@ -76,6 +81,13 @@ class SalesSegmentGroupForm(OurForm):
     )
     public = OurBooleanField(
         label=u'一般公開',
+        hide_on_new=True
+    )
+    account_id = OurSelectField(
+        label=u'配券元',
+        validators=[Required(u'選択してください')],
+        choices=[],
+        coerce=int,
         hide_on_new=True
     )
     margin_ratio = OurDecimalField(

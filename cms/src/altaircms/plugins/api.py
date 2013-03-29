@@ -85,6 +85,18 @@ def get_extra_resource(request):
         return extra
     return request.registry.getUtility(IExtraResourceDefault)
 
+def get_cart_domain(request):
+    extra_resource = get_extra_resource(request)
+    if "cart_domain" in extra_resource:
+        domain = extra_resource["cart_domain"]
+        if isinstance(domain, (list, tuple)):
+            domain = domain[0]
+        request._cart_domain = domain.rstrip("/")
+    else:
+        request._cart_domain = ""
+    return request._cart_domain
+
+
 ## widget aggregator
 
 def page_type(request, page):

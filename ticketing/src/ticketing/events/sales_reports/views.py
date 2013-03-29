@@ -69,7 +69,7 @@ class SalesReports(BaseView):
     @view_config(route_name='sales_reports.performance', renderer='ticketing:templates/sales_reports/performance.html')
     def performance(self):
         performance_id = int(self.request.matchdict.get('performance_id', 0))
-        performance = Performance.get(performance_id)
+        performance = Performance.get(performance_id, self.context.user.organization_id)
         if performance is None:
             raise HTTPNotFound('performance id %d is not found' % performance_id)
 

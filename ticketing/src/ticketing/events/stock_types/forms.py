@@ -3,11 +3,11 @@
 from wtforms import Form
 from ticketing.formhelpers import OurForm, OurTextField, OurSelectField, OurIntegerField, OurBooleanField, NullableTextField
 from wtforms import HiddenField, FieldList
-from wtforms.validators import Length, Optional
+from wtforms.validators import Length, Optional, ValidationError
 from wtforms.widgets import CheckboxInput, TextArea
 
 from ticketing.formhelpers import Translations, Required
-from ticketing.core.models import StockTypeEnum
+from ticketing.core.models import StockTypeEnum, StockType
 
 class StockTypeForm(OurForm):
 
@@ -51,3 +51,12 @@ class StockTypeForm(OurForm):
         label=u'説明',
         hide_on_new=True
         )
+
+    def validate_quantity_only(form, field):
+        if form.id.data:
+            stock_type = StockType.query.filter_by(id=form.id.data).first()
+            if stock_type.quantity_only != bool(field.data):
+                for stock in stock_type.stocks:
+                    if stock.quantity > 0:
+                        p = stock.performance
+                        raise ValidationError(u'既に配席されている為、変更できません (%s席 @ %s %s)' % (stock.quantity, p.name, p.start_on.strftime("%m/%d")))

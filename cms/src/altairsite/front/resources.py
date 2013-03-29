@@ -33,38 +33,6 @@ access controll object
 レンダリング過程が複雑になったらここでrendererのdispatchする.
 (今はresourceが持っている。)
 """
-class AccessControlMobile(object):
-    def __init__(self, request):
-        self.request = request
-        self.access_ok = False
-        self.error_message = "this-object-is-not-used" 
-
-    def can_access(self):
-        if not self.access_ok:
-            mes = u"*front mobile access* url is not found (%s) error=%s" % (self.request.referer, self.error_message)
-            logger.warn(mes.encode("utf-8")) ## referer?
-        return self.access_ok
-
-    def _fetch_pageset_from_params(self, url, dt):
-        qs = self.request.allowable(PageSet).filter(PageSet.id==Page.pageset_id)
-        qs = qs.filter(PageSet.url==url)
-        qs = qs.filter(Page.in_term(dt))
-        qs = qs.filter(Page.published==True)
-        return qs.first()
-
-    def fetch_pageset_from_params(self, url, dt):
-        pageset = self._fetch_pageset_from_params(url, dt)
-        self.access_ok = True
-
-        if pageset is None:
-            self.error_message = (u"*fetch pageset* url=%s pageset is not found" % url).encode("utf-8")
-            self.access_ok = False
-            return pageset
-
-        if pageset.event and pageset.event.is_searchable == False:
-            self.error_message = "*fetch pageset* pageset(id=%s) event is disabled event(is_searchable==False)" % pageset.id
-            self.access_ok = False
-        return pageset
 
 
 class AccessControlPC(object):

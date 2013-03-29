@@ -17,3 +17,5 @@ def search_by_freeword(request, freeword, query_cond="intersection"): #query_con
     query_params = dict(query=freeword, query_cond="intersection")
     qs = searcher.get_pageset_query_from_freeword(request, query_params)
     return qs
+
+

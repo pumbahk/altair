@@ -1,5 +1,12 @@
 <%inherit file='../../../templates/layout_2col.html'/>
 
+<script type="text/javascript">
+  <%include file="../_helper.js"/>  
+  $(function(){
+    $(".row-fluid select").each(function(i,e){select_helper($(e));});
+  });
+</script>
+
 <%namespace name="fco" file="../../../templates/formcomponents.html"/>
 <%namespace name="nco" file="../../../templates/navcomponents.html"/>
 

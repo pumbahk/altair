@@ -34,6 +34,9 @@ class MyLayout(object):
     def top_category_genre_list(self):
         return get_top_category_genres(self.request, strict=True)
 
+    def get_subgenre_list_from_genre(self, genre):
+        return (genre.children or []) if genre else []        
+
     def get_subgenre_list_from_page(self, page):
         if page and hasattr(page, "pageset") and page.pageset.genre_id:
             genre = page.pageset.genre

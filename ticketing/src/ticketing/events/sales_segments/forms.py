@@ -4,19 +4,23 @@ from wtforms import Form
 from wtforms import TextField, SelectField, HiddenField, IntegerField, BooleanField, SelectMultipleField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 from wtforms.widgets import CheckboxInput
-
-from ticketing.formhelpers import OurDateTimeField, Translations, Required, RequiredOnUpdate, OurForm, OurIntegerField, OurBooleanField, BugFreeSelectField, PHPCompatibleSelectMultipleField, CheckboxMultipleSelect
-from ticketing.core.models import SalesSegmentGroup, SalesSegmentKindEnum, Event, StockHolder, SalesSegment
 from sqlalchemy.sql import or_, and_
+
+from ticketing.formhelpers import (Translations, Required, RequiredOnUpdate, OurForm, OurDateTimeField,
+                                   OurIntegerField, OurBooleanField, OurSelectField, OurDecimalField,
+                                   BugFreeSelectField, PHPCompatibleSelectMultipleField, CheckboxMultipleSelect)
+from ticketing.core.models import SalesSegmentGroup, SalesSegment, Account
 
 class SalesSegmentForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         super(SalesSegmentForm, self).__init__(formdata, obj, prefix, **kwargs)
+
+        performances = kwargs.get("performances", [])
         self.performance_id.choices = \
             [(u'', u'(なし)')] + \
             [(unicode(p.id),
               u'%s (%s)' % (p.name, p.start_on.strftime('%Y-%m-%d %H:%M'))) \
-             for p in kwargs.get("performances", [])]
+             for p in performances]
         sales_segment_groups = kwargs.get('sales_segment_groups')
 
         sales_segment_group = None
@@ -42,6 +46,18 @@ class SalesSegmentForm(OurForm):
                   u'%s - %s' % (pdmp.payment_method.name, pdmp.delivery_method.name))
                  for pdmp in sales_segment_group.payment_delivery_method_pairs
                 ]
+            self.account_id.choices = [
+                (a.id, a.name) for a in Account.query.filter_by(organization_id=sales_segment_group.event.organization_id)
+            ]
+            self.account_id.default = sales_segment_group.account_id
+            for field_name in ('margin_ratio', 'refund_ratio', 'printing_fee', 'registration_fee'):
+                field = getattr(self, field_name)
+                field.default = getattr(sales_segment_group, field_name)
+            self.process(formdata, obj, **kwargs)
+        elif performances:
+            self.account_id.choices = [
+                (a.id, a.name) for a in Account.query.filter_by(organization_id=performances[0].event.organization_id)
+            ]
         if obj and obj.payment_delivery_method_pairs is not None:
             self.payment_delivery_method_pairs.data = [int(pdmp.id) for pdmp in obj.payment_delivery_method_pairs]
         elif sales_segment_group is not None and formdata is None:
@@ -99,6 +115,41 @@ class SalesSegmentForm(OurForm):
         label=u'購入上限枚数',
         default=10,
         validators=[RequiredOnUpdate()],
+        hide_on_new=True
+    )
+    account_id = OurSelectField(
+        label=u'配券元',
+        validators=[Required(u'選択してください')],
+        choices=[],
+        coerce=int,
+        hide_on_new=True
+    )
+    margin_ratio = OurDecimalField(
+        label=u'販売手数料率(%)',
+        places=2,
+        default=0,
+        validators=[Required()],
+        hide_on_new=True
+    )
+    refund_ratio = OurDecimalField(
+        label=u'払戻手数料率(%)',
+        places=2,
+        default=0,
+        validators=[Required()],
+        hide_on_new=True
+    )
+    printing_fee = OurDecimalField(
+        label=u'印刷代金(円/枚)',
+        places=2,
+        default=0,
+        validators=[Required()],
+        hide_on_new=True
+    )
+    registration_fee = OurDecimalField(
+        label=u'登録手数料(円/公演)',
+        places=2,
+        default=0,
+        validators=[Required()],
         hide_on_new=True
     )
 

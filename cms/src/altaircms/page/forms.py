@@ -331,6 +331,7 @@ class PageSetFormFactory(object):
 ## static page
 class StaticPageForm(Form):
     name = fields.TextField(label=u"name", validators=[validators.Optional()])
+    label = fields.TextField(label=u"タイトル", validators=[validators.Required()])
     layout = dynamic_query_select_field_factory(Layout, allow_blank=True, 
                                                 get_label=lambda obj: u"%s(%s)" % (obj.title, obj.template_filename), 
                                                 dynamic_query=layout_filter
@@ -365,10 +366,11 @@ class StaticPageForm(Form):
                 append_errors(self.errors, "publish_begin", u"開始日よりも後に終了日が設定されています")
         return status
 
-    __display_fields__ = ["name", "layout", "publish_begin", "publish_end", "interceptive"]
+    __display_fields__ = ["name", "label", "layout", "publish_begin", "publish_end", "interceptive"]
 
 class StaticPageCreateForm(Form):
     name = fields.TextField(label=u"name", validators=[validators.Required()])
+    label = fields.TextField(label=u"タイトル", validators=[validators.Required()])
     zipfile = fields.FileField(label=u"zipファイルを投稿")
     layout = dynamic_query_select_field_factory(Layout, allow_blank=True, 
                                                 get_label=lambda obj: u"%s(%s)" % (obj.title, obj.template_filename), 

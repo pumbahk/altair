@@ -2,21 +2,19 @@
 
 from datetime import datetime
 import json
-import operator
 import urllib2
 import logging
 import contextlib
-import sqlalchemy as sa
+
 from zope.deprecation import deprecate
 
 from pyramid.interfaces import IRoutesMapper, IRequest
 from pyramid.security import effective_principals, forget
 from pyramid.httpexceptions import HTTPNotFound
 
-from ticketing.mobile.interfaces import IMobileRequest
 from ticketing.api.impl import get_communication_api
 from ticketing.api.impl import CMSCommunicationApi
-from ticketing.core.models import Event, Performance, Stock, Product, ProductItem, SalesSegment, SalesSegmentGroup, Venue
+from ticketing.mobile.interfaces import IMobileRequest
 from ticketing.core import models as c_models
 from ticketing.core import api as c_api
 from ticketing.users.models import User, UserCredential, Membership, MemberGroup, MemberGroup_SalesSegment
@@ -60,9 +58,9 @@ def is_login_required(request, event):
     ).filter(
         MemberGroup.id==MemberGroup_SalesSegment.c.membergroup_id
     ).filter(
-        SalesSegmentGroup.id==MemberGroup_SalesSegment.c.sales_segment_group_id
+        c_models.SalesSegmentGroup.id==MemberGroup_SalesSegment.c.sales_segment_group_id
     ).filter(
-        SalesSegmentGroup.event_id==event.id
+        c_models.SalesSegmentGroup.event_id==event.id
     )
     return bool(q.count())
 
@@ -91,7 +89,7 @@ def get_event(request):
     event_id = request.matchdict.get('event_id')
     if not event_id:
         return None
-    return Event.query.filter(Event.id==event_id).first()
+    return c_models.Event.query.filter(c_models.Event.id==event_id).first()
 
 def is_mobile(request):
     return IMobileRequest.providedBy(request)
@@ -228,11 +226,11 @@ def get_or_create_user(request, auth_identifier, membership='rakuten'):
 def get_salessegment(request, event_id, salessegment_id, selected_date):
     ## 販売条件は必ず一つに絞られるはず
     if salessegment_id:
-        return SalesSegment.filter_by(id=salessegment_id).first()
+        return c_models.SalesSegment.filter_by(id=salessegment_id).first()
     elif selected_date:
-        qs = DBSession.query(SalesSegment).filter(SalesSegment.event_id==event_id)
-        qs = qs.filter(SalesSegment.start_at<=selected_date)
-        qs = qs.filter(SalesSegment.end_at >= selected_date)
+        qs = DBSession.query(c_models.SalesSegment).filter(c_models.SalesSegment.event_id==event_id)
+        qs = qs.filter(c_models.SalesSegment.start_at<=selected_date)
+        qs = qs.filter(c_models.SalesSegment.end_at >= selected_date)
         return qs.first()
     else:
         return None

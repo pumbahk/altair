@@ -5,16 +5,22 @@ from pyramid.view import view_config
 from altairsite.inquiry.forms import InquiryForm
 from altairsite.mobile.core.helper import log_info, log_error
 
-@view_config(route_name='inquirypage', request_method="GET",
+
+##workaround.
+def pc_access(info, request):
+    return hasattr(request, "is_mobile") and request.is_mobile == False
+
+@view_config(route_name='usersite.inquiry', request_method="GET",
+             custom_predicates=(pc_access, ), 
              renderer='altaircms:templates/usersite/inquiry.html')
 def move_inquiry(request):
-
     log_info("move_inquiry", "start")
     form = InquiryForm()
     log_info("move_inquiry", "end")
     return {'form':form}
 
-@view_config(route_name='inquirypage', request_method="POST",
+@view_config(route_name='usersite.inquiry', request_method="POST",
+             custom_predicates=(pc_access, ), 
              renderer='altaircms:templates/usersite/inquiry.html')
 def send_inquiry(request):
     log_info("send_inquiry", "start")

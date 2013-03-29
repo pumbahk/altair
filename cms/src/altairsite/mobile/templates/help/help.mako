@@ -27,7 +27,7 @@
             </a><br/><br/>
         % endfor
 
-        <a href="#top">トップへ</a>
+        <a href="#top">▲上へ</a>
 
         % for count, help in enumerate(form.helps.data):
             <hr/>
@@ -37,7 +37,7 @@
             ${helper.nl2br(help.text)|n}<br/>
             % if (count + 1) % 5 == 0 or len(form.helps.data) == count + 1:
                 <hr/>
-                <a href="#top">トップへ</a>
+                <a href="#top">▲上へ</a><br/>
             % endif
         % endfor
     % endif

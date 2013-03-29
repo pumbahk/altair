@@ -1,4 +1,4 @@
-<%page args="form" />
+<%page args="sales_segments" />
 <% from ticketing.events.sales_segments.forms import SalesSegmentForm %>
 <%namespace file="/common/helpers.html" name="h" />
 % if sales_segments:
@@ -6,33 +6,35 @@
   <div class="span12">
     <table class="table table-striped table-bordered table-condensed" style="margin-bottom: 10px;">
       <thead>
-      <tr>
-        <th class="minwidth"></th>
-        <th>名称</th>
-        <th>${h.sortable(SalesSegmentForm.start_at)}</a></th>
-        <th>${h.sortable(SalesSegmentForm.end_at)}</a></th>
-        <th>${h.sortable(SalesSegmentForm.upper_limit)}</a></th>
-        <th>${h.sortable(SalesSegmentForm.seat_choice)}</a></th>
-        <th>${h.sortable(SalesSegmentForm.public)}</a></th>
-        <th>決済方法</th>
-        <th>引取方法</th>
-      </tr>
+        <tr>
+          <th class="minwidth"></th>
+          <th>名称</th>
+          <th>${h.sortable(SalesSegmentForm.start_at)}</a></th>
+          <th>${h.sortable(SalesSegmentForm.end_at)}</a></th>
+          <th>${h.sortable(SalesSegmentForm.account_id)}</a></th>
+          <th>${h.sortable(SalesSegmentForm.upper_limit)}</a></th>
+          <th>${h.sortable(SalesSegmentForm.seat_choice)}</a></th>
+          <th>${h.sortable(SalesSegmentForm.public)}</a></th>
+          <th>決済方法</th>
+          <th>引取方法</th>
+        </tr>
       </thead>
       <tbody>
       % for i, sales_segment in enumerate(sales_segments):
-        <tr id="sales_segment-${sales_segment.id}">
+        <tr>
           <% count = len(sales_segment.payment_delivery_method_pairs) %>
           <% rowspan = 'rowspan=%s' % (count) if count else '' %>
           <td ${rowspan}>
             <input type="radio" name="sales_segment_id" value="${sales_segment.id}" />
             <input type="hidden" id="kind" value="${sales_segment.kind}" />
           </td>
-          <td ${rowspan} id="name">${sales_segment.sales_segment_group.name}</td>
-          <td ${rowspan} id="current_start_at">${h.safe_strftime(sales_segment.start_at)}</td>
-          <td ${rowspan} id="current_end_at">${h.safe_strftime(sales_segment.end_at)}</td>
-          <td ${rowspan} id="upper_limit">${sales_segment.upper_limit or u''}</td>
-          <td ${rowspan} id="seat_choice" value="${sales_segment.seat_choice}">${u'○' if sales_segment.seat_choice else u'×'}</td>
-          <td ${rowspan} id="public" value="${sales_segment.public}">${u'○' if sales_segment.public else u'×'}</td>
+          <td ${rowspan}><a href="${request.route_path('sales_segment_groups.show', sales_segment_group_id=sales_segment.sales_segment_group.id)}">${sales_segment.sales_segment_group.name}</a></td>
+          <td ${rowspan}>${h.safe_strftime(sales_segment.start_at)}</td>
+          <td ${rowspan}>${h.safe_strftime(sales_segment.end_at)}</td>
+          <td ${rowspan}>${sales_segment.account.name}</td>
+          <td ${rowspan}>${sales_segment.upper_limit or u''}</td>
+          <td ${rowspan}>${u'○' if sales_segment.seat_choice else u'×'}</td>
+          <td ${rowspan}>${u'○' if sales_segment.public else u'×'}</td>
           % if count == 0:
           <td></td>
           <td></td>

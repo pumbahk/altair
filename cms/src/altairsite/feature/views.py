@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 import logging 
 logger = logging.getLogger(__name__)
-
+import os.path
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPNotFound
 
@@ -13,6 +13,8 @@ def features_view(context, request):
     path = request.matchdict["path"]
     prefix = path.split("/", 1)[0]
     logger.debug("prefix: %s" % prefix)
+    if prefix == path:
+        path = os.path.join(path, "index.html")
     try:
         if prefix:
             static_page = request.allowable(StaticPage).filter(StaticPage.name==prefix, StaticPage.published==True, StaticPage.interceptive==False).first()

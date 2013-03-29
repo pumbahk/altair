@@ -66,6 +66,12 @@ def _refine_pageset_qs(qs):
     qs = _refine_pageset_only_published_term(qs)
     return qs.options(orm.joinedload("event"), orm.joinedload("event.performances"), orm.joinedload("genre"))
 
+def get_refined_pageset_qs(request, qs):
+    qs = _refine_pageset_collect_future(qs)
+    qs = qs.filter(Event.is_searchable==True).filter(Event.id==PageSet.event_id)
+    qs = _refine_pageset_only_published_term(qs)
+    return qs.options(orm.joinedload("event"), orm.joinedload("event.performances"), orm.joinedload("genre"))
+
 ## todo:test
 @provider(ISearchFn)
 def get_pageset_query_from_hotword(request, query_params):

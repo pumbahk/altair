@@ -211,12 +211,27 @@ class StaticPage(BaseOriginalMixin,
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
     name = sa.Column(sa.String(255), doc="directory name(internal)")
+    label = sa.Column(sa.Unicode(255), doc=u"日本語名", default=u"")
     publish_begin = Column(DateTime)
     publish_end = Column(DateTime)
     published = Column(sa.Boolean, default=False)    
     layout_id = Column(Integer, ForeignKey("layout.id"))    
     layout = relationship(Layout, backref='static_pages', uselist=False)
     interceptive = Column(sa.Boolean, default=True)
+
+    @property
+    def description(self):
+        return self.label or self.name or u""
+
+    @hybrid_method
+    def in_term(self, dt):
+        return (((self.publish_begin == None) or (self.publish_begin <= dt))
+                and ((self.publish_end == None) or (self.publish_end > dt)))
+
+    @in_term.expression
+    def in_term(self, dt):
+        return sa.sql.and_(sa.sql.or_((self.publish_begin == None), (self.publish_begin <= dt)), 
+                           sa.sql.or_((self.publish_end == None), (self.publish_end > dt)))
 
 class Page(BaseOriginalMixin,
            WithOrganizationMixin, 
