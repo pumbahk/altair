@@ -314,6 +314,7 @@ headerSearch a{
 
 #index #headerSearch {
 	margin-bottom: 10px;
+  overflow: hidden;
 }
 
 #headerSearch form {
@@ -331,8 +332,27 @@ headerSearch a{
   padding: 2px 0 0 0;
 }
 
+#headerSearch form img,
+#headerSearch form input,
+#headerSearch form a {
+  float: left;
+  display: block;
+}
+
+#headerSearch form img {
+  margin: 0 4px 0 4px;
+}
+
 #headerSearch form input {
-	vertical-align: middle;
+  margin-top: 12px;
+}
+
+#headerSearch form input#imageField {
+  margin-top: 8px;
+}
+
+#headerSearch form a {
+  margin-top: 12px;
 }
 
 #headerSearch form a {
@@ -343,11 +363,6 @@ headerSearch a{
 #headerSearch form input[type="text"]{
   width: 200px;
   height: 16px;
-  margin: 0 0 7px 0;	
-}
-
-#headerSearch form input[type="image"]{
-  margin: 0 10px 3px 0;	
 }
 
 #headerSearch form a {

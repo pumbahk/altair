@@ -4,6 +4,13 @@
   for global navigation 
 */
 
+#container {
+    position: relative;
+}
+
+#headerSearch {
+}
+
 #headerSearch a{
 	color: #fff;
 	text-decoration: underline;
@@ -29,18 +36,16 @@
   width: 130px;
   height: 100px;
   padding: 10px 15px 10px 15px;
-  position: relative;
+  position: absolute;
   text-align: left;
-  top: 41px;
-  left: 20px;
+  left: 10px;
   color: #000;
   z-index: 100;
 }
 
 .fukidashi_region p{
   display: block;
-  position: relative;
-  bottom:20px;
+  margin-top: 12px;
 }
 
 .fukidashi_region p a{

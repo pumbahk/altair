@@ -61,7 +61,7 @@ form = TopPageSidebarSearchForm()
 		</div>
 </%def>
 
-<%def name="fukidashi(request)">
+<%def name="fukidashi(request, bind_to)">
 <%
    from altaircms.seeds.area import AREA_CHOICES
    i = 0
@@ -77,13 +77,14 @@ form = TopPageSidebarSearchForm()
         %endif
 	    %endfor
  		</p>
+    <script type="text/javascript">
+      (function($fukidashi_region, $bind_to) {
+        $fukidashi_region.hide();
+        $fukidashi_region.css({ top: $bind_to.position().top + $bind_to.height() + 20 + "px" });
+        $bind_to.click(function(e){$fukidashi_region.toggle();return false;});
+      })($("script:last").parent(), ${bind_to|n});
+    </script>
  	</div>
-  <script type="text/javascript">
-    $(function(){
-      $(".fukidashi_region").hide();
-      $(".fukidashi-btn").click(function(e){e.preventDefault(); $(".fukidashi_region").toggle();});
-    });
-  </script>
 </%def>
 
 ## end of python code
@@ -143,7 +144,7 @@ form = TopPageSidebarSearchForm()
             <dd class="siteUtility">
               <ul>
                 %for c in layout.navigation_link_list("siteUtility"):
-                <li class="right"><a href="${h.link.get_link_from_category(request,c)}"><img src="${c.imgsrc}" alt="${c.label}" ${(c.attributes or "")|n} /></a></li>
+                <li><a href="${h.link.get_link_from_category(request,c)}">${c.label}</a></li>
                 %endfor
               </ul>
             </dd>
@@ -177,7 +178,7 @@ form = TopPageSidebarSearchForm()
               </ul>
             </dd>
           </dl>
-        ${fukidashi(request)}
+        ${fukidashi(request, '$(".fukidashi-btn")')}
         </div>
 
         <div class="clear"></div>

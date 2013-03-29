@@ -30,7 +30,8 @@ requires = [
     'fluent-logger == 0.3.3moriyoshi',
     'pyramid_selectable_renderer',
     'altair.findable_label', 
-    'pyramid_layout'
+    'pyramid_layout',
+    'lxml',
     ]
 
 solr_require = [
