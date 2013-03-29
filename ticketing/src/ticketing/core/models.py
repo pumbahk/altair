@@ -577,6 +577,10 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if allocation > 0:
             raise Exception(u'配席されている為、削除できません')
 
+        # delete SalesSegment
+        for sales_segment in self.sales_segments:
+            sales_segment.delete()
+
         # delete ProductItem
         for product_item in self.product_items:
             product_item.delete()
