@@ -370,9 +370,9 @@ ul#globalNav1 li.right{
 
 #headerSearch form input.text {
     margin-top: 10px;
-	width: 300px;
+	width: 230px;
 	height: 19px;
-    font-size: 16px;
+    font-size: 12px;
 }
 
 #headerSearch form a {
