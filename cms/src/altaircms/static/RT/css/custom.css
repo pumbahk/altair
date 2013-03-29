@@ -449,9 +449,13 @@
 	background-color: #f7f7ea;
 }
 .searchInput dd {
-    word-spacing: 0.75em;
     letter-spacing: 0em;
 
+}
+
+.searchInput dd .control-group {
+    min-width: 40px;
+    display: inline-block;
 }
 
 .searchInput dd td {
