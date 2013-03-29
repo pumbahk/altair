@@ -80,6 +80,7 @@ form = TopPageSidebarSearchForm()
     <script type="text/javascript">
       (function($fukidashi_region, $bind_to) {
         $fukidashi_region.hide();
+        $fukidashi_region.css({ top: $bind_to.position().top + $bind_to.height() + 20 + "px" });
         $bind_to.click(function(e){$fukidashi_region.toggle();return false;});
       })($("script:last").parent(), ${bind_to|n});
     </script>
