@@ -8,24 +8,17 @@
     position: relative;
 }
 
-#headerSearch {
-}
-
-#headerSearch a{
-	color: #fff;
-	text-decoration: underline;
-}
-
 #globalNav1 li {
     line-height: 39px;
 }
 
-#globalNav1 .category a:visited{
+#globalNav1 .category a:visited {
     text-decoration:none;
     line-height:40px;
     color: #fff;
 }
-#globalNav1 .category a{
+
+#globalNav1 .category a {
     text-decoration:none;
     color: #fff;
 }

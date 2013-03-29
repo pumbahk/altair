@@ -1,44 +1,42 @@
 <%namespace file="./gadgets.html" name="gadgets" />
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
-## define
-
+## define {{{
 <%def name="top_side_searchform()">
 <%
 from altairsite.search.forms import TopPageSidebarSearchForm
 form = TopPageSidebarSearchForm()
 %>
-		<div id="sideSearch">
-			<h2><img src="/static/RT/img/index/title_search.gif" alt="チケットを探す" width="246" height="36" /></h2>
-			<ul>
-				<li><a href="${h.link.get_searchpage(request, kind="deal_cond", value="early_firstcome")}"><img src="/static/RT/img/index/btn_presale.gif" alt="先行抽選" width="222" height="28" /></a></li>
-				<li><a href="${h.link.get_searchpage(request, kind="deal_cond", value="normal")}"><img src="/static/RT/img/index/btn_release.gif" alt="一般発売" width="222" height="28" /></a></li>
-				<li><a href="${h.link.get_searchpage(request, kind="deal_open", value=7)}"><img src="/static/RT/img/index/btn_now.gif" alt="すぐ見たい" width="222" height="28" /></a></li>
-				<li><a href="${request.route_path("page_search_by_freeword",_query=dict(q=u"お買い得"))}"><img src="/static/RT/img/index/btn_best.gif" alt="お買い得チケット" width="222" height="28" /></a></li>
-			</ul>
-			<form id="form2" name="form2" method="GET" action="${request.route_path("page_search_by_multi")}">
-				<dl>
-					<dt><img src="/static/RT/img/index/search_day.gif" alt="開催日" width="37" height="13" /></dt>
-					<dd>
-                       ${form.start_year}
-                       ${form.start_month}
-                       ${form.start_day}
+    <div id="sideSearch">
+      <h2><img src="/static/RT/img/index/title_search.gif" alt="チケットを探す" width="246" height="36" /></h2>
+      <ul>
+        <li><a href="${h.link.get_searchpage(request, kind="deal_cond", value="early_firstcome")}"><img src="/static/RT/img/index/btn_presale.gif" alt="先行抽選" width="222" height="28" /></a></li>
+        <li><a href="${h.link.get_searchpage(request, kind="deal_cond", value="normal")}"><img src="/static/RT/img/index/btn_release.gif" alt="一般発売" width="222" height="28" /></a></li>
+        <li><a href="${h.link.get_searchpage(request, kind="deal_open", value=7)}"><img src="/static/RT/img/index/btn_now.gif" alt="すぐ見たい" width="222" height="28" /></a></li>
+        <li><a href="${request.route_path("page_search_by_freeword",_query=dict(q=u"お買い得"))}"><img src="/static/RT/img/index/btn_best.gif" alt="お買い得チケット" width="222" height="28" /></a></li>
+      </ul>
+      <form id="form2" name="form2" method="GET" action="${request.route_path("page_search_by_multi")}">
+        <dl>
+          <dt><img src="/static/RT/img/index/search_day.gif" alt="開催日" width="37" height="13" /></dt>
+          <dd>
+						${form.start_year}
+						${form.start_month}
+						${form.start_day}
 						～<br />
-                       ${form.end_year}
-                       ${form.end_month}
-                       ${form.end_day}
-					</dd>
-					<dt><img src="/static/RT/img/index/search_place.gif" alt="開催場所" width="52" height="13" /></dt>
-					<dd>
-                        ${form.area}
-					</dd>
-				</dl>
-				<p><input name="imageField2" type="image" id="imageField2" src="/static/RT/img/index/btn_search.gif" alt="日程・場所で探す" /></p>
-			</form>
-		</div>
+            ${form.end_year}
+            ${form.end_month}
+            ${form.end_day}
+          </dd>
+          <dt><img src="/static/RT/img/index/search_place.gif" alt="開催場所" width="52" height="13" /></dt>
+          <dd>
+            ${form.area}
+          </dd>
+        </dl>
+        <p><input name="imageField2" type="image" id="imageField2" src="/static/RT/img/index/btn_search.gif" alt="日程・場所で探す" /></p>
+      </form>
+    </div>
 </%def>
 
-## html
+## }}} end of python code
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
   <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
@@ -51,20 +49,13 @@ form = TopPageSidebarSearchForm()
     <meta http-equiv="content-style-type" content="text/css" />
     <meta http-equiv="content-script-type" content="text/javascript" />
     
-
-    <!--************************************* webフォント使ったら怒られるかな？************************************hiromi****** -->
-    <link href='http://fonts.googleapis.com/css?family=Changa+One' rel='stylesheet' type='text/css'>
-     <!--************************************* webフォント使ったら怒られるかな？************************************hiromi****** -->
-      
-      <link rel="shortcut icon" href="/static/RT/img/common/favicon.ico" />
-      <link rel="stylesheet" href="/static/RT/css/import.css" type="text/css" media="all" />
-      <script type="text/javascript" src="/static/RT/js/jquery.js"></script>
-    </head>
-
-    <body id="${layout.body_id}">
-      <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="/static/RT/img/common/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
-      <div id="container">
-
+    <link rel="shortcut icon" href="/static/RT/img/common/favicon.ico" />
+    <link rel="stylesheet" href="/static/RT/css/import.css" type="text/css" media="all" />
+    <script type="text/javascript" src="/static/RT/js/jquery.js"></script>
+  </head>
+	<body id="${layout.body_id}">
+		<p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="/static/RT/img/common/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
+		<div id="container">
         <!-- ========== header ========== -->
         <div id="grpheader">
           
