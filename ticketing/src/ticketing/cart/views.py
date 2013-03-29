@@ -814,6 +814,7 @@ class OutTermSalesView(object):
 @view_config(decorator=with_jquery.not_when(mobile_request), route_name='cart.logout')
 def logout(request):
     headers = security.forget(request)
-    res = HTTPFound(location='/')
+    location = c_api.get_host_base_url(request)
+    res = HTTPFound(location=location)
     res.headerlist.extend(headers)
     return res
