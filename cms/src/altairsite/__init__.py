@@ -41,8 +41,10 @@ def main(global_config, **local_config):
     search_utility = settings.get("altaircms.solr.search.utility", "altaircms.solr.api.DummySearch")
     config.add_fulltext_search(search_utility)
 
-    config.include("altairsite.mobile", route_prefix="/mobile")
+    ## first:
     config.include("altairsite.front")
+
+    config.include("altairsite.mobile", route_prefix="/mobile")
     config.include("altairsite.feature")
     config.include("altairsite.errors")
     config.include("altairsite.search", route_prefix="/search")
