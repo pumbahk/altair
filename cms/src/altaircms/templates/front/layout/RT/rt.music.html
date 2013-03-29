@@ -152,9 +152,11 @@ form = TopPageSidebarSearchForm()
 
          <div class="clear"></div><div id="globalNav">
           <ul id="globalNav1">
-            %for c in layout.navigation_link_list("globalNav1"):
-            <li><a href="${h.link.get_link_from_category(request,c)}"><img src="${c.imgsrc}" alt="${c.label}" ${(c.attributes or "")|n} /></a></li>
-            %endfor
+            <li><a href="/"><img src="/static/RT/img/renewal/header_nav_top.jpg" alt="index" width="132" height="38" /></a></li>
+            <li><a href="/music"><img src="/static/RT/img/renewal/header_nav_music_active.jpg" alt="music" alt="music 音楽" width="68" height="38" /></a></li>
+            <li><a href="/stage"><img src="/static/RT/img/renewal/header_nav_stage.jpg" alt="stage" alt="stage 演劇" width="136" height="38" /></a></li>
+            <li><a href="/sports"><img src="/static/RT/img/renewal/header_nav_sports.jpg" alt="sports" alt="sports スポーツ" width="92" height="38" /></a></li>
+            <li><a href="/event"><img src="/static/RT/img/renewal/header_nav_event.jpg" alt="event" alt="event イベント・その他" width="146" height="38" /></a></li>
             %for c in layout.navigation_link_list("globalNav2"):
             <li class="right"><a href="${h.link.get_link_from_category(request,c)}"><img src="${c.imgsrc}" alt="${c.label}" ${(c.attributes or "")|n} /></a></li>
             %endfor
