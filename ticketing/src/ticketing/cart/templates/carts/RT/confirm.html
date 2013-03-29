@@ -131,8 +131,13 @@
 			</dt>
             <dd>
               <ul>
+<%
+style = ''
+if len(list(mailmagazines_to_subscribe)) == 1:
+    style = 'style="width: 100%;"'         
+%>
                 % for mailmagazine in mailmagazines_to_subscribe:
-                <li>
+                <li ${style|n}>
                   <div>
                     <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
                     <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
