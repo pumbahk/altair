@@ -135,6 +135,11 @@ class TopicCore(Base):
     def genre(self, vs):
         self._genre = vs
 
+    def delete(self, session=None):
+        tags = list(self.tags)
+        for t in tags:
+            self.tags.remove(t)
+        
 _where = object()
 
 
@@ -301,9 +306,9 @@ class TopicCoreTag(WithOrganizationMixin, Base):
     def __repr__(self):
         return "<%r label: %r organization_id: %r>" % (self.__class__, self.label, self.organization_id)
 
-def delete_orphan_topiccoretag(mapper, connection, target):
-    TopicCoreTag.query.filter(~TopicCoreTag.topiccores.any()).delete(synchronize_session=False)
-sa.event.listen(TopicCore, "after_delete", delete_orphan_topiccoretag)
+# def delete_orphan_topiccoretag(mapper, connection, target):
+#     TopicCoreTag.query.filter(~TopicCoreTag.topiccores.any()).delete(synchronize_session=False)
+# sa.event.listen(TopicCore, "after_delete", delete_orphan_topiccoretag)
 
 class TopicTag(TopicCoreTag):
     type = "topic"
@@ -311,9 +316,9 @@ class TopicTag(TopicCoreTag):
     @declared_attr
     def __tableargs__(cls):
         return  ((sa.schema.UniqueConstraint(cls.label, cls.discriminator, cls.organization_id, cls.publicp)))        
-def delete_orphan_tag(mapper, connection, target):
-    TopicTag.query.filter(~TopicTag.topiccores.any()).delete(synchronize_session=False)
-sa.event.listen(Topic, "after_delete", delete_orphan_tag)
+# def delete_orphan_tag(mapper, connection, target):
+#     TopicTag.query.filter(~TopicTag.topiccores.any()).delete(synchronize_session=False)
+# sa.event.listen(Topic, "after_delete", delete_orphan_tag)
 
 class TopcontentTag(TopicCoreTag):
     type = "topcontent"
@@ -321,9 +326,9 @@ class TopcontentTag(TopicCoreTag):
     @declared_attr
     def __tableargs__(cls):
         return  ((sa.schema.UniqueConstraint(cls.label, cls.discriminator, cls.organization_id)))        
-def delete_orphan_tag(mapper, connection, target):
-    TopcontentTag.query.filter(~TopcontentTag.topiccores.any()).delete(synchronize_session=False)
-sa.event.listen(Topcontent, "after_delete", delete_orphan_tag)
+# def delete_orphan_tag(mapper, connection, target):
+#     TopcontentTag.query.filter(~TopcontentTag.topiccores.any()).delete(synchronize_session=False)
+# sa.event.listen(Topcontent, "after_delete", delete_orphan_tag)
 
 
 class PromotionTag(TopicCoreTag):
@@ -333,6 +338,6 @@ class PromotionTag(TopicCoreTag):
     def __tableargs__(cls):
         return  ((sa.schema.UniqueConstraint(cls.label, cls.discriminator, cls.organization_id)))        
 
-def delete_orphan_tag(mapper, connection, target):
-    PromotionTag.query.filter(~PromotionTag.topiccores.any()).delete(synchronize_session=False)
-sa.event.listen(Promotion, "after_delete", delete_orphan_tag)
+# def delete_orphan_tag(mapper, connection, target):
+#     PromotionTag.query.filter(~PromotionTag.topiccores.any()).delete(synchronize_session=False)
+# sa.event.listen(Promotion, "after_delete", delete_orphan_tag)

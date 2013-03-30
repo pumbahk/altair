@@ -1,16 +1,18 @@
 ## sizeがwidth,height固定はひどい
-
 <div id="notableEvents">
-  % for t in qs:
-  <div class="event">
-	<dl>
-	  <dt><a href="${h.link.get_link_from_topcontent(request, t)}">${h.truncate(t.title, 35) }</a></dt>
-	  <dd>${h.truncate(t.text, 57)}</dd>
-	</dl>
-	<p>
-	  <a href="${h.link.get_link_from_topcontent(request, t)}">
-		<img src="${h.asset.to_show_page(request, t.image_asset,filepath=getattr(t.image_asset, widget.rendering_image_attribute))}" alt="${t.title}" width="80" height="80" />
-	  </a><br />
-  </div>
+  <table>
+    <tbody>
+  % for pair in h.chunk(qs, 2):
+      <tr>
+    % for t in pair:
+        <td class="event">
+          <a href="${h.link.get_link_from_topcontent(request, t)}"><img src="${h.asset.to_show_page(request, t.image_asset,filepath=getattr(t.image_asset, widget.rendering_image_attribute))}" alt="${t.title}" width="80" height="80" /></a>
+          <a href="${h.link.get_link_from_topcontent(request, t)}">${h.truncate(t.title, 35) }</a>
+          <p>${h.truncate(t.text, 57)}</p>
+        </td>
+    % endfor
+      </tr>
   % endfor
+    </tbody>
+  </table>
 </div>

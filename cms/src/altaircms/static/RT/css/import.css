@@ -7,10 +7,12 @@
 */
 
 
-@import'default.css';
-@import'layout.css';
-@import'content.css';
-@import'jquery.colorbox.css';
+@import 'all.css';
+@import 'rtfooter.css';
+@import 'jquery.colorbox.css';
+@import 'grpRakutenLinkArea.css';
 
-/* 追加 */
-@import'custom.css';
+div#grpRakutenLinkArea {
+    clear: both;
+    font-size: 125%;
+}

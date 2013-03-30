@@ -39,7 +39,7 @@
 	% endif
 </td></tr>
 <tr><th>frontend metadata</th><td>
-	% if root:
+	% if site._metadata_url != None and root:
 	<a href="${request.route_path('api.get_frontend', venue_id=venue.id, part=root)}" target="_blank">${site._metadata_url}</a>
 	% else:
 	${site._metadata_url}

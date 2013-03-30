@@ -172,10 +172,10 @@ class GenrePartForm(Form):
         prefix = self._prefix or ""
         for (t_id, t_label), subs in zip(self.top.choices, self.for_render_subs):
             html.append(u"<tr>")
-            html.append(u'<td class="mostleft"><input name="%stop" value="%s" type="checkbox"/>%s</td>' % (prefix, t_id, t_label))
+            html.append(u'<td class="mostleft"><span class="control-group"><label><input name="%stop" value="%s" type="checkbox"/> %s</label></span></td>' % (prefix, t_id, t_label))
             html.append(u"<td>")
             for s_id, s_label in subs:
-                html.append(u'<input name="%ssub" value="%s" type="checkbox"/>%s' % (prefix, s_id, s_label))
+                html.append(u'<span class="control-group"><label><input name="%ssub" value="%s" type="checkbox"/> %s</label></span>' % (prefix, s_id, s_label))
             html.append(u"</td>")
             html.append(u"</tr>")
         return u"\n".join(html)
