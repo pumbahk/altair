@@ -24,25 +24,21 @@
 }
 
 /* fukidashi*/
-.fukidashi_region{
+.fukidashi_region {
   background: url(../img/renewal/fukidashi.gif) 0 0 no-repeat transparent;
   width: 130px;
-  height: 100px;
-  padding: 10px 15px 10px 15px;
+  height: 88px;
+  padding: 22px 15px 10px 15px;
   position: absolute;
   text-align: left;
+  line-height: 14px;
   left: 10px;
   color: #000;
   z-index: 100;
 }
 
-.fukidashi_region p{
+.fukidashi_region p {
   display: block;
-  margin-top: 12px;
-}
-
-.fukidashi_region p a{
-  color: #444 !important;
 }
 
 /*

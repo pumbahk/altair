@@ -300,23 +300,20 @@ ul#globalNav1 li.right{
 }
 
 /* ヘッダ検索 */
-#headerSearch a {
-	color: #fff;
-}
-
 #headerSearch {
 	height: 48px;
 	font-size: 120%;
 	background: #c01920;
 	width:950px;
-	margin: 0 auto;
+	height: 47px;
+	padding: 0 0;
+	margin: 0 auto 10px auto;
+	overflow: hidden;
 }
 
-#headerSearch {
-	overflow: hidden;
-	margin-bottom: 10px;
-	padding: 0 0;
-	height: 47px;
+#headerSearch form a,
+#headerSearch dl a {
+	color: #fff;
 }
 
 #headerSearch form {
@@ -325,6 +322,7 @@ ul#globalNav1 li.right{
 	padding: 0 0 0 10px;
 	margin: 0 0;
 	height: 47px;
+    overflow: hidden;
 }
 
 #headerSearch .headerSearch_border {
@@ -370,7 +368,7 @@ ul#globalNav1 li.right{
 
 #headerSearch form input.text {
     margin-top: 10px;
-	width: 230px;
+	width: 222px;
 	height: 19px;
     font-size: 12px;
 }
@@ -384,6 +382,8 @@ ul#globalNav1 li.right{
 #headerSearch dl {
   float: right;
   width: 470px;
+  height: 47px;
+  overflow: hidden;
 }
 
 #headerSearch dt {
