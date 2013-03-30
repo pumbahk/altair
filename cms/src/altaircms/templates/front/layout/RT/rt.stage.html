@@ -26,7 +26,7 @@ form = TopPageSidebarSearchForm()
         <li><a href="${h.link.get_searchpage(request, page=page, kind="deal_cond", value="early_firstcome")}"><img src="/static/RT/img/index/btn_presale.gif" alt="先行抽選" width="222" height="28" /></a></li>
         <li><a href="${h.link.get_searchpage(request, page=page, kind="deal_cond", value="normal")}"><img src="/static/RT/img/index/btn_release.gif" alt="一般発売" width="222" height="28" /></a></li>
         <li><a href="${h.link.get_searchpage(request, page=page, kind="deal_open", value=7)}"><img src="/static/RT/img/index/btn_now.gif" alt="すぐ見たい" width="222" height="28" /></a></li>
-        <li><a href="${request.route_path("page_search_by_freeword",_query=dict(q=u"お買い得"))}"><img src="/static/RT/img/index/btn_best.gif" alt="お買い得チケット" width="222" height="28" /></a></li>
+        <li><a href="${request.route_path("page_search_by_freeword",_query=dict(q=u"ポイントキャンペーン"))}"><img src="/static/RT/img/index/btn_best.gif" alt="お買い得チケット" width="222" height="28" /></a></li>
       </ul>
       <form id="form2" name="form2" method="GET" action="${request.route_path("page_search_by_multi")}">
         <dl>
@@ -213,14 +213,15 @@ form = TopPageSidebarSearchForm()
 </%block>
   <div class="sideCategoryGenre">
     <h2>ジャンル一覧</h2>
-
 	  <ul>
-		  % for g in layout.get_subgenre_list_from_page(page):
-         %if g.category_top_pageset_id:
-		       <li><a href="${h.link.get_link_from_genre(request, g)}">${g.label}</a></li>
-         %endif
+		  % for i,is_me,g in layout.get_genre_tree_with_nestlevel_from_page(page):
+        %if is_me:
+		      <li><span class="active nest${i}">${g.label}</span></li>          
+        %else:
+		      <li><a class="nest${i}"href="${h.link.get_link_from_genre(request, g)}">${g.label}</a></li>
+        %endif
 		  % endfor
-</ul>
+    </ul>
 </div>
 
 ## area
