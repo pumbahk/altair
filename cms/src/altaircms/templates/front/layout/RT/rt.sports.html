@@ -212,7 +212,7 @@ form = TopPageSidebarSearchForm()
     <h2>ジャンル一覧</h2>
 
 	  <ul>
-		  % for i,is_me,g in layout.get_genre_tree_with_nestlevel(page.pageset.genre):
+		  % for i,is_me,g in layout.get_genre_tree_with_nestlevel_from_page(page):
         %if is_me:
 		      <li><span class="active nest${i}">${g.label}</span></li>          
         %else:

@@ -37,6 +37,12 @@ class MyLayout(object):
     def get_subgenre_list_from_genre(self, genre):
         return (genre.children or []) if genre else []        
 
+    def get_subgenre_list_from_page(self, page):
+        if page and hasattr(page, "pageset") and page.pageset.genre_id:
+            genre = page.pageset.genre
+            return genre.children if genre else []
+        return []
+       
     def get_genre_tree_with_nestlevel(self, genre):
         if not genre:
             return []
@@ -62,14 +68,12 @@ class MyLayout(object):
                     else:
                         r.append((index, False, g))
         return r
-            
 
-    def get_subgenre_list_from_page(self, page):
+    def get_genre_tree_with_nestlevel_from_page(self, page):
         if page and hasattr(page, "pageset") and page.pageset.genre_id:
-            genre = page.pageset.genre
-            return genre.children if genre else []
+            return self.get_genre_tree_with_nestlevel(page.pageset.genre)
         return []
-
+         
     _body_id = "index"
     @property
     def body_id(self):
