@@ -24,7 +24,6 @@ else:
     ${w|n}
   % endfor
 </%def>
-
 <%def name="search_form_on_header(placeholder, query_id)">
   <form id="form1" name="form1" method="GET" action="${request.route_path("page_search_by_freeword")}">
     <a href="#" class="region fukidashi-btn">開催地</a>
@@ -46,23 +45,23 @@ form = TopPageSidebarSearchForm()
         <li><a href="${h.link.get_searchpage(request, page=page, kind="deal_cond", value="early_firstcome")}"><img src="/static/RT/img/index/btn_presale.gif" alt="先行抽選" width="222" height="28" /></a></li>
         <li><a href="${h.link.get_searchpage(request, page=page, kind="deal_cond", value="normal")}"><img src="/static/RT/img/index/btn_release.gif" alt="一般発売" width="222" height="28" /></a></li>
         <li><a href="${h.link.get_searchpage(request, page=page, kind="deal_open", value=7)}"><img src="/static/RT/img/index/btn_now.gif" alt="すぐ見たい" width="222" height="28" /></a></li>
-        <li><a href="${request.route_path("page_search_by_freeword",_query=dict(q=u"お買い得"))}"><img src="/static/RT/img/index/btn_best.gif" alt="お買い得チケット" width="222" height="28" /></a></li>
+        <li><a href="${request.route_path("page_search_by_freeword",_query=dict(q=u"ポイントキャンペーン"))}"><img src="/static/RT/img/index/btn_best.gif" alt="お買い得チケット" width="222" height="28" /></a></li>
       </ul>
       <form id="form2" name="form2" method="GET" action="${request.route_path("page_search_by_multi")}">
         <dl>
           <dt><img src="/static/RT/img/index/search_day.gif" alt="開催日" width="37" height="13" /></dt>
           <dd>
-            ${form.start_year}
-            ${form.start_month}
-            ${form.start_day}
+                       ${form.start_year}
+                       ${form.start_month}
+                       ${form.start_day}
             ～<br />
-            ${form.end_year}
-            ${form.end_month}
-            ${form.end_day}
+                       ${form.end_year}
+                       ${form.end_month}
+                       ${form.end_day}
           </dd>
           <dt><img src="/static/RT/img/index/search_place.gif" alt="開催場所" width="52" height="13" /></dt>
           <dd>
-            ${form.area}
+                        ${form.area}
           </dd>
         </dl>
         <p><input name="imageField2" type="image" id="imageField2" src="/static/RT/img/index/btn_search.gif" alt="日程・場所で探す" /></p>
@@ -246,10 +245,13 @@ form = TopPageSidebarSearchForm()
 
   <div class="sideCategoryGenre">
     <h2>ジャンル一覧</h2>
-
 	  <ul>
-		  % for g in layout.top_category_genre_list:
-		    <li><a href="${h.link.get_link_from_genre(request, g)}">${g.label}</a></li>
+		  % for i,is_me,g in layout.get_genre_tree_with_nestlevel_from_page(page):
+        %if is_me:
+		      <li><span class="active nest${i}">${g.label}</span></li>          
+        %else:
+		      <li><a class="nest${i}"href="${h.link.get_link_from_genre(request, g)}">${g.label}</a></li>
+        %endif
 		  % endfor
     </ul>
     </div>
