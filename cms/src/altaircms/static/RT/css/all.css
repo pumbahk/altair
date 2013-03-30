@@ -306,6 +306,7 @@
     padding-top: 10px;
     font-size: 120%;
     text-align: left; /* for Quirks Mode */
+    overflow: hidden;
 }
 
 /* アクセシビリティ対応 */
