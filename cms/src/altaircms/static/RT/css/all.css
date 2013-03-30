@@ -655,7 +655,8 @@ ul#globalNav1 li.right{
 
 #headerSearch form {
     float: left;
-    width: 465px;
+    white-space: nowrap;
+    width: 485px;
     padding: 0 0 0 10px;
     margin: 0 0;
     height: 47px;
@@ -705,9 +706,9 @@ ul#globalNav1 li.right{
 
 #headerSearch form input.text {
     margin-top: 10px;
-    width: 222px;
-    height: 19px;
-    font-size: 12px;
+    width: 248px;
+    height: 20px;
+    font-size: 14px;
 }
 
 #headerSearch form a {
@@ -718,19 +719,23 @@ ul#globalNav1 li.right{
     
 #headerSearch dl {
   float: right;
-  width: 470px;
+  width: 455px;
   height: 47px;
   overflow: hidden;
 }
 
 #headerSearch dt {
   float: left;
+  width: 53px;
+  height: 47px;
   margin-right: 10px;
 }
 
 #headerSearch dd {
   line-height: 1.5;
   padding-top: 5px;
+  width: 392px;
+  height: 47px;
 }
 
 #headerSearch dd li {
