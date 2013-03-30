@@ -6,7 +6,7 @@ from zope.deprecation import deprecate
 
 from altaircms.tag.models import HotWord
 from altaircms.page.models import PageTag
-from altaircms.models import Category, Genre, SalesSegmentKind
+from altaircms.models import Category, Genre, SalesSegmentKind, _GenrePath
 from markupsafe import Markup
 
 
@@ -37,6 +37,33 @@ class MyLayout(object):
     def get_subgenre_list_from_genre(self, genre):
         return (genre.children or []) if genre else []        
 
+    def get_genre_tree_with_nestlevel(self, genre):
+        if not genre:
+            return []
+        ancestors = genre.query_ancestors().with_entities(_GenrePath.hop, Genre).all()
+        r = []
+        max_depth = ancestors[-1][0]
+        ancestors.pop()
+        if not ancestors:
+            r.append((1, True, genre))
+            for g in self.get_subgenre_list_from_genre(genre):
+                r.append((2, False, g))
+            return r
+        for i, g in reversed(ancestors):
+            r.append((max_depth-i, False, g))
+            if i == 1:
+                sibblings = g.children
+                index = max_depth + 1
+                for g in sibblings:
+                    if g.id == genre.id:
+                        r.append((index, True, g))
+                        for g in genre.children:
+                            r.append((index+1, False, g))
+                    else:
+                        r.append((index, False, g))
+        return r
+            
+
     def get_subgenre_list_from_page(self, page):
         if page and hasattr(page, "pageset") and page.pageset.genre_id:
             genre = page.pageset.genre
@@ -62,7 +89,6 @@ def get_top_category_genres(request, strict=False):
         return root.children
     return [g for g in root.children if g.category_top_pageset_id]
 
-
 def get_system_tags_from_genres(request, genres):
     genres = [g.label for g in genres]
     return PageTag.query.filter(PageTag.organization_id==None, PageTag.label.in_([genres]))
@@ -84,6 +110,13 @@ def get_current_hotwords(request, _nowday=datetime.now):
     qs = qs.filter_by(enablep=True).order_by(sa.asc("display_order"), sa.asc("term_end"))
     return qs
 
+@deprecate("this is obsolete")
+def get_subcategories_from_page(request, page):
+    """ カテゴリトップのサブカテゴリを取得する
+    """
+    qs = Category.query.filter(Category.pageset==page.pageset).filter(Category.pageset != None)
+    root_category = qs.first()
+    return root_category.children if root_category else []
 
 @deprecate("this is obsolete")
 def get_navigation_categories(request):
@@ -98,10 +131,3 @@ def get_navigation_categories(request):
                 top_outer_categories=top_outer_categories,
                 top_inner_categories=top_inner_categories)
 
-@deprecate("this is obsolete")
-def get_subcategories_from_page(request, page):
-    """ カテゴリトップのサブカテゴリを取得する
-    """
-    qs = Category.query.filter(Category.pageset==page.pageset).filter(Category.pageset != None)
-    root_category = qs.first()
-    return root_category.children if root_category else []

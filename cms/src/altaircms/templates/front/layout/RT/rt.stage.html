@@ -213,14 +213,15 @@ form = TopPageSidebarSearchForm()
 </%block>
   <div class="sideCategoryGenre">
     <h2>ジャンル一覧</h2>
-
 	  <ul>
-		  % for g in layout.get_subgenre_list_from_page(page):
-         %if g.category_top_pageset_id:
-		       <li><a href="${h.link.get_link_from_genre(request, g)}">${g.label}</a></li>
-         %endif
+		  % for i,is_me,g in layout.get_genre_tree_with_nestlevel(page.pageset.genre):
+        %if is_me:
+		      <li><span class="active nest${i}">${g.label}</span></li>          
+        %else:
+		      <li><a class="nest${i}"href="${h.link.get_link_from_genre(request, g)}">${g.label}</a></li>
+        %endif
 		  % endfor
-</ul>
+    </ul>
 </div>
 
 ## area

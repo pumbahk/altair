@@ -840,6 +840,18 @@ ul#globalNav1 li.right{
 #detail #side iframe {
     margin-bottom: 10px;
 }
+
+#side .nest1 {
+}
+#side .nest2 {
+ margin-left: 4%;
+}
+#side .nest3 {
+ margin-left: 8%;
+}
+#side .nest4 {
+ margin-left: 12%;
+}
 /* }}} */
 
 /* #sideName {{{ */
@@ -1205,6 +1217,13 @@ ul#globalNav1 li.right{
 }
 
 .sideCategoryGenre a {
+    display: block;
+    height: 1%;
+    padding: 3px 10px 5px 18px;
+    background: url(../img/search/side_icon.gif) no-repeat 10px 9px;
+}
+
+.sideCategoryGenre .active {
     display: block;
     height: 1%;
     padding: 3px 10px 5px 18px;
@@ -2895,3 +2914,4 @@ salessegment icon
     margin-bottom: 20px;
 }
 /* }}} */
+

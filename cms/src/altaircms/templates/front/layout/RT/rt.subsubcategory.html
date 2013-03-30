@@ -34,14 +34,6 @@ else:
   </form>
 </%def>
 
-<%def name="search_form_prev(placeholder, query_id)">
-	<form id="form1" name="form1" method="GET" action="${request.route_path("page_search_by_freeword")}">
-		<input name="q" type="text" class="text" id="${query_id}" size="30" placeholder="${placeholder}" />
-		<input name="imageField" type="image" id="imageField" src="/static/RT/img/common/header_search_btn.gif" alt="検索" />
-		<a href="${request.route_path("page_search_input")}">詳細検索</a>
-	</form>
-</%def>
-
 <%def name="top_side_searchform()">
 <%
 from altairsite.search.forms import TopPageSidebarSearchForm
@@ -219,7 +211,7 @@ form = TopPageSidebarSearchForm()
 	<div class="searchMessage">
         <h3>該当するチケットはありません</h3>
       <p class="message">他の検索条件で再度検索してみてください</p>
-      ${search_form_prev(u"アーティスト名、公演名、会場名など", "missing_query_id")}
+      ${search_form_on_header(u"アーティスト名、公演名、会場名など", "missing_query_id")}
     </div>
     % else:
 
@@ -253,10 +245,13 @@ form = TopPageSidebarSearchForm()
 
   <div class="sideCategoryGenre">
     <h2>ジャンル一覧</h2>
-
 	  <ul>
-		  % for g in layout.top_category_genre_list:
-		    <li><a href="${h.link.get_link_from_genre(request, g)}">${g.label}</a></li>
+		  % for i,is_me,g in layout.get_genre_tree_with_nestlevel(page.pageset.genre):
+        %if is_me:
+		      <li><span class="active nest${i}">${g.label}</span></li>          
+        %else:
+		      <li><a class="nest${i}"href="${h.link.get_link_from_genre(request, g)}">${g.label}</a></li>
+        %endif
 		  % endfor
     </ul>
     </div>
