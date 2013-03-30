@@ -46,7 +46,8 @@ class MyLayout(object):
     def get_genre_tree_with_nestlevel(self, genre):
         if not genre:
             return []
-        ancestors = genre.query_ancestors().with_entities(_GenrePath.hop, Genre).all()
+        ancestors = genre.query_ancestors().with_entities(_GenrePath.hop, Genre)
+        ancestors = ancestors.options(orm.joinedload(Genre.category_top_pageset)).all()
         r = []
         max_depth = ancestors[-1][0]
         ancestors.pop()
@@ -58,7 +59,7 @@ class MyLayout(object):
         for i, g in reversed(ancestors):
             r.append((max_depth-i, False, g))
             if i == 1:
-                sibblings = g.children
+                sibblings = g.query_descendant(hop=1).options(orm.joinedload(Genre.category_top_pageset)).all()
                 index = max_depth + 1
                 for g in sibblings:
                     if g.id == genre.id:
