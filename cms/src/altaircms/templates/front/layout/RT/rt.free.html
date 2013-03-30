@@ -124,8 +124,8 @@ form = TopPageSidebarSearchForm()
             <dt>補助メニュー</dt>
             <dd class="siteUtility">
                 <ul>
-                    %for c in layout.navigation_link_list("siteUtility"):
-                    <li class="right"><a href="${h.link.get_link_from_category(request,c)}"><img src="${c.imgsrc}" alt="${c.label}" ${(c.attributes or "")|n} /></a></li>
+                    %for _, c in h.first_and_last(layout.navigation_link_list("siteUtility")):
+                    <li${_()}><a href="${h.link.get_link_from_category(request,c)}"><img src="${c.imgsrc}" alt="${c.label}" ${(c.attributes or "")|n} /></a></li>
                     %endfor
                 </ul>
             </dd>
