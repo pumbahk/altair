@@ -123,7 +123,7 @@ ul.sitemapLists li.list2{
         <h3 class="genre">新着順</h3>
         <ul class="sitemapLists">
           %for p in recently_pages:
-          <li><a href="${h.link.publish_page_from_pageset(request, p)}" target="_blank" >${p.event.title}</a></li>                   
+          <li><a href="${h.link.publish_page_from_pageset(request, p)}" target="_blank" >${p.event.title}</a> (${h.base.jdate_with_hour(p.event.deal_open)} 販売開始!)</li>                   
           %endfor
         </ul>
       </td>
@@ -186,6 +186,9 @@ ul.sitemapLists li.list2{
           %endfor
           %endfor
         </ul>
+        <div class="align1" style="margin-top:5px;">
+          <a href="/search/input">その他の会場を見る（詳細検索へ）</a>
+        </div>
       </td>
     </tr>
   </table>
@@ -200,10 +203,16 @@ ul.sitemapLists li.list2{
       <h3 class="genre">初めての方へ</h3>
       <ul class="sitemapLists">
         <li>
-          <a href="/first" target="_blank">初めての方へ</a>
+          <a href="/howto" target="_blank">購入の流れ</a>
         </li>
         <li>
-          <a href="/help" target="_blank">ヘルプ</a>
+          <a href="/faq" target="_blank">よくある質問</a>
+        </li>
+        <li>
+          <a href="/terms" target="_blank">サービス利用規約</a>
+        </li>
+        <li>
+          <a href="/sitemap" target="_blank">サイトマップ</a>
         </li>
       </ul>
     </td>
@@ -214,7 +223,10 @@ ul.sitemapLists li.list2{
           <a href="/change" target="_blank">公演中止・変更情報</a>
         </li>
         <li>
-          <a href="/orderreview" target="_blank">予約チケットの確認 </a>
+          <a href="/order" target="_blank">予約チケットの確認 </a>
+        </li>
+        <li>
+          <a href="/premium" target="_blank">プレミアムチケット </a>
         </li>
         <!--
             <li>
@@ -234,9 +246,6 @@ ul.sitemapLists li.list2{
         </li>
         <li>
           <a href="/inquiry" target="_blank">お問い合わせ </a>
-        </li>
-        <li>
-          <a href="/terms" target="_blank">利用規約</a>
         </li>
         <li>
           <a href="http://www.ticketstar.jp/" target="_blank">運営会社について </a>
