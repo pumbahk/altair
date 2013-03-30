@@ -2795,3 +2795,22 @@ h1.detail-title {
 h2.detail.heading {
     font-size: 170%;
 }
+
+/* #social {{{ */
+#social {
+    /* background-color: #ffe; */
+    border-radius: 4px;
+    border: 1px solid #eed;
+    padding: 4px 4px;
+    line-height: 100%;
+    margin: 10px 0;
+    float: right;
+}
+
+#social iframe {
+    margin: 0 0 !important;
+}
+
+#side #social {
+}
+/* }}} */
