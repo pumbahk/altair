@@ -819,8 +819,7 @@ ul#globalNav1 li.right{
 #detail #side {
     position: static;
     float: right;
-    width: 226px;
-    margin-right: 14px;
+    width: 240px;
 }
 
 #detail #side iframe {
@@ -1928,6 +1927,7 @@ ul#globalNav1 li.right{
     color: #7f663f;
     font-size: 116.7%;
     font-weight: bold;
+    width: 240px;
     background: url(../img/detail/bg_count_down.gif) no-repeat 0 0;
 }
 
