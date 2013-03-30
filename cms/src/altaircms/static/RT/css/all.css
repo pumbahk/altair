@@ -2787,3 +2787,11 @@ salessegment icon
     height: 46px;
 }
 /* }}} */
+
+h1.detail-title {
+    font-size: 200%;
+}
+
+h2.detail.heading {
+    font-size: 170%;
+}
