@@ -752,7 +752,7 @@ ul#globalNav1 li.right{
     position: relative;
     left: 1px;
     float: right;
-    width: 740px;
+    width: 742px;
     line-height: 1.5;
     margin-bottom: 20px;
     padding-top: 3px;
@@ -765,7 +765,7 @@ ul#globalNav1 li.right{
 
 #index #main {
     float: left;
-    width: 700px;
+    width: 702px;
 }
 
 #detail #main {
@@ -781,7 +781,6 @@ ul#globalNav1 li.right{
     clear: both;
     position: relative;
     left: -1px;
-    margin-bottom: 5px;
 }
 
 #main div {
@@ -1322,18 +1321,21 @@ ul#globalNav1 li.right{
 
 /* .event {{{ */
 .event {
-    float: left;
     width: 350px;
     overflow: hidden;
     padding: 0 10px;
     border-bottom: 1px dotted #cccccc;
 }
 
-* html .event {
+div.event {
+    float: left;
+}
+
+* html div.event {
     width: 370px;
 }
 
-.event dl {
+div.event dl {
     float: right;
     width: 240px;
     padding: 10px 15px 7px 0;
@@ -1344,11 +1346,11 @@ ul#globalNav1 li.right{
   height: 125px;
 }
 
-.event dt {
+div.event dt {
     font-weight: bold;
 }
 
-.event p {
+div.event p {
     margin: 0;
     width: 82px;
     padding: 10px 0 7px;
@@ -1356,12 +1358,12 @@ ul#globalNav1 li.right{
     text-align: center;
 }
 
-.event p img {
+div.event p img {
     margin-bottom: 5px;
     border: 1px solid #e6e6da;
 }
 
-.event p a {
+div.event p a {
     color: #ff3399;
 }
 
@@ -1374,11 +1376,28 @@ ul#globalNav1 li.right{
     width: 350px;
 }
 
-#index .event dl {
+td.event a {
+    font-weight: bold;
+}
+
+td.event p {
+    margin: 0 0;
+    padding: 0 0;
+}
+
+td.event img {
+    float: left;
+    margin: 5px 10px 5px 0;
+    border: 1px solid #e6e6da;
+    width: 80px;
+    height: 80px;
+}
+
+#index div.event dl {
     width: 220px;
 }
 
-* html #index .event dl {
+* html #index div.event dl {
     width: 235px;
 }
 /* }}} */
@@ -2650,9 +2669,11 @@ h2.sidebar-heading {
 .heading {
     background-repeat: no-repeat;
     color: #fff;
-    margin:0;
-    padding: 6px;
+    margin: 0 0 10px 0;
     padding-left: 15px;
+    height: 42px;
+    line-height: 42px;
+    vertical-align: middle;
 }
 
 .index.heading {
@@ -2675,6 +2696,13 @@ h2.sidebar-heading {
 }
 .change.heading {
     background-image:url(../img/change/bg_heading.gif);
+}
+
+#mainLeft #thisWeek,
+#mainLeft #nearTheEnd,
+#mainRight #thisWeek,
+#mainRight #nearTheEnd {
+    margin-top: -10px;
 }
 
 /* .topic-widget {{{ */
@@ -2818,5 +2846,11 @@ h2.detail.heading {
 }
 
 #side #social {
+}
+/* }}} */
+
+/* #notableEvents { */
+#notableEvents {
+    margin-bottom: 20px;
 }
 /* }}} */

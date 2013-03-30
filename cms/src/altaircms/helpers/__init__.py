@@ -171,4 +171,11 @@ def safe_url_quote(url):
             return urllib.quote(url.encode("utf-8"), safe="%/:=&?~#+!$,;'@()*[]").decode("utf-8") if url else ""
         except:
             return ""
-        
+
+def chunk(i, count, cons=list):
+    i = iter(i)
+    while True:
+        l = cons(itertools.islice(i, count))
+        if not l:
+            break
+        yield l
