@@ -25,6 +25,7 @@ from sqlalchemy.ext.declarative import declared_attr
 
 from altaircms.models import Base, BaseOriginalMixin
 from altaircms.models import DBSession
+from altaircms.models import model_to_dict
 from altaircms.layout.models import Layout
 from altaircms.models import WithOrganizationMixin
 
@@ -182,11 +183,13 @@ class PageSet(Base,
         return [tag for tag in self.tags if tag.publicp == False]
 
     def to_dict(self): #for slackoff update view
-        return dict(id=self.id, 
-                    tags_string=u", ".join(t.label for t in self.tags if t.organization_id), 
-                    private_tags_string=u", ".join(t.label for t in self.private_tags), 
-                    genre_id=self.genre_id, 
-                    )
+        params = model_to_dict(self)
+        params.update(id=self.id, 
+                      tags_string=u", ".join(t.label for t in self.public_tags if t.organization_id), 
+                      private_tags_string=u", ".join(t.label for t in self.private_tags), 
+                      genre_id=self.genre_id, 
+                      )
+        return params
     
         
     # @property
