@@ -84,52 +84,62 @@
     width: 342px;
     float: left;
     margin-right: 8px;
+    overflow: visible;
 }
 
 #index #mainRight {
     width: 342px;
     float: left;
     margin-left: 8px;
+    overflow: visible;
 }
 
 #sports #mainLeft {
     width: 362px;
     float: left;
+    overflow: visible;
 }
 
 #sports #mainRight {
     width: 362px;
     float: right;
+    overflow: visible;
 }
 
 #stage #mainLeft {
     width: 362px;
     float: left;
+    overflow: visible;
 }
 
 #stage #mainRight {
     width: 362px;
     float: right;
+    overflow: visible;
 }
 
 #music #mainLeft {
     width: 362px;
     float: left;
+    overflow: visible;
 }
 
 #music #mainRight {
     width: 362px;
     float: right;
+    overflow: visible;
 }
 
 #event #mainLeft {
     width: 362px;
     float: left;
+    overflow: visible;
 }
 
 #event #mainRight {
     width: 362px;
     float: right;
+    overflow: visible;
 }
 
 #music #main {
@@ -779,7 +789,6 @@ ul#globalNav1 li.right{
 
 #main h2 {
     clear: both;
-    position: relative;
     left: -1px;
 }
 
@@ -2663,9 +2672,26 @@ h2.sidebar-heading {
 }
 /* }}} */
 
-/* 
-    for heading widget
-*/
+h1.detail-title {
+    font-size: 200%;
+}
+
+/* .detail {{{ */
+.detail.heading {
+    background-image:url(../img/detail/bg_heading.gif);
+    color: #000;
+}
+.detail.heading h2{
+    vertical-align: middle ;
+}
+
+#detail h2.detail.heading {
+    font-size: 170%;
+}
+
+/* }}} */
+
+/* .heading {{{ */
 .heading {
     background-repeat: no-repeat;
     color: #fff;
@@ -2676,27 +2702,59 @@ h2.sidebar-heading {
     vertical-align: middle;
 }
 
+h2.heading {
+    *font-size: 100%;
+    *color: #fff;
+}
+
 .index.heading {
     background-image:url(../img/index/bg_heading.gif);
 }
+
+h2.index {
+    *background-image:url(../img/index/bg_heading.gif);
+}
+
 .sports.heading {
     background-image:url(../img/sports/bg_heading.gif);
 }
+
+h2.sports {
+    *background-image:url(../img/sports/bg_heading.gif);
+}
+
 .music.heading {
     background-image:url(../img/music/bg_heading.gif);
 }
+
+h2.music {
+    *background-image:url(../img/music/bg_heading.gif);
+}
+
 .other.heading {
     background-image:url(../img/event/bg_heading.gif);
 }
+
+h2.other {
+    *background-image:url(../img/event/bg_heading.gif);
+}
+
 .stage.heading {
     background-image:url(../img/stage/bg_heading.gif);
 }
+
+h2.stage {
+    *background-image:url(../img/stage/bg_heading.gif);
+}
+
 .help.heading {
     background-image:url(../img/help/bg_heading.gif);
 }
+
 .change.heading {
     background-image:url(../img/change/bg_heading.gif);
 }
+/* }}} */
 
 #mainLeft #thisWeek,
 #mainLeft #nearTheEnd,
@@ -2712,16 +2770,6 @@ h2.sidebar-heading {
 
 .topic-widget li {
     list-style: none;
-}
-/* }}} */
-
-/* .detail {{{ */
-.detail.heading {
-    background-image:url(../img/detail/bg_heading.gif);
-    color: #000;
-}
-.detail.heading h2{
-    vertical-align: middle ;
 }
 /* }}} */
 
@@ -2821,14 +2869,6 @@ salessegment icon
     height: 46px;
 }
 /* }}} */
-
-h1.detail-title {
-    font-size: 200%;
-}
-
-h2.detail.heading {
-    font-size: 170%;
-}
 
 /* #social {{{ */
 #social {
