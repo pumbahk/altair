@@ -24,7 +24,6 @@ else:
     ${w|n}
   % endfor
 </%def>
-
 <%def name="search_form_on_header(placeholder, query_id)">
   <form id="form1" name="form1" method="GET" action="${request.route_path("page_search_by_freeword")}">
     <a href="#" class="region fukidashi-btn">開催地</a>
@@ -33,6 +32,14 @@ else:
     <input name="imageField" type="image" id="imageField" src="/static/RT/img/renewal/header_search_btn.gif" alt="検索" />
     <a href="${request.route_path("page_search_input")}">詳細検索</a>
   </form>
+</%def>
+
+<%def name="search_form_prev(placeholder, query_id)">
+	<form id="form1" name="form1" method="GET" action="${request.route_path("page_search_by_freeword")}">
+		<input name="q" type="text" class="text" id="${query_id}" size="30" placeholder="${placeholder}" />
+		<input name="imageField" type="image" id="imageField" src="/static/RT/img/common/header_search_btn.gif" alt="検索" />
+		<a href="${request.route_path("page_search_input")}">詳細検索</a>
+	</form>
 </%def>
 
 <%def name="top_side_searchform()">
@@ -52,17 +59,17 @@ form = TopPageSidebarSearchForm()
         <dl>
           <dt><img src="/static/RT/img/index/search_day.gif" alt="開催日" width="37" height="13" /></dt>
           <dd>
-            ${form.start_year}
-            ${form.start_month}
-            ${form.start_day}
+                       ${form.start_year}
+                       ${form.start_month}
+                       ${form.start_day}
             ～<br />
-            ${form.end_year}
-            ${form.end_month}
-            ${form.end_day}
+                       ${form.end_year}
+                       ${form.end_month}
+                       ${form.end_day}
           </dd>
           <dt><img src="/static/RT/img/index/search_place.gif" alt="開催場所" width="52" height="13" /></dt>
           <dd>
-            ${form.area}
+                        ${form.area}
           </dd>
         </dl>
         <p><input name="imageField2" type="image" id="imageField2" src="/static/RT/img/index/btn_search.gif" alt="日程・場所で探す" /></p>
@@ -212,7 +219,7 @@ form = TopPageSidebarSearchForm()
 	<div class="searchMessage">
         <h3>該当するチケットはありません</h3>
       <p class="message">他の検索条件で再度検索してみてください</p>
-      ${search_form_on_header(u"アーティスト名、公演名、会場名など", "missing_query_id")}
+      ${search_form_prev(u"アーティスト名、公演名、会場名など", "missing_query_id")}
     </div>
     % else:
 
