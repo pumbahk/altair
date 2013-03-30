@@ -748,6 +748,7 @@ ul#globalNav1 li.right{
   padding-top: 5px;
   width: 392px;
   height: 47px;
+  float: left;
 }
 
 #headerSearch dd li {
