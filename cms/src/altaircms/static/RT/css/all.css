@@ -572,6 +572,7 @@ dl#topicPath dt {
 #globalNav1 {
     width: 950px;
     margin: 20px 0 0 0;
+    clear: both;
 }
 
 ul#globalNav1 li{
