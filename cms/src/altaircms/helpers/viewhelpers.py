@@ -32,6 +32,8 @@ def set_endpoint(request, endpoint=None):
     logger.debug("sentinel: %s, endpoint: %s, referer: %s" % (session.get(_CMS_ENDPOINT_SENTINEL), session.get(CMS_ENDPOINT), endpoint or request.referrer))
     
 def get_endpoint(request): #maybe
+    if "endpoint" in request.GET:
+        return request.GET["endpoint"]
     session = request.session
     endpoint = request.get("endpoint") or session.get(CMS_ENDPOINT)
     if endpoint and CMS_ENDPOINT in session:
