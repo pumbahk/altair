@@ -50,7 +50,7 @@
 <hr/>
 <h3>操作</h3>
 <div class="btn-group">
-  <a class="btn btn-primary" href="${request.route_path("pageset_update", id=pageset.id, action="input", _query=dict(genre=pageset.genre_id, url=pageset.url, endpoint=request.url))}" class="btn">
+  <a class="btn btn-primary" href="${request.route_path("pageset_update", id=pageset.id, action="input", _query=dict(endpoint=request.url))}" class="btn">
     <i class="icon-pencil"></i> ページセットの編集
   </a>
   <a class="btn"  href="${request.route_path("pageset", pageset_id=pageset.id)}">

@@ -27,26 +27,28 @@ def send_inquiry(request):
 
     form = InquiryForm(request.POST)
 
-    if form.validate():
-        form.send.data = "Success"
-        try:
-            log_info("send_inquiry", "send mail start")
-            mailer = get_mailer(request)
-            message = Message(subject=u'楽天チケット[PC]　お問合せフォーム',
-                              sender=request.sender_mailaddress,
-                              recipients=[request.inquiry_mailaddress],
-                              body=_create_mail_body(form))
-            mailer.send(message)
-            log_info("send_inquiry", "send mail end")
-        except Exception as e:
-            log_error("send_inquiry", str(e))
-            form.send.data = "Failed"
+    if not form.validate():
+        return {"form": form}
+
+    form.send.data = "Success"
+    try:
+        log_info("send_inquiry", "send mail start")
+        mailer = get_mailer(request)
+        message = Message(subject=u'楽天チケット[PC]　お問合せフォーム',
+                          sender=request.sender_mailaddress,
+                          recipients=[request.inquiry_mailaddress],
+                          body=_create_mail_body(form))
+        mailer.send(message)
+        log_info("send_inquiry", "send mail end")
+    except Exception as e:
+        log_error("send_inquiry", str(e))
+        form.send.data = "Failed"
 
     log_info("send_inquiry", "end")
     return {'form':form}
 
 def _create_mail_body(form):
-    body = form.name.data + u"さんからのお問合せです。\n"
+    body = form.username.data + u"さんからのお問合せです。\n"
     body = body + u"メールアドレス：" + form.mail.data + u"\n"
     body = body + u"予約受付番号：" + form.num.data + u"\n\n"
     body = body + u"---------------------------------------\n"

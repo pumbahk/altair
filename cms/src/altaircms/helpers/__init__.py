@@ -16,6 +16,7 @@ from webhelpers.paginate import Page
 import urlparse
 import cgi 
 import itertools
+from markupsafe import Markup
 
 def truncate(s, size):
     if len(s) > size:
@@ -171,4 +172,38 @@ def safe_url_quote(url):
             return urllib.quote(url.encode("utf-8"), safe="%/:=&?~#+!$,;'@()*[]").decode("utf-8") if url else ""
         except:
             return ""
-        
+
+def chunk(i, count, cons=list):
+    i = iter(i)
+    while True:
+        l = cons(itertools.islice(i, count))
+        if not l:
+            break
+        yield l
+
+def first_and_last(iter, first_class=u'first', last_class=u'last'):
+    first = True
+    last_i = None
+    extra_class = None
+
+    def _(class_=u''):
+        class_ = extra_class + u" " + class_ if extra_class else class_
+        if class_:
+            return Markup(u' class="%s"' % class_)
+        else:
+            return Markup(u'')
+
+    for i in iter:
+        if last_i is not None:
+            yield _, last_i
+        if first:
+            extra_class = first_class
+            first = False
+        else:
+            extra_class = None
+        last_i = i
+
+    extra_class = last_class
+    if last_i is not None:
+        yield _, last_i
+

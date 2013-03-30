@@ -27,11 +27,11 @@ def linklist_render(widget, finder, request=None):
         qs = qs.limit(widget.max_items)
     qs = qs.all()
     if not qs:
-        return u'<div style="margin-top:-5px;" id="%s"><p>現在、対象となる公演情報はありません</p></div>' % widget.finder_kind
+        return u'<div id="%s"><p>現在、対象となる公演情報はありません</p></div>' % widget.finder_kind
     candidates = [u'<a href="%s">%s</a>' % (h.link.publish_page_from_pageset(request, p), p.name) for p in qs]
     content = widget.delimiter.join(candidates)
     element = u'<p>%s</p>' % content if content else ''
-    return u'<div style="margin-top:-5px;" id="%s">%s</div>' % (widget.finder_kind, element)
+    return u'<div id="%s">%s</div>' % (widget.finder_kind, element)
 
 
 FINDER_KINDS_DICT= {"nearTheEnd": u"販売終了間近" , 
