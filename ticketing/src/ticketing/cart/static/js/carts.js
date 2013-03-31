@@ -1026,6 +1026,13 @@ cart.VenueView = Backbone.View.extend({
                 }
             },
             loadPartEnd: function (viewer, part) {
+                if (part == 'info') {
+                    var use_seatmap = $.map(viewer.stockTypes, function(st) {
+                        return !st.quantity_only ? st : null;
+                    });
+                    $('.selectSeatLeftPane .guidance').css({ display: 0 < use_seatmap.length ? '' : 'none' });
+                }
+
 				var page = viewer.currentPage;
 				if(page) {
 					self.verticalSlider.css({ visibility: viewer.pages[page].zoomable===false ? 'hidden' : 'visible' });
