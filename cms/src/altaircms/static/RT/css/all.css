@@ -2003,7 +2003,6 @@ td.event img {
 }
 /* }}} */
 
-
 /* #mypageHistory {{{ */
 #mypageHistory {
     margin-bottom: 30px;
@@ -2410,9 +2409,7 @@ td.event img {
 }
 /* }}} */
 
-
-/* サイトマップ
------------------------------------------------------------ */
+/* サイトマップ {{{ */ 
 #sitemapAboutBuy {
     margin: 10px 0 20px 10px;
     padding: 1px 0 1px 17px;
@@ -2547,6 +2544,7 @@ td.event img {
 #sitemapGuide li ul {
     padding-left: 20px;
 }
+/* }}} */
 
 /* .describeBox {{{ */
 .describeBox .settlementBoxInner2 {
@@ -2795,6 +2793,7 @@ h2.stage {
 }
 /* }}} */
 
+/* category icons {{{ */
 .icon-category {
     width: 82px;
     height: 20px;
@@ -2820,6 +2819,7 @@ h2.stage {
 .icon-category-event {
     background-image: url(../img/search/icon_event.gif);    
 }
+/* }}} */
 
 /* .purcharse-simple {{{ */
 .purchase-simple {
@@ -2830,9 +2830,7 @@ h2.stage {
 }
 /* }}} */
 
-/*
-salessegment icon
-*/
+/* salessegment icon {{{ */
 .icon-salessegment {
     display: inline-block;
     background-repeat: no-repeat;
@@ -2881,6 +2879,7 @@ salessegment icon
 .icon-salessegment.other {
     background-image: url(../img/search/icon_other.gif);
 }
+/* }}} */
 
 /* .purchaseButton {{{ */
 .purchaseButton {
@@ -2911,7 +2910,7 @@ salessegment icon
 }
 /* }}} */
 
-/* #notableEvents { */
+/* #notableEvents {{{ */
 #notableEvents {
     margin-bottom: 20px;
 }
