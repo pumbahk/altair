@@ -20,9 +20,10 @@ class PerformanceForm(Form):
             # FIXME: 都道府県が正しい順番に並ばないのは何とかならないものか
             venue_by_pref = dict()
             for venue in Venue.filter_by(**conditions).all():
-                if not venue.site.prefecture in venue_by_pref:
-                    venue_by_pref[venue.site.prefecture] = [ ]
-                venue_by_pref[venue.site.prefecture].append(
+                pref = venue.site.prefecture if venue.site.prefecture!=None and venue.site.prefecture!='' else u'(不明な都道府県)'
+                if not pref in venue_by_pref:
+                    venue_by_pref[pref] = [ ]
+                venue_by_pref[pref].append(
                     (venue.id,venue.name+(' ('+venue.sub_name+')' if (venue.sub_name!=None and venue.sub_name!='') else ''))
                 )
             self.venue_id.choices = [
