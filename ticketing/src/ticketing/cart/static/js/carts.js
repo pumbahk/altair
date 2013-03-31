@@ -73,10 +73,10 @@ cart.Dialog.prototype = {
         this.callbacks = callbacks;
         n.parent().append(this.n);
         this.n.overlay({
-            mask: {
+            mask: !$.browser.msie || parseInt($.browser.version) >= 8 ? {
                 color: "#999",
                 opacity: 0.5
-            },
+            }: null,
             closeOnClick: false
         });
         var self = this;
