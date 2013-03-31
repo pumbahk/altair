@@ -145,7 +145,7 @@ class EventPageDefaultInfoTests(unittest.TestCase):
             class organization:
                 code = "RT"
         target = self._makeOne(defaultinfo)
-        self.assertEqual(target.resolve_url(self.jpop, event=event), "prefix-/music/jpop/EV0010")
+        self.assertEqual(target.resolve_url(self.jpop, event=event), "prefix-/music/jpop/RTEV0010")
 
 
     def test_title_only(self):
