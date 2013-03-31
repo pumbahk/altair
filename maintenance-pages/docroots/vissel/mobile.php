@@ -3,7 +3,7 @@
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
   <title>ヴィッセル神戸 ヴィッセルチケット</title>
 </head>
-<body background="#FFB700">
+<body>
   <img src="assets/head_title_mobile.jpg" alt="ヴィッセルチケット" width="232" height="108" />
   <div align="center">ただいまメンテナンス中です</div>
   <?php include '../#common/maintenance_message.php'; ?>
