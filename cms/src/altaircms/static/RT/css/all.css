@@ -1713,7 +1713,7 @@ td.event img {
 /* .detailBox {{{ */
 .detailBox {
     width: 690px;
-    margin-bottom: 20px;
+    margin: 0 auto 20px auto;
     background: url(../img/detail/bg_box_bottom.gif) no-repeat left bottom;
 }
 
