@@ -1,28 +1,21 @@
 <div id="grpRakutenLinkArea">
 
-<ul id="grpSpelinlk">
-<li><a href="#">総合トップ</a></li>
-<li><a href="#">本</a></li>
-<li><a href="#">雑誌</a></li>
-<li><a href="#">DVD・Blu-ray</a></li>
-<li><a href="#">CD</a></li>
-<li><a href="#">ゲーム</a></li>
-<li><a href="#">ソフトウェア</a></li>
-<li class="grpLast"><a href="#">洋書</a></li>
-</ul>
-
-<dl id="grpKeyword">
-<dt>キーワード</dt>
-<dd>
-<ul>
-<li><a href="#">レストラン検索</a></li>
-<li><a href="#">飲み会・宴会</a></li>
-<li><a href="#">接待</a></li>
-<li><a href="#">個室</a></li>
-<li><a href="#">記念日</a></li>
-</ul>
-</dd>
-</dl>
+<div id="serviceList">
+    <dl>
+        % for genre in layout.top_category_genre_list:
+            <dl>
+                <dt><a href="${h.link.get_link_from_genre(request, genre)}">${genre.label}</a></dt>
+                <dd>
+                    % for subgenre in layout.get_subgenre_list_from_genre(genre):
+                        <ul>
+                            <li><a href="${h.link.get_link_from_genre(request, subgenre)}">${subgenre.label}</a></li>
+                        </ul>
+                    % endfor
+                </dd>
+            </dl>
+        % endfor
+        </dl>
+</div><!-- /div#serviceList -->
 
 <div id="grpFooter">
 <div id="groupServiceFooter">
