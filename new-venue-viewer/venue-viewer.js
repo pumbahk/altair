@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['LLMUJ20KF8HE2_LT'] = (function (exports) { (function () { 
+__LIBS__['v9MMJ3KG03VUBOIM'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['LS15ESZ95B6FM2TB'] = (function (exports) { (function () { 
+__LIBS__['V13HTR2FLDJSL4QY'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['A_H76M3H95VYO9XO'] = (function (exports) { (function () { 
+__LIBS__['xHSBFF2TBCHH5X2Y'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['LLMUJ20KF8HE2_LT'];
-var CONF = __LIBS__['LS15ESZ95B6FM2TB'];
+var util = __LIBS__['v9MMJ3KG03VUBOIM'];
+var CONF = __LIBS__['V13HTR2FLDJSL4QY'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -1030,9 +1030,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['LS15ESZ95B6FM2TB'];
-  var seat = __LIBS__['A_H76M3H95VYO9XO'];
-  var util = __LIBS__['LLMUJ20KF8HE2_LT'];
+  var CONF = __LIBS__['V13HTR2FLDJSL4QY'];
+  var seat = __LIBS__['xHSBFF2TBCHH5X2Y'];
+  var util = __LIBS__['v9MMJ3KG03VUBOIM'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1210,7 +1210,7 @@ function parseTransform(transform_str) {
                 if (self.currentPage) {
                   self.loadDrawing(self.currentPage, function () {
                     self.callbacks.load.call(self, self);
-                    self.zoomAndPan(self.zoomRatioMin, { x: 0., y: 0., });
+                    self.zoomAndPan(self.zoomRatioMin, { x: 0., y: 0. });
                   });
                 } else {
                   self.callbacks.load.call(self, self);
@@ -1578,7 +1578,6 @@ function parseTransform(transform_str) {
                       page = self.currentPage;
                     self.callbacks.messageBoard.up.call(self, self.pages[page].name);
                     self.canvas.css({ cursor: 'pointer' });
-console.log("over");
                   }
                 },
                 mouseout: function(evt) {
@@ -1876,7 +1875,6 @@ console.log("over");
                 }, self.callbacks.message);
               },
               mouseout: function(evt) {
-console.log("shape out");
                 var highlighted = self.highlighted;
                 self.highlighted = {};
                 for (var i in highlighted)
