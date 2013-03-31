@@ -168,7 +168,7 @@ form = TopPageSidebarSearchForm()
         
         <hr />
 
-<h1 style="font-size:140%; color:#888888; margin-top:10px;">${static_page.label}</h1>
+<h1 style="font-size:140%; color:#888888; margin-top:10px;">${static_page.label if hasattr(static_page,"label") else u"*ページのタイトル*"}</h1>
 <hr style="display: block; border:5px solid #d6cec3; margin-top:10px; margin-bottom:10px;"/>
 ${(inner_body or "<!-- this is inner -->")|n}
 
