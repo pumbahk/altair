@@ -3,7 +3,7 @@
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
   <title>仙台89ERS ナイナーズチケット</title>
 </head>
-<body background="#FFB700">
+<body>
   <img src="assets/head_title_mobile.jpg" alt="仙台89ERS" width="232" height="72" />
   <div align="center">ただいまメンテナンス中です</div>
   <?php include '../#common/maintenance_message.php'; ?>
