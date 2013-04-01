@@ -43,6 +43,7 @@ class Lots(BaseView):
                     if lot.entries:
                         self.request.session.flash(u'{0}は抽選申し込みが存在します。'.format(lot.name))
                     else:
+                        lot.sales_segment.delete()
                         lot.delete()
                         self.request.session.flash(u"{0}を削除しました。".format(lot.name))
 
