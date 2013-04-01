@@ -28,13 +28,10 @@ def search(request):
             qs = searcher.get_events_from_freeword(form)
             if qs:
                 qs = searcher.get_events_from_area(form, qs)
-                qs = searcher.get_events_week_sale(form, qs)
-                qs = searcher.get_events_soon_act(form, qs)
+                qs = searcher.get_events_from_sale(form, qs)
         else: # トップ画面からの地域検索
             qs = searcher.get_events_from_area(form)
-            qs = searcher.get_events_from_area(form, qs)
-            qs = searcher.get_events_week_sale(form, qs)
-            qs = searcher.get_events_soon_act(form, qs)
+            qs = searcher.get_events_from_sale(form, qs)
 
         log_info("search", "search event end(area)")
         form = get_event_paging(request=request, form=form, qs=qs)

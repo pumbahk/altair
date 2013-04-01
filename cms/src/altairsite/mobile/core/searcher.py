@@ -94,26 +94,6 @@ class EventSearcher(object):
         log_info("get_events_from_area", "end")
         return qs
 
-    # 今週発売検索
-    def get_events_week_sale(self, form, qs=None):
-        log_info("get_events_week_sale", "start")
-        if form.week_sale.data:
-            log_info("get_events_week_sale", "search start")
-            qs = self._get_events_week_sale(date.today(), None, qs)
-        log_info("get_events_week_sale", "end")
-        return qs
-
-    # まもなく開演
-    def get_events_soon_act(self, form, qs=None):
-        log_info("get_events_soon_act", "start")
-        where = (date.today() < Performance.start_on) & \
-                    (Performance.start_on < date.today() + timedelta(days=7))
-        if form.soon_act.data:
-            log_info("get_events_soon_act", "search start")
-            qs = self._create_common_qs(where=where, qs=qs)
-        log_info("get_events_soon_act", "end")
-        return qs
-
     # 発売状況
     def get_events_from_sale(self, form, qs=None):
         log_info("get_events_from_sale", "start")
@@ -126,6 +106,16 @@ class EventSearcher(object):
         elif form.sale.data == int(SalesEnum.NEAR_SALE_END):
             log_info("get_events_from_sale", "search start NEAR_SALE_END")
             qs = self._get_events_near_sale_end(date.today(), 7, qs)
+        elif form.sale.data == int(SalesEnum.SOON_ACT):
+            log_info("get_events_from_sale", "search start SOON_ACT")
+            qs = self._get_events_near_sale_end(date.today(), 7, qs)
+            qs = self._create_common_qs(
+                where=(
+                    (date.today() < Performance.start_on) & \
+                    (Performance.start_on < date.today() + timedelta(days=7))
+                    ),
+                qs=qs
+                )
         log_info("get_events_from_sale", "end")
         return qs
 

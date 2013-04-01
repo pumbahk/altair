@@ -1,26 +1,43 @@
-<!DOCTYPE html>
-<html>
-    <%include file='../common/_header.mako' args="title=u'検索結果'"/>
-<body>
+<%inherit file="../common/_base.mako" />
+<%namespace file="../common/tags_mobile.mako" name="m" />
+<%block name="title">詳細検索</%block>
+<%
+breadcrumbs = []
 
-    <div style="background-image:url(/static/mobile/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffc0cb">■</font>検索結果</font></div>
+breadcrumbs.append(
+  (request.route_path('genre', _query=dict(genre=form.navi_genre.data.id)),
+   form.navi_genre.data.label))
+if form.navi_sub_genre.data:
+  breadcrumbs.append(
+    (request.route_path('genre', _query=dict(genre=form.navi_genre.data.id, sub_genre=form.navi_sub_genre.data.id)),
+     form.navi_sub_genre.data.label))
+if form.navi_area.data:
+  breadcrumbs.append(
+    (request.route_path('genresearch', _query=dict(genre=form.navi_genre.data.id, sub_genre=form.navi_sub_genre.data and form.navi_sub_genre.data.id, area=form.area.data)), u'地域「%s」' % form.navi_area.data))
+if form.word.data:
+  breadcrumbs.append(
+    (request.route_path('genresearch', _query=dict(genre=form.navi_genre.data.id, sub_genre=form.navi_sub_genre.data and form.navi_sub_genre.data.id, area=form.area.data, word=form.word.data)), u'「%s」を含む' % form.word.data))
 
-    <div class="line" style="background:#FFFFFF"><img src="/static/mobile/clear.gif" alt="" width="1" height="1" /></div>
+self.breadcrumbs = breadcrumbs
+%>
+<%m:header>検索条件</%m:header>
+% for i in range(len(breadcrumbs)):
+<% breadcrumb = breadcrumbs[i] %>
+% if i + 1 < len(breadcrumbs):
+<a href="${breadcrumb[0]}">${breadcrumb[1]}</a> &gt;
+% else:
+${breadcrumb[1]}
+% endif
+% endfor
+<br />
+<hr />
+<%block name="fnavi">
+<a href="${self.breadcrumbs[-2][0]}" accesskey="0">[0]${self.breadcrumbs[-2][1]}</a><br />
+[9]<a href="/" accesskey="9">トップへ</a><br />
+</%block>
+<%include file='../common/_search_result.mako' args="events=form.events.data
+                  ,word=form.word.data, num=form.num.data, page=form.page.data
+                  ,page_num=form.page_num.data, path=form.path.data, week=form.week.data
+                  ,genre=form.genre.data, sub_genre=form.sub_genre.data, area=form.area.data"/>
 
-    <a href="/genre?genre=${form.genre.data}&sub_genre=${form.sub_genre.data}" accesskey="0">[0]戻る</a>
-    <a href="/" accesskey="9">[9]トップへ</a>
-    <br/><br/>
-
-    <%include file='_navigation.mako' args="word=form.word.data, navi_genre=form.navi_genre.data,
-                                               navi_sub=form.navi_sub_genre.data, area=form.area.data" />
-
-    <%include file='../common/_search_result.mako' args="events=form.events.data
-                      ,word=form.word.data, num=form.num.data, page=form.page.data
-                      ,page_num=form.page_num.data, path=form.path.data, week=form.week.data
-                      ,genre=form.genre.data, sub_genre=form.sub_genre.data, area=form.area.data"/>
-
-    <%include file='../common/_search.mako' args="path='/search', genre=form.genre.data, sub_genre=form.sub_genre.data"/>
-
-    <%include file='../common/_footer.mako' />
-</body>
-</html>
+<%include file='../common/_search.mako' args="path='/search', genre=form.genre.data, sub_genre=form.sub_genre.data"/>
