@@ -201,22 +201,20 @@ def get_performance_sales_summary(form, organization):
     query = query.with_entities(
         StockType.id.label('stock_type_id'),
         StockType.name.label('stock_type_name'),
-        Product.id.label('product_id'),
+        func.ifnull(Product.base_product_id, Product.id).label('product_id'),
         Product.name.label('product_name'),
         Product.price.label('product_price'),
         StockHolder.id.label('stock_holder_id'),
         StockHolder.name.label('stock_holder_name'),
         sales_segment_group_name_entity,
         Stock.id.label('stock_id'),
-        Product.base_product_id.label('base_product_id'),
-    ).group_by(Product.base_product_id)
+    ).group_by(func.ifnull(Product.base_product_id, Product.id))
 
     for row in query.all():
-        product_id = row[9] or row[2]
-        performance_reports[product_id] = dict(
+        performance_reports[row[2]] = dict(
             stock_type_id=row[0],
             stock_type_name=row[1],
-            product_id=product_id,
+            product_id=row[2],
             product_name=row[3],
             product_price=row[4],
             stock_holder_id=row[5],
@@ -233,7 +231,7 @@ def get_performance_sales_summary(form, organization):
     query = Stock.query.filter(Stock.stock_holder_id.in_(stock_holder_ids))\
         .join(StockStatus).filter(StockStatus.deleted_at==None)\
         .join(ProductItem).filter(ProductItem.deleted_at==None)\
-        .join(Product).filter(Product.seat_stock_type_id==Stock.stock_type_id)
+        .join(Product).filter(and_(Product.seat_stock_type_id==Stock.stock_type_id, Product.base_product_id!=None))
 
     if form.performance_id.data:
         query = query.filter(Stock.performance_id==form.performance_id.data)
@@ -245,16 +243,14 @@ def get_performance_sales_summary(form, organization):
             SalesSegmentGroup.id==form.sales_segment_group_id.data,
         )
     query = query.with_entities(
-        Product.id,
-        Product.base_product_id,
+        func.ifnull(Product.base_product_id, Product.id),
         func.sum(Stock.quantity),
         func.sum(StockStatus.quantity)
-    ).group_by(Product.base_product_id)
+    ).group_by(func.ifnull(Product.base_product_id, Product.id))
 
-    for id, base_product_id, total_quantity, vacant_quantity in query.all():
-        id = base_product_id or id
+    for id, total_quantity, vacant_quantity in query.all():
         if id not in performance_reports:
-            logger.warn('invalid key (product_id:%s)' % id)
+            logger.warn('invalid key (product_id:%s) total_quantity query' % id)
             continue
         performance_reports[id].update(dict(total_quantity=total_quantity or 0, vacant_quantity=vacant_quantity or 0))
 
@@ -279,30 +275,26 @@ def get_performance_sales_summary(form, organization):
     # 入金済み
     paid_query = query.filter(Order.paid_at!=None)
     paid_query = paid_query.with_entities(
-        OrderedProduct.product_id,
-        Product.base_product_id,
+        func.ifnull(Product.base_product_id, Product.id),
         func.sum(OrderedProduct.quantity).label('ordered_product_quantity')
-    ).group_by(Product.id)
+    ).group_by(func.ifnull(Product.base_product_id, Product.id))
 
-    for id, base_product_id, paid_quantity in paid_query.all():
-        id = base_product_id or id
+    for id, paid_quantity in paid_query.all():
         if id not in performance_reports:
-            logger.warn('invalid key (product_id:%s)' % id)
+            logger.warn('invalid key (product_id:%s) paid_quantity query' % id)
             continue
         performance_reports[id]['paid_quantity'] += paid_quantity
 
     # 未入金
     unpaid_query = query.filter(Order.paid_at==None)
     unpaid_query = unpaid_query.with_entities(
-        OrderedProduct.product_id,
-        Product.base_product_id,
+        func.ifnull(Product.base_product_id, Product.id),
         func.sum(OrderedProduct.quantity).label('ordered_product_quantity')
-    ).group_by(Product.id)
+    ).group_by(func.ifnull(Product.base_product_id, Product.id))
 
-    for id, base_product_id, unpaid_quantity in unpaid_query.all():
-        id = base_product_id or id
+    for id, unpaid_quantity in unpaid_query.all():
         if id not in performance_reports:
-            logger.warn('invalid key (product_id:%s)' % id)
+            logger.warn('invalid key (product_id:%s) unpaid_quantity query' % id)
             continue
         performance_reports[id]['unpaid_quantity'] += unpaid_quantity
 
