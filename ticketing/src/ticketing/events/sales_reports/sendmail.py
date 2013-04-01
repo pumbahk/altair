@@ -188,7 +188,7 @@ def get_performance_sales_summary(form, organization):
     if form.performance_id.data:
         query = query.filter(ProductItem.performance_id==form.performance_id.data)
     if form.event_id.data:
-        query = query.filter(Product.event_id==form.event_id.data)
+        query = query.filter(StockType.event_id==form.event_id.data)
     if form.sales_segment_group_id.data:
         query = query.join(SalesSegment)
         query = query.join(SalesSegmentGroup).filter(
@@ -236,7 +236,7 @@ def get_performance_sales_summary(form, organization):
     if form.performance_id.data:
         query = query.filter(Stock.performance_id==form.performance_id.data)
     if form.event_id.data:
-        query = query.filter(Product.event_id==form.event_id.data)
+        query = query.join(StockType).filter(StockType.event_id==form.event_id.data)
     if form.sales_segment_group_id.data:
         query = query.join(SalesSegment)
         query = query.join(SalesSegmentGroup).filter(
@@ -261,7 +261,7 @@ def get_performance_sales_summary(form, organization):
     if form.performance_id.data:
         query = query.filter(Order.performance_id==form.performance_id.data)
     elif form.event_id.data:
-        query = query.filter(Product.event_id==form.event_id.data)
+        query = query.join(StockType).filter(StockType.event_id==form.event_id.data)
     if form.sales_segment_group_id.data:
         query = query.join(SalesSegment)
         query = query.join(SalesSegmentGroup).filter(
