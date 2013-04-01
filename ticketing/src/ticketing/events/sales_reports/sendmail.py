@@ -190,8 +190,8 @@ def get_performance_sales_summary(form, organization):
     if form.event_id.data:
         query = query.filter(Product.event_id==form.event_id.data)
     if form.sales_segment_group_id.data:
-        query = query.outerjoin(SalesSegment)
-        query = query.outerjoin(SalesSegmentGroup).filter(
+        query = query.join(SalesSegment)
+        query = query.join(SalesSegmentGroup).filter(
             SalesSegmentGroup.id==form.sales_segment_group_id.data,
         )
         sales_segment_group_name_entity = SalesSegmentGroup.name.label('sales_segment_group_name')
@@ -263,8 +263,8 @@ def get_performance_sales_summary(form, organization):
     elif form.event_id.data:
         query = query.filter(Product.event_id==form.event_id.data)
     if form.sales_segment_group_id.data:
-        query = query.outerjoin(SalesSegment)
-        query = query.outerjoin(SalesSegmentGroup).filter(
+        query = query.join(SalesSegment)
+        query = query.join(SalesSegmentGroup).filter(
             SalesSegmentGroup.id==form.sales_segment_group_id.data
         )
     if form.limited_from.data:
