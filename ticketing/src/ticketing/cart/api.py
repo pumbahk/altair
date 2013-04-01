@@ -180,7 +180,7 @@ def get_nickname(request, suffix=u'さん'):
     nickname = user.get('nickname', '')
     if not nickname:
         return ""
-    return nickname + suffix
+    return unicode(nickname, 'utf-8') + suffix
 
 def get_payment_method_manager(request=None, registry=None):
     if request is not None:
