@@ -269,7 +269,7 @@ class SearchResultRender(object):
     def purchase_link(self):
         fmt = u'''\
 <a href="%s"><img src="/static/RT/img/search/btn_detail.gif" alt="詳細へ" width="86" height="32" /></a>
-<a href="%s"><img src="/static/RT/img/search/btn_buy.gif" alt="購入へ" width="86" height="32" /></a>
+<!--<a href="%s"><img src="/static/RT/img/search/btn_buy.gif" alt="購入へ" width="86" height="32" /></a>-->
 '''
         return fmt % (h.link.publish_page_from_pageset(self.request, self.pageset), 
                       h.link.get_purchase_page_from_event(self.request, self.pageset.event))
