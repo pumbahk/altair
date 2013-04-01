@@ -1,11 +1,3 @@
-<%doc>
-#以下のようにしてtitleなど設定可能
-<%
-page_title = u""
-page_description = u""
-page_keywords = u""
-%>
-</%doc>
 ## define {{{
 <%def name="search_form_on_header(placeholder, query_id)">
   <form id="form1" name="form1" method="GET" action="${request.route_path("page_search_by_freeword")}">
@@ -82,18 +74,18 @@ form = TopPageSidebarSearchForm()
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
   <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-    <title>${page_title or ""}</title>
-    <meta name="description" content="${page_description or ""}">
-    <meta name="keywords" content="${page_keywords or ""}">
+    <title>${static_page.label if hasattr(static_page,"label") else u"*ページのタイトル*"}</title>
+    <meta name="description" content="楽天チケット。${static_page.label if hasattr(static_page,"label") else u"*ページのタイトル*"} 特集">
+    <meta name="keywords" content="楽天チケット,特集,${static_page.label if hasattr(static_page,"label") else u""}">
     <meta http-equiv="content-style-type" content="text/css" />
     <meta http-equiv="content-script-type" content="text/javascript" />
     <meta property="og:site_name" content="楽天チケット" />
     <meta property="fb:app_id" content="253316378120995" />
-    <meta property="og:title" content="${page_title or ""}" />
+    <meta property="og:title" content="${static_page.label if hasattr(static_page,"label") else u"*ページのタイトル*"}" />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="http://rakuten-ticket-static.s3.amazonaws.com/static/images/logo.gif" />
     <meta property="og:url" content="${request.url}" />
-    <meta property="og:description" content="${page_description or ""}" />
+    <meta property="og:description" content="楽天チケット。${static_page.label if hasattr(static_page,"label") else u"*ページのタイトル*"}" 特集/>
     <link rel="shortcut icon" href="/static/RT/img/common/favicon.ico" />
     <link rel="stylesheet" href="/static/RT/css/import.css" type="text/css" media="all" />
     <script type="text/javascript" src="/static/RT/js/jquery.js"></script>
