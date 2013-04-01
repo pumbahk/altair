@@ -8,8 +8,20 @@ from pyramid.interfaces import IRequest, IDict
 from pyramid_beaker import session_factory_from_settings
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.tweens import EXCVIEW
+from ticketing.core.api import get_organization
+
 import sqlalchemy as sa
 import sqlahelper
+
+class WhoDecider(object):
+    def __init__(self, request):
+        self.request = request
+
+    def decide(self):
+        """ WHO API 選択
+        """
+        #return self.request.organization.setting.auth_type
+        return get_organization(self.request).setting.auth_type
 
 def register_globals(event):
     from . import helpers
@@ -43,6 +55,12 @@ def includeme(config):
     config.add_route('lots.payment.confirm', 'events/{event_id}/payment/{lot_id}/confirm')
     config.add_route('lots.payment.completion', 'events/{event_id}/payment/{lot_id}/completion')
   
+    # 楽天認証コールバック
+    config.add_route('rakuten_auth.login', '/login')
+    config.add_route('rakuten_auth.verify', '/verify')
+    config.add_route('rakuten_auth.verify2', '/verify2')
+    config.add_route('rakuten_auth.error', '/error')
+
     config.scan(".")
 
 # TODO: carts.includemeに移動
@@ -69,6 +87,14 @@ def main(global_config, **local_config):
 
     config.include(".")
     config.include(".secure")
+
+    ### includes altair.*
+    config.include('altair.auth')
+    config.include('altair.browserid')
+    config.include('altair.exclog')
+
+
+    config.include('ticketing.rakuten_auth')
     config.include("ticketing.payments")
     config.include("ticketing.payments.plugins")
     config.add_tween('ticketing.tweens.session_cleaner_factory', over=EXCVIEW)
