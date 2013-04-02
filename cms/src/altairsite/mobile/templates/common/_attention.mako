@@ -1,26 +1,19 @@
 <%page args="attentions, genre, sub_genre, helper" />
-
-<div style="background-image:url(/static/mobile/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>注目のイベント</font></div>
-
-<div class="line" style="background:#FFFFFF"><img src="/static/mobile/clear.gif" alt="" width="1" height="1" /></div>
-
+<%namespace file="../common/tags_mobile.mako" name="m" />
 % if attentions:
-    % for count, attention in enumerate(attentions):
+<%m:header>注目のイベント</%m:header>
+<div>
+  <% first = True %>
+    % for attention in attentions:
         % if genre:
             % if helper.get_event_from_topcontent(request, attention):
-                <a href="/eventdetail?event_id=${helper.get_event_from_topcontent(request, attention).id}&genre=${genre}&sub_genre=${sub_genre}">${attention.text}</a>
-            % else:
-                ${attention.text}
+                <a href="/eventdetail?event_id=${helper.get_event_from_topcontent(request, attention).id}&genre=${genre}&sub_genre=${sub_genre}">${attention.text}</a><br />
             % endif
         % else:
             % if helper.get_event_from_topcontent(request, attention):
-                <a href="/eventdetail?event_id=${helper.get_event_from_topcontent(request, attention).id}">${attention.text}</a>
-            % else:
-                ${attention.text}
+                <a href="/eventdetail?event_id=${helper.get_event_from_topcontent(request, attention).id}">${attention.text}</a><br />
             % endif
         % endif
-        % if count < len(attentions) - 1:
-        /
-        % endif
     % endfor
+</div>
 % endif

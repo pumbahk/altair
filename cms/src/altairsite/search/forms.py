@@ -32,7 +32,7 @@ convertorはローマ字->日本語の変換などに使われる
 MarkedTree = namedtuple("MarkedTree", "check_all_list, tree, translator")
 
 
-years = [(i, unicode(i)) for i in range(2010, 2020)]
+years = [(i, unicode(i)) for i in range(2013, 2020)]
 months = [(i, unicode(i)) for i in range(1, 13)]
 days = [(i, unicode(i)) for i in range(1, 32)]
 

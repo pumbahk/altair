@@ -5,6 +5,7 @@ class SalesEnum(StandardEnum):
     ON_SALE         = 0
     WEEK_SALE       = 1
     NEAR_SALE_END   = 2
+    SOON_ACT        = 3
 
 def get_category_name(category_no):
     categories = {

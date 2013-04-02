@@ -1,17 +1,7 @@
-<!DOCTYPE html>
-<html>
-    <%include file='../common/_header.mako' args="title=u'楽天チケット[ホットワード]'"/>
-<body>
-
-<div style="background-image:url(/static/mobile/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffc0cb">■</font></font></div>
-
-<div class="line" style="background:#FFFFFF"><img src="/static/mobile/clear.gif" alt="" width="1" height="1" /></div>
-
-<a href="/">トップ</a>
-
-    <%include file='../common/_search_result.mako' args="form=form, events=events" />
-
-    <hr/>
-    <%include file='../common/_footer.mako' />
-</body>
-</html>
+<%inherit file="../common/_base.mako" />
+<%namespace file="../common/tags_mobile.mako" name="m" />
+<%block name="title">ホットワード</%block>
+<%block name="fnavi">
+  [9]<a href="/" accesskey="9">トップへ</a>
+</%block>
+<%include file='../common/_search_result.mako' args="form=form, events=events" />

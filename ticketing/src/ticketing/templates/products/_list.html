@@ -1,16 +1,29 @@
-<%page args="form, products=None, performance=None, limit=None" />
+<%page args="form, products=None, performance=None, sales_segment=None, limit=None" />
 <%namespace file="/common/helpers.html" name="h" />
 <%namespace file="/product_items/_action_button.html" name="b" />
 
-% if performance:
+% if performance or sales_segment:
 <%
 from ticketing.core.models import StockHolder, Stock
-stock_types = performance.event.stock_types
-stock_holders = StockHolder.query.join(Stock).filter(Stock.performance_id == performance.id).distinct().all()
-ticket_bundles = performance.event.ticket_bundles
-sales_segments = performance.sales_segments
+
+if performance:
+    stock_types = performance.event.stock_types
+    stock_holders = StockHolder.query.join(Stock).filter(Stock.performance_id == performance.id).distinct().all()
+    ticket_bundles = performance.event.ticket_bundles
+    sales_segments = performance.sales_segments
+elif sales_segment:
+    event = sales_segment.event
+    stock_types = event.stock_types
+    ticket_bundles = event.ticket_bundles
+    sales_segments = [sales_segment]
+    performance_ids = [p.performance.id for p in sales_segment.products]
+
+    stock_holders = StockHolder.query.join(Stock).filter(Stock.performance_id.in_(performance_ids)).distinct().all()
+
 %>
+%if performance:
 <%include file="/product_items/_modal.html" args="modal_id='modal-product_item', performance_id=performance.id" />
+%endif
 
 <script type="text/javascript">
   $(function() {

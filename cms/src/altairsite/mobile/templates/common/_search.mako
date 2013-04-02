@@ -1,9 +1,8 @@
 <%page args="form, genre, sub_genre" />
-
-
-<div style="background-image:url(/static/mobile/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>チケット検索</font></div>
-<div class="line" style="background:#FFFFFF"><img src="/static/mobile/clear.gif" alt="" width="1" height="1" /></div>
-
+<%namespace file="../common/tags_mobile.mako" name="m" />
+<%m:band>チケット検索</%m:band>
+<%m:band bgcolor="#ffcccc" color="${None}">
+<%m:line width="4" color="${None}" />
 <form action="${form.path.data}" method="GET">
     ${form.genre}
     ${form.sub_genre}
@@ -14,8 +13,7 @@
     % for error in form.word.errors:
         <font color="red">${error}</font>
     % endfor
-    ${form.week_sale}今週発売のチケット<br/>
-    ${form.soon_act}まもなく開演のイベント<br/>
+    ${form.sale}<br />
     <input type="submit" value="検索"/><br/>
     % if genre:
         <a href="/detailsearchinit?genre=${genre}&sub_genre=${sub_genre}">もっと詳しく</a>
@@ -23,3 +21,5 @@
         <a href="/detailsearchinit">もっと詳しく</a>
     % endif
 </form>
+<%m:line width="4" color="${None}" />
+</%m:band>

@@ -1,14 +1,22 @@
 # -*- coding: utf-8 -*-
 from wtforms import Form
-from wtforms import HiddenField, TextField, BooleanField
+from wtforms import HiddenField, TextField, BooleanField, SelectField
 from wtforms.validators import Optional, Length
+from .const import SalesEnum
 
 class CommonForm(Form):
 
     # --- フォーム表示項目
     word = TextField(label = '', validators=[Length(max=200, message=u'200文字以内で入力してください')])
-    week_sale = BooleanField(label='', validators=[Optional()], default=False)
-    soon_act = BooleanField(label='', validators=[Optional()], default=False)
+    sale = SelectField(
+        label='',
+        validators=[Optional()],
+        choices=[
+            (SalesEnum.ON_SALE.v, u'すべてのチケット'),
+            (SalesEnum.WEEK_SALE.v, u'今週発売のチケット'),
+            (SalesEnum.SOON_ACT.v, u'まもなく開演のチケット'),
+        ],
+        default=SalesEnum.ON_SALE.v, coerce=int)
 
     # --- リンク取得項目
     genre = HiddenField(validators=[Optional()], default="0")

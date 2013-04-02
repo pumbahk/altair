@@ -160,7 +160,9 @@ class Products(BaseView):
                 ),
                 parent='null',  # need for sorting
             )
-            product_items = product.items_by_performance_id(performance_id)
+            # product_items = product.items_by_performance_id(performance_id)
+            product_items = product.items
+
             for i, product_item in enumerate(product_items):
                 row2 = row.copy()
                 row2.update(

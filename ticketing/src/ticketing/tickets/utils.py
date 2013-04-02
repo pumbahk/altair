@@ -337,7 +337,9 @@ class DictBuilder(object):
             u'受付番号': order.order_no,
             u'受付日時': safe_format(self.formatter.format_datetime,  order.created_at),
             u'受付日時s': safe_format(self.formatter.format_datetime_short, order.created_at),
-            u'予約番号': order.order_no
+            u'発券日時': safe_format(self.formatter.format_datetime,  order.issued_at),
+            u'発券日時s': safe_format(self.formatter.format_datetime_short, order.issued_at),
+            u'予約番号': order.order_no,
             }
 
         self.build_shipping_address_dict(extra, shipping_address)
@@ -393,7 +395,7 @@ class DictBuilder(object):
         extra = self.build_basic_dict_from_ordered_product_item(ordered_product_item, user_profile)
         return self._build_dict_from_ordered_product_item_token(extra, ordered_product_item, ordered_product_item_token, ticket_number_issuer)
 
-    def build_dicts_from_carted_product_item(self, carted_product_item, payment_delivery_method_pair=None, ordered_product_item_attributes=None, user_profile=None, ticket_number_issuer=None):
+    def build_dicts_from_carted_product_item(self, carted_product_item, payment_delivery_method_pair=None, ordered_product_item_attributes=None, user_profile=None, ticket_number_issuer=None, now=None):
         product_item = carted_product_item.product_item
         ticket_bundle = product_item.ticket_bundle
         carted_product = carted_product_item.carted_product
@@ -403,7 +405,7 @@ class DictBuilder(object):
         payment_method = payment_delivery_method_pair and payment_delivery_method_pair.payment_method
         delivery_method = payment_delivery_method_pair and payment_delivery_method_pair.delivery_method
         sales_segment = product.sales_segment
-        now = datetime.now()
+        now = now or datetime.now()
         extra = {
             u'order': {
                 u'total_amount': cart.total_amount,
@@ -459,6 +461,8 @@ class DictBuilder(object):
             u'受付日時': safe_format(self.formatter.format_datetime, now),
             u'受付日時s': safe_format(self.formatter.format_datetime_short, now),
             u'予約番号': cart.order_no,
+            u'発券日時': u'\ufeff{{発券日時}}\ufeff',
+            u'発券日時s': u'\ufeff{{発券日時s}}\ufeff',
             }
 
         self.build_shipping_address_dict(extra, shipping_address)

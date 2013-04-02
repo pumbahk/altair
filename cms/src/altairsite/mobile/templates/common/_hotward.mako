@@ -1,27 +1,20 @@
 <%page args="hotwords, genre, sub_genre, helper" />
-<div style="background-image:url(/static/mobile/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>ホットワード</font></div>
-
-<div class="line" style="background:#FFFFFF"><img src="/static/mobile/clear.gif" alt="" width="1" height="1" /></div>
-
+<%namespace file="../common/tags_mobile.mako" name="m" />
 % if hotwords:
+<%m:header>ホットワード</%m:header>
+<div>
     % if genre:
         % for hotword in hotwords:
             % if helper.get_events_from_hotword(request, hotword):
                 <a href="/hotword?id=${hotword.id}&genre=${genre}&sub_genre=${sub_genre}">${hotword.name}</a>
-            % else:
-                ${hotword.name}
             % endif
         % endfor
     % else:
         % for count, hotword in enumerate(hotwords):
             % if helper.get_events_from_hotword(request, hotword):
                 <a href="/hotword?id=${hotword.id}">${hotword.name}</a>
-            % else:
-                ${hotword.name}
-            % endif
-            % if count < len(hotwords) - 1:
-                 / 
             % endif
         % endfor
     % endif
+</div>
 % endif

@@ -1,25 +1,10 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/html">
-    <%include file='../common/_header.mako' args="title=u'楽天チケット[個人情報保護方針]'"/>
-<body>
-
-    <div style="background-image:url(/static/mobile/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffc0cb">■</font>個人情報保護方針</font></div>
-
-    <div class="line" style="background:#FFFFFF"><img src="/static/mobile/clear.gif" alt="" width="1" height="1" /></div>
-
-    <a href="/" accesskey="0">[0]戻る</a>
-    <a href="/" accesskey="9">[9]トップへ</a>
-    <br/><br/>
-
-    <a href="/">トップ</a> >> <a name="top" id="top">個人情報保護方針</a>
-    <br/>
-
-    <div class="line" style="background:#FFFFFF"><img src="/static/mobile/clear.gif" alt="" width="1" height="1" /></div>
-
-    <div style="background-image:url(/static/mobile/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>個人情報保護方針</font></div>
-
-    <div class="line" style="background:#FFFFFF"><img src="/static/mobile/clear.gif" alt="" width="1" height="1" /></div>
-
+<%inherit file="../common/_base.mako" />
+<%namespace file="../common/tags_mobile.mako" name="m" />
+<%block name="title">個人情報保護方針</%block>
+<%block name="fnavi">
+<a href="/" accesskey="0">[0]戻る</a><br />
+[9]<a href="/" accesskey="9">トップへ</a><br />
+</%block>
 <a href="#1">1. 本方針について</a><br/>
 <a href="#2">2. 用語の意味について</a><br/>
 <a href="#3">3. 個人情報の収集について</a><br/>
@@ -228,7 +213,3 @@
 13.	楽天マート株式会社<br/>
 <br/>
 <a href="#top">▲上へ</a>
-
-    <%include file='../common/_footer.mako' />
-</body>
-</html>
