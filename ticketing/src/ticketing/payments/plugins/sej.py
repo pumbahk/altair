@@ -96,12 +96,12 @@ def get_tickets(order):
                     tickets.append(ticket)
     return tickets
 
-def get_tickets_from_cart(cart):
+def get_tickets_from_cart(cart, now):
     tickets = []
     for carted_product in cart.products:
         for carted_product_item in carted_product.items:
             bundle = carted_product_item.product_item.ticket_bundle
-            dicts = build_dicts_from_carted_product_item(carted_product_item)
+            dicts = build_dicts_from_carted_product_item(carted_product_item, now=now)
             for (seat, dict_) in dicts:
                 for ticket in applicable_tickets_iter(bundle):
                     ticket_format = ticket.ticket_format
@@ -187,7 +187,7 @@ class SejDeliveryPlugin(object):
         payment_due_at = get_payment_due_at(current_date,cart)
         ticketing_start_at = get_ticketing_start_at(current_date,cart)
         ticketing_due_at = cart.payment_delivery_pair.issuing_end_at
-        tickets = get_tickets_from_cart(cart)
+        tickets = get_tickets_from_cart(cart, current_date)
         order_no = cart.order_no
         tel1 = shipping_address.tel_1 and shipping_address.tel_1.replace('-', '')
         tel2 = shipping_address.tel_2 and shipping_address.tel_2.replace('-', '')
