@@ -3108,6 +3108,10 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
                 in self.payment_delivery_method_pairs
                 if pdmp.is_available_for(self.performance, now)]
 
+    @property
+    def event(self):
+        return self.sales_segment_group.event
+
     @hybrid_property
     def name(self):
         return self.sales_segment_group.name
