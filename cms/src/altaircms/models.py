@@ -244,6 +244,10 @@ class Genre(Base,  WithOrganizationMixin):
         return self.query_descendant(hop=1).all()
 
     @property
+    def children_with_joined_pageset(self):
+        return self.query_descendant(hop=1).options(orm.joinedload(Genre.category_top_pageset)).all()
+
+    @property
     def ancestors_include_self(self):
         xs = list(self.ancestors)
         xs.insert(0, self)

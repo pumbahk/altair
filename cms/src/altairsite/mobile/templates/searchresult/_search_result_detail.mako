@@ -1,6 +1,5 @@
-<%page args="events, word, num, page, page_num, path, week, genre, sub_genre, area
-                , sale, sales_segment, since_year, since_month, since_day, year, month, day, errors"/>
-
+<%page args="events, word, num, page, page_num, path, week, genre, sub_genre, area, sale, sales_segment, since_year, since_month, since_day, year, month, day, errors"/> 
+<%namespace file="../common/tags_mobile.mako" name="m" />
 % if int(num):
     ${num}件見つかりました。
 % else:
@@ -10,31 +9,22 @@
         % endif
     % endif
 % endif
-
-<div class="line" style="background:#FFFFFF"><img src="/static/mobile/clear.gif" alt="" width="1" height="1" /></div>
-
-<div style="background-image:url(/static/mobile/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>公演一覧</font></div>
-
 % if events:
+<%m:header>公演一覧</%m:header>
+<div>
     % for count, event in enumerate(events):
-        <div class="line" style="background:#FFFFFF"><img src="/static/mobile/clear.gif" alt="" width="1" height="1" /></div>
-        <a href="/eventdetail?event_id=${event.id}&genre=${genre}&sub_genre=${sub_genre}">${event.title}</a><br/>
-        販売期間：${event.deal_open.year}/${str(event.deal_open.month).zfill(2)}/${str(event.deal_open.day).zfill(2)}(${week[event.deal_open.weekday()]})〜${event.deal_close.year}/${str(event.deal_close.month).zfill(2)}/${str(event.deal_close.day).zfill(2)}(${week[event.deal_close.weekday()]})<br/>
+<a href="/eventdetail?event_id=${event.id}&genre=${genre}&sub_genre=${sub_genre}">${event.title}</a><br />
+　販売期間：${event.deal_open.year}/${str(event.deal_open.month).zfill(2)}/${str(event.deal_open.day).zfill(2)}(${week[event.deal_open.weekday()]})〜${event.deal_close.year}/${str(event.deal_close.month).zfill(2)}/${str(event.deal_close.day).zfill(2)}(${week[event.deal_close.weekday()]})<br />
         % if event.performances[0]:
-            会場：${event.performances[0].venue}
+　会場：${event.performances[0].venue}<br />
             % if count < len(events) - 1:
                 <hr/>
             % endif
         % endif
     % endfor
-% endif
-<div class="line" style="background:#FFFFFF"><img src="/static/mobile/clear.gif" alt="" width="1" height="1" /></div>
-
-% if int(num):
+    % if int(page_num) > 1:
     <div align="center">
-        % if int(page) <= 1:
-            前へ
-        % else:
+        % if int(page) > 1:
             <a href="${path}?genre=${genre}&sub_genre=${sub_genre}&word=${word}&area=${area}&sale=${sale}&sales_segment=${sales_segment}&since_year=${since_year}&since_month=${since_month}&since_day=${since_day}&year=${year}&month=${month}&day=${day}&page=${int(page) - 1}">前へ</a>
         % endif
 
@@ -46,10 +36,10 @@
             % endif
         % endfor
 
-        % if int(page) >= int(page_num):
-            次へ
-        % else:
+        % if int(page) < int(page_num):
             <a href="${path}?genre=${genre}&sub_genre=${sub_genre}&word=${word}&area=${area}&sale=${sale}&sales_segment=${sales_segment}&since_year=${since_year}&since_month=${since_month}&since_day=${since_day}&year=${year}&month=${month}&day=${day}&page=${int(page) + 1}">次へ</a>
         % endif
     </div>
+    % endif
+</div>
 % endif

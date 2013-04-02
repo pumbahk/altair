@@ -6,6 +6,7 @@ from altairsite.mobile.core.searcher import EventSearcher
 from altairsite.mobile.core.const import get_prefecture_name
 from altairsite.mobile.core.helper import exist_value, get_week_map, get_event_paging
 from altairsite.mobile.core.helper import log_info
+from datetime import date
 
 class ValidationFailure(Exception):
     pass
@@ -28,13 +29,10 @@ def search(request):
             qs = searcher.get_events_from_freeword(form)
             if qs:
                 qs = searcher.get_events_from_area(form, qs)
-                qs = searcher.get_events_week_sale(form, qs)
-                qs = searcher.get_events_soon_act(form, qs)
+                qs = searcher.get_events_from_sale(form, qs)
         else: # トップ画面からの地域検索
             qs = searcher.get_events_from_area(form)
-            qs = searcher.get_events_from_area(form, qs)
-            qs = searcher.get_events_week_sale(form, qs)
-            qs = searcher.get_events_soon_act(form, qs)
+            qs = searcher.get_events_from_sale(form, qs)
 
         log_info("search", "search event end(area)")
         form = get_event_paging(request=request, form=form, qs=qs)
@@ -44,8 +42,7 @@ def search(request):
             qs = searcher.get_events_from_freeword(form)
             if qs:
                 qs = searcher.get_events_from_area(form, qs)
-                qs = searcher.get_events_week_sale(form, qs)
-                qs = searcher.get_events_soon_act(form, qs)
+                qs = searcher.get_events_from_sale(form, qs)
             log_info("search", "search event end")
             form = get_event_paging(request=request, form=form, qs=qs)
 

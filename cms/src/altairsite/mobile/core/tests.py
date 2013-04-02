@@ -34,26 +34,6 @@ class TestSearcher(unittest.TestCase):
         request = DummyRequest()
         self.searcher = EventSearcher(request)
 
-    def test_get_events_from_freeword2(self):
-
-        form = DetailSearchForm()
-        form.word.data = "search"
-        form.genre.data = 1
-        self.searcher.get_events_from_freeword(form)
-        self.assertTrue(True)
-
-        form.sub_genre.data = 2
-        self.searcher.get_events_from_freeword(form)
-        self.assertTrue(True)
-
-    def test_get_events_from_freeword(self):
-        form = DetailSearchForm()
-        form.word.data = "search"
-        form.genre.data = "genre"
-        form.sub_genre.data = "subgenre"
-        self.searcher.get_events_from_freeword(form)
-        self.assertTrue(True)
-
     def test_create_ids(self):
         events = []
         for cnt in range(10):
@@ -73,22 +53,6 @@ class TestSearcher(unittest.TestCase):
         self.assertTrue(True)
 
         self.searcher.get_events_from_area(form, qs)
-        self.assertTrue(True)
-
-    def test_get_events_week_sale(self):
-
-        form = DetailSearchForm()
-        form.week_sale.data = True
-
-        self.searcher.get_events_week_sale(form)
-        self.assertTrue(True)
-
-    def test_get_events_soon_act(self):
-
-        form = DetailSearchForm()
-        form.soon_act.data = True
-
-        self.searcher.get_events_soon_act(form)
         self.assertTrue(True)
 
     def test_get_events_from_sale(self):
@@ -112,8 +76,8 @@ class TestSearcher(unittest.TestCase):
         ret = self.searcher._get_events_on_sale(form, None)
         self.assertTrue(True)
 
-    def test__get_events_week_sale(self):
-        ret = self.searcher._get_events_week_sale(date.today(), None)
+    def test_get_events_week_sale(self):
+        ret = self.searcher.get_events_week_sale(date.today(), None)
         self.assertTrue(True)
 
     def test_get_events_near_sale_end(self):

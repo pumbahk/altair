@@ -1,24 +1,15 @@
 <%page args="topics, genre, sub_genre, helper" />
-
-<div style="background-image:url(/static/mobile/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>トピックス</font></div>
-
-<div class="line" style="background:#FFFFFF"><img src="/static/mobile/clear.gif" alt="" width="1" height="1" /></div>
-
+<%namespace file="../common/tags_mobile.mako" name="m" />
+<% topics = [(event, topic) for event, topic in ((helper.get_event_from_topic(request, topic), topic) for topic in topics) if event] %>
 % if topics:
-    % for topic in topics:
+<%m:header>トピックス</%m:header>
+<div>
+    % for event, topic in topics:
         % if genre:
-            % if helper.get_event_from_topic(request, topic):
-                <a href="/eventdetail?event_id=${helper.get_event_from_topic(request, topic).id}&genre=${genre}&sub_genre=${sub_genre}">${topic.text}</a>
-            % else:
-                ${topic.text}
-            % endif
+            <a href="/eventdetail?event_id=${event.id}&genre=${genre}&sub_genre=${sub_genre}">${topic.text}</a><br />
         % else:
-            % if helper.get_event_from_topic(request, topic):
-                <a href="/eventdetail?event_id=${helper.get_event_from_topic(request, topic).id}">${topic.text}</a>
-            % else:
-                ${topic.text}
-            % endif
+            <a href="/eventdetail?event_id=${event.id}">${topic.text}</a><br />
         % endif
-        <br/>
     % endfor
+</div>
 % endif

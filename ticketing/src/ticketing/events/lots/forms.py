@@ -4,7 +4,7 @@ from wtforms import Form
 from wtforms import TextField, SelectField, HiddenField, IntegerField, BooleanField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 from ticketing.formhelpers import DateTimeField, Translations, Required, NullableTextField
-from ticketing.core.models import Product, SalesSegment
+from ticketing.core.models import Product, SalesSegment, SalesSegmentGroup
 from ticketing.lots.models import Lot
 
 class LotForm(Form):
@@ -83,12 +83,14 @@ class LotForm(Form):
 
 
     def create_lot(self, event):
+        sales_segment_group = SalesSegmentGroup.query.filter(SalesSegmentGroup.id==self.data['sales_segment_group_id']).one()
         sales_segment = SalesSegment(
             sales_segment_group_id=self.data['sales_segment_group_id'],
             start_at=self.data['start_at'],
             end_at=self.data['end_at'],
             upper_limit=self.data['upper_limit'],
             seat_choice=self.data['seat_choice'],
+            account_id=sales_segment_group.account_id,
             )
         lot = Lot(
             event=event,

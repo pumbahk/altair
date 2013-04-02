@@ -143,22 +143,18 @@ class PageUpdateForm(Form):
     title = fields.TextField(label=u"ページタイトル", validators=[validators.Required()], widget=widgets.TextArea())
     description = fields.TextField(label=u"概要", widget=widgets.TextArea())
     keywords = fields.TextField(widget=widgets.TextArea())
-    layout = dynamic_query_select_field_factory(Layout, allow_blank=False, 
-                                                get_label=lambda obj: u"%s" % obj.title)
-    event = dynamic_query_select_field_factory(Event, allow_blank=True, label=u"イベント", 
-                                               get_label=lambda obj:  obj.title)
+    pagetype = dynamic_query_select_field_factory(PageType, allow_blank=False, 
+                                                  get_label=lambda obj: obj.label)
     pageset = dynamic_query_select_field_factory(PageSet, allow_blank=True, label=u"ページセット",
                                                  get_label=lambda ps: ps.name)
-    parent = dynamic_query_select_field_factory(PageSet, 
-                                                allow_blank=True, label=u"親ページ", 
-                                                get_label=lambda obj:  u'%s' % obj.name)
-
     publish_begin = MaybeDateTimeField(label=u"掲載開始")
     publish_end = MaybeDateTimeField(label=u"掲載終了")
 
     def validate(self):
         """ override to form validation"""
-        result = super(PageUpdateForm, self).validate()
+        status = super(PageUpdateForm, self).validate()
+        if not bool(status):
+            return status
 
         data = self.data
         if data.get("publish_end"):
