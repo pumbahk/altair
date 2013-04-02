@@ -78,7 +78,7 @@ class EventSearcher(object):
         ids = []
         for event in events:
             ids.append(event.id)
-        log_info("_create_ids", "%s" % str(ids))
+        log_info("_create_ids", "event ID = %s" % str(ids))
         log_info("_create_ids", "end")
         return ids
 
