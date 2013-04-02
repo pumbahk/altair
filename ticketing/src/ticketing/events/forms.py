@@ -5,6 +5,7 @@ from wtforms import TextField, IntegerField, HiddenField, SelectField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 
 from ticketing.formhelpers import DateTimeField, Translations, Required, JISX0208
+from ticketing.formhelpers.filters import replace_ambiguous
 from ticketing.core.models import Event, Account
 
 class EventForm(Form):
@@ -38,6 +39,9 @@ class EventForm(Form):
     )
     title = TextField(
         label = u'タイトル',
+        filters=[
+            replace_ambiguous,
+            ],
         validators=[
             Required(),
             JISX0208, 
@@ -46,6 +50,9 @@ class EventForm(Form):
     )
     abbreviated_title = TextField(
         label = u'タイトル略称',
+        filters=[
+            replace_ambiguous,
+            ],
         validators=[
             Required(),
             JISX0208, 

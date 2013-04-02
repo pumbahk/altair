@@ -5,6 +5,7 @@ from wtforms import TextField, HiddenField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 
 from ticketing.formhelpers import DateTimeField, Translations, Required, NullableTextField, JISX0208, after1900, SelectField
+from ticketing.formhelpers import replace_ambiguous
 from ticketing.core.models import Venue, Performance, Stock
 from ticketing.payments.plugins.sej import DELIVERY_PLUGIN_ID as SEJ_DELIVERY_PLUGIN_ID
 from ticketing.core.utils import ApplicableTicketsProducer
@@ -42,6 +43,9 @@ class PerformanceForm(Form):
     )
     name = TextField(
         label=u'公演名',
+        filters=[
+            replace_ambiguous,
+            ],
         validators=[
             Required(),
             JISX0208, 
