@@ -16,7 +16,7 @@ from altaircms.topic.api import get_topic_searcher
 PromotionInfo = namedtuple("PromotionInfo", "idx thumbnails message main width height main_link links messages interval_time unit_candidates")
 
 class PromotionSheet(object):
-    INTERVAL_TIME = 5000
+    INTERVAL_TIME = 30000
 
     def __init__(self, promotion_units):
         self.promotion_units = promotion_units

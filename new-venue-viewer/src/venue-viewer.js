@@ -183,7 +183,7 @@
                 if (self.currentPage) {
                   self.loadDrawing(self.currentPage, function () {
                     self.callbacks.load.call(self, self);
-                    self.zoomAndPan(self.zoomRatioMin, { x: 0., y: 0., });
+                    self.zoomAndPan(self.zoomRatioMin, { x: 0., y: 0. });
                   });
                 } else {
                   self.callbacks.load.call(self, self);

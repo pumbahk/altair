@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from wtforms import Form
-from wtforms import TextField, SelectField, HiddenField
+from wtforms import TextField, HiddenField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 
-from ticketing.formhelpers import DateTimeField, Translations, Required, NullableTextField, JISX0208, after1900
+from ticketing.formhelpers import DateTimeField, Translations, Required, NullableTextField, JISX0208, after1900, SelectField
 from ticketing.core.models import Venue, Performance, Stock
 from ticketing.payments.plugins.sej import DELIVERY_PLUGIN_ID as SEJ_DELIVERY_PLUGIN_ID
 from ticketing.core.utils import ApplicableTicketsProducer
@@ -17,8 +17,17 @@ class PerformanceForm(Form):
                 'organization_id':kwargs['organization_id'],
                 'original_venue_id':None
             }
+            # FIXME: 都道府県が正しい順番に並ばないのは何とかならないものか
+            venue_by_pref = dict()
+            for venue in Venue.filter_by(**conditions).all():
+                pref = venue.site.prefecture if venue.site.prefecture!=None and venue.site.prefecture!='' else u'(不明な都道府県)'
+                if not pref in venue_by_pref:
+                    venue_by_pref[pref] = [ ]
+                venue_by_pref[pref].append(
+                    (venue.id,venue.name+(' ('+venue.sub_name+')' if (venue.sub_name!=None and venue.sub_name!='') else ''))
+                )
             self.venue_id.choices = [
-                (venue.id, venue.name+(' ('+venue.sub_name+')' if venue.sub_name!=None else '')) for venue in Venue.filter_by(**conditions).all()
+                (pref, tuple(venue_by_pref[pref])) for pref in venue_by_pref
             ]
             if 'venue_id' in kwargs:
                 venue = Venue.get(kwargs['venue_id'])

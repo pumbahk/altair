@@ -73,10 +73,10 @@ cart.Dialog.prototype = {
         this.callbacks = callbacks;
         n.parent().append(this.n);
         this.n.overlay({
-            mask: {
+            mask: !$.browser.msie || parseInt($.browser.version) >= 8 ? {
                 color: "#999",
                 opacity: 0.5
-            },
+            }: null,
             closeOnClick: false
         });
         var self = this;
@@ -255,9 +255,10 @@ cart.ApplicationController.prototype.init = function(venues_selection, selected,
         viewType: cart.StockTypeListView,
         performance: this.performance
     });
+    var venueEnabled = !$.browser.msie || parseInt($.browser.version) >= 9;
     // 会場図
     this.venuePresenter = new cart.VenuePresenter({
-        viewType: cart.VenueView,
+        viewType: venueEnabled ? cart.VenueView: cart.DummyVenueView,
         performance: this.performance,
         stockTypeListPresenter: this.stockTypeListPresenter
     });
@@ -265,6 +266,7 @@ cart.ApplicationController.prototype.init = function(venues_selection, selected,
     this.orderFormPresenter = new cart.OrderFormPresenter({
         viewType: cart.OrderFormView,
         venuePresenter: this.venuePresenter,
+        seatSelectionEnabled: venueEnabled
     });
 
     this.performanceSearchPresenter.stockTypeListPresenter = this.stockTypeListPresenter;
@@ -417,10 +419,9 @@ cart.VenuePresenter.prototype = {
     },
     onPerformanceChanged: function() {
         if (!this.view.readOnly) {
-          this.setStockType(null);
-          this.view.reset();
+            this.setStockType(null);
+            this.view.reset();
         }
-
         var dataSource = this.performance.createDataSource();
         this.view.updateVenueViewer(dataSource, this.callbacks);
     },
@@ -640,11 +641,16 @@ cart.OrderFormPresenter = function(params) {
 };
 
 cart.OrderFormPresenter.prototype = {
+    defaults: {
+        seatSelectionEnabled: true
+    },
+
     initialize: function() {
         this.view = new this.viewType({
             el: $('#selectProductTemplate'),
             updateHandler: $('#seatTypeList').data('updateArrowpos'),
-            presenter: this
+            presenter: this,
+            seatSelectionEnabled: this.seatSelectionEnabled
         });
         this.stock_type = null;
         this.products = null;
@@ -747,11 +753,13 @@ _.extend(cart.OrderFormPresenter.prototype, Backbone.Event);
 cart.OrderFormView = Backbone.View.extend({
     defaults: {
         el: $('#selectProductTemplate'),
-        selected_stock_type_el: null
+        selected_stock_type_el: null,
+        seatSelectionEnabled: true
     },
     initialize: function() {
         this.presenter = this.options.presenter;
         this.updateHandler = this.options.updateHandler;
+        this.seatSelectionEnabled = this.options.seatSelectionEnabled;
     },
     getChoices: function () {
         var retval = {};
@@ -831,8 +839,13 @@ cart.OrderFormView = Backbone.View.extend({
             btn_entrust.parent().css('display', 'none');
             btn_buy.parent().css('display', null);
         } else {
-            btn_select_seat.parent().css('display', null);
-            btn_entrust.parent().css('display', null);
+            if (self.seatSelectionEnabled) {
+                btn_select_seat.parent().css('display', null);
+                btn_entrust.parent().css('display', null);
+            } else {
+                btn_select_seat.parent().css('display', 'none');
+                btn_entrust.parent().css('display', null);
+            }
             btn_buy.parent().css('display', 'none');
         }
         btn_select_seat.click(function () { self.presenter.onSelectSeatPressed(); return false; });
@@ -1026,10 +1039,21 @@ cart.VenueView = Backbone.View.extend({
                 }
             },
             loadPartEnd: function (viewer, part) {
-				var page = viewer.currentPage;
-				if(page) {
-					self.verticalSlider.css({ visibility: viewer.pages[page].zoomable===false ? 'hidden' : 'visible' });
-				}
+                // part = pages, stockTypes, info, seats, drawing
+                var page = viewer.currentPage;
+
+                if (part == 'info') {
+                    var use_seatmap = $.map(viewer.stockTypes, function(st) {
+                        return !st.quantity_only ? st : null;
+                    });
+                    $('.selectSeatLeftPane .guidance').css({ display: 0 < use_seatmap.length ? '' : 'none' });
+                }
+
+                if (part == 'drawing') {
+                    if(page) {
+                        self.verticalSlider.css({ visibility: viewer.pages[page].zoomable===false ? 'hidden' : 'visible' });
+                    }
+                }
 
                 if (part == 'drawing') {
                     if (loadingLayer) {
@@ -1038,39 +1062,41 @@ cart.VenueView = Backbone.View.extend({
                     }
                 }
 
-				$('.pageSwitchPanel').remove();
-				var ul = $('<ul></ul>');
-				ul
-					.addClass('pageSwitchPanel')
-					.css({ position: 'absolute', top: 10, right : 20, left: 40, textAlign: 'right' });
-				var pages = [ ];
-				for(var k in viewer.pages) {
-					if(!viewer.pages[k].hidden) {
-						viewer.pages[k]._filename = k;
-						pages.push(viewer.pages[k]);
-					}
-				}
-				pages = pages.sort(function(a, b) { return a.order == b.order ? 0 : a.order < b.order ? -1 : +1; });
-				for(var idx in pages) {
-					$('<li></li>')
-						.css({ display: 'inline-block', height: 20, verticalAlign: 'middle', border: '1px solid gray', paddingLeft: 4, paddingRight: 4, marginBottom: 4, marginLeft: 4, cursor: 'pointer', backgroundColor: 'ffffff' })
-						.attr('filename', pages[idx]._filename)
-						.click(function() {
-							viewer.navigate($(this).attr('filename'));
-						})
-						.text(pages[idx].short_name || pages[idx].name).appendTo(ul);
-				}
-				if(page && viewer.pages[page] && viewer.pages[page].zoomable===false) {
-					;
-				} else if($('li', ul).size() == 1 && $('li', ul).eq(0).attr('filename') == page) {
-					;
-				} else if(1 <= $('li', ul).size()) {
-					$('li', ul).each(function() {
-						var filename = $(this).attr('filename');
-						$(this).css({ backgroundColor: (filename == page) ? '#cccccc' : '#ffffff' });
-					});
-					$('.venueViewerWrapper').append(ul);
-				}
+                if (part == 'drawing') {
+                    $('.pageSwitchPanel').remove();
+                    var ul = $('<ul></ul>');
+                    ul
+                        .addClass('pageSwitchPanel')
+                        .css({ position: 'absolute', top: 10, right : 20, left: 40, textAlign: 'right' });
+                    var pages = [ ];
+                    for(var k in viewer.pages) {
+                        if(!viewer.pages[k].hidden) {
+                            viewer.pages[k]._filename = k;
+                            pages.push(viewer.pages[k]);
+                        }
+                    }
+                    pages = pages.sort(function(a, b) { return a.order == b.order ? 0 : a.order < b.order ? -1 : +1; });
+                    for(var idx in pages) {
+                        $('<li></li>')
+                            .css({ display: 'inline-block', height: 20, verticalAlign: 'middle', border: '1px solid gray', paddingLeft: 4, paddingRight: 4, marginBottom: 4, marginLeft: 4, cursor: 'pointer', backgroundColor: 'ffffff' })
+                            .attr('filename', pages[idx]._filename)
+                            .click(function() {
+                                viewer.navigate($(this).attr('filename'));
+                            })
+                            .text(pages[idx].short_name || pages[idx].name).appendTo(ul);
+                    }
+                    if(page && viewer.pages[page] && viewer.pages[page].zoomable===false) {
+                        ;
+                    } else if($('li', ul).size() == 1 && $('li', ul).eq(0).attr('filename') == page) {
+                        ;
+                    } else if(1 <= $('li', ul).size()) {
+                        $('li', ul).each(function() {
+                            var filename = $(this).attr('filename');
+                            $(this).css({ backgroundColor: (filename == page) ? '#cccccc' : '#ffffff' });
+                        });
+                        $('.venueViewerWrapper').append(ul);
+                    }
+                }
             },
             messageBoard: (function() {
                 if (self.tooltip)
@@ -1128,6 +1154,33 @@ cart.VenueView = Backbone.View.extend({
     }
 });
 
+
+cart.DummyVenueView = Backbone.View.extend({
+    initialize: function() {},
+    updateVenueViewer: function () {},
+    updateUIState: function () {
+        if (this.readOnly) {
+            $('#selectSeat').removeClass('focused');
+            $('#selectSeat').addClass('blur');
+        } else {
+            $('#selectSeat').removeClass('blur');
+            $('#selectSeat').addClass('focused');
+        }
+    },
+    render: function() {
+        this.updateUIState();
+        $('.venueViewer').append(
+            $('<div class="dummy-venue-viewer"></div>')
+            .css({ position: 'relative',
+                   width: '100%',
+                   height: '100%' })
+            .append(
+                $('<div style="position: absolute; margin: -8em -40% -8em -40%; top: 50%; left: 50%; width: 80%; height: 15em;"><p>本公演 (試合) でお好みの座席を選択してチケットをお買い求めいただくには、<u>サポート対象のブラウザー</u>をご利用ください。</p><p style="font-weight:bold">※選択の席種から自動的に座席を決定する「おまかせで選択」機能は、全ブラウザーでご利用いただけます。</p><p>サポート対象のブラウザーは以下となっております。</p><ul><li><a href="http://www.google.co.jp/chrome/">Google Chrome</a></li><li><a href="http://www.mozilla.jp/firefox/">Mozilla Firefox 13.0以降</a></li><li><a href="http://windows.microsoft.com/ja-jp/internet-explorer/download-ie">Internet Explorer 9.0以降 (Windows Vista以降)</a></li><li><a href="http://www.apple.com/jp/safari/">Safari 5.0以降</a></li></ul></div>')
+            )
+        );
+    },
+    reset: function () {}
+});
 
 cart.Venue = Backbone.Model.extend({
     updateDataSource: function(params) {

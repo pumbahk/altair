@@ -1,28 +1,21 @@
 <div id="grpRakutenLinkArea">
 
-<ul id="grpSpelinlk">
-<li><a href="#">総合トップ</a></li>
-<li><a href="#">本</a></li>
-<li><a href="#">雑誌</a></li>
-<li><a href="#">DVD・Blu-ray</a></li>
-<li><a href="#">CD</a></li>
-<li><a href="#">ゲーム</a></li>
-<li><a href="#">ソフトウェア</a></li>
-<li class="grpLast"><a href="#">洋書</a></li>
-</ul>
-
-<dl id="grpKeyword">
-<dt>キーワード</dt>
-<dd>
-<ul>
-<li><a href="#">レストラン検索</a></li>
-<li><a href="#">飲み会・宴会</a></li>
-<li><a href="#">接待</a></li>
-<li><a href="#">個室</a></li>
-<li><a href="#">記念日</a></li>
-</ul>
-</dd>
-</dl>
+<div id="serviceList">
+    <dl>
+        % for genre in layout.top_category_genre_list:
+            <dl>
+                <dt><a href="${h.link.get_link_from_genre(request, genre)}">${genre.label}</a></dt>
+                <dd>
+                    % for subgenre in layout.get_subgenre_list_from_genre(genre):
+                        <ul>
+                            <li><a href="${h.link.get_link_from_genre(request, subgenre)}">${subgenre.label}</a></li>
+                        </ul>
+                    % endfor
+                </dd>
+            </dl>
+        % endfor
+        </dl>
+</div><!-- /div#serviceList -->
 
 <div id="grpFooter">
 <div id="groupServiceFooter">
@@ -153,12 +146,12 @@
 </div><!-- /div#groupServiceFooter -->
 <div id="companyFooter">
 <ul>
-<li><a href="http://corp.rakuten.co.jp/" rel="nofollow">企業情報</a></li>
-<li><a href="http://privacy.rakuten.co.jp/" rel="nofollow">個人情報保護方針</a></li>
-<li><a href="http://corp.rakuten.co.jp/csr/">社会的責任[CSR]</a></li>
-<li class="grpLast"><a href="http://corp.rakuten.co.jp/careers/">採用情報</a></li>
+<li><a href="http://www.ticketstar.jp/">運営会社</a></li>
+<li><a href="https://ticket.rakuten.co.jp/inquiry">お問い合わせ</a></li>
+<li><a href="http://privacy.rakuten.co.jp/">個人情報保護方針</a></li>
+<li class="grpLast"><a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a></li>
 </ul>
-<p id="copyright">Copyright &copy; 1997-2013 Rakuten, Inc. All Rights Reserved.</p>
+<p id="copyright">Copyright &copy; 2010-2013 TicketStar Inc. All Rights Reserved. </p>
 </div><!-- /div#companyFooter -->
 </div><!-- /div#grpFooter -->
 <!-- Google Code start -->
