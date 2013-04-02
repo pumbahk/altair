@@ -35,12 +35,12 @@ class MyLayout(object):
         return get_top_category_genres(self.request, strict=True)
 
     def get_subgenre_list_from_genre(self, genre):
-        return (genre.children or []) if genre else []        
+        return (genre.children_with_joined_pageset or []) if genre else []        
 
     def get_subgenre_list_from_page(self, page):
         if page and hasattr(page, "pageset") and page.pageset.genre_id:
             genre = page.pageset.genre
-            return genre.children if genre else []
+            return genre.children_with_joined_pageset if genre else []
         return []
        
     def get_genre_tree_with_nestlevel(self, genre):
@@ -59,7 +59,7 @@ class MyLayout(object):
         for i, g in reversed(ancestors):
             r.append((max_depth-i, False, g))
             if i == 1:
-                sibblings = g.query_descendant(hop=1).options(orm.joinedload(Genre.category_top_pageset)).all()
+                sibblings = g.children_with_joined_pageset
                 index = max_depth + 1
                 for g in sibblings:
                     if g.id == genre.id:
@@ -91,8 +91,8 @@ class MyLayout(object):
 def get_top_category_genres(request, strict=False):
     root = request.allowable(Genre).filter(Genre.is_root==True).first()
     if not strict:
-        return root.children
-    return [g for g in root.children if g.category_top_pageset_id]
+        return root.children_with_joined_pageset
+    return [g for g in root.children_with_joined_pageset if g.category_top_pageset_id]
 
 def get_system_tags_from_genres(request, genres):
     genres = [g.label for g in genres]
