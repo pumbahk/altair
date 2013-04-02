@@ -5,18 +5,18 @@
 breadcrumbs = []
 
 breadcrumbs.append(
-  (request.route_path('genre', _query=dict(genre=form.navi_genre.data.id)),
+  (request.mobile_route_path('genre', _query=dict(genre=form.navi_genre.data.id)),
    form.navi_genre.data.label))
 if form.navi_sub_genre.data:
   breadcrumbs.append(
-    (request.route_path('genre', _query=dict(genre=form.navi_genre.data.id, sub_genre=form.navi_sub_genre.data.id)),
+    (request.mobile_route_path('genre', _query=dict(genre=form.navi_genre.data.id, sub_genre=form.navi_sub_genre.data.id)),
      form.navi_sub_genre.data.label))
 if form.navi_area.data:
   breadcrumbs.append(
-    (request.route_path('genresearch', _query=dict(genre=form.navi_genre.data.id, sub_genre=form.navi_sub_genre.data and form.navi_sub_genre.data.id, area=form.area.data)), u'地域「%s」' % form.navi_area.data))
+    (request.mobile_route_path('genresearch', _query=dict(genre=form.navi_genre.data.id, sub_genre=form.navi_sub_genre.data and form.navi_sub_genre.data.id, area=form.area.data)), u'地域「%s」' % form.navi_area.data))
 if form.word.data:
   breadcrumbs.append(
-    (request.route_path('genresearch', _query=dict(genre=form.navi_genre.data.id, sub_genre=form.navi_sub_genre.data and form.navi_sub_genre.data.id, area=form.area.data, word=form.word.data)), u'「%s」を含む' % form.word.data))
+    (request.mobile_route_path('genresearch', _query=dict(genre=form.navi_genre.data.id, sub_genre=form.navi_sub_genre.data and form.navi_sub_genre.data.id, area=form.area.data, word=form.word.data)), u'「%s」を含む' % form.word.data))
 
 self.breadcrumbs = breadcrumbs
 %>
