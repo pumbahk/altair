@@ -79,7 +79,8 @@ def format_currency(num, thousands=","):
     return u"￥" + format_number(num, thousands)
 
 def build_unit_template(product, performance_id):
-    items = product.items_by_performance_id(performance_id)
+    #items = product.items_by_performance_id(performance_id)
+    items = product.items
     if len(items) == 1:
         if items[0].quantity == 1:
             return u"{{num}}枚"
@@ -143,7 +144,8 @@ def render_payment_finished_viewlet(request, order):
 
 
 def product_name_with_unit(product, performance_id):
-    items = product.items_by_performance_id(performance_id)
+    #items = product.items_by_performance_id(performance_id)
+    items = product.items
     if len(items) == 1:
         return None
     else:

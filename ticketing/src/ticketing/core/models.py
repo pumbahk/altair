@@ -26,6 +26,8 @@ from sqlalchemy.sql.expression import asc, desc, exists, select, table, column, 
 from sqlalchemy.ext.associationproxy import association_proxy
 from pyramid.threadlocal import get_current_registry
 
+from zope.deprecation import deprecation
+
 from .exceptions import InvalidStockStateError
 from ticketing.models import (
     Base, DBSession, 
@@ -1717,6 +1719,8 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         perform_items = ProductItem.query.filter(ProductItem.product==self).filter(ProductItem.performance_id==performance_id).all()
         return sum([pi.quantity for pi in perform_items if pi.stock.stock_type == stock_type])
 
+
+    @deprecation.deprecate(u"商品が公演づきになったので、このクエリは不要")
     def items_by_performance_id(self, id):
         return ProductItem.filter_by(performance_id=id)\
                           .filter_by(product_id=self.id).all()
