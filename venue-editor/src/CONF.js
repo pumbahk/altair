@@ -49,9 +49,7 @@ exports.DEFAULT = {
     tooltip: {
     },
     unselectable: {
-      text_color: "#888",
-      fill:   { color: "#eee" },
-      stroke: { color: "#ccc", width: 1 }
+      stroke: { color: "#ababab", width: 2, pattern: 'solid' }
     }
   },
 

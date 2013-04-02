@@ -18,12 +18,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
     this.styleTypes = [];
 
     function selectableChanged() {
-      if (self.get('model').selectable())
-        self.addStyleType('unselectable');
-      else
+      if (self.get('model').selectable()) {
         self.removeStyleType('unselectable');
-    };
-    
+      } else if (!self.get('model').get('sold')) {
+        self.addStyleType('unselectable');
+      }
+    }
+
     function selectedChanged() {
       if (this.get('selected'))
         self.addStyleType('selected');
@@ -39,19 +40,17 @@ var Seat = exports.Seat = Backbone.Model.extend({
       if (model)
         model.on('change:style', onStockChanged);
       self._refreshStyle();
-    };
+    }
 
     function onModelChange() {
       var prevModel = self.previous('model');
       var model = self.get('model');
       if (prevModel) {
-        model.off('change:venue', selectableChanged);
         model.off('change:selectable', selectableChanged);
         model.off('change:selected', selectedChanged);
         model.off('change:stock', onStockChanged);
       }
       if (model) {
-        model.on('change:venue', selectableChanged);
         model.on('change:selectable', selectableChanged);
         model.on('change:selected', selectedChanged);
         model.on('change:stock', onStockChanged);
@@ -114,6 +113,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
     // ensure change events to get invoked correctly on the
     // initialization.
     this._previousAttributes = {};
+    selectableChanged();
     onModelChange();
     onShapeChange(true);
     onEventsChange();
@@ -156,7 +156,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
           s = shape.size();
       var text = new Fashion.Text({
           position: {
-			x: p.x + (s.x * (0.05 + (styleText.length==1 ? 0.2 : 0.0))),
+			      x: p.x + (s.x * (0.05 + (styleText.length==1 ? 0.2 : 0.0))),
             y: p.y + (s.y * 0.75)
           },
           fontSize: style.text ? s.y * 0.5 : (s.x*1.2/Math.max(2, styleText.length)),

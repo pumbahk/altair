@@ -1504,6 +1504,7 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     performance_id = Column(Identifier, ForeignKey('Performance.id'), nullable=False)
     stock_holder_id = Column(Identifier, ForeignKey('StockHolder.id'), nullable=True)
     stock_type_id = Column(Identifier, ForeignKey('StockType.id'), nullable=True)
+    locked_at = Column(DateTime, nullable=True, default=None)
 
     stock_status = relationship("StockStatus", uselist=False, backref='stock')
 

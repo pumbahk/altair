@@ -570,7 +570,7 @@
             mousedown: function(evt) {
               if (seats[id].get('model').selectable()) {
                 self.callbacks.click && self.callbacks.click(self, self, self.highlighted);
-              } else {
+              } else if (seats[id].get('model').get('sold')) {
                 self.callbacks.tooltip && self.callbacks.tooltip(id);
               }
             }
