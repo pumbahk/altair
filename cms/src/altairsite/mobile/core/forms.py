@@ -16,8 +16,7 @@ class CommonForm(Form):
             (SalesEnum.WEEK_SALE.v, u'今週発売のチケット'),
             (SalesEnum.SOON_ACT.v, u'まもなく開演のチケット'),
         ],
-        default=SalesEnum.ON_SALE.v
-        )
+        default=SalesEnum.ON_SALE.v, coerce=int)
 
     # --- リンク取得項目
     genre = HiddenField(validators=[Optional()], default="0")
