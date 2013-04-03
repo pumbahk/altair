@@ -32,6 +32,8 @@ class EventSearcher(object):
                 .join(Page, Page.event_id == Event.id) \
                 .filter(Event.is_searchable == True) \
                 .filter(Page.published == True) \
+                .filter(Page.publish_begin < datetime.now()) \
+                .filter((Page.publish_end==None) | (Page.publish_end > datetime.now())) \
                 .filter(where)
         log_info("_create_common_qs", "end")
         return qs
