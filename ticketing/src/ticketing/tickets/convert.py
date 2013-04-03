@@ -677,10 +677,16 @@ class Visitor(object):
                 if self.current_style_ctx.style.font_weight != style.font_weight:
                     html_styles.append((u'font-weight', style.font_weight))
                 current_font_family_class = self.font_classes.get(self.current_style_ctx.style.font_family)
+                if current_font_family_class is None:
+                    # silenty falls back to the default font
+                    current_font_family_class = u"f16"
                 new_font_family_class = self.font_classes.get(style.font_family)
+                if new_font_family_class is None:
+                    logger.warning('Unsupported font %s; falling back to "f16"' % style.font_family)
+                    new_font_family_class = u"f16"
                 subelem = self._build_html_from_flow_elements(text_and_elements(elem), tag)
                 if current_font_family_class != new_font_family_class:
-                    subelem.set('class', current_font_family_class)
+                    subelem.set('class', new_font_family_class)
                 if len(html_styles) > 0:
                     subelem.set('style', u';'.join(':'.join(pair) for pair in html_styles))
                 if len(subelem.items()) == 0:
@@ -740,10 +746,16 @@ class Visitor(object):
                 if self.current_style_ctx.style.font_weight != style.font_weight:
                     html_styles.append((u'font-weight', style.font_weight))
                 current_font_family_class = self.font_classes.get(self.current_style_ctx.style.font_family)
+                if current_font_family_class is None:
+                    # silenty falls back to the default font
+                    current_font_family_class = u"f16"
                 new_font_family_class = self.font_classes.get(style.font_family)
+                if new_font_family_class is None:
+                    logger.warning('Unsupported font %s; falling back to "f16"' % style.font_family)
+                    new_font_family_class = u"f16"
                 subelem = self._build_html_from_text_elements(text_and_elements(elem), tag)
                 if current_font_family_class != new_font_family_class:
-                    subelem.set('class', current_font_family_class)
+                    subelem.set('class', new_font_family_class)
                 if len(html_styles) > 0:
                     subelem.set('style', u';'.join(':'.join(pair) for pair in html_styles))
                 if len(subelem.items()) == 0:

@@ -48,7 +48,7 @@ class ConverterTest(unittest.TestCase):
         self.assertConversionResult(
             input=u'<svg xmlns="http://www.w3.org/2000/svg"><text x="0" y="0" width="100" height="100" style="font-family:UNSUPPORTED-FONT-FAMILY">test<tspan style="font-weight:bold">test</tspan></text></svg>',
             expected=u'<TICKET><b>0.1 S :px U :f16 hc 0 0 m 1000 1000 "test&lt;span style=\\"font-weight:bold\\"&gt;test&lt;/span&gt;" X</b><FIXTAG01/><FIXTAG02/><FIXTAG03/><FIXTAG04/><FIXTAG05/><FIXTAG06/></TICKET>')
-        self.assertEqual(len(self.dummy_handler.records), 1)
+        self.assertEqual(len(self.dummy_handler.records), 2)
         self.assertEqual(self.dummy_handler.records[0].levelno, logging.WARNING)
         self.assertTrue(u'UNSUPPORTED-FONT-FAMILY' in self.dummy_handler.records[0].msg)
 
