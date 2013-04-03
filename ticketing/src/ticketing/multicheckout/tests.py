@@ -75,11 +75,12 @@ class get_multicheckout_service_Tests(unittest.TestCase):
 
     def _callFUT(self, request, *args, **kwargs):
         settings = {
-            u'altair_checkout3d.override_shop_name': u'SHOP',
             u'altair_checkout3d.base_url': u'http://example.com/api/',
         }
         self.config.registry.settings.update(settings)
         request.config = self.config
+        request.altair_checkout3d_override_shop_name = u'SHOP'
+
         return api.get_multicheckout_service(request)
 
     def test_it(self):
