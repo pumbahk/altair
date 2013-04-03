@@ -164,8 +164,25 @@ class OrderSearchForm(Form):
             ('ordered', u'受付済み'),
             ('delivered', u'配送済み'),
             ('canceled', u'キャンセル'),
+        ],
+        coerce=str,
+    )
+    issue_status = BugFreeSelectMultipleField(
+        label=u'発券ステータス',
+        widget=CheckboxMultipleSelect(multiple=True),
+        validators=[Optional()],
+        choices=[
             ('issued', u'発券済み'),
             ('unissued', u'未発券'),
+        ],
+        coerce=str,
+    )
+    payment_status = BugFreeSelectMultipleField(
+        label=u'決済ステータス',
+        widget=CheckboxMultipleSelect(multiple=True),
+        validators=[Optional()],
+        choices=[
+            ('unpaid', u'未入金'),
             ('paid', u'入金済み'),
             ('refunding', u'払戻予約'),
             ('refunded', u'払戻済み')
@@ -263,12 +280,8 @@ class OrderRefundSearchForm(OrderSearchForm):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         super(OrderRefundSearchForm, self).__init__(formdata, obj, prefix, **kwargs)
-
-        if self.sales_segment_group.data:
-            sales_segment_groups = SalesSegmentGroup.query.filter(SalesSegmentGroup.id.in_(self.sales_segment_group.data))
-            self.sales_segment_group.choices = [(sales_segment_group.id, sales_segment_group.name) for sales_segment_group in sales_segment_groups]
-
-        self.status.data = ['paid']
+        self.status.data = ['ordered', 'delivered']
+        self.payment_status.data = ['paid']
         self.public.data = u'一般販売のみ'
 
     def _get_translations(self):
@@ -308,14 +321,25 @@ class OrderRefundSearchForm(OrderSearchForm):
         choices=[],
         validators=[Required()],
     )
-    sales_segment_group = SelectMultipleField(
-        label=u'販売区分グループ',
+    sales_segment_id = SelectMultipleField(
+        label=u'販売区分',
         coerce=lambda x : int(x) if x else u"",
         choices=[],
         validators=[Required()],
     )
-    status = SelectMultipleField(
+    status = BugFreeSelectMultipleField(
         label=u'ステータス',
+        widget=CheckboxMultipleSelect(multiple=True),
+        validators=[Required()],
+        choices=[
+            ('ordered', u'受付済み'),
+            ('delivered', u'配送済み'),
+        ],
+        coerce=str,
+    )
+    payment_status = BugFreeSelectMultipleField(
+        label=u'決済ステータス',
+        widget=CheckboxMultipleSelect(multiple=True),
         validators=[Required()],
         choices=[
             ('paid', u'入金済み'),

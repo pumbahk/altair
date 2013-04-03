@@ -2491,23 +2491,35 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if condition:
             status_cond = []
             if 'ordered' in condition:
-                status_cond.append(and_(Order.paid_at==None, Order.canceled_at==None, Order.delivered_at==None))
+                status_cond.append(and_(Order.canceled_at==None, Order.delivered_at==None))
             if 'delivered' in condition:
                 status_cond.append(and_(Order.canceled_at==None, Order.delivered_at!=None))
             if 'canceled' in condition:
                 status_cond.append(and_(Order.canceled_at!=None))
-            if 'issued' in condition:
-                status_cond.append(Order.issued==True)
-            if 'unissued' in condition:
-                status_cond.append(Order.issued==False)
-            if 'paid' in condition:
-                status_cond.append(and_(Order.paid_at!=None, Order.canceled_at==None, Order.refund_id==None, Order.delivered_at==None))
-            if 'refunding' in condition:
-                status_cond.append(and_(Order.paid_at!=None, Order.refund_id!=None, Order.refunded_at==None))
-            if 'refunded' in condition:
-                status_cond.append(and_(Order.refunded_at!=None))
             if status_cond:
                 query = query.filter(or_(*status_cond))
+        condition = form.issue_status.data
+        if condition:
+            issue_cond = []
+            if 'issued' in condition:
+                issue_cond.append(Order.issued==True)
+            if 'unissued' in condition:
+                issue_cond.append(Order.issued==False)
+            if issue_cond:
+                query = query.filter(or_(*issue_cond))
+        condition = form.payment_status.data
+        if condition:
+            payment_cond = []
+            if 'unpaid' in condition:
+                payment_cond.append(and_(Order.refunded_at==None, Order.refund_id==None, Order.paid_at==None))
+            if 'paid' in condition:
+                payment_cond.append(and_(Order.refunded_at==None, Order.refund_id==None, Order.paid_at!=None))
+            if 'refunding' in condition:
+                payment_cond.append(and_(Order.refunded_at==None, Order.refund_id!=None))
+            if 'refunded' in condition:
+                payment_cond.append(and_(Order.refunded_at!=None))
+            if payment_cond:
+                query = query.filter(or_(*payment_cond))
         condition = form.tel.data
         if condition:
             query = query.join(Order.shipping_address).filter(or_(ShippingAddress.tel_1==condition, ShippingAddress.tel_2==condition))
