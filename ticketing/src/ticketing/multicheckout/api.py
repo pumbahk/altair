@@ -109,7 +109,7 @@ def sanitize_card_number(xml_data):
 def get_multicheckout_service(request):
     reg = request.registry
 
-    orverride_name = reg.settings.get('altair_checkout3d.override_shop_name')
+    orverride_name = getattr(request, 'altair_checkout3d_override_shop_name')
     setting = get_multicheckout_setting(request, override_name=orverride_name)
     if setting is None:
         raise Exception
