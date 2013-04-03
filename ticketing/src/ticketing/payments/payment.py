@@ -131,6 +131,7 @@ class Payment(object):
             try:
                 delivery_plugin.finish(self.request, self.cart)
             except Exception as e:
+                self._bind_order(order)
                 on_delivery_error(e, self.request, order)
                 transaction.commit()
                 raise DeliveryFailedException(order_no, event_id)

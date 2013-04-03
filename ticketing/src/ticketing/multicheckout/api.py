@@ -62,8 +62,8 @@ def get_multicheckout_settings(request):
 
 def get_multicheckout_setting(request, override_name):
     reg = request.registry
+    logger.info('get_multicheckout_setting override_name = %s, request_host = %s' % (override_name, request.host))
     if override_name:
-        
         #return m.MulticheckoutSetting.query.filter_by(shop_name=override_name).one()
         os = core_models.OrganizationSetting.query.filter_by(multicheckout_shop_name=override_name).one()
         return MulticheckoutSetting(os)
