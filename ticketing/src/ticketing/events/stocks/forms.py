@@ -33,6 +33,9 @@ class AllocateStockForm(Form):
             NumberRange(min=0, message=u'在庫数に有効な値を入力してください'),
         ],
     )
+    assignable = IntegerField(
+        validators=[Optional()],
+    )
 
     def validate_quantity(form, field):
         stock = Stock.get(form.id.data)

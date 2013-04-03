@@ -96,7 +96,7 @@ def main():
             logger.info("%s: shop_id = %s is already processed" % (name, shop_id))
             continue
 
-        request.registry.settings['altair_checkout3d.override_shop_name'] = name
+        request.altair_checkout3d_override_shop_name = name
 
         logger.info("starting sync_data %s" % name)
         sync_data(request, multicheckout_setting)

@@ -118,14 +118,14 @@ def cancel_auth_expired_carts():
             # 状態確認
             logging.info('well, then trying to cancel the authorization request associated with the order (order_no=%s)' % order_no)
             logging.info('check for order_no=%s' % order_no)
+            request.altair_checkout3d_override_shop_name = None
             try:
-                #request.registry.settings['altair_checkout3d.override_shop_name'] =  cart.performance.event.organization.multicheckout_settings[0].shop_name
-                request.registry.settings['altair_checkout3d.override_shop_name'] =  cart.performance.event.organization.setting.multicheckout_shop_name
+                request.altair_checkout3d_override_shop_name =  cart.performance.event.organization.setting.multicheckout_shop_name
             except:
                 logging.info('can not detect shop_name for order_no = %s' % order_no)
                 carts_to_skip.add(cart_id)
                 continue
-            if not request.registry.settings.get('altair_checkout3d.override_shop_name'):
+            if not request.altair_checkout3d_override_shop_name:
                 logging.info('can not detect shop_name for order_no = %s' % order_no)
                 carts_to_skip.add(cart_id)
                 continue

@@ -62,8 +62,8 @@ def get_multicheckout_settings(request):
 
 def get_multicheckout_setting(request, override_name):
     reg = request.registry
+    logger.info('get_multicheckout_setting override_name = %s, request_host = %s' % (override_name, request.host))
     if override_name:
-        
         #return m.MulticheckoutSetting.query.filter_by(shop_name=override_name).one()
         os = core_models.OrganizationSetting.query.filter_by(multicheckout_shop_name=override_name).one()
         return MulticheckoutSetting(os)
@@ -108,8 +108,9 @@ def sanitize_card_number(xml_data):
 
 def get_multicheckout_service(request):
     reg = request.registry
-
-    orverride_name = reg.settings.get('altair_checkout3d.override_shop_name')
+    orverride_name = None
+    if hasattr(request, 'altair_checkout3d_override_shop_name'):
+        orverride_name = getattr(request, 'altair_checkout3d_override_shop_name')
     setting = get_multicheckout_setting(request, override_name=orverride_name)
     if setting is None:
         raise Exception

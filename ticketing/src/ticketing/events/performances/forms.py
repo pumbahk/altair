@@ -10,6 +10,8 @@ from ticketing.core.models import Venue, Performance, Stock
 from ticketing.payments.plugins.sej import DELIVERY_PLUGIN_ID as SEJ_DELIVERY_PLUGIN_ID
 from ticketing.core.utils import ApplicableTicketsProducer
 
+PREFECTURE_ORDER = { u'北海道': 1, u'青森県': 2, u'岩手県': 3, u'宮城県': 4, u'秋田県': 5, u'山形県': 6, u'福島県': 7, u'茨城県': 8, u'栃木県': 9, u'群馬県': 10, u'埼玉県': 11, u'千葉県': 12, u'東京都': -10, u'神奈川県': 14, u'新潟県': 15, u'富山県': 16, u'石川県': 17, u'福井県': 18, u'山梨県': 19, u'長野県': 20, u'岐阜県': 21, u'静岡県': 22, u'愛知県': -8, u'三重県': 24, u'滋賀県': 25, u'京都府': 26, u'大阪府': -9, u'兵庫県': 28, u'奈良県': 29, u'和歌山県': 30, u'鳥取県': 31, u'島根県': 32, u'岡山県': 33, u'広島県': 34, u'山口県': 35, u'徳島県': 36, u'香川県': 37, u'愛媛県': 38, u'高知県': 39, u'福岡県': 40, u'佐賀県': 41, u'長崎県': 42, u'熊本県': 43, u'大分県': 44, u'宮崎県': 45, u'鹿児島県': 46, u'沖縄県': 47 }
+
 class PerformanceForm(Form):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
@@ -18,9 +20,8 @@ class PerformanceForm(Form):
                 'organization_id':kwargs['organization_id'],
                 'original_venue_id':None
             }
-            # FIXME: 都道府県が正しい順番に並ばないのは何とかならないものか
             venue_by_pref = dict()
-            for venue in Venue.filter_by(**conditions).all():
+            for venue in Venue.filter_by(**conditions).order_by('name').all():
                 pref = venue.site.prefecture if venue.site.prefecture!=None and venue.site.prefecture!='' else u'(不明な都道府県)'
                 if not pref in venue_by_pref:
                     venue_by_pref[pref] = [ ]
@@ -28,7 +29,7 @@ class PerformanceForm(Form):
                     (venue.id,venue.name+(' ('+venue.sub_name+')' if (venue.sub_name!=None and venue.sub_name!='') else ''))
                 )
             self.venue_id.choices = [
-                (pref, tuple(venue_by_pref[pref])) for pref in venue_by_pref
+                (pref, tuple(venue_by_pref[pref])) for pref in sorted(venue_by_pref.keys(), key=lambda x:PREFECTURE_ORDER[x] if PREFECTURE_ORDER.has_key(x) else 99)
             ]
             if 'venue_id' in kwargs:
                 venue = Venue.get(kwargs['venue_id'])

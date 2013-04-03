@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['d1SY5Y_3NF0VPV93'] = (function (exports) { (function () { 
+__LIBS__['ECKM1KD5AEIML148'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -26,7 +26,7 @@ exports.ja = {
   } 
 };
  })(); return exports; })({});
-__LIBS__['I1Y55G5G2A12KPOB'] = (function (exports) { (function () { 
+__LIBS__['TZNDZAUNG_ZXS_9X'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -80,9 +80,7 @@ exports.DEFAULT = {
     tooltip: {
     },
     unselectable: {
-      text_color: "#888",
-      fill:   { color: "#eee" },
-      stroke: { color: "#ccc", width: 1 }
+      stroke: { color: "#ababab", width: 2, pattern: 'solid' }
     }
   },
 
@@ -99,7 +97,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['iYHUH95JHTCQV9BT'] = (function (exports) { (function () { 
+__LIBS__['Y54F4C7ZT_S84BGT'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -213,7 +211,7 @@ timer.prototype.lap = function(msg) {
     return lap;
 };
  })(); return exports; })({});
-__LIBS__['OZPUCZ4ROQFK9XG6'] = (function (exports) { (function () { 
+__LIBS__['b7BXV_JMKHU2EBKF'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -262,12 +260,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['CD5Y7SQAW2PFOFHH'] = (function (exports) { (function () { 
+__LIBS__['U4A4FFJ712DXYJY4'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['iYHUH95JHTCQV9BT'];
-var CONF = __LIBS__['I1Y55G5G2A12KPOB'];
-var IdentifiableSet = __LIBS__['OZPUCZ4ROQFK9XG6'].IdentifiableSet;
+var util = __LIBS__['Y54F4C7ZT_S84BGT'];
+var CONF = __LIBS__['TZNDZAUNG_ZXS_9X'];
+var IdentifiableSet = __LIBS__['b7BXV_JMKHU2EBKF'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -357,13 +355,17 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
       stockHolder: stockHolder,
       stockType: stockType,
       assigned: stockDatum.assigned,
-      available: stockDatum.available
+      available: stockDatum.available,
+      assignable: stockDatum.assignable
     });
     stocks.add(stock);
     stock.on('change:assigned', function () {
       this.set('edited', true);
       this.get('stockHolder').recalculateQuantity();
       this.get('stockType').recalculateQuantity();
+    });
+    stock.on('change:assignable', function () {
+      this.set('edited', true);
     });
     if (stockHolder && stockType) {
       var map = perStockHolderStockMap[stockHolder.id];
@@ -393,15 +395,18 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
   });
   for (var id in initialData.seats) {
     var seatDatum = initialData.seats[id];
+    var stock = stocks.get(seatDatum.stock_id);
+    var sold = ($.inArray(seatDatum.status, [0, 1]) == -1);
     var seat = new Seat({
       id: seatDatum.id,
       name: seatDatum.name,
       seat_no: seatDatum.seat_no,
       status: seatDatum.status,
-      stock: stocks.get(seatDatum.stock_id),
+      stock: stock,
       attrs: seatDatum.attrs,
       areas: seatDatum.areas,
-      selectable: $.inArray(seatDatum.status, [0, 1]) > -1 ? true : false
+      sold: sold,
+      selectable: (stock && stock.get('assignable') && !sold) ? true : false
     });
     seats.add(seat);
     {
@@ -414,7 +419,6 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
       }
     }
     {
-      var stock = seat.get('stock');
       var set;
       if (stock) {
         set = perStockSeatSet[stock.id];
@@ -489,7 +493,8 @@ Venue.prototype.toJSON = function Venue_toJSON () {
     if (stock.get('edited')) {
       stockData.push({
         id: stock.get('id'),
-        quantity: stock.get('assigned')
+        quantity: stock.get('assigned'),
+        assignable: stock.get('assignable') ? 1 : 0
       });
     }
   });
@@ -617,6 +622,7 @@ var Stock = exports.Stock = Backbone.Model.extend({
     assigned: 0,
     available: 0,
     style: CONF.DEFAULT.SEAT_STYLE,
+    assignable: true,
     edited: false
   },
 
@@ -674,7 +680,8 @@ var Seat = exports.Seat = Backbone.Model.extend({
 
   selectable: function Seat_selectable() {
     var venue = this.get('venue');
-    return this.get('selectable') && (!venue || venue.isSelectable(this));
+    var stock = this.get('stock');
+    return this.get('selectable') && (!stock || stock.get('assignable')) && (!venue || venue.isSelectable(this));
   }
 });
 
@@ -745,12 +752,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['dPIBL3AHEF2DF7MQ'] = (function (exports) { (function () { 
+__LIBS__['C18SD_QZ9WLOVSNE'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['iYHUH95JHTCQV9BT'];
-var CONF = __LIBS__['I1Y55G5G2A12KPOB'];
-var models = __LIBS__['CD5Y7SQAW2PFOFHH'];
+var util = __LIBS__['Y54F4C7ZT_S84BGT'];
+var CONF = __LIBS__['TZNDZAUNG_ZXS_9X'];
+var models = __LIBS__['U4A4FFJ712DXYJY4'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -768,12 +775,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
     this.styleTypes = [];
 
     function selectableChanged() {
-      if (self.get('model').selectable())
-        self.addStyleType('unselectable');
-      else
+      if (self.get('model').selectable()) {
         self.removeStyleType('unselectable');
-    };
-    
+      } else if (!self.get('model').get('sold')) {
+        self.addStyleType('unselectable');
+      }
+    }
+
     function selectedChanged() {
       if (this.get('selected'))
         self.addStyleType('selected');
@@ -789,19 +797,17 @@ var Seat = exports.Seat = Backbone.Model.extend({
       if (model)
         model.on('change:style', onStockChanged);
       self._refreshStyle();
-    };
+    }
 
     function onModelChange() {
       var prevModel = self.previous('model');
       var model = self.get('model');
       if (prevModel) {
-        model.off('change:venue', selectableChanged);
         model.off('change:selectable', selectableChanged);
         model.off('change:selected', selectedChanged);
         model.off('change:stock', onStockChanged);
       }
       if (model) {
-        model.on('change:venue', selectableChanged);
         model.on('change:selectable', selectableChanged);
         model.on('change:selected', selectedChanged);
         model.on('change:stock', onStockChanged);
@@ -864,6 +870,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
     // ensure change events to get invoked correctly on the
     // initialization.
     this._previousAttributes = {};
+    selectableChanged();
     onModelChange();
     onShapeChange(true);
     onEventsChange();
@@ -883,30 +890,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
     }
     shape.style(util.convertToFashionStyle(style));
     var styleText = style.text || model.get('seat_no');
-    if (style.text && ($.inArray('tooltip', this.styleTypes) != -1 || $.inArray('highlighted', this.styleTypes) != -1)) {
-      var posx = 0;
-      var posy = 0;
-      var e = window.event;
-      if (e.pageX || e.pageY) {
-        posx = e.pageX;
-        posy = e.pageY;
-      }
-      else if (e.clientX || e.clientY) {
-        posx = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
-        posy = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
-      }
-      $('#tooltip').attr('style', 'visibility: visible; top: ' + posy + 'px; left: ' + posx + 'px;');
-      $('#tooltip').html(model.get('stock').get('stockType').get('name') + "<br>" + model.get('name'));
-    } else {
-      $('#tooltip').attr('style', 'visibility: hidden;');
-    }
     if (!this.label) {
       var p = shape.position(),
           t = shape.transform(),
           s = shape.size();
       var text = new Fashion.Text({
           position: {
-			x: p.x + (s.x * (0.05 + (styleText.length==1 ? 0.2 : 0.0))),
+			      x: p.x + (s.x * (0.05 + (styleText.length==1 ? 0.2 : 0.0))),
             y: p.y + (s.y * 0.75)
           },
           fontSize: style.text ? s.y * 0.5 : (s.x*1.2/Math.max(2, styleText.length)),
@@ -949,13 +939,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['I1Y55G5G2A12KPOB'];
-  var models = __LIBS__['CD5Y7SQAW2PFOFHH'];
-  var util = __LIBS__['iYHUH95JHTCQV9BT'];
-  var viewobjects = __LIBS__['dPIBL3AHEF2DF7MQ'];
-  var IdentifiableSet = __LIBS__['OZPUCZ4ROQFK9XG6'].IdentifiableSet;
+  var CONF = __LIBS__['TZNDZAUNG_ZXS_9X'];
+  var models = __LIBS__['U4A4FFJ712DXYJY4'];
+  var util = __LIBS__['Y54F4C7ZT_S84BGT'];
+  var viewobjects = __LIBS__['C18SD_QZ9WLOVSNE'];
+  var IdentifiableSet = __LIBS__['b7BXV_JMKHU2EBKF'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['d1SY5Y_3NF0VPV93'];
+    I18n.translations = __LIBS__['ECKM1KD5AEIML148'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -1502,6 +1492,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
                   seat.addStyleType('tooltip');
                 }
                 self.highlighted[_id] = seat;
+                self.callbacks.tooltip && self.callbacks.tooltip(seat);
               }
             },
             mouseout: function(evt) {
@@ -1514,13 +1505,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
                 } else {
                   seat.removeStyleType('tooltip');
                 }
+                self.callbacks.tooltip && self.callbacks.tooltip(seat);
               }
             },
             mousedown: function(evt) {
-              if (seats[id].get('model').selectable()) {
-                self.callbacks.click && self.callbacks.click(self, self, self.highlighted);
-              } else {
-                self.callbacks.tooltip && self.callbacks.tooltip(id);
+              var seat = seats[id];
+              if (seat.get('model').get('sold')) {
+                self.callbacks.click && self.callbacks.click(seat.get('model'));
               }
             }
           }

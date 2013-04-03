@@ -674,11 +674,19 @@ class Visitor(object):
                     html_styles.append((u'line-height', unicode(line_height) + u'px'))
                 if self.current_style_ctx.style.fill_color != style.fill_color:
                     html_styles.append((u'color', style.fill_color))
+                if self.current_style_ctx.style.font_weight != style.font_weight:
+                    html_styles.append((u'font-weight', style.font_weight))
                 current_font_family_class = self.font_classes.get(self.current_style_ctx.style.font_family)
+                if current_font_family_class is None:
+                    # silenty falls back to the default font
+                    current_font_family_class = u"f16"
                 new_font_family_class = self.font_classes.get(style.font_family)
+                if new_font_family_class is None:
+                    logger.warning('Unsupported font %s; falling back to "f16"' % style.font_family)
+                    new_font_family_class = u"f16"
                 subelem = self._build_html_from_flow_elements(text_and_elements(elem), tag)
                 if current_font_family_class != new_font_family_class:
-                    subelem.set('class', current_font_family_class)
+                    subelem.set('class', new_font_family_class)
                 if len(html_styles) > 0:
                     subelem.set('style', u';'.join(':'.join(pair) for pair in html_styles))
                 if len(subelem.items()) == 0:
@@ -712,7 +720,7 @@ class Visitor(object):
                     if line:
                         nodes.append(line)
             else:
-                if elem.tag == u'{%s}textSpan' % SVG_NAMESPACE:
+                if elem.tag == u'{%s}tspan' % SVG_NAMESPACE:
                     tag = 'span'
                 else:
                     raise Exception('Unsupported tag: %s' % elem.tag)
@@ -735,11 +743,19 @@ class Visitor(object):
                     html_styles.append((u'line-height', unicode(line_height) + u'px'))
                 if self.current_style_ctx.style.fill_color != style.fill_color:
                     html_styles.append((u'color', style.fill_color))
+                if self.current_style_ctx.style.font_weight != style.font_weight:
+                    html_styles.append((u'font-weight', style.font_weight))
                 current_font_family_class = self.font_classes.get(self.current_style_ctx.style.font_family)
+                if current_font_family_class is None:
+                    # silenty falls back to the default font
+                    current_font_family_class = u"f16"
                 new_font_family_class = self.font_classes.get(style.font_family)
+                if new_font_family_class is None:
+                    logger.warning('Unsupported font %s; falling back to "f16"' % style.font_family)
+                    new_font_family_class = u"f16"
                 subelem = self._build_html_from_text_elements(text_and_elements(elem), tag)
                 if current_font_family_class != new_font_family_class:
-                    subelem.set('class', current_font_family_class)
+                    subelem.set('class', new_font_family_class)
                 if len(html_styles) > 0:
                     subelem.set('style', u';'.join(':'.join(pair) for pair in html_styles))
                 if len(subelem.items()) == 0:
@@ -792,15 +808,18 @@ class Visitor(object):
         if new_style.font_family is not None:
             font_family_class = self.font_classes.get(new_style.font_family)
             if font_family_class is None:
-                raise Exception('Unsupported font: %s' % new_style.font_family)
+                logger.warning('Unsupported font %s; falling back to "f16"' % new_style.font_family)
+                font_family_class = u"f16"
             old_font_family_class = self.font_classes.get(self.current_style_ctx.style.font_family)
             if font_family_class != old_font_family_class:
                 classes_pushed['font_family'] = font_family_class
 
         if new_style.font_weight is not None:
             if new_style.font_weight not in self.font_weight_classes:
-                raise Exception('Unsupported font weight: %s' % new_style.font_weight)
-            font_weight_class = self.font_weight_classes[new_style.font_weight]
+                logger.warning('Unsupported font weight %s; falling back to "normal"' % new_style.font_weight)
+                font_weight_class = None
+            else:
+                font_weight_class = self.font_weight_classes[new_style.font_weight]
             if font_weight_class is not None:
                 old_font_weight_class = self.font_weight_classes.get(self.current_style_ctx.style.font_weight)
                 if font_weight_class != old_font_weight_class:
@@ -810,7 +829,8 @@ class Visitor(object):
             text_anchor_class = self.text_anchor_classes.get(new_style.text_anchor)
             old_text_anchor_class = self.text_anchor_classes.get(self.current_style_ctx.style.text_anchor)
             if text_anchor_class is None:
-                raise Exception('Unsupported anchor type: %s' % new_style.text_anchor)
+                logger.warning('Unsupported anchor type %s; falling back to left' % new_style.text_anchor)
+                text_anchor_class = u"l"
             if text_anchor_class != old_text_anchor_class:
                 classes_pushed['text_anchor'] = text_anchor_class
 

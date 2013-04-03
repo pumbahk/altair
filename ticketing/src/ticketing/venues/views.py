@@ -102,7 +102,8 @@ def get_seats(request):
                 assigned=stock.quantity,
                 stock_type_id=stock.stock_type_id,
                 stock_holder_id=stock.stock_holder_id,
-                available=stock.stock_status.quantity)\
+                available=stock.stock_status.quantity,
+                assignable=False if stock.locked_at else True)\
             for stock in query
             ]
 
@@ -201,6 +202,7 @@ def show(request):
     site = Site.get(venue.site_id)
     root = None
     if site._metadata != None:
+        pages = site._metadata.get('pages').items()
         for page, info in site._metadata.get('pages').items():
             if info.get('root'):
                 root = page
@@ -243,6 +245,7 @@ def show(request):
         'venue': venue,
         'site': site,
         'root': root,
+        'pages': pages,
         'items': items,
         'adjs': adjs,
     }
