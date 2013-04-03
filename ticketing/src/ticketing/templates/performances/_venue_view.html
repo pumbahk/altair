@@ -112,8 +112,29 @@
   margin-left: 5px;
 }
 
+#venue-editor .tooltip {
+  border: solid 3px #05C;
+  -moz-border-radius: 6px;
+  -webkit-border-radius: 6px;
+  border-radius: 6px;
+  position: absolute;
+  text-decoration: none;
+  margin: 10px;
+  padding: 5px 5px;
+  width: 160px;
+  zoom: 1;
+  -webkit-transition-property: opacity;
+  -webkit-transition-duration: 2s;
+  -webkit-transition-timing-function: ease-in-out;
+  background-color: white;
+  visibility: hidden;
+  z-index: 10;
+  opacity: 1;
+}
+
       </style>
       <div style="width:100%;" id="venue-editor">
+        <div class="tooltip"></div>
         <div class="ui-corner-all ui-toolbar clearfix">
           <div style="float:left">
             <span class="ui-buttonset">
@@ -234,7 +255,35 @@ venueEditorRoot.venueeditor({
         break;
       }
     },
-    click: function (viewer, seat, highlighted) {
+    click: function (seat) {
+      var tooltip = venueEditor.find('.tooltip');
+      $.ajax({
+        url: '${request.route_path('orders.api.get')}',
+        data: {'l0_id':seat.id, 'performance_id':${performance.id}},
+        dataType: 'json',
+        success: function(data) {
+          var products = '';
+          for (var i = 0; i < data.products.length; i++) {
+            products += "<li>" + data.products[i] + "</li>";
+          }
+          var seat_names = '';
+          for (var i = 0; i < data.seat_names.length; i++) {
+            seat_names += "<li>" + data.seat_names[i] + "</li>";
+          }
+          tooltip.html(
+          "予約番号: " + data.order_no + "<br>" +
+          "氏名: " + data.name + "<br>" +
+          "商品: " + "<br><ul>" + products + "</ul>" +
+          "座席番号: " + "<br><ul>" + seat_names + "</ul>" +
+          "合計金額: " + data.price + "円"
+          ).css('width', '200px');
+        },
+        error: function(xhr, text) {
+          var responseText = JSON.parse(xhr.responseText);
+          var messages = responseText['message'] || xhr.statusText
+          tooltip.text(messages).css('width', '200px');
+        }
+      });
       callbacks.click && callbacks.click(viewer, seat, highlighted);
     },
     select: function (viewer, selection) {
@@ -251,34 +300,25 @@ venueEditorRoot.venueeditor({
       }
       callbacks.load && callbacks.load(viewer);
     },
-    tooltip: function (l0_id) {
-      $.ajax({
-        url: '/orders/api/get/',
-        data: {'l0_id':l0_id, 'performance_id':${performance.id}},
-        dataType: 'json',
-        success: function(data) {
-          var products = '';
-          for (var i = 0; i < data.products.length; i++) {
-            products += "<li>" + data.products[i] + "</li>";
-          }
-          var seat_names = '';
-          for (var i = 0; i < data.seat_names.length; i++) {
-            seat_names += "<li>" + data.seat_names[i] + "</li>";
-          }
-          $('#tooltip').html(
-            "予約番号: " + data.order_no + "<br>" +
-            "氏名: " + data.name + "<br>" +
-            "商品: " + "<br><ul>" + products + "</ul>" +
-            "座席番号: " + "<br><ul>" + seat_names + "</ul>" +
-            "合計金額: " + data.price + "円"
-          ).css('width', '200px');
-        },
-        error: function(xhr, text) {
-          var responseText = JSON.parse(xhr.responseText);
-          var messages = responseText['message'] || xhr.statusText
-          $('#tooltip').text(messages).css('width', '200px');
+    tooltip: function (seat) {
+      var tooltip = venueEditor.find('.tooltip');
+      var model = seat.get('model');
+      if (($.inArray('tooltip', seat.styleTypes) != -1 || $.inArray('highlighted', seat.styleTypes) != -1)) {
+        var posx = 0;
+        var posy = 0;
+        var e = window.event;
+        if (e.pageX || e.pageY) {
+          posx = e.pageX;
+          posy = e.pageY;
+        } else if (e.clientX || e.clientY) {
+          posx = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+          posy = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
         }
-      });
+        tooltip.attr('style', 'visibility: visible; top: ' + posy + 'px; left: ' + posx + 'px;');
+        tooltip.html(model.get('stock').get('stockType').get('name') + "<br>" + model.get('name'));
+      } else {
+        tooltip.attr('style', 'visibility: hidden;');
+      }
     }
   }
 }).venueeditor("load");

@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['ZLG_DAU8YBARPV26'] = (function (exports) { (function () { 
+__LIBS__['ECKM1KD5AEIML148'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -26,7 +26,7 @@ exports.ja = {
   } 
 };
  })(); return exports; })({});
-__LIBS__['QJ8H_642U6R6RK0R'] = (function (exports) { (function () { 
+__LIBS__['TZNDZAUNG_ZXS_9X'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -97,7 +97,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['FGY5BS865TE10_NX'] = (function (exports) { (function () { 
+__LIBS__['Y54F4C7ZT_S84BGT'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -211,7 +211,7 @@ timer.prototype.lap = function(msg) {
     return lap;
 };
  })(); return exports; })({});
-__LIBS__['CEE74BCCI3_CFU_L'] = (function (exports) { (function () { 
+__LIBS__['b7BXV_JMKHU2EBKF'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -260,12 +260,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['fQZJFAC7CZI1J5PP'] = (function (exports) { (function () { 
+__LIBS__['U4A4FFJ712DXYJY4'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['FGY5BS865TE10_NX'];
-var CONF = __LIBS__['QJ8H_642U6R6RK0R'];
-var IdentifiableSet = __LIBS__['CEE74BCCI3_CFU_L'].IdentifiableSet;
+var util = __LIBS__['Y54F4C7ZT_S84BGT'];
+var CONF = __LIBS__['TZNDZAUNG_ZXS_9X'];
+var IdentifiableSet = __LIBS__['b7BXV_JMKHU2EBKF'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -752,12 +752,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['VD613TKRFP0NNEIX'] = (function (exports) { (function () { 
+__LIBS__['C18SD_QZ9WLOVSNE'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['FGY5BS865TE10_NX'];
-var CONF = __LIBS__['QJ8H_642U6R6RK0R'];
-var models = __LIBS__['fQZJFAC7CZI1J5PP'];
+var util = __LIBS__['Y54F4C7ZT_S84BGT'];
+var CONF = __LIBS__['TZNDZAUNG_ZXS_9X'];
+var models = __LIBS__['U4A4FFJ712DXYJY4'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -890,23 +890,6 @@ var Seat = exports.Seat = Backbone.Model.extend({
     }
     shape.style(util.convertToFashionStyle(style));
     var styleText = style.text || model.get('seat_no');
-    if (style.text && ($.inArray('tooltip', this.styleTypes) != -1 || $.inArray('highlighted', this.styleTypes) != -1)) {
-      var posx = 0;
-      var posy = 0;
-      var e = window.event;
-      if (e.pageX || e.pageY) {
-        posx = e.pageX;
-        posy = e.pageY;
-      }
-      else if (e.clientX || e.clientY) {
-        posx = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
-        posy = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
-      }
-      $('#tooltip').attr('style', 'visibility: visible; top: ' + posy + 'px; left: ' + posx + 'px;');
-      $('#tooltip').html(model.get('stock').get('stockType').get('name') + "<br>" + model.get('name'));
-    } else {
-      $('#tooltip').attr('style', 'visibility: hidden;');
-    }
     if (!this.label) {
       var p = shape.position(),
           t = shape.transform(),
@@ -956,13 +939,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['QJ8H_642U6R6RK0R'];
-  var models = __LIBS__['fQZJFAC7CZI1J5PP'];
-  var util = __LIBS__['FGY5BS865TE10_NX'];
-  var viewobjects = __LIBS__['VD613TKRFP0NNEIX'];
-  var IdentifiableSet = __LIBS__['CEE74BCCI3_CFU_L'].IdentifiableSet;
+  var CONF = __LIBS__['TZNDZAUNG_ZXS_9X'];
+  var models = __LIBS__['U4A4FFJ712DXYJY4'];
+  var util = __LIBS__['Y54F4C7ZT_S84BGT'];
+  var viewobjects = __LIBS__['C18SD_QZ9WLOVSNE'];
+  var IdentifiableSet = __LIBS__['b7BXV_JMKHU2EBKF'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['ZLG_DAU8YBARPV26'];
+    I18n.translations = __LIBS__['ECKM1KD5AEIML148'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -1509,6 +1492,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
                   seat.addStyleType('tooltip');
                 }
                 self.highlighted[_id] = seat;
+                self.callbacks.tooltip && self.callbacks.tooltip(seat);
               }
             },
             mouseout: function(evt) {
@@ -1521,13 +1505,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
                 } else {
                   seat.removeStyleType('tooltip');
                 }
+                self.callbacks.tooltip && self.callbacks.tooltip(seat);
               }
             },
             mousedown: function(evt) {
-              if (seats[id].get('model').selectable()) {
-                self.callbacks.click && self.callbacks.click(self, self, self.highlighted);
-              } else if (seats[id].get('model').get('sold')) {
-                self.callbacks.tooltip && self.callbacks.tooltip(id);
+              var seat = seats[id];
+              if (seat.get('model').get('sold')) {
+                self.callbacks.click && self.callbacks.click(seat.get('model'));
               }
             }
           }
