@@ -300,8 +300,20 @@
 
           var drawable = new Fashion.Drawable( self.canvas[0], {
             contentSize: size ? {x: size.x, y: size.y}: null,
-            viewportSize: self.optionalViewportSize
+            viewportSize: self.optionalViewportSize             // fixed parameter
           });
+
+          /*
+          var frame = new Fashion.Rect({
+                  size: { x: size.x, y: size.y },
+                  position: { x: (vb && vb[0]) || 0, y: (vb && vb[1]) || 0 },
+                  corner: { x: 0, y: 0 },
+                  transform: null,
+                  zIndex: -10
+              });
+          frame.style({ fill: new Fashion.FloodFill(new Fashion.Color("#ff000080")) });
+          drawable.draw(frame);
+          */
 
           var shapes = {}, link_pairs = [];
           var small_texts = [];
@@ -483,40 +495,44 @@
           self.link_pairs = link_pairs;
 
           if (!leftTop)
-            leftTop = { x: 0, y: 0 };
+            leftTop = { x: (vb && vb[0]) || 0, y: (vb && vb[1]) || 0 };
           if (!rightBottom)
-            rightBottom = size;
+            rightBottom = { x: leftTop.x + size.x, y: leftTop.y + size.y };
 
           var center = {
             x: (leftTop.x + rightBottom.x) / 2,
-            y: (leftTop.x + rightBottom.y) / 2
+            y: (leftTop.y + rightBottom.y) / 2
           };
-
           var focusedRegionSize = {
-            x: (rightBottom.x - leftTop.x) / 0.8,
-            y: (rightBottom.y - leftTop.y) / 0.8
+            x: (rightBottom.x - leftTop.x),
+            y: (rightBottom.y - leftTop.y)
           };
           var focusedRegionOffset = {
             x: center.x - (focusedRegionSize.x / 2),
             y: center.y - (focusedRegionSize.y / 2)
           };
 
+          var margin = { x: 20, y: 20 };  /* width of zoom slider and height of map selector */
           var vs = drawable.viewportSize();
-          var wr = vs.x / focusedRegionSize.x;
-          var hr = vs.y / focusedRegionSize.y;
-          var r = (wr < hr) ? wr : hr;
+          vs = { x: vs.x-margin.x, y: vs.y-margin.y };
+
+          var xr = vs.x / focusedRegionSize.x * 0.9;
+          var yr = vs.y / focusedRegionSize.y * 0.9;
+          var r = (xr < yr) ? xr : yr;
+
           var origin = {
-            x: (wr < hr) ? focusedRegionOffset.x : center.x - ((vs.x/2)/hr),
-            y: (wr < hr) ? center.y - ((vs.y/2)/wr) : focusedRegionOffset.y
+            x: center.x - (vs.x/2+margin.x)/r, y: center.y - (vs.y/2+margin.y)/r
           };
           self.zoomRatioMin = r;
           self.contentOriginPosition = origin;
 
           drawable.transform(
-            Fashion.Matrix.scale(self.zoomRatio)
-              .translate({x: -origin.x, y: -origin.y}));
-
-          drawable.contentSize({x: (vs.x/r) + origin.x, y: (vs.y/r) + origin.y});
+            Fashion.Matrix.scale(self.zoomRatioMin)
+              .translate({ x: -origin.x, y: -origin.y })
+          );
+          drawable.contentSize({
+            x: origin.x + vs.x/r, y: origin.y + vs.y/r
+          });
 
           function getSiblings(link) {
             var rt = [];
@@ -618,7 +634,7 @@
                     evt.logicalPosition,
                     self.startPos));
                 self.drawable.scrollPosition(newScrollPos);
-				scrollPos = newScrollPos;
+                scrollPos = newScrollPos;
                 return false;
             }
 
