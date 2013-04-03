@@ -202,6 +202,7 @@ def show(request):
     site = Site.get(venue.site_id)
     root = None
     if site._metadata != None:
+        pages = site._metadata.get('pages').items()
         for page, info in site._metadata.get('pages').items():
             if info.get('root'):
                 root = page
@@ -244,6 +245,7 @@ def show(request):
         'venue': venue,
         'site': site,
         'root': root,
+        'pages': pages,
         'items': items,
         'adjs': adjs,
     }
