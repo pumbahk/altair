@@ -103,7 +103,7 @@ def get_seats(request):
                 stock_type_id=stock.stock_type_id,
                 stock_holder_id=stock.stock_holder_id,
                 available=stock.stock_status.quantity,
-                assignable=False if stock.locked_at else True)\
+                assignable=False if (stock.locked_at and u'sale_only' not in filter_params) else True)\
             for stock in query
             ]
 
