@@ -121,6 +121,8 @@ class EventSearcher(object):
                     ),
                 qs=qs
                 )
+        elif form.sale.data == int(SalesEnum.ALL):
+            pass
         log_info("get_events_from_sale", "end")
         return qs
 
