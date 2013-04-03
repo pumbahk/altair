@@ -762,7 +762,7 @@
                 case 13:
                     g.preventDefault();
                     if (this.results_showing) {
-                        return this.result_select(g)
+//                      return this.result_select(g)
                     }
                     break;
                 case 27:
