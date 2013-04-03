@@ -20,9 +20,8 @@ class PerformanceForm(Form):
                 'organization_id':kwargs['organization_id'],
                 'original_venue_id':None
             }
-            # FIXME: 都道府県が正しい順番に並ばないのは何とかならないものか
             venue_by_pref = dict()
-            for venue in Venue.filter_by(**conditions).all():
+            for venue in Venue.filter_by(**conditions).order_by('name').all():
                 pref = venue.site.prefecture if venue.site.prefecture!=None and venue.site.prefecture!='' else u'(不明な都道府県)'
                 if not pref in venue_by_pref:
                     venue_by_pref[pref] = [ ]
