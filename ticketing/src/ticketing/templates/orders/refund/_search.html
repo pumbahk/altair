@@ -41,8 +41,7 @@
       <fieldset>
         ${h.form_item(form.event_id)}
         ${h.form_item(form.performance_id, class_='span10')}
-
-        ${h.form_item(form.sales_segment_group)}
+        ${h.form_item(form.sales_segment_id)}
         ${h.form_item(form.payment_method)}
         ${h.form_item(form.delivery_method)}
 
@@ -92,17 +91,17 @@
             };
             $("#search select[name='event_id']").change(update_performances);
 
-            var update_sales_segment_groups_on_empty = function(){
-              var $target = $(this).parents("form").find("select[name='sales_segment_group']").eq(0);
+            var update_sales_segments_on_empty = function(){
+              var $target = $(this).parents("form").find("select[name='sales_segment_id']").eq(0);
               $target.empty();
               return;
             };
-            var update_sales_segment_groups_on_hasvalue = function(v){
+            var update_sales_segments_on_hasvalue = function(v){
               var self = this;
-              var params = {event_id: v, public:true};
-              $.getJSON("${request.route_url('orders.api.sales_segment_groups')}", params).done(function(data){
+              var params = {performance_id: v, public:true};
+              $.getJSON("${request.route_url('orders.api.sales_segments')}", params).done(function(data){
                 if(data.status){
-                  var $target = $(self).parents("form").find("select[name='sales_segment_group']").eq(0);
+                  var $target = $(self).parents("form").find("select[name='sales_segment_id']").eq(0);
                   $target.empty();
                   // optimize if slow.
                   for(var i=0, j=data.result.length; i<j; i++){
@@ -112,16 +111,16 @@
                 }
               });
             };
-            var update_sales_segment_groups = function(){
+            var update_sales_segments = function(){
               var self = this;
               var v = $(this).val();
               if(!v){
-                return update_sales_segment_groups_on_empty.call(self);
+                return update_sales_segments_on_empty.call(self);
               } else {
-                return update_sales_segment_groups_on_hasvalue.call(self, v);
+                return update_sales_segments_on_hasvalue.call(self, v);
               }
             };
-            $("#search select[name='event_id']").change(update_sales_segment_groups);
+            $("#search select[name='performance_id']").change(update_sales_segments);
           });
     		</script>
       </fieldset>

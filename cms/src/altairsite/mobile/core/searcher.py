@@ -3,6 +3,7 @@ from altairsite.mobile.solr import helper
 from pyramid.httpexceptions import HTTPNotFound
 from altaircms.models import Performance, SalesSegmentGroup, SalesSegmentKind
 from altaircms.event.models import Event
+from altaircms.page.models import Page
 from altaircms.models import Genre
 from altairsite.mobile.core.const import get_prefecture
 from altairsite.mobile.core.helper import exist_value
@@ -28,7 +29,11 @@ class EventSearcher(object):
                 .join(Performance, Event.id == Performance.event_id) \
                 .join(SalesSegmentGroup, SalesSegmentGroup.event_id == Event.id) \
                 .join(SalesSegmentKind, SalesSegmentKind.id == SalesSegmentGroup.kind_id) \
+                .join(Page, Page.event_id == Event.id) \
                 .filter(Event.is_searchable == True) \
+                .filter(Page.published == True) \
+                .filter(Page.publish_begin < datetime.now()) \
+                .filter((Page.publish_end==None) | (Page.publish_end > datetime.now())) \
                 .filter(where)
         log_info("_create_common_qs", "end")
         return qs
@@ -116,6 +121,8 @@ class EventSearcher(object):
                     ),
                 qs=qs
                 )
+        elif form.sale.data == int(SalesEnum.ALL):
+            pass
         log_info("get_events_from_sale", "end")
         return qs
 
