@@ -1341,6 +1341,9 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @staticmethod
     def create_from_template(template, **kwargs):
+        if not template.product.performance:
+            # performance_idがないレコードはSalesSegmentGroup追加時の移行用なのでコピーしない
+            return
         product_item = ProductItem.clone(template)
         if 'performance_id' in kwargs:
             product_item.performance_id = kwargs['performance_id']
@@ -1766,6 +1769,8 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @staticmethod
     def create_from_template(template, with_product_items=False, **kwargs):
         product = Product.clone(template)
+        product.event_id = None
+        product.sales_segment_group_id = None
         if 'event_id' in kwargs:
             product.event_id = kwargs['event_id']
         if 'performance_id' in kwargs:
@@ -1775,7 +1780,6 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if 'sales_segment' in kwargs:
             # 販売区分なしの場合の product もありえる
             product.sales_segment_id = template.sales_segment_id and kwargs['sales_segment'][template.sales_segment_id]
-            #product.sales_segment_group_id = kwargs['sales_segment'][template.sales_segment_id]
         product.save()
 
         if with_product_items:
