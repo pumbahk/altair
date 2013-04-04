@@ -50,7 +50,7 @@ class TicketingCartResource(object):
         self._populate_params()
 
     def _populate_params(self):
-        if request.matchdict:
+        if self.request.matchdict:
             try:
                 self._event_id = long(self.request.matchdict.get('event_id'))
             except (ValueError, TypeError):
