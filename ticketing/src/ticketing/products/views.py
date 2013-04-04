@@ -13,7 +13,7 @@ from paste.util.multidict import MultiDict
 from ticketing.fanstatic import with_bootstrap
 from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
-from ticketing.core.models import Product, ProductItem, Event, Performance, Stock
+from ticketing.core.models import Product, ProductItem, Event, Performance, Stock, SalesSegment
 from ticketing.products.forms import ProductForm, ProductItemForm
 
 logger = logging.getLogger(__name__)
@@ -226,7 +226,10 @@ class Products(BaseView):
     def api_set(self):
         performance_id = int(self.request.params.get('performance_id', 0))
         performance = Performance.get(performance_id, self.context.user.organization_id)
-        if performance is None:
+        sales_segment_id = int(self.request.params.get('sales_segment_id'), 0)
+        sales_segment = SalesSegment.query.filter(SalesSegment.id==sales_segment_id).first()
+
+        if performance is None and sales_segment is None:
             logger.info('performance id %d is not found' % performance_id)
             raise HTTPBadRequest(body=json.dumps({
                 'message':u'パフォーマンスが存在しません',
@@ -258,7 +261,10 @@ class Products(BaseView):
                         'rows':{'rowid':row_data.get('id'), 'errors':[e.message]}
                     }))
             else:
-                f = ProductItemForm(row_data, performance_id=performance_id)
+                product_id = row_data['product_id']
+                product = Product.query.filter(Product.id==product_id).one()
+
+                f = ProductItemForm(row_data, performance_id=product.performance.id)
                 if not f.validate():
                     logger.info('validation error:%s' % f.errors)
                     raise HTTPBadRequest(body=json.dumps({
@@ -266,8 +272,8 @@ class Products(BaseView):
                         'rows':{'rowid':row_data.get('id'), 'errors':f.errors}
                     }))
 
-                product_item.performance_id = performance_id
-                product_item.product_id = f.product_id.data
+                product_item.performance_id = product.performance.id
+                product_item.product_id = product.id
                 product_item.name = f.product_item_name.data
                 product_item.price = f.product_item_price.data
                 product_item.quantity = f.product_item_quantity.data

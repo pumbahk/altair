@@ -145,7 +145,7 @@ class TicketingCartResource(object):
         """現在認証中のユーザ"""
         from ticketing.rakuten_auth.api import authenticated_user
         user = authenticated_user(self.request)
-        return user
+        return user or { 'is_guest': True }
 
     @reify
     def sales_segments(self):

@@ -44,26 +44,6 @@ span.editable {
   margin: 0 0;
 }
 
-#tooltip {
-  border: solid 3px #05C;
-  -moz-border-radius: 6px;
-  -webkit-border-radius: 6px;
-  border-radius: 6px;
-  position: absolute;
-  text-decoration: none;
-  margin: 10px;
-  padding: 5px 5px;
-  width: 160px;
-  zoom: 1;
-  -webkit-transition-property: opacity;
-  -webkit-transition-duration: 2s;
-  -webkit-transition-timing-function: ease-in-out;
-  background-color: white;
-  visibility: hidden;
-  z-index: 10;
-  opacity: 1;
-}
-
 .swatch {
   display: inline-block;
   width: 16px;
@@ -78,7 +58,7 @@ span.editable {
 
 .transfer {
   float: right;
-  margin: 8px 18px 8px 5px;
+  margin: 8px 8px 8px 5px;
 }
 
 .rest {
@@ -99,7 +79,6 @@ span.editable {
   $(".collapse").collapse();
 </script>
 
-<div id="tooltip"></div>
 <div class="tabbable" id="seat-allocation-tab">
   <div class="tab-content" id="seat-allocation-tab-content">
     <div class="tab-pane active" id="map">
@@ -202,6 +181,7 @@ function bind(bindable, model, attr) {
     bindable.set(this.get(attr));
   }
   model.on('change:' + attr, onchange);
+  bindable.bindStock('change:assignable', onchange);
   bindable.bindSave(function (value) {
     return model.set(attr, value, {
       error: function (msg) {
@@ -212,20 +192,51 @@ function bind(bindable, model, attr) {
   onchange.call(model);
 }
 
-function makeAssignable(n, stock) {
-  var assignable = $('<a class="assignable"></a>').appendTo(n);
-  function refresh() {
-    assignable.text(stock.get('assigned'));
+function makeLockHandler(n, stock) {
+  var lockable = $('<i class="icon-lock"></i>').appendTo(n);
+  var venue = venueEditorRoot.venueeditor('model');
+  function onClick() {
+    var status = stock.get('assignable') ? false : true;
+    stock.set('assignable', status);
+    if (venue.perStockSeatSet[stock.id]) {
+      venue.perStockSeatSet[stock.id].each(function(seat){
+        if (!seat.get('sold')) seat.set('selectable', status);
+      })
+    }
+    return false;
   }
-  stock.on('change:assigned', refresh);
-  assignable.click(function () {
+  lockable.bind('click', onClick);
+  function refresh() {
+    if (stock.get('assignable')) {
+      lockable.addClass('icon-white');
+    } else {
+      lockable.removeClass('icon-white');
+    }
+  }
+  stock.on('change:assignable', refresh);
+  refresh();
+}
+
+function makeAssignable(n, stock) {
+  var assignable = $('<span></span>').appendTo(n);
+  function onClick() {
     var selection = venueEditorRoot.venueeditor('selection');
     selection.each(function (seat) {
       seat.set('stock', stock);
     });
     venueEditorRoot.venueeditor('clearSelection');
     return false;
-  });
+  }
+  function refresh() {
+    assignable.text(stock.get('assigned'));
+    if (stock.get('assignable')) {
+      assignable.bind('click', onClick).addClass('assignable');
+    } else {
+      assignable.unbind().removeClass('assignable');
+    }
+  }
+  stock.on('change:assigned', refresh);
+  stock.on('change:assignable', refresh);
   refresh();
 }
 
@@ -233,17 +244,12 @@ var makeEditable = (function () {
   var editing = null;
   var prevDisplayStyleValue = null;
 
-  return function makeEditable(n) {
-    var editable = $('<span class="editable"></span>').appendTo(n);
+  return function makeEditable(n, stock) {
+    var editable = $('<span></span>').appendTo(n);
     var editableIcon = $('<i class="icon-pencil" style="margin-left: 4px;"></i>').appendTo(n);
     var save = function (value) { set(value); };
     var value = '';
-    function set(_value) {
-      if (editing)
-        editing.val(_value)
-      editable.text(_value);
-      value = _value;
-    }
+
     function beginEdit() {
       if (editing)
         return;
@@ -288,11 +294,26 @@ var makeEditable = (function () {
       save();
     }
 
-    n.click(function () {
+    function onClick() {
       if (editing)
         cancel();
       beginEdit();
-    });
+    }
+
+    function set(_value) {
+      if (editing)
+        editing.val(_value)
+      editable.text(_value);
+      value = _value;
+
+      if (stock.get('assignable')) {
+        editable.bind('click', onClick).addClass('editable');
+        editableIcon.css('display', 'inline-block');
+      } else {
+        editable.unbind().removeClass('editable');
+        editableIcon.css('display', 'none');
+      }
+    }
 
     return {
       element: editable,
@@ -302,6 +323,9 @@ var makeEditable = (function () {
       },
       bindSave: function (_save) {
         save = _save;
+      },
+      bindStock: function (event, listener) {
+        stock.on(event, listener);
       }
     }
   }
@@ -314,19 +338,22 @@ function buildStockRow(stock) {
   var stockType = stock.get('stockType');
   if (stockType.id != "") {
     buildColorButton(stockType, 'style').appendTo(legend);
-    bind(makeEditable(name), stockType, 'name');
+    bind(makeEditable(name, stock), stockType, 'name');
   } else {
     name.text(stockType.get('name'));
   }
-  tr.append(legend);
-  tr.append(name);
   var quantity = $('<td class="stock-quantity"></td>');
   if (stockType.get('isSeat') && !stockType.get('quantityOnly')) {
     makeAssignable(quantity, stock);
   } else {
-    bind(makeEditable(quantity), stock, 'assigned');
+    bind(makeEditable(quantity, stock), stock, 'assigned');
   }
+  var lock = $('<td class="stock-lock"></td>');
+  makeLockHandler(lock, stock);
+  tr.append(legend);
+  tr.append(name);
   tr.append(quantity);
+  tr.append(lock);
   return tr;
 }
 

@@ -2641,6 +2641,7 @@ td.event img {
 }
 
 .searchInput li {
+    list-style: none;
     line-height: 2.5em;
 }
 /* }}} */

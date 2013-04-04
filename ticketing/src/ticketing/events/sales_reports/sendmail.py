@@ -231,7 +231,7 @@ def get_performance_sales_summary(form, organization):
     query = Stock.query.filter(Stock.stock_holder_id.in_(stock_holder_ids))\
         .join(StockStatus).filter(StockStatus.deleted_at==None)\
         .join(ProductItem).filter(ProductItem.deleted_at==None)\
-        .join(Product).filter(and_(Product.seat_stock_type_id==Stock.stock_type_id, Product.base_product_id!=None))
+        .join(Product).filter(and_(Product.seat_stock_type_id==Stock.stock_type_id, Product.base_product_id==None))
 
     if form.performance_id.data:
         query = query.filter(Stock.performance_id==form.performance_id.data)

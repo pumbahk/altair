@@ -44,7 +44,10 @@ def main(global_config, **local_config):
     ## first:
     config.include("altairsite.front")
 
+    ## tween: [encodingfixer, mobile-tween]. the order is important
+    config.include("altair.encodingfixer")
     config.include("altairsite.mobile", route_prefix="/mobile")
+
     config.include("altairsite.feature")
     config.include("altairsite.errors")
     config.include("altairsite.search", route_prefix="/search")

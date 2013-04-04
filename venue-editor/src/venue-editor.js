@@ -553,6 +553,7 @@
                   seat.addStyleType('tooltip');
                 }
                 self.highlighted[_id] = seat;
+                self.callbacks.tooltip && self.callbacks.tooltip(seat);
               }
             },
             mouseout: function(evt) {
@@ -565,13 +566,13 @@
                 } else {
                   seat.removeStyleType('tooltip');
                 }
+                self.callbacks.tooltip && self.callbacks.tooltip(seat);
               }
             },
             mousedown: function(evt) {
-              if (seats[id].get('model').selectable()) {
-                self.callbacks.click && self.callbacks.click(self, self, self.highlighted);
-              } else {
-                self.callbacks.tooltip && self.callbacks.tooltip(id);
+              var seat = seats[id];
+              if (seat.get('model').get('sold')) {
+                self.callbacks.click && self.callbacks.click(seat.get('model'));
               }
             }
           }

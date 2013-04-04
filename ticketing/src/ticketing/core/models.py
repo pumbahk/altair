@@ -37,14 +37,12 @@ from ticketing.models import (
     is_any_of
 )
 from standardenum import StandardEnum
-from ticketing.utils import is_nonmobile_email_address
 from ticketing.users.models import User, UserCredential, MemberGroup, MemberGroup_SalesSegment
-from ticketing.utils import sensible_alnum_decode
 from ticketing.sej.models import SejOrder, SejTenant, SejTicket, SejRefundTicket, SejRefundEvent
 from ticketing.sej.exceptions import SejServerError
 from ticketing.sej.payment import request_cancel_order
 from ticketing.assets import IAssetResolver
-from ticketing.utils import myurljoin
+from ticketing.utils import myurljoin, tristate, is_nonmobile_email_address, sensible_alnum_decode
 from ticketing.helpers import todate
 from ticketing.payments import plugins
 from .utils import ApplicableTicketsProducer
@@ -1504,6 +1502,7 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     performance_id = Column(Identifier, ForeignKey('Performance.id'), nullable=False)
     stock_holder_id = Column(Identifier, ForeignKey('StockHolder.id'), nullable=True)
     stock_type_id = Column(Identifier, ForeignKey('StockType.id'), nullable=True)
+    locked_at = Column(DateTime, nullable=True, default=None)
 
     stock_status = relationship("StockStatus", uselist=False, backref='stock')
 
@@ -2490,23 +2489,35 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if condition:
             status_cond = []
             if 'ordered' in condition:
-                status_cond.append(and_(Order.paid_at==None, Order.canceled_at==None, Order.delivered_at==None))
+                status_cond.append(and_(Order.canceled_at==None, Order.delivered_at==None))
             if 'delivered' in condition:
                 status_cond.append(and_(Order.canceled_at==None, Order.delivered_at!=None))
             if 'canceled' in condition:
                 status_cond.append(and_(Order.canceled_at!=None))
-            if 'issued' in condition:
-                status_cond.append(Order.issued==True)
-            if 'unissued' in condition:
-                status_cond.append(Order.issued==False)
-            if 'paid' in condition:
-                status_cond.append(and_(Order.paid_at!=None, Order.canceled_at==None, Order.refund_id==None, Order.delivered_at==None))
-            if 'refunding' in condition:
-                status_cond.append(and_(Order.paid_at!=None, Order.refund_id!=None, Order.refunded_at==None))
-            if 'refunded' in condition:
-                status_cond.append(and_(Order.refunded_at!=None))
             if status_cond:
                 query = query.filter(or_(*status_cond))
+        condition = form.issue_status.data
+        if condition:
+            issue_cond = []
+            if 'issued' in condition:
+                issue_cond.append(Order.issued==True)
+            if 'unissued' in condition:
+                issue_cond.append(Order.issued==False)
+            if issue_cond:
+                query = query.filter(or_(*issue_cond))
+        condition = form.payment_status.data
+        if condition:
+            payment_cond = []
+            if 'unpaid' in condition:
+                payment_cond.append(and_(Order.refunded_at==None, Order.refund_id==None, Order.paid_at==None))
+            if 'paid' in condition:
+                payment_cond.append(and_(Order.refunded_at==None, Order.refund_id==None, Order.paid_at!=None))
+            if 'refunding' in condition:
+                payment_cond.append(and_(Order.refunded_at==None, Order.refund_id!=None))
+            if 'refunded' in condition:
+                payment_cond.append(and_(Order.refunded_at!=None))
+            if payment_cond:
+                query = query.filter(or_(*payment_cond))
         condition = form.tel.data
         if condition:
             query = query.join(Order.shipping_address).filter(or_(ShippingAddress.tel_1==condition, ShippingAddress.tel_2==condition))
@@ -3081,7 +3092,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     start_at = Column(DateTime)
     end_at = Column(DateTime)
     upper_limit = Column(Integer)
-    seat_choice = Column(Boolean, default=True)
+    _seat_choice = Column('seat_choice', Boolean, nullable=True, default=None)
     public = Column(Boolean, default=True)
     performance_id = Column(Identifier, ForeignKey('Performance.id'))
     performance = relationship("Performance", backref="sales_segments")
@@ -3122,6 +3133,18 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     @hybrid_method
     def in_term(self, dt):
         return (self.start_at <= dt) & (dt <= self.end_at)
+
+    @hybrid_property
+    def seat_choice(self):
+        return self._seat_choice if self._seat_choice is not None else self.sales_segment_group.seat_choice
+
+    @seat_choice.expression
+    def seat_choice(cls):
+        return or_(and_(cls._seat_choice == None, SalesSegmentGroup.seat_choice), cls._seat_choice)
+
+    @seat_choice.setter
+    def seat_choice(self, value):
+        self._seat_choice = tristate(value)
 
     @property
     def stocks(self):

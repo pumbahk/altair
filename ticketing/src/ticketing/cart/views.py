@@ -157,12 +157,10 @@ class IndexView(IndexViewMixin):
     @view_config(route_name='cart.seat_types', renderer="json")
     def get_seat_types(self):
         event_id = self.request.matchdict['event_id']
-        performance_id = self.request.matchdict['performance_id']
-        sales_segment_id = self.request.matchdict['sales_segment_id']
-        #performance = c_models.Performance.query.filter_by(id=performance_id).one()
+        sales_segment = self.request.context.sales_segment # XXX: matchdict から取得していることを期待
         performance = self.request.context.performance
 
-        seat_type_triplets = get_seat_type_triplets(event_id, performance_id, sales_segment_id)
+        seat_type_triplets = get_seat_type_triplets(event_id, performance.id, sales_segment.id)
         data = dict(
             seat_types=[
                 dict(
@@ -171,20 +169,21 @@ class IndexView(IndexViewMixin):
                     description=s.description,
                     style=s.style,
                     products_url=self.request.route_url('cart.products',
-                        event_id=event_id, performance_id=performance_id, sales_segment_id=sales_segment_id, seat_type_id=s.id),
+                        event_id=event_id, performance_id=performance.id, sales_segment_id=sales_segment.id, seat_type_id=s.id),
                     availability=available > 0,
                     availability_text=h.get_availability_text(available),
                     quantity_only=s.quantity_only,
+                    seat_choice=sales_segment.seat_choice
                     )
                 for s, total, available in seat_type_triplets
                 ],
             event_name=performance.event.title,
             performance_name=performance.name,
             performance_start=h.performance_date(performance),
-            performance_id=performance_id,
-            sales_segment_id=sales_segment_id,
+            performance_id=performance.id,
+            sales_segment_id=sales_segment.id,
             order_url=self.request.route_url("cart.order", 
-                    sales_segment_id=sales_segment_id),
+                    sales_segment_id=sales_segment.id),
             venue_name=performance.venue.name,
             event_id=event_id,
             venue_id=performance.venue.id,
@@ -192,15 +191,15 @@ class IndexView(IndexViewMixin):
                 venue_drawing=self.request.route_url(
                     'cart.venue_drawing',
                     event_id=event_id,
-                    performance_id=performance_id,
+                    performance_id=performance.id,
                     venue_id=performance.venue.id,
                     part='__part__'),
                 seats=self.request.route_url(
                     'cart.seats',
                     event_id=event_id,
-                    performance_id=performance_id,
+                    performance_id=performance.id,
                     #venue_id=performance.venue.id,
-                    sales_segment_id=sales_segment_id,
+                    sales_segment_id=sales_segment.id,
                     ),
                 seat_adjacencies=self.request.application_url \
                     + api.get_route_pattern(

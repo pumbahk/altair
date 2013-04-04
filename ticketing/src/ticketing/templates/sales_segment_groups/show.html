@@ -92,7 +92,7 @@ function get_selected_sales_segment_group_id() {
             </td>
             <td>${h.safe_strftime(sales_segment.start_at)}</td>
             <td>${h.safe_strftime(sales_segment.end_at)}</td>
-            <td>${sales_segment.account.name}</td>
+            <td>${sales_segment.account.name if sales_segment.account else u'(未設定)'}</td>
             <td>${sales_segment.upper_limit or u''}</td>
             <td>${u'○' if sales_segment.seat_choice else u'×'}</td>
             <td>${u'○' if sales_segment.public else u'×'}</td>

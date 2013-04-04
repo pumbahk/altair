@@ -52,6 +52,7 @@ form = TopPageSidebarSearchForm()
     <link rel="shortcut icon" href="/static/RT/img/common/favicon.ico" />
     <link rel="stylesheet" href="/static/RT/css/import.css" type="text/css" media="all" />
     <script type="text/javascript" src="/static/RT/js/jquery.js"></script>
+    <%include file="altaircms:templates/front/google-analitics.html"/>
   </head>
 	<body id="${layout.body_id}">
 		<p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="/static/RT/img/common/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
@@ -89,8 +90,8 @@ form = TopPageSidebarSearchForm()
         </div>
 
         <div id="social">
-          <iframe src="https://www.facebook.com/plugins/like.php?app_id=233610706676154&amp;href=${h.safe_url_quote(request.url)}&amp;send=false&amp;layout=button_count&amp;width=100&amp;show_faces=false&amp;action=like&amp;colorscheme=light&amp;font&amp;height=20" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:100px; height:20px;" allowTransparency="true"></iframe>
-          <iframe allowtransparency="true" frameborder="0" scrolling="no" src="http://platform.twitter.com/widgets/tweet_button.html?url=${h.safe_url_quote(request.url)}&amp;via=RakutenTicket&amp;count=none&amp;lang=ja&amp;" style="height: 20px; width: 70px;"></iframe>
+          <iframe src="https://www.facebook.com/plugins/like.php?app_id=233610706676154&amp;href=${h.safe_url_quote("http://ticket.rakuten.co.jp/")}&amp;send=false&amp;layout=button_count&amp;width=100&amp;show_faces=false&amp;action=like&amp;colorscheme=light&amp;font&amp;height=20" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:100px; height:20px;" allowTransparency="true"></iframe>
+          <iframe allowtransparency="true" frameborder="0" scrolling="no" src="http://platform.twitter.com/widgets/tweet_button.html?url=${h.safe_url_quote("http://ticket.rakuten.co.jp/")}&amp;via=RakutenTicket&amp;count=none&amp;lang=ja&amp;" style="height: 20px; width: 70px;"></iframe>
         </div>
 
         <div id="globalNav">

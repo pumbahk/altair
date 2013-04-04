@@ -34,7 +34,6 @@ def notfound(request):
     if event_id is not None:
         logger.debug("404 on event_id=%s" % event_id)
     request.response.status = 404
-    api.logout(request)
     return {}
 
 @mobile_view_config(context=NoCartError, renderer=selectable_renderer("ticketing.cart:templates/carts/%(membership)s/timeout.html"))
