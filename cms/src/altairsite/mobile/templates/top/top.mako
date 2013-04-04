@@ -17,6 +17,8 @@
     % for count, promo in enumerate(form.promotions.data):
         % if helper.get_event_from_promotion(request, promo):
             <a href="/eventdetail?event_id=${helper.get_event_from_promotion(request, promo).id}">${promo.text}</a><br />
+        % else:
+            ${promo.text}<br/>
         % endif
     % endfor
 % endif
