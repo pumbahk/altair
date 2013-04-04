@@ -38,7 +38,7 @@ def install_app(config):
     config.set_request_property(getti_orderreview_url, "getti_orderreview_url", reify=True)
     config.set_request_property(sender_mailaddress, "sender_mailaddress", reify=True)
     config.set_request_property(inquiry_mailaddress, "inquiry_mailaddress", reify=True)
-
+    config.set_request_property(".dispatch.views.mobile_route_path", "mobile_route_path", reify=True)
     config.include('altairsite.mobile.event.company')
     config.include('altairsite.mobile.event.detailsearch')
     config.include('altairsite.mobile.event.eventdetail')

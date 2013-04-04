@@ -30,6 +30,7 @@ requires = [
     'fluent-logger == 0.3.3moriyoshi1',
     'pyramid_selectable_renderer',
     'altair.findable_label', 
+    'altair.encodingfixer', 
     'pyramid_layout',
     'lxml',
     ]
@@ -87,6 +88,7 @@ setup(name='altair-cms',
       dependency_links = [
         'file:../commons#egg=altair-commons-0.0',
         'file:../altair_findable_label#egg=altair.findable_label-0.0',
+        'file:../altair_encodingfixer#egg=altair.encodingfixer-0.0', 
         'https://github.com/moriyoshi/fluent-logger-python/tarball/0.3.3moriyoshi1#egg=fluent-logger-0.3.3moriyoshi1',
         ],
       tests_require=tests_require,

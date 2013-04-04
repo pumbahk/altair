@@ -92,11 +92,23 @@
         <label class="${u' '.join(classes + [u'control-label'])}" for="${item.id}">${label or item.label.text}</label>
       % endif
       <% add_on = options.pop('add_on', None) %>
+      <% counter = options.pop('counter', None) %>
       <div class="controls ${'input-prepend' if add_on else ''}">
         % if add_on:
         <span class="add-on">${add_on}</span>
         % endif
         ${item(**options)}
+        % if counter and 'maxlength' in options:
+        あと<span class="counter"></span>文字
+        <script type="text/javascript">
+          $(function(){
+            $('#${item.id}').keyup(function(){
+              var item = $(this);
+              item.parent().find('.counter').text(item.attr('maxlength') - item.val().length);
+            }).keyup();
+          });
+        </script>
+        % endif
         ${validate_errors(item)}
       </div>
     % endif
