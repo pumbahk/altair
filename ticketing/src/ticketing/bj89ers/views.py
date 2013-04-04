@@ -131,10 +131,9 @@ class IndexView(object):
         cart_api.set_cart(self.request, cart)
         store_user_profile(self.request, form.data)
         logger.debug('OK redirect')
-        sales_segment_group_id = self.context.sales_segment_group_id
-        cart.sales_segment_group_id = sales_segment_group_id
-        cart.sales_segment = c_models.SalesSegment.query.filter(c_models.SalesSegment.id==1).one()
-        return HTTPFound(location=self.request.route_url("cart.payment", sales_segment_id=sales_segment_group_id))
+        cart.sales_segment = self.context.sales_segment
+        cart.sales_segment_group_id = cart.sales_segment.sales_segment_group.id
+        return HTTPFound(location=self.request.route_url("cart.payment", sales_segment_id=cart.sales_segment.id))
 
 class PaymentView(_PaymentView):
     def get_validated_address_data(self):
