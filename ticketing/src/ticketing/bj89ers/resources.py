@@ -7,28 +7,21 @@ from ticketing.sej.models import SejOrder
 from .api import load_user_profile
 from sqlalchemy.orm.exc import NoResultFound
 from ticketing.core.models import SalesSegment
+from pyramid.decorator import reify
 import logging
 
 MEMBERSHIP_NAME = '89ers'
 logger = logging.getLogger(__name__)
 
 class Bj89erCartResource(TicketingCartResource):
-    def __init__(self, request):
-        super(Bj89erCartResource, self).__init__(request)
-        self.organization_id = request.registry.settings['89ers.organization_id']
-        self.event_id = request.registry.settings['89ers.event_id']
-        self.performance_id = request.registry.settings['89ers.performance_id']
-        self.start_at = parser.parse(request.registry.settings['89ers.start_at'])
-        self.end_at = parser.parse(request.registry.settings['89ers.end_at'])
+    def _populate_params(self):
+        self._event_id = self.request.registry.settings['89ers.event_id']
+        self._performance_id = self.request.registry.settings['89ers.performance_id']
+        self._sales_segment_id = None
 
-    @property
-    def sales_segment_group_id(self):
-        #### this is tooo bad. 
-        logging.debug("bj89ers sales segment is must be 1")
-        return 1
-
-    def get_sales_segment(self):
-        return SalesSegment.filter_by(id=self.sales_segment_group_id).first()
+    @reify
+    def sales_segment(self):
+        return self.available_sales_segments[0]
 
     def get_or_create_user(self):
         from ticketing.cart import api

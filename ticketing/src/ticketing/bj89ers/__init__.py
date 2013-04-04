@@ -83,6 +83,8 @@ def main(global_config, **local_config):
 
     config.add_view('.views.contact_view', route_name="contact", renderer="static/contact.html")
     config.add_view('.views.contact_view', route_name="contact", renderer="static_mobile/contact.html", request_type='ticketing.mobile.interfaces.IMobileRequest')
+    config.add_view('.views.OutTermSalesView', attr='pc', context='ticketing.cart.exceptions.OutTermSalesException', renderer='carts/out_term_sales.html')
+    config.add_view('.views.OutTermSalesView', attr='mobile', context='ticketing.cart.exceptions.OutTermSalesException', renderer='carts_mobile/out_term_sales.html', request_type='ticketing.mobile.interfaces.IMobileRequest')
     config.add_view('.views.notfound_view', context=HTTPNotFound, renderer="errors/not_found.html", )
     config.add_view('.views.notfound_view', context=HTTPNotFound,  renderer="errors_mobile/not_found.html", request_type='ticketing.mobile.interfaces.IMobileRequest')
     config.add_view('.views.forbidden_view', context="pyramid.httpexceptions.HTTPForbidden", renderer="errors/not_found.html", )

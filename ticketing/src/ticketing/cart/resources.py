@@ -45,9 +45,22 @@ class TicketingCartResource(object):
         self.now = datetime.now()
         self._event_id = None
         self._event = None
+        self._performance_id = None
+        self._sales_segment_id = None
+        self._populate_params()
+
+    def _populate_params(self):
         if request.matchdict:
             try:
-                self._event_id = int(self.request.matchdict.get('event_id'))
+                self._event_id = long(self.request.matchdict.get('event_id'))
+            except (ValueError, TypeError):
+                pass
+            try:
+                self._performance_id = long(self.request.matchdict.get('performance_id'))
+            except (ValueError, TypeError):
+                pass
+            try:
+                self._sales_segment_id = long(self.request.matchdict.get('sales_segment_id'))
             except (ValueError, TypeError):
                 pass
 
@@ -84,12 +97,10 @@ class TicketingCartResource(object):
                 self._event = None
         return self._event
 
-
     @property
     def performance(self):
-        performance_id = self.request.matchdict['performance_id']
         try:
-            return c_models.Performance.query.filter_by(id=performance_id).one()
+            return c_models.Performance.query.filter_by(id=self._performance_id).one()
         except NoResultFound:
             raise NoPerformanceError
 
@@ -187,19 +198,12 @@ class TicketingCartResource(object):
     def sales_segment(self):
         """ 該当イベントのSalesSegment取得
         """
-
-        if not getattr(self.request, 'matchdict'):
-            raise NoSalesSegment()
-
-        try:
-            sales_segment_id = long(self.request.matchdict.get('sales_segment_id'))
-        except (ValueError, TypeError):
-            # sales_segment_id が与えられてないとか、非整数な文字列
+        if self._sales_segment_id is None:
             raise NoSalesSegment()
 
         # XXX: 件数少ないしリニアサーチでいいよね
         for sales_segment in self.available_sales_segments:
-            if sales_segment.id == sales_segment_id:
+            if sales_segment.id == self._sales_segment_id:
                 return sales_segment
 
         raise NoSalesSegment()
