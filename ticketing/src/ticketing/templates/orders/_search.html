@@ -4,6 +4,9 @@
 from ticketing.formhelpers import OurDateWidget
 %>
 
+<script src="${request.static_url('ticketing:static/js/jquery.chosen.js')}"></script>
+<link rel="stylesheet" type="text/css" href="${request.static_url('ticketing:static/css/chosen.css')}" />
+
 <style type="text/css">
 .form-horizontal .control-label {
   width: 120px;
@@ -95,9 +98,11 @@ from ticketing.formhelpers import OurDateWidget
       <tbody>
         <tr>
           <th><label for="event_id">${form.event_id.label.text}</label></th>
-          <td>${form.event_id(style="width:400px", size=4)}</td>
+          <td>${form.event_id(style="width:100%", size=4)}</td>
+        </tr>
+        <tr>
           <th><label for="performance_id">${form.performance_id.label.text}</label></th>
-          <td>${form.performance_id(style="width:370px", size=4)}</td>
+          <td>${form.performance_id(style="width:100%", size=4)}</td>
         </tr>
       </tbody>
     </table>
@@ -139,6 +144,7 @@ from ticketing.formhelpers import OurDateWidget
         var update_on_empty = function(){
           var $target = $(this).parents("form").find("select[name='performance_id']").eq(0);
           $target.empty();
+          $target.chosen().trigger("liszt:updated");
           return;
         };
         var update_on_hasvalue = function(v){
@@ -153,6 +159,7 @@ from ticketing.formhelpers import OurDateWidget
                 var e = data.result[i];
                 $target.append($("<option>").attr("value", e.pk).text(e.name))
               }
+              $target.chosen().trigger("liszt:updated");
             }
           });
         };
@@ -165,7 +172,7 @@ from ticketing.formhelpers import OurDateWidget
             return update_on_hasvalue.call(self, v);
           }
         };
-        $("#search select[name='event_id']").change(update_performances);
+        $("#search select[name='event_id']").change(update_performances).chosen();
 
         var update_sales_segments_on_empty = function(){
           var $target = $(this).parents("form").find("select[name='sales_segment_id']").eq(0);
@@ -196,7 +203,7 @@ from ticketing.formhelpers import OurDateWidget
             return update_sales_segments_on_hasvalue.call(self, v);
           }
         };
-        $("#search select[name='performance_id']").change(update_sales_segments);
+        $("#search select[name='performance_id']").change(update_sales_segments).chosen();
       });
     </script>
     ${h.form_item(form.sort)}
@@ -304,7 +311,6 @@ from ticketing.formhelpers import OurDateWidget
     <a href="javascript:download_orders();" class="btn danger">ダウンロード</a>
   </div>
 </div>
-
 
 % if len(orders) == 0:
   見つかりませんでした
