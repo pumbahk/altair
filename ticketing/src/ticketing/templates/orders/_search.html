@@ -94,22 +94,22 @@ from ticketing.formhelpers import OurDateWidget
     <table>
       <tbody>
         <tr>
-          <th><label for="payment_method">${form.payment_method.label.text}</label></th>
-          <td>${form.payment_method(style="width:100%", size=4)}
-          <th><label for="delivery_method">${form.delivery_method.label.text}</label></th>
-          <td>${form.delivery_method(style="width:100%", size=4)}</td>
+          <th><label for="event_id">${form.event_id.label.text}</label></th>
+          <td>${form.event_id(style="width:400px", size=4)}</td>
+          <th><label for="performance_id">${form.performance_id.label.text}</label></th>
+          <td>${form.performance_id(style="width:370px", size=4)}</td>
         </tr>
       </tbody>
     </table>
     <table>
       <tbody>
         <tr>
-          <th><label for="event_id">${form.event_id.label.text}</label></th>
-          <td>${form.event_id(size=4)}</td>
-          <th><label for="performance_id">${form.performance_id.label.text}</label></th>
-          <td>${form.performance_id(size=4)}</td>
           <th><label for="sales_segment_id">${form.sales_segment_id.label.text}</label></th>
           <td>${form.sales_segment_id(size=4)}</td>
+          <th><label for="payment_method">${form.payment_method.label.text}</label></th>
+          <td>${form.payment_method(size=4)}
+            <th><label for="delivery_method">${form.delivery_method.label.text}</label></th>
+          <td>${form.delivery_method(size=4)}</td>
         </tr>
         <tr>
           <th><label>${form.start_on_from.label.text}</label></th>
