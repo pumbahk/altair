@@ -63,7 +63,7 @@ def mobile_rendering_page(context, request):
     control = context.pc_access_control()
     page = control.fetch_page_from_params(url, dt)
 
-    if not control.can_access() or page.event_id is None:
+    if not control.access_ok or page.event_id is None:
         logger.info(control.error_message)
         return mobile_dispatch_view(context, request)
     return HTTPFound(request.route_path("eventdetail", _query=dict(event_id=page.event_id or page.pageset.event_id)))
