@@ -331,3 +331,6 @@ def uniurldecode(buf, method='plus', encoding=None):
                 None
                 ))
     return retval
+
+def tristate(bool_or_none):
+    return bool(bool_or_none) if bool_or_none is not None else None

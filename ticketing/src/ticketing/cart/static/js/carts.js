@@ -839,7 +839,7 @@ cart.OrderFormView = Backbone.View.extend({
             btn_entrust.parent().css('display', 'none');
             btn_buy.parent().css('display', null);
         } else {
-            if (self.seatSelectionEnabled) {
+            if (self.seatSelectionEnabled && stock_type.get("seat_choice")) {
                 btn_select_seat.parent().css('display', null);
                 btn_entrust.parent().css('display', null);
             } else {
