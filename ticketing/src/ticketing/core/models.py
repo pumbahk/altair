@@ -37,14 +37,12 @@ from ticketing.models import (
     is_any_of
 )
 from standardenum import StandardEnum
-from ticketing.utils import is_nonmobile_email_address
 from ticketing.users.models import User, UserCredential, MemberGroup, MemberGroup_SalesSegment
-from ticketing.utils import sensible_alnum_decode
 from ticketing.sej.models import SejOrder, SejTenant, SejTicket, SejRefundTicket, SejRefundEvent
 from ticketing.sej.exceptions import SejServerError
 from ticketing.sej.payment import request_cancel_order
 from ticketing.assets import IAssetResolver
-from ticketing.utils import myurljoin
+from ticketing.utils import myurljoin, tristate, is_nonmobile_email_address, sensible_alnum_decode
 from ticketing.helpers import todate
 from ticketing.payments import plugins
 from .utils import ApplicableTicketsProducer
@@ -3094,7 +3092,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     start_at = Column(DateTime)
     end_at = Column(DateTime)
     upper_limit = Column(Integer)
-    seat_choice = Column(Boolean, default=True)
+    _seat_choice = Column('seat_choice', Boolean, nullable=True, default=None)
     public = Column(Boolean, default=True)
     performance_id = Column(Identifier, ForeignKey('Performance.id'))
     performance = relationship("Performance", backref="sales_segments")
@@ -3135,6 +3133,18 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     @hybrid_method
     def in_term(self, dt):
         return (self.start_at <= dt) & (dt <= self.end_at)
+
+    @hybrid_property
+    def seat_choice(self):
+        return self._seat_choice if self._seat_choice is not None else self.sales_segment_group.seat_choice
+
+    @seat_choice.expression
+    def seat_choice(cls):
+        return or_(and_(cls._seat_choice == None, SalesSegmentGroup.seat_choice), cls._seat_choice)
+
+    @seat_choice.setter
+    def seat_choice(self, value):
+        self._seat_choice = tristate(value)
 
     @property
     def stocks(self):
