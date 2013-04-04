@@ -81,7 +81,6 @@ class MobileIndexView(IndexViewMixin):
 
         return dict(
             event=self.context.event,
-            sales_segment=self.context.normal_sales_segment,
             venues=venues,
             venue_name=venue_name,
             performances=performances,
