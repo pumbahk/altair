@@ -2,6 +2,7 @@
 import logging
 logger = logging.getLogger(__file__)
 from datetime import datetime
+from altaircms.datelib import get_now
 import sqlalchemy as sa
 from altaircms.page.models import Page
 from altaircms.page.models import PageSet
@@ -16,12 +17,9 @@ class PageRenderingResource(object):
     def pc_access_control(self):
         return AccessControlPC(self.request)
 
-    def mobile_access_control(self):
-        return AccessControlMobile(self.request)
-
     def get_preview_date(self):
         if 'datetime' not in self.request.params:
-            return datetime.now()
+            return get_now()
         else:
             dt = self.request.params['datetime']
             return datetime.strptime(dt, '%Y%m%d%H%M%S')

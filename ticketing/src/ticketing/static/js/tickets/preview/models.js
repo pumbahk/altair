@@ -48,7 +48,11 @@ if (!window.preview)
                 this.trigger("*params.preview.redraw");
                 break;
             case RELOAD_SVG:
-                this.trigger("*params.change.holder");
+                if(!this.get("holder")){
+                    this.trigger("*params.preview.redraw");
+                }else {
+                    this.trigger("*params.change.holder");
+                }
                 break;
             }
         }

@@ -14,6 +14,9 @@ if (!window.core)
     var numOnlyRx = /\d+$/;
     core.UnitCalcService = {
         mul: function(unit, x){
+            if (!unit || !x){
+                return null; //warning;
+            }
             var m = unitRx.exec(unit);
             return String(Number(m[1])*x) + m[2];
         }, 
