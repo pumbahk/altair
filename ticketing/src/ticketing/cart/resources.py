@@ -45,6 +45,7 @@ class TicketingCartResource(object):
         self.now = datetime.now()
         self._event_id = None
         self._event = None
+        self._performance_id = None
         self._sales_segment_id = None
         self._populate_params()
 
@@ -52,6 +53,10 @@ class TicketingCartResource(object):
         if self.request.matchdict:
             try:
                 self._event_id = long(self.request.matchdict.get('event_id'))
+            except (ValueError, TypeError):
+                pass
+            try:
+                self._performance_id = long(self.request.matchdict.get('performance_id'))
             except (ValueError, TypeError):
                 pass
             try:
@@ -94,7 +99,10 @@ class TicketingCartResource(object):
 
     @property
     def performance(self):
-        return self.sales_segment.performance
+        try:
+            return c_models.Performance.query.filter_by(id=self._performance_id).one()
+        except NoResultFound:
+            raise NoPerformanceError
 
     @reify
     def membergroups(self):
