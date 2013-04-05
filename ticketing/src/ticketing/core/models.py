@@ -1012,15 +1012,26 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             now)
 
 class SalesSegmentKindEnum(StandardEnum):
-    first_lottery   = u'最速抽選'
-    early_lottery   = u'先行抽選'
+    normal          = u'一般発売'
     early_firstcome = u'先行先着'
-    normal          = u'一般販売'
-    added_sales     = u'追加販売'
+    added_sales     = u'追加発売'
+    early_lottery   = u'先行抽選'
     added_lottery   = u'追加抽選'
+    first_lottery   = u'最速抽選'
     vip             = u'関係者'
     sales_counter   = u'窓口販売'
     other           = u'その他'
+    order = [
+        'normal',
+        'early_firstcome',
+        'added_sales',
+        'early_lottery',
+        'added_lottery',
+        'first_lottery',
+        'vip',
+        'sales_counter',
+        'other',
+    ]
 
 class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'SalesSegmentGroup'

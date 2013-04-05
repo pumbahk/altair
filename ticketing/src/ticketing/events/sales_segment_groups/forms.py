@@ -47,7 +47,7 @@ class SalesSegmentGroupForm(OurForm):
     kind = SelectField(
         label=u'種別',
         validators=[Required()],
-        choices=[(kind.k, kind.v) for kind in SalesSegmentKindEnum],
+        choices=[(k, getattr(SalesSegmentKindEnum, k).v) for k in SalesSegmentKindEnum.order.v],
         coerce=str,
     )
     name = TextField(
