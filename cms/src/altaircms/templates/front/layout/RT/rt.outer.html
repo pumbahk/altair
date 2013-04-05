@@ -20,7 +20,7 @@ form = TopPageSidebarSearchForm()
         <li><a href="${h.link.get_searchpage(request, page=page, kind="deal_cond", value="early_firstcome")}"><img src="/static/RT/img/index/btn_presale.gif" alt="先行抽選" width="222" height="28" /></a></li>
         <li><a href="${h.link.get_searchpage(request, page=page, kind="deal_cond", value="normal")}"><img src="/static/RT/img/index/btn_release.gif" alt="一般発売" width="222" height="28" /></a></li>
         <li><a href="${h.link.get_searchpage(request, page=page, kind="deal_open", value=7)}"><img src="/static/RT/img/index/btn_now.gif" alt="すぐ見たい" width="222" height="28" /></a></li>
-        <li><a href="${request.route_path("page_search_by_freeword",_query=dict(q=u"ポイントキャンペーン"))}"><img src="/static/RT/img/index/btn_best.gif" alt="お買い得チケット" width="222" height="28" /></a></li>
+        <li><a href="${request.route_path("page_search_by", kind="pagetag", value=request.get_page_tag(u"お買い得").id)}"><img src="/static/RT/img/index/btn_best.gif" alt="お買い得チケット" width="222" height="28" /></a></li>
       </ul>
       <form id="form2" name="form2" method="GET" action="${request.route_path("page_search_by_multi")}">
         <dl>

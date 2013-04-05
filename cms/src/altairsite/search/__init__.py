@@ -1,6 +1,13 @@
 import functools
 
 def includeme(config):
+    from altaircms.page.models import PageTag
+    def get_page_tag_factory(request):
+        def _(labelname):
+            return request.allowable(PageTag).filter_by(label=labelname, publicp=True).first()
+        return _
+    config.set_request_property(get_page_tag_factory,  "get_page_tag", reify=True)
+
     add_route = functools.partial(config.add_route, factory=".resources.SearchPageResource")
     add_route("page_search_input", "/input") #input, result
     add_route("page_search_result", "/result/detail")
